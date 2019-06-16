@@ -31,6 +31,7 @@
 - [Data Map](#data-map)
 - [App Structure](#app-structure)
 - [Legal Pages](#legal-pages)
+- [Credits](#credits)
 
 <!-- /MarkdownTOC -->
 
@@ -385,3 +386,9 @@ TC_URL      # terms and condition
 PRIVACY_URL # privacy policy
 COOKIES_URL # cookies policy
 ```
+
+# Credits
+
+Quepid wasn't always open source!  Check out the [credits](docs/credits.md) for a list of contributors to the project.
+
+
