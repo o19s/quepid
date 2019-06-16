@@ -1,0 +1,20 @@
+# == Schema Information
+#
+# Table name: case_metadata
+#
+#  id             :integer          not null, primary key
+#  user_id        :integer          not null
+#  case_id        :integer          not null
+#  last_viewed_at :datetime
+#
+
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+# This model initially had no columns defined.  If you add columns to the
+# model remove the '{}' from the fixture names and add the columns immediately
+# below each fixture, per the syntax in the comments below
+#
+past:
+  user: :doug
+  case: :with_metadata
+  last_viewed_at: <%= DateTime.now - 5.days %>

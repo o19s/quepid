@@ -1,0 +1,53 @@
+<script type="text/javascript">
+  // Tooltip
+  $(function () {
+    $('[data-toggle="tooltip"]').tooltip();
+  })
+</script>
+
+<div class="modal-header">
+  <button type="button" class="close" aria-label="Close" ng-click="ctrl.cancel()"><span aria-hidden="true">&times;</span></button>
+  <h3 class="modal-title">Export case: <span class="modal-case">{{ ctrl.theCase.caseName }}</span></h3>
+</div>
+<div class="modal-body">
+  <p>You have the option to export either a general overview of the case or a detailed result drill down.</p>
+
+  <label>Export type</label>
+  <div class="form-group">
+    <input type="radio" id="general" name="exportSelection" value="general" ng-model="ctrl.options.which">
+    <label for="general">General</label>
+    <span class="help-block">
+      CSV file with <code>Team Name,Case Name,Case ID,Query Text,Score,Date Last Scored,Count,Notes</code>
+    </span>
+  </div>
+
+  <div class="form-group">
+    <input type="radio" id="detailed" name="exportSelection" value="detailed" ng-model="ctrl.options.which">
+    <label for="detailed">Detailed</label>
+    <span class="help-block">
+      CSV file with <code>Team Name,Case Name,Case ID,Query Text,Doc ID,Title,Rating,Field1,...,FieldN</code> where <code>Field1,...,FieldN</code> are specified under <strong>Settings</strong> in the <strong>Displayed Fields</strong> field.
+    </span>
+  </div>
+
+  <div class="form-group">
+    <input type="radio" id="snapshot" name="exportSelection" value="snapshot" ng-model="ctrl.options.which">
+    <label for="snapshot">Snapshot</label>
+    <span class="help-block">
+      Snapshot's represent a point in time, and you may want to download them for furthur analysis, rework them, and then
+      import them back into Quepid using the <strong>Import Snapshots from CSV</strong> function on the Relevancy Cases listing page.
+      You will have a CSV file with <code>Snapshot Name,Snapshot Time,Case ID,Query Text,Doc ID,Doc Position</code> fields.
+    </span>
+    <label for="snapshot_choice">Snapshot
+      <select
+        id="diffWith"
+        ng-model="ctrl.options.selection"
+        ng-options="snapshot.id as snapshot.name() for (id, snapshot) in ctrl.snapshots"
+      >
+      </select>
+    </label>
+  </div>
+</div>
+<div class="modal-footer">
+  <button class="btn btn-default float-left" ng-click="ctrl.cancel()">Cancel</button>
+  <button class="btn btn-primary" ng-click="ctrl.ok()" ng-disabled="ctrl.options.which === 'undefined'">Export</button>
+</div>

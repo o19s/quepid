@@ -1,0 +1,48 @@
+<li class='annotation'>
+  <div class="dropdown pull-right" uib-dropdown>
+    <a uib-dropdown-toggle>
+      <i class="fa fa-bars"></i>
+    </a>
+
+    <ul class="dropdown-menu" uib-dropdown-menu>
+      <li>
+        <a ng-click='ctrl.update()'>
+          <i class='fa fa-edit'></i>
+          Edit
+        </a>
+      </li>
+      <li>
+        <a ng-click='ctrl.delete()' class='text-danger'>
+          <i class='fa fa-trash'></i>
+          Delete
+        </a>
+      </li>
+    </ul>
+  </div>
+
+  <em class='annotations-time'>{{ ctrl.theAnnotation.createdAt | timeAgo }} - </em>
+
+  <span class='annotation-source' ng-if='ctrl.theAnnotation.user'>
+    by {{ ctrl.theAnnotation.user.name }}
+  </span>
+
+  <span class='annotation-source' ng-if='ctrl.theAnnotation.source'>
+    by {{ ctrl.theAnnotation.source }}
+  </span>
+
+  <div>
+    <span class='annotation-try'>
+      Try No: {{ ctrl.theAnnotation.score.try_id }}
+    </span>
+
+    <i class='fa fa-circle'></i>
+
+    <span class='annotation-score'>
+      Score: {{ ctrl.theAnnotation.score.score }}
+    </span>
+  </div>
+
+  <div class='annotation-message'>
+    {{ ctrl.theAnnotation.message }}
+  </div>
+</li>

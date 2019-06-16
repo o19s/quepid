@@ -1,0 +1,36 @@
+<ul class="navbar-left nav navbar-nav" ng-controller="HeaderCtrl">
+  <!-- Begin case selector -->
+  <li class="dropdown" uib-dropdown>
+    <a href class="dropdown-toggle" uib-dropdown-toggle>
+      <span class="nav-label">Relevancy cases</span>
+      <i class="fa fa-chevron-down"></i>
+    </a>
+
+    <ul class="dropdown-menu dropdown-content" ng-model="headerScope.dropdownCases" uib-dropdown-menu>
+      <li class="text-muted">
+        <strong>RECENT CASES</strong>
+      </li>
+
+      <li ng-repeat="case in headerScope.dropdownCases | limitTo:5 track by $index" class="cases-nav-listing">
+        <a href="#" class="dropdown-link" ng-click="headerScope.goToCase($event, case)"  ng-if="!isRailsGoingToAngular()">{{ case.caseName }}</a>
+
+        <a ng-href="{{'/case/' + case.caseNo + '/try/' + case.lastTry}}" class="dropdown-link" ng-if="isRailsGoingToAngular()" target="_self">{{ case.caseName }}</a>
+      </li>
+
+      <li class="actions">
+        <a href="/cases" class="btn btn-default btn-block" ng-attr-target="{{ isRailsGoingToAngular() ? '_self' : undefined }}">
+          View all cases
+          <small class="text-muted">
+            ({{ headerScope.casesCount }} active)
+          </small>
+        </a>
+
+        <new-case button-text="'Create a case'"></new-case>
+      </li>
+    </ul>
+  </li>
+  <!-- End case selector -->
+
+  <li><a ng-attr-target="{{ isRailsGoingToAngular() ? '_self' : undefined }}" href="/teams">Teams</a></li>
+  <li><a ng-attr-target="{{ isRailsGoingToAngular() ? '_self' : undefined }}" href="/advanced">Custom scorers</a></li>
+</ul>

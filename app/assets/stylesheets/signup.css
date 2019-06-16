@@ -1,0 +1,27 @@
+/*
+  Hero
+*/
+h2 {
+  font-family: 'allerregular';
+  color: #036;
+  margin: 10px 0 20px 0;
+  padding: 0;
+  font-size: 24px;
+}
+
+h3 {
+  font-family: 'allerregular';
+  font-size: 20px;
+  color: #036;
+  margin: 10px 0 20px 0;
+  padding: 0;
+}
+
+.or-block {
+  margin-top: 50px;
+  text-align: center;
+}
+
+.m-t-20 {
+  margin-top: 20px !important;
+}

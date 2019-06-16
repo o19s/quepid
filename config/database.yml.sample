@@ -1,0 +1,24 @@
+default: &default
+  adapter:    <%= ENV["DB_ADAPTER"] %>
+  encoding:   utf8mb4
+  collation:  utf8mb4_bin
+  reconnect:  false
+  pool:       5
+  username:   <%= ENV["DB_USERNAME"] %>
+  password:   <%= ENV["DB_PASSWORD"] %>
+  host:       <%= ENV["DB_HOST"] %>
+
+development:
+  <<: *default
+  database: <%= ENV["DB_NAME"] %>_development
+
+# Warning: The database defined as "test" will be erased and
+# re-generated from your development database when you run "rake".
+# Do not set this db to the same as development or production.
+test:
+  <<: *default
+  database: <%= ENV["DB_NAME"] %>_test
+
+production:
+  <<: *default
+  database: <%= ENV["DATABASE_URL"] %>

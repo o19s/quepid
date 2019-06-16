@@ -1,0 +1,98 @@
+<div class="item-box row">
+  <div class="col-xs-1">
+    {{ ctrl.thisCase.caseNo }}
+  </div>
+
+  <div class="col-xs-3">
+    <span ng-switch="ctrl.clickToEdit.clicked">
+      <span ng-switch-when="false">
+        <span
+          class="case-title"
+          ng-click="ctrl.goToCase()"
+        >
+          {{ ctrl.thisCase.caseName }}
+        </span>
+
+        <span class="item-actions">
+          <span ng-if="ctrl.thisCase.owned">
+            <action-icon title="'Rename'" icon-class="'fa fa-edit'" fn-call="ctrl.rename()"></action-icon>
+
+            <delete-case this-case="ctrl.thisCase"></delete-case>
+          </span>
+
+          <span ng-if="ctrl.canExport()">
+            <export-case the-case="ctrl.thisCase"></export-case>
+          </span>
+
+          <span ng-if="!ctrl.canExport()">
+            <a
+              class="action-icon"
+              uib-popover-template="'case_listing/_export.html'"
+              popover-placement="auto"
+              popover-trigger="mouseenter"
+            >
+              <i
+                class="glyphicon glyphicon-save-file"
+                area-hidden="true"
+                title="Export Case"
+                alt="Export Case"
+              ></i>
+
+              <i
+                class="glyphicon glyphicon-export"
+                area-hidden="true"
+                title="Export Ratings"
+                alt="Export Ratings"
+              ></i>
+
+              <sup class="text-warning fa fa-exclamation-circle"></sup>
+            </a>
+          </span>
+
+          <span>
+            <share-case
+              acase="ctrl.thisCase"
+              icon-only="true"
+            ></share-case>
+          </span>
+        </span>
+      </span>
+
+      <form ng-switch-when="true" ng-blur="ctrl.submit()" ng-submit="ctrl.submit()" class="form-inline">
+        <input type="text" autofocus="autofocus" ng-model="ctrl.clickToEdit.currVal" class="form-control input-sm"></input>
+        <button class="btn btn-xs btn-success rename">Save</button>
+        <a class="btn btn-xs btn-default" ng-click="ctrl.cancel()">Cancel</a>
+      </form>
+    </span>
+  </div>
+
+  <div class="col-xs-1">
+    {{ ctrl.thisCase.lastTry }}
+  </div>
+
+  <div class="col-xs-1">
+    {{ ctrl.thisCase.queriesCount }}
+  </div>
+
+  <div class="col-xs-1">
+    <last-score score="ctrl.thisCase.lastScore"></last-score>
+  </div>
+
+  <div class="col-xs-1">
+    {{ ctrl.thisCase.lastScore.created_at | timeAgo }}
+  </div>
+
+  <div class="col-xs-2">
+    {{ ctrl.thisCase.lastScore.username }}
+  </div>
+
+  <div class="col-xs-2">
+    <div class="owner" ng-if="ctrl.thisCase.owned">
+      Me
+    </div>
+
+    <div class="owner" ng-if="!ctrl.thisCase.owned">
+      {{ ctrl.thisCase.teamNames() }}
+    </div>
+  </div>
+</div>

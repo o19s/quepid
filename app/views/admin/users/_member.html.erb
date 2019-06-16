@@ -1,0 +1,7 @@
+<li class='col-sm-5'>
+  <%= image_tag member.avatar_url %>
+  <%= member.display_name %>
+  <% if member == current_user %>
+    <span class="label label-info">You</span>
+  <% end %>
+</li>

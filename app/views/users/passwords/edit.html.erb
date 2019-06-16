@@ -1,0 +1,37 @@
+<div class="main-container">
+  <div class="jumbotron">
+    <div class="row">
+      <div class="col-sm-4 col-sm-offset-4">
+
+        <h2>Change your password</h2>
+
+        <%= form_for(resource, as: resource_name, url: password_path(resource_name), html: { method: :put }) do |f| %>
+          <% if devise_error_messages? -%>
+            <%= devise_update_password_error_messages %>
+          <% end -%>
+
+          <%= f.hidden_field :reset_password_token %>
+
+          <div class="form-group">
+            <%= f.label :password, "New password", class: 'control-label' %>
+            <% if @minimum_password_length %>
+              <em>(<%= @minimum_password_length %> characters minimum)</em><br />
+            <% end %>
+            <%= f.password_field :password, autofocus: true, autocomplete: "off", class: 'form-control input-lg', placeholder: 'New password' %>
+          </div>
+
+          <div class="form-group">
+            <%= f.label :password_confirmation, "Confirm new password", class: 'control-label' %>
+            <%= f.password_field :password_confirmation, autocomplete: "off", class: 'form-control input-lg', placeholder: 'Confirm new password' %>
+          </div>
+
+          <div class="form-group">
+            <%= f.submit "Change my password", class: "btn btn-primary btn-lg" %>
+          </div>
+        <% end %>
+
+        <a href='/'>Login</a>
+      </div>
+    </div>
+  </div>
+</div>

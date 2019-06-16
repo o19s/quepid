@@ -1,0 +1,78 @@
+AllCops:
+  Exclude:
+    - config/puma.rb
+    - db/**/*
+    - bin/**/*
+    - vendor/**/*
+    - node_modules/**/*
+    - lib/templates/rails/jbuilder/index.json.jbuilder
+    - lib/railgun/mailer_decorator.rb
+    - config/initializers/simple_form.rb
+    - config/initializers/simple_form_bootstrap.rb
+    - config/initializers/content_security_policy.rb
+
+Rails:
+  Enabled: true
+
+Rails/Output:
+  Enabled: false
+
+Documentation:
+  Enabled: false
+
+Layout/AlignHash:
+  EnforcedColonStyle: table
+  EnforcedHashRocketStyle: table
+
+Layout/IndentFirstHashElement:
+  EnforcedStyle: consistent
+
+Layout/MultilineMethodCallIndentation:
+  EnforcedStyle: indented
+
+Layout/SpaceInsideArrayLiteralBrackets:
+  EnforcedStyle: space
+
+Layout/SpaceInsidePercentLiteralDelimiters:
+  Enabled: false
+
+Layout/SpaceInsideParens:
+  Enabled: false
+
+Metrics/BlockLength:
+  Exclude:
+    - test/**/*
+
+Metrics/ClassLength:
+  Exclude:
+    - test/**/*
+
+Metrics/AbcSize:
+  Max: 30
+
+Metrics/LineLength:
+  Max: 120
+
+Metrics/MethodLength:
+  Max: 15
+
+Metrics/CyclomaticComplexity:
+  Max: 8
+
+Metrics/PerceivedComplexity:
+  Max: 8
+
+Style/Alias:
+  EnforcedStyle: prefer_alias_method
+
+Style/Lambda:
+  Enabled: false
+
+Style/MethodDefParentheses:
+  EnforcedStyle: require_no_parentheses_except_multiline
+
+Style/TrailingCommaInHashLiteral:
+  EnforcedStyleForMultiline: comma
+
+Style/YodaCondition:
+  EnforcedStyle: require_for_equality_operators_only

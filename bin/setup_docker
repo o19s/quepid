@@ -1,0 +1,33 @@
+#!/usr/bin/env ruby
+require 'pathname'
+
+# path to your application root.
+APP_ROOT = Pathname.new File.expand_path('../../',  __FILE__)
+
+Dir.chdir APP_ROOT do
+  # This script is a starting point to setup your application.
+  # Add necessary setup steps to this file:
+
+  puts "\n== Copying sample files =="
+  unless File.exist?("config/database.yml")
+    system "cp config/database.yml.sample config/database.yml"
+  end
+
+  unless File.exist?(".env")
+    system "cp .env.example .env"
+  end
+
+  # Specifiying nobuild will force use of existing image
+  build_arg = "--build"
+  if ARGV.length > 0 and ARGV[0] == "nobuild"
+      build_arg = "--no-build"
+      puts "\n== Pulling latest image =="
+      system "docker-compose pull app"
+  end
+
+  puts "\n== Building Docker container =="
+  system "docker-compose up #{build_arg} --no-start"
+  system "bin/docker r yarn"
+  system "bin/docker r bin/rake db:setup"
+  system "bin/docker r bin/rake db:create RAILS_ENV=test"
+end

@@ -1,0 +1,32 @@
+version: '3'   # on CircleCI the version and services cause build to puke.
+services:
+  mysql:
+    container_name: quepid_db
+    image: mysql:5.6.37
+    ports:
+      - 3306:3306
+    environment:
+      - MYSQL_ROOT_PASSWORD=password
+
+  redis:
+    container_name: quepid_redis
+    image: redis
+    ports:
+      - 6379:6379
+
+  app:
+    container_name: quepid_app
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    image: quepid/quepid
+    volumes:
+      - .:/srv/app
+    ports:
+      - 3000:3000
+    links:
+      - mysql
+      - redis
+    depends_on:
+      - mysql
+      - redis

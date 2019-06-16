@@ -1,0 +1,6 @@
+$("#flash").html('<%= escape_javascript(flash_messages).html_safe %>');
+
+$('#account-form').trigger("reset");
+$('#old').val("");
+$('#new').val("");
+$('#confirm').val("");

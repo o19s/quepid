@@ -1,0 +1,100 @@
+<div id="main">
+  <div class="pane_container">
+    <div class="pane_main results-control">
+      <div id="case-header" class="row">
+        <div class="col-sm-12">
+          <div ng-controller="queriesCtrl" style="display: inline-block">
+            <qscore
+              class="case-score"
+              diff-label="queries.selectedDiffName()"
+              full-diff-name="queries.fullDiffName()"
+              max-score="maxScore || 100";
+              scorable="queries.avgQuery"
+              score-label="'average'"
+              score-type="'header'"
+              scores="scores"
+              show-diff="queries.selectedDiff() !== null"
+            >
+            </qscore>
+          </div>
+
+          <div ng-controller="CaseCtrl" style="display:inline-block;vertical-align:top">
+            <h1 class="">
+              <small class="text-muted">Current case</small>
+
+              <br>
+
+              {{ caseModel.selectedCase().caseName }}
+
+              <small class="text-muted" ng-controller="CurrSettingsCtrl">
+                &mdash;
+                {{ currentTry.selectedTry().name }}
+              </small>
+            </h1>
+          </div>
+        </div>
+      </div>
+
+      <div id="case-actions" class="row" ng-controller="CaseCtrl">
+        <div class="col-sm-12" ng-if="caseModel.caseLoaded()">
+          <ul class="list-inline">
+            <li>
+              <span class="glyphicon glyphicon-tasks"></span>
+              <a name="button" ng-click="pickScorer()">
+                Select scorer
+              </a>
+            </li>
+            <li>
+              <span class="glyphicon glyphicon-camera"></span>
+              <a ng-controller="TakeSnapshotCtrl" type="button" ng-click="snapshot.prompt()">
+                Create snapshot
+              </a>
+            </li>
+            <li>
+              <diff></diff>
+            </li>
+            <li>
+              <import-ratings
+                acase="caseModel.selectedCase()"
+              ></import-ratings>
+            </li>
+            <li>
+              <share-case
+                acase="caseModel.selectedCase()"
+              ></share-case>
+            </li>
+            <li>
+              <clone-case
+                acase="caseModel.selectedCase()"
+              ></clone-case>
+            </li>
+            <li>
+              <export-entire-case
+                acase="caseModel.selectedCase()"
+              ></export-entire-case>
+            </li>
+            <li id="tune-relevance-link">
+              <span class="glyphicon glyphicon-wrench"></span>
+              <a type="button" ng-click="toggleDevSettings()">
+                Tune Relevance
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div> <!-- end of #case-actions -->
+
+      <!-- see queries directive -->
+      <queries></queries>
+
+      <div ng-controller="WizardCtrl"></div>
+    </div>
+
+    <div class="east-slider">
+    </div>
+
+    <div class="pane_east">
+      <ng-include src="'views/cases/_dev_settings.html'"></ng-include>
+    </div>
+    <div class="clearfix"></div>
+  </div>
+</div>

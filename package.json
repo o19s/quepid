@@ -1,0 +1,55 @@
+{
+  "name": "quepid",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/o19s/quepid.git"
+  },
+  "license": "SEE LICENSE IN agreement.html",
+  "dependencies": {
+    "FileSaver.js": "https://github.com/Teleborder/FileSaver.js",
+    "ace-builds": "^1.4.1",
+    "angular": "~1.7.7",
+    "angular-cookies": "~1.7.7",
+    "angular-csv-import": "https://github.com/bahaaldine/angular-csv-import",
+    "angular-flash": "https://github.com/wmluke/angular-flash",
+    "angular-resource": "~1.7.7",
+    "angular-route": "~1.7.7",
+    "angular-sanitize": "~1.7.7",
+    "angular-timeago": "~0.1.12",
+    "angular-ui-ace": "https://github.com/angular-ui/ui-ace",
+    "angular-ui-bootstrap": "~2.5.0",
+    "angular-ui-sortable": "~0.13.4",
+    "angular-utils-pagination": "~0.11.1",
+    "angular-wizard": "git://github.com/softwaredoug/angular-wizard.git#0.4.2",
+    "bootstrap": "~3.3.6",
+    "components-font-awesome": "~4.4.0",
+    "d3": "~3.5.17",
+    "d3-tip": "~0.6.7",
+    "es5-shim": "~4.1.11",
+    "jasmine-core": "~2.9.0",
+    "jquery": "~1.12.2",
+    "jquery-ui": "~1.12.1",
+    "jshint": "latest",
+    "json3": "~3.2.4",
+    "karma": "~0.13.22",
+    "karma-coffee-preprocessor": ">= 0.2.1",
+    "karma-coverage": "~0.5.5",
+    "karma-jasmine": ">= 0.2.2",
+    "karma-ng-html2js-preprocessor": ">= 0.2.0",
+    "karma-ng-scenario": "0.1.0",
+    "karma-phantomjs-launcher": ">= 0.1.4",
+    "ng-json-explorer": "https://github.com/odra/ng-json-explorer",
+    "ng-tags-input": "~3.0.0",
+    "splainer-search": "2.4.3",
+    "tether-shepherd": "latest"
+  },
+  "devDependencies": {
+    "angular-mocks": "~1.7.7",
+    "angular-scenario": "~1.7.7"
+  },
+  "resolutions": {
+    "angular": "~1.7.7",
+    "es5-shim": "~4.1.11",
+    "d3": "~3.5.17"
+  }
+}

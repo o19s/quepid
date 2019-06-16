@@ -1,0 +1,176 @@
+<!--div class="modal-header">
+  <h3 class="modal-title">Quepid Wizard</h3>
+</div-->
+<div class="modal-body">
+  <wizard on-finish="pendingWizardSettings.submit()">
+    <wz-step title="Welcome">
+      <h1>Welcome To Quepid!</h1>
+      <div>
+        <img ng-src="/images/doug.jpg" style="float: left; margin: 20px 30px 100px 20px; width: 100px" />
+        <p>Hi, I'm Doug, creator of Quepid. Let me guide you through your setup!</p>
+        <button class="btn btn-primary pull-right" wz-next>Continue</button>
+        <br><br><br><br><br>
+      </div>
+    </wz-step>
+    <wz-step title="Name">
+      <h2>Name Your Case!</h2>
+      <div>
+        <p>Give an informative name to the problem you're solving</p>
+
+        <form class="form-inline">
+          <div class="form-group">
+            <label>New Case Name:</label>
+            <input type="text" ng-model="pendingWizardSettings.caseName" style='width: 250px' />
+          </div>
+          <button class="btn btn-primary pull-right" wz-next>Continue</button>
+        </form>
+
+        <br><br><br><br><br>
+      </div>
+    </wz-step>
+    <wz-step title="Engine">
+      <h2>Solr or Elasticsearch?</h2>
+      <div>
+
+        <div style="text-align: center;">
+          <label style="margin-right: 25px;">
+            <img ng-src="/images/Solr.png" alt='Solr' width="100px" />
+            <input type="radio" value="solr" ng-model="pendingWizardSettings.searchEngine" ng-change="udpateSettingsDefaults()">
+          </label>
+          <label>
+            <input type="radio" value="es" ng-model="pendingWizardSettings.searchEngine" ng-change="udpateSettingsDefaults()">
+            <img ng-src="/images/elasticsearch.png" alt='Elasticsearch' width="150px" />
+          </label>
+        </div>
+
+        <br>
+        <p>Paste a URL to where Quepid can search (you can also just experiment with the default collection):</p>
+        <div class="row">
+          <div ng-if="urlInvalid" class="alert alert-danger">Sorry, we're not getting any search results from your <span ng-show="pendingWizardSettings.searchEngine === 'es'">Elasticsearch</span><span ng-show="pendingWizardSettings.searchEngine === 'solr'">Solr</span>.
+            <ul ng-if="pendingWizardSettings.searchEngine === 'es'">
+              <li>Is your Elasticsearch behind a firewall or proxy? Try acessing the <a target="_blank" href="{{pendingWizardSettings.searchUrl}}">URL directly</a> and see if you get a response</li>
+              <li>Does your Elasticsearch accept HTTP POST requests?</li>
+              <li>Is your Elasticsearch setup for CORS to talk to Quepid's web app (http://app.quepid.com)?</li>
+              <li>Double check if you have an ad blocker blocking your queries.</li>
+              <li>Don't hesitate to contact <a target="_blank" href="http://quepid.com/support/">support</a> to get to a real human being!</li>
+            </ul>
+            <ul ng-if="pendingWizardSettings.searchEngine === 'solr'">
+              <li>Do you see any errors when you visit your <a target="_blank" href="{{pendingWizardSettings.searchUrl}}">Solr URL directly?</a></li>
+              <li>Will your request handler accept the JSONP writer type? Or does it only return XML or JSON?</li>
+              <li>If Solr responds, check if you have an ad blocker blocking your queries.</li>
+              <li>Don't hesitate to contact <a target="_blank" href="http://quepid.com/support/">support</a> to get to a real human being!</li>
+            </ul>
+
+          </div>
+          <div ng-if="urlValid" class="alert alert-success">Quepid can search this! Hit 'Continue' to keep working through setup.</div>
+        </div>
+
+        <form class="form-inline">
+          <div class="form-group" style="width: 100%">
+
+            <div class="row">
+              <input style="width: 100%" type="text" ng-change="reset()" ng-model="pendingWizardSettings.searchUrl" class="form-control" />
+              <small title="Manually validates Quepid can get retrieve search results from your URL before continuing" class="pull-right"><a ng-click="validate(true)">ping it</a></small>
+              <p class="help-block">Unsure? <a href="http://quepid.com/how-quepid-works/" target="_blank">Learn More</a> about Quepid's light touch with your search engine &amp; data
+
+              <p class="help-block tip">
+                Tip: Your URL should look like this {{pendingWizardSettings.urlFormat}}.
+              </p>
+            </div>
+
+            <div class="clearfix"></div>
+
+            <div class="row" style="margin-top: 50px;">
+              <div class="pull-right">
+                <button class="btn btn-primary pull-right" ng-click="validate()" ng-disabled="validating">
+                  <span ng-hide="validating">Continue</span>
+                  <span ng-show="validating">Validating...</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </form>
+
+        <br><br><br><br>
+      </div>
+    </wz-step>
+    <wz-step title="Fields">
+      <h2>How Should We Display Your Results?</h2>
+      <div>
+
+        <form class="form-horizaontal">
+          <div class="form-group clearfix">
+            <label class="col-sm-3 control-label">Title Field</label>
+            <div class="col-sm-9">
+              <input type="text" class="form-control" ng-model="pendingWizardSettings.titleField" ng-change="updateDisplayFields('title', pendingWizardSettings.titleField)" typeahead-on-select="updateDisplayFields('title', pendingWizardSettings.titleField)" uib-typeahead="field for field in searchFields | filter:$viewValue | limitTo:8" class="form-control" placeholder="Begin typing to show suggestions">
+              <p class="help-block">What field should we treat as the 'title' when displaying results?</p>
+              <p ng-if="titleFieldRequired" class="text-danger">This field is required. Please select a title field.</p>
+            </div>
+          </div>
+
+          <div class="form-group clearfix">
+            <label class="col-sm-3 control-label">ID Field</label>
+            <div class="col-sm-9">
+              <input type="text" class="form-control" ng-model="pendingWizardSettings.idField" ng-change="updateDisplayFields('id', pendingWizardSettings.idField)" typeahead-on-select="updateDisplayFields('id', pendingWizardSettings.idField)" uib-typeahead="field for field in idFields | filter:$viewValue | limitTo:8" class="form-control" placeholder="Begin typing to show suggestions">
+              <p class="help-block">What field is the unique identifier for your search results?</p>
+              <p ng-if="idFieldRequired" class="text-danger">This field is required. Please select an ID field.</p>
+            </div>
+          </div>
+
+          <div class="form-group clearfix">
+            <label class="col-sm-3 control-label">Additional Display Fields</label>
+            <div class="col-sm-9">
+              <tags-input ng-model="pendingWizardSettings.additionalFields" placeholder="Add a field" add-on-space="true" min-length="1">
+              <auto-complete source="loadFields($query)" min-length="0" load-on-focus="true" load-on-empty="true"></auto-complete>
+              </tags-input>
+              <p class="help-block">Would any extra fields be handy to display?</p>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <button class="btn btn-primary pull-right" ng-click="validateFieldSpec()" ng-disabled="validating">
+              <span ng-hide="validating">Continue</span>
+              <span ng-show="validating">Validating...</span>
+            </button>
+          </div>
+        </form>
+      </div>
+      <br><br><br><br><br>
+    </wz-step>
+    <wz-step title="Query">
+      <h2>Add Your Search Queries</h2>
+      <div>
+        <p class="help-block">Start out tuning a couple important search queries:</p>
+        <button class="btn btn-primary pull-right" wz-next ng-click="pendingWizardSettings.addQuery(pendingWizardSettings.text)">Continue</button>
+
+        <div>
+          <form>
+            <input type="text" ng-model="pendingWizardSettings.text" style='width: 250px'></input>
+            <input class="btn-xs btn-success" type="submit" value="Add Query" ng-click="pendingWizardSettings.addQuery(pendingWizardSettings.text)"></input>
+          </form>
+        </div>
+
+        <div ng-repeat="query in pendingWizardSettings.newQueries track by $id(query)" style="display: inline-block">
+          <div class="wiz_new_query">
+            <span class="query_text">
+              {{query.queryString}}
+            </span>
+            <button ng-click="pendingWizardSettings.deleteQuery($index)">X</button>
+          </div>
+        </div>
+
+        <br><br><br><br><br>
+      </div>
+    </wz-step>
+    <wz-step title="Finish">
+      <h1>That's It!</h1>
+      <p class="help-block">Go to "Tune Relevance" to iterate on your relevance and manipulate searches</p>
+      <button class="btn-lg btn-success pull-right" wz-next>Finish</button>
+      <br><br><br><br><br>
+    </wz-step>
+  </wizard>
+</div>
+<!--div class="modal-footer">
+  <button class="btn btn-primary" ng-click="pendingWizardSettings.submit()">Continue</button>
+  <button class="btn btn-warning" ng-click="close()">Cancel</button>
+</div-->

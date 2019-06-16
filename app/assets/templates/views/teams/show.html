@@ -1,0 +1,177 @@
+<div class='team container'>
+  <h2>Team: {{ currentTeam.name }}</h2>
+
+  <div class="pull-right">
+    <a ng-href='/teams'>
+      <i class="fa fa-hand-o-left" aria-hidden="true"></i>
+      Back to list
+    </a>
+  </div>
+
+  <div class="row">
+    <div class='team-owner pull-left'>
+      <img
+        ng-src="{{ currentTeam.owner.avatar_url }}"
+        class="img-responsive img-rounded"
+        alt="{{ currentTeam.owner.display_name }}"
+      />
+
+      <h4>
+        {{ currentTeam.owner.display_name }}
+        &nbsp;
+        <span class="label label-info">
+          owner
+        </span>
+      </h4>
+
+      {{ currentTeam.owner.username }}
+    </div>
+
+    <div class="team-stats col-xs-6 col-sm-6 col-md-4 col-lg-3">
+      <div class="vcard-stats border-bottom row">
+        <span class="vcard-stat col-sm-4">
+          <strong class="vcard-stat-count d-block">
+            {{ currentTeam.members.length }}
+          </strong>
+          <span class="text-muted d-block">Members</span>
+        </span>
+        <span class="vcard-stat col-sm-4">
+          <strong class="vcard-stat-count d-block">
+            {{ currentTeam.cases.length }}
+          </strong>
+          <span class="text-muted d-block">Cases</span>
+        </span>
+        <span class="vcard-stat col-sm-4">
+          <strong class="vcard-stat-count d-block">
+            {{ currentTeam.scorers.length }}
+          </strong>
+          <span class="text-muted d-block">Scorers</span>
+        </span>
+      </div>
+
+      <div class="add-member border-bottom row">
+        <h4>
+          Add Member
+        </h4>
+
+        <add-member team='currentTeam'></add-member>
+      </div>
+
+      <div
+        class="change-owner border-bottom row"
+
+
+      >
+        <h4>
+          Change Owner
+        </h4>
+
+        <change-team-owner
+          team='currentTeam'
+
+          ng-if="currentUser.id == currentTeam.owner.id"
+        ></change-team-owner>
+
+        <p ng-if="currentUser.id !== currentTeam.owner.id">
+          Only the owner, {{ currentTeam.owner.display_name }}, can change the owner of the team.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div class='clearfix'></div>
+
+  <div class="row team-associations">
+    <div class='team-members col-md-12'>
+      <h3>Members</h3>
+
+      <div class="row">
+        <div class="col-md-offset-8 col-md-4 filter-form">
+          <input type="search" ng-model="q" placeholder="Filter members" aria-label="filter members" class="form-control" id='team-members-filter' />
+        </div>
+      </div>
+
+      <div class="clearfix"></div>
+
+      <div id='users-listing' ng-if="currentTeam.members.length !== 0">
+        <ul class="users-list" ng-model="currentTeam.members">
+          <li ng-repeat="user in currentTeam.members | filter:q" class="users-list-item">
+            <user-listing user="user" light="true" team="currentTeam"></user-listing>
+          </li>
+        </ul>
+      </div>
+
+      <p ng-if="currentTeam.members.length == 0">
+        No members to show!
+      </p>
+    </div> <!-- .team-members -->
+
+    <div class='team-cases col-md-12'>
+      <h3>Cases</h3>
+
+      <div class="row">
+        <div class="col-md-offset-8 col-md-4 filter-form">
+          <input type="search" ng-model="q1" placeholder="Filter cases" aria-label="filter cases" class="form-control" id='team-cases-filter' />
+        </div>
+      </div>
+
+      <div class="clearfix"></div>
+
+      <div id='cases-listing' ng-if="currentTeam.cases.length !== 0">
+        <div class="row listing-header">
+          <span class="col-xs-1">ID</span>
+            <span class="col-xs-3">Case Title</span>
+            <span class="col-xs-1">Last Try</span>
+            <span class="col-xs-1"># of Queries</span>
+            <span class="col-xs-1">Last Score</span>
+            <span class="col-xs-1">Last Run On</span>
+            <span class="col-xs-2">Last Run By</span>
+            <span class="col-xs-2">Owner</span>
+        </div>
+
+        <ul class="cases-list" ng-model="currentTeam.cases">
+          <li ng-repeat="case in currentTeam.cases | filter:q1" class="cases-list-item">
+            <case-listing this-case="case" light="true"></case-listing>
+          </li>
+        </ul>
+      </div>
+
+      <p ng-if="currentTeam.cases.length == 0">
+        No cases to show!
+      </p>
+    </div> <!-- .team-cases -->
+
+    <div class="clearfix"></div>
+
+    <div class='team-scorers col-md-12'>
+      <h3>Scorers</h3>
+
+      <div class="row">
+        <div class="col-md-offset-8 col-md-4 filter-form">
+          <input type="search" ng-model="q2" placeholder="Filter scorers" aria-label="filter scorers" class="form-control" id='team-scorers-filter' />
+        </div>
+      </div>
+
+      <div class="clearfix"></div>
+
+      <div id='scorers-listing' ng-if="currentTeam.scorers.length !== 0">
+        <div class="row listing-header">
+          <span class="col-md-1">Name</span>
+          <span class="col-md-7">Code/Scale</span>
+          <span class="col-md-2">Show scale labels?</span>
+          <span class="col-md-2">Max Score</span>
+        </div>
+
+        <ul class="scorers-list" ng-model="currentTeam.scorers">
+          <li ng-repeat="scorer in currentTeam.scorers | filter:q2" class="scorers-list-item">
+            <scorer-listing scorer="scorer" light="true"></scorer-listing>
+          </li>
+        </ul>
+      </div>
+
+      <p ng-if="currentTeam.scorers.length == 0">
+        No scorers to show!
+      </p>
+    </div> <!-- .team-scorers -->
+  </div> <!-- .row -->
+</div>

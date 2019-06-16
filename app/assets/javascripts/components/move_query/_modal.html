@@ -1,0 +1,26 @@
+<div class="modal-header">
+  <h3 class="modal-title">Move Query to Another Case</h3>
+</div>
+<div class="modal-body">
+  <div ng-show="ctrl.loading">
+    <p>
+      Loading cases, this wont take long!
+      <i class="fa fa-spinner fa-spin" aria-hidden="true"></i>
+    </p>
+  </div>
+
+  <div ng-show="!ctrl.loading">
+    <p>Select a case:</p>
+    <ul class="list-group move-query-cases-list">
+      <li class="list-group-item" ng-repeat="case in ctrl.cases" ng-class="{ active: case == ctrl.activeCase }" ng-click="ctrl.selectCase(case)">
+        {{case.caseName}}
+      </li>
+    </ul>
+  </div>
+</div>
+<div class="modal-footer">
+  <button ng-show="ctrl.activeCase" class="btn btn-success" ng-click="ctrl.ok()">
+    Move to {{ ctrl.activeCase.caseName }}
+  </button>
+  <button class="btn btn-default" ng-click="ctrl.cancel()">Cancel</button>
+</div>

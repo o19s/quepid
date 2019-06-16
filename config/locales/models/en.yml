@@ -1,0 +1,26 @@
+en:
+  activerecord:
+    attributes:
+      user:
+        username: "Email"
+    errors:
+      models:
+        user:
+          attributes:
+            scorer_id:
+              existence: is not valid
+        case:
+          attributes:
+            scorer_id:
+              existence: is not valid
+        scorer:
+          attributes:
+            scale:
+              length: must be limited to at most 10 values
+              type: is invalid (only integers allowed)
+              existence: is not valid
+        default_scorer:
+          attributes:
+            scale:
+              length: must be limited to at most 10 values
+              type: is invalid (only integers allowed)

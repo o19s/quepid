@@ -1,0 +1,26 @@
+# == Schema Information
+#
+# Table name: ratings
+#
+#  id         :integer          not null, primary key
+#  doc_id     :string(500)
+#  rating     :integer
+#  query_id   :integer
+#  created_at :datetime         not null
+#  updated_at :datetime         not null
+#
+
+import_rating_1:
+  doc_id: '123'
+  query:  :import_ratings_query
+  rating: 5
+
+import_rating_2:
+  doc_id: '234'
+  query:  :import_ratings_query
+  rating: 5
+
+import_rating_3:
+  doc_id: '456'
+  query:  :import_ratings_query
+  rating: 5

@@ -1,0 +1,33 @@
+<div style="margin: 20px">
+  <h3>Detailed Document View of doc: {{doc.id}}</h3>
+  <h4>{{doc.title}}</h4>
+
+  <div ng-repeat="(subName, subValue) in doc.subs" class="row" style="margin-bottom: 10px">
+    <div class="col-md-4">{{subName}}</div>
+
+    <div class="col-md-8">
+      <span
+        ng-if="isJSONObject(subValue)"
+      >
+        <json-explorer
+          json-data="subValue"
+          collapsed="false">
+        </json-explorer>
+      </span>
+
+      <span
+        ng-bind-html="subValue"
+        ng-if="!isJSONObject(subValue)"
+      >
+      </span>
+    </div>
+  </div>
+
+  <a class="btn btn-primary" href="{{doc._url()}}" target="_blank">
+    View Document
+  </a>
+
+  <a class="btn btn-default" ng-click="cancel()" target="_blank">
+    Close
+  </a>
+</div>

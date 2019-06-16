@@ -1,0 +1,512 @@
+# frozen_string_literal: true
+
+require 'test_helper'
+
+module Api
+  module V1
+    class CasesControllerTest < ActionController::TestCase
+      let(:doug) { users(:doug) }
+
+      before do
+        @controller = Api::V1::CasesController.new
+
+        login_user doug
+      end
+
+      describe 'Creating a case' do
+        let(:joe) { users(:joe) }
+
+        before do
+          login_user joe
+        end
+
+        test "successfully creates a case and adds it to the user's case list" do
+          count     = joe.cases.count
+          case_name = 'test case'
+
+          post :create, caseName: case_name
+
+          assert_response :ok
+
+          assert_equal json_response['caseName'], case_name
+
+          assert_equal joe.cases.count,          count + 1
+          assert_equal joe.cases.first.caseName, case_name
+        end
+
+        test 'requires a case name' do
+          post :create
+
+          assert_response :bad_request
+
+          body = JSON.parse(response.body)
+          assert body['caseName'].include? "can't be blank"
+        end
+
+        test 'creates an initial defaults try' do
+          case_name = 'test case'
+
+          post :create, caseName: case_name
+
+          assert_response :ok
+
+          assert_equal json_response['caseName'], case_name
+          acase = Case.where(caseName: case_name).first
+
+          assert_equal 1, acase.tries.count
+        end
+
+        describe 'analytics' do
+          test 'posts event' do
+            expects_any_ga_event_call
+
+            case_name = 'test case'
+
+            perform_enqueued_jobs do
+              post :create, caseName: case_name
+
+              assert_response :ok
+            end
+          end
+        end
+      end
+
+      describe 'Fetching a case' do
+        let(:the_case)  { cases(:one) }
+        let(:matt_case) { cases(:matt_case) }
+
+        test "returns a not found error if the case is not in the signed in user's case list" do
+          get :show, case_id: matt_case.id
+          assert_response :not_found
+        end
+
+        test 'returns case info' do
+          get :show, case_id: the_case.id
+          assert_response :ok
+
+          body = JSON.parse(response.body)
+
+          assert_equal body['caseName'], the_case.caseName
+          assert_equal body['caseNo'],   the_case.id
+        end
+      end
+
+      describe 'Score history for case' do
+        let(:the_case) { cases(:one) }
+
+        before do
+          get :show, case_id: the_case.id
+          @body = JSON.parse(response.body)
+        end
+
+        test 'shows score history' do
+          assert_not_empty @body['scores']
+        end
+
+        test 'only returns the last 10 scores' do
+          assert the_case.scores.count > 10
+          assert 10 == @body['scores'].count, 'limit to 10 scores'
+        end
+
+        test 'returns the most recent scores' do
+          oldest_score = scores(:one)
+          @body['scores'].each do |s|
+            assert s['id'] != oldest_score.id
+          end
+        end
+
+        test 'keeps the scorer response small' do
+          score = @body['scores'].first
+          score_fields = %w[updated_at score note]
+          assert_empty score_fields - score.keys, 'missing fields in score response'
+          assert_empty score.keys - score_fields, 'too many fields in score response'
+        end
+      end
+
+      describe 'Archiving a case' do
+        describe 'when it is the last/only case' do
+          let(:matt)      { users(:matt) }
+          let(:the_case)  { cases(:matt_case) }
+
+          before do
+            login_user matt
+          end
+
+          test 'return a forbidden error' do
+            delete :destroy, case_id: the_case.id
+
+            assert_response :forbidden
+          end
+        end
+
+        describe 'when it is not the last/only case' do
+          let(:one) { cases(:one) }
+
+          test 'successfully marks case as archived' do
+            count_unarchived  = doug.cases.where(archived: false).count
+            count_archived    = doug.cases.where(archived: true).count
+
+            delete :destroy, case_id: one.id
+            assert_response :no_content
+
+            assert_equal count_unarchived - 1,  doug.cases.where(archived: false).count
+            assert_equal count_archived + 1,    doug.cases.where(archived: true).count
+          end
+        end
+
+        describe 'analytics' do
+          let(:one) { cases(:one) }
+
+          test 'posts event' do
+            expects_any_ga_event_call
+
+            perform_enqueued_jobs do
+              delete :destroy, case_id: one.id
+              assert_response :no_content
+            end
+          end
+        end
+      end
+
+      describe 'Updating cases' do
+        let(:one) { cases(:one) }
+
+        describe 'when case does not exist' do
+          test 'returns not found error' do
+            patch :update, case_id: 'foo', caseName: 'foo'
+            assert_response :not_found
+
+            put :update, case_id: 'foo', caseName: 'foo'
+            assert_response :not_found
+          end
+        end
+
+        describe 'when changing the case name' do
+          test 'updates name successfully using PATCH verb' do
+            patch :update, case_id: one.id, caseName: 'New Name'
+            assert_response :ok
+
+            one.reload
+            assert_equal one.caseName, 'New Name'
+          end
+
+          test 'updates name successfully using PUT verb' do
+            put :update, case_id: one.id, caseName: 'New Name'
+            assert_response :ok
+
+            one.reload
+            assert_equal one.caseName, 'New Name'
+          end
+        end
+
+        describe 'when unarchiving the case' do
+          before do
+            one.mark_archived!
+          end
+
+          test 'unarchives case successfully using PATCH verb' do
+            count_unarchived  = doug.cases.where(archived: false).count
+            count_archived    = doug.cases.where(archived: true).count
+
+            patch :update, case_id: one.id, archived: false
+            assert_response :ok
+
+            one.reload
+            assert_equal one.archived, false
+
+            assert_equal count_unarchived + 1,  doug.cases.where(archived: false).count
+            assert_equal count_archived - 1,    doug.cases.where(archived: true).count
+          end
+
+          test 'unarchives case successfully using PUT verb' do
+            count_unarchived  = doug.cases.where(archived: false).count
+            count_archived    = doug.cases.where(archived: true).count
+
+            put :update, case_id: one.id, archived: false
+            assert_response :ok
+
+            one.reload
+            assert_equal one.archived, false
+
+            assert_equal count_unarchived + 1,  doug.cases.where(archived: false).count
+            assert_equal count_archived - 1,    doug.cases.where(archived: true).count
+          end
+        end
+
+        describe 'analytics' do
+          test 'posts event' do
+            expects_any_ga_event_call
+
+            perform_enqueued_jobs do
+              patch :update, case_id: one.id, caseName: 'New Name'
+              assert_response :ok
+            end
+          end
+        end
+      end
+
+      describe 'Listing cases' do
+        let(:first_case)          { cases(:one) }
+        let(:second_case)         { cases(:two) }
+        let(:archived)            { cases(:archived) }
+        let(:shared)              { cases(:shared_with_team) }
+        let(:shared_with_owner)   { cases(:shared_with_owner) }
+        let(:not_shared)          { cases(:not_shared) }
+        let(:not_marked)          { cases(:case_not_marked_if_archived) }
+
+        test 'returns only shallow information about cases' do
+          get :index
+
+          body = JSON.parse(response.body)
+          cases = body['allCases']
+
+          cases.each do |c|
+            assert_nil c['tries']
+            assert_nil c['lastScore']['queries'] if c['lastScore']
+          end
+        end
+
+        test 'returns list of cases owned by user' do
+          get :index
+
+          assert_response :ok
+
+          body  = JSON.parse(response.body)
+          cases = body['allCases']
+
+          ids = cases.map { |c| c['caseNo'] }
+
+          assert_includes ids, first_case.id
+          assert_includes ids, second_case.id
+        end
+
+        test 'only returns teams the user can access' do
+          not_a_member = teams(:case_finder_owned_team)
+          shared.teams << not_a_member
+          shared.save!
+
+          get :index
+          body = JSON.parse(response.body)
+          test_team_ids = body['allCases'].find_all do |c|
+            c['caseNo'] == shared.id
+          end
+
+          test_team_ids = test_team_ids.flat_map do |c|
+            c['teams'].map do |co|
+              co['id']
+            end
+          end
+
+          assert_not_includes test_team_ids, not_a_member.id
+          assert_includes test_team_ids, teams(:shared).id
+        end
+
+        test 'returns list of cases shared with the user' do
+          get :index
+
+          assert_response :ok
+
+          body  = JSON.parse(response.body)
+          cases = body['allCases']
+
+          ids = cases.map { |c| c['caseNo'] }
+
+          assert_includes ids, shared.id
+        end
+
+        test 'returns list of cases shared with team owned by the user' do
+          get :index
+
+          assert_response :ok
+
+          cases = json_response['allCases']
+
+          ids = cases.map { |c| c['caseNo'] }
+
+          assert_includes ids, shared_with_owner.id
+
+          the_case = cases.select { |c| c['caseNo'] == shared_with_owner.id }.first
+
+          assert_not_nil the_case['teams']
+          assert the_case['teams'].count.positive?
+        end
+
+        test 'does not return cases not shared with the user even if owner is in the same team' do
+          get :index
+
+          assert_response :ok
+
+          cases = json_response['allCases']
+
+          ids = cases.map { |c| c['caseNo'] }
+
+          assert_not_includes ids, not_shared.id
+        end
+
+        test 'returns case even if it was not explicitly marked not archived' do
+          get :index
+
+          assert_response :ok
+
+          body  = JSON.parse(response.body)
+          cases = body['allCases']
+
+          ids = cases.map { |c| c['caseNo'] }
+
+          assert_includes ids, not_marked.id
+        end
+
+        test 'does not return archived cases by default' do
+          get :index
+
+          assert_response :ok
+
+          body  = JSON.parse(response.body)
+          cases = body['allCases']
+
+          ids = cases.map { |c| c['caseNo'] }
+
+          assert_not_includes ids, archived.id
+        end
+
+        test 'returns archived cases when specified' do
+          get :index, archived: true
+
+          assert_response :ok
+
+          body  = JSON.parse(response.body)
+          cases = body['allCases']
+
+          assert cases.length == doug.cases.where(archived: true).length
+          assert_equal cases.first['caseName'],  archived.caseName
+          assert_equal cases.first['caseNo'],    archived.id
+        end
+
+        test 'archived flag works as a string' do
+          get :index, archived: 'true'
+
+          assert_response :ok
+
+          body  = JSON.parse(response.body)
+          cases = body['allCases']
+
+          assert cases.length == doug.cases.where(archived: true).length
+          assert_equal cases.first['caseName'],  archived.caseName
+          assert_equal cases.first['caseNo'],    archived.id
+        end
+
+        test 'only returns owned archived cases' do
+          shared.update archived: true
+
+          get :index, archived: true
+
+          assert_response :ok
+
+          cases = json_response['allCases']
+          names = cases.map { |c| c['caseName'] }
+
+          assert_not_includes names, shared.caseName
+        end
+
+        test 'limits list to 3 cases if sorting by last_viewed_at' do
+          get :index, sortBy: 'last_viewed_at'
+
+          assert_response :ok
+
+          body  = JSON.parse(response.body)
+          cases = body['allCases']
+
+          assert cases.length <= 3
+        end
+
+        test 'returns list of cases ordered by last viewed date' do
+          date        = DateTime.current
+          date_param  = date.strftime('%F %T')
+          metadata    = second_case.metadata.find_or_create_by user_id: doug.id
+          metadata.update last_viewed_at: date_param
+
+          get :index, sortBy: 'last_viewed_at'
+
+          assert_response :ok
+
+          body  = JSON.parse(response.body)
+          cases = body['allCases']
+
+          ids = cases.map { |c| c['caseNo'] }
+
+          assert_equal ids.first, second_case.id
+        end
+
+        test 'returns list of cases ordered by last viewed date works for shared cases' do
+          date        = DateTime.current
+          date_param  = date.strftime('%F %T')
+          metadata    = shared.metadata.find_or_create_by user_id: doug.id
+          metadata.update last_viewed_at: date_param
+
+          get :index, sortBy: 'last_viewed_at'
+
+          assert_response :ok
+
+          body  = JSON.parse(response.body)
+          cases = body['allCases']
+
+          ids = cases.map { |c| c['caseNo'] }
+
+          assert_equal ids.first, shared.id
+        end
+      end
+
+      describe 'Default scorer' do
+        let(:one)     { cases(:one) }
+        let(:scorer)  { scorers(:valid) }
+
+        test 'sets a default scorer successfully' do
+          put :update, case_id: one.id, scorer_id: scorer.id
+
+          assert_response :ok
+
+          one.reload
+          assert_equal one.scorer_id, scorer.id
+        end
+
+        test 'removes default scorer' do
+          one.scorer = scorer
+          one.save!
+
+          put :update, case_id: one.id, scorer_id: nil
+
+          assert_response :ok
+
+          one.reload
+          assert_nil one.scorer_id
+          assert_nil one.scorer
+        end
+
+        test 'removes default scorer if id is set to 0' do
+          one.scorer = scorer
+          one.save!
+
+          put :update, case_id: one.id, scorer_id: 0
+
+          assert_response :ok
+
+          one.reload
+          assert_nil one.scorer_id
+          assert_nil one.scorer
+        end
+
+        test 'returns an error if scorer does not exist' do
+          put :update, case_id: one.id, scorer_id: 'foo'
+
+          assert_response :bad_request
+
+          assert_equal json_response['scorer_id'], [ 'is not valid' ]
+
+          one.reload
+          assert_nil one.scorer_id
+          assert_nil one.scorer
+        end
+      end
+    end
+  end
+end

@@ -1,0 +1,34 @@
+# == Schema Information
+#
+# Table name: curator_variables
+#
+#  id             :integer          not null, primary key
+#  name           :string(500)
+#  value          :float(24)
+#  query_param_id :integer
+#  created_at     :datetime         not null
+#  updated_at     :datetime         not null
+#
+
+one:
+  name:   one
+  value:  1
+  try:    :try_with_curator_vars
+
+two:
+  name:   two
+  value:  2
+  try:    :try_with_curator_vars
+
+tie_breaker:
+  name:   tieBreaker
+  value:  1
+  try:    :es_try_with_curator_vars
+
+a_float:
+  name:   aFloat
+  value:  0.5
+
+an_int:
+  name:   anInt
+  value:  1

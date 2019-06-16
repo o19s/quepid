@@ -1,0 +1,63 @@
+<script type="text/javascript">
+  // Tooltip
+  $(function () {
+    $('[data-toggle="tooltip"]').tooltip();
+  })
+</script>
+
+<div class="modal-header">
+  <button type="button" class="close" ng-click="ctrl.cancel()" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+  <h3 class="modal-title">Import Ratings</h3>
+</div>
+<div class="modal-body">
+  <p>Importing ratings is a great way to manage the rating process outside of Quepid, for example in your own custom application.
+    The CSV file should have the headers: <code>'Query Text', 'Doc ID', 'Rating'</code>
+  </p>
+
+  <p>Select CSV file to import:</p>
+
+  <ng-csv-import
+    class="import"
+    content="ctrl.csv.content"
+    upload-button-label="ctrl.csv.uploadButtonLabel"
+    header="ctrl.csv.header"
+    header-visible="true"
+    separator="ctrl.csv.separator"
+    separator-visible="ctrl.csv.separatorVisible"
+    result="ctrl.csv.result">
+  </ng-csv-import>
+
+  <div ng-show="ctrl.import.alert" class="{{ ctrl.import.alert.type }}" ng-bind-html="ctrl.import.alert.text">
+  </div>
+
+  <div ng-if="ctrl.csv.content" class="block left">
+    <h2>CSV</h2>
+    <div class="content import-content"><pre>{{ ctrl.csv.content }}</pre></div>
+  </div>
+
+  <div class="checkbox">
+    <label>
+      <input type="checkbox" ng-model='ctrl.csv.clearQueries'> Clear existing queries?
+      <span class="glyphicon glyphicon-question-sign" aria-hidden="true" data-placement="right" data-toggle="tooltip"  title="Select to clear all the existing queries on a case, this is typical when you manage your queries and ratings per case outside Quepid"></span>
+    </label>
+  </div>
+</div>
+<div class="modal-footer">
+  <p class='bg-warning text-warning padded-text'>
+    <i class="fa fa-exclamation-triangle" aria-hidden="true"></i>
+    This operation WILL override your existing ratings. Proceed with caution!
+  </p>
+
+  <i class="fa fa-spinner fa-spin" aria-hidden="true" ng-show="ctrl.loading"></i>
+  <button
+    class="btn btn-primary"
+    ng-show="ctrl.csv.result"
+    ng-click="ctrl.ok()"
+    ng-disabled="ctrl.loading"
+  >Import</button>
+  <button
+    class="btn btn-default"
+    ng-click="ctrl.cancel()"
+    ng-disabled="ctrl.loading"
+  >Cancel</button>
+</div>

@@ -1,0 +1,191 @@
+# == Schema Information
+#
+# Table name: users
+#
+#  id                     :integer          not null, primary key
+#  username               :string(80)
+#  password               :string(120)
+#  agreed_time            :datetime
+#  agreed                 :boolean
+#  firstLogin             :boolean
+#  numLogins              :integer
+#  scorer_id              :integer
+#  name                   :string(255)
+#  administrator          :boolean          default(FALSE)
+#  reset_password_token   :string(255)
+#  reset_password_sent_at :datetime
+#  company                :string(255)
+#  locked                 :boolean
+#  locked_at              :datetime
+#  created_at             :datetime         not null
+#  updated_at             :datetime         not null
+#  default_scorer_id      :integer
+#
+
+default: &default
+  password:         $2a$12$Yf6zIiRvsHWDrhBxN0trXe/b/TTTSE3nK736Qbz2bGsowrjn3n2xC
+  agreed_time:      <%= Time.now - 1.day %>
+
+doug:
+  <<: *default
+  username: doug
+  scorer: :valid
+  administrator: true
+
+# Matt should only have one case: Matt's case
+# Assumption is that Matt always starts off with 1 case only
+matt:
+  <<: *default
+  username: matt
+  administrator: true
+
+# Joe should never be assigned a case
+# Assumption is that Joe always starts off with 0 cases
+joe:
+  <<: *default
+  username: joe
+  administrator: true
+
+# Joe should never be assigned an team
+# Assumption is that Joe always starts off with 0 teams
+jane:
+  <<: *default
+  username: jane
+  administrator: false
+
+# Joey is used to test tries
+# Assumption is that Joey's list of cases would not be tested directly
+joey:
+  <<: *default
+  username: joey
+  administrator: false
+
+# The whole purpose of this user is to own a scorer that is shared
+# with an team to which other users belong
+shared_scorer_owner:
+  <<: *default
+  username: shared_scorer_owner
+  administrator: false
+
+# The whole purpose of this user is to test deleting scorers set as
+# default for some users
+default_scorer_owner:
+  <<: *default
+  username: default_scorer_owner
+  scorer:   :default_scorer
+  administrator: false
+
+# The whole purpose of this user is to test deleting scorers set as
+# default for some users
+default_scorer_user:
+  <<: *default
+  username: default_scorer_user
+  scorer:   :default_scorer
+  administrator: false
+
+# The whole purpose of this user is to test finding cases using the
+# UserCaseFinder service
+case_finder_user:
+  <<: *default
+  username: case_finder_user
+  administrator: false
+
+# This is user is used randomly when we need a user without affecting
+# other users
+random:
+  <<: *default
+  username: random
+  administrator: false
+
+# This is user is used randomly when we need a user without affecting
+# other users
+random_1:
+  <<: *default
+  username: random_1
+  administrator: false
+
+# This is user is used randomly when we need a user without affecting
+# other users
+random_2:
+  <<: *default
+  username: random_2
+  administrator: false
+
+# The whole purpose of this user is to test finding teams using the
+# UserTeamFinder service
+team_finder_user:
+  <<: *default
+  username: team_finder_user
+  administrator: false
+
+# The whole purpose of this user is to test team memberships
+team_owner:
+  <<: *default
+  username: team_owner
+  administrator: false
+
+# The whole purpose of this user is to test team memberships
+team_member_1:
+  <<: *default
+  username: team_member_1
+  administrator: false
+
+# The whole purpose of this user is to test team memberships
+team_member_2:
+  <<: *default
+  username: team_member_2
+  administrator: false
+
+# The whole purpose of this user is to test team memberships
+wants_to_be_a_member:
+  <<: *default
+  username: wants_to_be_a_member
+  administrator: false
+
+# The whole purpose of this user is to test team memberships
+shared_team_member:
+  <<: *default
+  username: shared_team_member
+  administrator: false
+
+# The whole purpose of this user is to test searching
+search_user_1:
+  <<: *default
+  username: search_user_1
+  administrator: false
+
+# The whole purpose of this user is to test searching
+search_user_2:
+  <<: *default
+  username: search_user_2
+  administrator: false
+
+# The whole purpose of this user is to test bootstrapping cases in the home controller
+bootstrap_user:
+  <<: *default
+  username: bootstrap_user
+  administrator: false
+
+osc_owner:
+  <<: *default
+  username: osc_owner
+
+not_shared_case_owner:
+  <<: *default
+  username:     not_shared_case_owner
+
+dropdown_user:
+  <<: *default
+  username:     dropdown_user
+
+locked_user:
+  <<: *default
+  username:     locked_user
+  locked:       true
+  locked_at:    <%= Time.now - 1.week %>
+
+admin:
+  <<: *default
+  username:      admin
+  scorer:        :valid
+  administrator: true

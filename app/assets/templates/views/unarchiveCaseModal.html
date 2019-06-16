@@ -1,0 +1,39 @@
+
+<div class="container">
+
+  <h2>Archived Cases</h2>
+
+  <p ng-if="archivedCases().length === 0 && !loading">
+    No cases have been archived yet!
+  </p>
+
+  <p ng-show="loading" class="text-center">
+    <i class="fa fa-spin fa-spinner"></i>
+  </p>
+
+  <ul class="archived-case-list">
+    <li ng-click="toggleSelect(case)" ng-repeat="case in archivedCases()"
+        ng-class="isSelected(case) ? 'selected-archived-case': ''">
+      {{case.caseName}}
+    </li>
+
+  </ul>
+
+  <div class="row" style="padding: 10px">
+
+    <div class="pull-right">
+      <button type="button" ng-click="addBackCase(selectedCase)" ng-hide="selectedCase === null" class="btn btn-success">
+        <span class="glyphicon glyphicon-plus" style="color: #FFF"> </span> Add Back: "{{selectedCase.caseName}}"</button>
+
+      <button type="button" ng-click="cancel()"  class="btn btn-default">Cancel</button>
+
+    </div>
+
+  </div>
+
+</div>
+<!--<select
+  ng-model="currArchived"
+  ng-options="case.caseName for case in archivedCases()">
+
+</select>-->

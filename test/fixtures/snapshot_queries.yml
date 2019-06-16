@@ -1,0 +1,16 @@
+# == Schema Information
+#
+# Table name: snapshot_queries
+#
+#  id          :integer          not null, primary key
+#  query_id    :integer
+#  snapshot_id :integer
+#
+
+first_snapshot_query:
+  snapshot: :a_snapshot
+  query:    :a_query
+
+second_snapshot_query:
+  snapshot: :a_snapshot
+  query:    :b_query

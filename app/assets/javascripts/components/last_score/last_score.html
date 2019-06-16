@@ -1,0 +1,31 @@
+<span ng-switch="ctrl.scorePresent()">
+  <span
+    ng-switch-when="true"
+    uib-popover-template="'last_score/_popover.html'"
+    popover-placement="auto"
+    popover-trigger='mouseenter'
+  >
+    {{ ctrl.score.score }}
+
+    <sup
+      class="text-warning fa fa-exclamation-circle"
+      title='There are unrated results in this case!'
+      ng-hide="ctrl.score.all_rated"
+    ></sup>
+  </span>
+
+  <span
+    ng-switch-when="false"
+    uib-popover="To generate scoring data, make sure to navigate to the case and allow the scoring to run."
+    popover-placement="auto"
+    popover-trigger='mouseenter'
+    class="text-warning no-data"
+  >
+    No data available.
+
+    <sup
+      class="fa fa-exclamation-circle"
+      title='No scoring data for this case!'
+    ></sup>
+  </span>
+</span>

@@ -1,0 +1,123 @@
+<div class="jumbotron">
+  <div class="row">
+    <div class="col-md-3 col-sm-4 col-md-offset-2 col-sm-offset-1">
+      <h2>Login</h2>
+      <div ng-controller="LoginCtrl">
+        <form ng-submit="submit(username, password)">
+          <div class="alert alert-danger" ng-if="warnUndefined">
+            Unknown username/password. Try again or sign up!
+          </div>
+          <div class="alert alert-danger" ng-if="warnErr">
+            Unknown username/password combo. Double check you have the correct username and password, or sign up for a new account.
+          </div>
+          <div class="alert alert-danger" ng-if="warnInvalid">
+            Please provide a valid username and password.
+          </div>
+          <div class="alert alert-danger" ng-if="warnLocked">
+            Your account is locked. If you believe this is a mistake, please contact customer support.
+          </div>
+
+          <input type="text" class="form-control" ng-model="username" placeholder="Email">
+          <br/>
+          <input type="password" class="form-control" ng-model="password" placeholder="Password">
+          <br/>
+          <div>
+            <a href='/users/password/new' target="_self">Forgot Password?</a>
+          </div>
+          <br/>
+          <input type="submit" value="Login" class="btn btn-default">
+          <br/>
+        </form>
+      </div>
+    </div>
+
+    <div class="col-md-1 or-block col-sm-2">
+      <h2>OR</h2>
+    </div>
+
+    <div class="col-md-3 col-sm-4">
+      <div ng-controller="SignupCtrl">
+        <form ng-submit="submit(agree, name, username, password, confirm)" >
+          <h2>Signup to get started!</h2>
+
+          <div class="alert alert-danger" ng-if="warnErr">
+            Something weird happened. Contact us for assistance
+          </div>
+
+          <div class="alert alert-danger" ng-if="warnEmail">
+            You must enter an email address.
+          </div>
+
+          <div class="alert alert-danger" ng-if="warnDefined">
+            The email you entered is already registered!
+          </div>
+
+          <div class="alert alert-danger" ng-if="warnPass">
+            The passwords do not match!
+          </div>
+
+          <div class="alert alert-danger" ng-if="warnName">
+            Please provide your full name, so we can properly address you :)
+          </div>
+
+          <div class="alert alert-danger" ng-if="warnAgree">
+            You must agree to the terms and conditions.
+          </div>
+
+          <div class="form-group">
+            <input
+              type="text"
+              ng-model="name"
+              class="form-control"
+              placeholder="Full Name"
+              required
+             />
+          </div>
+
+          <div class="form-group">
+            <input type="email" ng-model="username" class="form-control" placeholder="Email Address" required />
+          </div>
+
+          <div class="form-group">
+            <input
+              type="password"
+              ng-model="password"
+              class="form-control"
+              placeholder="Password"
+              required
+             />
+          </div>
+
+          <div class="form-group">
+            <input
+              type="password"
+              ng-model="confirm"
+              class="form-control"
+              placeholder="Confirm Password"
+              required
+             />
+          </div>
+
+          <div class="checkbox">
+            <label>
+              <input type="checkbox" ng-model="agree" required />
+              Agree to
+              <a href="/agreement">terms &amp; conditions</a>?
+            </label>
+          </div>
+
+          <button class="btn btn-primary">Signup</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="row m-t-20">
+    <div class="col-md-8 col-md-offset-2">
+      <p>
+        <a href="http://www.opensourceconnections.com/2013/10/07/quepid-give-your-search-queries-some-love/">Read more</a> about the Quepid story. <a href="mailto:TalkToUs@opensourceconnections.com">Contact us</a>
+        to talk about Quepid or ask how we can help with your search problems!
+      </p>
+    </div>
+  </div>
+</div>

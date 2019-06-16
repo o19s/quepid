@@ -1,0 +1,15 @@
+# == Schema Information
+#
+# Table name: annotations
+#
+#  id         :integer          not null, primary key
+#  message    :text(65535)
+#  source     :string(255)
+#  user_id    :integer
+#  created_at :datetime         not null
+#  updated_at :datetime         not null
+#
+
+one:
+  message:  Original Message
+  user:     :random

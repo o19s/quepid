@@ -1,0 +1,66 @@
+<div class="modal-header">
+  <h3 class="modal-title">Explain Missing Documents</h3>
+</div>
+<div class="modal-body" id="targeted-search-modal">
+  <div ng-controller = 'DocFinderCtrl' class="arrow_box">
+    <form ng-submit="findDocs()">
+      <div class="row">
+        <div class="form-group col-sm-6">
+          <input type="text" ng-model="docFinder.queryText" class="form-control" placeholder="Search Query"></input>
+          <p class="help-block">
+            Use the simple query syntax (<code>field:value</code>).<br />
+            Solr example: <code>id:123</code>.<br />
+            ES example: <code>_id:123</code>.
+          </p>
+        </div>
+        <div class="col-sm-3">
+          <input type="submit" class="btn btn-primary form-control" value="Search"></input>
+        </div>
+      </div>
+    </form>
+    <div style="padding-top: 20px">
+    </div>
+    <div>
+      <div class="row alert alert-warning" ng-if="this.docFinder.numFound == 0">
+        Your query <em>{{docFinder.lastQuery}}</em> returned no results
+      </div>
+
+      <div ng-if="this.docFinder.numFound > 0">
+        <p>
+          Your query <em>{{docFinder.lastQuery}}</em> returned <em>{{docFinder.numFound}}</em> results
+        </p>
+
+        <div class="score-all pull-left">
+          <strong>Score All</strong>
+          <div class="ratings">
+            <div class="single-rating" ng-click="ratings.open()" uib-popover-template="'views/ratings/popover.html'" popover-trigger="outsideClick" popover-placement="auto right" popover-is-open="ratings.ratingsOn">
+              <span class="btn" style="background-color: rgb(119, 119, 119);">- <span class="caret"></span></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="alert alert-warning pull-left score-all-alert">
+          Changing ratings will affect the query score.
+        </div>
+
+        <search-result class="search-result" max-doc-score="query.maxDocScore()" explain-view="'full'" explain-viewport="'#targeted-search-modal'" ng-repeat="doc in docFinder.docs" doc="doc" field-spec="query.fieldSpec" rank="{{$index + 1}}" query="query" doc-id="doc.id">
+        </search-result>
+      </div>
+    </div>
+
+    <div class='row'>
+      <span ng-if="docFinder.numFound > docFinder.docs.length">
+        <a class="btn btn-default" ng-click="paginate()">
+          Peek at the next page of results
+        </a>
+      </span>
+
+      <span ng-show="docFinder.paging">
+        <i class="fa fa-spin fa-circle-o-notch"></i>
+      </span>
+    </div>
+  </div>
+</div>
+<div class="modal-footer">
+  <button class="btn btn-default" ng-click="targetedSearchModalModel.closeModal()">Close</button>
+</div>

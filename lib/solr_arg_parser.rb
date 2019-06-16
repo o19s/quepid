@@ -1,0 +1,30 @@
+# frozen_string_literal: true
+
+require 'cgi'
+
+module SolrArgParser
+  def self.parse query_string, vars = {}
+    # join lines, remove extraneous whitespace
+    query_string = query_string.lines.map(&:strip).join('')
+
+    # escape kernel::sprintf formatting character
+    query_string.gsub!('%', '%%')
+
+    # ready string to accept curator vars
+    # rubocop:disable Style/FormatStringToken
+    vars.each { |key, _value| query_string.gsub!(format('##%s##', key), "%{#{key}}") }
+    # rubocop:enable Style/FormatStringToken
+
+    # interpolate curator vars
+    query_string = query_string % vars
+
+    hash    = {}
+    params  = query_string.split('&')
+    params.map do |param|
+      split = param.split('=', 2)
+      (hash[split[0]] ||= []) << split[1]
+    end
+
+    hash
+  end
+end

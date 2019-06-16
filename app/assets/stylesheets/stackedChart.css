@@ -1,0 +1,30 @@
+.graph-explain .progress {
+    height: 7px;
+    margin: 2px 0 5px 0;
+}
+
+.graph-explain .graph-label {
+    font-size: 10px;
+    word-wrap: break-word;
+}
+
+.stacked-chart-container {
+	padding: 15px;
+}
+
+.stacked-chart-container .nav-tabs li a {
+	font-size: 12px;
+	padding: 8px 10px;
+}
+
+.stacked-chart-container .tab-body {
+	padding: 15px;
+	background: #FFF;
+	border-left: 1px solid #DDD;
+	border-right: 1px solid #DDD;
+	border-bottom: 1px solid #DDD;
+}
+
+.detailed-explain-modal { }
+
+small { font-size: 11px; }

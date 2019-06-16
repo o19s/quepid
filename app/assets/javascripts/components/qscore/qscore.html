@@ -1,0 +1,35 @@
+<qgraph
+  ng-if="ctrl.scores && (ctrl.scores.length > 1)"
+  max="ctrl.maxScore"
+  scores="ctrl.scores"
+></qgraph>
+
+<div
+  ng-style="ctrl.style"
+  ng-class="ctrl.scoreType | chooseScoreClass"
+>
+  <span class="scorable-score">
+    {{ ctrl.score || '?' | scoreDisplay }}
+  </span>
+  <span class="query-score-label low-profile">
+    {{ ctrl.scoreLabel }}
+  </span>
+</div>
+
+<div
+  class="diff-score"
+  title="{{ ctrl.fullDiffName }}"
+  ng-show="ctrl.showDiff"
+  ng-style="ctrl.getDiffInfo().style"
+  ng-class="ctrl.scoreType | chooseScoreClass"
+>
+  <span class="scorable-score">
+    {{ ctrl.getDiffInfo().score | scoreDisplay }}
+  </span>
+  <span
+    ng-show="ctrl.getDiffInfo().label"
+    class="query-score-label low-profile"
+  >
+    {{ ctrl.getDiffInfo().label }}
+  </span>
+</div>

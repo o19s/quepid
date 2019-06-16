@@ -1,0 +1,48 @@
+# frozen_string_literal: true
+
+class ScorerPolicy < ApplicationPolicy
+  attr_reader :user, :record
+
+  def initialize user, record
+    @user   = user
+    @record = record
+  end
+
+  def index?
+    true
+  end
+
+  def show?
+    permissions[:read]
+  end
+
+  def create?
+    permissions[:create]
+  end
+
+  def new?
+    create?
+  end
+
+  def update?
+    permissions[:update] && show?
+  end
+
+  def edit?
+    update?
+  end
+
+  def destroy?
+    permissions[:delete]
+  end
+
+  def add_to_community?
+    @user.administrator?
+  end
+
+  private
+
+  def permissions
+    @user.permissions_hash[:scorer] || Permissible.defaults[:scorer]
+  end
+end

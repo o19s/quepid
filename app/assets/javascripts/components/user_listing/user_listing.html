@@ -1,0 +1,21 @@
+<div class="item-box row">
+  <div class="{{ ctrl.colWidth.image }}">
+    <img
+      ng-src="{{ ctrl.user.avatar_url }}"
+      class="img-responsive img-rounded"
+      alt="{{ ctrl.user.display_name }}"
+    />
+  </div>
+
+  <div class="{{ ctrl.colWidth.name }} user-info">
+    <h5 class="user-name">
+      {{ ctrl.user.display_name }}
+    </h5>
+
+    {{ ctrl.user.username }}
+
+    <span class="item-actions">
+      <remove-member this-member="ctrl.user" this-team="ctrl.team"></remove-member>
+    </span>
+  </div>
+</div>

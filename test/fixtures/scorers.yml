@@ -1,0 +1,138 @@
+# == Schema Information
+#
+# Table name: scorers
+#
+#  id                     :integer          not null, primary key
+#  code                   :text(65535)
+#  name                   :string(191)
+#  owner_id               :integer
+#  scale                  :string(255)
+#  query_test             :boolean
+#  query_id               :integer
+#  manual_max_score       :boolean          default(FALSE)
+#  manual_max_score_value :integer          default(100)
+#  show_scale_labels      :boolean          default(FALSE)
+#  scale_with_labels      :text(65535)
+#  created_at             :datetime         not null
+#  updated_at             :datetime         not null
+#  communal               :boolean          default(FALSE)
+#
+
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+# This model initially had no columns defined.  If you add columns to the
+# model remove the '{}' from the fixture names and add the columns immediately
+# below each fixture, per the syntax in the comments below
+#
+valid:
+  code: test code
+  name: valid scorer
+  owner: :doug
+  query_test: false
+  scale: 1, 2, 3, 4
+
+for_case_with_scorer:
+  code: test code
+  name: test scorer
+  owner: :doug
+  query_test: false
+  scale: 1, 2, 3, 4
+
+owned_scorer:
+  code:       pass();
+  name:       Owned Scorer
+  owner:      :doug
+  query_test: false
+  scale:      1, 2, 3, 4
+
+owned_scorer1:
+  code:       pass();
+  name:       Owned Scorer 1
+  owner:      :doug
+  query_test: false
+  scale:      1, 2, 3, 4
+
+owned_scorer2:
+  code:       pass();
+  name:       Owned Scorer 2
+  owner:      :doug
+  query_test: false
+  scale:      1, 2, 3, 4
+
+shared_scorer:
+  code:       pass();
+  name:       Shared Scorer
+  owner:      :shared_scorer_owner
+  query_test: false
+  scale:      1, 2, 3, 4
+
+shared_scorer1:
+  code:       pass();
+  name:       Shared Scorer 1
+  owner:      :shared_scorer_owner
+  query_test: false
+  scale:      1, 2, 3, 4
+
+shared_scorer2:
+  code:       pass();
+  name:       Shared Scorer 2
+  owner:      :shared_scorer_owner
+  query_test: false
+  scale:      1, 2, 3, 4
+
+default_scorer:
+  code:       pass();
+  name:       Not Shared Scorer
+  owner:      :default_scorer_owner
+  query_test: false
+  scale:      1, 2, 3, 4
+
+case_default_scorer:
+  code:       test code
+  name:       case_default_scorer
+  owner:      :random
+  query_test: false
+  scale:      1, 2, 3, 4
+
+query_default_scorer:
+  code:       test code
+  name:       query_default_scorer
+  owner:      :random
+  query_test: false
+  scale:      1, 2, 3, 4
+
+query_scorer:
+  code:       pass();
+  name:       Scorer for Query
+  owner:      :random
+  query_test: false
+  scale:      1, 2, 3, 4
+
+random_scorer:
+  code:       pass();
+  name:       Scorer for sharing
+  owner:      :random
+  query_test: false
+  scale:      1, 2, 3, 4
+
+random_scorer_1:
+  code:       pass();
+  name:       Scorer for sharing
+  owner:      :random
+  query_test: false
+  scale:      1, 2, 3, 4
+
+random_scorer_2:
+  code:       pass();
+  name:       Scorer for sharing
+  owner:      :random
+  query_test: false
+  scale:      1, 2, 3, 4
+
+community_scorer:
+  code:       pass();
+  communal:   true
+  name:       Communal Scorer
+  owner:      :admin
+  query_test: false
+  scale:      1, 2, 3, 4

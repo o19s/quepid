@@ -1,0 +1,125 @@
+<div id="advanced" class="container">
+  <h2>Advanced Options</h2>
+
+  <div id='default-scorers' class="row">
+    <div class='col-sm-6'>
+      <div class='advanced-header'>
+        <h3>Your Default Scorer</h3>
+        <p>Do you want to set a default scorer to use on all future cases you create? Good thing we've got your back!</p>
+
+        <div class="form-group">
+          <select
+            ng-model="advanced.user.scorerId"
+            ng-options="scorer.scorerId as scorer.displayName for scorer in advanced.combinedScorers"
+            ng-change="advanced.updateUserScorer(advanced.user.scorerId)"
+            class="form-control"
+          >
+            <option value="">No Default Scorer</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class='col-sm-6'>
+      <div class='advanced-header' id="system-default-scorer">
+        <h3>System Default Scorer</h3>
+        <p>
+          Lock down a system default scorer to be used.
+          <a
+            href="#"
+            uib-popover-template="'views/advanced/_system_default_scorer.html'"
+            popover-title="System Default Scorer"
+            popover-trigger="outsideClick"
+            popover-placement="left"
+          >
+            <i class="fa fa-question">
+            </i>
+          </a>
+        </p>
+
+        <select
+          class="form-control"
+          ng-model="advanced.user.defaultScorerId"
+          ng-options="scorer.scorerId as scorer.name for scorer in advanced.defaultScorers"
+          ng-change="advanced.updateDefaultScorer(advanced.user.defaultScorerId)"
+        >
+          <option value="">Latest</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <hr />
+
+  <div id='custom-scorers'>
+    <h3>Scorers</h3>
+
+    <div class="row">
+      <div class='col-md-4'>
+        <div class="btn-group">
+          <new-scorer button-text="'Add New'"></new-scorer>
+        </div>
+      </div>
+
+      <div class='col-md-4'>
+        View
+        &nbsp;&nbsp;&nbsp;
+        <div class="btn-group">
+          <label class="btn btn-default" ng-model="scorerFilters.typeFilter" uib-btn-radio="'all'">
+            All
+          </label>
+          <label class="btn btn-default" ng-model="scorerFilters.typeFilter" uib-btn-radio="'not_test'">
+            Non Tests
+          </label>
+          <label class="btn btn-default" ng-model="scorerFilters.typeFilter" uib-btn-radio="'test'">
+            Tests
+          </label>
+        </div>
+      </div>
+
+      <div class="col-md-4 form-inline">
+        <input type="search" ng-model="q" placeholder="Filter scorers" aria-label="filter scorers" class="form-control" id='scorers-filter' />
+
+        <input type="number" min="1" max="100" class="form-control" ng-model="pagination.scorers.pageSize" id='scorers-per-page' />
+      </div>
+    </div>
+
+    <div class="clearfix"></div>
+
+    <div id='scorers-listing'>
+      <div ng-if="advanced.userScorers.length !== 0">
+        <div class="row listing-header">
+          <div class="col-xs-12">
+            <div class="row">
+              <span class="col-xs-1">Name</span>
+              <span class="col-xs-5">
+                Code/Scale (<a target="_blank" href="http://quepid.com/docs/#scorers-custom">learn more</a>)
+              </span>
+              <span class="col-xs-2">Show scale labels?</span>
+              <span class="col-xs-2">Max Score</span>
+              <span class="col-xs-2">Owner</span>
+            </div>
+          </div>
+        </div>
+
+        <ul ng-model="advanced.userScorers" class="scorers-list row">
+          <li dir-paginate="scorer in advanced.userScorers | scorerType:scorerFilters.typeFilter | filter:q | itemsPerPage: pagination.scorers.pageSize : 'scorers' track by scorer.scorerId" current-page="pagination.scorers.currentPage" pagination-id="scorers" class="scorers-list-item col-xs-12">
+            <scorer-listing scorer="scorer"></scorer-listing>
+          </li>
+        </ul>
+
+        <dir-pagination-controls
+          class="text-center center-block"
+          pagination-id="scorers"
+        ></dir-pagination-controls>
+      </div>
+
+      <p ng-if="advanced.userScorers.length === 0 && !loading">
+        No scorers to show!
+      </p>
+
+      <p ng-show="loading" class="text-center">
+        <i class="fa fa-spin fa-spinner"></i>
+      </p>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,80 @@
+{
+  "addons": [
+    "jawsdb",
+    "logdna",
+    "heroku-redis"
+  ],
+  "buildpacks": [
+    {
+      "url": "heroku/nodejs"
+    },
+    {
+      "url": "heroku/ruby"
+    }
+  ],
+  "env": {
+    "BUNDLE_WITHOUT": {
+      "required": true
+    },
+    "DB_ADAPTER": {
+      "required": true
+    },
+    "FORCE_SSL": {
+      "required": true
+    },
+    "INTERCOM_API_KEY": {
+      "required": true
+    },
+    "INTERCOM_APP_ID": {
+      "required": true
+    },
+    "LANG": {
+      "required": true
+    },
+    "LOGDNA_KEY": {
+      "required": true
+    },
+    "POSTMARK_API_TOKEN": {
+      "required": true
+    },
+    "QUEPID_DOMAIN": {
+      "required": true
+    },
+    "QUEPID_GA": {
+      "required": true
+    },
+    "RACK_ENV": {
+      "required": true
+    },
+    "RAILS_ENV": {
+      "required": true
+    },
+    "RAILS_SERVE_STATIC_FILES": {
+      "required": true
+    },
+    "SECRET_KEY_BASE": {
+      "generator": "secret"
+    },
+    "SIDEKIQ_CONCURRENCY": {
+      "required": true
+    },
+    "STRIPE_PUBLISHABLE_KEY": {
+      "required": true
+    },
+    "STRIPE_SECRET_KEY": {
+      "required": true
+    }
+  },
+  "formation": {
+    "worker": {
+      "quantity": 1
+    },
+    "web": {
+      "quantity": 1
+    }
+  },
+  "name": "quepid",
+  "scripts": {
+  },
+  "stack": "heroku-16"
+}

@@ -1,0 +1,92 @@
+<div class="container">
+  <div class="row">
+    <div id="profile" class="col-xs-12 col-sm-6 col-sm-offset-3">
+      <div class="avatar pull-left">
+        <%= image_tag current_user.avatar_url(:big), id: 'user-avatar', data: { avatar: 'big' } %>
+      </div>
+
+      <div class="name pull-left">
+        <h2 id="name" data-name><%= current_user.display_name %></h2>
+        <h3 id="username" data-username><%= current_user.username %></h3>
+      </div>
+    </div>
+
+    <div class="col-xs-12 col-sm-6 col-sm-offset-3">
+      <% form_options = {
+        id:                 "profile-form",
+        url:                profile_path,
+        remote:             true,
+        authenticity_token: true
+      } %>
+      <%= form_for(current_user, form_options) do |f| %>
+        <legend>
+          Profile
+        </legend>
+
+        <div class="form-group">
+          <label for="user_username" class="control-label">
+            Email
+          </label>
+          <%= f.email_field :username, class: "form-control input-lg", placeholder: "Email" %>
+        </div>
+
+        <div class="form-group">
+          <label for="user_name" class="control-label">
+            Name
+          </label>
+          <%= f.text_field :name, class: "form-control input-lg", placeholder: "Name" %>
+        </div>
+
+        <div class="form-group">
+          <label for="user_company" class="control-label">
+            Company Name
+          </label>
+          <%= f.text_field :company, class: "form-control input-lg", placeholder: "Company Name" %>
+        </div>
+
+        <div class="form-group">
+          <button type="submit" class="btn btn-primary btn-lg">Update Profile</button>
+        </div>
+      <% end %>
+    </div>
+
+    <div class="col-xs-12 col-sm-6 col-sm-offset-3">
+      <% form_options = {
+        method:             "put",
+        id:                 "account-form",
+        remote:             true,
+        authenticity_token: true
+      } %>
+      <%= form_tag(account_path, form_options) do %>
+        <legend>
+          Account
+        </legend>
+
+        <div class="form-group">
+          <label for="old" class="control-label">
+            Old Password
+          </label>
+          <input id="old" type="password" name="current_password" class="form-control input-lg" placeholder="Old Password" />
+        </div>
+
+        <div class="form-group">
+          <label for="new" class="control-label">
+            New Password
+          </label>
+          <input id="new" type="password" name="new_password" class="form-control input-lg" placeholder="New Password" />
+        </div>
+
+        <div class="form-group">
+          <label for="confirm" class="control-label">
+            Confirm New Password
+          </label>
+          <input id="confirm" type="password" name="confirm_password" class="form-control input-lg" placeholder="Confirm New Password" />
+        </div>
+
+        <div class="form-group">
+          <button type="submit" class="btn btn-primary btn-lg">Update Password</button>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

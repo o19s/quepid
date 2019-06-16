@@ -1,0 +1,77 @@
+# == Schema Information
+#
+# Table name: case_scores
+#
+#  id            :integer          not null, primary key
+#  case_id       :integer
+#  user_id       :integer
+#  try_id        :integer
+#  score         :float(24)
+#  all_rated     :boolean
+#  created_at    :datetime
+#  queries       :binary(16777215)
+#  annotation_id :integer
+#  updated_at    :datetime
+#
+
+one:
+  case:       :one
+  user:       :random
+  try:        :one
+  score:      0
+  all_rated:  false
+  updated_at: <%= 1.hours.ago.to_s(:db) %>
+
+<% for i in 1..10 %>
+valid_<%= i %>:
+  case:       :one
+  user:       :random
+  try:        :one
+  score:      <%= i * 10 %>
+  all_rated:  true
+  updated_at: <%= i.minutes.ago.to_s(:db) %>
+<% end %>
+
+score:
+  case:       :other_score_case
+  user:       :random
+  try:        :first_try_for_other_score_case
+  score:      0
+  all_rated:  false
+
+score_with_queries:
+  case:       :other_score_case
+  user:       :random
+  try:        :second_try_for_other_score_case
+  score:      100
+  all_rated:  false
+  queries:    '{ "1": { "text": "first query", "score": 100 }, "2": { "text": "second query", "score": 100 } }'
+
+score_with_annotation:
+  case:       :other_score_case
+  user:       :random
+  try:        :first_try_for_other_score_case
+  score:      50
+  all_rated:  false
+  annotation: :one
+
+score_for_first_try:
+  case:       :case_with_score_for_first_try
+  user:       :random
+  try:        :for_case_with_score_for_first_try_try_1
+  score:      50
+  all_rated:  false
+
+score_for_try_1:
+  case:       :case_with_score
+  user:       :random
+  try:        :for_case_with_score_try_1
+  score:      65
+  all_rated:  false
+
+score_for_try_2:
+  case:       :case_with_score
+  user:       :random
+  try:        :for_case_with_score_try_2
+  score:      75
+  all_rated:  false

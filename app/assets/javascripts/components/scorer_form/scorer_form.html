@@ -1,0 +1,87 @@
+<div class="form-group" ng-show='ctrl.scorerOptions.showName'>
+  <label>Name</label>
+  <input type="text" class="form-control" ng-required="true" ng-model="ctrl.scorer.name" placeholder="Give your scorer a name" autoFocus>
+</div>
+
+<div class="form-group scorer code">
+  <label>Code (<a target="_blank" href="http://quepid.com/docs/#scorers-custom">learn more</a>)</label>
+  <div ui-ace="{
+    require: ['ace/ext/language_tools'],
+    advanced: {
+      enableBasicAutocompletion: true,
+      enableLiveAutocompletion: true
+    },
+    mode:   'javascript',
+    theme:  'chrome'
+  }"
+  ng-model="ctrl.scorer.code"></div>
+</div>
+
+<div class='form-group scorer max-score'>
+  <label>Max Score:</label></br />
+  <label>
+    <input type="radio" ng-model="ctrl.scorer.manualMaxScore" ng-value="false">
+    Automatic
+    <a href="javascript:void();" tooltip="Calculated automatically by setting the rating of all docs to the highest rating in the scale." tooltip-placement="left">
+      <span class="fa fa-question-circle" aria-hidden="true"></span>
+    </a>
+  </label>
+
+  <label>
+    <input type="radio" ng-model="ctrl.scorer.manualMaxScore" ng-value="true">
+    Custom
+  </label>
+
+  <input type="text" ng-model="ctrl.scorer.manualMaxScoreValue" ng-disabled="!ctrl.scorer.manualMaxScore">
+</div>
+
+<div class='form-group'>
+  <label>Scale for query ratings:</label></br />
+  <label>
+    <input type="radio" ng-model="ctrl.scaleChoice" value="defaultScale" ng-change="ctrl.updateScale(ctrl.scaleOptions.defaultScale)">
+    Default Scale ({{ ctrl.scaleOptions.defaultScale }})
+  </label><br/>
+  <label>
+    <input type="radio" ng-model="ctrl.scaleChoice" value="shortScale" ng-change="ctrl.updateScale(ctrl.scaleOptions.shortScale)">
+    Short Scale ({{ ctrl.scaleOptions.shortScale }})
+  </label><br/>
+  <label>
+    <input type="radio" ng-model="ctrl.scaleChoice" value="fibonacciScale" ng-change="ctrl.updateScale(ctrl.scaleOptions.fibonacciScale)">
+    Fibonacci Sequence ({{ ctrl.scaleOptions.fibonacciScale }})
+  </label><br/>
+  <label>
+    <input type="radio" ng-model="ctrl.scaleChoice" value="custom" ng-change="ctrl.updateScale(ctrl.scaleOptions.custom)">
+    Custom
+  </label><br/>
+
+  <input type="text" class="form-control" ng-required="true" ng-model="ctrl.scorer.scale" placeholder="Provide a list of comma separated INTEGERS to use for the scoring scale" ng-change="ctrl.scaleChoice = 'custom'">
+</div>
+
+<div class='form-group'>
+  <label>Labels:</label></br />
+
+  <div>
+    <label>
+      <input type="checkbox" ng-model="ctrl.scorer.showScaleLabels" ng-change="">
+      Show Scale Labels
+    </label>
+
+    <div ng-if="ctrl.scorer.showScaleLabels === true">
+      <ul class='scale-labels form-horizontal'>
+        <li ng-repeat="(value, label) in ctrl.scorer.scaleWithLabels" class="form-group">
+          <label class="col-sm-1 control-label">{{value}}: </label>
+          <div class="col-sm-11">
+            <input type='text' ng-model='ctrl.scorer.scaleWithLabels[value]' class="form-control" />
+          </div>
+        </li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class='form-group' ng-if="currentUser.canMakeScorerCommunal()">
+  <label>
+    <input type="checkbox" ng-model="ctrl.scorer.communal" ng-change="">
+    Communal?
+  </label>
+</div>
