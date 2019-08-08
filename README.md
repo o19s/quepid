@@ -1,4 +1,23 @@
+# Quepid
+
+[![License][license-image]][license]
+
+<img src="https://quepid.com/images/logo.png"
+ alt="Quepid logo" title="Quepid" align="right" />
+
+Quepid makes improving your app's search results a repeatable, reliable engineering process that the whole team can understand. It deals with three issues:
+
+1. **Our collaboration stinks** Making holistic progress on search requires deep, cross-functional collaboration. Shooting emails or tracking search requirements in spreadsheets won't cut it.
+
+2. ***Search testing is hard*** Search changes are cross-cutting: most changes will cause problems. Testing is difficult: you can't run hundreds of searches after every relevance change.
+
+3. **Iterations are slow** Moving forward seems impossible. To avoid sliding backwards, progress is slow. Many simply give up on search, depriving users of the means to find critical information.
+
+
+**To find out more, please check out the [Quepid website](http://www.quepid.com) and the [Quepid wiki](wiki).**
+
 # Table of Contents
+Below is information related to developing the Quepid open source project.
 
 <!-- MarkdownTOC levels="1,2,3,4" autolink=true bracket=round -->
 
@@ -71,6 +90,12 @@ bin/docker r bin/rake db:seed:test
 ```
 
 #### 3. Running the app
+
+Now fire up Quepid locally at http://localhost:3000:
+
+```
+bin/docker server
+```
 
 We've created a helper script to run and manage the app through docker that wraps around the `docker-compose` command.
 You can still use `docker-compose` directly, but for the basic stuff you can use the following:
@@ -390,5 +415,3 @@ COOKIES_URL # cookies policy
 # Credits
 
 Quepid wasn't always open source!  Check out the [credits](docs/credits.md) for a list of contributors to the project.
-
-
