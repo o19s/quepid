@@ -4,6 +4,10 @@
 // sent down from the backend. It comes in when the query
 // is initially retrieved and managed here.
 //
+// For documents whose id is a simple string, we pass that
+// back and forth.  However, if the id of the document is
+// a URL or contains a "." character, then we do escaping.
+//
 angular.module('QuepidApp')
   .service('ratingsStoreSvc', [
     '$http',
@@ -19,8 +23,7 @@ angular.module('QuepidApp')
 
         var path      = function(docId) {
           var id = docId;
-
-          if ( /http/.test(docId) ) {
+          if ( /http/.test(docId) || /\./.test(docId)) {
             id = btoa(docId);
           }
 
