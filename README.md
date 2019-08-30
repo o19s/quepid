@@ -97,6 +97,8 @@ Now fire up Quepid locally at http://localhost:3000:
 bin/docker server
 ```
 
+It can take up to a minute for the server to respond as it compiles all the front end assets on the first call.
+
 We've created a helper script to run and manage the app through docker that wraps around the `docker-compose` command.
 You can still use `docker-compose` directly, but for the basic stuff you can use the following:
 
@@ -134,6 +136,8 @@ If you aren't using Docker, then create test database...
 ```
 rake db:create RAILS_ENV=test
 ```
+
+If you are using Docker, then prefix the below commands with `bin/docker r` to run them in your container.
 
 There are three types of tests that you can run:
 
