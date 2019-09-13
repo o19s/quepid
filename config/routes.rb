@@ -83,7 +83,7 @@ Rails.application.routes.draw do
             resource  :position,  only: [ :update ]
             resource  :scorer,    only: %i[show update destroy]
             resource  :threshold, only: [ :update ]
-            resources :ratings,   only: %i[update destroy], param: :doc_id, format: :json, :constraints => { :doc_id => /[^\/]+/ }
+            resources :ratings,   only: %i[update destroy], param: :doc_id
           end
 
           resource :bulk, only: [] do
