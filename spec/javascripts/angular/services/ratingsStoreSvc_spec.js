@@ -48,6 +48,22 @@ describe('Service: Ratingsstoresvc', function () {
     expect(ratingsStore.getRating('file://foo/bar')).toBe(10);
     $httpBackend.verifyNoOutstandingExpectation();
   });
+  it('should base 64 and urlencode when POSTIng rating w id is URL', function() {
+    var ratingsStore = ratingsStoreSvc.createRatingsStore(0, 1, {});
+    $httpBackend.expectPUT('/api/cases/0/queries/1/ratings/aHR0cDovL3d3dy5leGFtcGxlLmNvbS9kb2MvMQ%3D%3D').respond(200, {});
+    ratingsStore.rateDocument('http://www.example.com/doc/1', 10);
+    $httpBackend.flush();
+    expect(ratingsStore.getRating('http://www.example.com/doc/1')).toBe(10);
+    $httpBackend.verifyNoOutstandingExpectation();
+  });
+  it('should base 64 and urlencode when POSTIng rating w id containing a period', function() {
+    var ratingsStore = ratingsStoreSvc.createRatingsStore(0, 1, {});
+    $httpBackend.expectPUT('/api/cases/0/queries/1/ratings/bXlkb2MucGRm').respond(200, {});
+    ratingsStore.rateDocument('mydoc.pdf', 10);
+    $httpBackend.flush();
+    expect(ratingsStore.getRating('mydoc.pdf')).toBe(10);
+    $httpBackend.verifyNoOutstandingExpectation();
+  });
 
   it('should urlencode when DELETING rating', function() {
     var ratingsStore = ratingsStoreSvc.createRatingsStore(0, 1, {});
