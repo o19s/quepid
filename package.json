@@ -40,7 +40,7 @@
     "karma-phantomjs-launcher": ">= 0.1.4",
     "ng-json-explorer": "https://github.com/odra/ng-json-explorer",
     "ng-tags-input": "~3.0.0",
-    "splainer-search": "2.4.3",
+    "splainer-search": "2.5.0",
     "tether-shepherd": "latest"
   },
   "devDependencies": {
