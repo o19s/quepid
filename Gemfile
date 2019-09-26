@@ -7,7 +7,7 @@ git_source(:github) do |repo_name|
   "https://github.com/#{repo_name}.git"
 end
 
-ruby '2.5.5'
+ruby '2.5.6'
 
 gem 'ace-rails-ap'
 gem 'activerecord-import', '>= 0.13.0'
