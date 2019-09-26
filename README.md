@@ -2,8 +2,7 @@
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
-<img src="https://quepid.com/images/logo.png"
- alt="Quepid logo" title="Quepid" align="right" />
+<img src="https://quepid.com/images/logo.png" alt="Quepid logo" title="Quepid" align="right" />
 
 Quepid makes improving your app's search results a repeatable, reliable engineering process that the whole team can understand. It deals with three issues:
 
