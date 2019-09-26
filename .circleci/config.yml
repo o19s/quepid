@@ -1,0 +1,89 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: circleci/ruby:2.5-node-browsers
+        environment: # environment variables for primary container
+          BUNDLE_JOBS: 3
+          BUNDLE_RETRY: 3
+          BUNDLE_PATH: vendor/bundle
+          RAILS_ENV: test
+          RACK_ENV: test
+          DB_ADAPTER: mysql2
+          DB_HOST: 127.0.0.1
+          DB_USERNAME: root
+          DB_PASSWORD: ''
+          DB_NAME: quepid
+          MYSQL_ALLOW_EMPTY_PASSWORD: true
+
+      - image: circleci/mysql:5.7
+        command: mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_bin
+        environment: # environment variables for database
+          MYSQL_USER: root
+          MYSQL_DATABASE: quepid_test
+          MYSQL_ROOT_PASSWORD: ''
+          MYSQL_ALLOW_EMPTY_PASSWORD: true
+          MYSQL_ROOT_HOST: '%'
+
+    steps:
+      - checkout
+
+      - run:
+          name: Which bundler?
+          command: bundle -v
+
+      # Restore bundle cache
+      - restore_cache:
+          keys:
+            - quepid-bundle-v2-{{ checksum "Gemfile.lock" }}
+            - quepid-bundle-v2-
+
+      - run:
+          name: Bundle Install
+          command: bundle check || bundle install
+
+      # Store bundle cache
+      - save_cache:
+          key: quepid-bundle-v2-{{ checksum "Gemfile.lock" }}
+          paths:
+            - vendor/bundle
+
+      # Only necessary if app uses webpacker or yarn in some other way
+      - restore_cache:
+          keys:
+            - quepid-yarn-{{ checksum "yarn.lock" }}
+            - quepid-yarn-
+
+      - run:
+          name: Yarn Install
+          command: yarn install --cache-folder ~/.cache/yarn
+
+      # Store yarn / webpacker cache
+      - save_cache:
+          key: quepid-yarn-{{ checksum "yarn.lock" }}
+          paths:
+            - ~/.cache/yarn
+
+      - run:
+          name: Wait for DB
+          command: dockerize -wait tcp://127.0.0.1:3306 -timeout 1m
+
+      - run:
+          name: Unset DATABASE_URL
+          command: unset DATABASE_URL
+
+      - run:
+          name: Database setup
+          command: bundle exec rake db:setup --trace
+
+      - run:
+          name: Run unit tests
+          command: bundle exec rake test:quepid
+
+      - run:
+          name: Run rubocop
+          command: bundle exec rubocop
+
+      # Save test results for timing analysis
+      - store_test_results:
+          path: test_results
