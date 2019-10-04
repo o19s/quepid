@@ -1,4 +1,4 @@
-FROM ruby:2.5.5
+FROM ruby:2.5.7
 
 MAINTAINER OpenSource Connections <quepid_admin@opensourceconnections.com>
 
