@@ -72,7 +72,7 @@ module Api
             assert_equal count, 1
           end
 
-          test "works with a url as the id" do
+          test 'works with a url as the id' do
             doc_id     = 'https%3A%2F%2Fexample.com%2Frelative-path'
             encoded_id = Base64.strict_encode64(doc_id)
 
@@ -134,7 +134,7 @@ module Api
             assert_equal count, 1
           end
 
-          test "works with a document id that contains a period" do
+          test 'works with a document id that contains a period' do
             doc_id = 'mydoc.pdf'
 
             put :update, case_id: acase.id, query_id: query.id, doc_id: doc_id, rating: 5
@@ -152,7 +152,7 @@ module Api
             assert_equal count, 1
           end
 
-          describe "analytics" do
+          describe 'analytics' do
             test 'posts event' do
               expects_any_ga_event_call
 
