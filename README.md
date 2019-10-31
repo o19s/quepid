@@ -327,6 +327,7 @@ You will need to configure Elasticsearch to accept requests from the browser usi
 http.cors:
   enabled: true
   allow-origin: /https?:\/\/localhost(:[0-9]+)?/
+  allow-headers: X-Requested-With,Content-Type,Content-Length,if-modified-since
 ```
 
 # Dev Errata
