@@ -4,7 +4,7 @@
     "type": "git",
     "url": "https://github.com/o19s/quepid.git"
   },
-  "license": "SEE LICENSE IN agreement.html",
+  "license": "ASL 2.0",
   "dependencies": {
     "FileSaver.js": "https://github.com/Teleborder/FileSaver.js",
     "ace-builds": "^1.4.1",
