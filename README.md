@@ -403,7 +403,7 @@ Check out the [Data Mapping](docs/data_mapping.md) file for more info about the 
 
 # App Structure
 
-Check out the [App Structure](docs/app_structure.md) file for more info on how the app is structured.
+Check out the [App Structure](docs/app_structure.md) file for more info on how Quepid is structured.
 
 # Legal Pages
 

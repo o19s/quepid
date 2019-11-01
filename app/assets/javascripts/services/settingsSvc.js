@@ -34,8 +34,8 @@ angular.module('QuepidApp')
           queryParams:  [
             '{',
             '    "query": {',
-            '        "match": {',
-            '            "_all": "#$query##"',
+            '        "query_string": {',
+            '            "query": "#$query##"',
             '        }',
             '    }',
             '}',
