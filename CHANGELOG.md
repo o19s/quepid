@@ -1,5 +1,14 @@
 # Changelog
 
+## 6.0.1 - ??
+* Update to splainer-search 2.5.0.
+* Fix setting the default case for exporting when you first load Quepid.  o19s/quepid/15 by @worleydl
+* Allow a document to be rated to have an id with a period in it like `mydoc.pdf`.  o19s/quepid/6 by @epugh
+* Default query when setting up a new case works across Elasticsearch versions 5, 6, and 7.   o19s/quepid/3 by @epugh
+* Update to CircleCI and update Ruby 2.5.7 by @ychaker
+
+
+
 ## 6.0.0
 * Removes everything related to payments, and makes Quepid "free"
 * Adds support for using a CORS proxy for Solr instances that are not configured to allow connections from Quepid
