@@ -211,7 +211,7 @@ While running the application, you can debug the javascript using your favorite 
 
 The javascript files will be concatenated into one file, using the rails asset pipeline.
 
-You can turn that off by toggling the following flag in `config/environment/development.rb`:
+You can turn that off by toggling the following flag in `config/environments/development.rb`:
 
 ```ruby
 # config.assets.debug = true
