@@ -28,7 +28,7 @@ describe('Service: DocListFactory', function () {
 
   function buildMockDocs(mockResults) {
     angular.forEach(mockResults, function(result) {
-      result.source = function() {
+      result.origin = function() {
         return this;
       };
       result.explain = function() {
