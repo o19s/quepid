@@ -66,9 +66,9 @@ describe('Service: queriesSvc', function () {
       numFound: 2,
       docs : [
       {id: 'doc1', field1: 'doc1field1val', field2: 'doc1field2val',
-        source:function()  {return this;}, highlight: function() {return null;}, explain: function() {return null;}},
+        origin:function()  {return this;}, highlight: function() {return null;}, explain: function() {return null;}},
       {id: 'doc2', field1: 'doc2field1val', field2: 'doc2field2val',
-        source:function() {return this;},  highlight: function() {return null;}, explain: function() {return null;}}
+        origin:function() {return this;},  highlight: function() {return null;}, explain: function() {return null;}}
       ]
     }
   };
@@ -1022,9 +1022,9 @@ describe('Service: queriesSvc', function () {
         numFound: 2,
         docs : [
           {id: 'doc1', field1: 'doc1field1val', field2: 'doc1field2val',
-           source: function() {return this;}, highlight: function() {return null;}, explain: function() {return explain1;}},
+           origin: function() {return this;}, highlight: function() {return null;}, explain: function() {return explain1;}},
           {id: 'doc2', field1: 'doc2field1val', field2: 'doc2field2val',
-           source: function() {return this;}, highlight: function() {return null;}, explain: function() {return explain2;}}
+           origin: function() {return this;}, highlight: function() {return null;}, explain: function() {return explain2;}}
         ]
       }
     };
@@ -1036,9 +1036,9 @@ describe('Service: queriesSvc', function () {
         numFound: 2,
         docs : [
           {id: 'doc1', field1: 'doc1field1val', field2: 'doc1field2val',
-           source: function() {return this;}, highlight: function() {return null;}, explain: function() {return explain2_1;}},
+           origin: function() {return this;}, highlight: function() {return null;}, explain: function() {return explain2_1;}},
           {id: 'doc2', field1: 'doc2field1val', field2: 'doc2field2val',
-           source: function() {return this;}, highlight: function() {return null;}, explain: function() {return explain2_2;}}
+           origin: function() {return this;}, highlight: function() {return null;}, explain: function() {return explain2_2;}}
         ]
       }
     };
