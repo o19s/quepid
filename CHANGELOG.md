@@ -2,10 +2,10 @@
 
 ## 6.0.1 - ??
 * Update to splainer-search 2.5.0.
-* Fix setting the default case for exporting when you first load Quepid.  o19s/quepid/15 by @worleydl
-* Allow a document to be rated to have an id with a period in it like `mydoc.pdf`.  #6 by @epugh
-* Default query when setting up a new case works across Elasticsearch versions 5, 6, and 7.   o19s/quepid/3 by @epugh
-* Update to CircleCI and update Ruby 2.5.7 by @ychaker
+* Fix setting the default case for exporting when you first load Quepid.  https://github.com/o19s/quepid/pull/15 by worleydl fixes https://github.com/o19s/quepid/issues/12
+* Allow a document to be rated to have an id with a period in it like `mydoc.pdf`.  https://github.com/o19s/quepid/pull/6 by epugh fixes https://github.com/o19s/quepid/issues/5
+* Default query when setting up a new case works across Elasticsearch versions 5, 6, and 7.   https://github.com/o19s/quepid/pull/3 by epugh fixes https://github.com/o19s/quepid/issues/2
+* Updates to CircleCI and update Ruby 2.5.7 by @ychaker
 
 
 
