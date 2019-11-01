@@ -21,7 +21,7 @@ angular.module('QuepidApp')
       querySnapshotSvc
     ) {
       var ctrl = this;
-      ctrl.theCase;
+      ctrl.theCase = caseSvc.getSelectedCase();
 
       $rootScope.$on('caseSelected', function() {
         ctrl.theCase = caseSvc.getSelectedCase();
