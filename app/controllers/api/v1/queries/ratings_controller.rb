@@ -34,7 +34,7 @@ module Api
         def id_base64? id
           id.is_a?(String) &&
             Base64.strict_encode64(Base64.strict_decode64(id)) == id &&
-            uri?(Base64.strict_decode64(id))
+            (uri?(Base64.strict_decode64(id)) || contains_period?(Base64.strict_decode64(id)))
         rescue ArgumentError
           false
         end
@@ -46,6 +46,10 @@ module Api
           false
         rescue URI::InvalidURIError
           false
+        end
+
+        def contains_period? string
+          string.include?('.')
         end
 
         def decode_id

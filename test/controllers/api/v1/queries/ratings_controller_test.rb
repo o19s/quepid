@@ -134,6 +134,24 @@ module Api
             assert_equal count, 1
           end
 
+          test 'works with a document id that contains a period' do
+            doc_id = 'mydoc.pdf'
+
+            put :update, case_id: acase.id, query_id: query.id, doc_id: doc_id, rating: 5
+
+            assert_response :ok
+
+            data = JSON.parse(response.body)
+
+            assert_equal data['rating'],    5
+            assert_equal data['doc_id'],    doc_id
+            assert_equal data['query_id'],  query.id
+
+            count = query.ratings.where(doc_id: doc_id).count
+
+            assert_equal count, 1
+          end
+
           describe 'analytics' do
             test 'posts event' do
               expects_any_ga_event_call
