@@ -329,6 +329,8 @@ http.cors:
   allow-origin: /https?:\/\/localhost(:[0-9]+)?/
 ```
 
+See more details on the wiki at https://github.com/o19s/quepid/wiki/Troubleshooting-Elasticsearch-and-Quepid
+
 # Dev Errata
 
 ## I'd like to use a new Node module
