@@ -1,6 +1,6 @@
 # Changelog
 
-## 6.0.1 - ??
+## 6.0.1 - 11/05/2019
 * Update to splainer-search 2.5.0.
 * Fix setting the default case for exporting when you first load Quepid.  https://github.com/o19s/quepid/pull/15 by worleydl fixes https://github.com/o19s/quepid/issues/12
 * Allow a document to be rated to have an id with a period in it like `mydoc.pdf`.  https://github.com/o19s/quepid/pull/6 by epugh fixes https://github.com/o19s/quepid/issues/5
