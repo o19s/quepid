@@ -107,7 +107,7 @@ module Api
         elsif @users.count.positive?
           render(
             json:   {
-              error: "Cannot delete the scorer because it is the default for #{@users.count} #{"user".pluralize(@users.count)}, including [#{@users.take(3).map(&:u.username).to_sentence}]",
+              error: "Cannot delete the scorer because it is the default for #{@users.count} #{"user".pluralize(@users.count)}, including [#{@users.take(3).map(&:username).to_sentence}]",
             },
             status: :bad_request
           )
