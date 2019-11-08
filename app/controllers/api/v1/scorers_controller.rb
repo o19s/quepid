@@ -107,7 +107,7 @@ module Api
         elsif @users.count.positive?
           render(
             json:   {
-              error: 'Cannot delete a scorer that is used as default by at least one user',
+              error: "Cannot delete the scorer because it is the default for #{@users.count} #{"user".pluralize(@users.count)}, including [#{@users.take(3).map{|u|u.username}.to_sentence}]",
             },
             status: :bad_request
           )
@@ -121,7 +121,7 @@ module Api
         elsif @cases.count.positive?
           render(
             json:   {
-              error: 'Cannot delete a scorer that is used as default by at least one case',
+              error: "Cannot delete the scorer because it is the default for #{@cases.count} #{"case".pluralize(@cases.count)}, including [#{@cases.take(3).map{|c|c.caseName}.to_sentence}]",
             },
             status: :bad_request
           )
@@ -135,7 +135,7 @@ module Api
         elsif @queries.count.positive?
           render(
             json:   {
-              error: 'Cannot delete a scorer that is used as default by at least one query',
+              error: "Cannot delete the scorer because it is the default for #{@queries.count} #{"query".pluralize(@queries.count)}, including [#{@queries.take(3).map{|q|q.query_text}.to_sentence}]",
             },
             status: :bad_request
           )
