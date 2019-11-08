@@ -539,8 +539,6 @@ module Api
           test 'returns a bad request error if nothing specified' do
             delete :destroy, id: default_scorer.id
 
-            puts response.body
-
             assert_response :bad_request
           end
         end
