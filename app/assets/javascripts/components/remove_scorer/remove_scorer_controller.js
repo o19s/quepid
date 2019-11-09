@@ -19,10 +19,6 @@ angular.module('QuepidApp')
       ctrl.thisScorer = $scope.thisScorer;
       ctrl.thisTeam   = $scope.thisTeam;
 
-      console.log('I am good to go with ' + ctrl.thisScorer);
-
-      console.log('What about ' + $scope.scorer);
-
       ctrl.openRemoveModal  = openRemoveModal;
       ctrl.removeScorer     = removeScorer;
 
