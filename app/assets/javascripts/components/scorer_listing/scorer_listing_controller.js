@@ -43,7 +43,7 @@ angular.module('QuepidApp')
         var removeScorer = $window.confirm('Are you absolutely sure you want to remove this scorer from this team?');
 
         if (removeScorer) {
-          teamSvc.removeScorer(ctrl.thisTeam, ctrl.thisScorer)
+          teamSvc.removeScorer(ctrl.team, ctrl.scorer)
             .then(function() {
               flash.success = 'Scorer removed from team';
             }, function(response) {
