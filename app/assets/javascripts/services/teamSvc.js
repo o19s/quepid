@@ -220,8 +220,8 @@ angular.module('QuepidApp')
       };
 
       this.removeScorer = function(team, scorer) {
-        // http DELETE /api/teams/<int:teamId>/members/<int:memberId>
-        var url   = '/api/teams/' + team.id + '/scorers/' + scorer.id;
+        // http DELETE /api/teams/<int:teamId>/scorers/<int:scorerId>
+        var url   = '/api/teams/' + team.id + '/scorers/' + scorer.scorerId;
 
         if ( team.scorers === undefined ) {
           team.scorers = [];
