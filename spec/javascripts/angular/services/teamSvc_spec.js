@@ -174,7 +174,7 @@ describe('Service: teamSvc', function () {
   });
 
   it('removes a scorer from the team', function() {
-    var url   = '/api/teams/' + mockTeam.id + '/scorers/' + mockScorer.id;
+    var url   = '/api/teams/' + mockTeam.id + '/scorers/' + mockScorer.scorerId;
 
     $httpBackend.expectDELETE(url).respond(200);
 
