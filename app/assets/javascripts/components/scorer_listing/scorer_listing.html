@@ -3,11 +3,14 @@
     {{ ctrl.scorer.name }}
 
     <span class="item-actions">
-      <span ng-if="ctrl.scorer.owned">
-        <share-scorer scorer="ctrl.scorer"></share-scorer>
-        <edit-scorer scorer="ctrl.scorer"></edit-scorer>
-
-        <action-icon title="'Delete'" icon-class="'fa fa-trash'" fn-call="ctrl.deleteScorer()"></action-icon>
+      <share-scorer scorer="ctrl.scorer"></share-scorer>
+      <edit-scorer scorer="ctrl.scorer"></edit-scorer>
+      <span ng-if="ctrl.team">
+        scorer name: {{ ctrl.scorer.name }}, team name: {{ ctrl.team.name }}
+      <remove-scorer scorer="ctrl.scorer" team="ctrl.team"></remove-scorer>
+      </span>
+      <span ng-if="!ctrl.team">
+      <action-icon title="'Delete'" icon-class="'fa fa-trash'" fn-call="ctrl.deleteScorer()"></action-icon>
       </span>
     </span>
   </div>

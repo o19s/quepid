@@ -1,16 +1,16 @@
 'use strict';
 
 angular.module('QuepidApp')
-  .directive('scorerListing', [
+  .directive('removeScorer', [
     function () {
       return {
         restrict:     'E',
-        controller:   'ScorerListingCtrl',
+        controller:   'RemoveScorerCtrl',
         controllerAs: 'ctrl',
-        templateUrl:  'scorer_listing/scorer_listing.html',
+        templateUrl:  'remove_scorer/remove_scorer.html',
         scope:        {
-          scorer: '=',
-          team:   '=',
+          thisScorer: '=',
+          thisTeam: '=',
         },
       };
     }

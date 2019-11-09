@@ -15,8 +15,15 @@ angular.module('QuepidApp')
       customScorerSvc
     ) {
       var ctrl = this;
-
+      console.log("About to set the team");
       ctrl.scorer = $scope.scorer;
+      ctrl.team  = $scope.team;
+
+      $scope.$watch('team', function() {
+        console.log("We are watching team in the scope");
+        ctrl.team = $scope.team;
+      });
+
 
       // Functions
       ctrl.deleteScorer = deleteScorer;

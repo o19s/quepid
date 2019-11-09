@@ -1,0 +1,19 @@
+<div class="modal-header">
+  <h3 class="modal-title">Remove this Scorer from Team?</h3>
+</div>
+<div class="modal-body">
+  <p>
+    ctrl.scorer: {{ ctrl.scorer }}
+    </p>
+    <p>
+      ctrl.thisScorer: {{ ctrl.thisScorer }}
+      </p?
+  <p>You're about to remove {{ ctrl.thisScorer.name }} from the team {{ ctrl.thisTeam.name }}.
+    This does not delete the scorer.
+  </p>
+
+</div>
+<div class="modal-footer">
+  <button class="btn btn-danger" ng-click="ctrl.ok()">Delete</button>
+  <button class="btn btn-default" ng-click="ctrl.cancel()">Cancel</button>
+</div>
