@@ -8,6 +8,7 @@
       <span ng-if="ctrl.team">
         scorer name: {{ ctrl.scorer.name }}, team name: {{ ctrl.team.name }}
       <remove-scorer scorer="ctrl.scorer" team="ctrl.team"></remove-scorer>
+      <action-icon title="'Delete'" icon-class="'fa fa-archive'" fn-call="ctrl.removeScorer()"></action-icon>
       </span>
       <span ng-if="!ctrl.team">
       <action-icon title="'Delete'" icon-class="'fa fa-trash'" fn-call="ctrl.deleteScorer()"></action-icon>
