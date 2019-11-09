@@ -1,8 +1,8 @@
 <div class="item-box row">
-  <div class="{{ ctrl.colWidth.name }}">
+  <div class="col-xs-1">
     {{ ctrl.scorer.name }}
 
-    <span class="item-actions" ng-if="!ctrl.light">
+    <span class="item-actions">
       <span ng-if="ctrl.scorer.owned">
         <share-scorer scorer="ctrl.scorer"></share-scorer>
         <edit-scorer scorer="ctrl.scorer"></edit-scorer>
@@ -12,7 +12,7 @@
     </span>
   </div>
 
-  <div class="{{ ctrl.colWidth.code }}">
+  <div class="col-xs-5">
     <div class="scorer code">
       <div ui-ace="{
         require: ['ace/ext/language_tools'],
@@ -44,11 +44,11 @@
     </div>
   </div>
 
-  <div class="{{ ctrl.colWidth.label }}">
+  <div class="col-xs-2">
     {{ ctrl.scorer.showScaleLabels }}
   </div>
 
-  <div class="{{ ctrl.colWidth.max_score }}">
+  <div class="col-xs-2">
     <span ng-if="ctrl.scorer.manualMaxScore">
     {{ ctrl.scorer.manualMaxScoreValue }}
   </span>
@@ -58,7 +58,7 @@
     </span>
   </div>
 
-  <div class="{{ ctrl.colWidth.owner }}" ng-if="!ctrl.light">
+  <div class="col-xs-2">
     <span ng-if="ctrl.scorer.owned">
       Me
     </span>
