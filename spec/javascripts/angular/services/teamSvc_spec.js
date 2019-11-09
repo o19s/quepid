@@ -172,4 +172,13 @@ describe('Service: teamSvc', function () {
       });
     $httpBackend.flush();
   });
+
+  it('removes a scorer from the team', function() {
+    var url   = '/api/teams/' + mockTeam.id + '/scorers/' + mockScorer.id;
+
+    $httpBackend.expectDELETE(url).respond(200);
+
+    teamSvc.removeScorer(mockTeam, mockScorer);
+    $httpBackend.flush();
+  });
 });
