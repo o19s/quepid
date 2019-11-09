@@ -96,7 +96,7 @@
       <div id='users-listing' ng-if="currentTeam.members.length !== 0">
         <ul class="users-list" ng-model="currentTeam.members">
           <li ng-repeat="user in currentTeam.members | filter:q" class="users-list-item">
-            <user-listing user="user" light="true" team="currentTeam"></user-listing>
+            <user-listing user="user" team="currentTeam"></user-listing>
           </li>
         </ul>
       </div>
@@ -131,7 +131,7 @@
 
         <ul class="cases-list" ng-model="currentTeam.cases">
           <li ng-repeat="case in currentTeam.cases | filter:q1" class="cases-list-item">
-            <case-listing this-case="case" light="true"></case-listing>
+            <case-listing this-case="case"></case-listing>
           </li>
         </ul>
       </div>
@@ -164,7 +164,7 @@
 
         <ul class="scorers-list" ng-model="currentTeam.scorers">
           <li ng-repeat="scorer in currentTeam.scorers | filter:q2" class="scorers-list-item">
-            <scorer-listing scorer="scorer" light="true"></scorer-listing>
+            <scorer-listing scorer="scorer"></scorer-listing>
           </li>
         </ul>
       </div>

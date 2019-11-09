@@ -10,7 +10,6 @@ angular.module('QuepidApp')
         templateUrl:  'user_listing/user_listing.html',
         scope:        {
           user:   '=',
-          light:  '=',  // FIXME this can be removed.
           team: '=',
         },
       };

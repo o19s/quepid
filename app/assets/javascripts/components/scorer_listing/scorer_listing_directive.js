@@ -10,7 +10,6 @@ angular.module('QuepidApp')
         templateUrl:  'scorer_listing/scorer_listing.html',
         scope:        {
           scorer: '=',
-          light:  '=',
         },
       };
     }
