@@ -113,7 +113,7 @@
 
   tour.addStep 'done',
     title:     'TADA!'
-    text:      'And there you have it, that\'s how Quepid works. There are many other areas to explore, but now that you know where to look, we will leave the rest to you.<br />We recommend that you check out the other tabs in the "Tune Relevance" pane, as well as other sections of the app from the header. <br />Also, make sure to stop by the <a href="http://quepid.com/docs" target="_blank" title="Knowledge Base">Knowledge Base</a> section for detailed info and the <a href="http://quepid.com/support/" title="Tutorials">Tutorials</a> section for some advanced videos.  Lastly our <a href="https://github.com/o19s/quepid/wiki" target="_blank" title="Wiki">Wiki</a> is looking for contributions!'
+    text:      'And there you have it, that\'s how Quepid works. There are many other areas to explore, but now that you know where to look, we will leave the rest to you.<br />We recommend that you check out the other tabs in the "Tune Relevance" pane, as well as other sections of the app from the header. <br />Also, make sure to stop by the <a href="http://quepid.com/docs" target="_blank" title="Knowledge Base">Knowledge Base</a> section for detailed info and the <a href="https://github.com/o19s/quepid/wiki/Videos-on-Learning-to-use-Quepid" title="Tutorials">Tutorials</a> section for some advanced videos.  Lastly our <a href="https://github.com/o19s/quepid/wiki" target="_blank" title="Wiki">Wiki</a> is looking for contributions!'
     buttons:   [
       text:    'Finish'
       action:  tour.complete
