@@ -33,7 +33,7 @@ angular.module('QuepidApp')
               tryNo:  acase.lastTry
             });
           }, function() {
-            flash.error = 'Unable to clone your case, please try again. If the error persists contact support.';
+            flash.error = 'Unable to clone your case, please try again.';
           });
       }
 

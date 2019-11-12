@@ -96,7 +96,7 @@ angular.module('QuepidApp')
 
         if ( response.status === -1 ) {
           error += 'You may have a typo in your URL';
-          error += ' (<a href="http://quepid.com/support/" target="_blank">more info</a>).';
+          error += ' (<a href="https://github.com/o19s/quepid/wiki" target="_blank">Quepid Wiki</a> for more help).';
           error += ' If that is not the case, make sure that CORS is enabled in your config.';
         } else {
           error +=  self.formatCode(response.status);

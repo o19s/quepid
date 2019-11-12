@@ -62,7 +62,7 @@ angular.module('QuepidApp')
             }, function() {
                var result = {
                 error:    true,
-                message:  'Could not import snapshots successfully! Please try again, if the error persists, please contact customer support.',
+                message:  'Could not import snapshots successfully! Please try again.',
               };
 
               ctrl.import.loading = false;
