@@ -101,7 +101,7 @@ angular.module('QuepidApp')
               $uibModalInstance.close(ctrl.selection);
               flash.success = 'Snapshot loaded successfully.';
             }, function (response) {
-              flash.error = 'Could note fetch snapshot. If the error persists please contact support!';
+              flash.error = 'Could note fetch snapshot!';
               $log.debug('error fetching snapshot:');
               $log.debug(response);
             });
