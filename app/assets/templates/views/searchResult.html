@@ -58,8 +58,27 @@
             </span>
 
             <span
+              ng-bind-html="fieldValue"
+            >
+            </span>
+            <span
               ng-if="isUrl(fieldValue)">
-              <a href="{{ fieldValue }}" target="_blank">{{ fieldValue }}</a>
+              <br/>
+              A:<a href="{{ fieldValue }}" target="_blank" ng-bind-html="fieldValue"></a>
+              <br/>
+              B:
+              <a ng-href="{{ fieldValue }}">{{ fieldValue }}</a>
+              <br/>
+              C:
+              <a ng-href="{{ fieldValue }}" ng-bind-html="fieldValue"></a>
+              <br/>
+              D:
+              <a ng-href="{{ fieldValue }}">
+                <span ng-bind-html="fieldValue"/>
+              </a>
+              E:
+              <a ng-href="{{ fieldValue }}">Some Link</a>              
+              <br/>
             </span>
           </li>
 
