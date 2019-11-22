@@ -53,8 +53,13 @@
 
             <span
               ng-bind-html="fieldValue"
-              ng-if="!isJSONObject(fieldValue)"
+              ng-if="!isJSONObject(fieldValue) and !isUrl(fieldValue)"
             >
+            </span>
+
+            <span
+              ng-if="isUrl(fieldValue)">
+              <a href="{{ fieldValue }}" target="_blank">{{ fieldValue }}</a>
             </span>
           </li>
 
