@@ -1,6 +1,7 @@
 # Changelog
 
 ## 6.0.2 - ?
+* Deprecate www.quepid.com/support in favor of linking to wiki.  https://github.com/o19s/quepid/pull/18 by @epugh fixes https://github.com/o19s/quepid/issues/17
 * More informative error message when you delete a custom scorer and its in use.  https://github.com/o19s/quepid/pull/22 by @epugh fixes https://github.com/o19s/quepid/issues/21.
 
 ## 6.0.1 - 11/05/2019
