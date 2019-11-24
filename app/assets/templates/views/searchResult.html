@@ -45,6 +45,7 @@
             <span
               ng-if="isJSONObject(fieldValue)"
             >
+              <!-- output JSON blob -->
               <json-explorer
                 json-data="fieldValue"
                 collapsed="false">
@@ -52,33 +53,16 @@
             </span>
 
             <span
-              ng-bind-html="fieldValue"
-              ng-if="!isJSONObject(fieldValue) && !isUrl(fieldValue)"
-            >
+              ng-if="isUrl(fieldValue)">
+              <!-- Format a HREF link.  Use the original value, not the html escaped snippet. -->
+              <a ng-href="{{ doc.doc[fieldName] }}" target="_blank">{{ doc.doc[fieldName] }}</a>
             </span>
 
             <span
               ng-bind-html="fieldValue"
+              ng-if="!isJSONObject(fieldValue) && !isUrl(fieldValue)"
             >
-            </span>
-            <span
-              ng-if="isUrl(fieldValue)">
-              <br/>
-              A:<a href="{{ fieldValue }}" target="_blank" ng-bind-html="fieldValue"></a>
-              <br/>
-              B:
-              <a ng-href="{{ fieldValue }}">{{ fieldValue }}</a>
-              <br/>
-              C:
-              <a ng-href="{{ fieldValue }}" ng-bind-html="fieldValue"></a>
-              <br/>
-              D:
-              <a ng-href="{{ fieldValue }}">
-                <span ng-bind-html="fieldValue"/>
-              </a>
-              E:
-              <a ng-href="{{ fieldValue }}">Some Link</a>              
-              <br/>
+              <!-- Normal display of a snippet -->
             </span>
           </li>
 
