@@ -50,5 +50,5 @@ Rails.application.configure do
 
   config.action_mailer.default_url_options = { host: ENV['QUEPID_DOMAIN'], port: ENV['PORT'] }
 
-  ENV['QUEPID_GA'] = "UA-FAKE-GA-CODE-FOR-TESTING"
+  ENV['QUEPID_GA'] = 'UA-FAKE-GA-CODE-FOR-TESTING'
 end
