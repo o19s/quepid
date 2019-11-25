@@ -23,10 +23,10 @@
       "required": true
     },
     "INTERCOM_API_KEY": {
-      "required": true
+      "required": false
     },
     "INTERCOM_APP_ID": {
-      "required": true
+      "required": false
     },
     "LANG": {
       "required": true
@@ -41,7 +41,7 @@
       "required": true
     },
     "QUEPID_GA": {
-      "required": true
+      "required": false
     },
     "RACK_ENV": {
       "required": true
