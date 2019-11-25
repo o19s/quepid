@@ -527,6 +527,22 @@ module Api
           end
         end
 
+        describe 'when scorer is shared with a team' do
+          let(:default_scorer)        { scorers(:random_scorer_1) }
+          let(:default_scorer_team)   { teams(:scorers_team) }
+          let(:user)                  { users(:random) }
+
+          before do
+            login_user user
+          end
+
+          test 'returns a bad request error if nothing specified' do
+            delete :destroy, id: default_scorer.id
+
+            assert_response :bad_request
+          end
+        end
+
         describe 'analytics' do
           let(:owned_scorer) { scorers(:owned_scorer) }
 
