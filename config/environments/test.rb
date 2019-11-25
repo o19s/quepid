@@ -49,4 +49,6 @@ Rails.application.configure do
   # config.action_view.raise_on_missing_translations = true
 
   config.action_mailer.default_url_options = { host: ENV['QUEPID_DOMAIN'], port: ENV['PORT'] }
+
+  ENV['QUEPID_GA'] = "UA-FAKE-GA-CODE-FOR-TESTING"
 end
