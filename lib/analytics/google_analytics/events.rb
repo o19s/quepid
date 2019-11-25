@@ -687,7 +687,7 @@ module Analytics
       #
       def create_event data
         return unless Analytics::GA.enabled?
-        
+
         GoogleAnalyticsEventJob.perform_later data
       end
     end
