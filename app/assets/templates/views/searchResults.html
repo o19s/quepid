@@ -109,6 +109,7 @@
       </search-result>
 
       <div class='row'>
+        <span class="glyphicon glyphicon-chevron-up" ng-click="query.toggle()"></span>
         <span ng-if="query.numFound > query.docs.length">
           <a
             ng-show='query.numFound > 10'
