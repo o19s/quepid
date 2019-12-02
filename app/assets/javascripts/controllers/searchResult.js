@@ -87,7 +87,7 @@ angular.module('QuepidApp')
         return typeof value === 'object' &&  value instanceof Array !== true;
       };
       $scope.isUrl = function(value) {
-        return ( /http/.test(value));
+        return ( /^\s+http/.test(value));
       };
     }
   ]);
