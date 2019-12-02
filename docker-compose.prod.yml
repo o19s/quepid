@@ -19,7 +19,21 @@ services:
 
   app:
     container_name: quepid_prod_app
-    image: quepid/quepid_prod_app
+    image: quepid/quepid_app
+    environment:
+      - PORT=80
+      - RACK_ENV=production
+      - RAILS_ENV=production
+      - DB_ADAPTER=mysql2
+      - DB_HOST=mysql
+      - DB_USERNAME=root
+      - DB_PASSWORD=password
+      - DB_NAME=quepid
+      - REDIS_URL=redis://redis:6379/1
+      - FORCE_SSL=false
+      - MAX_THREADS=2
+      - WEB_CONCURRENCY=2
+      - SECRET_KEY_BASE=some_value_needed_here
     ports:
       - 3000:3000
     links:
