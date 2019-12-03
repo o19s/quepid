@@ -350,7 +350,6 @@ GEM
       actionpack (>= 4.0)
       activesupport (>= 4.0)
       sprockets (>= 3.0.0)
-    sqlite3 (1.4.0)
     stackprof (0.2.12)
     temple (0.8.0)
     thin (1.7.2)
@@ -442,7 +441,6 @@ DEPENDENCIES
   sinatra
   slim
   spring (= 1.6.4)
-  sqlite3
   stackprof
   thin
   timecop
