@@ -1,4 +1,4 @@
-version: '3'   # on CircleCI the version and services cause build to puke.
+version: '3'
 services:
   mysql:
     container_name: quepid_db
@@ -19,7 +19,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.dev
-    image: quepid/quepid
     volumes:
       - .:/srv/app
     ports:
