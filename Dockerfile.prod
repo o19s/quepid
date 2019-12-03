@@ -31,4 +31,4 @@ RUN bundle install
 COPY --from=build-dep /srv/app/node_modules ./node_modules/
 COPY . .
 RUN rake assets:precompile DB_ADAPTER=mysql2
-CMD foreman s
+CMD foreman s -f Procfile

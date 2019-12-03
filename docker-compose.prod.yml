@@ -19,9 +19,9 @@ services:
 
   app:
     container_name: quepid_prod_app
-    image: quepid/quepid_app
+    image: quepid/quepid
     environment:
-      - PORT=80
+      - PORT=3000
       - RACK_ENV=production
       - RAILS_ENV=production
       - DB_ADAPTER=mysql2
@@ -29,13 +29,15 @@ services:
       - DB_USERNAME=root
       - DB_PASSWORD=password
       - DB_NAME=quepid
+      - DATABASE_URL=mysql2://root:password@mysql:3306/quepid
       - REDIS_URL=redis://redis:6379/1
       - FORCE_SSL=false
       - MAX_THREADS=2
       - WEB_CONCURRENCY=2
       - SECRET_KEY_BASE=some_value_needed_here
+    command: "foreman s -f Procfile"
     ports:
-      - 3000:3000
+      - 80:3000 # Map to port 80 for outside users.
     links:
       - mysql
       - redis
