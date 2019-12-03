@@ -10,6 +10,8 @@ services:
       - 3306:3306
     environment:
       - MYSQL_ROOT_PASSWORD=password
+    volumes:
+      - ./volumes/mysql_data:/var/lib/mysql      
 
   redis:
     container_name: quepid_prod_redis
