@@ -36,9 +36,22 @@
       self.searchUrl     = data.searchUrl;
       self.tryNo         = data.tryNo;
 
+      // Legacy migration path for ES queries that are currently stored as queryParams
+      if (data.searchEngine === 'es' && !!data.queryParams && data.queryParams.length > 0 &&
+          data.queryParams.trim() && !data.queryJson) {
+
+          try {
+              JSON.parse(data.queryParams);
+              // if no error was hit:
+              data.queryJson = data.queryParams;
+              data.queryParams = '';
+          } catch (ignored_e) {
+          }
+      }
+
       // Derive from Try data which query editor to show
       if (!!data.queryParams && data.queryParams.length > 0 && data.queryParams.trim()) {
-          self.requestHasQueryString = true;
+        self.requestHasQueryString = true;
       }
       if (!!data.queryJson && data.queryJson.length > 0 && data.queryJson.trim()) {
         self.requestHasJsonBody = true;
@@ -128,8 +141,9 @@
           curatorVar.inQueryParams = false;
         });
 
-        var varNames = varExtractorSvc.extract(self.queryParams);
-        angular.forEach(varNames, function(varName) {
+        var varNames = self.requestHasQueryString ? varExtractorSvc.extract(self.queryParams) : [];
+        var varNamesJson = self.requestHasJsonBody ? varExtractorSvc.extract(self.queryJson) : [];
+        angular.forEach(varNames.concat(varNamesJson), function(varName) {
           var foundVar = self.getVar(varName);
           if (!foundVar) {
             addVar(self, varName, 10);
