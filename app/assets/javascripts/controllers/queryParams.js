@@ -23,9 +23,12 @@ angular.module('QuepidApp')
           name:          $scope.settings.selectedTry.name,
           numberOfRows:  $scope.settings.selectedTry.numberOfRows,
           queryParams:   $scope.settings.selectedTry.queryParams,
+          queryJson:     $scope.settings.selectedTry.queryJson,
           searchEngine:  $scope.settings.selectedTry.searchEngine,
           searchUrl:     $scope.settings.selectedTry.searchUrl,
           tryNo:         $scope.settings.selectedTry.tryNo,
+          requestHasQueryString: $scope.settings.selectedTry.requestHasQueryString,
+          requestHasJsonBody: $scope.settings.selectedTry.requestHasJsonBody,
         });
         tmp.updateVars();
         $scope.settings.selectedTry = tmp;

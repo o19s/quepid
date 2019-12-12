@@ -168,6 +168,7 @@
         angular.forEach(self.tries, function(aTry) {
           if (foundTry === null) {
             if (aTry.queryParams === qp.queryParams &&
+                aTry.queryJson === qp.queryJson &&
                 angular.equals(aTry.curatorVarsDict(),qp.curatorVars)
             ) {
               foundTry = aTry;

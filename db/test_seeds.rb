@@ -217,6 +217,7 @@ es_params = {
   searchUrl:    Try::DEFAULTS[:es][:search_url],
   fieldSpec:    Try::DEFAULTS[:es][:field_spec],
   queryParams:  Try::DEFAULTS[:es][:query_params],
+  queryJson:  Try::DEFAULTS[:es][:query_json],
 }
 es_try.update es_params
 print_case_info es_case

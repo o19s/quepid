@@ -209,6 +209,7 @@ ActiveRecord::Schema.define(version: 20190505190705) do
   create_table "tries", force: :cascade do |t|
     t.integer  "tryNo",          limit: 4
     t.text     "queryParams",    limit: 65535
+    t.text     "queryJson",      limit: 65535
     t.integer  "case_id",        limit: 4
     t.string   "fieldSpec",      limit: 500
     t.string   "searchUrl",      limit: 500

@@ -15,6 +15,7 @@ module Api
             fieldSpec:      @try.fieldSpec,
             number_of_rows: @try.number_of_rows,
             queryParams:    @try.queryParams,
+            queryJson:      @try.queryJson,
             searchEngine:   @try.searchEngine,
             searchUrl:      @try.searchUrl,
           }
@@ -54,6 +55,7 @@ module Api
             :searchUrl,
             :fieldSpec,
             :queryParams,
+            :queryJson,
             :searchEngine,
             :escapeQuery,
             :number_of_rows

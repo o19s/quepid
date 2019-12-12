@@ -100,6 +100,7 @@ class Try < ActiveRecord::Base
     self.searchEngine = DEFAULTS[:search_engine] if searchEngine.blank?
     self.fieldSpec    = DEFAULTS[searchEngine.to_sym][:field_spec]    if fieldSpec.blank?
     self.queryParams  = DEFAULTS[searchEngine.to_sym][:query_params]  if queryParams.blank?
+    self.queryJson    = DEFAULTS[searchEngine.to_sym][:query_json]  if queryJson.blank?
     self.searchUrl    = DEFAULTS[searchEngine.to_sym][:search_url]    if searchUrl.blank?
   end
 end

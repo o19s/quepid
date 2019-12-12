@@ -20,14 +20,16 @@
 
         <div class='clearfix'></div>
 
-        <textarea class="form-control" ng-show="settings.searchEngine == 'solr'" name="queryParams" ng-model="settings.selectedTry.queryParams"></textarea>
+        <textarea class="form-control {{settings.requestHasJsonBody ? 'smallblock' : ''}}"
+                  ng-show="settings.requestHasQueryString" name="queryParams"
+                  ng-model="settings.selectedTry.queryParams"></textarea>
 
-        <div id='es-query-params-editor' class='es-query-params' ng-show="settings.searchEngine == 'es'" ui-ace="{
+        <div id='es-query-params-editor' class='es-query-params' ng-show="settings.requestHasJsonBody" ui-ace="{
             require:      ['ace/ext/language_tools'],
             useWrapMode:  false,
             mode:         'json',
             theme:        'chrome'
-          }" ng-model="settings.selectedTry.queryParams">
+          }" ng-model="settings.selectedTry.queryJson">
         </div>
       </div> <!-- end .rerunnable-settings-tab -->
     </div> <!-- end .settings-tab (Query Sandbox) -->
@@ -95,6 +97,22 @@
             <p class="help-block tip">
               Tip: Your URL should look like this {{settings.urlFormat}}.
             </p>
+
+
+            Request Type:<br />
+            <div>
+                <label>
+                    <input type="checkbox" id="querystring" ng-model="settings.requestHasQueryString">
+                    Query String
+                </label>
+            </div>
+
+            <div>
+                <label>
+                    <input type="checkbox" id="jsonbody" ng-model="settings.requestHasJsonBody">
+                    JSON Body
+                </label>
+            </div>
           </div>
         </div>
         <!-- end of Search Engine Request Handler -->

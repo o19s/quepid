@@ -171,6 +171,7 @@ class Case < ActiveRecord::Base
       fieldSpec:    the_try.fieldSpec,
       name:         the_try.name,
       queryParams:  the_try.queryParams,
+      queryJson:    the_try.queryJson,
       searchEngine: the_try.searchEngine,
       searchUrl:    the_try.searchUrl,
       tryNo:        0

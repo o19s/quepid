@@ -25,13 +25,17 @@ angular.module('QuepidApp')
           idField:         'id',
           numberOfRows:    10,
           queryParams:     'q=#$query##',
+          queryJson:       '',
           searchEngine:    'solr',
+          requestHasQueryString: true,
+          requestHasJsonBody: false,
           searchUrl:       'http://quepid-solr.dev.o19s.com/solr/tmdb/select',
           titleField:      'title',
           urlFormat:       'http(s?)://yourdomain.com/<index>/select',
         },
         es: {
-          queryParams:  [
+          queryParams: '',
+          queryJson:  [
             '{',
             '    "query": {',
             '        "query_string": {',
@@ -47,9 +51,31 @@ angular.module('QuepidApp')
           idField:         '_id',
           numberOfRows:    10,
           searchEngine:    'es',
+          requestHasQueryString: false,
+          requestHasJsonBody: true,
           searchUrl:       'http://quepid-elasticsearch.dev.o19s.com:9200/tmdb/_search',
           titleField:      'title',
           urlFormat:       'http(s?)://yourdomain.com/<index>/_search',
+        },
+        other: {
+          queryParams: '',
+          queryJson:  [
+            '{',
+            '    "query": "#$query##"',
+            '}',
+          ].join('\n'),
+
+          additional:      '',
+          escapeQuery:     true,
+          fieldSpec:       'id:_id, title:title',
+          idField:         '_id',
+          numberOfRows:    10,
+          searchEngine:    'other',
+          requestHasQueryString: true,
+          requestHasJsonBody: true,
+          searchUrl:       '',
+          titleField:      'title',
+          urlFormat:       '',
         }
       };
 
@@ -114,8 +140,11 @@ angular.module('QuepidApp')
           settings.fieldSpec     = tryToUse.fieldSpec;
           settings.numberOfRows  = tryToUse.numberOfRows;
           settings.queryParams   = tryToUse.queryParams;
+          settings.queryJson     = tryToUse.queryJson;
           settings.searchEngine  = tryToUse.searchEngine;
           settings.searchUrl     = tryToUse.searchUrl;
+          settings.requestHasQueryString = tryToUse.requestHasQueryString;
+          settings.requestHasJsonBody = tryToUse.requestHasJsonBody;
 
           return settings;
   			} else {
@@ -167,6 +196,7 @@ angular.module('QuepidApp')
         sentData.fieldSpec       = settingsToSave.fieldSpec;
         sentData.number_of_rows  = settingsToSave.numberOfRows;
         sentData.queryParams     = settingsToSave.selectedTry.queryParams;
+        sentData.queryJson       = settingsToSave.selectedTry.queryJson;
         sentData.searchEngine    = settingsToSave.searchEngine;
         sentData.searchUrl       = settingsToSave.searchUrl;
 

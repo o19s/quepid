@@ -19,6 +19,8 @@
 
       if ( angular.isUndefined(data.searchEngine) ) {
         data.searchEngine = 'solr';
+        data.requestHasQueryString = true;
+        data.requestHasJsonBody = false;
       }
 
       // Attributes
@@ -29,9 +31,18 @@
       self.name          = data.name;
       self.numberOfRows  = data.numberOfRows;
       self.queryParams   = data.queryParams;
+      self.queryJson     = data.queryJson;
       self.searchEngine  = data.searchEngine;
       self.searchUrl     = data.searchUrl;
       self.tryNo         = data.tryNo;
+
+      // Derive from Try data which query editor to show
+      if (!!data.queryParams && data.queryParams.length > 0 && data.queryParams.trim()) {
+          self.requestHasQueryString = true;
+      }
+      if (!!data.queryJson && data.queryJson.length > 0 && data.queryJson.trim()) {
+        self.requestHasJsonBody = true;
+      }
 
       // transform curator vars to be more angular friendly
       var ngFriendlyCuratorVars = [];

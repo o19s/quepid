@@ -31,6 +31,7 @@ angular.module('QuepidApp')
         $scope.pendingWizardSettings.searchEngine             = settings.searchEngine;
         $scope.pendingWizardSettings.searchUrl                = settings.searchUrl;
         $scope.pendingWizardSettings.selectedTry.queryParams  = settings.queryParams;
+        $scope.pendingWizardSettings.selectedTry.queryJson    = settings.queryJson;
         $scope.pendingWizardSettings.titleField               = settings.titleField;
         $scope.pendingWizardSettings.urlFormat                = settings.urlFormat;
         $scope.reset();

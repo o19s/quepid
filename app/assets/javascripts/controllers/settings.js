@@ -23,10 +23,13 @@ angular.module('QuepidApp')
         if ( this.searchEngine !== currSettings.searchEngine) {
           currSettings = settingsSvc.defaults[$scope.pendingSettings.searchEngine];
         }
+        this.requestHasQueryString    = currSettings.requestHasQueryString;
+        this.requestHasJsonBody       = currSettings.requestHasJsonBody;
         this.searchEngine             = currSettings.searchEngine;
         this.searchUrl                = currSettings.searchUrl;
         this.fieldSpec                = currSettings.fieldSpec;
         this.selectedTry.queryParams  = currSettings.queryParams;
+        this.selectedTry.queryJson    = currSettings.queryJson;
         this.urlFormat                = settingsSvc.defaults[currSettings.searchEngine].urlFormat;
 
         this.submit = submit;
@@ -46,11 +49,11 @@ angular.module('QuepidApp')
       });
 
       function submit () {
-        if ( $scope.pendingSettings.searchEngine === 'es' ) {
-          // Verify that JSON is valid
+        if ( $scope.pendingSettings.requestHasJsonBody === true ) {
+          // Verify that JSON is valid if request has JSON body
           try {
-            var jsonObject = JSON.parse($scope.pendingSettings.selectedTry.queryParams);
-            $scope.pendingSettings.selectedTry.queryParams = angular.toJson(jsonObject, true);
+            var jsonObject = JSON.parse($scope.pendingSettings.selectedTry.queryJson);
+            $scope.pendingSettings.selectedTry.queryJson = angular.toJson(jsonObject, true);
           } catch (e) {
             flash.error = 'Please provide a valid JSON object for the query DSL.';
             return;

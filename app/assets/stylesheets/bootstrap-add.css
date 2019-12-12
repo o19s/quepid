@@ -836,6 +836,11 @@ header .dropdown-content li.dropdown-header {
 	height: calc(100% - 40px);
 }
 
+#queryParamsCanvas textarea.smallblock {
+	height: 60px;
+    margin-bottom: 10px;
+}
+
 #queryParamsCanvas .slider-wrap {
 	padding: 10px 0;
 	border-bottom: 1px solid #555;

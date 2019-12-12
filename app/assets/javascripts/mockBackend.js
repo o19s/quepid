@@ -123,7 +123,8 @@ window.mockBackend = function(angModule) {
       var found = false;
       angular.forEach(settings.queryParamsHistory, function(qp) {
         if (qp.curatorVars === data.curatorVars &&
-            qp.queryParams === data.queryParams)
+            qp.queryParams === data.queryParams &&
+            qp.queryJson === data.queryJson)
         {
           found = true;
         }
@@ -131,6 +132,7 @@ window.mockBackend = function(angModule) {
 
       if (!found) {
         var newSettings = {queryParams: data.queryParams,
+                           queryJson: data.queryJson,
                            curatorVars: data.curatorVars };
         settings.queryParamsHistory.push(newSettings);
       }
