@@ -2,6 +2,7 @@
 
 ## 6.0.3 - ?
 * Only treat field content that begins with "http" as a link.  https://github.com/o19s/quepid/pull/35 by @pfries fixes https://github.com/o19s/quepid/issues/34
+* Update Elasticsearch logo.  https://github.com/o19s/quepid/pull/38 by @moshebla
 
 ## 6.0.2 - 11/26/2019
 * Deprecate www.quepid.com/support in favor of linking to wiki.  https://github.com/o19s/quepid/pull/18 by @epugh fixes https://github.com/o19s/quepid/issues/17
