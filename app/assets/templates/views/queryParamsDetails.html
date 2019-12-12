@@ -14,7 +14,8 @@
       Arguments
     </div>
     <div class="col-sm-9">
-    <pre><code>{{aTry.queryParams}}</code></pre>
+    <pre ng-if="aTry.requestHasQueryString"><code>{{aTry.queryParams}}</code></pre>
+    <pre ng-if="aTry.requestHasJsonBody"><code>{{aTry.queryJson}}</code></pre>
   </div>
 
   <div class="row">
