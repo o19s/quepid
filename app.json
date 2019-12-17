@@ -58,10 +58,13 @@
     "SIDEKIQ_CONCURRENCY": {
       "required": true
     },
-    "STRIPE_PUBLISHABLE_KEY": {
+    "TC_URL": {
       "required": true
     },
-    "STRIPE_SECRET_KEY": {
+    "PRIVACY_URL": {
+      "required": true
+    },
+    "COOKIES_URL": {
       "required": true
     }
   },
