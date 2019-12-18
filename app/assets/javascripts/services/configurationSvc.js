@@ -3,7 +3,7 @@
 angular.module('UtilitiesModule')
   .service('configurationSvc', [
     '$window', '$log',
-    function ConfigurationSvc($window, $log) {
+    function ConfigurationSvc() {
       var termsAndConditionsUrl;
 
       this.setTermsAndConditionsUrl = function (url) {
