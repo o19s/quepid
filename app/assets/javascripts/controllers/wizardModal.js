@@ -154,10 +154,16 @@ angular.module('QuepidApp')
       $scope.loadFields = loadFields;
       function loadFields (query) {
         var autocompleteList = [];
+        var _query = query.trim().toLowerCase();
+        var thumb = false;
+        if (_query.startsWith('thumb:')) {
+            _query = _query.substr(6);
+            thumb = true;
+        }
 
         angular.forEach($scope.searchFields, function(field) {
-          if ( field.indexOf(query) !== -1 ) {
-            autocompleteList.push({ text: field });
+          if ( field.toLowerCase().indexOf(_query) !== -1 ) {
+            autocompleteList.push({ text: thumb ? 'thumb:' + field : field });
           }
         });
 
