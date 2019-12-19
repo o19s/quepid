@@ -63,7 +63,7 @@ $(function() {
   $(document).on('toggleEast', resizeAce);
   $(document).on('devSettingsHeightChange', resizeAce);
 
-  $('[name="queryParams"]').keyup(function() {
+  $('[name="queryJson"]').keyup(function() {
     var input = $(this);
     var value = input.val();
 

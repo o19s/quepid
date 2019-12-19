@@ -24,7 +24,7 @@
                   ng-show="settings.requestHasQueryString" name="queryParams"
                   ng-model="settings.selectedTry.queryParams"></textarea>
 
-        <div id='es-query-params-editor' class='es-query-params' ng-show="settings.requestHasJsonBody" ui-ace="{
+        <div id='es-query-params-editor' class='es-query-params'  name="queryJson" ng-show="settings.requestHasJsonBody" ui-ace="{
             require:      ['ace/ext/language_tools'],
             useWrapMode:  false,
             mode:         'json',
