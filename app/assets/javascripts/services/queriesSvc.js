@@ -61,6 +61,11 @@ angular.module('QuepidApp')
         var args = angular.copy(passedInSettings.selectedTry.args);
 
         if (passedInSettings && passedInSettings.selectedTry) {
+          // TODO decide on apiMethod based on selected passedInSettings.searchEngine
+          var apiMethod = (passedInSettings.searchEngine === 'es') ? 'post' : 'querystring';
+          if (passedInSettings.searchEngine === 'solr' && !!passedInSettings.requestHasJsonBody) {
+              apiMethod = 'json';
+          }
           return searchSvc.createSearcher(
             passedInSettings.createFieldSpec().fieldList(),
             passedInSettings.selectedTry.searchUrl,
@@ -69,6 +74,7 @@ angular.module('QuepidApp')
             {
               escapeQuery:   passedInSettings.escapeQuery,
               numberOfRows:  passedInSettings.numberOfRows,
+              apiMethod:     apiMethod,
             },
             passedInSettings.searchEngine
           );
