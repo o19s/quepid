@@ -92,7 +92,3 @@ end
 group :production, :staging do
   gem 'rails_12factor'
 end
-
-group :container do
-  gem 'sqlite3'
-end
