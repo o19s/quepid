@@ -24,6 +24,7 @@ angular.module('QuepidApp')
       ctrl.handlePaste  = handlePaste;
       ctrl.message      = message;
       ctrl.submit       = submit;
+      ctrl.inputIsEmpty = inputIsEmpty;
 
       var addOne = function(queryText, user) {
         var q = queriesSvc.createQuery(queryText);
@@ -82,7 +83,13 @@ angular.module('QuepidApp')
         return newQueries;
       };
 
+      function inputIsEmpty() {
+          return (!ctrl.text || /^\s*$/.test(ctrl.text));
+      }
+
       function submit () {
+        if (inputIsEmpty) { return; }
+
         ctrl.loading = true;
         var initialSearchStrings  = parseAddQuery(ctrl.text);
         var searchStrings         = userQueries(initialSearchStrings, $rootScope.currentUser);
