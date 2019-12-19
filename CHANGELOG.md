@@ -5,6 +5,7 @@
 * Update Elasticsearch logo.  https://github.com/o19s/quepid/pull/38 by @moshebla
 * Remove sqlite from gem, no longer used.  https://github.com/o19s/quepid/pull/41 by @epugh fixes https://github.com/o19s/quepid/issues/40
 * Better look and UI experience for the dev panel.  https://github.com/o19s/quepid/pull/39 by @moshebla
+* Show or don't show the T&C's link based on the Quepid configuration.  https://github.com/o19s/quepid/pull/42 by @epugh fixes https://github.com/o19s/quepid/issues/44 by @flaxsearch.
 
 ## 6.0.2 - 11/26/2019
 * Deprecate www.quepid.com/support in favor of linking to wiki.  https://github.com/o19s/quepid/pull/18 by @epugh fixes https://github.com/o19s/quepid/issues/17
