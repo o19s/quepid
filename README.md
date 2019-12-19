@@ -410,7 +410,8 @@ Check out the [App Structure](docs/app_structure.md) file for more info on how Q
 
 # Legal Pages
 
-If you would like to have legal pages linked in the footer of the app, add the following `ENV` vars:
+If you would like to have legal pages linked in the footer of the app, similar to behavior on http://app.quepid.com, 
+add the following `ENV` vars:
 
 ```
 TC_URL      # terms and condition

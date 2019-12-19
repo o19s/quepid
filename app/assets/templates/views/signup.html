@@ -98,11 +98,11 @@
              />
           </div>
 
-          <div class="checkbox">
+          <div class="checkbox" ng-show="hasTermsAndConditions">
             <label>
-              <input type="checkbox" ng-model="agree" required />
+              <input type="checkbox" ng-model="agree" required ng-if="hasTermsAndConditions"/>
               Agree to
-              <a href="/agreement">terms &amp; conditions</a>?
+              <a ng-href="{{ termsAndConditionsUrl }}" target="_blank">terms &amp; conditions</a>?
             </label>
           </div>
 
