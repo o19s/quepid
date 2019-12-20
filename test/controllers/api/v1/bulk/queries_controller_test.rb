@@ -44,6 +44,33 @@ module Api
             assert_equal 'one', first_query.query_text
             assert_equal json_response['displayOrder'][0], first_query.id
           end
+
+          test 'allows duplicates queries to be created' do
+            data = {
+              case_id: acase.id,
+              queries: %w[one two three four],
+            }
+
+            post :create, data
+
+            acase.reload
+
+            first_query = acase.queries.first
+
+            assert_equal 'one', first_query.query_text
+            assert_equal 4, acase.queries.size
+
+            data = {
+              case_id: acase.id,
+              queries: %w[one two three four],
+            }
+
+            post :create, data
+
+            acase.reload
+
+            assert_equal 4, acase.queries.size
+          end
         end
       end
     end
