@@ -94,6 +94,20 @@ describe('Controller: AddQueryCtrl', function () {
     $rootScope.currentUser = angular.copy(mockUser);
   });
 
+  it('rejects empty or blank text', function() {
+    var newText;
+    ctrl.text   = newText;
+
+    expect(mockQueriesSvc.lastCreatedQ()).toBe(undefined);
+    ctrl.submit();
+    expect(mockQueriesSvc.lastCreatedQ()).toBe(undefined);
+
+    newText = '';
+    ctrl.text   = newText;
+
+    ctrl.submit();
+    expect(mockQueriesSvc.lastCreatedQ()).toBe(undefined);
+  });
 
   it('adds queries', function() {
     var newText = 'foo';
