@@ -11,7 +11,7 @@
   <input
     class="btn btn-success"
     ng-click="ctrl.submit()"
-    ng-disabled="ctrl.inputIsEmpty() || user.hasReachedQueryLimit()"
+    ng-disabled="ctrl.textInputIsEmpty() || user.hasReachedQueryLimit()"
     type="submit"
     value="{{ ctrl.text.indexOf(';') === -1 ? 'Add query' : 'Add queries' }}"
    />
