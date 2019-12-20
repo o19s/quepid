@@ -27,6 +27,7 @@
 //= require utilitiesModule
 //= require secureApp
 //= require app
+//= require services/configurationSvc
 //= require services/secureRedirectSvc
 //= require services/loginSvc
 //= require services/userSvc
