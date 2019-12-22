@@ -77,7 +77,7 @@ brew cask install docker-toolbox
 
 #### 2. Setup your environment
 
-Run the setup script:
+Run the local Ruby based setup script to setup your Docker images:
 
 ```
 bin/setup_docker
@@ -116,16 +116,10 @@ You can still use `docker-compose` directly, but for the basic stuff you can use
 While running the app under foreman, you'll only see a request log, for more detailed logging run the following:
 
 ```
-tail -f -n 200 log/development.log
+bin/docker r tail -f -n 200 log/development.log
 ```
 
-or
-
-```
-bin/docker run tail -f -n 200 log/development.log
-```
-
-**Note:** To clear the logs to avoid them getting too big run: `cat /dev/null > log/development.log`
+**Note:** To clear the logs to avoid them getting too big run: `bin/docker r cat /dev/null > log/development.log`
 
 ## III. Run Tests
 
@@ -137,8 +131,6 @@ If you aren't using Docker, then create test database...
 rake db:create RAILS_ENV=test
 ```
 
-If you are using Docker, then prefix the below commands with `bin/docker r` to run them in your container.
-
 There are three types of tests that you can run:
 
 ### Minitest
@@ -146,7 +138,13 @@ There are three types of tests that you can run:
 These tests run the tests from the Rails side (mainly API controllers, and models):
 
 ```
-bin/rake test
+bin/docker r bin/rake test
+```
+
+Run a single test via:
+
+```
+bin/docker r bin/rake test TEST=./test/controllers/api/v1/bulk/queries_controller_test.rb
 ```
 
 ### JS Lint
@@ -154,15 +152,15 @@ bin/rake test
 To check the JS syntax:
 
 ```
-bin/rake test:jshint
+bin/docker r bin/rake test:jshint
 ```
 
 ### Karma
 
 Runs tests for the Angular side. There are two modes for the karma tests:
 
-* Single run: `bin/rake karma:run`
-* Continuous/watched run: `bin/rake karma:start`
+* Single run: `bin/docker r bin/rake karma:run`
+* Continuous/watched run: `bin/docker r bin/rake karma:start`
 
 **Note:** The karma tests require the assets to be precompiled, which adds a significant amount of time to the test run. If you are only making changes to the test/spec files, then it is recommended you run the tests in watch mode (`bin/rake karma:start`). The caveat is that any time you make a change to the app files, you will have to restart the process (or use the single run mode).
 
@@ -171,7 +169,7 @@ Runs tests for the Angular side. There are two modes for the karma tests:
 If you want to run all of the tests in one go (before you commit and push for example), just run the special rake task:
 
 ```
-bin/rake test:quepid
+bin/docker r bin/rake test:quepid
 ```
 
 ### Performance Testing
@@ -243,7 +241,7 @@ Whereas Thor is a more powerful tool for writing scripts that take in args much 
 To see what rake tasks are available run:
 
 ```
-bin/rake -T
+bin/docker r bin/rake -T
 ```
 
 **Note**: the use of `bin/rake` makes sure that the version of `rake` that is running is the one locked to the app's `Gemfile.lock` (to avoid conflicts with other versions that might be installed on your system). This is equivalent of `bundle exec rake`.
@@ -410,7 +408,7 @@ Check out the [App Structure](docs/app_structure.md) file for more info on how Q
 
 # Legal Pages
 
-If you would like to have legal pages linked in the footer of the app, similar to behavior on http://app.quepid.com, 
+If you would like to have legal pages linked in the footer of the app, similar to behavior on http://app.quepid.com,
 add the following `ENV` vars:
 
 ```
