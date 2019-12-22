@@ -7,6 +7,7 @@
 * Better look and UI experience for the dev panel.  https://github.com/o19s/quepid/pull/39 by @moshebla
 * Show or don't show the T&C's link based on the Quepid configuration.  https://github.com/o19s/quepid/pull/42 by @epugh fixes https://github.com/o19s/quepid/issues/44 by @flaxsearch.
 * Add Query button activates in response to query text entered.  https://github.com/o19s/quepid/pull/43 by @moshebla
+* Prevent duplicate queries when using bulk query importer.   https://github.com/o19s/quepid/pull/49 by @epugh fixes https://github.com/o19s/quepid/issues/48
 
 ## 6.0.2 - 11/26/2019
 * Deprecate www.quepid.com/support in favor of linking to wiki.  https://github.com/o19s/quepid/pull/18 by @epugh fixes https://github.com/o19s/quepid/issues/17
