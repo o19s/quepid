@@ -44,6 +44,7 @@ module Api
             render status: :bad_request
           end
         end
+        # rubocop:enable Metrics/MethodLength
       end
     end
   end
