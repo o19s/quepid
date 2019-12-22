@@ -7,11 +7,12 @@ module Api
         before_action :find_case
         before_action :check_case
 
+        # rubocop:disable Metrics/MethodLength
         def create
           # This logic is very similar to the ratings_importer.rb logic.
           queries_to_import = []
 
-          unique_queries  = params[:queries].uniq
+          unique_queries = params[:queries].uniq
 
           # b. Fetch all the existing queries
           queries_params = {
