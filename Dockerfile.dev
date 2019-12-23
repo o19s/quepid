@@ -35,9 +35,6 @@ RUN apt-get update                                      \
   && apt-get clean                                      \
   && rm -rf /tmp/* /var/lib/apt/lists/*
 
-# Install Heroku CLI
-RUN curl https://cli-assets.heroku.com/install-ubuntu.sh | sh
-
 # Clean environment
 RUN apt-get clean all
 

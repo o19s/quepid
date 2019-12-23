@@ -1,0 +1,51 @@
+# Docker Compose file for running Quepid in Production mode.
+# Allows you to update your Quepid installation over time.
+
+version: '3'
+services:
+  mysql:
+    container_name: quepid_prod_db
+    image: mysql:5.6.37
+    ports:
+      - 3306:3306
+    environment:
+      - MYSQL_ROOT_PASSWORD=password
+    volumes:
+      - ./volumes/mysql_data:/var/lib/mysql
+
+  redis:
+    container_name: quepid_prod_redis
+    image: redis
+    ports:
+      - 6379:6379
+
+  app:
+    container_name: quepid_prod_app
+    image: o19s/quepid:latest
+    environment:
+      - PORT=3000
+      - RACK_ENV=production
+      - RAILS_ENV=production
+      - DB_ADAPTER=mysql2
+      - DB_HOST=mysql
+      - DB_USERNAME=root
+      - DB_PASSWORD=password
+      - DB_NAME=quepid
+      - DATABASE_URL=mysql2://root:password@mysql:3306/quepid
+      - REDIS_URL=redis://redis:6379/1
+      - FORCE_SSL=false
+      - MAX_THREADS=2
+      - WEB_CONCURRENCY=2
+      - SECRET_KEY_BASE=some_value_needed_here
+      - TC_URL=
+      - PRIVACY_URL=
+      - COOKIES_URL=
+    command: "foreman s -f Procfile"
+    ports:
+      - 80:3000 # Map to port 80 for outside users.
+    links:
+      - mysql
+      - redis
+    depends_on:
+      - mysql
+      - redis
