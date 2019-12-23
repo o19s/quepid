@@ -21,7 +21,7 @@ services:
 
   app:
     container_name: quepid_prod_app
-    image: o19s/quepid:6.0.3-temp
+    image: o19s/quepid:latest
     environment:
       - PORT=3000
       - RACK_ENV=production
