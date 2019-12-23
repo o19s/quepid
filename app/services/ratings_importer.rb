@@ -45,7 +45,7 @@ class RatingsImporter
     #     a. Loop through each row
     #     b. Create or fetch the query based on the query text (cache the query)
     #     c. Create or update the rating
-    #   ii. The less naive way:
+    #   ii. The less naive way, which we are using:
     #     a. Map from the rows all the unique queries
     #     b. Fetch all the existing queries
     #     c. Determine which queries do not already exist
