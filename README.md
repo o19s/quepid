@@ -14,10 +14,12 @@ Quepid makes improving your app's search results a repeatable, reliable engineer
 3. **Iterations are slow** Moving forward seems impossible. To avoid sliding backwards, progress is slow. Many simply give up on search, depriving users of the means to find critical information.
 
 
-**To find out more, please check out the [Quepid website](http://www.quepid.com) and the [Quepid wiki](http://github.com/o19s/quepid/wiki).**
+**To learn more, please check out the [Quepid website](http://www.quepid.com) and the [Quepid wiki](http://github.com/o19s/quepid/wiki).**
+
+**If you are ready to dive right in, you can use the [Hosted Quepid](http://app.quepid.com) service right now or follow the [installation steps](https://github.com/o19s/quepid/wiki/Installation-Guide) to set up your own instance of Quepid.**
 
 # Table of Contents
-Below is information related to developing the Quepid open source project.
+Below is information related to developing the Quepid open source project, primarily for people interested in extending what Quepid can do!
 
 <!-- MarkdownTOC levels="1,2,3,4" autolink=true bracket=round -->
 
