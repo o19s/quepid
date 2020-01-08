@@ -25,7 +25,13 @@
       ng-class="query.isNotAllRated() ? 'unrated-results' : ''"
     >
       {{query.numFound}}
-      <small class="text-muted">Results</small>
+      <small class="text-muted">
+        <ng-pluralize count="query.numFound"
+            when="{'0': 'Results',
+                   'one': 'Result',
+                   'other': 'Results'}">
+        </ng-pluralize>
+      </small>
 
       <small
         class="unrated-results-text text-muted"
@@ -121,7 +127,12 @@
         </span>
 
         <span ng-if="selectedTry.searchEngine == 'solr'">
-          <a ng-show="query.state() !== 'error'" class="btn btn-primary" href="{{query.browseUrl()}}" target="_blank">  Browse {{query.numFound}} Results on Solr
+          <a ng-show="query.state() !== 'error'" class="btn btn-primary" href="{{query.browseUrl()}}" target="_blank">
+            <ng-pluralize count="query.numFound"
+                when="{'0': 'Browse {} Results on Solr',
+                       'one': 'Browse {} Result on Solr',
+                       'other': 'Browse {} Results on Solr'}">
+            </ng-pluralize>
           </a>
         </span>
 

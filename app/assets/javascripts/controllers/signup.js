@@ -4,7 +4,13 @@ angular.module('QuepidSecureApp')
   .controller('SignupCtrl', [
     '$scope', '$location',
     'signupSvc',
-    function ($scope, $location, signupSvc) {
+    'configurationSvc',
+    function ($scope, $location, signupSvc, configurationSvc) {
+      $scope.hasTermsAndConditions = configurationSvc.hasTermsAndConditions();
+      if (configurationSvc.hasTermsAndConditions()){
+        $scope.termsAndConditionsUrl = configurationSvc.getTermsAndConditionsUrl();
+      }
+
       $scope.submit = function (agree, name, username, pass, confirm) {
         $scope.warnAgree    = false;
         $scope.warnEmail    = false;
@@ -13,12 +19,13 @@ angular.module('QuepidSecureApp')
         $scope.warnErr      = false;
         $scope.warnName     = false;
 
+
         if ( !name ) {
           $scope.warnName = true;
           return;
         }
 
-        if( !agree ) {
+        if( $scope.hasTermsAndConditions && !agree ) {
           $scope.warnAgree = true;
           return;
         }

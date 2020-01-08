@@ -164,7 +164,7 @@
 
         <ul class="scorers-list" ng-model="currentTeam.scorers">
           <li ng-repeat="scorer in currentTeam.scorers | filter:q2" class="scorers-list-item">
-            <scorer-listing scorer="scorer"></scorer-listing>
+            <scorer-listing scorer="scorer" team="currentTeam"></scorer-listing>
           </li>
         </ul>
       </div>

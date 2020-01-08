@@ -1,3 +1,5 @@
+# For more information consult https://guides.rubyonrails.org/configuring.html#configuring-a-database
+
 default: &default
   adapter:    <%= ENV["DB_ADAPTER"] %>
   encoding:   utf8mb4
