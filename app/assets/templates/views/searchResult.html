@@ -43,11 +43,11 @@
             <span class="subLabel">{{fieldName}}:</span>
 
             <span
-              ng-if="isJSONObject(fieldValue)"
+              ng-if="isJSONObject(doc.doc[fieldName])"
             >
               <!-- output JSON blob -->
               <json-explorer
-                json-data="fieldValue"
+                json-data="doc.doc[fieldName]"
                 collapsed="false">
               </json-explorer>
             </span>
@@ -60,7 +60,7 @@
 
             <span
               ng-bind-html="fieldValue"
-              ng-if="!isJSONObject(fieldValue) && !isUrl(fieldValue)"
+              ng-if="!isJSONObject(doc.doc[fieldName]) && !isUrl(fieldValue)"
             >
               <!-- Normal display of a snippet -->
             </span>
