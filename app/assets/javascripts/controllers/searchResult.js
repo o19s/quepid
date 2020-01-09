@@ -86,14 +86,14 @@ angular.module('QuepidApp')
       $scope.isJSONObject = function(value) {
         //return typeof value === 'object' &&  value instanceof Array !== true;
         if (typeof value === 'object' && value instanceof Array === true) {
-          return typeof value[0] === 'object'
+          return typeof value[0] === 'object';
         }
         else if (typeof value === 'object' &&  value instanceof Array !== true) {
           return true;
         }
         return false;
       };
-      
+
       $scope.isUrl = function(value) {
         return (/^(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/)?[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?$/.test(value));
       };

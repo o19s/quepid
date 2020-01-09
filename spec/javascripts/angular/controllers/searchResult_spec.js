@@ -32,6 +32,7 @@ describe('Controller: SearchResultCtrl', function () {
     expect(isUrl("  https://www.example.com/blah")).toBe(false);
     expect(isUrl("  https://www.example.com/blah")).toBe(false);
     expect(isUrl("www.example.com/blah")).toBe(true);
+    expect(isUrl("https://image.tmdb.org/t/p/w185/6mtUJKyedvQwEKXfWzJt3vtWx1M.jpg"))
 
   });
 
