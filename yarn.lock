@@ -5781,10 +5781,10 @@ spdx-license-ids@^3.0.0:
   resolved "https://registry.yarnpkg.com/spdx-license-ids/-/spdx-license-ids-3.0.0.tgz#7a7cd28470cc6d3a1cfe6d66886f6bc430d3ac87"
   integrity sha512-2+EPwgbnmOIl8HjGBXXMd9NAu02vLjOO1nWw4kmeRDFyHn+M/ETfHxQUK0oXg8ctgVnl9t3rosNVsZ1jG61nDA==
 
-splainer-search@2.5.2:
-  version "2.5.2"
-  resolved "https://registry.yarnpkg.com/splainer-search/-/splainer-search-2.5.2.tgz#e0a6b5c95fe0b853b8393bf4a00748f747e4b7e4"
-  integrity sha512-H0JHZ9w0X740CjPFi2fRMXm0tjxe3fYRweuYsz23A72dFhALlMXnRQotihNekV31S1EHEQHgA3MZGx7rRLqrLw==
+splainer-search@2.5.5:
+  version "2.5.5"
+  resolved "https://registry.yarnpkg.com/splainer-search/-/splainer-search-2.5.5.tgz#cbc03fa7725c3b2f94167e9c9f6f57a41ee8e5aa"
+  integrity sha512-US8mq+K6JlXs3O9YsECDnXT3dAHyVrDZhj/t7q66WvZjeMIw0Wwbt8s3GvRC3GAOz0/DQbErSv9dHcSyAKLobw==
   dependencies:
     angular "~1.7.7"
     npm "^6.11.3"
