@@ -166,6 +166,14 @@ Runs tests for the Angular side. There are two modes for the karma tests:
 
 **Note:** The karma tests require the assets to be precompiled, which adds a significant amount of time to the test run. If you are only making changes to the test/spec files, then it is recommended you run the tests in watch mode (`bin/rake karma:start`). The caveat is that any time you make a change to the app files, you will have to restart the process (or use the single run mode).
 
+### Rubocop
+
+To check the Ruby syntax:
+
+```
+bin/docker r bundle exec rubocop
+```
+
 ### All Tests
 
 If you want to run all of the tests in one go (before you commit and push for example), just run the special rake task:

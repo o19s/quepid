@@ -180,8 +180,8 @@ class Case < ActiveRecord::Base
 
     the_try.curator_variables.each do |a_curator_variable|
       new_curator_variable = CuratorVariable.new(
-        name:       a_curator_variable.name,
-        value:      a_curator_variable.value
+        name:  a_curator_variable.name,
+        value: a_curator_variable.value
       )
       new_try.curator_variables << new_curator_variable
     end

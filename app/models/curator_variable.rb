@@ -14,7 +14,7 @@
 
 class CuratorVariable < ActiveRecord::Base
   belongs_to :try,
-             inverse_of:  :curator_variables
+             inverse_of: :curator_variables
 
   validates :name,
             presence: true
