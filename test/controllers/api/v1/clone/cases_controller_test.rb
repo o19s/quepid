@@ -8,7 +8,8 @@ module Api
       class CasesControllerTest < ActionController::TestCase
         let(:user)      { users(:random_1) }
         let(:the_case)  { cases(:random_case) }
-        let(:the_try)   { the_case.tries.best }
+        #let(:the_try)   { the_case.tries.best }
+        let(:the_try)   { tries(:try_with_curator_vars) }
 
         before do
           @controller = Api::V1::Clone::CasesController.new
@@ -47,6 +48,8 @@ module Api
                   tryNo:   the_try.tryNo,
                 }
 
+                puts "Here is the curator vars: #{the_try.curator_variables.size}"
+
                 post :create, data
 
                 assert_response :ok
@@ -66,6 +69,7 @@ module Api
                 assert_equal 'Try 0',               cloned_try.name
                 assert_equal the_try.searchEngine,  cloned_try.searchEngine
                 assert_equal the_try.escapeQuery,   cloned_try.escapeQuery
+                assert_equal the_try.curator_variables.size,   cloned_try.curator_variables.size
               end
             end
           end
