@@ -175,8 +175,15 @@ class Case < ActiveRecord::Base
       searchUrl:    the_try.searchUrl,
       tryNo:        0
     )
-
     tries << new_try
+    
+    the_try.curator_variables.each do |a_curator_variable|
+      new_curator_variable = CuratorVariable.new(
+        name:       a_curator_variable.name,
+        value:      a_curator_variable.value
+      )
+      new_try.curator_variables << new_curator_variable
+    end
   end
 
   # rubocop:disable Metrics/MethodLength
@@ -203,6 +210,7 @@ class Case < ActiveRecord::Base
 
     queries << new_query
   end
+
   # rubocop:enable Metrics/MethodLength
 end
 # rubocop:enable Metrics/ClassLength
