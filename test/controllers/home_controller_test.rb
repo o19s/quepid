@@ -77,7 +77,7 @@ class HomeControllerTest < ActionController::TestCase
       User.create(
         username:   'foo@example.com',
         password:   'password',
-        firstLogin: false
+        first_login: false
       )
     end
 

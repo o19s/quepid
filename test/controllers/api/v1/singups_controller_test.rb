@@ -67,10 +67,10 @@ module Api
 
           user = User.find_by(username: 'foo')
 
-          assert_not_nil user.firstLogin
+          assert_not_nil user.first_login
           assert_not_nil user.numLogins
 
-          assert_equal true,  user.firstLogin
+          assert_equal true,  user.first_login
           assert_equal 0,     user.numLogins
         end
 

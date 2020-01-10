@@ -66,7 +66,7 @@ describe('Service: userSvc', function () {
 
     it('updates user after first login', function() {
       var url           = '/api/users/' + mockUser.id;
-      var data          = { user: { firstLogin: false } };
+      var data          = { user: { first_login: false } };
 
       $httpBackend.expectPUT(url, data).respond(200, mockUser);
 

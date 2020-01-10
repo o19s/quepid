@@ -7,7 +7,7 @@
 #  password               :string(120)
 #  agreed_time            :datetime
 #  agreed                 :boolean
-#  firstLogin             :boolean
+#  first_login            :boolean
 #  numLogins              :integer
 #  scorer_id              :integer
 #  name                   :string(255)

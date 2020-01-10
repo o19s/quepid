@@ -9,7 +9,7 @@
 #  password               :string(120)
 #  agreed_time            :datetime
 #  agreed                 :boolean
-#  firstLogin             :boolean
+#  first_login            :boolean
 #  numLogins              :integer
 #  scorer_id              :integer
 #  name                   :string(255)
@@ -46,10 +46,10 @@ class UserTest < ActiveSupport::TestCase
     test 'are set when user is created' do
       user = User.create(username: 'defaults@email.com', password: 'password')
 
-      assert_not_nil user.firstLogin
+      assert_not_nil user.first_login
       assert_not_nil user.numLogins
 
-      assert_equal true,  user.firstLogin
+      assert_equal true,  user.first_login
       assert_equal 0,     user.numLogins
     end
 
@@ -57,14 +57,14 @@ class UserTest < ActiveSupport::TestCase
       user = User.create(
         username:   'defaults@email.com',
         password:   'password',
-        firstLogin: false,
+        first_login: false,
         numLogins:  1
       )
 
-      assert_not_nil user.firstLogin
+      assert_not_nil user.first_login
       assert_not_nil user.numLogins
 
-      assert_equal false, user.firstLogin
+      assert_equal false, user.first_login
       assert_equal 1,     user.numLogins
     end
   end
