@@ -370,6 +370,16 @@ What you need to do:
 
 **PS:** Why are we using both `puma` and `thin`? Because I simply could not figure out how to get `puma` to work properly with SSL and did not want to spend any more time on it!
 
+## Modifying the database
+
+Here is an example of generating a migration:
+```
+bin/docker r bundle exec bin/rails g migration FixCuratorVariablesTriesForeignKeyName
+```
+
+Followed by `bin/docker r bundle exec rake db:migrate`
+
+
 # QA
 
 There is a code deployment pipeline to the staging-quepid.herokuapp.com site.

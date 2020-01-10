@@ -7,7 +7,7 @@
 #  id             :integer          not null, primary key
 #  name           :string(500)
 #  value          :float(24)
-#  query_param_id :integer
+#  try_id         :integer
 #  created_at     :datetime         not null
 #  updated_at     :datetime         not null
 #
