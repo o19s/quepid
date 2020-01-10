@@ -14,7 +14,6 @@
 
 class CuratorVariable < ActiveRecord::Base
   belongs_to :try,
-             foreign_key: 'try_id',
              inverse_of:  :curator_variables
 
   validates :name,

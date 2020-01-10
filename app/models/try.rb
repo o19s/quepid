@@ -53,7 +53,6 @@ class Try < ActiveRecord::Base
   belongs_to  :case
 
   has_many    :curator_variables,
-              foreign_key: 'try_id',
               dependent:   :destroy,
               inverse_of:  :try
 
