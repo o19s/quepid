@@ -166,6 +166,14 @@ Runs tests for the Angular side. There are two modes for the karma tests:
 
 **Note:** The karma tests require the assets to be precompiled, which adds a significant amount of time to the test run. If you are only making changes to the test/spec files, then it is recommended you run the tests in watch mode (`bin/rake karma:start`). The caveat is that any time you make a change to the app files, you will have to restart the process (or use the single run mode).
 
+### Rubocop
+
+To check the Ruby syntax:
+
+```
+bin/docker r bundle exec rubocop
+```
+
 ### All Tests
 
 If you want to run all of the tests in one go (before you commit and push for example), just run the special rake task:
@@ -369,6 +377,16 @@ What you need to do:
 6. Go to `https://localhost:3000`
 
 **PS:** Why are we using both `puma` and `thin`? Because I simply could not figure out how to get `puma` to work properly with SSL and did not want to spend any more time on it!
+
+## Modifying the database
+
+Here is an example of generating a migration:
+```
+bin/docker r bundle exec bin/rails g migration FixCuratorVariablesTriesForeignKeyName
+```
+
+Followed by `bin/docker r bundle exec rake db:migrate`
+
 
 # QA
 

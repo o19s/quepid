@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20190505190705) do
+ActiveRecord::Schema.define(version: 20200110023326) do
 
   create_table "annotations", force: :cascade do |t|
     t.text     "message",    limit: 65535
@@ -66,14 +66,14 @@ ActiveRecord::Schema.define(version: 20190505190705) do
   add_index "cases", ["user_id"], name: "user_id", using: :btree
 
   create_table "curator_variables", force: :cascade do |t|
-    t.string   "name",           limit: 500
-    t.float    "value",          limit: 24
-    t.integer  "query_param_id", limit: 4
-    t.datetime "created_at",                 null: false
-    t.datetime "updated_at",                 null: false
+    t.string   "name",       limit: 500
+    t.float    "value",      limit: 24
+    t.integer  "try_id",     limit: 4
+    t.datetime "created_at",             null: false
+    t.datetime "updated_at",             null: false
   end
 
-  add_index "curator_variables", ["query_param_id"], name: "query_param_id", using: :btree
+  add_index "curator_variables", ["try_id"], name: "try_id", using: :btree
 
   create_table "default_scorers", force: :cascade do |t|
     t.text     "code",                   limit: 65535
@@ -254,7 +254,7 @@ ActiveRecord::Schema.define(version: 20190505190705) do
   add_foreign_key "case_scores", "cases", name: "case_scores_ibfk_1"
   add_foreign_key "case_scores", "users", name: "case_scores_ibfk_2"
   add_foreign_key "cases", "users", name: "cases_ibfk_1"
-  add_foreign_key "curator_variables", "tries", column: "query_param_id", name: "curator_variables_ibfk_1"
+  add_foreign_key "curator_variables", "tries", name: "curator_variables_ibfk_1"
   add_foreign_key "queries", "cases", name: "queries_ibfk_1"
   add_foreign_key "ratings", "queries", name: "ratings_ibfk_1"
   add_foreign_key "snapshot_docs", "snapshot_queries", name: "snapshot_docs_ibfk_1"
