@@ -53,14 +53,14 @@
             </span>
 
             <span
-              ng-if="isUrl(fieldValue)">
+              ng-if="isUrl(doc.doc[fieldName])">
               <!-- Format a HREF link.  Use the original value, not the html escaped snippet. -->
               <a ng-href="{{ doc.doc[fieldName] }}" target="_blank">{{ doc.doc[fieldName] }}</a>
             </span>
 
             <span
               ng-bind-html="fieldValue"
-              ng-if="!isJSONObject(doc.doc[fieldName]) && !isUrl(fieldValue)"
+              ng-if="!isJSONObject(doc.doc[fieldName]) && !isUrl(doc.doc[fieldName])"
             >
               <!-- Normal display of a snippet -->
             </span>
