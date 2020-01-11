@@ -10,7 +10,7 @@
 #  agreed_time            :datetime
 #  agreed                 :boolean
 #  first_login            :boolean
-#  num_logins              :integer
+#  num_logins             :integer
 #  scorer_id              :integer
 #  name                   :string(255)
 #  administrator          :boolean          default(FALSE)
@@ -55,8 +55,8 @@ class UserTest < ActiveSupport::TestCase
 
     test 'do not override the passed in arguments' do
       user = User.create(
-        username:   'defaults@email.com',
-        password:   'password',
+        username:    'defaults@email.com',
+        password:    'password',
         first_login: false,
         num_logins:  1
       )

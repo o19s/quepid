@@ -23,7 +23,7 @@ class SessionsControllerTest < ActionController::TestCase
 
   test 'increments the number of logins for the user' do
     user = users(:random)
-    user.num_logins =  original_number = 1
+    user.num_logins = original_number = 1
     user.save
 
     post :create, username: user.username, password: 'password', format: :json
