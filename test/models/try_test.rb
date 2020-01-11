@@ -11,7 +11,7 @@
 #  fieldSpec      :string(500)
 #  searchUrl      :string(500)
 #  name           :string(50)
-#  searchEngine   :string(50)       default("solr")
+#  search_engine  :string(50)       default("solr")
 #  escapeQuery    :boolean          default(TRUE)
 #  number_of_rows :integer          default(10)
 #  created_at     :datetime         not null

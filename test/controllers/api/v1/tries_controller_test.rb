@@ -162,10 +162,10 @@ module Api
 
         test 'sets attribute successfully and assigns try to case' do
           try_params = {
-            searchUrl:    'http://solr.quepid.com',
-            fieldSpec:    'catch_line',
-            queryParams:  'q=#$query##',
-            searchEngine: 'solr',
+            searchUrl:     'http://solr.quepid.com',
+            fieldSpec:     'catch_line',
+            queryParams:   'q=#$query##',
+            search_engine: 'solr',
           }
 
           case_last_try = the_case.lastTry
@@ -193,10 +193,10 @@ module Api
 
         test 'adds curator vars to the try' do
           try_params = {
-            searchUrl:    'http://solr.quepid.com',
-            fieldSpec:    'catch_line',
-            queryParams:  'q=#$query##',
-            searchEngine: 'solr',
+            searchUrl:     'http://solr.quepid.com',
+            fieldSpec:     'catch_line',
+            queryParams:   'q=#$query##',
+            search_engine: 'solr',
           }
 
           curator_vars_params = {
@@ -225,10 +225,10 @@ module Api
 
         test 'sets default name properly' do
           try_params = {
-            searchUrl:    'http://solr.quepid.com',
-            fieldSpec:    'catch_line',
-            queryParams:  'q=#$query##',
-            searchEngine: 'solr',
+            searchUrl:     'http://solr.quepid.com',
+            fieldSpec:     'catch_line',
+            queryParams:   'q=#$query##',
+            search_engine: 'solr',
           }
 
           post :create, try_params.merge(case_id: the_case.id)
@@ -295,13 +295,13 @@ module Api
           assert_match( /#{the_case.lastTry}/,   created_try.name )
           assert_match( /#{created_try.tryNo}/,  created_try.name )
 
-          assert_not_nil created_try.searchEngine
+          assert_not_nil created_try.search_engine
           assert_not_nil created_try.fieldSpec
           assert_not_nil created_try.searchUrl
           assert_not_nil created_try.queryParams
           assert_not_nil created_try.escapeQuery
 
-          assert_equal created_try.searchEngine,    Try::DEFAULTS[:search_engine]
+          assert_equal created_try.search_engine,   Try::DEFAULTS[:search_engine]
           assert_equal created_try.fieldSpec,       Try::DEFAULTS[:solr][:field_spec]
           assert_equal created_try.searchUrl,       Try::DEFAULTS[:solr][:search_url]
           assert_equal created_try.escapeQuery,     true
@@ -368,23 +368,23 @@ module Api
             assert_match( /#{the_case.lastTry}/,   created_try.name )
             assert_match( /#{created_try.tryNo}/,  created_try.name )
 
-            assert_not_nil created_try.searchEngine
+            assert_not_nil created_try.search_engine
             assert_not_nil created_try.fieldSpec
             assert_not_nil created_try.searchUrl
             assert_not_nil created_try.queryParams
             assert_not_nil created_try.escapeQuery
 
-            assert_equal created_try.searchEngine, Try::DEFAULTS[:search_engine]
-            assert_equal created_try.fieldSpec,    Try::DEFAULTS[:solr][:field_spec]
-            assert_equal created_try.searchUrl,    Try::DEFAULTS[:solr][:search_url]
-            assert_equal created_try.queryParams,  Try::DEFAULTS[:solr][:query_params]
-            assert_equal created_try.escapeQuery,  true
+            assert_equal created_try.search_engine, Try::DEFAULTS[:search_engine]
+            assert_equal created_try.fieldSpec,     Try::DEFAULTS[:solr][:field_spec]
+            assert_equal created_try.searchUrl,     Try::DEFAULTS[:solr][:search_url]
+            assert_equal created_try.queryParams,   Try::DEFAULTS[:solr][:query_params]
+            assert_equal created_try.escapeQuery,   true
           end
         end
 
         describe 'Elasticsearch' do
           test 'sets the proper default values' do
-            post :create, case_id: the_case.id, searchEngine: 'es'
+            post :create, case_id: the_case.id, search_engine: 'es'
 
             assert_response :ok # should be :created,
             # but there's a bug currently in the responders gem
@@ -397,23 +397,23 @@ module Api
             assert_match( /#{the_case.lastTry}/,   created_try.name )
             assert_match( /#{created_try.tryNo}/,  created_try.name )
 
-            assert_not_nil created_try.searchEngine
+            assert_not_nil created_try.search_engine
             assert_not_nil created_try.fieldSpec
             assert_not_nil created_try.searchUrl
             assert_not_nil created_try.queryParams
             assert_not_nil created_try.escapeQuery
 
-            assert_equal created_try.searchEngine, 'es'
-            assert_equal created_try.fieldSpec,    Try::DEFAULTS[:es][:field_spec]
-            assert_equal created_try.searchUrl,    Try::DEFAULTS[:es][:search_url]
-            assert_equal created_try.queryParams,  Try::DEFAULTS[:es][:query_params]
-            assert_equal created_try.escapeQuery,  true
+            assert_equal created_try.search_engine, 'es'
+            assert_equal created_try.fieldSpec,     Try::DEFAULTS[:es][:field_spec]
+            assert_equal created_try.searchUrl,     Try::DEFAULTS[:es][:search_url]
+            assert_equal created_try.queryParams,   Try::DEFAULTS[:es][:query_params]
+            assert_equal created_try.escapeQuery,   true
           end
 
           test 'parses args properly' do
             query_params = '{ "query": "#$query##" }'
 
-            post :create, case_id: the_case.id, searchEngine: 'es', queryParams: query_params
+            post :create, case_id: the_case.id, search_engine: 'es', queryParams: query_params
 
             assert_response :ok # should be :created,
             # but there's a bug currently in the responders gem
@@ -429,7 +429,7 @@ module Api
           test 'handles bad JSON in query params' do
             query_params = '{ "query": "#$query##"'
 
-            post :create, case_id: the_case.id, searchEngine: 'es', queryParams: query_params
+            post :create, case_id: the_case.id, search_engine: 'es', queryParams: query_params
 
             assert_response :ok # should be :created,
             # but there's a bug currently in the responders gem

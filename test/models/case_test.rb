@@ -117,7 +117,7 @@ class CaseTest < ActiveSupport::TestCase
 
       default_try = acase.tries.first
 
-      assert_equal default_try.searchEngine,  Try::DEFAULTS[:search_engine]
+      assert_equal default_try.search_engine, Try::DEFAULTS[:search_engine]
       assert_equal default_try.fieldSpec,     Try::DEFAULTS[:solr][:field_spec]
       assert_equal default_try.searchUrl,     Try::DEFAULTS[:solr][:search_url]
       assert_equal default_try.queryParams,   Try::DEFAULTS[:solr][:query_params]

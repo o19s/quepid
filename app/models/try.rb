@@ -11,7 +11,7 @@
 #  fieldSpec      :string(500)
 #  searchUrl      :string(500)
 #  name           :string(50)
-#  searchEngine   :string(50)       default("solr")
+#  search_engine  :string(50)       default("solr")
 #  escapeQuery    :boolean          default(TRUE)
 #  number_of_rows :integer          default(10)
 #  created_at     :datetime         not null
@@ -60,9 +60,9 @@ class Try < ActiveRecord::Base
   before_create :set_defaults
 
   def args
-    if 'solr' == searchEngine
+    if 'solr' == search_engine
       solr_args
-    elsif 'es' == searchEngine
+    elsif 'es' == search_engine
       es_args
     end
   end
@@ -96,9 +96,9 @@ class Try < ActiveRecord::Base
   def set_defaults
     self.name = "Try #{tryNo}" if name.blank?
 
-    self.searchEngine = DEFAULTS[:search_engine] if searchEngine.blank?
-    self.fieldSpec    = DEFAULTS[searchEngine.to_sym][:field_spec]    if fieldSpec.blank?
-    self.queryParams  = DEFAULTS[searchEngine.to_sym][:query_params]  if queryParams.blank?
-    self.searchUrl    = DEFAULTS[searchEngine.to_sym][:search_url]    if searchUrl.blank?
+    self.search_engine = DEFAULTS[:search_engine] if search_engine.blank?
+    self.fieldSpec    = DEFAULTS[search_engine.to_sym][:field_spec]    if fieldSpec.blank?
+    self.queryParams  = DEFAULTS[search_engine.to_sym][:query_params]  if queryParams.blank?
+    self.searchUrl    = DEFAULTS[search_engine.to_sym][:search_url]    if searchUrl.blank?
   end
 end

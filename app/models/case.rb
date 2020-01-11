@@ -168,13 +168,13 @@ class Case < ActiveRecord::Base
   # rubocop:disable Metrics/MethodLength
   def clone_try the_try
     new_try = Try.new(
-      escapeQuery:  the_try.escapeQuery,
-      fieldSpec:    the_try.fieldSpec,
-      name:         the_try.name,
-      queryParams:  the_try.queryParams,
-      searchEngine: the_try.searchEngine,
-      searchUrl:    the_try.searchUrl,
-      tryNo:        0
+      escapeQuery:   the_try.escapeQuery,
+      fieldSpec:     the_try.fieldSpec,
+      name:          the_try.name,
+      queryParams:   the_try.queryParams,
+      search_engine: the_try.search_engine,
+      searchUrl:     the_try.searchUrl,
+      tryNo:         0
     )
     tries << new_try
 

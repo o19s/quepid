@@ -66,7 +66,7 @@ module Api
           :name,
           :number_of_rows,
           :queryParams,
-          :searchEngine,
+          :search_engine,
           :searchUrl
         )
       end
