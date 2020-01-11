@@ -68,10 +68,10 @@ module Api
           user = User.find_by(username: 'foo')
 
           assert_not_nil user.first_login
-          assert_not_nil user.numLogins
+          assert_not_nil user.num_logins
 
           assert_equal true,  user.first_login
-          assert_equal 0,     user.numLogins
+          assert_equal 0,     user.num_logins
         end
 
         test 'does not care if the name is present' do

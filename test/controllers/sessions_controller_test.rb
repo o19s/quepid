@@ -23,14 +23,14 @@ class SessionsControllerTest < ActionController::TestCase
 
   test 'increments the number of logins for the user' do
     user = users(:random)
-    user.numLogins =  original_number = 1
+    user.num_logins =  original_number = 1
     user.save
 
     post :create, username: user.username, password: 'password', format: :json
     assert_response :success
 
     user.reload
-    assert_equal user.numLogins, original_number + 1
+    assert_equal user.num_logins, original_number + 1
   end
 
   describe 'locked user' do

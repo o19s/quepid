@@ -10,7 +10,7 @@
 #  agreed_time            :datetime
 #  agreed                 :boolean
 #  first_login            :boolean
-#  numLogins              :integer
+#  num_logins              :integer
 #  scorer_id              :integer
 #  name                   :string(255)
 #  administrator          :boolean          default(FALSE)
@@ -47,10 +47,10 @@ class UserTest < ActiveSupport::TestCase
       user = User.create(username: 'defaults@email.com', password: 'password')
 
       assert_not_nil user.first_login
-      assert_not_nil user.numLogins
+      assert_not_nil user.num_logins
 
       assert_equal true,  user.first_login
-      assert_equal 0,     user.numLogins
+      assert_equal 0,     user.num_logins
     end
 
     test 'do not override the passed in arguments' do
@@ -58,14 +58,14 @@ class UserTest < ActiveSupport::TestCase
         username:   'defaults@email.com',
         password:   'password',
         first_login: false,
-        numLogins:  1
+        num_logins:  1
       )
 
       assert_not_nil user.first_login
-      assert_not_nil user.numLogins
+      assert_not_nil user.num_logins
 
       assert_equal false, user.first_login
-      assert_equal 1,     user.numLogins
+      assert_equal 1,     user.num_logins
     end
   end
 
@@ -82,7 +82,7 @@ class UserTest < ActiveSupport::TestCase
 
     test 'does not encrypt the password when updating a user without the password' do
       current_password = user.password
-      user.update numLogins: 3
+      user.update num_logins: 3
 
       assert_equal current_password, user.password
     end
@@ -90,7 +90,7 @@ class UserTest < ActiveSupport::TestCase
     test "encrypts password when updating a user's password" do
       current_password  = user.password
       password          = 'newpass'
-      user.update numLogins: 3, password: password
+      user.update num_logins: 3, password: password
 
       assert_not_equal  current_password, user.password
 

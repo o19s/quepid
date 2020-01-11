@@ -8,7 +8,7 @@
 #  agreed_time            :datetime
 #  agreed                 :boolean
 #  first_login            :boolean
-#  numLogins              :integer
+#  num_logins              :integer
 #  scorer_id              :integer
 #  name                   :string(255)
 #  administrator          :boolean          default(FALSE)
