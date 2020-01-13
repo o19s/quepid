@@ -7,15 +7,14 @@
 #  id             :integer          not null, primary key
 #  name           :string(500)
 #  value          :float(24)
-#  query_param_id :integer
+#  try_id         :integer
 #  created_at     :datetime         not null
 #  updated_at     :datetime         not null
 #
 
 class CuratorVariable < ActiveRecord::Base
   belongs_to :try,
-             foreign_key: 'query_param_id',
-             inverse_of:  :curator_variables
+             inverse_of: :curator_variables
 
   validates :name,
             presence: true

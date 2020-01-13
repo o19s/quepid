@@ -53,9 +53,8 @@ class Try < ActiveRecord::Base
   belongs_to  :case
 
   has_many    :curator_variables,
-              foreign_key: 'query_param_id',
-              dependent:   :destroy,
-              inverse_of:  :try
+              dependent:  :destroy,
+              inverse_of: :try
 
   # Callbacks
   before_create :set_defaults

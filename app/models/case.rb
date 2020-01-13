@@ -165,6 +165,7 @@ class Case < ActiveRecord::Base
     update lastTry: the_try.tryNo
   end
 
+  # rubocop:disable Metrics/MethodLength
   def clone_try the_try
     new_try = Try.new(
       escapeQuery:  the_try.escapeQuery,
@@ -175,9 +176,17 @@ class Case < ActiveRecord::Base
       searchUrl:    the_try.searchUrl,
       tryNo:        0
     )
-
     tries << new_try
+
+    the_try.curator_variables.each do |a_curator_variable|
+      new_curator_variable = CuratorVariable.new(
+        name:  a_curator_variable.name,
+        value: a_curator_variable.value
+      )
+      new_try.curator_variables << new_curator_variable
+    end
   end
+  # rubocop:enable Metrics/MethodLength
 
   # rubocop:disable Metrics/MethodLength
   def clone_query query, clone_ratings
@@ -203,6 +212,7 @@ class Case < ActiveRecord::Base
 
     queries << new_query
   end
+
   # rubocop:enable Metrics/MethodLength
 end
 # rubocop:enable Metrics/ClassLength
