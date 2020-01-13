@@ -45,8 +45,8 @@ class SessionsController < ApplicationController
 
     session[:current_user_id] = user.id
 
-    user.numLogins ||= 0
-    user.numLogins  += 1
+    user.num_logins ||= 0
+    user.num_logins  += 1
     user.save
 
     user

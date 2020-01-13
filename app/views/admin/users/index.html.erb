@@ -23,7 +23,7 @@
             (<%= time_ago_in_words user.agreed_time %> ago)
           <% end %>
         </td>
-        <td><%= user.numLogins %></td>
+        <td><%= user.num_logins %></td>
         <td><%= user.administrator? %></td>
         <td><%= link_to 'Show', admin_user_path(user) %></td>
         <td><%= link_to 'Edit', edit_admin_user_path(user) %></td>

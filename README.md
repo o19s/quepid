@@ -130,7 +130,8 @@ bin/docker r tail -f -n 200 log/development.log
 If you aren't using Docker, then create test database...
 
 ```
-rake db:create RAILS_ENV=test
+bin/docker r rake db:drop RAILS_ENV=test
+bin/docker r rake db:create RAILS_ENV=test
 ```
 
 There are three types of tests that you can run:
