@@ -7,6 +7,6 @@ json.fieldSpec      try.fieldSpec
 json.name           try.name
 json.numberOfRows   try.number_of_rows || 10
 json.queryParams    try.queryParams
-json.searchEngine  try.search_engine
+json.searchEngine   try.search_engine
 json.searchUrl      try.searchUrl
 json.tryNo          try.tryNo
