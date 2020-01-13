@@ -21,7 +21,7 @@ module Api
           assert_equal try.tryNo,       response['tryNo']
           assert_equal try.name,        response['name']
           assert_equal try.solr_args,   response['args']
-          assert_equal try.escapeQuery, response['escapeQuery']
+          assert_equal try.escape_query,response['escape_query']
 
           assert_curator_vars_equal try.curator_vars_map, response['curatorVars']
         end
@@ -30,7 +30,7 @@ module Api
           assert_equal try.case_id,     a_try.case_id
           assert_equal try.queryParams, a_try.queryParams
           assert_equal try.searchUrl,   a_try.searchUrl
-          assert_equal try.escapeQuery, a_try.escapeQuery
+          assert_equal try.escape_query,a_try.escape_query
         end
 
         def assert_curator_vars_equal vars, response_vars

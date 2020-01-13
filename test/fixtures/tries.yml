@@ -10,7 +10,7 @@
 #  searchUrl      :string(500)
 #  name           :string(50)
 #  search_engine  :string(50)       default("solr")
-#  escapeQuery    :boolean          default(TRUE)
+#  escape_query   :boolean          default(TRUE)
 #  number_of_rows :integer          default(10)
 #  created_at     :datetime         not null
 #  updated_at     :datetime         not null

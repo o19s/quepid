@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20200111143938) do
+ActiveRecord::Schema.define(version: 20200113123124) do
 
   create_table "annotations", force: :cascade do |t|
     t.text     "message",    limit: 65535
@@ -214,7 +214,7 @@ ActiveRecord::Schema.define(version: 20200111143938) do
     t.string   "searchUrl",      limit: 500
     t.string   "name",           limit: 50
     t.string   "search_engine",  limit: 50,    default: "solr"
-    t.boolean  "escapeQuery",                  default: true
+    t.boolean  "escape_query",                 default: true
     t.integer  "number_of_rows", limit: 4,     default: 10
     t.datetime "created_at",                                    null: false
     t.datetime "updated_at",                                    null: false

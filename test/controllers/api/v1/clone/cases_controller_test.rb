@@ -65,7 +65,7 @@ module Api
                 assert_equal the_try.searchUrl,     cloned_try.searchUrl
                 assert_equal 'Try 0',               cloned_try.name
                 assert_equal the_try.search_engine, cloned_try.search_engine
-                assert_equal the_try.escapeQuery,   cloned_try.escapeQuery
+                assert_equal the_try.escape_query,  cloned_try.escape_query
                 assert_equal the_try.curator_variables.size, cloned_try.curator_variables.size
               end
             end

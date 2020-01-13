@@ -20,17 +20,17 @@ module Api
         assert_equal try.tryNo,       response['tryNo']
         assert_equal try.name,        response['name']
         assert_equal try.solr_args,   response['args']
-        assert_equal try.escapeQuery, response['escapeQuery']
+        assert_equal try.escape_query,response['escape_query']
 
         assert_curator_vars_equal try.curator_vars_map, response['curatorVars']
       end
 
       def assert_try_matches_params params, try
-        assert_equal try.queryParams, params[:queryParams] if params[:queryParams]
-        assert_equal try.fieldSpec,   params[:fieldSpec]   if params[:fieldSpec]
-        assert_equal try.searchUrl,   params[:searchUrl]   if params[:searchUrl]
-        assert_equal try.name,        params[:name]        if params[:name]
-        assert_equal try.escapeQuery, params[:escapeQuery] if params[:escapeQuery]
+        assert_equal try.queryParams,  params[:queryParams]  if params[:queryParams]
+        assert_equal try.fieldSpec,    params[:fieldSpec]    if params[:fieldSpec]
+        assert_equal try.searchUrl,    params[:searchUrl]    if params[:searchUrl]
+        assert_equal try.name,         params[:name]         if params[:name]
+        assert_equal try.escape_query, params[:escape_query] if params[:escape_query]
       end
 
       def assert_curator_vars_equal vars, response_vars
@@ -249,9 +249,9 @@ module Api
           assert_match( /#{try_response['tryNo']}/,  try_response['name'] )
         end
 
-        test 'sets escapeQuery param' do
+        test 'sets escape_query param' do
           try_params = {
-            escapeQuery: false,
+            escape_query: false,
           }
 
           post :create, try_params.merge(case_id: the_case.id)
@@ -261,8 +261,8 @@ module Api
           the_case.reload
           created_try = the_case.tries.where(tryNo: json_response['tryNo']).first
 
-          assert_equal false, json_response['escapeQuery']
-          assert_equal false, created_try.escapeQuery
+          assert_equal false, json_response['escape_query']
+          assert_equal false, created_try.escape_query
         end
 
         test 'sets number of rows' do
@@ -299,12 +299,12 @@ module Api
           assert_not_nil created_try.fieldSpec
           assert_not_nil created_try.searchUrl
           assert_not_nil created_try.queryParams
-          assert_not_nil created_try.escapeQuery
+          assert_not_nil created_try.escape_query
 
           assert_equal created_try.search_engine,   Try::DEFAULTS[:search_engine]
           assert_equal created_try.fieldSpec,       Try::DEFAULTS[:solr][:field_spec]
           assert_equal created_try.searchUrl,       Try::DEFAULTS[:solr][:search_url]
-          assert_equal created_try.escapeQuery,     true
+          assert_equal created_try.escape_query,    true
           assert_equal created_try.number_of_rows,  10
         end
 
@@ -372,13 +372,13 @@ module Api
             assert_not_nil created_try.fieldSpec
             assert_not_nil created_try.searchUrl
             assert_not_nil created_try.queryParams
-            assert_not_nil created_try.escapeQuery
+            assert_not_nil created_try.escape_query
 
             assert_equal created_try.search_engine, Try::DEFAULTS[:search_engine]
             assert_equal created_try.fieldSpec,     Try::DEFAULTS[:solr][:field_spec]
             assert_equal created_try.searchUrl,     Try::DEFAULTS[:solr][:search_url]
             assert_equal created_try.queryParams,   Try::DEFAULTS[:solr][:query_params]
-            assert_equal created_try.escapeQuery,   true
+            assert_equal created_try.escape_query,  true
           end
         end
 
@@ -401,13 +401,13 @@ module Api
             assert_not_nil created_try.fieldSpec
             assert_not_nil created_try.searchUrl
             assert_not_nil created_try.queryParams
-            assert_not_nil created_try.escapeQuery
+            assert_not_nil created_try.escape_query
 
             assert_equal created_try.search_engine, 'es'
             assert_equal created_try.fieldSpec,     Try::DEFAULTS[:es][:field_spec]
             assert_equal created_try.searchUrl,     Try::DEFAULTS[:es][:search_url]
             assert_equal created_try.queryParams,   Try::DEFAULTS[:es][:query_params]
-            assert_equal created_try.escapeQuery,   true
+            assert_equal created_try.escape_query,  true
           end
 
           test 'parses args properly' do
