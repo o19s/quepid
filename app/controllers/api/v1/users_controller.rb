@@ -42,7 +42,7 @@ module Api
       def user_params
         params.require(:user).permit(
           :scorer_id,
-          :firstLogin,
+          :first_login,
           :company,
           :default_scorer_id
         )

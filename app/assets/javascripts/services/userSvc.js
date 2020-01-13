@@ -79,7 +79,7 @@ angular.module('UtilitiesModule')
           var url   = '/api/users/' + self.id;
           var data  = {
             user: {
-              firstLogin: false
+              first_login: false
             }
           };
 

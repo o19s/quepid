@@ -14,7 +14,7 @@ class CurrentUserDecorator
   def initialize user = nil
     if user
       @company                  = user.company
-      @first_time               = user.firstLogin
+      @first_time               = user.first_login
       @id                       = user.id
       @num_queries              = user.num_queries || 0
       @permissions              = PermissionsEvaluator.new(user).run
