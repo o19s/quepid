@@ -111,12 +111,12 @@ angular.module('QuepidApp')
           }
           console.log("settingsSvc: editableSettings setting up tryToUse");
           console.log(tryToUse);
-          settings.escapeQuery   = (tryToUse.escape_query === undefined) ? tryToUse.escapeQuery : tryToUse.escape_query;
+          settings.escapeQuery   = tryToUse.escapeQuery;
           settings.fieldSpec     = tryToUse.fieldSpec;
           settings.numberOfRows  = tryToUse.numberOfRows;
           settings.queryParams   = tryToUse.queryParams;
-          settings.searchEngine  = (tryToUse.search_engine === undefined) ? tryToUse.searchEngine : tryToUse.search_engine;
-          settings.searchUrl     = (tryToUse.search_url === undefined) ? tryToUse.searchUrl : tryToUse.search_url;
+          settings.searchEngine  = tryToUse.searchEngine;
+          settings.searchUrl     = tryToUse.searchUrl;
 
           return settings;
   			} else {
