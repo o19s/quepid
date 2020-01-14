@@ -17,7 +17,7 @@ module Api
         def assert_try_matches_response response, try
           assert_equal try.queryParams, response['queryParams']
           assert_equal try.fieldSpec,   response['fieldSpec']
-          assert_equal try.searchUrl,   response['searchUrl']
+          assert_equal try.search_url,  response['search_url']
           assert_equal try.tryNo,       response['tryNo']
           assert_equal try.name,        response['name']
           assert_equal try.solr_args,   response['args']
@@ -29,7 +29,7 @@ module Api
         def assert_tries_match a_try, try
           assert_equal try.case_id,     a_try.case_id
           assert_equal try.queryParams, a_try.queryParams
-          assert_equal try.searchUrl,   a_try.searchUrl
+          assert_equal try.search_url,  a_try.search_url
           assert_equal try.escape_query,a_try.escape_query
         end
 

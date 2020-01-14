@@ -6,7 +6,7 @@
 #
 #  id              :integer          not null, primary key
 #  caseName        :string(191)
-#  searchUrl       :string(500)
+#  search_url      :string(500)
 #  fieldSpec       :string(500)
 #  lastTry         :integer
 #  user_id         :integer
@@ -173,7 +173,7 @@ class Case < ActiveRecord::Base
       name:          the_try.name,
       queryParams:   the_try.queryParams,
       search_engine: the_try.search_engine,
-      searchUrl:     the_try.searchUrl,
+      search_url:    the_try.search_url,
       tryNo:         0
     )
     tries << new_try

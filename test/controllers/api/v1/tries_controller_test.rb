@@ -16,7 +16,7 @@ module Api
       def assert_try_matches_response response, try
         assert_equal try.queryParams, response['queryParams']
         assert_equal try.fieldSpec,   response['fieldSpec']
-        assert_equal try.searchUrl,   response['searchUrl']
+        assert_equal try.search_url,  response['search_url']
         assert_equal try.tryNo,       response['tryNo']
         assert_equal try.name,        response['name']
         assert_equal try.solr_args,   response['args']
@@ -28,7 +28,7 @@ module Api
       def assert_try_matches_params params, try
         assert_equal try.queryParams,  params[:queryParams]  if params[:queryParams]
         assert_equal try.fieldSpec,    params[:fieldSpec]    if params[:fieldSpec]
-        assert_equal try.searchUrl,    params[:searchUrl]    if params[:searchUrl]
+        assert_equal try.search_url,   params[:search_url]   if params[:search_url]
         assert_equal try.name,         params[:name]         if params[:name]
         assert_equal try.escape_query, params[:escape_query] if params[:escape_query]
       end
@@ -162,7 +162,7 @@ module Api
 
         test 'sets attribute successfully and assigns try to case' do
           try_params = {
-            searchUrl:     'http://solr.quepid.com',
+            search_url:    'http://solr.quepid.com',
             fieldSpec:     'catch_line',
             queryParams:   'q=#$query##',
             search_engine: 'solr',
@@ -193,7 +193,7 @@ module Api
 
         test 'adds curator vars to the try' do
           try_params = {
-            searchUrl:     'http://solr.quepid.com',
+            search_url:    'http://solr.quepid.com',
             fieldSpec:     'catch_line',
             queryParams:   'q=#$query##',
             search_engine: 'solr',
@@ -225,7 +225,7 @@ module Api
 
         test 'sets default name properly' do
           try_params = {
-            searchUrl:     'http://solr.quepid.com',
+            search_url:    'http://solr.quepid.com',
             fieldSpec:     'catch_line',
             queryParams:   'q=#$query##',
             search_engine: 'solr',
@@ -297,13 +297,13 @@ module Api
 
           assert_not_nil created_try.search_engine
           assert_not_nil created_try.fieldSpec
-          assert_not_nil created_try.searchUrl
+          assert_not_nil created_try.search_url
           assert_not_nil created_try.queryParams
           assert_not_nil created_try.escape_query
 
           assert_equal created_try.search_engine,   Try::DEFAULTS[:search_engine]
           assert_equal created_try.fieldSpec,       Try::DEFAULTS[:solr][:field_spec]
-          assert_equal created_try.searchUrl,       Try::DEFAULTS[:solr][:search_url]
+          assert_equal created_try.search_url,      Try::DEFAULTS[:solr][:search_url]
           assert_equal created_try.escape_query,    true
           assert_equal created_try.number_of_rows,  10
         end
@@ -370,13 +370,13 @@ module Api
 
             assert_not_nil created_try.search_engine
             assert_not_nil created_try.fieldSpec
-            assert_not_nil created_try.searchUrl
+            assert_not_nil created_try.search_url
             assert_not_nil created_try.queryParams
             assert_not_nil created_try.escape_query
 
             assert_equal created_try.search_engine, Try::DEFAULTS[:search_engine]
             assert_equal created_try.fieldSpec,     Try::DEFAULTS[:solr][:field_spec]
-            assert_equal created_try.searchUrl,     Try::DEFAULTS[:solr][:search_url]
+            assert_equal created_try.search_url,    Try::DEFAULTS[:solr][:search_url]
             assert_equal created_try.queryParams,   Try::DEFAULTS[:solr][:query_params]
             assert_equal created_try.escape_query,  true
           end
@@ -399,13 +399,13 @@ module Api
 
             assert_not_nil created_try.search_engine
             assert_not_nil created_try.fieldSpec
-            assert_not_nil created_try.searchUrl
+            assert_not_nil created_try.search_url
             assert_not_nil created_try.queryParams
             assert_not_nil created_try.escape_query
 
             assert_equal created_try.search_engine, 'es'
             assert_equal created_try.fieldSpec,     Try::DEFAULTS[:es][:field_spec]
-            assert_equal created_try.searchUrl,     Try::DEFAULTS[:es][:search_url]
+            assert_equal created_try.search_url,    Try::DEFAULTS[:es][:search_url]
             assert_equal created_try.queryParams,   Try::DEFAULTS[:es][:query_params]
             assert_equal created_try.escape_query,  true
           end

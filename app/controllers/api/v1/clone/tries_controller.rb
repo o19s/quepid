@@ -16,7 +16,7 @@ module Api
             number_of_rows: @try.number_of_rows,
             queryParams:    @try.queryParams,
             search_engine:  @try.search_engine,
-            searchUrl:      @try.searchUrl,
+            search_url:     @try.search_url,
           }
 
           @new_try = @case.tries.build new_try_params
@@ -51,7 +51,7 @@ module Api
         def try_params
           params.permit(
             :name,
-            :searchUrl,
+            :search_url,
             :fieldSpec,
             :queryParams,
             :search_engine,

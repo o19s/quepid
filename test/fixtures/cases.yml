@@ -4,7 +4,7 @@
 #
 #  id              :integer          not null, primary key
 #  caseName        :string(191)
-#  searchUrl       :string(500)
+#  search_url      :string(500)
 #  fieldSpec       :string(500)
 #  lastTry         :integer
 #  user_id         :integer

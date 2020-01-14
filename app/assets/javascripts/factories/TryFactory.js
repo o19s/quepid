@@ -16,21 +16,23 @@
   ) {
     var Try = function(data) {
       var self  = this;
-
-      if ( angular.isUndefined(data.searchEngine) ) {
-        data.searchEngine = 'solr';
+      console.log("TryFactory: Creating a try from the data:");
+      console.log(data);
+      if ( angular.isUndefined(data.search_engine) ) {
+        console.log("We have an undefined data.search_engine so setting to Solr");
+        data.search_engine = 'solr';
       }
 
       // Attributes
       self.args          = data.args;
       self.deleted       = false;
-      self.escapeQuery   = data.escapeQuery;
+      self.escapeQuery   = data.escape_query;
       self.fieldSpec     = data.fieldSpec;
       self.name          = data.name;
       self.numberOfRows  = data.numberOfRows;
       self.queryParams   = data.queryParams;
-      self.searchEngine  = data.searchEngine;
-      self.searchUrl     = data.searchUrl;
+      self.searchEngine  = data.search_engine;
+      self.searchUrl     = data.search_url;
       self.tryNo         = data.tryNo;
 
       // transform curator vars to be more angular friendly
