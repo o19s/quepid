@@ -7,7 +7,7 @@
 #  id              :integer          not null, primary key
 #  caseName        :string(191)
 #  search_url      :string(500)
-#  fieldSpec       :string(500)
+#  field_spec      :string(500)
 #  lastTry         :integer
 #  user_id         :integer
 #  displayPosition :integer
@@ -118,7 +118,7 @@ class CaseTest < ActiveSupport::TestCase
       default_try = acase.tries.first
 
       assert_equal default_try.search_engine, Try::DEFAULTS[:search_engine]
-      assert_equal default_try.fieldSpec,     Try::DEFAULTS[:solr][:field_spec]
+      assert_equal default_try.field_spec,    Try::DEFAULTS[:solr][:field_spec]
       assert_equal default_try.search_url,    Try::DEFAULTS[:solr][:search_url]
       assert_equal default_try.queryParams,   Try::DEFAULTS[:solr][:query_params]
       assert_equal default_try.escape_query,  true
@@ -146,7 +146,7 @@ class CaseTest < ActiveSupport::TestCase
             cloned_try = cloned_case.tries.best
 
             assert_equal the_try.queryParams,   cloned_try.queryParams
-            assert_equal 'title',               cloned_try.fieldSpec
+            assert_equal 'title',               cloned_try.field_spec
             assert_equal the_try.search_url,    cloned_try.search_url
             assert_equal 'Try 0',               cloned_try.name
             assert_equal the_try.search_engine, cloned_try.search_engine

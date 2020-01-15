@@ -8,7 +8,7 @@
 #  tryNo          :integer
 #  queryParams    :text(65535)
 #  case_id        :integer
-#  fieldSpec      :string(500)
+#  field_spec     :string(500)
 #  search_url     :string(500)
 #  name           :string(50)
 #  search_engine  :string(50)       default("solr")

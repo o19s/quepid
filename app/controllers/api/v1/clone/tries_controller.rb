@@ -12,7 +12,7 @@ module Api
         def create
           new_try_params = {
             escape_query:   @try.escape_query,
-            fieldSpec:      @try.fieldSpec,
+            field_spec:     @try.field_spec,
             number_of_rows: @try.number_of_rows,
             queryParams:    @try.queryParams,
             search_engine:  @try.search_engine,
@@ -52,7 +52,7 @@ module Api
           params.permit(
             :name,
             :search_url,
-            :fieldSpec,
+            :field_spec,
             :queryParams,
             :search_engine,
             :escape_query,

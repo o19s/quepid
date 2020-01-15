@@ -3,7 +3,7 @@
 json.args           try.args
 json.curatorVars    try.curator_vars_map
 json.escape_query   try.escape_query
-json.fieldSpec      try.fieldSpec
+json.field_spec     try.field_spec
 json.name           try.name
 json.numberOfRows   try.number_of_rows || 10
 json.queryParams    try.queryParams

@@ -8,7 +8,7 @@
 #  tryNo          :integer
 #  queryParams    :text(65535)
 #  case_id        :integer
-#  fieldSpec      :string(500)
+#  field_spec     :string(500)
 #  search_url     :string(500)
 #  name           :string(50)
 #  search_engine  :string(50)       default("solr")
@@ -97,7 +97,7 @@ class Try < ActiveRecord::Base
     self.name = "Try #{tryNo}" if name.blank?
 
     self.search_engine = DEFAULTS[:search_engine] if search_engine.blank?
-    self.fieldSpec     = DEFAULTS[search_engine.to_sym][:field_spec]    if fieldSpec.blank?
+    self.field_spec    = DEFAULTS[search_engine.to_sym][:field_spec]    if field_spec.blank?
     self.queryParams   = DEFAULTS[search_engine.to_sym][:query_params]  if queryParams.blank?
     self.search_url    = DEFAULTS[search_engine.to_sym][:search_url]    if search_url.blank?
   end

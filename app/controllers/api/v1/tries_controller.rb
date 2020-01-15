@@ -62,7 +62,7 @@ module Api
       def try_params
         params.permit(
           :escape_query,
-          :fieldSpec,
+          :field_spec,
           :name,
           :number_of_rows,
           :queryParams,

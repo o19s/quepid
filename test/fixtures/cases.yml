@@ -5,7 +5,7 @@
 #  id              :integer          not null, primary key
 #  caseName        :string(191)
 #  search_url      :string(500)
-#  fieldSpec       :string(500)
+#  field_spec      :string(500)
 #  lastTry         :integer
 #  user_id         :integer
 #  displayPosition :integer

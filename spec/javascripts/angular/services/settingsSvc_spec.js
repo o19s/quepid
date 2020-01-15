@@ -20,7 +20,7 @@ describe('Service: settingsSvc', function () {
        'args': {'q': ['#$query##'],
                     'fq': ['title:foo', 'sub:bar']},
        'search_url': 'http://example.com:1234/solr/collection1',
-       'fieldSpec': 'thumb:field1 title sub',
+       'field_spec': 'thumb:field1 title sub',
        'escape_query': true,
        'name': 'try 0',
       },
@@ -31,7 +31,7 @@ describe('Service: settingsSvc', function () {
        'args': {'q': ['#$query##'],
                     'fq': ['title:foo', 'sub:2']},
        'search_url': 'http://example.com:1234/solr/collection1',
-       'fieldSpec': 'thumb:field1 title sub',
+       'field_spec': 'thumb:field1 title sub',
        'escape_query': true,
        'name': 'try 1',
       }
@@ -48,7 +48,7 @@ describe('Service: settingsSvc', function () {
        'args': {'q': ['#$query##'],
                     'fq': ['title:foo', 'sub:bar']},
        'search_url': 'http://doug.com:1234/solr/collection1',
-       'fieldSpec': 'thumb:field1 title sub2',
+       'field_spec': 'thumb:field1 title sub2',
        'escape_query': true,
        'name': 'try 0',
       },
@@ -59,7 +59,7 @@ describe('Service: settingsSvc', function () {
        'args': {'q': ['#$query##'],
                     'bq': ['title:foo^5', 'sub:2']},
        'search_url': 'http://doug.com:1234/solr/collection1',
-       'fieldSpec': 'thumb:field1 title sub2',
+       'field_spec': 'thumb:field1 title sub2',
        'escape_query': true,
        'name': 'try 1',
       },
@@ -71,7 +71,7 @@ describe('Service: settingsSvc', function () {
                     'bq': ['title:foo^5', 'sub:2'],
                     'qf': ['title']},
        'search_url': 'http://doug.com:1234/solr/collection1',
-       'fieldSpec': 'thumb:field1 title sub2',
+       'field_spec': 'thumb:field1 title sub2',
        'escape_query': true,
        'name': 'try 2',
       }
@@ -110,7 +110,7 @@ describe('Service: settingsSvc', function () {
     settingsSvc.bootstrap(0, 0)
     .then(function() {
       var settingsCpy = settingsSvc.editableSettings();
-      expect(settingsCpy.fieldSpec).toBe(mockSettings0.tries[0].fieldSpec);
+      expect(settingsCpy.fieldSpec).toBe(mockSettings0.tries[0].field_spec);
       expect(settingsCpy.searchUrl).toBe(mockSettings0.tries[0].search_url);
       expect(settingsCpy.tries[0].queryParams)
             .toEqual(mockSettings0.tries[0].queryParams);
@@ -135,8 +135,8 @@ describe('Service: settingsSvc', function () {
          'args': {'q': ['#$query##'],
                       'bq': ['title:foo^5', 'sub:2'],
                       'qf': ['title']},
-         'searchUrl': 'http://doug.com:1234/solr/collection1',
-         'fieldSpec': 'thumb:field1 title sub2',
+         'search_url': 'http://doug.com:1234/solr/collection1',
+         'field_spec': 'thumb:field1 title sub2',
          'name': 'try 0'
         }
       ]
@@ -187,7 +187,7 @@ describe('Service: settingsSvc', function () {
     settingsSvc.bootstrap()
     .then(function() {
       var settingsCpy = settingsSvc.editableSettings();
-      expect(settingsCpy.fieldSpec).toBe(mockSettings1.tries[0].fieldSpec);
+      expect(settingsCpy.fieldSpec).toBe(mockSettings1.tries[0].field_spec);
       expect(settingsCpy.searchUrl).toBe(mockSettings1.tries[0].search_url);
       expect(settingsCpy.tries[0].queryParams)
             .toEqual(mockSettings1.tries[0].queryParams);
@@ -207,26 +207,12 @@ describe('Service: settingsSvc', function () {
 
   });
 
-  var mockSettingsAddResp = {
-    tries: [
-      {'queryParams': 'ADDED',
-       'curatorVars': {},
-       'args': {},
-       'searchUrl': 'http://doug.com:1234/solr/collection1',
-       'fieldSpec': 'thumb:field1 title sub2',
-       'tryNo': 2,
-       'name': 'try 2'
-      },
-    ]
-
-  };
-
   var mockTry = {
     'queryParams': 'ADDED',
     'curatorVars': {},
     'args': {},
-    'searchUrl': 'http://doug.com:1234/solr/collection1',
-    'fieldSpec': 'thumb:field1 title sub2',
+    'search_url': 'http://doug.com:1234/solr/collection1',
+    'field_spec': 'thumb:field1 title sub2',
     'tryNo': 2,
     'name': 'try 2'
   };
@@ -259,7 +245,7 @@ describe('Service: settingsSvc', function () {
     },
     curatorVars: { titleboost: 5 },
     escape_query: false,
-    fieldSpec:   'CHANGED',
+    field_spec:   'CHANGED',
     name:        'try 2',
     queryParams: 'q=#$query##&bq=title:##titleboost##&bq=sub:2&qf=title',
     search_url:   'http://doug.com:1234/solr/collection1',
@@ -305,20 +291,6 @@ describe('Service: settingsSvc', function () {
     expect(currSettings.selectedTry.escapeQuery).toBe(false);
   });
 
-  var mockSettingsVersionResp = {
-    args:        {
-      'q':    ['#$query##'],
-      'fq':   ['title:foo', 'sub:bar'],
-      'new':  ['10']
-    },
-    curatorVars: { newvar: 10 },
-    escape_query: true,
-    fieldSpec:   'thumb:field1 title sub2',
-    queryParams: 'q=#$query##&fq=title:foo&fq=sub:bar&new=##newvar##',
-    search_url:   'http://doug.com:1234/solr/collection1',
-    tryNo:       2,
-  };
-
   var mockSettingsAddNewVarsResp = {
     'tryNo': 2,
     'queryParams': 'q=#$query##&fq=title:foo&fq=sub:bar&new=##newvar##',
@@ -330,7 +302,7 @@ describe('Service: settingsSvc', function () {
     },
     'search_url': 'http://doug.com:1234/solr/collection1',
     'escape_query': true,
-    'fieldSpec': 'thumb:field1 title sub2'
+    'field_spec': 'thumb:field1 title sub2'
   };
 
   it('gathers new curatorVars on submit', function() {

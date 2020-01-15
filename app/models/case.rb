@@ -7,7 +7,7 @@
 #  id              :integer          not null, primary key
 #  caseName        :string(191)
 #  search_url      :string(500)
-#  fieldSpec       :string(500)
+#  field_spec      :string(500)
 #  lastTry         :integer
 #  user_id         :integer
 #  displayPosition :integer
@@ -169,7 +169,7 @@ class Case < ActiveRecord::Base
   def clone_try the_try
     new_try = Try.new(
       escape_query:  the_try.escape_query,
-      fieldSpec:     the_try.fieldSpec,
+      field_spec:    the_try.field_spec,
       name:          the_try.name,
       queryParams:   the_try.queryParams,
       search_engine: the_try.search_engine,

@@ -215,7 +215,7 @@ es_try = es_case.tries.best
 es_params = {
   search_engine: :es,
   search_url:   Try::DEFAULTS[:es][:search_url],
-  fieldSpec:    Try::DEFAULTS[:es][:field_spec],
+  field_spec:   Try::DEFAULTS[:es][:field_spec],
   queryParams:  Try::DEFAULTS[:es][:query_params],
 }
 es_try.update es_params

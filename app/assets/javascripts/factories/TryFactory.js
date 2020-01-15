@@ -33,7 +33,7 @@
       self.args          = data.args;
       self.deleted       = false;
       self.escapeQuery   = data.escape_query;
-      self.fieldSpec     = data.fieldSpec;
+      self.fieldSpec     = data.field_spec;
       self.name          = data.name;
       self.numberOfRows  = data.numberOfRows;
       self.queryParams   = data.queryParams;
