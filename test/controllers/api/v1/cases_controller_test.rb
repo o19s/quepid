@@ -29,9 +29,8 @@ module Api
           assert_response :ok
 
           assert_equal json_response['case_name'], case_name
-
-          assert_equal joe.cases.count,             count + 1
-          assert_equal joe.cases.first.case_name, case_name
+          assert_equal joe.cases.count,            count + 1
+          assert_equal joe.cases.first.case_name,  case_name
         end
 
         test 'requires a case name' do
