@@ -581,7 +581,6 @@ describe('Service: caseSvc', function () {
       {
         'caseNo': 1,
         'caseName': 'test case 1',
-        'displayPosition': 0,
         'lastTry': 3,
         'owned': true
       },
@@ -589,7 +588,6 @@ describe('Service: caseSvc', function () {
         'caseNo': 2,
         'caseName': 'test case 2',
         'lastTry': 4,
-        'displayPosition': 0,
         'owned': true
       }
     ];

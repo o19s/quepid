@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20200115015024) do
+ActiveRecord::Schema.define(version: 20200115020540) do
 
   create_table "annotations", force: :cascade do |t|
     t.text     "message",    limit: 65535
@@ -49,15 +49,14 @@ ActiveRecord::Schema.define(version: 20200115015024) do
   add_index "case_scores", ["user_id"], name: "user_id", using: :btree
 
   create_table "cases", force: :cascade do |t|
-    t.string   "caseName",        limit: 191
-    t.integer  "lastTry",         limit: 4
-    t.integer  "user_id",         limit: 4
-    t.integer  "displayPosition", limit: 4
+    t.string   "caseName",    limit: 191
+    t.integer  "lastTry",     limit: 4
+    t.integer  "user_id",     limit: 4
     t.boolean  "archived"
-    t.integer  "scorer_id",       limit: 4
-    t.datetime "created_at",                  null: false
-    t.datetime "updated_at",                  null: false
-    t.string   "scorer_type",     limit: 255
+    t.integer  "scorer_id",   limit: 4
+    t.datetime "created_at",              null: false
+    t.datetime "updated_at",              null: false
+    t.string   "scorer_type", limit: 255
   end
 
   add_index "cases", ["scorer_type"], name: "index_cases_on_scorer_type", length: {"scorer_type"=>191}, using: :btree

@@ -55,8 +55,7 @@ describe('Service: teamSvc', function () {
   var mockCase = {
     'caseNo':           1,
     'lastTry':          0,
-    'caseName':         'Case',
-    'displayPosition':  0,
+    'caseName':         'Case'
   };
 
   var mockScorer = {

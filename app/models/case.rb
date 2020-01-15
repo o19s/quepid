@@ -10,7 +10,6 @@
 #  field_spec      :string(500)
 #  lastTry         :integer
 #  user_id         :integer
-#  displayPosition :integer
 #  archived        :boolean
 #  scorer_id       :integer
 #  created_at      :datetime         not null
