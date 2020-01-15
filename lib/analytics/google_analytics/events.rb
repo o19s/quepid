@@ -195,7 +195,7 @@ module Analytics
           category: 'Case Tries',
           action:   'Saved a Case Try',
           label:    the_case.caseName,
-          value:    the_try.tryNo,
+          value:    the_try.try_number,
           bounce:   false,
         }
 
