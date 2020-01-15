@@ -21,9 +21,10 @@ module Api
 
           @new_try = @case.tries.build new_try_params
 
-          try_number     = @case.lastTry + 1
+          try_number = @case.lastTry + 1
+
           @new_try.try_number = try_number
-          @case.lastTry  = try_number
+          @case.lastTry       = try_number
 
           if @new_try.save && @case.save
             @try.add_curator_vars @try.curator_vars_map
