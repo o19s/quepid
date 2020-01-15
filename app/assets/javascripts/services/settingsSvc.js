@@ -168,7 +168,7 @@ angular.module('QuepidApp')
         sentData.fields          = settingsToSave.createFieldSpec().fields;
         sentData.field_spec      = settingsToSave.fieldSpec;
         sentData.number_of_rows  = settingsToSave.numberOfRows;
-        sentData.queryParams     = settingsToSave.selectedTry.queryParams;
+        sentData.query_params    = settingsToSave.selectedTry.queryParams;
         sentData.search_engine   = settingsToSave.searchEngine;
         sentData.searchUrl       = settingsToSave.searchUrl;
 

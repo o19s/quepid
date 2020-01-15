@@ -14,7 +14,7 @@ module Api
             escape_query:   @try.escape_query,
             field_spec:     @try.field_spec,
             number_of_rows: @try.number_of_rows,
-            queryParams:    @try.queryParams,
+            query_params:   @try.query_params,
             search_engine:  @try.search_engine,
             search_url:     @try.search_url,
           }
@@ -53,7 +53,7 @@ module Api
             :name,
             :search_url,
             :field_spec,
-            :queryParams,
+            :query_params,
             :search_engine,
             :escape_query,
             :number_of_rows

@@ -65,7 +65,7 @@ module Api
           :field_spec,
           :name,
           :number_of_rows,
-          :queryParams,
+          :query_params,
           :search_engine,
           :search_url
         )

@@ -170,7 +170,7 @@ class Case < ActiveRecord::Base
       escape_query:  the_try.escape_query,
       field_spec:    the_try.field_spec,
       name:          the_try.name,
-      queryParams:   the_try.queryParams,
+      query_params:  the_try.query_params,
       search_engine: the_try.search_engine,
       search_url:    the_try.search_url,
       tryNo:         0

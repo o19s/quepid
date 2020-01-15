@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20200115020540) do
+ActiveRecord::Schema.define(version: 20200115021550) do
 
   create_table "annotations", force: :cascade do |t|
     t.text     "message",    limit: 65535
@@ -205,7 +205,7 @@ ActiveRecord::Schema.define(version: 20200115020540) do
 
   create_table "tries", force: :cascade do |t|
     t.integer  "tryNo",          limit: 4
-    t.text     "queryParams",    limit: 65535
+    t.text     "query_params",   limit: 65535
     t.integer  "case_id",        limit: 4
     t.string   "field_spec",     limit: 500
     t.string   "search_url",     limit: 500

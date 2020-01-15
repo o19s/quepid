@@ -6,7 +6,7 @@
 #
 #  id             :integer          not null, primary key
 #  tryNo          :integer
-#  queryParams    :text(65535)
+#  query_params   :text(65535)
 #  case_id        :integer
 #  field_spec     :string(500)
 #  search_url     :string(500)

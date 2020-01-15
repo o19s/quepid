@@ -14,7 +14,7 @@ module Api
       end
 
       def assert_try_matches_response response, try
-        assert_equal try.queryParams,  response['queryParams']
+        assert_equal try.query_params, response['query_params']
         assert_equal try.field_spec,   response['field_spec']
         assert_equal try.search_url,   response['search_url']
         assert_equal try.tryNo,        response['tryNo']
@@ -26,7 +26,7 @@ module Api
       end
 
       def assert_try_matches_params params, try
-        assert_equal try.queryParams,  params[:queryParams]  if params[:queryParams]
+        assert_equal try.query_params, params[:query_params]  if params[:query_params]
         assert_equal try.field_spec,   params[:field_spec]   if params[:field_spec]
         assert_equal try.search_url,   params[:search_url]   if params[:search_url]
         assert_equal try.name,         params[:name]         if params[:name]
@@ -140,7 +140,7 @@ module Api
 
         test 'does nothing with params passed except name' do
           old_no = the_try.tryNo
-          put :update, case_id: the_case.id, tryNo: the_try.tryNo, queryParams: 'New No'
+          put :update, case_id: the_case.id, tryNo: the_try.tryNo, query_params: 'New No'
 
           assert_response :ok
 
@@ -164,7 +164,7 @@ module Api
           try_params = {
             search_url:    'http://solr.quepid.com',
             field_spec:    'catch_line',
-            queryParams:   'q=#$query##',
+            query_params:  'q=#$query##',
             search_engine: 'solr',
           }
 
@@ -195,7 +195,7 @@ module Api
           try_params = {
             search_url:    'http://solr.quepid.com',
             field_spec:    'catch_line',
-            queryParams:   'q=#$query##',
+            query_params:  'q=#$query##',
             search_engine: 'solr',
           }
 
@@ -227,7 +227,7 @@ module Api
           try_params = {
             search_url:    'http://solr.quepid.com',
             field_spec:    'catch_line',
-            queryParams:   'q=#$query##',
+            query_params:  'q=#$query##',
             search_engine: 'solr',
           }
 
@@ -298,7 +298,7 @@ module Api
           assert_not_nil created_try.search_engine
           assert_not_nil created_try.field_spec
           assert_not_nil created_try.search_url
-          assert_not_nil created_try.queryParams
+          assert_not_nil created_try.query_params
           assert_not_nil created_try.escape_query
 
           assert_equal created_try.search_engine,   Try::DEFAULTS[:search_engine]
@@ -371,13 +371,13 @@ module Api
             assert_not_nil created_try.search_engine
             assert_not_nil created_try.field_spec
             assert_not_nil created_try.search_url
-            assert_not_nil created_try.queryParams
+            assert_not_nil created_try.query_params
             assert_not_nil created_try.escape_query
 
             assert_equal created_try.search_engine, Try::DEFAULTS[:search_engine]
             assert_equal created_try.field_spec,    Try::DEFAULTS[:solr][:field_spec]
             assert_equal created_try.search_url,    Try::DEFAULTS[:solr][:search_url]
-            assert_equal created_try.queryParams,   Try::DEFAULTS[:solr][:query_params]
+            assert_equal created_try.query_params,  Try::DEFAULTS[:solr][:query_params]
             assert_equal created_try.escape_query,  true
           end
         end
@@ -400,20 +400,20 @@ module Api
             assert_not_nil created_try.search_engine
             assert_not_nil created_try.field_spec
             assert_not_nil created_try.search_url
-            assert_not_nil created_try.queryParams
+            assert_not_nil created_try.query_params
             assert_not_nil created_try.escape_query
 
             assert_equal created_try.search_engine, 'es'
             assert_equal created_try.field_spec,    Try::DEFAULTS[:es][:field_spec]
             assert_equal created_try.search_url,    Try::DEFAULTS[:es][:search_url]
-            assert_equal created_try.queryParams,   Try::DEFAULTS[:es][:query_params]
+            assert_equal created_try.query_params,  Try::DEFAULTS[:es][:query_params]
             assert_equal created_try.escape_query,  true
           end
 
           test 'parses args properly' do
             query_params = '{ "query": "#$query##" }'
 
-            post :create, case_id: the_case.id, search_engine: 'es', queryParams: query_params
+            post :create, case_id: the_case.id, search_engine: 'es', query_params: query_params
 
             assert_response :ok # should be :created,
             # but there's a bug currently in the responders gem
@@ -429,7 +429,7 @@ module Api
           test 'handles bad JSON in query params' do
             query_params = '{ "query": "#$query##"'
 
-            post :create, case_id: the_case.id, search_engine: 'es', queryParams: query_params
+            post :create, case_id: the_case.id, search_engine: 'es', query_params: query_params
 
             assert_response :ok # should be :created,
             # but there's a bug currently in the responders gem

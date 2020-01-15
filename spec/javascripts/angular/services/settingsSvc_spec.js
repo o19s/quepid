@@ -15,7 +15,7 @@ describe('Service: settingsSvc', function () {
     tries: [
       {
        'tryNo': 0,
-       'queryParams': 'q=#$query##&fq=title:foo&fq=sub:bar',
+       'query_params': 'q=#$query##&fq=title:foo&fq=sub:bar',
        'curatorVars': {},
        'args': {'q': ['#$query##'],
                     'fq': ['title:foo', 'sub:bar']},
@@ -26,7 +26,7 @@ describe('Service: settingsSvc', function () {
       },
       {
        'tryNo': 1,
-       'queryParams': 'q=#$query##&fq=title:2&fq=ub:2',
+       'query_params': 'q=#$query##&fq=title:2&fq=ub:2',
        'curatorVars': {},
        'args': {'q': ['#$query##'],
                     'fq': ['title:foo', 'sub:2']},
@@ -43,7 +43,7 @@ describe('Service: settingsSvc', function () {
     tries: [
       {
        'tryNo': 0,
-       'queryParams': 'q=#$query##&fq=title:foo&fq=sub:bar',
+       'query_params': 'q=#$query##&fq=title:foo&fq=sub:bar',
        'curatorVars': {},
        'args': {'q': ['#$query##'],
                     'fq': ['title:foo', 'sub:bar']},
@@ -54,7 +54,7 @@ describe('Service: settingsSvc', function () {
       },
       {
        'tryNo': 1,
-       'queryParams': 'q=#$query##&bq=title:foo^##titleboost##&bq=sub:2',
+       'query_params': 'q=#$query##&bq=title:foo^##titleboost##&bq=sub:2',
        'curatorVars': {titleboost: 5},
        'args': {'q': ['#$query##'],
                     'bq': ['title:foo^5', 'sub:2']},
@@ -65,7 +65,7 @@ describe('Service: settingsSvc', function () {
       },
       {
        'tryNo': 2,
-       'queryParams': 'q=#$query##&bq=title:##titleboost##&bq=sub:2&qf=title',
+       'query_params': 'q=#$query##&bq=title:##titleboost##&bq=sub:2&qf=title',
        'curatorVars': {titleboost: 5},
        'args': {'q': ['#$query##'],
                     'bq': ['title:foo^5', 'sub:2'],
@@ -113,11 +113,11 @@ describe('Service: settingsSvc', function () {
       expect(settingsCpy.fieldSpec).toBe(mockSettings0.tries[0].field_spec);
       expect(settingsCpy.searchUrl).toBe(mockSettings0.tries[0].search_url);
       expect(settingsCpy.tries[0].queryParams)
-            .toEqual(mockSettings0.tries[0].queryParams);
+            .toEqual(mockSettings0.tries[0].query_params);
       expect(settingsCpy.tries[0].curatorVarsDict())
             .toEqual(mockSettings0.tries[0].curatorVars);
       expect(settingsCpy.tries[1].queryParams)
-            .toEqual(mockSettings0.tries[1].queryParams);
+            .toEqual(mockSettings0.tries[1].query_params);
       expect(settingsCpy.tries[1].curatorVarsDict())
             .toEqual(mockSettings0.tries[1].curatorVars);
     });
@@ -130,7 +130,7 @@ describe('Service: settingsSvc', function () {
       tries: [
         {
          'tryNo': 0,
-         'queryParams': 'q=#$query##&bq=title:##titleboost##&bq=sub:2&qf=title',
+         'query_params': 'q=#$query##&bq=title:##titleboost##&bq=sub:2&qf=title',
          'curatorVars': {titleboost: 5, missing: 11},
          'args': {'q': ['#$query##'],
                       'bq': ['title:foo^5', 'sub:2'],
@@ -190,15 +190,15 @@ describe('Service: settingsSvc', function () {
       expect(settingsCpy.fieldSpec).toBe(mockSettings1.tries[0].field_spec);
       expect(settingsCpy.searchUrl).toBe(mockSettings1.tries[0].search_url);
       expect(settingsCpy.tries[0].queryParams)
-            .toEqual(mockSettings1.tries[0].queryParams);
+            .toEqual(mockSettings1.tries[0].query_params);
       expect(settingsCpy.tries[0].curatorVarsDict())
             .toEqual(mockSettings1.tries[0].curatorVars);
       expect(settingsCpy.tries[1].queryParams)
-            .toEqual(mockSettings1.tries[1].queryParams);
+            .toEqual(mockSettings1.tries[1].query_params);
       expect(settingsCpy.tries[1].curatorVarsDict())
             .toEqual(mockSettings1.tries[1].curatorVars);
       expect(settingsCpy.tries[2].queryParams)
-            .toEqual(mockSettings1.tries[2].queryParams);
+            .toEqual(mockSettings1.tries[2].query_params);
       expect(settingsCpy.tries[2].curatorVarsDict())
             .toEqual(mockSettings1.tries[2].curatorVars);
     });
@@ -208,7 +208,7 @@ describe('Service: settingsSvc', function () {
   });
 
   var mockTry = {
-    'queryParams': 'ADDED',
+    'query_params': 'ADDED',
     'curatorVars': {},
     'args': {},
     'search_url': 'http://doug.com:1234/solr/collection1',
@@ -247,7 +247,7 @@ describe('Service: settingsSvc', function () {
     escape_query: false,
     field_spec:   'CHANGED',
     name:        'try 2',
-    queryParams: 'q=#$query##&bq=title:##titleboost##&bq=sub:2&qf=title',
+    query_params: 'q=#$query##&bq=title:##titleboost##&bq=sub:2&qf=title',
     search_url:   'http://doug.com:1234/solr/collection1',
     tryNo:       2,
   };
@@ -293,7 +293,7 @@ describe('Service: settingsSvc', function () {
 
   var mockSettingsAddNewVarsResp = {
     'tryNo': 2,
-    'queryParams': 'q=#$query##&fq=title:foo&fq=sub:bar&new=##newvar##',
+    'query_params': 'q=#$query##&fq=title:foo&fq=sub:bar&new=##newvar##',
     'curatorVars': {newvar: 10},
     'args': {
       'q':    ['#$query##'],
@@ -443,12 +443,12 @@ describe('Service: settingsSvc', function () {
     var url   = '/api/clone/cases/0/tries/0';
     var mockResponse = {
      'tryNo':       3,
-     'queryParams': aTry.queryParams,
+     'query_params': aTry.query_params,
      'curatorVars': {},
      'args':        aTry.args,
-     'searchUrl':   aTry.searchUrl,
-     'fieldSpec':   aTry.fieldSpec,
-     'escapeQuery': true,
+     'search_url':  aTry.search_url,
+     'field_spec':   aTry.field_spec,
+     'escape_query': true,
      'name':        'try 3'
     };
 

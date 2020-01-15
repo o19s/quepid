@@ -15,7 +15,7 @@ module Api
         end
 
         def assert_try_matches_response response, try
-          assert_equal try.queryParams,  response['queryParams']
+          assert_equal try.query_params, response['query_params']
           assert_equal try.field_spec,   response['field_spec']
           assert_equal try.search_url,   response['search_url']
           assert_equal try.tryNo,        response['tryNo']
@@ -28,7 +28,7 @@ module Api
 
         def assert_tries_match a_try, try
           assert_equal try.case_id,      a_try.case_id
-          assert_equal try.queryParams,  a_try.queryParams
+          assert_equal try.query_params, a_try.query_params
           assert_equal try.search_url,   a_try.search_url
           assert_equal try.escape_query, a_try.escape_query
         end

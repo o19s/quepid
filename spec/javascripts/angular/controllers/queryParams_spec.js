@@ -17,7 +17,7 @@ describe('Controller: QueryparamsCtrl', function () {
     var queryParams = 'q=#$query##';
     var curatorVars = {};
 
-    testTry = new TryFactory({ tryNo: 0, queryParams: queryParams, curatorVars: curatorVars });
+    testTry = new TryFactory({ tryNo: 0, query_params: queryParams, curatorVars: curatorVars });
     scope.settings = {selectedTry: testTry};
 
     QueryparamsCtrl = $controller('QueryParamsCtrl', {

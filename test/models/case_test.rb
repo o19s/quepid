@@ -117,7 +117,7 @@ class CaseTest < ActiveSupport::TestCase
       assert_equal default_try.search_engine, Try::DEFAULTS[:search_engine]
       assert_equal default_try.field_spec,    Try::DEFAULTS[:solr][:field_spec]
       assert_equal default_try.search_url,    Try::DEFAULTS[:solr][:search_url]
-      assert_equal default_try.queryParams,   Try::DEFAULTS[:solr][:query_params]
+      assert_equal default_try.query_params,  Try::DEFAULTS[:solr][:query_params]
       assert_equal default_try.escape_query,  true
     end
   end
@@ -142,7 +142,7 @@ class CaseTest < ActiveSupport::TestCase
 
             cloned_try = cloned_case.tries.best
 
-            assert_equal the_try.queryParams,   cloned_try.queryParams
+            assert_equal the_try.query_params,  cloned_try.query_params
             assert_equal 'title',               cloned_try.field_spec
             assert_equal the_try.search_url,    cloned_try.search_url
             assert_equal 'Try 0',               cloned_try.name

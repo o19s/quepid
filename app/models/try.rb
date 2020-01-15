@@ -6,7 +6,7 @@
 #
 #  id             :integer          not null, primary key
 #  tryNo          :integer
-#  queryParams    :text(65535)
+#  query_params   :text(65535)
 #  case_id        :integer
 #  field_spec     :string(500)
 #  search_url     :string(500)
@@ -84,11 +84,11 @@ class Try < ActiveRecord::Base
   end
 
   def solr_args
-    SolrArgParser.parse(queryParams, curator_vars_map)
+    SolrArgParser.parse(query_params, curator_vars_map)
   end
 
   def es_args
-    EsArgParser.parse(queryParams, curator_vars_map)
+    EsArgParser.parse(query_params, curator_vars_map)
   end
 
   private
@@ -98,7 +98,7 @@ class Try < ActiveRecord::Base
 
     self.search_engine = DEFAULTS[:search_engine] if search_engine.blank?
     self.field_spec    = DEFAULTS[search_engine.to_sym][:field_spec]    if field_spec.blank?
-    self.queryParams   = DEFAULTS[search_engine.to_sym][:query_params]  if queryParams.blank?
+    self.query_params  = DEFAULTS[search_engine.to_sym][:query_params]  if query_params.blank?
     self.search_url    = DEFAULTS[search_engine.to_sym][:search_url]    if search_url.blank?
   end
 end

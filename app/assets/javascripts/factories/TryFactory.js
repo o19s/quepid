@@ -36,7 +36,7 @@
       self.fieldSpec     = data.field_spec;
       self.name          = data.name;
       self.numberOfRows  = data.numberOfRows;
-      self.queryParams   = data.queryParams;
+      self.queryParams   = data.query_params;
       self.searchEngine  = data.search_engine;
       self.searchUrl     = data.search_url;
       self.tryNo         = data.tryNo;

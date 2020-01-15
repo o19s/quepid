@@ -4,7 +4,7 @@
 #
 #  id             :integer          not null, primary key
 #  tryNo          :integer
-#  queryParams    :text(65535)
+#  query_params   :text(65535)
 #  case_id        :integer
 #  field_spec     :string(500)
 #  search_url     :string(500)
@@ -19,174 +19,174 @@
 one:
   case:           :one
   tryNo:          0
-  queryParams:    'q=#$query##'
+  query_params:   'q=#$query##'
   search_url:     test.com
   search_engine:  solr
 
 two:
   case:           :two
   tryNo:          1
-  queryParams:    'q=#$query##'
+  query_params:   'q=#$query##'
   search_url:     test.com
   search_engine:  solr
 
 for_shared_team_case:
   case:           :shared_team_case
   tryNo:          0
-  queryParams:    'q=#$query##'
+  query_params:   'q=#$query##'
   search_url:     test.com
   search_engine:  solr
 
 for_shared_case:
   case:           :shared_case
   tryNo:          0
-  queryParams:    'q=#$query##'
+  query_params:   'q=#$query##'
   search_url:     test.com
   search_engine:  solr
 
 archived:
   case:           :archived
   tryNo:          0
-  queryParams:    'q=#$query##'
+  query_params:   'q=#$query##'
   search_url:     test.com
   search_engine:  solr
 
 for_metadata_case:
   case:           :with_metadata
   tryNo:          1
-  queryParams:    'q=#$query##'
+  query_params:   'q=#$query##'
   search_url:     test.com
   search_engine:  solr
 
 for_case_with_scorer:
   case:           :with_scorer
   tryNo:          1
-  queryParams:    'q=#$query##'
+  query_params:   'q=#$query##'
   search_url:     test.com
   search_engine:  solr
 
 for_case_with_one_try:
   case:           :case_with_one_try
-  queryParams:    'q=#$query##'
+  query_params:   'q=#$query##'
   search_url:     test.com
   tryNo:          0
   search_engine:  solr
 
 first_for_case_with_two_tries:
   case:           :case_with_two_tries
-  queryParams:    'q=#$query##'
+  query_params:   'q=#$query##'
   search_url:     test.com
   tryNo:          0
   search_engine:  solr
 
 second_for_case_with_two_tries:
   case:           :case_with_two_tries
-  queryParams:    'q=#$query##'
+  query_params:   'q=#$query##'
   search_url:     test.com
   tryNo:          1
   search_engine:  solr
 
 first_try_for_score_case:
   case:           :score_case
-  queryParams:    'q=#$query##'
+  query_params:   'q=#$query##'
   search_url:     test.com
   tryNo:          0
   search_engine:  solr
 
 second_try_for_score_case:
   case:           :score_case
-  queryParams:    'q=#$query##'
+  query_params:   'q=#$query##'
   search_url:     test.com
   tryNo:          1
   search_engine:  solr
 
 first_try_for_other_score_case:
   case:           :other_score_case
-  queryParams:    'q=#$query##'
+  query_params:   'q=#$query##'
   search_url:     test.com
   tryNo:          0
   search_engine:  solr
 
 second_try_for_other_score_case:
   case:           :other_score_case
-  queryParams:    'q=#$query##'
+  query_params:   'q=#$query##'
   search_url:     test.com
   tryNo:          1
   search_engine:  solr
 
 try_without_curator_vars:
   case:           :random_case
-  queryParams:    'q=#$query##'
+  query_params:   'q=#$query##'
   search_url:     test.com
   tryNo:          1
   search_engine:  solr
 
 try_with_curator_vars:
   case:           :random_case
-  queryParams:    'q=#$query##&defType=edismax&qf=text^##one## catch_line^##two##'
+  query_params:   'q=#$query##&defType=edismax&qf=text^##one## catch_line^##two##'
   search_url:     test.com
   tryNo:          2
   search_engine:  solr
 
 es_try:
   case:           :random_case
-  queryParams:    '{ "query": { "match": { "text": "#$query##" } } }'
+  query_params:   '{ "query": { "match": { "text": "#$query##" } } }'
   search_url:     test.com
   tryNo:          3
   search_engine:  es
 
 es_try_with_curator_vars:
   case:           :random_case
-  queryParams:    '{ "query": { "multi_match": { "fields": "title, overview", "query": "#$query##", "tie_breaker": "##tieBreaker##" } } }'
+  query_params:   '{ "query": { "multi_match": { "fields": "title, overview", "query": "#$query##", "tie_breaker": "##tieBreaker##" } } }'
   search_url:     test.com
   tryNo:          4
   search_engine:  es
 
 bootstrap_try_1:
   case:           :bootstrap_case
-  queryParams:    'q=#$query##'
+  query_params:   'q=#$query##'
   search_url:     test.com
   tryNo:          0
   search_engine:  solr
 
 bootstrap_try_2:
   case:           :bootstrap_case
-  queryParams:    '{ "query": { "match": { "text": "#$query##" } } }'
+  query_params:   '{ "query": { "match": { "text": "#$query##" } } }'
   search_url:     test.com
   tryNo:          1
   search_engine:  es
 
 for_case_without_score_try_1:
   case:           :case_without_score
-  queryParams:    'q=#$query##'
+  query_params:   'q=#$query##'
   search_url:     test.com
   tryNo:          0
   search_engine:  solr
 
 for_case_with_score_for_first_try_try_1:
   case:           :case_with_score_for_first_try
-  queryParams:    'q=#$query##'
+  query_params:   'q=#$query##'
   search_url:     test.com
   tryNo:          0
   search_engine:  solr
 
 for_case_with_score_for_first_try_try_2:
   case:           :case_with_score_for_first_try
-  queryParams:    'q=#$query##'
+  query_params:   'q=#$query##'
   search_url:     test.com
   tryNo:          1
   search_engine:  solr
 
 for_case_with_score_try_1:
   case:           :case_with_score
-  queryParams:    'q=#$query##'
+  query_params:   'q=#$query##'
   search_url:     test.com
   tryNo:          0
   search_engine:  solr
 
 for_case_with_score_try_2:
   case:           :case_with_score
-  queryParams:    'q=#$query##'
+  query_params:   'q=#$query##'
   search_url:     test.com
   tryNo:          1
   search_engine:  solr
