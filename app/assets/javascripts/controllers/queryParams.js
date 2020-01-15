@@ -26,7 +26,7 @@ angular.module('QuepidApp')
           query_params:   $scope.settings.selectedTry.queryParams,
           search_engine:  $scope.settings.selectedTry.searchEngine,
           search_url:     $scope.settings.selectedTry.searchUrl,
-          tryNo:         $scope.settings.selectedTry.tryNo,
+          try_number:     $scope.settings.selectedTry.tryNo,
         });
         tmp.updateVars();
         $scope.settings.selectedTry = tmp;

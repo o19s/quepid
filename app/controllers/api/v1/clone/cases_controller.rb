@@ -14,7 +14,7 @@ module Api
           preserve_history  = params[:preserve_history]
           clone_queries     = params[:clone_queries]
           clone_ratings     = params[:clone_ratings]
-          the_try           = @case.tries.where(tryNo: params[:tryNo]).first
+          the_try           = @case.tries.where(try_number: params[:try_number]).first
           @new_case.caseName = params[:caseName].presence || "Cloned: #{@case.caseName}"
 
           transaction = @new_case.clone_case(

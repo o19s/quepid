@@ -43,8 +43,8 @@ module Api
             assert_difference 'Case.count' do
               assert_difference 'Try.count' do
                 data = {
-                  case_id: the_case.id,
-                  tryNo:   the_try.tryNo,
+                  case_id:    the_case.id,
+                  try_number: the_try.try_number,
                 }
 
                 post :create, data

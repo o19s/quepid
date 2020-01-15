@@ -30,6 +30,8 @@
       }
 
       // Attributes
+      // Note, if you are changing these, then you probably to fix the
+      // var tmp = new TryFactory method in queryParams.js as well.
       self.args          = data.args;
       self.deleted       = false;
       self.escapeQuery   = data.escape_query;
@@ -39,7 +41,7 @@
       self.queryParams   = data.query_params;
       self.searchEngine  = data.search_engine;
       self.searchUrl     = data.search_url;
-      self.tryNo         = data.tryNo;
+      self.tryNo         = data.try_number;
 
       // transform curator vars to be more angular friendly
       var ngFriendlyCuratorVars = [];

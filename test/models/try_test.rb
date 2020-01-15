@@ -5,7 +5,7 @@
 # Table name: tries
 #
 #  id             :integer          not null, primary key
-#  tryNo          :integer
+#  try_number     :integer
 #  query_params   :text(65535)
 #  case_id        :integer
 #  field_spec     :string(500)

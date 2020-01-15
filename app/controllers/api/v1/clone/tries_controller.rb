@@ -22,7 +22,7 @@ module Api
           @new_try = @case.tries.build new_try_params
 
           try_number     = @case.lastTry + 1
-          @new_try.tryNo = try_number
+          @new_try.try_number = try_number
           @case.lastTry  = try_number
 
           if @new_try.save && @case.save
@@ -39,7 +39,7 @@ module Api
         private
 
         def set_try
-          @try = @case.tries.where(tryNo: params[:tryNo]).first
+          @try = @case.tries.where(try_number: params[:try_number]).first
 
           render json: { message: 'Try not found!' }, status: :not_found unless @try
         end

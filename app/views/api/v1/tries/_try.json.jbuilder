@@ -9,4 +9,4 @@ json.number_of_rows try.number_of_rows || 10
 json.query_params   try.query_params
 json.search_engine  try.search_engine
 json.search_url     try.search_url
-json.tryNo          try.tryNo
+json.try_number     try.try_number

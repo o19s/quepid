@@ -5,7 +5,7 @@
 # Table name: tries
 #
 #  id             :integer          not null, primary key
-#  tryNo          :integer
+#  try_number     :integer
 #  query_params   :text(65535)
 #  case_id        :integer
 #  field_spec     :string(500)
@@ -24,7 +24,7 @@ require 'es_arg_parser'
 class Try < ActiveRecord::Base
   # Scopes
   scope :best, -> { order(id: :desc).first }
-  scope :latest, -> { order(tryNo: :desc).limit(1).first }
+  scope :latest, -> { order(try_number: :desc).limit(1).first }
 
   # Constants
   DEFAULTS = {
@@ -68,7 +68,7 @@ class Try < ActiveRecord::Base
   end
 
   def param
-    tryNo
+    try_number
   end
 
   def add_curator_vars vars = {}
@@ -94,7 +94,7 @@ class Try < ActiveRecord::Base
   private
 
   def set_defaults
-    self.name = "Try #{tryNo}" if name.blank?
+    self.name = "Try #{try_number}" if name.blank?
 
     self.search_engine = DEFAULTS[:search_engine] if search_engine.blank?
     self.field_spec    = DEFAULTS[search_engine.to_sym][:field_spec]    if field_spec.blank?

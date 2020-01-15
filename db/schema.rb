@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20200115021550) do
+ActiveRecord::Schema.define(version: 20200115131622) do
 
   create_table "annotations", force: :cascade do |t|
     t.text     "message",    limit: 65535
@@ -204,7 +204,7 @@ ActiveRecord::Schema.define(version: 20200115021550) do
   add_index "teams_scorers", ["team_id"], name: "index_teams_scorers_on_team_id", using: :btree
 
   create_table "tries", force: :cascade do |t|
-    t.integer  "tryNo",          limit: 4
+    t.integer  "try_number",     limit: 4
     t.text     "query_params",   limit: 65535
     t.integer  "case_id",        limit: 4
     t.string   "field_spec",     limit: 500
@@ -218,7 +218,7 @@ ActiveRecord::Schema.define(version: 20200115021550) do
   end
 
   add_index "tries", ["case_id"], name: "case_id", using: :btree
-  add_index "tries", ["tryNo"], name: "ix_queryparam_tryNo", using: :btree
+  add_index "tries", ["try_number"], name: "ix_queryparam_tryNo", using: :btree
 
   create_table "users", force: :cascade do |t|
     t.string   "username",               limit: 80

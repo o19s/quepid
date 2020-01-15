@@ -33,13 +33,13 @@ class HomeController < ApplicationController
       if bootstrapCase
         @bootstrapCaseNo  = bootstrapCase.id
         best_try          = bootstrapCase.tries.best
-        @bootstrapTryNo   = best_try.tryNo if best_try.present?
+        @bootstrapTryNo   = best_try.try_number if best_try.present?
       else
         @triggerWizard = true unless current_user.firstLogin?
 
         bootstrapCase     = current_user.cases.create caseName: Case::DEFAULT_NAME
         @bootstrapCaseNo  = bootstrapCase.id
-        @bootstrapTryNo   = bootstrapCase.tries.best.tryNo
+        @bootstrapTryNo   = bootstrapCase.tries.best.try_number
       end
     end
 

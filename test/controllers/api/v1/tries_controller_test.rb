@@ -15,10 +15,10 @@ module Api
 
       def assert_try_matches_response response, try
         assert_equal try.query_params, response['query_params']
-        assert_equal try.field_spec,   response['field_spec']
+        assert_equal try.field_spec,   response['field_spec'] if response['field_spec']
         assert_equal try.search_url,   response['search_url']
-        assert_equal try.tryNo,        response['tryNo']
-        assert_equal try.name,         response['name']
+        assert_equal try.try_number,   response['try_number']
+        assert_equal try.name,         response['name'] if response['name']
         assert_equal try.solr_args,    response['args']
         assert_equal try.escape_query, response['escape_query']
 
@@ -84,9 +84,9 @@ module Api
           body  = JSON.parse(response.body)
           tries = body['tries']
 
-          ids = tries.map { |each| each['tryNo'] }
+          ids = tries.map { |each| each['try_number'] }
 
-          assert_includes ids, first_try.tryNo
+          assert_includes ids, first_try.try_number
         end
       end
 
@@ -98,13 +98,13 @@ module Api
         let(:second_for_case_with_two_tries)  { tries(:second_for_case_with_two_tries) }
 
         test 'returns a not found error when try does not exist' do
-          get :show, case_id: case_with_two_tries.id, tryNo: 1234
+          get :show, case_id: case_with_two_tries.id, try_number: 1234
 
           assert_response :not_found
         end
 
         test 'returns a specific case try' do
-          get :show, case_id: case_with_two_tries.id, tryNo: first_for_case_with_two_tries.tryNo
+          get :show, case_id: case_with_two_tries.id, try_number: first_for_case_with_two_tries.try_number
 
           assert_response :ok
 
@@ -112,7 +112,7 @@ module Api
 
           assert_try_matches_response body, first_for_case_with_two_tries
 
-          get :show, case_id: case_with_two_tries.id, tryNo: second_for_case_with_two_tries.tryNo
+          get :show, case_id: case_with_two_tries.id, try_number: second_for_case_with_two_tries.try_number
 
           assert_response :ok
 
@@ -127,7 +127,7 @@ module Api
         let(:the_try)   { tries(:first_for_case_with_two_tries) }
 
         test 'renames try successfully' do
-          put :update, case_id: the_case.id, tryNo: the_try.tryNo, name: 'New Name'
+          put :update, case_id: the_case.id, try_number: the_try.try_number, name: 'New Name'
 
           assert_response :ok
 
@@ -139,16 +139,16 @@ module Api
         end
 
         test 'does nothing with params passed except name' do
-          old_no = the_try.tryNo
-          put :update, case_id: the_case.id, tryNo: the_try.tryNo, query_params: 'New No'
+          old_no = the_try.try_number
+          put :update, case_id: the_case.id, try_number: the_try.try_number, query_params: 'New No'
 
           assert_response :ok
 
           the_try.reload
-          assert_not_equal  the_try.tryNo, 'New No'
-          assert_equal      the_try.tryNo, old_no
+          assert_not_equal  the_try.try_number, 'New No'
+          assert_equal      the_try.try_number, old_no
 
-          put :update, case_id: the_case.id, tryNo: the_try.tryNo, field_spec: 'New field_spec'
+          put :update, case_id: the_case.id, try_number: the_try.try_number, field_spec: 'New field_spec'
 
           assert_response :ok
 
@@ -178,7 +178,7 @@ module Api
 
             the_case.reload
             try_response  = JSON.parse(response.body)
-            created_try   = the_case.tries.where(tryNo: try_response['tryNo']).first
+            created_try   = the_case.tries.where(try_number: try_response['try_number']).first
 
             assert_equal the_case.lastTry, case_last_try + 1
 
@@ -212,7 +212,7 @@ module Api
             assert_response :ok
 
             try_response  = json_response
-            created_try   = the_case.tries.where(tryNo: try_response['tryNo']).first
+            created_try   = the_case.tries.where(try_number: try_response['try_number']).first
 
             assert_try_matches_response try_response,  created_try
             assert_try_matches_params   try_params,    created_try
@@ -238,15 +238,15 @@ module Api
 
           the_case.reload
           try_response  = JSON.parse(response.body)
-          created_try   = the_case.tries.where(tryNo: try_response['tryNo']).first
+          created_try   = the_case.tries.where(try_number: try_response['try_number']).first
 
-          assert_match( /Try/,                   created_try.name )
-          assert_match( /#{the_case.lastTry}/,   created_try.name )
-          assert_match( /#{created_try.tryNo}/,  created_try.name )
+          assert_match( /Try/,                        created_try.name )
+          assert_match( /#{the_case.lastTry}/,        created_try.name )
+          assert_match( /#{created_try.try_number}/,  created_try.name )
 
-          assert_match( /Try/,                       try_response['name'] )
-          assert_match( /#{the_case.lastTry}/,       try_response['name'] )
-          assert_match( /#{try_response['tryNo']}/,  try_response['name'] )
+          assert_match( /Try/,                            try_response['name'] )
+          assert_match( /#{the_case.lastTry}/,            try_response['name'] )
+          assert_match( /#{try_response['try_number']}/,  try_response['name'] )
         end
 
         test 'sets escape_query param' do
@@ -259,7 +259,7 @@ module Api
           assert_response :ok
 
           the_case.reload
-          created_try = the_case.tries.where(tryNo: json_response['tryNo']).first
+          created_try = the_case.tries.where(try_number: json_response['try_number']).first
 
           assert_equal false, json_response['escape_query']
           assert_equal false, created_try.escape_query
@@ -275,7 +275,7 @@ module Api
           assert_response :ok
 
           the_case.reload
-          created_try = the_case.tries.where(tryNo: json_response['tryNo']).first
+          created_try = the_case.tries.where(try_number: json_response['try_number']).first
 
           assert_equal 20, created_try.number_of_rows
           assert_equal 20, json_response['number_of_rows']
@@ -289,11 +289,11 @@ module Api
 
           the_case.reload
           try_response  = JSON.parse(response.body)
-          created_try   = the_case.tries.where(tryNo: try_response['tryNo']).first
+          created_try   = the_case.tries.where(try_number: try_response['try_number']).first
 
-          assert_match( /Try/,                   created_try.name )
-          assert_match( /#{the_case.lastTry}/,   created_try.name )
-          assert_match( /#{created_try.tryNo}/,  created_try.name )
+          assert_match( /Try/,                        created_try.name )
+          assert_match( /#{the_case.lastTry}/,        created_try.name )
+          assert_match( /#{created_try.try_number}/,  created_try.name )
 
           assert_not_nil created_try.search_engine
           assert_not_nil created_try.field_spec
@@ -326,14 +326,14 @@ module Api
         let(:the_try)   { tries(:first_for_case_with_two_tries) }
 
         test 'returns a not found error if try does not exist' do
-          delete :destroy, case_id: the_case.id, tryNo: 123_456
+          delete :destroy, case_id: the_case.id, try_number: 123_456
 
           assert_response :not_found
         end
 
         test 'successfully removes try from case tries' do
           assert_difference 'the_case.tries.count', -1 do
-            delete :destroy, case_id: the_case.id, tryNo: the_try.tryNo
+            delete :destroy, case_id: the_case.id, try_number: the_try.try_number
 
             assert_response :no_content
           end
@@ -343,7 +343,7 @@ module Api
           the_try.curator_variables.create name: 'foo', value: 1
 
           assert_difference 'the_case.tries.count', -1 do
-            delete :destroy, case_id: the_case.id, tryNo: the_try.tryNo
+            delete :destroy, case_id: the_case.id, try_number: the_try.try_number
 
             assert_response :no_content
           end
@@ -362,11 +362,11 @@ module Api
 
             the_case.reload
             try_response  = JSON.parse(response.body)
-            created_try   = the_case.tries.where(tryNo: try_response['tryNo']).first
+            created_try   = the_case.tries.where(try_number: try_response['try_number']).first
 
-            assert_match( /Try/,                   created_try.name )
-            assert_match( /#{the_case.lastTry}/,   created_try.name )
-            assert_match( /#{created_try.tryNo}/,  created_try.name )
+            assert_match( /Try/,                        created_try.name )
+            assert_match( /#{the_case.lastTry}/,        created_try.name )
+            assert_match( /#{created_try.try_number}/,  created_try.name )
 
             assert_not_nil created_try.search_engine
             assert_not_nil created_try.field_spec
@@ -391,11 +391,11 @@ module Api
 
             the_case.reload
             try_response  = JSON.parse(response.body)
-            created_try   = the_case.tries.where(tryNo: try_response['tryNo']).first
+            created_try   = the_case.tries.where(try_number: try_response['try_number']).first
 
-            assert_match( /Try/,                   created_try.name )
-            assert_match( /#{the_case.lastTry}/,   created_try.name )
-            assert_match( /#{created_try.tryNo}/,  created_try.name )
+            assert_match( /Try/,                        created_try.name )
+            assert_match( /#{the_case.lastTry}/,        created_try.name )
+            assert_match( /#{created_try.try_number}/,  created_try.name )
 
             assert_not_nil created_try.search_engine
             assert_not_nil created_try.field_spec
@@ -420,7 +420,7 @@ module Api
 
             the_case.reload
             try_response  = JSON.parse(response.body)
-            created_try   = the_case.tries.where(tryNo: try_response['tryNo']).first
+            created_try   = the_case.tries.where(try_number: try_response['try_number']).first
 
             assert_equal created_try.args,      'query' => '#$query##'
             assert_equal try_response['args'],  'query' => '#$query##'
@@ -436,7 +436,7 @@ module Api
 
             the_case.reload
             try_response  = JSON.parse(response.body)
-            created_try   = the_case.tries.where(tryNo: try_response['tryNo']).first
+            created_try   = the_case.tries.where(try_number: try_response['try_number']).first
 
             assert_nil created_try.args
             assert_nil try_response['args']

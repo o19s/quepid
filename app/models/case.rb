@@ -113,7 +113,7 @@ class Case < ActiveRecord::Base
       elsif try
         clone_try try
       end
-      self.lastTry = tries.last.tryNo
+      self.lastTry = tries.last.try_number
 
       if clone_queries
         original_case.queries.each do |query|
@@ -160,8 +160,8 @@ class Case < ActiveRecord::Base
 
   def add_default_try
     try_number  = (lastTry || -1) + 1
-    the_try     = tries.create(tryNo: try_number)
-    update lastTry: the_try.tryNo
+    the_try     = tries.create(try_number: try_number)
+    update lastTry: the_try.try_number
   end
 
   # rubocop:disable Metrics/MethodLength
@@ -173,7 +173,7 @@ class Case < ActiveRecord::Base
       query_params:  the_try.query_params,
       search_engine: the_try.search_engine,
       search_url:    the_try.search_url,
-      tryNo:         0
+      try_number:    0
     )
     tries << new_try
 

@@ -6,7 +6,7 @@ json.allCases do
     json.caseNo           acase.id
     json.owned            acase.user_id == current_user.id
 
-    json.lastTry acase.tries.best.tryNo if acase.tries.present? && acase.tries.best.present?
+    json.lastTry acase.tries.best.try_number if acase.tries.present? && acase.tries.best.present?
   end
 end
 
