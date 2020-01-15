@@ -109,7 +109,7 @@ angular.module('QuepidApp')
             tryToUse = settings.selectedTry;
             settings.selectTry(tryToUse.tryNo);
           }
-          console.log("settingsSvc: editableSettings setting up tryToUse");
+          console.log('settingsSvc: editableSettings setting up tryToUse');
           console.log(tryToUse);
           settings.escapeQuery   = tryToUse.escapeQuery;
           settings.fieldSpec     = tryToUse.fieldSpec;
