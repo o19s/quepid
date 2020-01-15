@@ -26,7 +26,7 @@ module Api
       end
 
       def assert_try_matches_params params, try
-        assert_equal try.query_params, params[:query_params]  if params[:query_params]
+        assert_equal try.query_params, params[:query_params] if params[:query_params]
         assert_equal try.field_spec,   params[:field_spec]   if params[:field_spec]
         assert_equal try.search_url,   params[:search_url]   if params[:search_url]
         assert_equal try.name,         params[:name]         if params[:name]
@@ -278,7 +278,7 @@ module Api
           created_try = the_case.tries.where(tryNo: json_response['tryNo']).first
 
           assert_equal 20, created_try.number_of_rows
-          assert_equal 20, json_response['numberOfRows']
+          assert_equal 20, json_response['number_of_rows']
         end
 
         test 'assigns default attributes' do
