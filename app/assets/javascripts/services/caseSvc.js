@@ -3,11 +3,11 @@
 angular.module('QuepidApp')
   .service('caseSvc', [
     '$http', '$filter', '$q', '$rootScope',
-    'caseTryNavSvc', 'teamSvc', 'settingsSvc',
+    'caseTryNavSvc', 'settingsSvc',
     'broadcastSvc',
     function caseSvc(
       $http, $filter, $q, $rootScope,
-      caseTryNavSvc, teamSvc, settingsSvc,
+      caseTryNavSvc, settingsSvc,
       broadcastSvc
     ) {
 
@@ -39,7 +39,7 @@ angular.module('QuepidApp')
 
         theCase.caseNo            = data.caseNo;
         theCase.lastTry           = data.lastTry;
-        theCase.caseName          = data.caseName;
+        theCase.caseName          = data.case_name;
         theCase.lastScore         = data.lastScore;
         theCase.scorerId          = data.scorerId;
         theCase.scorerType        = data.scorerType;
@@ -66,7 +66,7 @@ angular.module('QuepidApp')
             var url  = '/api/cases/' + theCase.caseNo;
             var data = {
               caseNo:   theCase.caseNo,
-              caseName: newName
+              case_name: newName
             };
 
             return $http.put(url, data)
@@ -178,7 +178,7 @@ angular.module('QuepidApp')
         // on success, sets current case number to case number
         var data = {'caseName': 'Case: ' + this.casesCount};
         if (caseName) {
-          data.caseName = caseName;
+          data.case_name = caseName;
         }
         if (queries) {
           data.queries = queries;
@@ -444,7 +444,7 @@ angular.module('QuepidApp')
           clone_ratings:    options.ratings,
           preserve_history: options.history,
           tryNo:            options.tryId,
-          caseName:         options.caseName
+          case_name:         options.caseName
         };
         var defaultOptions  = {
           case_id:          theCase.caseNo,

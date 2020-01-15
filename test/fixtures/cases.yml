@@ -3,7 +3,7 @@
 # Table name: cases
 #
 #  id              :integer          not null, primary key
-#  caseName        :string(191)
+#  case_name       :string(191)
 #  lastTry         :integer
 #  user_id         :integer
 #  archived        :boolean
@@ -16,177 +16,177 @@
 one:
   user: :doug
   archived: false
-  caseName: one
+  case_name: one
 
 two:
   user: :doug
   archived: false
-  caseName: two
+  case_name: two
 
 case_not_marked_if_archived:
   user: :doug
-  caseName: case_not_marked_if_archived
+  case_name: case_not_marked_if_archived
 
 with_metadata:
   user: :doug
   archived: false
-  caseName: with_metadata
+  case_name: with_metadata
 
 with_scorer:
   user:     :random
   archived: false
-  caseName: with default scorer
+  case_name: with default scorer
   scorer:   for_case_with_scorer (Scorer)
 
 for_default_scorer:
   user:     :random
   archived: false
-  caseName: for default scorer
+  case_name: for default scorer
   scorer:   case_default_scorer (Scorer)
 
 shared_with_team:
   user: :random
   archived: false
-  caseName: shared with sharing team
+  case_name: shared with sharing team
 
 shared_through_owned_team:
   user: :random
   archived: false
-  caseName: shared through team doug owns
+  case_name: shared through team doug owns
 
 archived:
   user: :doug
   archived: true
-  caseName: Archived
+  case_name: Archived
 
 matt_case:
   user: :matt
   archived: false
-  caseName: Matt's Case
+  case_name: Matt's Case
 
 case_with_one_try:
   user: :joey
   archived: false
-  caseName: Case with one try
+  case_name: Case with one try
   lastTry: 0
 
 case_with_two_tries:
   user: :joey
   archived: false
-  caseName: Case with two tries
+  case_name: Case with two tries
   lastTry: 1
 
 owned_case:
   user:     :case_finder_user
-  caseName: Case owned by Case Finder User
+  case_name: Case owned by Case Finder User
   archived: false
 
 owned_team_case:
   user:           :random
-  caseName:       Case from Case Finder User's owned team
+  case_name:      Case from Case Finder User's owned team
   archived:       false
 
 shared_team_case:
   user:           :random
-  caseName:       Case from Case Finder User's shared team
+  case_name:      Case from Case Finder User's shared team
   archived:       false
 
 queries_case:
   user:     :random
-  caseName: A case to test queries positions
+  case_name: A case to test queries positions
   archived: false
 
 move_query_to_me:
   user:     :random
-  caseName: A case to test moving queries
+  case_name: A case to test moving queries
   archived: false
 
 metadata_case:
   user:     :random
-  caseName: Metadata Case
+  case_name: Metadata Case
   archived: false
 
 snapshot_case:
   user:     :random
-  caseName: Snapshot Case
+  case_name: Snapshot Case
   archived: false
 
 score_case:
   user:     :random
-  caseName: Score Case
+  case_name: Score Case
   archived: false
 
 other_score_case:
   user:     :random
-  caseName: Other Score Case
+  case_name: Other Score Case
   archived: false
 
 shared_case:
   user:     :random_2
-  caseName: Score Case
+  case_name: Score Case
   archived: false
 
 random_case:
   user:     :random_1
-  caseName: Random Case
+  case_name: Random Case
   archived: false
 
 random_case_1:
   user:     :random_1
-  caseName: Random Case 1
+  case_name: Random Case 1
   archived: false
 
 random_case_2:
   user:     :random_1
-  caseName: Random Case 2
+  case_name: Random Case 2
   archived: false
 
 bootstrap_case:
   user:     :bootstrap_user
-  caseName: Boostrapped Case
+  case_name: Boostrapped Case
   archived: false
 
 import_ratings_case:
   user:     :random
-  caseName: Import Ratings Case
+  case_name: Import Ratings Case
   archived: false
 
 not_shared:
   user:     :not_shared_case_owner
   archived: false
-  caseName: Case not shared
+  case_name: Case not shared
 
 shared_with_owner:
   user:     :random
   archived: false
-  caseName: Case shared with owner
+  case_name: Case shared with owner
 
 dropdown_case_1:
   user:     :dropdown_user
   archived: false
-  caseName: dropdown_case_1
+  case_name: dropdown_case_1
 
 dropdown_case_2:
   user:     :dropdown_user
   archived: false
-  caseName: dropdown_case_2
+  case_name: dropdown_case_2
 
 dropdown_case_archived:
   user:     :dropdown_user
   archived: true
-  caseName: dropdown_case_archived
+  case_name: dropdown_case_archived
 
 case_without_score:
   user:     :random
-  caseName: Case without Score
+  case_name: Case without Score
   archived: false
 
 case_with_score_for_first_try:
   user:     :random
-  caseName: case_with_score_for_first_try
+  case_name: case_with_score_for_first_try
   archived: false
 
 case_with_score:
   user:     :random
-  caseName: case_with_score
+  case_name: case_with_score
   archived: false

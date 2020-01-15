@@ -110,7 +110,7 @@ class UserTest < ActiveSupport::TestCase
         first_case = user.cases.first
 
         assert_not_nil  first_case
-        assert_equal    first_case.caseName, Case::DEFAULT_NAME
+        assert_equal    first_case.case_name, Case::DEFAULT_NAME
       end
     end
   end

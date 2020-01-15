@@ -5,7 +5,7 @@
 # Table name: cases
 #
 #  id              :integer          not null, primary key
-#  caseName        :string(191)
+#  case_name       :string(191)
 #  lastTry         :integer
 #  user_id         :integer
 #  archived        :boolean
@@ -20,13 +20,13 @@ require 'test_helper'
 class CaseTest < ActiveSupport::TestCase
   describe 'Creating a case' do
     test 'sets archived flag to false by default' do
-      acase = Case.create(caseName: 'test case')
+      acase = Case.create(case_name: 'test case')
 
       assert_equal acase.archived, false
     end
 
     test 'does not override archived flag if set' do
-      acase = Case.create(caseName: 'test case', archived: true)
+      acase = Case.create(case_name: 'test case', archived: true)
 
       assert_equal acase.archived, true
     end
@@ -37,7 +37,7 @@ class CaseTest < ActiveSupport::TestCase
       user.scorer = user_scorer
       user.save
 
-      acase = Case.create(caseName: 'with default scorer', user: user)
+      acase = Case.create(case_name: 'with default scorer', user: user)
 
       assert_equal acase.scorer_id, user_scorer.id
       assert_equal acase.scorer_id, user.scorer_id
@@ -49,7 +49,7 @@ class CaseTest < ActiveSupport::TestCase
       user.default_scorer = q_scorer
       user.save
 
-      acase = Case.create(caseName: 'with q scorer', user: user)
+      acase = Case.create(case_name: 'with q scorer', user: user)
 
       assert_equal acase.scorer_id,   q_scorer.id
       assert_equal acase.scorer_type, 'DefaultScorer'
@@ -63,7 +63,7 @@ class CaseTest < ActiveSupport::TestCase
       user.default_scorer = q_scorer
       user.save
 
-      acase = Case.create(caseName: 'with default scorer', user: user)
+      acase = Case.create(case_name: 'with default scorer', user: user)
 
       assert_equal acase.scorer_id,   user_scorer.id
       assert_equal acase.scorer_id,   user.scorer_id
@@ -74,7 +74,7 @@ class CaseTest < ActiveSupport::TestCase
       q_scorer2 = default_scorers(:v2)
       user      = users(:random)
 
-      acase = Case.create(caseName: 'with default scorer', user: user)
+      acase = Case.create(case_name: 'with default scorer', user: user)
 
       assert_equal acase.scorer_id,   q_scorer2.id
       assert_equal acase.scorer_type, 'DefaultScorer'
@@ -87,7 +87,7 @@ class CaseTest < ActiveSupport::TestCase
       user.scorer = user_scorer
       user.save
 
-      acase = Case.create(caseName: 'with default scorer', user: user, scorer: case_scorer)
+      acase = Case.create(case_name: 'with default scorer', user: user, scorer: case_scorer)
 
       assert_equal acase.scorer_id, case_scorer.id
       assert_not_equal acase.scorer_id, user_scorer.id
@@ -95,13 +95,13 @@ class CaseTest < ActiveSupport::TestCase
     end
 
     test 'automatically creates a default try' do
-      acase = Case.create(caseName: 'test case')
+      acase = Case.create(case_name: 'test case')
 
       assert_equal acase.tries.count, 1
     end
 
     test 'sets the last try of the case' do
-      acase = Case.create(caseName: 'test case')
+      acase = Case.create(case_name: 'test case')
 
       default_try = acase.tries.first
 
@@ -110,7 +110,7 @@ class CaseTest < ActiveSupport::TestCase
     end
 
     test 'sets the default try to the default search engine attributes' do
-      acase = Case.create(caseName: 'test case')
+      acase = Case.create(case_name: 'test case')
 
       default_try = acase.tries.first
 
@@ -126,7 +126,7 @@ class CaseTest < ActiveSupport::TestCase
     let(:user)        { users(:random) }
     let(:the_case)    { cases(:random_case) }
     let(:the_try)     { the_case.tries.best }
-    let(:cloned_case) { Case.new(caseName: 'Cloned Case') }
+    let(:cloned_case) { Case.new(case_name: 'Cloned Case') }
 
     describe 'when only cloning a try' do
       it 'creates a new case' do
@@ -138,7 +138,7 @@ class CaseTest < ActiveSupport::TestCase
             assert_equal 0, cloned_case.queries.size
             assert_equal user.id, cloned_case.user_id
 
-            assert_equal 'Cloned Case', cloned_case.caseName
+            assert_equal 'Cloned Case', cloned_case.case_name
 
             cloned_try = cloned_case.tries.best
 

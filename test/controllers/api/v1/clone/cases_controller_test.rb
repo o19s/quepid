@@ -34,7 +34,7 @@ module Api
                 assert_equal the_case.tries.count, cloned_case.tries.count
                 assert_equal 0, cloned_case.queries.count
                 assert_equal user.id, cloned_case.user_id
-                assert_equal "Cloned: #{the_case.caseName}", cloned_case.caseName
+                assert_equal "Cloned: #{the_case.case_name}", cloned_case.case_name
               end
             end
           end
@@ -56,7 +56,7 @@ module Api
                 assert_equal 1, cloned_case.tries.count
                 assert_equal 0, cloned_case.queries.count
                 assert_equal user.id, cloned_case.user_id
-                assert_equal "Cloned: #{the_case.caseName}", cloned_case.caseName
+                assert_equal "Cloned: #{the_case.case_name}", cloned_case.case_name
 
                 cloned_try = cloned_case.tries.best
 

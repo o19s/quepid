@@ -189,11 +189,11 @@ puts "End of seeding users................"
 puts "Seeding cases................"
 
 def print_case_info the_case
-  puts "Seeded case: name: #{the_case.caseName}, ID: #{the_case.id} for: #{the_case.user.username}"
+  puts "Seeded case: name: #{the_case.case_name}, ID: #{the_case.id} for: #{the_case.user.username}"
 end
 
 unless two_case_user.cases.count == 2
-  second_case = two_case_user.cases.create caseName: 'Second Case'
+  second_case = two_case_user.cases.create case_name: 'Second Case'
   print_case_info second_case
 end
 
@@ -202,7 +202,7 @@ end
 ######################################
 
 solr_case = solr_case_user.cases.first
-solr_case.update caseName: 'SOLR CASE'
+solr_case.update case_name: 'SOLR CASE'
 print_case_info solr_case
 
 ######################################
@@ -210,7 +210,7 @@ print_case_info solr_case
 ######################################
 
 es_case = es_case_user.cases.first
-es_case.update caseName: 'ES CASE'
+es_case.update case_name: 'ES CASE'
 es_try = es_case.tries.best
 es_params = {
   search_engine: :es,
@@ -263,7 +263,7 @@ puts "Seeding ratings................"
 search_url = "http://quepid-solr.dev.o19s.com/solr/statedecoded"
 
 tens_of_queries_case = tens_of_queries_user.cases.first
-tens_of_queries_case.update caseName: '10s of Queries'
+tens_of_queries_case.update case_name: '10s of Queries'
 
 unless tens_of_queries_case.queries.count >= 20
   generator = RatingsGenerator.new search_url, { number: 20 }
@@ -321,7 +321,7 @@ if ENV['LARGE_SEEDS']
   print_user_info user_params
 
   hundreds_of_queries_case = hundreds_of_queries_user.cases.first
-  hundreds_of_queries_case.update caseName: '100s of Queries'
+  hundreds_of_queries_case.update case_name: '100s of Queries'
 
   unless hundreds_of_queries_case.queries.count >= 200
     generator = RatingsGenerator.new search_url, { number: 200 }
@@ -336,7 +336,7 @@ if ENV['LARGE_SEEDS']
   end
 
   thousands_of_queries_case = thousands_of_queries_user.cases.first
-  thousands_of_queries_case.update caseName: '1000s of Queries'
+  thousands_of_queries_case.update case_name: '1000s of Queries'
 
   unless thousands_of_queries_case.queries.count >= 2000
     generator = RatingsGenerator.new search_url, { number: 2000 }

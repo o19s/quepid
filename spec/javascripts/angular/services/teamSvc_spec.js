@@ -55,7 +55,7 @@ describe('Service: teamSvc', function () {
   var mockCase = {
     'caseNo':           1,
     'lastTry':          0,
-    'caseName':         'Case'
+    'case_name':         'Case'
   };
 
   var mockScorer = {
@@ -119,6 +119,41 @@ describe('Service: teamSvc', function () {
         expect(response).toEqual(mockTeam);
       });
     $httpBackend.flush();
+  });
+
+  it('fetches an team with its cases', function() {
+    var url = '/api/teams/' + mockTeam.id + '?load_cases=true';
+
+    var mockTeamWithCasesResponse = {
+        id:       1,
+        name:     'Team 1',
+        owner_id: 1,
+        members:  [],
+        cases:    [
+          {
+          'caseNo':           1,
+          'lastTry':          0,
+          'case_name':         'Case'
+          }
+        ],
+        scorers:  [],
+      }
+
+    $httpBackend.expectGET(url).respond(200, mockTeamWithCasesResponse);
+
+    var load_cases = true;
+
+    teamSvc.get(mockTeam.id, load_cases)
+      .then(function(response) {
+        expect(response.cases[0].caseName).toBe('Case');
+    });
+    //var team = teamSvc.get(mockTeam.id, load_cases);
+    $httpBackend.flush();
+    //$httpBackend.verifyNoOutstandingExpectation();
+    //console.log("Lets see what we go");
+    //console.log(team);
+    //expect(team.cases[0].caseName).toBe('Case');
+
   });
 
   it('adds a member to the team', function() {

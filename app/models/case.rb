@@ -5,7 +5,7 @@
 # Table name: cases
 #
 #  id              :integer          not null, primary key
-#  caseName        :string(191)
+#  case_name       :string(191)
 #  search_url      :string(500)
 #  field_spec      :string(500)
 #  lastTry         :integer
@@ -67,7 +67,7 @@ class Case < ActiveRecord::Base
              source_type: 'DefaultScorer'
 
   # Validations
-  validates :caseName, presence: true
+  validates :case_name, presence: true
   validates_with DefaultScorerExistsValidator
 
   # Callbacks

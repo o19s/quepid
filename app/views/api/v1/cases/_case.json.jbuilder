@@ -10,7 +10,7 @@ unless no_teams
   end
 end
 
-json.caseName         acase.caseName
+json.case_name        acase.case_name
 json.caseNo           acase.id
 json.scorerId         acase.scorer_id
 json.scorerType       acase.scorer_type

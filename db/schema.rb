@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20200115131622) do
+ActiveRecord::Schema.define(version: 20200115152546) do
 
   create_table "annotations", force: :cascade do |t|
     t.text     "message",    limit: 65535
@@ -49,7 +49,7 @@ ActiveRecord::Schema.define(version: 20200115131622) do
   add_index "case_scores", ["user_id"], name: "user_id", using: :btree
 
   create_table "cases", force: :cascade do |t|
-    t.string   "caseName",    limit: 191
+    t.string   "case_name",   limit: 191
     t.integer  "lastTry",     limit: 4
     t.integer  "user_id",     limit: 4
     t.boolean  "archived"

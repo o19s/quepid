@@ -24,14 +24,14 @@ module Api
           count     = joe.cases.count
           case_name = 'test case'
 
-          post :create, caseName: case_name
+          post :create, case_name: case_name
 
           assert_response :ok
 
-          assert_equal json_response['caseName'], case_name
+          assert_equal json_response['case_name'], case_name
 
-          assert_equal joe.cases.count,          count + 1
-          assert_equal joe.cases.first.caseName, case_name
+          assert_equal joe.cases.count,             count + 1
+          assert_equal joe.cases.first.case_name, case_name
         end
 
         test 'requires a case name' do
@@ -40,18 +40,18 @@ module Api
           assert_response :bad_request
 
           body = JSON.parse(response.body)
-          assert body['caseName'].include? "can't be blank"
+          assert body['case_name'].include? "can't be blank"
         end
 
         test 'creates an initial defaults try' do
           case_name = 'test case'
 
-          post :create, caseName: case_name
+          post :create, case_name: case_name
 
           assert_response :ok
 
-          assert_equal json_response['caseName'], case_name
-          acase = Case.where(caseName: case_name).first
+          assert_equal json_response['case_name'], case_name
+          acase = Case.where(case_name: case_name).first
 
           assert_equal 1, acase.tries.count
         end
@@ -63,7 +63,7 @@ module Api
             case_name = 'test case'
 
             perform_enqueued_jobs do
-              post :create, caseName: case_name
+              post :create, case_name: case_name
 
               assert_response :ok
             end
@@ -86,8 +86,8 @@ module Api
 
           body = JSON.parse(response.body)
 
-          assert_equal body['caseName'], the_case.caseName
-          assert_equal body['caseNo'],   the_case.id
+          assert_equal body['case_name'], the_case.case_name
+          assert_equal body['caseNo'],    the_case.id
         end
       end
 
@@ -173,29 +173,29 @@ module Api
 
         describe 'when case does not exist' do
           test 'returns not found error' do
-            patch :update, case_id: 'foo', caseName: 'foo'
+            patch :update, case_id: 'foo', case_name: 'foo'
             assert_response :not_found
 
-            put :update, case_id: 'foo', caseName: 'foo'
+            put :update, case_id: 'foo', case_name: 'foo'
             assert_response :not_found
           end
         end
 
         describe 'when changing the case name' do
           test 'updates name successfully using PATCH verb' do
-            patch :update, case_id: one.id, caseName: 'New Name'
+            patch :update, case_id: one.id, case_name: 'New Name'
             assert_response :ok
 
             one.reload
-            assert_equal one.caseName, 'New Name'
+            assert_equal one.case_name, 'New Name'
           end
 
           test 'updates name successfully using PUT verb' do
-            put :update, case_id: one.id, caseName: 'New Name'
+            put :update, case_id: one.id, case_name: 'New Name'
             assert_response :ok
 
             one.reload
-            assert_equal one.caseName, 'New Name'
+            assert_equal one.case_name, 'New Name'
           end
         end
 
@@ -238,7 +238,7 @@ module Api
             expects_any_ga_event_call
 
             perform_enqueued_jobs do
-              patch :update, case_id: one.id, caseName: 'New Name'
+              patch :update, case_id: one.id, case_name: 'New Name'
               assert_response :ok
             end
           end
@@ -378,8 +378,8 @@ module Api
           cases = body['allCases']
 
           assert cases.length == doug.cases.where(archived: true).length
-          assert_equal cases.first['caseName'],  archived.caseName
-          assert_equal cases.first['caseNo'],    archived.id
+          assert_equal cases.first['case_name'],  archived.case_name
+          assert_equal cases.first['caseNo'],     archived.id
         end
 
         test 'archived flag works as a string' do
@@ -391,8 +391,8 @@ module Api
           cases = body['allCases']
 
           assert cases.length == doug.cases.where(archived: true).length
-          assert_equal cases.first['caseName'],  archived.caseName
-          assert_equal cases.first['caseNo'],    archived.id
+          assert_equal cases.first['case_name'],  archived.case_name
+          assert_equal cases.first['caseNo'],     archived.id
         end
 
         test 'only returns owned archived cases' do
@@ -403,9 +403,9 @@ module Api
           assert_response :ok
 
           cases = json_response['allCases']
-          names = cases.map { |c| c['caseName'] }
+          names = cases.map { |c| c['case_name'] }
 
-          assert_not_includes names, shared.caseName
+          assert_not_includes names, shared.case_name
         end
 
         test 'limits list to 3 cases if sorting by last_viewed_at' do

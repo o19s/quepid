@@ -19,6 +19,14 @@ angular.module('QuepidApp')
         this.members      = members;
         this.scorers      = scorers;
         this.owned        = owned;
+
+
+        angular.forEach(this.cases, function(c) {
+          // This is really ugly.
+          c.caseName = c.case_name;
+        });
+
+
       };
 
       this.constructFromData = function(data) {

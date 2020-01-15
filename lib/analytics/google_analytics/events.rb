@@ -138,7 +138,7 @@ module Analytics
         data = {
           category: 'Cases',
           action:   'Created a Case',
-          label:    the_case.caseName,
+          label:    the_case.case_name,
           value:    user.cases.count,
           bounce:   false,
         }
@@ -156,7 +156,7 @@ module Analytics
         data = {
           category: 'Cases',
           action:   'Updated a Case',
-          label:    the_case.caseName,
+          label:    the_case.case_name,
           value:    nil,
           bounce:   false,
         }
@@ -174,7 +174,7 @@ module Analytics
         data = {
           category: 'Cases',
           action:   'Archived a Case',
-          label:    the_case.caseName,
+          label:    the_case.case_name,
           value:    nil,
           bounce:   false,
         }
@@ -194,7 +194,7 @@ module Analytics
         data = {
           category: 'Case Tries',
           action:   'Saved a Case Try',
-          label:    the_case.caseName,
+          label:    the_case.case_name,
           value:    the_try.try_number,
           bounce:   false,
         }
@@ -214,7 +214,7 @@ module Analytics
         data = {
           category: 'Cases',
           action:   'Shared a Case',
-          label:    the_case.caseName,
+          label:    the_case.case_name,
           value:    nil,
           bounce:   false,
         }

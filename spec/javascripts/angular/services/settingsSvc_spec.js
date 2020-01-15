@@ -20,6 +20,7 @@ describe('Service: settingsSvc', function () {
        'args': {'q': ['#$query##'],
                     'fq': ['title:foo', 'sub:bar']},
        'search_url': 'http://example.com:1234/solr/collection1',
+       'search_engine': 'solr',
        'field_spec': 'thumb:field1 title sub',
        'escape_query': true,
        'name': 'try 0',
@@ -31,6 +32,7 @@ describe('Service: settingsSvc', function () {
        'args': {'q': ['#$query##'],
                     'fq': ['title:foo', 'sub:2']},
        'search_url': 'http://example.com:1234/solr/collection1',
+       'search_engine': 'solr',
        'field_spec': 'thumb:field1 title sub',
        'escape_query': true,
        'name': 'try 1',
@@ -48,6 +50,7 @@ describe('Service: settingsSvc', function () {
        'args': {'q': ['#$query##'],
                     'fq': ['title:foo', 'sub:bar']},
        'search_url': 'http://doug.com:1234/solr/collection1',
+       'search_engine':'solr',
        'field_spec': 'thumb:field1 title sub2',
        'escape_query': true,
        'name': 'try 0',
@@ -59,6 +62,7 @@ describe('Service: settingsSvc', function () {
        'args': {'q': ['#$query##'],
                     'bq': ['title:foo^5', 'sub:2']},
        'search_url': 'http://doug.com:1234/solr/collection1',
+       'search_engine':'solr',
        'field_spec': 'thumb:field1 title sub2',
        'escape_query': true,
        'name': 'try 1',
@@ -71,6 +75,7 @@ describe('Service: settingsSvc', function () {
                     'bq': ['title:foo^5', 'sub:2'],
                     'qf': ['title']},
        'search_url': 'http://doug.com:1234/solr/collection1',
+       'search_engine':'solr',
        'field_spec': 'thumb:field1 title sub2',
        'escape_query': true,
        'name': 'try 2',
@@ -136,6 +141,7 @@ describe('Service: settingsSvc', function () {
                       'bq': ['title:foo^5', 'sub:2'],
                       'qf': ['title']},
          'search_url': 'http://doug.com:1234/solr/collection1',
+         'search_engine':'solr',
          'field_spec': 'thumb:field1 title sub2',
          'name': 'try 0'
         }
@@ -212,6 +218,7 @@ describe('Service: settingsSvc', function () {
     'curatorVars': {},
     'args': {},
     'search_url': 'http://doug.com:1234/solr/collection1',
+    'search_engine':'solr',
     'field_spec': 'thumb:field1 title sub2',
     'try_number': 2,
     'name': 'try 2'
@@ -243,12 +250,13 @@ describe('Service: settingsSvc', function () {
       'bq': ['title:foo^5', 'sub:2'],
       'qf': ['title']
     },
-    curatorVars: { titleboost: 5 },
-    escape_query: false,
-    field_spec:   'CHANGED',
-    name:         'try 2',
-    query_params: 'q=#$query##&bq=title:##titleboost##&bq=sub:2&qf=title',
-    search_url:   'http://doug.com:1234/solr/collection1',
+    curatorVars:  { titleboost: 5 },
+    escape_query:  false,
+    field_spec:    'CHANGED',
+    name:          'try 2',
+    query_params:  'q=#$query##&bq=title:##titleboost##&bq=sub:2&qf=title',
+    search_url:    'http://doug.com:1234/solr/collection1',
+    search_engine: 'solr',
     try_number:    2,
   };
 
@@ -286,8 +294,6 @@ describe('Service: settingsSvc', function () {
     $httpBackend.verifyNoOutstandingExpectation();
 
     var currSettings = settingsSvc.editableSettings();
-    console.log("Here comes test");
-    console.log(currSettings.selectedTry);
     expect(currSettings.selectedTry.escapeQuery).toBe(false);
   });
 
@@ -301,6 +307,7 @@ describe('Service: settingsSvc', function () {
       'new':  ['10']
     },
     'search_url': 'http://doug.com:1234/solr/collection1',
+    'search_engine':'solr',
     'escape_query': true,
     'field_spec': 'thumb:field1 title sub2'
   };
@@ -447,6 +454,7 @@ describe('Service: settingsSvc', function () {
      'args':        {'q': ['#$query##'],
                      'fq': ['title:foo', 'sub:bar']},
      'search_url':  'http://doug.com:1234/solr/collection1',
+     'search_engine':'solr',
      'field_spec':    'thumb:field1 title sub2',
      'escape_query': true,
      'name':        'try 3'

@@ -11,11 +11,11 @@ module Api
         def create
           @new_case = Case.new
 
-          preserve_history  = params[:preserve_history]
-          clone_queries     = params[:clone_queries]
-          clone_ratings     = params[:clone_ratings]
-          the_try           = @case.tries.where(try_number: params[:try_number]).first
-          @new_case.caseName = params[:caseName].presence || "Cloned: #{@case.caseName}"
+          preserve_history    = params[:preserve_history]
+          clone_queries       = params[:clone_queries]
+          clone_ratings       = params[:clone_ratings]
+          the_try             = @case.tries.where(try_number: params[:try_number]).first
+          @new_case.case_name = params[:case_name].presence || "Cloned: #{@case.case_name}"
 
           transaction = @new_case.clone_case(
             @case,

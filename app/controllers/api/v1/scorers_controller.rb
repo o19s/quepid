@@ -124,7 +124,7 @@ module Api
           render(
             json:   {
               # rubocop:disable Metrics/LineLength
-              error: "Cannot delete the scorer because it is the default for #{@cases.count} #{'case'.pluralize(@cases.count)}: [#{@cases.take(3).map(&:caseName).to_sentence}]",
+              error: "Cannot delete the scorer because it is the default for #{@cases.count} #{'case'.pluralize(@cases.count)}: [#{@cases.take(3).map(&:case_name).to_sentence}]",
               # rubocop:enable Metrics/LineLength
             },
             status: :bad_request
