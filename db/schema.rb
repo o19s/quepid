@@ -225,8 +225,8 @@ ActiveRecord::Schema.define(version: 20200115205420) do
     t.string   "password",               limit: 120
     t.datetime "agreed_time"
     t.boolean  "agreed"
-    t.boolean  "firstLogin"
-    t.integer  "numLogins",              limit: 4
+    t.boolean  "first_login"
+    t.integer  "num_logins",             limit: 4
     t.integer  "scorer_id",              limit: 4
     t.string   "name",                   limit: 255
     t.boolean  "administrator",                      default: false

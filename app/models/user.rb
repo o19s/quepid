@@ -9,8 +9,8 @@
 #  password               :string(120)
 #  agreed_time            :datetime
 #  agreed                 :boolean
-#  firstLogin             :boolean
-#  numLogins              :integer
+#  first_login            :boolean
+#  num_logins             :integer
 #  scorer_id              :integer
 #  name                   :string(255)
 #  administrator          :boolean          default(FALSE)
@@ -148,8 +148,8 @@ class User < ActiveRecord::Base
   private
 
   def set_defaults
-    self.firstLogin       = true  if firstLogin.nil?
-    self.numLogins        = 0     if numLogins.nil?
+    self.first_login      = true  if first_login.nil?
+    self.num_logins       = 0     if num_logins.nil?
 
     true # this is necessary because it will rollback
     # the creation/update of the user otherwise

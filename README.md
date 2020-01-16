@@ -130,7 +130,8 @@ bin/docker r tail -f -n 200 log/development.log
 If you aren't using Docker, then create test database...
 
 ```
-rake db:create RAILS_ENV=test
+bin/docker r rake db:drop RAILS_ENV=test
+bin/docker r rake db:create RAILS_ENV=test
 ```
 
 There are three types of tests that you can run:
@@ -392,7 +393,14 @@ Followed by `bin/docker r bundle exec rake db:migrate`
 
 # QA
 
-There is a code deployment pipeline to the staging-quepid.herokuapp.com site.
+There is a code deployment pipeline to the http://quepid-staging.herokuapp.com site that
+is run on successful commits to `master`.  
+
+If you have pending migrations you will need to run them via:
+```
+./heroku run bin/rake db:migrate -a quepid-staging
+./heroku restart -a quepid-staging
+```
 
 ## Seed Data
 

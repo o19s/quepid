@@ -21,7 +21,7 @@ user_defaults = {
   administrator:    false,
   agreed:           true,
   agreed_time:      Time.now,
-  firstLogin:       false,
+  first_login:       false,
   name:             'No Name',
   password:         'password',
   username:         'foo',

@@ -38,6 +38,12 @@
             This document can't be uniquely identified, so Quepid can't store ratings for this document. </br> <span ng-bind-html="doc.error"></span>.
           </div>
 
+          <!-- Media Embeds -->
+          <li ng-repeat="(fieldName, fieldValue) in doc.embeds">
+            <span class="subLabel">{{fieldName}}:</span>
+            <span quepid-embed data-src="fieldValue"></span>
+          </li>
+
           <!-- Other fields -->
           <li ng-repeat="(fieldName, fieldValue) in snippets">
             <span class="subLabel">{{fieldName}}:</span>
