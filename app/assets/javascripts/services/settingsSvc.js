@@ -109,7 +109,7 @@ angular.module('QuepidApp')
             tryToUse = settings.selectedTry;
             settings.selectTry(tryToUse.tryNo);
           }
-          
+
           settings.escapeQuery   = tryToUse.escapeQuery;
           settings.fieldSpec     = tryToUse.fieldSpec;
           settings.numberOfRows  = tryToUse.numberOfRows;
@@ -169,7 +169,7 @@ angular.module('QuepidApp')
         sentData.number_of_rows  = settingsToSave.numberOfRows;
         sentData.query_params    = settingsToSave.selectedTry.queryParams;
         sentData.search_engine   = settingsToSave.searchEngine;
-        sentData.searchUrl       = settingsToSave.searchUrl;
+        sentData.search_url       = settingsToSave.searchUrl;
 
         return $http.post('/api/cases/' + currCaseNo + '/tries', sentData)
           .then(function(response) {
