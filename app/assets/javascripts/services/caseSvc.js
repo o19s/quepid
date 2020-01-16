@@ -176,7 +176,7 @@ angular.module('QuepidApp')
         // http post /cases/
         // returns as if we did http get /cases/<caseNo>
         // on success, sets current case number to case number
-        var data = {'caseName': 'Case: ' + this.casesCount};
+        var data = {'case_name': 'Case: ' + this.casesCount};
         if (caseName) {
           data.case_name = caseName;
         }
