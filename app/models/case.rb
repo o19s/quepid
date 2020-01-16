@@ -8,7 +8,7 @@
 #  case_name       :string(191)
 #  search_url      :string(500)
 #  field_spec      :string(500)
-#  lastTry         :integer
+#  last_try_number :integer
 #  user_id         :integer
 #  archived        :boolean
 #  scorer_id       :integer
@@ -113,7 +113,7 @@ class Case < ActiveRecord::Base
       elsif try
         clone_try try
       end
-      self.lastTry = tries.last.try_number
+      self.last_try_number = tries.last.try_number
 
       if clone_queries
         original_case.queries.each do |query|
@@ -159,9 +159,9 @@ class Case < ActiveRecord::Base
   end
 
   def add_default_try
-    try_number  = (lastTry || -1) + 1
+    try_number  = (last_try_number || -1) + 1
     the_try     = tries.create(try_number: try_number)
-    update lastTry: the_try.try_number
+    update last_try_number: the_try.try_number
   end
 
   # rubocop:disable Metrics/MethodLength

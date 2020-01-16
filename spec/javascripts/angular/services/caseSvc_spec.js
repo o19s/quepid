@@ -252,18 +252,18 @@ describe('Service: caseSvc', function () {
       expect(caseSvc.getSelectedCase().caseNo).toEqual(2);
     });
 
-    var archivedCases = {
+    var archivedCasesAPIResponse = {
       allCases: [
         {
           'caseNo':   6,
           'case_name': 'archived',
-          'lastTry':  4
+          'last_try_number':  4
         }
       ]
     };
 
     it('add back archived case', function() {
-      $httpBackend.expectGET('/api/cases?archived=true').respond(200, archivedCases);
+      $httpBackend.expectGET('/api/cases?archived=true').respond(200, archivedCasesAPIResponse);
       var called = 0;
       caseSvc.fetchArchived()
       .then(function() {
@@ -278,7 +278,7 @@ describe('Service: caseSvc', function () {
       expect(called).toBe(1);
 
       var archivedCaseNo = caseSvc.archived[0].caseNo;
-      $httpBackend.expectPUT('/api/cases/' + archivedCaseNo).respond(200, archivedCases.allCases[0]);
+      $httpBackend.expectPUT('/api/cases/' + archivedCaseNo).respond(200, archivedCasesAPIResponse.allCases[0]);
 
       var casesBefore = caseSvc.allCases.length;
       caseSvc.undeleteCase(caseSvc.archived[0]).then(function() {
@@ -294,7 +294,7 @@ describe('Service: caseSvc', function () {
     });
 
     it('refetch archive', function() {
-      $httpBackend.expectGET('/api/cases?archived=true').respond(200, archivedCases);
+      $httpBackend.expectGET('/api/cases?archived=true').respond(200, archivedCasesAPIResponse);
       var called = 0;
       caseSvc.fetchArchived()
       .then(function() {
@@ -308,7 +308,7 @@ describe('Service: caseSvc', function () {
       $httpBackend.flush();
       expect(called).toBe(1);
 
-      $httpBackend.expectGET('/api/cases?archived=true').respond(200, archivedCases);
+      $httpBackend.expectGET('/api/cases?archived=true').respond(200, archivedCasesAPIResponse);
       caseSvc.fetchArchived()
       .then(function() {
         called++;
@@ -323,9 +323,9 @@ describe('Service: caseSvc', function () {
     });
 
     it('larger archive', function() {
-      var archive = angular.copy(archivedCases);
-      var baseNo = archive.allCases[0].caseNo;
-      var baseName = archive.allCases[0].caseName;
+      var archiveAPIResponse = angular.copy(archivedCasesAPIResponse);
+      var baseNo = archiveAPIResponse.allCases[0].caseNo;
+      var baseName = archiveAPIResponse.allCases[0].case_name;
       var numArchived = 10;
       for (var i = 0; i < numArchived - 1; i++) {
         var newCase = {
@@ -333,10 +333,10 @@ describe('Service: caseSvc', function () {
           'case_name': baseName + (i + 1),
           'lastTry':  i
         };
-        archive.allCases.push(newCase);
+        archiveAPIResponse.allCases.push(newCase);
       }
 
-      $httpBackend.expectGET('/api/cases?archived=true').respond(200, archive);
+      $httpBackend.expectGET('/api/cases?archived=true').respond(200, archiveAPIResponse);
       var called = 0;
       caseSvc.fetchArchived()
       .then(function() {
@@ -351,7 +351,7 @@ describe('Service: caseSvc', function () {
       angular.forEach(caseSvc.archived, function(aCase) {
         if (aCase.caseNo % 2 === 1) {
           undeleted.push(aCase.caseNo);
-          $httpBackend.expectPUT('/api/cases/' + aCase.caseNo).respond(200, archive.allCases[aCase.caseNo - baseNo]);
+          $httpBackend.expectPUT('/api/cases/' + aCase.caseNo).respond(200, archiveAPIResponse.allCases[aCase.caseNo - baseNo]);
           caseSvc.undeleteCase(aCase)
           .then(function() {
             called++;

@@ -6,7 +6,7 @@
 #
 #  id              :integer          not null, primary key
 #  case_name       :string(191)
-#  lastTry         :integer
+#  last_try_number :integer
 #  user_id         :integer
 #  archived        :boolean
 #  scorer_id       :integer
@@ -105,7 +105,7 @@ class CaseTest < ActiveSupport::TestCase
 
       default_try = acase.tries.first
 
-      assert_equal default_try.try_number, acase.lastTry
+      assert_equal default_try.try_number, acase.last_try_number
       assert_equal default_try.try_number, 0
     end
 
@@ -176,7 +176,7 @@ class CaseTest < ActiveSupport::TestCase
             assert_equal 1, cloned_case.tries.size
             assert_equal the_case.queries.size, cloned_case.queries.size
             assert_equal user.id, cloned_case.user_id
-            assert_equal 0, cloned_case.lastTry
+            assert_equal 0, cloned_case.last_try_number
           end
         end
       end

@@ -168,7 +168,7 @@ module Api
             search_engine: 'solr',
           }
 
-          case_last_try = the_case.lastTry
+          case_last_try = the_case.last_try_number
 
           assert_difference 'the_case.tries.count' do
             post :create, try_params.merge(case_id: the_case.id)
@@ -180,7 +180,7 @@ module Api
             try_response  = JSON.parse(response.body)
             created_try   = the_case.tries.where(try_number: try_response['try_number']).first
 
-            assert_equal the_case.lastTry, case_last_try + 1
+            assert_equal the_case.last_try_number, case_last_try + 1
 
             assert_try_matches_response try_response,  created_try
             assert_try_matches_params   try_params,    created_try
@@ -240,12 +240,12 @@ module Api
           try_response  = JSON.parse(response.body)
           created_try   = the_case.tries.where(try_number: try_response['try_number']).first
 
-          assert_match( /Try/,                        created_try.name )
-          assert_match( /#{the_case.lastTry}/,        created_try.name )
-          assert_match( /#{created_try.try_number}/,  created_try.name )
+          assert_match( /Try/,                         created_try.name )
+          assert_match( /#{the_case.last_try_number}/, created_try.name )
+          assert_match( /#{created_try.try_number}/,   created_try.name )
 
           assert_match( /Try/,                            try_response['name'] )
-          assert_match( /#{the_case.lastTry}/,            try_response['name'] )
+          assert_match( /#{the_case.last_try_number}/,    try_response['name'] )
           assert_match( /#{try_response['try_number']}/,  try_response['name'] )
         end
 
@@ -291,9 +291,9 @@ module Api
           try_response  = JSON.parse(response.body)
           created_try   = the_case.tries.where(try_number: try_response['try_number']).first
 
-          assert_match( /Try/,                        created_try.name )
-          assert_match( /#{the_case.lastTry}/,        created_try.name )
-          assert_match( /#{created_try.try_number}/,  created_try.name )
+          assert_match( /Try/,                         created_try.name )
+          assert_match( /#{the_case.last_try_number}/, created_try.name )
+          assert_match( /#{created_try.try_number}/,   created_try.name )
 
           assert_not_nil created_try.search_engine
           assert_not_nil created_try.field_spec
@@ -364,9 +364,9 @@ module Api
             try_response  = JSON.parse(response.body)
             created_try   = the_case.tries.where(try_number: try_response['try_number']).first
 
-            assert_match( /Try/,                        created_try.name )
-            assert_match( /#{the_case.lastTry}/,        created_try.name )
-            assert_match( /#{created_try.try_number}/,  created_try.name )
+            assert_match( /Try/,                         created_try.name )
+            assert_match( /#{the_case.last_try_number}/, created_try.name )
+            assert_match( /#{created_try.try_number}/,   created_try.name )
 
             assert_not_nil created_try.search_engine
             assert_not_nil created_try.field_spec
@@ -393,9 +393,9 @@ module Api
             try_response  = JSON.parse(response.body)
             created_try   = the_case.tries.where(try_number: try_response['try_number']).first
 
-            assert_match( /Try/,                        created_try.name )
-            assert_match( /#{the_case.lastTry}/,        created_try.name )
-            assert_match( /#{created_try.try_number}/,  created_try.name )
+            assert_match( /Try/,                         created_try.name )
+            assert_match( /#{the_case.last_try_number}/, created_try.name )
+            assert_match( /#{created_try.try_number}/,   created_try.name )
 
             assert_not_nil created_try.search_engine
             assert_not_nil created_try.field_spec

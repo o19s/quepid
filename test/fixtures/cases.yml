@@ -4,7 +4,7 @@
 #
 #  id              :integer          not null, primary key
 #  case_name       :string(191)
-#  lastTry         :integer
+#  last_try_number :integer
 #  user_id         :integer
 #  archived        :boolean
 #  scorer_id       :integer
@@ -68,13 +68,13 @@ case_with_one_try:
   user: :joey
   archived: false
   case_name: Case with one try
-  lastTry: 0
+  last_try_number: 0
 
 case_with_two_tries:
   user: :joey
   archived: false
   case_name: Case with two tries
-  lastTry: 1
+  last_try_number: 1
 
 owned_case:
   user:     :case_finder_user

@@ -19,7 +19,7 @@ json.queriesCount     acase.queries.count
 
 json.teams            teams unless no_teams
 
-json.lastTry acase.tries.best.try_number unless no_tries || acase.tries.blank? || acase.tries.best.blank?
+json.last_try_number acase.tries.best.try_number unless no_tries || acase.tries.blank? || acase.tries.best.blank?
 
 unless shallow
   json.queries do
