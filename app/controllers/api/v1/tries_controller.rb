@@ -16,7 +16,7 @@ module Api
         @try = @case.tries.build try_params
 
         try_number = @case.last_try_number + 1
-        
+
         @try.try_number       = try_number
         @case.last_try_number = try_number
 
