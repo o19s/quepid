@@ -389,9 +389,9 @@ bin/docker r bundle exec bin/rails g migration FixCuratorVariablesTriesForeignKe
 Followed by `bin/docker r bundle exec rake db:migrate`
 
 
-# QA Environment
+# QA
 
-There is a code deployment pipeline to the quepid-staging.herokuapp.com site that
+There is a code deployment pipeline to the http://quepid-staging.herokuapp.com site that
 is run on successful commits to `master`.  
 
 If you have migrations you will need to run them via:
