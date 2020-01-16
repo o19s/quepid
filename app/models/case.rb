@@ -5,12 +5,11 @@
 # Table name: cases
 #
 #  id              :integer          not null, primary key
-#  caseName        :string(191)
-#  searchUrl       :string(500)
-#  fieldSpec       :string(500)
-#  lastTry         :integer
+#  case_name       :string(191)
+#  search_url      :string(500)
+#  field_spec      :string(500)
+#  last_try_number :integer
 #  user_id         :integer
-#  displayPosition :integer
 #  archived        :boolean
 #  scorer_id       :integer
 #  created_at      :datetime         not null
@@ -68,7 +67,7 @@ class Case < ActiveRecord::Base
              source_type: 'DefaultScorer'
 
   # Validations
-  validates :caseName, presence: true
+  validates :case_name, presence: true
   validates_with DefaultScorerExistsValidator
 
   # Callbacks
@@ -114,7 +113,7 @@ class Case < ActiveRecord::Base
       elsif try
         clone_try try
       end
-      self.lastTry = tries.last.tryNo
+      self.last_try_number = tries.last.try_number
 
       if clone_queries
         original_case.queries.each do |query|
@@ -160,21 +159,21 @@ class Case < ActiveRecord::Base
   end
 
   def add_default_try
-    try_number  = (lastTry || -1) + 1
-    the_try     = tries.create(tryNo: try_number)
-    update lastTry: the_try.tryNo
+    try_number  = (last_try_number || -1) + 1
+    the_try     = tries.create(try_number: try_number)
+    update last_try_number: the_try.try_number
   end
 
   # rubocop:disable Metrics/MethodLength
   def clone_try the_try
     new_try = Try.new(
-      escapeQuery:  the_try.escapeQuery,
-      fieldSpec:    the_try.fieldSpec,
-      name:         the_try.name,
-      queryParams:  the_try.queryParams,
-      searchEngine: the_try.searchEngine,
-      searchUrl:    the_try.searchUrl,
-      tryNo:        0
+      escape_query:  the_try.escape_query,
+      field_spec:    the_try.field_spec,
+      name:          the_try.name,
+      query_params:  the_try.query_params,
+      search_engine: the_try.search_engine,
+      search_url:    the_try.search_url,
+      try_number:    0
     )
     tries << new_try
 

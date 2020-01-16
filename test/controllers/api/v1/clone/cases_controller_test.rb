@@ -34,7 +34,7 @@ module Api
                 assert_equal the_case.tries.count, cloned_case.tries.count
                 assert_equal 0, cloned_case.queries.count
                 assert_equal user.id, cloned_case.user_id
-                assert_equal "Cloned: #{the_case.caseName}", cloned_case.caseName
+                assert_equal "Cloned: #{the_case.case_name}", cloned_case.case_name
               end
             end
           end
@@ -43,8 +43,8 @@ module Api
             assert_difference 'Case.count' do
               assert_difference 'Try.count' do
                 data = {
-                  case_id: the_case.id,
-                  tryNo:   the_try.tryNo,
+                  case_id:    the_case.id,
+                  try_number: the_try.try_number,
                 }
 
                 post :create, data
@@ -56,16 +56,16 @@ module Api
                 assert_equal 1, cloned_case.tries.count
                 assert_equal 0, cloned_case.queries.count
                 assert_equal user.id, cloned_case.user_id
-                assert_equal "Cloned: #{the_case.caseName}", cloned_case.caseName
+                assert_equal "Cloned: #{the_case.case_name}", cloned_case.case_name
 
                 cloned_try = cloned_case.tries.best
 
-                assert_equal the_try.queryParams,   cloned_try.queryParams
-                assert_equal 'title',               cloned_try.fieldSpec
-                assert_equal the_try.searchUrl,     cloned_try.searchUrl
+                assert_equal the_try.query_params,  cloned_try.query_params
+                assert_equal 'title',               cloned_try.field_spec
+                assert_equal the_try.search_url,    cloned_try.search_url
                 assert_equal 'Try 0',               cloned_try.name
-                assert_equal the_try.searchEngine,  cloned_try.searchEngine
-                assert_equal the_try.escapeQuery,   cloned_try.escapeQuery
+                assert_equal the_try.search_engine, cloned_try.search_engine
+                assert_equal the_try.escape_query,  cloned_try.escape_query
                 assert_equal the_try.curator_variables.size, cloned_try.curator_variables.size
               end
             end

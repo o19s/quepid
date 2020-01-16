@@ -15,9 +15,10 @@ module Api
       def create
         @try = @case.tries.build try_params
 
-        try_number    = @case.lastTry + 1
-        @try.tryNo    = try_number
-        @case.lastTry = try_number
+        try_number = @case.last_try_number + 1
+
+        @try.try_number       = try_number
+        @case.last_try_number = try_number
 
         if @try.save && @case.save
           @try.add_curator_vars params[:curatorVars]
@@ -50,7 +51,7 @@ module Api
       private
 
       def set_try
-        @try = @case.tries.where(tryNo: params[:tryNo]).first
+        @try = @case.tries.where(try_number: params[:try_number]).first
 
         render json: { message: 'Try not found!' }, status: :not_found unless @try
       end
@@ -61,13 +62,13 @@ module Api
 
       def try_params
         params.permit(
-          :escapeQuery,
-          :fieldSpec,
+          :escape_query,
+          :field_spec,
           :name,
           :number_of_rows,
-          :queryParams,
-          :searchEngine,
-          :searchUrl
+          :query_params,
+          :search_engine,
+          :search_url
         )
       end
     end

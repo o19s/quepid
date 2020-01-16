@@ -32,7 +32,7 @@ class QueryTest < ActiveSupport::TestCase
     end
 
     test 'bootstraps new query with default position values' do
-      new_case = Case.create caseName: 'New Case'
+      new_case = Case.create case_name: 'New Case'
       new_query = new_case.queries.create query_text: 'New query'
 
       assert_equal new_query.arranged_at,   Arrangement::List::STARTING_POSITION

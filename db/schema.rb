@@ -11,8 +11,8 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20200110194733) do
-  
+ActiveRecord::Schema.define(version: 20200115205420) do
+
   create_table "annotations", force: :cascade do |t|
     t.text     "message",    limit: 65535
     t.string   "source",     limit: 255
@@ -49,12 +49,9 @@ ActiveRecord::Schema.define(version: 20200110194733) do
   add_index "case_scores", ["user_id"], name: "user_id", using: :btree
 
   create_table "cases", force: :cascade do |t|
-    t.string   "caseName",        limit: 191
-    t.string   "searchUrl",       limit: 500
-    t.string   "fieldSpec",       limit: 500
-    t.integer  "lastTry",         limit: 4
+    t.string   "case_name",       limit: 191
+    t.integer  "last_try_number", limit: 4
     t.integer  "user_id",         limit: 4
-    t.integer  "displayPosition", limit: 4
     t.boolean  "archived"
     t.integer  "scorer_id",       limit: 4
     t.datetime "created_at",                  null: false
@@ -207,21 +204,21 @@ ActiveRecord::Schema.define(version: 20200110194733) do
   add_index "teams_scorers", ["team_id"], name: "index_teams_scorers_on_team_id", using: :btree
 
   create_table "tries", force: :cascade do |t|
-    t.integer  "tryNo",          limit: 4
-    t.text     "queryParams",    limit: 65535
+    t.integer  "try_number",     limit: 4
+    t.text     "query_params",   limit: 65535
     t.integer  "case_id",        limit: 4
-    t.string   "fieldSpec",      limit: 500
-    t.string   "searchUrl",      limit: 500
+    t.string   "field_spec",     limit: 500
+    t.string   "search_url",     limit: 500
     t.string   "name",           limit: 50
-    t.string   "searchEngine",   limit: 50,    default: "solr"
-    t.boolean  "escapeQuery",                  default: true
+    t.string   "search_engine",  limit: 50,    default: "solr"
+    t.boolean  "escape_query",                 default: true
     t.integer  "number_of_rows", limit: 4,     default: 10
     t.datetime "created_at",                                    null: false
     t.datetime "updated_at",                                    null: false
   end
 
   add_index "tries", ["case_id"], name: "case_id", using: :btree
-  add_index "tries", ["tryNo"], name: "ix_queryparam_tryNo", using: :btree
+  add_index "tries", ["try_number"], name: "ix_queryparam_tryNo", using: :btree
 
   create_table "users", force: :cascade do |t|
     t.string   "username",               limit: 80

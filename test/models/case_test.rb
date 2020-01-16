@@ -5,12 +5,9 @@
 # Table name: cases
 #
 #  id              :integer          not null, primary key
-#  caseName        :string(191)
-#  searchUrl       :string(500)
-#  fieldSpec       :string(500)
-#  lastTry         :integer
+#  case_name       :string(191)
+#  last_try_number :integer
 #  user_id         :integer
-#  displayPosition :integer
 #  archived        :boolean
 #  scorer_id       :integer
 #  created_at      :datetime         not null
@@ -23,13 +20,13 @@ require 'test_helper'
 class CaseTest < ActiveSupport::TestCase
   describe 'Creating a case' do
     test 'sets archived flag to false by default' do
-      acase = Case.create(caseName: 'test case')
+      acase = Case.create(case_name: 'test case')
 
       assert_equal acase.archived, false
     end
 
     test 'does not override archived flag if set' do
-      acase = Case.create(caseName: 'test case', archived: true)
+      acase = Case.create(case_name: 'test case', archived: true)
 
       assert_equal acase.archived, true
     end
@@ -40,7 +37,7 @@ class CaseTest < ActiveSupport::TestCase
       user.scorer = user_scorer
       user.save
 
-      acase = Case.create(caseName: 'with default scorer', user: user)
+      acase = Case.create(case_name: 'with default scorer', user: user)
 
       assert_equal acase.scorer_id, user_scorer.id
       assert_equal acase.scorer_id, user.scorer_id
@@ -52,7 +49,7 @@ class CaseTest < ActiveSupport::TestCase
       user.default_scorer = q_scorer
       user.save
 
-      acase = Case.create(caseName: 'with q scorer', user: user)
+      acase = Case.create(case_name: 'with q scorer', user: user)
 
       assert_equal acase.scorer_id,   q_scorer.id
       assert_equal acase.scorer_type, 'DefaultScorer'
@@ -66,7 +63,7 @@ class CaseTest < ActiveSupport::TestCase
       user.default_scorer = q_scorer
       user.save
 
-      acase = Case.create(caseName: 'with default scorer', user: user)
+      acase = Case.create(case_name: 'with default scorer', user: user)
 
       assert_equal acase.scorer_id,   user_scorer.id
       assert_equal acase.scorer_id,   user.scorer_id
@@ -77,7 +74,7 @@ class CaseTest < ActiveSupport::TestCase
       q_scorer2 = default_scorers(:v2)
       user      = users(:random)
 
-      acase = Case.create(caseName: 'with default scorer', user: user)
+      acase = Case.create(case_name: 'with default scorer', user: user)
 
       assert_equal acase.scorer_id,   q_scorer2.id
       assert_equal acase.scorer_type, 'DefaultScorer'
@@ -90,7 +87,7 @@ class CaseTest < ActiveSupport::TestCase
       user.scorer = user_scorer
       user.save
 
-      acase = Case.create(caseName: 'with default scorer', user: user, scorer: case_scorer)
+      acase = Case.create(case_name: 'with default scorer', user: user, scorer: case_scorer)
 
       assert_equal acase.scorer_id, case_scorer.id
       assert_not_equal acase.scorer_id, user_scorer.id
@@ -98,30 +95,30 @@ class CaseTest < ActiveSupport::TestCase
     end
 
     test 'automatically creates a default try' do
-      acase = Case.create(caseName: 'test case')
+      acase = Case.create(case_name: 'test case')
 
       assert_equal acase.tries.count, 1
     end
 
     test 'sets the last try of the case' do
-      acase = Case.create(caseName: 'test case')
+      acase = Case.create(case_name: 'test case')
 
       default_try = acase.tries.first
 
-      assert_equal default_try.tryNo, acase.lastTry
-      assert_equal default_try.tryNo, 0
+      assert_equal default_try.try_number, acase.last_try_number
+      assert_equal default_try.try_number, 0
     end
 
     test 'sets the default try to the default search engine attributes' do
-      acase = Case.create(caseName: 'test case')
+      acase = Case.create(case_name: 'test case')
 
       default_try = acase.tries.first
 
-      assert_equal default_try.searchEngine,  Try::DEFAULTS[:search_engine]
-      assert_equal default_try.fieldSpec,     Try::DEFAULTS[:solr][:field_spec]
-      assert_equal default_try.searchUrl,     Try::DEFAULTS[:solr][:search_url]
-      assert_equal default_try.queryParams,   Try::DEFAULTS[:solr][:query_params]
-      assert_equal default_try.escapeQuery,   true
+      assert_equal default_try.search_engine, Try::DEFAULTS[:search_engine]
+      assert_equal default_try.field_spec,    Try::DEFAULTS[:solr][:field_spec]
+      assert_equal default_try.search_url,    Try::DEFAULTS[:solr][:search_url]
+      assert_equal default_try.query_params,  Try::DEFAULTS[:solr][:query_params]
+      assert_equal default_try.escape_query,  true
     end
   end
 
@@ -129,7 +126,7 @@ class CaseTest < ActiveSupport::TestCase
     let(:user)        { users(:random) }
     let(:the_case)    { cases(:random_case) }
     let(:the_try)     { the_case.tries.best }
-    let(:cloned_case) { Case.new(caseName: 'Cloned Case') }
+    let(:cloned_case) { Case.new(case_name: 'Cloned Case') }
 
     describe 'when only cloning a try' do
       it 'creates a new case' do
@@ -141,16 +138,16 @@ class CaseTest < ActiveSupport::TestCase
             assert_equal 0, cloned_case.queries.size
             assert_equal user.id, cloned_case.user_id
 
-            assert_equal 'Cloned Case', cloned_case.caseName
+            assert_equal 'Cloned Case', cloned_case.case_name
 
             cloned_try = cloned_case.tries.best
 
-            assert_equal the_try.queryParams,   cloned_try.queryParams
-            assert_equal 'title',               cloned_try.fieldSpec
-            assert_equal the_try.searchUrl,     cloned_try.searchUrl
+            assert_equal the_try.query_params,  cloned_try.query_params
+            assert_equal 'title',               cloned_try.field_spec
+            assert_equal the_try.search_url,    cloned_try.search_url
             assert_equal 'Try 0',               cloned_try.name
-            assert_equal the_try.searchEngine,  cloned_try.searchEngine
-            assert_equal the_try.escapeQuery,   cloned_try.escapeQuery
+            assert_equal the_try.search_engine, cloned_try.search_engine
+            assert_equal the_try.escape_query,  cloned_try.escape_query
           end
         end
       end
@@ -179,7 +176,7 @@ class CaseTest < ActiveSupport::TestCase
             assert_equal 1, cloned_case.tries.size
             assert_equal the_case.queries.size, cloned_case.queries.size
             assert_equal user.id, cloned_case.user_id
-            assert_equal 0, cloned_case.lastTry
+            assert_equal 0, cloned_case.last_try_number
           end
         end
       end

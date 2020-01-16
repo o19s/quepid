@@ -5,14 +5,14 @@
 # Table name: tries
 #
 #  id             :integer          not null, primary key
-#  tryNo          :integer
-#  queryParams    :text(65535)
+#  try_number     :integer
+#  query_params   :text(65535)
 #  case_id        :integer
-#  fieldSpec      :string(500)
-#  searchUrl      :string(500)
+#  field_spec     :string(500)
+#  search_url     :string(500)
 #  name           :string(50)
-#  searchEngine   :string(50)       default("solr")
-#  escapeQuery    :boolean          default(TRUE)
+#  search_engine  :string(50)       default("solr")
+#  escape_query   :boolean          default(TRUE)
 #  number_of_rows :integer          default(10)
 #  created_at     :datetime         not null
 #  updated_at     :datetime         not null

@@ -10,7 +10,7 @@ unless no_teams
   end
 end
 
-json.caseName         acase.caseName
+json.case_name        acase.case_name
 json.caseNo           acase.id
 json.scorerId         acase.scorer_id
 json.scorerType       acase.scorer_type
@@ -19,7 +19,7 @@ json.queriesCount     acase.queries.count
 
 json.teams            teams unless no_teams
 
-json.lastTry acase.tries.best.tryNo unless no_tries || acase.tries.blank? || acase.tries.best.blank?
+json.last_try_number acase.tries.best.try_number unless no_tries || acase.tries.blank? || acase.tries.best.blank?
 
 unless shallow
   json.queries do

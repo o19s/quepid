@@ -3,11 +3,11 @@
 angular.module('QuepidApp')
   .service('caseSvc', [
     '$http', '$filter', '$q', '$rootScope',
-    'caseTryNavSvc', 'teamSvc', 'settingsSvc',
+    'caseTryNavSvc', 'settingsSvc',
     'broadcastSvc',
     function caseSvc(
       $http, $filter, $q, $rootScope,
-      caseTryNavSvc, teamSvc, settingsSvc,
+      caseTryNavSvc, settingsSvc,
       broadcastSvc
     ) {
 
@@ -38,8 +38,8 @@ angular.module('QuepidApp')
         var theCase               = this;
 
         theCase.caseNo            = data.caseNo;
-        theCase.lastTry           = data.lastTry;
-        theCase.caseName          = data.caseName;
+        theCase.lastTry           = data.last_try_number;
+        theCase.caseName          = data.case_name;
         theCase.lastScore         = data.lastScore;
         theCase.scorerId          = data.scorerId;
         theCase.scorerType        = data.scorerType;
@@ -66,7 +66,7 @@ angular.module('QuepidApp')
             var url  = '/api/cases/' + theCase.caseNo;
             var data = {
               caseNo:   theCase.caseNo,
-              caseName: newName
+              case_name: newName
             };
 
             return $http.put(url, data)
@@ -176,9 +176,9 @@ angular.module('QuepidApp')
         // http post /cases/
         // returns as if we did http get /cases/<caseNo>
         // on success, sets current case number to case number
-        var data = {'caseName': 'Case: ' + this.casesCount};
+        var data = {'case_name': 'Case: ' + this.casesCount};
         if (caseName) {
-          data.caseName = caseName;
+          data.case_name = caseName;
         }
         if (queries) {
           data.queries = queries;
@@ -444,7 +444,7 @@ angular.module('QuepidApp')
           clone_ratings:    options.ratings,
           preserve_history: options.history,
           tryNo:            options.tryId,
-          caseName:         options.caseName
+          case_name:         options.caseName
         };
         var defaultOptions  = {
           case_id:          theCase.caseNo,

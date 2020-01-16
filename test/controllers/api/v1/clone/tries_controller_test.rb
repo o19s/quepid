@@ -15,22 +15,22 @@ module Api
         end
 
         def assert_try_matches_response response, try
-          assert_equal try.queryParams, response['queryParams']
-          assert_equal try.fieldSpec,   response['fieldSpec']
-          assert_equal try.searchUrl,   response['searchUrl']
-          assert_equal try.tryNo,       response['tryNo']
-          assert_equal try.name,        response['name']
-          assert_equal try.solr_args,   response['args']
-          assert_equal try.escapeQuery, response['escapeQuery']
+          assert_equal try.query_params, response['query_params']
+          assert_equal try.field_spec,   response['field_spec']
+          assert_equal try.search_url,   response['search_url']
+          assert_equal try.try_number,   response['try_number']
+          assert_equal try.name,         response['name']
+          assert_equal try.solr_args,    response['args']
+          assert_equal try.escape_query, response['escape_query']
 
           assert_curator_vars_equal try.curator_vars_map, response['curatorVars']
         end
 
         def assert_tries_match a_try, try
-          assert_equal try.case_id,     a_try.case_id
-          assert_equal try.queryParams, a_try.queryParams
-          assert_equal try.searchUrl,   a_try.searchUrl
-          assert_equal try.escapeQuery, a_try.escapeQuery
+          assert_equal try.case_id,      a_try.case_id
+          assert_equal try.query_params, a_try.query_params
+          assert_equal try.search_url,   a_try.search_url
+          assert_equal try.escape_query, a_try.escape_query
         end
 
         def assert_curator_vars_equal vars, response_vars
@@ -48,14 +48,14 @@ module Api
           let(:the_try)   { tries(:first_for_case_with_two_tries) }
 
           it 'returns a not found error if try does not exist' do
-            post :create, case_id: the_case.id, tryNo: 123_456
+            post :create, case_id: the_case.id, try_number: 123_456
 
             assert_response :not_found
           end
 
           it 'successfully duplicates try for case' do
             assert_difference 'the_case.tries.count' do
-              post :create, case_id: the_case.id, tryNo: the_try.tryNo
+              post :create, case_id: the_case.id, try_number: the_try.try_number
 
               assert_response :ok
 
@@ -73,7 +73,7 @@ module Api
               expects_any_ga_event_call
 
               perform_enqueued_jobs do
-                post :create, case_id: the_case.id, tryNo: the_try.tryNo
+                post :create, case_id: the_case.id, try_number: the_try.try_number
 
                 assert_response :ok
               end

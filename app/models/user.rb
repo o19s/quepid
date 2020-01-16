@@ -162,6 +162,6 @@ class User < ActiveRecord::Base
   end
 
   def add_default_case
-    cases.create caseName: Case::DEFAULT_NAME
+    cases.create case_name: Case::DEFAULT_NAME
   end
 end

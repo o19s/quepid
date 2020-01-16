@@ -68,7 +68,7 @@ Rails.application.routes.draw do
       resources :cases, except: %i[new edit], param: :case_id
       resources :cases, only: [] do
         # Case Tries
-        resources :tries, param: :tryNo, except: %i[new edit] do
+        resources :tries, param: :try_number, except: %i[new edit] do
           post '/duplicate' => 'duplicate_tries#create', as: :duplicate_try
         end
 
@@ -108,7 +108,7 @@ Rails.application.routes.draw do
 
       namespace :clone do
         resources :cases, only: [ :create ] do
-          post 'tries/:tryNo' => 'tries#create', as: :try
+          post 'tries/:try_number' => 'tries#create', as: :try
         end
       end
 

@@ -2,11 +2,11 @@
 
 json.allCases do
   json.array! @cases do |acase|
-    json.caseName         acase.caseName
+    json.case_name        acase.case_name
     json.caseNo           acase.id
     json.owned            acase.user_id == current_user.id
 
-    json.lastTry acase.tries.best.tryNo if acase.tries.present? && acase.tries.best.present?
+    json.last_try_number acase.tries.best.try_number if acase.tries.present? && acase.tries.best.present?
   end
 end
 

@@ -15,23 +15,32 @@
     fieldSpecSvc, caseTryNavSvc, varExtractorSvc
   ) {
     var Try = function(data) {
+      // This method converts the response from the API to angular objects.
       var self  = this;
+      if ( data.searchEngine !== undefined ) {
+        console.log('Data object creating Try has a searchEngine!');
+        console.log(data);
+      }
 
-      if ( angular.isUndefined(data.searchEngine) ) {
-        data.searchEngine = 'solr';
+      if ( angular.isUndefined(data.search_engine) ) {
+        console.log('We have an undefined data.search_engine so setting to Solr, should this ever happen?');
+        console.log(data);
+        data.search_engine = 'solr';
       }
 
       // Attributes
+      // Note, if you are changing these, then you probably to fix the
+      // var tmp = new TryFactory method in queryParams.js as well.
       self.args          = data.args;
       self.deleted       = false;
-      self.escapeQuery   = data.escapeQuery;
-      self.fieldSpec     = data.fieldSpec;
+      self.escapeQuery   = data.escape_query;
+      self.fieldSpec     = data.field_spec;
       self.name          = data.name;
-      self.numberOfRows  = data.numberOfRows;
-      self.queryParams   = data.queryParams;
-      self.searchEngine  = data.searchEngine;
-      self.searchUrl     = data.searchUrl;
-      self.tryNo         = data.tryNo;
+      self.numberOfRows  = data.number_of_rows;
+      self.queryParams   = data.query_params;
+      self.searchEngine  = data.search_engine;
+      self.searchUrl     = data.search_url;
+      self.tryNo         = data.try_number;
 
       // transform curator vars to be more angular friendly
       var ngFriendlyCuratorVars = [];

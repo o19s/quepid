@@ -42,11 +42,11 @@ class HomeControllerTest < ActionController::TestCase
       get :index
 
       try_info = TRY_INFO.match(response.body)
-      assert_equal the_try.tryNo.to_s, try_info[1]
+      assert_equal the_try.try_number.to_s, try_info[1]
     end
 
     test 'bootstraps non deleted/archived case' do
-      deleted_case = user.cases.create caseName: Case::DEFAULT_NAME
+      deleted_case = user.cases.create case_name: Case::DEFAULT_NAME
       deleted_case.update archived: true
 
       get :index
@@ -56,19 +56,19 @@ class HomeControllerTest < ActionController::TestCase
     end
 
     test 'bootstraps not deleted try' do
-      deleted_try = the_case.tries.create tryNo: 100
+      deleted_try = the_case.tries.create try_number: 100
 
       get :index
 
       try_info = TRY_INFO.match(response.body)
-      assert_equal deleted_try.tryNo.to_s, try_info[1]
+      assert_equal deleted_try.try_number.to_s, try_info[1]
 
       deleted_try.delete
 
       get :index
 
       try_info = TRY_INFO.match(response.body)
-      assert_not_equal deleted_try.tryNo.to_s, try_info[1]
+      assert_not_equal deleted_try.try_number.to_s, try_info[1]
     end
   end
 

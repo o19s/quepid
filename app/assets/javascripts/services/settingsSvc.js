@@ -109,7 +109,7 @@ angular.module('QuepidApp')
             tryToUse = settings.selectedTry;
             settings.selectTry(tryToUse.tryNo);
           }
-
+          
           settings.escapeQuery   = tryToUse.escapeQuery;
           settings.fieldSpec     = tryToUse.fieldSpec;
           settings.numberOfRows  = tryToUse.numberOfRows;
@@ -158,16 +158,17 @@ angular.module('QuepidApp')
         // (3) possibly edited query params
         // (4) possibly modified curator vars
         // probably could be a bit more restful
+        // Note that we map between camelCase in JS and snake_case in API here.
         var sentData = {};
         var currCaseNo = caseTryNavSvc.getCaseNo();
 
         sentData.curatorVars     = settingsToSave.selectedTry.curatorVarsDict();
-        sentData.escapeQuery     = settingsToSave.escapeQuery;
+        sentData.escape_query    = settingsToSave.escapeQuery;
         sentData.fields          = settingsToSave.createFieldSpec().fields;
-        sentData.fieldSpec       = settingsToSave.fieldSpec;
+        sentData.field_spec      = settingsToSave.fieldSpec;
         sentData.number_of_rows  = settingsToSave.numberOfRows;
-        sentData.queryParams     = settingsToSave.selectedTry.queryParams;
-        sentData.searchEngine    = settingsToSave.searchEngine;
+        sentData.query_params    = settingsToSave.selectedTry.queryParams;
+        sentData.search_engine   = settingsToSave.searchEngine;
         sentData.searchUrl       = settingsToSave.searchUrl;
 
         return $http.post('/api/cases/' + currCaseNo + '/tries', sentData)
