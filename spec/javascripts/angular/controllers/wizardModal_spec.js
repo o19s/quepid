@@ -32,27 +32,27 @@ describe('Controller: WizardModalCtrl', function () {
   var bootstrappedSettingsData = {
     tries: [
       {
-        searchUrl: 'http://quepid-solr.dev.o19s.com/solr/tmdb/select',
-        fieldSpec: 'catch_line',
+        search_url: 'http://quepid-solr.dev.o19s.com/solr/tmdb/select',
+        field_spec: 'catch_line',
         curatorVars: {},
-        queryParams: 'q=#$query##',
+        query_params: 'q=#$query##',
         args: {
           q: ['#$query##']
         },
-        tryNo: 0
+        try_number: 0
       }
     ],
   };
 
   var mockTry = {
-    searchUrl: 'http://quepid-solr.dev.o19s.com/solr/tmdb/select',
-    fieldSpec: 'catch_line',
+    search_url: 'http://quepid-solr.dev.o19s.com/solr/tmdb/select',
+    field_spec: 'catch_line',
     curatorVars: {},
-    queryParams: 'q=#$query##',
+    query_params: 'q=#$query##',
     args: {
       q: ['#$query##']
     },
-    tryNo: 0
+    try_number: 0
   };
 
   var mockUser = {
