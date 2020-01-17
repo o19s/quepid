@@ -1,6 +1,6 @@
 # Changelog
 
-## 6.0.3 - ?
+## 6.1 - ?
 * Cloning cases now carries any magic variables and their values along to the new case https://github.com/o19s/quepid/pull/55 by @epugh fixes https://github.com/o19s/quepid/issues/37
 * Only treat field content that begins with "http" as a link.  https://github.com/o19s/quepid/pull/35 by @pfries fixes https://github.com/o19s/quepid/issues/34
 * Update Elasticsearch logo.  https://github.com/o19s/quepid/pull/38 by @moshebla
