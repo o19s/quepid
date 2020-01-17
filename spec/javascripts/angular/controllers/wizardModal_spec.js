@@ -140,6 +140,40 @@ describe('Controller: WizardModalCtrl', function () {
       ]
     };
 
+
+    it ('gets title field for autocomplete', function() {
+      scope.searchFields = ['title', 'body', 'image'];
+      var autocompleteList = scope.loadFields('ti');
+      expect(autocompleteList.length).toBe(1);
+    });
+
+    it ('gets all fields for media: autocomplete', function() {
+      scope.searchFields = ['title', 'body', 'image'];
+      var autocompleteList = scope.loadFields('media:');
+      expect(autocompleteList.length).toBe(3);
+    });
+
+    it ('gets all fields for thumb: autocomplete', function() {
+      scope.searchFields = ['title', 'body', 'image'];
+      var autocompleteList = scope.loadFields('thumb:');
+      expect(autocompleteList.length).toBe(3);
+    });
+
+    it ('gets subset without modifier prefix', function() {
+      scope.searchFields = ['title', 'body', 'image', 'imageAlt'];
+      var autocompleteList = scope.loadFields('im');
+      expect(autocompleteList.length).toBe(2);
+      expect(autocompleteList).toEqual([{'text': 'image'}, {'text': 'imageAlt'}]);
+    });
+
+    it ('gets subset with modifier prefix', function() {
+      scope.searchFields = ['title', 'body', 'image', 'imageAlt'];
+      var autocompleteList = scope.loadFields('thumb:im');
+      expect(autocompleteList.length).toBe(2);
+      expect(autocompleteList).toEqual([{'text': 'thumb:image'}, {'text': 'thumb:imageAlt'}]);
+    });
+
+
     // it('adds queries', function() {
     //   $httpBackend.expectPOST('/api/cases/0/tries').respond(200, mockTry);
     //   $httpBackend.expectGET('/api/cases/0/scorers').respond(200, {});
