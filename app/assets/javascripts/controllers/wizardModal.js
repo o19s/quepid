@@ -155,15 +155,28 @@ angular.module('QuepidApp')
       function loadFields (query) {
         var autocompleteList = [];
         var _query = query.trim().toLowerCase();
-        var thumb = false;
-        if (_query.startsWith('thumb:')) {
-            _query = _query.substr(6);
-            thumb = true;
+        var modified = false;
+        var modifierText = '';
+
+        var allowedModifiers = [
+            'media:',
+            'thumb:'
+        ];
+
+        for (var i = 0; i < allowedModifiers.length; i++) {
+          var modifier = allowedModifiers[i];
+
+          if (_query.startsWith(modifier)) {
+            _query = _query.substr(modifier.length);
+            modifierText = modifier;
+            modified = true;
+            break;
+          }
         }
 
         angular.forEach($scope.searchFields, function(field) {
           if ( field.toLowerCase().indexOf(_query) !== -1 ) {
-            autocompleteList.push({ text: thumb ? 'thumb:' + field : field });
+            autocompleteList.push({ text: modified ? modifierText + field : field });
           }
         });
 
