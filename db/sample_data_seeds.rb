@@ -292,7 +292,7 @@ puts "End of seeding teams................"
 
 # Big Cases
 
-if ENV['LARGE_SEEDS']
+if ENV['SEED_LARGE_CASES']
   puts "Seeding large cases..............."
   ######################################
   # User with 100s of Queries

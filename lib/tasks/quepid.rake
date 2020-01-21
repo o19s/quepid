@@ -31,15 +31,16 @@ end
 
 namespace :db do
   namespace :seed do
-    desc 'Runs db:seed with SEED_TEST set to true to seed DB with test accounts'
-    task test: :environment do
-      ENV['SEED_TEST'] = 'true' # apparently it has to be a string
+    desc 'Runs db:seed with SEED_SAMPLE_DATA set to true to seed DB with sample user accounts'
+    task sample_users: :environment do
+      ENV['SEED_SAMPLE_DATA'] = 'true' # apparently it has to be a string
       Rake::Task['db:seed'].invoke
     end
 
-    task large: :environment do
-      ENV['SEED_TEST']   = 'true'
-      ENV['LARGE_SEEDS'] = 'true'
+    desc 'Runs db:seed with SEED_SAMPLE_DATA and SEED_LARGE_CASES set to true to seed DB with lots of queries'
+    task large_cases: :environment do
+      ENV['SEED_SAMPLE_DATA']   = 'true'
+      ENV['SEED_LARGE_CASES'] = 'true'
       Rake::Task['db:seed'].invoke
     end
   end
