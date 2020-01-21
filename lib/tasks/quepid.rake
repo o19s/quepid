@@ -39,7 +39,7 @@ namespace :db do
 
     desc 'Runs db:seed with SEED_SAMPLE_DATA and SEED_LARGE_CASES set to true to seed DB with lots of queries'
     task large_cases: :environment do
-      ENV['SEED_SAMPLE_DATA']   = 'true'
+      ENV['SEED_SAMPLE_DATA'] = 'true'
       ENV['SEED_LARGE_CASES'] = 'true'
       Rake::Task['db:seed'].invoke
     end
