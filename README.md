@@ -190,7 +190,7 @@ bin/docker r bin/rake test:quepid
 If you want to create a LOT of queries for a user for testing, then run
 
 ```
-bin/docker r bin/rake db:seed:large
+bin/docker r bin/rake db:seed:large_cases
 ```
 
 You will have two users, `quepid+100sOfQueries@o19s.com` and `quepid+1000sOfQueries@o19s.com` to test with.

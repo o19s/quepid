@@ -260,7 +260,7 @@ puts "End of seeding scorers................"
 # Ratings
 puts "Seeding ratings................"
 
-search_url = "http://quepid-solr.dev.o19s.com/solr/statedecoded"
+search_url = "http://quepid-solr.dev.o19s.com:8983/solr/statedecoded/select"
 
 tens_of_queries_case = tens_of_queries_user.cases.first
 tens_of_queries_case.update case_name: '10s of Queries'
@@ -323,7 +323,8 @@ if ENV['SEED_LARGE_CASES']
   hundreds_of_queries_case = hundreds_of_queries_user.cases.first
   hundreds_of_queries_case.update case_name: '100s of Queries'
 
-  unless hundreds_of_queries_case.queries.count >= 200
+  # was 200
+  unless hundreds_of_queries_case.queries.count >= 400
     generator = RatingsGenerator.new search_url, { number: 200 }
     ratings   = generator.generate_ratings
 
@@ -335,6 +336,7 @@ if ENV['SEED_LARGE_CASES']
     puts "Seeded 100s of queries"
   end
 
+  if 1 == 2 then
   thousands_of_queries_case = thousands_of_queries_user.cases.first
   thousands_of_queries_case.update case_name: '1000s of Queries'
 
@@ -349,4 +351,5 @@ if ENV['SEED_LARGE_CASES']
 
     puts "Seeded 1000s of queries"
   end
+end # if 1 == 2
 end

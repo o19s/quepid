@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'rsolr'
+require 'net/http'
 require 'progress_indicator'
 
 # rubocop:disable Metrics/LineLength
@@ -26,14 +26,14 @@ end
 class DocGenerator
   include ProgressIndicator
 
-  attr_reader :logger, :options, :solr
+  attr_reader :logger, :options, :solr_url
 
   attr_accessor :target_set, :words, :queries, :docs
 
   def initialize solr_url, options
     @options  = options
     @logger   = @options[:logger]
-    @solr     = RSolr.connect url: solr_url
+    @solr_url = solr_url
   end
 
   def show_progress?
@@ -50,11 +50,16 @@ class DocGenerator
     docs  = []
 
     block_with_progress_bar(times) do
-      response = @solr.paginate start, 10, 'select', params: {
-        q:  @options[:query],
-        wt: :ruby,
-        fl: [ @options[:id], @options[:field] ].join(','),
+      uri = URI(@solr_url)
+      params = {
+        :q => @options[:query],
+        :start => 0, :rows => 10,
+        fl: [ @options[:id], @options[:field] ].join(',')
       }
+      uri.query = URI.encode_www_form(params)
+
+      res = Net::HTTP.get_response(uri)
+      response = JSON.parse(res.body)
 
       docs += response['response']['docs']
       start += 1
@@ -130,12 +135,18 @@ class DocGenerator
   private
 
   def fetch_results_for_single_query query
-    response = @solr.get 'select', params: {
-      q:    query,
-      wt:   :ruby,
-      rows: @options[:rows],
-      fl:   @options[:id],
+
+    uri = URI(@solr_url)
+    params = {
+      :q => query,
+      :start => 0, :rows => @options[:rows],
+      fl: @options[:id]
     }
+    uri.query = URI.encode_www_form(params)
+
+    res = Net::HTTP.get_response(uri)
+
+    response = JSON.parse(res.body)
 
     docs = response['response']['docs']
 
