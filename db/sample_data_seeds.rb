@@ -336,7 +336,6 @@ if ENV['SEED_LARGE_CASES']
     puts "Seeded 100s of queries"
   end
 
-  if 1 == 2 then
   thousands_of_queries_case = thousands_of_queries_user.cases.first
   thousands_of_queries_case.update case_name: '1000s of Queries'
 
@@ -351,5 +350,4 @@ if ENV['SEED_LARGE_CASES']
 
     puts "Seeded 1000s of queries"
   end
-end # if 1 == 2
 end
