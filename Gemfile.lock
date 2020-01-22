@@ -121,8 +121,6 @@ GEM
     erubis (2.7.0)
     eventmachine (1.2.7)
     execjs (2.7.0)
-    faraday (0.15.4)
-      multipart-post (>= 1.2, < 3)
     ffi (1.9.25)
     flamegraph (0.9.5)
     font-awesome-sass (5.6.1)
@@ -204,7 +202,6 @@ GEM
     mocha (1.8.0)
       metaclass (~> 0.0.1)
     multi_json (1.13.1)
-    multipart-post (2.0.0)
     mysql2 (0.5.2)
     nenv (0.3.0)
     newrelic_rpm (6.1.0.352)
@@ -290,9 +287,6 @@ GEM
     responders (2.4.1)
       actionpack (>= 4.2.0, < 6.0)
       railties (>= 4.2.0, < 6.0)
-    rsolr (2.2.1)
-      builder (>= 2.1.2)
-      faraday (>= 0.9.0)
     rubocop (0.70.0)
       jaro_winkler (~> 1.5.1)
       parallel (~> 1.10)
@@ -431,7 +425,6 @@ DEPENDENCIES
   rails-assets-d3 (~> 3.5.5)!
   rails_12factor
   responders
-  rsolr
   rubocop
   sass-rails (~> 5.0)
   sdoc (~> 0.4.0)

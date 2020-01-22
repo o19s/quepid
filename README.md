@@ -85,10 +85,10 @@ Run the local Ruby based setup script to setup your Docker images:
 bin/setup_docker
 ```
 
-potentially seed the db to have something to work with (the output will print out credentials you can use for test users):
+Optionally you can seed the database with sample data (the output will print out credentials you can use to login as various sample users):
 
 ```
-bin/docker r bin/rake db:seed:test
+bin/docker r bin/rake db:seed:sample_users
 ```
 
 #### 3. Running the app
@@ -190,7 +190,7 @@ bin/docker r bin/rake test:quepid
 If you want to create a LOT of queries for a user for testing, then run
 
 ```
-bin/docker r bin/rake db:seed:large
+bin/docker r bin/rake db:seed:large_cases
 ```
 
 You will have two users, `quepid+100sOfQueries@o19s.com` and `quepid+1000sOfQueries@o19s.com` to test with.

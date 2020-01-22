@@ -15,7 +15,7 @@ class DocGeneratorTest < ActiveSupport::TestCase
       show_progress: false,
     }
   end
-  let(:solr_url)  { 'http://solr.quepid.com/solr/statedecoded/' }
+  let(:solr_url)  { 'http://solr.quepid.com:8983/solr/statedecoded/select' }
   let(:generator) { DocGenerator.new solr_url, default_options }
 
   describe 'method chaining' do
