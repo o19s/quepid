@@ -26,14 +26,15 @@ module ActiveSupport
         :get,
         'http://solr.quepid.com:8983/solr/statedecoded/select?fl=id,text&q=*:*&rows=10&start=0'
       )
-      .with(
-            headers: {
-        	  'Accept'=>'*/*',
-        	  'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3',
-        	  'Host'=>'solr.quepid.com:8983',
-        	  'User-Agent'=>'Ruby'
-            })
-      .to_return(status: 200, body: '
+        .with(
+          headers: {
+            'Accept'          => '*/*',
+            'Accept-Encoding' => 'gzip;q=1.0,deflate;q=0.6,identity;q=0.3',
+            'Host'            => 'solr.quepid.com:8983',
+            'User-Agent'      => 'Ruby',
+          }
+        )
+        .to_return(status: 200, body: '
         {
           "responseHeader":{
             "zkConnected":true,
@@ -82,14 +83,15 @@ module ActiveSupport
         :get,
         'http://solr.quepid.com:8983/solr/statedecoded/select?fl=id&q=served&rows=1&start=0'
       )
-      .with(
-           headers: {
-           'Accept'=>'*/*',
-           'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3',
-           'Host'=>'solr.quepid.com:8983',
-           'User-Agent'=>'Ruby'
-           })
-      .to_return(status: 200, body: '
+        .with(
+          headers: {
+            'Accept'          => '*/*',
+            'Accept-Encoding' => 'gzip;q=1.0,deflate;q=0.6,identity;q=0.3',
+            'Host'            => 'solr.quepid.com:8983',
+            'User-Agent'      => 'Ruby',
+          }
+        )
+        .to_return(status: 200, body: '
         {
   "responseHeader":{
     "zkConnected":true,

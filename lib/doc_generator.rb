@@ -52,8 +52,8 @@ class DocGenerator
     block_with_progress_bar(times) do
       uri = URI(@solr_url)
       params = {
-        :q => @options[:query],
-        :start => 0, :rows => 10,
+        q: @options[:query],
+        start: 0, rows: 10,
         fl: [ @options[:id], @options[:field] ].join(',')
       }
       uri.query = URI.encode_www_form(params)
@@ -135,11 +135,10 @@ class DocGenerator
   private
 
   def fetch_results_for_single_query query
-
     uri = URI(@solr_url)
     params = {
-      :q => query,
-      :start => 0, :rows => @options[:rows],
+      q: query,
+      start: 0, rows: @options[:rows],
       fl: @options[:id]
     }
     uri.query = URI.encode_www_form(params)

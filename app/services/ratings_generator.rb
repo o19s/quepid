@@ -6,7 +6,7 @@ require 'doc_generator'
 class RatingsGenerator
   include ProgressIndicator
 
-  attr_accessor :logger, :options , :solr_url
+  attr_accessor :logger, :options, :solr_url
 
   def initialize solr_url, opts = {}
     default_options = {
