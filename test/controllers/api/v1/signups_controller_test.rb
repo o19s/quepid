@@ -114,39 +114,33 @@ module Api
           password = 'password'
           data = { user: { username: 'foo', password: password } }
 
-          perform_enqueued_jobs do
-            post :create, data
-            assert_response :ok
+          post :create, data
+          assert_response :ok
 
-            user = User.last
-            assert_not user.email_marketing
-          end
+          user = User.last
+          assert_not user.email_marketing
         end
 
         test 'unchecked sets email_marketing to false' do
           password = 'password'
           data = { user: { username: 'foo', password: password , email_marketing: false} }
 
-          perform_enqueued_jobs do
-            post :create, data
-            assert_response :ok
+          post :create, data
+          assert_response :ok
 
-            user = User.last
-            assert_not user.email_marketing
-          end
+          user = User.last
+          assert_not user.email_marketing
         end
 
         test 'checked sets email_marketing to true' do
           password = 'password'
           data = { user: { username: 'foo', password: password , email_marketing: true} }
 
-          perform_enqueued_jobs do
-            post :create, data
-            assert_response :ok
+          post :create, data
+          assert_response :ok
 
-            user = User.last
-            assert user.email_marketing
-          end
+          user = User.last
+          assert user.email_marketing
         end
       end
 
