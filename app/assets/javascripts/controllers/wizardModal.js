@@ -256,7 +256,7 @@ angular.module('QuepidApp')
 
                 createPromises.push(
                   queryPromise(q)
-                    .then(q.search)
+                    .then(q.search.bind(q))
                 );
               }
             }
