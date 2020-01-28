@@ -123,7 +123,7 @@ module Api
 
         test 'unchecked sets email_marketing to false' do
           password = 'password'
-          data = { user: { username: 'foo', password: password , email_marketing: false} }
+          data = { user: { username: 'foo', password: password, email_marketing: false } }
 
           post :create, data
           assert_response :ok
@@ -134,7 +134,7 @@ module Api
 
         test 'checked sets email_marketing to true' do
           password = 'password'
-          data = { user: { username: 'foo', password: password , email_marketing: true} }
+          data = { user: { username: 'foo', password: password, email_marketing: true } }
 
           post :create, data
           assert_response :ok
