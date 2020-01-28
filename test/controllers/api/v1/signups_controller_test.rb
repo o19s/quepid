@@ -109,6 +109,47 @@ module Api
         end
       end
 
+      describe 'verify gdpr logic' do
+        test 'accepts no gdpr field' do
+          password = 'password'
+          data = { user: { username: 'foo', password: password } }
+
+          perform_enqueued_jobs do
+            post :create, data
+            assert_response :ok
+
+            user = User.last
+            assert_not user.email_marketing
+          end
+        end
+
+        test 'unchecked sets email_marketing to false' do
+          password = 'password'
+          data = { user: { username: 'foo', password: password , email_marketing: false} }
+
+          perform_enqueued_jobs do
+            post :create, data
+            assert_response :ok
+
+            user = User.last
+            assert_not user.email_marketing
+          end
+        end
+
+        test 'checked sets email_marketing to true' do
+          password = 'password'
+          data = { user: { username: 'foo', password: password , email_marketing: true} }
+
+          perform_enqueued_jobs do
+            post :create, data
+            assert_response :ok
+
+            user = User.last
+            assert user.email_marketing
+          end
+        end
+      end
+
       describe 'analytics' do
         test 'creates user and posts an event' do
           expects_any_ga_event_call
