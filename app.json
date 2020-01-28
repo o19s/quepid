@@ -66,6 +66,9 @@
     },
     "COOKIES_URL": {
       "required": true
+    },
+    "GDPR_MODE": {
+      "required": true
     }
   },
   "formation": {

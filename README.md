@@ -436,7 +436,7 @@ Check out the [Data Mapping](docs/data_mapping.md) file for more info about the 
 
 Check out the [App Structure](docs/app_structure.md) file for more info on how Quepid is structured.
 
-# Legal Pages
+# Legal Pages & GDPR
 
 If you would like to have legal pages linked in the footer of the app, similar to behavior on http://app.quepid.com,
 add the following `ENV` vars:
@@ -445,6 +445,12 @@ add the following `ENV` vars:
 TC_URL      # terms and condition
 PRIVACY_URL # privacy policy
 COOKIES_URL # cookies policy
+```
+
+To allow users to give consent to email marketing, set the following var to true:
+
+```
+GDPR_MODE   # Enables a checkbox on user signup to consent to emails
 ```
 
 # Credits
