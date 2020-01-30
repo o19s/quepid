@@ -44,12 +44,10 @@
           <%= f.text_field :company, class: "form-control input-lg", placeholder: "Company Name" %>
         </div>
 
-        email? <%= Rails.application.config.email_marketing_mode %>
-
         <% if Rails.application.config.email_marketing_mode %>
         <div class="form-group">
           <label for="user_email_marketing" class="control-label">
-            Email marketing
+            I want to recieve email marketing updates about Quepid!
           </label>
           <%= f.check_box :email_marketing, class: "form-control input-lg" %>
         </div>
