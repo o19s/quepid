@@ -25,7 +25,8 @@ module Api
           :name,
           :username,
           :password,
-          :agreed
+          :agreed,
+          :email_marketing
         )
       end
     end

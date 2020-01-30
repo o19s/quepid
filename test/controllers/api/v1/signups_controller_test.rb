@@ -109,6 +109,41 @@ module Api
         end
       end
 
+      describe 'verify email marketing mode logic' do
+        test 'accepts no email marketing field' do
+          password = 'password'
+          data = { user: { username: 'foo', password: password } }
+
+          post :create, data
+          assert_response :ok
+
+          user = User.last
+          assert_not user.email_marketing
+        end
+
+        test 'unchecked sets email_marketing to false' do
+          password = 'password'
+          data = { user: { username: 'foo', password: password, email_marketing: false } }
+
+          post :create, data
+          assert_response :ok
+
+          user = User.last
+          assert_not user.email_marketing
+        end
+
+        test 'checked sets email_marketing to true' do
+          password = 'password'
+          data = { user: { username: 'foo', password: password, email_marketing: true } }
+
+          post :create, data
+          assert_response :ok
+
+          user = User.last
+          assert user.email_marketing
+        end
+      end
+
       describe 'analytics' do
         test 'creates user and posts an event' do
           expects_any_ga_event_call

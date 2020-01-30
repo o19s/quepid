@@ -22,6 +22,7 @@
 #  created_at             :datetime         not null
 #  updated_at             :datetime         not null
 #  default_scorer_id      :integer
+#  email_marketing        :boolean          not null
 #
 
 class User < ActiveRecord::Base

@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20200115205420) do
+ActiveRecord::Schema.define(version: 20200128133401) do
 
   create_table "annotations", force: :cascade do |t|
     t.text     "message",    limit: 65535
@@ -238,6 +238,7 @@ ActiveRecord::Schema.define(version: 20200115205420) do
     t.datetime "created_at",                                         null: false
     t.datetime "updated_at",                                         null: false
     t.integer  "default_scorer_id",      limit: 4
+    t.boolean  "email_marketing",                    default: false, null: false
   end
 
   add_index "users", ["default_scorer_id"], name: "index_users_on_default_scorer_id", using: :btree

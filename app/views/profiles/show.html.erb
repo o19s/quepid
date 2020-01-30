@@ -44,6 +44,15 @@
           <%= f.text_field :company, class: "form-control input-lg", placeholder: "Company Name" %>
         </div>
 
+        <% if Rails.application.config.email_marketing_mode %>
+        <div class="form-group">
+          <label for="user_email_marketing" class="control-label">
+            I want to receive email marketing updates about Quepid!
+          </label>
+          <%= f.check_box :email_marketing, class: "form-control input-lg" %>
+        </div>
+        <% end %>
+
         <div class="form-group">
           <button type="submit" class="btn btn-primary btn-lg">Update Profile</button>
         </div>

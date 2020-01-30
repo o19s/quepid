@@ -37,7 +37,7 @@
 
     <div class="col-md-3 col-sm-4">
       <div ng-controller="SignupCtrl">
-        <form ng-submit="submit(agree, name, username, password, confirm)" >
+        <form ng-submit="submit(agree, emailMarketingAgree, name, username, password, confirm)" >
           <h2>Signup to get started!</h2>
 
           <div class="alert alert-danger" ng-if="warnErr">
@@ -105,6 +105,14 @@
               <a ng-href="{{ termsAndConditionsUrl }}" target="_blank">terms &amp; conditions</a>?
             </label>
           </div>
+
+          <div class="checkbox" ng-show="isEmailMarketingMode">
+            <label>
+              <input type="checkbox" ng-model="emailMarketingAgree" ng-required="false"/>
+              Click here if you'd like us to send you occasional news about relevance tuning with Quepid (including new features). You can unsubscribe at any time.
+            </label>
+          </div>
+
 
           <button class="btn btn-primary">Signup</button>
         </form>

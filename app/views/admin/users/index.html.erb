@@ -6,6 +6,7 @@
       <th>Username</th>
       <th>Name</th>
       <th>Signed Up</th>
+      <th>Marketing</th>
       <th>Number of Logins</th>
       <th>Administrator?</th>
       <th colspan="3"></th>
@@ -23,6 +24,7 @@
             (<%= time_ago_in_words user.agreed_time %> ago)
           <% end %>
         </td>
+        <td><%= user.email_marketing %></td>
         <td><%= user.num_logins %></td>
         <td><%= user.administrator? %></td>
         <td><%= link_to 'Show', admin_user_path(user) %></td>
