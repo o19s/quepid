@@ -29,7 +29,7 @@
 
 
 
-## 6.0.0
+## 6.0.0 - 07/25/2019
 * Removes everything related to payments, and makes Quepid "free"
 * Adds support for using a CORS proxy for Solr instances that are not configured to allow connections from Quepid
 * Replaces use of Vagrant in development in favor of Docker
