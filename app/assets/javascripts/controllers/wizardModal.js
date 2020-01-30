@@ -256,7 +256,11 @@ angular.module('QuepidApp')
 
                 createPromises.push(
                   queryPromise(q)
-                    .then(q.search)
+                    /* jshint ignore:start */
+                    .then(function() {
+                        q.search();
+                    })
+                    /* jshint ignore:end */
                 );
               }
             }
