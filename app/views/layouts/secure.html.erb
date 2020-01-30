@@ -36,7 +36,7 @@
           $log.debug("Activate debug mode");
           secureRedirectSvc.debugServer(debugPort);
         }
-        configurationSvc.setGdprMode('<%= ENV['GDPR_MODE'] %>');
+        configurationSvc.setEmailMarketingMode('<%= ENV['EMAIL_MARKETING_MODE'] %>');
         configurationSvc.setTermsAndConditionsUrl('<%= ENV['TC_URL'] %>');
       });
   </script>

@@ -67,7 +67,7 @@
     "COOKIES_URL": {
       "required": true
     },
-    "GDPR_MODE": {
+    "EMAIL_MARKETING_MODE": {
       "required": true
     }
   },

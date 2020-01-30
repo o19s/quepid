@@ -4,15 +4,15 @@ angular.module('UtilitiesModule')
   .service('configurationSvc', [
     '$window', '$log',
     function ConfigurationSvc() {
-      var gdprMode;
+      var emailMarketingMode;
       var termsAndConditionsUrl;
 
-      this.setGdprMode = function(val) {
-        gdprMode = JSON.parse(val);
+      this.setEmailMarketingMode = function(val) {
+        emailMarketingMode = JSON.parse(val);
       };
 
-      this.isGdprMode = function() {
-        return gdprMode;
+      this.isEmailMarketingMode = function() {
+        return emailMarketingMode;
       };
 
       this.setTermsAndConditionsUrl = function (url) {

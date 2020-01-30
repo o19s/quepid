@@ -109,8 +109,8 @@ module Api
         end
       end
 
-      describe 'verify gdpr logic' do
-        test 'accepts no gdpr field' do
+      describe 'verify email marketing mode logic' do
+        test 'accepts no email marketing field' do
           password = 'password'
           data = { user: { username: 'foo', password: password } }
 

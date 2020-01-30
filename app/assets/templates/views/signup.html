@@ -37,7 +37,7 @@
 
     <div class="col-md-3 col-sm-4">
       <div ng-controller="SignupCtrl">
-        <form ng-submit="submit(agree, gdprAgree, name, username, password, confirm)" >
+        <form ng-submit="submit(agree, emailMarketingAgree, name, username, password, confirm)" >
           <h2>Signup to get started!</h2>
 
           <div class="alert alert-danger" ng-if="warnErr">
@@ -106,10 +106,10 @@
             </label>
           </div>
 
-          <div class="checkbox" ng-show="isGdprMode">
+          <div class="checkbox" ng-show="isEmailMarketingMode">
             <label>
-              <input type="checkbox" ng-model="gdprAgree" ng-required="false"/>
-              Click here if you'd like us to send you occasional news about relevance tuning with Quepid (including new features). You can unsubscribe at any time. 
+              <input type="checkbox" ng-model="emailMarketingAgree" ng-required="false"/>
+              Click here if you'd like us to send you occasional news about relevance tuning with Quepid (including new features). You can unsubscribe at any time.
             </label>
           </div>
 

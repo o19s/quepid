@@ -447,10 +447,10 @@ PRIVACY_URL # privacy policy
 COOKIES_URL # cookies policy
 ```
 
-To allow users to give consent to email marketing, set the following var to true:
+To allow users to give consent to email marketing (per GDPR), set the following var to true:
 
 ```
-GDPR_MODE   # Enables a checkbox on user signup to consent to emails
+EMAIL_MARKETING_MODE   # Enables a checkbox on user signup to consent to emails
 ```
 
 # Credits
