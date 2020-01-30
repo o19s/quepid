@@ -36,7 +36,7 @@
           $log.debug("Activate debug mode");
           secureRedirectSvc.debugServer(debugPort);
         }
-        configurationSvc.setEmailMarketingMode('<%= ENV['EMAIL_MARKETING_MODE'] %>');
+        configurationSvc.setEmailMarketingMode('<%= Rails.application.config.email_marketing_mode %>');
         configurationSvc.setTermsAndConditionsUrl('<%= ENV['TC_URL'] %>');
       });
   </script>
