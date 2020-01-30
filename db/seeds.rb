@@ -24,6 +24,6 @@ DefaultScorer.first_or_create(
   default:      true
 )
 
-if ENV['SEED_TEST']
-  require_relative 'test_seeds'
+if ENV['SEED_SAMPLE_DATA']
+  require_relative 'sample_data_seeds'
 end
