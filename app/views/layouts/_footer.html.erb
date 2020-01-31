@@ -9,25 +9,25 @@
 
       <% footer_links = [
         {
-          env: 'TC_URL',
+          url: Rails.application.config.terms_and_conditions_url,
           text: 'Terms & Conditions',
         },
         {
-          env: 'PRIVACY_URL',
+          url: Rails.application.config.privacy_url,
           text: 'Privacy Policy',
         },
         {
-          env: 'COOKIES_URL',
+          url: Rails.application.config.cookies_url,
           text: 'Cookies Policy',
         },
       ] %>
 
       <% footer_links.each do |link| %>
-        <% if ENV[link[:env]] %>
+        <% unless link[:url].blank? %>
 
           -
 
-          <a href="<%= ENV[link[:env]] %>" target="_blank">
+          <a href="<%= link[:url] %>" target="_blank">
             <%= link[:text] %>
           </a>
         <% end %>

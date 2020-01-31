@@ -11,3 +11,24 @@
 # isn't useful to private installs, so this controls the display.
 #
 Rails.application.config.email_marketing_mode = ENV.fetch('EMAIL_MARKETING_MODE', false)
+
+# == Cookies Policy URL
+# To comply with GDPR, and be a good citizen, the hosted version of Quepid asks
+# about cookies and provides a link to the cookies policy. This feature
+# isn't useful to private installs, so this controls the display.
+#
+Rails.application.config.cookies_url = ENV.fetch('COOKIES_URL', nil)
+
+# == Privacy Policy URL
+# To comply with GDPR, and be a good citizen, the hosted version of Quepid links
+# to a privacy policy. This feature isn't useful to private installs, so this
+# controls the display.
+#
+Rails.application.config.privacy_url = ENV.fetch('PRIVACY_URL', nil)
+
+# == Hosted App.quepid.com T&C's
+# Users of the free hosted app.quepid.com are asked to agree to certain terms &
+# conditions. This feature isn't useful to private installs, so this
+# controls the display.
+#
+Rails.application.config.terms_and_conditions_url = ENV.fetch('TC_URL', nil)
