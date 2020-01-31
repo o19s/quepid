@@ -16,7 +16,7 @@
 <base href="/secure/">
 </head>
 <body ng-app="QuepidSecureApp">
-  <%= render 'cookies_eu/consent_banner', link: '/cookies', target: '_blank' %>
+  <%= render 'cookies_eu/consent_banner', link: '/cookies', target: '_blank' unless Rails.application.config.cookies_url.blank? %>
 
   <%= render 'layouts/header' %>
 
@@ -37,7 +37,7 @@
           secureRedirectSvc.debugServer(debugPort);
         }
         configurationSvc.setEmailMarketingMode('<%= Rails.application.config.email_marketing_mode %>');
-        configurationSvc.setTermsAndConditionsUrl('<%= ENV['TC_URL'] %>');
+        configurationSvc.setTermsAndConditionsUrl('<%= Rails.application.config.terms_and_conditions_url %>');
       });
   </script>
 

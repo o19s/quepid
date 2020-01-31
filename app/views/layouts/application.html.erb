@@ -17,7 +17,7 @@
 <base href="/">
 </head>
 <body ng-app="QuepidApp">
-  <%= render 'cookies_eu/consent_banner', link: '/cookies', target: '_blank' %>
+  <%= render 'cookies_eu/consent_banner', link: '/cookies', target: '_blank' unless Rails.application.config.cookies_url.blank? %>
 
   <div class="main-container">
     <%= render 'layouts/header' %>
