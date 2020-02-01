@@ -1,6 +1,8 @@
 # Changelog
 
-## 6.1 - 02/01/2020
+## 6.1.? - ?
+
+## 6.1.0 - 02/01/2020
 This release changes the database schema, so you will need to run `docker-compose run --rm app bin/rake db:migrate` if you have an existing Quepid.
 
 * Cloning cases now carries any magic variables and their values along to the new case https://github.com/o19s/quepid/pull/55 by @epugh fixes https://github.com/o19s/quepid/issues/37
