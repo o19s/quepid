@@ -28,6 +28,6 @@ Dir.chdir APP_ROOT do
   puts "\n== Building Docker container =="
   system "docker-compose up #{build_arg} --no-start"
   system "bin/docker r yarn"
-  system "bin/docker r bin/rake db:setup"
-  system "bin/docker r bin/rake db:create RAILS_ENV=test"
+  system "bin/docker r ./wait-for mysql:3306 -- bin/rake db:setup"
+  system "bin/docker r ./wait-for mysql:3306 -- bin/rake db:create RAILS_ENV=test"
 end
