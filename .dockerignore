@@ -1,0 +1,10 @@
+# Files used by Docker to build images
+docker-compose*.yml
+Dockerfile*
+.env
+
+# GitHub and CircleCI configuration
+.github/**/*
+.github
+.circleci/**/*
+.circleci
