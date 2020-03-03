@@ -108,11 +108,12 @@ class Case < ActiveRecord::Base
 
       if preserve_history
         original_case.tries.each do |a_try|
-          clone_try a_try
+          clone_try(a_try, true)
         end
       elsif try
-        clone_try try
+        clone_try(try, false)
       end
+
       self.last_try_number = tries.last.try_number
 
       if clone_queries
@@ -165,7 +166,7 @@ class Case < ActiveRecord::Base
   end
 
   # rubocop:disable Metrics/MethodLength
-  def clone_try the_try
+  def clone_try the_try, preserve_history
     new_try = Try.new(
       escape_query:  the_try.escape_query,
       field_spec:    the_try.field_spec,
@@ -173,7 +174,7 @@ class Case < ActiveRecord::Base
       query_params:  the_try.query_params,
       search_engine: the_try.search_engine,
       search_url:    the_try.search_url,
-      try_number:    0
+      try_number:    preserve_history ? the_try.try_number : 0
     )
     tries << new_try
 

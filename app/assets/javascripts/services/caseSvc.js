@@ -443,15 +443,15 @@ angular.module('QuepidApp')
           clone_queries:    options.queries,
           clone_ratings:    options.ratings,
           preserve_history: options.history,
-          tryNo:            options.tryId,
-          case_name:         options.caseName
+          try_number:       options.tryId,
+          case_name:        options.caseName
         };
         var defaultOptions  = {
           case_id:          theCase.caseNo,
           clone_queries:    false,
           clone_ratings:    false,
           preserve_history: false,
-          tryNo:            null,
+          try_number:       null,
         };
 
         var data = angular.extend({}, defaultOptions, opts);
