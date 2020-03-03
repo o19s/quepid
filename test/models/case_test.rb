@@ -146,6 +146,7 @@ class CaseTest < ActiveSupport::TestCase
             assert_equal 'title',               cloned_try.field_spec
             assert_equal the_try.search_url,    cloned_try.search_url
             assert_equal 'Try 0',               cloned_try.name
+            assert_equal 0, cloned_case.tries.first.try_number
             assert_equal the_try.search_engine, cloned_try.search_engine
             assert_equal the_try.escape_query,  cloned_try.escape_query
           end
@@ -162,6 +163,10 @@ class CaseTest < ActiveSupport::TestCase
             assert_equal the_case.tries.count, cloned_case.tries.count
             assert_equal 0, cloned_case.queries.count
             assert_equal user.id, cloned_case.user_id
+
+            the_case.tries.each_with_index do |a_try, idx|
+              assert_equal cloned_case.tries[idx].try_number, a_try.try_number
+            end
           end
         end
       end
@@ -177,6 +182,7 @@ class CaseTest < ActiveSupport::TestCase
             assert_equal the_case.queries.size, cloned_case.queries.size
             assert_equal user.id, cloned_case.user_id
             assert_equal 0, cloned_case.last_try_number
+            assert_equal 0, cloned_case.tries.first.try_number
           end
         end
       end
@@ -196,6 +202,8 @@ class CaseTest < ActiveSupport::TestCase
             cloned_case.clone_case the_case, user, try: the_try, clone_queries: true, clone_ratings: true
 
             assert_equal 1, cloned_case.tries.count
+            assert_equal 0, cloned_case.last_try_number
+            assert_equal 0, cloned_case.tries.first.try_number
             assert_equal the_case.queries.count, cloned_case.queries.count
             assert_equal the_case.ratings.count, cloned_case.ratings.count
             assert_equal user.id, cloned_case.user_id
