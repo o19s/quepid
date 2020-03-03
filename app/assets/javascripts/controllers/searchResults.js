@@ -170,8 +170,5 @@ angular.module('QuepidApp')
           return $scope.query.rating;
         }
       };
-
-      $scope.displayNotes = $scope.query.notes;
-
     }
   ]);
