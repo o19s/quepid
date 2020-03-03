@@ -239,17 +239,10 @@
       }
 
       function editDistance(str1, str2) {
-        var makeZeroArr = function(len) {
-          var rVal = new Array(len);
-          for (var i = 0; i < len; i++) {
-            rVal[i] = 0;
-          }
-          return rVal;
-        };
 
         var d = [];
         for (var i = 0; i < str1.length; i++) {
-          d[i] = makeZeroArr(str2.length);
+          d[i] = new Array(str2.length).fill(0);
         }
 
         var getD = function(i, j) {
