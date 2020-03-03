@@ -8,7 +8,6 @@ angular.module('QuepidApp')
     function ($scope, flash, $timeout) {
       var ctrl  = this;
       ctrl.saveInProgress = false;
-      $scope.queryNotes = ''; // need this?
       var timeout = null;
 
       var saveFinished = function() {
@@ -16,7 +15,7 @@ angular.module('QuepidApp')
       };
       var saveNotes = function() {
 
-        $scope.query.saveNotes($scope.displayNotes)
+        $scope.query.saveNotes($scope.query.notes)
           .then( function() {
 
           }, function() {
@@ -35,7 +34,7 @@ angular.module('QuepidApp')
         }
       };
 
-      $scope.$watch('displayNotes', debounceSaveUpdates);
+      $scope.$watch('query.notes', debounceSaveUpdates);
 
 
     }
