@@ -77,6 +77,7 @@
       self.scaleToScaleWithLabels = scaleToScaleWithLabels;
       self.showScaleLabel         = showScaleLabel;
       self.teamNames              = teamNames;
+      self.getBestRatings         = getBestRatings;
 
 
       var DEFAULT_NUM_DOCS = 10;
@@ -267,6 +268,20 @@
         return getD(str1.length - 1, str2.length - 1);
       }
 
+      // return the ratings as an array from the top-N (count) documents stored in Quepid for a query
+      // works globally, not restricted to just search engine results, could be from 'Explain missing'
+      function getBestRatings(count, bestDocs) {
+        //var bestDocsRatings = [];
+
+        //bestDocs.slice(0, count)
+        let bestDocsRatings = bestDocs.slice(0, count).map(x => x.rating) 
+
+        // for (var i = 0; i < bestDocs.length; i++) {
+        //   bestDocsRatings.push(bestDocs[i].rating);
+        // }
+        return bestDocsRatings;
+      };
+
       function distanceFromBest(docs, bestDocs, count) {
         if ( angular.isUndefined(count) ) {
           count = DEFAULT_NUM_DOCS;
@@ -306,7 +321,6 @@
         for (i = 0; i < rem; i++) {
           bestDocsRatings.push(null);
         }
-
         return Math.floor(self.editDistance(docsRatings, bestDocsRatings));
       }
 
@@ -477,6 +491,10 @@
           for (i = 0; i < bestDocs.length; i++) {
             f(bestDocs[i]);
           }
+        };
+
+        var topRatings = function(count = 5) {
+          return getBestRatings(count, bestDocs);
         };
 
         var qOption = function(key) {
