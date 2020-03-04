@@ -13,10 +13,10 @@
       var defaultAlgorithm = [
         '// Gets the average score over a scale of 100',
         '// (assumes query rating on a scale of 1-10)',
-        'var score = avgRating100();',
+        'var score = avgRating100(10);',
         'if (score !== null) {',
         '  // Adds a distance penalty to the score',
-        '  score -= editDistanceFromBest();',
+        '  score -= editDistanceFromBest(10);',
         '}',
         'setScore(score);',
       ].join('\n');
@@ -271,16 +271,10 @@
       // return the ratings as an array from the top-N (count) documents stored in Quepid for a query
       // works globally, not restricted to just search engine results, could be from 'Explain missing'
       function getBestRatings(count, bestDocs) {
-        //var bestDocsRatings = [];
-
-        //bestDocs.slice(0, count)
-        let bestDocsRatings = bestDocs.slice(0, count).map(x => x.rating) 
-
-        // for (var i = 0; i < bestDocs.length; i++) {
-        //   bestDocsRatings.push(bestDocs[i].rating);
-        // }
+        var bestDocsRatings = bestDocs.slice(0, count).map(function(x) {return x.rating;});
+  
         return bestDocsRatings;
-      };
+      }
 
       function distanceFromBest(docs, bestDocs, count) {
         if ( angular.isUndefined(count) ) {
@@ -493,7 +487,7 @@
           }
         };
 
-        var topRatings = function(count = 5) {
+        var topRatings = function(count) {
           return getBestRatings(count, bestDocs);
         };
 
