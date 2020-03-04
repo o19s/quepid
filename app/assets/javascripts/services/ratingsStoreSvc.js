@@ -122,7 +122,7 @@ angular.module('QuepidApp')
             ratingsArray.push({'id': docId, 'rating': parseInt(rating, 10)});
           });
           ratingsArray.sort(function(a, b) {return b.rating - a.rating;}); //descending order; null values are last; don't think returning null values is problematic but if it becomes we could filter them out here
-          return ratingsArray
+          return ratingsArray;
         };
 
         // A Solr doc rateable for a this RatingStore's caseNo & queryId
