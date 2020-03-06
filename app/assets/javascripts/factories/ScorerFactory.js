@@ -13,10 +13,10 @@
       var defaultAlgorithm = [
         '// Gets the average score over a scale of 100',
         '// (assumes query rating on a scale of 1-10)',
-        'var score = avgRating100(10);',
+        'var score = avgRating100();',
         'if (score !== null) {',
         '  // Adds a distance penalty to the score',
-        '  score -= editDistanceFromBest(10);',
+        '  score -= editDistanceFromBest();',
         '}',
         'setScore(score);',
       ].join('\n');
@@ -241,9 +241,17 @@
 
       function editDistance(str1, str2) {
 
+        var makeZeroArr = function(len) {
+          var rVal = new Array(len);
+          for (var i = 0; i < len; i++) {
+            rVal[i] = 0;
+          }
+          return rVal;
+        };
+
         var d = [];
         for (var i = 0; i < str1.length; i++) {
-          d[i] = new Array(str2.length).fill(0);
+          d[i] = makeZeroArr(str2.length);
         }
 
         var getD = function(i, j) {
