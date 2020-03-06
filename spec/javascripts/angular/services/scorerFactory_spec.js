@@ -571,6 +571,24 @@ describe('Service: ScorerFactory', function () {
       checkExpectation(521, docs, bestDocs, 0);
     });
 
+    it('topRatings() returns the proper number of rating', function() {
+      var docs = makeDocs([
+        {rating: 10},
+        {rating: 9},
+        {rating: 8},
+        {rating: 7}
+      ]);
+      var bestDocs = [
+        {rating: 10},
+        {rating: 9},
+        {rating: 8},
+        {rating: 7}
+      ];
+      scorer.code = 'assert(JSON.stringify(topRatings(2)) === "[10,9]"); pass()';
+ 
+      checkExpectation(2, docs, bestDocs, 100)
+    });
+
     //it('scripted scorer that always passes', function() {
       //var docs = makeDocs([{rating: 10, doc: {'title': 'boo'}}]);
       //scorer.code = 'pass()';

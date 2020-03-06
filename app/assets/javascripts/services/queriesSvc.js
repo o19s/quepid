@@ -193,7 +193,7 @@ angular.module('QuepidApp')
             }
           });
 
-          var bestDocs  = this.ratingsStore.bestDocs(10);
+          var bestDocs  = this.ratingsStore.bestDocs();
           var scorer    = this.effectiveScorer();
           var score     = scorer.score(this.numFound, otherDocs, bestDocs, this.options);
           var maxScore  = scorer.maxScore(this.numFound, otherDocs, bestDocs, this.options);

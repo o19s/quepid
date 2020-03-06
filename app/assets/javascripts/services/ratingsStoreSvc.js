@@ -1,6 +1,6 @@
 'use strict';
 
-// This service handles the giant blob of docs->ratings
+// This service handles the giant blob of docs->ratingsyea
 // sent down from the backend. It comes in when the query
 // is initially retrieved and managed here.
 //
@@ -115,14 +115,14 @@ angular.module('QuepidApp')
 
         // Retrieve the best documents based on rating
         // a list of ids sorted by rating
-        this.bestDocs = function(numBest) {
+        this.bestDocs = function() {
           // take the object -> list of objects
           var ratingsArray = [];
           angular.forEach(ratingsDict, function(rating, docId) {
             ratingsArray.push({'id': docId, 'rating': parseInt(rating, 10)});
           });
-          ratingsArray.sort(function(a, b) {return b.rating - a.rating;});
-          return ratingsArray.slice(0, numBest);
+          ratingsArray.sort(function(a, b) {return b.rating - a.rating;}); //descending order; null values are last; don't think returning null values is problematic but if it becomes we could filter them out here
+          return ratingsArray;
         };
 
         // A Solr doc rateable for a this RatingStore's caseNo & queryId
