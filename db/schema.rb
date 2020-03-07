@@ -85,7 +85,6 @@ ActiveRecord::Schema.define(version: 20200303190724) do
     t.boolean  "default",                              default: false
     t.datetime "created_at",                                             null: false
     t.datetime "updated_at",                                             null: false
-    t.integer  "decimal_places",         limit: 1,     default: 0
   end
 
   create_table "permissions", force: :cascade do |t|
