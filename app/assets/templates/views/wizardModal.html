@@ -35,10 +35,10 @@
         <div style="text-align: center;">
           <label style="margin-right: 25px;">
             <img ng-src="/images/Solr.png" alt='Solr' width="100px" />
-            <input type="radio" value="solr" ng-model="pendingWizardSettings.searchEngine" ng-change="udpateSettingsDefaults()">
+            <input type="radio" value="solr" ng-model="pendingWizardSettings.searchEngine" ng-change="updateSettingsDefaults()">
           </label>
           <label>
-            <input type="radio" value="es" ng-model="pendingWizardSettings.searchEngine" ng-change="udpateSettingsDefaults()">
+            <input type="radio" value="es" ng-model="pendingWizardSettings.searchEngine" ng-change="updateSettingsDefaults()">
             <img ng-src="/images/elasticsearch.png" alt='Elasticsearch' width="150px" />
           </label>
         </div>
@@ -120,7 +120,7 @@
           <div class="form-group clearfix">
             <label class="col-sm-3 control-label">Additional Display Fields</label>
             <div class="col-sm-9">
-              <tags-input ng-model="pendingWizardSettings.additionalFields" placeholder="Add a field" add-on-space="true" min-length="1">
+              <tags-input ng-model="pendingWizardSettings.additionalFields" placeholder="Add a field" add-on-enter="true" add-on-space="true" min-length="1">
               <auto-complete source="loadFields($query)" min-length="0" load-on-focus="true" load-on-empty="true"></auto-complete>
               </tags-input>
               <p class="help-block">Would any extra fields be handy to display?</p>

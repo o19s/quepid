@@ -23,7 +23,7 @@ angular.module('QuepidApp')
         return settingsSvc.settingsId();
       };
 
-      $scope.udpateSettingsDefaults = function() {
+      $scope.updateSettingsDefaults = function() {
         var settings = settingsSvc.defaults[$scope.pendingWizardSettings.searchEngine];
         $scope.pendingWizardSettings.additionalFields         = settings.additional;
         $scope.pendingWizardSettings.fieldSpec                = settings.fieldSpec;
