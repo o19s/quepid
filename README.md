@@ -350,10 +350,12 @@ See more details on the wiki at https://github.com/o19s/quepid/wiki/Troubleshoot
 Typically you would simply do:
 
 ```
-yarn add foobar
+bin/docker r yarn add foobar
 ```
 
 which will install the new Node module, and then save that dependency to `package.json`.
+
+Then check in the updated `package.json` and `yarn.lock` files.
 
 ## I'd like to test SSL
 
