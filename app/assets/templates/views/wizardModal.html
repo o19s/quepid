@@ -117,7 +117,6 @@
           <div class="form-group clearfix">
             <label class="col-sm-3 control-label">Additional Display Fields</label>
             <div class="col-sm-9">
-              {{ pendingWizardSettings.additionalFields }}
               <tags-input ng-model="pendingWizardSettings.additionalFields" placeholder="Add a field" add-on-enter="true" add-on-space="true" min-length="1">
               <auto-complete source="loadFields($query)" min-length="0" load-on-focus="true" load-on-empty="true"></auto-complete>
               </tags-input>
@@ -126,7 +125,7 @@
           </div>
 
           <div class="form-group">
-            <button class="btn btn-primary pull-right" wz-next ng-click="validateFieldSpec()" ng-disabled="validating">
+            <button class="btn btn-primary pull-right" ng-click="validateFieldSpec()" ng-disabled="validating">
               <span ng-hide="validating">Continue</span>
               <span ng-show="validating">Validating...</span>
             </button>
