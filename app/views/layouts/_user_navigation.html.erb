@@ -15,9 +15,10 @@
       </li>
       <li><a class="dropdown-link" href="/logout" target="_self">Log out</a></li>
       <% if current_user.administrator? %>
-      <li class="dropdown-header">Admin</li>
-      <li><a class="dropdown-link" href="/admin" target="_self">Index</a></li>
+      <li role="separator" class="divider"></li>
+      <li><a class="dropdown-link" href="/admin" target="_self">Admin Home</a></li>
       <li><%= link_to 'Users', admin_users_path, class: 'dropdown-link', target: '_self' %></li>
+      <li><a class="dropdown-link" href="/admin/default_scorers" target="_self">Quepid Scorers</a></li>
       <li><a class="dropdown-link" href="/admin/jobs" target="_self">Job Manager</a></li>
       <% end %>
     </ul>
