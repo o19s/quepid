@@ -59,15 +59,15 @@
               <li>Will your request handler accept the JSONP writer type? Or does it only return XML or JSON?</li>
               <li>
                 If you are using Solr 8.2 or later, you need to tweak the content-type being set by <code>wt=json</code>.
-                You can do this via the below curl command, replacing <i>gettingstarted</i> with your collection name:
+                You can do this via the below curl command:
 <pre>
 curl -X POST -H 'Content-type:application/json' -d '{
   "update-queryresponsewriter": {
     "name": "json",
     "class": "solr.JSONResponseWriter",
-    "content-type": "application/json; charset=UTF-8"
+    "content-type": "text/javascript; charset=UTF-8"
   }
-}' http://localhost:8983/solr/gettingstarted/config
+}' {{ extractSolrConfigApiUrl(pendingWizardSettings.searchUrl) }}
 </pre>
 
 
