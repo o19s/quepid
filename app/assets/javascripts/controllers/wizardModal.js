@@ -43,7 +43,7 @@ angular.module('QuepidApp')
       $scope.searchFields = [];
 
       $scope.extractSolrConfigApiUrl = function(searchUrl) {
-        return searchUrl.substring(0, searchUrl.lastIndexOf("/")) + "/config";
+        return searchUrl.substring(0, searchUrl.lastIndexOf('/')) + '/config';
       };
 
 
