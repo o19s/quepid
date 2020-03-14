@@ -21,8 +21,6 @@ DefaultScorer.first_or_create(
   name:         'v1',
   state:        'published',
   published_at: Time.new(2014, 01, 01),
-  default:      true
-)
 
 if ENV['SEED_SAMPLE_DATA']
   require_relative 'sample_data_seeds'
