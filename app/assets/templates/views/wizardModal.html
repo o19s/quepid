@@ -54,6 +54,22 @@
             <ul ng-if="pendingWizardSettings.searchEngine === 'solr'">
               <li>Do you see any errors when you visit your <a target="_blank" href="{{pendingWizardSettings.searchUrl}}">Solr URL directly?</a></li>
               <li>Will your request handler accept the JSONP writer type? Or does it only return XML or JSON?</li>
+              <li>
+                If you are using Solr 8.4 or later, you may need to tweak the content-type being set by <code>wt=json</code>.
+                You can do this via the below curl command:
+<pre>
+curl -X POST -H 'Content-type:application/json' -d '{
+  "update-queryresponsewriter": {
+    "name": "json",
+    "class": "solr.JSONResponseWriter",
+    "content-type": "text/javascript; charset=UTF-8"
+  }
+}' {{ extractSolrConfigApiUrl(pendingWizardSettings.searchUrl) }}
+</pre>
+
+
+
+              </li>
               <li>If Solr responds, check if you have an ad blocker blocking your queries.</li>
               <li>See the <a target="_blank" href="https://github.com/o19s/quepid/wiki/Troubleshooting-Solr-and-Quepid">Troubleshooting Solr and Quepid</a> wiki page for more help!</li>
             </ul>
