@@ -58,7 +58,7 @@
               <li>Do you see any errors when you visit your <a target="_blank" href="{{pendingWizardSettings.searchUrl}}">Solr URL directly?</a></li>
               <li>Will your request handler accept the JSONP writer type? Or does it only return XML or JSON?</li>
               <li>
-                If you are using Solr 8.2 or later, you need to tweak the content-type being set by <code>wt=json</code>.
+                If you are using Solr 8.4 or later, you may need to tweak the content-type being set by <code>wt=json</code>.
                 You can do this via the below curl command:
 <pre>
 curl -X POST -H 'Content-type:application/json' -d '{
