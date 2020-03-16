@@ -17,7 +17,6 @@
         self.constructFromData = constructFromData;
         self.create            = create;
         self.clearScorer       = clearScorer;
-        self.communityScorers  = [];
         self.defaultScorer     = new ScorerFactory();
         self.defaultScorers    = [];
         self.delete            = deleteScorer;
@@ -171,11 +170,8 @@
             .then(function(response) {
               var scorer = self.constructFromData(response.data);
 
-              if( !contains(self.scorers, scorer) && !scorer.communal ) {
+              if( !contains(self.scorers, scorer)) {
                 self.scorers.push(scorer);
-                broadcastSvc.send('updatedScorersList');
-              } else if( !contains(self.communityScorers, scorer) && scorer.communal ) {
-                self.communityScorers.push(scorer);
                 broadcastSvc.send('updatedScorersList');
               }
 
@@ -207,14 +203,6 @@
               }
             });
 
-            angular.forEach(data.community_scorers, function(scorerData) {
-              var scorer = self.constructFromData(scorerData);
-
-              if(!contains(self.communityScorers, scorer)) {
-                self.communityScorers.push(scorer);
-              }
-            });
-
             broadcastSvc.send('updatedScorersList');
           });
         }
@@ -240,14 +228,6 @@
 
               if(!contains(self.defaultScorers, scorer)) {
                 self.defaultScorers.push(scorer);
-              }
-            });
-
-            angular.forEach(data.community_scorers, function(scorerData) {
-              var scorer = self.constructFromData(scorerData);
-
-              if(!contains(self.communityScorers, scorer)) {
-                self.communityScorers.push(scorer);
               }
             });
 
