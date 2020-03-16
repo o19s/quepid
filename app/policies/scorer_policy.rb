@@ -36,7 +36,6 @@ class ScorerPolicy < ApplicationPolicy
     permissions[:delete]
   end
 
-
   private
 
   def permissions
