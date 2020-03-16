@@ -125,15 +125,6 @@ bin/docker r tail -f -n 200 log/development.log
 
 ## III. Run Tests
 
-### BEFORE RUNNING TESTS
-
-If you aren't using Docker, then create test database...
-
-```
-bin/docker r rake db:drop RAILS_ENV=test
-bin/docker r rake db:create RAILS_ENV=test
-```
-
 There are three types of tests that you can run:
 
 ### Minitest
@@ -150,6 +141,13 @@ Run a single test via:
 
 ```
 bin/docker r bin/rake test TEST=./test/controllers/api/v1/bulk/queries_controller_test.rb
+```
+
+If you need to reset your test database setup then run:
+
+```
+bin/docker r rake db:drop RAILS_ENV=test
+bin/docker r rake db:create RAILS_ENV=test
 ```
 
 ### JS Lint

@@ -13,20 +13,18 @@ module Admin
     end
 
     describe 'Creates scorer' do
-      test 'sets default attributes' do
+      test 'does NOT set default attributes except for status' do
         post :create
 
         assert_redirected_to admin_default_scorer_path(assigns(:scorer))
 
         scorer = DefaultScorer.last
 
-        assert_not_nil scorer.code
-        assert_not_nil scorer.name
-        assert_not_nil scorer.scale
-
-        assert_equal DefaultScorer::DEFAULTS[:code],   scorer.code
-        assert_equal DefaultScorer::DEFAULTS[:scale],  scorer.scale
-        assert_equal DefaultScorer::DEFAULTS[:name],   scorer.name
+        assert_nil scorer.code
+        assert_nil scorer.name
+        assert_equal [], scorer.scale
+        assert_equal '', scorer.scale_list
+        assert_equal 'draft', scorer.state
       end
 
       test 'handles empty string names' do
@@ -36,7 +34,7 @@ module Admin
 
         scorer = DefaultScorer.last
 
-        assert_equal DefaultScorer::DEFAULTS[:name], scorer.name
+        assert_nil scorer.name
       end
 
       test 'accepts code as an attribute' do
@@ -49,11 +47,10 @@ module Admin
         scorer = DefaultScorer.last
 
         assert_not_nil scorer.code
-        assert_not_nil scorer.name
-        assert_not_nil scorer.scale
+        assert_nil scorer.name
+        assert_equal [], scorer.scale
 
         assert_equal code, scorer.code
-        assert_equal DefaultScorer::DEFAULTS[:scale], scorer.scale
       end
 
       test 'accepts name as an attribute' do
@@ -65,7 +62,7 @@ module Admin
 
         scorer = DefaultScorer.last
 
-        assert_not_nil scorer.code
+        assert_nil scorer.code
         assert_not_nil scorer.name
         assert_not_nil scorer.scale
 
@@ -81,11 +78,10 @@ module Admin
 
         scorer = DefaultScorer.last
 
-        assert_not_nil scorer.code
-        assert_not_nil scorer.name
+        assert_nil scorer.code
+        assert_nil scorer.name
         assert_not_nil scorer.scale
 
-        assert_equal DefaultScorer::DEFAULTS[:code], scorer.code
         assert_equal scale, scorer.scale
       end
 
@@ -98,11 +94,10 @@ module Admin
 
         scorer = DefaultScorer.last
 
-        assert_not_nil scorer.code
-        assert_not_nil scorer.name
+        assert_nil scorer.code
+        assert_nil scorer.name
         assert_not_nil scorer.scale
 
-        assert_equal DefaultScorer::DEFAULTS[:code], scorer.code
         assert_equal scale, scorer.scale
       end
 
@@ -135,8 +130,8 @@ module Admin
 
         scorer = DefaultScorer.last
 
-        assert_not_nil scorer.code
-        assert_not_nil scorer.name
+        assert_nil scorer.code
+        assert_nil scorer.name
         assert_not_nil scorer.scale
 
         assert_equal scale.sort, scorer.scale
@@ -151,8 +146,8 @@ module Admin
 
         scorer = DefaultScorer.last
 
-        assert_not_nil scorer.code
-        assert_not_nil scorer.name
+        assert_nil scorer.code
+        assert_nil scorer.name
         assert_not_nil scorer.scale
 
         assert_equal scale.sort, scorer.scale
