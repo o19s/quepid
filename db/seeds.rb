@@ -6,22 +6,25 @@
 #   cities = City.create([{ name: 'Chicago' }, { name: 'Copenhagen' }])
 #   Mayor.create(name: 'Emanuel', city: cities.first)
 
-DefaultScorer.first_or_create(
-  scale:  (1..10).to_a,
-  code:   [
-    '// Gets the average score over a scale of 100',
-    '// (assumes query rating on a scale of 1-10)',
-    'var score = avgRating100(10);',
-    'if (score !== null) {',
-    '  // Adds a distance penalty to the score',
-    '  score -= editDistanceFromBest(10);',
-    '}',
-    'setScore(score);',
-  ].join("\n"),
+puts File.readlines('./db/scorers/v1.js')
+
+
+DefaultScorer.where(name: 'v1').first_or_create(
+  scale:        (1..10).to_a,
+  code:         File.readlines('./db/scorers/v1.js','\n').join('\n'),
   name:         'v1',
   state:        'published',
   published_at: Time.new(2014, 01, 01)
 )
+
+DefaultScorer.where(name: 'nDCG@10').first_or_create(
+  scale:        (1..4).to_a,
+  code:         File.readlines('./db/scorers/ndcg@10.js','\n').join('\n'),
+  name:         'nDCG@10',
+  state:        'published',
+  published_at: Time.new(2020, 3, 16)
+)
+
 
 if ENV['SEED_SAMPLE_DATA']
   require_relative 'sample_data_seeds'
