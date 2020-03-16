@@ -22,14 +22,13 @@ module Api
           scorer = json_response
 
           assert_not_nil scorer['scorerId']
-          assert_not_nil scorer['code']
+          assert_nil     scorer['code']
           assert_not_nil scorer['name']
           assert_not_nil scorer['scale']
 
           assert_equal user.id,                       scorer['owner_id']
-          assert_equal Scorer::DEFAULTS[:code],       scorer['code']
-          assert_equal Scorer::DEFAULTS[:scale],      scorer['scale']
-          assert_equal Scorer::DEFAULTS[:query_test], scorer['queryTest']
+          assert_equal [],                            scorer['scale']
+          assert_equal false,                         scorer['queryTest']
 
           regex = /Scorer/
           assert_match regex, scorer['name']
@@ -68,8 +67,8 @@ module Api
 
           assert_equal user.id,                       scorer['owner_id']
           assert_equal code,                          scorer['code']
-          assert_equal Scorer::DEFAULTS[:scale],      scorer['scale']
-          assert_equal Scorer::DEFAULTS[:query_test], scorer['queryTest']
+          assert_equal [],                            scorer['scale']
+          assert_equal false,                         scorer['queryTest']
 
           regex = /Scorer/
           assert_match regex, scorer['name']
@@ -88,14 +87,13 @@ module Api
           scorer = JSON.parse(response.body)
 
           assert_not_nil scorer['scorerId']
-          assert_not_nil scorer['code']
+          assert_nil     scorer['code']
           assert_not_nil scorer['name']
           assert_not_nil scorer['scale']
 
           assert_equal user.id,                       scorer['owner_id']
-          assert_equal Scorer::DEFAULTS[:code],       scorer['code']
-          assert_equal Scorer::DEFAULTS[:scale],      scorer['scale']
-          assert_equal Scorer::DEFAULTS[:query_test], scorer['queryTest']
+          assert_equal [],                            scorer['scale']
+          assert_equal false,                         scorer['queryTest']
 
           assert_equal name, scorer['name']
         end
@@ -110,14 +108,13 @@ module Api
           scorer = JSON.parse(response.body)
 
           assert_not_nil scorer['scorerId']
-          assert_not_nil scorer['code']
+          assert_nil     scorer['code']
           assert_not_nil scorer['name']
           assert_not_nil scorer['scale']
 
           assert_equal user.id,                       scorer['owner_id']
-          assert_equal Scorer::DEFAULTS[:code],       scorer['code']
           assert_equal scale,                         scorer['scale']
-          assert_equal Scorer::DEFAULTS[:query_test], scorer['queryTest']
+          assert_equal false,                         scorer['queryTest']
         end
 
         test 'limits scale length' do
@@ -154,14 +151,13 @@ module Api
           scorer = JSON.parse(response.body)
 
           assert_not_nil scorer['scorerId']
-          assert_not_nil scorer['code']
+          assert_nil     scorer['code']
           assert_not_nil scorer['name']
           assert_not_nil scorer['scale']
 
           assert_equal user.id,                       scorer['owner_id']
-          assert_equal Scorer::DEFAULTS[:code],       scorer['code']
           assert_equal scale.sort,                    scorer['scale']
-          assert_equal Scorer::DEFAULTS[:query_test], scorer['queryTest']
+          assert_equal false,                         scorer['queryTest']
         end
 
         test 'accepts scale as a string' do
@@ -174,14 +170,13 @@ module Api
           scorer = JSON.parse(response.body)
 
           assert_not_nil scorer['scorerId']
-          assert_not_nil scorer['code']
+          assert_nil scorer['code']
           assert_not_nil scorer['name']
-          assert_not_nil scorer['scale']
+          assert_equal [ 1, 2, 3, 4 ], scorer['scale']
 
           assert_equal user.id,                       scorer['owner_id']
-          assert_equal Scorer::DEFAULTS[:code],       scorer['code']
           assert_equal scale.sort,                    scorer['scale']
-          assert_equal Scorer::DEFAULTS[:query_test], scorer['queryTest']
+          assert_equal false,                         scorer['queryTest']
         end
 
         test 'sets scorer as a test for a query' do

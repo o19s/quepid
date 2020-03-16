@@ -1,6 +1,3 @@
-<!--div class="modal-header">
-  <h3 class="modal-title">Quepid Wizard</h3>
-</div-->
 <div class="modal-body">
   <wizard on-finish="pendingWizardSettings.submit()">
     <wz-step title="Welcome">
@@ -35,10 +32,10 @@
         <div style="text-align: center;">
           <label style="margin-right: 25px;">
             <img ng-src="/images/Solr.png" alt='Solr' width="100px" />
-            <input type="radio" value="solr" ng-model="pendingWizardSettings.searchEngine" ng-change="udpateSettingsDefaults()">
+            <input type="radio" value="solr" ng-model="pendingWizardSettings.searchEngine" ng-change="updateSettingsDefaults()">
           </label>
           <label>
-            <input type="radio" value="es" ng-model="pendingWizardSettings.searchEngine" ng-change="udpateSettingsDefaults()">
+            <input type="radio" value="es" ng-model="pendingWizardSettings.searchEngine" ng-change="updateSettingsDefaults()">
             <img ng-src="/images/elasticsearch.png" alt='Elasticsearch' width="150px" />
           </label>
         </div>
@@ -57,6 +54,22 @@
             <ul ng-if="pendingWizardSettings.searchEngine === 'solr'">
               <li>Do you see any errors when you visit your <a target="_blank" href="{{pendingWizardSettings.searchUrl}}">Solr URL directly?</a></li>
               <li>Will your request handler accept the JSONP writer type? Or does it only return XML or JSON?</li>
+              <li>
+                If you are using Solr 8.4 or later, you may need to tweak the content-type being set by <code>wt=json</code>.
+                You can do this via the below curl command:
+<pre>
+curl -X POST -H 'Content-type:application/json' -d '{
+  "update-queryresponsewriter": {
+    "name": "json",
+    "class": "solr.JSONResponseWriter",
+    "content-type": "text/javascript; charset=UTF-8"
+  }
+}' {{ extractSolrConfigApiUrl(pendingWizardSettings.searchUrl) }}
+</pre>
+
+
+
+              </li>
               <li>If Solr responds, check if you have an ad blocker blocking your queries.</li>
               <li>See the <a target="_blank" href="https://github.com/o19s/quepid/wiki/Troubleshooting-Solr-and-Quepid">Troubleshooting Solr and Quepid</a> wiki page for more help!</li>
             </ul>
@@ -98,7 +111,7 @@
       <h2>How Should We Display Your Results?</h2>
       <div>
 
-        <form class="form-horizaontal">
+        <form class="">
           <div class="form-group clearfix">
             <label class="col-sm-3 control-label">Title Field</label>
             <div class="col-sm-9">
@@ -120,7 +133,7 @@
           <div class="form-group clearfix">
             <label class="col-sm-3 control-label">Additional Display Fields</label>
             <div class="col-sm-9">
-              <tags-input ng-model="pendingWizardSettings.additionalFields" placeholder="Add a field" add-on-space="true" min-length="1">
+              <tags-input ng-model="pendingWizardSettings.additionalFields" placeholder="Add a field" add-on-enter="true" add-on-space="true" min-length="1">
               <auto-complete source="loadFields($query)" min-length="0" load-on-focus="true" load-on-empty="true"></auto-complete>
               </tags-input>
               <p class="help-block">Would any extra fields be handy to display?</p>

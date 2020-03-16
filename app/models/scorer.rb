@@ -22,22 +22,6 @@
 require 'scale_serializer'
 
 class Scorer < ActiveRecord::Base
-  # Constants
-  DEFAULTS = {
-    scale:      (1..10).to_a,
-    code:       [
-      '// Gets the average score over a scale of 100',
-      '// (assumes query rating on a scale of 1-10)',
-      'var score = avgRating100(10);',
-      'if (score !== null) {',
-      '  // Adds a distance penalty to the score',
-      '  score -= editDistanceFromBest(10);',
-      '}',
-      'setScore(score);'
-    ].join("\n"),
-    query_test: false,
-  }.freeze
-
   # Associations
   belongs_to :owner, class_name: 'User'
 
@@ -74,9 +58,8 @@ class Scorer < ActiveRecord::Base
   def initialize attributes = nil, options = {}
     super
 
-    self.code     ||= DEFAULTS[:code]
-    self.scale      = DEFAULTS[:scale]      if scale.blank?
-    self.query_test = DEFAULTS[:query_test] if query_test.blank?
+    self.scale      = []       if scale.blank?
+    self.query_test = false    if query_test.blank?
 
     # This is not always accurate since a scorer can be deleted and thus
     # we could presumably have two scorers with the same name.

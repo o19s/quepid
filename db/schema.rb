@@ -81,7 +81,6 @@ ActiveRecord::Schema.define(version: 20200314193226) do
     t.boolean  "show_scale_labels",                    default: false
     t.text     "scale_with_labels",      limit: 65535
     t.string   "state",                  limit: 255,   default: "draft"
-    t.boolean  "default",                              default: false
     t.datetime "published_at"
     t.datetime "created_at",                                             null: false
     t.datetime "updated_at",                                             null: false

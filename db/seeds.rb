@@ -20,8 +20,7 @@ DefaultScorer.first_or_create(
   ].join("\n"),
   name:         'v1',
   state:        'published',
-  published_at: Time.new(2014, 01, 01),
-  default:      true
+  published_at: Time.new(2014, 01, 01)
 )
 
 if ENV['SEED_SAMPLE_DATA']
