@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20200303190724) do
+ActiveRecord::Schema.define(version: 20200314193226) do
 
   create_table "annotations", force: :cascade do |t|
     t.text     "message",    limit: 65535
@@ -81,8 +81,8 @@ ActiveRecord::Schema.define(version: 20200303190724) do
     t.boolean  "show_scale_labels",                    default: false
     t.text     "scale_with_labels",      limit: 65535
     t.string   "state",                  limit: 255,   default: "draft"
-    t.datetime "published_at"
     t.boolean  "default",                              default: false
+    t.datetime "published_at"
     t.datetime "created_at",                                             null: false
     t.datetime "updated_at",                                             null: false
   end
@@ -140,7 +140,6 @@ ActiveRecord::Schema.define(version: 20200303190724) do
     t.text     "scale_with_labels",      limit: 65535
     t.datetime "created_at",                                           null: false
     t.datetime "updated_at",                                           null: false
-    t.boolean  "communal",                             default: false
   end
 
   create_table "snapshot_docs", force: :cascade do |t|

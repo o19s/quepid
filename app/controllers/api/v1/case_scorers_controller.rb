@@ -10,9 +10,8 @@ module Api
         @default           = @case.scorer
         @user_scorers      = @case.user_scorers
         @default_scorers   = @case.default_scorers
-        @community_scorers = Scorer.communal.all
 
-        respond_with @user_scorers, @default_scorers, @community_scorers, @default
+        respond_with @user_scorers, @default_scorers, @default
       end
 
       def update

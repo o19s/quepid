@@ -13,7 +13,3 @@ end
 json.default_scorers @default_scorers do |scorer|
   json.partial! "api/v1/#{scorer.class.table_name}/scorer", scorer: scorer
 end
-
-json.community_scorers @community_scorers do |scorer|
-  json.partial! "api/v1/#{scorer.class.table_name}/scorer", scorer: scorer
-end

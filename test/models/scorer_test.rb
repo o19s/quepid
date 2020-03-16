@@ -17,7 +17,6 @@
 #  scale_with_labels      :text(65535)
 #  created_at             :datetime         not null
 #  updated_at             :datetime         not null
-#  communal               :boolean          default(FALSE)
 #
 
 require 'test_helper'

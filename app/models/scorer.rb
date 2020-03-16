@@ -17,7 +17,6 @@
 #  scale_with_labels      :text(65535)
 #  created_at             :datetime         not null
 #  updated_at             :datetime         not null
-#  communal               :boolean          default(FALSE)
 #
 
 require 'scale_serializer'
@@ -66,14 +65,6 @@ class Scorer < ActiveRecord::Base
         owner_id: user.id,
       }
     )
-  }
-
-  #
-  # Communal as in for the community
-  # didn't want to use 'public' because that is a special keyword
-  # and shared in our context means that it was shared with a team
-  scope :communal, -> {
-    where(communal: true)
   }
 
   # Transform scale from array to a string

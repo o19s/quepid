@@ -41,8 +41,7 @@ module Api
                     when 'DefaultScorer'
                       DefaultScorer.where(id: params[:scorer_id]).first
                     else
-                      current_user.scorers.where(id: params[:scorer_id]).first ||
-                      Scorer.communal.where(id: params[:scorer_id]).first
+                      current_user.scorers.where(id: params[:scorer_id]).first
                     end
 
           render json: { error: 'Not Found!' }, status: :not_found unless @scorer
