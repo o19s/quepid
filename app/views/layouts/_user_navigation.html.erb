@@ -8,16 +8,13 @@
     </a>
 
     <ul class="dropdown-menu dropdown-content" uib-dropdown-menu>
-      <li>
-        <%= link_to profile_path, class: 'dropdown-link', target: '_self' do %>
-          My profile
-        <% end -%>
-      </li>
-      <li><a class="dropdown-link" href="/logout" target="_self">Log out</a></li>
+      <li><%= link_to 'My profile', profile_path, class: 'dropdown-link', target: '_self' %></li>
+      <li><%= link_to 'Log out', logout_path, class: 'dropdown-link', target: '_self' %></li>
       <% if current_user.administrator? %>
-      <li class="dropdown-header">Admin</li>
-      <li><a class="dropdown-link" href="/admin" target="_self">Index</a></li>
+      <li role="separator" class="divider"></li>
+      <li><%= link_to 'Admin Home', admin_path, class: 'dropdown-link', target: '_self' %></li>
       <li><%= link_to 'Users', admin_users_path, class: 'dropdown-link', target: '_self' %></li>
+      <li><%= link_to 'Quepid Scorers', admin_default_scorers_path, class: 'dropdown-link', target: '_self' %></li>
       <li><a class="dropdown-link" href="/admin/jobs" target="_self">Job Manager</a></li>
       <% end %>
     </ul>
