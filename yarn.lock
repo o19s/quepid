@@ -4070,10 +4070,10 @@ negotiator@0.6.1:
     gulp-open "^2.0.0"
     gulp-uglify "^3.0.0"
 
-ng-tags-input@~3.0.0:
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/ng-tags-input/-/ng-tags-input-3.0.0.tgz#5fb06032e02d38aad02d443e3f5afc51e127fa4b"
-  integrity sha1-X7BgMuAtOKrQLUQ+P1r8UeEn+ks=
+ng-tags-input@3.2.0:
+  version "3.2.0"
+  resolved "https://registry.yarnpkg.com/ng-tags-input/-/ng-tags-input-3.2.0.tgz#91282de575130c8ab794797febf0972b0f3bba3e"
+  integrity sha1-kSgt5XUTDIq3lHl/6/CXKw87uj4=
 
 nice-try@^1.0.4:
   version "1.0.5"

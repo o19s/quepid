@@ -19,16 +19,16 @@ angular.module('QuepidApp')
     ) {
       this.defaults = {
         solr: {
-          additional:      '',
-          escapeQuery:     true,
-          fieldSpec:       'id:id, title:title',
-          idField:         'id',
-          numberOfRows:    10,
-          queryParams:     'q=#$query##',
-          searchEngine:    'solr',
-          searchUrl:       'http://quepid-solr.dev.o19s.com/solr/tmdb/select',
-          titleField:      'title',
-          urlFormat:       'http(s?)://yourdomain.com/<index>/select',
+          queryParams:      'q=#$query##',
+          escapeQuery:      true,
+          fieldSpec:        'id:id, title:title',
+          idField:          'id',
+          titleField:       'title',
+          additionalFields: ['overview','thumb:poster_path'],
+          numberOfRows:     10,
+          searchEngine:     'solr',
+          searchUrl:        'http://quepid-solr.dev.o19s.com/solr/tmdb/select',
+          urlFormat:        'http(s?)://yourdomain.com:8983/<index>/select',
         },
         es: {
           queryParams:  [
@@ -41,15 +41,15 @@ angular.module('QuepidApp')
             '}',
           ].join('\n'),
 
-          additional:      '',
-          escapeQuery:     true,
-          fieldSpec:       'id:_id, title:title',
-          idField:         '_id',
-          numberOfRows:    10,
-          searchEngine:    'es',
-          searchUrl:       'http://quepid-elasticsearch.dev.o19s.com:9200/tmdb/_search',
-          titleField:      'title',
-          urlFormat:       'http(s?)://yourdomain.com/<index>/_search',
+          escapeQuery:       true,
+          fieldSpec:         'id:_id, title:title',
+          idField:           '_id',
+          titleField:        'title',
+          additionalFields:  ['overview','thumb:poster_path'],
+          numberOfRows:      10,
+          searchEngine:      'es',
+          searchUrl:         'http://quepid-elasticsearch.dev.o19s.com:9200/tmdb/_search',
+          urlFormat:         'http(s?)://yourdomain.com:9200/<index>/_search',
         }
       };
 

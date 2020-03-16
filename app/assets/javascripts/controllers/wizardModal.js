@@ -23,9 +23,9 @@ angular.module('QuepidApp')
         return settingsSvc.settingsId();
       };
 
-      $scope.udpateSettingsDefaults = function() {
+      $scope.updateSettingsDefaults = function() {
         var settings = settingsSvc.defaults[$scope.pendingWizardSettings.searchEngine];
-        $scope.pendingWizardSettings.additionalFields         = settings.additional;
+        $scope.pendingWizardSettings.additionalFields         = settings.additionalFields;
         $scope.pendingWizardSettings.fieldSpec                = settings.fieldSpec;
         $scope.pendingWizardSettings.idField                  = settings.idField;
         $scope.pendingWizardSettings.searchEngine             = settings.searchEngine;
@@ -78,7 +78,7 @@ angular.module('QuepidApp')
           if ( newUrl === defaultUrl ) {
             $scope.pendingWizardSettings.idField          = defaults.idField;
             $scope.pendingWizardSettings.titleField       = defaults.titleField;
-            $scope.pendingWizardSettings.additionalFields = defaults.additional;
+            $scope.pendingWizardSettings.additionalFields = defaults.additionalFields;
           } else {
             $scope.pendingWizardSettings.idField          = '';
             if (searchEngine === 'es') {
