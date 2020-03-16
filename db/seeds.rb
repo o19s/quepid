@@ -18,11 +18,13 @@ DefaultScorer.where(name: 'v1').first_or_create(
 )
 
 DefaultScorer.where(name: 'nDCG@10').first_or_create(
-  scale:        (1..4).to_a,
-  code:         File.readlines('./db/scorers/ndcg@10.js','\n').join('\n'),
-  name:         'nDCG@10',
-  state:        'published',
-  published_at: Time.new(2020, 3, 16)
+  scale:              (1..4).to_a,
+  scale_with_labels:  {"1":"Poor","2":"Fair","3":"Good","4":"Perfect"},
+  show_scale_labels:  true,
+  code:               File.readlines('./db/scorers/ndcg@10.js','\n').join('\n'),
+  name:               'nDCG@10',
+  state:              'published',
+  published_at:       Time.new(2020, 3, 16)
 )
 
 
