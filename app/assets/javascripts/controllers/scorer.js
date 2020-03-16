@@ -63,7 +63,6 @@ angular.module('QuepidApp')
           });
 
           $scope.defaultScorers   = customScorerSvc.defaultScorers;
-          $scope.communityScorers = customScorerSvc.communityScorers;
         });
 
       function cancel() {

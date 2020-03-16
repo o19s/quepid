@@ -56,7 +56,7 @@ class Case < ActiveRecord::Base
   has_many   :annotations,
              through: :scores
 
-  has_many   :user_scorers, -> { where(communal: false) },
+  has_many   :user_scorers,
              through:     :queries,
              source:      :scorer,
              source_type: 'Scorer'

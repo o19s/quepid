@@ -7,7 +7,3 @@ end
 json.default_scorers do
   json.array! @default_scorers, partial: 'api/v1/default_scorers/scorer', as: :scorer
 end
-
-json.community_scorers do
-  json.array! @community_scorers, partial: 'scorer', as: :scorer
-end

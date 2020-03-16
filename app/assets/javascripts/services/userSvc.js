@@ -36,10 +36,6 @@ angular.module('UtilitiesModule')
         var numQueries = userObj.numQueries;
         self.introWizardSeen = userObj.introWizardSeen;
 
-        this.canMakeScorerCommunal = function() {
-          return this.permissions.scorer.add_to_community;
-        };
-
         this.hasReachedQueryLimit = function () {
           return (this.queriesRemaining() === 0);
         };

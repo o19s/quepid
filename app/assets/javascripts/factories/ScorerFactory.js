@@ -40,7 +40,6 @@
       // Attributes
       self.code                   = data.code;
       self.colors                 = scaleToColors(data.scale);
-      self.communal               = data.communal;
       self.defaultAlgorithm       = defaultAlgorithm;
       self.displayName            = setDisplayName(data.name, data.scorerType);
       self.error                  = false;

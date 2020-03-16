@@ -36,10 +36,6 @@ class ScorerPolicy < ApplicationPolicy
     permissions[:delete]
   end
 
-  def add_to_community?
-    @user.administrator?
-  end
-
   private
 
   def permissions

@@ -28,7 +28,6 @@ module Api
             'scorerId'            => scorer.id,
             'scorerType'          => scorer.class.to_s,
             'code'                => scorer.code,
-            'communal'            => scorer.communal,
             'name'                => scorer.name,
             'queryTest'           => scorer.query_test,
             'scale'               => scorer.scale,

@@ -67,11 +67,6 @@ module Permissible
     },
     {
       model_type: 'scorer',
-      action:     'add_to_community',
-      on:         { user: false },
-    },
-    {
-      model_type: 'scorer',
       action:     'delete',
       on:         { user: true },
     },
