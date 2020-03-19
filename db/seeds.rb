@@ -17,12 +17,12 @@ DefaultScorer.where(name: 'v1').first_or_create(
   published_at: Time.new(2014, 01, 01)
 )
 
-DefaultScorer.where(name: 'nDCG@10').first_or_create(
+DefaultScorer.where(name: 'nDCG@5').first_or_create(
   scale:              (1..4).to_a,
   scale_with_labels:  {"1":"Poor","2":"Fair","3":"Good","4":"Perfect"},
   show_scale_labels:  true,
-  code:               File.readlines('./db/scorers/ndcg@10.js','\n').join('\n'),
-  name:               'nDCG@10',
+  code:               File.readlines('./db/scorers/ndcg@5.js','\n').join('\n'),
+  name:               'nDCG@5',
   state:              'published',
   published_at:       Time.new(2020, 3, 16)
 )
