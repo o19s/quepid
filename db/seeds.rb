@@ -19,7 +19,7 @@ DefaultScorer.where(name: 'v1').first_or_create(
 
 DefaultScorer.where(name: 'nDCG@5').first_or_create(
   scale:              (0..4).to_a,
-  scale_with_labels:  {"0":"Irrelevant" "1":"Poor","2":"Fair","3":"Good","4":"Perfect"},
+  scale_with_labels:  {"0":"Irrelevant","1":"Poor","2":"Fair","3":"Good","4":"Perfect"},
   show_scale_labels:  true,
   code:               File.readlines('./db/scorers/ndcg@5.js','\n').join('\n'),
   name:               'nDCG@5',
@@ -29,10 +29,20 @@ DefaultScorer.where(name: 'nDCG@5').first_or_create(
 
 DefaultScorer.where(name: 'DCG@5').first_or_create(
   scale:              (0..4).to_a,
-  scale_with_labels:  {"0":"Irrelevant", "1":"Poor","2":"Fair","3":"Good","4":"Perfect"},
+  scale_with_labels:  {"0":"Irrelevant","1":"Poor","2":"Fair","3":"Good","4":"Perfect"},
   show_scale_labels:  true,
   code:               File.readlines('./db/scorers/dcg@5.js','\n').join('\n'),
   name:               'DCG@5',
+  state:              'published',
+  published_at:       Time.new(2020, 3, 20)
+)
+
+DefaultScorer.where(name: 'CG@5').first_or_create(
+  scale:              (0..4).to_a,
+  scale_with_labels:  {"0":"Irrelevant","1":"Poor","2":"Fair","3":"Good","4":"Perfect"},
+  show_scale_labels:  true,
+  code:               File.readlines('./db/scorers/cg@5.js','\n').join('\n'),
+  name:               'CG@5',
   state:              'published',
   published_at:       Time.new(2020, 3, 20)
 )
