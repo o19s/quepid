@@ -1,6 +1,7 @@
 # Changelog
 
-## 6.?.? - ??
+## 6.1.? - ??
+* Community member reported the default demo TMDB Elasticsearch server on port 9200 had on data.  Having seem random "drive by vandalism" of our demo Solr and ES servers on default ports, we want to move away.  https://github.com/o19s/quepid/pull/103 by @epugh changes default used in Wizard to port 9206 and 8985.
 
 ## 6.1.1 - 03/07/2020
 * Community member reported race condition in standing up Rails and MySQL and issues with PhantomJS install in the developer `docker-compose.yml` and `Dockerfile.dev` setups.  https://github.com/o19s/quepid/pull/75 by @epugh fixes https://github.com/o19s/quepid/issues/76 and https://github.com/o19s/quepid/issues/73.
