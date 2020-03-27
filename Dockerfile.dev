@@ -2,23 +2,24 @@ FROM ruby:2.5.7-stretch
 
 MAINTAINER OpenSource Connections <quepid_admin@opensourceconnections.com>
 
+ENV home .
+
 # Must have packages
-RUN apt-get update -qq && apt-get install -y vim curl git tmux
+RUN apt-get update -qq && apt-get install -y vim curl tmux
 
-# Install Node
+COPY Gemfile* /srv/app/
+WORKDIR /srv/app
+RUN bundle install
+
+RUN curl -sL https://deb.nodesource.com/setup_10.x | bash
 RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
-RUN curl -sL https://deb.nodesource.com/setup_8.x | bash
 RUN echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list
+RUN apt-get update && apt-get install -y nodejs
+RUN apt-get install -y --allow-unauthenticated yarn netcat
 
-RUN apt-get install -y nodejs
-RUN apt-get update && apt-get install -y --allow-unauthenticated yarn netcat
+COPY . /srv/app/
 
 RUN yarn global add phantomjs-prebuilt
 
 # Clean environment
 RUN apt-get clean all
-
-COPY . /srv/app
-WORKDIR /srv/app
-
-RUN bundle install
