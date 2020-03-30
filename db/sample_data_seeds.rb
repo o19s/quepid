@@ -260,7 +260,7 @@ puts "End of seeding scorers................"
 # Ratings
 puts "Seeding ratings................"
 
-search_url = "http://quepid-solr.dev.o19s.com:8983/solr/statedecoded/select"
+search_url = "http://quepid-solr.dev.o19s.com:8985/solr/statedecoded/select"
 
 tens_of_queries_case = tens_of_queries_user.cases.first
 tens_of_queries_case.update case_name: '10s of Queries'
