@@ -2950,10 +2950,10 @@ jsprim@^1.2.2:
   resolved "https://registry.yarnpkg.com/karma-ng-html2js-preprocessor/-/karma-ng-html2js-preprocessor-1.0.0.tgz#10d8c8cfaa4136f1c8a76d91a4cbceedebec4a31"
   integrity sha1-ENjIz6pBNvHIp22RpMvO7evsSjE=
 
-karma-ng-scenario@0.1.0:
-  version "0.1.0"
-  resolved "https://registry.yarnpkg.com/karma-ng-scenario/-/karma-ng-scenario-0.1.0.tgz#0d7c8f1348597252178aab450866507f384d08a3"
-  integrity sha1-DXyPE0hZclIXiqtFCGZQfzhNCKM=
+karma-ng-scenario@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/karma-ng-scenario/-/karma-ng-scenario-1.0.0.tgz#03315b27ee866f40443cf88bfebf7963f86543e1"
+  integrity sha1-AzFbJ+6Gb0BEPPiL/r95Y/hlQ+E=
 
 "karma-phantomjs-launcher@>= 0.1.4":
   version "1.0.4"
