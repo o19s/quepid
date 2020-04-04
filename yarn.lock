@@ -2840,10 +2840,10 @@ isstream@0.1.x, isstream@~0.1.2:
   resolved "https://registry.yarnpkg.com/isstream/-/isstream-0.1.2.tgz#47e63f7af55afa6f92e1500e690eb8b8529c099a"
   integrity sha1-R+Y/evVa+m+S4VAOaQ64uFKcCZo=
 
-jasmine-core@~2.9.0:
-  version "2.9.1"
-  resolved "https://registry.yarnpkg.com/jasmine-core/-/jasmine-core-2.9.1.tgz#b6bbc1d8e65250d56f5888461705ebeeeb88f22f"
-  integrity sha1-trvB2OZSUNVvWIhGFwXr7uuI8i8=
+jasmine-core@^2.99.1:
+  version "2.99.1"
+  resolved "https://registry.yarnpkg.com/jasmine-core/-/jasmine-core-2.99.1.tgz#e6400df1e6b56e130b61c4bcd093daa7f6e8ca15"
+  integrity sha1-5kAN8ea1bhMLYcS80JPap/boyhU=
 
 jquery-ui@~1.12.1:
   version "1.12.1"
