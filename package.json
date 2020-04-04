@@ -33,7 +33,7 @@
     "json3": "~3.2.4",
     "karma": "~4.4.1",
     "karma-coffee-preprocessor": "^1.0.1",
-    "karma-jasmine": ">= 0.2.2",
+    "karma-jasmine": "1.1.2",
     "karma-ng-html2js-preprocessor": "^1.0.0",
     "karma-ng-scenario": "^1.0.0",
     "karma-phantomjs-launcher": ">= 0.1.4",
