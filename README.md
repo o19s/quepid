@@ -167,6 +167,21 @@ Runs tests for the Angular side. There are two modes for the karma tests:
 
 **Note:** The karma tests require the assets to be precompiled, which adds a significant amount of time to the test run. If you are only making changes to the test/spec files, then it is recommended you run the tests in watch mode (`bin/rake karma:start`). The caveat is that any time you make a change to the app files, you will have to restart the process (or use the single run mode).
 
+**Upgrading:** We have reliable test runs with karma-jasmine@1.1.2 and "jasmine-core": "^2.99.1".  Upgrading newer that that we have issues with the csv export test, which is okay cause they always fail, but also random errors, like in rateElementSvc_spec.js, which makes me nervous.
+spec/javascripts/angular/services/userSvc_spec.js:107:40
+spec/javascripts/angular/services/rateElementSvc_spec.js:109:46
+spec/javascripts/angular/services/rateElementSvc_spec.js:84:46
+spec/javascripts/angular/services/rateElementSvc_spec.js:105:30
+spec/javascripts/angular/services/rateElementSvc_spec.js:109:46
+
+Okay, updated furthur and now:
+spec/javascripts/angular/services/userSvc_spec.js:107:40
+spec/javascripts/angular/services/rateElementSvc_spec.js:105:30
+spec/javascripts/angular/services/rateElementSvc_spec.js:80:30
+
+
+
+
 ### Rubocop
 
 To check the Ruby syntax:

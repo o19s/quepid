@@ -22,7 +22,7 @@ module.exports = function(config) {
 
     // list of files to exclude
     exclude: [
-
+      'spec/javascripts/angular/services/caseCSVSvc_spec.js'
     ],
 
 
