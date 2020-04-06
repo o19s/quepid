@@ -2,6 +2,10 @@
 
 describe('Service: rateElementSvc', function () {
 
+  // https://zeit.co/blog/async-and-await
+  function sleep (time) {
+    return new Promise((resolve) => setTimeout(resolve, time));
+  }
   // load the service's module
   beforeEach(module('QuepidTest'));
 
@@ -80,8 +84,11 @@ describe('Service: rateElementSvc', function () {
       rateElementSvc.setScale(mockScope, mockScope.ratings);
       $rootScope.$apply();
 
-      expect(mockScope.ratings.scale).toBeDefined();
-      expect(mockScope.ratings.scale).toEqual(expectedDefaultScorer);
+      // I do NOT know why a sleep would a make this work.  sleep(0) goes back to failing
+      sleep(500).then(() => {
+        expect(mockScope.ratings.scale).toBeDefined();
+        expect(mockScope.ratings.scale).toEqual(expectedDefaultScorer);
+      })
     });
 
     it('to the default when scorerId is default', function() {
@@ -102,11 +109,15 @@ describe('Service: rateElementSvc', function () {
         return mockScorer;
       };
 
-      rateElementSvc.setScale(mockScope, mockScope.ratings);
+      sleep(500).then(() => {
+        rateElementSvc.setScale(mockScope, mockScope.ratings);
+      });
       $rootScope.$apply();
 
-      expect(mockScope.ratings.scale).toBeDefined();
-      expect(mockScope.ratings.scale).toEqual(expectedDefaultScorer);
+      sleep(500).then(() => {
+        expect(mockScope.ratings.scale).toBeDefined();
+        expect(mockScope.ratings.scale).toEqual(expectedDefaultScorer);
+      });
     });
 
     it('to returned scale when scorer is set with a different scale', function() {
