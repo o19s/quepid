@@ -178,6 +178,27 @@ Okay, updated furthur and now:
 spec/javascripts/angular/services/userSvc_spec.js:107:40
 spec/javascripts/angular/services/rateElementSvc_spec.js:105:30
 spec/javascripts/angular/services/rateElementSvc_spec.js:80:30
+spec/javascripts/angular/services/userSvc_spec.js:107:40
+spec/javascripts/angular/services/rateElementSvc_spec.js:109:46
+
+spec/javascripts/angular/services/userSvc_spec.js:107:40
+spec/javascripts/angular/services/rateElementSvc_spec.js:109:46
+spec/javascripts/angular/services/rateElementSvc_spec.js:84:46
+
+Got a perfect run!
+spec/javascripts/angular/services/userSvc_spec.js:107:40
+
+spec/javascripts/angular/services/userSvc_spec.js:107:40
+spec/javascripts/angular/services/rateElementSvc_spec.js:105:30
+
+Just updated to Pupppeteer
+spec/javascripts/angular/services/rateElementSvc_spec.js:84:39
+0.57s user 0.29s system 1% cpu 1:06.26 total
+
+1:21.53 total
+spec/javascripts/angular/services/userSvc_spec.js:107:33
+spec/javascripts/angular/services/rateElementSvc_spec.js:84:39
+
 
 
 

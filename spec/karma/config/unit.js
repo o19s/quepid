@@ -1,6 +1,8 @@
 // Karma configuration
 // Generated on Fri Nov 06 2015 19:55:18 GMT+0000 (UTC)
 
+process.env.CHROME_BIN = require('puppeteer').executablePath()
+
 module.exports = function(config) {
   config.set({
 
@@ -57,7 +59,14 @@ module.exports = function(config) {
     // - Safari (only Mac; has to be installed with `npm install karma-safari-launcher`)
     // - PhantomJS
     // - IE (only Windows; has to be installed with `npm install karma-ie-launcher`)
-    browsers: ['PhantomJS'],
+    browsers: ['ChromeHeadlessNoSandbox'],
+    customLaunchers: {
+       ChromeHeadlessNoSandbox: {
+           base: 'ChromeHeadless',
+           flags: ['--no-sandbox', '--headless']
+       }
+
+    },
 
 
     // If browser does not capture in given timeout [ms], kill it
