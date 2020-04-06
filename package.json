@@ -35,7 +35,6 @@
     "karma-coffee-preprocessor": "^1.0.1",
     "karma-jasmine": "^3.1.1",
     "karma-ng-html2js-preprocessor": "^1.0.0",
-    "karma-ng-scenario": "^1.0.0",
     "ng-json-explorer": "https://github.com/odra/ng-json-explorer",
     "ng-tags-input": "3.2.0",
     "splainer-search": "2.5.6",
