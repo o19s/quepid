@@ -81,9 +81,10 @@ describe('Service: caseCSVSvc', function () {
     });
 
     it('escapes a value with a " in it', function () {
-      mockCase.caseName = 'Test "Case"';
+      var newMockCase = angular.copy(mockCase);
+      newMockCase.caseName = 'Test "Case"';
 
-      var result = caseCSVSvc.stringify(mockCase);
+      var result = caseCSVSvc.stringify(newMockCase);
 
       var expectedResult = 'Test Team,Test ""Case"",8,dog,30,2015-07-14 16:08:55,,This dog looks like a great dog.\r\nTest Team,Test ""Case"",8,cat,0,2015-07-14 16:08:55,,Is this ""really"" a ""cat""?\r\nTest Team,Test ""Case"",8,foo,,2015-07-14 16:08:55,,chil\'laxin\r\n';
 
@@ -91,9 +92,10 @@ describe('Service: caseCSVSvc', function () {
     });
 
     it('escapes a value with a \n in it', function () {
-      mockCase.caseName = 'Test \n Case';
+      var newMockCase = angular.copy(mockCase);
+      newMockCase.caseName = 'Test \n Case';
 
-      var result = caseCSVSvc.stringify(mockCase);
+      var result = caseCSVSvc.stringify(newMockCase);
 
       var expectedResult = 'Test Team,"Test \n Case",8,dog,30,2015-07-14 16:08:55,,This dog looks like a great dog.\r\nTest Team,"Test \n Case",8,cat,0,2015-07-14 16:08:55,,Is this ""really"" a ""cat""?\r\nTest Team,"Test \n Case",8,foo,,2015-07-14 16:08:55,,chil\'laxin\r\n';
 
@@ -101,9 +103,10 @@ describe('Service: caseCSVSvc', function () {
     });
 
     it('escapes a value with a \r in it', function () {
-      mockCase.caseName = 'Test \r Case';
+      var newMockCase = angular.copy(mockCase);
+      newMockCase.caseName = 'Test \r Case';
 
-      var result = caseCSVSvc.stringify(mockCase);
+      var result = caseCSVSvc.stringify(newMockCase);
 
       var expectedResult = 'Test Team,"Test \r Case",8,dog,30,2015-07-14 16:08:55,,This dog looks like a great dog.\r\nTest Team,"Test \r Case",8,cat,0,2015-07-14 16:08:55,,Is this ""really"" a ""cat""?\r\nTest Team,"Test \r Case",8,foo,,2015-07-14 16:08:55,,chil\'laxin\r\n';
 
@@ -111,9 +114,10 @@ describe('Service: caseCSVSvc', function () {
     });
 
     it('escapes a value with a \n\r in it', function () {
-      mockCase.caseName = 'Test \n\r Case';
+      var newMockCase = angular.copy(mockCase);
+      newMockCase.caseName = 'Test \n\r Case';
 
-      var result = caseCSVSvc.stringify(mockCase);
+      var result = caseCSVSvc.stringify(newMockCase);
 
       var expectedResult = 'Test Team,"Test \n\r Case",8,dog,30,2015-07-14 16:08:55,,This dog looks like a great dog.\r\nTest Team,"Test \n\r Case",8,cat,0,2015-07-14 16:08:55,,Is this ""really"" a ""cat""?\r\nTest Team,"Test \n\r Case",8,foo,,2015-07-14 16:08:55,,chil\'laxin\r\n';
 
@@ -121,9 +125,10 @@ describe('Service: caseCSVSvc', function () {
     });
 
     it('escapes a value with a , in it', function () {
-      mockCase.caseName = 'Test, Case';
+      var newMockCase = angular.copy(mockCase);
+      newMockCase.caseName = 'Test, Case';
 
-      var result = caseCSVSvc.stringify(mockCase);
+      var result = caseCSVSvc.stringify(newMockCase);
 
       var expectedResult = 'Test Team,"Test, Case",8,dog,30,2015-07-14 16:08:55,,This dog looks like a great dog.\r\nTest Team,"Test, Case",8,cat,0,2015-07-14 16:08:55,,Is this ""really"" a ""cat""?\r\nTest Team,"Test, Case",8,foo,,2015-07-14 16:08:55,,chil\'laxin\r\n';
 
