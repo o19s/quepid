@@ -95,24 +95,42 @@ describe('Service: userSvc', function () {
       $httpBackend.flush();
 
       // bad!
-      sleep(500).then(() => {
+      //sleep(500).then(() => {
         expect(currUser.scorerId).toEqual(newScorerId);
-      });
+      //});
+
     });
 
     it('updates a user\'s default scorer', function() {
+      console.log("super before currUser.scorerId:" + currUser.scorerId);
       var url           = '/api/users/' + mockUser.id;
       var newScorerId   = 90;
       var data          = { user: { default_scorer_id: newScorerId } };
       mockUser.scorerId = newScorerId;
 
+      console.log("mockUser");
+      console.log(mockUser);
+
       $httpBackend.expectPUT(url, data).respond(200, mockUser);
 
       currUser.updateDefaultScorer(newScorerId);
+      console.log("before currUser.scorerId:" + currUser.scorerId);
+      console.log("before newScorerId:" + newScorerId);
 
       $httpBackend.flush();
+      sleep(100).then(() => {
 
+        // bad!
+        //sleep(0).then(() => {
+
+      });
+      console.log("currUser.scorerId:" + currUser.scorerId);
+      console.log("newScorerId:" + newScorerId);
       expect(currUser.scorerId).toEqual(newScorerId);
+
+
+
+      //});
     });
   });
 
