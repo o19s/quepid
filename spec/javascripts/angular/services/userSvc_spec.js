@@ -2,6 +2,11 @@
 
 describe('Service: userSvc', function () {
 
+  // https://zeit.co/blog/async-and-await
+  function sleep (time) {
+    return new Promise((resolve) => setTimeout(resolve, time));
+  }
+
   // load the service's module
   beforeEach(module('QuepidTest'));
 
@@ -89,7 +94,10 @@ describe('Service: userSvc', function () {
 
       $httpBackend.flush();
 
-      expect(currUser.scorerId).toEqual(newScorerId);
+      // bad!
+      sleep(500).then(() => {
+        expect(currUser.scorerId).toEqual(newScorerId);
+      });
     });
 
     it('updates a user\'s default scorer', function() {
