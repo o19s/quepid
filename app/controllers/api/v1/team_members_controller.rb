@@ -12,10 +12,7 @@ module Api
       end
 
       def create
-        @member = User.where.any_of(
-          email:    params[:id].to_s.downcase,
-             id:    params[:id]
-        ).first
+        @member = User.where.any_of(email: params[:id].to_s.downcase, id: params[:id]).first
 
         unless @member
           render json: { error: 'User Not Found!' }, status: :not_found
@@ -33,10 +30,7 @@ module Api
       end
 
       def destroy
-        member = @team.members.where.any_of(
-          email:    params[:id].to_s.downcase,
-             id:    params[:id]
-        ).all
+        member = @team.members.where.any_of(email: params[:id].to_s.downcase, id: params[:id]).all
 
         @team.members.delete(member) if member
 
