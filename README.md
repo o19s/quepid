@@ -301,8 +301,9 @@ thor ratings:import CASEID FILENAME     # imports ratings to a case
 
 user
 ----
-thor user:create USERNAME PASSWORD             # creates a new user
-thor user:reset_password USERNAME NEWPASSWORD  # resets user's password
+thor user:create EMAIL USERNAME PASSWORD    # creates a new user
+thor user:grant_administrator EMAIL         # grant administrator privileges to user
+thor user:reset_password EMAIL NEWPASSWORD  # resets user's password
 ```
 
 To see more details about any of the tasks, run `bin/docker r thor help TASKNAME`:
