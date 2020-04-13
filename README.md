@@ -284,7 +284,7 @@ bin/rake test:quepid
 The see available tasks:
 
 ```
-thor list
+bin/docker r thor list
 ```
 
 Examples include:
@@ -305,7 +305,7 @@ thor user:create USERNAME PASSWORD             # creates a new user
 thor user:reset_password USERNAME NEWPASSWORD  # resets user's password
 ```
 
-To see more details about any of the tasks, run `thor help TASKNAME`:
+To see more details about any of the tasks, run `bin/docker r thor help TASKNAME`:
 
 ```
 thor help user:create
