@@ -78,6 +78,36 @@ class User < Thor
     end
   end
 
+  desc 'grant_administrator EMAIL', "grant administrator privileges to user"
+  long_desc <<-LONGDESC
+    `user:grant_administrator` grants the user the administrator privileges.
+
+    EXAMPLES:
+
+    $ thor user:grant_administrator foo@example.com
+  LONGDESC
+  def grant_administrator email
+    puts "Granting administrator privileges to user with email: #{email}".yellow
+
+    load_environment
+
+    user = ::User.where(username: email).first
+
+    unless user
+      puts "Could not find user with email: #{email}".red
+      return
+    end
+
+    if user.update administrator: true
+      puts 'Success!'.green
+    else
+      puts 'Could not update user, check the errors below and try again:'.red
+      user.errors.each do |attribute, message|
+        puts "#{attribute} #{message}".red
+      end
+    end
+  end
+
   private
 
   def load_environment
