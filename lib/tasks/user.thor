@@ -18,7 +18,7 @@ class User < Thor
 
     $ thor user:create -a admin@example.com Administrator mysuperstrongpassword
   LONGDESC
-  option :administrator, type: :boolean, aliases: "-a"
+  option :administrator, type: :boolean, aliases: '-a'
   def create email, name, password
     is_administrator = options[:administrator] || false
     puts "Creating a new user with email: #{email}, name: #{name}, password: #{password}.".yellow
@@ -78,7 +78,7 @@ class User < Thor
     end
   end
 
-  desc 'grant_administrator EMAIL', "grant administrator privileges to user"
+  desc 'grant_administrator EMAIL', 'grant administrator privileges to user'
   long_desc <<-LONGDESC
     `user:grant_administrator` grants the user the administrator privileges.
 
