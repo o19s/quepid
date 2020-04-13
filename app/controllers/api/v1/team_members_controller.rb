@@ -14,7 +14,7 @@ module Api
       def create
         @member = User.where.any_of(
           email:    params[:id].to_s.downcase,
-          id:       params[:id]
+             id:    params[:id]
         ).first
 
         unless @member
@@ -35,7 +35,7 @@ module Api
       def destroy
         member = @team.members.where.any_of(
           email:    params[:id].to_s.downcase,
-          id:       params[:id]
+             id:    params[:id]
         ).all
 
         @team.members.delete(member) if member
