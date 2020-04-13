@@ -10,7 +10,7 @@ class User < Thor
 
     EXAMPLES:
 
-    $ thor user:create foo@example.com Eric mysuperstrongpassword
+    $ thor user:create foo@example.com "Eric Pugh" mysuperstrongpassword
 
     With -a option, will mark the user as Administrator
 
