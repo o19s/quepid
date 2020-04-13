@@ -95,9 +95,6 @@ class User < ActiveRecord::Base
   attr_accessor :password_confirmation
   validates :password, confirmation: true
 
-  # Should be able to remove, but maybe need to alias the otherway? Quepid #111
-  #alias_attribute :email, :username
-
   def encrypted_password_changed?
     password_changed?
   end
