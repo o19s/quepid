@@ -20,9 +20,9 @@ module Api
       end
 
       describe 'Adds new members to team' do
-        test 'adds a new member successfully using the username' do
+        test 'adds a new member successfully using the email' do
           assert_difference 'team.members.count' do
-            post :create, team_id: team.id, id: wants_to_be_a_member.username
+            post :create, team_id: team.id, id: wants_to_be_a_member.email
 
             assert_response :ok
           end
@@ -38,7 +38,7 @@ module Api
 
         test 'does not add an existing member' do
           assert_difference 'team.members.count', 0 do
-            post :create, team_id: team.id, id: member1.username
+            post :create, team_id: team.id, id: member1.email
 
             assert_response :ok
           end
@@ -67,7 +67,7 @@ module Api
             expects_any_ga_event_call
 
             perform_enqueued_jobs do
-              post :create, team_id: team.id, id: wants_to_be_a_member.username
+              post :create, team_id: team.id, id: wants_to_be_a_member.email
 
               assert_response :ok
             end
@@ -76,9 +76,9 @@ module Api
       end
 
       describe 'Removes a member from team' do
-        test 'deletes existing member successfully using the username' do
+        test 'deletes existing member successfully using the email' do
           assert_difference 'team.members.count', -1 do
-            delete :destroy, team_id: team.id, id: member1.username
+            delete :destroy, team_id: team.id, id: member1.email
 
             assert_response :no_content
           end

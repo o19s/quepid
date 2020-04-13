@@ -5,7 +5,7 @@
 # Table name: users
 #
 #  id                     :integer          not null, primary key
-#  username               :string(80)
+#  email                  :string(80)
 #  password               :string(120)
 #  agreed_time            :datetime
 #  agreed                 :boolean
@@ -44,7 +44,7 @@ class UserTest < ActiveSupport::TestCase
 
   describe 'Defaults' do
     test 'are set when user is created' do
-      user = User.create(username: 'defaults@email.com', password: 'password')
+      user = User.create(email: 'defaults@email.com', password: 'password')
 
       assert_not_nil user.first_login
       assert_not_nil user.num_logins
@@ -55,7 +55,7 @@ class UserTest < ActiveSupport::TestCase
 
     test 'do not override the passed in arguments' do
       user = User.create(
-        username:    'defaults@email.com',
+        email:       'defaults@email.com',
         password:    'password',
         first_login: false,
         num_logins:  1
@@ -74,7 +74,7 @@ class UserTest < ActiveSupport::TestCase
 
     test 'encrypts password when creating a new password' do
       password = 'password'
-      new_user = User.create(username: 'new@user.com', password: password)
+      new_user = User.create(email: 'new@user.com', password: password)
 
       assert_not_equal password, new_user.password
       assert BCrypt::Password.new(new_user.password) == password
@@ -102,7 +102,7 @@ class UserTest < ActiveSupport::TestCase
   describe 'Default Case' do
     test 'when user is created a default case is automatically created' do
       assert_difference 'Case.count' do
-        user = User.create username: 'foo', password: 'foobar'
+        user = User.create email: 'foo@example.com', password: 'foobar'
 
         assert_not_nil  user.cases
         assert_equal    user.cases.count, 1

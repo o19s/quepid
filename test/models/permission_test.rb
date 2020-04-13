@@ -29,7 +29,7 @@ class PermissionTest < ActiveSupport::TestCase
   describe 'default user permissions' do
     test 'initializes the default set of permissions when a user is created' do
       assert_difference 'Permission.count', Permissible::PERMISSIONS.count do
-        User.create username: 'permission', password: 'password', agreed: true
+        User.create email: 'permission@example.com', password: 'password', agreed: true
       end
     end
   end

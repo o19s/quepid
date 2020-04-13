@@ -26,7 +26,7 @@ describe('Service: userSvc', function () {
 
   it('fetches user info', function() {
     var mockUser = {
-      'username': 'mockUsername',
+      'email': 'mockEmail@example.com',
       'scorerId': 10,
       'id':       1,
     };
@@ -36,7 +36,7 @@ describe('Service: userSvc', function () {
 
     userSvc.get(mockUser.id)
       .then(function(response) {
-        expect(response.username).toEqual(mockUser.username);
+        expect(response.email).toEqual(mockUser.email);
         expect(response.scorerId).toEqual(mockUser.scorerId);
       });
 
@@ -47,7 +47,7 @@ describe('Service: userSvc', function () {
     var currUser;
 
     var mockUser = {
-      'username': 'mockUsername',
+      'email': 'mockEmail@example.com',
       'scorerId': 10,
       'id':       1,
     };

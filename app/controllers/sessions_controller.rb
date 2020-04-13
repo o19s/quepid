@@ -7,7 +7,7 @@ class SessionsController < ApplicationController
   skip_before_action :verify_authenticity_token,  only: :create
 
   def create
-    user = login(params[:username], params[:password])
+    user = login(params[:email], params[:password])
     respond_to do |format|
       if user
         format.json { render json: { message: 'connected' }, status: :ok }
@@ -25,8 +25,8 @@ class SessionsController < ApplicationController
 
   private
 
-  def login username, password
-    user = User.where(username: username.downcase).first
+  def login email, password
+    user = User.where(email: email.downcase).first
 
     return nil unless user
 

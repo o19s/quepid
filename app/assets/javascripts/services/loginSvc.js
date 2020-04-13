@@ -6,12 +6,12 @@ angular.module('QuepidSecureApp')
     '$window', '$http',
     'secureRedirectSvc',
     function loginSvc($window, $http, secureRedirectSvc) {
-      this.login = function(username, password, errorHandler, nextUrl) {
+      this.login = function(email, password, errorHandler, nextUrl) {
         if(!errorHandler) {
           errorHandler = function(){};
         }
 
-        $http.post('/users/login', {'username':username, 'password':password})
+        $http.post('/users/login', {'email':email, 'password':password})
           .then( function() {
             secureRedirectSvc.redirectToMain(nextUrl);
           }, errorHandler);

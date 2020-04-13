@@ -4,20 +4,20 @@ require 'test_helper'
 
 class SessionsControllerTest < ActionController::TestCase
   test 'should create session for valid user' do
-    post :create, username: 'doug', password: 'password', format: :json
+    post :create, email: 'doug@example.com', password: 'password', format: :json
     assert_response :success
     assert_not_nil session[:current_user_id], 'sets a user'
-    assert session[:current_user_id] == User.find_by(username: 'doug').id, 'user is doug'
+    assert session[:current_user_id] == User.find_by(email: 'doug@example.com').id, 'user is doug'
   end
 
   test 'should not create session for invalid password' do
-    post :create, username: 'doug', password: 'incorrect', format: :json
+    post :create, email: 'doug@example.com', password: 'incorrect', format: :json
     assert_response :unprocessable_entity
     assert_nil session[:current_user_id], 'does not set a user'
   end
 
   test 'should not create session for unknown user' do
-    post :create, username: 'floyd', password: 'floydster', format: :json
+    post :create, email: 'floyd@example.com', password: 'floydster', format: :json
     assert_response :unprocessable_entity
   end
 
@@ -26,7 +26,7 @@ class SessionsControllerTest < ActionController::TestCase
     user.num_logins = original_number = 1
     user.save
 
-    post :create, username: user.username, password: 'password', format: :json
+    post :create, email: user.email, password: 'password', format: :json
     assert_response :success
 
     user.reload
@@ -41,7 +41,7 @@ class SessionsControllerTest < ActionController::TestCase
     end
 
     it 'rejects the user when trying to log in' do
-      post :create, username: user.username, password: 'password', format: :json
+      post :create, email: user.email, password: 'password', format: :json
 
       assert_response :unprocessable_entity
       assert_equal 'LOCKED', json_response['reason']
@@ -55,8 +55,8 @@ class SessionsControllerTest < ActionController::TestCase
       @controller = SessionsController.new
     end
 
-    it 'ignore case for username' do
-      post :create, username: user.username.upcase, password: 'password', format: :json
+    it 'ignore case for email' do
+      post :create, email: user.email.upcase, password: 'password', format: :json
 
       assert_response :success
       assert_not_nil session[:current_user_id], 'sets a user'

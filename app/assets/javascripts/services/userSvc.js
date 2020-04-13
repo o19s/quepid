@@ -30,7 +30,7 @@ angular.module('UtilitiesModule')
         self.id              = userObj.id;
         self.permissions     = userObj.permissions;
         self.scorerId        = scorerId;
-        self.username        = userObj.username;
+        self.email           = userObj.email;
 
         var maxQueries = userObj.maxQueries;
         var numQueries = userObj.numQueries;

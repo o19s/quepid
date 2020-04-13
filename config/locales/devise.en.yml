@@ -62,7 +62,7 @@ en:
         other: "%{count} errors prohibited this %{resource} from being saved:"
       reset_password:
         not_sent: "Could not send reset password instructions because"
-        username:
+        email:
           cant_be_blank: "the email must be specified"
           not_found: "the email was not found"
       update_password:

@@ -2,15 +2,15 @@
 puts "Seeding users................"
 
 def seed_user hash
-  if User.where(username: hash[:username].downcase).exists?
-    User.where(username: hash[:username].downcase).first
+  if User.where(email: hash[:email].downcase).exists?
+    User.where(email: hash[:email].downcase).first
   else
     User.create hash
   end
 end
 
 def print_user_info info
-  puts "Seeded user: username: #{info[:username]}, password: #{info[:password]}"
+  puts "Seeded user: email: #{info[:email]}, password: #{info[:password]}"
 end
 
 ######################################
@@ -24,7 +24,7 @@ user_defaults = {
   first_login:       false,
   name:             'No Name',
   password:         'password',
-  username:         'foo',
+  email:            'foo@example.com',
 }
 
 ######################################
@@ -34,7 +34,7 @@ user_defaults = {
 user_specifics = {
   administrator:    true,
   name:             'Admin User',
-  username:         'quepid+admin@o19s.com',
+  email:            'quepid+admin@o19s.com',
   password:         'quepid+admin',
 }
 user_params = user_defaults.merge(user_specifics)
@@ -47,7 +47,7 @@ print_user_info user_params
 
 user_specifics = {
   name:             'One Case User',
-  username:         'quepid+1case@o19s.com',
+  email:            'quepid+1case@o19s.com',
   password:         'quepid+1case',
 }
 user_params   = user_defaults.merge(user_specifics)
@@ -60,7 +60,7 @@ print_user_info user_params
 
 user_specifics = {
   name:             'Two Case User',
-  username:         'quepid+2case@o19s.com',
+  email:            'quepid+2case@o19s.com',
   password:         'quepid+2case',
 }
 user_params   = user_defaults.merge(user_specifics)
@@ -73,7 +73,7 @@ print_user_info user_params
 
 user_specifics = {
   name:             'User with Solr Case',
-  username:         'quepid+solr@o19s.com',
+  email:            'quepid+solr@o19s.com',
   password:         'quepid+solr',
 }
 user_params    = user_defaults.merge(user_specifics)
@@ -86,7 +86,7 @@ print_user_info user_params
 
 user_specifics = {
   name:             'User with ES Case',
-  username:         'quepid+es@o19s.com',
+  email:            'quepid+es@o19s.com',
   password:         'quepid+es',
 }
 user_params  = user_defaults.merge(user_specifics)
@@ -99,7 +99,7 @@ print_user_info user_params
 
 user_specifics = {
   name:             'User with 10s of Queries',
-  username:         'quepid+10sOfQueries@o19s.com',
+  email:            'quepid+10sOfQueries@o19s.com',
   password:         'quepid+10sOfQueries',
 }
 user_params          = user_defaults.merge(user_specifics)
@@ -112,7 +112,7 @@ print_user_info user_params
 
 user_specifics = {
   name:             'OSC Team Owner',
-  username:         'quepid+oscOwner@o19s.com',
+  email:            'quepid+oscOwner@o19s.com',
   password:         'quepid+oscOwner',
 }
 user_params    = user_defaults.merge(user_specifics)
@@ -125,7 +125,7 @@ print_user_info user_params
 
 user_specifics = {
   name:             'OSC Team Member',
-  username:         'quepid+oscMember@o19s.com',
+  email:            'quepid+oscMember@o19s.com',
   password:         'quepid+oscMember',
 }
 user_params     = user_defaults.merge(user_specifics)
@@ -138,7 +138,7 @@ print_user_info user_params
 
 user_specifics = {
   name:             'Enterprise Owner',
-  username:         'quepid+enterpriseOwner@o19s.com',
+  email:            'quepid+enterpriseOwner@o19s.com',
   password:         'quepid+enterpriseOwner',
 }
 user_params          = user_defaults.merge(user_specifics)
@@ -151,7 +151,7 @@ print_user_info user_params
 
 user_specifics = {
   name:             'Enterprise Member',
-  username:         'quepid+enterpriseMember@o19s.com',
+  email:            'quepid+enterpriseMember@o19s.com',
   password:         'quepid+enterpriseMember',
 }
 user_params           = user_defaults.merge(user_specifics)
@@ -163,7 +163,7 @@ print_user_info user_params
 ######################################
 user_specifics = {
   name:             'User with Custom Scorer',
-  username:         'quepid+CustomScorer@o19s.com',
+  email:            'quepid+CustomScorer@o19s.com',
   password:         'quepid+CustomScorer',
 }
 user_params = user_defaults.merge(user_specifics)
@@ -176,7 +176,7 @@ print_user_info user_params
 
 user_specifics = {
   name:             'User with Custom Scorer as Default',
-  username:         'quepid+CustomScorerDefault@o19s.com',
+  email:            'quepid+CustomScorerDefault@o19s.com',
   password:         'quepid+CustomScorerDefault',
 }
 user_params = user_defaults.merge(user_specifics)
@@ -189,7 +189,7 @@ puts "End of seeding users................"
 puts "Seeding cases................"
 
 def print_case_info the_case
-  puts "Seeded case: name: #{the_case.case_name}, ID: #{the_case.id} for: #{the_case.user.username}"
+  puts "Seeded case: name: #{the_case.case_name}, ID: #{the_case.id} for: #{the_case.user.email}"
 end
 
 unless two_case_user.cases.count == 2
@@ -301,7 +301,7 @@ if ENV['SEED_LARGE_CASES']
   user_specifics = {
     name:             'User with 100s of Queries',
     password:         'quepid+100sOfQueries',
-    username:         'quepid+100sOfQueries@o19s.com',
+    email:            'quepid+100sOfQueries@o19s.com',
   }
   user_params = user_defaults.merge(user_specifics)
   hundreds_of_queries_user = seed_user user_params
@@ -314,7 +314,7 @@ if ENV['SEED_LARGE_CASES']
   user_specifics = {
     name:             'User with 1000s of Queries',
     password:         'quepid+1000sOfQueries',
-    username:         'quepid+1000sOfQueries@o19s.com',
+    email:            'quepid+1000sOfQueries@o19s.com',
   }
   user_params = user_defaults.merge(user_specifics)
   thousands_of_queries_user = seed_user user_params

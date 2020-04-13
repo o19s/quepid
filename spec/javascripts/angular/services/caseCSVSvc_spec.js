@@ -36,7 +36,7 @@ describe('Service: caseCSVSvc', function () {
       "score":      54.5,
       "try_id":     1,
       "user_id":    2,
-      "username":   "ychaker"
+      "email":      "ychaker@example.com"
     };
     var mockCase = {
       "caseName":   'Test Case',

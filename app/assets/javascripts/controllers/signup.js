@@ -13,7 +13,7 @@ angular.module('QuepidSecureApp')
 
       $scope.isEmailMarketingMode = configurationSvc.isEmailMarketingMode();
 
-      $scope.submit = function (agree, emailMarketingAgree, name, username, pass, confirm) {
+      $scope.submit = function (agree, emailMarketingAgree, name, email, pass, confirm) {
         $scope.warnAgree    = false;
         $scope.warnEmail    = false;
         $scope.warnPass     = false;
@@ -37,13 +37,13 @@ angular.module('QuepidSecureApp')
         }
 
         var emailVer = /^.+@.*$/;
-        if( !emailVer.test(username) ){
+        if( !emailVer.test(email) ){
           $scope.warnEmail = true;
           return;
         }
 
         var user = {
-          username:        username,
+          email:        email,
           name:            name,
           password:        pass,
           email_marketing: emailMarketingAgree
