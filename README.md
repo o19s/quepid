@@ -311,23 +311,23 @@ To see more details about any of the tasks, run `bin/docker r thor help TASKNAME
 ```
 thor help user:create
 Usage:
-  thor user:create USERNAME PASSWORD
+  thor user:create EMAIL USERNAME PASSWORD
 
 Options:
-  -p, [--paid], [--no-paid]
+  -a, [--administrator], [--no-administrator]  
 
 Description:
-  `user:create` creates a new user with the passed in username and password.
+  `user:create` creates a new user with the passed in email, name and password.
 
   EXAMPLES:
 
-  $ thor user:create foo@example.com mysuperstrongpassword
+  $ thor user:create foo@example.com Eric mysuperstrongpassword
 
-  With -p option, will mark the user as paid
+  With -a option, will mark the user as Administrator
 
   EXAMPLES:
 
-  $ thor user:create -p foo@example.com mysuperstrongpassword
+  $ thor user:create -a admin@example.com Administrator mysuperstrongpassword
 ```
 
 # Elasticsearch
