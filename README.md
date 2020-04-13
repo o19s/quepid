@@ -284,7 +284,7 @@ bin/rake test:quepid
 The see available tasks:
 
 ```
-thor list
+bin/docker r thor list
 ```
 
 Examples include:
@@ -301,32 +301,33 @@ thor ratings:import CASEID FILENAME     # imports ratings to a case
 
 user
 ----
-thor user:create USERNAME PASSWORD             # creates a new user
-thor user:reset_password USERNAME NEWPASSWORD  # resets user's password
+thor user:create EMAIL USERNAME PASSWORD    # creates a new user
+thor user:grant_administrator EMAIL         # grant administrator privileges to user
+thor user:reset_password EMAIL NEWPASSWORD  # resets user's password
 ```
 
-To see more details about any of the tasks, run `thor help TASKNAME`:
+To see more details about any of the tasks, run `bin/docker r thor help TASKNAME`:
 
 ```
 thor help user:create
 Usage:
-  thor user:create USERNAME PASSWORD
+  thor user:create EMAIL USERNAME PASSWORD
 
 Options:
-  -p, [--paid], [--no-paid]
+  -a, [--administrator], [--no-administrator]  
 
 Description:
-  `user:create` creates a new user with the passed in username and password.
+  `user:create` creates a new user with the passed in email, name and password.
 
   EXAMPLES:
 
-  $ thor user:create foo@example.com mysuperstrongpassword
+  $ thor user:create foo@example.com "Eric Pugh" mysuperstrongpassword
 
-  With -p option, will mark the user as paid
+  With -a option, will mark the user as Administrator
 
   EXAMPLES:
 
-  $ thor user:create -p foo@example.com mysuperstrongpassword
+  $ thor user:create -a admin@example.com Administrator mysuperstrongpassword
 ```
 
 # Elasticsearch

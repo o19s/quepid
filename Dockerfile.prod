@@ -3,7 +3,7 @@ WORKDIR /srv/app
 COPY package.json yarn.lock ./
 RUN yarn install
 
-FROM ruby:2.5.7-stretch
+FROM ruby:2.5.8-stretch
 
 MAINTAINER OpenSource Connections <quepid_admin@opensourceconnections.com>
 
