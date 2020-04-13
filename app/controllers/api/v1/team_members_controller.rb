@@ -13,7 +13,7 @@ module Api
 
       def create
         @member = User.where.any_of(
-          username: params[:id].to_s.downcase,
+          email:    params[:id].to_s.downcase,
           id:       params[:id]
         ).first
 
@@ -34,7 +34,7 @@ module Api
 
       def destroy
         member = @team.members.where.any_of(
-          username: params[:id].to_s.downcase,
+          email:    params[:id].to_s.downcase,
           id:       params[:id]
         ).all
 

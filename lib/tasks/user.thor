@@ -27,7 +27,7 @@ class User < Thor
     load_environment
 
     user_params = {
-      username:      email, # Quepid Issue #111 will fix this.
+      email:         email, # Quepid Issue #111 will fix this.
       name:          name,
       password:      password,
       administrator: is_administrator,
@@ -61,7 +61,7 @@ class User < Thor
 
     load_environment
 
-    user = ::User.where(username: email).first
+    user = ::User.where(email: email).first
 
     unless user
       puts "Could not find user with email: #{email}".red
@@ -91,7 +91,7 @@ class User < Thor
 
     load_environment
 
-    user = ::User.where(username: email).first
+    user = ::User.where(email: email).first
 
     unless user
       puts "Could not find user with email: #{email}".red

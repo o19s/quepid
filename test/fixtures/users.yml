@@ -3,12 +3,12 @@
 # Table name: users
 #
 #  id                     :integer          not null, primary key
-#  username               :string(80)
+#  email                  :string(80)
 #  password               :string(120)
 #  agreed_time            :datetime
 #  agreed                 :boolean
 #  first_login            :boolean
-#  num_logins              :integer
+#  num_logins             :integer
 #  scorer_id              :integer
 #  name                   :string(255)
 #  administrator          :boolean          default(FALSE)
@@ -28,7 +28,7 @@ default: &default
 
 doug:
   <<: *default
-  username: doug
+  email: doug@example.com
   scorer: :valid
   administrator: true
 
@@ -36,42 +36,42 @@ doug:
 # Assumption is that Matt always starts off with 1 case only
 matt:
   <<: *default
-  username: matt
+  email: matt@example.com
   administrator: true
 
 # Joe should never be assigned a case
 # Assumption is that Joe always starts off with 0 cases
 joe:
   <<: *default
-  username: joe
+  email: joe@example.com
   administrator: true
 
 # Joe should never be assigned an team
 # Assumption is that Joe always starts off with 0 teams
 jane:
   <<: *default
-  username: jane
+  email: jane@example.com
   administrator: false
 
 # Joey is used to test tries
 # Assumption is that Joey's list of cases would not be tested directly
 joey:
   <<: *default
-  username: joey
+  email: joey@example.com
   administrator: false
 
 # The whole purpose of this user is to own a scorer that is shared
 # with an team to which other users belong
 shared_scorer_owner:
   <<: *default
-  username: shared_scorer_owner
+  email: shared_scorer_owner@example.com
   administrator: false
 
 # The whole purpose of this user is to test deleting scorers set as
 # default for some users
 default_scorer_owner:
   <<: *default
-  username: default_scorer_owner
+  email: default_scorer_owner@example.com
   scorer:   :default_scorer
   administrator: false
 
@@ -79,7 +79,7 @@ default_scorer_owner:
 # default for some users
 default_scorer_user:
   <<: *default
-  username: default_scorer_user
+  email: default_scorer_user@example.com
   scorer:   :default_scorer
   administrator: false
 
@@ -87,105 +87,105 @@ default_scorer_user:
 # UserCaseFinder service
 case_finder_user:
   <<: *default
-  username: case_finder_user
+  email: case_finder_user
   administrator: false
 
 # This is user is used randomly when we need a user without affecting
 # other users
 random:
   <<: *default
-  username: random
+  email: random@example.com
   administrator: false
 
 # This is user is used randomly when we need a user without affecting
 # other users
 random_1:
   <<: *default
-  username: random_1
+  email: random_1@example.com
   administrator: false
 
 # This is user is used randomly when we need a user without affecting
 # other users
 random_2:
   <<: *default
-  username: random_2
+  email: random_2@example.com
   administrator: false
 
 # The whole purpose of this user is to test finding teams using the
 # UserTeamFinder service
 team_finder_user:
   <<: *default
-  username: team_finder_user
+  email: team_finder_user@example.com
   administrator: false
 
 # The whole purpose of this user is to test team memberships
 team_owner:
   <<: *default
-  username: team_owner
+  email: team_owner@example.com
   administrator: false
 
 # The whole purpose of this user is to test team memberships
 team_member_1:
   <<: *default
-  username: team_member_1
+  email: team_member_1@example.com
   administrator: false
 
 # The whole purpose of this user is to test team memberships
 team_member_2:
   <<: *default
-  username: team_member_2
+  email: team_member_2@example.com
   administrator: false
 
 # The whole purpose of this user is to test team memberships
 wants_to_be_a_member:
   <<: *default
-  username: wants_to_be_a_member
+  email: wants_to_be_a_member@example.com
   administrator: false
 
 # The whole purpose of this user is to test team memberships
 shared_team_member:
   <<: *default
-  username: shared_team_member
+  email: shared_team_member@example.com
   administrator: false
 
 # The whole purpose of this user is to test searching
 search_user_1:
   <<: *default
-  username: search_user_1
+  email: search_user_1@example.com
   administrator: false
 
 # The whole purpose of this user is to test searching
 search_user_2:
   <<: *default
-  username: search_user_2
+  email: search_user_2@example.com
   administrator: false
 
 # The whole purpose of this user is to test bootstrapping cases in the home controller
 bootstrap_user:
   <<: *default
-  username: bootstrap_user
+  email: bootstrap_user@example.com
   administrator: false
 
 osc_owner:
   <<: *default
-  username: osc_owner
+  email: osc_owner@example.com
 
 not_shared_case_owner:
   <<: *default
-  username:     not_shared_case_owner
+  email:     not_shared_case_owner@example.com
 
 dropdown_user:
   <<: *default
-  username:     dropdown_user
+  email:     dropdown_user@example.com
 
 locked_user:
   <<: *default
-  username:     locked_user
+  email:     locked_user@example.com
   locked:       true
   locked_at:    <%= Time.now - 1.week %>
 
 admin:
   <<: *default
-  username:      admin
+  email:      admin@example.com
   scorer:        :valid
   administrator: true

@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20200314193226) do
+ActiveRecord::Schema.define(version: 20200413184942) do
 
   create_table "annotations", force: :cascade do |t|
     t.text     "message",    limit: 65535
@@ -219,7 +219,7 @@ ActiveRecord::Schema.define(version: 20200314193226) do
   add_index "tries", ["try_number"], name: "ix_queryparam_tryNo", using: :btree
 
   create_table "users", force: :cascade do |t|
-    t.string   "username",               limit: 80
+    t.string   "email",                  limit: 80
     t.string   "password",               limit: 120
     t.datetime "agreed_time"
     t.boolean  "agreed"
@@ -240,8 +240,8 @@ ActiveRecord::Schema.define(version: 20200314193226) do
   end
 
   add_index "users", ["default_scorer_id"], name: "index_users_on_default_scorer_id", using: :btree
+  add_index "users", ["email"], name: "ix_user_email", unique: true, using: :btree
   add_index "users", ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true, length: {"reset_password_token"=>191}, using: :btree
-  add_index "users", ["username"], name: "ix_user_username", unique: true, using: :btree
 
   add_foreign_key "annotations", "users"
   add_foreign_key "case_metadata", "cases", name: "case_metadata_ibfk_1"

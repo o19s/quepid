@@ -7,4 +7,4 @@ json.numQueries      @user.num_queries
 json.permissions     @user.permissions
 json.defaultScorerId @user.default_scorer_id
 json.scorerId        @user.scorer_id
-json.username        @user.username
+json.email           @user.email
