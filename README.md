@@ -424,8 +424,6 @@ where type is one of the following:
 * `1000sOfQueries`: A trial user with a Solr case that has 1000s of queries (usually disabled)
 * `oscOwner`: A trial user who owns the team 'OSC'
 * `oscMember`: A trial user who is a member of the team 'OSC'
-* `enterpriseOwner`: A trial user who owns the enterprise 'OSC E'
-* `enterpriseMember`: A trial user who is a member of the enterprise 'OSC E'
 * `CustomScorer`: A trial user who has a custom scorer
 * `CustomScorerDefault`: A trial user who has a custom scorer that is set as their default
 
