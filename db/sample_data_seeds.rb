@@ -133,32 +133,6 @@ osc_member_user = seed_user user_params
 print_user_info user_params
 
 ######################################
-# Enterprise Owner
-######################################
-
-user_specifics = {
-  name:             'Enterprise Owner',
-  email:            'quepid+enterpriseOwner@o19s.com',
-  password:         'quepid+enterpriseOwner',
-}
-user_params          = user_defaults.merge(user_specifics)
-enterprise_owner_user = seed_user user_params
-print_user_info user_params
-
-######################################
-# Enterprise Member
-######################################
-
-user_specifics = {
-  name:             'Enterprise Member',
-  email:            'quepid+enterpriseMember@o19s.com',
-  password:         'quepid+enterpriseMember',
-}
-user_params           = user_defaults.merge(user_specifics)
-enterprise_member_user = seed_user user_params
-print_user_info user_params
-
-######################################
 # User with Custom Scorer
 ######################################
 user_specifics = {
