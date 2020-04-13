@@ -8,9 +8,9 @@ angular.module('QuepidSecureApp')
     function signupSvc($location, $http, loginSvc) {
       var self = this;
 
-      this.signupSuccess = function(username, password) {
+      this.signupSuccess = function(email, password) {
         return function() {
-          loginSvc.login(username, password);
+          loginSvc.login(email, password);
         };
       };
 
@@ -27,7 +27,7 @@ angular.module('QuepidSecureApp')
 
         $http.post('/api/signups', user_params)
           .then(
-            self.signupSuccess(user.username, user.password),
+            self.signupSuccess(user.email, user.password),
             errorHandler
           );
       };

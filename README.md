@@ -408,7 +408,7 @@ heroku restart -a quepid-staging
 The following accounts are created through the seeds. The all follow the following format:
 
 ```
-username: quepid+[type]@o19s.com
+email: quepid+[type]@o19s.com
 password: quepid+[type]
 ```
 
