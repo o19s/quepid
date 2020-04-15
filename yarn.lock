@@ -2028,7 +2028,7 @@ karma-coffee-preprocessor@^1.0.1:
     coffee-script "~1"
     object-assign "^4.1.0"
 
-"karma-jasmine@>= 0.2.2":
+karma-jasmine@1.1.2:
   version "1.1.2"
   resolved "https://registry.yarnpkg.com/karma-jasmine/-/karma-jasmine-1.1.2.tgz#394f2b25ffb4a644b9ada6f22d443e2fd08886c3"
   integrity sha1-OU8rJf+0pkS5rabyLUQ+L9CIhsM=
