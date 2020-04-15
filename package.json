@@ -43,8 +43,7 @@
     "angular-mocks": "~1.7.7",
     "angular-scenario": "~1.7.7",
     "karma": "^5.0.1",
-    "karma-coffee-preprocessor": "^1.0.1",
-    "karma-ng-scenario": "^1.0.0"
+    "karma-coffee-preprocessor": "^1.0.1"
   },
   "resolutions": {
     "angular": "~1.7.7",
