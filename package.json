@@ -32,7 +32,6 @@
     "jshint": "latest",
     "json3": "~3.2.4",
     "karma-jasmine": ">= 0.2.2",
-    "karma-ng-html2js-preprocessor": ">= 0.2.0",
     "karma-phantomjs-launcher": ">= 0.1.4",
     "ng-json-explorer": "http://github.com/odra/ng-json-explorer",
     "ng-tags-input": "3.2.0",

@@ -2033,11 +2033,6 @@ karma-coffee-preprocessor@^1.0.1:
   resolved "https://registry.yarnpkg.com/karma-jasmine/-/karma-jasmine-1.1.2.tgz#394f2b25ffb4a644b9ada6f22d443e2fd08886c3"
   integrity sha1-OU8rJf+0pkS5rabyLUQ+L9CIhsM=
 
-"karma-ng-html2js-preprocessor@>= 0.2.0":
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/karma-ng-html2js-preprocessor/-/karma-ng-html2js-preprocessor-1.0.0.tgz#10d8c8cfaa4136f1c8a76d91a4cbceedebec4a31"
-  integrity sha1-ENjIz6pBNvHIp22RpMvO7evsSjE=
-
 "karma-phantomjs-launcher@>= 0.1.4":
   version "1.0.4"
   resolved "https://registry.yarnpkg.com/karma-phantomjs-launcher/-/karma-phantomjs-launcher-1.0.4.tgz#d23ca34801bda9863ad318e3bb4bd4062b13acd2"
