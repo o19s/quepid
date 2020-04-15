@@ -32,7 +32,6 @@
     "jshint": "latest",
     "json3": "~3.2.4",
     "karma-jasmine": ">= 0.2.2",
-    "karma-phantomjs-launcher": ">= 0.1.4",
     "ng-json-explorer": "http://github.com/odra/ng-json-explorer",
     "ng-tags-input": "3.2.0",
     "splainer-search": "2.5.7",
@@ -41,7 +40,8 @@
   "devDependencies": {
     "angular-mocks": "~1.7.7",
     "karma": "^5.0.1",
-    "karma-coffee-preprocessor": "^1.0.1"
+    "karma-coffee-preprocessor": "^1.0.1",
+    "karma-phantomjs-launcher": "^1.0.4"
   },
   "resolutions": {
     "angular": "~1.7.7",
