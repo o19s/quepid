@@ -26,7 +26,6 @@
     "d3": "~3.5.17",
     "d3-tip": "~0.6.7",
     "es5-shim": "~4.1.11",
-    "jasmine-core": "~2.9.0",
     "jquery": "~1.12.2",
     "jquery-ui": "~1.12.1",
     "jshint": "latest",
@@ -37,6 +36,7 @@
     "tether-shepherd": "latest"
   },
   "devDependencies": {
+    "jasmine-core": "~2.9.0",
     "angular-mocks": "~1.7.7",
     "karma": "^5.0.1",
     "karma-coffee-preprocessor": "^1.0.1",
