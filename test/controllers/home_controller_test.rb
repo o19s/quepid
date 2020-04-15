@@ -75,7 +75,7 @@ class HomeControllerTest < ActionController::TestCase
   describe 'trigger wizard when user has no cases but has logged in before' do
     let(:user) do
       User.create(
-        username:    'foo@example.com',
+        email:       'foo@example.com',
         password:    'password',
         first_login: false
       )

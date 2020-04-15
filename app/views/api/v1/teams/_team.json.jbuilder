@@ -14,7 +14,7 @@ end
 json.members team.members do |member|
   json.id             member.id
   json.display_name   member.display_name
-  json.username       member.username
+  json.email          member.email
   json.avatar_url     member.avatar_url(:big)
 end
 
@@ -27,6 +27,6 @@ end
 json.owner do
   json.id             team.owner.id
   json.display_name   team.owner.display_name
-  json.username       team.owner.username
+  json.email          team.owner.email
   json.avatar_url     team.owner.avatar_url(:big)
 end

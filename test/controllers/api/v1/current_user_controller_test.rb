@@ -23,7 +23,7 @@ module Api
 
             body = JSON.parse(response.body)
 
-            assert body['username'] == matt.username
+            assert body['email'] == matt.email
           end
         end
 

@@ -34,13 +34,13 @@ class ProfilesControllerTest < ActionController::TestCase
       end
 
       it 'updates user email' do
-        username = 'new@email.com'
+        email = 'new@email.com'
 
-        patch :update, user: { username: username }
+        patch :update, user: { email: email }
 
         assert_redirected_to profile_path
 
-        assert_equal user.username, username
+        assert_equal user.email, email
       end
 
       describe 'analytics' do
