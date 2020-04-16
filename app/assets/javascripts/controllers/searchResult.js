@@ -83,8 +83,8 @@ angular.module('QuepidApp')
         });
       };
 
-      $scope.isJSONObject = function(value) {
-        return typeof value === 'object' &&  value instanceof Array !== true;
+      $scope.isObjectOrArray = function(value) {
+        return typeof value === 'object';
       };
       $scope.isUrl = function(value) {
         return ( /^\s+http/.test(value));
