@@ -148,12 +148,6 @@ GEM
     intercom-rails (0.4.0)
       activesupport (> 3.0)
     jaro_winkler (1.5.2)
-    jasmine (2.99.0)
-      jasmine-core (>= 2.99.0, < 3.0.0)
-      phantomjs
-      rack (>= 1.2.1)
-      rake
-    jasmine-core (2.99.2)
     jbuilder (2.8.0)
       activesupport (>= 4.2.0)
       multi_json (>= 1.2)
@@ -211,7 +205,6 @@ GEM
       activerecord (>= 4.0, < 5.3)
     parser (2.6.3.0)
       ast (~> 2.4.0)
-    phantomjs (2.1.1.0)
     postmark (1.5.0)
       json
       rake
@@ -395,7 +388,6 @@ DEPENDENCIES
   guard-minitest
   intercom
   intercom-rails
-  jasmine
   jbuilder (~> 2.0)
   jquery-rails
   jquery-ui-rails

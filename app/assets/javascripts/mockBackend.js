@@ -282,5 +282,5 @@ window.mockBackend = function(angModule) {
   });
 };
 
-// declace for testing
+// declare for testing
 angular.module('QuepidTest', ['ngMock', 'ngRoute', 'QuepidApp', 'QuepidSecureApp']);
