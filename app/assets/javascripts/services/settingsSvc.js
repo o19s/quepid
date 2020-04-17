@@ -27,7 +27,7 @@ angular.module('QuepidApp')
           additionalFields: ['overview','thumb:poster_path'],
           numberOfRows:     10,
           searchEngine:     'solr',
-          searchUrl:        'http://quepid-solr.dev.o19s.com/solr/tmdb/select',
+          searchUrl:        'http://quepid-solr.dev.o19s.com:8985/solr/tmdb/select',
           urlFormat:        'http(s?)://yourdomain.com:8983/<index>/select',
         },
         es: {
@@ -48,7 +48,7 @@ angular.module('QuepidApp')
           additionalFields:  ['overview','thumb:poster_path'],
           numberOfRows:      10,
           searchEngine:      'es',
-          searchUrl:         'http://quepid-elasticsearch.dev.o19s.com:9200/tmdb/_search',
+          searchUrl:         'http://quepid-elasticsearch.dev.o19s.com:9206/tmdb/_search',
           urlFormat:         'http(s?)://yourdomain.com:9200/<index>/_search',
         }
       };

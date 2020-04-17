@@ -47,6 +47,25 @@ DefaultScorer.where(name: 'CG@5').first_or_create(
   published_at:       Time.new(2020, 3, 20)
 )
 
+DefaultScorer.where(name: 'P@5').first_or_create(
+  scale:              (0..1).to_a,
+  scale_with_labels:  {"0":"Irrelevant","1":"Relevant"},
+  show_scale_labels:  true,
+  code:               File.readlines('./db/scorers/p@5.js','\n').join('\n'),
+  name:               'P@5',
+  state:              'published',
+  published_at:       Time.new(2020, 3, 24)
+)
+
+DefaultScorer.where(name: 'AP@5').first_or_create(
+  scale:              (0..1).to_a,
+  scale_with_labels:  {"0":"Irrelevant","1":"Relevant"},
+  show_scale_labels:  true,
+  code:               File.readlines('./db/scorers/ap@5.js','\n').join('\n'),
+  name:               'AP@5',
+  state:              'published',
+  published_at:       Time.new(2020, 3, 26)
+)
 
 if ENV['SEED_SAMPLE_DATA']
   require_relative 'sample_data_seeds'
