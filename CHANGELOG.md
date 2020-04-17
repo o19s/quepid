@@ -2,9 +2,9 @@
 
 ## 6.2.0 - ??
 
-This is a major release of Quepid that finally introduces the standard _search geek_ scorers like NDCG, DCG, Average Precision, and friends by default.  We've also fixed a large number of bugs introduced by changes in browsers and Elasticsearch and Solr.  
+This is a major release of Quepid that finally introduces the standard _search geek_ scorers like NDCG, DCG, Average Precision, and friends by default.  We've also fixed a large number of bugs introduced by changes in browser security models and recent updates to Elasticsearch and Solr.  
 
-Lastly, we've worked on developer happiness by auditing the various dependencies we include.  We're removed quite a few gem's and node packages that aren't used, and finally made the move to ECMAScript 6.  Lastly, by being intentional about our development dependencies, we have cut the Quepid image from 2.8GB to XGB.
+Speed of development has been an issue with Quepid.  In this release we've worked on developer happiness by auditing all of the dependencies we include.  We're removed quite a few Ruby gems and NodeJS packages that aren't used, and upgraded the rest (replacing PhantomJS with Puppeteer for headless testing).  `yarn.lock` dropped from 6706 lines to 1519!  This allowed us to finally move to ECMAScript 6 and to Node version 10.  Lastly we have cut the production Quepid Docker image from almost 3 GB to 2.3 GB.
 
 ### Features
 
@@ -25,8 +25,7 @@ Lastly, we've worked on developer happiness by auditing the various dependencies
 ### Bugs
 
 * Wizard Autocomplete Didn't work well with Keyboard. Autocomplete suggestion had to be clicked with a Mouse.  https://github.com/o19s/quepid/pull/94 by @epugh fixes this by upgrading package.
-* Multivalued and nest JSON fields didn't display well, you would get `[object Object]` instead.  https://github.com/o19s/quepid/pull/117 by @CGamesPlay fixes https://github.com/o19s/quepid/issues/52.
-
+* Multivalued and nest JSON fields didn't display well, you would get `[object Object]` instead.  Now we display arrays and Json properly.  https://github.com/o19s/quepid/pull/117 by @CGamesPlay fixes https://github.com/o19s/quepid/issues/52.
 
 
 ## 6.1.1 - 03/07/2020
