@@ -32,7 +32,7 @@ describe('Controller: WizardModalCtrl', function () {
   var bootstrappedSettingsData = {
     tries: [
       {
-        search_url: 'http://quepid-solr.dev.o19s.com/solr/tmdb/select',
+        search_url: 'http://quepid-solr.dev.o19s.com:8985/solr/tmdb/select',
         field_spec: 'catch_line',
         curatorVars: {},
         query_params: 'q=#$query##',
@@ -45,7 +45,7 @@ describe('Controller: WizardModalCtrl', function () {
   };
 
   var mockTry = {
-    search_url: 'http://quepid-solr.dev.o19s.com/solr/tmdb/select',
+    search_url: 'http://quepid-solr.dev.o19s.com:8985/solr/tmdb/select',
     field_spec: 'catch_line',
     curatorVars: {},
     query_params: 'q=#$query##',

@@ -21,7 +21,7 @@ class PermissionsEvaluatorTest < ActiveSupport::TestCase
     end
 
     describe 'when the user has defined permissions' do
-      let(:user) { User.create(username: 'foo', password: 'bar') }
+      let(:user) { User.create(email: 'foo@example.com', password: 'bar') }
 
       before do
         user.cases.first.mark_archived!

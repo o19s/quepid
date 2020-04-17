@@ -43,12 +43,12 @@ module Admin
     end
 
     test 'should update user' do
-      patch :update, id: user, user: { username: 'blah@blah.com' }
+      patch :update, id: user, user: { email: 'blah@blah.com' }
 
       assert_redirected_to admin_user_path(assigns(:user))
 
       user.reload
-      assert_equal user.username, 'blah@blah.com'
+      assert_equal user.email, 'blah@blah.com'
     end
 
     describe 'analytics' do
@@ -56,7 +56,7 @@ module Admin
         expects_any_ga_event_call
 
         perform_enqueued_jobs do
-          patch :update, id: user, user: { username: 'blah@blah.com' }
+          patch :update, id: user, user: { email: 'blah@blah.com' }
 
           assert_redirected_to admin_user_path(assigns(:user))
         end

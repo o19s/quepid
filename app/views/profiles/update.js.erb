@@ -1,7 +1,7 @@
 $('#flash').html('<%= escape_javascript flash_messages %>');
 
 $('[data-name]').html('<%= escape_javascript(current_user.name) %>');
-$('[data-username]').html('<%= escape_javascript(current_user.username) %>');
+$('[data-email]').html('<%= escape_javascript(current_user.email) %>');
 $('[data-display-name]').html('<%= escape_javascript(current_user.display_name) %>');
 
 $('[data-avatar="big"]').each(function(index, element) {

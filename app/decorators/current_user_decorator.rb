@@ -8,7 +8,7 @@ class CurrentUserDecorator
               :num_queries,
               :permissions,
               :scorer_id,
-              :username
+              :email
 
   # rubocop:disable Metrics/MethodLength
   def initialize user = nil
@@ -20,7 +20,7 @@ class CurrentUserDecorator
       @permissions              = PermissionsEvaluator.new(user).run
       @default_scorer_id        = user.default_scorer_id
       @scorer_id                = user.scorer_id || ''
-      @username                 = user.username
+      @email                    = user.email
     else
       @company                  = ''
       @first_time               = false
@@ -29,7 +29,7 @@ class CurrentUserDecorator
       @permissions              = {}
       @default_scorer_id        = ''
       @scorer_id                = ''
-      @username                 = ''
+      @email                    = ''
     end
   end
   # rubocop:enable Metrics/MethodLength

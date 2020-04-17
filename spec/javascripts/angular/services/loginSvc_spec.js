@@ -33,16 +33,15 @@ describe('Service: loginSvc', function () {
   });
 
   it('uses the backend to post login ', function() {
-    $httpBackend.expectPOST('/users/login', {username:'user', password:'pass'}).respond({username:'username'});
-    loginSvc.login('user','pass');
+    $httpBackend.expectPOST('/users/login', {email:'user@example.com', password:'pass'}).respond({email:'user@example.com'});
+    loginSvc.login('user@example.com','pass');
     $httpBackend.flush();
   });
 
   it('redirects to http address', function () {
-    $httpBackend.expectPOST('/users/login', {username:'user', password:'pass'}).respond({username:'username'});
-    loginSvc.login('user','pass');
+    $httpBackend.expectPOST('/users/login', {email:'user@example.com', password:'pass'}).respond({email:'user@example.com'});
+    loginSvc.login('user@example.com','pass');
     $httpBackend.flush();
     expect(secureMocker.redirectToMain).toHaveBeenCalled();
   });
 });
-

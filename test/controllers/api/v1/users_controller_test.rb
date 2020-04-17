@@ -19,23 +19,23 @@ module Api
 
           test 'returns basic user info if user exists (self)' do
             @request.headers['Accept'] = 'application/vnd.quepid+json; version=1'
-            get :show, id: matt.username
+            get :show, id: matt.email
             assert_response :ok
 
             body = JSON.parse(response.body)
 
-            assert body['username'] == matt.username
+            assert body['email'] == matt.email
           end
 
           test 'returns basic user info if user exists (other user)' do
             doug = users(:doug)
 
-            get :show, id: doug.username
+            get :show, id: doug.email
             assert_response :ok
 
             body = JSON.parse(response.body)
 
-            assert body['username'] == doug.username
+            assert body['email'] == doug.email
             assert body['scorerId'] == doug.scorer.id
           end
 
@@ -47,7 +47,7 @@ module Api
 
         describe 'when user is not signed in' do
           test 'returns an unauthorized error' do
-            get :show, id: matt.username
+            get :show, id: matt.email
             assert_response :unauthorized
           end
         end
@@ -61,7 +61,7 @@ module Api
         end
 
         test 'successfully updates default scorer' do
-          patch :update, id: matt.username, user: { scorer_id: scorer.id }
+          patch :update, id: matt.email, user: { scorer_id: scorer.id }
 
           assert_response :success
           matt.reload
@@ -73,7 +73,7 @@ module Api
           matt.scorer = scorer
           matt.save!
 
-          patch :update, id: matt.username, user: { scorer_id: nil }
+          patch :update, id: matt.email, user: { scorer_id: nil }
 
           assert_response :success
           matt.reload
@@ -85,7 +85,7 @@ module Api
           matt.scorer = scorer
           matt.save!
 
-          patch :update, id: matt.username, user: { scorer_id: 0 }
+          patch :update, id: matt.email, user: { scorer_id: 0 }
 
           assert_response :success
           matt.reload
@@ -94,7 +94,7 @@ module Api
         end
 
         test 'assigning a non existent scorer as default scorer' do
-          patch :update, id: matt.username, user: { scorer_id: 123 }
+          patch :update, id: matt.email, user: { scorer_id: 123 }
 
           assert_response :bad_request
 
@@ -113,7 +113,7 @@ module Api
         end
 
         test 'successfully updates company' do
-          patch :update, id: matt.username, user: { company: 'OSC' }
+          patch :update, id: matt.email, user: { company: 'OSC' }
 
           assert_response :success
 
@@ -131,7 +131,7 @@ module Api
           end
 
           it 'returns an empty array' do
-            get :index, username: 'manual'
+            get :index, email: 'manual@example.com'
 
             assert_response :ok
 

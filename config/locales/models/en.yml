@@ -2,7 +2,7 @@ en:
   activerecord:
     attributes:
       user:
-        username: "Email"
+        email: "Email"
     errors:
       models:
         user:

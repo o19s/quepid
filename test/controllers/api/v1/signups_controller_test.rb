@@ -10,7 +10,7 @@ module Api
       end
 
       describe 'Creates new user' do
-        test 'returns an error when the username is not present' do
+        test 'returns an error when the email is not present' do
           data = { user: { password: 'password' } }
 
           post :create, data
@@ -18,22 +18,22 @@ module Api
           assert_response :bad_request
 
           error = JSON.parse(response.body)
-          assert_includes error['username'], I18n.t('errors.messages.blank')
+          assert_includes error['email'], I18n.t('errors.messages.blank')
         end
 
-        test 'returns an error when the username is not unique' do
-          data = { user: { username: users(:doug).username, password: 'password' } }
+        test 'returns an error when the email is not unique' do
+          data = { user: { email: users(:doug).email, password: 'password' } }
 
           post :create, data
 
           assert_response :bad_request
 
           error = JSON.parse(response.body)
-          assert_includes error['username'], I18n.t('errors.messages.taken')
+          assert_includes error['email'], I18n.t('errors.messages.taken')
         end
 
-        test 'returns an error when the email is not present' do
-          data = { user: { username: 'foo' } }
+        test 'returns an error when the password is not present' do
+          data = { user: { email: 'foo@example.com' } }
 
           post :create, data
 
@@ -45,13 +45,13 @@ module Api
 
         test 'encrypts the password' do
           password = 'password'
-          data = { user: { username: 'foo', password: password } }
+          data = { user: { email: 'foo@example.com', password: password } }
 
           post :create, data
 
           assert_response :ok
 
-          user = User.find_by(username: 'foo')
+          user = User.find_by(email: 'foo@example.com')
 
           assert_not_equal password, user.password
           assert BCrypt::Password.new(user.password) == password
@@ -59,13 +59,13 @@ module Api
 
         test 'sets the defaults' do
           password = 'password'
-          data = { user: { username: 'foo', password: password } }
+          data = { user: { email: 'foo@example.com', password: password } }
 
           post :create, data
 
           assert_response :ok
 
-          user = User.find_by(username: 'foo')
+          user = User.find_by(email: 'foo@example.com')
 
           assert_not_nil user.first_login
           assert_not_nil user.num_logins
@@ -76,7 +76,7 @@ module Api
 
         test 'does not care if the name is present' do
           password = 'password'
-          data = { user: { username: 'foo', password: password } }
+          data = { user: { email: 'foo@example.com', password: password } }
 
           assert_difference 'User.count' do
             post :create, data
@@ -91,7 +91,7 @@ module Api
 
           data = {
             user: {
-              username: 'foo',
+              email:    'foo@example.com',
               password: password,
               name:     name,
             },
@@ -112,7 +112,7 @@ module Api
       describe 'verify email marketing mode logic' do
         test 'accepts no email marketing field' do
           password = 'password'
-          data = { user: { username: 'foo', password: password } }
+          data = { user: { email: 'foo@example.com', password: password } }
 
           post :create, data
           assert_response :ok
@@ -123,7 +123,7 @@ module Api
 
         test 'unchecked sets email_marketing to false' do
           password = 'password'
-          data = { user: { username: 'foo', password: password, email_marketing: false } }
+          data = { user: { email: 'foo@example.com', password: password, email_marketing: false } }
 
           post :create, data
           assert_response :ok
@@ -134,7 +134,7 @@ module Api
 
         test 'checked sets email_marketing to true' do
           password = 'password'
-          data = { user: { username: 'foo', password: password, email_marketing: true } }
+          data = { user: { email: 'foo@example.com', password: password, email_marketing: true } }
 
           post :create, data
           assert_response :ok
@@ -149,7 +149,7 @@ module Api
           expects_any_ga_event_call
 
           password = 'password'
-          data = { user: { username: 'foo', password: password } }
+          data = { user: { email: 'foo@example.com', password: password } }
 
           perform_enqueued_jobs do
             post :create, data

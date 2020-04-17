@@ -2,17 +2,12 @@
 
 source 'https://rubygems.org'
 
-git_source(:github) do |repo_name|
-  repo_name = "#{repo_name}/#{repo_name}" unless repo_name.include?('/')
-  "https://github.com/#{repo_name}.git"
-end
-
-ruby '2.5.7'
+ruby '2.5.8'
 
 gem 'ace-rails-ap'
 gem 'activerecord-import', '>= 0.13.0'
 gem 'activerecord_any_of'
-gem 'acts_as_list', github: 'swanandp/acts_as_list'
+gem 'acts_as_list', '>= 1.0.1'
 gem 'angular-rails-templates', '>= 1.0.0.beta'
 gem 'bcrypt', '~> 3.1.7'
 gem 'bootstrap-sass', '~> 3.3.5'
@@ -75,7 +70,6 @@ end
 
 group :test do
   gem 'database_cleaner'
-  gem 'jasmine'
   gem 'm', '~> 1.5.0'
   gem 'minitest-reporters', '>= 0.5.0'
   gem 'mocha'

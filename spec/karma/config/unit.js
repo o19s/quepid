@@ -1,6 +1,8 @@
 // Karma configuration
 // Generated on Fri Nov 06 2015 19:55:18 GMT+0000 (UTC)
 
+process.env.CHROME_BIN = require('puppeteer').executablePath()
+
 module.exports = function(config) {
   config.set({
 
@@ -28,7 +30,7 @@ module.exports = function(config) {
 
     // test results reporter to use
     // possible values: 'dots', 'progress', 'junit', 'growl', 'coverage'
-    reporters: ['progress', 'coverage'],
+    reporters: ['progress'],
 
 
     // web server port
@@ -56,7 +58,13 @@ module.exports = function(config) {
     // - Safari (only Mac; has to be installed with `npm install karma-safari-launcher`)
     // - PhantomJS
     // - IE (only Windows; has to be installed with `npm install karma-ie-launcher`)
-    browsers: ['PhantomJS'],
+    browsers: ['ChromeHeadlessNoSandbox'],
+    customLaunchers: {
+      ChromeHeadlessNoSandbox: {
+        base: 'ChromeHeadless',
+        flags: ['--no-sandbox', '--headless']
+      }
+    },
 
 
     // If browser does not capture in given timeout [ms], kill it
@@ -71,7 +79,6 @@ module.exports = function(config) {
     preprocessors: {
         '/**/*.coffee.erb':             'coffee',
         '/**/*.coffee':                 'coffee',
-        'tmp/assets/application*.js':   ['coverage'],
     }
 
   });

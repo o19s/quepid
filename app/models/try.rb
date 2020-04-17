@@ -31,7 +31,7 @@ class Try < ActiveRecord::Base
     search_engine: 'solr',
     solr:          {
       query_params: 'q=#$query##',
-      search_url:   'http://quepid-solr.dev.o19s.com/solr/tmdb/select',
+      search_url:   'http://quepid-solr.dev.o19s.com:8985/solr/tmdb/select',
       field_spec:   'title',
     },
     es:            {
@@ -44,7 +44,7 @@ class Try < ActiveRecord::Base
         '    }',
         '}'
       ].join('\n'),
-      search_url:   'http://quepid-elasticsearch.dev.o19s.com:9200/tmdb/_search',
+      search_url:   'http://quepid-elasticsearch.dev.o19s.com:9206/tmdb/_search',
       field_spec:   'id:_id, title:title',
     },
   }.freeze

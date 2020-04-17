@@ -17,7 +17,7 @@ module Analytics
         data = {
           category: 'Users',
           action:   'Signed Up',
-          label:    user.username,
+          label:    user.email,
           value:    nil,
           bounce:   false,
         }
@@ -34,7 +34,7 @@ module Analytics
         data = {
           category: 'Users',
           action:   'Upgraded by Admin',
-          label:    user.username,
+          label:    user.email,
           value:    nil,
           bounce:   true,
         }
@@ -51,7 +51,7 @@ module Analytics
         data = {
           category: 'Users',
           action:   'Updated Profile',
-          label:    user.username,
+          label:    user.email,
           value:    nil,
           bounce:   true,
         }
@@ -68,7 +68,7 @@ module Analytics
         data = {
           category: 'Users',
           action:   'Updated by Admin',
-          label:    user.username,
+          label:    user.email,
           value:    nil,
           bounce:   true,
         }
@@ -85,7 +85,7 @@ module Analytics
         data = {
           category: 'Users',
           action:   'Updated Password',
-          label:    user.username,
+          label:    user.email,
           value:    nil,
           bounce:   true,
         }
@@ -102,7 +102,7 @@ module Analytics
         data = {
           category: 'Users',
           action:   'Reset Password by Admin',
-          label:    user.username,
+          label:    user.email,
           value:    nil,
           bounce:   true,
         }
@@ -120,7 +120,7 @@ module Analytics
         data = {
           category: 'Cases',
           action:   'Created First Case',
-          label:    user.username,
+          label:    user.email,
           value:    1,
           bounce:   false,
         }

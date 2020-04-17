@@ -5,7 +5,7 @@
 # Table name: users
 #
 #  id                     :integer          not null, primary key
-#  username               :string(80)
+#  email                  :string(80)
 #  password               :string(120)
 #  agreed_time            :datetime
 #  agreed                 :boolean
@@ -70,7 +70,7 @@ class User < ActiveRecord::Base
   belongs_to :default_scorer
 
   # Validations
-  validates :username,
+  validates :email,
             presence:   true,
             uniqueness: true
 
@@ -84,7 +84,7 @@ class User < ActiveRecord::Base
   # :confirmable, :lockable, :timeoutable and :omniauthable
   # devise :database_authenticatable, :registerable,
   # :recoverable, :rememberable, :trackable, :validatable
-  devise :recoverable, reset_password_keys: [ :username ]
+  devise :recoverable, reset_password_keys: [ :email ]
 
   # Callbacks
   before_create :set_defaults
@@ -94,8 +94,6 @@ class User < ActiveRecord::Base
   # Devise hacks since we only use the recoverable module
   attr_accessor :password_confirmation
   validates :password, confirmation: true
-
-  alias_attribute :email, :username
 
   def encrypted_password_changed?
     password_changed?

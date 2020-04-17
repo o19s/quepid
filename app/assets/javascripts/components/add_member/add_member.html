@@ -1,12 +1,12 @@
 <script type="text/ng-template" id="member_popup.html">
   <a>
       <img ng-src="{{match.model.avatar_url}}" width="24">
-      {{match.model.display_name}} (<span ng-bind-html="match.model.username"></span>)
+      {{match.model.display_name}} (<span ng-bind-html="match.model.email"></span>)
   </a>
 </script>
 
 <div class='form-group'>
-  <input type="text" ng-model="ctrl.selected" placeholder="Look for users via username or display name"
+  <input type="text" ng-model="ctrl.selected" placeholder="Look for users via email or display name"
     uib-typeahead="user as user.display_name for user in ctrl.getUsers($viewValue)"
     typeahead-loading="loadingUsers"
     typeahead-template-url="member_popup.html"
@@ -22,7 +22,7 @@
   </a>
 
   <p class='help-block'>
-    Start typing a username to add user as a member to this team.
+    Start typing an email to add user as a member to this team.
     Once you select a user, click on "Add" to add them as a member.
   </p>
 </div>
