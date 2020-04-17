@@ -6,6 +6,9 @@ This is a major release of Quepid that finally introduces the standard _search g
 
 Speed of development has been an issue with Quepid.  In this release we've worked on developer happiness by auditing all of the dependencies we include.  We're removed quite a few Ruby gems and NodeJS packages that aren't used, and upgraded the rest (replacing PhantomJS with Puppeteer for headless testing).  `yarn.lock` dropped from 6706 lines to 1519!  This allowed us to finally move to ECMAScript 6 and to Node version 10.  Lastly we have cut the production Quepid Docker image from almost 3 GB to 2.3 GB.
 
+### Upgrade Notes
+Follow the steps outlined at https://github.com/o19s/quepid/wiki/Installation-Guide#updating-quepid.   You will need to run a database migration and rerun the `db:seed` to get the new default scorers.
+
 ### Features
 
 * Quepid Default Scorer Admin screen is buried in UI.  Add it to the dropdown menu.  https://github.com/o19s/quepid/pull/96 by @epugh.
