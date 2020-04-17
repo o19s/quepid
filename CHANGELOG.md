@@ -25,6 +25,7 @@ Lastly, we've worked on developer happiness by auditing the various dependencies
 ### Bugs
 
 * Wizard Autocomplete Didn't work well with Keyboard. Autocomplete suggestion had to be clicked with a Mouse.  https://github.com/o19s/quepid/pull/94 by @epugh fixes this by upgrading package.
+* Multivalued and nest JSON fields didn't display well, you would get `[object Object]` instead.  https://github.com/o19s/quepid/pull/117 by @CGamesPlay fixes https://github.com/o19s/quepid/issues/52.
 
 
 
