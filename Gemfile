@@ -68,7 +68,6 @@ group :test do
   gem 'minitest-reporters', '>= 0.5.0'
   gem 'mocha', '~> 1.11'
   gem 'simplecov', require: false
-  gem 'timecop'
   gem 'webmock'
 
   source 'https://rails-assets.org' do
