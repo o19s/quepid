@@ -56,7 +56,6 @@ group :development, :test do
   gem 'memory_profiler'
   gem 'rack-mini-profiler'
   gem 'spring', '1.6.4'
-  gem 'stackprof'
 end
 
 group :development do
