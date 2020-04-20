@@ -69,7 +69,6 @@ group :test do
   gem 'mocha', '~> 1.11'
   gem 'simplecov', require: false
   gem 'webmock'
-
 end
 
 group :production, :staging do
