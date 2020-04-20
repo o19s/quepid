@@ -66,23 +66,6 @@ GEM
       activesupport (>= 3.0.0)
       uniform_notifier (~> 1.11)
     byebug (10.0.2)
-    celluloid (0.17.4)
-      celluloid-essentials
-      celluloid-extras
-      celluloid-fsm
-      celluloid-pool
-      celluloid-supervision
-      timers (>= 4.1.1)
-    celluloid-essentials (0.20.5)
-      timers (>= 4.1.1)
-    celluloid-extras (0.20.5)
-      timers (>= 4.1.1)
-    celluloid-fsm (0.20.5)
-      timers (>= 4.1.1)
-    celluloid-pool (0.20.5)
-      timers (>= 4.1.1)
-    celluloid-supervision (0.20.6)
-      timers (>= 4.1.1)
     coderay (1.1.2)
     coffee-rails (4.1.1)
       coffee-script (>= 2.2.0)
@@ -136,7 +119,6 @@ GEM
     hashdiff (0.3.8)
     i18n (0.9.5)
       concurrent-ruby (~> 1.0)
-    ice_cube (0.14.0)
     intercom (3.7.3)
     intercom-rails (0.4.0)
       activesupport (> 3.0)
@@ -301,10 +283,6 @@ GEM
       rack (>= 1.5.0)
       rack-protection (>= 1.5.0)
       redis (>= 3.3.5, < 5)
-    sidetiq (0.7.2)
-      celluloid (>= 0.17.3)
-      ice_cube (~> 0.14.0)
-      sidekiq (>= 4.1.0)
     simplecov (0.16.1)
       docile (~> 1.1)
       json (>= 1.8, < 3)
@@ -330,7 +308,6 @@ GEM
     thread_safe (0.3.6)
     tilt (2.0.9)
     timecop (0.9.1)
-    timers (4.3.0)
     tzinfo (1.2.7)
       thread_safe (~> 0.1)
     uglifier (4.1.20)
@@ -402,7 +379,6 @@ DEPENDENCIES
   sass-rails (~> 5.0)
   sdoc (~> 0.4.0)
   sidekiq
-  sidetiq
   simplecov
   sinatra
   slim
