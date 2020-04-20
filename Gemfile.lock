@@ -212,8 +212,6 @@ GEM
     rails-assets-angular (1.7.5)
     rails-assets-angular-cache (4.6.0)
       rails-assets-angular (>= 1)
-    rails-assets-angular-mocks (1.7.5)
-      rails-assets-angular (= 1.7.5)
     rails-assets-cal-heatmap (3.6.2)
       rails-assets-d3 (>= 3.0.6, < 4.0.0)
     rails-assets-d3 (3.5.17)
@@ -363,7 +361,6 @@ DEPENDENCIES
   rails (~> 4.2, >= 4.2.5.1)
   rails-assets-angular!
   rails-assets-angular-cache!
-  rails-assets-angular-mocks!
   rails-assets-cal-heatmap!
   rails-assets-d3 (~> 3.5.5)!
   rails_12factor

@@ -70,9 +70,6 @@ group :test do
   gem 'simplecov', require: false
   gem 'webmock'
 
-  source 'https://rails-assets.org' do
-    gem 'rails-assets-angular-mocks'
-  end
 end
 
 group :production, :staging do
