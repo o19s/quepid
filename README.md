@@ -211,6 +211,8 @@ In the Rails application you can use the logger for the output:
 Rails.logger object.inspect
 ```
 
+We also support the `web-console` gem which allows you to work with Rails via a console right into your browser, similar to running `bin/docker r`.  This only works on HTML view rendered by Rails, not on API calls.  Learn more at https://github.com/rails/web-console/tree/v2.2.1#usage. 
+
 If that's not enough and you want to run a debugger, the `byebug` gem is included for that. Add `byebug` wherever you want a breakpoint and then run the code.
 
 Caveat: You might have to stop spring (`bin/spring stop`) or restart the server to get it to execute the breakpoint.
