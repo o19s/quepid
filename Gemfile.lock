@@ -153,7 +153,6 @@ GEM
     mail (2.7.1)
       mini_mime (>= 0.1.1)
     memory_profiler (0.9.12)
-    metaclass (0.0.4)
     method_source (0.9.2)
     mini_mime (1.0.1)
     mini_portile2 (2.4.0)
@@ -163,8 +162,7 @@ GEM
       builder
       minitest (>= 5.0)
       ruby-progressbar
-    mocha (1.8.0)
-      metaclass (~> 0.0.1)
+    mocha (1.11.2)
     multi_json (1.13.1)
     mysql2 (0.5.2)
     nenv (0.3.0)
@@ -358,7 +356,7 @@ DEPENDENCIES
   m (~> 1.5.0)
   memory_profiler
   minitest-reporters (>= 0.5.0)
-  mocha
+  mocha (~> 1.11)
   mysql2
   newrelic_rpm
   paranoia (~> 2.0)
