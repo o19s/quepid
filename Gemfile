@@ -51,7 +51,6 @@ group :development, :test do
   gem 'bullet'
   gem 'byebug'
   gem 'dotenv-rails'
-  gem 'flamegraph'
   gem 'foreman'
   gem 'guard'
   gem 'guard-minitest'

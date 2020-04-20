@@ -117,7 +117,6 @@ GEM
     eventmachine (1.2.7)
     execjs (2.7.0)
     ffi (1.9.25)
-    flamegraph (0.9.5)
     font-awesome-sass (5.6.1)
       sassc (>= 1.11)
     foreman (0.85.0)
@@ -380,7 +379,6 @@ DEPENDENCIES
   database_cleaner
   devise
   dotenv-rails
-  flamegraph
   font-awesome-sass (>= 4.4.0)
   foreman
   gabba
