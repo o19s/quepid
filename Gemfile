@@ -50,7 +50,6 @@ group :development, :test do
   gem 'annotate'
   gem 'bullet'
   gem 'byebug'
-  gem 'dotenv-rails'
   gem 'foreman'
   gem 'guard'
   gem 'guard-minitest'
