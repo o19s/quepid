@@ -35,3 +35,6 @@ coverage/
 
 # Docker artifacts
 public/srv
+
+# Test Reports
+test/reports
