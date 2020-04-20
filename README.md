@@ -211,7 +211,7 @@ In the Rails application you can use the logger for the output:
 Rails.logger object.inspect
 ```
 
-We also support the `web-console` gem which allows you to work with Rails via a console right into your browser, similar to running `bin/docker r`.  This only works on HTML view rendered by Rails, not on API calls.  Learn more at https://github.com/rails/web-console/tree/v2.2.1#usage. 
+We also support the `web-console` gem which allows you to work with Rails via a console right into your browser, similar to running `bin/docker r`.  This only works on HTML view rendered by Rails, not on API calls.  Learn more at https://github.com/rails/web-console/tree/v2.2.1#usage.
 
 If that's not enough and you want to run a debugger, the `byebug` gem is included for that. Add `byebug` wherever you want a breakpoint and then run the code.
 
@@ -377,10 +377,12 @@ What you need to do:
   * `sudo cp .ssl/localhost.crt /etc/ssl/cert`
   * `sudo cp .ssl/localhost.key /etc/ssl/private`
   * `sudo c_rehash`
-3. In `Procfile` comment the part that uses `puma` and uncomment the part that uses `thin`
-4. In `.env` make sure you add `FORCE_SSL=true`
-5. Restart the server
-6. Go to `https://localhost:3000`
+3. Add the Thin webserver for testing SSL, `bin/docker r bundle install thin`
+4. In `Procfile.dev` comment the part that uses `puma` and uncomment the part that uses `thin`
+5. In `.env` make sure you add `FORCE_SSL=true`
+6. Restart the server
+7. Go to `https://localhost:3000`
+8. Undo your Thin changes afterwords!
 
 **PS:** Why are we using both `puma` and `thin`? Because I simply could not figure out how to get `puma` to work properly with SSL and did not want to spend any more time on it!
 

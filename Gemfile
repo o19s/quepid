@@ -58,7 +58,6 @@ group :development, :test do
   gem 'rack-mini-profiler'
   gem 'spring', '1.6.4'
   gem 'stackprof'
-  gem 'thin'
 end
 
 group :development do
