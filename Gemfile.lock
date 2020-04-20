@@ -147,9 +147,6 @@ GEM
       crass (~> 1.0.2)
       nokogiri (>= 1.5.9)
     lumberjack (1.0.13)
-    m (1.5.1)
-      method_source (>= 0.6.7)
-      rake (>= 0.9.2.2)
     mail (2.7.1)
       mini_mime (>= 0.1.1)
     memory_profiler (0.9.12)
@@ -353,7 +350,6 @@ DEPENDENCIES
   jquery-rails
   jquery-ui-rails
   letter_opener
-  m (~> 1.5.0)
   memory_profiler
   minitest-reporters (>= 0.5.0)
   mocha (~> 1.11)

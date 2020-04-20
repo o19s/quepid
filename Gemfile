@@ -65,7 +65,6 @@ end
 
 group :test do
   gem 'database_cleaner'
-  gem 'm', '~> 1.5.0'
   gem 'minitest-reporters', '>= 0.5.0'
   gem 'mocha', '~> 1.11'
   gem 'simplecov', require: false
