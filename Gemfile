@@ -50,8 +50,6 @@ group :development, :test do
   gem 'bullet'
   gem 'byebug'
   gem 'foreman'
-  gem 'guard'
-  gem 'guard-minitest'
   gem 'memory_profiler'
   gem 'rack-mini-profiler'
   gem 'spring', '1.6.4'
