@@ -20,7 +20,7 @@ gem 'gabba'
 gem 'intercom-rails'
 gem 'jbuilder', '~> 2.0'
 gem 'jquery-rails'
-gem 'jquery-ui-rails'  # Can we narrow the widgets to load faster?
+gem 'jquery-ui-rails' # Can we narrow the widgets to load faster?
 gem 'mysql2'
 gem 'postmark-rails', '~> 0.10.0'
 gem 'puma', '~> 3.7'
