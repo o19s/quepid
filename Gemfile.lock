@@ -141,7 +141,6 @@ GEM
     mocha (1.11.2)
     multi_json (1.13.1)
     mysql2 (0.5.2)
-    newrelic_rpm (6.1.0.352)
     nokogiri (1.9.1)
       mini_portile2 (~> 2.4.0)
     orm_adapter (0.5.0)
@@ -305,7 +304,6 @@ DEPENDENCIES
   minitest-reporters (>= 0.5.0)
   mocha (~> 1.11)
   mysql2
-  newrelic_rpm
   postmark-rails (~> 0.10.0)
   puma (~> 3.7)
   puma_worker_killer
