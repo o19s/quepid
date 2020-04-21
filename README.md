@@ -373,7 +373,7 @@ openssl req -new -newkey rsa:2048 -sha1 -days 365 -nodes -x509 -keyout .ssl/loca
 What you need to do:
 
 1. Drag `.ssl/localhost.crt` to `System` in `Keychain Access` (this is for OS X)
-2. run (this is for Ubuntu/Vagrant):
+2. run (this is for Ubuntu/Docker):
   * `sudo cp .ssl/localhost.crt /etc/ssl/cert`
   * `sudo cp .ssl/localhost.key /etc/ssl/private`
   * `sudo c_rehash`
