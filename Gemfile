@@ -17,14 +17,11 @@ gem 'cookies_eu'
 gem 'devise'
 gem 'font-awesome-sass', '>= 4.4.0'
 gem 'gabba'
-gem 'intercom'
 gem 'intercom-rails'
 gem 'jbuilder', '~> 2.0'
 gem 'jquery-rails'
-gem 'jquery-ui-rails'
+gem 'jquery-ui-rails' # Can we narrow the widgets to load faster?
 gem 'mysql2'
-gem 'newrelic_rpm'
-gem 'paranoia', '~> 2.0'
 gem 'postmark-rails', '~> 0.10.0'
 gem 'puma', '~> 3.7'
 gem 'puma_worker_killer'
@@ -32,11 +29,7 @@ gem 'pundit'
 gem 'rails', '~> 4.2', '>= 4.2.5.1'
 gem 'responders'
 gem 'sass-rails', '~> 5.0'
-gem 'sdoc', '~> 0.4.0', group: :doc
 gem 'sidekiq'
-gem 'sidetiq'
-gem 'sinatra', require: false
-gem 'slim'
 gem 'uglifier', '>= 1.3.0'
 
 source 'https://rails-assets.org' do
@@ -50,16 +43,10 @@ group :development, :test do
   gem 'annotate'
   gem 'bullet'
   gem 'byebug'
-  gem 'dotenv-rails'
-  gem 'flamegraph'
   gem 'foreman'
-  gem 'guard'
-  gem 'guard-minitest'
   gem 'memory_profiler'
   gem 'rack-mini-profiler'
   gem 'spring', '1.6.4'
-  gem 'stackprof'
-  gem 'thin'
 end
 
 group :development do
@@ -70,16 +57,10 @@ end
 
 group :test do
   gem 'database_cleaner'
-  gem 'm', '~> 1.5.0'
   gem 'minitest-reporters', '>= 0.5.0'
-  gem 'mocha'
+  gem 'mocha', '~> 1.11'
   gem 'simplecov', require: false
-  gem 'timecop'
   gem 'webmock'
-
-  source 'https://rails-assets.org' do
-    gem 'rails-assets-angular-mocks'
-  end
 end
 
 group :production, :staging do
