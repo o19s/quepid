@@ -3,7 +3,7 @@
 Rails.application.configure do
   # Settings specified here will take precedence over those in config/application.rb.
 
-  config.web_console.whitelisted_ips = '172.28.0.0/16' # in web-console master it is config.web_console.permissions
+  config.web_console.whitelisted_ips = ['172.16.0.0/12', '192.168.0.0/16'] # in web-console master it is config.web_console.permissions
 
   # In the development environment your application's code is reloaded on
   # every request. This slows down response time but is perfect for development
