@@ -241,10 +241,6 @@ Because there are too many Angular JS files in this application, and in `debug` 
 
 **PS:** Don't forget to restart the server when you change the config.
 
-Also please note that the files `secure.js`, `application.js`, and `admin.js` are used to load all the
-JavaScript and CSS dependencies via the Rails Asset pipeline.   If you are debugging Bootstrap, then
-you will want individual files.  So replace `//= require sprockets` with `//= require bootstrap-sprockets`.
-
 ## Convenience Scripts
 
 This application has two ways of running scripts: `rake` & `thor`.
