@@ -1,5 +1,8 @@
 //= require jquery
-//= require bootstrap-sprockets
+// Use this for debugging.
+//# require bootstrap-sprockets
+// Use this for faster loading
+//= require bootstrap
 //= require jquery_ujs
 //= require jquery-ui
 //= require d3
