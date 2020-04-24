@@ -53,7 +53,7 @@
 //= require jquery-ui/effects/effect-size
 //= require jquery-ui/effects/effect-slide
 //= require jquery-ui/effects/effect-transfer
-//= require jquery-ui/widgets/accordion
+//# require jquery-ui/widgets/accordion
 //# require jquery-ui/widgets/autocomplete
 //# require jquery-ui/widgets/button
 //# require jquery-ui/widgets/checkboxradio
@@ -66,7 +66,7 @@
 //# require jquery-ui/widgets/mouse
 //# require jquery-ui/widgets/progressbar
 //# require jquery-ui/widgets/resizable
-//= require jquery-ui/widgets/selectable
+//#= require jquery-ui/widgets/selectable
 //# require jquery-ui/widgets/selectmenu
 //# require jquery-ui/widgets/slider
 //= require jquery-ui/widgets/sortable
