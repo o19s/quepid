@@ -4,7 +4,7 @@
 
 This is a major release of Quepid that finally introduces the standard _search geek_ scorers like NDCG, DCG, Average Precision, and friends by default.  We've also fixed a large number of bugs introduced by changes in browser security models and recent updates to Elasticsearch and Solr.  
 
-Speed of development has been an issue with Quepid.  In this release we've worked on developer happiness by auditing all of the dependencies we include.  We're removed quite a few Ruby gems and NodeJS packages that aren't used, and upgraded the rest (replacing PhantomJS with Puppeteer for headless testing).  `yarn.lock` dropped from 6706 lines to 1519!  This allowed us to finally move to ECMAScript 6 and to Node version 10.  Lastly we have cut the production Quepid Docker image from almost 3 GB to 2.3 GB.
+Speed of development has been an issue with Quepid.  In this release we've worked on developer happiness by auditing all of the dependencies we include.  We're removed quite a few Ruby gems and NodeJS packages that weren't used, and upgraded the rest (replacing PhantomJS with Puppeteer for headless testing).  `yarn.lock` dropped from 6706 lines to 1519 and `Gemfile.lock` from 448 to 330!  This allowed us to finally move to ECMAScript 6 and to Node version 10.  Lastly we have cut the production Quepid Docker image from almost 3 GB to 2.3 GB.
 
 ### Features
 
@@ -21,6 +21,7 @@ Speed of development has been an issue with Quepid.  In this release we've worke
 * Solr 8.2 tightened up the security profile for accessing it that we depend on via JSONP to have Quepid work.  Now the wizard provides you the command to run on your Solr if it can't connect.  https://github.com/o19s/quepid/pull/95 by @epugh fixes https://github.com/o19s/quepid/issues/92.
 * Using the default `tmdb` dataset?  Demonstrate the `thumb:poster_path` feature.  https://github.com/o19s/quepid/pull/94 by @epugh fixed https://github.com/o19s/quepid/issues/72.
 * Rename `user.username` in database to `user.email` since that is what we use.  Clean up API.  https://github.com/o19s/quepid/pull/113 by @epugh fixes https://github.com/o19s/quepid/issues/111.  You will need to run database migration for this release!
+* Audited code base to prune dependencies and remove unused code.  https://github.com/o19s/quepid/pull/121, https://github.com/o19s/quepid/pull/119, https://github.com/o19s/quepid/pull/118, https://github.com/o19s/quepid/pull/116 all worked towards this goal.
 
 ### Bugs
 
