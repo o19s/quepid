@@ -15,8 +15,6 @@
 //# require bootstrap-sprockets
 // Use this for faster loading
 //= require bootstrap
-//## require jquery_ujs
-//## require jquery-ui
 //= require angular/angular
 //= require bootstrap/dist/js/bootstrap
 //= require angular-resource/angular-resource
