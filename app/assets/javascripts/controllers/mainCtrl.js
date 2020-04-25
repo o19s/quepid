@@ -23,12 +23,6 @@ angular.module('QuepidApp')
 
       var initialCaseNo = angular.copy(caseTryNavSvc.getCaseNo());
 
-      var curate = ($location.path().indexOf('curate') > 0);
-      var curateSearch = null;
-      if (curate && $location.search().hasOwnProperty('search')) {
-        curateSearch = $location.search().search;
-      }
-
       var caseChanged = function() {
         return initialCaseNo !== caseNo;
       };
@@ -86,7 +80,7 @@ angular.module('QuepidApp')
 
             return queriesSvc.changeSettings(caseNo, newSettings)
               .then(function() {
-                if (!bootstrapped && !curate) {
+                if (!bootstrapped) {
                   flash.error                    = '';
                   flash.success                  = '';
                   flash.to('search-error').error = '';
@@ -119,9 +113,7 @@ angular.module('QuepidApp')
 
       caseTryNavSvc.navigationCompleted({
         caseNo:       caseNo,
-        tryNo:        tryNo,
-        curate:       curate,
-        curateSearch: curateSearch
+        tryNo:        tryNo
       });
 
       queriesSvc.querySearchPromiseReset();
