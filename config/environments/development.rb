@@ -1,5 +1,15 @@
 # frozen_string_literal: true
 
+# Monkey Patch the rails-webconsole to allow it to connect from any IP, working
+# around Docker.
+module WebConsole
+  class Whitelist
+    def include?(network)
+      true # Damn you Docker!
+    end
+  end
+end
+
 Rails.application.configure do
   # Settings specified here will take precedence over those in config/application.rb.
 
