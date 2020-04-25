@@ -21,7 +21,11 @@ angular.module('QuepidApp')
       var caseNo  = parseInt($routeParams.caseNo, 10);
       var tryNo   = parseInt($routeParams.tryNo, 10);
 
+      $log.debug("Caseno:" + caseNo + ", tryNo:" + tryNo);
+
       var initialCaseNo = angular.copy(caseTryNavSvc.getCaseNo());
+
+      $log.debug(caseTryNavSvc.getTryNo());
 
       var curate = ($location.path().indexOf('curate') > 0);
       var curateSearch = null;
@@ -64,6 +68,11 @@ angular.module('QuepidApp')
           .then(function(acase) {
             caseSvc.selectTheCase(acase);
             settingsSvc.setCaseTries(acase.tries);
+            if ( isNaN(tryNo) ) {  // If we didn't specify a try
+              console.log("Setting tryNo to be " + acase.lastTry);
+              tryNo = acase.lastTry;
+            }
+
             settingsSvc.setCurrentTry(tryNo);
           });
       };
