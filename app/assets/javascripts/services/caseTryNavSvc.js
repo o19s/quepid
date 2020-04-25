@@ -63,7 +63,7 @@ angular.module('QuepidApp')
         isLoading = true;
 
         // always append a trailing / or ngRoute will double load this
-        var path = '/case/' + navCaseNo + '/try/' + navTryNo;
+        var path = '/case/' + navCaseNo + '/try/' + navTryNo + '/';
         $location.path(path);
       };
 
