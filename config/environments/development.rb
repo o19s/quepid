@@ -4,7 +4,7 @@
 # around Docker.
 module WebConsole
   class Whitelist
-    def include?(network)
+    def include? _network
       true # Damn you Docker!
     end
   end
