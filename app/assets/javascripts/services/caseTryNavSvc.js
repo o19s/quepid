@@ -11,8 +11,6 @@ angular.module('QuepidApp')
     function caseTryNavSvc($location, $timeout, $window) {
       var caseNo = 0;
       var tryNo = 0;
-      var curate = false;
-      var curateSearch = null;
       var bootstrapPath = null;
 
       var currNavDelay = 1000;
@@ -44,8 +42,6 @@ angular.module('QuepidApp')
         currNavDelay = navDelay;
         var navCaseNo = caseNo;
         var navTryNo = tryNo;
-        var navCurate = curate;
-        var navCurateSearch = curateSearch;
         var sortBy, sortOrder;
         if ($location.search()) {
           sortBy = $location.search().sort;
@@ -61,33 +57,20 @@ angular.module('QuepidApp')
         else if (caseTryObj.hasOwnProperty('caseNo')) {
           navTryNo = 0;
         }
-        var curatePath = '';
-        if (caseTryObj.hasOwnProperty('curate')) {
-          navCurate = caseTryObj.curate;
-        }
-        if (caseTryObj.hasOwnProperty('curateSearch')) {
-          navCurateSearch = caseTryObj.curateSearch;
-        }
-        if (navCurate) {
-          curatePath = '/curate';
-          if (navCurateSearch) {
-            $location.search({'search': navCurateSearch});
-          }
-        } else {
-          $location.search({'sort': sortBy, 'reverse': sortOrder});
-        }
+
+        $location.search({'sort': sortBy, 'reverse': sortOrder});
+
         isLoading = true;
 
         // always append a trailing / or ngRoute will double load this
-        var path = '/case/' + navCaseNo + '/try/' + navTryNo + curatePath + '/';
+        var path = '/case/' + navCaseNo + '/try/' + navTryNo + '/';
         $location.path(path);
       };
 
       this.navigationCompleted = function(caseTryObj) {
         caseNo = caseTryObj.caseNo;
         tryNo = caseTryObj.tryNo;
-        curate = caseTryObj.curate;
-        curateSearch = caseTryObj.curateSearch;
+
         $timeout(function() {
           isLoading = false;
         }, currNavDelay);
@@ -103,10 +86,6 @@ angular.module('QuepidApp')
 
       this.getTryNo = function() {
         return tryNo;
-      };
-
-      this.getCurateSearch = function() {
-        return curateSearch;
       };
 
     }
