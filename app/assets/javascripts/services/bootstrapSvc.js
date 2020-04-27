@@ -26,12 +26,7 @@ angular.module('UtilitiesModule')
             $rootScope.currentUser = user;
 
             if (user && angular.isDefined(caseNo) && angular.isDefined(tryNo)) {
-              var curate = false;
-              if ($location.path().indexOf('/curate') > 0) {
-                curate = true;
-              }
-
-              caseTryNavSvc.pathRequested({caseNo: caseNo, tryNo: tryNo, curate: curate});
+              caseTryNavSvc.pathRequested({caseNo: caseNo, tryNo: tryNo});
             }
           });
       }

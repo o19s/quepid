@@ -31,27 +31,6 @@ describe('Service: caseTryNavSvc', function () {
     expect(locationMock.path).toHaveBeenCalledWith('/case/5/try/1/');
   });
 
-  it('navigates to case/try w/ curate', function() {
-    caseTryNavSvc.navigateTo({caseNo: 5, tryNo: 1, curate: true});
-    expect(locationMock.path).toHaveBeenCalledWith('/case/5/try/1/curate/');
-  });
-
-  it('navigates to case/try w/ curate and search', function() {
-    caseTryNavSvc.navigateTo({caseNo: 5, tryNo: 1, curate: true, curateSearch: 'cat'});
-    expect(locationMock.path).toHaveBeenCalledWith('/case/5/try/1/curate/');
-    expect(locationMock.search).toHaveBeenCalledWith({'search': 'cat'});
-  });
-
-  it('navigates to case/try w/ curate and new search', function() {
-    caseTryNavSvc.navigateTo({caseNo: 5, tryNo: 1, curate: true, curateSearch: 'cat'});
-    expect(locationMock.path).toHaveBeenCalledWith('/case/5/try/1/curate/');
-    expect(locationMock.search).toHaveBeenCalledWith({'search': 'cat'});
-    caseTryNavSvc.navigationCompleted({caseNo: 5, tryNo: 1, curate: true, curateSearch: 'cat'});
-    caseTryNavSvc.navigateTo({caseNo: 5, tryNo: 1, curate: true, curateSearch: 'dog'});
-    expect(locationMock.path).toHaveBeenCalledWith('/case/5/try/1/curate/');
-    expect(locationMock.search).toHaveBeenCalledWith({'search': 'dog'});
-  });
-
   it('navigates to new case', function() {
     caseTryNavSvc.navigateTo({caseNo: 5, tryNo: 1});
     expect(locationMock.path).toHaveBeenCalledWith('/case/5/try/1/');
