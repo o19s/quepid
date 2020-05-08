@@ -20,7 +20,7 @@ Rails/Output:
 Documentation:
   Enabled: false
 
-Layout/AlignHash:
+Layout/HashAlignment:
   EnforcedColonStyle: table
   EnforcedHashRocketStyle: table
 
