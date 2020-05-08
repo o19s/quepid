@@ -362,6 +362,12 @@ which will install the new Node module, and then save that dependency to `packag
 
 Then check in the updated `package.json` and `yarn.lock` files.
 
+If you want to review and upgrade multiple dependencies use to:
+
+```
+bin/docker r yarn upgrade-interactive
+```
+
 ## I'd like to test SSL
 
 There's a directory `.ssl` that contains they key and cert files used for SSL. This is a self signed generated certificate for use in development ONLY!
