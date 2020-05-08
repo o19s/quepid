@@ -77,9 +77,10 @@ angular-timeago@~0.1.12:
   resolved "https://registry.yarnpkg.com/angular-timeago/-/angular-timeago-0.1.12.tgz#cc0275566c72925d01ea19baf91f67a959286602"
   integrity sha1-zAJ1Vmxykl0B6hm6+R9nqVkoZgI=
 
-"angular-ui-ace@https://github.com/angular-ui/ui-ace":
+angular-ui-ace@^0.2.3:
   version "0.2.3"
-  resolved "https://github.com/angular-ui/ui-ace#4c62a97e0adc60b7cde2be4caf902ac95c5c8c34"
+  resolved "https://registry.yarnpkg.com/angular-ui-ace/-/angular-ui-ace-0.2.3.tgz#3cb903428100621a367fc7f641440e97a42a26d0"
+  integrity sha1-PLkDQoEAYho2f8f2QUQOl6QqJtA=
 
 angular-ui-bootstrap@~2.5.0:
   version "2.5.6"
