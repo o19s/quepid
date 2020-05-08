@@ -30,8 +30,9 @@ gem 'rails', '~> 4.2', '>= 4.2.5.1'
 gem 'responders'
 gem 'sass-rails', '~> 6.0'
 gem 'sidekiq'
-gem 'uglifier', '>= 1.3.0'
 gem 'sprockets', '3.7.2'
+gem 'uglifier', '>= 1.3.0'
+gem 'webpacker', '~> 4.x'
 
 source 'https://rails-assets.org' do
   gem 'rails-assets-angular'
@@ -47,12 +48,12 @@ group :development, :test do
   gem 'foreman'
   gem 'memory_profiler'
   gem 'rack-mini-profiler'
+  gem 'rubocop', '0.70.0'
   gem 'spring', '1.6.4'
 end
 
 group :development do
   gem 'letter_opener'
-  gem 'rubocop', require: false
   gem 'web-console', '~> 3.0'
 end
 

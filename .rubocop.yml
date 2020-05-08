@@ -20,11 +20,11 @@ Rails/Output:
 Documentation:
   Enabled: false
 
-Layout/HashAlignment:
+Layout/AlignHash:
   EnforcedColonStyle: table
   EnforcedHashRocketStyle: table
 
-Layout/FirstHashElementIndentation:
+Layout/IndentFirstHashElement:
   EnforcedStyle: consistent
 
 Layout/MultilineMethodCallIndentation:
