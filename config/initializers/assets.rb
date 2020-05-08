@@ -10,7 +10,7 @@ Rails.application.config.assets.version = '1.0'
 
 Rails.application.config.assets.paths << Rails.root.join('node_modules')
 
-Rails.application.config.assets.paths << Rails.root.join('spec', 'karma') if Rails.env.development? || Rails.env.test?
+Rails.application.config.assets.paths << Rails.root.join('spec', 'karma') if Rails.env.test?
 
 # Precompile additional assets.
 # application.js, application.css, and all non-JS/CSS in app/assets folder are already added.
