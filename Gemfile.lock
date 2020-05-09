@@ -224,9 +224,9 @@ GEM
       sprockets (> 3.0)
       sprockets-rails
       tilt
-    sidekiq (5.2.8)
+    sidekiq (5.2.5)
       connection_pool (~> 2.2, >= 2.2.2)
-      rack (< 2.1.0)
+      rack (>= 1.5.0)
       rack-protection (>= 1.5.0)
       redis (>= 3.3.5, < 5)
     simplecov (0.18.5)
@@ -306,7 +306,7 @@ DEPENDENCIES
   responders
   rubocop (= 0.70.0)
   sass-rails (~> 6.0)
-  sidekiq
+  sidekiq (= 5.2.5)
   simplecov
   spring (= 1.6.4)
   sprockets (= 3.7.2)
