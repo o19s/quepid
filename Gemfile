@@ -19,8 +19,8 @@ gem 'font-awesome-sass', '>= 5.12.0'
 gem 'gabba'
 gem 'intercom-rails'
 gem 'jbuilder', '~> 2.0'
-#gem 'jquery-rails'
-#gem 'jquery-ui-rails' # Can we narrow the widgets to load faster?
+# gem 'jquery-rails'
+# gem 'jquery-ui-rails' # Can we narrow the widgets to load faster?
 gem 'mysql2'
 gem 'postmark-rails', '~> 0.10.0'
 gem 'puma', '~> 3.7'
@@ -29,7 +29,7 @@ gem 'pundit'
 gem 'rails', '~> 4.2', '>= 4.2.5.1'
 gem 'responders'
 gem 'sass-rails', '~> 6.0'
-gem 'sidekiq', '5.2.5'  # 5.2.8 appears to not work, maybe due to rack changes?
+gem 'sidekiq', '5.2.5' # 5.2.8 appears to not work, maybe due to rack changes?
 gem 'sprockets', '3.7.2'
 gem 'uglifier', '>= 1.3.0'
 gem 'webpacker', '~> 4.x'
@@ -37,17 +37,17 @@ gem 'webpacker', '~> 4.x'
 source 'https://rails-assets.org' do
   gem 'rails-assets-angular'
   gem 'rails-assets-angular-cache'
-  #gem 'rails-assets-cal-heatmap'
-  #gem 'rails-assets-d3', '~> 3.5.5'
+  # gem 'rails-assets-cal-heatmap'
+  # gem 'rails-assets-d3', '~> 3.5.5'
 end
 
 group :development, :test do
   gem 'annotate'
-  #gem 'bullet'
+  # gem 'bullet'
   gem 'byebug'
   gem 'foreman'
-  #gem 'memory_profiler'
-  #gem 'rack-mini-profiler'
+  # gem 'memory_profiler'
+  # gem 'rack-mini-profiler'
   gem 'rubocop', '0.70.0'
   gem 'spring', '1.6.4'
 end
