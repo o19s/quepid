@@ -29,7 +29,7 @@ gem 'pundit'
 gem 'rails', '~> 4.2', '>= 4.2.5.1'
 gem 'responders'
 gem 'sass-rails', '~> 6.0'
-gem 'sidekiq', '5.2.5'  # 5.2.8 appears to not work, maybe due to rack changes?
+gem 'sidekiq', '5.2.5' # 5.2.8 appears to not work, maybe due to rack changes?
 gem 'sprockets', '3.7.2'
 gem 'uglifier', '>= 1.3.0'
 
@@ -42,11 +42,11 @@ end
 
 group :development, :test do
   gem 'annotate'
-  #gem 'bullet'
+  # gem 'bullet'
   gem 'byebug'
   gem 'foreman'
-  #gem 'memory_profiler'
-  #gem 'rack-mini-profiler'
+  # gem 'memory_profiler'
+  # gem 'rack-mini-profiler'
   gem 'rubocop', '0.70.0'
   gem 'spring', '1.6.4'
 end
