@@ -19,8 +19,8 @@ gem 'font-awesome-sass', '>= 5.12.0'
 gem 'gabba'
 gem 'intercom-rails'
 gem 'jbuilder', '~> 2.0'
-gem 'jquery-rails'
-gem 'jquery-ui-rails' # Can we narrow the widgets to load faster?
+#gem 'jquery-rails'
+#gem 'jquery-ui-rails' # Can we narrow the widgets to load faster?
 gem 'mysql2'
 gem 'postmark-rails', '~> 0.10.0'
 gem 'puma', '~> 3.7'
@@ -37,8 +37,8 @@ gem 'webpacker', '~> 4.x'
 source 'https://rails-assets.org' do
   gem 'rails-assets-angular'
   gem 'rails-assets-angular-cache'
-  gem 'rails-assets-cal-heatmap'
-  gem 'rails-assets-d3', '~> 3.5.5'
+  #gem 'rails-assets-cal-heatmap'
+  #gem 'rails-assets-d3', '~> 3.5.5'
 end
 
 group :development, :test do

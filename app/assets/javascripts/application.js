@@ -22,13 +22,13 @@
 //= require jquery
 //= require bootstrap
 
-//= require jquery-ui/widgets/draggable
-//= require jquery-ui/widgets/droppable
-//= require jquery-ui/widgets/sortable
+//= #require jquery-ui/widgets/draggable
+//= #require jquery-ui/widgets/droppable
+//= #require jquery-ui/widgets/sortable
 
-//= require jquery-autoGrowInput
-//= require d3
-//= require d3-tip
+//= #require jquery-autoGrowInput
+//= #require d3
+//= #require d3-tip
 //= require cookies_eu
 //= require angular/angular
 //= require ace-builds/src-min-noconflict/ace

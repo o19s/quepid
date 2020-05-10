@@ -158,6 +158,8 @@ GEM
     pundit (2.1.0)
       activesupport (>= 3.0.0)
     rack (1.6.13)
+    rack-cors (1.0.6)
+      rack (>= 1.6.0)
     rack-mini-profiler (2.0.1)
       rack (>= 1.2.0)
     rack-protection (2.0.8.1)
@@ -302,6 +304,7 @@ DEPENDENCIES
   puma (~> 3.7)
   puma_worker_killer
   pundit
+  rack-cors
   rack-mini-profiler
   rails (~> 4.2, >= 4.2.5.1)
   rails-assets-angular!

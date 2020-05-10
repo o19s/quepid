@@ -1,0 +1,17 @@
+
+//@import "style";        // not sure we need
+
+@import "cal-heatmap/cal-heatmap";
+@import "bootstrap";
+@import "font-awesome";  // note we duplicate fonts into the app/javascript/fonts dir from node_modules
+
+// Import a webpacker version of fonts.css
+//@import "fonts";
+@import "fonts_webpacker";
+//@import "_panes";  // not sure we need
+//@import "resize"; // not sure we need
+//@import "stackedChart"; // not sure we need
+@import "bootstrap-add";
+//@import "_base";        // not sure we need
+//@import "_admin";        // not sure we need
+//@import "_misc";        // not sure we need
