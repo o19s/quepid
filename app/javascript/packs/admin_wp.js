@@ -15,7 +15,7 @@
 // const images = require.context('../images', true)
 // const imagePath = (name) => images(name, true)
 
-console.log('Hello World from Webpacker Yeah bayb a triple2')
+console.log('Hello World from Webpacker Yeah baby a triple!')
 
 require.context('../fonts/', true, /\.(eot|ttf|woff|woff2|otf)$/i);
 
@@ -31,6 +31,15 @@ import 'd3'
 import 'cal-heatmap'
 import 'cal-heatmap/cal-heatmap'
 
+import 'ace-builds/src-min-noconflict/ace'
+import 'ace-builds/src-min-noconflict/ext-language_tools'
+//import 'ace-builds/src-min-noconflict/mode-json'
+import 'ace-builds/src-min-noconflict/mode-javascript'
+import 'ace-builds/src-min-noconflict/theme-chrome'
+//ace.config.setModuleUrl("ace/mode/json_worker", require("file-loader!ace-builds/src-noconflict/worker-json.js"))
+ace.config.setModuleUrl("ace/mode/javascript_worker", require("file-loader!ace-builds/src-noconflict/worker-javascript.js"))
+
+import 'scorers'
 import 'user_pulse'
 
 import '../stylesheets/admin_wp'
