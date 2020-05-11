@@ -40,9 +40,9 @@ Rails.application.configure do
   config.active_support.deprecation = :stderr
 
   config.after_initialize do
-#    Bullet.enable = true
-#    Bullet.bullet_logger = true
-#    Bullet.raise = true # raise an error if n+1 query occurs
+    # Bullet.enable = true
+    # Bullet.bullet_logger = true
+    # Bullet.raise = true  raise an error if n+1 query occurs
   end
 
   # Raises error for missing translations
