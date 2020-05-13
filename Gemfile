@@ -33,7 +33,6 @@ gem 'sidekiq'
 gem 'sprockets', '3.7.2'
 gem 'uglifier', '>= 1.3.0'
 
-
 source 'https://rails-assets.org' do
   gem 'rails-assets-angular'
   gem 'rails-assets-angular-cache'
