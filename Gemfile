@@ -30,8 +30,9 @@ gem 'rails', '~> 4.2', '>= 4.2.5.1'
 gem 'responders'
 gem 'sass-rails', '~> 6.0'
 gem 'sidekiq'
-gem 'uglifier', '>= 1.3.0'
 gem 'sprockets', '3.7.2'
+gem 'uglifier', '>= 1.3.0'
+
 
 source 'https://rails-assets.org' do
   gem 'rails-assets-angular'
