@@ -47,12 +47,12 @@ group :development, :test do
   gem 'foreman'
   gem 'memory_profiler'
   gem 'rack-mini-profiler'
+  gem 'rubocop', '0.70.0'
   gem 'spring', '1.6.4'
 end
 
 group :development do
   gem 'letter_opener'
-  gem 'rubocop', require: false
   gem 'web-console', '~> 3.0'
 end
 
