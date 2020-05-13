@@ -32,6 +32,7 @@ gem 'sass-rails', '~> 6.0'
 gem 'sidekiq', '5.2.5' # 5.2.8 appears to not work, maybe due to rack changes?
 gem 'sprockets', '3.7.2'
 gem 'uglifier', '>= 1.3.0'
+gem 'webpacker', '~> 4.x'
 
 source 'https://rails-assets.org' do
   gem 'rails-assets-angular'
