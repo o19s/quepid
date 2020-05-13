@@ -10,6 +10,8 @@
 <meta name="description" content="Tired of irrelevant search results? Use Quepid to help improve the quality and relevancy of your search results.">
 <meta name="viewport" content="width=device-width">
 
+<!--script src="https://d3js.org/d3.v5.min.js"></script-->
+<%= javascript_pack_tag 'application_wp' %>
 <%= stylesheet_link_tag 'application', media: 'all' %>
 <%= stylesheet_link_tag 'ng-json-explorer/dist/angular-json-explorer', 'angular-wizard/dist/angular-wizard', 'ng-tags-input/build/ng-tags-input.min.css', 'ng-tags-input/build/ng-tags-input.bootstrap.min.css', media: 'all' %>
 <%= csrf_meta_tags %>
@@ -26,6 +28,7 @@
   </div>
 
   <%= render 'layouts/footer' %>
+
 
   <%= javascript_include_tag 'application' %>
 

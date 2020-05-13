@@ -18,3 +18,13 @@
 import 'core-js/stable'
 import 'regenerator-runtime/runtime'
 console.log('Hello World from Webpacker hey there, whats going on?  Dude!')
+
+//import 'jquery-ui'
+
+//import 'jquery-ui/ui/widgets/draggable'
+//import 'jquery-ui/ui/widgets/droppable'
+//import 'jquery-ui/ui/widgets/sortable'
+
+import d3 from 'd3'
+
+import 'd3-tip/dist'

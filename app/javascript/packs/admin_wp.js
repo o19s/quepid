@@ -27,7 +27,7 @@ import 'jquery'
 import 'bootstrap'
 import 'jquery-ujs'
 import 'jquery-ui'
-import 'd3'
+import d3 from 'd3'
 import 'cal-heatmap'
 import 'cal-heatmap/cal-heatmap'
 

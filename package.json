@@ -27,7 +27,7 @@
     "coffeescript": "1.12.7",
     "components-font-awesome": "~4.4.0",
     "d3": "~3.5.17",
-    "d3-tip": "~0.6.7",
+    "d3-tip": "^0.9.1",
     "es5-shim": "~4.1.11",
     "file-saver": "^2.0.2",
     "font-awesome": "^4.7.0",

@@ -20,6 +20,9 @@
 
 /* global d3 */
 
+import d3 from 'd3'
+import d3tip from 'd3-tip/dist'
+
 angular.module('QuepidApp')
   .directive('qgraph', [
     function () {

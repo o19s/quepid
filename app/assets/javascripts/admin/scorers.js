@@ -2,6 +2,8 @@
 
 /*global ace */
 
+console.log("Hey Nate and Max");
+
 $(function() {
   $.each($('.scorer .code > div'), function(index, element) {
     var id        = $(element).attr('id');
