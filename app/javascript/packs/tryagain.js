@@ -19,3 +19,5 @@ console.log('Hello World from Webpacker tryagain')
 
 import 'core-js/stable'
 import 'regenerator-runtime/runtime'
+
+import 'jquery'
