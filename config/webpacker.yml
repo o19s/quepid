@@ -11,7 +11,8 @@ default: &default
 
   # Additional paths webpack should lookup modules
   # ['app/assets', 'engine/foo/app/assets']
-  resolved_paths: []
+  #resolved_paths: []
+  resolved_paths: ['app/assets/javascripts/admin']
 
   # Reload manifest.json on all requests so we reload latest compiled packs
   cache_manifest: false
@@ -34,6 +35,7 @@ default: &default
     - .woff2
 
   extensions:
+    - .coffee
     - .mjs
     - .js
     - .sass
