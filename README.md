@@ -162,10 +162,10 @@ bin/docker r bin/rake test:jshint
 
 Runs tests for the Angular side. There are two modes for the karma tests:
 
-* Single run: `bin/docker r bin/rake karma:run`
-* Continuous/watched run: `bin/docker r bin/rake karma:start`
+* Single run: `bin/docker r bin/rake test:js`
+* Continuous/watched run: `bin/docker r bin/rake test:js:start`
 
-**Note:** The karma tests require the assets to be precompiled, which adds a significant amount of time to the test run. If you are only making changes to the test/spec files, then it is recommended you run the tests in watch mode (`bin/rake karma:start`). The caveat is that any time you make a change to the app files, you will have to restart the process (or use the single run mode).
+**Note:** The karma tests require the assets to be precompiled, which adds a significant amount of time to the test run. If you are only making changes to the test/spec files, then it is recommended you run the tests in watch mode (`bin/rake test:js:start`). The caveat is that any time you make a change to the app files, you will have to restart the process (or use the single run mode).
 
 ### Rubocop
 

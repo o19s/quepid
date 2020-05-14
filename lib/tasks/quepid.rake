@@ -4,8 +4,11 @@ require 'colorize'
 require 'jshint/lint'
 
 namespace :test do
-  desc 'Run js/karma tests (equivalent of kamra:run)'
+  desc 'Run js/karma tests (equivalent of kamra:run), but loads context properly'
   task 'js' => 'karma:run'
+
+  desc 'Run js/karma watching changes to spec/ (equivalent of karma:start), but loads context properly'
+  task 'js:start' => 'karma:start'
 
   desc 'Run all tests: test:js, test:jshint, and test'
   task quepid: [ 'test:js', 'test:jshint', 'test' ]
