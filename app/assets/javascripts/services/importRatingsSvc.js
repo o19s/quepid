@@ -20,9 +20,9 @@ angular.module('QuepidApp')
 
         angular.forEach(csv, function(rating) {
           ratings.push({
-            query_text: rating['Query Text'],
-            doc_id:     rating['Doc ID'],
-            rating:     rating['Rating'],
+            query_text: rating['query'],
+            doc_id:     rating['docid'],
+            rating:     rating['rating'],
           });
         });
 

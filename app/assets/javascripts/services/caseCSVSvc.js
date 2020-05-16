@@ -13,8 +13,9 @@
 (function() {
   angular.module('QuepidApp')
     .service('caseCSVSvc', [
+      '$http',
       'queriesSvc',
-      function(queriesSvc) {
+      function($http, queriesSvc) {
         var self          = this;
         var EOL           = '\r\n';
         var textDelimiter = '"';
@@ -25,6 +26,7 @@
         self.snapshotHeaderToCSV        = snapshotHeaderToCSV;
         self.stringify                  = stringify;
         self.stringifyQueries           = stringifyQueries;
+        self.exportRatings              = exportRatings;
         self.stringifyQueriesDetailed   = stringifyQueriesDetailed;
         self.stringifySnapshot          = stringifySnapshot;
 
@@ -47,9 +49,9 @@
 
         function queriesHeaderToCSV () {
           var header = [
-            'Query Text',
-            'Doc ID',
-            'Rating',
+            'query',
+            'doc_id',
+            'rating',
           ];
 
           var headerString = header.join(',');
@@ -179,6 +181,25 @@
         }
 
         /**
+         * Very similar to stringifyQueries, but the logic is all
+         * on the server side.
+         *
+         * @param aCase
+         *
+         */
+        function exportRatings(aCase) {
+          $http.get('/api/export/ratings/' + aCase.caseNo + '.csv')
+            .then(function(response) {
+              var blob = new Blob([response.data], {
+                type: 'text/csv'
+              });
+              
+              /*global saveAs */
+              saveAs(blob, aCase.caseName + '_basic.csv');
+            });
+        }
+
+        /**
          * Creates CSV string of queries from a case object
          * including every field in the field list
          *
@@ -274,7 +295,7 @@
             }
             else {
               data = data.join(',');
-            }          
+            }
           }
           if (typeof data === 'string') {
             data = data.replace(/"/g, '""'); // Escape double quotes

@@ -88,6 +88,11 @@ angular.module('QuepidApp')
           });
 
         }
+        else if ( options.which === 'basic' ) {
+         $log.info('Selected "basic" as export option.');
+         caseCSVSvc.exportRatings(ctrl.theCase);
+
+        }
       }
 
       function prompt() {

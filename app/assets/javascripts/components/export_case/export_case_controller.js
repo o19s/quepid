@@ -29,14 +29,7 @@ angular.module('QuepidApp')
       }
 
       function exportRatingsCSV() {
-        caseCSVSvc.stringifyQueries(ctrl.theCase, true)
-          .then(function(response){
-            var blob = new Blob([response.data], {
-              type: 'text/csv'
-            });
-            /*global saveAs */
-            saveAs(blob, ctrl.theCase.caseName + '_ratings.csv');
-          });
+        caseCSVSvc.exportRatings(ctrl.theCase);        
       }
     }
   ]);
