@@ -2,13 +2,9 @@
 headers = ['query','docid','rating']
 data = []
 %>
-<%= ::CSV.generate_line(headers).html_safe %>
-<%= ::CSV.generate_line(['dude',@case.id,@case.ratings.size]).html_safe %>
-<%
+<%= ::CSV.generate_line(headers).html_safe %><%
 @case.queries.each do |query|
   query.ratings.each do |rating|
-%>
-<%= ::CSV.generate_line([query.query_text,rating.doc_id, rating.rating]).html_safe %>
-<%
+%><%= ::CSV.generate_line([query.query_text,rating.doc_id, rating.rating]).html_safe %><%
   end
 end %>
