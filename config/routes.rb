@@ -127,6 +127,11 @@ Rails.application.routes.draw do
         resources :ratings, only: [ :create ]
       end
 
+      # Exports
+      namespace :export do
+        resources :ratings, only: [ :show ], param: :case_id
+      end
+
       namespace :bulk do
         resources :cases, only: [] do
           resources :queries, only: [ :create ]
