@@ -14,9 +14,9 @@
 // Use this for debugging.
 //# require bootstrap-sprockets
 // Use this for faster loading
-//= require bootstrap
+//#= require bootstrap
 //= require angular/angular
-//= require bootstrap/dist/js/bootstrap
+//#= require bootstrap/dist/js/bootstrap
 //= require angular-resource/angular-resource
 //= require angular-cookies/angular-cookies
 //= require angular-route/angular-route

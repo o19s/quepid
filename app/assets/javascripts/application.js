@@ -20,7 +20,8 @@
 // we don't know about.
 //
 //= require jquery
-//= require bootstrap
+//# require bootstrap
+//# require popper
 
 //= require jquery-ui/widgets/draggable
 //= require jquery-ui/widgets/droppable

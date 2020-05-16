@@ -15,17 +15,18 @@
 // const images = require.context('../images', true)
 // const imagePath = (name) => images(name, true)
 
-console.log('Hello World from Webpacker tryagain')
+console.log('Hello World from Webpacker: admin_webpack.js')
 
 import 'core-js/stable'
 import 'regenerator-runtime/runtime'
 
 import 'jquery'
+import 'popper.js'
 import 'bootstrap'
 import 'jquery-ujs'
 import 'jquery-ui'
 import d3 from 'd3'
-//import 'cal-heatmap'
+
 import 'cal-heatmap/cal-heatmap'
 
 import 'ace-builds/src-min-noconflict/ace'
