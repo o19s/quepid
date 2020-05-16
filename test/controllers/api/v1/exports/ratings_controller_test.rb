@@ -29,11 +29,10 @@ module Api
 
             body = JSON.parse(response.body)
 
-            assert_equal body['queries'].size,      the_case.queries.size
+            assert_equal body['queries'].size,         the_case.queries.size
             assert_equal body['queries'][0]['query'],  the_case.queries[0].query_text
           end
         end
-
       end
     end
   end
