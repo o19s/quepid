@@ -30,7 +30,7 @@ Scorer.where(name: 'CG@5').first_or_create(
   show_scale_labels:  true,
   code:               File.readlines('./db/scorers/cg@5.js','\n').join('\n'),
   name:               'CG@5',
-  default_scorer:     true
+  communal:           true
 )
 
 Scorer.where(name: 'P@5').first_or_create(
