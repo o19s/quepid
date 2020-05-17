@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20200428150211) do
+ActiveRecord::Schema.define(version: 20200517162819) do
 
   create_table "annotations", force: :cascade do |t|
     t.text     "message",    limit: 65535
@@ -139,6 +139,8 @@ ActiveRecord::Schema.define(version: 20200428150211) do
     t.text     "scale_with_labels",      limit: 65535
     t.datetime "created_at",                                           null: false
     t.datetime "updated_at",                                           null: false
+    t.date     "published",                                            null: false
+    t.boolean  "default_scorer",                       default: false
   end
 
   create_table "snapshot_docs", force: :cascade do |t|
@@ -265,5 +267,4 @@ ActiveRecord::Schema.define(version: 20200428150211) do
   add_foreign_key "teams_scorers", "scorers"
   add_foreign_key "teams_scorers", "teams"
   add_foreign_key "tries", "cases", name: "tries_ibfk_1"
-  add_foreign_key "users", "default_scorers"
 end
