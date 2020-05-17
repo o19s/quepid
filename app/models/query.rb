@@ -38,9 +38,6 @@ class Query < ActiveRecord::Base
               class_name: 'Scorer',
               dependent:  :destroy
 
-  # Soft delete
-  # acts_as_paranoid
-
   # Validations
   validates :query_text,
             presence: true

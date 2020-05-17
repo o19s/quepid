@@ -211,6 +211,8 @@ In the Rails application you can use the logger for the output:
 Rails.logger object.inspect
 ```
 
+We also support the `web-console` gem which allows you to work with Rails via a console right into your browser, similar to running `bin/docker r`.  This only works on HTML view rendered by Rails, not on API calls.  Learn more at https://github.com/rails/web-console/tree/v2.2.1#usage.
+
 If that's not enough and you want to run a debugger, the `byebug` gem is included for that. Add `byebug` wherever you want a breakpoint and then run the code.
 
 Caveat: You might have to stop spring (`bin/spring stop`) or restart the server to get it to execute the breakpoint.
@@ -238,6 +240,10 @@ config.assets.debug = true
 Because there are too many Angular JS files in this application, and in `debug` mode Rails will try to load every file separately, that slows down the application, and becomes really annoying in development mode to wait for the scripts to load. Which is why it is turned off by default.
 
 **PS:** Don't forget to restart the server when you change the config.
+
+Also please note that the files `secure.js`, `application.js`, and `admin.js` are used to load all the
+JavaScript and CSS dependencies via the Rails Asset pipeline.   If you are debugging Bootstrap, then
+you will want individual files.  So replace `//= require sprockets` with `//= require bootstrap-sprockets`.
 
 ## Convenience Scripts
 
@@ -371,14 +377,16 @@ openssl req -new -newkey rsa:2048 -sha1 -days 365 -nodes -x509 -keyout .ssl/loca
 What you need to do:
 
 1. Drag `.ssl/localhost.crt` to `System` in `Keychain Access` (this is for OS X)
-2. run (this is for Ubuntu/Vagrant):
+2. run (this is for Ubuntu/Docker):
   * `sudo cp .ssl/localhost.crt /etc/ssl/cert`
   * `sudo cp .ssl/localhost.key /etc/ssl/private`
   * `sudo c_rehash`
-3. In `Procfile` comment the part that uses `puma` and uncomment the part that uses `thin`
-4. In `.env` make sure you add `FORCE_SSL=true`
-5. Restart the server
-6. Go to `https://localhost:3000`
+3. Add the Thin webserver for testing SSL, `bin/docker r bundle install thin`
+4. In `Procfile.dev` comment the part that uses `puma` and uncomment the part that uses `thin`
+5. In `.env` make sure you add `FORCE_SSL=true`
+6. Restart the server
+7. Go to `https://localhost:3000`
+8. Undo your Thin changes afterwords!
 
 **PS:** Why are we using both `puma` and `thin`? Because I simply could not figure out how to get `puma` to work properly with SSL and did not want to spend any more time on it!
 

@@ -27,10 +27,6 @@ angular.module('QuepidApp')
           controller: 'BootstrapCtrl',
           template: ''
         })
-        .when('/case/:caseNo/try/:tryNo/curate', {
-          templateUrl: 'views/curate.html',
-          controller: 'MainCtrl'
-        })
         .when('/case/:caseNo/try/:tryNo', {
           templateUrl: 'views/queriesLayout.html',
           controller: 'MainCtrl',

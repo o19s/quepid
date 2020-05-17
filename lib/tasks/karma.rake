@@ -25,7 +25,6 @@ namespace :karma  do
   def cleanup_assets
     puts 'Cleanup_assets...'.yellow
 
-    rm_rf Rails.root.join('public', 'vagrant')
     rm_rf Rails.root.join('tmp', 'cache', 'assets', 'test')
 
     ::Rake.application['assets:environment'].invoke

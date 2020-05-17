@@ -11,9 +11,10 @@
 // about supported directives.
 //
 //= require jquery
-//= require bootstrap-sprockets
-//= require jquery_ujs
-//= require jquery-ui
+// Use this for debugging.
+//# require bootstrap-sprockets
+// Use this for faster loading
+//= require bootstrap
 //= require angular/angular
 //= require bootstrap/dist/js/bootstrap
 //= require angular-resource/angular-resource

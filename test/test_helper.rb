@@ -14,7 +14,7 @@ require 'webmock/minitest'
 Dir[Rails.root.join('test', 'support', '**', '*.rb')].sort
   .each { |f| require f }
 
-MiniTest::Reporters.use!
+Minitest::Reporters.use! [ Minitest::Reporters::ProgressReporter.new, Minitest::Reporters::JUnitReporter.new ]
 
 module ActiveSupport
   class TestCase

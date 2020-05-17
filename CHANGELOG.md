@@ -4,7 +4,7 @@
 
 This is a major release of Quepid that finally introduces the standard _search geek_ scorers like NDCG, DCG, Average Precision, and friends by default.  We've also fixed a large number of bugs introduced by changes in browser security models and recent updates to Elasticsearch and Solr.  
 
-Speed of development has been an issue with Quepid.  In this release we've worked on developer happiness by auditing all of the dependencies we include.  We're removed quite a few Ruby gems and NodeJS packages that aren't used, and upgraded the rest (replacing PhantomJS with Puppeteer for headless testing).  `yarn.lock` dropped from 6706 lines to 1519!  This allowed us to finally move to ECMAScript 6 and to Node version 10.  Lastly we have cut the production Quepid Docker image from almost 3 GB to 2.3 GB.
+Speed of development has been an issue with Quepid.  In this release we've worked on developer happiness by auditing all of the dependencies we include.  We're removed quite a few Ruby gems and NodeJS packages that weren't used, and upgraded the rest (replacing PhantomJS with Puppeteer for headless testing).  `yarn.lock` dropped from 6706 lines to 1519 and `Gemfile.lock` from 448 to 330!  This allowed us to finally move to ECMAScript 6 and to Node version 10.  Lastly we have cut the production Quepid Docker image from almost 3 GB to 2.3 GB.
 
 ### Upgrade Notes
 Follow the steps outlined at https://github.com/o19s/quepid/wiki/Installation-Guide#updating-quepid.   You will need to run a database migration and rerun the `db:seed` to get the new default scorers.
@@ -17,18 +17,22 @@ Follow the steps outlined at https://github.com/o19s/quepid/wiki/Installation-Gu
 
 ### Improvements
 
-* Community member reported the default demo TMDB Elasticsearch server on port 9200 had no data.  Having seem random "drive by vandalism" of our demo Solr and ES servers that run on default ports, we want to move away. Yes, security by obscurity.  https://github.com/o19s/quepid/pull/103 by @epugh changes default used in Wizard to port 8985 and 9206.
+* Community member reported the default demo TMDB Elasticsearch server on port 9200 had no data.  Having seem random "drive by vandalism" of our demo Solr and ES servers that run on default ports, we want to move away. Yes, security by obscurity.  https://github.com/o19s/quepid/pull/103 by @epugh changes default used in Wizard to port 8985 and 9206.  https://github.com/o19s/quepid/pull/125 and https://github.com/o19s/quepid/issues/104 migrate existing URLs to the new ones.
 * Increase Developer Happiness by speeding up the `bin/setup_docker` script by caching RubyGems.  50% speed up! https://github.com/o19s/quepid/pull/105 by @nathancday.
 * Remove the concept of "communal" i.e shared with everyone scorers.  This feature has been in Quepid for years, yet even @softwaredoug didn't remember it! https://github.com/o19s/quepid/pull/99 by @epugh fixes https://github.com/o19s/quepid/issues/98.
 * In the beginning of Quepid, before there was a Search Relevancy community, there was just one, slightly janky scorer, that wasn't like any of the standard search geek scorers (looking at you NDCG) that we use today.  We are building towards supporting many scorers, so it's time to remove the `DEFAULTS` definition of a scorer, and the related scope in ActiveRecord.  https://github.com/o19s/quepid/pull/97 by @epugh.
 * Solr 8.2 tightened up the security profile for accessing it that we depend on via JSONP to have Quepid work.  Now the wizard provides you the command to run on your Solr if it can't connect.  https://github.com/o19s/quepid/pull/95 by @epugh fixes https://github.com/o19s/quepid/issues/92.
 * Using the default `tmdb` dataset?  Demonstrate the `thumb:poster_path` feature.  https://github.com/o19s/quepid/pull/94 by @epugh fixed https://github.com/o19s/quepid/issues/72.
 * Rename `user.username` in database to `user.email` since that is what we use.  Clean up API.  https://github.com/o19s/quepid/pull/113 by @epugh fixes https://github.com/o19s/quepid/issues/111.  You will need to run database migration for this release!
+* Audited code base to prune dependencies and remove unused code.  https://github.com/o19s/quepid/pull/121, https://github.com/o19s/quepid/pull/119, https://github.com/o19s/quepid/pull/118, https://github.com/o19s/quepid/pull/116 all worked towards this goal.
+* Turns out Quepid has a [_Curate_ interface](https://twitter.com/dep4b/status/1254885186204041217).  It isn't supported, so in the interest of reducing our codebase, removing it.  Points the way for the future however!  https://github.com/o19s/quepid/pull/123.
 
 ### Bugs
 
 * Wizard Autocomplete Didn't work well with Keyboard. Autocomplete suggestion had to be clicked with a Mouse.  https://github.com/o19s/quepid/pull/94 by @epugh fixes this by upgrading package.
 * Multivalued and nest JSON fields didn't display well, you would get `[object Object]` instead.  Now we display arrays and Json properly.  https://github.com/o19s/quepid/pull/117 by @CGamesPlay fixes https://github.com/o19s/quepid/issues/52.
+* fixed highlighting throwing an error on Solr date fields by using `hl.method=unified` in Splainer-Search v2.5.9.  https://github.com/o19s/quepid/issues/84 created by @janhoy.
+* fixed fields with a `.` like `foo.bar` failing to be rendered in UI in Splainer-Search v2.5.9.  https://github.com/o19s/quepid/issues/106 created by @rjurney.
 
 
 ## 6.1.1 - 03/07/2020
