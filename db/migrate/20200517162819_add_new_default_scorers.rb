@@ -7,7 +7,7 @@ class AddNewDefaultScorers < ActiveRecord::Migration
       show_scale_labels:  true,
       code:               File.readlines('./db/scorers/ndcg@5.js','\n').join('\n'),
       name:               'nDCG@5',
-      default_scorer:     true
+      communal:           true
     )
 
     Scorer.where(name: 'DCG@5').first_or_create(
@@ -16,7 +16,7 @@ class AddNewDefaultScorers < ActiveRecord::Migration
       show_scale_labels:  true,
       code:               File.readlines('./db/scorers/dcg@5.js','\n').join('\n'),
       name:               'DCG@5',
-      default_scorer:     true
+      communal:           true
     )
 
     Scorer.where(name: 'CG@5').first_or_create(
@@ -25,7 +25,7 @@ class AddNewDefaultScorers < ActiveRecord::Migration
       show_scale_labels:  true,
       code:               File.readlines('./db/scorers/cg@5.js','\n').join('\n'),
       name:               'CG@5',
-      default_scorer:     true
+      communal:           true
     )
 
     Scorer.where(name: 'P@5').first_or_create(
@@ -34,7 +34,7 @@ class AddNewDefaultScorers < ActiveRecord::Migration
       show_scale_labels:  true,
       code:               File.readlines('./db/scorers/p@5.js','\n').join('\n'),
       name:               'P@5',
-      default_scorer:     true
+      communal:           true
     )
 
     Scorer.where(name: 'AP@5').first_or_create(
@@ -43,7 +43,7 @@ class AddNewDefaultScorers < ActiveRecord::Migration
       show_scale_labels:  true,
       code:               File.readlines('./db/scorers/ap@5.js','\n').join('\n'),
       name:               'AP@5',
-      default_scorer:     true
+      communal:           true
     )
   end
 end

@@ -139,8 +139,7 @@ ActiveRecord::Schema.define(version: 20200517164239) do
     t.text     "scale_with_labels",      limit: 65535
     t.datetime "created_at",                                           null: false
     t.datetime "updated_at",                                           null: false
-    t.date     "published",                                            null: false
-    t.boolean  "default_scorer",                       default: false
+    t.boolean  "communal",                             default: false
   end
 
   create_table "snapshot_docs", force: :cascade do |t|

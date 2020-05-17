@@ -12,6 +12,6 @@ class MigrateUserDefaultScorer < ActiveRecord::Migration
       WHERE scorer_id IS NOT NULL"
     )
 
-    add_column :scorers, :default_scorer, :boolean, default: false
+    add_column :scorers, :communal, :boolean, default: false
   end
 end
