@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20200517162819) do
+ActiveRecord::Schema.define(version: 20200517164239) do
 
   create_table "annotations", force: :cascade do |t|
     t.text     "message",    limit: 65535
@@ -227,7 +227,6 @@ ActiveRecord::Schema.define(version: 20200517162819) do
     t.boolean  "agreed"
     t.boolean  "first_login"
     t.integer  "num_logins",             limit: 4
-    t.integer  "scorer_id",              limit: 4
     t.string   "name",                   limit: 255
     t.boolean  "administrator",                      default: false
     t.string   "reset_password_token",   limit: 255
@@ -267,4 +266,5 @@ ActiveRecord::Schema.define(version: 20200517162819) do
   add_foreign_key "teams_scorers", "scorers"
   add_foreign_key "teams_scorers", "teams"
   add_foreign_key "tries", "cases", name: "tries_ibfk_1"
+  add_foreign_key "users", "scorers", column: "default_scorer_id"
 end
