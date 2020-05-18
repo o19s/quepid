@@ -25,6 +25,8 @@ class Scorer < ActiveRecord::Base
   # Associations
   belongs_to :owner, class_name: 'User'
 
+  has_many :users, dependent: :nullify
+
   # too late now!
   # rubocop:disable Rails/HasAndBelongsToMany
   has_and_belongs_to_many :teams,

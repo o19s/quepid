@@ -11,7 +11,7 @@
 #  agreed                 :boolean
 #  first_login            :boolean
 #  num_logins             :integer
-#  scorer_id              :integer
+#  scorer_id              :integer  #fixme
 #  name                   :string(255)
 #  administrator          :boolean          default(FALSE)
 #  reset_password_token   :string(255)
@@ -27,7 +27,7 @@
 
 class User < ActiveRecord::Base
   # Associations
-  belongs_to :scorer
+  belongs_to :scorer, foreign_key: 'default_scorer_id'  # should be called default_scorer?
   has_many :cases,
            dependent:   :destroy
 
@@ -67,7 +67,7 @@ class User < ActiveRecord::Base
   has_many :permissions,
            dependent: :destroy
 
-  belongs_to :default_scorer
+  #belongs_to :default_scorer
 
   # Validations
   validates :email,
@@ -77,7 +77,7 @@ class User < ActiveRecord::Base
   validates :password,
             presence: true
 
-  validates_with ::ScorerExistsValidator
+  validates_with ::DefaultScorerExistsValidator
 
   # Modules
   # Include default devise modules. Others available are:

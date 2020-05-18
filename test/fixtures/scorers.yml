@@ -23,12 +23,30 @@
 # model remove the '{}' from the fixture names and add the columns immediately
 # below each fixture, per the syntax in the comments below
 #
+
+quepid_default_scorer:
+  code: pass();
+  name: AP@5
+  query_test: false
+  scale: 0, 1
+  show_scale_labels:  false
+  communal: true
+
+v1:
+  code: pass();
+  name: v1
+  query_test: false
+  scale: 1, 2, 3, 4
+  show_scale_labels:  false
+  communal: true
+
 valid:
   code: test code
   name: valid scorer
   owner: :doug
   query_test: false
   scale: 1, 2, 3, 4
+  communal:   false
 
 for_case_with_scorer:
   code: test code
@@ -36,6 +54,7 @@ for_case_with_scorer:
   owner: :doug
   query_test: false
   scale: 1, 2, 3, 4
+  communal:   false
 
 owned_scorer:
   code:       pass();
@@ -43,6 +62,7 @@ owned_scorer:
   owner:      :doug
   query_test: false
   scale:      1, 2, 3, 4
+  communal:   false
 
 owned_scorer1:
   code:       pass();
@@ -50,6 +70,7 @@ owned_scorer1:
   owner:      :doug
   query_test: false
   scale:      1, 2, 3, 4
+  communal:   false
 
 owned_scorer2:
   code:       pass();
@@ -57,6 +78,7 @@ owned_scorer2:
   owner:      :doug
   query_test: false
   scale:      1, 2, 3, 4
+  communal:   false
 
 shared_scorer:
   code:       pass();
@@ -64,6 +86,7 @@ shared_scorer:
   owner:      :shared_scorer_owner
   query_test: false
   scale:      1, 2, 3, 4
+  communal:   false
 
 shared_scorer1:
   code:       pass();
@@ -71,6 +94,7 @@ shared_scorer1:
   owner:      :shared_scorer_owner
   query_test: false
   scale:      1, 2, 3, 4
+  communal:   false
 
 shared_scorer2:
   code:       pass();
@@ -78,6 +102,7 @@ shared_scorer2:
   owner:      :shared_scorer_owner
   query_test: false
   scale:      1, 2, 3, 4
+  communal:   false
 
 default_scorer:
   code:       pass();
@@ -85,6 +110,7 @@ default_scorer:
   owner:      :default_scorer_owner
   query_test: false
   scale:      1, 2, 3, 4
+  communal:   false
 
 case_default_scorer:
   code:       test code
@@ -92,6 +118,7 @@ case_default_scorer:
   owner:      :random
   query_test: false
   scale:      1, 2, 3, 4
+  communal:   false
 
 query_default_scorer:
   code:       test code
@@ -106,6 +133,7 @@ query_scorer:
   owner:      :random
   query_test: false
   scale:      1, 2, 3, 4
+  communal:   false
 
 random_scorer:
   code:       pass();
@@ -113,6 +141,7 @@ random_scorer:
   owner:      :random
   query_test: false
   scale:      1, 2, 3, 4
+  communal:   false
 
 random_scorer_1:
   code:       pass();
@@ -120,6 +149,7 @@ random_scorer_1:
   owner:      :random
   query_test: false
   scale:      1, 2, 3, 4
+  communal:   false
 
 random_scorer_2:
   code:       pass();
@@ -127,3 +157,4 @@ random_scorer_2:
   owner:      :random
   query_test: false
   scale:      1, 2, 3, 4
+  communal:   false

@@ -26,8 +26,7 @@ class Case < ActiveRecord::Base
                           join_table: 'teams_cases'
   # rubocop:enable Rails/HasAndBelongsToMany
 
-  belongs_to :scorer,
-             polymorphic: true
+  belongs_to :scorer
 
   belongs_to :user
 
@@ -61,14 +60,14 @@ class Case < ActiveRecord::Base
              source:      :scorer,
              source_type: 'Scorer'
 
-  has_many   :default_scorers,
-             through:     :queries,
-             source:      :scorer,
-             source_type: 'DefaultScorer'
+  #has_many   :default_scorers,
+  #           through:     :queries,
+  #           source:      :scorer,
+  #           source_type: 'DefaultScorer'
 
   # Validations
   validates :case_name, presence: true
-  validates_with DefaultScorerExistsValidator
+  validates_with ScorerExistsValidator
 
   # Callbacks
   before_create :set_scorer
@@ -152,10 +151,12 @@ class Case < ActiveRecord::Base
 
     self.scorer = if user&.scorer
                     user.scorer
-                  elsif user&.default_scorer
-                    user.default_scorer
+                  #elsif user&.default_scorer
+                  #  user.default_scorer
                   else
-                    DefaultScorer.published.order(published_at: :desc).first
+                    puts "I am looking up the defautl Scorer"                    
+                    Scorer.find_by(name: Rails.application.config.quepid_default_scorer, communal: true)
+                    #DefaultScorer.published.order(published_at: :desc).first
                   end
   end
 
