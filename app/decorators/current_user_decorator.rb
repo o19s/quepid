@@ -19,7 +19,7 @@ class CurrentUserDecorator
       @num_queries              = user.num_queries || 0
       @permissions              = PermissionsEvaluator.new(user).run
       @default_scorer_id        = user.default_scorer_id
-      #@scorer_id                = user.scorer_id || ''
+      # @scorer_id                = user.scorer_id || ''
       @email                    = user.email
     else
       @company                  = ''
@@ -28,7 +28,7 @@ class CurrentUserDecorator
       @num_queries              = 0
       @permissions              = {}
       @default_scorer_id        = ''
-      #@scorer_id                = ''
+      # @scorer_id                = ''
       @email                    = ''
     end
   end

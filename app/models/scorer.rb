@@ -27,7 +27,7 @@ class Scorer < ActiveRecord::Base
   belongs_to :owner, class_name: 'User'
 
   # not sure about this!
-  #has_many :users, dependent: :nullify
+  # has_many :users, dependent: :nullify
 
   # too late now!
   # rubocop:disable Rails/HasAndBelongsToMany

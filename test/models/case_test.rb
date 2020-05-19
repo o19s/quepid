@@ -51,26 +51,21 @@ class CaseTest < ActiveSupport::TestCase
 
       acase = Case.create(case_name: 'with q scorer', user: user)
 
-      assert_equal acase.scorer_id,   q_scorer.id
-      #assert_equal acase.scorer_type, 'DefaultScorer'
+      assert_equal acase.scorer_id, q_scorer.id
+      assert_equal acase.scorer.communal, true
     end
 
     test "sets the scorer to the user's scorer even when a q score is available" do
-      puts "I am skipping"
-      if (1 == 2)
       user_scorer         = scorers(:random_scorer)
-      q_scorer            = default_scorers(:v1)
       user                = users(:random)
       user.scorer         = user_scorer
-      user.default_scorer = q_scorer
       user.save
 
       acase = Case.create(case_name: 'with default scorer', user: user)
 
-      assert_equal acase.scorer_id,   user_scorer.id
-      assert_equal acase.scorer_id,   user.scorer_id
-      assert_equal acase.scorer_type, 'Scorer'
-      end
+      assert_equal acase.scorer_id,       user_scorer.id
+      assert_equal acase.scorer_id,       user.default_scorer_id
+      assert_equal acase.scorer.communal, false
     end
 
     test "sets the scorer to the QUEPID_DEFAULT_SCORER if the user doesn't have one picked" do
@@ -79,9 +74,9 @@ class CaseTest < ActiveSupport::TestCase
 
       acase = Case.create(case_name: 'with default scorer', user: user)
 
-      assert_equal acase.scorer_id,   q_scorer2.id
-      #assert_equal acase.scorer_type, 'Scorer'
-      assert_equal "AP@5", q_scorer2.name
+      assert_equal acase.scorer_id, q_scorer2.id
+      assert_equal acase.scorer.communal, true
+      assert_equal 'AP@5', q_scorer2.name
     end
 
     test "does not override the case scorer with the user's scorer" do

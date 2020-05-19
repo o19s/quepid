@@ -65,8 +65,8 @@ module Api
 
           assert_response :success
           matt.reload
-          assert matt.default_scorer_id == scorer.id
-          assert matt.scorer    == scorer
+          assert_equal matt.default_scorer_id, scorer.id
+          assert_equal matt.scorer, scorer
         end
 
         test 'successfully remove default scorer' do
@@ -77,8 +77,8 @@ module Api
 
           assert_response :success
           matt.reload
-          assert matt.default_scorer_id.nil?
-          assert matt.scorer.nil?
+          assert_nil matt.default_scorer_id
+          assert_nil matt.scorer
         end
 
         test 'successfully remove default scorer by setting the id to 0' do
@@ -99,7 +99,9 @@ module Api
           assert_response :bad_request
 
           body = JSON.parse(response.body)
+          # rubocop:disable Metrics/LineLength
           assert body['default_scorer_id'].include? I18n.t('activerecord.errors.models.user.attributes.default_scorer_id.existence')
+          # rubocop:enable Metrics/LineLength
 
           matt.reload
           assert matt.default_scorer_id.nil?

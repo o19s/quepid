@@ -22,7 +22,7 @@ require 'scale_serializer'
 
 class DefaultScorer < ActiveRecord::Base
   # Associations
-  #has_many :users, dependent: :nullify
+  # has_many :users, dependent: :nullify
   has_many :cases,
            as:         :scorer,
            dependent:  :nullify,

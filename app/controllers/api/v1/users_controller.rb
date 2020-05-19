@@ -21,8 +21,6 @@ module Api
       def update
         update_params = user_params
 
-        #update_params[:scorer_id] = nil if user_scorer_removed? update_params
-
         update_params[:default_scorer_id] = nil if default_scorer_removed? update_params
 
         if @user.update update_params
@@ -46,10 +44,6 @@ module Api
           :default_scorer_id
         )
       end
-
-      #def user_scorer_removed? params = {}
-      #  params[:scorer_id].present? && [ 0, '0' ].include?(params[:scorer_id])
-      #end
 
       def default_scorer_removed? params = {}
         params[:default_scorer_id].present? && [ 0, '0' ].include?(params[:default_scorer_id])

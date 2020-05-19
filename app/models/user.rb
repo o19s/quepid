@@ -27,9 +27,9 @@
 
 class User < ActiveRecord::Base
   # Associations
-  
+
   # should be called default_scorer?
-  belongs_to :scorer, foreign_key: 'default_scorer_id'
+  belongs_to :scorer, foreign_key: 'default_scorer_id', inverse_of: :owner
   has_many :cases,
            dependent:   :destroy
 
@@ -69,7 +69,7 @@ class User < ActiveRecord::Base
   has_many :permissions,
            dependent: :destroy
 
-  #belongs_to :default_scorer
+  # belongs_to :default_scorer
 
   # Validations
   validates :email,

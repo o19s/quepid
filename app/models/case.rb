@@ -55,14 +55,7 @@ class Case < ActiveRecord::Base
   has_many   :annotations,
              through: :scores
 
-  has_many   :user_scorers,
-             through:     :queries,
-             source:      :scorer
-
-  #has_many   :default_scorers,
-  #           through:     :queries,
-  #           source:      :scorer,
-  #           source_type: 'DefaultScorer'
+  has_many   :user_scorers, through: :queries, source: :scorer
 
   # Validations
   validates :case_name, presence: true
@@ -150,12 +143,12 @@ class Case < ActiveRecord::Base
 
     self.scorer = if user&.scorer
                     user.scorer
-                  #elsif user&.default_scorer
+                  # elsif user&.default_scorer
                   #  user.default_scorer
                   else
-                    puts "I am looking up the defautl Scorer"
+                    puts 'I am looking up the default Scorer from Quepid Config'
                     Scorer.find_by(name: Rails.application.config.quepid_default_scorer, communal: true)
-                    #DefaultScorer.published.order(published_at: :desc).first
+                    # DefaultScorer.published.order(published_at: :desc).first
                   end
   end
 

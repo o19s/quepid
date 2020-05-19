@@ -7,9 +7,10 @@ module Api
       before_action :set_scorer, only: %i[show update destroy]
 
       def index
-        @user_scorers      = current_user.scorers.all
-        puts "should @default_scorers be @communal_scorers"
-        @default_scorers   = Scorer.communal
+        @user_scorers    = current_user.scorers.all
+        @default_scorers = Scorer.communal
+
+        puts 'should @default_scorers be @communal_scorers??'
 
         respond_with @user_scorers, @default_scorers
       end

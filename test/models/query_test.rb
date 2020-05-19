@@ -218,8 +218,7 @@ class QueryTest < ActiveSupport::TestCase
     let(:query) { queries(:one) }
 
     test 'adds a new test' do
-
-      mytest = Scorer.new(:code => 'pass();', :query_test => true)
+      mytest = Scorer.new(code: 'pass();', query_test: true)
       query.test = mytest
       query.save
 
@@ -230,11 +229,11 @@ class QueryTest < ActiveSupport::TestCase
     end
 
     test 'always fetches the last test' do
-      query.test = Scorer.new(:code => 'pass();', :query_test => true)
+      query.test = Scorer.new(code: 'pass();', query_test: true)
       query.save
       query.reload
 
-      query.test = Scorer.new(:code => 'fail();', :query_test => true)
+      query.test = Scorer.new(code: 'fail();', query_test: true)
       query.save
       query.reload
 
