@@ -11,7 +11,6 @@
 #  agreed                 :boolean
 #  first_login            :boolean
 #  num_logins             :integer
-#  scorer_id              :integer  #fixme
 #  name                   :string(255)
 #  administrator          :boolean          default(FALSE)
 #  reset_password_token   :string(255)
