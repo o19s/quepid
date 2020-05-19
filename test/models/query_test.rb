@@ -218,15 +218,25 @@ class QueryTest < ActiveSupport::TestCase
     let(:query) { queries(:one) }
 
     test 'adds a new test' do
-      query.create_test code: 'pass();', query_test: true
+
+      mytest = Scorer.new(:code => 'pass();', :query_test => true)
+      query.test = mytest
+      query.save
+
+      query.reload
 
       assert_not_nil query.test
       assert_equal 'pass();', query.test.code
     end
 
     test 'always fetches the last test' do
-      query.create_test code: 'pass();', query_test: true
-      query.create_test code: 'fail();', query_test: true
+      query.test = Scorer.new(:code => 'pass();', :query_test => true)
+      query.save
+      query.reload
+
+      query.test = Scorer.new(:code => 'fail();', :query_test => true)
+      query.save
+      query.reload
 
       assert_not_nil query.test
       assert_equal 'fail();', query.test.code

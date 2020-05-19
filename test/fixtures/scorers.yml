@@ -15,6 +15,7 @@
 #  scale_with_labels      :text(65535)
 #  created_at             :datetime         not null
 #  updated_at             :datetime         not null
+#  communal               :boolean
 #
 
 # Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html

@@ -28,7 +28,7 @@ class Query < ActiveRecord::Base
   include Arrangement::Item
 
   # Associations
-  belongs_to  :scorer, polymorphic: true
+  belongs_to  :scorer, polymorphic: false
   belongs_to  :case, autosave: true
 
   has_many    :ratings,

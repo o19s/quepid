@@ -17,6 +17,7 @@
 #  scale_with_labels      :text(65535)
 #  created_at             :datetime         not null
 #  updated_at             :datetime         not null
+#  communal               :boolean
 #
 
 require 'scale_serializer'
@@ -25,7 +26,8 @@ class Scorer < ActiveRecord::Base
   # Associations
   belongs_to :owner, class_name: 'User'
 
-  has_many :users, dependent: :nullify
+  # not sure about this!
+  #has_many :users, dependent: :nullify
 
   # too late now!
   # rubocop:disable Rails/HasAndBelongsToMany
