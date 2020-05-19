@@ -101,23 +101,6 @@ angular.module('UtilitiesModule')
             });
         };
 
-        this.updateCompany = function(company) {
-          var self  = this;
-          var url   = '/api/users/' + self.id;
-          var data  = {
-            user: {
-              company: company
-            }
-          };
-
-          return $http.put(url, data)
-            .then( function() {
-              self.company = company;
-
-              return self;
-            });
-        };
-
         this.updateDefaultScorer = function(scorerId) {
           var self  = this;
           var url   = '/api/users/' + self.id;
