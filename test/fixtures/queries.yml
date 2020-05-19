@@ -61,7 +61,8 @@ for_default_scorer:
   case:         :for_default_scorer
   query_text:   B Query
   arranged_at:  2
-  scorer:       query_default_scorer (Scorer)
+  scorer:       :query_default_scorer
+#  scorer:       query_default_scorer (Scorer)
 
 import_ratings_query:
   case:         :import_ratings_case

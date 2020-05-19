@@ -411,13 +411,13 @@ module Api
 
             assert_not_equal  default_scorer_owner.scorer, default_scorer
             assert_nil        default_scorer_owner.scorer
-            assert_nil        default_scorer_owner.scorer_id
+            assert_nil        default_scorer_owner.default_scorer_id
 
             assert_not_equal  default_scorer_user.scorer, default_scorer
             assert_nil        default_scorer_user.scorer
-            assert_nil        default_scorer_user.scorer_id
+            assert_nil        default_scorer_user.default_scorer_id
 
-            assert_equal User.where(scorer_id: default_scorer.id).count, 0
+            assert_equal User.where(default_scorer_id: default_scorer.id).count, 0
           end
         end
 

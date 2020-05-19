@@ -9,7 +9,9 @@ module Api
       def index
         @default           = @case.scorer
         @user_scorers      = @case.user_scorers
-        @default_scorers   = @case.default_scorers
+        puts "Do we need @default_scrores?"
+        @default_scorers = []
+        #@default_scorers   = @case.default_scorers
 
         respond_with @user_scorers, @default_scorers, @default
       end

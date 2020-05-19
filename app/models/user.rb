@@ -27,7 +27,9 @@
 
 class User < ActiveRecord::Base
   # Associations
-  belongs_to :scorer, foreign_key: 'default_scorer_id'  # should be called default_scorer?
+  
+  # should be called default_scorer?
+  belongs_to :scorer, foreign_key: 'default_scorer_id'
   has_many :cases,
            dependent:   :destroy
 

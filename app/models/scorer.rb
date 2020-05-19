@@ -55,6 +55,8 @@ class Scorer < ActiveRecord::Base
     )
   }
 
+  scope :communal, -> { where(communal: true) }
+
   # Transform scale from array to a string
   serialize :scale, ScaleSerializer
   serialize :scale_with_labels, JSON

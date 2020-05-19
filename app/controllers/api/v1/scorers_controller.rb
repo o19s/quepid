@@ -8,9 +8,8 @@ module Api
 
       def index
         @user_scorers      = current_user.scorers.all
-        @default_scorers   = DefaultScorer.published
-          .order(published_at: :desc)
-          .all
+        puts "should @default_scorers be @communal_scorers"
+        @default_scorers   = Scorer.communal
 
         respond_with @user_scorers, @default_scorers
       end
@@ -99,10 +98,9 @@ module Api
 
           return
         end
-
-        @users = User.where(scorer_id: @scorer.id)
+        @users = User.where(default_scorer_id: @scorer.id)
         if @users.count.positive? && params[:force]
-          @users.update_all(scorer_id: nil) # rubocop:disable Rails/SkipsModelValidations
+          @users.update_all(default_scorer_id: nil) # rubocop:disable Rails/SkipsModelValidations
         elsif @users.count.positive?
           render(
             json:   {
@@ -185,6 +183,7 @@ module Api
           :manual_max_score,
           :manual_max_score_value,
           :show_scale_labels,
+          :communal,
           :scale,
           scale: []
         ).tap do |whitelisted|

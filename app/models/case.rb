@@ -57,8 +57,7 @@ class Case < ActiveRecord::Base
 
   has_many   :user_scorers,
              through:     :queries,
-             source:      :scorer,
-             source_type: 'Scorer'
+             source:      :scorer
 
   #has_many   :default_scorers,
   #           through:     :queries,
@@ -154,7 +153,7 @@ class Case < ActiveRecord::Base
                   #elsif user&.default_scorer
                   #  user.default_scorer
                   else
-                    puts "I am looking up the defautl Scorer"                    
+                    puts "I am looking up the defautl Scorer"
                     Scorer.find_by(name: Rails.application.config.quepid_default_scorer, communal: true)
                     #DefaultScorer.published.order(published_at: :desc).first
                   end
