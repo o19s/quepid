@@ -42,7 +42,7 @@ angular.module('QuepidApp')
         theCase.caseName          = data.case_name;
         theCase.lastScore         = data.lastScore;
         theCase.scorerId          = data.scorerId;
-        theCase.scorerType        = data.scorerType;
+        //theCase.scorerType        = data.scorerType;
         theCase.owned             = data.owned;
         theCase.queriesCount      = data.queriesCount;
         theCase.teams             = data.teams || [];
@@ -65,7 +65,6 @@ angular.module('QuepidApp')
             // HTTP PUT /api/cases/<int:caseId>
             var url  = '/api/cases/' + theCase.caseNo;
             var data = {
-              caseNo:   theCase.caseNo,
               case_name: newName
             };
 
@@ -392,12 +391,12 @@ angular.module('QuepidApp')
        * take a scorerId or null and send that information
        * to the server to save on a case
        */
-      function saveDefaultScorer(caseId, scorerId, scorerType) {
+      function saveDefaultScorer(caseId, scorerId) {
         // http PUT /api/cases/<int:caseId>/scorers/<int:scorerId>
         scorerId  =  scorerId || 0;
         var url   = '/api/cases/' + caseId + '/scorers/' + scorerId;
         var data  = {
-          scorer_type: scorerType
+          //scorer_type: scorerType
         };
 
         return $http.put(url, data)

@@ -5,45 +5,17 @@
     <div class='col-sm-6'>
       <div class='advanced-header'>
         <h3>Your Default Scorer</h3>
-        <p>Do you want to set a default scorer to use on all future cases you create? Good thing we've got your back!</p>
+        <p>Change the default scorer you use when creating new cases!</p>
 
         <div class="form-group">
           <select
-            ng-model="advanced.user.scorerId"
+            ng-model="advanced.user.defaultScorerId"
             ng-options="scorer.scorerId as scorer.displayName for scorer in advanced.combinedScorers"
-            ng-change="advanced.updateUserScorer(advanced.user.scorerId)"
+            ng-change="advanced.updateUserScorer(advanced.user.defaultScorerId)"
             class="form-control"
           >
-            <option value="">No Default Scorer</option>
           </select>
         </div>
-      </div>
-    </div>
-    <div class='col-sm-6'>
-      <div class='advanced-header' id="system-default-scorer">
-        <h3>System Default Scorer</h3>
-        <p>
-          Lock down a system default scorer to be used.
-          <a
-            href="#"
-            uib-popover-template="'views/advanced/_system_default_scorer.html'"
-            popover-title="System Default Scorer"
-            popover-trigger="outsideClick"
-            popover-placement="left"
-          >
-            <i class="fa fa-question">
-            </i>
-          </a>
-        </p>
-
-        <select
-          class="form-control"
-          ng-model="advanced.user.defaultScorerId"
-          ng-options="scorer.scorerId as scorer.name for scorer in advanced.defaultScorers"
-          ng-change="advanced.updateDefaultScorer(advanced.user.defaultScorerId)"
-        >
-          <option value="">Latest</option>
-        </select>
       </div>
     </div>
   </div>

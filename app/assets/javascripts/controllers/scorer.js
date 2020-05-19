@@ -99,9 +99,9 @@ angular.module('QuepidApp')
 
       function selectScorer(scorer) {
         var name = (!scorer ? 'none' : scorer.name);
-        var type = (!scorer ? 'none' : scorer.scorerType);
+        //var type = (!scorer ? 'none' : scorer.scorerType);
 
-        $log.info('selected scorer: ' + name + ', ' + type);
+        $log.info('selected scorer: ' + name);
 
         if (!scorer) {
           $scope.activeScorer = null;
@@ -116,8 +116,7 @@ angular.module('QuepidApp')
         if ($scope.activeScorer) {
           caseSvc.saveDefaultScorer(
             caseNo,
-            $scope.activeScorer.scorerId,
-            $scope.activeScorer.scorerType
+            $scope.activeScorer.scorerId
           ).then(function() {
             // TODO move to customer scorer svc, needs major updates to queriessvc first
             customScorerSvc.setDefault($scope.activeScorer)
@@ -127,6 +126,7 @@ angular.module('QuepidApp')
             });
           });
         } else {
+          console.log("Is this dead code path?");
           caseSvc.saveDefaultScorer(caseNo)
             .then(function() {
               // TODO move to customer scorer svc, needs major updates to queriessvc first
