@@ -27,7 +27,7 @@ describe('Service: userSvc', function () {
   it('fetches user info', function() {
     var mockUser = {
       'email': 'mockEmail@example.com',
-      'scorerId': 10,
+      'defaultScorerId': 10,
       'id':       1,
     };
 
@@ -37,7 +37,7 @@ describe('Service: userSvc', function () {
     userSvc.get(mockUser.id)
       .then(function(response) {
         expect(response.email).toEqual(mockUser.email);
-        expect(response.scorerId).toEqual(mockUser.scorerId);
+        expect(response.defaultScorerId).toEqual(mockUser.defaultScorerId);
       });
 
     $httpBackend.flush();
@@ -80,8 +80,8 @@ describe('Service: userSvc', function () {
     it('updates a user\'s scorer', function() {
       var url           = '/api/users/' + mockUser.id;
       var newScorerId   = 90;
-      var data          = { user: { scorer_id: newScorerId } };
-      mockUser.scorerId = newScorerId;
+      var data          = { user: { default_scorer_id: newScorerId } };
+      mockUser.defaultScorerId = newScorerId;
 
       $httpBackend.expectPUT(url, data).respond(200, mockUser);
 
@@ -89,7 +89,7 @@ describe('Service: userSvc', function () {
 
       $httpBackend.flush();
 
-      expect(currUser.scorerId).toEqual(newScorerId);
+      expect(currUser.defaultScorerId).toEqual(newScorerId);
     });
 
     it('updates a user\'s default scorer', function() {
@@ -104,7 +104,7 @@ describe('Service: userSvc', function () {
 
       $httpBackend.flush();
 
-      expect(currUser.scorerId).toEqual(newScorerId);
+      expect(currUser.defaultScorerId).toEqual(newScorerId);
     });
   });
 
