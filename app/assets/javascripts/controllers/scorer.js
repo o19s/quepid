@@ -126,7 +126,7 @@ angular.module('QuepidApp')
             });
           });
         } else {
-          console.log("Is this dead code path?");
+          console.log('Is this dead code path?');
           caseSvc.saveDefaultScorer(caseNo)
             .then(function() {
               // TODO move to customer scorer svc, needs major updates to queriessvc first
