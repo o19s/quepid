@@ -3,13 +3,13 @@
 require 'test_helper'
 
 class UserScorerFinderTest < ActiveSupport::TestCase
-  let(:doug)          { users(:doug) }
-  let(:owned_scorer)  { scorers(:owned_scorer) }
-  let(:shared_scorer) { scorers(:shared_scorer) }
+  let(:doug)                  { users(:doug) }
+  let(:owned_scorer)          { scorers(:owned_scorer) }
+  let(:shared_scorer)         { scorers(:shared_scorer) }
 
   let(:quepid_default_scorer) { scorers(:quepid_default_scorer) }
 
-  let(:service)       { UserScorerFinder.new(doug) }
+  let(:service)               { UserScorerFinder.new(doug) }
 
   describe 'Find all scorers' do
     test 'returns an array of scorers' do
@@ -197,9 +197,9 @@ class UserScorerFinderTest < ActiveSupport::TestCase
     # call doesn't also return Scorers with communal = true.
     # So we do the check outside this service call.
     test 'includes the default communal scorer' do
-      result = service.all
+      # result = service.all
 
-      #assert_includes result, quepid_default_scorer
+      # assert_includes result, quepid_default_scorer
     end
   end
 end

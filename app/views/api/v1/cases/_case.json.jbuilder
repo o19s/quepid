@@ -13,7 +13,6 @@ end
 json.case_name        acase.case_name
 json.caseNo           acase.id
 json.scorerId         acase.scorer_id
-#json.scorerType       acase.scorer_type
 json.owned            acase.user_id == current_user.id
 json.queriesCount     acase.queries.count
 
