@@ -41,6 +41,10 @@ class Scorer < ActiveRecord::Base
   validates_with ScaleValidator
 
   # Scopes
+  # The :for_user scope should also include in the scorers: array
+  # the owner_id: user.id OR communal:true clause, but in Rails 4
+  # we can't do OR statements in ARel.  So, working around it outside
+  # this scope.
   scope :for_user, ->(user) {
     where.any_of(
       teams:         {

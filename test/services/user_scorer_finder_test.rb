@@ -7,6 +7,8 @@ class UserScorerFinderTest < ActiveSupport::TestCase
   let(:owned_scorer)  { scorers(:owned_scorer) }
   let(:shared_scorer) { scorers(:shared_scorer) }
 
+  let(:quepid_default_scorer) { scorers(:quepid_default_scorer) }
+
   let(:service)       { UserScorerFinder.new(doug) }
 
   describe 'Find all scorers' do
@@ -88,6 +90,7 @@ class UserScorerFinderTest < ActiveSupport::TestCase
     end
 
     test 'works when filtering by id' do
+      puts "The owned scorer is #{owned_scorer.name}"
       result = service.where(id: owned_scorer.id)
         .order(name: :asc)
         .first
@@ -187,6 +190,16 @@ class UserScorerFinderTest < ActiveSupport::TestCase
       assert_instance_of  Scorer,  result
       assert_not_equal    result, owned_scorer
       assert_equal        result, shared_scorer
+    end
+
+    # This is currently disabled due to Rails 4 ActiveRecord not
+    # supporting OR syntax in AREL, which means that the service.all
+    # call doesn't also return Scorers with communal = true.
+    # So we do the check outside this service call.
+    test 'includes the default communal scorer' do
+      result = service.all
+
+      #assert_includes result, quepid_default_scorer
     end
   end
 end
