@@ -61,6 +61,11 @@ class Scorer < ActiveRecord::Base
 
   scope :communal, -> { where(communal: true) }
 
+  # the default scorer for users who don't have one specified.
+  def self.system_default_scorer
+    where(name: Rails.application.config.quepid_default_scorer).first
+  end
+
   # Transform scale from array to a string
   serialize :scale, ScaleSerializer
   serialize :scale_with_labels, JSON

@@ -92,20 +92,6 @@ describe('Service: userSvc', function () {
       expect(currUser.defaultScorerId).toEqual(newScorerId);
     });
 
-    it('updates a user\'s default scorer', function() {
-      var url           = '/api/users/' + mockUser.id;
-      var newScorerId   = 90;
-      var data          = { user: { default_scorer_id: newScorerId } };
-      mockUser.scorerId = newScorerId;
-
-      $httpBackend.expectPUT(url, data).respond(200, mockUser);
-
-      currUser.updateDefaultScorer(newScorerId);
-
-      $httpBackend.flush();
-
-      expect(currUser.defaultScorerId).toEqual(newScorerId);
-    });
   });
 
 });

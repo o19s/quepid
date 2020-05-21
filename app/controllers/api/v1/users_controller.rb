@@ -21,7 +21,7 @@ module Api
       def update
         update_params = user_params
 
-        update_params[:default_scorer_id] = nil if default_scorer_removed? update_params
+        update_params[:default_scorer_id] = Scorer.system_default_scorer.id if default_scorer_removed? update_params
 
         if @user.update update_params
           respond_with @user

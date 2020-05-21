@@ -141,14 +141,10 @@ class Case < ActiveRecord::Base
   def set_scorer
     return true if scorer_id.present?
 
-    self.scorer = if user&.scorer
-                    user.scorer
-                  # elsif user&.default_scorer
-                  #  user.default_scorer
+    self.scorer = if user&.default_scorer
+                    user.default_scorer
                   else
-                    puts 'I am looking up the default Scorer from Quepid Config'
-                    Scorer.find_by(name: Rails.application.config.quepid_default_scorer, communal: true)
-                    # DefaultScorer.published.order(published_at: :desc).first
+                    Scorer.system_default_scorer
                   end
   end
 

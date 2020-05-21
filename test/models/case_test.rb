@@ -32,9 +32,9 @@ class CaseTest < ActiveSupport::TestCase
     end
 
     test "sets the scorer to the user's scorer" do
-      user_scorer = scorers(:random_scorer)
-      user        = users(:random)
-      user.scorer = user_scorer
+      user_scorer         = scorers(:random_scorer)
+      user                = users(:random)
+      user.default_scorer = user_scorer
       user.save
 
       acase = Case.create(case_name: 'with default scorer', user: user)
@@ -46,7 +46,7 @@ class CaseTest < ActiveSupport::TestCase
     test "sets the scorer to the user's quepid scorer" do
       q_scorer            = scorers(:v1)
       user                = users(:random)
-      user.scorer = q_scorer
+      user.default_scorer = q_scorer
       user.save
 
       acase = Case.create(case_name: 'with q scorer', user: user)
@@ -58,7 +58,7 @@ class CaseTest < ActiveSupport::TestCase
     test "sets the scorer to the user's scorer even when a q score is available" do
       user_scorer         = scorers(:random_scorer)
       user                = users(:random)
-      user.scorer         = user_scorer
+      user.default_scorer = user_scorer
       user.save
 
       acase = Case.create(case_name: 'with default scorer', user: user)
@@ -80,10 +80,10 @@ class CaseTest < ActiveSupport::TestCase
     end
 
     test "does not override the case scorer with the user's scorer" do
-      user_scorer = scorers(:random_scorer)
-      case_scorer = scorers(:random_scorer_1)
-      user        = users(:random)
-      user.scorer = user_scorer
+      user_scorer         = scorers(:random_scorer)
+      case_scorer         = scorers(:random_scorer_1)
+      user                = users(:random)
+      user.default_scorer = user_scorer
       user.save
 
       acase = Case.create(case_name: 'with default scorer', user: user, scorer: case_scorer)

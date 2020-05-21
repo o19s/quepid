@@ -28,7 +28,9 @@ class User < ActiveRecord::Base
   # Associations
 
   # should be called default_scorer?
-  belongs_to :scorer, foreign_key: 'default_scorer_id', inverse_of: :owner
+  #belongs_to :scorer, foreign_key: 'default_scorer_id', inverse_of: :owner
+  belongs_to :default_scorer, class_name:  'Scorer'
+
   has_many :cases,
            dependent:   :destroy
 
@@ -67,8 +69,6 @@ class User < ActiveRecord::Base
 
   has_many :permissions,
            dependent: :destroy
-
-  # belongs_to :default_scorer
 
   # Validations
   validates :email,
@@ -149,11 +149,12 @@ class User < ActiveRecord::Base
 
   def set_defaults
     # rubocop:disable Style/RedundantSelf
-    puts "Setting user default scorer to #{Rails.application.config.quepid_default_scorer}" if self.scorer.nil?
+    puts "Setting defaults"
+    puts "Setting user default scorer to #{Rails.application.config.quepid_default_scorer}" if self.default_scorer.nil?
 
     self.first_login      = true  if first_login.nil?
     self.num_logins       = 0     if num_logins.nil?
-    self.scorer           = Scorer.find_by(name: Rails.application.config.quepid_default_scorer) if self.scorer.nil?
+    self.default_scorer   = Scorer.find_by(name: Rails.application.config.quepid_default_scorer) if self.default_scorer.nil?
     # rubocop:enable Style/RedundantSelf
 
     true # this is necessary because it will rollback

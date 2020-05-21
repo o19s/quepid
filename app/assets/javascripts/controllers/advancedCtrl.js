@@ -33,7 +33,6 @@ angular.module('QuepidApp')
 
       // Functions
       $scope.advanced.updateUserScorer    = updateUserScorer;
-      $scope.advanced.updateDefaultScorer = updateDefaultScorer;
 
       $rootScope.$watch('currentUser', function() {
         $scope.advanced.user = $rootScope.currentUser;
@@ -72,15 +71,6 @@ angular.module('QuepidApp')
         $rootScope.currentUser.updateUserScorer(scorerId)
           .then(function() {
             flash.success = 'Your default scorer has been updated successfully';
-          }, function(response) {
-            flash.error = response.data.message;
-          });
-      }
-
-      function updateDefaultScorer(scorerId) {
-        $rootScope.currentUser.updateDefaultScorer(scorerId)
-          .then(function() {
-            flash.success = 'Your Quepid scorer has been updated successfully';
           }, function(response) {
             flash.error = response.data.message;
           });

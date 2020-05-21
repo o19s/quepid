@@ -36,7 +36,7 @@ module Api
             body = JSON.parse(response.body)
 
             assert body['email'] == doug.email
-            assert body['defaultScorerId'] == doug.scorer.id
+            assert body['defaultScorerId'] == doug.default_scorer.id
           end
 
           test 'returns a not found error if user does not exist' do
@@ -66,34 +66,24 @@ module Api
           assert_response :success
           matt.reload
           assert_equal matt.default_scorer_id, scorer.id
-          assert_equal matt.scorer, scorer
-        end
-
-        test 'successfully remove default scorer' do
-          matt.scorer = scorer
-          matt.save!
-
-          patch :update, id: matt.email, user: { default_scorer_id: nil }
-
-          assert_response :success
-          matt.reload
-          assert_nil matt.default_scorer_id
-          assert_nil matt.scorer
+          assert_equal matt.default_scorer, scorer
         end
 
         test 'successfully remove default scorer by setting the id to 0' do
-          matt.scorer = scorer
+          matt.default_scorer = scorer
           matt.save!
 
           patch :update, id: matt.email, user: { default_scorer_id: 0 }
 
           assert_response :success
           matt.reload
-          assert matt.default_scorer_id.nil?
-          assert matt.scorer.nil?
+          assert_equal matt.default_scorer.name, Rails.application.config.quepid_default_scorer
         end
 
         test 'assigning a non existent scorer as default scorer' do
+
+          matt.default_scorer = scorer
+          matt.save!
           patch :update, id: matt.email, user: { default_scorer_id: 123 }
 
           assert_response :bad_request
@@ -104,8 +94,7 @@ module Api
           # rubocop:enable Metrics/LineLength
 
           matt.reload
-          assert matt.default_scorer_id.nil?
-          assert matt.scorer.nil?
+          assert_equal matt.default_scorer, scorer
         end
       end
 

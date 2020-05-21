@@ -100,23 +100,6 @@ angular.module('UtilitiesModule')
               return self;
             });
         };
-
-        this.updateDefaultScorer = function(scorerId) {
-          var self  = this;
-          var url   = '/api/users/' + self.id;
-          var data  = {
-            user: {
-              default_scorer_id: scorerId
-            }
-          };
-
-          return $http.put(url, data)
-            .then( function() {
-              self.defaultScorerId = scorerId;
-
-              return self;
-            });
-        };
       };
 
       this.bootstrapUser = function(userData) {
