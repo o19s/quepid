@@ -537,7 +537,7 @@ module Api
 
           expected_owned_response = {
             'scorerId'            => owned_scorer.id,
-            'scorerType'          => owned_scorer.class.to_s,
+            'communal'            => owned_scorer.communal,
             'code'                => owned_scorer.code,
             'name'                => owned_scorer.name,
             'queryTest'           => owned_scorer.query_test,
@@ -562,7 +562,7 @@ module Api
 
           expected_shared_response = {
             'scorerId'            => shared_scorer.id,
-            'scorerType'          => shared_scorer.class.to_s,
+            'communal'            => owned_scorer.communal,
             'code'                => shared_scorer.code,
             'name'                => shared_scorer.name,
             'queryTest'           => shared_scorer.query_test,

@@ -8,11 +8,9 @@ module Api
 
       def index
         @user_scorers    = current_user.scorers.all
-        @default_scorers = Scorer.communal
+        @communal_scorers = Scorer.communal
 
-        puts 'should @default_scorers be @communal_scorers??'
-
-        respond_with @user_scorers, @default_scorers
+        respond_with @user_scorers, @communal_scorers
       end
 
       def show

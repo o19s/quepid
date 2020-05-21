@@ -26,7 +26,7 @@ module Api
 
           expected_response = {
             'scorerId'            => scorer.id,
-            'scorerType'          => scorer.class.to_s,
+            'communal'            => scorer.communal,
             'code'                => scorer.code,
             'name'                => scorer.name,
             'queryTest'           => scorer.query_test,

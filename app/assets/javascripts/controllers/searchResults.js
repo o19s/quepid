@@ -64,6 +64,17 @@ angular.module('QuepidApp')
         return ($scope.query.score().score < $scope.query.threshold) && $scope.query.thresholdEnabled;
       };
 
+      $scope.hasTest = function() {
+        //return ($scope.query.test !== null && $scope.query.effectiveScorer().scorerId === $scope.query.test.scorerId);
+        console.log('Checking has test for '' + $scope.query.queryId + ' and ' + ($scope.query.test !== null));
+        return ($scope.query.test !== null);
+      };
+
+      $scope.hasQuerySpecificScorer = function() {
+        console.log('Checking scorer enabled' + $scope.query.scorerEnbl);
+        return $scope.query.scorerEnbl;
+      };
+
       $scope.displayed = new DisplayConfig();
       /*$scope.diff = {disable: function() {}};
 

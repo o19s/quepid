@@ -42,7 +42,25 @@
     </span>
 
     <span class="error-warning glyphicon glyphicon-warning-sign"></span>
-    <span ng-show="overThreshold()" class="glyphicon glyphicon-warning-sign"></span>
+
+    <span ng-show="overThreshold()" class="fa-stack fa-lg" title="Threshold of {{query.threshold}} not met.">
+      <i class="fa fa-circle fa-stack-2x"></i>
+      <strong class="fa-stack-1x text-danger">
+          {{query.threshold}}
+      </strong>
+    </span>
+
+    <span ng-show="hasQuerySpecificScorer()" class="fa-stack fa-lg" title="Using {{query.scorer.name}}">
+      <i class="fa fa-frog fa-stack-2x"></i>
+    </span>
+
+    <span ng-show="hasTest()" class="fa-stack fa-lg" title="Custom Unit Test">
+      <i class="fa fa-stroopwafel fa-stack-2x"></i>
+    </span>
+
+
+
+
     <span class="toggleSign glyphicon {{query.isToggled() | plusOrMinus}}" ng-hide="isSortingEnabled()" ng-click="query.toggle()"></span>
   </div>
 

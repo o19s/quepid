@@ -22,7 +22,7 @@
     "angular-utils-pagination": "~0.11.1",
     "angular-wizard": "git://github.com/softwaredoug/angular-wizard.git#0.4.2",
     "bootstrap": "~3.3.6",
-    "components-font-awesome": "~4.4.0",
+    "components-font-awesome": "^5.9.0",
     "d3": "~3.5.17",
     "d3-tip": "~0.6.7",
     "es5-shim": "~4.1.11",

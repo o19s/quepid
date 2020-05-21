@@ -310,10 +310,10 @@ component-inherit@0.0.3:
   resolved "https://registry.yarnpkg.com/component-inherit/-/component-inherit-0.0.3.tgz#645fc4adf58b72b649d5cae65135619db26ff143"
   integrity sha1-ZF/ErfWLcrZJ1crmUTVhnbJv8UM=
 
-components-font-awesome@~4.4.0:
-  version "4.4.0"
-  resolved "https://registry.yarnpkg.com/components-font-awesome/-/components-font-awesome-4.4.0.tgz#25b17d558f47c8109f6132c07f442d4d0f1bc42b"
-  integrity sha1-JbF9VY9HyBCfYTLAf0QtTQ8bxCs=
+components-font-awesome@^5.9.0:
+  version "5.9.0"
+  resolved "https://registry.yarnpkg.com/components-font-awesome/-/components-font-awesome-5.9.0.tgz#02242f85946f0a6ab46870547f4c54d11e94ef75"
+  integrity sha512-AjY5WwmKripvroQ1oYpCC4eK8efavSKUGN/ATgwcbyz/kRmojslH8l6Mrlxq071bdzBrZvCxi+RKgU5ao3bU+A==
 
 concat-map@0.0.1:
   version "0.0.1"

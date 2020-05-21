@@ -1,5 +1,5 @@
 'use strict';
-
+// Look through a list of scorers and identify the unit test style ones.
 angular.module('QuepidApp')
   .filter('scorerType', [
     function () {

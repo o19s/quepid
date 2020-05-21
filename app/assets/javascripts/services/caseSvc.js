@@ -42,7 +42,6 @@ angular.module('QuepidApp')
         theCase.caseName          = data.case_name;
         theCase.lastScore         = data.lastScore;
         theCase.scorerId          = data.scorerId;
-        //theCase.scorerType        = data.scorerType;
         theCase.owned             = data.owned;
         theCase.queriesCount      = data.queriesCount;
         theCase.teams             = data.teams || [];
@@ -395,9 +394,7 @@ angular.module('QuepidApp')
         // http PUT /api/cases/<int:caseId>/scorers/<int:scorerId>
         scorerId  =  scorerId || 0;
         var url   = '/api/cases/' + caseId + '/scorers/' + scorerId;
-        var data  = {
-          //scorer_type: scorerType
-        };
+        var data  = {};
 
         return $http.put(url, data)
           .then( function(response) {

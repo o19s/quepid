@@ -99,7 +99,6 @@ angular.module('QuepidApp')
 
       function selectScorer(scorer) {
         var name = (!scorer ? 'none' : scorer.name);
-        //var type = (!scorer ? 'none' : scorer.scorerType);
 
         $log.info('selected scorer: ' + name);
 

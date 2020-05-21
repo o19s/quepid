@@ -431,8 +431,7 @@ angular.module('QuepidApp')
           var query = this;
           var url   = '/api/cases/' + caseNo + '/queries/' + this.queryId + '/scorer';
           var data  = {
-            scorer_id:   scorer.scorerId,
-            scorer_type: scorer.scorerType,
+            scorer_id:   scorer.scorerId
           };
 
           return $http.put(url, data)
