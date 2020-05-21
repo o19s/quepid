@@ -16,11 +16,11 @@
         <li class="list-group-item"
           ng-class="{active: usingDefaultScorer()}"
           ng-click="selectScorer()">
-          Stick to <i>{{activeScorer.name}}</i> used by the case (safest option) 
+          Stick to <i>{{activeScorer.name}}</i> used by the case (safest option)
         </li>
 
         <li class="list-group-item"
-        ng-repeat="scorer in defaultScorers track by scorer.scorerId"
+        ng-repeat="scorer in communalScorers track by scorer.scorerId"
           ng-class="{ active: scorer.scorerId === activeScorer.scorerId }"
           ng-click="selectScorer(scorer)">
           {{scorer.name}}
@@ -54,7 +54,7 @@
     <h4>Select from defaults:</h4>
     <ul class="list-group">
       <li class="list-group-item"
-      ng-repeat="scorer in defaultScorers track by scorer.scorerId"
+      ng-repeat="scorer in communalScorers track by scorer.scorerId"
         ng-class="{ active: scorer.scorerId === activeScorer.scorerId }"
         ng-click="selectScorer(scorer)">
         {{scorer.name}}

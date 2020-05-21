@@ -148,8 +148,13 @@ class User < ActiveRecord::Base
   private
 
   def set_defaults
+    # rubocop:disable Style/RedundantSelf
+    puts "Setting user default scorer to #{Rails.application.config.quepid_default_scorer}" if self.scorer.nil?
+
     self.first_login      = true  if first_login.nil?
     self.num_logins       = 0     if num_logins.nil?
+    self.scorer           = Scorer.find_by(name: Rails.application.config.quepid_default_scorer) if self.scorer.nil?
+    # rubocop:enable Style/RedundantSelf
 
     true # this is necessary because it will rollback
     # the creation/update of the user otherwise

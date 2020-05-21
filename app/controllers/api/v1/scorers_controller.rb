@@ -7,7 +7,7 @@ module Api
       before_action :set_scorer, only: %i[show update destroy]
 
       def index
-        @user_scorers    = current_user.scorers.all
+        @user_scorers     = current_user.scorers.all
         @communal_scorers = Scorer.communal
 
         respond_with @user_scorers, @communal_scorers

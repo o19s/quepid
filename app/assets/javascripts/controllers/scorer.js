@@ -19,7 +19,7 @@ angular.module('QuepidApp')
       $scope.gotoAdvanced       = gotoAdvanced;
       $scope.ok                 = ok;
       $scope.scorers            = [];
-      $scope.defaultScorers     = [];
+      $scope.communalScorers    = [];
       $scope.selectScorer       = selectScorer;
       $scope.usingDefaultScorer = usingDefaultScorer;
       $scope.updateButtonLabel  = updateButtonLabel;
@@ -62,7 +62,7 @@ angular.module('QuepidApp')
             return !scorer.queryTest;
           });
 
-          $scope.defaultScorers   = customScorerSvc.defaultScorers;
+          $scope.communalScorers = customScorerSvc.communalScorers;
         });
 
       function cancel() {

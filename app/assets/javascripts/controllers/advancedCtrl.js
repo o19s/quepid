@@ -17,7 +17,7 @@ angular.module('QuepidApp')
     ) {
       // Attributes
       $scope.advanced                 = {};
-      $scope.advanced.defaultScorers  = [];
+      $scope.advanced.communalScorers = [];
       $scope.advanced.combinedScorers = [];
       $scope.advanced.userScorers     = [];
       $scope.advanced.user            = $rootScope.currentUser;
@@ -60,12 +60,12 @@ angular.module('QuepidApp')
       });
 
       function getLists() {
-        $scope.advanced.defaultScorers  = customScorerSvc.defaultScorers;
+        $scope.advanced.communalScorers  = customScorerSvc.communalScorers;
         $scope.advanced.userScorers     = customScorerSvc.scorers;
         var nonTestUserScorers          = customScorerSvc.scorers.filter(function(scorer) {
           return scorer.queryTest === false;
         });
-        $scope.advanced.combinedScorers = $scope.advanced.defaultScorers.concat(nonTestUserScorers);
+        $scope.advanced.combinedScorers = $scope.advanced.communalScorers.concat(nonTestUserScorers);
       }
 
       function updateUserScorer(scorerId) {

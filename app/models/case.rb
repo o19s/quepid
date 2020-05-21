@@ -55,7 +55,7 @@ class Case < ActiveRecord::Base
   has_many   :annotations,
              through: :scores
 
-  has_many   :user_scorers, -> { where(communal:  :false) }, through: :queries, source: :scorer
+  has_many   :user_scorers, -> { where(communal: false) }, through: :queries, source: :scorer
 
   # Validations
   validates :case_name, presence: true
