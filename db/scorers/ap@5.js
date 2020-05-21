@@ -1,5 +1,5 @@
 var k = 5; // @Rank
-var score = [];
+var scores = [];
 var docs_counted = 0;
 
 eachDoc(function(doc, i) {
