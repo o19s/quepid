@@ -154,7 +154,7 @@ class User < ActiveRecord::Base
 
     self.first_login      = true  if first_login.nil?
     self.num_logins       = 0     if num_logins.nil?
-    self.default_scorer   = Scorer.find_by(name: Rails.application.config.quepid_default_scorer) if self.default_scorer.nil?
+    self.default_scorer   = Scorer.system_default_scorer if self.default_scorer.nil?
     # rubocop:enable Style/RedundantSelf
 
     true # this is necessary because it will rollback
