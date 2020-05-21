@@ -66,7 +66,7 @@ angular.module('QuepidApp')
 
       $scope.hasTest = function() {
         //return ($scope.query.test !== null && $scope.query.effectiveScorer().scorerId === $scope.query.test.scorerId);
-        console.log('Checking has test for '' + $scope.query.queryId + ' and ' + ($scope.query.test !== null));
+        console.log('Checking has test for ' + $scope.query.queryId + ' and ' + ($scope.query.test !== null));
         return ($scope.query.test !== null);
       };
 
