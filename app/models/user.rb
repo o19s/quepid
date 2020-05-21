@@ -26,10 +26,7 @@
 
 class User < ActiveRecord::Base
   # Associations
-
-  # should be called default_scorer?
-  #belongs_to :scorer, foreign_key: 'default_scorer_id', inverse_of: :owner
-  belongs_to :default_scorer, class_name:  'Scorer'
+  belongs_to :default_scorer, class_name: 'Scorer'
 
   has_many :cases,
            dependent:   :destroy
@@ -149,9 +146,6 @@ class User < ActiveRecord::Base
 
   def set_defaults
     # rubocop:disable Style/RedundantSelf
-    puts "Setting defaults"
-    puts "Setting user default scorer to #{Rails.application.config.quepid_default_scorer}" if self.default_scorer.nil?
-
     self.first_login      = true  if first_login.nil?
     self.num_logins       = 0     if num_logins.nil?
     self.default_scorer   = Scorer.system_default_scorer if self.default_scorer.nil?

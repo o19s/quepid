@@ -63,7 +63,7 @@ class Scorer < ActiveRecord::Base
 
   # the default scorer for users who don't have one specified.
   def self.system_default_scorer
-    where(name: Rails.application.config.quepid_default_scorer).first
+    find_by(name: Rails.application.config.quepid_default_scorer)
   end
 
   # Transform scale from array to a string

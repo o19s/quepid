@@ -99,7 +99,9 @@ module Api
         end
         @users = User.where(default_scorer_id: @scorer.id)
         if @users.count.positive? && params[:force]
-          @users.update_all(default_scorer_id: Scorer.system_default_scorer) # rubocop:disable Rails/SkipsModelValidations
+          # rubocop:disable Rails/SkipsModelValidations
+          @users.update_all(default_scorer_id: Scorer.system_default_scorer)
+          # rubocop:enable Rails/SkipsModelValidations
         elsif @users.count.positive?
           render(
             json:   {
