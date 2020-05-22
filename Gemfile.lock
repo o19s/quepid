@@ -159,8 +159,8 @@ GEM
       puma (>= 2.7, < 4)
     pundit (2.0.1)
       activesupport (>= 3.0.0)
-    rack (1.6.11)
-    rack-mini-profiler (1.0.0)
+    rack (1.6.13)
+    rack-mini-profiler (2.0.1)
       rack (>= 1.2.0)
     rack-protection (1.5.5)
       rack
