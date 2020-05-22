@@ -15,7 +15,6 @@
 #  scorer_enbl    :boolean
 #  created_at     :datetime         not null
 #  updated_at     :datetime         not null
-#  scorer_type    :string(255)
 #  options        :text(65535)
 #
 

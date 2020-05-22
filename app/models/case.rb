@@ -14,7 +14,6 @@
 #  scorer_id       :integer
 #  created_at      :datetime         not null
 #  updated_at      :datetime         not null
-#  scorer_type     :string(255)
 #
 
 # rubocop:disable Metrics/ClassLength
