@@ -280,7 +280,7 @@ angular.module('QuepidApp')
 
       function getScorer() {
         return customScorerSvc.defaultScorer;
-      };
+      }
 
       /*jslint latedef:false*/
       function pickScorer() {
