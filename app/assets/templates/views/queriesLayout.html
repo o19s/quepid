@@ -10,7 +10,7 @@
               full-diff-name="queries.fullDiffName()"
               max-score="maxScore || 100";
               scorable="queries.avgQuery"
-              score-label="'average'"
+              score-label="getScorer().name"
               score-type="'header'"
               scores="scores"
               show-diff="queries.selectedDiff() !== null"
@@ -29,6 +29,11 @@
               <small class="text-muted" ng-controller="CurrSettingsCtrl">
                 &mdash;
                 {{ currentTry.selectedTry().name }}
+              </small>
+
+              <small class="text-muted">
+                &mdash;
+                {{ getScorer().name }}
               </small>
             </h1>
           </div>

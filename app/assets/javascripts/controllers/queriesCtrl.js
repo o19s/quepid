@@ -87,6 +87,8 @@ angular.module('QuepidApp')
       $scope.pickScorer               = pickScorer;
       $scope.sortBy                   = sortBy;
 
+      $scope.getScorer                = getScorer;
+
       $scope.reverse = $location.search().reverse;
       $scope.sortBy($location.search().sort || 'default', !$scope.reverse);
 
@@ -274,6 +276,10 @@ angular.module('QuepidApp')
 
       $scope.collapseAll = function() {
         queryViewSvc.collapseAll();
+      };
+
+      function getScorer() {
+        return customScorerSvc.defaultScorer;
       };
 
       /*jslint latedef:false*/
