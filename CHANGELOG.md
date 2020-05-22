@@ -34,14 +34,14 @@ Speed of development has been an issue with Quepid.  In this release we've worke
 * fixed fields with a `.` like `foo.bar` failing to be rendered in UI in Splainer-Search v2.5.9.  https://github.com/o19s/quepid/issues/106 created by @rjurney.
 
 
-## 6.1.1 - 03/07/2020
+## 6.1.1 - 2020-07-03
 * Community member reported race condition in standing up Rails and MySQL and issues with PhantomJS install in the developer `docker-compose.yml` and `Dockerfile.dev` setups.  https://github.com/o19s/quepid/pull/75 by @epugh fixes https://github.com/o19s/quepid/issues/76 and https://github.com/o19s/quepid/issues/73.
 * Add .dockerignore file to prevent unrelated changes from breaking Docker layer cache fixes by @TheSench https://github.com/o19s/quepid/issues/80
 * Fix issue where you couldn't clone a case without including the full history. https://github.com/o19s/quepid/pull/89 by @worleydl fixes https://github.com/o19s/quepid/issues/37 Thanks @janhoy for submitting this bug.
 * Fixed display of notes for query disappearing after collapse and then expand of query window. https://github.com/o19s/quepid/pull/88 by @dworley fixes https://github.com/o19s/quepid/issues/87
 * NDCG@10 doesn't include documents that are rated via Explain Other, it only looks at the documents returned by the search engine.  We want to be able to have NDCG look globally at all rated documents.  https://github.com/o19s/quepid/pull/90 by @nathancday and @worleydl fixes https://github.com/o19s/quepid/issues/78.  Note: We currently have the NDCG@10 scorer in app.quepid.com, however it hasn't been backported to the Docker image or the dev setup in Quepid.  See https://github.com/o19s/quepid/issues/91.
 
-## 6.1.0 - 02/01/2020
+## 6.1.0 - 2020-02-01
 This release changes the database schema, so you will need to run `docker-compose run --rm app bin/rake db:migrate` if you have an existing Quepid.
 
 * Cloning cases now carries any magic variables and their values along to the new case https://github.com/o19s/quepid/pull/55 by @epugh fixes https://github.com/o19s/quepid/issues/37
@@ -62,11 +62,11 @@ This release changes the database schema, so you will need to run `docker-compos
 * app.quepid.com needs to get explicit consent from users to receive emails related to Quepid and related features.   Introducing a new `customize_quepid.rb` file in initializers to start supporting more customizations of Quepid.  https://github.com/o19s/quepid/pull/68 by @worleydl.
 * Only show cookie acceptance popup if COOKIES_URL is set.  https://github.com/o19s/quepid/pull/71 by @epugh fixes https://github.com/o19s/quepid/issues/70 by @epugh.
 
-## 6.0.2 - 11/26/2019
+## 6.0.2 - 2019-11-29
 * Deprecate www.quepid.com/support in favor of linking to wiki.  https://github.com/o19s/quepid/pull/18 by @epugh fixes https://github.com/o19s/quepid/issues/17
 * More informative error message when you delete a custom scorer and its in use.  https://github.com/o19s/quepid/pull/22 by @epugh fixes https://github.com/o19s/quepid/issues/21.
 
-## 6.0.1 - 11/05/2019
+## 6.0.1 - 2019-11-05
 * Update to splainer-search 2.5.0.
 * Fix setting the default case for exporting when you first load Quepid.  https://github.com/o19s/quepid/pull/15 by @worleydl fixes https://github.com/o19s/quepid/issues/12
 * Allow a document to be rated to have an id with a period in it like `mydoc.pdf`.  https://github.com/o19s/quepid/pull/6 by @epugh fixes https://github.com/o19s/quepid/issues/5
@@ -75,7 +75,7 @@ This release changes the database schema, so you will need to run `docker-compos
 
 
 
-## 6.0.0 - 07/25/2019
+## 6.0.0 - 2019-07-25
 * Removes everything related to payments, and makes Quepid "free"
 * Adds support for using a CORS proxy for Solr instances that are not configured to allow connections from Quepid
 * Replaces use of Vagrant in development in favor of Docker
@@ -102,7 +102,7 @@ This release changes the database schema, so you will need to run `docker-compos
 ## 4.1.1
 * bugfix: Prevent re-escaping % when it's part of an escape char
 
-## 4.1.0 (7 months)
+## 4.1.0
 
 * bugfix-873-change-try-name Fixes renaming try and reloading name in list
 * bugfix-872-duplicate-try Fixes #872: Duplicating a try
