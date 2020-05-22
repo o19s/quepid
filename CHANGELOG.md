@@ -24,6 +24,7 @@ Speed of development has been an issue with Quepid.  In this release we've worke
 * Rename `user.username` in database to `user.email` since that is what we use.  Clean up API.  https://github.com/o19s/quepid/pull/113 by @epugh fixes https://github.com/o19s/quepid/issues/111.  You will need to run database migration for this release!
 * Audited code base to prune dependencies and remove unused code.  https://github.com/o19s/quepid/pull/121, https://github.com/o19s/quepid/pull/119, https://github.com/o19s/quepid/pull/118, https://github.com/o19s/quepid/pull/116 all worked towards this goal.
 * Turns out Quepid has a [_Curate_ interface](https://twitter.com/dep4b/status/1254885186204041217).  It isn't supported, so in the interest of reducing our codebase, removing it.  Points the way for the future however!  https://github.com/o19s/quepid/pull/123.
+* Deal with sameSite cookie warnings from Firefox.  https://github.com/o19s/quepid/pull/131 by @epugh fixes https://github.com/o19s/quepid/issues/130.
 
 ### Bugs
 
