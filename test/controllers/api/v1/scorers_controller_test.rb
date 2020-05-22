@@ -416,7 +416,7 @@ module Api
             assert_not_equal  default_scorer_user.default_scorer, default_scorer
             assert_not_nil    default_scorer_user.default_scorer
             assert_equal      default_scorer_user.default_scorer, Scorer.system_default_scorer
-            
+
             assert_equal User.where(default_scorer_id: default_scorer.id).count, 0
           end
         end
@@ -488,7 +488,7 @@ module Api
             assert_not_equal  query.scorer, default_scorer
             assert_nil        query.scorer
             assert_nil        query.scorer_id
-
+            
             assert_equal Query.where(scorer_id: default_scorer.id).count, 0
           end
         end
