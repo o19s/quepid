@@ -81,7 +81,6 @@ module Api
         end
 
         test 'assigning a non existent scorer as default scorer' do
-
           matt.default_scorer = scorer
           matt.save!
           patch :update, id: matt.email, user: { default_scorer_id: 123 }
