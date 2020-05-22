@@ -25,7 +25,7 @@ angular.module('QuepidApp')
         headers     = headers.split(ctrl.csv.separator);
 
         var expectedHeaders = [
-          'Query Text', 'Doc ID', 'Rating'
+          'query', 'docid', 'rating'
         ];
 
         if (!angular.equals(headers, expectedHeaders)) {
