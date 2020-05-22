@@ -488,7 +488,7 @@ module Api
             assert_not_equal  query.scorer, default_scorer
             assert_nil        query.scorer
             assert_nil        query.scorer_id
-            
+
             assert_equal Query.where(scorer_id: default_scorer.id).count, 0
           end
         end
