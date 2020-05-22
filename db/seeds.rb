@@ -6,7 +6,6 @@
 #   cities = City.create([{ name: 'Chicago' }, { name: 'Copenhagen' }])
 #   Mayor.create(name: 'Emanuel', city: cities.first)
 
-if (1 == 2) then
 Scorer.where(name: 'nDCG@5').first_or_create(
   scale:              (0..4).to_a,
   scale_with_labels:  {"0":"Irrelevant","1":"Poor","2":"Fair","3":"Good","4":"Perfect"},
@@ -51,7 +50,6 @@ Scorer.where(name: 'AP@5').first_or_create(
   name:               'AP@5',
   communal:           true
 )
-end
 
 if ENV['SEED_SAMPLE_DATA']
   require_relative 'sample_data_seeds'
