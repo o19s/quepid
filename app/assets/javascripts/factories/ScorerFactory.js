@@ -214,7 +214,7 @@
           }
         }
 
-        if (docsRated > 0 && sum > 0) {
+        if (docsRated > 0) {
           return sum / docsRated;
         } else {
           return null;
