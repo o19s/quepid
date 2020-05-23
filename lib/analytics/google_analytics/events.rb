@@ -632,15 +632,15 @@ module Analytics
       end
 
       #
-      # Creates an event when a user creates a default scorer.
+      # Creates an event when a user creates a communal scorer.
       #
       # @param user,    User
-      # @param scorer,  DefaultScorer
+      # @param scorer,  Scorer
       #
-      def user_created_default_scorer _user, scorer
+      def user_created_communal_scorer _user, scorer
         data = {
-          category: 'DefaultScorers',
-          action:   'Created a Default Scorer',
+          category: 'CommunalScorers',
+          action:   'Created a Communal Scorer',
           label:    scorer.name,
           value:    nil,
           bounce:   false,
@@ -655,10 +655,10 @@ module Analytics
       # @param user,    User
       # @param scorer,  DefaultScorer
       #
-      def user_updated_default_scorer _user, scorer
+      def user_updated_communal_scorer _user, scorer
         data = {
-          category: 'DefaultScorers',
-          action:   'Updated a Default Scorer',
+          category: 'CommunalScorers',
+          action:   'Updated a Communal Scorer',
           label:    scorer.name,
           value:    nil,
           bounce:   false,

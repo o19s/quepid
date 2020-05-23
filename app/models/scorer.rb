@@ -84,4 +84,15 @@ class Scorer < ActiveRecord::Base
     # to be able to identify them easily.
     self.name       = "Scorer #{Scorer.count + 1}" if name.blank?
   end
+
+  def scale_list=value
+    self.scale = value.split(',') if value.present?
+  end
+
+  def scale_list
+    # rubocop:disable Style/SafeNavigation
+    scale.join(',') unless scale.nil?
+    # scale&.join(',')
+    # rubocop:enable Style/SafeNavigation
+  end  
 end

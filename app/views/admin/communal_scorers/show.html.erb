@@ -1,7 +1,7 @@
 <h1>Show Scorer</h1>
 
-<%= link_to 'Edit', edit_admin_default_scorer_path(@scorer) %> |
-<%= link_to 'Back', admin_default_scorers_path %>
+<%= link_to 'Edit', edit_admin_communal_scorer_path(@scorer) %> |
+<%= link_to 'Back', admin_communal_scorers_path %>
 
 <div class='scorer container'>
   <div class="row element-attribute">
@@ -80,21 +80,11 @@
 
   <div class="row element-attribute">
     <strong class='col-sm-2 control-label'>
-      State:
+      Updated At:
     </strong>
 
     <div class="col-sm-10">
-      <%= @scorer.state %>
-    </div>
-  </div>
-
-  <div class="row element-attribute">
-    <strong class='col-sm-2 control-label'>
-      Published At:
-    </strong>
-
-    <div class="col-sm-10">
-      <%= @scorer.published_at %>
+      <%= @scorer.updated_at %>
     </div>
   </div>
 </div>

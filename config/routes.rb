@@ -33,7 +33,7 @@ Rails.application.routes.draw do
       resource :lock, only: [ :update ], module: :users
       resource :pulse, only: [ :show ], module: :users
     end
-    resources :default_scorers, except: [ :destroy ]
+    resources :communal_scorers, except: [ :destroy ]
   end
 
   root 'home#index'

@@ -3,36 +3,37 @@
 require 'test_helper'
 
 module Admin
-  class DefaultScorersControllerTest < ActionController::TestCase
+  class CommunalScorersControllerTest < ActionController::TestCase
     let(:user) { users(:admin) }
 
     before do
-      @controller = Admin::DefaultScorersController.new
+      @controller = Admin::CommunalScorersController.new
 
       login_user user
     end
 
     describe 'Creates scorer' do
-      test 'does NOT set default attributes except for status' do
+      test 'does NOT set default attributes except for communal flag' do
         post :create
 
-        assert_redirected_to admin_default_scorer_path(assigns(:scorer))
+        assert_redirected_to admin_communal_scorer_path(assigns(:scorer))
 
-        scorer = DefaultScorer.last
+        scorer = Scorer.last
 
+        assert_equal true, scorer.communal
         assert_nil scorer.code
         assert_nil scorer.name
         assert_equal [], scorer.scale
         assert_equal '', scorer.scale_list
-        assert_equal 'draft', scorer.state
+
       end
 
       test 'handles empty string names' do
         post :create, name: ''
 
-        assert_redirected_to admin_default_scorer_path(assigns(:scorer))
+        assert_redirected_to admin_communal_scorer_path(assigns(:scorer))
 
-        scorer = DefaultScorer.last
+        scorer = Scorer.last
 
         assert_nil scorer.name
       end
@@ -40,11 +41,11 @@ module Admin
       test 'accepts code as an attribute' do
         code = 'pass();'
 
-        post :create, default_scorer: { code: code }
+        post :create, communal_scorer: { code: code }
 
-        assert_redirected_to admin_default_scorer_path(assigns(:scorer))
+        assert_redirected_to admin_communal_scorer_path(assigns(:scorer))
 
-        scorer = DefaultScorer.last
+        scorer = Scorer.last
 
         assert_not_nil scorer.code
         assert_nil scorer.name
@@ -56,11 +57,11 @@ module Admin
       test 'accepts name as an attribute' do
         name = 'Custom Name'
 
-        post :create, default_scorer: { name: name }
+        post :create, communal_scorer: { name: name }
 
-        assert_redirected_to admin_default_scorer_path(assigns(:scorer))
+        assert_redirected_to admin_communal_scorer_path(assigns(:scorer))
 
-        scorer = DefaultScorer.last
+        scorer = Scorer.last
 
         assert_nil scorer.code
         assert_not_nil scorer.name
@@ -72,11 +73,11 @@ module Admin
       test 'accepts custom scale and serializes properly' do
         scale = [ 1, 2, 3, 4 ]
 
-        post :create, default_scorer: { scale: scale }
+        post :create, communal_scorer: { scale: scale }
 
-        assert_redirected_to admin_default_scorer_path(assigns(:scorer))
+        assert_redirected_to admin_communal_scorer_path(assigns(:scorer))
 
-        scorer = DefaultScorer.last
+        scorer = Scorer.last
 
         assert_nil scorer.code
         assert_nil scorer.name
@@ -88,11 +89,11 @@ module Admin
       test 'uses the scale list property to set the scale' do
         scale = [ 1, 2, 3, 4 ]
 
-        post :create, default_scorer: { scale_list: scale.join(',') }
+        post :create, communal_scorer: { scale_list: scale.join(',') }
 
-        assert_redirected_to admin_default_scorer_path(assigns(:scorer))
+        assert_redirected_to admin_communal_scorer_path(assigns(:scorer))
 
-        scorer = DefaultScorer.last
+        scorer = Scorer.last
 
         assert_nil scorer.code
         assert_nil scorer.name
@@ -104,7 +105,7 @@ module Admin
       test 'limits scale length' do
         scale = (1..15).to_a
 
-        post :create, default_scorer: { scale: scale }
+        post :create, communal_scorer: { scale: scale }
 
         scorer = assigns(:scorer)
 
@@ -114,7 +115,7 @@ module Admin
       test 'limits scale to integers only' do
         scale = [ 1, 2, 3, 'foo' ]
 
-        post :create, default_scorer: { scale: scale }
+        post :create, communal_scorer: { scale: scale }
 
         scorer = assigns(:scorer)
 
@@ -124,9 +125,9 @@ module Admin
       test 'sorts scale' do
         scale = [ 3, 4, 1, 2 ]
 
-        post :create, default_scorer: { scale: scale }
+        post :create, communal_scorer: { scale: scale }
 
-        assert_redirected_to admin_default_scorer_path(assigns(:scorer))
+        assert_redirected_to admin_communal_scorer_path(assigns(:scorer))
 
         scorer = DefaultScorer.last
 
@@ -140,9 +141,9 @@ module Admin
       test 'accepts scale as a string' do
         scale = [ 1, 2, 3, 4 ]
 
-        post :create, default_scorer: { scale: scale.join(',') }
+        post :create, communal_scorer: { scale: scale.join(',') }
 
-        assert_redirected_to admin_default_scorer_path(assigns(:scorer))
+        assert_redirected_to admin_communal_scorer_path(assigns(:scorer))
 
         scorer = DefaultScorer.last
 
@@ -153,29 +154,18 @@ module Admin
         assert_equal scale.sort, scorer.scale
       end
 
-      describe 'analytics' do
-        test 'posts event' do
-          expects_any_ga_event_call
-
-          perform_enqueued_jobs do
-            post :create
-
-            assert_redirected_to admin_default_scorer_path(assigns(:scorer))
-          end
-        end
-      end
     end
 
     describe 'Updates scorer' do
-      let(:owned_scorer)      { default_scorers(:admin_scorer) }
-      let(:not_owned_scorer)  { default_scorers(:doug_scorer) }
+      let(:owned_scorer)      { communal_scorers(:admin_scorer) }
+      let(:not_owned_scorer)  { communal_scorers(:doug_scorer) }
 
       test 'successfully updates name' do
         name = 'Custom Name'
 
-        put :update, id: owned_scorer.id, default_scorer: { name: name }
+        put :update, id: owned_scorer.id, communal_scorer: { name: name }
 
-        assert_redirected_to admin_default_scorer_path(owned_scorer)
+        assert_redirected_to admin_communal_scorer_path(owned_scorer)
 
         owned_scorer.reload
 
@@ -185,9 +175,9 @@ module Admin
       test 'successfully updates code' do
         code = 'fail();'
 
-        put :update, id: owned_scorer.id, default_scorer: { code: code }
+        put :update, id: owned_scorer.id, communal_scorer: { code: code }
 
-        assert_redirected_to admin_default_scorer_path(owned_scorer)
+        assert_redirected_to admin_communal_scorer_path(owned_scorer)
 
         owned_scorer.reload
 
@@ -197,9 +187,9 @@ module Admin
       test 'successfully updates scale' do
         scale = [ 1, 2 ]
 
-        put :update, id: owned_scorer.id, default_scorer: { scale: scale }
+        put :update, id: owned_scorer.id, communal_scorer: { scale: scale }
 
-        assert_redirected_to admin_default_scorer_path(owned_scorer)
+        assert_redirected_to admin_communal_scorer_path(owned_scorer)
 
         owned_scorer.reload
 
@@ -209,7 +199,7 @@ module Admin
       test 'limits scale length' do
         scale = (1..15).to_a
 
-        put :update, id: owned_scorer.id, default_scorer: { scale: scale }
+        put :update, id: owned_scorer.id, communal_scorer: { scale: scale }
 
         scorer = assigns(:scorer)
 
@@ -219,7 +209,7 @@ module Admin
       test 'limits scale to integers only' do
         scale = [ 1, 'foo' ]
 
-        put :update, id: owned_scorer.id, default_scorer: { scale: scale }
+        put :update, id: owned_scorer.id, communal_scorer: { scale: scale }
 
         scorer = assigns(:scorer)
 
@@ -229,9 +219,9 @@ module Admin
       test 'sorts scale' do
         scale = [ 2, 1 ]
 
-        put :update, id: owned_scorer.id, default_scorer: { scale: scale }
+        put :update, id: owned_scorer.id, communal_scorer: { scale: scale }
 
-        assert_redirected_to admin_default_scorer_path(owned_scorer)
+        assert_redirected_to admin_communal_scorer_path(owned_scorer)
 
         owned_scorer.reload
 
@@ -241,27 +231,13 @@ module Admin
       test 'any admin can update any quepid scorer' do
         name = 'Custom Name'
 
-        put :update, id: not_owned_scorer.id, default_scorer: { name: name }
+        put :update, id: not_owned_scorer.id, communal_scorer: { name: name }
 
-        assert_redirected_to admin_default_scorer_path(not_owned_scorer)
+        assert_redirected_to admin_communal_scorer_path(not_owned_scorer)
 
         not_owned_scorer.reload
 
         assert_equal name, not_owned_scorer.name
-      end
-
-      describe 'analytics' do
-        test 'posts event' do
-          expects_any_ga_event_call
-
-          name = 'Custom Name'
-
-          perform_enqueued_jobs do
-            put :update, id: owned_scorer.id, default_scorer: { name: name }
-
-            assert_redirected_to admin_default_scorer_path(owned_scorer)
-          end
-        end
       end
     end
   end

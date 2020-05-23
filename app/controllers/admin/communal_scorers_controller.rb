@@ -1,25 +1,25 @@
 # frozen_string_literal: true
 
 module Admin
-  class DefaultScorersController < Admin::AdminController
+  class CommunalScorersController < Admin::AdminController
     before_action :set_scorer, only: %i[show edit update]
 
     def index
-      @scorers = DefaultScorer.all
+      @scorers = Scorer.communal
     end
 
     def show; end
 
     def new
-      @scorer = DefaultScorer.new
+      @scorer = Scorer.new
+      @scorer.communal = true
     end
 
     def create
-      @scorer = DefaultScorer.new scorer_params
+      @scorer = Scorer.new scorer_params
 
       if @scorer.save
-        Analytics::Tracker.track_default_scorer_created_event current_user, @scorer
-        redirect_to admin_default_scorer_path(@scorer)
+        redirect_to admin_communal_scorer_path(@scorer)
       else
         render action: :new
       end
@@ -33,7 +33,7 @@ module Admin
       # Reinitialize the object without the scale, to maintain the
       # passed values, just in case another error should be communicated
       # back to the caller.
-      @scorer = DefaultScorer.new sanitized_params
+      @scorer = Scorer.new sanitized_params
       @scorer.errors.add(:scale, :type)
 
       render action: :new
@@ -43,8 +43,7 @@ module Admin
 
     def update
       if @scorer.update scorer_params
-        Analytics::Tracker.track_default_scorer_updated_event current_user, @scorer
-        redirect_to admin_default_scorer_path(@scorer)
+        redirect_to admin_communal_scorer_path(@scorer)
       else
         render action: :edit
       end
@@ -69,11 +68,12 @@ module Admin
     private
 
     def scorer_params
-      return unless params[:default_scorer]
+      return unless params[:communal_scorer]
 
-      params.require(:default_scorer).permit(
+      params.require(:communal_scorer).permit(
         :code,
         :name,
+        :communal,
         :manual_max_score,
         :manual_max_score_value,
         :show_scale_labels,
@@ -82,12 +82,12 @@ module Admin
         :state,
         scale: []
       ).tap do |whitelisted|
-        whitelisted[:scale_with_labels] = params[:default_scorer][:scale_with_labels]
+        whitelisted[:scale_with_labels] = params[:communal_scorer][:scale_with_labels]
       end
     end
 
     def set_scorer
-      @scorer = DefaultScorer.where(id: params[:id]).first
+      @scorer = Scorer.where(id: params[:id]).first
 
       render json: { error: 'Not Found!' }, status: :not_found unless @scorer
     end

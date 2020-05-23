@@ -2,7 +2,6 @@
 
 require_relative 'ga'
 require_relative 'tracker/case'
-require_relative 'tracker/default_scorer'
 require_relative 'tracker/query'
 require_relative 'tracker/rating'
 require_relative 'tracker/scorer'
@@ -14,7 +13,6 @@ require_relative 'tracker/user'
 module Analytics
   module Tracker
     extend Case
-    extend DefaultScorer
     extend Query
     extend Rating
     extend Scorer
