@@ -42,9 +42,9 @@ angular.module('QuepidApp')
         }
       });
 
-      $scope.showScorer = function() {
+      $scope.pickAdHocScorer = function() {
         $uibModal.open({
-          templateUrl:  'views/scorer.html',
+          templateUrl:  'views/pick_ad_hoc_scorer.html',
           backdrop:     'static',
           controller:   'ScorerCtrl',
           resolve:      {
@@ -64,16 +64,9 @@ angular.module('QuepidApp')
         return ($scope.query.score().score < $scope.query.threshold) && $scope.query.thresholdEnabled;
       };
 
-      $scope.hasTest = function() {
-        //return ($scope.query.test !== null && $scope.query.effectiveScorer().scorerId === $scope.query.test.scorerId);
-        console.log('Checking has test for ' + $scope.query.queryId + ' and ' + ($scope.query.test !== null));
-        return ($scope.query.test !== null);
-      };
-
-      $scope.hasQuerySpecificScorer = function() {
-        console.log('Checking scorer enabled' + $scope.query.scorerEnbl);
-        return $scope.query.scorerEnbl;
-      };
+      $scope.hasEnabledTest = function() {
+        return ($scope.query.test !== null && $scope.query.scorerEnbl);
+      }
 
       $scope.displayed = new DisplayConfig();
       /*$scope.diff = {disable: function() {}};

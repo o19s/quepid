@@ -84,7 +84,7 @@ angular.module('QuepidApp')
       $scope.queries                  = {};
       $scope.queries.sortableOptions  = sortableOptions;
 
-      $scope.pickScorer               = pickScorer;
+      $scope.pickCaseScorer           = pickCaseScorer;
       $scope.sortBy                   = sortBy;
 
       $scope.getScorer                = getScorer;
@@ -283,9 +283,9 @@ angular.module('QuepidApp')
       }
 
       /*jslint latedef:false*/
-      function pickScorer() {
+      function pickCaseScorer() {
         $uibModal.open({
-          templateUrl: 'views/scorer.html',
+          templateUrl: 'views/pick_scorer.html',
           backdrop:    'static',
           controller:  'ScorerCtrl',
           resolve:     {

@@ -46,9 +46,9 @@ angular.module('QuepidApp')
 
       function updateButtonLabel (value) {
         if (value === 'ad-hoc') {
-          $scope.okButtonLabel = 'Save and Select Scorer';
+          $scope.okButtonLabel = 'Save Unit Test Scorer';
         } else {
-          $scope.okButtonLabel = 'Select Scorer';
+          $scope.okButtonLabel = 'Restore Case Scorer';
         }
 
         $scope.scorerSelector = value;
@@ -76,14 +76,15 @@ angular.module('QuepidApp')
 
       function ok() {
         if (parent.attachType === 'query') {
+          var query = parent.attachTo;
           if ($scope.scorerSelector === 'pre'){
-            setScorerForQuery(parent.attachTo);
+            query.unassignScorer();
           } else if ($scope.scorerSelector === 'ad-hoc') {
             parent.attachTo.saveTest($scope.scorer)
-              .then(function(response) {
-                $scope.activeScorer = response.data;
-
-                setScorerForQuery(parent.attachTo);
+              .then(function(scorer) {
+                //deal with the updated unit test style scorer
+                $scope.activeScorer = scorer;
+                query.saveScorer($scope.activeScorer);
 
                 $uibModalInstance.close($scope.activeScorer);
               });

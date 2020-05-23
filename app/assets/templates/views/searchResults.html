@@ -5,7 +5,7 @@
       diff-label="''"
       full-diff-name="''"
       max-score="maxScore || 100";
-      ng-click="showScorer()"
+      ng-click="pickAdHocScorer()"
       scorable="query"
       score-label="''"
       score-type="'query'"
@@ -50,11 +50,7 @@
       </strong>
     </span>
 
-    <span ng-show="hasQuerySpecificScorer()" class="fa-stack fa-lg" title="Using {{query.scorer.name}}">
-      <i class="fa fa-frog fa-stack-2x"></i>
-    </span>
-
-    <span ng-show="hasTest()" class="fa-stack fa-lg" title="Custom Unit Test">
+    <span ng-show="hasEnabledTest()" class="fa-stack fa-lg" title="Unit Test Specified">
       <i class="fa fa-stroopwafel fa-stack-2x"></i>
     </span>
 
