@@ -137,14 +137,6 @@ angular.module('QuepidApp')
         }
       }
 
-      function setScorerForQuery(query) {
-        if ($scope.activeScorer) {
-          query.saveScorer($scope.activeScorer);
-        } else {
-          query.unassignScorer();
-        }
-      }
-
       function usingDefaultScorer() {
         return !$scope.activeScorer;
       }

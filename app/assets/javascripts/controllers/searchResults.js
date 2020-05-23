@@ -66,7 +66,7 @@ angular.module('QuepidApp')
 
       $scope.hasEnabledTest = function() {
         return ($scope.query.test !== null && $scope.query.scorerEnbl);
-      }
+      };
 
       $scope.displayed = new DisplayConfig();
       /*$scope.diff = {disable: function() {}};
