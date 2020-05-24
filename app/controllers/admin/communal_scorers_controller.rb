@@ -17,11 +17,15 @@ module Admin
 
     def create
       @scorer = Scorer.new scorer_params
+      @scorer.communal = true
 
       if @scorer.save
         redirect_to admin_communal_scorer_path(@scorer)
       else
-        render action: :new
+        require 'pp'
+        pp @scorer
+        pp @scorer.errors
+        render action: :edit
       end
     rescue ActiveRecord::SerializationTypeMismatch
       # Get a version of the params without the scale, which is causing
