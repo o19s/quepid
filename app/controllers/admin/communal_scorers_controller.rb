@@ -22,10 +22,7 @@ module Admin
       if @scorer.save
         redirect_to admin_communal_scorer_path(@scorer)
       else
-        require 'pp'
-        pp @scorer
-        pp @scorer.errors
-        render action: :edit
+        render action: :new
       end
     rescue ActiveRecord::SerializationTypeMismatch
       # Get a version of the params without the scale, which is causing
@@ -72,9 +69,9 @@ module Admin
     private
 
     def scorer_params
-      return unless params[:communal_scorer]
+      return unless params[:scorer]
 
-      params.require(:communal_scorer).permit(
+      params.require(:scorer).permit(
         :code,
         :name,
         :communal,
@@ -86,7 +83,7 @@ module Admin
         :state,
         scale: []
       ).tap do |whitelisted|
-        whitelisted[:scale_with_labels] = params[:communal_scorer][:scale_with_labels]
+        whitelisted[:scale_with_labels] = params[:scorer][:scale_with_labels]
       end
     end
 

@@ -33,7 +33,7 @@ $(function() {
 
     codeElement.closest('form').submit(function () {
       var value       = editor.getSession().getValue();
-      var valueField  = $('#default_scorer_code');
+      var valueField  = $('#scorer_code');
       valueField.val(value);
     });
   }
@@ -52,7 +52,7 @@ $(function() {
           .append($('<input>')
             .attr({
               type: 'text',
-              name: 'default_scorer[scale_with_labels][' + value + ']'
+              name: 'scorer[scale_with_labels][' + value + ']'
             })
             .addClass('form-control scale-label clearfix')
           );

@@ -94,5 +94,5 @@ class Scorer < ActiveRecord::Base
     scale.join(',') unless scale.nil?
     # scale&.join(',')
     # rubocop:enable Style/SafeNavigation
-  end  
+  end
 end
