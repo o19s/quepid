@@ -68,7 +68,7 @@ angular.module('QuepidApp')
               $log.info('INFO: Modal dismissed');
             }
           );
-        };
+        }
       }
     }
   ]);

@@ -58,8 +58,6 @@ module Api
       end
 
       describe 'user with edit permissions on scorer' do
-
-
         describe 'when user is an administrator' do
           let(:user) { users(:doug) }
 
@@ -91,14 +89,8 @@ module Api
             body = JSON.parse(response.body)
 
             assert_equal body['permissions']['scorer']['update_communal'], false
-
-            pp body
           end
         end
-
-
-
-
       end
     end
   end
