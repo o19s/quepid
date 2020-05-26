@@ -226,7 +226,7 @@ unless custom_scorer_as_default_user.default_scorer != Scorer.system_default_sco
     code:   'setScore(100);'
   }
   custom_scorer = custom_scorer_as_default_user.owned_scorers.create scorer_params
-  custom_scorer_as_default_user.update scorer_default_id: custom_scorer.id
+  custom_scorer_as_default_user.update default_scorer_id: custom_scorer.id
 end
 
 puts "End of seeding scorers................"
