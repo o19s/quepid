@@ -36,14 +36,14 @@
         View
         &nbsp;&nbsp;&nbsp;
         <div class="btn-group">
-          <label class="btn btn-default" ng-model="scorerFilters.typeFilter" uib-btn-radio="'all'">
-            All
+          <label class="btn btn-default" ng-model="scorerFilters.typeFilter" uib-btn-radio="'communal'">
+            Communal
           </label>
-          <label class="btn btn-default" ng-model="scorerFilters.typeFilter" uib-btn-radio="'not_test'">
-            Non Tests
+          <label class="btn btn-default" ng-model="scorerFilters.typeFilter" uib-btn-radio="'custom'">
+            Custom
           </label>
           <label class="btn btn-default" ng-model="scorerFilters.typeFilter" uib-btn-radio="'test'">
-            Tests
+            Unit Test Style
           </label>
         </div>
       </div>
@@ -58,11 +58,11 @@
     <div class="clearfix"></div>
 
     <div id='scorers-listing'>
-      <div ng-if="advanced.userScorers.length !== 0">
+      <div>
         <div class="row listing-header">
           <div class="col-xs-12">
             <div class="row">
-              <span class="col-xs-1">Name</span>
+              <span class="col-xs-1">Name check</span>
               <span class="col-xs-5">
                 Code/Scale (<a target="_blank" href="http://quepid.com/docs/#scorers-custom">learn more</a>)
               </span>
@@ -73,8 +73,8 @@
           </div>
         </div>
 
-        <ul ng-model="advanced.userScorers" class="scorers-list row">
-          <li dir-paginate="scorer in advanced.userScorers | scorerType:scorerFilters.typeFilter | filter:q | itemsPerPage: pagination.scorers.pageSize : 'scorers' track by scorer.scorerId" current-page="pagination.scorers.currentPage" pagination-id="scorers" class="scorers-list-item col-xs-12">
+        <ul ng-model="advanced.combinedScorers" class="scorers-list row">
+          <li dir-paginate="scorer in advanced.combinedScorers | scorerType:scorerFilters.typeFilter | filter:q | itemsPerPage: pagination.scorers.pageSize : 'scorers' track by scorer.scorerId" current-page="pagination.scorers.currentPage" pagination-id="scorers" class="scorers-list-item col-xs-12">
             <scorer-listing scorer="scorer"></scorer-listing>
           </li>
         </ul>
@@ -84,10 +84,6 @@
           pagination-id="scorers"
         ></dir-pagination-controls>
       </div>
-
-      <p ng-if="advanced.userScorers.length === 0 && !loading">
-        No scorers to show!
-      </p>
 
       <p ng-show="loading" class="text-center">
         <i class="fa fa-spin fa-spinner"></i>

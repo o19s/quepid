@@ -8,6 +8,10 @@ angular.module('QuepidApp')
           return items.filter(function(item) { return item.queryTest; });
         } else if (test === 'not_test') {
           return items.filter(function(item) { return !item.queryTest; });
+        } else if (test === 'communal') {
+          return items.filter(function(item) { return item.communal && !item.queryTest; });
+        } else if (test === 'custom') {
+          return items.filter(function(item) { return !item.communal && !item.queryTest; });
         } else {
           return items;
         }
