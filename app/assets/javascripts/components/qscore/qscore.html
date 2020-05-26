@@ -9,7 +9,7 @@
   ng-class="ctrl.scoreType | chooseScoreClass"
 >
   <span class="scorable-score">
-    {{ ctrl.score || '?' | scoreDisplay }}
+    {{ ctrl.score | scoreDisplay }}
   </span>
   <span class="query-score-label low-profile">
     {{ ctrl.scoreLabel }}
