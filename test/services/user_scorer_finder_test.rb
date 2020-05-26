@@ -90,7 +90,6 @@ class UserScorerFinderTest < ActiveSupport::TestCase
     end
 
     test 'works when filtering by id' do
-      puts "The owned scorer is #{owned_scorer.name}"
       result = service.where(id: owned_scorer.id)
         .order(name: :asc)
         .first
