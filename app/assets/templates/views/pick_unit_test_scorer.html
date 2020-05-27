@@ -1,0 +1,29 @@
+<div class="modal-header">
+  <h3>Score this query seperately "unit test" style?</h3>
+</div>
+<div class="modal-body">
+  <div ng-if="attachType === 'query'">
+    <div class="radio">
+      <label>
+        <input type="radio" ng-model="scorerSelector" value="pre" ng-change="updateButtonLabel(scorerSelector)">
+        Stick to the existing Case scorer.
+      </label>
+    </div>
+
+    <div class="radio">
+      <label>
+        <input type="radio" ng-model="scorerSelector" value="unit-test" ng-change="updateButtonLabel(scorerSelector)">
+        Test with an unit test style scorer:
+      </label>
+    </div>
+
+    <div ng-show="scorerSelector === 'unit-test'">
+      <unit-test-scorer scorer="scorer"></unit-test-scorer>
+    </div>
+  </div>
+</div>
+
+<div class="modal-footer">
+  <button class="btn btn-success" ng-click="ok()">{{okButtonLabel}}</button>
+  <button class="btn btn-default" ng-click="cancel()">Cancel</button>
+</div>

@@ -29,22 +29,22 @@ angular.module('QuepidApp')
       if ( $scope.query.test !== null &&
         $scope.query.effectiveScorer().scorerId === $scope.query.test.scorerId
       ) {
-        scorerSelector = 'ad-hoc';
+        scorerSelector = 'unit-test';
       }
 
       $scope.$watch('query.effectiveScorer()', function() {
         if ( $scope.query.test !== null &&
           $scope.query.effectiveScorer().scorerId === $scope.query.test.scorerId
         ) {
-          scorerSelector = 'ad-hoc';
+          scorerSelector = 'unit-test';
         } else {
           scorerSelector = 'pre';
         }
       });
 
-      $scope.pickAdHocScorer = function() {
+      $scope.pickUnitTestScorer = function() {
         $uibModal.open({
-          templateUrl:  'views/pick_ad_hoc_scorer.html',
+          templateUrl:  'views/pick_unit_test_scorer.html',
           backdrop:     'static',
           controller:   'ScorerCtrl',
           resolve:      {

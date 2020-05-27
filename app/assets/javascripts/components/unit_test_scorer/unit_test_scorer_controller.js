@@ -3,7 +3,7 @@
 /*jslint latedef:false*/
 
 angular.module('QuepidApp')
-  .controller('AdHocScorerCtrl', [
+  .controller('UnitTestScorerCtrl', [
     '$scope',
     'scorerControllerActionsSvc',
     'customScorerSvc',

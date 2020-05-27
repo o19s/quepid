@@ -1,13 +1,13 @@
 'use strict';
 
 angular.module('QuepidApp')
-  .directive('adHocScorer', [
+  .directive('unitTestScorer', [
     function () {
       return {
         restrict:     'E',
-        controller:   'AdHocScorerCtrl',
+        controller:   'UnitTestScorerCtrl',
         controllerAs: 'ctrl',
-        templateUrl:  'ad_hoc_scorer/ad_hoc_scorer.html',
+        templateUrl:  'unit_test_scorer/unit_test_scorer.html',
         scope:        {
           scorer: '=',
         },

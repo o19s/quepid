@@ -45,7 +45,7 @@ angular.module('QuepidApp')
       }
 
       function updateButtonLabel (value) {
-        if (value === 'ad-hoc') {
+        if (value === 'unit-test') {
           $scope.okButtonLabel = 'Save Unit Test Scorer';
         } else {
           $scope.okButtonLabel = 'Restore Case Scorer';
@@ -79,7 +79,7 @@ angular.module('QuepidApp')
           var query = parent.attachTo;
           if ($scope.scorerSelector === 'pre'){
             query.unassignScorer();
-          } else if ($scope.scorerSelector === 'ad-hoc') {
+          } else if ($scope.scorerSelector === 'unit-test') {
             parent.attachTo.saveTest($scope.scorer)
               .then(function(scorer) {
                 //deal with the updated unit test style scorer
