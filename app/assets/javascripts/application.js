@@ -52,6 +52,7 @@
 //= require angular-timeago/src/timeAgo
 //= require angular-csv-import/dist/angular-csv-import
 //= require angular-flash/dist/angular-flash
+//= require angular-animate/angular-animate
 //= require ng-tags-input/build//ng-tags-input
 //= require FileSaver.js/FileSaver
 //= require urijs/src/URI
