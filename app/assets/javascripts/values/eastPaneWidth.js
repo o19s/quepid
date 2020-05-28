@@ -1,4 +1,4 @@
 'use strict';
 
 angular.module('QuepidApp')
-  .value('eastPaneWidth', 400);
+  .value('eastPaneWidth', 450);

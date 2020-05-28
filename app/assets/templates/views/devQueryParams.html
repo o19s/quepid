@@ -1,7 +1,7 @@
 <div id="queryParamsArea">
   <ul class="nav nav-tabs">
-    <li ng-class="{tabBoxSelected: qp.curTab == 'developer'}" id="developerTab" ng-click="qp.toggleTab('developer')">Tune</li>
-    <li ng-class="{tabBoxSelected: qp.curTab == 'curator'}" id="curatorTab" ng-click="qp.toggleTab('curator')">Variables</li>
+    <li ng-class="{tabBoxSelected: qp.curTab == 'developer'}" id="developerTab" ng-click="qp.toggleTab('developer')">Query</li>
+    <li ng-class="{tabBoxSelected: qp.curTab == 'curator'}" id="curatorTab" ng-click="qp.toggleTab('curator')">Tuning Knobs</li>
     <li ng-class="{tabBoxSelected: qp.curTab == 'engineSettings'}" id="engineTab" ng-click="qp.toggleTab('engineSettings')">Settings</li>
     <li ng-class="{tabBoxSelected: qp.curTab == 'history'}" id="historyTab" ng-click="qp.toggleTab('history')">History</li>
     <li ng-class="{tabBoxSelected: qp.curTab == 'annotations'}" id="annotationsTab" ng-click="qp.toggleTab('annotations')">Annotations</li>
@@ -36,15 +36,23 @@
     <div class="settings-tab" ng-show="qp.curTab == 'curator'">
       <div class="rerunnable-settings-tab">
         <p ng-show="settings.selectedTry.curatorVars.length == 0">
-          What's this tab? Knobs and Dials to fine tune your search! Define variables in your template with <code>##</code>, such as this boost: <code>title^##titleBoost##</code>. Play with the values in this tab. Submit to rerun with the new values!
+          What's this tab do? Knobs allow you to fine tune your search!
+          Define variables in your query template with <code>##</code>, such as this boost: <code>title^##titleBoost##</code>.
+          Play with the values in this tab. Submit to rerun with the new values!
         </p>
 
-        <h4 ng-show="settings.selectedTry.curatorVars.length > 0">Your Knobs</h4>
+        <h4>Tuning Knobs</h4>
 
+        <p class="help-block tip">
+          Add and remove knobs from here by editing your query.
+        </p>
         <div ng-repeat="curatorVar in settings.selectedTry.curatorVars">
           <div ng-show="curatorVar.inQueryParams" class="slider-wrap clearfix">
               <label>{{ curatorVar.name }}:</label>
-              <input type="number" class="slider-val" min=0 max=10000000000 ng-model="curatorVar.value" auto-grow>
+              <input type="number" class="slider-val" min=0 max=10000000000 ng-model="curatorVar.value" auto-grow/>
+              <p ng-show="curatorVar.inQueryParams != true">
+                This knob/dial is not currently used by the query!
+              </p>
           </div>
         </div>
       </div> <!-- end .rerunnable-settings-tab -->
