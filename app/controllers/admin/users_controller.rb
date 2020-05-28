@@ -1,13 +1,25 @@
 # frozen_string_literal: true
 
+require 'csv'
+
 module Admin
   class UsersController < Admin::AdminController
     before_action :set_user, only: %i[show edit update]
 
     # GET /admin/users
     # GET /admin/users.json
+    # GET /admin/users.csv
     def index
       @users = User.all
+
+      respond_to do |format|
+        format.json
+        format.html
+        format.csv do
+          headers['Content-Disposition'] = "attachment; filename=\"quepid_users.csv\""
+          headers['Content-Type'] ||= 'text/csv'
+        end
+      end
     end
 
     # GET /admin/users/1
