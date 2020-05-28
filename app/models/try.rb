@@ -32,7 +32,7 @@ class Try < ActiveRecord::Base
     solr:          {
       query_params: 'q=#$query##',
       search_url:   'http://quepid-solr.dev.o19s.com:8985/solr/tmdb/select',
-      field_spec:   'title',
+      field_spec:   'id:id title:title',
     },
     es:            {
       query_params: [
