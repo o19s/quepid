@@ -24,6 +24,7 @@ angular.module('QuepidApp')
         angular.forEach(this.cases, function(c) {
           // This is really ugly.
           c.caseName = c.case_name;
+          c.lastTry  = c.last_try_number;
         });
 
 
