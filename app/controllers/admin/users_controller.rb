@@ -16,7 +16,7 @@ module Admin
         format.json
         format.html
         format.csv do
-          headers['Content-Disposition'] = "attachment; filename=\"quepid_users.csv\""
+          headers['Content-Disposition'] = 'attachment; filename=\"quepid_users.csv\"'
           headers['Content-Type'] ||= 'text/csv'
         end
       end
