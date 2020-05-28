@@ -25,6 +25,8 @@ Speed of development has been an issue with Quepid.  In this release we've worke
 * Audited code base to prune dependencies and remove unused code.  https://github.com/o19s/quepid/pull/121, https://github.com/o19s/quepid/pull/119, https://github.com/o19s/quepid/pull/118, https://github.com/o19s/quepid/pull/116 all worked towards this goal.
 * Turns out Quepid has a [_Curate_ interface](https://twitter.com/dep4b/status/1254885186204041217).  It isn't supported, so in the interest of reducing our codebase, removing it.  Points the way for the future however!  https://github.com/o19s/quepid/pull/123.
 * Deal with sameSite cookie warnings from Firefox.  https://github.com/o19s/quepid/pull/131 by @epugh fixes https://github.com/o19s/quepid/issues/130.
+* curator variables (i.e knobs and dials) that aren't used in query cause weird UI.  https://github.com/o19s/quepid/pull/135 by @epugh fixes https://github.com/o19s/quepid/issues/64.
+* Saving two annotations in a row doesn't work, you need to rescore per annotation.  Fixed in https://github.com/o19s/quepid/pull/136 by @epugh.
 
 ### Bugs
 
