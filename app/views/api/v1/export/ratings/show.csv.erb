@@ -1,6 +1,5 @@
 <%
 headers = ['query','docid','rating']
-data = []
 %>
 <%= ::CSV.generate_line(headers).html_safe %><%
 @case.queries.each do |query|
