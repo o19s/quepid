@@ -14,7 +14,6 @@ module Api
 
           respond_to do |format|
             format.json do
-              puts "dammit in json"
               json_template = file_format.nil? ? 'show.json.jbuilder' : "show.#{file_format.downcase}.json.jbuilder"
 
               render json_template
@@ -24,7 +23,6 @@ module Api
               headers['Content-Type'] ||= 'text/csv'
             end
             format.txt do
-              puts "setting some headers"
               headers['Content-Disposition'] = "attachment; filename=\"case_#{@case.id}_judgements.txt\""
               headers['Content-Type'] ||= 'text/plain'
             end
