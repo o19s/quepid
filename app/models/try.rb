@@ -91,6 +91,34 @@ class Try < ActiveRecord::Base
     EsArgParser.parse(query_params, curator_vars_map)
   end
 
+  def id_from_field_spec
+    # much of this logic is inspired by https://github.com/o19s/splainer-search/blob/master/services/fieldSpecSvc.js
+
+    # rubocop:disable Style/IfUnlessModifier
+    # rubocop:disable Style/MultipleComparison
+    # rubocop:disable Style/Next
+    if 'id' == field_spec || '_id' == field_spec
+      return field_spec
+    end
+
+    field_specs = field_spec.split
+    field_specs.each do |fs|
+      if 'id' == fs || '_id' == fs
+        return fs
+      end
+
+      type_and_field = fs.split(':')
+      if 2 == type_and_field.length
+        if 'id' == type_and_field[0]
+          return type_and_field[1]
+        end
+      end
+    end
+    # rubocop:enable Style/IfUnlessModifier
+    # rubocop:enable Style/MultipleComparison
+    # rubocop:enable Style/Next
+  end
+
   private
 
   def set_defaults

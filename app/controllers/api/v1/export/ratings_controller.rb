@@ -12,7 +12,7 @@ module Api
         def show
           respond_to do |format|
             format.json do
-              file_format = params[:file_format]  
+              file_format = params[:file_format]
               json_template = file_format.nil? ? 'show.json.jbuilder' : "show.#{file_format.downcase}.json.jbuilder"
 
               render json_template
