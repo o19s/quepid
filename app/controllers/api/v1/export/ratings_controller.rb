@@ -10,9 +10,11 @@ module Api
         before_action :check_case
 
         def show
+          file_format = params[:file_format]
+
           respond_to do |format|
             format.json do
-              file_format = params[:file_format]
+              puts "dammit in json"
               json_template = file_format.nil? ? 'show.json.jbuilder' : "show.#{file_format.downcase}.json.jbuilder"
 
               render json_template
@@ -20,6 +22,11 @@ module Api
             format.csv do
               headers['Content-Disposition'] = "attachment; filename=\"case_#{@case.id}_judgements.csv\""
               headers['Content-Type'] ||= 'text/csv'
+            end
+            format.txt do
+              puts "setting some headers"
+              headers['Content-Disposition'] = "attachment; filename=\"case_#{@case.id}_judgements.txt\""
+              headers['Content-Type'] ||= 'text/plain'
             end
           end
         end

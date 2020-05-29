@@ -49,6 +49,17 @@ module Api
             assert_equal body['queries'][0]['placeholders']['$query'],  the_case.queries[0].query_text
           end
         end
+
+        describe 'Exporting a case in LTR text format' do
+          let(:the_case) { cases(:one) }
+
+          test 'returns case info' do
+            get :show, case_id: the_case.id, format: :txt
+            assert_response :ok
+
+            assert_equal response.content_type, 'text/plain'
+          end
+        end
       end
     end
   end
