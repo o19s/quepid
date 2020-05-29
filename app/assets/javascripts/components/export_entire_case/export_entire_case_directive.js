@@ -5,10 +5,12 @@ angular.module('QuepidApp')
     function () {
       return {
         restrict:         'E',
-        scope:            true,
         controller:       'ExportEntireCaseCtrl',
         controllerAs:     'ctrl',
         templateUrl:      'export_entire_case/export_entire_case.html',
+        scope:        {
+          theCase: '=',
+        }
       };
     }
   ]);

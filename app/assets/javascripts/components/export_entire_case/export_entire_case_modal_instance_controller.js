@@ -10,7 +10,16 @@ angular.module('QuepidApp')
       var ctrl = this;
 
       ctrl.theCase = theCase;
-      ctrl.snapshots  = querySnapshotSvc.snapshots;
+
+      // If called from the cases listing page, then we need the call back with the bootstrap,
+      // otherwise on the main page the querySnapshotSvc.snapshots was bootstrapped.
+      ctrl.snapshots = querySnapshotSvc.snapshots;
+      if (ctrl.theCase.caseNo !== querySnapshotSvc.getCaseNo()){
+        querySnapshotSvc.bootstrap(ctrl.theCase.caseNo).then(function() {
+            ctrl.snapshots = querySnapshotSvc.snapshots;
+          }
+        );
+      }
 
       ctrl.options = {
         which: 'undefined',

@@ -19,6 +19,9 @@ angular.module('QuepidApp')
       var caseNo    = -1;
       var version   = 0;
       svc.snapshots = {};
+      svc.getCaseNo = function(){
+        return caseNo;
+      };
 
       svc.importSnapshots = importSnapshots;
       svc.get             = get;
