@@ -2,7 +2,9 @@
 
 ## 6.2.0 - ??
 
-This is a major release of Quepid that finally introduces the standard _search geek_ scorers like NDCG, DCG, Average Precision, and friends by default.  We've also fixed a large number of bugs introduced by changes in browser security models and recent updates to Elasticsearch and Solr.  
+This is a major release of Quepid that finally introduces the standard _search geek_ scorers like NDCG, DCG, Average Precision, and friends by default.  We've also fixed a large number of bugs introduced by changes in browser security models and recent updates to Elasticsearch and Solr.
+
+The burgeoning suite of open source tools for relevancy all require judgement lists.  We revamped Quepid to handle exporting and importing from your favorite tools like Quaerite and RRE, as well as an LTR formatted export.
 
 Speed of development has been an issue with Quepid.  In this release we've worked on developer happiness by auditing all of the dependencies we include.  We're removed quite a few Ruby gems and NodeJS packages that weren't used, and upgraded the rest (replacing PhantomJS with Puppeteer for headless testing).  `yarn.lock` dropped from 6706 lines to 1519 and `Gemfile.lock` from 448 to 330!  This allowed us to finally move to ECMAScript 6 and to Node version 10.  Lastly we have cut the production Quepid Docker image from almost 3 GB to 2.3 GB.
 
@@ -12,6 +14,7 @@ Speed of development has been an issue with Quepid.  In this release we've worke
 * Support Basic Auth in Quepid with Elasticsearch.  https://github.com/o19s/quepid/pull/114 and https://github.com/o19s/splainer-search/pull/79 by @CGamesPlay fixes https://github.com/o19s/quepid/issues/109.
 * When installing Quepid, use `thor user:create` to create an administrator!  https://github.com/o19s/quepid/pull/112 by @epugh fixes https://github.com/o19s/quepid/issues/107.
 * Enhanced export ratings function that follows the standard `query,docid,rating` supports full export/import lifecycle and easier integration with other tools.  https://github.com/o19s/quepid/pull/128 by @epugh fixes https://github.com/o19s/quepid/issues/126.
+* Export ratings in RRE and LTR file formats.  https://github.com/o19s/quepid/pull/137 by @epugh fixes https://github.com/o19s/quepid/issues/133
 
 ### Improvements
 
