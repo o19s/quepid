@@ -1,7 +1,7 @@
 'use strict';
 
 angular.module('QuepidApp')
-  .controller('ExportEntireCaseModalInstanceCtrl', [
+  .controller('ExportCaseModalInstanceCtrl', [
     '$scope',
     '$uibModalInstance',
     'querySnapshotSvc',
