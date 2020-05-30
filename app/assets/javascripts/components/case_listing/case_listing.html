@@ -20,36 +20,9 @@
             <delete-case this-case="ctrl.thisCase"></delete-case>
           </span>
 
-          <span ng-if="ctrl.canExport()">
-            <export-case icon-only="true" the-case="ctrl.thisCase"></export-case>
-          </span>
-
-          <span ng-if="!ctrl.canExport()">
-            <a
-              class="action-icon"
-              uib-popover-template="'case_listing/_export.html'"
-              popover-placement="auto"
-              popover-trigger="mouseenter"
-            >
-              <i
-                class="fa fa-upload"
-                area-hidden="true"
-                title="Export Case"
-                alt="Export Case"
-              ></i>
-
-              <i
-                class="glyphicon glyphicon-export"
-                area-hidden="true"
-                title="Export Ratings"
-                alt="Export Ratings"
-              ></i>
-
-              <sup class="text-warning fa fa-exclamation-circle"></sup>
-            </a>
-          </span>
-
           <span>
+            <export-case icon-only="true" the-case="ctrl.thisCase"></export-case>
+
             <share-case
               acase="ctrl.thisCase"
               icon-only="true"

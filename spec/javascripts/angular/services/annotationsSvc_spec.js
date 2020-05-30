@@ -48,7 +48,6 @@ describe('Service: annotationsSvc', function () {
         score:      0.0,
         all_rated:  true,
         created_at: "2016-04-13T20:02:11.702Z",
-        hasData:    false,
         shallow:    true
       },
       user: {
@@ -109,7 +108,6 @@ describe('Service: annotationsSvc', function () {
         score:      0.0,
         all_rated:  true,
         created_at: "2016-04-13T20:02:11.702Z",
-        hasData:    false,
         shallow:    true
       },
       user: {

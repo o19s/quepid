@@ -46,10 +46,5 @@ class Score < ActiveRecord::Base
       .limit(1)
       .first
   }
-
-  # rubocop:disable Naming/PredicateName
-  def has_export_data?
-    queries.present?
-  end
-  # rubocop:enable Naming/PredicateName
+  
 end
