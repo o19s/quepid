@@ -37,7 +37,7 @@ Speed of development has been an issue with Quepid.  In this release we've worke
 * fixed fields with a `.` like `foo.bar` failing to be rendered in UI in Splainer-Search v2.5.9.  https://github.com/o19s/quepid/issues/106 created by @rjurney.
 * When a try number is not specified for a case, automatically redirect to the most recent try.  https://github.com/o19s/quepid/pull/122 by @epugh fixes https://github.com/o19s/quepid/issues/110 by @binarymax.
 * Case shared via Team with me has NaN for the Try.  https://github.com/o19s/quepid/pull/134 by @epugh fixes https://github.com/o19s/quepid/issues/83.
-* Not able to export cases from a Team page.  Commit 021bda8627463986f1ff04ffb1c290195c428c5b by @epugh fixed this.
+* Not able to export cases from a Team page.  Commit quepid@021bda8627463986f1ff04ffb1c290195c428c5b by @epugh fixed this.
 
 
 ## 6.1.1 - 2020-07-03
