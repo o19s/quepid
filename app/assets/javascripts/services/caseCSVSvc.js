@@ -14,8 +14,9 @@
   angular.module('QuepidApp')
     .service('caseCSVSvc', [
       '$http',
+      '$filter',
       'queriesSvc',
-      function($http, queriesSvc) {
+      function($http, $filter, queriesSvc) {
         var self          = this;
         var EOL           = '\r\n';
         var textDelimiter = '"';
@@ -26,7 +27,9 @@
         self.snapshotHeaderToCSV        = snapshotHeaderToCSV;
         self.stringify                  = stringify;
         self.stringifyQueries           = stringifyQueries;
-        self.exportRatings              = exportRatings;
+        self.exportBasicFormat          = exportBasicFormat;
+        self.exportRREFormat            = exportRREFormat;
+        self.exportLTRFormat            = exportLTRFormat;
         self.stringifyQueriesDetailed   = stringifyQueriesDetailed;
         self.stringifySnapshot          = stringifySnapshot;
 
@@ -181,21 +184,45 @@
         }
 
         /**
-         * Very similar to stringifyQueries, but the logic is all
+         * Somewhat similar to stringifyQueries, but the logic is all
          * on the server side.
          *
          * @param aCase
          *
          */
-        function exportRatings(aCase) {
+        function exportBasicFormat(aCase) {
           $http.get('/api/export/ratings/' + aCase.caseNo + '.csv')
             .then(function(response) {
               var blob = new Blob([response.data], {
                 type: 'text/csv'
               });
-              
+
               /*global saveAs */
               saveAs(blob, aCase.caseName + '_basic.csv');
+            });
+        }
+
+        function exportRREFormat(aCase) {
+          $http.get('/api/export/ratings/' + aCase.caseNo + '.json?file_format=rre')
+            .then(function(response) {
+              var blob = new Blob([$filter('json')(response.data)], {
+                type: 'application/json'
+              });
+
+              /*global saveAs */
+              saveAs(blob, aCase.caseName + '_rre.json');
+            });
+        }
+
+        function exportLTRFormat(aCase) {
+          $http.get('/api/export/ratings/' + aCase.caseNo + '.txt?file_format=ltr')
+            .then(function(response) {
+              var blob = new Blob([response.data], {
+                type: 'text/plain'
+              });
+
+              /*global saveAs */
+              saveAs(blob, aCase.caseName + '_ltr.txt');
             });
         }
 

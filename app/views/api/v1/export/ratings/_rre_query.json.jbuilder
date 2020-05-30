@@ -16,7 +16,7 @@ query.ratings.each do |r|
 end
 
 json.relevant_documents do
-  grouped_ratings.sort { |key| key }.to_h.each do |key, value|
+  grouped_ratings.sort.to_h.each do |key, value|
     json.set!(key, value)
   end
 end

@@ -10,9 +10,8 @@
   <h3 class="modal-title">Export case: <span class="modal-case">{{ ctrl.theCase.caseName }}</span></h3>
 </div>
 <div class="modal-body">
-  <p>You have the option to export either a general overview of the case or a detailed result drill down.</p>
+  <p>There are a number of formats for exporting data from Quepid.</p>
 
-  <label>Export type</label>
   <div class="form-group">
     <input type="radio" id="general" name="exportSelection" value="general" ng-model="ctrl.options.which">
     <label for="general">General</label>
@@ -50,7 +49,23 @@
     <input type="radio" id="basic" name="exportSelection" value="basic" ng-model="ctrl.options.which">
     <label for="basic">Basic</label>
     <span class="help-block">
-      Simplest CSV file format with just <code>query,docid,rating</code>.
+      Simplest CSV file format with just <code>query,docid,rating</code>.  Compatible with projects like <a href="https://github.com/tballison/quaerite" target="_blank">Quaerite</a> among others.
+    </span>
+  </div>
+
+  <div class="form-group">
+    <input type="radio" id="rre" name="exportSelection" value="rre" ng-model="ctrl.options.which">
+    <label for="rre">Rated Ranking Evaluator</label>
+    <span class="help-block">
+      Need to gather relevance metrics for 1000's of queries? <a href="https://github.com/SeaseLtd/rated-ranking-evaluator" target="_blank">Rated Ranking Evaluator</a> is a great option!  This exports
+      the judgement list in the RRE format.
+    </span>
+  </div>
+  <div class="form-group">
+    <input type="radio" id="ltr" name="exportSelection" value="ltr" ng-model="ctrl.options.which">
+    <label for="ltr">Learning to Rank</label>
+    <span class="help-block">
+      LTR uses a rather odd format of <code>rating qid:queryid # docid</code>, eg <code>1 qid:23 # 193</code>.
     </span>
   </div>
 </div>

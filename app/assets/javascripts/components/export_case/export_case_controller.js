@@ -100,7 +100,17 @@ angular.module('QuepidApp')
         }
         else if ( options.which === 'basic' ) {
          $log.info('Selected "basic" as export option.');
-         caseCSVSvc.exportRatings(ctrl.theCase);
+         caseCSVSvc.exportBasicFormat(ctrl.theCase);
+
+        }
+        else if ( options.which === 'rre' ) {
+         $log.info('Selected "rre" as export option.');
+         caseCSVSvc.exportRREFormat(ctrl.theCase);
+
+        }
+        else if ( options.which === 'ltr' ) {
+         $log.info('Selected "ltr" as export option.');
+         caseCSVSvc.exportLTRFormat(ctrl.theCase);
 
         }
       }
