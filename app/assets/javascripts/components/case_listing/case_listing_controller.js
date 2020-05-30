@@ -55,7 +55,7 @@ angular.module('QuepidApp')
       }
 
       function canExport() {
-        if (angular.isDefined(ctrl.thisCase.queries) && ctrl.thisCase.queries.length > 0) {
+        if (ctrl.thisCase.queriesCount > 0) {
           return  angular.isDefined(ctrl.thisCase.lastScore) &&
                   ctrl.thisCase.lastScore.hasData;
         }
