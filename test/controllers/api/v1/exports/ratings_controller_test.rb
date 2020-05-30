@@ -33,6 +33,33 @@ module Api
             assert_equal body['queries'][0]['query'],  the_case.queries[0].query_text
           end
         end
+
+        describe 'Exporting a case in RRE json format' do
+          let(:the_case) { cases(:one) }
+
+          test 'returns case info' do
+            get :show, case_id: the_case.id, file_format: 'rre'
+            assert_response :ok
+
+            body = JSON.parse(response.body)
+
+            assert_equal body['id_field'],                              'id'
+            assert_equal body['index'],                                 the_case.case_name
+            assert_equal body['queries'].size,                          the_case.queries.size
+            assert_equal body['queries'][0]['placeholders']['$query'],  the_case.queries[0].query_text
+          end
+        end
+
+        describe 'Exporting a case in LTR text format' do
+          let(:the_case) { cases(:one) }
+
+          test 'returns case info' do
+            get :show, case_id: the_case.id, format: :txt
+            assert_response :ok
+
+            assert_equal response.content_type, 'text/plain'
+          end
+        end
       end
     end
   end

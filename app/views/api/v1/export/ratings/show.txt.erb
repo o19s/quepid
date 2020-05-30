@@ -1,0 +1,7 @@
+<%
+@case.queries.each do |query|
+  query.ratings.each do |rating| %>
+<%=rating.rating%>    qid:<%=query.id%> #    <%=rating.doc_id %>
+<%
+  end
+end %>

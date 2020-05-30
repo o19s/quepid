@@ -61,7 +61,7 @@ module Api
                 cloned_try = cloned_case.tries.best
 
                 assert_equal the_try.query_params,  cloned_try.query_params
-                assert_equal 'title',               cloned_try.field_spec
+                assert_equal 'id:id title:title',   cloned_try.field_spec
                 assert_equal the_try.search_url,    cloned_try.search_url
                 assert_equal 'Try 0',               cloned_try.name
                 assert_equal the_try.search_engine, cloned_try.search_engine

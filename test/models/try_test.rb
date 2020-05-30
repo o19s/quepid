@@ -104,4 +104,23 @@ class TryTest < ActiveSupport::TestCase
       end
     end
   end
+
+  describe 'Getting the id field from field_spec' do
+    test 'parses params and returns the appropriate object' do
+      try = tries(:one)
+      assert_equal 'id', try.id_from_field_spec
+
+      try.field_spec = 'id title'
+      assert_equal 'id', try.id_from_field_spec
+
+      try.field_spec = '_id title'
+      assert_equal '_id', try.id_from_field_spec
+
+      try.field_spec = 'id:id title'
+      assert_equal 'id', try.id_from_field_spec
+
+      try.field_spec = 'title:title name id:id'
+      assert_equal 'id', try.id_from_field_spec
+    end
+  end
 end

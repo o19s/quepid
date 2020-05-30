@@ -4,7 +4,6 @@ shallow ||= false
 json.all_rated  score.all_rated
 json.case_id    score.case_id
 json.created_at score.created_at
-json.hasData    score.has_export_data?
 json.id         score.id
 json.score      score.score
 json.shallow    shallow

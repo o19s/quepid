@@ -20,7 +20,6 @@ angular.module('QuepidApp')
 
       // Functions
       ctrl.cancel     = cancel;
-      ctrl.canExport  = canExport;
       ctrl.goToCase   = goToCase;
       ctrl.rename     = rename;
       ctrl.submit     = submit;
@@ -51,13 +50,6 @@ angular.module('QuepidApp')
         if (ctrl.clickToEdit.oldVal !== ctrl.clickToEdit.currVal) {
           ctrl.clickToEdit.oldVal = ctrl.clickToEdit.currVal;
           ctrl.thisCase.rename(ctrl.clickToEdit.currVal);
-        }
-      }
-
-      function canExport() {
-        if (angular.isDefined(ctrl.thisCase.queries) && ctrl.thisCase.queries.length > 0) {
-          return  angular.isDefined(ctrl.thisCase.lastScore) &&
-                  ctrl.thisCase.lastScore.hasData;
         }
       }
     }

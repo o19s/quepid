@@ -22,6 +22,7 @@ one:
   query_params:   'q=#$query##'
   search_url:     test.com
   search_engine:  solr
+  field_spec:     id:id title:title
 
 two:
   case:           :two
