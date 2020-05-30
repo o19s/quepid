@@ -21,6 +21,9 @@ angular.module('QuepidApp')
       querySnapshotSvc
     ) {
       var ctrl = this;
+
+      this.iconOnly = $rootScope.iconOnly;
+
       // If called from the cases listing page, $rootScope.theCase is populated,
       // otherwise on the main page get it from the caseSvc.
       if ($rootScope.theCase) {

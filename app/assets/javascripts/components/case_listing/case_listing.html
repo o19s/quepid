@@ -21,9 +21,7 @@
           </span>
 
           <span ng-if="ctrl.canExport()">
-            <export-case the-case="ctrl.thisCase"></export-case>
-            ||
-            <export-entire-case the-case="ctrl.thisCase"></export-entire-case>
+            <export-entire-case icon-only="true" the-case="ctrl.thisCase"></export-entire-case>
           </span>
 
           <span ng-if="!ctrl.canExport()">
