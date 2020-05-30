@@ -46,5 +46,5 @@ class Score < ActiveRecord::Base
       .limit(1)
       .first
   }
-  
+
 end
