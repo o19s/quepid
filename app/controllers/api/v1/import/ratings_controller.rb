@@ -29,7 +29,6 @@ module Api
                   }
                   ratings << rating
                 end
-
               end
             end
           end
