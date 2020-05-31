@@ -87,7 +87,7 @@ describe('Service: importRatingsSvc', function () {
 
 
     it('imports ratings multiple queries and multiple docs', function() {
-      var url = '/api/import/ratings?file_format=csv';
+      var url = '/api/import/ratings?file_format=hash';
 
       $httpBackend.expectPOST(url).respond(200, {});
 
