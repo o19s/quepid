@@ -14,7 +14,7 @@ Speed of development has been an issue with Quepid.  In this release we've worke
 * Support Basic Auth in Quepid with Elasticsearch.  https://github.com/o19s/quepid/pull/114 and https://github.com/o19s/splainer-search/pull/79 by @CGamesPlay fixes https://github.com/o19s/quepid/issues/109.
 * When installing Quepid, use `thor user:create` to create an administrator!  https://github.com/o19s/quepid/pull/112 by @epugh fixes https://github.com/o19s/quepid/issues/107.
 * Enhanced export ratings function that follows the standard `query,docid,rating` supports full export/import lifecycle and easier integration with other tools.  https://github.com/o19s/quepid/pull/128 by @epugh fixes https://github.com/o19s/quepid/issues/126.
-* Export ratings in RRE and LTR file formats.  https://github.com/o19s/quepid/pull/137 by @epugh fixes https://github.com/o19s/quepid/issues/133
+* Export ratings in RRE and LTR file formats.  Import ratings from RRE Judgement JSON file.  https://github.com/o19s/quepid/pull/137 and https://github.com/o19s/quepid/pull/139 by @epugh fixes https://github.com/o19s/quepid/issues/133
 
 ### Improvements
 
