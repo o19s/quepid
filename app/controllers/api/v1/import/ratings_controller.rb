@@ -7,14 +7,40 @@ module Api
         before_action :find_case
         before_action :check_case
 
+        # rubocop:disable Metrics/MethodLength
         def create
+          file_format = params[:file_format]
+          file_format = 'hash' unless params[:file_format]
+
+          if 'hash' == file_format
+            ratings = params[:ratings]
+          elsif 'rre' == file_format
+            # normalize the RRE ratings format to the default hash format.
+            ratings = []
+            rre_json = JSON.parse(params[:rre_json])
+            rre_json['queries'].each do |rre_query|
+              query_text = rre_query['placeholders']['$query']
+              rre_query['relevant_documents'].each do |rating_value, doc_ids|
+                doc_ids.each do |doc_id|
+                  rating = {
+                    query_text: query_text,
+                    doc_id:     doc_id,
+                    rating:     rating_value,
+                  }
+                  ratings << rating
+                end
+
+              end
+            end
+          end
+
           options = {
             format:         :hash,
             force:          true,
             clear_existing: params[:clear_queries] || false,
           }
 
-          service = RatingsImporter.new @case, params[:ratings], options
+          service = RatingsImporter.new @case, ratings, options
 
           begin
             service.import
@@ -30,6 +56,7 @@ module Api
           end
           # rubocop:enable Lint/RescueException
         end
+        # rubocop:enable Metrics/MethodLength
       end
     end
   end
