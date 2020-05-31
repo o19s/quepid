@@ -11,11 +11,10 @@ angular.module('QuepidApp')
       var self = this;
 
       // Functions
-      self.makeCall = makeCall;
+      self.importCSVFormat = importCSVFormat;
+      self.importRREFormat = importRREFormat;
 
-      function makeCall(theCase, csv, clearQueries) {
-        var url = '/api/import/ratings';
-
+      function importCSVFormat(theCase, csv, clearQueries) {
         var ratings = [];
 
         angular.forEach(csv, function(rating) {
@@ -32,7 +31,19 @@ angular.module('QuepidApp')
           clear_queries:  clearQueries,
         };
 
-        return $http.post(url, data);
+        return $http.post('/api/import/ratings', data);
+      }
+
+      function importRREFormat(theCase, rreJson, clearQueries) {
+
+        var data = {
+          rre_json:       rreJson,
+          case_id:        theCase.caseNo,
+          clear_queries:  clearQueries,
+        };
+
+        return $http.post('/api/import/ratings?file_format=rre', data);
+
       }
     }
   ]);
