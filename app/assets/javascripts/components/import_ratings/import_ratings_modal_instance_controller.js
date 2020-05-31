@@ -59,10 +59,10 @@ angular.module('QuepidApp')
           var data = e.target.result;
           ctrl.rre.content = data;
           ctrl.loading = false;
-        }
+        };
 
         r.readAsText(f);
-      }
+      };
 
       ctrl.ok = function () {
         if ( ctrl.options.which === 'csv' ) {
