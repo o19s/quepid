@@ -27,19 +27,19 @@ describe('Service: importRatingsSvc', function () {
 
     var mockCsv = [
       {
-        'Query Text': 'dog',
-        'Doc ID':     'i_801',
-        'Rating':     '8'
+        'query':       'dog',
+        'docid':      'i_801',
+        'rating':     '8'
       },
       {
-        'Query Text': 'dog',
-        'Doc ID':     'i_802',
-        'Rating':     '5'
+        'query':      'dog',
+        'docid':      'i_802',
+        'rating':     '5'
       },
       {
-        'Query Text': 'cat',
-        'Doc ID':     'i_803',
-        'Rating':     '3'
+        'query':     'cat',
+        'docid':     'i_803',
+        'rating':    '3'
       },
     ];
 
@@ -47,12 +47,62 @@ describe('Service: importRatingsSvc', function () {
       caseNo: 8
     };
 
+    var mockRREJson = {
+      "id_field": [
+        "id"
+      ],
+      "index": "Movies Search",
+      "template": "quepid.json",
+      "queries": [
+        {
+          "placeholders": {
+            "$query": "star trek"
+          },
+          "relevant_documents": {
+            "1": [
+              "193"
+            ],
+            "2": [
+              "157",
+              "152"
+            ]
+          }
+        },
+        {
+          "placeholders": {
+            "$query": "star wars"
+          },
+          "relevant_documents": {
+            "1": [
+              "12180"
+            ],
+            "2": [
+              "13532",
+              "1895"
+            ]
+          }
+        }
+      ]
+    }
+
+
     it('imports ratings multiple queries and multiple docs', function() {
-      var url = '/api/import/ratings';
+      var url = '/api/import/ratings?file_format=hash';
 
       $httpBackend.expectPOST(url).respond(200, {});
 
-      importRatingsSvc.makeCall(mockCase, mockCsv);
+      importRatingsSvc.importCSVFormat(mockCase, mockCsv);
+
+      $httpBackend.flush();
+      $rootScope.$apply();
+    });
+
+    it('imports rre format', function() {
+      var url = '/api/import/ratings?file_format=rre';
+
+      $httpBackend.expectPOST(url).respond(200, {});
+
+      importRatingsSvc.importRREFormat(mockCase, mockRREJson);
 
       $httpBackend.flush();
       $rootScope.$apply();

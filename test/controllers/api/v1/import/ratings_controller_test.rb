@@ -128,6 +128,22 @@ module Api
             assert query.deleted
           end
         end
+        describe '#create from RRE' do
+          test 'creates new queries from rre format mapped to hash format' do
+            mock_rre_json = File.read('./test/controllers/api/v1/import/mock_rre_json.json')
+            data = {
+              case_id:       acase.id,
+              clear_queries: true,
+              rre_json:      mock_rre_json,
+              file_format:   'rre',
+            }
+
+            assert_difference 'acase.queries.count' do
+              post :create, data
+              assert_response :ok
+            end
+          end
+        end
       end
     end
   end

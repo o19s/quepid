@@ -7,40 +7,65 @@
 
 <div class="modal-header">
   <button type="button" class="close" ng-click="ctrl.cancel()" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-  <h3 class="modal-title">Import Ratings</h3>
+  <h3 class="modal-title">Import into Case: <span class="modal-case">{{ ctrl.theCase.caseName }}</span></h3>
 </div>
 <div class="modal-body">
-  <p>Importing ratings is a great way to manage the rating process outside of Quepid, for example in your own custom application.
-    The CSV file should have the headers: <code>query,docid,rating</code>
+  <p>
+    Importing ratings is a great way to manage the rating process outside of Quepid, for example in your own custom application.
+    There are a number of formats for importing data into Quepid.
   </p>
-
-  <p>Select CSV file to import:</p>
-
-  <ng-csv-import
-    class="import"
-    content="ctrl.csv.content"
-    upload-button-label="ctrl.csv.uploadButtonLabel"
-    header="ctrl.csv.header"
-    header-visible="true"
-    separator="ctrl.csv.separator"
-    separator-visible="ctrl.csv.separatorVisible"
-    result="ctrl.csv.result">
-  </ng-csv-import>
-
-  <div ng-show="ctrl.import.alert" class="{{ ctrl.import.alert.type }}" ng-bind-html="ctrl.import.alert.text">
-  </div>
-
-  <div ng-if="ctrl.csv.content" class="block left">
-    <h2>CSV</h2>
-    <div class="content import-content"><pre>{{ ctrl.csv.content }}</pre></div>
-  </div>
-
   <div class="checkbox">
     <label>
       <input type="checkbox" ng-model='ctrl.csv.clearQueries'> Clear existing queries?
       <span class="glyphicon glyphicon-question-sign" aria-hidden="true" data-placement="right" data-toggle="tooltip"  title="Select to clear all the existing queries on a case, this is typical when you manage your queries and ratings per case outside Quepid"></span>
     </label>
   </div>
+
+  <p>Please select the file format to import:</p>
+
+  <div class="form-group">
+    <input type="radio" id="csv" name="importSelection" value="csv" ng-model="ctrl.options.which">
+    <label for="csv">CSV</label>
+    <span class="help-block">
+      The CSV file should have the headers: <code>query,docid,rating</code>
+    </span>
+    <p>Select CSV file to import:</p>
+
+    <ng-csv-import
+      class="import"
+      content="ctrl.csv.content"
+      header="ctrl.csv.header"
+      header-visible="true"
+      separator="ctrl.csv.separator"
+      separator-visible="ctrl.csv.separatorVisible"
+      result="ctrl.csv.result">
+    </ng-csv-import>
+
+
+
+    <div ng-if="ctrl.csv.content" class="block left">
+      <h2>CSV</h2>
+      <div ng-show="ctrl.import.alert" class="text-danger bg-danger" ng-bind-html="ctrl.import.alert">
+      </div>
+      <div class="content import-content"><pre>{{ ctrl.csv.content }}</pre></div>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <input type="radio" id="rre" name="importSelection" value="rre" ng-model="ctrl.options.which">
+    <label for="rre">RRE</label>
+    <span class="help-block">
+      Quepid only imports the ratings part of the <a href="https://github.com/SeaseLtd/rated-ranking-evaluator/wiki/What%20We%20Need%20To%20Provide#ratings" target="_blank">RRE judgement</a> file.
+    </span>
+    <p>Select RRE ratings file to import:</p>
+    <!-- this onchange is a code smell. -->
+    <input type="file" id="file" name="file"
+      accept="application/json"
+      onchange="angular.element(this).scope().pickedFile()"/>
+
+
+  </div>
+
 </div>
 <div class="modal-footer">
   <p class='bg-warning text-warning padded-text'>
@@ -49,15 +74,8 @@
   </p>
 
   <i class="fa fa-spinner fa-spin" aria-hidden="true" ng-show="ctrl.loading"></i>
-  <button
-    class="btn btn-primary"
-    ng-show="ctrl.csv.result"
-    ng-click="ctrl.ok()"
-    ng-disabled="ctrl.loading"
-  >Import</button>
-  <button
-    class="btn btn-default"
-    ng-click="ctrl.cancel()"
-    ng-disabled="ctrl.loading"
-  >Cancel</button>
+
+  <button class="btn btn-default float-left" ng-click="ctrl.cancel()">Cancel</button>
+  <button class="btn btn-primary" ng-click="ctrl.ok()" ng-disabled="ctrl.options.which === 'undefined'">Import</button>
+
 </div>

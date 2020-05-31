@@ -21,7 +21,7 @@ angular.module('QuepidApp')
           controller:   'ImportRatingsModalInstanceCtrl',
           controllerAs: 'ctrl',
           resolve:      {
-            selectedCase: function() {
+            theCase: function() {
               return ctrl.acase;
             }
           }

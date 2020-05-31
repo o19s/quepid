@@ -1,0 +1,37 @@
+{
+  "id_field": [
+    "id"
+  ],
+  "index": "Movies Search",
+  "template": "quepid.json",
+  "queries": [
+    {
+      "placeholders": {
+        "$query": "star trek"
+      },
+      "relevant_documents": {
+        "1": [
+          "193"
+        ],
+        "2": [
+          "157",
+          "152"
+        ]
+      }
+    },
+    {
+      "placeholders": {
+        "$query": "star wars"
+      },
+      "relevant_documents": {
+        "1": [
+          "12180"
+        ],
+        "2": [
+          "13532",
+          "1895"
+        ]
+      }
+    }
+  ]
+}
