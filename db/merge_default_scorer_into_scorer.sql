@@ -1,3 +1,5 @@
+// This script is supporting migrating the database for Quepid 6.2 on the hosted
+// app.quepid.com platform.
 // there are 4 DefaultScorers in app.quepid.com
 
 INSERT INTO scorers (

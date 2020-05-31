@@ -9,7 +9,12 @@ The burgeoning suite of open source tools for relevancy all require judgement li
 Speed of development has been an issue with Quepid.  In this release we've worked on developer happiness by auditing all of the dependencies we include.  We're removed quite a few Ruby gems and NodeJS packages that weren't used, and upgraded the rest (replacing PhantomJS with Puppeteer for headless testing).  `yarn.lock` dropped from 6706 lines to 1519 and `Gemfile.lock` from 448 to 330!  This allowed us to finally move to ECMAScript 6 and to Node version 10.  Lastly we have cut the production Quepid Docker image from almost 3 GB to 2.3 GB.
 
 ### Upgrade Notes
-Follow the steps outlined at https://github.com/o19s/quepid/wiki/Installation-Guide#updating-quepid.   You will need to run a database migration and rerun the `db:seed` to get the new default scorers.
+Follow the steps outlined at https://github.com/o19s/quepid/wiki/Installation-Guide#updating-quepid.   
+
+You will need to run a database migration and rerun the `db:seed` to get the new default scorers.
+
+There is a sql migration script in `./db/merge_default_scorer_into_scorer.sql` that you might if you have been using Quepid locally for a while with default scorers.  This was primarily meant to support updating http://app.quepid.com.
+
 
 ### Features
 
@@ -18,6 +23,7 @@ Follow the steps outlined at https://github.com/o19s/quepid/wiki/Installation-Gu
 * When installing Quepid, use `thor user:create` to create an administrator!  https://github.com/o19s/quepid/pull/112 by @epugh fixes https://github.com/o19s/quepid/issues/107.
 * Enhanced export ratings function that follows the standard `query,docid,rating` supports full export/import lifecycle and easier integration with other tools.  https://github.com/o19s/quepid/pull/128 by @epugh fixes https://github.com/o19s/quepid/issues/126.
 * Export ratings in RRE and LTR file formats.  Import ratings from RRE Judgement JSON file.  https://github.com/o19s/quepid/pull/137 and https://github.com/o19s/quepid/pull/139 by @epugh fixes https://github.com/o19s/quepid/issues/133
+* Classical scorers like AP, DCG, and NDCG are now shipping by default.  All new users who sign up on Quepid will start with AP@5.  This effort is still in progress, for example right now the scorers are named AP@5, DCG@5, NDCG@5 because they are hard coded to only look at the first five ranks.  We also need to work on the Q Score Graph's vertical axis handling.  Huge effort in https://github.com/o19s/quepid/pull/100 by @nathancday and @epugh to get this done.  This change also removes the individual query level scorer being assignable, which was a bad idea (https://github.com/o19s/quepid/issues/132) and restores the ability to write a custom unit test for a query in Javascript (https://github.com/o19s/quepid/issues/120) which is an interesting idea!  Thanks to @janhoy for being the impetuous to get this work done!
 
 ### Improvements
 
