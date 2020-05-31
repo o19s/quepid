@@ -19,7 +19,7 @@ angular.module('QuepidApp')
       $scope.gotoAdvanced       = gotoAdvanced;
       $scope.ok                 = ok;
       $scope.scorers            = [];
-      $scope.defaultScorers     = [];
+      $scope.communalScorers    = [];
       $scope.selectScorer       = selectScorer;
       $scope.usingDefaultScorer = usingDefaultScorer;
       $scope.updateButtonLabel  = updateButtonLabel;
@@ -45,10 +45,10 @@ angular.module('QuepidApp')
       }
 
       function updateButtonLabel (value) {
-        if (value === 'ad-hoc') {
-          $scope.okButtonLabel = 'Save and Select Scorer';
+        if (value === 'unit-test') {
+          $scope.okButtonLabel = 'Save Unit Test Scorer';
         } else {
-          $scope.okButtonLabel = 'Select Scorer';
+          $scope.okButtonLabel = 'Restore Case Scorer';
         }
 
         $scope.scorerSelector = value;
@@ -62,7 +62,7 @@ angular.module('QuepidApp')
             return !scorer.queryTest;
           });
 
-          $scope.defaultScorers   = customScorerSvc.defaultScorers;
+          $scope.communalScorers = customScorerSvc.communalScorers;
         });
 
       function cancel() {
@@ -76,14 +76,15 @@ angular.module('QuepidApp')
 
       function ok() {
         if (parent.attachType === 'query') {
+          var query = parent.attachTo;
           if ($scope.scorerSelector === 'pre'){
-            setScorerForQuery(parent.attachTo);
-          } else if ($scope.scorerSelector === 'ad-hoc') {
+            query.unassignScorer();
+          } else if ($scope.scorerSelector === 'unit-test') {
             parent.attachTo.saveTest($scope.scorer)
-              .then(function(response) {
-                $scope.activeScorer = response.data;
-
-                setScorerForQuery(parent.attachTo);
+              .then(function(scorer) {
+                //deal with the updated unit test style scorer
+                $scope.activeScorer = scorer;
+                query.saveScorer($scope.activeScorer);
 
                 $uibModalInstance.close($scope.activeScorer);
               });
@@ -99,9 +100,8 @@ angular.module('QuepidApp')
 
       function selectScorer(scorer) {
         var name = (!scorer ? 'none' : scorer.name);
-        var type = (!scorer ? 'none' : scorer.scorerType);
 
-        $log.info('selected scorer: ' + name + ', ' + type);
+        $log.info('selected scorer: ' + name);
 
         if (!scorer) {
           $scope.activeScorer = null;
@@ -116,8 +116,7 @@ angular.module('QuepidApp')
         if ($scope.activeScorer) {
           caseSvc.saveDefaultScorer(
             caseNo,
-            $scope.activeScorer.scorerId,
-            $scope.activeScorer.scorerType
+            $scope.activeScorer.scorerId
           ).then(function() {
             // TODO move to customer scorer svc, needs major updates to queriessvc first
             customScorerSvc.setDefault($scope.activeScorer)
@@ -127,6 +126,7 @@ angular.module('QuepidApp')
             });
           });
         } else {
+          console.log('Is this dead code path?');
           caseSvc.saveDefaultScorer(caseNo)
             .then(function() {
               // TODO move to customer scorer svc, needs major updates to queriessvc first
@@ -134,14 +134,6 @@ angular.module('QuepidApp')
               $log.info('rescoring queries with default scorer');
               queriesSvc.updateScores();
           });
-        }
-      }
-
-      function setScorerForQuery(query) {
-        if ($scope.activeScorer) {
-          query.saveScorer($scope.activeScorer);
-        } else {
-          query.unassignScorer();
         }
       }
 

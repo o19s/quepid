@@ -16,10 +16,7 @@ angular.module('UtilitiesModule')
         // so the comparison fails if the user's scorerId is a string, and
         // even if the user has a default scorer it would look like as
         // if he does not.
-        var scorerId, defaultScorerId;
-        if ( !isNaN(parseInt(userObj.scorerId)) ) {
-          scorerId = parseInt(userObj.scorerId);
-        }
+        var defaultScorerId;
         if ( !isNaN(parseInt(userObj.defaultScorerId)) ) {
           defaultScorerId = parseInt(userObj.defaultScorerId);
         }
@@ -29,7 +26,6 @@ angular.module('UtilitiesModule')
         self.firstTime       = userObj.firstTime;
         self.id              = userObj.id;
         self.permissions     = userObj.permissions;
-        self.scorerId        = scorerId;
         self.email           = userObj.email;
 
         var maxQueries = userObj.maxQueries;
@@ -88,52 +84,18 @@ angular.module('UtilitiesModule')
             });
         };
 
-        this.updateUserScorer = function(scorerId) {
+        this.updateUserScorer = function(defaultScorerId) {
           var self  = this;
           var url   = '/api/users/' + self.id;
           var data  = {
             user: {
-              scorer_id: scorerId
+              default_scorer_id: defaultScorerId
             }
           };
 
           return $http.put(url, data)
             .then( function() {
-              self.scorerId = scorerId;
-
-              return self;
-            });
-        };
-
-        this.updateCompany = function(company) {
-          var self  = this;
-          var url   = '/api/users/' + self.id;
-          var data  = {
-            user: {
-              company: company
-            }
-          };
-
-          return $http.put(url, data)
-            .then( function() {
-              self.company = company;
-
-              return self;
-            });
-        };
-
-        this.updateDefaultScorer = function(scorerId) {
-          var self  = this;
-          var url   = '/api/users/' + self.id;
-          var data  = {
-            user: {
-              default_scorer_id: scorerId
-            }
-          };
-
-          return $http.put(url, data)
-            .then( function() {
-              self.defaultScorerId = scorerId;
+              self.defaultScorerId = defaultScorerId;
 
               return self;
             });

@@ -17,7 +17,6 @@
 #  scorer_enbl    :boolean
 #  created_at     :datetime         not null
 #  updated_at     :datetime         not null
-#  scorer_type    :string(255)
 #  options        :text(65535)
 #
 
@@ -28,12 +27,16 @@ class Query < ActiveRecord::Base
   include Arrangement::Item
 
   # Associations
-  belongs_to  :scorer, polymorphic: true
+  belongs_to  :scorer
   belongs_to  :case, autosave: true
 
   has_many    :ratings,
               dependent:  :destroy
 
+  # the queries.scorer_enbl field determines if this ad hoc unit test style scorer
+  # is actually in use or not.   When you pick your ad hoc scorer, we flip this bit
+  # and you haven't lost the query!  One thing is that they never get deleted because
+  # we soft delete a query, so the :destroy never gets called.
   has_one     :test,
               class_name: 'Scorer',
               dependent:  :destroy

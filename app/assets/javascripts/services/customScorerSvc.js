@@ -18,7 +18,7 @@
         self.create            = create;
         self.clearScorer       = clearScorer;
         self.defaultScorer     = new ScorerFactory();
-        self.defaultScorers    = [];
+        self.communalScorers    = [];
         self.delete            = deleteScorer;
         self.edit              = edit;
         self.get               = get;
@@ -195,11 +195,11 @@
               }
             });
 
-            angular.forEach(data.default_scorers, function(scorerData) {
+            angular.forEach(data.communal_scorers, function(scorerData) {
               var scorer = self.constructFromData(scorerData);
 
-              if(!contains(self.defaultScorers, scorer)) {
-                self.defaultScorers.push(scorer);
+              if(!contains(self.communalScorers, scorer)) {
+                self.communalScorers.push(scorer);
               }
             });
 
@@ -223,11 +223,11 @@
               }
             });
 
-            angular.forEach(data.default_scorers, function(scorerData) {
+            angular.forEach(data.communal_scorers, function(scorerData) {
               var scorer = self.constructFromData(scorerData);
 
-              if(!contains(self.defaultScorers, scorer)) {
-                self.defaultScorers.push(scorer);
+              if(!contains(self.communalScorers, scorer)) {
+                self.communalScorers.push(scorer);
               }
             });
 

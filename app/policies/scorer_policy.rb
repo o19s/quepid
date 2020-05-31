@@ -28,6 +28,10 @@ class ScorerPolicy < ApplicationPolicy
     permissions[:update] && show?
   end
 
+  def update_communal?
+    @user.administrator
+  end
+
   def edit?
     update?
   end

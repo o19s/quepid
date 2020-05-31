@@ -5,7 +5,7 @@
       diff-label="''"
       full-diff-name="''"
       max-score="maxScore || 100";
-      ng-click="showScorer()"
+      ng-click="pickUnitTestScorer()"
       scorable="query"
       score-label="''"
       score-type="'query'"
@@ -20,10 +20,7 @@
       <span class='query'>{{query.queryText}} &nbsp;</span>
     </h2>
 
-    <span
-      class='pull-right total-results'
-      ng-class="query.isNotAllRated() ? 'unrated-results' : ''"
-    >
+    <span class='pull-right total-results'>
       {{query.numFound}}
       <small class="text-muted">
         <ng-pluralize count="query.numFound"
@@ -32,17 +29,28 @@
                    'other': 'Results'}">
         </ng-pluralize>
       </small>
-
-      <small
-        class="unrated-results-text text-muted"
-        ng-show="query.isNotAllRated()"
-      >
-        <em>Unrated Results</em>
-      </small>
     </span>
 
     <span class="error-warning glyphicon glyphicon-warning-sign"></span>
-    <span ng-show="overThreshold()" class="glyphicon glyphicon-warning-sign"></span>
+
+    <span ng-show="overThreshold()" class="fa-stack fa-lg" title="Threshold of {{query.threshold}} not met.">
+      <i class="fa fa-circle fa-stack-2x"></i>
+      <strong class="fa-stack-1x text-danger">
+          {{query.threshold}}
+      </strong>
+    </span>
+
+    <span ng-show="hasEnabledTest()" class="fa-stack fa-lg" title="Unit Test Specified">
+      <i class="fa fa-stroopwafel fa-stack-2x"></i>
+    </span>
+
+    <span ng-show="query.isNotAllRated()" class="froggy pull-right fa-stack fa-lg" style="margin-right: 20px;" title="Hop to it!  There are unrated results!">
+      <i class="fa fa-frog fa-stack-2x"></i>
+    </span>
+
+
+
+
     <span class="toggleSign glyphicon {{query.isToggled() | plusOrMinus}}" ng-hide="isSortingEnabled()" ng-click="query.toggle()"></span>
   </div>
 

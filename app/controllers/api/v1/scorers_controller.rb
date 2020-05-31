@@ -7,12 +7,10 @@ module Api
       before_action :set_scorer, only: %i[show update destroy]
 
       def index
-        @user_scorers      = current_user.scorers.all
-        @default_scorers   = DefaultScorer.published
-          .order(published_at: :desc)
-          .all
+        @user_scorers     = current_user.scorers.all
+        @communal_scorers = Scorer.communal
 
-        respond_with @user_scorers, @default_scorers
+        respond_with @user_scorers, @communal_scorers
       end
 
       def show
@@ -99,10 +97,11 @@ module Api
 
           return
         end
-
-        @users = User.where(scorer_id: @scorer.id)
+        @users = User.where(default_scorer_id: @scorer.id)
         if @users.count.positive? && params[:force]
-          @users.update_all(scorer_id: nil) # rubocop:disable Rails/SkipsModelValidations
+          # rubocop:disable Rails/SkipsModelValidations
+          @users.update_all(default_scorer_id: Scorer.system_default_scorer)
+          # rubocop:enable Rails/SkipsModelValidations
         elsif @users.count.positive?
           render(
             json:   {
@@ -185,6 +184,7 @@ module Api
           :manual_max_score,
           :manual_max_score_value,
           :show_scale_labels,
+          :communal,
           :scale,
           scale: []
         ).tap do |whitelisted|

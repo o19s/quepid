@@ -62,6 +62,11 @@ module Permissible
     },
     {
       model_type: 'scorer',
+      action:     'update_communal',
+      on:         { user: true },
+    },
+    {
+      model_type: 'scorer',
       action:     'read',
       on:         { user: true },
     },

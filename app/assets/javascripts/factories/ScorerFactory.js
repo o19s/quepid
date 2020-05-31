@@ -41,7 +41,7 @@
       self.code                   = data.code;
       self.colors                 = scaleToColors(data.scale);
       self.defaultAlgorithm       = defaultAlgorithm;
-      self.displayName            = setDisplayName(data.name, data.scorerType);
+      self.displayName            = setDisplayName(data.name, data.communal);
       self.error                  = false;
       self.manualMaxScore         = data.manualMaxScore || false;
       self.manualMaxScoreValue    = data.manualMaxScoreValue || 100;
@@ -53,7 +53,7 @@
       self.scale                  = data.scale;
       self.scaleWithLabels        = data.scaleWithLabels;
       self.scorerId               = data.scorerId;
-      self.scorerType             = data.scorerType;
+      self.communal               = data.communal;
       self.showScaleLabels        = data.showScaleLabels || false;
       self.teams                  = data.teams || [];
 
@@ -172,9 +172,9 @@
         return labels;
       }
 
-      function setDisplayName(name, scorerType) {
-        if ( scorerType === ' DefaultScorer' ) {
-          return name + ' (QScorer)';
+      function setDisplayName(name, communal) {
+        if ( communal === true ) {
+          return name + ' (Communal)';
         } else {
           return name;
         }
@@ -214,7 +214,7 @@
           }
         }
 
-        if (docsRated > 0 && sum > 0) {
+        if (docsRated > 0) {
           return sum / docsRated;
         } else {
           return null;

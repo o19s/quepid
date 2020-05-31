@@ -41,6 +41,7 @@ services:
       - PRIVACY_URL=
       - COOKIES_URL=
       - EMAIL_MARKETING_MODE=false
+      - DEFAULT_QUEPID_SCORER=AP@5
     command: "foreman s -f Procfile"
     ports:
       - 80:3000 # Map to port 80 for outside users.

@@ -21,9 +21,7 @@ module Api
       def update
         update_params = user_params
 
-        update_params[:scorer_id] = nil if user_scorer_removed? update_params
-
-        update_params[:default_scorer_id] = nil if default_scorer_removed? update_params
+        update_params[:default_scorer_id] = Scorer.system_default_scorer.id if default_scorer_removed? update_params
 
         if @user.update update_params
           respond_with @user
@@ -41,15 +39,10 @@ module Api
 
       def user_params
         params.require(:user).permit(
-          :scorer_id,
           :first_login,
           :company,
           :default_scorer_id
         )
-      end
-
-      def user_scorer_removed? params = {}
-        params[:scorer_id].present? && [ 0, '0' ].include?(params[:scorer_id])
       end
 
       def default_scorer_removed? params = {}

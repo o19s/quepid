@@ -29,22 +29,22 @@ angular.module('QuepidApp')
       if ( $scope.query.test !== null &&
         $scope.query.effectiveScorer().scorerId === $scope.query.test.scorerId
       ) {
-        scorerSelector = 'ad-hoc';
+        scorerSelector = 'unit-test';
       }
 
       $scope.$watch('query.effectiveScorer()', function() {
         if ( $scope.query.test !== null &&
           $scope.query.effectiveScorer().scorerId === $scope.query.test.scorerId
         ) {
-          scorerSelector = 'ad-hoc';
+          scorerSelector = 'unit-test';
         } else {
           scorerSelector = 'pre';
         }
       });
 
-      $scope.showScorer = function() {
+      $scope.pickUnitTestScorer = function() {
         $uibModal.open({
-          templateUrl:  'views/scorer.html',
+          templateUrl:  'views/pick_unit_test_scorer.html',
           backdrop:     'static',
           controller:   'ScorerCtrl',
           resolve:      {
@@ -62,6 +62,10 @@ angular.module('QuepidApp')
 
       $scope.overThreshold = function() {
         return ($scope.query.score().score < $scope.query.threshold) && $scope.query.thresholdEnabled;
+      };
+
+      $scope.hasEnabledTest = function() {
+        return ($scope.query.test !== null && $scope.query.scorerEnbl);
       };
 
       $scope.displayed = new DisplayConfig();

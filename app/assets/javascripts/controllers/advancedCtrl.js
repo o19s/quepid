@@ -17,9 +17,8 @@ angular.module('QuepidApp')
     ) {
       // Attributes
       $scope.advanced                 = {};
-      $scope.advanced.defaultScorers  = [];
+      $scope.advanced.communalScorers = [];
       $scope.advanced.combinedScorers = [];
-      $scope.advanced.quepidScorers   = [];
       $scope.advanced.userScorers     = [];
       $scope.advanced.user            = $rootScope.currentUser;
 
@@ -30,11 +29,10 @@ angular.module('QuepidApp')
         }
       };
 
-      $scope.scorerFilters = { typeFilter: 'not_test' };
+      $scope.scorerFilters = { typeFilter: 'communal' };
 
       // Functions
       $scope.advanced.updateUserScorer    = updateUserScorer;
-      $scope.advanced.updateDefaultScorer = updateDefaultScorer;
 
       $rootScope.$watch('currentUser', function() {
         $scope.advanced.user = $rootScope.currentUser;
@@ -61,25 +59,34 @@ angular.module('QuepidApp')
       });
 
       function getLists() {
-        $scope.advanced.defaultScorers  = customScorerSvc.defaultScorers;
+        $scope.advanced.communalScorers  = customScorerSvc.communalScorers;
         $scope.advanced.userScorers     = customScorerSvc.scorers;
-        $scope.advanced.quepidScorers   = customScorerSvc.quepidScorers;
-        $scope.advanced.combinedScorers = $scope.advanced.userScorers.concat($scope.advanced.quepidScorers);
+        //var nonTestUserScorers          = customScorerSvc.scorers.filter(function(scorer) {
+          //return scorer.queryTest === false;
+        //});
+        //array1.filter(val => !array2.includes(val));
+
+        //$scope.advanced.combinedScorers = $scope.advanced.communalScorers.concat(customScorerSvc.scorers);
+        angular.forEach($scope.advanced.userScorers, function(scorer) {
+          if (!contains($scope.advanced.combinedScorers, scorer)) {
+            $scope.advanced.combinedScorers.push(scorer);
+          }
+        });
+        angular.forEach($scope.advanced.communalScorers, function(scorer) {
+          if (!contains($scope.advanced.combinedScorers, scorer)) {
+            $scope.advanced.combinedScorers.push(scorer);
+          }
+        });
       }
+
+      var contains = function(list, scorer) {
+        return list.filter(function(item) { return item.scorerId === scorer.scorerId; }).length > 0;
+      };
 
       function updateUserScorer(scorerId) {
         $rootScope.currentUser.updateUserScorer(scorerId)
           .then(function() {
             flash.success = 'Your default scorer has been updated successfully';
-          }, function(response) {
-            flash.error = response.data.message;
-          });
-      }
-
-      function updateDefaultScorer(scorerId) {
-        $rootScope.currentUser.updateDefaultScorer(scorerId)
-          .then(function() {
-            flash.success = 'Your Quepid scorer has been updated successfully';
           }, function(response) {
             flash.error = response.data.message;
           });

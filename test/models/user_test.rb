@@ -11,7 +11,6 @@
 #  agreed                 :boolean
 #  first_login            :boolean
 #  num_logins             :integer
-#  scorer_id              :integer
 #  name                   :string(255)
 #  administrator          :boolean          default(FALSE)
 #  reset_password_token   :string(255)
@@ -49,8 +48,9 @@ class UserTest < ActiveSupport::TestCase
       assert_not_nil user.first_login
       assert_not_nil user.num_logins
 
-      assert_equal true,  user.first_login
-      assert_equal 0,     user.num_logins
+      assert_equal true,                     user.first_login
+      assert_equal 0,                        user.num_logins
+      assert_equal user.default_scorer.name, Rails.application.config.quepid_default_scorer
     end
 
     test 'do not override the passed in arguments' do

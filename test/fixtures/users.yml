@@ -9,7 +9,6 @@
 #  agreed                 :boolean
 #  first_login            :boolean
 #  num_logins             :integer
-#  scorer_id              :integer
 #  name                   :string(255)
 #  administrator          :boolean          default(FALSE)
 #  reset_password_token   :string(255)
@@ -29,7 +28,7 @@ default: &default
 doug:
   <<: *default
   email: doug@example.com
-  scorer: :valid
+  default_scorer: :valid
   administrator: true
 
 # Matt should only have one case: Matt's case
@@ -72,7 +71,7 @@ shared_scorer_owner:
 default_scorer_owner:
   <<: *default
   email: default_scorer_owner@example.com
-  scorer:   :default_scorer
+  default_scorer:   :default_scorer
   administrator: false
 
 # The whole purpose of this user is to test deleting scorers set as
@@ -80,7 +79,7 @@ default_scorer_owner:
 default_scorer_user:
   <<: *default
   email: default_scorer_user@example.com
-  scorer:   :default_scorer
+  default_scorer:   :default_scorer
   administrator: false
 
 # The whole purpose of this user is to test finding cases using the
@@ -186,6 +185,6 @@ locked_user:
 
 admin:
   <<: *default
-  email:      admin@example.com
-  scorer:        :valid
-  administrator: true
+  email:          admin@example.com
+  default_scorer: :valid
+  administrator:  true

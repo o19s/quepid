@@ -10,7 +10,7 @@
               full-diff-name="queries.fullDiffName()"
               max-score="maxScore || 100";
               scorable="queries.avgQuery"
-              score-label="'average'"
+              score-label="getScorer().name"
               score-type="'header'"
               scores="scores"
               show-diff="queries.selectedDiff() !== null"
@@ -30,6 +30,11 @@
                 &mdash;
                 {{ currentTry.selectedTry().name }}
               </small>
+
+              <small class="text-muted">
+                &mdash;
+                {{ getScorer().name }}
+              </small>
             </h1>
           </div>
         </div>
@@ -40,7 +45,7 @@
           <ul class="list-inline">
             <li>
               <span class="glyphicon glyphicon-tasks"></span>
-              <a name="button" ng-click="pickScorer()">
+              <a name="button" ng-click="pickCaseScorer()">
                 Select scorer
               </a>
             </li>

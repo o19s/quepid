@@ -146,8 +146,8 @@ bin/docker r bin/rake test TEST=./test/controllers/api/v1/bulk/queries_controlle
 If you need to reset your test database setup then run:
 
 ```
-bin/docker r rake db:drop RAILS_ENV=test
-bin/docker r rake db:create RAILS_ENV=test
+bin/docker r bin/rake db:drop RAILS_ENV=test
+bin/docker r bin/rake db:create RAILS_ENV=test
 ```
 
 ### JS Lint

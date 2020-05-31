@@ -8,7 +8,7 @@ angular.module('QuepidApp')
         if (score === '?') {
           return '?';
         } else if ( angular.isNumber(score) ) {
-          return $filter('number')(score, 0);
+          return $filter('number')(score, 2);
         } else {
           return score;
         }

@@ -11,7 +11,6 @@
 #  agreed                 :boolean
 #  first_login            :boolean
 #  num_logins             :integer
-#  scorer_id              :integer
 #  name                   :string(255)
 #  administrator          :boolean          default(FALSE)
 #  reset_password_token   :string(255)
@@ -27,7 +26,8 @@
 
 class User < ActiveRecord::Base
   # Associations
-  belongs_to :scorer
+  belongs_to :default_scorer, class_name: 'Scorer'
+
   has_many :cases,
            dependent:   :destroy
 
@@ -67,8 +67,6 @@ class User < ActiveRecord::Base
   has_many :permissions,
            dependent: :destroy
 
-  belongs_to :default_scorer
-
   # Validations
   validates :email,
             presence:   true,
@@ -77,7 +75,7 @@ class User < ActiveRecord::Base
   validates :password,
             presence: true
 
-  validates_with ::ScorerExistsValidator
+  validates_with ::DefaultScorerExistsValidator
 
   # Modules
   # Include default devise modules. Others available are:
@@ -147,8 +145,11 @@ class User < ActiveRecord::Base
   private
 
   def set_defaults
+    # rubocop:disable Style/RedundantSelf
     self.first_login      = true  if first_login.nil?
     self.num_logins       = 0     if num_logins.nil?
+    self.default_scorer   = Scorer.system_default_scorer if self.default_scorer.nil?
+    # rubocop:enable Style/RedundantSelf
 
     true # this is necessary because it will rollback
     # the creation/update of the user otherwise

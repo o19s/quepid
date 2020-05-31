@@ -6,21 +6,49 @@
 #   cities = City.create([{ name: 'Chicago' }, { name: 'Copenhagen' }])
 #   Mayor.create(name: 'Emanuel', city: cities.first)
 
-DefaultScorer.first_or_create(
-  scale:  (1..10).to_a,
-  code:   [
-    '// Gets the average score over a scale of 100',
-    '// (assumes query rating on a scale of 1-10)',
-    'var score = avgRating100(10);',
-    'if (score !== null) {',
-    '  // Adds a distance penalty to the score',
-    '  score -= editDistanceFromBest(10);',
-    '}',
-    'setScore(score);',
-  ].join("\n"),
-  name:         'v1',
-  state:        'published',
-  published_at: Time.new(2014, 01, 01)
+Scorer.where(name: 'nDCG@5').first_or_create(
+  scale:              (0..4).to_a,
+  scale_with_labels:  {"0":"Irrelevant","1":"Poor","2":"Fair","3":"Good","4":"Perfect"},
+  show_scale_labels:  true,
+  code:               File.readlines('./db/scorers/ndcg@5.js','\n').join('\n'),
+  name:               'nDCG@5',
+  communal:           true
+)
+
+Scorer.where(name: 'DCG@5').first_or_create(
+  scale:              (0..4).to_a,
+  scale_with_labels:  {"0":"Irrelevant","1":"Poor","2":"Fair","3":"Good","4":"Perfect"},
+  show_scale_labels:  true,
+  code:               File.readlines('./db/scorers/dcg@5.js','\n').join('\n'),
+  name:               'DCG@5',
+  communal:           true
+)
+
+Scorer.where(name: 'CG@5').first_or_create(
+  scale:              (0..4).to_a,
+  scale_with_labels:  {"0":"Irrelevant","1":"Poor","2":"Fair","3":"Good","4":"Perfect"},
+  show_scale_labels:  true,
+  code:               File.readlines('./db/scorers/cg@5.js','\n').join('\n'),
+  name:               'CG@5',
+  communal:           true
+)
+
+Scorer.where(name: 'P@5').first_or_create(
+  scale:              (0..1).to_a,
+  scale_with_labels:  {"0":"Irrelevant","1":"Relevant"},
+  show_scale_labels:  true,
+  code:               File.readlines('./db/scorers/p@5.js','\n').join('\n'),
+  name:               'P@5',
+  communal:           true
+)
+
+Scorer.where(name: 'AP@5').first_or_create(
+  scale:              (0..1).to_a,
+  scale_with_labels:  {"0":"Irrelevant","1":"Relevant"},
+  show_scale_labels:  true,
+  code:               File.readlines('./db/scorers/ap@5.js','\n').join('\n'),
+  name:               'AP@5',
+  communal:           true
 )
 
 if ENV['SEED_SAMPLE_DATA']

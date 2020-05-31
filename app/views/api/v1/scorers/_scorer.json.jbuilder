@@ -5,7 +5,7 @@ teams = scorer.teams.find_all do |o|
 end
 
 json.scorerId             scorer.id
-json.scorerType           'Scorer'
+json.communal             scorer.communal
 json.code                 scorer.code
 json.name                 scorer.name
 json.queryTest            scorer.query_test

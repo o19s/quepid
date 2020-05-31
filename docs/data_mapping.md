@@ -22,7 +22,7 @@ A query returns results from the search engine, but those results are not saved 
 
 A rating is associated to the query using the `query_id` foreign key and to a search results through the `doc_id` attribute. The `doc_id` is the only thing Quepid saves related to search results.
 
-Ratings for each result are summed up and turned into query score using a `Scorer`. Each query can have its own scorer, or inherit the case scorer. Scorers can be created by a user to be used on cases or queries, or shared with teams, or be created in an ad-hoc manner directly for a query.
+Ratings for each result are summed up and turned into query score using a `Scorer`. Each query can either have a specific unit test style scorer, or use the case scorer. Scorers can be created by a user to be used on cases and shared with teams, or be created in an ad-hoc manner directly for a query as a unit test.  There is an argument for unit test style scorers should be their own model and not shared with case level scorers.
 
 The score of each query is transformed into a percentile score for the case, and saved as a time series as the `Score` model. The user can also create an `Annotation` which would be associated to a score, in order to save notes throughout time to indicate what changes were made that resulted in a different case score.
 
@@ -32,7 +32,7 @@ The last remaining piece of the puzzle is `Snapshot`/`SnapshotQuery`/`SnapshotDo
 
 ## Other
 
-Quepid provides scorers that are written by the OSC team for everyone to use, those scorers are saved as `DefaultScorer`s, and the initial version of the default scorer is created when seeding the db (using `bin/rake db:seed` or `bin/rake db:setup`).
+Quepid provides scorers that are written by the OSC team for everyone to use, those `Scorer`'s are tagged with the `communal` flag as `true`, and the default scorers are created when seeding the db (using `bin/rake db:seed` or `bin/rake db:setup`).
 
 ## Diagram
 

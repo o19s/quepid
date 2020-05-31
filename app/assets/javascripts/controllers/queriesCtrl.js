@@ -84,8 +84,10 @@ angular.module('QuepidApp')
       $scope.queries                  = {};
       $scope.queries.sortableOptions  = sortableOptions;
 
-      $scope.pickScorer               = pickScorer;
+      $scope.pickCaseScorer           = pickCaseScorer;
       $scope.sortBy                   = sortBy;
+
+      $scope.getScorer                = getScorer;
 
       $scope.reverse = $location.search().reverse;
       $scope.sortBy($location.search().sort || 'default', !$scope.reverse);
@@ -296,10 +298,14 @@ angular.module('QuepidApp')
         queryViewSvc.collapseAll();
       };
 
+      function getScorer() {
+        return customScorerSvc.defaultScorer;
+      }
+
       /*jslint latedef:false*/
-      function pickScorer() {
+      function pickCaseScorer() {
         $uibModal.open({
-          templateUrl: 'views/scorer.html',
+          templateUrl: 'views/pick_scorer.html',
           backdrop:    'static',
           controller:  'ScorerCtrl',
           resolve:     {

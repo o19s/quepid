@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20200428150211) do
+ActiveRecord::Schema.define(version: 20200522215022) do
 
   create_table "annotations", force: :cascade do |t|
     t.text     "message",    limit: 65535
@@ -56,10 +56,8 @@ ActiveRecord::Schema.define(version: 20200428150211) do
     t.integer  "scorer_id",       limit: 4
     t.datetime "created_at",                  null: false
     t.datetime "updated_at",                  null: false
-    t.string   "scorer_type",     limit: 255
   end
 
-  add_index "cases", ["scorer_type"], name: "index_cases_on_scorer_type", length: {"scorer_type"=>191}, using: :btree
   add_index "cases", ["user_id"], name: "user_id", using: :btree
 
   create_table "curator_variables", force: :cascade do |t|
@@ -108,12 +106,10 @@ ActiveRecord::Schema.define(version: 20200428150211) do
     t.boolean  "scorer_enbl"
     t.datetime "created_at",                   null: false
     t.datetime "updated_at",                   null: false
-    t.string   "scorer_type",    limit: 255
     t.text     "options",        limit: 65535
   end
 
   add_index "queries", ["case_id"], name: "case_id", using: :btree
-  add_index "queries", ["scorer_type"], name: "index_queries_on_scorer_type", length: {"scorer_type"=>191}, using: :btree
 
   create_table "ratings", force: :cascade do |t|
     t.string   "doc_id",     limit: 500
@@ -139,6 +135,7 @@ ActiveRecord::Schema.define(version: 20200428150211) do
     t.text     "scale_with_labels",      limit: 65535
     t.datetime "created_at",                                           null: false
     t.datetime "updated_at",                                           null: false
+    t.boolean  "communal",                             default: false
   end
 
   create_table "snapshot_docs", force: :cascade do |t|
@@ -225,7 +222,6 @@ ActiveRecord::Schema.define(version: 20200428150211) do
     t.boolean  "agreed"
     t.boolean  "first_login"
     t.integer  "num_logins",             limit: 4
-    t.integer  "scorer_id",              limit: 4
     t.string   "name",                   limit: 255
     t.boolean  "administrator",                      default: false
     t.string   "reset_password_token",   limit: 255
@@ -265,5 +261,5 @@ ActiveRecord::Schema.define(version: 20200428150211) do
   add_foreign_key "teams_scorers", "scorers"
   add_foreign_key "teams_scorers", "teams"
   add_foreign_key "tries", "cases", name: "tries_ibfk_1"
-  add_foreign_key "users", "default_scorers"
+  add_foreign_key "users", "scorers", column: "default_scorer_id"
 end

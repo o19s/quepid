@@ -15,7 +15,6 @@
 #  scorer_enbl    :boolean
 #  created_at     :datetime         not null
 #  updated_at     :datetime         not null
-#  scorer_type    :string(255)
 #  options        :text(65535)
 #
 
@@ -61,7 +60,8 @@ for_default_scorer:
   case:         :for_default_scorer
   query_text:   B Query
   arranged_at:  2
-  scorer:       query_default_scorer (Scorer)
+  scorer:       :query_default_scorer
+#  scorer:       query_default_scorer (Scorer)
 
 import_ratings_query:
   case:         :import_ratings_case

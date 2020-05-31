@@ -36,16 +36,17 @@ module Api
 
         private
 
+        # rubocop:disable Style/IfUnlessModifier
         def set_scorer
-          @scorer = case params[:scorer_type]
-                    when 'DefaultScorer'
-                      DefaultScorer.where(id: params[:scorer_id]).first
-                    else
-                      current_user.scorers.where(id: params[:scorer_id]).first
-                    end
+          @scorer = current_user.scorers.where(id: params[:scorer_id]).first
+
+          if @scorer.nil? # Check if communal scorers has the scorer.  This logic should be in the .scorers. method!
+            @scorer = Scorer.communal.where(id: params[:scorer_id]).first
+          end
 
           render json: { error: 'Not Found!' }, status: :not_found unless @scorer
         end
+        # rubocop:enable Style/IfUnlessModifier
       end
     end
   end

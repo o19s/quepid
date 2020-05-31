@@ -17,6 +17,7 @@
 #  scale_with_labels      :text(65535)
 #  created_at             :datetime         not null
 #  updated_at             :datetime         not null
+#  communal               :boolean
 #
 
 require 'scale_serializer'
@@ -24,6 +25,9 @@ require 'scale_serializer'
 class Scorer < ActiveRecord::Base
   # Associations
   belongs_to :owner, class_name: 'User'
+
+  # not sure about this!
+  # has_many :users, dependent: :nullify
 
   # too late now!
   # rubocop:disable Rails/HasAndBelongsToMany
@@ -37,6 +41,10 @@ class Scorer < ActiveRecord::Base
   validates_with ScaleValidator
 
   # Scopes
+  # The :for_user scope should also include in the scorers: array
+  # the owner_id: user.id OR communal:true clause, but in Rails 4
+  # we can't do OR statements in ARel.  So, working around it outside
+  # this scope.
   scope :for_user, ->(user) {
     where.any_of(
       teams:         {
@@ -50,6 +58,13 @@ class Scorer < ActiveRecord::Base
       }
     )
   }
+
+  scope :communal, -> { where(communal: true) }
+
+  # the default scorer for users who don't have one specified.
+  def self.system_default_scorer
+    find_by(name: Rails.application.config.quepid_default_scorer)
+  end
 
   # Transform scale from array to a string
   serialize :scale, ScaleSerializer
@@ -68,5 +83,16 @@ class Scorer < ActiveRecord::Base
     # Ideally users would provide a meaningful name for scorers in order
     # to be able to identify them easily.
     self.name       = "Scorer #{Scorer.count + 1}" if name.blank?
+  end
+
+  def scale_list=value
+    self.scale = value.split(',') if value.present?
+  end
+
+  def scale_list
+    # rubocop:disable Style/SafeNavigation
+    scale.join(',') unless scale.nil?
+    # scale&.join(',')
+    # rubocop:enable Style/SafeNavigation
   end
 end

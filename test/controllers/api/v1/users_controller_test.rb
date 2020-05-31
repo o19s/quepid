@@ -36,7 +36,7 @@ module Api
             body = JSON.parse(response.body)
 
             assert body['email'] == doug.email
-            assert body['scorerId'] == doug.scorer.id
+            assert body['defaultScorerId'] == doug.default_scorer.id
           end
 
           test 'returns a not found error if user does not exist' do
@@ -61,49 +61,39 @@ module Api
         end
 
         test 'successfully updates default scorer' do
-          patch :update, id: matt.email, user: { scorer_id: scorer.id }
+          patch :update, id: matt.email, user: { default_scorer_id: scorer.id }
 
           assert_response :success
           matt.reload
-          assert matt.scorer_id == scorer.id
-          assert matt.scorer    == scorer
-        end
-
-        test 'successfully remove default scorer' do
-          matt.scorer = scorer
-          matt.save!
-
-          patch :update, id: matt.email, user: { scorer_id: nil }
-
-          assert_response :success
-          matt.reload
-          assert matt.scorer_id.nil?
-          assert matt.scorer.nil?
+          assert_equal matt.default_scorer_id, scorer.id
+          assert_equal matt.default_scorer, scorer
         end
 
         test 'successfully remove default scorer by setting the id to 0' do
-          matt.scorer = scorer
+          matt.default_scorer = scorer
           matt.save!
 
-          patch :update, id: matt.email, user: { scorer_id: 0 }
+          patch :update, id: matt.email, user: { default_scorer_id: 0 }
 
           assert_response :success
           matt.reload
-          assert matt.scorer_id.nil?
-          assert matt.scorer.nil?
+          assert_equal matt.default_scorer.name, Rails.application.config.quepid_default_scorer
         end
 
         test 'assigning a non existent scorer as default scorer' do
-          patch :update, id: matt.email, user: { scorer_id: 123 }
+          matt.default_scorer = scorer
+          matt.save!
+          patch :update, id: matt.email, user: { default_scorer_id: 123 }
 
           assert_response :bad_request
 
           body = JSON.parse(response.body)
-          assert body['scorer_id'].include? I18n.t('activerecord.errors.models.user.attributes.scorer_id.existence')
+          # rubocop:disable Metrics/LineLength
+          assert body['default_scorer_id'].include? I18n.t('activerecord.errors.models.user.attributes.default_scorer_id.existence')
+          # rubocop:enable Metrics/LineLength
 
           matt.reload
-          assert matt.scorer_id.nil?
-          assert matt.scorer.nil?
+          assert_equal matt.default_scorer, scorer
         end
       end
 

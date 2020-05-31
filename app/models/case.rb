@@ -14,7 +14,6 @@
 #  scorer_id       :integer
 #  created_at      :datetime         not null
 #  updated_at      :datetime         not null
-#  scorer_type     :string(255)
 #
 
 # rubocop:disable Metrics/ClassLength
@@ -26,8 +25,7 @@ class Case < ActiveRecord::Base
                           join_table: 'teams_cases'
   # rubocop:enable Rails/HasAndBelongsToMany
 
-  belongs_to :scorer,
-             polymorphic: true
+  belongs_to :scorer
 
   belongs_to :user
 
@@ -56,19 +54,11 @@ class Case < ActiveRecord::Base
   has_many   :annotations,
              through: :scores
 
-  has_many   :user_scorers,
-             through:     :queries,
-             source:      :scorer,
-             source_type: 'Scorer'
-
-  has_many   :default_scorers,
-             through:     :queries,
-             source:      :scorer,
-             source_type: 'DefaultScorer'
+  has_many   :user_scorers, -> { where(communal: false) }, through: :queries, source: :scorer
 
   # Validations
   validates :case_name, presence: true
-  validates_with DefaultScorerExistsValidator
+  validates_with ScorerExistsValidator
 
   # Callbacks
   before_create :set_scorer
@@ -150,12 +140,10 @@ class Case < ActiveRecord::Base
   def set_scorer
     return true if scorer_id.present?
 
-    self.scorer = if user&.scorer
-                    user.scorer
-                  elsif user&.default_scorer
+    self.scorer = if user&.default_scorer
                     user.default_scorer
                   else
-                    DefaultScorer.published.order(published_at: :desc).first
+                    Scorer.system_default_scorer
                   end
   end
 

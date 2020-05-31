@@ -401,7 +401,7 @@ module Api
             assert_response :bad_request
           end
 
-          test 'removes default association and deletes scorer when forced' do
+          test 'removes default association and deletes scorer when forced, setting the default to Quepid default' do
             delete :destroy, id: default_scorer.id, force: true
 
             assert_response :no_content
@@ -409,15 +409,15 @@ module Api
             default_scorer_user.reload
             default_scorer_owner.reload
 
-            assert_not_equal  default_scorer_owner.scorer, default_scorer
-            assert_nil        default_scorer_owner.scorer
-            assert_nil        default_scorer_owner.scorer_id
+            assert_not_equal  default_scorer_owner.default_scorer, default_scorer
+            assert_not_nil    default_scorer_owner.default_scorer
+            assert_equal      default_scorer_owner.default_scorer.name, Rails.application.config.quepid_default_scorer
 
-            assert_not_equal  default_scorer_user.scorer, default_scorer
-            assert_nil        default_scorer_user.scorer
-            assert_nil        default_scorer_user.scorer_id
+            assert_not_equal  default_scorer_user.default_scorer, default_scorer
+            assert_not_nil    default_scorer_user.default_scorer
+            assert_equal      default_scorer_user.default_scorer, Scorer.system_default_scorer
 
-            assert_equal User.where(scorer_id: default_scorer.id).count, 0
+            assert_equal User.where(default_scorer_id: default_scorer.id).count, 0
           end
         end
 
@@ -537,7 +537,7 @@ module Api
 
           expected_owned_response = {
             'scorerId'            => owned_scorer.id,
-            'scorerType'          => owned_scorer.class.to_s,
+            'communal'            => owned_scorer.communal,
             'code'                => owned_scorer.code,
             'name'                => owned_scorer.name,
             'queryTest'           => owned_scorer.query_test,
@@ -562,7 +562,7 @@ module Api
 
           expected_shared_response = {
             'scorerId'            => shared_scorer.id,
-            'scorerType'          => shared_scorer.class.to_s,
+            'communal'            => owned_scorer.communal,
             'code'                => shared_scorer.code,
             'name'                => shared_scorer.name,
             'queryTest'           => shared_scorer.query_test,

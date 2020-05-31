@@ -1,0 +1,92 @@
+<%= form_for(@scorer, url: {action: passed_in_action}, class: 'form-horizontal') do |f| %>
+  <% if @scorer.errors.any? %>
+    <div id="error_explanation">
+      <h2><%= pluralize(@scorer.errors.count, "error") %> prohibited this scorer from being saved:</h2>
+
+      <ul>
+      <% @scorer.errors.full_messages.each do |message| %>
+        <li><%= message %></li>
+      <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="form-group clearfix">
+    <%= f.label :name, class: 'col-sm-2 control-label' %>
+    <div class="col-sm-10">
+      <%= f.text_field :name, class: 'form-control' %>
+    </div>
+  </div>
+
+  <div class="form-group clearfix">
+    <%= f.label :code, class: 'col-sm-2 control-label' %>
+    <div class="col-sm-10">
+      <%= f.hidden_field :code %>
+      <div
+        id='scorer-code-editor'
+        data-code='<%= @scorer.code %>'
+      >
+      </div>
+    </div>
+  </div>
+
+  <div class="form-group clearfix">
+    <%= f.label :scale_list, class: 'col-sm-2 control-label' %>
+    <div class="col-sm-10">
+      <%= f.text_field :scale_list, class: 'form-control', data: { 'live-update': 'scorer_scale_with_labels' } %>
+      <span class='help-block'>Use a comma delimited list.</span>
+    </div>
+  </div>
+
+  <div class="form-group clearfix">
+    <div class="col-sm-offset-2 col-sm-10">
+      <div class="checkbox">
+        <%= f.label :manual_max_score do %>
+          <%= f.check_box :manual_max_score %>
+          Use a manual max score?
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <div class="form-group clearfix">
+    <%= f.label :manual_max_score_value, class: 'col-sm-2 control-label' %>
+    <div class="col-sm-10">
+      <%= f.text_field :manual_max_score_value, class: 'form-control' %>
+    </div>
+  </div>
+
+  <div class="form-group clearfix">
+    <div class="col-sm-offset-2 col-sm-10">
+      <div class="checkbox">
+        <%= f.label :show_scale_labels do %>
+          <%= f.check_box :show_scale_labels %>
+          Show scale labels?
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <div class="form-group clearfix">
+    <%= f.label :scale_with_labels, class: 'col-sm-2 control-label' %>
+    <div class="col-sm-10" id="scorer_scale_with_labels">
+      <% @scorer.scale.each do |value| -%>
+        <label class='scale-with-label-element clearfix'>
+          <%= value %>:
+          <input
+            class="form-control scale-label clearfix"
+            type="text"
+            name="scorer[scale_with_labels][<%= value %>]"
+            value="<%= @scorer.scale_with_labels[value.to_s] unless @scorer.scale_with_labels.blank? %>"
+           />
+        </label>
+      <% end -%>
+    </div>
+  </div>
+
+  <div class="form-group clearfix">
+    <div class="col-sm-offset-2 col-sm-10">
+      <%= f.submit class: 'btn btn-primary' %>
+    </div>
+  </div>
+<% end %>

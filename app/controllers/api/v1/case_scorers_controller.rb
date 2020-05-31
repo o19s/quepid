@@ -9,21 +9,21 @@ module Api
       def index
         @default           = @case.scorer
         @user_scorers      = @case.user_scorers
-        @default_scorers   = @case.default_scorers
+        @communal_scorers  = Scorer.communal
 
-        respond_with @user_scorers, @default_scorers, @default
+        respond_with @user_scorers, @communal_scorers, @default
       end
 
       def update
-        scorer_id   = params[:id]
-        scorer_type = params[:scorer_type] || 'Scorer'
+        scorer_id = params[:id]
 
+        # rubocop:disable Style/IfUnlessModifier
         if scorer_removed?
-          scorer_id   = nil
-          scorer_type = nil
+          scorer_id = nil
         end
+        # rubocop:enable Style/IfUnlessModifier
 
-        if @case.update scorer_id: scorer_id, scorer_type: scorer_type
+        if @case.update scorer_id: scorer_id
           Analytics::Tracker.track_case_updated_event current_user, @case
           respond_with @case
         else

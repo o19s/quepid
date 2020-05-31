@@ -4,6 +4,6 @@ json.user_scorers do
   json.array! @user_scorers, partial: 'scorer', as: :scorer
 end
 
-json.default_scorers do
-  json.array! @default_scorers, partial: 'api/v1/default_scorers/scorer', as: :scorer
+json.communal_scorers do
+  json.array! @communal_scorers, partial: 'communal_scorer', as: :scorer
 end
