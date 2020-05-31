@@ -23,7 +23,7 @@ angular.module('QuepidApp')
 
       ctrl.rre         = {
         content:           null
-      }
+      };
 
       ctrl.options = {
         which: 'undefined'
@@ -51,44 +51,14 @@ angular.module('QuepidApp')
       $scope.pickedFile = function() {
         var f = document.getElementById('file').files[0],
             r = new FileReader();
+
+        // This next two lines don't seem to trigger the watches that I wanted.
         ctrl.options.which = 'rre';
         ctrl.loading = true;
         r.onloadend = function(e) {
           var data = e.target.result;
-          console.log("Loaded data");
           ctrl.rre.content = data;
           ctrl.loading = false;
-
-          //send your binary data via $http or $resource or do anything else with it
-        }
-
-        r.readAsText(f);
-      }
-
-      $scope.add = function() {
-        var f = document.getElementById('file').files[0],
-            r = new FileReader();
-
-        ctrl.options.which = 'rre';
-        r.onloadend = function(e) {
-          var data = e.target.result;
-          console.log("Loaded data");
-          ctrl.rre.content = data;
-          //send your binary data via $http or $resource or do anything else with it
-        }
-
-        r.readAsText(f);
-      }
-
-      function readText() {
-        var f = document.getElementById('file').files[0],
-            r = new FileReader();
-
-        r.onloadend = function(e) {
-          var data = e.target.result;
-          console.log("Loaded data");
-          ctrl.rre.content = data;
-          //send your binary data via $http or $resource or do anything else with it
         }
 
         r.readAsText(f);
