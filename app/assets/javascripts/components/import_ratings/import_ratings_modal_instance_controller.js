@@ -2,13 +2,14 @@
 
 angular.module('QuepidApp')
   .controller('ImportRatingsModalInstanceCtrl', [
+    '$scope',
     '$uibModalInstance',
     'importRatingsSvc',
-    'selectedCase',
-    function ($uibModalInstance, importRatingsSvc, selectedCase) {
+    'theCase',
+    function ($scope, $uibModalInstance, importRatingsSvc, theCase) {
       var ctrl = this;
 
-      ctrl.selectedCase = selectedCase;
+      ctrl.selectedCase = theCase;
       ctrl.loading      = false;
       ctrl.import       = {};
       ctrl.csv          = {
@@ -19,6 +20,17 @@ angular.module('QuepidApp')
         separatorVisible: false,
         result:           null
       };
+
+      ctrl.options = {
+        which: 'undefined'
+      };
+
+      // Watches
+      $scope.$watch('ctrl.csv.content', function(newVal, oldVal) {
+        if (newVal !== oldVal) {
+          ctrl.options.which = 'csv';
+        }
+      },true);
 
       ctrl.ok = function () {
         var headers = ctrl.csv.content.split('\n')[0];
@@ -34,14 +46,12 @@ angular.module('QuepidApp')
           alert += expectedHeaders.join(',');
           alert += '</strong>';
 
-          ctrl.import.alert = {
-            'text': alert,
-            'type': 'text-danger'
-          };
+          ctrl.import.alert = alert;
+
         } else {
           ctrl.loading = true;
-          importRatingsSvc.makeCall(
-            ctrl.selectedCase,
+          importRatingsSvc.importCSVFormat(
+            ctrl.theCase,
             ctrl.csv.result,
             ctrl.csv.clearQueries
           ).then(function() {

@@ -1127,7 +1127,7 @@ footer {
 
 /* Import */
 .import-content {
-  max-height: 300px;
+  max-height: 200px;
   overflow:   scroll;
 }
 
@@ -1178,7 +1178,7 @@ li.annotation {
 	margin: 5px 5px 0 0;
 }
 
-.modal-body .btn-group .btn-default { 
+.modal-body .btn-group .btn-default {
 	background: linear-gradient(to bottom right, #EEE, #F8F8F8);
 }
 
@@ -1195,12 +1195,12 @@ li.annotation {
 	padding-left: 0;
 }
 
-.modal-body .glyphicon { 
+.modal-body .glyphicon {
 	font-size: 16px;
-	color: #aaa; 
+	color: #aaa;
 }
 
-.modal-body .checkbox { 
+.modal-body .checkbox {
 	margin-top: 0;
 	margin-bottom: 5px;
 	padding: 8px 0;
