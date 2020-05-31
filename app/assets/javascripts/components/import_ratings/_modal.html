@@ -55,11 +55,13 @@
     <input type="radio" id="rre" name="importSelection" value="rre" ng-model="ctrl.options.which">
     <label for="rre">RRE</label>
     <span class="help-block">
-      The RRE file should have the headers: <code>query,docid,rating</code>
+      Quepid only imports the ratings part of the <a href="https://github.com/SeaseLtd/rated-ranking-evaluator/wiki/What%20We%20Need%20To%20Provide#ratings" target="_blank">RRE judgement</a> file.
     </span>
-    <p>Select RRE ratings json file to import:</p>
+    <p>Select RRE ratings file to import:</p>
     <!-- this onchange is a code smell. -->
-    <input type="file" id="file" name="file" onchange="angular.element(this).scope().pickedFile()"/>
+    <input type="file" id="file" name="file"
+      accept="application/json"
+      onchange="angular.element(this).scope().pickedFile()"/>
 
 
   </div>
