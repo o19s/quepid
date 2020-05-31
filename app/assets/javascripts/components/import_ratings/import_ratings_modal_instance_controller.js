@@ -9,7 +9,7 @@ angular.module('QuepidApp')
     function ($scope, $uibModalInstance, importRatingsSvc, theCase) {
       var ctrl = this;
 
-      ctrl.selectedCase = theCase;
+      ctrl.theCase      = theCase;
       ctrl.loading      = false;
       ctrl.import       = {};
       ctrl.csv          = {
