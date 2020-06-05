@@ -15,6 +15,8 @@ You will need to run a database migration and rerun the `db:seed` to get the new
 
 There is a sql migration script in `./db/merge_default_scorer_into_scorer.sql` that you might if you have been using Quepid locally for a while with default scorers.  This was primarily meant to support updating http://app.quepid.com.
 
+QUEPID_DEFAULT_SCORER is a new environment variable specifying the default scorer
+for users to use. QUEPID_DEFAULT_SCORER=AP@5 is what app.quepid.com uses.
 
 ### Features
 
