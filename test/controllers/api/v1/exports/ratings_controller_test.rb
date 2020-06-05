@@ -57,6 +57,8 @@ module Api
             get :show, case_id: the_case.id, format: :txt
             assert_response :ok
 
+            assert response.body.include?("<%=rating.rating%>    qid:<%=query.id%> #    <%=rating.doc_id %>; \"<%query.query_text%>\"")
+
             assert_equal response.content_type, 'text/plain'
           end
         end

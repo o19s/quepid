@@ -1,7 +1,7 @@
 <%
 @case.queries.each do |query|
   query.ratings.each do |rating| %>
-<%=rating.rating%>    qid:<%=query.id%> #    <%=rating.doc_id %>
+<%=rating.rating%>    qid:<%=query.id%> #    <%=rating.doc_id %>; "<%query.query_text%>"
 <%
   end
 end %>
