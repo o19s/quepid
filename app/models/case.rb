@@ -29,7 +29,7 @@ class Case < ActiveRecord::Base
 
   belongs_to :user
 
-  has_many   :tries,
+  has_many   :tries,    -> { order(try_number: :desc) },
              dependent: :destroy
 
   has_many   :metadata,
