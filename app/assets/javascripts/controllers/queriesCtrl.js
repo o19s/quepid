@@ -123,8 +123,6 @@ angular.module('QuepidApp')
 
         resultObject.lastScore = queriesSvc.scoreAll();
         lastVersion            = queriesSvc.version();
-        var colors             = customScorerSvc.defaultScorer.getColors();
-        var index, color;
 
         if (
           resultObject.lastScore &&
