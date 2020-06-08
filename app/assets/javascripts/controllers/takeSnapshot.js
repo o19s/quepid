@@ -15,8 +15,9 @@ angular.module('QuepidApp')
         modalInstance.result.then(function() {
           // take the snapshot over all the active queries
           $log.debug('Creating snapshot: ');
+        },function() {
+          $log.info('INFO: Modal dismissed');
         });
-
       };
     }
   ]);
