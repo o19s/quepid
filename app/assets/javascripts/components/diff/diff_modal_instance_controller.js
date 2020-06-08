@@ -25,7 +25,7 @@ angular.module('QuepidApp')
       ctrl.inProgress = false;
 
       // Functions
-      ctrl.close           = close;
+      ctrl.cancel          = cancel;
       ctrl.delConfirm      = delConfirm;
       ctrl.delStarted      = delStarted;
       ctrl.isNumber        = isNumber;
@@ -108,8 +108,9 @@ angular.module('QuepidApp')
         }
       }
 
-      function close() {
-        $uibModalInstance.dismiss();
+      function cancel() {
+        //$uibModalInstance.dismiss();
+        $uibModalInstance.dismiss('cancel');
       }
     }
   ]);

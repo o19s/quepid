@@ -1,6 +1,6 @@
 <div class="modal-header">
-  <button type="button" class="close" ng-click="ctrl.cancel()" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-  <h3>Compare Your Search Results</h3>
+  <button type="button" class="close" aria-label="Close" ng-click="ctrl.cancel()"><span aria-hidden="true">&times;</span></button>
+  <h3 class="modal-title">Compare Your Search Results</h3>
 </div>
 <div class="modal-body">
   <p>Check your current progress against previous snapshots or compare against the highest rated documents from each query</p>
@@ -55,7 +55,7 @@
   <button
     class="btn btn-default"
     ng-disabled="ctrl.inProgress"
-    ng-click="ctrl.close()"
+    ng-click="ctrl.cancel()"
   >
     Cancel
   </button>

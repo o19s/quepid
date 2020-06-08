@@ -5,8 +5,9 @@
 angular.module('QuepidApp')
   .controller('DiffCtrl', [
     '$uibModal',
+    '$log',
     'queryViewSvc', 'queriesSvc',
-    function($uibModal, queryViewSvc, queriesSvc) {
+    function($uibModal, $log, queryViewSvc, queriesSvc) {
       var ctrl = this;
 
       // Functions
@@ -30,7 +31,7 @@ angular.module('QuepidApp')
             queriesSvc.setDiffSetting(response);
           },
           function() {
-            console.log('Diff modal failed to close properly.');
+            $log.info('INFO: Modal dismissed');
           });
       }
     }

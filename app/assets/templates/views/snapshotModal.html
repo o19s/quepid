@@ -1,5 +1,6 @@
 <div class="modal-header">
-  <h3>Take a Snapshot of all your queries?</h3>
+  <button type="button" class="close" aria-label="Close" ng-click="cancel()"><span aria-hidden="true">&times;</span></button>
+  <h3 class="modal-title">Take a Snapshot of all your queries?</h3>
 </div>
 <div class="modal-body">
   <p>Record the current results of your queries to compare future work against this milestone.  A snapshot
@@ -16,7 +17,7 @@
   <button class="btn btn-default" ng-disabled="snapPrompt.inProgress" ng-click="ok()">
     Take Snapshot
   </button>
-  <button class="btn btn-default" ng-disabled="snapPrompt.inProgress" ng-click="close()">
+  <button class="btn btn-default" ng-disabled="snapPrompt.inProgress" ng-click="cancel()">
     Cancel
   </button>
   <div ng-show="snapPrompt.inProgress">
