@@ -150,7 +150,9 @@ bin/docker r bin/rake db:drop RAILS_ENV=test
 bin/docker r bin/rake db:create RAILS_ENV=test
 ```
 
-View the logs generated during testing set `config.log_level:debug` in `test.rb` and then tail via:
+View the logs generated during testing set `config.log_level = :debug` in `test.rb`
+and then tail the log file via:
+
 ```
 bin/docker r tail -f -n 200 log/test.log
 ```
