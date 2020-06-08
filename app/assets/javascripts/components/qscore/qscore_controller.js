@@ -18,7 +18,7 @@ angular.module('QuepidApp')
         var scorable = ctrl.scorable.score();
 
         ctrl.score    = scorable.score;
-        ctrl.maxScore = ctrl.maxScore;
+        ctrl.maxScore = $scope.ctrl.maxScore;
 
         if ( angular.isDefined(scorable.backgroundColor) ) {
           ctrl.style = { 'backgroundColor': scorable.backgroundColor };
