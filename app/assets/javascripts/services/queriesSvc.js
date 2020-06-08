@@ -197,8 +197,12 @@ angular.module('QuepidApp')
 
           var bestDocs  = this.ratingsStore.bestDocs();
           var scorer    = this.effectiveScorer();
-          var score     = scorer.score(this.numFound, otherDocs, bestDocs, this.options);
-          var maxScore  = scorer.maxScore(this.numFound, otherDocs, bestDocs, this.options);
+
+          // The defaults are set below because sometimes quepid saves out scores with no values.
+          // TODO: Defaults can be removed if the quepid scoring persistence issue is cleaned up
+          var score     = scorer.score(this.numFound, otherDocs, bestDocs, this.options) || 0.0;
+          var maxScore  = scorer.maxScore(this.numFound, otherDocs, bestDocs, this.options) || 1.0;
+
           var color     = qscoreSvc.scoreToColor(score, maxScore);
 
           var othersScore = {
