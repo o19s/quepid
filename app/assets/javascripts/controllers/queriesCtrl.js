@@ -304,7 +304,7 @@ angular.module('QuepidApp')
 
       /*jslint latedef:false*/
       function pickCaseScorer() {
-        $uibModal.open({
+        var modalInstance = $uibModal.open({
           templateUrl: 'views/pick_scorer.html',
           backdrop:    'static',
           controller:  'ScorerCtrl',
@@ -318,6 +318,11 @@ angular.module('QuepidApp')
             },
           }
         });
+
+        modalInstance.result.then(
+          function() { },
+          function() { }
+        );
       }
 
       function sortBy(field, skipOrder) {
