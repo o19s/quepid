@@ -29,7 +29,7 @@ angular.module('QuepidApp')
         });
       };
 
-      $scope.close = function() {
+      $scope.cancel = function() {
         $uibModalInstance.dismiss('cancel');
       };
     }
