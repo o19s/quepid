@@ -150,6 +150,11 @@ bin/docker r bin/rake db:drop RAILS_ENV=test
 bin/docker r bin/rake db:create RAILS_ENV=test
 ```
 
+View the logs generated during testing set `config.log_level:debug` in `test.rb` and then tail via:
+```
+bin/docker r tail -f -n 200 log/test.log
+```
+
 ### JS Lint
 
 To check the JS syntax:
