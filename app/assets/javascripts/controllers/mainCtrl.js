@@ -127,10 +127,10 @@ angular.module('QuepidApp')
           loadQueries();
           loadSnapshots();
           updateCaseMetadata();
+          paneSvc.refreshElements();
         });
 
       // Sets up the panes stuff only when needed
-      paneSvc.initPanes();
       // Makes sure state is persisted even after reload.
       // This is used when the user hits "Rerun My Searches!" and wants to
       // continue tweaking the settings, it would keep the pane open.

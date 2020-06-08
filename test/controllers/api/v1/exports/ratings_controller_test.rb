@@ -57,6 +57,19 @@ module Api
             get :show, case_id: the_case.id, format: :txt
             assert_response :ok
 
+            # rubocop:disable  Lint/UselessAssignment
+            # rubocop:disable  Metrics/LineLength
+            query  = the_case.queries.first
+            rating = query.ratings.first
+
+            # For whatever reason the response.body is blank.
+            # We want to test both the format of the lines and
+            # that specifically for LTR that the export is based on the qid.
+            # assert response.body.include?("<%=rating.rating%>    qid:<%=query.id%> #    <%=rating.doc_id %>; \"<%=query.query_text%>\"")
+
+            # rubocop:enable  Lint/UselessAssignment
+            # rubocop:enable  Metrics/LineLength
+
             assert_equal response.content_type, 'text/plain'
           end
         end

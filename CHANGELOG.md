@@ -42,6 +42,7 @@ for users to use. QUEPID_DEFAULT_SCORER=AP@5 is what app.quepid.com uses.
 * curator variables (i.e knobs and dials) that aren't used in query cause weird UI.  https://github.com/o19s/quepid/pull/135 by @epugh fixes https://github.com/o19s/quepid/issues/64.
 * Saving two annotations in a row doesn't work, you need to rescore per annotation.  Fixed in https://github.com/o19s/quepid/pull/136 by @epugh.
 * Users can opt out of community marketing emails.  Add a `/admin/users.csv` export to make keeping track of that easier.  Thanks @flaxsearch for the suggestion.
+* Inconsistent use of X icon in modal popups is frustrating.  https://github.com/o19s/quepid/pull/148 by @worleydl and @epugh fixes https://github.com/o19s/quepid/issues/146 and https://github.com/o19s/quepid/issues/145.
 
 ### Bugs
 
@@ -52,6 +53,7 @@ for users to use. QUEPID_DEFAULT_SCORER=AP@5 is what app.quepid.com uses.
 * When a try number is not specified for a case, automatically redirect to the most recent try.  https://github.com/o19s/quepid/pull/122 by @epugh fixes https://github.com/o19s/quepid/issues/110 by @binarymax.
 * Case shared via Team with me has NaN for the Try.  https://github.com/o19s/quepid/pull/134 by @epugh fixes https://github.com/o19s/quepid/issues/83.
 * Not able to export cases from a Team page.  Commit quepid@021bda8627463986f1ff04ffb1c290195c428c5b by @epugh fixed this.
+* Race condition in laying out the main Quepid Screen and the Tune Relevance screen.  https://github.com/o19s/quepid/pull/147 by @worleydl fixes https://github.com/o19s/quepid/issues/144 by @epugh.
 
 
 ## 6.1.1 - 2020-07-03
