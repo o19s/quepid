@@ -42,7 +42,7 @@ for users to use. QUEPID_DEFAULT_SCORER=AP@5 is what app.quepid.com uses.
 * curator variables (i.e knobs and dials) that aren't used in query cause weird UI.  https://github.com/o19s/quepid/pull/135 by @epugh fixes https://github.com/o19s/quepid/issues/64.
 * Saving two annotations in a row doesn't work, you need to rescore per annotation.  Fixed in https://github.com/o19s/quepid/pull/136 by @epugh.
 * Users can opt out of community marketing emails.  Add a `/admin/users.csv` export to make keeping track of that easier.  Thanks @flaxsearch for the suggestion.
-* Inconsistent use of X icon in modal popups is frustrating.  https://github.com/o19s/quepid/pull/148 by @worleydl and @epugh fixes https://github.com/o19s/quepid/issues/146 and https://github.com/o19s/quepid/issues/145.
+* Inconsistent use of X icon in modal popups is frustrating.  https://github.com/o19s/quepid/pull/148 and https://github.com/o19s/quepid/pull/149 by @worleydl fixes https://github.com/o19s/quepid/issues/146 and https://github.com/o19s/quepid/issues/145.
 
 ### Bugs
 
