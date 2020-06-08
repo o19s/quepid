@@ -109,7 +109,8 @@ angular.module('QuepidApp')
       }
 
       function close() {
-        $uibModalInstance.dismiss();
+        //$uibModalInstance.dismiss();
+        $uibModalInstance.dismiss('cancel');
       }
     }
   ]);
