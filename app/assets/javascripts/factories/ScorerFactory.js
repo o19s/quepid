@@ -72,7 +72,6 @@
       self.scaleToArray           = scaleToArray;
       self.scaleToColors          = scaleToColors;
       self.score                  = score;
-      self.scoreToColor           = scoreToColor;
       self.scaleToScaleWithLabels = scaleToScaleWithLabels;
       self.showScaleLabel         = showScaleLabel;
       self.teamNames              = teamNames;
@@ -534,20 +533,6 @@
         }
 
         return runCode(total, docs, bestDocs, 'max', options);
-      }
-
-      function scoreToColor (score, maxScore) {
-        if ( maxScore === 0 ) {
-          return 'hsl(0, 100%, 50%)';
-        }
-
-        var n = score * 120 / maxScore;
-
-        if ( isNaN(n) ) {
-          n = 0;
-        }
-
-        return 'hsl(' + n + ', 100%, 50%)';
       }
 
       function score(total, docs, bestDocs, options) {

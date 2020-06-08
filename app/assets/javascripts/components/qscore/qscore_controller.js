@@ -3,8 +3,8 @@
 
 angular.module('QuepidApp')
   .controller('QscoreCtrl', [
-    '$scope',
-    function ($scope) {
+    '$scope', 'qscoreSvc',
+    function ($scope, qscoreSvc) {
       var ctrl          = this;
       var defaultStyle  = { 'background-color': 'hsl(0, 0%, 0%, 0.5)'};
 
@@ -12,7 +12,7 @@ angular.module('QuepidApp')
       ctrl.diffStyle    = {};
       ctrl.score        = '?';
       ctrl.scoreType    = ctrl.scoreType || 'normal';
-      ctrl.style        = scoreToColor(ctrl.score);
+      ctrl.style        = qscoreSvc.scoreToColor(ctrl.score, ctrl.maxScore);
 
       $scope.$watch('ctrl.scorable.score()', function() {
         var scorable = ctrl.scorable.score();
@@ -21,9 +21,9 @@ angular.module('QuepidApp')
         ctrl.maxScore = $scope.ctrl.maxScore;
 
         if ( angular.isDefined(scorable.backgroundColor) ) {
-          ctrl.style = { 'backgroundColor': scorable.backgroundColor };
+          ctrl.style = { 'background-color': scorable.backgroundColor };
         } else {
-          ctrl.style = scoreToColor(ctrl.score);
+          ctrl.style = { 'background-color': qscoreSvc.scoreToColor(ctrl.score, ctrl.maxScore)};
         }
 
         setDiff();
@@ -63,7 +63,7 @@ angular.module('QuepidApp')
           ) {
             ctrl.diffStyle = { 'background-color': diffScore.backgroundColor };
           } else {
-            ctrl.diffStyle = scoreToColor(diffScore.score);
+            ctrl.diffStyle = { 'background-color': qscoreSvc.scoreToColor(diffScore.score, ctrl.maxScore)};
           }
         } else {
           setDefaultDiff();
@@ -73,35 +73,6 @@ angular.module('QuepidApp')
       function setDefaultDiff() {
         ctrl.diffScore  = '?';
         ctrl.diffStyle  = defaultStyle;
-      }
-
-      function scoreToColor(score) {
-        // TODO add support for diff width
-        if ( score === '?' ) {
-          return defaultStyle;
-        }
-
-        if ( score === null ) {
-          return defaultStyle;
-        }
-
-        // Make the color of the score relative to the max score possible:
-        score = score * 100 / ctrl.maxScore;
-        score = Math.round(parseInt(score, 10) / 10);
-        return {
-          '-1': { 'background-color': 'hsl(0, 100%, 40%)'},
-          '0':  { 'background-color': 'hsl(5, 95%, 45%)'},
-          '1':  { 'background-color': 'hsl(10, 90%, 50%)'},
-          '2':  { 'background-color': 'hsl(15, 85%, 55%)'},
-          '3':  { 'background-color': 'hsl(20, 80%, 60%)'},
-          '4':  { 'background-color': 'hsl(24, 75%, 65%)'},
-          '5':  { 'background-color': 'hsl(28, 65%, 75%)'},
-          '6':  { 'background-color': 'hsl(60, 55%, 65%)'},
-          '7':  { 'background-color': 'hsl(70, 70%, 50%)'},
-          '8':  { 'background-color': 'hsl(80, 80%, 45%)'},
-          '9':  { 'background-color': 'hsl(90, 85%, 40%)'},
-          '10': { 'background-color': 'hsl(100, 90%, 35%)'}
-        }[score];
       }
     }
   ]);

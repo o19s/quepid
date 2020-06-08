@@ -14,6 +14,7 @@ angular.module('QuepidApp')
     'broadcastSvc',
     'caseSvc',
     'customScorerSvc',
+    'qscoreSvc',
     'searchSvc',
     'solrUrlSvc',
     'ratingsStoreSvc',
@@ -28,6 +29,7 @@ angular.module('QuepidApp')
       broadcastSvc,
       caseSvc,
       customScorerSvc,
+      qscoreSvc,
       searchSvc,
       solrUrlSvc,
       ratingsStoreSvc,
@@ -197,7 +199,7 @@ angular.module('QuepidApp')
           var scorer    = this.effectiveScorer();
           var score     = scorer.score(this.numFound, otherDocs, bestDocs, this.options);
           var maxScore  = scorer.maxScore(this.numFound, otherDocs, bestDocs, this.options);
-          var color     = scorer.scoreToColor(score, maxScore);
+          var color     = qscoreSvc.scoreToColor(score, maxScore);
 
           var othersScore = {
             score:            score,
