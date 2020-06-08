@@ -132,6 +132,7 @@ angular.module('QuepidApp')
         ) {
           var scoreInfo = resultObject.lastScore;
 
+          // TODO: This seems bugged, maybe force specification of max score?
           // Fetch the potential total max score by averaging
           // the max score of each query,
           // the same way we average the score of each query
@@ -146,6 +147,7 @@ angular.module('QuepidApp')
 
           $scope.maxScore = maxScores.
             reduce(function(a, b) { return a + b; }, 0) / maxScores.length;
+          $scope.maxScore = Math.max(1, $scope.maxScore);
 
           // Make the color of the score relative to the
           // max score possible:
