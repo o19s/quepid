@@ -9,17 +9,6 @@ angular.module('QuepidApp')
       var main;
       var slider;
 
-      this.refreshElements = function() {
-        slider  = document.getElementsByClassName('east-slider')[0];
-        container = document.getElementsByClassName('pane_container')[0];
-        east = document.getElementsByClassName('pane_east')[0];
-        main = document.getElementsByClassName('pane_main')[0];
-        east.style.left = slider.style.left = (container.offsetWidth - 20) + 'px';
-
-        slider.onmousedown = grabSlider;
-        document.onmouseup = releaseSlider;
-      }
-
       /* Move the left edge of east to x
        * */
       var moveEastTo = function(x) {
@@ -42,6 +31,17 @@ angular.module('QuepidApp')
 
       var releaseSlider = function() {
         document.onmousemove = null;
+      };
+
+      this.refreshElements = function() {
+        slider  = document.getElementsByClassName('east-slider')[0];
+        container = document.getElementsByClassName('pane_container')[0];
+        east = document.getElementsByClassName('pane_east')[0];
+        main = document.getElementsByClassName('pane_main')[0];
+        east.style.left = slider.style.left = (container.offsetWidth - 20) + 'px';
+
+        slider.onmousedown = grabSlider;
+        document.onmouseup = releaseSlider;
       };
 
       var toggled = false;
