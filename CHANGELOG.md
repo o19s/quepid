@@ -43,6 +43,7 @@ for users to use. QUEPID_DEFAULT_SCORER=AP@5 is what app.quepid.com uses.
 * Saving two annotations in a row doesn't work, you need to rescore per annotation.  Fixed in https://github.com/o19s/quepid/pull/136 by @epugh.
 * Users can opt out of community marketing emails.  Add a `/admin/users.csv` export to make keeping track of that easier.  Thanks @flaxsearch for the suggestion.
 * Inconsistent use of X icon in modal popups is frustrating.  https://github.com/o19s/quepid/pull/148 and https://github.com/o19s/quepid/pull/149 by @worleydl fixes https://github.com/o19s/quepid/issues/146 and https://github.com/o19s/quepid/issues/145.
+* Swap the sorting of tries in the history tab to the newest first, going back in time.  https://github.com/o19s/quepid/pull/151 by @epugh fixes https://github.com/o19s/quepid/issues/143 by @renekrie.
 
 ### Bugs
 
