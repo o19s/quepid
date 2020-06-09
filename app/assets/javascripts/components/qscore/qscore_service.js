@@ -11,6 +11,7 @@ angular.module('QuepidApp')
         }
 
         // Make the color of the score relative to the max score possible:
+        score = Math.min(score, maxScore); // This is needed in case a user switches to a binary scorer from a nonbinary
         score = score * 100 / maxScore;
         score = Math.round(parseInt(score, 10) / 10);
         return {
