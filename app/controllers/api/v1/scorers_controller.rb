@@ -44,7 +44,12 @@ module Api
 
       # rubocop:disable Metrics/MethodLength
       def update
-        unless @scorer.owner == current_user
+        # this method could be used instead of the below @scorer.owner == current_user logic
+        # authorize @scorer, :update_communal?
+
+        # the policy() call is provided by Pundit and leverages the Permissions data structures.
+        # using this check instead of the authorize because it raises an exception.
+        unless @scorer.owner == current_user || (@scorer.communal && policy(@scorer).update_communal?)
           render(
             json:   {
               error: 'Cannot edit a scorer you do not own',
@@ -193,7 +198,14 @@ module Api
       end
 
       def set_scorer
+        # This block of logic should all be in user_scorer_finder.rb
         @scorer = current_user.scorers.where(id: params[:id]).first
+
+        # rubocop:disable Style/IfUnlessModifier
+        if @scorer.nil? # Check if communal scorers has the scorer.  This logic should be in the .scorers. method!
+          @scorer = Scorer.communal.where(id: params[:id]).first
+        end
+        # rubocop:enable Style/IfUnlessModifier
 
         render json: { error: 'Not Found!' }, status: :not_found unless @scorer
       end

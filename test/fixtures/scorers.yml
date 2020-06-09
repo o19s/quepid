@@ -41,6 +41,13 @@ v1:
   show_scale_labels:  false
   communal: true
 
+communal_scorer:
+  code: communal scorer
+  name: communal scorer
+  query_test: false
+  scale: 1, 2, 3, 4
+  communal:   true
+
 valid:
   code: test code
   name: valid scorer

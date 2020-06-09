@@ -10,12 +10,14 @@ class AddNewDefaultScorers < ActiveRecord::Migration
     )
 
     Scorer.where(name: 'nDCG@5').first_or_create(
-      scale:              (0..4).to_a,
-      scale_with_labels:  {"0":"Irrelevant","1":"Poor","2":"Fair","3":"Good","4":"Perfect"},
-      show_scale_labels:  true,
-      code:               File.readlines('./db/scorers/ndcg@5.js','\n').join('\n'),
-      name:               'nDCG@5',
-      communal:           true
+      scale:                  (0..4).to_a,
+      scale_with_labels:      {"0":"Irrelevant","1":"Poor","2":"Fair","3":"Good","4":"Perfect"},
+      show_scale_labels:      true,
+      code:                   File.readlines('./db/scorers/ndcg@5.js','\n').join('\n'),
+      name:                   'nDCG@5',
+      communal:               true,
+      manual_max_score:       true,
+      manual_max_score_value: 1
     )
 
     Scorer.where(name: 'DCG@5').first_or_create(

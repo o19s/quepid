@@ -28,6 +28,7 @@ default: &default
 doug:
   <<: *default
   email: doug@example.com
+  name: Doug Turnbull
   default_scorer: :valid
   administrator: true
 

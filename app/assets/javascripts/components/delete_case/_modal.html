@@ -1,9 +1,10 @@
 <div class="modal-header">
+  <button type="button" class="close" ng-click="ctrl.cancel()" aria-label="Close"><span aria-hidden="true">&times;</span></button>
   <h3 class="modal-title">Archive This Case for Later?</h3>
 </div>
 <div class="modal-body">
   <p ng-hide="ctrl.onlyCase">You're about to put this case into deep freeze. You'll be able to get to it through "Archived Cases" filter in the Relevancy Cases listing page.</p>
-  <p ng-show="ctrl.onlyCase">Can't delete the only case. Consider adding a new case, or renaming this one.</p>
+  <p ng-show="ctrl.onlyCase">You can't delete the only case you have created! Consider adding a new case, or renaming this one.</p>
 </div>
 <div class="modal-footer">
   <button class="btn btn-danger" ng-show="!ctrl.onlyCase" ng-click="ctrl.ok()">Archive</button>

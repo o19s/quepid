@@ -49,7 +49,7 @@ angular.module('QuepidApp')
 
       function create () {
         if (ctrl.selectedCase.lastScore === undefined){
-          flash.error = 'Can\'t create a new annotation until searches have been run!  Please click <i>Rerun My Searches!</i>.';
+          flash.error = 'Can\'t create a new annotation until searches have been run!  Please rerun your searches.';
           return;
         }
 
