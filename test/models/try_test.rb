@@ -121,6 +121,9 @@ class TryTest < ActiveSupport::TestCase
 
       try.field_spec = 'title:title name id:id'
       assert_equal 'id', try.id_from_field_spec
+
+      try.field_spec = 'id:id, title:title, overview, thumb:poster_path'
+      assert_equal 'id', try.id_from_field_spec
     end
   end
 end
