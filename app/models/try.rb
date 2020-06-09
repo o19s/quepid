@@ -92,7 +92,7 @@ class Try < ActiveRecord::Base
   end
 
   def id_from_field_spec
-    # much of this logic is inspired by https://github.com/o19s/splainer-search/blob/master/services/fieldSpecSvc.js
+    # logic is inspired by https://github.com/o19s/splainer-search/blob/master/services/fieldSpecSvc.js
 
     # rubocop:disable Style/IfUnlessModifier
     # rubocop:disable Style/MultipleComparison
@@ -101,7 +101,7 @@ class Try < ActiveRecord::Base
       return field_spec
     end
 
-    field_specs = field_spec.split
+    field_specs = field_spec.split(/[\s,]+/)
     field_specs.each do |fs|
       if 'id' == fs || '_id' == fs
         return fs
