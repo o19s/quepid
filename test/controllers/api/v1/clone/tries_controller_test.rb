@@ -61,7 +61,7 @@ module Api
 
               the_case.reload
               try_response  = JSON.parse(response.body)
-              created_try   = the_case.tries.last
+              created_try   = the_case.tries.first
 
               assert_try_matches_response try_response, created_try
               assert_tries_match          the_try,      created_try

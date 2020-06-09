@@ -104,7 +104,7 @@ class Case < ActiveRecord::Base
         clone_try(try, false)
       end
 
-      self.last_try_number = tries.last.try_number
+      self.last_try_number = tries.first.try_number
 
       if clone_queries
         original_case.queries.each do |query|
