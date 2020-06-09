@@ -101,7 +101,6 @@ module Api
 
           assert_equal body['tries'][0]['try_number'], 1
           assert_equal body['tries'][1]['try_number'], 0
-
         end
       end
 

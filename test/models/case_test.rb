@@ -112,7 +112,6 @@ class CaseTest < ActiveSupport::TestCase
 
       assert_equal acase.tries.first.try_number,  1
       assert_equal acase.tries.second.try_number, 0
-
     end
 
     test 'sets the default try to the default search engine attributes' do
