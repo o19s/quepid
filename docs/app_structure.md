@@ -29,3 +29,22 @@ The AngularJS app starts with the `app/assets/javascripts/app.js` file and the `
 The main entry to the app is through a case page, which is controller by the `app/assets/javascripts/controllers/mainCtrl.js` controller.
 
 This is the basic structure of the app and should get you started.
+
+## Permissions Structure
+
+We currently have a mix of hard coded rules and the use of the Pundit gem.  For example, this code from `scorers_controller.rb`:
+
+```
+unless @scorer.owner == current_user or (@scorer.communal and policy(@scorer).update_communal?)
+  render(
+    json:   {
+      error: 'Cannot edit a scorer you do not own',
+    },
+    status: :forbidden
+  )
+
+  return
+end
+```
+
+We should be able to just use the `authorize()` and `policy()` methods from Pundit.

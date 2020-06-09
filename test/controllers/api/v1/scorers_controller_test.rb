@@ -246,8 +246,10 @@ module Api
       end
 
       describe 'Updates scorer' do
-        let(:owned_scorer)  { scorers(:owned_scorer) }
-        let(:shared_scorer) { scorers(:shared_scorer) }
+        let(:owned_scorer)    { scorers(:owned_scorer) }
+        let(:shared_scorer)   { scorers(:shared_scorer) }
+        let(:communal_scorer) { scorers(:communal_scorer) }
+        let(:jane)            { users(:jane) }
 
         test 'return a forbidden error if updating a scorer not owned by user' do
           put :update, id: shared_scorer.id, scorer: { name: 'new name' }
@@ -258,6 +260,21 @@ module Api
 
           assert_equal error['error'], 'Cannot edit a scorer you do not own'
         end
+
+
+
+          test 'return a forbidden error if updating a communal scorer' do
+
+            login_user jane
+
+            put :update, id: communal_scorer.id, scorer: { name: 'new name' }
+
+            assert_response :forbidden
+
+            error = JSON.parse(response.body)
+
+            assert_equal error['error'], 'Cannot edit a scorer you do not own'
+          end
 
         test 'successfully updates name' do
           name = 'Custom Name'
@@ -359,7 +376,7 @@ module Api
           let(:owned_scorer)  { scorers(:owned_scorer) }
           let(:shared_scorer) { scorers(:shared_scorer) }
 
-          test 'return a forbidden error if updating a scorer not owned by user' do
+          test 'return a forbidden error if deleteing a scorer not owned by user' do
             delete :destroy, id: shared_scorer.id
 
             assert_response :forbidden

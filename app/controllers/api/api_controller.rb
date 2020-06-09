@@ -5,6 +5,7 @@ require 'analytics'
 
 module Api
   class ApiController < ActionController::Base
+    include Pundit
     include Authentication::CurrentUserManager
     include Authentication::CurrentCaseManager
     include Authentication::CurrentQueryManager
