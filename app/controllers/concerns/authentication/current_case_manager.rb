@@ -30,6 +30,7 @@ module Authentication
         .case
         .where(id: params[:case_id])
         .includes([ :tries ])
+        .order('tries.try_number DESC')
         .first
     end
 

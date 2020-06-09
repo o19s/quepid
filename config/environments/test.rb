@@ -39,9 +39,8 @@ Rails.application.configure do
   # Print deprecation notices to the stderr.
   config.active_support.deprecation = :stderr
 
-  # Set to :debug instead of :info to see SQL and uncomment the STDOUT redirect
+  # Set to :debug instead of :info to see SQL
   config.log_level = :info
-  # ActiveRecord::Base.logger = Logger.new(STDOUT)
 
   config.after_initialize do
     Bullet.enable = true

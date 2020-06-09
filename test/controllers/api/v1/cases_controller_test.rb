@@ -71,8 +71,10 @@ module Api
       end
 
       describe 'Fetching a case' do
-        let(:the_case)  { cases(:one) }
-        let(:matt_case) { cases(:matt_case) }
+        let(:the_case)            { cases(:one) }
+        let(:matt_case)           { cases(:matt_case) }
+        let(:case_with_two_tries) { cases(:case_with_two_tries) }
+        let(:joey) { users(:joey) }
 
         test "returns a not found error if the case is not in the signed in user's case list" do
           get :show, case_id: matt_case.id
@@ -87,6 +89,18 @@ module Api
 
           assert_equal body['case_name'], the_case.case_name
           assert_equal body['caseNo'],    the_case.id
+        end
+
+        test 'returns tries from newest to oldest' do
+          login_user joey
+
+          get :show, case_id: case_with_two_tries.id
+          assert_response :ok
+
+          body = JSON.parse(response.body)
+
+          assert_equal body['tries'][0]['try_number'], 1
+          assert_equal body['tries'][1]['try_number'], 0
         end
       end
 

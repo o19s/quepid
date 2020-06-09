@@ -121,6 +121,7 @@ try_without_curator_vars:
   search_url:     test.com
   try_number:     1
   search_engine:  solr
+  field_spec:     id:id title:title
 
 try_with_curator_vars:
   case:           :random_case
@@ -128,6 +129,7 @@ try_with_curator_vars:
   search_url:     test.com
   try_number:     2
   search_engine:  solr
+  field_spec:     id:id title:title
 
 es_try:
   case:           :random_case
@@ -135,6 +137,7 @@ es_try:
   search_url:     test.com
   try_number:     3
   search_engine:  es
+  field_spec:     id:_id title:title
 
 es_try_with_curator_vars:
   case:           :random_case
@@ -142,6 +145,7 @@ es_try_with_curator_vars:
   search_url:     test.com
   try_number:     4
   search_engine:  es
+  field_spec:     id:_id title:title  
 
 bootstrap_try_1:
   case:           :bootstrap_case

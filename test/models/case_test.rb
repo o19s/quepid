@@ -107,6 +107,13 @@ class CaseTest < ActiveSupport::TestCase
       assert_equal default_try.try_number, 0
     end
 
+    test 'returns try from highest try number (therefore newest) to lowest' do
+      acase = cases(:case_with_two_tries)
+
+      assert_equal acase.tries.first.try_number,  1
+      assert_equal acase.tries.second.try_number, 0
+    end
+
     test 'sets the default try to the default search engine attributes' do
       acase = Case.create(case_name: 'test case')
 
@@ -141,7 +148,7 @@ class CaseTest < ActiveSupport::TestCase
             cloned_try = cloned_case.tries.best
 
             assert_equal the_try.query_params,  cloned_try.query_params
-            assert_equal 'id:id title:title',   cloned_try.field_spec
+            assert_equal the_try.field_spec,    cloned_try.field_spec
             assert_equal the_try.search_url,    cloned_try.search_url
             assert_equal 'Try 0',               cloned_try.name
             assert_equal 0, cloned_case.tries.first.try_number
