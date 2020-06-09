@@ -53,7 +53,7 @@ angular.module('QuepidApp')
           });
 
           /*global saveAs */
-          saveAs(blob, ctrl.theCase.caseName + '_general.csv');
+          saveAs(blob, caseCSVSvc.formatDownloadFileName(ctrl.theCase.caseName + '_general.csv'));
         } else if ( options.which === 'detailed' ) {
           $log.info('Selected "detailed" as export option.');
 
@@ -68,7 +68,7 @@ angular.module('QuepidApp')
           });
 
           /*global saveAs */
-          saveAs(blob, ctrl.theCase.caseName + '_detailed.csv');
+          saveAs(blob, caseCSVSvc.formatDownloadFileName(ctrl.theCase.caseName + '_detailed.csv'));
         }
         else if ( options.which === 'snapshot' ) {
           $log.info('Selected "snapshot" as export option.');
@@ -90,7 +90,7 @@ angular.module('QuepidApp')
             });
 
             /*global saveAs */
-            saveAs(blob, ctrl.theCase.caseName + '_snapshot.csv');
+            saveAs(blob, caseCSVSvc.formatDownloadFileName(ctrl.theCase.caseName + '_snapshot.csv'));
 
           }, function (response) {
             $log.debug('error fetching snapshot:');

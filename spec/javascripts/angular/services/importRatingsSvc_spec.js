@@ -48,11 +48,9 @@ describe('Service: importRatingsSvc', function () {
     };
 
     var mockRREJson = {
-      "id_field": [
-        "id"
-      ],
+      "id_field": "id",
       "index": "Movies Search",
-      "template": "quepid.json",
+      "template": "template.json",
       "queries": [
         {
           "placeholders": {

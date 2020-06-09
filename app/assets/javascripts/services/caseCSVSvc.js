@@ -32,6 +32,7 @@
         self.exportLTRFormat            = exportLTRFormat;
         self.stringifyQueriesDetailed   = stringifyQueriesDetailed;
         self.stringifySnapshot          = stringifySnapshot;
+        self.formatDownloadFileName     = formatDownloadFileName;
 
         function caseHeaderToCSV () {
           var header = [
@@ -198,7 +199,7 @@
               });
 
               /*global saveAs */
-              saveAs(blob, aCase.caseName + '_basic.csv');
+              saveAs(blob, formatDownloadFileName(aCase.caseName + '_basic.csv'));
             });
         }
 
@@ -210,7 +211,7 @@
               });
 
               /*global saveAs */
-              saveAs(blob, aCase.caseName + '_rre.json');
+              saveAs(blob, formatDownloadFileName(aCase.caseName + '_rre.json'));
             });
         }
 
@@ -222,7 +223,7 @@
               });
 
               /*global saveAs */
-              saveAs(blob, aCase.caseName + '_ltr.txt');
+              saveAs(blob, formatDownloadFileName(aCase.caseName + '_ltr.txt'));
             });
         }
 
@@ -312,6 +313,19 @@
 
 
           return csvContent;
+        }
+
+        /**
+         * Take a string and make it ready for being a downloaded file name
+         *
+         * @param aCase
+         *
+         */
+
+        function formatDownloadFileName (fileName) {
+          var downloadFileName = fileName.replace(/ /g,'_');
+
+          return downloadFileName;
         }
 
 
