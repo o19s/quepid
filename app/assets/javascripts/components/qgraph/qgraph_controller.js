@@ -33,6 +33,11 @@ angular.module('QuepidApp')
       ctrl.scores = $scope.scores;
 
       // Watches
+      $scope.$watch('max', function() {
+        ctrl.max = $scope.max;
+        renderGraph();
+      });
+
       $scope.$watchCollection('scores', function () {
         ctrl.scores = $scope.scores;
         renderGraph();
@@ -82,7 +87,7 @@ angular.module('QuepidApp')
               return xpos;
             })
             .y(function (d) {
-              return y(parseInt(d.score));
+              return y(d.score);
             });
 
           $scope.graph.append('svg:path').attr('d', line(data));

@@ -123,8 +123,6 @@ angular.module('QuepidApp')
 
         resultObject.lastScore = queriesSvc.scoreAll();
         lastVersion            = queriesSvc.version();
-        var colors             = customScorerSvc.defaultScorer.getColors();
-        var index, color;
 
         if (
           resultObject.lastScore &&
@@ -132,6 +130,7 @@ angular.module('QuepidApp')
         ) {
           var scoreInfo = resultObject.lastScore;
 
+          // TODO: This seems bugged, maybe force specification of max score?
           // Fetch the potential total max score by averaging
           // the max score of each query,
           // the same way we average the score of each query
@@ -146,17 +145,9 @@ angular.module('QuepidApp')
 
           $scope.maxScore = maxScores.
             reduce(function(a, b) { return a + b; }, 0) / maxScores.length;
-
-          // Make the color of the score relative to the
-          // max score possible:
-          var normScore = scoreInfo.score * 100 / $scope.maxScore;
-          index         = Math.round(parseInt(normScore, 10) / 10);
-          color         = angular.isDefined(colors[index]) ? colors[index].color : undefined;
-          resultObject.lastScore.backgroundColor = color;
-        } else {
-          index = parseInt(resultObject.lastScore.score / 10, 10);
-          color = angular.isDefined(colors[index]) ? colors[index].color : undefined;
-          resultObject.lastScore.backgroundColor = color;
+          if (!isNaN($scope.maxScore)) {
+            $scope.maxScore = Math.max(1, $scope.maxScore);
+          }
         }
       };
 
