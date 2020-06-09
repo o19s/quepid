@@ -261,20 +261,17 @@ module Api
           assert_equal error['error'], 'Cannot edit a scorer you do not own'
         end
 
+        test 'return a forbidden error if updating a communal scorer' do
+          login_user jane
 
+          put :update, id: communal_scorer.id, scorer: { name: 'new name' }
 
-          test 'return a forbidden error if updating a communal scorer' do
+          assert_response :forbidden
 
-            login_user jane
+          error = JSON.parse(response.body)
 
-            put :update, id: communal_scorer.id, scorer: { name: 'new name' }
-
-            assert_response :forbidden
-
-            error = JSON.parse(response.body)
-
-            assert_equal error['error'], 'Cannot edit a scorer you do not own'
-          end
+          assert_equal error['error'], 'Cannot edit a scorer you do not own'
+        end
 
         test 'successfully updates name' do
           name = 'Custom Name'

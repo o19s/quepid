@@ -36,9 +36,9 @@ class UserScorerFinderTest < ActiveSupport::TestCase
     # the scorer.for_user method.  When we upgrade then
     # enable this test!
     # test 'includes all communal scorers' do
-      # result = service.all
+    #   result = service.all
 
-      # assert_includes result, communal_scorer
+    #   assert_includes result, communal_scorer
     # end
   end
 
