@@ -316,14 +316,14 @@
         }
 
         /**
-         * Take a string and make it ready for downloads.
+         * Take a string and make it ready for being a downloaded file name
          *
          * @param aCase
          *
          */
 
         function formatDownloadFileName (fileName) {
-          var downloadFileName = fileName.replace(/ /g,"_");
+          var downloadFileName = fileName.replace(/ /g,'_');
 
           return downloadFileName;
         }
