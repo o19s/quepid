@@ -29,8 +29,9 @@ class Case < ActiveRecord::Base
 
   belongs_to :user
 
-  has_many   :tries,    -> { order(try_number: :desc) },
-             dependent: :destroy
+  has_many   :tries,     -> { order(try_number: :desc) },
+             dependent:  :destroy,
+             inverse_of: :case
 
   has_many   :metadata,
              dependent: :destroy
