@@ -136,10 +136,6 @@ angular.module('QuepidApp')
       // continue tweaking the settings, it would keep the pane open.
       $rootScope.devSettings = $rootScope.devSettings || false;
 
-      if ( $rootScope.devSettings ) {
-        $(document).trigger('toggleEast');
-      }
-
       $scope.toggleDevSettings = function() {
         $rootScope.devSettings = !$rootScope.devSettings;
         $(document).trigger('toggleEast');

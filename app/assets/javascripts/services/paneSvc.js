@@ -2,8 +2,9 @@
 
 angular.module('QuepidApp')
   .service('paneSvc', [
+    '$timeout',
     'eastPaneWidth',
-    function paneSvc(eastPaneWidth) {
+    function paneSvc($timeout, eastPaneWidth) {
       var container;
       var east;
       var main;
@@ -33,24 +34,16 @@ angular.module('QuepidApp')
         document.onmousemove = null;
       };
 
-      this.refreshElements = function() {
-        slider  = document.getElementsByClassName('east-slider')[0];
-        container = document.getElementsByClassName('pane_container')[0];
-        east = document.getElementsByClassName('pane_east')[0];
-        main = document.getElementsByClassName('pane_main')[0];
-        east.style.left = slider.style.left = (container.offsetWidth - 20) + 'px';
-
-        slider.onmousedown = grabSlider;
-        document.onmouseup = releaseSlider;
-      };
 
       var toggled = false;
-      /* Toggle the pull out, unhide the
-       * east slider east pane, then
-       * bind to the slider's events for dragging
-       * */
-      var toggleEast = function() {
-        toggled = !toggled;
+
+
+      /* If toggled, unhide the
+      * east slider east pane, then
+      * bind to the slider's events for dragging
+      * otherwise do the opposite
+      * */
+      var setupPane = function() {
         if (toggled) {
           slider.onmousedown = grabSlider;
           document.onmouseup = releaseSlider;
@@ -67,6 +60,30 @@ angular.module('QuepidApp')
         }
       };
 
+      var refreshElements = function() {
+        slider  = document.getElementsByClassName('east-slider')[0];
+        container = document.getElementsByClassName('pane_container')[0];
+        east = document.getElementsByClassName('pane_east')[0];
+        main = document.getElementsByClassName('pane_main')[0];
+        east.style.left = slider.style.left = (container.offsetWidth - 20) + 'px';
+
+        slider.onmousedown = grabSlider;
+        document.onmouseup = releaseSlider;
+
+        if (container.offsetWidth === 0) {
+          $timeout(function() {
+            refreshElements();
+          }, 200);
+        } else {
+          setupPane();
+        }
+      };
+
+      var toggleEast = function() {
+        toggled = !toggled;
+        setupPane();
+      };
+
       $(window).on('resize', function() {
         if (toggled) {
           moveEastTo(container.offsetWidth - eastPaneWidth);
@@ -77,5 +94,7 @@ angular.module('QuepidApp')
       });
 
       $(document).on('toggleEast', toggleEast);
+
+      this.refreshElements = refreshElements;
     }
   ]);
