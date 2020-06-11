@@ -9,7 +9,6 @@ jobs:
           BUNDLE_PATH: vendor/bundle
           RAILS_ENV: test
           RACK_ENV: test
-          DB_ADAPTER: mysql2
           DB_HOST: 127.0.0.1
           DB_USERNAME: root
           DB_PASSWORD: ''

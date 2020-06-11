@@ -16,9 +16,6 @@
     "BUNDLE_WITHOUT": {
       "required": true
     },
-    "DB_ADAPTER": {
-      "required": true
-    },
     "FORCE_SSL": {
       "required": true
     },
