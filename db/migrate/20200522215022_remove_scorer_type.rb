@@ -3,11 +3,11 @@ class RemoveScorerType < ActiveRecord::Migration
   # we need to bring it back, we don't want to lose the data.  Just in case..
   def change
 
-    # This script is supporting migrating the database for Quepid 6.2 on the hosted
-    # app.quepid.com platform.
-    # there are 4 DefaultScorers in app.quepid.com
+    # This script is supporting migrating the database for Quepid 6.2.0
+    # on the hosted app.quepid.com platform.
+    # there are 4 DefaultScorers in app.quepid.com that need migration.
 
-    MigrateUserDefaultScorer.connection.execute(
+    RemoveScorerType.connection.execute(
       "
       INSERT INTO scorers (
         code,
