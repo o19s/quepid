@@ -1,6 +1,6 @@
-// This script is supporting migrating the database for Quepid 6.2 on the hosted
-// app.quepid.com platform.
-// there are 4 DefaultScorers in app.quepid.com
+// This script is supporting migrating the database for Quepid 6.2.0
+// on the hosted app.quepid.com platform.
+// there are 4 DefaultScorers in app.quepid.com that need migration.
 
 INSERT INTO scorers (
   code,

@@ -11,12 +11,12 @@ Ease of development has long been an issue with Quepid.  In this release we've w
 ### Upgrade Notes
 Follow the steps outlined at https://github.com/o19s/quepid/wiki/Installation-Guide#updating-quepid.   
 
-You will need to run a database migration and rerun the `db:seed` to get the new default scorers.
+You will need to run some database migrations to update the database and insert the new classical scorers (NDCG, AP, etc).
 
-There is a sql migration script in `./db/merge_default_scorer_into_scorer.sql` that you might if you have been using Quepid locally for a while with default scorers.  This was primarily meant to support updating http://app.quepid.com.
+There is a sql migration script in `./db/release_6_2_0_merge_default_scorer_into_scorer.sql` that you might want to look if you have been using Quepid locally for a while.  This script is primarily meant to support updating http://app.quepid.com database for the 6.2.0 schema.
 
-QUEPID_DEFAULT_SCORER is a new environment variable specifying the default scorer
-for users to use. QUEPID_DEFAULT_SCORER=AP@5 is what app.quepid.com uses.
+QUEPID_DEFAULT_SCORER is a new environment variable specifying the name of the default scorer
+for users when they create a new case. QUEPID_DEFAULT_SCORER=AP@5 is what app.quepid.com uses.
 
 ### Features
 
