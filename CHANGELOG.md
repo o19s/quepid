@@ -1,12 +1,12 @@
 # Changelog
 
-## 6.2.0 - ??
+## 6.2.0 - 2020-06-11
 
-This is a major release of Quepid that finally introduces the standard _search geek_ scorers like NDCG, DCG, Average Precision, and friends by default.  We've also fixed a large number of bugs introduced by changes in browser security models and recent updates to Elasticsearch and Solr.
+This release of Quepid finally introduces the classical _search geek_ scorers like NDCG, DCG, Average Precision, and friends by default.  We've also fixed a large number of bugs introduced by changes in Firefox and Chrome browser security models that happened in the first part of 2020, as well as recent updates to Elasticsearch and Solr.
 
-The burgeoning suite of open source tools for relevancy all require judgement lists.  We revamped Quepid to handle exporting and importing from your favorite tools like Quaerite and RRE, as well as an LTR formatted export.
+The burgeoning suite of open source tools for relevancy all require judgement lists.  We revamped Quepid to handle exporting and importing from your favorite tools like Quaerite and RRE, as well as an LTR formatted export.  You can see this in action in [Chorus](https://github.com/querqy/chorus), an ecommerce search focused stack that includes Quepid.
 
-Speed of development has been an issue with Quepid.  In this release we've worked on developer happiness by auditing all of the dependencies we include.  We're removed quite a few Ruby gems and NodeJS packages that weren't used, and upgraded the rest (replacing PhantomJS with Puppeteer for headless testing).  `yarn.lock` dropped from 6706 lines to 1519 and `Gemfile.lock` from 448 to 330!  This allowed us to finally move to ECMAScript 6 and to Node version 10.  Lastly we have cut the production Quepid Docker image from almost 3 GB to 2.3 GB.
+Ease of development has long been an issue with Quepid.  In this release we've worked on developer happiness by auditing all of the dependencies we include.  We're removed quite a few Ruby gems and Node packages that weren't used, and upgraded the rest (replacing PhantomJS with Puppeteer for headless testing).  `yarn.lock` dropped from 6706 lines to 1525 and `Gemfile.lock` from 448 to 330!  This allowed us to finally move to ECMAScript 6 and Node version 10.  Lastly we have cut the production Quepid Docker image from almost 3 GB down to 2.3 GB.
 
 ### Upgrade Notes
 Follow the steps outlined at https://github.com/o19s/quepid/wiki/Installation-Guide#updating-quepid.   
@@ -55,6 +55,7 @@ for users to use. QUEPID_DEFAULT_SCORER=AP@5 is what app.quepid.com uses.
 * Case shared via Team with me has NaN for the Try.  https://github.com/o19s/quepid/pull/134 by @epugh fixes https://github.com/o19s/quepid/issues/83.
 * Not able to export cases from a Team page.  Commit quepid@021bda8627463986f1ff04ffb1c290195c428c5b by @epugh fixed this.
 * Race condition in laying out the main Quepid Screen and the Tune Relevance screen.  https://github.com/o19s/quepid/pull/147 by @worleydl fixes https://github.com/o19s/quepid/issues/144 by @epugh.
+* Using the "peek" function to page to deeper search results would lose your `escapeQueries` choice.  https://github.com/o19s/splainer-search/pull/87 by @jorgelbg fies this.  Bump to splainer search 2.6.0 to include the fix.
 
 
 ## 6.1.1 - 2020-07-03

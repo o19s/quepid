@@ -1287,10 +1287,10 @@ source-map@^0.6.1:
   resolved "https://registry.yarnpkg.com/source-map/-/source-map-0.6.1.tgz#74722af32e9614e9c287a8d0bbde48b5e2f1a263"
   integrity sha512-UjgapumWlbMhkBgzT7Ykc5YXUT46F0iKu8SGXq0bcwP5dz/h0Plj6enJqjz1Zbq2l5WaqYnrVbwWOWMyF3F47g==
 
-splainer-search@2.5.9:
-  version "2.5.9"
-  resolved "https://registry.yarnpkg.com/splainer-search/-/splainer-search-2.5.9.tgz#6ed7d430f61554bac75ce920cb764abe2e48482e"
-  integrity sha512-IfS67ere/k0s6MmhnkV8pS9JN+UjDWA9vLN+mslCFbN7M8SKUcvfX5jN22DJuH9rGd8d3TYDuBHf8EE21TsfrA==
+splainer-search@2.6.0:
+  version "2.6.0"
+  resolved "https://registry.yarnpkg.com/splainer-search/-/splainer-search-2.6.0.tgz#56d7610e4f63c8a50e04d5ae772b7afad273892e"
+  integrity sha512-H77YRKZWhj5LS5jWR9zzbG/lULIDAwSMt9Fxs4a5i8vft7vG4At5GfRc/RW4eQnr+4oPRbC6n3y28MYzhUM+og==
   dependencies:
     angular "^1.7.9"
     urijs "~1.16.1"
