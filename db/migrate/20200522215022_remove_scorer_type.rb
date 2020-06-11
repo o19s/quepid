@@ -29,11 +29,38 @@ class RemoveScorerType < ActiveRecord::Migration
       scale_with_labels,
       created_at,
       updated_at
-      FROM    default_scorers WHERE id = 1
+      FROM    default_scorers WHERE id = 1 and name = 'v1';
 
       SET @last_id_in_scorers = LAST_INSERT_ID();
 
-      update cases set scorer_id = @last_id_in_scorers, scorer_type = 'Scorer' where scorer_id =1 and scorer_type = 'DefaultScorer'
+      update cases set scorer_id = @last_id_in_scorers, scorer_type = 'Scorer' where scorer_id =1 and scorer_type = 'DefaultScorer';
+
+      INSERT INTO scorers (
+        code,
+        name,
+        scale,
+        manual_max_score,
+        manual_max_score_value,
+        show_scale_labels,
+        scale_with_labels,
+        created_at,
+        updated_at,
+        communal
+      )
+      SELECT  code,
+      name,
+      scale,
+      manual_max_score,
+      manual_max_score_value,
+      show_scale_labels,
+      scale_with_labels,
+      created_at,
+      updated_at
+      FROM    default_scorers WHERE id = 2 and name='1-4 Distance From Best';
+
+      SET @last_id_in_scorers = LAST_INSERT_ID();
+
+      update cases set scorer_id = @last_id_in_scorers, scorer_type = 'Scorer' where scorer_id =2 and scorer_type = 'DefaultScorer';
 
       INSERT INTO scorers (
         code,
@@ -55,11 +82,11 @@ class RemoveScorerType < ActiveRecord::Migration
       scale_with_labels,
       created_at,
       updated_at
-      FROM    default_scorers WHERE id = 2
+      FROM    default_scorers WHERE id = 3 and name = 'nDCG@10';
 
       SET @last_id_in_scorers = LAST_INSERT_ID();
 
-      update cases set scorer_id = @last_id_in_scorers, scorer_type = 'Scorer' where scorer_id =2 and scorer_type = 'DefaultScorer'
+      update cases set scorer_id = @last_id_in_scorers, scorer_type = 'Scorer' where scorer_id =3 and scorer_type = 'DefaultScorer';
 
       INSERT INTO scorers (
         code,
@@ -81,37 +108,11 @@ class RemoveScorerType < ActiveRecord::Migration
       scale_with_labels,
       created_at,
       updated_at
-      FROM    default_scorers WHERE id = 3
+      FROM    default_scorers WHERE id = 4 and name = 'DCG@10';
 
       SET @last_id_in_scorers = LAST_INSERT_ID();
 
-      update cases set scorer_id = @last_id_in_scorers, scorer_type = 'Scorer' where scorer_id =3 and scorer_type = 'DefaultScorer'
-
-      INSERT INTO scorers (
-        code,
-        name,
-        scale,
-        manual_max_score,
-        manual_max_score_value,
-        show_scale_labels,
-        scale_with_labels,
-        created_at,
-        updated_at
-      )
-      SELECT  code,
-      name,
-      scale,
-      manual_max_score,
-      manual_max_score_value,
-      show_scale_labels,
-      scale_with_labels,
-      created_at,
-      updated_at
-      FROM    default_scorers WHERE id = 4
-
-      SET @last_id_in_scorers = LAST_INSERT_ID();
-
-      update cases set scorer_id = @last_id_in_scorers, scorer_type = 'Scorer' where scorer_id =4 and scorer_type = 'DefaultScorer'
+      update cases set scorer_id = @last_id_in_scorers, scorer_type = 'Scorer' where scorer_id =4 and scorer_type = 'DefaultScorer';
 
       // check that everything migrated
       // select count(*) from cases where scorer_type = 'DefaultScorer'"
