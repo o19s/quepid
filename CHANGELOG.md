@@ -1,10 +1,19 @@
 # Changelog
 
+## 6.2.1 - 2020-06-18
+
+Thanks to some feedback from the community, we figured out that the SQL script for
+migrating data from the DefaultScorer table to the Scorers table (and being tagged
+as `communal`) didn't run reliably.  We've pulled it out as `db/release_6_2_0_merge_default_scorer_into_scorer.sql` for folks to look at.
+
+* https://github.com/o19s/quepid/issues/157 identified the issue and fixed by @worleydl.  
+* Commits a1fc942d32e3d524836492f745735ce4ec4972ff and 029dd0cafe8caa492095c9483617b623a6a4e437 and 1a3c997f59b144a1cbffa59a04c67cb3e051b32d cover the migration fixes.
+
 ## 6.2.0 - 2020-06-11
 
 This release of Quepid finally introduces the classical _search geek_ scorers like NDCG, DCG, Average Precision, and friends by default.  We've also fixed a large number of bugs introduced by changes in Firefox and Chrome browser security models that happened in the first part of 2020, as well as recent updates to Elasticsearch and Solr.
 
-The burgeoning suite of open source tools for relevancy all require judgement lists.  We revamped Quepid to handle exporting and importing from your favorite tools like Quaerite and RRE, as well as an LTR formatted export.  You can see this in action in [Chorus](https://github.com/querqy/chorus), an ecommerce search focused stack that includes Quepid.
+The burgeoning suite of open source tools for relevancy all require judgement lists.  We revamped Quepid to handle exporting and importing from your favorite tools like [Quaerite](https://github.com/tballison/quaerite) and [RRE](https://github.com/SeaseLtd/rated-ranking-evaluator), as well as a Learning to Rank formatted export.  You can see this in action in [Chorus](https://github.com/querqy/chorus), an ecommerce search focused stack that includes Quepid.
 
 Ease of development has long been an issue with Quepid.  In this release we've worked on developer happiness by auditing all of the dependencies we include.  We're removed quite a few Ruby gems and Node packages that weren't used, and upgraded the rest (replacing PhantomJS with Puppeteer for headless testing).  `yarn.lock` dropped from 6706 lines to 1525 and `Gemfile.lock` from 448 to 330!  This allowed us to finally move to ECMAScript 6 and Node version 10.  Lastly we have cut the production Quepid Docker image from almost 3 GB down to 2.3 GB.
 
