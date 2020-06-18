@@ -15,7 +15,7 @@ services:
 
   redis:
     container_name: quepid_prod_redis
-    image: redis
+    image: redis:6.0.5
     ports:
       - 6379:6379
 
