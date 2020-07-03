@@ -70,7 +70,7 @@
 
     <div class="btn-toolbar" role="toolbar">
       <div class="btn-group">
-        <query-options query="query"></query-options>
+        <button class="btn btn-default btn-sm" ng-click="displayed.notes = !displayed.notes">Toggle Notes</button>
       </div>
 
       <div class="btn-group">
@@ -84,7 +84,7 @@
       </div>
 
       <div class="btn-group">
-        <button class="btn btn-default btn-sm" ng-click="displayed.notes = !displayed.notes">Toggle Notes</button>
+        <query-options query="query"></query-options>
         <button type="button" class="btn btn-default btn-sm" ng-controller="TakeThresholdCtrl" ng-click="snapshot.prompt()">Set Threshold
         </button>
       </div>
