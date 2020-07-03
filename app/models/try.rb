@@ -119,6 +119,14 @@ class Try < ActiveRecord::Base
     # rubocop:enable Style/Next
   end
 
+  def index_name_from_search_url
+    if 'solr' == search_engine
+      search_url.split('/')[-2]
+    elsif 'es' == search_engine
+      search_url.split('/')[-2]
+    end
+  end
+
   private
 
   def set_defaults

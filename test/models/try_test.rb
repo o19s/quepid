@@ -126,4 +126,14 @@ class TryTest < ActiveSupport::TestCase
       assert_equal 'id', try.id_from_field_spec
     end
   end
+
+  describe 'Getting the index name from the search_url' do
+    test 'parses search_url and returns index name' do
+      try = tries(:one)
+      assert_equal 'tmdb', try.index_name_from_search_url
+
+      try = tries(:es_try)
+      assert_equal 'tmdb', try.index_name_from_search_url
+    end
+  end
 end

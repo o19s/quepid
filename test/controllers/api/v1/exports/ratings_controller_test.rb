@@ -44,7 +44,7 @@ module Api
             body = JSON.parse(response.body)
 
             assert_equal body['id_field'],                              'id'
-            assert_equal body['index'],                                 the_case.case_name
+            assert_equal body['index'],                                 the_case.tries.latest.index_name_from_search_url
             assert_equal body['queries'].size,                          the_case.queries.size
             assert_equal body['queries'][0]['placeholders']['$query'],  the_case.queries[0].query_text
           end
