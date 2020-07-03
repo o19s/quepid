@@ -70,7 +70,7 @@
 
     <div class="btn-toolbar" role="toolbar">
       <div class="btn-group">
-        <query-options query="query"></query-options>
+        <button class="btn btn-default btn-sm" ng-click="displayed.notes = !displayed.notes">Toggle Notes</button>
       </div>
 
       <div class="btn-group">
@@ -84,7 +84,7 @@
       </div>
 
       <div class="btn-group">
-        <button class="btn btn-default btn-sm" ng-click="displayed.notes = !displayed.notes">Toggle Notes</button>
+        <query-options query="query"></query-options>
         <button type="button" class="btn btn-default btn-sm" ng-controller="TakeThresholdCtrl" ng-click="snapshot.prompt()">Set Threshold
         </button>
       </div>
@@ -100,9 +100,9 @@
     <div ng-class="{true: 'notes-box', false: 'hidden'}[displayed.notes]">
       <div ng-controller = 'QueryNotesCtrl as ctrl' class="notes-content">
         <label>Notes on this Query:</label>
-        <i class="fa fa-spinner fa-spin" ng-show="ctrl.saveInProgress"></i>
-        <form>
-          <textarea ng-model="query.notes" class="form-control"></textarea>
+        <form ng-submit="saveNotes()">
+          <textarea ng-model="queryNotes" class="form-control"></textarea>
+          <input type="submit" class="btn btn-primary" value="Save Notes"></input>
         </form>
       </div>
     </div>

@@ -4,38 +4,27 @@ angular.module('QuepidApp')
   .controller('QueryNotesCtrl', [
     '$scope',
     'flash',
-    '$timeout',
-    function ($scope, flash, $timeout) {
-      var ctrl  = this;
-      ctrl.saveInProgress = false;
-      var timeout = null;
+    function ($scope, flash) {
+      $scope.queryNotes = '';
 
-      var saveFinished = function() {
-        ctrl.saveInProgress = false;
-      };
-      var saveNotes = function() {
-
-        $scope.query.saveNotes($scope.query.notes)
-          .then( function() {
-
-          }, function() {
-            flash.error = 'Ooooops! Could not save your note.';
-          }).finally(saveFinished);
-      };
-      var debounceSaveUpdates = function(newVal, oldVal) {
-        if (newVal !== oldVal) {
-          if (!ctrl.saveInProgress) {
-            ctrl.saveInProgress = true;
-            if (timeout) {
-              $timeout.cancel(timeout);
+      $scope.$watch('displayed.notes', function() {
+        if($scope.displayed.notes) {
+          $scope.query.fetchNotes()
+            .then(function() {
+              $scope.queryNotes = $scope.query.notes;
             }
-            timeout = $timeout(saveNotes, 1000);  // 1000 = 1 second
-          }
+          );
         }
+      });
+
+      $scope.saveNotes = function() {
+        $scope.query.saveNotes($scope.queryNotes)
+          .then( function() {
+            flash.success = 'Success! Your note has been saved.';
+            $scope.displayed.notes = false;
+          }, function() {
+            flash.error = 'Ooooops! Could not save your note. Please try again.';
+          });
       };
-
-      $scope.$watch('query.notes', debounceSaveUpdates);
-
-
     }
   ]);
