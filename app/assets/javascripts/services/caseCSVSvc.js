@@ -323,7 +323,7 @@
          */
 
         function formatDownloadFileName (fileName) {
-          var downloadFileName = fileName.replace(/ /g,'_').replace(/:/g,'_');;
+          var downloadFileName = fileName.replace(/ /g,'_').replace(/:/g,'_');
 
           return downloadFileName;
         }
