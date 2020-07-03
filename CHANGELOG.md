@@ -11,6 +11,7 @@
 
 * When using the case wizard, you couldn't cut'n'paste in a long list of fields like `overview_en, overview_idioms` as they became a single tag.   https://github.com/o19s/quepid/pull/166 by @epugh fixes https://github.com/o19s/quepid/issues/165.
 * A `:` in the case name was converted to a ` ` when exporting a case. https://github.com/o19s/quepid/pull/169 by @epugh fixes https://github.com/o19s/quepid/issues/168.
+* The implementation of autosaving your notes per query didn't work well.  Going back to an explicit save button.  https://github.com/o19s/quepid/pull/170 by @epugh fixes https://github.com/o19s/quepid/issues/164. Thanks @DmitryKey for the issue! 
 
 ## 6.2.1 - 2020-06-18
 
