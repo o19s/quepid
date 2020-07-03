@@ -20,7 +20,7 @@ one:
   case:           :one
   try_number:     0
   query_params:   'q=#$query##'
-  search_url:     test.com
+  search_url:     http://test.com/solr/tmdb/select
   search_engine:  solr
   field_spec:     id:id title:title
 
@@ -28,76 +28,76 @@ two:
   case:           :two
   try_number:     1
   query_params:   'q=#$query##'
-  search_url:     test.com
+  search_url:     http://test.com/solr/tmdb/select
   search_engine:  solr
 
 for_shared_team_case:
   case:           :shared_team_case
   try_number:     0
   query_params:   'q=#$query##'
-  search_url:     test.com
+  search_url:     http://test.com/solr/tmdb/select
   search_engine:  solr
 
 for_shared_case:
   case:           :shared_case
   try_number:     0
   query_params:   'q=#$query##'
-  search_url:     test.com
+  search_url:     http://test.com/solr/tmdb/select
   search_engine:  solr
 
 archived:
   case:           :archived
   try_number:     0
   query_params:   'q=#$query##'
-  search_url:     test.com
+  search_url:     http://test.com/solr/tmdb/select
   search_engine:  solr
 
 for_metadata_case:
   case:           :with_metadata
   try_number:     1
   query_params:   'q=#$query##'
-  search_url:     test.com
+  search_url:     http://test.com/solr/tmdb/select
   search_engine:  solr
 
 for_case_with_scorer:
   case:           :with_scorer
   try_number:     1
   query_params:   'q=#$query##'
-  search_url:     test.com
+  search_url:     http://test.com/solr/tmdb/select
   search_engine:  solr
 
 for_case_with_one_try:
   case:           :case_with_one_try
   query_params:   'q=#$query##'
-  search_url:     test.com
+  search_url:     http://test.com/solr/tmdb/select
   try_number:     0
   search_engine:  solr
 
 first_for_case_with_two_tries:
   case:           :case_with_two_tries
   query_params:   'q=#$query##'
-  search_url:     test.com
+  search_url:     http://test.com/solr/tmdb/select
   try_number:     0
   search_engine:  solr
 
 second_for_case_with_two_tries:
   case:           :case_with_two_tries
   query_params:   'q=#$query##'
-  search_url:     test.com
+  search_url:     http://test.com/solr/tmdb/select
   try_number:     1
   search_engine:  solr
 
 first_try_for_score_case:
   case:           :score_case
   query_params:   'q=#$query##'
-  search_url:     test.com
+  search_url:     http://test.com/solr/tmdb/select
   try_number:     0
   search_engine:  solr
 
 second_try_for_score_case:
   case:           :score_case
   query_params:   'q=#$query##'
-  search_url:     test.com
+  search_url:     http://test.com/solr/tmdb/select
   try_number:     1
   search_engine:  solr
 
@@ -111,14 +111,14 @@ first_try_for_other_score_case:
 second_try_for_other_score_case:
   case:           :other_score_case
   query_params:   'q=#$query##'
-  search_url:     test.com
+  search_url:     http://test.com/solr/tmdb/select
   try_number:     1
   search_engine:  solr
 
 try_without_curator_vars:
   case:           :random_case
   query_params:   'q=#$query##'
-  search_url:     test.com
+  search_url:     http://test.com/solr/tmdb/select
   try_number:     1
   search_engine:  solr
   field_spec:     id:id title:title
@@ -126,7 +126,7 @@ try_without_curator_vars:
 try_with_curator_vars:
   case:           :random_case
   query_params:   'q=#$query##&defType=edismax&qf=text^##one## catch_line^##two##'
-  search_url:     test.com
+  search_url:     http://test.com/solr/tmdb/select
   try_number:     2
   search_engine:  solr
   field_spec:     id:id title:title
@@ -134,7 +134,7 @@ try_with_curator_vars:
 es_try:
   case:           :random_case
   query_params:   '{ "query": { "match": { "text": "#$query##" } } }'
-  search_url:     test.com
+  search_url:     http://test.com:9200/tmdb/_search
   try_number:     3
   search_engine:  es
   field_spec:     id:_id title:title
@@ -142,10 +142,10 @@ es_try:
 es_try_with_curator_vars:
   case:           :random_case
   query_params:   '{ "query": { "multi_match": { "fields": "title, overview", "query": "#$query##", "tie_breaker": "##tieBreaker##" } } }'
-  search_url:     test.com
+  search_url:     http://test.com:9200/tmdb/_search
   try_number:     4
   search_engine:  es
-  field_spec:     id:_id title:title  
+  field_spec:     id:_id title:title
 
 bootstrap_try_1:
   case:           :bootstrap_case
@@ -157,41 +157,41 @@ bootstrap_try_1:
 bootstrap_try_2:
   case:           :bootstrap_case
   query_params:   '{ "query": { "match": { "text": "#$query##" } } }'
-  search_url:     test.com
+  search_url:     http://test.com:9200/tmdb/_search
   try_number:     1
   search_engine:  es
 
 for_case_without_score_try_1:
   case:           :case_without_score
   query_params:   'q=#$query##'
-  search_url:     test.com
+  search_url:     http://test.com/solr/tmdb/select
   try_number:     0
   search_engine:  solr
 
 for_case_with_score_for_first_try_try_1:
   case:           :case_with_score_for_first_try
   query_params:   'q=#$query##'
-  search_url:     test.com
+  search_url:     http://test.com/solr/tmdb/select
   try_number:     0
   search_engine:  solr
 
 for_case_with_score_for_first_try_try_2:
   case:           :case_with_score_for_first_try
   query_params:   'q=#$query##'
-  search_url:     test.com
+  search_url:     http://test.com/solr/tmdb/select
   try_number:     1
   search_engine:  solr
 
 for_case_with_score_try_1:
   case:           :case_with_score
   query_params:   'q=#$query##'
-  search_url:     test.com
+  search_url:     http://test.com/solr/tmdb/select
   try_number:     0
   search_engine:  solr
 
 for_case_with_score_try_2:
   case:           :case_with_score
   query_params:   'q=#$query##'
-  search_url:     test.com
+  search_url:     http://test.com/solr/tmdb/select
   try_number:     1
   search_engine:  solr
