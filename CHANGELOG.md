@@ -2,9 +2,14 @@
 
 ## 6.2.2 - ??
 
+### Improvements
+
+When exporting for RRE, we need the ES or Solr index name.  Extract this from the url for the most recent try and save a step!  https://github.com/o19s/quepid/pull/167 by @epugh fixes https://github.com/o19s/quepid/issues/159.
+
 ### Bugs
 
-* When using the case wizard, you couldn't cut'n'paste in a long list of fields like `overview_en, overview_idioms` as they became a single tag.   https://github.com/o19s/quepid/pull/166 by @epugh fixes https://github.com/o19s/quepid/issues/165. 
+* When using the case wizard, you couldn't cut'n'paste in a long list of fields like `overview_en, overview_idioms` as they became a single tag.   https://github.com/o19s/quepid/pull/166 by @epugh fixes https://github.com/o19s/quepid/issues/165.
+* A `:` in the case name was converted to a ` ` when exporting a case. https://github.com/o19s/quepid/pull/169 by @epugh fixes https://github.com/o19s/quepid/issues/168.
 
 ## 6.2.1 - 2020-06-18
 
