@@ -4,7 +4,8 @@
 
 ### Improvements
 
-When exporting for RRE, we need the ES or Solr index name.  Extract this from the url for the most recent try and save a step!  https://github.com/o19s/quepid/pull/167 by @epugh fixes https://github.com/o19s/quepid/issues/159.
+* When exporting for RRE, we need the ES or Solr index name.  Extract this from the url for the most recent try and save a step!  https://github.com/o19s/quepid/pull/167 by @epugh fixes https://github.com/o19s/quepid/issues/159.
+* If you link to either a case that doesn't exist, or you don't have permission for, or a try that doesn't exist for a case, then provide messaging back in the UI!  Let's share some Quepid Cases!  933ed257198ebe21ff86b7e35573d3172cc2e593, 99ac27c1f8698ed726580a4c46eaf6810a4372d2, and 37b95b89fa848b0af2bae3d5a9541141e5d80d62 by @epugh to master branch fixes https://github.com/o19s/quepid/issues/158.
 
 ### Bugs
 
