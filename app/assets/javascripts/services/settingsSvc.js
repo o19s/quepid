@@ -65,7 +65,9 @@ angular.module('QuepidApp')
       };
 
       this.isTrySelected = function() {
-        return currSettings !== null;
+        // Make sure we have current settings and that the try we selected
+        // actually exists, otherwise the selectedTry will be null.
+        return currSettings !== null && currSettings.selectedTry !== null;
       };
 
       // An external change in case, we need

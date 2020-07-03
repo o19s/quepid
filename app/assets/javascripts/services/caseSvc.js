@@ -161,7 +161,7 @@ angular.module('QuepidApp')
       };
 
       this.getCaseByNo = function(caseNo) {
-        console.log("I AM A DEAD METHOD UNLESS YOU SEE ME!");
+        console.log('I AM A DEAD METHOD UNLESS YOU SEE ME!');
         var returnedCase = null;
 
         angular.forEach(this.allCases, function(aCase) {
