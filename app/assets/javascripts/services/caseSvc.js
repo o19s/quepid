@@ -3,10 +3,12 @@
 angular.module('QuepidApp')
   .service('caseSvc', [
     '$http', '$filter', '$q', '$rootScope',
+    'flash',
     'caseTryNavSvc', 'settingsSvc',
     'broadcastSvc',
     function caseSvc(
       $http, $filter, $q, $rootScope,
+      flash,
       caseTryNavSvc, settingsSvc,
       broadcastSvc
     ) {
@@ -159,6 +161,7 @@ angular.module('QuepidApp')
       };
 
       this.getCaseByNo = function(caseNo) {
+        console.log("I AM A DEAD METHOD UNLESS YOU SEE ME!");
         var returnedCase = null;
 
         angular.forEach(this.allCases, function(aCase) {
@@ -404,7 +407,7 @@ angular.module('QuepidApp')
 
       function get(id, useCache) {
         // http GET /api/cases/<int:caseId>
-        var url   = '/api/cases/' + id;
+        var url  = '/api/cases/' + id;
         useCache = typeof useCache !== 'undefined' ?  useCache : true;
 
         var ccase = cases[id];
@@ -412,7 +415,8 @@ angular.module('QuepidApp')
           return $q(function(resolve) {
             resolve(ccase);
           });
-        } else {
+        }
+        else {
           return $http.get(url)
             .then(function(response) {
               var acase = constructFromData(response.data);
@@ -424,7 +428,10 @@ angular.module('QuepidApp')
 
               svc.allCases[index] = acase;
               return acase;
-            });
+            }, function(response) {
+              flash.to('search-error').error = "Either the case does not exist or you do not have permissions to access it!";
+              return response;
+          });
         }
       }
 
