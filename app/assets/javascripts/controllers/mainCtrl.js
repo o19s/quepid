@@ -64,7 +64,7 @@ angular.module('QuepidApp')
 
             settingsSvc.setCurrentTry(tryNo);
             if (!settingsSvc.isTrySelected()){
-              flash.to('search-error').error = "The try that was specified for the case doesn't actually exist!";
+              flash.to('search-error').error = 'The try that was specified for the case does not actually exist!';
             }
           });
       };

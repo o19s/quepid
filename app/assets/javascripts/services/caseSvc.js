@@ -429,7 +429,7 @@ angular.module('QuepidApp')
               svc.allCases[index] = acase;
               return acase;
             }, function(response) {
-              flash.to('search-error').error = "Either the case does not exist or you do not have permissions to access it!";
+              flash.to('search-error').error = 'Either the case does not exist or you do not have permissions to access it!';
               return response;
           });
         }
