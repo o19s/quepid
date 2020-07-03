@@ -1,5 +1,11 @@
 # Changelog
 
+## 6.2.2 - ??
+
+### Bugs
+
+* When using the case wizard, you couldn't cut'n'paste in a long list of fields like `overview_en, overview_idioms` as they became a single tag.   https://github.com/o19s/quepid/pull/166 by @epugh fixes https://github.com/o19s/quepid/issues/165. 
+
 ## 6.2.1 - 2020-06-18
 
 Thanks to some feedback from the community, we figured out that the SQL script for
