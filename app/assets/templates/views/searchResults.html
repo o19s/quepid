@@ -100,9 +100,9 @@
     <div ng-class="{true: 'notes-box', false: 'hidden'}[displayed.notes]">
       <div ng-controller = 'QueryNotesCtrl as ctrl' class="notes-content">
         <label>Notes on this Query:</label>
-        <i class="fa fa-spinner fa-spin" ng-show="ctrl.saveInProgress"></i>
-        <form>
-          <textarea ng-model="query.notes" class="form-control"></textarea>
+        <form ng-submit="saveNotes()">
+          <textarea ng-model="queryNotes" class="form-control"></textarea>
+          <input type="submit" class="btn btn-primary" value="Save Notes"></input>
         </form>
       </div>
     </div>
