@@ -291,35 +291,39 @@ angular.module('QuepidApp')
       this.trackLastScore = function(scoreData) {
         var self = this;
 
-        if (  angular.isUndefined(scoreData.queries) ||
-              scoreData.queries === null ||
-              Object.keys(scoreData.queries).length === 0
-        ) {
-          return $q(function(resolve) {
-            resolve();
-          });
-        }
+
+//        if (  angular.isUndefined(scoreData.queries) ||
+//              scoreData.queries === null ||
+//              Object.keys(scoreData.queries).length === 0
+//        ) {
+//          return $q(function(resolve) {
+//            resolve();
+//          });
+//        }
 
         /*jshint camelcase:false*/
         var caseNo = scoreData.case_id;
         /*jshint camelcase:true*/
 
         var url         = '/api/cases/'+ caseNo + '/scores';
-        var dateFormat  = 'yyyy-MM-dd HH:mm:ss Z';
+//        var dateFormat  = 'yyyy-MM-dd HH:mm:ss Z';
 
         /*jshint camelcase:false*/
-        scoreData.created_at = $filter('date')(new Date().toUTCString(), dateFormat);
+//        scoreData.created_at = $filter('date')(new Date().toUTCString(), dateFormat);
         /*jshint camelcase:true*/
 
         // Replace null values by an empty string for query scores,
         // in order to normalize values when score is not present:
-        angular.forEach(scoreData.queries, function(score, id) {
-          if (score === null || score === undefined || score === 'Null') {
-            scoreData.queries[id] = '';
-          }
-        });
+//        angular.forEach(scoreData.queries, function(score, id) {
+//          if (score === null || score === undefined || score === 'Null') {
+//            scoreData.queries[id] = '';
+//          }
+//        });
 
         var data = { 'score': scoreData };
+
+        console.log("HERE COMES THE DATA");
+        console.log(data);
 
         return $http.put(url, data)
           .then(function(response) {
