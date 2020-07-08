@@ -32,24 +32,19 @@ module Api
         end
 
         def id_base64? id
-          id.is_a?(String) &&
-            Base64.strict_encode64(Base64.strict_decode64(id)) == id &&
-            (uri?(Base64.strict_decode64(id)) || contains_period?(Base64.strict_decode64(id)))
+          !is_numeric?(id) &&
+            Base64.strict_encode64(Base64.strict_decode64(id)) == id ||
+              contains_period?(Base64.strict_decode64(id))
         rescue ArgumentError
-          false
-        end
-
-        def uri? string
-          uri = URI.parse(CGI.unescape(string))
-          %w[ http https ].include?(uri.scheme)
-        rescue URI::BadURIError
-          false
-        rescue URI::InvalidURIError
           false
         end
 
         def contains_period? string
           string.include?('.')
+        end
+
+        def is_numeric? string
+          Float(string) != nil rescue false
         end
 
         def decode_id

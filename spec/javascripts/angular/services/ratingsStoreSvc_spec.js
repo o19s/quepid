@@ -54,6 +54,20 @@ describe('Service: Ratingsstoresvc', function () {
     ratingsStore.rateDocument('http://www.example.com/doc/1', 10);
     $httpBackend.flush();
     expect(ratingsStore.getRating('http://www.example.com/doc/1')).toBe(10);
+
+    var id = 'aspace-https-archives-yale-edu-repositories-5-archival_objects-2530795';
+    $httpBackend.expectPUT('/api/cases/0/queries/1/ratings/aspace-https-archives-yale-edu-repositories-5-archival_objects-2530795').respond(200, {});
+    ratingsStore.rateDocument('aspace-https-archives-yale-edu-repositories-5-archival_objects-2530795', 10);
+    $httpBackend.flush();
+    expect(ratingsStore.getRating('aspace-https-archives-yale-edu-repositories-5-archival_objects-2530795')).toBe(10);
+
+    // Base64 encoded value of d2Vic2l0ZTpodHRwOi8vd3d3Lmdvb2dsZS5jb20= is then URL encoded.
+    id = 'website:http://www.google.com';
+    $httpBackend.expectPUT('/api/cases/0/queries/1/ratings/d2Vic2l0ZTpodHRwOi8vd3d3Lmdvb2dsZS5jb20%3D').respond(200, {});
+    ratingsStore.rateDocument('website:http://www.google.com', 10);
+    $httpBackend.flush();
+    expect(ratingsStore.getRating('website:http://www.google.com')).toBe(10);
+
     $httpBackend.verifyNoOutstandingExpectation();
   });
   it('should base 64 and urlencode when POSTIng rating w id containing a period', function() {
