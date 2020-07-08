@@ -32,9 +32,9 @@ module Api
         end
 
         def id_base64? id
-          !is_numeric?(id) &&
+          !numeric?(id) &&
             Base64.strict_encode64(Base64.strict_decode64(id)) == id ||
-              contains_period?(Base64.strict_decode64(id))
+            contains_period?(Base64.strict_decode64(id))
         rescue ArgumentError
           false
         end
@@ -43,8 +43,10 @@ module Api
           string.include?('.')
         end
 
-        def is_numeric? string
-          Float(string) != nil rescue false
+        def numeric? string
+          nil != Float(string)
+        rescue ArgumentError
+          false
         end
 
         def decode_id

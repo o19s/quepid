@@ -134,7 +134,7 @@ module Api
             assert_equal count, 1
 
             # test where we have https but it's all dashes, no / or . character.
-            doc_id     = 'https-example-com-relative-path2'
+            doc_id = 'https-example-com-relative-path2'
 
             assert_recognizes(
               {
