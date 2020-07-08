@@ -48,6 +48,8 @@ angular.module('QuepidApp')
           });
         };
 
+        // We do not encode doc ids with the bulk because they are in the payload
+        // instead of in the URL, so the / and . issues don't crop up.
         this.rateBulkDocuments = function(docIds, rating) {
           var url   = basePath() + '/bulk' + '/ratings';
           var data  = {
