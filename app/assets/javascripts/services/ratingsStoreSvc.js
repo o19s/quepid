@@ -25,7 +25,7 @@ angular.module('QuepidApp')
           var id = docId;
           // For document id's that have either a / or a . character, we need to base64 encode them.
           // Rails pukes on the . and the webapp pukes on the / in routing things.
-          if ( /\./.test(docId) || /\./.test(docId)) {
+          if ( /\//.test(docId) || /\./.test(docId)) {
             id = btoa(docId);
           }
 
