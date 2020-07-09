@@ -10,14 +10,8 @@ angular.module('QuepidApp')
     ) {
       // Settings for query display
       var DisplayConfig = function() {
-        this.layouts = {};
-        this.resultsView = {};
-        this.layouts.image = 0;
-        this.layouts.list = 1;
-        this.layout = this.layouts.list;
-
         this.notes = false;
-
+        this.resultsView = {};
         this.resultsView.finder = 1;
         this.resultsView.results = 2;
         this.resultsView.diff = 3;
@@ -91,10 +85,6 @@ angular.module('QuepidApp')
       };
       $scope.query.toggle = function() {
           queryViewSvc.toggleQuery($scope.query.queryId);
-      };
-
-      $scope.query.hasThumb = function() {
-        return $scope.query.fieldSpec.hasOwnProperty('thumb');
       };
 
       $scope.removeQuery = function(queryId) {
