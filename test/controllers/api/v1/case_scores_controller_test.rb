@@ -30,7 +30,7 @@ module Api
             try_id:    first_try.id,
           }
 
-          put :update, case_id: acase.id, score: data
+          put :update, case_id: acase.id, case_score: data
 
           assert_response :no_content
         end
@@ -42,7 +42,7 @@ module Api
             try_id:    first_try.id,
           }
 
-          put :update, case_id: acase.id, score: data
+          put :update, case_id: acase.id, case_score: data
 
           assert_response :ok
 
@@ -69,7 +69,7 @@ module Api
             },
           }
 
-          put :update, case_id: acase.id, score: data
+          put :update, case_id: acase.id, case_score: data
 
           assert_response :ok
 
@@ -87,7 +87,7 @@ module Api
           }
 
           assert_no_difference 'acase.scores.count' do
-            put :update, case_id: acase.id, score: data
+            put :update, case_id: acase.id, case_score: data
 
             assert_response :ok
 
@@ -118,7 +118,7 @@ module Api
           }
 
           assert_difference 'acase.scores.count' do
-            put :update, case_id: acase.id, score: data
+            put :update, case_id: acase.id, case_score: data
 
             assert_response :ok
 

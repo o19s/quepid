@@ -222,26 +222,24 @@ angular.module('QuepidApp')
               lastScoreTracker = {
                 'score':      $scope.queries.avgQuery.lastScore.score,
                 'all_rated':  $scope.queries.avgQuery.lastScore.allRated,
-                'case_id':    caseNo,
                 'try_id':     tryNo,
                 'queries':    $scope.queries.avgQuery.lastScore.queries,
               };
 
               $log.info('sending score information to mothership');
-              caseSvc.trackLastScore(lastScoreTracker);
+              caseSvc.trackLastScore(caseNo, lastScoreTracker);
             });
         }
         else {
           var lastScoreTracker = {
             'score':      $scope.queries.avgQuery.lastScore.score,
             'all_rated':  $scope.queries.avgQuery.lastScore.allRated,
-            'case_id':    caseNo,
             'try_id':     tryNo,
             'queries':    $scope.queries.avgQuery.lastScore.queries,
           };
 
           $log.info('sending score information to mothership');
-          caseSvc.trackLastScore(lastScoreTracker);
+          caseSvc.trackLastScore(caseNo, lastScoreTracker);
         }
       }
 
