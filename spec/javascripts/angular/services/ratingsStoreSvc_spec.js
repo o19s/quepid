@@ -42,7 +42,7 @@ describe('Service: Ratingsstoresvc', function () {
 
   it('should urlencode when POSTIng rating', function() {
     var ratingsStore = ratingsStoreSvc.createRatingsStore(0, 1, {});
-    $httpBackend.expectPUT('/api/cases/0/queries/1/ratings/file%3A%2F%2Ffoo%2Fbar').respond(200, {});
+    $httpBackend.expectPUT('/api/cases/0/queries/1/ratings/ZmlsZTovL2Zvby9iYXI%3D').respond(200, {});
     ratingsStore.rateDocument('file://foo/bar', 10);
     $httpBackend.flush();
     expect(ratingsStore.getRating('file://foo/bar')).toBe(10);
@@ -81,7 +81,7 @@ describe('Service: Ratingsstoresvc', function () {
 
   it('should urlencode when DELETING rating', function() {
     var ratingsStore = ratingsStoreSvc.createRatingsStore(0, 1, {});
-    $httpBackend.expectDELETE('/api/cases/0/queries/1/ratings/file%3A%2F%2Ffoo%2Fbar').respond(200, {});
+    $httpBackend.expectDELETE('/api/cases/0/queries/1/ratings/ZmlsZTovL2Zvby9iYXI%3D').respond(200, {});
     ratingsStore.resetRating('file://foo/bar');
     $httpBackend.flush();
     expect(ratingsStore.hasRating('file://foo/bar')).toBe(false);
