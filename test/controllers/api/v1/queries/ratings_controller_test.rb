@@ -132,6 +132,36 @@ module Api
             count = query.ratings.where(doc_id: doc_id).count
 
             assert_equal count, 1
+
+            # test where we have https but it's all dashes, no / or . character.
+            doc_id = 'https-example-com-relative-path2'
+
+            assert_recognizes(
+              {
+                format:     :json,
+                controller: 'api/v1/queries/ratings',
+                action:     'update',
+                case_id:    acase.id.to_s,
+                query_id:   query.id.to_s,
+                doc_id:     doc_id,
+              },
+              path:   "/api/cases/#{acase.id}/queries/#{query.id}/ratings/#{doc_id}",
+              method: :put
+            )
+
+            put :update, case_id: acase.id, query_id: query.id, doc_id: doc_id, rating: 6
+
+            assert_response :ok
+
+            data = JSON.parse(response.body)
+
+            assert_equal data['rating'],    6
+            assert_equal data['doc_id'],    doc_id
+            assert_equal data['query_id'],  query.id
+
+            count = query.ratings.where(doc_id: doc_id).count
+
+            assert_equal count, 1
           end
 
           test 'works with a document id that contains a period' do
