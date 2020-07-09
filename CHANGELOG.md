@@ -1,5 +1,7 @@
 # Changelog
 
+## 6.2.x - ???
+
 ## 6.2.2 - 2020-07-09
 
 ### Improvements
