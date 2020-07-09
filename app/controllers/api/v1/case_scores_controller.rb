@@ -39,13 +39,17 @@ module Api
 
       private
 
+      # There is a weird thing where for some reason our params object has both
+      # a "score" and a "case_score" hash of params, and they are identical, even
+      # though the front end only submits a "score" hash.  Some sort of magic.
+      # this leads to a Unpermitted parameter: queries
       def score_params
-        params.require(:score).permit(
+        params.require(:case_score).permit(
           :score,
           :all_rated,
           :try_id
         ).tap do |whitelisted|
-          whitelisted[:queries] = params[:score][:queries] if params[:score][:queries]
+          whitelisted[:queries] = params[:case_score][:queries] if params[:case_score][:queries]
         end
       end
     end

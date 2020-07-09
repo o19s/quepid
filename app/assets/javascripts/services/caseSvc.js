@@ -288,7 +288,7 @@ angular.module('QuepidApp')
         return $http.put(url, data);
       };
 
-      this.trackLastScore = function(scoreData) {
+      this.trackLastScore = function(caseNo, scoreData) {
         var self = this;
 
         if (  angular.isUndefined(scoreData.queries) ||
@@ -300,16 +300,7 @@ angular.module('QuepidApp')
           });
         }
 
-        /*jshint camelcase:false*/
-        var caseNo = scoreData.case_id;
-        /*jshint camelcase:true*/
-
         var url         = '/api/cases/'+ caseNo + '/scores';
-        var dateFormat  = 'yyyy-MM-dd HH:mm:ss Z';
-
-        /*jshint camelcase:false*/
-        scoreData.created_at = $filter('date')(new Date().toUTCString(), dateFormat);
-        /*jshint camelcase:true*/
 
         // Replace null values by an empty string for query scores,
         // in order to normalize values when score is not present:
@@ -319,7 +310,7 @@ angular.module('QuepidApp')
           }
         });
 
-        var data = { 'score': scoreData };
+        var data = { 'case_score': scoreData };
 
         return $http.put(url, data)
           .then(function(response) {

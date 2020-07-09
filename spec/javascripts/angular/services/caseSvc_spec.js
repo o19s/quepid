@@ -436,7 +436,6 @@ describe('Service: caseSvc', function () {
     var scoreData = {
       score:      90,
       all_rated:  false,
-      case_id:    1,
       try_id:     3,
       queries:    {
         174: {
@@ -456,7 +455,7 @@ describe('Service: caseSvc', function () {
     it('tracks the last score successfully', function() {
       $httpBackend.expectPUT('/api/cases/1/scores').respond(200, '');
 
-      caseSvc.trackLastScore(scoreData);
+      caseSvc.trackLastScore(1, scoreData);
       $httpBackend.flush();
     });
 
@@ -465,7 +464,7 @@ describe('Service: caseSvc', function () {
       data.score   = 0;
       data.queries = {};
 
-      caseSvc.trackLastScore(data);
+      caseSvc.trackLastScore(1, data);
 
       $httpBackend.verifyNoOutstandingExpectation();
     });
@@ -476,7 +475,7 @@ describe('Service: caseSvc', function () {
 
       $httpBackend.expectPUT('/api/cases/1/scores').respond(200, '');
 
-      caseSvc.trackLastScore(data);
+      caseSvc.trackLastScore(1, data);
 
       $httpBackend.flush();
       $httpBackend.verifyNoOutstandingExpectation();
@@ -490,7 +489,7 @@ describe('Service: caseSvc', function () {
 
       $httpBackend.expectPUT('/api/cases/1/scores').respond(200, mockResponse);
 
-      caseSvc.trackLastScore(scoreData);
+      caseSvc.trackLastScore(1, scoreData);
       $httpBackend.flush();
       $rootScope.$apply();
 
@@ -518,7 +517,7 @@ describe('Service: caseSvc', function () {
 
       $httpBackend.expectPUT('/api/cases/1/scores').respond(200, mockResponse);
 
-      caseSvc.trackLastScore(scoreData);
+      caseSvc.trackLastScore(1, scoreData);
       $httpBackend.flush();
       $rootScope.$apply();
 
