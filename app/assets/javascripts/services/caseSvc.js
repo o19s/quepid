@@ -160,19 +160,6 @@ angular.module('QuepidApp')
         return selectedCase;
       };
 
-      this.getCaseByNo = function(caseNo) {
-        console.log('I AM A DEAD METHOD UNLESS YOU SEE ME!');
-        var returnedCase = null;
-
-        angular.forEach(this.allCases, function(aCase) {
-          if (aCase.caseNo === caseNo) {
-            returnedCase = aCase;
-          }
-        });
-
-        return returnedCase;
-      };
-
       this.createCase = function(caseName, queries, tries) {
         // http post /cases/
         // returns as if we did http get /cases/<caseNo>

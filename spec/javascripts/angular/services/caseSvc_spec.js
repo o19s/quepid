@@ -5,14 +5,16 @@ describe('Service: caseSvc', function () {
   // load the service's module
   beforeEach(module('QuepidTest'));
 
+  var mockCase1 = {
+    'caseNo':   1,
+    'case_name': 'test case',
+    'lastTry':  4,
+    'owned':    true
+  };
+
   var mockCases = {
     allCases: [
-      {
-        'caseNo':   1,
-        'case_name': 'test case',
-        'lastTry':  4,
-        'owned':    true
-      },
+      mockCase1,
       {
         'caseNo':   2,
         'case_name': 'test case 2',
@@ -82,6 +84,8 @@ describe('Service: caseSvc', function () {
     beforeEach(function() {
       $httpBackend.expectGET('/api/cases').respond(200, mockCases);
       $httpBackend.expectGET('/api/dropdown/cases').respond(200, mockCases);
+
+
 
       caseSvc.uponBeingBootstrapped().
         then(function() {
@@ -192,22 +196,22 @@ describe('Service: caseSvc', function () {
     });
 
     it('gets a case by number', function() {
-      var caseNoOne = caseSvc.getCaseByNo(1);
-      expect(caseNoOne.caseName).toEqual('test case');
+      $httpBackend.expectGET('/api/cases/1').respond(200, mockCase1);
+      caseSvc.get(1,false).then(function(acase) {
+        expect(acase.caseName).toEqual('test case');
+      });
+      $httpBackend.flush();
     });
 
-    it('gets null if case number not present', function() {
-      var caseNoZero = caseSvc.getCaseByNo(0);
-      expect(caseNoZero).toEqual(null);
-      var caseNoOneK = caseSvc.getCaseByNo(1000);
-      expect(caseNoOneK).toEqual(null);
-    });
 
     it('deletes a case', function() {
+      $httpBackend.expectGET('/api/cases/1').respond(200, mockCase1);
       $httpBackend.expectDELETE('/api/cases/1').respond(200, '');
       expectToRefetchCases();
 
-      caseSvc.deleteCase(caseSvc.getCaseByNo(1));
+      caseSvc.get(1,false).then(function(acase) {
+        caseSvc.deleteCase(acase);
+      });
 
       $httpBackend.flush();
 
@@ -222,11 +226,14 @@ describe('Service: caseSvc', function () {
     });
 
     it('deletes and calls promise', function(){
+      $httpBackend.expectGET('/api/cases/1').respond(200, mockCase1);
       $httpBackend.expectDELETE('/api/cases/1').respond(200, '');
       expectToRefetchCases();
       var called = false;
-      caseSvc.deleteCase(caseSvc.getCaseByNo(1)).then( function() {
-        called = true;
+      caseSvc.get(1,false).then(function(acase) {
+        caseSvc.deleteCase(acase).then( function() {
+          called = true;
+        });
       });
       $httpBackend.flush();
       expect(called).toEqual(true);
@@ -235,9 +242,12 @@ describe('Service: caseSvc', function () {
     it('deletes currently selected case, calls promise', function(){
       caseSvc.selectCase(1);
       expect(caseSvc.getSelectedCase().caseNo).toEqual(1);
+      $httpBackend.expectGET('/api/cases/1').respond(200, mockCase1);
       $httpBackend.expectDELETE('/api/cases/1').respond(200, '');
       expectToRefetchCases();
-      caseSvc.deleteCase(caseSvc.getCaseByNo(1));
+      caseSvc.get(1,false).then(function(acase) {
+        caseSvc.deleteCase(acase);
+      });
       $httpBackend.flush();
       expect(caseSvc.getSelectedCase()).toEqual(null);
     });
@@ -245,9 +255,12 @@ describe('Service: caseSvc', function () {
     it('deletes currently selected case, calls promise', function(){
       caseSvc.selectCase(2);
       expect(caseSvc.getSelectedCase().caseNo).toEqual(2);
+      $httpBackend.expectGET('/api/cases/1').respond(200, mockCase1);
       $httpBackend.expectDELETE('/api/cases/1').respond(200, '');
       expectToRefetchCases();
-      caseSvc.deleteCase(caseSvc.getCaseByNo(1));
+      caseSvc.get(1,false).then(function(acase) {
+        caseSvc.deleteCase(acase);
+      });
       $httpBackend.flush();
       expect(caseSvc.getSelectedCase().caseNo).toEqual(2);
     });
