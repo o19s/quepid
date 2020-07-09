@@ -1,17 +1,23 @@
 # Changelog
 
-## 6.2.2 - ??
+## 6.2.2 - 2020-07-09
 
 ### Improvements
 
 * When exporting for RRE, we need the ES or Solr index name.  Extract this from the url for the most recent try and save a step!  https://github.com/o19s/quepid/pull/167 by @epugh fixes https://github.com/o19s/quepid/issues/159.
 * If you link to either a case that doesn't exist, or you don't have permission for, or a try that doesn't exist for a case, then provide messaging back in the UI!  Let's share some Quepid Cases!  933ed257198ebe21ff86b7e35573d3172cc2e593, 99ac27c1f8698ed726580a4c46eaf6810a4372d2, and 37b95b89fa848b0af2bae3d5a9541141e5d80d62 by @epugh to master branch fixes https://github.com/o19s/quepid/issues/158.
+* `getCaseByNo` only used in tests. https://github.com/o19s/quepid/pull/173 by @epugh removes code.
+* There was a partially working attempt at a result grid view instead of list view.  It wasn't rendering in the UI, and we want to have a more general solution in the future, so removing the code to simplify Quepid. https://github.com/o19s/quepid/pull/174 by @epugh fixes https://github.com/o19s/quepid/issues/171.
 
 ### Bugs
 
 * When using the case wizard, you couldn't cut'n'paste in a long list of fields like `overview_en, overview_idioms` as they became a single tag.   https://github.com/o19s/quepid/pull/166 by @epugh fixes https://github.com/o19s/quepid/issues/165.
 * A `:` in the case name was converted to a ` ` when exporting a case. https://github.com/o19s/quepid/pull/169 by @epugh fixes https://github.com/o19s/quepid/issues/168.
-* The implementation of autosaving your notes per query didn't work well.  Going back to an explicit save button.  https://github.com/o19s/quepid/pull/170 by @epugh fixes https://github.com/o19s/quepid/issues/164. Thanks @DmitryKey for the issue! 
+* The implementation of autosaving your notes per query didn't work well.  Going back to an explicit save button.  https://github.com/o19s/quepid/pull/170 by @epugh fixes https://github.com/o19s/quepid/issues/164. Thanks @DmitryKey for the issue!
+* Remove warning in server log on parameters.  https://github.com/o19s/quepid/pull/182 by @epugh fixes https://github.com/o19s/quepid/issues/180.
+* Community member spotted that doc id's with `blah-http-blah` triggered base64 encoding.  Simplified handling docs with an id with a `.` or `/` in them. https://github.com/o19s/quepid/pull/179 by @worleydl and @epugh fixes https://github.com/o19s/quepid/issues/175.
+
+
 
 ## 6.2.1 - 2020-06-18
 
