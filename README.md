@@ -2,6 +2,7 @@
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![CircleCI](https://circleci.com/gh/o19s/quepid.svg?style=svg)](https://circleci.com/gh/o19s/quepid)
+[![Docker Hub](https://img.shields.io/docker/pulls/o19s/quepid.svg)](https://hub.docker.com/r/o19s/quepid/ "Docker Pulls")
 
 <img src="https://quepid.com/images/logo.png" alt="Quepid logo" title="Quepid" align="right" />
 
