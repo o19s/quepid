@@ -11,6 +11,10 @@ module Api
 
         def show
           file_format = params[:file_format]
+          puts "File format is #{file_format}"
+          if file_format == 'basic_snapshot'
+            @snapshot = Snapshot.find_by_id(params[:snapshot_id])
+          end
 
           respond_to do |format|
             format.json do
@@ -19,8 +23,24 @@ module Api
               render json_template
             end
             format.csv do
-              headers['Content-Disposition'] = "attachment; filename=\"case_#{@case.id}_judgements.csv\""
+
+              puts "File format is #{file_format}"
+              if file_format == 'basic_snapshot'
+                csv_filename = "case_#{@case.id}_snapshot_judgements.csv"
+              else
+                csv_filename = "case_#{@case.id}_judgements.csv"                
+              end
+              csv_template = "show.#{file_format.downcase}.csv.erb"
+
+              puts "csv_template is #{csv_filename}"
+              puts "csv_template is #{csv_filename}"
+
+              headers['Content-Disposition'] = "attachment; filename=\"#{csv_filename}\""
               headers['Content-Type'] ||= 'text/csv'
+
+              render csv_template
+
+
             end
             format.txt do
               headers['Content-Disposition'] = "attachment; filename=\"case_#{@case.id}_judgements.txt\""

@@ -192,7 +192,7 @@
          *
          */
         function exportBasicFormat(aCase) {
-          $http.get('/api/export/ratings/' + aCase.caseNo + '.csv')
+          $http.get('/api/export/ratings/' + aCase.caseNo + '.csv?file_format=basic')
             .then(function(response) {
               var blob = new Blob([response.data], {
                 type: 'text/csv'
