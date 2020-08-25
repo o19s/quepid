@@ -42,7 +42,7 @@ angular.module('QuepidApp')
       ctrl.prompt     = prompt;
 
       function exportCase(options) {
-        var csv, blob;
+        var csv, blob, snapshotId;
 
         if ( options.which === 'general' ) {
           $log.info('Selected "general" as export option.');
@@ -72,9 +72,8 @@ angular.module('QuepidApp')
         }
         else if ( options.which === 'snapshot' ) {
           $log.info('Selected "snapshot" as export option.');
-          $log.info('Exporting snapshot ' + options.selection + '.');
-          $log.info(options);
-          var snapshotId = options.selection;
+          $log.info('Exporting snapshot ' + options.snapshot_snapshot + '.');
+          snapshotId = options.snapshot_snapshot;
           // Snapshot Name	Snapshot Time	Case ID	Query Text	Doc ID	Doc Position
 
           querySnapshotSvc.get(snapshotId).then(function() {
@@ -100,7 +99,14 @@ angular.module('QuepidApp')
         }
         else if ( options.which === 'basic' ) {
          $log.info('Selected "basic" as export option.');
-         caseCSVSvc.exportBasicFormat(ctrl.theCase);
+         snapshotId = options.basic_snapshot;
+
+         if (snapshotId === undefined){
+           caseCSVSvc.exportBasicFormat(ctrl.theCase);
+         }
+         else {
+            caseCSVSvc.exportBasicFormatSnapshot(ctrl.theCase, snapshotId);
+         }
 
         }
         else if ( options.which === 'rre' ) {

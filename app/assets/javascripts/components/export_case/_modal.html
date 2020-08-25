@@ -39,7 +39,7 @@
     <label for="snapshot_choice">Snapshot
       <select
         id="diffWith"
-        ng-model="ctrl.options.selection"
+        ng-model="ctrl.options.snapshot_snapshot"
         ng-options="snapshot.id as snapshot.name() for (id, snapshot) in ctrl.snapshots"
       >
       </select>
@@ -49,8 +49,18 @@
     <input type="radio" id="basic" name="exportSelection" value="basic" ng-model="ctrl.options.which">
     <label for="basic">Basic</label>
     <span class="help-block">
-      Simplest CSV file format with just <code>query,docid,rating</code>.  Compatible with projects like <a href="https://github.com/tballison/quaerite" target="_blank">Quaerite</a> among others.
+      Simple CSV file format <code>query,docid,rating</code> that exports only queries that have been rated.
+      If you choose a Snapshot, then it will export unrated query/document pairs from when the Snapshot was created.
+      Compatible with projects like <a href="https://github.com/tballison/quaerite" target="_blank">Quaerite</a> among others.
     </span>
+    <label for="snapshot_choice">Snapshot
+      <select
+        id="diffWith2"
+        ng-model="ctrl.options.basic_snapshot"
+        ng-options="snapshot.id as snapshot.name() for (id, snapshot) in ctrl.snapshots"
+      >
+      </select>
+    </label>
   </div>
 
   <div class="form-group">

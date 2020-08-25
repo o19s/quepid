@@ -29,8 +29,11 @@ angular.module('QuepidApp')
       // Watches
       $scope.$watch('ctrl.options', function(newVal, oldVal) {
         if (newVal !== oldVal) {
-          if (oldVal.selection !== newVal.selection) {
+          if (oldVal.snapshot_snapshot !== newVal.snapshot_snapshot) {
             ctrl.options.which = 'snapshot';
+          }
+          else if (oldVal.basic_snapshot !== newVal.basic_snapshot) {
+            ctrl.options.which = 'basic';
           }
         }
       },true);

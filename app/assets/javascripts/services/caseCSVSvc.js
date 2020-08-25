@@ -28,6 +28,7 @@
         self.stringify                  = stringify;
         self.stringifyQueries           = stringifyQueries;
         self.exportBasicFormat          = exportBasicFormat;
+        self.exportBasicFormatSnapshot  = exportBasicFormatSnapshot;
         self.exportRREFormat            = exportRREFormat;
         self.exportLTRFormat            = exportLTRFormat;
         self.stringifyQueriesDetailed   = stringifyQueriesDetailed;
@@ -200,6 +201,17 @@
 
               /*global saveAs */
               saveAs(blob, formatDownloadFileName(aCase.caseName + '_basic.csv'));
+            });
+        }
+        function exportBasicFormatSnapshot(aCase, snapshotId) {
+          $http.get('/api/export/ratings/' + aCase.caseNo + '.csv?file_format=basic_snapshot&snapshot_id=' + snapshotId)
+            .then(function(response) {
+              var blob = new Blob([response.data], {
+                type: 'text/csv'
+              });
+
+              /*global saveAs */
+              saveAs(blob, formatDownloadFileName(aCase.caseName + '_basic_snapshot.csv'));
             });
         }
 
