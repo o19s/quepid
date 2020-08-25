@@ -9,6 +9,7 @@ module Api
         before_action :find_case
         before_action :check_case
 
+        # rubocop:disable Metrics/MethodLength
         def show
           file_format = params[:file_format]
 
@@ -19,9 +20,9 @@ module Api
               render json_template
             end
             format.csv do
-              if file_format == 'basic_snapshot'
+              if 'basic_snapshot' == file_format
                 csv_filename = "case_#{@case.id}_snapshot_judgements.csv"
-                @snapshot = Snapshot.find_by_id(params[:snapshot_id])
+                @snapshot = Snapshot.find_by(params[:snapshot_id])
               else
                 csv_filename = "case_#{@case.id}_judgements.csv"
               end
@@ -30,8 +31,6 @@ module Api
               headers['Content-Type'] ||= 'text/csv'
 
               render "show.#{file_format.downcase}.csv.erb"
-
-
             end
             format.txt do
               headers['Content-Disposition'] = "attachment; filename=\"case_#{@case.id}_judgements.txt\""
@@ -39,6 +38,7 @@ module Api
             end
           end
         end
+        # rubocop:enable Metrics/MethodLength
       end
     end
   end
