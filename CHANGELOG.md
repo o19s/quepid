@@ -2,6 +2,10 @@
 
 ## 6.2.x - ???
 
+### Improvements
+
+* We want to export unrated query/doc pairs, which is only supported via exporting a Snapshot.  Add support for exporting a Snapshot in the Basic format.
+
 ## 6.2.2 - 2020-07-09
 
 ### Improvements
