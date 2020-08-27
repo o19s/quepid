@@ -56,3 +56,7 @@ Scorer.where(name: 'AP@5').first_or_create(
 if ENV['SEED_SAMPLE_DATA']
   require_relative 'sample_data_seeds'
 end
+
+if ENV['CUSTOM_QUERY']
+  require_relative 'custom_query_loader'
+end
