@@ -2,6 +2,19 @@
 
 ## 6.2.x - ???
 
+### Features
+
+* We want to export unrated query/doc pairs, which is only supported via exporting a previously created Snapshot.  Add support for exporting a Snapshot in the Basic format.  https://github.com/o19s/quepid/pull/191 by @epugh fixes https://github.com/o19s/quepid/issues/185.
+
+### Improvements
+
+* When importing queries, you can have it clear all existing queries. This feature only worked for CSV
+files, not other formats like RRE.  https://github.com/o19s/quepid/pull/193 by @epugh solves this.
+
+### Bugs
+
+
+
 ## 6.2.2 - 2020-07-09
 
 ### Improvements
