@@ -142,7 +142,7 @@ angular.module('QuepidApp')
       ctrl.checkCSVBody = function() {
         var lines = ctrl.csv.content.split('\n');
         var i = 1;
-        var alert = undefined;
+        var alert;
         for (i = 1; i < lines.length; i++) {
           var line = lines[i];
           if (line && line.split(ctrl.csv.separator).length !== 3){
