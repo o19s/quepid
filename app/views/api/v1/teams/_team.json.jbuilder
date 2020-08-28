@@ -20,7 +20,7 @@ end
 
 if load_cases
   json.cases do
-    json.array! team.cases, partial: 'api/v1/cases/case', as: :acase, locals: { shallow: true }
+    json.array! team.cases, partial: 'api/v1/cases/case', as: :acase, locals: { shallow: true, no_teams: true, no_tries: true }
   end
 end
 
