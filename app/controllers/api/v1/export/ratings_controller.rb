@@ -22,7 +22,7 @@ module Api
             format.csv do
               if 'basic_snapshot' == file_format
                 csv_filename = "case_#{@case.id}_snapshot_judgements.csv"
-                @snapshot = Snapshot.find_by(params[:snapshot_id])
+                @snapshot = Snapshot.find_by(id: params[:snapshot_id])
               else
                 csv_filename = "case_#{@case.id}_judgements.csv"
               end
