@@ -4,6 +4,8 @@ shallow  ||= false
 no_tries ||= false
 no_teams ||= false
 
+puts "Shallow in _case.json.jbuilder is #{shallow}"
+
 unless no_teams
   teams = acase.teams.find_all do |o|
     current_user.teams.all.include?(o) || o.owner_id == current_user.id
