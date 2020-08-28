@@ -20,7 +20,9 @@ end
 
 if load_cases
   json.cases do
+    # rubocop:disable Metrics/LineLength
     json.array! team.cases, partial: 'api/v1/cases/case', as: :acase, locals: { shallow: true, no_teams: true, no_tries: true }
+    # rubocop:enable Metrics/LineLength
   end
 end
 
