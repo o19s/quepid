@@ -33,7 +33,7 @@ unless shallow
 end
 
 if acase.last_score.present?
-  json.lastScore acase.last_score, partial: 'api/v1/case_scores/score', as: :score, shallow: shallow
+  json.lastScore acase.last_score, partial: 'api/v1/case_scores/score', as: :score, locals: { shallow: shallow }
 end
 
 unless shallow
