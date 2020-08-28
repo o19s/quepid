@@ -50,7 +50,7 @@ star trek,,</pre>
 
     <div ng-if="ctrl.csv.content" class="block left">
       <h2>CSV</h2>
-      <div ng-show="ctrl.import.alert" class="text-danger bg-danger" ng-bind-html="ctrl.import.alert">
+      <div ng-show="ctrl.import.alert" class="text-danger bg-danger import-content" ng-bind-html="ctrl.import.alert">
       </div>
       <div class="content import-content"><pre>{{ ctrl.csv.content }}</pre></div>
     </div>
