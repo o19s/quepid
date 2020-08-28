@@ -41,6 +41,7 @@ shared_team:
   name:     Team shared with Team Finder User
   owner:    :random
   members:  team_finder_user, team_owner, shared_team_member
+  cases:    shared_team_case
 
 team_owner_team:
   name:     Team owned bt Team Owner User
