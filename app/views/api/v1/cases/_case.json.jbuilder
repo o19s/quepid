@@ -34,9 +34,10 @@ unless shallow
   end
 end
 
-if acase.last_score.present?
-  json.lastScore acase.last_score, partial: 'api/v1/case_scores/score', as: :score, locals: { shallow: shallow }
-end
+json.lastScore do
+  json.partial! 'api/v1/case_scores/score', score: acase.last_score, shallow: shallow
+end if acase.last_score.present?
+
 
 unless shallow
   json.scores acase.scores.includes(:annotation).limit(10) do |s|
