@@ -179,7 +179,7 @@ module Api
       end
 
       describe 'Listing teams' do
-        test 'returns list of team owned by user' do
+        test 'returns list of teams owned by user' do
           get :index
 
           assert_response :ok
@@ -192,7 +192,7 @@ module Api
           assert_equal teams.first['id'],   the_team.id
         end
 
-        test 'returns list of team shared by user' do
+        test 'returns list of teams shared by user' do
           get :index
 
           assert_response :ok
@@ -203,6 +203,17 @@ module Api
           assert_equal teams.length,        user.teams_im_in.all.length
           assert_equal teams.last['name'],  shared_team.name
           assert_equal teams.last['id'],    shared_team.id
+        end
+
+        test 'returns list of teams and loads case data' do
+          get :index, load_cases: true
+
+          assert_response :ok
+
+          body  = JSON.parse(response.body)
+          teams = body['teams']
+
+          refute_empty(teams.last['cases'])
         end
       end
     end
