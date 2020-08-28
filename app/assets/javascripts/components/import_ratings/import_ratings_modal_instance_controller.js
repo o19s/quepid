@@ -33,7 +33,9 @@ angular.module('QuepidApp')
       $scope.$watch('ctrl.csv.content', function(newVal, oldVal) {
         if (newVal !== oldVal) {
           ctrl.options.which = 'csv';
-          ctrl.checkCVSHeaders();
+          ctrl.import.alert = undefined;
+          ctrl.checkCSVHeaders();
+          ctrl.checkCSVBody();
         }
       },true);
 
@@ -71,7 +73,8 @@ angular.module('QuepidApp')
 
       ctrl.ok = function () {
         if ( ctrl.options.which === 'csv' ) {
-          ctrl.checkCVSHeaders();
+          ctrl.checkCSVHeaders();
+          ctrl.checkCSVBody();
         }
 
         // check if any alerts defined.
@@ -119,8 +122,7 @@ angular.module('QuepidApp')
         $uibModalInstance.dismiss('cancel');
       };
 
-      ctrl.checkCVSHeaders = function() {
-        ctrl.import.alert = undefined;
+      ctrl.checkCSVHeaders = function() {
         var headers = ctrl.csv.content.split('\n')[0];
         headers     = headers.split(ctrl.csv.separator);
 
@@ -134,6 +136,27 @@ angular.module('QuepidApp')
           alert += expectedHeaders.join(',');
           alert += '</strong>';
 
+          ctrl.import.alert = alert;
+        }
+      };
+      ctrl.checkCSVBody = function() {
+        var lines = ctrl.csv.content.split('\n');
+        var i = 1;
+        var alert;
+        for (i = 1; i < lines.length; i++) {
+          var line = lines[i];
+          if (line && line.split(ctrl.csv.separator).length !== 3){
+            if (alert === undefined){
+              alert = 'Must have three columns for every line in CSV file: ';
+              alert += '<br /><strong>';
+            }
+            alert += 'line ' + (i + 1) + ': ';
+            alert += line;
+            alert += '<br />';
+          }
+        }
+        if (alert !== undefined){
+          alert += '</strong>';
           ctrl.import.alert = alert;
         }
       };
