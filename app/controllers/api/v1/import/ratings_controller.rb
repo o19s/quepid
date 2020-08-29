@@ -44,7 +44,7 @@ module Api
               query_text = ltr_array[4]
               rating = {
                 query_text: query_text,
-                doc_id:     ltr_array[3],
+                doc_id:     ltr_array[3].tr(';'),
                 rating:     ltr_array[0],
               }
               ratings << rating
