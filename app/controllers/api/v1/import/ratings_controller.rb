@@ -31,7 +31,26 @@ module Api
                 end
               end
             end
+          elsif 'ltr' == file_format
+            # normalize the LTR ratings format to the default hash format.
+
+            # What do we do about qid?  Do we assume that qid is in Quepid already?
+            ratings = []
+            ltr_text = JSON.parse(params[:ltr_text])
+            ltr_lines = ltr_text.split(/\n+/)
+            ltr_lines.each do |ltr_line|
+              ltr_array = ltr_line.split
+
+              query_text = ltr_array[4]
+              rating = {
+                query_text: query_text,
+                doc_id:     ltr_array[3],
+                rating:     ltr_array[0],
+              }
+              ratings << rating
+            end
           end
+
 
           options = {
             format:         :hash,
