@@ -28,49 +28,55 @@ user_specifics = {
   password:         'quepid+qimporter',
 }
 user_params          = user_defaults.merge(user_specifics)
-tens_of_queries_user = seed_user user_params
+custom_queries_user = seed_user user_params
 
 require 'csv'
 
 if ENV['CUSTOM_QUERY']
-    path = ENV['PATH']
-    puts "Loading custom queries from path=" + path
+  path = ENV['PATH']
+  puts 'Loading custom queries from path=' + path
 
-    # Ratings
-    puts "Seeding ratings................"
+  # Ratings
+  puts 'Seeding ratings................'
 
-    search_url = "http://quepid-solr.dev.o19s.com:8985/solr/statedecoded/select"
+  rails_db = "#{Rails.root}/db/data/"
+  puts rails_db
+  files_list = Dir[rails_db + "*"]
+  puts 'File list: ' + files_list.join(', ')
 
-    rails_db = "#{Rails.root}/db/data/"
-    puts rails_db
-    files_list = Dir[rails_db + "*"]
-    puts "File list: " + files_list.join(', ')
+  # good to have for debugging purposes.
+  # set this to some positive integer to control number of loaded query rows from the input CSV
+  max_to_load = -1
 
-    CSV.foreach(rails_db + path, :headers => true) do |row|
-        query = row['keyword']
-        tens_of_queries_case = tens_of_queries_user.cases.first
-        tens_of_queries_case.update case_name: "'" + query[0..185] + "'"
-
-        puts "Creating case: " + tens_of_queries_case.case_name
-
-        opts    = {
-          format:         :hash,
-          force:          true,
-          clear_existing: true,
-        }
-
-        # non-existent doc id: the point is to create a query in this case
-        ratings = [
-                { query_text: query,   doc_id: ' 720784-021190', rating: ' 5' }
-              ]
-
-        puts "Importing query: " + query
-
-        ratings_importer = RatingsImporter.new tens_of_queries_case, ratings, opts
-        ratings_importer.import
+  CSV.foreach(rails_db + path, :headers => true) do |row|
+    if max_to_load == 0
+      break
     end
+    query = row['keyword']
+    query_case = Case.new ({:user => custom_queries_user})
+    query_case.update case_name: "'" + query[0..185] + "'"
 
-    puts "Done loading queries"
+    puts 'Creating case: ' + query_case.case_name
+
+    opts    = {
+      format:         :hash,
+      force:          true,
+      clear_existing: true,
+    }
+
+    # non-existent doc id: the point is to create a query in this case
+    ratings = [
+            { query_text: query,   doc_id: ' 720784-021190', rating: ' 5' }
+          ]
+
+    puts 'Importing query: ' + query
+
+    ratings_importer = RatingsImporter.new query_case, ratings, opts
+    ratings_importer.import
+    max_to_load -= 1
+  end
+
+  puts 'Done loading queries'
 
 end
 
