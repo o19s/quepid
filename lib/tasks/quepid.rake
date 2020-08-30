@@ -47,12 +47,12 @@ namespace :db do
 end
 
 namespace :db do
-    desc 'Custom query import'
-    task :custom_query_loader, [:path] => :environment do |t, args|
-        ENV['CUSTOM_QUERY'] = 'true'
-        ENV['PATH'] = args[:path]
-        puts "Executing custom query import"
-        Rake::Task['db:seed'].invoke
-        puts "Done"
-    end
+  desc 'Custom query import'
+  task :custom_query_loader, [ :path ] => :environment do |_, args|
+    ENV['CUSTOM_QUERY'] = 'true'
+    ENV['PATH'] = args[:path]
+    puts 'Executing custom query import'
+    Rake::Task['db:seed'].invoke
+    puts 'Done'
+  end
 end
