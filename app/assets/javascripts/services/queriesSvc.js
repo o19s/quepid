@@ -11,6 +11,8 @@ angular.module('QuepidApp')
     '$timeout',
     '$q',
     '$log',
+    '$rootScope',
+    '$location',
     'broadcastSvc',
     'caseSvc',
     'customScorerSvc',
@@ -26,6 +28,8 @@ angular.module('QuepidApp')
       $timeout,
       $q,
       $log,
+      $rootScope,
+      $location,
       broadcastSvc,
       caseSvc,
       customScorerSvc,
@@ -54,13 +58,21 @@ angular.module('QuepidApp')
         svc.svcVersion++;
       }
 
+      $rootScope.showOnlyRated = $location.search().showOnlyRated;
+      // alert('Initial rated toggle is ' + $rootScope.showOnlyRated);
+
       this.getCaseNo = getCaseNo;
       this.createSearcherFromSettings = createSearcherFromSettings;
 
       svc.bootstrapQueries = bootstrapQueries;
 
-      function createSearcherFromSettings(passedInSettings, query) {
+      function createSearcherFromSettings(passedInSettings, query, filterIds) {
         var args = angular.copy(passedInSettings.selectedTry.args);
+        // TODO: This is Solr specific
+        // alert('showOnlyWhenCreate is ' + $rootScope.showOnlyRated);
+        if ($rootScope.showOnlyRated === 'true' && filterIds.length > 0) {
+          args['fq'] = '{!terms f=' + passedInSettings.createFieldSpec().id + '}' + filterIds.join(',');
+        }
 
         if (passedInSettings && passedInSettings.selectedTry) {
           return searchSvc.createSearcher(
@@ -156,6 +168,7 @@ angular.module('QuepidApp')
           self.queryId,
           ratings
         );
+        self.ratings        = ratings;
 
         var resultsReturned = false;
         var that = this;
@@ -302,10 +315,13 @@ angular.module('QuepidApp')
           return $q(function(resolve, reject) {
             self.markUnscored();
 
+            var ratedIds = Object.keys(self.ratings);
             self.searcher = svc.createSearcherFromSettings(
               currSettings,
-              self.queryText
+              self.queryText,
+              ratedIds
             );
+            console.log('Ratings: ' + JSON.stringify(ratedIds, undefined, 2));
             resultsReturned = false;
 
             self.searcher.search()

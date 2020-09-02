@@ -7,6 +7,14 @@
 
       <ul class="list-inline pull-right">
         <li>
+          <input type="checkbox" ng-checked="showOnlyRated === 'true'" ng-click="toggleShowOnlyRated()"/>Show only rated
+        </li>
+
+        <li class="text-muted">
+          <span class="text-muted"> | </span>
+        </li>
+
+        <li>
           <a ng-click="collapseAll()" href="">Collapse all</a>
         </li>
 
