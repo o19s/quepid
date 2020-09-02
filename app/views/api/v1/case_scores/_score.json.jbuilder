@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 shallow ||= false
+
 json.all_rated  score.all_rated
 json.case_id    score.case_id
 json.created_at score.created_at

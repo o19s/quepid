@@ -41,6 +41,11 @@ describe('Service: importRatingsSvc', function () {
         'docid':     'i_803',
         'rating':    '3'
       },
+      {
+        'query':     'parrot',
+        'docid':     '',
+        'rating':    ''
+      },
     ];
 
     var mockCase = {

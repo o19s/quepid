@@ -12,8 +12,8 @@ angular.module('QuepidApp')
       ctrl.theCase      = theCase;
       ctrl.loading      = false;
       ctrl.import       = {};
+      ctrl.clearQueries = false;
       ctrl.csv          = {
-        clearQueries:     false,
         content:          null,
         header:           true,
         separator:        ',',
@@ -33,18 +33,25 @@ angular.module('QuepidApp')
       $scope.$watch('ctrl.csv.content', function(newVal, oldVal) {
         if (newVal !== oldVal) {
           ctrl.options.which = 'csv';
+          ctrl.import.alert = undefined;
+          ctrl.checkCSVHeaders();
+          ctrl.checkCSVBody();
         }
       },true);
 
+      // doesn't appear to work.
       $scope.$watch('ctrl.rre.content', function(newVal, oldVal) {
         if (newVal !== oldVal) {
           ctrl.options.which = 'rre';
         }
       },true);
 
+      // doesn't appear to work.
       $scope.$watch('ctrl.rre', function(newVal, oldVal) {
         if (newVal !== oldVal) {
-          ctrl.options.which = 'rre';
+          if (oldVal.content !== newVal.content) {
+            ctrl.options.which = 'rre';
+          }
         }
       },true);
 
@@ -66,22 +73,8 @@ angular.module('QuepidApp')
 
       ctrl.ok = function () {
         if ( ctrl.options.which === 'csv' ) {
-          ctrl.import.alert = undefined;
-          var headers = ctrl.csv.content.split('\n')[0];
-          headers     = headers.split(ctrl.csv.separator);
-
-          var expectedHeaders = [
-            'query', 'docid', 'rating'
-          ];
-
-          if (!angular.equals(headers, expectedHeaders)) {
-            var alert = 'Headers mismatch! Please make sure you have the correct headers in you file (check for correct spelling and capitalization): ';
-            alert += '<br /><strong>';
-            alert += expectedHeaders.join(',');
-            alert += '</strong>';
-
-            ctrl.import.alert = alert;
-          }
+          ctrl.checkCSVHeaders();
+          ctrl.checkCSVBody();
         }
 
         // check if any alerts defined.
@@ -92,7 +85,7 @@ angular.module('QuepidApp')
             importRatingsSvc.importCSVFormat(
               ctrl.theCase,
               ctrl.csv.result,
-              ctrl.csv.clearQueries
+              ctrl.clearQueries
             ).then(function() {
                 ctrl.loading = false;
                 $uibModalInstance.close();
@@ -108,7 +101,8 @@ angular.module('QuepidApp')
           else if (ctrl.options.which === 'rre' ) {
             importRatingsSvc.importRREFormat(
               ctrl.theCase,
-              ctrl.rre.content
+              ctrl.rre.content,
+              ctrl.clearQueries
             ).then(function() {
                 ctrl.loading = false;
                 $uibModalInstance.close();
@@ -126,6 +120,45 @@ angular.module('QuepidApp')
 
       ctrl.cancel = function () {
         $uibModalInstance.dismiss('cancel');
+      };
+
+      ctrl.checkCSVHeaders = function() {
+        var headers = ctrl.csv.content.split('\n')[0];
+        headers     = headers.split(ctrl.csv.separator);
+
+        var expectedHeaders = [
+          'query', 'docid', 'rating'
+        ];
+
+        if (!angular.equals(headers, expectedHeaders)) {
+          var alert = 'Headers mismatch! Please make sure you have the correct headers in you file (check for correct spelling and capitalization): ';
+          alert += '<br /><strong>';
+          alert += expectedHeaders.join(',');
+          alert += '</strong>';
+
+          ctrl.import.alert = alert;
+        }
+      };
+      ctrl.checkCSVBody = function() {
+        var lines = ctrl.csv.content.split('\n');
+        var i = 1;
+        var alert;
+        for (i = 1; i < lines.length; i++) {
+          var line = lines[i];
+          if (line && line.split(ctrl.csv.separator).length !== 3){
+            if (alert === undefined){
+              alert = 'Must have three columns for every line in CSV file: ';
+              alert += '<br /><strong>';
+            }
+            alert += 'line ' + (i + 1) + ': ';
+            alert += line;
+            alert += '<br />';
+          }
+        }
+        if (alert !== undefined){
+          alert += '</strong>';
+          ctrl.import.alert = alert;
+        }
       };
     }
   ]);

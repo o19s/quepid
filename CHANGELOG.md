@@ -1,6 +1,23 @@
 # Changelog
 
-## 6.2.x - ???
+## 6.3.0 - 2020-09-01
+
+### Features
+
+* We want to export unrated query/doc pairs, which is only supported via exporting a previously created Snapshot.  Add support for exporting a Snapshot to the Basic format on the Export screen.  https://github.com/o19s/quepid/pull/191 by @epugh fixes https://github.com/o19s/quepid/issues/185.
+
+### Improvements
+
+* When importing queries, you can have it clear all existing queries. This feature only worked for CSV
+files, not other formats like RRE.  https://github.com/o19s/quepid/pull/193 by @epugh solves this.
+
+* You can now import queries using the *Import Ratings* screen.   Most of this was already supported, however now the modal dialog has better instructions to the user, and nicer validation of CSV formatting.  https://github.com/o19s/quepid/pull/192 by @epugh solves this.
+
+* When sharing Cases or Scorers, the lookup for what Teams you are part of created a really large JSON response (@epugh would get back a 1.4 MB payload!).  We put this API response on a diet!  https://github.com/o19s/quepid/pull/197 by @epugh solves this.
+
+### Bugs
+
+
 
 ## 6.2.2 - 2020-07-09
 

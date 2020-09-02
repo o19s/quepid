@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require 'test_helper'
-
+require 'csv'
 module Api
   module V1
     module Export
@@ -47,6 +47,24 @@ module Api
             assert_equal body['index'],                                 the_case.tries.latest.index_name_from_search_url
             assert_equal body['queries'].size,                          the_case.queries.size
             assert_equal body['queries'][0]['placeholders']['$query'],  the_case.queries[0].query_text
+          end
+        end
+
+        describe 'Exporting a case in basic csv format' do
+          let(:the_case) { cases(:one) }
+
+          test 'returns case w/ queries and ratings info' do
+            # fixme, there must be a better approach.  We need a case with ratings to make this work
+            @rating = the_case.queries[0].ratings.find_or_create_by doc_id: '999a'
+            @rating.rating = 99
+            @rating.save!
+
+            get :show, case_id: the_case.id, format: :csv, file_format: 'basic'
+            assert_response :ok
+            csv = CSV.parse(response.body, headers: true)
+
+            assert_equal csv[0]['query'],                               the_case.queries[0].query_text
+            assert_equal csv[0]['rating'],                              the_case.queries[0].ratings[0].rating.to_s
           end
         end
 
