@@ -28,6 +28,9 @@
             Email
           </label>
           <%= f.email_field :email, class: "form-control input-lg", placeholder: "Email" %>
+          <span class="help-block">
+            Your profile image displayed is sourced from <a href="http://gravatar.com" target="_blank">gravatar.com</a> based on your email address.
+          </span>
         </div>
 
         <div class="form-group">
@@ -47,7 +50,7 @@
         <% if Rails.application.config.email_marketing_mode %>
         <div class="form-group">
           <label for="user_email_marketing" class="control-label">
-            I want to receive email marketing updates about Quepid!
+            I want to receive updates about Quepid!
           </label>
           <%= f.check_box :email_marketing, class: "form-control input-lg" %>
         </div>
