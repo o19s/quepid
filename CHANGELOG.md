@@ -1,5 +1,19 @@
 # Changelog
 
+## 6.3.? - ??
+
+### Features
+
+
+### Improvements
+
+* Encourage use of profile pics by adding help text in Profile page that they come from Gravatar.com.  https://github.com/o19s/quepid/pull/202 by @epugh fixes https://github.com/o19s/quepid/issues/201.
+
+* Use the same header navigation bar in both the main application and the Admin screens.  https://github.com/o19s/quepid/pull/203 by @epugh refactors this logic.
+
+### Bugs
+
+
 ## 6.3.0 - 2020-09-01
 
 ### Features
