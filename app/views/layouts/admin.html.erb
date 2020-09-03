@@ -19,23 +19,7 @@
   <%= render 'cookies_eu/consent_banner', link: '/cookies', target: '_blank' unless Rails.application.config.cookies_url.blank? %>
 
   <div class="main-container">
-    <header class="navbar-inverse navbar-secondary clearfix">
-      <div class="container container-home">
-        <%= render 'layouts/logo' %>
-
-        <div class="navbar-right navbar-right-home-user">
-          <p class="navbar-text">Welcome, <%= current_user.email %></p>
-
-          <ul class="nav navbar-nav">
-            <li><a href="/logout"><span class="glyphicon glyphicon-left glyphicon-eject"></span> Logout</a></li>
-          </ul>
-        </div>
-      </div>
-    </header>
-
-    <div id='flash'>
-      <%= flash_messages -%>
-    </div>
+    <%= render 'layouts/header' %>
 
     <div class="container">
       <%= yield %>
