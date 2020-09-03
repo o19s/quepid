@@ -3,7 +3,9 @@
     <%= render 'layouts/logo' %>
 
     <% if current_user.present? %>
-      <%= render 'layouts/main_navigation' %>
+      <% unless controller.class.to_s.include?("Admin::") %>
+        <%= render 'layouts/main_navigation' %>
+      <% end %>
       <%= render 'layouts/user_navigation' %>
       <%= render 'layouts/docs_navigation' %>
     <% end %>
