@@ -13,6 +13,7 @@ angular.module('QuepidApp')
       // Functions
       self.importCSVFormat = importCSVFormat;
       self.importRREFormat = importRREFormat;
+      self.importLTRFormat = importLTRFormat;
 
       function importCSVFormat(theCase, csv, clearQueries) {
         var ratings = [];
