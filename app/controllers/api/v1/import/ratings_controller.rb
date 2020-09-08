@@ -37,15 +37,16 @@ module Api
 
             # What do we do about qid?  Do we assume that qid is in Quepid already?
             ratings = []
-            ltr_text = JSON.parse(params[:ltr_text])
+            ltr_text = params[:ltr_text]
             ltr_lines = ltr_text.split(/\n+/)
             ltr_lines.each do |ltr_line|
               ltr_array = ltr_line.split
 
               query_text = ltr_array[4]
+              query_text = query_text[(query_text.index("\"")+1)...query_text.rindex("\"")]
               rating = {
                 query_text: query_text,
-                doc_id:     ltr_array[3].tr(';'),
+                doc_id:     ltr_array[3].tr(';',''),
                 rating:     ltr_array[0],
               }
               ratings << rating
