@@ -8,6 +8,7 @@ module Api
         before_action :check_case
 
         # rubocop:disable Metrics/MethodLength
+        # rubocop:disable Metrics/AbcSize
         def create
           file_format = params[:file_format]
           file_format = 'hash' unless params[:file_format]
@@ -51,7 +52,6 @@ module Api
             end
           end
 
-
           options = {
             format:         :hash,
             force:          true,
@@ -75,6 +75,7 @@ module Api
           # rubocop:enable Lint/RescueException
         end
         # rubocop:enable Metrics/MethodLength
+        # rubocop:enable Metrics/AbcSize
       end
     end
   end
