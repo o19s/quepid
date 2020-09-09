@@ -43,10 +43,10 @@ module Api
               ltr_array = ltr_line.split
 
               query_text = ltr_array[4]
-              query_text = query_text[(query_text.index("\"")+1)...query_text.rindex("\"")]
+              query_text = query_text[(query_text.index('\"') + 1)...query_text.rindex('\"')]
               rating = {
                 query_text: query_text,
-                doc_id:     ltr_array[3].tr(';',''),
+                doc_id:     ltr_array[3].tr(';', ''),
                 rating:     ltr_array[0],
               }
               ratings << rating
