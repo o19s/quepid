@@ -1,17 +1,23 @@
 # Changelog
 
-## 6.3.? - ??
+## 6.3.1 - ??
 
 ### Features
 
 
 ### Improvements
 
+* When we rolled out classic graded scorers (_CG, DCT, NDCG_) we used a 5 point scale, that allows you to pick a "no choice" middle option.  However industry standard (for example RRE) is 4 point scale, so lets use 0,1,2,3 as our choices.  New Best Practices document https://github.com/o19s/quepid/wiki/Judgement-Rating-Best-Practices by @binarymax is availble to help educate you.   https://github.com/o19s/quepid/pull/206 by @epugh fixes https://github.com/o19s/quepid/issues/205.
+
 * Encourage use of profile pics by adding help text in Profile page that they come from Gravatar.com.  https://github.com/o19s/quepid/pull/202 by @epugh fixes https://github.com/o19s/quepid/issues/201.
 
 * Use the same header navigation bar in both the main application and the Admin screens.  https://github.com/o19s/quepid/pull/203 by @epugh refactors this logic.
 
+* Added `bin/docker c` option to jump into the Rails Console during development, and cleaned up the other options.  https://github.com/o19s/quepid/pull/200 by @epugh.
+
 ### Bugs
+
+* Running `bin/setup_docker` more than once always had hiccups on dropping MySQL, and needed a `docker-compose -v`, so just make that part of the script. https://github.com/o19s/quepid/pull/208 by @epugh fixes this.
 
 
 ## 6.3.0 - 2020-09-01
