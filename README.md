@@ -102,17 +102,17 @@ bin/docker server
 
 It can take up to a minute for the server to respond as it compiles all the front end assets on the first call.
 
-We've created a helper script to run and manage the app through docker that wraps around the `docker-compose` command.
+We've created a helper script to run and manage the app through docker that wraps around the `docker-compose` command.  You will need Ruby installed.
 You can still use `docker-compose` directly, but for the basic stuff you can use the following:
 
-* Building the image: `bin/docker build` or `bin/docker b`
-* Start the vm: `bin/docker start` or `bin/docker t`
-* Stop the vm: `bin/docker stop` or `bin/docker p`
-* Destroy the image: `bin/docker destroy` or `bin/docker d`
 * Start the app: `bin/docker server` or `bin/docker s`
-* Connect to the app container with bash: `bin/docker bash` or `bin/docker c`
+* Connect to the app container with bash: `bin/docker bash` or `bin/docker ba`
+* Connect to the Rails console: `bin/docker console` or `bin/docker c`
 * Run any command: `bin/docker run [COMMAND]` or `bin/docker r [COMMAND]`
+* Run dev mode as daemon: `bin/docker daemon` or `bin/docker q`
+* Destroy the Docker env: `bin/docker destroy` or `bin/docker d`
 * Run unit tests: `bin/docker r bin/rake test:quepid`
+
 
 ## II. Development Log
 
