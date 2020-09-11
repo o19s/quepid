@@ -8,6 +8,9 @@ Dir.chdir APP_ROOT do
   # This script is a starting point to setup your application.
   # Add necessary setup steps to this file:
 
+  puts "\n== Teardown Existing Quepid =="
+  system "docker-compose down -v"
+
   puts "\n== Copying sample files =="
   unless File.exist?("config/database.yml")
     system "cp config/database.yml.sample config/database.yml"
