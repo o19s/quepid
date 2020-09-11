@@ -10,7 +10,9 @@ class ChangeToZeroToThreeGrading < ActiveRecord::Migration
       unless scorer.nil?
         scorer.scale = (0..3).to_a
         scorer.scale_with_labels = scale_with_labels
+        scorer.save!
       end
+
 
     end
   end
