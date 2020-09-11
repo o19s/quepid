@@ -7,8 +7,8 @@
 #   Mayor.create(name: 'Emanuel', city: cities.first)
 
 Scorer.where(name: 'nDCG@5').first_or_create(
-  scale:                  (0..4).to_a,
-  scale_with_labels:      {"0":"Irrelevant","1":"Poor","2":"Fair","3":"Good","4":"Perfect"},
+  scale:                  (0..3).to_a,
+  scale_with_labels:      {"0":"Poor","1":"Fair","2":"Good","3":"Perfect"},
   show_scale_labels:      true,
   code:                   File.readlines('./db/scorers/ndcg@5.js','\n').join('\n'),
   name:                   'nDCG@5',
@@ -18,8 +18,8 @@ Scorer.where(name: 'nDCG@5').first_or_create(
 )
 
 Scorer.where(name: 'DCG@5').first_or_create(
-  scale:              (0..4).to_a,
-  scale_with_labels:  {"0":"Irrelevant","1":"Poor","2":"Fair","3":"Good","4":"Perfect"},
+  scale:              (0..3).to_a,
+  scale_with_labels:  {"0":"Poor","1":"Fair","2":"Good","3":"Perfect"},
   show_scale_labels:  true,
   code:               File.readlines('./db/scorers/dcg@5.js','\n').join('\n'),
   name:               'DCG@5',
@@ -27,8 +27,8 @@ Scorer.where(name: 'DCG@5').first_or_create(
 )
 
 Scorer.where(name: 'CG@5').first_or_create(
-  scale:              (0..4).to_a,
-  scale_with_labels:  {"0":"Irrelevant","1":"Poor","2":"Fair","3":"Good","4":"Perfect"},
+  scale:              (0..3).to_a,
+  scale_with_labels:  {"0":"Poor","1":"Fair","2":"Good","3":"Perfect"},
   show_scale_labels:  true,
   code:               File.readlines('./db/scorers/cg@5.js','\n').join('\n'),
   name:               'CG@5',
