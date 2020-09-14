@@ -21,6 +21,8 @@
 
 * Running `bin/setup_docker` more than once always had hiccups on dropping MySQL, and needed a `docker-compose -v`, so just make that part of the script. https://github.com/o19s/quepid/pull/208 by @epugh fixes this.
 
+* Making HTTP links clickable wasn't working in some cases.  https://github.com/o19s/quepid/pull/211 by @e-budur fixes https://github.com/o19s/quepid/issues/183.
+
 
 ## 6.3.0 - 2020-09-01
 
