@@ -11,7 +11,7 @@ Scorer.where(name: 'nDCG@10').first_or_create(
   scale_with_labels:      {"0":"Poor","1":"Fair","2":"Good","3":"Perfect"},
   show_scale_labels:      true,
   code:                   File.readlines('./db/scorers/ndcg@10.js','\n').join('\n'),
-  name:                   'nDCG@5',
+  name:                   'nDCG@105',
   communal:               true,
   manual_max_score:       true,
   manual_max_score_value: 1
@@ -22,7 +22,7 @@ Scorer.where(name: 'DCG@10').first_or_create(
   scale_with_labels:  {"0":"Poor","1":"Fair","2":"Good","3":"Perfect"},
   show_scale_labels:  true,
   code:               File.readlines('./db/scorers/dcg@10.js','\n').join('\n'),
-  name:               'DCG@5',
+  name:               'DCG@10',
   communal:           true
 )
 
@@ -31,7 +31,7 @@ Scorer.where(name: 'CG@10').first_or_create(
   scale_with_labels:  {"0":"Poor","1":"Fair","2":"Good","3":"Perfect"},
   show_scale_labels:  true,
   code:               File.readlines('./db/scorers/cg@10.js','\n').join('\n'),
-  name:               'CG@5',
+  name:               'CG@10',
   communal:           true
 )
 
@@ -40,7 +40,7 @@ Scorer.where(name: 'P@10').first_or_create(
   scale_with_labels:  {"0":"Irrelevant","1":"Relevant"},
   show_scale_labels:  true,
   code:               File.readlines('./db/scorers/p@10.js','\n').join('\n'),
-  name:               'P@5',
+  name:               'P@10',
   communal:           true
 )
 
@@ -49,7 +49,7 @@ Scorer.where(name: 'AP@10').first_or_create(
   scale_with_labels:  {"0":"Irrelevant","1":"Relevant"},
   show_scale_labels:  true,
   code:               File.readlines('./db/scorers/ap@10.js','\n').join('\n'),
-  name:               'AP@5',
+  name:               'AP@10',
   communal:           true
 )
 
