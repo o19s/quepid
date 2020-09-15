@@ -1,5 +1,10 @@
 # Changelog
 
+## 6.3.1.1 - 2020-09-15
+
+* Default communal scorer was set to _AP@5_, however in release 6.3.1 we renamed it to _AP@10_, so doing a
+quick release.  Fixed in commit 182f14d8a667759cdda559fd0ed5e063167b6914 by @epugh.
+
 ## 6.3.1 - 2020-09-14
 
 ### Features
