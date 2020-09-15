@@ -10,7 +10,7 @@
 # override to their own preferred scorer, either one of the defaults shipped with Quepid
 # or a custom scorer.
 #
-Rails.application.config.quepid_default_scorer = ENV.fetch('QUEPID_DEFAULT_SCORER', 'AP@5')
+Rails.application.config.quepid_default_scorer = ENV.fetch('QUEPID_DEFAULT_SCORER', 'AP@10')
 
 # == Email Marketing Permission
 # To comply with GDPR, and be a good citizen, the hosted version of Quepid asks

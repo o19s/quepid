@@ -87,7 +87,7 @@ You will need to run some database migrations to update the database and insert 
 There is a sql migration script in `./db/release_6_2_0_merge_default_scorer_into_scorer.sql` that you might want to look if you have been using Quepid locally for a while.  This script is primarily meant to support updating http://app.quepid.com database for the 6.2.0 schema.
 
 QUEPID_DEFAULT_SCORER is a new environment variable specifying the name of the default scorer
-for users when they create a new case. QUEPID_DEFAULT_SCORER=AP@5 is what app.quepid.com uses.
+for users when they create a new case. QUEPID_DEFAULT_SCORER=AP@10 is what app.quepid.com uses.
 
 ### Features
 
