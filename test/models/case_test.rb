@@ -75,7 +75,7 @@ class CaseTest < ActiveSupport::TestCase
 
       assert_equal acase.scorer_id, q_scorer2.id
       assert_equal acase.scorer.communal, true
-      assert_equal 'AP@5', q_scorer2.name
+      assert_equal 'AP@10', q_scorer2.name
     end
 
     test "does not override the case scorer with the user's scorer" do
