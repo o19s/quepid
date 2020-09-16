@@ -11,7 +11,7 @@ Scorer.where(name: 'nDCG@10').first_or_create(
   scale_with_labels:      {"0":"Poor","1":"Fair","2":"Good","3":"Perfect"},
   show_scale_labels:      true,
   code:                   File.readlines('./db/scorers/ndcg@10.js','\n').join('\n'),
-  name:                   'nDCG@105',
+  name:                   'nDCG@10',
   communal:               true,
   manual_max_score:       true,
   manual_max_score_value: 1
