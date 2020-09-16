@@ -1,5 +1,9 @@
 # Changelog
 
+## 6.3.1.2 - 2020-09-16
+
+* Silly cut'n'paste error that should have been caught with more testing before the 6.3.1.1 release, not the day after.  Fixed in commit 2e322b337cc62895847df0ed95ba6a68683dad5f by @epugh.
+
 ## 6.3.1.1 - 2020-09-15
 
 * Default communal scorer was set to _AP@5_, however in release 6.3.1 we renamed it to _AP@10_, so doing a
