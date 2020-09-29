@@ -1,17 +1,37 @@
 # Changelog
 
-## 6.3.? - ??
+## 6.3.1.2 - 2020-09-16
+
+* Silly cut'n'paste error that should have been caught with more testing before the 6.3.1.1 release, not the day after.  Fixed in commit 2e322b337cc62895847df0ed95ba6a68683dad5f by @epugh.
+
+## 6.3.1.1 - 2020-09-15
+
+* Default communal scorer was set to _AP@5_, however in release 6.3.1 we renamed it to _AP@10_, so doing a
+quick release.  Fixed in commit 182f14d8a667759cdda559fd0ed5e063167b6914 and ad29ad199dcd25231d364e2ca95d2c09cac195ac by @epugh.
+* Also found some issues with the `seeds.db` names being used.  Commit 26edccfa407119b46b6f4316f44f34d0e3e87a9f by @epugh.
+
+## 6.3.1 - 2020-09-14
 
 ### Features
 
 
 ### Improvements
 
+* When we rolled out classic graded scorers (_CG, DCT, NDCG_) we used a 5 point scale, that allows you to pick a "no choice" middle option.  However industry standard (for example RRE) is 4 point scale, so lets use 0,1,2,3 as our choices.  New Best Practices document https://github.com/o19s/quepid/wiki/Judgement-Rating-Best-Practices by @binarymax is availble to help educate you.   https://github.com/o19s/quepid/pull/206 by @epugh fixes https://github.com/o19s/quepid/issues/205.
+
+* Closely related to the scale change, all the classic scorers used a *@5* depth of scoring, however the other industry standard in rating is to score ten deep documents, *@10*, so https://github.com/o19s/quepid/pull/209 by @epugh makes this change as well.
+
 * Encourage use of profile pics by adding help text in Profile page that they come from Gravatar.com.  https://github.com/o19s/quepid/pull/202 by @epugh fixes https://github.com/o19s/quepid/issues/201.
 
 * Use the same header navigation bar in both the main application and the Admin screens.  https://github.com/o19s/quepid/pull/203 by @epugh refactors this logic.
 
+* Added `bin/docker c` option to jump into the Rails Console during development, and cleaned up the other options.  https://github.com/o19s/quepid/pull/200 by @epugh.
+
 ### Bugs
+
+* Running `bin/setup_docker` more than once always had hiccups on dropping MySQL, and needed a `docker-compose -v`, so just make that part of the script. https://github.com/o19s/quepid/pull/208 by @epugh fixes this.
+
+* Making HTTP links clickable wasn't working in some cases.  https://github.com/o19s/quepid/pull/211 by @e-budur fixes https://github.com/o19s/quepid/issues/183.
 
 
 ## 6.3.0 - 2020-09-01
@@ -77,7 +97,7 @@ You will need to run some database migrations to update the database and insert 
 There is a sql migration script in `./db/release_6_2_0_merge_default_scorer_into_scorer.sql` that you might want to look if you have been using Quepid locally for a while.  This script is primarily meant to support updating http://app.quepid.com database for the 6.2.0 schema.
 
 QUEPID_DEFAULT_SCORER is a new environment variable specifying the name of the default scorer
-for users when they create a new case. QUEPID_DEFAULT_SCORER=AP@5 is what app.quepid.com uses.
+for users when they create a new case. QUEPID_DEFAULT_SCORER=AP@10 is what app.quepid.com uses.
 
 ### Features
 

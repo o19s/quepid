@@ -1,4 +1,4 @@
-var k = 5 // @Rank
+var k = 10 // @Rank
 
 var ideal = topRatings(k)
 

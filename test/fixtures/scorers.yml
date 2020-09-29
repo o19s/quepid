@@ -27,7 +27,7 @@
 
 quepid_default_scorer:
   code: pass();
-  name: AP@5
+  name: AP@10
   query_test: false
   scale: 0, 1
   show_scale_labels:  false
