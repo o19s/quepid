@@ -361,6 +361,7 @@ angular.module('QuepidApp')
 
       function toggleShowOnlyRated() {
         var sor = $rootScope.showOnlyRated;
+        console.log('Toggle button pressed, sor= ' + sor);
         if (sor === undefined) {
           sor = false;
         }
@@ -370,9 +371,10 @@ angular.module('QuepidApp')
           sor = 'false';
         }
         $rootScope.showOnlyRated = sor.toString();
-        alert('showOnlyRated is toggled to ' + sor);
-        $scope.queries.showOnlyRated = sor;
+        console.log('showOnlyRated is now toggled to ' + sor);
+        $scope.queries.showOnlyRated = sor.toString();
         $location.search('showOnlyRated', sor.toString());
+        console.log('Reloading page for sor');
         location.reload();
       }
     }

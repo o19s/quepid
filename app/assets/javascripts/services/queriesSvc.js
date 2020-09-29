@@ -59,7 +59,7 @@ angular.module('QuepidApp')
       }
 
       $rootScope.showOnlyRated = $location.search().showOnlyRated;
-      // alert('Initial rated toggle is ' + $rootScope.showOnlyRated);
+      console.log('Initial showOnlyRated toggle is ' + $rootScope.showOnlyRated);
 
       this.getCaseNo = getCaseNo;
       this.createSearcherFromSettings = createSearcherFromSettings;
@@ -69,9 +69,10 @@ angular.module('QuepidApp')
       function createSearcherFromSettings(passedInSettings, query, filterIds) {
         var args = angular.copy(passedInSettings.selectedTry.args);
         // TODO: This is Solr specific
-        // alert('showOnlyWhenCreate is ' + $rootScope.showOnlyRated);
+        console.log('showOnlyRated in createSearcherFromSettings() is ' + $rootScope.showOnlyRated);
         if ($rootScope.showOnlyRated === 'true' && filterIds.length > 0) {
           args['fq'] = '{!terms f=' + passedInSettings.createFieldSpec().id + '}' + filterIds.join(',');
+          console.log('showOnlyRated true, adding query filter for Solr');
         }
 
         if (passedInSettings && passedInSettings.selectedTry) {
