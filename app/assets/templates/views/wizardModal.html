@@ -62,7 +62,7 @@ curl -X POST -H 'Content-type:application/json' -d '{
   "update-queryresponsewriter": {
     "name": "json",
     "class": "solr.JSONResponseWriter",
-    "content-type": "text/javascript; charset=UTF-8"
+    "content-type": "application/javascript; charset=UTF-8"
   }
 }' {{ extractSolrConfigApiUrl(pendingWizardSettings.searchUrl) }}
 </pre>
