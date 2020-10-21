@@ -1,5 +1,11 @@
 # Changelog
 
+## 6.3.2 - ??
+
+### Improvements
+
+* Update Javascript references to `application/javascript`.  Pay down some tech debt!  https://github.com/o19s/quepid/pull/223 by @epugh
+
 ## 6.3.1.2 - 2020-09-16
 
 * Silly cut'n'paste error that should have been caught with more testing before the 6.3.1.1 release, not the day after.  Fixed in commit 2e322b337cc62895847df0ed95ba6a68683dad5f by @epugh.
