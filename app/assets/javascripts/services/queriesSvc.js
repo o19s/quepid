@@ -49,7 +49,6 @@ angular.module('QuepidApp')
       this.displayOrder = [];
       this.queries = {};
       this.linkUrl = '';
-      this.showOnlyRated = false;
 
       svc.reset = reset;
       function reset() {
@@ -63,6 +62,7 @@ angular.module('QuepidApp')
       this.toggleShowOnlyRated = toggleShowOnlyRated;
 
       svc.bootstrapQueries = bootstrapQueries;
+      svc.showOnlyRated = false;
 
       function createSearcherFromSettings(passedInSettings, query, ratings) {
         var args = angular.copy(passedInSettings.selectedTry.args);
