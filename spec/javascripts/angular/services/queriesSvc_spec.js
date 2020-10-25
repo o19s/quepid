@@ -231,6 +231,20 @@ describe('Service: queriesSvc', function () {
     $httpBackend.verifyNoOutstandingExpectation();
   };
 
+  describe('maintains show rated state', function() {
+    beforeEach(function() {
+      setupQuerySvc();
+    });
+
+    it('toggles show only rated state', function() {
+      expect(queriesSvc.showOnlyRated).toEqual(false);
+      queriesSvc.toggleShowOnlyRated();
+      expect(queriesSvc.showOnlyRated).toEqual(true);
+      queriesSvc.reset();
+      expect(queriesSvc.showOnlyRated).toEqual(false);
+    });
+  });
+
   describe('query factory', function() {
     var query;
     beforeEach(function() {

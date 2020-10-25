@@ -47,15 +47,18 @@ angular.module('QuepidApp')
       this.displayOrder = [];
       this.queries = {};
       this.linkUrl = '';
+      this.showOnlyRated = false;
 
       svc.reset = reset;
       function reset() {
         svc.queries = {};
+        svc.showOnlyRated = false;
         svc.svcVersion++;
       }
 
       this.getCaseNo = getCaseNo;
       this.createSearcherFromSettings = createSearcherFromSettings;
+      this.toggleShowOnlyRated = toggleShowOnlyRated;
 
       svc.bootstrapQueries = bootstrapQueries;
 
@@ -75,6 +78,10 @@ angular.module('QuepidApp')
             passedInSettings.searchEngine
           );
         }
+      }
+
+      function toggleShowOnlyRated() {
+        svc.showOnlyRated = !svc.showOnlyRated;
       }
 
       this.unscoredQueries = {};

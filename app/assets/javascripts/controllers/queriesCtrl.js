@@ -27,6 +27,7 @@ angular.module('QuepidApp')
       caseSvc,
       customScorerSvc
     ) {
+      $scope.queriesSvc = queriesSvc;
 
       // Options for ui-sortable at http://api.jqueryui.com/sortable/
       var sortableOptions = {
