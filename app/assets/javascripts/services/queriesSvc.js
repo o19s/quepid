@@ -13,6 +13,7 @@ angular.module('QuepidApp')
     '$log',
     'broadcastSvc',
     'caseSvc',
+    'caseTryNavSvc',
     'customScorerSvc',
     'qscoreSvc',
     'searchSvc',
@@ -28,6 +29,7 @@ angular.module('QuepidApp')
       $log,
       broadcastSvc,
       caseSvc,
+      caseTryNavSvc,
       customScorerSvc,
       qscoreSvc,
       searchSvc,
@@ -62,8 +64,24 @@ angular.module('QuepidApp')
 
       svc.bootstrapQueries = bootstrapQueries;
 
-      function createSearcherFromSettings(passedInSettings, query) {
+      function createSearcherFromSettings(passedInSettings, query, ratings) {
         var args = angular.copy(passedInSettings.selectedTry.args);
+        var ratedIds = ratings ? Object.keys(ratings) : {};
+
+        // Show only rated cases
+        if (svc.showOnlyRated) {
+          // ES wraps query in a boolean
+          if (passedInSettings.searchEngine === 'es') {
+
+          // Solr show only rated
+          } else {
+            if (args['fq'] === undefined) {
+              args['fq'] = [];
+            }
+
+            args['fq'].push('{!terms f=' + passedInSettings.createFieldSpec().id + '}' + ratedIds.join(','));
+          }
+        }
 
         if (passedInSettings && passedInSettings.selectedTry) {
           return searchSvc.createSearcher(
@@ -82,6 +100,7 @@ angular.module('QuepidApp')
 
       function toggleShowOnlyRated() {
         svc.showOnlyRated = !svc.showOnlyRated;
+        caseTryNavSvc.navigateTo({tryNo: caseTryNavSvc.getTryNo()});
       }
 
       this.unscoredQueries = {};
@@ -102,6 +121,7 @@ angular.module('QuepidApp')
         self.queryId        = queryWithRatings.queryId;
         self.caseNo         = caseNo;
         self.queryText      = queryWithRatings[qt];
+        self.ratings        = {};
         self.scorerId       = null;
         self.scorerEnbl     = false;
         self.scorer         = null;
@@ -153,15 +173,15 @@ angular.module('QuepidApp')
           }
         }
 
-        var ratings = queryWithRatings.ratings;
-        if ( ratings === undefined ) {
-          ratings = {};
+        self.ratings = queryWithRatings.ratings;
+        if ( self.ratings === undefined ) {
+          self.ratings = {};
         }
 
         self.ratingsStore = ratingsStoreSvc.createRatingsStore(
           caseNo,
           self.queryId,
-          ratings
+          self.ratings
         );
 
         var resultsReturned = false;
@@ -311,7 +331,8 @@ angular.module('QuepidApp')
 
             self.searcher = svc.createSearcherFromSettings(
               currSettings,
-              self.queryText
+              self.queryText,
+              self.ratings
             );
             resultsReturned = false;
 
