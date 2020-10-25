@@ -92,6 +92,7 @@ describe('Service: queriesSvc', function () {
   var MockSearcher = function(settings, queryText) {
     var currPromise = null;
     this.docs = [];
+    this.settings = settings;
 
     // force a search success
     this.fulfill = function(mockResp) {
@@ -231,10 +232,31 @@ describe('Service: queriesSvc', function () {
     $httpBackend.verifyNoOutstandingExpectation();
   };
 
-  describe('maintains show rated state', function() {
+  describe('show rated only', function() {
+    var query;
     beforeEach(function() {
       setupQuerySvc();
+      query = new queriesSvc.QueryFactory({queryId: 1, query_text: 'test'});
+      query.ratings = {1:1, 2:1, 3:1};
     });
+
+    it('manipulates es query', function() {
+      queriesSvc.toggleShowOnlyRated();
+      mockSettings.searchEngine = 'es';
+      mockSettings.selectedTry.args = {'query': { 'match_all': {} } };
+      var searcher = queriesSvc.createSearcherFromSettings(mockSettings, 'test', query.ratings);
+      expect(Object.keys(searcher.settings.args['query'])).toEqual(['bool']);
+    });
+
+    it('manipulates solr query', function() {
+      queriesSvc.toggleShowOnlyRated();
+      mockSettings.searchEngine = 'solr';
+      mockSettings.selectedTry.args = {'q': ['rambo']};
+      var searcher = queriesSvc.createSearcherFromSettings(mockSettings, 'test', query.ratings);
+      expect(searcher.settings.args['q'][0]).toContain('*:*^0.0 OR');
+      expect(searcher.settings.args['fq'][0]).toContain('terms');
+    });
+
 
     it('toggles show only rated state', function() {
       expect(queriesSvc.showOnlyRated).toEqual(false);
