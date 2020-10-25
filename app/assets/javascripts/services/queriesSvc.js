@@ -66,18 +66,33 @@ angular.module('QuepidApp')
 
       function createSearcherFromSettings(passedInSettings, query, ratings) {
         var args = angular.copy(passedInSettings.selectedTry.args);
-        var ratedIds = ratings ? Object.keys(ratings) : {};
+        var ratedIds = ratings ? Object.keys(ratings) : [];
 
         // Show only rated cases
         if (svc.showOnlyRated) {
           // ES wraps query in a boolean
           if (passedInSettings.searchEngine === 'es') {
-
-          // Solr show only rated
+            var mainQuery = args['query'];
+            args = {
+              'query': {
+                'bool': {
+                  'should': mainQuery,
+                  'filter': {
+                    'ids': {
+                      'values': ratedIds
+                    }
+                  }
+                }
+              }
+            };
+          // Solr adds a fq clause
           } else {
             if (args['fq'] === undefined) {
               args['fq'] = [];
             }
+
+            // Do a match all weighted zero to get rated docs back even if they didn't match the query
+            args['q'][0] = '*:*^0.0 OR (' + args['q'][0] + ')';
 
             args['fq'].push('{!terms f=' + passedInSettings.createFieldSpec().id + '}' + ratedIds.join(','));
           }
