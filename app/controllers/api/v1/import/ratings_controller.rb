@@ -41,7 +41,7 @@ module Api
             ltr_lines = ltr_text.split(/\n+/)
 
             ltr_lines.each do |ltr_line|
-              rating = rating_from_ltr_line (ltr_line)
+              rating = rating_from_ltr_line ltr_line
               ratings << rating
             end
           end
@@ -70,28 +70,26 @@ module Api
         end
         # rubocop:enable Metrics/MethodLength
         # rubocop:enable Metrics/AbcSize
-      
-        def rating_from_ltr_line (ltr_line)
 
+        def rating_from_ltr_line ltr_line
           first_chunk = ltr_line.index(' ')
           rating = ltr_line[0..first_chunk].strip
 
           second_chunk_begin = ltr_line.index('#')
           second_chunk_end = ltr_line.index(';')
-          doc_id = ltr_line[second_chunk_begin+1..second_chunk_end-1].strip
+          doc_id = ltr_line[second_chunk_begin + 1..second_chunk_end - 1].strip
 
           third_chunk_begin = ltr_line.index('"')
           third_chunk_end = ltr_line.rindex('"')
-          query_text = ltr_line[third_chunk_begin+1..third_chunk_end-1]
+          query_text = ltr_line[third_chunk_begin + 1..third_chunk_end - 1]
 
           rating = {
             query_text: query_text,
             doc_id:     doc_id,
-            rating:     rating
+            rating:     rating,
           }
-          return rating
+          rating
         end
-
       end
     end
   end
