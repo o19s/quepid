@@ -73,7 +73,7 @@ star trek,,</pre>
     <input type="radio" id="ltr" name="importSelection" value="ltr" ng-model="ctrl.options.which">
     <label for="ltr">Learning to Rank</label>
     <span class="help-block">
-      LTR uses a rather odd format of <code>rating qid:queryid # docid</code>, eg <code>1 qid:23 # 193</code>.
+      LTR uses a rather odd format of <code>rating qid:queryid # docid "query"</code>, eg <code>1 qid:23 # 193 "star trek"</code>.  We ignore the <code>qid:queryid</code> and use the <code>"query"</code> for matching.
     </span>
     <p>Select LTR ratings file to import:</p>
     <!-- this onchange is a code smell. -->
