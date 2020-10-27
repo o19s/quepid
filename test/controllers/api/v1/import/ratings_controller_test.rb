@@ -144,6 +144,17 @@ module Api
             end
           end
         end
+
+        describe '#create from LTR' do
+          test 'convert a ltr line into a rating' do
+            rating = @controller.rating_from_ltr_line('0    qid:2 #    9755; "star trek"')
+            puts rating
+
+            assert_equal '0', rating[:rating]
+            assert_equal '9755', rating[:doc_id]
+            assert_equal 'star trek', rating[:query_text]
+          end
+        end
       end
     end
   end
