@@ -42,14 +42,20 @@ angular.module('QuepidApp')
         };
 
         this.rateDocument = function(docId, rating) {
-          $http.put(path(docId), {'rating': rating}).then(function() {
+          var url   = basePath() + '/ratings';
+          var data  = {
+            doc_id:  docId,
+            rating: rating,
+          };
+
+          $http.put(url, data).then(function() {
             ratingsDict[docId] = rating;
+
             markDirty();
           });
         };
 
-        // We do not encode doc ids with the bulk because they are in the payload
-        // instead of in the URL, so the / and . issues don't crop up.
+        // This takes a single rating and applies it to a list of docIds
         this.rateBulkDocuments = function(docIds, rating) {
           var url   = basePath() + '/bulk' + '/ratings';
           var data  = {
@@ -67,11 +73,15 @@ angular.module('QuepidApp')
         };
 
         this.resetRating = function(docId) {
-          $http.delete(path(docId)).then(function() {
-            delete ratingsDict[docId];
+          var url   = basePath() + '/ratings';
+          var data  = {
+            doc_id:  docId,
+          };
+          $http.delete(url, data).then(function() {
+            delete ratingsDict[docId];        
             markDirty();
           });
-        };
+        };        
 
         this.resetBulkRatings = function(docIds) {
           var url   = basePath() + '/bulk' + '/ratings/delete';
@@ -96,7 +106,7 @@ angular.module('QuepidApp')
           if (ratingsDict.hasOwnProperty(docId)) {
             var rating = ratingsDict[docId];
             if (angular.isString(rating)) {
-              /* An annoying incosistency upstream is compensated for here:
+              /* An annoying inconsistency upstream is compensated for here:
                * sometimes we're given ratings as strings.
                * The backend bootstraps various features with ratings as strings
                * so we do a silly thing here and report the strings we store as ints
