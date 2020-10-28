@@ -19,8 +19,12 @@ module Api
         describe 'Update query rating for doc' do
           test 'creates a new rating with TMDB id (issue 1001)' do
             doc_id = '7555'
+            rating = {
+              doc_id: doc_id,
+              rating: 4
+            }
 
-            put :update, case_id: acase.id, query_id: query.id, doc_id: doc_id, rating: 4
+            put :update, case_id: acase.id, query_id: query.id, rating: rating
 
             assert_response :ok
 
@@ -37,8 +41,13 @@ module Api
 
           test "creates a new rating if it didn't already exist" do
             doc_id = 'x123z'
-
-            put :update, case_id: acase.id, query_id: query.id, doc_id: doc_id, rating: 5
+            
+            rating = {
+              doc_id: doc_id,
+              rating: 5
+            }
+            
+            put :update, case_id: acase.id, query_id: query.id, rating: rating
 
             assert_response :ok
 
@@ -56,8 +65,13 @@ module Api
           test 'updates existing rating for doc' do
             doc_id = 'x123z'
             query.ratings.create(doc_id: doc_id, rating: 1)
-
-            put :update, case_id: acase.id, query_id: query.id, doc_id: doc_id, rating: 5
+            
+            rating = {
+              doc_id: doc_id,
+              rating: 5
+            }
+            
+            put :update, case_id: acase.id, query_id: query.id, rating: rating
 
             assert_response :ok
 
@@ -74,7 +88,10 @@ module Api
 
           test 'works with a url as the id' do
             doc_id     = 'https%3A%2F%2Fexample.com%2Frelative-path'
-            encoded_id = Base64.strict_encode64(doc_id)
+            rating = {
+              doc_id: doc_id,
+              rating: 5
+            }
 
             assert_recognizes(
               {
@@ -83,13 +100,12 @@ module Api
                 action:     'update',
                 case_id:    acase.id.to_s,
                 query_id:   query.id.to_s,
-                doc_id:     encoded_id,
               },
-              path:   "/api/cases/#{acase.id}/queries/#{query.id}/ratings/#{encoded_id}",
+              path:   "/api/cases/#{acase.id}/queries/#{query.id}/ratings",
               method: :put
             )
 
-            put :update, case_id: acase.id, query_id: query.id, doc_id: encoded_id, rating: 5
+            put :update, case_id: acase.id, query_id: query.id, rating: rating
 
             assert_response :ok
 
@@ -104,7 +120,10 @@ module Api
             assert_equal count, 1
 
             doc_id     = 'https://example.com/relative-path2'
-            encoded_id = Base64.strict_encode64(doc_id)
+            rating = {
+              doc_id: doc_id,
+              rating: 6
+            }
 
             assert_recognizes(
               {
@@ -113,13 +132,12 @@ module Api
                 action:     'update',
                 case_id:    acase.id.to_s,
                 query_id:   query.id.to_s,
-                doc_id:     encoded_id,
               },
-              path:   "/api/cases/#{acase.id}/queries/#{query.id}/ratings/#{encoded_id}",
+              path:   "/api/cases/#{acase.id}/queries/#{query.id}/ratings",
               method: :put
             )
 
-            put :update, case_id: acase.id, query_id: query.id, doc_id: encoded_id, rating: 6
+            put :update, case_id: acase.id, query_id: query.id, rating: rating
 
             assert_response :ok
 
@@ -135,6 +153,10 @@ module Api
 
             # test where we have https but it's all dashes, no / or . character.
             doc_id = 'https-example-com-relative-path2'
+            rating = {
+              doc_id: doc_id,
+              rating: 6
+            }            
 
             assert_recognizes(
               {
@@ -142,14 +164,13 @@ module Api
                 controller: 'api/v1/queries/ratings',
                 action:     'update',
                 case_id:    acase.id.to_s,
-                query_id:   query.id.to_s,
-                doc_id:     doc_id,
+                query_id:   query.id.to_s
               },
-              path:   "/api/cases/#{acase.id}/queries/#{query.id}/ratings/#{doc_id}",
+              path:   "/api/cases/#{acase.id}/queries/#{query.id}/ratings",
               method: :put
             )
 
-            put :update, case_id: acase.id, query_id: query.id, doc_id: doc_id, rating: 6
+            put :update, case_id: acase.id, query_id: query.id, rating: rating
 
             assert_response :ok
 
@@ -166,8 +187,12 @@ module Api
 
           test 'works with a document id that contains a period' do
             doc_id = 'mydoc.pdf'
+            rating = {
+              doc_id: doc_id,
+              rating: 5
+            }  
 
-            put :update, case_id: acase.id, query_id: query.id, doc_id: doc_id, rating: 5
+            put :update, case_id: acase.id, query_id: query.id, rating: rating
 
             assert_response :ok
 
@@ -187,9 +212,13 @@ module Api
               expects_any_ga_event_call
 
               doc_id = 'x123z'
+              rating = {
+                doc_id: doc_id,
+                rating: 5
+              }  
 
               perform_enqueued_jobs do
-                put :update, case_id: acase.id, query_id: query.id, doc_id: doc_id, rating: 5
+                put :update, case_id: acase.id, query_id: query.id, rating: rating
 
                 assert_response :ok
               end
@@ -200,9 +229,12 @@ module Api
         describe 'Removes doc rating' do
           test 'deletes rating from query' do
             doc_id = 'x123z'
+            rating = {
+              doc_id: doc_id
+            } 
             query.ratings.create(doc_id: doc_id, rating: 1)
 
-            delete :destroy, case_id: acase.id, query_id: query.id, doc_id: doc_id
+            delete :destroy, case_id: acase.id, query_id: query.id, rating: rating
 
             assert_response :no_content
 
@@ -216,10 +248,13 @@ module Api
               expects_any_ga_event_call
 
               doc_id = 'x123z'
+              rating = {
+                doc_id: doc_id
+              } 
               query.ratings.create(doc_id: doc_id, rating: 1)
 
               perform_enqueued_jobs do
-                delete :destroy, case_id: acase.id, query_id: query.id, doc_id: doc_id
+                delete :destroy, case_id: acase.id, query_id: query.id, rating: rating
 
                 assert_response :no_content
               end
