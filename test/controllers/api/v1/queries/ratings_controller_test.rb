@@ -21,7 +21,7 @@ module Api
             doc_id = '7555'
             rating = {
               doc_id: doc_id,
-              rating: 4
+              rating: 4,
             }
 
             put :update, case_id: acase.id, query_id: query.id, rating: rating
@@ -41,12 +41,12 @@ module Api
 
           test "creates a new rating if it didn't already exist" do
             doc_id = 'x123z'
-            
+
             rating = {
               doc_id: doc_id,
-              rating: 5
+              rating: 5,
             }
-            
+
             put :update, case_id: acase.id, query_id: query.id, rating: rating
 
             assert_response :ok
@@ -65,12 +65,11 @@ module Api
           test 'updates existing rating for doc' do
             doc_id = 'x123z'
             query.ratings.create(doc_id: doc_id, rating: 1)
-            
+
             rating = {
               doc_id: doc_id,
-              rating: 5
+              rating: 5,
             }
-            
             put :update, case_id: acase.id, query_id: query.id, rating: rating
 
             assert_response :ok
@@ -87,10 +86,10 @@ module Api
           end
 
           test 'works with a url as the id' do
-            doc_id     = 'https%3A%2F%2Fexample.com%2Frelative-path'
+            doc_id = 'https%3A%2F%2Fexample.com%2Frelative-path'
             rating = {
               doc_id: doc_id,
-              rating: 5
+              rating: 5,
             }
 
             assert_recognizes(
@@ -119,10 +118,10 @@ module Api
 
             assert_equal count, 1
 
-            doc_id     = 'https://example.com/relative-path2'
+            doc_id = 'https://example.com/relative-path2'
             rating = {
               doc_id: doc_id,
-              rating: 6
+              rating: 6,
             }
 
             assert_recognizes(
@@ -155,8 +154,8 @@ module Api
             doc_id = 'https-example-com-relative-path2'
             rating = {
               doc_id: doc_id,
-              rating: 6
-            }            
+              rating: 6,
+            }
 
             assert_recognizes(
               {
@@ -164,7 +163,7 @@ module Api
                 controller: 'api/v1/queries/ratings',
                 action:     'update',
                 case_id:    acase.id.to_s,
-                query_id:   query.id.to_s
+                query_id:   query.id.to_s,
               },
               path:   "/api/cases/#{acase.id}/queries/#{query.id}/ratings",
               method: :put
@@ -189,8 +188,8 @@ module Api
             doc_id = 'mydoc.pdf'
             rating = {
               doc_id: doc_id,
-              rating: 5
-            }  
+              rating: 5,
+            }
 
             put :update, case_id: acase.id, query_id: query.id, rating: rating
 
@@ -214,8 +213,8 @@ module Api
               doc_id = 'x123z'
               rating = {
                 doc_id: doc_id,
-                rating: 5
-              }  
+                rating: 5,
+              }
 
               perform_enqueued_jobs do
                 put :update, case_id: acase.id, query_id: query.id, rating: rating
@@ -230,8 +229,8 @@ module Api
           test 'deletes rating from query' do
             doc_id = 'x123z'
             rating = {
-              doc_id: doc_id
-            } 
+              doc_id: doc_id,
+            }
             query.ratings.create(doc_id: doc_id, rating: 1)
 
             delete :destroy, case_id: acase.id, query_id: query.id, rating: rating
@@ -249,8 +248,8 @@ module Api
 
               doc_id = 'x123z'
               rating = {
-                doc_id: doc_id
-              } 
+                doc_id: doc_id,
+              }
               query.ratings.create(doc_id: doc_id, rating: 1)
 
               perform_enqueued_jobs do

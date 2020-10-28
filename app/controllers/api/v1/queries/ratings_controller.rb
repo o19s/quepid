@@ -4,9 +4,8 @@ module Api
   module V1
     module Queries
       class RatingsController < Api::V1::Queries::ApplicationController
-        #before_action :decode_id
         before_action :set_doc_id, only: %i[update destroy]
-        
+
         def update
           @rating = @query.ratings.find_or_create_by doc_id: @doc_id
 
@@ -26,12 +25,12 @@ module Api
           head :no_content
         end
 
-        #private
+        private
 
         def rating_params
           params.require(:rating).permit(:rating, :doc_id)
         end
-        
+
         def set_doc_id
           @doc_id = rating_params[:doc_id]
         end
