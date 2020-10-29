@@ -83,7 +83,7 @@ Rails.application.routes.draw do
             resource  :position,  only: [ :update ]
             resource  :scorer,    only: %i[show update destroy]
             resource  :threshold, only: [ :update ]
-            resources :ratings,   only: %i[update destroy], param: :doc_id
+            resource  :ratings,   only: %i[update destroy] # not actually a singular resource, doc_id in json payload
           end
 
           resource :bulk, only: [] do
