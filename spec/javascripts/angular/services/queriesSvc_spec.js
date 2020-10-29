@@ -632,7 +632,7 @@ describe('Service: queriesSvc', function () {
     queriesSvc.persistQuery(newQ);
     $httpBackend.flush();
 
-    $httpBackend.expectPUT('/api/cases/2/queries/3/ratings/doc1').respond(200);
+    $httpBackend.expectPUT('/api/cases/2/queries/3/ratings').respond(200, {doc_id: 'doc1', rating: 10});
     newQ.docs[0].rate('10');
     $httpBackend.flush();
     $httpBackend.verifyNoOutstandingExpectation();
@@ -690,7 +690,7 @@ describe('Service: queriesSvc', function () {
 
       testQuery = queriesSvc.queries['0'];
       testDoc = testQuery.docs[0];
-      $httpBackend.expectPUT('/api/cases/2/queries/' + testQuery.queryId + '/ratings/' + testDoc.id).respond(200, '');
+      $httpBackend.expectPUT('/api/cases/2/queries/' + testQuery.queryId + '/ratings').respond(200, {doc_id: testDoc.id, rating: 10});
       versionBeforeRate = queriesSvc.version();
       testDoc.rate(10);
       $httpBackend.flush();
@@ -721,7 +721,8 @@ describe('Service: queriesSvc', function () {
 
     var testQuery = queriesSvc.queries['0'];
     var testDoc = testQuery.docs[0];
-    $httpBackend.expectPUT('/api/cases/3/queries/' + testQuery.queryId + '/ratings/' + testDoc.id).respond(200, '');
+    $httpBackend.expectPUT('/api/cases/3/queries/' + testQuery.queryId + '/ratings').respond(200, {doc_id: testDoc.id, rating: 10});
+    //$httpBackend.expectPUT('/api/cases/3/queries/' + testQuery.queryId + '/ratings/' + testDoc.id).respond(200, '');
     testDoc.rate(10);
     var score = testQuery.score();
     expect(score.score).toBeGreaterThan(0);
