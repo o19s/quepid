@@ -72,16 +72,19 @@ module Api
         # rubocop:enable Metrics/AbcSize
 
         def rating_from_ltr_line ltr_line
+          #Pattern: 3 qid:1 # 1370 star trek
+          ltr_line = ltr_line.strip
           first_chunk = ltr_line.index(' ')
           rating = ltr_line[0..first_chunk].strip
-
+          ltr_line = ltr_line[first_chunk ..-1].strip
           second_chunk_begin = ltr_line.index('#')
-          second_chunk_end = ltr_line.index(';')
-          doc_id = ltr_line[second_chunk_begin + 1..second_chunk_end - 1].strip
+          ltr_line = ltr_line[second_chunk_begin+1..-1].strip
+          second_chunk_end = ltr_line.index(' ')
+          doc_id = ltr_line[0 ..second_chunk_end].strip
 
-          third_chunk_begin = ltr_line.index('"')
-          third_chunk_end = ltr_line.rindex('"')
-          query_text = ltr_line[third_chunk_begin + 1..third_chunk_end - 1]
+          ltr_line = ltr_line[second_chunk_end ..-1]
+
+          query_text = ltr_line.strip
 
           rating = {
             query_text: query_text,
