@@ -32,9 +32,11 @@ angular.module('QuepidApp')
 
         this.rateDocument = function(docId, rating) {
           var url   = basePath() + '/ratings';
-          var data  = {
-            doc_id:  docId,
-            rating: rating,
+          var data  = { rating:
+            {
+              doc_id:  docId,
+              rating: rating,
+            }
           };
 
           $http.put(url, data).then(function() {
@@ -63,14 +65,16 @@ angular.module('QuepidApp')
 
         this.resetRating = function(docId) {
           var url   = basePath() + '/ratings';
-          var data  = {
-            doc_id:  docId,
+          var data  = { rating:
+            {
+              doc_id:  docId,
+            }
           };
           $http.delete(url, data).then(function() {
-            delete ratingsDict[docId];        
+            delete ratingsDict[docId];
             markDirty();
           });
-        };        
+        };
 
         this.resetBulkRatings = function(docIds) {
           var url   = basePath() + '/bulk' + '/ratings/delete';
