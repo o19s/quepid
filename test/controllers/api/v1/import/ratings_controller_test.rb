@@ -156,8 +156,6 @@ module Api
             assert_equal '0', rating[:rating]
             assert_equal '9755', rating[:doc_id]
             assert_equal 'star trek', rating[:query_text]
-
-
           end
         end
       end
