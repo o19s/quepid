@@ -7,9 +7,9 @@ module Api
       before_action :check_case
 
       def index
-        ratedOnly = ActiveRecord::Type::Boolean.new.type_cast_from_user(params[:ratedOnly]) || false
-        @scores = @case.scores.where(rated_only: ratedOnly).includes(:annotation).limit(10)
-  
+        rated_only = ActiveRecord::Type::Boolean.new.type_cast_from_user(params[:rated_only]) || false
+        @scores = @case.scores.where(rated_only: rated_only).includes(:annotation).limit(10)
+
         respond_with @scores
       end
 
@@ -32,8 +32,8 @@ module Api
       end
 
       def show
-        ratedOnly = ActiveRecord::Type::Boolean.new.type_cast_from_user(params[:ratedOnly].blank? ? false : params[:ratedOnly])
-        @score    = @case.scores.where(rated_only: ratedOnly).first
+        rated_only = ActiveRecord::Type::Boolean.new.type_cast_from_user(params[:rated_only]) || false
+        @score    = @case.scores.where(rated_only: rated_only).first
         @shallow  = false
 
         respond_with @score

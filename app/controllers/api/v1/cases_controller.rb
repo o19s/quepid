@@ -50,7 +50,7 @@ module Api
 
       def show
         bool = ActiveRecord::Type::Boolean.new
-        ratedOnly = bool.type_cast_from_user(params[:ratedOnly]) || false
+        @rated_only = bool.type_cast_from_user(params[:rated_only]) || false
 
         respond_with @case
       end

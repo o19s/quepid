@@ -80,7 +80,7 @@ angular.module('QuepidApp')
         };
 
         var params = {
-            'ratedOnly': queriesSvc.showOnlyRated
+            'rated_only': queriesSvc.showOnlyRated
         };
 
         theCase.fetchCaseScore = function() {
