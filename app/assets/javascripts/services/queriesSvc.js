@@ -11,6 +11,7 @@ angular.module('QuepidApp')
     '$timeout',
     '$q',
     '$log',
+    '$sce',
     'broadcastSvc',
     'caseTryNavSvc',
     'customScorerSvc',
@@ -26,6 +27,7 @@ angular.module('QuepidApp')
       $timeout,
       $q,
       $log,
+      $sce,
       broadcastSvc,
       caseTryNavSvc,
       customScorerSvc,
@@ -68,6 +70,8 @@ angular.module('QuepidApp')
 
         // Show only rated cases
         if (svc.showOnlyRated) {
+          var defTypeGuess = passedInSettings.selectedTry.defTypeGuess || 'lucene';
+
           // Elastic case
           if (passedInSettings.searchEngine === 'es') {
             var mainQuery = args['query'];
@@ -92,14 +96,7 @@ angular.module('QuepidApp')
             args['defType'] = 'lucene';
             args['qfilter'] = '{!terms f=' + passedInSettings.createFieldSpec().id + '}' + ratedIds.join(',');
 
-            /*
-             * TODO: Limit this feature to edismax only? May be able to try and detect the defType from qt
-             *
-             * The root defType must be lucene or func for local params to work.  Local params allow
-             * for wrapping the filter/query into a bool queries filter/should parameters.  However
-             * it doesn't seem possible to pass qt thru.
-             */
-            args['qq'] = '{!edismax}' + args['q'][0];
+            args['qq'] = '{!' + defTypeGuess + '}' + args['q'][0];
             args['q'][0] = '{!bool filter=$qfilter should=$qq}';
           }
         }
@@ -693,6 +690,40 @@ angular.module('QuepidApp')
 
 
       this.searchAll = function() {
+        // Determine the defType if solr and showRatedOnly
+        // TODO: Move to splainer or another quepid service?
+        if (currSettings.selectedTry.searchEngine === 'solr' && svc.showOnlyRated) {
+          var args = angular.copy(currSettings.selectedTry.args);
+          args['echoParams'] = 'all';
+          args['rows'] = 0;
+          args['wt'] = 'json';
+
+          var url = currSettings.selectedTry.searchUrl;
+          if (!url.startsWith('http')) {
+            url = 'http://' + url;
+          }
+
+          var trustedUrl = $sce.trustAsResourceUrl(url);
+          var promise = $http.jsonp(trustedUrl, {params: args, jsonpCallbackParam: 'json.wrf' })
+            .then(function(data) {
+              try {
+                currSettings.selectedTry.defTypeGuess = data.data['responseHeader']['params']['defType'];
+              } catch (err) {
+                // No-op
+              }
+            }, function() {
+              $log.debug('Unable to determine defType');
+            });
+
+          return promise.then(function() {
+            return svc.prepareSearchPromises();
+          });
+        } else {
+          return svc.prepareSearchPromises();
+        }
+      };
+
+      this.prepareSearchPromises = function() {
         var promises = [];
 
         angular.forEach(this.queries, function(query) {
