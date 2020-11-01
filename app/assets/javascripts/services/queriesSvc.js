@@ -68,7 +68,7 @@ angular.module('QuepidApp')
 
         // Show only rated cases
         if (svc.showOnlyRated) {
-          // ES wraps query in a boolean
+          // Elastic case
           if (passedInSettings.searchEngine === 'es') {
             var mainQuery = args['query'];
             args = {
@@ -83,16 +83,24 @@ angular.module('QuepidApp')
                 }
               }
             };
-          // Solr adds a fq clause
+          // Solr case
           } else {
             if (args['fq'] === undefined) {
               args['fq'] = [];
             }
 
-            // Do a match all weighted zero to get rated docs back even if they didn't match the query
-            args['q'][0] = '*:*^0.0 OR (' + args['q'][0] + ')';
+            args['defType'] = 'lucene';
+            args['qfilter'] = '{!terms f=' + passedInSettings.createFieldSpec().id + '}' + ratedIds.join(',');
 
-            args['fq'].push('{!terms f=' + passedInSettings.createFieldSpec().id + '}' + ratedIds.join(','));
+            /*
+             * TODO: Limit this feature to edismax only? May be able to try and detect the defType from qt
+             *
+             * The root defType must be lucene or func for local params to work.  Local params allow
+             * for wrapping the filter/query into a bool queries filter/should parameters.  However
+             * it doesn't seem possible to pass qt thru.
+             */
+            args['qq'] = '{!edismax}' + args['q'][0];
+            args['q'][0] = '{!bool filter=$qfilter should=$qq}';
           }
         }
 

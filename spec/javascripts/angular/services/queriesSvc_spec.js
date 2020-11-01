@@ -253,10 +253,8 @@ describe('Service: queriesSvc', function () {
       mockSettings.searchEngine = 'solr';
       mockSettings.selectedTry.args = {'q': ['rambo']};
       var searcher = queriesSvc.createSearcherFromSettings(mockSettings, 'test', query.ratings);
-      expect(searcher.settings.args['q'][0]).toContain('*:*^0.0 OR');
-      expect(searcher.settings.args['fq'][0]).toContain('terms');
+      expect(searcher.settings.args['q'][0]).toContain('{!bool');
     });
-
 
     it('toggles show only rated state', function() {
       expect(queriesSvc.showOnlyRated).toEqual(false);
