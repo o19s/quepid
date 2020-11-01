@@ -4,12 +4,12 @@ angular.module('QuepidApp')
   .service('caseSvc', [
     '$http', '$filter', '$q', '$rootScope',
     'flash',
-    'caseTryNavSvc', 'settingsSvc',
+    'caseTryNavSvc', 'queriesSvc', 'settingsSvc',
     'broadcastSvc',
     function caseSvc(
       $http, $filter, $q, $rootScope,
       flash,
-      caseTryNavSvc, settingsSvc,
+      caseTryNavSvc, queriesSvc, settingsSvc,
       broadcastSvc
     ) {
 
@@ -79,11 +79,15 @@ angular.module('QuepidApp')
           }
         };
 
+        var params = {
+            'ratedOnly': queriesSvc.showOnlyRated
+        };
+
         theCase.fetchCaseScore = function() {
           // HTTP GET /api/cases/<int:caseId>/scores
           var url = '/api/cases/' + theCase.caseNo + '/scores';
 
-          return $http.get(url)
+          return $http.get(url, {params: params})
             .then(function(response) {
               theCase.lastScore = response.data;
 
@@ -95,7 +99,7 @@ angular.module('QuepidApp')
           // HTTP GET /api/cases/<int:caseId>/scores/all
           var url = '/api/cases/' + theCase.caseNo + '/scores/all';
 
-          return $http.get(url)
+          return $http.get(url, {params: params})
             .then(function(response) {
               theCase.scores = response.data.scores;
 
