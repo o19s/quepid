@@ -14,6 +14,7 @@
 #  queries       :binary(16777215)
 #  annotation_id :integer
 #  updated_at    :datetime
+#  rated_only    :boolean
 #
 
 class Score < ActiveRecord::Base

@@ -3,6 +3,7 @@
 shallow ||= false
 
 json.all_rated  score.all_rated
+json.rated_only score.rated_only
 json.case_id    score.case_id
 json.created_at score.created_at
 json.id         score.id

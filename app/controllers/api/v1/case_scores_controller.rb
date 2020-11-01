@@ -47,7 +47,8 @@ module Api
         params.require(:case_score).permit(
           :score,
           :all_rated,
-          :try_id
+          :try_id,
+          :rated_only
         ).tap do |whitelisted|
           whitelisted[:queries] = params[:case_score][:queries] if params[:case_score][:queries]
         end

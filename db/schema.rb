@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20200911192850) do
+ActiveRecord::Schema.define(version: 20201101171720) do
 
   create_table "annotations", force: :cascade do |t|
     t.text     "message",    limit: 65535
@@ -42,10 +42,12 @@ ActiveRecord::Schema.define(version: 20200911192850) do
     t.binary   "queries",       limit: 16777215
     t.integer  "annotation_id", limit: 4
     t.datetime "updated_at"
+    t.boolean  "rated_only",                     default: false
   end
 
   add_index "case_scores", ["annotation_id"], name: "index_case_scores_on_annotation_id", using: :btree
   add_index "case_scores", ["case_id"], name: "case_id", using: :btree
+  add_index "case_scores", ["rated_only"], name: "case_scores_rated_only_idx", using: :btree
   add_index "case_scores", ["user_id"], name: "user_id", using: :btree
 
   create_table "cases", force: :cascade do |t|
