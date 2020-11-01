@@ -97,11 +97,11 @@ angular.module('QuepidApp')
             args['qfilter'] = '{!terms f=' + passedInSettings.createFieldSpec().id + '}' + ratedIds.join(',');
 
             if (args['q'][0].startsWith('{!')) {
-              args['qq'] = args['q'][0];
+              args['quepidQ'] = args['q'][0];
             } else {
-              args['qq'] = '{!' + defTypeGuess + '}' + args['q'][0];
+              args['quepidQ'] = '{!' + defTypeGuess + '}' + args['q'][0];
             }
-            args['q'][0] = '{!bool filter=$qfilter should=$qq}';
+            args['q'][0] = '{!bool filter=$qfilter should=$quepidQ}';
           }
         }
 
