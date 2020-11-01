@@ -96,7 +96,11 @@ angular.module('QuepidApp')
             args['defType'] = 'lucene';
             args['qfilter'] = '{!terms f=' + passedInSettings.createFieldSpec().id + '}' + ratedIds.join(',');
 
-            args['qq'] = '{!' + defTypeGuess + '}' + args['q'][0];
+            if (args['q'][0].startsWith('{!')) {
+              args['qq'] = args['q'][0];
+            } else {
+              args['qq'] = '{!' + defTypeGuess + '}' + args['q'][0];
+            }
             args['q'][0] = '{!bool filter=$qfilter should=$qq}';
           }
         }
