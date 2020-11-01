@@ -49,6 +49,9 @@ module Api
       end
 
       def show
+        bool = ActiveRecord::Type::Boolean.new
+        ratedOnly = bool.type_cast_from_user(params[:ratedOnly]) || false
+
         respond_with @case
       end
 

@@ -7,7 +7,7 @@ module Api
       before_action :check_case
 
       def index
-        ratedOnly = ActiveRecord::Type::Boolean.new.type_cast_from_user(params[:ratedOnly].blank? ? false : params[:ratedOnly])
+        ratedOnly = ActiveRecord::Type::Boolean.new.type_cast_from_user(params[:ratedOnly]) || false
         @scores = @case.scores.where(rated_only: ratedOnly).includes(:annotation).limit(10)
   
         respond_with @scores

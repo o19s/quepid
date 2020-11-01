@@ -3,6 +3,7 @@
 shallow  ||= false
 no_tries ||= false
 no_teams ||= false
+rated_only ||= false
 
 unless no_teams
   teams = acase.teams.find_all do |o|
@@ -39,7 +40,7 @@ end if acase.last_score.present?
 # rubocop:enable Style/MultilineIfModifier
 
 unless shallow
-  json.scores acase.scores.includes(:annotation).limit(10) do |s|
+  json.scores acase.scores.where(rated_only: rated_only).includes(:annotation).limit(10) do |s|
     json.score      s.score
     json.updated_at s.updated_at
     json.note       s.annotation ? s.annotation.message : nil
