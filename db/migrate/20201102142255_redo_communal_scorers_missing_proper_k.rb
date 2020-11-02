@@ -1,4 +1,5 @@
 # It appears that we still have k=5, even through the scores are labeled as @10, so fix this.
+# caused by the previous scorer had an errant "," after the scorer.code line
 class RedoCommunalScorersMissingProperK < ActiveRecord::Migration
   def change
 
@@ -8,7 +9,7 @@ class RedoCommunalScorersMissingProperK < ActiveRecord::Migration
       scorer = Scorer.where(name: scorer_name).first
       unless scorer.nil?
         name = scorer.name
-        scorer.code = File.readlines("./db/scorers/#{name.downcase}.js",'\n').join('\n'),
+        scorer.code = File.readlines("./db/scorers/#{name.downcase}.js",'\n').join('\n')
         scorer.save!
       end
     end
