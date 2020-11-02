@@ -83,7 +83,7 @@ module Api
             # For whatever reason the response.body is blank.
             # We want to test both the format of the lines and
             # that specifically for LTR that the export is based on the qid.
-            # assert response.body.include?("<%=rating.rating%>    qid:<%=query.id%> #    <%=rating.doc_id %>; \"<%=query.query_text%>\"")
+            # assert response.body.include?("<%=rating.rating%>    qid:<%=query.id%> #    <%=rating.doc_id %> <%=query.query_text%>")
 
             # rubocop:enable  Lint/UselessAssignment
             # rubocop:enable  Metrics/LineLength

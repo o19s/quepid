@@ -8,6 +8,7 @@ module Api
         before_action :check_case
 
         # rubocop:disable Metrics/MethodLength
+        # rubocop:disable Metrics/AbcSize
         def create
           file_format = params[:file_format]
           file_format = 'hash' unless params[:file_format]
@@ -30,6 +31,18 @@ module Api
                   ratings << rating
                 end
               end
+            end
+          elsif 'ltr' == file_format
+            # normalize the LTR ratings format to the default hash format.
+
+            # What do we do about qid?  Do we assume that qid is in Quepid already?
+            ratings = []
+            ltr_text = params[:ltr_text]
+            ltr_lines = ltr_text.split(/\n+/)
+
+            ltr_lines.each do |ltr_line|
+              rating = rating_from_ltr_line ltr_line
+              ratings << rating
             end
           end
 
@@ -55,7 +68,31 @@ module Api
           end
           # rubocop:enable Lint/RescueException
         end
+
+        def rating_from_ltr_line ltr_line
+          # Pattern: 3 qid:1 # 1370 star trek
+          ltr_line = ltr_line.strip
+          first_chunk = ltr_line.index(' ')
+          rating = ltr_line[0..first_chunk].strip
+          ltr_line = ltr_line[first_chunk..-1].strip
+          second_chunk_begin = ltr_line.index('#')
+          ltr_line = ltr_line[second_chunk_begin + 1..-1].strip
+          second_chunk_end = ltr_line.index(' ')
+          doc_id = ltr_line[0..second_chunk_end].strip
+
+          ltr_line = ltr_line[second_chunk_end..-1]
+
+          query_text = ltr_line.strip
+
+          rating = {
+            query_text: query_text,
+            doc_id:     doc_id,
+            rating:     rating,
+          }
+          rating
+        end
         # rubocop:enable Metrics/MethodLength
+        # rubocop:enable Metrics/AbcSize
       end
     end
   end
