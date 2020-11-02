@@ -58,17 +58,28 @@ star trek,,</pre>
 
   <div class="form-group">
     <input type="radio" id="rre" name="importSelection" value="rre" ng-model="ctrl.options.which">
-    <label for="rre">RRE</label>
+    <label for="rre">Rated Ranking Evaluator</label>
     <span class="help-block">
       Quepid only imports the ratings part of the <a href="https://github.com/SeaseLtd/rated-ranking-evaluator/wiki/What%20We%20Need%20To%20Provide#ratings" target="_blank">RRE judgement</a> file.
     </span>
     <p>Select RRE ratings file to import:</p>
     <!-- this onchange is a code smell. -->
-    <input type="file" id="file" name="file"
+    <input type="file" id="rreFile" name="rreFile"
       accept="application/json"
-      onchange="angular.element(this).scope().pickedFile()"/>
+      onchange="angular.element(this).scope().pickedRREFile()"/>
+  </div>
 
-
+  <div class="form-group">
+    <input type="radio" id="ltr" name="importSelection" value="ltr" ng-model="ctrl.options.which">
+    <label for="ltr">Learning to Rank</label>
+    <span class="help-block">
+      LTR uses a rather odd format of <code>rating qid:queryid # docid query</code>, eg <code>3 qid:1 # 1370 star trek</code>.  We ignore the <code>qid:queryid</code> and use the <code>query</code> for matching up to existing queries.
+    </span>
+    <p>Select LTR ratings file to import:</p>
+    <!-- this onchange is a code smell. -->
+    <input type="file" id="ltrFile" name="ltrFile"
+      accept="text/plain"
+      onchange="angular.element(this).scope().pickedLTRFile()"/>
   </div>
 
 </div>
