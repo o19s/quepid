@@ -65,12 +65,18 @@ angular.module('QuepidApp')
 
         this.resetRating = function(docId) {
           var url   = basePath() + '/ratings';
-          var data  = { rating:
+          var obj  = { rating:
             {
               doc_id:  docId,
             }
           };
-          $http.delete(url, data).then(function() {
+          var config = { // Silly AngularJS workaround to pass data
+            headers: {
+              'Content-Type': 'application/json;charset=UTF-8'
+            },
+            data: JSON.stringify(obj)
+          };
+          $http.delete(url, config).then(function() {
             delete ratingsDict[docId];
             markDirty();
           });
