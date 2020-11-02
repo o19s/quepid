@@ -9,7 +9,7 @@ class ChangeDefaultScorersToAtTenDeep < ActiveRecord::Migration
         name = scorer.name
         name.sub!('@5', '@10')
         scorer.name = name
-        scorer.code = File.readlines("./db/scorers/#{name.downcase}.js",'\n').join('\n'),
+        scorer.code = File.readlines("./db/scorers/#{name.downcase}.js",'\n').join('\n')
         scorer.save!
       end
 
