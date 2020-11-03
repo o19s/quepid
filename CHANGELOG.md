@@ -4,9 +4,11 @@
 
 ### Features
 
-* Round trip export and import LTR ranking files!  https://github.com/o19s/quepid/pull/204 by @epugh fixes https://github.com/o19s/quepid/issues/162 by @DmitryKey,
+* Round trip export and import LTR ranking files!  https://github.com/o19s/quepid/pull/204 by @epugh fixes https://github.com/o19s/quepid/issues/162 by @DmitryKey.
 
 ### Improvements
+
+* Demonstrate richness of queries in Quepid when you use the TMDB dataset.  https://github.com/o19s/quepid/pull/236 by @epugh fixes https://github.com/o19s/quepid/issues/224.
 
 * Update Javascript references to `application/javascript`.  Pay down some tech debt!  https://github.com/o19s/quepid/pull/223 by @epugh
 
