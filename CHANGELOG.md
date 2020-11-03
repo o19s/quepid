@@ -5,7 +5,7 @@
 * Big upgrade to Rails 5.  Ruby 2.6.6.
 
 
-* Simplify handling doc id's that have periods or slashes in then, and avoid base64 issues by passing that in the JSON payload.  https://github.com/o19s/quepid/pull/233 by @epugh fixes https://github.com/o19s/quepid/issues/228.
+* Simplify handling doc id's that have periods or slashes in then, and avoid base64 issues by passing that in the JSON payload.  https://github.com/o19s/quepid/pull/233 by @epugh fixes https://github.com/o19s/quepid/issues/228 and https://github.com/o19s/quepid/issues/221.
 
 * Some Solr collections need manual setup of the `wt=json` mimetype.  Add better text message for users.  https://github.com/o19s/quepid/pull/235 by @epugh fixes https://github.com/o19s/quepid/issues/178.
 
