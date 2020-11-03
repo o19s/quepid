@@ -19,12 +19,19 @@ angular.module('QuepidApp')
     ) {
       this.defaults = {
         solr: {
-          queryParams:      'q=#$query##',
+          queryParams:  [
+            '&defType=edismax',
+            '&qf=text_all',
+            '&indent=on',
+            '&q=#$query##',
+            '&tie=1.0',
+          ].join('\n'),
+
           escapeQuery:      true,
           fieldSpec:        'id:id, title:title',
           idField:          'id',
           titleField:       'title',
-          additionalFields: ['overview','thumb:poster_path'],
+          additionalFields: ['overview','cast','thumb:poster_path'],
           numberOfRows:     10,
           searchEngine:     'solr',
           searchUrl:        'http://quepid-solr.dev.o19s.com:8985/solr/tmdb/select',
@@ -33,11 +40,17 @@ angular.module('QuepidApp')
         es: {
           queryParams:  [
             '{',
-            '    "query": {',
-            '        "query_string": {',
-            '            "query": "#$query##"',
-            '        }',
+            '  "query": {',
+            '    "multi_match": {',
+            '      "query": "#$query##",',
+            '      "type": "best_fields",',
+            '      "fields": [',
+            '        "title^10",',
+            '        "overview",',
+            '        "cast"',
+            '      ]',
             '    }',
+            '  }',
             '}',
           ].join('\n'),
 
@@ -45,7 +58,7 @@ angular.module('QuepidApp')
           fieldSpec:         'id:_id, title:title',
           idField:           '_id',
           titleField:        'title',
-          additionalFields:  ['overview','thumb:poster_path'],
+          additionalFields:  ['overview','cast','thumb:poster_path'],
           numberOfRows:      10,
           searchEngine:      'es',
           searchUrl:         'http://quepid-elasticsearch.dev.o19s.com:9206/tmdb/_search',
