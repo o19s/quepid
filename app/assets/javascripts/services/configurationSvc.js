@@ -6,6 +6,7 @@ angular.module('UtilitiesModule')
     function ConfigurationSvc() {
       var emailMarketingMode;
       var termsAndConditionsUrl;
+      var isSignupEnabled;
 
       this.setEmailMarketingMode = function(val) {
         emailMarketingMode = JSON.parse(val);
@@ -31,6 +32,14 @@ angular.module('UtilitiesModule')
 
       this.getTermsAndConditionsUrl = function () {
         return termsAndConditionsUrl;
+      };
+
+      this.setSignupEnabled = function (val) {
+        isSignupEnabled = JSON.parse(val);
+      };
+
+      this.isSignupEnabled = function() {
+        return isSignupEnabled;
       };
     }
   ]);
