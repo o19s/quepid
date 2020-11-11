@@ -4,6 +4,7 @@ module Api
   module V1
     class TeamOwnersController < Api::ApiController
       before_action :set_team, only: [ :update ]
+      before_action :check_team_owner, only: [ :update ]
 
       def update
         previous_owner = @team.owner
