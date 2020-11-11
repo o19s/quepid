@@ -39,3 +39,7 @@ Rails.application.config.privacy_url = ENV.fetch('PRIVACY_URL', nil)
 # controls the display.
 #
 Rails.application.config.terms_and_conditions_url = ENV.fetch('TC_URL', nil)
+
+# == Enable signup
+# This parameter controls whether or not signing up via the UI is enabled.
+Rails.application.config.signup_enabled = ENV.fetch('SIGNUP_ENABLED', true)
