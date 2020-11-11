@@ -8,7 +8,7 @@ module Api
 
       def update
         previous_owner = @team.owner
-        @team.members << previous_owner unless @team.members.exists?(previous_owner)
+        @team.members << previous_owner unless @team.members.exists?(previous_owner.id)
 
         if @team.update(owner_id: params[:id])
           respond_with @team
