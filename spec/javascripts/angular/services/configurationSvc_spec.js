@@ -17,6 +17,13 @@ describe('Service: ConfigurationSvc', function () {
     expect(!!configurationSvc).toBe(true);
   });
 
+  it('reports if signup is enabled', function () {
+    configurationSvc.setSignupEnabled(false);
+    expect(configurationSvc.isSignupEnabled()).toBe(false);
+    configurationSvc.setSignupEnabled(true);
+    expect(configurationSvc.isSignupEnabled()).toBe(true);
+  });
+
   it('reports if terms and conditions url was set', function () {
     configurationSvc.setTermsAndConditionsUrl('https://quepid.com/agreement');
     expect(configurationSvc.hasTermsAndConditions()).toBe(true);

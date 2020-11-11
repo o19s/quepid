@@ -53,7 +53,7 @@ Rails.application.routes.draw do
       resources :users,   only: %i[index show update] do
         get '/current' => 'current_user#show', on: :collection
       end
-      resources :signups, only: [ :create ]
+      resources :signups, only: [ :create ] if Rails.application.config.signup_enabled
 
       get '/dropdown/cases' => 'cases/dropdown#index'
 
