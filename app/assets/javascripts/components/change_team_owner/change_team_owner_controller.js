@@ -17,8 +17,6 @@ angular.module('QuepidApp')
         id: null,
       };
 
-      console.log(ctrl.team);
-
       $scope.$watch('ctrl.team', function() {
         ctrl.owner.id = ctrl.team.id;
       });
