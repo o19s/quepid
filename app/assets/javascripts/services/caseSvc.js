@@ -62,24 +62,6 @@ angular.module('QuepidApp')
           return names.join(', ');
         };
 
-        theCase.rename = function(newName) {
-          if (newName.length > 0) {
-            // HTTP PUT /api/cases/<int:caseId>
-            var url  = '/api/cases/' + theCase.caseNo;
-            var data = {
-              case_name: newName
-            };
-
-            return $http.put(url, data)
-              .then(function() {
-                theCase.caseName = newName;
-                broadcastSvc.send('caseRenamed', theCase);
-              }, function() {
-                caseTryNavSvc.notFound();
-              });
-          }
-        };
-
         theCase.fetchCaseScore = function() {
           // HTTP GET /api/cases/<int:caseId>/scores
           var url = '/api/cases/' + theCase.caseNo + '/scores';
@@ -386,7 +368,8 @@ angular.module('QuepidApp')
       }
 
       /*
-       * rename the case.  Similar method on theCase object itself!
+       * rename the case.  This could be refactored into a more
+       * general "update" method.
        */
       function renameCase(theCase, newName) {
         if (newName.length > 0) {

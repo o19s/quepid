@@ -58,7 +58,6 @@ angular.module('QuepidApp')
         ctrl.clickToEdit.clicked = false;
         if (ctrl.clickToEdit.oldVal !== ctrl.clickToEdit.currVal) {
           ctrl.clickToEdit.oldVal = ctrl.clickToEdit.currVal;
-          //ctrl.thisCase.rename(ctrl.clickToEdit.currVal);
           caseSvc.renameCase(ctrl.thisCase, ctrl.clickToEdit.currVal);
         }
       }
