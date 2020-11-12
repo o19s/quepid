@@ -404,7 +404,7 @@ angular.module('QuepidApp')
               caseTryNavSvc.notFound();
             });
         }
-      };
+      }
 
 
       function get(id, useCache) {
