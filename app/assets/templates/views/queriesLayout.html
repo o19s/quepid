@@ -23,8 +23,18 @@
               <small class="text-muted">Current case</small>
 
               <br>
-
-              {{ caseModel.selectedCase().caseName }}
+              <span ng-dblclick="caseNameEditModeToggle()">
+                <span ng-hide="caseName.startRename">
+                  {{ caseModel.selectedCase().caseName }}
+                </span>
+                <span ng-show="caseName.startRename">
+                  <form class="form-inline" ng-submit="caseName.rename()">
+                      <input style="background:#FFFF99" type="text" ng-model="caseName.name" />
+                      <input type="submit" class="btn btn-sm btn-primary" value="Rename" />
+                      <button class="btn btn-sm btn-default" ng-click="caseName.cancel()">Cancel</button>
+                  </form>
+                </span>
+              </span>
 
               <small class="text-muted" ng-controller="CurrSettingsCtrl">
                 &mdash;
