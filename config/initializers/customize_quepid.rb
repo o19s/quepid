@@ -43,3 +43,7 @@ Rails.application.config.terms_and_conditions_url = ENV.fetch('TC_URL', nil)
 # == Enable signup
 # This parameter controls whether or not signing up via the UI is enabled.
 Rails.application.config.signup_enabled = ENV.fetch('SIGNUP_ENABLED', true)
+
+# == Search host whitelist
+# An array of allowed search hostnames. If empty, all hosts are allowed.
+Rails.application.config.search_host_whitelist = ENV.fetch('SEARCH_HOST_WHITELIST', '').split(',')

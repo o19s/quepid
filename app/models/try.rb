@@ -59,6 +59,9 @@ class Try < ActiveRecord::Base
   # Callbacks
   before_create :set_defaults
 
+  # Validations
+  validates_with ::SearchUrlWhitelistValidator
+
   def args
     if 'solr' == search_engine
       solr_args
