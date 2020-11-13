@@ -6,9 +6,11 @@ angular.module('QuepidApp')
   .controller('CaseListingCtrl', [
     '$scope',
     'caseTryNavSvc',
+    'caseSvc',
     function (
       $scope,
-      caseTryNavSvc
+      caseTryNavSvc,
+      caseSvc
     ) {
       var ctrl = this;
 
@@ -23,13 +25,6 @@ angular.module('QuepidApp')
       ctrl.goToCase   = goToCase;
       ctrl.rename     = rename;
       ctrl.submit     = submit;
-
-      // we may get bound to different cases on moves, reset the state
-      $scope.$watch('thisCase', function() {
-        ctrl.thisCase            = $scope.thisCase;
-        ctrl.clickToEdit.currVal = ctrl.thisCase.caseName.slice(0);
-        ctrl.clickToEdit.clicked = false;
-      });
 
       function rename() {
         ctrl.clickToEdit.clicked = true;
@@ -49,7 +44,7 @@ angular.module('QuepidApp')
         ctrl.clickToEdit.clicked = false;
         if (ctrl.clickToEdit.oldVal !== ctrl.clickToEdit.currVal) {
           ctrl.clickToEdit.oldVal = ctrl.clickToEdit.currVal;
-          ctrl.thisCase.rename(ctrl.clickToEdit.currVal);
+          caseSvc.renameCase(ctrl.thisCase, ctrl.clickToEdit.currVal);
         }
       }
     }
