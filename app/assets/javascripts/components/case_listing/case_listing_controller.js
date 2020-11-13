@@ -26,20 +26,6 @@ angular.module('QuepidApp')
       ctrl.rename     = rename;
       ctrl.submit     = submit;
 
-      // we may get bound to different cases on moves, reset the state
-      //$scope.$watch('thisCase', function() {
-      //  ctrl.thisCase            = $scope.thisCase;
-      //  ctrl.clickToEdit.currVal = ctrl.thisCase.caseName.slice(0);
-      //  ctrl.clickToEdit.clicked = false;
-      //});
-
-      // we may get bound to different cases on moves, reset the state
-      //$scope.$watch('caseRenamed', function() {
-      //  ctrl.thisCase            = $scope.thisCase;
-      //  ctrl.clickToEdit.currVal = ctrl.thisCase.caseName.slice(0);
-      //  ctrl.clickToEdit.clicked = false;
-      //});
-
       function rename() {
         ctrl.clickToEdit.clicked = true;
       }
