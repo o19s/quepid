@@ -237,7 +237,7 @@ angular.module('QuepidApp')
 
             //Change Case Name (Separate from Dev settings)
             if(typeof($scope.pendingWizardSettings.caseName) !=='undefined' && $scope.pendingWizardSettings.caseName !== ''){
-              caseSvc.renameCase(caseSvc.getSelectedCase(), $scope.pendingWizardSettings.caseName)
+              caseSvc.renameCase(caseSvc.getSelectedCase(), $scope.pendingWizardSettings.caseName);
             }
             var length = $scope.pendingWizardSettings.newQueries.length;
             var query = null;
