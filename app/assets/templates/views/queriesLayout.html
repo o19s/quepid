@@ -38,7 +38,18 @@
 
               <small class="text-muted" ng-controller="CurrSettingsCtrl">
                 &mdash;
-                {{ currentTry.selectedTry().name }}
+                <span ng-dblclick="tryNameEditModeToggle()">
+                  <span ng-hide="tryName.startRename">
+                    {{ currentTry.selectedTry().name }}
+                  </span>
+                </span>
+                <span ng-show="tryName.startRename">
+                  <form class="form-inline" ng-submit="tryName.rename()">
+                      <input style="background:#FFFF99" type="text" ng-model="tryName.name" />
+                      <input type="submit" class="btn btn-sm btn-primary" value="Rename" />
+                      <button class="btn btn-sm btn-default" ng-click="tryName.cancel()">Cancel</button>
+                  </form>
+                </span>
               </small>
 
               <small class="text-muted">
