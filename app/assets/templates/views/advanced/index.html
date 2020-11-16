@@ -28,12 +28,12 @@
 
     <div class="row">
       <div class='col-md-4'>
-        <div class="btn-group">
+        <div class="btn-group" ng-show="!communalScorersOnly">
           <new-scorer button-text="'Add New'"></new-scorer>
         </div>
       </div>
 
-      <div class='col-md-4'>
+      <div class='col-md-4' ng-show="!communalScorersOnly">
         View
         &nbsp;&nbsp;&nbsp;
         <div class="btn-group">

@@ -32,11 +32,13 @@
   <script>
     angular.module('QuepidApp')
       .run([
-        'secureRedirectSvc', 'bootstrapSvc',
-        function(secureRedirectSvc, bootstrapSvc) {
+        'secureRedirectSvc', 'bootstrapSvc', 'configurationSvc',
+        function(secureRedirectSvc, bootstrapSvc, configurationSvc) {
           var appDebug      = '<%= Rails.env == 'development' ? 'true' : 'false' %>';
           var debugPort     = '<%= request.port %>';
           var triggerWizard = <%= @triggerWizard %>;
+
+          configurationSvc.setCommunalScorersOnly('<%= Rails.application.config.communal_scorers_only %>');
 
           if (appDebug === 'true') {
             secureRedirectSvc.debugServer(debugPort);

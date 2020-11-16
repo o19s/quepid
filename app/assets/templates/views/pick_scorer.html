@@ -14,7 +14,7 @@
       </li>
     </ul>
 
-    <h4>Or select from your own custom scorers:</h4>
+    <div ng-show="!communalScorersOnly"><h4>Or select from your own custom scorers:</h4></div>
     <ul class="list-group">
       <li class="list-group-item"
       ng-repeat="scorer in scorers track by scorer.scorerId"
@@ -27,7 +27,7 @@
 </div>
 
 <div class="modal-footer">
-  <button class="btn btn-primary pull-left" ng-click="gotoAdvanced()">
+  <button class="btn btn-primary pull-left" ng-click="gotoAdvanced()" ng-show="!communalScorersOnly">
     <i class="glyphicon glyphicon-plus" style="color: #FFF"></i>
     Create New Scorer
   </button>

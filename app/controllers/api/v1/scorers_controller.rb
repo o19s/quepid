@@ -5,9 +5,12 @@ module Api
   module V1
     class ScorersController < Api::ApiController
       before_action :set_scorer, only: %i[show update destroy]
+      before_action :check_communal_scorers_only, only: %i[create update, destroy]
 
       def index
-        @user_scorers     = current_user.scorers.all
+        if not Rails.application.config.communal_scorers_only == 'true'
+          @user_scorers     = current_user.scorers.all
+        end
         @communal_scorers = Scorer.communal
 
         respond_with @user_scorers, @communal_scorers
@@ -208,6 +211,10 @@ module Api
         # rubocop:enable Style/IfUnlessModifier
 
         render json: { error: 'Not Found!' }, status: :not_found unless @scorer
+      end
+
+      def check_communal_scorers_only
+        render json: { error: 'Communal Scorers Only!' }, status: :forbidden if Rails.application.config.communal_scorers_only == 'true'
       end
     end
   end

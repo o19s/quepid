@@ -8,12 +8,12 @@ angular.module('QuepidApp')
     '$rootScope', '$scope',
     'flash',
     'broadcastSvc',
-    'customScorerSvc',
+    'customScorerSvc', 'configurationSvc',
     function (
       $rootScope, $scope,
       flash,
       broadcastSvc,
-      customScorerSvc
+      customScorerSvc, configurationSvc
     ) {
       // Attributes
       $scope.advanced                 = {};
@@ -30,6 +30,8 @@ angular.module('QuepidApp')
       };
 
       $scope.scorerFilters = { typeFilter: 'communal' };
+
+      $scope.communalScorersOnly = configurationSvc.isCommunalScorersOnly();
 
       // Functions
       $scope.advanced.updateUserScorer    = updateUserScorer;

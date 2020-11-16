@@ -6,11 +6,11 @@ angular.module('QuepidApp')
   .controller('ScorerCtrl', [
     '$scope', '$location', '$uibModalInstance', '$log',
     'parent', 'customScorerSvc', 'caseSvc', 'queriesSvc',
-    'ScorerFactory',
+    'ScorerFactory', 'configurationSvc',
     function (
       $scope, $location, $uibModalInstance, $log,
       parent, customScorerSvc, caseSvc, queriesSvc,
-      ScorerFactory
+      ScorerFactory, configurationSvc
     ) {
 
       $scope.activeScorer       = parent.currentScorer || {};
@@ -25,6 +25,7 @@ angular.module('QuepidApp')
       $scope.updateButtonLabel  = updateButtonLabel;
       $scope.scorerSelector     = parent.scorerSelector;
       $scope.okButtonLabel      = 'Select Scorer';
+      $scope.communalScorersOnly = configurationSvc.isCommunalScorersOnly();
 
       if ($scope.activeScorer.scorerId && ($scope.activeScorer.scorerId !== 'default')) {
         $scope.activeScorer.scorerId = parseInt($scope.activeScorer.scorerId);
