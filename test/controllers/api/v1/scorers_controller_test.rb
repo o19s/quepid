@@ -9,6 +9,7 @@ module Api
 
       before do
         @controller = Api::V1::ScorersController.new
+        Rails.application.config.communal_scorers_only = 'false'
 
         login_user user
       end
@@ -191,6 +192,18 @@ module Api
           assert_not_nil  query.test
         end
 
+        test 'respects communal_Scorers_only environment setting' do
+          Rails.application.config.communal_scorers_only = 'true'
+
+          post :create
+
+          assert_response :forbidden
+
+          error = JSON.parse(response.body)
+
+          assert_equal error['error'], 'Communal Scorers Only!'
+        end
+
         describe 'analytics' do
           test 'posts event' do
             expects_any_ga_event_call
@@ -271,6 +284,18 @@ module Api
           error = JSON.parse(response.body)
 
           assert_equal error['error'], 'Cannot edit a scorer you do not own'
+        end
+
+        test 'respects communal_Scorers_only environment setting' do
+          Rails.application.config.communal_scorers_only = 'true'
+
+          put :update, id: owned_scorer.id, scorer: { name: 'new name' }
+
+          assert_response :forbidden
+
+          error = JSON.parse(response.body)
+
+          assert_equal error['error'], 'Communal Scorers Only!'
         end
 
         test 'successfully updates name' do
@@ -391,6 +416,18 @@ module Api
             user.reload
 
             assert_not_includes user.owned_scorers, owned_scorer
+          end
+
+          test 'respects communal_Scorers_only environment setting' do
+            Rails.application.config.communal_scorers_only = 'true'
+
+            delete :destroy, id: owned_scorer.id
+
+            assert_response :forbidden
+
+            error = JSON.parse(response.body)
+
+            assert_equal error['error'], 'Communal Scorers Only!'
           end
         end
 
@@ -593,6 +630,18 @@ module Api
 
           assert_includes scorers['user_scorers'], expected_owned_response
           assert_includes scorers['user_scorers'], expected_shared_response
+        end
+
+        test 'respects communal_Scorers_only environment setting' do
+          Rails.application.config.communal_scorers_only = 'true'
+
+          get :index
+
+          assert_response :ok
+
+          scorers = JSON.parse(response.body)
+
+          assert_empty scorers['user_scorers']
         end
       end
     end
