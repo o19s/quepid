@@ -14,6 +14,25 @@ angular.module('QuepidApp')
       $scope.caseModel.reorderEnabled = false;
       $scope.scores  = [];
       $scope.theCase = caseSvc.getSelectedCase();
+      $scope.caseName = {
+        name: null,
+        startRename: false,
+        rename: function() {
+          caseSvc.renameCase($scope.theCase, $scope.caseName.name)
+          .then(function() {
+            $scope.caseName.startRename = false;
+          });
+        },
+        cancel: function() {
+          $scope.caseName.startRename = false;
+          $scope.caseName.name = $scope.caseModel.selectedCase().caseName;
+        }
+      };
+
+      $scope.caseNameEditModeToggle = function(){
+        $scope.caseName.name = $scope.caseModel.selectedCase().caseName;
+        $scope.caseName.startRename = !$scope.caseName.startRename;
+      };
 
       $scope.caseModel.newCase = function() {
         // the server will bootstrap a new case
