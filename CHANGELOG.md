@@ -10,6 +10,8 @@
 
 ### Improvements
 
+* Easy in-place editing of case name and the try name to encourage using those features!  [Microinteration](https://www.oreilly.com/library/view/microinteractions-full-color/9781491945957/) FTW!  https://github.com/o19s/quepid/pull/242 by @epugh.
+
 * Demonstrate richness of queries in Quepid when you use the TMDB dataset.  https://github.com/o19s/quepid/pull/236 by @epugh fixes https://github.com/o19s/quepid/issues/224.
 
 * Update Javascript references to `application/javascript`.  Pay down some tech debt!  https://github.com/o19s/quepid/pull/223 by @epugh
@@ -25,6 +27,8 @@
 * Discovered that DELETE of ratings didn't work, and had to work around that.  Commit 153047cd4b75d626695f5fc38832f6202eed9007.
 
 * Missing authorization check for Team Owner.  https://github.com/o19s/quepid/issues/230 by @jacobgraves fixes https://github.com/o19s/quepid/issues/230 by @testerTester0123456789.
+
+* Can't rename a case on the Teams page.  https://github.com/o19s/quepid/pull/240 by @epugh fixes https://github.com/o19s/quepid/issues/213
 
 ## 6.3.1.2 - 2020-09-16
 
