@@ -134,5 +134,50 @@ describe('Service: caseCSVSvc', function () {
 
       expect(result).toEqual(expectedResult);
     });
+
+    it('escapes a value that starts with =', function () {
+      var newMockCase = angular.copy(mockCase);
+      newMockCase.caseName = '=Test Case';
+
+      var result = caseCSVSvc.stringify(newMockCase);
+
+      var expectedResult = 'Test Team, =Test Case,8,dog,30,2015-07-14 16:08:55,,This dog looks like a great dog.\r\nTest Team, =Test Case,8,cat,0,2015-07-14 16:08:55,,Is this ""really"" a ""cat""?\r\nTest Team, =Test Case,8,foo,,2015-07-14 16:08:55,,chil\'laxin\r\n';
+
+      expect(result).toEqual(expectedResult);
+    });
+
+    it('escapes a value that starts with @', function () {
+      var newMockCase = angular.copy(mockCase);
+      newMockCase.caseName = '@Test Case';
+
+      var result = caseCSVSvc.stringify(newMockCase);
+
+      var expectedResult = 'Test Team, @Test Case,8,dog,30,2015-07-14 16:08:55,,This dog looks like a great dog.\r\nTest Team, @Test Case,8,cat,0,2015-07-14 16:08:55,,Is this ""really"" a ""cat""?\r\nTest Team, @Test Case,8,foo,,2015-07-14 16:08:55,,chil\'laxin\r\n';;
+
+      expect(result).toEqual(expectedResult);
+    });
+
+    it('escapes a value that starts with +', function () {
+      var newMockCase = angular.copy(mockCase);
+      newMockCase.caseName = '+Test Case';
+
+      var result = caseCSVSvc.stringify(newMockCase);
+
+      var expectedResult = 'Test Team, +Test Case,8,dog,30,2015-07-14 16:08:55,,This dog looks like a great dog.\r\nTest Team, +Test Case,8,cat,0,2015-07-14 16:08:55,,Is this ""really"" a ""cat""?\r\nTest Team, +Test Case,8,foo,,2015-07-14 16:08:55,,chil\'laxin\r\n';;
+
+      expect(result).toEqual(expectedResult);
+    });
+
+    it('escapes a value that starts with -', function () {
+      var newMockCase = angular.copy(mockCase);
+      newMockCase.caseName = '-Test Case';
+
+      var result = caseCSVSvc.stringify(newMockCase);
+
+      var expectedResult = 'Test Team, -Test Case,8,dog,30,2015-07-14 16:08:55,,This dog looks like a great dog.\r\nTest Team, -Test Case,8,cat,0,2015-07-14 16:08:55,,Is this ""really"" a ""cat""?\r\nTest Team, -Test Case,8,foo,,2015-07-14 16:08:55,,chil\'laxin\r\n';;
+
+      expect(result).toEqual(expectedResult);
+    });
+
   });
 });
