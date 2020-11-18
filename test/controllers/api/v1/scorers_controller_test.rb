@@ -9,7 +9,7 @@ module Api
 
       before do
         @controller = Api::V1::ScorersController.new
-        Rails.application.config.communal_scorers_only = 'false'
+        Rails.application.config.communal_scorers_only = false
 
         login_user user
       end
@@ -193,7 +193,7 @@ module Api
         end
 
         test 'respects communal_Scorers_only environment setting' do
-          Rails.application.config.communal_scorers_only = 'true'
+          Rails.application.config.communal_scorers_only = true
 
           post :create
 
@@ -287,7 +287,7 @@ module Api
         end
 
         test 'respects communal_Scorers_only environment setting' do
-          Rails.application.config.communal_scorers_only = 'true'
+          Rails.application.config.communal_scorers_only = true
 
           put :update, id: owned_scorer.id, scorer: { name: 'new name' }
 
@@ -419,7 +419,7 @@ module Api
           end
 
           test 'respects communal_Scorers_only environment setting' do
-            Rails.application.config.communal_scorers_only = 'true'
+            Rails.application.config.communal_scorers_only = true
 
             delete :destroy, id: owned_scorer.id
 
@@ -633,7 +633,7 @@ module Api
         end
 
         test 'respects communal_Scorers_only environment setting' do
-          Rails.application.config.communal_scorers_only = 'true'
+          Rails.application.config.communal_scorers_only = true
 
           get :index
 

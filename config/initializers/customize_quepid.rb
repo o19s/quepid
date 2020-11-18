@@ -49,4 +49,6 @@ Rails.application.config.signup_enabled = ENV.fetch('SIGNUP_ENABLED', true)
 # security flaw as malicious javascript could be entered. This setting restricts users to
 # communal scorers only, which are controlled by admins.
 #
-Rails.application.config.communal_scorers_only = ENV.fetch('COMMUNAL_SCORERS_ONLY', 'false')
+Rails.application.config.communal_scorers_only = ENV.fetch('COMMUNAL_SCORERS_ONLY', false)
+Rails.application.config.communal_scorers_only = true if 'true' == Rails.application.config.communal_scorers_only
+Rails.application.config.communal_scorers_only = false if 'false' == Rails.application.config.communal_scorers_only
