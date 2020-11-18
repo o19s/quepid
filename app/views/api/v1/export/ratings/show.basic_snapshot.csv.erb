@@ -5,6 +5,6 @@ headers = ['query','docid','rating']
 @snapshot.snapshot_queries.each do |snapshot_query|
   snapshot_query.snapshot_docs.each do |snapshot_doc|
     rating = Rating.find_by_query_id_and_doc_id(snapshot_query.query.id,snapshot_doc.doc_id)
-%><%= ::CSV.generate_line([snapshot_query.query.query_text, snapshot_doc.doc_id, rating.nil? ? nil : rating.rating]).html_safe %><%
+%><%= ::CSV.generate_line([make_csv_safe(snapshot_query.query.query_text), snapshot_doc.doc_id, rating.nil? ? nil : rating.rating]).html_safe %><%
   end
 end %>
