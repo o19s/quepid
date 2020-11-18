@@ -8,9 +8,7 @@ module Api
       before_action :check_communal_scorers_only, only: %i[create update destroy]
 
       def index
-        if not Rails.application.config.communal_scorers_only == 'true'
-          @user_scorers     = current_user.scorers.all
-        end
+        @user_scorers = current_user.scorers.all unless 'true' == Rails.application.config.communal_scorers_only
         @communal_scorers = Scorer.communal
 
         respond_with @user_scorers, @communal_scorers
@@ -214,7 +212,12 @@ module Api
       end
 
       def check_communal_scorers_only
-        render json: { error: 'Communal Scorers Only!' }, status: :forbidden if Rails.application.config.communal_scorers_only == 'true'
+        return unless 'true' == Rails.application.config.communal_scorers_only
+
+        render(
+          json:   { error: 'Communal Scorers Only!' },
+          status: :forbidden
+        )
       end
     end
   end
