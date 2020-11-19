@@ -43,3 +43,12 @@ Rails.application.config.terms_and_conditions_url = ENV.fetch('TC_URL', nil)
 # == Enable signup
 # This parameter controls whether or not signing up via the UI is enabled.
 Rails.application.config.signup_enabled = ENV.fetch('SIGNUP_ENABLED', true)
+
+# == Communal Scorers Only
+# Users can normally create custom scorers which run embedded javascript, this is a potential
+# security flaw as malicious javascript could be entered. This setting restricts users to
+# communal scorers only, which are controlled by admins.
+#
+Rails.application.config.communal_scorers_only = ENV.fetch('COMMUNAL_SCORERS_ONLY', false)
+Rails.application.config.communal_scorers_only = true if 'true' == Rails.application.config.communal_scorers_only
+Rails.application.config.communal_scorers_only = false if 'false' == Rails.application.config.communal_scorers_only

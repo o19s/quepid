@@ -38,4 +38,11 @@ describe('Service: ConfigurationSvc', function () {
 
   });
 
+  it('reports if communcal scorers only is set', function () {
+    configurationSvc.setCommunalScorersOnly(false);
+    expect(configurationSvc.isCommunalScorersOnly()).toBe(false);
+    configurationSvc.setCommunalScorersOnly(true);
+    expect(configurationSvc.isCommunalScorersOnly()).toBe(true);
+  });
+
 });
