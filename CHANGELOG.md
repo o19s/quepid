@@ -22,6 +22,8 @@
 
 * The CSV export format has a CSV injection vulnerability that is now fixed.  https://github.com/o19s/quepid/pull/245 by @nicholaskwan fixes https://github.com/o19s/quepid/issues/231.
 
+* The Javascript based scorers could be used maliciously, so we've added an environment variable COMMUNAL_SCORERS_ONLY that controls if only Admins can create communal scorers for use by users.  https://github.com/o19s/quepid/pull/246 by @jacobgraves fixes https://github.com/o19s/quepid/issues/232.
+
 ### Bugs
 
 * Discovered that the migrations from communal scorers being `@5` to `@10` didn't always run cleanly.  Commits 94dd23990422901082d79b121c1ca86a76907dc3, 8317b543530cc387d5cb89b4942acea5da57ce23, and 19b046485db530162c213a593e5b2e9df8fbbf07 to deal with this.
