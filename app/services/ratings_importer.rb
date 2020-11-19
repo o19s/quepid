@@ -108,16 +108,18 @@ class RatingsImporter
       doc_id      = row[:doc_id]
       rating      = row[:rating]
 
-      print_step "Importing rating: #{rating} for query: #{query_text} and doc: #{doc_id}"
+      unless doc_id.blank? # filter out creating ratings where we have no document
+        print_step "Importing rating: #{rating} for query: #{query_text} and doc: #{doc_id}"
 
-      query   = @queries[query_text]
-      exists  = query.ratings.where(doc_id: doc_id).first
+        query   = @queries[query_text]
+        exists  = query.ratings.where(doc_id: doc_id).first
 
-      if exists.present? && @options[:force]
-        exists.rating = rating
-        ratings_to_update << exists
-      elsif exists.blank?
-        ratings_to_import << query.ratings.build(doc_id: doc_id, rating: rating)
+        if exists.present? && @options[:force]
+          exists.rating = rating
+          ratings_to_update << exists
+        elsif exists.blank?
+          ratings_to_import << query.ratings.build(doc_id: doc_id, rating: rating)
+        end
       end
     end
 

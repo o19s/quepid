@@ -3,7 +3,11 @@ headers = ['query','docid','rating']
 %>
 <%= ::CSV.generate_line(headers).html_safe %><%
 @case.queries.each do |query|
-  query.ratings.each do |rating|
+  if query.ratings.empty?
+%><%= ::CSV.generate_line([make_csv_safe(query.query_text)]).html_safe %><%
+  else
+    query.ratings.each do |rating|
 %><%= ::CSV.generate_line([make_csv_safe(query.query_text),rating.doc_id, rating.rating]).html_safe %><%
+    end
   end
 end %>

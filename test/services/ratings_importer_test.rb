@@ -50,5 +50,30 @@ class RatingsImporterTest < ActiveSupport::TestCase
       assert_not_nil(rating)
       assert_equal 'Mexican Food', rating.query.query_text
     end
+
+    test 'includes queries with no ratings and no docs' do
+      ratings = [
+        { query_text: 'Mexican Food', doc_id: '720784-021190', rating: '5' },
+        { query_text: 'Mexican Food', doc_id: '', rating: '' },
+        { query_text: 'Chinese Food', doc_id: nil, rating: nil }
+      ]
+
+      assert_empty(owned_case.queries)
+
+      ratings_importer = RatingsImporter.new owned_case, ratings, options
+      ratings_importer.import
+      rating = Rating.find_by(doc_id: '720784-021190')
+
+      assert_not_nil(rating)
+      assert_equal 'Mexican Food', rating.query.query_text
+
+      assert_equal 2, owned_case.queries.size
+      query = Query.find_by(case_id: owned_case.id, query_text: 'Chinese Food')
+      assert_empty (query.ratings)
+
+      query = Query.find_by(case_id: owned_case.id, query_text: 'Mexican Food')
+      assert_equal 1, query.ratings.size
+
+    end
   end
 end
