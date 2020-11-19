@@ -70,16 +70,14 @@ module Api
             the_case.queries << query
             the_case.save!
 
-
             get :show, case_id: the_case.id, format: :csv, file_format: 'basic'
             assert_response :ok
             csv = CSV.parse(response.body, headers: true)
 
-            assert_equal csv[0]['query'],                               " =cmd" # notice dealing with command injection vulnerability
             assert_nil csv[0]['rating']
+            assert_equal csv[0]['query'],                               ' =cmd' # notice dealing with command injection vulnerability
             assert_equal csv[1]['query'],                               the_case.queries[0].query_text
             assert_equal csv[1]['rating'],                              the_case.queries[0].ratings[0].rating.to_s
-
           end
         end
 

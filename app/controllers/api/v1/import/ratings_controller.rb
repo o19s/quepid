@@ -9,6 +9,7 @@ module Api
 
         # rubocop:disable Metrics/MethodLength
         # rubocop:disable Metrics/AbcSize
+        # rubocop:disable Metrics/PerceivedComplexity
         def create
           file_format = params[:file_format]
           file_format = 'hash' unless params[:file_format]
@@ -77,6 +78,7 @@ module Api
           end
           # rubocop:enable Lint/RescueException
         end
+        # rubocop:enable Metrics/PerceivedComplexity
 
         def rating_from_ltr_line ltr_line
           # Pattern: 3 qid:1 # 1370 star trek

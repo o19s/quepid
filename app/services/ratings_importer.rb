@@ -33,6 +33,7 @@ class RatingsImporter
   # rubocop:disable Metrics/MethodLength
   # rubocop:disable Metrics/AbcSize
   # rubocop:disable Metrics/PerceivedComplexity
+  # rubocop:disable Metrics/CyclomaticComplexity
   def import
     if @options[:clear_existing]
       print_step 'Clearing all ratings'
@@ -108,7 +109,7 @@ class RatingsImporter
       doc_id      = row[:doc_id]
       rating      = row[:rating]
 
-      unless doc_id.blank? # filter out creating ratings where we have no document
+      if doc_id.present? # filter out creating ratings where we have no document
         print_step "Importing rating: #{rating} for query: #{query_text} and doc: #{doc_id}"
 
         query   = @queries[query_text]
@@ -142,6 +143,7 @@ class RatingsImporter
   # rubocop:enable Metrics/PerceivedComplexity
   # rubocop:enable Metrics/AbcSize
   # rubocop:enable Metrics/MethodLength
+  # rubocop:enable Metrics/CyclomaticComplexity
 
   private
 
