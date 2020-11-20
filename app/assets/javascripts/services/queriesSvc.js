@@ -102,7 +102,7 @@ angular.module('QuepidApp')
         });
 
         return docs;
-      };
+      }
 
       function toggleShowOnlyRated() {
         svc.showOnlyRated = !svc.showOnlyRated;
@@ -318,17 +318,13 @@ angular.module('QuepidApp')
           return error;
         };
 
-        this.setRatedDocs = function(ratedDocs, numFound) {
-          var fieldSpec = currSettings.createFieldSpec();
-
+        this.setRatedDocs = function(ratedDocs) {
           that.ratedDocs = ratedDocs;
 
           // TODO: Rated docs error message?
-
           // Always show score from the "full set of docs", so need to call score
-
           return false;
-        }
+        };
 
         this.onError = function(errorText) {
           that.errorText = errorText;
@@ -378,7 +374,7 @@ angular.module('QuepidApp')
                 self.searcher.explainOther('{!terms f=id}' + ratedIDs.join(','), fieldSpec)
                   .then(function() {
                     var normed = svc.normalizeDocExplains(self, self.searcher, fieldSpec);
-                    self.setRatedDocs(normed, self.searcher.numFound);
+                    self.setRatedDocs(normed);
                     resolve();
                   });
               }, function(response) {
