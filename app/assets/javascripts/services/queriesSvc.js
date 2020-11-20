@@ -371,7 +371,7 @@ angular.module('QuepidApp')
                 var ratedIDs = self.ratings ? Object.keys(self.ratings) : []; 
                 ratedIDs = ratedIDs.sort().slice(0, 10);
 
-                self.searcher.explainOther('{!terms f=id}' + ratedIDs.join(','), fieldSpec)
+                self.searcher.explainOther('{!terms f=' + fieldSpec.id + '}' + ratedIDs.join(','), fieldSpec)
                   .then(function() {
                     var normed = svc.normalizeDocExplains(self, self.searcher, fieldSpec);
                     self.setRatedDocs(normed);
@@ -427,7 +427,7 @@ angular.module('QuepidApp')
           var fieldSpec = currSettings.createFieldSpec();
           var ratedIDs = self.ratings ? Object.keys(self.ratings) : [];
           ratedIDs = ratedIDs.sort().slice(self.ratedDocs.length);
-          return self.searcher.explainOther('{!terms f=id}' + ratedIDs.join(','), fieldSpec)
+          return self.searcher.explainOther('{!terms f=' + fieldSpec.id + '}' + ratedIDs.join(','), fieldSpec)
             .then(function() {
               var normed = svc.normalizeDocExplains(self, self.searcher, fieldSpec);
               self.ratedDocs = self.ratedDocs.concat(normed);
