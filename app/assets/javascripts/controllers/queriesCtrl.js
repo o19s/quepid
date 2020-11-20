@@ -27,7 +27,6 @@ angular.module('QuepidApp')
       caseSvc,
       customScorerSvc
     ) {
-      $scope.queriesSvc = queriesSvc;
 
       // Options for ui-sortable at http://api.jqueryui.com/sortable/
       var sortableOptions = {
@@ -223,7 +222,6 @@ angular.module('QuepidApp')
               lastScoreTracker = {
                 'score':      $scope.queries.avgQuery.lastScore.score,
                 'all_rated':  $scope.queries.avgQuery.lastScore.allRated,
-                'rated_only': queriesSvc.showOnlyRated,
                 'try_id':     tryNo,
                 'queries':    $scope.queries.avgQuery.lastScore.queries,
               };
@@ -236,7 +234,6 @@ angular.module('QuepidApp')
           var lastScoreTracker = {
             'score':      $scope.queries.avgQuery.lastScore.score,
             'all_rated':  $scope.queries.avgQuery.lastScore.allRated,
-            'rated_only': queriesSvc.showOnlyRated,
             'try_id':     tryNo,
             'queries':    $scope.queries.avgQuery.lastScore.queries,
           };

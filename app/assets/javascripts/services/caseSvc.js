@@ -79,15 +79,11 @@ angular.module('QuepidApp')
           }
         };
 
-        var params = {
-            'rated_only': queriesSvc.showOnlyRated
-        };
-
         theCase.fetchCaseScore = function() {
           // HTTP GET /api/cases/<int:caseId>/scores
           var url = '/api/cases/' + theCase.caseNo + '/scores';
 
-          return $http.get(url, {params: params})
+          return $http.get(url)
             .then(function(response) {
               theCase.lastScore = response.data;
 
@@ -99,7 +95,7 @@ angular.module('QuepidApp')
           // HTTP GET /api/cases/<int:caseId>/scores/all
           var url = '/api/cases/' + theCase.caseNo + '/scores/all';
 
-          return $http.get(url, {params: params})
+          return $http.get(url)
             .then(function(response) {
               theCase.scores = response.data.scores;
 

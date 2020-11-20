@@ -7,8 +7,7 @@ module Api
       before_action :check_case
 
       def index
-        rated_only = ActiveRecord::Type::Boolean.new.type_cast_from_user(params[:rated_only]) || false
-        @scores = @case.scores.where(rated_only: rated_only).includes(:annotation).limit(10)
+        @scores = @case.scores.includes(:annotation).limit(10)
 
         respond_with @scores
       end
@@ -32,8 +31,7 @@ module Api
       end
 
       def show
-        rated_only = ActiveRecord::Type::Boolean.new.type_cast_from_user(params[:rated_only]) || false
-        @score    = @case.scores.where(rated_only: rated_only).first
+        @score    = @case.scores.first
         @shallow  = false
 
         respond_with @score
@@ -50,7 +48,6 @@ module Api
           :score,
           :all_rated,
           :try_id,
-          :rated_only
         ).tap do |whitelisted|
           whitelisted[:queries] = params[:case_score][:queries] if params[:case_score][:queries]
         end

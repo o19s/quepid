@@ -560,7 +560,7 @@ describe('Service: caseSvc', function () {
     it('tracks the last score successfully', function() {
       var theCase = caseSvc.constructFromData(caseData);
 
-      $httpBackend.expectGET('/api/cases/1/scores?rated_only=false').respond(200, scoreData);
+      $httpBackend.expectGET('/api/cases/1/scores').respond(200, scoreData);
 
       theCase.fetchCaseScore()
         .then(function(response) { theCase = response; });

@@ -159,21 +159,6 @@ module Api
           assert_equal scores.length, acase.scores.length
         end
 
-        test 'respects the rated_only flag' do
-          now = DateTime.current
-          acase.scores.create(try_id: first_try.id,   user_id: user.id, created_at: now, score: 80, rated_only: true)
-          acase.scores.create(try_id: second_try.id,  user_id: user.id, created_at: now, score: 80, rated_only: false)
-
-          get :index, case_id: acase.id, rated_only: true
-
-          assert_response :ok
-
-          scores = JSON.parse(response.body)['scores']
-
-          assert_instance_of Array, scores
-          assert_equal scores.length, 1
-          assert scores[0]['rated_only']
-        end
       end
 
       describe 'Fetches case last score' do
