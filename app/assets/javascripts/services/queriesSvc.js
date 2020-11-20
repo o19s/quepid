@@ -22,6 +22,8 @@ angular.module('QuepidApp')
     'DocListFactory',
     'diffResultsSvc',
     'searchErrorTranslatorSvc',
+    'esExplainExtractorSvc',
+    'solrExplainExtractorSvc',
     function queriesSvc(
       $http,
       $timeout,
@@ -37,7 +39,9 @@ angular.module('QuepidApp')
       ratingsStoreSvc,
       DocListFactory,
       diffResultsSvc,
-      searchErrorTranslatorSvc
+      searchErrorTranslatorSvc,
+      esExplainExtractorSvc,
+      solrExplainExtractorSvc
     ) {
 
       var caseNo = -1;
@@ -59,51 +63,14 @@ angular.module('QuepidApp')
 
       this.getCaseNo = getCaseNo;
       this.createSearcherFromSettings = createSearcherFromSettings;
+      this.normalizeDocExplains = normalizeDocExplains;
       this.toggleShowOnlyRated = toggleShowOnlyRated;
 
       svc.bootstrapQueries = bootstrapQueries;
       svc.showOnlyRated = false;
 
-      function createSearcherFromSettings(passedInSettings, query, ratings) {
+      function createSearcherFromSettings(passedInSettings, query) {
         var args = angular.copy(passedInSettings.selectedTry.args);
-        var ratedIds = ratings ? Object.keys(ratings) : [];
-
-        // Show only rated cases
-        if (svc.showOnlyRated) {
-          var defTypeGuess = passedInSettings.selectedTry.defTypeGuess || 'lucene';
-
-          // Elastic case
-          if (passedInSettings.searchEngine === 'es') {
-            var mainQuery = args['query'];
-            args = {
-              'query': {
-                'bool': {
-                  'should': mainQuery,
-                  'filter': {
-                    'ids': {
-                      'values': ratedIds
-                    }
-                  }
-                }
-              }
-            };
-          // Solr case
-          } else {
-            if (args['fq'] === undefined) {
-              args['fq'] = [];
-            }
-
-            args['defType'] = 'lucene';
-            args['qfilter'] = '{!terms f=' + passedInSettings.createFieldSpec().id + '}' + ratedIds.join(',');
-
-            if (args['q'][0].startsWith('{!')) {
-              args['quepidQ'] = args['q'][0];
-            } else {
-              args['quepidQ'] = '{!' + defTypeGuess + '}' + args['q'][0];
-            }
-            args['q'][0] = '{!bool filter=$qfilter should=$quepidQ}';
-          }
-        }
 
         if (passedInSettings && passedInSettings.selectedTry) {
           return searchSvc.createSearcher(
@@ -120,9 +87,26 @@ angular.module('QuepidApp')
         }
       }
 
+      function normalizeDocExplains(query, searcher, fieldSpec) {
+        var normed = [];
+
+        if (searcher.type === 'es') {
+          normed = esExplainExtractorSvc.docsWithExplainOther(searcher.docs, fieldSpec);
+        } else {
+          normed = solrExplainExtractorSvc.docsWithExplainOther(searcher.docs, fieldSpec, searcher.othersExplained);
+        }
+
+        var docs = [];
+        angular.forEach(normed, function(doc) {
+          docs.push(query.ratingsStore.createRateableDoc(doc));
+        });
+
+        return docs;
+      };
+
       function toggleShowOnlyRated() {
         svc.showOnlyRated = !svc.showOnlyRated;
-        caseTryNavSvc.navigateTo({tryNo: caseTryNavSvc.getTryNo()});
+        //caseTryNavSvc.navigateTo({tryNo: caseTryNavSvc.getTryNo()});
       }
 
       this.unscoredQueries = {};
@@ -148,6 +132,7 @@ angular.module('QuepidApp')
         self.scorerEnbl     = false;
         self.scorer         = null;
         self.docs           = [];
+        self.ratedDocs      = [];
         self.numFound       = 0;
         self.test           = null;
         self.options        = {};
@@ -333,6 +318,18 @@ angular.module('QuepidApp')
           return error;
         };
 
+        this.setRatedDocs = function(ratedDocs, numFound) {
+          var fieldSpec = currSettings.createFieldSpec();
+
+          that.ratedDocs = ratedDocs;
+
+          // TODO: Rated docs error message?
+
+          // Always show score from the "full set of docs", so need to call score
+
+          return false;
+        }
+
         this.onError = function(errorText) {
           that.errorText = errorText;
         };
@@ -353,8 +350,7 @@ angular.module('QuepidApp')
 
             self.searcher = svc.createSearcherFromSettings(
               currSettings,
-              self.queryText,
-              self.ratings
+              self.queryText
             );
             resultsReturned = false;
 
@@ -375,7 +371,16 @@ angular.module('QuepidApp')
                   self.othersExplained = self.searcher.othersExplained;
                 }
 
-                resolve();
+                var fieldSpec = currSettings.createFieldSpec();
+                var ratedIDs = self.ratings ? Object.keys(self.ratings) : []; 
+                ratedIDs = ratedIDs.sort().slice(0, 10);
+
+                self.searcher.explainOther('{!terms f=id}' + ratedIDs.join(','), fieldSpec)
+                  .then(function() {
+                    var normed = svc.normalizeDocExplains(self, self.searcher, fieldSpec);
+                    self.setRatedDocs(normed, self.searcher.numFound);
+                    resolve();
+                  });
               }, function(response) {
                 self.linkUrl = self.searcher.linkUrl;
                 self.setDocs([], 0);
@@ -415,6 +420,23 @@ angular.module('QuepidApp')
               return response;
             });
         };
+
+      this.ratedPaginate = function() {
+          var self = this;
+
+          if (self.searcher === null) {
+            return;
+          }
+
+          var fieldSpec = currSettings.createFieldSpec();
+          var ratedIDs = self.ratings ? Object.keys(self.ratings) : [];
+          ratedIDs = ratedIDs.sort().slice(self.ratedDocs.length);
+          return self.searcher.explainOther('{!terms f=id}' + ratedIDs.join(','), fieldSpec)
+            .then(function() {
+              var normed = svc.normalizeDocExplains(self, self.searcher, fieldSpec);
+              self.ratedDocs = self.ratedDocs.concat(normed);
+            });
+      };
 
         this.saveNotes = function(notes) {
           var that = this;
@@ -694,40 +716,6 @@ angular.module('QuepidApp')
 
 
       this.searchAll = function() {
-        // Determine the defType if solr and showRatedOnly
-        // TODO: Move to splainer or another quepid service?
-        if (currSettings.selectedTry.searchEngine === 'solr' && svc.showOnlyRated) {
-          var args = angular.copy(currSettings.selectedTry.args);
-          args['echoParams'] = 'all';
-          args['rows'] = 0;
-          args['wt'] = 'json';
-
-          var url = currSettings.selectedTry.searchUrl;
-          if (!url.startsWith('http')) {
-            url = 'http://' + url;
-          }
-
-          var trustedUrl = $sce.trustAsResourceUrl(url);
-          var promise = $http.jsonp(trustedUrl, {params: args, jsonpCallbackParam: 'json.wrf' })
-            .then(function(data) {
-              try {
-                currSettings.selectedTry.defTypeGuess = data.data['responseHeader']['params']['defType'];
-              } catch (err) {
-                // No-op
-              }
-            }, function() {
-              $log.debug('Unable to determine defType');
-            });
-
-          return promise.then(function() {
-            return svc.prepareSearchPromises();
-          });
-        } else {
-          return svc.prepareSearchPromises();
-        }
-      };
-
-      this.prepareSearchPromises = function() {
         var promises = [];
 
         angular.forEach(this.queries, function(query) {

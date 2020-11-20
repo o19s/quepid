@@ -8,6 +8,8 @@ angular.module('QuepidApp')
       $scope, $uibModal, $log, $window,
       rateBulkSvc, userSvc, queriesSvc, queryViewSvc, settingsSvc
     ) {
+      $scope.queriesSvc = queriesSvc;
+
       // Settings for query display
       var DisplayConfig = function() {
         this.notes = false;
@@ -70,6 +72,10 @@ angular.module('QuepidApp')
           $scope.diff.disable();
         }
       });*/
+
+      $scope.query.getNumFound = function() {
+        return queriesSvc.showOnlyRated ? Object.keys($scope.query.ratings).length : $scope.query.numFound;
+      };
 
       $scope.query.isNotAllRated = function() {
         var score = $scope.query.score();
