@@ -158,7 +158,6 @@ module Api
           assert_equal scores.length, 2
           assert_equal scores.length, acase.scores.length
         end
-
       end
 
       describe 'Fetches case last score' do

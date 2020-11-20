@@ -3,7 +3,6 @@
 shallow  ||= false
 no_tries ||= false
 no_teams ||= false
-rated_only ||= false
 
 unless no_teams
   teams = acase.teams.find_all do |o|
