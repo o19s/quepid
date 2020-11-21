@@ -239,6 +239,8 @@ ActiveRecord::Schema.define(version: 20200911192850) do
   add_index "users", ["email"], name: "ix_user_email", unique: true, using: :btree
   add_index "users", ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true, length: {"reset_password_token"=>191}, using: :btree
 
+  puts "I AM COMMENTED OUT THE FK FROM ANNOTATIONS TO USERS DUE TO BIGINT ISSUE"
+  if (1 == 2) then
   add_foreign_key "annotations", "users"
   add_foreign_key "case_metadata", "cases", name: "case_metadata_ibfk_1"
   add_foreign_key "case_metadata", "users", name: "case_metadata_ibfk_2"
@@ -262,4 +264,5 @@ ActiveRecord::Schema.define(version: 20200911192850) do
   add_foreign_key "teams_scorers", "teams"
   add_foreign_key "tries", "cases", name: "tries_ibfk_1"
   add_foreign_key "users", "scorers", column: "default_scorer_id"
+  end
 end

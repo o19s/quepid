@@ -18,6 +18,11 @@
 
 # rubocop:disable Metrics/ClassLength
 class Case < ActiveRecord::Base
+  # Constants
+  DEFAULT_NAME = 'Movies Search'
+
+
+
   # Associations
   # too late now!
   # rubocop:disable Rails/HasAndBelongsToMany
@@ -65,6 +70,12 @@ class Case < ActiveRecord::Base
   before_create :set_scorer
   after_create  :add_default_try, if: proc { |a| a.tries.empty? }
 
+  after_initialize do |c|
+
+    c.archived = false if c.archived.nil?
+
+  end
+
   # Scopes
   scope :not_archived,  -> { where('`cases`.`archived` = false OR `cases`.`archived` IS NULL') }
   scope :for_user,      ->(user) {
@@ -81,15 +92,7 @@ class Case < ActiveRecord::Base
     )
   }
 
-  # Constants
-  DEFAULT_NAME = 'Movies Search'
 
-  def initialize attributes = nil, options = {}
-    super
-
-    # TODO: Move this to be the default value in MySQL
-    self.archived = false if archived.nil?
-  end
 
   # rubocop:disable Metrics/MethodLength
   # rubocop:disable Metrics/ParameterLists

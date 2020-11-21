@@ -26,7 +26,7 @@
 
 class User < ActiveRecord::Base
   # Associations
-  belongs_to :default_scorer, class_name: 'Scorer'
+  belongs_to :default_scorer, class_name: 'Scorer', optional: true # for communal scorers there isn't a owner
 
   has_many :cases,
            dependent:   :destroy

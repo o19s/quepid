@@ -1,12 +1,12 @@
 # This file should contain all the record creation needed to seed the database with its default values.
-# The data can then be loaded with the rake db:seed (or created alongside the db with db:setup).
+# The data can then be loaded with the rails db:seed command (or created alongside the database with db:setup).
 #
 # Examples:
 #
 #   cities = City.create([{ name: 'Chicago' }, { name: 'Copenhagen' }])
 #   Mayor.create(name: 'Emanuel', city: cities.first)
 
-Scorer.where(name: 'nDCG@10').first_or_create(
+Scorer.where(name: 'nDCG@10').first_or_create!(
   scale:                  (0..3).to_a,
   scale_with_labels:      {"0":"Poor","1":"Fair","2":"Good","3":"Perfect"},
   show_scale_labels:      true,

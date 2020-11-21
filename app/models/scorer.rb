@@ -24,7 +24,7 @@ require 'scale_serializer'
 
 class Scorer < ActiveRecord::Base
   # Associations
-  belongs_to :owner, class_name: 'User'
+  belongs_to :owner, class_name: 'User', optional: true # for communal scorers there isn't a owner
 
   # not sure about this!
   # has_many :users, dependent: :nullify
@@ -35,7 +35,7 @@ class Scorer < ActiveRecord::Base
                           join_table: 'teams_scorers'
   # rubocop:enable Rails/HasAndBelongsToMany
 
-  belongs_to :query, inverse_of: :test
+  belongs_to :query, inverse_of: :test, optional: true # only applies to unit test style scorers.
 
   # Validations
   validates_with ScaleValidator
@@ -70,11 +70,10 @@ class Scorer < ActiveRecord::Base
   serialize :scale, ScaleSerializer
   serialize :scale_with_labels, JSON
 
-  def initialize attributes = nil, options = {}
-    super
-
-    self.scale      = []       if scale.blank?
-    self.query_test = false    if query_test.blank?
+  after_initialize do |scorer|
+    puts "You have initialized an object called score with name: #{scorer.name}!"
+    scorer.scale      = []       if scorer.scale.blank?
+    scorer.query_test = false    if scorer.query_test.blank?
 
     # This is not always accurate since a scorer can be deleted and thus
     # we could presumably have two scorers with the same name.
@@ -82,8 +81,9 @@ class Scorer < ActiveRecord::Base
     # than nothing.
     # Ideally users would provide a meaningful name for scorers in order
     # to be able to identify them easily.
-    self.name       = "Scorer #{Scorer.count + 1}" if name.blank?
+    scorer.name       = "Scorer #{Scorer.count + 1}" if scorer.name.blank?
   end
+
 
   def scale_list=value
     self.scale = value.split(',') if value.present?
