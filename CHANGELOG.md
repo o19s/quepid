@@ -26,6 +26,8 @@
 
 * Don't show the Sharing icon for communal scorers, since they are implicitly shared globally!  https://github.com/o19s/quepid/pull/251 by @epugh fixes https://github.com/o19s/quepid/issues/247.
 
+* Allow the export and import cycle of ratings using both CSV and RRE formats to include queries with no rated documents. Don't create a partial rating on import where we only have a doc id but no rating.  https://github.com/o19s/quepid/pull/252 by @epugh fixes https://github.com/o19s/quepid/issues/244 by @LiuCao0614
+
 ### Bugs
 
 * Discovered that the migrations from communal scorers being `@5` to `@10` didn't always run cleanly.  Commits 94dd23990422901082d79b121c1ca86a76907dc3, 8317b543530cc387d5cb89b4942acea5da57ce23, and 19b046485db530162c213a593e5b2e9df8fbbf07 to deal with this.
