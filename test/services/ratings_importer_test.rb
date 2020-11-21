@@ -48,7 +48,6 @@ class RatingsImporterTest < ActiveSupport::TestCase
       assert_nil rating
       query = Query.find_by(case_id: owned_case.id, query_text: 'Mexican Food')
       assert_not_nil query
-
     end
 
     test 'includes queries with no ratings and no docs as queries but no ratings' do
@@ -79,8 +78,7 @@ class RatingsImporterTest < ActiveSupport::TestCase
   test 'handles when a doc id does not exist in our index, it is still inserted' do
     ratings = [
       { query_text: 'Swedish Food',   doc_id: ' 720784-021190', rating: nil },
-      { query_text: 'Swedish Food',   doc_id: 'NON_EXISTANT_DOC_ID', rating: '6' },
-
+      { query_text: 'Swedish Food',   doc_id: 'NON_EXISTANT_DOC_ID', rating: '6' }
     ]
 
     ratings_importer = RatingsImporter.new owned_case, ratings, options
@@ -91,6 +89,5 @@ class RatingsImporterTest < ActiveSupport::TestCase
     rating = Rating.find_by(doc_id: 'NON_EXISTANT_DOC_ID')
     assert_not_nil(rating)
     assert_equal 'Swedish Food', rating.query.query_text
-
   end
 end
