@@ -167,9 +167,9 @@ angular.module('QuepidApp')
         var alert;
         for (i = 1; i < lines.length; i++) {
           var line = lines[i];
-          if (line && line.split(ctrl.csv.separator).length !== 3){
+          if (line && line.split(ctrl.csv.separator).length > 3){
             if (alert === undefined){
-              alert = 'Must have three columns for every line in CSV file: ';
+              alert = 'Must have three (or fewer) columns for every line in CSV file: ';
               alert += '<br /><strong>';
             }
             alert += 'line ' + (i + 1) + ': ';

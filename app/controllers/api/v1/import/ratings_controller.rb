@@ -9,6 +9,7 @@ module Api
 
         # rubocop:disable Metrics/MethodLength
         # rubocop:disable Metrics/AbcSize
+        # rubocop:disable Metrics/PerceivedComplexity
         def create
           file_format = params[:file_format]
           file_format = 'hash' unless params[:file_format]
@@ -23,15 +24,24 @@ module Api
             rre_json = JSON.parse(params[:rre_json])
             rre_json['queries'].each do |rre_query|
               query_text = rre_query['placeholders']['$query']
-              rre_query['relevant_documents'].each do |rating_value, doc_ids|
-                doc_ids.each do |doc_id|
-                  rating = {
-                    query_text: query_text,
-                    doc_id:     doc_id,
-                    rating:     rating_value,
-                  }
-                  ratings << rating
+              if rre_query['relevant_documents'] # deal with if a query had no rated docs.
+                rre_query['relevant_documents'].each do |rating_value, doc_ids|
+                  doc_ids.each do |doc_id|
+                    rating = {
+                      query_text: query_text,
+                      doc_id:     doc_id,
+                      rating:     rating_value,
+                    }
+                    ratings << rating
+                  end
                 end
+              else
+                rating = {
+                  query_text: query_text,
+                  doc_id:     nil,
+                  rating:     nil,
+                }
+                ratings << rating
               end
             end
           elsif 'ltr' == file_format
@@ -71,6 +81,7 @@ module Api
           end
           # rubocop:enable Lint/RescueException
         end
+        # rubocop:enable Metrics/PerceivedComplexity
 
         def rating_from_ltr_line ltr_line
           # Pattern: 3 qid:1 # 1370 star trek
