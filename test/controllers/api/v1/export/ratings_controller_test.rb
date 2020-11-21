@@ -38,6 +38,11 @@ module Api
           let(:the_case) { cases(:one) }
 
           test 'returns case info' do
+            # add a query with no docs or ratings
+            query = Query.new query_text: '=cmd', case_id: the_case.id
+            the_case.queries << query
+            the_case.save!
+
             get :show, case_id: the_case.id, file_format: 'rre'
             assert_response :ok
 
@@ -47,6 +52,8 @@ module Api
             assert_equal body['index'],                                 the_case.tries.latest.index_name_from_search_url
             assert_equal body['queries'].size,                          the_case.queries.size
             assert_equal body['queries'][0]['placeholders']['$query'],  the_case.queries[0].query_text
+            assert_equal body['queries'][2]['placeholders']['$query'],  the_case.queries[2].query_text
+            assert_nil body['queries'][2]['relevant_documents']
           end
         end
 
@@ -54,17 +61,23 @@ module Api
           let(:the_case) { cases(:one) }
 
           test 'returns case w/ queries and ratings info' do
-            # fixme, there must be a better approach.  We need a case with ratings to make this work
-            @rating = the_case.queries[0].ratings.find_or_create_by doc_id: '999a'
-            @rating.rating = 99
-            @rating.save!
+            rating = the_case.queries[0].ratings.find_or_create_by doc_id: '999a'
+            rating.rating = 99
+            rating.save!
+
+            # add a query with no docs or ratings
+            query = Query.new query_text: '=cmd', case_id: the_case.id
+            the_case.queries << query
+            the_case.save!
 
             get :show, case_id: the_case.id, format: :csv, file_format: 'basic'
             assert_response :ok
             csv = CSV.parse(response.body, headers: true)
 
-            assert_equal csv[0]['query'],                               the_case.queries[0].query_text
-            assert_equal csv[0]['rating'],                              the_case.queries[0].ratings[0].rating.to_s
+            assert_nil csv[0]['rating']
+            assert_equal csv[0]['query'],                               ' =cmd' # notice csv injection vulnerability
+            assert_equal csv[1]['query'],                               the_case.queries[0].query_text
+            assert_equal csv[1]['rating'],                              the_case.queries[0].ratings[0].rating.to_s
           end
         end
 
