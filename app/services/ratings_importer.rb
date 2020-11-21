@@ -109,7 +109,7 @@ class RatingsImporter
       doc_id      = row[:doc_id]
       rating      = row[:rating]
 
-      if doc_id.present? # filter out creating ratings where we have no document
+      if doc_id.present? and rating.present? # Only create ratings for document and rating pairs, queries are always created.
         print_step "Importing rating: #{rating} for query: #{query_text} and doc: #{doc_id}"
 
         query   = @queries[query_text]
