@@ -3,7 +3,9 @@
     {{ ctrl.scorer.name }}
 
     <span class="item-actions">
-      <share-scorer scorer="ctrl.scorer"></share-scorer>
+      <span ng-if="!ctrl.scorer.communal">
+        <share-scorer scorer="ctrl.scorer"></share-scorer>
+      </span>
       <edit-scorer scorer="ctrl.scorer"></edit-scorer>
       <span ng-if="ctrl.team">
         <action-icon title="'Remove'" icon-class="'fa fa-archive'" fn-call="ctrl.removeScorer()"></action-icon>
