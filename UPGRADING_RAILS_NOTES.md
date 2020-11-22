@@ -17,3 +17,6 @@ FOREIGN KEY (`user_id`)
 /usr/local/bundle/gems/mysql2-0.5.3/lib/mysql2/client.rb:131:in `block in query'
 /usr/local/bundle/gems/mysql2-0.5.3/lib/mysql2/client.rb:130:in `handle_interrupt'
 /usr/local/bundle/gems/mysql2-0.5.3/lib/mysql2/client.rb:130:in `query'
+
+
+Don't forget to test importing ratings with clear all, I removed a convenicne case.ratings method, so...

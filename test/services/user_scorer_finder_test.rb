@@ -15,8 +15,13 @@ class UserScorerFinderTest < ActiveSupport::TestCase
   describe 'Find all scorers' do
     test 'returns an array of scorers' do
       result = service.all
-
-      assert_instance_of Scorer::ActiveRecord_Relation, result
+      puts "result is?"
+      puts result.class.to_s
+      require 'pp'
+      #pp result
+      assert_equal "Scorer::ActiveRecord_Relation", result.class.to_s
+      puts result.size
+      #assert_instance_of Scorer::ActiveRecord_Relation, result
     end
 
     test 'includes scorers owned by user' do

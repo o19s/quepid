@@ -36,7 +36,13 @@ class RatingsImporter
   def import
     if @options[:clear_existing]
       print_step 'Clearing all ratings'
-      Rating.delete @acase.ratings.ids
+      ratings = []
+      @acase.queries.each do |query|
+        query.ratings.each do |rating|
+          ratings << rating.id
+        end
+      end
+      Rating.delete ratings
     end
 
     #

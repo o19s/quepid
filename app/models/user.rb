@@ -87,7 +87,7 @@ class User < ActiveRecord::Base
   # Callbacks
   before_create :set_defaults
   before_save   :encrypt_password
-  after_create  :add_default_case
+  #after_create  :add_default_case
 
   # Devise hacks since we only use the recoverable module
   attr_accessor :password_confirmation
@@ -161,7 +161,8 @@ class User < ActiveRecord::Base
     true
   end
 
-  def add_default_case
-    cases.create case_name: Case::DEFAULT_NAME
-  end
+  #def add_default_case
+    #puts "We used to do this, but why?  Lots of places we might create a user and not have a case....  what about a rater user?   they wouldn't have a case."
+    #cases.create case_name: Case::DEFAULT_NAME
+  #end
 end

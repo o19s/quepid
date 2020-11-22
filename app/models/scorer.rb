@@ -46,6 +46,11 @@ class Scorer < ActiveRecord::Base
   # we can't do OR statements in ARel.  So, working around it outside
   # this scope.
   scope :for_user, ->(user) {
+    where(owner_id: user.id).or(where(communal:true)).or(Team.where(owner: user.id))
+
+  }
+
+  scope :for_user2, ->(user) {
     where.any_of(
       teams:         {
         owner_id: user.id,
@@ -71,7 +76,6 @@ class Scorer < ActiveRecord::Base
   serialize :scale_with_labels, JSON
 
   after_initialize do |scorer|
-    puts "You have initialized an object called score with name: #{scorer.name}!"
     scorer.scale      = []       if scorer.scale.blank?
     scorer.query_test = false    if scorer.query_test.blank?
 

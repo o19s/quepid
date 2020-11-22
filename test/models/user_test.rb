@@ -100,17 +100,18 @@ class UserTest < ActiveSupport::TestCase
   end
 
   describe 'Default Case' do
-    test 'when user is created a default case is automatically created' do
-      assert_difference 'Case.count' do
+    # we used to create the default case for every user, but that assumptions doesn't make sense anymore.
+    test 'when user is created a default case is NOT automatically created' do
+      assert_same 'Case.count' do
         user = User.create email: 'foo@example.com', password: 'foobar'
 
         assert_not_nil  user.cases
-        assert_equal    user.cases.count, 1
+        assert_equal    user.cases.count, 0
 
-        first_case = user.cases.first
+        #first_case = user.cases.first
 
-        assert_not_nil  first_case
-        assert_equal    first_case.case_name, Case::DEFAULT_NAME
+        #assert_not_nil  first_case
+        #assert_equal    first_case.case_name, Case::DEFAULT_NAME
       end
     end
   end

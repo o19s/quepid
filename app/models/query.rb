@@ -27,8 +27,8 @@ class Query < ActiveRecord::Base
   include Arrangement::Item
 
   # Associations
-  belongs_to  :scorer
-  belongs_to  :case, autosave: true
+  belongs_to  :scorer, optional: true
+  belongs_to  :case, autosave: true, optional: false
 
   has_many    :ratings,
               dependent:  :destroy
@@ -46,7 +46,8 @@ class Query < ActiveRecord::Base
             presence: true
 
   # Scopes
-  default_scope -> { where.any_of({ deleted: false }, deleted: nil) }
+  #default_scope -> { where.any_of({ deleted: false }, deleted: nil) }
+  default_scope -> { where(deleted: false).or(where(deleted: nil)) }
 
   # TODO: use the acts_as_paranoid gem instead
   # Which requires change to the db, that is not going to be done in the
