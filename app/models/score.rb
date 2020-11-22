@@ -25,7 +25,7 @@ class Score < ActiveRecord::Base
   belongs_to :case
   belongs_to :user
   belongs_to :try
-  belongs_to :annotation
+  belongs_to :annotation, optional: true
 
   # Validations
   validates :case_id,

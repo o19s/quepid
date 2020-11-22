@@ -108,10 +108,6 @@ class UserTest < ActiveSupport::TestCase
         assert_not_nil  user.cases
         assert_equal    user.cases.count, 0
 
-        #first_case = user.cases.first
-
-        #assert_not_nil  first_case
-        #assert_equal    first_case.case_name, Case::DEFAULT_NAME
       end
     end
   end

@@ -14,7 +14,7 @@
 
 class Annotation < ActiveRecord::Base
   # Associations
-  belongs_to  :user
+  belongs_to  :user, optional: false   
   has_one     :score, dependent: :destroy
   has_one     :case, through: :score
 
