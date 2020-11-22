@@ -6,11 +6,10 @@ class UserScorerFinder
   def initialize user
     @user = user
 
-#    @scorers = Scorer.includes(teams: [ :members ])
-#      .references(:teams, :users)
-#      .for_user(@user)
-    @scorers = Scorer.references(:teams, :users)
+    @scorers = Scorer.includes(teams: [ :members ])
+      .references(:teams, :users)
       .for_user(@user)
+
   end
 
   def method_missing method_name, *arguments, &block

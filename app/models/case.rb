@@ -77,20 +77,17 @@ class Case < ApplicationRecord
   # Scopes
   scope :not_archived,  -> { where('`cases`.`archived` = false OR `cases`.`archived` IS NULL') }
 
-  scope :for_user,      ->(user) {
-    where.any_of(
-      teams:         {
-        owner_id: user.id,
-      },
-      teams_members: {
-        member_id: user.id,
-      },
-      cases:         {
-        user_id: user.id,
-      }
-    )
+  scope :for_user, ->(user) {
+    joins('
+      LEFT OUTER JOIN `case_metadata` ON `case_metadata`.`case_id` = `cases`.`id`
+      LEFT OUTER JOIN `teams_cases` ON `teams_cases`.`case_id` = `cases`.`id`
+      LEFT OUTER JOIN `teams` ON `teams`.`id` = `teams_cases`.`team_id`
+      LEFT OUTER JOIN `teams_members` ON `teams_members`.`team_id` = `teams`.`id`
+      LEFT OUTER JOIN `users` ON `users`.`id` = `teams_members`.`member_id`
+    ').where('
+        `teams`.`owner_id` = ? OR `teams_members`.`member_id` = ? OR `cases`.`user_id` = ?
+    ', user.id, user.id, user.id)
   }
-
 
   # rubocop:disable Metrics/MethodLength
   # rubocop:disable Metrics/ParameterLists

@@ -41,27 +41,18 @@ class Scorer < ActiveRecord::Base
   validates_with ScaleValidator
 
   # Scopes
-  # The :for_user scope should also include in the scorers: array
-  # the owner_id: user.id OR communal:true clause, but in Rails 4
-  # we can't do OR statements in ARel.  So, working around it outside
-  # this scope.
   scope :for_user, ->(user) {
-    where(owner_id: user.id).or(where(communal:true)).or(Team.where(owner: user.id))
-
-  }
-
-  scope :for_user2, ->(user) {
-    where.any_of(
-      teams:         {
-        owner_id: user.id,
-      },
-      teams_members: {
-        member_id: user.id,
-      },
-      scorers:       {
-        owner_id: user.id,
-      }
-    )
+    joins('
+      LEFT OUTER JOIN `teams_scorers` ON `teams_scorers`.`scorer_id` = `scorers`.`id`
+      LEFT OUTER JOIN `teams` ON `teams`.`id` = `teams_scorers`.`team_id`
+      LEFT OUTER JOIN `teams_members` ON `teams_members`.`team_id` = `teams`.`id`
+      LEFT OUTER JOIN `users` ON `users`.`id` = `teams_members`.`member_id`
+    ').where('
+      `teams`.`owner_id` = ?
+      OR `teams_members`.`member_id` = ?
+      OR `scorers`.`owner_id` = ?
+      OR `scorers`.`communal` = true
+    ', user.id, user.id, user.id)
   }
 
   scope :communal, -> { where(communal: true) }

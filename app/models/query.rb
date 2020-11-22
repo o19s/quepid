@@ -46,7 +46,6 @@ class Query < ActiveRecord::Base
             presence: true
 
   # Scopes
-  #default_scope -> { where.any_of({ deleted: false }, deleted: nil) }
   default_scope -> { where(deleted: false).or(where(deleted: nil)) }
 
   # TODO: use the acts_as_paranoid gem instead
