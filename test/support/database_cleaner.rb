@@ -1,15 +1,17 @@
 # frozen_string_literal: true
 
-DatabaseCleaner.strategy = :transaction
+#DatabaseCleaner.strategy = :transaction
 
 module MiniTest
   class Spec
     before :each do
-      DatabaseCleaner.start
+      puts "DC.start"
+#      DatabaseCleaner.start
     end
 
     after :each do
-      DatabaseCleaner.clean
+      puts "DC>end"
+      #DatabaseCleaner.clean
     end
   end
 end

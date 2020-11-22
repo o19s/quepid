@@ -133,15 +133,22 @@ There are three types of tests that you can run:
 These tests run the tests from the Rails side (mainly API controllers, and models):
 
 ```
-bin/docker r bin/rake test
+bin/docker r rails test
 ```
 
 ** Make sure you don't run `bin/docker r bundle exec rake test`, you will get `uninitialized constant DatabaseCleaner` errors **
 
-Run a single test via:
+Run a single test file via:
 
 ```
-bin/docker r bin/rake test TEST=./test/controllers/api/v1/bulk/queries_controller_test.rb
+//bin/docker r bin/rake test TEST=./test/controllers/api/v1/bulk/queries_controller_test.rb
+bin/docker r rails test test/models/user_test.rb
+```
+
+Or even a single test in a test file by passing in the line number!
+
+```
+bin/docker r rails test test/models/user_test.rb:33
 ```
 
 If you need to reset your test database setup then run:

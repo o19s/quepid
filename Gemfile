@@ -65,7 +65,7 @@ group :development do
 end
 
 group :test do
-  gem 'database_cleaner'
+  gem 'database_cleaner' # apparently not needed in Rails 5.1 anymore!
   gem 'minitest-reporters', '>= 0.5.0'
   gem 'mocha', '~> 1.11'
   gem 'simplecov', require: false
