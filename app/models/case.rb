@@ -67,14 +67,16 @@ class Case < ApplicationRecord
   validates_with ScorerExistsValidator
 
   # Callbacks
-  after_create  :set_scorer
+  #after_create  :set_scorer
   #after_create  :add_default_try
 
   after_initialize do |c|
     c.archived = false if c.archived.nil?
   end
 
-  # very confused what after_create doesn't run, but after_initialize does...
+  # very confused why after_create doesn't run, but after_initialize does when
+  # we migrated from Rails 4 to Rails 5.
+
   after_initialize do |c|
     if c.tries.empty?
       try_number  = (last_try_number || -1) + 1
@@ -82,6 +84,16 @@ class Case < ApplicationRecord
       the_try.case = c
       c.tries << the_try
       update last_try_number: the_try.try_number
+    end
+  end
+
+  after_initialize do |c|
+    unless c.scorer_id.present?
+      c.scorer = if user&.default_scorer
+                    user.default_scorer
+                  else
+                    Scorer.system_default_scorer
+                  end
     end
   end
 
@@ -153,7 +165,8 @@ class Case < ApplicationRecord
                       user.default_scorer
                     else
                       Scorer.system_default_scorer
-    end              end
+                    end
+    end
   end
 
   def add_default_try

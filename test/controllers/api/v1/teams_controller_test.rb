@@ -27,7 +27,7 @@ module Api
           count     = jane.owned_teams.count
           team_name = 'test team'
 
-          post :create, name: team_name
+          post :create, params: { name: team_name }
 
           assert_response :ok
 
@@ -48,7 +48,7 @@ module Api
         end
 
         test 'requires a unique team name' do
-          post :create, name: the_team.name
+          post :create, params: { name: the_team.name }
 
           assert_response :bad_request
 
@@ -63,7 +63,7 @@ module Api
             team_name = 'test team'
 
             perform_enqueued_jobs do
-              post :create, name: team_name
+              post :create, params: { name: team_name }
 
               assert_response :ok
             end
@@ -73,12 +73,12 @@ module Api
 
       describe 'Fetching a team' do
         test 'returns a not found error if the user does not have access to the team' do
-          get :show, team_id: other_team.id
+          get :show, params: { team_id: other_team.id }
           assert_response :not_found
         end
 
         test 'returns team info when user owns team' do
-          get :show, team_id: the_team.id
+          get :show, params: { team_id: the_team.id }
           assert_response :ok
 
           body = JSON.parse(response.body)
@@ -89,7 +89,7 @@ module Api
         end
 
         test 'returns team info user is member of team' do
-          get :show, team_id: shared_team.id
+          get :show, params: { team_id: shared_team.id }
           assert_response :ok
 
           body = JSON.parse(response.body)
@@ -102,19 +102,19 @@ module Api
 
       describe 'Deleting an team' do
         test 'return a forbidden error when user does not own the team' do
-          delete :destroy, team_id: shared_team.id
+          delete :destroy, params: { team_id: shared_team.id }
 
           assert_response :forbidden
         end
         test 'return a not found error when user does not have access to the team' do
-          delete :destroy, team_id: other_team.id
+          delete :destroy, params: { team_id: other_team.id }
 
           assert_response :not_found
         end
 
         test 'successfully deletes team if user owns the team' do
           assert_difference 'user.owned_teams.count', -1 do
-            delete :destroy, team_id: the_team.id
+            delete :destroy, params: { team_id: the_team.id }
 
             assert_response :no_content
           end
@@ -125,7 +125,7 @@ module Api
             expects_any_ga_event_call
 
             perform_enqueued_jobs do
-              delete :destroy, team_id: the_team.id
+              delete :destroy, params: { team_id: the_team.id }
 
               assert_response :no_content
             end
@@ -136,7 +136,7 @@ module Api
       describe 'Updating teams' do
         describe 'when team does not exist' do
           test 'returns not found error' do
-            put :update, team_id: 'foo', name: 'foo'
+            put :update, params: { team_id: 'foo', name: 'foo' }
 
             assert_response :not_found
           end
@@ -144,7 +144,7 @@ module Api
 
         describe 'when changing the team name' do
           test 'updates name successfully when user owns team' do
-            put :update, team_id: the_team.id, name: 'New Name'
+            put :update, params: { team_id: the_team.id, name: 'New Name' }
 
             assert_response :ok
 
@@ -153,13 +153,13 @@ module Api
           end
 
           test 'returns a forbidden error when user does not own the team' do
-            put :update, team_id: shared_team.id, name: 'New Name'
+            put :update, params: { team_id: shared_team.id, name: 'New Name' }
 
             assert_response :forbidden
           end
 
           test 'returns a not found error when user does not have access to the team' do
-            put :update, team_id: other_team.id, name: 'New Name'
+            put :update, params: { team_id: other_team.id, name: 'New Name' }
 
             assert_response :not_found
           end
@@ -170,7 +170,7 @@ module Api
             expects_any_ga_event_call
 
             perform_enqueued_jobs do
-              put :update, team_id: the_team.id, name: 'New Name'
+              put :update, params: { team_id: the_team.id, name: 'New Name' }
 
               assert_response :ok
             end
@@ -206,7 +206,7 @@ module Api
         end
 
         test 'returns list of teams and loads case data' do
-          get :index, load_cases: true
+          get :index, params: { load_cases: true }
 
           assert_response :ok
 

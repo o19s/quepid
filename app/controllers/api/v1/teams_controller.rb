@@ -57,7 +57,7 @@ module Api
 
       def case_load
         bool = ActiveRecord::Type::Boolean.new
-        @load_cases = bool.type_cast_from_user(params[:load_cases]) || false
+        @load_cases = bool.deserialize(params[:load_cases]) || false
       end
     end
   end
