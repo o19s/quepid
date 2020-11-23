@@ -12,7 +12,7 @@ class ProfilesControllerTest < ActionController::TestCase
   describe 'updates profile' do
     describe 'when user is not signed in' do
       test 'returns an unauthorized error' do
-        patch :update, user: { name: 'new name' }
+        patch :update, params: { user: { name: 'new name' } }
 
         assert_redirected_to secure_path
       end
@@ -26,7 +26,7 @@ class ProfilesControllerTest < ActionController::TestCase
       test 'updates user name' do
         name = 'new name'
 
-        patch :update, user: { name: name }
+        patch :update, params: { user: { name: name } }
 
         assert_redirected_to profile_path
 
@@ -36,7 +36,7 @@ class ProfilesControllerTest < ActionController::TestCase
       it 'updates user email' do
         email = 'new@email.com'
 
-        patch :update, user: { email: email }
+        patch :update, params: { user: { email: email } }
 
         assert_redirected_to profile_path
 
@@ -50,7 +50,7 @@ class ProfilesControllerTest < ActionController::TestCase
           name = 'new name'
 
           perform_enqueued_jobs do
-            patch :update, user: { name: name }
+            patch :update, params: { user: { name: name } }
 
             assert_redirected_to profile_path
           end

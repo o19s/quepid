@@ -39,7 +39,8 @@ class HomeController < ApplicationController
 
         bootstrapCase     = current_user.cases.create case_name: Case::DEFAULT_NAME
         @bootstrapCaseNo  = bootstrapCase.id
-        @bootstrapTryNo   = bootstrapCase.tries.best.try_number
+        bootStrapTry      = bootstrapCase.tries.first
+        @bootstrapTryNo   = bootStrapTry.try_number
       end
     end
 

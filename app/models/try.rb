@@ -50,7 +50,7 @@ class Try < ActiveRecord::Base
   }.freeze
 
   # Associations
-  belongs_to  :case
+  belongs_to  :case , optional: true # shouldn't be optional, but was in rails 4
 
   has_many    :curator_variables,
               dependent:  :destroy,

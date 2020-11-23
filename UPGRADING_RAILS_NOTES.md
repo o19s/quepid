@@ -1,3 +1,9 @@
+Todos:
+* Fix circle ci to run rails instead of rake for rails tests.
+* get bin/docker r bin/rake test:quepid to run `rails test`
+* fix FK links
+* resolve migration to bigint in mysql for id's
+* Test importing ratings, confirm the removal of `case.ratings`.
 
 
 KEY!   http://railsdiff.org/4.2.11/5.2.4.4
