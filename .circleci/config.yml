@@ -77,7 +77,7 @@ jobs:
 
       - run:
           name: Run unit tests (backend)
-          command: bundle exec rails test
+          command: rails test
 
       - run:
           name: Run unit tests (frontend)
