@@ -8,7 +8,7 @@ namespace :test do
   task 'js' => 'karma:run'
 
   desc 'Run all tests: test:js, test:jshint, and test'
-  task quepid: [ 'test:js', 'test:jshint', 'test' ]
+  task quepid: [ 'test', 'test:js', 'test:jshint' ]
 
   desc 'Run jshint on js files using configuration under config/jshint.yml'
   task jshint: :environment do
