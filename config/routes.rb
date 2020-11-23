@@ -4,6 +4,8 @@ require 'sidekiq/web'
 
 # rubocop:disable Metrics/BlockLength
 Rails.application.routes.draw do
+  get 'bob/open'
+  get 'bob/show'
   constraints(AdminConstraint) do
     mount Sidekiq::Web, at: 'admin/jobs'
   end

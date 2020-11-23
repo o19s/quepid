@@ -49,6 +49,10 @@ Rails.application.configure do
 
   config.action_mailer.perform_caching = false
 
+  # Enable locale fallbacks for I18n (makes lookups for any locale fall back to
+  # the I18n.default_locale when a translation cannot be found).
+  config.i18n.fallbacks = [I18n.default_locale]
+
   # Print deprecation notices to the Rails logger.
   config.active_support.deprecation = :log
 
@@ -74,7 +78,7 @@ Rails.application.configure do
   # config.action_view.raise_on_missing_translations = true
 
   # Use an evented file watcher to asynchronously detect changes in source code,
-  # routes, locales, etc. This feature depends on the listen gem.		
+  # routes, locales, etc. This feature depends on the listen gem.
   config.file_watcher = ActiveSupport::EventedFileUpdateChecker
 
   config.action_mailer.delivery_method = :letter_opener

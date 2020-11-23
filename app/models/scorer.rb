@@ -22,7 +22,7 @@
 
 require 'scale_serializer'
 
-class Scorer < ActiveRecord::Base
+class Scorer < ApplicationRecord
   # Associations
   belongs_to :owner, class_name: 'User', optional: true # for communal scorers there isn't a owner
 

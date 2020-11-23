@@ -95,7 +95,6 @@ GEM
       js_cookie_rails (~> 2.2.0)
     crack (0.4.4)
     crass (1.0.6)
-    database_cleaner (1.8.5)
     devise (4.7.3)
       bcrypt (~> 3.0)
       orm_adapter (~> 0.1)
@@ -203,6 +202,10 @@ GEM
     rails-assets-cal-heatmap (3.6.2)
       rails-assets-d3 (>= 3.0.6, < 4.0.0)
     rails-assets-d3 (3.5.17)
+    rails-controller-testing (1.0.5)
+      actionpack (>= 5.0.1.rc1)
+      actionview (>= 5.0.1.rc1)
+      activesupport (>= 5.0.1.rc1)
     rails-dom-testing (2.0.3)
       activesupport (>= 4.2.0)
       nokogiri (>= 1.6)
@@ -320,7 +323,6 @@ DEPENDENCIES
   coffee-rails (~> 4.2)
   colorize
   cookies_eu
-  database_cleaner
   devise (>= 4.6.2)
   font-awesome-sass (>= 4.4.0)
   foreman
@@ -345,6 +347,7 @@ DEPENDENCIES
   rails-assets-angular-cache!
   rails-assets-cal-heatmap!
   rails-assets-d3 (~> 3.5.5)!
+  rails-controller-testing
   rails_12factor
   redis (~> 4.0)
   responders

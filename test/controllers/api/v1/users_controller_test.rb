@@ -5,6 +5,7 @@ require 'test_helper'
 module Api
   module V1
     class UsersControllerTest < ActionController::TestCase
+    #class UsersControllerTest < ActionDispatch::IntegrationTest
       let(:matt) { users(:matt) }
 
       before do
@@ -19,7 +20,7 @@ module Api
 
           test 'returns basic user info if user exists (self)' do
             @request.headers['Accept'] = 'application/vnd.quepid+json; version=1'
-            get :show, id: matt.email
+            get api_user_url, id: matt.email
             assert_response :ok
 
             body = JSON.parse(response.body)
@@ -29,8 +30,8 @@ module Api
 
           test 'returns basic user info if user exists (other user)' do
             doug = users(:doug)
-
-            get :show, id: doug.email
+            get api_user_url(doug)
+            #get :show, id: doug.email
             assert_response :ok
 
             body = JSON.parse(response.body)

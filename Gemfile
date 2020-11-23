@@ -65,11 +65,12 @@ group :development do
 end
 
 group :test do
-  gem 'database_cleaner' # apparently not needed in Rails 5.1 anymore!
+  #gem 'database_cleaner' # apparently not needed in Rails 5.1 anymore!
   gem 'minitest-reporters', '>= 0.5.0'
   gem 'mocha', '~> 1.11'
   gem 'simplecov', require: false
   gem 'webmock'
+  gem 'rails-controller-testing' # bring back compatibility with rails 4 assigns in controller tests.
 end
 
 group :production, :staging do

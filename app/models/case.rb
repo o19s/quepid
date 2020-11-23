@@ -67,7 +67,7 @@ class Case < ApplicationRecord
   validates_with ScorerExistsValidator
 
   # Callbacks
-  after_initialize :set_scorer
+  after_create  :set_scorer
   after_create  :add_default_try
 
   after_initialize do |c|
