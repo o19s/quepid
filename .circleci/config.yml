@@ -76,7 +76,11 @@ jobs:
           command: bundle exec rake db:setup --trace
 
       - run:
-          name: Run unit tests
+          name: Run unit tests (backend)
+          command: bundle exec rails test
+
+      - run:
+          name: Run unit tests (frontend)
           command: bundle exec rake test:quepid
 
       - run:
