@@ -19,6 +19,7 @@
 // to enable the drag and drop of queries in a case.  There may be others that are used by Quepid that
 // we don't know about.
 //
+//= require jquery
 //= require rails-ujs
 //= require activestorage
 
