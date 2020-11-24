@@ -1,5 +1,5 @@
 Todos:
-* Fix circle ci to run rails instead of rake for rails tests.
+* Fix circle ci to run rails instead of rake for rails tests.  OR, do we just use Github Actions?
 * get bin/docker r bin/rake test:quepid to run `rails test`
 * fix FK links
 * resolve migration to bigint in mysql for id's

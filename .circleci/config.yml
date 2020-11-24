@@ -75,9 +75,9 @@ jobs:
           name: Database setup
           command: bundle exec rake db:setup --trace
 
-      - run:
-          name: Run unit tests (backend)
-          command: bin/rails test
+      #- run:
+      #    name: Run unit tests (backend)
+      #    command: bin/rails test
 
       - run:
           name: Run unit tests (frontend)
