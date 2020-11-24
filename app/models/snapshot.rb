@@ -13,7 +13,7 @@
 
 class Snapshot < ActiveRecord::Base
   # Associations
-  belongs_to  :case
+  belongs_to  :case, optional: true # shouldn't be optional!
   has_many    :snapshot_queries, dependent: :destroy
 
   # Validations

@@ -10,8 +10,8 @@
 #
 
 class SnapshotQuery < ActiveRecord::Base
-  belongs_to  :snapshot
-  belongs_to  :query
+  belongs_to  :snapshot, optional: true #shouldn't be
+  belongs_to  :query, optional: true #shouldn't be
   has_many    :snapshot_docs, -> { order(position: :asc) },
               dependent:  :destroy,
               inverse_of: :snapshot_query

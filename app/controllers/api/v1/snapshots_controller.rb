@@ -19,7 +19,12 @@ module Api
 
         if @snapshot.save
           service = SnapshotManager.new(@snapshot)
-          service.add_docs params[:snapshot][:docs]
+
+          snapshot_docs = params[:snapshot][:docs]
+
+          if snapshot_docs then # run only if we have docs provided...
+            service.add_docs params[:snapshot][:docs]
+          end
           Analytics::Tracker.track_snapshot_created_event current_user, @snapshot
 
           # Refetch snapshot because after bulk creating the docs

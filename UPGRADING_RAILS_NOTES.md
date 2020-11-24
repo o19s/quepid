@@ -4,6 +4,8 @@ Todos:
 * fix FK links
 * resolve migration to bigint in mysql for id's
 * Test importing ratings, confirm the removal of `case.ratings`.
+* Test that when a snapshot has a query with docs, and a query wihtout docs, that the query without docs still gets snapshotted. Some weird JSON data. See `snapshots_controller_test.rb` __handles queries with no docs__ test...
+* Right now we support creating a snapshot with no docs.   WHY?   Look at `snapshots_controller_test.rb` __handles empty list of docs__.   
 
 
 KEY!   http://railsdiff.org/4.2.11/5.2.4.4

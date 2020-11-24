@@ -36,7 +36,7 @@ module Api
           }
 
           assert_difference 'acase.snapshots.count' do
-            post :create, data.merge(case_id: acase.id)
+            post :create, params: data.merge(case_id: acase.id)
 
             assert_response :ok
 
@@ -70,13 +70,16 @@ module Api
                   { id: 'doc1', explain: '1' },
                   { id: 'doc2', explain: '2' }
                 ],
-                second_query.id => [],
+                # in Rails 4, we could do second_query.id => [] and getting the second_query in,
+                # but in Rails five, the second_query doesn't show up because the array that is empty
+                # gets converted from [] to a nil!   Which then means we don't see second_query.id at all!
+                second_query.id => [""],
               },
             },
           }
 
           assert_difference 'acase.snapshots.count' do
-            post :create, data.merge(case_id: acase.id)
+            post :create, params: data.merge(case_id: acase.id)
 
             assert_response :ok
 
@@ -106,7 +109,7 @@ module Api
           }
 
           assert_difference 'acase.snapshots.count' do
-            post :create, data.merge(case_id: acase.id)
+            post :create, params: data.merge(case_id: acase.id)
 
             assert_response :ok
 
@@ -135,7 +138,7 @@ module Api
           }
 
           assert_difference 'acase.snapshots.count' do
-            post :create, data.merge(case_id: acase.id)
+            post :create, params: data.merge(case_id: acase.id)
 
             assert_response :ok
 
@@ -158,7 +161,7 @@ module Api
           }
 
           assert_difference 'acase.snapshots.count' do
-            post :create, data.merge(case_id: acase.id)
+            post :create, params: data.merge(case_id: acase.id)
 
             assert_response :ok
 
@@ -181,7 +184,7 @@ module Api
             expects_any_ga_event_call
 
             perform_enqueued_jobs do
-              post :create, data.merge(case_id: acase.id)
+              post :create, params: data.merge(case_id: acase.id)
 
               assert_response :ok
             end
@@ -194,7 +197,7 @@ module Api
         let(:snapshot)  { snapshots(:a_snapshot) }
 
         test 'returns full snapshot details' do
-          get :show, case_id: acase.id, id: snapshot.id
+          get :show, params: { case_id: acase.id, id: snapshot.id }
 
           assert_response :ok
 
@@ -211,7 +214,7 @@ module Api
 
         test 'returns full snapshot details' do
           assert_difference 'acase.snapshots.count', -1 do
-            delete :destroy, case_id: acase.id, id: snapshot.id
+            delete :destroy, params: { case_id: acase.id, id: snapshot.id }
 
             assert_response :no_content
           end
@@ -222,7 +225,7 @@ module Api
             expects_any_ga_event_call
 
             perform_enqueued_jobs do
-              delete :destroy, case_id: acase.id, id: snapshot.id
+              delete :destroy, params: { case_id: acase.id, id: snapshot.id }
 
               assert_response :no_content
             end
@@ -234,7 +237,7 @@ module Api
         let(:acase) { cases(:snapshot_case) }
 
         test 'returns compact list of snapshots for case' do
-          get :index, case_id: acase.id
+          get :index, params: { case_id: acase.id }
 
           assert_response :ok
 
