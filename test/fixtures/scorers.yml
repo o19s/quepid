@@ -134,6 +134,7 @@ query_default_scorer:
   owner:      :random
   query_test: false
   scale:      1, 2, 3, 4
+  communal:   false
 
 query_scorer:
   code:       pass();

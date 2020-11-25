@@ -13,7 +13,7 @@ module Api
         test 'returns an error when the email is not present' do
           data = { user: { password: 'password' } }
 
-          post :create, data
+          post :create, params: data
 
           assert_response :bad_request
 
@@ -24,7 +24,7 @@ module Api
         test 'returns an error when the email is not unique' do
           data = { user: { email: users(:doug).email, password: 'password' } }
 
-          post :create, data
+          post :create, params: data
 
           assert_response :bad_request
 
@@ -35,7 +35,7 @@ module Api
         test 'returns an error when the password is not present' do
           data = { user: { email: 'foo@example.com' } }
 
-          post :create, data
+          post :create, params: data
 
           assert_response :bad_request
 
@@ -47,7 +47,7 @@ module Api
           password = 'password'
           data = { user: { email: 'foo@example.com', password: password } }
 
-          post :create, data
+          post :create, params: data
 
           assert_response :ok
 
@@ -61,7 +61,7 @@ module Api
           password = 'password'
           data = { user: { email: 'foo@example.com', password: password } }
 
-          post :create, data
+          post :create, params: data
 
           assert_response :ok
 
@@ -79,7 +79,7 @@ module Api
           data = { user: { email: 'foo@example.com', password: password } }
 
           assert_difference 'User.count' do
-            post :create, data
+            post :create, params: data
 
             assert_response :ok
           end
@@ -98,7 +98,7 @@ module Api
           }
 
           assert_difference 'User.count' do
-            post :create, data
+            post :create, params: data
 
             assert_response :ok
 
@@ -114,7 +114,7 @@ module Api
           password = 'password'
           data = { user: { email: 'foo@example.com', password: password } }
 
-          post :create, data
+          post :create, params: data
           assert_response :ok
 
           user = User.last
@@ -125,7 +125,7 @@ module Api
           password = 'password'
           data = { user: { email: 'foo@example.com', password: password, email_marketing: false } }
 
-          post :create, data
+          post :create, params: data
           assert_response :ok
 
           user = User.last
@@ -136,7 +136,7 @@ module Api
           password = 'password'
           data = { user: { email: 'foo@example.com', password: password, email_marketing: true } }
 
-          post :create, data
+          post :create, params: data
           assert_response :ok
 
           user = User.last
@@ -152,7 +152,7 @@ module Api
           data = { user: { email: 'foo@example.com', password: password } }
 
           perform_enqueued_jobs do
-            post :create, data
+            post :create, params: data
 
             assert_response :ok
           end

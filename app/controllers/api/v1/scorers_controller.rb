@@ -92,6 +92,13 @@ module Api
       # rubocop:disable Metrics/CyclomaticComplexity
       # rubocop:disable Metrics/AbcSize
       def destroy
+        puts "Here is @scorer.owner #{@scorer.owner.id} == #{current_user.id}"
+
+        puts "Is communal scorer? #{@scorer.communal}"
+
+        puts "params force: #{params[:force]}"
+        force = params[:force] || false
+
         unless @scorer.owner == current_user
           render(
             json:   {
@@ -103,7 +110,10 @@ module Api
           return
         end
         @users = User.where(default_scorer_id: @scorer.id)
-        if @users.count.positive? && params[:force]
+
+        puts "Cound   of @users: #{@users.count}"
+
+        if @users.count.positive? && force == true
           # rubocop:disable Rails/SkipsModelValidations
           @users.update_all(default_scorer_id: Scorer.system_default_scorer)
           # rubocop:enable Rails/SkipsModelValidations
@@ -121,7 +131,7 @@ module Api
         end
 
         @cases = Case.where(scorer_id: @scorer.id)
-        if @cases.count.positive? && params[:force]
+        if @cases.count.positive? && force == true
           @cases.update_all(scorer_id: nil) # rubocop:disable Rails/SkipsModelValidations
         elsif @cases.count.positive?
           render(
@@ -137,9 +147,17 @@ module Api
         end
 
         @queries = Query.where(scorer_id: @scorer.id)
-        if @queries.count.positive? && params[:force]
+        puts "How many queries have this scorer?  #{@queries.size}"
+        puts "How many queries have this count?  #{@queries.count}"
+        puts "Is this true? #{@queries.count.positive? && force}"
+        puts "queries.count.positive? #{@queries.count.positive?}"
+        puts "force: #{force}"
+        if @queries.count.positive? && force == true
+          puts "Doing update all"
           @queries.update_all(scorer_id: nil) # rubocop:disable Rails/SkipsModelValidations
         elsif @queries.count.positive?
+          puts "about to render bad request"
+
           render(
             json:   {
               # rubocop:disable Metrics/LineLength

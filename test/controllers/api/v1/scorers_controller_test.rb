@@ -38,7 +38,7 @@ module Api
         end
 
         test 'handles empty string names' do
-          post :create, name: ''
+          post :create, params: { name: '' }
 
           assert_response :ok
 
@@ -54,7 +54,7 @@ module Api
         test 'accepts code as an attribute' do
           code = 'pass();'
 
-          post :create, scorer: { code: code }
+          post :create, params: { scorer: { code: code } }
 
           assert_response :ok
 
@@ -80,7 +80,7 @@ module Api
         test 'accepts name as an attribute' do
           name = 'Custom Name'
 
-          post :create, scorer: { name: name }
+          post :create, params: { scorer: { name: name } }
 
           assert_response :ok
 
@@ -101,7 +101,7 @@ module Api
         test 'accepts custom scale and serializes properly' do
           scale = [ 1, 2, 3, 4 ]
 
-          post :create, scorer: { scale: scale }
+          post :create, params: { scorer: { scale: scale } }
 
           assert_response :ok
 
@@ -120,7 +120,7 @@ module Api
         test 'limits scale length' do
           scale = (1..15).to_a
 
-          post :create, scorer: { scale: scale }
+          post :create, params: { scorer: { scale: scale } }
 
           assert_response :bad_request
 
@@ -132,7 +132,7 @@ module Api
         test 'limits scale to integers only' do
           scale = [ 1, 2, 3, 'foo' ]
 
-          post :create, scorer: { scale: scale }
+          post :create, params: { scorer: { scale: scale } }
 
           assert_response :bad_request
 
@@ -144,7 +144,7 @@ module Api
         test 'sorts scale' do
           scale = [ 3, 4, 1, 2 ]
 
-          post :create, scorer: { scale: scale }
+          post :create, params: { scorer: { scale: scale } }
 
           assert_response :ok
 
@@ -163,7 +163,7 @@ module Api
         test 'accepts scale as a string' do
           scale = [ 1, 2, 3, 4 ]
 
-          post :create, scorer: { scale: scale.join(',') }
+          post :create, params: { scorer: { scale: scale.join(',') } }
 
           assert_response :ok
 
@@ -182,7 +182,7 @@ module Api
         test 'sets scorer as a test for a query' do
           query = queries(:one)
 
-          post :create, scorer: { query_id: query.id }
+          post :create, params: { scorer: { query_id: query.id } }
 
           assert_response :ok
 
@@ -209,13 +209,13 @@ module Api
         let(:shared_scorer) { scorers(:shared_scorer) }
 
         test 'returns a not found error if the scorer is neither owned by the user or shared with the user' do
-          get :show, id: 'foo' # for when it doesn't exist
+          get :show, params: { id: 'foo' } # for when it doesn't exist
 
           assert_response :not_found
         end
 
         test 'returns scorer owned by user' do
-          get :show, id: scorer.id
+          get :show, params: { id: scorer.id }
 
           assert_response :ok
 
@@ -230,7 +230,7 @@ module Api
         end
 
         test 'returns scorer shared with user' do
-          get :show, id: shared_scorer.id
+          get :show, params: { id: shared_scorer.id }
 
           assert_response :ok
 
@@ -252,7 +252,7 @@ module Api
         let(:jane)            { users(:jane) }
 
         test 'return a forbidden error if updating a scorer not owned by user' do
-          put :update, id: shared_scorer.id, scorer: { name: 'new name' }
+          put :update, params: { id: shared_scorer.id, scorer: { name: 'new name' } }
 
           assert_response :forbidden
 
@@ -264,7 +264,7 @@ module Api
         test 'return a forbidden error if updating a communal scorer' do
           login_user jane
 
-          put :update, id: communal_scorer.id, scorer: { name: 'new name' }
+          put :update, params: { id: communal_scorer.id, scorer: { name: 'new name' } }
 
           assert_response :forbidden
 
@@ -276,7 +276,7 @@ module Api
         test 'successfully updates name' do
           name = 'Custom Name'
 
-          put :update, id: owned_scorer.id, scorer: { name: name }
+          put :update, params: { id: owned_scorer.id, scorer: { name: name } }
 
           assert_response :ok
 
@@ -290,7 +290,7 @@ module Api
         test 'successfully updates code' do
           code = 'fail();'
 
-          put :update, id: owned_scorer.id, scorer: { code: code }
+          put :update, params: { id: owned_scorer.id, scorer: { code: code } }
 
           assert_response :ok
 
@@ -304,7 +304,7 @@ module Api
         test 'successfully updates scale' do
           scale = [ 1, 2 ]
 
-          put :update, id: owned_scorer.id, scorer: { scale: scale }
+          put :update, params: { id: owned_scorer.id, scorer: { scale: scale } }
 
           assert_response :ok
 
@@ -318,7 +318,7 @@ module Api
         test 'limits scale length' do
           scale = (1..15).to_a
 
-          put :update, id: owned_scorer.id, scorer: { scale: scale }
+          put :update, params: { id: owned_scorer.id, scorer: { scale: scale } }
 
           assert_response :bad_request
 
@@ -330,7 +330,7 @@ module Api
         test 'limits scale to integers only' do
           scale = [ 1, 'foo' ]
 
-          put :update, id: owned_scorer.id, scorer: { scale: scale }
+          put :update, params: { id: owned_scorer.id, scorer: { scale: scale } }
 
           assert_response :bad_request
 
@@ -342,7 +342,7 @@ module Api
         test 'sorts scale' do
           scale = [ 2, 1 ]
 
-          put :update, id: owned_scorer.id, scorer: { scale: scale }
+          put :update, params: { id: owned_scorer.id, scorer: { scale: scale } }
 
           assert_response :ok
 
@@ -360,7 +360,7 @@ module Api
             name = 'Custom Name'
 
             perform_enqueued_jobs do
-              put :update, id: owned_scorer.id, scorer: { name: name }
+              put :update, params: { id: owned_scorer.id, scorer: { name: name } }
 
               assert_response :ok
             end
@@ -374,7 +374,7 @@ module Api
           let(:shared_scorer) { scorers(:shared_scorer) }
 
           test 'return a forbidden error if deleteing a scorer not owned by user' do
-            delete :destroy, id: shared_scorer.id
+            delete :destroy, params: { id: shared_scorer.id }
 
             assert_response :forbidden
 
@@ -384,7 +384,7 @@ module Api
           end
 
           test 'removes scorer successfully and disassociates it from owner' do
-            delete :destroy, id: owned_scorer.id
+            delete :destroy, params: { id: owned_scorer.id }
 
             assert_response :no_content
 
@@ -404,19 +404,19 @@ module Api
           end
 
           test 'returns a bad request error if nothing specified' do
-            delete :destroy, id: default_scorer.id
+            delete :destroy, params: { id: default_scorer.id }
 
             assert_response :bad_request
           end
 
           test 'returns a bad request error if not forced' do
-            delete :destroy, id: default_scorer.id, force: false
+            delete :destroy, params: { id: default_scorer.id, force: false }
 
             assert_response :bad_request
           end
 
           test 'removes default association and deletes scorer when forced, setting the default to Quepid default' do
-            delete :destroy, id: default_scorer.id, force: true
+            delete :destroy, params: { id: default_scorer.id, force: true }
 
             assert_response :no_content
 
@@ -445,19 +445,19 @@ module Api
           end
 
           test 'returns a bad request error if nothing specified' do
-            delete :destroy, id: default_scorer.id
+            delete :destroy, params: { id: default_scorer.id }
 
             assert_response :bad_request
           end
 
           test 'returns a bad request error if not forced' do
-            delete :destroy, id: default_scorer.id, force: false
+            delete :destroy, params: { id: default_scorer.id, force: false }
 
             assert_response :bad_request
           end
 
           test 'removes default association and deletes scorer when forced' do
-            delete :destroy, id: default_scorer.id, force: true
+            delete :destroy, params: { id: default_scorer.id, force: true }
 
             assert_response :no_content
 
@@ -471,7 +471,7 @@ module Api
           end
         end
 
-        describe 'when scorer is set as query default' do
+        describe 'when scorer is set as query default, ie unit test style' do
           let(:default_scorer)        { scorers(:query_default_scorer) }
           let(:user)                  { users(:random) }
           let(:query)                 { queries(:for_default_scorer) }
@@ -481,19 +481,19 @@ module Api
           end
 
           test 'returns a bad request error if nothing specified' do
-            delete :destroy, id: default_scorer.id
+            delete :destroy, params: { id: default_scorer.id }
 
             assert_response :bad_request
           end
 
           test 'returns a bad request error if not forced' do
-            delete :destroy, id: default_scorer.id, force: false
+            delete :destroy, params: { id: default_scorer.id, force: false }
 
             assert_response :bad_request
           end
 
           test 'removes default association and deletes scorer when forced' do
-            delete :destroy, id: default_scorer.id, force: true
+            delete :destroy, params: { id: default_scorer.id, force: true }
 
             assert_response :no_content
 
@@ -517,7 +517,7 @@ module Api
           end
 
           test 'returns a bad request error if nothing specified' do
-            delete :destroy, id: default_scorer.id
+            delete :destroy, params: { id: default_scorer.id }
 
             assert_response :bad_request
           end
@@ -530,7 +530,7 @@ module Api
             expects_any_ga_event_call
 
             perform_enqueued_jobs do
-              delete :destroy, id: owned_scorer.id
+              delete :destroy, params: { id: owned_scorer.id }
 
               assert_response :no_content
             end
