@@ -240,22 +240,6 @@ describe('Service: queriesSvc', function () {
       query.ratings = {1:1, 2:1, 3:1};
     });
 
-    it('manipulates es query', function() {
-      queriesSvc.toggleShowOnlyRated();
-      mockSettings.searchEngine = 'es';
-      mockSettings.selectedTry.args = {'query': { 'match_all': {} } };
-      var searcher = queriesSvc.createSearcherFromSettings(mockSettings, 'test', query.ratings);
-      expect(Object.keys(searcher.settings.args['query'])).toEqual(['bool']);
-    });
-
-    it('manipulates solr query', function() {
-      queriesSvc.toggleShowOnlyRated();
-      mockSettings.searchEngine = 'solr';
-      mockSettings.selectedTry.args = {'q': ['rambo']};
-      var searcher = queriesSvc.createSearcherFromSettings(mockSettings, 'test', query.ratings);
-      expect(searcher.settings.args['q'][0]).toContain('{!bool');
-    });
-
     it('toggles show only rated state', function() {
       expect(queriesSvc.showOnlyRated).toEqual(false);
       queriesSvc.toggleShowOnlyRated();

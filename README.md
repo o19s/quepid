@@ -414,6 +414,7 @@ There is a code deployment pipeline to the http://quepid-staging.herokuapp.com s
 is run on successful commits to `master`.  
 
 If you have pending migrations you will need to run them via:
+
 ```
 heroku run bin/rake db:migrate -a quepid-staging
 heroku restart -a quepid-staging
