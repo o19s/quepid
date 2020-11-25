@@ -114,7 +114,7 @@
     </div>
 
     <!-- Default search results -->
-    <div ng-show="displayed.results == displayed.resultsView.results">
+    <div ng-if="!queriesSvc.showOnlyRated" ng-show="displayed.results == displayed.resultsView.results">
       <search-result explain-viewport="'#query-container'" explain-view="'full'" class="search-result" ng-repeat="doc in query.docs track by doc.id" max-doc-score="query.maxDocScore()" doc="doc" field-spec="query.fieldSpec" rank="{{$index + 1}}" query="query" doc-id="doc.id">
       </search-result>
 
@@ -146,9 +146,38 @@
       </div>
     </div>
 
-
     <!-- Rated only search results -->
-    <!-- to be continued -->
+    <div ng-if="queriesSvc.showOnlyRated" ng-show="displayed.results == displayed.resultsView.results">
+      <search-result explain-viewport="'#query-container'" explain-view="'full'" class="search-result" ng-repeat="doc in query.ratedDocs track by doc.id" max-doc-score="query.maxDocScore()" doc="doc" field-spec="query.fieldSpec" rank="{{$index + 1}}" query="query" doc-id="doc.id">
+      </search-result>
+
+      <div class='row'>
+        <span class="glyphicon glyphicon-chevron-up text-primary" ng-click="query.toggle()" data-toggle="tooltip"  title="Close the results pane"></span>
+        <span ng-if="query.numFound > query.docs.length">
+          <a
+            ng-show='query.numFound > 10'
+            class="btn btn-default"
+            ng-click="query.ratedPaginate()"
+          >
+            Peek at the next page of results
+          </a>
+        </span>
+
+        <span ng-if="selectedTry.searchEngine == 'solr'">
+          <a ng-show="query.state() !== 'error'" class="btn btn-primary" href="{{query.browseUrl()}}" target="_blank">
+            <ng-pluralize count="query.numFound"
+                when="{'0': 'Browse {} Results on Solr',
+                       'one': 'Browse {} Result on Solr',
+                       'other': 'Browse {} Results on Solr'}">
+            </ng-pluralize>
+          </a>
+        </span>
+
+        <span class="text-muted text-warning bg-warning clearfix">
+          <strong>Note:</strong> Only the top 10 results are used in the scoring calculations.
+        </span>
+      </div>
+    </div>
 
   </div>
 </div>

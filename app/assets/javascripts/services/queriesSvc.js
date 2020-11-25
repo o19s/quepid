@@ -69,15 +69,29 @@ angular.module('QuepidApp')
       svc.bootstrapQueries = bootstrapQueries;
       svc.showOnlyRated = false;
 
-      function createSearcherFromSettings(passedInSettings, query) {
+      function createSearcherFromSettings(passedInSettings, queryText, query) {
         var args = angular.copy(passedInSettings.selectedTry.args);
 
         if (passedInSettings && passedInSettings.selectedTry) {
+          // Modify query if ratings were passed in
+          if (query) {
+            if (passedInSettings.searchEngine === 'es') {
+
+            } else {
+              if (args['fq'] === undefined) {
+                args['fq'] = [];
+              }
+              args['fq'].push(query.filterToRatings(passedInSettings.searchEngine, passedInSettings.createFieldSpec()));
+            }
+
+          }
+
+
           return searchSvc.createSearcher(
             passedInSettings.createFieldSpec().fieldList(),
             passedInSettings.selectedTry.searchUrl,
             args,
-            query,
+            queryText,
             {
               escapeQuery:   passedInSettings.escapeQuery,
               numberOfRows:  passedInSettings.numberOfRows,
@@ -348,6 +362,13 @@ angular.module('QuepidApp')
               currSettings,
               self.queryText
             );
+
+            self.ratedSearcher = svc.createSearcherFromSettings(
+              currSettings,
+              self.queryText,
+              self
+            );
+
             resultsReturned = false;
 
             self.searcher.search()
@@ -367,7 +388,14 @@ angular.module('QuepidApp')
                   self.othersExplained = self.searcher.othersExplained;
                 }
 
-                resolve();
+                self.ratedSearcher.search().then(function() {
+                  var normed = normalizeDocExplains(self, self.ratedSearcher, currSettings.createFieldSpec());
+
+                  angular.forEach(normed, function(doc) {
+                  var rateableDoc = self.ratingsStore.createRateableDoc(doc);
+                    self.ratedDocs.push(rateableDoc);
+                   });
+                });
               }, function(response) {
                 self.linkUrl = self.searcher.linkUrl;
                 self.setDocs([], 0);
@@ -411,14 +439,14 @@ angular.module('QuepidApp')
       this.ratedPaginate = function() {
           var self = this;
 
-          if (self.searcher === null) {
+          if (self.ratedSearcher === null) {
             return;
           }
 
-          var fieldSpec = currSettings.createFieldSpec();
-          return self.searcher.explainOther(this.filterToRatings(self.searcher.type, fieldSpec), fieldSpec)
+          self.ratedSearcher = self.ratedSearcher.pager();
+          return self.ratedSearcher.search()
             .then(function() {
-              var normed = svc.normalizeDocExplains(self, self.searcher, fieldSpec);
+              var normed = svc.normalizeDocExplains(self, self.ratedSearcher, currSettings.createFieldSpec());
               self.ratedDocs = self.ratedDocs.concat(normed);
             });
       };
