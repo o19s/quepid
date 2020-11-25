@@ -12,6 +12,7 @@ angular.module('QuepidApp')
       solrExplainExtractorSvc, esExplainExtractorSvc,
       rateBulkSvc
     ) {
+      $scope.defaultList = false;
       $scope.docFinder = {
         docs:       [],
         lastQuery:  '',
@@ -47,6 +48,14 @@ angular.module('QuepidApp')
       };
 
       $scope.paginate = function() {
+        if($scope.defaultList) {
+          $scope.paginateRatedQuery();
+        } else {
+          $scope.paginateCustomQuery();
+        }
+      };
+
+      $scope.paginateCustomQuery = function() {
         if ( $scope.docFinder.searcher === null ) {
           return;
         }
@@ -84,6 +93,31 @@ angular.module('QuepidApp')
           });
       };
 
+      $scope.paginateRatedQuery = function() {
+        $scope.docFinder.searcher = $scope.docFinder.searcher.pager();
+        $scope.docFinder.paging = true;
+
+        if ( $scope.docFinder.searcher === null ) {
+          $scope.docFinder.paging = false;
+          return;
+        }
+
+        var settings      = settingsSvc.editableSettings();
+        var fieldSpec     = settings.createFieldSpec();
+        var ratedIDs = $scope.query.ratings ? Object.keys($scope.query.ratings) : [];
+
+        $scope.docFinder.searcher.explainOther('{!terms f=' + fieldSpec.id + '}' + ratedIDs.join(','), fieldSpec)
+        .then(function() {
+          var normed = queriesSvc.normalizeDocExplains($scope.query, $scope.docFinder.searcher, fieldSpec);
+
+          angular.forEach(normed, function(doc) {
+            var rateableDoc = $scope.query.ratingsStore.createRateableDoc(doc);
+            $scope.docFinder.docs.push(rateableDoc);
+          });
+        });
+      };
+
+
       var src = {
         'query':  $scope.query
       };
@@ -120,5 +154,28 @@ angular.module('QuepidApp')
         },
         src
       );
+
+      // Initialize to rated docs
+      var currSettings = settingsSvc.editableSettings();
+
+      var fieldSpec = currSettings.createFieldSpec();
+      var ratedIDs = $scope.query.ratings ? Object.keys($scope.query.ratings) : [];
+      $scope.docFinder.numFound = ratedIDs.length;
+
+      $scope.docFinder.searcher = queriesSvc.createSearcherFromSettings(currSettings, $scope.query.queryText);
+
+      $scope.docFinder.searcher.explainOther('{!terms f=' + fieldSpec.id + '}' + ratedIDs.join(','), fieldSpec)
+        .then(function() {
+          var normed = queriesSvc.normalizeDocExplains($scope.query, $scope.docFinder.searcher, fieldSpec);
+
+          angular.forEach(normed, function(doc) {
+            var rateableDoc = $scope.query.ratingsStore.createRateableDoc(doc);
+            $scope.docFinder.docs.push(rateableDoc);
+          });
+
+          $scope.defaultList = true;
+        });
     }
+
+
   ]);

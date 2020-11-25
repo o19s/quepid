@@ -114,7 +114,7 @@
     </div>
 
     <!-- Default search results -->
-    <div ng-if="!queriesSvc.showOnlyRated" ng-show="displayed.results == displayed.resultsView.results">
+    <div ng-show="displayed.results == displayed.resultsView.results">
       <search-result explain-viewport="'#query-container'" explain-view="'full'" class="search-result" ng-repeat="doc in query.docs track by doc.id" max-doc-score="query.maxDocScore()" doc="doc" field-spec="query.fieldSpec" rank="{{$index + 1}}" query="query" doc-id="doc.id">
       </search-result>
 
@@ -148,27 +148,7 @@
 
 
     <!-- Rated only search results -->
-    <div ng-if="queriesSvc.showOnlyRated" ng-show="displayed.results == displayed.resultsView.results">
-      <search-result explain-viewport="'#query-container'" explain-view="'full'" class="search-result" ng-repeat="doc in query.ratedDocs track by doc.id" max-doc-score="query.maxDocScore()" doc="doc" field-spec="query.fieldSpec" rank="{{$index + 1}}" query="query" doc-id="doc.id">
-      </search-result>
-
-      <div class='row'>
-        <span class="glyphicon glyphicon-chevron-up text-primary" ng-click="query.toggle()" data-toggle="tooltip"  title="Close the results pane"></span>
-        <span ng-if="query.getNumFound() > query.ratedDocs.length">
-          <a
-            ng-show='query.getNumFound() > 10'
-            class="btn btn-default"
-            ng-click="query.ratedPaginate()"
-          >
-            Peek at the next page of rated results
-          </a>
-        </span>
-
-        <span class="text-muted text-warning bg-warning clearfix">
-          <strong>Note:</strong> You are only viewing rated documents
-        </span>
-      </div>
-    </div>
+    <!-- to be continued -->
 
   </div>
 </div>

@@ -371,16 +371,7 @@ angular.module('QuepidApp')
                   self.othersExplained = self.searcher.othersExplained;
                 }
 
-                var fieldSpec = currSettings.createFieldSpec();
-                var ratedIDs = self.ratings ? Object.keys(self.ratings) : []; 
-                ratedIDs = ratedIDs.sort().slice(0, 10);
-
-                self.searcher.explainOther('{!terms f=id}' + ratedIDs.join(','), fieldSpec)
-                  .then(function() {
-                    var normed = svc.normalizeDocExplains(self, self.searcher, fieldSpec);
-                    self.setRatedDocs(normed, self.searcher.numFound);
-                    resolve();
-                  });
+                resolve();
               }, function(response) {
                 self.linkUrl = self.searcher.linkUrl;
                 self.setDocs([], 0);
@@ -421,6 +412,7 @@ angular.module('QuepidApp')
             });
         };
 
+<<<<<<< Updated upstream
       this.ratedPaginate = function() {
           var self = this;
 
@@ -438,6 +430,8 @@ angular.module('QuepidApp')
             });
       };
 
+=======
+>>>>>>> Stashed changes
         this.saveNotes = function(notes) {
           var that = this;
           var notesJson = { query: { notes: notes } };
