@@ -412,7 +412,6 @@ angular.module('QuepidApp')
             });
         };
 
-<<<<<<< Updated upstream
       this.ratedPaginate = function() {
           var self = this;
 
@@ -430,8 +429,6 @@ angular.module('QuepidApp')
             });
       };
 
-=======
->>>>>>> Stashed changes
         this.saveNotes = function(notes) {
           var that = this;
           var notesJson = { query: { notes: notes } };
