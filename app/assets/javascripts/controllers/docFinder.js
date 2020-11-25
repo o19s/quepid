@@ -25,6 +25,8 @@ angular.module('QuepidApp')
         var ratingsStore  = $scope.query.ratingsStore;
         var fieldSpec     = settings.createFieldSpec();
 
+        $scope.defaultList = false;
+
         $scope.docFinder.searcher = queriesSvc.createSearcherFromSettings(settings, query);
 
         $scope.docFinder.docs = []; // reset the array for a new search
@@ -158,23 +160,26 @@ angular.module('QuepidApp')
       // Initialize to rated docs
       var currSettings = settingsSvc.editableSettings();
 
+
       var fieldSpec = currSettings.createFieldSpec();
       var ratedIDs = $scope.query.ratings ? Object.keys($scope.query.ratings) : [];
       $scope.docFinder.numFound = ratedIDs.length;
 
       $scope.docFinder.searcher = queriesSvc.createSearcherFromSettings(currSettings, $scope.query.queryText);
 
-      $scope.docFinder.searcher.explainOther($scope.query.filterToRatings($scope.docFinder.searcher.type, fieldSpec), fieldSpec)
-        .then(function() {
-          var normed = queriesSvc.normalizeDocExplains($scope.query, $scope.docFinder.searcher, fieldSpec);
+      if ($scope.docFinder.searcher.type === 'solr') {
+        $scope.docFinder.searcher.explainOther($scope.query.filterToRatings($scope.docFinder.searcher.type, fieldSpec), fieldSpec)
+          .then(function() {
+            var normed = queriesSvc.normalizeDocExplains($scope.query, $scope.docFinder.searcher, fieldSpec);
 
-          angular.forEach(normed, function(doc) {
-            var rateableDoc = $scope.query.ratingsStore.createRateableDoc(doc);
-            $scope.docFinder.docs.push(rateableDoc);
-          });
+            angular.forEach(normed, function(doc) {
+              var rateableDoc = $scope.query.ratingsStore.createRateableDoc(doc);
+              $scope.docFinder.docs.push(rateableDoc);
+            });
 
-          $scope.defaultList = true;
+            $scope.defaultList = true;
         });
+      }
     }
 
 

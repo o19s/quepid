@@ -605,7 +605,7 @@ angular.module('QuepidApp')
         this.filterToRatings = function(mode, fieldSpec) {
           var ratedIDs = self.ratings ? Object.keys(self.ratings) : [];
           if (mode === 'es') {
-
+            // Looks like this requires a splainer update, explainOther doesn't accept a ES query.
           } else {
             ratedIDs = ratedIDs.sort().slice(self.ratedDocs.length);
             return '{!terms f=' + fieldSpec.id + '}' + ratedIDs.join(',');
