@@ -90,7 +90,7 @@ describe('Service: queriesSvc', function () {
   };
 
   var MockSearcher = function(settings, queryText) {
-    var currPromise = null;
+    this.currPromise = null;
     this.docs = [];
     this.settings = settings;
 
@@ -109,20 +109,26 @@ describe('Service: queriesSvc', function () {
         }
         thisMockSearcher.docs.push(solrDoc);
       });
-      currPromise.resolve();
+
+      if (this.currPromise) {
+        this.currPromise.resolve();
+      }
     };
 
     // force a search failure
     this.fail = function() {
       this.inError = true;
-      currPromise.resolve();
+
+      if (this.currPromise) {
+        this.currPromise.resolve();
+      }
     };
 
     this.linkUrl = settings.searchUrl + '?linkUrl=true';
 
     this.search = function() {
-      currPromise = $q.defer();
-      return currPromise.promise;
+      this.currPromise = $q.defer();
+      return this.currPromise.promise;
     };
 
     this.queryText = function() {

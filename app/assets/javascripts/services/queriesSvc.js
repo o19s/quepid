@@ -411,6 +411,8 @@ angular.module('QuepidApp')
                       }
                       self.othersExplained = self.searcher.othersExplained;
                     }
+
+                    resolve();
                 })
               }, function(response) {
                 self.linkUrl = self.searcher.linkUrl;
