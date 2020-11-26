@@ -34,7 +34,8 @@ class Case < ApplicationRecord
   # on the scorers_controller.rb that has a delete on a score with force=true
   # that would set a scorer to nil, which means maybe it is optional??  I have
   # never used this force parameter...   But then our after_initialize assigns a
-  # default scorer, so going back to not optional!
+  # default scorer, so going back to not optional!  Maybe we don't even need the
+  # after_initialize if we support nil scorer on a case!
   belongs_to :scorer, optional: false
 
 

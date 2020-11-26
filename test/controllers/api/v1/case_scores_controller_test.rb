@@ -18,7 +18,7 @@ module Api
 
       describe 'Updates case score' do
         test 'return an error if try id is not specified' do
-          put :update, case_id: acase.id, case_score: { score: 1 }
+          put :update, params: { case_id: acase.id, case_score: { score: 1 } }
 
           assert_response :bad_request
         end
@@ -30,7 +30,7 @@ module Api
             try_id:    first_try.id,
           }
 
-          put :update, case_id: acase.id, case_score: data
+          put :update, params: { case_id: acase.id, case_score: data }
 
           assert_response :no_content
         end
@@ -42,7 +42,7 @@ module Api
             try_id:    first_try.id,
           }
 
-          put :update, case_id: acase.id, case_score: data
+          put :update, params: { case_id: acase.id, case_score: data }
 
           assert_response :ok
 
@@ -69,7 +69,7 @@ module Api
             },
           }
 
-          put :update, case_id: acase.id, case_score: data
+          put :update, params: { case_id: acase.id, case_score: data }
 
           assert_response :ok
 
@@ -87,7 +87,7 @@ module Api
           }
 
           assert_no_difference 'acase.scores.count' do
-            put :update, case_id: acase.id, case_score: data
+            put :update, params: { case_id: acase.id, case_score: data }
 
             assert_response :ok
 
@@ -118,7 +118,7 @@ module Api
           }
 
           assert_difference 'acase.scores.count' do
-            put :update, case_id: acase.id, case_score: data
+            put :update, params: { case_id: acase.id, case_score: data }
 
             assert_response :ok
 
@@ -134,7 +134,7 @@ module Api
 
       describe 'Fetches case scores' do
         test 'returns an empty array when case has not scores' do
-          get :index, case_id: acase.id
+          get :index, params: { case_id: acase.id }
 
           assert_response :ok
 
@@ -148,7 +148,7 @@ module Api
           acase.scores.create(try_id: first_try.id,   user_id: user.id, created_at: now, score: 80)
           acase.scores.create(try_id: second_try.id,  user_id: user.id, created_at: now, score: 80)
 
-          get :index, case_id: acase.id
+          get :index, params: { case_id: acase.id }
 
           assert_response :ok
 
@@ -181,7 +181,7 @@ module Api
         end
 
         test 'returns the last created/updated score' do
-          get :show, case_id: acase.id
+          get :show, params: { case_id: acase.id }
 
           assert_response :ok
 
@@ -195,7 +195,7 @@ module Api
           @last_score.queries = { foo: 'bar' }
           @last_score.save
 
-          get :show, case_id: acase.id
+          get :show, params: { case_id: acase.id }
 
           assert_response :ok
 
