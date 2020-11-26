@@ -108,7 +108,7 @@ angular.module('QuepidApp')
         var fieldSpec     = settings.createFieldSpec();
         var ratedIDs = $scope.query.ratings ? Object.keys($scope.query.ratings) : [];
 
-        $scope.docFinder.searcher.explainOther($scope.query.filterToRatings($scope.docFinder.searcher.type, fieldSpec), fieldSpec)
+        $scope.docFinder.searcher.explainOther($scope.query.filterToRatings(currSettings, fieldSpec), fieldSpec)
         .then(function() {
           var normed = queriesSvc.normalizeDocExplains($scope.query, $scope.docFinder.searcher, fieldSpec);
 
@@ -168,7 +168,7 @@ angular.module('QuepidApp')
       $scope.docFinder.searcher = queriesSvc.createSearcherFromSettings(currSettings, $scope.query.queryText);
 
       if ($scope.docFinder.searcher.type === 'solr') {
-        $scope.docFinder.searcher.explainOther($scope.query.filterToRatings($scope.docFinder.searcher.type, fieldSpec), fieldSpec)
+        $scope.docFinder.searcher.explainOther($scope.query.filterToRatings(currSettings, fieldSpec), fieldSpec)
           .then(function() {
             var normed = queriesSvc.normalizeDocExplains($scope.query, $scope.docFinder.searcher, fieldSpec);
 

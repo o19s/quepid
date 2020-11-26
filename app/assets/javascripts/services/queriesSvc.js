@@ -87,7 +87,7 @@ angular.module('QuepidApp')
               if (args['fq'] === undefined) {
                 args['fq'] = [];
               }
-              args['fq'].push(query.filterToRatings(passedInSettings.searchEngine, passedInSettings.createFieldSpec()));
+              args['fq'].push(query.filterToRatings(passedInSettings));
             }
 
           }
