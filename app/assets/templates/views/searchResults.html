@@ -153,9 +153,9 @@
 
       <div class='row'>
         <span class="glyphicon glyphicon-chevron-up text-primary" ng-click="query.toggle()" data-toggle="tooltip"  title="Close the results pane"></span>
-        <span ng-if="query.getNumFound() > query.docs.length">
+        <span ng-if="query.getNumFound() > query.ratedDocs.length">
           <a
-            ng-show='query.getNumFound() > 10'
+            ng-show='query.getNumFound() > query.ratedDocs.length'
             class="btn btn-default"
             ng-click="query.ratedPaginate()"
           >
@@ -174,7 +174,7 @@
         </span>
 
         <span class="text-muted text-warning bg-warning clearfix">
-          <strong>Note:</strong> You are only viewing documents that have been rated 
+          <strong>Note:</strong> You are only viewing documents that have been rated
         </span>
       </div>
     </div>

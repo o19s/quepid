@@ -2,10 +2,11 @@
 
 angular.module('QuepidApp')
   .controller('SearchResultsCtrl', [
+    '$rootScope',
     '$scope', '$uibModal', '$log', '$window',
     'rateBulkSvc', 'userSvc', 'queriesSvc', 'queryViewSvc', 'settingsSvc',
     function (
-      $scope, $uibModal, $log, $window,
+      $rootScope, $scope, $uibModal, $log, $window,
       rateBulkSvc, userSvc, queriesSvc, queryViewSvc, settingsSvc
     ) {
       $scope.queriesSvc = queriesSvc;
@@ -27,6 +28,13 @@ angular.module('QuepidApp')
       ) {
         scorerSelector = 'unit-test';
       }
+
+      // Refresh rated-only docs if ratings have changed
+      $rootScope.$on('rating-changed', function() {
+        if (!queriesSvc.showOnlyRated) {
+          $scope.query.refreshRatedDocs();
+        }
+      });
 
       $scope.$watch('query.effectiveScorer()', function() {
         if ( $scope.query.test !== null &&
@@ -139,24 +147,26 @@ angular.module('QuepidApp')
           extra.query.rating = newRating;
 
           var ids = [];
-          angular.forEach(extra.query.docs, function(doc) {
+          var docs = queriesSvc.showOnlyRated ? extra.query.ratedDocs : extra.query.docs;
+          angular.forEach(docs, function(doc) {
             ids.push(doc.id);
           });
 
           if ( ids.length > 0 ) {
-            extra.query.docs[0].rateBulk(ids, newRating);
+            docs[0].rateBulk(ids, newRating);
           }
         },
         function(extra) {
           extra.query.rating = '-';
 
           var ids = [];
-          angular.forEach(extra.query.docs, function(doc) {
+          var docs = queriesSvc.showOnlyRated ? extra.query.ratedDocs : extra.query.docs;
+          angular.forEach(docs, function(doc) {
             ids.push(doc.id);
           });
 
           if ( ids.length > 0 ) {
-            extra.query.docs[0].resetBulkRatings(ids);
+            docs[0].resetBulkRatings(ids);
           }
         },
         src

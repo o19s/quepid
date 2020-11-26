@@ -310,6 +310,24 @@ angular.module('QuepidApp')
           return maxDocScore;
         };
 
+        this.refreshRatedDocs = function() {
+          self.ratedSearcher = svc.createSearcherFromSettings(
+              currSettings,
+              self.queryText,
+              self
+            );
+
+          self.ratedDocs = [];
+          self.ratedSearcher.search().then(function() {
+            var normed = normalizeDocExplains(self, self.ratedSearcher, currSettings.createFieldSpec());
+
+            angular.forEach(normed, function(doc) {
+              var rateableDoc = self.ratingsStore.createRateableDoc(doc);
+              self.ratedDocs.push(rateableDoc);
+            });
+          });
+        };
+
         this.setDocs = function(newDocs, numFound) {
           that.docs.length = 0;
           that.numFound    = numFound;
@@ -372,31 +390,28 @@ angular.module('QuepidApp')
             self.searcher.search()
               .then(function() {
                   self.ratedSearcher.search().then(function() {
-                  var normed = normalizeDocExplains(self, self.ratedSearcher, currSettings.createFieldSpec());
+                    var normed = normalizeDocExplains(self, self.ratedSearcher, currSettings.createFieldSpec());
 
-                  angular.forEach(normed, function(doc) {
-                  var rateableDoc = self.ratingsStore.createRateableDoc(doc);
-                    self.ratedDocs.push(rateableDoc);
-                   });
+                    angular.forEach(normed, function(doc) {
+                    var rateableDoc = self.ratingsStore.createRateableDoc(doc);
+                      self.ratedDocs.push(rateableDoc);
+                    });
 
-                  self.linkUrl = self.searcher.linkUrl;
+                    self.linkUrl = self.searcher.linkUrl;
 
-                  if (self.searcher.inError) {
-                    //self.docs.length = 0;
-                    self.setDocs([], 0);
-                    self.onError('Please click browse to see the error');
-                  } else {
-                    var error = self.setDocs(self.searcher.docs, self.searcher.numFound);
-                    if (error) {
-                      self.onError(error);
-                      reject(error);
+                    if (self.searcher.inError) {
+                      //self.docs.length = 0;
+                      self.setDocs([], 0);
+                      self.onError('Please click browse to see the error');
+                    } else {
+                      var error = self.setDocs(self.searcher.docs, self.searcher.numFound);
+                      if (error) {
+                        self.onError(error);
+                        reject(error);
+                      }
+                      self.othersExplained = self.searcher.othersExplained;
                     }
-                    self.othersExplained = self.searcher.othersExplained;
-                  }
-                });
-
-
-
+                })
               }, function(response) {
                 self.linkUrl = self.searcher.linkUrl;
                 self.setDocs([], 0);
@@ -437,20 +452,20 @@ angular.module('QuepidApp')
             });
         };
 
-      this.ratedPaginate = function() {
-          var self = this;
+        this.ratedPaginate = function() {
+            var self = this;
 
-          if (self.ratedSearcher === null) {
-            return;
-          }
+            if (self.ratedSearcher === null) {
+              return;
+            }
 
-          self.ratedSearcher = self.ratedSearcher.pager();
-          return self.ratedSearcher.search()
-            .then(function() {
-              var normed = svc.normalizeDocExplains(self, self.ratedSearcher, currSettings.createFieldSpec());
-              self.ratedDocs = self.ratedDocs.concat(normed);
-            });
-      };
+            self.ratedSearcher = self.ratedSearcher.pager();
+            return self.ratedSearcher.search()
+              .then(function() {
+                var normed = svc.normalizeDocExplains(self, self.ratedSearcher, currSettings.createFieldSpec());
+                self.ratedDocs = self.ratedDocs.concat(normed);
+              });
+        };
 
         this.saveNotes = function(notes) {
           var that = this;

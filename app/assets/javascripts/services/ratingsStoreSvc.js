@@ -10,8 +10,9 @@
 //
 angular.module('QuepidApp')
   .service('ratingsStoreSvc', [
+    '$rootScope',
     '$http',
-    function ratingsStoreSvc($http) {
+    function ratingsStoreSvc($scope, $http) {
       var svcVersion = 0;
 
       var RatingsStore = function(caseNo, queryId, ratingsDict) {
@@ -35,6 +36,8 @@ angular.module('QuepidApp')
         var markDirty = function() {
           version++;
           svcVersion++;
+
+          $scope.$emit('rating-changed');
         };
 
         this.setQueryId = function(newQueryId) {
@@ -42,7 +45,7 @@ angular.module('QuepidApp')
         };
 
         this.rateDocument = function(docId, rating) {
-          $http.put(path(docId), {'rating': rating}).then(function() {
+          return $http.put(path(docId), {'rating': rating}).then(function() {
             ratingsDict[docId] = rating;
             markDirty();
           });
@@ -57,7 +60,7 @@ angular.module('QuepidApp')
             rating:   rating,
           };
 
-          $http.put(url, data).then(function() {
+          return $http.put(url, data).then(function() {
             angular.forEach(docIds, function(docId){
               ratingsDict[docId] = rating;
             });
@@ -67,7 +70,7 @@ angular.module('QuepidApp')
         };
 
         this.resetRating = function(docId) {
-          $http.delete(path(docId)).then(function() {
+          return $http.delete(path(docId)).then(function() {
             delete ratingsDict[docId];
             markDirty();
           });
@@ -79,7 +82,7 @@ angular.module('QuepidApp')
             doc_ids: docIds,
           };
 
-          $http.post(url, data).then(function() {
+          return $http.post(url, data).then(function() {
             angular.forEach(docIds, function(docId){
               delete ratingsDict[docId];
             });
