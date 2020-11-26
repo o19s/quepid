@@ -55,9 +55,6 @@ module Api
       def update
         update_params = case_params
 
-        puts "Here are update_params: #{update_params}"
-        puts "Did we remove scorer?  #{default_scorer_removed? update_params}"
-
         # Can we have a nil scorer?  Our logic is that you can't, again, bumping into this.
         update_params[:scorer_id] = Scorer.system_default_scorer.id if default_scorer_removed? update_params
 
@@ -89,11 +86,6 @@ module Api
       end
 
       def default_scorer_removed? params = {}
-        puts "params[:scorer_id]: #{params[:scorer_id]}"
-        puts "params[:scorer_id].present: #{params[:scorer_id].present?}"
-        puts "check on the key? #{params.key?(:scorer_id)}"
-        puts "check on the key? #{params.key?(:scorer_id)}"
-
         #params[:scorer_id].present? or params.key?(:scorer_id) && [ 0, '0', '' ].include?(params[:scorer_id])
         params[:scorer_id].present? && [ 0, '0' ].include?(params[:scorer_id])
       end

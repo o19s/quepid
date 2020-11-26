@@ -18,7 +18,7 @@ module Api
 
       describe '#create' do
         test 'return an error if try id is not specified' do
-          post :create, case_id: acase.id, score: { score: 1 }
+          post :create, params: { case_id: acase.id, score: { score: 1 } }
 
           assert_response :bad_request
         end
@@ -36,7 +36,7 @@ module Api
           }
 
           assert_difference 'acase.scores.count' do
-            post :create, data.merge(case_id: acase.id)
+            post :create, params: data.merge(case_id: acase.id)
 
             assert_response :ok
 
@@ -60,7 +60,7 @@ module Api
           }
 
           assert_difference 'acase.scores.count' do
-            post :create, data.merge(case_id: acase.id)
+            post :create, params: data.merge(case_id: acase.id)
 
             assert_response :ok
           end
@@ -79,7 +79,7 @@ module Api
           }
 
           assert_difference 'Annotation.count' do
-            post :create, data.merge(case_id: acase.id)
+            post :create, params: data.merge(case_id: acase.id)
 
             assert_response :ok
 
@@ -98,7 +98,7 @@ module Api
         test 'return an error if the annotation id is incorrect' do
           data = { message: 'new message' }
 
-          put :update, case_id: acase.id, id: 'foo', annotation: data
+          put :update, params: { case_id: acase.id, id: 'foo', annotation: data }
 
           assert_response :not_found
         end
@@ -106,7 +106,7 @@ module Api
         test 'updates annotation message' do
           data = { message: 'new message' }
 
-          put :update, case_id: acase.id, id: annotation.id, annotation: data
+          put :update, params: { case_id: acase.id, id: annotation.id, annotation: data }
 
           assert_response :ok
 
@@ -120,14 +120,14 @@ module Api
         let(:acase)       { annotation.case }
 
         test 'return an error if the annotation id is incorrect' do
-          delete :destroy, case_id: acase.id, id: 'foo'
+          delete :destroy, params: { case_id: acase.id, id: 'foo' }
 
           assert_response :not_found
         end
 
         test 'deletes annotation' do
           assert_difference 'Annotation.count', -1 do
-            delete :destroy, case_id: acase.id, id: annotation.id
+            delete :destroy, params: { case_id: acase.id, id: annotation.id }
 
             assert_response :no_content
           end
@@ -135,7 +135,7 @@ module Api
 
         test 'deletes score' do
           assert_difference 'Score.count', -1 do
-            delete :destroy, case_id: acase.id, id: annotation.id
+            delete :destroy, params: { case_id: acase.id, id: annotation.id }
 
             assert_response :no_content
           end
@@ -147,7 +147,7 @@ module Api
         let(:acase)       { annotation.case }
 
         test 'returns list of annotations for case' do
-          get :index, case_id: acase.id
+          get :index, params: { case_id: acase.id }
 
           assert_response :ok
 
