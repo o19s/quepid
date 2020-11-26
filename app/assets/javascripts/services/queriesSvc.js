@@ -338,14 +338,6 @@ angular.module('QuepidApp')
           return error;
         };
 
-        this.setRatedDocs = function(ratedDocs) {
-          that.ratedDocs = ratedDocs;
-
-          // TODO: Rated docs error message?
-          // Always show score from the "full set of docs", so need to call score
-          return false;
-        };
-
         this.onError = function(errorText) {
           that.errorText = errorText;
         };
