@@ -254,8 +254,8 @@ angular.module('QuepidApp')
 
           // The defaults are set below because sometimes quepid saves out scores with no values.
           // TODO: Defaults can be removed if the quepid scoring persistence issue is cleaned up
-          var score     = scorer.score(this.numFound, otherDocs, bestDocs, this.options) || 0.0;
-          var maxScore  = scorer.maxScore(this.numFound, otherDocs, bestDocs, this.options) || 1.0;
+          var score     = scorer.score(this.numFound, otherDocs, this.ratedDocs, bestDocs, this.options) || 0.0;
+          var maxScore  = scorer.maxScore(this.numFound, otherDocs, this.ratedDocs, bestDocs, this.options) || 1.0;
 
           var color     = qscoreSvc.scoreToColor(score, maxScore);
 
@@ -379,29 +379,32 @@ angular.module('QuepidApp')
 
             self.searcher.search()
               .then(function() {
-                self.linkUrl = self.searcher.linkUrl;
-
-                if (self.searcher.inError) {
-                  //self.docs.length = 0;
-                  self.setDocs([], 0);
-                  self.onError('Please click browse to see the error');
-                } else {
-                  var error = self.setDocs(self.searcher.docs, self.searcher.numFound);
-                  if (error) {
-                    self.onError(error);
-                    reject(error);
-                  }
-                  self.othersExplained = self.searcher.othersExplained;
-                }
-
-                self.ratedSearcher.search().then(function() {
+                  self.ratedSearcher.search().then(function() {
                   var normed = normalizeDocExplains(self, self.ratedSearcher, currSettings.createFieldSpec());
 
                   angular.forEach(normed, function(doc) {
                   var rateableDoc = self.ratingsStore.createRateableDoc(doc);
                     self.ratedDocs.push(rateableDoc);
                    });
+
+                  self.linkUrl = self.searcher.linkUrl;
+
+                  if (self.searcher.inError) {
+                    //self.docs.length = 0;
+                    self.setDocs([], 0);
+                    self.onError('Please click browse to see the error');
+                  } else {
+                    var error = self.setDocs(self.searcher.docs, self.searcher.numFound);
+                    if (error) {
+                      self.onError(error);
+                      reject(error);
+                    }
+                    self.othersExplained = self.searcher.othersExplained;
+                  }
                 });
+
+
+
               }, function(response) {
                 self.linkUrl = self.searcher.linkUrl;
                 self.setDocs([], 0);

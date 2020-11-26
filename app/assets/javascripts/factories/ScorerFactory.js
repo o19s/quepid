@@ -377,7 +377,7 @@
         return deferred.promise;
       }
 
-      function runCode(total, docs, bestDocs, mode, options) {
+      function runCode(total, docs, ratedDocs, bestDocs, mode, options) {
         var scale     = self.scale;
         var max       = scale[scale.length-1];
 
@@ -420,6 +420,23 @@
           }
           return true;
         };
+
+        var ratedDocAt = function(posn) {
+          if (posn >= ratedDocs.length) {
+            return {};
+          } else {
+            return ratedDocs[posn];
+          }
+        };
+
+
+        var ratedDocExistsAt = function(posn) {
+          if (posn >= ratedDocs.length) {
+            return false;
+          }
+          return true;
+        };
+
 
         /*jshint unused:false */
         var hasDocRating = function(posn) {
@@ -465,6 +482,20 @@
             }
           }
         };
+
+        var eachRatedDoc = function(f, count) {
+          if ( angular.isUndefined(count) ) {
+            count = DEFAULT_NUM_DOCS;
+          }
+
+          var i = 0;
+          for (i = 0; i < count; i++) {
+            if (ratedDocExistsAt(i)) {
+              f(ratedDocAt(i), i);
+            }
+          }
+        };
+
 
         // Loops through all docs that have a rating equal to the
         // param that is passed, and calls the callback function on
@@ -527,19 +558,20 @@
         }
       }
 
-      function maxScore(total, docs, bestDocs, options) {
+      function maxScore(total, docs, ratedDocs, bestDocs, options) {
         if (self.manualMaxScore) {
           return self.manualMaxScoreValue;
         }
 
-        return runCode(total, docs, bestDocs, 'max', options);
+        return runCode(total, docs, ratedDocs, bestDocs, 'max', options);
       }
 
-      function score(total, docs, bestDocs, options) {
-        var maxScore  = self.maxScore(total, docs, bestDocs, options);
+      function score(total, docs, ratedDocs, bestDocs, options) {
+        var maxScore  = self.maxScore(total, docs, ratedDocs, bestDocs, options);
         var calcScore = self.runCode(
           total,
           docs,
+          ratedDocs,
           bestDocs,
           undefined,
           options
