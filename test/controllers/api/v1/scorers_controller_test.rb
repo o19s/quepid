@@ -409,7 +409,7 @@ module Api
             assert_response :bad_request
           end
 
-          test 'returns a bad request error if not forced' do
+          test 'returns a bad request error if scorer is user default' do
             delete :destroy, params: { id: default_scorer.id, force: false }
 
             assert_response :bad_request
@@ -422,6 +422,7 @@ module Api
 
             default_scorer_user.reload
             default_scorer_owner.reload
+
 
             assert_not_equal  default_scorer_owner.default_scorer, default_scorer
             assert_not_nil    default_scorer_owner.default_scorer
@@ -464,8 +465,9 @@ module Api
             acase.reload
 
             assert_not_equal  acase.scorer, default_scorer
-            assert_nil        acase.scorer
-            assert_nil        acase.scorer_id
+            assert_not_nil    acase.scorer
+            assert_equal      acase.scorer.name, Rails.application.config.quepid_default_scorer
+
 
             assert_equal Case.where(scorer_id: default_scorer.id).count, 0
           end

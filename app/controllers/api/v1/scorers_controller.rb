@@ -92,12 +92,13 @@ module Api
       # rubocop:disable Metrics/CyclomaticComplexity
       # rubocop:disable Metrics/AbcSize
       def destroy
-        puts "Here is @scorer.owner #{@scorer.owner.id} == #{current_user.id}"
-
-        puts "Is communal scorer? #{@scorer.communal}"
-
-        puts "params force: #{params[:force]}"
-        force = params[:force] || false
+        # Note that the force parameter isn't actually used by the front end API.
+        # Also, instead of picking the Quepid Default Scorer, instead we should
+        # provide a "replacement_scorer_id" to point to the new one to use.  This
+        # would be useful when wholesale migrating scorers.
+        # Think about removing this capability?
+        bool = ActiveRecord::Type::Boolean.new
+        force  = bool.deserialize(params[:force]) || false
 
         unless @scorer.owner == current_user
           render(
@@ -109,13 +110,12 @@ module Api
 
           return
         end
+
         @users = User.where(default_scorer_id: @scorer.id)
 
-        puts "Cound   of @users: #{@users.count}"
-
-        if @users.count.positive? && force == true
+        if @users.count.positive? && force
           # rubocop:disable Rails/SkipsModelValidations
-          @users.update_all(default_scorer_id: Scorer.system_default_scorer)
+          @users.update_all(default_scorer_id: Scorer.system_default_scorer.id)
           # rubocop:enable Rails/SkipsModelValidations
         elsif @users.count.positive?
           render(
@@ -131,8 +131,10 @@ module Api
         end
 
         @cases = Case.where(scorer_id: @scorer.id)
-        if @cases.count.positive? && force == true
-          @cases.update_all(scorer_id: nil) # rubocop:disable Rails/SkipsModelValidations
+        if @cases.count.positive? && force
+          # We can't have a nil scorer on a case, so setting all to the default.  See comment above about how
+          # we should really pass in a replacement scorer id!
+          @cases.update_all(scorer_id: Scorer.system_default_scorer.id) # rubocop:disable Rails/SkipsModelValidations
         elsif @cases.count.positive?
           render(
             json:   {
@@ -147,17 +149,10 @@ module Api
         end
 
         @queries = Query.where(scorer_id: @scorer.id)
-        puts "How many queries have this scorer?  #{@queries.size}"
-        puts "How many queries have this count?  #{@queries.count}"
-        puts "Is this true? #{@queries.count.positive? && force}"
-        puts "queries.count.positive? #{@queries.count.positive?}"
-        puts "force: #{force}"
-        if @queries.count.positive? && force == true
-          puts "Doing update all"
+
+        if @queries.count.positive? && force
           @queries.update_all(scorer_id: nil) # rubocop:disable Rails/SkipsModelValidations
         elsif @queries.count.positive?
-          puts "about to render bad request"
-
           render(
             json:   {
               # rubocop:disable Metrics/LineLength

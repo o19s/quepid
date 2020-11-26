@@ -30,7 +30,13 @@ class Case < ApplicationRecord
                           join_table: 'teams_cases'
   # rubocop:enable Rails/HasAndBelongsToMany
 
-  belongs_to :scorer, optional: false # actually not optional, but fails in Rails 5.
+  # actually not optional, but fails in Rails 5.  We have a method however on
+  # on the scorers_controller.rb that has a delete on a score with force=true
+  # that would set a scorer to nil, which means maybe it is optional??  I have
+  # never used this force parameter...   But then our after_initialize assigns a
+  # default scorer, so going back to not optional!
+  belongs_to :scorer, optional: false
+
 
   belongs_to :user, optional: true
 
