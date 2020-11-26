@@ -76,7 +76,13 @@ angular.module('QuepidApp')
           // Modify query if ratings were passed in
           if (query) {
             if (passedInSettings.searchEngine === 'es') {
-
+              var mainQuery = args['query'];
+              args['query'] = {
+                'bool': {
+                  'should': mainQuery,
+                  'filter': query.filterToRatings(passedInSettings, true)
+                }
+              };
             } else {
               if (args['fq'] === undefined) {
                 args['fq'] = [];
@@ -630,12 +636,19 @@ angular.module('QuepidApp')
           }
         };
 
-        this.filterToRatings = function(mode, fieldSpec) {
+        // TODO: Fix splainer for ES and remove force setting
+        this.filterToRatings = function(settings, force) {
           var ratedIDs = self.ratings ? Object.keys(self.ratings) : [];
-          if (mode === 'es') {
+          var fieldSpec = settings.createFieldSpec();
+
+          if (settings.searchEngine === 'es' && force) {
             // Looks like this requires a splainer update, explainOther doesn't accept a ES query.
+            var esQuery = {
+              'terms': {}
+            };
+            esQuery['terms'][fieldSpec.id] = ratedIDs;
+            return esQuery;
           } else {
-            ratedIDs = ratedIDs.sort().slice(self.ratedDocs.length);
             return '{!terms f=' + fieldSpec.id + '}' + ratedIDs.join(',');
           }
         }
