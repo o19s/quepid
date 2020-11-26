@@ -19,7 +19,7 @@ angular.module('QuepidApp')
       $scope.query.maxDiffDocScore = 0;
 
       $scope.query.docPairs = function() {
-        var diffDocs = $scope.query.diff.docs();
+        var diffDocs = $scope.query.diff.docs(queriesSvc.showOnlyRated);
 
         for(var i = 0 ; i < howManyToDisplay; i++) {
           if( docSource()[i] ) {

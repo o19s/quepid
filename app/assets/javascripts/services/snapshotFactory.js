@@ -68,14 +68,18 @@
             $log.debug('' + sDoc.id + ' is null');
           }
 
+          // Apply rated only for filtering
+          doc.explain = sDoc.explain;
+          doc.rated_only = sDoc.rated_only;
+
           idsToDocs[doc.id] = doc;
         });
 
         // reorder based on my id list to
         // show original search results order
-        angular.forEach(qDocs, function(sDoc) {
-          var explAsJson  = angular.fromJson(sDoc.explain);
-          var nDoc = angular.copy(idsToDocs[sDoc.id]);
+        angular.forEach(Object.keys(idsToDocs), function(sDocId) {
+          var nDoc = angular.copy(idsToDocs[sDocId]);
+          var explAsJson  = angular.fromJson(nDoc.explain);
           nDoc = normalDocsSvc.explainDoc(nDoc, explAsJson);
 
           searchResults.push(nDoc);

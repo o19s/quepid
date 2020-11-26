@@ -175,6 +175,7 @@ class SnapshotManager
         doc_id:   doc[:id],
         explain:  doc[:explain],
         position: doc[:position] || (index + 1),
+        rated_only: doc[:rated_only] || false,
       }
 
       results << query.snapshot_docs.build(doc_params)

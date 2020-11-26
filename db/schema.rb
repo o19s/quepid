@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20201101171720) do
+ActiveRecord::Schema.define(version: 20201126010021) do
 
   create_table "annotations", force: :cascade do |t|
     t.text     "message",    limit: 65535
@@ -145,6 +145,7 @@ ActiveRecord::Schema.define(version: 20201101171720) do
     t.integer "position",          limit: 4
     t.integer "snapshot_query_id", limit: 4
     t.text    "explain",           limit: 16777215
+    t.boolean "rated_only",                         default: false
   end
 
   add_index "snapshot_docs", ["snapshot_query_id"], name: "snapshot_query_id", using: :btree
