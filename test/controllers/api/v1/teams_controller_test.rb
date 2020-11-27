@@ -187,9 +187,12 @@ module Api
           body  = JSON.parse(response.body)
           teams = body['teams']
 
+          names = teams.map { |team| team['name'] }
+          ids = teams.map { |team| team['id'] }
+
           assert_equal teams.length,        user.teams_im_in.all.length
-          assert_equal teams.first['name'], the_team.name
-          assert_equal teams.first['id'],   the_team.id
+          assert_includes names,            the_team.name
+          assert_includes ids,              the_team.id
         end
 
         test 'returns list of teams shared by user' do
