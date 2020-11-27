@@ -200,9 +200,12 @@ module Api
           body  = JSON.parse(response.body)
           teams = body['teams']
 
-          assert_equal teams.length,        user.teams_im_in.all.length
-          assert_equal teams.last['name'],  shared_team.name
-          assert_equal teams.last['id'],    shared_team.id
+          names = teams.map { |team| team['name'] }
+          ids = teams.map { |team| team['id'] }
+
+          assert_equal    teams.length,     user.teams_im_in.all.length
+          assert_includes names,            shared_team.name
+          assert_includes ids,              shared_team.id
         end
 
         test 'returns list of teams and loads case data' do
@@ -213,7 +216,7 @@ module Api
           body  = JSON.parse(response.body)
           teams = body['teams']
 
-          assert_not_empty(teams.last['cases'])
+          assert_not_empty(teams.first['cases'])
         end
       end
     end

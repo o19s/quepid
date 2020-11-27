@@ -85,7 +85,7 @@ jobs:
 
       - run:
           name: Run unit tests (backend)
-          command: bundle exec rails test
+          command: bundle exec bin/rails test
       - run:
           name: Run rubocop
           command: bundle exec rubocop
