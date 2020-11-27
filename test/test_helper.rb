@@ -11,7 +11,7 @@ require 'minitest/spec'
 require 'mocha/minitest'
 require 'webmock/minitest'
 
-Dir[Rails.root.join('test', 'support', '**', '*.rb')].sort
+Dir[Rails.root.join('test/support/**/*.rb')].sort
   .each { |f| require f }
 
 Minitest::Reporters.use! [ Minitest::Reporters::ProgressReporter.new, Minitest::Reporters::JUnitReporter.new ]

@@ -5,7 +5,6 @@ require 'test_helper'
 module Api
   module V1
     class UsersControllerTest < ActionController::TestCase
-    #class UsersControllerTest < ActionDispatch::IntegrationTest
       let(:matt) { users(:matt) }
 
       before do

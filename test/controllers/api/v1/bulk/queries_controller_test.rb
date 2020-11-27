@@ -25,7 +25,7 @@ module Api
             }
 
             assert_difference 'acase.queries.count', 4 do
-              post :create, data
+              post :create, params: data
             end
           end
 
@@ -35,7 +35,7 @@ module Api
               queries: %w[one two three four],
             }
 
-            post :create, data
+            post :create, params: data
 
             acase.reload
 
@@ -51,7 +51,7 @@ module Api
               queries: %w[one two three four],
             }
 
-            post :create, data
+            post :create, params: data
 
             acase.reload
 
@@ -62,7 +62,7 @@ module Api
               queries: %w[one two three four five],
             }
 
-            post :create, data
+            post :create, params: data
 
             acase.reload
 

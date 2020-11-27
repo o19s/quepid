@@ -20,7 +20,7 @@ module Api
           test 'creates a new rating with TMDB id (issue 1001)' do
             doc_id = '7555'
 
-            put :update, case_id: acase.id, query_id: query.id, doc_id: doc_id, rating: 4
+            put :update, params: { case_id: acase.id, query_id: query.id, doc_id: doc_id, rating: 4 }
 
             assert_response :ok
 
@@ -38,7 +38,7 @@ module Api
           test "creates a new rating if it didn't already exist" do
             doc_id = 'x123z'
 
-            put :update, case_id: acase.id, query_id: query.id, doc_id: doc_id, rating: 5
+            put :update, params: { case_id: acase.id, query_id: query.id, doc_id: doc_id, rating: 5 }
 
             assert_response :ok
 
@@ -57,7 +57,7 @@ module Api
             doc_id = 'x123z'
             query.ratings.create(doc_id: doc_id, rating: 1)
 
-            put :update, case_id: acase.id, query_id: query.id, doc_id: doc_id, rating: 5
+            put :update, params: { case_id: acase.id, query_id: query.id, doc_id: doc_id, rating: 5 }
 
             assert_response :ok
 
@@ -89,7 +89,7 @@ module Api
               method: :put
             )
 
-            put :update, case_id: acase.id, query_id: query.id, doc_id: encoded_id, rating: 5
+            put :update, params: { case_id: acase.id, query_id: query.id, doc_id: encoded_id, rating: 5 }
 
             assert_response :ok
 
@@ -119,7 +119,7 @@ module Api
               method: :put
             )
 
-            put :update, case_id: acase.id, query_id: query.id, doc_id: encoded_id, rating: 6
+            put :update, params: { case_id: acase.id, query_id: query.id, doc_id: encoded_id, rating: 6 }
 
             assert_response :ok
 
@@ -149,7 +149,7 @@ module Api
               method: :put
             )
 
-            put :update, case_id: acase.id, query_id: query.id, doc_id: doc_id, rating: 6
+            put :update, params: { case_id: acase.id, query_id: query.id, doc_id: doc_id, rating: 6 }
 
             assert_response :ok
 
@@ -167,7 +167,7 @@ module Api
           test 'works with a document id that contains a period' do
             doc_id = 'mydoc.pdf'
 
-            put :update, case_id: acase.id, query_id: query.id, doc_id: doc_id, rating: 5
+            put :update, params: { case_id: acase.id, query_id: query.id, doc_id: doc_id, rating: 5 }
 
             assert_response :ok
 
@@ -189,7 +189,7 @@ module Api
               doc_id = 'x123z'
 
               perform_enqueued_jobs do
-                put :update, case_id: acase.id, query_id: query.id, doc_id: doc_id, rating: 5
+                put :update, params: { case_id: acase.id, query_id: query.id, doc_id: doc_id, rating: 5 }
 
                 assert_response :ok
               end
@@ -202,7 +202,7 @@ module Api
             doc_id = 'x123z'
             query.ratings.create(doc_id: doc_id, rating: 1)
 
-            delete :destroy, case_id: acase.id, query_id: query.id, doc_id: doc_id
+            delete :destroy, params: { case_id: acase.id, query_id: query.id, doc_id: doc_id }
 
             assert_response :no_content
 
@@ -219,7 +219,7 @@ module Api
               query.ratings.create(doc_id: doc_id, rating: 1)
 
               perform_enqueued_jobs do
-                delete :destroy, case_id: acase.id, query_id: query.id, doc_id: doc_id
+                delete :destroy, params: { case_id: acase.id, query_id: query.id, doc_id: doc_id }
 
                 assert_response :no_content
               end

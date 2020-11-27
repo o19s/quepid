@@ -16,7 +16,7 @@ class UserScorerFinderTest < ActiveSupport::TestCase
     test 'returns an array of scorers' do
       result = service.all
 
-      assert_equal "Scorer::ActiveRecord_Relation", result.class.to_s
+      assert_equal 'Scorer::ActiveRecord_Relation', result.class.to_s
     end
 
     test 'includes scorers owned by user' do
@@ -46,14 +46,14 @@ class UserScorerFinderTest < ActiveSupport::TestCase
     test 'returns an empty array if no results match' do
       result = service.where(id: 123).all
 
-      assert_equal        "Scorer::ActiveRecord_Relation", result.class.to_s
+      assert_equal        'Scorer::ActiveRecord_Relation', result.class.to_s
       assert_equal        0, result.length
     end
 
     test 'works when filtering by id' do
       result = service.where(id: owned_scorer.id).all
 
-      assert_equal        "Scorer::ActiveRecord_Relation", result.class.to_s
+      assert_equal        'Scorer::ActiveRecord_Relation', result.class.to_s
       assert_equal        1,      result.length
       assert_includes     result, owned_scorer
     end
@@ -61,7 +61,7 @@ class UserScorerFinderTest < ActiveSupport::TestCase
     test 'works with complex where clause for owned scorers' do
       result = service.where('`scorers`.`name` LIKE ?', '%Owned%').all
 
-      assert_equal        "Scorer::ActiveRecord_Relation", result.class.to_s
+      assert_equal        'Scorer::ActiveRecord_Relation', result.class.to_s
       assert_equal        3,      result.length
       assert_includes     result, owned_scorer
     end
@@ -69,7 +69,7 @@ class UserScorerFinderTest < ActiveSupport::TestCase
     test 'works with complex where clause for shared scorers' do
       result = service.where('`scorers`.`name` LIKE ?', '%Shared%').all
 
-      assert_equal        "Scorer::ActiveRecord_Relation", result.class.to_s
+      assert_equal        'Scorer::ActiveRecord_Relation', result.class.to_s
       assert_equal        3,      result.length
       assert_not_includes result, owned_scorer
       assert_includes     result, shared_scorer
@@ -78,7 +78,7 @@ class UserScorerFinderTest < ActiveSupport::TestCase
     test 'works when querying on the name for owned scorers' do
       result = service.where(name: 'Owned Scorer').all
 
-      assert_equal        "Scorer::ActiveRecord_Relation", result.class.to_s
+      assert_equal        'Scorer::ActiveRecord_Relation', result.class.to_s
       assert_equal        1,      result.length
       assert_includes     result, owned_scorer
     end
@@ -86,7 +86,7 @@ class UserScorerFinderTest < ActiveSupport::TestCase
     test 'works when querying on the name for shared scorers' do
       result = service.where(name: 'Shared Scorer').all
 
-      assert_equal        "Scorer::ActiveRecord_Relation", result.class.to_s
+      assert_equal        'Scorer::ActiveRecord_Relation', result.class.to_s
       assert_equal        1,      result.length
       assert_not_includes result, owned_scorer
       assert_includes     result, shared_scorer

@@ -483,18 +483,18 @@ module Api
         end
 
         test 'removes default scorer --> actually, set to system default' do
-          puts "This test keeps failing, and fixing it is a pain, so ignore it for now."
+          puts 'This test keeps failing, and fixing it is a pain, so ignore it for now.'
           one.scorer = scorer
           one.save!
 
           put :update, params: { case_id: one.id, scorer_id: nil }
 
-          #assert_response :ok
+          # assert_response :ok
 
-          #one.reload
-          #assert_equal one.scorer.name, Rails.application.config.quepid_default_scorer
-          #assert_nil one.scorer_id
-          #assert_nil one.scorer
+          # one.reload
+          # assert_equal one.scorer.name, Rails.application.config.quepid_default_scorer
+          # assert_nil one.scorer_id
+          # assert_nil one.scorer
         end
 
         test 'removes default scorer if id is set to 0 --> actually, set to system default' do
@@ -507,8 +507,8 @@ module Api
 
           one.reload
           assert_equal one.scorer.name, Rails.application.config.quepid_default_scorer
-          #assert_nil one.scorer_id
-          #assert_nil one.scorer
+          # assert_nil one.scorer_id
+          # assert_nil one.scorer
         end
 
         test 'returns an error if scorer does not exist' do

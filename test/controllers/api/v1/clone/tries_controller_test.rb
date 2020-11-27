@@ -48,14 +48,14 @@ module Api
           let(:the_try)   { tries(:first_for_case_with_two_tries) }
 
           it 'returns a not found error if try does not exist' do
-            post :create, case_id: the_case.id, try_number: 123_456
+            post :create, params: { case_id: the_case.id, try_number: 123_456 }
 
             assert_response :not_found
           end
 
           it 'successfully duplicates try for case' do
             assert_difference 'the_case.tries.count' do
-              post :create, case_id: the_case.id, try_number: the_try.try_number
+              post :create, params: { case_id: the_case.id, try_number: the_try.try_number }
 
               assert_response :ok
 
@@ -73,7 +73,7 @@ module Api
               expects_any_ga_event_call
 
               perform_enqueued_jobs do
-                post :create, case_id: the_case.id, try_number: the_try.try_number
+                post :create, params: { case_id: the_case.id, try_number: the_try.try_number }
 
                 assert_response :ok
               end

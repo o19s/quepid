@@ -18,7 +18,7 @@ module Api
 
         describe 'Updates query threshold' do
           test 'sets the query threshold attribute' do
-            put :update, case_id: acase.id, query_id: query.id, query: { threshold: 1 }
+            put :update, params: { case_id: acase.id, query_id: query.id, query: { threshold: 1 } }
 
             assert_response :ok
 
@@ -35,7 +35,7 @@ module Api
             query.threshold = 1
             query.save
 
-            put :update, case_id: acase.id, query_id: query.id, query: { threshold_enbl: true }
+            put :update, params: { case_id: acase.id, query_id: query.id, query: { threshold_enbl: true } }
 
             assert_response :ok
 
@@ -54,7 +54,7 @@ module Api
               expects_any_ga_event_call
 
               perform_enqueued_jobs do
-                put :update, case_id: acase.id, query_id: query.id, query: { threshold: 1 }
+                put :update, params: { case_id: acase.id, query_id: query.id, query: { threshold: 1 } }
 
                 assert_response :ok
               end

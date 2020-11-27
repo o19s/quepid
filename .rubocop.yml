@@ -14,6 +14,9 @@ AllCops:
     - config/initializers/simple_form_bootstrap.rb
     - config/initializers/content_security_policy.rb
 
+Naming/VariableNumber:
+  Enabled: false  # we have a lot of legacy code to update
+
 Rails:
   Enabled: true
 

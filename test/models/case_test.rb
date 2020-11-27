@@ -212,7 +212,7 @@ class CaseTest < ActiveSupport::TestCase
             assert_equal 0, cloned_case.last_try_number
             assert_equal 0, cloned_case.tries.first.try_number
             assert_equal the_case.queries.count, cloned_case.queries.count
-            #assert_equal the_case.ratings.count, cloned_case.ratings.count
+            # assert_equal the_case.ratings.count, cloned_case.ratings.count
             assert_equal user.id, cloned_case.user_id
           end
         end

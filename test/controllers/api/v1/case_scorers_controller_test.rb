@@ -64,13 +64,13 @@ module Api
           acase.save!
 
           puts "I need to be fixed to deal with this..."
-          #put :update, params: { case_id: acase.id, id: 0 }
+          # put :update, params: { case_id: acase.id, id: 0 }
 
-          #assert_response :ok
+          # assert_response :ok
 
-          #acase.reload
-          #assert_nil acase.scorer_id
-          #assert_nil acase.scorer
+          # acase.reload
+          # assert_nil acase.scorer_id
+          # assert_nil acase.scorer
         end
 
         test 'returns an error if scorer does not exist' do
