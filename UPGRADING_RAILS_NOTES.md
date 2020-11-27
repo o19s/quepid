@@ -59,3 +59,74 @@ LEFT OUTER JOIN `teams` ON `teams`.`id` = `teams_scorers`.`team_id`
 LEFT OUTER JOIN `teams_members` ON `teams_members`.`team_id` = `teams`.`id`
 LEFT OUTER JOIN `users` ON `users`.`id` = `teams_members`.`member_id`
 WHERE ((`teams`.`owner_id` = 1 OR `teams_members`.`member_id` = 1) OR `scorers`.`owner_id` = 1)
+
+
+
+Rubocop Notice:
+```
+The following cops were added to RuboCop, but are not configured. Please set Enabled to either `true` or `false` in your `.rubocop.yml` file.
+
+Please also note that can also opt-in to new cops by default by adding this to your config:
+  AllCops:
+    NewCops: enable
+
+Lint/DuplicateBranch: # (new in 1.3)
+  Enabled: true
+Lint/DuplicateRegexpCharacterClassElement: # (new in 1.1)
+  Enabled: true
+Lint/EmptyBlock: # (new in 1.1)
+  Enabled: true
+Lint/EmptyClass: # (new in 1.3)
+  Enabled: true
+Lint/NoReturnInBeginEndBlocks: # (new in 1.2)
+  Enabled: true
+Lint/ToEnumArguments: # (new in 1.1)
+  Enabled: true
+Lint/UnmodifiedReduceAccumulator: # (new in 1.1)
+  Enabled: true
+Style/ArgumentsForwarding: # (new in 1.1)
+  Enabled: true
+Style/CollectionCompact: # (new in 1.2)
+  Enabled: true
+Style/DocumentDynamicEvalDefinition: # (new in 1.1)
+  Enabled: true
+Style/NegatedIfElseCondition: # (new in 1.2)
+  Enabled: true
+Style/NilLambda: # (new in 1.3)
+  Enabled: true
+Style/RedundantArgument: # (new in 1.4)
+  Enabled: true
+Style/SwapValues: # (new in 1.1)
+  Enabled: true
+Rails/ActiveRecordCallbacksOrder: # (new in 2.7)
+  Enabled: true
+Rails/AfterCommitOverride: # (new in 2.8)
+  Enabled: true
+Rails/FindById: # (new in 2.7)
+  Enabled: true
+Rails/Inquiry: # (new in 2.7)
+  Enabled: true
+Rails/MailerName: # (new in 2.7)
+  Enabled: true
+Rails/MatchRoute: # (new in 2.7)
+  Enabled: true
+Rails/NegateInclude: # (new in 2.7)
+  Enabled: true
+Rails/Pluck: # (new in 2.7)
+  Enabled: true
+Rails/PluckInWhere: # (new in 2.7)
+  Enabled: true
+Rails/RenderInline: # (new in 2.7)
+  Enabled: true
+Rails/RenderPlainText: # (new in 2.7)
+  Enabled: true
+Rails/ShortI18n: # (new in 2.7)
+  Enabled: true
+Rails/SquishedSQLHeredocs: # (new in 2.8)
+  Enabled: true
+Rails/WhereExists: # (new in 2.7)
+  Enabled: true
+Rails/WhereNot: # (new in 2.8)
+  Enabled: true
+For more information: https://docs.rubocop.org/rubocop/versioning.html
+```
