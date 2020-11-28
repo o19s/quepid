@@ -42,12 +42,16 @@ module Api
             LIMIT 3
           "
 
-          case_ids = ActiveRecord::Base.connection.execute(sql)
+          results = ActiveRecord::Base.connection.execute(sql)
 
-          puts case_ids
+          case_ids = []
+          results.each do |row|
+            case_ids << row.first
+          end
 
           @cases = current_user.case
-          @cases = @cases.where(id: cases_ids.map(&:id))
+          # @cases = @cases.where(id: cases_ids.map(&:id))
+          @cases = @cases.where(id: cases_ids)
           @cases = @cases.not_archived
           @cases = @cases.merge(Metadatum.order(last_viewed_at: :desc))
           @cases = @cases.order(id: :desc)
