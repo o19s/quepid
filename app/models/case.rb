@@ -82,9 +82,9 @@ class Case < ApplicationRecord
   end
 
   # very confused why after_create doesn't run, but after_initialize does when
-  # we migrated from Rails 4 to Rails 5.
+  # we migrated from Rails 4 to Rails 5.   Update 28-Nov-2020, after_create is running now!
 
-  after_initialize do |c|
+  after_create do |c|
     if c.tries.empty?
       try_number  = (last_try_number || -1) + 1
       the_try     = Try.create(try_number: try_number)
