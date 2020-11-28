@@ -50,5 +50,20 @@ class RatingsImporterTest < ActiveSupport::TestCase
       assert_not_nil(rating)
       assert_equal 'Mexican Food', rating.query.query_text
     end
+
+    test 'converts strings to symboles' do
+      ratings = [
+        { 'query_text': 'Mexican Food',   'doc_id': ' 720784-021190', 'rating': ' 5' },
+        { 'query_text': 'Mexican Food',   'doc_id': ' 843075-031090', 'rating': ' 6' },
+        { 'query_text': ' Mexican Food ', 'doc_id': '748785-005680',  'rating': ' 2' }
+      ]
+
+      ratings_importer = RatingsImporter.new owned_case, ratings, options
+      ratings_importer.import
+      rating = Rating.find_by(doc_id: '843075-031090')
+
+      assert_not_nil(rating)
+      assert_equal 'Mexican Food', rating.query.query_text
+    end
   end
 end

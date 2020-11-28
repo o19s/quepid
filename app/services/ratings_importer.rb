@@ -108,6 +108,7 @@ class RatingsImporter
     ratings_to_import = []
     ratings_to_update = []
     print_step 'Importing ratings'
+
     block_with_progress_bar(normalized_rows.length) do |i|
       row         = normalized_rows[i]
       query_text  = row[:query_text]

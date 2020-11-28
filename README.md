@@ -142,7 +142,6 @@ bin/docker r rails test
 Run a single test file via:
 
 ```
-//bin/docker r bin/rake test TEST=./test/controllers/api/v1/bulk/queries_controller_test.rb
 bin/docker r rails test test/models/user_test.rb
 ```
 

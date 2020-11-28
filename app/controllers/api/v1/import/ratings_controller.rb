@@ -13,7 +13,9 @@ module Api
           file_format = 'hash' unless params[:file_format]
 
           if 'hash' == file_format
-            ratings = params[:ratings]
+            # convert from ActionController::Parameters to a Hash, symbolize, and
+            # then return just the ratings as an array.
+            ratings = params.permit(ratings:[:query_text, :doc_id, :rating]).to_h.deep_symbolize_keys[:ratings]
           elsif 'rre' == file_format
             # normalize the RRE ratings format to the default hash format.
             ratings = []
@@ -37,6 +39,7 @@ module Api
             format:         :hash,
             force:          true,
             clear_existing: params[:clear_queries] || false,
+            show_progress:  false
           }
 
           service = RatingsImporter.new @case, ratings, options
