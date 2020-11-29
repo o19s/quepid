@@ -19,6 +19,8 @@ angular.module('QuepidApp')
         queryText:  '',
       };
 
+      var currSettings = settingsSvc.editableSettings();
+
       $scope.findDocs = function() {
         var settings      = settingsSvc.editableSettings();
         var query         = $scope.query.queryText;
@@ -106,7 +108,6 @@ angular.module('QuepidApp')
 
         var settings      = settingsSvc.editableSettings();
         var fieldSpec     = settings.createFieldSpec();
-        var ratedIDs = $scope.query.ratings ? Object.keys($scope.query.ratings) : [];
 
         $scope.docFinder.searcher.explainOther($scope.query.filterToRatings(currSettings, fieldSpec), fieldSpec)
         .then(function() {
@@ -158,9 +159,6 @@ angular.module('QuepidApp')
       );
 
       // Initialize to rated docs
-      var currSettings = settingsSvc.editableSettings();
-
-
       var fieldSpec = currSettings.createFieldSpec();
       var ratedIDs = $scope.query.ratings ? Object.keys($scope.query.ratings) : [];
       $scope.docFinder.numFound = ratedIDs.length;

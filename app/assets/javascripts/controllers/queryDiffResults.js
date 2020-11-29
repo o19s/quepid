@@ -7,6 +7,10 @@ angular.module('QuepidApp')
     function ($scope, queriesSvc) {
       var returnValue = [];
 
+      function docSource() {
+        return queriesSvc.showOnlyRated ? $scope.query.ratedDocs : $scope.query.docs;
+      }
+
       var howManyToDisplay = docSource().length;
       if ( howManyToDisplay < 10 ) {
         howManyToDisplay = 10;
@@ -40,9 +44,5 @@ angular.module('QuepidApp')
         }
         return returnValue;
       };
-
-      function docSource() {
-        return queriesSvc.showOnlyRated ? $scope.query.ratedDocs : $scope.query.docs;
-      }
     }
   ]);

@@ -154,7 +154,7 @@ describe('Service: ScorerFactory', function () {
   describe('Scoring', function () {
     var checkExpectation = function(num, docs, best, expectation) {
       var score;
-      score = scorer.score(num, docs, best);
+      score = scorer.score(num, docs, [], best);
       $rootScope.$apply();
       expect(score).toBe(expectation);
     };
@@ -585,7 +585,7 @@ describe('Service: ScorerFactory', function () {
         {rating: 7}
       ];
       scorer.code = 'assert(JSON.stringify(topRatings(2)) === "[10,9]"); pass()';
- 
+
       checkExpectation(2, docs, bestDocs, 100)
     });
 

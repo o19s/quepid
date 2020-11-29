@@ -389,6 +389,24 @@ angular.module('QuepidApp')
 
             self.searcher.search()
               .then(function() {
+                  self.linkUrl = self.searcher.linkUrl;
+
+                  if (self.searcher.inError) {
+                    //self.docs.length = 0;
+                    self.setDocs([], 0);
+                    self.onError('Please click browse to see the error');
+                  } else {
+                    var error = self.setDocs(self.searcher.docs, self.searcher.numFound);
+                    if (error) {
+                      self.onError(error);
+                      reject(error);
+                    }
+                    self.othersExplained = self.searcher.othersExplained;
+                  }
+
+                  resolve();
+
+                  // Refresh rated docs
                   self.ratedSearcher.search().then(function() {
                     var normed = normalizeDocExplains(self, self.ratedSearcher, currSettings.createFieldSpec());
 
@@ -396,24 +414,7 @@ angular.module('QuepidApp')
                     var rateableDoc = self.ratingsStore.createRateableDoc(doc);
                       self.ratedDocs.push(rateableDoc);
                     });
-
-                    self.linkUrl = self.searcher.linkUrl;
-
-                    if (self.searcher.inError) {
-                      //self.docs.length = 0;
-                      self.setDocs([], 0);
-                      self.onError('Please click browse to see the error');
-                    } else {
-                      var error = self.setDocs(self.searcher.docs, self.searcher.numFound);
-                      if (error) {
-                        self.onError(error);
-                        reject(error);
-                      }
-                      self.othersExplained = self.searcher.othersExplained;
-                    }
-
-                    resolve();
-                })
+                });
               }, function(response) {
                 self.linkUrl = self.searcher.linkUrl;
                 self.setDocs([], 0);
@@ -663,7 +664,7 @@ angular.module('QuepidApp')
           } else {
             return '{!terms f=' + fieldSpec.id + '}' + ratedIDs.join(',');
           }
-        }
+        };
       };
 
       this.QueryFactory = Query;
