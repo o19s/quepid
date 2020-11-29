@@ -137,8 +137,6 @@ These tests run the tests from the Rails side (mainly API controllers, and model
 bin/docker r rails test
 ```
 
-** Make sure you don't run `bin/docker r bundle exec rake test`, you will get `uninitialized constant DatabaseCleaner` errors **
-
 Run a single test file via:
 
 ```
