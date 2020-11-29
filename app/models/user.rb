@@ -121,6 +121,7 @@ class User < ActiveRecord::Base
   end
 
   def case
+    puts "Why isn't this user.cases?"
     UserCaseFinder.new(self)
   end
 
