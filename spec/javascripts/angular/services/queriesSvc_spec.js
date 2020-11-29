@@ -90,7 +90,8 @@ describe('Service: queriesSvc', function () {
   };
 
   var MockSearcher = function(settings, queryText) {
-    this.currPromise = null;
+    var promises = [];
+
     this.docs = [];
     this.settings = settings;
 
@@ -110,30 +111,33 @@ describe('Service: queriesSvc', function () {
         thisMockSearcher.docs.push(solrDoc);
       });
 
-      if (this.currPromise) {
-        this.currPromise.resolve();
-      }
+      this.resolvePromises();
     };
 
     // force a search failure
     this.fail = function() {
       this.inError = true;
-
-      if (this.currPromise) {
-        this.currPromise.resolve();
-      }
+      this.resolvePromises();
     };
 
     this.linkUrl = settings.searchUrl + '?linkUrl=true';
 
     this.search = function() {
-      this.currPromise = $q.defer();
-      return this.currPromise.promise;
+      var currPromise = $q.defer();
+      promises.push(currPromise);
+
+      return currPromise.promise;
     };
 
     this.queryText = function() {
       return queryText;
     };
+
+    this.resolvePromises = function() {
+      angular.forEach(promises, function(promise){
+        promise.resolve();
+      });
+    }
   };
 
   var MockSearchSvc = function() {
