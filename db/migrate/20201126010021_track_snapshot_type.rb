@@ -1,15 +1,9 @@
+# This migration is unique in that the hosted Quepid staging and production databases
+# have so much data that the migration fails.  For those, we contact tech support
+# and have them run the migration, and then just do a
+# INSERT INTO schema_migrations VALUES ('20201126010021') to fake out Rails
 class TrackSnapshotType < ActiveRecord::Migration
-  def self.up
-    #remove_foreign_key :snapshot_docs, :snapshot_queries
-    Lhm.change_table :snapshot_docs do |m|
-      m.ddl("alter table %s add column rated_only2 tinyint(1) default '0' NOT NULL" % m.name)
-    end
-    add_foreign_key :snapshot_docs, :snapshot_queries
-  end
-
-  def self.down
-    Lhm.change_table :snapshot_docs do |m|
-      m.remove_column :rated_only
-    end
+  def change
+    add_column :snapshot_docs, :rated_only, :boolean, default: false
   end
 end
