@@ -1,6 +1,6 @@
 class TrackSnapshotType < ActiveRecord::Migration
   def self.up
-    remove_foreign_key :snapshot_docs, :snapshot_queries
+    #remove_foreign_key :snapshot_docs, :snapshot_queries
     Lhm.change_table :snapshot_docs do |m|
       m.ddl("alter table %s add column rated_only2 tinyint(1) default '0' NOT NULL" % m.name)
     end
