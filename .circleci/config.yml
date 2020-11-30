@@ -84,6 +84,13 @@ jobs:
           command: bundle exec rake test:quepid
 
       - run:
+          name: Check rake version
+          command: bundle exec rake -v
+
+      - run:
+          name: bundle install
+          command: bundle install
+      - run:
           name: Run unit tests (backend)
           command: bundle exec bin/rails test
       - run:
