@@ -82,7 +82,7 @@ angular.module('QuepidApp')
       });*/
 
       $scope.query.getNumFound = function() {
-        return queriesSvc.showOnlyRated ? Object.keys($scope.query.ratings).length : $scope.query.numFound;
+        return queriesSvc.showOnlyRated ? $scope.query.ratedDocsFound : $scope.query.numFound;
       };
 
       $scope.query.isNotAllRated = function() {

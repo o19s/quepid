@@ -153,6 +153,7 @@ angular.module('QuepidApp')
         self.scorer         = null;
         self.docs           = [];
         self.ratedDocs      = [];
+        self.ratedDocsFound = 0;
         self.numFound       = 0;
         self.test           = null;
         self.options        = {};
@@ -408,6 +409,7 @@ angular.module('QuepidApp')
 
                   // Refresh rated docs
                   self.ratedSearcher.search().then(function() {
+                    self.ratedDocsFound = self.ratedSearcher.numFound;
                     var normed = normalizeDocExplains(self, self.ratedSearcher, currSettings.createFieldSpec());
 
                     angular.forEach(normed, function(doc) {
