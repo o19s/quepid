@@ -9,8 +9,9 @@ namespace :test do
 
   desc 'Run all tests: test:js, test:jshint, and test'
   task :quepid do
-    Rake::Task["test:js"].invoke
+    Rake::Task["test:js"].invoke # Javascript
     Rake::Task["test:jshint"].invoke
+    Rake::Task["test"].invoke # Rails
   end
 
   desc 'Run jshint on js files using configuration under config/jshint.yml'
