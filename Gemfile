@@ -5,10 +5,7 @@ source 'https://rubygems.org'
 ruby '2.6.6'
 
 gem 'ace-rails-ap'
-#gem 'actionpack', '~> 5.2', '>= 5.2.4.4'
-#gem 'activerecord', '~> 5.2', '>= 5.2.4.4'
 gem 'activerecord-import', '>= 1.0.7'
-gem 'activerecord_any_of', git: 'https://github.com/Benty/activerecord_any_of.git' # fork that supports Rails 5.2
 gem 'acts_as_list', '>= 1.0.1'
 gem 'angular-rails-templates', '>= 1.0.0.beta'
 gem 'bcrypt', '~> 3.1.7'
@@ -66,7 +63,6 @@ group :development do
 end
 
 group :test do
-  #gem 'database_cleaner' # apparently not needed in Rails 5.1 anymore!
   gem 'minitest-reporters', '>= 0.5.0'
   gem 'mocha', '~> 1.11'
   gem 'simplecov', require: false

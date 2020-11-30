@@ -1,10 +1,3 @@
-GIT
-  remote: https://github.com/Benty/activerecord_any_of.git
-  revision: 30fce087add247a7a7d7c813b4623e0d2efc21fb
-  specs:
-    activerecord_any_of (1.4)
-      activerecord (>= 3.2.13, < 6)
-
 GEM
   remote: https://rubygems.org/
   remote: https://rails-assets.org/
@@ -310,7 +303,6 @@ PLATFORMS
 DEPENDENCIES
   ace-rails-ap
   activerecord-import (>= 1.0.7)
-  activerecord_any_of!
   acts_as_list (>= 1.0.1)
   angular-rails-templates (>= 1.0.0.beta)
   annotate
