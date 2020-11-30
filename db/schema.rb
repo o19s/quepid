@@ -42,12 +42,10 @@ ActiveRecord::Schema.define(version: 20201126010021) do
     t.binary   "queries",       limit: 16777215
     t.integer  "annotation_id", limit: 4
     t.datetime "updated_at"
-    t.boolean  "rated_only",                     default: false
   end
 
   add_index "case_scores", ["annotation_id"], name: "index_case_scores_on_annotation_id", using: :btree
   add_index "case_scores", ["case_id"], name: "case_id", using: :btree
-  add_index "case_scores", ["rated_only"], name: "case_scores_rated_only_idx", using: :btree
   add_index "case_scores", ["user_id"], name: "user_id", using: :btree
 
   create_table "cases", force: :cascade do |t|
@@ -85,6 +83,34 @@ ActiveRecord::Schema.define(version: 20201126010021) do
     t.datetime "created_at",                                             null: false
     t.datetime "updated_at",                                             null: false
   end
+
+  create_table "lhma_2020_11_30_17_40_15_518_snapshot_docs", force: :cascade do |t|
+    t.string  "doc_id",            limit: 500
+    t.integer "position",          limit: 4
+    t.integer "snapshot_query_id", limit: 4
+    t.text    "explain",           limit: 16777215
+  end
+
+  add_index "lhma_2020_11_30_17_40_15_518_snapshot_docs", ["snapshot_query_id"], name: "snapshot_query_id", using: :btree
+
+  create_table "lhma_2020_11_30_17_41_39_957_snapshot_docs", force: :cascade do |t|
+    t.string  "doc_id",            limit: 500
+    t.integer "position",          limit: 4
+    t.integer "snapshot_query_id", limit: 4
+    t.text    "explain",           limit: 16777215
+    t.boolean "rated_only",                         default: false
+  end
+
+  add_index "lhma_2020_11_30_17_41_39_957_snapshot_docs", ["snapshot_query_id"], name: "snapshot_query_id", using: :btree
+
+  create_table "lhma_2020_11_30_17_42_15_936_snapshot_docs", force: :cascade do |t|
+    t.string  "doc_id",            limit: 500
+    t.integer "position",          limit: 4
+    t.integer "snapshot_query_id", limit: 4
+    t.text    "explain",           limit: 16777215
+  end
+
+  add_index "lhma_2020_11_30_17_42_15_936_snapshot_docs", ["snapshot_query_id"], name: "snapshot_query_id", using: :btree
 
   create_table "permissions", force: :cascade do |t|
     t.integer  "user_id",    limit: 4
@@ -145,7 +171,7 @@ ActiveRecord::Schema.define(version: 20201126010021) do
     t.integer "position",          limit: 4
     t.integer "snapshot_query_id", limit: 4
     t.text    "explain",           limit: 16777215
-    t.boolean "rated_only",                         default: false
+    t.boolean "rated_only",                         default: false, null: false
   end
 
   add_index "snapshot_docs", ["snapshot_query_id"], name: "snapshot_query_id", using: :btree
@@ -252,7 +278,6 @@ ActiveRecord::Schema.define(version: 20201126010021) do
   add_foreign_key "curator_variables", "tries", name: "curator_variables_ibfk_1"
   add_foreign_key "queries", "cases", name: "queries_ibfk_1"
   add_foreign_key "ratings", "queries", name: "ratings_ibfk_1"
-  add_foreign_key "snapshot_docs", "snapshot_queries", name: "snapshot_docs_ibfk_1"
   add_foreign_key "snapshot_queries", "queries", name: "snapshot_queries_ibfk_1"
   add_foreign_key "snapshot_queries", "snapshots", name: "snapshot_queries_ibfk_2"
   add_foreign_key "snapshots", "cases", name: "snapshots_ibfk_1"

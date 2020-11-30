@@ -31,6 +31,7 @@ gem 'responders'
 gem 'sass-rails', '~> 5.0'
 gem 'sidekiq'
 gem 'uglifier', '>= 1.3.0'
+gem 'lhm', git: "https://github.com/Shopify/lhm.git", tag: 'v3.3.3'
 
 source 'https://rails-assets.org' do
   gem 'rails-assets-angular'
