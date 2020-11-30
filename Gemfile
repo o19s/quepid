@@ -2,7 +2,7 @@
 
 source 'https://rubygems.org'
 
-ruby '2.5.8'
+ruby '2.6.6'
 
 gem 'ace-rails-ap'
 #gem 'actionpack', '~> 5.2', '>= 5.2.4.4'
@@ -72,8 +72,4 @@ group :test do
   gem 'simplecov', require: false
   gem 'webmock'
   gem 'rails-controller-testing' # bring back compatibility with rails 4 assigns in controller tests.
-end
-
-group :production, :staging do
-  gem 'rails_12factor'
 end
