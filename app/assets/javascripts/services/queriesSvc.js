@@ -80,7 +80,7 @@ angular.module('QuepidApp')
               args['query'] = {
                 'bool': {
                   'should': mainQuery,
-                  'filter': query.filterToRatings(passedInSettings, true)
+                  'filter': query.filterToRatings(passedInSettings)
                 }
               };
             } else {
@@ -649,12 +649,18 @@ angular.module('QuepidApp')
           }
         };
 
-        // TODO: Fix splainer for ES and remove force setting
-        this.filterToRatings = function(settings, force) {
+        // TODO: Fix splainer for ES
+        this.filterToRatings = function(settings, slice) {
           var ratedIDs = self.ratings ? Object.keys(self.ratings) : [];
+
+          // Explain other cannot page thru results, this allows for retrieving slices of the ratings
+          if (slice !== undefined) {
+            ratedIDs = ratedIDs.slice(slice, settings.numberOfRows + slice);
+          }
+
           var fieldSpec = settings.createFieldSpec();
 
-          if (settings.searchEngine === 'es' && force) {
+          if (settings.searchEngine === 'es') {
             // Looks like this requires a splainer update, explainOther doesn't accept a ES query.
             var esQuery = {
               'terms': {}

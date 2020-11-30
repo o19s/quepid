@@ -98,24 +98,19 @@ angular.module('QuepidApp')
       };
 
       $scope.paginateRatedQuery = function() {
-        $scope.docFinder.searcher = $scope.docFinder.searcher.pager();
+        $scope.docFinder.searcher = queriesSvc.createSearcherFromSettings(currSettings, $scope.query.queryText);
         $scope.docFinder.paging = true;
-
-        if ( $scope.docFinder.searcher === null ) {
-          $scope.docFinder.paging = false;
-          return;
-        }
 
         var settings      = settingsSvc.editableSettings();
         var fieldSpec     = settings.createFieldSpec();
 
-        $scope.docFinder.searcher.explainOther($scope.query.filterToRatings(currSettings, fieldSpec), fieldSpec)
+        $scope.docFinder.searcher.explainOther(
+          $scope.query.filterToRatings(currSettings, $scope.docFinder.docs.length), fieldSpec)
         .then(function() {
           var normed = queriesSvc.normalizeDocExplains($scope.query, $scope.docFinder.searcher, fieldSpec);
 
           angular.forEach(normed, function(doc) {
-            var rateableDoc = $scope.query.ratingsStore.createRateableDoc(doc);
-            $scope.docFinder.docs.push(rateableDoc);
+            $scope.docFinder.docs.push(doc);
           });
         });
       };
@@ -166,14 +161,11 @@ angular.module('QuepidApp')
       $scope.docFinder.searcher = queriesSvc.createSearcherFromSettings(currSettings, $scope.query.queryText);
 
       if ($scope.docFinder.searcher.type === 'solr') {
-        $scope.docFinder.searcher.explainOther($scope.query.filterToRatings(currSettings, fieldSpec), fieldSpec)
+        $scope.docFinder.searcher.explainOther(
+          $scope.query.filterToRatings(currSettings, $scope.docFinder.docs.length), fieldSpec)
           .then(function() {
             var normed = queriesSvc.normalizeDocExplains($scope.query, $scope.docFinder.searcher, fieldSpec);
-
-            angular.forEach(normed, function(doc) {
-              var rateableDoc = $scope.query.ratingsStore.createRateableDoc(doc);
-              $scope.docFinder.docs.push(rateableDoc);
-            });
+            $scope.docFinder.docs = normed;
 
             $scope.defaultList = true;
         });
