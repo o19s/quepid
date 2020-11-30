@@ -407,6 +407,16 @@ bin/docker r bundle exec bin/rails g migration FixCuratorVariablesTriesForeignKe
 
 Followed by `bin/docker r bundle exec rake db:migrate`
 
+## Updating RubyGems
+
+Modify the file `Gemfile` and then run:
+
+```
+bin/docker r bundle install
+```
+
+You will see a updated `Gemfile.lock`, go ahead and check it and `Gemfile` into Git.
+
 
 # QA
 
