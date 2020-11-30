@@ -58,7 +58,6 @@
 
         // fetch from the backend
         var qDocs         = self.docs[queryId];
-        var idsToDocs     = {};
         var searchResults = [];
 
         angular.forEach(qDocs, function loopBody(sDoc) {
@@ -72,14 +71,8 @@
           doc.explain = sDoc.explain;
           doc.rated_only = sDoc.rated_only;
 
-          idsToDocs[doc.id] = doc;
-        });
-
-        // reorder based on my id list to
-        // show original search results order
-        angular.forEach(Object.keys(idsToDocs), function(sDocId) {
-          var nDoc = angular.copy(idsToDocs[sDocId]);
-          var explAsJson  = angular.fromJson(nDoc.explain);
+          var explAsJson  = angular.fromJson(doc.explain);
+          var nDoc = angular.copy(doc);
           nDoc = normalDocsSvc.explainDoc(nDoc, explAsJson);
 
           searchResults.push(nDoc);
