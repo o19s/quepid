@@ -11,6 +11,7 @@
     "angular": "~1.7.7",
     "angular-animate": "^1.7.9",
     "angular-cookies": "~1.7.7",
+    "angular-countup": "^0.0.1",
     "angular-csv-import": "https://github.com/bahaaldine/angular-csv-import",
     "angular-flash": "https://github.com/wmluke/angular-flash",
     "angular-resource": "~1.7.7",

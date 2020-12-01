@@ -81,8 +81,11 @@ angular.module('QuepidApp')
         }
       });*/
 
+      $scope.numFound = 0;
+
       $scope.query.getNumFound = function() {
-        return queriesSvc.showOnlyRated ? $scope.query.ratedDocsFound : $scope.query.numFound;
+        $scope.numFound = queriesSvc.showOnlyRated ? $scope.query.ratedDocsFound : $scope.query.numFound;
+        return $scope.numFound;
       };
 
       $scope.query.isNotAllRated = function() {

@@ -49,6 +49,11 @@ angular-cookies@~1.7.7:
   resolved "https://registry.yarnpkg.com/angular-cookies/-/angular-cookies-1.7.7.tgz#35d7383fea2bbab1385b74acfbc539df3c50d157"
   integrity sha512-+osPNVIahz8nU4S+XCxTmmqwhJw/iPi1gUCHh8gVd4vjO/yP8I/dQza+WNwvCcWN4fY+lmp123lsMXneUVtm/g==
 
+angular-countup@^0.0.1:
+  version "0.0.1"
+  resolved "https://registry.yarnpkg.com/angular-countup/-/angular-countup-0.0.1.tgz#7074db72d4d605bc9d1c34762d81d26af005566e"
+  integrity sha1-cHTbctTWBbydHDR2LYHSavAFVm4=
+
 "angular-csv-import@https://github.com/bahaaldine/angular-csv-import":
   version "0.0.38"
   resolved "https://github.com/bahaaldine/angular-csv-import#923f17da1dcbc19d40d52a2daa1c8843b1fe6f22"
