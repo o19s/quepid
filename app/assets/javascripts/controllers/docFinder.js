@@ -106,7 +106,7 @@ angular.module('QuepidApp')
 
 
         $scope.docFinder.searcher.explainOther(
-          $scope.query.filterToRatings(currSettings, $scope.docFinder.docs.length), fieldSpec)
+          $scope.query.filterToRatings(currSettings, $scope.docFinder.docs.length), fieldSpec, 'lucene')
         .then(function() {
           var normed = queriesSvc.normalizeDocExplains($scope.query, $scope.docFinder.searcher, fieldSpec);
 
@@ -163,7 +163,7 @@ angular.module('QuepidApp')
 
       if ($scope.docFinder.searcher.type === 'solr') {
         $scope.docFinder.searcher.explainOther(
-          $scope.query.filterToRatings(currSettings, $scope.docFinder.docs.length), fieldSpec)
+          $scope.query.filterToRatings(currSettings, $scope.docFinder.docs.length), fieldSpec, 'lucene')
           .then(function() {
             var normed = queriesSvc.normalizeDocExplains($scope.query, $scope.docFinder.searcher, fieldSpec);
             $scope.docFinder.docs = normed;
