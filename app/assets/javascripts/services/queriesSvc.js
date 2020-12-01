@@ -94,7 +94,7 @@ angular.module('QuepidApp')
 
 
           return searchSvc.createSearcher(
-            passedInSettings.createFieldSpec().fieldList(),
+            passedInSettings.createFieldSpec(),
             passedInSettings.selectedTry.searchUrl,
             args,
             queryText,

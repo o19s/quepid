@@ -105,7 +105,6 @@ angular.module('QuepidApp')
         var fieldSpec     = settings.createFieldSpec();
 
 
-        $scope.docFinder.searcher.args['defType'] = 'lucene';
         $scope.docFinder.searcher.explainOther(
           $scope.query.filterToRatings(currSettings, $scope.docFinder.docs.length), fieldSpec)
         .then(function() {
@@ -163,9 +162,6 @@ angular.module('QuepidApp')
       $scope.docFinder.searcher = queriesSvc.createSearcherFromSettings(currSettings, $scope.query.queryText);
 
       if ($scope.docFinder.searcher.type === 'solr') {
-        // Force defType to lucene for ranked lookups
-        $scope.docFinder.searcher.args['defType'] = 'lucene';
-
         $scope.docFinder.searcher.explainOther(
           $scope.query.filterToRatings(currSettings, $scope.docFinder.docs.length), fieldSpec)
           .then(function() {
