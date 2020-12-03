@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20201102142255) do
+ActiveRecord::Schema.define(version: 20201203212611) do
 
   create_table "annotations", force: :cascade do |t|
     t.text     "message",    limit: 65535
