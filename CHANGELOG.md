@@ -38,6 +38,8 @@
 
 * Can't rename a case on the Teams page.  https://github.com/o19s/quepid/pull/240 by @epugh fixes https://github.com/o19s/quepid/issues/213
 
+* Fixed scoring of AP@10 and NDCG@10 when you have fewer then 10 results.  https://github.com/o19s/quepid/pull/253 by @nathancday fixes https://github.com/o19s/quepid/issues/225 by @epugh.
+
 ## 6.3.1.2 - 2020-09-16
 
 * Silly cut'n'paste error that should have been caught with more testing before the 6.3.1.1 release, not the day after.  Fixed in commit 2e322b337cc62895847df0ed95ba6a68683dad5f by @epugh.
