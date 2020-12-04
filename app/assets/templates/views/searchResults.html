@@ -21,7 +21,7 @@
     </h2>
 
     <span class='pull-right total-results'>
-      <count-up ng-model="numFound" steps="5" time="500" />
+      <count-up ng-model="query.getNumFound()" steps="5" time="500" />
       <small class="text-muted">
         <ng-pluralize count="query.getNumFound()"
             when="{'0': 'Results',

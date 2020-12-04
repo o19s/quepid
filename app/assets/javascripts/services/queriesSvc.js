@@ -326,6 +326,8 @@ angular.module('QuepidApp')
               var rateableDoc = self.ratingsStore.createRateableDoc(doc);
               self.ratedDocs.push(rateableDoc);
             });
+
+            self.ratedDocsFound = normed.length;
           });
         };
 

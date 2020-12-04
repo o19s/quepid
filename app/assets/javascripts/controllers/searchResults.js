@@ -81,8 +81,6 @@ angular.module('QuepidApp')
         }
       });*/
 
-      $scope.numFound = 0;
-
       $scope.query.getNumFound = function() {
         $scope.numFound = queriesSvc.showOnlyRated ? $scope.query.ratedDocsFound : $scope.query.numFound;
         return $scope.numFound;
