@@ -150,6 +150,7 @@ angular.module('QuepidApp')
         self.hasBeenScored  = false;
         self.docsSet        = false;
         self.allRated       = true;
+        self.ratingsPromise = null;
         self.ratingsReady   = false;
 
         self.queryId        = queryWithRatings.queryId;
@@ -263,8 +264,8 @@ angular.module('QuepidApp')
 
           // The defaults are set below because sometimes quepid saves out scores with no values.
           // TODO: Defaults can be removed if the quepid scoring persistence issue is cleaned up
-          var score     = scorer.score(this.numFound, otherDocs, this.ratedDocs, bestDocs, this.options) || 0.0;
-          var maxScore  = scorer.maxScore(this.numFound, otherDocs, this.ratedDocs, bestDocs, this.options) || 1.0;
+          var score     = scorer.score(this, this.numFound, otherDocs, bestDocs, this.options) || 0.0;
+          var maxScore  = scorer.maxScore(this, this.numFound, otherDocs, bestDocs, this.options) || 1.0;
 
           var color     = qscoreSvc.scoreToColor(score, maxScore);
 
@@ -319,6 +320,31 @@ angular.module('QuepidApp')
           return maxDocScore;
         };
 
+
+        // This method allows scorers to wait on rated documents before trying to score
+        this.awaitRatedDocs = function() {
+          var deferred = $q.defer();
+
+          // Immediately resolve if the docs are ready
+          if (this.ratingsReady) {
+            deferred.resolve();
+          // Waiting on an existing promise
+          } else if (self.ratingsPromise) {
+            self.ratingsPromise.then(function() {
+              deferred.resolve();
+            });
+          // Setup a new promise
+          } else {
+            self.ratingsPromise = this.refreshRatedDocs()
+              .then(function() {
+              deferred.resolve();
+            });
+          }
+
+          return deferred.promise;
+        }
+
+
         this.refreshRatedDocs = function() {
           self.ratedSearcher = svc.createSearcherFromSettings(
               currSettings,
@@ -327,7 +353,7 @@ angular.module('QuepidApp')
             );
 
           self.ratedDocs = [];
-          self.ratedSearcher.search().then(function() {
+          return self.ratedSearcher.search().then(function() {
             var normed = normalizeDocExplains(self, self.ratedSearcher, currSettings.createFieldSpec());
 
             angular.forEach(normed, function(doc) {
@@ -337,6 +363,7 @@ angular.module('QuepidApp')
 
             self.ratedDocsFound = normed.length;
             self.ratingsReady = true;
+            self.ratingsPromise = null;
           });
         };
 

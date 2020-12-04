@@ -378,7 +378,7 @@
         return deferred.promise;
       }
 
-      function runCode(total, docs, ratedDocs, bestDocs, mode, options) {
+      function runCode(query, total, docs, bestDocs, mode, options) {
         var scale     = self.scale;
         var max       = scale[scale.length-1];
 
@@ -423,16 +423,16 @@
         };
 
         var ratedDocAt = function(posn) {
-          if (posn >= ratedDocs.length) {
+          if (posn >= query.ratedDocs.length) {
             return {};
           } else {
-            return ratedDocs[posn];
+            return query.ratedDocs[posn];
           }
         };
 
 
         var ratedDocExistsAt = function(posn) {
-          if (posn >= ratedDocs.length) {
+          if (posn >= query.ratedDocs.length) {
             return false;
           }
           return true;
@@ -489,12 +489,15 @@
             count = DEFAULT_NUM_DOCS;
           }
 
-          var i = 0;
-          for (i = 0; i < count; i++) {
-            if (ratedDocExistsAt(i)) {
-              f(ratedDocAt(i), i);
-            }
-          }
+          return query.awaitRatedDocs()
+            .then(function() {
+              var i = 0;
+              for (i = 0; i < count; i++) {
+                if (ratedDocExistsAt(i)) {
+                  f(ratedDocAt(i), i);
+                }
+              }
+            });
         };
 
 
@@ -543,7 +546,8 @@
           }
 
           /*jshint evil:true */
-          eval(self.code);
+          var safeScore = eval(self.code);
+          return safeScore;
           /*jshint evil:false */
         } catch (score) {
           if (angular.isNumber(score)) {
@@ -559,20 +563,20 @@
         }
       }
 
-      function maxScore(total, docs, ratedDocs, bestDocs, options) {
+      function maxScore(query, total, docs, bestDocs, options) {
         if (self.manualMaxScore) {
           return self.manualMaxScoreValue;
         }
 
-        return runCode(total, docs, ratedDocs, bestDocs, 'max', options);
+        return runCode(query, total, docs, bestDocs, 'max', options);
       }
 
-      function score(total, docs, ratedDocs, bestDocs, options) {
-        var maxScore  = self.maxScore(total, docs, ratedDocs, bestDocs, options);
+      function score(query, total, docs, bestDocs, options) {
+        var maxScore  = self.maxScore(query, total, docs, bestDocs, options);
         var calcScore = self.runCode(
+          query,
           total,
           docs,
-          ratedDocs,
           bestDocs,
           undefined,
           options
