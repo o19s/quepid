@@ -352,15 +352,16 @@ angular.module('QuepidApp')
               self
             );
 
-          self.ratedDocs = [];
+          var ratedDocsStaging = [];
           return self.ratedSearcher.search().then(function() {
             var normed = normalizeDocExplains(self, self.ratedSearcher, currSettings.createFieldSpec());
 
             angular.forEach(normed, function(doc) {
               var rateableDoc = self.ratingsStore.createRateableDoc(doc);
-              self.ratedDocs.push(rateableDoc);
+              ratedDocsStaging.push(rateableDoc);
             });
 
+            self.ratedDocs = ratedDocsStaging;
             self.ratedDocsFound = normed.length;
             self.ratingsReady = true;
             self.ratingsPromise = null;
