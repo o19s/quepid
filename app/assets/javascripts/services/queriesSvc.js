@@ -342,7 +342,7 @@ angular.module('QuepidApp')
           }
 
           return deferred.promise;
-        }
+        };
 
 
         this.refreshRatedDocs = function() {

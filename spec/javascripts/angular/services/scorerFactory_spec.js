@@ -154,7 +154,7 @@ describe('Service: ScorerFactory', function () {
   describe('Scoring', function () {
     var checkExpectation = function(num, docs, best, expectation) {
       var score;
-      score = scorer.score(num, docs, [], best);
+      score = scorer.score({}, num, docs, best);
       $rootScope.$apply();
       expect(score).toBe(expectation);
     };

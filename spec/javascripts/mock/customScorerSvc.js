@@ -8,14 +8,14 @@
     this.lastDocs = null;
     this.lastBestDocs = null;
 
-    this.score = function(queryText, docs, bestDocs) {
+    this.score = function(query, queryText, docs, bestDocs) {
       this.lastQueryText = queryText;
       this.lastDocs = docs;
       this.lastBestDocs = bestDocs;
       return 100;
     };
 
-    this.maxScore = function(queryText, docs, bestDocs) {
+    this.maxScore = function(query, queryText, docs, bestDocs) {
       return 100;
     };
 
