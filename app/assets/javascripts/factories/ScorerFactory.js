@@ -489,15 +489,12 @@
             count = DEFAULT_NUM_DOCS;
           }
 
-          return query.awaitRatedDocs()
-            .then(function() {
-              var i = 0;
-              for (i = 0; i < count; i++) {
-                if (ratedDocExistsAt(i)) {
-                  f(ratedDocAt(i), i);
-                }
-              }
-            });
+          var i = 0;
+          for (i = 0; i < count; i++) {
+            if (ratedDocExistsAt(i)) {
+              f(ratedDocAt(i), i);
+            }
+          }
         };
 
 
@@ -546,8 +543,7 @@
           }
 
           /*jshint evil:true */
-          var safeScore = eval(self.code);
-          return safeScore;
+          eval(self.code);
           /*jshint evil:false */
         } catch (score) {
           if (angular.isNumber(score)) {

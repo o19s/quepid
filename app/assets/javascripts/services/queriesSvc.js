@@ -426,25 +426,11 @@ angular.module('QuepidApp')
 
             resultsReturned = false;
 
-            self.searcher.search()
+            var promises = [];
+
+            promises.push(self.searcher.search()
               .then(function() {
-                  self.linkUrl = self.searcher.linkUrl;
-
-                  if (self.searcher.inError) {
-                    //self.docs.length = 0;
-                    self.setDocs([], 0);
-                    self.onError('Please click browse to see the error');
-                  } else {
-                    var error = self.setDocs(self.searcher.docs, self.searcher.numFound);
-                    if (error) {
-                      self.onError(error);
-                      reject(error);
-                    }
-                    self.othersExplained = self.searcher.othersExplained;
-                  }
-
-                  resolve();
-              }, function(response) {
+                            }, function(response) {
                 self.linkUrl = self.searcher.linkUrl;
                 self.setDocs([], 0);
 
@@ -455,7 +441,29 @@ angular.module('QuepidApp')
               }).catch(function(response) {
                 $log.debug('Failed to load search results');
                 return response;
-              });
+              }));
+
+
+            promises.push(self.refreshRatedDocs());
+
+            $q.all(promises).then( () => {
+              self.linkUrl = self.searcher.linkUrl;
+
+              if (self.searcher.inError) {
+                //self.docs.length = 0;
+                self.setDocs([], 0);
+                self.onError('Please click browse to see the error');
+              } else {
+                var error = self.setDocs(self.searcher.docs, self.searcher.numFound);
+                if (error) {
+                  self.onError(error);
+                  reject(error);
+                }
+                self.othersExplained = self.searcher.othersExplained;
+              }
+
+              resolve();
+            });
           });
         };
 
