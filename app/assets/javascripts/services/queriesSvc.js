@@ -126,8 +126,14 @@ angular.module('QuepidApp')
 
       function toggleShowOnlyRated() {
         svc.showOnlyRated = !svc.showOnlyRated;
-        // Navigating causes a pretty annoying delay
-        //caseTryNavSvc.navigateTo({tryNo: caseTryNavSvc.getTryNo()});
+
+        if (svc.showOnlyRated) {
+          angular.forEach(svc.queries, function(query) {
+            if (!query.ratingsReady) {
+              query.refreshRatedDocs();
+            }
+          });
+        }
       }
 
       this.unscoredQueries = {};
