@@ -140,7 +140,7 @@ describe('Service: caseSvc', function () {
 
       var newName = 'blah';
       $httpBackend.expectPUT('/api/cases/' + newCase.caseNo).respond(201, {});
-      newCase.rename(newName);
+      caseSvc.renameCase(newCase, newName);
       $httpBackend.flush();
       var sameCase = caseSvc.getSelectedCase();
       expect(sameCase.caseName).toBe(newName);

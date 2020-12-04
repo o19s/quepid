@@ -357,6 +357,10 @@
               data = textDelimiter + data + textDelimiter;
             }
 
+            if (data.startsWith('=') || data.startsWith('@') || data.startsWith('+') || data.startsWith('-')) {
+              data = ' ' + data;
+            }
+
             return data;
           }
 

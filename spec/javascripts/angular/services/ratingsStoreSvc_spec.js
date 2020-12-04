@@ -20,7 +20,7 @@ describe('Service: Ratingsstoresvc', function () {
 
   it('should rate documents', function () {
     var ratingsStore = ratingsStoreSvc.createRatingsStore(0, 1, {});
-    $httpBackend.expectPUT('/api/cases/0/queries/1/ratings/doc1').respond(200, {});
+    $httpBackend.expectPUT('/api/cases/0/queries/1/ratings').respond(200, {});
     ratingsStore.rateDocument('doc1', 10);
     $httpBackend.flush();
     expect(ratingsStore.getRating('doc1')).toBe(10);
@@ -40,48 +40,45 @@ describe('Service: Ratingsstoresvc', function () {
     $httpBackend.verifyNoOutstandingExpectation();
   });
 
-  it('should urlencode when POSTIng rating', function() {
+  it('should handle slashes in the doc id', function() {
     var ratingsStore = ratingsStoreSvc.createRatingsStore(0, 1, {});
-    $httpBackend.expectPUT('/api/cases/0/queries/1/ratings/ZmlsZTovL2Zvby9iYXI%3D').respond(200, {});
+    $httpBackend.expectPUT('/api/cases/0/queries/1/ratings').respond(200, {});
     ratingsStore.rateDocument('file://foo/bar', 10);
     $httpBackend.flush();
     expect(ratingsStore.getRating('file://foo/bar')).toBe(10);
     $httpBackend.verifyNoOutstandingExpectation();
   });
-  it('should base 64 and urlencode when POSTIng rating w id is URL', function() {
+  it('should handle a URL as the doc id', function() {
     var ratingsStore = ratingsStoreSvc.createRatingsStore(0, 1, {});
-    $httpBackend.expectPUT('/api/cases/0/queries/1/ratings/aHR0cDovL3d3dy5leGFtcGxlLmNvbS9kb2MvMQ%3D%3D').respond(200, {});
+    $httpBackend.expectPUT('/api/cases/0/queries/1/ratings').respond(200, {rating: {doc_id: 'http://www.example.com/doc/1', rating: 10}});
     ratingsStore.rateDocument('http://www.example.com/doc/1', 10);
     $httpBackend.flush();
     expect(ratingsStore.getRating('http://www.example.com/doc/1')).toBe(10);
 
-    var id = 'aspace-https-archives-yale-edu-repositories-5-archival_objects-2530795';
-    $httpBackend.expectPUT('/api/cases/0/queries/1/ratings/aspace-https-archives-yale-edu-repositories-5-archival_objects-2530795').respond(200, {});
+    $httpBackend.expectPUT('/api/cases/0/queries/1/ratings').respond(200, {rating: {doc_id: 'aspace-https-archives-yale-edu-repositories-5-archival_objects-2530795', rating: 10}});
     ratingsStore.rateDocument('aspace-https-archives-yale-edu-repositories-5-archival_objects-2530795', 10);
     $httpBackend.flush();
     expect(ratingsStore.getRating('aspace-https-archives-yale-edu-repositories-5-archival_objects-2530795')).toBe(10);
 
-    // Base64 encoded value of d2Vic2l0ZTpodHRwOi8vd3d3Lmdvb2dsZS5jb20= is then URL encoded.
-    id = 'website:http://www.google.com';
-    $httpBackend.expectPUT('/api/cases/0/queries/1/ratings/d2Vic2l0ZTpodHRwOi8vd3d3Lmdvb2dsZS5jb20%3D').respond(200, {});
+    $httpBackend.expectPUT('/api/cases/0/queries/1/ratings').respond(200, {rating: {doc_id: 'website:http://www.google.com', rating: 10}});
     ratingsStore.rateDocument('website:http://www.google.com', 10);
     $httpBackend.flush();
     expect(ratingsStore.getRating('website:http://www.google.com')).toBe(10);
 
     $httpBackend.verifyNoOutstandingExpectation();
   });
-  it('should base 64 and urlencode when POSTIng rating w id containing a period', function() {
+  it('should handle a document with a dot in the id', function() {
     var ratingsStore = ratingsStoreSvc.createRatingsStore(0, 1, {});
-    $httpBackend.expectPUT('/api/cases/0/queries/1/ratings/bXlkb2MucGRm').respond(200, {});
+    $httpBackend.expectPUT('/api/cases/0/queries/1/ratings').respond(200, {rating: {doc_id: 'mydoc.pdf', rating: 10}});
     ratingsStore.rateDocument('mydoc.pdf', 10);
     $httpBackend.flush();
     expect(ratingsStore.getRating('mydoc.pdf')).toBe(10);
     $httpBackend.verifyNoOutstandingExpectation();
   });
 
-  it('should urlencode when DELETING rating', function() {
+  it('should handle when DELETING rating', function() {
     var ratingsStore = ratingsStoreSvc.createRatingsStore(0, 1, {});
-    $httpBackend.expectDELETE('/api/cases/0/queries/1/ratings/ZmlsZTovL2Zvby9iYXI%3D').respond(200, {});
+    $httpBackend.expectDELETE('/api/cases/0/queries/1/ratings').respond(200, {rating: {doc_id: 'file://foo/bar'}});
     ratingsStore.resetRating('file://foo/bar');
     $httpBackend.flush();
     expect(ratingsStore.hasRating('file://foo/bar')).toBe(false);
@@ -90,7 +87,7 @@ describe('Service: Ratingsstoresvc', function () {
 
   it('should alter the value of existing ratings', function() {
     var ratingsStore = ratingsStoreSvc.createRatingsStore(0, 1, {doc1: 10});
-    $httpBackend.expectPUT('/api/cases/0/queries/1/ratings/doc1').respond(200, {});
+    $httpBackend.expectPUT('/api/cases/0/queries/1/ratings').respond(200, {});
     ratingsStore.rateDocument('doc1', 5);
     $httpBackend.flush();
     expect(ratingsStore.getRating('doc1')).toBe(5);
@@ -100,7 +97,7 @@ describe('Service: Ratingsstoresvc', function () {
   it('should reset ratings', function() {
     var ratingsStore = ratingsStoreSvc.createRatingsStore(0, 1, {doc1: 10});
     expect(ratingsStore.hasRating('doc1')).toBeTruthy();
-    $httpBackend.expectDELETE('/api/cases/0/queries/1/ratings/doc1').respond(200, {});
+    $httpBackend.expectDELETE('/api/cases/0/queries/1/ratings').respond(200, {});
     ratingsStore.resetRating('doc1');
     $httpBackend.flush();
     expect(ratingsStore.hasRating()).toBe(false);
@@ -142,7 +139,7 @@ describe('Service: Ratingsstoresvc', function () {
 
   it('updates version increment on reset', function() {
     var ratingsStore = ratingsStoreSvc.createRatingsStore(0, 1, {doc1: 10});
-    $httpBackend.expectDELETE('/api/cases/0/queries/1/ratings/doc1').respond(200, {});
+    $httpBackend.expectDELETE('/api/cases/0/queries/1/ratings').respond(200, {rating: {doc_id: 'doc1'}});
     var origVersion = ratingsStore.version();
     ratingsStore.resetRating('doc1');
     $httpBackend.flush();
@@ -151,7 +148,7 @@ describe('Service: Ratingsstoresvc', function () {
 
   it('updates version increment on rate', function() {
     var ratingsStore = ratingsStoreSvc.createRatingsStore(0, 1, {doc1: 10});
-    $httpBackend.expectPUT('/api/cases/0/queries/1/ratings/doc1').respond(200, {});
+    $httpBackend.expectPUT('/api/cases/0/queries/1/ratings').respond(200, {rating: {doc_id: 'doc2', rating: 10}});
     var origVersion = ratingsStore.version();
     ratingsStore.rateDocument('doc1', '5');
     $httpBackend.flush();
@@ -193,7 +190,7 @@ describe('Rateable Docs', function () {
     var ratingsStore = ratingsStoreSvc.createRatingsStore(0, 1, {doc1: 10});
     var solrDoc = {'id': 'doc2'};
     var rateableSolrDoc = ratingsStore.createRateableDoc(solrDoc);
-    $httpBackend.expectPUT('/api/cases/0/queries/1/ratings/doc2').respond(200, {});
+    $httpBackend.expectPUT('/api/cases/0/queries/1/ratings').respond(200, {});
     rateableSolrDoc.rate(5);
     $httpBackend.flush();
     expect(rateableSolrDoc.getRating()).toBe(5);
@@ -204,7 +201,7 @@ describe('Rateable Docs', function () {
     var ratingsStore = ratingsStoreSvc.createRatingsStore(0, 1, {doc1: 10});
     var solrDoc = {'id': 'doc2'};
     var rateableSolrDoc = ratingsStore.createRateableDoc(solrDoc);
-    $httpBackend.expectDELETE('/api/cases/0/queries/1/ratings/doc2').respond(200, {});
+    $httpBackend.expectDELETE('/api/cases/0/queries/1/ratings').respond(200, {rating: {doc_id: 'doc2'}});
     rateableSolrDoc.resetRating();
     $httpBackend.flush();
     $httpBackend.verifyNoOutstandingExpectation();

@@ -12,6 +12,7 @@ angular.module('QuepidSecureApp')
       }
 
       $scope.isEmailMarketingMode = configurationSvc.isEmailMarketingMode();
+      $scope.isSignupEnabled = configurationSvc.isSignupEnabled();
 
       $scope.submit = function (agree, emailMarketingAgree, name, email, pass, confirm) {
         $scope.warnAgree    = false;

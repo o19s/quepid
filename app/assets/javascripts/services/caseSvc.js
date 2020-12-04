@@ -33,6 +33,7 @@ angular.module('QuepidApp')
       svc.listContainsCase  = listContainsCase;
       svc.refetchCaseLists  = refetchCaseLists;
       svc.saveDefaultScorer = saveDefaultScorer;
+      svc.renameCase        = renameCase;
 
       // an individual case, ie
       // a search problem to be solved
@@ -59,24 +60,6 @@ angular.module('QuepidApp')
           });
 
           return names.join(', ');
-        };
-
-        theCase.rename = function(newName) {
-          if (newName.length > 0) {
-            // HTTP PUT /api/cases/<int:caseId>
-            var url  = '/api/cases/' + theCase.caseNo;
-            var data = {
-              case_name: newName
-            };
-
-            return $http.put(url, data)
-              .then(function() {
-                theCase.caseName = newName;
-                broadcastSvc.send('caseRenamed', theCase);
-              }, function() {
-                caseTryNavSvc.notFound();
-              });
-          }
         };
 
         theCase.fetchCaseScore = function() {
@@ -195,6 +178,7 @@ angular.module('QuepidApp')
             caseTryNavSvc.notFound();
           });
       };
+
 
       this.deleteCase = function(caseToDelete) {
         var that        = this;
@@ -382,6 +366,29 @@ angular.module('QuepidApp')
             return response;
           });
       }
+
+      /*
+       * rename the case.  This could be refactored into a more
+       * general "update" method.
+       */
+      function renameCase(theCase, newName) {
+        if (newName.length > 0) {
+          // HTTP PUT /api/cases/<int:caseId>
+          var url  = '/api/cases/' + theCase.caseNo;
+          var data = {
+            case_name: newName
+          };
+
+          return $http.put(url, data)
+            .then(function() {
+              theCase.caseName = newName;
+              broadcastSvc.send('caseRenamed', theCase);
+            }, function() {
+              caseTryNavSvc.notFound();
+            });
+        }
+      }
+
 
       function get(id, useCache) {
         // http GET /api/cases/<int:caseId>

@@ -51,7 +51,7 @@ Rails.application.routes.draw do
       resources :users,   only: %i[index show update] do
         get '/current' => 'current_user#show', on: :collection
       end
-      resources :signups, only: [ :create ]
+      resources :signups, only: [ :create ] if Rails.application.config.signup_enabled
 
       get '/dropdown/cases' => 'cases/dropdown#index'
 
@@ -83,7 +83,7 @@ Rails.application.routes.draw do
             resource  :position,  only: [ :update ]
             resource  :scorer,    only: %i[show update destroy]
             resource  :threshold, only: [ :update ]
-            resources :ratings,   only: %i[update destroy], param: :doc_id
+            resource  :ratings,   only: %i[update destroy] # not actually a singular resource, doc_id in json payload
           end
 
           resource :bulk, only: [] do

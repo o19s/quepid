@@ -22,17 +22,6 @@ angular.module('QuepidApp')
           return '/api/cases/' + caseNo + '/queries/' + queryId;
         };
 
-        var path      = function(docId) {
-          var id = docId;
-          // For document id's that have either a / or a . character, we need to base64 encode them.
-          // Rails pukes on the . and the webapp pukes on the / in routing things.
-          if ( /\//.test(docId) || /\./.test(docId)) {
-            id = btoa(docId);
-          }
-
-          return  basePath() + '/ratings/' + encodeURIComponent(id);
-        };
-
         var markDirty = function() {
           version++;
           svcVersion++;
@@ -45,14 +34,22 @@ angular.module('QuepidApp')
         };
 
         this.rateDocument = function(docId, rating) {
-          return $http.put(path(docId), {'rating': rating}).then(function() {
+          var url   = basePath() + '/ratings';
+          var data  = { rating:
+            {
+              doc_id:  docId,
+              rating: rating,
+            }
+          };
+
+          $http.put(url, data).then(function() {
             ratingsDict[docId] = rating;
+
             markDirty();
           });
         };
 
-        // We do not encode doc ids with the bulk because they are in the payload
-        // instead of in the URL, so the / and . issues don't crop up.
+        // This takes a single rating and applies it to a list of docIds
         this.rateBulkDocuments = function(docIds, rating) {
           var url   = basePath() + '/bulk' + '/ratings';
           var data  = {
@@ -70,7 +67,19 @@ angular.module('QuepidApp')
         };
 
         this.resetRating = function(docId) {
-          return $http.delete(path(docId)).then(function() {
+          var url   = basePath() + '/ratings';
+          var obj  = { rating:
+            {
+              doc_id:  docId,
+            }
+          };
+          var config = { // Silly AngularJS workaround to pass data
+            headers: {
+              'Content-Type': 'application/json;charset=UTF-8'
+            },
+            data: JSON.stringify(obj)
+          };
+          $http.delete(url, config).then(function() {
             delete ratingsDict[docId];
             markDirty();
           });
@@ -99,7 +108,7 @@ angular.module('QuepidApp')
           if (ratingsDict.hasOwnProperty(docId)) {
             var rating = ratingsDict[docId];
             if (angular.isString(rating)) {
-              /* An annoying incosistency upstream is compensated for here:
+              /* An annoying inconsistency upstream is compensated for here:
                * sometimes we're given ratings as strings.
                * The backend bootstraps various features with ratings as strings
                * so we do a silly thing here and report the strings we store as ints

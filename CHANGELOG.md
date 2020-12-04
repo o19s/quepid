@@ -2,9 +2,43 @@
 
 ## 6.3.2 - ??
 
+### Features
+
+* Round trip export and import LTR ranking files!  https://github.com/o19s/quepid/pull/204 by @epugh fixes https://github.com/o19s/quepid/issues/162 by @DmitryKey.
+
+* Disable web signups by setting `SIGNUP_ENABLED=false`.  https://github.com/o19s/quepid/pull/238 by @tonomonic.
+
 ### Improvements
 
+* Easy in-place editing of case name and the try name to encourage using those features!  [Microinteration](https://www.oreilly.com/library/view/microinteractions-full-color/9781491945957/) FTW!  https://github.com/o19s/quepid/pull/242 by @epugh.
+
+* Demonstrate richness of queries in Quepid when you use the TMDB dataset.  https://github.com/o19s/quepid/pull/236 by @epugh fixes https://github.com/o19s/quepid/issues/224.
+
 * Update Javascript references to `application/javascript`.  Pay down some tech debt!  https://github.com/o19s/quepid/pull/223 by @epugh
+
+* Simplify handling doc id's that have periods or slashes in then, and avoid base64 issues by passing that in the JSON payload.  https://github.com/o19s/quepid/pull/233 by @epugh fixes https://github.com/o19s/quepid/issues/228 and https://github.com/o19s/quepid/issues/221.
+
+* Some Solr collections need manual setup of the `wt=json` mimetype.  Add better text message for users.  https://github.com/o19s/quepid/pull/235 by @epugh fixes https://github.com/o19s/quepid/issues/178.
+
+* The CSV export format has a CSV injection vulnerability that is now fixed.  https://github.com/o19s/quepid/pull/245 by @nicholaskwan fixes https://github.com/o19s/quepid/issues/231.
+
+* The Javascript based scorers could be used maliciously, so we've added an environment variable COMMUNAL_SCORERS_ONLY that controls if only Admins can create communal scorers for use by users.  https://github.com/o19s/quepid/pull/246 by @jacobgraves fixes https://github.com/o19s/quepid/issues/232.
+
+* Don't show the Sharing icon for communal scorers, since they are implicitly shared globally!  https://github.com/o19s/quepid/pull/251 by @epugh fixes https://github.com/o19s/quepid/issues/247.
+
+* Allow the export and import cycle of ratings using both CSV and RRE formats to include queries with no rated documents. Don't create a partial rating on import where we only have a doc id but no rating.  https://github.com/o19s/quepid/pull/252 by @epugh fixes https://github.com/o19s/quepid/issues/244 by @LiuCao0614
+
+### Bugs
+
+* Discovered that the migrations from communal scorers being `@5` to `@10` didn't always run cleanly.  Commits 94dd23990422901082d79b121c1ca86a76907dc3, 8317b543530cc387d5cb89b4942acea5da57ce23, and 19b046485db530162c213a593e5b2e9df8fbbf07 to deal with this.
+
+* Discovered that DELETE of ratings didn't work, and had to work around that.  Commit 153047cd4b75d626695f5fc38832f6202eed9007.
+
+* Missing authorization check for Team Owner.  https://github.com/o19s/quepid/issues/230 by @jacobgraves fixes https://github.com/o19s/quepid/issues/230 by @testerTester0123456789.
+
+* Can't rename a case on the Teams page.  https://github.com/o19s/quepid/pull/240 by @epugh fixes https://github.com/o19s/quepid/issues/213
+
+* Fixed scoring of AP@10 and NDCG@10 when you have fewer then 10 results.  https://github.com/o19s/quepid/pull/253 by @nathancday fixes https://github.com/o19s/quepid/issues/225 by @epugh.
 
 ## 6.3.1.2 - 2020-09-16
 

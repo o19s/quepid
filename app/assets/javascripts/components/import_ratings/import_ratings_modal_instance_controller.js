@@ -25,6 +25,10 @@ angular.module('QuepidApp')
         content:           null
       };
 
+      ctrl.ltr         = {
+        content:           null
+      };
+
       ctrl.options = {
         which: 'undefined'
       };
@@ -39,24 +43,9 @@ angular.module('QuepidApp')
         }
       },true);
 
-      // doesn't appear to work.
-      $scope.$watch('ctrl.rre.content', function(newVal, oldVal) {
-        if (newVal !== oldVal) {
-          ctrl.options.which = 'rre';
-        }
-      },true);
 
-      // doesn't appear to work.
-      $scope.$watch('ctrl.rre', function(newVal, oldVal) {
-        if (newVal !== oldVal) {
-          if (oldVal.content !== newVal.content) {
-            ctrl.options.which = 'rre';
-          }
-        }
-      },true);
-
-      $scope.pickedFile = function() {
-        var f = document.getElementById('file').files[0],
+      $scope.pickedRREFile = function() {
+        var f = document.getElementById('rreFile').files[0],
             r = new FileReader();
 
         // This next two lines don't seem to trigger the watches that I wanted.
@@ -65,6 +54,22 @@ angular.module('QuepidApp')
         r.onloadend = function(e) {
           var data = e.target.result;
           ctrl.rre.content = data;
+          ctrl.loading = false;
+        };
+
+        r.readAsText(f);
+      };
+
+      $scope.pickedLTRFile = function() {
+        var f = document.getElementById('ltrFile').files[0],
+            r = new FileReader();
+
+        // This next two lines don't seem to trigger the watches that I wanted.
+        ctrl.options.which = 'ltr';
+        ctrl.loading = true;
+        r.onloadend = function(e) {
+          var data = e.target.result;
+          ctrl.ltr.content = data;
           ctrl.loading = false;
         };
 
@@ -115,6 +120,23 @@ angular.module('QuepidApp')
                 $uibModalInstance.close(error);
               });
           }
+          else if (ctrl.options.which === 'ltr' ) {
+            importRatingsSvc.importLTRFormat(
+              ctrl.theCase,
+              ctrl.ltr.content,
+              ctrl.clearQueries
+            ).then(function() {
+                ctrl.loading = false;
+                $uibModalInstance.close();
+              },
+              function(response) {
+                var error = 'Unable to import ratings from LTR: ';
+                error += response.status;
+                error += ' - ' + response.statusText;
+                ctrl.loading = false;
+                $uibModalInstance.close(error);
+              });
+          }
         }
       };
 
@@ -145,9 +167,9 @@ angular.module('QuepidApp')
         var alert;
         for (i = 1; i < lines.length; i++) {
           var line = lines[i];
-          if (line && line.split(ctrl.csv.separator).length !== 3){
+          if (line && line.split(ctrl.csv.separator).length > 3){
             if (alert === undefined){
-              alert = 'Must have three columns for every line in CSV file: ';
+              alert = 'Must have three (or fewer) columns for every line in CSV file: ';
               alert += '<br /><strong>';
             }
             alert += 'line ' + (i + 1) + ': ';
