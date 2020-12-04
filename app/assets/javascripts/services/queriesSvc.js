@@ -126,6 +126,7 @@ angular.module('QuepidApp')
 
       function toggleShowOnlyRated() {
         svc.showOnlyRated = !svc.showOnlyRated;
+        // Navigating causes a pretty annoying delay
         //caseTryNavSvc.navigateTo({tryNo: caseTryNavSvc.getTryNo()});
       }
 
@@ -143,6 +144,7 @@ angular.module('QuepidApp')
         self.hasBeenScored  = false;
         self.docsSet        = false;
         self.allRated       = true;
+        self.ratingsReady   = false;
 
         self.queryId        = queryWithRatings.queryId;
         self.caseNo         = caseNo;
@@ -328,6 +330,7 @@ angular.module('QuepidApp')
             });
 
             self.ratedDocsFound = normed.length;
+            self.ratingsReady = true;
           });
         };
 
@@ -408,17 +411,6 @@ angular.module('QuepidApp')
                   }
 
                   resolve();
-
-                  // Refresh rated docs
-                  self.ratedSearcher.search().then(function() {
-                    self.ratedDocsFound = self.ratedSearcher.numFound;
-                    var normed = normalizeDocExplains(self, self.ratedSearcher, currSettings.createFieldSpec());
-
-                    angular.forEach(normed, function(doc) {
-                    var rateableDoc = self.ratingsStore.createRateableDoc(doc);
-                      self.ratedDocs.push(rateableDoc);
-                    });
-                });
               }, function(response) {
                 self.linkUrl = self.searcher.linkUrl;
                 self.setDocs([], 0);

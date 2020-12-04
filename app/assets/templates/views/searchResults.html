@@ -21,7 +21,7 @@
     </h2>
 
     <span class='pull-right total-results'>
-      <count-up ng-model="query.getNumFound()" steps="5" time="500" />
+      <count-up ng-data="query.getNumFound()" ng-model="numFound" steps="5" time="500" />
       <small class="text-muted">
         <ng-pluralize count="query.getNumFound()"
             when="{'0': 'Results',
@@ -148,6 +148,7 @@
 
     <!-- Rated only search results -->
     <div ng-if="queriesSvc.showOnlyRated" ng-show="displayed.results == displayed.resultsView.results">
+      <i class="fa fa-spinner fa-spin" ng-show="!query.ratingsReady"></i>
       <search-result explain-viewport="'#query-container'" explain-view="'full'" class="search-result" ng-repeat="doc in query.ratedDocs track by doc.id" max-doc-score="query.maxDocScore()" doc="doc" field-spec="query.fieldSpec" rank="{{$index + 1}}" query="query" doc-id="doc.id">
       </search-result>
 
