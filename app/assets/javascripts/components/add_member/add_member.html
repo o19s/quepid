@@ -6,7 +6,7 @@
 </script>
 
 <div class='form-group'>
-  <input type="text" ng-model="ctrl.selected" placeholder="Look for users via email or display name"
+  <input id="user-lookup" type="text" ng-model="ctrl.selected" placeholder="Look for users via email or display name"
     uib-typeahead="user as user.display_name for user in ctrl.getUsers($viewValue)"
     typeahead-loading="loadingUsers"
     typeahead-template-url="member_popup.html"

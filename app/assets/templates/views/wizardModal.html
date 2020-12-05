@@ -1,15 +1,15 @@
-<div class="modal-body">
+<div class="modal-body" id="wizard">
   <wizard on-finish="pendingWizardSettings.submit()">
-    <wz-step title="Welcome">
+    <wz-step title="Welcome" id="step-one">
       <h1>Welcome To Quepid!</h1>
       <div>
         <img ng-src="/images/doug.jpg" style="float: left; margin: 20px 30px 100px 20px; width: 100px" />
         <p>Hi, I'm Doug, creator of Quepid. Let me guide you through your setup!</p>
-        <button class="btn btn-primary pull-right" wz-next>Continue</button>
+        <button id="continue" class="btn btn-primary pull-right" wz-next>Continue</button>
         <br><br><br><br><br>
       </div>
     </wz-step>
-    <wz-step title="Name">
+    <wz-step title="Name" id="step-two">
       <h2>Name Your Case!</h2>
       <div>
         <p>Give an informative name to the problem you're solving</p>
@@ -19,13 +19,13 @@
             <label>New Case Name:</label>
             <input type="text" ng-model="pendingWizardSettings.caseName" style='width: 250px' />
           </div>
-          <button class="btn btn-primary pull-right" wz-next>Continue</button>
+          <button id="continue" class="btn btn-primary pull-right" wz-next>Continue</button>
         </form>
 
         <br><br><br><br><br>
       </div>
     </wz-step>
-    <wz-step title="Engine">
+    <wz-step title="Engine" id="step-three">
       <h2>Solr or Elasticsearch?</h2>
       <div>
 
@@ -94,7 +94,7 @@ curl -X POST -H 'Content-type:application/json' -d '{
 
             <div class="row" style="margin-top: 50px;">
               <div class="pull-right">
-                <button class="btn btn-primary pull-right" ng-click="validate()" ng-disabled="validating">
+                <button id="continue" class="btn btn-primary pull-right" ng-click="validate()" ng-disabled="validating">
                   <span ng-hide="validating">Continue</span>
                   <span ng-show="validating">Validating...</span>
                 </button>
@@ -106,7 +106,7 @@ curl -X POST -H 'Content-type:application/json' -d '{
         <br><br><br><br>
       </div>
     </wz-step>
-    <wz-step title="Fields">
+    <wz-step title="Fields" id="step-four">
       <h2>How Should We Display Your Results?</h2>
       <div>
 
@@ -140,7 +140,7 @@ curl -X POST -H 'Content-type:application/json' -d '{
           </div>
 
           <div class="form-group">
-            <button class="btn btn-primary pull-right" ng-click="validateFieldSpec()" ng-disabled="validating">
+            <button id="continue" class="btn btn-primary pull-right" ng-click="validateFieldSpec()" ng-disabled="validating">
               <span ng-hide="validating">Continue</span>
               <span ng-show="validating">Validating...</span>
             </button>
@@ -149,11 +149,11 @@ curl -X POST -H 'Content-type:application/json' -d '{
       </div>
       <br><br><br><br><br>
     </wz-step>
-    <wz-step title="Query">
+    <wz-step title="Query" id="step-five">
       <h2>Add Your Search Queries</h2>
       <div>
         <p class="help-block">Start out tuning a couple important search queries:</p>
-        <button class="btn btn-primary pull-right" wz-next ng-click="pendingWizardSettings.addQuery(pendingWizardSettings.text)">Continue</button>
+        <button id="continue" class="btn btn-primary pull-right" wz-next ng-click="pendingWizardSettings.addQuery(pendingWizardSettings.text)">Continue</button>
 
         <div>
           <form>
@@ -174,10 +174,10 @@ curl -X POST -H 'Content-type:application/json' -d '{
         <br><br><br><br><br>
       </div>
     </wz-step>
-    <wz-step title="Finish">
+    <wz-step title="Finish" id="step-six">
       <h1>That's It!</h1>
       <p class="help-block">Go to "Tune Relevance" to iterate on your relevance and manipulate searches</p>
-      <button class="btn-lg btn-success pull-right" wz-next>Finish</button>
+      <button id="finish" class="btn-lg btn-success pull-right" wz-next>Finish</button>
       <br><br><br><br><br>
     </wz-step>
   </wizard>
