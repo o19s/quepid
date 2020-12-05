@@ -1,3 +1,6 @@
+# puppeteer testing
+/spec/puppeteer/node_modules
+
 # VIM swp
 *.swp
 
