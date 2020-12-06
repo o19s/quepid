@@ -42,6 +42,7 @@
       self.code                   = data.code;
       self.colors                 = scaleToColors(data.scale);
       self.defaultAlgorithm       = defaultAlgorithm;
+      self.deferred               = null;
       self.displayName            = setDisplayName(data.name, data.communal);
       self.error                  = false;
       self.manualMaxScore         = data.manualMaxScore || false;
@@ -83,15 +84,15 @@
 
       /*jshint unused:false */
       function pass() {
-        throw 100;
+        self.deferred.resolve(100);
       }
 
       function fail() {
-        throw 0;
+        self.deferred.reject(0);
       }
 
       function setScore(score) {
-        throw score;
+        self.deferred.resolve(score);
       }
 
       function assert(cond) {
@@ -537,70 +538,63 @@
           }
         };
 
-        try {
-          if (mode === 'max' && self.code.indexOf('pass()') > -1) {
-            throw 100;
-          }
+        if (mode === 'max' && self.code.indexOf('pass()') > -1) {
+          return 100;
+        }
 
+        self.deferred = $q.defer();
+
+        $timeout(function() {
           /*jshint evil:true */
           eval(self.code);
           /*jshint evil:false */
-        } catch (score) {
-          if (angular.isNumber(score)) {
-            return score;
-          } else {
-            if (!!score) { // true for not null or 0
-              $log.info('error in custom scorer');
-              $log.info(score);
-            }
-            self.error = score;
-            return null;
-          }
-        }
+        }, 1);
+
+        return self.deferred.promise;
       }
 
-      function maxScore(query, total, docs, bestDocs, options) {
-        if (self.manualMaxScore) {
-          return self.manualMaxScoreValue;
-        }
-
-        return runCode(query, total, docs, bestDocs, 'max', options);
+      function maxScore() {
+        return self.manualMaxScore ? self.manualMaxScore : 100;
       }
 
       function score(query, total, docs, bestDocs, options) {
-        var maxScore  = self.maxScore(query, total, docs, bestDocs, options);
-        var calcScore = self.runCode(
+        var maxScore  = self.maxScore();
+        return self.runCode(
           query,
           total,
           docs,
           bestDocs,
           undefined,
           options
-        );
+        ).then(function(calcScore){
+          if (angular.isNumber(calcScore)) {
+            if (calcScore < 0 && calcScore === maxScore) {
+              return null;
+            }
 
-        if (angular.isNumber(calcScore)) {
-          if (calcScore < 0 && calcScore === maxScore) {
+            if (calcScore < 0) {
+              return 0;
+            }
+            else if (calcScore > maxScore) {
+              return maxScore;
+            }
+
+            if (maxScore === 0) {
+              return 0;
+            }
+
+            return calcScore;
+          } else {
+            self.error = calcScore;
             return null;
           }
-
-          if (calcScore < 0) {
-            return 0;
-          }
-          else if (calcScore > maxScore) {
-            return maxScore;
-          }
-
-          if (maxScore === 0) {
-            return 0;
-          }
-
-          return calcScore;
-        } else {
-          self.error = calcScore;
+        }, function(reject) {
+          self.error = reject;
           return null;
-        }
+        });
       }
     };
+
     return Scorer;
   }
 })();

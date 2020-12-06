@@ -14,19 +14,21 @@ angular.module('QuepidApp')
       ctrl.scoreType    = ctrl.scoreType || 'normal';
       ctrl.style        = { 'background-color': qscoreSvc.scoreToColor(ctrl.score, ctrl.maxScore) };
 
-      $scope.$watch('ctrl.scorable.score()', function() {
-        var scorable = ctrl.scorable.score();
+      $scope.$watch('ctrl.scorable.currentScore', function() {
+        if (ctrl.scorable.currentScore) {
+          var scorable = ctrl.scorable.currentScore;
 
-        ctrl.score    = scorable.score;
-        ctrl.maxScore = $scope.ctrl.maxScore;
+          ctrl.score    = scorable.score;
+          ctrl.maxScore = $scope.ctrl.maxScore;
 
-        if ( angular.isDefined(scorable.backgroundColor) ) {
-          ctrl.style = { 'background-color': scorable.backgroundColor };
-        } else {
-          ctrl.style = { 'background-color': qscoreSvc.scoreToColor(ctrl.score, ctrl.maxScore)};
+          if ( angular.isDefined(scorable.backgroundColor) ) {
+            ctrl.style = { 'background-color': scorable.backgroundColor };
+          } else {
+            ctrl.style = { 'background-color': qscoreSvc.scoreToColor(ctrl.score, ctrl.maxScore)};
+          }
+
+          setDiff();
         }
-
-        setDiff();
       });
 
       // Functions

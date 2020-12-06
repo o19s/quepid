@@ -272,8 +272,9 @@ describe('Service: queriesSvc', function () {
 
     it('knows if it has been scored', function() {
       query.setDocs([]);
-      query.score();
-      expect(query.hasBeenScored).toBe(true);
+      query.score().then(function() {
+        expect(query.hasBeenScored).toBe(true);
+      });
     });
 
     it('forces rescoring of provided docs', function() {
@@ -314,8 +315,9 @@ describe('Service: queriesSvc', function () {
     });
 
     it('knows when scoring is completed for all queries', function() {
-      queriesSvc.scoreAll();
-      expect(queriesSvc.hasUnscoredQueries()).toBe(false);
+      queriesSvc.scoreAll().then(function() {
+        expect(queriesSvc.hasUnscoredQueries()).toBe(false);
+      });
     });
 
     it('knows if there are unscored queries', function() {
@@ -676,8 +678,9 @@ describe('Service: queriesSvc', function () {
 
   it('calculates avg score', function() {
     setupQuerySvc();
-    var scoreInfo = queriesSvc.scoreAll();
-    expect(scoreInfo.score).toBeGreaterThan(0);
+    queriesSvc.scoreAll().then(function(scoreInfo) {
+      expect(scoreInfo.score).toBeGreaterThan(0);
+    });
   });
 
   it('scores scorables', function() {
@@ -752,8 +755,9 @@ describe('Service: queriesSvc', function () {
     $httpBackend.expectPUT('/api/cases/3/queries/' + testQuery.queryId + '/ratings').respond(200, {doc_id: testDoc.id, rating: 10});
     //$httpBackend.expectPUT('/api/cases/3/queries/' + testQuery.queryId + '/ratings/' + testDoc.id).respond(200, '');
     testDoc.rate(10);
-    var score = testQuery.score();
-    expect(score.score).toBeGreaterThan(0);
+    testQuery.score().then(function(score) {
+      expect(score.score).toBeGreaterThan(0);
+    });
 
     $httpBackend.flush();
     $httpBackend.verifyNoOutstandingExpectation();

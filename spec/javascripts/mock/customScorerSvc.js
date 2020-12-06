@@ -12,7 +12,16 @@
       this.lastQueryText = queryText;
       this.lastDocs = docs;
       this.lastBestDocs = bestDocs;
-      return 100;
+
+      // Somehow $q can be injected here instead of using raw promises
+      var resolve = function(data) {
+        return data;
+      };
+
+      var promise = new Promise(resolve);
+      resolve(100);
+
+      return promise;
     };
 
     this.maxScore = function(query, queryText, docs, bestDocs) {
@@ -28,7 +37,7 @@
     };
   };
 
-  wind.MockCustomScorerSvc = function() {
+  wind.MockCustomScorerSvc = function($q) {
 
     var scorers = {};
     this.defaultScorer = new MockScorer('default-code');

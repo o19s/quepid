@@ -65,7 +65,8 @@ angular.module('QuepidApp')
       };
 
       $scope.overThreshold = function() {
-        return ($scope.query.score().score < $scope.query.threshold) && $scope.query.thresholdEnabled;
+        return $scope.query.lastScore && $scope.query.thresholdEnabled
+          && ($scope.query.lastScore < $scope.query.threshold);
       };
 
       $scope.hasEnabledTest = function() {

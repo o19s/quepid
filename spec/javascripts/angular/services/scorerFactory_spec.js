@@ -156,7 +156,10 @@ describe('Service: ScorerFactory', function () {
       var score;
       score = scorer.score({}, num, docs, best);
       $rootScope.$apply();
-      expect(score).toBe(expectation);
+
+      score.then(function(scoreValue) {
+        expect(scoreValue).toBe(expectation);
+      });
     };
 
     it('scores avg on no difference', function() {
