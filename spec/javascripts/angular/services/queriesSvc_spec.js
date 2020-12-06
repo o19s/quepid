@@ -687,7 +687,14 @@ describe('Service: queriesSvc', function () {
     setupQuerySvc();
     var Scorable = function() {
       this.score = function() {
-        return {score: 5, allRated: true};
+        var deferred = $q.defer();
+        deferred.resolve({
+            score:            5,
+            maxScore:         5,
+            allRated:         true,
+            backgroundColor:  ''
+        });
+        return deferred.promise;
       };
     };
 
@@ -695,8 +702,9 @@ describe('Service: queriesSvc', function () {
     for (var i = 0; i < 10; i++) {
       scoreables.push(new Scorable());
     }
-    var scoreInfo = queriesSvc.scoreAll(scoreables);
-    expect(scoreInfo.score).toBeGreaterThan(0);
+    queriesSvc.scoreAll(scoreables).then(function(scoreInfo) {
+      expect(scoreInfo.score).toBeGreaterThan(0);
+    });
   });
 
   it('applies ratings to docs', function() {

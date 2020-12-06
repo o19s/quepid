@@ -99,7 +99,9 @@ angular.module('QuepidApp')
         };
 
         this.score = function() {
-          return this.diffScore;
+          var deferred = $q.defer();
+          deferred.resolve(this.diffScore);
+          return deferred.promise;
         };
 
         this.docs = function(onlyRated) {

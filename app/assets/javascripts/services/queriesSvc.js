@@ -1045,6 +1045,8 @@ angular.module('QuepidApp')
                 numFound: scorable.numFound,
               };
             }
+
+            return scoreInfo;
           }));
         });
 
