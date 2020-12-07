@@ -216,6 +216,8 @@ module Api
 
           assert_response :ok
 
+          puts response.body
+
           body  = JSON.parse(response.body)
           teams = body['teams']
 
