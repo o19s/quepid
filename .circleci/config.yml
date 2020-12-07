@@ -77,11 +77,16 @@ jobs:
 
       - run:
           name: Run unit tests (frontend)
-          command: bundle exec rake test:quepid
+          command: bundle exec rake test:js
 
       - run:
-          name: Run unit tests
+          name: Run unit tests (backend)
           command: bundle exec rake test
+
+      - run:
+          name: Run jshint
+          command: bundle exec rake test:jshint
+
       - run:
           name: Run rubocop
           command: bundle exec rubocop
