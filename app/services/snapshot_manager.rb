@@ -184,13 +184,14 @@ class SnapshotManager
   end
 
   def extract_doc_info row
-    if :csv == @options[:format]
+    case @options[:format]
+    when :csv
       {
         query_text: row[0],
         id:         row[1],
         position:   row[2],
       }
-    elsif :hash == @options[:format]
+    when :hash
       row.deep_symbolize_keys
     else
       row

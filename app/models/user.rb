@@ -152,8 +152,10 @@ class User < ActiveRecord::Base
     self.default_scorer   = Scorer.system_default_scorer if self.default_scorer.nil?
     # rubocop:enable Style/RedundantSelf
 
-    true # this is necessary because it will rollback
+    # this is necessary because it will rollback
     # the creation/update of the user otherwise
+    true
+
   end
 
   def encrypt_password
@@ -161,9 +163,4 @@ class User < ActiveRecord::Base
 
     true
   end
-
-  #def add_default_case
-    #puts "We used to do this, but why?  Lots of places we might create a user and not have a case....  what about a rater user?   they wouldn't have a case."
-    #cases.create case_name: Case::DEFAULT_NAME
-  #end
 end

@@ -12,7 +12,7 @@ module SolrArgParser
 
     # ready string to accept curator vars
     vars.each { |key, _value| query_string.gsub!(format('##%s##', key), "%{#{key}}") }
-    
+
     # interpolate curator vars
     query_string = query_string % vars
 

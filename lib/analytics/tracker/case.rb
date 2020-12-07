@@ -3,7 +3,7 @@
 module Analytics
   module Tracker
     module Case
-      def track_case_created_event user, acase, first = false
+      def track_case_created_event user, acase, first: false
         if first
           Analytics::GA.user_created_first_case user, acase
         else

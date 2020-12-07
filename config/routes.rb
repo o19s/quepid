@@ -41,7 +41,7 @@ Rails.application.routes.draw do
   root 'home#index'
 
   # preview routes for mailers
-  if 'development' == Rails.env
+  if Rails.env.development?
     get '/rails/mailers' => 'rails/mailers#index'
     get '/rails/mailers/*path' => 'rails/mailers#preview'
   end
@@ -78,7 +78,7 @@ Rails.application.routes.draw do
         resources :scorers, only: [ :index, :update ], controller: :case_scorers
 
         # Case Queries
-        resources :queries, except: [ :new, :edit, :show] do
+        resources :queries, except: [ :new, :edit, :show ] do
           scope module: :queries do
             resource  :notes,     only: [ :show, :update ]
             resource  :options,   only: [ :show, :update ]
