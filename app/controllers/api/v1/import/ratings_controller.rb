@@ -14,6 +14,7 @@ module Api
         def create
           file_format = params[:file_format]
           file_format = 'hash' unless params[:file_format]
+          
           case file_format
           when 'hash'
             # convert from ActionController::Parameters to a Hash, symbolize, and
@@ -45,6 +46,7 @@ module Api
                 ratings << rating
               end
             end
+
           when 'ltr'
             # normalize the LTR ratings format to the default hash format.
 
@@ -82,12 +84,14 @@ module Api
           end
           # rubocop:enable Lint/RescueException
         end
+        # rubocop:enable Metrics/PerceivedComplexity
 
         def rating_from_ltr_line ltr_line
           # Pattern: 3 qid:1 # 1370 star trek
           ltr_line = ltr_line.strip
           first_chunk = ltr_line.index(' ')
           rating = ltr_line[0..first_chunk].strip
+
           ltr_line = ltr_line[first_chunk..].strip
           second_chunk_begin = ltr_line.index('#')
           ltr_line = ltr_line[second_chunk_begin + 1..].strip
@@ -95,7 +99,6 @@ module Api
           doc_id = ltr_line[0..second_chunk_end].strip
 
           ltr_line = ltr_line[second_chunk_end..]
-
           query_text = ltr_line.strip
 
           rating = {
@@ -109,6 +112,7 @@ module Api
         # rubocop:enable Metrics/AbcSize
         # rubocop:enable Metrics/PerceivedComplexity
         # rubocop:enable Metrics/CyclomaticComplexity
+
       end
     end
   end
