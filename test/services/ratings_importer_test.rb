@@ -76,30 +76,30 @@ class RatingsImporterTest < ActiveSupport::TestCase
       assert_equal 1, query.ratings.size
     end
 
-    test 'converts strings to symboles' do
+    test 'converts strings to symbols' do
       ratings = [
-        { 'query_text': 'Mexican Food',   'doc_id': ' 720784-021190', 'rating': ' 5' },
-        { 'query_text': 'Mexican Food',   'doc_id': ' 843075-031090', 'rating': ' 6' },
-        { 'query_text': ' Mexican Food ', 'doc_id': '748785-005680',  'rating': ' 2' }
+        { 'query_text': 'Mexican Food',   'doc_id': ' 920784-021190', 'rating': ' 5' },
+        { 'query_text': 'Mexican Food',   'doc_id': ' 943075-031090', 'rating': ' 6' },
+        { 'query_text': 'Indian Food ',   'doc_id': '948785-005680',  'rating': ' 2' }
       ]
 
       ratings_importer = RatingsImporter.new owned_case, ratings, options
       ratings_importer.import
       owned_case.reload
 
-      rating = Rating.find_by(doc_id: '843075-031090')
+      rating = Rating.find_by(doc_id: '943075-031090')
       assert_not_nil(rating)
-      
-      rating = Rating.find_by(doc_id: '720784-021190')
+
+      rating = Rating.find_by(doc_id: '920784-021190')
       assert_not_nil rating
       assert_equal 'Mexican Food', rating.query.query_text
 
       assert_equal 2, owned_case.queries.size
-      query = Query.find_by(case_id: owned_case.id, query_text: 'Chinese Food')
-      assert_empty query.ratings
+      query = Query.find_by(case_id: owned_case.id, query_text: 'Indian Food')
+      assert_equal 1, query.ratings.size
 
       query = Query.find_by(case_id: owned_case.id, query_text: 'Mexican Food')
-      assert_equal 1, query.ratings.size
+      assert_equal 2, query.ratings.size
     end
   end
 
