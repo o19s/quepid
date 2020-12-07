@@ -221,7 +221,7 @@ module Api
           body  = JSON.parse(response.body)
           teams = body['teams']
 
-          assert_not_empty(teams.first['cases'])
+          assert_not_empty(teams.second['cases'])
         end
       end
     end
