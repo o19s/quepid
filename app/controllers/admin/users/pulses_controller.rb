@@ -20,35 +20,36 @@ module Admin
       # rubocop:disable Metrics/MethodLength
       # rubocop:disable Metrics/AbcSize
       def set_data
-        if 'metadata' == params[:data]
+        case params[:data]
+        when 'metadata'
           @data = Metadatum.where(user_id: @user.id)
             .where('last_viewed_at >= :start AND last_viewed_at <= :end',
                    start: params[:start],
                    end:   params[:end])
             .group(:last_viewed_at)
             .count
-        elsif 'scores' == params[:data]
+        when 'scores'
           @data = Score.where(user_id: @user.id)
             .where('created_at >= :start AND created_at <= :end',
                    start: params[:start],
                    end:   params[:end])
             .group(:created_at)
             .count
-        elsif 'cases-created' == params[:data]
+        when 'cases-created'
           @data = Case.where(user_id: @user.id)
             .where('created_at >= :start AND created_at <= :end',
                    start: params[:start],
                    end:   params[:end])
             .group(:created_at)
             .count
-        elsif 'teams-created' == params[:data]
+        when 'teams-created'
           @data = Team.where(owner_id: @user.id)
             .where('created_at >= :start AND created_at <= :end',
                    start: params[:start],
                    end:   params[:end])
             .group(:created_at)
             .count
-        elsif 'queries-created' == params[:data]
+        when 'queries-created'
           @data = Query.joins(:case)
             .where(cases: { user_id: @user.id })
             .where('`queries`.`created_at` >= :start AND `queries`.`created_at` <= :end',
@@ -57,10 +58,11 @@ module Admin
             .group('`queries`.`created_at`')
             .count
         end
-
+        # rubocop:disable Style/HashTransformKeys
         @data = @data.map do |k, v|
           [ k.to_i, v ]
         end.to_h
+        # rubocop:enable Style/HashTransformKeys
       end
       # rubocop:enable Metrics/AbcSize
       # rubocop:enable Metrics/MethodLength

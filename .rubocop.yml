@@ -14,13 +14,15 @@ AllCops:
     - config/initializers/simple_form_bootstrap.rb
     - config/initializers/content_security_policy.rb
     - test/support/json_response.rb
-    
+
 
 Naming/VariableNumber:
   Enabled: false  # we have a lot of legacy code to update
 
-Naming/VariableNumber:
-  Enabled: false  # we have a lot of legacy code to update
+Bundler/OrderedGems:
+  Enabled: false  # legacy gem file, someday.
+
+
 
 Rails:
   Enabled: true
