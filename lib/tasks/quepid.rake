@@ -4,14 +4,14 @@ require 'colorize'
 require 'jshint/lint'
 
 namespace :test do
-  desc 'Run js/karma tests (equivalent of kamra:run)'
+  desc 'Run js/karma tests (equivalent of karma:run)'
   task 'js' => 'karma:run'
 
   desc 'Run all tests: test:js, test:jshint, and test'
   task :quepid do
-    Rake::Task["test:js"].invoke # Javascript
-    Rake::Task["test:jshint"].invoke
-    Rake::Task["test"].invoke # Rails
+    Rake::Task['test:js'].invoke # Javascript
+    Rake::Task['test:jshint'].invoke
+    Rake::Task['test'].invoke # Rails
   end
 
   desc 'Run jshint on js files using configuration under config/jshint.yml'
