@@ -6,7 +6,7 @@ module AccountsHelper
   end
 
   def account_label user
-    content_tag(
+    tag(
       :span,
       account_type(user).titleize,
       class: "label #{account_type user}"
