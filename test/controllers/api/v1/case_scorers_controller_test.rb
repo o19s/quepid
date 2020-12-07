@@ -63,8 +63,8 @@ module Api
           acase.scorer = scorer
           acase.save!
 
-          puts "I need to be fixed to deal with this..."
-          # put :update, params: { case_id: acase.id, id: 0 }
+          puts 'I need to be fixed when we allow cases to have nil scorers to deal with this...'
+          put :update, params: { case_id: acase.id, id: 0 }
 
           # assert_response :ok
 
