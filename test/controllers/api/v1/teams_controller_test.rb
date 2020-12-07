@@ -216,12 +216,11 @@ module Api
 
           assert_response :ok
 
-          puts response.body
-
           body  = JSON.parse(response.body)
           teams = body['teams']
 
-          assert_not_empty(teams.second['cases'])
+          # sometimes it's the first team, sometimes it's the second team in the array.
+          assert_not_empty(teams.find{ |team| team['name'] == 'Team shared with Team Finder User'}['cases'])
         end
       end
     end

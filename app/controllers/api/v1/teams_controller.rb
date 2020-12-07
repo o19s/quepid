@@ -9,14 +9,8 @@ module Api
       before_action :case_load,         only: %i[index show]
 
       def index
-        puts "The value of @load_cases is #{@load_cases}"
         @teams = current_user.teams_im_in
         @teams = @teams.includes(:scorers, :members, :cases, :owner).all
-
-        @teams.each do |team|
-          puts "I am team #{team.id}"
-          puts "I have #{team.cases.size} cases"
-        end
 
         respond_with @teams
       end
