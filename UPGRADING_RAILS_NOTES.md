@@ -7,7 +7,8 @@ Todos:
 * Test that when a snapshot has a query with docs, and a query wihtout docs, that the query without docs still gets snapshotted. Some weird JSON data. See `snapshots_controller_test.rb` __handles queries with no docs__ test...
 * Right now we support creating a snapshot with no docs.   WHY?   Look at `snapshots_controller_test.rb` __handles empty list of docs__.   
 * Interestingly we have on the /api/scorers (`scorers_controller.rb`) a *force* param that isn't used by the front end, that forces deleting a scorer.  i fixed the tests but left the code...  
-* We must figure out if a case MUST have a scorer or NOT!   We have all sorts of odd logic.  leaning towards if we have a future with N scorers, then it doens't have ot have one!  and that you don't get forced with a default.    
+* We must figure out if a case MUST have a scorer or NOT!   We have all sorts of odd logic.  leaning towards if we have a future with N scorers, then it doens't have ot have one!  and that you don't get forced with a default.
+   
 
 
 KEY!   http://railsdiff.org/4.2.11/5.2.4.4
