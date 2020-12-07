@@ -14,22 +14,22 @@ module ApplicationHelper
   def flash_messages _opts = {}
     flash.each do |msg_type, message|
       concat(
-        tag(
+        content_tag(
           :div,
           message,
           class: "alert #{bootstrap_class_for(msg_type)} alert-dismissible",
           role:  'alert'
         ) do
           concat(
-            tag(
+            content_tag(
               :button,
               class: 'close',
               data:  { dismiss: 'alert' }
             ) do
               concat(
-                tag(:span, '&times;'.html_safe, 'aria-hidden' => true)
+                content_tag(:span, '&times;'.html_safe, 'aria-hidden' => true)
               )
-              concat tag(:span, 'Close', class: 'sr-only')
+              concat content_tag(:span, 'Close', class: 'sr-only')
             end
           )
           concat message
