@@ -38,12 +38,13 @@ module Api
       end
 
       private
+
       def score_params
         params.require(:case_score).permit(
           :score,
           :all_rated,
           :try_id,
-          queries: [:text, :score]
+          queries: [ :text, :score ]
         )
       end
     end

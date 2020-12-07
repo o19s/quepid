@@ -22,6 +22,9 @@ Naming/VariableNumber:
 Bundler/OrderedGems:
   Enabled: false  # legacy gem file, someday.
 
+Style/SymbolArray:
+  EnforcedStyle: brackets
+
 
 
 Rails:
