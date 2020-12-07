@@ -91,14 +91,14 @@ IntercomRails.config do |config|
   #
   # config.company.plan = Proc.new { |current_company| current_company.plan.name }
 
-  # rubocop:disable Metrics/LineLength
+  # rubocop:disable Layout/LineLength
   # == Company Monthly Spend
   # This is the amount the company spends each month on your app. If your company
   # has a plan, it will set the 'total value' of that plan appropriately.
   #
   # config.company.monthly_spend = Proc.new { |current_company| current_company.plan.price }
   # config.company.monthly_spend = Proc.new { |current_company| (current_company.plan.price - current_company.subscription.discount) }
-  # rubocop:enable Metrics/LineLength
+  # rubocop:enable Layout/LineLength
 
   # == Custom Style
   # By default, Intercom will add a button that opens the messenger to

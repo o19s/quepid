@@ -2,6 +2,7 @@
 
 # Used by the scorer model to serialize users scale options into a simple string
 # for storage in the db
+#rubocop disable Style/CaseLikeIf
 class ScaleSerializer
   def self.dump scale
     if scale.is_a? Array
@@ -20,3 +21,4 @@ class ScaleSerializer
     raise ActiveRecord::SerializationTypeMismatch, 'Scale should be an array of integers'
   end
 end
+#rubocop enable Style/CaseLikeIf

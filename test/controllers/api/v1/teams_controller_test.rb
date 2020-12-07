@@ -220,7 +220,7 @@ module Api
           teams = body['teams']
 
           # sometimes it's the first team, sometimes it's the second team in the array.
-          assert_not_empty(teams.find{ |team| team['name'] == 'Team shared with Team Finder User'}['cases'])
+          assert_not_empty(teams.find { |team| 'Team shared with Team Finder User' == team['name'] }['cases'])
         end
       end
     end

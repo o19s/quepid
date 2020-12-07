@@ -121,9 +121,9 @@ module Api
         elsif @users.count.positive?
           render(
             json:   {
-              # rubocop:disable Metrics/LineLength
+              # rubocop:disable Layout/LineLength
               error: "Cannot delete the scorer because it is the default for #{@users.count} #{'user'.pluralize(@users.count)}: [#{@users.take(3).map(&:email).to_sentence}]",
-              # rubocop:enable Metrics/LineLength
+              # rubocop:enable Layout/LineLength
             },
             status: :bad_request
           )
@@ -139,9 +139,9 @@ module Api
         elsif @cases.count.positive?
           render(
             json:   {
-              # rubocop:disable Metrics/LineLength
+              # rubocop:disable Layout/LineLength
               error: "Cannot delete the scorer because it is the default for #{@cases.count} #{'case'.pluralize(@cases.count)}: [#{@cases.take(3).map(&:case_name).to_sentence}]",
-              # rubocop:enable Metrics/LineLength
+              # rubocop:enable Layout/LineLength
             },
             status: :bad_request
           )
@@ -156,9 +156,9 @@ module Api
         elsif @queries.count.positive?
           render(
             json:   {
-              # rubocop:disable Metrics/LineLength
+              # rubocop:disable Layout/LineLength
               error: "Cannot delete the scorer because it is the default for #{@queries.count} #{'query'.pluralize(@queries.count)}: [#{@queries.take(3).map(&:query_text).to_sentence}]",
-              # rubocop:enable Metrics/LineLength
+              # rubocop:enable Layout/LineLength
             },
             status: :bad_request
           )
@@ -170,9 +170,9 @@ module Api
         if @teams.count.positive?
           render(
             json:   {
-              # rubocop:disable Metrics/LineLength
+              # rubocop:disable Layout/LineLength
               error: "Cannot delete the scorer because it is shared with #{@teams.count} #{'team'.pluralize(@teams.count)}: [#{@teams.take(3).map(&:name).to_sentence}]",
-              # rubocop:enable Metrics/LineLength
+              # rubocop:enable Layout/LineLength
             },
             status: :bad_request
           )

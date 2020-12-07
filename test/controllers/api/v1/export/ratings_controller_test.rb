@@ -91,7 +91,7 @@ module Api
             assert_response :ok
 
             # rubocop:disable  Lint/UselessAssignment
-            # rubocop:disable  Metrics/LineLength
+            # rubocop:disable  Layout/LineLength
             query  = the_case.queries.first
             rating = query.ratings.first
 
@@ -101,7 +101,7 @@ module Api
             # assert response.body.include?("<%=rating.rating%>    qid:<%=query.id%> #    <%=rating.doc_id %> <%=query.query_text%>")
 
             # rubocop:enable  Lint/UselessAssignment
-            # rubocop:enable  Metrics/LineLength
+            # rubocop:enable  Layout/LineLength
 
             assert_equal response.content_type, 'text/plain'
           end

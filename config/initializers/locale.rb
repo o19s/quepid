@@ -5,10 +5,10 @@
 #I18n.load_path += Dir[Rails.root.join('config', 'locales', '*.{rb,yml}')]
 
 # the below shouldn't be needed, but is.
-I18n.load_path += Dir[Rails.root.join('config', 'locales', 'models', '*.{rb,yml}')]
+I18n.load_path += Dir[Rails.root.join('config/locales/models/*.{rb,yml}')]
 
 # Permitted locales available for the application
-I18n.available_locales = [:en]
+I18n.available_locales = [ :en ]
 
 # Set default locale to something other than :en
 I18n.default_locale = :en

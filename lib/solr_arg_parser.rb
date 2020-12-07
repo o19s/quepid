@@ -11,10 +11,8 @@ module SolrArgParser
     query_string.gsub!('%', '%%')
 
     # ready string to accept curator vars
-    # rubocop:disable Style/FormatStringToken
     vars.each { |key, _value| query_string.gsub!(format('##%s##', key), "%{#{key}}") }
-    # rubocop:enable Style/FormatStringToken
-
+    
     # interpolate curator vars
     query_string = query_string % vars
 

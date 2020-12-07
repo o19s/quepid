@@ -3,7 +3,7 @@
 require 'net/http'
 require 'progress_indicator'
 
-# rubocop:disable Metrics/LineLength
+# rubocop:disable Layout/LineLength
 class TargetSetEmpty < StandardError
   def initialize msg = 'Attempting to generate word list before assigning target set. Try calling the `fetch_enough_docs_for_sample_words` beforehand, or settting the attribute manually.'
     super
@@ -21,7 +21,7 @@ class QueriesEmpty < StandardError
     super
   end
 end
-# rubocop:enable Metrics/LineLength
+# rubocop:enable Layout/LineLength
 
 class DocGenerator
   include ProgressIndicator

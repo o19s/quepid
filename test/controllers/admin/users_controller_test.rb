@@ -4,7 +4,6 @@ require 'test_helper'
 
 module Admin
   class UsersControllerTest < ActionController::TestCase
-
     let(:user) { users(:doug) }
 
     setup do
