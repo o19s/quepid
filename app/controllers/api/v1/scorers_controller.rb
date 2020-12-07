@@ -5,7 +5,7 @@ module Api
   module V1
     class ScorersController < Api::ApiController
       before_action :set_scorer, only: [ :show, :update, :destroy ]
-      before_action :check_communal_scorers_only, only: %i[create update destroy]
+      before_action :check_communal_scorers_only, only: [ :create, :update, :destroy ]
 
       def index
         @user_scorers = current_user.scorers.all unless Rails.application.config.communal_scorers_only
@@ -215,11 +215,9 @@ module Api
         # This block of logic should all be in user_scorer_finder.rb
         @scorer = current_user.scorers.where(id: params[:id]).first
 
-        # rubocop:disable Style/IfUnlessModifier
         if @scorer.nil? # Check if communal scorers has the scorer.  This logic should be in the .scorers. method!
           @scorer = Scorer.communal.where(id: params[:id]).first
         end
-        # rubocop:enable Style/IfUnlessModifier
 
         render json: { error: 'Not Found!' }, status: :not_found unless @scorer
       end

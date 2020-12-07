@@ -28,6 +28,12 @@ Style/SymbolArray:
 Style/OptionalBooleanParameter:
   Enabled: false # we got test failures with this enabled.
 
+Style/RedundantAssignment:
+  Enabled: false # legacy stuff
+
+Lint/MissingSuper:
+  Enabled: false # legacy stuff
+
 
 Rails:
   Enabled: true

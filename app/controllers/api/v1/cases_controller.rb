@@ -86,7 +86,7 @@ module Api
       end
 
       def default_scorer_removed? params = {}
-        #params[:scorer_id].present? or params.key?(:scorer_id) && [ 0, '0', '' ].include?(params[:scorer_id])
+        # params[:scorer_id].present? or params.key?(:scorer_id) && [ 0, '0', '' ].include?(params[:scorer_id])
         params[:scorer_id].present? && [ 0, '0' ].include?(params[:scorer_id])
       end
     end

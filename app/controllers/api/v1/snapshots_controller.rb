@@ -5,8 +5,8 @@ module Api
     class SnapshotsController < Api::ApiController
       before_action :find_case
       before_action :check_case
-      before_action :set_snapshot,    only: %i[show destroy]
-      before_action :check_snapshot,  only: %i[show destroy]
+      before_action :set_snapshot,    only: [ :show, :destroy ]
+      before_action :check_snapshot,  only: [ :show, :destroy ]
 
       def index
         @snapshots = @case.snapshots
@@ -22,9 +22,8 @@ module Api
 
           snapshot_docs = params[:snapshot][:docs]
 
-          if snapshot_docs then # run only if we have docs provided...
-            service.add_docs params[:snapshot][:docs]
-          end
+          service.add_docs params[:snapshot][:docs] if snapshot_docs
+
           Analytics::Tracker.track_snapshot_created_event current_user, @snapshot
 
           # Refetch snapshot because after bulk creating the docs

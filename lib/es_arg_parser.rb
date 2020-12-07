@@ -18,12 +18,12 @@ module EsArgParser
     converted_string.gsub!(/%%/, '%')
 
     # Parse the JSON string
+    # rubocop:disable Style/RedundantReturn
     begin
       return JSON.parse(converted_string)
     rescue JSON::ParserError
-      # rubocop:disable Style/RedundantReturn
       return nil
-      # rubocop:enable Style/RedundantReturn
     end
+    # rubocop:enable Style/RedundantReturn
   end
 end

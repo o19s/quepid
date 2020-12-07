@@ -36,7 +36,7 @@ module Api
           # Not sure what all this logic was about!
           # @cases = current_user.case
           # @cases = @cases.where(id: cases_ids.map(&:id))
-          @cases = Case.where(id: [case_ids])
+          @cases = Case.where(id: [ case_ids ])
           @cases = @cases.sort_by { |x| case_ids.index x.id }
           # @cases = @cases.not_archived
           # @cases = @cases.merge(Metadatum.order(last_viewed_at: :desc))

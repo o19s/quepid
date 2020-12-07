@@ -2,7 +2,7 @@
 
 module Admin
   class CommunalScorersController < Admin::AdminController
-    before_action :set_scorer, only: %i[show edit update]
+    before_action :set_scorer, only: [ :show, :edit, :update ]
 
     def index
       @scorers = Scorer.communal

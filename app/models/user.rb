@@ -87,10 +87,11 @@ class User < ApplicationRecord
   # Callbacks
   before_create :set_defaults
   before_save   :encrypt_password
-  #after_create  :add_default_case
+  # after_create  :add_default_case
 
   # Devise hacks since we only use the recoverable module
   attr_accessor :password_confirmation
+
   validates :password, confirmation: true
 
   def encrypted_password_changed?
@@ -155,7 +156,6 @@ class User < ApplicationRecord
     # this is necessary because it will rollback
     # the creation/update of the user otherwise
     true
-
   end
 
   def encrypt_password

@@ -10,7 +10,7 @@ module Api
 
       def index
         @queries = @case.queries
-          .includes(%i[ ratings test scorer ])
+          .includes([ :ratings, :test, :scorer ])
 
         @display_order = @queries.map(&:id)
 

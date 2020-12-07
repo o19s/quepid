@@ -154,14 +154,16 @@ class RatingsImporter
 
   private
 
+  # rubocop:disable Metrics/MethodLength
   def extract_rating_info row
-    if :csv == @options[:format]
+    case @options[:format]
+    when :csv
       {
         query_text: row[0].is_a?(String) ? row[0].strip : row[0],
         doc_id:     row[1].is_a?(String) ? row[1].strip : row[1],
         rating:     row[2].is_a?(String) ? row[2].strip : row[2],
       }
-    elsif :hash == @options[:format]
+    when :hash
       row.deep_symbolize_keys
 
       row.each do |k, v|
@@ -173,5 +175,6 @@ class RatingsImporter
       row
     end
   end
+  # rubocop:enable Metrics/MethodLength
 end
 # rubocop:enable Metrics/ClassLength

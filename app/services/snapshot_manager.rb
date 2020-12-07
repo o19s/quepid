@@ -108,7 +108,7 @@ class SnapshotManager
 
     # Fetch all queries for the snapshot's case where the query text
     # matches the keys in the hash supplied in the params.
-    queries_params    = {
+    queries_params = {
       query_text: keys,
       case_id:    @snapshot.case_id,
     }

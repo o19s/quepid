@@ -41,6 +41,6 @@ class Team < ApplicationRecord
     joins('
       LEFT OUTER JOIN teams_members on teams_members.team_id = teams.id
       LEFT OUTER JOIN users on users.id = teams_members.member_id
-    ').where("`teams`.`owner_id` = ? OR `teams_members`.`member_id` = ?", user.id, user.id)
+    ').where('`teams`.`owner_id` = ? OR `teams_members`.`member_id` = ?', user.id, user.id)
   }
 end

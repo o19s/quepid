@@ -21,8 +21,6 @@ class Case < ApplicationRecord
   # Constants
   DEFAULT_NAME = 'Movies Search'
 
-
-
   # Associations
   # too late now!
   # rubocop:disable Rails/HasAndBelongsToMany
@@ -37,7 +35,6 @@ class Case < ApplicationRecord
   # default scorer, so going back to not optional!  Maybe we don't even need the
   # after_initialize if we support nil scorer on a case!
   belongs_to :scorer, optional: false
-
 
   belongs_to :user, optional: true
 
@@ -95,17 +92,17 @@ class Case < ApplicationRecord
   end
 
   after_initialize do |c|
-    unless c.scorer_id.present?
+    if c.scorer_id.blank?
       c.scorer = if user&.default_scorer
-                    user.default_scorer
-                  else
-                    Scorer.system_default_scorer
-                  end
+                   user.default_scorer
+                 else
+                   Scorer.system_default_scorer
+                 end
     end
   end
 
   # Scopes
-  scope :not_archived,  -> { where('`cases`.`archived` = false OR `cases`.`archived` IS NULL') }
+  scope :not_archived, -> { where('`cases`.`archived` = false OR `cases`.`archived` IS NULL') }
 
   scope :for_user, ->(user) {
     joins('
@@ -167,7 +164,7 @@ class Case < ApplicationRecord
 
   def set_scorer
     # return true if scorer_id.present?
-    unless scorer_id.present?
+    if scorer_id.blank?
       self.scorer = if user&.default_scorer
                       user.default_scorer
                     else
@@ -229,7 +226,7 @@ class Case < ApplicationRecord
         new_rating = Rating.new(
           doc_id: rating.doc_id,
           rating: rating.rating,
-          query: new_query
+          query:  new_query
         )
         new_query.ratings << new_rating
       end
