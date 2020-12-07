@@ -28,7 +28,7 @@ module Arrangement
       end
     end
 
-    def move_to previous_node_id, reverse: false
+    def move_to previous_node_id, reverse = false
       ensure_sequencing
       list = parent_list
 

@@ -79,7 +79,6 @@ class Scorer < ApplicationRecord
     scorer.name       = "Scorer #{Scorer.count + 1}" if scorer.name.blank?
   end
 
-
   def scale_list=value
     self.scale = value.split(',') if value.present?
   end

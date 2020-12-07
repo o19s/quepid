@@ -5,8 +5,8 @@ module Api
     class QueriesController < Api::ApiController
       before_action :find_case
       before_action :check_case
-      before_action :set_query,   only: %i[update destroy]
-      before_action :check_query, only: %i[update destroy]
+      before_action :set_query,   only: [ :update, :destroy ]
+      before_action :check_query, only: [ :update, :destroy ]
 
       def index
         @queries = @case.queries

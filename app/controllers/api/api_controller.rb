@@ -3,7 +3,7 @@
 require 'application_responder'
 require 'analytics'
 
-#rubocop:disable Rails/ApplicationController
+# rubocop:disable Rails/ApplicationController
 module Api
   class ApiController < ActionController::Base
     include Pundit
@@ -34,4 +34,4 @@ module Api
     end
   end
 end
-#rubocop:enable Rails/ApplicationController
+# rubocop:enable Rails/ApplicationController

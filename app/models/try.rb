@@ -21,7 +21,7 @@
 require 'solr_arg_parser'
 require 'es_arg_parser'
 
-class Try < ActiveRecord::Base
+class Try < ApplicationRecord
   # Scopes
   scope :best, -> { order(id: :desc).first }
   scope :latest, -> { order(try_number: :desc).limit(1).first }

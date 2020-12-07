@@ -11,7 +11,7 @@
 #  updated_at :datetime         not null
 #
 
-class Team < ActiveRecord::Base
+class Team < ApplicationRecord
   # Associations
   # too late now!
   # rubocop:disable Rails/HasAndBelongsToMany

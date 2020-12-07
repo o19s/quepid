@@ -16,7 +16,7 @@
 #  updated_at    :datetime
 #
 
-class Score < ActiveRecord::Base
+class Score < ApplicationRecord
   self.table_name = 'case_scores'
 
   serialize :queries, JSON

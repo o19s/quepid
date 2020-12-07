@@ -9,7 +9,6 @@ class UserScorerFinder
     @scorers = Scorer.includes(teams: [ :members ])
       .references(:teams, :users)
       .for_user(@user)
-
   end
 
   def method_missing method_name, *arguments, &block

@@ -22,7 +22,7 @@
 
 require 'arrangement/item'
 
-class Query < ActiveRecord::Base
+class Query < ApplicationRecord
   # Arrangement
   include Arrangement::Item
 

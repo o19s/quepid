@@ -21,9 +21,9 @@ module EsArgParser
     begin
       return JSON.parse(converted_string)
     rescue JSON::ParserError
-      # rubocop disable Style/RedundantReturn
+      # rubocop:disable Style/RedundantReturn
       return nil
-      # rubocop enable Style/RedundantReturn
+      # rubocop:enable Style/RedundantReturn
     end
   end
 end

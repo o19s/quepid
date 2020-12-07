@@ -48,7 +48,7 @@ class Case < ApplicationRecord
   has_many   :metadata,
              dependent: :destroy
 
-  #has_many   :ratings,  # wed ont' actually need htis.
+  # has_many   :ratings,  # wed ont' actually need htis.
   #           through: :queries
 
   # rubocop:disable Rails/InverseOf
@@ -74,8 +74,8 @@ class Case < ApplicationRecord
   validates_with ScorerExistsValidator
 
   # Callbacks
-  #after_create  :set_scorer
-  #after_create  :add_default_try
+  # after_create  :set_scorer
+  # after_create  :add_default_try
 
   after_initialize do |c|
     c.archived = false if c.archived.nil?
@@ -166,7 +166,7 @@ class Case < ApplicationRecord
   private
 
   def set_scorer
-    #return true if scorer_id.present?
+    # return true if scorer_id.present?
     unless scorer_id.present?
       self.scorer = if user&.default_scorer
                       user.default_scorer
@@ -177,7 +177,7 @@ class Case < ApplicationRecord
   end
 
   def add_default_try
-    puts "I am in add_default_try."
+    puts 'I am in add_default_try.'
     puts "is empty? #{tries.empty?}"
     if tries.empty?
       try_number  = (last_try_number || -1) + 1

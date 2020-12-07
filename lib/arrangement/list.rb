@@ -31,7 +31,7 @@ module Arrangement
       end
 
       # Rearrange nodes to be sorted by the arragned_at attribute
-      def sequence nodes, normalize: true
+      def sequence nodes, normalize = true
         return [] if nodes.blank?
 
         sorted_nodes = nodes.sort_by { |node| node.arranged_at || 0 }

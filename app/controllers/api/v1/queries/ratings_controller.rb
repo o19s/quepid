@@ -4,7 +4,7 @@ module Api
   module V1
     module Queries
       class RatingsController < Api::V1::Queries::ApplicationController
-        before_action :set_doc_id, only: %i[update destroy]
+        before_action :set_doc_id, only: [ :update, :destroy ]
 
         def update
           @rating = @query.ratings.find_or_create_by doc_id: @doc_id

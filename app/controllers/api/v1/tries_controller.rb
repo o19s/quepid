@@ -5,7 +5,7 @@ module Api
     class TriesController < Api::ApiController
       before_action :find_case
       before_action :check_case
-      before_action :set_try, only: %i[show update destroy]
+      before_action :set_try, only: [ :show, :update, :destroy ]
 
       def index
         @tries = @case.tries
@@ -27,7 +27,7 @@ module Api
           respond_with @try
         else
           require 'pp'
-          puts "Here I am"
+          puts 'Here I am'
           pp @try.errors
           pp @case.errors
 

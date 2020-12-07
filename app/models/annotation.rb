@@ -12,9 +12,9 @@
 #  updated_at :datetime         not null
 #
 
-class Annotation < ActiveRecord::Base
+class Annotation < ApplicationRecord
   # Associations
-  belongs_to  :user, optional: false   
+  belongs_to  :user, optional: false
   has_one     :score, dependent: :destroy
   has_one     :case, through: :score
 

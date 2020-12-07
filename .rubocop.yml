@@ -25,6 +25,8 @@ Bundler/OrderedGems:
 Style/SymbolArray:
   EnforcedStyle: brackets
 
+Style/OptionalBooleanParameter:
+  Enabled: false # we got test failures with this enabled.
 
 
 Rails:

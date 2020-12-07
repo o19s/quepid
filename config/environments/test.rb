@@ -18,7 +18,7 @@ Rails.application.configure do
   config.public_file_server.enabled = true
   config.public_file_server.headers = {
     'Cache-Control' => "public, max-age=#{1.hour.to_i}",
-	}
+  }
 
   # Show full error reports and disable caching.
   config.consider_all_requests_local       = true
@@ -32,7 +32,7 @@ Rails.application.configure do
 
   # Store uploaded files on the local file system in a temporary directory
   config.active_storage.service = :test
- 	config.action_mailer.perform_caching = false
+  config.action_mailer.perform_caching = false
 
   # Tell Action Mailer not to deliver emails to the real world.
   # The :test delivery method accumulates sent emails in the
@@ -41,9 +41,9 @@ Rails.application.configure do
 
   # Enable locale fallbacks for I18n (makes lookups for any locale fall back to
   # the I18n.default_locale when a translation cannot be found).
-  #config.i18n.fallbacks = [I18n.default_locale]
+  # config.i18n.fallbacks = [ I18n.default_locale ]
   config.i18n.default_locale = :en
-  config.i18n.fallbacks = ['en']
+  config.i18n.fallbacks = [ 'en' ]
 
   # Print deprecation notices to the stderr.
   config.active_support.deprecation = :stderr

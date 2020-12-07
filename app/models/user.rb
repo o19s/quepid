@@ -24,7 +24,7 @@
 #  email_marketing        :boolean          not null
 #
 
-class User < ActiveRecord::Base
+class User < ApplicationRecord
   # Associations
   belongs_to :default_scorer, class_name: 'Scorer', optional: true # for communal scorers there isn't a owner
 

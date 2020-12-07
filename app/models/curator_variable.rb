@@ -12,7 +12,7 @@
 #  updated_at     :datetime         not null
 #
 
-class CuratorVariable < ActiveRecord::Base
+class CuratorVariable < ApplicationRecord
   belongs_to :try,
              inverse_of: :curator_variables
 
