@@ -81,7 +81,7 @@ jobs:
 
       - run:
           name: Run unit tests
-          command: bundle exec rake:test
+          command: bundle exec rake test
       - run:
           name: Run rubocop
           command: bundle exec rubocop
