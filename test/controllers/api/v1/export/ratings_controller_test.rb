@@ -45,7 +45,7 @@ module Api
             the_case.queries << query
             the_case.save!
 
-            get :show, case_id: the_case.id, file_format: 'rre'
+            get :show, params: { case_id: the_case.id, file_format: 'rre' }
             assert_response :ok
 
             body = JSON.parse(response.body)

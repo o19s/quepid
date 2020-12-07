@@ -19,6 +19,9 @@ AllCops:
 Naming/VariableNumber:
   Enabled: false  # we have a lot of legacy code to update
 
+Naming/VariableNumber:
+  Enabled: false  # we have a lot of legacy code to update
+
 Rails:
   Enabled: true
 

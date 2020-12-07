@@ -66,7 +66,11 @@ module Api
             doc_id = 'x123z'
             query.ratings.create(doc_id: doc_id, rating: 1)
 
-            put :update, params: { case_id: acase.id, query_id: query.id, doc_id: doc_id, rating: 5 }
+            rating = {
+              doc_id: doc_id,
+              rating: 5,
+            }
+            put :update, params: { case_id: acase.id, query_id: query.id, rating: rating }
 
             assert_response :ok
 
@@ -187,7 +191,7 @@ module Api
               rating: 5,
             }
 
-            put :update, case_id: acase.id, query_id: query.id, rating: rating
+            put :update, params: { case_id: acase.id, query_id: query.id, rating: rating }
 
             assert_response :ok
 
