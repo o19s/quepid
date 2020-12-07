@@ -163,26 +163,26 @@ class Case < ApplicationRecord
   private
 
   def set_scorer
-    # return true if scorer_id.present?
-    if scorer_id.blank?
-      self.scorer = if user&.default_scorer
-                      user.default_scorer
-                    else
-                      Scorer.system_default_scorer
-                    end
-    end
+    return true if scorer_id.present?
+
+    self.scorer = if user&.default_scorer
+                    user.default_scorer
+                  else
+                    Scorer.system_default_scorer
+                  end
   end
 
   def add_default_try
     puts 'I am in add_default_try.'
     puts "is empty? #{tries.empty?}"
-    if tries.empty?
-      try_number  = (last_try_number || -1) + 1
-      the_try     = tries.create(try_number: try_number)
-      the_try.case = self
-      tries << new_try
-      update last_try_number: the_try.try_number
-    end
+    return true unless tries.empty?
+
+    try_number  = (last_try_number || -1) + 1
+    the_try     = tries.create(try_number: try_number)
+    the_try.case = self
+    tries << new_try
+    update last_try_number: the_try.try_number
+
   end
 
   # rubocop:disable Metrics/MethodLength
