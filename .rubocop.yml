@@ -34,6 +34,9 @@ Style/RedundantAssignment:
 Lint/MissingSuper:
   Enabled: false # legacy stuff
 
+Rails/ContentTag:
+  Enabled: false # we have legacy in helpers that seem to require this.  
+
 
 Rails:
   Enabled: true
