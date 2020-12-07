@@ -24,7 +24,7 @@ module Api
           @cases = current_user.case.includes(:teams).not_archived
 
           if 'last_viewed_at' == sort_by
-            @cases = @cases.limit(3).order('`case_metadata`.`last_viewed_at` DESC, `cases`.`id`')
+            @cases = @cases.limit(3).order(Arel.sql('`case_metadata`.`last_viewed_at` DESC, `cases`.`id`'))
           elsif sort_by
             @cases = @cases.order(sort_by)
           end

@@ -61,6 +61,8 @@ class RatingsImporterTest < ActiveSupport::TestCase
 
       ratings_importer = RatingsImporter.new owned_case, ratings, options
       ratings_importer.import
+
+      owned_case.reload
       rating = Rating.find_by(doc_id: '720784-021190')
 
       assert_not_nil rating

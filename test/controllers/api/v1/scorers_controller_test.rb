@@ -289,7 +289,7 @@ module Api
         test 'respects communal_Scorers_only environment setting' do
           Rails.application.config.communal_scorers_only = true
 
-          put :update, id: owned_scorer.id, scorer: { name: 'new name' }
+          put :update, params: { id: owned_scorer.id, scorer: { name: 'new name' } }
 
           assert_response :forbidden
 
@@ -421,7 +421,7 @@ module Api
           test 'respects communal_Scorers_only environment setting' do
             Rails.application.config.communal_scorers_only = true
 
-            delete :destroy, id: owned_scorer.id
+            delete :destroy, params: { id: owned_scorer.id }
 
             assert_response :forbidden
 
