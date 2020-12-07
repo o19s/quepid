@@ -24,7 +24,6 @@ module Api
               rating: 4,
             }
 
-
             put :update, params: { case_id: acase.id, query_id: query.id, rating: rating }
             assert_response :ok
 
@@ -46,7 +45,6 @@ module Api
               doc_id: doc_id,
               rating: 5,
             }
-
 
             put :update, params: { case_id: acase.id, query_id: query.id, rating: rating }
             assert_response :ok
@@ -135,7 +133,6 @@ module Api
               method: :put
             )
 
-
             put :update, params: { case_id: acase.id, query_id: query.id, rating: rating }
             assert_response :ok
 
@@ -167,7 +164,6 @@ module Api
               path:   "/api/cases/#{acase.id}/queries/#{query.id}/ratings",
               method: :put
             )
-
 
             put :update, params: { case_id: acase.id, query_id: query.id, rating: rating }
             assert_response :ok

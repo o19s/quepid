@@ -85,11 +85,12 @@ class RatingsImporterTest < ActiveSupport::TestCase
 
       ratings_importer = RatingsImporter.new owned_case, ratings, options
       ratings_importer.import
+      owned_case.reload
+
       rating = Rating.find_by(doc_id: '843075-031090')
-
       assert_not_nil(rating)
+      
       rating = Rating.find_by(doc_id: '720784-021190')
-
       assert_not_nil rating
       assert_equal 'Mexican Food', rating.query.query_text
 

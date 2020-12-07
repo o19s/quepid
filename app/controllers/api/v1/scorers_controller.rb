@@ -4,7 +4,6 @@
 module Api
   module V1
     class ScorersController < Api::ApiController
-
       before_action :set_scorer, only: [ :show, :update, :destroy ]
       before_action :check_communal_scorers_only, only: [ :create, :update, :destroy ]
 

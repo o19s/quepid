@@ -17,7 +17,6 @@ module Api
         test 'user successfully updates an owned teams owner' do
           login_user owner
 
-
           put :update, params: { team_id: owned_team.id, id: member1.id }
           assert_response :ok
 

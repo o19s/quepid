@@ -14,7 +14,7 @@ module Api
         def create
           file_format = params[:file_format]
           file_format = 'hash' unless params[:file_format]
-          
+
           case file_format
           when 'hash'
             # convert from ActionController::Parameters to a Hash, symbolize, and
@@ -84,7 +84,6 @@ module Api
           end
           # rubocop:enable Lint/RescueException
         end
-        # rubocop:enable Metrics/PerceivedComplexity
 
         def rating_from_ltr_line ltr_line
           # Pattern: 3 qid:1 # 1370 star trek
@@ -112,7 +111,6 @@ module Api
         # rubocop:enable Metrics/AbcSize
         # rubocop:enable Metrics/PerceivedComplexity
         # rubocop:enable Metrics/CyclomaticComplexity
-
       end
     end
   end
