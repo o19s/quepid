@@ -63,7 +63,7 @@ class RatingsImporter
 
     # a. Map from the rows all the unique queries
     normalized_rows = @ratings.map { |row| extract_rating_info row }
-    query_texts     = normalized_rows.map { |row| row[:query_text] }
+    query_texts     = normalized_rows.pluck(:query_text)
     unique_queries  = query_texts.uniq
 
     # b. Fetch all the existing queries
@@ -79,7 +79,9 @@ class RatingsImporter
     existing_queries = indexed_queries.keys
     non_existing_queries = unique_queries - existing_queries
 
-    if !non_existing_queries.empty?
+    if non_existing_queries.empty?
+      @queries = indexed_queries
+    else
       # d. Create remaining queries in bulk
       queries_to_import = []
       print_step 'Importing queries'
@@ -101,8 +103,6 @@ class RatingsImporter
       @queries = Query.where(queries_params)
         .all
         .index_by(&:query_text)
-    else
-      @queries = indexed_queries
     end
 
     # e. Create or update ratings

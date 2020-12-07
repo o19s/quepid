@@ -182,7 +182,6 @@ class Case < ApplicationRecord
     the_try.case = self
     tries << new_try
     update last_try_number: the_try.try_number
-
   end
 
   # rubocop:disable Metrics/MethodLength

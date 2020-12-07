@@ -23,7 +23,7 @@ module Api
         q_params[:query_text] = q_params[:query_text].strip if q_params[:query_text]
 
         query = 'BINARY query_text = ?'
-        if @case.queries.where(query, q_params[:query_text]).exists?
+        if @case.queries.exists?([ query, q_params[:query_text] ])
           head :no_content
           return
         end

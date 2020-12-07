@@ -2,6 +2,7 @@ require: rubocop-rails
 
 
 AllCops:
+  NewCops: enable
   Exclude:
     - config/puma.rb
     - db/**/*
@@ -10,11 +11,8 @@ AllCops:
     - node_modules/**/*
     - lib/templates/rails/jbuilder/index.json.jbuilder
     - lib/railgun/mailer_decorator.rb
-    - config/initializers/simple_form.rb
-    - config/initializers/simple_form_bootstrap.rb
     - config/initializers/content_security_policy.rb
     - test/support/json_response.rb
-
 
 Naming/VariableNumber:
   Enabled: false  # we have a lot of legacy code to update
@@ -34,8 +32,7 @@ Style/RedundantAssignment:
 Lint/MissingSuper:
   Enabled: false # legacy stuff
 
-Rails/ContentTag:
-  Enabled: false # we have legacy in helpers that seem to require this.  
+
 
 
 Rails:
@@ -44,7 +41,10 @@ Rails:
 Rails/Output:
   Enabled: false
 
-Documentation:
+Rails/ContentTag:
+  Enabled: false # we have legacy in helpers that seem to require this.  
+
+Style/Documentation:
   Enabled: false
 
 Layout/HashAlignment:

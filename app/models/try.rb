@@ -123,12 +123,15 @@ class Try < ApplicationRecord
   end
 
   def index_name_from_search_url
+    # rubocop:disable Lint/DuplicateBranch
+    # NOTE: fix me when we add antoher engine!
     case search_engine
     when 'solr'
       search_url.split('/')[-2]
     when 'es'
       search_url.split('/')[-2]
     end
+    # rubocop:enable Lint/DuplicateBranch
   end
 
   private

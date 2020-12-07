@@ -85,8 +85,9 @@ class User < ApplicationRecord
   devise :recoverable, reset_password_keys: [ :email ]
 
   # Callbacks
-  before_create :set_defaults
   before_save   :encrypt_password
+  before_create :set_defaults
+
   # after_create  :add_default_case
 
   # Devise hacks since we only use the recoverable module

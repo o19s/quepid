@@ -32,9 +32,11 @@ class Team < ApplicationRecord
              class_name: 'User'
 
   # Validations
+  # rubocop:disable Rails/UniqueValidationWithoutIndex
   validates :name,
             presence:   true,
             uniqueness: true
+  # rubocop:enable Rails/UniqueValidationWithoutIndex
 
   # Scopes
   scope :for_user, ->(user) {
