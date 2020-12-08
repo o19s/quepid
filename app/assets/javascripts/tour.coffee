@@ -30,6 +30,7 @@
     ,
       text:   'Next'
       action: tour.next
+      classes: 'shepherd-button-example-primary'
     ]
 
   tour.addStep 'add-query',
