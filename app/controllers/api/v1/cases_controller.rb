@@ -21,7 +21,7 @@ module Api
           @cases = Case.where(archived: archived, user_id: current_user.id)
             .all
         else
-          @cases = current_user.case.includes(:teams).not_archived
+          @cases = current_user.cases_involved_with.includes(:teams).not_archived
 
           if 'last_viewed_at' == sort_by
             @cases = @cases.limit(3).order(Arel.sql('`case_metadata`.`last_viewed_at` DESC, `cases`.`id`'))

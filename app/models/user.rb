@@ -122,9 +122,9 @@ class User < ApplicationRecord
     UserScorerFinder.new(self)
   end
 
-  def case
-    raise "Why isn't this user.cases"
-    puts "Why isn't this user.cases?"
+  # This method returns not just the cases the user is the owner of, which .cases
+  # does, but also via being in a team, those cases as well.
+  def cases_involved_with
     UserCaseFinder.new(self)
   end
 

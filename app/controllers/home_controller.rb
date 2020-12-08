@@ -24,12 +24,12 @@ class HomeController < ApplicationController
     session.delete :bootstrapTryNo
 
     if @bootstrapCaseNo
-      # Note, calling `case` not `cases` which fetches cases both owned
+      # Note, calling `cases_involved_with` not `cases` which fetches cases both owned
       # and shared
-      bootstrapCase = current_user.case.where(id: @bootstrapCaseNo).first
+      bootstrapCase = current_user.cases_involved_with.where(id: @bootstrapCaseNo).first
     end
 
-    bootstrapCase ||= current_user.case.where.not(archived: true).last
+    bootstrapCase ||= current_user.cases_involved_with.where.not(archived: true).last
 
     if bootstrapCase
       @bootstrapCaseNo  = bootstrapCase.id
