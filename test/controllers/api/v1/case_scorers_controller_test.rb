@@ -63,14 +63,12 @@ module Api
           acase.scorer = scorer
           acase.save!
 
-          puts 'I need to be fixed when we allow cases to have nil scorers to deal with this...'
           put :update, params: { case_id: acase.id, id: 0 }
 
-          # assert_response :ok
+          assert_response :ok
 
-          # acase.reload
-          # assert_nil acase.scorer_id
-          # assert_nil acase.scorer
+          acase.reload
+          assert_equal acase.scorer.name, Scorer.system_default_scorer.name
         end
 
         test 'returns an error if scorer does not exist' do
