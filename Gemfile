@@ -2,7 +2,7 @@
 
 source 'https://rubygems.org'
 
-ruby '2.6.6'
+ruby '2.7.2'
 
 gem 'ace-rails-ap'
 gem 'activerecord-import', '>= 1.0.7'
@@ -54,7 +54,6 @@ group :development do
   gem 'letter_opener'
   gem 'rubocop', require: false
   gem 'rubocop-rails', require: false
-  gem 'web-console', '>= 3.3.0'
   gem 'listen', '>= 3.0.5', '< 3.2'
 
   # Spring speeds up development by keeping your application running in the background. Read more: https://github.com/rails/spring
