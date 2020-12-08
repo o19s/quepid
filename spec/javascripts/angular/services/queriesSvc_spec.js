@@ -186,6 +186,7 @@ describe('Service: queriesSvc', function () {
   };
 
   beforeEach(function() {
+
     module(function($provide) {
       mockSearchSvc = new MockSearchSvc();
       mockScorerSvc = new MockCustomScorerSvc();
@@ -201,6 +202,9 @@ describe('Service: queriesSvc', function () {
       $q            = _$q_;
       fieldSpecSvc  = _fieldSpecSvc_;
       queriesSvc    = _queriesSvc_;
+
+      mockScorerSvc.setQ($q);
+
       mockSettings  = {
         selectedTry:  mockTry,
         searchUrl:    mockSolrUrl,
@@ -208,6 +212,8 @@ describe('Service: queriesSvc', function () {
           return mockFieldSpec;
         },
       };
+
+
 
       mockFieldSpec = fieldSpecSvc.createFieldSpec('field field1');
     });
@@ -234,12 +240,13 @@ describe('Service: queriesSvc', function () {
     $httpBackend.flush();
 
     // search all queries
-    queriesSvc.searchAll();
+    var promise = queriesSvc.searchAll();
 
     // fullfill a search that  occurs after succesful bootstrap
     mockSearchSvc.fulfill(mockResults);
     $rootScope.$apply();
     $httpBackend.verifyNoOutstandingExpectation();
+    return promise;
   };
 
   describe('show rated only', function() {

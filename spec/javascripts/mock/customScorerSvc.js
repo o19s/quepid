@@ -2,7 +2,7 @@
 'use strict';
 
 (function (wind) {
-  var MockScorer = function(scorerCode) {
+  var MockScorer = function(scorerCode, $q) {
 
     this.lastQueryText = null;
     this.lastDocs = null;
@@ -13,15 +13,9 @@
       this.lastDocs = docs;
       this.lastBestDocs = bestDocs;
 
-      // Somehow $q can be injected here instead of using raw promises
-      var resolve = function(data) {
-        return data;
-      };
-
-      var promise = new Promise(resolve);
-      resolve(100);
-
-      return promise;
+      var deferred = $q.defer();
+      deferred.resolve(10);
+      return deferred.promise;
     };
 
     this.maxScore = function(query, queryText, docs, bestDocs) {
@@ -37,13 +31,18 @@
     };
   };
 
-  wind.MockCustomScorerSvc = function($q) {
-
+  wind.MockCustomScorerSvc = function() {
+    var $q;
     var scorers = {};
-    this.defaultScorer = new MockScorer('default-code');
+
+    // If someone knows how to get this working with injection feel free to do it the right way
+    this.setQ = function(q) {
+      $q = q;
+      this.defaultScorer = new MockScorer('default-code', $q);
+    }
 
     this.createScorer = function(scoreCode) {
-      return new MockScorer(scoreCode);
+      return new MockScorer(scoreCode, $q);
     };
 
     this.bootstrap = function() {};

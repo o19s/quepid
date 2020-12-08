@@ -3,11 +3,11 @@
 (function() {
   angular.module('QuepidApp')
     .factory('ScorerFactory', [
-      '$q', '$timeout', '$log',
+      '$q', '$timeout',
       ScorerFactory
     ]);
 
-  function ScorerFactory($q, $timeout, $log) {
+  function ScorerFactory($q, $timeout) {
     var Scorer = function(data) {
       var self = this;
       var defaultAlgorithm = [

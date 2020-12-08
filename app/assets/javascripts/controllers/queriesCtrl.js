@@ -5,6 +5,7 @@ angular.module('QuepidApp')
   .controller('queriesCtrl', [
     '$scope',
     '$rootScope',
+    '$q',
     '$log',
     '$location',
     '$routeParams',
@@ -18,6 +19,7 @@ angular.module('QuepidApp')
     function (
       $scope,
       $rootScope,
+      $q,
       $log,
       $location,
       $routeParams,

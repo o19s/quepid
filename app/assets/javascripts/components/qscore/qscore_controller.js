@@ -45,7 +45,7 @@ angular.module('QuepidApp')
         ctrl.diffInfo.label = ctrl.diffLabel;
         ctrl.diffInfo.score = ctrl.diffScore || '?';
         ctrl.diffInfo.style = ctrl.diffStyle;
-      };
+      }
 
       function setDiff() {
         if (ctrl.scorable.diff !== null) {
