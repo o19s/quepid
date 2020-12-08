@@ -28,13 +28,7 @@ class Case < ApplicationRecord
                           join_table: 'teams_cases'
   # rubocop:enable Rails/HasAndBelongsToMany
 
-  # actually not optional, but fails in Rails 5.  We have a method however on
-  # on the scorers_controller.rb that has a delete on a score with force=true
-  # that would set a scorer to nil, which means maybe it is optional??  I have
-  # never used this force parameter...   But then our after_initialize assigns a
-  # default scorer, so going back to not optional!  Maybe we don't even need the
-  # after_initialize if we support nil scorer on a case!
-  belongs_to :scorer, optional: false
+  belongs_to :scorer, optional: true
 
   belongs_to :user, optional: true
 
@@ -71,34 +65,11 @@ class Case < ApplicationRecord
   validates_with ScorerExistsValidator
 
   # Callbacks
-  # after_create  :set_scorer
-  # after_create  :add_default_try
+  after_initialize  :set_scorer
+  after_create      :add_default_try
 
   after_initialize do |c|
     c.archived = false if c.archived.nil?
-  end
-
-  # very confused why after_create doesn't run, but after_initialize does when
-  # we migrated from Rails 4 to Rails 5.   Update 28-Nov-2020, after_create is running now!
-
-  after_create do |c|
-    if c.tries.empty?
-      try_number  = (last_try_number || -1) + 1
-      the_try     = Try.create(try_number: try_number)
-      the_try.case = c
-      c.tries << the_try
-      update last_try_number: the_try.try_number
-    end
-  end
-
-  after_initialize do |c|
-    if c.scorer_id.blank?
-      c.scorer = if user&.default_scorer
-                   user.default_scorer
-                 else
-                   Scorer.system_default_scorer
-                 end
-    end
   end
 
   # Scopes
@@ -170,18 +141,18 @@ class Case < ApplicationRecord
                   else
                     Scorer.system_default_scorer
                   end
+    return true
   end
 
   def add_default_try
-    puts 'I am in add_default_try.'
-    puts "is empty? #{tries.empty?}"
     return true unless tries.empty?
 
     try_number  = (last_try_number || -1) + 1
     the_try     = tries.create(try_number: try_number)
     the_try.case = self
-    tries << new_try
+    tries << the_try
     update last_try_number: the_try.try_number
+    return true
   end
 
   # rubocop:disable Metrics/MethodLength

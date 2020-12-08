@@ -83,8 +83,6 @@ module Api
           acase.reload
 
           assert_equal acase.scorer.name, Scorer.system_default_scorer.name
-          # assert_nil acase.scorer_id
-          # assert_nil acase.scorer
         end
       end
     end

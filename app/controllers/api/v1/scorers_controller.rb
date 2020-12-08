@@ -92,14 +92,16 @@ module Api
       # rubocop:disable Metrics/PerceivedComplexity
       # rubocop:disable Metrics/CyclomaticComplexity
       # rubocop:disable Metrics/AbcSize
+
+      # This method lets you delete a scorer, and if you pass in force=true then
+      # you update other objects with either the system default scorer, or, if
+      # you pass in the replacement_scorer_id then that scorer.
       def destroy
-        # Note that the force parameter isn't actually used by the front end API.
-        # Also, instead of picking the Quepid Default Scorer, instead we should
-        # provide a "replacement_scorer_id" to point to the new one to use.  This
-        # would be useful when wholesale migrating scorers.
-        # Think about removing this capability?
         bool = ActiveRecord::Type::Boolean.new
         force  = bool.deserialize(params[:force]) || false
+        if force
+          replacement_scorer = params[:replacement_scorer_id].present? ? Scorer.find_by(id: params[:replacement_scorer_id]) : Scorer.system_default_scorer
+        end
 
         unless @scorer.owner == current_user
           render(
@@ -113,10 +115,9 @@ module Api
         end
 
         @users = User.where(default_scorer_id: @scorer.id)
-
         if @users.count.positive? && force
           # rubocop:disable Rails/SkipsModelValidations
-          @users.update_all(default_scorer_id: Scorer.system_default_scorer.id)
+          @users.update_all(default_scorer_id: replacement_scorer.id)
           # rubocop:enable Rails/SkipsModelValidations
         elsif @users.count.positive?
           render(
@@ -135,7 +136,7 @@ module Api
         if @cases.count.positive? && force
           # We can't have a nil scorer on a case, so setting all to the default.  See comment above about how
           # we should really pass in a replacement scorer id!
-          @cases.update_all(scorer_id: Scorer.system_default_scorer.id) # rubocop:disable Rails/SkipsModelValidations
+          @cases.update_all(scorer_id: replacement_scorer.id) # rubocop:disable Rails/SkipsModelValidations
         elsif @cases.count.positive?
           render(
             json:   {

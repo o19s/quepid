@@ -474,6 +474,7 @@ module Api
           let(:default_scorer)        { scorers(:case_default_scorer) }
           let(:user)                  { users(:random) }
           let(:acase)                 { cases(:for_default_scorer) }
+          let(:replacement_scorer)    { scorers(:v1) }
 
           before do
             login_user user
@@ -491,7 +492,7 @@ module Api
             assert_response :bad_request
           end
 
-          test 'removes default association and deletes scorer when forced' do
+          test 'removes default association and deletes scorer when forced, replacing with system default scorer' do
             delete :destroy, params: { id: default_scorer.id, force: true }
 
             assert_response :no_content
@@ -501,6 +502,19 @@ module Api
             assert_not_equal  acase.scorer, default_scorer
             assert_not_nil    acase.scorer
             assert_equal      acase.scorer.name, Rails.application.config.quepid_default_scorer
+
+            assert_equal Case.where(scorer_id: default_scorer.id).count, 0
+          end
+
+          test 'removes default association and deletes scorer when forced, updating to the new scorer' do
+            delete :destroy, params: { id: default_scorer.id, force: true, replacement_scorer_id: replacement_scorer.id }
+
+            assert_response :no_content
+
+            acase.reload
+
+            assert_not_nil    acase.scorer
+            assert_equal      acase.scorer, replacement_scorer
 
             assert_equal Case.where(scorer_id: default_scorer.id).count, 0
           end
