@@ -26,47 +26,49 @@ angular.module('QuepidApp')
           } else {
             ctrl.style = { 'background-color': qscoreSvc.scoreToColor(ctrl.score, ctrl.maxScore)};
           }
-
-          setDiff();
         }
       });
 
-      // Functions
-      ctrl.getDiffInfo = getDiffInfo;
-
-      // WARNING: DO NOT REMOVE THIS FUNCTION!
-      // AngularJS automatically updates the DOM when the return value
-      // of a function changes.
-      // So calling `setDiff()` in this function will update the
-      // return value of the function any time there are changes, which
-      // in turn update the DOM.
-      function getDiffInfo() {
+      // This watch updates the diffs in the main query list and the avgQuery
+      $scope.$watchGroup(['ctrl.scorable.diff', 'ctrl.diffLabel'], () => {
         setDiff();
-        return {
-          label: ctrl.diffLabel,
-          score: ctrl.diffScore || '?',
-          style: ctrl.diffStyle,
-        };
-      }
+      });
+
+      ctrl.diffInfo = {
+        label: ctrl.diffLabel,
+        score: ctrl.diffScore || '?',
+        style: ctrl.diffStyle,
+      };
+
+      // Functions
+      function updateDiffInfo() {
+        ctrl.diffInfo.label = ctrl.diffLabel;
+        ctrl.diffInfo.score = ctrl.diffScore || '?';
+        ctrl.diffInfo.style = ctrl.diffStyle;
+      };
 
       function setDiff() {
         if (ctrl.scorable.diff !== null) {
-          var diffScore = angular.copy(ctrl.scorable.diff.score());
+          ctrl.scorable.diff.score().then( (diffScore) => {
+            if (diffScore.score === null) {
+              setDefaultDiff();
+              return;
+            }
 
-          if (diffScore.score === null) {
-            setDefaultDiff();
-            return;
-          }
+            ctrl.diffScore = diffScore.score;
 
-          ctrl.diffScore = diffScore.score;
+            if (  angular.isDefined(diffScore.backgroundColor) &&
+                  diffScore.backgroundColor !== null
+            ) {
+              ctrl.diffStyle = { 'background-color': diffScore.backgroundColor };
+            } else {
+              ctrl.diffStyle = { 'background-color': qscoreSvc.scoreToColor(diffScore.score, ctrl.maxScore)};
+            }
 
-          if (  angular.isDefined(diffScore.backgroundColor) &&
-                diffScore.backgroundColor !== null
-          ) {
-            ctrl.diffStyle = { 'background-color': diffScore.backgroundColor };
-          } else {
-            ctrl.diffStyle = { 'background-color': qscoreSvc.scoreToColor(diffScore.score, ctrl.maxScore)};
-          }
+            updateDiffInfo();
+          });
+
+
         } else {
           setDefaultDiff();
         }
@@ -75,6 +77,7 @@ angular.module('QuepidApp')
       function setDefaultDiff() {
         ctrl.diffScore  = '?';
         ctrl.diffStyle  = defaultStyle;
+        updateDiffInfo();
       }
     }
   ]);

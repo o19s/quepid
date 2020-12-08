@@ -177,11 +177,16 @@ angular.module('QuepidApp')
           }
         },
         score: () => {
-          return this.lastScore;
+          var deferred = $q.defer();
+          deferred.resolve($scope.queries.avgQuery.diff.currentScore);
+          return deferred.promise;
         },
         diff: {
           score: function() {
-            return 5; //queriesSvc.scoreAllDiffs();
+            return queriesSvc.scoreAllDiffs().then( (scoreInfo) => {
+              $scope.queries.avgQuery.diff.currentScore = scoreInfo;
+              return scoreInfo;
+            });
           }
         }
         //var diff: null, // TODO fill out

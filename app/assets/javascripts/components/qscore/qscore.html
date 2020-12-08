@@ -20,16 +20,16 @@
   class="diff-score"
   title="{{ ctrl.fullDiffName }}"
   ng-show="ctrl.showDiff"
-  ng-style="ctrl.getDiffInfo().style"
+  ng-style="ctrl.diffInfo.style"
   ng-class="ctrl.scoreType | chooseScoreClass"
 >
   <span class="scorable-score">
-    {{ ctrl.getDiffInfo().score | scoreDisplay }}
+    {{ ctrl.diffInfo.score | scoreDisplay }}
   </span>
   <span
-    ng-show="ctrl.getDiffInfo().label"
+    ng-show="ctrl.diffInfo.label"
     class="query-score-label low-profile"
   >
-    {{ ctrl.getDiffInfo().label }}
+    {{ ctrl.diffInfo.label }}
   </span>
 </div>
