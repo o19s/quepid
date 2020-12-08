@@ -89,7 +89,7 @@ angular.module('QuepidApp')
       };
 
       $scope.query.isNotAllRated = function() {
-        var score = $scope.query.score();
+        var score = $scope.query.currentScore;
         if (!score || score.score === null || score.allRated) {
           return false;
         }
