@@ -43,8 +43,6 @@ class HomeController < ApplicationController
         @bootstrapTryNo   = bootStrapTry.try_number
       end
     end
-
-    @user_decorator = CurrentUserDecorator.new(current_user)
   end
   # rubocop:enable Metrics/AbcSize
   # rubocop:enable Metrics/MethodLength

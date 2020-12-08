@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
 json.company         @user.company
-json.firstTime       @user.first_time
+json.firstLogin      @user.first_login
 json.id              @user.id
 json.numQueries      @user.num_queries
-json.permissions     @user.permissions
+json.permissions     @permissions
 json.defaultScorerId @user.default_scorer_id
 json.email           @user.email
