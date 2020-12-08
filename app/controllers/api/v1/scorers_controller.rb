@@ -92,6 +92,7 @@ module Api
       # rubocop:disable Metrics/PerceivedComplexity
       # rubocop:disable Metrics/CyclomaticComplexity
       # rubocop:disable Metrics/AbcSize
+      # rubocop:disable Layout/LineLength
 
       # This method lets you delete a scorer, and if you pass in force=true then
       # you update other objects with either the system default scorer, or, if
@@ -122,9 +123,7 @@ module Api
         elsif @users.count.positive?
           render(
             json:   {
-              # rubocop:disable Layout/LineLength
               error: "Cannot delete the scorer because it is the default for #{@users.count} #{'user'.pluralize(@users.count)}: [#{@users.take(3).map(&:email).to_sentence}]",
-              # rubocop:enable Layout/LineLength
             },
             status: :bad_request
           )
@@ -140,9 +139,7 @@ module Api
         elsif @cases.count.positive?
           render(
             json:   {
-              # rubocop:disable Layout/LineLength
               error: "Cannot delete the scorer because it is the default for #{@cases.count} #{'case'.pluralize(@cases.count)}: [#{@cases.take(3).map(&:case_name).to_sentence}]",
-              # rubocop:enable Layout/LineLength
             },
             status: :bad_request
           )
@@ -157,9 +154,7 @@ module Api
         elsif @queries.count.positive?
           render(
             json:   {
-              # rubocop:disable Layout/LineLength
               error: "Cannot delete the scorer because it is the default for #{@queries.count} #{'query'.pluralize(@queries.count)}: [#{@queries.take(3).map(&:query_text).to_sentence}]",
-              # rubocop:enable Layout/LineLength
             },
             status: :bad_request
           )
@@ -171,9 +166,7 @@ module Api
         if @teams.count.positive?
           render(
             json:   {
-              # rubocop:disable Layout/LineLength
               error: "Cannot delete the scorer because it is shared with #{@teams.count} #{'team'.pluralize(@teams.count)}: [#{@teams.take(3).map(&:name).to_sentence}]",
-              # rubocop:enable Layout/LineLength
             },
             status: :bad_request
           )
@@ -190,6 +183,7 @@ module Api
       # rubocop:enable Metrics/CyclomaticComplexity
       # rubocop:enable Metrics/PerceivedComplexity
       # rubocop:enable Metrics/MethodLength
+      # rubocop:enable Layout/LineLength
 
       private
 

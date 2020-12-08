@@ -507,7 +507,11 @@ module Api
           end
 
           test 'removes default association and deletes scorer when forced, updating to the new scorer' do
-            delete :destroy, params: { id: default_scorer.id, force: true, replacement_scorer_id: replacement_scorer.id }
+            delete :destroy, params: {
+              id:                    default_scorer.id,
+              force:                 true,
+              replacement_scorer_id: replacement_scorer.id,
+            }
 
             assert_response :no_content
 

@@ -55,7 +55,6 @@ module Api
       def update
         update_params = case_params
 
-        # Can we have a nil scorer?  Our logic is that you can't, again, bumping into this.
         update_params[:scorer_id] = Scorer.system_default_scorer.id if default_scorer_removed? update_params
 
         if @case.update update_params

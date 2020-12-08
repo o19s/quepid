@@ -141,7 +141,6 @@ class Case < ApplicationRecord
                   else
                     Scorer.system_default_scorer
                   end
-    return true
   end
 
   def add_default_try
@@ -152,7 +151,6 @@ class Case < ApplicationRecord
     the_try.case = self
     tries << the_try
     update last_try_number: the_try.try_number
-    return true
   end
 
   # rubocop:disable Metrics/MethodLength
