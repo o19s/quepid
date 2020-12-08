@@ -118,6 +118,7 @@ class User < ApplicationRecord
     queries.count
   end
 
+  # All the scorers that you have access to, either as communal or as owner or team.
   def scorers
     UserScorerFinder.new(self)
   end
@@ -128,6 +129,7 @@ class User < ApplicationRecord
     UserCaseFinder.new(self)
   end
 
+  # Returns all the teams that the user is both owner of and involved in!
   def teams_im_in
     UserTeamFinder.new(self).call
   end
