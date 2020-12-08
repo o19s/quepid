@@ -459,7 +459,7 @@ angular.module('QuepidApp')
               }));
 
 
-            promises.push(self.refreshRatedDocs());
+            //promises.push(self.refreshRatedDocs());
 
             $q.all(promises).then( () => {
               self.linkUrl = self.searcher.linkUrl;
@@ -476,10 +476,8 @@ angular.module('QuepidApp')
                 } else {
                   self.othersExplained = self.searcher.othersExplained;
 
-                  // Score all documents one searching is completed
-                  svc.scoreAll().then( () => {
-                    resolve();
-                  });
+                  resolve();
+
                 }
               }
             });
@@ -833,7 +831,10 @@ angular.module('QuepidApp')
           promises.push(query.search());
         });
 
-        return $q.all(promises);
+        return $q.all(promises).then( () => {
+          // Score all queries once searching is completed
+          svc.scoreAll();
+        });
       };
 
       // the try that the query results reflect
@@ -1098,7 +1099,7 @@ angular.module('QuepidApp')
           query.setDirty();
         });
 
-        scoreAll().then(function() {
+        svc.scoreAll().then(function() {
           svcVersion++;
         });
       };
