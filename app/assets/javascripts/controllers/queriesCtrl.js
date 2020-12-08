@@ -128,14 +128,17 @@ angular.module('QuepidApp')
           resultObject = {};
         }
 
-        resultObject.lastScore = queriesSvc.latestScoreInfo;
-        lastVersion            = queriesSvc.version();
+        // This triggers a refresh in qscore
+        resultObject.currentScore = queriesSvc.latestScoreInfo;
+
+        resultObject.lastScore    = resultObject.currentScore.score;
+        lastVersion               = queriesSvc.version();
 
         if (
           resultObject.lastScore &&
           resultObject.lastScore !== -1
         ) {
-          var scoreInfo = resultObject.lastScore;
+          var scoreInfo = resultObject.currentScore;
 
           // TODO: This seems bugged, maybe force specification of max score?
           // Fetch the potential total max score by averaging
@@ -228,10 +231,10 @@ angular.module('QuepidApp')
               tryNo = acase.lastTry;
 
               lastScoreTracker = {
-                'score':      $scope.queries.avgQuery.lastScore.score,
-                'all_rated':  $scope.queries.avgQuery.lastScore.allRated,
+                'score':      $scope.queries.avgQuery.currentScore.score,
+                'all_rated':  $scope.queries.avgQuery.currentScore.allRated,
                 'try_id':     tryNo,
-                'queries':    $scope.queries.avgQuery.lastScore.queries,
+                'queries':    $scope.queries.avgQuery.currentScore.queries,
               };
 
               $log.info('sending score information to mothership');
@@ -240,10 +243,10 @@ angular.module('QuepidApp')
         }
         else {
           var lastScoreTracker = {
-            'score':      $scope.queries.avgQuery.lastScore.score,
-            'all_rated':  $scope.queries.avgQuery.lastScore.allRated,
+            'score':      $scope.queries.avgQuery.currentScore.score,
+            'all_rated':  $scope.queries.avgQuery.currentScore.allRated,
             'try_id':     tryNo,
-            'queries':    $scope.queries.avgQuery.lastScore.queries,
+            'queries':    $scope.queries.avgQuery.currentScore.queries,
           };
 
           $log.info('sending score information to mothership');

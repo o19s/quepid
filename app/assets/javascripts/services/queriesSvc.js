@@ -1059,8 +1059,6 @@ angular.module('QuepidApp')
         });
 
         return $q.all(promises).then(function() {
-          $scope.$emit('scoring-complete');
-
           if (tot > 0) {
             avg = avg/tot;
           }
@@ -1070,6 +1068,8 @@ angular.module('QuepidApp')
             'score':    avg,
             'queries':  queryScores,
           };
+
+          $scope.$emit('scoring-complete');
 
           return svc.latestScoreInfo;
         });
