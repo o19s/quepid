@@ -74,7 +74,7 @@ describe('Service: userSvc', function () {
 
       $httpBackend.flush();
 
-      expect(currUser.firstTime).toEqual(false);
+      expect(currUser.firstLogin).toEqual(false);
     });
 
     it('updates a user\'s scorer', function() {

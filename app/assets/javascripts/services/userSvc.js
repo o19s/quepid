@@ -23,7 +23,7 @@ angular.module('UtilitiesModule')
 
         self.company         = userObj.company;
         self.defaultScorerId = defaultScorerId;
-        self.firstTime       = userObj.firstTime;
+        self.firstLogin      = userObj.firstLogin;
         self.id              = userObj.id;
         self.permissions     = userObj.permissions;
         self.email           = userObj.email;
@@ -78,7 +78,7 @@ angular.module('UtilitiesModule')
           return $http.put(url, data)
             .then( function() {
               self.introWizardSeen  = true;
-              self.firstTime        = false;
+              self.firstLogin       = false;
 
               return self;
             });

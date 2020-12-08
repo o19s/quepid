@@ -17,9 +17,9 @@ describe('Controller: WizardModalCtrl', function () {
   };
 
   var mockUserSvc = {
-    doFirstTime: false,
+    dofirstLogin: false,
     getUser: function() {
-      return {firstTime: this.doFirstTime};
+      return {firstLogin: this.dofirstLogin};
     }
   };
 
@@ -58,7 +58,7 @@ describe('Controller: WizardModalCtrl', function () {
   var mockUser = {
     queriesAdded:     0,
     maxQueries:       5,
-    firstTime:        false,
+    firstLogin:       false,
     queriesRemaining: function() { return this.maxQueries - this.queriesAdded; },
     queryAdded:       function() { this.queriesAdded++; },
   };

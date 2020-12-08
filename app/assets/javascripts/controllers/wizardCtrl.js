@@ -34,7 +34,7 @@ angular.module('QuepidApp')
       function showModal() {
         return angular.isDefined($rootScope.currentUser) &&
           $rootScope.currentUser !== null &&
-          ($rootScope.currentUser.firstTime || userSvc.triggerWizard) &&
+          ($rootScope.currentUser.firstLogin || userSvc.triggerWizard) &&
           $rootScope.currentUser.introWizardSeen !== true;
       }
     }
