@@ -93,6 +93,14 @@ Optionally you can seed the database with sample data (the output will print out
 bin/docker r bin/rake db:seed:sample_users
 ```
 
+If you want to create some cases with 100's and 1000's of queries, then do:
+
+```
+bin/docker r bin/rake SEED_LARGE_CASES=true db:seed:sample_users
+```
+
+This is useful for stress testing Quepid!
+
 #### 3. Running the app
 
 Now fire up Quepid locally at http://localhost:3000:
