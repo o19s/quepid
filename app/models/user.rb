@@ -123,6 +123,7 @@ class User < ApplicationRecord
   end
 
   def case
+    raise "Why isn't this user.cases"
     puts "Why isn't this user.cases?"
     UserCaseFinder.new(self)
   end

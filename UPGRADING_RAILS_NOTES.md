@@ -1,4 +1,5 @@
 Todos:
+* Remove Spring, it doesn't help us in dockerized world.
 * Fix circle ci to run rails instead of rake for rails tests.  OR, do we just use Github Actions?
 * get bin/docker r bin/rake test:quepid to run `rails test`
 * fix FK links
@@ -8,11 +9,13 @@ Todos:
 * Right now we support creating a snapshot with no docs.   WHY?   Look at `snapshots_controller_test.rb` __handles empty list of docs__.   
 * Interestingly we have on the /api/scorers (`scorers_controller.rb`) a *force* param that isn't used by the front end, that forces deleting a scorer.  i fixed the tests but left the code...  
 * We must figure out if a case MUST have a scorer or NOT!   We have all sorts of odd logic.  leaning towards if we have a future with N scorers, then it doens't have ot have one!  and that you don't get forced with a default.
-   
+
 
 
 KEY!   http://railsdiff.org/4.2.11/5.2.4.4
 
+
+https://dev.to/vvo/a-rails-6-setup-guide-for-2019-and-2020-hf5
 
 https://www.mccartie.com/tech/2016/12/05/rails-5.1.html
 https://dev.to/zealot128/upgrading-rails-from-4-2-to-5-2-6-0-collected-notes-a0o
