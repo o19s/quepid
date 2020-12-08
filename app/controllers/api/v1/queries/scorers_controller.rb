@@ -37,14 +37,7 @@ module Api
         private
 
         def set_scorer
-          # This block of logic should all be in user_scorer_finder.rb
           @scorer = current_user.scorers.where(id: params[:scorer_id]).first
-
-          puts 'checking set scorer, and now with communal being included, able to get rid of the following check.'
-          # if @scorer.nil? # Check if communal scorers has the scorer.  This logic should be in the .scorers. method!
-          #   @scorer = Scorer.communal.where(id: params[:scorer_id]).first
-          # end
-
           render json: { error: 'Not Found!' }, status: :not_found unless @scorer
         end
       end
