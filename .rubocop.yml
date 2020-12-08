@@ -29,6 +29,9 @@ Style/OptionalBooleanParameter:
 Style/RedundantAssignment:
   Enabled: false # legacy stuff
 
+Style/EmptyMethod:
+  Enabled: false   
+
 Lint/MissingSuper:
   Enabled: false # legacy stuff
 
@@ -42,7 +45,7 @@ Rails/Output:
   Enabled: false
 
 Rails/ContentTag:
-  Enabled: false # we have legacy in helpers that seem to require this.  
+  Enabled: false # we have legacy in helpers that seem to require this.
 
 Style/Documentation:
   Enabled: false

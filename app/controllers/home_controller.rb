@@ -10,38 +10,38 @@ class HomeController < ApplicationController
   def index
     @triggerWizard = false
 
-    if current_user
-      # load a case/try if one was set somewhere
-      bootstrapCase = nil
+    return unless current_user
 
-      # First check if the case and the try have been set in the session
-      @bootstrapCaseNo  = session[:bootstrapCaseNo]
-      @bootstrapTryNo   = session[:bootstrapTryNo]
+    # load a case/try if one was set somewhere
+    bootstrapCase = nil
 
-      # Clear the session
-      session.delete :bootstrapCaseNo
-      session.delete :bootstrapTryNo
+    # First check if the case and the try have been set in the session
+    @bootstrapCaseNo  = session[:bootstrapCaseNo]
+    @bootstrapTryNo   = session[:bootstrapTryNo]
 
-      if @bootstrapCaseNo
-        # Note, calling `case` not `cases` which fetches cases both owned
-        # and shared
-        bootstrapCase = current_user.case.where(id: @bootstrapCaseNo).first
-      end
+    # Clear the session
+    session.delete :bootstrapCaseNo
+    session.delete :bootstrapTryNo
 
-      bootstrapCase ||= current_user.case.where.not(archived: true).last
+    if @bootstrapCaseNo
+      # Note, calling `case` not `cases` which fetches cases both owned
+      # and shared
+      bootstrapCase = current_user.case.where(id: @bootstrapCaseNo).first
+    end
 
-      if bootstrapCase
-        @bootstrapCaseNo  = bootstrapCase.id
-        best_try          = bootstrapCase.tries.best
-        @bootstrapTryNo   = best_try.try_number if best_try.present?
-      else
-        @triggerWizard = true unless current_user.first_login?
+    bootstrapCase ||= current_user.case.where.not(archived: true).last
 
-        bootstrapCase     = current_user.cases.create case_name: Case::DEFAULT_NAME
-        @bootstrapCaseNo  = bootstrapCase.id
-        bootStrapTry      = bootstrapCase.tries.first
-        @bootstrapTryNo   = bootStrapTry.try_number
-      end
+    if bootstrapCase
+      @bootstrapCaseNo  = bootstrapCase.id
+      best_try          = bootstrapCase.tries.best
+      @bootstrapTryNo   = best_try.try_number if best_try.present?
+    else
+      @triggerWizard = true unless current_user.first_login?
+
+      bootstrapCase     = current_user.cases.create case_name: Case::DEFAULT_NAME
+      @bootstrapCaseNo  = bootstrapCase.id
+      bootStrapTry      = bootstrapCase.tries.first
+      @bootstrapTryNo   = bootStrapTry.try_number
     end
   end
   # rubocop:enable Metrics/AbcSize
