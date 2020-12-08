@@ -71,6 +71,11 @@ angular.module('QuepidApp')
       svc.bootstrapQueries = bootstrapQueries;
       svc.showOnlyRated = false;
 
+      // Rescore on ratings update
+      $scope.$on('rating-changed', () => {
+        svc.scoreAll();
+      });
+
       function createSearcherFromSettings(passedInSettings, queryText, query) {
         var args = angular.copy(passedInSettings.selectedTry.args);
 
