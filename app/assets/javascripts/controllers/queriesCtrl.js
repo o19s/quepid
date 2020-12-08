@@ -4,6 +4,7 @@
 angular.module('QuepidApp')
   .controller('queriesCtrl', [
     '$scope',
+    '$rootScope',
     '$log',
     '$location',
     '$routeParams',
@@ -16,6 +17,7 @@ angular.module('QuepidApp')
     'customScorerSvc',
     function (
       $scope,
+      $rootScope,
       $log,
       $location,
       $routeParams,
@@ -28,6 +30,10 @@ angular.module('QuepidApp')
       customScorerSvc
     ) {
       $scope.queriesSvc = queriesSvc;
+
+      $rootScope.$on('scoring-complete', () => {
+        $scope.queries.avgQuery.calcScore();
+      });
 
       // Options for ui-sortable at http://api.jqueryui.com/sortable/
       var sortableOptions = {
@@ -122,7 +128,7 @@ angular.module('QuepidApp')
           resultObject = {};
         }
 
-        resultObject.lastScore = queriesSvc.scoreAll();
+        resultObject.lastScore = queriesSvc.latestScoreInfo;
         lastVersion            = queriesSvc.version();
 
         if (
@@ -156,7 +162,7 @@ angular.module('QuepidApp')
       var lastVersion = -1;
       var avgQuery = {
         lastScore: -1,
-        score: function() {
+        calcScore: function() {
           // rescore only if
           // - there are no unscored queries
           // - we seem to have a new version of the query service
@@ -166,12 +172,13 @@ angular.module('QuepidApp')
             runScore(this);
             saveScoring();
           }
-
+        },
+        score: () => {
           return this.lastScore;
         },
         diff: {
           score: function() {
-            return queriesSvc.scoreAllDiffs();
+            return 5; //queriesSvc.scoreAllDiffs();
           }
         }
         //var diff: null, // TODO fill out

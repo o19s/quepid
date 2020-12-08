@@ -42,7 +42,6 @@
       self.code                   = data.code;
       self.colors                 = scaleToColors(data.scale);
       self.defaultAlgorithm       = defaultAlgorithm;
-      self.deferred               = null;
       self.displayName            = setDisplayName(data.name, data.communal);
       self.error                  = false;
       self.manualMaxScore         = data.manualMaxScore || false;
@@ -82,30 +81,6 @@
 
       var DEFAULT_NUM_DOCS = 10;
 
-      /*jshint unused:false */
-      function pass() {
-        self.deferred.resolve(100);
-      }
-
-      function fail() {
-        self.deferred.reject(0);
-      }
-
-      function setScore(score) {
-        self.deferred.resolve(score);
-      }
-
-      function assert(cond) {
-        if (!cond) {
-          fail();
-        }
-      }
-
-      function assertOrScore(cond, score) {
-        if (!cond) {
-          setScore(score);
-        }
-      }
 
       // public functions
       function getColors() {
@@ -383,6 +358,8 @@
         var scale     = self.scale;
         var max       = scale[scale.length-1];
 
+        var scorerDeferred = $q.defer();
+
         // Normalize how you get the rating of a doc
         angular.forEach(bestDocs, function(doc) {
           if ( doc.hasOwnProperty('getRating') && typeof doc.getRating === 'function' ) {
@@ -538,11 +515,35 @@
           }
         };
 
+        /*jshint unused:false */
+        function pass() {
+          scorerDeferred.resolve(100);
+        }
+
+        function fail() {
+          scorerDeferred.reject(0);
+        }
+
+        function setScore(score) {
+          scorerDeferred.resolve(score);
+        }
+
+        function assert(cond) {
+          if (!cond) {
+            fail();
+          }
+        }
+
+        function assertOrScore(cond, score) {
+          if (!cond) {
+            setScore(score);
+          }
+        }
+
+
         if (mode === 'max' && self.code.indexOf('pass()') > -1) {
           return 100;
         }
-
-        self.deferred = $q.defer();
 
         $timeout(function() {
           /*jshint evil:true */
@@ -550,7 +551,7 @@
           /*jshint evil:false */
         }, 1);
 
-        return self.deferred.promise;
+        return scorerDeferred.promise;
       }
 
       function maxScore() {

@@ -7,6 +7,7 @@
 // .... (as you can tell by the dependencies)
 angular.module('QuepidApp')
   .service('queriesSvc', [
+    '$rootScope',
     '$http',
     '$timeout',
     '$q',
@@ -25,6 +26,7 @@ angular.module('QuepidApp')
     'esExplainExtractorSvc',
     'solrExplainExtractorSvc',
     function queriesSvc(
+      $scope,
       $http,
       $timeout,
       $q,
@@ -399,9 +401,8 @@ angular.module('QuepidApp')
           }
 
           that.docsSet = true;
-          return that.score().then(function() {
-            return error;
-          });
+
+          return error;
         };
 
         this.onError = function(errorText) {
@@ -463,16 +464,18 @@ angular.module('QuepidApp')
                 self.setDocs([], 0);
                 self.onError('Please click browse to see the error');
               } else {
-                self.setDocs(self.searcher.docs, self.searcher.numFound)
-                  .then(function(error) {
-                    if (error) {
-                      self.onError(error);
-                      reject(error);
-                    } else {
-                      self.othersExplained = self.searcher.othersExplained;
-                      resolve();
-                    }
+                var error = self.setDocs(self.searcher.docs, self.searcher.numFound);
+                if (error) {
+                  self.onError(error);
+                  reject(error);
+                } else {
+                  self.othersExplained = self.searcher.othersExplained;
+
+                  // Score all documents one searching is completed
+                  svc.scoreAll().then( () => {
+                    resolve();
                   });
+                }
               }
             });
           });
@@ -1051,15 +1054,19 @@ angular.module('QuepidApp')
         });
 
         return $q.all(promises).then(function() {
+          $scope.$emit('scoring-complete');
+
           if (tot > 0) {
             avg = avg/tot;
           }
 
-          return {
+          svc.latestScoreInfo = {
             'allRated': allRated,
             'score':    avg,
             'queries':  queryScores,
           };
+
+          return svc.latestScoreInfo;
         });
       };
 
