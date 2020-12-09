@@ -1161,3 +1161,7 @@ li.annotation {
 	font-weight: 200;
 	color: #888;
 }
+
+.hidden {
+  display: none;
+}

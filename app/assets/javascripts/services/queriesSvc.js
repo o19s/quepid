@@ -710,6 +710,12 @@ angular.module('QuepidApp')
           }
         };
 
+        this.searchAndScore = function() {
+          return this.search().then( () => {
+            this.score();
+          });
+        };
+
         // TODO: Fix splainer for ES
         this.filterToRatings = function(settings, slice) {
           var ratedIDs = self.ratings ? Object.keys(self.ratings) : [];
