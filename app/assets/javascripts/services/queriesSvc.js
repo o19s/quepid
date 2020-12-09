@@ -459,6 +459,7 @@ angular.module('QuepidApp')
               }));
 
 
+            // This is okay for smaller cases but bogs down the app for 100's of queries
             //promises.push(self.refreshRatedDocs());
 
             $q.all(promises).then( () => {
