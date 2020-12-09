@@ -44,7 +44,7 @@ module Api
           :score,
           :all_rated,
           :try_id,
-          queries: [ :text, :score ]
+          queries: [ :text, :score, :maxScore, :numFound ]
         )
       end
     end
