@@ -328,12 +328,12 @@ describe('Service: queriesSvc', function () {
     });
 
     it('knows if there are unscored queries', function() {
-      queriesSvc.queries[0].markUnscored();
+      queriesSvc.queries[0].hasBeenScored = false;
       expect(queriesSvc.hasUnscoredQueries()).toBe(true);
     });
 
     it('knows how many queries are unscored', function() {
-      queriesSvc.queries[0].markUnscored();
+      queriesSvc.queries[0].hasBeenScored = false;
       expect(queriesSvc.unscoredQueryCount()).toBe(1);
     });
 
