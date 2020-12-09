@@ -835,12 +835,15 @@ angular.module('QuepidApp')
         var promises = [];
 
         angular.forEach(this.queries, function(query) {
-          promises.push(query.search());
+          var promise = query.search().then( () => {
+            query.score();
+          });
+
+          promises.push(promise);
         });
 
         return $q.all(promises).then( () => {
-          // Score all queries once searching is completed
-          svc.scoreAll();
+          $scope.$emit('scoring-complete');
         });
       };
 
