@@ -93,13 +93,13 @@ Optionally you can seed the database with sample data (the output will print out
 bin/docker r bin/rake db:seed:sample_users
 ```
 
-If you want to create some cases with 100's and 1000's of queries, then do:
+If you want to create some cases that have 100's and 1000's of queries, then do:
 
 ```
-bin/docker r bin/rake SEED_LARGE_CASES=true db:seed:sample_users
+bin/docker r bin/rake db:seed:large_cases
 ```
 
-This is useful for stress testing Quepid!
+This is useful for stress testing Quepid!  Especially the front end application!
 
 #### 3. Running the app
 
@@ -120,7 +120,8 @@ You can still use `docker-compose` directly, but for the basic stuff you can use
 * Run any command: `bin/docker run [COMMAND]` or `bin/docker r [COMMAND]`
 * Run dev mode as daemon: `bin/docker daemon` or `bin/docker q`
 * Destroy the Docker env: `bin/docker destroy` or `bin/docker d`
-* Run unit tests: `bin/docker r bin/rake test:quepid`
+* Run front end unit tests: `bin/docker r rails test:frontend`
+* Run back end unit tests: `bin/docker r rails test`
 
 
 ## II. Development Log
@@ -176,14 +177,14 @@ bin/docker r tail -f -n 200 log/test.log
 To check the JS syntax:
 
 ```
-bin/docker r bin/rake test:jshint
+bin/docker r rails test:jshint
 ```
 
 ### Karma
 
 Runs tests for the Angular side. There are two modes for the karma tests:
 
-* Single run: `bin/docker r bin/rake karma:run`
+* Single run: `bin/docker r rails karma:run`
 * Continuous/watched run: `bin/docker r bin/rake karma:start`
 
 **Note:** The karma tests require the assets to be precompiled, which adds a significant amount of time to the test run. If you are only making changes to the test/spec files, then it is recommended you run the tests in watch mode (`bin/rake karma:start`). The caveat is that any time you make a change to the app files, you will have to restart the process (or use the single run mode).
@@ -193,16 +194,19 @@ Runs tests for the Angular side. There are two modes for the karma tests:
 To check the Ruby syntax:
 
 ```
-bin/docker r bundle exec rubocop
+bin/docker r rubocop
 ```
 
 ### All Tests
 
-If you want to run all of the tests in one go (before you commit and push for example), just run the special rake task:
+If you want to run all of the tests in one go (before you commit and push for example), just run these two commands:
 
 ```
-bin/docker r bin/rake test:quepid
+bin/docker r rails test
+bin/docker r rails test:frontend
 ```
+
+For some reason we can't run both with one command, _though we should be able to!_.
 
 ### Performance Testing
 
@@ -231,8 +235,6 @@ In the Rails application you can use the logger for the output:
 ```ruby
 Rails.logger object.inspect
 ```
-
-We also support the `web-console` gem which allows you to work with Rails via a console right into your browser, similar to running `bin/docker r`.  This only works on HTML view rendered by Rails, not on API calls.  Place `<% console %>` into the html.  Learn more at https://github.com/rails/web-console/tree/v3.3.0#usage.
 
 If that's not enough and you want to run a debugger, the `byebug` gem is included for that. Add `byebug` wherever you want a breakpoint and then run the code.
 

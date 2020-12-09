@@ -7,14 +7,11 @@ namespace :test do
   desc 'Run js/karma tests (equivalent of karma:run)'
   task 'js' => 'karma:run'
 
-  # rubocop:disable Rails/RakeEnvironment
-  desc 'Run all tests: test:js, test:jshint, and test'
-  task :quepid do
-    Rake::Task['test:js'].invoke # Javascript
+  desc 'Run all frontend tasks: test:js, test:jshint'
+  task frontend: :environment do
+    Rake::Task['test:js'].invoke
     Rake::Task['test:jshint'].invoke
-    Rake::Task['test'].invoke # Rails
   end
-  # rubocop:enable Rails/RakeEnvironment
 
   desc 'Run jshint on js files using configuration under config/jshint.yml'
   task jshint: :environment do
