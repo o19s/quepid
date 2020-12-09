@@ -475,6 +475,10 @@
           }
         };
 
+        var refreshRatedDocs = function(k) {
+          return query.refreshRatedDocs(k);
+        };
+
 
         // Loops through all docs that have a rating equal to the
         // param that is passed, and calls the callback function on

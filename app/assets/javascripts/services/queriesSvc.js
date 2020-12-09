@@ -360,9 +360,15 @@ angular.module('QuepidApp')
         };
 
 
-        this.refreshRatedDocs = function() {
+        this.refreshRatedDocs = function(pageSize) {
+          var settings = angular.copy(currSettings);
+
+          if (pageSize) {
+            settings.numberOfRows = pageSize;
+          }
+
           self.ratedSearcher = svc.createSearcherFromSettings(
-              currSettings,
+              settings,
               self.queryText,
               self
             );
