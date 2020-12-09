@@ -1,4 +1,7 @@
-<div class="clearfix" ng-class="query.state() | queryStateClass">
+<div
+  ng-attr-id="{{ 'query-' + query.queryText }}"
+  rank="{{$index + 1}}"
+  class="clearfix" ng-class="query.state() | queryStateClass">
   <div class="result-header">
     <qscore
       class="results-score"
