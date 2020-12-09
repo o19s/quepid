@@ -137,7 +137,7 @@ angular.module('QuepidApp')
         lastVersion               = queriesSvc.version();
 
         if (
-          resultObject.lastScore &&
+          angular.isNumber(resultObject.lastScore) &&
           resultObject.lastScore !== -1
         ) {
           var scoreInfo = resultObject.currentScore;

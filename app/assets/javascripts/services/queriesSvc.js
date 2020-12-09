@@ -829,17 +829,33 @@ angular.module('QuepidApp')
 
       this.searchAll = function() {
         var promises = [];
+        var scorePromises = [];
 
         angular.forEach(this.queries, function(query) {
           var promise = query.search().then( () => {
-            query.score();
+            scorePromises.push(query.score());
           });
 
           promises.push(promise);
         });
 
+        // Holy nested promises batman
         return $q.all(promises).then( () => {
-          $scope.$emit('scoring-complete');
+          $q.all(scorePromises).then( () => {
+            /*
+             * Why are we calling scoreAll after we called score() above?
+             *
+             * Score just runs the scorer on each query
+             * scoreAll prepares the aggregation score for all queries (also runs scores if needed)
+             * but knows not to run anything if things haven't changed.
+             *
+             * We have the split here so the progress bar progresses instead of flying thru
+             * after all searches complete.
+             */
+            svc.scoreAll().then( () => {
+              $scope.$emit('scoring-complete');
+            });
+          });
         });
       };
 
@@ -1025,6 +1041,10 @@ angular.module('QuepidApp')
         return svcVersion + ratingsStoreSvc.version();
       };
 
+      /*
+       * This method prepares the scores table that the qgraph/qscore needs.
+       *
+       */
       this.scoreAll = function(scorables) {
         var avg = 0;
         var tot = 0;
