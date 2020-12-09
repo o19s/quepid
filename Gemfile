@@ -20,7 +20,6 @@ gem 'gabba'
 gem 'intercom-rails'
 gem 'jbuilder', '~> 2.5'
 gem 'redis', '~> 4.0'
-gem 'bootsnap', '>= 1.1.0', require: false
 gem 'jquery-rails'
 gem 'jquery-ui-rails' # Can we narrow the widgets to load faster?
 gem 'mysql2'
@@ -33,6 +32,8 @@ gem 'responders'
 gem 'sass-rails', '~> 5.0'
 gem 'sidekiq'
 gem 'uglifier', '>= 1.3.0'
+gem "bootsnap", "~> 1.5"
+gem "listen", "~> 3.3"
 
 source 'https://rails-assets.org' do
   gem 'rails-assets-angular'
@@ -54,11 +55,6 @@ group :development do
   gem 'letter_opener'
   gem 'rubocop', require: false
   gem 'rubocop-rails', require: false
-  gem 'listen', '>= 3.0.5', '< 3.2'
-
-  # Spring speeds up development by keeping your application running in the background. Read more: https://github.com/rails/spring
-  gem 'spring'
-  gem 'spring-watcher-listen', '~> 2.0.0'
 end
 
 group :test do

@@ -238,8 +238,6 @@ Rails.logger object.inspect
 
 If that's not enough and you want to run a debugger, the `byebug` gem is included for that. Add `byebug` wherever you want a breakpoint and then run the code.
 
-Caveat: You might have to stop spring (`bin/spring stop`) or restart the server to get it to execute the breakpoint.
-
 ### Debugging JS
 
 While running the application, you can debug the javascript using your favorite tool, the way you've always done it.

@@ -1,5 +1,5 @@
 Todos:
-* Remove Spring, it doesn't help us in dockerized world.
+* DONE Remove Spring, it doesn't help us in dockerized world.
 * DONE Fix circle ci to run rails instead of rake for rails tests.  OR, do we just use Github Actions?
 * DONE get bin/docker r bin/rake test:quepid to run `rails test`
 * DONE fix FK links
