@@ -143,8 +143,6 @@ angular.module('QuepidApp')
         }
       }
 
-      this.unscoredQueries = {};
-
       // ***********************************
       // An individual search query that
       // gets executed
@@ -297,30 +295,18 @@ angular.module('QuepidApp')
           return this.scoreOthers(this.docs)
             .then(function(score) {
               that.currentScore = score;
+
+              that.hasBeenScored = true;
+
               that.lastScore    = that.currentScore.score || 0;
 
               that.allRated     = that.currentScore.allRated;
-
-              // if we have received docs, mark this query as successfully scored
-              if (that.docsSet) {
-                that.markScored();
-              }
 
               that.lastScoreVersion = that.version();
 
               return that.currentScore;
             }
           );
-        };
-
-        this.markScored = function() {
-          this.hasBeenScored = true;
-          delete svc.unscoredQueries[this.queryId];
-        };
-
-        this.markUnscored = function() {
-          this.hasBeenScored = false;
-          svc.unscoredQueries[this.queryId] = true;
         };
 
         this.fieldSpec = function() {
@@ -432,7 +418,7 @@ angular.module('QuepidApp')
           var self = this;
 
           return $q(function(resolve, reject) {
-            self.markUnscored();
+            self.hasBeenScored = false;
 
             self.searcher = svc.createSearcherFromSettings(
               currSettings,
@@ -747,11 +733,15 @@ angular.module('QuepidApp')
       };
 
       this.unscoredQueryCount = function() {
-        return Object.keys(this.unscoredQueries).length;
+        return Object.values(this.queries).filter( (q) => {
+          return !q.hasBeenScored;
+        }).length;
       };
 
       this.scoredQueryCount = function() {
-        return this.queryCount() - this.unscoredQueryCount();
+        return Object.values(this.queries).filter ( (q) => {
+          return q.hasBeenScored;
+        }).length;
       };
 
       this.queryCount = function() {
@@ -901,7 +891,6 @@ angular.module('QuepidApp')
                 query.queryId = parseInt(addedQuery.queryId, 10);
                 query.ratingsStore.setQueryId(addedQuery.queryId);
                 self.queries[query.queryId] = query;
-                query.markUnscored();
                 svcVersion++;
                 broadcastSvc.send('updatedQueriesList');
 

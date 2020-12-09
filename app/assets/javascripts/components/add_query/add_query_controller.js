@@ -57,7 +57,7 @@ angular.module('QuepidApp')
             queriesSvc.searchAll()
               .then(function () {
                 // searchAll emits its own 'scoring-complete' message, not needed here
-                flash.success = 'Queries added successfull.';
+                flash.success = 'Queries added successfully.';
               }, function (errorMsg) {
                 flash.error = 'One (or many) of your new queries had an error!';
                 flash.to('search-error').error = errorMsg;

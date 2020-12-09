@@ -259,18 +259,13 @@ angular.module('QuepidApp')
               if( typeof(query.queryString) !== 'undefined' && query.queryString !== '' ) {
                 var q = queriesSvc.createQuery(query.queryString);
 
-                createPromises.push(
-                  queryPromise(q)
-                    /* jshint ignore:start */
-                    .then(function() {
-                        q.search();
-                    })
-                    /* jshint ignore:end */
-                );
+                createPromises.push(queryPromise(q));
               }
             }
 
-            $q.all(createPromises);
+            $q.all(createPromises).then( () => {
+              queriesSvc.searchAll();
+            });
 
             $uibModalInstance.close();
           });
