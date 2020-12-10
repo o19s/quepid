@@ -37,7 +37,6 @@ module Api
           @cases = Case.includes([ :tries, :cases_teams ]).where(id: [ case_ids ])
           @cases = @cases.sort_by { |x| case_ids.index x.id }
 
-
           respond_with @cases
         end
         # rubocop:enable Layout/LineLength
