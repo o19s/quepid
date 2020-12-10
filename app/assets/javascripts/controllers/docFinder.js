@@ -166,6 +166,12 @@ angular.module('QuepidApp')
       // Initialize to rated docs
       var fieldSpec = currSettings.createFieldSpec();
       var ratedIDs = $scope.query.ratings ? Object.keys($scope.query.ratings) : [];
+
+      // Don't query if there are no ratings, the "no results" message is weird.
+      if (ratedIDs.length === 0) {
+        return;
+      }
+
       $scope.docFinder.numFound = ratedIDs.length;
 
       $scope.docFinder.searcher = queriesSvc.createSearcherFromSettings(currSettings, $scope.query.queryText);
@@ -194,6 +200,4 @@ angular.module('QuepidApp')
         });
       }
     }
-
-
   ]);
