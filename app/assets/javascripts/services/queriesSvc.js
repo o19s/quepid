@@ -277,7 +277,7 @@ angular.module('QuepidApp')
             var color     = qscoreSvc.scoreToColor(score, maxScore);
 
             return {
-              score:            score,
+              score:            score || 0.0,
               maxScore:         maxScore,
               allRated:         allRated,
               backgroundColor:  color
