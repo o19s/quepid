@@ -13,25 +13,7 @@ class HomeController < ApplicationController
     return unless current_user
 
     # load a case/try if one was set somewhere
-    bootstrapCase = nil
-
-    # First check if the case and the try have been set in the session
-    puts 'I am reading from the session!'
-    puts "Here is session[:bootstrapCaseNo]: #{session[:bootstrapCaseNo]}"
-    @bootstrapCaseNo  = session[:bootstrapCaseNo]
-    @bootstrapTryNo   = session[:bootstrapTryNo]
-
-    # Clear the session
-    session.delete :bootstrapCaseNo
-    session.delete :bootstrapTryNo
-
-    if @bootstrapCaseNo
-      # Note, calling `cases_involved_with` not `cases` which fetches cases both owned
-      # and shared
-      bootstrapCase = current_user.cases_involved_with.where(id: @bootstrapCaseNo).first
-    end
-
-    bootstrapCase ||= current_user.cases_involved_with.where.not(archived: true).last
+    bootstrapCase = current_user.cases_involved_with.not_archived.last
 
     if bootstrapCase
       @bootstrapCaseNo  = bootstrapCase.id
