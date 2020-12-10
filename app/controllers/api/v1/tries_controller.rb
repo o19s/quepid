@@ -26,11 +26,6 @@ module Api
 
           respond_with @try
         else
-          require 'pp'
-          puts 'Here I am'
-          pp @try.errors
-          pp @case.errors
-
           render json: @try.errors.concat(@case.errors), status: :bad_request
         end
       end
