@@ -481,14 +481,6 @@ To comply with GDPR, and be a good citizen, the hosted version of Quepid asks if
 EMAIL_MARKETING_MODE=true   # Enables a checkbox on user signup to consent to emails
 ```
 
-## sameSite Cookie issues
-
-We use Rails 4, and it doesn't have support for the sameSite cookie setting required by modern browsers.  You may
-see a message about "sameSite" attribute in the browser console.  
-
-We work around it for the `_quepid_session` by setting it to be lax.  However, the `rack-mini-profiler` also
-has the cookie `__profilin` and it will also cause the warning message to show up.  https://github.com/MiniProfiler/rack-mini-profiler/issues/442
-
 
 # Credits
 
