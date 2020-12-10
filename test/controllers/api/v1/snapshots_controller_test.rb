@@ -71,7 +71,7 @@ module Api
                   { id: 'doc2', explain: '2' }
                 ],
                 # in Rails 4, we could do second_query.id => [] and getting the second_query in,
-                # but in Rails five, the second_query doesn't show up because the array that is empty
+                # but in Rails 5, the second_query doesn't show up because the array that is empty
                 # gets converted from [] to a nil!   Which then means we don't see second_query.id at all!
                 second_query.id => [ '' ],
               },
