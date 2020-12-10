@@ -5,8 +5,6 @@ class HomeController < ApplicationController
 
   # ignoring naming convention because these are getting passed to JS
   # rubocop:disable Naming/VariableName
-  # rubocop:disable Metrics/MethodLength
-  # rubocop:disable Metrics/AbcSize
   def index
     @triggerWizard = false
 
@@ -28,8 +26,6 @@ class HomeController < ApplicationController
       @bootstrapTryNo   = bootStrapTry.try_number
     end
   end
-  # rubocop:enable Metrics/AbcSize
-  # rubocop:enable Metrics/MethodLength
   # rubocop:enable Naming/VariableName
 
   private

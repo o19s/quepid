@@ -11,9 +11,9 @@ Todos:
 * DONE We must figure out if a case MUST have a scorer or NOT!   We have all sorts of odd logic.  leaning towards if we have a future with N scorers, then it doens't have ot have one!  and that you don't get forced with a default.
 * DONE (no issue!) When starting a new case, no Movie Search case name is set...
 * DONE (Now we use try start with 1, and the wizard works!).  Okay, we pass around a try_id from the front end, however it's actually a try_number!  
-* rip out exgtra dev analystics stuff
+* rip out extra dev analystics stuff
 * DONE (no issue!) export of general and detail from js doesn't work.
-* Look at session in home_controller, do we use it???
+* DONE Look at session in home_controller, do we use it???
 
 
 
