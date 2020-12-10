@@ -158,7 +158,8 @@ angular.module('QuepidApp')
         return currSettings.renameTry(tryNo, newName);
       };
 
-      // Save off any modified settings
+      // Save off any modified settings, generating a
+      // new try.
       this.save = function(settingsToSave) {
         if (settingsToSave.inError) {
           return $q(function(resolve) {
@@ -184,7 +185,7 @@ angular.module('QuepidApp')
         sentData.number_of_rows  = settingsToSave.numberOfRows;
         sentData.query_params    = settingsToSave.selectedTry.queryParams;
         sentData.search_engine   = settingsToSave.searchEngine;
-        sentData.search_url       = settingsToSave.searchUrl;
+        sentData.search_url      = settingsToSave.searchUrl;
 
         return $http.post('/api/cases/' + currCaseNo + '/tries', sentData)
           .then(function(response) {
@@ -201,6 +202,51 @@ angular.module('QuepidApp')
 
             // navigate to what was selected in case try no changed
             caseTryNavSvc.navigateTo({tryNo: newTry.tryNo});
+          });
+      };
+
+      // Update a set of settings in place, which doesn't generate
+      // a new try.
+      this.update = function(settingsToSave) {
+        if (settingsToSave.inError) {
+          return $q(function(resolve) {
+            resolve();
+          });
+        }
+
+        settingsToSave.selectedTry.updateVars();
+        // post up
+        // (1) searchUrl
+        // (2) fieldSpec
+        // (3) possibly edited query params
+        // (4) possibly modified curator vars
+        // probably could be a bit more restful
+        // Note that we map between camelCase in JS and snake_case in API here.
+        var sentData = {};
+        var currCaseNo = caseTryNavSvc.getCaseNo();
+        var currTryNo = caseTryNavSvc.getTryNo();
+
+        sentData.curatorVars     = settingsToSave.selectedTry.curatorVarsDict();
+        sentData.escape_query    = settingsToSave.escapeQuery;
+        sentData.fields          = settingsToSave.createFieldSpec().fields;
+        sentData.field_spec      = settingsToSave.fieldSpec;
+        sentData.number_of_rows  = settingsToSave.numberOfRows;
+        sentData.query_params    = settingsToSave.selectedTry.queryParams;
+        sentData.search_engine   = settingsToSave.searchEngine;
+        sentData.search_url      = settingsToSave.searchUrl;
+
+        return $http.put('/api/cases/' + currCaseNo + '/tries/' + currTryNo, sentData)
+          .then(function(response) {
+
+            // Broadcast that settings for case have been updated
+            var args = {
+              caseNo:   currCaseNo,
+              lastTry:  settingsToSave.selectedTry
+            };
+            broadcastSvc.send('settings-updated', args);
+
+            // navigate to what was selected in case try no changed
+            caseTryNavSvc.navigateTo({tryNo: settingsToSave.selectedTry.tryNo});
           });
       };
 

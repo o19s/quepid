@@ -143,7 +143,7 @@ class Case < ApplicationRecord
   def add_default_try
     return unless tries.empty?
 
-    try_number  = (last_try_number || -1) + 1
+    try_number  = (last_try_number || 0) + 1
     the_try     = tries.create(try_number: try_number)
     the_try.case = self
     tries << the_try

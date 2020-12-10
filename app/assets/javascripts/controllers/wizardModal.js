@@ -228,7 +228,7 @@ angular.module('QuepidApp')
         // pass pending settings on to be saved
         $scope.pendingWizardSettings.submit = function() {
           $log.debug('Submitting settings (from wizard modal)');
-          settingsSvc.save($scope.pendingWizardSettings)
+          settingsSvc.update($scope.pendingWizardSettings)
           .then(function() {
             var latestSettings = settingsSvc.editableSettings();
             docCacheSvc.invalidate();

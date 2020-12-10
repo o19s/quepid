@@ -75,7 +75,7 @@ class CaseTest < ActiveSupport::TestCase
 
       assert_equal acase.scorer_id, q_scorer2.id
       assert_equal acase.scorer.communal, true
-      assert_equal 'AP@10', q_scorer2.name
+      assert_equal Rails.application.config.quepid_default_scorer, q_scorer2.name
     end
 
     test "does not override the case scorer with the user's scorer" do
@@ -104,14 +104,14 @@ class CaseTest < ActiveSupport::TestCase
       default_try = acase.tries.first
 
       assert_equal default_try.try_number, acase.last_try_number
-      assert_equal default_try.try_number, 0
+      assert_equal default_try.try_number, 1
     end
 
     test 'returns try from highest try number (therefore newest) to lowest' do
       acase = cases(:case_with_two_tries)
 
-      assert_equal acase.tries.first.try_number,  1
-      assert_equal acase.tries.second.try_number, 0
+      assert_equal acase.tries.first.try_number,  2
+      assert_equal acase.tries.second.try_number, 1
     end
 
     test 'sets the default try to the default search engine attributes' do

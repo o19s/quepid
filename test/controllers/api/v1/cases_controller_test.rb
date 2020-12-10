@@ -99,8 +99,8 @@ module Api
 
           body = JSON.parse(response.body)
 
-          assert_equal body['tries'][0]['try_number'], 1
-          assert_equal body['tries'][1]['try_number'], 0
+          assert_equal body['tries'][0]['try_number'], 2
+          assert_equal body['tries'][1]['try_number'], 1
         end
       end
 

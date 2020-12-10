@@ -70,7 +70,7 @@ Rails.application.routes.draw do
       resources :cases, except: [ :new, :edit ], param: :case_id
       resources :cases, only: [] do
         # Case Tries
-        resources :tries, param: :try_number, except: [ :new, :edit ] do
+        resources :tries, param: :try_number, except: [ :new ] do
           post '/duplicate' => 'duplicate_tries#create', as: :duplicate_try
         end
 
