@@ -43,6 +43,7 @@ module Api
         params.require(:case_score).permit(
           :score,
           :all_rated,
+          :try_number,
           :try_id,
           queries: [ :text, :score, :maxScore, :numFound ]
         )

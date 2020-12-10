@@ -30,6 +30,13 @@ class CaseScoreManager
       end
     end
 
+    # Look up the try using the try_number if we passed that in.
+    if score_data[:try_number]
+      try = @the_case.tries.where(try_number: score_data[:try_number]).first
+      score_data.except!(:try_number)
+      score_data[:try_id] = try.id
+    end
+
     @score = @the_case.scores.build score_data
 
     return @score if @score.save

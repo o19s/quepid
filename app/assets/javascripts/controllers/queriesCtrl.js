@@ -222,7 +222,7 @@ angular.module('QuepidApp')
               lastScoreTracker = {
                 'score':      $scope.queries.avgQuery.lastScore.score,
                 'all_rated':  $scope.queries.avgQuery.lastScore.allRated,
-                'try_id':     tryNo,
+                'try_number': tryNo,
                 'queries':    $scope.queries.avgQuery.lastScore.queries,
               };
 
@@ -234,7 +234,7 @@ angular.module('QuepidApp')
           var lastScoreTracker = {
             'score':      $scope.queries.avgQuery.lastScore.score,
             'all_rated':  $scope.queries.avgQuery.lastScore.allRated,
-            'try_id':     tryNo,
+            'try_number': tryNo,
             'queries':    $scope.queries.avgQuery.lastScore.queries,
           };
 

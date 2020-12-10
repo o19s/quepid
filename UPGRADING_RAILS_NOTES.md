@@ -4,11 +4,15 @@ Todos:
 * DONE get bin/docker r bin/rake test:quepid to run `rails test`
 * DONE fix FK links
 * DONE (Not going to do it, just specify integer) resolve migration to bigint in mysql for id's
-* Test importing ratings, confirm the removal of `case.ratings`.
+* DONE Test importing ratings, confirm the removal of `case.ratings`.
 * Test that when a snapshot has a query with docs, and a query wihtout docs, that the query without docs still gets snapshotted. Some weird JSON data. See `snapshots_controller_test.rb` __handles queries with no docs__ test...
 * Right now we support creating a snapshot with no docs.   WHY?   Look at `snapshots_controller_test.rb` __handles empty list of docs__.   
 * DONE (added a replacement_scorer_id param which will let us clean up some stuff in production Quepid).   Interestingly we have on the /api/scorers (`scorers_controller.rb`) a *force* param that isn't used by the front end, that forces deleting a scorer.  i fixed the tests but left the code...  
 * DONE We must figure out if a case MUST have a scorer or NOT!   We have all sorts of odd logic.  leaning towards if we have a future with N scorers, then it doens't have ot have one!  and that you don't get forced with a default.
+* When starting a new case, no Movie Search case name is set...
+* DONE Okay, we pass around a try_id from the front end, however it's actually a try_number!  
+* rip out exgtra dev analystics stuff
+* export of general and detail from js doesn't work.
 
 
 
