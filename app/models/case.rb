@@ -18,8 +18,6 @@
 
 # rubocop:disable Metrics/ClassLength
 class Case < ApplicationRecord
-  # Constants
-  DEFAULT_NAME = 'Movies Search'
 
   # Associations
   # too late now!
@@ -134,7 +132,7 @@ class Case < ApplicationRecord
   private
 
   def set_scorer
-    return true if scorer_id.present?
+    return if scorer_id.present?
 
     self.scorer = if user&.default_scorer
                     user.default_scorer
@@ -144,7 +142,7 @@ class Case < ApplicationRecord
   end
 
   def add_default_try
-    return true unless tries.empty?
+    return unless tries.empty?
 
     try_number  = (last_try_number || -1) + 1
     the_try     = tries.create(try_number: try_number)
