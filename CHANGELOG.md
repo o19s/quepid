@@ -1,11 +1,10 @@
 # Changelog
 
-
 ## 6.3.3 - ?
 
 * Big upgrade to Rails 5.  Ruby 2.6.6.
 
-## 6.3.2 - ??
+## 6.3.2 - 2020-12-08
 
 ### Features
 
@@ -32,6 +31,8 @@
 * Don't show the Sharing icon for communal scorers, since they are implicitly shared globally!  https://github.com/o19s/quepid/pull/251 by @epugh fixes https://github.com/o19s/quepid/issues/247.
 
 * Allow the export and import cycle of ratings using both CSV and RRE formats to include queries with no rated documents. Don't create a partial rating on import where we only have a doc id but no rating.  https://github.com/o19s/quepid/pull/252 by @epugh fixes https://github.com/o19s/quepid/issues/244 by @LiuCao0614
+
+* Make it easier for scrapers and automated test tools to log into Quepid by adding some id and class tags to the login forms.  https://github.com/o19s/quepid/pull/257 by @epugh.
 
 ### Bugs
 

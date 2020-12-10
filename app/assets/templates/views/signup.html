@@ -3,7 +3,7 @@
     <div class="col-md-3 col-sm-4 col-md-offset-2 col-sm-offset-1">
       <h2>Login</h2>
       <div ng-controller="LoginCtrl">
-        <form ng-submit="submit(email, password)">
+        <form id="login" ng-submit="submit(email, password)">
           <div class="alert alert-danger" ng-if="warnUndefined">
             Unknown email/password. Try again or sign up!
           </div>
@@ -17,15 +17,15 @@
             Your account is locked.
           </div>
 
-          <input type="text" class="form-control" ng-model="email" placeholder="Email">
+          <input type="text" class="form-control email" ng-model="email" placeholder="Email">
           <br/>
-          <input type="password" class="form-control" ng-model="password" placeholder="Password">
+          <input type="password" class="form-control password" ng-model="password" placeholder="Password">
           <br/>
           <div>
             <a href='/users/password/new' target="_self">Forgot Password?</a>
           </div>
           <br/>
-          <input type="submit" value="Login" class="btn btn-default">
+          <input type="submit" value="Login" class="btn btn-default login">
           <br/>
         </form>
       </div>
@@ -37,7 +37,7 @@
 
     <div class="col-md-3 col-sm-4" ng-show="isSignupEnabled">
       <div ng-controller="SignupCtrl" ng-cloak>
-        <form ng-submit="submit(agree, emailMarketingAgree, name, email, password, confirm)" >
+        <form id="signup" ng-submit="submit(agree, emailMarketingAgree, name, email, password, confirm)" >
           <h2>Signup to get started!</h2>
 
           <div class="alert alert-danger" ng-if="warnErr">
@@ -68,21 +68,21 @@
             <input
               type="text"
               ng-model="name"
-              class="form-control"
+              class="form-control name"
               placeholder="Full Name"
               required
              />
           </div>
 
           <div class="form-group">
-            <input type="email" ng-model="email" class="form-control" placeholder="Email Address" required />
+            <input type="email" ng-model="email" class="form-control email" placeholder="Email Address" required />
           </div>
 
           <div class="form-group">
             <input
               type="password"
               ng-model="password"
-              class="form-control"
+              class="form-control password"
               placeholder="Password"
               required
              />
@@ -92,7 +92,7 @@
             <input
               type="password"
               ng-model="confirm"
-              class="form-control"
+              class="form-control password-confirm"
               placeholder="Confirm Password"
               required
              />
@@ -100,7 +100,7 @@
 
           <div class="checkbox" ng-show="hasTermsAndConditions">
             <label>
-              <input type="checkbox" ng-model="agree" ng-required="hasTermsAndConditions"/>
+              <input id="terms-and-conditions" type="checkbox" ng-model="agree" ng-required="hasTermsAndConditions"/>
               Agree to
               <a ng-href="{{ termsAndConditionsUrl }}" target="_blank">terms &amp; conditions</a>?
             </label>
@@ -108,13 +108,13 @@
 
           <div class="checkbox" ng-show="isEmailMarketingMode">
             <label>
-              <input type="checkbox" ng-model="emailMarketingAgree" ng-required="false"/>
+              <input id="email-marketing" type="checkbox" ng-model="emailMarketingAgree" ng-required="false"/>
               Click here if you'd like us to send you occasional news about relevance tuning with Quepid (including new features). You can unsubscribe at any time.
             </label>
           </div>
 
 
-          <button class="btn btn-primary">Signup</button>
+          <button class="btn btn-primary signup">Signup</button>
         </form>
       </div>
     </div>

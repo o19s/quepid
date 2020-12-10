@@ -32,7 +32,7 @@
       </span>
 
       <form ng-switch-when="true" ng-blur="ctrl.submit()" ng-submit="ctrl.submit()" class="form-inline">
-        <input type="text" autofocus="autofocus" ng-model="ctrl.clickToEdit.currVal" class="form-control input-sm"></input>
+        <input id="case-name" type="text" autofocus="autofocus" ng-model="ctrl.clickToEdit.currVal" class="form-control input-sm"></input>
         <button class="btn btn-xs btn-success rename">Save</button>
         <a class="btn btn-xs btn-default" ng-click="ctrl.cancel()">Cancel</a>
       </form>
