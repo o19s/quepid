@@ -33,7 +33,7 @@
     "json3": "~3.2.4",
     "ng-json-explorer": "http://github.com/odra/ng-json-explorer",
     "ng-tags-input": "3.2.0",
-    "splainer-search": "^2.6.6-1",
+    "splainer-search": "^2.6.6",
     "tether-shepherd": "latest"
   },
   "devDependencies": {

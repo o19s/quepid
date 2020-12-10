@@ -702,7 +702,6 @@ angular.module('QuepidApp')
           });
         };
 
-        // TODO: Fix splainer for ES
         this.filterToRatings = function(settings, slice) {
           var ratedIDs = self.ratings ? Object.keys(self.ratings) : [];
 
@@ -714,7 +713,6 @@ angular.module('QuepidApp')
           var fieldSpec = settings.createFieldSpec();
 
           if (settings.searchEngine === 'es') {
-            // Looks like this requires a splainer update, explainOther doesn't accept a ES query.
             var esQuery = {
               'terms': {}
             };

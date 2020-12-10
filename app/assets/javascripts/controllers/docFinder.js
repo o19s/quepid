@@ -105,15 +105,24 @@ angular.module('QuepidApp')
         var fieldSpec     = settings.createFieldSpec();
 
 
-        $scope.docFinder.searcher.explainOther(
-          $scope.query.filterToRatings(currSettings, $scope.docFinder.docs.length), fieldSpec, 'lucene')
-        .then(function() {
-          var normed = queriesSvc.normalizeDocExplains($scope.query, $scope.docFinder.searcher, fieldSpec);
-
-          angular.forEach(normed, function(doc) {
-            $scope.docFinder.docs.push(doc);
+        if ($scope.docFinder.searcher.type === 'es') {
+          var filter = {
+            'query': $scope.query.filterToRatings(currSettings, $scope.docFinder.docs.length)
+          };
+          $scope.docFinder.searcher.explainOther(
+            filter, fieldSpec)
+            .then(function() {
+              var normed = queriesSvc.normalizeDocExplains($scope.query, $scope.docFinder.searcher, fieldSpec);
+              $scope.docFinder.docs = $scope.docFinder.docs.concat(normed);
+            });
+        } else if ($scope.docFinder.searcher.type === 'solr') {
+          $scope.docFinder.searcher.explainOther(
+            $scope.query.filterToRatings(currSettings, $scope.docFinder.docs.length), fieldSpec, 'lucene')
+            .then(function() {
+              var normed = queriesSvc.normalizeDocExplains($scope.query, $scope.docFinder.searcher, fieldSpec);
+              $scope.docFinder.docs = $scope.docFinder.docs.concat(normed);
           });
-        });
+        }
       };
 
 
@@ -161,7 +170,20 @@ angular.module('QuepidApp')
 
       $scope.docFinder.searcher = queriesSvc.createSearcherFromSettings(currSettings, $scope.query.queryText);
 
-      if ($scope.docFinder.searcher.type === 'solr') {
+      if ($scope.docFinder.searcher.type === 'es') {
+        var filter = {
+          'query': $scope.query.filterToRatings(currSettings, $scope.docFinder.docs.length)
+        };
+        $scope.docFinder.searcher.explainOther(
+          filter, fieldSpec)
+          .then(function() {
+            var normed = queriesSvc.normalizeDocExplains($scope.query, $scope.docFinder.searcher, fieldSpec);
+            $scope.docFinder.docs = normed;
+
+            $scope.defaultList = true;
+        });
+
+      } else if ($scope.docFinder.searcher.type === 'solr') {
         $scope.docFinder.searcher.explainOther(
           $scope.query.filterToRatings(currSettings, $scope.docFinder.docs.length), fieldSpec, 'lucene')
           .then(function() {
