@@ -383,6 +383,20 @@ which will install the new Node module, and then save that dependency to `packag
 
 Then check in the updated `package.json` and `yarn.lock` files.
 
+## I'd like to use a new Ruby Gem
+
+Typically you would simply do:
+
+```
+bin/docker r bundle add foobar
+```
+
+which will install the new Gem, and then save that dependency to `Gemfile`.
+
+Then check in the updated `package.json` and `yarn.lock` files.  For good measure
+run the `bin/setup_docker`.
+
+
 ## I'd like to test SSL
 
 There's a directory `.ssl` that contains they key and cert files used for SSL. This is a self signed generated certificate for use in development ONLY!
@@ -434,11 +448,11 @@ heroku restart -a quepid-staging
 
 ## Seed Data
 
-The following accounts are created through the seeds. The all follow the following format:
+The following accounts are created through the seeds. They all follow the following format:
 
 ```
 email: quepid+[type]@o19s.com
-password: quepid+[type]
+password: password
 ```
 
 where type is one of the following:
