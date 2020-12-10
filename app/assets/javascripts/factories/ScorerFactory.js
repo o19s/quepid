@@ -559,7 +559,7 @@
       }
 
       function maxScore() {
-        return self.manualMaxScore ? self.manualMaxScore : 100;
+        return self.manualMaxScore ? self.manualMaxScore : self.scale[-1];
       }
 
       function score(query, total, docs, bestDocs, options) {
