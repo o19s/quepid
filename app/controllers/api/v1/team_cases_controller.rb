@@ -12,7 +12,7 @@ module Api
       end
 
       def create
-        @case = Case.where(id: params[:id]).first
+        @case = Case.includes( tries: [ :curator_variables ] ).where(id: params[:id]).first
 
         unless @case
           render json: { error: 'Not Found!' }, status: :not_found

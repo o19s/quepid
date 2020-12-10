@@ -7,7 +7,7 @@ module Api
       before_action :check_case
 
       def index
-        @scores = @case.scores.includes(:annotation).limit(10)
+        @scores = @case.scores.includes(:annotation, :user).limit(10)
 
         respond_with @scores
       end

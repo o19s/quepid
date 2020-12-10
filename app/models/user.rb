@@ -105,7 +105,7 @@ class User < ApplicationRecord
   include Profile
 
   # Scopes
-  default_scope -> { includes(:permissions) }
+  #default_scope -> { includes(:permissions) }
 
   # returns and owned or shared case for this user
   def find_case case_id

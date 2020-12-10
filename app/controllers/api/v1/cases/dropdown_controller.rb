@@ -33,16 +33,10 @@ module Api
             case_ids << row.first.to_i
           end
 
-          # Not sure what all this logic was about!
-          # @cases = current_user.case
-          # @cases = @cases.where(id: cases_ids.map(&:id))
-          @cases = Case.where(id: [ case_ids ])
+          # map to objects
+          @cases = Case.includes([ :tries, :cases_teams ]).where(id: [ case_ids ])
           @cases = @cases.sort_by { |x| case_ids.index x.id }
-          # @cases = @cases.not_archived
-          # @cases = @cases.merge(Metadatum.order(last_viewed_at: :desc))
-          # @cases = @cases.order(id: :desc)
-          # @cases = @cases.limit(3)
-          # @cases = @cases.all
+
 
           respond_with @cases
         end

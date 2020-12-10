@@ -5,13 +5,13 @@ Todos:
 * DONE fix FK links
 * DONE (Not going to do it, just specify integer) resolve migration to bigint in mysql for id's
 * DONE Test importing ratings, confirm the removal of `case.ratings`.
-* Test that when a snapshot has a query with docs, and a query wihtout docs, that the query without docs still gets snapshotted. Some weird JSON data. See `snapshots_controller_test.rb` __handles queries with no docs__ test...
-* Right now we support creating a snapshot with no docs.   WHY?   Look at `snapshots_controller_test.rb` __handles empty list of docs__.   
+* DONE Test that when a snapshot has a query with docs, and a query wihtout docs, that the query without docs still gets snapshotted. Some weird JSON data. See `snapshots_controller_test.rb` __handles queries with no docs__ test...
+* DONE (guessing casue maybe later you have docs?) Right now we support creating a snapshot with no docs.   WHY?   Look at `snapshots_controller_test.rb` __handles empty list of docs__.   
 * DONE (added a replacement_scorer_id param which will let us clean up some stuff in production Quepid).   Interestingly we have on the /api/scorers (`scorers_controller.rb`) a *force* param that isn't used by the front end, that forces deleting a scorer.  i fixed the tests but left the code...  
 * DONE We must figure out if a case MUST have a scorer or NOT!   We have all sorts of odd logic.  leaning towards if we have a future with N scorers, then it doens't have ot have one!  and that you don't get forced with a default.
 * DONE (no issue!) When starting a new case, no Movie Search case name is set...
 * DONE (Now we use try start with 1, and the wizard works!).  Okay, we pass around a try_id from the front end, however it's actually a try_number!  
-* rip out extra dev analystics stuff
+* DONE (Changed my mind, I used it to reduce some extra sql joins etc) rip out extra dev analystics stuff
 * DONE (no issue!) export of general and detail from js doesn't work.
 * DONE Look at session in home_controller, do we use it???
 
