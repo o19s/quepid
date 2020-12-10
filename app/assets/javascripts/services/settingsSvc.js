@@ -236,7 +236,7 @@ angular.module('QuepidApp')
         sentData.search_url      = settingsToSave.searchUrl;
 
         return $http.put('/api/cases/' + currCaseNo + '/tries/' + currTryNo, sentData)
-          .then(function(response) {
+          .then(function() {
 
             // Broadcast that settings for case have been updated
             var args = {
