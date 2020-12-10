@@ -18,7 +18,6 @@
 
 # rubocop:disable Metrics/ClassLength
 class Case < ApplicationRecord
-
   # Associations
   # too late now!
   # rubocop:disable Rails/HasAndBelongsToMany

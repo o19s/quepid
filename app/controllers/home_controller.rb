@@ -16,7 +16,7 @@ class HomeController < ApplicationController
     bootstrapCase = nil
 
     # First check if the case and the try have been set in the session
-    puts "I am reading from the session!"
+    puts 'I am reading from the session!'
     puts "Here is session[:bootstrapCaseNo]: #{session[:bootstrapCaseNo]}"
     @bootstrapCaseNo  = session[:bootstrapCaseNo]
     @bootstrapTryNo   = session[:bootstrapTryNo]
@@ -40,7 +40,7 @@ class HomeController < ApplicationController
     else
       @triggerWizard    = true unless current_user.first_login?
 
-      bootstrapCase     = current_user.cases.create case_name: "Case #{current_user.cases.size}"  
+      bootstrapCase     = current_user.cases.create case_name: "Case #{current_user.cases.size}"
       @bootstrapCaseNo  = bootstrapCase.id
       bootStrapTry      = bootstrapCase.tries.first
       @bootstrapTryNo   = bootStrapTry.try_number

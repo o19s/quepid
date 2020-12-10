@@ -46,7 +46,7 @@ class HomeControllerTest < ActionController::TestCase
     end
 
     test 'bootstraps non deleted/archived case' do
-      deleted_case = user.cases.create case_name: "archived case"
+      deleted_case = user.cases.create case_name: 'archived case'
       deleted_case.update archived: true
 
       get :index
