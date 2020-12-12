@@ -4,8 +4,6 @@ require 'sidekiq/web'
 
 # rubocop:disable Metrics/BlockLength
 Rails.application.routes.draw do
-  get 'bob/open'
-  get 'bob/show'
   constraints(AdminConstraint) do
     mount Sidekiq::Web, at: 'admin/jobs'
   end
@@ -19,15 +17,22 @@ Rails.application.routes.draw do
   post 'users/login' => 'sessions#create', defaults: { format: :json }
   get  'logout'      => 'sessions#destroy'
   get  'secure'      => 'secure#index'
+  get  'secure/complete' => 'secure#index'
   # end legacy routes
 
   resources :sessions
   resource :account, only: [ :update ]
   resource :profile, only: [ :show, :update ]
 
-  devise_for :users, only: [ :passwords ], controllers: {
+  # not sure I get why we had the only: [ :passwords ] clause
+  devise_for :users, controllers: {
     passwords: 'users/passwords',
+    invitations: 'users/invitations'
   }
+  #devise_for :users, only: [ :passwords ], controllers: {
+  #  passwords: 'users/passwords',
+  #  invitations: 'users/invitations'
+  #}
 
   namespace :admin do
     get '/' => 'home#index'
@@ -119,6 +124,7 @@ Rails.application.routes.draw do
       resources :teams, except: [ :new, :edit ], param: :team_id
       resources :teams, only: [] do
         resources :members, only: [ :index, :create, :destroy ], controller: :team_members
+        post '/members/invite' => 'team_members#invite'
         resources :scorers, only: [ :index, :create, :destroy ], controller: :team_scorers
         resources :cases,   only: [ :index, :create, :destroy ], controller: :team_cases
         resources :owners,  only: [ :update ], controller: :team_owners

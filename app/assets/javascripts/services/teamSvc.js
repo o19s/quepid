@@ -187,6 +187,25 @@ angular.module('QuepidApp')
           });
       };
 
+      this.inviteUserToJoin = function(team, email) {
+        // http POST /api/teams/<int:teamId>/members/invite
+        var url   = '/api/teams/' + team.id + '/members/invite';
+        var data  = { id:  email };
+
+        if ( team.members === undefined ) {
+          team.members = [];
+        }
+
+        return $http.post(url, data)
+          .then(function(response) {
+            var member = response.data;
+
+            if ( !hasMember(team, member) ) {
+              team.members.push(member);
+            }
+          });
+      };
+
       this.removeMember = function(team, member) {
         // http DELETE /api/teams/<int:teamId>/members/<int:memberId>
         var url   = '/api/teams/' + team.id + '/members/' + member.id;

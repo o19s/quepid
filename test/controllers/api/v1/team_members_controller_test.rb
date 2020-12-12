@@ -75,6 +75,19 @@ module Api
         end
       end
 
+      describe 'Invites a new user to join Quepid and a team' do
+        test 'invites a new member successfully using the email' do
+          assert_difference 'team.members.count' do
+            invitee_email = "newperson@example.com"
+
+            post :invite, params: { team_id: team.id, id: invitee_email }
+            assert_response :ok
+            
+            assert json_response['pending_invite']
+          end
+        end
+      end
+
       describe 'Removes a member from team' do
         test 'deletes existing member successfully using the email' do
           assert_difference 'team.members.count', -1 do

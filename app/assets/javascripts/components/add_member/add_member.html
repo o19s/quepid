@@ -1,28 +1,40 @@
 <script type="text/ng-template" id="member_popup.html">
   <a>
-      <img ng-src="{{match.model.avatar_url}}" width="24">
+      <img ng-src="{{match.model.avatar_url}}" width="48">
       {{match.model.display_name}} (<span ng-bind-html="match.model.email"></span>)
   </a>
 </script>
 
 <div class='form-group'>
-  <input id="user-lookup" type="text" ng-model="ctrl.selected" placeholder="Look for users via email or display name"
+  <form class="form input-append">
+  <input id="user-lookup" class="form-control email" size="30" type="text" ng-model="ctrl.selected" placeholder="Look for users via email or display name"
     uib-typeahead="user as user.display_name for user in ctrl.getUsers($viewValue)"
     typeahead-loading="loadingUsers"
+    typeahead-no-results="noMatches"
     typeahead-template-url="member_popup.html"
     class="form-control"
     typeahead-on-select="ctrl.selectMember($item, $model, $label)"
   />
-  <i ng-show="loadingUsers" class="fa fa-refresh fa-spin"></i>
-  <a
+
+  <a ng-if="!(noMatches && ctrl.testIsEmailAddress(ctrl.selected))"
     class="btn btn-success"
     ng-click="ctrl.addMember()"
   >
-    Add
+    Add user
   </a>
 
+  <a ng-if="(noMatches && ctrl.testIsEmailAddress(ctrl.selected))"
+    class="btn btn-success"
+    ng-click="ctrl.inviteUserToJoin()"
+  >
+    Send invitation
+  </a>
+  <i ng-show="loadingUsers" class="fa fa-spinner fa-spin"></i>
+  </form>
+
   <p class='help-block'>
-    Start typing an email to add user as a member to this team.
-    Once you select a user, click on "Add" to add them as a member.
+    Start typing an email address to add an existing user to this team.
+    If the email address doesn't match anyone, you will be able to invite them to join Quepid and this team.
   </p>
+
 </div>

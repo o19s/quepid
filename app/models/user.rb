@@ -68,9 +68,13 @@ class User < ApplicationRecord
            dependent: :destroy
 
   # Validations
+
+  # https://davidcel.is/posts/stop-validating-email-addresses-with-regex/
   validates :email,
             presence:   true,
-            uniqueness: true
+            uniqueness: true,
+            format: { with: URI::MailTo::EMAIL_REGEXP }
+
 
   validates :password,
             presence: true
@@ -148,6 +152,10 @@ class User < ApplicationRecord
     self.locked_at  = nil
   end
 
+  def after_database_authentication
+    puts "HERE I AM, I am a bogus method I think!!!!"
+  end
+
   private
 
   def set_defaults
@@ -167,4 +175,6 @@ class User < ApplicationRecord
 
     true
   end
+
+
 end

@@ -99,6 +99,30 @@ class UserTest < ActiveSupport::TestCase
     end
   end
 
+  describe 'Email' do
+    test 'validates the format of the email address' do
+      new_user = User.create(email: nil, password: 'password')
+
+      assert new_user.errors.added? :email, :blank # => true
+      assert_includes new_user.errors.messages[:email], "can't be blank"
+
+      new_user = User.create(email: 'epugh', password: 'password')
+      assert_includes new_user.errors.messages[:email], "is invalid"
+
+      new_user = User.create(email: 'epugh@', password: 'password')
+      assert_includes new_user.errors.messages[:email], "is invalid"
+
+      # turns out this is a valid format at least as far as regex validation goes!
+      new_user = User.create(email: 'epugh@o19s', password: 'password')
+      assert_empty new_user.errors.messages
+
+      new_user = User.create(email: 'epugh@o19s.com', password: 'password')
+      assert_empty new_user.errors.messages
+      new_user = User.create(email: 'epugh+tag@o19s.com', password: 'password')
+      assert_empty new_user.errors.messages
+    end
+  end
+
   describe 'Default Case' do
     # we used to create the default case for every user, but that assumptions doesn't make sense anymore.
     test 'when user is created a default case is NOT automatically created' do

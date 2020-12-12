@@ -141,7 +141,7 @@ Devise.setup do |config|
   # The class name of the inviting model. If this is nil,
   # the #invited_by association is declared to be polymorphic.
   # Default: nil
-  # config.invited_by_class_name = 'User'
+  config.invited_by_class_name = 'User'
 
   # The foreign key to the inviting model (if invited_by_class_name is set)
   # Default: :invited_by_id
