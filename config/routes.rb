@@ -26,13 +26,13 @@ Rails.application.routes.draw do
 
   # not sure I get why we had the only: [ :passwords ] clause
   devise_for :users, controllers: {
-    passwords: 'users/passwords',
-    invitations: 'users/invitations'
+    passwords:   'users/passwords',
+    invitations: 'users/invitations',
   }
-  #devise_for :users, only: [ :passwords ], controllers: {
+  # devise_for :users, only: [ :passwords ], controllers: {
   #  passwords: 'users/passwords',
   #  invitations: 'users/invitations'
-  #}
+  # }
 
   namespace :admin do
     get '/' => 'home#index'

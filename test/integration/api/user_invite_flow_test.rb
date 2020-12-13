@@ -5,7 +5,7 @@ require 'test_helper'
 class UserInviteFlowTest < ActionDispatch::IntegrationTest
   include ActionMailer::TestHelper
 
-  test "invite friend" do
+  test 'invite friend to join my team on Quepid' do
     post users_login_url params: { email: 'doug@example.com', password: 'password', format: :json }
 
     # Asserts the difference in the ActionMailer::Base.deliveries
@@ -30,12 +30,13 @@ class UserInviteFlowTest < ActionDispatch::IntegrationTest
     invitee.reload
     assert_not invitee.invitation_accepted?
 
-    put user_invitation_url( params: {  user: { invitation_token: raw_token_from_email, name: 'Bob', email: 'friend@example.com', password: 'password', password_confirmation: 'password' } } )
+    # rubocop:disable Layout/LineLength
+    put user_invitation_url( params: { user: { invitation_token: raw_token_from_email, name: 'Bob', email: 'friend@example.com', password: 'password', password_confirmation: 'password' } } )
+    # rubocop:enable Layout/LineLength
 
     invitee.reload
 
     assert invitee.invitation_accepted?
     assert_equal invitee.name, 'Bob'
-
   end
 end

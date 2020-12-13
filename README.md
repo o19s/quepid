@@ -194,7 +194,7 @@ Runs tests for the Angular side. There are two modes for the karma tests:
 To check the Ruby syntax:
 
 ```
-bin/docker r rubocop
+bin/docker r bundle exec rubocop
 ```
 
 ### All Tests

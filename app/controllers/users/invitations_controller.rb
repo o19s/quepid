@@ -1,17 +1,24 @@
-class Users::InvitationsController < Devise::InvitationsController
-  force_ssl if: :ssl_enabled?
-  skip_before_action :require_login,              only: [ :edit, :update ]
+# frozen_string_literal: true
 
-  #layout 'admin'
+module Users
+  class InvitationsController < Devise::InvitationsController
+    force_ssl if: :ssl_enabled?
+    skip_before_action :require_login, only: [ :edit, :update ]
 
-  def update
-    super
+    def update
+      super
 
-    session[:current_user_id] = @user.id
-  end
+      session[:current_user_id] = @user.id
+    end
 
-  private
-  def update_resource_params
-    params.require(:user).permit(:name, :email,:invitation_token, :password, :password_confirmation)
+    def edit
+      super
+    end
+
+    private
+
+    def update_resource_params
+      params.require(:user).permit(:name, :email, :invitation_token, :password, :password_confirmation)
+    end
   end
 end

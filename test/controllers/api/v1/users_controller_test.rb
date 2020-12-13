@@ -138,14 +138,14 @@ module Api
           end
 
           it 'returns a match on a email' do
-            get :index,  params: { prefix: 'matt@' }
+            get :index, params: { prefix: 'matt@' }
 
             assert_response :ok
 
             assert_instance_of  Array,  json_response['users']
-            assert_equal        1,     json_response['users'].size
+            assert_equal        1,      json_response['users'].size
 
-            emails      = json_response['users'].pluck('email')
+            emails = json_response['users'].pluck('email')
             assert_includes emails, 'matt@example.com'
           end
 

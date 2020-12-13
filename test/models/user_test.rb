@@ -104,13 +104,13 @@ class UserTest < ActiveSupport::TestCase
       new_user = User.create(email: nil, password: 'password')
 
       assert new_user.errors.added? :email, :blank # => true
-      assert_includes new_user.errors.messages[:email], "can't be blank"
+      assert_includes new_user.errors.messages[:email], 'can\'t be blank'
 
       new_user = User.create(email: 'epugh', password: 'password')
-      assert_includes new_user.errors.messages[:email], "is invalid"
+      assert_includes new_user.errors.messages[:email], 'is invalid'
 
       new_user = User.create(email: 'epugh@', password: 'password')
-      assert_includes new_user.errors.messages[:email], "is invalid"
+      assert_includes new_user.errors.messages[:email], 'is invalid'
 
       # turns out this is a valid format at least as far as regex validation goes!
       new_user = User.create(email: 'epugh@o19s', password: 'password')

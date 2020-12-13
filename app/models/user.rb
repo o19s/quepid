@@ -75,7 +75,6 @@ class User < ApplicationRecord
             uniqueness: true,
             format: { with: URI::MailTo::EMAIL_REGEXP }
 
-
   validates :password,
             presence: true
 
@@ -153,7 +152,7 @@ class User < ApplicationRecord
   end
 
   def after_database_authentication
-    puts "HERE I AM, I am a bogus method I think!!!!"
+    # required by devise_invitable
   end
 
   private
@@ -167,6 +166,7 @@ class User < ApplicationRecord
 
     # this is necessary because it will rollback
     # the creation/update of the user otherwise
+    # Not sure this is true
     true
   end
 
@@ -175,6 +175,4 @@ class User < ApplicationRecord
 
     true
   end
-
-
 end
