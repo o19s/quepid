@@ -11,9 +11,11 @@ module Users
       session[:current_user_id] = @user.id
     end
 
+    # rubocop:disable Lint/UselessMethodDefinition
     def edit
       super
     end
+    # rubocop:enable Lint/UselessMethodDefinition
 
     private
 
