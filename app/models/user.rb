@@ -134,7 +134,7 @@ class User < ApplicationRecord
 
   # Returns all the teams that the user is both owner of and involved in!
   def teams_im_in
-    UserTeamFinder.new(self).call
+    UserTeamFinder.new(self)
   end
 
   def locked?
