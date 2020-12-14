@@ -27,6 +27,10 @@ module Api
       render json: { message: 'Success!' }, status: :ok
     end
 
+    def signup_enabled?
+      'true' == Rails.application.config.signup_enabled
+    end
+
     protected
 
     def set_default_response_format

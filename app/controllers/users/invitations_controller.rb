@@ -6,6 +6,11 @@ module Users
     skip_before_action :require_login, only: [ :edit, :update ]
 
     def update
+      unless signup_enabled?
+        flash.now[:error] = 'Signups are disabled.'
+        redirect_to secure_path and return
+      end
+
       super
 
       session[:current_user_id] = @user.id

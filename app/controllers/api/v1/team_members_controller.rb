@@ -30,6 +30,11 @@ module Api
       end
 
       def invite
+        unless signup_enabled?
+          render json: { error: 'Signups are disabled!' }, status: :not_found
+          return
+        end
+
         @member = User.invite!({ email: params[:id], password: '' }, current_user)
 
         @team.members << @member unless @team.members.exists?(@member.id)
