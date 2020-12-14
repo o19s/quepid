@@ -80,6 +80,14 @@ class User < ApplicationRecord
 
   validates_with ::DefaultScorerExistsValidator
 
+  validates :agreed,
+            acceptance: { message: 'You must agree to the terms and conditions.' },
+            if:         :terms_and_conditions?
+
+  def terms_and_conditions?
+    Rails.application.config.terms_and_conditions_url.length.positive?
+  end
+
   # Modules
   # Include default devise modules. Others available are:
   # :confirmable, :lockable, :timeoutable and :omniauthable
@@ -89,9 +97,8 @@ class User < ApplicationRecord
 
   # Callbacks
   before_save   :encrypt_password
+  before_save   :check_agreed_time
   before_create :set_defaults
-
-  # after_create  :add_default_case
 
   # Devise hacks since we only use the recoverable module
   attr_accessor :password_confirmation
@@ -174,5 +181,14 @@ class User < ApplicationRecord
     self[:password] = BCrypt::Password.create(password) if password.present? && password_changed?
 
     true
+  end
+
+  def check_agreed_time
+    return unless terms_and_conditions?
+
+    return unless agreed && agreed_time.nil?
+
+    self[:agreed_time] = Time.zone.now
+
   end
 end

@@ -30,9 +30,20 @@ class UserInviteFlowTest < ActionDispatch::IntegrationTest
     invitee.reload
     assert_not invitee.invitation_accepted?
 
-    # rubocop:disable Layout/LineLength
-    put user_invitation_url( params: { user: { invitation_token: raw_token_from_email, name: 'Bob', email: 'friend@example.com', password: 'password', password_confirmation: 'password' } } )
-    # rubocop:enable Layout/LineLength
+    # rubocop:disable Layout/HashAlignment
+    put user_invitation_url(
+      params: {
+        user: {
+          invitation_token:       raw_token_from_email,
+          name:                   'Bob',
+          email:                  'friend@example.com',
+          password:               'password',
+          password_confirmation:  'password',
+          agreed:                 'true',
+        },
+      }
+    )
+    # rubocop:enable Layout/HashAlignment
 
     invitee.reload
 

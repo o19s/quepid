@@ -16,7 +16,7 @@ Todos:
 * DONE Look at session in home_controller, do we use it???
 * DONE, (password blank works fine).  Chase down why :password="" is needed when inviting a user.
 * Deal with the format of the emails!  Make them quepid qlassy.
-* Deal with environment variable for disabling forms.
+* DONE Deal with environment variable for disabling forms.
 
 
 https://www.codementor.io/@gowiem/deviseinvitable-rails-api-9wzmbisus

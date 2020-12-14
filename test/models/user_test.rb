@@ -99,6 +99,26 @@ class UserTest < ActiveSupport::TestCase
     end
   end
 
+  describe 'Agreed' do
+    test 'Doesnt set agreed_time agreed is nil or false' do
+      password = 'password'
+      new_user = User.create(email: 'new@user.com', password: password, agreed: nil)
+      assert_nil new_user.agreed_time
+
+      new_user = User.create(email: 'new@user.com', password: password, agreed: false)
+      assert_nil new_user.agreed_time
+    end
+
+    test 'Sets agreed_time if nil when agreed set to true' do
+      user = User.create
+      assert user.terms_and_conditions?
+
+      password = 'password'
+      new_user = User.create(email: 'new@user.com', password: password, agreed: true)
+      assert_not_nil new_user.agreed_time
+    end
+  end
+
   describe 'Email' do
     test 'validates the format of the email address' do
       new_user = User.create(email: nil, password: 'password')

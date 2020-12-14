@@ -13,7 +13,9 @@ module Users
 
       super
 
+      @user.agreed_time = Time.zone.now
       session[:current_user_id] = @user.id
+      Analytics::Tracker.track_signup_event @user
     end
 
     # rubocop:disable Lint/UselessMethodDefinition
@@ -25,7 +27,15 @@ module Users
     private
 
     def update_resource_params
-      params.require(:user).permit(:name, :email, :invitation_token, :password, :password_confirmation)
+      params.require(:user).permit(
+        :name,
+        :email,
+        :invitation_token,
+        :password,
+        :password_confirmation,
+        :agreed,
+        :email_marketing
+      )
     end
   end
 end

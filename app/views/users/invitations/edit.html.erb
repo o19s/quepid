@@ -20,13 +20,6 @@
                 <%= message %>
               </div>
               <% end %>
-
-              <ul>
-              <% resource.errors.full_messages.each do |message| %>
-                <li><%= message %></li>
-
-              <% end %>
-              </ul>
             </div>
           <% end %>
 
@@ -46,20 +39,24 @@
               <%= f.password_field :password_confirmation, class: 'form-control password-confirm', placeholder: 'Confirm Password' %>
           </div>
 
-          <div class="checkbox" ng-show="hasTermsAndConditions">
+          <% if Rails.application.config.terms_and_conditions_url.size > 0 %>
+          <div class="checkbox">
             <label>
-              <input id="terms-and-conditions" type="checkbox" ng-model="agree" ng-required="hasTermsAndConditions"/>
+              <%= f.check_box :agreed %>
               Agree to
               <a ng-href="{{ termsAndConditionsUrl }}" target="_blank">terms &amp; conditions</a>?
             </label>
           </div>
+          <% end %>
 
-          <div class="checkbox" ng-show="isEmailMarketingMode">
+          <% if Rails.application.config.email_marketing_mode %>
+          <div class="checkbox">
             <label>
-              <input id="email-marketing" type="checkbox" ng-model="emailMarketingAgree" ng-required="false"/>
-              Click here if you'd like us to send you occasional news about relevance tuning with Quepid (including new features). You can unsubscribe at any time.
+              <%= f.check_box :email_marketing %>
+              Click here to receive occasional news about relevance tuning with Quepid (including new features). You can unsubscribe at any time.
             </label>
           </div>
+          <% end %>
 
           <%= f.submit 'Accept Invite', class: 'btn btn-primary signup' %>
         <% end %>

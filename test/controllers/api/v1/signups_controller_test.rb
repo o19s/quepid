@@ -43,6 +43,17 @@ module Api
           assert_includes error['password'], I18n.t('errors.messages.blank')
         end
 
+        test 'returns an error when the agreed is false' do
+          data = { user: { email: 'foo@example.com', password: 'password2', agreed: false } }
+
+          post :create, params: data
+
+          assert_response :bad_request
+
+          error = JSON.parse(response.body)
+          assert_includes error['agreed'], 'You must agree to the terms and conditions.'
+        end
+
         test 'encrypts the password' do
           password = 'password'
           data = { user: { email: 'foo@example.com', password: password } }
