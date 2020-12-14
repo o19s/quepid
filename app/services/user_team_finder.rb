@@ -5,8 +5,7 @@ class UserTeamFinder
 
   def initialize user
     @user = user
-    @teams = Team.references(:users)
-          .for_user(@user)
+    @teams = Team.references(:users).for_user(@user)
   end
 
   def method_missing method_name, *arguments, &block
