@@ -170,17 +170,10 @@ class User < ApplicationRecord
     self.num_logins       = 0     if num_logins.nil?
     self.default_scorer   = Scorer.system_default_scorer if self.default_scorer.nil?
     # rubocop:enable Style/RedundantSelf
-
-    # this is necessary because it will rollback
-    # the creation/update of the user otherwise
-    # Not sure this is true
-    true
   end
 
   def encrypt_password
     self[:password] = BCrypt::Password.create(password) if password.present? && password_changed?
-
-    true
   end
 
   def check_agreed_time
@@ -189,6 +182,5 @@ class User < ApplicationRecord
     return unless agreed && agreed_time.nil?
 
     self[:agreed_time] = Time.zone.now
-
   end
 end
