@@ -167,6 +167,9 @@ angular.module('QuepidApp')
       var fieldSpec = currSettings.createFieldSpec();
       var ratedIDs = $scope.query.ratings ? Object.keys($scope.query.ratings) : [];
 
+      // The filter here is for empty ID's that seem to sneak in, a bug somewhere else?
+      ratedIDs = ratedIDs.filter( (r) => { return r.length > 0; });
+
       // Don't query if there are no ratings, the "no results" message is weird.
       if (ratedIDs.length === 0) {
         return;
