@@ -361,6 +361,8 @@ angular.module('QuepidApp')
 
           var ratedDocsStaging = [];
           return self.ratedSearcher.search().then(function() {
+            self.ratedUrl = self.ratedSearcher.linkUrl;
+
             var normed = normalizeDocExplains(self, self.ratedSearcher, currSettings.createFieldSpec());
 
             angular.forEach(normed, function(doc) {
@@ -407,7 +409,11 @@ angular.module('QuepidApp')
         };
 
         this.browseUrl = function() {
-          return that.linkUrl;
+          if (svc.showOnlyRated) {
+            return that.ratedUrl;
+          } else {
+            return that.linkUrl;
+          }
         };
 
         this.version = function() {
