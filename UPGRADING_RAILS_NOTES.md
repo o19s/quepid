@@ -19,6 +19,9 @@ Todos:
 * DONE Deal with environment variable for disabling forms.
 
 
+https://github.com/gonzalo-bulnes/simple_token_authentication
+https://api.rubyonrails.org/classes/ActionController/HttpAuthentication/Token.html
+
 https://www.codementor.io/@gowiem/deviseinvitable-rails-api-9wzmbisus
 
 
