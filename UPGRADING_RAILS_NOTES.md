@@ -21,6 +21,7 @@ Todos:
 
 https://github.com/gonzalo-bulnes/simple_token_authentication
 https://api.rubyonrails.org/classes/ActionController/HttpAuthentication/Token.html
+https://github.com/lynndylanhurley/devise_token_auth
 
 https://www.codementor.io/@gowiem/deviseinvitable-rails-api-9wzmbisus
 
