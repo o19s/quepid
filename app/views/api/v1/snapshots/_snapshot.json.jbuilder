@@ -18,6 +18,7 @@ end
 
 if with_docs
   json.queries do
-    json.array! snapshot.snapshot_queries.collect(&:query), partial: 'api/v1/queries/query', as: :query
+    # filter out deleted queries from the snapshot via the .compact method.
+    json.array! snapshot.snapshot_queries.collect(&:query).compact, partial: 'api/v1/queries/query', as: :query
   end
 end
