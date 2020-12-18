@@ -494,6 +494,12 @@ We work around it for the `_quepid_session` by setting it to be lax.  However, t
 has the cookie `__profilin` and it will also cause the warning message to show up.  https://github.com/MiniProfiler/rack-mini-profiler/issues/442
 
 
-# Credits
+# Thank You's
+
+Quepid would not be possible without the contributions from many individuals and organizations.   
+
+Specifically we would like to thank Erik Bugge and the folks at Kobler for funding the Only Rated feature released in Quepid [6.4.0](https://github.com/o19s/quepid/releases/tag/v6.4.0).
 
 Quepid wasn't always open source!  Check out the [credits](docs/credits.md) for a list of contributors to the project.
+
+If you would like to fund development of a new feature for Quepid do [get in touch](http://www.opensourceconnections.com/contact/)!
