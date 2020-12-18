@@ -1,5 +1,28 @@
 # Changelog
 
+## 6.4.0 - 2020-12-18
+
+*Only Rated* toggle is a powerful new feature added to Quepid, our first relevancy centric feature in a long while.
+
+In certain relevancy cases, you may only care about the ordering of a subset of documents within the entire result set.  One particular use case may be in e-commerce where you want certain products to be boosted and others to be demoted in the ranking algorithm.  While this was doable in previous versions of Quepid, it could get difficult to manage the list of rated documents, especially if the list went many pages deep into the results.
+
+To help solve this problem we worked with [Kobler](www.kobler.no) to introduce several new features to Quepid.  We strived to make it easier to work with your corpus of rated documents in the main case view, inside of Explain Missing Documents and within the scorers themselves.
+
+This feature was developed by @worleydl in https://github.com/o19s/quepid/pull/229, with an initial POC by @janhoy in https://github.com/o19s/quepid/pull/220, and resolves issue https://github.com/o19s/quepid/issues/163.  Much thanks to @janhoy and the folks at [Kobler](www.kobler.no) for this feature.
+
+
+### Features
+
+ * Added "Show Only Rated" toggle to the main searchResult listing
+ * Explain Missing Documents modal now defaults to showing all of your rated documents when you first open it up
+ * Added eachRatedDoc function to ScorerFactory to iterate over rated documents in scoring
+ * Provided refreshRatedDocs(k) in ScorerFactory for loading a custom amount of rated documents up to k
+
+### Improvements
+
+*  Migrated scoring to an asynchronous pipeline
+* Fixed stuck "Updating queries" message when creating a new case
+
 ## 6.3.2 - 2020-12-08
 
 ### Features
