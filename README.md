@@ -358,7 +358,7 @@ See more details on the wiki at https://github.com/o19s/quepid/wiki/Troubleshoot
 
 # Dev Errata
 
-## I'd like to use a new Node module
+## I'd like to use a new Node module, or update a existing one
 
 Typically you would simply do:
 
@@ -366,7 +366,13 @@ Typically you would simply do:
 bin/docker r yarn add foobar
 ```
 
-which will install the new Node module, and then save that dependency to `package.json`.
+or
+
+```
+bin/docker r yarn upgrade foobar
+```
+
+which will install/upgrade the Node module, and then save that dependency to `package.json`.
 
 Then check in the updated `package.json` and `yarn.lock` files.
 
@@ -407,6 +413,16 @@ bin/docker r bundle exec bin/rails g migration FixCuratorVariablesTriesForeignKe
 
 Followed by `bin/docker r bundle exec rake db:migrate`
 
+## Updating RubyGems
+
+Modify the file `Gemfile` and then run:
+
+```
+bin/docker r bundle install
+```
+
+You will see a updated `Gemfile.lock`, go ahead and check it and `Gemfile` into Git.
+
 
 # QA
 
@@ -414,6 +430,7 @@ There is a code deployment pipeline to the http://quepid-staging.herokuapp.com s
 is run on successful commits to `master`.  
 
 If you have pending migrations you will need to run them via:
+
 ```
 heroku run bin/rake db:migrate -a quepid-staging
 heroku restart -a quepid-staging

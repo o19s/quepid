@@ -11,6 +11,7 @@
     "angular": "~1.7.7",
     "angular-animate": "^1.7.9",
     "angular-cookies": "~1.7.7",
+    "angular-countup": "^0.0.1",
     "angular-csv-import": "https://github.com/bahaaldine/angular-csv-import",
     "angular-flash": "https://github.com/wmluke/angular-flash",
     "angular-resource": "~1.7.7",
@@ -32,7 +33,7 @@
     "json3": "~3.2.4",
     "ng-json-explorer": "http://github.com/odra/ng-json-explorer",
     "ng-tags-input": "3.2.0",
-    "splainer-search": "2.6.0",
+    "splainer-search": "^2.6.9",
     "tether-shepherd": "latest"
   },
   "devDependencies": {

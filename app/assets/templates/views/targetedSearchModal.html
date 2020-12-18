@@ -27,9 +27,14 @@
       </div>
 
       <div ng-if="this.docFinder.numFound > 0">
-        <p>
+        <p ng-if="!defaultList">
           Your query <em>{{docFinder.lastQuery}}</em> returned <em>{{docFinder.numFound}}</em> results
         </p>
+
+        <p ng-if="defaultList">
+          Your query <em>{{docFinder.lastQuery}}</em> has <em>{{docFinder.numFound}}</em> rated results
+        </p>
+
 
         <div class="score-all pull-left">
           <strong>Score All</strong>

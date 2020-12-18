@@ -8,7 +8,7 @@ if with_docs
   json.docs do
     snapshot.snapshot_queries.each do |query|
       docs = query.snapshot_docs.map do |doc|
-        { id: doc.doc_id, explain: doc.explain }
+        { id: doc.doc_id, explain: doc.explain, rated_only: doc.rated_only }
       end
 
       json.set! query.query_id, docs

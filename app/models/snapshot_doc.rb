@@ -9,6 +9,7 @@
 #  position          :integer
 #  snapshot_query_id :integer
 #  explain           :text(16777215)
+#  rated_only        :tinyint
 #
 
 class SnapshotDoc < ActiveRecord::Base

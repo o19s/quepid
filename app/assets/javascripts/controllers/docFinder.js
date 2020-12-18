@@ -12,17 +12,22 @@ angular.module('QuepidApp')
       solrExplainExtractorSvc, esExplainExtractorSvc,
       rateBulkSvc
     ) {
+      $scope.defaultList = false;
       $scope.docFinder = {
         docs:       [],
         lastQuery:  '',
         queryText:  '',
       };
 
+      var currSettings = settingsSvc.editableSettings();
+
       $scope.findDocs = function() {
         var settings      = settingsSvc.editableSettings();
         var query         = $scope.query.queryText;
         var ratingsStore  = $scope.query.ratingsStore;
         var fieldSpec     = settings.createFieldSpec();
+
+        $scope.defaultList = false;
 
         $scope.docFinder.searcher = queriesSvc.createSearcherFromSettings(settings, query);
 
@@ -47,6 +52,14 @@ angular.module('QuepidApp')
       };
 
       $scope.paginate = function() {
+        if($scope.defaultList) {
+          $scope.paginateRatedQuery();
+        } else {
+          $scope.paginateCustomQuery();
+        }
+      };
+
+      $scope.paginateCustomQuery = function() {
         if ( $scope.docFinder.searcher === null ) {
           return;
         }
@@ -84,6 +97,35 @@ angular.module('QuepidApp')
           });
       };
 
+      $scope.paginateRatedQuery = function() {
+        $scope.docFinder.searcher = queriesSvc.createSearcherFromSettings(currSettings, $scope.query.queryText);
+        $scope.docFinder.paging = true;
+
+        var settings      = settingsSvc.editableSettings();
+        var fieldSpec     = settings.createFieldSpec();
+
+
+        if ($scope.docFinder.searcher.type === 'es') {
+          var filter = {
+            'query': $scope.query.filterToRatings(currSettings, $scope.docFinder.docs.length)
+          };
+          $scope.docFinder.searcher.explainOther(
+            filter, fieldSpec)
+            .then(function() {
+              var normed = queriesSvc.normalizeDocExplains($scope.query, $scope.docFinder.searcher, fieldSpec);
+              $scope.docFinder.docs = $scope.docFinder.docs.concat(normed);
+            });
+        } else if ($scope.docFinder.searcher.type === 'solr') {
+          $scope.docFinder.searcher.explainOther(
+            $scope.query.filterToRatings(currSettings, $scope.docFinder.docs.length), fieldSpec, 'lucene')
+            .then(function() {
+              var normed = queriesSvc.normalizeDocExplains($scope.query, $scope.docFinder.searcher, fieldSpec);
+              $scope.docFinder.docs = $scope.docFinder.docs.concat(normed);
+          });
+        }
+      };
+
+
       var src = {
         'query':  $scope.query
       };
@@ -120,5 +162,45 @@ angular.module('QuepidApp')
         },
         src
       );
+
+      // Initialize to rated docs
+      var fieldSpec = currSettings.createFieldSpec();
+      var ratedIDs = $scope.query.ratings ? Object.keys($scope.query.ratings) : [];
+
+      // The filter here is for empty ID's that seem to sneak in, a bug somewhere else?
+      ratedIDs = ratedIDs.filter( (r) => { return r.length > 0; });
+
+      // Don't query if there are no ratings, the "no results" message is weird.
+      if (ratedIDs.length === 0) {
+        return;
+      }
+
+      $scope.docFinder.numFound = ratedIDs.length;
+
+      $scope.docFinder.searcher = queriesSvc.createSearcherFromSettings(currSettings, $scope.query.queryText);
+
+      if ($scope.docFinder.searcher.type === 'es') {
+        var filter = {
+          'query': $scope.query.filterToRatings(currSettings, $scope.docFinder.docs.length)
+        };
+        $scope.docFinder.searcher.explainOther(
+          filter, fieldSpec)
+          .then(function() {
+            var normed = queriesSvc.normalizeDocExplains($scope.query, $scope.docFinder.searcher, fieldSpec);
+            $scope.docFinder.docs = normed;
+
+            $scope.defaultList = true;
+        });
+
+      } else if ($scope.docFinder.searcher.type === 'solr') {
+        $scope.docFinder.searcher.explainOther(
+          $scope.query.filterToRatings(currSettings, $scope.docFinder.docs.length), fieldSpec, 'lucene')
+          .then(function() {
+            var normed = queriesSvc.normalizeDocExplains($scope.query, $scope.docFinder.searcher, fieldSpec);
+            $scope.docFinder.docs = normed;
+
+            $scope.defaultList = true;
+        });
+      }
     }
   ]);

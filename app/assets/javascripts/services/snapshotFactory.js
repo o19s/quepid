@@ -58,7 +58,6 @@
 
         // fetch from the backend
         var qDocs         = self.docs[queryId];
-        var idsToDocs     = {};
         var searchResults = [];
 
         angular.forEach(qDocs, function loopBody(sDoc) {
@@ -68,14 +67,12 @@
             $log.debug('' + sDoc.id + ' is null');
           }
 
-          idsToDocs[doc.id] = doc;
-        });
+          // Apply rated only for filtering
+          doc.explain = sDoc.explain;
+          doc.rated_only = sDoc.rated_only;
 
-        // reorder based on my id list to
-        // show original search results order
-        angular.forEach(qDocs, function(sDoc) {
-          var explAsJson  = angular.fromJson(sDoc.explain);
-          var nDoc = angular.copy(idsToDocs[sDoc.id]);
+          var explAsJson  = angular.fromJson(doc.explain);
+          var nDoc = angular.copy(doc);
           nDoc = normalDocsSvc.explainDoc(nDoc, explAsJson);
 
           searchResults.push(nDoc);
