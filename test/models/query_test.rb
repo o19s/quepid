@@ -176,15 +176,15 @@ class QueryTest < ActiveSupport::TestCase
     end
   end
 
-  describe 'Soft deletion' do
+  describe 'Delete query' do
     let(:query) { queries(:one) }
 
-    test 'marks query as deleted but does not actually delete query' do
-      assert_difference 'Query.unscoped.where(deleted: true).count' do
-        query.soft_delete
-        query.reload
-
-        assert_equal query.deleted, true
+    test 'deletes a query' do
+      assert_difference 'Query.unscoped.count',-1 do
+        query.destroy
+        assert_raises (ActiveRecord::StatementInvalid) do
+          query.reload
+        end
       end
     end
 
