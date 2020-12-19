@@ -120,6 +120,13 @@ class Case < ApplicationRecord
     save
   end
 
+  def special_destroy
+    snapshots.each do |snapshot|
+      snapshot.destroy
+    end
+    destroy
+  end
+
   def rearrange_queries
     Arrangement::List.sequence queries
   end

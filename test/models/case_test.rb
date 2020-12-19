@@ -128,6 +128,47 @@ class CaseTest < ActiveSupport::TestCase
     end
   end
 
+  describe 'Deleting a case' do
+    let(:acase)         { cases(:one) }
+
+    test 'Can delete basic case' do
+      assert_difference 'Score.count', -acase.scores.size do
+        assert_difference 'Case.count', -1 do
+          assert acase.destroy
+        end
+      end
+    end
+
+    describe 'Deleting a case' do
+      let(:snapshot_case) { cases(:snapshot_case) }
+
+      test 'Can delete a case with snapshots using direct methods' do
+
+        # Due to some foreign key issues, we can't just directly delete a case with
+        # snapshots, we have to "unwind" it by deleting the snapshots seperately.
+        assert_raises (ActiveRecord::StatementInvalid) do
+          snapshot_case.destroy
+        end
+
+        assert_difference 'acase.snapshots.size', -acase.snapshots.size do
+          snapshot_case.snapshots.each do |snapshot|
+            assert snapshot.destroy
+          end
+        end
+
+        assert_difference 'Case.count', -1 do
+          assert snapshot_case.destroy
+        end
+      end
+
+      test 'Can delete a case using the special_destroy method' do
+        assert_difference 'Case.count', -1 do
+          assert snapshot_case.special_destroy
+        end
+      end
+    end
+  end
+
   describe 'clone' do
     let(:user)        { users(:random) }
     let(:the_case)    { cases(:random_case) }

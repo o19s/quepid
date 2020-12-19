@@ -18,3 +18,8 @@ past:
   user: :doug
   case: :with_metadata
   last_viewed_at: <%= DateTime.now - 5.days %>
+
+one:
+  user: :doug
+  case: :one
+  last_viewed_at: <%= DateTime.now - 5.days %>

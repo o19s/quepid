@@ -46,7 +46,7 @@ class Query < ApplicationRecord
             presence: true
 
   # Scopes
-  default_scope -> { where(deleted: false).or(where(deleted: nil)) }
+  #default_scope -> { where(deleted: false).or(where(deleted: nil)) }
 
   # TODO: use the acts_as_paranoid gem instead
   # Which requires change to the db, that is not going to be done in the
