@@ -35,6 +35,7 @@ class UserInviteFlowTest < ActionDispatch::IntegrationTest
     # owner rates 0's
     # member1 rates 1's
     # member2 rates 2's
+    ratings_counter = 0
     rating_value = 0
     raters = [owner, member1, member2]
     raters.each do | rater |
@@ -53,9 +54,16 @@ class UserInviteFlowTest < ActionDispatch::IntegrationTest
       end
     end
 
+    # and only 6 ratings generated.
+    assert_equal 6, matt_case.ratings.size
 
 
+    # Lets grab our case!
+    get api_case_url(matt_case)
 
+    body = JSON.parse(response.body)
+
+    assert_equal body['queries'][0]['ratings']['doc_frog_1'], 2
 
 
   end
