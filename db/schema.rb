@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2020_12_10_214439) do
+ActiveRecord::Schema.define(version: 2020_12_21_191551) do
 
   create_table "annotations", id: :integer, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin", force: :cascade do |t|
     t.text "message"
@@ -110,8 +110,10 @@ ActiveRecord::Schema.define(version: 2020_12_10_214439) do
     t.integer "query_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "user_id"
     t.index ["doc_id"], name: "index_ratings_on_doc_id", length: 191
     t.index ["query_id"], name: "query_id"
+    t.index ["user_id"], name: "index_ratings_on_user_id"
   end
 
   create_table "scorers", id: :integer, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin", force: :cascade do |t|
@@ -241,6 +243,7 @@ ActiveRecord::Schema.define(version: 2020_12_10_214439) do
   add_foreign_key "curator_variables", "tries", name: "curator_variables_ibfk_1"
   add_foreign_key "queries", "cases", name: "queries_ibfk_1"
   add_foreign_key "ratings", "queries", name: "ratings_ibfk_1"
+  add_foreign_key "ratings", "users"
   add_foreign_key "snapshot_docs", "snapshot_queries", name: "snapshot_docs_ibfk_1"
   add_foreign_key "snapshot_queries", "queries", name: "snapshot_queries_ibfk_1"
   add_foreign_key "snapshot_queries", "snapshots", name: "snapshot_queries_ibfk_2"

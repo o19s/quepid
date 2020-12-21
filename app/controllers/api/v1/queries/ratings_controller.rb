@@ -28,7 +28,7 @@ module Api
         private
 
         def rating_params
-          params.require(:rating).permit(:rating, :doc_id)
+          params.require(:rating).permit(:rating, :doc_id, :user_id)
         end
 
         def set_doc_id

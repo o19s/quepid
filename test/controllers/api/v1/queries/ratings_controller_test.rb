@@ -7,6 +7,7 @@ module Api
     module Queries
       class RatingsControllerTest < ActionController::TestCase
         let(:user)  { users(:random) }
+        let(:doug)  { users(:doug) }
         let(:acase) { cases(:queries_case) }
         let(:query) { queries(:first_query) }
 
@@ -22,6 +23,7 @@ module Api
             rating = {
               doc_id: doc_id,
               rating: 4,
+              user_id: user.id,
             }
 
             put :update, params: { case_id: acase.id, query_id: query.id, rating: rating }
@@ -32,6 +34,7 @@ module Api
             assert_equal data['rating'],    4
             assert_equal data['doc_id'],    doc_id
             assert_equal data['query_id'],  query.id
+            assert_equal data['user_id'],   user.id
 
             count = query.ratings.where(doc_id: doc_id).count
 
@@ -55,20 +58,22 @@ module Api
             assert_equal data['doc_id'],    doc_id
             assert_equal data['query_id'],  query.id
 
+            assert_nil data['user_id']
+
             count = query.ratings.where(doc_id: doc_id).count
 
             assert_equal count, 1
           end
 
-          test 'updates existing rating for doc' do
+          test 'updates existing rating for doc, updating to the passed in user id' do
             doc_id = 'x123z'
-            query.ratings.create(doc_id: doc_id, rating: 1)
+            query.ratings.create(doc_id: doc_id, user_id: doug.id, rating: 1)
 
             rating = {
               doc_id: doc_id,
               rating: 5,
+              user_id: user.id
             }
-
             put :update, params: { case_id: acase.id, query_id: query.id, rating: rating }
             assert_response :ok
 
@@ -77,6 +82,7 @@ module Api
             assert_equal data['rating'],    5
             assert_equal data['doc_id'],    doc_id
             assert_equal data['query_id'],  query.id
+            assert_equal data['user_id'],  user.id
 
             count = query.ratings.where(doc_id: doc_id).count
 
