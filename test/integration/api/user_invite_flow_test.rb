@@ -45,6 +45,7 @@ class UserInviteFlowTest < ActionDispatch::IntegrationTest
     )
     # rubocop:enable Layout/HashAlignment
 
+    sleep(2)
     invitee.reload
 
     assert invitee.invitation_accepted?
