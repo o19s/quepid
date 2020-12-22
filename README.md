@@ -236,7 +236,14 @@ In the Rails application you can use the logger for the output:
 Rails.logger object.inspect
 ```
 
-If that's not enough and you want to run a debugger, the `byebug` gem is included for that. Add `byebug` wherever you want a breakpoint and then run the code.
+If that's not enough and you want to run a debugger, the `byebug` gem is included for that. Add the command `byebug` wherever you want a breakpoint and then run the code.
+
+For example, in a unit test you will get a REPL:
+```
+(byebug) query.ratings.where(doc_id: 'doc1').average(:rating).round.to_i
+3
+(byebug)
+```
 
 ### Debugging JS
 
