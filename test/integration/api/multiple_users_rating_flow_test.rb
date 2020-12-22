@@ -62,9 +62,9 @@ class UserInviteFlowTest < ActionDispatch::IntegrationTest
     get api_case_url(matt_case)
 
     body = JSON.parse(response.body)
-    puts json_response
 
-    assert_equal body['queries'][0]['ratings']['doc_frog_1'], 2
+    # check the average of a 0, 1, and 2 rating:
+    assert_equal body['queries'][0]['ratings']['doc_frog_1'], 1
 
 
   end

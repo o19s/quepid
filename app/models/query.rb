@@ -65,6 +65,8 @@ class Query < ApplicationRecord
 
   # FIXME.  Nate, our front end doesn't support decimals at this time, yet
   # this does decimals.  https://imgflip.com/i/4rahhg
+  RatingAveraged = Struct.new(:doc_id, :query_id, :rating)
+
   def ratings_averaged
     average_ratings_by_doc = {}
     ratings.each do | rating |
@@ -79,7 +81,7 @@ class Query < ApplicationRecord
       sum = value[:ratings].inject(0, :+)
       value[:rating] = ( sum / value[:ratings].size ).round(0)
 
-      ratings_averaged << value.except!(:ratings)
+      ratings_averaged << RatingAveraged.new(value[:doc_id], value[:query_id], value[:rating])
     end
     ratings_averaged
   end

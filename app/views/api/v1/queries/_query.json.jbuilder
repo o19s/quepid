@@ -20,5 +20,5 @@ if query.scorer.present?
 end
 
 json.ratings do
-  query.ratings.each { |rating| json.set! rating.doc_id, rating.rating }
+  query.ratings_averaged.each { |rating| json.set! rating.doc_id, rating.rating }
 end
