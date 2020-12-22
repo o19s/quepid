@@ -62,4 +62,25 @@ class Query < ApplicationRecord
   def list_owner
     self.case
   end
+
+  # FIXME.  Nate, our front end doesn't support decimals at this time, yet
+  # this does decimals.  https://imgflip.com/i/4rahhg
+  def ratings_averaged
+    average_ratings_by_doc = {}
+    ratings.each do | rating |
+      if average_ratings_by_doc.has_key? rating.doc_id
+        average_ratings_by_doc[rating.doc_id][:ratings] << rating[:rating].to_f
+      else
+        average_ratings_by_doc[rating.doc_id] = { doc_id: rating[:doc_id], query_id: rating[:query_id], ratings: [rating[:rating].to_f] }
+      end
+    end
+    ratings_averaged = []
+    average_ratings_by_doc.each do |key, value |
+      sum = value[:ratings].inject(0, :+)
+      value[:rating] = ( sum / value[:ratings].size ).round(0)
+
+      ratings_averaged << value.except!(:ratings)
+    end
+    ratings_averaged
+  end
 end

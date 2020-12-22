@@ -7,7 +7,8 @@ module Api
         before_action :set_doc_id, only: [ :update, :destroy ]
 
         def update
-          @rating = @query.ratings.find_or_create_by doc_id: @doc_id
+          # user_id sometimes is nil and sometimes is populated
+          @rating = @query.ratings.find_or_create_by doc_id: @doc_id, user_id: rating_params[:user_id]
 
           if @rating.update rating_params
             Analytics::Tracker.track_rating_created_event current_user, @rating
@@ -18,7 +19,7 @@ module Api
         end
 
         def destroy
-          @rating = @query.ratings.where(doc_id: @doc_id).first
+          @rating = @query.ratings.where(doc_id: @doc_id, user_id: rating_params[:user_id]).first
           @rating.delete
           Analytics::Tracker.track_rating_deleted_event current_user, @rating
 

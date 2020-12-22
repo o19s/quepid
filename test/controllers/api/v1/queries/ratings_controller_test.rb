@@ -65,7 +65,31 @@ module Api
             assert_equal count, 1
           end
 
-          test 'updates existing rating for doc, updating to the passed in user id' do
+          test 'updates existing rating for doc' do
+            doc_id = 'x123y'
+            query.ratings.create(doc_id: doc_id, user_id: doug.id, rating: 1)
+
+            rating = {
+              doc_id: doc_id,
+              rating: 5,
+              user_id: doug.id
+            }
+            put :update, params: { case_id: acase.id, query_id: query.id, rating: rating }
+            assert_response :ok
+
+            data = JSON.parse(response.body)
+
+            assert_equal data['rating'],    5
+            assert_equal data['doc_id'],    doc_id
+            assert_equal data['query_id'],  query.id
+            assert_equal data['user_id'],  doug.id
+
+            count = query.ratings.where(doc_id: doc_id).count
+
+            assert_equal count, 1
+          end
+
+          test 'updates existing rating for doc creates a new one if you change the user_id' do
             doc_id = 'x123z'
             query.ratings.create(doc_id: doc_id, user_id: doug.id, rating: 1)
 
@@ -86,7 +110,28 @@ module Api
 
             count = query.ratings.where(doc_id: doc_id).count
 
-            assert_equal count, 1
+            assert_equal count, 2
+
+            # Now put in a nil
+            rating = {
+              doc_id: doc_id,
+              rating: 3,
+              user_id: nil
+            }
+            put :update, params: { case_id: acase.id, query_id: query.id, rating: rating }
+            assert_response :ok
+
+            data = JSON.parse(response.body)
+
+            assert_equal data['rating'],    3
+            assert_equal data['doc_id'],    doc_id
+            assert_equal data['query_id'],  query.id
+            
+            assert_nil data['user_id']
+
+            count = query.ratings.where(doc_id: doc_id).count
+
+            assert_equal count, 3
           end
 
           test 'works with a url as the id' do
@@ -238,6 +283,37 @@ module Api
             rating = query.ratings.where(doc_id: doc_id).first
 
             assert_nil rating
+          end
+          test 'deletes rating from query with mixed user_id and not.' do
+            doc_id = 'x123z'
+            rating = {
+              doc_id: doc_id,
+            }
+            query.ratings.create(doc_id: doc_id, rating: 1)
+
+            query.ratings.create(doc_id: doc_id, rating: 1, user_id:user.id)
+            assert query.ratings.where(doc_id: doc_id).size, 2
+
+            delete :destroy, params: { case_id: acase.id, query_id: query.id, rating: rating }
+            assert_response :no_content
+
+            rating = query.ratings.where(doc_id: doc_id).first
+
+            assert_not_nil rating
+            assert_equal rating.user.id, user.id
+
+            rating = {
+              doc_id: doc_id,
+              user_id: user.id
+            }
+
+            delete :destroy, params: { case_id: acase.id, query_id: query.id, rating: rating }
+            assert_response :no_content
+
+            rating = query.ratings.where(doc_id: doc_id).first
+
+            assert_nil rating
+
           end
 
           describe 'analytics' do

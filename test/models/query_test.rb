@@ -240,4 +240,43 @@ class QueryTest < ActiveSupport::TestCase
       assert_equal 'fail();', query.test.code
     end
   end
+
+  describe 'ratings' do
+    let(:query) { queries(:one) }
+    let(:member1)               { users(:team_member_1) }
+    let(:member2)               { users(:team_member_2) }
+    let(:matt)                  { users(:matt) }
+
+    test 'gets an average rating from a single rating' do
+      query.ratings.create(doc_id: 'doc1', user_id: matt.id, rating: 1)
+      query.ratings.create(doc_id: 'doc2', user_id: matt.id, rating: 2)
+      assert_equal query.ratings_averaged.size, 2
+      assert_equal query.ratings_averaged.first[:rating], 1
+      assert_equal query.ratings_averaged.second[:rating], 2
+
+    end
+
+    test 'gets an average rating from a three ratings' do
+      query.ratings.create(doc_id: 'doc1', user_id: matt.id, rating: 1)
+      query.ratings.create(doc_id: 'doc2', user_id: matt.id, rating: 2)
+      query.ratings.create(doc_id: 'doc1', user_id: member1.id, rating: 2)
+      query.ratings.create(doc_id: 'doc1', user_id: member2.id, rating: 4)
+      assert_equal query.ratings_averaged.size, 2
+      assert_equal query.ratings_averaged.first[:rating], 2
+      assert_equal query.ratings_averaged.second[:rating], 2
+
+    end
+
+    test 'gets an average rating from a three user tagged ratings and one blank user' do
+      query.ratings.create(doc_id: 'doc1', user_id: matt.id, rating: 1)
+      query.ratings.create(doc_id: 'doc2', user_id: matt.id, rating: 2)
+      query.ratings.create(doc_id: 'doc1', user_id: member1.id, rating: 2)
+      query.ratings.create(doc_id: 'doc1', user_id: member2.id, rating: 3)
+      query.ratings.create(doc_id: 'doc1', rating: 0)
+      assert_equal query.ratings_averaged.size, 2
+      assert_equal query.ratings_averaged.first[:rating], 2
+      assert_equal query.ratings_averaged.second[:rating], 2
+
+    end
+  end
 end
