@@ -197,6 +197,12 @@ To check the Ruby syntax:
 bin/docker r bundle exec rubocop
 ```
 
+Rubocop has some magic "auto correction" features for simple/common issues, so you can just run it with autocorrect enabled:
+
+```
+bin/docker r bundle exec rubocop --auto-correct
+```
+
 ### All Tests
 
 If you want to run all of the tests in one go (before you commit and push for example), just run these two commands:

@@ -17,6 +17,9 @@ AllCops:
 Naming/VariableNumber:
   Enabled: false  # we have a lot of legacy code to update
 
+Naming/MethodParameterName:
+  Enabled: false
+
 Bundler/OrderedGems:
   Enabled: false  # legacy gem file, someday.
 
@@ -30,7 +33,7 @@ Style/RedundantAssignment:
   Enabled: false # legacy stuff
 
 Style/EmptyMethod:
-  Enabled: false   
+  Enabled: false
 
 Lint/MissingSuper:
   Enabled: false # legacy stuff

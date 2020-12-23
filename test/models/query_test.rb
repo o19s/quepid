@@ -247,8 +247,6 @@ class QueryTest < ActiveSupport::TestCase
     let(:member2)               { users(:team_member_2) }
     let(:matt)                  { users(:matt) }
 
-
-
     test 'Can we do the same thing with .average?' do
       query.ratings.create(doc_id: 'doc1', user_id: matt.id, rating: 1)
       query.ratings.create(doc_id: 'doc2', user_id: matt.id, rating: 5)
@@ -272,7 +270,6 @@ class QueryTest < ActiveSupport::TestCase
       assert_equal ratings.size, 2
       assert_equal ratings.first[:rating], 2.92
       assert ratings.second[:rating].nan?
-
     end
   end
 end

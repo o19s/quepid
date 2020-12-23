@@ -21,8 +21,8 @@ module Api
           test 'creates a new rating with TMDB id (issue 1001)' do
             doc_id = '7555'
             rating = {
-              doc_id: doc_id,
-              rating: 4,
+              doc_id:  doc_id,
+              rating:  4,
               user_id: user.id,
             }
 
@@ -70,9 +70,9 @@ module Api
             query.ratings.create(doc_id: doc_id, user_id: doug.id, rating: 1)
 
             rating = {
-              doc_id: doc_id,
-              rating: 5,
-              user_id: doug.id
+              doc_id:  doc_id,
+              rating:  5,
+              user_id: doug.id,
             }
             put :update, params: { case_id: acase.id, query_id: query.id, rating: rating }
             assert_response :ok
@@ -82,7 +82,7 @@ module Api
             assert_equal data['rating'],    5
             assert_equal data['doc_id'],    doc_id
             assert_equal data['query_id'],  query.id
-            assert_equal data['user_id'],  doug.id
+            assert_equal data['user_id'], doug.id
 
             count = query.ratings.where(doc_id: doc_id).count
 
@@ -94,9 +94,9 @@ module Api
             query.ratings.create(doc_id: doc_id, user_id: doug.id, rating: 1)
 
             rating = {
-              doc_id: doc_id,
-              rating: 5,
-              user_id: user.id
+              doc_id:  doc_id,
+              rating:  5,
+              user_id: user.id,
             }
             put :update, params: { case_id: acase.id, query_id: query.id, rating: rating }
             assert_response :ok
@@ -106,7 +106,7 @@ module Api
             assert_equal data['rating'],    5
             assert_equal data['doc_id'],    doc_id
             assert_equal data['query_id'],  query.id
-            assert_equal data['user_id'],  user.id
+            assert_equal data['user_id'], user.id
 
             count = query.ratings.where(doc_id: doc_id).count
 
@@ -114,9 +114,9 @@ module Api
 
             # Now put in a nil
             rating = {
-              doc_id: doc_id,
-              rating: 3,
-              user_id: nil
+              doc_id:  doc_id,
+              rating:  3,
+              user_id: nil,
             }
             put :update, params: { case_id: acase.id, query_id: query.id, rating: rating }
             assert_response :ok
@@ -126,7 +126,7 @@ module Api
             assert_equal data['rating'],    3
             assert_equal data['doc_id'],    doc_id
             assert_equal data['query_id'],  query.id
-            
+
             assert_nil data['user_id']
 
             count = query.ratings.where(doc_id: doc_id).count
@@ -291,7 +291,7 @@ module Api
             }
             query.ratings.create(doc_id: doc_id, rating: 1)
 
-            query.ratings.create(doc_id: doc_id, rating: 1, user_id:user.id)
+            query.ratings.create(doc_id: doc_id, rating: 1, user_id: user.id)
             assert query.ratings.where(doc_id: doc_id).size, 2
 
             delete :destroy, params: { case_id: acase.id, query_id: query.id, rating: rating }
@@ -303,8 +303,8 @@ module Api
             assert_equal rating.user.id, user.id
 
             rating = {
-              doc_id: doc_id,
-              user_id: user.id
+              doc_id:  doc_id,
+              user_id: user.id,
             }
 
             delete :destroy, params: { case_id: acase.id, query_id: query.id, rating: rating }
@@ -313,7 +313,6 @@ module Api
             rating = query.ratings.where(doc_id: doc_id).first
 
             assert_nil rating
-
           end
 
           describe 'analytics' do

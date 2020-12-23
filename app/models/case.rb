@@ -36,18 +36,16 @@ class Case < ApplicationRecord
   has_many   :metadata,
              dependent: :destroy
 
-
-
   # rubocop:disable Rails/InverseOf
   has_many   :queries,  -> { order(arranged_at: :asc) },
              autosave:  true,
              dependent: :delete_all
   # rubocop:enable Rails/InverseOf
 
-  has_many   :ratings,  # we don't actually need this.
+  has_many   :ratings, # we don't actually need this.
              through: :queries
 
-  has_many   :scores,   -> { order(updated_at:  :desc) },
+  has_many   :scores, -> { order(updated_at: :desc) },
              dependent:  :destroy,
              inverse_of: :case
 
