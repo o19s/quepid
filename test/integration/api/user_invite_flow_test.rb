@@ -16,7 +16,7 @@ class UserInviteFlowTest < ActionDispatch::IntegrationTest
 
     mail = ActionMailer::Base.deliveries.last
 
-    raw_token_from_email = mail.parts[0].to_s.gsub!(/invitation_token=\w*/).first.split('=')[1]
+    raw_token_from_email = mail.parts[0].to_s.gsub!(/.*invitation_token=(.*)[\s\r\n].*/).first.split('=')[1].strip
 
     invitee = User.find_by(email: 'friend@example.com')
 
@@ -44,6 +44,7 @@ class UserInviteFlowTest < ActionDispatch::IntegrationTest
       }
     )
     # rubocop:enable Layout/HashAlignment
+    assert_response :redirect
 
     invitee.reload
 
