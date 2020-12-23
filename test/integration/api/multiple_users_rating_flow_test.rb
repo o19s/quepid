@@ -65,7 +65,9 @@ class MultipleUsersRatingFlowTest < ActionDispatch::IntegrationTest
 
     # check the average of a 0, 1, and 2 rating:
     #assert_equal body['queries'][0]['ratings']['doc_frog_1'], 1
-    assert_equal 1, body['queries'][0]
+    # back to 2, cause we only return the most recent rating.
+    assert_equal body['queries'][0]['ratings']['doc_frog_1'], 2
+    #assert_equal 1, body['queries'][0]
 
 
   end
