@@ -64,7 +64,8 @@ class MultipleUsersRatingFlowTest < ActionDispatch::IntegrationTest
     body = JSON.parse(response.body)
 
     # check the average of a 0, 1, and 2 rating:
-    assert_equal body['queries'][0]['ratings']['doc_frog_1'], 1
+    #assert_equal body['queries'][0]['ratings']['doc_frog_1'], 1
+    assert_equal 1, body['queries'][0]
 
 
   end
