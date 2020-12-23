@@ -57,17 +57,16 @@ class MultipleUsersRatingFlowTest < ActionDispatch::IntegrationTest
     # and 18 ratings (raters * queries * docs) generated.
     assert_equal 18, matt_case.ratings.size
 
-
     # Lets grab our case!
     get api_case_url(matt_case)
 
     body = JSON.parse(response.body)
 
+    query = body['queries'].select { | q | q['query_text'] == 'frog'}.first
+
     # check the average of a 0, 1, and 2 rating:
-    #assert_equal body['queries'][0]['ratings']['doc_frog_1'], 1
     # back to 2, cause we only return the most recent rating.
-    assert_equal body['queries'][0]['ratings']['doc_frog_1'], 2
-    #assert_equal 1, body['queries'][0]
+    assert_equal query['ratings']['doc_frog_1'], 2
 
 
   end
