@@ -16,6 +16,12 @@ describe('Service: queriesSvc', function () {
   var mockScorerSvc;
   var mockCaseSvc;
 
+  var mockUser = {
+    'email': 'mockEmail@example.com',
+    'defaultScorerId': 10,
+    'id':       1,
+  };
+
   var mockTry = {
     args: {
       q: ['#$query##'],
@@ -199,6 +205,8 @@ describe('Service: queriesSvc', function () {
       };
 
       mockFieldSpec = fieldSpecSvc.createFieldSpec('field field1');
+
+      $rootScope.currentUser = angular.copy(mockUser);
     });
   });
 
