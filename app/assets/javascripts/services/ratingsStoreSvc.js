@@ -10,8 +10,8 @@
 //
 angular.module('QuepidApp')
   .service('ratingsStoreSvc', [
-    '$http',
-    function ratingsStoreSvc($http) {
+    '$http','$rootScope',
+    function ratingsStoreSvc($http, $rootScope) {
       var svcVersion = 0;
 
       var RatingsStore = function(caseNo, queryId, ratingsDict) {
@@ -32,9 +32,11 @@ angular.module('QuepidApp')
 
         this.rateDocument = function(docId, rating) {
           var url   = basePath() + '/ratings';
+
           var data  = { rating:
             {
               doc_id:  docId,
+              user_id: $rootScope.currentUser.id,
               rating: rating,
             }
           };
