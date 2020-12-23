@@ -48,8 +48,8 @@ Rails.application.configure do
   # Print deprecation notices to the stderr.
   config.active_support.deprecation = :stderr
 
-  # Set to :debug instead of :info to see SQL
-  config.log_level = :info
+  # Set to :info instead of :debug to filter out SQL
+  config.log_level = :debug
 
   config.after_initialize do
     Bullet.enable = true
