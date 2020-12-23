@@ -46,8 +46,10 @@ class MetaViewOfCaseTest < ActionDispatch::IntegrationTest
     query = matt_case.queries.first
     put api_case_query_ratings_url(matt_case, query), params: { rating: { doc_id: "doc_#{query.query_text}_1", user_id: member2.id, rating: 1 } }
 
-
+    Bullet.enable = false # I don't get the Bullet notification, so just disable it.
     post api_case_queries_url(matt_case), params: { query: { query_text: "parrot" } }
+    Bullet.enable = true
+
     matt_case.reload
     query = matt_case.queries.first{ |q| q.query_text == 'parrot'}
 
