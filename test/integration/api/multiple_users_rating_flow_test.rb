@@ -2,7 +2,7 @@
 
 require 'test_helper'
 
-class UserInviteFlowTest < ActionDispatch::IntegrationTest
+class MultipleUsersRatingFlowTest < ActionDispatch::IntegrationTest
   include ActionMailer::TestHelper
   let(:owner)                 { users(:team_owner) }
   let(:member1)               { users(:team_member_1) }

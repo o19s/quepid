@@ -65,24 +65,58 @@ class Query < ApplicationRecord
 
   # FIXME.  Nate, our front end doesn't support decimals at this time, yet
   # this does decimals.  https://imgflip.com/i/4rahhg
-  RatingAveraged = Struct.new(:doc_id, :query_id, :rating)
+  RatingAveraged = Struct.new(:doc_id, :query_id, :rating, :id, :user_id)
 
-  def ratings_averaged
-    average_ratings_by_doc = {}
-    ratings.each do | rating |
-      if average_ratings_by_doc.has_key? rating.doc_id
-        average_ratings_by_doc[rating.doc_id][:ratings] << rating[:rating].to_f
-      else
-        average_ratings_by_doc[rating.doc_id] = { doc_id: rating[:doc_id], query_id: rating[:query_id], ratings: [rating[:rating].to_f] }
-      end
-    end
+  # this method may not be needed if we just use the .average(:rating) on the ActiveRecord?
+  def self.ratings_averaged (ratings)
+    ratings_by_doc = group_by_doc_id(ratings)
+
     ratings_averaged = []
-    average_ratings_by_doc.each do |key, value |
-      sum = value[:ratings].inject(0, :+)
-      value[:rating] = ( sum / value[:ratings].size ).round(0)
+    ratings_by_doc.each do |key, value |
+      value[:rating] = mean(value[:ratings]).round(0)
 
       ratings_averaged << RatingAveraged.new(value[:doc_id], value[:query_id], value[:rating])
     end
     ratings_averaged
+  end
+
+  def self.ratings_variance (ratings)
+    ratings_by_doc = group_by_doc_id(ratings)
+
+    ratings_variants = []
+    ratings_by_doc.each do |key, value |
+      value[:rating] = variance(value[:ratings]).round(2)
+
+      ratings_variants << RatingAveraged.new(value[:doc_id], value[:query_id], value[:rating])
+    end
+    ratings_variants
+  end
+
+  def self.group_by_doc_id(ratings)
+    ratings_by_doc = {}
+    ratings.each do | rating |
+      if ratings_by_doc.has_key? rating.doc_id
+        ratings_by_doc[rating.doc_id][:ratings] << rating[:rating].to_f
+      else
+        ratings_by_doc[rating.doc_id] = { doc_id: rating[:doc_id], query_id: rating[:query_id], ratings: [rating[:rating].to_f] }
+      end
+    end
+    ratings_by_doc
+  end
+
+  def self.variance(x)
+    m = mean(x)
+    sum = 0.0
+    x.each {|v| sum += (v-m)**2 }
+    sum/(x.size - 1)
+  end
+
+  def self.sigma(x)
+    Math.sqrt(variance(x))
+  end
+
+  def self.mean(x)
+    x.sum(0.0) / x.size
+    #x.inject(0, :+) / x.size
   end
 end

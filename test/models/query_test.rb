@@ -247,35 +247,31 @@ class QueryTest < ActiveSupport::TestCase
     let(:member2)               { users(:team_member_2) }
     let(:matt)                  { users(:matt) }
 
-    test 'gets an average rating from a single rating' do
+
+
+    test 'Can we do the same thing with .average?' do
       query.ratings.create(doc_id: 'doc1', user_id: matt.id, rating: 1)
-      query.ratings.create(doc_id: 'doc2', user_id: matt.id, rating: 2)
-      assert_equal query.ratings_averaged.size, 2
-      assert_equal query.ratings_averaged.first[:rating], 1
-      assert_equal query.ratings_averaged.second[:rating], 2
-
-    end
-
-    test 'gets an average rating from a three ratings' do
-      query.ratings.create(doc_id: 'doc1', user_id: matt.id, rating: 1)
-      query.ratings.create(doc_id: 'doc2', user_id: matt.id, rating: 2)
-      query.ratings.create(doc_id: 'doc1', user_id: member1.id, rating: 2)
-      query.ratings.create(doc_id: 'doc1', user_id: member2.id, rating: 4)
-      assert_equal query.ratings_averaged.size, 2
-      assert_equal query.ratings_averaged.first[:rating], 2
-      assert_equal query.ratings_averaged.second[:rating], 2
-
-    end
-
-    test 'gets an average rating from a three user tagged ratings and one blank user' do
-      query.ratings.create(doc_id: 'doc1', user_id: matt.id, rating: 1)
-      query.ratings.create(doc_id: 'doc2', user_id: matt.id, rating: 2)
+      query.ratings.create(doc_id: 'doc2', user_id: matt.id, rating: 5)
       query.ratings.create(doc_id: 'doc1', user_id: member1.id, rating: 2)
       query.ratings.create(doc_id: 'doc1', user_id: member2.id, rating: 3)
-      query.ratings.create(doc_id: 'doc1', rating: 0)
-      assert_equal query.ratings_averaged.size, 2
-      assert_equal query.ratings_averaged.first[:rating], 2
-      assert_equal query.ratings_averaged.second[:rating], 2
+      query.ratings.create(doc_id: 'doc1', rating: 5)
+
+      assert_equal query.ratings.where(doc_id: 'doc1').average(:rating).round.to_i, 3
+      assert_equal query.ratings.where(doc_id: 'doc2').average(:rating).round.to_i, 5
+    end
+
+    test 'gets an variance rating from a three user tagged ratings and one blank user' do
+      query.ratings.create(doc_id: 'doc1', user_id: matt.id, rating: 1)
+      query.ratings.create(doc_id: 'doc2', user_id: matt.id, rating: 5)
+      query.ratings.create(doc_id: 'doc1', user_id: member1.id, rating: 2)
+      query.ratings.create(doc_id: 'doc1', user_id: member2.id, rating: 3)
+      query.ratings.create(doc_id: 'doc1', rating: 5)
+
+      ratings = Query.ratings_variance(query.ratings)
+
+      assert_equal ratings.size, 2
+      assert_equal ratings.first[:rating], 2.92
+      assert ratings.second[:rating].nan?
 
     end
   end
