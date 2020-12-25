@@ -189,3 +189,13 @@ admin:
   email:          admin@example.com
   default_scorer: :valid
   administrator:  true
+
+luke:
+  <<: *default
+  name:      Luke Skywalker
+  email:     lue@skywalkerranch.com
+
+kirk:
+  <<: *default
+  name:      James T Kirk
+  email:     james@starfleet.gov  

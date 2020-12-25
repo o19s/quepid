@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2020_12_21_191551) do
+ActiveRecord::Schema.define(version: 2020_12_23_161940) do
 
   create_table "annotations", id: :integer, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin", force: :cascade do |t|
     t.text "message"
@@ -25,6 +25,7 @@ ActiveRecord::Schema.define(version: 2020_12_21_191551) do
     t.integer "user_id", null: false
     t.integer "case_id", null: false
     t.datetime "last_viewed_at"
+    t.integer "ratings_view"
     t.index ["case_id"], name: "case_metadata_ibfk_1"
     t.index ["user_id", "case_id"], name: "case_metadata_user_id_case_id_index"
   end

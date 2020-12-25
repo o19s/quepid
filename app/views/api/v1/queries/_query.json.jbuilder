@@ -19,6 +19,19 @@ if query.scorer.present?
   json.scorer query.scorer, partial: path, as: :scorer
 end
 
+if @metadatum.present?
+#  puts "in query elvel"
+
+  if @metadatum.individual_ratings_view?
+    ratings = query.ratings.where(user_id: @metadatum.user_id)
+  elsif @metadatum.consolidated_ratings_view?
+    ratings = Query.ratings_averaged(query.ratings)
+  end
+else
+  # Average out the ratings if we don't have a specific user
+  ratings = Query.ratings_averaged(query.ratings)
+end
+
 json.ratings do
-  query.ratings.each { |rating| json.set! rating.doc_id, rating.rating }
+  ratings.each { |rating| json.set! rating.doc_id, rating.rating }
 end

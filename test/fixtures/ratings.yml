@@ -25,3 +25,39 @@ import_rating_3:
   doc_id: '456'
   query:  :import_ratings_query
   rating: 5
+
+kirk_rating_1:
+  user:  :kirk
+  query:  :star
+  doc_id: 'star_wars'
+  rating: 1
+
+kirk_rating_2:
+  user:  :kirk
+  query:  :star
+  doc_id: 'star_trek'
+  rating: 4
+
+kirk_rating_3:
+  user:  :kirk
+  query:  :star
+  doc_id: 'star_man'
+  rating: 2
+
+luke_rating_1:
+  user:  :luke
+  query:  :star
+  doc_id: 'star_wars'
+  rating: 4
+
+luke_rating_2:
+  user:  :luke
+  query:  :star
+  doc_id: 'star_trek'
+  rating: 1
+
+luke_rating_3:
+  user:  :luke
+  query:  :star
+  doc_id: 'star_man'
+  rating: 2

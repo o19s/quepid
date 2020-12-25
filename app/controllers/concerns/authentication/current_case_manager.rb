@@ -16,6 +16,11 @@ module Authentication
 
     def set_case
       @case = current_user.cases.where(id: params[:case_id]).first
+      current_case_metadatum
+    end
+
+    def current_case_metadatum
+      @case.metadata.find_or_create_by user_id: current_user.id unless @case.nil?
     end
 
     # Fetches case that a user can view and query.

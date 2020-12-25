@@ -69,3 +69,9 @@ team_for_case_shared_with_owner:
   owner:    :doug
   members:  random_1, random
   cases:    shared_with_owner
+
+phasers_vs_sabers_team:
+  name:     Team for Phasers vs Sabers Comparison
+  owner:    :luke
+  members:  kirk
+  cases:    phasers_vs_sabers

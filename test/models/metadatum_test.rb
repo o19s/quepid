@@ -18,6 +18,11 @@ class MetadatumTest < ActiveSupport::TestCase
     let(:acase)               { cases(:with_metadata) }
     let(:doug)                { users(:doug) }
 
+    test 'default to individual' do
+      metadatum = Metadatum.create(user_id: doug.id, case_id: acase.id)
+      assert metadatum.individual_ratings_view?
+    end
+
     test 'can filter to a specific metadatum' do
 
       metadatum = acase.metadata.find_by(user_id: doug.id)

@@ -189,3 +189,9 @@ case_with_score:
   user:     :random
   case_name: case_with_score
   archived: false
+
+phasers_vs_sabers:
+  user:   :luke
+  case_name: Phasers vs Sabers
+  archived: false
+  scorer: :v1

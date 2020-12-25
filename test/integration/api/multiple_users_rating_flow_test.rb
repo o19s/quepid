@@ -68,7 +68,26 @@ class MultipleUsersRatingFlowTest < ActionDispatch::IntegrationTest
 
     # check the average of a 0, 1, and 2 rating:
     # back to 2, cause we only return the most recent rating.
-    assert_equal query['ratings']['doc_frog_1'], 2
+    #assert_equal query['ratings']['doc_frog_1'], 2
+
+    # check that the logged in user, the owner, gets their ratings back.
+    assert_equal query['ratings']['doc_frog_1'], 0
+
+    metadatum = matt_case.metadata.where(user_id: owner.id).first
+
+    metadatum.consolidated_ratings_view!
+
+    get api_case_url(matt_case)
+
+    body = JSON.parse(response.body)
+
+    query = body['queries'].select { |q| 'frog' == q['query_text'] }.first
+
+    # check that the logged in user, the owner, gets the averaged rating back.
+    assert_equal query['ratings']['doc_frog_1'], 1
+
+
+
   end
   # rubocop:enable Layout/LineLength
 end

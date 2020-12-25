@@ -136,6 +136,60 @@ module Api
         end
       end
 
+      describe 'ratings view for case' do
+        let(:the_case)    { cases(:phasers_vs_sabers) }
+        let(:kirk)        { users(:kirk) }
+        let(:luke)        { users(:luke) }
+
+        before do
+
+        end
+
+
+        test 'luke has individual view so gets his ratings back' do
+
+          @controller = Api::V1::CasesController.new
+
+          login_user luke
+
+          assert_equal 1, the_case.queries.size
+          assert_equal 2, the_case.metadata.size
+
+          luke_metadatum = the_case.metadata.find_by(user_id: luke.id)
+          assert luke_metadatum.individual_ratings_view?
+
+          get :show, params: { case_id: the_case.id }
+          @body = JSON.parse(response.body)
+
+          query = @body['queries'].first
+          assert_equal query['ratings']['star_wars'], 4
+          assert_equal query['ratings']['star_trek'], 1
+          assert_equal query['ratings']['star_man'], 2
+
+        end
+
+        test 'kirk has consolidated view so gets averaged ratings back' do
+          @controller = Api::V1::CasesController.new
+
+          login_user kirk
+
+          assert_equal 1, the_case.queries.size
+          assert_equal 2, the_case.metadata.size
+
+          kirk_metadatum = the_case.metadata.find_by(user_id: kirk.id)
+          assert kirk_metadatum.consolidated_ratings_view?
+
+          get :show, params: { case_id: the_case.id }
+          @body = JSON.parse(response.body)
+
+          query = @body['queries'].first
+          assert_equal query['ratings']['star_wars'], 3
+          assert_equal query['ratings']['star_trek'], 3
+          assert_equal query['ratings']['star_man'], 2
+
+        end
+      end
+
       describe 'Archiving a case' do
         describe 'when it is the last/only case' do
           let(:matt)      { users(:matt) }
