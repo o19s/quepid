@@ -278,7 +278,7 @@ angular.module('QuepidApp')
           }, function() {
             caseTryNavSvc.notFound();
           });
-      }
+      };
 
 
       this.trackLastScore = function(caseNo, scoreData) {
