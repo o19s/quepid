@@ -141,13 +141,7 @@ module Api
         let(:kirk)        { users(:kirk) }
         let(:luke)        { users(:luke) }
 
-        before do
-
-        end
-
-
         test 'luke has individual view so gets his ratings back' do
-
           @controller = Api::V1::CasesController.new
 
           login_user luke
@@ -165,7 +159,6 @@ module Api
           assert_equal query['ratings']['star_wars'], 4
           assert_equal query['ratings']['star_trek'], 1
           assert_equal query['ratings']['star_man'], 2
-
         end
 
         test 'kirk has consolidated view so gets averaged ratings back' do
@@ -186,7 +179,6 @@ module Api
           assert_equal query['ratings']['star_wars'], 3
           assert_equal query['ratings']['star_trek'], 3
           assert_equal query['ratings']['star_man'], 2
-
         end
       end
 

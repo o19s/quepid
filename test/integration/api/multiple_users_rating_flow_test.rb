@@ -68,7 +68,7 @@ class MultipleUsersRatingFlowTest < ActionDispatch::IntegrationTest
 
     # check the average of a 0, 1, and 2 rating:
     # back to 2, cause we only return the most recent rating.
-    #assert_equal query['ratings']['doc_frog_1'], 2
+    # assert_equal query['ratings']['doc_frog_1'], 2
 
     # check that the logged in user, the owner, gets their ratings back.
     assert_equal query['ratings']['doc_frog_1'], 0
@@ -85,9 +85,6 @@ class MultipleUsersRatingFlowTest < ActionDispatch::IntegrationTest
 
     # check that the logged in user, the owner, gets the averaged rating back.
     assert_equal query['ratings']['doc_frog_1'], 1
-
-
-
   end
   # rubocop:enable Layout/LineLength
 end

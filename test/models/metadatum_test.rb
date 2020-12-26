@@ -24,7 +24,6 @@ class MetadatumTest < ActiveSupport::TestCase
     end
 
     test 'can filter to a specific metadatum' do
-
       metadatum = acase.metadata.find_by(user_id: doug.id)
       assert_equal metadatum.ratings_view, 'individual'
 

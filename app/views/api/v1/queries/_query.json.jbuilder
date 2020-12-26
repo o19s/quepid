@@ -20,7 +20,7 @@ if query.scorer.present?
 end
 
 if @metadatum.present?
-#  puts "in query elvel"
+  #  puts "in query elvel"
 
   if @metadatum.individual_ratings_view?
     ratings = query.ratings.where(user_id: @metadatum.user_id)

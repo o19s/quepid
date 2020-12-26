@@ -35,6 +35,11 @@ Style/RedundantAssignment:
 Style/EmptyMethod:
   Enabled: false
 
+# scale.join(',') unless scale.nil? may not be good style compared to
+# scale&.join(','), but the & is very opaque to me!
+Style/SafeNavigation:
+  Enabled: false
+
 Lint/MissingSuper:
   Enabled: false # legacy stuff
 
