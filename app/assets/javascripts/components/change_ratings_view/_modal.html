@@ -1,0 +1,29 @@
+<script type="application/javascript">
+  // Tooltip
+  $(function () {
+    $('[data-toggle="tooltip"]').tooltip();
+  })
+</script>
+
+<div class="modal-header">
+  <button type="button" class="close" aria-label="Close" ng-click="ctrl.cancel()"><span aria-hidden="true">&times;</span></button>
+  <h3 class="modal-title">Change View of Ratings for Case: <span class="modal-case">{{ ctrl.acase.caseName }}</span></h3>
+</div>
+<div class="modal-body">
+  <p>You can look at the ratings in two ways, your individual ratings and then the ratings averaged across your team.</p>
+
+  <div class="form-group">
+  <div class="list-group">
+
+    <div class="list-group">
+      <a href="" class="list-group-item" ng-repeat="ratingView in ctrl.ratingViews" ng-class="{ active: ratingView === ctrl.acase.ratingsView }" ng-click="ctrl.selectRatingView(ratingView)">
+        {{ ratingView }}
+      </a>
+    </div>
+  </div>
+  </div>
+</div>
+<div class="modal-footer">
+  <button class="btn btn-default float-left" ng-click="ctrl.cancel()">Cancel</button>
+  <button class="btn btn-primary" ng-click="ctrl.ok()">Update</button>
+</div>
