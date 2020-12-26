@@ -260,18 +260,21 @@ angular.module('QuepidApp')
         return $http.put(url, data);
       };
 
-      this.changeRatingsView = function(theCase, ratingsView) {
+      this.changeRatingsView = function(theCase) {
         var url         = '/api/cases/'+ theCase.caseNo + '/metadata';
         var data        = {
           'metadata': {
-            'ratings_view': ratingsView
+            'ratings_view': theCase.ratingsView
           }
         };
 
         return $http.put(url, data)
           .then(function() {
+            //caseSvc.get(theCase.caseNo);
+
             //theCase.caseName = newName;
             //broadcastSvc.send('caseRenamed', theCase);
+            //broadcastSvc.send('updatedCasesList', svc.allCases);
           }, function() {
             caseTryNavSvc.notFound();
           });

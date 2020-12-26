@@ -9,12 +9,14 @@ angular.module('QuepidApp')
     '$log',
     '$routeParams',
     'flash',
+    'caseSvc',
     function (
       $scope,
       $uibModal,
       $log,
       $routeParams,
       flash,
+      caseSvc,
     ) {
       var ctrl = this;
 
@@ -36,9 +38,9 @@ angular.module('QuepidApp')
 
         modalInstance.result.then(
           function(acase) {
-            var caseNo  = share.acase.caseNo;
-            var ratingsView = share.acase.ratingsView;
-            caseSvc.changeRatingsView(caseNo, ratingsView)
+            var caseNo  = acase.caseNo;
+            var ratingsView = acase.ratingsView;
+            caseSvc.changeRatingsView(acase)
               .then(function() {
                 flash.success = 'Case rating view updated.';
               }, function() {
