@@ -49,8 +49,7 @@ module Api
       end
 
       def show
-        puts "The current case has a ratings view of #{current_case_metadatum.ratings_view}"
-        @metadatum = current_case_metadatum
+        puts "The current case has a ratings view of #{@case_metadatum.ratings_view}"
         respond_with @case
       end
 

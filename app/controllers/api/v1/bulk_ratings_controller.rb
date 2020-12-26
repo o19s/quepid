@@ -8,10 +8,12 @@ module Api
       before_action :set_case_query
       before_action :check_query
 
+      # we pass in a list of doc_ids and a rating hash with the user_id and rating to use
       def update
         if params[:doc_ids].present?
           params[:doc_ids].each do |doc_id|
-            rating = @query.ratings.find_or_create_by doc_id: doc_id
+            # user_id sometimes is nil and sometimes is populated
+            rating = @query.ratings.find_or_create_by doc_id: doc_id, user_id: rating_params[:user_id]
             rating.update rating_params
           end
         end
@@ -35,7 +37,7 @@ module Api
       private
 
       def rating_params
-        params.permit(:rating)
+        params.require(:rating).permit(:rating, :user_id)
       end
     end
   end

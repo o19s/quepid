@@ -19,12 +19,10 @@ if query.scorer.present?
   json.scorer query.scorer, partial: path, as: :scorer
 end
 
-if @metadatum.present?
-  #  puts "in query elvel"
-
-  if @metadatum.individual_ratings_view?
-    ratings = query.ratings.where(user_id: @metadatum.user_id)
-  elsif @metadatum.consolidated_ratings_view?
+if @case_metadatum.present?
+  if @case_metadatum.individual_ratings_view?
+    ratings = query.ratings.where(user_id: @case_metadatum.user_id)
+  elsif @case_metadatum.consolidated_ratings_view?
     ratings = Query.ratings_averaged(query.ratings)
   end
 else

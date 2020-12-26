@@ -20,7 +20,7 @@ json.teams            teams unless no_teams
 
 json.last_try_number acase.tries.best.try_number unless no_tries || acase.tries.blank? || acase.tries.best.blank?\
 
-json.ratings_view @metadatum.present? ? @metadatum.ratings_view : 'consolidated'
+json.ratings_view @case_metadatum.present? ? @case_metadatum.ratings_view : 'consolidated'
 
 unless shallow
   json.queries do

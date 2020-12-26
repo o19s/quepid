@@ -53,7 +53,10 @@ angular.module('QuepidApp')
           var url   = basePath() + '/bulk' + '/ratings';
           var data  = {
             doc_ids:  docIds,
-            rating:   rating,
+            rating: {
+              user_id: $rootScope.currentUser.id,
+              rating: rating,
+            }
           };
 
           $http.put(url, data).then(function() {

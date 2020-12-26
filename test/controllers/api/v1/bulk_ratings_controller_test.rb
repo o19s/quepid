@@ -18,9 +18,13 @@ module Api
       describe 'update' do
         test 'sets rating for all docs' do
           doc_ids = %w[x123z x456z]
+          rating = {
+            rating:  5,
+            user_id: user.id,
+          }
 
           assert_difference 'query.ratings.count', 2 do
-            put :update, params: { case_id: acase.id, query_id: query.id, doc_ids: doc_ids, rating: 5 }
+            put :update, params: { case_id: acase.id, query_id: query.id, doc_ids: doc_ids, rating: rating }
 
             assert_response :no_content
           end
@@ -31,9 +35,13 @@ module Api
             expects_any_ga_event_call
 
             doc_ids = %w[x123z x456z]
+            rating = {
+              rating:  5,
+              user_id: user.id,
+            }
 
             perform_enqueued_jobs do
-              put :update, params: { case_id: acase.id, query_id: query.id, doc_ids: doc_ids, rating: 5 }
+              put :update, params: { case_id: acase.id, query_id: query.id, doc_ids: doc_ids, rating: rating }
 
               assert_response :no_content
             end

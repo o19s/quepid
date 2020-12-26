@@ -16,18 +16,20 @@ module Authentication
 
     def set_case
       @case = current_user.cases.where(id: params[:case_id]).first
-      current_case_metadatum
+      # current_case_metadatum
     end
 
     def current_case_metadatum
-      @case.metadata.find_or_create_by user_id: current_user.id unless @case.nil?
+      @case_metadatum = @case.metadata.find_or_create_by user_id: current_user.id unless @case.nil?
     end
 
     # Fetches case that a user can view and query.
     # This includes a case owned by the user, shared with an team owned by
     # the user, or shared with a team shared with the user.
+    # possibility that set_case and find_case could be merged.
     def find_case
       @case = current_user.cases_involved_with.where(id: params[:case_id]).first
+      # current_case_metadatum
     end
 
     def case_with_all_the_bells_whistles
@@ -40,6 +42,7 @@ module Authentication
     end
 
     def check_case
+      current_case_metadatum
       render json: { message: 'Case not found!' }, status: :not_found unless @case
     end
   end

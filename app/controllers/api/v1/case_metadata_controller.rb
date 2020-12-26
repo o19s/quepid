@@ -7,7 +7,8 @@ module Api
       before_action :check_case
 
       def update
-        @metadatum = @case.metadata.find_or_create_by user_id: current_user.id
+        # @metadatum = @case.metadata.find_or_create_by user_id: current_user.id
+        @metadatum = @case_metadatum
 
         if @metadatum.update metadata_params
           head :no_content
