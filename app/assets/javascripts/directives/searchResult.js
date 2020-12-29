@@ -31,6 +31,7 @@ angular.module('QuepidApp')
           explainView: '=',
           explainViewport: '=',
           query: '=',
+          case: '=',
           docId: '=',
           rank: '@'
         },

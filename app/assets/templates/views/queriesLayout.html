@@ -57,7 +57,7 @@
                 {{ getScorer().name }}
               </small>
 
-              <small class="text-muted">
+              <small class="text-muted" ng-show="caseModel.selectedCase().sharedWithTeam" >
                 &mdash;
                 <em>{{ caseModel.selectedCase().ratingsView }}</em>
               </small>
@@ -105,7 +105,7 @@
                 acase="caseModel.selectedCase()"
               ></export-case>
             </li>
-            <li>
+            <li ng-show="caseModel.selectedCase().sharedWithTeam">
               <change-ratings-view
                 icon-only="false"
                 acase="caseModel.selectedCase()"

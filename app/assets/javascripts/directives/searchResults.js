@@ -22,6 +22,7 @@ angular.module('QuepidApp')
         transclude: true,
         scope: {
           query: '=',
+          case: '=',
           isSortingEnabled: '=issortingenabled'
         },
 

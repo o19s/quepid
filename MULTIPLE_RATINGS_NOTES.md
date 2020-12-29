@@ -1,8 +1,10 @@
 * The custom Struct for ratings is weird.
-* Need a migration to assign ALL ratings to whoever owns the case.   
-* Need a migration to add the `case_view` column to cases.metadata.
+* DONE: Need a migration to assign ALL ratings to whoever owns the case.   
+* DONE:  Need a migration to add the `case_view` column to cases.metadata.
 * back out the average stuff on the rating view on updating it.
-
+* When swapping between invidicual and consolidated, the front end UI doesn't refresh.
+* When you share a case with a team, we need to refresh the component for "changes ratings view" in the front end
+* Still a bug where sometimes tryNo in JS is 0, not 1!!!
 
 
 

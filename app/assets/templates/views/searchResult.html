@@ -7,15 +7,17 @@
       <div class="col-ratings">
 
         <div ng-if="doc.error === undefined" class="ratings">
-          <!-- <div class="single-rating" ng-click="ratings.open()"> -->
-          <div class="single-rating" uib-popover-template="'views/ratings/popover.html'" popover-trigger="outsideClick" popover-placement="auto right" popover-is-open="ratings.ratingsOn">
+          <div class="single-rating" ng-show="case.ratingEnabled()" uib-popover-template="'views/ratings/popover.html'" popover-trigger="outsideClick" popover-placement="auto right" popover-is-open="ratings.ratingsOn">
             <span class="btn" ng-style="{rating: displayRating(), scale: ratings.scale} | ratingBgStyle">
               {{displayRating()}}
               <span class="caret"></span>
             </span>
           </div>
-
-          <!-- <ng-include src="'views/ratings/popover.html'"></ng-include> -->
+          <div class="single-rating" ng-show="!case.ratingEnabled()">
+            <span class="btn" ng-style="{rating: displayRating(), scale: ratings.scale} | ratingBgStyle">
+              {{displayRating()}}
+            </span>
+          </div>
         </div>
       </div>
 

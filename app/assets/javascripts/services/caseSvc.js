@@ -52,6 +52,7 @@ angular.module('QuepidApp')
         theCase.tries             = data.tries || [];
         theCase.scores            = data.scores || [];
         theCase.queries           = data.queries || [];
+        theCase.sharedWithTeam    = data.shared_with_team;
 
         theCase.teamNames = function() {
           var names = [];
@@ -86,6 +87,21 @@ angular.module('QuepidApp')
               return theCase;
             });
         };
+
+        theCase.ratingEnabled = function() {
+          if (!theCase.sharedWithTeam){
+            return true;
+          }
+          else {
+            if (theCase.ratingsView === 'individual'){
+              return true;
+            }
+            else {
+              return false;
+            }
+          }
+
+        }
 
         $rootScope.$on('settings-updated', function(event, args) {
           if ( args.caseNo === theCase.caseNo ) {

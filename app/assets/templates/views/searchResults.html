@@ -65,8 +65,11 @@
     <div class="col-ratings query-rating">
       <strong>Score All</strong>
       <div class="ratings">
-        <div class="single-rating" ng-click="ratings.open()" uib-popover-template="'views/ratings/popover.html'" popover-trigger="outsideClick" popover-placement="auto right" popover-is-open="ratings.ratingsOn">
+        <div class="single-rating" ng-show="case.ratingEnabled()" ng-click="ratings.open()" uib-popover-template="'views/ratings/popover.html'" popover-trigger="outsideClick" popover-placement="auto right" popover-is-open="ratings.ratingsOn">
           <span class="btn" ng-style="{rating: displayRating(), scale: ratings.scale} | ratingBgStyle">{{displayRating()}} <span class="caret"></span></span>
+        </div>
+        <div class="single-rating" ng-show="!case.ratingEnabled()">
+          <span class="btn" ng-style="{rating: displayRating(), scale: ratings.scale} | ratingBgStyle">{{displayRating()}} </span>
         </div>
       </div>
     </div>
@@ -117,7 +120,7 @@
     </div>
 
     <div ng-show="displayed.results == displayed.resultsView.results">
-      <search-result explain-viewport="'#query-container'" explain-view="'full'" class="search-result" ng-repeat="doc in query.docs track by doc.id" max-doc-score="query.maxDocScore()" doc="doc" field-spec="query.fieldSpec" rank="{{$index + 1}}" query="query" doc-id="doc.id">
+      <search-result explain-viewport="'#query-container'" explain-view="'full'" class="search-result" ng-repeat="doc in query.docs track by doc.id" max-doc-score="query.maxDocScore()" doc="doc" field-spec="query.fieldSpec" rank="{{$index + 1}}" case="case" query="query" doc-id="doc.id">
       </search-result>
 
       <div class='row'>
