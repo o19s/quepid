@@ -33,12 +33,20 @@ module Authentication
     end
 
     def case_with_all_the_bells_whistles
-      @case = current_user
-        .cases_involved_with
-        .where(id: params[:case_id])
-        .includes([ queries: [ :ratings, :test, :scorer ], tries: [ :curator_variables ] ])
-        .order('tries.try_number DESC')
-        .first
+      # The joins to include all the cases this user has access to was appearing to make a GIANT query
+      # that would time out on MySQL.
+      cases_involved_with_ids = current_user.cases_involved_with.pluck(:id)
+      puts "cases_involved_with_ids #{cases_involved_with_ids}"
+      puts "params[:case_id]: #{params[:case_id]}"
+      puts "cases_involved_with_ids include? #{cases_involved_with_ids.include?( params[:case_id].to_i )}"
+      case_id_int = params[:case_id].to_i
+
+      if (cases_involved_with_ids.include?( case_id_int ))
+        @case = Case.where(id: case_id_int)
+          .includes([ queries: [ :ratings, :test, :scorer ], tries: [ :curator_variables ] ])
+          .order('tries.try_number DESC').first
+      end
+
     end
 
     def check_case
