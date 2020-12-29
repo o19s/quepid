@@ -100,8 +100,7 @@ angular.module('QuepidApp')
               return false;
             }
           }
-
-        }
+        };
 
         $rootScope.$on('settings-updated', function(event, args) {
           if ( args.caseNo === theCase.caseNo ) {
