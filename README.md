@@ -203,6 +203,8 @@ Rubocop has some magic "auto correction" features for simple/common issues, so y
 bin/docker r bundle exec rubocop --auto-correct
 ```
 
+Now check in your fixes to GitHub!
+
 ### All Tests
 
 If you want to run all of the tests in one go (before you commit and push for example), just run these two commands:
