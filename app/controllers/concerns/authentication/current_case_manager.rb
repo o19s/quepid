@@ -34,11 +34,9 @@ module Authentication
 
     def case_with_all_the_bells_whistles
       # The joins to include all the cases this user has access to was appearing to make a GIANT query
-      # that would time out on MySQL.
+      # that would time out on MySQL.  So now we break it up into two queries, the first we get all the
+      # case id's, and the second then is that actual query to get the extended data.
       cases_involved_with_ids = current_user.cases_involved_with.pluck(:id)
-      puts "cases_involved_with_ids #{cases_involved_with_ids}"
-      puts "params[:case_id]: #{params[:case_id]}"
-      puts "cases_involved_with_ids include? #{cases_involved_with_ids.include?( params[:case_id].to_i )}"
       case_id_int = params[:case_id].to_i
 
       if (cases_involved_with_ids.include?( case_id_int ))
