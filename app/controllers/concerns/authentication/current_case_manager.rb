@@ -39,12 +39,11 @@ module Authentication
       cases_involved_with_ids = current_user.cases_involved_with.pluck(:id)
       case_id_int = params[:case_id].to_i
 
-      if (cases_involved_with_ids.include?( case_id_int ))
-        @case = Case.where(id: case_id_int)
-          .includes([ queries: [ :ratings, :test, :scorer ], tries: [ :curator_variables ] ])
-          .order('tries.try_number DESC').first
-      end
+      return unless cases_involved_with_ids.include?( case_id_int )
 
+      @case = Case.where(id: case_id_int)
+        .includes([ queries: [ :ratings, :test, :scorer ], tries: [ :curator_variables ] ])
+        .order('tries.try_number DESC').first
     end
 
     def check_case
