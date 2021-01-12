@@ -92,6 +92,10 @@ class Query < ApplicationRecord
     ratings_variants
   end
 
+  def self.relative_variance (max_label, variance)
+    variance / max_label
+  end
+
   def self.group_by_doc_id ratings
     ratings_by_doc = {}
     ratings.each do |rating|

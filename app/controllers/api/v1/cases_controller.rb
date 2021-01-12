@@ -39,7 +39,9 @@ module Api
       def create
         @case = current_user.cases.build case_params
 
+
         if @case.save
+          current_case_metadatum
           first = 1 == current_user.cases.count
           Analytics::Tracker.track_case_created_event current_user, @case, first
           respond_with @case

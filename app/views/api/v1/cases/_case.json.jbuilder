@@ -21,7 +21,27 @@ json.teams            teams unless no_teams
 
 json.last_try_number acase.tries.best.try_number unless no_tries || acase.tries.blank? || acase.tries.best.blank?
 
-json.ratings_view @case_metadatum.present? ? @case_metadatum.ratings_view : 'consolidated'
+if @case_metadatum.present?
+  json.ratings_view @case_metadatum.ratings_view
+end
+
+unless no_teams
+  if teams.count.positive?
+    max_label = acase.scorer.scale.last
+    case_variance_values = []
+    acase.queries.each do |q|
+      next if q.ratings.empty?
+
+      variance = Query.ratings_variance(q.ratings).first.rating # change rating to something else for Nate
+
+      relative_variance = variance / max_label
+
+      case_variance_values << relative_variance
+    end
+
+    json.case_rating_variance Query.mean(case_variance_values)
+  end
+end
 
 unless shallow
   json.queries do

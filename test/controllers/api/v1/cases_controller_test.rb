@@ -74,7 +74,7 @@ module Api
         let(:the_case)            { cases(:one) }
         let(:matt_case)           { cases(:matt_case) }
         let(:case_with_two_tries) { cases(:case_with_two_tries) }
-        let(:joey) { users(:joey) }
+        let(:joey)                { users(:joey) }
 
         test "returns a not found error if the case is not in the signed in user's case list" do
           get :show, params: { case_id: matt_case.id }
@@ -101,6 +101,28 @@ module Api
 
           assert_equal body['tries'][0]['try_number'], 2
           assert_equal body['tries'][1]['try_number'], 1
+        end
+
+        describe 'Looking at case variances' do
+          let(:phasers_vs_sabers)   { cases(:phasers_vs_sabers) }
+          let(:kirk)                { users(:kirk) }
+          let(:luke)                { users(:luke) }
+
+          test 'luke with individual' do
+            @controller = Api::V1::CasesController.new
+
+            login_user luke
+            get :show, params: { case_id: phasers_vs_sabers.id }
+            assert_response :ok
+
+            body = JSON.parse(response.body)
+
+            assert_equal body['case_name'], phasers_vs_sabers.case_name
+            assert_equal body['caseNo'],    phasers_vs_sabers.id
+
+            assert_equal body['case_rating_variance'], 1.125
+          end
+
         end
       end
 

@@ -5,6 +5,7 @@
 * When swapping between invidicual and consolidated, the front end UI doesn't refresh.
 * When you share a case with a team, we need to refresh the component for "changes ratings view" in the front end
 * Still a bug where sometimes tryNo in JS is 0, not 1!!!
+* Think about moving the variances to something like /cases/case_id/analytics/variances end point, and introduce a case_analytics_controller.rb to deal with all of that!
 
 
 
