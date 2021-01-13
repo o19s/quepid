@@ -24,3 +24,12 @@ import_rating_3:
   doc_id: '456'
   query:  :import_ratings_query
   rating: 5
+
+rating_with_rating:
+  doc_id: '123'
+  query:  :query_with_empty_ratings
+  rating: 5
+
+rating_without_rating:
+  doc_id: '234'
+  query:  :query_with_empty_ratings

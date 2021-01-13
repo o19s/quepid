@@ -14,4 +14,8 @@
 
 class Rating < ActiveRecord::Base
   belongs_to :query
+
+  # arguably we shouldn't need this, however today you can have a rating object that doesn't have a
+  # value set.  fully_rated means that the rating integer has been set.
+  scope :fully_rated, -> { where.not(rating: nil) }
 end
