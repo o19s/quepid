@@ -243,7 +243,7 @@ class QueryTest < ActiveSupport::TestCase
 
   describe 'query scoping with ratings and with ratings' do
     let(:query)               { queries(:query_with_empty_ratings) }
-    let (:rating_with_rating) { ratings(:rating_with_rating) }
+    let(:rating_with_rating)  { ratings(:rating_with_rating) }
 
     test 'always fetches all the ratings' do
       assert_equal 2, query.ratings.size
