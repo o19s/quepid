@@ -72,3 +72,10 @@ random_query:
   case:         :random_case
   query_text:   Random Query
   arranged_at:  1
+
+query_with_empty_ratings:
+  case:         :random_case
+  query_text:   Query With Empty Ratings
+  arranged_at:  1
+
+  
