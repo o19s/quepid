@@ -2,11 +2,19 @@
 
 ## 6.4.1 - ??
 
+### Features
+
+### Improvements
+
+* Small housekeeping update for the hosted app version running on Heroku.  https://github.com/o19s/quepid/pull/267 by @dworley.
+
+* Clean up last scoring run details on the Cases Listing page.  Now better iconography to call out cases that have queries that need rating.  https://github.com/o19s/quepid/pull/261 by @epugh fixes https://github.com/o19s/quepid/issues/219.
+
 ### Bugs
 
 * Don't export ratings that don't have a rating set for RRE and Basic export formats.  https://github.com/o19s/quepid/pull/266 by @epugh fixes https://github.com/o19s/quepid/issues/265.
 
-* Small housekeeping update for the hosted app version running on Heroku.  https://github.com/o19s/quepid/pull/267 by @dworley.
+
 
 ## 6.4.0 - 2020-12-18
 
