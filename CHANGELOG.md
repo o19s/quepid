@@ -1,8 +1,10 @@
 # Changelog
 
-## 6.4.1 - ??
+## 6.4.1 - 2021-01-14
 
-### Features
+In the 6.4.0 release, the correct splainer-search NPM package was missed in the production Docker image.
+
+This release resolves that oversite.  Thanks @LiuCao0614 for testing the upgrade process and reporting the issue.
 
 ### Improvements
 
