@@ -6,6 +6,8 @@
 
 * Don't export ratings that don't have a rating set for RRE and Basic export formats.  https://github.com/o19s/quepid/pull/266 by @epugh fixes https://github.com/o19s/quepid/issues/265.
 
+* Small housekeeping update for the hosted app version running on Heroku.  https://github.com/o19s/quepid/pull/267 by @dworley.
+
 ## 6.4.0 - 2020-12-18
 
 *Only Rated* toggle is a powerful new feature added to Quepid, our first relevancy centric feature in a long while.
