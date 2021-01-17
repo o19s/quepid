@@ -3,10 +3,10 @@
 module Api
   module V1
     class TeamsController < Api::ApiController
-      before_action :set_team,          only: %i[show update destroy]
-      before_action :check_team,        only: %i[show update destroy]
-      before_action :check_team_owner,  only: %i[update destroy]
-      before_action :case_load,         only: %i[index show]
+      before_action :set_team,          only: [ :show, :update, :destroy ]
+      before_action :check_team,        only: [ :show, :update, :destroy ]
+      before_action :check_team_owner,  only: [ :update, :destroy ]
+      before_action :case_load,         only: [ :index, :show ]
 
       def index
         @teams = current_user.teams_im_in
@@ -57,7 +57,7 @@ module Api
 
       def case_load
         bool = ActiveRecord::Type::Boolean.new
-        @load_cases = bool.type_cast_from_user(params[:load_cases]) || false
+        @load_cases = bool.deserialize(params[:load_cases]) || false
       end
     end
   end

@@ -83,7 +83,7 @@ class QueryTest < ActiveSupport::TestCase
       list = queries_case.queries
 
       previous_query = list.first
-      list[1..-1].each do |query|
+      list[1..].each do |query|
         assert previous_query.arranged_at < query.arranged_at
         assert_equal previous_query.arranged_next, query.arranged_at
         previous_query = query

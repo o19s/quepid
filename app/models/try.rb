@@ -21,7 +21,7 @@
 require 'solr_arg_parser'
 require 'es_arg_parser'
 
-class Try < ActiveRecord::Base
+class Try < ApplicationRecord
   # Scopes
   scope :best, -> { order(id: :desc).first }
   scope :latest, -> { order(try_number: :desc).limit(1).first }
@@ -50,7 +50,7 @@ class Try < ActiveRecord::Base
   }.freeze
 
   # Associations
-  belongs_to  :case
+  belongs_to  :case, optional: true # shouldn't be optional, but was in rails 4
 
   has_many    :curator_variables,
               dependent:  :destroy,
@@ -60,9 +60,10 @@ class Try < ActiveRecord::Base
   before_create :set_defaults
 
   def args
-    if 'solr' == search_engine
+    case search_engine
+    when 'solr'
       solr_args
-    elsif 'es' == search_engine
+    when 'es'
       es_args
     end
   end
@@ -97,6 +98,7 @@ class Try < ActiveRecord::Base
     # rubocop:disable Style/IfUnlessModifier
     # rubocop:disable Style/MultipleComparison
     # rubocop:disable Style/Next
+    # rubocop:disable Style/SoleNestedConditional
     if 'id' == field_spec || '_id' == field_spec
       return field_spec
     end
@@ -117,14 +119,19 @@ class Try < ActiveRecord::Base
     # rubocop:enable Style/IfUnlessModifier
     # rubocop:enable Style/MultipleComparison
     # rubocop:enable Style/Next
+    # rubocop:enable Style/SoleNestedConditional
   end
 
   def index_name_from_search_url
-    if 'solr' == search_engine
+    # rubocop:disable Lint/DuplicateBranch
+    # NOTE: fix me when we add antoher engine!
+    case search_engine
+    when 'solr'
       search_url.split('/')[-2]
-    elsif 'es' == search_engine
+    when 'es'
       search_url.split('/')[-2]
     end
+    # rubocop:enable Lint/DuplicateBranch
   end
 
   private

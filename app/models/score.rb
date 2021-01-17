@@ -16,7 +16,7 @@
 #  updated_at    :datetime
 #
 
-class Score < ActiveRecord::Base
+class Score < ApplicationRecord
   self.table_name = 'case_scores'
 
   serialize :queries, JSON
@@ -25,7 +25,7 @@ class Score < ActiveRecord::Base
   belongs_to :case
   belongs_to :user
   belongs_to :try
-  belongs_to :annotation
+  belongs_to :annotation, optional: true
 
   # Validations
   validates :case_id,

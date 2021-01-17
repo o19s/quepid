@@ -36,7 +36,7 @@
     </div>
 
     <div class="col-md-3 col-sm-4" ng-show="isSignupEnabled">
-      <div ng-controller="SignupCtrl">
+      <div ng-controller="SignupCtrl" ng-cloak>
         <form id="signup" ng-submit="submit(agree, emailMarketingAgree, name, email, password, confirm)" >
           <h2>Signup to get started!</h2>
 

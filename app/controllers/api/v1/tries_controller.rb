@@ -5,7 +5,7 @@ module Api
     class TriesController < Api::ApiController
       before_action :find_case
       before_action :check_case
-      before_action :set_try, only: %i[show update destroy]
+      before_action :set_try, only: [ :show, :update, :destroy ]
 
       def index
         @tries = @case.tries

@@ -108,7 +108,7 @@ class SnapshotManager
 
     # Fetch all queries for the snapshot's case where the query text
     # matches the keys in the hash supplied in the params.
-    queries_params    = {
+    queries_params = {
       query_text: keys,
       case_id:    @snapshot.case_id,
     }
@@ -185,13 +185,14 @@ class SnapshotManager
   end
 
   def extract_doc_info row
-    if :csv == @options[:format]
+    case @options[:format]
+    when :csv
       {
         query_text: row[0],
         id:         row[1],
         position:   row[2],
       }
-    elsif :hash == @options[:format]
+    when :hash
       row.deep_symbolize_keys
     else
       row

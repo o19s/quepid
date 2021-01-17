@@ -5,48 +5,27 @@ class HomeController < ApplicationController
 
   # ignoring naming convention because these are getting passed to JS
   # rubocop:disable Naming/VariableName
-  # rubocop:disable Metrics/MethodLength
-  # rubocop:disable Metrics/AbcSize
   def index
     @triggerWizard = false
 
-    if current_user
-      # load a case/try if one was set somewhere
-      bootstrapCase = nil
+    return unless current_user
 
-      # First check if the case and the try have been set in the session
-      @bootstrapCaseNo  = session[:bootstrapCaseNo]
-      @bootstrapTryNo   = session[:bootstrapTryNo]
+    # load a case/try if one was set somewhere
+    bootstrapCase = current_user.cases_involved_with.not_archived.last
 
-      # Clear the session
-      session.delete :bootstrapCaseNo
-      session.delete :bootstrapTryNo
+    if bootstrapCase
+      @bootstrapCaseNo  = bootstrapCase.id
+      best_try          = bootstrapCase.tries.best
+      @bootstrapTryNo   = best_try.try_number if best_try.present?
+    else
+      @triggerWizard    = true unless current_user.first_login?
 
-      if @bootstrapCaseNo
-        # Note, calling `case` not `cases` which fetches cases both owned
-        # and shared
-        bootstrapCase = current_user.case.where(id: @bootstrapCaseNo).first
-      end
-
-      bootstrapCase ||= current_user.case.where.not(archived: true).last
-
-      if bootstrapCase
-        @bootstrapCaseNo  = bootstrapCase.id
-        best_try          = bootstrapCase.tries.best
-        @bootstrapTryNo   = best_try.try_number if best_try.present?
-      else
-        @triggerWizard = true unless current_user.first_login?
-
-        bootstrapCase     = current_user.cases.create case_name: Case::DEFAULT_NAME
-        @bootstrapCaseNo  = bootstrapCase.id
-        @bootstrapTryNo   = bootstrapCase.tries.best.try_number
-      end
+      bootstrapCase     = current_user.cases.create case_name: "Case #{current_user.cases.size}"
+      @bootstrapCaseNo  = bootstrapCase.id
+      bootStrapTry      = bootstrapCase.tries.first
+      @bootstrapTryNo   = bootStrapTry.try_number
     end
-
-    @user_decorator = CurrentUserDecorator.new(current_user)
   end
-  # rubocop:enable Metrics/AbcSize
-  # rubocop:enable Metrics/MethodLength
   # rubocop:enable Naming/VariableName
 
   private

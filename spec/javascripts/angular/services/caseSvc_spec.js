@@ -472,6 +472,17 @@ describe('Service: caseSvc', function () {
       $httpBackend.flush();
     });
 
+    it('handles a try_number versus try_id', function() {
+
+      delete scoreData['try_id'];
+      scoreData.try_number = 33;
+
+      $httpBackend.expectPUT('/api/cases/1/scores').respond(200, '');
+
+      caseSvc.trackLastScore(1, scoreData);
+      $httpBackend.flush();
+    });
+
     it('ignores empty scores', function() {
       var data = angular.copy(scoreData)
       data.score   = 0;

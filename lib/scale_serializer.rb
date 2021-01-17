@@ -2,7 +2,9 @@
 
 # Used by the scorer model to serialize users scale options into a simple string
 # for storage in the db
+
 class ScaleSerializer
+  # rubocop:disable Style/CaseLikeIf
   def self.dump scale
     if scale.is_a? Array
       scale.join(',')
@@ -10,6 +12,7 @@ class ScaleSerializer
       scale
     end
   end
+  # rubocop:enable Style/CaseLikeIf
 
   def self.load scale
     # TODO: escape ',' in labels

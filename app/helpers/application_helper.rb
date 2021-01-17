@@ -43,7 +43,7 @@ module ApplicationHelper
 
   def make_csv_safe str
     if %w[- = + @].include?(str[0])
-      ' ' + str
+      " #{str}"
     else
       str
     end

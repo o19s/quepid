@@ -1,5 +1,9 @@
 # Changelog
 
+## 6.4.2 - ?
+
+* Big upgrade to Rails 5.  Ruby 2.6.6.
+
 ## 6.4.1 - 2021-01-14
 
 In the 6.4.0 release, the correct splainer-search NPM package was missed in the production Docker image.

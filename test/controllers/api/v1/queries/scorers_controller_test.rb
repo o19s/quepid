@@ -19,7 +19,7 @@ module Api
 
         describe 'Fetches query scorer info' do
           test 'returns nil for scorer id & false for the enabled flag if no scorer is associated with the query' do
-            get :show, case_id: acase.id, query_id: query.id
+            get :show, params: { case_id: acase.id, query_id: query.id }
 
             assert_response :ok
 
@@ -34,7 +34,7 @@ module Api
             query.scorer_enbl = true
             query.save
 
-            get :show, case_id: acase.id, query_id: query.id
+            get :show, params: { case_id: acase.id, query_id: query.id }
 
             assert_response :ok
 
@@ -47,13 +47,13 @@ module Api
 
         describe 'Updates query scorer' do
           test 'returns a not found error if the scorer does not exist' do
-            put :update, case_id: acase.id, query_id: query.id, scorer_id: 'foo'
+            put :update, params: { case_id: acase.id, query_id: query.id, scorer_id: 'foo' }
 
             assert_response :not_found
           end
 
           test 'sets the query scorer and updates the enabled flag to true' do
-            put :update, case_id: acase.id, query_id: query.id, scorer_id: scorer.id
+            put :update, params: { case_id: acase.id, query_id: query.id, scorer_id: scorer.id }
 
             assert_response :ok
 
@@ -71,7 +71,7 @@ module Api
               expects_any_ga_event_call
 
               perform_enqueued_jobs do
-                put :update, case_id: acase.id, query_id: query.id, scorer_id: scorer.id
+                put :update, params: { case_id: acase.id, query_id: query.id, scorer_id: scorer.id }
 
                 assert_response :ok
               end
@@ -81,7 +81,7 @@ module Api
 
         describe 'Removes scorer from query' do
           test 'removes the query scorer and update the enabled flag to false' do
-            delete :destroy, case_id: acase.id, query_id: query.id
+            delete :destroy, params: { case_id: acase.id, query_id: query.id }
 
             assert_response :ok
 
@@ -96,7 +96,7 @@ module Api
               expects_any_ga_event_call
 
               perform_enqueued_jobs do
-                delete :destroy, case_id: acase.id, query_id: query.id
+                delete :destroy, params: { case_id: acase.id, query_id: query.id }
 
                 assert_response :ok
               end

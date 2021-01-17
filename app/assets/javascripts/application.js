@@ -20,6 +20,9 @@
 // we don't know about.
 //
 //= require jquery
+//= require rails-ujs
+//= require activestorage
+
 //= require bootstrap
 
 //= require jquery-ui/widgets/draggable

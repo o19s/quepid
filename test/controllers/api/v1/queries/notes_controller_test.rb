@@ -18,7 +18,7 @@ module Api
 
         describe 'Fetches query notes' do
           test 'returns nil if the query has no notes' do
-            get :show, case_id: acase.id, query_id: query.id
+            get :show, params: { case_id: acase.id, query_id: query.id }
 
             assert_response :ok
 
@@ -32,7 +32,7 @@ module Api
             query.notes = note
             query.save
 
-            get :show, case_id: acase.id, query_id: query.id
+            get :show, params: { case_id: acase.id, query_id: query.id }
 
             assert_response :ok
 
@@ -45,7 +45,7 @@ module Api
         describe "Updates query's notes" do
           test 'sets the new query notes successfully' do
             note = 'An even awesomer note'
-            put :update, case_id: acase.id, query_id: query.id, query: { notes: note }
+            put :update, params: { case_id: acase.id, query_id: query.id, query: { notes: note } }
 
             assert_response :ok
 
@@ -63,7 +63,7 @@ module Api
               note = 'An even awesomer note'
 
               perform_enqueued_jobs do
-                put :update, case_id: acase.id, query_id: query.id, query: { notes: note }
+                put :update, params: { case_id: acase.id, query_id: query.id, query: { notes: note } }
 
                 assert_response :ok
               end

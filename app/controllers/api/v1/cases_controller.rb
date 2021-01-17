@@ -3,17 +3,17 @@
 module Api
   module V1
     class CasesController < Api::ApiController
-      before_action :set_case, only: %i[update destroy]
+      before_action :set_case, only: [ :update, :destroy ]
       before_action :case_with_all_the_bells_whistles, only: [ :show ]
-      before_action :check_case, only: %i[show update destroy]
+      before_action :check_case, only: [ :show, :update, :destroy ]
 
       # rubocop:disable Metrics/MethodLength
       def index
         bool = ActiveRecord::Type::Boolean.new
 
-        archived  = bool.type_cast_from_user(params[:archived]) || false
+        archived  = bool.deserialize(params[:archived]) || false
         sort_by   = params[:sortBy]
-        @deep     = bool.type_cast_from_user(params[:deep]) || false
+        @deep     = bool.deserialize(params[:deep]) || false
 
         if archived
           @no_tries = true
@@ -21,10 +21,10 @@ module Api
           @cases = Case.where(archived: archived, user_id: current_user.id)
             .all
         else
-          @cases = current_user.case.includes(:teams).not_archived
+          @cases = current_user.cases_involved_with.includes(:teams, :tries, :cases_teams).not_archived
 
           if 'last_viewed_at' == sort_by
-            @cases = @cases.limit(3).order('`case_metadata`.`last_viewed_at` DESC, `cases`.`id`')
+            @cases = @cases.limit(3).order(Arel.sql('`case_metadata`.`last_viewed_at` DESC, `cases`.`id`'))
           elsif sort_by
             @cases = @cases.order(sort_by)
           end
@@ -55,7 +55,7 @@ module Api
       def update
         update_params = case_params
 
-        update_params[:scorer_id] = nil if default_scorer_removed? update_params
+        update_params[:scorer_id] = Scorer.system_default_scorer.id if default_scorer_removed? update_params
 
         if @case.update update_params
           Analytics::Tracker.track_case_updated_event current_user, @case
@@ -85,6 +85,7 @@ module Api
       end
 
       def default_scorer_removed? params = {}
+        # params[:scorer_id].present? or params.key?(:scorer_id) && [ 0, '0', '' ].include?(params[:scorer_id])
         params[:scorer_id].present? && [ 0, '0' ].include?(params[:scorer_id])
       end
     end

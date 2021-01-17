@@ -17,9 +17,9 @@ describe('Controller: WizardModalCtrl', function () {
   };
 
   var mockUserSvc = {
-    doFirstTime: false,
+    dofirstLogin: false,
     getUser: function() {
-      return {firstTime: this.doFirstTime};
+      return {firstLogin: this.dofirstLogin};
     }
   };
 
@@ -58,7 +58,7 @@ describe('Controller: WizardModalCtrl', function () {
   var mockUser = {
     queriesAdded:     0,
     maxQueries:       5,
-    firstTime:        false,
+    firstLogin:       false,
     queriesRemaining: function() { return this.maxQueries - this.queriesAdded; },
     queryAdded:       function() { this.queriesAdded++; },
   };
@@ -174,7 +174,7 @@ describe('Controller: WizardModalCtrl', function () {
     });
 
     it('adds queries', function() {
-      $httpBackend.expectPOST('/api/cases/0/tries').respond(200, mockTry);
+      $httpBackend.expectPUT('/api/cases/0/tries/0').respond(200, mockTry);
       $httpBackend.expectGET('/api/cases/0/scorers').respond(200, {});
       $httpBackend.expectGET('/api/cases/0/queries?bootstrap=true').respond(200, mockFullQueriesResp);
 

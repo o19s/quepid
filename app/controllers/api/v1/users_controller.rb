@@ -33,7 +33,7 @@ module Api
       private
 
       def set_user
-        @user = User.where.any_of(email: params[:id], id: params[:id]).first
+        @user = User.where('email = ? OR id = ?', params[:id].to_s.downcase, params[:id] ).first
         render json: { message: 'User not found!' }, status: :not_found unless @user
       end
 

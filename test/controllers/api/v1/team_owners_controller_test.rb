@@ -17,7 +17,7 @@ module Api
         test 'user successfully updates an owned teams owner' do
           login_user owner
 
-          put :update, team_id: owned_team.id, id: member1.id
+          put :update, params: { team_id: owned_team.id, id: member1.id }
           assert_response :ok
 
           assert_equal owner.owned_teams.count, 0
@@ -27,7 +27,7 @@ module Api
         test 'user cannot update a non-owned teams owner' do
           login_user member1
 
-          put :update, team_id: owned_team.id, id: member1.id
+          put :update, params: { team_id: owned_team.id, id: member1.id }
           assert_response :forbidden
         end
       end

@@ -45,7 +45,7 @@ class AccountsController < ApplicationController
   private
 
   def verify_password user, password
-    # Note: this might not be obvious at first but what's going on here is
+    # NOTE: this might not be obvious at first but what's going on here is
     # that BCrypt::Password.new creates an object can be compared to a clear
     # text string, but when you inspect it the output, it will actually print
     # out the encrypted string, so you'll get something like this:

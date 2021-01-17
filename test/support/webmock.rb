@@ -2,7 +2,7 @@
 
 WebMock.disable_net_connect!(allow_localhost: true)
 
-# rubocop:disable Metrics/LineLength
+# rubocop:disable Layout/LineLength
 module ActiveSupport
   class TestCase
     # rubocop:disable Metrics/MethodLength
@@ -16,11 +16,12 @@ module ActiveSupport
         :any,
         'https://as6051jt:e3e08990d7bf3ef7c5adc012383cf67716176ad1@api.intercom.io/users'
       )
-
+      # rubocop:disable Style/RedundantRegexpEscape
       stub_request(
         :any,
         %r{http\://www.google-analytics\.com/\_\_utm\.gif\?.*}
       )
+      # rubocop:enable Style/RedundantRegexpEscape
 
       stub_request(
         :get,
@@ -137,7 +138,7 @@ module ActiveSupport
     end
     # rubocop:enable Metrics/MethodLength
   end
-  # rubocop:enable Metrics/LineLength
+  # rubocop:enable Layout/LineLength
 end
 
 # rubocop:enable Style/FrozenStringLiteralComment

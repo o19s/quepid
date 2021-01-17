@@ -13,7 +13,7 @@
 
 ActiveRecord::Schema.define(version: 20201203212611) do
 
-  create_table "annotations", force: :cascade do |t|
+  create_table "annotations", id: :integer, force: :cascade do |t|
     t.text     "message",    limit: 65535
     t.string   "source",     limit: 255
     t.integer  "user_id",    limit: 4
@@ -23,7 +23,7 @@ ActiveRecord::Schema.define(version: 20201203212611) do
 
   add_index "annotations", ["user_id"], name: "index_annotations_on_user_id", using: :btree
 
-  create_table "case_metadata", force: :cascade do |t|
+  create_table "case_metadata", id: :integer, force: :cascade do |t|
     t.integer  "user_id",        limit: 4, null: false
     t.integer  "case_id",        limit: 4, null: false
     t.datetime "last_viewed_at"
@@ -32,7 +32,7 @@ ActiveRecord::Schema.define(version: 20201203212611) do
   add_index "case_metadata", ["case_id"], name: "case_metadata_ibfk_1", using: :btree
   add_index "case_metadata", ["user_id", "case_id"], name: "case_metadata_user_id_case_id_index", using: :btree
 
-  create_table "case_scores", force: :cascade do |t|
+  create_table "case_scores", id: :integer, force: :cascade do |t|
     t.integer  "case_id",       limit: 4
     t.integer  "user_id",       limit: 4
     t.integer  "try_id",        limit: 4
@@ -48,7 +48,7 @@ ActiveRecord::Schema.define(version: 20201203212611) do
   add_index "case_scores", ["case_id"], name: "case_id", using: :btree
   add_index "case_scores", ["user_id"], name: "user_id", using: :btree
 
-  create_table "cases", force: :cascade do |t|
+  create_table "cases", id: :integer, force: :cascade do |t|
     t.string   "case_name",       limit: 191
     t.integer  "last_try_number", limit: 4
     t.integer  "user_id",         limit: 4
@@ -60,7 +60,7 @@ ActiveRecord::Schema.define(version: 20201203212611) do
 
   add_index "cases", ["user_id"], name: "user_id", using: :btree
 
-  create_table "curator_variables", force: :cascade do |t|
+  create_table "curator_variables", id: :integer, force: :cascade do |t|
     t.string   "name",       limit: 500
     t.float    "value",      limit: 24
     t.integer  "try_id",     limit: 4
@@ -70,7 +70,7 @@ ActiveRecord::Schema.define(version: 20201203212611) do
 
   add_index "curator_variables", ["try_id"], name: "try_id", using: :btree
 
-  create_table "default_scorers", force: :cascade do |t|
+  create_table "default_scorers", id: :integer, force: :cascade do |t|
     t.text     "code",                   limit: 65535
     t.string   "name",                   limit: 255
     t.string   "scale",                  limit: 255
@@ -84,35 +84,7 @@ ActiveRecord::Schema.define(version: 20201203212611) do
     t.datetime "updated_at",                                             null: false
   end
 
-  create_table "lhma_2020_11_30_17_40_15_518_snapshot_docs", force: :cascade do |t|
-    t.string  "doc_id",            limit: 500
-    t.integer "position",          limit: 4
-    t.integer "snapshot_query_id", limit: 4
-    t.text    "explain",           limit: 16777215
-  end
-
-  add_index "lhma_2020_11_30_17_40_15_518_snapshot_docs", ["snapshot_query_id"], name: "snapshot_query_id", using: :btree
-
-  create_table "lhma_2020_11_30_17_41_39_957_snapshot_docs", force: :cascade do |t|
-    t.string  "doc_id",            limit: 500
-    t.integer "position",          limit: 4
-    t.integer "snapshot_query_id", limit: 4
-    t.text    "explain",           limit: 16777215
-    t.boolean "rated_only",                         default: false
-  end
-
-  add_index "lhma_2020_11_30_17_41_39_957_snapshot_docs", ["snapshot_query_id"], name: "snapshot_query_id", using: :btree
-
-  create_table "lhma_2020_11_30_17_42_15_936_snapshot_docs", force: :cascade do |t|
-    t.string  "doc_id",            limit: 500
-    t.integer "position",          limit: 4
-    t.integer "snapshot_query_id", limit: 4
-    t.text    "explain",           limit: 16777215
-  end
-
-  add_index "lhma_2020_11_30_17_42_15_936_snapshot_docs", ["snapshot_query_id"], name: "snapshot_query_id", using: :btree
-
-  create_table "permissions", force: :cascade do |t|
+  create_table "permissions", id: :integer, force: :cascade do |t|
     t.integer  "user_id",    limit: 4
     t.string   "model_type", limit: 255,                 null: false
     t.string   "action",     limit: 255,                 null: false
@@ -121,7 +93,7 @@ ActiveRecord::Schema.define(version: 20201203212611) do
     t.datetime "updated_at",                             null: false
   end
 
-  create_table "queries", force: :cascade do |t|
+  create_table "queries", id: :integer, force: :cascade do |t|
     t.integer  "arranged_next",  limit: 8
     t.integer  "arranged_at",    limit: 8
     t.boolean  "deleted"
@@ -139,7 +111,7 @@ ActiveRecord::Schema.define(version: 20201203212611) do
 
   add_index "queries", ["case_id"], name: "case_id", using: :btree
 
-  create_table "ratings", force: :cascade do |t|
+  create_table "ratings", id: :integer, force: :cascade do |t|
     t.string   "doc_id",     limit: 500
     t.integer  "rating",     limit: 4
     t.integer  "query_id",   limit: 4
@@ -150,7 +122,7 @@ ActiveRecord::Schema.define(version: 20201203212611) do
   add_index "ratings", ["doc_id"], name: "index_ratings_on_doc_id", length: {"doc_id"=>191}, using: :btree
   add_index "ratings", ["query_id"], name: "query_id", using: :btree
 
-  create_table "scorers", force: :cascade do |t|
+  create_table "scorers", id: :integer, force: :cascade do |t|
     t.text     "code",                   limit: 65535
     t.string   "name",                   limit: 191
     t.integer  "owner_id",               limit: 4
@@ -166,7 +138,7 @@ ActiveRecord::Schema.define(version: 20201203212611) do
     t.boolean  "communal",                             default: false
   end
 
-  create_table "snapshot_docs", force: :cascade do |t|
+  create_table "snapshot_docs", id: :integer, force: :cascade do |t|
     t.string  "doc_id",            limit: 500
     t.integer "position",          limit: 4
     t.integer "snapshot_query_id", limit: 4
@@ -176,7 +148,7 @@ ActiveRecord::Schema.define(version: 20201203212611) do
 
   add_index "snapshot_docs", ["snapshot_query_id"], name: "snapshot_query_id", using: :btree
 
-  create_table "snapshot_queries", force: :cascade do |t|
+  create_table "snapshot_queries", id: :integer, force: :cascade do |t|
     t.integer "query_id",    limit: 4
     t.integer "snapshot_id", limit: 4
   end
@@ -184,7 +156,7 @@ ActiveRecord::Schema.define(version: 20201203212611) do
   add_index "snapshot_queries", ["query_id"], name: "query_id", using: :btree
   add_index "snapshot_queries", ["snapshot_id"], name: "snapshot_id", using: :btree
 
-  create_table "snapshots", force: :cascade do |t|
+  create_table "snapshots", id: :integer, force: :cascade do |t|
     t.string   "name",       limit: 250
     t.datetime "created_at"
     t.integer  "case_id",    limit: 4
@@ -193,7 +165,7 @@ ActiveRecord::Schema.define(version: 20201203212611) do
 
   add_index "snapshots", ["case_id"], name: "case_id", using: :btree
 
-  create_table "teams", force: :cascade do |t|
+  create_table "teams", id: :integer, force: :cascade do |t|
     t.string   "name",       limit: 255
     t.integer  "owner_id",   limit: 4,   null: false
     t.datetime "created_at",             null: false
@@ -227,7 +199,7 @@ ActiveRecord::Schema.define(version: 20201203212611) do
   add_index "teams_scorers", ["scorer_id"], name: "index_teams_scorers_on_scorer_id", using: :btree
   add_index "teams_scorers", ["team_id"], name: "index_teams_scorers_on_team_id", using: :btree
 
-  create_table "tries", force: :cascade do |t|
+  create_table "tries", id: :integer, force: :cascade do |t|
     t.integer  "try_number",     limit: 4
     t.text     "query_params",   limit: 65535
     t.integer  "case_id",        limit: 4
@@ -244,7 +216,7 @@ ActiveRecord::Schema.define(version: 20201203212611) do
   add_index "tries", ["case_id"], name: "case_id", using: :btree
   add_index "tries", ["try_number"], name: "ix_queryparam_tryNo", using: :btree
 
-  create_table "users", force: :cascade do |t|
+  create_table "users", id: :integer, force: :cascade do |t|
     t.string   "email",                  limit: 80
     t.string   "password",               limit: 120
     t.datetime "agreed_time"

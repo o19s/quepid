@@ -4,7 +4,7 @@ require 'csv'
 
 module Admin
   class UsersController < Admin::AdminController
-    before_action :set_user, only: %i[show edit update]
+    before_action :set_user, only: [ :show, :edit, :update ]
 
     # GET /admin/users
     # GET /admin/users.json

@@ -193,7 +193,7 @@ angular.module('QuepidApp')
         angular.merge($scope.pendingWizardSettings, settingsSvc.editableSettings());
         $scope.pendingWizardSettings.newQueries = [];
 
-        if(userSvc.getUser().firstTime===true){
+        if(userSvc.getUser().firstLogin===true){
           $scope.pendingWizardSettings.caseName = 'Movies Search';
         } else {
           $log.info('Skipping welcome step for case wizard');
@@ -228,7 +228,7 @@ angular.module('QuepidApp')
         // pass pending settings on to be saved
         $scope.pendingWizardSettings.submit = function() {
           $log.debug('Submitting settings (from wizard modal)');
-          settingsSvc.save($scope.pendingWizardSettings)
+          settingsSvc.update($scope.pendingWizardSettings)
           .then(function() {
             var latestSettings = settingsSvc.editableSettings();
             docCacheSvc.invalidate();

@@ -78,7 +78,7 @@ describe('Controller: AddQueryCtrl', function () {
     isTrial:          false,
     queriesAdded:     0,
     maxQueries:       5,
-    firstTime:        false,
+    firstLogin:       false,
     queryAdded:       function() { this.queriesAdded++; },
     queriesRemaining: function() {
       return this.maxQueries - this.queriesAdded;

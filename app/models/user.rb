@@ -24,9 +24,9 @@
 #  email_marketing        :boolean          not null
 #
 
-class User < ActiveRecord::Base
+class User < ApplicationRecord
   # Associations
-  belongs_to :default_scorer, class_name: 'Scorer'
+  belongs_to :default_scorer, class_name: 'Scorer', optional: true # for communal scorers there isn't a owner
 
   has_many :cases,
            dependent:   :destroy
@@ -85,12 +85,14 @@ class User < ActiveRecord::Base
   devise :recoverable, reset_password_keys: [ :email ]
 
   # Callbacks
-  before_create :set_defaults
   before_save   :encrypt_password
-  after_create  :add_default_case
+  before_create :set_defaults
+
+  # after_create  :add_default_case
 
   # Devise hacks since we only use the recoverable module
   attr_accessor :password_confirmation
+
   validates :password, confirmation: true
 
   def encrypted_password_changed?
@@ -103,7 +105,7 @@ class User < ActiveRecord::Base
   include Profile
 
   # Scopes
-  default_scope -> { includes(:permissions) }
+  # default_scope -> { includes(:permissions) }
 
   # returns and owned or shared case for this user
   def find_case case_id
@@ -116,14 +118,18 @@ class User < ActiveRecord::Base
     queries.count
   end
 
+  # All the scorers that you have access to, either as communal or as owner or team.
   def scorers
     UserScorerFinder.new(self)
   end
 
-  def case
+  # This method returns not just the cases the user is the owner of, which .cases
+  # does, but also via being in a team, those cases as well.
+  def cases_involved_with
     UserCaseFinder.new(self)
   end
 
+  # Returns all the teams that the user is both owner of and involved in!
   def teams_im_in
     UserTeamFinder.new(self).call
   end
@@ -151,17 +157,14 @@ class User < ActiveRecord::Base
     self.default_scorer   = Scorer.system_default_scorer if self.default_scorer.nil?
     # rubocop:enable Style/RedundantSelf
 
-    true # this is necessary because it will rollback
+    # this is necessary because it will rollback
     # the creation/update of the user otherwise
+    true
   end
 
   def encrypt_password
     self[:password] = BCrypt::Password.create(password) if password.present? && password_changed?
 
     true
-  end
-
-  def add_default_case
-    cases.create case_name: Case::DEFAULT_NAME
   end
 end

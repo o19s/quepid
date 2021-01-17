@@ -65,7 +65,7 @@ module Jshint
     end
 
     def jshint_path
-      Rails.root.join('node_modules', 'jshint', 'bin', 'jshint')
+      Rails.root.join('node_modules/jshint/bin/jshint')
     end
 
     def javascript_files

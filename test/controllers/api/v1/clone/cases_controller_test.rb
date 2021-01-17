@@ -25,7 +25,7 @@ module Api
                   preserve_history: true,
                 }
 
-                post :create, data
+                post :create, params: data
 
                 assert_response :ok
 
@@ -47,7 +47,7 @@ module Api
                   try_number: the_try.try_number,
                 }
 
-                post :create, data
+                post :create, params: data
 
                 assert_response :ok
 

@@ -33,7 +33,7 @@ class AccountsControllerTest < ActionController::TestCase
           confirm_password: password,
         }
 
-        patch :update, data
+        patch :update, params: data
 
         assert_redirected_to profile_path
         assert_equal flash[:success], 'Account updated successfully.'
@@ -49,7 +49,7 @@ class AccountsControllerTest < ActionController::TestCase
           confirm_password: password,
         }
 
-        patch :update, data
+        patch :update, params: data
 
         assert_template 'profiles/show'
         assert_equal flash[:error], 'Please fill all required fields.'
@@ -63,7 +63,7 @@ class AccountsControllerTest < ActionController::TestCase
           confirm_password: password,
         }
 
-        patch :update, data
+        patch :update, params: data
 
         assert_template 'profiles/show'
         assert_equal flash[:error], 'Please fill all required fields.'
@@ -79,7 +79,7 @@ class AccountsControllerTest < ActionController::TestCase
           confirm_password: password,
         }
 
-        patch :update, data
+        patch :update, params: data
 
         assert_template 'profiles/show'
         assert_equal flash[:error], 'The original password is incorrect.'
@@ -95,7 +95,7 @@ class AccountsControllerTest < ActionController::TestCase
           confirm_password: 'bar',
         }
 
-        patch :update, data
+        patch :update, params: data
 
         assert_template 'profiles/show'
         assert_equal flash[:error], 'The new passwords do not match!'
@@ -115,7 +115,7 @@ class AccountsControllerTest < ActionController::TestCase
           }
 
           perform_enqueued_jobs do
-            patch :update, data
+            patch :update, params: data
 
             assert_redirected_to profile_path
           end

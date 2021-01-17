@@ -2,7 +2,7 @@ version: 2
 jobs:
   build:
     docker:
-      - image: circleci/ruby:2.5.8-node-browsers
+      - image: circleci/ruby:2.7.2-node-browsers
         environment: # environment variables for primary container
           BUNDLE_JOBS: 3
           BUNDLE_RETRY: 3
@@ -26,6 +26,10 @@ jobs:
 
     steps:
       - checkout
+
+      - run:
+          name: Specify bundler!
+          command: gem install bundler:1.17.3
 
       - run:
           name: Which bundler?
@@ -76,8 +80,16 @@ jobs:
           command: bundle exec rake db:setup --trace
 
       - run:
-          name: Run unit tests
-          command: bundle exec rake test:quepid
+          name: Run unit tests (frontend)
+          command: bundle exec rake test:js
+
+      - run:
+          name: Run unit tests (backend)
+          command: bundle exec rake test
+
+      - run:
+          name: Run jshint
+          command: bundle exec rake test:jshint
 
       - run:
           name: Run rubocop

@@ -134,7 +134,7 @@ module Arrangement
         List.bootstrap(nodes.first)
 
         previous_node = nodes.first
-        nodes[1..-1].each do |node|
+        nodes[1..].each do |node|
           List.arrange_after(previous_node, node)
           previous_node = node
         end

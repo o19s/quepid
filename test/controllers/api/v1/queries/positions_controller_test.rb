@@ -20,7 +20,7 @@ module Api
             query   = acase.queries[0]
             second  = acase.queries[1]
 
-            put :update, case_id: acase.id, query_id: query.id, after: second.id
+            put :update, params: { case_id: acase.id, query_id: query.id, after: second.id }
 
             assert_response :ok
 
@@ -34,7 +34,7 @@ module Api
             query   = acase.queries[0]
             second  = acase.queries[1]
 
-            put :update, case_id: acase.id, query_id: query.id, after: second.id
+            put :update, params: { case_id: acase.id, query_id: query.id, after: second.id }
 
             assert_response :ok
 
@@ -48,7 +48,7 @@ module Api
             query   = acase.queries[2]
             second  = acase.queries[0]
 
-            put :update, case_id: acase.id, query_id: query.id, after: second.id, reverse: true
+            put :update, params: { case_id: acase.id, query_id: query.id, after: second.id, reverse: true }
 
             assert_response :ok
 
@@ -62,7 +62,7 @@ module Api
             query   = acase.queries[1]
             second  = acase.queries.last
 
-            put :update, case_id: acase.id, query_id: query.id, after: second.id
+            put :update, params: { case_id: acase.id, query_id: query.id, after: second.id }
 
             assert_response :ok
 
@@ -75,7 +75,7 @@ module Api
             query   = acase.queries[1]
             second  = acase.queries[2]
 
-            put :update, case_id: acase.id, query_id: query.id, after: second.id
+            put :update, params: { case_id: acase.id, query_id: query.id, after: second.id }
 
             assert_response :ok
 
@@ -89,7 +89,7 @@ module Api
             query   = acase.queries[2]
             second  = acase.queries[1]
 
-            put :update, case_id: acase.id, query_id: query.id, after: second.id, reverse: true
+            put :update, params: { case_id: acase.id, query_id: query.id, after: second.id, reverse: true }
 
             assert_response :ok
 

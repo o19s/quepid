@@ -10,7 +10,7 @@
 #  last_viewed_at :datetime
 #
 
-class Metadatum < ActiveRecord::Base
+class Metadatum < ApplicationRecord
   self.table_name = 'case_metadata'
   belongs_to :case
   belongs_to :user

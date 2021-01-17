@@ -190,10 +190,7 @@ module Permissible
 
   # rubocop:disable Naming/PredicateName
   def has_permission? model_type, action
-    permissions.where(
-      model_type: model_type,
-      action:     action
-    ).exists?
+    permissions.exists?(model_type: model_type, action: action)
   end
   # rubocop:enable Naming/PredicateName
 

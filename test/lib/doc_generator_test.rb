@@ -8,7 +8,7 @@ class DocGeneratorTest < ActiveSupport::TestCase
     {
       field:         'text',
       id:            'id',
-      logger:        Logger.new(STDOUT),
+      logger:        Logger.new($stdout),
       number:        1,
       query:         '*:*',
       rows:          1,

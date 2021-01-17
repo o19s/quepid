@@ -5,7 +5,7 @@ require 'test_helper'
 class HomeControllerTest < ActionController::TestCase
   TRY_INFO        = /bootstrapTryNo.*?(\d*);/.freeze
   CASE_INFO       = /bootstrapCaseNo.*?(\d*);/.freeze
-  TRIGGER_WIZARD  = /triggerWizard\ \=\s*(\w*);/.freeze
+  TRIGGER_WIZARD  = /triggerWizard\ =\s*(\w*);/.freeze
 
   before do
     @controller = HomeController.new
@@ -46,7 +46,7 @@ class HomeControllerTest < ActionController::TestCase
     end
 
     test 'bootstraps non deleted/archived case' do
-      deleted_case = user.cases.create case_name: Case::DEFAULT_NAME
+      deleted_case = user.cases.create case_name: 'archived case'
       deleted_case.update archived: true
 
       get :index

@@ -1,5 +1,4 @@
-# Users
-puts "Seeding users................"
+
 
 def seed_user hash
   if User.where(email: hash[:email].downcase).exists?
@@ -9,9 +8,16 @@ def seed_user hash
   end
 end
 
-def print_user_info info
-  puts "Seeded user: email: #{info[:email]}, password: #{info[:password]}"
+def print_step text
+  puts text.blue
 end
+
+def print_user_info info
+  print_step "Seeded user: email: #{info[:email]}, password: #{info[:password]}"
+end
+
+# Users
+print_step "Seeding users................"
 
 ######################################
 # Defaults
@@ -35,7 +41,6 @@ user_specifics = {
   administrator:    true,
   name:             'Admin User',
   email:            'quepid+admin@o19s.com',
-  password:         'quepid+admin',
 }
 user_params = user_defaults.merge(user_specifics)
 admin_user  = seed_user user_params
@@ -48,7 +53,6 @@ print_user_info user_params
 user_specifics = {
   name:             'One Case User',
   email:            'quepid+1case@o19s.com',
-  password:         'quepid+1case',
 }
 user_params   = user_defaults.merge(user_specifics)
 one_case_user = seed_user user_params
@@ -61,7 +65,6 @@ print_user_info user_params
 user_specifics = {
   name:             'Two Case User',
   email:            'quepid+2case@o19s.com',
-  password:         'quepid+2case',
 }
 user_params   = user_defaults.merge(user_specifics)
 two_case_user = seed_user user_params
@@ -74,7 +77,6 @@ print_user_info user_params
 user_specifics = {
   name:             'User with Solr Case',
   email:            'quepid+solr@o19s.com',
-  password:         'quepid+solr',
 }
 user_params    = user_defaults.merge(user_specifics)
 solr_case_user = seed_user user_params
@@ -87,7 +89,6 @@ print_user_info user_params
 user_specifics = {
   name:             'User with ES Case',
   email:            'quepid+es@o19s.com',
-  password:         'quepid+es',
 }
 user_params  = user_defaults.merge(user_specifics)
 es_case_user = seed_user user_params
@@ -100,7 +101,6 @@ print_user_info user_params
 user_specifics = {
   name:             'User with 10s of Queries',
   email:            'quepid+10sOfQueries@o19s.com',
-  password:         'quepid+10sOfQueries',
 }
 user_params          = user_defaults.merge(user_specifics)
 tens_of_queries_user = seed_user user_params
@@ -113,7 +113,6 @@ print_user_info user_params
 user_specifics = {
   name:             'OSC Team Owner',
   email:            'quepid+oscOwner@o19s.com',
-  password:         'quepid+oscOwner',
 }
 user_params    = user_defaults.merge(user_specifics)
 osc_owner_user = seed_user user_params
@@ -138,7 +137,6 @@ print_user_info user_params
 user_specifics = {
   name:             'User with Custom Scorer',
   email:            'quepid+CustomScorer@o19s.com',
-  password:         'quepid+CustomScorer',
 }
 user_params = user_defaults.merge(user_specifics)
 custom_scorer_user = seed_user user_params
@@ -151,22 +149,23 @@ print_user_info user_params
 user_specifics = {
   name:             'User with Custom Scorer as Default',
   email:            'quepid+CustomScorerDefault@o19s.com',
-  password:         'quepid+CustomScorerDefault',
 }
 user_params = user_defaults.merge(user_specifics)
 custom_scorer_as_default_user = seed_user user_params
 print_user_info user_params
 
-puts "End of seeding users................"
+print_step "End of seeding users................"
 
 # Cases
-puts "Seeding cases................"
+print_step "Seeding cases................"
 
 def print_case_info the_case
-  puts "Seeded case: name: #{the_case.case_name}, ID: #{the_case.id} for: #{the_case.user.email}"
+  print_step "Seeded case: name: #{the_case.case_name}, ID: #{the_case.id} for: #{the_case.user.email}"
 end
 
 unless two_case_user.cases.count == 2
+  first_case = two_case_user.cases.create case_name: 'First Case'
+  print_case_info first_case
   second_case = two_case_user.cases.create case_name: 'Second Case'
   print_case_info second_case
 end
@@ -175,16 +174,14 @@ end
 # Solr Case
 ######################################
 
-solr_case = solr_case_user.cases.first
-solr_case.update case_name: 'SOLR CASE'
+solr_case = solr_case_user.cases.create case_name: 'SOLR CASE'
 print_case_info solr_case
 
 ######################################
 # ES Case
 ######################################
 
-es_case = es_case_user.cases.first
-es_case.update case_name: 'ES CASE'
+es_case = es_case_user.cases.create case_name: 'ES CASE'
 es_try = es_case.tries.best
 es_params = {
   search_engine: :es,
@@ -195,10 +192,10 @@ es_params = {
 es_try.update es_params
 print_case_info es_case
 
-puts "End of seeding cases................"
+print_step "End of seeding cases................"
 
 # Scorers
-puts "Seeding scorers................"
+print_step "Seeding scorers................"
 
 ######################################
 # Custom Scorers
@@ -229,32 +226,31 @@ unless custom_scorer_as_default_user.default_scorer != Scorer.system_default_sco
   custom_scorer_as_default_user.update default_scorer_id: custom_scorer.id
 end
 
-puts "End of seeding scorers................"
+print_step "End of seeding scorers................"
 
 # Ratings
-puts "Seeding ratings................"
+print_step "Seeding ratings................"
 
 search_url = "http://quepid-solr.dev.o19s.com:8985/solr/statedecoded/select"
 
-tens_of_queries_case = tens_of_queries_user.cases.first
-tens_of_queries_case.update case_name: '10s of Queries'
+tens_of_queries_case = tens_of_queries_user.cases.create case_name: '10s of Queries'
 
 unless tens_of_queries_case.queries.count >= 20
   generator = RatingsGenerator.new search_url, { number: 20 }
   ratings   = generator.generate_ratings
 
-  opts    = { format: :hash }
-  service = ::RatingsImporter.new tens_of_queries_case, ratings, opts
+  options    = { format: :hash }
+  service = ::RatingsImporter.new tens_of_queries_case, ratings, options
 
   service.import
 
-  puts "Seeded 10s of queries"
+  print_step "Seeded 10s of queries"
 end
 
-puts "End of seeding ratings................"
+print_step "End of seeding ratings................"
 
 # Teams
-puts "Seeding teams................"
+print_step "Seeding teams................"
 
 ######################################
 # OSC Team
@@ -262,19 +258,18 @@ puts "Seeding teams................"
 
 osc = Team.where(owner_id: osc_owner_user.id, name: 'OSC').first_or_create
 osc.members << osc_member_user
-puts "End of seeding teams................"
+print_step "End of seeding teams................"
 
 # Big Cases
 
 if ENV['SEED_LARGE_CASES']
-  puts "Seeding large cases..............."
+  print_step "Seeding large cases..............."
   ######################################
   # User with 100s of Queries
   ######################################
 
   user_specifics = {
     name:             'User with 100s of Queries',
-    password:         'quepid+100sOfQueries',
     email:            'quepid+100sOfQueries@o19s.com',
   }
   user_params = user_defaults.merge(user_specifics)
@@ -287,41 +282,38 @@ if ENV['SEED_LARGE_CASES']
 
   user_specifics = {
     name:             'User with 1000s of Queries',
-    password:         'quepid+1000sOfQueries',
     email:            'quepid+1000sOfQueries@o19s.com',
   }
   user_params = user_defaults.merge(user_specifics)
   thousands_of_queries_user = seed_user user_params
   print_user_info user_params
 
-  hundreds_of_queries_case = hundreds_of_queries_user.cases.first
-  hundreds_of_queries_case.update case_name: '100s of Queries'
+  hundreds_of_queries_case = hundreds_of_queries_user.cases.create case_name: '100s of Queries'
 
   # was 200
   unless hundreds_of_queries_case.queries.count >= 400
-    generator = RatingsGenerator.new search_url, { number: 200 }
+    generator = RatingsGenerator.new search_url, { number: 200, show_progress: true }
     ratings   = generator.generate_ratings
 
-    opts    = { format: :hash }
-    service = ::RatingsImporter.new hundreds_of_queries_case, ratings, opts
+    options    = { format: :hash, show_progress: true }
+    service = ::RatingsImporter.new hundreds_of_queries_case, ratings, options
 
     service.import
 
-    puts "Seeded 100s of queries"
+    print_step "Seeded 100s of queries"
   end
 
-  thousands_of_queries_case = thousands_of_queries_user.cases.first
-  thousands_of_queries_case.update case_name: '1000s of Queries'
+  thousands_of_queries_case = thousands_of_queries_user.cases.create case_name: '1000s of Queries'
 
   unless thousands_of_queries_case.queries.count >= 2000
-    generator = RatingsGenerator.new search_url, { number: 2000 }
+    generator = RatingsGenerator.new search_url, { number: 2000, show_progress: true }
     ratings   = generator.generate_ratings
 
-    opts    = { format: :hash }
-    service = ::RatingsImporter.new thousands_of_queries_case, ratings, opts
+    options    = { format: :hash, show_progress: true }
+    service = ::RatingsImporter.new thousands_of_queries_case, ratings, options
 
     service.import
 
-    puts "Seeded 1000s of queries"
+    print_step "Seeded 1000s of queries"
   end
 end

@@ -5,7 +5,6 @@ class UserCaseFinder
 
   def initialize user
     @user = user
-
     @cases = Case.includes(:metadata, teams: [ :members ])
       .references(:teams, :users, :metadata)
       .for_user(@user)

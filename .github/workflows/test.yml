@@ -1,0 +1,11 @@
+name: quepid-unit-tests
+on: push
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build the stack
+        run: bin/setup_docker
+      - name: Test
+        run: bin/docker r rails test

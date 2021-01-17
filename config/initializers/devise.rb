@@ -100,10 +100,10 @@ Devise.setup do |config|
   # a value of 20 is already extremely slow: approx. 60 seconds for 1 calculation).
   config.stretches = Rails.env.test? ? 1 : 10
 
-  # rubocop:disable Metrics/LineLength
+  # rubocop:disable Layout/LineLength
   # Setup a pepper to generate the encrypted password.
   # config.pepper = '87e22a5737bdaf21e51f6a1a0ee13d1442296719a47fd414a4f880fb2da79851d687ebe486f0f9d5b68ef03278e35d522936caf41c39333209794f75553ed0a1'
-  # rubocop:enable Metrics/LineLength
+  # rubocop:enable Layout/LineLength
 
   # Send a notification email when the user's password is changed
   # config.send_password_change_notification = false

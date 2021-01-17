@@ -23,7 +23,7 @@ module Api
       describe 'Adds new cases to team' do
         test 'adds a new case successfully' do
           assert_difference 'team.cases.count' do
-            post :create, team_id: team.id, id: acase.id
+            post :create, params: { team_id: team.id, id: acase.id }
 
             assert_response :ok
           end
@@ -31,27 +31,27 @@ module Api
 
         test 'does not add an existing case' do
           assert_difference 'team.cases.count', 0 do
-            post :create, team_id: team.id, id: case1.id
+            post :create, params: { team_id: team.id, id: case1.id }
 
             assert_response :ok
           end
         end
 
         test 'returns a not found error when the new case does not exist' do
-          post :create, team_id: team.id, id: 'foo'
+          post :create, params: { team_id: team.id, id: 'foo' }
 
           assert_response :not_found
         end
 
         test "returns a not found error when the team can't be access by the user" do
-          post :create, team_id: other_team.id
+          post :create, params: { team_id: other_team.id }
 
           assert_response :not_found
         end
 
         test 'adds case successfully when the user is a member of the team' do
           assert_difference 'shared_team.cases.count' do
-            post :create, team_id: shared_team.id, id: acase.id
+            post :create, params: { team_id: shared_team.id, id: acase.id }
 
             assert_response :ok
           end
@@ -62,7 +62,7 @@ module Api
             expects_any_ga_event_call
 
             perform_enqueued_jobs do
-              post :create, team_id: shared_team.id, id: acase.id
+              post :create, params: { team_id: shared_team.id, id: acase.id }
 
               assert_response :ok
             end
@@ -73,28 +73,28 @@ module Api
       describe 'Removes a case from team' do
         test 'deletes existing case successfully' do
           assert_difference 'team.cases.count', -1 do
-            delete :destroy, team_id: team.id, id: case1.id
+            delete :destroy, params: { team_id: team.id, id: case1.id }
 
             assert_response :no_content
           end
         end
 
         test "returns a not found error when the team can't be access by the user" do
-          delete :destroy, team_id: other_team.id, id: 'foo'
+          delete :destroy, params: { team_id: other_team.id, id: 'foo' }
 
           assert_response :not_found
         end
 
         test 'deletes existing case successfully when the user is a member of the team' do
           assert_difference 'shared_team.cases.count', -1 do
-            delete :destroy, team_id: shared_team.id, id: shared_case.id
+            delete :destroy, params: { team_id: shared_team.id, id: shared_case.id }
 
             assert_response :no_content
           end
         end
 
         test 'does nothing when the case does not exist' do
-          delete :destroy, team_id: team.id, id: 'foo'
+          delete :destroy, params: { team_id: team.id, id: 'foo' }
 
           assert_response :no_content
         end
@@ -102,7 +102,7 @@ module Api
 
       describe 'Lists all team cases' do
         test "returns a list of all the team's cases" do
-          get :index, team_id: team.id
+          get :index, params: { team_id: team.id }
 
           assert_response :ok
 
@@ -117,7 +117,7 @@ module Api
           assert_includes ids, case2.id
         end
         test "returns a list of all the team's cases the user is a member of" do
-          get :index, team_id: shared_team.id
+          get :index, params: { team_id: shared_team.id }
 
           assert_response :ok
 

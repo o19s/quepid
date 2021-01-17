@@ -11,9 +11,9 @@
 #  updated_at :datetime         not null
 #
 
-class Snapshot < ActiveRecord::Base
+class Snapshot < ApplicationRecord
   # Associations
-  belongs_to  :case
+  belongs_to  :case, optional: true # shouldn't be optional!
   has_many    :snapshot_queries, dependent: :destroy
 
   # Validations

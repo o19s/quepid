@@ -14,7 +14,7 @@ class UserCaseFinderTest < ActiveSupport::TestCase
     test 'returns an array of cases' do
       result = service.all
 
-      assert_instance_of Case::ActiveRecord_Relation, result
+      assert_equal 'Case::ActiveRecord_Relation', result.class.to_s
     end
 
     test 'includes cases owned by user' do
@@ -40,14 +40,14 @@ class UserCaseFinderTest < ActiveSupport::TestCase
     test 'returns an empty array if no results match' do
       result = service.where(id: 123).all
 
-      assert_instance_of  Case::ActiveRecord_Relation, result
+      assert_equal        'Case::ActiveRecord_Relation', result.class.to_s
       assert_equal        0, result.length
     end
 
     test 'works when filtering by id' do
       result = service.where(id: owned_case.id).all
 
-      assert_instance_of  Case::ActiveRecord_Relation, result
+      assert_equal        'Case::ActiveRecord_Relation', result.class.to_s
       assert_equal        1,      result.length
       assert_includes     result, owned_case
     end
@@ -55,7 +55,7 @@ class UserCaseFinderTest < ActiveSupport::TestCase
     test 'works with complex where clause for owned cases' do
       result = service.where('`cases`.`case_name` LIKE ?', '%owned by%').all
 
-      assert_instance_of  Case::ActiveRecord_Relation, result
+      assert_equal        'Case::ActiveRecord_Relation', result.class.to_s
       assert_equal        1,      result.length
       assert_includes     result, owned_case
     end
@@ -63,7 +63,7 @@ class UserCaseFinderTest < ActiveSupport::TestCase
     test "works with complex where clause for cases from user's owned team" do
       result = service.where('`cases`.`case_name` LIKE ?', '%owned team%').all
 
-      assert_instance_of  Case::ActiveRecord_Relation, result
+      assert_equal        'Case::ActiveRecord_Relation', result.class.to_s
       assert_equal        1,      result.length
       assert_includes     result, owned_team_case
     end
@@ -71,7 +71,7 @@ class UserCaseFinderTest < ActiveSupport::TestCase
     test "works with complex where clause for cases from user's shared team" do
       result = service.where('`cases`.`case_name` LIKE ?', '%shared team%').all
 
-      assert_instance_of  Case::ActiveRecord_Relation, result
+      assert_equal        'Case::ActiveRecord_Relation', result.class.to_s
       assert_equal        1,      result.length
       assert_includes     result, shared_team_case
     end
@@ -79,7 +79,7 @@ class UserCaseFinderTest < ActiveSupport::TestCase
     test 'works when querying on the name for owned cases' do
       result = service.where(case_name: 'Case owned by Case Finder User').all
 
-      assert_instance_of  Case::ActiveRecord_Relation, result
+      assert_equal        'Case::ActiveRecord_Relation', result.class.to_s
       assert_equal        1,      result.length
       assert_includes     result, owned_case
     end
@@ -87,7 +87,7 @@ class UserCaseFinderTest < ActiveSupport::TestCase
     test "works when querying on the name for cases from user's owned team" do
       result = service.where(case_name: "Case from Case Finder User's owned team").all
 
-      assert_instance_of  Case::ActiveRecord_Relation, result
+      assert_equal        'Case::ActiveRecord_Relation', result.class.to_s
       assert_equal        1,      result.length
       assert_includes     result, owned_team_case
     end
@@ -95,7 +95,7 @@ class UserCaseFinderTest < ActiveSupport::TestCase
     test "works when querying on the name for cases from user's shared team" do
       result = service.where(case_name: "Case from Case Finder User's shared team").all
 
-      assert_instance_of  Case::ActiveRecord_Relation, result
+      assert_equal        'Case::ActiveRecord_Relation', result.class.to_s
       assert_equal        1,      result.length
       assert_includes     result, shared_team_case
     end

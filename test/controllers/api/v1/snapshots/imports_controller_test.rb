@@ -42,7 +42,7 @@ module Api
               ],
             }
 
-            post :create, data.merge(case_id: acase.id)
+            post :create, params: data.merge(case_id: acase.id)
 
             assert_response :ok
 
@@ -98,7 +98,7 @@ module Api
               ],
             }
 
-            post :create, data.merge(case_id: acase.id)
+            post :create, params: data.merge(case_id: acase.id)
 
             assert_response :ok
 

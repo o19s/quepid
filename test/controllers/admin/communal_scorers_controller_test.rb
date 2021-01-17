@@ -28,7 +28,7 @@ module Admin
       end
 
       test 'handles empty string names' do
-        post :create, name: ''
+        post :create, params: { name: '' }
 
         assert_redirected_to admin_communal_scorer_path(assigns(:scorer))
 
@@ -40,7 +40,7 @@ module Admin
       test 'accepts code as an attribute' do
         code = 'pass();'
 
-        post :create, scorer: { code: code }
+        post :create, params: { scorer: { code: code } }
 
         assert_redirected_to admin_communal_scorer_path(assigns(:scorer))
 
@@ -56,7 +56,7 @@ module Admin
       test 'accepts name as an attribute' do
         name = 'Custom Name'
 
-        post :create, scorer: { name: name }
+        post :create, params: { scorer: { name: name } }
 
         assert_redirected_to admin_communal_scorer_path(assigns(:scorer))
 
@@ -72,7 +72,7 @@ module Admin
       test 'accepts custom scale and serializes properly' do
         scale = [ 1, 2, 3, 4 ]
 
-        post :create, scorer: { scale: scale }
+        post :create, params: { scorer: { scale: scale } }
 
         assert_redirected_to admin_communal_scorer_path(assigns(:scorer))
 
@@ -89,7 +89,7 @@ module Admin
       test 'uses the scale list property to set the scale' do
         scale = [ 1, 2, 3, 4 ]
 
-        post :create, scorer: { scale_list: scale.join(',') }
+        post :create, params: { scorer: { scale_list: scale.join(',') } }
 
         assert_redirected_to admin_communal_scorer_path(assigns(:scorer))
 
@@ -105,7 +105,7 @@ module Admin
       test 'limits scale length' do
         scale = (1..15).to_a
 
-        post :create, scorer: { scale: scale }
+        post :create, params: { scorer: { scale: scale } }
 
         scorer = assigns(:scorer)
 
@@ -115,7 +115,7 @@ module Admin
       test 'limits scale to integers only' do
         scale = [ 1, 2, 3, 'foo' ]
 
-        post :create, scorer: { scale: scale }
+        post :create, params: { scorer: { scale: scale } }
 
         scorer = assigns(:scorer)
 
@@ -125,7 +125,7 @@ module Admin
       test 'sorts scale' do
         scale = [ 3, 4, 1, 2 ]
 
-        post :create, scorer: { scale: scale }
+        post :create, params: { scorer: { scale: scale } }
 
         assert_redirected_to admin_communal_scorer_path(assigns(:scorer))
 
@@ -141,7 +141,7 @@ module Admin
       test 'accepts scale as a string' do
         scale = [ 1, 2, 3, 4 ]
 
-        post :create, scorer: { scale: scale.join(',') }
+        post :create, params: { scorer: { scale: scale.join(',') } }
 
         assert_redirected_to admin_communal_scorer_path(assigns(:scorer))
 
@@ -162,7 +162,7 @@ module Admin
       test 'successfully updates name' do
         name = 'Custom Name'
 
-        put :update, id: owned_scorer.id, scorer: { name: name }
+        put :update, params: { id: owned_scorer.id, scorer: { name: name } }
 
         assert_redirected_to admin_communal_scorer_path(owned_scorer)
 
@@ -174,7 +174,7 @@ module Admin
       test 'successfully updates code' do
         code = 'fail();'
 
-        put :update, id: owned_scorer.id, scorer: { code: code }
+        put :update, params: { id: owned_scorer.id, scorer: { code: code } }
 
         assert_redirected_to admin_communal_scorer_path(owned_scorer)
 
@@ -186,7 +186,7 @@ module Admin
       test 'successfully updates scale' do
         scale = [ 1, 2 ]
 
-        put :update, id: owned_scorer.id, scorer: { scale: scale }
+        put :update, params: { id: owned_scorer.id, scorer: { scale: scale } }
 
         assert_redirected_to admin_communal_scorer_path(owned_scorer)
 
@@ -198,7 +198,7 @@ module Admin
       test 'limits scale length' do
         scale = (1..15).to_a
 
-        put :update, id: owned_scorer.id, scorer: { scale: scale }
+        put :update, params: { id: owned_scorer.id, scorer: { scale: scale } }
 
         scorer = assigns(:scorer)
 
@@ -208,7 +208,7 @@ module Admin
       test 'limits scale to integers only' do
         scale = [ 1, 'foo' ]
 
-        put :update, id: owned_scorer.id, scorer: { scale: scale }
+        put :update, params: { id: owned_scorer.id, scorer: { scale: scale } }
 
         scorer = assigns(:scorer)
 
@@ -218,7 +218,7 @@ module Admin
       test 'sorts scale' do
         scale = [ 2, 1 ]
 
-        put :update, id: owned_scorer.id, scorer: { scale: scale }
+        put :update, params: { id: owned_scorer.id, scorer: { scale: scale } }
 
         assert_redirected_to admin_communal_scorer_path(owned_scorer)
 
@@ -230,7 +230,7 @@ module Admin
       test 'any admin can update any quepid scorer' do
         name = 'Custom Name'
 
-        put :update, id: not_owned_scorer.id, scorer: { name: name }
+        put :update, params: { id: not_owned_scorer.id, scorer: { name: name } }
 
         assert_redirected_to admin_communal_scorer_path(not_owned_scorer)
 

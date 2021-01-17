@@ -20,7 +20,7 @@ module Api
           doc_ids = %w[x123z x456z]
 
           assert_difference 'query.ratings.count', 2 do
-            put :update, case_id: acase.id, query_id: query.id, doc_ids: doc_ids, rating: 5
+            put :update, params: { case_id: acase.id, query_id: query.id, doc_ids: doc_ids, rating: 5 }
 
             assert_response :no_content
           end
@@ -33,7 +33,7 @@ module Api
             doc_ids = %w[x123z x456z]
 
             perform_enqueued_jobs do
-              put :update, case_id: acase.id, query_id: query.id, doc_ids: doc_ids, rating: 5
+              put :update, params: { case_id: acase.id, query_id: query.id, doc_ids: doc_ids, rating: 5 }
 
               assert_response :no_content
             end
@@ -48,7 +48,7 @@ module Api
           query.ratings.create(doc_id: doc_id, rating: 1)
 
           assert_difference 'query.ratings.count', -1 do
-            delete :destroy, case_id: acase.id, query_id: query.id, doc_ids: doc_ids
+            delete :destroy, params: { case_id: acase.id, query_id: query.id, doc_ids: doc_ids }
 
             assert_response :no_content
           end
@@ -64,7 +64,7 @@ module Api
           query.ratings.create(doc_id: doc_id, rating: 1)
 
           perform_enqueued_jobs do
-            delete :destroy, case_id: acase.id, query_id: query.id, doc_ids: doc_ids
+            delete :destroy, params: { case_id: acase.id, query_id: query.id, doc_ids: doc_ids }
 
             assert_response :no_content
           end
