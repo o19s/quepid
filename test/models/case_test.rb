@@ -207,7 +207,7 @@ class CaseTest < ActiveSupport::TestCase
 
             cloned_case.clone_case the_case, user, try: the_try, clone_queries: true, clone_ratings: true
 
-            assert_equal 1, cloned_case.queries.count
+            assert_equal the_case.queries.count, cloned_case.queries.count
             assert_equal 1, cloned_case.tries.count
             assert_equal 0, cloned_case.last_try_number
             assert_equal 0, cloned_case.tries.first.try_number
