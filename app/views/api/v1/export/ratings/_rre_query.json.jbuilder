@@ -6,7 +6,7 @@ end
 
 grouped_ratings = {}
 
-query.ratings.each do |r|
+query.ratings.fully_rated.each do |r|
   # rubocop:disable Style/IfUnlessModifier
   unless grouped_ratings.key?(r.rating)
     grouped_ratings[r.rating] = []

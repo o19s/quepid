@@ -240,4 +240,18 @@ class QueryTest < ActiveSupport::TestCase
       assert_equal 'fail();', query.test.code
     end
   end
+
+  describe 'query scoping with ratings and with ratings' do
+    let(:query)               { queries(:query_with_empty_ratings) }
+    let(:rating_with_rating)  { ratings(:rating_with_rating) }
+
+    test 'always fetches all the ratings' do
+      assert_equal 2, query.ratings.size
+    end
+
+    test 'can filter out ratings that do not have a rating set' do
+      assert_equal 1, query.ratings.fully_rated.size
+      assert_includes query.ratings.fully_rated, rating_with_rating
+    end
+  end
 end

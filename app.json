@@ -82,5 +82,5 @@
   "name": "quepid",
   "scripts": {
   },
-  "stack": "heroku-16"
+  "stack": "heroku-20"
 }

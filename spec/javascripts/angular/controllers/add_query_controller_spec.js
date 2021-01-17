@@ -19,6 +19,13 @@ describe('Controller: AddQueryCtrl', function () {
             }
           };
         },
+        searchAndScore: function() {
+          return {
+            then: function(success) {
+              success();
+            }
+          }
+        },
         queryText: text
       };
 

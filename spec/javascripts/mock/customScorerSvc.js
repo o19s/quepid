@@ -2,20 +2,23 @@
 'use strict';
 
 (function (wind) {
-  var MockScorer = function(scorerCode) {
+  var MockScorer = function(scorerCode, $q) {
 
     this.lastQueryText = null;
     this.lastDocs = null;
     this.lastBestDocs = null;
 
-    this.score = function(queryText, docs, bestDocs) {
+    this.score = function(query, queryText, docs, bestDocs) {
       this.lastQueryText = queryText;
       this.lastDocs = docs;
       this.lastBestDocs = bestDocs;
-      return 100;
+
+      var deferred = $q.defer();
+      deferred.resolve(10);
+      return deferred.promise;
     };
 
-    this.maxScore = function(queryText, docs, bestDocs) {
+    this.maxScore = function(query, queryText, docs, bestDocs) {
       return 100;
     };
 
@@ -29,12 +32,17 @@
   };
 
   wind.MockCustomScorerSvc = function() {
-
+    var $q;
     var scorers = {};
-    this.defaultScorer = new MockScorer('default-code');
+
+    // If someone knows how to get this working with injection feel free to do it the right way
+    this.setQ = function(q) {
+      $q = q;
+      this.defaultScorer = new MockScorer('default-code', $q);
+    }
 
     this.createScorer = function(scoreCode) {
-      return new MockScorer(scoreCode);
+      return new MockScorer(scoreCode, $q);
     };
 
     this.bootstrap = function() {};

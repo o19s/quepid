@@ -4,12 +4,12 @@ angular.module('QuepidApp')
   .service('caseSvc', [
     '$http', '$filter', '$q', '$rootScope',
     'flash',
-    'caseTryNavSvc', 'settingsSvc',
+    'caseTryNavSvc', 'queriesSvc', 'settingsSvc',
     'broadcastSvc',
     function caseSvc(
       $http, $filter, $q, $rootScope,
       flash,
-      caseTryNavSvc, settingsSvc,
+      caseTryNavSvc, queriesSvc, settingsSvc,
       broadcastSvc
     ) {
 

@@ -2,6 +2,10 @@
  *
  *
  * */
+.align-top {
+  vertical-align: top;
+}
+
 .rating, .ratingNum, .curRating, .removeRating {
     color: white;
     font-size: .7em;

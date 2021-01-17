@@ -90,8 +90,10 @@ describe('Service: queriesSvc', function () {
   };
 
   var MockSearcher = function(settings, queryText) {
-    var currPromise = null;
+    var promises = [];
+
     this.docs = [];
+    this.settings = settings;
 
     // force a search success
     this.fulfill = function(mockResp) {
@@ -108,25 +110,34 @@ describe('Service: queriesSvc', function () {
         }
         thisMockSearcher.docs.push(solrDoc);
       });
-      currPromise.resolve();
+
+      this.resolvePromises();
     };
 
     // force a search failure
     this.fail = function() {
       this.inError = true;
-      currPromise.resolve();
+      this.resolvePromises();
     };
 
     this.linkUrl = settings.searchUrl + '?linkUrl=true';
 
     this.search = function() {
-      currPromise = $q.defer();
+      var currPromise = $q.defer();
+      promises.push(currPromise);
+
       return currPromise.promise;
     };
 
     this.queryText = function() {
       return queryText;
     };
+
+    this.resolvePromises = function() {
+      angular.forEach(promises, function(promise){
+        promise.resolve();
+      });
+    }
   };
 
   var MockSearchSvc = function() {
@@ -175,6 +186,7 @@ describe('Service: queriesSvc', function () {
   };
 
   beforeEach(function() {
+
     module(function($provide) {
       mockSearchSvc = new MockSearchSvc();
       mockScorerSvc = new MockCustomScorerSvc();
@@ -190,6 +202,9 @@ describe('Service: queriesSvc', function () {
       $q            = _$q_;
       fieldSpecSvc  = _fieldSpecSvc_;
       queriesSvc    = _queriesSvc_;
+
+      mockScorerSvc.setQ($q);
+
       mockSettings  = {
         selectedTry:  mockTry,
         searchUrl:    mockSolrUrl,
@@ -197,6 +212,8 @@ describe('Service: queriesSvc', function () {
           return mockFieldSpec;
         },
       };
+
+
 
       mockFieldSpec = fieldSpecSvc.createFieldSpec('field field1');
     });
@@ -223,13 +240,31 @@ describe('Service: queriesSvc', function () {
     $httpBackend.flush();
 
     // search all queries
-    queriesSvc.searchAll();
+    var promise = queriesSvc.searchAll();
 
     // fullfill a search that  occurs after succesful bootstrap
     mockSearchSvc.fulfill(mockResults);
     $rootScope.$apply();
     $httpBackend.verifyNoOutstandingExpectation();
+    return promise;
   };
+
+  describe('show rated only', function() {
+    var query;
+    beforeEach(function() {
+      setupQuerySvc();
+      query = new queriesSvc.QueryFactory({queryId: 1, query_text: 'test'});
+      query.ratings = {1:1, 2:1, 3:1};
+    });
+
+    it('toggles show only rated state', function() {
+      expect(queriesSvc.showOnlyRated).toEqual(false);
+      queriesSvc.toggleShowOnlyRated();
+      expect(queriesSvc.showOnlyRated).toEqual(true);
+      queriesSvc.reset();
+      expect(queriesSvc.showOnlyRated).toEqual(false);
+    });
+  });
 
   describe('query factory', function() {
     var query;
@@ -244,8 +279,9 @@ describe('Service: queriesSvc', function () {
 
     it('knows if it has been scored', function() {
       query.setDocs([]);
-      query.score();
-      expect(query.hasBeenScored).toBe(true);
+      query.score().then(function() {
+        expect(query.hasBeenScored).toBe(true);
+      });
     });
 
     it('forces rescoring of provided docs', function() {
@@ -286,17 +322,18 @@ describe('Service: queriesSvc', function () {
     });
 
     it('knows when scoring is completed for all queries', function() {
-      queriesSvc.scoreAll();
-      expect(queriesSvc.hasUnscoredQueries()).toBe(false);
+      queriesSvc.scoreAll().then(function() {
+        expect(queriesSvc.hasUnscoredQueries()).toBe(false);
+      });
     });
 
     it('knows if there are unscored queries', function() {
-      queriesSvc.queries[0].markUnscored();
+      queriesSvc.queries[0].hasBeenScored = false;
       expect(queriesSvc.hasUnscoredQueries()).toBe(true);
     });
 
     it('knows how many queries are unscored', function() {
-      queriesSvc.queries[0].markUnscored();
+      queriesSvc.queries[0].hasBeenScored = false;
       expect(queriesSvc.unscoredQueryCount()).toBe(1);
     });
 
@@ -648,15 +685,23 @@ describe('Service: queriesSvc', function () {
 
   it('calculates avg score', function() {
     setupQuerySvc();
-    var scoreInfo = queriesSvc.scoreAll();
-    expect(scoreInfo.score).toBeGreaterThan(0);
+    queriesSvc.scoreAll().then(function(scoreInfo) {
+      expect(scoreInfo.score).toBeGreaterThan(0);
+    });
   });
 
   it('scores scorables', function() {
     setupQuerySvc();
     var Scorable = function() {
       this.score = function() {
-        return {score: 5, allRated: true};
+        var deferred = $q.defer();
+        deferred.resolve({
+            score:            5,
+            maxScore:         5,
+            allRated:         true,
+            backgroundColor:  ''
+        });
+        return deferred.promise;
       };
     };
 
@@ -664,8 +709,9 @@ describe('Service: queriesSvc', function () {
     for (var i = 0; i < 10; i++) {
       scoreables.push(new Scorable());
     }
-    var scoreInfo = queriesSvc.scoreAll(scoreables);
-    expect(scoreInfo.score).toBeGreaterThan(0);
+    queriesSvc.scoreAll(scoreables).then(function(scoreInfo) {
+      expect(scoreInfo.score).toBeGreaterThan(0);
+    });
   });
 
   it('applies ratings to docs', function() {
@@ -724,8 +770,9 @@ describe('Service: queriesSvc', function () {
     $httpBackend.expectPUT('/api/cases/3/queries/' + testQuery.queryId + '/ratings').respond(200, {doc_id: testDoc.id, rating: 10});
     //$httpBackend.expectPUT('/api/cases/3/queries/' + testQuery.queryId + '/ratings/' + testDoc.id).respond(200, '');
     testDoc.rate(10);
-    var score = testQuery.score();
-    expect(score.score).toBeGreaterThan(0);
+    testQuery.score().then(function(score) {
+      expect(score.score).toBeGreaterThan(0);
+    });
 
     $httpBackend.flush();
     $httpBackend.verifyNoOutstandingExpectation();

@@ -10,8 +10,9 @@
 //
 angular.module('QuepidApp')
   .service('ratingsStoreSvc', [
+    '$rootScope',
     '$http',
-    function ratingsStoreSvc($http) {
+    function ratingsStoreSvc($scope, $http) {
       var svcVersion = 0;
 
       var RatingsStore = function(caseNo, queryId, ratingsDict) {
@@ -24,6 +25,8 @@ angular.module('QuepidApp')
         var markDirty = function() {
           version++;
           svcVersion++;
+
+          $scope.$emit('rating-changed');
         };
 
         this.setQueryId = function(newQueryId) {
@@ -54,7 +57,7 @@ angular.module('QuepidApp')
             rating:   rating,
           };
 
-          $http.put(url, data).then(function() {
+          return $http.put(url, data).then(function() {
             angular.forEach(docIds, function(docId){
               ratingsDict[docId] = rating;
             });
@@ -88,7 +91,7 @@ angular.module('QuepidApp')
             doc_ids: docIds,
           };
 
-          $http.post(url, data).then(function() {
+          return $http.post(url, data).then(function() {
             angular.forEach(docIds, function(docId){
               delete ratingsDict[docId];
             });

@@ -83,6 +83,8 @@ describe('Service: diffResultsSvc', function() {
     },
     ratingsStore: {
       createRateableDoc: function (doc) {
+        doc.ratedOnly = false;
+
         doc.getRating = function() {
           if (doc.id === '3') {
             return 10;
@@ -94,6 +96,7 @@ describe('Service: diffResultsSvc', function() {
             return 5;
           }
         };
+
         return doc;
       },
 
