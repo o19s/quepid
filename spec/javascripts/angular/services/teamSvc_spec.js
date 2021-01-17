@@ -52,6 +52,10 @@ describe('Service: teamSvc', function () {
     'name':     'member',
   };
 
+  var mockInvitee = {
+    'email':     'newuser@example.com',
+  };
+
   var mockCase = {
     'caseNo':           1,
     'lastTry':          0,
@@ -176,6 +180,22 @@ describe('Service: teamSvc', function () {
     $httpBackend.expectDELETE(url).respond(200);
 
     teamSvc.removeMember(mockTeam, mockMember);
+    $httpBackend.flush();
+  });
+
+  it('invites a user to join the team', function() {
+    var url   = '/api/teams/' + mockTeam.id + '/members/invite';
+    var data  = {
+      id: mockInvitee.email,
+    };
+    var mockResponse = mockTeam;
+
+    $httpBackend.expectPOST(url, data).respond(200);
+
+    teamSvc.inviteUserToJoin(mockTeam, mockInvitee.email).
+      then(function(response) {
+        expect(mockTeam.members.length).toBe(1);
+      });
     $httpBackend.flush();
   });
 

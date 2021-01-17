@@ -14,8 +14,33 @@ Todos:
 * DONE (Changed my mind, I used it to reduce some extra sql joins etc) rip out extra dev analystics stuff
 * DONE (no issue!) export of general and detail from js doesn't work.
 * DONE Look at session in home_controller, do we use it???
+* DONE, (password blank works fine).  Chase down why :password="" is needed when inviting a user.
+* Deal with the format of the emails!  Make them quepid qlassy.
+* DONE Deal with environment variable for disabling forms.
 
 
+https://github.com/gonzalo-bulnes/simple_token_authentication
+https://api.rubyonrails.org/classes/ActionController/HttpAuthentication/Token.html
+https://github.com/lynndylanhurley/devise_token_auth
+
+https://www.codementor.io/@gowiem/deviseinvitable-rails-api-9wzmbisus
+
+
+User.invite!(email: 'joe@example.com', name: 'Joe', password:'password')
+
+user = User.invite!(email: 'joe3@example.com', name: 'joe3', password:'password') do |u|
+  u.skip_invitation = true
+end
+
+user = User.invite!({ email: 'joe8@example.com', name: 'Joe8', password:'password' }, current_user)
+User.invite!({ email: 'new_user@example.com' }, current_user)
+
+
+User.accept_invitation!(invitation_token: params[:invitation_token], password: 'ad97nwj3o2', name: 'John Doe')
+User.accept_invitation!(invitation_token: '9ngHVdcWyvSNrg54a8yj', password: 'ad97nwj3o2', name: 'John Doe')
+
+
+user = User.invite!({ email: 'joe9@example.com' }, current_user)
 
 
 KEY!   http://railsdiff.org/4.2.11/5.2.4.4

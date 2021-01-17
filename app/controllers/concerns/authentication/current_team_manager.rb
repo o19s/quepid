@@ -7,9 +7,10 @@ module Authentication
     private
 
     def set_team
-      @team = current_user.teams_im_in.where(id: params[:team_id])
-        .preload(:members)
-        .first
+      # @team = current_user.teams_im_in.where(id: params[:team_id])
+      #  .preload(:members)
+      #  .first
+      @team = current_user.teams_im_in.where(id: params[:team_id]).first
     end
 
     def check_team

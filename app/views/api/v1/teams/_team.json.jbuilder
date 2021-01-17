@@ -16,6 +16,7 @@ json.members team.members do |member|
   json.display_name   member.display_name
   json.email          member.email
   json.avatar_url     member.avatar_url(:big)
+  json.pending_invite member.created_by_invite? && !member.invitation_accepted?
 end
 
 if load_cases

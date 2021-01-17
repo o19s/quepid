@@ -7,7 +7,7 @@ class UserTeamFinderTest < ActiveSupport::TestCase
   let(:owned_team)    { teams(:owned_team) }
   let(:shared_team)   { teams(:shared_team) }
 
-  let(:service)       { UserTeamFinder.new(user).call.preload(:members) }
+  let(:service)       { UserTeamFinder.new(user) }
 
   describe 'Find all teams' do
     test 'returns an array of teams' do

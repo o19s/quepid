@@ -15,6 +15,7 @@ gem 'turbolinks', '~> 5'
 gem 'colorize', require: false
 gem 'cookies_eu'
 gem 'devise', '>= 4.6.2'
+gem 'devise_invitable', '~> 2.0'
 gem 'font-awesome-sass', '>= 4.4.0'
 gem 'gabba'
 gem 'intercom-rails'

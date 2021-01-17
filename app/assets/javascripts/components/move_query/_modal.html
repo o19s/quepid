@@ -10,7 +10,13 @@
     </p>
   </div>
 
-  <div ng-show="!ctrl.loading">
+  <div class="text-center" ng-show="ctrl.cases.length === 0 && !ctrl.loading">
+    <p>
+      Please create another case to move this query to first.
+    </p>
+  </div>
+
+  <div ng-show="ctrl.cases.length > 0 && !ctrl.loading">
     <p>Select a case:</p>
     <ul class="list-group move-query-cases-list">
       <li class="list-group-item" ng-repeat="case in ctrl.cases" ng-class="{ active: case == ctrl.activeCase }" ng-click="ctrl.selectCase(case)">

@@ -37,7 +37,7 @@ angular.module('QuepidSecureApp')
           return;
         }
 
-        var emailVer = /^.+@.*$/;
+        var emailVer = /^[a-z]+[a-z0-9._]+@[a-z]+\.[a-z.]{2,5}$/;
         if( !emailVer.test(email) ){
           $scope.warnEmail = true;
           return;

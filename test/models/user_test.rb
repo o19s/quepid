@@ -99,6 +99,50 @@ class UserTest < ActiveSupport::TestCase
     end
   end
 
+  describe 'Agreed' do
+    test 'Doesnt set agreed_time agreed is nil or false' do
+      password = 'password'
+      new_user = User.create(email: 'new@user.com', password: password, agreed: nil)
+      assert_nil new_user.agreed_time
+
+      new_user = User.create(email: 'new@user.com', password: password, agreed: false)
+      assert_nil new_user.agreed_time
+    end
+
+    test 'Sets agreed_time if nil when agreed set to true' do
+      user = User.create
+      assert user.terms_and_conditions?
+
+      password = 'password'
+      new_user = User.create(email: 'new@user.com', password: password, agreed: true)
+      assert_not_nil new_user.agreed_time
+    end
+  end
+
+  describe 'Email' do
+    test 'validates the format of the email address' do
+      new_user = User.create(email: nil, password: 'password')
+
+      assert new_user.errors.added? :email, :blank # => true
+      assert_includes new_user.errors.messages[:email], 'can\'t be blank'
+
+      new_user = User.create(email: 'epugh', password: 'password')
+      assert_includes new_user.errors.messages[:email], 'is invalid'
+
+      new_user = User.create(email: 'epugh@', password: 'password')
+      assert_includes new_user.errors.messages[:email], 'is invalid'
+
+      # turns out this is a valid format at least as far as regex validation goes!
+      new_user = User.create(email: 'epugh@o19s', password: 'password')
+      assert_empty new_user.errors.messages
+
+      new_user = User.create(email: 'epugh@o19s.com', password: 'password')
+      assert_empty new_user.errors.messages
+      new_user = User.create(email: 'epugh+tag@o19s.com', password: 'password')
+      assert_empty new_user.errors.messages
+    end
+  end
+
   describe 'Default Case' do
     # we used to create the default case for every user, but that assumptions doesn't make sense anymore.
     test 'when user is created a default case is NOT automatically created' do

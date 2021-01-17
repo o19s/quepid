@@ -31,5 +31,11 @@ module Api
         assert 'Success!' == body['message']
       end
     end
+
+    describe 'Quepid Qonfiguration' do
+      test 'signup is enabled' do
+        assert @controller.signup_enabled?
+      end
+    end
   end
 end

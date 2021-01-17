@@ -206,6 +206,22 @@ module Api
           assert_equal data['name'],        snapshot.name
           assert_equal data['docs'].length, snapshot.snapshot_queries.length
         end
+
+        test 'returns snapshot when a query is deleted' do
+          query_count = acase.queries.size
+          acase.queries.first.soft_delete
+          acase.save!
+
+          get :show, params: { case_id: acase.id, id: snapshot.id }
+
+          assert_response :ok
+
+          data = JSON.parse(response.body)
+
+          assert_equal data['name'],           snapshot.name
+          assert_equal data['docs'].length,    snapshot.snapshot_queries.length
+          assert_equal data['queries'].length, (query_count - 1)
+        end
       end
 
       describe 'Deletes a snapshot' do

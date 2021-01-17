@@ -1,0 +1,75 @@
+<div class="jumbotron">
+  <div class="row">
+    <div class="col-md-3 col-sm-4 col-md-offset-2 col-sm-offset-1">
+      <h2>Accept the Invitation to join the team on Quepid!</h2>
+      <p>
+        </p>
+      </div>
+    <div class="col-md-3 col-sm-4">
+      <div>
+        <%= form_for(resource, as: resource_name, url: invitation_path(resource_name), html: { method: :put }) do |f| %>
+        <%= f.hidden_field :invitation_token, readonly: true %>
+          <h2></h2>
+
+          <% if resource.errors.any? %>
+            <div id="error_explanation">
+              <h2><%= pluralize(resource.errors.count, "error") %> prohibited this invitation from being processed:</h2>
+
+              <% resource.errors.full_messages.each do |message| %>
+              <div class="alert alert-danger">
+                <%= message %>
+              </div>
+              <% end %>
+            </div>
+          <% end %>
+
+          <div class="form-group">
+             <%= f.text_field :name, class: 'form-control name', placeholder: 'Full Name' %>
+          </div>
+
+          <div class="form-group">
+            <%= f.text_field :email, class: 'form-control email', placeholder: 'Email Address' %>
+          </div>
+
+          <div class="form-group">
+             <%= f.password_field :password, class: 'form-control password', placeholder: 'Password' %>
+          </div>
+
+          <div class="form-group">
+              <%= f.password_field :password_confirmation, class: 'form-control password-confirm', placeholder: 'Confirm Password' %>
+          </div>
+
+          <% if Rails.application.config.terms_and_conditions_url.size > 0 %>
+          <div class="checkbox">
+            <label>
+              <%= f.check_box :agreed %>
+              Agree to
+              <a ng-href="{{ termsAndConditionsUrl }}" target="_blank">terms &amp; conditions</a>?
+            </label>
+          </div>
+          <% end %>
+
+          <% if Rails.application.config.email_marketing_mode %>
+          <div class="checkbox">
+            <label>
+              <%= f.check_box :email_marketing %>
+              Click here to receive occasional news about relevance tuning with Quepid (including new features). You can unsubscribe at any time.
+            </label>
+          </div>
+          <% end %>
+
+          <%= f.submit 'Accept Invite', class: 'btn btn-primary signup' %>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <div class="row m-t-20">
+    <div class="col-md-8 col-md-offset-2">
+      <p>
+        <a href="http://www.opensourceconnections.com/2013/10/07/quepid-give-your-search-queries-some-love/">Read more</a> about the Quepid story. <a href="mailto:TalkToUs@opensourceconnections.com">Contact us</a>
+        to talk about Quepid or ask how we can help with your search problems!
+      </p>
+    </div>
+  </div>
+</div>

@@ -8,7 +8,6 @@ module Api
 
       def create
         @user = User.new user_params
-        @user.agreed_time = Time.zone.now
 
         if @user.save
           Analytics::Tracker.track_signup_event @user

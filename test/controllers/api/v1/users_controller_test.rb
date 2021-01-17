@@ -111,7 +111,7 @@ module Api
         end
       end
 
-      describe 'Search users' do
+      describe 'Lookup users' do
         describe 'when user is not an admin member' do
           let(:user) { users(:random) }
 
@@ -127,6 +127,52 @@ module Api
             assert_instance_of  Array,  json_response['users']
             assert_equal        [],     json_response['users']
           end
+        end
+      end
+      describe 'Search users' do
+        describe 'when user is not an admin member' do
+          let(:user) { users(:random) }
+
+          before do
+            login_user user
+          end
+
+          it 'returns a match on a email' do
+            get :index, params: { prefix: 'matt@' }
+
+            assert_response :ok
+
+            assert_instance_of  Array,  json_response['users']
+            assert_equal        1,      json_response['users'].size
+
+            emails = json_response['users'].pluck('email')
+            assert_includes emails, 'matt@example.com'
+          end
+
+          # Case Insensitive matches on name are too slow (600 ms instead of 250 ms)
+          # so we are removing for now.  Someday if we have a real search index on
+          # users we could put this back.
+          # it 'does a case insensitive match on name' do
+          #  get :index,  params: { prefix: 'Doug T'}
+
+          #  assert_response :ok
+
+          #  assert_instance_of  Array,  json_response['users']
+          #  assert_equal        1,     json_response['users'].size
+
+          #  emails      = json_response['users'].pluck('email')
+          #  assert_includes emails, 'doug@example.com'
+
+          #  get :index,  params: { prefix: 'DOUG'}
+
+          #  assert_response :ok
+
+          #  assert_instance_of  Array,  json_response['users']
+          #  assert_equal        1,     json_response['users'].size
+
+          #  emails      = json_response['users'].pluck('email')
+          #  assert_includes emails, 'doug@example.com'
+          # end
         end
       end
     end

@@ -68,27 +68,37 @@ class User < ApplicationRecord
            dependent: :destroy
 
   # Validations
+
+  # https://davidcel.is/posts/stop-validating-email-addresses-with-regex/
   validates :email,
             presence:   true,
-            uniqueness: true
+            uniqueness: true,
+            format:     { with: URI::MailTo::EMAIL_REGEXP }
 
   validates :password,
             presence: true
 
   validates_with ::DefaultScorerExistsValidator
 
+  validates :agreed,
+            acceptance: { message: 'You must agree to the terms and conditions.' },
+            if:         :terms_and_conditions?
+
+  def terms_and_conditions?
+    Rails.application.config.terms_and_conditions_url.length.positive?
+  end
+
   # Modules
   # Include default devise modules. Others available are:
   # :confirmable, :lockable, :timeoutable and :omniauthable
-  # devise :database_authenticatable, :registerable,
+  # devise :invitable, :database_authenticatable, :registerable,
   # :recoverable, :rememberable, :trackable, :validatable
-  devise :recoverable, reset_password_keys: [ :email ]
+  devise :invitable, :recoverable, reset_password_keys: [ :email ]
 
   # Callbacks
   before_save   :encrypt_password
+  before_save   :check_agreed_time
   before_create :set_defaults
-
-  # after_create  :add_default_case
 
   # Devise hacks since we only use the recoverable module
   attr_accessor :password_confirmation
@@ -131,7 +141,7 @@ class User < ApplicationRecord
 
   # Returns all the teams that the user is both owner of and involved in!
   def teams_im_in
-    UserTeamFinder.new(self).call
+    UserTeamFinder.new(self)
   end
 
   def locked?
@@ -148,6 +158,10 @@ class User < ApplicationRecord
     self.locked_at  = nil
   end
 
+  def after_database_authentication
+    # required by devise_invitable
+  end
+
   private
 
   def set_defaults
@@ -156,15 +170,17 @@ class User < ApplicationRecord
     self.num_logins       = 0     if num_logins.nil?
     self.default_scorer   = Scorer.system_default_scorer if self.default_scorer.nil?
     # rubocop:enable Style/RedundantSelf
-
-    # this is necessary because it will rollback
-    # the creation/update of the user otherwise
-    true
   end
 
   def encrypt_password
     self[:password] = BCrypt::Password.create(password) if password.present? && password_changed?
+  end
 
-    true
+  def check_agreed_time
+    return unless terms_and_conditions?
+
+    return unless agreed && agreed_time.nil?
+
+    self[:agreed_time] = Time.zone.now
   end
 end

@@ -27,7 +27,7 @@
       {{ currentTeam.owner.email }}
     </div>
 
-    <div class="team-stats col-xs-6 col-sm-6 col-md-4 col-lg-3">
+    <div class="team-stats col-xs-6 col-sm-6 col-md-4 col-lg-4">
       <div class="vcard-stats border-bottom row">
         <span class="vcard-stat col-sm-4">
           <strong class="vcard-stat-count d-block">
@@ -51,24 +51,19 @@
 
       <div class="add-member border-bottom row">
         <h4>
-          Add Member
+          Add Team Member
         </h4>
 
         <add-member team='currentTeam'></add-member>
       </div>
 
-      <div
-        class="change-owner border-bottom row"
-
-
-      >
+      <div class="change-owner border-bottom row">
         <h4>
           Change Owner
         </h4>
 
         <change-team-owner
           team='currentTeam'
-
           ng-if="currentUser.id == currentTeam.owner.id"
         ></change-team-owner>
 
