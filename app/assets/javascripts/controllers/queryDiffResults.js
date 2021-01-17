@@ -3,10 +3,15 @@
 angular.module('QuepidApp')
   .controller('QueryDiffResultsCtrl', [
     '$scope',
-    function ($scope) {
+    'queriesSvc',
+    function ($scope, queriesSvc) {
       var returnValue = [];
 
-      var howManyToDisplay = $scope.query.docs.length;
+      function docSource() {
+        return queriesSvc.showOnlyRated ? $scope.query.ratedDocs : $scope.query.docs;
+      }
+
+      var howManyToDisplay = docSource().length;
       if ( howManyToDisplay < 10 ) {
         howManyToDisplay = 10;
       }
@@ -18,11 +23,11 @@ angular.module('QuepidApp')
       $scope.query.maxDiffDocScore = 0;
 
       $scope.query.docPairs = function() {
-        var diffDocs = $scope.query.diff.docs();
+        var diffDocs = $scope.query.diff.docs(queriesSvc.showOnlyRated);
 
         for(var i = 0 ; i < howManyToDisplay; i++) {
-          if( $scope.query.docs[i] ) {
-            returnValue[i].doc = $scope.query.docs[i];
+          if( docSource()[i] ) {
+            returnValue[i].doc = docSource()[i];
           } else {
             returnValue[i].doc = null;  // To overwrite old docs
                                         // (ie when switching from snapshot

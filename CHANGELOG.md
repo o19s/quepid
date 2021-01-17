@@ -1,8 +1,49 @@
 # Changelog
 
-## 6.3.3 - ?
+## 6.4.2 - ?
 
 * Big upgrade to Rails 5.  Ruby 2.6.6.
+
+## 6.4.1 - 2021-01-14
+
+In the 6.4.0 release, the correct splainer-search NPM package was missed in the production Docker image.
+
+This release resolves that oversite.  Thanks @LiuCao0614 for testing the upgrade process and reporting the issue.
+
+### Improvements
+
+* Small housekeeping update for the hosted app version running on Heroku.  https://github.com/o19s/quepid/pull/267 by @dworley.
+
+* Clean up last scoring run details on the Cases Listing page.  Now better iconography to call out cases that have queries that need rating.  https://github.com/o19s/quepid/pull/261 by @epugh fixes https://github.com/o19s/quepid/issues/219.
+
+### Bugs
+
+* Don't export ratings that don't have a rating set for RRE and Basic export formats.  https://github.com/o19s/quepid/pull/266 by @epugh fixes https://github.com/o19s/quepid/issues/265.
+
+
+
+## 6.4.0 - 2020-12-18
+
+*Only Rated* toggle is a powerful new feature added to Quepid, our first relevancy centric feature in a long while.
+
+In certain relevancy cases, you may only care about the ordering of a subset of documents within the entire result set.  One particular use case may be in e-commerce where you want certain products to be boosted and others to be demoted in the ranking algorithm.  While this was doable in previous versions of Quepid, it could get difficult to manage the list of rated documents, especially if the list went many pages deep into the results.
+
+To help solve this problem we worked with [Kobler](www.kobler.no) to introduce several new features to Quepid.  We strived to make it easier to work with your corpus of rated documents in the main case view, inside of Explain Missing Documents and within the scorers themselves.
+
+This feature was developed by @worleydl in https://github.com/o19s/quepid/pull/229, with an initial POC by @janhoy in https://github.com/o19s/quepid/pull/220, and resolves issue https://github.com/o19s/quepid/issues/163.  Much thanks to @janhoy and the folks at [Kobler](www.kobler.no) for this feature.
+
+
+### Features
+
+ * Added "Show Only Rated" toggle to the main searchResult listing
+ * Explain Missing Documents modal now defaults to showing all of your rated documents when you first open it up
+ * Added eachRatedDoc function to ScorerFactory to iterate over rated documents in scoring
+ * Provided refreshRatedDocs(k) in ScorerFactory for loading a custom amount of rated documents up to k
+
+### Improvements
+
+*  Migrated scoring to an asynchronous pipeline
+* Fixed stuck "Updating queries" message when creating a new case
 
 ## 6.3.2 - 2020-12-08
 

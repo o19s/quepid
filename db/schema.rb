@@ -143,6 +143,7 @@ ActiveRecord::Schema.define(version: 20201203212611) do
     t.integer "position",          limit: 4
     t.integer "snapshot_query_id", limit: 4
     t.text    "explain",           limit: 16777215
+    t.boolean "rated_only",                         default: false, null: false
   end
 
   add_index "snapshot_docs", ["snapshot_query_id"], name: "snapshot_query_id", using: :btree
@@ -249,7 +250,6 @@ ActiveRecord::Schema.define(version: 20201203212611) do
   add_foreign_key "curator_variables", "tries", name: "curator_variables_ibfk_1"
   add_foreign_key "queries", "cases", name: "queries_ibfk_1"
   add_foreign_key "ratings", "queries", name: "ratings_ibfk_1"
-  add_foreign_key "snapshot_docs", "snapshot_queries", name: "snapshot_docs_ibfk_1"
   add_foreign_key "snapshot_queries", "queries", name: "snapshot_queries_ibfk_1"
   add_foreign_key "snapshot_queries", "snapshots", name: "snapshot_queries_ibfk_2"
   add_foreign_key "snapshots", "cases", name: "snapshots_ibfk_1"

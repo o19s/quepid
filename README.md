@@ -371,7 +371,7 @@ See more details on the wiki at https://github.com/o19s/quepid/wiki/Troubleshoot
 
 # Dev Errata
 
-## I'd like to use a new Node module
+## I'd like to use a new Node module, or update a existing one
 
 Typically you would simply do:
 
@@ -379,7 +379,13 @@ Typically you would simply do:
 bin/docker r yarn add foobar
 ```
 
-which will install the new Node module, and then save that dependency to `package.json`.
+or
+
+```
+bin/docker r yarn upgrade foobar
+```
+
+which will install/upgrade the Node module, and then save that dependency to `package.json`.
 
 Then check in the updated `package.json` and `yarn.lock` files.
 
@@ -420,6 +426,16 @@ bin/docker r bundle exec bin/rails g migration FixCuratorVariablesTriesForeignKe
 
 Followed by `bin/docker r bundle exec rake db:migrate`
 
+## Updating RubyGems
+
+Modify the file `Gemfile` and then run:
+
+```
+bin/docker r bundle install
+```
+
+You will see a updated `Gemfile.lock`, go ahead and check it and `Gemfile` into Git.
+
 
 # QA
 
@@ -427,6 +443,7 @@ There is a code deployment pipeline to the http://quepid-staging.herokuapp.com s
 is run on successful commits to `master`.  
 
 If you have pending migrations you will need to run them via:
+
 ```
 heroku run bin/rake db:migrate -a quepid-staging
 heroku restart -a quepid-staging
@@ -482,6 +499,12 @@ EMAIL_MARKETING_MODE=true   # Enables a checkbox on user signup to consent to em
 ```
 
 
-# Credits
+# Thank You's
+
+Quepid would not be possible without the contributions from many individuals and organizations.   
+
+Specifically we would like to thank Erik Bugge and the folks at Kobler for funding the Only Rated feature released in Quepid [6.4.0](https://github.com/o19s/quepid/releases/tag/v6.4.0).
 
 Quepid wasn't always open source!  Check out the [credits](docs/credits.md) for a list of contributors to the project.
+
+If you would like to fund development of a new feature for Quepid do [get in touch](http://www.opensourceconnections.com/contact/)!

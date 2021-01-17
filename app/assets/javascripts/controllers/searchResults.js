@@ -2,12 +2,15 @@
 
 angular.module('QuepidApp')
   .controller('SearchResultsCtrl', [
+    '$rootScope',
     '$scope', '$uibModal', '$log', '$window',
     'rateBulkSvc', 'userSvc', 'queriesSvc', 'queryViewSvc', 'settingsSvc',
     function (
-      $scope, $uibModal, $log, $window,
+      $rootScope, $scope, $uibModal, $log, $window,
       rateBulkSvc, userSvc, queriesSvc, queryViewSvc, settingsSvc
     ) {
+      $scope.queriesSvc = queriesSvc;
+
       // Settings for query display
       var DisplayConfig = function() {
         this.notes = false;
@@ -25,6 +28,13 @@ angular.module('QuepidApp')
       ) {
         scorerSelector = 'unit-test';
       }
+
+      // Refresh rated-only docs if ratings have changed
+      $rootScope.$on('rating-changed', function() {
+        if (!queriesSvc.showOnlyRated) {
+          $scope.query.refreshRatedDocs();
+        }
+      });
 
       $scope.$watch('query.effectiveScorer()', function() {
         if ( $scope.query.test !== null &&
@@ -55,7 +65,8 @@ angular.module('QuepidApp')
       };
 
       $scope.overThreshold = function() {
-        return ($scope.query.score().score < $scope.query.threshold) && $scope.query.thresholdEnabled;
+        return $scope.query.lastScore && $scope.query.thresholdEnabled &&
+          ($scope.query.lastScore < $scope.query.threshold);
       };
 
       $scope.hasEnabledTest = function() {
@@ -71,8 +82,14 @@ angular.module('QuepidApp')
         }
       });*/
 
+      $scope.numFound = 0;
+      $scope.query.getNumFound = function() {
+        $scope.numFound = queriesSvc.showOnlyRated ? $scope.query.ratedDocsFound : $scope.query.numFound;
+        return $scope.numFound;
+      };
+
       $scope.query.isNotAllRated = function() {
-        var score = $scope.query.score();
+        var score = $scope.query.currentScore;
         if (!score || score.score === null || score.allRated) {
           return false;
         }
@@ -133,24 +150,26 @@ angular.module('QuepidApp')
           extra.query.rating = newRating;
 
           var ids = [];
-          angular.forEach(extra.query.docs, function(doc) {
+          var docs = queriesSvc.showOnlyRated ? extra.query.ratedDocs : extra.query.docs;
+          angular.forEach(docs, function(doc) {
             ids.push(doc.id);
           });
 
           if ( ids.length > 0 ) {
-            extra.query.docs[0].rateBulk(ids, newRating);
+            docs[0].rateBulk(ids, newRating);
           }
         },
         function(extra) {
           extra.query.rating = '-';
 
           var ids = [];
-          angular.forEach(extra.query.docs, function(doc) {
+          var docs = queriesSvc.showOnlyRated ? extra.query.ratedDocs : extra.query.docs;
+          angular.forEach(docs, function(doc) {
             ids.push(doc.id);
           });
 
           if ( ids.length > 0 ) {
-            extra.query.docs[0].resetBulkRatings(ids);
+            docs[0].resetBulkRatings(ids);
           }
         },
         src

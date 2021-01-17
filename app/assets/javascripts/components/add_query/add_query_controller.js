@@ -31,8 +31,9 @@ angular.module('QuepidApp')
 
         queriesSvc.persistQuery(q)
           .then(function() {
-            q.search()
+            q.searchAndScore()
               .then(function success() {
+                $rootScope.$emit('scoring-complete');
                 flash.success = 'Query added successfully.';
               }, function error(errorMsg) {
                 flash.error = 'Your new query had an error!';
@@ -55,7 +56,8 @@ angular.module('QuepidApp')
           .then(function() {
             queriesSvc.searchAll()
               .then(function () {
-                flash.success = 'Queries added successfull.';
+                // searchAll emits its own 'scoring-complete' message, not needed here
+                flash.success = 'Queries added successfully.';
               }, function (errorMsg) {
                 flash.error = 'One (or many) of your new queries had an error!';
                 flash.to('search-error').error = errorMsg;

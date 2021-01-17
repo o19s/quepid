@@ -18,5 +18,5 @@
     value="{{ ctrl.text.indexOf(';') === -1 ? 'Add query' : 'Add queries' }}"
    />
 
-  <i class="fa fa-spinner fa-spin" ng-show="ctrl.loading"></i>
+  <i class="fa fa-spinner fa-spin" ng-class="{'hidden': !ctrl.loading}"></i>
 </form>

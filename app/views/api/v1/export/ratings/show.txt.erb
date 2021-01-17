@@ -1,6 +1,6 @@
 <%
 @case.queries.sort_by(&:id).each do |query|
-  query.ratings.each do |rating| %>
+  query.ratings.fully_rated.each do |rating| %>
 <%=rating.rating%> qid:<%=query.id%> # <%=rating.doc_id %> <%=query.query_text%>
 <%
   end

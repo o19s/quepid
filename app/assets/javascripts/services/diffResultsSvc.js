@@ -56,6 +56,7 @@ angular.module('QuepidApp')
           angular.forEach(savedSearchResults, function loopBody(doc) {
             if ( angular.isDefined(doc) && doc !== null) {
               var rateableDoc = query.ratingsStore.createRateableDoc(doc);
+              rateableDoc.ratedOnly = doc.rated_only ? doc.rated_only : false;
               thisFetcher.docs.push(rateableDoc);
             }
           });
@@ -84,7 +85,7 @@ angular.module('QuepidApp')
 
           return thisQDiff.fetcher.fetch(settings)
             .then(function() {
-              thisQDiff.diffScore = query.scoreOthers(thisQDiff.fetcher.docs);
+              thisQDiff.diffScore = query.scoreOthers(thisQDiff.fetcher.docs.filter(d => d.ratedOnly === false));
             }, function(response) {
               $log.debug('Failed to fetch diff: ', response);
               return response;
@@ -98,11 +99,15 @@ angular.module('QuepidApp')
         };
 
         this.score = function() {
-          return this.diffScore;
+          var deferred = $q.defer();
+          deferred.resolve(this.diffScore);
+          return deferred.promise;
         };
 
-        this.docs = function() {
-          return this.fetcher.docs;
+        this.docs = function(onlyRated) {
+          onlyRated = onlyRated || false;
+
+          return this.fetcher.docs.filter(d => d.ratedOnly === onlyRated);
         };
 
         this.name = function() {
