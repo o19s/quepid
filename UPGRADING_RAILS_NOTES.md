@@ -14,7 +14,6 @@ Todos:
 * DONE (Changed my mind, I used it to reduce some extra sql joins etc) rip out extra dev analystics stuff
 * DONE (no issue!) export of general and detail from js doesn't work.
 * DONE Look at session in home_controller, do we use it???
-<<<<<<< HEAD
 * DONE, (password blank works fine).  Chase down why :password="" is needed when inviting a user.
 * Deal with the format of the emails!  Make them quepid qlassy.
 * DONE Deal with environment variable for disabling forms.
@@ -42,11 +41,7 @@ User.accept_invitation!(invitation_token: '9ngHVdcWyvSNrg54a8yj', password: 'ad9
 
 
 user = User.invite!({ email: 'joe9@example.com' }, current_user)
-=======
 
-
-
->>>>>>> master
 
 KEY!   http://railsdiff.org/4.2.11/5.2.4.4
 
