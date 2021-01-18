@@ -1,4 +1,4 @@
-
+require 'csv'
 
 def seed_user hash
   if User.where(email: hash[:email].downcase).exists?
@@ -107,27 +107,27 @@ tens_of_queries_user = seed_user user_params
 print_user_info user_params
 
 ######################################
-# OSC Team Owner
+# Trek Team Owner
 ######################################
 
 user_specifics = {
-  name:             'OSC Team Owner',
-  email:            'quepid+oscOwner@o19s.com',
+  name:             'Kirk',
+  email:            'kirk@starfleet.com',
 }
-user_params    = user_defaults.merge(user_specifics)
-osc_owner_user = seed_user user_params
+user_params     = user_defaults.merge(user_specifics)
+trek_owner_kirk = seed_user user_params
 print_user_info user_params
 
 ######################################
-# OSC Team Member
+# Trek Team Member
 ######################################
 
 user_specifics = {
-  name:             'OSC Team Member',
-  email:            'quepid+oscMember@o19s.com',
+  name:             'Spock',
+  email:            'spock@vulcans.org'
 }
-user_params     = user_defaults.merge(user_specifics)
-osc_member_user = seed_user user_params
+user_params       = user_defaults.merge(user_specifics)
+trek_member_spock = seed_user user_params
 print_user_info user_params
 
 ######################################
@@ -252,11 +252,65 @@ print_step "End of seeding ratings................"
 print_step "Seeding teams................"
 
 ######################################
-# OSC Team
+# Trek Team
 ######################################
 
-osc = Team.where(owner_id: osc_owner_user.id, name: 'OSC').first_or_create
-osc.members << osc_member_user
+trek = Team.where(owner_id: trek_owner_kirk.id, name: 'NCC-1701 Enterprise').first_or_create
+trek.members << trek_member_spock
+
+phasers_rule = trek_owner_kirk.cases.create case_name: 'Phasers Rule', scorer: Scorer.system_default_scorer
+print_case_info phasers_rule
+
+phasers_rule.tries.create try_number:1, query_params: 'q=#$query##', field_spec: 'id:id title:title overview thumb:poster_path vote_count', search_url: 'http://quepid-solr.dev.o19s.com:8985/solr/tmdb/select', name: 'Seeded Try', search_engine: 'solr', number_of_rows: 10
+
+trek.cases << phasers_rule
+
+ratings = <<~RATINGS
+query,docid,rating
+star trek,26965,1
+star trek,81899,1
+star trek,416182,1
+star trek,414260,1
+star trek,451572,1
+star trek,522055,1
+star trek,573374,1
+star trek,161334,1
+star trek,464207,1
+star trek,9755,0
+star trek,140607,0
+star trek,11,0
+star trek,37165,0
+star trek,330459,0
+star trek,72190,0
+star trek,181808,0
+star trek,1893,0
+star trek,1892,0
+star trek,1895,0
+star trek,1894,0
+star trek,13475,3
+star trek,332562,0
+star trek,54138,3
+star trek,188927,3
+star trek,154,3
+star trek,199,3
+star trek,152,3
+star trek,168,3
+star trek,201,3
+star trek,157,3
+star trek,193,3
+star trek,174,3
+star trek,200,3
+star trek,172,3
+RATINGS
+
+options = {}
+ratings_importer = RatingsImporter.new phasers_rule, CSV.parse(ratings, headers: true), options
+ratings_importer.import
+
+phasers_rule.reload
+
+
+
 print_step "End of seeding teams................"
 
 # Big Cases
