@@ -2,13 +2,23 @@
 
 ## 6.4.2 - ?
 
-* Big upgrade to Rails 5.  Ruby 2.6.6.
+### Features
+
+* Invite your friends to join your team on Quepid!  You can now send an email with an invite code to join Quepid and your specific team.   https://github.com/o19s/quepid/pull/259 by @epugh.
+
+### Improvements
+
+* Upgrade to Rails 5 and Ruby 2.7.2!   We have been stuck on Rails 4.2 for years, and this unlocks a lot of new capabilities.  https://github.com/o19s/quepid/pull/256 by @epugh with inspiration from @worleydl.
+
+### Bugs
+
+* You can export a rating that has no actual rating value chosen! https://github.com/o19s/quepid/pull/266 by @epugh fixes https://github.com/o19s/quepid/issues/265.
 
 ## 6.4.1 - 2021-01-14
 
 In the 6.4.0 release, the correct splainer-search NPM package was missed in the production Docker image.
 
-This release resolves that oversite.  Thanks @LiuCao0614 for testing the upgrade process and reporting the issue.
+This release resolves that oversight.  Thanks @LiuCao0614 for testing the upgrade process and reporting the issue.
 
 ### Improvements
 
