@@ -463,27 +463,20 @@ heroku restart -a quepid-staging
 
 ## Seed Data
 
-The following accounts are created through the seeds. They all follow the following format:
+The following accounts are created through the seeds. They all have the same password value of _password_ ;-)
 
-```
-email: quepid+[type]@o19s.com
-password: password
-```
-
-where type is one of the following:
-
-* `admin`: An admin account
-* `1case`: A trial user with 1 case
-* `2case`: A trial user with 2 cases
-* `solr`: A trial user with a Solr case
-* `es`: A trial user with a ES case
-* `10sOfQueries`: A trial user with a Solr case that has 10s of queries
-* `100sOfQueries`: A trial user with a Solr case that has 100s of queries (usually disabled)
-* `1000sOfQueries`: A trial user with a Solr case that has 1000s of queries (usually disabled)
-* `oscOwner`: A trial user who owns the team 'OSC'
-* `oscMember`: A trial user who is a member of the team 'OSC'
-* `CustomScorer`: A trial user who has a custom scorer
-* `CustomScorerDefault`: A trial user who has a custom scorer that is set as their default
+* `quepid+admin@o19s.com`: An administrator account
+* `quepid+1case@o19s.com`: A user with 1 case
+* `quepid+2case@o19s.com`: A user with 2 cases
+* `quepid+solr@o19s.com`: A user with a Solr case
+* `quepid+es@o19s.com`: A  user with a ES case
+* `quepid+10sOfQueries@o19s.com`: A user with a Solr case that has 10s of queries
+* `quepid+100sOfQueries@o19s.com`: A user with a Solr case that has 100s of queries (usually disabled)
+* `quepid+1000sOfQueries@o19s.com`: A user with a Solr case that has 1000s of queries (usually disabled)
+* `kirk@starfleet.com`: Kirk is the owner of the team 'NCC-1701 Enterprise', and has rated documents
+* `spock@vulcan.org`: A member of the team 'NCC-1701 Enterprise', shares cases with Kirk
+* `quepid+CustomScorer@o19s.com`: A user who has a custom scorer
+* `quepid+CustomScorerDefault@o19s.com`: A user who has a custom scorer that is set as their default
 
 # Data Map
 

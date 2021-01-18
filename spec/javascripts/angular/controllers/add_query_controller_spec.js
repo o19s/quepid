@@ -68,7 +68,6 @@ describe('Controller: AddQueryCtrl', function () {
   };
 
   var mockUser = {
-    isTrial:          false,
     queriesAdded:     0,
     maxQueries:       5,
     firstLogin:       false,
