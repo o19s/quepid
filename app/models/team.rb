@@ -31,6 +31,9 @@ class Team < ApplicationRecord
   belongs_to :owner,
              class_name: 'User'
 
+  # Callbacks
+  before_create :set_defaults
+
   # Validations
   # rubocop:disable Rails/UniqueValidationWithoutIndex
   validates :name,
@@ -45,4 +48,11 @@ class Team < ApplicationRecord
       LEFT OUTER JOIN users on users.id = teams_members.member_id
     ').where('`teams`.`owner_id` = ? OR `teams_members`.`member_id` = ?', user.id, user.id)
   }
+
+  def set_defaults
+    # rubocop:disable Style/RedundantSelf
+    # if you are a owner you are a member of the team!
+    self.members << self.owner unless self.members.include?(self.owner)
+    # rubocop:enable Style/RedundantSelf
+  end
 end

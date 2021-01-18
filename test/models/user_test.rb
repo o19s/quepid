@@ -34,6 +34,13 @@ class UserTest < ActiveSupport::TestCase
     assert_includes users(:doug).owned_teams, teams(:valid)
   end
 
+  test 'creating a team as an owner adds you to that team as a member' do
+    owner = User.create(email: 'defaults@email.com', password: 'password')
+    team = Team.create(owner_id: owner.id, name: 'Test membership')
+    assert_equal owner, team.owner
+    assert_includes team.members, owner
+  end
+
   test 'search for cases I can access' do
     doug = users(:doug)
     assert_not_nil doug.find_case(cases(:one).id)
