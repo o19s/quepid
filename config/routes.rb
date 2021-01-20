@@ -148,12 +148,11 @@ Rails.application.routes.draw do
 
       namespace :analytics do
         resources :cases, only: [ :show ], param: :case_id
-        #get '/case' => 'cases#index'
-        #resources :cases, only: [ :create ] do
+        # get '/case' => 'cases#index'
+        # resources :cases, only: [ :create ] do
         #  post 'tries/:try_number' => 'tries#create', as: :try
-        #end
+        # end
       end
-
     end
   end
 

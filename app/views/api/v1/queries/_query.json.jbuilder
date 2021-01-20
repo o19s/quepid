@@ -30,7 +30,7 @@ else
   ratings = Query.ratings_averaged(query.ratings)
 end
 
-#json.relative_variance = Query.relative_variance(query.scorer.scorer.scale.last, Query.ratings_averaged(query.ratings))
+# json.relative_variance = Query.relative_variance(query.scorer.scorer.scale.last, Query.ratings_averaged(query.ratings))
 
 json.ratings do
   ratings.each { |rating| json.set! rating.doc_id, rating.rating }

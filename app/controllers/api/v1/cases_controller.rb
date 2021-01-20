@@ -39,7 +39,6 @@ module Api
       def create
         @case = current_user.cases.build case_params
 
-
         if @case.save
           current_case_metadatum
           first = 1 == current_user.cases.count
@@ -52,6 +51,7 @@ module Api
 
       def show
         puts "The current case has a ratings view of #{@case_metadatum.ratings_view}"
+        @analytics = true
         respond_with @case
       end
 

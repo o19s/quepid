@@ -197,6 +197,8 @@ To check the Ruby syntax:
 bin/docker r bundle exec rubocop
 ```
 
+If you get `Error: `Rails` cops have been extracted to the `rubocop-rails` gem.`, it means you forgot the `bundle exec` part!
+
 Rubocop has some magic "auto correction" features for simple/common issues, so you can just run it with autocorrect enabled:
 
 ```

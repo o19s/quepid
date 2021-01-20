@@ -122,7 +122,6 @@ module Api
 
             assert_equal body['case_rating_variance'], 1.125
           end
-
         end
       end
 

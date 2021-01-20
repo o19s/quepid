@@ -1,3 +1,3 @@
 # frozen_string_literal: true
 
-json.partial! 'case', acase: @case, shallow: false
+json.partial! 'case', acase: @case, shallow: false, analytics: @analytics

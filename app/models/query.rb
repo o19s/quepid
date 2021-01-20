@@ -92,7 +92,7 @@ class Query < ApplicationRecord
     ratings_variants
   end
 
-  def self.relative_variance (max_label, variance)
+  def self.relative_variance max_label, variance
     variance / max_label
   end
 
