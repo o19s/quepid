@@ -71,6 +71,7 @@ rating: rating_value } }
 
       case_variance_values << relative_variance
 
+      # rubocop:disable Lint/UselessAssignment
       stoplight = if relative_variance.nan?
                     'hollow'
                   elsif relative_variance > 1.0
@@ -81,6 +82,7 @@ rating: rating_value } }
                     'green'
                   end
       # puts "stoplight for query #{q.query_text} is #{stoplight}"
+      # rubocop:enable Lint/UselessAssignment
     end
 
     # puts "Here is case variance: #{Query.mean(case_variance_values)}"

@@ -63,9 +63,9 @@ class Query < ApplicationRecord
     self.case
   end
 
-  # FIXME I can't get good stuff.
+  # FIXME: I can't get good stuff.
   def relative_variance
-    rand()
+    rand
   end
 
   # FIXME.  Nate, our front end doesn't support decimals at this time, yet
