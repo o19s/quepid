@@ -80,10 +80,10 @@ rating: rating_value } }
                   else
                     'green'
                   end
-      puts "stoplight for query #{q.query_text} is #{stoplight}"
+      # puts "stoplight for query #{q.query_text} is #{stoplight}"
     end
 
-    puts "Here is case variance: #{Query.mean(case_variance_values)}"
+    # puts "Here is case variance: #{Query.mean(case_variance_values)}"
     assert Query.mean(case_variance_values).nan? # a single NaN at the query level makes case level NaN.
   end
 end
