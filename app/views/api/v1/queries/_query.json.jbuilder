@@ -31,7 +31,7 @@ else
 end
 
 # rubocop:disable Layout/LineLength
-# json.relative_variance = Query.relative_variance(query.scorer.scorer.scale.last, Query.ratings_averaged(query.ratings))
+json.rating_variance Query.relative_variance(query.case.scorer.scale.last, Query.ratings_averaged(query.ratings).first.rating)
 # rubocop:enable Layout/LineLength
 
 json.ratings do
