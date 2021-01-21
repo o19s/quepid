@@ -10,7 +10,6 @@ module Api
         # not sure if this is going to be used or deleted...
         # Currently using a analytics parameter on case show method.
         def show
-          # puts "The current case has a ratings view of #{@case_metadatum.ratings_view}"
           respond_with @case
         end
       end

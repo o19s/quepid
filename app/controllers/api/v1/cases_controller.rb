@@ -50,7 +50,6 @@ module Api
       end
 
       def show
-        puts "The current case has a ratings view of #{@case_metadatum.ratings_view}"
         @analytics = true
         respond_with @case
       end
