@@ -36,7 +36,7 @@ if analytics && !teams.empty?
     case_variance_values << relative_variance
   end
 
-  json.case_rating_variance number_with_precision(Query.mean(case_variance_values), precision: 2)
+  json.rating_variance number_with_precision(Query.mean(case_variance_values), precision: 2)
 end
 
 unless shallow

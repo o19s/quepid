@@ -120,7 +120,7 @@ module Api
             assert_equal body['case_name'], phasers_vs_sabers.case_name
             assert_equal body['caseNo'],    phasers_vs_sabers.id
 
-            assert_equal body['case_rating_variance'], '1.13'
+            assert_equal body['rating_variance'], '1.13'
           end
         end
       end

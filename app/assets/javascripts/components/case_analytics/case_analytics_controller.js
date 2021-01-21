@@ -5,14 +5,8 @@
 angular.module('QuepidApp')
   .controller('CaseAnalyticsCtrl', [
     '$scope',
-    '$uibModal',
-    'flash',
-    'caseSvc',
     function (
-      $scope,
-      $uibModal,
-      flash,
-      caseSvc
+      $scope
     ) {
       var ctrl = this;
 
@@ -21,16 +15,16 @@ angular.module('QuepidApp')
 
       function varianceColour() {
         var colour = '';
-        var val = ctrl.thisCase.caseRatingVariance;
+        var val = ctrl.thisCase.ratingVariance;
         switch(true)
         {
-            case ((val >= 0) && (val <= .33)):
+            case ((val >= 0) && (val <= 0.33)):
                 colour = 'Tomato';
                 break;
-            case ((val >= .34) && (val <= .79)):
+            case ((val >= 0.34) && (val <= 0.79)):
                 colour = '#dbab09';
                 break;
-            case ((val >= .8) && (val <= 1)):
+            case ((val >= 0.8) && (val <= 1)):
                 colour = 'SeaGreen';
                 break;
         }

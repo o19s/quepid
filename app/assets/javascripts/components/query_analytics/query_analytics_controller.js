@@ -5,12 +5,8 @@
 angular.module('QuepidApp')
   .controller('QueryAnalyticsCtrl', [
     '$scope',
-    '$uibModal',
-    'flash',
     function (
-      $scope,
-      $uibModal,
-      flash
+      $scope
     ) {
       var ctrl = this;
 
@@ -22,13 +18,13 @@ angular.module('QuepidApp')
         var val = ctrl.thisQuery.ratingVariance;
         switch(true)
         {
-            case ((val >= 0) && (val <= .33)):
+            case ((val >= 0) && (val <= 0.33)):
                 colour = 'Tomato';
                 break;
-            case ((val >= .34) && (val <= .79)):
+            case ((val >= 0.34) && (val <= 0.79)):
                 colour = '#dbab09';
                 break;
-            case ((val >= .8) && (val <= 1)):
+            case ((val >= 0.8) && (val <= 1)):
                 colour = 'SeaGreen';
                 break;
         }
