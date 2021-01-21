@@ -1,5 +1,6 @@
 <a class="action-icon">
   <span
+    ng-if="ctrl.thisCase.sharedWithTeam"
     class="matches-popper"
     uib-popover-template="'case_analytics/analytics.html'"
     popover-title="Case Analytics"
@@ -12,6 +13,17 @@
       style="vertical-align: middle; font-size: 0.3em; color:{{ctrl.varianceColour()}} !important"
       title="Case analytics"
       alt="Case analytics"
+    ></i>
+  </span>
+  <span
+    ng-if="!ctrl.thisCase.sharedWithTeam"
+  >
+    <i
+      class="far fa-circle"
+      aria-hidden="true"
+      style="vertical-align: middle; font-size: 0.3em;"
+      title="Share with a team to gather case analytics"
+      alt="Share with a team to gather case analytics"
     ></i>
   </span>
 </a>
