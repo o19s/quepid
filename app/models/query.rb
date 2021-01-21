@@ -63,6 +63,11 @@ class Query < ApplicationRecord
     self.case
   end
 
+  # FIXME I can't get good stuff.
+  def relative_variance
+    rand()
+  end
+
   # FIXME.  Nate, our front end doesn't support decimals at this time, yet
   # this does decimals.  https://imgflip.com/i/4rahhg
   RatingAveraged = Struct.new(:doc_id, :query_id, :rating, :id, :user_id)
