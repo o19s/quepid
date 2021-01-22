@@ -75,3 +75,14 @@ def update
   else
     render json: @rating.errors, status: :bad_request
   end
+
+
+
+## Discussion w/ Nate .
+
+
+Do we show the case variance stop light in INDIVIDUAL mode?
+
+If, when you change from CONSOLIDATED to INDIVIDUAL and back, maybe we just redirect you to the case and reload everything, versus trying to update in place????   I don't expect it to be super common changing, unlike say the show rated toggle.
+
+Maybe if you start rating, we single the case variance stop light to become a hollow circle to indicate the data is out of date?
