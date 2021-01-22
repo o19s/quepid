@@ -64,5 +64,6 @@ group :test do
 end
 
 group :production, :staging do
+  gem 'mysql'
   gem 'rails_12factor'
 end
