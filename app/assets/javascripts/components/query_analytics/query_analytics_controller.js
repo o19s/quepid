@@ -18,14 +18,14 @@ angular.module('QuepidApp')
         var val = ctrl.thisQuery.ratingVariance;
         switch(true)
         {
-            case ((val >= 0) && (val <= 0.33)):
-                colour = 'Tomato';
+            case ((val >= 0) && (val < 0.25)):
+                colour = 'SeaGreen';
                 break;
-            case ((val >= 0.34) && (val <= 0.79)):
+            case ((val >= 0.25) && (val < 0.5)):
                 colour = '#dbab09';
                 break;
-            case ((val >= 0.8) && (val <= 1)):
-                colour = 'SeaGreen';
+            case ((val >= 0.5) && (val <= 1)):
+                colour = 'Tomato';
                 break;
         }
         return colour;
