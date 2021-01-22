@@ -124,7 +124,7 @@ print_user_info user_params
 
 user_specifics = {
   name:             'Spock',
-  email:            'spock@vulcans.org'
+  email:            'spock@starfleet.com'
 }
 user_params       = user_defaults.merge(user_specifics)
 trek_member_spock = seed_user user_params
