@@ -64,5 +64,6 @@ group :test do
 end
 
 group :production, :staging do
+  gem 'mysql2' #got error that this was now in the bundle file
   gem 'rails_12factor'
 end
