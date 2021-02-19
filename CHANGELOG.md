@@ -10,6 +10,8 @@
 
 * Upgrade to Rails 5 and Ruby 2.7.2!   We have been stuck on Rails 4.2 for years, and this unlocks a lot of new capabilities.  https://github.com/o19s/quepid/pull/256 by @epugh with inspiration from @worleydl.
 
+* Renamed "Export Case" and "Import Ratings" to just "Export" and "Import".  https://github.com/o19s/quepid/pull/270 by @abhishekChoudhary93 fixes https://github.com/o19s/quepid/issues/195.
+
 ### Bugs
 
 * You can export a rating that has no actual rating value chosen! https://github.com/o19s/quepid/pull/266 by @epugh fixes https://github.com/o19s/quepid/issues/265.
