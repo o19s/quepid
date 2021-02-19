@@ -21,7 +21,6 @@ module Quepid
     # -- all .rb files in that directory are automatically loaded after loading
     # the framework and any gems in your application.
 
-
     config.angular_templates.ignore_prefix = %w[templates/ components/]
 
     config.active_job.queue_adapter = :sidekiq

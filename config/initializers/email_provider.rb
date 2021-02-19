@@ -14,7 +14,7 @@ if Rails.application.config.email_provider.casecmp?('smtp')
   }
 elsif Rails.application.config.email_provider.casecmp?('postmark')
   Rails.application.config.action_mailer.delivery_method = :postmark
-  Rails.application.config.action_mailer.postmark_settings  = {
+  Rails.application.config.action_mailer.postmark_settings = {
     api_token: ENV['POSTMARK_API_TOKEN'],
   }
 
