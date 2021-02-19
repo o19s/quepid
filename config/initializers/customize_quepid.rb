@@ -52,3 +52,9 @@ Rails.application.config.signup_enabled = bool.deserialize(ENV.fetch('SIGNUP_ENA
 # communal scorers only, which are controlled by admins.
 #
 Rails.application.config.communal_scorers_only = bool.deserialize(ENV.fetch('COMMUNAL_SCORERS_ONLY', false))
+
+# == What Email Provider to Use
+# You can send emails to users using either the Postmark Saas service by setting this to POSTMARK, or
+# you can send using traditional SMTP server by setting this to SMTP.  Leave it blank and there is
+# no email provider.
+Rails.application.config.email_provider = ENV.fetch('EMAIL_PROVIDER', nil)
