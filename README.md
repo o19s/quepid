@@ -53,7 +53,7 @@ Below is information related to developing the Quepid open source project, prima
   - [Seed Data](#seed-data)
 - [Data Map](#data-map)
 - [App Structure](#app-structure)
-- [Legal Pages](#legal-pages)
+- [Operating Documentation](#operating-documentation)
 - [Credits](#credits)
 
 <!-- /MarkdownTOC -->
@@ -495,22 +495,9 @@ Check out the [Data Mapping](docs/data_mapping.md) file for more info about the 
 
 Check out the [App Structure](docs/app_structure.md) file for more info on how Quepid is structured.
 
-# Legal Pages & GDPR
+# Operating Documentation
 
-If you would like to have legal pages linked in the footer of the app, similar to behavior on http://app.quepid.com,
-add the following `ENV` vars:
-
-```
-TC_URL      # terms and condition
-PRIVACY_URL # privacy policy
-COOKIES_URL # cookies policy
-```
-
-To comply with GDPR, and be a good citizen, the hosted version of Quepid asks if they are willing to receive Quepid related updates via email.  This feature isn't useful to private installs, so this controls the display.
-
-```
-EMAIL_MARKETING_MODE=true   # Enables a checkbox on user signup to consent to emails
-```
+Check out the [Operating Documentation](docs/operating_documentation.md) file for more informations how Quepid can be operated and configured for your company.
 
 # Thank You's
 
