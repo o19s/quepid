@@ -14,6 +14,8 @@
 
 * You can export a rating that has no actual rating value chosen! https://github.com/o19s/quepid/pull/266 by @epugh fixes https://github.com/o19s/quepid/issues/265.
 
+* Fixing typo in defining aria-hidden html tag.  https://github.com/o19s/quepid/pull/269 by @abhishekChoudhary93 fixes https://github.com/o19s/quepid/issues/268.
+
 ## 6.4.1 - 2021-01-14
 
 In the 6.4.0 release, the correct splainer-search NPM package was missed in the production Docker image.
