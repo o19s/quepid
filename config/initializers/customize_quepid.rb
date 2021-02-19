@@ -57,4 +57,4 @@ Rails.application.config.communal_scorers_only = bool.deserialize(ENV.fetch('COM
 # You can send emails to users using either the Postmark Saas service by setting this to POSTMARK, or
 # you can send using traditional SMTP server by setting this to SMTP.  Leave it blank and there is
 # no email provider.
-Rails.application.config.email_provider = ENV.fetch('EMAIL_PROVIDER', nil)
+Rails.application.config.email_provider = ENV.fetch('EMAIL_PROVIDER', "")
