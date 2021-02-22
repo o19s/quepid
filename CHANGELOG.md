@@ -6,6 +6,8 @@
 
 * Invite your friends to join your team on Quepid!  You can now send an email with an invite code to join Quepid and your specific team.   https://github.com/o19s/quepid/pull/259 by @epugh.
 
+* Add support for sending emails via SMTP, or use Postmark, or don't send emails.  https://github.com/o19s/quepid/pull/276 by @gabaur fixes https://github.com/o19s/quepid/issues/275.
+
 ### Improvements
 
 * Upgrade to Rails 5 and Ruby 2.7.2!   We have been stuck on Rails 4.2 for years, and this unlocks a lot of new capabilities.  https://github.com/o19s/quepid/pull/256 by @epugh with inspiration from @worleydl.
