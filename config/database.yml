@@ -24,3 +24,4 @@ test:
 production:
   <<: *default
   url: <%= ENV["DATABASE_URL"] %>
+  ssl_mode: disabled
