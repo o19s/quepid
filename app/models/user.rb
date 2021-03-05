@@ -25,6 +25,23 @@
 #
 
 class User < ApplicationRecord
+  class << self
+    def from_omniauth_custom(auth)
+      require 'pp'
+      pp auth
+      user = User.find_or_initialize_by(email: auth['info']['email'])
+      #user.uid = auth['uid']
+      user.name = auth['info']['name']
+      user.password = "fake"
+
+      #user.avatar_url = auth['info']['image']
+      #user.access_token = auth['credentials']['token']
+      #user.refresh_token = auth['credentials']['refresh_token'] unless auth['credentials']['refresh_token'].nil?
+      #user.expires_at = auth['credentials']['expires_at'] unless auth['credentials']['refresh_token'].nil?
+      user.save!
+      user
+    end
+  end
   # Associations
   belongs_to :default_scorer, class_name: 'Scorer', optional: true # for communal scorers there isn't a owner
 
@@ -93,7 +110,9 @@ class User < ApplicationRecord
   # :confirmable, :lockable, :timeoutable and :omniauthable
   # devise :invitable, :database_authenticatable, :registerable,
   # :recoverable, :rememberable, :trackable, :validatable
-  devise :invitable, :recoverable, reset_password_keys: [ :email ]
+  devise :invitable, :recoverable, :omniauthable, omniauth_providers: [:keycloakopenid]
+  #devise :omniauthable, omniauth_providers: %i[keycloakopenid]
+  #devise :invitable, :recoverable, :omniauthable
 
   # Callbacks
   before_save   :encrypt_password
@@ -183,4 +202,6 @@ class User < ApplicationRecord
 
     self[:agreed_time] = Time.zone.now
   end
+
+
 end
