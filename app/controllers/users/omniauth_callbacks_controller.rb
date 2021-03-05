@@ -12,7 +12,7 @@ class Users::OmniauthCallbacksController < Devise::OmniauthCallbacksController
       Rails.logger.warn("user did persisted")
       session[:current_user_id] = @user.id  # this populates our session variable.
       #sign_in_and_redirect @user, event: :authentication
-      redirect_to secure_path
+      redirect_to root_path
     else
       Rails.logger.warn("user not persisted, what do we need to do?")
       session["devise.keycloakopenid_data"] = request.env["omniauth.auth"]
