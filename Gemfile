@@ -67,5 +67,5 @@ group :test do
   gem 'rails-controller-testing' # bring back compatibility with rails 4 assigns in controller tests.
 end
 
-gem "omniauth-keycloak", "~> 1.2"
+gem 'omniauth-keycloak', '~> 1.2'
 gem 'aes_key_wrap', '~> 1.1'

@@ -319,10 +319,11 @@ Devise.setup do |config|
   # When using OmniAuth, Devise cannot automatically set OmniAuth path,
   # so you need to do it manually. For the users scope, it would be:
   # config.omniauth_path_prefix = '/my_engine/users/auth'
-  #config.omniauth :github, "APP_ID", "APP_SECRET"
+  # config.omniauth :github, "APP_ID", "APP_SECRET"
   # ==> OmniAuth
-  #config.omniauth_providers: %i[keycloakopenid]
-  config.omniauth :keycloak_openid, "quepid", "example-secret-if-configured", client_options: { site: "http://host.docker.internal:9080", realm: "chorus" }, :strategy_class => OmniAuth::Strategies::KeycloakOpenId
+  # config.omniauth_providers: %i[keycloakopenid]
+  config.omniauth :keycloak_openid, 'quepid', 'example-secret-if-configured',
+                  client_options: { site: 'http://host.docker.internal:9080', realm: 'chorus' }, strategy_class: OmniAuth::Strategies::KeycloakOpenId
 end
 
 Rails.application.config.to_prepare do

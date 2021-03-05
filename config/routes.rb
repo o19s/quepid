@@ -28,9 +28,9 @@ Rails.application.routes.draw do
 
   # not sure I get why we had the only: [ :passwords ] clause
   devise_for :users, controllers: {
-    passwords:   'users/passwords',
-    invitations: 'users/invitations',
-    omniauth_callbacks: 'users/omniauth_callbacks'
+    passwords:          'users/passwords',
+    invitations:        'users/invitations',
+    omniauth_callbacks: 'users/omniauth_callbacks',
   }
   # devise_for :users, only: [ :passwords ], controllers: {
   #  passwords: 'users/passwords',
