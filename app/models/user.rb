@@ -24,6 +24,7 @@
 #  email_marketing        :boolean          not null
 #
 
+# rubocop:disable Metrics/ClassLength
 class User < ApplicationRecord
   class << self
     def from_omniauth_custom auth
@@ -203,3 +204,4 @@ class User < ApplicationRecord
     self[:agreed_time] = Time.zone.now
   end
 end
+# rubocop:enable Metrics/ClassLength

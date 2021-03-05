@@ -20,7 +20,7 @@ module DeviseHelper
   end
 
   def devise_error_messages?
-    resource.errors.empty? ? false : true
+    !resource.errors.empty?
   end
 
   def devise_reset_password_error_messages

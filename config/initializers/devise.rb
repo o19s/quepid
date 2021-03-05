@@ -323,7 +323,8 @@ Devise.setup do |config|
   # ==> OmniAuth
   # config.omniauth_providers: %i[keycloakopenid]
   config.omniauth :keycloak_openid, 'quepid', 'example-secret-if-configured',
-                  client_options: { site: 'http://host.docker.internal:9080', realm: 'chorus' }, strategy_class: OmniAuth::Strategies::KeycloakOpenId
+                  client_options: { site: 'http://host.docker.internal:9080', realm: 'chorus' },
+                  strategy_class: OmniAuth::Strategies::KeycloakOpenId
 end
 
 Rails.application.config.to_prepare do
