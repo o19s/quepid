@@ -49,6 +49,11 @@ angular-cookies@~1.7.7:
   resolved "https://registry.yarnpkg.com/angular-cookies/-/angular-cookies-1.7.7.tgz#35d7383fea2bbab1385b74acfbc539df3c50d157"
   integrity sha512-+osPNVIahz8nU4S+XCxTmmqwhJw/iPi1gUCHh8gVd4vjO/yP8I/dQza+WNwvCcWN4fY+lmp123lsMXneUVtm/g==
 
+angular-countup@^0.0.1:
+  version "0.0.1"
+  resolved "https://registry.yarnpkg.com/angular-countup/-/angular-countup-0.0.1.tgz#7074db72d4d605bc9d1c34762d81d26af005566e"
+  integrity sha1-cHTbctTWBbydHDR2LYHSavAFVm4=
+
 "angular-csv-import@https://github.com/bahaaldine/angular-csv-import":
   version "0.0.38"
   resolved "https://github.com/bahaaldine/angular-csv-import#923f17da1dcbc19d40d52a2daa1c8843b1fe6f22"
@@ -1287,10 +1292,10 @@ source-map@^0.6.1:
   resolved "https://registry.yarnpkg.com/source-map/-/source-map-0.6.1.tgz#74722af32e9614e9c287a8d0bbde48b5e2f1a263"
   integrity sha512-UjgapumWlbMhkBgzT7Ykc5YXUT46F0iKu8SGXq0bcwP5dz/h0Plj6enJqjz1Zbq2l5WaqYnrVbwWOWMyF3F47g==
 
-splainer-search@2.6.0:
-  version "2.6.0"
-  resolved "https://registry.yarnpkg.com/splainer-search/-/splainer-search-2.6.0.tgz#56d7610e4f63c8a50e04d5ae772b7afad273892e"
-  integrity sha512-H77YRKZWhj5LS5jWR9zzbG/lULIDAwSMt9Fxs4a5i8vft7vG4At5GfRc/RW4eQnr+4oPRbC6n3y28MYzhUM+og==
+splainer-search@^2.6.9:
+  version "2.6.9"
+  resolved "https://registry.yarnpkg.com/splainer-search/-/splainer-search-2.6.9.tgz#46b5e112bf2f93aa95e14ac7707d80a44fbc2cb6"
+  integrity sha512-VXJGyqumseOOHlqLiTSEfgxpN7sDlV2C7+kU/oXrr/SHi1mCsCFePL2U2V6mP86EYC0KdVMs0RwtHZMuCKyhUw==
   dependencies:
     angular "^1.7.9"
     urijs "~1.16.1"

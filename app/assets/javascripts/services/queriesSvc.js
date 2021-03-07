@@ -7,12 +7,14 @@
 // .... (as you can tell by the dependencies)
 angular.module('QuepidApp')
   .service('queriesSvc', [
+    '$rootScope',
     '$http',
     '$timeout',
     '$q',
     '$log',
+    '$sce',
     'broadcastSvc',
-    'caseSvc',
+    'caseTryNavSvc',
     'customScorerSvc',
     'qscoreSvc',
     'searchSvc',
@@ -21,13 +23,17 @@ angular.module('QuepidApp')
     'DocListFactory',
     'diffResultsSvc',
     'searchErrorTranslatorSvc',
+    'esExplainExtractorSvc',
+    'solrExplainExtractorSvc',
     function queriesSvc(
+      $scope,
       $http,
       $timeout,
       $q,
       $log,
+      $sce,
       broadcastSvc,
-      caseSvc,
+      caseTryNavSvc,
       customScorerSvc,
       qscoreSvc,
       searchSvc,
@@ -35,7 +41,9 @@ angular.module('QuepidApp')
       ratingsStoreSvc,
       DocListFactory,
       diffResultsSvc,
-      searchErrorTranslatorSvc
+      searchErrorTranslatorSvc,
+      esExplainExtractorSvc,
+      solrExplainExtractorSvc
     ) {
 
       var caseNo = -1;
@@ -51,23 +59,52 @@ angular.module('QuepidApp')
       svc.reset = reset;
       function reset() {
         svc.queries = {};
+        svc.showOnlyRated = false;
         svc.svcVersion++;
       }
 
       this.getCaseNo = getCaseNo;
       this.createSearcherFromSettings = createSearcherFromSettings;
+      this.normalizeDocExplains = normalizeDocExplains;
+      this.toggleShowOnlyRated = toggleShowOnlyRated;
 
       svc.bootstrapQueries = bootstrapQueries;
+      svc.showOnlyRated = false;
 
-      function createSearcherFromSettings(passedInSettings, query) {
+      // Rescore on ratings update
+      $scope.$on('rating-changed', () => {
+        svc.scoreAll();
+      });
+
+      function createSearcherFromSettings(passedInSettings, queryText, query) {
         var args = angular.copy(passedInSettings.selectedTry.args);
 
         if (passedInSettings && passedInSettings.selectedTry) {
+          // Modify query if ratings were passed in
+          if (query) {
+            if (passedInSettings.searchEngine === 'es') {
+              var mainQuery = args['query'];
+              args['query'] = {
+                'bool': {
+                  'should': mainQuery,
+                  'filter': query.filterToRatings(passedInSettings)
+                }
+              };
+            } else {
+              if (args['fq'] === undefined) {
+                args['fq'] = [];
+              }
+              args['fq'].push(query.filterToRatings(passedInSettings));
+            }
+
+          }
+
+
           return searchSvc.createSearcher(
-            passedInSettings.createFieldSpec().fieldList(),
+            passedInSettings.createFieldSpec(),
             passedInSettings.selectedTry.searchUrl,
             args,
-            query,
+            queryText,
             {
               escapeQuery:   passedInSettings.escapeQuery,
               numberOfRows:  passedInSettings.numberOfRows,
@@ -77,7 +114,34 @@ angular.module('QuepidApp')
         }
       }
 
-      this.unscoredQueries = {};
+      function normalizeDocExplains(query, searcher, fieldSpec) {
+        var normed = [];
+
+        if (searcher.type === 'es') {
+          normed = esExplainExtractorSvc.docsWithExplainOther(searcher.docs, fieldSpec);
+        } else {
+          normed = solrExplainExtractorSvc.docsWithExplainOther(searcher.docs, fieldSpec, searcher.othersExplained);
+        }
+
+        var docs = [];
+        angular.forEach(normed, function(doc) {
+          docs.push(query.ratingsStore.createRateableDoc(doc));
+        });
+
+        return docs;
+      }
+
+      function toggleShowOnlyRated() {
+        svc.showOnlyRated = !svc.showOnlyRated;
+
+        if (svc.showOnlyRated) {
+          angular.forEach(svc.queries, function(query) {
+            if (!query.ratingsReady) {
+              query.refreshRatedDocs();
+            }
+          });
+        }
+      }
 
       // ***********************************
       // An individual search query that
@@ -91,14 +155,19 @@ angular.module('QuepidApp')
         self.hasBeenScored  = false;
         self.docsSet        = false;
         self.allRated       = true;
+        self.ratingsPromise = null;
+        self.ratingsReady   = false;
 
         self.queryId        = queryWithRatings.queryId;
         self.caseNo         = caseNo;
         self.queryText      = queryWithRatings[qt];
+        self.ratings        = {};
         self.scorerId       = null;
         self.scorerEnbl     = false;
         self.scorer         = null;
         self.docs           = [];
+        self.ratedDocs      = [];
+        self.ratedDocsFound = 0;
         self.numFound       = 0;
         self.test           = null;
         self.options        = {};
@@ -148,15 +217,15 @@ angular.module('QuepidApp')
           }
         }
 
-        var ratings = queryWithRatings.ratings;
-        if ( ratings === undefined ) {
-          ratings = {};
+        self.ratings = queryWithRatings.ratings;
+        if ( self.ratings === undefined ) {
+          self.ratings = {};
         }
 
         self.ratingsStore = ratingsStoreSvc.createRatingsStore(
           caseNo,
           self.queryId,
-          ratings
+          self.ratings
         );
 
         var resultsReturned = false;
@@ -187,7 +256,7 @@ angular.module('QuepidApp')
         // order from the Quepid server
         this.defaultCaseOrder = 0;
         this.lastScore = 0; // the score of this query the last time it was tested
-        var lastScoreVersion = -5;
+        this.lastScoreVersion = -5;
 
         this.scoreOthers = function(otherDocs) {
           var allRated = true;
@@ -202,48 +271,44 @@ angular.module('QuepidApp')
 
           // The defaults are set below because sometimes quepid saves out scores with no values.
           // TODO: Defaults can be removed if the quepid scoring persistence issue is cleaned up
-          var score     = scorer.score(this.numFound, otherDocs, bestDocs, this.options) || 0.0;
-          var maxScore  = scorer.maxScore(this.numFound, otherDocs, bestDocs, this.options) || 1.0;
+          var promise   = scorer.score(this, this.numFound, otherDocs, bestDocs, this.options) || 0.0;
+          var maxScore  = scorer.maxScore() || 1.0;
 
-          var color     = qscoreSvc.scoreToColor(score, maxScore);
 
-          var othersScore = {
-            score:            score,
-            maxScore:         maxScore,
-            allRated:         allRated,
-            backgroundColor:  color
-          };
-          return othersScore;
+          return promise.then(function(score) {
+            var color     = qscoreSvc.scoreToColor(score, maxScore);
+
+            return {
+              score:            score || 0.0,
+              maxScore:         maxScore,
+              allRated:         allRated,
+              backgroundColor:  color
+            };
+          });
         };
 
         this.score = function() {
-          if (lastScoreVersion === this.version()) {
-            return this.currentScore;
+          if (this.lastScoreVersion === this.version()) {
+            var deferred = $q.defer();
+            deferred.resolve(this.currentScore);
+            return deferred.promise;
           }
 
-          this.currentScore = this.scoreOthers(this.docs);
+          return this.scoreOthers(this.docs)
+            .then(function(score) {
+              that.currentScore = score;
 
-          this.lastScore    = this.currentScore.score || 0;
-          this.allRated     = this.currentScore.allRated;
+              that.hasBeenScored = true;
 
-          // if we have received docs, mark this query as successfully scored
-          if (this.docsSet) {
-            this.markScored();
-          }
+              that.lastScore    = that.currentScore.score || 0;
 
-          lastScoreVersion = this.version();
+              that.allRated     = that.currentScore.allRated;
 
-          return this.currentScore;
-        };
+              that.lastScoreVersion = that.version();
 
-        this.markScored = function() {
-          this.hasBeenScored = true;
-          delete svc.unscoredQueries[this.queryId];
-        };
-
-        this.markUnscored = function() {
-          this.hasBeenScored = false;
-          svc.unscoredQueries[this.queryId] = true;
+              return that.currentScore;
+            }
+          );
         };
 
         this.fieldSpec = function() {
@@ -256,6 +321,62 @@ angular.module('QuepidApp')
             maxDocScore = Math.max(doc.score(), maxDocScore);
           });
           return maxDocScore;
+        };
+
+
+        // This method allows scorers to wait on rated documents before trying to score
+        this.awaitRatedDocs = function() {
+          var deferred = $q.defer();
+
+          // Immediately resolve if the docs are ready
+          if (this.ratingsReady) {
+            deferred.resolve();
+          // Waiting on an existing promise
+          } else if (self.ratingsPromise) {
+            self.ratingsPromise.then(function() {
+              deferred.resolve();
+            });
+          // Setup a new promise
+          } else {
+            self.ratingsPromise = this.refreshRatedDocs()
+              .then(function() {
+              deferred.resolve();
+            });
+          }
+
+          return deferred.promise;
+        };
+
+
+        this.refreshRatedDocs = function(pageSize) {
+          var settings = angular.copy(currSettings);
+
+          if (pageSize) {
+            settings.numberOfRows = pageSize;
+          }
+
+          self.ratedSearcher = svc.createSearcherFromSettings(
+              settings,
+              self.queryText,
+              self
+            );
+
+          var ratedDocsStaging = [];
+          return self.ratedSearcher.search().then(function() {
+            self.ratedUrl = self.ratedSearcher.linkUrl;
+
+            var normed = normalizeDocExplains(self, self.ratedSearcher, currSettings.createFieldSpec());
+
+            angular.forEach(normed, function(doc) {
+              var rateableDoc = self.ratingsStore.createRateableDoc(doc);
+              ratedDocsStaging.push(rateableDoc);
+            });
+
+            self.ratedDocs = ratedDocsStaging;
+            self.ratedDocsFound = normed.length;
+            self.ratingsReady = true;
+            self.ratingsPromise = null;
+          });
         };
 
         this.setDocs = function(newDocs, numFound) {
@@ -281,7 +402,6 @@ angular.module('QuepidApp')
           }
 
           that.docsSet = true;
-          that.score();
 
           return error;
         };
@@ -291,7 +411,11 @@ angular.module('QuepidApp')
         };
 
         this.browseUrl = function() {
-          return that.linkUrl;
+          if (svc.showOnlyRated) {
+            return that.ratedUrl;
+          } else {
+            return that.linkUrl;
+          }
         };
 
         this.version = function() {
@@ -302,33 +426,26 @@ angular.module('QuepidApp')
           var self = this;
 
           return $q(function(resolve, reject) {
-            self.markUnscored();
+            self.hasBeenScored = false;
 
             self.searcher = svc.createSearcherFromSettings(
               currSettings,
               self.queryText
             );
+
+            self.ratedSearcher = svc.createSearcherFromSettings(
+              currSettings,
+              self.queryText,
+              self
+            );
+
             resultsReturned = false;
 
-            self.searcher.search()
+            var promises = [];
+
+            promises.push(self.searcher.search()
               .then(function() {
-                self.linkUrl = self.searcher.linkUrl;
-
-                if (self.searcher.inError) {
-                  //self.docs.length = 0;
-                  self.setDocs([], 0);
-                  self.onError('Please click browse to see the error');
-                } else {
-                  var error = self.setDocs(self.searcher.docs, self.searcher.numFound);
-                  if (error) {
-                    self.onError(error);
-                    reject(error);
-                  }
-                  self.othersExplained = self.searcher.othersExplained;
-                }
-
-                resolve();
-              }, function(response) {
+                            }, function(response) {
                 self.linkUrl = self.searcher.linkUrl;
                 self.setDocs([], 0);
 
@@ -339,7 +456,32 @@ angular.module('QuepidApp')
               }).catch(function(response) {
                 $log.debug('Failed to load search results');
                 return response;
-              });
+              }));
+
+
+            // This is okay for smaller cases but bogs down the app for 100's of queries
+            //promises.push(self.refreshRatedDocs());
+
+            $q.all(promises).then( () => {
+              self.linkUrl = self.searcher.linkUrl;
+
+              if (self.searcher.inError) {
+                //self.docs.length = 0;
+                self.setDocs([], 0);
+                self.onError('Please click browse to see the error');
+              } else {
+                var error = self.setDocs(self.searcher.docs, self.searcher.numFound);
+                if (error) {
+                  self.onError(error);
+                  reject(error);
+                } else {
+                  self.othersExplained = self.searcher.othersExplained;
+
+                  resolve();
+
+                }
+              }
+            });
           });
         };
 
@@ -366,6 +508,21 @@ angular.module('QuepidApp')
               $log.debug('Failed to load search');
               return response;
             });
+        };
+
+        this.ratedPaginate = function() {
+            var self = this;
+
+            if (self.ratedSearcher === null) {
+              return;
+            }
+
+            self.ratedSearcher = self.ratedSearcher.pager();
+            return self.ratedSearcher.search()
+              .then(function() {
+                var normed = svc.normalizeDocExplains(self, self.ratedSearcher, currSettings.createFieldSpec());
+                self.ratedDocs = self.ratedDocs.concat(normed);
+              });
         };
 
         this.saveNotes = function(notes) {
@@ -546,6 +703,33 @@ angular.module('QuepidApp')
               });
           }
         };
+
+        this.searchAndScore = function() {
+          return this.search().then( () => {
+            this.score();
+          });
+        };
+
+        this.filterToRatings = function(settings, slice) {
+          var ratedIDs = self.ratings ? Object.keys(self.ratings) : [];
+
+          // Explain other cannot page thru results, this allows for retrieving slices of the ratings
+          if (slice !== undefined) {
+            ratedIDs = ratedIDs.slice(slice, settings.numberOfRows + slice);
+          }
+
+          var fieldSpec = settings.createFieldSpec();
+
+          if (settings.searchEngine === 'es') {
+            var esQuery = {
+              'terms': {}
+            };
+            esQuery['terms'][fieldSpec.id] = ratedIDs;
+            return esQuery;
+          } else {
+            return '{!terms f=' + fieldSpec.id + '}' + ratedIDs.join(',');
+          }
+        };
       };
 
       this.QueryFactory = Query;
@@ -555,11 +739,15 @@ angular.module('QuepidApp')
       };
 
       this.unscoredQueryCount = function() {
-        return Object.keys(this.unscoredQueries).length;
+        return Object.values(this.queries).filter( (q) => {
+          return !q.hasBeenScored;
+        }).length;
       };
 
       this.scoredQueryCount = function() {
-        return this.queryCount() - this.unscoredQueryCount();
+        return Object.values(this.queries).filter ( (q) => {
+          return q.hasBeenScored;
+        }).length;
       };
 
       this.queryCount = function() {
@@ -647,12 +835,34 @@ angular.module('QuepidApp')
 
       this.searchAll = function() {
         var promises = [];
+        var scorePromises = [];
 
         angular.forEach(this.queries, function(query) {
-          promises.push(query.search());
+          var promise = query.search().then( () => {
+            scorePromises.push(query.score());
+          });
+
+          promises.push(promise);
         });
 
-        return $q.all(promises);
+        // Holy nested promises batman
+        return $q.all(promises).then( () => {
+          $q.all(scorePromises).then( () => {
+            /*
+             * Why are we calling scoreAll after we called score() above?
+             *
+             * Score just runs the scorer on each query
+             * scoreAll prepares the aggregation score for all queries (also runs scores if needed)
+             * but knows not to run anything if things haven't changed.
+             *
+             * We have the split here so the progress bar progresses instead of flying thru
+             * after all searches complete.
+             */
+            svc.scoreAll().then( () => {
+              $scope.$emit('scoring-complete');
+            });
+          });
+        });
       };
 
       // the try that the query results reflect
@@ -703,7 +913,6 @@ angular.module('QuepidApp')
                 query.queryId = parseInt(addedQuery.queryId, 10);
                 query.ratingsStore.setQueryId(addedQuery.queryId);
                 self.queries[query.queryId] = query;
-                query.markUnscored();
                 svcVersion++;
                 broadcastSvc.send('updatedQueriesList');
 
@@ -838,6 +1047,10 @@ angular.module('QuepidApp')
         return svcVersion + ratingsStoreSvc.version();
       };
 
+      /*
+       * This method prepares the scores table that the qgraph/qscore needs.
+       *
+       */
       this.scoreAll = function(scorables) {
         var avg = 0;
         var tot = 0;
@@ -848,41 +1061,50 @@ angular.module('QuepidApp')
 
         var queryScores =  {};
 
+        var promises = [];
         angular.forEach(scorables, function(scorable) {
-          var scoreInfo = scorable.score();
+          promises.push(scorable.score().then(function(scoreInfo) {
+            if (!scoreInfo.allRated) {
+              allRated = false;
+            }
 
-          if (!scoreInfo.allRated) {
-            allRated = false;
-          }
+            if (scoreInfo.score !== null) {
+              avg += scoreInfo.score;
+              tot++;
+              queryScores[scorable.queryId] = {
+                score:    scoreInfo.score,
+                maxScore: scoreInfo.maxScore,
+                text:     scorable.queryText,
+                numFound: scorable.numFound,
+              };
+            } else {
+              queryScores[scorable.queryId] = {
+                score:    '',
+                maxScore: scoreInfo.maxScore,
+                text:     scorable.queryText,
+                numFound: scorable.numFound,
+              };
+            }
 
-          if (scoreInfo.score !== null) {
-            avg += scoreInfo.score;
-            tot++;
-            queryScores[scorable.queryId] = {
-              score:    scoreInfo.score,
-              maxScore: scoreInfo.maxScore,
-              text:     scorable.queryText,
-              numFound: scorable.numFound,
-            };
-          } else {
-            queryScores[scorable.queryId] = {
-              score:    '',
-              maxScore: scoreInfo.maxScore,
-              text:     scorable.queryText,
-              numFound: scorable.numFound,
-            };
-          }
+            return scoreInfo;
+          }));
         });
 
-        if (tot > 0) {
-          avg = avg/tot;
-        }
+        return $q.all(promises).then(function() {
+          if (tot > 0) {
+            avg = avg/tot;
+          }
 
-        return {
-          'allRated': allRated,
-          'score':    avg,
-          'queries':  queryScores,
-        };
+          svc.latestScoreInfo = {
+            'allRated': allRated,
+            'score':    avg,
+            'queries':  queryScores,
+          };
+
+          $scope.$emit('scoring-complete');
+
+          return svc.latestScoreInfo;
+        });
       };
 
       this.setDiffSetting = function(diffSetting) {
@@ -908,8 +1130,9 @@ angular.module('QuepidApp')
           query.setDirty();
         });
 
-        this.scoreAll();
-        svcVersion++;
+        svc.scoreAll().then(function() {
+          svcVersion++;
+        });
       };
 
       /*jslint latedef:false*/

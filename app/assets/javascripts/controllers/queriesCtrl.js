@@ -4,6 +4,8 @@
 angular.module('QuepidApp')
   .controller('queriesCtrl', [
     '$scope',
+    '$rootScope',
+    '$q',
     '$log',
     '$location',
     '$routeParams',
@@ -16,6 +18,8 @@ angular.module('QuepidApp')
     'customScorerSvc',
     function (
       $scope,
+      $rootScope,
+      $q,
       $log,
       $location,
       $routeParams,
@@ -27,6 +31,11 @@ angular.module('QuepidApp')
       caseSvc,
       customScorerSvc
     ) {
+      $scope.queriesSvc = queriesSvc;
+
+      $rootScope.$on('scoring-complete', () => {
+        $scope.queries.avgQuery.calcScore();
+      });
 
       // Options for ui-sortable at http://api.jqueryui.com/sortable/
       var sortableOptions = {
@@ -122,14 +131,17 @@ angular.module('QuepidApp')
           resultObject = {};
         }
 
-        resultObject.lastScore = queriesSvc.scoreAll();
-        lastVersion            = queriesSvc.version();
+        // This triggers a refresh in qscore
+        resultObject.currentScore = queriesSvc.latestScoreInfo;
+
+        resultObject.lastScore    = resultObject.currentScore.score;
+        lastVersion               = queriesSvc.version();
 
         if (
-          resultObject.lastScore &&
+          angular.isNumber(resultObject.lastScore) &&
           resultObject.lastScore !== -1
         ) {
-          var scoreInfo = resultObject.lastScore;
+          var scoreInfo = resultObject.currentScore;
 
           // TODO: This seems bugged, maybe force specification of max score?
           // Fetch the potential total max score by averaging
@@ -156,7 +168,7 @@ angular.module('QuepidApp')
       var lastVersion = -1;
       var avgQuery = {
         lastScore: -1,
-        score: function() {
+        calcScore: function() {
           // rescore only if
           // - there are no unscored queries
           // - we seem to have a new version of the query service
@@ -166,12 +178,18 @@ angular.module('QuepidApp')
             runScore(this);
             saveScoring();
           }
-
-          return this.lastScore;
+        },
+        score: () => {
+          var deferred = $q.defer();
+          deferred.resolve($scope.queries.avgQuery.diff.currentScore);
+          return deferred.promise;
         },
         diff: {
           score: function() {
-            return queriesSvc.scoreAllDiffs();
+            return queriesSvc.scoreAllDiffs().then( (scoreInfo) => {
+              $scope.queries.avgQuery.diff.currentScore = scoreInfo;
+              return scoreInfo;
+            });
           }
         }
         //var diff: null, // TODO fill out

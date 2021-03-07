@@ -69,8 +69,14 @@ angular.module('QuepidApp')
         angular.forEach(queries, function(query) {
           docs[query.queryId] = [];
 
+          // Save all matches
           angular.forEach(query.docs, function(doc) {
-            docs[query.queryId].push({'id': doc.id, 'explain': doc.explain().rawStr()});
+            docs[query.queryId].push({'id': doc.id, 'explain': doc.explain().rawStr(), 'rated_only': false});
+          });
+
+          // Save rated only matches
+          angular.forEach(query.ratedDocs, function(doc) {
+            docs[query.queryId].push({'id': doc.id, 'explain': doc.explain().rawStr(), 'rated_only': true});
           });
         });
 

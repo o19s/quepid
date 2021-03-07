@@ -2,5 +2,5 @@
 
 json.query query.query_text
 json.ratings do
-  query.ratings.each { |rating| json.set! rating.doc_id, rating.rating }
+  query.ratings.fully_rated.each { |rating| json.set! rating.doc_id, rating.rating }
 end

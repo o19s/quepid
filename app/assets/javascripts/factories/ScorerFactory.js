@@ -3,11 +3,11 @@
 (function() {
   angular.module('QuepidApp')
     .factory('ScorerFactory', [
-      '$q', '$timeout', '$log',
+      '$q', '$timeout',
       ScorerFactory
     ]);
 
-  function ScorerFactory($q, $timeout, $log) {
+  function ScorerFactory($q, $timeout) {
     var Scorer = function(data) {
       var self = this;
       var defaultAlgorithm = [
@@ -81,30 +81,6 @@
 
       var DEFAULT_NUM_DOCS = 10;
 
-      /*jshint unused:false */
-      function pass() {
-        throw 100;
-      }
-
-      function fail() {
-        throw 0;
-      }
-
-      function setScore(score) {
-        throw score;
-      }
-
-      function assert(cond) {
-        if (!cond) {
-          fail();
-        }
-      }
-
-      function assertOrScore(cond, score) {
-        if (!cond) {
-          setScore(score);
-        }
-      }
 
       // public functions
       function getColors() {
@@ -378,9 +354,11 @@
         return deferred.promise;
       }
 
-      function runCode(total, docs, bestDocs, mode, options) {
+      function runCode(query, total, docs, bestDocs, mode, options) {
         var scale     = self.scale;
         var max       = scale[scale.length-1];
+
+        var scorerDeferred = $q.defer();
 
         // Normalize how you get the rating of a doc
         angular.forEach(bestDocs, function(doc) {
@@ -421,6 +399,23 @@
           }
           return true;
         };
+
+        var ratedDocAt = function(posn) {
+          if (posn >= query.ratedDocs.length) {
+            return {};
+          } else {
+            return query.ratedDocs[posn];
+          }
+        };
+
+
+        var ratedDocExistsAt = function(posn) {
+          if (posn >= query.ratedDocs.length) {
+            return false;
+          }
+          return true;
+        };
+
 
         /*jshint unused:false */
         var hasDocRating = function(posn) {
@@ -467,6 +462,24 @@
           }
         };
 
+        var eachRatedDoc = function(f, count) {
+          if ( angular.isUndefined(count) ) {
+            count = DEFAULT_NUM_DOCS;
+          }
+
+          var i = 0;
+          for (i = 0; i < count; i++) {
+            if (ratedDocExistsAt(i)) {
+              f(ratedDocAt(i), i);
+            }
+          }
+        };
+
+        var refreshRatedDocs = function(k) {
+          return query.refreshRatedDocs(k);
+        };
+
+
         // Loops through all docs that have a rating equal to the
         // param that is passed, and calls the callback function on
         // each doc.
@@ -506,69 +519,87 @@
           }
         };
 
-        try {
-          if (mode === 'max' && self.code.indexOf('pass()') > -1) {
-            throw 100;
-          }
+        /*jshint unused:false */
+        function pass() {
+          scorerDeferred.resolve(100);
+        }
 
+        function fail() {
+          scorerDeferred.reject(0);
+        }
+
+        function setScore(score) {
+          scorerDeferred.resolve(score);
+        }
+
+        function assert(cond) {
+          if (!cond) {
+            fail();
+          }
+        }
+
+        function assertOrScore(cond, score) {
+          if (!cond) {
+            setScore(score);
+          }
+        }
+
+
+        if (mode === 'max' && self.code.indexOf('pass()') > -1) {
+          return 100;
+        }
+
+        $timeout(function() {
           /*jshint evil:true */
           eval(self.code);
           /*jshint evil:false */
-        } catch (score) {
-          if (angular.isNumber(score)) {
-            return score;
-          } else {
-            if (!!score) { // true for not null or 0
-              $log.info('error in custom scorer');
-              $log.info(score);
-            }
-            self.error = score;
-            return null;
-          }
-        }
+        }, 1);
+
+        return scorerDeferred.promise;
       }
 
-      function maxScore(total, docs, bestDocs, options) {
-        if (self.manualMaxScore) {
-          return self.manualMaxScoreValue;
-        }
-
-        return runCode(total, docs, bestDocs, 'max', options);
+      function maxScore() {
+        return self.manualMaxScore ? self.manualMaxScore : self.scale[-1];
       }
 
-      function score(total, docs, bestDocs, options) {
-        var maxScore  = self.maxScore(total, docs, bestDocs, options);
-        var calcScore = self.runCode(
+      function score(query, total, docs, bestDocs, options) {
+        var maxScore  = self.maxScore();
+        return self.runCode(
+          query,
           total,
           docs,
           bestDocs,
           undefined,
           options
-        );
+        ).then(function(calcScore){
+          if (angular.isNumber(calcScore)) {
+            if (calcScore < 0 && calcScore === maxScore) {
+              return null;
+            }
 
-        if (angular.isNumber(calcScore)) {
-          if (calcScore < 0 && calcScore === maxScore) {
+            if (calcScore < 0) {
+              return 0;
+            }
+            else if (calcScore > maxScore) {
+              return maxScore;
+            }
+
+            if (maxScore === 0) {
+              return 0;
+            }
+
+            return calcScore;
+          } else {
+            self.error = calcScore;
             return null;
           }
-
-          if (calcScore < 0) {
-            return 0;
-          }
-          else if (calcScore > maxScore) {
-            return maxScore;
-          }
-
-          if (maxScore === 0) {
-            return 0;
-          }
-
-          return calcScore;
-        } else {
-          self.error = calcScore;
+        }, function(reject) {
+          self.error = reject;
           return null;
-        }
+        });
       }
     };
+
     return Scorer;
   }
 })();

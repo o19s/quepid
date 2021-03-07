@@ -138,6 +138,7 @@ ActiveRecord::Schema.define(version: 2020_12_23_161940) do
     t.integer "position"
     t.integer "snapshot_query_id"
     t.text "explain", limit: 16777215
+    t.boolean "rated_only", default: false, null: false
     t.index ["snapshot_query_id"], name: "snapshot_query_id"
   end
 

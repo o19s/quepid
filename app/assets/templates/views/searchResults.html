@@ -25,9 +25,9 @@
     </h2>
 
     <span class='pull-right total-results'>
-      {{query.numFound}}
+      <count-up ng-data="query.getNumFound()" ng-model="numFound" steps="5" time="500" />
       <small class="text-muted">
-        <ng-pluralize count="query.numFound"
+        <ng-pluralize count="query.getNumFound()"
             when="{'0': 'Results',
                    'one': 'Result',
                    'other': 'Results'}">
@@ -151,5 +151,39 @@
         </span>
       </div>
     </div>
+
+    <!-- Rated only search results -->
+    <div ng-if="queriesSvc.showOnlyRated" ng-show="displayed.results == displayed.resultsView.results">
+      <search-result explain-viewport="'#query-container'" explain-view="'full'" class="search-result" ng-repeat="doc in query.ratedDocs track by doc.id" max-doc-score="query.maxDocScore()" doc="doc" field-spec="query.fieldSpec" rank="{{$index + 1}}" query="query" doc-id="doc.id">
+      </search-result>
+
+      <div class='row'>
+        <span class="glyphicon glyphicon-chevron-up text-primary" ng-click="query.toggle()" data-toggle="tooltip"  title="Close the results pane"></span>
+        <span ng-if="query.getNumFound() > query.ratedDocs.length">
+          <a
+            ng-show='query.getNumFound() > query.ratedDocs.length'
+            class="btn btn-default"
+            ng-click="query.ratedPaginate()"
+          >
+            Peek at the next page of results
+          </a>
+        </span>
+
+        <span ng-if="selectedTry.searchEngine == 'solr'">
+          <a ng-show="query.state() !== 'error'" class="btn btn-primary" href="{{query.browseUrl()}}" target="_blank">
+            <ng-pluralize count="query.getNumFound()"
+                when="{'0': 'Browse {} Results on Solr',
+                       'one': 'Browse {} Result on Solr',
+                       'other': 'Browse {} Results on Solr'}">
+            </ng-pluralize>
+          </a>
+        </span>
+
+        <span class="text-muted text-warning bg-warning clearfix">
+          <strong>Note:</strong> You are only viewing documents that have been rated
+        </span>
+      </div>
+    </div>
+
   </div>
 </div>

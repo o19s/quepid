@@ -26,6 +26,7 @@ import_rating_3:
   query:  :import_ratings_query
   rating: 5
 
+
 kirk_rating_1:
   user:  :kirk
   query:  :star
@@ -61,3 +62,12 @@ luke_rating_3:
   query:  :star
   doc_id: 'star_man'
   rating: 2
+
+rating_with_rating:
+  doc_id: '123'
+  query:  :query_with_empty_ratings
+  rating: 5
+
+rating_without_rating:
+  doc_id: '234'
+  query:  :query_with_empty_ratings

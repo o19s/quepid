@@ -53,7 +53,7 @@ Below is information related to developing the Quepid open source project, prima
   - [Seed Data](#seed-data)
 - [Data Map](#data-map)
 - [App Structure](#app-structure)
-- [Legal Pages](#legal-pages)
+- [Operating Documentation](#operating-documentation)
 - [Credits](#credits)
 
 <!-- /MarkdownTOC -->
@@ -202,10 +202,12 @@ If you get `Error: `Rails` cops have been extracted to the `rubocop-rails` gem.`
 Rubocop has some magic "auto correction" features for simple/common issues, so you can just run it with autocorrect enabled:
 
 ```
-bin/docker r bundle exec rubocop --auto-correct
+bin/docker r bundle exec rubocop --auto-correct-all
 ```
 
 Now check in your fixes to GitHub!
+
+If there is a new "Cop" as they call their rules that we don't like, you can add it to the `./rubocop.yml` file.
 
 ### All Tests
 
@@ -388,7 +390,7 @@ See more details on the wiki at https://github.com/o19s/quepid/wiki/Troubleshoot
 
 # Dev Errata
 
-## I'd like to use a new Node module
+## I'd like to use a new Node module, or update a existing one
 
 Typically you would simply do:
 
@@ -396,7 +398,13 @@ Typically you would simply do:
 bin/docker r yarn add foobar
 ```
 
-which will install the new Node module, and then save that dependency to `package.json`.
+or
+
+```
+bin/docker r yarn upgrade foobar
+```
+
+which will install/upgrade the Node module, and then save that dependency to `package.json`.
 
 Then check in the updated `package.json` and `yarn.lock` files.
 
@@ -451,6 +459,16 @@ bin/docker r bundle exec bin/rails g migration FixCuratorVariablesTriesForeignKe
 
 Followed by `bin/docker r bundle exec rake db:migrate`
 
+## Updating RubyGems
+
+Modify the file `Gemfile` and then run:
+
+```
+bin/docker r bundle install
+```
+
+You will see a updated `Gemfile.lock`, go ahead and check it and `Gemfile` into Git.
+
 
 # QA
 
@@ -458,6 +476,7 @@ There is a code deployment pipeline to the http://quepid-staging.herokuapp.com s
 is run on successful commits to `master`.  
 
 If you have pending migrations you will need to run them via:
+
 ```
 heroku run bin/rake db:migrate -a quepid-staging
 heroku restart -a quepid-staging
@@ -488,24 +507,16 @@ Check out the [Data Mapping](docs/data_mapping.md) file for more info about the 
 
 Check out the [App Structure](docs/app_structure.md) file for more info on how Quepid is structured.
 
-# Legal Pages & GDPR
+# Operating Documentation
 
-If you would like to have legal pages linked in the footer of the app, similar to behavior on http://app.quepid.com,
-add the following `ENV` vars:
+Check out the [Operating Documentation](docs/operating_documentation.md) file for more informations how Quepid can be operated and configured for your company.
 
-```
-TC_URL      # terms and condition
-PRIVACY_URL # privacy policy
-COOKIES_URL # cookies policy
-```
+# Thank You's
 
-To comply with GDPR, and be a good citizen, the hosted version of Quepid asks if they are willing to receive Quepid related updates via email.  This feature isn't useful to private installs, so this controls the display.
+Quepid would not be possible without the contributions from many individuals and organizations.   
 
-```
-EMAIL_MARKETING_MODE=true   # Enables a checkbox on user signup to consent to emails
-```
-
-
-# Credits
+Specifically we would like to thank Erik Bugge and the folks at Kobler for funding the Only Rated feature released in Quepid [6.4.0](https://github.com/o19s/quepid/releases/tag/v6.4.0).
 
 Quepid wasn't always open source!  Check out the [credits](docs/credits.md) for a list of contributors to the project.
+
+If you would like to fund development of a new feature for Quepid do [get in touch](http://www.opensourceconnections.com/contact/)!

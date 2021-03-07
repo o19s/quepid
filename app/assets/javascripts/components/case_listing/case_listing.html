@@ -40,7 +40,7 @@
   </div>
 
   <div class="col-xs-1">
-    {{ ctrl.thisCase.lastTry }}
+     {{ ctrl.thisCase.lastTry }}
   </div>
 
   <div class="col-xs-1">
@@ -48,11 +48,20 @@
   </div>
 
   <div class="col-xs-1">
-    <last-score score="ctrl.thisCase.lastScore"></last-score>
+    {{ ctrl.thisCase.lastScore.score }}
+
+    <span ng-show="ctrl.thisCase.lastScore.all_rated === false" class='text-warning' title="Hop to it!  There are unrated results!">
+      <i class="fa fa-frog"></i>
+    </span>
   </div>
 
   <div class="col-xs-1">
+    <span ng-show="ctrl.thisCase.lastScore.created_at">
     {{ ctrl.thisCase.lastScore.created_at | timeAgo }}
+    </span>
+    <span ng-hide="ctrl.thisCase.lastScore.created_at">
+    Never Run
+    </span>
   </div>
 
   <div class="col-xs-2">
