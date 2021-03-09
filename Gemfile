@@ -29,7 +29,6 @@ gem 'puma_worker_killer'
 gem 'pundit'
 gem 'rails', '~> 5.2.4', '>= 5.2.4.4'
 gem 'responders'
-gem 'sass-rails', '>= 5'
 gem 'sidekiq'
 gem 'uglifier', '>= 1.3.0'
 gem 'bootsnap', '~> 1.5'
@@ -66,3 +65,5 @@ group :test do
   gem 'webmock'
   gem 'rails-controller-testing' # bring back compatibility with rails 4 assigns in controller tests.
 end
+
+gem "sassc-rails", "~> 2.1"
