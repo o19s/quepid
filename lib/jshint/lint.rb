@@ -72,7 +72,7 @@ module Jshint
       # These files are converted from coffee script, and fail JavaScript lint checking.
       # I am skipping them via this terrible way because I can't get JSHint exclude_paths to work.
       # They should be fixed to pass jshint!
-      files_to_skip = ['user_pulse.js', 'tour.js']
+      files_to_skip = [ 'user_pulse.js', 'tour.js' ]
       js_asset_files = []
       file_paths.each do |path|
         Dir.glob(path) do |file|
