@@ -26,10 +26,7 @@ jobs:
 
     steps:
       - checkout
-#      - run:
-#          name: Disable xdebug
-#          command: sudo sed -i 's/^zend_extension/;zend_extension/g' /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini      
-
+    
       - run:
           name: Specify bundler!
           command: gem install bundler:1.17.3
