@@ -48,6 +48,10 @@ Rails.application.configure do
   # Print deprecation notices to the stderr.
   config.active_support.deprecation = :stderr
 
+  config.assets.configure do |env|
+    env.export_concurrent = false
+  end
+
   # Set to :debug instead of :info to see SQL
   config.log_level = :info
 
