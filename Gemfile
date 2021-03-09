@@ -10,6 +10,7 @@ gem 'acts_as_list', '>= 1.0.1'
 gem 'angular-rails-templates', '>= 1.0.0.beta'
 gem 'bcrypt', '~> 3.1.7'
 gem 'bootstrap-sass'
+gem 'sassc-rails', '~> 2.1'
 gem 'turbolinks', '~> 5'
 gem 'colorize', require: false
 gem 'cookies_eu'
@@ -41,8 +42,6 @@ source 'https://rails-assets.org' do
   gem 'rails-assets-d3', '~> 3.5.5'
 end
 
-gem 'derailed_benchmarks', group: :development
-
 group :development, :test do
   gem 'annotate'
   gem 'bullet'
@@ -53,6 +52,7 @@ group :development, :test do
 end
 
 group :development do
+  gem 'derailed_benchmarks'
   gem 'letter_opener'
   gem 'rubocop', require: false
   gem 'rubocop-rails', require: false
@@ -65,5 +65,3 @@ group :test do
   gem 'webmock'
   gem 'rails-controller-testing' # bring back compatibility with rails 4 assigns in controller tests.
 end
-
-gem "sassc-rails", "~> 2.1"
