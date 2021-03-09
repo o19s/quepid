@@ -246,6 +246,12 @@ Rails.logger object.inspect
 
 If that's not enough and you want to run a debugger, the `byebug` gem is included for that. Add `byebug` wherever you want a breakpoint and then run the code.
 
+Also, we have the `derailed` gem available which helps you understand memory issues.
+
+```
+bin/docker r bundle exec derailed bundle:mem
+```
+
 ### Debugging JS
 
 While running the application, you can debug the javascript using your favorite tool, the way you've always done it.
@@ -397,7 +403,7 @@ which will install/upgrade the Node module, and then save that dependency to `pa
 
 Then check in the updated `package.json` and `yarn.lock` files.
 
-## I'd like to use a new Ruby Gem
+## I'd like to use a new Ruby Gem, or update a existing one
 
 Typically you would simply do:
 
@@ -407,7 +413,13 @@ bin/docker r bundle add foobar
 
 which will install the new Gem, and then save that dependency to `Gemfile`.
 
-Then check in the updated `package.json` and `yarn.lock` files.  For good measure
+You can also upgrade a gem via:
+
+```
+bin/docker r bundle update foobar
+```
+
+Then check in the updated `Gemfile` and `Gemfile.lock` files.  For good measure
 run the `bin/setup_docker`.
 
 
