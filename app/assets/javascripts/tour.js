@@ -1,3 +1,6 @@
+
+'use strict';
+
 /*
  * decaffeinate suggestions:
  * DS102: Remove unnecessary code created because of implicit returns
@@ -21,8 +24,8 @@ this.setupTour = function() {
       text:    'Exit',
       classes: 'shepherd-button-secondary',
       action:   tour.cancel
-    }
-    , {
+    },
+    {
       text:    'Next',
       action:  tour.next,
       classes: 'shepherd-button-example-primary'
@@ -38,8 +41,8 @@ this.setupTour = function() {
       text:    'Back',
       classes: 'shepherd-button-secondary',
       action:  tour.back
-    }
-    , {
+    },
+    {
       text:   'Next',
       action: tour.next,
       classes: 'shepherd-button-example-primary'
@@ -68,8 +71,8 @@ this.setupTour = function() {
       text:    'Back',
       classes: 'shepherd-button-secondary',
       action:  tour.back
-    }
-    , {
+    },
+    {
       text:   'Next',
       action: tour.next
     }
@@ -84,8 +87,8 @@ this.setupTour = function() {
       text:    'Back',
       classes: 'shepherd-button-secondary',
       action:  tour.back
-    }
-    , {
+    },
+    {
       text:   'Next',
       action: tour.next
     }
@@ -120,8 +123,8 @@ this.setupTour = function() {
       text:    'Back',
       classes: 'shepherd-button-secondary',
       action:  tour.back
-    }
-    , {
+    },
+    {
       text:   'Next',
       action: tour.next
     }
