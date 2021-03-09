@@ -10,7 +10,6 @@ gem 'acts_as_list', '>= 1.0.1'
 gem 'angular-rails-templates', '>= 1.0.0.beta'
 gem 'bcrypt', '~> 3.1.7'
 gem 'bootstrap-sass', '~> 3.3.5'
-gem 'coffee-rails', '~> 4.2'
 gem 'turbolinks', '~> 5'
 gem 'colorize', require: false
 gem 'cookies_eu'
@@ -42,6 +41,8 @@ source 'https://rails-assets.org' do
   gem 'rails-assets-cal-heatmap'
   gem 'rails-assets-d3', '~> 3.5.5'
 end
+
+gem 'derailed_benchmarks', group: :development
 
 group :development, :test do
   gem 'annotate'
