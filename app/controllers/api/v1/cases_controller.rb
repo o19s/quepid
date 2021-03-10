@@ -18,15 +18,16 @@ module Api
         if archived
           @no_tries = true
           @no_teams = true
-          @cases = Case.where(archived: archived, user_id: current_user.id)
-            .all
+          @cases = Case.where(archived: archived, user_id: current_user.id).all
         else
-          @cases = current_user.cases_involved_with.includes(:teams, :tries, :cases_teams).not_archived
-
           if 'last_viewed_at' == sort_by
-            @cases = @cases.limit(3).order(Arel.sql('`case_metadata`.`last_viewed_at` DESC, `cases`.`id`'))
+            @cases = current_user.cases_involved_with.preload(:tries).not_archived.order(Arel.sql('`case_metadata`.`last_viewed_at` DESC, `cases`.`id`')).limit(3)
+            #@cases = @cases.limit(3).order(Arel.sql('`case_metadata`.`last_viewed_at` DESC, `cases`.`id`'))
           elsif sort_by
-            @cases = @cases.order(sort_by)
+            @cases = current_user.cases_involved_with.preload( :tries).not_archived.order(sort_by)
+            #@cases = @cases.order(sort_by)
+          else
+            @cases = current_user.cases_involved_with.preload(:tries).not_archived
           end
 
           @cases = @cases.all
