@@ -10,7 +10,7 @@ module Api
 
       def index
         @teams = current_user.teams_im_in
-        @teams = @teams.includes(:scorers, :members, :cases, :owner).all
+        @teams = @teams.preload(:scorers, :members, :cases, :owner).all
 
         respond_with @teams
       end
