@@ -5,9 +5,7 @@ no_tries ||= false
 no_teams ||= false
 
 unless no_teams
-  teams = acase.teams.find_all do |o|
-    current_user.teams.all.include?(o) || o.owner_id == current_user.id
-  end
+  teams = acase.teams.find_all { |t| current_user.teams.all.include?(t) || t.owner_id == current_user.id }
 end
 
 json.case_name        acase.case_name
