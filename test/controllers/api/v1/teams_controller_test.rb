@@ -190,7 +190,7 @@ module Api
           names = teams.map { |team| team['name'] }
           ids = teams.map { |team| team['id'] }
 
-          assert_equal teams.length,        user.teams_im_in.all.length
+          assert_equal teams.length,        user.teams.length
           assert_includes names,            the_team.name
           assert_includes ids,              the_team.id
         end
@@ -206,7 +206,7 @@ module Api
           names = teams.map { |team| team['name'] }
           ids = teams.map { |team| team['id'] }
 
-          assert_equal    teams.length,     user.teams_im_in.all.length
+          assert_equal    teams.length,     user.teams.all.length
           assert_includes names,            shared_team.name
           assert_includes ids,              shared_team.id
         end
