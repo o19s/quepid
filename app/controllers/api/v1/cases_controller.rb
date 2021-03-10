@@ -8,6 +8,8 @@ module Api
       before_action :check_case, only: [ :show, :update, :destroy ]
 
       # rubocop:disable Metrics/MethodLength
+      # rubocop:disable Metrics/AbcSize
+      # I should fix above.
       def index
         bool = ActiveRecord::Type::Boolean.new
 
@@ -20,15 +22,16 @@ module Api
           @no_teams = true
           @cases = Case.where(archived: archived, user_id: current_user.id).all
         else
-          if 'last_viewed_at' == sort_by
-            @cases = current_user.cases_involved_with.preload(:tries).not_archived.order(Arel.sql('`case_metadata`.`last_viewed_at` DESC, `cases`.`id`')).limit(3)
-            #@cases = @cases.limit(3).order(Arel.sql('`case_metadata`.`last_viewed_at` DESC, `cases`.`id`'))
-          elsif sort_by
-            @cases = current_user.cases_involved_with.preload( :tries).not_archived.order(sort_by)
-            #@cases = @cases.order(sort_by)
-          else
-            @cases = current_user.cases_involved_with.preload(:tries).not_archived
-          end
+          @cases = if 'last_viewed_at' == sort_by
+                     current_user.cases_involved_with.preload(:tries).not_archived
+                       .order(Arel.sql('`case_metadata`.`last_viewed_at` DESC, `cases`.`id`')).limit(3)
+                     # @cases = @cases.limit(3).order(Arel.sql('`case_metadata`.`last_viewed_at` DESC, `cases`.`id`'))
+                   elsif sort_by
+                     current_user.cases_involved_with.preload( :tries).not_archived.order(sort_by)
+                     # @cases = @cases.order(sort_by)
+                   else
+                     current_user.cases_involved_with.preload(:tries).not_archived
+                   end
 
           @cases = @cases.all
         end
@@ -36,6 +39,7 @@ module Api
         respond_with @cases
       end
       # rubocop:enable Metrics/MethodLength
+      # rubocop:enable Metrics/AbcSize
 
       def create
         @case = current_user.cases.build case_params

@@ -83,7 +83,7 @@ class Case < ApplicationRecord
         `teams_members`.`member_id` = ? OR `cases`.`user_id` = ?
     ', user.id, user.id)
   }
-  #scope :for_user, ->(user) {
+  # scope :for_user, ->(user) {
   #  joins('
   #    LEFT OUTER JOIN `case_metadata` ON `case_metadata`.`case_id` = `cases`.`id`
   #    LEFT OUTER JOIN `teams_cases` ON `teams_cases`.`case_id` = `cases`.`id`
@@ -93,7 +93,7 @@ class Case < ApplicationRecord
   #  ').where('
   #      `teams`.`owner_id` = ? OR `teams_members`.`member_id` = ? OR `cases`.`user_id` = ?
   #  ', user.id, user.id, user.id)
-  #}
+  # }
 
   # rubocop:disable Metrics/MethodLength
   # rubocop:disable Metrics/ParameterLists

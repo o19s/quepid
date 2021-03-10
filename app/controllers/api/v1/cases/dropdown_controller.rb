@@ -5,7 +5,6 @@ module Api
     module Cases
       class DropdownController < Api::ApiController
         # rubocop:disable Metrics/MethodLength
-        # rubocop:disable Layout/LineLength
         def index
           # Using joins/includes will not return the proper list in the
           # correct order because rails refuses to include the
@@ -34,12 +33,11 @@ module Api
           end
 
           # map to objects
-          @cases = Case.where(id: [ case_ids ])
+          @cases = Case.includes(:tries).where(id: [ case_ids ])
           @cases = @cases.sort_by { |x| case_ids.index x.id }
 
           respond_with @cases
         end
-        # rubocop:enable Layout/LineLength
         # rubocop:enable Metrics/MethodLength
       end
     end
