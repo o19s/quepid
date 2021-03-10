@@ -5,8 +5,11 @@ class UserCaseFinder
 
   def initialize user
     @user = user
-    @cases = Case.preload(:metadata, teams: [ :members ])
-      .references(:teams, :users, :metadata)
+    #@cases = Case.preload(:metadata, teams: [ :members ])
+    #  .references(:teams, :users, :metadata)
+    #  .for_user(@user)
+    # I think the above preload was casuing you maybe to load every metadata and team the user ever had?   Dunno.
+    @cases = Case.references(:teams, :users)
       .for_user(@user)
   end
 
