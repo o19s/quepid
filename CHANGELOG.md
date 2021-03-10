@@ -16,6 +16,8 @@
 
 * Pay down some tech debt by removing our use of Coffee Script in Quepid.  https://github.com/o19s/quepid/pull/283 by @epugh.
 
+* Build time on CircleCI dropped from ~135 seconds down to ~105 seconds by removing `sass` gem in favour of `sassc`.  https://github.com/o19s/quepid/pull/285 by @epugh.
+
 ### Bugs
 
 * You can export a rating that has no actual rating value chosen! https://github.com/o19s/quepid/pull/266 by @epugh fixes https://github.com/o19s/quepid/issues/265.
