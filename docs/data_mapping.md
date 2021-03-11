@@ -36,4 +36,4 @@ Quepid provides scorers that are written by the OSC team for everyone to use, th
 
 ## Diagram
 
-See the [model diagram](erd.pdf).
+See the [model diagram](erd.png).

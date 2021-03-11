@@ -511,6 +511,8 @@ where type is one of the following:
 
 Check out the [Data Mapping](docs/data_mapping.md) file for more info about the data structure of the app.
 
+Rebuild the [ERD](docs/erd.png) via `bin/docker r bundle exec rake erd:image`
+
 # App Structure
 
 Check out the [App Structure](docs/app_structure.md) file for more info on how Quepid is structured.

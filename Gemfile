@@ -56,6 +56,7 @@ group :development do
   gem 'letter_opener'
   gem 'rubocop', require: false
   gem 'rubocop-rails', require: false
+  gem "rails-erd", "~> 1.6"
 end
 
 group :test do
