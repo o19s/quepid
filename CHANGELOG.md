@@ -20,6 +20,8 @@
 
 * We have simplified our queries that involve cases and users that are part of teams by making the simplifying assumption that all owners of teams are also members, which turns out to be true in practice.   We also have audited our use of `.includes` to load child objects (avoiding the N+1 problem), and used more `.preload` to try and deal with running out of temp space in our database.   https://github.com/o19s/quepid/pull/286 by @epugh.
 
+* Turns out we had a [ERD](docs/erd.png) diagram all along, but it was hidden.  Now you can see it on our [Data Mapping](docs/datamapping.md) page, plus we have how to recreate it documented and integrated.  https://github.com/o19s/quepid/pull/287 by @epugh.
+
 ### Bugs
 
 * You can export a rating that has no actual rating value chosen! https://github.com/o19s/quepid/pull/266 by @epugh fixes https://github.com/o19s/quepid/issues/265.
