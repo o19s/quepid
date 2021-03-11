@@ -29,7 +29,8 @@ module Authentication
       @case = current_user
         .cases_involved_with
         .where(id: params[:case_id])
-        .includes([ queries: [ :ratings, :test, :scorer ], tries: [ :curator_variables ] ])
+        .includes(:tries )
+        .preload([ queries: [ :ratings, :test, :scorer ], tries: [ :curator_variables ] ])
         .order('tries.try_number DESC')
         .first
     end

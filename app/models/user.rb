@@ -139,11 +139,6 @@ class User < ApplicationRecord
     UserCaseFinder.new(self)
   end
 
-  # Returns all the teams that the user is both owner of and involved in!
-  def teams_im_in
-    UserTeamFinder.new(self)
-  end
-
   def locked?
     true == locked
   end

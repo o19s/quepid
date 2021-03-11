@@ -4,11 +4,7 @@ shallow  ||= false
 no_tries ||= false
 no_teams ||= false
 
-unless no_teams
-  teams = acase.teams.find_all do |o|
-    current_user.teams.all.include?(o) || o.owner_id == current_user.id
-  end
-end
+teams = acase.teams.find_all { |t| current_user.teams.all.include?(t) } unless no_teams
 
 json.case_name        acase.case_name
 json.caseNo           acase.id
