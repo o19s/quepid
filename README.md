@@ -200,7 +200,7 @@ bin/docker r bundle exec rubocop
 Rubocop can often autocorrect many of the lint issues it runs into via `--auto-correct-all`:
 
 ```
- bin/docker r bundle exec rubocop --auto-correct-all
+bin/docker r bundle exec rubocop --auto-correct-all
 ```
 
 If there is a new "Cop" as they call their rules that we don't like, you can add it to the `./rubocop.yml` file.
@@ -510,6 +510,8 @@ where type is one of the following:
 # Data Map
 
 Check out the [Data Mapping](docs/data_mapping.md) file for more info about the data structure of the app.
+
+Rebuild the [ERD](docs/erd.png) via `bin/docker r bundle exec rake erd:image`
 
 # App Structure
 
