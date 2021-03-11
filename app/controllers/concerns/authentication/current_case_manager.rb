@@ -15,7 +15,7 @@ module Authentication
     end
 
     def set_case
-      @case = current_user.cases.where(id: params[:case_id]).first
+      @case = current_user.cases_involved_with.where(id: params[:case_id]).first
     end
 
     # Fetches case that a user can view and query.
