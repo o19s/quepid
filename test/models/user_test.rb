@@ -34,13 +34,6 @@ class UserTest < ActiveSupport::TestCase
     assert_includes users(:doug).owned_teams, teams(:valid)
   end
 
-  test 'search for cases I can access' do
-    doug = users(:doug)
-    assert_not_nil doug.find_case(cases(:one).id)
-    assert_not_nil doug.find_case(cases(:shared_through_owned_team).id)
-    assert_not_nil doug.find_case(cases(:shared_with_team).id)
-  end
-
   describe 'Defaults' do
     test 'are set when user is created' do
       user = User.create(email: 'defaults@email.com', password: 'password')
