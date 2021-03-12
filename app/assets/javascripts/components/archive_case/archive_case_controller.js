@@ -23,7 +23,7 @@ angular.module('QuepidApp')
       ctrl.retrieveTooltip   = retrieveTooltip;
 
       function archiveCase() {
-        caseSvc.deleteCase(ctrl.thisCase).then(
+        caseSvc.archiveCase(ctrl.thisCase).then(
           function () {
             flash.success = 'Case archived successfully.';
           }, function (data) {

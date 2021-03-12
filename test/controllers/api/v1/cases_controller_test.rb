@@ -146,7 +146,8 @@ module Api
           end
 
           test 'return a forbidden error' do
-            delete :destroy, params: { case_id: the_case.id }
+            #delete :destroy, params: { case_id: the_case.id }
+            post :update, params: { case_id: the_case.id, archived: true }
 
             assert_response :forbidden
           end
@@ -159,11 +160,55 @@ module Api
             count_unarchived  = doug.cases.where(archived: false).count
             count_archived    = doug.cases.where(archived: true).count
 
-            delete :destroy, params: { case_id: one.id }
-            assert_response :no_content
+            put :update, params: { case_id: one.id, archived: true }
+            assert_response :ok
 
             assert_equal count_unarchived - 1,  doug.cases.where(archived: false).count
             assert_equal count_archived + 1,    doug.cases.where(archived: true).count
+          end
+        end
+
+        describe 'analytics' do
+          let(:one) { cases(:one) }
+
+          test 'posts event' do
+            expects_any_ga_event_call
+
+            perform_enqueued_jobs do
+              put :update, params: { case_id: one.id, archived: true }
+              assert_response :ok
+            end
+          end
+        end
+      end
+
+      describe 'Deleting a case' do
+        describe 'when it is the last/only case' do
+          let(:matt)      { users(:matt) }
+          let(:the_case)  { cases(:matt_case) }
+
+          before do
+            login_user matt
+          end
+
+          test 'return a forbidden error' do
+            delete :destroy, params: { case_id: the_case.id }
+
+            assert_response :forbidden
+          end
+        end
+
+        describe 'when it is not the last/only case' do
+          let(:one) { cases(:one) }
+
+          test 'successfully deletes the case' do
+            count_cases  = doug.cases.count
+
+            delete :destroy, params: { case_id: one.id }
+            assert_response :no_content
+
+            doug.cases.reload
+            assert_equal count_cases - 1,  doug.cases.count
           end
         end
 
@@ -221,7 +266,7 @@ module Api
             count_unarchived  = doug.cases.where(archived: false).count
             count_archived    = doug.cases.where(archived: true).count
 
-            patch :update, params: { case_id: one.id, archived: false }
+            post :update, params: { case_id: one.id, archived: false }
             assert_response :ok
 
             one.reload
@@ -235,7 +280,7 @@ module Api
             count_unarchived  = doug.cases.where(archived: false).count
             count_archived    = doug.cases.where(archived: true).count
 
-            put :update, params: { case_id: one.id, archived: false }
+            post :update, params: { case_id: one.id, archived: false }
             assert_response :ok
 
             one.reload
