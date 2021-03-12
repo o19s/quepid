@@ -145,11 +145,11 @@ module Api
             login_user matt
           end
 
-          test 'return a forbidden error' do
-            #delete :destroy, params: { case_id: the_case.id }
+          test 'is perfectly okay, which is a different than before!' do
+            # delete :destroy, params: { case_id: the_case.id }
             post :update, params: { case_id: the_case.id, archived: true }
 
-            assert_response :forbidden
+            assert_response :ok
           end
         end
 
@@ -191,10 +191,9 @@ module Api
             login_user matt
           end
 
-          test 'return a forbidden error' do
+          test 'is perfectly okay, it was old orthodoxy that every user has a case' do
             delete :destroy, params: { case_id: the_case.id }
-
-            assert_response :forbidden
+            assert_response :no_content
           end
         end
 
@@ -202,13 +201,13 @@ module Api
           let(:one) { cases(:one) }
 
           test 'successfully deletes the case' do
-            count_cases  = doug.cases.count
+            count_cases = doug.cases.count
 
             delete :destroy, params: { case_id: one.id }
             assert_response :no_content
 
             doug.cases.reload
-            assert_equal count_cases - 1,  doug.cases.count
+            assert_equal count_cases - 1, doug.cases.count
           end
         end
 
