@@ -67,7 +67,7 @@
 
       function formattedName() {
         if (self.name.includes('Try ' + self.tryNo)){
-          return self.name
+          return self.name;
         }
         else {
           return self.name + ' - Try ' + self.tryNo;
