@@ -8,7 +8,7 @@
                 ng-repeat="try in settings.tries"
                 ng-style="{'background-color': ['#666', '#64647D', '#667A66'][urlBucket(try.searchUrl, 3)]}" >
                 <button ng-click="tryDetails(try); $event.stopPropagation()" type="button" class="btn btn-circle try-details">...</button>
-                <span>{{try.name}}</span>
+                <span>{{try.formattedName()}}</span>
                 {{try.queryParams.slice(0,200)}}...
                 <span>using {{ try.searchEngine | searchEngineName }} {{urlBucket(try.searchUrl, 30) + 1}}</span>
             </li>
