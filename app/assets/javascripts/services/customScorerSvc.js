@@ -87,8 +87,6 @@
 
         function create(scorer) {
           // http POST /api/scorers
-          console.log("HEre is raw scorer");
-          console.log(scorer);
           var url   = '/api/scorers';
           var data  = {
             'name':                   scorer.name,
