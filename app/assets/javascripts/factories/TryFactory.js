@@ -17,10 +17,6 @@
     var Try = function(data) {
       // This method converts the response from the API to angular objects.
       var self  = this;
-      if ( data.searchEngine !== undefined ) {
-        console.log('Data object creating Try has a searchEngine!');
-        console.log(data);
-      }
 
       if ( angular.isUndefined(data.search_engine) ) {
         console.log('We have an undefined data.search_engine so setting to Solr, should this ever happen?');
