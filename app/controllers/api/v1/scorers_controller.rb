@@ -201,7 +201,7 @@ module Api
           :communal,
           :scale,
           scale_with_labels: [],
-          scale: []
+          scale:             []
         )
       end
 

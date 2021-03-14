@@ -35,10 +35,10 @@ module Arrangement
       if list.blank?
         List.bootstrap(self)
       elsif reverse
-        previous_node = list.where(id: previous_node_id).first
+        previous_node = list.find_by(id: previous_node_id)
         List.prepend(self, previous_node)
       else
-        previous_node = list.where(id: previous_node_id).first
+        previous_node = list.find_by(id: previous_node_id)
         List.arrange_after(previous_node, self)
       end
 
