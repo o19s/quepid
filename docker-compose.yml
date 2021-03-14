@@ -21,6 +21,9 @@ services:
       dockerfile: Dockerfile.dev
     env_file:
       - .env
+    environment:
+      - LAUNCHY_DRY_RUN=true # dev only letter_opener gem wants to open a browser
+      - BROWSER=/dev/null
     volumes:
       - .:/srv/app
     ports:
