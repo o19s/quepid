@@ -80,7 +80,7 @@ module Api
       # rubocop:enable Metrics/MethodLength
 
       def destroy
-        @case.destroy
+        @case.really_destroy
         Analytics::Tracker.track_case_deleted_event current_user, @case
 
         render json: {}, status: :no_content

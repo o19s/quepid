@@ -42,7 +42,7 @@ class Case < ApplicationRecord
   # rubocop:disable Rails/InverseOf
   has_many   :queries,  -> { order(arranged_at: :asc) },
              autosave:  true,
-             dependent: :delete_all
+             dependent: :destroy
   # rubocop:enable Rails/InverseOf
 
   has_many   :scores,   -> { order(updated_at:  :desc) },
@@ -53,7 +53,8 @@ class Case < ApplicationRecord
              dependent: :destroy
 
   has_many   :annotations,
-             through: :scores
+             through:   :scores,
+             dependent: :destroy
 
   has_many   :user_scorers, -> { where(communal: false) }, through: :queries, source: :scorer
 
@@ -83,17 +84,15 @@ class Case < ApplicationRecord
         `teams_members`.`member_id` = ? OR `cases`.`user_id` = ?
     ', user.id, user.id)
   }
-  # scope :for_user, ->(user) {
-  #  joins('
-  #    LEFT OUTER JOIN `case_metadata` ON `case_metadata`.`case_id` = `cases`.`id`
-  #    LEFT OUTER JOIN `teams_cases` ON `teams_cases`.`case_id` = `cases`.`id`
-  #    LEFT OUTER JOIN `teams` ON `teams`.`id` = `teams_cases`.`team_id`
-  #    LEFT OUTER JOIN `teams_members` ON `teams_members`.`team_id` = `teams`.`id`
-  #    LEFT OUTER JOIN `users` ON `users`.`id` = `teams_members`.`member_id`
-  #  ').where('
-  #      `teams`.`owner_id` = ? OR `teams_members`.`member_id` = ? OR `cases`.`user_id` = ?
-  #  ', user.id, user.id, user.id)
-  # }
+
+  # Not proud of this method, but it's the only way I can get the dependent
+  # objects of a Case to actually delete!
+  def really_destroy
+    snapshots.destroy_all
+    queries.unscoped.where(case_id: id).destroy_all
+    tries.destroy_all
+    destroy
+  end
 
   # rubocop:disable Metrics/MethodLength
   # rubocop:disable Metrics/ParameterLists

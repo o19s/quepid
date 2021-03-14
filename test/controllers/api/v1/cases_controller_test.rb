@@ -146,7 +146,6 @@ module Api
           end
 
           test 'is perfectly okay, which is a different than before!' do
-            # delete :destroy, params: { case_id: the_case.id }
             post :update, params: { case_id: the_case.id, archived: true }
 
             assert_response :ok
