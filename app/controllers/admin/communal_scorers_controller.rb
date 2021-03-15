@@ -80,7 +80,7 @@ module Admin
         :show_scale_labels,
         :scale_list,  # alternate approach to the scale:[] array used in admin only
         :state,
-        scale: [],
+        scale:             [],
         scale_with_labels: {}
       )
     end
