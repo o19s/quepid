@@ -55,7 +55,7 @@ angular.module('QuepidApp')
           navTryNo = parseInt(caseTryObj.tryNo, 10);
         }
         else if (caseTryObj.hasOwnProperty('caseNo')) {
-          navTryNo = 0;
+          navTryNo = 1;
         }
 
         $location.search({'sort': sortBy, 'reverse': sortOrder});
