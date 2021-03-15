@@ -144,8 +144,8 @@ angular.module('QuepidApp')
       };
 
       this.createCase = function(caseName, queries, tries) {
-        // http post /cases/
-        // returns as if we did http get /cases/<caseNo>
+        // HTTP POST /api/cases
+        // returns as if we did HTTP GET /cases/<caseNo>
         // on success, sets current case number to case number
         var data = {'case_name': 'Case: ' + this.casesCount};
         if (caseName) {
@@ -172,7 +172,6 @@ angular.module('QuepidApp')
 
             // TODO: see if this is still necessary!
             settingsSvc.setSettings(caseTries, newCase.lastTry);
-
             caseTryNavSvc.navigateTo(caseTryObj);
           }, function(){
             caseTryNavSvc.notFound();
