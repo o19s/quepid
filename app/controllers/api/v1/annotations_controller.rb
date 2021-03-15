@@ -70,10 +70,9 @@ module Api
         params.require(:score).permit(
           :all_rated,
           :score,
-          :try_id
-        ).tap do |whitelisted|
-          whitelisted[:queries] = params[:score][:queries] if params[:score][:queries]
-        end
+          :try_id,
+          queries: []
+        )
       end
     end
   end

@@ -79,12 +79,10 @@ module Admin
         :manual_max_score_value,
         :show_scale_labels,
         :scale_list,
-        :scale,
         :state,
-        scale: []
-      ).tap do |whitelisted|
-        whitelisted[:scale_with_labels] = params[:scorer][:scale_with_labels]
-      end
+        scale: [],
+        scale_with_labels: {}
+      )
     end
 
     def set_scorer

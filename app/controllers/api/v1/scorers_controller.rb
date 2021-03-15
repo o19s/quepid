@@ -199,9 +199,8 @@ module Api
           :manual_max_score_value,
           :show_scale_labels,
           :communal,
-          :scale,
-          scale_with_labels: [],
-          scale:             []
+          scale:             [],
+          scale_with_labels: {}
         )
       end
 
