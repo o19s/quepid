@@ -78,7 +78,7 @@ module Admin
         :manual_max_score,
         :manual_max_score_value,
         :show_scale_labels,
-        :scale_list,
+        :scale_list,  # alternate approach to the scale:[] array used in admin only
         :state,
         scale: [],
         scale_with_labels: {}

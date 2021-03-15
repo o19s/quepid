@@ -137,22 +137,6 @@ module Admin
 
         assert_equal scale.sort, scorer.scale
       end
-
-      test 'accepts scale as a string' do
-        scale = [ 1, 2, 3, 4 ]
-
-        post :create, params: { scorer: { scale: scale.join(',') } }
-
-        assert_redirected_to admin_communal_scorer_path(assigns(:scorer))
-
-        scorer = Scorer.last
-
-        assert_nil scorer.code
-        assert_not_nil scorer.name
-        assert_not_nil scorer.scale
-
-        assert_equal scale.sort, scorer.scale
-      end
     end
 
     describe 'Updates scorer' do

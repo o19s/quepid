@@ -161,25 +161,6 @@ module Api
           assert_equal false,                         scorer['queryTest']
         end
 
-        test 'accepts scale as a string' do
-          scale = [ 1, 2, 3, 4 ]
-
-          post :create, params: { scorer: { scale: scale.join(',') } }
-
-          assert_response :ok
-
-          scorer = JSON.parse(response.body)
-
-          assert_not_nil scorer['scorerId']
-          assert_nil scorer['code']
-          assert_not_nil scorer['name']
-          assert_equal [ 1, 2, 3, 4 ], scorer['scale']
-
-          assert_equal user.id,                       scorer['owner_id']
-          assert_equal scale.sort,                    scorer['scale']
-          assert_equal false,                         scorer['queryTest']
-        end
-
         test 'sets scorer as a test for a query' do
           query = queries(:one)
 
