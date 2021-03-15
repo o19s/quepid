@@ -3,7 +3,7 @@
 /*jshint latedef:false*/
 
 angular.module('QuepidApp')
-  .controller('DeleteCaseCtrl', [
+  .controller('ArchiveCaseCtrl', [
     '$scope',
     '$uibModal',
     'flash',
@@ -16,18 +16,18 @@ angular.module('QuepidApp')
     ) {
       var ctrl = this;
 
-      ctrl.thisCase         = $scope.thisCase;
-      ctrl.checkIfOnlyCase  = checkIfOnlyCase;
-      ctrl.deleteCase       = deleteCase;
-      ctrl.openDeleteModal  = openDeleteModal;
-      ctrl.retrieveTooltip  = retrieveTooltip;
+      ctrl.thisCase          = $scope.thisCase;
+      ctrl.checkIfOnlyCase   = checkIfOnlyCase;
+      ctrl.archiveCase       = archiveCase;
+      ctrl.openArchiveModal  = openArchiveModal;
+      ctrl.retrieveTooltip   = retrieveTooltip;
 
-      function deleteCase() {
-        caseSvc.deleteCase(ctrl.thisCase).then(
+      function archiveCase() {
+        caseSvc.archiveCase(ctrl.thisCase).then(
           function () {
-            flash.success = 'Case deleted successfully.';
+            flash.success = 'Case archived successfully.';
           }, function (data) {
-            var message = 'Oooops! Could not delete the case. ';
+            var message = 'Oooops! Could not archive the case. ';
             message += data.message;
             flash.error = message;
           }
@@ -46,16 +46,16 @@ angular.module('QuepidApp')
 
       function retrieveTooltip() {
         if(ctrl.checkIfOnlyCase()){
-          return 'Can\'t delete the only case';
+          return 'Can\'t archive the only case';
         } else {
-          return 'Delete';
+          return 'Archive';
         }
       }
 
-      function openDeleteModal() {
+      function openArchiveModal() {
         var modalInstance = $uibModal.open({
-          templateUrl:  'delete_case/_modal.html',
-          controller:   'DeleteCaseModalInstanceCtrl',
+          templateUrl:  'archive_case/_modal.html',
+          controller:   'ArchiveCaseModalInstanceCtrl',
           controllerAs: 'ctrl',
           size:         'sm',
           resolve:      {
@@ -65,9 +65,9 @@ angular.module('QuepidApp')
           }
         });
 
-        modalInstance.result.then(function (deleteClicked) {
-          if( deleteClicked ){
-            ctrl.deleteCase();
+        modalInstance.result.then(function (archiveClicked) {
+          if( archiveClicked ){
+            ctrl.archiveCase();
           }
         });
       }

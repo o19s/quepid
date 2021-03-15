@@ -46,6 +46,7 @@ class Query < ApplicationRecord
             presence: true
 
   # Scopes
+  # Lot of folks say don't use default_scopes since if you do case.queries you down't see deleted queries!
   default_scope -> { where(deleted: false).or(where(deleted: nil)) }
 
   # TODO: use the acts_as_paranoid gem instead

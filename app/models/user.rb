@@ -117,13 +117,6 @@ class User < ApplicationRecord
   # Scopes
   # default_scope -> { includes(:permissions) }
 
-  # returns and owned or shared case for this user
-  def find_case case_id
-    cases.find_by(id: case_id) ||
-      owned_team_cases.find_by(id: case_id) ||
-      shared_team_cases.find_by(id: case_id)
-  end
-
   def num_queries
     queries.count
   end

@@ -200,10 +200,9 @@ module Api
           :show_scale_labels,
           :communal,
           :scale,
-          scale: []
-        ).tap do |whitelisted|
-          whitelisted[:scale_with_labels] = params[:scorer][:scale_with_labels]
-        end
+          scale_with_labels: [],
+          scale:             []
+        )
       end
 
       def set_scorer

@@ -57,12 +57,18 @@ module Api
         respond_with @case
       end
 
+      # rubocop:disable Metrics/MethodLength
       def update
         update_params = case_params
 
         update_params[:scorer_id] = Scorer.system_default_scorer.id if default_scorer_removed? update_params
-
-        if @case.update update_params
+        bool = ActiveRecord::Type::Boolean.new
+        archived = bool.deserialize(params[:archived]) || false
+        if archived
+          @case.mark_archived!
+          Analytics::Tracker.track_case_archived_event current_user, @case
+          respond_with @case
+        elsif @case.update update_params
           Analytics::Tracker.track_case_updated_event current_user, @case
           respond_with @case
         else
@@ -71,16 +77,13 @@ module Api
       rescue ActiveRecord::InvalidForeignKey
         render json: { error: 'Invalid id' }, status: :bad_request
       end
+      # rubocop:enable Metrics/MethodLength
 
       def destroy
-        if current_user.cases.count > 1
-          @case.mark_archived!
-          Analytics::Tracker.track_case_archived_event current_user, @case
+        @case.really_destroy
+        Analytics::Tracker.track_case_deleted_event current_user, @case
 
-          respond_with @case
-        else
-          render json: { error: 'Cannot archive last or only case!' }, status: :forbidden
-        end
+        render json: {}, status: :no_content
       end
 
       private

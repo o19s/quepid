@@ -144,8 +144,8 @@ angular.module('QuepidApp')
       };
 
       this.createCase = function(caseName, queries, tries) {
-        // http post /cases/
-        // returns as if we did http get /cases/<caseNo>
+        // HTTP POST /api/cases
+        // returns as if we did HTTP GET /cases/<caseNo>
         // on success, sets current case number to case number
         var data = {'case_name': 'Case: ' + this.casesCount};
         if (caseName) {
@@ -172,7 +172,6 @@ angular.module('QuepidApp')
 
             // TODO: see if this is still necessary!
             settingsSvc.setSettings(caseTries, newCase.lastTry);
-
             caseTryNavSvc.navigateTo(caseTryObj);
           }, function(){
             caseTryNavSvc.notFound();
@@ -194,8 +193,27 @@ angular.module('QuepidApp')
           });
       };
 
-      this.undeleteCase = function(caseToUndelete) {
-        var caseNumber  = caseToUndelete.caseNo;
+      this.archiveCase = function(caseToArchive) {
+        var caseNumber  = caseToArchive.caseNo;
+        var url         = '/api/cases/' + caseNumber;
+        var data        = { archived: true };
+
+        return $http.put(url, data)
+          .then(function(response) {
+            var data    = response.data;
+            var newCase = new Case(data);
+
+            svc.allCases.push(newCase);
+            svc.archived = svc.archived.filter( function(acase) {
+              acase.caseNo !== newCase.caseNo;
+            });
+
+            broadcastSvc.send('updatedCasesList', svc.allCases);
+          });
+      };
+
+      this.unarchiveCase = function(caseToUnarchive) {
+        var caseNumber  = caseToUnarchive.caseNo;
         var url         = '/api/cases/' + caseNumber;
         var data        = { archived: false };
 

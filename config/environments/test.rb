@@ -49,7 +49,7 @@ Rails.application.configure do
   config.active_support.deprecation = :stderr
 
   # Set to :debug instead of :info to see SQL
-  config.log_level = :info
+  config.log_level = :debug
 
   config.after_initialize do
     Bullet.enable = true

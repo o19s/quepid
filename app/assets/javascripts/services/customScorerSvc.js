@@ -85,19 +85,19 @@
           return angular.equals(first, second);
         }
 
-        function create(data) {
+        function create(scorer) {
           // http POST /api/scorers
           var url   = '/api/scorers';
+          var data  = {
+            'name':                   scorer.name,
+            'code':                   scorer.code,
+            'scale':                  scorer.scale,
+            'manual_max_score':       scorer.manualMaxScore,
+            'manual_max_score_value': scorer.manualMaxScoreValue,
+            'show_scale_labels':      scorer.showScaleLabels,
+            'scale_with_labels':      scorer.scaleWithLabels,
+          };
 
-          data.manual_max_score       = data.manualMaxScore;
-          data.manual_max_score_value = data.manualMaxScoreValue;
-          data.show_scale_labels      = data.showScaleLabels;
-          data.scale_with_labels      = data.scaleWithLabels;
-
-          delete data.manualMaxScore;
-          delete data.manualMaxScoreValue;
-          delete data.showScaleLabels;
-          delete data.scaleWithLabels;
 
           return $http.post(url, { 'scorer': data })
             .then(function(response) {

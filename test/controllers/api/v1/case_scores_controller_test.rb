@@ -181,6 +181,8 @@ module Api
         end
 
         test 'returns the last created/updated score' do
+          # This test sometimes fails due to timing issues, and we should
+          # harden it.
           get :show, params: { case_id: acase.id }
 
           assert_response :ok

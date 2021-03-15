@@ -183,7 +183,6 @@ module Api
           get :index
 
           assert_response :ok
-
           body  = JSON.parse(response.body)
           teams = body['teams']
 
@@ -199,7 +198,6 @@ module Api
           get :index
 
           assert_response :ok
-
           body  = JSON.parse(response.body)
           teams = body['teams']
 
@@ -221,6 +219,9 @@ module Api
 
           # sometimes it's the first team, sometimes it's the second team in the array.
           assert_not_empty(teams.find { |team| 'Team shared with Team Finder User' == team['name'] }['cases'])
+          assert_equal 1, teams.find { |team|
+                            'Team shared with Team Finder User' == team['name']
+                          } ['cases'][0]['last_try_number']
         end
       end
     end
