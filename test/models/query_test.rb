@@ -13,8 +13,6 @@
 #  threshold      :float(24)
 #  threshold_enbl :boolean
 #  case_id        :integer
-#  scorer_id      :integer
-#  scorer_enbl    :boolean
 #  created_at     :datetime         not null
 #  updated_at     :datetime         not null
 #  options        :text(65535)
@@ -210,34 +208,6 @@ class QueryTest < ActiveSupport::TestCase
       ids     = queries.map(&:id)
 
       assert_includes ids, query.id
-    end
-  end
-
-  describe 'test' do
-    let(:query) { queries(:one) }
-
-    test 'adds a new test' do
-      mytest = Scorer.new(code: 'pass();', query_test: true)
-      query.test = mytest
-      query.save
-
-      query.reload
-
-      assert_not_nil query.test
-      assert_equal 'pass();', query.test.code
-    end
-
-    test 'always fetches the last test' do
-      query.test = Scorer.new(code: 'pass();', query_test: true)
-      query.save
-      query.reload
-
-      query.test = Scorer.new(code: 'fail();', query_test: true)
-      query.save
-      query.reload
-
-      assert_not_nil query.test
-      assert_equal 'fail();', query.test.code
     end
   end
 

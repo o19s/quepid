@@ -87,7 +87,7 @@ ActiveRecord::Schema.define(version: 2021_03_16_172643) do
     t.datetime "updated_at", null: false
   end
 
-  create_table "queries", id: :integer, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8", force: :cascade do |t|
+  create_table "queries", id: :integer, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin", force: :cascade do |t|
     t.bigint "arranged_next"
     t.bigint "arranged_at"
     t.boolean "deleted"
@@ -112,7 +112,7 @@ ActiveRecord::Schema.define(version: 2021_03_16_172643) do
     t.index ["query_id"], name: "query_id"
   end
 
-  create_table "scorers", id: :integer, options: "ENGINE=InnoDB DEFAULT CHARSET=latin1", force: :cascade do |t|
+  create_table "scorers", id: :integer, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin", force: :cascade do |t|
     t.text "code"
     t.string "name"
     t.integer "owner_id"

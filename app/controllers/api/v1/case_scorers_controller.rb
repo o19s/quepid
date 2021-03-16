@@ -8,10 +8,9 @@ module Api
 
       def index
         @default           = @case.scorer
-        @user_scorers      = @case.user_scorers
         @communal_scorers  = Scorer.communal
 
-        respond_with @user_scorers, @communal_scorers, @default
+        respond_with @communal_scorers, @default
       end
 
       def update

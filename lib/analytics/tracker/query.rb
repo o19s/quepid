@@ -27,13 +27,6 @@ module Analytics
         Analytics::GA.user_updated_query_options user, query
       end
 
-      def track_query_scorer_updated_event user, query, scorer
-        Analytics::GA.user_updated_query_scorer user, query, scorer
-      end
-
-      def track_query_scorer_deleted_event user, query
-        Analytics::GA.user_deleted_query_scorer user, query
-      end
     end
   end
 end

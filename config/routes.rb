@@ -90,7 +90,6 @@ Rails.application.routes.draw do
             resource  :notes,     only: [ :show, :update ]
             resource  :options,   only: [ :show, :update ]
             resource  :position,  only: [ :update ]
-            resource  :scorer,    only: [ :show, :update, :destroy ]
             resource  :threshold, only: [ :update ]
             resource  :ratings,   only: [ :update, :destroy ] # not actually a singular resource, doc_id in json payload
           end

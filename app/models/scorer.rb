@@ -9,8 +9,6 @@
 #  name                   :string(191)
 #  owner_id               :integer
 #  scale                  :string(255)
-#  query_test             :boolean
-#  query_id               :integer
 #  manual_max_score       :boolean          default(FALSE)
 #  manual_max_score_value :integer          default(100)
 #  show_scale_labels      :boolean          default(FALSE)
@@ -34,8 +32,6 @@ class Scorer < ApplicationRecord
   has_and_belongs_to_many :teams,
                           join_table: 'teams_scorers'
   # rubocop:enable Rails/HasAndBelongsToMany
-
-  belongs_to :query, inverse_of: :test, optional: true # only applies to unit test style scorers.
 
   # Validations
   validates_with ScaleValidator
@@ -68,7 +64,6 @@ class Scorer < ApplicationRecord
 
   after_initialize do |scorer|
     scorer.scale      = []       if scorer.scale.blank?
-    scorer.query_test = false    if scorer.query_test.blank?
 
     # This is not always accurate since a scorer can be deleted and thus
     # we could presumably have two scorers with the same name.

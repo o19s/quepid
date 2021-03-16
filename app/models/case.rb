@@ -56,8 +56,6 @@ class Case < ApplicationRecord
              through:   :scores,
              dependent: :destroy
 
-  has_many   :user_scorers, -> { where(communal: false) }, through: :queries, source: :scorer
-
   # Validations
   validates :case_name, presence: true
   validates_with ScorerExistsValidator

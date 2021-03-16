@@ -9,8 +9,7 @@ module Api
       before_action :check_query, only: [ :update, :destroy ]
 
       def index
-        @queries = @case.queries
-          .includes([ :ratings, :test, :scorer ])
+        @queries = @case.queries.includes([ :ratings ])
 
         @display_order = @queries.map(&:id)
 
