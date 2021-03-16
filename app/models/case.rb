@@ -73,16 +73,26 @@ class Case < ApplicationRecord
   # Scopes
   scope :not_archived, -> { where('`cases`.`archived` = false OR `cases`.`archived` IS NULL') }
 
-  scope :for_user, ->(user) {
+  scope :for_user3, ->(user) {
     joins('
-      LEFT OUTER JOIN `case_metadata` ON `case_metadata`.`case_id` = `cases`.`id`
       LEFT OUTER JOIN `teams_cases` ON `teams_cases`.`case_id` = `cases`.`id`
       LEFT OUTER JOIN `teams` ON `teams`.`id` = `teams_cases`.`team_id`
       LEFT OUTER JOIN `teams_members` ON `teams_members`.`team_id` = `teams`.`id`
       LEFT OUTER JOIN `users` ON `users`.`id` = `teams_members`.`member_id`
     ').where('
-        `teams_members`.`member_id` = ? OR `cases`.`user_id` = ?
-    ', user.id, user.id)
+        `teams_members`.`member_id` = ?
+    ', user.id)
+  }
+
+  scope :for_user4, ->(user) {
+    where('
+        `cases`.`user_id` = ?
+    ',  user.id)
+  }
+
+  scope :for_user, ->(user) {
+    ids = for_user3(user).pluck(:id) + for_user4(user).pluck(:id)
+    where(id: ids.uniq)
   }
 
   # Not proud of this method, but it's the only way I can get the dependent

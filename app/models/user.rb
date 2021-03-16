@@ -127,9 +127,9 @@ class User < ApplicationRecord
   end
 
   # This method returns not just the cases the user is the owner of, which .cases
-  # does, but also via being in a team, those cases as well.
+  # does, but also via being in a team, those team cases as well.
   def cases_involved_with
-    UserCaseFinder.new(self)
+    Case.for_user(self)
   end
 
   def locked?

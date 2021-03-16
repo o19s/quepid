@@ -23,17 +23,13 @@ module Api
           @cases = Case.where(archived: archived, user_id: current_user.id).all
         else
           @cases = if 'last_viewed_at' == sort_by
-                     current_user.cases_involved_with.preload(:tries).not_archived
+                     current_user.cases_involved_with.not_archived.includes(:metadata).references(:metadata)
                        .order(Arel.sql('`case_metadata`.`last_viewed_at` DESC, `cases`.`id`')).limit(3)
-                     # @cases = @cases.limit(3).order(Arel.sql('`case_metadata`.`last_viewed_at` DESC, `cases`.`id`'))
                    elsif sort_by
                      current_user.cases_involved_with.preload( :tries).not_archived.order(sort_by)
-                     # @cases = @cases.order(sort_by)
                    else
-                     current_user.cases_involved_with.preload(:tries).not_archived
+                     current_user.cases_involved_with.preload(:tries, :teams, :cases_teams).not_archived
                    end
-
-          @cases = @cases.all
         end
 
         respond_with @cases
