@@ -24,6 +24,8 @@
 
 * You can now Delete a case altogether!  Historically we had an Archive function, so that you could restore an old case.  However, if you are like me, you create lots and lots of throwaway cases, so this allows you to clean up your Quepid setup.  This PR also fixed some data modeling issues, and the problem of sometimes have a Try of zero, instead of the default first try of One!   We also always include the Try number even if you have named the Try, since that is a big deal.  https://github.com/o19s/quepid/pull/288 by @epugh fixes https://github.com/o19s/quepid/issues/250.  Thanks @DmitryKey for help QA'ing this code.
 
+* Remove obscure `quepidIf.js` file that doesn't seem to do anything.  https://github.com/o19s/quepid/pull/293 by @worleydl.
+
 ### Bugs
 
 * You can export a rating that has no actual rating value chosen! https://github.com/o19s/quepid/pull/266 by @epugh fixes https://github.com/o19s/quepid/issues/265.
