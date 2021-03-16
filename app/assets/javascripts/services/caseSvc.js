@@ -329,7 +329,7 @@ angular.module('QuepidApp')
       /*jslint latedef:false*/
       function getCases (deep) {
         deep = deep || false;
-        // http get /api/cases
+        // HTTP GET /api/cases
         var url = '/api/cases';
 
         if (deep) {
