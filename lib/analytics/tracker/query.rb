@@ -26,7 +26,6 @@ module Analytics
       def track_query_options_updated_event user, query
         Analytics::GA.user_updated_query_options user, query
       end
-
     end
   end
 end

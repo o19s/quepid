@@ -63,7 +63,7 @@ class Scorer < ApplicationRecord
   serialize :scale_with_labels, JSON
 
   after_initialize do |scorer|
-    scorer.scale      = []       if scorer.scale.blank?
+    scorer.scale      = [] if scorer.scale.blank?
 
     # This is not always accurate since a scorer can be deleted and thus
     # we could presumably have two scorers with the same name.
