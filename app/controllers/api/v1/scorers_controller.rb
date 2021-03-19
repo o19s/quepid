@@ -8,7 +8,7 @@ module Api
       before_action :check_communal_scorers_only, only: [ :create, :update, :destroy ]
 
       def index
-        @user_scorers = current_user.scorers.all unless Rails.application.config.communal_scorers_only
+        @user_scorers = current_user.scorers.all.reject { | scorer | scorer.communal? } unless Rails.application.config.communal_scorers_only
         @communal_scorers = Scorer.communal
 
         respond_with @user_scorers, @communal_scorers

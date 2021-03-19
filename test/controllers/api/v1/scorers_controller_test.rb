@@ -520,6 +520,7 @@ module Api
       describe 'Fetches scorers' do
         let(:owned_scorer)     { scorers(:owned_scorer) }
         let(:shared_scorer)    { scorers(:shared_scorer) }
+        let(:communal_scorer)  { scorers(:quepid_default_scorer) }
 
         test 'returns all scorers owned by user and those shared through teams' do
           get :index
@@ -568,9 +569,15 @@ module Api
 
           assert_includes scorers['user_scorers'], expected_owned_response
           assert_includes scorers['user_scorers'], expected_shared_response
+
+          ids = scorers['user_scorers'].map { |s| s['scorerId'] }
+
+          assert_not_includes ids, communal_scorer.id
+
+
         end
 
-        test 'respects communal_Scorers_only environment setting' do
+        test 'respects communal_scorers_only environment setting' do
           Rails.application.config.communal_scorers_only = true
 
           get :index
