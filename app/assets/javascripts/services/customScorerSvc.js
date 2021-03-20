@@ -193,7 +193,6 @@
               if(!contains(self.scorers, scorer)) {
                 self.scorers.push(scorer);
               }
-              console.log("Scorerss size is " + self.scorers.length);
             });
 
             angular.forEach(data.communal_scorers, function(scorerData) {
@@ -246,7 +245,6 @@
           var deferred = $q.defer();
           scorer = self.constructFromData(scorer);
 
-          console.log('default set');
           self.defaultScorer = scorer;
           deferred.resolve();
 
