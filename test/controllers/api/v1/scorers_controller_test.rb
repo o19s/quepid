@@ -573,8 +573,6 @@ module Api
           ids = scorers['user_scorers'].map { |s| s['scorerId'] }
 
           assert_not_includes ids, communal_scorer.id
-
-
         end
 
         test 'respects communal_scorers_only environment setting' do
