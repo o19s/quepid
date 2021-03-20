@@ -67,16 +67,6 @@ describe('Filter: scorerType', function () {
     expect(results[0].name).toBe('Scorer 4 Custom Scorer');
   });
 
-  it('filters to just the non tests"', function () {
-    var results = scorerType(mockScorers, "not_test");
-    expect(results.length).toBe(2);
-  });
-
-  it('filters to just the tests"', function () {
-    var results = scorerType(mockScorers, "test");
-    expect(results.length).toBe(2);
-  });
-
   it('returns everything if you have a bogus filter"', function () {
     var results = scorerType(mockScorers, "fake-filter");
     expect(results.length).toBe(4);

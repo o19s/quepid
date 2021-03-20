@@ -193,6 +193,7 @@
               if(!contains(self.scorers, scorer)) {
                 self.scorers.push(scorer);
               }
+              console.log("Scorerss size is " + self.scorers.length);
             });
 
             angular.forEach(data.communal_scorers, function(scorerData) {

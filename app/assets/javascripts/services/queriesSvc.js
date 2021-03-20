@@ -162,14 +162,10 @@ angular.module('QuepidApp')
         self.caseNo         = caseNo;
         self.queryText      = queryWithRatings[qt];
         self.ratings        = {};
-        self.scorerId       = null;
-        self.scorerEnbl     = false;
-        self.scorer         = null;
         self.docs           = [];
         self.ratedDocs      = [];
         self.ratedDocsFound = 0;
         self.numFound       = 0;
-        self.test           = null;
         self.options        = {};
         self.notes          = queryWithRatings.notes;
 
@@ -196,22 +192,6 @@ angular.module('QuepidApp')
             self.scorerId = parseInt(queryWithRatings.scorerId, 10);
           } else {
             self.scorerId = queryWithRatings.scorerId;
-          }
-        }
-
-        // Figure out if the query has a test scorer
-        if (queryWithRatings.hasOwnProperty('test')) {
-          self.test = customScorerSvc.constructFromData(queryWithRatings.test);
-        }
-
-        // If scorer is enabled,  set it
-        if (queryWithRatings.hasOwnProperty('scorerEnbl') && queryWithRatings.scorerEnbl) {
-          if ( self.test !== null && self.test.scorerId === self.scorerId ) {
-            self.scorer     = self.test;
-            self.scorerEnbl = true;
-          } else if (queryWithRatings.scorer) {
-            self.scorerEnbl = true;
-            self.scorer     = customScorerSvc.constructFromData(queryWithRatings.scorer);
           }
         }
 
@@ -586,45 +566,6 @@ angular.module('QuepidApp')
               return response;
             }).catch(function(response) {
               $log.debug('Failed to fetch options');
-              return response;
-            });
-        };
-
-        this.saveScorer = function(scorer) {
-          var query = this;
-          var url   = '/api/cases/' + caseNo + '/queries/' + this.queryId + '/scorer';
-          var data  = {
-            scorer_id:   scorer.scorerId
-          };
-
-          return $http.put(url, data)
-            .then(function() {
-              query.scorer      = scorer;
-              query.scorerEnbl  = true;
-              that.setDirty();
-            }, function(response) {
-              $log.debug('Failed to save scorer: ', response);
-              return response;
-            }).catch(function(response) {
-              $log.debug('Failed to save scorer');
-              return response;
-            });
-        };
-
-        this.unassignScorer = function() {
-          var query = this;
-          var url   = '/api/cases/' + caseNo + '/queries/' + this.queryId + '/scorer';
-
-          return $http.delete(url)
-            .then(function() {
-              query.scorer      = null;
-              query.scorerEnbl  = false;
-              that.setDirty();
-            }, function(response) {
-              $log.debug('Failed to unassign scorer: ', response);
-              return response;
-            }).catch(function(response) {
-              $log.debug('Failed to unassign scorer');
               return response;
             });
         };

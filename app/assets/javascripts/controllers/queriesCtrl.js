@@ -318,7 +318,6 @@ angular.module('QuepidApp')
           resolve:     {
             parent: function() {
               return {
-                attachType:    'case',
                 attachTo:      queriesSvc,
                 currentScorer: customScorerSvc.defaultScorer,
               };
