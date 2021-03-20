@@ -64,8 +64,6 @@ angular.module('QuepidApp')
       function getLists() {
         $scope.advanced.communalScorers  = customScorerSvc.communalScorers;
         $scope.advanced.userScorers     = customScorerSvc.scorers;
-        console.log("In getLists");
-        console.log($scope.advanced.userScorers);
 
         // fixed a bug so that we shouldn't need this logic.
         angular.forEach($scope.advanced.userScorers, function(scorer) {
