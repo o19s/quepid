@@ -28,6 +28,8 @@
 
 * The Export All Cases feature only supported the old "Detail" format, and none of the other export formats, like LTR, Basic, or RRE.  Plus the filtering options of "All, Owned, Shared" was pretty simplistic.  It wasn't being used, and it added some complexity and performance issues to List All Cases page.   So we removed it.  https://github.com/o19s/quepid/pull/295 by @epugh fixes https://github.com/o19s/quepid/issues/294.
 
+* _Unit Test_ style custom scorers let you run a unit test that asserted specific things about specific docs at specific ranks in your search results.   This logic however was always convoluted, and only 15 people since 2019 have used it, and I suspect by accident ;-)   We want better ways of handling this type of function, so removing this to pay down some tech debt, simplify the database architecture, and open the door to new approach.  https://github.com/o19s/quepid/pull/296 by @epugh fixes https://github.com/o19s/quepid/issues/290.
+
 ### Bugs
 
 * You can export a rating that has no actual rating value chosen! https://github.com/o19s/quepid/pull/266 by @epugh fixes https://github.com/o19s/quepid/issues/265.
