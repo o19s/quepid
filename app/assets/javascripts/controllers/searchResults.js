@@ -22,8 +22,6 @@ angular.module('QuepidApp')
       };
 
       $scope.selectedTry  = settingsSvc.applicableSettings();
-      var scorerSelector  = 'pre';
-
 
       // Refresh rated-only docs if ratings have changed
       $rootScope.$on('rating-changed', function() {
@@ -31,12 +29,6 @@ angular.module('QuepidApp')
           $scope.query.refreshRatedDocs();
         }
       });
-
-      //$scope.$watch('query.effectiveScorer()', function() {
-
-      //    scorerSelector = 'pre';
-
-      //});
 
       $scope.overThreshold = function() {
         return $scope.query.lastScore && $scope.query.thresholdEnabled &&

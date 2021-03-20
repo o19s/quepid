@@ -21,8 +21,6 @@ angular.module('QuepidApp')
       $scope.communalScorers    = [];
       $scope.selectScorer       = selectScorer;
       $scope.usingDefaultScorer = usingDefaultScorer;
-      $scope.scorerSelector     = parent.scorerSelector;
-      $scope.okButtonLabel      = 'Select Scorer';
       $scope.communalScorersOnly = configurationSvc.isCommunalScorersOnly();
 
       if ($scope.activeScorer.scorerId && ($scope.activeScorer.scorerId !== 'default')) {
