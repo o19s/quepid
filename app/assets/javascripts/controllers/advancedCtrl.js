@@ -44,6 +44,7 @@ angular.module('QuepidApp')
       customScorerSvc.list()
         .then(function() {
           broadcastSvc.send('updatedScorersList');
+          getLists();
           $scope.loading = false;
         }, function(response) {
           flash.error = response.data.message;
@@ -63,12 +64,8 @@ angular.module('QuepidApp')
       function getLists() {
         $scope.advanced.communalScorers  = customScorerSvc.communalScorers;
         $scope.advanced.userScorers     = customScorerSvc.scorers;
-        //var nonTestUserScorers          = customScorerSvc.scorers.filter(function(scorer) {
-          //return scorer.queryTest === false;
-        //});
-        //array1.filter(val => !array2.includes(val));
 
-        //$scope.advanced.combinedScorers = $scope.advanced.communalScorers.concat(customScorerSvc.scorers);
+        // fixed a bug so that we shouldn't need this logic.
         angular.forEach($scope.advanced.userScorers, function(scorer) {
           if (!contains($scope.advanced.combinedScorers, scorer)) {
             $scope.advanced.combinedScorers.push(scorer);

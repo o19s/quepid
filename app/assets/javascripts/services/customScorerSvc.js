@@ -245,7 +245,6 @@
           var deferred = $q.defer();
           scorer = self.constructFromData(scorer);
 
-          console.log('default set');
           self.defaultScorer = scorer;
           deferred.resolve();
 

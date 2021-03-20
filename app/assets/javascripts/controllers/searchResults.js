@@ -22,12 +22,6 @@ angular.module('QuepidApp')
       };
 
       $scope.selectedTry  = settingsSvc.applicableSettings();
-      var scorerSelector  = 'pre';
-      if ( $scope.query.test !== null &&
-        $scope.query.effectiveScorer().scorerId === $scope.query.test.scorerId
-      ) {
-        scorerSelector = 'unit-test';
-      }
 
       // Refresh rated-only docs if ratings have changed
       $rootScope.$on('rating-changed', function() {
@@ -36,51 +30,12 @@ angular.module('QuepidApp')
         }
       });
 
-      $scope.$watch('query.effectiveScorer()', function() {
-        if ( $scope.query.test !== null &&
-          $scope.query.effectiveScorer().scorerId === $scope.query.test.scorerId
-        ) {
-          scorerSelector = 'unit-test';
-        } else {
-          scorerSelector = 'pre';
-        }
-      });
-
-      $scope.pickUnitTestScorer = function() {
-        $uibModal.open({
-          templateUrl:  'views/pick_unit_test_scorer.html',
-          backdrop:     'static',
-          controller:   'ScorerCtrl',
-          resolve:      {
-            parent: function() {
-              return {
-                attachType:     'query',
-                attachTo:       $scope.query,
-                currentScorer:  $scope.query.effectiveScorer(),
-                scorerSelector: scorerSelector
-              };
-            },
-          }
-        });
-      };
-
       $scope.overThreshold = function() {
         return $scope.query.lastScore && $scope.query.thresholdEnabled &&
           ($scope.query.lastScore < $scope.query.threshold);
       };
 
-      $scope.hasEnabledTest = function() {
-        return ($scope.query.test !== null && $scope.query.scorerEnbl);
-      };
-
       $scope.displayed = new DisplayConfig();
-      /*$scope.diff = {disable: function() {}};
-
-      $scope.$watch('displayed.results', function() {
-        if ($scope.displayed.results !== $scope.displayed.resultsView.diff) {
-          $scope.diff.disable();
-        }
-      });*/
 
       $scope.numFound = 0;
       $scope.query.getNumFound = function() {
