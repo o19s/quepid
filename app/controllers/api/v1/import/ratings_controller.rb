@@ -16,7 +16,7 @@ module Api
           file_format = 'hash' unless params[:file_format]
 
           bool = ActiveRecord::Type::Boolean.new
-          clear_queries  = bool.deserialize(params[:clear_queries]) || false
+          clear_queries = bool.deserialize(params[:clear_queries]) || false
 
           case file_format
           when 'hash'
@@ -63,7 +63,6 @@ module Api
               ratings << rating
             end
           end
-
 
           options = {
             format:         :hash,
