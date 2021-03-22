@@ -7,7 +7,6 @@
 #  id             :integer          not null, primary key
 #  arranged_next  :integer
 #  arranged_at    :integer
-#  deleted        :boolean
 #  query_text     :string(191)
 #  notes          :text(65535)
 #  threshold      :float(24)
@@ -174,20 +173,20 @@ class QueryTest < ActiveSupport::TestCase
     end
   end
 
-  describe 'Soft deletion' do
+  describe 'Deletion' do
     let(:query) { queries(:one) }
 
     test 'marks query as deleted but does not actually delete query' do
-      assert_difference 'Query.unscoped.where(deleted: true).count' do
-        query.soft_delete
-        query.reload
+      assert_difference 'Query.count', -1 do
+        query.destroy
 
-        assert_equal query.deleted, true
+        assert query.destroyed?
       end
     end
 
-    test 'does not fetch queries marked as deleted by default' do
-      query.soft_delete
+    test 'does not fetch queries destroyed' do
+      query.destroy
+      assert query.destroyed?
 
       queries = Query.all
       ids     = queries.map(&:id)
@@ -196,14 +195,6 @@ class QueryTest < ActiveSupport::TestCase
     end
 
     test 'returns query if deleted is marked as nil' do
-      queries = Query.all
-      ids     = queries.map(&:id)
-
-      assert_includes ids, query.id
-    end
-
-    test 'returns query if deleted is marked as false' do
-      query.update deleted: false
       queries = Query.all
       ids     = queries.map(&:id)
 

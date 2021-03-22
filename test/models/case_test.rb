@@ -237,10 +237,10 @@ class CaseTest < ActiveSupport::TestCase
       assert_not user.destroyed?
     end
 
-    it 'handles soft deleted queries' do
+    it 'handles destroyed queries' do
       assert_difference 'Query.count', -2 do
         assert_equal 2, the_case.queries.size
-        the_case.queries.first.soft_delete
+        the_case.queries.first.destroy
         assert_equal 1, the_case.queries.size
         the_case.really_destroy
         assert the_case.destroyed?

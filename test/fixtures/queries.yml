@@ -5,7 +5,6 @@
 #  id             :integer          not null, primary key
 #  arranged_next  :integer
 #  arranged_at    :integer
-#  deleted        :boolean
 #  query_text     :string(191)
 #  notes          :text(65535)
 #  threshold      :float(24)

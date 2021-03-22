@@ -117,15 +117,13 @@ module Api
                 { query_text: 'dog', doc_id: '456', rating: 3 }
               ],
             }
+            assert_not query.destroyed?
             assert_no_difference 'acase.queries.count' do
               post :create, params: data
 
               assert_response :ok
             end
-
-            query.reload
-
-            assert query.deleted
+            assert_not Query.exists?(query.id)
           end
         end
         describe '#create from RRE' do

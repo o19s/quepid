@@ -15,6 +15,9 @@ module Api
           file_format = params[:file_format]
           file_format = 'hash' unless params[:file_format]
 
+          bool = ActiveRecord::Type::Boolean.new
+          clear_queries  = bool.deserialize(params[:clear_queries]) || false
+
           case file_format
           when 'hash'
             # convert from ActionController::Parameters to a Hash, symbolize, and
@@ -61,10 +64,11 @@ module Api
             end
           end
 
+
           options = {
             format:         :hash,
             force:          true,
-            clear_existing: params[:clear_queries] || false,
+            clear_existing: clear_queries,
             show_progress:  false,
           }
 
