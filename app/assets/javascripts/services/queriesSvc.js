@@ -812,7 +812,6 @@ angular.module('QuepidApp')
       this.createQuery = function(queryText) {
         var queryJson = {
           'query_text': queryText,
-          deleted:      false,
           queryId:      -1
         };
         var newQuery = new Query(queryJson);

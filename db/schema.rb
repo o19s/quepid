@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_03_16_172643) do
+ActiveRecord::Schema.define(version: 2021_03_21_113736) do
 
   create_table "annotations", id: :integer, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8", force: :cascade do |t|
     t.text "message"
@@ -90,7 +90,6 @@ ActiveRecord::Schema.define(version: 2021_03_16_172643) do
   create_table "queries", id: :integer, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin", force: :cascade do |t|
     t.bigint "arranged_next"
     t.bigint "arranged_at"
-    t.boolean "deleted"
     t.string "query_text", limit: 500
     t.text "notes"
     t.float "threshold"

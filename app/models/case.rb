@@ -196,7 +196,6 @@ class Case < ApplicationRecord
     new_query = ::Query.new(
       arranged_next:  query.arranged_next,
       arranged_at:    query.arranged_at,
-      deleted:        query.deleted,
       query_text:     query.query_text,
       notes:          query.notes,
       threshold:      query.threshold,

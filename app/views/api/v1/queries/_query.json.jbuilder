@@ -2,7 +2,6 @@
 
 json.arrangedAt         query.arranged_at
 json.arrangedNext       query.arranged_next
-json.deleted            query.deleted
 json.queryId            query.id
 json.query_text         query.query_text
 json.threshold          query.threshold
