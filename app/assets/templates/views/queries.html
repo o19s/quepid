@@ -87,7 +87,7 @@
       </div>
 
       <!-- let the user know what we're looking at-->
-      <ul class="results-list-element" ui-sortable="queries.sortableOptions" ng-model="queriesList" ng-class="dragging === true ? 'dragging' : ''">
+      <ul class="results-list-element" ui-sortable="queries.sortableOptions" ng-model="queriesList" ng-class="!queryListSortable ? 'unsortable' : dragging === true ? 'dragging' : ''">
         <li ng-class="query.isToggled() ? 'unsortable' : ''" dir-paginate="query in queriesList | orderBy:sort:reverse | itemsPerPage: pagination.pageSize" current-page="pagination.currentPage" >
           <search-results query="query" issortingenabled="queries.isSortingEnabled">
           </search-results>

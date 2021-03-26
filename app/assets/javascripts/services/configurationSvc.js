@@ -8,6 +8,7 @@ angular.module('UtilitiesModule')
       var termsAndConditionsUrl;
       var isSignupEnabled;
       var communalScorersOnly;
+      var queryListSortable;
 
       this.setEmailMarketingMode = function(val) {
         emailMarketingMode = JSON.parse(val);
@@ -49,6 +50,10 @@ angular.module('UtilitiesModule')
 
       this.isCommunalScorersOnly = function() {
         return communalScorersOnly;
+      };
+
+      this.isQueryListSortable = function() {
+        return queryListSortable;
       };
     }
   ]);
