@@ -18,7 +18,7 @@ class HomeController < ApplicationController
       best_try          = bootstrapCase.tries.best
       @bootstrapTryNo   = best_try.try_number if best_try.present?
     else
-      @triggerWizard    = true unless current_user.first_login?
+      @triggerWizard    = true unless current_user.first_login? && current_user.teams.empty?
 
       bootstrapCase     = current_user.cases.create case_name: "Case #{current_user.cases.size}"
       @bootstrapCaseNo  = bootstrapCase.id

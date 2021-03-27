@@ -94,4 +94,34 @@ class HomeControllerTest < ActionController::TestCase
       assert_equal 'true', trigger[1]
     end
   end
+
+  describe 'do not trigger wizard when user has first_login true (should be create_case_wizard=false) and is part of a team with a case' do
+    let(:user) do
+      User.create(
+        email:       'foo@example.com',
+        password:    'password',
+        first_login: true
+      )
+    end
+
+    let(:team)  { teams(:valid) }
+
+    before do
+      user.teams << team
+      user.save
+      login_user user
+    end
+
+    test 'bootstraps latest case' do
+
+      assert user.teams.size == 1
+
+      get :index
+
+      puts response.body
+
+      trigger = TRIGGER_WIZARD.match(response.body)
+      assert_equal 'false', trigger[1]
+    end
+  end
 end

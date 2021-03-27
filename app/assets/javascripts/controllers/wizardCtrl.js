@@ -32,9 +32,14 @@ angular.module('QuepidApp')
       });
 
       function showModal() {
+        //return angular.isDefined($rootScope.currentUser) &&
+        //  $rootScope.currentUser !== null &&
+        //  ($rootScope.currentUser.firstLogin || userSvc.triggerWizard) &&
+        //  $rootScope.currentUser.introWizardSeen !== true;
+        // move some logic about triggerWizard into backend home_controller.rb
         return angular.isDefined($rootScope.currentUser) &&
           $rootScope.currentUser !== null &&
-          ($rootScope.currentUser.firstLogin || userSvc.triggerWizard) &&
+          userSvc.triggerWizard &&
           $rootScope.currentUser.introWizardSeen !== true;
       }
     }
