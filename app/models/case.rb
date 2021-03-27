@@ -71,7 +71,7 @@ class Case < ApplicationRecord
   # Scopes
   scope :not_archived, -> { where('`cases`.`archived` = false OR `cases`.`archived` IS NULL') }
 
-  scope :for_user3, ->(user) {
+  scope :for_user_via_teams, ->(user) {
     joins('
       LEFT OUTER JOIN `teams_cases` ON `teams_cases`.`case_id` = `cases`.`id`
       LEFT OUTER JOIN `teams` ON `teams`.`id` = `teams_cases`.`team_id`
@@ -82,14 +82,14 @@ class Case < ApplicationRecord
     ', user.id)
   }
 
-  scope :for_user4, ->(user) {
+  scope :for_user_directly_owned, ->(user) {
     where('
         `cases`.`user_id` = ?
     ',  user.id)
   }
 
   scope :for_user, ->(user) {
-    ids = for_user3(user).pluck(:id) + for_user4(user).pluck(:id)
+    ids = for_user_via_teams(user).pluck(:id) + for_user_directly_owned(user).pluck(:id)
     where(id: ids.uniq)
   }
 

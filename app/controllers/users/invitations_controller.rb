@@ -7,7 +7,7 @@ module Users
 
     # Intercepts the login path and redirects the user to their
     # Team page as their first page after joining Quepid!
-    def after_accept_path_for(resource)
+    def after_accept_path_for resource
       teams_path_url(resource.teams.first)
     end
 
@@ -22,7 +22,6 @@ module Users
       @user.agreed_time = Time.zone.now
       session[:current_user_id] = @user.id
       Analytics::Tracker.track_signup_event @user
-
     end
 
     # rubocop:disable Lint/UselessMethodDefinition

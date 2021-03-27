@@ -104,7 +104,7 @@ class HomeControllerTest < ActionController::TestCase
       )
     end
 
-    let(:team)  { teams(:valid) }
+    let(:team) { teams(:valid) }
 
     before do
       user.teams << team
@@ -113,8 +113,7 @@ class HomeControllerTest < ActionController::TestCase
     end
 
     test 'bootstraps latest case' do
-
-      assert user.teams.size == 1
+      assert 1 == user.teams.size
 
       get :index
 
