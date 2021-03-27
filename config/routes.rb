@@ -153,7 +153,7 @@ Rails.application.routes.draw do
   get '/case/:id(/try/:id(/curate))'  => 'home#index'
   get '/cases'                        => 'home#index'
   get '/cases/import'                 => 'home#index'
-  get '/teams(/:id)'                  => 'home#index'
+  get '/teams(/:id)'                  => 'home#index', as: :teams_path
   get '/advanced'                     => 'home#index'
 
   # Static pages
