@@ -280,6 +280,9 @@ angular.module('QuepidApp')
       this.trackLastScore = function(caseNo, scoreData) {
         var self = this;
 
+        console.log("Checking on the scoreData, is it undefined and the resolve taking forever?  Looks like it");
+        console.log(scoreData);
+
         if (  angular.isUndefined(scoreData.queries) ||
               scoreData.queries === null ||
               Object.keys(scoreData.queries).length === 0
@@ -291,6 +294,8 @@ angular.module('QuepidApp')
 
         var url         = '/api/cases/'+ caseNo + '/scores';
 
+        console.log("We never get to this line " + url);
+
         // Replace null values by an empty string for query scores,
         // in order to normalize values when score is not present:
         angular.forEach(scoreData.queries, function(score, id) {
@@ -300,6 +305,8 @@ angular.module('QuepidApp')
         });
 
         var data = { 'case_score': scoreData };
+
+        console.log("data is " + data);
 
         return $http.put(url, data)
           .then(function(response) {
