@@ -27,7 +27,7 @@ module Api
           count     = jane.owned_teams.count
           team_name = 'test team'
 
-          post :create, params: { name: team_name }
+          post :create, params: { team: { name: team_name } }
 
           assert_response :ok
 
@@ -39,7 +39,7 @@ module Api
         end
 
         test 'requires a team name' do
-          post :create
+          post :create, params: { team: { name: '' } }
 
           assert_response :bad_request
 
@@ -48,7 +48,7 @@ module Api
         end
 
         test 'requires a unique team name' do
-          post :create, params: { name: the_team.name }
+          post :create, params: { team: { name: the_team.name } }
 
           assert_response :bad_request
 
@@ -63,7 +63,7 @@ module Api
             team_name = 'test team'
 
             perform_enqueued_jobs do
-              post :create, params: { name: team_name }
+              post :create, params: { team: { name: team_name } }
 
               assert_response :ok
             end
@@ -136,7 +136,7 @@ module Api
       describe 'Updating teams' do
         describe 'when team does not exist' do
           test 'returns not found error' do
-            put :update, params: { team_id: 'foo', name: 'foo' }
+            put :update, params: { team_id: 'foo', team: { name: 'foo' } }
 
             assert_response :not_found
           end
@@ -144,7 +144,7 @@ module Api
 
         describe 'when changing the team name' do
           test 'updates name successfully when user owns team' do
-            put :update, params: { team_id: the_team.id, name: 'New Name' }
+            put :update, params: { team_id: the_team.id, team: { name: 'New Name' } }
 
             assert_response :ok
 
@@ -153,7 +153,7 @@ module Api
           end
 
           test 'returns a forbidden error when user does not own the team' do
-            put :update, params: { team_id: shared_team.id, name: 'New Name' }
+            put :update, params: { team_id: shared_team.id, team: { name: 'New Name' } }
 
             assert_response :forbidden
           end
@@ -170,7 +170,7 @@ module Api
             expects_any_ga_event_call
 
             perform_enqueued_jobs do
-              put :update, params: { team_id: the_team.id, name: 'New Name' }
+              put :update, params: { team_id: the_team.id, team: { name: 'New Name' } }
 
               assert_response :ok
             end
