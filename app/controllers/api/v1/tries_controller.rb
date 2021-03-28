@@ -57,11 +57,11 @@ module Api
       end
 
       def update_try_params
-        params.permit(:name)
+        params.require(:try).permit( :name )
       end
 
       def try_params
-        params.permit(
+        params.require(:try).permit(
           :escape_query,
           :field_spec,
           :name,

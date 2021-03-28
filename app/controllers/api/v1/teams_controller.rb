@@ -54,7 +54,7 @@ module Api
       private
 
       def team_params
-        params.permit(:name)
+        params.require(:team).permit(:name)
       end
 
       def case_load
