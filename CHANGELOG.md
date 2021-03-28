@@ -42,6 +42,8 @@
 
 * Rails 5 Upgrade Hangover: fixed strong parameters validation issues, fixed wonky left outer joins on cases showing duplicate cases (and killed performance), eliminated the `user_case_finder.rb` class in favour of simpler scopes.  https://github.com/o19s/quepid/pull/292 by @epugh w/ assist from @worleydl.
 
+* Thanks to @DmitryKey for spotting that we were not tracking scorers for cases (bug introduced when we added the Show Only Ratings feature).  https://github.com/o19s/quepid/pull/303 by @epugh and @worleydl fixes both https://github.com/o19s/quepid/issues/306 AND https://github.com/o19s/quepid/issues/289.  A twofer!
+
 ## 6.4.1 - 2021-01-14
 
 In the 6.4.0 release, the correct splainer-search NPM package was missed in the production Docker image.
