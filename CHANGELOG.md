@@ -32,6 +32,7 @@
 
 * We have removed the Soft Delete for Queries to simplify how Quepid works.  If you delete a query in Quepid it is now fully deleted from the database!  This is a nice bit of paying down tech debt.  Huge thanks to @DmitryKey for testing this PR.  https://github.com/o19s/quepid/pull/299 by @epugh fixes https://github.com/o19s/quepid/issues/298 by @DmitryKey.
 
+* The `/case` url is one we frequently end up with, and it generates a 404.  Thanks @DmitryKey for suggesting we have it route to the case listing page `/cases` instead.  https://github.com/o19s/quepid/pull/304 by @epugh.
 
 ### Bugs
 
