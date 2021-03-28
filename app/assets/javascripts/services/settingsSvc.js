@@ -178,9 +178,11 @@ angular.module('QuepidApp')
         var sentData = {};
         var currCaseNo = caseTryNavSvc.getCaseNo();
 
+        // We create the default name on the server side
+        //sentData.name            = settingsToSave.selectedTry.name;
         sentData.curatorVars     = settingsToSave.selectedTry.curatorVarsDict();
         sentData.escape_query    = settingsToSave.escapeQuery;
-        sentData.fields          = settingsToSave.createFieldSpec().fields;
+        //sentData.fields          = settingsToSave.createFieldSpec().fields;
         sentData.field_spec      = settingsToSave.fieldSpec;
         sentData.number_of_rows  = settingsToSave.numberOfRows;
         sentData.query_params    = settingsToSave.selectedTry.queryParams;
@@ -226,9 +228,12 @@ angular.module('QuepidApp')
         var currCaseNo = caseTryNavSvc.getCaseNo();
         var currTryNo = caseTryNavSvc.getTryNo();
 
+        // because this is only called at the end of the case creation wizard
+        // we don't have a sentData.name = settingsToSave.selectedTry.name
+        // for completeness we should.   If we enable more edit of existing try
+        // tries are odd, cause we pretty much only create new ones!
         sentData.curatorVars     = settingsToSave.selectedTry.curatorVarsDict();
         sentData.escape_query    = settingsToSave.escapeQuery;
-        sentData.fields          = settingsToSave.createFieldSpec().fields;
         sentData.field_spec      = settingsToSave.fieldSpec;
         sentData.number_of_rows  = settingsToSave.numberOfRows;
         sentData.query_params    = settingsToSave.selectedTry.queryParams;
