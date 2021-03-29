@@ -27,11 +27,10 @@ angular.module('UtilitiesModule')
         self.id              = userObj.id;
         self.permissions     = userObj.permissions;
         self.email           = userObj.email;
-        self.introWizardSeen = userObj.introWizardSeen;
 
         var maxQueries = userObj.maxQueries;
         var numQueries = userObj.numQueries;
-
+        self.introWizardSeen = userObj.introWizardSeen;
 
         this.hasReachedQueryLimit = function () {
           return (this.queriesRemaining() === 0);

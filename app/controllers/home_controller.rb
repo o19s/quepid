@@ -13,14 +13,12 @@ class HomeController < ApplicationController
     # load a case/try if one was set somewhere
     bootstrapCase = current_user.cases_involved_with.not_archived.last
 
-
     if bootstrapCase
       @bootstrapCaseNo  = bootstrapCase.id
       best_try          = bootstrapCase.tries.best
       @bootstrapTryNo   = best_try.try_number if best_try.present?
     else
       # I am feeling like this should be on the forntend logic, not the backend...
-      # seems like the front end should actually make the call to create the empty bootstrap case!
       @triggerWizard    = true unless current_user.first_login? && current_user.teams.empty?
 
       bootstrapCase     = current_user.cases.create case_name: "Case #{current_user.cases.size}"
