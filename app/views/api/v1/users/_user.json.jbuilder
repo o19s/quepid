@@ -6,3 +6,4 @@ json.display_name    user.display_name
 json.id              user.id
 json.defaultScorerId user.default_scorer_id
 json.email           user.email
+json.belongs_to_team !user.teams.empty?
