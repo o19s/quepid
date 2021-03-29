@@ -16,12 +16,7 @@ describe('Controller: WizardModalCtrl', function () {
     dismiss: jasmine.createSpy()
   };
 
-  var mockUserSvc = {
-    dofirstLogin: false,
-    getUser: function() {
-      return {firstLogin: this.dofirstLogin};
-    }
-  };
+
 
   var mockWizardHandler = {
     wizard: function(){
@@ -61,6 +56,12 @@ describe('Controller: WizardModalCtrl', function () {
     firstLogin:       false,
     queriesRemaining: function() { return this.maxQueries - this.queriesAdded; },
     queryAdded:       function() { this.queriesAdded++; },
+  };
+
+  var mockUserSvc = {
+    getUser: function() {
+      return mockUser;
+    }
   };
 
   // Initialize the controller and a mock scope
