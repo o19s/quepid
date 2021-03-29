@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]> <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]> <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]> <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js"> <!--<![endif]-->
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<title>Quepid -- Relevant Search Solved</title>
+<meta name="description" content="Tired of irrelevant search results? Use Quepid to help improve the quality and relevancy of your search results.">
+<meta name="viewport" content="width=device-width">
+
+<%= stylesheet_link_tag 'application', media: 'all' %>
+<%= stylesheet_link_tag 'ng-json-explorer/dist/angular-json-explorer', 'angular-wizard/dist/angular-wizard', 'ng-tags-input/build/ng-tags-input.min.css', 'ng-tags-input/build/ng-tags-input.bootstrap.min.css', media: 'all' %>
+<%= csrf_meta_tags %>
+
+<base href="/">
+</head>
+<body ng-app="QuepidApp">
+  <%= render 'cookies_eu/consent_banner', link: '/cookies', target: '_blank' unless Rails.application.config.cookies_url.blank? %>
+
+  <div class="main-container">
+    <%= render 'layouts/header' %>
+
+    <div id="content">
+      <%= yield %>
+    </div>
+  </div>
+
+  <%= render 'layouts/footer' %>
+
+  <%= javascript_include_tag 'application' %>
+
+  <script>
+    angular.module('QuepidApp')
+      .run([
+        'secureRedirectSvc', 'bootstrapSvc', 'configurationSvc',
+        function(secureRedirectSvc, bootstrapSvc, configurationSvc) {
+          var appDebug      = '<%= Rails.env == 'development' ? 'true' : 'false' %>';
+          var debugPort     = '<%= request.port %>';
+          var triggerWizard = <%= @triggerWizard || false %>;
+
+          configurationSvc.setCommunalScorersOnly('<%= Rails.application.config.communal_scorers_only %>');
+
+          if (appDebug === 'true') {
+            secureRedirectSvc.debugServer(debugPort);
+          }
+
+          bootstrapSvc.run(triggerWizard);
+        }
+      ]);
+  </script>
+
+  <%= render 'layouts/common_js' %>
+</body>
+</html>
