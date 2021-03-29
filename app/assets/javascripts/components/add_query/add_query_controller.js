@@ -40,7 +40,6 @@ angular.module('QuepidApp')
                 flash.to('search-error').error = errorMsg;
               });
 
-            user.queryAdded();
             ctrl.loading = false;
           });
       };
@@ -62,8 +61,6 @@ angular.module('QuepidApp')
                 flash.error = 'One (or many) of your new queries had an error!';
                 flash.to('search-error').error = errorMsg;
               });
-
-            user.queryAdded(queries.length);
             ctrl.loading = false;
           });
       };

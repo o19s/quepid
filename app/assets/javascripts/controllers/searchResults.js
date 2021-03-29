@@ -64,10 +64,7 @@ angular.module('QuepidApp')
         var confirm = $window.confirm('Are you absolutely sure you want to delete?');
 
         if (confirm) {
-          queriesSvc.deleteQuery(queryId)
-          .then(function() {
-            userSvc.getUser().queryRemoved();
-          });
+          queriesSvc.deleteQuery(queryId);
         }
       };
 

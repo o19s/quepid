@@ -51,11 +51,7 @@ describe('Controller: WizardModalCtrl', function () {
   };
 
   var mockUser = {
-    queriesAdded:     0,
-    maxQueries:       5,
-    firstLogin:       false,
-    queriesRemaining: function() { return this.maxQueries - this.queriesAdded; },
-    queryAdded:       function() { this.queriesAdded++; },
+    firstLogin:       false
   };
 
   var mockUserSvc = {

@@ -29,33 +29,6 @@ angular.module('UtilitiesModule')
         self.email           = userObj.email;
         self.introWizardSeen = userObj.introWizardSeen;
 
-        var maxQueries = userObj.maxQueries;
-        var numQueries = userObj.numQueries;
-
-
-        this.hasReachedQueryLimit = function () {
-          return (this.queriesRemaining() === 0);
-        };
-
-        this.queriesRemaining = function() {
-          if (maxQueries === 'infinity') {
-            return 9999999999999999;
-          }
-          return (maxQueries/1) - (numQueries/1);
-        };
-
-        this.queryRemoved = function() {
-          numQueries--;
-        };
-
-        this.queryAdded = function(count) {
-          if ( angular.isUndefined(count) || count === null ) {
-            numQueries++;
-          } else {
-            numQueries += count;
-          }
-        };
-
         this.updatePassword = function(oldPass, newPass, success, failure) {
           $http.post('/api/users/' + self.id, {
             oldPassword:oldPass,
