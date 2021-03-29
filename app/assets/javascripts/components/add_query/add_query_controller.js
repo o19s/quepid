@@ -26,7 +26,7 @@ angular.module('QuepidApp')
       ctrl.submit       = submit;
       ctrl.textInputIsEmpty = textInputIsEmpty;
 
-      var addOne = function(queryText, user) {
+      var addOne = function(queryText) {
         var q = queriesSvc.createQuery(queryText);
 
         queriesSvc.persistQuery(q)
@@ -44,7 +44,7 @@ angular.module('QuepidApp')
           });
       };
 
-      var addMany = function(queryTexts, user) {
+      var addMany = function(queryTexts) {
         var queries = [];
 
         angular.forEach(queryTexts, function(queryText) {
@@ -63,10 +63,6 @@ angular.module('QuepidApp')
               });
             ctrl.loading = false;
           });
-      };
-
-      var userQueries = function(searchStrings) {
-        return searchStrings;
       };
 
       var parseAddQuery = function(formInput) {
@@ -90,13 +86,12 @@ angular.module('QuepidApp')
         if (textInputIsEmpty()) { return; }
 
         ctrl.loading = true;
-        var initialSearchStrings  = parseAddQuery(ctrl.text);
-        var searchStrings         = userQueries(initialSearchStrings, $rootScope.currentUser);
+        var searchStrings         = parseAddQuery(ctrl.text);
 
         if ( searchStrings.length === 1 ) {
-          addOne(searchStrings[0], $rootScope.currentUser);
+          addOne(searchStrings[0]);
         } else if ( searchStrings.length > 1 ) {
-          addMany(searchStrings, $rootScope.currentUser);
+          addMany(searchStrings);
         }
 
         ctrl.text = '';
