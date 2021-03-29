@@ -16,6 +16,9 @@ angular.module('UtilitiesModule')
 
       function run(triggerWizard, caseNo, tryNo) {
         // Fetch the current user who is logged in
+        console.log("not sure why, but setting userSvc.triggerWizard to " + triggerWizard);
+        console.log("I think the bootstrap service ought to decide this");
+        console.log("Here is caseNo:" + caseNo);
         userSvc.triggerWizard = triggerWizard;
         userSvc.getCurrentUser()
           .then(function() {

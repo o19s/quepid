@@ -193,8 +193,11 @@ angular.module('QuepidApp')
         angular.merge($scope.pendingWizardSettings, settingsSvc.editableSettings());
         $scope.pendingWizardSettings.newQueries = [];
 
+        console.log("User firstlogin is " + userSvc.getUser().firstLogin);
+
         if(userSvc.getUser().firstLogin===true){
           $scope.pendingWizardSettings.caseName = 'Movies Search';
+          // should we be setting up more here?
         } else {
           $log.info('Skipping welcome step for case wizard');
           WizardHandler.wizard().goTo(1);
