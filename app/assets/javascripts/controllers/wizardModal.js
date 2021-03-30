@@ -16,6 +16,9 @@ angular.module('QuepidApp')
     ) {
       $log.debug('Init Wizard settings ctrl');
       $scope.wizardSettingsModel = {};
+      $rootScope.currentUser.introWizardSeen=true;
+
+
 
       $scope.pendingWizardSettings = angular.copy(settingsSvc.defaults.solr);
 
@@ -264,6 +267,8 @@ angular.module('QuepidApp')
             $q.all(createPromises).then( () => {
               queriesSvc.searchAll();
             });
+
+            $rootScope.currentUser.shownIntroWizard();
 
             $uibModalInstance.close();
           });

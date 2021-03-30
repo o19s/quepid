@@ -47,6 +47,12 @@ angular.module('QuepidApp')
         });
 
         modalInstance.result.then(function() {
+          // If this is someones first login still, then do the tour after.
+          if ($rootScope.currentUser.firstLogin) {
+            /* global setupAndStartTour */
+            $timeout(setupAndStartTour, 1500);
+          }
+
           // Insert text into dev settings + pull out dev setting bar
           // Trigger 2nd tutorial here?
         });

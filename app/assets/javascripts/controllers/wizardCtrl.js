@@ -26,11 +26,13 @@ angular.module('QuepidApp')
         if ( angular.isDefined(user) && user !== null ) {
           if ( showModal() ) {
             $scope.wizard.triggerModal();
-            $rootScope.currentUser.shownIntroWizard();
           }
         }
       });
 
+      // All the logic to detect if a user is not part of a team and
+      // has just logged on so we should start them on the case.
+      // could be replace with a big button "Create your First Case"!
       function showModal() {
         //return angular.isDefined($rootScope.currentUser) &&
         //  $rootScope.currentUser !== null &&
@@ -39,7 +41,7 @@ angular.module('QuepidApp')
         // move some logic about triggerWizard into backend home_controller.rb
         return angular.isDefined($rootScope.currentUser) &&
           $rootScope.currentUser !== null &&
-          userSvc.triggerWizard &&
+          ($rootScope.currentUser.firstLogin && !$rootScope.currentUser.belongsToTeam) &&
           $rootScope.currentUser.introWizardSeen !== true;
       }
     }

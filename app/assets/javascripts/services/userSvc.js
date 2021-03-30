@@ -27,7 +27,7 @@ angular.module('UtilitiesModule')
         self.id              = userObj.id;
         self.permissions     = userObj.permissions;
         self.email           = userObj.email;
-        self.introWizardSeen = userObj.introWizardSeen;
+        self.belongsToTeam   = userObj.belongs_to_team;
 
         this.updatePassword = function(oldPass, newPass, success, failure) {
           $http.post('/api/users/' + self.id, {
@@ -51,7 +51,6 @@ angular.module('UtilitiesModule')
 
           return $http.put(url, data)
             .then( function() {
-              self.introWizardSeen  = true;
               self.firstLogin       = false;
 
               return self;

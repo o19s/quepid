@@ -19,6 +19,7 @@ class HomeController < ApplicationController
       @bootstrapTryNo   = best_try.try_number if best_try.present?
     else
       # I am feeling like this should be on the forntend logic, not the backend...
+      # seems like the front end should actually make the call to create the empty bootstrap case!
       @triggerWizard    = true unless current_user.first_login? && current_user.teams.empty?
 
       bootstrapCase     = current_user.cases.create case_name: "Case #{current_user.cases.size}"
