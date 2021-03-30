@@ -30,6 +30,10 @@
 
 * _Unit Test_ style custom scorers let you run a unit test that asserted specific things about specific docs at specific ranks in your search results.   This logic however was always convoluted, and only 15 people since 2019 have used it, and I suspect by accident ;-)   We want better ways of handling this type of function, so removing this to pay down some tech debt, simplify the database architecture, and open the door to new approach.  https://github.com/o19s/quepid/pull/296 by @epugh fixes https://github.com/o19s/quepid/issues/290.
 
+* We have removed the Soft Delete for Queries to simplify how Quepid works.  If you delete a query in Quepid it is now fully deleted from the database!  This is a nice bit of paying down tech debt.  Huge thanks to @DmitryKey for testing this PR.  https://github.com/o19s/quepid/pull/299 by @epugh fixes https://github.com/o19s/quepid/issues/298 by @DmitryKey.
+
+* The `/case` url is one we frequently end up with, and it generates a 404.  Thanks @DmitryKey for suggesting we have it route to the case listing page `/cases` instead.  https://github.com/o19s/quepid/pull/304 by @epugh.
+
 ### Bugs
 
 * You can export a rating that has no actual rating value chosen! https://github.com/o19s/quepid/pull/266 by @epugh fixes https://github.com/o19s/quepid/issues/265.
@@ -37,6 +41,8 @@
 * Fixing typo in defining aria-hidden html tag.  https://github.com/o19s/quepid/pull/269 by @abhishekChoudhary93 fixes https://github.com/o19s/quepid/issues/268.
 
 * Rails 5 Upgrade Hangover: fixed strong parameters validation issues, fixed wonky left outer joins on cases showing duplicate cases (and killed performance), eliminated the `user_case_finder.rb` class in favour of simpler scopes.  https://github.com/o19s/quepid/pull/292 by @epugh w/ assist from @worleydl.
+
+* Thanks to @DmitryKey for spotting that we were not tracking scorers for cases (bug introduced when we added the Show Only Ratings feature).  https://github.com/o19s/quepid/pull/303 by @epugh and @worleydl fixes both https://github.com/o19s/quepid/issues/306 AND https://github.com/o19s/quepid/issues/289.  A twofer!
 
 ## 6.4.1 - 2021-01-14
 

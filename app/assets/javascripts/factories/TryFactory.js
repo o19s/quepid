@@ -103,6 +103,8 @@
         return rVal;
       }
 
+      // This method overlaps with settingsSvc.js update() method in
+      // terms of interacting with a Try.
       function rename(newName) {
         var caseNo  = caseTryNavSvc.getCaseNo();
         var nameReq = {'name': newName};

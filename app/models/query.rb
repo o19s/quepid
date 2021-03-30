@@ -7,7 +7,6 @@
 #  id             :integer          not null, primary key
 #  arranged_next  :integer
 #  arranged_at    :integer
-#  deleted        :boolean
 #  query_text     :string(191)
 #  notes          :text(65535)
 #  threshold      :float(24)
@@ -30,20 +29,14 @@ class Query < ApplicationRecord
   has_many    :ratings,
               dependent: :destroy
 
+  has_many    :snapshot_queries,
+              dependent: :destroy
+
   # Validations
   validates :query_text,
             presence: true
 
   # Scopes
-  # Lot of folks say don't use default_scopes since if you do case.queries you down't see deleted queries!
-  default_scope -> { where(deleted: false).or(where(deleted: nil)) }
-
-  # TODO: use the acts_as_paranoid gem instead
-  # Which requires change to the db, that is not going to be done in the
-  # initial scope of work in the rails migration
-  def soft_delete
-    update deleted: true
-  end
 
   def parent_list
     self.case.queries

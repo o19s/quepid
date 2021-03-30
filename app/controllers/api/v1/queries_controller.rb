@@ -72,7 +72,7 @@ module Api
 
       def destroy
         @query.remove_from_list
-        @query.soft_delete
+        @query.destroy
         Analytics::Tracker.track_query_deleted_event current_user, @query
 
         # Make sure queries have the right `arranged_next` and `arranged_at`
