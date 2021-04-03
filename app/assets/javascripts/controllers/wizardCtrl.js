@@ -9,8 +9,7 @@
 angular.module('QuepidApp')
   .controller('WizardCtrl', [
     '$rootScope', '$scope', '$uibModal', '$timeout',
-    'userSvc',
-    function ($rootScope, $scope, $uibModal, $timeout, userSvc) {
+    function ($rootScope, $scope, $uibModal, $timeout) {
       $scope.wizard = {};
       $scope.wizard.triggerModal = function() {
 

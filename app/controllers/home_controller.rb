@@ -6,7 +6,6 @@ class HomeController < ApplicationController
   # ignoring naming convention because these are getting passed to JS
   # rubocop:disable Naming/VariableName
   def index
-
     return unless current_user
 
     # load a case/try if the user has access to one

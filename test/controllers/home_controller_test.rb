@@ -74,8 +74,8 @@ class HomeControllerTest < ActionController::TestCase
   describe 'bootstraps when user has no cases, not in team, but has logged in before' do
     let(:user) do
       User.create(
-        email:                 'foo@example.com',
-        password:              'password'
+        email:    'foo@example.com',
+        password: 'password'
       )
     end
 
@@ -94,8 +94,6 @@ class HomeControllerTest < ActionController::TestCase
 
       case_info = CASE_INFO.match(response.body)
       assert_equal user.cases.first.id.to_s, case_info[1]
-
     end
   end
-
 end
