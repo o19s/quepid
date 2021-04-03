@@ -2,6 +2,10 @@
 
 /*jslint latedef:false*/
 
+// This control decides when to "trigger" the create case wizard to start up
+// based on if a user has just logged on and isn't part of team, so get them to start
+// creating a case.  However, if they are part of a team, then we don't trigger it since
+// presumably they will be starting with an existing shared case.
 angular.module('QuepidApp')
   .controller('WizardCtrl', [
     '$rootScope', '$scope', '$uibModal', '$timeout',
@@ -12,7 +16,7 @@ angular.module('QuepidApp')
 
         var modalInstance = $uibModal.open({
           templateUrl: 'views/wizardModal.html',
-          controller: 'WizardModalCtrl', //be ready to rename to tutorial modal 1
+          controller: 'WizardModalCtrl',
           backdrop: 'static'
         });
 
@@ -34,14 +38,9 @@ angular.module('QuepidApp')
       // has just logged on so we should start them on the case.
       // could be replace with a big button "Create your First Case"!
       function showModal() {
-        //return angular.isDefined($rootScope.currentUser) &&
-        //  $rootScope.currentUser !== null &&
-        //  ($rootScope.currentUser.firstLogin || userSvc.triggerWizard) &&
-        //  $rootScope.currentUser.introWizardSeen !== true;
-        // move some logic about triggerWizard into backend home_controller.rb
         return angular.isDefined($rootScope.currentUser) &&
           $rootScope.currentUser !== null &&
-          ($rootScope.currentUser.firstLogin && !$rootScope.currentUser.belongsToTeam) &&
+          (!$rootScope.currentUser.completedCaseWizard && !$rootScope.currentUser.belongsToTeam) &&
           $rootScope.currentUser.introWizardSeen !== true;
       }
     }

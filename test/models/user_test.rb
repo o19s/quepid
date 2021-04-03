@@ -9,7 +9,7 @@
 #  password               :string(120)
 #  agreed_time            :datetime
 #  agreed                 :boolean
-#  first_login            :boolean
+#  completed_case_wizard  :boolean
 #  num_logins             :integer
 #  name                   :string(255)
 #  administrator          :boolean          default(FALSE)
@@ -38,27 +38,27 @@ class UserTest < ActiveSupport::TestCase
     test 'are set when user is created' do
       user = User.create(email: 'defaults@email.com', password: 'password')
 
-      assert_not_nil user.first_login
+      assert_not_nil user.completed_case_wizard
       assert_not_nil user.num_logins
 
-      assert_equal true,                     user.first_login
+      assert_equal false, user.completed_case_wizard
       assert_equal 0,                        user.num_logins
       assert_equal user.default_scorer.name, Rails.application.config.quepid_default_scorer
     end
 
     test 'do not override the passed in arguments' do
       user = User.create(
-        email:       'defaults@email.com',
-        password:    'password',
-        first_login: false,
-        num_logins:  1
+        email:                 'defaults@email.com',
+        password:              'password',
+        completed_case_wizard: true,
+        num_logins:            1
       )
 
-      assert_not_nil user.first_login
+      assert_not_nil user.completed_case_wizard
       assert_not_nil user.num_logins
 
-      assert_equal false, user.first_login
-      assert_equal 1,     user.num_logins
+      assert_equal true, user.completed_case_wizard
+      assert_equal 1, user.num_logins
     end
   end
 

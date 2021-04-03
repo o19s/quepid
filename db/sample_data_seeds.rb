@@ -27,7 +27,7 @@ user_defaults = {
   administrator:    false,
   agreed:           true,
   agreed_time:      Time.now,
-  first_login:       false,
+  completed_case_wizard:       true,
   name:             'No Name',
   password:         'password',
   email:            'foo@example.com',

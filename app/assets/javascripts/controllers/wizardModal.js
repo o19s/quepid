@@ -16,7 +16,7 @@ angular.module('QuepidApp')
     ) {
       $log.debug('Init Wizard settings ctrl');
       $scope.wizardSettingsModel = {};
-      $rootScope.currentUser.introWizardSeen=true;
+
 
 
 
@@ -196,9 +196,9 @@ angular.module('QuepidApp')
         angular.merge($scope.pendingWizardSettings, settingsSvc.editableSettings());
         $scope.pendingWizardSettings.newQueries = [];
 
-        console.log('User firstlogin is ' + userSvc.getUser().firstLogin);
+        console.log('User completedCaseWizard is ' + userSvc.getUser().completedCaseWizard);
 
-        if(userSvc.getUser().firstLogin===true){
+        if(userSvc.getUser().completedCaseWizard===false){
           $scope.pendingWizardSettings.caseName = 'Movies Search';
           // should we be setting up more here?
         } else {
@@ -268,7 +268,9 @@ angular.module('QuepidApp')
               queriesSvc.searchAll();
             });
 
+            
             $rootScope.currentUser.shownIntroWizard();
+
 
             $uibModalInstance.close();
           });

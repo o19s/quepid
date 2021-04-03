@@ -8,12 +8,14 @@ angular.module('QuepidApp')
     '$scope',
     '$location',
     '$uibModal',
+    '$timeout',
     'caseSvc',
     function (
       $rootScope,
       $scope,
       $location,
       $uibModal,
+      $timeout,
       caseSvc
     ) {
       var ctrl = this;
@@ -42,20 +44,16 @@ angular.module('QuepidApp')
 
         var modalInstance = $uibModal.open({
           templateUrl:  'views/wizardModal.html',
-          controller:   'WizardModalCtrl', //be ready to rename to tutorial modal 1
+          controller:   'WizardModalCtrl', 
           backdrop:     'static'
         });
 
-        modalInstance.result.then(function() {
-          // If this is someones first login still, then do the tour after.
-          if ($rootScope.currentUser.firstLogin) {
+        if (!$rootScope.currentUser.completedCaseWizard) {
+          modalInstance.result.then(function() {
             /* global setupAndStartTour */
             $timeout(setupAndStartTour, 1500);
-          }
-
-          // Insert text into dev settings + pull out dev setting bar
-          // Trigger 2nd tutorial here?
-        });
+          });
+        }
       }
     }
   ]);

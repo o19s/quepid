@@ -51,13 +51,18 @@ describe('Controller: WizardModalCtrl', function () {
   };
 
   var mockUser = {
-    firstLogin:       false
+    completedCaseWizard:       true,
+    introWizardSeen: false,
+    shownIntroWizard: function() {
+      self.introWizardSeen=true;
+    }
   };
 
   var mockUserSvc = {
     getUser: function() {
       return mockUser;
     }
+
   };
 
   // Initialize the controller and a mock scope

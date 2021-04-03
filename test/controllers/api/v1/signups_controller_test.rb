@@ -78,11 +78,11 @@ module Api
 
           user = User.find_by(email: 'foo@example.com')
 
-          assert_not_nil user.first_login
+          assert_not_nil user.completed_case_wizard
           assert_not_nil user.num_logins
 
-          assert_equal true,  user.first_login
-          assert_equal 0,     user.num_logins
+          assert_equal false,  user.completed_case_wizard
+          assert_equal 0, user.num_logins
         end
 
         test 'does not care if the name is present' do

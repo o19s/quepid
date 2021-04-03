@@ -4,8 +4,6 @@ angular.module('UtilitiesModule')
   .service('userSvc', [
     '$http',
     function userSvc($http) {
-      this.triggerWizard = false;
-
       var currUser = null;
 
       var User = function(userObj) {
@@ -23,7 +21,7 @@ angular.module('UtilitiesModule')
 
         self.company         = userObj.company;
         self.defaultScorerId = defaultScorerId;
-        self.firstLogin      = userObj.firstLogin;
+        self.completedCaseWizard      = userObj.completed_case_wizard;
         self.id              = userObj.id;
         self.permissions     = userObj.permissions;
         self.email           = userObj.email;
@@ -42,16 +40,17 @@ angular.module('UtilitiesModule')
 
         this.shownIntroWizard = function() {
           var self  = this;
+          self.introWizardSeen=true;
           var url   = '/api/users/' + self.id;
           var data  = {
             user: {
-              first_login: false
+              completed_case_wizard: true
             }
           };
 
           return $http.put(url, data)
             .then( function() {
-              self.firstLogin       = false;
+              self.completedCaseWizard       = true;
 
               return self;
             });

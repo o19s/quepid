@@ -1,6 +1,8 @@
 'use strict';
 
 /*jslint latedef:false*/
+// This service gets us the current user and if we have a case/try then
+// redirects us to the right location in the browser URL.
 
 angular.module('UtilitiesModule')
   .service('bootstrapSvc', [
@@ -14,27 +16,11 @@ angular.module('UtilitiesModule')
       // Public Functions
       self.run = run;
 
-      function run(triggerWizard, caseNo, tryNo) {
+      function run(caseNo, tryNo) {
         // Fetch the current user who is logged in
-
-
-
-        //userSvc.triggerWizard = triggerWizard;
         userSvc.getCurrentUser()
           .then(function() {
             var user = userSvc.getUser();
-            console.log("not sure why, but setting userSvc.triggerWizard to " + triggerWizard);
-            console.log("I think the bootstrap service ought to decide this");
-            console.log("Here is caseNo:" + caseNo);
-            console.log(user);
-
-            // If a user isn't part of a team, (i.e they just signed up for Quepid, they weren't invited), then
-            // if they haven't done the create case wizard, we should pop it open.  firstLogin == true.
-            //if (user.firstLogin && !user.belongsToTeam){
-            //  userSvc.triggerWizard = true;
-            //}
-
-
 
             // Assign it so all controllers have access to the current user
             // instead of having to call the userSvc.getUser() function all the time.

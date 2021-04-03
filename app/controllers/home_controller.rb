@@ -6,11 +6,10 @@ class HomeController < ApplicationController
   # ignoring naming convention because these are getting passed to JS
   # rubocop:disable Naming/VariableName
   def index
-    @triggerWizard = false
 
     return unless current_user
 
-    # load a case/try if one was set somewhere
+    # load a case/try if the user has access to one
     bootstrapCase = current_user.cases_involved_with.not_archived.last
 
     if bootstrapCase
@@ -18,10 +17,6 @@ class HomeController < ApplicationController
       best_try          = bootstrapCase.tries.best
       @bootstrapTryNo   = best_try.try_number if best_try.present?
     else
-      # I am feeling like this should be on the forntend logic, not the backend...
-      # seems like the front end should actually make the call to create the empty bootstrap case!
-      @triggerWizard    = true unless current_user.first_login? && current_user.teams.empty?
-
       bootstrapCase     = current_user.cases.create case_name: "Case #{current_user.cases.size}"
       @bootstrapCaseNo  = bootstrapCase.id
       bootStrapTry      = bootstrapCase.tries.first
