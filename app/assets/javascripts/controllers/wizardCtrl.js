@@ -6,6 +6,7 @@
 // based on if a user has just logged on and isn't part of team, so get them to start
 // creating a case.  However, if they are part of a team, then we don't trigger it since
 // presumably they will be starting with an existing shared case.
+// We track this via just seeing how many cases they are involved with.
 angular.module('QuepidApp')
   .controller('WizardCtrl', [
     '$rootScope', '$scope', '$uibModal', '$timeout',
@@ -33,13 +34,13 @@ angular.module('QuepidApp')
         }
       });
 
-      // All the logic to detect if a user is not part of a team and
-      // has just logged on so we should start them on the case.
+      // Logic to figure out if we have a valid user who doesn't have
+      // access to any existing cases.
       // could be replace with a big button "Create your First Case"!
       function showModal() {
         return angular.isDefined($rootScope.currentUser) &&
           $rootScope.currentUser !== null &&
-          (!$rootScope.currentUser.completedCaseWizard && !$rootScope.currentUser.belongsToTeam) &&
+          (!$rootScope.currentUser.completedCaseWizard && $rootScope.currentUser.casesInvolvedWithCount == 0) &&
           $rootScope.currentUser.introWizardSeen !== true;
       }
     }

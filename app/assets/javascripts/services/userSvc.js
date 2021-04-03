@@ -25,7 +25,7 @@ angular.module('UtilitiesModule')
         self.id              = userObj.id;
         self.permissions     = userObj.permissions;
         self.email           = userObj.email;
-        self.belongsToTeam   = userObj.belongs_to_team;
+        self.casesInvolvedWithCount   = userObj.cases_involved_with_count;
 
         this.updatePassword = function(oldPass, newPass, success, failure) {
           $http.post('/api/users/' + self.id, {
