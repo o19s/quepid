@@ -20,7 +20,7 @@
     "angular-timeago": "~0.1.12",
     "angular-ui-ace": "https://github.com/angular-ui/ui-ace",
     "angular-ui-bootstrap": "~2.5.0",
-    "angular-ui-sortable": "~0.13.4",
+    "angular-ui-sortable": "~0.19.0",
     "angular-utils-pagination": "~0.11.1",
     "angular-wizard": "git://github.com/softwaredoug/angular-wizard.git#0.4.2",
     "bootstrap": "~3.3.6",
