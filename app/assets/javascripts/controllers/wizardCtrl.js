@@ -40,7 +40,7 @@ angular.module('QuepidApp')
       function showModal() {
         return angular.isDefined($rootScope.currentUser) &&
           $rootScope.currentUser !== null &&
-          (!$rootScope.currentUser.completedCaseWizard && $rootScope.currentUser.casesInvolvedWithCount == 0) &&
+          (!$rootScope.currentUser.completedCaseWizard && $rootScope.currentUser.casesInvolvedWithCount === 0) &&
           $rootScope.currentUser.introWizardSeen !== true;
       }
     }
