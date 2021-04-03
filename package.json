@@ -43,7 +43,7 @@
     "karma": "^6.3.2",
     "karma-chrome-launcher": "^3.1.0",
     "karma-jasmine": "4.0.1",
-    "puppeteer": "^8.0.0"
+    "puppeteer": "2.1.1"
   },
   "resolutions": {
     "angular": "~1.7.7",
