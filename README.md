@@ -129,10 +129,8 @@ You can still use `docker-compose` directly, but for the basic stuff you can use
 While running the app under foreman, you'll only see a request log, for more detailed logging run the following:
 
 ```
-bin/docker r tail -f -n 200 log/development.log
+tail -f log/development.log
 ```
-
-**Note:** To clear the logs to avoid them getting too big run: `bin/docker r cat /dev/null > log/development.log`
 
 ## III. Run Tests
 
@@ -169,7 +167,7 @@ View the logs generated during testing set `config.log_level = :debug` in `test.
 and then tail the log file via:
 
 ```
-bin/docker r tail -f -n 200 log/test.log
+tail -f log/test.log
 ```
 
 ### JS Lint

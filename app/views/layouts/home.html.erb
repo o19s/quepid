@@ -36,7 +36,6 @@
         function(secureRedirectSvc, bootstrapSvc, configurationSvc) {
           var appDebug      = '<%= Rails.env == 'development' ? 'true' : 'false' %>';
           var debugPort     = '<%= request.port %>';
-          var triggerWizard = <%= @triggerWizard %>;
 
           configurationSvc.setCommunalScorersOnly('<%= Rails.application.config.communal_scorers_only %>');
 
@@ -51,8 +50,7 @@
             bootstrapCaseNo = 0;
             bootstrapTryNo  = 0;
           }
-
-          bootstrapSvc.run(triggerWizard, bootstrapCaseNo, bootstrapTryNo);
+          bootstrapSvc.run(bootstrapCaseNo, bootstrapTryNo);
         }
       ]);
   </script>

@@ -5,7 +5,6 @@ require 'test_helper'
 class HomeControllerTest < ActionController::TestCase
   TRY_INFO        = /bootstrapTryNo.*?(\d*);/.freeze
   CASE_INFO       = /bootstrapCaseNo.*?(\d*);/.freeze
-  TRIGGER_WIZARD  = /triggerWizard\ =\s*(\w*);/.freeze
 
   before do
     @controller = HomeController.new
@@ -72,12 +71,11 @@ class HomeControllerTest < ActionController::TestCase
     end
   end
 
-  describe 'trigger wizard when user has no cases but has logged in before' do
+  describe 'bootstraps when user has no cases, not in team, but has logged in before' do
     let(:user) do
       User.create(
-        email:       'foo@example.com',
-        password:    'password',
-        first_login: false
+        email:    'foo@example.com',
+        password: 'password'
       )
     end
 
@@ -90,8 +88,12 @@ class HomeControllerTest < ActionController::TestCase
     test 'bootstraps latest case' do
       get :index
 
-      trigger = TRIGGER_WIZARD.match(response.body)
-      assert_equal 'true', trigger[1]
+      assert_response :ok
+
+      user.reload
+
+      case_info = CASE_INFO.match(response.body)
+      assert_equal user.cases.first.id.to_s, case_info[1]
     end
   end
 end

@@ -4,8 +4,6 @@ require 'sidekiq/web'
 
 # rubocop:disable Metrics/BlockLength
 Rails.application.routes.draw do
-  get 'bob/open'
-  get 'bob/show'
   constraints(AdminConstraint) do
     mount Sidekiq::Web, at: 'admin/jobs'
   end
@@ -154,7 +152,7 @@ Rails.application.routes.draw do
   get '/cases'                        => 'home#index'
   get '/case'                         => 'home#index'
   get '/cases/import'                 => 'home#index'
-  get '/teams(/:id)'                  => 'home#index'
+  get '/teams(/:id)'                  => 'home#index', as: :teams_path
   get '/advanced'                     => 'home#index'
 
   # Static pages

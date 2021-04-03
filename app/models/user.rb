@@ -9,7 +9,7 @@
 #  password               :string(120)
 #  agreed_time            :datetime
 #  agreed                 :boolean
-#  first_login            :boolean
+#  completed_case_wizard  :boolean
 #  num_logins             :integer
 #  name                   :string(255)
 #  administrator          :boolean          default(FALSE)
@@ -154,8 +154,8 @@ class User < ApplicationRecord
 
   def set_defaults
     # rubocop:disable Style/RedundantSelf
-    self.first_login      = true  if first_login.nil?
-    self.num_logins       = 0     if num_logins.nil?
+    self.completed_case_wizard = false if completed_case_wizard.nil?
+    self.num_logins       = 0 if num_logins.nil?
     self.default_scorer   = Scorer.system_default_scorer if self.default_scorer.nil?
     # rubocop:enable Style/RedundantSelf
   end

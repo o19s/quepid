@@ -11,7 +11,6 @@
 <meta name="viewport" content="width=device-width">
 
 <%= stylesheet_link_tag 'application', media: 'all' %>
-<%= stylesheet_link_tag 'ng-json-explorer/dist/angular-json-explorer', 'angular-wizard/dist/angular-wizard', 'ng-tags-input/build/ng-tags-input.min.css', 'ng-tags-input/build/ng-tags-input.bootstrap.min.css', media: 'all' %>
 <%= csrf_meta_tags %>
 
 <base href="/">
@@ -28,28 +27,6 @@
   </div>
 
   <%= render 'layouts/footer' %>
-
-  <%= javascript_include_tag 'application' %>
-
-  <script>
-    angular.module('QuepidApp')
-      .run([
-        'secureRedirectSvc', 'bootstrapSvc', 'configurationSvc',
-        function(secureRedirectSvc, bootstrapSvc, configurationSvc) {
-          var appDebug      = '<%= Rails.env == 'development' ? 'true' : 'false' %>';
-          var debugPort     = '<%= request.port %>';
-          var triggerWizard = <%= @triggerWizard || false %>;
-
-          configurationSvc.setCommunalScorersOnly('<%= Rails.application.config.communal_scorers_only %>');
-
-          if (appDebug === 'true') {
-            secureRedirectSvc.debugServer(debugPort);
-          }
-
-          bootstrapSvc.run(triggerWizard);
-        }
-      ]);
-  </script>
 
   <%= render 'layouts/common_js' %>
 </body>

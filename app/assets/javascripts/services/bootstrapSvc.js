@@ -1,6 +1,8 @@
 'use strict';
 
 /*jslint latedef:false*/
+// This service gets us the current user and if we have a case/try then
+// redirects us to the right location in the browser URL.
 
 angular.module('UtilitiesModule')
   .service('bootstrapSvc', [
@@ -14,9 +16,8 @@ angular.module('UtilitiesModule')
       // Public Functions
       self.run = run;
 
-      function run(triggerWizard, caseNo, tryNo) {
+      function run(caseNo, tryNo) {
         // Fetch the current user who is logged in
-        userSvc.triggerWizard = triggerWizard;
         userSvc.getCurrentUser()
           .then(function() {
             var user = userSvc.getUser();
