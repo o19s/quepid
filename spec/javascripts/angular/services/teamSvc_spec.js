@@ -45,7 +45,9 @@ describe('Service: teamSvc', function () {
     cases:    [],
     scorers:  [],
   };
-  var mockTeam;
+  var mockTeam = {
+    id:       1
+  };
 
   var mockMember = {
     'id':       1,
