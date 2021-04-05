@@ -78,6 +78,10 @@ describe('Service: rateElementSvc', function () {
 
     it('to the default when scorer is null', function() {
       rateElementSvc.setScale(mockScope, mockScope.ratings);
+      mockScorer.getColors = function() {
+        return expectedScorer;
+      };
+      
       $rootScope.$apply();
 
       expect(mockScope.ratings.scale).toBeDefined();
