@@ -138,7 +138,7 @@ module Api
           assert_equal the_try['name'], 'New Name'
         end
 
-        test 'does nothing with params passed except name' do
+        test 'can change other parameters too' do
           old_no = the_try.try_number
           put :update, params: { case_id: the_case.id, try_number: the_try.try_number, try: { query_params: 'New No' } }
 
@@ -154,7 +154,7 @@ module Api
           assert_response :ok
 
           the_try.reload
-          assert_not_equal the_try.field_spec, 'New field_spec'
+          assert_equal the_try.field_spec, 'New field_spec'
         end
       end
 
