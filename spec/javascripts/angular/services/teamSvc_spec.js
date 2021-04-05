@@ -46,7 +46,7 @@ describe('Service: teamSvc', function () {
     scorers:  [],
   };
   var mockTeam = {
-    id:       1
+    'id':       1
   };
 
   var mockMember = {
@@ -55,6 +55,7 @@ describe('Service: teamSvc', function () {
   };
 
   var mockInvitee = {
+    'id':        2,
     'email':     'newuser@example.com',
   };
 
@@ -186,13 +187,14 @@ describe('Service: teamSvc', function () {
   });
 
   it('invites a user to join the team', function() {
+    console.log("mock team id is" + mockTeam.id)
     var url   = '/api/teams/' + mockTeam.id + '/members/invite';
     var data  = {
       id: mockInvitee.email,
     };
     var mockResponse = mockTeam;
 
-    $httpBackend.expectPOST(url, data).respond(200);
+    $httpBackend.expectPOST(url, data).respond(200, mockInvitee);
 
     teamSvc.inviteUserToJoin(mockTeam, mockInvitee.email).
       then(function(response) {
