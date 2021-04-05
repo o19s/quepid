@@ -46,6 +46,8 @@
 
 * Thanks to @DmitryKey for spotting that we were not tracking scorers for cases (bug introduced when we added the Show Only Ratings feature).  https://github.com/o19s/quepid/pull/303 by @epugh and @worleydl fixes both https://github.com/o19s/quepid/issues/306 AND https://github.com/o19s/quepid/issues/289.  A twofer!
 
+* Thanks to @DmitryKey for spotting that we were not properly storing the Elasticsearch choice.  https://github.com/o19s/quepid/pull/310 by @epugh fixes https://github.com/o19s/quepid/issues/309.
+
 ## 6.4.1 - 2021-01-14
 
 In the 6.4.0 release, the correct splainer-search NPM package was missed in the production Docker image.
