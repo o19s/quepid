@@ -46,10 +46,6 @@
           var bootstrapCaseNo = <%= @bootstrapCaseNo.to_i || 0 %>;
           var bootstrapTryNo  = <%= @bootstrapTryNo.to_i || 0 %>;
 
-          if (isNaN(bootstrapCaseNo)) {
-            bootstrapCaseNo = 0;
-            bootstrapTryNo  = 0;
-          }
           bootstrapSvc.run(bootstrapCaseNo, bootstrapTryNo);
         }
       ]);
