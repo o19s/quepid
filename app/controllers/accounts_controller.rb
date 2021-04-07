@@ -11,19 +11,19 @@ class AccountsController < ApplicationController
     error = false
 
     if params[:new_password].blank? || params[:current_password].blank?
-      flash.now[:error] = 'Please fill all required fields.'
+      flash[:error] = 'Please fill all required fields.'
       error = true
     elsif params[:new_password] != params[:confirm_password]
-      flash.now[:error] = 'The new passwords do not match!'
+      flash[:error] = 'The new passwords do not match!'
       error = true
     elsif !verify_password(@user, params[:current_password])
-      flash.now[:error] = 'The original password is incorrect.'
+      flash[:error] = 'The original password is incorrect.'
       error = true
     elsif @user.update password: params[:new_password]
       Analytics::Tracker.track_user_updated_password_event @user
-      flash.now[:success] = 'Account updated successfully.'
+      flash[:success] = 'Account updated successfully.'
     else
-      flash.now[:error] = 'Oooops! Something happened, please double check your values and try again.'
+      flash[:error] = 'Oooops! Something happened, please double check your values and try again.'
       error = true
     end
 
@@ -33,6 +33,7 @@ class AccountsController < ApplicationController
           render 'profiles/show'
         else
           redirect_to profile_path
+          #render 'profiles/show'
         end
       end
       format.js
@@ -41,6 +42,16 @@ class AccountsController < ApplicationController
   # rubocop:enable Metrics/MethodLength
   # rubocop:enable Metrics/PerceivedComplexity
   # rubocop:enable Metrics/AbcSize
+
+
+  def destroy
+    @user = current_user
+    @user.destroy
+    respond_to do |format|
+      format.html { redirect_to secure_url, notice: 'Your account was deleted.' }
+      format.json { head :no_content }
+    end
+  end
 
   private
 

@@ -21,7 +21,7 @@ Rails.application.routes.draw do
   # end legacy routes
 
   resources :sessions
-  resource :account, only: [ :update ]
+  resource :account, only: [ :update, :destroy ]
   resource :profile, only: [ :show, :update ]
 
   # not sure I get why we had the only: [ :passwords ] clause

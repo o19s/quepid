@@ -12,16 +12,22 @@
     </div>
 
     <div class="col-xs-12 col-sm-6 col-sm-offset-3">
-      <% form_options = {
-        id:                 "profile-form",
-        url:                profile_path,
-        remote:             true,
-        authenticity_token: true
-      } %>
-      <%= form_for(current_user, form_options) do |f| %>
+
+      <%= form_with( model: current_user, url: profile_path) do |f| %>
         <legend>
           Profile
         </legend>
+        <% if current_user.errors.any? %>
+          <div id="error_explanation">
+            <h2><%= pluralize(current_user.errors.count, "error") %> prohibited this from being saved:</h2>
+
+            <ul>
+            <% current_user.errors.full_messages.each do |message| %>
+              <li><%= message %></li>
+            <% end %>
+            </ul>
+          </div>
+        <% end %>
 
         <div class="form-group">
           <label for="user_email" class="control-label">
@@ -57,22 +63,29 @@
         <% end %>
 
         <div class="form-group">
-          <button type="submit" class="btn btn-primary btn-lg">Update Profile</button>
+          <%= f.submit 'Update profile', class: 'btn btn-primary btn-lg' %>
         </div>
       <% end %>
     </div>
 
     <div class="col-xs-12 col-sm-6 col-sm-offset-3">
-      <% form_options = {
-        method:             "put",
-        id:                 "account-form",
-        remote:             true,
-        authenticity_token: true
-      } %>
-      <%= form_tag(account_path, form_options) do %>
+
+      <%= form_with( model: current_user, url: account_path) do |f| %>
         <legend>
           Account
         </legend>
+
+        <% if current_user.errors.any? %>
+          <div id="error_explanation">
+            <h2><%= pluralize(current_user.errors.count, "error") %> prohibited this from being saved:</h2>
+
+            <ul>
+            <% current_user.errors.full_messages.each do |message| %>
+              <li><%= message %></li>
+            <% end %>
+            </ul>
+          </div>
+        <% end %>
 
         <div class="form-group">
           <label for="old" class="control-label">
@@ -96,7 +109,37 @@
         </div>
 
         <div class="form-group">
-          <button type="submit" class="btn btn-primary btn-lg">Update Password</button>
+          <button type="submit" class="btn btn-primary btn-lg">Update password</button>
+        </div>
+      <% end %>
+    </div>
+    <div class="col-xs-12 col-sm-6 col-sm-offset-3">
+
+      <%= form_with( model: current_user, url: account_path,  method: :delete) do |f| %>
+        <legend>
+          <font color="red">Danger Zone</font>
+        </legend>
+
+        <% if current_user.errors.any? %>
+          <div id="error_explanation">
+            <h2><%= pluralize(current_user.errors.count, "error") %> prohibited this from being saved:</h2>
+
+            <ul>
+            <% current_user.errors.full_messages.each do |message| %>
+              <li><%= message %></li>
+            <% end %>
+            </ul>
+          </div>
+        <% end %>
+
+
+        <div class="form-group">
+          <label for="confirm" class="control-label">
+            This will remove you from any existing teams, and delete any cases that you are the owner and only member of, as well as associated
+            snapshots and all ratings that have been made.
+          </label>
+
+          <button id="confirm" type="submit" class="btn btn-primary btn-lg">Delete your account</button>
         </div>
       <% end %>
     </div>
