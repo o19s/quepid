@@ -123,7 +123,7 @@ class User < ApplicationRecord
 
   # All the scorers that you have access to, either as communal or as owner or team.
   def scorers
-    UserScorerFinder.new(self)
+    Scorer.for_user(self)
   end
 
   # This method returns not just the cases the user is the owner of, which .cases
