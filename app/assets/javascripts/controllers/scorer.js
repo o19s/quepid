@@ -31,7 +31,7 @@ angular.module('QuepidApp')
       customScorerSvc.list()
         .then(function() {
           var scorers = customScorerSvc.scorers;
-          $scope.scorers = scorers.filter( function (scorer) {
+          $scope.userScorers = scorers.filter( function (scorer) {
             return !scorer.queryTest;
           });
 
