@@ -15,7 +15,6 @@
     </ul>
 
     <div ng-show="!communalScorersOnly"><h4>Or select from your own custom scorers:</h4></div>
-    {{ userScorers }}
     <ul class="list-group">
       <li class="list-group-item"
       ng-repeat="scorer in scorers track by scorer.scorerId"
