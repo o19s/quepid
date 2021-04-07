@@ -52,6 +52,18 @@ class User < ApplicationRecord
            inverse_of:  :owner,
            dependent:   :destroy
 
+  has_many :owned_team_cases,
+           through: :owned_teams,
+           source:  :cases
+
+  has_many :shared_team_cases,
+           through: :teams,
+           source:  :cases
+
+  has_many :shared_scorers,
+           through: :teams,
+           source:  :scorers
+
   has_many :permissions,
            dependent: :destroy
 
@@ -102,6 +114,8 @@ class User < ApplicationRecord
   include Permissible
   include Profile
 
+  # Scopes
+  # default_scope -> { includes(:permissions) }
 
   def num_queries
     queries.count
