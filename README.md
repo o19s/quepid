@@ -300,22 +300,22 @@ Common rake tasks that you might use:
 
 ```
 # db
-bin/rake db:create
-bin/rake db:drop
-bin/rake db:migrate
-bin/rake db:rollback
-bin/rake db:schema:load
-bin/rake db:seed
-bin/rake db:setup
+bin/docker r bin/rake db:create
+bin/docker r bin/rake db:drop
+bin/docker r bin/rake db:migrate
+bin/docker r bin/rake db:rollback
+bin/docker r bin/rake db:schema:load
+bin/docker r bin/rake db:seed
+bin/docker r bin/rake db:setup
 
 # show routes
-bin/rake routes
+bin/docker r bin/rake routes
 
 # tests
-bin/rake test
-bin/rake test:js
-bin/rake test:jshint
-bin/rake test:quepid
+bin/docker r bin/rake test
+bin/docker r bin/rake test:js
+bin/docker r bin/rake test:jshint
+bin/docker r bin/rake test:quepid
 ```
 
 ### Thor
