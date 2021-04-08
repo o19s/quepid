@@ -193,7 +193,7 @@ describe('Service: teamSvc', function () {
     };
     var mockResponse = mockTeam;
 
-    $httpBackend.expectPOST(url, data).respond(200, {id:1});
+    $httpBackend.expectPOST(url, data).respond(200, mockMember);
 
     teamSvc.inviteUserToJoin(mockTeam, mockInvitee.email).
       then(function(response) {
