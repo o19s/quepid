@@ -189,3 +189,8 @@ case_with_score:
   user:     :random
   case_name: case_with_score
   archived: false
+
+case_owned_by_team_owner:
+  user:     :team_owner
+  case_name: Case owned by Case Finder User
+  archived: false

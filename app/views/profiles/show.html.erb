@@ -139,7 +139,7 @@
             snapshots and all ratings that have been made.
           </label>
 
-          <button id="confirm" type="submit" class="btn btn-primary btn-lg">Delete your account</button>
+          <%= f.submit 'Delete your account', class: 'btn btn-primary btn-lg', data: {confirm: "Are you sure?"}, :confirm => 'Your confirm message' %>
         </div>
       <% end %>
     </div>

@@ -46,11 +46,44 @@ class AccountsController < ApplicationController
 
   def destroy
     @user = current_user
-    @user.destroy
-    respond_to do |format|
-      format.html { redirect_to secure_url, notice: 'Your account was deleted.' }
-      format.json { head :no_content }
+    able_to_destroy = true
+    @user.owned_teams.each do |team|
+      @user.errors.add(:base, "Please reassign ownership of the team #{team.name}." ) if team.members.count > 1
     end
+
+    puts "@user.errors.empty?: #{@user.errors.empty?}"
+    require 'pp'
+    pp @user.errors
+    unless @user.errors.empty?
+      able_to_destroy = false
+    end
+
+
+    if able_to_destroy then
+      @user.cases.each do |c|
+        if c.teams.empty?
+          c.really_destroy
+        else
+          c.user = nil       
+          c.save
+        end
+      end
+
+      @user.destroy
+      able_to_destroy = @user.destroyed?
+    end
+
+
+    respond_to do |format|
+      if able_to_destroy
+        format.html { redirect_to secure_url, notice: 'Account was deleted' }
+        format.json { head :no_content }
+      else
+        format.html { render 'profiles/show' }
+        format.json { render json: @user.errors, status: :unprocessable_entity }
+      end
+    end
+
   end
 
   private

@@ -46,9 +46,10 @@ shared_team:
   cases:    shared_team_case
 
 team_owner_team:
-  name:     Team owned bt Team Owner User
+  name:     Team owned by Team Owner User
   owner:    :team_owner
   members:  team_member_1, team_member_2, team_owner
+  cases:    shared_team_case
 
 scorers_team:
   name:     Team to test sharing scorers
