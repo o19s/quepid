@@ -29,7 +29,7 @@ class User < ApplicationRecord
   belongs_to :default_scorer, class_name: 'Scorer', optional: true # for communal scorers there isn't a owner
 
   has_many :cases,
-           dependent:   :nullify   # sometimes a case belongs to a team, so don't just delete it.
+           dependent:   :nullify # sometimes a case belongs to a team, so don't just delete it.
 
   has_many :queries, through: :cases
 

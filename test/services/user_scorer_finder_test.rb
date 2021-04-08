@@ -15,7 +15,7 @@ class UserScorerFinderTest < ActiveSupport::TestCase
 
   let(:quepid_default_scorer) { scorers(:quepid_default_scorer) }
 
-  #let(:service)               { UserScorerFinder.new(doug) }
+  # let(:service)               { UserScorerFinder.new(doug) }
 
   describe 'Find all scorers' do
     test 'returns an array of scorers' do
@@ -138,7 +138,7 @@ class UserScorerFinderTest < ActiveSupport::TestCase
         .order(name: :asc)
         .first
 
-      assert_instance_of  Scorer,  result
+      assert_instance_of  Scorer, result
       assert_equal        result, owned_scorer
     end
 
@@ -147,7 +147,7 @@ class UserScorerFinderTest < ActiveSupport::TestCase
         .order(name: :asc)
         .first
 
-      assert_instance_of  Scorer,  result
+      assert_instance_of  Scorer, result
       assert_not_equal    result, owned_scorer
       assert_equal        result, shared_scorer
     end
@@ -193,7 +193,7 @@ class UserScorerFinderTest < ActiveSupport::TestCase
         .order(name: :desc)
         .last
 
-      assert_instance_of  Scorer,  result
+      assert_instance_of  Scorer, result
       assert_equal        result, owned_scorer
     end
 
@@ -202,7 +202,7 @@ class UserScorerFinderTest < ActiveSupport::TestCase
         .order(name: :desc)
         .last
 
-      assert_instance_of  Scorer,  result
+      assert_instance_of  Scorer, result
       assert_not_equal    result, owned_scorer
       assert_equal        result, shared_scorer
     end

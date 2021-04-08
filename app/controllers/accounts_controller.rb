@@ -33,7 +33,7 @@ class AccountsController < ApplicationController
           render 'profiles/show'
         else
           redirect_to profile_path
-          #render 'profiles/show'
+          # render 'profiles/show'
         end
       end
       format.js
@@ -43,19 +43,19 @@ class AccountsController < ApplicationController
   # rubocop:enable Metrics/PerceivedComplexity
   # rubocop:enable Metrics/AbcSize
 
-
+  # rubocop:disable Metrics/AbcSize
+  # rubocop:disable Metrics/PerceivedComplexity
+  # rubocop:disable Metrics/MethodLength
   def destroy
     @user = current_user
-    able_to_destroy = true    # This should probably be at the Model level.
+    able_to_destroy = true # This should probably be at the Model level.
     @user.owned_teams.each do |team|
       @user.errors.add(:base, "Please reassign ownership of the team #{team.name}." ) if team.members.count > 1
     end
 
-    unless @user.errors.empty?
-      able_to_destroy = false
-    end
+    able_to_destroy = false unless @user.errors.empty?
 
-    if able_to_destroy then
+    if able_to_destroy
       @user.cases.each do |c|
         if c.teams.empty?
           c.really_destroy
@@ -69,7 +69,6 @@ class AccountsController < ApplicationController
       able_to_destroy = @user.destroyed?
     end
 
-
     respond_to do |format|
       if able_to_destroy
         format.html { redirect_to secure_url, notice: 'Account was deleted' }
@@ -79,8 +78,10 @@ class AccountsController < ApplicationController
         format.json { render json: @user.errors, status: :unprocessable_entity }
       end
     end
-
   end
+  # rubocop:enable Metrics/MethodLength
+  # rubocop:enable Metrics/PerceivedComplexity
+  # rubocop:enable Metrics/AbcSize
 
   private
 

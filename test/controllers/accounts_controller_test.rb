@@ -135,7 +135,7 @@ class AccountsControllerTest < ActionController::TestCase
           assert_difference('User.count', -1) do
             delete :destroy, params: { id: user.id }
           end
-          end
+        end
         assert_redirected_to secure_path
       end
     end
@@ -153,13 +153,11 @@ class AccountsControllerTest < ActionController::TestCase
 
         assert_template 'profiles/show'
 
-        #assert_includes user.errors['base'], 'Please reassign ownership of the team Team owned by Team Owner User'
-        #assert_equal flash[:error], 'Please reassign ownership of the team Team owned by Team Owner User'
-
+        # assert_includes user.errors['base'], 'Please reassign ownership of the team Team owned by Team Owner User'
+        # assert_equal flash[:error], 'Please reassign ownership of the team Team owned by Team Owner User'
       end
 
       test 'user reassigns their team first' do
-
         team = user.teams.first
         team.owner = team_member_1
         team.save
@@ -173,7 +171,6 @@ class AccountsControllerTest < ActionController::TestCase
 
         shared_team_case.reload
         assert_not shared_team_case.destroyed?
-
       end
     end
   end
