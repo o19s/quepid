@@ -46,25 +46,21 @@ class AccountsController < ApplicationController
 
   def destroy
     @user = current_user
-    able_to_destroy = true
+    able_to_destroy = true    # This should probably be at the Model level.
     @user.owned_teams.each do |team|
       @user.errors.add(:base, "Please reassign ownership of the team #{team.name}." ) if team.members.count > 1
     end
 
-    puts "@user.errors.empty?: #{@user.errors.empty?}"
-    require 'pp'
-    pp @user.errors
     unless @user.errors.empty?
       able_to_destroy = false
     end
-
 
     if able_to_destroy then
       @user.cases.each do |c|
         if c.teams.empty?
           c.really_destroy
         else
-          c.user = nil       
+          c.user = nil
           c.save
         end
       end
