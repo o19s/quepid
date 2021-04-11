@@ -15,34 +15,3 @@
 <div id='flash'>
   <%= flash_messages -%>
 </div>
-
-<div id='flash'>
-<% if flash[:notice] %>
-  <div class="alert alert-success" role="alert">
-  <button class="close" data-dismiss="alert"><span aria-hidden="true">×</span><span class="sr-only">Close</span></button>
-  not  <%= flash[:notice].html_safe %>
-  </div>
-<% end %>
-<% if flash[:success] %>
-    <div class="alert alert-success" role="alert">
-      <button class="close" data-dismiss="alert"><span aria-hidden="true">×</span><span class="sr-only">Close</span></button>
-      <%= flash[:success].html_safe %>
-    </div>
-<% end %>
-<% if flash[:info] %>
-  <div class="alert alert-success" role="alert">
-  <button class="close" data-dismiss="alert"><span aria-hidden="true">×</span><span class="sr-only">Close</span></button>
-  inf  <%= flash[:info].html_safe %>
-  </div>
-<% end %>
-<% if flash[:warning] %>
-  <div class="alert alert-warning" role="alert">
-  war  <%= flash[:warning].html_safe %>
-  </div>
-<% end %>
-<% if flash[:error] %>
-  <div class="alert alert-danger" role="alert">
-    <%= flash[:error].html_safe %>
-  </div>
-<% end %>
-</div>

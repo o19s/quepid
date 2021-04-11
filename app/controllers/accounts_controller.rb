@@ -11,19 +11,19 @@ class AccountsController < ApplicationController
     error = false
 
     if params[:new_password].blank? || params[:current_password].blank?
-      flash[:error] = 'Please fill all required fields.'
+      flash.now[:error] = 'Please fill all required fields.'
       error = true
     elsif params[:new_password] != params[:confirm_password]
-      flash[:error] = 'The new passwords do not match!'
+      flash.now[:error] = 'The new passwords do not match!'
       error = true
     elsif !verify_password(@user, params[:current_password])
-      flash[:error] = 'The original password is incorrect.'
+      flash.now[:error] = 'The original password is incorrect.'
       error = true
     elsif @user.update password: params[:new_password]
       Analytics::Tracker.track_user_updated_password_event @user
       flash[:success] = 'Account updated successfully.'
     else
-      flash[:error] = 'Oooops! Something happened, please double check your values and try again.'
+      flash.now[:error] = 'Oooops! Something happened, please double check your values and try again.'
       error = true
     end
 
