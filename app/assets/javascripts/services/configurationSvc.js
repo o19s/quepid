@@ -52,6 +52,10 @@ angular.module('UtilitiesModule')
         return communalScorersOnly;
       };
 
+      this.setQueryListSortable = function (val) {
+        queryListSortable = JSON.parse(val);
+      };
+
       this.isQueryListSortable = function() {
         return queryListSortable;
       };
