@@ -149,9 +149,6 @@ GEM
     marcel (1.0.0)
     memory_profiler (1.0.0)
     method_source (1.0.0)
-    mimemagic (0.3.9)
-      nokogiri (~> 1)
-      rake
     mini_histogram (0.3.1)
     mini_mime (1.0.3)
     mini_portile2 (2.5.0)
