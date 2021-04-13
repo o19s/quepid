@@ -24,7 +24,7 @@
 #
 
 require 'test_helper'
-
+# rubocop:disable Layout/LineLength
 class UserTest < ActiveSupport::TestCase
   test 'membership in team' do
     assert_includes users(:doug).teams, teams(:shared)
@@ -175,4 +175,48 @@ class UserTest < ActiveSupport::TestCase
       assert_not user.locked?
     end
   end
+
+  describe 'Delete User' do
+    let(:user)          { users(:team_owner) }
+    let(:team_member_1) { users(:team_member_1) }
+    let(:shared_team_case) { cases(:shared_team_case) }
+    let(:team) { teams(:valid) }
+
+    let(:random) { users(:random) }
+
+    let(:team_owner) { users(:team_owner) }
+    let(:team_member_1) { users(:team_member_1) }
+    let(:shared_team_case) { cases(:shared_team_case) }
+
+    it 'prevents a user who owns a team that other people are in from being deleted' do
+      user.destroy
+      assert_not user.destroyed?
+
+      assert user.errors.full_messages_for(:base).include?('Please reassign ownership of the team Team owned by Team Owner User.')
+    end
+
+    it 'prevents a user who owns a scorer shared with a team from being deleted' do
+      random.destroy
+      assert_not random.destroyed?
+      assert random.errors.full_messages_for(:base).include?('Please remove the scorer Scorer for sharing from the team before deleting this user.')
+    end
+
+    it 'deletes a user and their team if no one else is in the team' do
+      team = team_owner.teams.first
+      team.owner = team_member_1
+      team.save
+
+      assert_not shared_team_case.destroyed?
+
+      assert_difference('User.count', -1) do
+        team_owner.destroy
+        assert team_owner.destroyed?
+      end
+
+      shared_team_case.reload
+      assert_not shared_team_case.destroyed?
+    end
+  end
 end
+
+# rubocop:enable Layout/LineLength

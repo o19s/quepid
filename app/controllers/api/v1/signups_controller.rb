@@ -7,7 +7,10 @@ module Api
       skip_before_action :verify_authenticity_token
 
       def create
-        @user = User.new user_params
+        user_params_to_save = user_params
+        # Little workaround for the Angular frontend doing password confirmation on the frontend!
+        user_params_to_save[:password_confirmation] = user_params_to_save[:password]
+        @user = User.new user_params_to_save
 
         if @user.save
           Analytics::Tracker.track_signup_event @user

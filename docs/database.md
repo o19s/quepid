@@ -25,4 +25,4 @@ CHARSET=utf8mb4 COLLATE=utf8mb4_bin
 ```
 
 If your migration add/drops a table, you may need to edit `schema.rb` to restore that definition.  Your tests
-will fail fortunately ;-).
+will fail fortunately ;-).  Expect to see `ERROR emoji support#test_handles_emoji_in_code (27.86s)`

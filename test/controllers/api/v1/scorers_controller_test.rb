@@ -156,7 +156,7 @@ module Api
           assert_equal scale.sort,                    scorer['scale']
         end
 
-        test 'respects communal_Scorers_only environment setting' do
+        test 'respects communal_scorers_only environment setting' do
           Rails.application.config.communal_scorers_only = true
 
           post :create

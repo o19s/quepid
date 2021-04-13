@@ -21,7 +21,7 @@ Rails.application.routes.draw do
   # end legacy routes
 
   resources :sessions
-  resource :account, only: [ :update ]
+  resource :account, only: [ :update, :destroy ]
   resource :profile, only: [ :show, :update ]
 
   # not sure I get why we had the only: [ :passwords ] clause
@@ -36,7 +36,7 @@ Rails.application.routes.draw do
 
   namespace :admin do
     get '/' => 'home#index'
-    resources :users, except: [ :new, :create, :destroy ] do
+    resources :users, except: [ :new, :create ] do
       resource :lock, only: [ :update ], module: :users
       resource :pulse, only: [ :show ], module: :users
     end
