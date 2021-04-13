@@ -84,6 +84,8 @@ class User < ApplicationRecord
   validates :password,
             presence: true
 
+  validates_confirmation_of :password, :message => "should match confirmation"
+
   validates_with ::DefaultScorerExistsValidator
 
   validates :agreed,
@@ -92,6 +94,27 @@ class User < ApplicationRecord
 
   def terms_and_conditions?
     Rails.application.config.terms_and_conditions_url.length.positive?
+  end
+
+  before_destroy :check_team_ownership_before_removing!, prepend: true
+  before_destroy :check_scorer_ownership_before_removing!, prepend: true
+
+  def check_team_ownership_before_removing!
+    owned_teams.each do |team|
+      if team.members.count > 1
+        errors.add(:base, "Please reassign ownership of the team #{team.name}." )
+        throw(:abort)
+      end
+    end
+  end
+
+  def check_scorer_ownership_before_removing!
+    owned_scorers.each do |scorer|
+      if shared_scorers.include?(scorer)
+        errors.add(:base, "Please remove the scorer #{scorer.name} from the team before deleting this user." )
+        throw(:abort)
+      end
+    end
   end
 
   # Modules

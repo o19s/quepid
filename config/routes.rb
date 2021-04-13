@@ -36,7 +36,7 @@ Rails.application.routes.draw do
 
   namespace :admin do
     get '/' => 'home#index'
-    resources :users, except: [ :new, :create, :destroy ] do
+    resources :users, except: [ :new, :create ] do
       resource :lock, only: [ :update ], module: :users
       resource :pulse, only: [ :show ], module: :users
     end

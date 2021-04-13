@@ -9,7 +9,7 @@
       <th>Marketing</th>
       <th>Number of Logins</th>
       <th>Administrator?</th>
-      <th colspan="3"></th>
+      <th colspan="2"></th>
     </tr>
   </thead>
 
@@ -29,14 +29,6 @@
         <td><%= user.administrator? %></td>
         <td><%= link_to 'Show', admin_user_path(user) %></td>
         <td><%= link_to 'Edit', edit_admin_user_path(user) %></td>
-        <td>
-          <% if user.locked? %>
-            <% text = 'Unlock' %>
-          <% else %>
-            <% text = 'Lock' %>
-          <% end %>
-          <%= button_to text, admin_user_lock_path(user), method: :patch, class: 'btn btn-danger' %>
-        </td>
       </tr>
     <% end %>
   </tbody>

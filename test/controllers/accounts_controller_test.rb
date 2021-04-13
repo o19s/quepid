@@ -24,13 +24,13 @@ class AccountsControllerTest < ActionController::TestCase
       end
 
       test 'updates user password' do
-        old_password  = 'password'
+        current_password  = 'password'
         password      = 'newpass'
 
         data          = {
-          current_password: old_password,
-          new_password:     password,
-          confirm_password: password,
+          current_password: current_password,
+          password:     password,
+          password_confirmation: password,
         }
 
         patch :update, params: data
@@ -40,43 +40,30 @@ class AccountsControllerTest < ActionController::TestCase
       end
 
       test 'requires all fields to be filled' do
-        old_password  = ''
-        password      = 'newpass'
 
-        data          = {
-          current_password: old_password,
-          new_password:     password,
-          confirm_password: password,
-        }
-
-        patch :update, params: data
-
-        assert_template 'profiles/show'
-        assert_equal flash[:error], 'Please fill all required fields.'
-
-        old_password  = 'password'
+        current_password  = 'password'
         password      = ''
 
         data          = {
-          current_password: old_password,
-          new_password:     password,
-          confirm_password: password,
+          current_password: current_password,
+          password:     password,
+          password_confirmation: password,
         }
 
         patch :update, params: data
 
         assert_template 'profiles/show'
-        assert_equal flash[:error], 'Please fill all required fields.'
+        assert_equal flash[:error], 'Oooops! Something happened, please double check your values and try again.'
       end
 
       test 'requires a valid current password' do
-        old_password  = 'foo'
+        current_password  = 'foo'
         password      = 'newpass'
 
         data          = {
-          current_password: old_password,
-          new_password:     password,
-          confirm_password: password,
+          current_password: current_password,
+          password:     password,
+          password_confirmation: password,
         }
 
         patch :update, params: data
@@ -86,32 +73,33 @@ class AccountsControllerTest < ActionController::TestCase
       end
 
       test 'requires new password to match confirmation password' do
-        old_password  = 'foo'
+        current_password  = 'password'
         password      = 'newpass'
 
         data          = {
-          current_password: old_password,
-          new_password:     password,
-          confirm_password: 'bar',
+          current_password: current_password,
+          password:     password,
+          password_confirmation: 'bar',
         }
 
         patch :update, params: data
 
         assert_template 'profiles/show'
-        assert_equal flash[:error], 'The new passwords do not match!'
+        assert user.errors.full_messages_for(:password_confirmation).include?("Password confirmation doesn't match Password")
+        assert_equal flash[:error], 'Oooops! Something happened, please double check your values and try again.'
       end
 
       describe 'analytics' do
         test 'posts event' do
           expects_any_ga_event_call
 
-          old_password  = 'password'
+          current_password  = 'password'
           password      = 'newpass'
 
           data          = {
-            current_password: old_password,
-            new_password:     password,
-            confirm_password: password,
+            current_password: current_password,
+            password:     password,
+            password_confirmation: password,
           }
 
           perform_enqueued_jobs do
@@ -148,13 +136,11 @@ class AccountsControllerTest < ActionController::TestCase
         login_user user
       end
 
-      test 'user who owns a team' do
+      test 'user who owns a team and can not delete it gets error' do
         delete :destroy, params: { id: user.id }
 
         assert_template 'profiles/show'
 
-        # assert_includes user.errors['base'], 'Please reassign ownership of the team Team owned by Team Owner User'
-        # assert_equal flash[:error], 'Please reassign ownership of the team Team owned by Team Owner User'
       end
 
       test 'user reassigns their team first' do

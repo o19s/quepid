@@ -242,7 +242,7 @@ In the Rails application you can use the logger for the output:
 Rails.logger object.inspect
 ```
 
-If that's not enough and you want to run a debugger, the `byebug` gem is included for that. Add `byebug` wherever you want a breakpoint and then run the code.
+If that's not enough and you want to run a debugger, the `byebug` gem is included for that. Add the line `byebug` in your Rails code wherever you want a breakpoint and then run the code and you will get an inline REPL.   Even in unit tests!
 
 Also, we have the `derailed` gem available which helps you understand memory issues.
 

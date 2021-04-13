@@ -10,16 +10,10 @@ class AccountsController < ApplicationController
     @user = current_user
     error = false
 
-    if params[:new_password].blank? || params[:current_password].blank?
-      flash.now[:error] = 'Please fill all required fields.'
-      error = true
-    elsif params[:new_password] != params[:confirm_password]
-      flash.now[:error] = 'The new passwords do not match!'
-      error = true
-    elsif !verify_password(@user, params[:current_password])
+    if !verify_password(@user, params[:current_password])
       flash.now[:error] = 'The original password is incorrect.'
       error = true
-    elsif @user.update password: params[:new_password]
+    elsif @user.update password: params[:password], password_confirmation: params[:password_confirmation]
       Analytics::Tracker.track_user_updated_password_event @user
       flash[:success] = 'Account updated successfully.'
     else
@@ -33,7 +27,6 @@ class AccountsController < ApplicationController
           render 'profiles/show'
         else
           redirect_to profile_path
-          # render 'profiles/show'
         end
       end
       format.js
@@ -59,9 +52,6 @@ class AccountsController < ApplicationController
       @user.cases.each do |c|
         if c.teams.empty?
           c.really_destroy
-        else
-          c.user = nil
-          c.save
         end
       end
 
