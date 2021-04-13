@@ -3,8 +3,6 @@
 class AccountsController < ApplicationController
   force_ssl if: :ssl_enabled?
 
-  # rubocop:disable Metrics/AbcSize
-  # rubocop:disable Metrics/PerceivedComplexity
   # rubocop:disable Metrics/MethodLength
   def update
     @user = current_user
@@ -33,34 +31,16 @@ class AccountsController < ApplicationController
     end
   end
   # rubocop:enable Metrics/MethodLength
-  # rubocop:enable Metrics/PerceivedComplexity
-  # rubocop:enable Metrics/AbcSize
 
-  # rubocop:disable Metrics/AbcSize
-  # rubocop:disable Metrics/PerceivedComplexity
-  # rubocop:disable Metrics/MethodLength
   def destroy
     @user = current_user
-    able_to_destroy = true # This should probably be at the Model level.
-    @user.owned_teams.each do |team|
-      @user.errors.add(:base, "Please reassign ownership of the team #{team.name}." ) if team.members.count > 1
-    end
 
-    able_to_destroy = false unless @user.errors.empty?
-
-    if able_to_destroy
-      @user.cases.each do |c|
-        if c.teams.empty?
-          c.really_destroy
-        end
-      end
-
-      @user.destroy
-      able_to_destroy = @user.destroyed?
+    @user.cases.each do |c|
+      c.really_destroy if c.teams.empty?
     end
 
     respond_to do |format|
-      if able_to_destroy
+      if @user.destroy
         format.html { redirect_to secure_url, notice: 'Account was deleted' }
         format.json { head :no_content }
       else
@@ -69,9 +49,6 @@ class AccountsController < ApplicationController
       end
     end
   end
-  # rubocop:enable Metrics/MethodLength
-  # rubocop:enable Metrics/PerceivedComplexity
-  # rubocop:enable Metrics/AbcSize
 
   private
 

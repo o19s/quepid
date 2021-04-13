@@ -84,7 +84,7 @@ class User < ApplicationRecord
   validates :password,
             presence: true
 
-  validates_confirmation_of :password, :message => "should match confirmation"
+  validates :password, confirmation: { message: 'should match confirmation' }
 
   validates_with ::DefaultScorerExistsValidator
 
@@ -96,6 +96,10 @@ class User < ApplicationRecord
     Rails.application.config.terms_and_conditions_url.length.positive?
   end
 
+  # Callbacks
+  before_save :encrypt_password
+  before_save :check_agreed_time
+  before_create :set_defaults
   before_destroy :check_team_ownership_before_removing!, prepend: true
   before_destroy :check_scorer_ownership_before_removing!, prepend: true
 
@@ -123,11 +127,6 @@ class User < ApplicationRecord
   # devise :invitable, :database_authenticatable, :registerable,
   # :recoverable, :rememberable, :trackable, :validatable
   devise :invitable, :recoverable, reset_password_keys: [ :email ]
-
-  # Callbacks
-  before_save   :encrypt_password
-  before_save   :check_agreed_time
-  before_create :set_defaults
 
   # Devise hacks since we only use the recoverable module
   attr_accessor :password_confirmation

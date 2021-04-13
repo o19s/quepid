@@ -24,12 +24,12 @@ class AccountsControllerTest < ActionController::TestCase
       end
 
       test 'updates user password' do
-        current_password  = 'password'
+        current_password = 'password'
         password      = 'newpass'
 
         data          = {
-          current_password: current_password,
-          password:     password,
+          current_password:      current_password,
+          password:              password,
           password_confirmation: password,
         }
 
@@ -40,13 +40,12 @@ class AccountsControllerTest < ActionController::TestCase
       end
 
       test 'requires all fields to be filled' do
-
-        current_password  = 'password'
+        current_password = 'password'
         password      = ''
 
         data          = {
-          current_password: current_password,
-          password:     password,
+          current_password:      current_password,
+          password:              password,
           password_confirmation: password,
         }
 
@@ -57,12 +56,12 @@ class AccountsControllerTest < ActionController::TestCase
       end
 
       test 'requires a valid current password' do
-        current_password  = 'foo'
+        current_password = 'foo'
         password      = 'newpass'
 
         data          = {
-          current_password: current_password,
-          password:     password,
+          current_password:      current_password,
+          password:              password,
           password_confirmation: password,
         }
 
@@ -73,19 +72,20 @@ class AccountsControllerTest < ActionController::TestCase
       end
 
       test 'requires new password to match confirmation password' do
-        current_password  = 'password'
+        current_password = 'password'
         password      = 'newpass'
 
         data          = {
-          current_password: current_password,
-          password:     password,
+          current_password:      current_password,
+          password:              password,
           password_confirmation: 'bar',
         }
 
         patch :update, params: data
 
         assert_template 'profiles/show'
-        assert user.errors.full_messages_for(:password_confirmation).include?("Password confirmation doesn't match Password")
+        assert user.errors.full_messages_for(:password_confirmation)
+          .include?("Password confirmation doesn't match Password")
         assert_equal flash[:error], 'Oooops! Something happened, please double check your values and try again.'
       end
 
@@ -93,12 +93,12 @@ class AccountsControllerTest < ActionController::TestCase
         test 'posts event' do
           expects_any_ga_event_call
 
-          current_password  = 'password'
+          current_password = 'password'
           password      = 'newpass'
 
           data          = {
-            current_password: current_password,
-            password:     password,
+            current_password:      current_password,
+            password:              password,
             password_confirmation: password,
           }
 
@@ -140,7 +140,6 @@ class AccountsControllerTest < ActionController::TestCase
         delete :destroy, params: { id: user.id }
 
         assert_template 'profiles/show'
-
       end
 
       test 'user reassigns their team first' do
