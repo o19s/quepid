@@ -24,6 +24,7 @@
 #  email_marketing        :boolean          not null
 #
 
+# rubocop:disable Metrics/ClassLength
 class User < ApplicationRecord
   # Associations
   belongs_to :default_scorer, class_name: 'Scorer', optional: true # for communal scorers there isn't a owner
@@ -200,3 +201,4 @@ class User < ApplicationRecord
     self[:agreed_time] = Time.zone.now
   end
 end
+# rubocop:enable Metrics/ClassLength
