@@ -45,7 +45,9 @@ describe('Service: teamSvc', function () {
     cases:    [],
     scorers:  [],
   };
-  var mockTeam;
+  var mockTeam = {
+    'id':       1
+  };
 
   var mockMember = {
     'id':       1,
@@ -184,16 +186,19 @@ describe('Service: teamSvc', function () {
   });
 
   it('invites a user to join the team', function() {
+
     var url   = '/api/teams/' + mockTeam.id + '/members/invite';
     var data  = {
       id: mockInvitee.email,
     };
     var mockResponse = mockTeam;
 
-    $httpBackend.expectPOST(url, data).respond(200);
+    $httpBackend.expectPOST(url, data).respond(200, mockMember);
 
     teamSvc.inviteUserToJoin(mockTeam, mockInvitee.email).
       then(function(response) {
+        console.log("We expect 1 member, but we have " + mockTeam.members.length);
+        console.log(mockTeam.members);
         expect(mockTeam.members.length).toBe(1);
       });
     $httpBackend.flush();

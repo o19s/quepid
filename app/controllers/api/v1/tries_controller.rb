@@ -35,7 +35,7 @@ module Api
       end
 
       def update
-        if @try.update update_try_params
+        if @try.update try_params
           respond_with @try
         else
           render json: @try.errors, status: :bad_request
@@ -54,10 +54,6 @@ module Api
         @try = @case.tries.where(try_number: params[:try_number]).first
 
         render json: { message: 'Try not found!' }, status: :not_found unless @try
-      end
-
-      def update_try_params
-        params.require(:try).permit( :name )
       end
 
       def try_params

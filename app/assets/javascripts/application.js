@@ -52,7 +52,7 @@
 //= require angular-ui-ace/src/ui-ace
 //= require angular-ui-sortable/dist/sortable
 //= require angular-utils-pagination/dirPagination
-//= require angular-timeago/src/timeAgo
+//= require angular-timeago/dist/angular-timeago
 //= require angular-csv-import/dist/angular-csv-import
 //= require angular-flash/dist/angular-flash
 //= require angular-animate/angular-animate
@@ -62,7 +62,6 @@
 //= require urijs/src/URI
 //= require utilitiesModule
 //= require secureApp
-//= require bind
 //= require app
 //= require routes
 //= require_tree ./components

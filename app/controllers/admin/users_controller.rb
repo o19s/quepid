@@ -45,6 +45,16 @@ module Admin
       end
     end
 
+    # DELETE /admin/users/1
+    # DELETE /admin/users/1.json
+    def destroy
+      @user.destroy
+      respond_to do |format|
+        format.html { redirect_to people_url, notice: 'Person was successfully destroyed.' }
+        format.json { head :no_content }
+      end
+    end
+
     private
 
     # Use callbacks to share common setup or constraints between actions.

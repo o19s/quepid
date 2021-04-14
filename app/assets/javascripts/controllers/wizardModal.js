@@ -17,6 +17,9 @@ angular.module('QuepidApp')
       $log.debug('Init Wizard settings ctrl');
       $scope.wizardSettingsModel = {};
 
+
+
+
       $scope.pendingWizardSettings = angular.copy(settingsSvc.defaults.solr);
 
       $scope.wizardSettingsModel.settingsId = function() {
@@ -193,8 +196,11 @@ angular.module('QuepidApp')
         angular.merge($scope.pendingWizardSettings, settingsSvc.editableSettings());
         $scope.pendingWizardSettings.newQueries = [];
 
-        if(userSvc.getUser().firstLogin===true){
+        console.log('User completedCaseWizard is ' + userSvc.getUser().completedCaseWizard);
+
+        if(userSvc.getUser().completedCaseWizard===false){
           $scope.pendingWizardSettings.caseName = 'Movies Search';
+          // should we be setting up more here?
         } else {
           $log.info('Skipping welcome step for case wizard');
           WizardHandler.wizard().goTo(1);
@@ -242,13 +248,8 @@ angular.module('QuepidApp')
             var length = $scope.pendingWizardSettings.newQueries.length;
             var query = null;
 
-            var updateUserNumQueries = function() {
-              $rootScope.currentUser.queryAdded();
-            };
-
             var queryPromise = function(q) {
-              return queriesSvc.persistQuery(q)
-                      .then(updateUserNumQueries());
+              return queriesSvc.persistQuery(q);
             };
 
             var createPromises = [];
@@ -266,6 +267,10 @@ angular.module('QuepidApp')
             $q.all(createPromises).then( () => {
               queriesSvc.searchAll();
             });
+
+            
+            $rootScope.currentUser.shownIntroWizard();
+
 
             $uibModalInstance.close();
           });

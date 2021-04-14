@@ -34,6 +34,8 @@
 
 * The `/case` url is one we frequently end up with, and it generates a 404.  Thanks @DmitryKey for suggesting we have it route to the case listing page `/cases` instead.  https://github.com/o19s/quepid/pull/304 by @epugh.
 
+* The logic around when we popped open the "Create a Case" wizard for a brand new user was somewhat split between the backend `home_controller.rb` and the front end.   It also made anyone who was invited to a team just for rating purposes go through the Create a Case Wizard on their first login, which was awkward.   So, converted the concept of a "first_login" for the wizard to just a boolean "completed_case_wizard", and now it it checked if you have NO cases, and popped up, or if you click "Add a Case".   https://github.com/o19s/quepid/pull/305 by @epugh fixes https://github.com/o19s/quepid/issues/281.
+
 ### Bugs
 
 * You can export a rating that has no actual rating value chosen! https://github.com/o19s/quepid/pull/266 by @epugh fixes https://github.com/o19s/quepid/issues/265.
@@ -43,6 +45,8 @@
 * Rails 5 Upgrade Hangover: fixed strong parameters validation issues, fixed wonky left outer joins on cases showing duplicate cases (and killed performance), eliminated the `user_case_finder.rb` class in favour of simpler scopes.  https://github.com/o19s/quepid/pull/292 by @epugh w/ assist from @worleydl.
 
 * Thanks to @DmitryKey for spotting that we were not tracking scorers for cases (bug introduced when we added the Show Only Ratings feature).  https://github.com/o19s/quepid/pull/303 by @epugh and @worleydl fixes both https://github.com/o19s/quepid/issues/306 AND https://github.com/o19s/quepid/issues/289.  A twofer!
+
+* Thanks to @DmitryKey for spotting that we were not properly storing the Elasticsearch choice.  https://github.com/o19s/quepid/pull/310 by @epugh fixes https://github.com/o19s/quepid/issues/309.
 
 ## 6.4.1 - 2021-01-14
 

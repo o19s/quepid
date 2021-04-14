@@ -26,6 +26,7 @@ services:
       - BROWSER=/dev/null
     volumes:
       - .:/srv/app
+      - ./log:/log
     ports:
       - 3000:3000
     links:

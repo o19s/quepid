@@ -4,7 +4,7 @@
       <h1>Welcome To Quepid!</h1>
       <div>
         <img ng-src="/images/doug.jpg" style="float: left; margin: 20px 30px 100px 20px; width: 100px" />
-        <p>Hi, I'm Doug, creator of Quepid. Let me guide you through your setup!</p>
+        <p>Hi, I'm Doug, creator of Quepid. Let me guide you through setting up your very first Case!</p>
         <button class="btn btn-primary pull-right continue" wz-next>Continue</button>
         <br><br><br><br><br>
       </div>
@@ -12,7 +12,7 @@
     <wz-step title="Name" id="step-two">
       <h2>Name Your Case!</h2>
       <div>
-        <p>Give an informative name to the problem you're solving</p>
+        <p>Give an informative name to the problem you're solving.</p>
 
         <form class="form-inline">
           <div class="form-group">
@@ -83,7 +83,7 @@ curl -X POST -H 'Content-type:application/json' -d '{
             <div class="row">
               <input style="width: 100%" type="text" ng-change="reset()" ng-model="pendingWizardSettings.searchUrl" class="form-control" />
               <small title="Manually validates Quepid can get retrieve search results from your URL before continuing" class="pull-right"><a ng-click="validate(true)">ping it</a></small>
-              <p class="help-block">Unsure? <a href="http://quepid.com/how-quepid-works/" target="_blank">Learn More</a> about Quepid's light touch with your search engine &amp; data
+              <p class="help-block">Unsure? <a href="http://quepid.com/how-quepid-works/" target="_blank">Learn More</a> about Quepid's light touch with your search engine &amp; data.
 
               <p class="help-block tip">
                 Tip: Your URL should look like this {{pendingWizardSettings.urlFormat}}.

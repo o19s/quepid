@@ -27,7 +27,7 @@ class User < Thor
     load_environment
 
     user_params = {
-      email:         email, # Quepid Issue #111 will fix this.
+      email:         email,
       name:          name,
       password:      password,
       administrator: is_administrator,
