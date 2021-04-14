@@ -46,7 +46,8 @@ describe('Service: rateElementSvc', function () {
       "error":    false,
     };
 
-    var mockScope = {
+    var mockScope = {};
+    var mockScopeTemplate = {
       "query": {
         "scorer": null,
         effectiveScorer: function() {
@@ -60,6 +61,9 @@ describe('Service: rateElementSvc', function () {
       rateElementSvc  = _rateElementSvc_;
       customScorerSvc = _customScorerSvc_;
       $rootScope      = _$rootScope_;
+
+      // Tests were mucking with the scope so clear it out
+      mockScope = angular.copy(mockScopeTemplate);
 
       spyOn(customScorerSvc, "get").and.callFake(function(id) {
         var deferred = $q.defer();
@@ -78,10 +82,12 @@ describe('Service: rateElementSvc', function () {
 
     it('to the default when scorer is null', function() {
       rateElementSvc.setScale(mockScope, mockScope.ratings);
+
+      // This is set but shouldn't be called by the setScale method
       mockScorer.getColors = function() {
         return expectedScorer;
       };
-      
+
       $rootScope.$apply();
 
       expect(mockScope.ratings.scale).toBeDefined();
