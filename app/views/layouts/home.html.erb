@@ -39,6 +39,7 @@
           var triggerWizard = <%= @triggerWizard %>;
 
           configurationSvc.setCommunalScorersOnly('<%= Rails.application.config.communal_scorers_only %>');
+          configurationSvc.setQueryListSortable('<%= Rails.application.config.query_list_sortable %>');
 
           if (appDebug === 'true') {
             secureRedirectSvc.debugServer(debugPort);
