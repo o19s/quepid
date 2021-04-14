@@ -16,6 +16,7 @@ angular.module('QuepidApp')
     'diffResultsSvc',
     'caseSvc',
     'customScorerSvc',
+    'configurationSvc',
     function (
       $scope,
       $rootScope,
@@ -29,9 +30,11 @@ angular.module('QuepidApp')
       querySnapshotSvc,
       diffResultsSvc,
       caseSvc,
-      customScorerSvc
+      customScorerSvc,
+      configurationSvc
     ) {
       $scope.queriesSvc = queriesSvc;
+      $scope.queryListSortable = configurationSvc.isQueryListSortable();
 
       $rootScope.$on('scoring-complete', () => {
         $scope.queries.avgQuery.calcScore();
