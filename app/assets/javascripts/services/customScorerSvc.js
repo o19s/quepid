@@ -91,7 +91,7 @@
           var data  = {
             'name':                   scorer.name,
             'code':                   scorer.code,
-            'scale':                  scorer.scale,
+            'scale':                  scorer.scale.split(',').filter(entry => entry.trim() != ''),
             'manual_max_score':       scorer.manualMaxScore,
             'manual_max_score_value': scorer.manualMaxScoreValue,
             'show_scale_labels':      scorer.showScaleLabels,
@@ -117,7 +117,7 @@
             'scorer': {
               'name':                   scorer.name,
               'code':                   scorer.code,
-              'scale':                  scorer.scale,
+              'scale':                  scorer.scale.split(',').filter(entry => entry.trim() != ''),
               'manual_max_score':       scorer.manualMaxScore,
               'manual_max_score_value': scorer.manualMaxScoreValue,
               'show_scale_labels':      scorer.showScaleLabels,
