@@ -12,6 +12,8 @@
 
 ### Improvements
 
+* We now have a favicon for Quepid!  https://github.com/o19s/quepid/pull/317 by @DmitryKey.
+
 * Upgrade to Rails 5 and Ruby 2.7.2!   We have been stuck on Rails 4.2 for years, and this unlocks a lot of new capabilities.  https://github.com/o19s/quepid/pull/256 by @epugh with inspiration from @worleydl.
 
 * Renamed "Export Case" and "Import Ratings" to just "Export" and "Import".  https://github.com/o19s/quepid/pull/270 by @abhishekChoudhary93 fixes https://github.com/o19s/quepid/issues/195.
@@ -46,7 +48,7 @@
 
 * Fixing typo in defining aria-hidden html tag.  https://github.com/o19s/quepid/pull/269 by @abhishekChoudhary93 fixes https://github.com/o19s/quepid/issues/268.
 
-* Rails 5 Upgrade Hangover: fixed strong parameters validation issues, fixed wonky left outer joins on cases showing duplicate cases (and killed performance), eliminated the `user_case_finder.rb` class in favour of simpler scopes.  https://github.com/o19s/quepid/pull/292 by @epugh w/ assist from @worleydl.  https://github.com/o19s/quepid/pull/314 by @worleydl is related.
+* Rails 5 Upgrade Hangover: fixed strong parameters validation issues, fixed wonky left outer joins on cases showing duplicate cases (and killed performance), eliminated the `user_case_finder.rb` class in favour of simpler scopes.  https://github.com/o19s/quepid/pull/292 by @epugh w/ assist from @worleydl.  https://github.com/o19s/quepid/pull/314 by @worleydl is related.  https://github.com/o19s/quepid/issues/321 by @janhoy fixed by https://github.com/o19s/quepid/pull/323 by @epugh.
 
 * Thanks to @DmitryKey for spotting that we were not tracking scorers for cases (bug introduced when we added the Show Only Ratings feature).  https://github.com/o19s/quepid/pull/303 by @epugh and @worleydl fixes both https://github.com/o19s/quepid/issues/306 AND https://github.com/o19s/quepid/issues/289.  A twofer!
 
