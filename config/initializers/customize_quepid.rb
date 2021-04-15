@@ -58,3 +58,9 @@ Rails.application.config.communal_scorers_only = bool.deserialize(ENV.fetch('COM
 # you can send using traditional SMTP server by setting this to SMTP.  Leave it blank and there is
 # no email provider.
 Rails.application.config.email_provider = ENV.fetch('EMAIL_PROVIDER', '')
+
+# == Query List Sortable
+# See https://github.com/o19s/quepid/issues/272 for a bug in expand/collapse that some setups experience.
+# This lets you disable the sorting if you experience the bug.
+#
+Rails.application.config.query_list_sortable = bool.deserialize(ENV.fetch('QUERY_LIST_SORTABLE', true))

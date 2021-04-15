@@ -27,7 +27,7 @@
           <span class="text-muted">Sort &nbsp;</span>
 
           <ul class="list-inline" style="display:inline" role="group" aria-label="sort">
-            <li>
+            <li ng-if="queryListSortable">
               <a ng-class="{active: sort == 'defaultCaseOrder'}" ng-click="sortBy('default')">
                 Manual
                 <span ng-show="sortName == 'default'"
@@ -36,6 +36,16 @@
                   aria-hidden="true">
                 </span>
               </a>
+            </li>
+            <li ng-if="!queryListSortable">
+              <script type="application/javascript">
+                // Tooltip
+                $(function () {
+                  $('[data-toggle="tooltip"]').tooltip();
+                })
+              </script>
+              Manual
+              <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true" data-placement="right" data-toggle="tooltip"  title="Manual sorting has been disabled by your administrator due to the bug https://github.com/o19s/quepid/issues/272."></span>
             </li>
 
             <li>
@@ -87,7 +97,7 @@
       </div>
 
       <!-- let the user know what we're looking at-->
-      <ul class="results-list-element" ui-sortable="queries.sortableOptions" ng-model="queriesList" ng-class="dragging === true ? 'dragging' : ''">
+      <ul class="results-list-element" ui-sortable="queries.sortableOptions" ng-model="queriesList" ng-class="!queryListSortable ? 'unsortable' : dragging === true ? 'dragging' : ''">
         <li ng-class="query.isToggled() ? 'unsortable' : ''" dir-paginate="query in queriesList | orderBy:sort:reverse | itemsPerPage: pagination.pageSize" current-page="pagination.currentPage" >
           <search-results query="query" issortingenabled="queries.isSortingEnabled">
           </search-results>

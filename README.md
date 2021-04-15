@@ -185,7 +185,7 @@ Runs tests for the Angular side. There are two modes for the karma tests:
 * Single run: `bin/docker r rails karma:run`
 * Continuous/watched run: `bin/docker r bin/rake karma:start`
 
-**Note:** The karma tests require the assets to be precompiled, which adds a significant amount of time to the test run. If you are only making changes to the test/spec files, then it is recommended you run the tests in watch mode (`bin/rake karma:start`). The caveat is that any time you make a change to the app files, you will have to restart the process (or use the single run mode).
+**Note:** The karma tests require the assets to be precompiled, which adds a significant amount of time to the test run. If you are only making changes to the test/spec files, then it is recommended you run the tests in watch mode (`bin/docker r bin/rake karma:start`). The caveat is that any time you make a change to the app files, you will have to restart the process (or use the single run mode).
 
 ### Rubocop
 
@@ -242,7 +242,7 @@ In the Rails application you can use the logger for the output:
 Rails.logger object.inspect
 ```
 
-If that's not enough and you want to run a debugger, the `byebug` gem is included for that. Add `byebug` wherever you want a breakpoint and then run the code.
+If that's not enough and you want to run a debugger, the `byebug` gem is included for that. Add the line `byebug` in your Rails code wherever you want a breakpoint and then run the code and you will get an inline REPL.   Even in unit tests!
 
 Also, we have the `derailed` gem available which helps you understand memory issues.
 
@@ -300,22 +300,22 @@ Common rake tasks that you might use:
 
 ```
 # db
-bin/rake db:create
-bin/rake db:drop
-bin/rake db:migrate
-bin/rake db:rollback
-bin/rake db:schema:load
-bin/rake db:seed
-bin/rake db:setup
+bin/docker r bin/rake db:create
+bin/docker r bin/rake db:drop
+bin/docker r bin/rake db:migrate
+bin/docker r bin/rake db:rollback
+bin/docker r bin/rake db:schema:load
+bin/docker r bin/rake db:seed
+bin/docker r bin/rake db:setup
 
 # show routes
-bin/rake routes
+bin/docker r bin/rake routes
 
 # tests
-bin/rake test
-bin/rake test:js
-bin/rake test:jshint
-bin/rake test:quepid
+bin/docker r bin/rake test
+bin/docker r bin/rake test:js
+bin/docker r bin/rake test:jshint
+bin/docker r bin/rake test:quepid
 ```
 
 ### Thor
