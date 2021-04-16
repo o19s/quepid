@@ -1,6 +1,18 @@
 # Changelog
 
-## 6.4.2 - ?
+## 6.5.0 - ?
+
+I can sum up this release of Quepid as either the "Hey friend, come join me in improving search" release or the "so much technical
+debt has been paid down" release.   
+
+> Hey friend, come join me in improving search
+
+We have added features that make it easier for you to invite your colleagues to come join your team and start rating documents.  We
+have reworked the initial case creation wizard to be smarter about popping up only the first time you decide to create your own case, instead of having it jump into the user flow when you join an existing team with existing cases.  This should make it easier to bring folks interested only in rating docs into Quepid.  As part of this, we've also added better support for deleting both individual Cases and now you can delete User accounts.  So if you invite someone, and change your mind, you can clean up after yourself.
+
+> so much technical debt has been paid down
+
+We are finally off Rails 4.2 and are now on the latest Rails 5 release, and we have a shiny new Favicon to go with it!  We've updated all of our frontend dependencies to the latest possible, congruent with the core app is still on Angular1.  The lift from Rails 4 to Rails 5 was massive, and a huge round of thanks to everyone who reported bugs.   We also ripped out some features that hadn't seen adoption by users, including "soft delete" of queries and the "unit test" style custom scorers.
 
 ### Features
 
@@ -8,7 +20,7 @@
 
 * Add support for sending emails via SMTP, or use Postmark, or don't send emails.  https://github.com/o19s/quepid/pull/276 by @gabauer fixes https://github.com/o19s/quepid/issues/275.
 
-* Let a user (or an Adminstrator) delete their account from Quepid, handling their cases, scorers, and team memberships.  https://github.com/o19s/quepid/pull/315 by @epugh fixes https://github.com/o19s/quepid/issues/311.
+* Let a user (or an Administrator) delete their account from Quepid, handling their cases, scorers, and team memberships.  https://github.com/o19s/quepid/pull/315 by @epugh fixes https://github.com/o19s/quepid/issues/311.
 
 ### Improvements
 
@@ -40,7 +52,9 @@
 
 * The logic around when we popped open the "Create a Case" wizard for a brand new user was somewhat split between the backend `home_controller.rb` and the front end.   It also made anyone who was invited to a team just for rating purposes go through the Create a Case Wizard on their first login, which was awkward.   So, converted the concept of a "first_login" for the wizard to just a boolean "completed_case_wizard", and now it it checked if you have NO cases, and popped up, or if you click "Add a Case".   https://github.com/o19s/quepid/pull/305 by @epugh fixes https://github.com/o19s/quepid/issues/281.
 
-* Upgraded to the latest version of Angular 1, 1.8.2, and many of the other front end dependencies.   https://github.com/o19s/quepid/pull/308 by @epugh and https://github.com/o19s/quepid/pull/320 by @worleydl dealth
+* Upgraded to the latest version of Angular 1, 1.8.2, and many of the other front end dependencies.   https://github.com/o19s/quepid/pull/308 by @epugh and https://github.com/o19s/quepid/pull/320 by @worleydl deals with this.
+
+* You can now override the from email address from the default `quepid@o19s.com` to your own email address.   https://github.com/o19s/quepid/pull/322 by @slawmac.  Thanks @slawmac for this improvement!
 
 ### Bugs
 
