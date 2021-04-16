@@ -59,6 +59,10 @@ Rails.application.config.communal_scorers_only = bool.deserialize(ENV.fetch('COM
 # no email provider.
 Rails.application.config.email_provider = ENV.fetch('EMAIL_PROVIDER', '')
 
+# == Email Address of the Sender of Emails
+# When Quepid sends emails to users, what is the email address of the sender?
+Rails.application.config.email_sender = ENV.fetch('EMAIL_SENDER', '')
+
 # == Query List Sortable
 # See https://github.com/o19s/quepid/issues/272 for a bug in expand/collapse that some setups experience.
 # This lets you disable the sorting if you experience the bug.
