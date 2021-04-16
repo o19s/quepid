@@ -10,8 +10,9 @@
 //
 angular.module('QuepidApp')
   .service('ratingsStoreSvc', [
-    '$http','$rootScope',
-    function ratingsStoreSvc($http, $rootScope) {
+    '$rootScope',
+    '$http',
+    function ratingsStoreSvc($rootScope, $http) {
       var svcVersion = 0;
 
       var RatingsStore = function(caseNo, queryId, ratingsDict) {
@@ -25,7 +26,7 @@ angular.module('QuepidApp')
           version++;
           svcVersion++;
 
-          $scope.$emit('rating-changed');
+          $rootScope.$emit('rating-changed');
         };
 
         this.setQueryId = function(newQueryId) {

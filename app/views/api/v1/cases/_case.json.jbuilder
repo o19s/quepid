@@ -19,7 +19,9 @@ json.teams            teams unless no_teams
 json.last_try_number acase.tries.best.try_number unless no_tries || acase.tries.blank? || acase.tries.best.blank?
 
 json.ratings_view @case_metadatum.ratings_view if @case_metadatum.present?
+
 if analytics && !teams.empty?
+  json.max_label = acase.scorer.scale.last
   max_label = acase.scorer.scale.last
   case_variance_values = []
   acase.queries.each do |q|

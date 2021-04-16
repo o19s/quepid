@@ -14,10 +14,10 @@ module Api
       def update
         if params[:doc_ids].present?
           params[:doc_ids].each do |doc_id|
-            rating = @query.ratings.find_or_create_by doc_id: doc_id
+            plucked_rating_params = pluck_out_just_rating_param
+            rating = @query.ratings.find_or_create_by doc_id: doc_id, user_id: plucked_rating_params[:user_id]
 
-            # rating.update rating_params
-            rating.rating = pluck_out_just_rating_param
+            rating.rating = plucked_rating_params
             rating.save
           end
         end
