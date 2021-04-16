@@ -65,4 +65,6 @@ Rails.application.configure do
   ENV['TC_URL'] = 'https://quepid.com/agreement'
 
   ENV['QUEPID_GA'] = 'UA-FAKE-GA-CODE-FOR-TESTING'
+
+  ENV['EMAIL_SENDER'] = 'quepid@o19s.com'
 end
