@@ -9,8 +9,8 @@ gem 'activerecord-import', '>= 1.0.7'
 gem 'acts_as_list', '>= 1.0.1'
 gem 'angular-rails-templates', '>= 1.0.0.beta'
 gem 'bcrypt', '~> 3.1.7'
-gem 'bootstrap-sass', '~> 3.3.5'
-gem 'coffee-rails', '~> 4.2'
+gem 'bootstrap-sass'
+gem 'sassc-rails', '~> 2.1'
 gem 'turbolinks', '~> 5'
 gem 'colorize', require: false
 gem 'cookies_eu'
@@ -30,7 +30,6 @@ gem 'puma_worker_killer'
 gem 'pundit'
 gem 'rails', '~> 5.2.4', '>= 5.2.4.4'
 gem 'responders'
-gem 'sass-rails', '~> 5.0'
 gem 'sidekiq'
 gem 'uglifier', '>= 1.3.0'
 gem 'bootsnap', '~> 1.5'
@@ -53,9 +52,11 @@ group :development, :test do
 end
 
 group :development do
+  gem 'derailed_benchmarks'
   gem 'letter_opener'
   gem 'rubocop', require: false
   gem 'rubocop-rails', require: false
+  gem 'rails-erd', '~> 1.6'
 end
 
 group :test do

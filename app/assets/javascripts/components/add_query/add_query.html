@@ -2,7 +2,6 @@
   <input
     id="add-query"
     class="form-control"
-    ng-disabled="user.hasReachedQueryLimit()"
     ng-model="ctrl.text"
     placeholder="{{ ctrl.message() }}"
     text-paste="ctrl.handlePaste($pastedText)"
@@ -13,7 +12,7 @@
     id="add-query-submit"
     class="btn btn-success"
     ng-click="ctrl.submit()"
-    ng-disabled="ctrl.textInputIsEmpty() || user.hasReachedQueryLimit()"
+    ng-disabled="ctrl.textInputIsEmpty()"
     type="submit"
     value="{{ ctrl.text.indexOf(';') === -1 ? 'Add query' : 'Add queries' }}"
    />

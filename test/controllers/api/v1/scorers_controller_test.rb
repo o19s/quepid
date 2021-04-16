@@ -29,7 +29,6 @@ module Api
 
           assert_equal user.id,                       scorer['owner_id']
           assert_equal [],                            scorer['scale']
-          assert_equal false,                         scorer['queryTest']
 
           regex = /Scorer/
           assert_match regex, scorer['name']
@@ -69,7 +68,6 @@ module Api
           assert_equal user.id,                       scorer['owner_id']
           assert_equal code,                          scorer['code']
           assert_equal [],                            scorer['scale']
-          assert_equal false,                         scorer['queryTest']
 
           regex = /Scorer/
           assert_match regex, scorer['name']
@@ -94,7 +92,6 @@ module Api
 
           assert_equal user.id,                       scorer['owner_id']
           assert_equal [],                            scorer['scale']
-          assert_equal false,                         scorer['queryTest']
 
           assert_equal name, scorer['name']
         end
@@ -115,7 +112,6 @@ module Api
 
           assert_equal user.id,                       scorer['owner_id']
           assert_equal scale,                         scorer['scale']
-          assert_equal false,                         scorer['queryTest']
         end
 
         test 'limits scale length' do
@@ -158,41 +154,9 @@ module Api
 
           assert_equal user.id,                       scorer['owner_id']
           assert_equal scale.sort,                    scorer['scale']
-          assert_equal false,                         scorer['queryTest']
         end
 
-        test 'accepts scale as a string' do
-          scale = [ 1, 2, 3, 4 ]
-
-          post :create, params: { scorer: { scale: scale.join(',') } }
-
-          assert_response :ok
-
-          scorer = JSON.parse(response.body)
-
-          assert_not_nil scorer['scorerId']
-          assert_nil scorer['code']
-          assert_not_nil scorer['name']
-          assert_equal [ 1, 2, 3, 4 ], scorer['scale']
-
-          assert_equal user.id,                       scorer['owner_id']
-          assert_equal scale.sort,                    scorer['scale']
-          assert_equal false,                         scorer['queryTest']
-        end
-
-        test 'sets scorer as a test for a query' do
-          query = queries(:one)
-
-          post :create, params: { scorer: { query_id: query.id } }
-
-          assert_response :ok
-
-          assert_not_nil  json_response['queryId']
-          assert_equal    query.id, json_response['queryId']
-          assert_not_nil  query.test
-        end
-
-        test 'respects communal_Scorers_only environment setting' do
+        test 'respects communal_scorers_only environment setting' do
           Rails.application.config.communal_scorers_only = true
 
           post :create
@@ -237,7 +201,6 @@ module Api
           assert_equal scorer.id,         scorer_response['scorerId']
           assert_equal scorer.name,       scorer_response['name']
           assert_equal scorer.code,       scorer_response['code']
-          assert_equal scorer.query_test, scorer_response['queryTest']
           assert_equal user.id,           scorer_response['owner_id']
           assert_equal true,              scorer_response['owned']
         end
@@ -252,7 +215,6 @@ module Api
           assert_equal shared_scorer.id,          scorer_response['scorerId']
           assert_equal shared_scorer.name,        scorer_response['name']
           assert_equal shared_scorer.code,        scorer_response['code']
-          assert_equal shared_scorer.query_test,  scorer_response['queryTest']
           assert_not_equal user.id,               scorer_response['owner_id']
           assert_not_equal true,                  scorer_response['owned']
         end
@@ -524,42 +486,6 @@ module Api
           end
         end
 
-        describe 'when scorer is set as query default, ie unit test style' do
-          let(:default_scorer)        { scorers(:query_default_scorer) }
-          let(:user)                  { users(:random) }
-          let(:query)                 { queries(:for_default_scorer) }
-
-          before do
-            login_user user
-          end
-
-          test 'returns a bad request error if nothing specified' do
-            delete :destroy, params: { id: default_scorer.id }
-
-            assert_response :bad_request
-          end
-
-          test 'returns a bad request error if not forced' do
-            delete :destroy, params: { id: default_scorer.id, force: false }
-
-            assert_response :bad_request
-          end
-
-          test 'removes default association and deletes scorer when forced' do
-            delete :destroy, params: { id: default_scorer.id, force: true }
-
-            assert_response :no_content
-
-            query.reload
-
-            assert_not_equal  query.scorer, default_scorer
-            assert_nil        query.scorer
-            assert_nil        query.scorer_id
-
-            assert_equal Query.where(scorer_id: default_scorer.id).count, 0
-          end
-        end
-
         describe 'when scorer is shared with a team' do
           let(:default_scorer)        { scorers(:random_scorer_1) }
           let(:default_scorer_team)   { teams(:scorers_team) }
@@ -594,6 +520,7 @@ module Api
       describe 'Fetches scorers' do
         let(:owned_scorer)     { scorers(:owned_scorer) }
         let(:shared_scorer)    { scorers(:shared_scorer) }
+        let(:communal_scorer)  { scorers(:quepid_default_scorer) }
 
         test 'returns all scorers owned by user and those shared through teams' do
           get :index
@@ -607,11 +534,9 @@ module Api
             'communal'            => owned_scorer.communal,
             'code'                => owned_scorer.code,
             'name'                => owned_scorer.name,
-            'queryTest'           => owned_scorer.query_test,
             'scale'               => owned_scorer.scale,
             'owner_id'            => owned_scorer.owner_id,
             'owned'               => true,
-            'queryId'             => nil,
             'manualMaxScore'      => false,
             'manualMaxScoreValue' => 100,
             'showScaleLabels'     => false,
@@ -632,11 +557,9 @@ module Api
             'communal'            => owned_scorer.communal,
             'code'                => shared_scorer.code,
             'name'                => shared_scorer.name,
-            'queryTest'           => shared_scorer.query_test,
             'scale'               => shared_scorer.scale,
             'owner_id'            => shared_scorer.owner_id,
             'owned'               => false,
-            'queryId'             => nil,
             'manualMaxScore'      => false,
             'manualMaxScoreValue' => 100,
             'showScaleLabels'     => false,
@@ -646,9 +569,13 @@ module Api
 
           assert_includes scorers['user_scorers'], expected_owned_response
           assert_includes scorers['user_scorers'], expected_shared_response
+
+          ids = scorers['user_scorers'].map { |s| s['scorerId'] }
+
+          assert_not_includes ids, communal_scorer.id
         end
 
-        test 'respects communal_Scorers_only environment setting' do
+        test 'respects communal_scorers_only environment setting' do
           Rails.application.config.communal_scorers_only = true
 
           get :index

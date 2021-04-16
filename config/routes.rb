@@ -4,8 +4,6 @@ require 'sidekiq/web'
 
 # rubocop:disable Metrics/BlockLength
 Rails.application.routes.draw do
-  get 'bob/open'
-  get 'bob/show'
   constraints(AdminConstraint) do
     mount Sidekiq::Web, at: 'admin/jobs'
   end
@@ -23,7 +21,7 @@ Rails.application.routes.draw do
   # end legacy routes
 
   resources :sessions
-  resource :account, only: [ :update ]
+  resource :account, only: [ :update, :destroy ]
   resource :profile, only: [ :show, :update ]
 
   # not sure I get why we had the only: [ :passwords ] clause
@@ -38,7 +36,7 @@ Rails.application.routes.draw do
 
   namespace :admin do
     get '/' => 'home#index'
-    resources :users, except: [ :new, :create, :destroy ] do
+    resources :users, except: [ :new, :create ] do
       resource :lock, only: [ :update ], module: :users
       resource :pulse, only: [ :show ], module: :users
     end
@@ -90,7 +88,6 @@ Rails.application.routes.draw do
             resource  :notes,     only: [ :show, :update ]
             resource  :options,   only: [ :show, :update ]
             resource  :position,  only: [ :update ]
-            resource  :scorer,    only: [ :show, :update, :destroy ]
             resource  :threshold, only: [ :update ]
             resource  :ratings,   only: [ :update, :destroy ] # not actually a singular resource, doc_id in json payload
           end
@@ -153,8 +150,9 @@ Rails.application.routes.draw do
   # Routes handled by angular
   get '/case/:id(/try/:id(/curate))'  => 'home#index'
   get '/cases'                        => 'home#index'
+  get '/case'                         => 'home#index'
   get '/cases/import'                 => 'home#index'
-  get '/teams(/:id)'                  => 'home#index'
+  get '/teams(/:id)'                  => 'home#index', as: :teams_path
   get '/advanced'                     => 'home#index'
 
   # Static pages

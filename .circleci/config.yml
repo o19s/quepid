@@ -18,7 +18,6 @@ jobs:
       - image: circleci/mysql:5.7
         command: mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_bin
         environment: # environment variables for database
-          MYSQL_USER: root
           MYSQL_DATABASE: quepid_test
           MYSQL_ROOT_PASSWORD: ''
           MYSQL_ALLOW_EMPTY_PASSWORD: true

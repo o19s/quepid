@@ -11,7 +11,6 @@
 
       <import-to-cases></import-to-cases>
 
-      <export-cases case-list="casesScope.allCases"></export-cases>
     </div>
 
     <div class='col-md-4'>
@@ -58,7 +57,7 @@
 
   <div class="clearfix loading-cases-msg" ng-if="casesScope.loadingCases">
     <span class="fa fa-spinner fa-spin"></span>
-    <span>Export data is currently loading</span>
+    <span>Loading Your Cases</span>
   </div>
 
   <div id='cases-listing'>
@@ -68,7 +67,7 @@
           <div class="row">
             <span class="col-xs-1">ID</span>
             <span class="col-xs-3">Case Title</span>
-            <span class="col-xs-1">Last Try</span>
+            <span class="col-xs-1">Last Try #</span>
             <span class="col-xs-1"># of Queries</span>
             <span class="col-xs-1">Last Score</span>
             <span class="col-xs-1">Last Run On</span>
@@ -90,7 +89,7 @@
       ></dir-pagination-controls>
     </div>
 
-    <p ng-if="casesScope.allCases.length === 0">
+    <p ng-if="casesScope.allCases.length === 0 && !casesScope.loadingCases">
       No cases to show!
     </p>
 

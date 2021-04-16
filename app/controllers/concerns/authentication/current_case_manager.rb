@@ -15,12 +15,7 @@ module Authentication
     end
 
     def set_case
-      @case = current_user.cases.where(id: params[:case_id]).first
-      # current_case_metadatum
-    end
-
-    def current_case_metadatum
-      @case_metadatum = @case.metadata.find_or_create_by user_id: current_user.id unless @case.nil?
+      @case = current_user.cases_involved_with.where(id: params[:case_id]).first
     end
 
     # Fetches case that a user can view and query.
@@ -33,17 +28,13 @@ module Authentication
     end
 
     def case_with_all_the_bells_whistles
-      # The joins to include all the cases this user has access to was appearing to make a GIANT query
-      # that would time out on MySQL.  So now we break it up into two queries, the first we get all the
-      # case id's, and the second then is that actual query to get the extended data.
-      cases_involved_with_ids = current_user.cases_involved_with.pluck(:id)
-      case_id_int = params[:case_id].to_i
-
-      return unless cases_involved_with_ids.include?( case_id_int )
-
-      @case = Case.where(id: case_id_int)
-        .includes([ queries: [ :ratings, :test, :scorer ], tries: [ :curator_variables ] ])
-        .order('tries.try_number DESC').first
+      @case = current_user
+        .cases_involved_with
+        .where(id: params[:case_id])
+        .includes(:tries )
+        .preload([ queries: [ :ratings ], tries: [ :curator_variables ] ])
+        .order('tries.try_number DESC')
+        .first
     end
 
     def check_case

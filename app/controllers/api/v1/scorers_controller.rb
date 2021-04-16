@@ -8,7 +8,9 @@ module Api
       before_action :check_communal_scorers_only, only: [ :create, :update, :destroy ]
 
       def index
-        @user_scorers = current_user.scorers.all unless Rails.application.config.communal_scorers_only
+        unless Rails.application.config.communal_scorers_only
+          @user_scorers = current_user.scorers.all.reject(&:communal?)
+        end
         @communal_scorers = Scorer.communal
 
         respond_with @user_scorers, @communal_scorers
@@ -147,21 +149,6 @@ module Api
           return
         end
 
-        @queries = Query.where(scorer_id: @scorer.id)
-
-        if @queries.count.positive? && force
-          @queries.update_all(scorer_id: nil) # rubocop:disable Rails/SkipsModelValidations
-        elsif @queries.count.positive?
-          render(
-            json:   {
-              error: "Cannot delete the scorer because it is the default for #{@queries.count} #{'query'.pluralize(@queries.count)}: [#{@queries.take(3).map(&:query_text).to_sentence}]",
-            },
-            status: :bad_request
-          )
-
-          return
-        end
-
         @teams = @scorer.teams
         if @teams.count.positive?
           render(
@@ -193,17 +180,13 @@ module Api
         params.require(:scorer).permit(
           :code,
           :name,
-          :query_test,
-          :query_id,
           :manual_max_score,
           :manual_max_score_value,
           :show_scale_labels,
           :communal,
-          :scale,
-          scale: []
-        ).tap do |whitelisted|
-          whitelisted[:scale_with_labels] = params[:scorer][:scale_with_labels]
-        end
+          scale:             [],
+          scale_with_labels: {}
+        )
       end
 
       def set_scorer

@@ -1,12 +1,9 @@
 <!DOCTYPE html>
-<!--[if lt IE 7]> <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
-<!--[if IE 7]> <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
-<!--[if IE 8]> <html class="no-js lt-ie9"> <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js"> <!--<![endif]-->
+<html>
 <head>
 <meta charset="utf-8">
-<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 <title>Quepid -- Relevant Search Solved</title>
+<%= favicon_link_tag asset_path "favicon.ico" %>  
 <meta name="description" content="Tired of irrelevant search results? Use Quepid to help improve the quality and relevancy of your search results.">
 <meta name="viewport" content="width=device-width">
 
@@ -36,9 +33,9 @@
         function(secureRedirectSvc, bootstrapSvc, configurationSvc) {
           var appDebug      = '<%= Rails.env == 'development' ? 'true' : 'false' %>';
           var debugPort     = '<%= request.port %>';
-          var triggerWizard = <%= @triggerWizard %>;
 
           configurationSvc.setCommunalScorersOnly('<%= Rails.application.config.communal_scorers_only %>');
+          configurationSvc.setQueryListSortable('<%= Rails.application.config.query_list_sortable %>');
 
           if (appDebug === 'true') {
             secureRedirectSvc.debugServer(debugPort);
@@ -47,12 +44,7 @@
           var bootstrapCaseNo = <%= @bootstrapCaseNo.to_i || 0 %>;
           var bootstrapTryNo  = <%= @bootstrapTryNo.to_i || 0 %>;
 
-          if (isNaN(bootstrapCaseNo)) {
-            bootstrapCaseNo = 0;
-            bootstrapTryNo  = 0;
-          }
-
-          bootstrapSvc.run(triggerWizard, bootstrapCaseNo, bootstrapTryNo);
+          bootstrapSvc.run(bootstrapCaseNo, bootstrapTryNo);
         }
       ]);
   </script>

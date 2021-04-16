@@ -3,25 +3,17 @@
 class AccountsController < ApplicationController
   force_ssl if: :ssl_enabled?
 
-  # rubocop:disable Metrics/AbcSize
-  # rubocop:disable Metrics/PerceivedComplexity
   # rubocop:disable Metrics/MethodLength
   def update
     @user = current_user
     error = false
 
-    if params[:new_password].blank? || params[:current_password].blank?
-      flash.now[:error] = 'Please fill all required fields.'
-      error = true
-    elsif params[:new_password] != params[:confirm_password]
-      flash.now[:error] = 'The new passwords do not match!'
-      error = true
-    elsif !verify_password(@user, params[:current_password])
+    if !verify_password(@user, params[:current_password])
       flash.now[:error] = 'The original password is incorrect.'
       error = true
-    elsif @user.update password: params[:new_password]
+    elsif @user.update password: params[:password], password_confirmation: params[:password_confirmation]
       Analytics::Tracker.track_user_updated_password_event @user
-      flash.now[:success] = 'Account updated successfully.'
+      flash[:success] = 'Account updated successfully.'
     else
       flash.now[:error] = 'Oooops! Something happened, please double check your values and try again.'
       error = true
@@ -39,8 +31,24 @@ class AccountsController < ApplicationController
     end
   end
   # rubocop:enable Metrics/MethodLength
-  # rubocop:enable Metrics/PerceivedComplexity
-  # rubocop:enable Metrics/AbcSize
+
+  def destroy
+    @user = current_user
+
+    @user.cases.each do |c|
+      c.really_destroy if c.teams.empty?
+    end
+
+    respond_to do |format|
+      if @user.destroy
+        format.html { redirect_to secure_url, notice: 'Account was deleted' }
+        format.json { head :no_content }
+      else
+        format.html { render 'profiles/show' }
+        format.json { render json: @user.errors, status: :unprocessable_entity }
+      end
+    end
+  end
 
   private
 

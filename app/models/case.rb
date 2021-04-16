@@ -39,7 +39,7 @@ class Case < ApplicationRecord
   # rubocop:disable Rails/InverseOf
   has_many   :queries,  -> { order(arranged_at: :asc) },
              autosave:  true,
-             dependent: :delete_all
+             dependent: :destroy
   # rubocop:enable Rails/InverseOf
 
   has_many   :ratings, # we don't actually need this.
@@ -53,9 +53,8 @@ class Case < ApplicationRecord
              dependent: :destroy
 
   has_many   :annotations,
-             through: :scores
-
-  has_many   :user_scorers, -> { where(communal: false) }, through: :queries, source: :scorer
+             through:   :scores,
+             dependent: :destroy
 
   # Validations
   validates :case_name, presence: true
@@ -72,17 +71,36 @@ class Case < ApplicationRecord
   # Scopes
   scope :not_archived, -> { where('`cases`.`archived` = false OR `cases`.`archived` IS NULL') }
 
-  scope :for_user, ->(user) {
+  scope :for_user_via_teams, ->(user) {
     joins('
-      LEFT OUTER JOIN `case_metadata` ON `case_metadata`.`case_id` = `cases`.`id`
       LEFT OUTER JOIN `teams_cases` ON `teams_cases`.`case_id` = `cases`.`id`
       LEFT OUTER JOIN `teams` ON `teams`.`id` = `teams_cases`.`team_id`
       LEFT OUTER JOIN `teams_members` ON `teams_members`.`team_id` = `teams`.`id`
       LEFT OUTER JOIN `users` ON `users`.`id` = `teams_members`.`member_id`
     ').where('
-        `teams`.`owner_id` = ? OR `teams_members`.`member_id` = ? OR `cases`.`user_id` = ?
-    ', user.id, user.id, user.id)
+        `teams_members`.`member_id` = ?
+    ', user.id)
   }
+
+  scope :for_user_directly_owned, ->(user) {
+    where('
+        `cases`.`user_id` = ?
+    ',  user.id)
+  }
+
+  scope :for_user, ->(user) {
+    ids = for_user_via_teams(user).pluck(:id) + for_user_directly_owned(user).pluck(:id)
+    where(id: ids.uniq)
+  }
+
+  # Not proud of this method, but it's the only way I can get the dependent
+  # objects of a Case to actually delete!
+  def really_destroy
+    snapshots.destroy_all
+    queries.unscoped.where(case_id: id).destroy_all
+    tries.destroy_all
+    destroy
+  end
 
   # rubocop:disable Metrics/MethodLength
   # rubocop:disable Metrics/ParameterLists
@@ -178,7 +196,6 @@ class Case < ApplicationRecord
     new_query = ::Query.new(
       arranged_next:  query.arranged_next,
       arranged_at:    query.arranged_at,
-      deleted:        query.deleted,
       query_text:     query.query_text,
       notes:          query.notes,
       threshold:      query.threshold,

@@ -25,9 +25,9 @@ angular.module('QuepidApp')
       function deleteCase() {
         caseSvc.deleteCase(ctrl.thisCase).then(
           function () {
-            flash.success = 'Case archived successfully.';
+            flash.success = 'Case deleted successfully.';
           }, function (data) {
-            var message = 'Oooops! Could not archive the case. ';
+            var message = 'Oooops! Could not delete the case. ';
             message += data.message;
             flash.error = message;
           }
@@ -46,9 +46,9 @@ angular.module('QuepidApp')
 
       function retrieveTooltip() {
         if(ctrl.checkIfOnlyCase()){
-          return 'Can\'t archive the only case';
+          return 'Can\'t delete the only case';
         } else {
-          return 'Archive';
+          return 'Delete';
         }
       }
 

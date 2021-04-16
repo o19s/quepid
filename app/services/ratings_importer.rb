@@ -144,7 +144,7 @@ class RatingsImporter
     print_step 'Clearing unused queries'
 
     @acase.queries.each do |query|
-      query.soft_delete if @queries[query.query_text].blank?
+      query.destroy if @queries[query.query_text].blank?
     end
   end
   # rubocop:enable Metrics/PerceivedComplexity

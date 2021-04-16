@@ -147,7 +147,7 @@ module Analytics
       end
 
       #
-      # Creates an event when a user updates a new case.
+      # Creates an event when a user updates a case.
       #
       # @param user,      User
       # @param the_case,  Case
@@ -165,7 +165,7 @@ module Analytics
       end
 
       #
-      # Creates an event when a user archives a new case.
+      # Creates an event when a user archives a case.
       #
       # @param user,      User
       # @param the_case,  Case
@@ -174,6 +174,24 @@ module Analytics
         data = {
           category: 'Cases',
           action:   'Archived a Case',
+          label:    the_case.case_name,
+          value:    nil,
+          bounce:   false,
+        }
+
+        create_event data
+      end
+
+      #
+      # Creates an event when a user deletes a case.
+      #
+      # @param user,      User
+      # @param the_case,  Case
+      #
+      def user_deleted_case _user, the_case
+        data = {
+          category: 'Cases',
+          action:   'Deleted a Case',
           label:    the_case.case_name,
           value:    nil,
           bounce:   false,

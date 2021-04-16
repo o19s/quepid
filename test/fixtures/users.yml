@@ -7,7 +7,7 @@
 #  password               :string(120)
 #  agreed_time            :datetime
 #  agreed                 :boolean
-#  first_login            :boolean
+#  completed_case_wizard  :boolean
 #  num_logins             :integer
 #  name                   :string(255)
 #  administrator          :boolean          default(FALSE)
@@ -111,8 +111,7 @@ random_2:
   email: random_2@example.com
   administrator: false
 
-# The whole purpose of this user is to test finding teams using the
-# UserTeamFinder service
+# The whole purpose of this user is to test finding teams
 team_finder_user:
   <<: *default
   email: team_finder_user@example.com

@@ -294,7 +294,7 @@ describe('Service: caseSvc', function () {
       $httpBackend.expectPUT('/api/cases/' + archivedCaseNo).respond(200, archivedCasesAPIResponse.allCases[0]);
 
       var casesBefore = caseSvc.allCases.length;
-      caseSvc.undeleteCase(caseSvc.archived[0]).then(function() {
+      caseSvc.unarchiveCase(caseSvc.archived[0]).then(function() {
         called++;
         expect(caseSvc.archived.length).toBe(0);
         expect(caseSvc.allCases.length).toBe(casesBefore + 1);
@@ -365,7 +365,7 @@ describe('Service: caseSvc', function () {
         if (aCase.caseNo % 2 === 1) {
           undeleted.push(aCase.caseNo);
           $httpBackend.expectPUT('/api/cases/' + aCase.caseNo).respond(200, archiveAPIResponse.allCases[aCase.caseNo - baseNo]);
-          caseSvc.undeleteCase(aCase)
+          caseSvc.unarchiveCase(aCase)
           .then(function() {
             called++;
           });

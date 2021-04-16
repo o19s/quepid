@@ -24,7 +24,7 @@ module Api
           count     = joe.cases.count
           case_name = 'test case'
 
-          post :create, params: { case_name: case_name }
+          post :create, params: { case: { case_name: case_name } }
 
           assert_response :ok
 
@@ -34,7 +34,7 @@ module Api
         end
 
         test 'requires a case name' do
-          post :create
+          post :create, params: { case: { name: '' } }
 
           assert_response :bad_request
 
@@ -45,7 +45,7 @@ module Api
         test 'creates an initial defaults try' do
           case_name = 'test case'
 
-          post :create, params: { case_name: case_name }
+          post :create, params: { case: { case_name: case_name } }
 
           assert_response :ok
 
@@ -62,7 +62,7 @@ module Api
             case_name = 'test case'
 
             perform_enqueued_jobs do
-              post :create, params: { case_name: case_name }
+              post :create, params: { case: { case_name: case_name } }
 
               assert_response :ok
             end
@@ -212,10 +212,10 @@ module Api
             login_user matt
           end
 
-          test 'return a forbidden error' do
-            delete :destroy, params: { case_id: the_case.id }
+          test 'is perfectly okay, which is a different than before!' do
+            post :update, params: { case_id: the_case.id, case: { archived: true } }
 
-            assert_response :forbidden
+            assert_response :ok
           end
         end
 
@@ -226,11 +226,54 @@ module Api
             count_unarchived  = doug.cases.where(archived: false).count
             count_archived    = doug.cases.where(archived: true).count
 
-            delete :destroy, params: { case_id: one.id }
-            assert_response :no_content
+            put :update, params: { case_id: one.id, case: { archived: true } }
+            assert_response :ok
 
             assert_equal count_unarchived - 1,  doug.cases.where(archived: false).count
             assert_equal count_archived + 1,    doug.cases.where(archived: true).count
+          end
+        end
+
+        describe 'analytics' do
+          let(:one) { cases(:one) }
+
+          test 'posts event' do
+            expects_any_ga_event_call
+
+            perform_enqueued_jobs do
+              put :update, params: { case_id: one.id, case: { archived: true } }
+              assert_response :ok
+            end
+          end
+        end
+      end
+
+      describe 'Deleting a case' do
+        describe 'when it is the last/only case' do
+          let(:matt)      { users(:matt) }
+          let(:the_case)  { cases(:matt_case) }
+
+          before do
+            login_user matt
+          end
+
+          test 'is perfectly okay, it was old orthodoxy that every user has a case' do
+            delete :destroy, params: { case_id: the_case.id }
+            assert_response :no_content
+          end
+        end
+
+        describe 'when it is not the last/only case' do
+          let(:one) { cases(:one) }
+
+          test 'successfully deletes the case' do
+            count_cases = doug.cases.count
+
+            delete :destroy, params: { case_id: one.id }
+            assert_response :no_content
+
+            doug.cases.reload
+            assert_equal count_cases - 1, doug.cases.count
           end
         end
 
@@ -263,7 +306,7 @@ module Api
 
         describe 'when changing the case name' do
           test 'updates name successfully using PATCH verb' do
-            patch :update, params: { case_id: one.id, case_name: 'New Name' }
+            patch :update, params: { case_id: one.id, case: { case_name: 'New Name' } }
             assert_response :ok
 
             one.reload
@@ -271,7 +314,7 @@ module Api
           end
 
           test 'updates name successfully using PUT verb' do
-            put :update, params: { case_id: one.id, case_name: 'New Name' }
+            put :update, params: { case_id: one.id, case: { case_name: 'New Name' } }
             assert_response :ok
 
             one.reload
@@ -288,7 +331,7 @@ module Api
             count_unarchived  = doug.cases.where(archived: false).count
             count_archived    = doug.cases.where(archived: true).count
 
-            patch :update, params: { case_id: one.id, archived: false }
+            post :update, params: { case_id: one.id, case: { archived: false } }
             assert_response :ok
 
             one.reload
@@ -302,7 +345,7 @@ module Api
             count_unarchived  = doug.cases.where(archived: false).count
             count_archived    = doug.cases.where(archived: true).count
 
-            put :update, params: { case_id: one.id, archived: false }
+            post :update, params: { case_id: one.id, case: { archived: false } }
             assert_response :ok
 
             one.reload
@@ -318,7 +361,7 @@ module Api
             expects_any_ga_event_call
 
             perform_enqueued_jobs do
-              patch :update, params: { case_id: one.id, case_name: 'New Name' }
+              patch :update, params: { case_id: one.id, case: { case_name: 'New Name' } }
               assert_response :ok
             end
           end
@@ -541,7 +584,7 @@ module Api
         let(:scorer)  { scorers(:valid) }
 
         test 'sets a default scorer successfully' do
-          put :update, params: { case_id: one.id, scorer_id: scorer.id }
+          put :update, params: { case_id: one.id, case: { scorer_id: scorer.id } }
 
           assert_response :ok
 
@@ -553,7 +596,7 @@ module Api
           one.scorer = scorer
           one.save!
 
-          put :update, params: { case_id: one.id, scorer_id: 0 }
+          put :update, params: { case_id: one.id, case: { scorer_id: 0 } }
 
           assert_response :ok
 
@@ -566,7 +609,7 @@ module Api
           one.scorer = scorer
           one.save!
 
-          put :update, params: { case_id: one.id, scorer_id: 0 }
+          put :update, params: { case_id: one.id, case: { scorer_id: 0 } }
 
           assert_response :ok
 
@@ -579,7 +622,7 @@ module Api
         test 'returns an error if scorer does not exist' do
           one.scorer = scorer
           one.save!
-          put :update, params: { case_id: one.id, scorer_id: 'foo' }
+          put :update, params: { case_id: one.id, case: { scorer_id: 'foo' } }
 
           assert_response :bad_request
 

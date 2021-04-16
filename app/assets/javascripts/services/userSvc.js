@@ -4,8 +4,6 @@ angular.module('UtilitiesModule')
   .service('userSvc', [
     '$http',
     function userSvc($http) {
-      this.triggerWizard = false;
-
       var currUser = null;
 
       var User = function(userObj) {
@@ -23,37 +21,12 @@ angular.module('UtilitiesModule')
 
         self.company         = userObj.company;
         self.defaultScorerId = defaultScorerId;
-        self.firstLogin      = userObj.firstLogin;
+        self.completedCaseWizard      = userObj.completed_case_wizard;
         self.id              = userObj.id;
         self.permissions     = userObj.permissions;
         self.email           = userObj.email;
-
-        var maxQueries = userObj.maxQueries;
-        var numQueries = userObj.numQueries;
-        self.introWizardSeen = userObj.introWizardSeen;
-
-        this.hasReachedQueryLimit = function () {
-          return (this.queriesRemaining() === 0);
-        };
-
-        this.queriesRemaining = function() {
-          if (maxQueries === 'infinity') {
-            return 9999999999999999;
-          }
-          return (maxQueries/1) - (numQueries/1);
-        };
-
-        this.queryRemoved = function() {
-          numQueries--;
-        };
-
-        this.queryAdded = function(count) {
-          if ( angular.isUndefined(count) || count === null ) {
-            numQueries++;
-          } else {
-            numQueries += count;
-          }
-        };
+        self.casesInvolvedWithCount   = userObj.cases_involved_with_count;
+        self.teamsInvolvedWithCount   = userObj.teams_involved_with_count;
 
         this.updatePassword = function(oldPass, newPass, success, failure) {
           $http.post('/api/users/' + self.id, {
@@ -68,17 +41,17 @@ angular.module('UtilitiesModule')
 
         this.shownIntroWizard = function() {
           var self  = this;
+          self.introWizardSeen=true;
           var url   = '/api/users/' + self.id;
           var data  = {
             user: {
-              first_login: false
+              completed_case_wizard: true
             }
           };
 
           return $http.put(url, data)
             .then( function() {
-              self.introWizardSeen  = true;
-              self.firstLogin       = false;
+              self.completedCaseWizard       = true;
 
               return self;
             });

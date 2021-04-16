@@ -8,6 +8,8 @@ module Api
       before_action :check_case, only: [ :show, :update, :destroy ]
 
       # rubocop:disable Metrics/MethodLength
+      # rubocop:disable Metrics/AbcSize
+      # I should fix above.
       def index
         bool = ActiveRecord::Type::Boolean.new
 
@@ -18,23 +20,22 @@ module Api
         if archived
           @no_tries = true
           @no_teams = true
-          @cases = Case.where(archived: archived, user_id: current_user.id)
-            .all
+          @cases = Case.where(archived: archived, user_id: current_user.id).all
         else
-          @cases = current_user.cases_involved_with.includes(:teams, :tries, :cases_teams).not_archived
-
-          if 'last_viewed_at' == sort_by
-            @cases = @cases.limit(3).order(Arel.sql('`case_metadata`.`last_viewed_at` DESC, `cases`.`id`'))
-          elsif sort_by
-            @cases = @cases.order(sort_by)
-          end
-
-          @cases = @cases.all
+          @cases = if 'last_viewed_at' == sort_by
+                     current_user.cases_involved_with.not_archived.includes(:metadata).references(:metadata)
+                       .order(Arel.sql('`case_metadata`.`last_viewed_at` DESC, `cases`.`id`')).limit(3)
+                   elsif sort_by
+                     current_user.cases_involved_with.preload( :tries).not_archived.order(sort_by)
+                   else
+                     current_user.cases_involved_with.preload(:tries, :teams, :cases_teams).not_archived
+                   end
         end
 
         respond_with @cases
       end
       # rubocop:enable Metrics/MethodLength
+      # rubocop:enable Metrics/AbcSize
 
       def create
         @case = current_user.cases.build case_params
@@ -54,12 +55,18 @@ module Api
         respond_with @case
       end
 
+      # rubocop:disable Metrics/MethodLength
       def update
         update_params = case_params
 
         update_params[:scorer_id] = Scorer.system_default_scorer.id if default_scorer_removed? update_params
-
-        if @case.update update_params
+        bool = ActiveRecord::Type::Boolean.new
+        archived = bool.deserialize(params[:archived]) || false
+        if archived
+          @case.mark_archived!
+          Analytics::Tracker.track_case_archived_event current_user, @case
+          respond_with @case
+        elsif @case.update update_params
           Analytics::Tracker.track_case_updated_event current_user, @case
           respond_with @case
         else
@@ -68,22 +75,19 @@ module Api
       rescue ActiveRecord::InvalidForeignKey
         render json: { error: 'Invalid id' }, status: :bad_request
       end
+      # rubocop:enable Metrics/MethodLength
 
       def destroy
-        if current_user.cases.count > 1
-          @case.mark_archived!
-          Analytics::Tracker.track_case_archived_event current_user, @case
+        @case.really_destroy
+        Analytics::Tracker.track_case_deleted_event current_user, @case
 
-          respond_with @case
-        else
-          render json: { error: 'Cannot archive last or only case!' }, status: :forbidden
-        end
+        render json: {}, status: :no_content
       end
 
       private
 
       def case_params
-        params.permit(:case_name, :scorer_id, :archived)
+        params.require(:case).permit(:case_name, :scorer_id, :archived)
       end
 
       def default_scorer_removed? params = {}

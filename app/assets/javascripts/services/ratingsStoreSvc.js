@@ -52,7 +52,7 @@ angular.module('QuepidApp')
 
         // This takes a single rating and applies it to a list of docIds
         this.rateBulkDocuments = function(docIds, rating) {
-          var url   = basePath() + '/bulk' + '/ratings';
+          var url   = basePath() + '/bulk/ratings';
           var data  = {
             doc_ids:  docIds,
             rating: {
@@ -90,7 +90,7 @@ angular.module('QuepidApp')
         };
 
         this.resetBulkRatings = function(docIds) {
-          var url   = basePath() + '/bulk' + '/ratings/delete';
+          var url   = basePath() + '/bulk/ratings/delete';
           var data  = {
             doc_ids: docIds,
           };

@@ -8,13 +8,17 @@ module Api
       before_action :set_case_query
       before_action :check_query
 
-      # we pass in a list of doc_ids and a rating hash with the user_id and rating to use
+      # We get a messy set of params in this method, so we don't use the normal
+      # approach of strong parameter validation.  We hardcode the only params
+      # we care about.
       def update
         if params[:doc_ids].present?
           params[:doc_ids].each do |doc_id|
-            # user_id sometimes is nil and sometimes is populated
-            rating = @query.ratings.find_or_create_by doc_id: doc_id, user_id: rating_params[:user_id]
-            rating.update rating_params
+            rating = @query.ratings.find_or_create_by doc_id: doc_id
+
+            # rating.update rating_params
+            rating.rating = pluck_out_just_rating_param
+            rating.save
           end
         end
 
@@ -36,8 +40,14 @@ module Api
 
       private
 
-      def rating_params
-        params.require(:rating).permit(:rating, :user_id)
+      # def rating_params
+      #  params.permit(:rating)
+      # should be params.require(:rating).permit(:rating) to
+      # follow standard pattern.
+      # end
+
+      def pluck_out_just_rating_param
+        params[:rating]
       end
     end
   end

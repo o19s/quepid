@@ -190,8 +190,7 @@ case_with_score:
   case_name: case_with_score
   archived: false
 
-phasers_vs_sabers:
-  user:   :luke
-  case_name: Phasers vs Sabers
+case_owned_by_team_owner:
+  user:     :team_owner
+  case_name: Case owned by Case Finder User
   archived: false
-  scorer: :v1

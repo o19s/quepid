@@ -9,7 +9,7 @@
 #  password               :string(120)
 #  agreed_time            :datetime
 #  agreed                 :boolean
-#  first_login            :boolean
+#  completed_case_wizard  :boolean
 #  num_logins             :integer
 #  name                   :string(255)
 #  administrator          :boolean          default(FALSE)
@@ -24,12 +24,13 @@
 #  email_marketing        :boolean          not null
 #
 
+# rubocop:disable Metrics/ClassLength
 class User < ApplicationRecord
   # Associations
   belongs_to :default_scorer, class_name: 'Scorer', optional: true # for communal scorers there isn't a owner
 
   has_many :cases,
-           dependent:   :destroy
+           dependent:   :nullify # sometimes a case belongs to a team, so don't just delete it.
 
   has_many :queries, through: :cases
 
@@ -67,6 +68,12 @@ class User < ApplicationRecord
   has_many :permissions,
            dependent: :destroy
 
+  has_many :scores,
+           dependent: :destroy
+
+  has_many :metadata,
+           dependent: :destroy
+
   # Validations
 
   # https://davidcel.is/posts/stop-validating-email-addresses-with-regex/
@@ -78,6 +85,8 @@ class User < ApplicationRecord
   validates :password,
             presence: true
 
+  validates :password, confirmation: { message: 'should match confirmation' }
+
   validates_with ::DefaultScorerExistsValidator
 
   validates :agreed,
@@ -88,17 +97,37 @@ class User < ApplicationRecord
     Rails.application.config.terms_and_conditions_url.length.positive?
   end
 
+  # Callbacks
+  before_save :encrypt_password
+  before_save :check_agreed_time
+  before_create :set_defaults
+  before_destroy :check_team_ownership_before_removing!, prepend: true
+  before_destroy :check_scorer_ownership_before_removing!, prepend: true
+
+  def check_team_ownership_before_removing!
+    owned_teams.each do |team|
+      if team.members.count > 1
+        errors.add(:base, "Please reassign ownership of the team #{team.name}." )
+        throw(:abort)
+      end
+    end
+  end
+
+  def check_scorer_ownership_before_removing!
+    owned_scorers.each do |scorer|
+      if shared_scorers.include?(scorer)
+        errors.add(:base, "Please remove the scorer #{scorer.name} from the team before deleting this user." )
+        throw(:abort)
+      end
+    end
+  end
+
   # Modules
   # Include default devise modules. Others available are:
   # :confirmable, :lockable, :timeoutable and :omniauthable
   # devise :invitable, :database_authenticatable, :registerable,
   # :recoverable, :rememberable, :trackable, :validatable
   devise :invitable, :recoverable, reset_password_keys: [ :email ]
-
-  # Callbacks
-  before_save   :encrypt_password
-  before_save   :check_agreed_time
-  before_create :set_defaults
 
   # Devise hacks since we only use the recoverable module
   attr_accessor :password_confirmation
@@ -117,31 +146,19 @@ class User < ApplicationRecord
   # Scopes
   # default_scope -> { includes(:permissions) }
 
-  # returns and owned or shared case for this user
-  def find_case case_id
-    cases.find_by(id: case_id) ||
-      owned_team_cases.find_by(id: case_id) ||
-      shared_team_cases.find_by(id: case_id)
-  end
-
   def num_queries
     queries.count
   end
 
   # All the scorers that you have access to, either as communal or as owner or team.
   def scorers
-    UserScorerFinder.new(self)
+    Scorer.for_user(self)
   end
 
   # This method returns not just the cases the user is the owner of, which .cases
-  # does, but also via being in a team, those cases as well.
+  # does, but also via being in a team, those team cases as well.
   def cases_involved_with
-    UserCaseFinder.new(self)
-  end
-
-  # Returns all the teams that the user is both owner of and involved in!
-  def teams_im_in
-    UserTeamFinder.new(self)
+    Case.for_user(self)
   end
 
   def locked?
@@ -166,8 +183,8 @@ class User < ApplicationRecord
 
   def set_defaults
     # rubocop:disable Style/RedundantSelf
-    self.first_login      = true  if first_login.nil?
-    self.num_logins       = 0     if num_logins.nil?
+    self.completed_case_wizard = false if completed_case_wizard.nil?
+    self.num_logins       = 0 if num_logins.nil?
     self.default_scorer   = Scorer.system_default_scorer if self.default_scorer.nil?
     # rubocop:enable Style/RedundantSelf
   end
@@ -184,3 +201,4 @@ class User < ApplicationRecord
     self[:agreed_time] = Time.zone.now
   end
 end
+# rubocop:enable Metrics/ClassLength

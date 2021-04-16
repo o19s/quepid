@@ -219,4 +219,32 @@ class CaseTest < ActiveSupport::TestCase
       end
     end
   end
+
+  describe 'destroy' do
+    let(:user)        { users(:random) }
+    let(:the_case)    { cases(:random_case) }
+    let(:the_try)     { the_case.tries.best }
+
+    it 'destroys the related objects' do
+      assert_difference 'Case.count', -1 do
+        assert_difference 'Try.count', -4 do
+          assert_difference 'Query.count', -2 do
+            the_case.really_destroy
+            assert the_case.destroyed?
+          end
+        end
+      end
+      assert_not user.destroyed?
+    end
+
+    it 'handles destroyed queries' do
+      assert_difference 'Query.count', -2 do
+        assert_equal 2, the_case.queries.size
+        the_case.queries.first.destroy
+        assert_equal 1, the_case.queries.size
+        the_case.really_destroy
+        assert the_case.destroyed?
+      end
+    end
+  end
 end

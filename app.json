@@ -72,6 +72,9 @@
     },
     "EMAIL_PROVIDER": {
       "required": true
+    },
+    "EMAIL_SENDER": {
+      "required": true
     }
   },
   "formation": {

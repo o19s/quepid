@@ -7,8 +7,6 @@
 #  name                   :string(191)
 #  owner_id               :integer
 #  scale                  :string(255)
-#  query_test             :boolean
-#  query_id               :integer
 #  manual_max_score       :boolean          default(FALSE)
 #  manual_max_score_value :integer          default(100)
 #  show_scale_labels      :boolean          default(FALSE)
@@ -28,7 +26,6 @@
 quepid_default_scorer:
   code: pass();
   name: AP@10
-  query_test: false
   scale: 0, 1
   show_scale_labels:  false
   communal: true
@@ -36,7 +33,6 @@ quepid_default_scorer:
 v1:
   code: pass();
   name: v1
-  query_test: false
   scale: 1, 2, 3, 4
   show_scale_labels:  false
   communal: true
@@ -44,7 +40,6 @@ v1:
 communal_scorer:
   code: communal scorer
   name: communal scorer
-  query_test: false
   scale: 1, 2, 3, 4
   communal:   true
 
@@ -52,7 +47,6 @@ valid:
   code: test code
   name: valid scorer
   owner: :doug
-  query_test: false
   scale: 1, 2, 3, 4
   communal:   false
 
@@ -60,7 +54,6 @@ for_case_with_scorer:
   code: test code
   name: test scorer
   owner: :doug
-  query_test: false
   scale: 1, 2, 3, 4
   communal:   false
 
@@ -68,7 +61,6 @@ owned_scorer:
   code:       pass();
   name:       Owned Scorer
   owner:      :doug
-  query_test: false
   scale:      1, 2, 3, 4
   communal:   false
 
@@ -76,7 +68,6 @@ owned_scorer1:
   code:       pass();
   name:       Owned Scorer 1
   owner:      :doug
-  query_test: false
   scale:      1, 2, 3, 4
   communal:   false
 
@@ -84,7 +75,6 @@ owned_scorer2:
   code:       pass();
   name:       Owned Scorer 2
   owner:      :doug
-  query_test: false
   scale:      1, 2, 3, 4
   communal:   false
 
@@ -92,7 +82,6 @@ shared_scorer:
   code:       pass();
   name:       Shared Scorer
   owner:      :shared_scorer_owner
-  query_test: false
   scale:      1, 2, 3, 4
   communal:   false
 
@@ -100,7 +89,6 @@ shared_scorer1:
   code:       pass();
   name:       Shared Scorer 1
   owner:      :shared_scorer_owner
-  query_test: false
   scale:      1, 2, 3, 4
   communal:   false
 
@@ -108,7 +96,6 @@ shared_scorer2:
   code:       pass();
   name:       Shared Scorer 2
   owner:      :shared_scorer_owner
-  query_test: false
   scale:      1, 2, 3, 4
   communal:   false
 
@@ -116,7 +103,6 @@ default_scorer:
   code:       pass();
   name:       Not Shared Scorer
   owner:      :default_scorer_owner
-  query_test: false
   scale:      1, 2, 3, 4
   communal:   false
 
@@ -124,7 +110,6 @@ case_default_scorer:
   code:       test code
   name:       case_default_scorer
   owner:      :random
-  query_test: false
   scale:      1, 2, 3, 4
   communal:   false
 
@@ -132,7 +117,6 @@ query_default_scorer:
   code:       test code
   name:       query_default_scorer
   owner:      :random
-  query_test: false
   scale:      1, 2, 3, 4
   communal:   false
 
@@ -140,7 +124,6 @@ query_scorer:
   code:       pass();
   name:       Scorer for Query
   owner:      :random
-  query_test: false
   scale:      1, 2, 3, 4
   communal:   false
 
@@ -148,7 +131,6 @@ random_scorer:
   code:       pass();
   name:       Scorer for sharing
   owner:      :random
-  query_test: false
   scale:      1, 2, 3, 4
   communal:   false
 
@@ -156,7 +138,6 @@ random_scorer_1:
   code:       pass();
   name:       Scorer for sharing
   owner:      :random
-  query_test: false
   scale:      1, 2, 3, 4
   communal:   false
 
@@ -164,6 +145,5 @@ random_scorer_2:
   code:       pass();
   name:       Scorer for sharing
   owner:      :random
-  query_test: false
   scale:      1, 2, 3, 4
   communal:   false

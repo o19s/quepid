@@ -27,7 +27,7 @@ user_defaults = {
   administrator:    false,
   agreed:           true,
   agreed_time:      Time.now,
-  first_login:       false,
+  completed_case_wizard:       true,
   name:             'No Name',
   password:         'password',
   email:            'foo@example.com',
@@ -123,8 +123,8 @@ print_user_info user_params
 ######################################
 
 user_specifics = {
-  name:             'Spock',
-  email:            'spock@starfleet.com'
+  name:             'OSC Team Member',
+  email:            'quepid+oscMember@o19s.com'
 }
 user_params       = user_defaults.merge(user_specifics)
 trek_member_spock = seed_user user_params

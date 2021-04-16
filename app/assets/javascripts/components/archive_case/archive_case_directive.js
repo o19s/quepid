@@ -1,15 +1,15 @@
 'use strict';
 
 angular.module('QuepidApp')
-  .directive('unitTestScorer', [
+  .directive('archiveCase', [
     function () {
       return {
         restrict:     'E',
-        controller:   'UnitTestScorerCtrl',
+        controller:   'ArchiveCaseCtrl',
         controllerAs: 'ctrl',
-        templateUrl:  'unit_test_scorer/unit_test_scorer.html',
+        templateUrl:  'archive_case/archive_case.html',
         scope:        {
-          scorer: '=',
+          thisCase: '=',
         },
       };
     }

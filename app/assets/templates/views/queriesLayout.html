@@ -40,7 +40,7 @@
                 &mdash;
                 <span ng-dblclick="tryNameEditModeToggle()">
                   <span ng-hide="tryName.startRename">
-                    {{ currentTry.selectedTry().name }}
+                    {{ currentTry.selectedTry().formattedName() }}
                   </span>
                 </span>
                 <span ng-show="tryName.startRename">
