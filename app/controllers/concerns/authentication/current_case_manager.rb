@@ -18,6 +18,10 @@ module Authentication
       @case = current_user.cases_involved_with.where(id: params[:case_id]).first
     end
 
+    def current_case_metadatum
+      @case_metadatum = @case.metadata.find_or_create_by user_id: current_user.id unless @case.nil?
+    end    
+
     # Fetches case that a user can view and query.
     # This includes a case owned by the user, shared with an team owned by
     # the user, or shared with a team shared with the user.
