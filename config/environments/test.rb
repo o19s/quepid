@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-
+# rubocop:disable Metrics/BlockLength
 Rails.application.configure do
   # Settings specified here will take precedence over those in config/application.rb.
 
@@ -68,3 +68,4 @@ Rails.application.configure do
 
   ENV['EMAIL_SENDER'] = 'quepid@o19s.com'
 end
+# rubocop:enable Metrics/BlockLength
