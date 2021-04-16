@@ -22,6 +22,8 @@ services:
   app:
     container_name: quepid_prod_app
     image: o19s/quepid:latest
+    env_file:
+      - .env.prod
     environment:
       - PORT=3000
       - RACK_ENV=production
@@ -35,10 +37,12 @@ services:
       - TC_URL=
       - PRIVACY_URL=
       - COOKIES_URL=
+      - QUEPID_DOMAIN=https://example.com
       - EMAIL_MARKETING_MODE=false
-      - DEFAULT_QUEPID_SCORER=AP@10
+      - QUEPID_DEFAULT_SCORER=AP@10
       - SIGNUP_ENABLED=true
       - COMMUNAL_SCORERS_ONLY=false
+      - EMAIL_SENDER=quepid@o19s.com
       - QUERY_LIST_SORTABLE=true
     command: "foreman s -f Procfile"
     ports:
