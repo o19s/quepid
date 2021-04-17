@@ -781,11 +781,6 @@ es5-shim@~4.1.11:
   resolved "https://registry.yarnpkg.com/es5-shim/-/es5-shim-4.1.16.tgz#002f5bfd470997952fb317bfec4c87c81ad07284"
   integrity sha1-AC9b/UcJl5Uvsxe/7EyHyBrQcoQ=
 
-es5-shim@~4.5.15:
-  version "4.5.15"
-  resolved "https://registry.yarnpkg.com/es5-shim/-/es5-shim-4.5.15.tgz#6a26869b261854a3b045273f5583c52d390217fe"
-  integrity sha512-FYpuxEjMeDvU4rulKqFdukQyZSTpzhg4ScQHrAosrlVpR6GFyaw14f74yn2+4BugniIS0Frpg7TvwZocU4ZMTw==
-
 escalade@^3.1.1:
   version "3.1.1"
   resolved "https://registry.yarnpkg.com/escalade/-/escalade-3.1.1.tgz#d8cfdc7000965c5a0174b4a82eaa5c0552742e40"
