@@ -69,7 +69,7 @@ angular.module('QuepidApp')
               .attr('y1', 0)
               .attr('y2', ctrl.height)
               .attr('class', 'marker')
-              .on('mouseover', function () { $scope.tip.show(note); })
+              .on('mouseover', function () { $scope.tip.show(note, this); })
               .on('mouseout', $scope.tip.hide)
               .append('svg:title')
               .text(note);
