@@ -3,24 +3,11 @@
  * listed below.
  */
 
-@import "style";
-
-@import "bootstrap-sprockets";
 @import "bootstrap";
 @import "font-awesome-sprockets";
 @import "font-awesome";
 @import "cal-heatmap";
 
 @import "fonts";
-@import "panes";
-@import "resize";
-@import "stackedChart";
 @import "bootstrap-add";
-@import "base";
 @import "admin2";
-
-
-
-// Other
-@import "misc";
-@import "animation"

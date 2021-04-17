@@ -1,10 +1,5 @@
 //= require jquery
-// Use this for debugging.
-//# require bootstrap-sprockets
-// Use this for faster loading
-//= require bootstrap
-//= require jquery_ujs
-//= require jquery-ui
+//= require bootstrap/dist/js/bootstrap.bundle
 //= require d3
 //= require cal-heatmap
 //= require ace-rails-ap
