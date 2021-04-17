@@ -44,8 +44,6 @@
     "puppeteer": "8.0.0"
   },
   "resolutions": {
-    "angular": "~1.7.7",
-    "es5-shim": "~4.1.11",
-    "d3": "~3.5.17"
+
   }
 }
