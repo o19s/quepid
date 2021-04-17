@@ -28,7 +28,6 @@
     "d3-tip": "~0.9.1",
     "jquery": "~3.6.0",
     "jquery-ui": "~1.12.1",
-    "json3": "~3.3.3",
     "ng-json-explorer": "http://github.com/odra/ng-json-explorer",
     "ng-tags-input": "3.2.0",
     "popper.js": "^1.16.1",
