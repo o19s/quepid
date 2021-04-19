@@ -20,10 +20,6 @@
 // we don't know about.
 //
 //= require jquery
-//= require rails-ujs
-//= require activestorage
-
-//= require bootstrap
 
 //= require jquery-ui/widgets/draggable
 //= require jquery-ui/widgets/droppable
@@ -38,7 +34,8 @@
 //= require ace-builds/src-min-noconflict/ext-language_tools
 //= require ace-builds/src-min-noconflict/mode-json
 //= require ace-builds/src-min-noconflict/mode-javascript
-//= require bootstrap/dist/js/bootstrap
+
+
 //= require angular-resource/angular-resource
 //= require angular-cookies/angular-cookies
 //= require angular-route/angular-route
