@@ -4,7 +4,6 @@ source 'https://rubygems.org'
 
 ruby '2.7.2'
 
-gem 'ace-rails-ap'
 gem 'activerecord-import', '>= 1.0.7'
 gem 'acts_as_list', '>= 1.0.1'
 gem 'angular-rails-templates', '>= 1.0.0.beta'

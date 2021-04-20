@@ -1,7 +1,6 @@
 GEM
   remote: https://rubygems.org/
   specs:
-    ace-rails-ap (4.4)
     actioncable (5.2.5)
       actionpack (= 5.2.5)
       nio4r (~> 2.0)
@@ -297,7 +296,6 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  ace-rails-ap
   activerecord-import (>= 1.0.7)
   acts_as_list (>= 1.0.1)
   angular-rails-templates (>= 1.0.0.beta)
