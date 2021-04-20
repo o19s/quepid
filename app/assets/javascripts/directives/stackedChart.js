@@ -65,47 +65,6 @@ angular.module('QuepidApp')
               }
             });
           };
-
-          var myPop = element.find('.popper');
-
-          myPop.popover({
-            html:     true,
-            trigger:  'manual',
-            viewport: scope.viewport, //'#query-container'
-            title:    function() {
-              return element.find('.explain_pop_title').html();
-            },
-            content:  function() {
-              return element.find('.explain_pop').html();
-            },
-          })
-          .click(function() {
-            var content = $('.popover-content');
-            myPop.popover('show');
-
-            // Link btn to modal
-            setTimeout(function() {
-              content.find('.btn').click(openModal);
-            }, 0);
-
-            var hidePopup = function(e) {
-              // if the target of the click isn't the container
-              // nor a descendant of the container
-              var isOriginalLink      = element.is(e.target);
-              var isLinkDescendant    = element.has(e.target).length > 0;
-              var isPopover           = content.is(e.target);
-              var isPopoverDescendant = content.has(e.target).length > 0;
-
-              if ( !( isOriginalLink || isLinkDescendant ||
-                      isPopover || isPopoverDescendant )
-              ) {
-                myPop.popover('hide');
-                $(document).unbind('mouseup', hidePopup);
-              }
-            };
-
-            $(document).bind('mouseup', hidePopup);
-          });
         }
       };
     }
