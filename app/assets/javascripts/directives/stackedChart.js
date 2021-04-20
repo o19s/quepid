@@ -37,8 +37,7 @@ angular.module('QuepidApp')
 
 angular.module('QuepidApp')
   .directive('stackedChart', [
-    '$uibModal',
-    function ($uibModal) {
+    function () {
       return {
         restrict: 'E',
         priority: 1000,
@@ -47,25 +46,7 @@ angular.module('QuepidApp')
             maxDocScore: '=',
             viewport: '='
           },
-        templateUrl: 'views/stackedChart.html',
-        link: function(scope, element) {
-
-          var openModal = function() {
-            $uibModal.open({
-              templateUrl: 'views/detailedExplain.html',
-              controller: 'DocExplainCtrl',
-              //windowClass: 'detailed-explain-modal',
-              resolve: {
-                doc: function() {
-                  return scope.doc;
-                },
-                maxScore: function() {
-                  return scope.maxDocScore;
-                }
-              }
-            });
-          };
-        }
+        templateUrl: 'views/stackedChart.html'
       };
     }
   ]);
