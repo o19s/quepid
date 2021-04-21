@@ -104,6 +104,8 @@ GEM
     erubi (1.10.0)
     execjs (2.7.0)
     ffi (1.15.0)
+    font-awesome-sass (5.15.1)
+      sassc (>= 1.11)
     foreman (0.87.2)
     gabba (1.0.1)
     get_process_mem (0.2.7)
@@ -311,6 +313,7 @@ DEPENDENCIES
   derailed_benchmarks
   devise (>= 4.6.2)
   devise_invitable (~> 2.0)
+  font-awesome-sass
   foreman
   gabba
   intercom-rails
