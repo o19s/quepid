@@ -26,7 +26,6 @@ Rails.application.config.assets.precompile += %w[ application_spec.js ]
 
 # CSS from node modules
 Rails.application.config.assets.precompile += %w[
-  @fortawesome/fontawesome-free/css/all.min.css
   ng-json-explorer/dist/angular-json-explorer.css
   angular-wizard/dist/angular-wizard.css
   ng-tags-input/build/ng-tags-input.min.css
