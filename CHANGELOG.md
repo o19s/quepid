@@ -2,17 +2,25 @@
 
 ## 6.5.0 - ?
 
-I can sum up this release of Quepid as either the "Hey friend, come join me in improving search" release or the "so much technical
-debt has been paid down" release.   
+I can sum up this release of Quepid as either the "Hey friend, come join me in improving search" release or the "so much technical debt has been paid down" release.   
+
+For those of you upgrading your Docker based install, there are two new ENV variables you need to add to your `docker-compose.yml` file:
+
+```
+- RAILS_LOG_TO_STDOUT=true
+- RAILS_SERVE_STATIC_FILES=true
+```
 
 > Hey friend, come join me in improving search
 
 We have added features that make it easier for you to invite your colleagues to come join your team and start rating documents.  We
-have reworked the initial case creation wizard to be smarter about popping up only the first time you decide to create your own case, instead of having it jump into the user flow when you join an existing team with existing cases.  This should make it easier to bring folks interested only in rating docs into Quepid.  As part of this, we've also added better support for deleting both individual Cases and now you can delete User accounts.  So if you invite someone, and change your mind, you can clean up after yourself.
+have reworked the initial case creation wizard to be smarter about popping up only the first time you decide to create your own case, instead of having it jump into the user flow when you join an existing team with existing cases.  This should make it easier to bring folks interested only in rating docs into Quepid.  As part of this, we've also added support for deleting individual Cases and User accounts.  So if you invite someone, and change your mind, you can clean up after yourself.
 
 > so much technical debt has been paid down
 
-We are finally off Rails 4.2 and are now on the latest Rails 5 release, and we have a shiny new Favicon to go with it!  We've updated all of our frontend dependencies to the latest possible, congruent with the core app is still on Angular1.  The lift from Rails 4 to Rails 5 was massive, and a huge round of thanks to everyone who reported bugs.   We also ripped out some features that hadn't seen adoption by users, including "soft delete" of queries and the "unit test" style custom scorers.
+We are finally off Rails 4.2 and are now on the latest Rails 5 release, and we have a shiny new Favicon to go with it!  We've updated all of our frontend dependencies to the latest versions possible, congruent with the core app is still based on Angular1 .  The lift from Rails 4 to Rails 5 was a massive effort, and a huge round of thanks goes out to everyone who reported bugs.  We've shrunk our list of dependencies by 10% over the v6.4.1 release, and 29% compared to v6.0.1 release, and we're set up now to look at new front end technologies!
+
+We also did some housecleaning by ripping out some features that hadn't seen adoption by users, including "soft delete" of queries and the "unit test" style of custom scorers.
 
 ### Features
 
