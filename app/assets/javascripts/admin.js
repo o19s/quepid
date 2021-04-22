@@ -1,14 +1,15 @@
 //= require jquery
-// Use this for debugging.
-//# require bootstrap-sprockets
-// Use this for faster loading
-//= require bootstrap
-//= require jquery_ujs
-//= require jquery-ui
+//= require rails-ujs
+
+//= require bootstrap/dist/js/bootstrap.bundle
+
 //= require d3
 //= require cal-heatmap
-//= require ace-rails-ap
-//= require ace/theme-chrome
-//= require ace/mode-javascript
+
+//= require ace-builds/src-min-noconflict/ace
+//= require ace-builds/src-min-noconflict/ext-language_tools
+//= require ace-builds/src-min-noconflict/mode-json
+//= require ace-builds/src-min-noconflict/mode-javascript
+
 //= require admin/scorers
 //= require admin/user_pulse
