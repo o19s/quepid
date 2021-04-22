@@ -4,7 +4,7 @@
 
 ![favicon](https://raw.githubusercontent.com/o19s/quepid/master/app/assets/images/favicon.ico)
 
-I can sum up this release of Quepid as either the "Hey friend, come join me in improving search" release or the "so much technical debt has been paid down" release.   
+I can sum up this release of Quepid as either the _Hey friend, come join me in improving search_ release or the _so much technical debt has been paid down_ release.   
 
 For those of you upgrading your Docker based install, there are two new ENV variables you need to add to your `docker-compose.yml` file:
 
@@ -32,6 +32,8 @@ We also did some housecleaning by ripping out some features that hadn't seen ado
 
 * Let a user (or an Administrator) delete their account from Quepid, handling their cases, scorers, and team memberships.  https://github.com/o19s/quepid/pull/315 by @epugh fixes https://github.com/o19s/quepid/issues/311.
 
+* You can now Delete a case altogether!  Historically we had an Archive function, so that you could restore an old case.  However, if you are like me, you create lots and lots of throwaway cases, so this allows you to clean up your Quepid setup.  This PR also fixed some data modeling issues, and the problem of sometimes have a Try of zero, instead of the default first try of One!   We also always include the Try number even if you have named the Try, since that is a big deal.  https://github.com/o19s/quepid/pull/288 by @epugh fixes https://github.com/o19s/quepid/issues/250.  Thanks @DmitryKey for help QA'ing this code.
+
 ### Improvements
 
 * We now have a favicon for Quepid!  https://github.com/o19s/quepid/pull/317 by @DmitryKey.
@@ -47,8 +49,6 @@ We also did some housecleaning by ripping out some features that hadn't seen ado
 * We have simplified our queries that involve cases and users that are part of teams by making the simplifying assumption that all owners of teams are also members, which turns out to be true in practice.   We also have audited our use of `.includes` to load child objects (avoiding the N+1 problem), and used more `.preload` to try and deal with running out of temp space in our database.   https://github.com/o19s/quepid/pull/286 by @epugh.
 
 * Turns out we had a [ERD](docs/erd.png) diagram all along, but it was hidden.  Now you can see it on our [Data Mapping](docs/datamapping.md) page, plus we have how to recreate it documented and integrated.  https://github.com/o19s/quepid/pull/287 by @epugh.
-
-* You can now Delete a case altogether!  Historically we had an Archive function, so that you could restore an old case.  However, if you are like me, you create lots and lots of throwaway cases, so this allows you to clean up your Quepid setup.  This PR also fixed some data modeling issues, and the problem of sometimes have a Try of zero, instead of the default first try of One!   We also always include the Try number even if you have named the Try, since that is a big deal.  https://github.com/o19s/quepid/pull/288 by @epugh fixes https://github.com/o19s/quepid/issues/250.  Thanks @DmitryKey for help QA'ing this code.
 
 * Remove obscure `quepidIf.js` file that doesn't seem to do anything.  https://github.com/o19s/quepid/pull/293 by @worleydl.
 
