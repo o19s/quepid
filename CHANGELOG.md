@@ -18,7 +18,7 @@ have reworked the initial case creation wizard to be smarter about popping up on
 
 > so much technical debt has been paid down
 
-We are finally off Rails 4.2 and are now on the latest Rails 5 release, and we have a shiny new [favicon](https://raw.githubusercontent.com/o19s/quepid/master/app/assets/images/favicon.ico) to go with it!  We've updated all of our frontend dependencies to the latest versions possible, congruent with the core app is still based on Angular1 .  The lift from Rails 4 to Rails 5 was a massive effort, and a huge round of thanks goes out to everyone who reported bugs.  We've shrunk our list of dependencies by 10% over the v6.4.1 release, and 29% compared to v6.0.1 release, and we're set up now to look at new front end technologies!
+We are finally off Rails 4.2 and are now on the latest Rails 5 release, and we have a shiny new favicon ![favicon](https://raw.githubusercontent.com/o19s/quepid/master/app/assets/images/favicon.ico) to go with it!  We've updated all of our frontend dependencies to the latest versions possible, congruent with the core app is still based on Angular1 .  The lift from Rails 4 to Rails 5 was a massive effort, and a huge round of thanks goes out to everyone who reported bugs.  We've shrunk our list of dependencies by 10% over the v6.4.1 release, and 29% compared to v6.0.1 release, and we're set up now to look at new front end technologies!
 
 We also did some housecleaning by ripping out some features that hadn't seen adoption by users, including "soft delete" of queries and the "unit test" style of custom scorers.
 
