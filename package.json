@@ -24,13 +24,10 @@
     "angular-utils-pagination": "~0.11.1",
     "angular-wizard": "git://github.com/softwaredoug/angular-wizard.git#0.4.2",
     "bootstrap": "~4.6.0",
-    "components-font-awesome": "^5.9.0",
     "d3": "~6.6.2",
     "d3-tip": "~0.9.1",
-    "es5-shim": "~4.5.15",
     "jquery": "~3.6.0",
     "jquery-ui": "~1.12.1",
-    "json3": "~3.3.3",
     "ng-json-explorer": "http://github.com/odra/ng-json-explorer",
     "ng-tags-input": "3.2.0",
     "popper.js": "^1.16.1",
@@ -46,9 +43,5 @@
     "karma-jasmine": "4.0.1",
     "puppeteer": "8.0.0"
   },
-  "resolutions": {
-    "angular": "~1.7.7",
-    "es5-shim": "~4.1.11",
-    "d3": "~3.5.17"
-  }
+  "resolutions": {}
 }

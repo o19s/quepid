@@ -125,7 +125,7 @@
       </search-result>
 
       <div class='row'>
-        <span class="glyphicon glyphicon-chevron-up text-primary" ng-click="query.toggle()" data-toggle="tooltip"  title="Close the results pane"></span>
+        <span class="glyphicon glyphicon-chevron-up text-primary" ng-click="query.toggle()" uib-popover="Close the results pane"></span>
         <span ng-if="query.numFound > query.docs.length">
           <a
             ng-show='query.numFound > 10'
@@ -158,7 +158,7 @@
       </search-result>
 
       <div class='row'>
-        <span class="glyphicon glyphicon-chevron-up text-primary" ng-click="query.toggle()" data-toggle="tooltip"  title="Close the results pane"></span>
+        <span class="glyphicon glyphicon-chevron-up text-primary" ng-click="query.toggle()" uib-popover="Close the results pane"></span>
         <span ng-if="query.getNumFound() > query.ratedDocs.length">
           <a
             ng-show='query.getNumFound() > query.ratedDocs.length'

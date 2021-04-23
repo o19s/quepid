@@ -4,7 +4,7 @@ require 'csv'
 
 module Admin
   class UsersController < Admin::AdminController
-    before_action :set_user, only: [ :show, :edit, :update ]
+    before_action :set_user, only: [ :show, :edit, :update, :destroy ]
 
     # GET /admin/users
     # GET /admin/users.json
@@ -50,7 +50,7 @@ module Admin
     def destroy
       @user.destroy
       respond_to do |format|
-        format.html { redirect_to people_url, notice: 'Person was successfully destroyed.' }
+        format.html { redirect_to admin_users_url, notice: 'User account was successfully deleted.' }
         format.json { head :no_content }
       end
     end

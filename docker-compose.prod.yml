@@ -22,8 +22,8 @@ services:
   app:
     container_name: quepid_prod_app
     image: o19s/quepid:latest
-    env_file:
-      - .env.prod
+    #env_file:   # Use this approach if you would rather manage your environment settings elsewhere.
+    #  - .env.prod
     environment:
       - PORT=3000
       - RACK_ENV=production
@@ -34,6 +34,8 @@ services:
       - MAX_THREADS=2
       - WEB_CONCURRENCY=2
       - SECRET_KEY_BASE=some_value_needed_here
+      - RAILS_LOG_TO_STDOUT=true
+      - RAILS_SERVE_STATIC_FILES=true      
       - TC_URL=
       - PRIVACY_URL=
       - COOKIES_URL=

@@ -421,6 +421,12 @@ You can also upgrade a gem via:
 bin/docker r bundle update foobar
 ```
 
+You can remove a gem via:
+
+```
+bin/docker r bundle remove foobar --install
+```
+
 Then check in the updated `Gemfile` and `Gemfile.lock` files.  For good measure
 run the `bin/setup_docker`.
 

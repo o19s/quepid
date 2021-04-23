@@ -1,18 +1,28 @@
 # Changelog
 
-## 6.5.0 - ?
+## 6.5.0 - 2021-04-22
 
-I can sum up this release of Quepid as either the "Hey friend, come join me in improving search" release or the "so much technical
-debt has been paid down" release.   
+![favicon](https://raw.githubusercontent.com/o19s/quepid/master/app/assets/images/favicon.ico)
+
+I can sum up this release of Quepid as either the _Hey friend, come join me in improving search_ release or the _so much technical debt has been paid down_ release.   
+
+For those of you upgrading your Docker based install, there are two new ENV variables you need to add to your `docker-compose.yml` file:
+
+```
+- RAILS_LOG_TO_STDOUT=true
+- RAILS_SERVE_STATIC_FILES=true
+```
 
 > Hey friend, come join me in improving search
 
 We have added features that make it easier for you to invite your colleagues to come join your team and start rating documents.  We
-have reworked the initial case creation wizard to be smarter about popping up only the first time you decide to create your own case, instead of having it jump into the user flow when you join an existing team with existing cases.  This should make it easier to bring folks interested only in rating docs into Quepid.  As part of this, we've also added better support for deleting both individual Cases and now you can delete User accounts.  So if you invite someone, and change your mind, you can clean up after yourself.
+have reworked the initial case creation wizard to be smarter about popping up only the first time you decide to create your own case, instead of having it jump into the user flow when you join an existing team with existing cases.  This should make it easier to bring folks interested only in rating docs into Quepid.  As part of this, we've also added support for deleting individual Cases and User accounts.  So if you invite someone, and change your mind, you can clean up after yourself.
 
 > so much technical debt has been paid down
 
-We are finally off Rails 4.2 and are now on the latest Rails 5 release, and we have a shiny new Favicon to go with it!  We've updated all of our frontend dependencies to the latest possible, congruent with the core app is still on Angular1.  The lift from Rails 4 to Rails 5 was massive, and a huge round of thanks to everyone who reported bugs.   We also ripped out some features that hadn't seen adoption by users, including "soft delete" of queries and the "unit test" style custom scorers.
+We are finally off Rails 4.2 and are now on the latest Rails 5 release, and we have a shiny new favicon to go with it!  We've updated all of our frontend dependencies to the latest versions possible, congruent with the core app still being based on Angular1.  The lift from Rails 4 to Rails 5 was a massive effort, and a huge round of thanks goes out to everyone who reported bugs.  We've shrunk our list of dependencies by 10% over the v6.4.1 release, and 29% compared to v6.0.1 release, and we're set up now to look at new front end technologies!
+
+We also did some housecleaning by ripping out some features that hadn't seen adoption by users, including "soft delete" of queries and the "unit test" style of custom scorers.
 
 ### Features
 
@@ -21,6 +31,8 @@ We are finally off Rails 4.2 and are now on the latest Rails 5 release, and we h
 * Add support for sending emails via SMTP, or use Postmark, or don't send emails.  https://github.com/o19s/quepid/pull/276 by @gabauer fixes https://github.com/o19s/quepid/issues/275.
 
 * Let a user (or an Administrator) delete their account from Quepid, handling their cases, scorers, and team memberships.  https://github.com/o19s/quepid/pull/315 by @epugh fixes https://github.com/o19s/quepid/issues/311.
+
+* You can now Delete a case altogether!  Historically we had an Archive function, so that you could restore an old case.  However, if you are like me, you create lots and lots of throwaway cases, so this allows you to clean up your Quepid setup.  This PR also fixed some data modeling issues, and the problem of sometimes have a Try of zero, instead of the default first try of One!   We also always include the Try number even if you have named the Try, since that is a big deal.  https://github.com/o19s/quepid/pull/288 by @epugh fixes https://github.com/o19s/quepid/issues/250.  Thanks @DmitryKey for help QA'ing this code.
 
 ### Improvements
 
@@ -38,8 +50,6 @@ We are finally off Rails 4.2 and are now on the latest Rails 5 release, and we h
 
 * Turns out we had a [ERD](docs/erd.png) diagram all along, but it was hidden.  Now you can see it on our [Data Mapping](docs/datamapping.md) page, plus we have how to recreate it documented and integrated.  https://github.com/o19s/quepid/pull/287 by @epugh.
 
-* You can now Delete a case altogether!  Historically we had an Archive function, so that you could restore an old case.  However, if you are like me, you create lots and lots of throwaway cases, so this allows you to clean up your Quepid setup.  This PR also fixed some data modeling issues, and the problem of sometimes have a Try of zero, instead of the default first try of One!   We also always include the Try number even if you have named the Try, since that is a big deal.  https://github.com/o19s/quepid/pull/288 by @epugh fixes https://github.com/o19s/quepid/issues/250.  Thanks @DmitryKey for help QA'ing this code.
-
 * Remove obscure `quepidIf.js` file that doesn't seem to do anything.  https://github.com/o19s/quepid/pull/293 by @worleydl.
 
 * The Export All Cases feature only supported the old "Detail" format, and none of the other export formats, like LTR, Basic, or RRE.  Plus the filtering options of "All, Owned, Shared" was pretty simplistic.  It wasn't being used, and it added some complexity and performance issues to List All Cases page.   So we removed it.  https://github.com/o19s/quepid/pull/295 by @epugh fixes https://github.com/o19s/quepid/issues/294.
@@ -52,7 +62,7 @@ We are finally off Rails 4.2 and are now on the latest Rails 5 release, and we h
 
 * The logic around when we popped open the "Create a Case" wizard for a brand new user was somewhat split between the backend `home_controller.rb` and the front end.   It also made anyone who was invited to a team just for rating purposes go through the Create a Case Wizard on their first login, which was awkward.   So, converted the concept of a "first_login" for the wizard to just a boolean "completed_case_wizard", and now it it checked if you have NO cases, and popped up, or if you click "Add a Case".   https://github.com/o19s/quepid/pull/305 by @epugh fixes https://github.com/o19s/quepid/issues/281.
 
-* Upgraded to the latest version of Angular 1, 1.8.2, and many of the other front end dependencies.   https://github.com/o19s/quepid/pull/308 by @epugh and https://github.com/o19s/quepid/pull/320 by @worleydl deals with this.
+* Upgraded to the latest version of Angular 1, 1.8.2, and many of the other front end dependencies.   https://github.com/o19s/quepid/pull/308 and https://github.com/o19s/quepid/pull/324 by @epugh and https://github.com/o19s/quepid/pull/320 by @worleydl deals with this.
 
 * You can now override the from email address from the default `quepid@o19s.com` to your own email address.   https://github.com/o19s/quepid/pull/322 by @slawmac.  Thanks @slawmac for this improvement!
 
@@ -68,7 +78,7 @@ We are finally off Rails 4.2 and are now on the latest Rails 5 release, and we h
 
 * Thanks to @DmitryKey for spotting that we were not properly storing the Elasticsearch choice.  https://github.com/o19s/quepid/pull/310 by @epugh fixes https://github.com/o19s/quepid/issues/309.
 
-* There is a known issue where expanding/collapsing queries on a larger case, the UI can become completely locked in Chrome, forcing the user to close out the tab.  Thanks to some next level debugging by @LiuCao0614 we have a workaround that disables the JQuery based drag and drop sorting feature that appears to avoid this bug.   *This is not a fix!*   However, you can set `QUERY_LIST_SORTABLE=false` in your environment to disable this feature.   https://github.com/o19s/quepid/issues/272 tracks this issue.
+* There is a known issue where expanding/collapsing queries on a larger case, the UI can become completely locked in Chrome, forcing the user to close out the tab.  Thanks to some next level debugging by @LiuCao0614 we have a workaround that disables the JQuery based drag and drop sorting feature that appears to avoid this bug.   *This is not a fix!  This is a workaround!*   Set `QUERY_LIST_SORTABLE=false` in your environment to disable the sorting of queries feature.   https://github.com/o19s/quepid/issues/272 tracks this ongoing issue.
 
 ## 6.4.1 - 2021-01-14
 
