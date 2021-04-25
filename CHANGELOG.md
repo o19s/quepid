@@ -1,5 +1,11 @@
 # Changelog
 
+## 6.5.1 - ??
+
+### Improvements
+
+* Uglifier for JavaScript appears to not work with ES6, and so using [Terser](https://github.com/ahorek/terser-ruby) instead.  https://github.com/o19s/quepid/pull/329 by @epugh fixes this.
+
 ## 6.5.0 - 2021-04-22
 
 ![favicon](https://raw.githubusercontent.com/o19s/quepid/master/app/assets/images/favicon.ico)
