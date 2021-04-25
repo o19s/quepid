@@ -97,7 +97,7 @@ class Case < ApplicationRecord
   # objects of a Case to actually delete!
   def really_destroy
     snapshots.destroy_all
-    queries.unscoped.where(case_id: id).destroy_all
+    queries.where(case_id: id).destroy_all
     tries.destroy_all
     destroy
   end

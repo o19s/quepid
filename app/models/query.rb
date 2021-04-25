@@ -96,7 +96,6 @@ class Query < ApplicationRecord
 
     ratings_variants = []
 
-    puts ratings_by_doc.first
     ratings_by_doc.each do |_key, value|
       value[:rating] = variance(value[:ratings]).round(2)
 

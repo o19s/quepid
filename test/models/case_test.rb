@@ -207,7 +207,7 @@ class CaseTest < ActiveSupport::TestCase
 
             cloned_case.clone_case the_case, user, try: the_try, clone_queries: true, clone_ratings: true
 
-            assert_equal 1, cloned_case.queries.count
+            assert_equal 2, cloned_case.queries.count
             assert_equal 1, cloned_case.tries.count
             assert_equal 0, cloned_case.last_try_number
             assert_equal 0, cloned_case.tries.first.try_number
@@ -235,16 +235,6 @@ class CaseTest < ActiveSupport::TestCase
         end
       end
       assert_not user.destroyed?
-    end
-
-    it 'handles destroyed queries' do
-      assert_difference 'Query.count', -2 do
-        assert_equal 2, the_case.queries.size
-        the_case.queries.first.destroy
-        assert_equal 1, the_case.queries.size
-        the_case.really_destroy
-        assert the_case.destroyed?
-      end
     end
   end
 end
