@@ -20,7 +20,7 @@ module Authentication
 
     def current_case_metadatum
       @case_metadatum = @case.metadata.find_or_create_by user_id: current_user.id unless @case.nil?
-    end    
+    end
 
     # Fetches case that a user can view and query.
     # This includes a case owned by the user, shared with an team owned by

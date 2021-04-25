@@ -1,0 +1,20 @@
+<%=@case.case_name %>
+
+
+<table class="table table-condensed table-striped">
+  <tr>
+    <th>Query</th><th>Doc ID</th><th>User</th>
+  </tr>
+
+
+</table>
+
+
+<%= @df.plot("query_id", "doc_id", type: "pie")%>
+
+
+
+<h2>Here are all the ratings</h2>
+<pre>
+<%= @df.to_csv
+</pre>

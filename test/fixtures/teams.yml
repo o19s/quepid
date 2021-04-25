@@ -78,5 +78,5 @@ team_for_case_shared_with_owner:
 phasers_vs_sabers_team:
   name:     Team for Phasers vs Sabers Comparison
   owner:    :luke
-  members:  kirk
+  members:  kirk, luke
   cases:    phasers_vs_sabers

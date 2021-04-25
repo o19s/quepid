@@ -46,6 +46,29 @@ class Query < ApplicationRecord
     self.case
   end
 
+  # FIXME: I dislike this method.
+  # rubocop:disable Metrics/MethodLength
+  def ratings_by_doc_id_and_user_id
+    ratings_by_doc = {}
+    ratings.each do |rating|
+      user_key = rating.user_id.nil? ? 'blank' : rating.user_id.to_s
+      ratings_by_doc_id = if ratings_by_doc.key? rating.doc_id
+                            ratings_by_doc[rating.doc_id]
+                          else
+                            ratings_by_doc[rating.doc_id] = {}
+                          end
+
+      ratings_data = if ratings_by_doc_id.key? user_key
+                       ratings_by_doc_id[user_key]
+                     else
+                       ratings_by_doc_id[user_key] = []
+                     end
+      ratings_data << rating
+    end
+    ratings_by_doc
+  end
+  # rubocop:enable Metrics/MethodLength
+
   # FIXME: I can't get good stuff.
   def relative_variance
     rand

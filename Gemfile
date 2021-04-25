@@ -35,6 +35,9 @@ gem 'd3-rails', '~> 3.5.5' # we have a very old version of D3.  This provides D3
 gem 'cal-heatmap-rails', '~> 3.6' # provides assets for cal heatmap, that requires old d3
 gem 'font-awesome-sass'
 
+gem 'rover-df'
+gem 'vega'
+
 group :development, :test do
   gem 'annotate'
   gem 'bullet'
