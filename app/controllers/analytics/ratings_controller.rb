@@ -51,7 +51,7 @@ module Analytics
       puts df1.to_csv
 
       puts 'Average'
-      df1['average'] = (df1['rating_218954774'] * df1['rating_962534057']) / 2
+      df1['average'] = (df1["rating_#{users.first}"] * df1["rating_#{users.second}"]) / 2
       puts df1.to_csv
       # @df['rating'][@df['rating'] == nil] = -1
 
