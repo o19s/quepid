@@ -6,9 +6,9 @@
 Rails.application.config.assets.version = '1.0'
 
 # Maybe needed with segfaults in sassc gem?
-Rails.application.config.assets.configure do |env|
-  env.export_concurrent = false
-end
+#Rails.application.config.assets.configure do |env|
+#  env.export_concurrent = false
+#end
 
 # Add additional assets to the asset load path.
 # Rails.application.config.assets.paths << Emoji.images_path
