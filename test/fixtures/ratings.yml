@@ -63,6 +63,17 @@ luke_rating_3:
   doc_id: 'star_man'
   rating: 2
 
+luke_rating_4:
+  user:  :luke
+  query:  :star
+  doc_id: 'star_is_born'
+  rating: 2
+
+no_user_rating_1:
+  query:  :star
+  doc_id: 'star_is_born'
+  rating: 3    
+
 rating_with_rating:
   doc_id: '123'
   query:  :query_with_empty_ratings
