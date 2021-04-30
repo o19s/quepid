@@ -17,7 +17,7 @@ module Api
             plucked_rating_params = pluck_out_just_rating_param
             rating = @query.ratings.find_or_create_by doc_id: doc_id, user_id: plucked_rating_params[:user_id]
 
-            rating.rating = plucked_rating_params
+            rating.rating = plucked_rating_params[:rating]
             rating.save
           end
         end
