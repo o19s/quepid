@@ -11,108 +11,43 @@ module Analytics
     # GET /admin/users/1
     # GET /admin/users/1.json
     # rubocop:disable Metrics/MethodLength
-    # rubocop:disable Metrics/AbcSize
     def show
+      user_ids = @case.ratings.select(:user_id).distinct.map(&:user_id)
 
+      puts "I have #{user_ids} user ids"
 
-#select distinct q.query_text, r.doc_id from cases c, queries q, ratings r where c.id = 681124819 and c.id = q.case_id and r.query_id = q.id
+      @df = nil
+      @usernames = []
+      user_ids.each do |user_id|
+        username = user_id.nil? ? 'User Unknown' : User.find_by(id: user_id).name
+        @usernames << username
 
-      sql = "
-        SELECT  DISTINCT `queries`.`id`, `ratings`.`doc_id`
-        FROM `cases`, `queries`, `ratings`
-        WHERE `cases`.`id` = #{@case.id}
-        AND `queries`.`case_id` = `cases`.`id`
-        AND `ratings`.`query_id` = `queries`.`id`
-        ORDER BY `queries`.`query_text` DESC, `ratings`.`doc_id` DESC
-      "
-
-      results = ActiveRecord::Base.connection.execute(sql)
-
-      source = []
-      puts 'here come sql'
-      results.each do |row|
-
-        puts "#{row.first}:#{row.second}"
-        ratings_for_pair = @case.ratings.where(query_id:row.first, doc_id: row.second)
-        puts "ratings count: #{ratings_for_pair.size} ---  #{ratings_for_pair.map(&:rating)}"
-
-        ratings_by_user = {}
-        ratings_for_pair.each do |r|
-        end
-
-        source << {
-          "query_id": row.first,
-          "doc_id": row.second,
-          "ratings": ratings_for_pair.map(&:rating).to_s
-        }
+        df_for_user = create_df_for_user user_id, username
+        @df = if @df.nil?
+                df_for_user
+              else
+                @df.left_join(df_for_user, on: %w[query_id doc_id])
+              end
       end
 
-      dfnext = Rover::DataFrame.new(source)
-
-      dfnext.each_row do |row|
-        row["bob"] = "bob"
-      end
-      puts dfnext
-
-      ratings = @case.ratings
-      users = []
-      ratings.each do |rating|
-        rating.rating = -1 if rating.rating.nil?
-        #puts "rating user: #{rating.user_id}"
-        users << rating.user.id unless rating.user.nil?
-      end
-      @df = Rover::DataFrame.new(ratings)
-      @df.delete('updated_at')
-      @df.delete('created_at')
-
-      puts @df.keys
-
-      puts @df.to_csv
-
-      users.uniq!
-
-            puts 'here are users'
-            puts users
-
-
-      puts @df
-
-      puts "Okay, lets group"
-
-      puts @df.group('doc_id','query_id').count
-
-
-
-
-      if (1 == 1)
-
-        df1 = Rover::DataFrame.new(@case.ratings.where('`ratings`.`user_id` = ?', users.first))
-        df2 = Rover::DataFrame.new(@case.ratings.where('`ratings`.`user_id` = ?', users.second))
-
-        df1.delete('updated_at')
-        df1.delete('created_at')
-        df1["user_#{users.first}"] = df1.delete('user_id')
-        df1["rating_#{users.first}"] = df1.delete('rating')
-
-        df2.delete('updated_at')
-        df2.delete('created_at')
-        df2["user_#{users.second}"] = df2.delete('user_id')
-        df2["rating_#{users.second}"] = df2.delete('rating')
-        puts df1
-        puts df2
-
-        df1 = df1.inner_join(df2, on: %w[query_id doc_id])
-
-        puts 'JOINED'
-        puts df1
-
-        puts 'Average'
-        df1['average'] = (df1["rating_#{users.first}"] * df1["rating_#{users.second}"]) / 2
-        puts df1
+      @df['query_text'] = Array.new(@df.count, '')
+      @df.count.to_i.times do |x|
+        @df['query_text'][x] = Query.find_by(id: @df['query_id'][x]).query_text
       end
 
+      # puts @df
     end
+
     # rubocop:enable Metrics/MethodLength
-    # rubocop:enable Metrics/AbcSize
+    def create_df_for_user user_id, username
+      puts "Found #{@case.ratings.where(user_id: user_id).count} ratings for #{username}"
+      df = Rover::DataFrame.new(@case.ratings.where(user_id: user_id))
+      df.delete('updated_at')
+      df.delete('created_at')
+      df.delete('id')
+      df.delete('user_id')
+      df[username] = df.delete('rating')
+      df
+    end
   end
 end

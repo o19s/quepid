@@ -3,14 +3,31 @@
 
 <table class="table table-condensed table-striped">
   <tr>
-    <th>Query</th><th>Doc ID</th><th>User</th>
+    <th>Query</th><th>Doc ID</th>
+    <% @usernames.each do |username| %>
+      <th><%= username %></th>
+    <% end %>
   </tr>
+  <% @df.each_row do |row| %>
+    <tr>
+      <td><%= row['query_text']%></td>
+      <td><%= row['doc_id']%></td>
+      <% @usernames.each do |username| %>
+        <th><%= row[username]%></th>
+      <% end %>
+    </tr>
+  <% end %>
 
 
 </table>
 
 
 <%= @df.plot("query_id", "doc_id", type: "pie")%>
+
+<h2>Dataframe</h2>
+<pre>
+  <%= @df %>
+</pre>
 
 
 
