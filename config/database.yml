@@ -9,10 +9,10 @@ default: &default
   username:   <%= ENV["DB_USERNAME"] %>
   password:   <%= ENV["DB_PASSWORD"] %>
   host:       <%= ENV["DB_HOST"] %>
+  # see https://github.com/rails/rails/issues/25924
+  variables:
+    sql_mode: TRADITIONAL
 
-# see https://github.com/rails/rails/issues/25924
-variables:
-  sql_mode: TRADITIONAL
 
 development:
   <<: *default
