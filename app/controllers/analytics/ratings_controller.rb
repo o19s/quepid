@@ -11,12 +11,16 @@ module Analytics
     # GET /admin/users/1
     # GET /admin/users/1.json
     # rubocop:disable Metrics/MethodLength
+    # rubocop:disable Metrics/AbcSize
     def show
       user_ids = @case.ratings.select(:user_id).distinct.map(&:user_id)
 
-      puts "I have #{user_ids} user ids"
+      # We need all the unique query/doc pairs to set up the overall dataframe, then we fill in per user their data.
+      query_doc_pairs = @case.ratings.select(:query_id, :doc_id).distinct.map do |r|
+        { "querydoc_id": "#{r.query_id}!#{r.doc_id}" }
+      end
 
-      @df = nil
+      @df = Rover::DataFrame.new(query_doc_pairs)
       @usernames = []
       user_ids.each do |user_id|
         username = user_id.nil? ? 'User Unknown' : User.find_by(id: user_id).name
@@ -26,27 +30,36 @@ module Analytics
         @df = if @df.nil?
                 df_for_user
               else
-                @df.left_join(df_for_user, on: %w[query_id doc_id])
+                @df.left_join(df_for_user, on: :querydoc_id)
               end
       end
 
       @df['query_text'] = Array.new(@df.count, '')
+      @df['query_rating_variance'] = Array.new(@df.count, '')
       @df.count.to_i.times do |x|
-        @df['query_text'][x] = Query.find_by(id: @df['query_id'][x]).query_text
+        query = Query.find_by(id: @df['query_id'][x])
+        @df['query_text'][x] = query.query_text
+        @df['query_rating_variance'] = query.relative_variance
       end
 
       # puts @df
     end
-
     # rubocop:enable Metrics/MethodLength
+    # rubocop:enable Metrics/AbcSize
+
     def create_df_for_user user_id, username
-      puts "Found #{@case.ratings.where(user_id: user_id).count} ratings for #{username}"
       df = Rover::DataFrame.new(@case.ratings.where(user_id: user_id))
       df.delete('updated_at')
       df.delete('created_at')
       df.delete('id')
       df.delete('user_id')
       df[username] = df.delete('rating')
+
+      # populate the portion of the data frame that we have query/doc ratings for
+      df[:querydoc_id] = Array.new(df.count, '')
+      df.count.to_i.times do |x|
+        df[:querydoc_id][x] = "#{df['query_id'][x]}!#{df['doc_id'][x]}"
+      end
       df
     end
   end
