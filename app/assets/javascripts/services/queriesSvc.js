@@ -171,6 +171,8 @@ angular.module('QuepidApp')
 
         self.ratingVariance   = queryWithRatings.rating_variance;
 
+        self.modified = queryWithRatings.updated_at;
+
 
         // Threshold properties
         self.threshold        = queryWithRatings.threshold;
