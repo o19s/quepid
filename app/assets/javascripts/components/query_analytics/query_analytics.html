@@ -1,17 +1,9 @@
-<a class="action-icon">
-  <span
-    class="matches-popper"
-    uib-popover-template="'query_analytics/analytics.html'"
-    popover-title="Query Analytics"
-    popover-trigger="outsideClick"
-    popover-placement="auto right"
-  >
-    <i
-      class="fa fa-circle"
-      aria-hidden="true"
-      style="vertical-align: middle; font-size: 0.3em; color:{{ctrl.varianceColour()}} !important"
-      title="Query analytics"
-      alt="Query analytics"
-    ></i>
-  </span>
+<a class="action-icon" href="/analytics/cases/{{thisQuery.caseNo}}/ratings?query_id={{thisQuery.queryId}}" target="_blank">
+  <i
+    class="fa fa-circle"
+    aria-hidden="true"
+    style="vertical-align: middle; font-size: 0.3em; color:{{ctrl.varianceColour()}} !important"
+    title="Query variance is {{thisQuery.ratingVariance}}"
+    alt="Query variance is {{thisQuery.ratingVariance}}"
+  ></i>
 </a>
