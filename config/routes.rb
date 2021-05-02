@@ -30,7 +30,7 @@ Rails.application.routes.draw do
   }
 
   namespace :analytics do
-    resources :ratings, only: [ :show ], param: :case_id
+    get 'cases/:case_id/ratings' => 'ratings#show'
   end
 
   namespace :admin do
