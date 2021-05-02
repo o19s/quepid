@@ -1,29 +1,24 @@
-<a class="action-icon">
-  <span
-    ng-if="ctrl.thisCase.sharedWithTeam"
-    class="matches-popper"
-    uib-popover-template="'case_analytics/analytics.html'"
-    popover-title="Case Analytics"
-    popover-trigger="outsideClick"
-    popover-placement="auto top-right"
-  >
-    <i
-      class="fa fa-circle"
-      aria-hidden="true"
-      style="vertical-align: middle; font-size: 0.3em; color:{{ctrl.varianceColour()}} !important"
-      title="Case analytics"
-      alt="Case analytics"
-    ></i>
-  </span>
-  <span
-    ng-if="!ctrl.thisCase.sharedWithTeam"
-  >
-    <i
-      class="far fa-circle"
-      aria-hidden="true"
-      style="vertical-align: middle; font-size: 0.3em;"
-      title="Share with a team to gather case analytics"
-      alt="Share with a team to gather case analytics"
-    ></i>
-  </span>
-</a>
+<span
+  ng-if="ctrl.thisCase.sharedWithTeam"
+>
+  <a href="/analytics/cases/{{thisCase.caseNo}}/ratings" target="_blank" class="action-icon">
+  <i
+    class="fa fa-circle"
+    aria-hidden="true"
+    style="vertical-align: middle; font-size: 0.3em; color:{{ctrl.varianceColour()}} !important"
+    title="Case ratings variance {{thisCase.ratingVariance}}"
+    alt="Case ratings variance {{thisCase.ratingVariance}}"
+  ></i>
+  </a>
+</span>
+<span
+  ng-if="!ctrl.thisCase.sharedWithTeam"
+>
+  <i
+    class="far fa-circle"
+    aria-hidden="true"
+    style="vertical-align: middle; font-size: 0.3em;"
+    title="Share with a team to gather case analytics"
+    alt="Share with a team to gather case analytics"
+  ></i>
+</span>
