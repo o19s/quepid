@@ -1,9 +1,9 @@
-<%=@case.case_name %>
+<h2>Ratings Analysis for Case <%=@case.case_name %></h2>
 
 
 <table class="table table-condensed table-striped">
   <tr>
-    <th>Query</th><th>Doc ID</th>
+    <th>Query</th><th>Query Rating Variance</th><th>Doc ID</th>
     <% @usernames.each do |username| %>
       <th><%= username %></th>
     <% end %>
@@ -11,9 +11,10 @@
   <% @df.each_row do |row| %>
     <tr>
       <td><%= row['query_text']%></td>
+      <td><%= row['query_rating_variance']%></td>
       <td><%= row['doc_id']%></td>
       <% @usernames.each do |username| %>
-        <th><%= row[username]%></th>
+        <td><%= row[username]%></td>
       <% end %>
     </tr>
   <% end %>
