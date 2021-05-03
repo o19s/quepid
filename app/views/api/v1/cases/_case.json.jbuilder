@@ -20,21 +20,10 @@ json.last_try_number acase.tries.best.try_number unless no_tries || acase.tries.
 
 json.ratings_view @case_metadatum.ratings_view if @case_metadatum.present?
 
-if analytics && !teams.empty?
-  json.max_label = acase.scorer.scale.last
-  max_label = acase.scorer.scale.last
-  case_variance_values = []
-  acase.queries.each do |q|
-    next if q.ratings.empty?
-
-    variance = Query.ratings_variance(q.ratings).first.rating # change rating to something else for Nate
-
-    relative_variance = variance / max_label
-
-    case_variance_values << relative_variance
-  end
-
-  json.rating_variance number_with_precision(Query.mean(case_variance_values), precision: 2)
+caseAnalyticsManager = CaseAnalyticsManager.new @case
+if analytics && caseAnalyticsManager.can_calculate_variances?
+  json.max_label = caseAnalyticsManager.max_label
+  json.rating_variance number_with_precision(caseAnalyticsManager.case_ratings_variance, precision: 2)
 end
 
 unless shallow

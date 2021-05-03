@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 # See https://github.com/ankane/rover for more info.
+# See https://gist.github.com/mamantoha/9c0aec7958c7636cebef for ideas
 module Analytics
   class RatingsController < ApplicationController
     force_ssl if: :ssl_enabled?

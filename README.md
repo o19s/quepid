@@ -290,13 +290,26 @@ Rake is great for simple tasks that depend on the application environment, and d
 
 Whereas Thor is a more powerful tool for writing scripts that take in args much more nicely than Rake.
 
+### Production Mode versus Development Mode
+
+In production mode, to run scripts, you need to connect to a Quepid app container, which you do via:
+
+`docker-compose run app MYSCRIPT_HERE`
+
+However, if you have checked out the source code, then there is a convenience script you can run:
+
+`bin/docker r MYSCRIPT_HERE`
+
+
+
 ### Rake
 
 To see what rake tasks are available run:
 
 ```
-bin/docker r bin/rake -T
+bin/rake -T
 ```
+
 
 **Note**: the use of `bin/rake` makes sure that the version of `rake` that is running is the one locked to the app's `Gemfile.lock` (to avoid conflicts with other versions that might be installed on your system). This is equivalent of `bundle exec rake`.
 
