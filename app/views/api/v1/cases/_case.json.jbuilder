@@ -20,10 +20,10 @@ json.last_try_number acase.tries.best.try_number unless no_tries || acase.tries.
 
 json.ratings_view @case_metadatum.ratings_view if @case_metadatum.present?
 
-caseAnalyticsManager = CaseAnalyticsManager.new @case
-if analytics && caseAnalyticsManager.can_calculate_variances?
-  json.max_label = caseAnalyticsManager.max_label
-  json.rating_variance number_with_precision(caseAnalyticsManager.case_ratings_variance, precision: 2)
+case_analytics_manager = CaseAnalyticsManager.new @case
+if analytics && case_analytics_manager.can_calculate_variances?
+  json.max_label = case_analytics_manager.max_label
+  json.rating_variance number_with_precision(case_analytics_manager.case_ratings_variance, precision: 2)
 end
 
 unless shallow

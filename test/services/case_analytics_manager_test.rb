@@ -2,7 +2,6 @@
 
 require 'test_helper'
 
-# rubocop:disable Rails/SkipsModelValidations
 class CaseAnalyticsManagerTest < ActiveSupport::TestCase
   let(:manager) { CaseAnalyticsManager.new the_case }
 
@@ -17,7 +16,6 @@ class CaseAnalyticsManagerTest < ActiveSupport::TestCase
       test 'we have a max label' do
         assert_not_nil manager.max_label
       end
-
     end
 
     describe 'when standalone case' do
@@ -44,10 +42,6 @@ class CaseAnalyticsManagerTest < ActiveSupport::TestCase
       test 'can calculate a variance for the ratings over the entire case' do
         assert_equal 0.5, manager.case_ratings_variance
       end
-
     end
-
   end
-
-
 end

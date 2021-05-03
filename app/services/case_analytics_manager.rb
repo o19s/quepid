@@ -26,13 +26,12 @@ class CaseAnalyticsManager
 
       variance = ratings_variance(query.ratings).first[:rating] # change rating to something else for Nate
 
-      relative_variance = variance / self.max_label
+      relative_variance = variance / max_label
 
       case_variance_values << relative_variance
     end
 
     mean(case_variance_values)
-
   end
 
   def ratings_variance ratings
@@ -43,11 +42,10 @@ class CaseAnalyticsManager
     ratings_by_doc.each do |_key, value|
       value[:rating] = variance(value[:ratings]).round(2)
 
-      ratings_variants << {docid: value[:doc_id], query_id: value[:query_id], rating: value[:rating]}
+      ratings_variants << { docid: value[:doc_id], query_id: value[:query_id], rating: value[:rating] }
     end
     ratings_variants
   end
-
 
   def group_by_doc_id ratings
     ratings_by_doc = {}
@@ -62,7 +60,6 @@ class CaseAnalyticsManager
     ratings_by_doc
   end
 
-
   def variance x
     m = mean(x)
     sum = 0.0
@@ -73,8 +70,4 @@ class CaseAnalyticsManager
   def mean x
     x.sum(0.0) / x.size
   end
-
-
-
-
 end
