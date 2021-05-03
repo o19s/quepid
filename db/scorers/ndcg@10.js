@@ -2,17 +2,17 @@ var k = 10 // @Rank
 var missing_rating = 0; // pessimistic assumption
 
 var ideal = topRatings(k) // could return less than k if less than k docs have ratings
-var missing_pad = Array(k - ideal.length).fill(missing_rating);
-ideal = ideal.concat(missing_pad);
-
 var scores = Array(k);
-eachDoc(function (doc, i) {
+for (var i = 0; i < k; i++) {
+  if (!ideal[i]) {
+    ideal[i] = missing_rating;
+  }
   if (hasDocRating(i)) {
     scores[i] = (docRating(i));
   } else {
-      scores[i] = missing_rating;
+    scores[i] = missing_rating;
   }
-}, k)
+}
 
 function DCG(vals, k) {
   var dcg = 0;
