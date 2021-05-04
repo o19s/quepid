@@ -44,4 +44,16 @@ class CaseAnalyticsManagerTest < ActiveSupport::TestCase
       end
     end
   end
+
+  describe '#calculations at the query/doc level' do
+    let(:the_case) { cases(:phasers_vs_sabers) }
+    let(:the_query) { queries(:star) }
+
+    test 'can calculate a variance for all the ratings for a specific doc id' do
+      ratings = the_query.ratings.where(doc_id: 'star_is_born')
+      assert_equal 2, ratings.size
+
+      assert_equal 0.5, manager.query_doc_ratings_variance(ratings)
+    end
+  end
 end

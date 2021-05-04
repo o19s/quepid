@@ -34,6 +34,19 @@ class CaseAnalyticsManager
     mean(case_variance_values)
   end
 
+  # at the query/doc pair level what is our rating variance?
+  def query_doc_ratings_variance ratings
+    variance_values = []
+
+    variance = ratings_variance(ratings).first[:rating] # change rating to something else for Nate
+
+    relative_variance = variance / max_label
+
+    variance_values << relative_variance
+
+    mean(variance_values)
+  end
+
   def ratings_variance ratings
     ratings_by_doc = group_by_doc_id(ratings)
 

@@ -1,9 +1,11 @@
 <h2>Ratings Analysis for Case <%=@case.case_name %></h2>
 
+Case Rating Variance: <%=number_with_precision(@case_analytics_manager.case_ratings_variance, precision: 2) %>
 
 <table class="table table-condensed table-striped">
   <tr>
-    <th>Query</th><th>Query Rating Variance</th><th>Doc ID</th>
+    <th>Query</th><th>Query Rating Variance (RANDOM NUMBERS)</th><th>Doc ID</th>
+    <th>Query/Doc Variance</th>
     <% @usernames.each do |username| %>
       <th><%= username %></th>
     <% end %>
@@ -13,6 +15,7 @@
       <td><%= row['query_text']%></td>
       <td><%= row['query_rating_variance']%></td>
       <td><%= row['doc_id']%></td>
+      <td bgcolor="<%=format_variance(row['query_doc_rating_variance'])%>"><%= row['query_doc_rating_variance']%></td>
       <% @usernames.each do |username| %>
         <td><%= row[username]%></td>
       <% end %>

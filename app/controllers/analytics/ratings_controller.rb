@@ -14,6 +14,8 @@ module Analytics
     # rubocop:disable Metrics/MethodLength
     # rubocop:disable Metrics/AbcSize
     def show
+      @case_analytics_manager = CaseAnalyticsManager.new @case
+
       user_ids = @case.ratings.select(:user_id).distinct.map(&:user_id)
 
       # We need all the unique query/doc pairs to set up the overall dataframe, then we fill in per user their data.
@@ -37,10 +39,13 @@ module Analytics
 
       @df['query_text'] = Array.new(@df.count, '')
       @df['query_rating_variance'] = Array.new(@df.count, '')
+      @df['query_doc_rating_variance'] = Array.new(@df.count, '')
       @df.count.to_i.times do |x|
         query = Query.find_by(id: @df['query_id'][x])
         @df['query_text'][x] = query.query_text
-        @df['query_rating_variance'] = query.relative_variance
+        @df['query_rating_variance'][x] = query.relative_variance
+        query_doc_ratings = query.ratings.where(query_id: @df['query_id'][x], doc_id: @df['doc_id'][x])
+        @df['query_doc_rating_variance'][x] = @case_analytics_manager.query_doc_ratings_variance(query_doc_ratings)
       end
 
       # puts @df
