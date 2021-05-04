@@ -3,6 +3,7 @@
 module Analytics
   module RatingsHelper
     def format_variance variance
+      variance = variance.to_f
       if (variance >= 0.0) && (variance < 0.025)
         colour = 'SeaGreen'
       elsif (variance >= 0.25) && (variance <= 0.5)

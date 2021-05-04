@@ -15,7 +15,7 @@ Case Rating Variance: <%=number_with_precision(@case_analytics_manager.case_rati
       <td><%= row['query_text']%></td>
       <td><%= row['query_rating_variance']%></td>
       <td><%= row['doc_id']%></td>
-      <td bgcolor="<%=format_variance(row['query_doc_rating_variance'])%>"><%= row['query_doc_rating_variance']%></td>
+      <td bgcolor="<%=format_variance(row['query_doc_rating_variance'])%>"><%= number_with_precision(row['query_doc_rating_variance'], precision: 2)%></td>
       <% @usernames.each do |username| %>
         <td><%= row[username]%></td>
       <% end %>
