@@ -6,5 +6,5 @@ json.email          member.email
 json.avatar_url     member.avatar_url(:big)
 json.pending_invite member.created_by_invite? && !member.invitation_accepted?
 if member.created_by_invite? && !member.invitation_accepted?
-  json.invite_url accept_invitation_url(member, invitation_token: member.invitation_token)
+  json.invite_url accept_invitation_url(member, invitation_token: member.stored_raw_invitation_token)
 end

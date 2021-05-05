@@ -104,6 +104,8 @@ class User < ApplicationRecord
   before_destroy :check_team_ownership_before_removing!, prepend: true
   before_destroy :check_scorer_ownership_before_removing!, prepend: true
 
+
+
   def check_team_ownership_before_removing!
     owned_teams.each do |team|
       if team.members.count > 1
@@ -136,6 +138,14 @@ class User < ApplicationRecord
 
   def encrypted_password_changed?
     password_changed?
+  end
+
+  # Because we want to be able to send the acceptance invite later,
+  # store the raw invitation token in our own column for reuse later
+  before_invitation_created :store_raw_invitation_token
+
+  def store_raw_invitation_token
+    self.stored_raw_invitation_token = self.raw_invitation_token
   end
   # END devise hacks
 
@@ -200,5 +210,7 @@ class User < ApplicationRecord
 
     self[:agreed_time] = Time.zone.now
   end
+
+
 end
 # rubocop:enable Metrics/ClassLength
