@@ -13,7 +13,7 @@ angular.module('QuepidApp')
       ctrl.team  = $scope.team;
 
       ctrl.confirmCopy = function () {
-        flash.success = "Invite url copied."
+        flash.success = 'Invite url copied to clipboard.';
       }
 
     }
