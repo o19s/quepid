@@ -14,7 +14,7 @@ angular.module('QuepidApp')
 
       ctrl.confirmCopy = function () {
         flash.success = 'Invite url copied to clipboard.';
-      }
+      };
 
     }
   ]);
