@@ -15,7 +15,7 @@
     {{ ctrl.user.email }}
 
     <span class="text-muted" ng-if="ctrl.user.pending_invite"> Awaiting response to invitation
-      <a class="action-icon" ng-if="ctrl.user.pending_invite" ngclipboard ngclipboard-success="ctrl.confirmCopy()" data-clipboard-text="http://localhost:3000/user/invite/34234234">
+      <a class="action-icon" ng-if="ctrl.user.pending_invite" ngclipboard ngclipboard-success="ctrl.confirmCopy()" data-clipboard-text="{{ctrl.user.invite_url}}">
         <i
           class="glyphicon glyphicon-copy"
           aria-hidden="true"
