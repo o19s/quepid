@@ -85,7 +85,7 @@ module Api
 
             assert json_response['pending_invite']
 
-            user = User.find_by_email(invitee_email)
+            user = User.find_by(email: invitee_email)
             assert_not_nil user.stored_raw_invitation_token
             assert_not_equal user.stored_raw_invitation_token, user.invitation_token
           end
