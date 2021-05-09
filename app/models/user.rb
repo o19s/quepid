@@ -22,6 +22,7 @@
 #  updated_at             :datetime         not null
 #  default_scorer_id      :integer
 #  email_marketing        :boolean          not null
+#  stored_raw_invitation_token :string
 #
 
 # rubocop:disable Metrics/ClassLength
@@ -136,6 +137,14 @@ class User < ApplicationRecord
 
   def encrypted_password_changed?
     password_changed?
+  end
+
+  # Because we want to be able to send the acceptance invite later,
+  # store the raw invitation token in our own column for reuse later
+  before_invitation_created :store_raw_invitation_token
+
+  def store_raw_invitation_token
+    self.stored_raw_invitation_token = raw_invitation_token
   end
   # END devise hacks
 

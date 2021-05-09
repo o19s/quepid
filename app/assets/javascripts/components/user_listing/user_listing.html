@@ -14,7 +14,16 @@
 
     {{ ctrl.user.email }}
 
-    <span class="text-muted" ng-if="ctrl.user.pending_invite"> Pending Invitation </span>
+    <span class="text-muted" ng-if="ctrl.user.pending_invite"> Awaiting response to invitation
+      <a class="action-icon" ng-if="ctrl.user.pending_invite" ngclipboard ngclipboard-success="ctrl.confirmCopy()" data-clipboard-text="{{ctrl.user.invite_url}}">
+        <i
+          class="glyphicon glyphicon-copy"
+          aria-hidden="true"
+          title="Copy invite url to your clipboard"
+          alt="Copy invite url to your clipboard"
+        ></i>
+      </a>
+    </span>
 
     <span class="item-actions">
       <remove-member this-member="ctrl.user" this-team="ctrl.team"></remove-member>

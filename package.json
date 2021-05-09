@@ -30,6 +30,7 @@
     "jquery-ui": "~1.12.1",
     "ng-json-explorer": "http://github.com/odra/ng-json-explorer",
     "ng-tags-input": "3.2.0",
+    "ngclipboard": "^2.0.0",
     "popper.js": "^1.16.1",
     "splainer-search": "^2.6.9",
     "tether-shepherd": "latest"
