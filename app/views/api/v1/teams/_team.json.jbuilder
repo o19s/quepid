@@ -11,12 +11,8 @@ json.scorers do
   json.array! team.scorers, partial: 'api/v1/scorers/scorer', as: :scorer
 end
 
-json.members team.members do |member|
-  json.id             member.id
-  json.display_name   member.display_name
-  json.email          member.email
-  json.avatar_url     member.avatar_url(:big)
-  json.pending_invite member.created_by_invite? && !member.invitation_accepted?
+json.members do
+  json.array! team.members, partial: 'api/v1/team_members/member', as: :member
 end
 
 if load_cases
