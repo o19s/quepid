@@ -22,6 +22,7 @@
 #  updated_at             :datetime         not null
 #  default_scorer_id      :integer
 #  email_marketing        :boolean          not null
+#  stored_raw_invitation_token :string
 #
 
 # rubocop:disable Metrics/ClassLength

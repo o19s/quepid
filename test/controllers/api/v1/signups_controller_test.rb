@@ -5,6 +5,7 @@ require 'test_helper'
 module Api
   module V1
     class SignupsControllerTest < ActionController::TestCase
+      let(:user) { users(:matt) }
       before do
         @controller = Api::V1::SignupsController.new
       end
@@ -30,6 +31,16 @@ module Api
 
           error = JSON.parse(response.body)
           assert_includes error['email'], I18n.t('errors.messages.taken')
+        end
+
+        test 'user with existing invite is allowed to signup using invite user record' do
+          invitee = User.invite!({ email: 'invitee@mail.com', password: '' }, user)
+          assert invitee.created_by_invite?
+
+          data = { user: { email: invitee.email, password: 'password' } }
+
+          post :create, params: data
+          assert_response :ok
         end
 
         test 'returns an error when the password is not present' do
