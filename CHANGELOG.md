@@ -2,6 +2,10 @@
 
 ## 6.5.1 - ??
 
+### Bugs
+
+* Now that we've had the team invitations feature out for a while, we've found places where we make assumptions that aren't correct.  This fixes the Admin panel's user page, and makes on the Teams page the messaging around pending invites.  https://github.com/o19s/quepid/pull/339 by @epugh.
+
 ### Improvements
 
 * Uglifier for JavaScript appears to not work with ES6, and so using [Terser](https://github.com/ahorek/terser-ruby) instead.  https://github.com/o19s/quepid/pull/329 by @epugh fixes this.
