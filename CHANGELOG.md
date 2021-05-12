@@ -6,7 +6,9 @@
 
 * Now that we've had the team invitations feature out for a while, we've found places where we make assumptions that aren't correct.  This fixes the Admin panel's user page, and makes on the Teams page the messaging around pending invites.  https://github.com/o19s/quepid/pull/339 by @epugh.
 
-* We discovered that nDCG@10 score for products with a hitCount below 10 (K) was always 0.  https://github.com/o19s/quepid/pull/336 by @rudibatt fixes this.  Thanks @rudibatt for this contribution! 
+* We discovered that nDCG@10 score for products with a hitCount below 10 (K) was always 0.  https://github.com/o19s/quepid/pull/336 by @rudibatt fixes this.  Thanks @rudibatt for this contribution!
+
+* Passing in quote delimited parameters to `bin/docker r` wasn't preserving or quotes or escaping the spaces, causing the `thor user:create foo@example.com "Eric Pugh" "mysuperstrongpassword"` example to fail.  https://github.com/o19s/quepid/pull/340 by @epugh fixes https://github.com/o19s/quepid/issues/338.
 
 ### Improvements
 
