@@ -8,7 +8,8 @@ FROM ruby:2.7.2-buster
 MAINTAINER OpenSource Connections <quepid_admin@opensourceconnections.com>
 
 # Must have packages
-RUN apt-get update -qq && apt-get install -y vim curl git tmux apt-transport-https ca-certificates
+RUN apt-get update -qq && apt-get install -y vim curl git tmux apt-transport-https ca-certificates \
+  && rm -rf /var/lib/apt/lists/*
 
 # Install Node
 RUN curl -sL https://deb.nodesource.com/setup_10.x | bash
