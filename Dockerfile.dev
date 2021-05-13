@@ -1,6 +1,6 @@
 FROM ruby:2.7.2-buster
 
-MAINTAINER OpenSource Connections <quepid_admin@opensourceconnections.com>
+LABEL maintainer="quepid_admin@opensourceconnections.com"
 
 ENV home .
 
