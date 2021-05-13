@@ -15,7 +15,7 @@ enabled = true
 name = "docker"
 enabled = true
 
-[analyzers.meta]
+  [analyzers.meta]
   dockerfile_paths = [
     "Dockerfile.dev",
     "Dockerfile.prod"
