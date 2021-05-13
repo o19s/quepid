@@ -37,4 +37,4 @@ RUN bundle install
 COPY --from=build-dep /srv/app/node_modules ./node_modules/
 COPY . .
 RUN RAILS_ENV=production SECRET_KEY_BASE=fake_out_devise bundle exec rake assets:precompile
-CMD ["foreman", "s", ","-f", "Procfile"]
+CMD ["foreman", "s", "-f", "Procfile"]
