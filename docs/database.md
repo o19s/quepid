@@ -18,7 +18,7 @@ unzip -p quepid_prod_2021_03_02.sql.zip | mysql --host=127.0.0.1 --port=3306 -u 
 ## Backup a Database
 
 ```
-mysqldump -h OLDHOST -u OLDUSER -pOLDPASS OLDDATABASE  --column-statistics=0 > quepid_backup-`date +"%y-%m-%d"`.sql
+mysqldump -h OLDHOST -u OLDUSER -pOLDPASS OLDDATABASE  --column-statistics=0 | zip > quepid_backup-`date +"%y-%m-%d"`.sql.zip
 ```
 
 ## Emoji Support
