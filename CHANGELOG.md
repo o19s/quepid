@@ -16,7 +16,7 @@
 
 * Add to the Team page the ability to copy the team invitation url to send via other means then Quepid's own email setup.  This is helpful if you don't have email set up, or if you want to share invites with team members via chat tools like Slack.  Also fixed the user flow of registering after someone has sent out an invite for someone.  https://github.com/o19s/quepid/pull/337 by @epugh fixes https://github.com/o19s/quepid/issues/335 and https://github.com/o19s/quepid/issues/326.
 
-* We've added linting for our Dockerfiles via Deepsource.io.   https://github.com/o19s/quepid/pull/343 by @epugh.
+* We've added linting for our Dockerfiles via Deepsource.io.   https://github.com/o19s/quepid/pull/343 by @epugh fixes https://github.com/o19s/quepid/issues/341.
 
 ## 6.5.0 - 2021-04-22
 
