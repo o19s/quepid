@@ -2,9 +2,21 @@
 
 This document explains what endpoints Quepid hits on Solr.
 
+All queries responses are of type of JSON, wrapped in JSONP function name.
+
+## Ping Solr During Case Setup
+
+Quepid checks that that Solr is available and responding during Case setup wizard, and if not
+then Quepid attempts to privide you some workarounds.  Sometimes the workaround is to use the sample Solr
+endpoint and then change it yourself in the Case Settings window ;-).
+
+```
+http://quepid-solr.dev.o19s.com:8985/solr/tmdb/select?q=*:*&fl=*&wt=json&debug=true&debug.explain.structured=true&hl=false&rows=10&json.wrf=angular.callbacks._5
+```
+
 ## Basic Queries
 
-Basic queries are sent off to Solr using the standard GET request handler and expects a response type of JSON, wrapped in JSONP.
+Basic queries are sent off to Solr using the standard GET request handler.
 
 ```
 http://quepid-solr.dev.o19s.com:8985/solr/tmdb/select?q=star%20wars&fl=id title&wt=json&debug=true&debug.explain.structured=true&hl=false&rows=10&json.wrf=angular.callbacks._2
