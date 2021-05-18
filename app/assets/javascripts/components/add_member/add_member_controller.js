@@ -69,7 +69,7 @@ angular.module('QuepidApp')
 
       function testIsEmailAddress(val) {
         var emailVer = /^[a-z]+[a-z0-9._]+@[a-z]+\.[a-z.]{2,5}$/;
-        if( emailVer.test(val) ){
+        if( emailVer.test(val.toLowerCase()) ){
           return true;
         }
         else {
