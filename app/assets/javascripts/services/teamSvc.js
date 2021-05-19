@@ -22,10 +22,15 @@ angular.module('QuepidApp')
 
 
         angular.forEach(this.cases, function(c) {
-          // This is really ugly.  We don't use our standard caseSvc mapping, and probably should!
+          // This is really ugly.  We don't use our standard CaseSvc mapping, and probably should!
           c.caseName = c.case_name;
           c.ownerName = c.owner_name;
           c.lastTry  = c.last_try_number;
+        });
+
+        angular.forEach(this.scorers, function(s) {
+          // This is really ugly.  We don't use our standard ScorerFactory mapping, and probably should!
+          s.ownerName = s.owner_name;
         });
 
 

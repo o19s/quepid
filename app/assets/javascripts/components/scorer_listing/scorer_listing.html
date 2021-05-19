@@ -16,7 +16,7 @@
     </span>
   </div>
 
-  <div class="col-xs-5">
+  <div class="col-xs-7">
     <div class="scorer code">
       <div ui-ace="{
         require: ['ace/ext/language_tools'],
@@ -48,11 +48,11 @@
     </div>
   </div>
 
-  <div class="col-xs-2">
+  <div class="col-xs-1">
     {{ ctrl.scorer.showScaleLabels }}
   </div>
 
-  <div class="col-xs-2">
+  <div class="col-xs-1">
     <span ng-if="ctrl.scorer.manualMaxScore">
     {{ ctrl.scorer.manualMaxScoreValue }}
   </span>
@@ -68,7 +68,7 @@
     </span>
 
     <span ng-if="!ctrl.scorer.owned">
-      {{ ctrl.scorer.teamNames() }}
+      {{ ctrl.scorer.ownerName }}
     </span>
   </div>
 </div>
