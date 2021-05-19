@@ -8,10 +8,11 @@
       </span>
       <edit-scorer scorer="ctrl.scorer"></edit-scorer>
       <span ng-if="ctrl.team">
+        <delete-scorer this-scorer="ctrl.scorer"></delete-scorer>
         <action-icon title="'Remove'" icon-class="'fa fa-archive'" fn-call="ctrl.removeScorer()"></action-icon>
       </span>
       <span ng-if="!ctrl.team">
-        <action-icon title="'Delete'" icon-class="'fa fa-trash'" fn-call="ctrl.deleteScorer()"></action-icon>
+        <delete-scorer this-scorer="ctrl.scorer"></delete-scorer>
       </span>
     </span>
   </div>
