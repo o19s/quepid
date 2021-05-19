@@ -11,11 +11,10 @@ angular.module('QuepidApp')
 
       $rootScope.$watch('currentUser', function() {
         if ( $rootScope.currentUser ) {
-          console.log($rootScope.currentUser.permissions.case)
           ctrl.canDelete = $rootScope.currentUser.permissions.case.delete;
         }
       });
-      
+
       ctrl.ok = function () {
         $uibModalInstance.close(true);
       };
