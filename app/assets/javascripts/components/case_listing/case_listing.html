@@ -14,12 +14,10 @@
         </span>
 
         <span class="item-actions">
-          <span ng-if="ctrl.thisCase.owned">
-            <action-icon title="'Rename'" icon-class="'fa fa-edit'" fn-call="ctrl.rename()"></action-icon>
+          <action-icon title="'Rename'" icon-class="'fa fa-edit'" fn-call="ctrl.rename()"></action-icon>
 
-            <delete-case this-case="ctrl.thisCase"></delete-case>
-            <archive-case this-case="ctrl.thisCase"></archive-case>
-          </span>
+          <delete-case this-case="ctrl.thisCase"></delete-case>
+          <archive-case this-case="ctrl.thisCase"></archive-case>
 
           <span>
             <export-case icon-only="true" the-case="ctrl.thisCase"></export-case>
