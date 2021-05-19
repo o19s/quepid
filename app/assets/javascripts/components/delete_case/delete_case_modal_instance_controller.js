@@ -4,11 +4,8 @@ angular.module('QuepidApp')
   .controller('DeleteCaseModalInstanceCtrl', [
     '$rootScope',
     '$uibModalInstance',
-    'onlyCase',
-    function ($rootScope, $uibModalInstance, onlyCase) {
+    function ($rootScope, $uibModalInstance) {
       var ctrl = this;
-
-      ctrl.onlyCase = onlyCase;
 
       ctrl.canDelete = false;
 
