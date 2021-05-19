@@ -43,7 +43,7 @@ angular.module('QuepidApp')
           ctrl.clickToEdit.clicked = true;
         }
         else {
-          flash.error = "You do not have update permissions for cases."
+          flash.error = 'You do not have update permissions for cases.';
         }
       }
 
