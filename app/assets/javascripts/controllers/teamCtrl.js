@@ -9,7 +9,7 @@ angular.module('QuepidApp')
       teamSvc
     ) {
       var ctrl = this;
-      
+
       $scope.teamModel   = {};
       var teamId         = parseInt($routeParams.teamId, 10);
       $scope.currentTeam = {};
@@ -25,11 +25,9 @@ angular.module('QuepidApp')
         fetchTeam();
       };
 
-      angular.forEach(['updatedCasesList'], function (eventName) {
-        $scope.$on(eventName, function() {
-          fetchTeam();
-        });
-      });
+      $scope.$on('updatedCasesList', function(event, allCases) {
+        fetchTeam();
+      });        
 
       var init = function() {
         if (teamId) {
