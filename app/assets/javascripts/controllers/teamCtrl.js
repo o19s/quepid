@@ -15,6 +15,15 @@ angular.module('QuepidApp')
       $scope.currentTeam = {};
 
       // Functions
+      function fetchTeam (teamId) {
+        teamSvc.get(teamId, true)
+          .then(function(response) {
+            $scope.currentTeam = response;
+          }, function() {
+            $location.path('/teams');
+          });
+      }
+
       ctrl.fetchTeam = fetchTeam;
 
       $scope.$on('teamUpdated', function(event, team) {
@@ -34,15 +43,6 @@ angular.module('QuepidApp')
           $scope.teamModel.show(teamId);
         }
       };
-
-      function fetchTeam (teamId) {
-        teamSvc.get(teamId, true)
-          .then(function(response) {
-            $scope.currentTeam = response;
-          }, function() {
-            $location.path('/teams');
-          });
-      }
 
       init();
     }
