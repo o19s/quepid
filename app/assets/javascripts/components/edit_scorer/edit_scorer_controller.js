@@ -26,9 +26,22 @@ angular.module('QuepidApp')
 
       function editScorer() {
         $log.info('INFO: Opened modal to edit scorer!');
+        console.log($rootScope.currentUser.permissions.scorer)
         if ( ctrl.lastSaved.communal && !$rootScope.currentUser.permissions.scorer.update_communal ) {
           var deniedModalInstance = $uibModal.open({
             templateUrl:  'edit_scorer/_denied_modal.html',
+            controller:   'DeniedEditScorerModalInstanceCtrl',
+            controllerAs: 'ctrl'
+          });
+
+          deniedModalInstance.result.then(
+            function() { },
+            function() { }
+          );
+        }
+        else if ( !ctrl.lastSaved.communal && !$rootScope.currentUser.permissions.scorer.update ) {
+          var deniedModalInstance = $uibModal.open({
+            templateUrl:  'edit_scorer/_denied_custom_modal.html',
             controller:   'DeniedEditScorerModalInstanceCtrl',
             controllerAs: 'ctrl'
           });
