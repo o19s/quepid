@@ -22,8 +22,9 @@ angular.module('QuepidApp')
 
 
         angular.forEach(this.cases, function(c) {
-          // This is really ugly.
+          // This is really ugly.  We don't use our standard caseSvc mapping, and probably should!
           c.caseName = c.case_name;
+          c.ownerName = c.owner_name;
           c.lastTry  = c.last_try_number;
         });
 
