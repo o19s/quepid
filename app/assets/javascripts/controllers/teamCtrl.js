@@ -22,12 +22,12 @@ angular.module('QuepidApp')
       });
 
       $scope.teamModel.show = function(teamId) {
-        fetchTeam();
+        fetchTeam(teamId);
       };
 
-      $scope.$on('updatedCasesList', function(event, allCases) {
-        fetchTeam();
-      });        
+      $scope.$on('updatedCasesList', function() {
+        fetchTeam(teamId);
+      });
 
       var init = function() {
         if (teamId) {
@@ -35,7 +35,7 @@ angular.module('QuepidApp')
         }
       };
 
-      function fetchTeam () {
+      function fetchTeam (teamId) {
         teamSvc.get(teamId, true)
           .then(function(response) {
             $scope.currentTeam = response;
