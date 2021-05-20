@@ -18,7 +18,7 @@ function DCG(vals, k) {
   var dcg = 0;
   for (var i = 0; i < k; i++) {
     var d = Math.log2(i + 2);
-    var n = Math.pow(2, vals[i]) - 1;
+    var n = vals[i];
     dcg += d ? (n / d) : 0;
   }
   return dcg;
@@ -30,5 +30,9 @@ function nDCG(vals, ideal, k) {
   return d ? (n / d) : 0;
 }
 
-setScore(nDCG(scores, ideal, k));
+let relevance = scores.slice();
+relevance.sort(function(a, b) {
+  return b - a;
+});
+setScore(nDCG(scores, relevance, k));
 
