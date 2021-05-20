@@ -23,8 +23,8 @@ angular.module('QuepidApp')
 
       $rootScope.$watch('currentUser', function() {
         if ( $rootScope.currentUser ) {
-          ctrl.canUpdateScorer = !$rootScope.currentUser.permissions.scorer.update;
-          ctrl.canCreateTeam = !$rootScope.currentUser.permissions.team.create;
+          ctrl.canUpdateScorer = $rootScope.currentUser.permissions.scorer.update;
+          ctrl.canCreateTeam = $rootScope.currentUser.permissions.team.create;
         }
       });
 
