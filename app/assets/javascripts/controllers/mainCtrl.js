@@ -118,11 +118,6 @@ angular.module('QuepidApp')
 
       init();
 
-      console.log("Just past init()");
-      console.log("caseNo:" + caseNo);
-      console.log("tryNo:" + tryNo);
-
-
       caseTryNavSvc.navigationCompleted({
         caseNo:       caseNo,
         tryNo:        tryNo
