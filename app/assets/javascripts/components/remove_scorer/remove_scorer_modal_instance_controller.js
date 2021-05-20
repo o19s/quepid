@@ -2,15 +2,23 @@
 
 angular.module('QuepidApp')
   .controller('RemoveScorerModalInstanceCtrl', [
-    '$uibModalInstance','thisTeam','thisScorer',
-    function ($uibModalInstance, thisTeam, thisScorer) {
+    '$rootScope',
+    '$uibModalInstance',
+    'thisTeam',
+    'thisScorer',
+    function (
+      $rootScope,
+      $uibModalInstance,
+      thisTeam,
+      thisScorer
+    ) {
       var ctrl = this;
 
       ctrl.canUpdateTeam = false;
 
       $rootScope.$watch('currentUser', function() {
         if ( $rootScope.currentUser ) {
-          ctrl.canCreateTeam = $rootScope.currentUser.permissions.team.update;
+          ctrl.canUpdateTeam = $rootScope.currentUser.permissions.team.update;
         }
       });
 

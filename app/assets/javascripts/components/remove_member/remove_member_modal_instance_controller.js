@@ -2,9 +2,25 @@
 
 angular.module('QuepidApp')
   .controller('RemoveMemberModalInstanceCtrl', [
-    '$uibModalInstance','thisTeam','thisMember',
-    function ($uibModalInstance, thisTeam, thisMember) {
+    '$rootScope',
+    '$uibModalInstance',
+    'thisTeam',
+    'thisMember',
+    function (
+      $rootScope,
+      $uibModalInstance,
+      thisTeam,
+      thisMember
+    ) {
       var ctrl = this;
+
+      ctrl.canUpdateTeam = false;
+
+      $rootScope.$watch('currentUser', function() {
+        if ( $rootScope.currentUser ) {
+          ctrl.canUpdateTeam = $rootScope.currentUser.permissions.team.update;
+        }
+      });
 
       this.thisMember = thisMember;
       this.thisTeam = thisTeam;
