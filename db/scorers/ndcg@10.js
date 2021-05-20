@@ -30,9 +30,9 @@ function nDCG(vals, ideal, k) {
   return d ? (n / d) : 0;
 }
 
-let relevance = scores.slice();
-relevance.sort(function(a, b) {
+let ideal_scores = scores.slice();
+ideal_scores.sort(function(a, b) {
   return b - a;
 });
-setScore(nDCG(scores, relevance, k));
+setScore(nDCG(scores, ideal_scores, k));
 
