@@ -2,9 +2,14 @@
 
 angular.module('QuepidApp')
   .controller('ShareScorerModalInstanceCtrl', [
-    '$uibModalInstance', '$log', '$location',
-    'teamSvc', 'scorer',
+    '$rootScope',
+    '$uibModalInstance',
+    '$log',
+    '$location',
+    'teamSvc',
+    'scorer',
     function (
+      $rootScope,
       $uibModalInstance,
       $log,
       $location,
@@ -12,6 +17,16 @@ angular.module('QuepidApp')
       scorer
     ) {
       var ctrl = this;
+
+      ctrl.canUpdateScorer = false;
+      ctrl.canCreateTeam = false;
+
+      $rootScope.$watch('currentUser', function() {
+        if ( $rootScope.currentUser ) {
+          ctrl.canUpdateScorer = $rootScope.currentUser.permissions.scorer.update;
+          ctrl.canCreateTeam = $rootScope.currentUser.permissions.team.create;
+        }
+      });
 
       ctrl.share = {
         scorer:           scorer,

@@ -1,16 +1,16 @@
 'use strict';
 
 angular.module('QuepidApp')
-  .controller('RemoveMemberModalInstanceCtrl', [
+  .controller('RemoveScorerModalInstanceCtrl', [
     '$rootScope',
     '$uibModalInstance',
     'thisTeam',
-    'thisMember',
+    'thisScorer',
     function (
       $rootScope,
       $uibModalInstance,
       thisTeam,
-      thisMember
+      thisScorer
     ) {
       var ctrl = this;
 
@@ -22,7 +22,7 @@ angular.module('QuepidApp')
         }
       });
 
-      this.thisMember = thisMember;
+      this.thisScorer = thisScorer;
       this.thisTeam = thisTeam;
 
       ctrl.ok = function () {

@@ -1,7 +1,7 @@
 'use strict';
 
 angular.module('QuepidApp')
-  .controller('ArchiveCaseModalInstanceCtrl', [
+  .controller('DeleteScorerModalInstanceCtrl', [
     '$rootScope',
     '$uibModalInstance',
     function ($rootScope, $uibModalInstance) {
@@ -11,7 +11,7 @@ angular.module('QuepidApp')
 
       $rootScope.$watch('currentUser', function() {
         if ( $rootScope.currentUser ) {
-          ctrl.canDelete = $rootScope.currentUser.permissions.case.delete;
+          ctrl.canDelete = $rootScope.currentUser.permissions.scorer.delete;
         }
       });
 

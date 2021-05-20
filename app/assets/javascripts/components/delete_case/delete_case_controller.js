@@ -17,10 +17,8 @@ angular.module('QuepidApp')
       var ctrl = this;
 
       ctrl.thisCase         = $scope.thisCase;
-      ctrl.checkIfOnlyCase  = checkIfOnlyCase;
       ctrl.deleteCase       = deleteCase;
       ctrl.openDeleteModal  = openDeleteModal;
-      ctrl.retrieveTooltip  = retrieveTooltip;
 
       function deleteCase() {
         caseSvc.deleteCase(ctrl.thisCase).then(
@@ -34,35 +32,13 @@ angular.module('QuepidApp')
         );
       }
 
-      function checkIfOnlyCase() {
-        var ownedCases = caseSvc.filterCases(caseSvc.allCases, true);
-
-        if( ownedCases.length <= 1 ){
-          return true;
-        }
-
-        return false;
-      }
-
-      function retrieveTooltip() {
-        if(ctrl.checkIfOnlyCase()){
-          return 'Can\'t delete the only case';
-        } else {
-          return 'Delete';
-        }
-      }
-
       function openDeleteModal() {
         var modalInstance = $uibModal.open({
           templateUrl:  'delete_case/_modal.html',
           controller:   'DeleteCaseModalInstanceCtrl',
           controllerAs: 'ctrl',
           size:         'sm',
-          resolve:      {
-            onlyCase: function() {
-              return ctrl.checkIfOnlyCase();
-            }
-          }
+          resolve:      {}
         });
 
         modalInstance.result.then(function (deleteClicked) {

@@ -49,6 +49,7 @@
       self.name                   = data.name;
       self.owned                  = data.owned;
       self.ownerId                = data.owner_id;
+      self.ownerName              = data.owner_name;
       self.queryId                = data.queryId;
       self.queryTest              = data.queryTest;
       self.scale                  = data.scale;
