@@ -15,11 +15,6 @@ class HomeController < ApplicationController
       @bootstrapCaseNo  = bootstrapCase.id
       best_try          = bootstrapCase.tries.best
       @bootstrapTryNo   = best_try.try_number if best_try.present?
-    else
-      bootstrapCase     = current_user.cases.create case_name: "Case #{current_user.cases.size}"
-      @bootstrapCaseNo  = bootstrapCase.id
-      bootStrapTry      = bootstrapCase.tries.first
-      @bootstrapTryNo   = bootStrapTry.try_number
     end
   end
   # rubocop:enable Naming/VariableName
