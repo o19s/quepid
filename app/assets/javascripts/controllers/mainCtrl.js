@@ -126,7 +126,7 @@ angular.module('QuepidApp')
       // While not perfect, at least the site doesn't blow up if you don't
       // have any cases.
       if ( caseNo === 0 ) {
-        flash.error = "You don't have any Cases created in Quepid.  Click 'Create a Case' from the Relevancy Cases dropdown to get started.";
+        flash.error = 'You don\'t have any Cases created in Quepid.  Click \'Create a Case\' from the Relevancy Cases dropdown to get started.';
       }
       if ( caseNo > 0 ) {
         queriesSvc.querySearchPromiseReset();
