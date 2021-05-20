@@ -153,7 +153,7 @@ module Api
         if @teams.count.positive?
           render(
             json:   {
-              error: "Cannot delete the scorer because it is shared with #{@teams.count} #{'team'.pluralize(@teams.count)}: [#{@teams.take(3).map(&:name).to_sentence}]",
+              error: "Cannot delete the scorer because it is shared with #{@teams.count} #{'team'.pluralize(@teams.count)}: #{@teams.take(3).map(&:name).to_sentence}",
             },
             status: :bad_request
           )
