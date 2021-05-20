@@ -96,8 +96,8 @@ class HomeControllerTest < ActionController::TestCase
 
       case_info = CASE_INFO.match(response.body)
       try_info = TRY_INFO.match(response.body)
-      assert_equal "0", case_info[1]
-      assert_equal "0", try_info[1]
+      assert_equal '0', case_info[1]
+      assert_equal '0', try_info[1]
     end
   end
 end
