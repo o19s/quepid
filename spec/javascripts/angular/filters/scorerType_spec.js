@@ -12,7 +12,6 @@ describe('Filter: scorerType', function () {
         'code':     'pass()',
         'owner_id': 1,
         'owned':    true,
-        'queryTest':true,
         'communal': false,
         'scale':    [1, 2, 3, 4, 5, 6 , 7, 8, 9, 10],
       },
@@ -22,7 +21,6 @@ describe('Filter: scorerType', function () {
         'code':     'pass()',
         'owner_id': 1,
         'owned':    true,
-        'queryTest':true,
         'communal': false,
         'scale':    [1, 2, 3, 4, 5, 6 , 7, 8, 9, 10],
       },
@@ -32,7 +30,6 @@ describe('Filter: scorerType', function () {
         'code':     'pass()',
         'owner_id': null,
         'owned':    false,
-        'queryTest':false,
         'communal': true,
         'scale':    [1, 2, 3, 4, 5, 6 , 7, 8, 9, 10],
       }
@@ -43,7 +40,6 @@ describe('Filter: scorerType', function () {
         'code':     'pass()',
         'owner_id': 2,
         'owned':    false,
-        'queryTest':false,
         'communal': false,
         'scale':    [1, 2, 3, 4, 5, 6 , 7, 8, 9, 10],
       }
