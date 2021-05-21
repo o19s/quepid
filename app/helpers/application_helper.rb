@@ -40,12 +40,4 @@ module ApplicationHelper
     nil
   end
   # rubocop:enable Metrics/MethodLength
-
-  def make_csv_safe str
-    if %w[- = + @].include?(str[0])
-      " #{str}"
-    else
-      str
-    end
-  end
 end
