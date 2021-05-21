@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_05_10_175459) do
+ActiveRecord::Schema.define(version: 2021_05_21_211613) do
 
   create_table "annotations", id: :integer, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8", force: :cascade do |t|
     t.text "message"
@@ -62,20 +62,6 @@ ActiveRecord::Schema.define(version: 2021_05_10_175459) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["try_id"], name: "query_param_id"
-  end
-
-  create_table "default_scorers", id: :integer, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8", force: :cascade do |t|
-    t.text "code"
-    t.string "name"
-    t.string "scale"
-    t.boolean "manual_max_score", default: false
-    t.integer "manual_max_score_value"
-    t.boolean "show_scale_labels", default: false
-    t.text "scale_with_labels"
-    t.string "state", default: "draft"
-    t.datetime "published_at"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
   end
 
   create_table "permissions", id: :integer, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8", force: :cascade do |t|

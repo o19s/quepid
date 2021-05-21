@@ -30,11 +30,7 @@ angular.module('QuepidApp')
       /*jslint latedef:false*/
       customScorerSvc.list()
         .then(function() {
-          var scorers = customScorerSvc.scorers;
-          $scope.userScorers = scorers.filter( function (scorer) {
-            return !scorer.queryTest;
-          });
-
+          $scope.userScorers     = customScorerSvc.scorers;
           $scope.communalScorers = customScorerSvc.communalScorers;
         });
 
