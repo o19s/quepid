@@ -5,9 +5,9 @@ angular.module('QuepidApp')
     function () {
       return function (items, test) {
         if (test === 'communal') {
-          return items.filter(function(item) { return item.communal });
+          return items.filter(function(item) { return item.communal; });
         } else if (test === 'custom') {
-          return items.filter(function(item) { return !item.communal });
+          return items.filter(function(item) { return !item.communal; });
         } else {
           return items;
         }
