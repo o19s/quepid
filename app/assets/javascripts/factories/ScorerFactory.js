@@ -34,10 +34,6 @@
         data.scaleWithLabels = scaleToScaleWithLabels(data.scale, null);
       }
 
-      if ( angular.isUndefined(data.queryTest) ) {
-        data.queryTest = false;
-      }
-
       // Attributes
       self.code                   = data.code;
       self.colors                 = scaleToColors(data.scale);
@@ -51,7 +47,6 @@
       self.ownerId                = data.owner_id;
       self.ownerName              = data.owner_name;
       self.queryId                = data.queryId;
-      self.queryTest              = data.queryTest;
       self.scale                  = data.scale;
       self.scaleWithLabels        = data.scaleWithLabels;
       self.scorerId               = data.scorerId;
