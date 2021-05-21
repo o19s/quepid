@@ -41,7 +41,7 @@
         </div>
 
         <br>
-        <p>Paste a URL to where Quepid can search (you can also just experiment with the default collection):</p>
+        <p>Paste the URL to the endpoint of your search engine for Quepid to search (you can also just experiment with the demo servers):</p>
         <div class="row">
           <div ng-if="urlInvalid" class="alert alert-danger">Sorry, we're not getting any search results from your <span ng-show="pendingWizardSettings.searchEngine === 'es'">Elasticsearch</span><span ng-show="pendingWizardSettings.searchEngine === 'solr'">Solr</span>.
             <ul ng-if="pendingWizardSettings.searchEngine === 'es'">
@@ -98,6 +98,11 @@ curl -X POST -H 'Content-type:application/json' -d '{
                   <span ng-hide="validating">Continue</span>
                   <span ng-show="validating">Validating...</span>
                 </button>
+
+                <button class="btn btn-danger" ng-show="urlInvalid" ng-click="skipValidate()" ng-disabled="validating">
+                  <span ng-hide="validating">Skip Validation</span>
+                </button>
+
               </div>
             </div>
           </div>
