@@ -1,3 +1,9 @@
+# Rails logs
+log/
+docs/
+tmp/
+coverage/
+
 # Files used by Docker to build images
 docker-compose*.yml
 Dockerfile*
