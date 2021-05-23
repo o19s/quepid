@@ -85,15 +85,19 @@ class HomeControllerTest < ActionController::TestCase
       login_user user
     end
 
-    test 'bootstraps latest case' do
+    test 'bootstraps without creating a case or a try' do
       get :index
 
       assert_response :ok
 
       user.reload
 
+      assert_empty user.cases
+
       case_info = CASE_INFO.match(response.body)
-      assert_equal user.cases.first.id.to_s, case_info[1]
+      try_info = TRY_INFO.match(response.body)
+      assert_equal '0', case_info[1]
+      assert_equal '0', try_info[1]
     end
   end
 end

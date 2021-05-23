@@ -38,22 +38,20 @@ angular.module('QuepidApp')
       // an individual case, ie
       // a search problem to be solved
       var Case = function(data) {
-        var theCase                = this;
+        var theCase               = this;
 
-        theCase.caseNo             = data.caseNo;
-        theCase.lastTry            = data.last_try_number;
-        theCase.caseName           = data.case_name;
-        theCase.lastScore          = data.lastScore;
-        theCase.scorerId           = data.scorerId;
-        theCase.owned              = data.owned;
-        theCase.queriesCount       = data.queriesCount;
-        theCase.ratingsView        = data.ratings_view;
-        theCase.teams              = data.teams || [];
-        theCase.tries              = data.tries || [];
-        theCase.scores             = data.scores || [];
-        theCase.queries            = data.queries || [];
-        theCase.sharedWithTeam     = data.shared_with_team;
-        theCase.ratingVariance     = data.rating_variance;
+        theCase.caseNo            = data.caseNo;
+        theCase.lastTry           = data.last_try_number;
+        theCase.caseName          = data.case_name;
+        theCase.lastScore         = data.lastScore;
+        theCase.scorerId          = data.scorerId;
+        theCase.owned             = data.owned;
+        theCase.ownerName         = data.owner_name;
+        theCase.queriesCount      = data.queriesCount;
+        theCase.teams             = data.teams || [];
+        theCase.tries             = data.tries || [];
+        theCase.scores            = data.scores || [];
+        theCase.queries           = data.queries || [];
 
         theCase.teamNames = function() {
           var names = [];

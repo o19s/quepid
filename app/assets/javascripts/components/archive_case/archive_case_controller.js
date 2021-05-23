@@ -17,10 +17,8 @@ angular.module('QuepidApp')
       var ctrl = this;
 
       ctrl.thisCase          = $scope.thisCase;
-      ctrl.checkIfOnlyCase   = checkIfOnlyCase;
       ctrl.archiveCase       = archiveCase;
       ctrl.openArchiveModal  = openArchiveModal;
-      ctrl.retrieveTooltip   = retrieveTooltip;
 
       function archiveCase() {
         caseSvc.archiveCase(ctrl.thisCase).then(
@@ -34,35 +32,13 @@ angular.module('QuepidApp')
         );
       }
 
-      function checkIfOnlyCase() {
-        var ownedCases = caseSvc.filterCases(caseSvc.allCases, true);
-
-        if( ownedCases.length <= 1 ){
-          return true;
-        }
-
-        return false;
-      }
-
-      function retrieveTooltip() {
-        if(ctrl.checkIfOnlyCase()){
-          return 'Can\'t archive the only case';
-        } else {
-          return 'Archive';
-        }
-      }
-
       function openArchiveModal() {
         var modalInstance = $uibModal.open({
           templateUrl:  'archive_case/_modal.html',
           controller:   'ArchiveCaseModalInstanceCtrl',
           controllerAs: 'ctrl',
           size:         'sm',
-          resolve:      {
-            onlyCase: function() {
-              return ctrl.checkIfOnlyCase();
-            }
-          }
+          resolve:      {}
         });
 
         modalInstance.result.then(function (archiveClicked) {

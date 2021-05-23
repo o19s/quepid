@@ -428,7 +428,7 @@ bin/docker r bundle add foobar
 
 which will install the new Gem, and then save that dependency to `Gemfile`.
 
-You can also upgrade a gem via:
+You can also upgrade a gem that doesn't have a specific version in `Gemfile` via:
 
 ```
 bin/docker r bundle update foobar

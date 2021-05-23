@@ -11,6 +11,7 @@ json.case_name        acase.case_name
 json.caseNo           acase.id
 json.scorerId         acase.scorer_id
 json.owned            acase.user_id == current_user.id
+json.owner_name       acase.user.name unless acase.user.nil?
 json.queriesCount     acase.queries.count
 json.shared_with_team teams.count.positive? unless no_teams
 

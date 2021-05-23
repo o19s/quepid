@@ -3,6 +3,8 @@
 /*jshint camelcase: false */
 /*jslint latedef:false*/
 
+// TODO: This should just be scorerSvc
+
 (function() {
   angular.module('QuepidApp')
     .service('customScorerSvc', [

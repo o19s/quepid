@@ -40,7 +40,6 @@ describe('Service: customScorerSvc', function () {
     'code':       'pass()',
     'owner_id':   1,
     'scale':      [1, 2, 3, 4, 5, 6 , 7, 8, 9, 10],
-    'queryTest':  false,
     'queryId':    null,
   };
 
@@ -146,6 +145,3 @@ describe('Service: customScorerSvc', function () {
     });
   });
 });
-
-
-

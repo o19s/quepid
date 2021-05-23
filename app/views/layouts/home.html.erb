@@ -41,8 +41,8 @@
             secureRedirectSvc.debugServer(debugPort);
           }
 
-          var bootstrapCaseNo = <%= @bootstrapCaseNo.to_i || 0 %>;
-          var bootstrapTryNo  = <%= @bootstrapTryNo.to_i || 0 %>;
+          var bootstrapCaseNo = <%= @bootstrap_case_no || 0 %>;
+          var bootstrapTryNo  = <%= @bootstrap_try_no || 0 %>;
 
           bootstrapSvc.run(bootstrapCaseNo, bootstrapTryNo);
         }

@@ -2,12 +2,18 @@
 
 angular.module('QuepidApp')
   .controller('ArchiveCaseModalInstanceCtrl', [
+    '$rootScope',
     '$uibModalInstance',
-    'onlyCase',
-    function ($uibModalInstance, onlyCase) {
+    function ($rootScope, $uibModalInstance) {
       var ctrl = this;
 
-      ctrl.onlyCase = onlyCase;
+      ctrl.canDelete = false;
+
+      $rootScope.$watch('currentUser', function() {
+        if ( $rootScope.currentUser ) {
+          ctrl.canDelete = $rootScope.currentUser.permissions.case.delete;
+        }
+      });
 
       ctrl.ok = function () {
         $uibModalInstance.close(true);
