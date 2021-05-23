@@ -27,7 +27,6 @@ class Case < ApplicationRecord
 
   belongs_to :scorer, optional: true
 
-  #belongs_to :user, optional: true
   belongs_to :owner,
              class_name: 'User', optional: true
 
@@ -38,7 +37,7 @@ class Case < ApplicationRecord
   has_many   :metadata,
              dependent: :destroy
 
-  # has_many   :ratings,  # wed ont' actually need htis.
+  # has_many   :ratings,  # we don't actually need this.
   #           through: :queries
 
   # rubocop:disable Rails/InverseOf
