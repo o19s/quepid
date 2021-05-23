@@ -20,6 +20,18 @@
 
 * We've added linting for our Dockerfiles via Deepsource.io.   https://github.com/o19s/quepid/pull/343 by @epugh fixes https://github.com/o19s/quepid/issues/341.
 
+* Our Docker images are getting bloated by including log files from dev and test, leading to almost a 3 GB image.   Adding a `.dockerignore` has got us back to around 2.1 GB image.  https://github.com/o19s/quepid/pull/358 by @epugh fixes https://github.com/o19s/quepid/issues/353.
+
+* Remove the remnants of the query test (unit test style custom scorers) and the default scorer table that are still in the source code.  https://github.com/o19s/quepid/pull/357 by @epugh fixes https://github.com/o19s/quepid/issues/349.
+
+* Sometimes you want to create a Case even when you can't validate the connection.  Introduce a option to bypass the validation.  https://github.com/o19s/quepid/pull/356 by @epugh.
+
+* When we export basic rating data there is an extra LF character at the end of the CSV file.   This was causing issues when importing ratings into the Quaerite project (https://github.com/tballison/quaerite/issues/14).   https://github.com/o19s/quepid/pull/355 by @epugh with assist from @sstults fixes https://github.com/o19s/quepid/issues/354 by @sstults.
+
+* Quepid 6.5.0 started failing on Kubernetes clusters due to the need to be able to write to the filesystem.  Bootsnap dependency upgrade avoids this.  https://github.com/o19s/quepid/pull/344 by @epugh.  Thanks to @LiuCao0614 and @tonomonic for the assist on this.
+
+* Revamp of how all the permissions for doing actions related to Teams, Scorers, and Cases to use the Permissions data we aleady have for a user.  Lots of cleanups on those functions.  Finally dealt with the left over need to have a Case per User, or the UI blew up.  Now you get a nice message, and the UI doesn't blow up.   https://github.com/o19s/quepid/pull/347 by @epugh fixes https://github.com/o19s/quepid/issues/352, https://github.com/o19s/quepid/issues/331, https://github.com/o19s/quepid/issues/278.
+
 ## 6.5.0 - 2021-04-22
 
 ![favicon](https://raw.githubusercontent.com/o19s/quepid/master/app/assets/images/favicon.ico)
