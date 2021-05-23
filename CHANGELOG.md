@@ -10,6 +10,8 @@
 
 * Passing in quote delimited parameters to `bin/docker r` wasn't preserving or quotes or escaping the spaces, causing the `thor user:create foo@example.com "Eric Pugh" "mysuperstrongpassword"` example to fail.  https://github.com/o19s/quepid/pull/340 by @epugh fixes https://github.com/o19s/quepid/issues/338.
 
+* Thanks to Liz Novak at VIN for discovering that a non lowercase email address like `person@EXAMPLE.org` wouldn't be considered a valid email address, so you couldn't send a invite to join Quepid.  https://github.com/o19s/quepid/issues/342 fixed by https://github.com/o19s/quepid/pull/346 by @epugh.
+
 ### Improvements
 
 * Uglifier for JavaScript appears to not work with ES6, and so using [Terser](https://github.com/ahorek/terser-ruby) instead.  https://github.com/o19s/quepid/pull/329 by @epugh fixes this.
