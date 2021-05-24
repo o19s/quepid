@@ -29,10 +29,9 @@
 class User < ApplicationRecord
   class << self
     def from_omniauth_custom auth
-      require 'pp'
-      pp auth
+
       user = User.find_or_initialize_by(email: auth['info']['email'])
-      # user.uid = auth['uid']
+
       user.name = auth['info']['name']
       user.password = 'fake'
 
@@ -145,7 +144,7 @@ class User < ApplicationRecord
   # :confirmable, :lockable, :timeoutable and :omniauthable
   # devise :invitable, :database_authenticatable, :registerable,
   # :recoverable, :rememberable, :trackable, :validatable
-  devise :invitable, :recoverable, :omniauthable, omniauth_providers: [ :keycloakopenid ]
+  devise :invitable, :recoverable, :omniauthable, omniauth_providers: [ :keycloakopenid, :google_oauth2 ]
   # devise :omniauthable, omniauth_providers: %i[keycloakopenid]
   # devise :invitable, :recoverable, :omniauthable
 

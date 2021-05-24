@@ -30,10 +30,6 @@ Rails.application.routes.draw do
     invitations:        'users/invitations',
     omniauth_callbacks: 'users/omniauth_callbacks',
   }
-  # devise_for :users, only: [ :passwords ], controllers: {
-  #  passwords: 'users/passwords',
-  #  invitations: 'users/invitations'
-  # }
 
   namespace :admin do
     get '/' => 'home#index'

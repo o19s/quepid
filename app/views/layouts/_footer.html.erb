@@ -36,7 +36,8 @@
 
     <div class="col-md-12 text-center">
       <p>
-        <%= link_to "Sign in with Keycloak", user_keycloakopenid_omniauth_authorize_path %>
+        <%= button_to "Sign in with Keycloak", user_keycloakopenid_omniauth_authorize_path %>
+        <%= button_to "Sign in with Google", user_google_oauth2_omniauth_authorize_path %>
         For community support and discussion please join us in the #Quepid channel on Relevancy Slack at
         <a href="http://www.opensourceconnections.com/slack" target="_blank">
           www.opensourceconnections.com/slack
