@@ -22,6 +22,11 @@ The behavior which option should used, can be controlled by the following `ENV` 
 EMAIL_PROVIDER  # set to "smtp" to use SMTP, "postmark" to use Postmark, or blank to disable sending emails.
 ```
 
+Set the from email address via the following `ENV` var:
+```
+EMAIL_SENDER                 # The from email address.  i.e quepid@o19s.com
+```
+
 ## Postmark
 
 If you want to use Postmark as your mail delivery service, you have to set the `EMAIL_PROVIDER` to `postmark` and you have to tell Quepid your [Server API Token](https://postmarkapp.com/support/article/1008-what-are-the-account-and-server-api-tokens). This can be done by setting the following `ENV` var:
@@ -44,6 +49,10 @@ SMTP_AUTHENTICATION_TYPE     # If your mail server requires authentication, you 
 SMTP_ENABLE_STARTTLS         # If STARTTLS is enabled in your server set to true
 ```
 
+# Open ID
+
+Quepid supports authenticating through OpenID, specifically using the Keycloak OpenID tool.  To learn more,
+see the file `/config/initializers/devise.rb` for the section `config.omniauth` for the settings to customize.
 
 # Legal Pages & GDPR
 

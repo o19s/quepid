@@ -84,6 +84,10 @@ module Api
             assert_response :ok
 
             assert json_response['pending_invite']
+
+            user = User.find_by(email: invitee_email)
+            assert_not_nil user.stored_raw_invitation_token
+            assert_not_equal user.stored_raw_invitation_token, user.invitation_token
           end
         end
       end
@@ -139,6 +143,51 @@ module Api
 
           assert_includes ids, member1.id
           assert_includes ids, member2.id
+        end
+
+        describe 'pending invite logic' do
+          test 'outstanding invite returns pending invite' do
+            post :invite, params: { team_id: team.id, id: 'invitee@mail.com' }
+            assert_response :ok
+            invitee = User.find_by(email: 'invitee@mail.com')
+
+            get :index, params: { team_id: team.id }
+
+            assert_response :ok
+            members = JSON.parse(response.body)['members']
+            member = members.find { |m| m['id'].to_i == invitee.id }
+            assert member['pending_invite']
+          end
+
+          test "accepted invite doesn't return pending invite" do
+            post :invite, params: { team_id: team.id, id: 'invitee@mail.com' }
+            assert_response :ok
+            invitee = User.find_by(email: 'invitee@mail.com')
+            User.accept_invitation!(invitation_token: invitee.stored_raw_invitation_token, password: 'ad97nwj3o2',
+name: 'John Doe')
+            assert_response :ok
+
+            get :index, params: { team_id: team.id }
+
+            assert_response :ok
+            members = JSON.parse(response.body)['members']
+            member = members.find { |m| m['id'].to_i == invitee.id }
+            assert_not member['pending_invite']
+          end
+
+          test "pending invite, that is ignored and account directly created doesn't return pending invite" do
+            post :invite, params: { team_id: team.id, id: 'invitee@mail.com' }
+            assert_response :ok
+            invitee = User.find_by(email: 'invitee@mail.com')
+            invitee.update(password: 'temppassword', name: 'john doe') # don't accept invite, just signup directly.
+
+            get :index, params: { team_id: team.id }
+
+            assert_response :ok
+            members = JSON.parse(response.body)['members']
+            member = members.find { |m| m['id'].to_i == invitee.id }
+            assert_not member['pending_invite']
+          end
         end
       end
     end

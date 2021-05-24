@@ -1,24 +1,116 @@
 # Changelog
 
-## 6.4.2 - ?
+## 6.5.1 - ??
+
+### Bugs
+
+* Now that we've had the team invitations feature out for a while, we've found places where we make assumptions that aren't correct.  This fixes the Admin panel's user page, and makes on the Teams page the messaging around pending invites.  https://github.com/o19s/quepid/pull/339 by @epugh.
+
+* We discovered that nDCG@10 score for products with a hitCount below 10 (K) was always 0.  https://github.com/o19s/quepid/pull/336 by @rudibatt fixes this.  Thanks @rudibatt for this contribution!
+
+* Passing in quote delimited parameters to `bin/docker r` wasn't preserving or quotes or escaping the spaces, causing the `thor user:create foo@example.com "Eric Pugh" "mysuperstrongpassword"` example to fail.  https://github.com/o19s/quepid/pull/340 by @epugh fixes https://github.com/o19s/quepid/issues/338.
+
+* Thanks to Liz Novak at VIN for discovering that a non lowercase email address like `person@EXAMPLE.org` wouldn't be considered a valid email address, so you couldn't send a invite to join Quepid.  https://github.com/o19s/quepid/issues/342 fixed by https://github.com/o19s/quepid/pull/346 by @epugh.
+
+### Improvements
+
+* Uglifier for JavaScript appears to not work with ES6, and so using [Terser](https://github.com/ahorek/terser-ruby) instead.  https://github.com/o19s/quepid/pull/329 by @epugh fixes this.
+
+* Add to the Team page the ability to copy the team invitation url to send via other means then Quepid's own email setup.  This is helpful if you don't have email set up, or if you want to share invites with team members via chat tools like Slack.  Also fixed the user flow of registering after someone has sent out an invite for someone.  https://github.com/o19s/quepid/pull/337 by @epugh fixes https://github.com/o19s/quepid/issues/335 and https://github.com/o19s/quepid/issues/326.
+
+* We've added linting for our Dockerfiles via Deepsource.io.   https://github.com/o19s/quepid/pull/343 by @epugh fixes https://github.com/o19s/quepid/issues/341.
+
+* Our Docker images are getting bloated by including log files from dev and test, leading to almost a 3 GB image.   Adding a `.dockerignore` has got us back to around 2.1 GB image.  https://github.com/o19s/quepid/pull/358 by @epugh fixes https://github.com/o19s/quepid/issues/353.
+
+* Remove the remnants of the query test (unit test style custom scorers) and the default scorer table that are still in the source code.  https://github.com/o19s/quepid/pull/357 by @epugh fixes https://github.com/o19s/quepid/issues/349.
+
+* Sometimes you want to create a Case even when you can't validate the connection.  Introduce a option to bypass the validation.  https://github.com/o19s/quepid/pull/356 by @epugh.
+
+* When we export basic rating data there is an extra LF character at the end of the CSV file.   This was causing issues when importing ratings into the Quaerite project (https://github.com/tballison/quaerite/issues/14).   https://github.com/o19s/quepid/pull/355 by @epugh with assist from @sstults fixes https://github.com/o19s/quepid/issues/354 by @sstults.
+
+* Quepid 6.5.0 started failing on Kubernetes clusters due to the need to be able to write to the filesystem.  Bootsnap dependency upgrade avoids this.  https://github.com/o19s/quepid/pull/344 by @epugh.  Thanks to @LiuCao0614 and @tonomonic for the assist on this.
+
+* Revamp of how all the permissions for doing actions related to Teams, Scorers, and Cases to use the Permissions data we aleady have for a user.  Lots of cleanups on those functions.  Finally dealt with the left over need to have a Case per User, or the UI blew up.  Now you get a nice message, and the UI doesn't blow up.   https://github.com/o19s/quepid/pull/347 by @epugh fixes https://github.com/o19s/quepid/issues/352, https://github.com/o19s/quepid/issues/331, https://github.com/o19s/quepid/issues/278.
+
+## 6.5.0 - 2021-04-22
+
+![favicon](https://raw.githubusercontent.com/o19s/quepid/master/app/assets/images/favicon.ico)
+
+I can sum up this release of Quepid as either the _Hey friend, come join me in improving search_ release or the _so much technical debt has been paid down_ release.   
+
+For those of you upgrading your Docker based install, there are two new ENV variables you need to add to your `docker-compose.yml` file:
+
+```
+- RAILS_LOG_TO_STDOUT=true
+- RAILS_SERVE_STATIC_FILES=true
+```
+
+> Hey friend, come join me in improving search
+
+We have added features that make it easier for you to invite your colleagues to come join your team and start rating documents.  We
+have reworked the initial case creation wizard to be smarter about popping up only the first time you decide to create your own case, instead of having it jump into the user flow when you join an existing team with existing cases.  This should make it easier to bring folks interested only in rating docs into Quepid.  As part of this, we've also added support for deleting individual Cases and User accounts.  So if you invite someone, and change your mind, you can clean up after yourself.
+
+> so much technical debt has been paid down
+
+We are finally off Rails 4.2 and are now on the latest Rails 5 release, and we have a shiny new favicon to go with it!  We've updated all of our frontend dependencies to the latest versions possible, congruent with the core app still being based on Angular1.  The lift from Rails 4 to Rails 5 was a massive effort, and a huge round of thanks goes out to everyone who reported bugs.  We've shrunk our list of dependencies by 10% over the v6.4.1 release, and 29% compared to v6.0.1 release, and we're set up now to look at new front end technologies!
+
+We also did some housecleaning by ripping out some features that hadn't seen adoption by users, including "soft delete" of queries and the "unit test" style of custom scorers.
 
 ### Features
 
-* Invite your friends to join your team on Quepid!  You can now send an email with an invite code to join Quepid and your specific team.   https://github.com/o19s/quepid/pull/259 by @epugh.
+* Invite your friends to join your team on Quepid!  You can now send an email with an invite code to join Quepid and your specific team.   https://github.com/o19s/quepid/pull/259 by @epugh.   https://github.com/o19s/quepid/pull/305 by @epugh introduced better support for tracking of if someone had gone through the create case wizard or not, extending this feature.
 
 * Add support for sending emails via SMTP, or use Postmark, or don't send emails.  https://github.com/o19s/quepid/pull/276 by @gabauer fixes https://github.com/o19s/quepid/issues/275.
 
+* Let a user (or an Administrator) delete their account from Quepid, handling their cases, scorers, and team memberships.  https://github.com/o19s/quepid/pull/315 by @epugh fixes https://github.com/o19s/quepid/issues/311.
+
+* You can now Delete a case altogether!  Historically we had an Archive function, so that you could restore an old case.  However, if you are like me, you create lots and lots of throwaway cases, so this allows you to clean up your Quepid setup.  This PR also fixed some data modeling issues, and the problem of sometimes have a Try of zero, instead of the default first try of One!   We also always include the Try number even if you have named the Try, since that is a big deal.  https://github.com/o19s/quepid/pull/288 by @epugh fixes https://github.com/o19s/quepid/issues/250.  Thanks @DmitryKey for help QA'ing this code.
+
 ### Improvements
+
+* We now have a favicon for Quepid!  https://github.com/o19s/quepid/pull/317 by @DmitryKey.
 
 * Upgrade to Rails 5 and Ruby 2.7.2!   We have been stuck on Rails 4.2 for years, and this unlocks a lot of new capabilities.  https://github.com/o19s/quepid/pull/256 by @epugh with inspiration from @worleydl.
 
 * Renamed "Export Case" and "Import Ratings" to just "Export" and "Import".  https://github.com/o19s/quepid/pull/270 by @abhishekChoudhary93 fixes https://github.com/o19s/quepid/issues/195.
+
+* Pay down some tech debt by removing our use of Coffee Script in Quepid.  https://github.com/o19s/quepid/pull/283 by @epugh.
+
+* Build time on CircleCI dropped from ~135 seconds down to ~105 seconds by removing `sass` gem in favour of `sassc`.  https://github.com/o19s/quepid/pull/285 by @epugh.
+
+* We have simplified our queries that involve cases and users that are part of teams by making the simplifying assumption that all owners of teams are also members, which turns out to be true in practice.   We also have audited our use of `.includes` to load child objects (avoiding the N+1 problem), and used more `.preload` to try and deal with running out of temp space in our database.   https://github.com/o19s/quepid/pull/286 by @epugh.
+
+* Turns out we had a [ERD](docs/erd.png) diagram all along, but it was hidden.  Now you can see it on our [Data Mapping](docs/datamapping.md) page, plus we have how to recreate it documented and integrated.  https://github.com/o19s/quepid/pull/287 by @epugh.
+
+* Remove obscure `quepidIf.js` file that doesn't seem to do anything.  https://github.com/o19s/quepid/pull/293 by @worleydl.
+
+* The Export All Cases feature only supported the old "Detail" format, and none of the other export formats, like LTR, Basic, or RRE.  Plus the filtering options of "All, Owned, Shared" was pretty simplistic.  It wasn't being used, and it added some complexity and performance issues to List All Cases page.   So we removed it.  https://github.com/o19s/quepid/pull/295 by @epugh fixes https://github.com/o19s/quepid/issues/294.
+
+* _Unit Test_ style custom scorers let you run a unit test that asserted specific things about specific docs at specific ranks in your search results.   This logic however was always convoluted, and only 15 people since 2019 have used it, and I suspect by accident ;-)   We want better ways of handling this type of function, so removing this to pay down some tech debt, simplify the database architecture, and open the door to new approach.  https://github.com/o19s/quepid/pull/296 by @epugh fixes https://github.com/o19s/quepid/issues/290.   https://github.com/o19s/quepid/pull/313 also dealt with this.
+
+* We have removed the Soft Delete for Queries to simplify how Quepid works.  If you delete a query in Quepid it is now fully deleted from the database!  This is a nice bit of paying down tech debt.  Huge thanks to @DmitryKey for testing this PR.  https://github.com/o19s/quepid/pull/299 by @epugh fixes https://github.com/o19s/quepid/issues/298 by @DmitryKey.
+
+* The `/case` url is one we frequently end up with, and it generates a 404.  Thanks @DmitryKey for suggesting we have it route to the case listing page `/cases` instead.  https://github.com/o19s/quepid/pull/304 by @epugh.
+
+* The logic around when we popped open the "Create a Case" wizard for a brand new user was somewhat split between the backend `home_controller.rb` and the front end.   It also made anyone who was invited to a team just for rating purposes go through the Create a Case Wizard on their first login, which was awkward.   So, converted the concept of a "first_login" for the wizard to just a boolean "completed_case_wizard", and now it it checked if you have NO cases, and popped up, or if you click "Add a Case".   https://github.com/o19s/quepid/pull/305 by @epugh fixes https://github.com/o19s/quepid/issues/281.
+
+* Upgraded to the latest version of Angular 1, 1.8.2, and many of the other front end dependencies.   https://github.com/o19s/quepid/pull/308 and https://github.com/o19s/quepid/pull/324 by @epugh and https://github.com/o19s/quepid/pull/320 by @worleydl deals with this.
+
+* You can now override the from email address from the default `quepid@o19s.com` to your own email address.   https://github.com/o19s/quepid/pull/322 by @slawmac.  Thanks @slawmac for this improvement!
 
 ### Bugs
 
 * You can export a rating that has no actual rating value chosen! https://github.com/o19s/quepid/pull/266 by @epugh fixes https://github.com/o19s/quepid/issues/265.
 
 * Fixing typo in defining aria-hidden html tag.  https://github.com/o19s/quepid/pull/269 by @abhishekChoudhary93 fixes https://github.com/o19s/quepid/issues/268.
+
+* Rails 5 Upgrade Hangover: fixed strong parameters validation issues, fixed wonky left outer joins on cases showing duplicate cases (and killed performance), eliminated the `user_case_finder.rb` class in favour of simpler scopes.  https://github.com/o19s/quepid/pull/292 by @epugh w/ assist from @worleydl.  https://github.com/o19s/quepid/pull/314 by @worleydl is related.  https://github.com/o19s/quepid/issues/321 by @janhoy fixed by https://github.com/o19s/quepid/pull/323 by @epugh.
+
+* Thanks to @DmitryKey for spotting that we were not tracking scorers for cases (bug introduced when we added the Show Only Ratings feature).  https://github.com/o19s/quepid/pull/303 by @epugh and @worleydl fixes both https://github.com/o19s/quepid/issues/306 AND https://github.com/o19s/quepid/issues/289.  A twofer!
+
+* Thanks to @DmitryKey for spotting that we were not properly storing the Elasticsearch choice.  https://github.com/o19s/quepid/pull/310 by @epugh fixes https://github.com/o19s/quepid/issues/309.
+
+* There is a known issue where expanding/collapsing queries on a larger case, the UI can become completely locked in Chrome, forcing the user to close out the tab.  Thanks to some next level debugging by @LiuCao0614 we have a workaround that disables the JQuery based drag and drop sorting feature that appears to avoid this bug.   *This is not a fix!  This is a workaround!*   Set `QUERY_LIST_SORTABLE=false` in your environment to disable the sorting of queries feature.   https://github.com/o19s/quepid/issues/272 tracks this ongoing issue.
 
 ## 6.4.1 - 2021-01-14
 

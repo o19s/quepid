@@ -8,15 +8,16 @@
       </span>
       <edit-scorer scorer="ctrl.scorer"></edit-scorer>
       <span ng-if="ctrl.team">
-        <action-icon title="'Remove'" icon-class="'fa fa-archive'" fn-call="ctrl.removeScorer()"></action-icon>
+        <delete-scorer this-scorer="ctrl.scorer"></delete-scorer>
+        <remove-scorer this-scorer="ctrl.scorer" this-team="ctrl.team"></remove-scorer>
       </span>
       <span ng-if="!ctrl.team">
-        <action-icon title="'Delete'" icon-class="'fa fa-trash'" fn-call="ctrl.deleteScorer()"></action-icon>
+        <delete-scorer this-scorer="ctrl.scorer"></delete-scorer>
       </span>
     </span>
   </div>
 
-  <div class="col-xs-5">
+  <div class="col-xs-7">
     <div class="scorer code">
       <div ui-ace="{
         require: ['ace/ext/language_tools'],
@@ -48,11 +49,11 @@
     </div>
   </div>
 
-  <div class="col-xs-2">
+  <div class="col-xs-1">
     {{ ctrl.scorer.showScaleLabels }}
   </div>
 
-  <div class="col-xs-2">
+  <div class="col-xs-1">
     <span ng-if="ctrl.scorer.manualMaxScore">
     {{ ctrl.scorer.manualMaxScoreValue }}
   </span>
@@ -68,7 +69,7 @@
     </span>
 
     <span ng-if="!ctrl.scorer.owned">
-      {{ ctrl.scorer.teamNames() }}
+      {{ ctrl.scorer.ownerName }}
     </span>
   </div>
 </div>

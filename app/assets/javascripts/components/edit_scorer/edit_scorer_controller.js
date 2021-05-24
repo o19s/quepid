@@ -37,6 +37,18 @@ angular.module('QuepidApp')
             function() { },
             function() { }
           );
+        }
+        else if ( !ctrl.lastSaved.communal && !$rootScope.currentUser.permissions.scorer.update ) {
+          var deniedModalInstance2 = $uibModal.open({
+            templateUrl:  'edit_scorer/_denied_custom_modal.html',
+            controller:   'DeniedEditScorerModalInstanceCtrl',
+            controllerAs: 'ctrl'
+          });
+
+          deniedModalInstance2.result.then(
+            function() { },
+            function() { }
+          );
         } else {
           var modalInstance = $uibModal.open({
             templateUrl:  'edit_scorer/_modal.html',

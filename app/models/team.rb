@@ -28,6 +28,8 @@ class Team < ApplicationRecord
                           join_table: 'teams_scorers'
   # rubocop:enable Rails/HasAndBelongsToMany
 
+  # Every owner is also a member of the team.  So when we care about access to a team,
+  # we only need to check the team.members or the case.team.members.
   belongs_to :owner,
              class_name: 'User'
 
@@ -43,6 +45,6 @@ class Team < ApplicationRecord
     joins('
       LEFT OUTER JOIN teams_members on teams_members.team_id = teams.id
       LEFT OUTER JOIN users on users.id = teams_members.member_id
-    ').where('`teams`.`owner_id` = ? OR `teams_members`.`member_id` = ?', user.id, user.id)
+    ').where('`teams_members`.`member_id` = ?', user.id)
   }
 end

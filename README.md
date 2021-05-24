@@ -49,6 +49,7 @@ Below is information related to developing the Quepid open source project, prima
 - [Dev Errata](#dev-errata)
   - [I'd like to use a new Node module](#id-like-to-use-a-new-node-module)
   - [I'd like to test SSL](#id-like-to-test-ssl)
+  - [I'd like to test OpenID Auth](#id-like-to-test-openid-auth)
 - [QA](#qa)
   - [Seed Data](#seed-data)
 - [Data Map](#data-map)
@@ -129,10 +130,8 @@ You can still use `docker-compose` directly, but for the basic stuff you can use
 While running the app under foreman, you'll only see a request log, for more detailed logging run the following:
 
 ```
-bin/docker r tail -f -n 200 log/development.log
+tail -f log/development.log
 ```
-
-**Note:** To clear the logs to avoid them getting too big run: `bin/docker r cat /dev/null > log/development.log`
 
 ## III. Run Tests
 
@@ -169,7 +168,7 @@ View the logs generated during testing set `config.log_level = :debug` in `test.
 and then tail the log file via:
 
 ```
-bin/docker r tail -f -n 200 log/test.log
+tail -f log/test.log
 ```
 
 ### JS Lint
@@ -187,15 +186,23 @@ Runs tests for the Angular side. There are two modes for the karma tests:
 * Single run: `bin/docker r rails karma:run`
 * Continuous/watched run: `bin/docker r bin/rake karma:start`
 
-**Note:** The karma tests require the assets to be precompiled, which adds a significant amount of time to the test run. If you are only making changes to the test/spec files, then it is recommended you run the tests in watch mode (`bin/rake karma:start`). The caveat is that any time you make a change to the app files, you will have to restart the process (or use the single run mode).
+**Note:** The karma tests require the assets to be precompiled, which adds a significant amount of time to the test run. If you are only making changes to the test/spec files, then it is recommended you run the tests in watch mode (`bin/docker r bin/rake karma:start`). The caveat is that any time you make a change to the app files, you will have to restart the process (or use the single run mode).
 
 ### Rubocop
 
 To check the Ruby syntax:
 
 ```
-bin/docker r rubocop
+bin/docker r bundle exec rubocop
 ```
+
+Rubocop can often autocorrect many of the lint issues it runs into via `--auto-correct-all`:
+
+```
+bin/docker r bundle exec rubocop --auto-correct-all
+```
+
+If there is a new "Cop" as they call their rules that we don't like, you can add it to the `./rubocop.yml` file.
 
 ### All Tests
 
@@ -236,7 +243,13 @@ In the Rails application you can use the logger for the output:
 Rails.logger object.inspect
 ```
 
-If that's not enough and you want to run a debugger, the `byebug` gem is included for that. Add `byebug` wherever you want a breakpoint and then run the code.
+If that's not enough and you want to run a debugger, the `byebug` gem is included for that. Add the line `byebug` in your Rails code wherever you want a breakpoint and then run the code and you will get an inline REPL.   Even in unit tests!
+
+Also, we have the `derailed` gem available which helps you understand memory issues.
+
+```
+bin/docker r bundle exec derailed bundle:mem
+```
 
 ### Debugging JS
 
@@ -288,22 +301,22 @@ Common rake tasks that you might use:
 
 ```
 # db
-bin/rake db:create
-bin/rake db:drop
-bin/rake db:migrate
-bin/rake db:rollback
-bin/rake db:schema:load
-bin/rake db:seed
-bin/rake db:setup
+bin/docker r bin/rake db:create
+bin/docker r bin/rake db:drop
+bin/docker r bin/rake db:migrate
+bin/docker r bin/rake db:rollback
+bin/docker r bin/rake db:schema:load
+bin/docker r bin/rake db:seed
+bin/docker r bin/rake db:setup
 
 # show routes
-bin/rake routes
+bin/docker r bin/rake routes
 
 # tests
-bin/rake test
-bin/rake test:js
-bin/rake test:jshint
-bin/rake test:quepid
+bin/docker r bin/rake test
+bin/docker r bin/rake test:js
+bin/docker r bin/rake test:jshint
+bin/docker r bin/rake test:quepid
 ```
 
 ### Thor
@@ -389,7 +402,7 @@ which will install/upgrade the Node module, and then save that dependency to `pa
 
 Then check in the updated `package.json` and `yarn.lock` files.
 
-## I'd like to use a new Ruby Gem
+## I'd like to use a new Ruby Gem, or update a existing one
 
 Typically you would simply do:
 
@@ -399,7 +412,19 @@ bin/docker r bundle add foobar
 
 which will install the new Gem, and then save that dependency to `Gemfile`.
 
-Then check in the updated `package.json` and `yarn.lock` files.  For good measure
+You can also upgrade a gem that doesn't have a specific version in `Gemfile` via:
+
+```
+bin/docker r bundle update foobar
+```
+
+You can remove a gem via:
+
+```
+bin/docker r bundle remove foobar --install
+```
+
+Then check in the updated `Gemfile` and `Gemfile.lock` files.  For good measure
 run the `bin/setup_docker`.
 
 
@@ -430,6 +455,11 @@ What you need to do:
 8. Undo your Thin changes afterwords!
 
 **PS:** Why are we using both `puma` and `thin`? Because I simply could not figure out how to get `puma` to work properly with SSL and did not want to spend any more time on it!
+
+## I'd like to test OpenID Auth
+
+Add dev docs here!
+
 
 ## Modifying the database
 
@@ -490,6 +520,8 @@ where type is one of the following:
 # Data Map
 
 Check out the [Data Mapping](docs/data_mapping.md) file for more info about the data structure of the app.
+
+Rebuild the [ERD](docs/erd.png) via `bin/docker r bundle exec rake erd:image`
 
 # App Structure
 

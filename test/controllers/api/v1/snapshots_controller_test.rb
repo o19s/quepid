@@ -209,7 +209,7 @@ module Api
 
         test 'returns snapshot when a query is deleted' do
           query_count = acase.queries.size
-          acase.queries.first.soft_delete
+          acase.queries.first.destroy
           acase.save!
 
           get :show, params: { case_id: acase.id, id: snapshot.id }

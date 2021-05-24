@@ -5,6 +5,11 @@
 # Version of your assets, change this if you want to expire all your assets.
 Rails.application.config.assets.version = '1.0'
 
+# Maybe needed with segfaults in sassc gem?
+Rails.application.config.assets.configure do |env|
+  env.export_concurrent = false
+end
+
 # Add additional assets to the asset load path.
 # Rails.application.config.assets.paths << Emoji.images_path
 # Add Yarn node_modules folder to the asset load path.
@@ -15,7 +20,8 @@ Rails.application.config.assets.paths << Rails.root.join('spec/karma') if Rails.
 # Precompile additional assets.
 # application.js, application.css, and all non-JS/CSS in the app/assets
 # folder are already added.
-Rails.application.config.assets.precompile += %w[ secure.js secure.css admin.js ]
+Rails.application.config.assets.precompile += %w[ secure.js secure.css home.css home.js admin.css admin.js account.css
+                                                  account.js ]
 Rails.application.config.assets.precompile += %w[ application_spec.js ]
 
 # CSS from node modules

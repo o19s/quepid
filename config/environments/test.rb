@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+# rubocop:disable Metrics/BlockLength
+
 Rails.application.configure do
   # Settings specified here will take precedence over those in config/application.rb.
 
@@ -49,7 +51,7 @@ Rails.application.configure do
   config.active_support.deprecation = :stderr
 
   # Set to :debug instead of :info to see SQL
-  config.log_level = :info
+  config.log_level = :debug
 
   config.after_initialize do
     Bullet.enable = true
@@ -65,4 +67,7 @@ Rails.application.configure do
   ENV['TC_URL'] = 'https://quepid.com/agreement'
 
   ENV['QUEPID_GA'] = 'UA-FAKE-GA-CODE-FOR-TESTING'
+
+  ENV['EMAIL_SENDER'] = 'quepid@o19s.com'
 end
+# rubocop:enable Metrics/BlockLength

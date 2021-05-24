@@ -32,7 +32,7 @@ angular.module('QuepidApp')
       };
 
       $scope.addBackCase = function(aCase) {
-        caseSvc.undeleteCase(aCase)
+        caseSvc.unarchiveCase(aCase)
         .then(function() {
           $uibModalInstance.dismiss('addBackCase');
         });

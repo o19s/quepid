@@ -48,3 +48,12 @@ namespace :db do
     end
   end
 end
+
+namespace :erd do
+  desc 'Generate Entity Relationship Diagram'
+  task image: :environment do
+    system 'erd --inheritance --filetype=dot --direct --attributes=foreign_keys,content,inheritance'
+    system 'dot -Tpng erd.dot > docs/erd.png'
+    File.delete('erd.dot')
+  end
+end

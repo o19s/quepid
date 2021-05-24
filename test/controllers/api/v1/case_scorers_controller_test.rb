@@ -29,11 +29,10 @@ module Api
             'communal'            => scorer.communal,
             'code'                => scorer.code,
             'name'                => scorer.name,
-            'queryTest'           => scorer.query_test,
             'scale'               => scorer.scale,
             'owner_id'            => scorer.owner_id,
             'owned'               => false,
-            'queryId'             => scorer.query_id,
+            'owner_name'          => scorer.owner.name,
             'manualMaxScore'      => scorer.manual_max_score,
             'manualMaxScoreValue' => scorer.manual_max_score_value,
             'showScaleLabels'     => scorer.show_scale_labels,
@@ -42,7 +41,6 @@ module Api
           }
 
           assert_equal expected_response, data['default']
-          assert_instance_of Array, data['user_scorers']
         end
       end
 

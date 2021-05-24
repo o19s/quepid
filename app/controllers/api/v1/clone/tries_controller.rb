@@ -45,12 +45,8 @@ module Api
           render json: { message: 'Try not found!' }, status: :not_found unless @try
         end
 
-        def update_try_params
-          params.permit(:name)
-        end
-
         def try_params
-          params.permit(
+          params.require(:try).permit(
             :name,
             :search_url,
             :field_spec,

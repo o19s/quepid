@@ -14,7 +14,7 @@ Devise.setup do |config|
   # Configure the e-mail address which will be shown in Devise::Mailer,
   # note that it will be overwritten if you use your own mailer class
   # with default "from" parameter.
-  config.mailer_sender = 'quepid@o19s.com'
+  config.mailer_sender = Rails.application.config.email_sender
 
   # Configure the class responsible to send e-mails.
   # config.mailer = 'Devise::Mailer'
@@ -323,7 +323,7 @@ Devise.setup do |config|
   # ==> OmniAuth
   # config.omniauth_providers: %i[keycloakopenid]
   config.omniauth :keycloak_openid, 'quepid', 'example-secret-if-configured',
-                  client_options: { site: 'http://host.docker.internal:9080', realm: 'chorus' },
+                  client_options: { site: 'http://keycloak:9080', realm: 'quepid' },
                   strategy_class: OmniAuth::Strategies::KeycloakOpenId
 end
 

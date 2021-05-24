@@ -5,6 +5,7 @@ require 'test_helper'
 module Api
   module V1
     class SignupsControllerTest < ActionController::TestCase
+      let(:user) { users(:matt) }
       before do
         @controller = Api::V1::SignupsController.new
       end
@@ -30,6 +31,19 @@ module Api
 
           error = JSON.parse(response.body)
           assert_includes error['email'], I18n.t('errors.messages.taken')
+        end
+
+        test 'user with existing invite is allowed to signup using invite user record and doesnt create a case' do
+          invitee = User.invite!({ email: 'invitee@mail.com', password: '' }, user)
+          assert invitee.created_by_invite?
+
+          data = { user: { email: invitee.email, password: 'password' } }
+
+          post :create, params: data
+          assert_response :ok
+
+          invitee.reload
+          assert_empty invitee.cases
         end
 
         test 'returns an error when the password is not present' do
@@ -68,7 +82,7 @@ module Api
           assert BCrypt::Password.new(user.password) == password
         end
 
-        test 'sets the defaults' do
+        test 'sets the defaults, including a Case' do
           password = 'password'
           data = { user: { email: 'foo@example.com', password: password } }
 
@@ -78,11 +92,13 @@ module Api
 
           user = User.find_by(email: 'foo@example.com')
 
-          assert_not_nil user.first_login
+          assert_not_nil user.completed_case_wizard
           assert_not_nil user.num_logins
 
-          assert_equal true,  user.first_login
-          assert_equal 0,     user.num_logins
+          assert_equal false,  user.completed_case_wizard
+          assert_equal 0, user.num_logins
+
+          assert_equal 1, user.cases.count
         end
 
         test 'does not care if the name is present' do

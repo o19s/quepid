@@ -39,7 +39,7 @@ module Api
 
       def user_params
         params.require(:user).permit(
-          :first_login,
+          :completed_case_wizard,
           :company,
           :default_scorer_id
         )

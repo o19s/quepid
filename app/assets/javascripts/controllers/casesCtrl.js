@@ -34,20 +34,7 @@ angular.module('QuepidApp')
         caseSvc.getCases(false)
           .then(function() {
             broadcastSvc.send('updatedCasesList', caseSvc.allCases);
-
-            if ( caseSvc.allCases.length ) {
-              var promises = [];
-
-              caseSvc.allCases.forEach(function(aCase) {
-                promises.push( caseSvc.get(aCase.caseNo, false) );
-              });
-
-              $q.all(promises)
-                .then(function() {
-                  broadcastSvc.send('deepCaseListUpdated', caseSvc.allCases);
-                  $scope.casesScope.loadingCases = false;
-                });
-            }
+            $scope.casesScope.loadingCases = false;
           });
       };
 

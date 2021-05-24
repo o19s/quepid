@@ -44,7 +44,6 @@ angular.module('QuepidApp')
                 flash.success = 'Annotation updated successfully!';
               },
               function(response) {
-                console.log('response: ', response);
                 flash.error = response.data.message;
               });
           },

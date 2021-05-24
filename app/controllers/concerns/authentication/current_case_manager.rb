@@ -15,7 +15,7 @@ module Authentication
     end
 
     def set_case
-      @case = current_user.cases.where(id: params[:case_id]).first
+      @case = current_user.cases_involved_with.where(id: params[:case_id]).first
     end
 
     # Fetches case that a user can view and query.
@@ -29,7 +29,8 @@ module Authentication
       @case = current_user
         .cases_involved_with
         .where(id: params[:case_id])
-        .includes([ queries: [ :ratings, :test, :scorer ], tries: [ :curator_variables ] ])
+        .includes(:tries )
+        .preload([ queries: [ :ratings ], tries: [ :curator_variables ] ])
         .order('tries.try_number DESC')
         .first
     end

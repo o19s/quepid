@@ -17,39 +17,19 @@ angular.module('QuepidApp')
       var ctrl = this;
 
       ctrl.thisCase         = $scope.thisCase;
-      ctrl.checkIfOnlyCase  = checkIfOnlyCase;
       ctrl.deleteCase       = deleteCase;
       ctrl.openDeleteModal  = openDeleteModal;
-      ctrl.retrieveTooltip  = retrieveTooltip;
 
       function deleteCase() {
         caseSvc.deleteCase(ctrl.thisCase).then(
           function () {
-            flash.success = 'Case archived successfully.';
+            flash.success = 'Case deleted successfully.';
           }, function (data) {
-            var message = 'Oooops! Could not archive the case. ';
+            var message = 'Oooops! Could not delete the case. ';
             message += data.message;
             flash.error = message;
           }
         );
-      }
-
-      function checkIfOnlyCase() {
-        var ownedCases = caseSvc.filterCases(caseSvc.allCases, true);
-
-        if( ownedCases.length <= 1 ){
-          return true;
-        }
-
-        return false;
-      }
-
-      function retrieveTooltip() {
-        if(ctrl.checkIfOnlyCase()){
-          return 'Can\'t archive the only case';
-        } else {
-          return 'Archive';
-        }
       }
 
       function openDeleteModal() {
@@ -58,11 +38,7 @@ angular.module('QuepidApp')
           controller:   'DeleteCaseModalInstanceCtrl',
           controllerAs: 'ctrl',
           size:         'sm',
-          resolve:      {
-            onlyCase: function() {
-              return ctrl.checkIfOnlyCase();
-            }
-          }
+          resolve:      {}
         });
 
         modalInstance.result.then(function (deleteClicked) {

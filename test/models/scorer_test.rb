@@ -9,8 +9,6 @@
 #  name                   :string(191)
 #  owner_id               :integer
 #  scale                  :string(255)
-#  query_test             :boolean
-#  query_id               :integer
 #  manual_max_score       :boolean          default(FALSE)
 #  manual_max_score_value :integer          default(100)
 #  show_scale_labels      :boolean          default(FALSE)

@@ -5,14 +5,11 @@
 #  id             :integer          not null, primary key
 #  arranged_next  :integer
 #  arranged_at    :integer
-#  deleted        :boolean
 #  query_text     :string(191)
 #  notes          :text(65535)
 #  threshold      :float(24)
 #  threshold_enbl :boolean
 #  case_id        :integer
-#  scorer_id      :integer
-#  scorer_enbl    :boolean
 #  created_at     :datetime         not null
 #  updated_at     :datetime         not null
 #  options        :text(65535)
@@ -60,8 +57,7 @@ for_default_scorer:
   case:         :for_default_scorer
   query_text:   B Query
   arranged_at:  2
-  scorer:       :query_default_scorer
-#  scorer:       query_default_scorer (Scorer)
+
 
 import_ratings_query:
   case:         :import_ratings_case
@@ -77,5 +73,3 @@ query_with_empty_ratings:
   case:         :random_case
   query_text:   Query With Empty Ratings
   arranged_at:  1
-
-  

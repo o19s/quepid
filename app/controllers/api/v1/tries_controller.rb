@@ -35,7 +35,7 @@ module Api
       end
 
       def update
-        if @try.update update_try_params
+        if @try.update try_params
           respond_with @try
         else
           render json: @try.errors, status: :bad_request
@@ -56,12 +56,8 @@ module Api
         render json: { message: 'Try not found!' }, status: :not_found unless @try
       end
 
-      def update_try_params
-        params.permit(:name)
-      end
-
       def try_params
-        params.permit(
+        params.require(:try).permit(
           :escape_query,
           :field_spec,
           :name,

@@ -1,4 +1,4 @@
-// This is a manifest file that'll be compiled into application.js, which will include all the files
+// This is a manifest file that'll be compiled into secure.js, which will include all the files
 // listed below.
 //
 // Any JavaScript/Coffee file within this directory, lib/assets/javascripts, vendor/assets/javascripts,
@@ -11,12 +11,8 @@
 // about supported directives.
 //
 //= require jquery
-// Use this for debugging.
-//# require bootstrap-sprockets
-// Use this for faster loading
-//= require bootstrap
 //= require angular/angular
-//= require bootstrap/dist/js/bootstrap
+
 //= require angular-resource/angular-resource
 //= require angular-cookies/angular-cookies
 //= require angular-route/angular-route

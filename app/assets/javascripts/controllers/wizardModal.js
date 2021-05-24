@@ -17,6 +17,9 @@ angular.module('QuepidApp')
       $log.debug('Init Wizard settings ctrl');
       $scope.wizardSettingsModel = {};
 
+
+
+
       $scope.pendingWizardSettings = angular.copy(settingsSvc.defaults.solr);
 
       $scope.wizardSettingsModel.settingsId = function() {
@@ -36,11 +39,13 @@ angular.module('QuepidApp')
         $scope.reset();
       };
 
-      $scope.validate     = validate;
-      $scope.submit       = submit;
-      $scope.reset        = reset;
+      $scope.validate       = validate;
+      $scope.skipValidation = skipValidation;
+      $scope.setupDefaults  = setupDefaults;
+      $scope.submit         = submit;
+      $scope.reset          = reset;
       $scope.reset();
-      $scope.searchFields = [];
+      $scope.searchFields   = [];
 
       $scope.extractSolrConfigApiUrl = function(searchUrl) {
         return searchUrl.substring(0, searchUrl.lastIndexOf('/')) + '/config';
@@ -58,6 +63,14 @@ angular.module('QuepidApp')
         }
       }
 
+      function skipValidation() {
+        var validator = new SettingsValidatorFactory($scope.pendingWizardSettings);
+
+        setupDefaults(validator);
+
+        WizardHandler.wizard().next();
+      }
+
       function validate (justValidate) {
         if (angular.isUndefined(justValidate)) {
           justValidate = false;
@@ -68,30 +81,9 @@ angular.module('QuepidApp')
         var validator = new SettingsValidatorFactory($scope.pendingWizardSettings);
         validator.validateUrl()
         .then(function () {
-          $scope.validating   = false;
-          $scope.urlValid     = true;
-          $scope.searchFields = validator.fields;
-          $scope.idFields     = validator.idFields;
 
-          // Since the defaults are being overridden by the editableSettings(),
-          // make sure the default id, title, and additional fields are set
-          // if the URL is still set as the default
-          var searchEngine  = $scope.pendingWizardSettings.searchEngine;
-          var defaults      = settingsSvc.defaults[searchEngine];
-          var defaultUrl    = defaults.searchUrl;
-          var newUrl        = $scope.pendingWizardSettings.searchUrl;
-          if ( newUrl === defaultUrl ) {
-            $scope.pendingWizardSettings.idField          = defaults.idField;
-            $scope.pendingWizardSettings.titleField       = defaults.titleField;
-            $scope.pendingWizardSettings.additionalFields = defaults.additionalFields;
-          } else {
-            $scope.pendingWizardSettings.idField          = '';
-            if (searchEngine === 'es') {
-              $scope.pendingWizardSettings.idField        = '_id';
-            }
-            $scope.pendingWizardSettings.titleField       = '';
-            $scope.pendingWizardSettings.additionalFields = '';
-          }
+          setupDefaults(validator);
+
           if (!justValidate) {
             WizardHandler.wizard().next();
           }
@@ -99,6 +91,33 @@ angular.module('QuepidApp')
           $scope.urlInvalid = true;
           $scope.validating = false;
         });
+      }
+
+      function setupDefaults(validator) {
+        $scope.validating   = false;
+        $scope.urlValid     = true;
+        $scope.searchFields = validator.fields;
+        $scope.idFields     = validator.idFields;
+
+        // Since the defaults are being overridden by the editableSettings(),
+        // make sure the default id, title, and additional fields are set
+        // if the URL is still set as the default
+        var searchEngine  = $scope.pendingWizardSettings.searchEngine;
+        var defaults      = settingsSvc.defaults[searchEngine];
+        var defaultUrl    = defaults.searchUrl;
+        var newUrl        = $scope.pendingWizardSettings.searchUrl;
+        if ( newUrl === defaultUrl ) {
+          $scope.pendingWizardSettings.idField          = defaults.idField;
+          $scope.pendingWizardSettings.titleField       = defaults.titleField;
+          $scope.pendingWizardSettings.additionalFields = defaults.additionalFields;
+        } else {
+          $scope.pendingWizardSettings.idField          = '';
+          if (searchEngine === 'es') {
+            $scope.pendingWizardSettings.idField        = '_id';
+          }
+          $scope.pendingWizardSettings.titleField       = '';
+          $scope.pendingWizardSettings.additionalFields = '';
+        }
       }
 
       $scope.validateFieldSpec = validateFieldSpec;
@@ -193,8 +212,11 @@ angular.module('QuepidApp')
         angular.merge($scope.pendingWizardSettings, settingsSvc.editableSettings());
         $scope.pendingWizardSettings.newQueries = [];
 
-        if(userSvc.getUser().firstLogin===true){
+        console.log('User completedCaseWizard is ' + userSvc.getUser().completedCaseWizard);
+
+        if(userSvc.getUser().completedCaseWizard===false){
           $scope.pendingWizardSettings.caseName = 'Movies Search';
+          // should we be setting up more here?
         } else {
           $log.info('Skipping welcome step for case wizard');
           WizardHandler.wizard().goTo(1);
@@ -242,13 +264,8 @@ angular.module('QuepidApp')
             var length = $scope.pendingWizardSettings.newQueries.length;
             var query = null;
 
-            var updateUserNumQueries = function() {
-              $rootScope.currentUser.queryAdded();
-            };
-
             var queryPromise = function(q) {
-              return queriesSvc.persistQuery(q)
-                      .then(updateUserNumQueries());
+              return queriesSvc.persistQuery(q);
             };
 
             var createPromises = [];
@@ -266,6 +283,10 @@ angular.module('QuepidApp')
             $q.all(createPromises).then( () => {
               queriesSvc.searchAll();
             });
+
+
+            $rootScope.currentUser.shownIntroWizard();
+
 
             $uibModalInstance.close();
           });

@@ -3,6 +3,8 @@
 /*jshint camelcase: false */
 /*jslint latedef:false*/
 
+// TODO: This should just be scorerSvc
+
 (function() {
   angular.module('QuepidApp')
     .service('customScorerSvc', [
@@ -28,10 +30,19 @@
         self.scalesAreEqual    = scalesAreEqual;
         self.scorers           = [];
         self.setDefault        = setDefault;
+        self.scaleToArray      = scaleToArray;
 
         var contains = function(list, scorer) {
           return list.filter(function(item) { return item.scorerId === scorer.scorerId; }).length > 0;
         };
+
+        function scaleToArray(string) {
+          return string.replace(/^\s+|\s+$/g,'')
+            .split(/\s*,\s*/)
+            .map(function(item) {
+              return parseInt(item, 10);
+            });
+        }
 
         function rawScore(total, docs, bestDocs, options) {
 
@@ -85,19 +96,23 @@
           return angular.equals(first, second);
         }
 
-        function create(data) {
+        function create(scorer) {
           // http POST /api/scorers
           var url   = '/api/scorers';
+          var scale = scorer.scale;
+          if (angular.isString(scale)) {
+            scale = scaleToArray(scale);
+          }
+          var data  = {
+            'name':                   scorer.name,
+            'code':                   scorer.code,
+            'scale':                  scale,
+            'manual_max_score':       scorer.manualMaxScore,
+            'manual_max_score_value': scorer.manualMaxScoreValue,
+            'show_scale_labels':      scorer.showScaleLabels,
+            'scale_with_labels':      scorer.scaleWithLabels,
+          };
 
-          data.manual_max_score       = data.manualMaxScore;
-          data.manual_max_score_value = data.manualMaxScoreValue;
-          data.show_scale_labels      = data.showScaleLabels;
-          data.scale_with_labels      = data.scaleWithLabels;
-
-          delete data.manualMaxScore;
-          delete data.manualMaxScoreValue;
-          delete data.showScaleLabels;
-          delete data.scaleWithLabels;
 
           return $http.post(url, { 'scorer': data })
             .then(function(response) {
@@ -113,11 +128,17 @@
         function edit(scorer) {
           // http PUT /api/scorers/<int:scorerId>
           var url   = '/api/scorers/' + scorer.scorerId;
+
+          var scale = scorer.scale;
+          if (angular.isString(scale)) {
+            scale = scaleToArray(scale);
+          }
+
           var data  = {
             'scorer': {
               'name':                   scorer.name,
               'code':                   scorer.code,
-              'scale':                  scorer.scale,
+              'scale':                  scale,
               'manual_max_score':       scorer.manualMaxScore,
               'manual_max_score_value': scorer.manualMaxScoreValue,
               'show_scale_labels':      scorer.showScaleLabels,
@@ -245,7 +266,6 @@
           var deferred = $q.defer();
           scorer = self.constructFromData(scorer);
 
-          console.log('default set');
           self.defaultScorer = scorer;
           deferred.resolve();
 
