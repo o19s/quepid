@@ -29,24 +29,25 @@ module Users
     end
 
     def google_oauth2
-        # You need to implement the method below in your model (e.g. app/models/user.rb)
-        @user = User.from_omniauth_custom(request.env['omniauth.auth'])
+      # You need to implement the method below in your model (e.g. app/models/user.rb)
+      @user = User.from_omniauth_custom(request.env['omniauth.auth'])
 
-        if @user.persisted?
-          session[:current_user_id] = @user.id # this populates our session variable.
+      if @user.persisted?
+        session[:current_user_id] = @user.id # this populates our session variable.
 
-          # in this flow, we have a new user joining, so we create a empty case for them, which
-          # on the home_controller.rb triggers the bootstrap and the new case wizard.
-          @user.cases.build case_name: "Case #{@user.cases.size}"
+        # in this flow, we have a new user joining, so we create a empty case for them, which
+        # on the home_controller.rb triggers the bootstrap and the new case wizard.
+        @user.cases.build case_name: "Case #{@user.cases.size}"
 
-          #flash[:notice] = I18n.t 'devise.omniauth_callbacks.success', kind: 'Google'
-          redirect_to root_path
-          #sign_in_and_redirect @user, event: :authentication
-        else
-          Rails.logger.warn('user not persisted, what do we need to do?')
-          session['devise.google_data'] = request.env['omniauth.auth'].except('extra') # Removing extra as it can overflow some session stores
-          redirect_to new_user_registration_url, alert: @user.errors.full_messages.join("\n")
-        end
+        # flash[:notice] = I18n.t 'devise.omniauth_callbacks.success', kind: 'Google'
+        redirect_to root_path
+        # sign_in_and_redirect @user, event: :authentication
+      else
+        Rails.logger.warn('user not persisted, what do we need to do?')
+        # Removing extra as it can overflow some session stores
+        session['devise.google_data'] = request.env['omniauth.auth'].except('extra')
+        redirect_to new_user_registration_url, alert: @user.errors.full_messages.join("\n")
+      end
     end
 
     def failure

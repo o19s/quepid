@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+# rubocop:disable Layout/LineLength
+
 # Use this hook to configure devise mailer, warden hooks and so forth.
 # Many of these configuration options can be set straight in your model.
 Devise.setup do |config|
@@ -321,16 +323,25 @@ Devise.setup do |config|
   # config.omniauth_path_prefix = '/my_engine/users/auth'
   # config.omniauth :github, "APP_ID", "APP_SECRET"
   # ==> OmniAuth
-  #config.omniauth_providers: %i[keycloakopenid google_oauth2]
-  config.omniauth :keycloak_openid, Rails.application.config.keycloak_realm, 'example-secret-if-configured',
-                  client_options: { site: Rails.application.config.keycloak_site, realm: Rails.application.config.keycloak_realm },
-                  strategy_class: OmniAuth::Strategies::KeycloakOpenId
+  # config.omniauth_providers: %i[keycloakopenid google_oauth2]
+  if Rails.application.config.keycloak_realm.present?
+    config.omniauth :keycloak_openid, Rails.application.config.keycloak_realm, 'example-secret-if-configured',
+                    client_options: {
+                      site: Rails.application.config.keycloak_site,
+                      realm: Rails.application.config.keycloak_realm
+                    },
+                    strategy_class: OmniAuth::Strategies::KeycloakOpenId
+  end
 
-  config.omniauth :google_oauth2, Rails.application.config.google_client_id, Rails.application.config.google_client_secret,
+  if Rails.application.config.google_client_id.present?
+    config.omniauth :google_oauth2, Rails.application.config.google_client_id, Rails.application.config.google_client_secret,
                   client_options: { ssl: { verify: !Rails.env.development? } },
                   strategy_class: OmniAuth::Strategies::GoogleOauth2
+  end
 end
 
 Rails.application.config.to_prepare do
   Devise::Mailer.layout 'email'
 end
+
+# rubocop:enable Layout/LineLength

@@ -29,7 +29,6 @@
 class User < ApplicationRecord
   class << self
     def from_omniauth_custom auth
-
       user = User.find_or_initialize_by(email: auth['info']['email'])
 
       user.name = auth['info']['name']
