@@ -31,6 +31,7 @@ module Users
     def google_oauth2
       # You need to implement the method below in your model (e.g. app/models/user.rb)
       @user = User.from_omniauth_custom(request.env['omniauth.auth'])
+      @user.agreed = true # agreement happens implicitly on this flow.
 
       if @user.persisted?
         session[:current_user_id] = @user.id # this populates our session variable.
