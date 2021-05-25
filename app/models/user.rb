@@ -32,7 +32,7 @@ class User < ApplicationRecord
       user = User.find_or_initialize_by(email: auth['info']['email'])
 
       user.name = auth['info']['name']
-      user.password = 'fake'
+      user.password = 'fake' unless user.password.present? # If you don't have a password, fake it.
       user.agreed = true
 
       # user.avatar_url = auth['info']['image']
