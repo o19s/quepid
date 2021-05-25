@@ -53,7 +53,7 @@ module Users
     # rubocop:enable Metrics/AbcSize
 
     def failure
-      redirect_to root_path, alert: 'BOOOOMMMMMMM3' + @user.errors.full_messages.join("\n") + "BLANK" + session['devise.google_data']
+      redirect_to root_path, alert: 'Could not sign user in with OAuth provider.' + session['devise.google_data']
     end
   end
 end
