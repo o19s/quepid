@@ -38,7 +38,7 @@ class User < ApplicationRecord
       user.num_logins ||= 0
       user.num_logins  += 1
 
-      # user.avatar_url = auth['info']['image']
+      user.profile_pic = auth['info']['image']
       # user.access_token = auth['credentials']['token']
       # user.refresh_token = auth['credentials']['refresh_token'] unless auth['credentials']['refresh_token'].nil?
       # user.expires_at = auth['credentials']['expires_at'] unless auth['credentials']['refresh_token'].nil?

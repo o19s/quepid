@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_05_21_211613) do
+ActiveRecord::Schema.define(version: 2021_05_25_155555) do
 
   create_table "annotations", id: :integer, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8", force: :cascade do |t|
     t.text "message"
@@ -207,6 +207,7 @@ ActiveRecord::Schema.define(version: 2021_05_21_211613) do
     t.integer "invitations_count", default: 0
     t.boolean "completed_case_wizard", default: false, null: false
     t.string "stored_raw_invitation_token"
+    t.string "profile_pic"
     t.index ["default_scorer_id"], name: "index_users_on_default_scorer_id"
     t.index ["email"], name: "ix_user_username", unique: true
     t.index ["invitation_token"], name: "index_users_on_invitation_token", unique: true, length: 191
