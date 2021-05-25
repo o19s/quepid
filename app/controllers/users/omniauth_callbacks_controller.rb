@@ -7,10 +7,6 @@ module Users
 
     def keycloakopenid
       Rails.logger.debug(request.env['omniauth.auth'])
-      # Examples online suggest that I should have a from_omniauth or find_or_create_from_auth_hash
-      # methods injected into my User class by a gem, however I had to manually add mine.
-      # @user = User.from_omniauth(request.env["omniauth.auth"])
-      # @user = User.find_or_create_from_auth_hash(request.env["omniauth.auth"])
       @user = User.from_omniauth_custom(request.env['omniauth.auth'])
       if @user.persisted?
         session[:current_user_id] = @user.id # this populates our session variable.
@@ -29,9 +25,8 @@ module Users
     end
 
     def google_oauth2
-      # You need to implement the method below in your model (e.g. app/models/user.rb)
+      Rails.logger.debug(request.env['omniauth.auth'])
       @user = User.from_omniauth_custom(request.env['omniauth.auth'])
-      #@user.agreed = true # agreement happens implicitly on this flow.
 
       if @user.persisted?
         session[:current_user_id] = @user.id # this populates our session variable.
@@ -51,7 +46,7 @@ module Users
     end
 
     def failure
-      redirect_to root_path, alert: "Could not sign user in with OAuth provider."
+      redirect_to root_path, alert: 'Could not sign user in with OAuth provider.''
     end
   end
 end
