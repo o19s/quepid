@@ -28,7 +28,6 @@ module Users
       end
     end
 
-    # rubocop:disable Metrics/AbcSize
     def google_oauth2
       # You need to implement the method below in your model (e.g. app/models/user.rb)
       @user = User.from_omniauth_custom(request.env['omniauth.auth'])
@@ -50,10 +49,9 @@ module Users
         redirect_to new_user_registration_url, alert: @user.errors.full_messages.join("\n")
       end
     end
-    # rubocop:enable Metrics/AbcSize
 
     def failure
-      redirect_to root_path, alert: 'Could not sign user in with OAuth provider.' + session['devise.google_data']
+      redirect_to root_path, alert: "Could not sign user in with OAuth provider. #{session['devise.google_data']}"
     end
   end
 end
