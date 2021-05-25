@@ -54,8 +54,8 @@ module Users
     # rubocop:enable Metrics/AbcSize
 
     def failure
-      flash[:error] = "BOOMMMMMMM"
-      redirect_to root_path, alert: "BOOOOMMMMMMM3"
+      flash[:error] = 'BOOMMMMMMM'
+      redirect_to root_path, alert: 'BOOOOMMMMMMM3'
     end
   end
 end
