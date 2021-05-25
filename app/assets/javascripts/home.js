@@ -60,7 +60,6 @@
 //= require FileSaver.js/FileSaver
 //= require urijs/src/URI
 //= require utilitiesModule
-//= require secureApp
 //= require app
 //= require routes
 //= require_tree ./components

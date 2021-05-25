@@ -8,8 +8,6 @@ module Users
     # rubocop:disable Metrics/MethodLength
     def create
       user_params_to_save = user_params
-      # Little workaround for the Angular frontend doing password confirmation on the frontend!
-      user_params_to_save[:password_confirmation] = user_params_to_save[:password]
 
       # Check if we already have an invite out for this user, and if so let's use that
       if user_params_to_save[:email].blank?
@@ -27,6 +25,7 @@ module Users
       end
 
       if @user.save
+        session[:current_user_id] = @user.id # not sure if we need to do more here?
         Analytics::Tracker.track_signup_event @user
         redirect_to root_path
       else
