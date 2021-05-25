@@ -31,7 +31,7 @@ module Users
     def google_oauth2
       # You need to implement the method below in your model (e.g. app/models/user.rb)
       @user = User.from_omniauth_custom(request.env['omniauth.auth'])
-      @user.agreed = true # agreement happens implicitly on this flow.
+      #@user.agreed = true # agreement happens implicitly on this flow.
 
       if @user.persisted?
         session[:current_user_id] = @user.id # this populates our session variable.
@@ -51,7 +51,7 @@ module Users
     end
 
     def failure
-      redirect_to root_path, alert: "Could not sign user in with OAuth provider. #{session['devise.google_data']}"
+      redirect_to root_path, alert: "Could not sign user in with OAuth provider."
     end
   end
 end

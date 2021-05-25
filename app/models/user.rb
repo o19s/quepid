@@ -33,6 +33,7 @@ class User < ApplicationRecord
 
       user.name = auth['info']['name']
       user.password = 'fake'
+      user.agreed = true
 
       # user.avatar_url = auth['info']['image']
       # user.access_token = auth['credentials']['token']
