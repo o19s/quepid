@@ -16,7 +16,7 @@ module Users
     def update
       unless signup_enabled?
         flash.now[:error] = 'Signups are disabled.'
-        redirect_to secure_path and return
+        redirect_to sessions_path and return
       end
 
       super

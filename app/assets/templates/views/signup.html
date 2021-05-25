@@ -16,18 +16,7 @@
       <div ng-controller="LoginCtrl">
         <h4>Sign in via email:</h4>
         <form id="login" ng-submit="submit(email, password)">
-          <div class="alert alert-danger" ng-if="warnUndefined">
-            Unknown email/password. Try again or sign up!
-          </div>
-          <div class="alert alert-danger" ng-if="warnErr">
-            Unknown email/password combo. Double check you have the correct email address and password, or sign up for a new account.
-          </div>
-          <div class="alert alert-danger" ng-if="warnInvalid">
-            Please provide a valid email address and password.
-          </div>
-          <div class="alert alert-danger" ng-if="warnLocked">
-            Your account is locked.
-          </div>
+        
 
           <input type="text" class="form-control email" ng-model="email" placeholder="Email">
           <br/>
@@ -51,30 +40,6 @@
       <div ng-controller="SignupCtrl" ng-cloak>
         <form id="signup" ng-submit="submit(agree, emailMarketingAgree, name, email, password, confirm)" >
           <h2>Sign up to get started!</h2>
-
-          <div class="alert alert-danger" ng-if="warnErr">
-            Something weird happened. Contact us for assistance
-          </div>
-
-          <div class="alert alert-danger" ng-if="warnEmail">
-            You must enter an email address.
-          </div>
-
-          <div class="alert alert-danger" ng-if="warnDefined">
-            The email you entered is already registered!
-          </div>
-
-          <div class="alert alert-danger" ng-if="warnPass">
-            The passwords do not match!
-          </div>
-
-          <div class="alert alert-danger" ng-if="warnName">
-            Please provide your full name, so we can properly address you :)
-          </div>
-
-          <div class="alert alert-danger" ng-if="warnAgree">
-            You must agree to the terms and conditions.
-          </div>
 
           <div class="form-group">
             <input

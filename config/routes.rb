@@ -13,18 +13,15 @@ Rails.application.routes.draw do
   get '.well-known/acme-challenge/9IWOgATbRmEtWKsOOJQ-E4-lrIT9tHsHv_9bl5Zt6fI', to: proc { [ 200, {}, [ '9IWOgATbRmEtWKsOOJQ-E4-lrIT9tHsHv_9bl5Zt6fI.fDzklrX7i2PRMRsPtxEvo2yRZDSfy2LO3t--NfWfgaA' ] ] }
   # rubocop:enable Layout/LineLength
 
-  # legacy routes for angular single page app
-  post 'users/login' => 'sessions#create', defaults: { format: :json }
+  post 'users/login' => 'sessions#create'#, #defaults: { format: :json
+  post 'users/signup' => 'users/signups#create'
+
   get  'logout'      => 'sessions#destroy'
-  get  'secure'      => 'secure#index'
-  get  'secure/complete' => 'secure#index'
-  # end legacy routes
 
   resources :sessions
   resource :account, only: [ :update, :destroy ]
   resource :profile, only: [ :show, :update ]
 
-  # not sure I get why we had the only: [ :passwords ] clause
   devise_for :users, controllers: {
     passwords:          'users/passwords',
     invitations:        'users/invitations',

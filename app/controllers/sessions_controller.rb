@@ -2,16 +2,26 @@
 
 class SessionsController < ApplicationController
   force_ssl if: :ssl_enabled?
-  skip_before_action :require_login,              only: :create
+  skip_before_action :require_login,              only: [:create, :index]
   skip_before_action :check_current_user_locked!, only: :create
   skip_before_action :verify_authenticity_token,  only: :create
 
+  layout 'start'
+
+  def index
+    @user = User.new
+
+  end
   def create
-    user = login(params[:email], params[:password])
+    login_params = user_params
+
+    user = login(login_params[:email], login_params[:password])
     respond_to do |format|
       if user
+        format.html { redirect_to root_path}
         format.json { render json: { message: 'connected' }, status: :ok }
       else
+        format.html { redirect_to sessions_path}
         format.json { render json: { reason: @error }, status: :unprocessable_entity }
       end
     end
@@ -20,7 +30,7 @@ class SessionsController < ApplicationController
   def destroy
     clear_user_session
 
-    redirect_to secure_path
+    redirect_to sessions_path
   end
 
   private
@@ -50,5 +60,11 @@ class SessionsController < ApplicationController
     user.save
 
     user
+  end
+
+  private
+
+  def user_params
+    params.require(:user).permit(:email, :password)
   end
 end

@@ -21,7 +21,7 @@ Rails.application.config.assets.paths << Rails.root.join('spec/karma') if Rails.
 # application.js, application.css, and all non-JS/CSS in the app/assets
 # folder are already added.
 Rails.application.config.assets.precompile += %w[ secure.js secure.css home.css home.js admin.css admin.js account.css
-                                                  account.js ]
+                                                  account.js start.css start.js ]
 Rails.application.config.assets.precompile += %w[ application_spec.js ]
 
 # CSS from node modules
