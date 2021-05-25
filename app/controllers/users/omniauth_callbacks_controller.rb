@@ -46,7 +46,7 @@ module Users
     end
 
     def failure
-      redirect_to root_path, alert: 'Could not sign user in with OAuth provider.''
+      redirect_to root_path, alert: 'Could not sign user in with OAuth provider.'
     end
   end
 end
