@@ -139,7 +139,7 @@ module Api
       describe 'verify email marketing mode logic' do
         test 'accepts no email marketing field' do
           password = 'password'
-          data = { user: { email: 'foo@example.com', password: password }, format: :json  }
+          data = { user: { email: 'foo@example.com', password: password }, format: :json }
 
           post :create, params: data
           assert_response :ok

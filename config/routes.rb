@@ -13,10 +13,10 @@ Rails.application.routes.draw do
   get '.well-known/acme-challenge/9IWOgATbRmEtWKsOOJQ-E4-lrIT9tHsHv_9bl5Zt6fI', to: proc { [ 200, {}, [ '9IWOgATbRmEtWKsOOJQ-E4-lrIT9tHsHv_9bl5Zt6fI.fDzklrX7i2PRMRsPtxEvo2yRZDSfy2LO3t--NfWfgaA' ] ] }
   # rubocop:enable Layout/LineLength
 
-  post 'users/login' => 'sessions#create'#, #defaults: { format: :json
+  post 'users/login' => 'sessions#create' # , #defaults: { format: :json
   post 'users/signup' => 'users/signups#create'
 
-  get  'logout'      => 'sessions#destroy'
+  get  'logout' => 'sessions#destroy'
 
   resources :sessions
   resource :account, only: [ :update, :destroy ]
