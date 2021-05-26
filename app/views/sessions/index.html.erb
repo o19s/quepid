@@ -22,7 +22,6 @@
       </div>
       <hr/>
       <div>
-        <%=controller.class.to_s%>
         <h4>Sign in via email:</h4>
         <%= form_with model: @user, url: users_login_path, id: 'login', html: { method: :post } do |f| %>
           <% if controller.class.to_s.include?("SessionsController") && @user.errors.any? %>
