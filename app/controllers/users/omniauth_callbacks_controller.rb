@@ -55,7 +55,6 @@ module Users
 
     # rubocop:disable Metrics/AbcSize
     # rubocop:disable Metrics/MethodLength
-    # rubocop:disable Layout/LineLength
     def create_user_from_omniauth auth
       if Rails.application.config.signup_enabled
         user = User.find_or_initialize_by(email: auth['info']['email'])
@@ -83,6 +82,5 @@ module Users
     end
     # rubocop:enable Metrics/AbcSize
     # rubocop:enable Metrics/MethodLength
-    # rubocop:enable Layout/LineLength
   end
 end
