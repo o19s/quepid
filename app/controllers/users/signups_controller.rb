@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
 module Users
-  class SignupsController < Api::ApiController
-    skip_before_action :authenticate_api!
-    skip_before_action :verify_authenticity_token
+  class SignupsController < ApplicationController
+    skip_before_action :require_login
+    layout 'start'
 
     # rubocop:disable Metrics/MethodLength
     def create
@@ -24,13 +24,27 @@ module Users
         end
       end
 
-      if @user.save
-        session[:current_user_id] = @user.id # not sure if we need to do more here?
-        Analytics::Tracker.track_signup_event @user
-        redirect_to root_path
-      else
-        redirect_to sessions_path
+      respond_to do |format|
+        format.html do
+          if @user.save
+            session[:current_user_id] = @user.id # not sure if we need to do more here?
+            Analytics::Tracker.track_signup_event @user
+            redirect_to root_path
+          else
+            render template: 'sessions/index'
+          end
+        end
+        format.js
       end
+      # respond_to do |format|
+      #  if @user.save
+      #    session[:current_user_id] = @user.id # not sure if we need to do more here?
+      #    Analytics::Tracker.track_signup_event @user
+      #    format.html { redirect_to root_path }
+      #  else
+      #    format.html { render template: 'sessions/index' }
+      #  end
+      # end
     end
     # rubocop:enable Metrics/MethodLength
 

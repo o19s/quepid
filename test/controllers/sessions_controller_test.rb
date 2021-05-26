@@ -16,6 +16,18 @@ class SessionsControllerTest < ActionController::TestCase
     assert_nil session[:current_user_id], 'does not set a user'
   end
 
+  test 'should not create session for invalid password html' do
+    post :create, params: { user: { email: 'doug@example.com', password: 'incorrect' }, format: :html }
+    assert_response :success
+
+    assert_template 'sessions/index'
+
+    message_template = 'Unknown email/password combo. Double check you have the correct email address and password, or sign up for a new account.'
+    alert_message = css_select('#error_explanation .alert').text.strip
+    assert_equal message_template, alert_message
+    assert_nil session[:current_user_id], 'does not set a user'
+  end
+
   test 'should not create session for unknown user' do
     post :create, params: { user: { email: 'floyd@example.com', password: 'floydster' }, format: :json }
     assert_response :unprocessable_entity

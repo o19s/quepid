@@ -5,10 +5,12 @@ module Users
     force_ssl if: :ssl_enabled?
     skip_before_action :require_login, only: [ :keycloakopenid, :google_oauth2, :failure ]
 
+    # rubocop:disable Metrics/AbcSize
     def keycloakopenid
       Rails.logger.debug(request.env['omniauth.auth'])
-      @user = User.from_omniauth_custom(request.env['omniauth.auth'])
-      if @user.persisted?
+      @user = create_user_from_omniauth(request.env['omniauth.auth'])
+      @user.errors.add(:base, "Can't log in a locked user." ) if @user.locked
+      if @user.persisted? & !@user.locked
         session[:current_user_id] = @user.id # this populates our session variable.
 
         # in this flow, we have a new user joining, so we create a empty case for them, which
@@ -24,12 +26,11 @@ module Users
       end
     end
 
-    # rubocop:disable Metrics/AbcSize
     def google_oauth2
       Rails.logger.debug(request.env['omniauth.auth'])
-      @user = User.from_omniauth_custom(request.env['omniauth.auth'])
+      @user = create_user_from_omniauth(request.env['omniauth.auth'])
       @user.errors.add(:base, "Can't log in a locked user." ) if @user.locked
-      if @user.persisted? & !@user.locked
+      if @user.errors.empty?
         session[:current_user_id] = @user.id # this populates our session variable.
 
         # in this flow, we have a new user joining, so we create a empty case for them, which
@@ -49,5 +50,39 @@ module Users
     def failure
       redirect_to root_path, alert: 'Could not sign user in with OAuth provider.'
     end
+
+    private
+
+    # rubocop:disable Metrics/AbcSize
+    # rubocop:disable Metrics/MethodLength
+    # rubocop:disable Layout/LineLength
+    def create_user_from_omniauth auth
+      if Rails.application.config.signup_enabled
+        user = User.find_or_initialize_by(email: auth['info']['email'])
+      else
+        user = User.find_by(email: auth['info']['email'])
+        if user.nil? # we looked for a existing user account and didn't find it
+          user = User.new(email: auth['info']['email'])
+          user.errors.add(:base, 'You can only sign in with already created users.' )
+        end
+      end
+
+      user.name = auth['info']['name']
+      user.password = 'fake' if user.password.blank? # If you don't have a password, fake it.
+      user.agreed = true
+
+      user.num_logins ||= 0
+      user.num_logins  += 1
+
+      user.profile_pic = auth['info']['image']
+      # user.access_token = auth['credentials']['token']
+      # user.refresh_token = auth['credentials']['refresh_token'] unless auth['credentials']['refresh_token'].nil?
+      # user.expires_at = auth['credentials']['expires_at'] unless auth['credentials']['refresh_token'].nil?
+      user.save! if user.errors.empty?
+      user
+    end
+    # rubocop:enable Metrics/AbcSize
+    # rubocop:enable Metrics/MethodLength
+    # rubocop:enable Layout/LineLength
   end
 end

@@ -65,7 +65,7 @@ module Api
           assert_response :bad_request
 
           error = JSON.parse(response.body)
-          assert_includes error['agreed'], 'You must agree to the terms and conditions.'
+          assert_includes error['agreed'], 'checkbox must be clicked to signify you agree to the terms and conditions.'
         end
 
         test 'encrypts the password' do

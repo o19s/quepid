@@ -21,10 +21,17 @@
 
       </div>
       <hr/>
-      <div ng-controller="LoginCtrl">
+      <div>
+        <%=controller.class.to_s%>
         <h4>Sign in via email:</h4>
         <%= form_with model: @user, url: users_login_path, id: 'login', html: { method: :post } do |f| %>
-
+          <% if controller.class.to_s.include?("SessionsController") && @user.errors.any? %>
+            <div id="error_explanation">
+              <div class="alert alert-danger">
+                Unknown email/password combo. Double check you have the correct email address and password, or sign up for a new account.
+              </div>
+            </div>
+          <% end %>
           <div class="form-group">
             <%= f.text_field :email, class: 'form-control email', placeholder: 'Email Address' %>
           </div>
@@ -43,20 +50,19 @@
       </div>
     </div>
 
-    <div class="col-md-1 or-block col-sm-2" ng-show="isSignupEnabled">
+    <% if Rails.application.config.signup_enabled %>
+    <div class="col-md-1 or-block col-sm-2">
       <h2>OR</h2>
     </div>
 
-    <div class="col-md-3 col-sm-4" ng-show="isSignupEnabled">
-      <div ng-controller="SignupCtrl" ng-cloak>
+    <div class="col-md-3 col-sm-4">
+      <div>
         <%= form_for(@user, url: users_signup_path, id: 'signup', html: { method: :post }) do |f| %>
 
           <h2>Sign up to get started!</h2>
-          <% if @user.errors.any? %>
+          <% if controller.class.to_s.include?("SignupsController") && @user.errors.any? %>
             <div id="error_explanation">
-              <h2><%= pluralize(resource.errors.count, "error") %> prohibited this invitation from being processed:</h2>
-
-              <% resource.errors.full_messages.each do |message| %>
+              <% @user.errors.full_messages.each do |message| %>
               <div class="alert alert-danger">
                 <%= message %>
               </div>
@@ -84,7 +90,7 @@
             <label>
               <%= f.check_box :agreed %>
               Agree to
-              <a ng-href="{{ termsAndConditionsUrl }}" target="_blank">terms &amp; conditions</a>?
+              <a href="<%= Rails.application.config.terms_and_conditions_url %>" target="_blank">terms &amp; conditions</a>?
             </label>
           </div>
           <% end %>
@@ -103,6 +109,7 @@
         <% end %>
       </div>
     </div>
+    <% end %>
   </div>
 
   <div class="row m-t-20">

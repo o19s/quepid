@@ -27,25 +27,6 @@
 
 # rubocop:disable Metrics/ClassLength
 class User < ApplicationRecord
-  class << self
-    def from_omniauth_custom auth
-      user = User.find_or_initialize_by(email: auth['info']['email'])
-
-      user.name = auth['info']['name']
-      user.password = 'fake' if user.password.blank? # If you don't have a password, fake it.
-      user.agreed = true
-
-      user.num_logins ||= 0
-      user.num_logins  += 1
-
-      user.profile_pic = auth['info']['image']
-      # user.access_token = auth['credentials']['token']
-      # user.refresh_token = auth['credentials']['refresh_token'] unless auth['credentials']['refresh_token'].nil?
-      # user.expires_at = auth['credentials']['expires_at'] unless auth['credentials']['refresh_token'].nil?
-      user.save!
-      user
-    end
-  end
   # Associations
   belongs_to :default_scorer, class_name: 'Scorer', optional: true # for communal scorers there isn't a owner
 
@@ -110,7 +91,7 @@ class User < ApplicationRecord
   validates_with ::DefaultScorerExistsValidator
 
   validates :agreed,
-            acceptance: { message: 'You must agree to the terms and conditions.' },
+            acceptance: { message: 'checkbox must be clicked to signify you agree to the terms and conditions.' },
             if:         :terms_and_conditions?
 
   def terms_and_conditions?

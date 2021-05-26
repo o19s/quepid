@@ -15,13 +15,19 @@ class SessionsController < ApplicationController
   def create
     login_params = user_params
 
-    user = login(login_params[:email], login_params[:password])
+    @user = login(login_params[:email], login_params[:password])
     respond_to do |format|
-      if user
+      if @user
         format.html { redirect_to root_path }
         format.json { render json: { message: 'connected' }, status: :ok }
       else
-        format.html { redirect_to sessions_path }
+        @user = User.new(email: login_params[:email])
+
+        # rubocop:disable Layout/LineLength
+        @user.errors.add(:base,
+                         'Unknown email/password combo. Double check you have the correct email address and password, or sign up for a new account.' )
+        # rubocop:enable Layout/LineLength
+        format.html { render :index }
         format.json { render json: { reason: @error }, status: :unprocessable_entity }
       end
     end
