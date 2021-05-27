@@ -1,5 +1,16 @@
 # Changelog
 
+## 6.5.2 - 2021-05-27
+
+### Improvements
+
+* We have a new Favicon, but didn't use it everywhere, so https://github.com/o19s/quepid/pull/363 by @epugh displays the new favicon everywhere.
+
+### Features
+
+* Rating documents where the image carries most of the information?   The existing `thumbnail:image_path` limits you to a 75 pixel wide image.  We now have `image:image_path` which displays a 200 pixel wide image.   This is an alternative to the `media:image_path` approach, as this shows up next to your fields versus inline with your fields.  https://github.com/o19s/quepid/pull/362 by @epugh fixes https://github.com/o19s/quepid/issues/360.
+
+
 ## 6.5.1 - 2021-05-25
 
 ### Bugs
