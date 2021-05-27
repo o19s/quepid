@@ -95,9 +95,4 @@ describe('Service: caseTryNavSvc', function () {
     expect(caseTryNavSvc.getCaseNo()).toBe(5);
     expect(caseTryNavSvc.getTryNo()).toBe(1);
   });
-
-
-  it('bookmark', function() {
-    console.log('bookmark');
-  });
 });

@@ -12,9 +12,13 @@ module Profile
   }.freeze
 
   def avatar_url size = :small
-    gravatar_id   = Digest::MD5.hexdigest(email.downcase)
-    gravatar_size = size_to_number size
-    "https://secure.gravatar.com/avatar/#{gravatar_id}.png?s=#{gravatar_size}&d=retro"
+    if profile_pic.present?
+      profile_pic
+    else
+      gravatar_id   = Digest::MD5.hexdigest(email.downcase)
+      gravatar_size = size_to_number size
+      "https://secure.gravatar.com/avatar/#{gravatar_id}.png?s=#{gravatar_size}&d=retro"
+    end
   end
 
   def display_name

@@ -14,7 +14,7 @@ class ProfilesControllerTest < ActionController::TestCase
       test 'returns an unauthorized error' do
         patch :update, params: { user: { name: 'new name' } }
 
-        assert_redirected_to secure_path
+        assert_redirected_to sessions_path
       end
     end
 

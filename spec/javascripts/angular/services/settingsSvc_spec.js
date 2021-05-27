@@ -388,12 +388,10 @@ describe('Service: settingsSvc', function () {
     settingsSvc.bootstrap(0, 0);
     $httpBackend.flush();
     var settingsId = settingsSvc.settingsId();
-    console.log('id1:' + settingsId);
     $httpBackend.expectDELETE('/api/cases/0/tries/1')
                 .respond(200);
     settingsSvc.deleteTry(1);
     $httpBackend.flush();
-    console.log('id2:' + settingsSvc.settingsId());
     expect(settingsSvc.settingsId()).not.toEqual(settingsId);
   });
 

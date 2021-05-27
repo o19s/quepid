@@ -22,7 +22,7 @@ services:
     env_file:
       - .env
     environment:
-      - LAUNCHY_DRY_RUN=true # dev only letter_opener gem wants to open a browser
+      - LAUNCHY_DRY_RUN=true # dev only letter_opener gem wants to open a browser when sending emails.
       - BROWSER=/dev/null
     volumes:
       - .:/srv/app
@@ -32,6 +32,23 @@ services:
     links:
       - mysql
       - redis
+      - keycloak
     depends_on:
       - mysql
       - redis
+      - keycloak
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:13.0.0
+    container_name: keycloak
+    hostname: keycloak
+    command: ["-b", "0.0.0.0", "-Dkeycloak.migration.action=import", "-Dkeycloak.migration.provider=dir", "-Dkeycloak.migration.dir=/opt/jboss/keycloak/realm-config", "-Dkeycloak.migration.strategy=OVERWRITE_EXISTING", "-Djboss.socket.binding.port-offset=1000", "-Dkeycloak.profile.feature.upload_scripts=enabled"]
+    ports:
+      - 9080:9080
+      - 9443:9443
+    environment:
+      KEYCLOAK_USER: admin
+      KEYCLOAK_PASSWORD: password
+      DB_VENDOR: h2
+    volumes:
+      - ./keycloak/realm-config:/opt/jboss/keycloak/realm-config

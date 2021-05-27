@@ -65,7 +65,7 @@ module Api
           assert_response :bad_request
 
           error = JSON.parse(response.body)
-          assert_includes error['agreed'], 'You must agree to the terms and conditions.'
+          assert_includes error['agreed'], 'checkbox must be clicked to signify you agree to the terms and conditions.'
         end
 
         test 'encrypts the password' do
@@ -139,7 +139,7 @@ module Api
       describe 'verify email marketing mode logic' do
         test 'accepts no email marketing field' do
           password = 'password'
-          data = { user: { email: 'foo@example.com', password: password } }
+          data = { user: { email: 'foo@example.com', password: password }, format: :json }
 
           post :create, params: data
           assert_response :ok

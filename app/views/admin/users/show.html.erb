@@ -3,6 +3,7 @@
   <h1><%= @user.display_name %></h1>
 
   <p id="notice"><%= notice %></p>
+  <%= image_tag @user.avatar_url(:big), size:'96x96', class:'img-rounded' %>
 
   <div class="form-group">
     <label class="col-sm-2 control-label">Username</label>

@@ -49,6 +49,7 @@ Below is information related to developing the Quepid open source project, prima
 - [Dev Errata](#dev-errata)
   - [I'd like to use a new Node module](#id-like-to-use-a-new-node-module)
   - [I'd like to test SSL](#id-like-to-test-ssl)
+  - [I'd like to test OpenID Auth](#id-like-to-test-openid-auth)
 - [QA](#qa)
   - [Seed Data](#seed-data)
 - [Data Map](#data-map)
@@ -454,6 +455,11 @@ What you need to do:
 8. Undo your Thin changes afterwords!
 
 **PS:** Why are we using both `puma` and `thin`? Because I simply could not figure out how to get `puma` to work properly with SSL and did not want to spend any more time on it!
+
+## I'd like to test OpenID Auth
+
+Add dev docs here!
+
 
 ## Modifying the database
 

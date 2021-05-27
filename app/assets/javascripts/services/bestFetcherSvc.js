@@ -3,7 +3,11 @@
 angular.module('QuepidApp')
   .service('bestFetcherSvc', [
     'docCacheSvc',
-    function bestFetcherSvc(docCacheSvc) {
+    '$log',
+    function bestFetcherSvc(
+      docCacheSvc,
+      $log
+    ) {
       var BestFetcher = function(ratingsStore) {
         this.docs = [];
 
@@ -41,11 +45,11 @@ angular.module('QuepidApp')
                 return docB.getRating() - docA.getRating();
               });
             }, function(response) {
-              console.log('Got an error from docCacheSvc.update: ', response);
+              $log.info('Got an error from docCacheSvc.update: ', response);
               return response;
             })
             .catch(function(response) {
-              console.log('Got an error from docCacheSvc.update: ', response);
+              $log.info('Got an error from docCacheSvc.update: ', response);
               return response;
             });
         };

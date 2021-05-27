@@ -156,8 +156,6 @@ describe('Service: teamSvc', function () {
     //var team = teamSvc.get(mockTeam.id, load_cases);
     $httpBackend.flush();
     //$httpBackend.verifyNoOutstandingExpectation();
-    //console.log("Lets see what we go");
-    //console.log(team);
     //expect(team.cases[0].caseName).toBe('Case');
 
   });
@@ -197,8 +195,6 @@ describe('Service: teamSvc', function () {
 
     teamSvc.inviteUserToJoin(mockTeam, mockInvitee.email).
       then(function(response) {
-        console.log("We expect 1 member, but we have " + mockTeam.members.length);
-        console.log(mockTeam.members);
         expect(mockTeam.members.length).toBe(1);
       });
     $httpBackend.flush();

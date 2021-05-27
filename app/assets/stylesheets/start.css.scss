@@ -1,10 +1,13 @@
 /*
- * This is a manifest file that'll be compiled into secure.css, which will include all the files
+ * This is a manifest file that'll be compiled into start.css, which will include all the files
  * listed below.
  */
 
 @import "style";
 @import "bootstrap";
+
+@import "font-awesome-sprockets";
+@import "font-awesome";
 
 @import "cookies_eu";
 

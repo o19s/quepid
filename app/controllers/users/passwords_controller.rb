@@ -6,7 +6,7 @@ module Users
     skip_before_action :require_login
     skip_before_action :require_no_authentication
 
-    layout 'secure'
+    layout 'start'
 
     # GET /resource/password/new
     # def new

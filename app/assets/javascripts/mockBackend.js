@@ -283,4 +283,4 @@ window.mockBackend = function(angModule) {
 };
 
 // declare for testing
-angular.module('QuepidTest', ['ngMock', 'ngRoute', 'QuepidApp', 'QuepidSecureApp']);
+angular.module('QuepidTest', ['ngMock', 'ngRoute', 'QuepidApp']);

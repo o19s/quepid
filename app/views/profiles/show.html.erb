@@ -2,7 +2,7 @@
   <div class="row">
     <div id="profile" class="col-xs-12 col-sm-6 col-sm-offset-3">
       <div class="avatar pull-left">
-        <%= image_tag current_user.avatar_url(:big), id: 'user-avatar', data: { avatar: 'big' } %>
+        <%= image_tag current_user.avatar_url(:big), id: 'user-avatar', size:'96x96', class:'img-rounded' %>
       </div>
 
       <div class="name pull-left">

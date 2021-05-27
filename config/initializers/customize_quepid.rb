@@ -68,3 +68,11 @@ Rails.application.config.email_sender = ENV.fetch('EMAIL_SENDER', '')
 # This lets you disable the sorting if you experience the bug.
 #
 Rails.application.config.query_list_sortable = bool.deserialize(ENV.fetch('QUERY_LIST_SORTABLE', true))
+
+# = OAuth Settings =
+# ==
+Rails.application.config.google_client_id = ENV.fetch('GOOGLE_CLIENT_ID', '')
+Rails.application.config.google_client_secret = ENV.fetch('GOOGLE_CLIENT_SECRET', '')
+
+Rails.application.config.keycloak_realm = ENV.fetch('KEYCLOAK_REALM', '')
+Rails.application.config.keycloak_site = ENV.fetch('KEYCLOAK_SITE', '')
