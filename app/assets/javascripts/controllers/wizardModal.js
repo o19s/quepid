@@ -212,8 +212,6 @@ angular.module('QuepidApp')
         angular.merge($scope.pendingWizardSettings, settingsSvc.editableSettings());
         $scope.pendingWizardSettings.newQueries = [];
 
-        console.log('User completedCaseWizard is ' + userSvc.getUser().completedCaseWizard);
-
         if(userSvc.getUser().completedCaseWizard===false){
           $scope.pendingWizardSettings.caseName = 'Movies Search';
           // should we be setting up more here?
