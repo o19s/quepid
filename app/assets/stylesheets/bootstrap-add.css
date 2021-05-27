@@ -544,6 +544,11 @@ header .dropdown-content li.dropdown-header {
 	text-align: center;
 }
 
+.result-image {
+	width: 200px;
+	text-align: center;
+}
+
 .score-all {
   margin-left: 15px;
 }
@@ -569,23 +574,36 @@ header .dropdown-content li.dropdown-header {
 	left: 0;
 }
 
-.col-thumbnail, .col-ratings-thumbnail {
+.col-thumbnail {
 	float: left;
 	width: 125px;
 	padding: 0;
 	margin-right: 0;
 }
 
+.col-image {
+	float: left;
+	width: 250px;
+	padding: 0;
+	margin-right: 0;
+}
+
 .col-summary-img {
 	position: relative;
-	padding-left: 130px !important;
+	/** padding-left: 130px !important; */
   min-height: 125px;
 }
 
 .col-summary-img .col-thumbnail {
-	position: absolute;
 	top: 10px;
 	left: 0;
+  padding-left:0;
+}
+
+.col-summary-img .col-image {
+	top: 10px;
+	left: 0;
+  padding-left:0;
 }
 
 .col-summary, .col-summary-header {
