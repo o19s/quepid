@@ -597,7 +597,7 @@ header .dropdown-content li.dropdown-header {
 .col-summary-image {
 	position: relative;
 	padding-left: 305px !important;
-  min-height: 125px;
+  min-height: 400px;
 }
 
 .col-summary-thumb .col-thumbnail {
