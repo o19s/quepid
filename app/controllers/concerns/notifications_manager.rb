@@ -6,7 +6,7 @@ module NotificationsManager
   private
 
   def email_notifications_enabled?
-    return !Rails.application.config.action_mailer.delivery_method.blank?
+    Rails.application.config.action_mailer.delivery_method.present?
   end
 
   def check_email
