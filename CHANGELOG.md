@@ -1,5 +1,13 @@
 # Changelog
 
+## 6.5.3 - 2021-06-01
+
+### Bugs
+
+* In 6.5.2 we introduced the `image:image_path` to show larger images, however there is odd wrapping if you don't have many fields listed for a doc.  https://github.com/o19s/quepid/pull/365 by @epugh fixes this.
+
+* If you didn't have email set up, then sending invites wouldn't work.  https://github.com/o19s/quepid/pull/369 by @epugh adds better handling for when email hasn't been set up for Quepid.
+
 ## 6.5.2 - 2021-05-27
 
 ### Improvements
