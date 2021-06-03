@@ -20,7 +20,7 @@ module Api
         if archived
           @no_tries = true
           @no_teams = true
-          @cases = Case.where(archived: archived, user_id: current_user.id).all
+          @cases = Case.where(archived: archived, owner_id: current_user.id).all
         else
           @cases = if 'last_viewed_at' == sort_by
                      current_user.cases_involved_with.not_archived.includes(:metadata).references(:metadata)

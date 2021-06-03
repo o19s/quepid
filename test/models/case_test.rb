@@ -36,7 +36,7 @@ class CaseTest < ActiveSupport::TestCase
       user.default_scorer = user_scorer
       user.save
 
-      acase = Case.create(case_name: 'with default scorer', user: user)
+      acase = Case.create(case_name: 'with default scorer', owner: user)
 
       assert_equal acase.scorer_id, user_scorer.id
       assert_equal acase.scorer_id, user.default_scorer_id
@@ -48,7 +48,7 @@ class CaseTest < ActiveSupport::TestCase
       user.default_scorer = q_scorer
       user.save
 
-      acase = Case.create(case_name: 'with q scorer', user: user)
+      acase = Case.create(case_name: 'with q scorer', owner: user)
 
       assert_equal acase.scorer_id, q_scorer.id
       assert_equal acase.scorer.communal, true
@@ -60,7 +60,7 @@ class CaseTest < ActiveSupport::TestCase
       user.default_scorer = user_scorer
       user.save
 
-      acase = Case.create(case_name: 'with default scorer', user: user)
+      acase = Case.create(case_name: 'with default scorer', owner: user)
 
       assert_equal acase.scorer_id,       user_scorer.id
       assert_equal acase.scorer_id,       user.default_scorer_id
@@ -71,7 +71,7 @@ class CaseTest < ActiveSupport::TestCase
       q_scorer2 = scorers(:quepid_default_scorer)
       user      = users(:random)
 
-      acase = Case.create(case_name: 'with default scorer', user: user)
+      acase = Case.create(case_name: 'with default scorer', owner: user)
 
       assert_equal acase.scorer_id, q_scorer2.id
       assert_equal acase.scorer.communal, true
@@ -85,7 +85,7 @@ class CaseTest < ActiveSupport::TestCase
       user.default_scorer = user_scorer
       user.save
 
-      acase = Case.create(case_name: 'with default scorer', user: user, scorer: case_scorer)
+      acase = Case.create(case_name: 'with default scorer', owner: user, scorer: case_scorer)
 
       assert_equal acase.scorer_id, case_scorer.id
       assert_not_equal acase.scorer_id, user_scorer.id
@@ -142,7 +142,7 @@ class CaseTest < ActiveSupport::TestCase
 
             assert_equal 1, cloned_case.tries.size
             assert_equal 0, cloned_case.queries.size
-            assert_equal user.id, cloned_case.user_id
+            assert_equal user.id, cloned_case.owner_id
 
             assert_equal 'Cloned Case', cloned_case.case_name
 
@@ -168,7 +168,7 @@ class CaseTest < ActiveSupport::TestCase
 
             assert_equal the_case.tries.count, cloned_case.tries.count
             assert_equal 0, cloned_case.queries.count
-            assert_equal user.id, cloned_case.user_id
+            assert_equal user.id, cloned_case.owner_id
 
             the_case.tries.each_with_index do |a_try, idx|
               assert_equal cloned_case.tries[idx].try_number, a_try.try_number
@@ -186,7 +186,7 @@ class CaseTest < ActiveSupport::TestCase
 
             assert_equal 1, cloned_case.tries.size
             assert_equal the_case.queries.size, cloned_case.queries.size
-            assert_equal user.id, cloned_case.user_id
+            assert_equal user.id, cloned_case.owner_id
             assert_equal 0, cloned_case.last_try_number
             assert_equal 0, cloned_case.tries.first.try_number
           end
@@ -213,7 +213,7 @@ class CaseTest < ActiveSupport::TestCase
             assert_equal 0, cloned_case.tries.first.try_number
             assert_equal the_case.queries.count, cloned_case.queries.count
             # assert_equal the_case.ratings.count, cloned_case.ratings.count
-            assert_equal user.id, cloned_case.user_id
+            assert_equal user.id, cloned_case.owner_id
           end
         end
       end
