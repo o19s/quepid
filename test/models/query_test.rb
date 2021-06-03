@@ -7,14 +7,11 @@
 #  id             :integer          not null, primary key
 #  arranged_next  :integer
 #  arranged_at    :integer
-#  deleted        :boolean
 #  query_text     :string(191)
 #  notes          :text(65535)
 #  threshold      :float(24)
 #  threshold_enbl :boolean
 #  case_id        :integer
-#  scorer_id      :integer
-#  scorer_enbl    :boolean
 #  created_at     :datetime         not null
 #  updated_at     :datetime         not null
 #  options        :text(65535)
@@ -83,7 +80,7 @@ class QueryTest < ActiveSupport::TestCase
       list = queries_case.queries
 
       previous_query = list.first
-      list[1..-1].each do |query|
+      list[1..].each do |query|
         assert previous_query.arranged_at < query.arranged_at
         assert_equal previous_query.arranged_next, query.arranged_at
         previous_query = query
@@ -176,20 +173,20 @@ class QueryTest < ActiveSupport::TestCase
     end
   end
 
-  describe 'Soft deletion' do
+  describe 'Deletion' do
     let(:query) { queries(:one) }
 
     test 'marks query as deleted but does not actually delete query' do
-      assert_difference 'Query.unscoped.where(deleted: true).count' do
-        query.soft_delete
-        query.reload
+      assert_difference 'Query.count', -1 do
+        query.destroy
 
-        assert_equal query.deleted, true
+        assert query.destroyed?
       end
     end
 
-    test 'does not fetch queries marked as deleted by default' do
-      query.soft_delete
+    test 'does not fetch queries destroyed' do
+      query.destroy
+      assert query.destroyed?
 
       queries = Query.all
       ids     = queries.map(&:id)
@@ -202,42 +199,6 @@ class QueryTest < ActiveSupport::TestCase
       ids     = queries.map(&:id)
 
       assert_includes ids, query.id
-    end
-
-    test 'returns query if deleted is marked as false' do
-      query.update deleted: false
-      queries = Query.all
-      ids     = queries.map(&:id)
-
-      assert_includes ids, query.id
-    end
-  end
-
-  describe 'test' do
-    let(:query) { queries(:one) }
-
-    test 'adds a new test' do
-      mytest = Scorer.new(code: 'pass();', query_test: true)
-      query.test = mytest
-      query.save
-
-      query.reload
-
-      assert_not_nil query.test
-      assert_equal 'pass();', query.test.code
-    end
-
-    test 'always fetches the last test' do
-      query.test = Scorer.new(code: 'pass();', query_test: true)
-      query.save
-      query.reload
-
-      query.test = Scorer.new(code: 'fail();', query_test: true)
-      query.save
-      query.reload
-
-      assert_not_nil query.test
-      assert_equal 'fail();', query.test.code
     end
   end
 

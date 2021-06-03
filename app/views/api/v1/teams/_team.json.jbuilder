@@ -11,18 +11,15 @@ json.scorers do
   json.array! team.scorers, partial: 'api/v1/scorers/scorer', as: :scorer
 end
 
-json.members team.members do |member|
-  json.id             member.id
-  json.display_name   member.display_name
-  json.email          member.email
-  json.avatar_url     member.avatar_url(:big)
+json.members do
+  json.array! team.members, partial: 'api/v1/team_members/member', as: :member
 end
 
 if load_cases
   json.cases do
-    # rubocop:disable Metrics/LineLength
-    json.array! team.cases, partial: 'api/v1/cases/case', as: :acase, locals: { shallow: true, no_teams: true, no_tries: true }
-    # rubocop:enable Metrics/LineLength
+    # rubocop:disable Layout/LineLength
+    json.array! team.cases, partial: 'api/v1/cases/case', as: :acase, locals: { shallow: true, no_teams: true, no_tries: false }
+    # rubocop:enable Layout/LineLength
   end
 end
 

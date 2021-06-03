@@ -75,14 +75,8 @@ describe('Controller: AddQueryCtrl', function () {
   };
 
   var mockUser = {
-    isTrial:          false,
-    queriesAdded:     0,
-    maxQueries:       5,
-    firstTime:        false,
-    queryAdded:       function() { this.queriesAdded++; },
-    queriesRemaining: function() {
-      return this.maxQueries - this.queriesAdded;
-    },
+    isTrial:              false,
+    completedCaseWizard:  true
   };
 
   var mockQueriesSvc;
@@ -130,7 +124,6 @@ describe('Controller: AddQueryCtrl', function () {
     promise.resolve();
     $rootScope.$apply();
 
-    expect($rootScope.currentUser.queriesAdded).toBe(1);
     var persistedQ = mockQueriesSvc.lastPersistedQ();
 
     expect(persistedQ).toBe(createdQ);

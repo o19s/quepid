@@ -22,9 +22,15 @@ angular.module('QuepidApp')
 
 
         angular.forEach(this.cases, function(c) {
-          // This is really ugly.
+          // This is really ugly.  We don't use our standard CaseSvc mapping, and probably should!
           c.caseName = c.case_name;
+          c.ownerName = c.owner_name;
           c.lastTry  = c.last_try_number;
+        });
+
+        angular.forEach(this.scorers, function(s) {
+          // This is really ugly.  We don't use our standard ScorerFactory mapping, and probably should!
+          s.ownerName = s.owner_name;
         });
 
 
@@ -171,6 +177,25 @@ angular.module('QuepidApp')
       this.addMemberByEmail = function(team, email) {
         // http POST /api/teams/<int:teamId>/members
         var url   = '/api/teams/' + team.id + '/members';
+        var data  = { id:  email };
+
+        if ( team.members === undefined ) {
+          team.members = [];
+        }
+
+        return $http.post(url, data)
+          .then(function(response) {
+            var member = response.data;
+
+            if ( !hasMember(team, member) ) {
+              team.members.push(member);
+            }
+          });
+      };
+
+      this.inviteUserToJoin = function(team, email) {
+        // http POST /api/teams/<int:teamId>/members/invite
+        var url   = '/api/teams/' + team.id + '/members/invite';
         var data  = { id:  email };
 
         if ( team.members === undefined ) {

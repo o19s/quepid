@@ -5,12 +5,11 @@ module Api
     class QueriesController < Api::ApiController
       before_action :find_case
       before_action :check_case
-      before_action :set_query,   only: %i[update destroy]
-      before_action :check_query, only: %i[update destroy]
+      before_action :set_query,   only: [ :update, :destroy ]
+      before_action :check_query, only: [ :update, :destroy ]
 
       def index
-        @queries = @case.queries
-          .includes(%i[ ratings test scorer ])
+        @queries = @case.queries.includes([ :ratings ])
 
         @display_order = @queries.map(&:id)
 
@@ -23,7 +22,7 @@ module Api
         q_params[:query_text] = q_params[:query_text].strip if q_params[:query_text]
 
         query = 'BINARY query_text = ?'
-        if @case.queries.where(query, q_params[:query_text]).exists?
+        if @case.queries.exists?([ query, q_params[:query_text] ])
           head :no_content
           return
         end
@@ -73,7 +72,7 @@ module Api
 
       def destroy
         @query.remove_from_list
-        @query.soft_delete
+        @query.destroy
         Analytics::Tracker.track_query_deleted_event current_user, @query
 
         # Make sure queries have the right `arranged_next` and `arranged_at`

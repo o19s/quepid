@@ -24,8 +24,7 @@ module Api
               rating: 4,
             }
 
-            put :update, case_id: acase.id, query_id: query.id, rating: rating
-
+            put :update, params: { case_id: acase.id, query_id: query.id, rating: rating }
             assert_response :ok
 
             data = JSON.parse(response.body)
@@ -47,8 +46,7 @@ module Api
               rating: 5,
             }
 
-            put :update, case_id: acase.id, query_id: query.id, rating: rating
-
+            put :update, params: { case_id: acase.id, query_id: query.id, rating: rating }
             assert_response :ok
 
             data = JSON.parse(response.body)
@@ -70,8 +68,8 @@ module Api
               doc_id: doc_id,
               rating: 5,
             }
-            put :update, case_id: acase.id, query_id: query.id, rating: rating
 
+            put :update, params: { case_id: acase.id, query_id: query.id, rating: rating }
             assert_response :ok
 
             data = JSON.parse(response.body)
@@ -104,8 +102,7 @@ module Api
               method: :put
             )
 
-            put :update, case_id: acase.id, query_id: query.id, rating: rating
-
+            put :update, params: { case_id: acase.id, query_id: query.id, rating: rating }
             assert_response :ok
 
             data = JSON.parse(response.body)
@@ -136,8 +133,7 @@ module Api
               method: :put
             )
 
-            put :update, case_id: acase.id, query_id: query.id, rating: rating
-
+            put :update, params: { case_id: acase.id, query_id: query.id, rating: rating }
             assert_response :ok
 
             data = JSON.parse(response.body)
@@ -169,8 +165,7 @@ module Api
               method: :put
             )
 
-            put :update, case_id: acase.id, query_id: query.id, rating: rating
-
+            put :update, params: { case_id: acase.id, query_id: query.id, rating: rating }
             assert_response :ok
 
             data = JSON.parse(response.body)
@@ -191,8 +186,7 @@ module Api
               rating: 5,
             }
 
-            put :update, case_id: acase.id, query_id: query.id, rating: rating
-
+            put :update, params: { case_id: acase.id, query_id: query.id, rating: rating }
             assert_response :ok
 
             data = JSON.parse(response.body)
@@ -217,8 +211,7 @@ module Api
               }
 
               perform_enqueued_jobs do
-                put :update, case_id: acase.id, query_id: query.id, rating: rating
-
+                put :update, params: { case_id: acase.id, query_id: query.id, rating: rating }
                 assert_response :ok
               end
             end
@@ -233,8 +226,7 @@ module Api
             }
             query.ratings.create(doc_id: doc_id, rating: 1)
 
-            delete :destroy, case_id: acase.id, query_id: query.id, rating: rating
-
+            delete :destroy, params: { case_id: acase.id, query_id: query.id, rating: rating }
             assert_response :no_content
 
             rating = query.ratings.where(doc_id: doc_id).first
@@ -253,8 +245,7 @@ module Api
               query.ratings.create(doc_id: doc_id, rating: 1)
 
               perform_enqueued_jobs do
-                delete :destroy, case_id: acase.id, query_id: query.id, rating: rating
-
+                delete :destroy, params: { case_id: acase.id, query_id: query.id, rating: rating }
                 assert_response :no_content
               end
             end

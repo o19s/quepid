@@ -25,7 +25,7 @@ namespace :karma  do
   def cleanup_assets
     puts 'Cleanup_assets...'.yellow
 
-    rm_rf Rails.root.join('tmp', 'cache', 'assets', 'test')
+    rm_rf Rails.root.join('tmp/cache/assets/test')
 
     ::Rake.application['assets:environment'].invoke
 
@@ -66,7 +66,7 @@ namespace :karma  do
   end
 
   def set_assets_path
-    dir = Rails.root.join('tmp', 'assets').to_s
+    dir = Rails.root.join('tmp/assets').to_s
 
     # temporarily set the static assets location from public/assets to the
     # tmp directory

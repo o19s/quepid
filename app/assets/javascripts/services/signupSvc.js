@@ -19,7 +19,7 @@ angular.module('QuepidSecureApp')
           errorHandler = function() {};
         }
 
-        user.agree = true;
+        user.agreed = true;
 
         var user_params = {
           user: user

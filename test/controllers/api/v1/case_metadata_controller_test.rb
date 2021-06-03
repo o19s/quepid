@@ -20,7 +20,7 @@ module Api
           date        = DateTime.current
           date_param  = date.strftime('%F %T')
 
-          put :update, case_id: acase.id, metadata: { last_viewed_at: date_param }
+          put :update, params: { case_id: acase.id, metadata: { last_viewed_at: date_param } }
 
           assert_response :no_content
 
@@ -37,7 +37,7 @@ module Api
           date        = DateTime.current
           date_param  = date.strftime('%F %T')
 
-          put :update, case_id: acase.id, metadata: { last_viewed_at: date_param }
+          put :update, params: { case_id: acase.id, metadata: { last_viewed_at: date_param } }
 
           assert_response :no_content
 

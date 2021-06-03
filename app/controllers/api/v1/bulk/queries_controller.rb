@@ -36,7 +36,7 @@ module Api
           if Query.import queries_to_import
 
             @case.reload
-            @queries        = @case.queries.includes(%i[ratings test])
+            @queries        = @case.queries.includes([ :ratings ])
             @display_order  = @queries.map(&:id)
 
             respond_with @queries, @display_order

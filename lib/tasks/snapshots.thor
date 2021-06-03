@@ -42,7 +42,7 @@ class Snapshots < Thor
     begin
       data    = ::CSV.read(filepath)
       opts    = { show_progress: true }
-      opts    = opts.merge(logger: Logger.new(STDOUT)) if options[:logger]
+      opts    = opts.merge(logger: Logger.new($stdout)) if options[:logger]
 
       snapshot_params = {
         case_id: acase.id,

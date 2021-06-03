@@ -34,6 +34,6 @@ The last remaining piece of the puzzle is `Snapshot`/`SnapshotQuery`/`SnapshotDo
 
 Quepid provides scorers that are written by the OSC team for everyone to use, those `Scorer`'s are tagged with the `communal` flag as `true`, and the default scorers are created when seeding the db (using `bin/rake db:seed` or `bin/rake db:setup`).
 
-## Diagram
+## Entity Resolution Diagram
 
-See the [model diagram](erd.pdf).
+![model diagram](erd.png).

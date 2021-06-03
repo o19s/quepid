@@ -67,13 +67,13 @@ case_with_one_try:
   user: :joey
   archived: false
   case_name: Case with one try
-  last_try_number: 0
+  last_try_number: 1
 
 case_with_two_tries:
   user: :joey
   archived: false
   case_name: Case with two tries
-  last_try_number: 1
+  last_try_number: 2
 
 owned_case:
   user:     :case_finder_user
@@ -188,4 +188,9 @@ case_with_score_for_first_try:
 case_with_score:
   user:     :random
   case_name: case_with_score
+  archived: false
+
+case_owned_by_team_owner:
+  user:     :team_owner
+  case_name: Case owned by Case Finder User
   archived: false

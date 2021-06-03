@@ -12,7 +12,7 @@
 #  updated_at :datetime         not null
 #
 
-class Rating < ActiveRecord::Base
+class Rating < ApplicationRecord
   belongs_to :query
 
   # arguably we shouldn't need this, however today you can have a rating object that doesn't have a

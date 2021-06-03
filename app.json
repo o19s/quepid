@@ -69,6 +69,12 @@
     },
     "QUEPID_DEFAULT_SCORER": {
       "required": true
+    },
+    "EMAIL_PROVIDER": {
+      "required": true
+    },
+    "EMAIL_SENDER": {
+      "required": true
     }
   },
   "formation": {
@@ -82,5 +88,5 @@
   "name": "quepid",
   "scripts": {
   },
-  "stack": "heroku-16"
+  "stack": "heroku-20"
 }

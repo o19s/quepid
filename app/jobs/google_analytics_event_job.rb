@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class GoogleAnalyticsEventJob < ActiveJob::Base
+class GoogleAnalyticsEventJob < ApplicationJob
   queue_as :default
 
   def perform data

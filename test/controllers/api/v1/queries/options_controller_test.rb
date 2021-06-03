@@ -18,7 +18,7 @@ module Api
 
         describe 'Fetches query options' do
           test 'returns nil if the query has no options' do
-            get :show, case_id: acase.id, query_id: query.id
+            get :show, params: { case_id: acase.id, query_id: query.id }
 
             assert_response :ok
 
@@ -32,7 +32,7 @@ module Api
             query.options = options
             query.save
 
-            get :show, case_id: acase.id, query_id: query.id
+            get :show, params: { case_id: acase.id, query_id: query.id }
 
             assert_response :ok
 
@@ -46,7 +46,7 @@ module Api
           test 'sets the new query options successfully' do
             options = "{ foo: 'bar' }"
 
-            put :update, case_id: acase.id, query_id: query.id, query: { options: options }
+            put :update, params: { case_id: acase.id, query_id: query.id, query: { options: options } }
 
             assert_response :ok
 
@@ -64,7 +64,7 @@ module Api
               options = "{ foo: 'bar' }"
 
               perform_enqueued_jobs do
-                put :update, case_id: acase.id, query_id: query.id, query: { options: options }
+                put :update, params: { case_id: acase.id, query_id: query.id, query: { options: options } }
 
                 assert_response :ok
               end

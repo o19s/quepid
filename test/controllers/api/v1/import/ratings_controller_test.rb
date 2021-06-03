@@ -27,7 +27,7 @@ module Api
               ],
             }
             assert_difference 'acase.queries.count' do
-              post :create, data
+              post :create, params: data
 
               assert_response :ok
             end
@@ -43,7 +43,7 @@ module Api
               ],
             }
             assert_no_difference 'acase.queries.count' do
-              post :create, data
+              post :create, params: data
 
               assert_response :ok
             end
@@ -59,7 +59,7 @@ module Api
               ],
             }
             assert_difference 'Rating.count', 3 do
-              post :create, data
+              post :create, params: data
 
               assert_response :ok
             end
@@ -80,7 +80,7 @@ module Api
             assert_not_equal rating.rating, 1
 
             assert_no_difference 'Rating.count' do
-              post :create, data
+              post :create, params: data
 
               assert_response :ok
 
@@ -101,7 +101,7 @@ module Api
             }
 
             assert_difference 'Rating.count', -1 do
-              post :create, data
+              post :create, params: data
 
               assert_response :ok
             end
@@ -117,15 +117,13 @@ module Api
                 { query_text: 'dog', doc_id: '456', rating: 3 }
               ],
             }
+            assert_not query.destroyed?
             assert_no_difference 'acase.queries.count' do
-              post :create, data
+              post :create, params: data
 
               assert_response :ok
             end
-
-            query.reload
-
-            assert query.deleted
+            assert_not Query.exists?(query.id)
           end
         end
         describe '#create from RRE' do
@@ -139,7 +137,7 @@ module Api
             }
 
             assert_difference 'acase.queries.count' do
-              post :create, data
+              post :create, params: data
               assert_response :ok
             end
           end

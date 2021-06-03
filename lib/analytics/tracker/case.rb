@@ -19,6 +19,10 @@ module Analytics
         Analytics::GA.user_archived_case user, acase
       end
 
+      def track_case_deleted_event user, acase
+        Analytics::GA.user_deleted_case user, acase
+      end
+
       def track_case_shared_event user, acase, team
         Analytics::GA.user_shared_case user, acase, team
       end

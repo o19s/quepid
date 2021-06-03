@@ -4,11 +4,14 @@ require 'colorize'
 require 'jshint/lint'
 
 namespace :test do
-  desc 'Run js/karma tests (equivalent of kamra:run)'
+  desc 'Run js/karma tests (equivalent of karma:run)'
   task 'js' => 'karma:run'
 
-  desc 'Run all tests: test:js, test:jshint, and test'
-  task quepid: [ 'test:js', 'test:jshint', 'test' ]
+  desc 'Run all frontend tasks: test:js, test:jshint'
+  task frontend: :environment do
+    Rake::Task['test:js'].invoke
+    Rake::Task['test:jshint'].invoke
+  end
 
   desc 'Run jshint on js files using configuration under config/jshint.yml'
   task jshint: :environment do
@@ -43,5 +46,14 @@ namespace :db do
       ENV['SEED_LARGE_CASES'] = 'true'
       Rake::Task['db:seed'].invoke
     end
+  end
+end
+
+namespace :erd do
+  desc 'Generate Entity Relationship Diagram'
+  task image: :environment do
+    system 'erd --inheritance --filetype=dot --direct --attributes=foreign_keys,content,inheritance'
+    system 'dot -Tpng erd.dot > docs/erd.png'
+    File.delete('erd.dot')
   end
 end

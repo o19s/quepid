@@ -82,6 +82,21 @@ class CaseScoreManagerTest < ActiveSupport::TestCase
           assert_equal the_case.last_score.score, score_data[:score]
         end
       end
+
+      test 'gets the try from the try_number parameter' do
+        assert_difference 'the_case.scores.count' do
+          # remove the try_id and add the try_number
+          score_data.except!(:try_id)
+          score_data[:try_number] = the_try.try_number
+
+          service.update score_data
+
+          the_case.reload
+
+          assert_not_nil the_case.last_score
+          assert_equal the_case.last_score.score, score_data[:score]
+        end
+      end
     end
 
     describe 'case with a score for one of the tries' do

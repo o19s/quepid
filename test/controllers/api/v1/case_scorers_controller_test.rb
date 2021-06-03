@@ -18,7 +18,7 @@ module Api
         let(:scorer)  { scorers(:for_case_with_scorer) }
 
         test 'returns all scorers owned by user and those shared through teams' do
-          get :index, case_id: acase.id
+          get :index, params: { case_id: acase.id }
 
           assert_response :ok
 
@@ -29,11 +29,10 @@ module Api
             'communal'            => scorer.communal,
             'code'                => scorer.code,
             'name'                => scorer.name,
-            'queryTest'           => scorer.query_test,
             'scale'               => scorer.scale,
             'owner_id'            => scorer.owner_id,
             'owned'               => false,
-            'queryId'             => scorer.query_id,
+            'owner_name'          => scorer.owner.name,
             'manualMaxScore'      => scorer.manual_max_score,
             'manualMaxScoreValue' => scorer.manual_max_score_value,
             'showScaleLabels'     => scorer.show_scale_labels,
@@ -42,7 +41,6 @@ module Api
           }
 
           assert_equal expected_response, data['default']
-          assert_instance_of Array, data['user_scorers']
         end
       end
 
@@ -51,7 +49,7 @@ module Api
         let(:scorer)  { scorers(:valid) }
 
         test 'sets a default scorer successfully' do
-          put :update, case_id: acase.id, id: scorer.id
+          put :update, params: { case_id: acase.id, id: scorer.id }
 
           assert_response :ok
 
@@ -63,25 +61,24 @@ module Api
           acase.scorer = scorer
           acase.save!
 
-          put :update, case_id: acase.id, id: 0
+          put :update, params: { case_id: acase.id, id: 0 }
 
           assert_response :ok
 
           acase.reload
-          assert_nil acase.scorer_id
-          assert_nil acase.scorer
+          assert_equal acase.scorer.name, Scorer.system_default_scorer.name
         end
 
         test 'returns an error if scorer does not exist' do
-          put :update, case_id: acase.id, id: 'foo'
+          put :update, params: { case_id: acase.id, id: 'foo' }
 
           assert_response :bad_request
 
           assert_equal json_response['scorer_id'], [ 'is not valid' ]
 
           acase.reload
-          assert_nil acase.scorer_id
-          assert_nil acase.scorer
+
+          assert_equal acase.scorer.name, Scorer.system_default_scorer.name
         end
       end
     end

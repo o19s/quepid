@@ -17,7 +17,7 @@ module Api
         let(:acase) { cases(:queries_case) }
 
         test 'requires query text' do
-          post :create, case_id: acase.id, query: { query_text: nil }
+          post :create, params: { case_id: acase.id, query: { query_text: nil } }
 
           assert_response :bad_request
 
@@ -26,7 +26,7 @@ module Api
 
         test 'to the end of the query list if no position is provided' do
           query_text = 'New Query'
-          post :create, case_id: acase.id, query: { query_text: query_text }
+          post :create, params: { case_id: acase.id, query: { query_text: query_text } }
 
           assert_response :ok
 
@@ -44,7 +44,7 @@ module Api
 
         test 'return the new display order of the queries' do
           query_text = 'New Query'
-          post :create, case_id: acase.id, query: { query_text: query_text }
+          post :create, params: { case_id: acase.id, query: { query_text: query_text } }
 
           assert_response :ok
 
@@ -57,7 +57,7 @@ module Api
         test 'at the proper position when one is provided' do
           query_text  = 'New Query'
           position    = 2
-          post :create, case_id: acase.id, query: { query_text: query_text }, position: 2
+          post :create, params: { case_id: acase.id, query: { query_text: query_text }, position: 2 }
 
           assert_response :ok
 
@@ -75,7 +75,7 @@ module Api
 
         test 'with special characters in name' do
           query_text = 'New Query 会议'
-          post :create, case_id: acase.id, query: { query_text: query_text }
+          post :create, params: { case_id: acase.id, query: { query_text: query_text } }
 
           assert_response :ok
 
@@ -88,7 +88,7 @@ module Api
 
         test 'handles when query already exists' do
           query_text = 'New Query'
-          post :create, case_id: acase.id, query: { query_text: query_text }
+          post :create, params: { case_id: acase.id, query: { query_text: query_text } }
 
           assert_response :ok
 
@@ -101,7 +101,7 @@ module Api
           count = acase.queries.count
 
           query_text = 'New Query'
-          post :create, case_id: acase.id, query: { query_text: query_text }
+          post :create, params: { case_id: acase.id, query: { query_text: query_text } }
 
           assert_response :no_content
 
@@ -113,7 +113,7 @@ module Api
 
         test 'strips whitespace from query text' do
           query_text = 'New Query '
-          post :create, case_id: acase.id, query: { query_text: query_text }
+          post :create, params: { case_id: acase.id, query: { query_text: query_text } }
 
           assert_response :ok
 
@@ -126,7 +126,7 @@ module Api
           count = acase.queries.count
 
           query_text = ' New Query'
-          post :create, case_id: acase.id, query: { query_text: query_text }
+          post :create, params: { case_id: acase.id, query: { query_text: query_text } }
 
           assert_response :no_content
 
@@ -140,7 +140,7 @@ module Api
           query_text = 'dog'
 
           assert_difference 'acase.queries.count' do
-            post :create, case_id: acase.id, query: { query_text: query_text }
+            post :create, params: { case_id: acase.id, query: { query_text: query_text } }
 
             assert_response :ok
 
@@ -152,7 +152,7 @@ module Api
           query_text = 'Dog'
 
           assert_difference 'acase.queries.count' do
-            post :create, case_id: acase.id, query: { query_text: query_text }
+            post :create, params: { case_id: acase.id, query: { query_text: query_text } }
 
             assert_response :ok
 
@@ -164,7 +164,7 @@ module Api
           query_text = 'DoG'
 
           assert_difference 'acase.queries.count' do
-            post :create, case_id: acase.id, query: { query_text: query_text }
+            post :create, params: { case_id: acase.id, query: { query_text: query_text } }
 
             assert_response :ok
 
@@ -176,7 +176,7 @@ module Api
           query_text = 'dOg'
 
           assert_difference 'acase.queries.count' do
-            post :create, case_id: acase.id, query: { query_text: query_text }
+            post :create, params: { case_id: acase.id, query: { query_text: query_text } }
 
             assert_response :ok
 
@@ -193,7 +193,7 @@ module Api
             query_text = 'New Query'
 
             perform_enqueued_jobs do
-              post :create, case_id: acase.id, query: { query_text: query_text }
+              post :create, params: { case_id: acase.id, query: { query_text: query_text } }
 
               assert_response :ok
             end
@@ -205,7 +205,7 @@ module Api
         let(:acase) { cases(:queries_case) }
 
         test 'returns case queries in order' do
-          get :index, case_id: acase.id
+          get :index, params: { case_id: acase.id }
 
           assert_response :ok
 
@@ -224,7 +224,7 @@ module Api
 
         test "removes query from case queries array and updates other queries' position" do
           assert_difference 'acase.queries.count', -1 do
-            delete :destroy, case_id: acase.id, id: query.id
+            delete :destroy, params: { case_id: acase.id, id: query.id }
 
             assert_response :no_content
 
@@ -237,14 +237,14 @@ module Api
           query.ratings.create doc_id: 'foo', rating: 1
 
           assert_difference 'acase.queries.count', -1 do
-            delete :destroy, case_id: acase.id, id: query.id
+            delete :destroy, params: { case_id: acase.id, id: query.id }
 
             assert_response :no_content
           end
         end
 
         test 'returns a not found error if query does not exist' do
-          delete :destroy, case_id: acase.id, id: 'foo'
+          delete :destroy, params: { case_id: acase.id, id: 'foo' }
 
           assert_response :not_found
         end
@@ -254,7 +254,7 @@ module Api
             expects_any_ga_event_call
 
             perform_enqueued_jobs do
-              delete :destroy, case_id: acase.id, id: query.id
+              delete :destroy, params: { case_id: acase.id, id: query.id }
 
               assert_response :no_content
             end
@@ -268,14 +268,14 @@ module Api
         let(:query)         { queries(:first_query) }
 
         test 'returns a not found error if other case does not exist' do
-          patch :update, case_id: original_case.id, id: query.id, other_case_id: 'foo'
+          patch :update, params: { case_id: original_case.id, id: query.id, other_case_id: 'foo' }
 
           assert_response :not_found
         end
 
         test 'removes query from original case and reorders case queries' do
           assert_difference 'original_case.queries.count', -1 do
-            patch :update, case_id: original_case.id, id: query.id, other_case_id: other_case.id
+            patch :update, params: { case_id: original_case.id, id: query.id, other_case_id: other_case.id }
 
             assert_response :ok
 
@@ -295,7 +295,7 @@ module Api
         end
 
         test 'adds query to the other case at the top of the queries list' do
-          patch :update, case_id: original_case.id, id: query.id, other_case_id: other_case.id
+          patch :update, params: { case_id: original_case.id, id: query.id, other_case_id: other_case.id }
 
           assert_response :ok
 
@@ -310,7 +310,7 @@ module Api
             expects_any_ga_event_call
 
             perform_enqueued_jobs do
-              patch :update, case_id: original_case.id, id: query.id, other_case_id: other_case.id
+              patch :update, params: { case_id: original_case.id, id: query.id, other_case_id: other_case.id }
 
               assert_response :ok
             end

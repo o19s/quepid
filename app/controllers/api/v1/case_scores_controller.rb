@@ -7,7 +7,7 @@ module Api
       before_action :check_case
 
       def index
-        @scores = @case.scores.includes(:annotation).limit(10)
+        @scores = @case.scores.includes(:annotation, :user).limit(10)
 
         respond_with @scores
       end
@@ -39,18 +39,14 @@ module Api
 
       private
 
-      # There is a weird thing where for some reason our params object has both
-      # a "score" and a "case_score" hash of params, and they are identical, even
-      # though the front end only submits a "score" hash.  Some sort of magic.
-      # this leads to a Unpermitted parameter: queries
       def score_params
         params.require(:case_score).permit(
           :score,
           :all_rated,
-          :try_id
-        ).tap do |whitelisted|
-          whitelisted[:queries] = params[:case_score][:queries] if params[:case_score][:queries]
-        end
+          :try_number,
+          :try_id,
+          queries: [ :text, :score, :maxScore, :numFound ]
+        )
       end
     end
   end

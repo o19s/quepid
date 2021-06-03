@@ -5,15 +5,15 @@ require 'cgi'
 module SolrArgParser
   def self.parse query_string, vars = {}
     # join lines, remove extraneous whitespace
+    # rubocop:disable Style/RedundantArgument
     query_string = query_string.lines.map(&:strip).join('')
+    # rubocop:enable Style/RedundantArgument
 
     # escape kernel::sprintf formatting character
     query_string.gsub!('%', '%%')
 
     # ready string to accept curator vars
-    # rubocop:disable Style/FormatStringToken
     vars.each { |key, _value| query_string.gsub!(format('##%s##', key), "%{#{key}}") }
-    # rubocop:enable Style/FormatStringToken
 
     # interpolate curator vars
     query_string = query_string % vars

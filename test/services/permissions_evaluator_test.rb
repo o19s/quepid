@@ -24,6 +24,7 @@ class PermissionsEvaluatorTest < ActiveSupport::TestCase
       let(:user) { User.create(email: 'foo@example.com', password: 'bar') }
 
       before do
+        user.cases << Case.create(case_name: 'Archived Case')
         user.cases.first.mark_archived!
       end
 

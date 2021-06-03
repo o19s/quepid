@@ -24,7 +24,7 @@ module Api
           count     = joe.cases.count
           case_name = 'test case'
 
-          post :create, case_name: case_name
+          post :create, params: { case: { case_name: case_name } }
 
           assert_response :ok
 
@@ -34,7 +34,7 @@ module Api
         end
 
         test 'requires a case name' do
-          post :create
+          post :create, params: { case: { name: '' } }
 
           assert_response :bad_request
 
@@ -45,7 +45,7 @@ module Api
         test 'creates an initial defaults try' do
           case_name = 'test case'
 
-          post :create, case_name: case_name
+          post :create, params: { case: { case_name: case_name } }
 
           assert_response :ok
 
@@ -62,7 +62,7 @@ module Api
             case_name = 'test case'
 
             perform_enqueued_jobs do
-              post :create, case_name: case_name
+              post :create, params: { case: { case_name: case_name } }
 
               assert_response :ok
             end
@@ -77,12 +77,12 @@ module Api
         let(:joey) { users(:joey) }
 
         test "returns a not found error if the case is not in the signed in user's case list" do
-          get :show, case_id: matt_case.id
+          get :show, params: { case_id: matt_case.id }
           assert_response :not_found
         end
 
         test 'returns case info' do
-          get :show, case_id: the_case.id
+          get :show, params: { case_id: the_case.id }
           assert_response :ok
 
           body = JSON.parse(response.body)
@@ -94,13 +94,13 @@ module Api
         test 'returns tries from newest to oldest' do
           login_user joey
 
-          get :show, case_id: case_with_two_tries.id
+          get :show, params: { case_id: case_with_two_tries.id }
           assert_response :ok
 
           body = JSON.parse(response.body)
 
-          assert_equal body['tries'][0]['try_number'], 1
-          assert_equal body['tries'][1]['try_number'], 0
+          assert_equal body['tries'][0]['try_number'], 2
+          assert_equal body['tries'][1]['try_number'], 1
         end
       end
 
@@ -108,7 +108,7 @@ module Api
         let(:the_case) { cases(:one) }
 
         before do
-          get :show, case_id: the_case.id
+          get :show, params: { case_id: the_case.id }
           @body = JSON.parse(response.body)
         end
 
@@ -145,10 +145,10 @@ module Api
             login_user matt
           end
 
-          test 'return a forbidden error' do
-            delete :destroy, case_id: the_case.id
+          test 'is perfectly okay, which is a different than before!' do
+            post :update, params: { case_id: the_case.id, case: { archived: true } }
 
-            assert_response :forbidden
+            assert_response :ok
           end
         end
 
@@ -159,8 +159,8 @@ module Api
             count_unarchived  = doug.cases.where(archived: false).count
             count_archived    = doug.cases.where(archived: true).count
 
-            delete :destroy, case_id: one.id
-            assert_response :no_content
+            put :update, params: { case_id: one.id, case: { archived: true } }
+            assert_response :ok
 
             assert_equal count_unarchived - 1,  doug.cases.where(archived: false).count
             assert_equal count_archived + 1,    doug.cases.where(archived: true).count
@@ -174,7 +174,50 @@ module Api
             expects_any_ga_event_call
 
             perform_enqueued_jobs do
-              delete :destroy, case_id: one.id
+              put :update, params: { case_id: one.id, case: { archived: true } }
+              assert_response :ok
+            end
+          end
+        end
+      end
+
+      describe 'Deleting a case' do
+        describe 'when it is the last/only case' do
+          let(:matt)      { users(:matt) }
+          let(:the_case)  { cases(:matt_case) }
+
+          before do
+            login_user matt
+          end
+
+          test 'is perfectly okay, it was old orthodoxy that every user has a case' do
+            delete :destroy, params: { case_id: the_case.id }
+            assert_response :no_content
+          end
+        end
+
+        describe 'when it is not the last/only case' do
+          let(:one) { cases(:one) }
+
+          test 'successfully deletes the case' do
+            count_cases = doug.cases.count
+
+            delete :destroy, params: { case_id: one.id }
+            assert_response :no_content
+
+            doug.cases.reload
+            assert_equal count_cases - 1, doug.cases.count
+          end
+        end
+
+        describe 'analytics' do
+          let(:one) { cases(:one) }
+
+          test 'posts event' do
+            expects_any_ga_event_call
+
+            perform_enqueued_jobs do
+              delete :destroy, params: { case_id: one.id }
               assert_response :no_content
             end
           end
@@ -186,17 +229,17 @@ module Api
 
         describe 'when case does not exist' do
           test 'returns not found error' do
-            patch :update, case_id: 'foo', case_name: 'foo'
+            patch :update, params: { case_id: 'foo', case_name: 'foo' }
             assert_response :not_found
 
-            put :update, case_id: 'foo', case_name: 'foo'
+            put :update, params: { case_id: 'foo', case_name: 'foo' }
             assert_response :not_found
           end
         end
 
         describe 'when changing the case name' do
           test 'updates name successfully using PATCH verb' do
-            patch :update, case_id: one.id, case_name: 'New Name'
+            patch :update, params: { case_id: one.id, case: { case_name: 'New Name' } }
             assert_response :ok
 
             one.reload
@@ -204,7 +247,7 @@ module Api
           end
 
           test 'updates name successfully using PUT verb' do
-            put :update, case_id: one.id, case_name: 'New Name'
+            put :update, params: { case_id: one.id, case: { case_name: 'New Name' } }
             assert_response :ok
 
             one.reload
@@ -221,7 +264,7 @@ module Api
             count_unarchived  = doug.cases.where(archived: false).count
             count_archived    = doug.cases.where(archived: true).count
 
-            patch :update, case_id: one.id, archived: false
+            post :update, params: { case_id: one.id, case: { archived: false } }
             assert_response :ok
 
             one.reload
@@ -235,7 +278,7 @@ module Api
             count_unarchived  = doug.cases.where(archived: false).count
             count_archived    = doug.cases.where(archived: true).count
 
-            put :update, case_id: one.id, archived: false
+            post :update, params: { case_id: one.id, case: { archived: false } }
             assert_response :ok
 
             one.reload
@@ -251,7 +294,7 @@ module Api
             expects_any_ga_event_call
 
             perform_enqueued_jobs do
-              patch :update, case_id: one.id, case_name: 'New Name'
+              patch :update, params: { case_id: one.id, case: { case_name: 'New Name' } }
               assert_response :ok
             end
           end
@@ -383,7 +426,7 @@ module Api
         end
 
         test 'returns archived cases when specified' do
-          get :index, archived: true
+          get :index, params: { archived: true }
 
           assert_response :ok
 
@@ -396,7 +439,7 @@ module Api
         end
 
         test 'archived flag works as a string' do
-          get :index, archived: 'true'
+          get :index, params: { archived: 'true' }
 
           assert_response :ok
 
@@ -411,7 +454,7 @@ module Api
         test 'only returns owned archived cases' do
           shared.update archived: true
 
-          get :index, archived: true
+          get :index, params: { archived: true }
 
           assert_response :ok
 
@@ -422,7 +465,7 @@ module Api
         end
 
         test 'limits list to 3 cases if sorting by last_viewed_at' do
-          get :index, sortBy: 'last_viewed_at'
+          get :index, params: { sortBy: 'last_viewed_at' }
 
           assert_response :ok
 
@@ -438,7 +481,7 @@ module Api
           metadata    = second_case.metadata.find_or_create_by user_id: doug.id
           metadata.update last_viewed_at: date_param
 
-          get :index, sortBy: 'last_viewed_at'
+          get :index, params: { sortBy: 'last_viewed_at' }
 
           assert_response :ok
 
@@ -456,7 +499,7 @@ module Api
           metadata    = shared.metadata.find_or_create_by user_id: doug.id
           metadata.update last_viewed_at: date_param
 
-          get :index, sortBy: 'last_viewed_at'
+          get :index, params: { sortBy: 'last_viewed_at' }
 
           assert_response :ok
 
@@ -474,7 +517,7 @@ module Api
         let(:scorer)  { scorers(:valid) }
 
         test 'sets a default scorer successfully' do
-          put :update, case_id: one.id, scorer_id: scorer.id
+          put :update, params: { case_id: one.id, case: { scorer_id: scorer.id } }
 
           assert_response :ok
 
@@ -482,42 +525,44 @@ module Api
           assert_equal one.scorer_id, scorer.id
         end
 
-        test 'removes default scorer' do
+        test 'removes default scorer --> actually, set to system default' do
           one.scorer = scorer
           one.save!
 
-          put :update, case_id: one.id, scorer_id: nil
+          put :update, params: { case_id: one.id, case: { scorer_id: 0 } }
 
           assert_response :ok
 
           one.reload
-          assert_nil one.scorer_id
-          assert_nil one.scorer
+          assert_equal one.scorer, Scorer.system_default_scorer
+          assert_equal one.scorer.name, Rails.application.config.quepid_default_scorer
         end
 
-        test 'removes default scorer if id is set to 0' do
+        test 'removes default scorer if id is set to 0 --> actually, set to system default' do
           one.scorer = scorer
           one.save!
 
-          put :update, case_id: one.id, scorer_id: 0
+          put :update, params: { case_id: one.id, case: { scorer_id: 0 } }
 
           assert_response :ok
 
           one.reload
-          assert_nil one.scorer_id
-          assert_nil one.scorer
+          assert_equal one.scorer.name, Rails.application.config.quepid_default_scorer
+          # assert_nil one.scorer_id
+          # assert_nil one.scorer
         end
 
         test 'returns an error if scorer does not exist' do
-          put :update, case_id: one.id, scorer_id: 'foo'
+          one.scorer = scorer
+          one.save!
+          put :update, params: { case_id: one.id, case: { scorer_id: 'foo' } }
 
           assert_response :bad_request
 
           assert_equal json_response['scorer_id'], [ 'is not valid' ]
 
           one.reload
-          assert_nil one.scorer_id
-          assert_nil one.scorer
+          assert_equal one.scorer, scorer
         end
       end
     end

@@ -10,4 +10,4 @@ json.allCases do
   end
 end
 
-json.casesCount current_user.case.not_archived.count
+json.casesCount current_user.cases_involved_with.not_archived.count

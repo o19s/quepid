@@ -37,7 +37,13 @@ class RatingsImporter
   def import
     if @options[:clear_existing]
       print_step 'Clearing all ratings'
-      Rating.delete @acase.ratings.ids
+      ratings = []
+      @acase.queries.each do |query|
+        query.ratings.each do |rating|
+          ratings << rating.id
+        end
+      end
+      Rating.delete ratings
     end
 
     #
@@ -57,7 +63,7 @@ class RatingsImporter
 
     # a. Map from the rows all the unique queries
     normalized_rows = @ratings.map { |row| extract_rating_info row }
-    query_texts     = normalized_rows.map { |row| row[:query_text] }
+    query_texts     = normalized_rows.pluck(:query_text)
     unique_queries  = query_texts.uniq
 
     # b. Fetch all the existing queries
@@ -73,7 +79,9 @@ class RatingsImporter
     existing_queries = indexed_queries.keys
     non_existing_queries = unique_queries - existing_queries
 
-    if !non_existing_queries.empty?
+    if non_existing_queries.empty?
+      @queries = indexed_queries
+    else
       # d. Create remaining queries in bulk
       queries_to_import = []
       print_step 'Importing queries'
@@ -95,14 +103,13 @@ class RatingsImporter
       @queries = Query.where(queries_params)
         .all
         .index_by(&:query_text)
-    else
-      @queries = indexed_queries
     end
 
     # e. Create or update ratings
     ratings_to_import = []
     ratings_to_update = []
     print_step 'Importing ratings'
+
     block_with_progress_bar(normalized_rows.length) do |i|
       row         = normalized_rows[i]
       query_text  = row[:query_text]
@@ -137,7 +144,7 @@ class RatingsImporter
     print_step 'Clearing unused queries'
 
     @acase.queries.each do |query|
-      query.soft_delete if @queries[query.query_text].blank?
+      query.destroy if @queries[query.query_text].blank?
     end
   end
   # rubocop:enable Metrics/PerceivedComplexity
@@ -147,14 +154,16 @@ class RatingsImporter
 
   private
 
+  # rubocop:disable Metrics/MethodLength
   def extract_rating_info row
-    if :csv == @options[:format]
+    case @options[:format]
+    when :csv
       {
         query_text: row[0].is_a?(String) ? row[0].strip : row[0],
         doc_id:     row[1].is_a?(String) ? row[1].strip : row[1],
         rating:     row[2].is_a?(String) ? row[2].strip : row[2],
       }
-    elsif :hash == @options[:format]
+    when :hash
       row.deep_symbolize_keys
 
       row.each do |k, v|
@@ -166,5 +175,6 @@ class RatingsImporter
       row
     end
   end
+  # rubocop:enable Metrics/MethodLength
 end
 # rubocop:enable Metrics/ClassLength

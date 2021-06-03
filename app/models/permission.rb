@@ -13,7 +13,7 @@
 #  updated_at :datetime         not null
 #
 
-class Permission < ActiveRecord::Base
+class Permission < ApplicationRecord
   # Associations
   belongs_to :user
 

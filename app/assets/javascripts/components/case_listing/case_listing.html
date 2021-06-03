@@ -14,11 +14,10 @@
         </span>
 
         <span class="item-actions">
-          <span ng-if="ctrl.thisCase.owned">
-            <action-icon title="'Rename'" icon-class="'fa fa-edit'" fn-call="ctrl.rename()"></action-icon>
+          <action-icon title="'Rename'" icon-class="'fa fa-edit'" fn-call="ctrl.rename()"></action-icon>
 
-            <delete-case this-case="ctrl.thisCase"></delete-case>
-          </span>
+          <delete-case this-case="ctrl.thisCase"></delete-case>
+          <archive-case this-case="ctrl.thisCase"></archive-case>
 
           <span>
             <export-case icon-only="true" the-case="ctrl.thisCase"></export-case>
@@ -40,7 +39,7 @@
   </div>
 
   <div class="col-xs-1">
-    {{ ctrl.thisCase.lastTry }}
+     {{ ctrl.thisCase.lastTry }}
   </div>
 
   <div class="col-xs-1">
@@ -48,11 +47,20 @@
   </div>
 
   <div class="col-xs-1">
-    <last-score score="ctrl.thisCase.lastScore"></last-score>
+    {{ ctrl.thisCase.lastScore.score }}
+
+    <span ng-show="ctrl.thisCase.lastScore.all_rated === false" class='text-warning' title="Hop to it!  There are unrated results!">
+      <i class="fa fa-frog"></i>
+    </span>
   </div>
 
   <div class="col-xs-1">
+    <span ng-show="ctrl.thisCase.lastScore.created_at">
     {{ ctrl.thisCase.lastScore.created_at | timeAgo }}
+    </span>
+    <span ng-hide="ctrl.thisCase.lastScore.created_at">
+    Never Run
+    </span>
   </div>
 
   <div class="col-xs-2">
@@ -65,7 +73,7 @@
     </div>
 
     <div class="owner" ng-if="!ctrl.thisCase.owned">
-      {{ ctrl.thisCase.teamNames() }}
+      {{ ctrl.thisCase.ownerName }}
     </div>
   </div>
 </div>

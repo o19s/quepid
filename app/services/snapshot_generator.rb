@@ -12,7 +12,7 @@ class SnapshotGenerator
     default_options = {
       field:         'text',
       id:            'id',
-      logger:        Logger.new(STDOUT),
+      logger:        Logger.new($stdout),
       number:        10,
       query:         '*:*',
       rows:          10,

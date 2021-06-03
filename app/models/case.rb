@@ -17,7 +17,7 @@
 #
 
 # rubocop:disable Metrics/ClassLength
-class Case < ActiveRecord::Base
+class Case < ApplicationRecord
   # Associations
   # too late now!
   # rubocop:disable Rails/HasAndBelongsToMany
@@ -25,9 +25,9 @@ class Case < ActiveRecord::Base
                           join_table: 'teams_cases'
   # rubocop:enable Rails/HasAndBelongsToMany
 
-  belongs_to :scorer
+  belongs_to :scorer, optional: true
 
-  belongs_to :user
+  belongs_to :user, optional: true
 
   has_many   :tries,     -> { order(try_number: :desc) },
              dependent:  :destroy,
@@ -36,13 +36,13 @@ class Case < ActiveRecord::Base
   has_many   :metadata,
              dependent: :destroy
 
-  has_many   :ratings,
-             through: :queries
+  # has_many   :ratings,  # wed ont' actually need htis.
+  #           through: :queries
 
   # rubocop:disable Rails/InverseOf
   has_many   :queries,  -> { order(arranged_at: :asc) },
              autosave:  true,
-             dependent: :delete_all
+             dependent: :destroy
   # rubocop:enable Rails/InverseOf
 
   has_many   :scores,   -> { order(updated_at:  :desc) },
@@ -53,42 +53,53 @@ class Case < ActiveRecord::Base
              dependent: :destroy
 
   has_many   :annotations,
-             through: :scores
-
-  has_many   :user_scorers, -> { where(communal: false) }, through: :queries, source: :scorer
+             through:   :scores,
+             dependent: :destroy
 
   # Validations
   validates :case_name, presence: true
   validates_with ScorerExistsValidator
 
   # Callbacks
-  before_create :set_scorer
-  after_create  :add_default_try, if: proc { |a| a.tries.empty? }
+  after_initialize  :set_scorer
+  after_create      :add_default_try
+
+  after_initialize do |c|
+    c.archived = false if c.archived.nil?
+  end
 
   # Scopes
-  scope :not_archived,  -> { where('`cases`.`archived` = false OR `cases`.`archived` IS NULL') }
-  scope :for_user,      ->(user) {
-    where.any_of(
-      teams:         {
-        owner_id: user.id,
-      },
-      teams_members: {
-        member_id: user.id,
-      },
-      cases:         {
-        user_id: user.id,
-      }
-    )
+  scope :not_archived, -> { where('`cases`.`archived` = false OR `cases`.`archived` IS NULL') }
+
+  scope :for_user_via_teams, ->(user) {
+    joins('
+      LEFT OUTER JOIN `teams_cases` ON `teams_cases`.`case_id` = `cases`.`id`
+      LEFT OUTER JOIN `teams` ON `teams`.`id` = `teams_cases`.`team_id`
+      LEFT OUTER JOIN `teams_members` ON `teams_members`.`team_id` = `teams`.`id`
+      LEFT OUTER JOIN `users` ON `users`.`id` = `teams_members`.`member_id`
+    ').where('
+        `teams_members`.`member_id` = ?
+    ', user.id)
   }
 
-  # Constants
-  DEFAULT_NAME = 'Movies Search'
+  scope :for_user_directly_owned, ->(user) {
+    where('
+        `cases`.`user_id` = ?
+    ',  user.id)
+  }
 
-  def initialize attributes = nil, options = {}
-    super
+  scope :for_user, ->(user) {
+    ids = for_user_via_teams(user).pluck(:id) + for_user_directly_owned(user).pluck(:id)
+    where(id: ids.uniq)
+  }
 
-    # TODO: Move this to be the default value in MySQL
-    self.archived = false if archived.nil?
+  # Not proud of this method, but it's the only way I can get the dependent
+  # objects of a Case to actually delete!
+  def really_destroy
+    snapshots.destroy_all
+    queries.unscoped.where(case_id: id).destroy_all
+    tries.destroy_all
+    destroy
   end
 
   # rubocop:disable Metrics/MethodLength
@@ -106,7 +117,6 @@ class Case < ActiveRecord::Base
       end
 
       self.last_try_number = tries.first.try_number
-
       if clone_queries
         original_case.queries.each do |query|
           clone_query query, clone_ratings
@@ -139,7 +149,7 @@ class Case < ActiveRecord::Base
   private
 
   def set_scorer
-    return true if scorer_id.present?
+    return if scorer_id.present?
 
     self.scorer = if user&.default_scorer
                     user.default_scorer
@@ -149,8 +159,12 @@ class Case < ActiveRecord::Base
   end
 
   def add_default_try
-    try_number  = (last_try_number || -1) + 1
+    return unless tries.empty?
+
+    try_number  = (last_try_number || 0) + 1
     the_try     = tries.create(try_number: try_number)
+    the_try.case = self
+    tries << the_try
     update last_try_number: the_try.try_number
   end
 
@@ -182,18 +196,19 @@ class Case < ActiveRecord::Base
     new_query = ::Query.new(
       arranged_next:  query.arranged_next,
       arranged_at:    query.arranged_at,
-      deleted:        query.deleted,
       query_text:     query.query_text,
       notes:          query.notes,
       threshold:      query.threshold,
-      threshold_enbl: query.threshold_enbl
+      threshold_enbl: query.threshold_enbl,
+      case:           self
     )
 
     if clone_ratings
       query.ratings.each do |rating|
         new_rating = Rating.new(
           doc_id: rating.doc_id,
-          rating: rating.rating
+          rating: rating.rating,
+          query:  new_query
         )
         new_query.ratings << new_rating
       end

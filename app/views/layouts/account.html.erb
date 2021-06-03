@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Quepid -- Relevant Search Solved</title>
+<%= favicon_link_tag asset_path "favicon.ico" %>
+<meta name="description" content="Tired of irrelevant search results? Use Quepid products & services to help improve the quality and relevancy of your search results.">
+<meta name="viewport" content="width=device-width">
+
+<%= stylesheet_link_tag 'account', media: 'all' %>
+<%= csrf_meta_tags %>
+<%= javascript_include_tag 'account' %>
+
+
+</head>
+<body class='admin'>
+  <%= render 'cookies_eu/consent_banner', link: '/cookies', target: '_blank' unless Rails.application.config.cookies_url.blank? %>
+
+  <div class="main-container">
+    <%= render 'layouts/header' %>
+
+    <div class="container">
+      <%= yield %>
+    </div>
+  </div>
+
+  <%= render 'layouts/footer' %>
+
+
+  <%= render 'layouts/common_js' %>
+
+</body>
+</html>

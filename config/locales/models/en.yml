@@ -19,8 +19,4 @@ en:
               length: must be limited to at most 10 values
               type: is invalid (only integers allowed)
               existence: is not valid
-        default_scorer:
-          attributes:
-            scale:
-              length: must be limited to at most 10 values
-              type: is invalid (only integers allowed)
+              

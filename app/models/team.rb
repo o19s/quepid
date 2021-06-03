@@ -11,7 +11,7 @@
 #  updated_at :datetime         not null
 #
 
-class Team < ActiveRecord::Base
+class Team < ApplicationRecord
   # Associations
   # too late now!
   # rubocop:disable Rails/HasAndBelongsToMany
@@ -28,27 +28,23 @@ class Team < ActiveRecord::Base
                           join_table: 'teams_scorers'
   # rubocop:enable Rails/HasAndBelongsToMany
 
+  # Every owner is also a member of the team.  So when we care about access to a team,
+  # we only need to check the team.members or the case.team.members.
   belongs_to :owner,
              class_name: 'User'
 
   # Validations
+  # rubocop:disable Rails/UniqueValidationWithoutIndex
   validates :name,
             presence:   true,
             uniqueness: true
+  # rubocop:enable Rails/UniqueValidationWithoutIndex
 
   # Scopes
   scope :for_user, ->(user) {
     joins('
       LEFT OUTER JOIN teams_members on teams_members.team_id = teams.id
       LEFT OUTER JOIN users on users.id = teams_members.member_id
-    ')
-      .where.any_of(
-        teams:         {
-          owner_id: user.id,
-        },
-        teams_members: {
-          member_id: user.id,
-        }
-      )
+    ').where('`teams_members`.`member_id` = ?', user.id)
   }
 end

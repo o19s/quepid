@@ -7,22 +7,22 @@
       <div class="col-ratings">
 
         <div ng-if="doc.error === undefined" class="ratings">
-          <!-- <div class="single-rating" ng-click="ratings.open()"> -->
           <div class="single-rating" uib-popover-template="'views/ratings/popover.html'" popover-trigger="outsideClick" popover-placement="auto right" popover-is-open="ratings.ratingsOn">
             <span class="btn" ng-style="{rating: displayRating(), scale: ratings.scale} | ratingBgStyle">
               {{displayRating()}}
               <span class="caret"></span>
             </span>
           </div>
-
-          <!-- <ng-include src="'views/ratings/popover.html'"></ng-include> -->
         </div>
       </div>
 
-      <div class="col-summary" ng-class="{true: 'col-summary-img', false: ''}[doc.hasThumb()]">
-      <!-- thumbnail / if the doc has one -->
+      <div class="col-summary" ng-class="summaryColumnStyle()">
+        <!-- thumbnail/image if the doc has one -->
         <div ng-show="doc.hasThumb()" class="col-thumbnail" style="text-align: center">
           <img class="img-thumbnail result-thumbnail" ng-src="{{doc.thumb}}">
+        </div>
+        <div ng-show="doc.hasImage()" class="col-image" style="text-align: center">
+          <img class="img-thumbnail result-image" ng-src="{{doc.image}}">
         </div>
 
         <!-- Fields -->

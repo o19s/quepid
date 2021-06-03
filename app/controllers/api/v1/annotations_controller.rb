@@ -5,7 +5,7 @@ module Api
     class AnnotationsController < Api::ApiController
       before_action :find_case
       before_action :check_case
-      before_action :set_annotation, only: %i[update destroy]
+      before_action :set_annotation, only: [ :update, :destroy ]
 
       def index
         @annotations = @case.annotations.includes(:score)
@@ -70,10 +70,9 @@ module Api
         params.require(:score).permit(
           :all_rated,
           :score,
-          :try_id
-        ).tap do |whitelisted|
-          whitelisted[:queries] = params[:score][:queries] if params[:score][:queries]
-        end
+          :try_id,
+          queries: []
+        )
       end
     end
   end

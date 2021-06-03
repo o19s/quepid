@@ -22,6 +22,8 @@ angular.module('QuepidApp')
       ctrl.addMember    = addMember;
       ctrl.getUsers     = getUsers;
       ctrl.selectMember = selectMember;
+      ctrl.testIsEmailAddress = testIsEmailAddress;
+      ctrl.inviteUserToJoin = inviteUserToJoin;
 
       function selectMember($item) {
         ctrl.selectedMember = $item;
@@ -52,6 +54,27 @@ angular.module('QuepidApp')
           .then(function(response) {
             return response.data.users;
           });
+      }
+
+      function inviteUserToJoin() {
+        teamSvc.inviteUserToJoin(ctrl.team, ctrl.selected)
+          .then(function() {
+            flash.success = 'Invitation sent to ' + ctrl.selected;
+            ctrl.selected = '';
+          }, function(response) {
+            flash.error = response.data.error;
+          });
+
+      }
+
+      function testIsEmailAddress(val) {
+        const emailVer = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+        if( emailVer.test(val) ){
+          return true;
+        }
+        else {
+          return false;
+        }
       }
     }
   ]);

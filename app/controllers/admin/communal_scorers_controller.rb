@@ -2,7 +2,7 @@
 
 module Admin
   class CommunalScorersController < Admin::AdminController
-    before_action :set_scorer, only: %i[show edit update]
+    before_action :set_scorer, only: [ :show, :edit, :update ]
 
     def index
       @scorers = Scorer.communal
@@ -78,13 +78,11 @@ module Admin
         :manual_max_score,
         :manual_max_score_value,
         :show_scale_labels,
-        :scale_list,
-        :scale,
+        :scale_list,  # alternate approach to the scale:[] array used in admin only
         :state,
-        scale: []
-      ).tap do |whitelisted|
-        whitelisted[:scale_with_labels] = params[:scorer][:scale_with_labels]
-      end
+        scale:             [],
+        scale_with_labels: {}
+      )
     end
 
     def set_scorer

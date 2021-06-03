@@ -44,46 +44,23 @@ angular.module('QuepidApp')
       customScorerSvc.list()
         .then(function() {
           broadcastSvc.send('updatedScorersList');
+          getLists();
           $scope.loading = false;
         }, function(response) {
           flash.error = response.data.message;
           $scope.loading = false;
         });
 
-      var events = [
-        'updatedScorersList',
-      ];
-      angular.forEach(events, function (eventName) {
-        $scope.$on(eventName, function() {
-          $scope.advanced._internalScorersList = customScorerSvc.scorers;
-          getLists();
-        });
+
+      $scope.$on('updatedScorersList', function() {
+        getLists();
       });
 
       function getLists() {
         $scope.advanced.communalScorers  = customScorerSvc.communalScorers;
         $scope.advanced.userScorers     = customScorerSvc.scorers;
-        //var nonTestUserScorers          = customScorerSvc.scorers.filter(function(scorer) {
-          //return scorer.queryTest === false;
-        //});
-        //array1.filter(val => !array2.includes(val));
-
-        //$scope.advanced.combinedScorers = $scope.advanced.communalScorers.concat(customScorerSvc.scorers);
-        angular.forEach($scope.advanced.userScorers, function(scorer) {
-          if (!contains($scope.advanced.combinedScorers, scorer)) {
-            $scope.advanced.combinedScorers.push(scorer);
-          }
-        });
-        angular.forEach($scope.advanced.communalScorers, function(scorer) {
-          if (!contains($scope.advanced.combinedScorers, scorer)) {
-            $scope.advanced.combinedScorers.push(scorer);
-          }
-        });
+        $scope.advanced.combinedScorers = $scope.advanced.communalScorers.concat($scope.advanced.userScorers);
       }
-
-      var contains = function(list, scorer) {
-        return list.filter(function(item) { return item.scorerId === scorer.scorerId; }).length > 0;
-      };
 
       function updateUserScorer(scorerId) {
         $rootScope.currentUser.updateUserScorer(scorerId)

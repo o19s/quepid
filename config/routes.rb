@@ -8,28 +8,35 @@ Rails.application.routes.draw do
     mount Sidekiq::Web, at: 'admin/jobs'
   end
 
-  # rubocop:disable Metrics/LineLength
+  # rubocop:disable Layout/LineLength
   # let's encrypt verification (can be removed in the future)
   get '.well-known/acme-challenge/9IWOgATbRmEtWKsOOJQ-E4-lrIT9tHsHv_9bl5Zt6fI', to: proc { [ 200, {}, [ '9IWOgATbRmEtWKsOOJQ-E4-lrIT9tHsHv_9bl5Zt6fI.fDzklrX7i2PRMRsPtxEvo2yRZDSfy2LO3t--NfWfgaA' ] ] }
-  # rubocop:enable Metrics/LineLength
+  # rubocop:enable Layout/LineLength
 
   # legacy routes for angular single page app
   post 'users/login' => 'sessions#create', defaults: { format: :json }
   get  'logout'      => 'sessions#destroy'
   get  'secure'      => 'secure#index'
+  get  'secure/complete' => 'secure#index'
   # end legacy routes
 
   resources :sessions
-  resource :account, only: [ :update ]
-  resource :profile, only: %i[show update]
+  resource :account, only: [ :update, :destroy ]
+  resource :profile, only: [ :show, :update ]
 
-  devise_for :users, only: [ :passwords ], controllers: {
-    passwords: 'users/passwords',
+  # not sure I get why we had the only: [ :passwords ] clause
+  devise_for :users, controllers: {
+    passwords:   'users/passwords',
+    invitations: 'users/invitations',
   }
+  # devise_for :users, only: [ :passwords ], controllers: {
+  #  passwords: 'users/passwords',
+  #  invitations: 'users/invitations'
+  # }
 
   namespace :admin do
     get '/' => 'home#index'
-    resources :users, except: %i[new create destroy] do
+    resources :users, except: [ :new, :create ] do
       resource :lock, only: [ :update ], module: :users
       resource :pulse, only: [ :show ], module: :users
     end
@@ -39,7 +46,7 @@ Rails.application.routes.draw do
   root 'home#index'
 
   # preview routes for mailers
-  if 'development' == Rails.env
+  if Rails.env.development?
     get '/rails/mailers' => 'rails/mailers#index'
     get '/rails/mailers/*path' => 'rails/mailers#preview'
   end
@@ -48,7 +55,7 @@ Rails.application.routes.draw do
     get 'test' => 'api#test'
 
     scope module: :v1, constraints: ApiConstraint.new(version: 1, default: true) do
-      resources :users,   only: %i[index show update] do
+      resources :users,   only: [ :index, :show, :update ] do
         get '/current' => 'current_user#show', on: :collection
       end
       resources :signups, only: [ :create ] if Rails.application.config.signup_enabled
@@ -65,42 +72,41 @@ Rails.application.routes.draw do
       # This simple setup helps use one before_filter to fetch the case by the
       # :case_id param instead of having multiple helpers to accommodate the
       # different scenarios.
-      resources :cases, except: %i[new edit], param: :case_id
+      resources :cases, except: [ :new, :edit ], param: :case_id
       resources :cases, only: [] do
         # Case Tries
-        resources :tries, param: :try_number, except: %i[new edit] do
+        resources :tries, param: :try_number, except: [ :new ] do
           post '/duplicate' => 'duplicate_tries#create', as: :duplicate_try
         end
 
         # Case Scorers
-        resources :scorers, only: %i[index update], controller: :case_scorers
+        resources :scorers, only: [ :index, :update ], controller: :case_scorers
 
         # Case Queries
-        resources :queries, except: %i[new edit show] do
+        resources :queries, except: [ :new, :edit, :show ] do
           scope module: :queries do
-            resource  :notes,     only: %i[show update]
-            resource  :options,   only: %i[show update]
+            resource  :notes,     only: [ :show, :update ]
+            resource  :options,   only: [ :show, :update ]
             resource  :position,  only: [ :update ]
-            resource  :scorer,    only: %i[show update destroy]
             resource  :threshold, only: [ :update ]
-            resource  :ratings,   only: %i[update destroy] # not actually a singular resource, doc_id in json payload
+            resource  :ratings,   only: [ :update, :destroy ] # not actually a singular resource, doc_id in json payload
           end
 
           resource :bulk, only: [] do
-            resource :ratings, only: %i[update destroy], controller: :bulk_ratings
+            resource :ratings, only: [ :update, :destroy ], controller: :bulk_ratings
             post '/ratings/delete' => 'bulk_ratings#destroy'
           end
         end
 
         # Case Snapshots
-        resources :snapshots, except: %i[new edit update]
+        resources :snapshots, except: [ :new, :edit, :update ]
         namespace :snapshots do
           resources :imports, only: [ :create ]
         end
 
         # Case Metadata/Scores
         resource :metadata, only: [ :update ], controller: :case_metadata
-        resource :scores, only: %i[index update show], controller: :case_scores
+        resource :scores, only: [ :index, :update, :show ], controller: :case_scores
         get '/scores/all' => 'case_scores#index'
 
         resources :annotations, except: [ :show ]
@@ -112,13 +118,14 @@ Rails.application.routes.draw do
         end
       end
 
-      resources :scorers, except: %i[new edit]
+      resources :scorers, except: [ :new, :edit ]
 
-      resources :teams, except: %i[new edit], param: :team_id
+      resources :teams, except: [ :new, :edit ], param: :team_id
       resources :teams, only: [] do
-        resources :members, only: %i[index create destroy], controller: :team_members
-        resources :scorers, only: %i[index create destroy], controller: :team_scorers
-        resources :cases,   only: %i[index create destroy], controller: :team_cases
+        resources :members, only: [ :index, :create, :destroy ], controller: :team_members
+        post '/members/invite' => 'team_members#invite'
+        resources :scorers, only: [ :index, :create, :destroy ], controller: :team_scorers
+        resources :cases,   only: [ :index, :create, :destroy ], controller: :team_cases
         resources :owners,  only: [ :update ], controller: :team_owners
       end
 
@@ -143,8 +150,9 @@ Rails.application.routes.draw do
   # Routes handled by angular
   get '/case/:id(/try/:id(/curate))'  => 'home#index'
   get '/cases'                        => 'home#index'
+  get '/case'                         => 'home#index'
   get '/cases/import'                 => 'home#index'
-  get '/teams(/:id)'                  => 'home#index'
+  get '/teams(/:id)'                  => 'home#index', as: :teams_path
   get '/advanced'                     => 'home#index'
 
   # Static pages

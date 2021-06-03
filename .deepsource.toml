@@ -1,0 +1,27 @@
+version = 1
+
+[[analyzers]]
+name = "ruby"
+enabled = true
+
+[[analyzers]]
+name = "javascript"
+enabled = true
+
+  [analyzers.meta]
+  plugins = ["angular"]
+
+[[analyzers]]
+name = "docker"
+enabled = true
+
+  [analyzers.meta]
+  dockerfile_paths = [
+    "Dockerfile.dev",
+    "Dockerfile.prod"
+  ]
+
+exclude_patterns = [
+  "public/javascripts/ace/*.js",
+]
+

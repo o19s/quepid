@@ -9,8 +9,6 @@
 #  name                   :string(191)
 #  owner_id               :integer
 #  scale                  :string(255)
-#  query_test             :boolean
-#  query_id               :integer
 #  manual_max_score       :boolean          default(FALSE)
 #  manual_max_score_value :integer          default(100)
 #  show_scale_labels      :boolean          default(FALSE)
@@ -22,9 +20,9 @@
 
 require 'scale_serializer'
 
-class Scorer < ActiveRecord::Base
+class Scorer < ApplicationRecord
   # Associations
-  belongs_to :owner, class_name: 'User'
+  belongs_to :owner, class_name: 'User', optional: true # for communal scorers there isn't a owner
 
   # not sure about this!
   # has_many :users, dependent: :nullify
@@ -35,28 +33,22 @@ class Scorer < ActiveRecord::Base
                           join_table: 'teams_scorers'
   # rubocop:enable Rails/HasAndBelongsToMany
 
-  belongs_to :query, inverse_of: :test
-
   # Validations
   validates_with ScaleValidator
 
   # Scopes
-  # The :for_user scope should also include in the scorers: array
-  # the owner_id: user.id OR communal:true clause, but in Rails 4
-  # we can't do OR statements in ARel.  So, working around it outside
-  # this scope.
   scope :for_user, ->(user) {
-    where.any_of(
-      teams:         {
-        owner_id: user.id,
-      },
-      teams_members: {
-        member_id: user.id,
-      },
-      scorers:       {
-        owner_id: user.id,
-      }
-    )
+    joins('
+      LEFT OUTER JOIN `teams_scorers` ON `teams_scorers`.`scorer_id` = `scorers`.`id`
+      LEFT OUTER JOIN `teams` ON `teams`.`id` = `teams_scorers`.`team_id`
+      LEFT OUTER JOIN `teams_members` ON `teams_members`.`team_id` = `teams`.`id`
+      LEFT OUTER JOIN `users` ON `users`.`id` = `teams_members`.`member_id`
+    ').where('
+      `teams`.`owner_id` = ?
+      OR `teams_members`.`member_id` = ?
+      OR `scorers`.`owner_id` = ?
+      OR `scorers`.`communal` = true
+    ', user.id, user.id, user.id)
   }
 
   scope :communal, -> { where(communal: true) }
@@ -70,11 +62,8 @@ class Scorer < ActiveRecord::Base
   serialize :scale, ScaleSerializer
   serialize :scale_with_labels, JSON
 
-  def initialize attributes = nil, options = {}
-    super
-
-    self.scale      = []       if scale.blank?
-    self.query_test = false    if query_test.blank?
+  after_initialize do |scorer|
+    scorer.scale      = [] if scorer.scale.blank?
 
     # This is not always accurate since a scorer can be deleted and thus
     # we could presumably have two scorers with the same name.
@@ -82,7 +71,7 @@ class Scorer < ActiveRecord::Base
     # than nothing.
     # Ideally users would provide a meaningful name for scorers in order
     # to be able to identify them easily.
-    self.name       = "Scorer #{Scorer.count + 1}" if name.blank?
+    scorer.name       = "Scorer #{Scorer.count + 1}" if scorer.name.blank?
   end
 
   def scale_list=value

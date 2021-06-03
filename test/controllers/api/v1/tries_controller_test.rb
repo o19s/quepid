@@ -49,13 +49,13 @@ module Api
         let(:shared_case)         { cases(:shared_team_case) }
 
         test 'returns a not found error if case does not exist' do
-          get :index, case_id: 'foo'
+          get :index, params: { case_id: 'foo' }
 
           assert_response :not_found
         end
 
         test 'returns all tries for a case' do
-          get :index, case_id: case_with_one_try.id
+          get :index, params: { case_id: case_with_one_try.id }
 
           assert_response :ok
 
@@ -64,7 +64,7 @@ module Api
 
           assert_equal tries.count, 1
 
-          get :index, case_id: case_with_two_tries.id
+          get :index, params: { case_id: case_with_two_tries.id }
 
           assert_response :ok
 
@@ -75,7 +75,7 @@ module Api
         end
 
         test 'works for a shared case as well' do
-          get :index, case_id: shared_case.id
+          get :index, params: { case_id: shared_case.id }
 
           first_try = shared_case.tries.first
 
@@ -98,13 +98,13 @@ module Api
         let(:second_for_case_with_two_tries)  { tries(:second_for_case_with_two_tries) }
 
         test 'returns a not found error when try does not exist' do
-          get :show, case_id: case_with_two_tries.id, try_number: 1234
+          get :show, params: { case_id: case_with_two_tries.id, try_number: 1234 }
 
           assert_response :not_found
         end
 
         test 'returns a specific case try' do
-          get :show, case_id: case_with_two_tries.id, try_number: first_for_case_with_two_tries.try_number
+          get :show, params: { case_id: case_with_two_tries.id, try_number: first_for_case_with_two_tries.try_number }
 
           assert_response :ok
 
@@ -112,7 +112,7 @@ module Api
 
           assert_try_matches_response body, first_for_case_with_two_tries
 
-          get :show, case_id: case_with_two_tries.id, try_number: second_for_case_with_two_tries.try_number
+          get :show, params: { case_id: case_with_two_tries.id, try_number: second_for_case_with_two_tries.try_number }
 
           assert_response :ok
 
@@ -127,7 +127,7 @@ module Api
         let(:the_try)   { tries(:first_for_case_with_two_tries) }
 
         test 'renames try successfully' do
-          put :update, case_id: the_case.id, try_number: the_try.try_number, name: 'New Name'
+          put :update, params: { case_id: the_case.id, try_number: the_try.try_number, try: { name: 'New Name' } }
 
           assert_response :ok
 
@@ -138,9 +138,9 @@ module Api
           assert_equal the_try['name'], 'New Name'
         end
 
-        test 'does nothing with params passed except name' do
+        test 'can change other parameters too' do
           old_no = the_try.try_number
-          put :update, case_id: the_case.id, try_number: the_try.try_number, query_params: 'New No'
+          put :update, params: { case_id: the_case.id, try_number: the_try.try_number, try: { query_params: 'New No' } }
 
           assert_response :ok
 
@@ -148,12 +148,13 @@ module Api
           assert_not_equal  the_try.try_number, 'New No'
           assert_equal      the_try.try_number, old_no
 
-          put :update, case_id: the_case.id, try_number: the_try.try_number, field_spec: 'New field_spec'
+          put :update,
+              params: { case_id: the_case.id, try_number: the_try.try_number, try: { field_spec: 'New field_spec' } }
 
           assert_response :ok
 
           the_try.reload
-          assert_not_equal the_try.field_spec, 'New field_spec'
+          assert_equal the_try.field_spec, 'New field_spec'
         end
       end
 
@@ -171,7 +172,7 @@ module Api
           case_last_try = the_case.last_try_number
 
           assert_difference 'the_case.tries.count' do
-            post :create, try_params.merge(case_id: the_case.id)
+            post :create, params: { case_id: the_case.id, try: try_params }
 
             assert_response :ok # should be :created,
             # but there's a bug currently in the responders gem
@@ -204,10 +205,8 @@ module Api
             var2: '2',
           }
 
-          try_params[:curatorVars] = curator_vars_params
-
           assert_difference 'CuratorVariable.count', 2 do
-            post :create, try_params.merge(case_id: the_case.id)
+            post :create, params: { case_id: the_case.id, try: try_params, curatorVars: curator_vars_params }
 
             assert_response :ok
 
@@ -231,7 +230,7 @@ module Api
             search_engine: 'solr',
           }
 
-          post :create, try_params.merge(case_id: the_case.id)
+          post :create, params: { case_id: the_case.id, try: try_params }
 
           assert_response :ok # should be :created,
           # but there's a bug currently in the responders gem
@@ -250,11 +249,7 @@ module Api
         end
 
         test 'sets escape_query param' do
-          try_params = {
-            escape_query: false,
-          }
-
-          post :create, try_params.merge(case_id: the_case.id)
+          post :create, params: { case_id: the_case.id, try: { escape_query: false } }
 
           assert_response :ok
 
@@ -266,11 +261,7 @@ module Api
         end
 
         test 'sets number of rows' do
-          try_params = {
-            number_of_rows: 20,
-          }
-
-          post :create, try_params.merge(case_id: the_case.id)
+          post :create, params: { case_id: the_case.id, try: { number_of_rows: 20 } }
 
           assert_response :ok
 
@@ -282,7 +273,7 @@ module Api
         end
 
         test 'assigns default attributes' do
-          post :create, case_id: the_case.id
+          post :create, params: { case_id: the_case.id, try: { name: '' } }
 
           assert_response :ok # should be :created,
           # but there's a bug currently in the responders gem
@@ -313,7 +304,7 @@ module Api
             expects_any_ga_event_call
 
             perform_enqueued_jobs do
-              post :create, case_id: the_case.id
+              post :create, params: { case_id: the_case.id, try: { name: 'blah' } }
 
               assert_response :ok
             end
@@ -326,14 +317,14 @@ module Api
         let(:the_try)   { tries(:first_for_case_with_two_tries) }
 
         test 'returns a not found error if try does not exist' do
-          delete :destroy, case_id: the_case.id, try_number: 123_456
+          delete :destroy, params: { case_id: the_case.id, try_number: 123_456 }
 
           assert_response :not_found
         end
 
         test 'successfully removes try from case tries' do
           assert_difference 'the_case.tries.count', -1 do
-            delete :destroy, case_id: the_case.id, try_number: the_try.try_number
+            delete :destroy, params: { case_id: the_case.id, try_number: the_try.try_number }
 
             assert_response :no_content
           end
@@ -343,7 +334,7 @@ module Api
           the_try.curator_variables.create name: 'foo', value: 1
 
           assert_difference 'the_case.tries.count', -1 do
-            delete :destroy, case_id: the_case.id, try_number: the_try.try_number
+            delete :destroy, params: { case_id: the_case.id, try_number: the_try.try_number }
 
             assert_response :no_content
           end
@@ -355,7 +346,7 @@ module Api
 
         describe 'Solr' do
           test 'sets the proper default values' do
-            post :create, case_id: the_case.id
+            post :create, params: { case_id: the_case.id, try: { name: '' } }
 
             assert_response :ok # should be :created,
             # but there's a bug currently in the responders gem
@@ -384,7 +375,7 @@ module Api
 
         describe 'Elasticsearch' do
           test 'sets the proper default values' do
-            post :create, case_id: the_case.id, search_engine: 'es'
+            post :create, params: { case_id: the_case.id, try: { search_engine: 'es' } }
 
             assert_response :ok # should be :created,
             # but there's a bug currently in the responders gem
@@ -413,7 +404,7 @@ module Api
           test 'parses args properly' do
             query_params = '{ "query": "#$query##" }'
 
-            post :create, case_id: the_case.id, search_engine: 'es', query_params: query_params
+            post :create, params: { case_id: the_case.id, try: { search_engine: 'es', query_params: query_params } }
 
             assert_response :ok # should be :created,
             # but there's a bug currently in the responders gem
@@ -429,7 +420,7 @@ module Api
           test 'handles bad JSON in query params' do
             query_params = '{ "query": "#$query##"'
 
-            post :create, case_id: the_case.id, search_engine: 'es', query_params: query_params
+            post :create, params: { case_id: the_case.id, try: { search_engine: 'es', query_params: query_params } }
 
             assert_response :ok # should be :created,
             # but there's a bug currently in the responders gem

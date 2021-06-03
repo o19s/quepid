@@ -3,6 +3,7 @@
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![CircleCI](https://circleci.com/gh/o19s/quepid.svg?style=svg)](https://circleci.com/gh/o19s/quepid)
 [![Docker Hub](https://img.shields.io/docker/pulls/o19s/quepid.svg)](https://hub.docker.com/r/o19s/quepid/ "Docker Pulls")
+[![Rails Style Guide](https://img.shields.io/badge/code_style-rubocop-brightgreen.svg)](https://github.com/rubocop-hq/rubocop-rails)
 
 <img src="https://quepid.com/images/logo.png" alt="Quepid logo" title="Quepid" align="right" />
 
@@ -52,7 +53,7 @@ Below is information related to developing the Quepid open source project, prima
   - [Seed Data](#seed-data)
 - [Data Map](#data-map)
 - [App Structure](#app-structure)
-- [Legal Pages](#legal-pages)
+- [Operating Documentation](#operating-documentation)
 - [Credits](#credits)
 
 <!-- /MarkdownTOC -->
@@ -92,6 +93,14 @@ Optionally you can seed the database with sample data (the output will print out
 bin/docker r bin/rake db:seed:sample_users
 ```
 
+If you want to create some cases that have 100's and 1000's of queries, then do:
+
+```
+bin/docker r bin/rake db:seed:large_cases
+```
+
+This is useful for stress testing Quepid!  Especially the front end application!
+
 #### 3. Running the app
 
 Now fire up Quepid locally at http://localhost:3000:
@@ -111,7 +120,8 @@ You can still use `docker-compose` directly, but for the basic stuff you can use
 * Run any command: `bin/docker run [COMMAND]` or `bin/docker r [COMMAND]`
 * Run dev mode as daemon: `bin/docker daemon` or `bin/docker q`
 * Destroy the Docker env: `bin/docker destroy` or `bin/docker d`
-* Run unit tests: `bin/docker r bin/rake test:quepid`
+* Run front end unit tests: `bin/docker r rails test:frontend`
+* Run back end unit tests: `bin/docker r rails test`
 
 
 ## II. Development Log
@@ -119,10 +129,8 @@ You can still use `docker-compose` directly, but for the basic stuff you can use
 While running the app under foreman, you'll only see a request log, for more detailed logging run the following:
 
 ```
-bin/docker r tail -f -n 200 log/development.log
+tail -f log/development.log
 ```
-
-**Note:** To clear the logs to avoid them getting too big run: `bin/docker r cat /dev/null > log/development.log`
 
 ## III. Run Tests
 
@@ -133,15 +141,19 @@ There are three types of tests that you can run:
 These tests run the tests from the Rails side (mainly API controllers, and models):
 
 ```
-bin/docker r bin/rake test
+bin/docker r rails test
 ```
 
-** Make sure you don't run `bin/docker r bundle exec rake test`, you will get `uninitialized constant DatabaseCleaner` errors **
-
-Run a single test via:
+Run a single test file via:
 
 ```
-bin/docker r bin/rake test TEST=./test/controllers/api/v1/bulk/queries_controller_test.rb
+bin/docker r rails test test/models/user_test.rb
+```
+
+Or even a single test in a test file by passing in the line number!
+
+```
+bin/docker r rails test test/models/user_test.rb:33
 ```
 
 If you need to reset your test database setup then run:
@@ -155,7 +167,7 @@ View the logs generated during testing set `config.log_level = :debug` in `test.
 and then tail the log file via:
 
 ```
-bin/docker r tail -f -n 200 log/test.log
+tail -f log/test.log
 ```
 
 ### JS Lint
@@ -163,17 +175,17 @@ bin/docker r tail -f -n 200 log/test.log
 To check the JS syntax:
 
 ```
-bin/docker r bin/rake test:jshint
+bin/docker r rails test:jshint
 ```
 
 ### Karma
 
 Runs tests for the Angular side. There are two modes for the karma tests:
 
-* Single run: `bin/docker r bin/rake karma:run`
+* Single run: `bin/docker r rails karma:run`
 * Continuous/watched run: `bin/docker r bin/rake karma:start`
 
-**Note:** The karma tests require the assets to be precompiled, which adds a significant amount of time to the test run. If you are only making changes to the test/spec files, then it is recommended you run the tests in watch mode (`bin/rake karma:start`). The caveat is that any time you make a change to the app files, you will have to restart the process (or use the single run mode).
+**Note:** The karma tests require the assets to be precompiled, which adds a significant amount of time to the test run. If you are only making changes to the test/spec files, then it is recommended you run the tests in watch mode (`bin/docker r bin/rake karma:start`). The caveat is that any time you make a change to the app files, you will have to restart the process (or use the single run mode).
 
 ### Rubocop
 
@@ -183,13 +195,24 @@ To check the Ruby syntax:
 bin/docker r bundle exec rubocop
 ```
 
+Rubocop can often autocorrect many of the lint issues it runs into via `--auto-correct-all`:
+
+```
+bin/docker r bundle exec rubocop --auto-correct-all
+```
+
+If there is a new "Cop" as they call their rules that we don't like, you can add it to the `./rubocop.yml` file.
+
 ### All Tests
 
-If you want to run all of the tests in one go (before you commit and push for example), just run the special rake task:
+If you want to run all of the tests in one go (before you commit and push for example), just run these two commands:
 
 ```
-bin/docker r bin/rake test:quepid
+bin/docker r rails test
+bin/docker r rails test:frontend
 ```
+
+For some reason we can't run both with one command, _though we should be able to!_.
 
 ### Performance Testing
 
@@ -219,11 +242,13 @@ In the Rails application you can use the logger for the output:
 Rails.logger object.inspect
 ```
 
-We also support the `web-console` gem which allows you to work with Rails via a console right into your browser, similar to running `bin/docker r`.  This only works on HTML view rendered by Rails, not on API calls.  Place `<% console %>` into the html.  Learn more at https://github.com/rails/web-console/tree/v3.3.0#usage.
+If that's not enough and you want to run a debugger, the `byebug` gem is included for that. Add the line `byebug` in your Rails code wherever you want a breakpoint and then run the code and you will get an inline REPL.   Even in unit tests!
 
-If that's not enough and you want to run a debugger, the `byebug` gem is included for that. Add `byebug` wherever you want a breakpoint and then run the code.
+Also, we have the `derailed` gem available which helps you understand memory issues.
 
-Caveat: You might have to stop spring (`bin/spring stop`) or restart the server to get it to execute the breakpoint.
+```
+bin/docker r bundle exec derailed bundle:mem
+```
 
 ### Debugging JS
 
@@ -275,22 +300,22 @@ Common rake tasks that you might use:
 
 ```
 # db
-bin/rake db:create
-bin/rake db:drop
-bin/rake db:migrate
-bin/rake db:rollback
-bin/rake db:schema:load
-bin/rake db:seed
-bin/rake db:setup
+bin/docker r bin/rake db:create
+bin/docker r bin/rake db:drop
+bin/docker r bin/rake db:migrate
+bin/docker r bin/rake db:rollback
+bin/docker r bin/rake db:schema:load
+bin/docker r bin/rake db:seed
+bin/docker r bin/rake db:setup
 
 # show routes
-bin/rake routes
+bin/docker r bin/rake routes
 
 # tests
-bin/rake test
-bin/rake test:js
-bin/rake test:jshint
-bin/rake test:quepid
+bin/docker r bin/rake test
+bin/docker r bin/rake test:js
+bin/docker r bin/rake test:jshint
+bin/docker r bin/rake test:quepid
 ```
 
 ### Thor
@@ -376,6 +401,32 @@ which will install/upgrade the Node module, and then save that dependency to `pa
 
 Then check in the updated `package.json` and `yarn.lock` files.
 
+## I'd like to use a new Ruby Gem, or update a existing one
+
+Typically you would simply do:
+
+```
+bin/docker r bundle add foobar
+```
+
+which will install the new Gem, and then save that dependency to `Gemfile`.
+
+You can also upgrade a gem that doesn't have a specific version in `Gemfile` via:
+
+```
+bin/docker r bundle update foobar
+```
+
+You can remove a gem via:
+
+```
+bin/docker r bundle remove foobar --install
+```
+
+Then check in the updated `Gemfile` and `Gemfile.lock` files.  For good measure
+run the `bin/setup_docker`.
+
+
 ## I'd like to test SSL
 
 There's a directory `.ssl` that contains they key and cert files used for SSL. This is a self signed generated certificate for use in development ONLY!
@@ -438,11 +489,11 @@ heroku restart -a quepid-staging
 
 ## Seed Data
 
-The following accounts are created through the seeds. The all follow the following format:
+The following accounts are created through the seeds. They all follow the following format:
 
 ```
 email: quepid+[type]@o19s.com
-password: quepid+[type]
+password: password
 ```
 
 where type is one of the following:
@@ -464,35 +515,15 @@ where type is one of the following:
 
 Check out the [Data Mapping](docs/data_mapping.md) file for more info about the data structure of the app.
 
+Rebuild the [ERD](docs/erd.png) via `bin/docker r bundle exec rake erd:image`
+
 # App Structure
 
 Check out the [App Structure](docs/app_structure.md) file for more info on how Quepid is structured.
 
-# Legal Pages & GDPR
+# Operating Documentation
 
-If you would like to have legal pages linked in the footer of the app, similar to behavior on http://app.quepid.com,
-add the following `ENV` vars:
-
-```
-TC_URL      # terms and condition
-PRIVACY_URL # privacy policy
-COOKIES_URL # cookies policy
-```
-
-To comply with GDPR, and be a good citizen, the hosted version of Quepid asks if they are willing to receive Quepid related updates via email.  This feature isn't useful to private installs, so this controls the display.
-
-```
-EMAIL_MARKETING_MODE=true   # Enables a checkbox on user signup to consent to emails
-```
-
-## sameSite Cookie issues
-
-We use Rails 4, and it doesn't have support for the sameSite cookie setting required by modern browsers.  You may
-see a message about "sameSite" attribute in the browser console.  
-
-We work around it for the `_quepid_session` by setting it to be lax.  However, the `rack-mini-profiler` also
-has the cookie `__profilin` and it will also cause the warning message to show up.  https://github.com/MiniProfiler/rack-mini-profiler/issues/442
-
+Check out the [Operating Documentation](docs/operating_documentation.md) file for more informations how Quepid can be operated and configured for your company.
 
 # Thank You's
 

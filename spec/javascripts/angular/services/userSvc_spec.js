@@ -66,7 +66,7 @@ describe('Service: userSvc', function () {
 
     it('updates user after first login', function() {
       var url           = '/api/users/' + mockUser.id;
-      var data          = { user: { first_login: false } };
+      var data          = { user: { completed_case_wizard: true } };
 
       $httpBackend.expectPUT(url, data).respond(200, mockUser);
 
@@ -74,7 +74,7 @@ describe('Service: userSvc', function () {
 
       $httpBackend.flush();
 
-      expect(currUser.firstTime).toEqual(false);
+      expect(currUser.completedCaseWizard).toEqual(true);
     });
 
     it('updates a user\'s scorer', function() {

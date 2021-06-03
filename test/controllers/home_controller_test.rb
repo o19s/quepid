@@ -5,7 +5,6 @@ require 'test_helper'
 class HomeControllerTest < ActionController::TestCase
   TRY_INFO        = /bootstrapTryNo.*?(\d*);/.freeze
   CASE_INFO       = /bootstrapCaseNo.*?(\d*);/.freeze
-  TRIGGER_WIZARD  = /triggerWizard\ \=\s*(\w*);/.freeze
 
   before do
     @controller = HomeController.new
@@ -46,7 +45,7 @@ class HomeControllerTest < ActionController::TestCase
     end
 
     test 'bootstraps non deleted/archived case' do
-      deleted_case = user.cases.create case_name: Case::DEFAULT_NAME
+      deleted_case = user.cases.create case_name: 'archived case'
       deleted_case.update archived: true
 
       get :index
@@ -72,12 +71,11 @@ class HomeControllerTest < ActionController::TestCase
     end
   end
 
-  describe 'trigger wizard when user has no cases but has logged in before' do
+  describe 'bootstraps when user has no cases, not in team, but has logged in before' do
     let(:user) do
       User.create(
-        email:       'foo@example.com',
-        password:    'password',
-        first_login: false
+        email:    'foo@example.com',
+        password: 'password'
       )
     end
 
@@ -87,11 +85,19 @@ class HomeControllerTest < ActionController::TestCase
       login_user user
     end
 
-    test 'bootstraps latest case' do
+    test 'bootstraps without creating a case or a try' do
       get :index
 
-      trigger = TRIGGER_WIZARD.match(response.body)
-      assert_equal 'true', trigger[1]
+      assert_response :ok
+
+      user.reload
+
+      assert_empty user.cases
+
+      case_info = CASE_INFO.match(response.body)
+      try_info = TRY_INFO.match(response.body)
+      assert_equal '0', case_info[1]
+      assert_equal '0', try_info[1]
     end
   end
 end

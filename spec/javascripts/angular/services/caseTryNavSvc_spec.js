@@ -36,7 +36,7 @@ describe('Service: caseTryNavSvc', function () {
     expect(locationMock.path).toHaveBeenCalledWith('/case/5/try/1/');
     caseTryNavSvc.navigationCompleted({caseNo: 5, tryNo: 1});
     caseTryNavSvc.navigateTo({caseNo: 4});
-    expect(locationMock.path).toHaveBeenCalledWith('/case/4/try/0/');
+    expect(locationMock.path).toHaveBeenCalledWith('/case/4/try/1/');
   });
 
   it('navigates to new try', function() {

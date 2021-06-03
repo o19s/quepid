@@ -16,10 +16,11 @@ module.exports = function(config) {
 
     // list of files / patterns to load in the browser
     files: [
+      'tmp/assets/home*.js',
       'tmp/assets/application*.js',
       'tmp/assets/application_spec*.js',
-      'spec/javascripts/mock/*.+(coffee|js)',
-      'spec/javascripts/**/*_spec.+(coffee|js)'
+      'spec/javascripts/mock/*.js',
+      'spec/javascripts/**/*_spec.js'
     ],
 
     // list of files to exclude
@@ -73,13 +74,7 @@ module.exports = function(config) {
 
     // Continuous Integration mode
     // if true, it capture browsers, run tests and exit
-    singleRun: false,
-
-    // Preprocessors
-    preprocessors: {
-        '/**/*.coffee.erb':             'coffee',
-        '/**/*.coffee':                 'coffee',
-    }
+    singleRun: false
 
   });
 };

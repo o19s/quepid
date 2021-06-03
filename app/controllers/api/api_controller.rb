@@ -3,6 +3,7 @@
 require 'application_responder'
 require 'analytics'
 
+# rubocop:disable Rails/ApplicationController
 module Api
   class ApiController < ActionController::Base
     include Pundit
@@ -10,6 +11,7 @@ module Api
     include Authentication::CurrentCaseManager
     include Authentication::CurrentQueryManager
     include Authentication::CurrentTeamManager
+    include NotificationsManager
 
     respond_to :json
     before_action :set_default_response_format
@@ -26,6 +28,10 @@ module Api
       render json: { message: 'Success!' }, status: :ok
     end
 
+    def signup_enabled?
+      Rails.application.config.signup_enabled
+    end
+
     protected
 
     def set_default_response_format
@@ -33,3 +39,4 @@ module Api
     end
   end
 end
+# rubocop:enable Rails/ApplicationController

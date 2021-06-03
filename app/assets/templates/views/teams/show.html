@@ -27,7 +27,7 @@
       {{ currentTeam.owner.email }}
     </div>
 
-    <div class="team-stats col-xs-6 col-sm-6 col-md-4 col-lg-3">
+    <div class="team-stats col-xs-6 col-sm-6 col-md-4 col-lg-4">
       <div class="vcard-stats border-bottom row">
         <span class="vcard-stat col-sm-4">
           <strong class="vcard-stat-count d-block">
@@ -51,24 +51,19 @@
 
       <div class="add-member border-bottom row">
         <h4>
-          Add Member
+          Add Team Member
         </h4>
 
         <add-member team='currentTeam'></add-member>
       </div>
 
-      <div
-        class="change-owner border-bottom row"
-
-
-      >
+      <div class="change-owner border-bottom row">
         <h4>
           Change Owner
         </h4>
 
         <change-team-owner
           team='currentTeam'
-
           ng-if="currentUser.id == currentTeam.owner.id"
         ></change-team-owner>
 
@@ -121,7 +116,7 @@
         <div class="row listing-header">
           <span class="col-xs-1">ID</span>
             <span class="col-xs-3">Case Title</span>
-            <span class="col-xs-1">Last Try</span>
+            <span class="col-xs-1">Last Try #</span>
             <span class="col-xs-1"># of Queries</span>
             <span class="col-xs-1">Last Score</span>
             <span class="col-xs-1">Last Run On</span>
@@ -157,9 +152,10 @@
       <div id='scorers-listing' ng-if="currentTeam.scorers.length !== 0">
         <div class="row listing-header">
           <span class="col-md-1">Name</span>
-          <span class="col-md-7">Code/Scale</span>
-          <span class="col-md-2">Show scale labels?</span>
-          <span class="col-md-2">Max Score</span>
+          <span class="col-md-7">Code/Scale (<a target="_blank" href="http://quepid.com/docs/#scorers-custom">learn more</a>)</span>
+          <span class="col-md-1">Show scale labels?</span>
+          <span class="col-md-1">Max Score</span>
+          <span class="col-md-2">Owner</span>
         </div>
 
         <ul class="scorers-list" ng-model="currentTeam.scorers">

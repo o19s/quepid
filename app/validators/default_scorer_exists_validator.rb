@@ -4,6 +4,6 @@ class DefaultScorerExistsValidator < ActiveModel::Validator
   def validate record
     return true if record.default_scorer_id.blank?
 
-    record.errors.add(:default_scorer_id, :existence) unless Scorer.where(id: record.default_scorer_id).exists?
+    record.errors.add(:default_scorer_id, :existence) unless Scorer.exists?(id: record.default_scorer_id)
   end
 end

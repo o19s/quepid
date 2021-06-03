@@ -4,11 +4,13 @@
 module Api
   module V1
     class ScorersController < Api::ApiController
-      before_action :set_scorer, only: %i[show update destroy]
-      before_action :check_communal_scorers_only, only: %i[create update destroy]
+      before_action :set_scorer, only: [ :show, :update, :destroy ]
+      before_action :check_communal_scorers_only, only: [ :create, :update, :destroy ]
 
       def index
-        @user_scorers = current_user.scorers.all unless Rails.application.config.communal_scorers_only
+        unless Rails.application.config.communal_scorers_only
+          @user_scorers = current_user.scorers.all.reject(&:communal?)
+        end
         @communal_scorers = Scorer.communal
 
         respond_with @user_scorers, @communal_scorers
@@ -92,7 +94,18 @@ module Api
       # rubocop:disable Metrics/PerceivedComplexity
       # rubocop:disable Metrics/CyclomaticComplexity
       # rubocop:disable Metrics/AbcSize
+      # rubocop:disable Layout/LineLength
+
+      # This method lets you delete a scorer, and if you pass in force=true then
+      # you update other objects with either the system default scorer, or, if
+      # you pass in the replacement_scorer_id then that scorer.
       def destroy
+        bool = ActiveRecord::Type::Boolean.new
+        force  = bool.deserialize(params[:force]) || false
+        if force
+          replacement_scorer = params[:replacement_scorer_id].present? ? Scorer.find_by(id: params[:replacement_scorer_id]) : Scorer.system_default_scorer
+        end
+
         unless @scorer.owner == current_user
           render(
             json:   {
@@ -103,17 +116,16 @@ module Api
 
           return
         end
+
         @users = User.where(default_scorer_id: @scorer.id)
-        if @users.count.positive? && params[:force]
+        if @users.count.positive? && force
           # rubocop:disable Rails/SkipsModelValidations
-          @users.update_all(default_scorer_id: Scorer.system_default_scorer)
+          @users.update_all(default_scorer_id: replacement_scorer.id)
           # rubocop:enable Rails/SkipsModelValidations
         elsif @users.count.positive?
           render(
             json:   {
-              # rubocop:disable Metrics/LineLength
               error: "Cannot delete the scorer because it is the default for #{@users.count} #{'user'.pluralize(@users.count)}: [#{@users.take(3).map(&:email).to_sentence}]",
-              # rubocop:enable Metrics/LineLength
             },
             status: :bad_request
           )
@@ -122,30 +134,14 @@ module Api
         end
 
         @cases = Case.where(scorer_id: @scorer.id)
-        if @cases.count.positive? && params[:force]
-          @cases.update_all(scorer_id: nil) # rubocop:disable Rails/SkipsModelValidations
+        if @cases.count.positive? && force
+          # We can't have a nil scorer on a case, so setting all to the default.  See comment above about how
+          # we should really pass in a replacement scorer id!
+          @cases.update_all(scorer_id: replacement_scorer.id) # rubocop:disable Rails/SkipsModelValidations
         elsif @cases.count.positive?
           render(
             json:   {
-              # rubocop:disable Metrics/LineLength
-              error: "Cannot delete the scorer because it is the default for #{@cases.count} #{'case'.pluralize(@cases.count)}: [#{@cases.take(3).map(&:case_name).to_sentence}]",
-              # rubocop:enable Metrics/LineLength
-            },
-            status: :bad_request
-          )
-
-          return
-        end
-
-        @queries = Query.where(scorer_id: @scorer.id)
-        if @queries.count.positive? && params[:force]
-          @queries.update_all(scorer_id: nil) # rubocop:disable Rails/SkipsModelValidations
-        elsif @queries.count.positive?
-          render(
-            json:   {
-              # rubocop:disable Metrics/LineLength
-              error: "Cannot delete the scorer because it is the default for #{@queries.count} #{'query'.pluralize(@queries.count)}: [#{@queries.take(3).map(&:query_text).to_sentence}]",
-              # rubocop:enable Metrics/LineLength
+              error: "Cannot delete the scorer because it is the default for #{@cases.count} #{'case'.pluralize(@cases.count)}: #{@cases.take(3).map(&:case_name).to_sentence}",
             },
             status: :bad_request
           )
@@ -157,9 +153,7 @@ module Api
         if @teams.count.positive?
           render(
             json:   {
-              # rubocop:disable Metrics/LineLength
-              error: "Cannot delete the scorer because it is shared with #{@teams.count} #{'team'.pluralize(@teams.count)}: [#{@teams.take(3).map(&:name).to_sentence}]",
-              # rubocop:enable Metrics/LineLength
+              error: "Cannot delete the scorer because it is shared with #{@teams.count} #{'team'.pluralize(@teams.count)}: #{@teams.take(3).map(&:name).to_sentence}",
             },
             status: :bad_request
           )
@@ -176,6 +170,7 @@ module Api
       # rubocop:enable Metrics/CyclomaticComplexity
       # rubocop:enable Metrics/PerceivedComplexity
       # rubocop:enable Metrics/MethodLength
+      # rubocop:enable Layout/LineLength
 
       private
 
@@ -185,28 +180,22 @@ module Api
         params.require(:scorer).permit(
           :code,
           :name,
-          :query_test,
-          :query_id,
           :manual_max_score,
           :manual_max_score_value,
           :show_scale_labels,
           :communal,
-          :scale,
-          scale: []
-        ).tap do |whitelisted|
-          whitelisted[:scale_with_labels] = params[:scorer][:scale_with_labels]
-        end
+          scale:             [],
+          scale_with_labels: {}
+        )
       end
 
       def set_scorer
         # This block of logic should all be in user_scorer_finder.rb
         @scorer = current_user.scorers.where(id: params[:id]).first
 
-        # rubocop:disable Style/IfUnlessModifier
         if @scorer.nil? # Check if communal scorers has the scorer.  This logic should be in the .scorers. method!
           @scorer = Scorer.communal.where(id: params[:id]).first
         end
-        # rubocop:enable Style/IfUnlessModifier
 
         render json: { error: 'Not Found!' }, status: :not_found unless @scorer
       end
