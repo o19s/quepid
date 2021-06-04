@@ -93,7 +93,7 @@ class UserTest < ActiveSupport::TestCase
   end
 
   describe 'Agreed' do
-    test 'Doesnt set agreed_time agreed is nil or false' do
+    test 'Does not set agreed_time when agreed is nil or false' do
       password = 'password'
       new_user = User.create(email: 'new@user.com', password: password, agreed: nil)
       assert_nil new_user.agreed_time
@@ -102,13 +102,25 @@ class UserTest < ActiveSupport::TestCase
       assert_nil new_user.agreed_time
     end
 
-    test 'Sets agreed_time if nil when agreed set to true' do
+    test 'Sets agreed_time when agreed set to true when T&C set' do
       user = User.create
       assert user.terms_and_conditions?
 
       password = 'password'
       new_user = User.create(email: 'new@user.com', password: password, agreed: true)
       assert_not_nil new_user.agreed_time
+    end
+
+    test 'Sets agreed_time when agreed set to true when T&C not set' do
+      terms_and_conditions_url = Rails.application.config.terms_and_conditions_url
+      Rails.application.config.terms_and_conditions_url = ''
+      user = User.create
+      assert_false user.terms_and_conditions?
+
+      password = 'password'
+      new_user = User.create(email: 'new@user.com', password: password, agreed: true)
+      assert_nil new_user.agreed_time
+      Rails.application.config.terms_and_conditions_url = terms_and_conditions_url
     end
   end
 
