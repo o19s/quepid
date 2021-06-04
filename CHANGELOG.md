@@ -1,5 +1,20 @@
 # Changelog
 
+## 6.5.4 - ??
+
+### Bugs
+
+* Preserve the chosen scorer when cloning a case, we were defaulting to the users default scorer.  https://github.com/o19s/quepid/pull/372 by @epugh fixes https://github.com/o19s/quepid/issues/273.  Thanks @binarymax and @nathancday for spotting this!
+
+* Ensure that CSV export always has all the columns expected.   Queries that aren't fully rated and have blank values didn't put out complete set of _,_ separators.  https://github.com/o19s/quepid/pull/371 by @epugh fixes https://github.com/o19s/quepid/issues/364 by @sstults.  Spotted while working with Quaerite.
+
+* If you don't have a Terms & Conditions url, then your users don't have an `agreed_time`, so the activity pulse chart in the admin errors out.  https://github.com/o19s/quepid/pull/373 by @epugh sorts this out.
+
+### Improvements
+
+* Enable TLS for Redis 6 on Sidekiq on Heroku.  https://github.com/o19s/quepid/pull/370 by @michaelcizmar fixes https://github.com/o19s/quepid/issues/271 by @michaelcizmar.  Thanks Michael for your first PR to Quepid!
+
+
 ## 6.5.3 - 2021-06-01
 
 ### Bugs
