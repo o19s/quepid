@@ -115,7 +115,7 @@ class UserTest < ActiveSupport::TestCase
       terms_and_conditions_url = Rails.application.config.terms_and_conditions_url
       Rails.application.config.terms_and_conditions_url = ''
       user = User.create
-      assert_false user.terms_and_conditions?
+      assert_not user.terms_and_conditions?
 
       password = 'password'
       new_user = User.create(email: 'new@user.com', password: password, agreed: true)
