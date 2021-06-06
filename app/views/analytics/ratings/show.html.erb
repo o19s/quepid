@@ -1,7 +1,8 @@
 <h2>Ratings Analysis for Case <%=@case.case_name %></h2>
 
 Case Rating Variance: <%=number_with_precision(@case_analytics_manager.case_ratings_variance, precision: 2) %>
-
+<br/>
+Question?   Should the Query/Doc Variance be 1 for total agreement and 0 for no agreement, or vice versa (which is what we have now!)
 <table class="table table-condensed table-striped">
   <tr>
     <th>Query</th><th>Query Rating Variance (RANDOM NUMBERS)</th><th>Doc ID</th>
