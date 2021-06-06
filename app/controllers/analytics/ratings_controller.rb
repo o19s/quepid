@@ -48,6 +48,8 @@ module Analytics
         @df['query_doc_rating_variance'][x] = @case_analytics_manager.query_doc_ratings_variance(query_doc_ratings)
       end
 
+      # We should sort the @df so when you reload you get same results!
+      
       # puts @df
     end
     # rubocop:enable Metrics/MethodLength
