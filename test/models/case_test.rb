@@ -192,6 +192,17 @@ class CaseTest < ActiveSupport::TestCase
           end
         end
       end
+      it 'preserves the scorer' do
+        assert_difference 'Case.count' do
+          user_scorer         = scorers(:random_scorer)
+          the_case.scorer     = user_scorer
+          the_case.save
+
+          cloned_case.clone_case the_case, user, try: the_try, clone_queries: false
+
+          assert_equal user_scorer, cloned_case.scorer
+        end
+      end
     end
 
     describe 'when cloning a try and the queries and the ratings' do

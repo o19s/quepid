@@ -21,10 +21,13 @@
         </div>
       </div>
 
-      <div class="col-summary" ng-class="{true: 'col-summary-img', false: ''}[doc.hasThumb()]">
-      <!-- thumbnail / if the doc has one -->
+      <div class="col-summary" ng-class="summaryColumnStyle()">
+        <!-- thumbnail/image if the doc has one -->
         <div ng-show="doc.hasThumb()" class="col-thumbnail" style="text-align: center">
           <img class="img-thumbnail result-thumbnail" ng-src="{{doc.thumb}}">
+        </div>
+        <div ng-show="doc.hasImage()" class="col-image" style="text-align: center">
+          <img class="img-thumbnail result-image" ng-src="{{doc.image}}">
         </div>
 
         <!-- Fields -->

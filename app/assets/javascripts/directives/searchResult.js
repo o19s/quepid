@@ -1,24 +1,4 @@
 'use strict';
-/*Style we used when we deceted a doc had a rating*/
-angular.module('QuepidApp')
-  .filter('thumbStyle', [
-    function() {
-      return function(doc) {
-        if (doc.hasOwnProperty('thumb')) {
-          return {'width': '300px',
-                  'height': '200px',
-                  'display': 'inline-block',
-                  'overflow-y': 'auto',
-                  'border-width': '1px',
-                  'border-style': 'solid'};
-        }
-        else {
-          return {};
-        }
-      };
-    }
-  ]);
-
 angular.module('QuepidApp')
   .directive('searchResult', [
     function () {
@@ -87,7 +67,7 @@ angular.module('QuepidApp')
             // Audio Embed
             if (isAudio(scope.src)) {
                 scope.audioSrc = scope.src;
-            // Image Embed
+            // Image Embed.  This is an alternative to the image: field spec.
             } else if (isImage(scope.src)) {
                 scope.imageSrc = scope.src;
             // Video Embed

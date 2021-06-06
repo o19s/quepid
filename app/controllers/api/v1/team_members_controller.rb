@@ -35,7 +35,9 @@ module Api
           return
         end
 
-        @member = User.invite!({ email: params[:id], password: '' }, current_user)
+        @member = User.invite!({ email: params[:id], password: '' }, current_user) do |u|
+          u.skip_invitation = !email_notifications_enabled?
+        end
 
         @team.members << @member unless @team.members.exists?(@member.id)
 

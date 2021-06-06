@@ -20,3 +20,8 @@ enabled = true
     "Dockerfile.dev",
     "Dockerfile.prod"
   ]
+
+exclude_patterns = [
+  "public/javascripts/ace/*.js",
+]
+

@@ -130,12 +130,12 @@ angular-utils-pagination@~0.11.1:
   version "0.4.2"
   resolved "git://github.com/softwaredoug/angular-wizard.git#d86e03e77296e60c9115622ab7c81221fad37649"
 
-angular@>=1.2.x, angular@^1.2.10, angular@^1.7.9:
+angular@>=1.2.x, angular@^1.2.10:
   version "1.7.9"
   resolved "https://registry.yarnpkg.com/angular/-/angular-1.7.9.tgz#e52616e8701c17724c3c238cfe4f9446fd570bc4"
   integrity sha512-5se7ZpcOtu0MBFlzGv5dsM1quQDoDeUTwZrWjGtTNA7O88cD8TEk5IEKCTDa3uECV9XnvKREVUr7du1ACiWGFQ==
 
-angular@~1.8.2:
+angular@^1.7.9, angular@~1.8.2:
   version "1.8.2"
   resolved "https://registry.yarnpkg.com/angular/-/angular-1.8.2.tgz#5983bbb5a9fa63e213cb7749199e0d352de3a2f1"
   integrity sha512-IauMOej2xEe7/7Ennahkbb5qd/HFADiNuLSESz9Q27inmi32zB0lnAsFeLEWcox3Gd1F6YhNd1CP7/9IukJ0Gw==
@@ -1481,10 +1481,10 @@ source-map@^0.6.1:
   resolved "https://registry.yarnpkg.com/source-map/-/source-map-0.6.1.tgz#74722af32e9614e9c287a8d0bbde48b5e2f1a263"
   integrity sha512-UjgapumWlbMhkBgzT7Ykc5YXUT46F0iKu8SGXq0bcwP5dz/h0Plj6enJqjz1Zbq2l5WaqYnrVbwWOWMyF3F47g==
 
-splainer-search@^2.6.9:
-  version "2.6.9"
-  resolved "https://registry.yarnpkg.com/splainer-search/-/splainer-search-2.6.9.tgz#46b5e112bf2f93aa95e14ac7707d80a44fbc2cb6"
-  integrity sha512-VXJGyqumseOOHlqLiTSEfgxpN7sDlV2C7+kU/oXrr/SHi1mCsCFePL2U2V6mP86EYC0KdVMs0RwtHZMuCKyhUw==
+splainer-search@^2.6.10:
+  version "2.6.10"
+  resolved "https://registry.yarnpkg.com/splainer-search/-/splainer-search-2.6.10.tgz#24577c0024d3089bda21c3f2af94e9dacd434f15"
+  integrity sha512-Fp1rzlW3zDjg0GWDIDRYnWnmBs81c8b8+mevsDu4TLr44/HNS5HsjgDmbT6GhqQUyIbI7u3M4pnmyUX0pqzmOA==
   dependencies:
     angular "^1.7.9"
     urijs "~1.16.1"

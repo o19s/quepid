@@ -184,7 +184,8 @@ angular.module('QuepidApp')
 
         var allowedModifiers = [
             'media:',
-            'thumb:'
+            'thumb:',
+            'image:'
         ];
 
         for (var i = 0; i < allowedModifiers.length; i++) {

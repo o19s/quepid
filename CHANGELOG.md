@@ -1,6 +1,40 @@
 # Changelog
 
-## 6.5.1 - ??
+## 6.5.4 - ??
+
+### Bugs
+
+* Preserve the chosen scorer when cloning a case, we were defaulting to the users default scorer.  https://github.com/o19s/quepid/pull/372 by @epugh fixes https://github.com/o19s/quepid/issues/273.  Thanks @binarymax and @nathancday for spotting this!
+
+* Ensure that CSV export always has all the columns expected.   Queries that aren't fully rated and have blank values didn't put out complete set of _,_ separators.  https://github.com/o19s/quepid/pull/371 by @epugh fixes https://github.com/o19s/quepid/issues/364 by @sstults.  Spotted while working with Quaerite.
+
+* If you don't have a Terms & Conditions url, then your users don't have an `agreed_time`, so the activity pulse chart in the admin errors out.  https://github.com/o19s/quepid/pull/373 by @epugh sorts this out.
+
+### Improvements
+
+* Enable TLS for Redis 6 on Sidekiq on Heroku.  https://github.com/o19s/quepid/pull/370 by @michaelcizmar fixes https://github.com/o19s/quepid/issues/271 by @michaelcizmar.  Thanks Michael for your first PR to Quepid!
+
+
+## 6.5.3 - 2021-06-01
+
+### Bugs
+
+* In 6.5.2 we introduced the `image:image_path` to show larger images, however there is odd wrapping if you don't have many fields listed for a doc.  https://github.com/o19s/quepid/pull/365 by @epugh fixes this.
+
+* If you didn't have email set up, then sending invites wouldn't work.  https://github.com/o19s/quepid/pull/369 by @epugh adds better handling for when email hasn't been set up for Quepid.
+
+## 6.5.2 - 2021-05-27
+
+### Improvements
+
+* We have a new Favicon, but didn't use it everywhere, so https://github.com/o19s/quepid/pull/363 by @epugh displays the new favicon everywhere.
+
+### Features
+
+* Rating documents where the image carries most of the information?   The existing `thumbnail:image_path` limits you to a 75 pixel wide image.  We now have `image:image_path` which displays a 200 pixel wide image.   This is an alternative to the `media:image_path` approach, as this shows up next to your fields versus inline with your fields.  https://github.com/o19s/quepid/pull/362 by @epugh fixes https://github.com/o19s/quepid/issues/360.
+
+
+## 6.5.1 - 2021-05-25
 
 ### Bugs
 
@@ -10,7 +44,7 @@
 
 * Passing in quote delimited parameters to `bin/docker r` wasn't preserving or quotes or escaping the spaces, causing the `thor user:create foo@example.com "Eric Pugh" "mysuperstrongpassword"` example to fail.  https://github.com/o19s/quepid/pull/340 by @epugh fixes https://github.com/o19s/quepid/issues/338.
 
-* Thanks to Liz Novak at VIN for discovering that a non lowercase email address like `person@EXAMPLE.org` wouldn't be considered a valid email address, so you couldn't send a invite to join Quepid.  https://github.com/o19s/quepid/issues/342 fixed by https://github.com/o19s/quepid/pull/346 by @epugh.
+* Thanks to Liz Novak at VIN for discovering that a non lowercase email address like `person@EXAMPLE.org` wouldn't be considered a valid email address, so you couldn't send a invite to join Quepid.  https://github.com/o19s/quepid/issues/342 fixed by https://github.com/o19s/quepid/pull/346 by @epugh with assist from @eribeiro.
 
 ### Improvements
 
