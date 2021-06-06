@@ -87,9 +87,12 @@ module Api
             get :show, params: { case_id: the_case.id, format: :csv, file_format: 'basic' }
             assert_response :ok
 
-            expected_csv = "query,docid,rating\n"\
-                           "two,,\n"\
-                           "one,,\n"
+            expected_csv = <<~CSV
+              query,docid,rating
+              two,,
+              one,,
+            CSV
+
             assert_equal response.body, expected_csv
 
             csv = CSV.parse(response.body, headers: true)
