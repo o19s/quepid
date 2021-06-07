@@ -17,9 +17,9 @@ json.shared_with_team teams.count.positive? unless no_teams
 
 json.teams            teams unless no_teams
 
-json.last_try_number acase.tries.best.try_number unless no_tries || acase.tries.blank? || acase.tries.best.blank?
+json.last_try_number  acase.tries.best.try_number unless no_tries || acase.tries.blank? || acase.tries.best.blank?
 
-json.ratings_view @case_metadatum.ratings_view if @case_metadatum.present?
+json.ratings_view     @case_metadatum.ratings_view if @case_metadatum.present?
 
 case_analytics_manager = CaseAnalyticsManager.new @case
 if analytics && case_analytics_manager.can_calculate_variances?
