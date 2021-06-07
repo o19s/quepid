@@ -41,7 +41,7 @@ module Api
 
             first_query = acase.queries.first
 
-            assert_equal 'one', first_query.query_text
+            assert_equal 'one', first_query.query_text, 'Sometimes fails on timing, just rerun first.'
             assert_equal json_response['displayOrder'][0], first_query.id
           end
 
