@@ -2,10 +2,17 @@
 
 angular.module('QuepidApp')
   .controller('SearchResultCtrl', [
-    '$scope', '$uibModal',
+    '$scope',
+    '$rootScope',
+    '$uibModal',
     'queriesSvc',
     'rateElementSvc',
-    function ($scope, $uibModal, queriesSvc, rateElementSvc) {
+    function (
+      $scope,
+      $rootScope,
+      $uibModal,
+      queriesSvc,
+      rateElementSvc) {
 
       var src = {
         'query':  $scope.query,

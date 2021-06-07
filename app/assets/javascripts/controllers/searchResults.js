@@ -2,8 +2,7 @@
 
 angular.module('QuepidApp')
   .controller('SearchResultsCtrl', [
-    '$rootScope',
-    '$scope', '$uibModal', '$log', '$window',
+    '$rootScope', '$scope', '$uibModal', '$log', '$window',
     'rateBulkSvc', 'userSvc', 'queriesSvc', 'queryViewSvc', 'settingsSvc',
     function (
       $rootScope, $scope, $uibModal, $log, $window,
