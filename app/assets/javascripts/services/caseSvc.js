@@ -53,6 +53,7 @@ angular.module('QuepidApp')
         theCase.scores            = data.scores || [];
         theCase.queries           = data.queries || [];
         theCase.sharedWithTeam    = data.shared_with_team;
+        theCase.ratingsView       = data.ratings_view;
         theCase.ratingVariance    = data.rating_variance;
 
         theCase.teamNames = function() {
