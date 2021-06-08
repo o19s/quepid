@@ -188,6 +188,10 @@ class User < ApplicationRecord
     # required by devise_invitable
   end
 
+  def pending_invite?
+    self.created_by_invite? && !self.invitation_accepted? && self.password.blank?
+  end
+
   private
 
   def set_defaults
