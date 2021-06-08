@@ -10,6 +10,8 @@
 
 * If you don't have a Terms & Conditions url, then your users don't have an `agreed_time`, so the activity pulse chart in the admin errors out.  https://github.com/o19s/quepid/pull/373 by @epugh sorts this out.
 
+* In the dawn of Quepid, we had `agreed_time` but not a boolean `agreed`.  A user let me know he couldn't update his email address (from an account in 2015!) because he didn't have `agreed=true` set.  https://github.com/o19s/quepid/pull/374 by @epugh cleans up some old user data.
+
 ### Improvements
 
 * Enable TLS for Redis 6 on Sidekiq on Heroku.  https://github.com/o19s/quepid/pull/370 by @michaelcizmar fixes https://github.com/o19s/quepid/issues/271 by @michaelcizmar.  Thanks Michael for your first PR to Quepid!
