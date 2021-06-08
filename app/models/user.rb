@@ -189,7 +189,7 @@ class User < ApplicationRecord
   end
 
   def pending_invite?
-    self.created_by_invite? && !self.invitation_accepted? && self.password.blank?
+    created_by_invite? && !invitation_accepted? && password.blank?
   end
 
   private
