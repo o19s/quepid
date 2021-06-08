@@ -49,7 +49,7 @@ module Analytics
       end
 
       # We should sort the @df so when you reload you get same results!
-      @df.sort_by! { |r| r['query_text'] }
+      @df = @df.sort_by! { |r| r['querydoc_id'] }
 
       # puts @df
     end

@@ -20,10 +20,7 @@ else
   ratings = Query.ratings_averaged(query.ratings)
 end
 
-# rubocop:disable Layout/LineLength
-# json.rating_variance Query.relative_variance(query.case.scorer.scale.last, Query.ratings_averaged(query.ratings).first.rating)
 json.rating_variance query.relative_variance
-# rubocop:enable Layout/LineLength
 
 json.ratings do
   ratings.each { |rating| json.set! rating.doc_id, rating.rating }
