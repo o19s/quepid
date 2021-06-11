@@ -10,15 +10,13 @@ angular.module('QuepidApp')
     '$log',
     'flash',
     'customScorerSvc',
-    'ScorerFactory',
     function (
       $uibModal,
       $scope,
       $rootScope,
       $log,
       flash,
-      customScorerSvc,
-      ScorerFactory
+      customScorerSvc
     ) {
       var ctrl = this;
       ctrl.buttonText = $scope.buttonText;
