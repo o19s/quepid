@@ -2,6 +2,18 @@
 
 ## 6.5.4 - ??
 
+### Features
+
+* You can now Clone an existing Scorer!.  Super useful when you want to start with one of the communal scorers that only go to 10 deep, like P@10, and you want it to be P@40.  Introduced as part of https://github.com/o19s/quepid/pull/379 by @epugh.
+
+### Improvements
+
+* Enable TLS for Redis 6 on Sidekiq on Heroku.  https://github.com/o19s/quepid/pull/370 by @michaelcizmar fixes https://github.com/o19s/quepid/issues/271 by @michaelcizmar.  Thanks Michael for your first PR to Quepid!
+
+* During the Case Wizard setup, allow space delimited list of fields, like `title overview` to be pasted in, just like comma delimited lists.  Thanks @peterdm for the assist on the Regex!   https://github.com/o19s/quepid/pull/378 by @epugh.
+
+* Revamped the layout of the Scorer creation and editing screens to be visually cleaner.  Retired the old _Fibonnaci_ scale, and renamed _Default_ to _Detail_, as well as _Short_ to _Graded_ scales.  Introduced _Binary_ as a new, default scale.   @DmitryKey and @epugh paired on this during Quepid Qommunity Qoding hour, resulting in https://github.com/o19s/quepid/pull/379.
+
 ### Bugs
 
 * Preserve the chosen scorer when cloning a case, we were defaulting to the users default scorer.  https://github.com/o19s/quepid/pull/372 by @epugh fixes https://github.com/o19s/quepid/issues/273.  Thanks @binarymax and @nathancday for spotting this!
@@ -12,11 +24,7 @@
 
 * In the dawn of Quepid, we had `agreed_time` but not a boolean `agreed`.  A user let me know he couldn't update his email address (from an account in 2015!) because he didn't have `agreed=true` set.  https://github.com/o19s/quepid/pull/374 by @epugh cleans up some old user data.
 
-### Improvements
-
-* Enable TLS for Redis 6 on Sidekiq on Heroku.  https://github.com/o19s/quepid/pull/370 by @michaelcizmar fixes https://github.com/o19s/quepid/issues/271 by @michaelcizmar.  Thanks Michael for your first PR to Quepid!
-
-* During the Case Wizard setup, allow space delimited list of fields, like `title overview` to be pasted in, just like comma delimited lists.  Thanks @peterdm for the assist on the Regex!   https://github.com/o19s/quepid/pull/378 by @epugh.
+* Fixed the labeling behavior for a Scorer.  @DmitryKey and @epugh paired on this during Quepid Qommunity Qoding hour, resulting in https://github.com/o19s/quepid/pull/379, fixing https://github.com/o19s/quepid/issues/376.
 
 
 ## 6.5.3 - 2021-06-01
