@@ -21,18 +21,21 @@
         function addActions(ctrl, scope) {
           ctrl.scaleOptions = scaleOptions;
 
+          // Let's only watch the scale if you pick custom radio option
           scope.$watch('ctrl.scorer.scale', function() {
-            ctrl.updateScale(ctrl.scorer.scale);
+            if (ctrl.scaleChoice === 'custom') {
+              ctrl.updateScale(ctrl.scorer.scale);
+            }
           });
 
           ctrl.updateScale = function(scale) {
-            if ( scale !== ctrl.scorer.scale) {
+            //if ( scale !== ctrl.scorer.scale {
               if (ctrl.needToWarnOnScaleChange) {
                 ctrl.updatingScale           = true;
               }
               ctrl.scorer.scale            = scale;
               ctrl.scorer.scaleWithLabels  = ctrl.scorer.scaleToScaleWithLabels(ctrl.scorer.scale, ctrl.scorer.scaleWithLabels);
-            }
+            //}
           };
         }
       }

@@ -17,7 +17,7 @@ angular.module('QuepidApp')
 
       scorerControllerActionsSvc.addActions(ctrl, $scope);
 
-      ctrl.scaleChoice  = 'defaultScale';
+      ctrl.scaleChoice  = 'binaryScale';
       ctrl.scorer       = defaultScorer;
 
       ctrl.scorerOptions = {

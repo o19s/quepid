@@ -42,15 +42,15 @@
     Changing scales may invalidate existing ratings. Please review and re-rate your queries as needed!
   </p>
   <label>
-    <input id="short" type="radio" ng-model="ctrl.scaleChoice" value="binaryScale" ng-change="ctrl.updateScale(ctrl.scaleOptions.binaryScale)">
+    <input id="binary" type="radio" ng-model="ctrl.scaleChoice" value="binaryScale" ng-change="ctrl.updateScale(ctrl.scaleOptions.binaryScale)">
     Binary Scale ( {{ ctrl.scaleOptions.binaryScale }} )
   </label><br/>
   <label>
-    <input id="short" type="radio" ng-model="ctrl.scaleChoice" value="gradedScale" ng-change="ctrl.updateScale(ctrl.scaleOptions.gradedScale)">
+    <input id="graded" type="radio" ng-model="ctrl.scaleChoice" value="gradedScale" ng-change="ctrl.updateScale(ctrl.scaleOptions.gradedScale)">
     Graded Scale ( {{ ctrl.scaleOptions.gradedScale }} )
   </label><br/>
   <label>
-    <input id="default" type="radio" ng-model="ctrl.scaleChoice" value="detailScale" ng-change="ctrl.updateScale(ctrl.scaleOptions.detailScale)">
+    <input id="detail" type="radio" ng-model="ctrl.scaleChoice" value="detailScale" ng-change="ctrl.updateScale(ctrl.scaleOptions.detailScale)">
     Detail Scale ( {{ ctrl.scaleOptions.detailScale }} )
   </label><br/>
   <label>
