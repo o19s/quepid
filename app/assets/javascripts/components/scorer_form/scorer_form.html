@@ -66,15 +66,13 @@
       Show Scale Labels
     </label>
 
-    <div ng-if="ctrl.scorer.showScaleLabels === true">
-      <ul class='scale-labels form-horizontal'>
-        <li ng-repeat="(value, label) in ctrl.scorer.scaleWithLabels" class="form-group">
-          <label class="col-sm-1 control-label">{{value}}: </label>
-          <div class="col-sm-11">
-            <input type='text' ng-model='ctrl.scorer.scaleWithLabels[value]' class="form-control" />
-          </div>
-        </li>
-      </ul>
+    <div ng-if="ctrl.scorer.showScaleLabels === true" class='scale-labels form-horizontal'>
+      <span ng-repeat="(value, label) in ctrl.scorer.scaleWithLabels" class="form-group">
+        <label class="col-sm-1 control-label">{{value}}: </label>
+        <div class="col-sm-11">
+          <input type='text' ng-model='ctrl.scorer.scaleWithLabels[value]' class="form-control" />
+        </div>
+      </span>
     </div>
   </div>
 </div>
