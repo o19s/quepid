@@ -27,6 +27,9 @@
 
           ctrl.updateScale = function(scale) {
             if ( scale !== ctrl.scorer.scale) {
+              if (ctrl.needToWarnOnScaleChange) {
+                ctrl.updatingScale           = true;
+              }
               ctrl.scorer.scale            = scale;
               ctrl.scorer.scaleWithLabels  = ctrl.scorer.scaleToScaleWithLabels(ctrl.scorer.scale, ctrl.scorer.scaleWithLabels);
             }

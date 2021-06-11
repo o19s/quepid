@@ -16,6 +16,7 @@ angular.module('QuepidApp')
     ) {
       var ctrl        = this;
       ctrl.scorer     = scorer;
+      ctrl.needToWarnOnScaleChange = true; // Editing scorers may have ratings already, so warn.
 
       scorerControllerActionsSvc.addActions(ctrl, $scope);
 
