@@ -5,7 +5,10 @@
 (function() {
   angular.module('QuepidApp')
     .service('scorerControllerActionsSvc', [
-      function() {
+      'customScorerSvc',
+      function(
+        customScorerSvc
+      ) {
         var self = this;
 
         var scaleOptions = {
@@ -17,6 +20,7 @@
 
         // Functions
         self.addActions = addActions;
+        self.figureOutScaleChoice = figureOutScaleChoice;
 
         function addActions(ctrl, scope) {
           ctrl.scaleOptions = scaleOptions;
@@ -37,6 +41,24 @@
               ctrl.scorer.scaleWithLabels  = ctrl.scorer.scaleToScaleWithLabels(ctrl.scorer.scale, ctrl.scorer.scaleWithLabels);
             //}
           };
+        }
+
+        function figureOutScaleChoice(ctrl) {
+          if (customScorerSvc.scalesAreEqual(
+            ctrl.scorer.scale, ctrl.scaleOptions.detailScale
+          )) {
+            ctrl.scaleChoice = 'detailScale';
+          } else if (customScorerSvc.scalesAreEqual(
+            ctrl.scorer.scale, ctrl.scaleOptions.gradedScale
+          )) {
+            ctrl.scaleChoice = 'gradedScale';
+          } else if (customScorerSvc.scalesAreEqual(
+            ctrl.scorer.scale, ctrl.scaleOptions.binaryScale
+          )) {
+            ctrl.scaleChoice = 'binaryScale';
+          } else  {
+            ctrl.scaleChoice = 'custom';
+          }
         }
       }
     ]);
