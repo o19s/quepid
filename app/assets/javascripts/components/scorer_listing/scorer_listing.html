@@ -35,8 +35,6 @@
 
     <div>
       <ul class='scorer-scale clearfix' ng-model="ctrl.scorer.scale">
-        <!-- There is an issue where this ng-repeat doesn't rerun after you save and update the lists. -->
-        <!-- Other properties of ctrl.scorer do update -->
         <li ng-repeat="(number, value) in ctrl.scorer.colors">
           <div ng-style="{ 'background-color': value.color }">
             {{ number }}

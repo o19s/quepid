@@ -635,10 +635,10 @@ describe('Service: ScorerFactory', function () {
       var scaleWithLabels = scorer.scaleToScaleWithLabels(scale);
 
       expect(scaleWithLabels).not.toBe(null);
-      expect(scaleWithLabels[1]).toEqual(undefined);
-      expect(scaleWithLabels[2]).toEqual(undefined);
-      expect(scaleWithLabels[3]).toEqual(undefined);
-      expect(scaleWithLabels[4]).toEqual(undefined);
+      expect(scaleWithLabels[1]).toEqual('');
+      expect(scaleWithLabels[2]).toEqual('');
+      expect(scaleWithLabels[3]).toEqual('');
+      expect(scaleWithLabels[4]).toEqual('');
     });
 
     it('does not override existing labels', function() {
@@ -648,9 +648,9 @@ describe('Service: ScorerFactory', function () {
 
       expect(scaleWithLabels).not.toBe(null);
       expect(scaleWithLabels[1]).toEqual('first');
-      expect(scaleWithLabels[2]).toEqual(undefined);
-      expect(scaleWithLabels[3]).toEqual(undefined);
-      expect(scaleWithLabels[4]).toEqual(undefined);
+      expect(scaleWithLabels[2]).toEqual('');
+      expect(scaleWithLabels[3]).toEqual('');
+      expect(scaleWithLabels[4]).toEqual('');
     });
   });
 });
