@@ -38,16 +38,16 @@
 <div class='form-group'>
   <label>Scale for query ratings:</label></br />
   <label>
-    <input id="default" type="radio" ng-model="ctrl.scaleChoice" value="defaultScale" ng-change="ctrl.updateScale(ctrl.scaleOptions.defaultScale)">
-    Default Scale ({{ ctrl.scaleOptions.defaultScale }})
+    <input id="short" type="radio" ng-model="ctrl.scaleChoice" value="binaryScale" ng-change="ctrl.updateScale(ctrl.scaleOptions.binaryScale)">
+    Binary Scale ( {{ ctrl.scaleOptions.binaryScale }} )
   </label><br/>
   <label>
-    <input id="short" type="radio" ng-model="ctrl.scaleChoice" value="shortScale" ng-change="ctrl.updateScale(ctrl.scaleOptions.shortScale)">
-    Short Scale ({{ ctrl.scaleOptions.shortScale }})
+    <input id="short" type="radio" ng-model="ctrl.scaleChoice" value="gradedScale" ng-change="ctrl.updateScale(ctrl.scaleOptions.gradedScale)">
+    Graded Scale ( {{ ctrl.scaleOptions.gradedScale }} )
   </label><br/>
   <label>
-    <input id="fibonacciScale" type="radio" ng-model="ctrl.scaleChoice" value="fibonacciScale" ng-change="ctrl.updateScale(ctrl.scaleOptions.fibonacciScale)">
-    Fibonacci Sequence ({{ ctrl.scaleOptions.fibonacciScale }})
+    <input id="default" type="radio" ng-model="ctrl.scaleChoice" value="detailScale" ng-change="ctrl.updateScale(ctrl.scaleOptions.detailScale)">
+    Detail Scale ( {{ ctrl.scaleOptions.detailScale }} )
   </label><br/>
   <label>
     <input id="custom" type="radio" ng-model="ctrl.scaleChoice" value="custom" ng-change="ctrl.updateScale(ctrl.scaleOptions.custom)">

@@ -9,9 +9,9 @@
         var self = this;
 
         var scaleOptions = {
-          defaultScale:   '1, 2, 3, 4, 5, 6, 7, 8, 9, 10',
-          shortScale:     '1, 2, 3, 4',
-          fibonacciScale: '1, 2, 3, 5, 8, 13, 21, 34',
+          binaryScale:    '0, 1',
+          gradedScale:    '0, 1, 2, 3',
+          detailScale:    '1, 2, 3, 4, 5, 6, 7, 8, 9, 10',
           custom:         '',
         };
 

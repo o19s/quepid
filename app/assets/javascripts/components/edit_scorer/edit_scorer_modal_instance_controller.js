@@ -20,17 +20,17 @@ angular.module('QuepidApp')
       scorerControllerActionsSvc.addActions(ctrl, $scope);
 
       if (customScorerSvc.scalesAreEqual(
-        ctrl.scorer.scale, ctrl.scaleOptions.defaultScale
+        ctrl.scorer.scale, ctrl.scaleOptions.detailScale
       )) {
-        ctrl.scaleChoice = 'defaultScale';
+        ctrl.scaleChoice = 'detailScale';
       } else if (customScorerSvc.scalesAreEqual(
-        ctrl.scorer.scale, ctrl.scaleOptions.shortScale
+        ctrl.scorer.scale, ctrl.scaleOptions.gradedScale
       )) {
-        ctrl.scaleChoice = 'shortScale';
+        ctrl.scaleChoice = 'gradedScale';
       } else if (customScorerSvc.scalesAreEqual(
-        ctrl.scorer.scale, ctrl.scaleOptions.fibonacciScale
+        ctrl.scorer.scale, ctrl.scaleOptions.binaryScale
       )) {
-        ctrl.scaleChoice = 'fibonacciScale';
+        ctrl.scaleChoice = 'binaryScale';
       } else  {
         ctrl.scaleChoice = 'custom';
       }
