@@ -38,6 +38,9 @@
       }
 
       // Attributes
+      self.scale                  = data.scale;
+      self.scaleWithLabels        = data.scaleWithLabels;
+      self.showScaleLabels        = data.showScaleLabels || false;
       self.code                   = data.code;
       self.colors                 = scaleToColors(data.scale);
       self.defaultAlgorithm       = defaultAlgorithm;
@@ -50,11 +53,10 @@
       self.ownerId                = data.owner_id;
       self.ownerName              = data.owner_name;
       self.queryId                = data.queryId;
-      self.scale                  = data.scale;
-      self.scaleWithLabels        = data.scaleWithLabels;
+
       self.scorerId               = data.scorerId;
       self.communal               = data.communal;
-      self.showScaleLabels        = data.showScaleLabels || false;
+
       self.teams                  = data.teams || [];
 
       // Functions
@@ -134,6 +136,8 @@
           scaleWithLabels = {};
         }
 
+        // This could possible be the method scaleToArray?
+        // And then replace the below value.length check that is there for "" blanks.
         if ( angular.isString(scale) ) {
           scale = scale.split(/,\s*/);
         }
