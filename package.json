@@ -6,6 +6,7 @@
   },
   "license": "Apache-2.0",
   "dependencies": {
+    "@rails/webpacker": "5.4.0",
     "FileSaver.js": "https://github.com/Teleborder/FileSaver.js",
     "ace-builds": "^1.4.12",
     "angular": "~1.8.2",
@@ -33,7 +34,9 @@
     "ngclipboard": "^2.0.0",
     "popper.js": "^1.16.1",
     "splainer-search": "^2.6.10",
-    "tether-shepherd": "latest"
+    "tether-shepherd": "latest",
+    "webpack": "^4.46.0",
+    "webpack-cli": "^3.3.12"
   },
   "devDependencies": {
     "angular-mocks": "~1.8.2",
@@ -42,7 +45,8 @@
     "karma": "^6.3.2",
     "karma-chrome-launcher": "^3.1.0",
     "karma-jasmine": "4.0.1",
-    "puppeteer": "8.0.0"
+    "puppeteer": "8.0.0",
+    "webpack-dev-server": "^3.11.2"
   },
   "resolutions": {}
 }

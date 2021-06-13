@@ -25,7 +25,7 @@ gem 'postmark-rails', '~> 0.10.0'
 gem 'puma', '~> 3.11'
 gem 'puma_worker_killer'
 gem 'pundit'
-gem 'rails', '~> 5.2.4', '>= 5.2.4.4'
+gem 'rails', '= 6.1.3.2' # starting Rails 6 the webpack is included by default.
 gem 'responders'
 gem 'sidekiq'
 gem 'terser'
@@ -34,6 +34,7 @@ gem 'listen', '~> 3.3'
 gem 'd3-rails', '~> 3.5.5' # we have a very old version of D3.  This provides D3 assets.
 gem 'cal-heatmap-rails', '~> 3.6' # provides assets for cal heatmap, that requires old d3
 gem 'font-awesome-sass'
+gem 'webpacker', '= 5.4.0'
 
 group :development, :test do
   gem 'annotate'

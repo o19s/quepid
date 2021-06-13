@@ -42,6 +42,7 @@ Below is information related to developing the Quepid open source project, prima
   - [IV. Debugging](#iv-debugging)
     - [Debugging Ruby](#debugging-ruby)
     - [Debugging JS](#debugging-js)
+    - [Webpacker](#webpacker)
   - [Convenience Scripts](#convenience-scripts)
     - [Rake](#rake)
     - [Thor](#thor)
@@ -277,6 +278,20 @@ Because there are too many Angular JS files in this application, and in `debug` 
 Also please note that the files `secure.js`, `application.js`, and `admin.js` are used to load all the
 JavaScript and CSS dependencies via the Rails Asset pipeline.   If you are debugging Bootstrap, then
 you will want individual files.  So replace `//= require sprockets` with `//= require bootstrap-sprockets`.
+
+### Webpacker
+To use webpacker, that will compile javascript code into packs and will load changes faster,
+you need to
+
+```bash
+bin/rails webpacker:install
+```
+
+Prior to that I had to install:
+
+```bash
+brew install mysql
+```
 
 ## Convenience Scripts
 
