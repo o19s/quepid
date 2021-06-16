@@ -1,6 +1,6 @@
 # Changelog
 
-## 6.5.4 - ??
+## 6.5.4 - 2021-06-16
 
 ### Features
 
@@ -13,6 +13,8 @@
 * During the Case Wizard setup, allow space delimited list of fields, like `title overview` to be pasted in, just like comma delimited lists.  Thanks @peterdm for the assist on the Regex!   https://github.com/o19s/quepid/pull/378 by @epugh.
 
 * Revamped the layout of the Scorer creation and editing screens to be visually cleaner.  Retired the old _Fibonnaci_ scale, and renamed _Default_ to _Detail_, as well as _Short_ to _Graded_ scales.  Introduced _Binary_ as a new, default scale.   @DmitryKey and @epugh paired on this during Quepid Qommunity Qoding hour, resulting in https://github.com/o19s/quepid/pull/379.
+
+* Shrink production Docker image of Quepid from 2.19GB to 2.17GB by not installing development and test Gems.   Commit 426d2677f6c4a8380971ddc1b0faa42a53a48879 by @epugh.
 
 ### Bugs
 
