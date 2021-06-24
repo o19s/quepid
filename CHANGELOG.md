@@ -1,5 +1,11 @@
 # Changelog
 
+## 6.5.? - ??
+
+### Improvements
+
+* You can now export fields that have the formatting modifiers `thumb` and `image` using the detail format.  Also improved the handling of the General and Detail export from the Case Listing page.  https://github.com/o19s/quepid/pull/383 by @epugh fixes https://github.com/o19s/quepid/issues/382.  Thanks @DmitryKey for the improvement assist and spotting the Case Listing export issue.
+
 ## 6.5.4 - 2021-06-16
 
 ### Features
