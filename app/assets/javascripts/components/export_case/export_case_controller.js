@@ -23,7 +23,7 @@ angular.module('QuepidApp')
       var ctrl = this;
 
       this.iconOnly = $scope.iconOnly;
-      this.supportsDetailedExport = $scope.supportsDetailedExport
+      this.supportsDetailedExport = $scope.supportsDetailedExport;
 
       // If called from the cases listing page, $scope.theCase is populated,
       // otherwise on the main page get it from the caseSvc.
