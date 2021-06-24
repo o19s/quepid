@@ -13,7 +13,7 @@ angular.module('QuepidApp')
     'querySnapshotSvc',
     function (
       $uibModal,
-      $rootScope,
+      $scope,
       $log,
       caseSvc,
       caseCSVSvc,
@@ -22,18 +22,19 @@ angular.module('QuepidApp')
     ) {
       var ctrl = this;
 
-      this.iconOnly = $rootScope.iconOnly;
+      this.iconOnly = $scope.iconOnly;
+      this.supportsDetailedExport = $scope.supportsDetailedExport
 
-      // If called from the cases listing page, $rootScope.theCase is populated,
+      // If called from the cases listing page, $scope.theCase is populated,
       // otherwise on the main page get it from the caseSvc.
-      if ($rootScope.theCase) {
-        ctrl.theCase = $rootScope.theCase;
+      if ($scope.theCase) {
+        ctrl.theCase = $scope.theCase;
       }
       else {
         ctrl.theCase = caseSvc.getSelectedCase();
       }
 
-      $rootScope.$on('caseSelected', function() {
+      $scope.$on('caseSelected', function() {
         ctrl.theCase = caseSvc.getSelectedCase();
       });
 
@@ -46,14 +47,17 @@ angular.module('QuepidApp')
 
         if ( options.which === 'general' ) {
           $log.info('Selected "general" as export option.');
-          $log.info(ctrl.theCase);
-          csv  = caseCSVSvc.stringify(ctrl.theCase, true);
-          blob = new Blob([csv], {
-            type: 'text/csv'
-          });
 
-          /*global saveAs */
-          saveAs(blob, caseCSVSvc.formatDownloadFileName(ctrl.theCase.caseName + '_general.csv'));
+          // Go back to the API in case other users have updates that we should include.
+          caseSvc.get(ctrl.theCase.caseNo, false).then(function(acase) {
+            csv  = caseCSVSvc.stringify(acase, true);
+            blob = new Blob([csv], {
+              type: 'text/csv'
+            });
+
+            /*global saveAs */
+            saveAs(blob, caseCSVSvc.formatDownloadFileName(acase.caseName + '_general.csv'));
+          });
         } else if ( options.which === 'detailed' ) {
           $log.info('Selected "detailed" as export option.');
 
@@ -129,6 +133,9 @@ angular.module('QuepidApp')
           resolve:      {
             theCase: function() {
               return ctrl.theCase;
+            },
+            supportsDetailedExport: function() {
+              return ctrl.supportsDetailedExport;
             }
           }
         });
