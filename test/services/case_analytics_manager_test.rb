@@ -56,4 +56,23 @@ class CaseAnalyticsManagerTest < ActiveSupport::TestCase
       assert_equal 0.5, manager.query_doc_ratings_variance(ratings)
     end
   end
+
+
+  describe '#calculations at the query level' do
+    let(:the_case) { cases(:phasers_vs_sabers) }
+    let(:the_query) { queries(:star) }
+
+    test 'can calculate a variance for all the ratings for a specific doc id' do
+      ratings_by_doc_id = Query.group_by_doc_id_version_two(the_query.ratings)
+
+      assert_equal 4, ratings_by_doc_id.keys.size
+      variances = []
+      ratings_by_doc_id.each do |key, ratings|
+        rating_values = ratings.map(&:rating)
+        variances << manager.variance(rating_values)
+      end
+      assert_equal 0.125, manager.query_rating_variance_average(variances)
+
+    end
+  end
 end

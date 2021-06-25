@@ -5,7 +5,7 @@ Case Rating Variance: <%=number_with_precision(@case_analytics_manager.case_rati
 Question?   Should the Query/Doc Variance be 1 for total agreement and 0 for no agreement, or vice versa (which is what we have now!)
 <table class="table table-condensed table-striped">
   <tr>
-    <th>Query</th><th>Query Rating Variance (RANDOM NUMBERS)</th><th>Doc ID</th>
+    <th>Query</th><th>Doc ID</th>
     <th>Query/Doc Variance</th>
     <% @usernames.each do |username| %>
       <th><%= username %></th>
@@ -14,7 +14,6 @@ Question?   Should the Query/Doc Variance be 1 for total agreement and 0 for no 
   <% @df.each_row do |row| %>
     <tr>
       <td><%= row['query_text']%></td>
-      <td><%= row['query_rating_variance']%></td>
       <td><%= row['doc_id']%></td>
       <td bgcolor="<%=format_variance(row['query_doc_rating_variance'])%>"><%= number_with_precision(row['query_doc_rating_variance'], precision: 2)%></td>
       <% @usernames.each do |username| %>
@@ -39,4 +38,9 @@ Question?   Should the Query/Doc Variance be 1 for total agreement and 0 for no 
 <h2>Here are all the ratings</h2>
 <pre>
 <%= @df.to_csv %>
+</pre>
+
+<h2>Here are all the queries</h2>
+<pre>
+<%= @df2.to_csv %>
 </pre>

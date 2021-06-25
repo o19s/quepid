@@ -121,11 +121,27 @@ class Query < ApplicationRecord
     ratings_by_doc
   end
 
-  def self.variance x
-    m = mean(x)
+  def self.group_by_doc_id_version_two ratings
+    require 'pp'
+    pp ratings
+    ratings_by_doc = {}
+    ratings.each do |rating|
+      if ratings_by_doc.key? rating.doc_id
+        ratings_by_doc[rating.doc_id] << rating
+      else
+        ratings_by_doc[rating.doc_id] = [rating]
+      end
+    end
+    pp ratings_by_doc
+    ratings_by_doc
+  end
+
+
+  def self.variance array_of_numbers
+    m = mean(array_of_numbers)
     sum = 0.0
-    x.each { |v| sum += (v - m)**2 }
-    sum / (x.size - 1)
+    array_of_numbers.each { |v| sum += (v - m)**2 }
+    sum / (array_of_numbers.size - 1)
   end
 
   def self.sigma x
