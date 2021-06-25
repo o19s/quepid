@@ -69,7 +69,7 @@
 
 <div class="clearfix">
   <h2>Pulse</h2>
-  <% if @user.terms_and_conditions? %>
+  <% if @user.pending_invite? %>
   <div class="alert alert-info" role="alert">This user hasn't accepted the invite to join Quepid, therefore no usage data is available.</div>
   <% else %>
   <h3>Cases viewed</h3>

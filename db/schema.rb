@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_05_21_211613) do
+ActiveRecord::Schema.define(version: 2021_06_08_145331) do
 
   create_table "annotations", id: :integer, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8", force: :cascade do |t|
     t.text "message"
@@ -62,7 +62,7 @@ ActiveRecord::Schema.define(version: 2021_05_21_211613) do
     t.integer "try_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["try_id"], name: "query_param_id"
+    t.index ["try_id"], name: "try_id"
   end
 
   create_table "permissions", id: :integer, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8", force: :cascade do |t|
@@ -224,7 +224,6 @@ ActiveRecord::Schema.define(version: 2021_05_21_211613) do
   add_foreign_key "case_scores", "cases", name: "case_scores_ibfk_1"
   add_foreign_key "case_scores", "users", name: "case_scores_ibfk_2"
   add_foreign_key "cases", "users", name: "cases_ibfk_1"
-  add_foreign_key "curator_variables", "tries", name: "curator_variables_ibfk_1"
   add_foreign_key "queries", "cases", name: "queries_ibfk_1"
   add_foreign_key "ratings", "queries", name: "ratings_ibfk_1"
   add_foreign_key "snapshot_docs", "snapshot_queries", name: "snapshot_docs_ibfk_1"

@@ -7,8 +7,8 @@ All queries responses are of type of JSON, wrapped in JSONP function name.
 ## Ping Solr During Case Setup
 
 Quepid checks that that Solr is available and responding during Case setup wizard, and if not
-then Quepid attempts to privide you some workarounds.  Sometimes the workaround is to use the sample Solr
-endpoint and then change it yourself in the Case Settings window ;-).
+then Quepid attempts to provide you some workarounds.  You can bypass this check as well, and then
+fix your Solr setup yourself in the Case Settings window ;-).
 
 ```
 http://quepid-solr.dev.o19s.com:8985/solr/tmdb/select?q=*:*&fl=*&wt=json&debug=true&debug.explain.structured=true&hl=false&rows=10&json.wrf=angular.callbacks._5
@@ -53,3 +53,7 @@ http://quepid-solr.dev.o19s.com:8985/solr/tmdb/select?q=star&explainOther=title:
 
 
 ## Snapshot Comparison
+
+## View Document
+
+http://searchservice-general-search-internal.wallapop.devel/quepid/general/search?indent=true&wt=xml&facet=true&facet.field=uid&facet.field=title&facet.field=image_url&facet.field=content&facet.field=brand&facet.field=model&facet.field=categoryIds&facet.field=uid&facet.field=objectType&facet.field=salePrice&facet.mincount=1&q=uid:635895760&json.wrf=bob
