@@ -258,12 +258,20 @@ print_step "Seeding teams................"
 trek = Team.where(owner_id: trek_owner_kirk.id, name: 'NCC-1701 Enterprise').first_or_create
 trek.members << trek_member_spock
 
-phasers_rule = trek_owner_kirk.cases.create case_name: 'Phasers Rule', scorer: Scorer.system_default_scorer
+
+# This case is all about if Spock and Kirk rated same movies for the query 'star trek',
+# and Spock, being logical, likes Documentarys, while Kirk likes all the other movies.
+
+scorer = Score.find_by (name: 'P@10')
+
+phasers_rule = trek_owner_kirk.cases.create case_name: 'Phasers Rules', scorer: scorer
 print_case_info phasers_rule
 
-phasers_rule.tries.create try_number:1, query_params: 'q=#$query##', field_spec: 'id:id title:title overview thumb:poster_path vote_count', search_url: 'http://quepid-solr.dev.o19s.com:8985/solr/tmdb/select', name: 'Seeded Try', search_engine: 'solr', number_of_rows: 10
+phasers_rule.tries.create try_number:1, query_params: 'q=#$query##&defType=edismax&pf=title&qf=title&mm=100%', field_spec: 'id:id title:title overview thumb:poster_path vote_count genres', search_url: 'http://quepid-solr.dev.o19s.com:8985/solr/tmdb/select', name: 'Seeded Try', search_engine: 'solr', number_of_rows: 10
 
 trek.cases << phasers_rule
+
+puts "need to redo this with updated ratings."
 
 ratings = <<~RATINGS
 query,docid,rating

@@ -65,13 +65,14 @@ rating: rating_value } }
     matt_case.queries.each do |q|
       next if q.ratings.empty?
 
-      variance = Query.ratings_variance(q.ratings).first.rating # change rating to something else for Nate
+      # variance = Query.ratings_variance(q.ratings).first.rating # change rating to something else for Nate
+      # rating = CaseAnalyticsManager.query_rating_variance_average_two(query)
+      variance = CaseAnalyticsManager.variance_two(q.ratings.map(&:rating))
 
       relative_variance = variance / max_label
 
       case_variance_values << relative_variance
 
-      # rubocop:disable Lint/UselessAssignment
       stoplight = if relative_variance.nan?
                     'hollow'
                   elsif relative_variance > 1.0
@@ -81,8 +82,7 @@ rating: rating_value } }
                   else
                     'green'
                   end
-      # puts "stoplight for query #{q.query_text} is #{stoplight}"
-      # rubocop:enable Lint/UselessAssignment
+      puts "stoplight for query #{q.query_text} is #{stoplight}"
     end
 
     # puts "Here is case variance: #{Query.mean(case_variance_values)}"

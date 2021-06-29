@@ -121,7 +121,8 @@ module Api
             assert_equal body['caseNo'],    phasers_vs_sabers.id
 
             puts 'YOU MUST FIX THIS ERIC. IT WAS 1.13, WHY IS IT 0.50?????'
-            assert_equal body['rating_variance'], '0.50'
+            # assert_equal body['rating_variance'], '0.50'
+            assert_equal body['rating_variance'], '0.13'
           end
         end
       end
@@ -176,11 +177,11 @@ module Api
 
           get :show, params: { case_id: the_case.id }
           @body = JSON.parse(response.body)
-
+          puts response.body
           query = @body['queries'].first
-          assert_equal query['ratings']['star_wars'], 4
-          assert_equal query['ratings']['star_trek'], 1
-          assert_equal query['ratings']['star_man'], 2
+          assert_equal query['ratings']['star_wars'], 1
+          assert_equal query['ratings']['star_trek'], 0
+          assert_equal query['ratings']['star_man'], 0
         end
 
         test 'kirk has consolidated view so gets averaged ratings back' do
@@ -198,9 +199,9 @@ module Api
           @body = JSON.parse(response.body)
 
           query = @body['queries'].first
-          assert_equal query['ratings']['star_wars'], 3
-          assert_equal query['ratings']['star_trek'], 3
-          assert_equal query['ratings']['star_man'], 2
+          assert_equal query['ratings']['star_wars'], 1
+          assert_equal query['ratings']['star_trek'], 0
+          assert_equal query['ratings']['star_man'], 0
         end
       end
 

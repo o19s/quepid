@@ -86,3 +86,43 @@ Do we show the case variance stop light in INDIVIDUAL mode?
 If, when you change from CONSOLIDATED to INDIVIDUAL and back, maybe we just redirect you to the case and reload everything, versus trying to update in place????   I don't expect it to be super common changing, unlike say the show rated toggle.
 
 Maybe if you start rating, we single the case variance stop light to become a hollow circle to indicate the data is out of date?
+
+
+### Script for Demo
+
+http://chorus.dev.o19s.com:4000/
+
+
+http://app.quepid.com/case/4690/try/6?sort=default
+Bring up Quepid with a case.   Let’s put in the Star Wars example.    Let’s pick P@4 for our scorer.
+
+Demonstrate that we have lots of garbage Star Wars movies.   
+
+Then tune it based on vote_count.   
+
+So that was easy!
+
+However, how do we scale this up for less specific results?
+
+
+So, imagine that Kirk and Spock are transported to our universe, and discover that they are actors!
+
+Imagine we ask them to rate their own movies...    How will they rate "Best Star Trek Movies" results?
+
+Well, we know that Kirk is emotional, while Spock is logical..  So, that suggests that SPock will like the movies int he comedy and drama genres, and Spock will go for the Documentatrys!
+
+So, lets up pull up a query with "star trek" and the query q=#$query##&defType=edismax&pf=title&qf=title&mm=100%
+
+
+
+
+
+How about an e-commerce example, like "fancy coffee maker".   http://chorus.dev.o19s.com:4000/?search_field=default_algo&q=fancy+coffee+maker
+
+Let's have Eric and Dmitry rate the case.
+
+Now let's look at how we rated them.
+
+
+
+To wrap up, we have a case with

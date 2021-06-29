@@ -20,7 +20,8 @@ else
   ratings = Query.ratings_averaged(query.ratings)
 end
 
-json.rating_variance query.relative_variance
+# json.rating_variance query.relative_variance
+json.rating_variance CaseAnalyticsManager.query_rating_variance_average_two(query)
 
 json.ratings do
   ratings.each { |rating| json.set! rating.doc_id, rating.rating }

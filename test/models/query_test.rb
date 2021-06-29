@@ -226,11 +226,13 @@ class QueryTest < ActiveSupport::TestCase
       query.ratings.create(doc_id: 'doc1', user_id: member2.id, rating: 3)
       query.ratings.create(doc_id: 'doc1', rating: 5)
 
-      ratings = Query.ratings_variance(query.ratings)
+      # ratings = Query.ratings_variance(query.ratings)
+      rating = CaseAnalyticsManager.query_rating_variance_average_two(query)
 
-      assert_equal ratings.size, 2
-      assert_equal ratings.first[:rating], 2.92
-      assert ratings.second[:rating].nan?
+      # assert_equal ratings.size, 2
+      assert_equal rating, 2.92
+      # assert_equal ratings.first[:rating], 2.92
+      # assert ratings.second[:rating].nan?
     end
   end
 

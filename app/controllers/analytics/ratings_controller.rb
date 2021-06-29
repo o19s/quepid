@@ -13,6 +13,7 @@ module Analytics
     # GET /admin/users/1.json
     # rubocop:disable Metrics/MethodLength
     # rubocop:disable Metrics/AbcSize
+    # rubocop:disable Metrics/PerceivedComplexity
     def show
       @case_analytics_manager = CaseAnalyticsManager.new @case
 
@@ -38,56 +39,39 @@ module Analytics
       end
 
       @df['query_text'] = Array.new(@df.count, '')
-      @df['query_mean'] = Array.new(@df.count, '')
       @df['query_doc_rating_variance'] = Array.new(@df.count, '')
 
-      query_doc_ratings_variance_array = []
       @df.count.to_i.times do |x|
         query = Query.find_by(id: @df['query_id'][x])
         @df['query_text'][x] = query.query_text
         query_doc_ratings = query.ratings.where(query_id: @df['query_id'][x], doc_id: @df['doc_id'][x])
         @df['query_doc_rating_variance'][x] = @case_analytics_manager.query_doc_ratings_variance(query_doc_ratings)
-
-        #query_doc_ratings_variance_array << @df['query_doc_rating_variance'][x]
-        #@df['query_rating_variance'][x] = @case_analytics_manager.query_ratings_variance(query_doc_ratings_variance_array)
       end
 
-      #@df.group('query_text').mean('query_doc_rating_variance').each |x|
-      #  @df['query_mean'] = x
-      #end
-
-
       # We should sort the @df so when you reload you get same results!
-      @df = @df.sort_by! { |r| r['querydoc_id'] }
-
+      # @df = @df.sort_by! { |r| r['querydoc_id'] }
+      @df.sort_by! { |r| [ r['query_text'], r['doc_id'] ] }
 
       @df2 = Rover::DataFrame.new(@case.queries.select(:query_text, :id).distinct)
       @df2['query_mean'] = Array.new(@df2.count, '')
-      #@df2['variance'] = Array.new(@df2.count, '')
-      #@df2['variance_size'] = Array.new(@df2.count, '')
-      #@df2['key_length'] = Array.new(@df2.count, '')
       @df2.count.to_i.times do |x|
         query = Query.find_by(id: @df2['id'][x])
         ratings_by_doc_id = Query.group_by_doc_id_version_two(query.ratings)
         variances = []
-        ratings_by_doc_id.each do |key, ratings|
+        ratings_by_doc_id.each do |_key, ratings|
           rating_values = ratings.map(&:rating)
           variances << @case_analytics_manager.variance(rating_values)
         end
-        #@df2['variance_size'][x] = variances.size
-        #@df2['variance'][x] = variances.join(',')
-        #@df2['key_length'][x] = ratings_by_doc_id.keys.join(',')
         @df2['query_mean'][x] = @case_analytics_manager.query_rating_variance_average(variances)
-
       end
 
       # puts @df
     end
     # rubocop:enable Metrics/MethodLength
     # rubocop:enable Metrics/AbcSize
+    # rubocop:enable Metrics/PerceivedComplexity
 
     def variance
-
     end
 
     def create_df_for_user user_id, username
