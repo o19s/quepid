@@ -112,9 +112,6 @@ a, button, .button {
 	background: -moz-linear-gradient(top,  #FFFFFF,  #F0F0F0);
 	border: none;
 	border-radius: 0;
-	-moz-border-radius: 0;
-  -webkit-border-radius: 0;
-  -khtml-border-radius: 0;
 	margin-bottom: 0;
 }
 
@@ -421,9 +418,6 @@ header .dropdown-content li.dropdown-header {
 	right: 19px;
 	font-weight: bold;
 	border-radius: 3px;
-	-moz-border-radius: 3px;
-  -webkit-border-radius: 3px;
-  -khtml-border-radius: 3px;
 	font-size: 16px;
 }
 
@@ -757,13 +751,7 @@ header .dropdown-content li.dropdown-header {
 	color: #FFF;
 	border: none;
 	border-bottom-left-radius: 3px;
-  	-moz-border-bottom-left-radius: 3px;
-  	-webkit-border-bottom-left-radius: 3px;
-  	-khtml-border-bottom-left-radius: 3px;
   border-bottom-right-radius: 3px;
-  	-moz-border-bottom-right-radius: 3px;
-  	-webkit-border-bottom-right-radius: 3px;
-  	-khtml-border-bottom-right-radius: 3px;
 }
 
 #dev-settings .btn-submit {
