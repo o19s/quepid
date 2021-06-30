@@ -2,10 +2,16 @@
 * DONE: Need a migration to assign ALL ratings to whoever owns the case.   
 * DONE:  Need a migration to add the `case_view` column to cases.metadata.
 * back out the average stuff on the rating view on updating it.
-* When swapping between invidicual and consolidated, the front end UI doesn't refresh.
+* When swapping between invidicual and consolidated, the front end UI doesn't refresh. --> We should probably just reload the entire case.
 * When you share a case with a team, we need to refresh the component for "changes ratings view" in the front end
 * Still a bug where sometimes tryNo in JS is 0, not 1!!!
 * Think about moving the variances to something like /cases/case_id/analytics/variances end point, and introduce a case_analytics_controller.rb to deal with all of that!
+* Change Struct for averaged rating to raturn decimal not integer.
+* change the view from having a NaN to a "-" for unrated docs.
+* Introduce the "Shared View" which is how things work today.
+* decide if query/doc variance can be calculated with only 1 rating from 1 person.
+* Case Variance theory:   split the colour based on multiple ratings per query and then the variance.  Do the colour chart, split half red and half green.
+* add a number to the frogs for 1, 2, 3
 
 
 
