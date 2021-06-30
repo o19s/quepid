@@ -1482,9 +1482,9 @@ source-map@^0.6.1:
   integrity sha512-UjgapumWlbMhkBgzT7Ykc5YXUT46F0iKu8SGXq0bcwP5dz/h0Plj6enJqjz1Zbq2l5WaqYnrVbwWOWMyF3F47g==
 
 splainer-search@^2.6.10:
-  version "2.6.10"
-  resolved "https://registry.yarnpkg.com/splainer-search/-/splainer-search-2.6.10.tgz#24577c0024d3089bda21c3f2af94e9dacd434f15"
-  integrity sha512-Fp1rzlW3zDjg0GWDIDRYnWnmBs81c8b8+mevsDu4TLr44/HNS5HsjgDmbT6GhqQUyIbI7u3M4pnmyUX0pqzmOA==
+  version "2.6.11"
+  resolved "https://registry.yarnpkg.com/splainer-search/-/splainer-search-2.6.11.tgz#ce317c0993bce042f5765e1370de044b554329cd"
+  integrity sha512-upjjmUGqv87YsKJGxdIzc9wkZASQUPlYtFSNxGGzu5wT4adu5Qxsdz6Cr6ZHHPwL4TjAp7hmpqABe1bL4y+U/Q==
   dependencies:
     angular "^1.7.9"
     urijs "~1.16.1"
