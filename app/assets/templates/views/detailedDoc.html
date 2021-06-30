@@ -23,6 +23,25 @@
     </div>
   </div>
 
+  <div ng-repeat="(fieldName, fieldValue) in doc.translations" class="row" style="margin-bottom: 10px">
+    <div class="col-md-4">{{fieldName}}</div>
+    <div class="col-md-8">{{fieldValue}}</div>
+  </div>
+
+  <div ng-repeat="(fieldName, fieldValue) in doc.embeds" class="row" style="margin-bottom: 10px">
+    <div class="col-md-4">{{fieldName}}</div>
+    <div class="col-md-8">{{fieldValue}}</div>
+  </div>
+
+  <div ng-show="doc.hasThumb()" class="row" style="margin-bottom: 10px">
+    <div class="col-md-4">Thumb</div>
+    <div class="col-md-8">{{doc.thumb}}</div>
+  </div>
+  <div ng-show="doc.hasImage()" class="row" style="margin-bottom: 10px">
+    <div class="col-md-4">Image</div>
+    <div class="col-md-8">{{doc.image}}</div>
+  </div>
+
   <a class="btn btn-primary" href="{{doc._url()}}" target="_blank">
     View Document
   </a>
