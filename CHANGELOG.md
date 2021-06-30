@@ -1,12 +1,18 @@
 # Changelog
 
-## 6.5.? - ??
+## 6.5.5 - 2021-06-30
+
+### Features
+
+* You can now tag a field with `translate:`, as in `translate:content` and you will get an icon to pop the text open in a Google Translate in a new browser window.  https://github.com/o19s/quepid/pull/386 by @epugh.
 
 ### Improvements
 
 * You can now export fields that have the formatting modifiers `thumb` and `image` using the detail format.  Also improved the handling of the General and Detail export from the Case Listing page.  https://github.com/o19s/quepid/pull/383 by @epugh fixes https://github.com/o19s/quepid/issues/382.  Thanks @DmitryKey for the improvement assist and spotting the Case Listing export issue.
 
 * Admin user can now reset a users password with a new password.  https://github.com/o19s/quepid/pull/385 by @epugh to fix issue identified by @michaelcizmar.  Thanks Michael!
+
+
 
 ## 6.5.4 - 2021-06-16
 
