@@ -6,6 +6,7 @@
 #  user_id        :integer          not null
 #  case_id        :integer          not null
 #  last_viewed_at :datetime
+#  ratings_view   :integer
 #
 
 # Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
@@ -18,3 +19,16 @@ past:
   user: :doug
   case: :with_metadata
   last_viewed_at: <%= DateTime.now - 5.days %>
+  ratings_view: individual
+
+luke_metadatum:
+  user: :luke
+  case: :phasers_vs_sabers
+  last_viewed_at: <%= DateTime.now - 5.days %>
+  ratings_view: individual
+
+kirk_metadatum:
+  user: :kirk
+  case: :phasers_vs_sabers
+  last_viewed_at: <%= DateTime.now - 1.days %>
+  ratings_view: consolidated

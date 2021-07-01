@@ -25,6 +25,7 @@ ActiveRecord::Schema.define(version: 2021_06_08_145331) do
     t.integer "user_id", null: false
     t.integer "case_id", null: false
     t.datetime "last_viewed_at"
+    t.integer "ratings_view"
     t.index ["case_id"], name: "case_metadata_ibfk_1"
     t.index ["user_id", "case_id"], name: "case_metadata_user_id_case_id_index"
   end
@@ -93,8 +94,10 @@ ActiveRecord::Schema.define(version: 2021_06_08_145331) do
     t.integer "query_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "user_id"
     t.index ["doc_id"], name: "index_ratings_on_doc_id", length: 191
     t.index ["query_id"], name: "query_id"
+    t.index ["user_id"], name: "index_ratings_on_user_id"
   end
 
   create_table "scorers", id: :integer, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin", force: :cascade do |t|

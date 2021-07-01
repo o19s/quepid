@@ -35,6 +35,8 @@ class User < ApplicationRecord
 
   has_many :queries, through: :cases
 
+  has_many :ratings, dependent: :destroy
+
   has_many :owned_scorers,
            class_name:  'Scorer',
            foreign_key: :owner_id,

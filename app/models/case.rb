@@ -36,16 +36,16 @@ class Case < ApplicationRecord
   has_many   :metadata,
              dependent: :destroy
 
-  # has_many   :ratings,  # wed ont' actually need htis.
-  #           through: :queries
-
   # rubocop:disable Rails/InverseOf
   has_many   :queries,  -> { order(arranged_at: :asc) },
              autosave:  true,
              dependent: :destroy
   # rubocop:enable Rails/InverseOf
 
-  has_many   :scores,   -> { order(updated_at:  :desc) },
+  has_many   :ratings, # we don't actually need this.
+             through: :queries
+
+  has_many   :scores, -> { order(updated_at: :desc) },
              dependent:  :destroy,
              inverse_of: :case
 
@@ -97,7 +97,7 @@ class Case < ApplicationRecord
   # objects of a Case to actually delete!
   def really_destroy
     snapshots.destroy_all
-    queries.unscoped.where(case_id: id).destroy_all
+    queries.where(case_id: id).destroy_all
     tries.destroy_all
     destroy
   end

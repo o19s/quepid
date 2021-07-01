@@ -169,6 +169,8 @@ angular.module('QuepidApp')
         self.options        = {};
         self.notes          = queryWithRatings.notes;
 
+        self.ratingVariance   = queryWithRatings.rating_variance;
+
 
         // Threshold properties
         self.threshold        = queryWithRatings.threshold;

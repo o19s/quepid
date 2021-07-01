@@ -1,0 +1,23 @@
+<span ng-if="ctrl.iconOnly">
+  <a ng-click="ctrl.prompt()" class="action-icon">
+    <i
+      class="fa fa-binoculars"
+      area-hidden="true"
+      title="Change Ratings View"
+      alt="Change Ratings View"
+    ></i>
+  </a>
+</span>
+
+<span ng-if="!ctrl.iconOnly">
+  <i
+    class="fa fa-binoculars"
+    area-hidden="true"
+    title="Change Ratings View"
+    alt="Change Ratings View"
+  ></i>
+
+  <a ng-click="ctrl.prompt()">
+    Change Ratings View
+  </a>
+</span>

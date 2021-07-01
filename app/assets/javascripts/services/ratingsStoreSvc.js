@@ -12,7 +12,7 @@ angular.module('QuepidApp')
   .service('ratingsStoreSvc', [
     '$rootScope',
     '$http',
-    function ratingsStoreSvc($scope, $http) {
+    function ratingsStoreSvc($rootScope, $http) {
       var svcVersion = 0;
 
       var RatingsStore = function(caseNo, queryId, ratingsDict) {
@@ -26,7 +26,7 @@ angular.module('QuepidApp')
           version++;
           svcVersion++;
 
-          $scope.$emit('rating-changed');
+          $rootScope.$emit('rating-changed');
         };
 
         this.setQueryId = function(newQueryId) {
@@ -35,9 +35,11 @@ angular.module('QuepidApp')
 
         this.rateDocument = function(docId, rating) {
           var url   = basePath() + '/ratings';
+
           var data  = { rating:
             {
               doc_id:  docId,
+              user_id: $rootScope.currentUser.id,
               rating: rating,
             }
           };
@@ -54,7 +56,10 @@ angular.module('QuepidApp')
           var url   = basePath() + '/bulk/ratings';
           var data  = {
             doc_ids:  docIds,
-            rating:   rating,
+            rating: {
+              user_id: $rootScope.currentUser.id,
+              rating: rating,
+            }
           };
 
           return $http.put(url, data).then(function() {

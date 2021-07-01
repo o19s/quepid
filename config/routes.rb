@@ -24,15 +24,14 @@ Rails.application.routes.draw do
   resource :account, only: [ :update, :destroy ]
   resource :profile, only: [ :show, :update ]
 
-  # not sure I get why we had the only: [ :passwords ] clause
   devise_for :users, controllers: {
     passwords:   'users/passwords',
     invitations: 'users/invitations',
   }
-  # devise_for :users, only: [ :passwords ], controllers: {
-  #  passwords: 'users/passwords',
-  #  invitations: 'users/invitations'
-  # }
+
+  namespace :analytics do
+    get 'cases/:case_id/ratings' => 'ratings#show'
+  end
 
   namespace :admin do
     get '/' => 'home#index'

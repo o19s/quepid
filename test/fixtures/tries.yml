@@ -195,3 +195,10 @@ for_case_with_score_try_2:
   search_url:     http://test.com/solr/tmdb/select
   try_number:     2
   search_engine:  solr
+
+for_case_phasers_versus_sabers_try_1:
+  case:           :phasers_vs_sabers
+  query_params:   'q=#$query##'
+  search_url:     http://test.com/solr/tmdb/select
+  try_number:     1
+  search_engine:  solr

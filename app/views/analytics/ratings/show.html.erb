@@ -1,0 +1,56 @@
+<h2>Ratings Analysis for Case <%=@case.case_name %></h2>
+
+Case Rating Variance: <%=number_with_precision(@case_analytics_manager.case_ratings_variance, precision: 2) %>
+<br/>
+Question?   Should the Query/Doc Variance be 1 for total agreement and 0 for no agreement, or vice versa (which is what we have now!)
+<h2>Query Ratings</h2>
+<table class="table table-condensed table-striped">
+  <tr>
+    <th>Query</th><th>Mean</th>
+  </tr>
+  <% @df2.each_row do |row| %>
+    <tr>
+      <td><%= row['query_text']%></td>
+      <td><%= row['query_mean']%></td>
+    </tr>
+  <% end %>
+
+
+</table>
+
+
+<h3>Individual Ratings</h3>
+<table class="table table-condensed table-striped">
+  <tr>
+    <th>Query</th><th>Doc ID</th>
+    <th>Query/Doc Variance</th>
+    <% @usernames.each do |username| %>
+      <th><%= username %></th>
+    <% end %>
+  </tr>
+  <% @df.each_row do |row| %>
+    <tr>
+      <td><%= row['query_text']%></td>
+      <td><%= row['doc_id']%></td>
+      <td bgcolor="<%=format_variance(row['query_doc_rating_variance'])%>"><%= number_with_precision(row['query_doc_rating_variance'], precision: 2)%></td>
+      <% @usernames.each do |username| %>
+        <td><%= row[username]%></td>
+      <% end %>
+    </tr>
+  <% end %>
+
+
+</table>
+
+
+<%= @df.plot("query_id", "doc_id", type: "pie")%>
+
+<h2>Dataframe</h2>
+<pre>
+  <%= @df %>
+</pre>
+
+<h2>Dataframe 2</h2>
+<pre>
+  <%= @df2 %>
+</pre>

@@ -21,3 +21,7 @@
 //= require cookies_eu
 //= require bootstrap/dist/js/bootstrap.bundle
 //= require turbolinks
+
+//= require vega
+//= require vega-lite
+//= require vega-embed

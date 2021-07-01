@@ -21,7 +21,7 @@
           <div ng-controller="CaseCtrl" style="display:inline-block;vertical-align:top">
             <h1 class="">
               <small class="text-muted">Current case</small>
-
+              <case-analytics ng-if="caseModel.caseLoaded()" this-case="caseModel.selectedCase()"></case-analytics>
               <br>
               <span ng-dblclick="caseNameEditModeToggle()">
                 <span ng-hide="caseName.startRename">
@@ -55,6 +55,11 @@
               <small class="text-muted">
                 &mdash;
                 {{ getScorer().name }}
+              </small>
+
+              <small class="text-muted" ng-show="caseModel.selectedCase().sharedWithTeam" >
+                &mdash;
+                <em>{{ caseModel.selectedCase().ratingsView }}</em>
               </small>
             </h1>
           </div>
@@ -100,6 +105,12 @@
                 acase="caseModel.selectedCase()"
                 supports-detailed-export="true"
               ></export-case>
+            </li>
+            <li ng-show="caseModel.selectedCase().sharedWithTeam">
+              <change-ratings-view
+                icon-only="false"
+                acase="caseModel.selectedCase()"
+              ></change-ratings-view>
             </li>
             <li id="tune-relevance-link">
               <span class="glyphicon glyphicon-wrench"></span>

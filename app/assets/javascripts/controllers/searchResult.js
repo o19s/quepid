@@ -2,10 +2,17 @@
 
 angular.module('QuepidApp')
   .controller('SearchResultCtrl', [
-    '$scope', '$uibModal',
+    '$scope',
+    '$rootScope',
+    '$uibModal',
     'queriesSvc',
     'rateElementSvc',
-    function ($scope, $uibModal, queriesSvc, rateElementSvc) {
+    function (
+      $scope,
+      $rootScope,
+      $uibModal,
+      queriesSvc,
+      rateElementSvc) {
 
       var src = {
         'query':  $scope.query,
@@ -92,6 +99,7 @@ angular.module('QuepidApp')
       };
 
       // Determine which style sheet to use to influence formatting
+      // of the images column, if there are images in the fieldSpec
       $scope.summaryColumnStyle = function() {
         if ($scope.doc.hasThumb()){
           return 'col-summary-thumb';

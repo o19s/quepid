@@ -8,12 +8,14 @@
 #  doc_id     :string(500)
 #  rating     :integer
 #  query_id   :integer
+#  user_id   :integer
 #  created_at :datetime         not null
 #  updated_at :datetime         not null
 #
 
 class Rating < ApplicationRecord
   belongs_to :query
+  belongs_to :user, optional: true
 
   # arguably we shouldn't need this, however today you can have a rating object that doesn't have a
   # value set.  fully_rated means that the rating integer has been set.

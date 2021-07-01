@@ -35,6 +35,7 @@ module Api
               # We have crazy rendering formatting in the view because we don't want a trailing LF at the end of the
               # CSV, it messes with Quaerite, however the render() call adds a LF, so we need to format our CSV with
               # line feeds on each line except the very last one!
+              # When we get to Rails 6, checkout https://github.com/rails/rails/pull/42279
 
               @csv_array = []
               csv_headers = %w[query docid rating]
@@ -91,11 +92,9 @@ module Api
         # rubocop:enable Metrics/BlockLength
 
         # https://stackoverflow.com/questions/5608918/pad-an-array-to-be-a-certain-size
-        # rubocop:disable Naming/MethodParameterName
         def padright! a, n, x
           a.fill(x, a.length...n)
         end
-        # rubocop:enable Naming/MethodParameterName
       end
     end
   end

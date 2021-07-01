@@ -1,16 +1,30 @@
 'use strict';
 
+var mockUser = {
+  'email': 'mockEmail@example.com',
+  'defaultScorerId': 10,
+  'id':       1,
+};
+
 describe('Service: Ratingsstoresvc', function () {
 
   // load the service's module
   beforeEach(module('QuepidTest'));
 
   var $httpBackend;
+  var $rootScope;
   // instantiate service
   var ratingsStoreSvc;
-  beforeEach(inject(function ($injector, _ratingsStoreSvc_) {
+
+
+
+
+  beforeEach(inject(function ($injector, _$rootScope_, _ratingsStoreSvc_) {
+    $rootScope = _$rootScope_;
     ratingsStoreSvc = _ratingsStoreSvc_;
     $httpBackend = $injector.get('$httpBackend');
+
+    $rootScope.currentUser = angular.copy(mockUser);
   }));
 
   it('should convert ratings from strings to ints', function() {
@@ -179,11 +193,15 @@ describe('Rateable Docs', function () {
   beforeEach(module('QuepidTest'));
 
   var $httpBackend;
+  var $rootScope;
   // instantiate service
   var ratingsStoreSvc;
-  beforeEach(inject(function ($injector, _ratingsStoreSvc_) {
+  beforeEach(inject(function ($injector, _$rootScope_, _ratingsStoreSvc_) {
+    $rootScope = _$rootScope_;
     ratingsStoreSvc = _ratingsStoreSvc_;
     $httpBackend = $injector.get('$httpBackend');
+
+    $rootScope.currentUser = angular.copy(mockUser);
   }));
 
   it('posts on rate', function() {

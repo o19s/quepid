@@ -4,3 +4,4 @@ json.id       @rating.id
 json.doc_id   @rating.doc_id
 json.rating   @rating.rating
 json.query_id @rating.query_id
+json.user_id  @rating.user_id

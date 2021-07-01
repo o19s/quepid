@@ -1,8 +1,9 @@
 # frozen_string_literal: true
 
-shallow  ||= false
-no_tries ||= false
-no_teams ||= false
+shallow   ||= false
+no_tries  ||= false
+no_teams  ||= false
+analytics ||= false
 
 teams = acase.teams.find_all { |t| current_user.teams.all.include?(t) } unless no_teams
 
@@ -12,10 +13,19 @@ json.scorerId         acase.scorer_id
 json.owned            acase.user_id == current_user.id
 json.owner_name       acase.user.name unless acase.user.nil?
 json.queriesCount     acase.queries.count
+json.shared_with_team teams.count.positive? unless no_teams
 
 json.teams            teams unless no_teams
 
-json.last_try_number acase.tries.best.try_number unless no_tries || acase.tries.blank? || acase.tries.best.blank?
+json.last_try_number  acase.tries.best.try_number unless no_tries || acase.tries.blank? || acase.tries.best.blank?
+
+json.ratings_view     @case_metadatum.ratings_view if @case_metadatum.present?
+
+case_analytics_manager = CaseAnalyticsManager.new @case
+if analytics && case_analytics_manager.can_calculate_variances?
+  json.max_label = case_analytics_manager.max_label
+  json.rating_variance number_with_precision(case_analytics_manager.case_ratings_variance, precision: 2)
+end
 
 unless shallow
   json.queries do

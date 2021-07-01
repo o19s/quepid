@@ -202,6 +202,40 @@ class QueryTest < ActiveSupport::TestCase
     end
   end
 
+  describe 'ratings' do
+    let(:query) { queries(:one) }
+    let(:member1)               { users(:team_member_1) }
+    let(:member2)               { users(:team_member_2) }
+    let(:matt)                  { users(:matt) }
+
+    test 'Can we do the same thing with .average?' do
+      query.ratings.create(doc_id: 'doc1', user_id: matt.id, rating: 1)
+      query.ratings.create(doc_id: 'doc2', user_id: matt.id, rating: 5)
+      query.ratings.create(doc_id: 'doc1', user_id: member1.id, rating: 2)
+      query.ratings.create(doc_id: 'doc1', user_id: member2.id, rating: 3)
+      query.ratings.create(doc_id: 'doc1', rating: 5)
+
+      assert_equal query.ratings.where(doc_id: 'doc1').average(:rating).round.to_i, 3
+      assert_equal query.ratings.where(doc_id: 'doc2').average(:rating).round.to_i, 5
+    end
+
+    test 'gets an variance rating from a three user tagged ratings and one blank user' do
+      query.ratings.create(doc_id: 'doc1', user_id: matt.id, rating: 1)
+      query.ratings.create(doc_id: 'doc2', user_id: matt.id, rating: 5)
+      query.ratings.create(doc_id: 'doc1', user_id: member1.id, rating: 2)
+      query.ratings.create(doc_id: 'doc1', user_id: member2.id, rating: 3)
+      query.ratings.create(doc_id: 'doc1', rating: 5)
+
+      # ratings = Query.ratings_variance(query.ratings)
+      rating = CaseAnalyticsManager.query_rating_variance_average_two(query)
+
+      # assert_equal ratings.size, 2
+      assert_equal rating, 2.92
+      # assert_equal ratings.first[:rating], 2.92
+      # assert ratings.second[:rating].nan?
+    end
+  end
+
   describe 'query scoping with ratings and with ratings' do
     let(:query)               { queries(:query_with_empty_ratings) }
     let(:rating_with_rating)  { ratings(:rating_with_rating) }

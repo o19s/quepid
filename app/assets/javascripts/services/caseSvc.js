@@ -52,6 +52,9 @@ angular.module('QuepidApp')
         theCase.tries             = data.tries || [];
         theCase.scores            = data.scores || [];
         theCase.queries           = data.queries || [];
+        theCase.sharedWithTeam    = data.shared_with_team;
+        theCase.ratingsView       = data.ratings_view;
+        theCase.ratingVariance    = data.rating_variance;
 
         theCase.teamNames = function() {
           var names = [];
@@ -85,6 +88,20 @@ angular.module('QuepidApp')
 
               return theCase;
             });
+        };
+
+        theCase.ratingEnabled = function() {
+          if (!theCase.sharedWithTeam){
+            return true;
+          }
+          else {
+            if (theCase.ratingsView === 'individual'){
+              return true;
+            }
+            else {
+              return false;
+            }
+          }
         };
 
         $rootScope.$on('settings-updated', function(event, args) {
@@ -277,6 +294,27 @@ angular.module('QuepidApp')
 
         return $http.put(url, data);
       };
+
+      this.changeRatingsView = function(theCase) {
+        var url         = '/api/cases/'+ theCase.caseNo + '/metadata';
+        var data        = {
+          'metadata': {
+            'ratings_view': theCase.ratingsView
+          }
+        };
+
+        return $http.put(url, data)
+          .then(function() {
+            //caseSvc.get(theCase.caseNo);
+
+            //theCase.caseName = newName;
+            //broadcastSvc.send('caseRenamed', theCase);
+            //broadcastSvc.send('updatedCasesList', svc.allCases);
+          }, function() {
+            caseTryNavSvc.notFound();
+          });
+      };
+
 
       this.trackLastScore = function(caseNo, scoreData) {
         var self = this;

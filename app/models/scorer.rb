@@ -79,9 +79,6 @@ class Scorer < ApplicationRecord
   end
 
   def scale_list
-    # rubocop:disable Style/SafeNavigation
     scale.join(',') unless scale.nil?
-    # scale&.join(',')
-    # rubocop:enable Style/SafeNavigation
   end
 end

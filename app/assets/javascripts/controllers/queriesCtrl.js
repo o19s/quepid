@@ -125,6 +125,7 @@ angular.module('QuepidApp')
           } else {
             $scope.scores = [];
           }
+          $scope.case = acase;
         }
       );
 

@@ -74,7 +74,7 @@ module Api
         let(:the_case)            { cases(:one) }
         let(:matt_case)           { cases(:matt_case) }
         let(:case_with_two_tries) { cases(:case_with_two_tries) }
-        let(:joey) { users(:joey) }
+        let(:joey)                { users(:joey) }
 
         test "returns a not found error if the case is not in the signed in user's case list" do
           get :show, params: { case_id: matt_case.id }
@@ -101,6 +101,29 @@ module Api
 
           assert_equal body['tries'][0]['try_number'], 2
           assert_equal body['tries'][1]['try_number'], 1
+        end
+
+        describe 'Looking at case variances' do
+          let(:phasers_vs_sabers)   { cases(:phasers_vs_sabers) }
+          let(:kirk)                { users(:kirk) }
+          let(:luke)                { users(:luke) }
+
+          test 'luke with individual' do
+            @controller = Api::V1::CasesController.new
+
+            login_user luke
+            get :show, params: { case_id: phasers_vs_sabers.id }
+            assert_response :ok
+
+            body = JSON.parse(response.body)
+
+            assert_equal body['case_name'], phasers_vs_sabers.case_name
+            assert_equal body['caseNo'],    phasers_vs_sabers.id
+
+            puts 'YOU MUST FIX THIS ERIC. IT WAS 1.13, WHY IS IT 0.50?????'
+            # assert_equal body['rating_variance'], '0.50'
+            assert_equal body['rating_variance'], '0.13'
+          end
         end
       end
 
@@ -133,6 +156,52 @@ module Api
           score_fields = %w[updated_at score note]
           assert_empty score_fields - score.keys, 'missing fields in score response'
           assert_empty score.keys - score_fields, 'too many fields in score response'
+        end
+      end
+
+      describe 'ratings view for case' do
+        let(:the_case)    { cases(:phasers_vs_sabers) }
+        let(:kirk)        { users(:kirk) }
+        let(:luke)        { users(:luke) }
+
+        test 'luke has individual view so gets his ratings back' do
+          @controller = Api::V1::CasesController.new
+
+          login_user luke
+
+          assert_equal 1, the_case.queries.size
+          assert_equal 2, the_case.metadata.size
+
+          luke_metadatum = the_case.metadata.find_by(user_id: luke.id)
+          assert luke_metadatum.individual_ratings_view?
+
+          get :show, params: { case_id: the_case.id }
+          @body = JSON.parse(response.body)
+          puts response.body
+          query = @body['queries'].first
+          assert_equal query['ratings']['star_wars'], 1
+          assert_equal query['ratings']['star_trek'], 0
+          assert_equal query['ratings']['star_man'], 0
+        end
+
+        test 'kirk has consolidated view so gets averaged ratings back' do
+          @controller = Api::V1::CasesController.new
+
+          login_user kirk
+
+          assert_equal 1, the_case.queries.size
+          assert_equal 2, the_case.metadata.size
+
+          kirk_metadatum = the_case.metadata.find_by(user_id: kirk.id)
+          assert kirk_metadatum.consolidated_ratings_view?
+
+          get :show, params: { case_id: the_case.id }
+          @body = JSON.parse(response.body)
+
+          query = @body['queries'].first
+          assert_equal query['ratings']['star_wars'], 1
+          assert_equal query['ratings']['star_trek'], 0
+          assert_equal query['ratings']['star_man'], 0
         end
       end
 

@@ -195,11 +195,15 @@ To check the Ruby syntax:
 bin/docker r bundle exec rubocop
 ```
 
-Rubocop can often autocorrect many of the lint issues it runs into via `--auto-correct-all`:
+If you get `Error: `Rails` cops have been extracted to the `rubocop-rails` gem.`, it means you forgot the `bundle exec` part!
+
+Rubocop has some magic "auto correction" features for simple/common issues, so you can just run it with autocorrect enabled:
 
 ```
 bin/docker r bundle exec rubocop --auto-correct-all
 ```
+
+Now check in your fixes to GitHub!
 
 If there is a new "Cop" as they call their rules that we don't like, you can add it to the `./rubocop.yml` file.
 
@@ -290,13 +294,26 @@ Rake is great for simple tasks that depend on the application environment, and d
 
 Whereas Thor is a more powerful tool for writing scripts that take in args much more nicely than Rake.
 
+### Production Mode versus Development Mode
+
+In production mode, to run scripts, you need to connect to a Quepid app container, which you do via:
+
+`docker-compose run app MYSCRIPT_HERE`
+
+However, if you have checked out the source code, then there is a convenience script you can run:
+
+`bin/docker r MYSCRIPT_HERE`
+
+
+
 ### Rake
 
 To see what rake tasks are available run:
 
 ```
-bin/docker r bin/rake -T
+bin/rake -T
 ```
+
 
 **Note**: the use of `bin/rake` makes sure that the version of `rake` that is running is the one locked to the app's `Gemfile.lock` (to avoid conflicts with other versions that might be installed on your system). This is equivalent of `bundle exec rake`.
 
@@ -493,27 +510,20 @@ heroku restart -a quepid-staging
 
 ## Seed Data
 
-The following accounts are created through the seeds. They all follow the following format:
+The following accounts are created through the seeds. They all have the same password value of _password_ ;-)
 
-```
-email: quepid+[type]@o19s.com
-password: password
-```
-
-where type is one of the following:
-
-* `admin`: An admin account
-* `1case`: A trial user with 1 case
-* `2case`: A trial user with 2 cases
-* `solr`: A trial user with a Solr case
-* `es`: A trial user with a ES case
-* `10sOfQueries`: A trial user with a Solr case that has 10s of queries
-* `100sOfQueries`: A trial user with a Solr case that has 100s of queries (usually disabled)
-* `1000sOfQueries`: A trial user with a Solr case that has 1000s of queries (usually disabled)
-* `oscOwner`: A trial user who owns the team 'OSC'
-* `oscMember`: A trial user who is a member of the team 'OSC'
-* `CustomScorer`: A trial user who has a custom scorer
-* `CustomScorerDefault`: A trial user who has a custom scorer that is set as their default
+* `quepid+admin@o19s.com`: An administrator account
+* `quepid+1case@o19s.com`: A user with 1 case
+* `quepid+2case@o19s.com`: A user with 2 cases
+* `quepid+solr@o19s.com`: A user with a Solr case
+* `quepid+es@o19s.com`: A  user with a ES case
+* `quepid+10sOfQueries@o19s.com`: A user with a Solr case that has 10s of queries
+* `quepid+100sOfQueries@o19s.com`: A user with a Solr case that has 100s of queries (usually disabled)
+* `quepid+1000sOfQueries@o19s.com`: A user with a Solr case that has 1000s of queries (usually disabled)
+* `kirk@starfleet.com`: Kirk is the owner of the team 'NCC-1701 Enterprise', and has rated documents
+* `spock@vulcan.org`: A member of the team 'NCC-1701 Enterprise', shares cases with Kirk
+* `quepid+CustomScorer@o19s.com`: A user who has a custom scorer
+* `quepid+CustomScorerDefault@o19s.com`: A user who has a custom scorer that is set as their default
 
 # Data Map
 
