@@ -190,7 +190,8 @@ GEM
       actionmailer (>= 3.0.0)
       postmark (~> 1.5.0)
     public_suffix (4.0.6)
-    puma (3.12.6)
+    puma (5.3.2)
+      nio4r (~> 2.0)
     puma_worker_killer (0.3.1)
       get_process_mem (~> 0.2)
       puma (>= 2.7)
@@ -331,7 +332,7 @@ DEPENDENCIES
   angular-rails-templates (>= 1.0.0.beta)
   annotate
   bcrypt (~> 3.1.7)
-  bootsnap
+  bootsnap (>= 1.4.4)
   bullet
   byebug
   cal-heatmap-rails (~> 3.6)
@@ -345,7 +346,7 @@ DEPENDENCIES
   foreman
   gabba
   intercom-rails
-  jbuilder (~> 2.5)
+  jbuilder (~> 2.7)
   jquery-rails
   jquery-ui-rails
   letter_opener
@@ -355,7 +356,7 @@ DEPENDENCIES
   mocha (~> 1.11)
   mysql2
   postmark-rails (~> 0.10.0)
-  puma (~> 3.11)
+  puma (~> 5.0)
   puma_worker_killer
   pundit
   rack-mini-profiler
@@ -372,7 +373,7 @@ DEPENDENCIES
   terser
   turbolinks (~> 5)
   webmock
-  webpacker (= 5.4.0)
+  webpacker (~> 5.0)
 
 RUBY VERSION
    ruby 2.7.2p137
