@@ -83,8 +83,6 @@ Rails.application.configure do
   config.action_mailer.delivery_method = :letter_opener
   config.action_mailer.default_url_options = { host: ENV['QUEPID_DOMAIN'], port: ENV['PORT'] }
 
-  config.force_ssl = false
-
   config.after_initialize do
     Bullet.enable = true
     Bullet.alert = false

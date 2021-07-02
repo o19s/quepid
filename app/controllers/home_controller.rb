@@ -1,8 +1,7 @@
 # frozen_string_literal: true
 
 class HomeController < ApplicationController
-  # TODO: don't know what to do with it yet
-  # before_action :redirect_to_non_ssl
+  before_action :redirect_to_non_ssl
 
   def index
     return unless current_user

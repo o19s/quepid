@@ -2,8 +2,7 @@
 
 module Users
   class InvitationsController < Devise::InvitationsController
-    # TODO: don't know what to do with it yet
-    # force_ssl if: :ssl_enabled?
+    force_ssl if: :ssl_enabled?
     skip_before_action :require_login, only: [ :edit, :update ]
 
     layout 'secure'

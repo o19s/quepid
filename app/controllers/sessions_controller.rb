@@ -1,8 +1,7 @@
 # frozen_string_literal: true
 
 class SessionsController < ApplicationController
-  # TODO: don't know what to do with it yet
-  # force_ssl if: :ssl_enabled?
+  force_ssl if: :ssl_enabled?
   skip_before_action :require_login,              only: :create
   skip_before_action :check_current_user_locked!, only: :create
   skip_before_action :verify_authenticity_token,  only: :create
