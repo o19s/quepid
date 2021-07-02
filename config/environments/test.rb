@@ -70,8 +70,6 @@ Rails.application.configure do
 
   ENV['EMAIL_SENDER'] = 'quepid@o19s.com'
 
-  if 'true' == ENV['FORCE_SSL']
-    config.force_ssl = true
-  end
+  config.force_ssl = true if 'true' == ENV['FORCE_SSL']
 end
 # rubocop:enable Metrics/BlockLength

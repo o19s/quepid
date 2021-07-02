@@ -97,7 +97,5 @@ Rails.application.configure do
 
   config.action_mailer.default_url_options = { host: ENV['QUEPID_DOMAIN'] }
 
-  if 'true' == ENV['FORCE_SSL']
-    config.force_ssl = true
-  end
+  config.force_ssl = true if 'true' == ENV['FORCE_SSL']
 end
