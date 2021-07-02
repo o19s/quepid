@@ -27,7 +27,7 @@ module Api
 
           respond_to do |format|
             format.json do
-              json_template = file_format.nil? ? 'show' : "show-#{file_format.downcase}"
+              json_template = file_format.nil? ? 'show' : "show_#{file_format.downcase}"
 
               render json_template, formats: :json
             end
