@@ -1,15 +1,5 @@
 # frozen_string_literal: true
 
-# Monkey Patch the rails-webconsole to allow it to connect from any IP, working
-# around Docker.
-module WebConsole
-  class Whitelist
-    def include? _network
-      true # Damn you Docker!
-    end
-  end
-end
-
 # rubocop:disable Metrics/BlockLength
 Rails.application.configure do
   # Settings specified here will take precedence over those in config/application.rb.
@@ -84,6 +74,7 @@ Rails.application.configure do
   config.action_mailer.default_url_options = { host: ENV['QUEPID_DOMAIN'], port: ENV['PORT'] }
 
   config.force_ssl = true if 'true' == ENV['FORCE_SSL']
+  config.ssl_options = { redirect: { exclude: ->(request) { /healthcheck/.match?(request.path) } } }
 
   config.after_initialize do
     Bullet.enable = true
