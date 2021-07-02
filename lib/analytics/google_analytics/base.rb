@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Analytics
-  module GA
+  module GoogleAnalytics
     module Base
       def enabled?
         # Unset values, empty strings, and "UA-" should all be treated as

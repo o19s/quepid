@@ -13,7 +13,7 @@ module Quepid
     # This attempts to deal with loading classes in ./lib, we where
     # getting NameError (uninitialized constant Scorer::ScaleSerializer) post Rails 5 upgrade.
     # Maybe move all regular classes into /app instead?
-    config.eager_load_paths << Rails.root.join('lib')
+    #config.eager_load_paths << Rails.root.join('lib')
 
     # Use the responders controller from the responders gem
     config.app_generators.scaffold_controller :responders_controller
