@@ -68,3 +68,12 @@ Rails.application.config.email_sender = ENV.fetch('EMAIL_SENDER', '')
 # This lets you disable the sorting if you experience the bug.
 #
 Rails.application.config.query_list_sortable = bool.deserialize(ENV.fetch('QUERY_LIST_SORTABLE', true))
+
+# == Google Analytics
+# To enable Google Analytics, set this environment variable.
+Rails.application.config.google_analytics = ENV.fetch('QUEPID_GA', '')
+
+# == Domain Quepid is Running Under
+# Certain features, like sending emails and Google Analytics require you to set the domain that Quepid
+# is set up under.
+Rails.application.config.quepid_domain = ENV.fetch('QUEPID_DOMAIN', '')
