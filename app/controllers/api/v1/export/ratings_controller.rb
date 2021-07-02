@@ -27,9 +27,9 @@ module Api
 
           respond_to do |format|
             format.json do
-              json_template = file_format.nil? ? 'show.json.jbuilder' : "show.#{file_format.downcase}.json.jbuilder"
+              json_template = file_format.nil? ? 'show' : "show-#{file_format.downcase}"
 
-              render json_template
+              render json_template, formats: :json
             end
             format.csv do
               # We have crazy rendering formatting in the view because we don't want a trailing LF at the end of the
