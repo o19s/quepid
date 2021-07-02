@@ -69,5 +69,9 @@ Rails.application.configure do
   ENV['QUEPID_GA'] = 'UA-FAKE-GA-CODE-FOR-TESTING'
 
   ENV['EMAIL_SENDER'] = 'quepid@o19s.com'
+
+  if 'true' == ENV['FORCE_SSL']
+    config.force_ssl = true
+  end
 end
 # rubocop:enable Metrics/BlockLength
