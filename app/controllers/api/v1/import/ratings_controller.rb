@@ -81,7 +81,7 @@ module Api
           rescue Exception => e
             # TODO: report this to logging infrastructure so we won't lose any important
             # errors that we might have to fix.
-            Rails.logger.debug "Import ratings failed: #{e.inspect}"
+            Rails.logger.debug { "Import ratings failed: #{e.inspect}" }
 
             render json: { message: e.message }, status: :bad_request
           end
