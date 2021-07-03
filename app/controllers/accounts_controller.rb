@@ -2,7 +2,7 @@
 
 class AccountsController < ApplicationController
   # TODO: don't know what to do with it yet
-  # force_ssl if: :ssl_enabled?
+  force_ssl if: :ssl_enabled?
 
   # rubocop:disable Metrics/MethodLength
   def update

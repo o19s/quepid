@@ -97,7 +97,7 @@ Rails.application.configure do
 
   config.action_mailer.default_url_options = { host: ENV['QUEPID_DOMAIN'] }
 
-  config.force_ssl = true if 'true' == ENV['FORCE_SSL']
+  #config.force_ssl = true if 'true' == ENV['FORCE_SSL']
   #config.ssl_options = { hsts: false, redirect: { exclude: ->(request) { request.path == '/' } } }
-  config.ssl_options = { redirect: { constrain_to: -> request { request.path != '/' } } }
+  #config.ssl_options = { redirect: { constrain_to: -> request { request.path != '/' } } }
 end

@@ -20,6 +20,10 @@ class ApplicationController < ActionController::Base
 
   private
 
+  def ssl_enabled?
+    'true' == ENV['FORCE_SSL']
+  end
+
   def signup_enabled?
     Rails.application.config.signup_enabled
   end
