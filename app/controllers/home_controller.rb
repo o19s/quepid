@@ -26,7 +26,7 @@ class HomeController < ApplicationController
     require 'pp'
     pp request
     puts "Here is the request.path:#{request.path}"
-    puts "does it match a /?  #{request.path == '/'}"
+    puts "does it match a /?  #{'/' == request.path}"
     if request.ssl?
       original_url = request.original_url
       original_url.gsub!(%r{https://}, 'http://')
