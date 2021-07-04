@@ -60,3 +60,5 @@ group :test do
   gem 'webmock'
   gem 'rails-controller-testing' # bring back compatibility with rails 4 assigns in controller tests.
 end
+
+gem "rack-cors", "~> 1.1"
