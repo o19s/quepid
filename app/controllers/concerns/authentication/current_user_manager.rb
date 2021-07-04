@@ -43,6 +43,8 @@ module Authentication
     end
 
     def require_login
+      puts "in require login"
+      puts "Do we have a @current_user? #{@current_user.nil?}"
       redirect_to secure_path unless @current_user
     end
 
