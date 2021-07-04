@@ -7,11 +7,12 @@ and https://github.com/rails/rails/pull/32277 and force_ssl if: :ssl_enabled?
   Turns Out it does!   
 
 * Confirm webpack actually being used.
-* look at all the build output that looks like:
-* The "loose" option must be the same for @babel/plugin-proposal-class-properties, @babel/plugin-proposal-private-methods and @babel/plugin-proposal-private-property-in-object (when they are enabled): you can silence this warning by explicitly adding
+* DONE - The "loose" option must be the same for @babel/plugin-proposal-class-properties, @babel/plugin-proposal-private-methods and @babel/plugin-proposal-private-property-in-object (when they are enabled): you can silence this warning by explicitly adding
 
  ["@babel/plugin-proposal-private-methods", { "loose": true }]
 
 to the "plugins" section of your Babel config.
+
+* Get `webpack-dev-server` to run in dev mode to enable the autoreload.  https://dev.to/vvo/a-rails-6-setup-guide-for-2019-and-2020-hf5
 
 * Bump to Ruby 2.7.3 right before the merge ;-)
