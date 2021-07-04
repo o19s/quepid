@@ -71,5 +71,6 @@ Rails.application.configure do
   ENV['EMAIL_SENDER'] = 'quepid@o19s.com'
 
   config.force_ssl = true if 'true' == ENV['FORCE_SSL']
+  config.ssl_options = { secure_cookies: false, hsts: false, redirect: { exclude: ->(request) { request.path == '/' } } }
 end
 # rubocop:enable Metrics/BlockLength
