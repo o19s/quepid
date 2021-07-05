@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+# rubocop:disable Metrics/BlockLength
 Sprockets.register_compressor 'application/javascript', :terser, Terser::Compressor
 Rails.application.configure do
   # Settings specified here will take precedence over those in config/application.rb.
@@ -102,3 +103,5 @@ Rails.application.configure do
                                                                                     '/' == request.path
                                                                                   } } }
 end
+
+# rubocop:enable Metrics/BlockLength
