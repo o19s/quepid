@@ -183,12 +183,11 @@ GEM
     parallel (1.20.1)
     parser (3.0.1.1)
       ast (~> 2.4.1)
-    postmark (1.5.0)
+    postmark (1.21.4)
       json
-      rake
-    postmark-rails (0.10.0)
+    postmark-rails (0.21.0)
       actionmailer (>= 3.0.0)
-      postmark (~> 1.5.0)
+      postmark (>= 1.21.3, < 2.0)
     public_suffix (4.0.6)
     puma (5.3.2)
       nio4r (~> 2.0)
@@ -243,7 +242,7 @@ GEM
       rake (>= 0.13)
       thor (~> 1.0)
     rainbow (3.0.0)
-    rake (13.0.3)
+    rake (13.0.4)
     rb-fsevent (0.11.0)
     rb-inotify (0.10.1)
       ffi (~> 1.0)
@@ -253,7 +252,7 @@ GEM
       actionpack (>= 5.0)
       railties (>= 5.0)
     rexml (3.2.5)
-    rubocop (1.18.2)
+    rubocop (1.18.3)
       parallel (~> 1.10)
       parser (>= 3.0.0.0)
       rainbow (>= 2.2.2, < 4.0)
@@ -357,7 +356,7 @@ DEPENDENCIES
   minitest-reporters (>= 0.5.0)
   mocha (~> 1.11)
   mysql2
-  postmark-rails (~> 0.10.0)
+  postmark-rails
   puma (~> 5.0)
   puma_worker_killer
   pundit

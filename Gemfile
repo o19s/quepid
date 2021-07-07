@@ -21,7 +21,7 @@ gem 'redis', '~> 4.0'
 gem 'jquery-rails'
 gem 'jquery-ui-rails' # Can we narrow the widgets to load faster?
 gem 'mysql2'
-gem 'postmark-rails', '~> 0.10.0'
+gem 'postmark-rails'
 gem 'puma', '~> 5.0'
 gem 'puma_worker_killer'
 gem 'pundit'

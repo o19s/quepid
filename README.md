@@ -441,6 +441,12 @@ bin/docker r bundle remove foobar --install
 Then check in the updated `Gemfile` and `Gemfile.lock` files.  For good measure
 run the `bin/setup_docker`.
 
+To understand if you have gems that are out of date run:
+
+```
+bin/docker r bundle outdated --groups
+```
+
 
 ## I'd like to test SSL
 
