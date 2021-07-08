@@ -31,9 +31,9 @@
               <a ng-class="{active: sort == 'defaultCaseOrder'}" ng-click="sortBy('default')">
                 Manual
                 <span ng-show="sortName == 'default'"
-                  class="glyphicon"
-                  ng-class="reverse ? 'glyphicon-arrow-up' : 'glyphicon-arrow-down'"
-                  aria-hidden="true">
+                      class="glyphicon"
+                      ng-class="reverse ? 'glyphicon-arrow-up' : 'glyphicon-arrow-down'"
+                      aria-hidden="true">
                 </span>
               </a>
             </li>
@@ -41,6 +41,18 @@
               Manual
               <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true" popover-trigger="'mouseenter'" popover-placement="right" uib-popover="Manual sorting has been disabled by your administrator due to the bug https://github.com/o19s/quepid/issues/272."></span>
             </li>
+
+            <li>
+              <a ng-class="{active: sort == 'modified'}" ng-click="sortBy('modified')">
+                Modified
+                <span ng-show="sortName == 'modified'"
+                      class="glyphicon"
+                      ng-class="reverse ? 'glyphicon-arrow-up' : 'glyphicon-arrow-down'"
+                      aria-hidden="true">
+                </span>
+              </a>
+            </li>
+
 
             <li>
               <a ng-class="{active: sort == 'queryText'}" ng-click="sortBy('query')">
