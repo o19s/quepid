@@ -35,12 +35,13 @@ gem 'd3-rails', '~> 3.5.5' # we have a very old version of D3.  This provides D3
 gem 'cal-heatmap-rails', '~> 3.6' # provides assets for cal heatmap, that requires old d3
 gem 'font-awesome-sass'
 gem 'webpacker', '~> 5.0'
+gem 'rack-cors', '~> 1.1'
+gem 'foreman'
 
 group :development, :test do
   gem 'annotate'
   gem 'bullet'
   gem 'byebug'
-  gem 'foreman'
   gem 'memory_profiler'
   gem 'rack-mini-profiler'
 end
@@ -60,5 +61,3 @@ group :test do
   gem 'webmock'
   gem 'rails-controller-testing' # bring back compatibility with rails 4 assigns in controller tests.
 end
-
-gem 'rack-cors', '~> 1.1'
