@@ -69,6 +69,5 @@ Rails.application.configure do
   ENV['QUEPID_GA'] = 'UA-FAKE-GA-CODE-FOR-TESTING'
 
   ENV['EMAIL_SENDER'] = 'quepid@o19s.com'
-
 end
 # rubocop:enable Metrics/BlockLength

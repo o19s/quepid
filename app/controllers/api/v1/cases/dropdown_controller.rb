@@ -6,11 +6,6 @@ module Api
       class DropdownController < Api::ApiController
         # rubocop:disable Metrics/MethodLength
         def index
-
-          puts "Here is the request.path for Dropdown:#{request.path}"
-          #puts "does it match a /api?  #{request.path.include('/api")?}"
-
-
           # Using joins/includes will not return the proper list in the
           # correct order because rails refuses to include the
           # `case_metadata`.`last_viewed_at` column in the SELECT statement
