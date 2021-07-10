@@ -30,13 +30,10 @@ module Authentication
     end
 
     def set_current_user
-      puts "Is @current_user.present? #{@current_user.present?}"
       if @current_user.present?
         session[:current_user_id] = @current_user.id
         return
       end
-
-      puts "session[:current_user_id]: #{session[:current_user_id]}"
 
       if session[:current_user_id] && User.exists?(session[:current_user_id])
         @current_user = User.find(session[:current_user_id])
