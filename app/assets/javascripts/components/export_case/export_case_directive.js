@@ -10,7 +10,8 @@ angular.module('QuepidApp')
         templateUrl:      'export_case/export_case.html',
         scope:        {
           theCase: '=',
-          iconOnly: '='
+          iconOnly: '=',
+          supportsDetailedExport: '='
         }
       };
     }

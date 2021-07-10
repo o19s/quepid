@@ -13,10 +13,11 @@ angular.module('QuepidApp')
       defaultScorer
     ) {
       var ctrl = this;
+      ctrl.needToWarnOnScaleChange = false; // New scorers don't have any ratings, so no need to warn.
 
       scorerControllerActionsSvc.addActions(ctrl, $scope);
 
-      ctrl.scaleChoice  = 'defaultScale';
+      ctrl.scaleChoice  = 'binaryScale';
       ctrl.scorer       = defaultScorer;
 
       ctrl.scorerOptions = {
