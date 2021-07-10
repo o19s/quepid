@@ -77,3 +77,8 @@ Rails.application.config.google_analytics = ENV.fetch('QUEPID_GA', '')
 # Certain features, like sending emails and Google Analytics require you to set the domain that Quepid
 # is set up under.
 Rails.application.config.quepid_domain = ENV.fetch('QUEPID_DOMAIN', '')
+
+
+# == SSL Specific Settings
+Rails.application.config.force_ssl = true if 'true' == ENV['FORCE_SSL']
+Rails.application.config.ssl_options = { secure_cookies: false, hsts: false, redirect: { exclude: -> request { request.path =~ /api/ or request.path =~ /assets/ or request.path =~ /case/ or request.path == '/' } } }

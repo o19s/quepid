@@ -98,10 +98,6 @@ Rails.application.configure do
 
   config.action_mailer.default_url_options = { host: ENV['QUEPID_DOMAIN'] }
 
-  config.force_ssl = true if 'true' == ENV['FORCE_SSL']
-  config.ssl_options = { secure_cookies: false, hsts: false, redirect: { exclude: ->(request) {
-                                                                                    '/' == request.path
-                                                                                  } } }
 end
 
 # rubocop:enable Metrics/BlockLength
