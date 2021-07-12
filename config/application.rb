@@ -16,13 +16,28 @@ module Quepid
     # Initialize configuration defaults for originally generated Rails version.
     config.load_defaults 6.1
 
-    # Settings in config/environments/* take precedence over those specified here.
-    # Application configuration can go into files in config/initializers
-    # -- all .rb files in that directory are automatically loaded after loading
-    # the framework and any gems in your application.
+    # Configuration for the application, engines, and railties goes here.
+  	#
+  	# These settings can be overridden in specific environments using the files
+  	# in config/environments, which are processed later.
+  	#
+  	# config.time_zone = "Central Time (US & Canada)"
+  	# config.eager_load_paths << Rails.root.join("extras")
 
     config.angular_templates.ignore_prefix = %w[templates/ components/]
 
     config.active_job.queue_adapter = :sidekiq
+
+    # == SSL Specific Settings
+    config.force_ssl = true if 'true' == ENV['FORCE_SSL']
+    # rubocop:disable Style/YodaCondition
+    # rubocop:disable Style/StabbyLambdaParentheses
+    # rubocop:disable Layout/LineLength
+    # rubocop:disable Layout/SpaceInLambdaLiteral
+    config.ssl_options = { secure_cookies: false, hsts: false, redirect: { exclude: -> request { request.path =~ /api/ or request.path =~ /assets/ or request.path =~ /case/ or request.path == '/' } } }
+    # rubocop:enable Style/YodaCondition
+    # rubocop:enable Style/StabbyLambdaParentheses
+    # rubocop:enable Layout/LineLength
+    # rubocop:enable Layout/SpaceInLambdaLiteral
   end
 end

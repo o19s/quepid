@@ -15,4 +15,14 @@ to the "plugins" section of your Babel config.
 
 * Get `webpack-dev-server` to run in dev mode to enable the autoreload.  https://dev.to/vvo/a-rails-6-setup-guide-for-2019-and-2020-hf5
 
-* Bump to Ruby 2.7.3 right before the merge ;-)
+* check out running `docker r rails app:update`  https://selleo.com/blog/how-to-upgrade-to-rails-6
+
+* check https://railsdiff.org/5.2.3/6.1.4
+
+* check<meta name="viewport" content="width=device-width,initial-scale=1"> on application.html.erb
+* bin/spring?
+* bin/rails?
+
+* Check on node versions for prod and dev
+* test:frontend doesn't run in Docker.
+* Bump to Ruby 2.7.4 right before the merge ;-)

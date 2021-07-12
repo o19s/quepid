@@ -1,4 +1,4 @@
-FROM node:10.20.1 AS build-dep
+FROM node:14.17.3-buster AS build-dep
 WORKDIR /srv/app
 COPY package.json yarn.lock ./
 RUN yarn install --production=true

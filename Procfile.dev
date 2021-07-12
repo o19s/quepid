@@ -1,4 +1,5 @@
 web:    bundle exec puma -C config/puma.rb
 worker: bundle exec sidekiq -e development -C config/sidekiq.yml -q default
+# For the future webpacker:  ./bin/webpack-dev-server
 
 # web: bundle exec thin start -p 3001 --ssl --ssl-key-file .ssl/localhost.key --ssl-cert-file .ssl/localhost.crt
