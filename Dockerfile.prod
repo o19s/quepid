@@ -3,7 +3,7 @@ WORKDIR /srv/app
 COPY package.json yarn.lock ./
 RUN yarn install --production=true
 
-FROM ruby:2.7.2-buster
+FROM ruby:2.7.4-buster
 
 LABEL maintainer="quepid_admin@opensourceconnections.com"
 
