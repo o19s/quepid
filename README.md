@@ -125,6 +125,7 @@ You can still use `docker-compose` directly, but for the basic stuff you can use
 * Run back end unit tests: `bin/docker r rails test`
 
 
+
 ## II. Development Log
 
 While running the app under foreman, you'll only see a request log, for more detailed logging run the following:
