@@ -12,7 +12,7 @@ class EsArgParserTest < ActiveSupport::TestCase
 
   test 'replaces curator vars with values' do
     params  = '{ "foo": "##var1##" }'
-    vars    = { 'var1': 1, 'var2': 2 }
+    vars    = { var1: 1, var2: 2 }
     result  = EsArgParser.parse(params, vars)
 
     assert_equal result['foo'], '1'
@@ -20,7 +20,7 @@ class EsArgParserTest < ActiveSupport::TestCase
 
   test 'handles params that do not have a curator var' do
     params  = '{ "foo": "bar" }'
-    vars    = { 'k': 1 }
+    vars    = { k: 1 }
     result  = EsArgParser.parse(params, vars)
 
     assert_equal result['foo'], 'bar'
@@ -28,7 +28,7 @@ class EsArgParserTest < ActiveSupport::TestCase
 
   test 'handles params with a %' do
     params  = '{ "foo": "##var1##", "bar": "100%" }'
-    vars    = { 'var1': 1, 'var2': 2 }
+    vars    = { var1: 1, var2: 2 }
     result  = EsArgParser.parse(params, vars)
 
     assert_equal result['foo'], '1'
@@ -45,7 +45,7 @@ class EsArgParserTest < ActiveSupport::TestCase
 
   test 'works with a car named `boost`' do
     params  = '{ "foo": "##boost##" }'
-    vars    = { 'boost': 42 }
+    vars    = { boost: 42 }
     result  = EsArgParser.parse(params, vars)
 
     assert_equal result['foo'], '42'

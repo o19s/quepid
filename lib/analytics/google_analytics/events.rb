@@ -6,7 +6,7 @@
 #
 # rubocop:disable Metrics/ModuleLength
 module Analytics
-  module GA
+  module GoogleAnalytics
     module Events
       #
       # Creates an event when a user signs up.
@@ -704,7 +704,7 @@ module Analytics
       # https://developers.google.com/analytics/devguides/collection/analyticsjs/events
       #
       def create_event data
-        return unless Analytics::GA.enabled?
+        return unless Analytics::GoogleAnalytics.enabled?
 
         GoogleAnalyticsEventJob.perform_later data
       end

@@ -3,7 +3,7 @@
 module ActiveSupport
   class TestCase
     def expects_any_ga_event_call
-      Analytics::GA.ga
+      Analytics::GoogleAnalytics.ga
         .expects(:event)
         .with(any_parameters)
     end

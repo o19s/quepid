@@ -81,7 +81,7 @@ class Try < ApplicationRecord
   end
 
   def curator_vars_map
-    Hash[curator_variables.map { |each| [ each.name.to_sym, each.value ] }]
+    curator_variables.map { |each| [ each.name.to_sym, each.value ] }.to_h
   end
 
   def solr_args

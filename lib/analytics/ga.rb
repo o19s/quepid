@@ -4,7 +4,7 @@ require_relative 'google_analytics/base'
 require_relative 'google_analytics/events'
 
 module Analytics
-  module GA
+  module GoogleAnalytics
     extend Base
     extend Events
   end

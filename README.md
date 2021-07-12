@@ -42,6 +42,7 @@ Below is information related to developing the Quepid open source project, prima
   - [IV. Debugging](#iv-debugging)
     - [Debugging Ruby](#debugging-ruby)
     - [Debugging JS](#debugging-js)
+    - [Webpacker](#webpacker)
   - [Convenience Scripts](#convenience-scripts)
     - [Rake](#rake)
     - [Thor](#thor)
@@ -122,6 +123,7 @@ You can still use `docker-compose` directly, but for the basic stuff you can use
 * Destroy the Docker env: `bin/docker destroy` or `bin/docker d`
 * Run front end unit tests: `bin/docker r rails test:frontend`
 * Run back end unit tests: `bin/docker r rails test`
+
 
 
 ## II. Development Log
@@ -278,6 +280,21 @@ Also please note that the files `secure.js`, `application.js`, and `admin.js` ar
 JavaScript and CSS dependencies via the Rails Asset pipeline.   If you are debugging Bootstrap, then
 you will want individual files.  So replace `//= require sprockets` with `//= require bootstrap-sprockets`.
 
+
+### Webpacker
+To use webpacker, that will compile javascript code into packs and will load changes faster,
+you need to
+
+```bash
+bin/rails webpacker:install
+```
+
+Prior to that I had to install:
+
+```bash
+brew install mysql
+```
+
 ### Debugging Splainer and other NPM packages
 
 `docker-compose.override.yml.example` can be copied to `docker-compose.override.yml` and use it to override environment variables or work with a local copy of the splainer-search JS library during development defined in `docker-compose.yml`. Example is included. Just update the path to splainer-search with your local checkout!  https://docs.docker.com/compose/extends/
@@ -429,6 +446,12 @@ bin/docker r bundle remove foobar --install
 
 Then check in the updated `Gemfile` and `Gemfile.lock` files.  For good measure
 run the `bin/setup_docker`.
+
+To understand if you have gems that are out of date run:
+
+```
+bin/docker r bundle outdated --groups
+```
 
 
 ## I'd like to test SSL

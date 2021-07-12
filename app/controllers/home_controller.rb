@@ -1,6 +1,10 @@
 # frozen_string_literal: true
 
 class HomeController < ApplicationController
+  # If Quepid is running on HTTPS, like on Heroku, then it needs to switch
+  # to HTTP in order to make calls to a Solr that is running in HTTP as well, otherwise
+  # you get this "Mixed Content", which browsers block as a security issue.
+  # https://developer.mozilla.org/en-US/docs/Web/Security/Mixed_content
   before_action :redirect_to_non_ssl
 
   def index
