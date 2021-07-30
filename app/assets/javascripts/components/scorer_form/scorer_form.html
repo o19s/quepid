@@ -37,17 +37,21 @@
 
 <div class='form-group'>
   <label>Scale for query ratings:</label></br />
+  <p ng-if="ctrl.updatingScale" class='bg-warning text-warning padded-text'>
+    <i class="fa fa-exclamation-triangle" aria-hidden="true"></i>
+    Changing scales may invalidate existing ratings. Please review and re-rate your queries as needed!
+  </p>
   <label>
-    <input id="default" type="radio" ng-model="ctrl.scaleChoice" value="defaultScale" ng-change="ctrl.updateScale(ctrl.scaleOptions.defaultScale)">
-    Default Scale ({{ ctrl.scaleOptions.defaultScale }})
+    <input id="binary" type="radio" ng-model="ctrl.scaleChoice" value="binaryScale" ng-change="ctrl.updateScale(ctrl.scaleOptions.binaryScale)">
+    Binary Scale ( {{ ctrl.scaleOptions.binaryScale }} )
   </label><br/>
   <label>
-    <input id="short" type="radio" ng-model="ctrl.scaleChoice" value="shortScale" ng-change="ctrl.updateScale(ctrl.scaleOptions.shortScale)">
-    Short Scale ({{ ctrl.scaleOptions.shortScale }})
+    <input id="graded" type="radio" ng-model="ctrl.scaleChoice" value="gradedScale" ng-change="ctrl.updateScale(ctrl.scaleOptions.gradedScale)">
+    Graded Scale ( {{ ctrl.scaleOptions.gradedScale }} )
   </label><br/>
   <label>
-    <input id="fibonacciScale" type="radio" ng-model="ctrl.scaleChoice" value="fibonacciScale" ng-change="ctrl.updateScale(ctrl.scaleOptions.fibonacciScale)">
-    Fibonacci Sequence ({{ ctrl.scaleOptions.fibonacciScale }})
+    <input id="detail" type="radio" ng-model="ctrl.scaleChoice" value="detailScale" ng-change="ctrl.updateScale(ctrl.scaleOptions.detailScale)">
+    Detail Scale ( {{ ctrl.scaleOptions.detailScale }} )
   </label><br/>
   <label>
     <input id="custom" type="radio" ng-model="ctrl.scaleChoice" value="custom" ng-change="ctrl.updateScale(ctrl.scaleOptions.custom)">
@@ -66,15 +70,13 @@
       Show Scale Labels
     </label>
 
-    <div ng-if="ctrl.scorer.showScaleLabels === true">
-      <ul class='scale-labels form-horizontal'>
-        <li ng-repeat="(value, label) in ctrl.scorer.scaleWithLabels" class="form-group">
-          <label class="col-sm-1 control-label">{{value}}: </label>
-          <div class="col-sm-11">
-            <input type='text' ng-model='ctrl.scorer.scaleWithLabels[value]' class="form-control" />
-          </div>
-        </li>
-      </ul>
+    <div ng-if="ctrl.scorer.showScaleLabels === true" class='scale-labels form-horizontal'>
+      <span ng-repeat="(value, label) in ctrl.scorer.scaleWithLabels" class="form-group">
+        <label class="col-sm-1 control-label">{{value}}: </label>
+        <div class="col-sm-11">
+          <input type='text' ng-model='ctrl.scorer.scaleWithLabels[value]' class="form-control" />
+        </div>
+      </span>
     </div>
   </div>
 </div>

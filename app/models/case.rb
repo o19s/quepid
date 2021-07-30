@@ -124,6 +124,8 @@ class Case < ApplicationRecord
         end
       end
 
+      self.scorer = original_case.scorer
+
       save!
     end
   end

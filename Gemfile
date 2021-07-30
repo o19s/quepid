@@ -34,12 +34,12 @@ gem 'listen', '~> 3.3'
 gem 'd3-rails', '~> 3.5.5' # we have a very old version of D3.  This provides D3 assets.
 gem 'cal-heatmap-rails', '~> 3.6' # provides assets for cal heatmap, that requires old d3
 gem 'font-awesome-sass'
+gem 'foreman'
 
 group :development, :test do
   gem 'annotate'
   gem 'bullet'
   gem 'byebug'
-  gem 'foreman'
   gem 'memory_profiler'
   gem 'rack-mini-profiler'
 end

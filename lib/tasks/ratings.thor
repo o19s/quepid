@@ -102,11 +102,11 @@ class Ratings < Thor
     ---------------
 
     -s: will override default scale to use for generating ratings.
-    Default is [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].
+    Default is [0, 1, 2, 3].
 
     EXAMPLES:
 
-    $ thor ratings:generate http://solr.quepid.com import.csv -s 1 2 3 4
+    $ thor ratings:generate http://solr.quepid.com import.csv -s 0 1
 
     ---------------
 
@@ -137,7 +137,7 @@ class Ratings < Thor
   LONGDESC
   option :query,  type: :string,  aliases: '-q', default: '*:*'
   option :rows,   type: :numeric, aliases: '-r', default: 10
-  option :scale,  type: :array,   aliases: '-s', default: (1..10).to_a
+  option :scale,  type: :array,   aliases: '-s', default: (0..3).to_a
   option :number, type: :numeric, aliases: '-n', default: 10
   option :field,  type: :string,  aliases: '-f', default: 'text'
   option :id,     type: :string,  aliases: '-i', default: 'id'

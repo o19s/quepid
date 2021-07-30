@@ -82,7 +82,22 @@ module Api
             assert_equal csv[1]['rating'],                              the_case.queries[0].ratings[0].rating.to_s
           end
 
-          test 'CSV response doesnt have a trailing line feed' do
+          test 'returns case w/ queries but no ratings in explicit csv compatible format' do
+            the_case.queries[0].ratings.destroy
+            get :show, params: { case_id: the_case.id, format: :csv, file_format: 'basic' }
+            assert_response :ok
+
+            expected_csv = "query,docid,rating\n"\
+                           "two,,\n"\
+                           "one,,\n"
+            assert_equal response.body, expected_csv
+
+            csv = CSV.parse(response.body, headers: true)
+            assert_nil csv[0]['rating']
+            assert_equal csv[0]['query'], the_case.queries[0].query_text
+          end
+
+          test 'CSV response should not have a trailing line feed' do
             # See https://github.com/o19s/quepid/issues/354
             lines_expected = the_case.queries.count + 1 # include csv header line!
 
