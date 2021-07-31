@@ -6,6 +6,7 @@
       <span ng-if="!ctrl.scorer.communal">
         <share-scorer scorer="ctrl.scorer"></share-scorer>
       </span>
+      <clone-scorer scorer="ctrl.scorer"></clone-scorer>
       <edit-scorer scorer="ctrl.scorer"></edit-scorer>
       <span ng-if="ctrl.team">
         <delete-scorer this-scorer="ctrl.scorer"></delete-scorer>
@@ -34,6 +35,8 @@
 
     <div>
       <ul class='scorer-scale clearfix' ng-model="ctrl.scorer.scale">
+        <!-- There is an issue where this ng-repeat doesn't rerun after you save and update the lists. -->
+        <!-- Other properties of ctrl.scorer do update -->
         <li ng-repeat="(number, value) in ctrl.scorer.colors">
           <div ng-style="{ 'background-color': value.color }">
             {{ number }}

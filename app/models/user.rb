@@ -30,8 +30,13 @@ class User < ApplicationRecord
   # Associations
   belongs_to :default_scorer, class_name: 'Scorer', optional: true # for communal scorers there isn't a owner
 
+  # has_many :cases,
+  #         dependent:   :nullify # sometimes a case belongs to a team, so don't just delete it.
   has_many :cases,
-           dependent:   :nullify # sometimes a case belongs to a team, so don't just delete it.
+           class_name:  'Case',
+           foreign_key: :owner_id,
+           inverse_of:  :owner,
+           dependent:   :nullify
 
   has_many :queries, through: :cases
 
@@ -188,6 +193,10 @@ class User < ApplicationRecord
 
   def after_database_authentication
     # required by devise_invitable
+  end
+
+  def pending_invite?
+    created_by_invite? && !invitation_accepted? && password.blank?
   end
 
   private

@@ -27,9 +27,9 @@ module Api
 
           respond_to do |format|
             format.json do
-              json_template = file_format.nil? ? 'show.json.jbuilder' : "show.#{file_format.downcase}.json.jbuilder"
+              json_template = file_format.nil? ? 'show' : "show_#{file_format.downcase}"
 
-              render json_template
+              render json_template, formats: :json
             end
             format.csv do
               # We have crazy rendering formatting in the view because we don't want a trailing LF at the end of the
@@ -70,6 +70,11 @@ module Api
                 end
               end
 
+              # pad out each row so we get three columns in our resulting CSV.
+              @csv_array.each do |row|
+                padright!(row, 3, nil)
+              end
+
               headers['Content-Disposition'] = "attachment; filename=\"#{csv_filename}\""
               headers['Content-Type'] ||= 'text/csv'
             end
@@ -84,6 +89,13 @@ module Api
         # rubocop:enable Metrics/CyclomaticComplexity
         # rubocop:enable Metrics/PerceivedComplexity
         # rubocop:enable Metrics/BlockLength
+
+        # https://stackoverflow.com/questions/5608918/pad-an-array-to-be-a-certain-size
+        # rubocop:disable Naming/MethodParameterName
+        def padright! a, n, x
+          a.fill(x, a.length...n)
+        end
+        # rubocop:enable Naming/MethodParameterName
       end
     end
   end

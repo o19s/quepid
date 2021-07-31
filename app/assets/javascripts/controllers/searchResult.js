@@ -89,5 +89,18 @@ angular.module('QuepidApp')
       $scope.isUrl = function(value) {
         return ( /^\s*http[s]?:.*/.test(value));
       };
+
+      // Determine which style sheet to use to influence formatting
+      $scope.summaryColumnStyle = function() {
+        if ($scope.doc.hasThumb()){
+          return 'col-summary-thumb';
+        }
+        else if ($scope.doc.hasImage()){
+          return 'col-summary-image';
+        }
+        else {
+          return '';
+        }
+      };
     }
   ]);

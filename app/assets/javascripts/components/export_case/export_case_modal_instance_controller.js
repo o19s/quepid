@@ -6,10 +6,12 @@ angular.module('QuepidApp')
     '$uibModalInstance',
     'querySnapshotSvc',
     'theCase',
-    function ($scope, $uibModalInstance, querySnapshotSvc, theCase) {
+    'supportsDetailedExport',
+    function ($scope, $uibModalInstance, querySnapshotSvc, theCase, supportsDetailedExport) {
       var ctrl = this;
 
       ctrl.theCase = theCase;
+      ctrl.supportsDetailedExport = supportsDetailedExport;
 
       // If called from the cases listing page, then we need the call back with the bootstrap,
       // otherwise on the main page the querySnapshotSvc.snapshots was bootstrapped.

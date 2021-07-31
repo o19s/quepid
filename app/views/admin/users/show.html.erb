@@ -70,7 +70,7 @@
 
 <div class="clearfix">
   <h2>Pulse</h2>
-  <% unless @user.agreed_time %>
+  <% if @user.pending_invite? %>
   <div class="alert alert-info" role="alert">This user hasn't accepted the invite to join Quepid, therefore no usage data is available.</div>
   <% else %>
   <h3>Cases viewed</h3>
@@ -78,7 +78,7 @@
     id="cases-viewed"
     data-pulse
     data-item-selector="#cases-viewed"
-    data-signup-date="<%= @user.agreed_time.strftime('%Y-%m-%d') %>"
+    data-signup-date="<%= @pulse_chart_start_date %>"
     data-url="<%= "/admin/users/#{@user.id}/pulse.json?data=metadata" %>"
   >
   </div>
@@ -88,7 +88,7 @@
     id="cases-scored"
     data-pulse
     data-item-selector="#cases-scored"
-    data-signup-date="<%= @user.agreed_time.strftime('%Y-%m-%d') %>"
+    data-signup-date="<%= @pulse_chart_start_date %>"
     data-url="<%= "/admin/users/#{@user.id}/pulse.json?data=scores" %>"
   >
   </div>
@@ -98,7 +98,7 @@
     id="cases-created"
     data-pulse
     data-item-selector="#cases-created"
-    data-signup-date="<%= @user.agreed_time.strftime('%Y-%m-%d') %>"
+    data-signup-date="<%= @pulse_chart_start_date %>"
     data-url="<%= "/admin/users/#{@user.id}/pulse.json?data=cases-created" %>"
   >
   </div>
@@ -108,7 +108,7 @@
     id="teams-created"
     data-pulse
     data-item-selector="#teams-created"
-    data-signup-date="<%= @user.agreed_time.strftime('%Y-%m-%d') %>"
+    data-signup-date="<%= @pulse_chart_start_date %>"
     data-url="<%= "/admin/users/#{@user.id}/pulse.json?data=teams-created" %>"
   >
   </div>
@@ -118,7 +118,7 @@
     id="queries-created"
     data-pulse
     data-item-selector="#queries-created"
-    data-signup-date="<%= @user.agreed_time.strftime('%Y-%m-%d') %>"
+    data-signup-date="<%= @pulse_chart_start_date %>"
     data-url="<%= "/admin/users/#{@user.id}/pulse.json?data=queries-created" %>"
   >
   </div>

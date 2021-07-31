@@ -53,9 +53,8 @@
             </ul>
             <ul ng-if="pendingWizardSettings.searchEngine === 'solr'">
               <li>Do you see any errors when you visit your <a target="_blank" href="{{pendingWizardSettings.searchUrl}}">Solr URL directly?</a></li>
-              <li>Will your request handler accept the JSONP writer type? Or does it only return XML or JSON?</li>
               <li>
-                If you are using Solr 8.4 or later, you may need to tweak the content-type being set by <code>wt=json</code>.
+                If you are using a version of Solr between 8.4 and 9.0, you may need to tweak the content-type being set by <code>wt=json</code>.
                 You can do this via the below curl command:
 <pre>
 curl -X POST -H 'Content-type:application/json' -d '{
@@ -137,7 +136,7 @@ curl -X POST -H 'Content-type:application/json' -d '{
           <div class="form-group clearfix">
             <label class="col-sm-3 control-label">Additional Display Fields</label>
             <div class="col-sm-9">
-              <tags-input ng-model="pendingWizardSettings.additionalFields" placeholder="Add a field" add-on-enter="true" add-on-space="true" add-on-paste="true" min-length="1">
+              <tags-input ng-model="pendingWizardSettings.additionalFields" placeholder="Add a field" add-on-enter="true" add-on-space="true" add-on-paste="true" paste-split-pattern="[,\s]" min-length="1">
               <auto-complete source="loadFields($query)" min-length="0" load-on-focus="true" load-on-empty="true"></auto-complete>
               </tags-input>
               <p class="help-block">Would any extra fields be handy to display?</p>

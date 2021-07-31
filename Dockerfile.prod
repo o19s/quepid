@@ -1,9 +1,9 @@
-FROM node:10.20.1 AS build-dep
+FROM node:14.17.3-buster AS build-dep
 WORKDIR /srv/app
 COPY package.json yarn.lock ./
 RUN yarn install --production=true
 
-FROM ruby:2.7.2-buster
+FROM ruby:2.7.4-buster
 
 LABEL maintainer="quepid_admin@opensourceconnections.com"
 
@@ -32,9 +32,19 @@ RUN apt-get update \
 WORKDIR /srv/app
 COPY Gemfile Gemfile.lock ./
 RUN gem install bundler:1.17.3
-RUN bundle install
+#RUN bundle install
+# Clean up Bundle
+RUN bundle install --without development test && \
+  bundle clean --force && \
+  rm -rf /app/.bundle/cache && \
+  rm -rf /app/vendor/bundle/ruby/*/cache
 
 COPY --from=build-dep /srv/app/node_modules ./node_modules/
 COPY . .
+
 RUN RAILS_ENV=production SECRET_KEY_BASE=fake_out_devise bundle exec rake assets:precompile
+
+# Remove some files not needed in resulting image
+RUN rm package.json yarn.lock
+
 CMD ["foreman", "s", "-f", "Procfile"]
