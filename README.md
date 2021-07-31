@@ -503,6 +503,14 @@ bin/docker r bundle install
 
 You will see a updated `Gemfile.lock`, go ahead and check it and `Gemfile` into Git.
 
+## How does the Frontend work?
+
+We use Angular 1 for the front end, and as part of that we use the `angular-ui-bootstrap` package
+for all our UI components.   This package is tied to Bootstrap version 3.   We import the Bootstrap 3
+CSS directly via the file `bootstrap.css`.   
+
+We currently use Rails Sprockets to compile everything, but do have dreams of moving the JavaScript
+over to Webpacker.
 
 # QA
 

@@ -27,7 +27,6 @@
     "angular-ui-sortable": "~0.19.0",
     "angular-utils-pagination": "~0.11.1",
     "angular-wizard": "git://github.com/softwaredoug/angular-wizard.git#0.4.2",
-    "bootstrap": "~4.6.0",
     "d3": "~6.6.2",
     "d3-tip": "~0.9.1",
     "jquery": "~3.6.0",
@@ -44,7 +43,7 @@
   },
   "devDependencies": {
     "angular-mocks": "~1.8.2",
-    "jasmine-core": "~3.7.1",
+    "jasmine-core": "^3.7.1",
     "jshint": "^2.12.0",
     "karma": "^6.3.2",
     "karma-chrome-launcher": "^3.1.0",
