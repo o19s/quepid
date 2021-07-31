@@ -509,6 +509,8 @@ We use Angular 1 for the front end, and as part of that we use the `angular-ui-b
 for all our UI components.   This package is tied to Bootstrap version 3.   We import the Bootstrap 3
 CSS directly via the file `bootstrap.css`.   
 
+For the various Admin pages, we actually are using Bootstrap 5! That is included via the `package.json` using NPM.  See `admin.js` for the line `//= require bootstrap/dist/js/bootstrap.bundle` which is where we are including.   
+
 We currently use Rails Sprockets to compile everything, but do have dreams of moving the JavaScript
 over to Webpacker.
 

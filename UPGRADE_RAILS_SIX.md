@@ -26,3 +26,5 @@ to the "plugins" section of your Babel config.
 * Check on node versions for prod and dev
 * test:frontend doesn't run in Docker.
 * Bump to Ruby 2.7.4 right before the merge ;-)
+* check on bootstrap 3 to bootstrap 4  http://upgrade-bootstrap.bootply.com/
+* Check on bootstrap 4 versus 5 https://designmodo.com/migrate-bootstrap-5/
