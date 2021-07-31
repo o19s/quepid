@@ -34,6 +34,7 @@ npm-debug.log
 # Rails assets
 # Ignore compiled assets
 public/assets
+public/packs
 
 # Test Coverage
 coverage/
