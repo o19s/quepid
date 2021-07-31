@@ -14,7 +14,7 @@ class AccountsControllerTest < ActionController::TestCase
       test 'returns an unauthorized error' do
         patch :update
 
-        assert_redirected_to secure_path
+        assert_redirected_to sessions_path
       end
     end
 
@@ -124,7 +124,7 @@ class AccountsControllerTest < ActionController::TestCase
             delete :destroy, params: { id: user.id }
           end
         end
-        assert_redirected_to secure_path
+        assert_redirected_to sessions_path
       end
     end
 
@@ -151,7 +151,7 @@ class AccountsControllerTest < ActionController::TestCase
 
         assert_difference('User.count', -1) do
           delete :destroy, params: { id: user.id }
-          assert_redirected_to secure_path
+          assert_redirected_to sessions_path
         end
 
         shared_team_case.reload

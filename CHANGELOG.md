@@ -1,6 +1,36 @@
 # Changelog
 
-## 6.5.4 - ??
+## 6.6.0 - ????
+
+### Features
+
+* OpenID Support!  Historically you had to create your own account on Quepid, but that is another barrier to entry, and something else to keep track of.  Inspired by the issue _Add OAuth Providers_ by @gregoryduckworth https://github.com/o19s/quepid/issues/188,  https://github.com/o19s/quepid/pull/280 and https://github.com/o19s/quepid/pull/389 by @epugh implements the first two providers, Google and Keycloak.
+
+### Improvements
+
+* Quepid is running on Rails 6!  Rails 6 was released ~26 months, and represents the future of Rails.  I'm excited that this push initiated by @DmitryKey is going to bring us some great new features like: better developer experience with Webpack for JavaScript, ActionText to handle better text formatting of notes and messages about Cases and Queries, ActionCable which will let us notify users who are rating the same case.  https://github.com/o19s/quepid/pull/381 by @DmitryKey with assist from @epugh.
+
+* Make our ActiveRecord modeling for ownership the same.  Teams have an _owner_, Scorers have an _owner_, but Cases have a _user_.  Now we have _case.owner_ relationship.  https://github.com/o19s/quepid/pull/359 by @epugh.
+
+### Bugs
+
+## 6.5.5 - 2021-06-30
+
+### Features
+
+* You can now tag a field with `translate:`, as in `translate:content` and you will get an icon to pop the text open in a Google Translate in a new browser window.  https://github.com/o19s/quepid/pull/386 by @epugh.
+
+### Improvements
+
+* You can now export fields that have the formatting modifiers `thumb` and `image` using the detail format.  Also improved the handling of the General and Detail export from the Case Listing page.  https://github.com/o19s/quepid/pull/383 by @epugh fixes https://github.com/o19s/quepid/issues/382.  Thanks @DmitryKey for the improvement assist and spotting the Case Listing export issue.
+
+* Admin user can now reset a users password with a new password.  https://github.com/o19s/quepid/pull/385 by @epugh to fix issue identified by @michaelcizmar.  Thanks Michael!
+
+* Trying to communciate about HTTPS better when you set up a case.  https://github.com/o19s/quepid/pull/384 by @epugh inspired by https://github.com/o19s/quepid/issues/279 by @arafalov.
+
+
+
+## 6.5.4 - 2021-06-16
 
 ### Features
 
@@ -13,6 +43,8 @@
 * During the Case Wizard setup, allow space delimited list of fields, like `title overview` to be pasted in, just like comma delimited lists.  Thanks @peterdm for the assist on the Regex!   https://github.com/o19s/quepid/pull/378 by @epugh.
 
 * Revamped the layout of the Scorer creation and editing screens to be visually cleaner.  Retired the old _Fibonnaci_ scale, and renamed _Default_ to _Detail_, as well as _Short_ to _Graded_ scales.  Introduced _Binary_ as a new, default scale.   @DmitryKey and @epugh paired on this during Quepid Qommunity Qoding hour, resulting in https://github.com/o19s/quepid/pull/379.
+
+* Shrink production Docker image of Quepid from 2.19GB to 2.17GB by not installing development and test Gems.   Commit 426d2677f6c4a8380971ddc1b0faa42a53a48879 by @epugh.
 
 ### Bugs
 

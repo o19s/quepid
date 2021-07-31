@@ -44,6 +44,17 @@
             <span quepid-embed data-src="fieldValue"></span>
           </li>
 
+          <!-- Translations -->
+          <li ng-repeat="(fieldName, fieldValue) in doc.translations">
+            <span class="subLabel">{{fieldName}}:</span>
+            <span
+              ng-bind-html="fieldValue"
+            >
+              <!-- Normal display of a snippet -->
+            </span>
+            <span><a href="https://translate.google.com/?sl=auto&tl=en&text={{fieldValue}}" target="_blank"><img ng-src="/images/google-translate.png" width="16" height="16"/></a></span>
+          </li>
+
           <!-- Other fields -->
           <li ng-repeat="(fieldName, fieldValue) in snippets">
             <span class="subLabel">{{fieldName}}:</span>

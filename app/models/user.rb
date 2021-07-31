@@ -30,8 +30,13 @@ class User < ApplicationRecord
   # Associations
   belongs_to :default_scorer, class_name: 'Scorer', optional: true # for communal scorers there isn't a owner
 
+  # has_many :cases,
+  #         dependent:   :nullify # sometimes a case belongs to a team, so don't just delete it.
   has_many :cases,
-           dependent:   :nullify # sometimes a case belongs to a team, so don't just delete it.
+           class_name:  'Case',
+           foreign_key: :owner_id,
+           inverse_of:  :owner,
+           dependent:   :nullify
 
   has_many :queries, through: :cases
 
@@ -91,7 +96,7 @@ class User < ApplicationRecord
   validates_with ::DefaultScorerExistsValidator
 
   validates :agreed,
-            acceptance: { message: 'You must agree to the terms and conditions.' },
+            acceptance: { message: 'checkbox must be clicked to signify you agree to the terms and conditions.' },
             if:         :terms_and_conditions?
 
   def terms_and_conditions?
@@ -128,7 +133,9 @@ class User < ApplicationRecord
   # :confirmable, :lockable, :timeoutable and :omniauthable
   # devise :invitable, :database_authenticatable, :registerable,
   # :recoverable, :rememberable, :trackable, :validatable
-  devise :invitable, :recoverable, reset_password_keys: [ :email ]
+  devise :invitable, :recoverable, :omniauthable, omniauth_providers: [ :keycloakopenid, :google_oauth2 ]
+  # devise :omniauthable, omniauth_providers: %i[keycloakopenid]
+  # devise :invitable, :recoverable, :omniauthable
 
   # Devise hacks since we only use the recoverable module
   attr_accessor :password_confirmation

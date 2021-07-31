@@ -168,7 +168,7 @@ file_format: 'basic_snapshot' }
             # rubocop:enable  Lint/UselessAssignment
             # rubocop:enable  Layout/LineLength
 
-            assert_equal response.content_type, 'text/plain'
+            assert_equal response.content_type, 'text/plain; charset=utf-8'
           end
         end
       end
