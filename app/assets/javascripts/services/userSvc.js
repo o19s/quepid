@@ -28,17 +28,6 @@ angular.module('UtilitiesModule')
         self.casesInvolvedWithCount   = userObj.cases_involved_with_count;
         self.teamsInvolvedWithCount   = userObj.teams_involved_with_count;
 
-        this.updatePassword = function(oldPass, newPass, success, failure) {
-          $http.post('/api/users/' + self.id, {
-            oldPassword:oldPass,
-            newPassword:newPass
-          })
-          .then(
-            success || function(){},
-            failure || function(){}
-          );
-        };
-
         this.shownIntroWizard = function() {
           var self  = this;
           self.introWizardSeen=true;
