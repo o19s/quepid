@@ -12,6 +12,7 @@
 
 ActiveRecord::Schema.define(version: 2021_06_08_145331) do
 
+
   create_table "annotations", id: :integer, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8", force: :cascade do |t|
     t.text "message"
     t.string "source"
@@ -47,12 +48,12 @@ ActiveRecord::Schema.define(version: 2021_06_08_145331) do
   create_table "cases", id: :integer, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8", force: :cascade do |t|
     t.string "case_name", limit: 191
     t.integer "last_try_number"
-    t.integer "user_id"
+    t.integer "owner_id"
     t.boolean "archived"
     t.integer "scorer_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["user_id"], name: "user_id"
+    t.index ["owner_id"], name: "user_id"
   end
 
   create_table "curator_variables", id: :integer, options: "ENGINE=InnoDB DEFAULT CHARSET=latin1", force: :cascade do |t|
@@ -220,7 +221,8 @@ ActiveRecord::Schema.define(version: 2021_06_08_145331) do
   add_foreign_key "case_scores", "annotations"
   add_foreign_key "case_scores", "cases", name: "case_scores_ibfk_1"
   add_foreign_key "case_scores", "users", name: "case_scores_ibfk_2"
-  add_foreign_key "cases", "users", name: "cases_ibfk_1"
+  add_foreign_key "cases", "users", column: "owner_id", name: "cases_ibfk_1"
+  add_foreign_key "curator_variables", "tries", name: "curator_variables_ibfk_1"
   add_foreign_key "queries", "cases", name: "queries_ibfk_1"
   add_foreign_key "ratings", "queries", name: "ratings_ibfk_1"
   add_foreign_key "snapshot_docs", "snapshot_queries", name: "snapshot_docs_ibfk_1"
