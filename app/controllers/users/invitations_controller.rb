@@ -2,11 +2,9 @@
 
 module Users
   class InvitationsController < Devise::InvitationsController
-    # TODO: don't know what to do with it yet
-    # force_ssl if: :ssl_enabled?
     skip_before_action :require_login, only: [ :edit, :update ]
 
-    layout 'secure'
+    layout 'start'
 
     # Intercepts the login path and redirects the user to their
     # Team page as their first page after joining Quepid!
@@ -17,7 +15,7 @@ module Users
     def update
       unless signup_enabled?
         flash.now[:error] = 'Signups are disabled.'
-        redirect_to secure_path and return
+        redirect_to sessions_path and return
       end
 
       super

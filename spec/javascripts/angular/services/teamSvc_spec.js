@@ -156,8 +156,6 @@ describe('Service: teamSvc', function () {
     //var team = teamSvc.get(mockTeam.id, load_cases);
     $httpBackend.flush();
     //$httpBackend.verifyNoOutstandingExpectation();
-    //console.log("Lets see what we go");
-    //console.log(team);
     //expect(team.cases[0].caseName).toBe('Case');
 
   });

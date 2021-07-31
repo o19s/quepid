@@ -61,3 +61,11 @@ group :test do
   gem 'webmock'
   gem 'rails-controller-testing' # bring back compatibility with rails 4 assigns in controller tests.
 end
+
+gem 'omniauth', '~> 2.0'
+
+gem 'omniauth-keycloak', '~> 1.3'
+
+gem 'omniauth-rails_csrf_protection', '~> 1.0'
+
+gem 'omniauth-google-oauth2', '~> 1.0'

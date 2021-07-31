@@ -69,6 +69,14 @@ Rails.application.config.email_sender = ENV.fetch('EMAIL_SENDER', '')
 #
 Rails.application.config.query_list_sortable = bool.deserialize(ENV.fetch('QUERY_LIST_SORTABLE', true))
 
+# == OAuth Settings =
+# We currently only support these two OAuth providers.
+Rails.application.config.google_client_id = ENV.fetch('GOOGLE_CLIENT_ID', '')
+Rails.application.config.google_client_secret = ENV.fetch('GOOGLE_CLIENT_SECRET', '')
+
+Rails.application.config.keycloak_realm = ENV.fetch('KEYCLOAK_REALM', '')
+Rails.application.config.keycloak_site = ENV.fetch('KEYCLOAK_SITE', '')
+
 # == Google Analytics
 # To enable Google Analytics, set this environment variable.
 Rails.application.config.google_analytics = ENV.fetch('QUEPID_GA', '')

@@ -208,6 +208,7 @@ ActiveRecord::Schema.define(version: 2021_06_08_145331) do
     t.integer "invitations_count", default: 0
     t.boolean "completed_case_wizard", default: false, null: false
     t.string "stored_raw_invitation_token"
+    t.string "profile_pic"
     t.index ["default_scorer_id"], name: "index_users_on_default_scorer_id"
     t.index ["email"], name: "ix_user_username", unique: true
     t.index ["invitation_token"], name: "index_users_on_invitation_token", unique: true, length: 191
