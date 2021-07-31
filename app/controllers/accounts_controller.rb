@@ -1,9 +1,6 @@
 # frozen_string_literal: true
 
 class AccountsController < ApplicationController
-  # TODO: don't know what to do with it yet
-  # force_ssl if: :ssl_enabled?
-
   # rubocop:disable Metrics/MethodLength
   def update
     @user = current_user

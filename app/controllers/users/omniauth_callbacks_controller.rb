@@ -2,7 +2,6 @@
 
 module Users
   class OmniauthCallbacksController < Devise::OmniauthCallbacksController
-    force_ssl if: :ssl_enabled?
     skip_before_action :require_login, only: [ :keycloakopenid, :google_oauth2, :failure ]
 
     # rubocop:disable Metrics/AbcSize
