@@ -1,5 +1,19 @@
 # Changelog
 
+## 6.6.0 - ????
+
+### Features
+
+* OpenID Support!  Historically you had to create your own account on Quepid, but that is another barrier to entry, and something else to keep track of.  Inspired by the issue _Add OAuth Providers_ by @gregoryduckworth https://github.com/o19s/quepid/issues/188,  https://github.com/o19s/quepid/pull/280 by @epugh implements the first two providers, Google and Keycloak.
+
+### Improvements
+
+* Quepid is running on Rails 6!  Rails 6 was released ~26 months, and represents the future of Rails.  I'm excited that this push initiated by @DmitryKey is going to bring us some great new features like: better developer experience with Webpack for JavaScript, ActionText to handle better text formatting of notes and messages about Cases and Queries, ActionCable which will let us notify users who are rating the same case.  https://github.com/o19s/quepid/pull/381 by @DmitryKey with assist from @epugh.
+
+* Make our ActiveRecord modeling for ownership the same.  Teams have an _owner_, Scorers have an _owner_, but Cases have a _user_.  Now we have _case.owner_ relationship.  https://github.com/o19s/quepid/pull/359 by @epugh.
+
+### Bugs
+
 ## 6.5.5 - 2021-06-30
 
 ### Features
