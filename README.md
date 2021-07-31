@@ -422,6 +422,8 @@ which will install/upgrade the Node module, and then save that dependency to `pa
 
 Then check in the updated `package.json` and `yarn.lock` files.
 
+Use `bin/docker r yarn outdated` to see what packages you can update!!!!
+
 ## I'd like to use a new Ruby Gem, or update a existing one
 
 Typically you would simply do:
