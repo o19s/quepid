@@ -43,3 +43,8 @@ public/srv
 
 # Test Reports
 test/reports
+
+/public/packs
+/public/packs-test
+yarn-debug.log*
+.yarn-integrity

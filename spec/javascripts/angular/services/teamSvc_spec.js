@@ -197,8 +197,6 @@ describe('Service: teamSvc', function () {
 
     teamSvc.inviteUserToJoin(mockTeam, mockInvitee.email).
       then(function(response) {
-        console.log("We expect 1 member, but we have " + mockTeam.members.length);
-        console.log(mockTeam.members);
         expect(mockTeam.members.length).toBe(1);
       });
     $httpBackend.flush();

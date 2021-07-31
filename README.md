@@ -42,6 +42,7 @@ Below is information related to developing the Quepid open source project, prima
   - [IV. Debugging](#iv-debugging)
     - [Debugging Ruby](#debugging-ruby)
     - [Debugging JS](#debugging-js)
+    - [Webpacker](#webpacker)
   - [Convenience Scripts](#convenience-scripts)
     - [Rake](#rake)
     - [Thor](#thor)
@@ -122,6 +123,7 @@ You can still use `docker-compose` directly, but for the basic stuff you can use
 * Destroy the Docker env: `bin/docker destroy` or `bin/docker d`
 * Run front end unit tests: `bin/docker r rails test:frontend`
 * Run back end unit tests: `bin/docker r rails test`
+
 
 
 ## II. Development Log
@@ -278,6 +280,21 @@ Also please note that the files `secure.js`, `application.js`, and `admin.js` ar
 JavaScript and CSS dependencies via the Rails Asset pipeline.   If you are debugging Bootstrap, then
 you will want individual files.  So replace `//= require sprockets` with `//= require bootstrap-sprockets`.
 
+
+### Webpacker
+To use webpacker, that will compile javascript code into packs and will load changes faster,
+you need to
+
+```bash
+bin/rails webpacker:install
+```
+
+Prior to that I had to install:
+
+```bash
+brew install mysql
+```
+
 ### Debugging Splainer and other NPM packages
 
 `docker-compose.override.yml.example` can be copied to `docker-compose.override.yml` and use it to override environment variables or work with a local copy of the splainer-search JS library during development defined in `docker-compose.yml`. Example is included. Just update the path to splainer-search with your local checkout!  https://docs.docker.com/compose/extends/
@@ -405,6 +422,8 @@ which will install/upgrade the Node module, and then save that dependency to `pa
 
 Then check in the updated `package.json` and `yarn.lock` files.
 
+Use `bin/docker r yarn outdated` to see what packages you can update!!!!
+
 ## I'd like to use a new Ruby Gem, or update a existing one
 
 Typically you would simply do:
@@ -429,6 +448,12 @@ bin/docker r bundle remove foobar --install
 
 Then check in the updated `Gemfile` and `Gemfile.lock` files.  For good measure
 run the `bin/setup_docker`.
+
+To understand if you have gems that are out of date run:
+
+```
+bin/docker r bundle outdated --groups
+```
 
 
 ## I'd like to test SSL
@@ -478,6 +503,16 @@ bin/docker r bundle install
 
 You will see a updated `Gemfile.lock`, go ahead and check it and `Gemfile` into Git.
 
+## How does the Frontend work?
+
+We use Angular 1 for the front end, and as part of that we use the `angular-ui-bootstrap` package
+for all our UI components.   This package is tied to Bootstrap version 3.   We import the Bootstrap 3
+CSS directly via the file `bootstrap.css`.   
+
+For the various Admin pages, we actually are using Bootstrap 5! That is included via the `package.json` using NPM.  See `admin.js` for the line `//= require bootstrap/dist/js/bootstrap.bundle` which is where we are including.   
+
+We currently use Rails Sprockets to compile everything, but do have dreams of moving the JavaScript
+over to Webpacker.
 
 # QA
 

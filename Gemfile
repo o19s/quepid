@@ -2,7 +2,7 @@
 
 source 'https://rubygems.org'
 
-ruby '2.7.2'
+ruby '2.7.4'
 
 gem 'activerecord-import', '>= 1.0.7'
 gem 'acts_as_list', '>= 1.0.1'
@@ -16,24 +16,26 @@ gem 'devise', '>= 4.6.2'
 gem 'devise_invitable', '~> 2.0'
 gem 'gabba'
 gem 'intercom-rails'
-gem 'jbuilder', '~> 2.5'
+gem 'jbuilder', '~> 2.7'
 gem 'redis', '~> 4.0'
 gem 'jquery-rails'
 gem 'jquery-ui-rails' # Can we narrow the widgets to load faster?
 gem 'mysql2'
-gem 'postmark-rails', '~> 0.10.0'
-gem 'puma', '~> 3.11'
+gem 'postmark-rails'
+gem 'puma', '~> 5.0'
 gem 'puma_worker_killer'
 gem 'pundit'
-gem 'rails', '~> 5.2.4', '>= 5.2.4.4'
+gem 'rails', '= 6.1.4' # starting Rails 6 the webpack is included by default.
 gem 'responders'
 gem 'sidekiq'
 gem 'terser'
-gem 'bootsnap'
+gem 'bootsnap', '>= 1.4.4', require: false
 gem 'listen', '~> 3.3'
 gem 'd3-rails', '~> 3.5.5' # we have a very old version of D3.  This provides D3 assets.
 gem 'cal-heatmap-rails', '~> 3.6' # provides assets for cal heatmap, that requires old d3
 gem 'font-awesome-sass'
+gem 'webpacker', '= 5.4.0'
+gem 'rack-cors', '~> 1.1'
 gem 'foreman'
 
 group :development, :test do
