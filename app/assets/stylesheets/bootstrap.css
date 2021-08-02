@@ -229,10 +229,6 @@ th {
   }
   p,
   h2,
-  h3 {
-    orphans: 3;
-    widows: 3;
-  }
   h2,
   h3 {
     page-break-after: avoid;
@@ -2519,7 +2515,7 @@ input[type="search"] {
 input[type="radio"],
 input[type="checkbox"] {
   margin: 4px 0 0;
-  margin-top: 1px \9;
+  margin-top: 1px;
   line-height: normal;
 }
 input[type="file"] {
@@ -2575,15 +2571,8 @@ output {
   color: #999;
   opacity: 1;
 }
-.form-control:-ms-input-placeholder {
-  color: #999;
-}
 .form-control::-webkit-input-placeholder {
   color: #999;
-}
-.form-control::-ms-expand {
-  background-color: transparent;
-  border: 0;
 }
 .form-control[disabled],
 .form-control[readonly],
@@ -3585,7 +3574,6 @@ tbody.collapse.in {
   cursor: not-allowed;
   background-color: transparent;
   background-image: none;
-  filter: progid:DXImageTransform.Microsoft.gradient(enabled = false);
 }
 .open > .dropdown-menu {
   display: block;
@@ -5109,14 +5097,6 @@ a.thumbnail.active {
     background-position: 0 0;
   }
 }
-@-o-keyframes progress-bar-stripes {
-  from {
-    background-position: 40px 0;
-  }
-  to {
-    background-position: 0 0;
-  }
-}
 @keyframes progress-bar-stripes {
   from {
     background-position: 40px 0;
@@ -5204,7 +5184,6 @@ a.thumbnail.active {
 .media,
 .media-body {
   overflow: hidden;
-  zoom: 1;
 }
 .media-body {
   width: 10000px;
@@ -6255,7 +6234,7 @@ button.close {
 .carousel-inner > .item > a > img {
   line-height: 1;
 }
-@media all and (transform-3d), (-webkit-transform-3d) {
+@media all {
   .carousel-inner > .item {
     -webkit-transition: -webkit-transform .6s ease-in-out;
          -o-transition:      -o-transform .6s ease-in-out;
@@ -6335,7 +6314,6 @@ button.close {
   background-image:      -o-linear-gradient(left, rgba(0, 0, 0, .5) 0%, rgba(0, 0, 0, .0001) 100%);
   background-image: -webkit-gradient(linear, left top, right top, from(rgba(0, 0, 0, .5)), to(rgba(0, 0, 0, .0001)));
   background-image:         linear-gradient(to right, rgba(0, 0, 0, .5) 0%, rgba(0, 0, 0, .0001) 100%);
-  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#80000000', endColorstr='#00000000', GradientType=1);
   background-repeat: repeat-x;
 }
 .carousel-control.right {
@@ -6345,7 +6323,6 @@ button.close {
   background-image:      -o-linear-gradient(left, rgba(0, 0, 0, .0001) 0%, rgba(0, 0, 0, .5) 100%);
   background-image: -webkit-gradient(linear, left top, right top, from(rgba(0, 0, 0, .0001)), to(rgba(0, 0, 0, .5)));
   background-image:         linear-gradient(to right, rgba(0, 0, 0, .0001) 0%, rgba(0, 0, 0, .5) 100%);
-  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#00000000', endColorstr='#80000000', GradientType=1);
   background-repeat: repeat-x;
 }
 .carousel-control:hover,
@@ -6545,9 +6522,6 @@ button.close {
 }
 .affix {
   position: fixed;
-}
-@-ms-viewport {
-  width: device-width;
 }
 .visible-xs,
 .visible-sm,
