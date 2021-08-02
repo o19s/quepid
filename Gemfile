@@ -43,7 +43,7 @@ group :development, :test do
   gem 'bullet'
   gem 'byebug'
   gem 'memory_profiler'
-  gem 'rack-mini-profiler'
+  gem 'rack-mini-profiler', git: 'https://github.com/epugh/rack-mini-profiler', branch: 'remove_old_css'
 end
 
 group :development do
