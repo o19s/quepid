@@ -1,7 +1,6 @@
 GIT
-  remote: https://github.com/epugh/rack-mini-profiler
-  revision: 4e440c08e4d73193152d8d8cf7282ef290edf6ad
-  branch: remove_old_css
+  remote: https://github.com/MiniProfiler/rack-mini-profiler
+  revision: 4e6d463b03a6979037171ae2866a85e11fc344df
   specs:
     rack-mini-profiler (2.3.2)
       rack (>= 1.2.0)
