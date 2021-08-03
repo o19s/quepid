@@ -1,13 +1,17 @@
 # frozen_string_literal: true
 
 class SessionsController < ApplicationController
-  skip_before_action :require_login,              only: [ :create, :index ]
+  skip_before_action :require_login,              only: [ :create, :new ]
   skip_before_action :check_current_user_locked!, only: :create
   skip_before_action :verify_authenticity_token,  only: :create
 
   layout 'start'
 
   def index
+
+  end
+
+  def new
     @user = User.new
   end
 
