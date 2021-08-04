@@ -43,7 +43,9 @@ group :development, :test do
   gem 'bullet'
   gem 'byebug'
   gem 'memory_profiler'
+  # rubocop:disable Layout/LineLength
   gem 'rack-mini-profiler', git: 'https://github.com/MiniProfiler/rack-mini-profiler' # pending release with PR 505 included
+  # rubocop:enable Layout/LineLength
 end
 
 group :development do
