@@ -14,7 +14,7 @@ class AccountsControllerTest < ActionController::TestCase
       test 'returns an unauthorized error' do
         patch :update
 
-        assert_redirected_to sessions_path
+        assert_redirected_to new_session_path
       end
     end
 
