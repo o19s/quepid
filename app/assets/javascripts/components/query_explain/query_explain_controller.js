@@ -7,12 +7,10 @@ angular.module('QuepidApp')
     '$uibModal',
     '$scope',
     '$log',
-    'flash',
     function (
       $uibModal,
       $scope,
-      $log,
-      flash
+      $log
     ) {
       var ctrl  = this;
       ctrl.query = $scope.query;
@@ -31,8 +29,8 @@ angular.module('QuepidApp')
         });
 
         modalInstance.result.then(
-          function(data) {
-            
+          function() {
+
           },
           function() {
             $log.info('INFO: Modal dismissed');

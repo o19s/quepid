@@ -10,6 +10,10 @@ angular.module('QuepidApp')
       $scope.targetedSearchModalModel = {};
       $log.debug('TargetedSearchModalCtrl - Initiated');
 
+      ctrl.cancel = function () {
+        $uibModalInstance.dismiss('cancel');
+      };
+
       $scope.targetedSearchModalModel.closeModal = function() {
         $uibModalInstance.dismiss('cancel');
       };
