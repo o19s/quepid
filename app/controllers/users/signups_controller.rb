@@ -36,15 +36,6 @@ module Users
         end
         format.js
       end
-      # respond_to do |format|
-      #  if @user.save
-      #    session[:current_user_id] = @user.id # not sure if we need to do more here?
-      #    Analytics::Tracker.track_signup_event @user
-      #    format.html { redirect_to root_path }
-      #  else
-      #    format.html { render template: 'sessions/index' }
-      #  end
-      # end
     end
     # rubocop:enable Metrics/MethodLength
 
