@@ -31,7 +31,7 @@ module Users
             Analytics::Tracker.track_signup_event @user
             redirect_to root_path
           else
-            render template: 'sessions/index'
+            render template: 'sessions/new'
           end
         end
         format.js
