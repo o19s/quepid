@@ -6998,9 +6998,9 @@ spdy@^4.0.2:
     spdy-transport "^3.0.0"
 
 splainer-search@^2.6.10:
-  version "2.6.11"
-  resolved "https://registry.yarnpkg.com/splainer-search/-/splainer-search-2.6.11.tgz#ce317c0993bce042f5765e1370de044b554329cd"
-  integrity sha512-upjjmUGqv87YsKJGxdIzc9wkZASQUPlYtFSNxGGzu5wT4adu5Qxsdz6Cr6ZHHPwL4TjAp7hmpqABe1bL4y+U/Q==
+  version "2.7.0"
+  resolved "https://registry.yarnpkg.com/splainer-search/-/splainer-search-2.7.0.tgz#572bcc540473480b378cc039418ff993dd242e82"
+  integrity sha512-4ZfLMN+UnR+mC+HYl7TK3nxTcqmuMBH5pWXMB7D8WIcLzSd8JQ3/b5DQXCrdU0tUtqpjRXYRjhRnTt1QPC/niA==
   dependencies:
     angular "^1.7.9"
     urijs "~1.16.1"
