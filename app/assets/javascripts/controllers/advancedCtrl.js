@@ -3,6 +3,8 @@
 /*jshint camelcase: false */
 /*jslint latedef:false*/
 
+// This controller manages the Scorer Options screen
+
 angular.module('QuepidApp')
   .controller('AdvancedCtrl', [
     '$rootScope', '$scope',
