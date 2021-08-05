@@ -10,7 +10,7 @@
 
 ### Improvements
 
-* Quepid is running on Rails 6!  Rails 6 was released ~26 months, and represents the future of Rails.  I'm excited that this push initiated by @DmitryKey is going to bring us some great new features like: better developer experience with Webpack for JavaScript, ActionText to handle better text formatting of notes and messages about Cases and Queries, ActionCable which will let us notify users who are rating the same case.  https://github.com/o19s/quepid/pull/381 by @DmitryKey with assist from @epugh.
+* Quepid is running on Rails 6!  Rails 6 was released ~26 months ago, and represents the future of Rails.  I'm excited that this push initiated by @DmitryKey is going to bring us some great new features like: better developer experience with Webpack for JavaScript, ActionText to handle better text formatting of notes and messages about Cases and Queries, ActionCable which will let us notify all the users of the same case that data has changed when it changes.  https://github.com/o19s/quepid/pull/381 by @DmitryKey with assist from @epugh.
 
 * Make our ActiveRecord modeling for ownership the same.  Teams have an _owner_, Scorers have an _owner_, but Cases have a _user_.  Now we have _case.owner_ relationship.  https://github.com/o19s/quepid/pull/359 by @epugh.
 
@@ -28,7 +28,7 @@
 
 * Admin user can now reset a users password with a new password.  https://github.com/o19s/quepid/pull/385 by @epugh to fix issue identified by @michaelcizmar.  Thanks Michael!
 
-* Trying to communciate about HTTPS better when you set up a case.  https://github.com/o19s/quepid/pull/384 by @epugh inspired by https://github.com/o19s/quepid/issues/279 by @arafalov.
+* Trying to communicate about HTTPS better when you set up a case.  https://github.com/o19s/quepid/pull/384 by @epugh inspired by https://github.com/o19s/quepid/issues/279 by @arafalov.
 
 
 
