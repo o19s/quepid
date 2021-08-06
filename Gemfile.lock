@@ -1,3 +1,10 @@
+GIT
+  remote: https://github.com/MiniProfiler/rack-mini-profiler
+  revision: 4e6d463b03a6979037171ae2866a85e11fc344df
+  specs:
+    rack-mini-profiler (2.3.2)
+      rack (>= 1.2.0)
+
 GEM
   remote: https://rubygems.org/
   specs:
@@ -253,8 +260,6 @@ GEM
     rack (2.2.3)
     rack-cors (1.1.1)
       rack (>= 2.0.0)
-    rack-mini-profiler (2.3.2)
-      rack (>= 1.2.0)
     rack-protection (2.1.0)
       rack
     rack-proxy (0.7.0)
@@ -421,7 +426,7 @@ DEPENDENCIES
   puma_worker_killer
   pundit
   rack-cors (~> 1.1)
-  rack-mini-profiler
+  rack-mini-profiler!
   rails (= 6.1.4)
   rails-controller-testing
   rails-erd (~> 1.6)

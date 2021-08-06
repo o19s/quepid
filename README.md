@@ -331,7 +331,7 @@ bin/docker r bin/rake db:seed
 bin/docker r bin/rake db:setup
 
 # show routes
-bin/docker r bin/rake routes
+bin/docker r bin/rails routes
 
 # tests
 bin/docker r bin/rake test

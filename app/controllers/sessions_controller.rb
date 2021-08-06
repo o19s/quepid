@@ -1,13 +1,16 @@
 # frozen_string_literal: true
 
 class SessionsController < ApplicationController
-  skip_before_action :require_login,              only: [ :create, :index ]
+  skip_before_action :require_login,              only: [ :create, :new ]
   skip_before_action :check_current_user_locked!, only: :create
   skip_before_action :verify_authenticity_token,  only: :create
 
   layout 'start'
 
   def index
+  end
+
+  def new
     @user = User.new
   end
 
@@ -26,7 +29,7 @@ class SessionsController < ApplicationController
         @user.errors.add(:base,
                          'Unknown email/password combo. Double check you have the correct email address and password, or sign up for a new account.' )
         # rubocop:enable Layout/LineLength
-        format.html { render :index }
+        format.html { render :new }
         format.json { render json: { reason: @error }, status: :unprocessable_entity }
       end
     end

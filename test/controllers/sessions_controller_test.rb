@@ -20,7 +20,7 @@ class SessionsControllerTest < ActionController::TestCase
     post :create, params: { user: { email: 'doug@example.com', password: 'incorrect' }, format: :html }
     assert_response :success
 
-    assert_template 'sessions/index'
+    assert_template 'sessions/new'
 
     # rubocop:disable Layout/LineLength
     alert_message_template = 'Unknown email/password combo. Double check you have the correct email address and password, or sign up for a new account.'
