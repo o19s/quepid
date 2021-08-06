@@ -12,9 +12,6 @@ angular.module('QuepidApp')
       $scope.queryParamsWarning = '';
 
       $scope.validateQueryParams = function () {
-        console.log("LETS VALIDATE");
-        console.log($scope.settings.selectedTry.queryParams);
-
         var params = {
           deftype:               'defType',
           echoparams:            'echoParams',
