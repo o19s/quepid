@@ -15,7 +15,7 @@ angular.module('QuepidApp')
 
       $scope.activeScorer       = parent.currentScorer || {};
       $scope.cancel             = cancel;
-      $scope.gotoAdvanced       = gotoAdvanced;
+      $scope.gotoScorers        = gotoScorers;
       $scope.ok                 = ok;
       $scope.scorers            = [];
       $scope.communalScorers    = [];
@@ -38,9 +38,9 @@ angular.module('QuepidApp')
         $uibModalInstance.dismiss('cancel');
       }
 
-      function gotoAdvanced() {
+      function gotoScorers() {
         $uibModalInstance.dismiss('cancel');
-        $location.path('/advanced');
+        $location.path('/scorers');
       }
 
       function ok() {

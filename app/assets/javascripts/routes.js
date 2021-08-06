@@ -57,9 +57,9 @@ angular.module('QuepidApp')
           templateUrl: 'views/teams/show.html',
           controller: 'TeamCtrl'
         })
-        .when('/advanced', {
-          templateUrl: 'views/advanced/index.html',
-          controller: 'AdvancedCtrl'
+        .when('/scorers', {
+          templateUrl: 'views/scorers/index.html',
+          controller: 'ScorersCtrl'
         })
         .otherwise({
           templateUrl: 'views/404.html',

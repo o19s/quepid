@@ -10,7 +10,7 @@ angular.module('UtilitiesModule')
         var self = this;
 
         // Make sure the user's scorerId is an int instead of a string.
-        // In the advanced screen, the dropdown lists the scorers' id as a number
+        // In the Scorers screen, the dropdown lists the scorers' id as a number
         // so the comparison fails if the user's scorerId is a string, and
         // even if the user has a default scorer it would look like as
         // if he does not.
