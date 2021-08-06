@@ -18,9 +18,12 @@
         </a>
         </p>
 
+
         <div class='clearfix'></div>
 
-        <textarea class="form-control" ng-show="settings.searchEngine == 'solr'" name="queryParams" ng-model="settings.selectedTry.queryParams"></textarea>
+        <p ng-show="showQueryParamsWarning" id="query-params-warn" class="alert alert-warning" ng-bind-html="queryParamsWarning">{{ queryParamsWarning }}</p>
+
+        <textarea class="form-control" ng-show="settings.searchEngine == 'solr'" name="queryParams" ng-model="settings.selectedTry.queryParams" ng-change="validateQueryParams()"></textarea>
 
         <div id='es-query-params-editor' class='es-query-params' ng-show="settings.searchEngine == 'es'" ui-ace="{
             require:      ['ace/ext/language_tools'],
