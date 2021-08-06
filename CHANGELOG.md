@@ -8,6 +8,8 @@
 
 * Explain Query Parsing!  We often want to know what the search engine is doing to our query.  Now you can click the "Explain Query" popup and see what is happening to your query and the various filter queries.  This works with both Solr and Elasticsearch.   https://twitter.com/dep4b/status/1420480501710827520.   https://github.com/o19s/quepid/pull/391 by @epugh.
 
+* Frequently type `deftype` instead of `defType` in Solr?  I found an old, but broken feature that provided a popup warning on common Solr query syntax errors, which has now been restored.   https://github.com/o19s/quepid/pull/394 by @epugh fixes https://github.com/o19s/quepid/issues/390.
+
 ### Improvements
 
 * Quepid is running on Rails 6!  Rails 6 was released ~26 months ago, and represents the future of Rails.  I'm excited that this push initiated by @DmitryKey is going to bring us some great new features like: better developer experience with Webpack for JavaScript, ActionText to handle better text formatting of notes and messages about Cases and Queries, ActionCable which will let us notify all the users of the same case that data has changed when it changes.  https://github.com/o19s/quepid/pull/381 by @DmitryKey with assist from @epugh.
@@ -15,6 +17,8 @@
 * Make our ActiveRecord modeling for ownership the same.  Teams have an _owner_, Scorers have an _owner_, but Cases have a _user_.  Now we have _case.owner_ relationship.  https://github.com/o19s/quepid/pull/359 by @epugh.
 
 * The nav bar link for Scorers is labeled "Custom Scorers", and takes you to an page called `/advanced`.   Both of the names are rather offputting.   Creating Scorers is a normal common thing to do in Quepid, so lets label it Scorers.  https://github.com/o19s/quepid/pull/392 by @epugh fixes https://github.com/o19s/quepid/issues/351.
+
+* We had, as someone put it "dinosaur" age CSS tags for mozilla and webkit browsers that triggered lots of browser warnings in the console.  https://github.com/o19s/quepid/pull/380 by @epugh cleaned up many of them.   It has also prompted some thinking about migrating to Bootstrap 5 for the non core pages.  If anyone has some CSS skills, please contact @epugh, to help refine the header menu in Bootstrap 5 CSS.  
 
 ### Bugs
 
