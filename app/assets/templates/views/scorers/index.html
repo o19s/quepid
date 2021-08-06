@@ -1,17 +1,17 @@
-<div id="advanced" class="container">
-  <h2>Advanced Options</h2>
+<div id="scorers" class="container">
+  <h2>Scorer Options</h2>
 
   <div id='default-scorers' class="row">
     <div class='col-sm-6'>
-      <div class='advanced-header'>
+      <div class='scorers-header'>
         <h3>Your Default Scorer</h3>
         <p>Change the default scorer you use when creating new cases!</p>
 
         <div class="form-group">
           <select
-            ng-model="advanced.user.defaultScorerId"
-            ng-options="scorer.scorerId as scorer.displayName for scorer in advanced.combinedScorers"
-            ng-change="advanced.updateUserScorer(advanced.user.defaultScorerId)"
+            ng-model="scorers.user.defaultScorerId"
+            ng-options="scorer.scorerId as scorer.displayName for scorer in scorers.combinedScorers"
+            ng-change="scorers.updateUserScorer(scorers.user.defaultScorerId)"
             class="form-control"
           >
           </select>
@@ -25,6 +25,7 @@
 
   <div id='custom-scorers'>
     <h3>Scorers</h3>
+    <p>We have two types of scorers, <i>Communal</i> that ship with Quepid and <i>Custom</i> which are scorers that you create and share with your teammates.</p>
 
     <div class="row">
       <div class='col-md-4'>
@@ -71,8 +72,8 @@
           </div>
         </div>
 
-        <ul ng-model="advanced.combinedScorers" class="scorers-list row">
-          <li dir-paginate="scorer in advanced.combinedScorers | scorerType:scorerFilters.typeFilter | filter:q | itemsPerPage: pagination.scorers.pageSize : 'scorers' track by scorer.scorerId" current-page="pagination.scorers.currentPage" pagination-id="scorers" class="scorers-list-item col-xs-12">
+        <ul ng-model="scorers.combinedScorers" class="scorers-list row">
+          <li dir-paginate="scorer in scorers.combinedScorers | scorerType:scorerFilters.typeFilter | filter:q | itemsPerPage: pagination.scorers.pageSize : 'scorers' track by scorer.scorerId" current-page="pagination.scorers.currentPage" pagination-id="scorers" class="scorers-list-item col-xs-12">
             <scorer-listing scorer="scorer"></scorer-listing>
           </li>
         </ul>

@@ -3,8 +3,10 @@
 /*jshint camelcase: false */
 /*jslint latedef:false*/
 
+// This controller manages the Scorers  screen
+
 angular.module('QuepidApp')
-  .controller('AdvancedCtrl', [
+  .controller('ScorersCtrl', [
     '$rootScope', '$scope',
     'flash',
     'broadcastSvc',
@@ -16,11 +18,11 @@ angular.module('QuepidApp')
       customScorerSvc, configurationSvc
     ) {
       // Attributes
-      $scope.advanced                 = {};
-      $scope.advanced.communalScorers = [];
-      $scope.advanced.combinedScorers = [];
-      $scope.advanced.userScorers     = [];
-      $scope.advanced.user            = $rootScope.currentUser;
+      $scope.scorers                 = {};
+      $scope.scorers.communalScorers = [];
+      $scope.scorers.combinedScorers = [];
+      $scope.scorers.userScorers     = [];
+      $scope.scorers.user            = $rootScope.currentUser;
 
       $scope.pagination = {
         scorers: {
@@ -34,10 +36,10 @@ angular.module('QuepidApp')
       $scope.communalScorersOnly = configurationSvc.isCommunalScorersOnly();
 
       // Functions
-      $scope.advanced.updateUserScorer    = updateUserScorer;
+      $scope.scorers.updateUserScorer    = updateUserScorer;
 
       $rootScope.$watch('currentUser', function() {
-        $scope.advanced.user = $rootScope.currentUser;
+        $scope.scorers.user = $rootScope.currentUser;
       });
 
       $scope.loading = true;
@@ -57,9 +59,9 @@ angular.module('QuepidApp')
       });
 
       function getLists() {
-        $scope.advanced.communalScorers  = customScorerSvc.communalScorers;
-        $scope.advanced.userScorers     = customScorerSvc.scorers;
-        $scope.advanced.combinedScorers = $scope.advanced.communalScorers.concat($scope.advanced.userScorers);
+        $scope.scorers.communalScorers  = customScorerSvc.communalScorers;
+        $scope.scorers.userScorers     = customScorerSvc.scorers;
+        $scope.scorers.combinedScorers = $scope.scorers.communalScorers.concat($scope.scorers.userScorers);
       }
 
       function updateUserScorer(scorerId) {
