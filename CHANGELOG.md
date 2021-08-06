@@ -14,6 +14,8 @@
 
 * Make our ActiveRecord modeling for ownership the same.  Teams have an _owner_, Scorers have an _owner_, but Cases have a _user_.  Now we have _case.owner_ relationship.  https://github.com/o19s/quepid/pull/359 by @epugh.
 
+* The nav bar link for Scorers is labeled "Custom Scorers", and takes you to an page called `/advanced`.   Both of the names are rather offputting.   Creating Scorers is a normal common thing to do in Quepid, so lets label it Scorers.  https://github.com/o19s/quepid/pull/392 by @epugh fixes https://github.com/o19s/quepid/issues/351.
+
 ### Bugs
 
 ## 6.5.5 - 2021-06-30
