@@ -2,7 +2,7 @@
 /*jslint latedef:false*/
 
 angular.module('QuepidApp')
-  .controller('queriesCtrl', [
+  .controller('QueriesCtrl', [
     '$scope',
     '$rootScope',
     '$q',
@@ -206,27 +206,30 @@ angular.module('QuepidApp')
       };
 
       $scope.queries.selectedDiffName = function() {
+        var diffName = '';
         if (queryViewSvc.diffSetting === null) {
-          return 'disabled';
+          diffName = 'disabled';
         }
         else if (queryViewSvc.diffSetting === 'best') {
-          return 'target';
+          diffName = 'target';
         } else {
-          return 'snapshot';
+          diffName = 'snapshot';
         }
-        return 'meow';
+        return diffName;
       };
 
       $scope.queries.fullDiffName = function() {
+        var fullDiffName = '';
         if (queryViewSvc.diffSetting === null) {
-          return 'disabled';
+          fullDiffName = 'disabled';
         }
         else if (queryViewSvc.diffSetting === 'best') {
-          return 'Highest ratest results for each query';
+          fullDiffName = 'Highest ratest results for each query';
         } else {
           var snapshot = querySnapshotSvc.snapshots[queryViewSvc.diffSetting];
-          return snapshot.name();
+          fullDiffName = snapshot.name();
         }
+        return fullDiffName;
       };
 
       function saveScoring() {

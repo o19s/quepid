@@ -6,7 +6,7 @@ angular.module('QuepidApp')
       return {
         restrict: 'E',
         transclude: true,
-        controller: 'queriesCtrl',
+        controller: 'QueriesCtrl',
         templateUrl: 'views/queries.html',
         replace: true
       };
