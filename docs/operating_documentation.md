@@ -52,11 +52,13 @@ SMTP_ENABLE_STARTTLS         # If STARTTLS is enabled in your server set to true
 # OAuth
 Quepid uses [OmniAuth](https://github.com/intridea/omniauth) for authenticating users against other resources besides it's own email/password database.   OmniAuth provides an easy way to authenticate against dozens of outside services. The only ones that are packaged with Quepid are Google and Keycloak, but it's fairly easy to add new ones.
 
+Learn more about setting up Google oAuth at https://support.google.com/cloud/answer/6158849?hl=en.
+
 The built in options are `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `KEYCLOAK_REALM` and `KEYCLOAK_SITE`.
 
 The OmniAuth providers are defined in `config/devise.rb`. A list of available providers can be viewed on the [OmniAuth Wiki](https://github.com/intridea/omniauth/wiki/List-of-Strategies). To enable a provider you need to add the gem (eg. `omniauth-facebook`) to the `Gemfile` and configure in `config/devise.rb` and `user.rb`
 
-The existance of `GOOGLE_CLIENT_ID` or `KEYCLOAK_REALM` enables the respective sign in option.
+The existence of `GOOGLE_CLIENT_ID` or `KEYCLOAK_REALM` enables the respective sign in option.
 
 # Legal Pages & GDPR
 

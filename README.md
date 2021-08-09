@@ -298,7 +298,7 @@ brew install mysql
 
 ### Debugging Splainer and other NPM packages
 
-`docker-compose.override.yml.example` can be copied to `docker-compose.override.yml` and use it to override environment variables or work with a local copy of the splainer-search JS library during development defined in `docker-compose.yml`. Example is included. Just update the path to splainer-search with your local checkout!  https://docs.docker.com/compose/extends/
+`docker-compose.override.yml.example` can be copied to `docker-compose.override.yml` and use it to override environment variables or work with a local copy of the splainer-search JS library during development defined in `docker-compose.yml`. Example is included. Just update the path to `splainer-search` with your local checkout!  https://docs.docker.com/compose/extends/
 
 ## Convenience Scripts
 
