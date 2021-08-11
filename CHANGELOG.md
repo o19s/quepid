@@ -1,6 +1,10 @@
 # Changelog
 
-## 6.6.0 - 2021-08-07
+## 6.6.1 - 2021-08-11
+
+* In testing the Keycloak oAuth integration via the Chorus project, identified that the name of the _Client_ that is passed to Keycloak was tied to the `KEYCLOAK_REALM` env setting.   Changed this to be hardcoded to `quepid` so it can be different then the _Realm_ name (i.e the Realm is _Chorus_ in the Chorus project, and the Client is _quepid_).
+
+## 6.6.0 - 2021-08-09
 
 ### Features
 

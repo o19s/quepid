@@ -56,9 +56,19 @@ Learn more about setting up Google oAuth at https://support.google.com/cloud/ans
 
 The built in options are `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `KEYCLOAK_REALM` and `KEYCLOAK_SITE`.
 
-The OmniAuth providers are defined in `config/devise.rb`. A list of available providers can be viewed on the [OmniAuth Wiki](https://github.com/intridea/omniauth/wiki/List-of-Strategies). To enable a provider you need to add the gem (eg. `omniauth-facebook`) to the `Gemfile` and configure in `config/devise.rb` and `user.rb`
+The OmniAuth providers are defined in `config/initializers/devise.rb`. A list of available providers can be viewed on the [OmniAuth Wiki](https://github.com/intridea/omniauth/wiki/List-of-Strategies). To enable a provider you need to add the gem (eg. `omniauth-facebook`) to the `Gemfile` and configure in `devise.rb` and `user.rb`
 
 The existence of `GOOGLE_CLIENT_ID` or `KEYCLOAK_REALM` enables the respective sign in option.
+
+## Keycloak Setup Details
+
+Quepid has a basic Keycloak config file in `/keycloak/realm-config/quepid-realm.json` that is used for development purposes.  
+
+We have a Realm called `Quepid`, and it includes a Client called `quepid`.  The client is where the specific configuration for how Quepid interacts with Keycloak via oAuth is set up.
+
+We *assume* that the client definition in Keycloak will be named `quepid`, you can't change that.  You can pick your Realm name however.
+
+
 
 # Legal Pages & GDPR
 

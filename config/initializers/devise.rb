@@ -324,7 +324,7 @@ Devise.setup do |config|
   # ==> OmniAuth
   # config.omniauth_providers: %i[keycloakopenid google_oauth2]
   if Rails.application.config.keycloak_realm.present?
-    config.omniauth :keycloak_openid, Rails.application.config.keycloak_realm, 'example-secret-if-configured',
+    config.omniauth :keycloak_openid, 'quepid', 'example-secret-if-configured',
                     client_options: {
                       site:  Rails.application.config.keycloak_site,
                       realm: Rails.application.config.keycloak_realm,
