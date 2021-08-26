@@ -20,10 +20,7 @@ angular.module('QuepidApp')
           var uri       = esUrlSvc.parseUrl($scope.settings.searchUrl);
           $scope.showESTemplateWarning = esUrlSvc.isTemplateCall(uri);
         }
-      }
-
-
-
+      };
 
       $scope.validateQueryParams = function () {
         var commonSolrParamTypos = {
@@ -74,7 +71,5 @@ angular.module('QuepidApp')
         $scope.settings.selectedTry = tmp;
         $scope.validateESTemplateUrl();
       };
-
-
     }
   ]);
