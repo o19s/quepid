@@ -1,5 +1,17 @@
 # Changelog
 
+## 6.7.0 - 2021-08-26
+
+### Features
+
+* Elasticsearch fields computed using script query now work!  Back in February @CGamesPlay contributed a PR (https://github.com/o19s/splainer-search/pull/90) to `splainer-search` to support this, and now it automagically works in Quepid! Thanks @DmitryKey for opening https://github.com/o19s/quepid/issues/327 and supporting this feature.  
+
+* Curious what parameters are being used by Solr to construct the query?  We're now adding a  `echoParams=all` to queries and surfacing them in the _Explain  Query_ modal at the query level in Quepid.  Currently a  Solr only feature.  https://github.com/o19s/quepid/pull/397 by @epugh with inspiration from @mkr.
+
+### Improvements
+
+* Continue cleanup of JavaScript, eliminated last remnants of "unit test" style scorers, and renamed `customScorer` to just `scorer` in front end app.
+
 ## 6.6.1 - 2021-08-11
 
 * In testing the Keycloak oAuth integration via the Chorus project, identified that the name of the _Client_ that is passed to Keycloak was tied to the `KEYCLOAK_REALM` env setting.   Changed this to be hardcoded to `quepid` so it can be different then the _Realm_ name (i.e the Realm is _Chorus_ in the Chorus project, and the Client is _quepid_).  Commmit de9e0e645ddb4cb02644680ed8af456a167023dd by @epugh.
