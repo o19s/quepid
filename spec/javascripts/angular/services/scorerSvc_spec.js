@@ -1,6 +1,6 @@
 'use strict';
 
-describe('Service: customScorerSvc', function () {
+describe('Service: scorerSvc', function () {
 
   // load the service's module
   beforeEach(module('QuepidTest'));
@@ -43,12 +43,12 @@ describe('Service: customScorerSvc', function () {
     'queryId':    null,
   };
 
-  var $httpBackend, customScorerSvc;
+  var $httpBackend, scorerSvc;
 
   // instantiate service
   beforeEach(function() {
-    inject(function (_customScorerSvc_, $injector) {
-      customScorerSvc = _customScorerSvc_;
+    inject(function (_scorerSvc_, $injector) {
+      scorerSvc = _scorerSvc_;
       $httpBackend = $injector.get('$httpBackend');
     });
   });
@@ -56,9 +56,9 @@ describe('Service: customScorerSvc', function () {
   it('gets a list of scorers', function() {
     var url = '/api/scorers';
     $httpBackend.expectGET(url).respond(200, mockScorers);
-    customScorerSvc.list()
+    scorerSvc.list()
       .then(function() {
-        expect(customScorerSvc.scorers.length).toBe(3);
+        expect(scorerSvc.scorers.length).toBe(3);
       });
     $httpBackend.flush();
   });
@@ -67,10 +67,10 @@ describe('Service: customScorerSvc', function () {
     var url = '/api/scorers';
     $httpBackend.expectPOST(url).respond(201, mockScorer);
 
-    customScorerSvc.create(mockScorer)
+    scorerSvc.create(mockScorer)
       .then(function(response) {
-        expect(customScorerSvc.scorers.length).toBe(1);
-        var expectedScorer = customScorerSvc.constructFromData(mockScorer);
+        expect(scorerSvc.scorers.length).toBe(1);
+        var expectedScorer = scorerSvc.constructFromData(mockScorer);
         expect(angular.equals(response, expectedScorer)).toBe(true);
       });
     $httpBackend.flush();
@@ -83,7 +83,7 @@ describe('Service: customScorerSvc', function () {
     var url = '/api/scorers/' + mockScorer.scorerId;
     $httpBackend.expectPUT(url).respond(200, editedScorer);
 
-    customScorerSvc.edit(editedScorer)
+    scorerSvc.edit(editedScorer)
       .then(function(response) {
         expect(response.name).toEqual('Edited Scorer');
       });
@@ -94,7 +94,7 @@ describe('Service: customScorerSvc', function () {
     var url = '/api/scorers/' + mockScorer.scorerId;
     $httpBackend.expectGET(url).respond(200, mockScorer);
 
-    customScorerSvc.get(mockScorer.scorerId)
+    scorerSvc.get(mockScorer.scorerId)
       .then(function(response) {
         expect(response.code).toEqual(mockScorer.code);
       });
@@ -106,9 +106,9 @@ describe('Service: customScorerSvc', function () {
     mockScorer.name = 'New Name';
     $httpBackend.expectPUT(url).respond(200, mockScorer);
 
-    customScorerSvc.edit(mockScorer).
+    scorerSvc.edit(mockScorer).
       then(function() {
-        customScorerSvc.get(mockScorer.scorerId)
+        scorerSvc.get(mockScorer.scorerId)
           .then(function(response) {
             // this should fire without a new get request
             expect(response.name).toEqual('New Name');
@@ -118,13 +118,13 @@ describe('Service: customScorerSvc', function () {
   });
 
   it('bootstraps and goes nuts', function() {
-    var scorerDefault = customScorerSvc.get();
+    var scorerDefault = scorerSvc.get();
     expect(scorerDefault).not.toBe(null);
   });
 
   describe('bootstrap', function() {
     beforeEach(function() {
-      customScorerSvc.clearScorer();
+      scorerSvc.clearScorer();
     });
 
     var mockResponse = {
@@ -138,10 +138,10 @@ describe('Service: customScorerSvc', function () {
       var url = '/api/cases/' + caseNo + '/scorers';
       $httpBackend.expectGET(url).respond(200, mockResponse);
 
-      customScorerSvc.bootstrap(caseNo);
+      scorerSvc.bootstrap(caseNo);
 
       $httpBackend.flush();
-      expect(customScorerSvc.defaultScorer).not.toBe(null);
+      expect(scorerSvc.defaultScorer).not.toBe(null);
     });
   });
 });

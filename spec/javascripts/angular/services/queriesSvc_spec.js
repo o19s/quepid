@@ -189,10 +189,10 @@ describe('Service: queriesSvc', function () {
 
     module(function($provide) {
       mockSearchSvc = new MockSearchSvc();
-      mockScorerSvc = new MockCustomScorerSvc();
+      mockScorerSvc = new MockScorerSvc();
       mockCaseSvc   = new MockCaseSvc();
       $provide.value('searchSvc', mockSearchSvc);
-      $provide.value('customScorerSvc', mockScorerSvc);
+      $provide.value('scorerSvc', mockScorerSvc);
       $provide.value('caseSvc', mockCaseSvc);
     });
 

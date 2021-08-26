@@ -9,7 +9,7 @@ angular.module('QuepidApp')
     '$rootScope',
     '$log',
     'flash',
-    'customScorerSvc',
+    'scorerSvc',
     'ScorerFactory',
     function (
       $uibModal,
@@ -17,7 +17,7 @@ angular.module('QuepidApp')
       $rootScope,
       $log,
       flash,
-      customScorerSvc,
+      scorerSvc,
       ScorerFactory
     ) {
       var ctrl = this;
@@ -49,7 +49,7 @@ angular.module('QuepidApp')
 
         modalInstance.result.then(
           function(data) {
-            customScorerSvc.create(data)
+            scorerSvc.create(data)
               .then(function() {
                 flash.success = 'Scorer created successfully';
               },

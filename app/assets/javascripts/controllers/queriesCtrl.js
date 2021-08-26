@@ -15,7 +15,7 @@ angular.module('QuepidApp')
     'querySnapshotSvc',
     'diffResultsSvc',
     'caseSvc',
-    'customScorerSvc',
+    'scorerSvc',
     'configurationSvc',
     function (
       $scope,
@@ -30,7 +30,7 @@ angular.module('QuepidApp')
       querySnapshotSvc,
       diffResultsSvc,
       caseSvc,
-      customScorerSvc,
+      scorerSvc,
       configurationSvc
     ) {
       $scope.queriesSvc = queriesSvc;
@@ -312,7 +312,7 @@ angular.module('QuepidApp')
       };
 
       function getScorer() {
-        return customScorerSvc.defaultScorer;
+        return scorerSvc.defaultScorer;
       }
 
       /*jslint latedef:false*/
@@ -325,7 +325,7 @@ angular.module('QuepidApp')
             parent: function() {
               return {
                 attachTo:      queriesSvc,
-                currentScorer: customScorerSvc.defaultScorer,
+                currentScorer: scorerSvc.defaultScorer,
               };
             },
           }

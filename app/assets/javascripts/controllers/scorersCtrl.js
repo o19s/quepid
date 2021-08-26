@@ -10,12 +10,12 @@ angular.module('QuepidApp')
     '$rootScope', '$scope',
     'flash',
     'broadcastSvc',
-    'customScorerSvc', 'configurationSvc',
+    'scorerSvc', 'configurationSvc',
     function (
       $rootScope, $scope,
       flash,
       broadcastSvc,
-      customScorerSvc, configurationSvc
+      scorerSvc, configurationSvc
     ) {
       // Attributes
       $scope.scorers                 = {};
@@ -43,7 +43,7 @@ angular.module('QuepidApp')
       });
 
       $scope.loading = true;
-      customScorerSvc.list()
+      scorerSvc.list()
         .then(function() {
           broadcastSvc.send('updatedScorersList');
           getLists();
@@ -59,8 +59,8 @@ angular.module('QuepidApp')
       });
 
       function getLists() {
-        $scope.scorers.communalScorers  = customScorerSvc.communalScorers;
-        $scope.scorers.userScorers     = customScorerSvc.scorers;
+        $scope.scorers.communalScorers  = scorerSvc.communalScorers;
+        $scope.scorers.userScorers     = scorerSvc.scorers;
         $scope.scorers.combinedScorers = $scope.scorers.communalScorers.concat($scope.scorers.userScorers);
       }
 
