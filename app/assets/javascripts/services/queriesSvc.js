@@ -80,6 +80,15 @@ angular.module('QuepidApp')
         var args = angular.copy(passedInSettings.selectedTry.args);
 
         if (passedInSettings && passedInSettings.selectedTry) {
+
+
+          if (passedInSettings.searchEngine === 'solr') {
+            // add echoParams=all if we don't have it defined to provide query details.
+            if (args['echoParams'] === undefined) {
+              args['echoParams'] = 'all';
+            }
+
+          }
           // Modify query if ratings were passed in
           if (query) {
             if (passedInSettings.searchEngine === 'es') {

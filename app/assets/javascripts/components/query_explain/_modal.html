@@ -6,16 +6,28 @@
 <div class="modal-body">
   <p>These are details returned from the search engine on how it processed the input query</p>
 
-  <div
-    ui-ace="{
-      require:     ['ace/ext/language_tools'],
-      useWrapMode: false,
-      mode:        'json',
-      theme:       'chrome'
-    }"
-    ng-model="ctrl.value"
-  >
-  </div>
+  <uib-tabset active="active">
+    <uib-tab index="0" heading="Params">
+      <p class='bg-warning text-warning padded-text' ng-show="ctrl.queryDetailsMessage">
+        <i class="fa fa-exclamation-triangle" aria-hidden="true"></i>
+        {{ctrl.queryDetailsMessage}}
+      </p>
+      <span ng-show="!ctrl.queryDetailsMessage">
+        <p>These are the query parameters sent to the search engine.</p>
+        <json-explorer
+          json-data="ctrl.queryDetails"
+          collapsed="false">
+        </json-explorer>
+      </span>
+    </uib-tab>
+    <uib-tab index="1" heading="Parsing" disable="false">
+      <p>This is how the search engine parsed the query.</p>
+      <json-explorer
+        json-data="ctrl.parsedQueryDetails"
+        collapsed="false">
+      </json-explorer>
+    </uib-tab>
+  </uib-tabset>
 </div>
 
 <div class="modal-footer">
