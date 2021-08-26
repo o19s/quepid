@@ -6,6 +6,8 @@
 
 * Elasticsearch fields computed using script query now work!  Back in February @CGamesPlay contributed a PR (https://github.com/o19s/splainer-search/pull/90) to `splainer-search` to support this, and now it automagically works in Quepid! Thanks @DmitryKey for opening https://github.com/o19s/quepid/issues/327 and supporting this feature.  
 
+* Elasticsearch templates can now be used in Quepid!  https://github.com/o19s/quepid/pull/400 by @epugh exposes the underlying `splainer-search` functionality in Quepid. Thanks @danielibars for opening https://github.com/o19s/quepid/issues/274 and supporting this feature.  
+
 * Curious what parameters are being used by Solr to construct the query?  We're now adding a  `echoParams=all` to queries and surfacing them in the _Explain  Query_ modal at the query level in Quepid.  Currently a  Solr only feature.  https://github.com/o19s/quepid/pull/397 by @epugh with inspiration from @mkr.
 
 ### Improvements
