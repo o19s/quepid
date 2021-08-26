@@ -101,7 +101,7 @@
           </div>
 
           <div class="dev-body" ng-show="devSettingsUrl.toggle">
-            <input type="text" class="form-control" id="" placeholder="Enter Your Search Engine URL" ng-model="settings.searchUrl">
+            <input type="text" class="form-control" id="" placeholder="Enter Your Search Engine URL" ng-model="settings.searchUrl" ng-change="validateESTemplateUrl()">
 
             <p class="help-block tip">
               Tip: Your URL should look like this {{settings.urlFormat}}.
@@ -111,13 +111,16 @@
         <!-- end of Search Engine Request Handler -->
 
         <!-- Display Fields -->
-        <div class="setting-div">
+        <div class="setting-div" ng-init="validateESTemplateUrl()">
           <div class="dev-header" ng-click="devSettingsFields.toggle = !devSettingsFields.toggle">
             Displayed Fields <span ng-class="{true: 'glyphicon-plus-sign', false: 'glyphicon-minus-sign'}[!devSettingsFields.toggle]" class="glyphicon"></span>
           </div>
 
           <div class="dev-body" ng-show="devSettingsFields.toggle">
-            <input class="form-control" name="fields" ng-model="settings.fieldSpec" class="ng-pristine ng-valid" style="margin-bottom: 10px">
+            <input class="form-control" name="fields" ng-model="settings.fieldSpec" class="ng-pristine ng-valid" style="margin-bottom: 10px" ng-show="!showESTemplateWarning">
+            <span ng-show="showESTemplateWarning">
+              When using ES Templates, specify fields to view via <code>_source</code> defined in the search template.
+            </span>
           </div>
         </div>
         <!-- end of Display Fields -->
