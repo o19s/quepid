@@ -186,15 +186,6 @@ angular.module('QuepidApp')
           self.options  = JSON.parse(queryWithRatings.options);
         }
 
-        // Figure out if the query has a custom scorer
-        if (queryWithRatings.hasOwnProperty('scorerId')) {
-          if (angular.isString(queryWithRatings.scorerId)) {
-            self.scorerId = parseInt(queryWithRatings.scorerId, 10);
-          } else {
-            self.scorerId = queryWithRatings.scorerId;
-          }
-        }
-
         self.ratings = queryWithRatings.ratings;
         if ( self.ratings === undefined ) {
           self.ratings = {};
@@ -611,35 +602,6 @@ angular.module('QuepidApp')
           }
           else {
             return 'loaded';
-          }
-        };
-
-        this.saveTest = function(scorer) {
-          var self = this;
-          scorer.query_id = self.queryId;
-
-          if ( self.test !== null ) {
-            scorer.scorerId = self.test.scorerId;
-
-            return customScorerSvc.edit(scorer)
-              .then(function(returnedScorer) {
-                self.test = returnedScorer;
-
-                return self.test;
-              }, function(response) {
-                $log.debug('Failed to save test: ', response);
-                return response;
-              });
-          } else {
-            return customScorerSvc.create(scorer)
-              .then(function(createdScorer) {
-                self.test = createdScorer;
-
-                return self.test;
-              }, function(response) {
-                $log.debug('Failed to save test: ', response);
-                return response;
-              });
           }
         };
 
