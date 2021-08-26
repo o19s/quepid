@@ -7,12 +7,12 @@ angular.module('QuepidApp')
     '$scope',
     '$uibModal',
     'flash',
-    'customScorerSvc',
+    'scorerSvc',
     function (
       $scope,
       $uibModal,
       flash,
-      customScorerSvc
+      scorerSvc
     ) {
       var ctrl = this;
 
@@ -21,7 +21,7 @@ angular.module('QuepidApp')
       ctrl.openDeleteModal  = openDeleteModal;
 
       function deleteScorer() {
-        customScorerSvc.delete(ctrl.thisScorer)
+        scorerSvc.delete(ctrl.thisScorer)
         .then(function () {
             flash.success = 'Scorer deleted successfully.';
           },

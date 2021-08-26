@@ -31,7 +31,7 @@
     };
   };
 
-  wind.MockCustomScorerSvc = function() {
+  wind.MockScorerSvc = function() {
     var $q;
     var scorers = {};
 
@@ -84,4 +84,3 @@
   };
 
 })(window);
-

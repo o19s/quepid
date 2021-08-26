@@ -5,9 +5,9 @@
 (function() {
   angular.module('QuepidApp')
     .service('scorerControllerActionsSvc', [
-      'customScorerSvc',
+      'scorerSvc',
       function(
-        customScorerSvc
+        scorerSvc
       ) {
         var self = this;
 
@@ -44,15 +44,15 @@
         }
 
         function figureOutScaleChoice(ctrl) {
-          if (customScorerSvc.scalesAreEqual(
+          if (scorerSvc.scalesAreEqual(
             ctrl.scorer.scale, ctrl.scaleOptions.detailScale
           )) {
             ctrl.scaleChoice = 'detailScale';
-          } else if (customScorerSvc.scalesAreEqual(
+          } else if (scorerSvc.scalesAreEqual(
             ctrl.scorer.scale, ctrl.scaleOptions.gradedScale
           )) {
             ctrl.scaleChoice = 'gradedScale';
-          } else if (customScorerSvc.scalesAreEqual(
+          } else if (scorerSvc.scalesAreEqual(
             ctrl.scorer.scale, ctrl.scaleOptions.binaryScale
           )) {
             ctrl.scaleChoice = 'binaryScale';

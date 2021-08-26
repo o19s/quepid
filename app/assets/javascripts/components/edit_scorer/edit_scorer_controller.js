@@ -9,14 +9,14 @@ angular.module('QuepidApp')
     '$scope',
     '$rootScope',
     'flash',
-    'customScorerSvc',
+    'scorerSvc',
     function (
       $uibModal,
       $log,
       $scope,
       $rootScope,
       flash,
-      customScorerSvc
+      scorerSvc
     ) {
       var ctrl       = this;
       ctrl.lastSaved = angular.copy($scope.scorer);
@@ -63,7 +63,7 @@ angular.module('QuepidApp')
 
           modalInstance.result.then(
             function(data) {
-              customScorerSvc.edit(data)
+              scorerSvc.edit(data)
                 .then(function() {
                   flash.success = 'Scorer updated successfully';
 

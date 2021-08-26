@@ -5,11 +5,11 @@
 angular.module('QuepidApp')
   .controller('ScorerCtrl', [
     '$scope', '$location', '$uibModalInstance', '$log',
-    'parent', 'customScorerSvc', 'caseSvc', 'queriesSvc',
+    'parent', 'scorerSvc', 'caseSvc', 'queriesSvc',
     'ScorerFactory', 'configurationSvc',
     function (
       $scope, $location, $uibModalInstance, $log,
-      parent, customScorerSvc, caseSvc, queriesSvc,
+      parent, scorerSvc, caseSvc, queriesSvc,
       ScorerFactory, configurationSvc
     ) {
 
@@ -28,10 +28,10 @@ angular.module('QuepidApp')
       }
 
       /*jslint latedef:false*/
-      customScorerSvc.list()
+      scorerSvc.list()
         .then(function() {
-          $scope.userScorers     = customScorerSvc.scorers;
-          $scope.communalScorers = customScorerSvc.communalScorers;
+          $scope.userScorers     = scorerSvc.scorers;
+          $scope.communalScorers = scorerSvc.communalScorers;
         });
 
       function cancel() {
@@ -69,8 +69,8 @@ angular.module('QuepidApp')
             caseNo,
             $scope.activeScorer.scorerId
           ).then(function() {
-            // TODO move to customer scorer svc, needs major updates to queriessvc first
-            customScorerSvc.setDefault($scope.activeScorer)
+            // TODO move to scorer svc, needs major updates to queriessvc first
+            scorerSvc.setDefault($scope.activeScorer)
               .then(function() {
                 $log.info('rescoring queries with new scorer');
                 queriesSvc.updateScores();
@@ -81,7 +81,7 @@ angular.module('QuepidApp')
           caseSvc.saveDefaultScorer(caseNo)
             .then(function() {
               // TODO move to customer scorer svc, needs major updates to queriessvc first
-              customScorerSvc.resetScorer();
+              scorerSvc.resetScorer();
               $log.info('rescoring queries with default scorer');
               queriesSvc.updateScores();
           });

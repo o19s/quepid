@@ -15,7 +15,7 @@ angular.module('QuepidApp')
     '$sce',
     'broadcastSvc',
     'caseTryNavSvc',
-    'customScorerSvc',
+    'scorerSvc',
     'qscoreSvc',
     'searchSvc',
     'solrUrlSvc',
@@ -34,7 +34,7 @@ angular.module('QuepidApp')
       $sce,
       broadcastSvc,
       caseTryNavSvc,
-      customScorerSvc,
+      scorerSvc,
       qscoreSvc,
       searchSvc,
       solrUrlSvc,
@@ -215,7 +215,7 @@ angular.module('QuepidApp')
           if (!scorer) {
           /* use the case default scorer if none
              set for this query */
-            return customScorerSvc.defaultScorer;
+            return scorerSvc.defaultScorer;
           } else {
             return scorer;
           }
@@ -717,7 +717,7 @@ angular.module('QuepidApp')
         currSettings = newSettings;
 
         if (caseNo !== newCaseNo) {
-          customScorerSvc.bootstrap(newCaseNo);
+          scorerSvc.bootstrap(newCaseNo);
           bootstrapQueries(newCaseNo);
         } else {
           angular.forEach(this.queries, function(query) {

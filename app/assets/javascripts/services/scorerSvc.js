@@ -7,7 +7,7 @@
 
 (function() {
   angular.module('QuepidApp')
-    .service('customScorerSvc', [
+    .service('scorerSvc', [
       '$http', '$q', '$log',
       'broadcastSvc',
       'ScorerFactory',
