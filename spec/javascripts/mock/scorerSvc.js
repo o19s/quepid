@@ -2,30 +2,25 @@
 'use strict';
 
 (function (wind) {
-  var MockScorer = function(scorerCode) {
+
+
+  var MockScorer = function(scorerCode, $q) {
 
     this.lastQueryText = null;
-    this.lastDocs      = null;
-    this.lastBestDocs  = null;
-    this.id            = Math.random();
+    this.lastDocs = null;
+    this.lastBestDocs = null;
 
-    this.score = function(queryText, docs, bestDocs) {
+    this.score = function(query, queryText, docs, bestDocs) {
       this.lastQueryText = queryText;
       this.lastDocs = docs;
       this.lastBestDocs = bestDocs;
 
-      // Somehow $q can be injected here instead of using raw promises
-      var resolve = function(data) {
-        return data;
-      };
-
-      var promise = new Promise(resolve);
-      resolve(100);
-
-      return promise;
+      var deferred = $q.defer();
+      deferred.resolve(10);
+      return deferred.promise;
     };
 
-    this.maxScore = function(queryText, docs, bestDocs) {
+    this.maxScore = function(query, queryText, docs, bestDocs) {
       return 100;
     };
 
@@ -37,4 +32,57 @@
       return scorerCode;
     };
   };
+
+  wind.MockScorerSvc = function() {
+    var $q;
+    var scorers = {};
+
+    // If someone knows how to get this working with injection feel free to do it the right way
+    this.setQ = function(q) {
+      $q = q;
+      this.defaultScorer = new MockScorer('default-code', $q);
+    }
+
+    this.createScorer = function(scoreCode) {
+      return new MockScorer(scoreCode, $q);
+    };
+
+    this.bootstrap = function() {};
+
+    this.get = function(scoreId) {
+      return {
+        then: function(fn) {
+          fn(scorers[scoreId]);
+        }
+      };
+    };
+
+    this.constructFromData = function(data) {
+      return data;
+    };
+
+    this.edit = function(scorer) {
+      scorers[scorer.id] = scorer;
+
+      return {
+        then: function(fn) {
+          fn( scorer );
+        }
+      };
+    };
+
+    this.create = function(scorer) {
+      var id = '' + Object.keys(scorers).length;
+      scorers[id] = scorer;
+      scorer.scorerId = id;
+
+      return {
+        then: function(fn) {
+          fn(scorer);
+        }
+      };
+    };
+
+  };
+
 })(window);
