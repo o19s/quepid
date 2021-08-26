@@ -18,14 +18,14 @@ angular.module('QuepidApp')
       // Only solr has this, not ES.  So a check if it exists.  It may just be empty {}.
       if (angular.isDefined(query.searcher.queryDetails)) {
         if (angular.equals(query.searcher.queryDetails,{})){
-          ctrl.queryDetailsMessage = "The list of query parameters used to construct the query was not returned by Solr.";
+          ctrl.queryDetailsMessage = 'The list of query parameters used to construct the query was not returned by Solr.';
         }
         else {
           ctrl.queryDetails = angular.toJson(query.searcher.queryDetails, true);
         }
       }
       else {
-        ctrl.queryDetailsMessage = "Query parameters are not returned by Elasticsearch."
+        ctrl.queryDetailsMessage = 'Query parameters are not returned by Elasticsearch.';
       }
 
       ctrl.cancel = function () {
