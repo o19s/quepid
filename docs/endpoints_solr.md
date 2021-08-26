@@ -28,6 +28,7 @@ Quepid adds some parameters:
 1. `fl=id title` comes from the Settings Pane in the UI.
 1. `wt=json` is to ensure the response is in JSON format that Quepid expects.
 1. `debug=true&debug.explain.structured=true` is used to get back the query explain information.  If this isn't available, that is fine, you just don't get the information about how the query matched the docs in the UI.
+1. `echoParams=all` lets us return all the params used in constructing the query to show in the UI.  You can override this via passing in `echoParams=none`.
 1. `hl=false` disables highlighting.  We used to actually use highlighting in our snippets, so this may be able to be removed.
 1. `rows=10` is driven by the Settings Pane in the UI.
 1. `json.wrf=angular.callbacks._2` to avoid needing to use CORS, we use JSONP, which requires this parameter to be sent to Solr, and wraps the resulting JSON response in the function `angular.callbacks._2()`.  
@@ -67,7 +68,7 @@ http://quepid-solr.dev.o19s.com:8985/solr/tmdb/select?defType=lucene&rows=15&q=i
 1. `fl=id title` comes from the Settings Pane in the UI.
 1. `wt=json` is to ensure the response is in JSON format that Quepid expects.
 1. `hl=false` disables highlighting.  We used to actually use highlighting in our snippets, so this may be able to be removed.
-1. `json.wrf=angular.callbacks._2` to avoid needing to use CORS, we use JSONP, which requires this parameter to be sent to Solr, and wraps the resulting JSON response in the function `angular.callbacks._2()`. 
+1. `json.wrf=angular.callbacks._2` to avoid needing to use CORS, we use JSONP, which requires this parameter to be sent to Solr, and wraps the resulting JSON response in the function `angular.callbacks._2()`.
 
 
 ## View Document
