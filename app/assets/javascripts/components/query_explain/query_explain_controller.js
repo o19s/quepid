@@ -21,6 +21,7 @@ angular.module('QuepidApp')
           templateUrl:  'query_explain/_modal.html',
           controller:   'QueryExplainModalInstanceCtrl',
           controllerAs: 'ctrl',
+          size: 'lg',
           resolve: {
             query: function() { return ctrl.query; }
           }

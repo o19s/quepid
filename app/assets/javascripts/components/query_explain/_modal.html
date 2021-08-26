@@ -9,29 +9,19 @@
   <uib-tabset active="active">
     <uib-tab index="0" heading="Params">
       <p>These are the query parameters sent to the search engine.</p>
-      <div
-        ui-ace="{
-          require:     ['ace/ext/language_tools'],
-          useWrapMode: false,
-          mode:        'json',
-          theme:       'chrome'
-        }"
-        ng-model="ctrl.value"
-      >      
+      <json-explorer
+        json-data="ctrl.queryDetails"
+        collapsed="false">
+      </json-explorer>
     </uib-tab>
     <uib-tab index="1" heading="Parsing" disable="false">
 
       <p>This is how the search engine parsed the query.</p>
-      <div
-        ui-ace="{
-          require:     ['ace/ext/language_tools'],
-          useWrapMode: false,
-          mode:        'json',
-          theme:       'chrome'
-        }"
-        ng-model="ctrl.value"
-      >
-      </div>
+
+      <json-explorer
+        json-data="ctrl.parsedQueryDetails"
+        collapsed="false">
+      </json-explorer>
     </uib-tab>
   </uib-tabset>
 </div>

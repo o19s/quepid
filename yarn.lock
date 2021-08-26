@@ -6997,13 +6997,13 @@ spdy@^4.0.2:
     select-hose "^2.0.0"
     spdy-transport "^3.0.0"
 
-splainer-search@^2.6.10:
-  version "2.7.0"
-  resolved "https://registry.yarnpkg.com/splainer-search/-/splainer-search-2.7.0.tgz#572bcc540473480b378cc039418ff993dd242e82"
-  integrity sha512-4ZfLMN+UnR+mC+HYl7TK3nxTcqmuMBH5pWXMB7D8WIcLzSd8JQ3/b5DQXCrdU0tUtqpjRXYRjhRnTt1QPC/niA==
+splainer-search@2.10.0:
+  version "2.10.0"
+  resolved "https://registry.yarnpkg.com/splainer-search/-/splainer-search-2.10.0.tgz#f0eea8378a7f2f48ec678759cd1e0bce6931754c"
+  integrity sha512-iIAmRcqAipdA7oDgPGWlNSXyTbeUFNpe3vPxGIOjTdGp/n42SCVtcaY68yvIXSW5Sa6E8wTZSVYodUgNLOXaAA==
   dependencies:
     angular "^1.7.9"
-    urijs "~1.16.1"
+    urijs "^1.19.7"
 
 split-string@^3.0.1, split-string@^3.0.2:
   version "3.1.0"
@@ -7532,10 +7532,10 @@ uri-js@^4.2.2:
   dependencies:
     punycode "^2.1.0"
 
-urijs@~1.16.1:
-  version "1.16.1"
-  resolved "https://registry.yarnpkg.com/urijs/-/urijs-1.16.1.tgz#859ad31890f5f9528727be89f1932c94fb4731e2"
-  integrity sha1-hZrTGJD1+VKHJ76J8ZMslPtHMeI=
+urijs@^1.19.7:
+  version "1.19.7"
+  resolved "https://registry.yarnpkg.com/urijs/-/urijs-1.19.7.tgz#4f594e59113928fea63c00ce688fb395b1168ab9"
+  integrity sha512-Id+IKjdU0Hx+7Zx717jwLPsPeUqz7rAtuVBRLLs+qn+J2nf9NGITWVCxcijgYxBqe83C7sqsQPs6H1pyz3x9gA==
 
 urix@^0.1.0:
   version "0.1.0"

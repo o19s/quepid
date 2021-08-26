@@ -12,7 +12,14 @@ angular.module('QuepidApp')
 
       ctrl.query = query;
 
-      ctrl.value = angular.toJson(query.searcher.parsedQueryDetails, true);
+      ctrl.parsedQueryDetails = angular.toJson(query.searcher.parsedQueryDetails, true);
+
+      if (angular.isDefined(query.searcher.queryDetails)) {
+        ctrl.queryDetails = angular.toJson(query.searcher.queryDetails, true);
+      }
+      else {
+        ctrl.queryDetails = '{"message":  "none provided"}'
+      }
 
       ctrl.cancel = function () {
         $uibModalInstance.dismiss('cancel');
