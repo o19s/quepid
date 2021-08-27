@@ -20,7 +20,7 @@ module Analytics
 
       # We need all the unique query/doc pairs to set up the overall dataframe, then we fill in per user their data.
       query_doc_pairs = @case.ratings.select(:query_id, :doc_id).distinct.map do |r|
-        { "querydoc_id": "#{r.query_id}!#{r.doc_id}" }
+        { querydoc_id: "#{r.query_id}!#{r.doc_id}" }
       end
 
       @df = Rover::DataFrame.new(query_doc_pairs)
