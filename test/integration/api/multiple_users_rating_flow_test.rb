@@ -13,7 +13,7 @@ class MultipleUsersRatingFlowTest < ActionDispatch::IntegrationTest
 
   # rubocop:disable Layout/LineLength
   test 'create a team of raters and have them rate' do
-    post users_login_url params: { email: owner.email, password: 'password', format: :json }
+    post users_login_url params: { user:  { email: owner.email, password: 'password' }, format: :json }
 
     assert_difference 'team.members.count' do
       post api_team_members_url(team), params: { id: matt.id }

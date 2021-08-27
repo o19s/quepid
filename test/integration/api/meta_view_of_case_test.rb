@@ -13,7 +13,7 @@ class MetaViewOfCaseTest < ActionDispatch::IntegrationTest
 
   test 'Look at a case, and product some quality metrics of the case and its ratings' do
     # Let's set up the case.
-    post users_login_url params: { email: owner.email, password: 'password', format: :json }
+    post users_login_url params: { user: { email: owner.email, password: 'password' }, format: :json }
     post api_team_members_url(team), params: { id: matt.id }
     post api_team_cases_url(team), params: { id: matt_case.id }
 
