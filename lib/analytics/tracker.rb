@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require_relative 'google_analytics.rb'
+require_relative 'google_analytics'
 require_relative 'tracker/case'
 require_relative 'tracker/query'
 require_relative 'tracker/rating'
