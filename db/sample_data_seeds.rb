@@ -262,7 +262,7 @@ trek.members << trek_member_spock
 # This case is all about if Spock and Kirk rated same movies for the query 'star trek',
 # and Spock, being logical, likes Documentarys, while Kirk likes all the other movies.
 
-scorer = Score.find_by (name: 'P@10')
+scorer = Scorer.find_by name: 'P@10'
 
 phasers_rule = trek_owner_kirk.cases.create case_name: 'Phasers Rules', scorer: scorer
 print_case_info phasers_rule
