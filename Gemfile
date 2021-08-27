@@ -25,7 +25,7 @@ gem 'postmark-rails'
 gem 'puma', '~> 5.0'
 gem 'puma_worker_killer'
 gem 'pundit'
-gem 'rails', '= 6.1.4' # starting Rails 6 the webpack is included by default.
+gem 'rails', '= 6.1.4.1' # starting Rails 6 the webpack is included by default.
 gem 'responders'
 gem 'sidekiq'
 gem 'terser'
