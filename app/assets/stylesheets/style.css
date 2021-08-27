@@ -72,8 +72,6 @@
 .wiz_new_query {
   position:relative;
   background:#369;
-  -webkit-border-radius: 5px;
-  -moz-border-radius: 5px;
   border-radius: 5px;
   margin: 10px 0 0 10px;
   display: inline-block;
@@ -91,8 +89,6 @@
   font-weight: bold;
   padding: 3px 6px;
   margin: 0 0 0 10px;
-  -webkit-border-radius: 5px;
-  -moz-border-radius: 5px;
   border-radius: 5px;
   border: none;
   background: #F0F0F0;

@@ -4,13 +4,12 @@ module Users
   class PasswordsController < Devise::PasswordsController
     include NotificationsManager
 
-    force_ssl if: :ssl_enabled?
     skip_before_action :require_login
     skip_before_action :require_no_authentication
 
     before_action :check_email
 
-    layout 'secure'
+    layout 'start'
 
     # GET /resource/password/new
     # def new

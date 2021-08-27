@@ -164,7 +164,7 @@ module Api
             assert_response :ok
             invitee = User.find_by(email: 'invitee@mail.com')
             User.accept_invitation!(invitation_token: invitee.stored_raw_invitation_token, password: 'ad97nwj3o2',
-name: 'John Doe')
+                                    name: 'John Doe')
             assert_response :ok
 
             get :index, params: { team_id: team.id }

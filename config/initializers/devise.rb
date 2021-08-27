@@ -1,5 +1,8 @@
 # frozen_string_literal: true
 
+# rubocop:disable Metrics/BlockLength
+# rubocop:disable Layout/LineLength
+
 # Use this hook to configure devise mailer, warden hooks and so forth.
 # Many of these configuration options can be set straight in your model.
 Devise.setup do |config|
@@ -100,10 +103,8 @@ Devise.setup do |config|
   # a value of 20 is already extremely slow: approx. 60 seconds for 1 calculation).
   config.stretches = Rails.env.test? ? 1 : 10
 
-  # rubocop:disable Layout/LineLength
   # Setup a pepper to generate the encrypted password.
   # config.pepper = '87e22a5737bdaf21e51f6a1a0ee13d1442296719a47fd414a4f880fb2da79851d687ebe486f0f9d5b68ef03278e35d522936caf41c39333209794f75553ed0a1'
-  # rubocop:enable Layout/LineLength
 
   # Send a notification email when the user's password is changed
   # config.send_password_change_notification = false
@@ -313,11 +314,34 @@ Devise.setup do |config|
   # The router that invoked `devise_for`, in the example above, would be:
   # config.router_name = :my_engine
   #
+  # ==> Invitable
+  config.reset_password_keys = [ :email ]
+
   # When using OmniAuth, Devise cannot automatically set OmniAuth path,
   # so you need to do it manually. For the users scope, it would be:
   # config.omniauth_path_prefix = '/my_engine/users/auth'
+  # config.omniauth :github, "APP_ID", "APP_SECRET"
+  # ==> OmniAuth
+  # config.omniauth_providers: %i[keycloakopenid google_oauth2]
+  if Rails.application.config.keycloak_realm.present?
+    config.omniauth :keycloak_openid, 'quepid', 'example-secret-if-configured',
+                    client_options: {
+                      site:  Rails.application.config.keycloak_site,
+                      realm: Rails.application.config.keycloak_realm,
+                    },
+                    strategy_class: OmniAuth::Strategies::KeycloakOpenId
+  end
+
+  if Rails.application.config.google_client_id.present?
+    config.omniauth :google_oauth2, Rails.application.config.google_client_id, Rails.application.config.google_client_secret,
+                    client_options: { ssl: { verify: !Rails.env.development? } },
+                    strategy_class: OmniAuth::Strategies::GoogleOauth2
+  end
 end
 
 Rails.application.config.to_prepare do
   Devise::Mailer.layout 'email'
 end
+
+# rubocop:enable Metrics/BlockLength
+# rubocop:enable Layout/LineLength

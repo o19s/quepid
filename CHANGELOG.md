@@ -1,10 +1,60 @@
 # Changelog
 
-## 6.5.? - ??
+## 6.7.0 - 2021-08-26
+
+### Features
+
+* Elasticsearch fields computed using script query now work!  Back in February @CGamesPlay contributed a PR (https://github.com/o19s/splainer-search/pull/90) to `splainer-search` to support this, and now it automagically works in Quepid! Thanks @DmitryKey for opening https://github.com/o19s/quepid/issues/327 and supporting this feature.  
+
+* Elasticsearch templates can now be used in Quepid!  https://github.com/o19s/quepid/pull/400 by @epugh exposes the underlying `splainer-search` functionality in Quepid. Thanks @danielibars for opening https://github.com/o19s/quepid/issues/274 and supporting this feature.  
+
+* Curious what parameters are being used by Solr to construct the query?  We're now adding a  `echoParams=all` to queries and surfacing them in the _Explain  Query_ modal at the query level in Quepid.  Currently a  Solr only feature.  https://github.com/o19s/quepid/pull/397 by @epugh with inspiration from @mkr.
+
+### Improvements
+
+* Continue cleanup of JavaScript, eliminated last remnants of "unit test" style scorers, and renamed `customScorer` to just `scorer` in front end app.
+
+## 6.6.1 - 2021-08-11
+
+* In testing the Keycloak oAuth integration via the Chorus project, identified that the name of the _Client_ that is passed to Keycloak was tied to the `KEYCLOAK_REALM` env setting.   Changed this to be hardcoded to `quepid` so it can be different then the _Realm_ name (i.e the Realm is _Chorus_ in the Chorus project, and the Client is _quepid_).  Commmit de9e0e645ddb4cb02644680ed8af456a167023dd by @epugh.
+
+## 6.6.0 - 2021-08-09
+
+### Features
+
+* OpenID Support!  Historically you had to create your own account on Quepid, but that is another barrier to entry, and something else to keep track of.  Inspired by the issue _Add OAuth Providers_ by @gregoryduckworth https://github.com/o19s/quepid/issues/188,  https://github.com/o19s/quepid/pull/280 and https://github.com/o19s/quepid/pull/389 by @epugh implements the first two providers, Google and Keycloak.
+
+* Explain Query Parsing!  We often want to know what the search engine is doing to our query.  Now you can click the "Explain Query" popup and see what is happening to your query and the various filter queries.  This works with both Solr and Elasticsearch.   https://twitter.com/dep4b/status/1420480501710827520.   https://github.com/o19s/quepid/pull/391 by @epugh.
+
+* Frequently type `deftype` instead of `defType` in Solr?  I found an old, but broken feature that provided a popup warning on common Solr query syntax errors, which has now been restored.   https://github.com/o19s/quepid/pull/394 by @epugh fixes https://github.com/o19s/quepid/issues/390.
+
+### Improvements
+
+* Quepid is running on Rails 6!  Rails 6 was released ~26 months ago, and represents the future of Rails.  I'm excited that this push initiated by @DmitryKey is going to bring us some great new features like: better developer experience with Webpack for JavaScript, ActionText to handle better text formatting of notes and messages about Cases and Queries, ActionCable which will let us notify all the users of the same case that data has changed when it changes.  https://github.com/o19s/quepid/pull/381 by @DmitryKey with assist from @epugh.
+
+* Make our ActiveRecord modeling for ownership the same.  Teams have an _owner_, Scorers have an _owner_, but Cases have a _user_.  Now we have _case.owner_ relationship.  https://github.com/o19s/quepid/pull/359 by @epugh.
+
+* The nav bar link for Scorers is labeled "Custom Scorers", and takes you to an page called `/advanced`.   Both of the names are rather offputting.   Creating Scorers is a normal common thing to do in Quepid, so lets label it Scorers.  https://github.com/o19s/quepid/pull/392 by @epugh fixes https://github.com/o19s/quepid/issues/351.
+
+* We had, as someone put it "dinosaur" age CSS tags for mozilla and webkit browsers that triggered lots of browser warnings in the console.  https://github.com/o19s/quepid/pull/380 by @epugh cleaned up many of them.   It has also prompted some thinking about migrating to Bootstrap 5 for the non core pages.  If anyone has some CSS skills, please contact @epugh, to help refine the header menu in Bootstrap 5 CSS.  
+
+### Bugs
+
+## 6.5.5 - 2021-06-30
+
+### Features
+
+* You can now tag a field with `translate:`, as in `translate:content` and you will get an icon to pop the text open in a Google Translate in a new browser window.  https://github.com/o19s/quepid/pull/386 by @epugh.
 
 ### Improvements
 
 * You can now export fields that have the formatting modifiers `thumb` and `image` using the detail format.  Also improved the handling of the General and Detail export from the Case Listing page.  https://github.com/o19s/quepid/pull/383 by @epugh fixes https://github.com/o19s/quepid/issues/382.  Thanks @DmitryKey for the improvement assist and spotting the Case Listing export issue.
+
+* Admin user can now reset a users password with a new password.  https://github.com/o19s/quepid/pull/385 by @epugh to fix issue identified by @michaelcizmar.  Thanks Michael!
+
+* Trying to communicate about HTTPS better when you set up a case.  https://github.com/o19s/quepid/pull/384 by @epugh inspired by https://github.com/o19s/quepid/issues/279 by @arafalov.
+
+
 
 ## 6.5.4 - 2021-06-16
 

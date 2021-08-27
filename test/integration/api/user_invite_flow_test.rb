@@ -6,7 +6,7 @@ class UserInviteFlowTest < ActionDispatch::IntegrationTest
   include ActionMailer::TestHelper
 
   test 'invite friend to join my team on Quepid' do
-    post users_login_url params: { email: 'doug@example.com', password: 'password', format: :json }
+    post users_login_url params: { user: { email: 'doug@example.com', password: 'password' }, format: :json }
 
     # Asserts the difference in the ActionMailer::Base.deliveries
     team = Team.find_by(name: 'valid team')

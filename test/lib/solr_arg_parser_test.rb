@@ -28,14 +28,14 @@ class SolrArgParserTest < ActiveSupport::TestCase
 
   test 'replaces curator vars with values' do
     params  = "#\$query##&foo=##var1##&foo=##var2##"
-    vars    = { 'var1': 1, 'var2': 2 }
+    vars    = { var1: 1, var2: 2 }
     result  = SolrArgParser.parse(params, vars)
 
     assert_includes result['foo'], vars[:var1].to_s
     assert_includes result['foo'], vars[:var2].to_s
 
     params  = "#\$query##&foo=##var1##&bar=##var2##"
-    vars    = { 'var1': 1, 'var2': 2 }
+    vars    = { var1: 1, var2: 2 }
     result  = SolrArgParser.parse(params, vars)
 
     assert_includes result['foo'], vars[:var1].to_s

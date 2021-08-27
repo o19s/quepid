@@ -34,6 +34,7 @@ npm-debug.log
 # Rails assets
 # Ignore compiled assets
 public/assets
+public/packs
 
 # Test Coverage
 coverage/
@@ -44,4 +45,7 @@ public/srv
 # Test Reports
 test/reports
 
-.byebug_history
+/public/packs
+/public/packs-test
+yarn-debug.log*
+.yarn-integrity

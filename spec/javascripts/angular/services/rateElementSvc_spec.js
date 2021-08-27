@@ -6,7 +6,7 @@ describe('Service: rateElementSvc', function () {
   beforeEach(module('QuepidTest'));
 
   describe('setting the scale', function() {
-    var $rootScope, rateElementSvc, customScorerSvc;
+    var $rootScope, rateElementSvc, scorerSvc;
 
     var expectedDefaultScorer = {
       '1':  '#c51800',
@@ -57,15 +57,15 @@ describe('Service: rateElementSvc', function () {
       "ratings": { }
     };
 
-    beforeEach(inject( function(_$rootScope_, _rateElementSvc_, _customScorerSvc_, $q) {
+    beforeEach(inject( function(_$rootScope_, _rateElementSvc_, _scorerSvc_, $q) {
       rateElementSvc  = _rateElementSvc_;
-      customScorerSvc = _customScorerSvc_;
+      scorerSvc = _scorerSvc_;
       $rootScope      = _$rootScope_;
 
       // Tests were mucking with the scope so clear it out
       mockScope = angular.copy(mockScopeTemplate);
 
-      spyOn(customScorerSvc, "get").and.callFake(function(id) {
+      spyOn(scorerSvc, "get").and.callFake(function(id) {
         var deferred = $q.defer();
         var scorer;
 

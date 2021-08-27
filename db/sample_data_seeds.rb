@@ -159,7 +159,7 @@ print_step "End of seeding users................"
 print_step "Seeding cases................"
 
 def print_case_info the_case
-  print_step "Seeded case: name: #{the_case.case_name}, ID: #{the_case.id} for: #{the_case.user.email}"
+  print_step "Seeded case: name: #{the_case.case_name}, ID: #{the_case.id} for: #{the_case.owner.email}"
 end
 
 unless two_case_user.cases.count == 2

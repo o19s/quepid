@@ -7,13 +7,13 @@ angular.module('QuepidApp')
     '$scope', '$routeParams', '$location', '$rootScope', '$log',
     'flash',
     'caseSvc', 'settingsSvc', 'querySnapshotSvc', 'caseTryNavSvc',
-    'queryViewSvc', 'queriesSvc', 'docCacheSvc', 'diffResultsSvc', 'customScorerSvc',
+    'queryViewSvc', 'queriesSvc', 'docCacheSvc', 'diffResultsSvc', 'scorerSvc',
     'paneSvc',
     function (
       $scope, $routeParams, $location, $rootScope, $log,
       flash,
       caseSvc, settingsSvc, querySnapshotSvc, caseTryNavSvc,
-      queryViewSvc, queriesSvc, docCacheSvc, diffResultsSvc, customScorerSvc,
+      queryViewSvc, queriesSvc, docCacheSvc, diffResultsSvc, scorerSvc,
       paneSvc
     ) {
       $log.debug('NEW MAIN CTRL');
@@ -75,7 +75,7 @@ angular.module('QuepidApp')
           if ( caseChanged() ) {
             queryViewSvc.reset();
             docCacheSvc.empty();
-            customScorerSvc.bootstrap(caseNo);
+            scorerSvc.bootstrap(caseNo);
           }
           diffResultsSvc.setDiffSetting(null);
           docCacheSvc.invalidate();

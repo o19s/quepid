@@ -4,6 +4,7 @@ require 'sidekiq/web'
 
 # rubocop:disable Metrics/BlockLength
 Rails.application.routes.draw do
+  # For details on the DSL available within this file, see https://guides.rubyonrails.org/routing.html
   constraints(AdminConstraint) do
     mount Sidekiq::Web, at: 'admin/jobs'
   end
@@ -13,20 +14,19 @@ Rails.application.routes.draw do
   get '.well-known/acme-challenge/9IWOgATbRmEtWKsOOJQ-E4-lrIT9tHsHv_9bl5Zt6fI', to: proc { [ 200, {}, [ '9IWOgATbRmEtWKsOOJQ-E4-lrIT9tHsHv_9bl5Zt6fI.fDzklrX7i2PRMRsPtxEvo2yRZDSfy2LO3t--NfWfgaA' ] ] }
   # rubocop:enable Layout/LineLength
 
-  # legacy routes for angular single page app
-  post 'users/login' => 'sessions#create', defaults: { format: :json }
-  get  'logout'      => 'sessions#destroy'
-  get  'secure'      => 'secure#index'
-  get  'secure/complete' => 'secure#index'
-  # end legacy routes
+  post 'users/login' => 'sessions#create' # , #defaults: { format: :json
+  post 'users/signup' => 'users/signups#create'
+
+  get  'logout' => 'sessions#destroy'
 
   resources :sessions
   resource :account, only: [ :update, :destroy ]
   resource :profile, only: [ :show, :update ]
 
   devise_for :users, controllers: {
-    passwords:   'users/passwords',
-    invitations: 'users/invitations',
+    passwords:          'users/passwords',
+    invitations:        'users/invitations',
+    omniauth_callbacks: 'users/omniauth_callbacks',
   }
 
   namespace :analytics do
@@ -152,7 +152,7 @@ Rails.application.routes.draw do
   get '/case'                         => 'home#index'
   get '/cases/import'                 => 'home#index'
   get '/teams(/:id)'                  => 'home#index', as: :teams_path
-  get '/advanced'                     => 'home#index'
+  get '/scorers'                      => 'home#index'
 
   # Static pages
   get '*page' => 'pages#show'

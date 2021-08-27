@@ -75,7 +75,6 @@ angular.module('QuepidApp')
       };
 
       $scope.showDetailed = function() {
-        console.log('ive been pressed');
         $uibModal.open({
           templateUrl: 'views/detailedExplain.html',
           controller: 'DocExplainCtrl',

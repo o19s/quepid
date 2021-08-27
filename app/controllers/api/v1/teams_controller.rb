@@ -12,7 +12,7 @@ module Api
         # @teams = current_user.teams_im_in
         # @teams = @teams.preload(:scorers, :members, :cases, :owner).all
         # There may be some more fields we could include...
-        @teams = current_user.teams.includes( :owner, :members, :teams_scorers, :cases, scorers: [ :teams ] ).all
+        @teams = current_user.teams.includes( :owner, :members, :cases, scorers: [ :teams ] ).all
 
         respond_with @teams
       end

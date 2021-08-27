@@ -4,7 +4,7 @@ json.allCases do
   json.array! @cases do |acase|
     json.case_name        acase.case_name
     json.caseNo           acase.id
-    json.owned            acase.user_id == current_user.id
+    json.owned            acase.owner_id == current_user.id
 
     json.last_try_number acase.tries.best.try_number if acase.tries.present? && acase.tries.best.present?
   end

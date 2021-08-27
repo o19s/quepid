@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 class ProfilesController < ApplicationController
-  force_ssl if: :ssl_enabled?
   layout 'account'
 
   def show; end
