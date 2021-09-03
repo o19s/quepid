@@ -80,36 +80,6 @@ describe('Service: rateElementSvc', function () {
       });
     }));
 
-    it('to the default when scorer is null', function() {
-      rateElementSvc.setScale(mockScope, mockScope.ratings);
-
-      // This is set but shouldn't be called by the setScale method
-      mockScorer.getColors = function() {
-        return expectedScorer;
-      };
-
-      $rootScope.$apply();
-
-      expect(mockScope.ratings.scale).toBeDefined();
-      // this should work, but it doesn't, so we are checking each property one by one.
-      //expect(mockScope.ratings.scale).toEqual(expectedDefaultScorer);
-      for (var i = 1; i < 10; i++) {
-        expect(mockScope.ratings.scale[i]).toEqual(expectedDefaultScorer[i]);
-      }
-    });
-
-    it('to the default when scorerId is default', function() {
-      mockScorer.scorerId = 'default';
-      mockScope.query.effectiveScorer = function() {
-        return mockScorer;
-      };
-
-      rateElementSvc.setScale(mockScope, mockScope.ratings);
-      $rootScope.$apply();
-
-      expect(mockScope.ratings.scale).toBeDefined();
-      expect(mockScope.ratings.scale).toEqual(expectedDefaultScorer);
-    });
 
     it('to returned scale when scorer is set', function() {
       mockScope.query.effectiveScorer = function() {
