@@ -223,7 +223,8 @@ angular.module('QuepidApp')
         // client side.
         this.touchModifiedAt = function() {
           this.modifiedAt = new Date().toISOString();
-        }
+        };
+        
         this.persisted = function() {
           return (this.queryId && this.queryId >= 0);
         };
