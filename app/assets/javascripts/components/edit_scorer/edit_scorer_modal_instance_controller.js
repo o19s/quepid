@@ -4,36 +4,21 @@ angular.module('QuepidApp')
   .controller('EditScorerModalInstanceCtrl', [
     '$scope',
     '$uibModalInstance',
-    'customScorerSvc',
     'scorerControllerActionsSvc',
     'scorer',
     function (
       $scope,
       $uibModalInstance,
-      customScorerSvc,
       scorerControllerActionsSvc,
       scorer
     ) {
       var ctrl        = this;
       ctrl.scorer     = scorer;
+      ctrl.needToWarnOnScaleChange = true; // Editing scorers may have ratings already, so warn.
 
       scorerControllerActionsSvc.addActions(ctrl, $scope);
 
-      if (customScorerSvc.scalesAreEqual(
-        ctrl.scorer.scale, ctrl.scaleOptions.defaultScale
-      )) {
-        ctrl.scaleChoice = 'defaultScale';
-      } else if (customScorerSvc.scalesAreEqual(
-        ctrl.scorer.scale, ctrl.scaleOptions.shortScale
-      )) {
-        ctrl.scaleChoice = 'shortScale';
-      } else if (customScorerSvc.scalesAreEqual(
-        ctrl.scorer.scale, ctrl.scaleOptions.fibonacciScale
-      )) {
-        ctrl.scaleChoice = 'fibonacciScale';
-      } else  {
-        ctrl.scaleChoice = 'custom';
-      }
+      scorerControllerActionsSvc.figureOutScaleChoice(ctrl);
 
       ctrl.scorerOptions = {
         showName: true

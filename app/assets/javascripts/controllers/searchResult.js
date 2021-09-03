@@ -68,7 +68,6 @@ angular.module('QuepidApp')
       };
 
       $scope.showDetailed = function() {
-        console.log('ive been pressed');
         $uibModal.open({
           templateUrl: 'views/detailedExplain.html',
           controller: 'DocExplainCtrl',
@@ -89,6 +88,19 @@ angular.module('QuepidApp')
       };
       $scope.isUrl = function(value) {
         return ( /^\s*http[s]?:.*/.test(value));
+      };
+
+      // Determine which style sheet to use to influence formatting
+      $scope.summaryColumnStyle = function() {
+        if ($scope.doc.hasThumb()){
+          return 'col-summary-thumb';
+        }
+        else if ($scope.doc.hasImage()){
+          return 'col-summary-image';
+        }
+        else {
+          return '';
+        }
       };
     }
   ]);

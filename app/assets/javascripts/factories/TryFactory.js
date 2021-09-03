@@ -6,12 +6,14 @@
   angular.module('QuepidApp')
     .factory('TryFactory', [
       '$http',
+      '$log',
       'fieldSpecSvc', 'caseTryNavSvc','varExtractorSvc',
       TryFactory
     ]);
 
   function TryFactory(
     $http,
+    $log,
     fieldSpecSvc, caseTryNavSvc, varExtractorSvc
   ) {
     var Try = function(data) {
@@ -19,8 +21,7 @@
       var self  = this;
 
       if ( angular.isUndefined(data.search_engine) ) {
-        console.log('We have an undefined data.search_engine so setting to Solr, should this ever happen?');
-        console.log(data);
+        $log.info('We have an undefined data.search_engine so setting to Solr, should this ever happen?');
         data.search_engine = 'solr';
       }
 

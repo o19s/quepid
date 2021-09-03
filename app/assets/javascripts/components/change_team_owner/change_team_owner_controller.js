@@ -25,7 +25,6 @@ angular.module('QuepidApp')
       ctrl.changeOwner = changeOwner;
 
       function changeOwner(newOwnerId) {
-        console.log('newOwnerId: ', newOwnerId);
         teamSvc.changeOwner(ctrl.team, newOwnerId)
           .then(function() {
             flash.success = 'Owner updated successfully.';

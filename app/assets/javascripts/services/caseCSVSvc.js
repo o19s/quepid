@@ -254,7 +254,10 @@
           }
 
           var firstQuery = queries[Object.keys(queries)[0]];
-          var fields     = firstQuery.fieldSpec().subs;
+          var fields     = firstQuery.fieldSpec().fields;
+          // subtract the mandatory fields from our list of fields to be written out
+          fields.splice(fields.indexOf(firstQuery.fieldSpec().id),1);
+          fields.splice(fields.indexOf(firstQuery.fieldSpec().title),1);
 
           if (withHeader) {
             csvContent += self.detailedQueriesHeaderToCSV(fields);
@@ -276,7 +279,7 @@
               infoArray.push(stringifyField(doc.getRating()));
 
               angular.forEach(fields, function(field) {
-                infoArray.push(stringifyField(doc.subs[field]));
+                infoArray.push(stringifyField(doc.doc[field]));
               });
 
               dataString = infoArray.join(',');

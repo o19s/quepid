@@ -14,6 +14,7 @@
         ng-src="{{ currentTeam.owner.avatar_url }}"
         class="img-responsive img-rounded"
         alt="{{ currentTeam.owner.display_name }}"
+        width="96" height="96"
       />
 
       <h4>
@@ -152,9 +153,10 @@
       <div id='scorers-listing' ng-if="currentTeam.scorers.length !== 0">
         <div class="row listing-header">
           <span class="col-md-1">Name</span>
-          <span class="col-md-7">Code/Scale</span>
-          <span class="col-md-2">Show scale labels?</span>
-          <span class="col-md-2">Max Score</span>
+          <span class="col-md-7">Code/Scale (<a target="_blank" href="http://quepid.com/docs/#scorers-custom">learn more</a>)</span>
+          <span class="col-md-1">Show scale labels?</span>
+          <span class="col-md-1">Max Score</span>
+          <span class="col-md-2">Owner</span>
         </div>
 
         <ul class="scorers-list" ng-model="currentTeam.scorers">

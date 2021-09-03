@@ -11,6 +11,7 @@ module Api
     include Authentication::CurrentCaseManager
     include Authentication::CurrentQueryManager
     include Authentication::CurrentTeamManager
+    include NotificationsManager
 
     respond_to :json
     before_action :set_default_response_format

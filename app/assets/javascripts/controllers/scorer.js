@@ -5,17 +5,17 @@
 angular.module('QuepidApp')
   .controller('ScorerCtrl', [
     '$scope', '$location', '$uibModalInstance', '$log',
-    'parent', 'customScorerSvc', 'caseSvc', 'queriesSvc',
+    'parent', 'scorerSvc', 'caseSvc', 'queriesSvc',
     'ScorerFactory', 'configurationSvc',
     function (
       $scope, $location, $uibModalInstance, $log,
-      parent, customScorerSvc, caseSvc, queriesSvc,
+      parent, scorerSvc, caseSvc, queriesSvc,
       ScorerFactory, configurationSvc
     ) {
 
       $scope.activeScorer       = parent.currentScorer || {};
       $scope.cancel             = cancel;
-      $scope.gotoAdvanced       = gotoAdvanced;
+      $scope.gotoScorers        = gotoScorers;
       $scope.ok                 = ok;
       $scope.scorers            = [];
       $scope.communalScorers    = [];
@@ -28,23 +28,19 @@ angular.module('QuepidApp')
       }
 
       /*jslint latedef:false*/
-      customScorerSvc.list()
+      scorerSvc.list()
         .then(function() {
-          var scorers = customScorerSvc.scorers;
-          $scope.userScorers = scorers.filter( function (scorer) {
-            return !scorer.queryTest;
-          });
-
-          $scope.communalScorers = customScorerSvc.communalScorers;
+          $scope.userScorers     = scorerSvc.scorers;
+          $scope.communalScorers = scorerSvc.communalScorers;
         });
 
       function cancel() {
         $uibModalInstance.dismiss('cancel');
       }
 
-      function gotoAdvanced() {
+      function gotoScorers() {
         $uibModalInstance.dismiss('cancel');
-        $location.path('/advanced');
+        $location.path('/scorers');
       }
 
       function ok() {
@@ -73,19 +69,19 @@ angular.module('QuepidApp')
             caseNo,
             $scope.activeScorer.scorerId
           ).then(function() {
-            // TODO move to customer scorer svc, needs major updates to queriessvc first
-            customScorerSvc.setDefault($scope.activeScorer)
+            // TODO move to scorer svc, needs major updates to queriessvc first
+            scorerSvc.setDefault($scope.activeScorer)
               .then(function() {
                 $log.info('rescoring queries with new scorer');
                 queriesSvc.updateScores();
             });
           });
         } else {
-          console.log('Is this dead code path?');
+          $log.info('Is this dead code path?');
           caseSvc.saveDefaultScorer(caseNo)
             .then(function() {
               // TODO move to customer scorer svc, needs major updates to queriessvc first
-              customScorerSvc.resetScorer();
+              scorerSvc.resetScorer();
               $log.info('rescoring queries with default scorer');
               queriesSvc.updateScores();
           });

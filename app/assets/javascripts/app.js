@@ -20,5 +20,6 @@ angular.module('QuepidApp', [
   'ng-rails-csrf',
   'templates',
   'ngAnimate',
-  'countUp'
+  'countUp',
+  'ngclipboard'
 ]);

@@ -1,4 +1,4 @@
-// This is a manifest file that'll be compiled into application.js, which will include all the files
+// This is a manifest file that'll be compiled into home.js, which will include all the files
 // listed below.
 //
 // Any JavaScript/Coffee file within this directory, lib/assets/javascripts, vendor/assets/javascripts,
@@ -54,11 +54,12 @@
 //= require angular-flash/dist/angular-flash
 //= require angular-animate/angular-animate
 //= require angular-countup/angular-countup
+//= require clipboard/dist/clipboard
+//= require ngclipboard/dist/ngclipboard
 //= require ng-tags-input/build/ng-tags-input
 //= require FileSaver.js/FileSaver
 //= require urijs/src/URI
 //= require utilitiesModule
-//= require secureApp
 //= require app
 //= require routes
 //= require_tree ./components
@@ -71,8 +72,8 @@
 //= require_tree ./values
 //= require_tree ../templates
 //= require_tree ./components
-//= require ace_config
 //= require footer
 //= require tether-shepherd/dist/js/tether
 //= require tether-shepherd/dist/js/shepherd
 //= require tour
+//= require ace_config

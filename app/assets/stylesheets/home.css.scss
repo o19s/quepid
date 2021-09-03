@@ -22,7 +22,7 @@
 
 @import "fonts";
 @import "panes";
-@import "resize";
+//@import "resize"; # this file here is a candidate for deleting, appears we don't use it.
 @import "stackedChart";
 @import "bootstrap-add";
 @import "base";

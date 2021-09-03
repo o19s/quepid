@@ -1,10 +1,140 @@
 # Changelog
 
-## 6.5.1 - ??
+## 6.7.0 - 2021-08-26
+
+### Features
+
+* Elasticsearch fields computed using script query now work!  Back in February @CGamesPlay contributed a PR (https://github.com/o19s/splainer-search/pull/90) to `splainer-search` to support this, and now it automagically works in Quepid! Thanks @DmitryKey for opening https://github.com/o19s/quepid/issues/327 and supporting this feature.  
+
+* Elasticsearch templates can now be used in Quepid!  https://github.com/o19s/quepid/pull/400 by @epugh exposes the underlying `splainer-search` functionality in Quepid. Thanks @danielibars for opening https://github.com/o19s/quepid/issues/274 and supporting this feature.  
+
+* Curious what parameters are being used by Solr to construct the query?  We're now adding a  `echoParams=all` to queries and surfacing them in the _Explain  Query_ modal at the query level in Quepid.  Currently a  Solr only feature.  https://github.com/o19s/quepid/pull/397 by @epugh with inspiration from @mkr.
+
+### Improvements
+
+* Continue cleanup of JavaScript, eliminated last remnants of "unit test" style scorers, and renamed `customScorer` to just `scorer` in front end app.
+
+## 6.6.1 - 2021-08-11
+
+* In testing the Keycloak oAuth integration via the Chorus project, identified that the name of the _Client_ that is passed to Keycloak was tied to the `KEYCLOAK_REALM` env setting.   Changed this to be hardcoded to `quepid` so it can be different then the _Realm_ name (i.e the Realm is _Chorus_ in the Chorus project, and the Client is _quepid_).  Commmit de9e0e645ddb4cb02644680ed8af456a167023dd by @epugh.
+
+## 6.6.0 - 2021-08-09
+
+### Features
+
+* OpenID Support!  Historically you had to create your own account on Quepid, but that is another barrier to entry, and something else to keep track of.  Inspired by the issue _Add OAuth Providers_ by @gregoryduckworth https://github.com/o19s/quepid/issues/188,  https://github.com/o19s/quepid/pull/280 and https://github.com/o19s/quepid/pull/389 by @epugh implements the first two providers, Google and Keycloak.
+
+* Explain Query Parsing!  We often want to know what the search engine is doing to our query.  Now you can click the "Explain Query" popup and see what is happening to your query and the various filter queries.  This works with both Solr and Elasticsearch.   https://twitter.com/dep4b/status/1420480501710827520.   https://github.com/o19s/quepid/pull/391 by @epugh.
+
+* Frequently type `deftype` instead of `defType` in Solr?  I found an old, but broken feature that provided a popup warning on common Solr query syntax errors, which has now been restored.   https://github.com/o19s/quepid/pull/394 by @epugh fixes https://github.com/o19s/quepid/issues/390.
+
+### Improvements
+
+* Quepid is running on Rails 6!  Rails 6 was released ~26 months ago, and represents the future of Rails.  I'm excited that this push initiated by @DmitryKey is going to bring us some great new features like: better developer experience with Webpack for JavaScript, ActionText to handle better text formatting of notes and messages about Cases and Queries, ActionCable which will let us notify all the users of the same case that data has changed when it changes.  https://github.com/o19s/quepid/pull/381 by @DmitryKey with assist from @epugh.
+
+* Make our ActiveRecord modeling for ownership the same.  Teams have an _owner_, Scorers have an _owner_, but Cases have a _user_.  Now we have _case.owner_ relationship.  https://github.com/o19s/quepid/pull/359 by @epugh.
+
+* The nav bar link for Scorers is labeled "Custom Scorers", and takes you to an page called `/advanced`.   Both of the names are rather offputting.   Creating Scorers is a normal common thing to do in Quepid, so lets label it Scorers.  https://github.com/o19s/quepid/pull/392 by @epugh fixes https://github.com/o19s/quepid/issues/351.
+
+* We had, as someone put it "dinosaur" age CSS tags for mozilla and webkit browsers that triggered lots of browser warnings in the console.  https://github.com/o19s/quepid/pull/380 by @epugh cleaned up many of them.   It has also prompted some thinking about migrating to Bootstrap 5 for the non core pages.  If anyone has some CSS skills, please contact @epugh, to help refine the header menu in Bootstrap 5 CSS.  
+
+### Bugs
+
+## 6.5.5 - 2021-06-30
+
+### Features
+
+* You can now tag a field with `translate:`, as in `translate:content` and you will get an icon to pop the text open in a Google Translate in a new browser window.  https://github.com/o19s/quepid/pull/386 by @epugh.
+
+### Improvements
+
+* You can now export fields that have the formatting modifiers `thumb` and `image` using the detail format.  Also improved the handling of the General and Detail export from the Case Listing page.  https://github.com/o19s/quepid/pull/383 by @epugh fixes https://github.com/o19s/quepid/issues/382.  Thanks @DmitryKey for the improvement assist and spotting the Case Listing export issue.
+
+* Admin user can now reset a users password with a new password.  https://github.com/o19s/quepid/pull/385 by @epugh to fix issue identified by @michaelcizmar.  Thanks Michael!
+
+* Trying to communicate about HTTPS better when you set up a case.  https://github.com/o19s/quepid/pull/384 by @epugh inspired by https://github.com/o19s/quepid/issues/279 by @arafalov.
+
+
+
+## 6.5.4 - 2021-06-16
+
+### Features
+
+* You can now Clone an existing Scorer!.  Super useful when you want to start with one of the communal scorers that only go to 10 deep, like P@10, and you want it to be P@40.  Introduced as part of https://github.com/o19s/quepid/pull/379 by @epugh.
+
+### Improvements
+
+* Enable TLS for Redis 6 on Sidekiq on Heroku.  https://github.com/o19s/quepid/pull/370 by @michaelcizmar fixes https://github.com/o19s/quepid/issues/271 by @michaelcizmar.  Thanks Michael for your first PR to Quepid!
+
+* During the Case Wizard setup, allow space delimited list of fields, like `title overview` to be pasted in, just like comma delimited lists.  Thanks @peterdm for the assist on the Regex!   https://github.com/o19s/quepid/pull/378 by @epugh.
+
+* Revamped the layout of the Scorer creation and editing screens to be visually cleaner.  Retired the old _Fibonnaci_ scale, and renamed _Default_ to _Detail_, as well as _Short_ to _Graded_ scales.  Introduced _Binary_ as a new, default scale.   @DmitryKey and @epugh paired on this during Quepid Qommunity Qoding hour, resulting in https://github.com/o19s/quepid/pull/379.
+
+* Shrink production Docker image of Quepid from 2.19GB to 2.17GB by not installing development and test Gems.   Commit 426d2677f6c4a8380971ddc1b0faa42a53a48879 by @epugh.
+
+### Bugs
+
+* Preserve the chosen scorer when cloning a case, we were defaulting to the users default scorer.  https://github.com/o19s/quepid/pull/372 by @epugh fixes https://github.com/o19s/quepid/issues/273.  Thanks @binarymax and @nathancday for spotting this!
+
+* Ensure that CSV export always has all the columns expected.   Queries that aren't fully rated and have blank values didn't put out complete set of _,_ separators.  https://github.com/o19s/quepid/pull/371 by @epugh fixes https://github.com/o19s/quepid/issues/364 by @sstults.  Spotted while working with Quaerite.
+
+* If you don't have a Terms & Conditions url, then your users don't have an `agreed_time`, so the activity pulse chart in the admin errors out.  https://github.com/o19s/quepid/pull/373 by @epugh sorts this out.
+
+* In the dawn of Quepid, we had `agreed_time` but not a boolean `agreed`.  A user let me know he couldn't update his email address (from an account in 2015!) because he didn't have `agreed=true` set.  https://github.com/o19s/quepid/pull/374 by @epugh cleans up some old user data.
+
+* Fixed the labeling behavior for a Scorer.  @DmitryKey and @epugh paired on this during Quepid Qommunity Qoding hour, resulting in https://github.com/o19s/quepid/pull/379, fixing https://github.com/o19s/quepid/issues/376.
+
+
+## 6.5.3 - 2021-06-01
+
+### Bugs
+
+* In 6.5.2 we introduced the `image:image_path` to show larger images, however there is odd wrapping if you don't have many fields listed for a doc.  https://github.com/o19s/quepid/pull/365 by @epugh fixes this.
+
+* If you didn't have email set up, then sending invites wouldn't work.  https://github.com/o19s/quepid/pull/369 by @epugh adds better handling for when email hasn't been set up for Quepid.
+
+## 6.5.2 - 2021-05-27
+
+### Improvements
+
+* We have a new Favicon, but didn't use it everywhere, so https://github.com/o19s/quepid/pull/363 by @epugh displays the new favicon everywhere.
+
+### Features
+
+* Rating documents where the image carries most of the information?   The existing `thumbnail:image_path` limits you to a 75 pixel wide image.  We now have `image:image_path` which displays a 200 pixel wide image.   This is an alternative to the `media:image_path` approach, as this shows up next to your fields versus inline with your fields.  https://github.com/o19s/quepid/pull/362 by @epugh fixes https://github.com/o19s/quepid/issues/360.
+
+
+## 6.5.1 - 2021-05-25
+
+### Bugs
+
+* Now that we've had the team invitations feature out for a while, we've found places where we make assumptions that aren't correct.  This fixes the Admin panel's user page, and makes on the Teams page the messaging around pending invites.  https://github.com/o19s/quepid/pull/339 by @epugh.
+
+* We discovered that nDCG@10 score for products with a hitCount below 10 (K) was always 0.  https://github.com/o19s/quepid/pull/336 by @rudibatt fixes this.  Thanks @rudibatt for this contribution!
+
+* Passing in quote delimited parameters to `bin/docker r` wasn't preserving or quotes or escaping the spaces, causing the `thor user:create foo@example.com "Eric Pugh" "mysuperstrongpassword"` example to fail.  https://github.com/o19s/quepid/pull/340 by @epugh fixes https://github.com/o19s/quepid/issues/338.
+
+* Thanks to Liz Novak at VIN for discovering that a non lowercase email address like `person@EXAMPLE.org` wouldn't be considered a valid email address, so you couldn't send a invite to join Quepid.  https://github.com/o19s/quepid/issues/342 fixed by https://github.com/o19s/quepid/pull/346 by @epugh with assist from @eribeiro.
 
 ### Improvements
 
 * Uglifier for JavaScript appears to not work with ES6, and so using [Terser](https://github.com/ahorek/terser-ruby) instead.  https://github.com/o19s/quepid/pull/329 by @epugh fixes this.
+
+* Add to the Team page the ability to copy the team invitation url to send via other means then Quepid's own email setup.  This is helpful if you don't have email set up, or if you want to share invites with team members via chat tools like Slack.  Also fixed the user flow of registering after someone has sent out an invite for someone.  https://github.com/o19s/quepid/pull/337 by @epugh fixes https://github.com/o19s/quepid/issues/335 and https://github.com/o19s/quepid/issues/326.
+
+* We've added linting for our Dockerfiles via Deepsource.io.   https://github.com/o19s/quepid/pull/343 by @epugh fixes https://github.com/o19s/quepid/issues/341.
+
+* Our Docker images are getting bloated by including log files from dev and test, leading to almost a 3 GB image.   Adding a `.dockerignore` has got us back to around 2.1 GB image.  https://github.com/o19s/quepid/pull/358 by @epugh fixes https://github.com/o19s/quepid/issues/353.
+
+* Remove the remnants of the query test (unit test style custom scorers) and the default scorer table that are still in the source code.  https://github.com/o19s/quepid/pull/357 by @epugh fixes https://github.com/o19s/quepid/issues/349.
+
+* Sometimes you want to create a Case even when you can't validate the connection.  Introduce a option to bypass the validation.  https://github.com/o19s/quepid/pull/356 by @epugh.
+
+* When we export basic rating data there is an extra LF character at the end of the CSV file.   This was causing issues when importing ratings into the Quaerite project (https://github.com/tballison/quaerite/issues/14).   https://github.com/o19s/quepid/pull/355 by @epugh with assist from @sstults fixes https://github.com/o19s/quepid/issues/354 by @sstults.
+
+* Quepid 6.5.0 started failing on Kubernetes clusters due to the need to be able to write to the filesystem.  Bootsnap dependency upgrade avoids this.  https://github.com/o19s/quepid/pull/344 by @epugh.  Thanks to @LiuCao0614 and @tonomonic for the assist on this.
+
+* Revamp of how all the permissions for doing actions related to Teams, Scorers, and Cases to use the Permissions data we aleady have for a user.  Lots of cleanups on those functions.  Finally dealt with the left over need to have a Case per User, or the UI blew up.  Now you get a nice message, and the UI doesn't blow up.   https://github.com/o19s/quepid/pull/347 by @epugh fixes https://github.com/o19s/quepid/issues/352, https://github.com/o19s/quepid/issues/331, https://github.com/o19s/quepid/issues/278.
 
 ## 6.5.0 - 2021-04-22
 

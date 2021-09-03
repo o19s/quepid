@@ -30,10 +30,13 @@ Style/RedundantAssignment:
   Enabled: false # legacy stuff
 
 Style/EmptyMethod:
-  Enabled: false   
+  Enabled: false
 
 Lint/MissingSuper:
   Enabled: false # legacy stuff
+
+Style/GuardClause:
+  Enabled: false # I don't like this one, so ignore it!
 
 
 

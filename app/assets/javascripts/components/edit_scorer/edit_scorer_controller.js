@@ -9,14 +9,14 @@ angular.module('QuepidApp')
     '$scope',
     '$rootScope',
     'flash',
-    'customScorerSvc',
+    'scorerSvc',
     function (
       $uibModal,
       $log,
       $scope,
       $rootScope,
       flash,
-      customScorerSvc
+      scorerSvc
     ) {
       var ctrl       = this;
       ctrl.lastSaved = angular.copy($scope.scorer);
@@ -28,12 +28,24 @@ angular.module('QuepidApp')
         $log.info('INFO: Opened modal to edit scorer!');
         if ( ctrl.lastSaved.communal && !$rootScope.currentUser.permissions.scorer.update_communal ) {
           var deniedModalInstance = $uibModal.open({
-            templateUrl:  'edit_scorer/_denied_modal.html',
+            templateUrl:  'edit_scorer/_denied_communal_modal.html',
             controller:   'DeniedEditScorerModalInstanceCtrl',
             controllerAs: 'ctrl'
           });
 
           deniedModalInstance.result.then(
+            function() { },
+            function() { }
+          );
+        }
+        else if ( !ctrl.lastSaved.communal && !$rootScope.currentUser.permissions.scorer.update ) {
+          var deniedModalInstance2 = $uibModal.open({
+            templateUrl:  'edit_scorer/_denied_modal.html',
+            controller:   'DeniedEditScorerModalInstanceCtrl',
+            controllerAs: 'ctrl'
+          });
+
+          deniedModalInstance2.result.then(
             function() { },
             function() { }
           );
@@ -51,7 +63,7 @@ angular.module('QuepidApp')
 
           modalInstance.result.then(
             function(data) {
-              customScorerSvc.edit(data)
+              scorerSvc.edit(data)
                 .then(function() {
                   flash.success = 'Scorer updated successfully';
 

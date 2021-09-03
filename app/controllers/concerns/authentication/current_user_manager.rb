@@ -43,7 +43,7 @@ module Authentication
     end
 
     def require_login
-      redirect_to secure_path unless @current_user
+      redirect_to new_session_path unless @current_user
     end
 
     def auto_login user

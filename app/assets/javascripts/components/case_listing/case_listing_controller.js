@@ -4,11 +4,15 @@
 
 angular.module('QuepidApp')
   .controller('CaseListingCtrl', [
+    '$rootScope',
     '$scope',
+    'flash',
     'caseTryNavSvc',
     'caseSvc',
     function (
+      $rootScope,
       $scope,
+      flash,
       caseTryNavSvc,
       caseSvc
     ) {
@@ -26,8 +30,21 @@ angular.module('QuepidApp')
       ctrl.rename     = rename;
       ctrl.submit     = submit;
 
+      ctrl.canUpdate = false;
+
+      $rootScope.$watch('currentUser', function() {
+        if ( $rootScope.currentUser ) {
+          ctrl.canUpdate = $rootScope.currentUser.permissions.case.update;
+        }
+      });
+
       function rename() {
-        ctrl.clickToEdit.clicked = true;
+        if (ctrl.canUpdate) {
+          ctrl.clickToEdit.clicked = true;
+        }
+        else {
+          flash.error = 'You do not have update permissions for cases.';
+        }
       }
 
       function cancel() {

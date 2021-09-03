@@ -7,13 +7,13 @@ angular.module('QuepidApp')
     '$scope', '$routeParams', '$location', '$rootScope', '$log',
     'flash',
     'caseSvc', 'settingsSvc', 'querySnapshotSvc', 'caseTryNavSvc',
-    'queryViewSvc', 'queriesSvc', 'docCacheSvc', 'diffResultsSvc', 'customScorerSvc',
+    'queryViewSvc', 'queriesSvc', 'docCacheSvc', 'diffResultsSvc', 'scorerSvc',
     'paneSvc',
     function (
       $scope, $routeParams, $location, $rootScope, $log,
       flash,
       caseSvc, settingsSvc, querySnapshotSvc, caseTryNavSvc,
-      queryViewSvc, queriesSvc, docCacheSvc, diffResultsSvc, customScorerSvc,
+      queryViewSvc, queriesSvc, docCacheSvc, diffResultsSvc, scorerSvc,
       paneSvc
     ) {
       $log.debug('NEW MAIN CTRL');
@@ -75,7 +75,7 @@ angular.module('QuepidApp')
           if ( caseChanged() ) {
             queryViewSvc.reset();
             docCacheSvc.empty();
-            customScorerSvc.bootstrap(caseNo);
+            scorerSvc.bootstrap(caseNo);
           }
           diffResultsSvc.setDiffSetting(null);
           docCacheSvc.invalidate();
@@ -123,25 +123,32 @@ angular.module('QuepidApp')
         tryNo:        tryNo
       });
 
-      queriesSvc.querySearchPromiseReset();
+      // While not perfect, at least the site doesn't blow up if you don't
+      // have any cases.
+      if ( caseNo === 0 ) {
+        flash.error = 'You don\'t have any Cases created in Quepid.  Click \'Create a Case\' from the Relevancy Cases dropdown to get started.';
+      }
+      if ( caseNo > 0 ) {
+        queriesSvc.querySearchPromiseReset();
 
-      bootstrapCase()
-        .then(function() {
-          loadQueries();
-          loadSnapshots();
-          updateCaseMetadata();
-          paneSvc.refreshElements();
-        });
+        bootstrapCase()
+          .then(function() {
+            loadQueries();
+            loadSnapshots();
+            updateCaseMetadata();
+            paneSvc.refreshElements();
+          });
 
-      // Sets up the panes stuff only when needed
-      // Makes sure state is persisted even after reload.
-      // This is used when the user hits "Rerun My Searches!" and wants to
-      // continue tweaking the settings, it would keep the pane open.
-      $rootScope.devSettings = $rootScope.devSettings || false;
+        // Sets up the panes stuff only when needed
+        // Makes sure state is persisted even after reload.
+        // This is used when the user hits "Rerun My Searches!" and wants to
+        // continue tweaking the settings, it would keep the pane open.
+        $rootScope.devSettings = $rootScope.devSettings || false;
 
-      $scope.toggleDevSettings = function() {
-        $rootScope.devSettings = !$rootScope.devSettings;
-        $(document).trigger('toggleEast');
-      };
+        $scope.toggleDevSettings = function() {
+          $rootScope.devSettings = !$rootScope.devSettings;
+          $(document).trigger('toggleEast');
+        };
+      }
     }
   ]);

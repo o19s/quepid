@@ -81,6 +81,71 @@ module Api
             assert_equal csv[1]['query'],                               the_case.queries[0].query_text
             assert_equal csv[1]['rating'],                              the_case.queries[0].ratings[0].rating.to_s
           end
+
+          test 'returns case w/ queries but no ratings in explicit csv compatible format' do
+            the_case.queries[0].ratings.destroy
+            get :show, params: { case_id: the_case.id, format: :csv, file_format: 'basic' }
+            assert_response :ok
+
+            expected_csv = "query,docid,rating\n"\
+                           "two,,\n"\
+                           "one,,\n"
+            assert_equal response.body, expected_csv
+
+            csv = CSV.parse(response.body, headers: true)
+            assert_nil csv[0]['rating']
+            assert_equal csv[0]['query'], the_case.queries[0].query_text
+          end
+
+          test 'CSV response should not have a trailing line feed' do
+            # See https://github.com/o19s/quepid/issues/354
+            lines_expected = the_case.queries.count + 1 # include csv header line!
+
+            get :show, params: { case_id: the_case.id, format: :csv, file_format: 'basic' }
+
+            raw_text = response.body
+            assert_equal lines_expected, raw_text.lines.size
+          end
+
+          test 'adds space when cell begins with =' do
+            assert_equal ' =abc', @controller.make_csv_safe('=abc')
+          end
+
+          test 'adds space when cell begins with +' do
+            assert_equal ' +abc', @controller.make_csv_safe('+abc')
+          end
+
+          test 'adds space when cell begins with -' do
+            assert_equal ' -abc', @controller.make_csv_safe('-abc')
+          end
+
+          test 'adds space when cell begins with @' do
+            assert_equal ' @abc', @controller.make_csv_safe('@abc')
+          end
+
+          test 'other strings unchanged' do
+            assert_equal 'ab=@c', @controller.make_csv_safe('ab=@c')
+          end
+        end
+
+        describe 'Exporting a snapshot of a case in basic csv format' do
+          let(:the_user)      { users(:random) }
+          let(:the_case)      { cases(:snapshot_case) }
+          let(:the_snapshot)  { snapshots(:a_snapshot) }
+
+          test 'CSV response doesnt have a trailing line feed' do
+            # See https://github.com/o19s/quepid/issues/354
+            lines_expected = the_snapshot.snapshot_queries.map do |sq|
+              sq.snapshot_docs.count
+            end.sum + 1 # include csv header line!
+            login_user the_user
+            get :show,
+                params: { case_id: the_case.id, snapshot_id: the_snapshot.id, format: :csv,
+file_format: 'basic_snapshot' }
+
+            raw_text = response.body
+            assert_equal lines_expected, raw_text.lines.size
+          end
         end
 
         describe 'Exporting a case in LTR text format' do
@@ -103,7 +168,7 @@ module Api
             # rubocop:enable  Lint/UselessAssignment
             # rubocop:enable  Layout/LineLength
 
-            assert_equal response.content_type, 'text/plain'
+            assert_equal response.content_type, 'text/plain; charset=utf-8'
           end
         end
       end

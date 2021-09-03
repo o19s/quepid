@@ -3,23 +3,23 @@
 describe('Service: ScorerFactory', function () {
 
   beforeEach(module('QuepidTest'));
-  var $rootScope, $q, $timeout, customScorerSvc, scorer;
+  var $rootScope, $q, $timeout, scorerSvc, scorer;
 
-  beforeEach(inject(function(_$rootScope_, _$q_, _$timeout_, _customScorerSvc_) {
+  beforeEach(inject(function(_$rootScope_, _$q_, _$timeout_, _scorerSvc_) {
     $q              = _$q_;
     $rootScope      = _$rootScope_;
     $timeout        = _$timeout_;
-    customScorerSvc = _customScorerSvc_;
+    scorerSvc = _scorerSvc_;
 
     var mockScorer = {
       'scorerId': 1,
       'name':     'Scorer 1',
-      'code':     customScorerSvc.defaultAlgorithm,
+      'code':     scorerSvc.defaultAlgorithm,
       'scale':    [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
       'owner_id': 1
     };
 
-    scorer = customScorerSvc.constructFromData(mockScorer);
+    scorer = scorerSvc.constructFromData(mockScorer);
   }));
 
   // mock querydocs
@@ -635,10 +635,10 @@ describe('Service: ScorerFactory', function () {
       var scaleWithLabels = scorer.scaleToScaleWithLabels(scale);
 
       expect(scaleWithLabels).not.toBe(null);
-      expect(scaleWithLabels[1]).toEqual('');
-      expect(scaleWithLabels[2]).toEqual('');
-      expect(scaleWithLabels[3]).toEqual('');
-      expect(scaleWithLabels[4]).toEqual('');
+      expect(scaleWithLabels[1]).toEqual(undefined);
+      expect(scaleWithLabels[2]).toEqual(undefined);
+      expect(scaleWithLabels[3]).toEqual(undefined);
+      expect(scaleWithLabels[4]).toEqual(undefined);
     });
 
     it('does not override existing labels', function() {
@@ -648,9 +648,9 @@ describe('Service: ScorerFactory', function () {
 
       expect(scaleWithLabels).not.toBe(null);
       expect(scaleWithLabels[1]).toEqual('first');
-      expect(scaleWithLabels[2]).toEqual('');
-      expect(scaleWithLabels[3]).toEqual('');
-      expect(scaleWithLabels[4]).toEqual('');
+      expect(scaleWithLabels[2]).toEqual(undefined);
+      expect(scaleWithLabels[3]).toEqual(undefined);
+      expect(scaleWithLabels[4]).toEqual(undefined);
     });
   });
 });

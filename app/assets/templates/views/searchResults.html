@@ -8,7 +8,6 @@
       diff-label="''"
       full-diff-name="''"
       max-score="maxScore || 100";
-      ng-click="pickUnitTestScorer()"
       scorable="query"
       score-label="''"
       score-type="'query'"
@@ -78,6 +77,7 @@
 
       <div class="btn-group">
         <!--button class="btn btn-default btn-sm" ng-class="{true: 'active', false: ''}[displayed.results == displayed.resultsView.results]" ng-click="displayed.results = displayed.resultsView.results">Current Top 10</button-->
+        <query-explain query="query"></query-explain>
         <button ng-controller="TargetedSearchCtrl" class="btn btn-default btn-sm" ng-class="{true: 'active', false: ''}[displayed.results == displayed.resultsView.finder]" ng-click="targetedSearch.triggerModal()">Explain Missing Documents</button>
       </div>
 

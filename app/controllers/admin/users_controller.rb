@@ -24,7 +24,15 @@ module Admin
 
     # GET /admin/users/1
     # GET /admin/users/1.json
-    def show; end
+    def show
+      # Figure out which date to use in the pulse charts to mark the beginning of the users account with Quepid
+      @pulse_chart_start_date = if @user.terms_and_conditions? && @user.agreed_time.present?
+                                  @user.agreed_time
+                                else
+                                  @user.created_at
+                                end
+      @pulse_chart_start_date = @pulse_chart_start_date.strftime('%Y-%m-%d')
+    end
 
     # GET /admin/users/1/edit
     def edit; end
@@ -62,11 +70,13 @@ module Admin
       @user = User.find(params[:id])
     end
 
-    # Never trust parameters from the scary internet, only allow the white list through.
+    # Never trust parameters from the scary internet, only allow the permitted list through.
     def user_params
       params.require(:user).permit(
         :administrator,
-        :email
+        :email,
+        :password,
+        :password_confirmation
       )
     end
   end

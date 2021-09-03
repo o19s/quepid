@@ -1,8 +1,6 @@
 # frozen_string_literal: true
 
 class AccountsController < ApplicationController
-  force_ssl if: :ssl_enabled?
-
   # rubocop:disable Metrics/MethodLength
   def update
     @user = current_user
@@ -41,7 +39,7 @@ class AccountsController < ApplicationController
 
     respond_to do |format|
       if @user.destroy
-        format.html { redirect_to secure_url, notice: 'Account was deleted' }
+        format.html { redirect_to sessions_path, notice: 'Account was deleted' }
         format.json { head :no_content }
       else
         format.html { render 'profiles/show' }

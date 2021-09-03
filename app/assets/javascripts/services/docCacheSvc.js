@@ -3,8 +3,13 @@
 angular.module('QuepidApp')
   .service('docCacheSvc', [
     '$q',
+    '$log',
     'docResolverSvc',
-    function docCacheSvc($q, docResolverSvc) {
+    function docCacheSvc(
+      $q,
+      $log,
+      docResolverSvc
+    ) {
       var docCache = {};
 
       this.addIds = function(moreIds) {
@@ -57,11 +62,11 @@ angular.module('QuepidApp')
                 docCache[doc.id] = doc;
               });
             }, function(response) {
-              console.log('Error fetching Docs in docCacheSvc: ', response);
+              $log.info('Error fetching Docs in docCacheSvc: ', response);
               return response;
             })
             .catch(function(response) {
-              console.log('Got an error from docCacheSvc: ', response);
+              $log.info('Got an error from docCacheSvc: ', response);
               return response;
             });
         } else {

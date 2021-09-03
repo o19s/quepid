@@ -78,9 +78,9 @@ class RatingsImporterTest < ActiveSupport::TestCase
 
     test 'converts strings to symbols' do
       ratings = [
-        { 'query_text': 'Mexican Food',   'doc_id': ' 920784-021190', 'rating': ' 5' },
-        { 'query_text': 'Mexican Food',   'doc_id': ' 943075-031090', 'rating': ' 6' },
-        { 'query_text': 'Indian Food ',   'doc_id': '948785-005680',  'rating': ' 2' }
+        { query_text: 'Mexican Food',   doc_id: ' 920784-021190', rating: ' 5' },
+        { query_text: 'Mexican Food',   doc_id: ' 943075-031090', rating: ' 6' },
+        { query_text: 'Indian Food ',   doc_id: '948785-005680',  rating: ' 2' }
       ]
 
       ratings_importer = RatingsImporter.new owned_case, ratings, options

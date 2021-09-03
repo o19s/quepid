@@ -11,13 +11,16 @@
     var Scorer = function(data) {
       var self = this;
       var defaultAlgorithm = [
-        '// Gets the average score over a scale of 100',
-        '// (assumes query rating on a scale of 1-10)',
-        'var score = avgRating100(10);',
-        'if (score !== null) {',
-        '  // Adds a distance penalty to the score',
-        '  score -= editDistanceFromBest(10);',
-        '}',
+        '// This is the AP@10 formula as an example',
+        'var k = 10; // @Rank',
+        'total = 0;',
+        '// if less than K results, need to reduce K now or final score is too low',
+        'k = numReturned() < k ? numReturned() : k',
+        '',
+        'eachDoc(function(doc, i) {',
+        '  total += avgRating(i+1)',
+        '}, k);',
+        'var score = total / k;',
         'setScore(score);',
       ].join('\n');
 
@@ -30,12 +33,8 @@
       }
 
       if ( angular.isUndefined(data.scale) ) {
-        data.scale = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10'];
+        data.scale = ['0', '1'];
         data.scaleWithLabels = scaleToScaleWithLabels(data.scale, null);
-      }
-
-      if ( angular.isUndefined(data.queryTest) ) {
-        data.queryTest = false;
       }
 
       // Attributes
@@ -49,8 +48,8 @@
       self.name                   = data.name;
       self.owned                  = data.owned;
       self.ownerId                = data.owner_id;
+      self.ownerName              = data.owner_name;
       self.queryId                = data.queryId;
-      self.queryTest              = data.queryTest;
       self.scale                  = data.scale;
       self.scaleWithLabels        = data.scaleWithLabels;
       self.scorerId               = data.scorerId;
@@ -130,9 +129,9 @@
         return colorMap;
       }
 
-      function scaleToScaleWithLabels(scale, labels) {
-        if ( angular.isUndefined(labels) || labels === null ) {
-          labels = {};
+      function scaleToScaleWithLabels(scale, scaleWithLabels) {
+        if ( angular.isUndefined(scaleWithLabels) || scaleWithLabels === null ) {
+          scaleWithLabels = {};
         }
 
         if ( angular.isString(scale) ) {
@@ -140,12 +139,12 @@
         }
 
         angular.forEach(scale, function(value) {
-          if ( angular.isUndefined(labels[value]) || labels[value] === null ) {
-            labels[value] = '';
+          if ( value.length >= 1 && (angular.isUndefined(scaleWithLabels[value]) || scaleWithLabels[value] === null) ) {
+            scaleWithLabels[value] = '';
           }
         });
 
-        return labels;
+        return scaleWithLabels;
       }
 
       function setDisplayName(name, communal) {
