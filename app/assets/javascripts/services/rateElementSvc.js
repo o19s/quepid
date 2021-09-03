@@ -4,25 +4,9 @@ angular.module('QuepidApp')
   .service('rateElementSvc', [
     function rateElementSvc() {
       var setScale = function(src, dst) {
-
         if (!angular.isUndefined(src.query)) {
           var scorer = src.query.effectiveScorer();
-          if (angular.isUndefined(scorer) || scorer === null || scorer.scorerId === 'default') {
-            dst.scale  = {
-              '1':  '#c51800',
-              '2':  '#e61f00',
-              '3':  '#fe2400',
-              '4':  '#fe5b00',
-              '5':  '#ffad00',
-              '6':  '#ffd600',
-              '7':  '#bfd200',
-              '8':  '#00c700',
-              '9':  '#00af00',
-              '10': '#008900'
-            };
-          } else {
-            dst.scale = scorer.getColors();
-          }
+          dst.scale = scorer.getColors();
         }
       };
 
