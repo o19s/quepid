@@ -66,6 +66,17 @@
             </li>
 
             <li>
+               <a ng-class="{active: sort == 'modified'}" ng-click="sortBy('modified')">
+                 Modified
+                 <span ng-show="sortName == 'modified'"
+                       class="glyphicon"
+                       ng-class="reverse ? 'glyphicon-arrow-up' : 'glyphicon-arrow-down'"
+                       aria-hidden="true">
+                 </span>
+               </a>
+             </li>
+
+            <li>
               <a ng-class="{active: sort == 'lastScore'}" ng-click="sortBy('score')">
                 Score
                 <span ng-show="sortName == 'score'"

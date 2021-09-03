@@ -37,9 +37,11 @@ angular.module('QuepidApp')
         function(ratingNo, extra) {
           var newRating = parseInt(ratingNo, 10);
           extra.doc.rate(newRating);
+          extra.query.touchModifiedAt();
         },
         function(extra) {
           extra.doc.resetRating();
+          extra.query.touchModifiedAt();
         },
         src
       );

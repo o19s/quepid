@@ -110,6 +110,7 @@ angular.module('QuepidApp')
           if ( ids.length > 0 ) {
             docs[0].rateBulk(ids, newRating);
           }
+          extra.query.touchModifiedAt();
         },
         function(extra) {
           extra.query.rating = '-';
@@ -123,6 +124,7 @@ angular.module('QuepidApp')
           if ( ids.length > 0 ) {
             docs[0].resetBulkRatings(ids);
           }
+          extra.query.touchModifiedAt();
         },
         src
       );
