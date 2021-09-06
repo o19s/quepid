@@ -43,18 +43,6 @@
             </li>
 
             <li>
-              <a ng-class="{active: sort == 'modified'}" ng-click="sortBy('modified')">
-                Modified
-                <span ng-show="sortName == 'modified'"
-                      class="glyphicon"
-                      ng-class="reverse ? 'glyphicon-arrow-up' : 'glyphicon-arrow-down'"
-                      aria-hidden="true">
-                </span>
-              </a>
-            </li>
-
-
-            <li>
               <a ng-class="{active: sort == 'queryText'}" ng-click="sortBy('query')">
                 Name
                 <span ng-show="sortName == 'query'"
