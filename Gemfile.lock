@@ -295,6 +295,9 @@ GEM
       activesupport (>= 4.2)
       choice (~> 0.2.0)
       ruby-graphviz (~> 1.2)
+    rails-healthcheck (1.4.0)
+      actionpack
+      railties
     rails-html-sanitizer (1.4.2)
       loofah (~> 2.3)
     railties (6.1.4.1)
@@ -432,6 +435,7 @@ DEPENDENCIES
   rails (= 6.1.4.1)
   rails-controller-testing
   rails-erd (~> 1.6)
+  rails-healthcheck (~> 1.4)
   redis (~> 4.0)
   responders
   rubocop
