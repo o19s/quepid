@@ -273,7 +273,7 @@ describe('Service: ScorerFactory', function () {
 
       checkExpectation(521, docs, bestDocs, 100);
 
-      var docs = makeDocs([
+      docs = makeDocs([
         {rating: 10},
         {rating: 10},
         {rating: 10},
@@ -376,7 +376,7 @@ describe('Service: ScorerFactory', function () {
       scorer.code = 'assert(hasDocRating(1)); pass()';
       checkExpectation(100, docs, bestDocs, 0);
 
-      var docs = makeDocs([
+      docs = makeDocs([
         {rating: 10,  doc: {'title': 'boo'}},
         {rating: 9,   doc: {'title': 'boo'}},
         {rating: 8,   doc: {'title': 'boo'}},
@@ -390,7 +390,7 @@ describe('Service: ScorerFactory', function () {
         {rating: 0,   doc: {'title': 'boo'}},
       ]);
 
-      var bestDocs = [{rating: 10}, {rating: 9}, {rating: 9},
+      bestDocs = [{rating: 10}, {rating: 9}, {rating: 9},
                       {rating: 8}, {rating: 8}, {rating: 7},
                       {rating: 7}, {rating: 7}, {rating: 6}];
 
