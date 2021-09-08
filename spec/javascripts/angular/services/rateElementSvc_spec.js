@@ -133,7 +133,7 @@ describe('Service: rateElementSvc', function () {
       "ratings": { }
     };
 
-    let mockExtra = { };
+    const mockExtra = { };
 
     var mockRateCallback = function(rating, extra) {
       extra.gotRated = rating;
