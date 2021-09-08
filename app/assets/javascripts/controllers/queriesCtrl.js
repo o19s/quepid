@@ -350,6 +350,11 @@ angular.module('QuepidApp')
               $scope.sortName = 'default';
               $scope.queries.sortableOptions.disabled = false;
               break;
+            case 'modified':
+              $scope.sort = '-modifiedAt';
+              $scope.sortName = 'modified';
+              $scope.queries.sortableOptions.disabled = true;
+              break;
             case 'query':
               $scope.sort = 'queryText';
               $scope.sortName = 'query';

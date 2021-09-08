@@ -25,3 +25,7 @@ exclude_patterns = [
   "public/javascripts/ace/*.js",
 ]
 
+test_patterns = [
+  "tests/**",
+  "spec/**"
+]

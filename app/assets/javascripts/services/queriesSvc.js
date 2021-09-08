@@ -177,6 +177,11 @@ angular.module('QuepidApp')
         self.numFound       = 0;
         self.options        = {};
         self.notes          = queryWithRatings.notes;
+        self.modifiedAt      = queryWithRatings.modified_at;
+
+        self.ratingVariance   = queryWithRatings.rating_variance;
+
+        self.modified = queryWithRatings.updated_at;
 
 
         // Threshold properties
@@ -214,6 +219,12 @@ angular.module('QuepidApp')
           svcVersion++;
         };
 
+        // Reflect updates to query or ratings that happen in
+        // client side.
+        this.touchModifiedAt = function() {
+          this.modifiedAt = new Date().toISOString();
+        };
+        
         this.persisted = function() {
           return (this.queryId && this.queryId >= 0);
         };
