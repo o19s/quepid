@@ -133,7 +133,7 @@ describe('Service: rateElementSvc', function () {
       "ratings": { }
     };
 
-    var extra = { };
+    var mockExtra = { };
 
     var mockRateCallback = function(rating, extra) {
       extra.gotRated = rating;
@@ -146,7 +146,7 @@ describe('Service: rateElementSvc', function () {
       rateElementSvc  = _rateElementSvc_;
 
       rateElementSvc.handleRatingScale(
-        mockScope.ratings, mockRateCallback, mockResetCallback, extra
+        mockScope.ratings, mockRateCallback, mockResetCallback, mockExtra
       );
     }));
 
@@ -175,8 +175,8 @@ describe('Service: rateElementSvc', function () {
       expect(mockScope.ratings.ratingsOn).toBeDefined();
       expect(mockScope.ratings.ratingsOn).toEqual(false);
 
-      expect(extra.gotRated).toBeDefined();
-      expect(extra.gotRated).toEqual(1);
+      expect(mockExtra.gotRated).toBeDefined();
+      expect(mockExtra.gotRated).toEqual(1);
     });
 
     it('resets rate of an element and calls the callback function', function() {
@@ -185,8 +185,8 @@ describe('Service: rateElementSvc', function () {
       expect(mockScope.ratings.ratingsOn).toBeDefined();
       expect(mockScope.ratings.ratingsOn).toEqual(false);
 
-      expect(extra.gotRated).toBeDefined();
-      expect(extra.gotRated).toEqual(null);
+      expect(mockExtra.gotRated).toBeDefined();
+      expect(mockExtra.gotRated).toEqual(null);
     });
   });
 });
