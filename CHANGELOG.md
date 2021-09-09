@@ -1,5 +1,14 @@
 # Changelog
 
+## 6.8.0 - ??
+
+### Features
+
+* Deploying Quepid in a cloud native way requires having a *healthcheck* end point to confirm Quepid is available and happy.  https://github.com/o19s/quepid/pull/404 by @epugh fixes https://github.com/o19s/quepid/pull/404 by @mkr.   Thanks to @xaviersanchez for the inspiration to do this.
+
+* Now sort queries by most recently modified.  https://github.com/o19s/quepid/pull/334 by @DmitryKey and @epugh fixes https://github.com/o19s/quepid/issues/307.
+  
+
 ## 6.7.0 - 2021-08-26
 
 ### Features
