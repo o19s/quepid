@@ -5,9 +5,9 @@ This document explains how Quepid can be operated and configured.
 # Table of Contents
 
 - [Mail](#mail)
-  - [I. Postmark](#postmark)
-  - [II. SMTP](#smtp)
+- [OAuth](#OAuth)
 - [Legal Pages & GDPR](#legal-pages-&-gdpr)
+- [Heathcheck Endpoint](#healthcheck)
 
 # Mail
 
