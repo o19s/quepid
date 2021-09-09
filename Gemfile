@@ -71,3 +71,5 @@ gem 'omniauth-keycloak', '~> 1.3'
 gem 'omniauth-rails_csrf_protection', '~> 1.0'
 
 gem 'omniauth-google-oauth2', '~> 1.0'
+
+gem 'rails-healthcheck', '~> 1.4'
