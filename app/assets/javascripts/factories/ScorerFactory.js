@@ -251,7 +251,8 @@
       }
 
       // return the ratings as an array from the top-N (count) documents stored in Quepid for a query
-      // works globally, not restricted to just search engine results, could be from 'Explain missing'
+      // works globally, not restricted to just search engine results, could be ratings generated via
+      // the 'Missing Documents' modal UI.
       function getBestRatings(count, bestDocs) {
         var bestDocsRatings = bestDocs.slice(0, count).map(function(x) {return x.rating;});
 
