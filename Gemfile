@@ -39,6 +39,7 @@ gem 'rack-cors', '~> 1.1'
 gem 'foreman'
 gem 'racc', '~> 1.4.0'
 gem 'ancestry'
+gem 'font_awesome5_rails'
 
 group :development, :test do
   gem 'annotate'

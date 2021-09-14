@@ -1,0 +1,13 @@
+/*
+ * This is a manifest file that'll be compiled into admin.css, which will include all the files
+ * listed below.
+ *
+ *= require font_awesome5_webfont
+ *= require bootstrap
+ *= require cal-heatmap
+ *
+ *= require fonts
+ *= require bootstrap-add
+ *
+ *= require admin2
+ */
