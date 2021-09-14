@@ -3,13 +3,11 @@
  * listed below.
  *
  *= require font_awesome5_webfont
+ *= require bootstrap
+ *= require cookies_eu
+ *
+ *= require fonts
+ *= require bootstrap-add
+ *
+ *= require signup
  */
-
-@import "style";
-@import "bootstrap";
-
-@import "cookies_eu";
-
-@import "fonts";
-@import "signup";
-@import "bootstrap-add";
