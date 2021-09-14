@@ -40,8 +40,6 @@ RUN bundle install --without development test && \
 COPY --from=build-dep /srv/app/node_modules ./node_modules/
 COPY . .
 
-RUN mkdir -p tmp/pids
-
 RUN RAILS_ENV=production SECRET_KEY_BASE=fake_out_devise bundle exec rake assets:precompile
 
 # Remove some files not needed in resulting image
