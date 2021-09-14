@@ -74,3 +74,5 @@ gem 'omniauth-google-oauth2', '~> 1.0'
 gem 'rails-healthcheck', '~> 1.4'
 
 gem "font_awesome5_rails", "= 1.5.0"
+
+gem "sassc", "~> 2.4"

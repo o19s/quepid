@@ -441,6 +441,7 @@ DEPENDENCIES
   responders
   rubocop
   rubocop-rails
+  sassc (~> 2.4)
   sassc-rails (~> 2.1)
   sidekiq
   simplecov
