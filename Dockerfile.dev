@@ -29,9 +29,6 @@ RUN curl -sL https://deb.nodesource.com/setup_15.x | bash -
 RUN apt-get update -qq && apt-get install -y --no-install-recommends nodejs yarn netcat \
   && rm -rf /var/lib/apt/lists/*
 
-COPY . /srv/app/
-
-RUN mkdir -p /src/app/tmp/pids
 
 # Clean environment
 RUN apt-get clean all
