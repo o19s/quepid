@@ -9,14 +9,13 @@
  * compiled file so the styles you add here take precedence over styles defined in any styles
  * defined in the other CSS/SCSS files in this directory. It is generally better to create a new
  * file per style scope.
+ *
+ *= require font_awesome5_webfont 
  */
 
 @import "style";
 
 @import "bootstrap";
-
-@import "font-awesome-sprockets";
-@import "font-awesome";
 
 @import "cookies_eu";
 

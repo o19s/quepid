@@ -3,12 +3,11 @@
  * listed below.
  */
 
-@import "bootstrap";
 
-@import "font-awesome-sprockets";
-@import "font-awesome";
-
-@import "cookies_eu";
-
-@import "fonts";
-@import "bootstrap-add";
+/*
+ *= require font_awesome5_webfont
+ *= require bootstrap
+ *= require cookies_eu
+ *= require fonts
+ *= require bootstrap-add
+*/

@@ -25,7 +25,7 @@ hr {
 */
 
 body {
-  background: image-url('blue_bg.jpg') top center repeat;
+  background: url('/assets/blue_bg.jpg') top center repeat;
 }
 
 button:select {
