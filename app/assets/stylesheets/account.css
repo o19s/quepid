@@ -1,10 +1,7 @@
 /*
  * This is a manifest file that'll be compiled into account.css, which will include all the files
  * listed below.
- */
-
-
-/*
+ *
  *= require font_awesome5_webfont
  *= require bootstrap
  *= require cookies_eu

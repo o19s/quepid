@@ -3,12 +3,11 @@
  * listed below.
  *
  *= require font_awesome5_webfont
+ *= require bootstrap
+ *= require cal-heatmap
+ *
+ *= require fonts
+ *= require bootstrap-add
+ *
+ *= require admin2
  */
-
-@import "bootstrap";
-
-@import "cal-heatmap";
-
-@import "fonts";
-@import "bootstrap-add";
-@import "admin2";
