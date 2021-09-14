@@ -9,39 +9,32 @@
  * compiled file so the styles you add here take precedence over styles defined in any styles
  * defined in the other CSS/SCSS files in this directory. It is generally better to create a new
  * file per style scope.
+ *
+ *= require font_awesome5_webfont
+ *= require bootstrap
+ *= require cookies_eu
+ *= require tether-shepherd/dist/css/shepherd-theme-arrows
+ *
+ *= require fonts
+ *= require bootstrap-add
+ *
+ *= require style
+ *= require stackedChart
+ *= require animation
+ *= require panes
+ *
+ *= require tour
+ *= require panes
+ *= require base
+ *= require misc
+ *
+ *= require cases
+ *= require scorers
+ *= require teams
+ *= require users
+ *= require docs
+ *= require settings
+ *= require qscore
+ *= require qgraph
+ *
  */
-
-@import "style";
-
-@import "bootstrap";
-
-@import "font-awesome-sprockets";
-@import "font-awesome";
-
-@import "cookies_eu";
-
-@import "fonts";
-@import "panes";
-//@import "resize"; # this file here is a candidate for deleting, appears we don't use it.
-@import "stackedChart";
-@import "bootstrap-add";
-@import "base";
-@import "admin2";
-
-// Tour/Guides
-@import "tether-shepherd/dist/css/shepherd-theme-arrows";
-@import "tour";
-
-// Screens
-@import "cases";
-@import "scorers";
-@import "teams";
-@import "users";
-@import "docs";
-@import "settings";
-@import "qscore";
-@import "qgraph";
-
-// Other
-@import "misc";
-@import "animation"
