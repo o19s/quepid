@@ -35,8 +35,6 @@
  *= require docs
  *= require settings
  *= require qscore
+ *= require qgraph
  *
  */
-
-@import "qscore";
-@import "qgraph";
