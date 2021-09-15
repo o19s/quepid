@@ -34,11 +34,27 @@ jobs:
           name: Which bundler?
           command: bundle -v
 
+      # Restore bundle cache
+      - restore_cache:
+          keys:
+            - quepid-bundle-v2-{{ checksum "Gemfile.lock" }}
+            - quepid-bundle-v2-
 
       - run:
           name: Bundle Install
           command: bundle check || bundle install
 
+      # Store bundle cache
+      - save_cache:
+          key: quepid-bundle-v2-{{ checksum "Gemfile.lock" }}
+          paths:
+            - vendor/bundle
+
+      # Only necessary if app uses webpacker or yarn in some other way
+      - restore_cache:
+          keys:
+            - quepid-yarn-{{ checksum "yarn.lock" }}
+            - quepid-yarn-
 
       - run:
           name: Yarn Install
