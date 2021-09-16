@@ -3,11 +3,12 @@ WORKDIR /srv/app
 COPY package.json yarn.lock ./
 RUN yarn install --production=true
 
-FROM ruby:2.7.4-buster-slim
+FROM ruby:2.7.4-buster
 
 LABEL maintainer="quepid_admin@opensourceconnections.com"
 
 # Must have packages
+# Build Dependencies for slim-buster: mariadb-server libmariadbclient-dev mariadb-client mysql-common  ruby-mysql2 libmariadbd-dev build-essential patch ruby-dev zlib1g-dev liblzma-dev gnupg
 RUN apt-get update -qq && apt-get install -y --no-install-recommends vim curl git tmux apt-transport-https ca-certificates \
   && rm -rf /var/lib/apt/lists/*
 
@@ -32,13 +33,35 @@ COPY Gemfile Gemfile.lock ./
 RUN gem install bundler:1.17.3
 
 # Clean up Bundle
-RUN bundle install --without development test && \
+RUN bundle config set without 'development test'
+RUN bundle install && \
   bundle clean --force && \
   rm -rf /app/.bundle/cache && \
   rm -rf /app/vendor/bundle/ruby/*/cache
 
 COPY --from=build-dep /srv/app/node_modules ./node_modules/
-COPY . .
+#COPY . .
+COPY ./app ./app
+COPY ./app.json ./app.json
+COPY ./babel.config.js ./babel.config.js
+COPY ./bin ./bin
+COPY ./config ./config
+COPY ./config.ru ./config.ru
+COPY ./db ./db
+COPY ./Gemfile ./Gemfile
+COPY ./Gemfile.lock ./Gemfile.lock
+COPY ./lib ./lib
+COPY ./LICENSE ./LICENSE
+COPY ./package.json ./package.json
+COPY ./postcss.config.js ./postcss.config.js
+COPY ./Procfile ./Procfile
+COPY ./public ./public
+COPY ./Rakefile ./Rakefile
+COPY ./README.md ./README.md
+COPY ./vendor ./vendor
+COPY ./yarn.lock ./yarn.lock
+
+
 
 RUN mkdir -p tmp/pids
 
