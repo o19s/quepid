@@ -23,8 +23,8 @@ require 'es_arg_parser'
 
 class Try < ApplicationRecord
   # Scopes
-  scope :best, -> { order(id: :desc).first }
-  scope :latest, -> { order(try_number: :desc).limit(1).first }
+  scope :latest, -> { order(id: :desc).first } # The try created the most recently
+  #scope :latest, -> { order(try_number: :desc).limit(1).first }
 
   # Constants
   DEFAULTS = {
