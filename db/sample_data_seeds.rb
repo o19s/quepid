@@ -181,7 +181,7 @@ print_case_info solr_case
 ######################################
 
 es_case = es_case_user.cases.create case_name: 'ES CASE'
-es_try = es_case.tries.best
+es_try = es_case.tries.latest
 es_params = {
   search_engine: :es,
   search_url:   Try::DEFAULTS[:es][:search_url],
