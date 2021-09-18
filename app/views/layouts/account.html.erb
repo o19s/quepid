@@ -12,8 +12,36 @@
 <%= javascript_include_tag 'account' %>
 
 
+<script src="https://cdn.jsdelivr.net/npm/vega@5"></script>
+
+
 </head>
 <body class='admin'>
+
+
+
+<div id="tries_tree_view"></div>
+<script type="text/javascript">
+  var tries_tree_view;
+
+  fetch('http://localhost:3000/tries-tree-layout.vg.json')
+    .then(res => res.json())
+    .then(spec => render(spec))
+    .catch(err => console.error(err));
+
+  function render(spec) {
+    spec.data[0].url = '<%= api_case_tries_path(case_id: 1, file_format: :vega) %>';
+    tries_tree_view = new vega.View(vega.parse(spec), {
+      renderer:  'canvas',  // renderer (canvas or svg)
+      container: '#tries_tree_view',   // parent DOM container
+      hover:     true       // enable hover processing
+    });
+    return tries_tree_view.runAsync();
+  }
+</script>
+
+
+
   <%= render 'cookies_eu/consent_banner', link: '/cookies', target: '_blank' unless Rails.application.config.cookies_url.blank? %>
 
   <div class="main-container">

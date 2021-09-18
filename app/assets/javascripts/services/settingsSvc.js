@@ -188,6 +188,7 @@ angular.module('QuepidApp')
         sentData.query_params    = settingsToSave.selectedTry.queryParams;
         sentData.search_engine   = settingsToSave.searchEngine;
         sentData.search_url      = settingsToSave.searchUrl;
+        sentData.parent_id       = settingsToSave.selectedTry.tryNo;
 
         return $http.post('/api/cases/' + currCaseNo + '/tries', sentData)
           .then(function(response) {

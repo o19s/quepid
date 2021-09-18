@@ -88,6 +88,21 @@ module Api
 
           assert_includes ids, first_try.try_number
         end
+
+        test 'formats in the vega tree format' do
+          get :index, params: { case_id: case_with_two_tries.id, file_format: 'vega' }
+
+          assert_response :ok
+
+          puts response.body
+          body  = JSON.parse(response.body)
+          tries = body
+
+          tries.each do |json_try|
+            assert_not_nil json_try['id']
+            assert_not_nil json_try['name']
+          end
+        end
       end
 
       describe 'Fetches a specific case try' do
@@ -189,6 +204,34 @@ module Api
             expected_value = { 'q' => [ '#$query##' ] }
 
             assert expected_value == try_response['args']
+          end
+        end
+
+        test 'tracks creating a child try from a parent try' do
+          the_try = the_case.tries.latest
+
+          try_params = {
+            search_url:    'http://solr.quepid.com',
+            field_spec:    'catch_line',
+            query_params:  'q=#$query##',
+            search_engine: 'solr',
+            parent_id:     the_try.id,
+          }
+
+          case_last_try = the_case.last_try_number
+
+          assert_difference 'the_case.tries.count' do
+            post :create, params: { case_id: the_case.id, try: try_params }
+
+            assert_response :ok # should be :created,
+            # but there's a bug currently in the responders gem
+
+            the_case.reload
+            the_try.reload
+            try_response  = JSON.parse(response.body)
+            created_try   = the_case.tries.where(try_number: try_response['try_number']).first
+
+            assert_includes the_try.children, created_try
           end
         end
 

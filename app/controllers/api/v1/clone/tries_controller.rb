@@ -20,6 +20,7 @@ module Api
           }
 
           @new_try = @case.tries.build new_try_params
+          @new_try.parent = @try
 
           try_number = @case.last_try_number + 1
 
