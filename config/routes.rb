@@ -30,6 +30,10 @@ Rails.application.routes.draw do
     omniauth_callbacks: 'users/omniauth_callbacks',
   }
 
+  namespace :analytics do
+    get 'cases/:case_id/tries' => 'cases#show'
+  end
+
   namespace :admin do
     get '/' => 'home#index'
     resources :users, except: [ :new, :create ] do

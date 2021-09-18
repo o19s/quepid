@@ -79,6 +79,7 @@ first_for_case_with_two_tries:
   search_url:     http://test.com/solr/tmdb/select
   try_number:     1
   search_engine:  solr
+  name:           Try 1
 
 second_for_case_with_two_tries:
   case:           :case_with_two_tries
@@ -86,6 +87,8 @@ second_for_case_with_two_tries:
   search_url:     http://test.com/solr/tmdb/select
   try_number:     2
   search_engine:  solr
+  name:           Second Try
+  ancestry:       '<%= ActiveRecord::FixtureSet.identify(:first_for_case_with_two_tries) %>'
 
 first_try_for_score_case:
   case:           :score_case
@@ -190,6 +193,13 @@ for_case_with_score_try_1:
   search_engine:  solr
 
 for_case_with_score_try_2:
+  case:           :case_with_score
+  query_params:   'q=#$query##'
+  search_url:     http://test.com/solr/tmdb/select
+  try_number:     2
+  search_engine:  solr
+
+for_case_with_score_try_3:
   case:           :case_with_score
   query_params:   'q=#$query##'
   search_url:     http://test.com/solr/tmdb/select

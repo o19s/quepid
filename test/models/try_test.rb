@@ -136,4 +136,26 @@ class TryTest < ActiveSupport::TestCase
       assert_equal 'tmdb', try.index_name_from_search_url
     end
   end
+
+  describe 'tracking history of tries' do
+    test 'try two follows try one, and three follows two' do
+      try_one = tries(:for_case_with_score_try_1)
+      try_two = tries(:for_case_with_score_try_2)
+      try_three = tries(:for_case_with_score_try_3)
+
+      try_two.parent = try_one
+      try_two.save!
+
+      try_three.parent_id = try_two.id
+      try_three.save!
+
+      assert_includes try_one.children, try_two
+      assert_includes try_two.children, try_three
+
+      try_two.destroy!
+
+      # validate that three gets adopted by one
+      assert_includes try_one.children, try_three
+    end
+  end
 end
