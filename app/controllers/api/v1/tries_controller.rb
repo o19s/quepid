@@ -10,10 +10,10 @@ module Api
       def index
         file_format = params[:file_format]
         json_template = file_format.nil? ? 'index' : "index_#{file_format.downcase}"
-        # @tries = @case.tries
-        descendants = Try.find_by(id: 6).descendants
-        roots = [ Try.find_by(id: 6) ]
-        @tries = [ roots, descendants ].flatten
+        @tries = @case.tries
+        #descendants = Try.find_by(id: 6).descendants
+        #roots = [ Try.find_by(id: 6) ]
+        #@tries = [ roots, descendants ].flatten
         render json_template, formats: :json
       end
 

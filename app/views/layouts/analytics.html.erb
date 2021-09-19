@@ -9,10 +9,14 @@
 
 <%= stylesheet_link_tag 'account', media: 'all' %>
 <%= csrf_meta_tags %>
-<%= javascript_include_tag 'account' %>
+<%= javascript_include_tag 'analytics' %>
+
+<!-- Can't figure out how to include Vega using Sprockets/Webpacker -->
+<script src="https://cdn.jsdelivr.net/npm/vega@5"></script>
 
 </head>
 <body class='admin'>
+
   <%= render 'cookies_eu/consent_banner', link: '/cookies', target: '_blank' unless Rails.application.config.cookies_url.blank? %>
 
   <div class="main-container">
