@@ -242,7 +242,7 @@ angular.module('QuepidApp')
             .then(function(acase) {
 
               tryNo = acase.lastTry;
-
+              console.log("We do not have a tryNo, so we grabbed the lastTry from the case, and using it as the id:" + tryNo);
               lastScoreTracker = {
                 'score':      $scope.queries.avgQuery.currentScore.score,
                 'all_rated':  $scope.queries.avgQuery.currentScore.allRated,

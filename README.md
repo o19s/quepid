@@ -548,7 +548,7 @@ where type is one of the following:
 * `2case`: A user with 2 cases
 * `solr`: A user with a Solr case
 * `es`: A user with a ES case
-* `realistic+activity`: A user with a Solr case that has 10s of queries and 30 tries
+* `realisticActivity`: A user with a Solr case that has 10s of queries and 30 tries
 * `100sOfQueries`: A user with a Solr case that has 100s of queries (usually disabled)
 * `1000sOfQueries`: A user with a Solr case that has 1000s of queries (usually disabled)
 * `oscOwner`: A user who owns the team 'OSC'

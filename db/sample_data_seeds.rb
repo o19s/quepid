@@ -23,6 +23,8 @@ print_step "Seeding users................"
 # Defaults
 ######################################
 
+search_url = "http://quepid-solr.dev.o19s.com:8985/solr/statedecoded/select"
+
 user_defaults = {
   administrator:    false,
   agreed:           true,
@@ -36,9 +38,9 @@ user_defaults = {
 try_defaults = {
   try_number:       '1',
   query_params:     'q=#$query##',
-  search_url:       'http://test.com/solr/tmdb/select',
+  search_url:       search_url,
   search_engine:    'solr',
-  field_spec:       'id:id title:title',
+  field_spec:       'id:id title:catch_line structure text',
 
 }
 
@@ -109,7 +111,7 @@ print_user_info user_params
 
 user_specifics = {
   name:             'User with Realistic Activity in Quepid',
-  email:            'quepid+realistic+activity@o19s.com',
+  email:            'quepid+realisticActivity@o19s.com',
 }
 user_params          = user_defaults.merge(user_specifics)
 realistic_activity_user = seed_user user_params
@@ -239,7 +241,7 @@ print_step "End of seeding scorers................"
 # Ratings
 print_step "Seeding ratings................"
 
-search_url = "http://quepid-solr.dev.o19s.com:8985/solr/statedecoded/select"
+
 
 tens_of_queries_case = realistic_activity_user.cases.create case_name: '10s of Queries'
 

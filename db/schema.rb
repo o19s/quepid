@@ -2,18 +2,17 @@
 # of editing this file, please use the migrations feature of Active Record to
 # incrementally modify your database, and then regenerate this schema definition.
 #
-# Note that this schema.rb definition is the authoritative source for your
-# database schema. If you need to create the application database on another
-# system, you should be using db:schema:load, not running all the migrations
-# from scratch. The latter is a flawed and unsustainable approach (the more migrations
-# you'll amass, the slower it'll run and the greater likelihood for issues).
+# This file is the source Rails uses to define your schema when running `bin/rails
+# db:schema:load`. When creating a new database, `bin/rails db:schema:load` tends to
+# be faster and is potentially less error prone than running all of your
+# migrations from scratch. Old migrations may fail to apply correctly if those
+# migrations use external dependencies or application code.
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_06_08_145331) do
+ActiveRecord::Schema.define(version: 2021_09_17_212115) do
 
-
-  create_table "annotations", id: :integer, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8", force: :cascade do |t|
+  create_table "annotations", id: :integer, charset: "utf8", force: :cascade do |t|
     t.text "message"
     t.string "source"
     t.integer "user_id"
@@ -22,7 +21,7 @@ ActiveRecord::Schema.define(version: 2021_06_08_145331) do
     t.index ["user_id"], name: "index_annotations_on_user_id"
   end
 
-  create_table "case_metadata", id: :integer, options: "ENGINE=InnoDB DEFAULT CHARSET=latin1", force: :cascade do |t|
+  create_table "case_metadata", id: :integer, charset: "latin1", force: :cascade do |t|
     t.integer "user_id", null: false
     t.integer "case_id", null: false
     t.datetime "last_viewed_at"
@@ -30,14 +29,14 @@ ActiveRecord::Schema.define(version: 2021_06_08_145331) do
     t.index ["user_id", "case_id"], name: "case_metadata_user_id_case_id_index"
   end
 
-  create_table "case_scores", id: :integer, options: "ENGINE=InnoDB DEFAULT CHARSET=latin1", force: :cascade do |t|
+  create_table "case_scores", id: :integer, charset: "latin1", force: :cascade do |t|
     t.integer "case_id"
     t.integer "user_id"
     t.integer "try_id"
     t.float "score"
     t.boolean "all_rated"
     t.datetime "created_at"
-    t.binary "queries", limit: 16777215
+    t.binary "queries", size: :medium
     t.integer "annotation_id"
     t.datetime "updated_at"
     t.index ["annotation_id"], name: "index_case_scores_on_annotation_id"
@@ -45,7 +44,7 @@ ActiveRecord::Schema.define(version: 2021_06_08_145331) do
     t.index ["user_id"], name: "user_id"
   end
 
-  create_table "cases", id: :integer, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8", force: :cascade do |t|
+  create_table "cases", id: :integer, charset: "utf8", force: :cascade do |t|
     t.string "case_name", limit: 191
     t.integer "last_try_number"
     t.integer "owner_id"
@@ -56,7 +55,7 @@ ActiveRecord::Schema.define(version: 2021_06_08_145331) do
     t.index ["owner_id"], name: "user_id"
   end
 
-  create_table "curator_variables", id: :integer, options: "ENGINE=InnoDB DEFAULT CHARSET=latin1", force: :cascade do |t|
+  create_table "curator_variables", id: :integer, charset: "latin1", force: :cascade do |t|
     t.string "name", limit: 500
     t.float "value"
     t.integer "try_id"
@@ -65,7 +64,7 @@ ActiveRecord::Schema.define(version: 2021_06_08_145331) do
     t.index ["try_id"], name: "try_id"
   end
 
-  create_table "permissions", id: :integer, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8", force: :cascade do |t|
+  create_table "permissions", id: :integer, charset: "utf8", force: :cascade do |t|
     t.integer "user_id"
     t.string "model_type", null: false
     t.string "action", null: false
@@ -74,7 +73,7 @@ ActiveRecord::Schema.define(version: 2021_06_08_145331) do
     t.datetime "updated_at", null: false
   end
 
-  create_table "queries", id: :integer, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin", force: :cascade do |t|
+  create_table "queries", id: :integer, charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.bigint "arranged_next"
     t.bigint "arranged_at"
     t.string "query_text", limit: 500
@@ -88,7 +87,7 @@ ActiveRecord::Schema.define(version: 2021_06_08_145331) do
     t.index ["case_id"], name: "case_id"
   end
 
-  create_table "ratings", id: :integer, options: "ENGINE=InnoDB DEFAULT CHARSET=latin1", force: :cascade do |t|
+  create_table "ratings", id: :integer, charset: "latin1", force: :cascade do |t|
     t.string "doc_id", limit: 500
     t.integer "rating"
     t.integer "query_id"
@@ -98,7 +97,7 @@ ActiveRecord::Schema.define(version: 2021_06_08_145331) do
     t.index ["query_id"], name: "query_id"
   end
 
-  create_table "scorers", id: :integer, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin", force: :cascade do |t|
+  create_table "scorers", id: :integer, charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.text "code"
     t.string "name"
     t.integer "owner_id"
@@ -112,23 +111,23 @@ ActiveRecord::Schema.define(version: 2021_06_08_145331) do
     t.boolean "communal", default: false
   end
 
-  create_table "snapshot_docs", id: :integer, options: "ENGINE=InnoDB DEFAULT CHARSET=latin1", force: :cascade do |t|
+  create_table "snapshot_docs", id: :integer, charset: "latin1", force: :cascade do |t|
     t.string "doc_id", limit: 500
     t.integer "position"
     t.integer "snapshot_query_id"
-    t.text "explain", limit: 16777215
+    t.text "explain", size: :medium
     t.boolean "rated_only", default: false
     t.index ["snapshot_query_id"], name: "snapshot_query_id"
   end
 
-  create_table "snapshot_queries", id: :integer, options: "ENGINE=InnoDB DEFAULT CHARSET=latin1", force: :cascade do |t|
+  create_table "snapshot_queries", id: :integer, charset: "latin1", force: :cascade do |t|
     t.integer "query_id"
     t.integer "snapshot_id"
     t.index ["query_id"], name: "query_id"
     t.index ["snapshot_id"], name: "snapshot_id"
   end
 
-  create_table "snapshots", id: :integer, options: "ENGINE=InnoDB DEFAULT CHARSET=latin1", force: :cascade do |t|
+  create_table "snapshots", id: :integer, charset: "latin1", force: :cascade do |t|
     t.string "name", limit: 250
     t.datetime "created_at"
     t.integer "case_id"
@@ -136,7 +135,7 @@ ActiveRecord::Schema.define(version: 2021_06_08_145331) do
     t.index ["case_id"], name: "case_id"
   end
 
-  create_table "teams", id: :integer, options: "ENGINE=InnoDB DEFAULT CHARSET=latin1", force: :cascade do |t|
+  create_table "teams", id: :integer, charset: "latin1", force: :cascade do |t|
     t.string "name", collation: "utf8_bin"
     t.integer "owner_id", null: false
     t.datetime "created_at", null: false
@@ -145,28 +144,28 @@ ActiveRecord::Schema.define(version: 2021_06_08_145331) do
     t.index ["owner_id"], name: "owner_id"
   end
 
-  create_table "teams_cases", primary_key: ["case_id", "team_id"], options: "ENGINE=InnoDB DEFAULT CHARSET=latin1", force: :cascade do |t|
+  create_table "teams_cases", primary_key: ["case_id", "team_id"], charset: "latin1", force: :cascade do |t|
     t.integer "case_id", null: false
     t.integer "team_id", null: false
     t.index ["case_id"], name: "index_teams_cases_on_case_id"
     t.index ["team_id"], name: "index_teams_cases_on_team_id"
   end
 
-  create_table "teams_members", primary_key: ["member_id", "team_id"], options: "ENGINE=InnoDB DEFAULT CHARSET=latin1", force: :cascade do |t|
+  create_table "teams_members", primary_key: ["member_id", "team_id"], charset: "latin1", force: :cascade do |t|
     t.integer "member_id", null: false
     t.integer "team_id", null: false
     t.index ["member_id"], name: "index_teams_members_on_member_id"
     t.index ["team_id"], name: "index_teams_members_on_team_id"
   end
 
-  create_table "teams_scorers", primary_key: ["scorer_id", "team_id"], options: "ENGINE=InnoDB DEFAULT CHARSET=latin1", force: :cascade do |t|
+  create_table "teams_scorers", primary_key: ["scorer_id", "team_id"], charset: "latin1", force: :cascade do |t|
     t.integer "scorer_id", null: false
     t.integer "team_id", null: false
     t.index ["scorer_id"], name: "index_teams_scorers_on_scorer_id"
     t.index ["team_id"], name: "index_teams_scorers_on_team_id"
   end
 
-  create_table "tries", id: :integer, options: "ENGINE=InnoDB DEFAULT CHARSET=latin1", force: :cascade do |t|
+  create_table "tries", id: :integer, charset: "latin1", force: :cascade do |t|
     t.integer "try_number"
     t.string "query_params", limit: 20000
     t.integer "case_id"
@@ -178,11 +177,13 @@ ActiveRecord::Schema.define(version: 2021_06_08_145331) do
     t.integer "number_of_rows", default: 10
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "ancestry"
+    t.index ["ancestry"], name: "index_tries_on_ancestry"
     t.index ["case_id"], name: "case_id"
     t.index ["try_number"], name: "ix_queryparam_tryNo"
   end
 
-  create_table "users", id: :integer, options: "ENGINE=InnoDB DEFAULT CHARSET=latin1", force: :cascade do |t|
+  create_table "users", id: :integer, charset: "latin1", force: :cascade do |t|
     t.string "email", limit: 80
     t.string "password", limit: 120
     t.datetime "agreed_time"

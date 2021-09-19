@@ -180,15 +180,15 @@ angular.module('QuepidApp')
 
         // We create the default name on the server side
         //sentData.name            = settingsToSave.selectedTry.name;
-        sentData.curatorVars     = settingsToSave.selectedTry.curatorVarsDict();
-        sentData.escape_query    = settingsToSave.escapeQuery;
+        sentData.curatorVars       = settingsToSave.selectedTry.curatorVarsDict();
+        sentData.escape_query      = settingsToSave.escapeQuery;
         //sentData.fields          = settingsToSave.createFieldSpec().fields;
-        sentData.field_spec      = settingsToSave.fieldSpec;
-        sentData.number_of_rows  = settingsToSave.numberOfRows;
-        sentData.query_params    = settingsToSave.selectedTry.queryParams;
-        sentData.search_engine   = settingsToSave.searchEngine;
-        sentData.search_url      = settingsToSave.searchUrl;
-        sentData.parent_id       = settingsToSave.selectedTry.tryNo;
+        sentData.field_spec        = settingsToSave.fieldSpec;
+        sentData.number_of_rows    = settingsToSave.numberOfRows;
+        sentData.query_params      = settingsToSave.selectedTry.queryParams;
+        sentData.search_engine     = settingsToSave.searchEngine;
+        sentData.search_url        = settingsToSave.searchUrl;
+        sentData.parent_try_number = settingsToSave.selectedTry.tryNo;
 
         return $http.post('/api/cases/' + currCaseNo + '/tries', sentData)
           .then(function(response) {
@@ -233,13 +233,14 @@ angular.module('QuepidApp')
         // we don't have a sentData.name = settingsToSave.selectedTry.name
         // for completeness we should.   If we enable more edit of existing try
         // tries are odd, cause we pretty much only create new ones!
-        sentData.curatorVars     = settingsToSave.selectedTry.curatorVarsDict();
-        sentData.escape_query    = settingsToSave.escapeQuery;
-        sentData.field_spec      = settingsToSave.fieldSpec;
-        sentData.number_of_rows  = settingsToSave.numberOfRows;
-        sentData.query_params    = settingsToSave.selectedTry.queryParams;
-        sentData.search_engine   = settingsToSave.searchEngine;
-        sentData.search_url      = settingsToSave.searchUrl;
+        sentData.curatorVars       = settingsToSave.selectedTry.curatorVarsDict();
+        sentData.escape_query      = settingsToSave.escapeQuery;
+        sentData.field_spec        = settingsToSave.fieldSpec;
+        sentData.number_of_rows    = settingsToSave.numberOfRows;
+        sentData.query_params      = settingsToSave.selectedTry.queryParams;
+        sentData.search_engine     = settingsToSave.searchEngine;
+        sentData.search_url        = settingsToSave.searchUrl;
+        sentData.parent_try_number = settingsToSave.selectedTry.tryNo;
 
         return $http.put('/api/cases/' + currCaseNo + '/tries/' + currTryNo, sentData)
           .then(function() {

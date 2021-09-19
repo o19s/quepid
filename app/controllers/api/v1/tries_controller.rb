@@ -11,14 +11,23 @@ module Api
         file_format = params[:file_format]
         json_template = file_format.nil? ? 'index' : "index_#{file_format.downcase}"
         @tries = @case.tries
-        #descendants = Try.find_by(id: 6).descendants
-        #roots = [ Try.find_by(id: 6) ]
-        #@tries = [ roots, descendants ].flatten
+
+        roots = @tries.select{|t| t.parent.nil?}
+        if roots.size > 1 # multiple roots need a new ROOT!
+          root_try = Try.new(id: 1, name: 'ROOT')
+          @tries.select{|t| t.parent.nil?}.each { |t| t.parent = root_try }
+          @tries = [@tries, root_try].flatten
+        end
+
         render json_template, formats: :json
       end
 
       def create
-        @try = @case.tries.build try_params
+        parameters_to_use = try_params
+        if params[:parent_try_number] # We need special translation from try_number to the try.id
+          parameters_to_use[:parent_id] = @case.tries.where(try_number: params[:parent_try_number]).first.id
+        end
+        @try = @case.tries.build parameters_to_use
 
         try_number = @case.last_try_number + 1
 
@@ -56,6 +65,8 @@ module Api
       private
 
       def set_try
+        # We always refer to a try as a incrementing linear number within the scope of
+        # a case.   We don't use the internal try_id in the API.
         @try = @case.tries.where(try_number: params[:try_number]).first
 
         render json: { message: 'Try not found!' }, status: :not_found unless @try
