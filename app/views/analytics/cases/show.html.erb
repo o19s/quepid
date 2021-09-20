@@ -2,7 +2,7 @@
 <script type="text/javascript">
   var tries_tree_view;
 
-  fetch('http://localhost:3000/tries-tree-layout.vg.json')
+  fetch('/tries-tree-layout.vg.json')
     .then(res => res.json())
     .then(spec => render(spec))
     .catch(err => console.error(err));
