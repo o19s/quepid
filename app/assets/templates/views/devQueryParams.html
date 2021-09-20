@@ -174,8 +174,10 @@
     <div class="settings-tab" ng-show="qp.curTab == 'history'">
       <div class="container">
         <p>
+          <a ng-href="/analytics/tries_visualization/{{ caseNo }}" target="_self">Visualize your tries</a></p>
+        <p>
           To switch back to a previous try, click on the try listing.<br />
-          If you'd like to edit a try, click on the "..." that show up in the right top corner on hover.
+          Click on the "..." when you hover over a listing to edit a try.
         </p>
 
         <query-params-history settings="settings" class="ng-isolate-scope ng-scope clearfix">
