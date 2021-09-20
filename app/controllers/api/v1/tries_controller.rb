@@ -12,11 +12,11 @@ module Api
         json_template = file_format.nil? ? 'index' : "index_#{file_format.downcase}"
         @tries = @case.tries
 
-        roots = @tries.select{|t| t.parent.nil?}
+        roots = @tries.select { |t| t.parent.nil? }
         if roots.size > 1 # multiple roots need a new ROOT!
           root_try = Try.new(id: 1, name: 'ROOT')
-          @tries.select{|t| t.parent.nil?}.each { |t| t.parent = root_try }
-          @tries = [@tries, root_try].flatten
+          @tries.select { |t| t.parent.nil? }.each { |t| t.parent = root_try }
+          @tries = [ @tries, root_try ].flatten
         end
 
         render json_template, formats: :json

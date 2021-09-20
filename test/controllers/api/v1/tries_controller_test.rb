@@ -218,8 +218,6 @@ module Api
             parent_id:     the_try.id,
           }
 
-          case_last_try = the_case.last_try_number
-
           assert_difference 'the_case.tries.count' do
             post :create, params: { case_id: the_case.id, try: try_params }
 
