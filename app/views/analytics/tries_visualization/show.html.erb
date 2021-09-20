@@ -1,14 +1,15 @@
+<%= link_to 'Back', case_home_path(@case) %>
+
 <div id="tries_tree_view"></div>
 <script type="text/javascript">
   var tries_tree_view;
 
-  fetch('/tries-tree-layout.vg.json')
+  fetch('<%= analytics_tries_visualization_vega_specification_url(case_id: @case.id) %>')
     .then(res => res.json())
     .then(spec => render(spec))
     .catch(err => console.error(err));
 
   function render(spec) {
-    spec.data[0].url = '<%= api_case_tries_path(case: @case, file_format: :vega) %>';
     tries_tree_view = new vega.View(vega.parse(spec), {
       renderer:  'canvas',  // renderer (canvas or svg)
       container: '#tries_tree_view',   // parent DOM container

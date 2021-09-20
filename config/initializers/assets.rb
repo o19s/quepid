@@ -5,7 +5,7 @@
 # Version of your assets, change this if you want to expire all your assets.
 Rails.application.config.assets.version = '1.0'
 
-# Maybe needed with segfaults in sassc gem?
+# Needed due to segfaults in sassc gem.  Remove in Rails 7!
 Rails.application.config.assets.configure do |env|
   env.export_concurrent = false
 end

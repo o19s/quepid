@@ -31,7 +31,9 @@ Rails.application.routes.draw do
   }
 
   namespace :analytics do
-    get 'cases/:case_id/tries' => 'cases#show'
+    get 'tries_visualization/:case_id' => 'tries_visualization#show', as: :tries_visualization
+    get 'tries_visualization/:case_id/vega_specification' => 'tries_visualization#vega_specification', as: :tries_visualization_vega_specification
+    get 'tries_visualization/:case_id/vega_data' => 'tries_visualization#vega_data', as: :tries_visualization_vega_data
   end
 
   namespace :admin do
@@ -148,7 +150,7 @@ Rails.application.routes.draw do
   end
 
   # Routes handled by angular
-  get '/case/:id(/try/:id(/curate))'  => 'home#index'
+  get '/case/:id(/try/:try_id)'       => 'home#index', as: :case_home
   get '/cases'                        => 'home#index'
   get '/case'                         => 'home#index'
   get '/cases/import'                 => 'home#index'

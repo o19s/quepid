@@ -1,6 +1,6 @@
 {
   "$schema": "https://vega.github.io/schema/vega/v5.json",
-  "description": "Tree layout of Tries over time",
+  "description": "Visualize the evolution of your Tries",
   "width": 1000,
   "height": 600,
   "padding": 5,
@@ -30,7 +30,7 @@
   "data": [
     {
       "name": "tree",
-      "url": "http://localhost:3000/api/cases/1/tries.json?file_format=vega",
+      "url": "<%= analytics_tries_visualization_vega_data_url(case_id: @case.id, format: :json) %>",
       "transform": [
         {
           "type": "stratify",
