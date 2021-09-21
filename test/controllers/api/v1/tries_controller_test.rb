@@ -88,21 +88,6 @@ module Api
 
           assert_includes ids, first_try.try_number
         end
-
-        test 'formats in the vega tree format' do
-          get :index, params: { case_id: case_with_two_tries.id, file_format: 'vega' }
-
-          assert_response :ok
-
-          puts response.body
-          body  = JSON.parse(response.body)
-          tries = body
-
-          tries.each do |json_try|
-            assert_not_nil json_try['id']
-            assert_not_nil json_try['name']
-          end
-        end
       end
 
       describe 'Fetches a specific case try' do
