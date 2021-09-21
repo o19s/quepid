@@ -13,8 +13,14 @@
     tries_tree_view = new vega.View(vega.parse(spec), {
       renderer:  'canvas',  // renderer (canvas or svg)
       container: '#tries_tree_view',   // parent DOM container
-      hover:     true       // enable hover processing
+      hover:     true,       // enable hover processing
+      loader: vega.loader({target: '_self'})  // enable loading links in the same window!
     });
+
+    tries_tree_view.addSignalListener('width', function(name, value) {
+      console.log('WIDTH: ' + value);
+    });
+
     return tries_tree_view.runAsync();
   }
 </script>

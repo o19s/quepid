@@ -151,7 +151,7 @@ Rails.application.routes.draw do
   end
 
   # Routes handled by angular
-  get '/case/:id(/try/:try_id)'       => 'home#index', as: :case_home
+  get '/case/:id(/try/:try_number)'   => 'home#index', as: :case_home
   get '/cases'                        => 'home#index'
   get '/case'                         => 'home#index'
   get '/cases/import'                 => 'home#index'
