@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Analytics
-  class TriesVisualizationController < ::ApplicationController
+  class TriesVisualizationController < ApplicationController
     layout 'analytics'
 
     before_action :set_case, only: [ :show, :vega_specification, :vega_data ]

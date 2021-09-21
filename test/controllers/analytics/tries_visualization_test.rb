@@ -4,25 +4,22 @@ require 'test_helper'
 
 module Analytics
   class TriesVisualizationControllerTest < ActionController::TestCase
-    let(:user) { users(:random) }
+    let(:user) { users(:joey) }
 
-    before do
-      @controller = TriesVisualizationController.new
+    setup do
+      @controller = Analytics::TriesVisualizationController.new
       login_user user
     end
 
     describe 'Fetches tries for a case in vega data format' do
       let(:case_with_two_tries) { cases(:case_with_two_tries) }
-      test 'formats in the vega tree format' do
 
-puts "HERE IS THE COUNT: #{case_with_two_tries.tries.size}"
+      test 'formats in the vega tree format' do
 
         get :vega_data, params: { case_id: case_with_two_tries.id, format: :json}
 
         assert_response :ok
 
-        puts response.body
-        #body  = JSON.parse(response.body)
         tries = json_response
         assert_equal 2, tries.size
 

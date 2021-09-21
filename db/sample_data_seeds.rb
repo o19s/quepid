@@ -266,7 +266,7 @@ print_step "Seeding tries................"
 
   try_specifics = {
     try_number:       counter,
-    query_params:     "q=#$query##&magicBoost=#{counter}"
+    query_params:     "q=#$query##&magicBoost=#{ counter +1 }"
   }
 
   try_params = try_defaults.merge(try_specifics)
