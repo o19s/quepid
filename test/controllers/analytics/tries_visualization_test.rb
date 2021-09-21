@@ -15,8 +15,7 @@ module Analytics
       let(:case_with_two_tries) { cases(:case_with_two_tries) }
 
       test 'formats in the vega tree format' do
-
-        get :vega_data, params: { case_id: case_with_two_tries.id, format: :json}
+        get :vega_data, params: { case_id: case_with_two_tries.id, format: :json }
 
         assert_response :ok
 

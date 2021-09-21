@@ -21,8 +21,6 @@ module Analytics
         @tries.select { |t| t.parent.nil? }.each { |t| t.parent = root_try }
         @tries = [ @tries, root_try ].flatten
       end
-
     end
-
   end
 end
