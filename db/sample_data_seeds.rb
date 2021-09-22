@@ -266,20 +266,12 @@ print_step "Seeding tries................"
 
   try_specifics = {
     try_number:       counter,
-    query_params:     "q=#$query##&magicBoost=#{ counter +1 }"
+    query_params:     'q=#$query##&magicBoost=' + (counter+2).to_s
   }
 
   try_params = try_defaults.merge(try_specifics)
 
   new_try = tens_of_queries_case.tries.build try_params
-
-  # twenty percent of the time lets grab a new origin for the try in the tree
-  if rand(0..10) <= 2
-    parent_try = tens_of_queries_case.tries.sample
-  else
-    parent_try = tens_of_queries_case.tries.latest
-  end
-  new_try.parent = parent_try
 
   try_number = tens_of_queries_case.last_try_number + 1
 
@@ -288,6 +280,15 @@ print_step "Seeding tries................"
 
   new_try.save
   tens_of_queries_case.save
+
+  # seventy percent of the time lets grab a new origin for the try in the tree
+  # 30 percent of the time we just add a new one
+  if rand(0..100) <= 70
+    parent_try = tens_of_queries_case.tries.sample
+  end
+  new_try.parent = parent_try
+
+  new_try.save
 
 
 end
