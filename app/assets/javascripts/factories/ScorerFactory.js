@@ -521,9 +521,8 @@
         };
 
         var recordDepthOfRanking = function (k){
-          console.log("Value of k is " + k);
           query.depthOfRating = k;
-        }
+        };
 
         /*jshint unused:false */
         function pass() {
@@ -565,7 +564,7 @@
           '}',
         ].join('\n');
 
-        kode = self.code;
+        var kode = self.code;
         kode+= appendRecordDepthOfRankingCode;
 
         $timeout(function() {
