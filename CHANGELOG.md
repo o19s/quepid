@@ -10,6 +10,10 @@
 
 * Now sort queries by most recently modified.  https://github.com/o19s/quepid/pull/334 by @DmitryKey and @epugh fixes https://github.com/o19s/quepid/issues/307.
 
+### Improvements
+
+* The messaging around how many documents are being scored, i.e `@10` or `@40` is now driven by the variable `k` defined in various Scorers.  Commit 73a378f9bae777cb504618cdc3361bfec52ff82f by @epugh fixes https://github.com/o19s/quepid/issues/413 by @DmitryKey.
+
 
 ## 6.7.0 - 2021-08-26
 
