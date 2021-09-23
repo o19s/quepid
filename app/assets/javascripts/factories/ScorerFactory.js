@@ -440,6 +440,8 @@
           return baseAvg(docs, count);
         };
 
+        // Used in the original v1 scorer, which were replaced by the
+        // classic search relevance metrics @P etc.
         var avgRating100 = function(count) {
           return avg100(docs, count);
         };
@@ -518,6 +520,11 @@
           }
         };
 
+        var recordDepthOfRanking = function (k){
+          console.log("Value of k is " + k);
+          query.depthOfRating = k;
+        }
+
         /*jshint unused:false */
         function pass() {
           scorerDeferred.resolve(100);
@@ -548,9 +555,22 @@
           return 100;
         }
 
+        // We can manipulate the base scorer code by just appending JS
+        // to what the user has entered in order to detect and extract
+        // the k parameter as the depth of scoring.
+        var appendRecordDepthOfRankingCode = [
+          '\n',
+          'if (typeof k !== \'undefined\') {',
+          '  recordDepthOfRanking(k);',
+          '}',
+        ].join('\n');
+
+        kode = self.code;
+        kode+= appendRecordDepthOfRankingCode;
+
         $timeout(function() {
           /*jshint evil:true */
-          eval(self.code);
+          eval(kode);
           /*jshint evil:false */
         }, 1);
 
