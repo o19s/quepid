@@ -37,6 +37,7 @@ gem 'font-awesome-sass'
 gem 'webpacker', '= 5.4.0'
 gem 'rack-cors', '~> 1.1'
 gem 'foreman'
+gem 'ancestry'
 
 group :development, :test do
   gem 'annotate'

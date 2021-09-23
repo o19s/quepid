@@ -58,7 +58,7 @@ module Api
                 assert_equal user.id, cloned_case.owner_id
                 assert_equal "Cloned: #{the_case.case_name}", cloned_case.case_name
 
-                cloned_try = cloned_case.tries.best
+                cloned_try = cloned_case.tries.latest
 
                 assert_equal the_try.query_params,  cloned_try.query_params
                 assert_equal 'id:id title:title',   cloned_try.field_spec

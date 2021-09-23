@@ -9,11 +9,14 @@ module Api
 
       def index
         @tries = @case.tries
-        respond_with @tries
       end
 
       def create
-        @try = @case.tries.build try_params
+        parameters_to_use = try_params
+        if params[:parent_try_number] # We need special translation from try_number to the try.id
+          parameters_to_use[:parent_id] = @case.tries.where(try_number: params[:parent_try_number]).first.id
+        end
+        @try = @case.tries.build parameters_to_use
 
         try_number = @case.last_try_number + 1
 
@@ -51,6 +54,8 @@ module Api
       private
 
       def set_try
+        # We always refer to a try as a incrementing linear number within the scope of
+        # a case.   We don't use the internal try_id in the API.
         @try = @case.tries.where(try_number: params[:try_number]).first
 
         render json: { message: 'Try not found!' }, status: :not_found unless @try
@@ -64,7 +69,8 @@ module Api
           :number_of_rows,
           :query_params,
           :search_engine,
-          :search_url
+          :search_url,
+          :parent_id
         )
       end
     end

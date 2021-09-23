@@ -5,7 +5,7 @@
 # Version of your assets, change this if you want to expire all your assets.
 Rails.application.config.assets.version = '1.0'
 
-# Maybe needed with segfaults in sassc gem?
+# Needed due to segfaults in sassc gem.  Remove in Rails 7!
 Rails.application.config.assets.configure do |env|
   env.export_concurrent = false
 end
@@ -21,7 +21,7 @@ Rails.application.config.assets.paths << Rails.root.join('spec/karma') if Rails.
 # application.js, application.css, and all non-JS/CSS in the app/assets
 # folder are already added.
 Rails.application.config.assets.precompile += %w[ home.css home.js admin.css admin.js account.css
-                                                  account.js start.css start.js ]
+                                                  account.js start.css start.js analytics.js ]
 Rails.application.config.assets.precompile += %w[ application_spec.js ]
 
 # CSS from node modules

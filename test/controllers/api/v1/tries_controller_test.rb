@@ -192,6 +192,32 @@ module Api
           end
         end
 
+        test 'tracks creating a child try from a parent try' do
+          the_try = the_case.tries.latest
+
+          try_params = {
+            search_url:    'http://solr.quepid.com',
+            field_spec:    'catch_line',
+            query_params:  'q=#$query##',
+            search_engine: 'solr',
+            parent_id:     the_try.id,
+          }
+
+          assert_difference 'the_case.tries.count' do
+            post :create, params: { case_id: the_case.id, try: try_params }
+
+            assert_response :ok # should be :created,
+            # but there's a bug currently in the responders gem
+
+            the_case.reload
+            the_try.reload
+            try_response  = JSON.parse(response.body)
+            created_try   = the_case.tries.where(try_number: try_response['try_number']).first
+
+            assert_includes the_try.children, created_try
+          end
+        end
+
         test 'adds curator vars to the try' do
           try_params = {
             search_url:    'http://solr.quepid.com',

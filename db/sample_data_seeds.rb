@@ -23,6 +23,8 @@ print_step "Seeding users................"
 # Defaults
 ######################################
 
+search_url = "http://quepid-solr.dev.o19s.com:8985/solr/statedecoded/select"
+
 user_defaults = {
   administrator:    false,
   agreed:           true,
@@ -31,6 +33,15 @@ user_defaults = {
   name:             'No Name',
   password:         'password',
   email:            'foo@example.com',
+}
+
+try_defaults = {
+  try_number:       '1',
+  query_params:     'q=#$query##',
+  search_url:       search_url,
+  search_engine:    'solr',
+  field_spec:       'id:id title:catch_line structure text',
+
 }
 
 ######################################
@@ -95,15 +106,15 @@ es_case_user = seed_user user_params
 print_user_info user_params
 
 ######################################
-# User with 10s of Queries
+# User with Realistic Activity in Quepid
 ######################################
 
 user_specifics = {
-  name:             'User with 10s of Queries',
-  email:            'quepid+10sOfQueries@o19s.com',
+  name:             'User with Realistic Activity in Quepid',
+  email:            'quepid+realisticActivity@o19s.com',
 }
 user_params          = user_defaults.merge(user_specifics)
-tens_of_queries_user = seed_user user_params
+realistic_activity_user = seed_user user_params
 print_user_info user_params
 
 ######################################
@@ -181,7 +192,7 @@ print_case_info solr_case
 ######################################
 
 es_case = es_case_user.cases.create case_name: 'ES CASE'
-es_try = es_case.tries.best
+es_try = es_case.tries.latest
 es_params = {
   search_engine: :es,
   search_url:   Try::DEFAULTS[:es][:search_url],
@@ -230,9 +241,9 @@ print_step "End of seeding scorers................"
 # Ratings
 print_step "Seeding ratings................"
 
-search_url = "http://quepid-solr.dev.o19s.com:8985/solr/statedecoded/select"
 
-tens_of_queries_case = tens_of_queries_user.cases.create case_name: '10s of Queries'
+
+tens_of_queries_case = realistic_activity_user.cases.create case_name: '10s of Queries'
 
 unless tens_of_queries_case.queries.count >= 20
   generator = RatingsGenerator.new search_url, { number: 20 }
@@ -247,6 +258,43 @@ unless tens_of_queries_case.queries.count >= 20
 end
 
 print_step "End of seeding ratings................"
+
+# Tries
+print_step "Seeding tries................"
+
+30.times do |counter|
+
+  try_specifics = {
+    try_number:       counter,
+    query_params:     'q=#$query##&magicBoost=' + (counter+2).to_s
+  }
+
+  try_params = try_defaults.merge(try_specifics)
+
+  new_try = tens_of_queries_case.tries.build try_params
+
+  try_number = tens_of_queries_case.last_try_number + 1
+
+  new_try.try_number   = try_number
+  tens_of_queries_case.last_try_number = try_number
+
+  new_try.save
+  tens_of_queries_case.save
+
+  # seventy percent of the time lets grab a new origin for the try in the tree
+  # 30 percent of the time we just add a new one
+  if rand(0..100) <= 70
+    parent_try = tens_of_queries_case.tries.sample
+  end
+  new_try.parent = parent_try
+
+  new_try.save
+
+
+end
+
+
+print_step "End of seeding tries................"
 
 # Teams
 print_step "Seeding teams................"
