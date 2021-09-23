@@ -25,7 +25,6 @@
         self.edit              = edit;
         self.get               = get;
         self.list              = list;
-        self.rawScore          = rawScore;
         self.resetScorer       = resetScorer;
         self.scalesAreEqual    = scalesAreEqual;
         self.scorers           = [];
@@ -42,34 +41,6 @@
             .map(function(item) {
               return parseInt(item, 10);
             });
-        }
-
-        function rawScore(total, docs, bestDocs, options) {
-
-          return self.checkCode()
-          .then(function() {
-            if (angular.isUndefined(docs) || docs === null || docs.length === 0) {
-              return null;
-            }
-
-            var score = self.runCode(
-              total,
-              docs,
-              bestDocs,
-              'default',
-              options
-            );
-
-            if (angular.isNumber(score)) {
-              return score;
-            } else {
-              self.error = score;
-              return null;
-            }
-          }, function(message) {
-            self.error = message;
-            return message;
-          });
         }
 
         function constructFromData(data) {
@@ -125,6 +96,8 @@
             });
         }
 
+        // If you are editing a scorer used by your current Case, then you need to
+        // hard reload the Case to get the newly edited scorer ;-(.
         function edit(scorer) {
           // http PUT /api/scorers/<int:scorerId>
           var url   = '/api/scorers/' + scorer.scorerId;
