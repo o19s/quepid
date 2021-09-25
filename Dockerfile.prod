@@ -1,4 +1,4 @@
-FROM node:14.17.3-buster AS build-dep
+FROM node:15.14.0-buster AS build-dep
 WORKDIR /srv/app
 COPY package.json yarn.lock ./
 RUN yarn install --production=true
@@ -8,8 +8,9 @@ FROM ruby:2.7.4-buster
 LABEL maintainer="quepid_admin@opensourceconnections.com"
 
 # Must have packages
-# Build Dependencies for slim-buster: mariadb-server libmariadbclient-dev mariadb-client mysql-common  ruby-mysql2 libmariadbd-dev build-essential patch ruby-dev zlib1g-dev liblzma-dev gnupg
-RUN apt-get update -qq && apt-get install -y --no-install-recommends vim curl git tmux apt-transport-https ca-certificates \
+# The next line is a list of dependencies if we move to slim-buster, however it only shaves 80MB off the image.
+# mariadb-server libmariadbclient-dev mariadb-client mysql-common ruby-mysql2 libmariadbd-dev build-essential patch ruby-dev zlib1g-dev liblzma-dev gnupg
+RUN apt-get update -qq && apt-get install -y --no-install-recommends vim curl apt-transport-https ca-certificates \
   && rm -rf /var/lib/apt/lists/*
 
 # Node and Yarn
@@ -60,8 +61,6 @@ COPY ./Rakefile ./Rakefile
 COPY ./README.md ./README.md
 COPY ./vendor ./vendor
 COPY ./yarn.lock ./yarn.lock
-
-
 
 RUN mkdir -p tmp/pids
 
