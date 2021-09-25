@@ -38,6 +38,7 @@ gem 'webpacker', '= 5.4.0'
 gem 'rack-cors', '~> 1.1'
 gem 'foreman'
 gem 'racc', '~> 1.4.0'
+gem 'ancestry'
 
 group :development, :test do
   gem 'annotate'

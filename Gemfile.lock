@@ -67,6 +67,8 @@ GEM
     addressable (2.8.0)
       public_suffix (>= 2.0.2, < 5.0)
     aes_key_wrap (1.1.0)
+    ancestry (4.1.0)
+      activerecord (>= 5.2.6)
     angular-rails-templates (1.1.0)
       railties (>= 4.2, < 7)
       sprockets (>= 3.0, < 5)
@@ -391,6 +393,7 @@ PLATFORMS
 DEPENDENCIES
   activerecord-import (>= 1.0.7)
   acts_as_list (>= 1.0.1)
+  ancestry
   angular-rails-templates (>= 1.0.0.beta)
   annotate
   bcrypt (~> 3.1.7)

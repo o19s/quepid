@@ -131,7 +131,7 @@ class CaseTest < ActiveSupport::TestCase
   describe 'clone' do
     let(:user)        { users(:random) }
     let(:the_case)    { cases(:random_case) }
-    let(:the_try)     { the_case.tries.best }
+    let(:the_try)     { the_case.tries.latest }
     let(:cloned_case) { Case.new(case_name: 'Cloned Case') }
 
     describe 'when only cloning a try' do
@@ -146,7 +146,7 @@ class CaseTest < ActiveSupport::TestCase
 
             assert_equal 'Cloned Case', cloned_case.case_name
 
-            cloned_try = cloned_case.tries.best
+            cloned_try = cloned_case.tries.latest
 
             assert_equal the_try.query_params,  cloned_try.query_params
             assert_equal the_try.field_spec,    cloned_try.field_spec
@@ -234,7 +234,7 @@ class CaseTest < ActiveSupport::TestCase
   describe 'destroy' do
     let(:user)        { users(:random) }
     let(:the_case)    { cases(:random_case) }
-    let(:the_try)     { the_case.tries.best }
+    let(:the_try)     { the_case.tries.latest }
 
     it 'destroys the related objects' do
       assert_difference 'Case.count', -1 do

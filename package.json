@@ -39,6 +39,7 @@
     "splainer-search": "2.10.0",
     "tether-shepherd": "latest",
     "turbolinks": "^5.2.0",
+    "vega": "^5.20.2",
     "webpack": "^4.46.0",
     "webpack-cli": "^3.3.12"
   },
