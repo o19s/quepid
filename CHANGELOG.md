@@ -14,6 +14,8 @@
 
 * The messaging around how many documents are being scored, i.e `@10` or `@40` is now driven by the variable `k` defined in various Scorers.  Commit 73a378f9bae777cb504618cdc3361bfec52ff82f by @epugh fixes https://github.com/o19s/quepid/issues/413 by @DmitryKey.
 
+* We audited our Docker builds, and _*shrank* the images from 2.42GB to 1.44GB!   Bumping Node version to 15, be smarter about what folders we copy into our production image, and some general fixups.  https://github.com/o19s/quepid/pull/409 by @dworley and @epugh.
+
 
 ## 6.7.0 - 2021-08-26
 
