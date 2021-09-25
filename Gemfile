@@ -37,6 +37,7 @@ gem 'font-awesome-sass'
 gem 'webpacker', '= 5.4.0'
 gem 'rack-cors', '~> 1.1'
 gem 'foreman'
+gem 'racc', '~> 1.4.0'
 gem 'ancestry'
 
 group :development, :test do
@@ -44,9 +45,7 @@ group :development, :test do
   gem 'bullet'
   gem 'byebug'
   gem 'memory_profiler'
-  # rubocop:disable Layout/LineLength
-  gem 'rack-mini-profiler', git: 'https://github.com/MiniProfiler/rack-mini-profiler' # pending release with PR 505 included
-  # rubocop:enable Layout/LineLength
+  gem 'rack-mini-profiler', '>= 2.3.3'
 end
 
 group :development do

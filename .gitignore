@@ -18,7 +18,10 @@
 # Ignore all logfiles and tempfiles.
 /log/*
 !/log/.keep
-/tmp
+/tmp/*
+!/tmp/pids
+/tmp/pids/*
+!/tmp/pids/.keep
 
 # Ignore bower artifacts
 /vendor/assets/bower_components
