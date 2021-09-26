@@ -4,24 +4,50 @@
 <meta charset="utf-8">
 <title>Quepid -- Relevant Search Solved</title>
 <%= favicon_link_tag asset_path "favicon.ico" %>
+
+
+<!-- Probably better way of doing this -->
+<% if flash[:unfurl] %>
 <!-— facebook open graph tags -->
 <meta property="og:type" content="website" />
-<meta property="og:url" content="http://ruraljuror.com/" />
-<meta property="og:title" content="Rural Juror" />
-<meta property="og:description" content="The film, based on a Kevin Grisham novel (John Grisham’s brother), revolves around a Southern–born lawyer named Constance Justice." />
-<meta property="og:image" content="http://ruraljuror.com/heroimage.png" />
+<meta property="og:url" content="<%=case_home_url(id: flash[:unfurl]["id"] ) %>" />
+<meta property="og:title" content="<%= flash[:unfurl]["case_name"] %>" />
+<meta property="og:description" content="Case <%= flash[:unfurl]["case_name"] %> Description here." />
+<!--meta property="og:image" content="http://ruraljuror.com/heroimage.png" /-->
 
 <!-— twitter card tags additive with the og: tags -->
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:domain" value="ruraljuror.com" />
-<meta name="twitter:title" value="Rural Juror" />
-<meta name="twitter:description" value="The film, based on a Kevin Grisham novel (John Grisham’s brother), revolves around a Southern–born lawyer named Constance Justice." />
-<meta name="twitter:image" content="http://ruraljuror.com/heroimage.png" />
-<meta name="twitter:url" value="http://www.ruraljuror.com/" />
-<meta name="twitter:label1" value="Opens in Theaters" />
+<meta name="twitter:card" content="summary">
+<meta name="twitter:domain" value="<%=URI.parse(root_url).host%>" />
+<meta name="twitter:title" value="<%= flash[:unfurl]["case_name"] %>" />
+<meta name="twitter:description" value="Case <%= flash[:unfurl]["case_name"] %> Description here" />
+<!--meta name="twitter:image" content="http://ruraljuror.com/heroimage.png" /-->
+<meta name="twitter:url" value="<%=case_home_url(id: flash[:unfurl]["id"] ) %>" />
+<meta name="twitter:label1" value="Try" />
+<meta name="twitter:data1" value="52" />
+<meta name="twitter:label2" value="Score" />
+<meta name="twitter:data2" value=".33" />
+<% else %>
+<!-— facebook open graph tags -->
+<meta property="og:type" content="website" />
+<meta property="og:url" content="<%=root_url%>" />
+<meta property="og:title" content="Quepid -- Relevant Search Solved" />
+<meta property="og:description" content="Tired of irrelevant search results? Use Quepid products & services to help improve the quality and relevancy of your search results." />
+<!--meta property="og:image" content="http://ruraljuror.com/heroimage.png" /-->
+
+<!-— twitter card tags additive with the og: tags -->
+<meta name="twitter:card" content="summary">
+<meta name="twitter:domain" value="<%=URI.parse(root_url).host%>" />
+<meta name="twitter:title" value="Quepid -- Relevant Search Solved" />
+<meta name="twitter:description" value="Tired of irrelevant search results? Use Quepid products & services to help improve the quality and relevancy of your search results." />
+<!--meta name="twitter:image" content="http://ruraljuror.com/heroimage.png" /-->
+<meta name="twitter:url" value="<%=root_url%>" />
+<!--meta name="twitter:label1" value="Opens in Theaters" />
 <meta name="twitter:data1" value="December 1, 2015" />
 <meta name="twitter:label2" value="Or on demand" />
-<meta name="twitter:data2" value="at Hulu.com" /><meta name="viewport" content="width=device-width">
+<meta name="twitter:data2" value="at Hulu.com" /-->
+<% end %>
+
+<meta name="viewport" content="width=device-width">
 
 <%= stylesheet_link_tag 'start', media: 'all' %>
 <%= csrf_meta_tags %>
