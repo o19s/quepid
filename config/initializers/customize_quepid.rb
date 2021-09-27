@@ -80,7 +80,7 @@ Rails.application.config.keycloak_site = ENV.fetch('KEYCLOAK_SITE', '')
 # == Google Analytics
 # To enable Google Analytics, set this environment variable.
 Rails.application.config.google_analytics = ENV.fetch('QUEPID_GA', '')
-Rails.application.config.google_analytics_enabled = Rails.application.config.google_analytics.length > 3
+Rails.application.config.google_analytics_enabled = !Rails.application.config.google_analytics.blank?
 
 # == Domain Quepid is Running Under
 # Certain features, like sending emails and Google Analytics require you to set the domain that Quepid

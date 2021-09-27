@@ -87,6 +87,15 @@ To comply with GDPR, and be a good citizen, the hosted version of Quepid asks if
 EMAIL_MARKETING_MODE=true   # Enables a checkbox on user signup to consent to emails
 ```
 
+# User Tracking
+
+We currently only support Google Analytics, and you enable it by setting the following `ENV` var:
+
+```
+QUEPID_GA=XXXXXXXXXXXX  # Your Google Analytics Key
+```
+
+
 # Healthcheck
 
 Want to monitor if Quepid is behaving?  Just monitor `/healthcheck`, and you will get 200 status codes from a healthy Quepid, and 503 if not.  The JSON output is `{"code":200,"status":{"database":"OK","migrations":"OK"}}`.
