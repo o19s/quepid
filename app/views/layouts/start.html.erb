@@ -8,6 +8,7 @@
 
 <!-- Probably better way of doing this -->
 <!-- unfurl is <%=flash[:unfurl]%>
+<!-- params is <% @test %>
 <% if flash[:unfurl] %>
 <!-- We have unfurl -->
 <!-— facebook open graph tags -->
@@ -29,6 +30,27 @@
 <meta name="twitter:data1" value="52" />
 <meta name="twitter:label2" value="Score" />
 <meta name="twitter:data2" value=".33" />
+<% elsif @case %>
+<!-- We have @case -->
+<!-— facebook open graph tags -->
+<meta property="og:type" content="website" />
+<meta property="og:url" content="<%=case_home_url(id: @case.id ) %>" />
+<meta property="og:title" content="Case <%= @case.case_name %>" />
+<meta property="og:description" content="Case <%= @case.case_name %> Description here." />
+<meta property="og:image" content="<%= image_url "quepid-icon.png" %>" />
+
+<!-— twitter card tags additive with the og: tags -->
+<meta name="twitter:card" content="summary">
+<meta name="twitter:site" content="@quepid_search">
+<meta name="twitter:domain" value="<%=URI.parse(root_url).host%>" />
+<meta name="twitter:title" value="<%= @case.case_name %>" />
+<meta name="twitter:description" value="Case <%=  @case.case_name %> Description here" />
+<meta name="twitter:image" content="<%= image_url "quepid-icon.png" %>" />
+<meta name="twitter:url" value="<%=case_home_url(id: @case.id  ) %>" />
+<meta name="twitter:label1" value="Try" />
+<meta name="twitter:data1" value="55" />
+<meta name="twitter:label2" value="Score" />
+<meta name="twitter:data2" value=".35" />
 <% else %>
 <!-- We DO NOT have unfurl -->
 <!-— facebook open graph tags -->
