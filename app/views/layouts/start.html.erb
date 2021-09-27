@@ -2,12 +2,15 @@
 <html>
 <head>
 <meta charset="utf-8">
-<title>Quepid -- Relevant Search Solved</title>
+
 <%= favicon_link_tag asset_path "favicon.ico" %>
 
 <!-- Probably better way of doing this -->
 <% if flash[:unfurl] %>
 <!-- We have unfurl -->
+
+<title>Case <%= flash[:unfurl]["case_name"] %></title>
+
 <!-— facebook open graph tags -->
 <meta property="og:type" content="website" />
 <% if flash[:unfurl]["id"] %>
@@ -21,14 +24,20 @@
 <meta name="twitter:card" content="summary">
 <meta name="twitter:site" content="@quepid_search">
 <meta name="twitter:domain" value="<%=URI.parse(root_url).host%>" />
-<meta name="twitter:title" value="<%= flash[:unfurl]["case_name"] %>" />
+<meta name="twitter:title" value="Case <%= flash[:unfurl]["case_name"] %>" />
 <meta name="twitter:description" value="Case <%= flash[:unfurl]["case_name"] %> Description here" />
 <meta name="twitter:image" content="<%= image_url "quepid-icon.png" %>" />
 <% if flash[:unfurl]["id"] %>
 <meta name="twitter:url" value="<%=case_home_url(id: flash[:unfurl]["id"] ) %>" />
+
+<meta name="twitter:label1" value="Latest Try" />
+<meta name="twitter:data1" value="<%=Case.find_by_id(flash[:unfurl]["id"]).tries.latest.try_number %>" />
 <% end %>
 <% else %>
 <!-- We DO NOT have unfurl -->
+
+<title>Quepid -- Relevant Search Solved</title>
+
 <!-— facebook open graph tags -->
 <meta property="og:type" content="website" />
 <meta name="twitter:site" content="@quepid_search">
