@@ -13,6 +13,7 @@ module ApplicationHelper
   # rubocop:disable Metrics/MethodLength
   def flash_messages _opts = {}
     flash.each do |msg_type, message|
+      next if msg_type == "unfurl" # we don't show unfurl's in the flash notice UI.
       concat(
         content_tag(
           :div,

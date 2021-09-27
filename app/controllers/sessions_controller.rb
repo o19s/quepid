@@ -12,11 +12,6 @@ class SessionsController < ApplicationController
 
   def new
     @user = User.new
-    @test = params
-    if params[:case_id]
-      @case = Case.find_by_id(params[:case_id])
-    end
-
   end
 
   def create
