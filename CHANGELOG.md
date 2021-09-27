@@ -10,11 +10,15 @@
 
 * Now sort queries by most recently modified.  https://github.com/o19s/quepid/pull/334 by @DmitryKey and @epugh fixes https://github.com/o19s/quepid/issues/307.
 
+* Excited to share the improvements you made to your Case?  You can now drop your link to the Case into Slack or other messaging tools, and it will _unfurl_, i.e show the Case Name and the most recent Try number.  You will still need to log into Quepid and have access to that Case.  https://github.com/o19s/quepid/pull/417 by @epugh fixes https://github.com/o19s/quepid/issues/416.
+
 ### Improvements
 
 * The messaging around how many documents are being scored, i.e `@10` or `@40` is now driven by the variable `k` defined in various Scorers.  Commit 73a378f9bae777cb504618cdc3361bfec52ff82f by @epugh fixes https://github.com/o19s/quepid/issues/413 by @DmitryKey.
 
 * We audited our Docker builds, and _*shrank* the images from 2.42GB to 1.44GB!   Bumping Node version to 15, be smarter about what folders we copy into our production image, and some general fixups.  https://github.com/o19s/quepid/pull/409 by @dworley and @epugh.
+
+* The logic to check if Google Analytics is enabled via ENV variable is different then the normal Quepid ENV handling.  https://github.com/o19s/quepid/pull/419 by @epugh cleaned this up, and solves a class loading issue in the DEV mode Quepid, increasing developer happiness!
 
 
 ## 6.7.0 - 2021-08-26
