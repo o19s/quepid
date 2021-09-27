@@ -1,10 +1,3 @@
-GIT
-  remote: https://github.com/MiniProfiler/rack-mini-profiler
-  revision: 5f29900d977e690d03a0acd3609f9f6b43c18b7f
-  specs:
-    rack-mini-profiler (2.3.2)
-      rack (>= 1.2.0)
-
 GEM
   remote: https://rubygems.org/
   specs:
@@ -74,6 +67,8 @@ GEM
     addressable (2.8.0)
       public_suffix (>= 2.0.2, < 5.0)
     aes_key_wrap (1.1.0)
+    ancestry (4.1.0)
+      activerecord (>= 5.2.6)
     angular-rails-templates (1.1.0)
       railties (>= 4.2, < 7)
       sprockets (>= 3.0, < 5)
@@ -258,10 +253,12 @@ GEM
       puma (>= 2.7)
     pundit (2.1.1)
       activesupport (>= 3.0.0)
-    racc (1.5.2)
+    racc (1.4.16)
     rack (2.2.3)
     rack-cors (1.1.1)
       rack (>= 2.0.0)
+    rack-mini-profiler (2.3.3)
+      rack (>= 1.2.0)
     rack-protection (2.1.0)
       rack
     rack-proxy (0.7.0)
@@ -396,6 +393,7 @@ PLATFORMS
 DEPENDENCIES
   activerecord-import (>= 1.0.7)
   acts_as_list (>= 1.0.1)
+  ancestry
   angular-rails-templates (>= 1.0.0.beta)
   annotate
   bcrypt (~> 3.1.7)
@@ -430,8 +428,9 @@ DEPENDENCIES
   puma (~> 5.0)
   puma_worker_killer
   pundit
+  racc (~> 1.4.0)
   rack-cors (~> 1.1)
-  rack-mini-profiler!
+  rack-mini-profiler (>= 2.3.3)
   rails (= 6.1.4.1)
   rails-controller-testing
   rails-erd (~> 1.6)

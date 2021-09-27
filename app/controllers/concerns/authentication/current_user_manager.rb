@@ -43,7 +43,14 @@ module Authentication
     end
 
     def require_login
-      redirect_to new_session_path unless @current_user
+      unless @current_user
+        # check if we are redirected from the case page, and if so lets support unfurling
+        # by populating the flash so it renders in the start.html.erb layout.
+        if 'home' == params[:controller] && 'index' == params[:action] && params[:id]
+          flash[:unfurl] = Case.find_by(id: params[:id])
+        end
+        redirect_to new_session_path
+      end
     end
 
     def auto_login user

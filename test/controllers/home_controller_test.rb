@@ -24,7 +24,7 @@ class HomeControllerTest < ActionController::TestCase
   describe 'Bootstrap case and try' do
     let(:user)      { users(:bootstrap_user) }
     let(:the_case)  { user.cases.where.not(archived: true).last }
-    let(:the_try)   { the_case.tries.best }
+    let(:the_try)   { the_case.tries.latest }
 
     before do
       login_user user

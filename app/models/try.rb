@@ -22,9 +22,10 @@ require 'solr_arg_parser'
 require 'es_arg_parser'
 
 class Try < ApplicationRecord
+  has_ancestry orphan_strategy: :adopt
+
   # Scopes
-  scope :best, -> { order(id: :desc).first }
-  scope :latest, -> { order(try_number: :desc).limit(1).first }
+  scope :latest, -> { order(id: :desc).first } # The try created the most recently
 
   # Constants
   DEFAULTS = {

@@ -3,12 +3,14 @@
 angular.module('QuepidApp')
   .controller('QueryParamsCtrl', [
     '$scope',
-    'esUrlSvc',
+    'esUrlSvc','caseTryNavSvc',
     'TryFactory',
-    function ($scope, esUrlSvc, TryFactory) {
+    function ($scope, esUrlSvc, caseTryNavSvc, TryFactory) {
 
       $scope.qp = {};
       $scope.qp.curTab = 'developer';
+
+      $scope.caseNo = caseTryNavSvc.getCaseNo();
 
       $scope.showQueryParamsWarning = false;
       $scope.queryParamsWarning = '';

@@ -63,8 +63,9 @@ module Api
               try_response  = JSON.parse(response.body)
               created_try   = the_case.tries.first
 
-              assert_try_matches_response try_response, created_try
-              assert_tries_match          the_try,      created_try
+              assert_try_matches_response try_response,     created_try
+              assert_tries_match          the_try,          created_try
+              assert_includes             the_try.children, created_try
             end
           end
 

@@ -143,8 +143,8 @@
           </a>
         </span>
 
-        <span class="text-muted text-warning bg-warning clearfix">
-          <strong>Note:</strong> Only the top 10 results are used in the scoring calculations.
+        <span ng-if="query.depthOfRating" class="text-muted text-warning bg-warning clearfix">
+          <strong>Note:</strong> Only the top {{query.depthOfRating}} results are used in the scoring calculations.
         </span>
       </div>
     </div>
