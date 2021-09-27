@@ -5,13 +5,14 @@
 <title>Quepid -- Relevant Search Solved</title>
 <%= favicon_link_tag asset_path "favicon.ico" %>
 
-
 <!-- Probably better way of doing this -->
 <% if flash[:unfurl] %>
 <!-- We have unfurl -->
 <!-— facebook open graph tags -->
 <meta property="og:type" content="website" />
+<% if flash[:unfurl]["id"] %>
 <meta property="og:url" content="<%=case_home_url(id: flash[:unfurl]["id"] ) %>" />
+<% end %>
 <meta property="og:title" content="Case <%= flash[:unfurl]["case_name"] %>" />
 <meta property="og:description" content="Case <%= flash[:unfurl]["case_name"] %> Description here." />
 <meta property="og:image" content="<%= image_url "quepid-icon.png" %>" />
@@ -23,11 +24,9 @@
 <meta name="twitter:title" value="<%= flash[:unfurl]["case_name"] %>" />
 <meta name="twitter:description" value="Case <%= flash[:unfurl]["case_name"] %> Description here" />
 <meta name="twitter:image" content="<%= image_url "quepid-icon.png" %>" />
+<% if flash[:unfurl]["id"] %>
 <meta name="twitter:url" value="<%=case_home_url(id: flash[:unfurl]["id"] ) %>" />
-<meta name="twitter:label1" value="Try" />
-<meta name="twitter:data1" value="52" />
-<meta name="twitter:label2" value="Score" />
-<meta name="twitter:data2" value=".33" />
+<% end %>
 <% else %>
 <!-- We DO NOT have unfurl -->
 <!-— facebook open graph tags -->
