@@ -1,6 +1,6 @@
 # Changelog
 
-## 6.8.0 - ??
+## 6.8.0 - 2021-09-28
 
 ### Features
 
@@ -19,6 +19,8 @@
 * We audited our Docker builds, and _*shrank* the images from 2.42GB to 1.44GB!   Bumping Node version to 15, be smarter about what folders we copy into our production image, and some general fixups.  https://github.com/o19s/quepid/pull/409 by @dworley and @epugh.
 
 * The logic to check if Google Analytics is enabled via ENV variable is different then the normal Quepid ENV handling.  https://github.com/o19s/quepid/pull/419 by @epugh cleaned this up, and solves a class loading issue in the DEV mode Quepid, increasing developer happiness!
+
+* Trying to find a doc that SHOULD match and be rated, but can't find it?  Using a global scorer like NDCG and curious what all the ratings are?   We have reworked the _Explain Missing Documents_ UI into a _Find and Rate Missing Documents_ that lets you see all your ratings associated with a query, and then search and find other documents that are missing.  Preview video here https://share.descript.com/view/IkxWkjSzzKF. https://github.com/o19s/quepid/pull/407 by @epugh fixes https://github.com/o19s/quepid/issues/406 by @mkr.
 
 
 ## 6.7.0 - 2021-08-26
