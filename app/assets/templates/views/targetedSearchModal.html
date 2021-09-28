@@ -1,26 +1,41 @@
 <div class="modal-header">
   <button type="button" class="close" ng-click="targetedSearchModalModel.closeModal()" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-  <h3 class="modal-title">Explain Missing Documents</h3>
+  <h3 class="modal-title">Find and Rate Missing Documents</h3>
 </div>
 <div class="modal-body" id="targeted-search-modal">
-  <div ng-controller = 'DocFinderCtrl' class="arrow_box">
+  <p>
+    Often you know that a document is a good match for a query, but it doesn't match the current query.
+    This lets you find that document and give it a grade, which then influences your scorer.  For example,
+    NDCG is based on your global scores, so if your top 10 are all <code>1</code>'s, and you find and rate a document as a <code>3</code>,
+    then the score will drop if that <code>3</code> rated document doesn't show up first!
+  </p>
+  <div ng-controller = 'DocFinderCtrl'>
     <form ng-submit="findDocs()">
       <div class="row">
         <div class="form-group col-sm-6">
           <input type="text" ng-model="docFinder.queryText" class="form-control" placeholder="Search Query"></input>
           <p class="help-block">
-            Use the simple query syntax (<code>field:value</code>).<br />
+            Use the simple <a href="https://www.lucenetutorial.com/lucene-query-syntax.html" target="_blank">Lucene query syntax</a> (<code>field:value</code>).<br />
             Solr example: <code>id:123</code>.<br />
             ES example: <code>_id:123</code>.
           </p>
         </div>
         <div class="col-sm-3">
+          <p>
           <input type="submit" class="btn btn-primary form-control" value="Search"></input>
+          </p>
+    </form>
+    <form ng-submit="resetToAllRatedDocs()">
+          <p>
+          <input type="submit" class="btn btn-default form-control" ng-class="{ disabled: defaultList }" value="Show Only Rated Docs"></input>
+          </p>
+    </form>
         </div>
       </div>
-    </form>
+
     <div style="padding-top: 20px">
     </div>
+
     <div>
       <div class="row alert alert-warning" ng-if="this.docFinder.numFound == 0">
         Your query <em>{{docFinder.lastQuery}}</em> returned no results
@@ -32,7 +47,7 @@
         </p>
 
         <p ng-if="defaultList">
-          Your query <em>{{docFinder.lastQuery}}</em> has <em>{{docFinder.numFound}}</em> rated results
+          Your original query <em>{{query.queryText}}</em> has a total of <em>{{docFinder.numFound}}</em> ratings
         </p>
 
 
