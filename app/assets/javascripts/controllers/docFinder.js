@@ -164,10 +164,11 @@ angular.module('QuepidApp')
       );
 
       $scope.resetToAllRatedDocs = function(){
-        $scope.docFinder.queryText = "";
+        $scope.docFinder.queryText = '';
         $scope.initializeToRatedDocs();
 
-      }
+      };
+      
       $scope.initializeToRatedDocs = function() {
         // Initialize to rated docs
         var fieldSpec = currSettings.createFieldSpec();
