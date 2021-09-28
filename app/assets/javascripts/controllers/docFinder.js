@@ -163,44 +163,55 @@ angular.module('QuepidApp')
         src
       );
 
-      // Initialize to rated docs
-      var fieldSpec = currSettings.createFieldSpec();
-      var ratedIDs = $scope.query.ratings ? Object.keys($scope.query.ratings) : [];
+      $scope.resetToAllRatedDocs = function(){
+        $scope.docFinder.queryText = "";
+        $scope.initializeToRatedDocs();
 
-      // The filter here is for empty ID's that seem to sneak in, a bug somewhere else?
-      ratedIDs = ratedIDs.filter( (r) => { return r.length > 0; });
-
-      // Don't query if there are no ratings, the "no results" message is weird.
-      if (ratedIDs.length === 0) {
-        return;
       }
+      $scope.initializeToRatedDocs = function() {
+        // Initialize to rated docs
+        var fieldSpec = currSettings.createFieldSpec();
+        var ratedIDs = $scope.query.ratings ? Object.keys($scope.query.ratings) : [];
 
-      $scope.docFinder.numFound = ratedIDs.length;
+        // The filter here is for empty ID's that seem to sneak in, a bug somewhere else?
+        ratedIDs = ratedIDs.filter( (r) => { return r.length > 0; });
 
-      $scope.docFinder.searcher = queriesSvc.createSearcherFromSettings(currSettings, $scope.query.queryText);
+        // Don't query if there are no ratings, the "no results" message is weird.
+        if (ratedIDs.length === 0) {
+          return;
+        }
 
-      if ($scope.docFinder.searcher.type === 'es') {
-        var filter = {
-          'query': $scope.query.filterToRatings(currSettings, $scope.docFinder.docs.length)
-        };
-        $scope.docFinder.searcher.explainOther(
-          filter, fieldSpec)
-          .then(function() {
-            var normed = queriesSvc.normalizeDocExplains($scope.query, $scope.docFinder.searcher, fieldSpec);
-            $scope.docFinder.docs = normed;
+        $scope.docFinder.numFound = ratedIDs.length;
+        $scope.docFinder.totalRatings = ratedIDs.length;
 
-            $scope.defaultList = true;
-        });
+        $scope.docFinder.searcher = queriesSvc.createSearcherFromSettings(currSettings, $scope.query.queryText);
 
-      } else if ($scope.docFinder.searcher.type === 'solr') {
-        $scope.docFinder.searcher.explainOther(
-          $scope.query.filterToRatings(currSettings, $scope.docFinder.docs.length), fieldSpec, 'lucene')
-          .then(function() {
-            var normed = queriesSvc.normalizeDocExplains($scope.query, $scope.docFinder.searcher, fieldSpec);
-            $scope.docFinder.docs = normed;
+        if ($scope.docFinder.searcher.type === 'es') {
+          var filter = {
+            'query': $scope.query.filterToRatings(currSettings, $scope.docFinder.docs.length)
+          };
+          $scope.docFinder.searcher.explainOther(
+            filter, fieldSpec)
+            .then(function() {
+              var normed = queriesSvc.normalizeDocExplains($scope.query, $scope.docFinder.searcher, fieldSpec);
+              $scope.docFinder.docs = normed;
 
-            $scope.defaultList = true;
-        });
-      }
+              $scope.defaultList = true;
+          });
+
+        } else if ($scope.docFinder.searcher.type === 'solr') {
+          $scope.docFinder.searcher.explainOther(
+            $scope.query.filterToRatings(currSettings, $scope.docFinder.docs.length), fieldSpec, 'lucene')
+            .then(function() {
+              var normed = queriesSvc.normalizeDocExplains($scope.query, $scope.docFinder.searcher, fieldSpec);
+              $scope.docFinder.docs = normed;
+
+              $scope.defaultList = true;
+          });
+        }
+      };
+
+
+      $scope.initializeToRatedDocs();
     }
   ]);
