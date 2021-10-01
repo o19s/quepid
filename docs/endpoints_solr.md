@@ -36,6 +36,9 @@ Quepid adds some parameters:
 
 ## Find and Rate Missing Documents
 
+This Modal UI in Quepid  has two query patterns for interacting with Solr.   The first is the ability for you to craft basic Lucene queries to go find some documents that then can be rated.  The second query pattern is to return ALL the documents that have been rated for a query, and is in the style of a lookup via list of id's for the documents.
+
+### Find Documents
 This function sends off whatever you enter to Solr using the standard GET request handler and expects a response type of JSON, wrapped in JSONP.
 
 ```
@@ -43,6 +46,22 @@ http://quepid-solr.dev.o19s.com:8985/solr/tmdb/select?q=star&explainOther=title:
 ```
 1. `q=star` comes from the Query that you clicked Missing Documents button in the UI.
 1. `explainOther=title:war` comes from the query you entered on the Find and Rate Missing Documents modal and is Lucene query.
+1. `fl=id title poster_path overview cast` comes from the Settings
+1. `wt=json` is to ensure the response is in JSON format that Quepid expects.
+1. `debug=true&debug.explain.structured=true` is used to get back the query explain information.  If this isn't available, that is fine, you just don't get the information about how the query matched the docs in the UI.
+1. `hl=false` disables highlighting.  We used to actually use highlighting in our snippets, so this may change.
+1. `rows=10` is driven by the Settings Pane in the UI.
+1. `json.wrf=angular.callbacks._8` to avoid needing to use CORS, we use JSONP, which requires this parameter to be sent to Solr, and wraps the resulting JSON response in the function `angular.callbacks._8()`.  
+
+### List All Documents That Have Been Rated
+This function sends off a query using the `{!terms}` component to look up the docs by their ids, using the GET request handler and expects a response type of JSON, wrapped in JSONP.
+
+```
+http://quepid-solr.dev.o19s.com:8985/solr/tmdb/select?qf=title%20id&rows=10&start=0&q={!terms%20f=id}193,13475&defType=lucene&fl=id title poster_path overview cast&wt=json&debug=true&debug.explain.structured=true&hl=false&json.wrf=angular.callbacks._z
+```
+1. `q={!terms%20f=id}193,13475` is the lookup by document id, in this case docs _193_ and _13475_.  This list will be as long as the number of rated docs.
+1. `defType=lucene` changes the query parser to be specific to Lucene.  (Do we need it?).
+1. `qf=title id` is the fields to be queried on, however in Lucene this isn't a parameter we use.  (Do we need it?).
 1. `fl=id title poster_path overview cast` comes from the Settings
 1. `wt=json` is to ensure the response is in JSON format that Quepid expects.
 1. `debug=true&debug.explain.structured=true` is used to get back the query explain information.  If this isn't available, that is fine, you just don't get the information about how the query matched the docs in the UI.
