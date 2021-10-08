@@ -6,20 +6,24 @@ Most query responses are of type of JSON, wrapped in JSONP function name.
 
 ## Ping Solr During Case Setup
 
-Quepid checks that that Solr is available and responding during Case setup wizard, and if not
+Quepid checks that that Solr is available and responding during the Case Setup Wizard, and if not
 then Quepid attempts to provide you some workarounds.  You can bypass this check as well, and then
-fix your Solr setup yourself in the Case Settings window ;-).
+fix your connectivity setup yourself in the Case Settings window ;-).
 
 ```
 http://quepid-solr.dev.o19s.com:8985/solr/tmdb/select?q=*:*&fl=*&wt=json&debug=true&debug.explain.structured=true&hl=false&rows=10&json.wrf=angular.callbacks._5
 ```
 
-## Basic Queries
+1. `q=*:*` is meant to be a query all docs, and is just to help you get a sample doc.  As long as you get one doc back, this is fine.
+1. `fl=*` is to get a listing of fields back, for the UI in the Case Setup Wizard.
+1. `wt=json` is to ensure the response is in JSON format that Quepid expects.
 
-Basic queries are sent off to Solr using the standard GET request handler.
+## Queries
+
+Queries are sent off to Solr using the standard GET request handler.
 
 ```
-http://quepid-solr.dev.o19s.com:8985/solr/tmdb/select?q=star%20wars&fl=id title&wt=json&debug=true&debug.explain.structured=true&hl=false&rows=10&json.wrf=angular.callbacks._2
+http://quepid-solr.dev.o19s.com:8985/solr/tmdb/select?q=star%20wars&fl=id title&wt=json&debug=true&debug.explain.structured=true&hl=false&rows=10&start=0&json.wrf=angular.callbacks._2
 ```
 
 Quepid adds some parameters:
@@ -31,6 +35,7 @@ Quepid adds some parameters:
 1. `echoParams=all` lets us return all the params used in constructing the query to show in the UI.  You can override this via passing in `echoParams=none`.
 1. `hl=false` disables highlighting.  We used to actually use highlighting in our snippets, so this may be able to be removed.
 1. `rows=10` is driven by the Settings Pane in the UI.
+1. `start=1` is added when you start to paginate through the results.
 1. `json.wrf=angular.callbacks._2` to avoid needing to use CORS, we use JSONP, which requires this parameter to be sent to Solr, and wraps the resulting JSON response in the function `angular.callbacks._2()`.  
 
 
@@ -44,8 +49,8 @@ This function sends off whatever you enter to Solr using the standard GET reques
 ```
 http://quepid-solr.dev.o19s.com:8985/solr/tmdb/select?q=star&explainOther=title:war&fl=id title poster_path overview cast&wt=json&debug=true&debug.explain.structured=true&hl=false&rows=10&json.wrf=angular.callbacks._8
 ```
-1. `q=star` comes from the Query that you clicked Missing Documents button in the UI.
-1. `explainOther=title:war` comes from the query you entered on the Find and Rate Missing Documents modal and is Lucene query.
+1. `q=star` comes from the actual Query that you clicked Missing Documents button in the UI.
+1. `explainOther=title:war` comes from the query you entered on the Find and Rate Missing Documents modal and is a Lucene query.   If you are building an adapter, you probably just want to search for the `explainOther` property.
 1. `fl=id title poster_path overview cast` comes from the Settings
 1. `wt=json` is to ensure the response is in JSON format that Quepid expects.
 1. `debug=true&debug.explain.structured=true` is used to get back the query explain information.  If this isn't available, that is fine, you just don't get the information about how the query matched the docs in the UI.
