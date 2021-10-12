@@ -10,9 +10,9 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_09_17_212115) do
+ActiveRecord::Schema.define(version: 2021_10_12_153900) do
 
-  create_table "annotations", id: :integer, charset: "utf8", force: :cascade do |t|
+  create_table "annotations", id: :integer, charset: "utf8mb3", force: :cascade do |t|
     t.text "message"
     t.string "source"
     t.integer "user_id"
@@ -44,7 +44,7 @@ ActiveRecord::Schema.define(version: 2021_09_17_212115) do
     t.index ["user_id"], name: "user_id"
   end
 
-  create_table "cases", id: :integer, charset: "utf8", force: :cascade do |t|
+  create_table "cases", id: :integer, charset: "utf8mb3", force: :cascade do |t|
     t.string "case_name", limit: 191
     t.integer "last_try_number"
     t.integer "owner_id"
@@ -55,7 +55,7 @@ ActiveRecord::Schema.define(version: 2021_09_17_212115) do
     t.index ["owner_id"], name: "user_id"
   end
 
-  create_table "curator_variables", id: :integer, charset: "latin1", force: :cascade do |t|
+  create_table "curator_variables", id: :integer, charset: "utf8mb3", force: :cascade do |t|
     t.string "name", limit: 500
     t.float "value"
     t.integer "try_id"
@@ -64,7 +64,7 @@ ActiveRecord::Schema.define(version: 2021_09_17_212115) do
     t.index ["try_id"], name: "try_id"
   end
 
-  create_table "permissions", id: :integer, charset: "utf8", force: :cascade do |t|
+  create_table "permissions", id: :integer, charset: "utf8mb3", force: :cascade do |t|
     t.integer "user_id"
     t.string "model_type", null: false
     t.string "action", null: false
@@ -87,7 +87,7 @@ ActiveRecord::Schema.define(version: 2021_09_17_212115) do
     t.index ["case_id"], name: "case_id"
   end
 
-  create_table "ratings", id: :integer, charset: "latin1", force: :cascade do |t|
+  create_table "ratings", id: :integer, charset: "utf8mb3", force: :cascade do |t|
     t.string "doc_id", limit: 500
     t.integer "rating"
     t.integer "query_id"
@@ -111,11 +111,11 @@ ActiveRecord::Schema.define(version: 2021_09_17_212115) do
     t.boolean "communal", default: false
   end
 
-  create_table "snapshot_docs", id: :integer, charset: "latin1", force: :cascade do |t|
+  create_table "snapshot_docs", id: :integer, charset: "utf8mb3", force: :cascade do |t|
     t.string "doc_id", limit: 500
     t.integer "position"
     t.integer "snapshot_query_id"
-    t.text "explain", size: :medium
+    t.text "explain", size: :long
     t.boolean "rated_only", default: false
     t.index ["snapshot_query_id"], name: "snapshot_query_id"
   end
@@ -127,7 +127,7 @@ ActiveRecord::Schema.define(version: 2021_09_17_212115) do
     t.index ["snapshot_id"], name: "snapshot_id"
   end
 
-  create_table "snapshots", id: :integer, charset: "latin1", force: :cascade do |t|
+  create_table "snapshots", id: :integer, charset: "utf8mb3", force: :cascade do |t|
     t.string "name", limit: 250
     t.datetime "created_at"
     t.integer "case_id"
@@ -135,8 +135,8 @@ ActiveRecord::Schema.define(version: 2021_09_17_212115) do
     t.index ["case_id"], name: "case_id"
   end
 
-  create_table "teams", id: :integer, charset: "latin1", force: :cascade do |t|
-    t.string "name", collation: "utf8_bin"
+  create_table "teams", id: :integer, charset: "utf8mb3", force: :cascade do |t|
+    t.string "name"
     t.integer "owner_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
