@@ -43,7 +43,8 @@ class HomeController < ApplicationController
       if latest_try
         https_server =  latest_try.search_url.starts_with?("https")
         puts "Here is search url: #{latest_try.search_url}"
-        puts "https_server is #{http_server}"
+        puts "https_server is #{https_server}"
+        return https_server
       end
     end
 
