@@ -5,7 +5,7 @@ class HomeController < ApplicationController
   # to HTTP in order to make calls to a Solr that is running in HTTP as well, otherwise
   # you get this "Mixed Content", which browsers block as a security issue.
   # https://developer.mozilla.org/en-US/docs/Web/Security/Mixed_content
-  before_action :redirect_to_non_ssl
+  before_action :redirect_to_non_ssl unless :bootstrap_try_is_ssl
 
   def index
     return unless current_user
@@ -32,5 +32,21 @@ class HomeController < ApplicationController
     end
 
     true
+  end
+
+  def bootstrap_try_is_ssl
+    bootstrap_case = current_user.cases_involved_with.not_archived.last
+
+    if bootstrap_case
+
+      latest_try = bootstrap_case.tries.latest
+      if latest_try
+        https_server =  latest_try.search_url.starts_with?("https")
+        puts "Here is search url: #{latest_try.search_url}"
+        puts "https_server is #{http_server}"
+      end
+    end
+
+    false
   end
 end
