@@ -10,6 +10,8 @@ class HomeController < ApplicationController
   def index
     return unless current_user
 
+    puts "What is the request?  #{request.ssl?}"
+
     # load a case/try if the user has access to one
     bootstrap_case = current_user.cases_involved_with.not_archived.last
 
@@ -23,6 +25,7 @@ class HomeController < ApplicationController
   private
 
   def redirect_to_non_ssl
+    puts "I AM IN REDIRECT TO NON SSL"
     if request.ssl?
       original_url = request.original_url
       original_url.gsub!(%r{https://}, 'http://')
@@ -35,14 +38,16 @@ class HomeController < ApplicationController
   end
 
   def bootstrap_try_is_ssl
+    puts "I AM IN BOOTASTRAP TRY IS SSL"
+
     bootstrap_case = current_user.cases_involved_with.not_archived.last
 
     if bootstrap_case
 
       latest_try = bootstrap_case.tries.latest
       if latest_try
-        https_server =  latest_try.search_url.starts_with?("https")
         puts "Here is search url: #{latest_try.search_url}"
+        https_server =  latest_try.search_url.starts_with?("https")
         puts "https_server is #{https_server}"
         return https_server
       end
