@@ -11,7 +11,7 @@ module NotificationsManager
 
   def check_email
     unless email_notifications_enabled?
-      redirect_to secure_path, alert: "Email delivery hasn't been set up, so can't send reset password email."
+      redirect_to sessions_path, alert: "Email delivery hasn't been set up, so can't send reset password email."
     end
   end
 end
