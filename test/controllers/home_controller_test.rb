@@ -5,6 +5,7 @@ require 'test_helper'
 class HomeControllerTest < ActionController::TestCase
   TRY_INFO        = /bootstrapTryNo.*?(\d*);/.freeze
   CASE_INFO       = /bootstrapCaseNo.*?(\d*);/.freeze
+  CASE_INFO       = /bootstrapCaseNo.*?(\d*);/.freeze
 
   before do
     @controller = HomeController.new
@@ -18,6 +19,7 @@ class HomeControllerTest < ActionController::TestCase
     test 'should get index' do
       get :index
       assert_response :success
+      puts "Request is #{request.ssl?}"
     end
   end
 
@@ -30,19 +32,37 @@ class HomeControllerTest < ActionController::TestCase
       login_user user
     end
 
-    test 'bootstraps latest case' do
+    test 'bootstraps latest case ' do
       get :index
 
       case_info = CASE_INFO.match(response.body)
       assert_equal the_case.id.to_s, case_info[1]
-    end
-
-    test 'bootstraps latest try' do
-      get :index
 
       try_info = TRY_INFO.match(response.body)
       assert_equal the_try.try_number.to_s, try_info[1]
+
+      puts "HEre is search #{the_try.search_url}"
+
+      puts "Request SSL: #{request.ssl?}"
+
     end
+
+    test 'bootstraps case with HTTPS search_engine ' do
+
+      the_try.search_url = "https://somesearch.com"
+      the_try.save!
+
+      get :index
+
+      puts response.body
+      assert_response :redirect
+      assert response.body.include?('<a href="https://test.host/">redirected</a>')
+
+      puts "Request SSL: #{request.ssl?}"
+
+    end
+
+
 
     test 'bootstraps non deleted/archived case' do
       deleted_case = user.cases.create case_name: 'archived case'
