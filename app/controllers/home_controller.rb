@@ -57,7 +57,7 @@ class HomeController < ApplicationController
 
     puts "Is @case.present? #{@case.present?}"
 
-    unless @case.present? # shortcut if we don't have an @case.
+    if @case.blank? # shortcut if we don't have an @case.
       return true
     end
 

@@ -19,7 +19,7 @@ class HomeTlsFlowTest < ActionDispatch::IntegrationTest
 
     try_http = kase.tries.first
 
-    assert !try_http.search_url.starts_with?("https")
+    assert_not try_http.search_url.starts_with?("https")
 
     try_https = kase.tries.second
 
