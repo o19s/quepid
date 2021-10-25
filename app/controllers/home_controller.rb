@@ -52,17 +52,19 @@ class HomeController < ApplicationController
     if search_engine_starts_with_https && !request.ssl? # redirect to SSL
       original_url = request.original_url
       original_url.gsub!(%r{http://}, 'https://')
+      flash[:success] = 'Redirecting to HTTPS Quepid page to match search engine URL.'
       redirect_to original_url
       flash.keep
-      false
+      return false
     elsif !search_engine_starts_with_https && request.ssl? # redirect to Non SSL
       original_url = request.original_url
       original_url.gsub!(%r{https://}, 'http://')
+      flash[:success] = 'Redirecting to HTTP Quepid page to match search engine URL.'
       redirect_to original_url
       flash.keep
-      false
+      return false
     else
-      true
+      return true
     end
   end
   # rubocop:enable Metrics/MethodLength
