@@ -18,12 +18,21 @@ class HomeController < ApplicationController
     puts " I am in special_set_case_or_bootstrap"
     puts params
 
+    if params[:id].present?
+      # load the explicitly listed case.
+      @case = current_user.cases_involved_with.where(id: params[:id]).first
+    else
+      # load a case/try if the user has access to one
+      @case = current_user.cases_involved_with.not_archived.last
+    end
 
-    # load a case/try if the user has access to one
-    @case = current_user.cases_involved_with.not_archived.last
 
-    if @case
-      @try = @case.tries.latest
+    if @case # don't run if we don't find the case!
+      if params[:try_number].present?
+        @try = @case.tries.where(try_number: params[:try_number]).first
+      else
+        @try = @case.tries.latest
+      end
     end
   end
 
@@ -37,8 +46,10 @@ class HomeController < ApplicationController
 
   # rubocop:disable Metrics/MethodLength
   def redirect_to_correct_tls
-
+    puts " I am in redirect_to_correct_tls"
     puts params
+
+    puts "Is @case.present? #{@case.present?}"
 
     unless @case.present? # shortcut if we don't have an @case.
       return true
