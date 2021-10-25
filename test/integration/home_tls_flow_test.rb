@@ -10,21 +10,16 @@ class HomeTlsFlowTest < ActionDispatch::IntegrationTest
 
     post users_login_url params: { user: { email: bootstrap_user.email, password: 'password' }, format: :json }
 
-
     kase = users(:bootstrap_user).cases.first
     require 'pp'
-    #pp kase
-
-    #pp kase.tries.first
 
     try_http = kase.tries.first
 
-    assert_not try_http.search_url.starts_with?("https")
+    assert_not try_http.search_url.starts_with?('https')
 
     try_https = kase.tries.second
 
-    assert try_https.search_url.starts_with?("https")
-
+    assert try_https.search_url.starts_with?('https')
 
     # Navigate to a try that is http TLS protocol
     get case_home_url(id: kase.id, try_number: try_http.try_number)
@@ -33,14 +28,10 @@ class HomeTlsFlowTest < ActionDispatch::IntegrationTest
 
     # Navigate to a try that is https TLS protocol
     # temp, remove me.
-    #try_http.search_url="https://followme.com"
-    #try_http.save!
+    # try_http.search_url="https://followme.com"
+    # try_http.save!
     puts "here is my try: #{try_https.search_url}"
     get case_home_url(id: kase.id, try_number: try_https.try_number)
     assert_response :redirect
-
-
-
-
   end
 end

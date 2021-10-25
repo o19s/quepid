@@ -1,38 +1,31 @@
 # frozen_string_literal: true
 
 class HomeController < ApplicationController
-
-  before_action :special_set_case_or_bootstrap
+  before_action :set_case_or_bootstrap
 
   before_action :redirect_to_correct_tls unless Rails.application.config.force_ssl
 
   def index
-    #return unless current_user
-
-
+    # return unless current_user
   end
 
   private
 
-  def special_set_case_or_bootstrap
-    puts " I am in special_set_case_or_bootstrap"
-    puts params
-
-    if params[:id].present?
-      # load the explicitly listed case.
-      @case = current_user.cases_involved_with.where(id: params[:id]).first
-    else
-      # load a case/try if the user has access to one
-      @case = current_user.cases_involved_with.not_archived.last
-    end
-
+  def set_case_or_bootstrap
+    @case = if params[:id].present?
+              # load the explicitly listed case.
+              current_user.cases_involved_with.where(id: params[:id]).first
+            else
+              # load a case/try if the user has access to one
+              current_user.cases_involved_with.not_archived.last
+            end
 
     if @case # don't run if we don't find the case!
-      if params[:try_number].present?
-        @try = @case.tries.where(try_number: params[:try_number]).first
-      else
-        @try = @case.tries.latest
-      end
+      @try = if params[:try_number].present?
+               @case.tries.where(try_number: params[:try_number]).first
+             else
+               @case.tries.latest
+             end
     end
   end
 
@@ -46,42 +39,26 @@ class HomeController < ApplicationController
 
   # rubocop:disable Metrics/MethodLength
   def redirect_to_correct_tls
-    puts " I am in redirect_to_correct_tls"
+    return true if @case.blank? # shortcut if we don't have an @case.
 
-
-    puts params
-
-    puts "Rails.application.config.force_ssl: #{Rails.application.config.force_ssl}"
-
-    puts "Is this request.ssl? #{request.ssl?}"
-
-    puts "Is @case.present? #{@case.present?}"
-
-    if @case.blank? # shortcut if we don't have an @case.
-      return true
-    end
-
-
-    puts "About to look up tls settings for case #{@case.id}"
     search_engine_starts_with_https = @try.present? ? @try.search_url.starts_with?('https') : false
 
-    puts "search_engine_starts_with_https: #{search_engine_starts_with_https}"
     if search_engine_starts_with_https && !request.ssl? # redirect to SSL
       original_url = request.original_url
       original_url.gsub!(%r{http://}, 'https://')
       flash[:success] = 'Redirecting to HTTPS version of Quepid to match search engine URL.'
       redirect_to original_url
       flash.keep
-      return false
+      false
     elsif !search_engine_starts_with_https && request.ssl? # redirect to Non SSL
       original_url = request.original_url
       original_url.gsub!(%r{https://}, 'http://')
       flash[:success] = 'Redirecting to HTTP version of Quepid to match search engine URL.'
       redirect_to original_url
       flash.keep
-      return false
+      false
     else
-      return true
+      true
     end
   end
   # rubocop:enable Metrics/MethodLength

@@ -44,12 +44,10 @@ class HomeControllerTest < ActionController::TestCase
       puts "HEre is search #{the_try.search_url}"
 
       puts "Request SSL: #{request.ssl?}"
-
     end
 
     test 'bootstraps case with HTTPS search_engine ' do
-
-      the_try.search_url = "https://somesearch.com"
+      the_try.search_url = 'https://somesearch.com'
       the_try.save!
 
       get :index
@@ -59,10 +57,7 @@ class HomeControllerTest < ActionController::TestCase
       assert response.body.include?('<a href="https://test.host/">redirected</a>')
 
       puts "Request SSL: #{request.ssl?}"
-
     end
-
-
 
     test 'bootstraps non deleted/archived case' do
       deleted_case = user.cases.create case_name: 'archived case'
