@@ -2,10 +2,12 @@
 
 angular.module('QuepidApp')
   .controller('QueryParamsCtrl', [
-    '$scope',
+    '$scope','$location', '$window',
     'esUrlSvc','caseTryNavSvc',
     'TryFactory',
-    function ($scope, esUrlSvc, caseTryNavSvc, TryFactory) {
+    function ($scope, $location, $window,
+      esUrlSvc, caseTryNavSvc,
+      TryFactory) {
 
       $scope.qp = {};
       $scope.qp.curTab = 'developer';
@@ -17,10 +19,31 @@ angular.module('QuepidApp')
 
       $scope.showESTemplateWarning = false;
 
+      $scope.showTLSChangeWarning = false;
+
       $scope.validateESTemplateUrl  = function() {
         if ($scope.settings.searchEngine === 'es'){
           var uri       = esUrlSvc.parseUrl($scope.settings.searchUrl);
           $scope.showESTemplateWarning = esUrlSvc.isTemplateCall(uri);
+        }
+
+        // Figure out if we need to redirect.
+
+        quepidStartsWithHttps = $location.protocol() === 'https';
+        searchEngineStartsWithHttps = $scope.settings.searchUrl.startsWith('https');
+
+        if (quepidStartsWithHttps !== searchEngineStartsWithHttps){
+          $scope.showTLSChangeWarning = true;
+          $scope.quepidUrlToSwitchTo = $location.absUrl();
+          if (searchEngineStartsWithHttps){
+            $scope.protocolToSwitchTo = 'https';
+            $scope.quepidUrlToSwitchTo = $scope.quepidUrlToSwitchTo.replace('http', 'https');
+          }
+          else {
+            $scope.protocolToSwitchTo = 'http';
+            $scope.quepidUrlToSwitchTo = $scope.quepidUrlToSwitchTo.replace('https', 'http');
+          }
+
         }
       };
 
