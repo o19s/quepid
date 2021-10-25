@@ -15,19 +15,16 @@ class HomeController < ApplicationController
   private
 
   def special_set_case_or_bootstrap
-
     puts " I am in special_set_case_or_bootstrap"
+    puts params
+
 
     # load a case/try if the user has access to one
-    @bootstrap_case = current_user.cases_involved_with.not_archived.last
+    @case = current_user.cases_involved_with.not_archived.last
 
-    if @bootstrap_case
-      @bootstrap_case_no = @bootstrap_case.id
-      @latest_try = @bootstrap_case.tries.latest
-      @bootstrap_try_no = @latest_try.try_number if @latest_try.present?
+    if @case
+      @try = @case.tries.latest
     end
-
-
   end
 
   # If Quepid is running on HTTPS, like on Heroku, then it needs to switch
@@ -40,23 +37,17 @@ class HomeController < ApplicationController
 
   # rubocop:disable Metrics/MethodLength
   def redirect_to_correct_tls
-    search_engine_starts_with_https = false
-    #bootstrap_case = current_user.cases_involved_with.not_archived.last
 
     puts params
 
-      
-    puts "About to look up tls settings for case #{@bootstrap_case.id}"
-    bootstrap_case = @bootstrap_case
-
-    if bootstrap_case
-      if @bootstrap_try.present?
-        try = @bootstrap_try
-      else
-        try = bootstrap_case.tries.latest
-      end
-      search_engine_starts_with_https = try.search_url.starts_with?('https') if try.present?
+    unless @case.present? # shortcut if we don't have an @case.
+      return true
     end
+
+
+    puts "About to look up tls settings for case #{@case.id}"
+    search_engine_starts_with_https = @try.present? ? @try.search_url.starts_with?('https') : false
+
     puts "search_engine_starts_with_https: #{search_engine_starts_with_https}"
     if search_engine_starts_with_https && !request.ssl? # redirect to SSL
       original_url = request.original_url
