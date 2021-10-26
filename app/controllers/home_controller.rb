@@ -47,8 +47,6 @@ class HomeController < ApplicationController
     bool = ActiveRecord::Type::Boolean.new
     skip_changing_to_matching_tls  = bool.deserialize(params[:skip_changing_to_matching_tls]) || false
 
-    puts "skip_changing_to_matching_tls: #{skip_changing_to_matching_tls}"
-
     return true if skip_changing_to_matching_tls == true
 
     return true if @case.blank? # shortcut if we don't have an @case.
@@ -58,14 +56,14 @@ class HomeController < ApplicationController
     if search_engine_starts_with_https && !request.ssl? # redirect to SSL
       original_url = request.original_url
       original_url.gsub!(%r{http://}, 'https://')
-      flash[:success] = 'Redirecting to HTTPS version of Quepid to match search engine URL.'
+      flash[:success] = 'Reloaded on HTTPS protocol for Quepid app to match search engine URL.'
       redirect_to original_url
       flash.keep
       false
     elsif !search_engine_starts_with_https && request.ssl? # redirect to Non SSL
       original_url = request.original_url
       original_url.gsub!(%r{https://}, 'http://')
-      flash[:success] = 'Redirecting to HTTP version of Quepid to match search engine URL.'
+      flash[:success] = 'Reloaded on HTTP protocol for Quepid app to match search engine URL.'
       redirect_to original_url
       flash.keep
       false

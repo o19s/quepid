@@ -21,8 +21,7 @@ angular.module('QuepidApp')
 
       $scope.showTLSChangeWarning = false;
 
-      // TODO change this method name.
-      $scope.validateESTemplateUrl  = function() {
+      $scope.validateSearchEngineUrl  = function() {
         if ($scope.settings.searchEngine === 'es'){
           var uri       = esUrlSvc.parseUrl($scope.settings.searchUrl);
           $scope.showESTemplateWarning = esUrlSvc.isTemplateCall(uri);
@@ -105,7 +104,7 @@ angular.module('QuepidApp')
         });
         tmp.updateVars();
         $scope.settings.selectedTry = tmp;
-        $scope.validateESTemplateUrl();
+        $scope.validateSearchEngineUrl();
       };
     }
   ]);
