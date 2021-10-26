@@ -41,13 +41,15 @@ class HomeController < ApplicationController
   # you edit the search engine url in the front end.  We need to change first, then come back
   # and ask the person to reapply the change.
 
-
   # rubocop:disable Metrics/MethodLength
+  # rubocop:disable Metrics/AbcSize
+  # rubocop:disable Metrics/CyclomaticComplexity
+  # rubocop:disable Metrics/PerceivedComplexity
   def redirect_to_correct_tls
     bool = ActiveRecord::Type::Boolean.new
-    skip_changing_to_matching_tls  = bool.deserialize(params[:skip_changing_to_matching_tls]) || false
+    skip_changing_to_matching_tls = bool.deserialize(params[:skip_changing_to_matching_tls]) || false
 
-    return true if skip_changing_to_matching_tls == true
+    return true if true == skip_changing_to_matching_tls
 
     return true if @case.blank? # shortcut if we don't have an @case.
 
@@ -72,4 +74,7 @@ class HomeController < ApplicationController
     end
   end
   # rubocop:enable Metrics/MethodLength
+  # rubocop:enable Metrics/AbcSize
+  # rubocop:enable Metrics/CyclomaticComplexity
+  # rubocop:enable Metrics/PerceivedComplexity
 end
