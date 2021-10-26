@@ -84,11 +84,11 @@ describe('Controller: QueryparamsCtrl', function () {
     scope.settings.searchUrl = 'https://example.com'
     scope.qp.toggleTab();
     expect(scope.showTLSChangeWarning).toBeTruthy();
-    expect(scope.quepidUrlToSwitchTo).toEqual('https://server/')
+    expect(scope.quepidUrlToSwitchTo).toEqual('https://server/?skip_changing_to_matching_tls')
     scope.settings.searchUrl = 'http://example.com'
     scope.qp.toggleTab();
     expect(scope.showTLSChangeWarning).toBeFalsy();
-    //expect(scope.quepidUrlToSwitchTo).toEqual('http://server/')    
+    //expect(scope.quepidUrlToSwitchTo).toEqual('http://server/')
   });
 
 });

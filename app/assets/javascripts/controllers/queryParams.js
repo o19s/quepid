@@ -29,23 +29,16 @@ angular.module('QuepidApp')
         }
 
         // Figure out if we need to redirect.
-        console.log("$location.protocol(): " + $location.protocol());
-        console.log("$scope.settings.searchUrl: " + $scope.settings.searchUrl);
         var quepidStartsWithHttps = $location.protocol() === 'https';
         var searchEngineStartsWithHttps = $scope.settings.searchUrl.startsWith('https');
-
-        console.log("quepidStartsWithHttps:" + quepidStartsWithHttps.toString() + "&&");
-        console.log("searchEngineStartsWithHttps:" + searchEngineStartsWithHttps.toString() + "&&");
-
-        console.log("match?  " + (quepidStartsWithHttps.toString() == searchEngineStartsWithHttps.toString()))
 
         if ((quepidStartsWithHttps.toString() == searchEngineStartsWithHttps.toString())){
           $scope.showTLSChangeWarning = false;
         }
         else {
           $scope.showTLSChangeWarning = true;
-          $scope.quepidUrlToSwitchTo = $location.absUrl();
-          $scope.quepidUrlToSwitchTo = $scope.quepidUrlToSwitchTo + "&skip_changing_to_matching_tls=true"
+          $scope.quepidUrlToSwitchTo = $location.search({'skip_changing_to_matching_tls': true}).absUrl();
+          //$scope.quepidUrlToSwitchTo = $scope.quepidUrlToSwitchTo + "&skip_changing_to_matching_tls=true"
           if (searchEngineStartsWithHttps){
             $scope.protocolToSwitchTo = 'https';
             $scope.quepidUrlToSwitchTo = $scope.quepidUrlToSwitchTo.replace('http', 'https');
