@@ -36,9 +36,21 @@ class HomeController < ApplicationController
   #
   # Similarily we may have only HTTPS set up for Quepid, and therefore need to stay on HTTPS,
   # so this method is only conditionally called if force_ssl is false.
+  #
+  # The skip_changing_to_matching_tls lets us override this behavior, which we have to do when
+  # you edit the search engine url in the front end.  We need to change first, then come back
+  # and ask the person to reapply the change.
+
 
   # rubocop:disable Metrics/MethodLength
   def redirect_to_correct_tls
+    bool = ActiveRecord::Type::Boolean.new
+    skip_changing_to_matching_tls  = bool.deserialize(params[:skip_changing_to_matching_tls]) || false
+
+    puts "skip_changing_to_matching_tls: #{skip_changing_to_matching_tls}"
+
+    return true if skip_changing_to_matching_tls == true
+
     return true if @case.blank? # shortcut if we don't have an @case.
 
     search_engine_starts_with_https = @try.present? ? @try.search_url.starts_with?('https') : false

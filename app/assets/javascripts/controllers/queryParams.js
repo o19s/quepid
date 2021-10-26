@@ -45,6 +45,7 @@ angular.module('QuepidApp')
         else {
           $scope.showTLSChangeWarning = true;
           $scope.quepidUrlToSwitchTo = $location.absUrl();
+          $scope.quepidUrlToSwitchTo = $scope.quepidUrlToSwitchTo + "&skip_changing_to_matching_tls=true"
           if (searchEngineStartsWithHttps){
             $scope.protocolToSwitchTo = 'https';
             $scope.quepidUrlToSwitchTo = $scope.quepidUrlToSwitchTo.replace('http', 'https');
