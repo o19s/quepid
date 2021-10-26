@@ -77,10 +77,10 @@
       "required": true
     },
     "GOOGLE_CLIENT_ID": {
-      "required": true
+      "required": false
     },
     "GOOGLE_CLIENT_SECRET": {
-      "required": true
+      "required": false
     }
   },
   "formation": {
