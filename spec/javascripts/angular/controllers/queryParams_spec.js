@@ -19,6 +19,7 @@ describe('Controller: QueryparamsCtrl', function () {
 
     testTry = new TryFactory({ tryNo: 0, query_params: queryParams, curatorVars: curatorVars });
     scope.settings = {selectedTry: testTry};
+    scope.settings.searchUrl = 'http://example.com'
 
     QueryparamsCtrl = $controller('QueryParamsCtrl', {
       $scope: scope

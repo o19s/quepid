@@ -21,6 +21,7 @@ angular.module('QuepidApp')
 
       $scope.showTLSChangeWarning = false;
 
+      // TODO change this method name.
       $scope.validateESTemplateUrl  = function() {
         if ($scope.settings.searchEngine === 'es'){
           var uri       = esUrlSvc.parseUrl($scope.settings.searchUrl);
@@ -29,8 +30,8 @@ angular.module('QuepidApp')
 
         // Figure out if we need to redirect.
 
-        quepidStartsWithHttps = $location.protocol() === 'https';
-        searchEngineStartsWithHttps = $scope.settings.searchUrl.startsWith('https');
+        var quepidStartsWithHttps = $location.protocol() === 'https';
+        var searchEngineStartsWithHttps = $scope.settings.searchUrl.startsWith('https');
 
         if (quepidStartsWithHttps !== searchEngineStartsWithHttps){
           $scope.showTLSChangeWarning = true;
