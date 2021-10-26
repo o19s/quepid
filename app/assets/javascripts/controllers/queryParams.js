@@ -34,12 +34,15 @@ angular.module('QuepidApp')
         var quepidStartsWithHttps = $location.protocol() === 'https';
         var searchEngineStartsWithHttps = $scope.settings.searchUrl.startsWith('https');
 
-        console.log("quepidStartsWithHttps:" + quepidStartsWithHttps.toString());
-        console.log("searchEngineStartsWithHttps:" + searchEngineStartsWithHttps.toString());
+        console.log("quepidStartsWithHttps:" + quepidStartsWithHttps.toString() + "&&");
+        console.log("searchEngineStartsWithHttps:" + searchEngineStartsWithHttps.toString() + "&&");
 
-        console.log("match?  " + (quepidStartsWithHttps.toString() !== searchEngineStartsWithHttps.toString()))
+        console.log("match?  " + (quepidStartsWithHttps.toString() == searchEngineStartsWithHttps.toString()))
 
-        if (quepidStartsWithHttps.toString() !== searchEngineStartsWithHttps.toString()){
+        if ((quepidStartsWithHttps.toString() == searchEngineStartsWithHttps.toString())){
+          $scope.showTLSChangeWarning = false;
+        }
+        else {
           $scope.showTLSChangeWarning = true;
           $scope.quepidUrlToSwitchTo = $location.absUrl();
           if (searchEngineStartsWithHttps){
