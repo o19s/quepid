@@ -125,7 +125,8 @@ angular.module('QuepidApp')
           $scope.showTLSChangeWarning = true;
           // We need to drop the path.
           //$scope.quepidUrlToSwitchTo = $location.absUrl();
-          $scope.quepidUrlToSwitchTo = $location.protocol() + '://' + $location.host() + ':' + $location.port() + '?skip_changing_to_matching_tls=true';
+          // what port is HTTPS on???
+          $scope.quepidUrlToSwitchTo = $location.protocol() + '://' + $location.host() + '?skip_changing_to_matching_tls=true';
           //if ($scope.quepidUrlToSwitchTo.endsWith('/')){
           //  $scope.quepidUrlToSwitchTo = $scope.quepidUrlToSwitchTo + '?skip_changing_to_matching_tls=true';
           //}
