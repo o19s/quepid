@@ -2,10 +2,12 @@
 
 angular.module('QuepidApp')
   .controller('QueryParamsCtrl', [
-    '$scope',
+    '$scope','$location', '$window',
     'esUrlSvc','caseTryNavSvc',
     'TryFactory',
-    function ($scope, esUrlSvc, caseTryNavSvc, TryFactory) {
+    function ($scope, $location, $window,
+      esUrlSvc, caseTryNavSvc,
+      TryFactory) {
 
       $scope.qp = {};
       $scope.qp.curTab = 'developer';
@@ -17,10 +19,41 @@ angular.module('QuepidApp')
 
       $scope.showESTemplateWarning = false;
 
-      $scope.validateESTemplateUrl  = function() {
+      $scope.showTLSChangeWarning = false;
+
+      $scope.validateSearchEngineUrl  = function() {
         if ($scope.settings.searchEngine === 'es'){
           var uri       = esUrlSvc.parseUrl($scope.settings.searchUrl);
           $scope.showESTemplateWarning = esUrlSvc.isTemplateCall(uri);
+        }
+
+        // Figure out if we need to redirect.
+        var quepidStartsWithHttps = $location.protocol() === 'https';
+        var searchEngineStartsWithHttps = $scope.settings.searchUrl.startsWith('https');
+
+        if ((quepidStartsWithHttps.toString() === searchEngineStartsWithHttps.toString())){
+          $scope.showTLSChangeWarning = false;
+        }
+        else {
+          $scope.showTLSChangeWarning = true;
+          $scope.quepidUrlToSwitchTo = $location.absUrl();
+
+          if ($scope.quepidUrlToSwitchTo.endsWith('/')){
+            $scope.quepidUrlToSwitchTo = $scope.quepidUrlToSwitchTo + '?skip_changing_to_matching_tls=true';
+          }
+          else {
+            $scope.quepidUrlToSwitchTo = $scope.quepidUrlToSwitchTo + '&skip_changing_to_matching_tls=true';
+          }
+
+          if (searchEngineStartsWithHttps){
+            $scope.protocolToSwitchTo = 'https';
+            $scope.quepidUrlToSwitchTo = $scope.quepidUrlToSwitchTo.replace('http', 'https');
+          }
+          else {
+            $scope.protocolToSwitchTo = 'http';
+            $scope.quepidUrlToSwitchTo = $scope.quepidUrlToSwitchTo.replace('https', 'http');
+          }
+
         }
       };
 
@@ -71,7 +104,7 @@ angular.module('QuepidApp')
         });
         tmp.updateVars();
         $scope.settings.selectedTry = tmp;
-        $scope.validateESTemplateUrl();
+        $scope.validateSearchEngineUrl();
       };
     }
   ]);

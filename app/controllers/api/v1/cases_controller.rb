@@ -9,7 +9,6 @@ module Api
 
       # rubocop:disable Metrics/MethodLength
       # rubocop:disable Metrics/AbcSize
-      # I should fix above.
       def index
         bool = ActiveRecord::Type::Boolean.new
 

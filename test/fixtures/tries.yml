@@ -153,7 +153,7 @@ es_try_with_curator_vars:
 bootstrap_try_1:
   case:           :bootstrap_case
   query_params:   'q=#$query##'
-  search_url:     test.com
+  search_url:     https://test.com
   try_number:     1
   search_engine:  solr
 

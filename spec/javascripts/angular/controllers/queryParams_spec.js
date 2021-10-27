@@ -19,6 +19,7 @@ describe('Controller: QueryparamsCtrl', function () {
 
     testTry = new TryFactory({ tryNo: 0, query_params: queryParams, curatorVars: curatorVars });
     scope.settings = {selectedTry: testTry};
+    scope.settings.searchUrl = 'http://example.com'
 
     QueryparamsCtrl = $controller('QueryParamsCtrl', {
       $scope: scope
@@ -77,4 +78,17 @@ describe('Controller: QueryparamsCtrl', function () {
     expect(scope.settings.selectedTry.curatorVars[0].value).toEqual(10);
     expect(scope.settings.selectedTry.curatorVars[0].inQueryParams).toBeTruthy();
   });
+
+  it('handles changing TLS from http to https when you start on http', function () {
+    expect(scope.showTLSChangeWarning).toBeFalsy();
+    scope.settings.searchUrl = 'https://example.com'
+    scope.qp.toggleTab();
+    expect(scope.showTLSChangeWarning).toBeTruthy();
+    expect(scope.quepidUrlToSwitchTo).toEqual('https://server/?skip_changing_to_matching_tls=true')
+    scope.settings.searchUrl = 'http://example.com'
+    scope.qp.toggleTab();
+    expect(scope.showTLSChangeWarning).toBeFalsy();
+    //expect(scope.quepidUrlToSwitchTo).toEqual('http://server/')
+  });
+
 });

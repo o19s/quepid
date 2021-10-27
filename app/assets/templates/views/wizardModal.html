@@ -43,7 +43,13 @@
         <br>
         <p>Paste the URL to the endpoint of your search engine for Quepid to search (you can also just experiment with the demo servers):</p>
         <div class="row">
-          <div ng-if="urlInvalid" class="alert alert-danger">Sorry, we're not getting any search results from your <span ng-show="pendingWizardSettings.searchEngine === 'es'">Elasticsearch</span><span ng-show="pendingWizardSettings.searchEngine === 'solr'">Solr</span>.
+          <div ng-show="showTLSChangeWarning" class="alert alert-warning">
+            <span>
+            You have specified a search engine url that is on a different protocol ( <code>{{protocolToSwitchTo}}</code> ) than Quepid is currently on,
+            so you need to reload Quepid on that protocol first, and then update the protocol here.  This is to comply with browser security issues.
+            </span>
+          </div>
+          <div ng-if="urlInvalid && !showTLSChangeWarning" class="alert alert-danger">Sorry, we're not getting any search results from your <span ng-show="pendingWizardSettings.searchEngine === 'es'">Elasticsearch</span><span ng-show="pendingWizardSettings.searchEngine === 'solr'">Solr</span>.
             <ul ng-if="pendingWizardSettings.searchEngine === 'es'">
               <li>Is your Elasticsearch behind a firewall or proxy? Try acessing the <a target="_blank" href="{{pendingWizardSettings.searchUrl}}">URL directly</a> and see if you get a response</li>
               <li>Does your Elasticsearch accept HTTP POST requests?</li>
@@ -93,14 +99,20 @@ curl -X POST -H 'Content-type:application/json' -d '{
 
             <div class="row" style="margin-top: 50px;">
               <div class="pull-right">
-                <button class="btn btn-primary pull-right continue" ng-click="validate()" ng-disabled="validating">
+                <button ng-show="!showTLSChangeWarning" class="btn btn-primary pull-right continue" ng-click="validate()" ng-disabled="validating">
                   <span ng-hide="validating">Continue</span>
                   <span ng-show="validating">Validating...</span>
                 </button>
 
-                <button class="btn btn-danger" ng-show="urlInvalid" ng-click="skipValidation()" ng-disabled="validating">
+                <button class="btn btn-danger" ng-show="urlInvalid && !showTLSChangeWarning" ng-click="skipValidation()" ng-disabled="validating">
                   <span ng-hide="validating">Skip Validation</span>
                 </button>
+
+                <span ng-show="showTLSChangeWarning">
+                  <a href="{{quepidUrlToSwitchTo}}" class="btn btn-primary form-control">
+                    <span class="glyphicon glyphicon-refresh"></span> Reload Quepid in <code>{{protocolToSwitchTo}}</code> TLS Protocol
+                  </a>
+                </span>
 
               </div>
             </div>

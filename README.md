@@ -334,10 +334,9 @@ bin/docker r bin/rake db:setup
 bin/docker r bin/rails routes
 
 # tests
-bin/docker r bin/rake test
-bin/docker r bin/rake test:js
+bin/docker r rails test
+bin/docker r rails test:frontend
 bin/docker r bin/rake test:jshint
-bin/docker r bin/rake test:quepid
 ```
 
 ### Thor

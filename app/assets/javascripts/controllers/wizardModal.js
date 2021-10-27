@@ -4,12 +4,12 @@
 
 angular.module('QuepidApp')
   .controller('WizardModalCtrl', [
-    '$rootScope', '$scope', '$uibModalInstance', '$log', '$window', '$q',
+    '$rootScope', '$scope', '$uibModalInstance', '$log', '$window', '$q', '$location',
     'WizardHandler',
     'settingsSvc', 'SettingsValidatorFactory',
     'docCacheSvc', 'queriesSvc', 'caseTryNavSvc', 'caseSvc', 'userSvc',
     function (
-      $rootScope, $scope, $uibModalInstance, $log, $window, $q,
+      $rootScope, $scope, $uibModalInstance, $log, $window, $q, $location,
       WizardHandler,
       settingsSvc, SettingsValidatorFactory,
       docCacheSvc, queriesSvc, caseTryNavSvc, caseSvc, userSvc
@@ -78,6 +78,22 @@ angular.module('QuepidApp')
         $scope.validating = true;
         $scope.urlValid = $scope.urlInvalid = false;
 
+        // This logic maybe should live in Splainer Search if we wanted to support Splainer.io as well?
+
+        // Copied from controllers/queryParams.js
+        // It's a bit awkward, as we have two validates!  validateSearchEngineUrl, which flips some flags,
+        // and then the SettingsValidatorFactory.
+
+        $scope.showTLSChangeWarning = false;
+
+        $scope.validateSearchEngineUrl();
+
+        // exit early if we have the TLS issue, this really should be part of the below logic.
+        // validator.validateTLS().then.validateURL().then....
+        if ($scope.showTLSChangeWarning){
+          return;
+        }
+
         var validator = new SettingsValidatorFactory($scope.pendingWizardSettings);
         validator.validateUrl()
         .then(function () {
@@ -92,6 +108,43 @@ angular.module('QuepidApp')
           $scope.validating = false;
         });
       }
+
+      $scope.validateSearchEngineUrl  = function() {
+
+        // Figure out if we need to redirect.
+        var quepidStartsWithHttps = $location.protocol() === 'https';
+        //
+        //var searchEngineStartsWithHttps = $scope.settings.searchUrl.startsWith('https');
+        var searchEngineStartsWithHttps = $scope.pendingWizardSettings.searchUrl.startsWith('https');
+
+
+        if ((quepidStartsWithHttps.toString() === searchEngineStartsWithHttps.toString())){
+          $scope.showTLSChangeWarning = false;
+        }
+        else {
+          $scope.showTLSChangeWarning = true;
+          // We need to drop the path.
+          //$scope.quepidUrlToSwitchTo = $location.absUrl();
+          // what port is HTTPS on???
+          $scope.quepidUrlToSwitchTo = $location.protocol() + '://' + $location.host() + '?skip_changing_to_matching_tls=true';
+          //if ($scope.quepidUrlToSwitchTo.endsWith('/')){
+          //  $scope.quepidUrlToSwitchTo = $scope.quepidUrlToSwitchTo + '?skip_changing_to_matching_tls=true';
+          //}
+          //else {
+          //  $scope.quepidUrlToSwitchTo = $scope.quepidUrlToSwitchTo + '&skip_changing_to_matching_tls=true';
+          //}
+
+          if (searchEngineStartsWithHttps){
+            $scope.protocolToSwitchTo = 'https';
+            $scope.quepidUrlToSwitchTo = $scope.quepidUrlToSwitchTo.replace('http', 'https');
+          }
+          else {
+            $scope.protocolToSwitchTo = 'http';
+            $scope.quepidUrlToSwitchTo = $scope.quepidUrlToSwitchTo.replace('https', 'http');
+          }
+
+        }
+      };
 
       function setupDefaults(validator) {
         $scope.validating   = false;
