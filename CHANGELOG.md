@@ -1,5 +1,17 @@
 # Changelog
 
+## 6.9.0 - 2021-10-27
+
+### Features
+
+* Chrome 94 forces you to be on https URL to access HTTPS secured search engines.  Quepid now checks to see whether it is running on the same protocol, HTTPS or HTTP that the search engine is running on, and if not, prompts you to reload the app on the same protocol as the search engine.  This required updating the messenging in the Case Wizard and the Tune Relevance screens.   We also simplified the logic in the `home_controller.rb` around bootstrapping a Case and Try.  Thanks to @tboeghk for pairing with @epugh on how to solve this problem.   https://github.com/o19s/quepid/pull/431 by @epugh fixes https://github.com/o19s/quepid/issues/426 by @DmitryKey and https://github.com/o19s/quepid/issues/432 by @bbirrell.
+
+### Improvements
+
+* Remove remnants of "SecureApp" angular1 app that was refactored a while ago into regular Rails app for login screens.  https://github.com/o19s/quepid/pull/434 by @epugh fixes https://github.com/o19s/quepid/issues/433.
+
+* Logic to enable Google Analytics tracking was crufty and caused classloader issues in development mode.  https://github.com/o19s/quepid/pull/419 by @epugh fixes https://github.com/o19s/quepid/issues/418.
+
 ## 6.8.0 - 2021-09-28
 
 ### Features
