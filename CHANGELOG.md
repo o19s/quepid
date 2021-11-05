@@ -1,5 +1,14 @@
 # Changelog
 
+## 6.9.1 - 2021-10-27
+
+### Improvements
+
+* Splainer-search 2.11.0 handles nulls the same as empty arrays (_{ }_) in Solr output.  Nulls might happen when a Proxy is used.  https://github.com/o19s/quepid/pull/440 by @epugh fixes issue discovered by @mkr in https://github.com/o19s/splainer-search/issues/97.
+
+* Node 15 is not a LTS version, which leads to a warning message!  https://github.com/o19s/quepid/pull/437 by @epugh bumps this.
+
+
 ## 6.9.0 - 2021-10-27
 
 ### Features
