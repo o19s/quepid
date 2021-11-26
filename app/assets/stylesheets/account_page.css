@@ -1,0 +1,7 @@
+.centered-form {
+  max-width: 960px;
+}
+
+body {
+  background: image-url('blue_bg.jpg') top center repeat;
+}

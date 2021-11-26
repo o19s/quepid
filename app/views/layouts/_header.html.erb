@@ -1,6 +1,11 @@
 <header id="header" class="navbar-inverse navbar-secondary clearfix">
   <div class="container container-home">
-    <%= render 'layouts/logo' %>
+    <div class="navbar-header">
+      <%= link_to '/', class: "navbar-brand", target: "_self" do %>
+        Quepid
+        <span class="hover"><%= image_tag 'tagline-sm.png' %></span>
+      <% end %>
+    </div>
 
     <% if current_user.present? %>
       <% unless controller.class.to_s.include?("Admin::") or controller.class.to_s.include?("Profile") %>
