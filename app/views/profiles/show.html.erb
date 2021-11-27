@@ -79,18 +79,20 @@
         </div>
       <% end %>
 
-      <div class="mb-3">
-        <label for="user_email" class="form-label">Email</label>
+      <div class="form-floating mb-3">
+
         <%= f.email_field :email, class: "form-control", placeholder: "Email" %>
+        <label for="user_email" class="form-label">Email</label>
         <div id="emailHelp" class="form-text">Your profile image displayed is sourced from <a href="http://gravatar.com" target="_blank">gravatar.com</a> based on your email address.</div>
       </div>
-      <div class="mb-3">
-        <label for="user_email" class="form-label">Name</label>
+      <div class="form-floating mb-3">
+
         <%= f.text_field :name, class: "form-control", placeholder: "Name" %>
+        <label for="user_email" class="form-label">Name</label>
       </div>
-      <div class="mb-3">
-        <label for="user_company" class="form-label">Company Name</label>
+      <div class="form-floating mb-3">
         <%= f.text_field :company, class: "form-control", placeholder: "Company Name" %>
+        <label for="user_company" class="form-label">Company Name</label>
       </div>
 
       <% if Rails.application.config.email_marketing_mode %>
@@ -124,17 +126,17 @@
         </div>
       <% end %>
 
-      <div class="mb-3">
+      <div class="form-floating mb-3">
+        <input id="old" type="password" name="current_password" class="form-control" placeholder="Password"/>
         <label for="old" class="form-label">Old Password</label>
-        <input id="old" type="password" name="current_password" class="form-control" placeholder="Old Password" />
       </div>
-      <div class="mb-3">
+      <div class="form-floating mb-3">
+        <input id="new" type="password" name="password" class="form-control"  placeholder="Password"/>
         <label for="new" class="form-label">New Password</label>
-        <input id="new" type="password" name="password" class="form-control" placeholder="New Password" />
       </div>
-      <div class="mb-3">
-        <label for="confirm" class="form-label">Confirm New Password</label>
+      <div class="form-floating mb-3">
         <input id="confirm" type="password" name="password_confirmation" class="form-control" placeholder="Confirm New Password" />
+        <label for="confirm" class="form-label">Confirm New Password</label>
       </div>
 
 

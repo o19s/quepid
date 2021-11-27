@@ -12,9 +12,4 @@
 //
 // This file loads all the below JavaScript files and can be very slow in the dev mode.
 
-//= require jquery
-//= require rails-ujs
-
-// Commented out
-//require bootstrap/dist/js/bootstrap.bundle
-//= require turbolinks
+//= require bootstrap/dist/js/bootstrap.bundle
