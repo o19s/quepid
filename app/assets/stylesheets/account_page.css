@@ -5,3 +5,78 @@
 body {
   background: image-url('blue_bg.jpg') top center repeat;
 }
+
+.footer-bar {
+  background-image: linear-gradient(to bottom, #4F8ECC 0%, #2774C0 100%);
+}
+
+/*
+	Primary Navbar
+*/
+
+/*
+	Primary Navbar - branding
+*/
+
+.navbar-brand {
+	position: relative;
+  height: 56px;
+  min-width: 120px;
+	/*padding: 16px 15px 0 0;*/
+	font-family: 'alleritalic';
+	font-size: 28px;
+	color: #FFF !important;
+}
+
+.sub-brand {
+	font-size: 13px;
+	color: #999;
+	font-weight: bold;
+}
+
+.navbar-brand .hover {
+	display: none;
+}
+
+.navbar-brand:hover .hover {
+	display: block;
+	position: absolute;
+	top: 15px;
+	left: 100px;
+  z-index: 10;
+}
+
+/*
+	Secondary Navbar
+*/
+
+.navbar-secondary {
+	background: #369;
+	background-image: -webkit-gradient(
+		linear,
+		left top,
+		left bottom,
+		color-stop(0, #4F8ECC),
+		color-stop(1, #2774C0)
+	);
+	background-image: -o-linear-gradient(bottom, #4F8ECC 0%, #2774C0 100%);
+	background-image: -moz-linear-gradient(bottom, #4F8ECC 0%, #2774C0 100%);
+	background-image: -webkit-linear-gradient(bottom, #4F8ECC 0%, #2774C0 100%);
+	background-image: -ms-linear-gradient(bottom, #4F8ECC 0%, #2774C0 100%);
+	background-image: linear-gradient(to bottom, #4F8ECC 0%, #2774C0 100%);
+	/* border-bottom: 1px solid #258; */
+	font-family: 'allerregular';
+  padding: 0px;
+}
+
+
+.navbar-secondary .nav-link {
+	color: #FFF;
+  font-family: 'allerregular';
+  font-size: 14px;
+}
+
+
+.img-rounded {
+  border-radius: 6px;
+}
