@@ -11,6 +11,7 @@ module ApplicationHelper
   end
 
   # rubocop:disable Metrics/MethodLength
+  # rubocop:disable Lint/EmptyBlock
   def flash_messages_bs5 _opts = {}
     flash.each do |msg_type, message|
       next if 'unfurl' == msg_type # we don't show unfurl's in the flash notice UI.
@@ -28,8 +29,6 @@ module ApplicationHelper
               class: 'btn-close',
               data:  { 'bs-dismiss': 'alert' }
             ) do
-
-
             end
           )
           concat message
@@ -39,6 +38,7 @@ module ApplicationHelper
 
     nil
   end
+  # rubocop:enable Lint/EmptyBlock
   # rubocop:enable Metrics/MethodLength
 
   # rubocop:disable Metrics/MethodLength
