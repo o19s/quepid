@@ -16,3 +16,8 @@
   margin-left: 10px;
   width:       calc(100% - 50px);
 }
+
+// push the Admin Panel down from the top a bit since it's got plenty of room
+main > .container {
+  padding: 60px 15px 0;
+}

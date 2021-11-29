@@ -1,31 +1,32 @@
 <!DOCTYPE html>
-<html>
-<head>
-<meta charset="utf-8">
-<title>Quepid -- Relevant Search Solved</title>
-<%= favicon_link_tag asset_path "favicon.ico" %>
-<meta name="description" content="Tired of irrelevant search results? Use Quepid products & services to help improve the quality and relevancy of your search results.">
-<meta name="viewport" content="width=device-width">
+<html lang="en" class="h-100">
+  <head>
+    <meta charset="utf-8">
+    <title>Quepid -- Relevant Search Solved</title>
+    <%= favicon_link_tag asset_path "favicon.ico" %>
+    <meta name="description" content="Tired of irrelevant search results? Use Quepid products & services to help improve the quality and relevancy of your search results.">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<%= stylesheet_link_tag 'admin', media: 'all' %>
-<%= csrf_meta_tags %>
+    <%= stylesheet_link_tag 'admin', media: 'all' %>
+    <%= csrf_meta_tags %>
+    <%= javascript_include_tag 'admin' %>
 
-</head>
-<body class='admin'>
+  </head>
+  <body class="d-flex flex-column h-100">
+    <header>
+      <%= render 'layouts/header_bs5' %>
+    </header>
 
-  <div class="main-container">
-    <%= render 'layouts/header' %>
+    <!-- Begin page content -->
+    <main class="flex-shrink-0">
+      <div class="container">
+        <%= yield %>
+      </div>
+    </main>
 
-    <div class="container">
-      <%= yield %>
-    </div>
-  </div>
+    <%= render 'layouts/footer_bs5' %>
 
-  <%= render 'layouts/footer' %>
+    <%= render 'layouts/common_js' %>
 
-  <%= javascript_include_tag 'admin' %>
-
-  <%= render 'layouts/common_js' %>
-
-</body>
+  </body>
 </html>
