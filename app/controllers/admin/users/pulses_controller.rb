@@ -36,7 +36,7 @@ module Admin
             .group(:created_at)
             .count
         when 'cases-created'
-          @data = Case.where(user_id: @user.id)
+          @data = Case.where(owner_id: @user.id)
             .where('created_at >= :start AND created_at <= :end',
                    start: params[:start],
                    end:   params[:end])
@@ -51,7 +51,7 @@ module Admin
             .count
         when 'queries-created'
           @data = Query.joins(:case)
-            .where(cases: { user_id: @user.id })
+            .where(cases: { owner_id: @user.id })
             .where('`queries`.`created_at` >= :start AND `queries`.`created_at` <= :end',
                    start: params[:start],
                    end:   params[:end])
