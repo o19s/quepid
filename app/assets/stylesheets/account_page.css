@@ -46,7 +46,7 @@ body {
 .navbar-brand:hover .hover {
 	display: block;
 	position: absolute;
-	top: 15px;
+	top: 5px;
 	left: 100px;
   z-index: 10;
 }
