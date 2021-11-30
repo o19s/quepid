@@ -1,3 +1,6 @@
+<%= stylesheet_link_tag 'admin_users', media: 'all' %>
+
+
 <%= form_for(@scorer, url: {action: passed_in_action}, class: 'form-horizontal') do |f| %>
   <% if @scorer.errors.any? %>
     <div id="error_explanation">
@@ -90,3 +93,6 @@
     </div>
   </div>
 <% end %>
+
+<!-- has to be at the end to let JQuery and Heatmap work -->
+<%= javascript_include_tag 'admin_users' %>
