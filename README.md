@@ -468,21 +468,7 @@ openssl req -new -newkey rsa:2048 -sha1 -days 365 -nodes -x509 -keyout .ssl/loca
 
 **PS:** It is not necessary to do that again.
 
-What you need to do:
-
-1. Drag `.ssl/localhost.crt` to `System` in `Keychain Access` (this is for OS X)
-2. run (this is for Ubuntu/Docker):
-  * `sudo cp .ssl/localhost.crt /etc/ssl/cert`
-  * `sudo cp .ssl/localhost.key /etc/ssl/private`
-  * `sudo c_rehash`
-3. Add the Thin webserver for testing SSL, `bin/docker r bundle install thin`
-4. In `Procfile.dev` comment the part that uses `puma` and uncomment the part that uses `thin`
-5. In `.env` make sure you add `FORCE_SSL=true`
-6. Restart the server
-7. Go to `https://localhost:3000`
-8. Undo your Thin changes afterwords!
-
-**PS:** Why are we using both `puma` and `thin`? Because I simply could not figure out how to get `puma` to work properly with SSL and did not want to spend any more time on it!
+The `docker-compose.yml` file contains an nginx reverse proxy that uses these certificates. You can access Quepid at https://localhost:8443. (Quepid will still be available over http on port 3000.)
 
 ## I'd like to test OpenID Auth
 
