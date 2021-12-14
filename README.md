@@ -472,12 +472,12 @@ What you need to do:
 
 1. Drag `.ssl/localhost.crt` to `System` in `Keychain Access` (this is for OS X)
 2. run (this is for Ubuntu/Docker):
-  * `sudo cp .ssl/localhost.crt /etc/ssl/cert`
-  * `sudo cp .ssl/localhost.key /etc/ssl/private`
+  * `sudo cp .ssl/localhost.crt /etc/ssl/certs/quepid.crt`
+  * `sudo cp .ssl/localhost.key /etc/ssl/private/quepid.key`
   * `sudo c_rehash`
-3. Add the Thin webserver for testing SSL, `bin/docker r bundle install thin`
-4. In `Procfile.dev` comment the part that uses `puma` and uncomment the part that uses `thin`
-5. In `.env` make sure you add `FORCE_SSL=true`
+3. In `Procfile.dev` comment the part that uses `puma` and uncomment the part that uses `thin`
+4. In `.env` make sure you add `FORCE_SSL=true`
+5. Add the Thin webserver for testing SSL, `bin/docker r gem install thin`
 6. Restart the server
 7. Go to `https://localhost:3000`
 8. Undo your Thin changes afterwords!

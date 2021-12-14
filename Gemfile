@@ -39,6 +39,8 @@ gem 'rack-cors', '~> 1.1'
 gem 'foreman'
 gem 'racc', '~> 1.4.0'
 gem 'ancestry'
+gem 'thin'
+gem 'daemons'
 
 group :development, :test do
   gem 'annotate'
