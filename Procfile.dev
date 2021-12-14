@@ -2,7 +2,7 @@
 web:    bundle exec puma -C config/puma.rb
 
 # Uncomment for HTTPS.
-web:     bundle exec thin start -p 3000 --ssl --ssl-key-file .ssl/localhost.key --ssl-cert-file .ssl/localhost.crt
+#web:     bundle exec thin start -p 3000 --ssl --ssl-key-file .ssl/localhost.key --ssl-cert-file .ssl/localhost.crt
 
 worker: bundle exec sidekiq -e development -C config/sidekiq.yml -q default
 # For the future webpacker:  ./bin/webpack-dev-server
