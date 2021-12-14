@@ -3,7 +3,7 @@ version: '3'
 services:
 
   nginx:
-    image: nginx:latest
+    image: nginx:1.21.4
     container_name: nginx
     ports:
       - "8443:8443"
