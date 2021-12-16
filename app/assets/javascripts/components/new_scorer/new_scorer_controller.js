@@ -40,6 +40,7 @@ angular.module('QuepidApp')
           templateUrl:  'new_scorer/_modal.html',
           controller:   'NewScorerModalInstanceCtrl',
           controllerAs: 'ctrl',
+          size:         'lg',
           resolve : {
             defaultScorer: function() {
               return new ScorerFactory();
