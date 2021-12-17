@@ -13,7 +13,32 @@
     <form ng-submit="findDocs()">
       <div class="row">
         <div class="form-group col-sm-6">
-          <input type="text" ng-model="docFinder.queryText" class="form-control" placeholder="Search Query"></input>
+          <div class="form-control">
+            <div ui-ace="{
+              onLoad : aceLoaded,
+              onChange: aceChanged,
+              require: ['ace/ext/language_tools'],
+              advanced: {
+                enableBasicAutocompletion: true,
+                enableLiveAutocompletion: true,
+                highlightGutterLine: false,
+                highlightActiveLine: false
+              },
+              mode:   'lucene',
+              theme:  'chrome',
+              showGutter: false,
+              rendererOptions: {
+                maxLines: 1
+              }
+            }"
+            ng-model="docFinder.queryText"
+            ng-keydown="checkIfEnterKeyPressed($event)"></div>
+          </div>
+          <p ng-if="enterKeyPressed" class="alert alert-danger">
+            <span class="glyphicon glyphicon-alert"></span>
+            Please click the "Search" button instead of enter key to avoid scrolling your query out of view!
+          </p>
+
           <p class="help-block">
             Use the simple <a href="https://www.lucenetutorial.com/lucene-query-syntax.html" target="_blank">Lucene query syntax</a> (<code>field:value</code>).<br />
             Solr example: <code>id:123</code>.<br />
