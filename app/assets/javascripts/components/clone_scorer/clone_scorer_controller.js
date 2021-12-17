@@ -38,6 +38,7 @@ angular.module('QuepidApp')
           templateUrl:  'clone_scorer/_modal.html',
           controller:   'CloneScorerModalInstanceCtrl',
           controllerAs: 'ctrl',
+          size:         'lg',
           resolve : {
             scorer: function() {
               return $scope.scorer;
