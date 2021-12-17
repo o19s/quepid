@@ -16,8 +16,9 @@ angular.module('QuepidApp')
         $uibModalInstance.dismiss('cancel');
       };
 
+      // using the enter key causes the lucene query to scroll out of view
+      // so warn the user!
       $scope.checkIfEnterKeyPressed = function(event){
-        console.log (event.keyCode)
         if (event.keyCode === 13) {
           $scope.enterKeyPressed = true;
         }
