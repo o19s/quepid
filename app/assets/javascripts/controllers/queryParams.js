@@ -27,33 +27,44 @@ angular.module('QuepidApp')
           $scope.showESTemplateWarning = esUrlSvc.isTemplateCall(uri);
         }
 
-        // Figure out if we need to redirect.
-        var quepidStartsWithHttps = $location.protocol() === 'https';
-        var searchEngineStartsWithHttps = $scope.settings.searchUrl.startsWith('https');
+        console.log("searchUrl:" + $scope.settings.searchUrl);
 
-        if ((quepidStartsWithHttps.toString() === searchEngineStartsWithHttps.toString())){
-          $scope.showTLSChangeWarning = false;
-        }
-        else {
-          $scope.showTLSChangeWarning = true;
-          $scope.quepidUrlToSwitchTo = $location.absUrl();
+        console.log("searchUrl:" + $scope.settings.searchUrl != '')
+        console.log("angular.isUndefined:" + angular.isUndefined($scope.settings.searchUrl));
+        if ($scope.settings.searchEngine != ''){
+          // Figure out if we need to redirect based on our search engine's url.
+          var quepidStartsWithHttps = $location.protocol() === 'https';
+          var searchEngineStartsWithHttps = $scope.settings.searchUrl.startsWith('https');
 
-          if ($scope.quepidUrlToSwitchTo.endsWith('/')){
-            $scope.quepidUrlToSwitchTo = $scope.quepidUrlToSwitchTo + '?skip_changing_to_matching_tls=true';
+
+
+          console.log("quepidStartsWithHttps:" + quepidStartsWithHttps);
+          console.log("searchEngineStartsWithHttps:" + searchEngineStartsWithHttps);
+
+          if ((quepidStartsWithHttps.toString() === searchEngineStartsWithHttps.toString())){
+            $scope.showTLSChangeWarning = false;
           }
           else {
-            $scope.quepidUrlToSwitchTo = $scope.quepidUrlToSwitchTo + '&skip_changing_to_matching_tls=true';
-          }
+            $scope.showTLSChangeWarning = true;
+            $scope.quepidUrlToSwitchTo = $location.absUrl();
 
-          if (searchEngineStartsWithHttps){
-            $scope.protocolToSwitchTo = 'https';
-            $scope.quepidUrlToSwitchTo = $scope.quepidUrlToSwitchTo.replace('http', 'https');
-          }
-          else {
-            $scope.protocolToSwitchTo = 'http';
-            $scope.quepidUrlToSwitchTo = $scope.quepidUrlToSwitchTo.replace('https', 'http');
-          }
+            if ($scope.quepidUrlToSwitchTo.endsWith('/')){
+              $scope.quepidUrlToSwitchTo = $scope.quepidUrlToSwitchTo + '?skip_changing_to_matching_tls=true';
+            }
+            else {
+              $scope.quepidUrlToSwitchTo = $scope.quepidUrlToSwitchTo + '&skip_changing_to_matching_tls=true';
+            }
 
+            if (searchEngineStartsWithHttps){
+              $scope.protocolToSwitchTo = 'https';
+              $scope.quepidUrlToSwitchTo = $scope.quepidUrlToSwitchTo.replace('http', 'https');
+            }
+            else {
+              $scope.protocolToSwitchTo = 'http';
+              $scope.quepidUrlToSwitchTo = $scope.quepidUrlToSwitchTo.replace('https', 'http');
+            }
+
+          }
         }
       };
 
