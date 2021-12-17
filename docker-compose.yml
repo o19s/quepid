@@ -20,13 +20,11 @@ services:
       - mysql
       - redis
       - keycloak
-      - nginx
     depends_on:
       - mysql
       - redis
       - keycloak
-      - nginx
-      
+
   mysql:
     container_name: quepid_db
     image: mysql:5.6.37
@@ -64,3 +62,6 @@ services:
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
       - ./.ssl/:/etc/nginx/certs
+    links:
+      - app
+  
