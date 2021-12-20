@@ -3,7 +3,7 @@
 class HomeController < ApplicationController
   before_action :set_case_or_bootstrap
 
-  before_action :redirect_to_correct_tls unless Rails.application.config.force_ssl
+  before_action :redirect_to_correct_tls # force a match to the URL of the search engine
 
   def index
     # return unless current_user
@@ -46,12 +46,25 @@ class HomeController < ApplicationController
   # rubocop:disable Metrics/CyclomaticComplexity
   # rubocop:disable Metrics/PerceivedComplexity
   def redirect_to_correct_tls
-    bool = ActiveRecord::Type::Boolean.new
-    skip_changing_to_matching_tls = bool.deserialize(params[:skip_changing_to_matching_tls]) || false
 
-    return true if true == skip_changing_to_matching_tls
+    puts "In redirect_to_correct_tls"
+
+
+    bool = ActiveRecord::Type::Boolean.new
+    #$skip_changing_to_matching_tls = bool.deserialize(params[:skip_changing_to_matching_tls]) || false
+
+    #return true if true == skip_changing_to_matching_tls
 
     return true if @case.blank? # shortcut if we don't have an @case.
+
+    puts "DO we have a try?  #{@try.present?}"
+    puts "Alternatively, do we have a searchUrl? #{params[:searchUrl]}"
+    puts params
+
+    if @try.present? && params[:searchUrl]
+      @try.search_url = params[:searchUrl]
+      @try.save
+    end
 
     search_engine_starts_with_https = @try.present? ? @try.search_url.starts_with?('https') : false
 

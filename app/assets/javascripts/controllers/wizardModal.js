@@ -123,16 +123,9 @@ angular.module('QuepidApp')
         }
         else {
           $scope.showTLSChangeWarning = true;
-          // We need to drop the path.
-          //$scope.quepidUrlToSwitchTo = $location.absUrl();
-          // what port is HTTPS on???
-          $scope.quepidUrlToSwitchTo = $location.protocol() + '://' + $location.host() + '?skip_changing_to_matching_tls=true';
-          //if ($scope.quepidUrlToSwitchTo.endsWith('/')){
-          //  $scope.quepidUrlToSwitchTo = $scope.quepidUrlToSwitchTo + '?skip_changing_to_matching_tls=true';
-          //}
-          //else {
-          //  $scope.quepidUrlToSwitchTo = $scope.quepidUrlToSwitchTo + '&skip_changing_to_matching_tls=true';
-          //}
+
+          $scope.quepidUrlToSwitchTo = $location.protocol() + '://' + $location.host() + $location.path();
+          $scope.quepidUrlToSwitchTo = $scope.quepidUrlToSwitchTo + '?searchUrl=' + $scope.pendingWizardSettings.searchUrl;
 
           if (searchEngineStartsWithHttps){
             $scope.protocolToSwitchTo = 'https';

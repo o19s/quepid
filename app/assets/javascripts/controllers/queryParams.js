@@ -46,15 +46,10 @@ angular.module('QuepidApp')
           }
           else {
             $scope.showTLSChangeWarning = true;
-            $scope.quepidUrlToSwitchTo = $location.absUrl();
+            $scope.quepidUrlToSwitchTo = $location.protocol() + '://' + $location.host() + $location.path();
 
-            if ($scope.quepidUrlToSwitchTo.endsWith('/')){
-              $scope.quepidUrlToSwitchTo = $scope.quepidUrlToSwitchTo + '?skip_changing_to_matching_tls=true';
-            }
-            else {
-              $scope.quepidUrlToSwitchTo = $scope.quepidUrlToSwitchTo + '&skip_changing_to_matching_tls=true';
-            }
-
+            $scope.quepidUrlToSwitchTo = $scope.quepidUrlToSwitchTo + '?searchUrl=' + $scope.settings.searchUrl;
+            
             if (searchEngineStartsWithHttps){
               $scope.protocolToSwitchTo = 'https';
               $scope.quepidUrlToSwitchTo = $scope.quepidUrlToSwitchTo.replace('http', 'https');
