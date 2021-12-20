@@ -7012,10 +7012,10 @@ spdy@^4.0.2:
     select-hose "^2.0.0"
     spdy-transport "^3.0.0"
 
-splainer-search@2.11.0:
-  version "2.11.0"
-  resolved "https://registry.yarnpkg.com/splainer-search/-/splainer-search-2.11.0.tgz#3c0dbe258114d5b0b2fa04281106592944443595"
-  integrity sha512-qTkYBPBWu7PrsEW/c55ROatP3MgsM/QQpSX3aSzCx6UXFkbG0VOuYcbENsbBE01c5CfrpGVZVTTqy3qnavaANA==
+splainer-search@2.12.0:
+  version "2.12.0"
+  resolved "https://registry.yarnpkg.com/splainer-search/-/splainer-search-2.12.0.tgz#e48e25ecefccfb5d14a7eb99afe908db081917ce"
+  integrity sha512-cEL+0//8vXCDFNBTJVRmlngOj30M9S9dSFAG0IrbIoQcvLHDAx3/b7f5NvjD1K+dihW3CB/r8Z+MwcjVa5ERnQ==
   dependencies:
     angular "^1.7.9"
     urijs "^1.19.7"

@@ -54,6 +54,7 @@ angular.module('QuepidApp')
             templateUrl:  'edit_scorer/_modal.html',
             controller:   'EditScorerModalInstanceCtrl',
             controllerAs: 'ctrl',
+            size:         'lg',
             resolve: {
               scorer: function() {
                 return ctrl.lastSaved;

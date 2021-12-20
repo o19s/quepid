@@ -1,5 +1,22 @@
 # Changelog
 
+## 6.10.0 - 2021-12-20??
+
+We've taken a rag and polished up the _Find and Rate Missing Documents_ modal box in this release.
+
+### Improvements
+
+The _Find and Rate Missing Documents_ query interface assumes you use the Lucene query syntax.  Turns out we have a highlighter built in, so enable that for Lucene syntax.  https://github.com/o19s/quepid/pull/453 by @epugh.
+
+Writing your own scorer?   The modal popup window is rather cramped, so let's give the editor room to breathe by making them larger!   https://github.com/o19s/quepid/pull/452 by @epugh.
+
+In the early days of Quepid, looking up a single Solr doc would trigger a `facet.field` on every field you display in Quepid.  For some Solr's, this can turn a quick lookup for a single document to a 30 second or more ordeal because of unexpected faceting!  Thanks to @jeffryedvm for opening https://github.com/o19s/quepid/issues/442.  Fixed by https://github.com/o19s/quepid/pull/456 by @epugh.
+
+### Bugs
+
+On the _Find and Rate Missing Documents_ screen the ability to show just the rated documents had an issue that you had to click the button twice, making you think it was broken.  https://github.com/o19s/quepid/issues/454 and https://github.com/o19s/quepid/issues/423 by @epugh are fixed in https://github.com/o19s/quepid/pull/455 by @epugh.
+
+
 ## 6.9.1 - 2021-10-27
 
 ### Improvements

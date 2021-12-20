@@ -34,6 +34,7 @@
 //= require ace-builds/src-min-noconflict/ext-language_tools
 //= require ace-builds/src-min-noconflict/mode-json
 //= require ace-builds/src-min-noconflict/mode-javascript
+//= require ace-builds/src-min-noconflict/mode-lucene
 
 
 //= require angular-resource/angular-resource
