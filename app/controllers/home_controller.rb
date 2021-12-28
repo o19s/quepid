@@ -66,6 +66,13 @@ class HomeController < ApplicationController
 
     search_engine_starts_with_https = @try.present? ? @try.search_url.starts_with?('https') : false
 
+    puts "@try.present? #{@try.present?}"
+    if @try.present?
+      puts "@try.search_url: #{@try.search_url}"
+    end
+    puts "search_engine_starts_with_https: #{search_engine_starts_with_https}"
+    puts "request.ssl? #{request.ssl?}"
+
     if search_engine_starts_with_https && !request.ssl? # redirect to SSL
       original_url = request.original_url
       original_url.gsub!(%r{http://}, 'https://')
