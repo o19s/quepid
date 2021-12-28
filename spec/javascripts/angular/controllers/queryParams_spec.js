@@ -84,7 +84,7 @@ describe('Controller: QueryparamsCtrl', function () {
     scope.settings.searchUrl = 'https://example.com'
     scope.qp.toggleTab();
     expect(scope.showTLSChangeWarning).toBeTruthy();
-    expect(scope.quepidUrlToSwitchTo).toEqual('https://server/?skip_changing_to_matching_tls=true')
+    expect(scope.quepidUrlToSwitchTo).toEqual('https://server/?searchUrl=https://example.com')
     scope.settings.searchUrl = 'http://example.com'
     scope.qp.toggleTab();
     expect(scope.showTLSChangeWarning).toBeFalsy();
