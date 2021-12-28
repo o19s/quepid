@@ -22,6 +22,16 @@ angular.module('QuepidApp')
 
       $scope.pendingWizardSettings = angular.copy(settingsSvc.defaults.solr);
 
+      // if we have restarted the wizard, then grab the searchUrl and caseName from
+      // the params and override the default values.
+      // We should pass this stuff in externally, not do it here.
+      if (angular.isDefined($location.search().searchUrl)){
+        $scope.pendingWizardSettings.searchUrl = $location.search().searchUrl
+      }
+      if (angular.isDefined($location.search().caseName)){
+        $scope.pendingWizardSettings.caseName = $location.search().caseName
+      }
+
       $scope.wizardSettingsModel.settingsId = function() {
         return settingsSvc.settingsId();
       };
@@ -125,7 +135,7 @@ angular.module('QuepidApp')
           $scope.showTLSChangeWarning = true;
 
           $scope.quepidUrlToSwitchTo = $location.protocol() + '://' + $location.host() + $location.path();
-          $scope.quepidUrlToSwitchTo = $scope.quepidUrlToSwitchTo + '?searchUrl=' + $scope.pendingWizardSettings.searchUrl;
+          $scope.quepidUrlToSwitchTo = $scope.quepidUrlToSwitchTo + '?searchUrl=' + $scope.pendingWizardSettings.searchUrl + '&showWizard=true&caseName=' + $scope.pendingWizardSettings.caseName;
 
           if (searchEngineStartsWithHttps){
             $scope.protocolToSwitchTo = 'https';

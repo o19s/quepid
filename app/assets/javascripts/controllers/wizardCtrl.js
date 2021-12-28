@@ -9,8 +9,8 @@
 // We track this via just seeing how many cases they are involved with.
 angular.module('QuepidApp')
   .controller('WizardCtrl', [
-    '$rootScope', '$scope', '$uibModal', '$timeout',
-    function ($rootScope, $scope, $uibModal, $timeout) {
+    '$rootScope', '$scope', '$uibModal', '$timeout', '$location',
+    function ($rootScope, $scope, $uibModal, $timeout, $location) {
       $scope.wizard = {};
       $scope.wizard.triggerModal = function() {
 
@@ -35,9 +35,12 @@ angular.module('QuepidApp')
       });
 
       // Logic to figure out if we have a valid user who doesn't have
-      // access to any existing cases.
-      // could be replace with a big button "Create your First Case"!
+      // access to any existing case (could be replaced with a big button "Create your First Case"!)
+      // or if the showWizard=true is set on the url.
       function showModal() {
+        if (angular.isDefined($location.search().showWizard) && $location.search().showWizard === 'true') {
+          return true;
+        }
         return angular.isDefined($rootScope.currentUser) &&
           $rootScope.currentUser !== null &&
           (!$rootScope.currentUser.completedCaseWizard && $rootScope.currentUser.casesInvolvedWithCount === 1 && $rootScope.currentUser.teamsInvolvedWithCount === 0) &&
