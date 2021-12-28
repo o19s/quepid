@@ -44,6 +44,7 @@ angular.module('QuepidApp')
       $scope.setupDefaults  = setupDefaults;
       $scope.submit         = submit;
       $scope.reset          = reset;
+      $scope.checkTLSForSearchEngineUrl = checkTLSForSearchEngineUrl;
       $scope.reset();
       $scope.searchFields   = [];
 
@@ -55,6 +56,8 @@ angular.module('QuepidApp')
       function reset() {
         $scope.validating = false;
         $scope.urlValid = $scope.urlInvalid = false;
+        $scope.checkTLSForSearchEngineUrl();
+
       }
 
       function submit() {
@@ -80,13 +83,9 @@ angular.module('QuepidApp')
 
         // This logic maybe should live in Splainer Search if we wanted to support Splainer.io as well?
 
-        // Copied from controllers/queryParams.js
-        // It's a bit awkward, as we have two validates!  validateSearchEngineUrl, which flips some flags,
-        // and then the SettingsValidatorFactory.
-
         $scope.showTLSChangeWarning = false;
 
-        $scope.validateSearchEngineUrl();
+        $scope.checkTLSForSearchEngineUrl();
 
         // exit early if we have the TLS issue, this really should be part of the below logic.
         // validator.validateTLS().then.validateURL().then....
@@ -109,7 +108,8 @@ angular.module('QuepidApp')
         });
       }
 
-      $scope.validateSearchEngineUrl  = function() {
+      // Copied validateSearchEngineUrl from controllers/queryParams.js and renamed it checkTLSForSearchEngineUrl
+      function checkTLSForSearchEngineUrl () {
 
         // Figure out if we need to redirect.
         var quepidStartsWithHttps = $location.protocol() === 'https';
