@@ -27,19 +27,17 @@ angular.module('QuepidApp')
           $scope.showESTemplateWarning = esUrlSvc.isTemplateCall(uri);
         }
 
-        console.log("searchUrl:" + $scope.settings.searchUrl);
+        console.log('searchUrl:' + $scope.settings.searchUrl);
 
-        console.log("searchUrl:" + $scope.settings.searchUrl != '')
-        console.log("angular.isUndefined:" + angular.isUndefined($scope.settings.searchUrl));
+        console.log('searchUrl:'' + $scope.settings.searchUrl != '');
+        console.log('angular.isUndefined:'' + angular.isUndefined($scope.settings.searchUrl));
         if ($scope.settings.searchEngine != ''){
           // Figure out if we need to redirect based on our search engine's url.
           var quepidStartsWithHttps = $location.protocol() === 'https';
           var searchEngineStartsWithHttps = $scope.settings.searchUrl.startsWith('https');
 
-
-
-          console.log("quepidStartsWithHttps:" + quepidStartsWithHttps);
-          console.log("searchEngineStartsWithHttps:" + searchEngineStartsWithHttps);
+          console.log('quepidStartsWithHttps:' + quepidStartsWithHttps);
+          console.log('searchEngineStartsWithHttps:' + searchEngineStartsWithHttps);
 
           if ((quepidStartsWithHttps.toString() === searchEngineStartsWithHttps.toString())){
             $scope.showTLSChangeWarning = false;
@@ -49,7 +47,7 @@ angular.module('QuepidApp')
             $scope.quepidUrlToSwitchTo = $location.protocol() + '://' + $location.host() + $location.path();
 
             $scope.quepidUrlToSwitchTo = $scope.quepidUrlToSwitchTo + '?searchUrl=' + $scope.settings.searchUrl;
-            
+
             if (searchEngineStartsWithHttps){
               $scope.protocolToSwitchTo = 'https';
               $scope.quepidUrlToSwitchTo = $scope.quepidUrlToSwitchTo.replace('http', 'https');
@@ -58,7 +56,6 @@ angular.module('QuepidApp')
               $scope.protocolToSwitchTo = 'http';
               $scope.quepidUrlToSwitchTo = $scope.quepidUrlToSwitchTo.replace('https', 'http');
             }
-
           }
         }
       };
