@@ -59,6 +59,11 @@ class HomeController < ApplicationController
     puts "Alternatively, do we have a searchUrl? #{params[:searchUrl]}"
     puts params
 
+    if @case.present? && params[:caseName]
+      @case.case_name = params[:caseName]
+      @case.save
+    end
+
     if @try.present? && params[:searchUrl]
       @try.search_url = params[:searchUrl]
       @try.save
