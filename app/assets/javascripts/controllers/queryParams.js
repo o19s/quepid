@@ -30,7 +30,7 @@ angular.module('QuepidApp')
         console.log('searchUrl:' + $scope.settings.searchUrl);
 
         console.log('searchUrl:' + $scope.settings.searchUrl != '');
-        console.log('angular.isUndefined:'' + angular.isUndefined($scope.settings.searchUrl));
+        console.log('angular.isUndefined:' + angular.isUndefined($scope.settings.searchUrl));
         if ($scope.settings.searchEngine != ''){
           // Figure out if we need to redirect based on our search engine's url.
           var quepidStartsWithHttps = $location.protocol() === 'https';
