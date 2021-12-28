@@ -46,14 +46,12 @@ class HomeController < ApplicationController
   # rubocop:disable Metrics/CyclomaticComplexity
   # rubocop:disable Metrics/PerceivedComplexity
   def redirect_to_correct_tls
+    puts 'In redirect_to_correct_tls'
 
-    puts "In redirect_to_correct_tls"
+    # bool = ActiveRecord::Type::Boolean.new
+    # $skip_changing_to_matching_tls = bool.deserialize(params[:skip_changing_to_matching_tls]) || false
 
-
-    bool = ActiveRecord::Type::Boolean.new
-    #$skip_changing_to_matching_tls = bool.deserialize(params[:skip_changing_to_matching_tls]) || false
-
-    #return true if true == skip_changing_to_matching_tls
+    # return true if true == skip_changing_to_matching_tls
 
     return true if @case.blank? # shortcut if we don't have an @case.
 
