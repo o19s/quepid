@@ -5,8 +5,7 @@ require 'test_helper'
 class HomeControllerTest < ActionController::TestCase
   TRY_INFO        = /bootstrapTryNo.*?(\d*);/.freeze
   CASE_INFO       = /bootstrapCaseNo.*?(\d*);/.freeze
-  CASE_INFO       = /bootstrapCaseNo.*?(\d*);/.freeze
-
+  
   before do
     @controller = HomeController.new
   end
