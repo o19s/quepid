@@ -39,8 +39,8 @@ module Quepid
       hsts: false,
       redirect: {
         exclude: -> request {
-          # request.path =~ /api/ or request.path =~ /assets/ or request.path =~ /case/ or request.path == '/'
-          request.path =~ /api/ or request.path =~ /assets/ or request.path =~ /case/
+          request.path =~ /api/ or request.path =~ /assets/ or request.path =~ /case/ or request.path == '/'
+          #request.path =~ /api/ or request.path =~ /assets/ or request.path =~ /case/
         },
       },
     }
