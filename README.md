@@ -468,7 +468,7 @@ openssl req -new -newkey rsa:2048 -sha1 -days 365 -nodes -x509 -keyout .ssl/loca
 
 **PS:** It is not necessary to do that again.
 
-The `docker-compose.yml` file contains an nginx reverse proxy that uses these certificates. You can access Quepid at https://localhost:8443. (Quepid will still be available over http on port 3000.)
+The `docker-compose.yml` file contains an nginx reverse proxy that uses these certificates. You can access Quepid at https://localhost or http://localhost. (Quepid will still be available over http on port 80.)
 
 ## I'd like to test OpenID Auth
 
