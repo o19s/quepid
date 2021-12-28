@@ -26,10 +26,10 @@ angular.module('QuepidApp')
       // the params and override the default values.
       // We should pass this stuff in externally, not do it here.
       if (angular.isDefined($location.search().searchUrl)){
-        $scope.pendingWizardSettings.searchUrl = $location.search().searchUrl
+        $scope.pendingWizardSettings.searchUrl = $location.search().searchUrl;
       }
       if (angular.isDefined($location.search().caseName)){
-        $scope.pendingWizardSettings.caseName = $location.search().caseName
+        $scope.pendingWizardSettings.caseName = $location.search().caseName;
       }
 
       $scope.wizardSettingsModel.settingsId = function() {
@@ -147,7 +147,7 @@ angular.module('QuepidApp')
           }
 
         }
-      };
+      }
 
       function setupDefaults(validator) {
         $scope.validating   = false;
