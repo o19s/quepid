@@ -22,24 +22,30 @@
                     <p class="small text-muted mb-1">
                       Cases
                     </p>
-                    <p class="mb-0">41</p>
+                    <p class="mb-0"><%= current_user.cases.count %></p>
                   </div>
                   <div class="px-3">
                     <p class="small text-muted mb-1">
                       Teams
                     </p>
-                    <p class="mb-0">976</p>
+                    <p class="mb-0"><%= current_user.teams.count %></p>
                   </div>
                   <div>
                     <p class="small text-muted mb-1">
+                      Queries
+                    </p>
+                    <p class="mb-0"><%= current_user.queries.count %></p>
+                  </div>
+                  <div class="px-3">
+                    <p class="small text-muted mb-1">
                       Ratings
                     </p>
-                    <p class="mb-0">8.5</p>
+                    <p class="mb-0">n/a</p>
                   </div>
                 </div>
                 <div class="d-flex pt-1">
                   <p class="small text-muted">
-                    Since Jan 1st 2020
+                    Since <%= time_ago_in_words current_user.created_at %>
                   </p>
                   <!--
                   <button type="button" class="btn btn-outline-primary me-1 flex-grow-1">
@@ -138,7 +144,7 @@
         <input id="confirm" type="password" name="password_confirmation" class="form-control" placeholder="Confirm New Password" />
         <label for="confirm" class="form-label">Confirm New Password</label>
       </div>
-      
+
       <button type="submit" class="btn btn-primary">Update password</button>
 
     <% end %>
