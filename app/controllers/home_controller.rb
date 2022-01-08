@@ -50,12 +50,8 @@ class HomeController < ApplicationController
     end
 
     if @try.present?
-      if params[:searchEngine].present?
-        @try.search_engine = params[:searchEngine]
-      end
-      if params[:searchUrl].present?
-        @try.search_url = params[:searchUrl]
-      end
+      @try.search_engine = params[:searchEngine] if params[:searchEngine].present?
+      @try.search_url = params[:searchUrl] if params[:searchUrl].present?
       @try.save
     end
 
