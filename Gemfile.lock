@@ -145,8 +145,6 @@ GEM
     faraday-patron (1.0.0)
     faraday-rack (1.0.0)
     ffi (1.15.3)
-    font-awesome-sass (5.15.1)
-      sassc (>= 1.11)
     font_awesome5_rails (1.5.0)
       nokogiri (>= 1.11.3)
       railties (>= 4.2)
@@ -410,7 +408,6 @@ DEPENDENCIES
   derailed_benchmarks
   devise (>= 4.6.2)
   devise_invitable (~> 2.0)
-  font-awesome-sass
   font_awesome5_rails
   foreman
   gabba
