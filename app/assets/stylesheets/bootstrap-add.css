@@ -25,7 +25,7 @@ hr {
 */
 
 body {
-  background: image-url('blue_bg.jpg') top center repeat;
+  background: url('blue_bg.jpg') top center repeat;
 }
 
 button:select {
@@ -442,7 +442,7 @@ header .dropdown-content li.dropdown-header {
 
 .sub-results {
 	clear: both;
-	background: image-url('sub-results-bg.png') top center no-repeat #F7F7F7;
+	background: url('sub-results-bg.png') top center no-repeat #F7F7F7;
 	padding: 75px 15px 15px 15px;
 	position: relative;
 	min-width: 650px;
