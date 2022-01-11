@@ -1300,9 +1300,9 @@ angular-utils-pagination@~0.11.1:
   resolved "https://registry.yarnpkg.com/angular-utils-pagination/-/angular-utils-pagination-0.11.1.tgz#efad7c8879beb30ad3d77707f93e3d0ef51f2c66"
   integrity sha1-7618iHm+swrT13cH+T49DvUfLGY=
 
-"angular-wizard@git://github.com/softwaredoug/angular-wizard.git#0.4.2":
+"angular-wizard@https://github.com/softwaredoug/angular-wizard.git#0.4.2":
   version "0.4.2"
-  resolved "git://github.com/softwaredoug/angular-wizard.git#d86e03e77296e60c9115622ab7c81221fad37649"
+  resolved "https://github.com/softwaredoug/angular-wizard.git#d86e03e77296e60c9115622ab7c81221fad37649"
 
 angular@>=1.2.x, angular@^1.2.10, angular@^1.7.9, angular@~1.8.2:
   version "1.8.2"
