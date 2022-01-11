@@ -22,9 +22,12 @@ angular.module('QuepidApp')
 
       $scope.pendingWizardSettings = angular.copy(settingsSvc.defaults.solr);
 
-      // if we have restarted the wizard, then grab the searchUrl and caseName from
-      // the params and override the default values.
+      // if we have restarted the wizard, then grab the searchUrl, searchEngine,
+      // and caseName from the params and override the default values.
       // We should pass this stuff in externally, not do it here.
+      if (angular.isDefined($location.search().searchEngine)){
+        $scope.pendingWizardSettings.searchEngine = $location.search().searchEngine;
+      }
       if (angular.isDefined($location.search().searchUrl)){
         $scope.pendingWizardSettings.searchUrl = $location.search().searchUrl;
       }
@@ -121,12 +124,9 @@ angular.module('QuepidApp')
       // Copied validateSearchEngineUrl from controllers/queryParams.js and renamed it checkTLSForSearchEngineUrl
       function checkTLSForSearchEngineUrl () {
 
-        // Figure out if we need to redirect.
+        // Figure out if we need to reload Quepid on a different http/https port to match search engine.
         var quepidStartsWithHttps = $location.protocol() === 'https';
-        //
-        //var searchEngineStartsWithHttps = $scope.settings.searchUrl.startsWith('https');
         var searchEngineStartsWithHttps = $scope.pendingWizardSettings.searchUrl.startsWith('https');
-
 
         if ((quepidStartsWithHttps.toString() === searchEngineStartsWithHttps.toString())){
           $scope.showTLSChangeWarning = false;
@@ -135,7 +135,7 @@ angular.module('QuepidApp')
           $scope.showTLSChangeWarning = true;
 
           $scope.quepidUrlToSwitchTo = $location.protocol() + '://' + $location.host() + $location.path();
-          $scope.quepidUrlToSwitchTo = $scope.quepidUrlToSwitchTo + '?searchUrl=' + $scope.pendingWizardSettings.searchUrl + '&showWizard=true&caseName=' + $scope.pendingWizardSettings.caseName;
+          $scope.quepidUrlToSwitchTo = $scope.quepidUrlToSwitchTo + '?searchEngine=' + $scope.pendingWizardSettings.searchEngine + '&searchUrl=' + $scope.pendingWizardSettings.searchUrl + '&showWizard=true&caseName=' + $scope.pendingWizardSettings.caseName;
 
           if (searchEngineStartsWithHttps){
             $scope.protocolToSwitchTo = 'https';
