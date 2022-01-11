@@ -40,7 +40,7 @@ class HomeControllerTest < ActionController::TestCase
       try_info = TRY_INFO.match(response.body)
       assert_equal the_try.try_number.to_s, try_info[1]
 
-      puts "HEre is search #{the_try.search_url}"
+      puts "Here is search #{the_try.search_url}"
 
       puts "Request SSL: #{request.ssl?}"
     end

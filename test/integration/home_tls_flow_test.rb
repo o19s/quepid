@@ -24,7 +24,7 @@ class HomeTlsFlowTest < ActionDispatch::IntegrationTest
     # Navigate to a try that is http TLS protocol
     get case_home_url(id: kase.id, try_number: try_http.try_number)
     assert_response :ok
-    puts "Requiest ssl?  #{request.ssl?}"
+    puts "Request ssl?  #{request.ssl?}"
 
     # Navigate to a try that is https TLS protocol
     # temp, remove me.
