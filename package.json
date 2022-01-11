@@ -26,7 +26,7 @@
     "angular-ui-bootstrap": "~2.5.0",
     "angular-ui-sortable": "~0.19.0",
     "angular-utils-pagination": "~0.11.1",
-    "angular-wizard": "git://github.com/softwaredoug/angular-wizard.git#0.4.2",
+    "angular-wizard": "https://github.com/softwaredoug/angular-wizard.git#0.4.2",
     "bootstrap": "^5.0.2",
     "d3": "~6.6.2",
     "d3-tip": "~0.9.1",

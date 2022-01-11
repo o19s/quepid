@@ -23,12 +23,11 @@ RUN apt-get update -qq \
 # may not need libgbm
 
 # Node and Yarn
-RUN curl -sL https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
+RUN wget --no-check-certificate -qO - https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
 RUN echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list
 RUN curl -sL https://deb.nodesource.com/setup_16.x | bash -
 RUN apt-get update -qq && apt-get install -y --no-install-recommends nodejs yarn netcat \
   && rm -rf /var/lib/apt/lists/*
-
 
 # Clean environment
 RUN apt-get clean all

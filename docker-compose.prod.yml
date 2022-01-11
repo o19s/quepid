@@ -5,7 +5,7 @@ version: '3'
 services:
   mysql:
     container_name: quepid_prod_db
-    image: mysql:5.6.37
+    image: amd64/mysql:5.7.36
     ports:
       - 3306:3306
     environment:
