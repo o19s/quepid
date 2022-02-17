@@ -38,7 +38,7 @@ class Try < ApplicationRecord
     },
     es:            {
       query_params:
-        '{
+                    '{
   "query": {
     "multi_match": {
       "query": "#$query##",

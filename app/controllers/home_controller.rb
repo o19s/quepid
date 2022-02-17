@@ -56,7 +56,7 @@ class HomeController < ApplicationController
         if @try.search_engine != params[:searchEngine]
           @try.search_engine = params[:searchEngine]
           @try.query_params  = Try::DEFAULTS[@try.search_engine.to_sym][:query_params]
-          @try.field_spec  = Try::DEFAULTS[@try.search_engine.to_sym][:field_spec]
+          @try.field_spec = Try::DEFAULTS[@try.search_engine.to_sym][:field_spec]
 
         end
         @try.search_url = params[:searchUrl]
