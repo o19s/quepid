@@ -1,5 +1,12 @@
 # Changelog
 
+## 6.10.1 - ??
+
+### Bugs
+
+* When Quepid switches between HTTP and HTTPS protocols, the flash message "Reloaded on HTTP protocol for Quepid app to match search engine URL" causes some CSS layout issues which led to the "Run my Queries" button to slide off the page!   Darn you CSS.  First spotted by @nathancday, while giving a demo of course!  Fixed by https://github.com/o19s/quepid/pull/463 by @epugh.
+
+
 ## 6.10.0 - 2022-01-03
 
 We've taken a rag and polished up the _Find and Rate Missing Documents_ modal box in this release.   We've also completely
