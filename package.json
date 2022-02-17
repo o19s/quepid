@@ -6,6 +6,7 @@
   },
   "license": "Apache-2.0",
   "dependencies": {
+    "@popperjs/core": "^2.11.2",
     "@rails/actioncable": "^6.0.0",
     "@rails/activestorage": "^6.0.0",
     "@rails/ujs": "^6.0.0",
