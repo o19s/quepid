@@ -1,0 +1,177 @@
+#!/usr/bin/env bash
+
+##########################
+# VARIABLES AND DEFAULTS #
+##########################
+
+AWS_PROFILE="$AWS_PROFILE"
+AWS_REGION=${AWS_REGION:-${AWS_DEFAULT_REGION:-'us-east-1'}}
+
+PASSWORD=''
+DOCKER_LOGIN=()
+
+INCLUDE_EMAIL=0
+
+#########
+# USAGE #
+#########
+
+SCRIPTNAME="$(basename "$0")"
+function print_usage() {
+  echo "Usage: $SCRIPTNAME [OPTIONS...]"
+  echo
+  echo "Run \`docker login\` for AWS Elastic Container Registry."
+  echo
+  echo "Options:"
+  echo "  --profile PROFILE           Name of the CLI profile to use"
+  echo "  --region REGION             AWS Region to send the request to                 [default: us-east-1]"
+  echo "  --[no-]include-email        Specify whether the '-e' flag should be included in   [default: false]"
+  echo "                              the \`docker login\` command. Note the '-e' option"
+  echo "                              has been deprecated and was removed in Docker 17.06."
+  echo "  --help                      Print help text and exit"
+  echo
+  echo "Environment Variables:"
+  echo "  AWS_PROFILE                 alias for --profile"
+  echo "  AWS_REGION                  primary alias for --region"
+  echo "  AWS_DEFAULT_REGION          secondary alias for --region"
+}
+
+####################
+# HELPER FUNCTIONS #
+####################
+
+# Exit with a usage error
+function exit_usage() {
+  local message="$1"
+
+  echo "${SCRIPTNAME}: $message" >&2
+  echo "${SCRIPTNAME}: Try \`${SCRIPTNAME} --help' for more information." >&2
+  exit 2
+}
+
+# Require arguments for certain command line options
+function require_optarg() {
+  if [[ -z "$OPTARG" ]]; then
+    exit_usage "missing operand after \`$OPT'"
+  fi
+}
+
+# Main logic
+function main() {
+  local opts
+  local output
+  local rc
+  local registry
+
+  # Build command line options for `aws ecr get-login`
+  opts="--region $AWS_REGION"
+  [[ $INCLUDE_EMAIL -eq 0 ]] && opts+=" --no-include-email"
+  [[ $INCLUDE_EMAIL -eq 1 ]] && opts+=" --include-email"
+
+  # Run `aws ecr get-login`. This will generate a `docker login` command that
+  # can then be run to login with AWS ECR.
+  export AWS_PROFILE
+  output="$(aws ecr get-login $opts)"
+  rc=$?
+  if [[ $rc -ne 0 ]]; then
+    echo
+    echo "${SCRIPTNAME}: error: There was an error running \`aws ecr get-login\`" >&2
+    echo "${SCRIPTNAME}: error: See above output for more information." >&2
+    exit $rc
+  fi
+
+  # Parse the `docker login` command line options
+  set -- $output
+  while [[ $# -gt 0 ]]; do
+    OPT="$1"
+    OPTARG="$2"
+
+    case "$OPT" in
+      -p|--password)
+        # Strip the password from the `docker login` command. We'll supply the
+        # password over STDIN instead.
+        PASSWORD="$OPTARG"
+        DOCKER_LOGIN+=('--password-stdin')
+        shift 2
+        ;;
+      *)
+        # Save all other options and arguments
+        DOCKER_LOGIN+=("$OPT")
+        shift
+        ;;
+    esac
+  done
+
+  # Run `docker login` command, piping the password to STDIN
+  registry="${DOCKER_LOGIN[${#DOCKER_LOGIN[@]}-1]}"
+  echo "Generating temporary login for AWS ECR registry: $registry"
+  echo "$PASSWORD" | "${DOCKER_LOGIN[@]}" 1>/dev/null
+}
+
+###########################
+# PARSE COMMAND LINE ARGS #
+###########################
+
+POSITIONAL=()
+NO_MORE_OPTS=0
+while [[ $# -gt 0 ]]; do
+  OPT="$1"
+  OPTARG="$2"
+
+  # Setting -- disables interpreting -* as options
+  if [[ $NO_MORE_OPTS -eq 1 ]]; then
+    POSITIONAL+=("$OPT")
+    shift
+    continue
+  fi
+
+  case "$OPT" in
+    --)
+      NO_MORE_OPTS=1
+      shift
+      ;;
+    --help)
+      print_usage
+      exit 0
+      ;;
+    --include-email)
+      INCLUDE_EMAIL=1
+      shift
+      ;;
+    --no-include-email)
+      INCLUDE_EMAIL=0
+      shift
+      ;;
+    --profile)
+      require_optarg
+      AWS_PROFILE="$OPTARG"
+      shift 2
+      ;;
+    --region)
+      require_optarg
+      AWS_REGION="$OPTARG"
+      shift 2
+      ;;
+    -*)
+      exit_usage "invalid option \`$OPT'"
+      ;;
+    *)
+      POSITIONAL+=("$OPT")
+      shift
+      ;;
+  esac
+done
+
+# Restore positional params
+set -- "${POSITIONAL[@]}"
+
+# Validate no extra arguments
+if [[ "${#POSITIONAL[@]}" -gt 0 ]]; then
+  exit_usage "extra operand \`${POSITIONAL[0]}'"
+fi
+
+#####################
+# MAIN LOGIC BEGINS #
+#####################
+
+main "$@"

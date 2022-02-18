@@ -1,4 +1,5 @@
 .byebug_history
+.vscode
 
 # puppeteer testing
 /spec/puppeteer/node_modules
@@ -29,6 +30,11 @@
 # Ignore local env file
 /.envrc
 .env
+.env-local
+
+# Terraform 
+.terraform
+*.tfstate.backup
 
 # Ignore node artifacts
 node_modules
