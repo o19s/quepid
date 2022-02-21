@@ -4431,10 +4431,10 @@ isobject@^3.0.0, isobject@^3.0.1:
   resolved "https://registry.yarnpkg.com/isobject/-/isobject-3.0.1.tgz#4e431e92b11a9731636aa1f9c8d1ccbcfdab78df"
   integrity sha1-TkMekrEalzFjaqH5yNHMvP2reN8=
 
-jasmine-core@3.99.0:
-  version "3.99.0"
-  resolved "https://registry.yarnpkg.com/jasmine-core/-/jasmine-core-3.99.0.tgz#99a3da0d38ba2de82614d9198b7b1bc1c32a5960"
-  integrity sha512-+ZDaJlEfRopINQqgE+hvzRyDIQDeKfqqTvF8RzXsvU1yE3pBDRud2+Qfh9WvGgRpuzqxyQJVI6Amy5XQ11r/3w==
+jasmine-core@4.0.0:
+  version "4.0.0"
+  resolved "https://registry.yarnpkg.com/jasmine-core/-/jasmine-core-4.0.0.tgz#8299ed38a100c47a1d154af63449a40967a7be5c"
+  integrity sha512-tq24OCqHElgU9KDpb/8O21r1IfotgjIzalfW9eCmRR40LZpvwXT68iariIyayMwi0m98RDt16aljdbwK0sBMmQ==
 
 jasmine-core@^3.6.0:
   version "3.7.1"
