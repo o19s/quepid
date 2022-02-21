@@ -6,6 +6,9 @@
 
 * When Quepid switches between HTTP and HTTPS protocols, the flash message "Reloaded on HTTP protocol for Quepid app to match search engine URL" causes some CSS layout issues which led to the "Run my Queries" button to slide off the page!   Darn you CSS.  First spotted by @nathancday, while giving a demo of course!  Fixed by https://github.com/o19s/quepid/pull/463 by @epugh.
 
+* When reloading from HTTP to HTTPS Elasticsearch during the case wizard, we lose the default query params for ES, we end up
+with the default Solr query params!  https://github.com/o19s/quepid/issues/457 by @epugh and @wrigleyDan.  Fixed by https://github.com/o19s/quepid/pull/464 by @epugh.
+
 
 ## 6.10.0 - 2022-01-03
 

@@ -27,7 +27,8 @@ class Try < ApplicationRecord
   # Scopes
   scope :latest, -> { order(id: :desc).first } # The try created the most recently
 
-  # Constants
+  # Defaults for defining a search engine.  These defaults
+  # are duplicated in the Angular SPA layer too ;-(
   DEFAULTS = {
     search_engine: 'solr',
     solr:          {
@@ -36,15 +37,20 @@ class Try < ApplicationRecord
       field_spec:   'id:id title:title',
     },
     es:            {
-      query_params: [
-        '{',
-        '    "query": {',
-        '        "match": {',
-        '            "_all": "#$query##"',
-        '        }',
-        '    }',
-        '}'
-      ].join('\n'),
+      query_params:
+                    '{
+  "query": {
+    "multi_match": {
+      "query": "#$query##",
+      "type": "best_fields",
+      "fields": [
+        "title^10",
+        "overview",
+        "cast"
+      ]
+    }
+  }
+}',
       search_url:   'http://quepid-elasticsearch.dev.o19s.com:9206/tmdb/_search',
       field_spec:   'id:_id, title:title',
     },

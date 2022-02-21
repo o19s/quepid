@@ -50,8 +50,17 @@ class HomeController < ApplicationController
     end
 
     if @try.present?
-      @try.search_engine = params[:searchEngine] if params[:searchEngine].present?
-      @try.search_url = params[:searchUrl] if params[:searchUrl].present?
+      # Deal with front end UI changes to search engine being stored in backend
+      if params[:searchEngine].present?
+        # Reset the default queries
+        if @try.search_engine != params[:searchEngine]
+          @try.search_engine = params[:searchEngine]
+          @try.query_params  = Try::DEFAULTS[@try.search_engine.to_sym][:query_params]
+          @try.field_spec = Try::DEFAULTS[@try.search_engine.to_sym][:field_spec]
+
+        end
+        @try.search_url = params[:searchUrl]
+      end
       @try.save
     end
 
