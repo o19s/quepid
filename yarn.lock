@@ -7012,10 +7012,10 @@ spdy@^4.0.2:
     select-hose "^2.0.0"
     spdy-transport "^3.0.0"
 
-splainer-search@2.12.0:
-  version "2.12.0"
-  resolved "https://registry.yarnpkg.com/splainer-search/-/splainer-search-2.12.0.tgz#e48e25ecefccfb5d14a7eb99afe908db081917ce"
-  integrity sha512-cEL+0//8vXCDFNBTJVRmlngOj30M9S9dSFAG0IrbIoQcvLHDAx3/b7f5NvjD1K+dihW3CB/r8Z+MwcjVa5ERnQ==
+splainer-search@2.13.0:
+  version "2.13.0"
+  resolved "https://registry.yarnpkg.com/splainer-search/-/splainer-search-2.13.0.tgz#81205020e160144ac008800ec1e44159e1b7640a"
+  integrity sha512-5E3CnYHEhmUgv7lQ0xpzq+V/LQkSyCRm7Uzsw/WJD3lEtPCqgZwOaBW+duJhstsH4WIJhzyTvtYc978rQguGLA==
   dependencies:
     angular "^1.7.9"
     urijs "^1.19.7"
@@ -7971,8 +7971,10 @@ watchpack@^1.7.4:
   resolved "https://registry.yarnpkg.com/watchpack/-/watchpack-1.7.5.tgz#1267e6c55e0b9b5be44c2023aed5437a2c26c453"
   integrity sha512-9P3MWk6SrKjHsGkLT2KHXdQ/9SNkyoJbabxnKOoJepsvJjJG8uYTR3yTPxPQvNDI3w4Nz1xnE0TLHK4RIVe/MQ==
   dependencies:
+    chokidar "^3.4.1"
     graceful-fs "^4.1.2"
     neo-async "^2.5.0"
+    watchpack-chokidar2 "^2.0.1"
   optionalDependencies:
     chokidar "^3.4.1"
     watchpack-chokidar2 "^2.0.1"
