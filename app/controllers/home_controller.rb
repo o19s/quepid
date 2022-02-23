@@ -3,7 +3,7 @@
 class HomeController < ApplicationController
   before_action :set_case_or_bootstrap
 
-  before_action :redirect_to_correct_tls unless Rails.application.config.force_ssl
+  before_action :redirect_to_correct_tls # force a match to the URL of the search engine
 
   def index
     # return unless current_user
@@ -37,37 +37,44 @@ class HomeController < ApplicationController
   # Similarily we may have only HTTPS set up for Quepid, and therefore need to stay on HTTPS,
   # so this method is only conditionally called if force_ssl is false.
   #
-  # The skip_changing_to_matching_tls lets us override this behavior, which we have to do when
-  # you edit the search engine url in the front end.  We need to change first, then come back
-  # and ask the person to reapply the change.
-
   # rubocop:disable Metrics/MethodLength
   # rubocop:disable Metrics/AbcSize
   # rubocop:disable Metrics/CyclomaticComplexity
   # rubocop:disable Metrics/PerceivedComplexity
   def redirect_to_correct_tls
-    bool = ActiveRecord::Type::Boolean.new
-    skip_changing_to_matching_tls = bool.deserialize(params[:skip_changing_to_matching_tls]) || false
-
-    return true if true == skip_changing_to_matching_tls
-
     return true if @case.blank? # shortcut if we don't have an @case.
+
+    if @case.present? && params[:caseName]
+      @case.case_name = params[:caseName]
+      @case.save
+    end
+
+    if @try.present?
+      # Deal with front end UI changes to search engine being stored in backend
+      if params[:searchEngine].present?
+        # Reset the default queries
+        if @try.search_engine != params[:searchEngine]
+          @try.search_engine = params[:searchEngine]
+          @try.query_params  = Try::DEFAULTS[@try.search_engine.to_sym][:query_params]
+          @try.field_spec = Try::DEFAULTS[@try.search_engine.to_sym][:field_spec]
+
+        end
+        @try.search_url = params[:searchUrl]
+      end
+      @try.save
+    end
 
     search_engine_starts_with_https = @try.present? ? @try.search_url.starts_with?('https') : false
 
     if search_engine_starts_with_https && !request.ssl? # redirect to SSL
       original_url = request.original_url
       original_url.gsub!(%r{http://}, 'https://')
-      flash[:success] = 'Reloaded on HTTPS protocol for Quepid app to match search engine URL.'
       redirect_to original_url
-      flash.keep
       false
     elsif !search_engine_starts_with_https && request.ssl? # redirect to Non SSL
       original_url = request.original_url
       original_url.gsub!(%r{https://}, 'http://')
-      flash[:success] = 'Reloaded on HTTP protocol for Quepid app to match search engine URL.'
       redirect_to original_url
-      flash.keep
       false
     else
       true

@@ -1,19 +1,6 @@
 version: '3'
+
 services:
-  mysql:
-    container_name: quepid_db
-    image: mysql:5.6.37
-    ports:
-      - 3306:3306
-    environment:
-      - MYSQL_ROOT_PASSWORD=password
-
-  redis:
-    container_name: quepid_redis
-    image: redis:6.0.5
-    ports:
-      - 6379:6379
-
   app:
     container_name: quepid_app
     build:
@@ -38,9 +25,23 @@ services:
       - redis
       - keycloak
 
+  mysql:
+    container_name: quepid_db
+    image: amd64/mysql:5.7.36
+    ports:
+      - 3306:3306
+    environment:
+      - MYSQL_ROOT_PASSWORD=password
+
+  redis:
+    container_name: quepid_redis
+    image: redis:6.0.5
+    ports:
+      - 6379:6379
+
   keycloak:
     image: quay.io/keycloak/keycloak:13.0.0
-    container_name: keycloak
+    container_name: quepid_keycloak
     hostname: keycloak
     command: ["-b", "0.0.0.0", "-Dkeycloak.migration.action=import", "-Dkeycloak.migration.provider=dir", "-Dkeycloak.migration.dir=/opt/jboss/keycloak/realm-config", "-Dkeycloak.migration.strategy=OVERWRITE_EXISTING", "-Djboss.socket.binding.port-offset=1000", "-Dkeycloak.profile.feature.upload_scripts=enabled"]
     ports:
@@ -52,3 +53,15 @@ services:
       DB_VENDOR: h2
     volumes:
       - ./keycloak/realm-config:/opt/jboss/keycloak/realm-config
+
+  nginx:
+    image: nginx:1.21.4
+    container_name: quepid_nginx
+    ports:
+      - "443:8443"
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./.ssl/:/etc/nginx/certs
+    links:
+      - app

@@ -22,6 +22,19 @@ angular.module('QuepidApp')
 
       $scope.pendingWizardSettings = angular.copy(settingsSvc.defaults.solr);
 
+      // if we have restarted the wizard, then grab the searchUrl, searchEngine,
+      // and caseName from the params and override the default values.
+      // We should pass this stuff in externally, not do it here.
+      if (angular.isDefined($location.search().searchEngine)){
+        $scope.pendingWizardSettings.searchEngine = $location.search().searchEngine;
+      }
+      if (angular.isDefined($location.search().searchUrl)){
+        $scope.pendingWizardSettings.searchUrl = $location.search().searchUrl;
+      }
+      if (angular.isDefined($location.search().caseName)){
+        $scope.pendingWizardSettings.caseName = $location.search().caseName;
+      }
+
       $scope.wizardSettingsModel.settingsId = function() {
         return settingsSvc.settingsId();
       };
@@ -44,6 +57,7 @@ angular.module('QuepidApp')
       $scope.setupDefaults  = setupDefaults;
       $scope.submit         = submit;
       $scope.reset          = reset;
+      $scope.checkTLSForSearchEngineUrl = checkTLSForSearchEngineUrl;
       $scope.reset();
       $scope.searchFields   = [];
 
@@ -55,6 +69,8 @@ angular.module('QuepidApp')
       function reset() {
         $scope.validating = false;
         $scope.urlValid = $scope.urlInvalid = false;
+        $scope.checkTLSForSearchEngineUrl();
+
       }
 
       function submit() {
@@ -80,13 +96,9 @@ angular.module('QuepidApp')
 
         // This logic maybe should live in Splainer Search if we wanted to support Splainer.io as well?
 
-        // Copied from controllers/queryParams.js
-        // It's a bit awkward, as we have two validates!  validateSearchEngineUrl, which flips some flags,
-        // and then the SettingsValidatorFactory.
-
         $scope.showTLSChangeWarning = false;
 
-        $scope.validateSearchEngineUrl();
+        $scope.checkTLSForSearchEngineUrl();
 
         // exit early if we have the TLS issue, this really should be part of the below logic.
         // validator.validateTLS().then.validateURL().then....
@@ -109,30 +121,21 @@ angular.module('QuepidApp')
         });
       }
 
-      $scope.validateSearchEngineUrl  = function() {
+      // Copied validateSearchEngineUrl from controllers/queryParams.js and renamed it checkTLSForSearchEngineUrl
+      function checkTLSForSearchEngineUrl () {
 
-        // Figure out if we need to redirect.
+        // Figure out if we need to reload Quepid on a different http/https port to match search engine.
         var quepidStartsWithHttps = $location.protocol() === 'https';
-        //
-        //var searchEngineStartsWithHttps = $scope.settings.searchUrl.startsWith('https');
         var searchEngineStartsWithHttps = $scope.pendingWizardSettings.searchUrl.startsWith('https');
-
 
         if ((quepidStartsWithHttps.toString() === searchEngineStartsWithHttps.toString())){
           $scope.showTLSChangeWarning = false;
         }
         else {
           $scope.showTLSChangeWarning = true;
-          // We need to drop the path.
-          //$scope.quepidUrlToSwitchTo = $location.absUrl();
-          // what port is HTTPS on???
-          $scope.quepidUrlToSwitchTo = $location.protocol() + '://' + $location.host() + '?skip_changing_to_matching_tls=true';
-          //if ($scope.quepidUrlToSwitchTo.endsWith('/')){
-          //  $scope.quepidUrlToSwitchTo = $scope.quepidUrlToSwitchTo + '?skip_changing_to_matching_tls=true';
-          //}
-          //else {
-          //  $scope.quepidUrlToSwitchTo = $scope.quepidUrlToSwitchTo + '&skip_changing_to_matching_tls=true';
-          //}
+
+          $scope.quepidUrlToSwitchTo = $location.protocol() + '://' + $location.host() + $location.path();
+          $scope.quepidUrlToSwitchTo = $scope.quepidUrlToSwitchTo + '?searchEngine=' + $scope.pendingWizardSettings.searchEngine + '&searchUrl=' + $scope.pendingWizardSettings.searchUrl + '&showWizard=true&caseName=' + $scope.pendingWizardSettings.caseName;
 
           if (searchEngineStartsWithHttps){
             $scope.protocolToSwitchTo = 'https';
@@ -144,7 +147,7 @@ angular.module('QuepidApp')
           }
 
         }
-      };
+      }
 
       function setupDefaults(validator) {
         $scope.validating   = false;

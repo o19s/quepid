@@ -1,5 +1,37 @@
 # Changelog
 
+## 6.10.1 - ??
+
+### Bugs
+
+* When Quepid switches between HTTP and HTTPS protocols, the flash message "Reloaded on HTTP protocol for Quepid app to match search engine URL" causes some CSS layout issues which led to the "Run my Queries" button to slide off the page!   Darn you CSS.  First spotted by @nathancday, while giving a demo of course!  Fixed by https://github.com/o19s/quepid/pull/463 by @epugh.
+
+* When reloading from HTTP to HTTPS Elasticsearch during the case wizard, we lose the default query params for ES, we end up
+with the default Solr query params!  https://github.com/o19s/quepid/issues/457 by @epugh and @wrigleyDan.  Fixed by https://github.com/o19s/quepid/pull/464 by @epugh.
+
+
+## 6.10.0 - 2022-01-03
+
+We've taken a rag and polished up the _Find and Rate Missing Documents_ modal box in this release.   We've also completely
+redone how we attempted to handle http and https connections from Quepid to http and https search engines that was first
+introduced into 6.9.0 based on what we've learned in the real world.
+
+### Improvements
+
+* Reworked the handing of http and https connections to Quepid when connecting to http and https search engines.  Added in Development mode a nginx based proxy to make http://localhost/ and https://localhost/ work, which is also how you would deploy Quepid in a Production set up.   Still works fine on http://localhost:3000 if you only use http based search engine connection.   Big thanks to @jzonthemtn for https://github.com/o19s/quepid/pull/451 which fixes https://github.com/o19s/quepid/issues/444 and https://github.com/o19s/quepid/issues/438.
+
+
+* The _Find and Rate Missing Documents_ query interface assumes you use the Lucene query syntax.  Turns out we have a highlighter built in, so enable that for Lucene syntax.  https://github.com/o19s/quepid/pull/453 by @epugh.
+
+* Writing your own scorer?   The modal popup window is rather cramped, so let's give the editor room to breathe by making them larger!   https://github.com/o19s/quepid/pull/452 by @epugh.
+
+* In the early days of Quepid, looking up a single Solr doc would trigger a `facet.field` on every field you display in Quepid.  For some Solr's, this can turn a quick lookup for a single document to a 30 second or more ordeal because of unexpected faceting!  Thanks to @jeffryedvm for opening https://github.com/o19s/quepid/issues/442.  Fixed by https://github.com/o19s/quepid/pull/456 by @epugh.
+
+### Bugs
+
+* On the _Find and Rate Missing Documents_ screen the ability to show just the rated documents had an issue that you had to click the button twice, making you think it was broken.  https://github.com/o19s/quepid/issues/454 and https://github.com/o19s/quepid/issues/423 by @epugh are fixed in https://github.com/o19s/quepid/pull/455 by @epugh.
+
+
 ## 6.9.1 - 2021-10-27
 
 ### Improvements

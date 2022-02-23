@@ -29,16 +29,22 @@ module Quepid
     config.active_job.queue_adapter = :sidekiq
 
     # == SSL Specific Settings
-    # Note, uf true then this will allow Quepid to ONLY talk to HTTPS based search engines.
+    # Note, if true then this will allow Quepid to ONLY talk to HTTPS based search engines.
     config.force_ssl = true if 'true' == ENV['FORCE_SSL']
-    # rubocop:disable Style/YodaCondition
     # rubocop:disable Style/StabbyLambdaParentheses
-    # rubocop:disable Layout/LineLength
     # rubocop:disable Layout/SpaceInLambdaLiteral
-    config.ssl_options = { secure_cookies: false, hsts: false, redirect: { exclude: -> request { request.path =~ /api/ or request.path =~ /assets/ or request.path =~ /case/ or request.path == '/' } } }
-    # rubocop:enable Style/YodaCondition
+    # rubocop:disable Layout/HashAlignment
+    config.ssl_options = {
+      secure_cookies: false,
+      hsts: false,
+      redirect: {
+        exclude: -> request {
+          request.path =~ /api/ or request.path =~ /assets/ or request.path =~ /case/ or '/' == request.path
+        },
+      },
+    }
     # rubocop:enable Style/StabbyLambdaParentheses
-    # rubocop:enable Layout/LineLength
     # rubocop:enable Layout/SpaceInLambdaLiteral
+    # rubocop:enable Layout/HashAlignment
   end
 end

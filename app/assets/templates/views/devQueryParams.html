@@ -109,7 +109,7 @@
 
             <span ng-show="showTLSChangeWarning">
               You have specified a search engine url that is on a different protocol ( <code>{{protocolToSwitchTo}}</code> ) than Quepid is currently on,
-              so you need to reload Quepid on that protocol first, and then update the protocol here.  This is to comply with browser security issues.
+              so you need to reload Quepid on that protocol.  This is to comply with browser security issues.
             </span>
           </div>
         </div>
@@ -196,13 +196,14 @@
   </div> <!-- end #queryParamsCanvas -->
 </div> <!-- end #queryParamsArea -->
 
-<span ng-show="showTLSChangeWarning">
-  <a href="{{quepidUrlToSwitchTo}}" class="btn btn-primary form-control">
-    <span class="glyphicon glyphicon-refresh"></span> Reload Quepid in <code>{{protocolToSwitchTo}}</code> TLS Protocol
-  </a>
-</span>
+<span ng-show="qp.curTab == 'developer' || qp.curTab == 'engineSettings' || qp.curTab == 'curator'">
+  <span ng-show="showTLSChangeWarning">
+    <a href="{{quepidUrlToSwitchTo}}" class="btn btn-primary form-control">
+      <span class="glyphicon glyphicon-refresh"></span> Reload Quepid in <code>{{protocolToSwitchTo}}</code> TLS Protocol
+    </a>
+  </span>
 
-<span ng-show="!showTLSChangeWarning" id="query-sandbox-action" ng-click="settings.submit()" class="btn btn-primary form-control"
-      ng-show="qp.curTab == 'developer' || qp.curTab == 'engineSettings' || qp.curTab == 'curator'">
-    Rerun My Searches!
+  <span ng-show="!showTLSChangeWarning" id="query-sandbox-action" ng-click="settings.submit()" class="btn btn-primary form-control">
+      Rerun My Searches!
+  </span>
 </span>

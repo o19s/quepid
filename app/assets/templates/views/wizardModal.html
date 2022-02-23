@@ -46,7 +46,7 @@
           <div ng-show="showTLSChangeWarning" class="alert alert-warning">
             <span>
             You have specified a search engine url that is on a different protocol ( <code>{{protocolToSwitchTo}}</code> ) than Quepid is currently on,
-            so you need to reload Quepid on that protocol first, and then update the protocol here.  This is to comply with browser security issues.
+            so you need to reload Quepid on that protocol first, and then continue the Wizard.  This is to comply with browser security issues.
             </span>
           </div>
           <div ng-if="urlInvalid && !showTLSChangeWarning" class="alert alert-danger">Sorry, we're not getting any search results from your <span ng-show="pendingWizardSettings.searchEngine === 'es'">Elasticsearch</span><span ng-show="pendingWizardSettings.searchEngine === 'solr'">Solr</span>.
@@ -75,6 +75,7 @@ curl -X POST -H 'Content-type:application/json' -d '{
 
               </li>
               <li>If Solr responds, check if you have an ad blocker blocking your queries.</li>
+              <li>Chrome does not accept self signed certificates on Solr, try Firefox.</li>
               <li>See the <a target="_blank" href="https://github.com/o19s/quepid/wiki/Troubleshooting-Solr-and-Quepid">Troubleshooting Solr and Quepid</a> wiki page for more help!</li>
             </ul>
 

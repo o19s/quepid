@@ -1,4 +1,4 @@
-FROM node:15.14.0-buster AS build-dep
+FROM node:16-buster AS build-dep
 WORKDIR /srv/app
 COPY package.json yarn.lock ./
 RUN yarn install --production=true
@@ -14,7 +14,7 @@ RUN apt-get update -qq && apt-get install -y --no-install-recommends vim curl ap
   && rm -rf /var/lib/apt/lists/*
 
 # Node and Yarn
-RUN curl -sL https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
+RUN wget --no-check-certificate -qO - https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
 RUN echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list
 RUN curl -sL https://deb.nodesource.com/setup_16.x | bash -
 
