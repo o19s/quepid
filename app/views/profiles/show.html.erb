@@ -45,7 +45,7 @@
                 </div>
                 <div class="d-flex pt-1">
                   <p class="small text-muted">
-                    Since <%= time_ago_in_words current_user.created_at %>
+                    Member since <%= time_ago_in_words current_user.created_at %> ago
                   </p>
                   <!--
                   <button type="button" class="btn btn-outline-primary me-1 flex-grow-1">
@@ -118,7 +118,7 @@
     <%= form_with( model: current_user, url: account_path) do |f| %>
 
       <h2>
-        Account
+        Account Security
       </h2>
       <% if current_user.errors.any? %>
         <div id="error_explanation">
