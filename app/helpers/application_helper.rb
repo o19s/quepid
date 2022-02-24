@@ -20,7 +20,7 @@ module ApplicationHelper
         content_tag(
           :div,
           message,
-          class: "alert #{bootstrap_class_for(msg_type)} alert-dismissible",
+          class: "alert #{bootstrap_class_for(msg_type)} alert-dismissible fade show",
           role:  'alert'
         ) do
           concat(
