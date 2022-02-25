@@ -57,17 +57,6 @@ body {
 
 .navbar-secondary {
 	background: #369;
-	background-image: -webkit-gradient(
-		linear,
-		left top,
-		left bottom,
-		color-stop(0, #4F8ECC),
-		color-stop(1, #2774C0)
-	);
-	background-image: -o-linear-gradient(bottom, #4F8ECC 0%, #2774C0 100%);
-	background-image: -moz-linear-gradient(bottom, #4F8ECC 0%, #2774C0 100%);
-	background-image: -webkit-linear-gradient(bottom, #4F8ECC 0%, #2774C0 100%);
-	background-image: -ms-linear-gradient(bottom, #4F8ECC 0%, #2774C0 100%);
 	background-image: linear-gradient(to bottom, #4F8ECC 0%, #2774C0 100%);
 	/* border-bottom: 1px solid #258; */
 	font-family: 'allerregular';
