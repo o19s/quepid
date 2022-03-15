@@ -73,3 +73,4 @@ en:
           cant_be_blank: "you did not provide one"
         password_confirmation:
           doesnt_match_password: "the password confirmation does not match the password"
+          should_match_confirmation: "the password confirmation does not match the password"

@@ -1,26 +1,23 @@
-<div class="main-container">
-  <div class="jumbotron">
-    <div class="row">
-      <div class="col-sm-4 col-sm-offset-4">
-        <h2>Forgot your password?</h2>
+<span class="fs-4">&nbsp;FIXME</span>
+<div class="p-5 mb-4 bg-light rounded-3">
+  <div class="container-fluid py-5">
+    <h2>Forgot your password?</h2>
 
-        <%= form_for(resource, as: resource_name, url: password_path(resource_name), html: { method: :post }) do |f| %>
-          <% if devise_error_messages? -%>
-            <%= devise_reset_password_error_messages %>
-          <% end -%>
+    <%= form_for(resource, as: resource_name, url: password_path(resource_name), html: { method: :post }) do |f| %>
+      <% if devise_error_messages? -%>
+        <%= devise_reset_password_error_messages %>
+      <% end -%>
 
-          <div class="mb-3">
-            <%= f.label :email, 'Your Email address', class: 'form-label' %>
-            <%= f.text_field :email, autofocus: true, class: 'form-control', placeholder: 'Email' %>
-          </div>
-
-          <div class="mb-3">
-            <%= f.submit "Send me reset password instructions", class: "btn btn-primary" %>
-          </div>
-        <% end %>
-
-        <a href='/'>Return to Sign in</a>
+      <div class="mb-3">
+        <%= f.label :email, 'Your Email address', class: 'form-label' %>
+        <%= f.text_field :email, autofocus: true, class: 'form-control', placeholder: 'Email' %>
       </div>
-    </div>
+
+      <div class="mb-3">
+        <%= f.submit "Send me reset password instructions", class: "btn btn-primary" %>
+      </div>
+    <% end %>
+
+    <a href='/'>Return to Sign in</a>
   </div>
 </div>
