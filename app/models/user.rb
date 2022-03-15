@@ -81,6 +81,10 @@ class User < ApplicationRecord
            dependent: :destroy
 
   # Validations
+  attr_accessor :skip_name_validation
+  #validates :name,
+  #          presence: true,
+  #          unless: :skip_name_validation
 
   # https://davidcel.is/posts/stop-validating-email-addresses-with-regex/
   validates :email,

@@ -36,7 +36,7 @@ class UserTest < ActiveSupport::TestCase
 
   describe 'Defaults' do
     test 'are set when user is created' do
-      user = User.create(email: 'defaults@email.com', password: 'password')
+      user = User.create(name: 'eric', email: 'defaults@email.com', password: 'password')
 
       assert_not_nil user.completed_case_wizard
       assert_not_nil user.num_logins
@@ -48,6 +48,7 @@ class UserTest < ActiveSupport::TestCase
 
     test 'do not override the passed in arguments' do
       user = User.create(
+        name:                  'eric',
         email:                 'defaults@email.com',
         password:              'password',
         completed_case_wizard: true,
@@ -62,12 +63,38 @@ class UserTest < ActiveSupport::TestCase
     end
   end
 
+  describe 'Name' do
+    let(:user) { users(:doug) }
+
+    test 'missing name prompts validation error' do
+      assert_equal true, user.valid?
+      user.name = nil
+      assert_equal false, user.valid?
+      assert user.errors.added? :name, :blank
+    end
+
+    test 'empty name prompts validation error' do
+      assert_equal true, user.valid?
+      user.name = ''
+      assert_equal false, user.valid?
+      assert user.errors.added? :name, :blank
+    end
+
+    test 'can override the name validation check' do
+      user.skip_name_validation = true
+      user.name = nil
+      assert_equal true, user.valid?
+      assert_equal false, (user.errors.added? :name, :blank)
+    end
+
+  end
+
   describe 'Password' do
     let(:user) { users(:doug) }
 
     test 'encrypts password when creating a new password' do
       password = 'password'
-      new_user = User.create(email: 'new@user.com', password: password)
+      new_user = User.create(name: 'eric', email: 'new@user.com', password: password)
 
       assert_not_equal password, new_user.password
       assert BCrypt::Password.new(new_user.password) == password
@@ -107,7 +134,7 @@ class UserTest < ActiveSupport::TestCase
       assert user.terms_and_conditions?
 
       password = 'password'
-      new_user = User.create(email: 'new@user.com', password: password, agreed: true)
+      new_user = User.create(name: 'new user', email: 'new@user.com', password: password, agreed: true)
       assert_not_nil new_user.agreed_time
     end
 
@@ -126,24 +153,24 @@ class UserTest < ActiveSupport::TestCase
 
   describe 'Email' do
     test 'validates the format of the email address' do
-      new_user = User.create(email: nil, password: 'password')
+      new_user = User.create(name: 'eric', email: nil, password: 'password')
 
       assert new_user.errors.added? :email, :blank # => true
       assert_includes new_user.errors.messages[:email], 'can\'t be blank'
 
-      new_user = User.create(email: 'epugh', password: 'password')
+      new_user = User.create(name: 'eric', email: 'epugh', password: 'password')
       assert_includes new_user.errors.messages[:email], 'is invalid'
 
-      new_user = User.create(email: 'epugh@', password: 'password')
+      new_user = User.create(name: 'eric', email: 'epugh@', password: 'password')
       assert_includes new_user.errors.messages[:email], 'is invalid'
 
       # turns out this is a valid format at least as far as regex validation goes!
-      new_user = User.create(email: 'epugh@o19s', password: 'password')
+      new_user = User.create(name: 'eric', email: 'epugh@o19s', password: 'password')
       assert_empty new_user.errors.messages
 
-      new_user = User.create(email: 'epugh@o19s.com', password: 'password')
+      new_user = User.create(name: 'eric', email: 'epugh@o19s.com', password: 'password')
       assert_empty new_user.errors.messages
-      new_user = User.create(email: 'epugh+tag@o19s.com', password: 'password')
+      new_user = User.create(name: 'eric', email: 'epugh+tag@o19s.com', password: 'password')
       assert_empty new_user.errors.messages
     end
   end

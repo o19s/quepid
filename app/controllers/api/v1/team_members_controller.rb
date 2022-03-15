@@ -36,6 +36,7 @@ module Api
         end
 
         @member = User.invite!({ email: params[:id], password: '' }, current_user) do |u|
+          u.skip_name_validation = false
           u.skip_invitation = !email_notifications_enabled?
         end
 
