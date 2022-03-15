@@ -93,9 +93,9 @@
           </div>
 
           <% if Rails.application.config.terms_and_conditions_url.size > 0 %>
-          <div class="mb-3 checkbox">
+          <div class="mb-3 form-check">
             <label>
-              <%= f.check_box :agreed %>
+              <%= f.check_box :agreed, class: 'form-check-input' %>
               Agree to
               <a href="<%= Rails.application.config.terms_and_conditions_url %>" target="_blank">terms &amp; conditions</a>?
             </label>
@@ -103,9 +103,9 @@
           <% end %>
 
           <% if Rails.application.config.email_marketing_mode %>
-          <div class="mb-3 checkbox">
+          <div class="mb-3 form-check">
             <label>
-              <%= f.check_box :email_marketing %>
+              <%= f.check_box :email_marketing, class: 'form-check-input' %>
               Click here to receive occasional news about relevance tuning with Quepid (including new features). You can unsubscribe at any time.
             </label>
           </div>
