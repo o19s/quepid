@@ -1,14 +1,14 @@
 <% email_login_only = true %>
-
-<div class="jumbotron">
-  <div class="row">
-    <div class="col-md-3 col-sm-4 col-md-offset-2 col-sm-offset-1">
+<span class="fs-4">&nbsp;FIXME</span>
+<div class="row">
+  <div class="col-md-5">
+    <div class="h-100 p-5 bg-light border rounded-3">
       <h2>Sign in</h2>
       <div>
         <% if Rails.application.config.devise.omniauth_providers.include?(:google_oauth2) %>
         <% email_login_only = false %>
         <p>
-          <%= button_to user_google_oauth2_omniauth_authorize_path, :class=> "btn btn-block btn-social btn-google" do %>
+          <%= button_to user_google_oauth2_omniauth_authorize_path, :class=> "btn btn-social btn-google" do %>
             <%= content_tag(:span, "", :class => "fab fa-google") %> Sign in with Google
           <% end %>
         </p>
@@ -17,7 +17,7 @@
         <% if Rails.application.config.devise.omniauth_providers.include?(:keycloak_openid) %>
         <% email_login_only = false %>
         <p>
-          <%= button_to user_keycloakopenid_omniauth_authorize_path, :class=> "btn btn-block btn-social btn-openid" do %>
+          <%= button_to user_keycloakopenid_omniauth_authorize_path, :class=> "btn btn-social btn-openid" do %>
             <%= content_tag(:span, "", :class => "fab fa-openid") %> Sign in with OpenId
           <% end %>
         </p>
@@ -39,30 +39,30 @@
               </div>
             </div>
           <% end %>
-          <div class="form-group">
+          <div class="mb-3">
             <%= f.text_field :email, class: 'form-control email', placeholder: 'Email Address' %>
           </div>
 
-          <div class="form-group">
+          <div class="mb-3">
              <%= f.password_field :password, class: 'form-control password', placeholder: 'Password' %>
           </div>
           <div>
             <a href='/users/password/new' target="_self">Forgot Password?</a>
           </div>
           <br/>
-          <%= f.submit 'Sign in', class: 'btn btn-default login' %>
+          <%= f.submit 'Sign in', class: 'btn btn-primary login' %>
           <br/>
 
         <% end %>
       </div>
     </div>
-
-    <% if Rails.application.config.signup_enabled %>
-    <div class="col-md-1 or-block col-sm-2">
-      <h2>OR</h2>
-    </div>
-
-    <div class="col-md-3 col-sm-4">
+  </div>
+  <% if Rails.application.config.signup_enabled %>
+  <div class="col-md-1 or-block col-sm-2">
+    <h2>OR</h2>
+  </div>
+  <div class="col-md-6">
+    <div class="h-100 p-5 bg-light border rounded-3">
       <div>
         <%= form_for(@user, url: users_signup_path, id: 'signup', html: { method: :post }) do |f| %>
 
@@ -76,24 +76,24 @@
               <% end %>
             </div>
           <% end %>
-          <div class="form-group">
+          <div class="mb-3">
              <%= f.text_field :name, class: 'form-control name', placeholder: 'Full Name' %>
           </div>
 
-          <div class="form-group">
+          <div class="mb-3">
             <%= f.text_field :email, class: 'form-control email', placeholder: 'Email Address' %>
           </div>
 
-          <div class="form-group">
+          <div class="mb-3">
              <%= f.password_field :password, class: 'form-control password', placeholder: 'Password' %>
           </div>
 
-          <div class="form-group">
+          <div class="mb-3">
               <%= f.password_field :password_confirmation, class: 'form-control password-confirm', placeholder: 'Confirm Password' %>
           </div>
 
           <% if Rails.application.config.terms_and_conditions_url.size > 0 %>
-          <div class="checkbox">
+          <div class="mb-3 checkbox">
             <label>
               <%= f.check_box :agreed %>
               Agree to
@@ -103,7 +103,7 @@
           <% end %>
 
           <% if Rails.application.config.email_marketing_mode %>
-          <div class="checkbox">
+          <div class="mb-3 checkbox">
             <label>
               <%= f.check_box :email_marketing %>
               Click here to receive occasional news about relevance tuning with Quepid (including new features). You can unsubscribe at any time.
@@ -116,15 +116,13 @@
         <% end %>
       </div>
     </div>
-    <% end %>
   </div>
+  <% end %>
+</div>
 
-  <div class="row m-t-20">
-    <div class="col-md-8 col-md-offset-2">
-      <p>
-        <a href="http://www.opensourceconnections.com/2013/10/07/quepid-give-your-search-queries-some-love/">Read more</a> about the Quepid story. <a href="mailto:TalkToUs@opensourceconnections.com">Contact us</a>
-        to talk about Quepid or ask how we can help with your search problems!
-      </p>
-    </div>
+<div class="p-5 mb-4">
+  <div class="container-fluid py-5">
+    <a href="http://www.opensourceconnections.com/2013/10/07/quepid-give-your-search-queries-some-love/">Read more</a> about the Quepid story. <a href="mailto:TalkToUs@opensourceconnections.com">Contact us</a>
+    to talk about Quepid or ask how we can help with your search problems!
   </div>
 </div>

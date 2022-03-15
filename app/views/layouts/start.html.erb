@@ -29,7 +29,6 @@
 <meta name="twitter:image" content="<%= image_url "quepid-icon.png" %>" />
 <% if flash[:unfurl]["id"] %>
 <meta name="twitter:url" value="<%=case_home_url(id: flash[:unfurl]["id"] ) %>" />
-
 <meta name="twitter:label1" value="Latest Try" />
 <meta name="twitter:data1" value="<%=Case.find_by_id(flash[:unfurl]["id"]).tries.latest.try_number %>" />
 <% end %>
@@ -59,21 +58,22 @@
 
 <%= stylesheet_link_tag 'start', media: 'all' %>
 <%= csrf_meta_tags %>
+<%= javascript_include_tag 'start' %>
 
 </head>
-<body class='admin'>
+<body class="d-flex flex-column h-100">
+  <header>
+    <%= render 'layouts/header_bs5' %>
+  </header>
 
-  <div class="main-container">
-    <%= render 'layouts/header' %>
-
+  <!-- Begin page content -->
+  <main class="flex-shrink-0">
     <div class="container">
       <%= yield %>
     </div>
-  </div>
+  </main>
 
-  <%= render 'layouts/footer' %>
-
-  <%= javascript_include_tag 'start' %>
+  <%= render 'layouts/footer_bs5' %>
 
   <%= render 'layouts/common_js' %>
 

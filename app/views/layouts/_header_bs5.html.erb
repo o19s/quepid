@@ -11,6 +11,7 @@
       </ul>
 
       <ul class="navbar-right nav navbar-nav">
+        <% if current_user.present? %>
         <li class="nav-item">
           <a  class="nav-link" href='https://github.com/o19s/quepid/wiki/Videos-on-Learning-to-use-Quepid' target="_blank">
             Video Tutorials
@@ -26,7 +27,7 @@
             Wiki
           </a>
         </li>
-        <% if current_user.present? %>
+
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
             <%= image_tag current_user.avatar_url, size: '24x24', class: 'img-rounded' %>
