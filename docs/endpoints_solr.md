@@ -2,7 +2,35 @@
 
 This document explains what endpoints Quepid hits on Solr.
 
-Most query responses are of type of JSON, wrapped in JSONP function name.
+Query responses are JSON formatted, wrapped in [JSONP](https://en.wikipedia.org/wiki/JSONP) function name:
+
+```
+http://quepid-solr.dev.o19s.com:8985/solr/tmdb/select?q=yoursearchgoeshere&wt=json&json.wrf=angular.callbacks._2
+```
+
+The name of the function `angular.callbacks._2` is dynamically generated, so if you see a parameter called `json.wrf`,
+then you need to take your resulting JSON formatted response and wrap it to look like a JavaScript function:
+
+```
+angular.callbacks._2({
+  "responseHeader":{
+    "zkConnected":true,
+    "status":0,
+    "QTime":0,
+    "params":{
+      "q":"*:*",
+      "json.wrf":"angular.callbacks._0",
+      "debug":"true",
+      "wt":"json"}},
+  "response":{"numFound":100384,"start":0,"numFoundExact":true,"docs":[
+      {
+        "id":"43000",
+        "title":["The Elusive Corporal"]},
+      {
+        "id":"43001",
+        "title":["Sundays and Cybele"]}]
+  }})
+```
 
 ## Ping Solr During Case Setup
 
