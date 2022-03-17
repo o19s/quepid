@@ -15,9 +15,6 @@
 // Use the bootstrap-sprockets instead of bootstrap when you need individual boostrap files for
 // debugging.  Otherwise the bootstrap version loads all the files as a single minified file.
 
-//= require jquery
-//= require rails-ujs
-
-//= require cookies_eu
 //= require bootstrap/dist/js/bootstrap.bundle
-//= require turbolinks
+//= require jquery
+//= require cookies_eu
