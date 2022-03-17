@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 class ProfilesController < ApplicationController
-  layout 'account'
 
   def show; end
 

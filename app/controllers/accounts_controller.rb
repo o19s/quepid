@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 class AccountsController < ApplicationController
-  layout 'account'
 
   # rubocop:disable Metrics/MethodLength
   def update
