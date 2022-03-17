@@ -16,13 +16,13 @@
 <body ng-app="QuepidApp">
   <%= render 'cookies_eu/consent_banner', link: '/cookies', target: '_blank' unless Rails.application.config.cookies_url.blank? %>
 
-  <%= render 'layouts/header' %>
+  <%= render 'layouts/header_core_app' %>
 
   <div id="main-content">
     <%= yield %>
   </div>
 
-  <%= render 'layouts/footer' %>
+  <%= render 'layouts/footer_core_app' %>
 
   <%= javascript_include_tag 'home' %>
 
