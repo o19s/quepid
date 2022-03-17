@@ -46,7 +46,7 @@ Rails.application.routes.draw do
     resources :communal_scorers, except: [ :destroy ]
   end
 
-  root 'home#index'
+  root 'core#index'
 
   # preview routes for mailers
   if Rails.env.development?
@@ -151,12 +151,12 @@ Rails.application.routes.draw do
   end
 
   # Routes handled by angular
-  get '/case/:id(/try/:try_number)'   => 'home#index', as: :case_home
-  get '/cases'                        => 'home#index'
-  get '/case'                         => 'home#index'
-  get '/cases/import'                 => 'home#index'
-  get '/teams(/:id)'                  => 'home#index', as: :teams_path
-  get '/scorers'                      => 'home#index'
+  get '/case/:id(/try/:try_number)'   => 'core#index', as: :case_core
+  get '/cases'                        => 'core#index'
+  get '/case'                         => 'core#index'
+  get '/cases/import'                 => 'core#index'
+  get '/teams(/:id)'                  => 'core#index', as: :teams_path
+  get '/scorers'                      => 'core#index'
 
   # Static pages
   get '*page' => 'pages#show'

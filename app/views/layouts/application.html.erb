@@ -14,7 +14,7 @@
 <!-— facebook open graph tags -->
 <meta property="og:type" content="website" />
 <% if flash[:unfurl]["id"] %>
-<meta property="og:url" content="<%=case_home_url(id: flash[:unfurl]["id"] ) %>" />
+<meta property="og:url" content="<%=case_core_url(id: flash[:unfurl]["id"] ) %>" />
 <% end %>
 <meta property="og:title" content="Case <%= flash[:unfurl]["case_name"] %>" />
 <meta property="og:description" content="Case <%= flash[:unfurl]["case_name"] %> Description here." />
@@ -28,7 +28,7 @@
 <meta name="twitter:description" value="Case <%= flash[:unfurl]["case_name"] %> Description here" />
 <meta name="twitter:image" content="<%= image_url "quepid-icon.png" %>" />
 <% if flash[:unfurl]["id"] %>
-<meta name="twitter:url" value="<%=case_home_url(id: flash[:unfurl]["id"] ) %>" />
+<meta name="twitter:url" value="<%=case_core_url(id: flash[:unfurl]["id"] ) %>" />
 <meta name="twitter:label1" value="Latest Try" />
 <meta name="twitter:data1" value="<%=Case.find_by_id(flash[:unfurl]["id"]).tries.latest.try_number %>" />
 <% end %>
@@ -56,9 +56,9 @@
 
 <meta name="viewport" content="width=device-width">
 
-<%= stylesheet_link_tag 'start', media: 'all' %>
+<%= stylesheet_link_tag 'application', media: 'all' %>
 <%= csrf_meta_tags %>
-<%= javascript_include_tag 'start' %>
+<%= javascript_include_tag 'application' %>
 
 </head>
 <body class="d-flex flex-column h-100">

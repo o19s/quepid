@@ -10,4 +10,8 @@
 // Read Sprockets README (https://github.com/rails/sprockets#sprockets-directives) for details
 // about supported directives.
 //
-// The long list of requires has been moved to home.js.
+// The long list of requires for the main Angular 1 application has been moved to core.js.
+
+//= require bootstrap/dist/js/bootstrap.bundle
+//= require jquery
+//= require cookies_eu

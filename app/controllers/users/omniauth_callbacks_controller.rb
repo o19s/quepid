@@ -13,7 +13,7 @@ module Users
         session[:current_user_id] = @user.id # this populates our session variable.
 
         # in this flow, we have a new user joining, so we create a empty case for them, which
-        # on the home_controller.rb triggers the bootstrap and the new case wizard.
+        # on the core_controller.rb triggers the bootstrap and the new case wizard.
         @user.cases.build case_name: "Case #{@user.cases.size}"
 
         # sign_in_and_redirect @user, event: :authentication
@@ -33,7 +33,7 @@ module Users
         session[:current_user_id] = @user.id # this populates our session variable.
 
         # in this flow, we have a new user joining, so we create a empty case for them, which
-        # on the home_controller.rb triggers the bootstrap and the new case wizard.
+        # on the core_controller.rb triggers the bootstrap and the new case wizard.
         @user.cases.build case_name: "Case #{@user.cases.size}"
 
         redirect_to root_path
