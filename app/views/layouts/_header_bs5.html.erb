@@ -54,6 +54,8 @@
   </div>
 </nav>
 
+<%= render 'cookies_eu/consent_banner', link: '/cookies', target: '_blank' unless Rails.application.config.cookies_url.blank? %>
+
 <div id='flash'>
   <%= flash_messages_bs5 -%>
 </div>
