@@ -3,7 +3,6 @@
 module Users
   class SignupsController < ApplicationController
     skip_before_action :require_login
-    layout 'start'
 
     # rubocop:disable Metrics/MethodLength
     def create

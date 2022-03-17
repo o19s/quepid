@@ -5,8 +5,6 @@ class SessionsController < ApplicationController
   skip_before_action :check_current_user_locked!, only: :create
   skip_before_action :verify_authenticity_token,  only: :create
 
-  layout 'start'
-
   def index
   end
 
