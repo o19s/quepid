@@ -31,7 +31,7 @@ class TlsFlowTest < ActionDispatch::IntegrationTest
     # try_http.search_url="https://followme.com"
     # try_http.save!
     puts "here is my try: #{try_https.search_url}"
-    get case_home_url(id: kase.id, try_number: try_https.try_number)
+    get case_core_url(id: kase.id, try_number: try_https.try_number)
     assert_response :redirect
   end
 end
