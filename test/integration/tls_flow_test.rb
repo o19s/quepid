@@ -2,7 +2,7 @@
 
 require 'test_helper'
 
-class HomeTlsFlowTest < ActionDispatch::IntegrationTest
+class TlsFlowTest < ActionDispatch::IntegrationTest
   include ActionMailer::TestHelper
 
   test 'A https search url and http quepid requires redirecting to http quepid' do
