@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 class AccountsController < ApplicationController
-
   # rubocop:disable Metrics/MethodLength
   def update
     @user = current_user
