@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
-class HomeController < ApplicationController
+# This hosts the main Angular 1 application that runs in the client.
+class CoreController < ApplicationController
   before_action :set_case_or_bootstrap
 
   before_action :redirect_to_correct_tls # force a match to the URL of the search engine

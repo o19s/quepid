@@ -4,10 +4,10 @@
 <meta charset="utf-8">
 <title>Quepid -- Relevant Search Solved</title>
 <%= favicon_link_tag asset_path "favicon.ico" %>
-<meta name="description" content="Home: Tired of irrelevant search results? Use Quepid to help improve the quality and relevancy of your search results.">
+<meta name="description" content="Tired of irrelevant search results? Use Quepid to help improve the quality and relevancy of your search results.">
 <meta name="viewport" content="width=device-width">
 
-<%= stylesheet_link_tag 'home', media: 'all' %>
+<%= stylesheet_link_tag 'core', media: 'all' %>
 <%= stylesheet_link_tag 'ng-json-explorer/dist/angular-json-explorer', 'angular-wizard/dist/angular-wizard', 'ng-tags-input/build/ng-tags-input.min.css', 'ng-tags-input/build/ng-tags-input.bootstrap.min.css', media: 'all' %>
 <%= csrf_meta_tags %>
 
@@ -16,15 +16,15 @@
 <body ng-app="QuepidApp">
   <%= render 'cookies_eu/consent_banner', link: '/cookies', target: '_blank' unless Rails.application.config.cookies_url.blank? %>
 
-  <%= render 'layouts/header' %>
+  <%= render 'layouts/header_core_app' %>
 
   <div id="main-content">
     <%= yield %>
   </div>
 
-  <%= render 'layouts/footer' %>
+  <%= render 'layouts/footer_core_app' %>
 
-  <%= javascript_include_tag 'home' %>
+  <%= javascript_include_tag 'core' %>
 
   <script>
     angular.module('QuepidApp')

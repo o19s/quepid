@@ -1,46 +1,18 @@
-<footer class="p-t-20 p-b-20">
-  <div class="row">
-    <div class="col-md-12 text-center">
-      &copy; <%= Time.zone.now.year %> &nbsp;&mdash;&nbsp;
-      <a href="http://opensourceconnections.com">
-        <%= image_tag "OSC-icon.png", width: 24 %>
-        OpenSource Connections, LLC
-      </a>
-
-      <% footer_links = [
-        {
-          url: Rails.application.config.terms_and_conditions_url,
-          text: 'Terms & Conditions',
-        },
-        {
-          url: Rails.application.config.privacy_url,
-          text: 'Privacy Policy',
-        },
-        {
-          url: Rails.application.config.cookies_url,
-          text: 'Cookies Policy',
-        },
-      ] %>
-
-      <% footer_links.each do |link| %>
-        <% unless link[:url].blank? %>
-
-          -
-
-          <a href="<%= link[:url] %>" target="_blank">
-            <%= link[:text] %>
-          </a>
-        <% end %>
-      <% end %>
-    </div>
-
-    <div class="col-md-12 text-center">
-      <p>
-        For community support and discussion please join us in the #Quepid channel on Relevancy Slack at
-        <a href="http://www.opensourceconnections.com/slack" target="_blank">
-          www.opensourceconnections.com/slack
-        </a>
+<footer class="footer mt-auto text-center text-white" style="background-color: #0a4275;">
+  <div class="container p-4 pb-0">
+    <!-- Section: CTA -->
+    <section class="">
+      <p class="d-flex justify-content-center align-items-center">
+        For community support please join us in the #Quepid channel in the&nbsp; <a href="http://www.opensourceconnections.com/slack" target="_blank">Relevancy Slack Community</a> &nbsp;or visit the &nbsp;<a href="http://github.com/o19s/quepid" target="_blank">Github Project</a>.
       </p>
-    </div>
+    </section>
+    <!-- Section: CTA -->
+  </div>
+  <div class="text-center p-3 footer-bar">
+    &copy; <%= Time.zone.now.year %>
+    <a class="text-white" href="http://opensourceconnections.com" target="_blank">
+      <%= image_tag "OSC-icon.png", width: 24 %>
+      OpenSource Connections, LLC
+    </a>
   </div>
 </footer>

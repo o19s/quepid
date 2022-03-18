@@ -1,147 +1,181 @@
-<div class="container">
-  <div class="row">
-    <div id="profile" class="col-xs-12 col-sm-6 col-sm-offset-3">
-      <div class="avatar pull-left">
-        <%= image_tag current_user.avatar_url(:big), id: 'user-avatar', size:'96x96', class:'img-rounded' %>
+
+<section styled="background-color: #9de2ff;">
+  <div class="container py-5 h-100">
+    <div class="row d-flex justify-content-center align-items-center h-100">
+      <div class="col-8">
+        <div class="card" style="border-radius: 15px;">
+          <div class="card-body p-4">
+            <div class="d-flex text-black">
+              <div class="flex-shrink-0">
+                <%= image_tag current_user.avatar_url(:big), id: 'user-avatar', class:'img-fluid img-rounded', style:"width: 180px;" %>
+              </div>
+              <div class="flex-grow-1 ms-3">
+                <h5 class="mb-1"><%= current_user.display_name %></h5>
+                <p class="mb-2 pb-1" style="color: #2b2a2a;">
+                  <%= current_user.email %>
+                </p>
+                <div
+                  class="d-flex justify-content-start rounded-3 p-2 mb-2"
+                  style="background-color: #efefef;"
+                >
+                  <div>
+                    <p class="small text-muted mb-1">
+                      Cases
+                    </p>
+                    <p class="mb-0"><%= current_user.cases.count %></p>
+                  </div>
+                  <div class="px-3">
+                    <p class="small text-muted mb-1">
+                      Teams
+                    </p>
+                    <p class="mb-0"><%= current_user.teams.count %></p>
+                  </div>
+                  <div>
+                    <p class="small text-muted mb-1">
+                      Queries
+                    </p>
+                    <p class="mb-0"><%= current_user.queries.count %></p>
+                  </div>
+                  <div class="px-3">
+                    <p class="small text-muted mb-1">
+                      Ratings
+                    </p>
+                    <p class="mb-0">n/a</p>
+                  </div>
+                </div>
+                <div class="d-flex pt-1">
+                  <p class="small text-muted">
+                    Member since <%= time_ago_in_words current_user.created_at %> ago
+                  </p>
+                  <!--
+                  <button type="button" class="btn btn-outline-primary me-1 flex-grow-1">
+                    Chat
+                  </button>
+                  <button type="button" class="btn btn-primary flex-grow-1">
+                    Follow
+                  </button>
+                  -->
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="container centered-form">
+  <div class="row mb-3">
+    <hr/>
+    <%= form_with( model: current_user, url: profile_path) do |f| %>
+
+      <h2>
+        Profile
+      </h2>
+      <% if current_user.errors.any? %>
+        <div id="error_explanation">
+          <h2><%= pluralize(current_user.errors.count, "error") %> prohibited this from being saved:</h2>
+
+          <ul>
+          <% current_user.errors.full_messages.each do |message| %>
+            <li><%= message %></li>
+          <% end %>
+          </ul>
+        </div>
+      <% end %>
+
+      <div class="form-floating mb-3">
+
+        <%= f.email_field :email, class: "form-control", placeholder: "Email" %>
+        <label for="user_email" class="form-label">Email</label>
+        <div id="emailHelp" class="form-text">Your profile image displayed is sourced from <a href="http://gravatar.com" target="_blank">gravatar.com</a> based on your email address.</div>
+      </div>
+      <div class="form-floating mb-3">
+
+        <%= f.text_field :name, class: "form-control", placeholder: "Name" %>
+        <label for="user_email" class="form-label">Name</label>
+      </div>
+      <div class="form-floating mb-3">
+        <%= f.text_field :company, class: "form-control", placeholder: "Company Name" %>
+        <label for="user_company" class="form-label">Company Name</label>
       </div>
 
-      <div class="name pull-left">
-        <h2 id="name" data-name><%= current_user.display_name %></h2>
-        <h3 id="email" data-email><%= current_user.email %></h3>
+      <% if Rails.application.config.email_marketing_mode %>
+      <div class="mb-3 form-check">
+        <%= f.check_box :email_marketing, class: "form-check-input" %>
+        <label class="form-check-label" for="user_email_marketing">I want to receive updates about Quepid!</label>
       </div>
-    </div>
+      <% end %>
 
-    <div class="col-xs-12 col-sm-6 col-sm-offset-3">
+      <button type="submit" class="btn btn-primary">Update profile</button>
 
-      <%= form_with( model: current_user, url: profile_path) do |f| %>
-        <legend>
-          Profile
-        </legend>
-        <% if current_user.errors.any? %>
-          <div id="error_explanation">
-            <h2><%= pluralize(current_user.errors.count, "error") %> prohibited this from being saved:</h2>
+    <% end %>
+  </div>
 
-            <ul>
-            <% current_user.errors.full_messages.each do |message| %>
-              <li><%= message %></li>
-            <% end %>
-            </ul>
-          </div>
-        <% end %>
+  <div class="row mb-3">
+    <hr/>
+    <%= form_with( model: current_user, url: account_path) do |f| %>
 
-        <div class="form-group">
-          <label for="user_email" class="control-label">
-            Email
-          </label>
-          <%= f.email_field :email, class: "form-control input-lg", placeholder: "Email" %>
-          <span class="help-block">
-            Your profile image displayed is sourced from <a href="http://gravatar.com" target="_blank">gravatar.com</a> based on your email address.
-          </span>
-        </div>
+      <h2>
+        Account Security
+      </h2>
+      <% if current_user.errors.any? %>
+        <div id="error_explanation">
+          <h2><%= pluralize(current_user.errors.count, "error") %> prohibited this from being saved:</h2>
 
-        <div class="form-group">
-          <label for="user_name" class="control-label">
-            Name
-          </label>
-          <%= f.text_field :name, class: "form-control input-lg", placeholder: "Name" %>
-        </div>
-
-        <div class="form-group">
-          <label for="user_company" class="control-label">
-            Company Name
-          </label>
-          <%= f.text_field :company, class: "form-control input-lg", placeholder: "Company Name" %>
-        </div>
-
-        <% if Rails.application.config.email_marketing_mode %>
-        <div class="form-group">
-          <label for="user_email_marketing" class="control-label">
-            I want to receive updates about Quepid!
-          </label>
-          <%= f.check_box :email_marketing, class: "form-control input-lg" %>
-        </div>
-        <% end %>
-
-        <div class="form-group">
-          <%= f.submit 'Update profile', class: 'btn btn-primary btn-lg' %>
+          <ul>
+          <% current_user.errors.full_messages.each do |message| %>
+            <li><%= message %></li>
+          <% end %>
+          </ul>
         </div>
       <% end %>
-    </div>
 
-    <div class="col-xs-12 col-sm-6 col-sm-offset-3">
+      <div class="form-floating mb-3">
+        <input id="old" type="password" name="current_password" class="form-control" placeholder="Password"/>
+        <label for="old" class="form-label">Old Password</label>
+      </div>
+      <div class="form-floating mb-3">
+        <input id="new" type="password" name="password" class="form-control"  placeholder="Password"/>
+        <label for="new" class="form-label">New Password</label>
+      </div>
+      <div class="form-floating mb-3">
+        <input id="confirm" type="password" name="password_confirmation" class="form-control" placeholder="Confirm New Password" />
+        <label for="confirm" class="form-label">Confirm New Password</label>
+      </div>
 
-      <%= form_with( model: current_user, url: account_path) do |f| %>
-        <legend>
-          Account
-        </legend>
+      <button type="submit" class="btn btn-primary">Update password</button>
 
-        <% if current_user.errors.any? %>
-          <div id="error_explanation">
-            <h2><%= pluralize(current_user.errors.count, "error") %> prohibited this from being saved:</h2>
+    <% end %>
+  </div>
 
-            <ul>
-            <% current_user.errors.full_messages.each do |message| %>
-              <li><%= message %></li>
-            <% end %>
-            </ul>
-          </div>
-        <% end %>
+  <div class="row mb-3">
+    <hr/>
+    <%= form_with( model: current_user, url: account_path,  method: :delete) do |f| %>
 
-        <div class="form-group">
-          <label for="old" class="control-label">
-            Old Password
-          </label>
-          <input id="old" type="password" name="current_password" class="form-control input-lg" placeholder="Old Password" />
-        </div>
+      <h2>
+        <font color="red">Danger Zone</font>
+      </h2>
+      <% if current_user.errors.any? %>
+        <div id="error_explanation">
+          <h2><%= pluralize(current_user.errors.count, "error") %> prohibited this from being saved:</h2>
 
-        <div class="form-group">
-          <label for="new" class="control-label">
-            New Password
-          </label>
-          <input id="new" type="password" name="password" class="form-control input-lg" placeholder="New Password" />
-        </div>
-
-        <div class="form-group">
-          <label for="confirm" class="control-label">
-            Confirm New Password
-          </label>
-          <input id="confirm" type="password" name="password_confirmation" class="form-control input-lg" placeholder="Confirm New Password" />
-        </div>
-
-        <div class="form-group">
-          <button type="submit" class="btn btn-primary btn-lg">Update password</button>
+          <ul>
+          <% current_user.errors.full_messages.each do |message| %>
+            <li><%= message %></li>
+          <% end %>
+          </ul>
         </div>
       <% end %>
-    </div>
-    <div class="col-xs-12 col-sm-6 col-sm-offset-3">
 
-      <%= form_with( model: current_user, url: account_path,  method: :delete) do |f| %>
-        <legend>
-          <font color="red">Danger Zone</font>
-        </legend>
+      <label for="confirm" class="form-text">
+        This will remove you from any existing teams, and delete any cases that you are the owner and only member of, as well as associated
+        snapshots and all ratings that have been made.
+      </label>
 
-        <% if current_user.errors.any? %>
-          <div id="error_explanation">
-            <h2><%= pluralize(current_user.errors.count, "error") %> prohibited this from being saved:</h2>
+      <%= f.submit 'Delete your account', class: 'btn btn-primary', data: {confirm: "Are you sure you want to delete your account?"} %>
 
-            <ul>
-            <% current_user.errors.full_messages.each do |message| %>
-              <li><%= message %></li>
-            <% end %>
-            </ul>
-          </div>
-        <% end %>
-
-
-        <div class="form-group">
-          <label for="confirm" class="control-label">
-            This will remove you from any existing teams, and delete any cases that you are the owner and only member of, as well as associated
-            snapshots and all ratings that have been made.
-          </label>
-
-          <%= f.submit 'Delete your account', class: 'btn btn-primary btn-lg', data: {confirm: "Are you sure you want to delete your account?"} %>
-        </div>
-      <% end %>
-    </div>
+    <% end %>
   </div>
 </div>

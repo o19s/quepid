@@ -3,7 +3,6 @@
 module Users
   class SignupsController < ApplicationController
     skip_before_action :require_login
-    layout 'start'
 
     # rubocop:disable Metrics/MethodLength
     def create
@@ -19,7 +18,7 @@ module Users
         else
           @user = User.new user_params_to_save
           # in this flow, we have a new user joining, so we create a empty case for them, which
-          # on the home_controller.rb triggers the bootstrap and the new case wizard.
+          # on the core_controller.rb triggers the bootstrap and the new case wizard.
           @user.cases.build case_name: "Case #{@user.cases.size}"
         end
       end

@@ -2,12 +2,12 @@
 
 require 'test_helper'
 
-class HomeControllerTest < ActionController::TestCase
+class CoreControllerTest < ActionController::TestCase
   TRY_INFO        = /bootstrapTryNo.*?(\d*);/.freeze
   CASE_INFO       = /bootstrapCaseNo.*?(\d*);/.freeze
 
   before do
-    @controller = HomeController.new
+    @controller = CoreController.new
   end
 
   describe 'Basic functionality' do

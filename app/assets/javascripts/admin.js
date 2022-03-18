@@ -1,15 +1,9 @@
-//= require jquery
-//= require rails-ujs
-
 //= require bootstrap/dist/js/bootstrap.bundle
+//= require rails-ujs
+//= require jquery
 
 //= require d3
 //= require cal-heatmap
 
-//= require ace-builds/src-min-noconflict/ace
-//= require ace-builds/src-min-noconflict/ext-language_tools
-//= require ace-builds/src-min-noconflict/mode-json
-//= require ace-builds/src-min-noconflict/mode-javascript
-
-//= require admin/scorers
-//= require admin/user_pulse
+//= require codemirror/lib/codemirror
+//= require codemirror/mode/javascript/javascript

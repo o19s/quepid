@@ -20,11 +20,7 @@
     </strong>
 
     <div class="col-sm-10 code">
-      <div
-        id="code-<%= @scorer.id %>"
-        data-readonly='true'
-        data-code="<%= @scorer.code %>"
-      ></div>
+      <textarea id="codearea"><%= @scorer.code %></textarea>
     </div>
   </div>
 
@@ -88,3 +84,11 @@
     </div>
   </div>
 </div>
+
+<script>
+  const codemirrorEditor = CodeMirror.fromTextArea(document.getElementById('codearea'), {
+    lineNumbers: true,
+    mode: "javascript",
+    readOnly: true
+  });
+</script>

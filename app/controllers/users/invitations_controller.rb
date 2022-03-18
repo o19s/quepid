@@ -4,8 +4,6 @@ module Users
   class InvitationsController < Devise::InvitationsController
     skip_before_action :require_login, only: [ :edit, :update ]
 
-    layout 'start'
-
     # Intercepts the login path and redirects the user to their
     # Team page as their first page after joining Quepid!
     def after_accept_path_for resource

@@ -1,3 +1,5 @@
+<!-- has to be at the end to let JQuery and Heatmap work -->
+<%= javascript_include_tag 'admin_users' %>
 <%= form_for(@scorer, url: {action: passed_in_action}, class: 'form-horizontal') do |f| %>
   <% if @scorer.errors.any? %>
     <div id="error_explanation">
@@ -11,63 +13,41 @@
     </div>
   <% end %>
 
-  <div class="form-group clearfix">
-    <%= f.label :name, class: 'col-sm-2 control-label' %>
-    <div class="col-sm-10">
-      <%= f.text_field :name, class: 'form-control' %>
-    </div>
+  <div class="mb-3">
+    <%= f.label :name, class: 'form-label' %>
+    <%= f.text_field :name, class: 'form-control' %>
+    <div class="form-text">The scorer name typically includes the depth of scoring as part of the name, i.e @10</div>
   </div>
 
-  <div class="form-group clearfix">
-    <%= f.label :code, class: 'col-sm-2 control-label' %>
-    <div class="col-sm-10">
-      <%= f.hidden_field :code %>
-      <div
-        id='scorer-code-editor'
-        data-code='<%= @scorer.code %>'
-      >
-      </div>
-    </div>
+  <div class="mb-3">
+    <%= f.label :code, class: 'form-label' %>
+    <div class="form-text">This Javascript is run in the browser to calculate the scores.</div>
+    <%= f.text_area :code %>
   </div>
 
-  <div class="form-group clearfix">
-    <%= f.label :scale_list, class: 'col-sm-2 control-label' %>
-    <div class="col-sm-10">
-      <%= f.text_field :scale_list, class: 'form-control', data: { 'live-update': 'scorer_scale_with_labels' } %>
-      <span class='help-block'>Use a comma delimited list.</span>
-    </div>
+  <div class="mb-3">
+    <%= f.label :scale_list, class: 'form-label' %>
+    <%= f.text_field :scale_list, class: 'form-control', data: { 'live-update': 'scorer_scale_with_labels' }%>
+    <div class="form-text">Use a comma delimited list.  This will update below the list of labels for each grade.</div>
   </div>
 
-  <div class="form-group clearfix">
-    <div class="col-sm-offset-2 col-sm-10">
-      <div class="checkbox">
-        <%= f.label :manual_max_score do %>
-          <%= f.check_box :manual_max_score %>
-          Use a manual max score?
-        <% end %>
-      </div>
-    </div>
+  <div class="mb-3 form-check">
+    <%= f.check_box :manual_max_score, class: 'form-check-input' %>
+    <%= f.label :manual_max_score, 'Use a manual max score?' %>
   </div>
 
-  <div class="form-group clearfix">
-    <%= f.label :manual_max_score_value, class: 'col-sm-2 control-label' %>
-    <div class="col-sm-10">
-      <%= f.text_field :manual_max_score_value, class: 'form-control' %>
-    </div>
+  <div class="mb-3">
+    <%= f.label :manual_max_score_value, class: 'form-label' %>
+    <%= f.text_field :manual_max_score_value, class: 'form-control' %>
+    <div class="form-text">?? Not sure exactly what this does.  If you know, tell Eric to fix this!</div>
   </div>
 
-  <div class="form-group clearfix">
-    <div class="col-sm-offset-2 col-sm-10">
-      <div class="checkbox">
-        <%= f.label :show_scale_labels do %>
-          <%= f.check_box :show_scale_labels %>
-          Show scale labels?
-        <% end %>
-      </div>
-    </div>
+  <div class="mb-3 form-check">
+    <%= f.check_box :show_scale_labels, class: 'form-check-input' %>
+    <%= f.label :show_scale_labels, 'Show scale labels?' %>
   </div>
 
-  <div class="form-group clearfix">
+  <div class="mb-3">
     <%= f.label :scale_with_labels, class: 'col-sm-2 control-label' %>
     <div class="col-sm-10" id="scorer_scale_with_labels">
       <% @scorer.scale.each do |value| -%>
@@ -84,9 +64,16 @@
     </div>
   </div>
 
-  <div class="form-group clearfix">
-    <div class="col-sm-offset-2 col-sm-10">
-      <%= f.submit class: 'btn btn-primary' %>
-    </div>
-  </div>
+  <%= f.submit class: 'btn btn-primary' %>
+
 <% end %>
+
+
+<script>
+  const codemirrorEditor = CodeMirror.fromTextArea(document.getElementById('scorer_code'), {
+    lineNumbers: true,
+    mode: "javascript",
+    readOnly: false
+  });
+  codemirrorEditor.setSize(null, 800);
+</script>

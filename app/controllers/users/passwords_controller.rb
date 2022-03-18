@@ -9,8 +9,6 @@ module Users
 
     before_action :check_email
 
-    layout 'start'
-
     # GET /resource/password/new
     # def new
     #   super

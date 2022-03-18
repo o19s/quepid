@@ -1,36 +1,35 @@
 <!DOCTYPE html>
 <html>
-<head>
-<meta charset="utf-8">
-<title>Quepid -- Relevant Search Solved</title>
-<%= favicon_link_tag asset_path "favicon.ico" %>
-<meta name="description" content="Tired of irrelevant search results? Use Quepid products & services to help improve the quality and relevancy of your search results.">
-<meta name="viewport" content="width=device-width">
+  <head>
+    <meta charset="utf-8">
+    <title>Quepid -- Relevant Search Solved</title>
+    <%= favicon_link_tag asset_path "favicon.ico" %>
+    <meta name="description" content="Tired of irrelevant search results? Use Quepid products & services to help improve the quality and relevancy of your search results.">
+    <meta name="viewport" content="width=device-width">
 
-<%= stylesheet_link_tag 'account', media: 'all' %>
-<%= csrf_meta_tags %>
-<%= javascript_include_tag 'analytics' %>
+    <%= stylesheet_link_tag 'application', media: 'all' %>
+    <%= csrf_meta_tags %>
+    <%= javascript_include_tag 'analytics' %>
 
-<!-- Can't figure out how to include Vega using Sprockets/Webpacker -->
-<script src="https://cdn.jsdelivr.net/npm/vega@5"></script>
+    <!-- Can't figure out how to include Vega using Sprockets/Webpacker -->
+    <script src="https://cdn.jsdelivr.net/npm/vega@5"></script>
 
-</head>
-<body class='admin'>
+  </head>
+  <body class="d-flex flex-column h-100">
+    <header>
+      <%= render 'layouts/header' %>
+    </header>
 
-  <%= render 'cookies_eu/consent_banner', link: '/cookies', target: '_blank' unless Rails.application.config.cookies_url.blank? %>
+    <!-- Begin page content -->
+    <main class="flex-shrink-0">
+      <div class="container">
+        <%= yield %>
+      </div>
+    </main>
 
-  <div class="main-container">
-    <%= render 'layouts/header' %>
+    <%= render 'layouts/footer' %>
 
-    <div class="container">
-      <%= yield %>
-    </div>
-  </div>
+    <%= render 'layouts/common_js' %>
 
-  <%= render 'layouts/footer' %>
-
-
-  <%= render 'layouts/common_js' %>
-
-</body>
+  </body>
 </html>
