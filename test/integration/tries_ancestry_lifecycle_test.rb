@@ -10,7 +10,7 @@ class TriesAncestryLifecycleTest < ActionDispatch::IntegrationTest
     root.save!
 
     parent = root
-    20.times do |i|
+    200.times do |i|
       try = Try.new(name: "Try #{i}")
       try.parent = parent
       try.save!
