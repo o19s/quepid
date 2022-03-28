@@ -3,7 +3,6 @@
 require 'test_helper'
 
 class TriesAncestryLifecycleTest < ActionDispatch::IntegrationTest
-  include ActionMailer::TestHelper
 
   test 'create 200 tries behavior' do
     root = Try.new(name: "Try Root")
@@ -16,29 +15,32 @@ class TriesAncestryLifecycleTest < ActionDispatch::IntegrationTest
       try.save!
       parent = try
     end
+  end
 
-    puts "hi"
-    #puts root.subtree.tree_view(:name)
-    require 'pp'
-    pp root
-    pp root.children[0].children
+  test 'Creates a new root try when ancestry tree gets to be too much' do
+    root_tries = []
+    root = Try.new(name: "Try Root")
+    root.save!
+    root_tries << root
 
-    root.subtree.each{|n| puts "#{n.name}: #{n.ancestry}"}
+    valueTooLongConditionHit = false
+    parent = root
+    300.times do |i|
+      try = Try.new(name: "Try #{i}")
+      try.parent = parent
+      begin
+        try.save!
+      rescue ActiveRecord::ValueTooLong
+        valueTooLongConditionHit = true
+        try.parent = nil
+        try.save!
+        root_tries << try
+      end
+      parent = try
+    end
 
-    puts root.descendant_ids
-
-
-
-
-
-
-  #  assert_includes try_one.children, try_two
-  #  assert_includes try_two.children, try_three
-
-  #  try_two.destroy!
-
-    # validate that three gets adopted by one
-  #  assert_includes try_one.children, try_three
+    assert valueTooLongConditionHit
+    assert_equal 2, root_tries.length
   end
 
 end
