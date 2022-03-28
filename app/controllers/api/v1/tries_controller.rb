@@ -23,7 +23,16 @@ module Api
         @try.try_number       = try_number
         @case.last_try_number = try_number
 
-        if @try.save && @case.save
+        caseSaved = @case.save
+        trySaved = false
+        begin # be smart about ancestry tracking leading too long value for database.
+          trySaved = @try.save
+        rescue ActiveRecord::ValueTooLong
+          @try.parent = nil
+          trySaved = @try.save
+        end
+
+        if trySaved && caseSaved
           @try.add_curator_vars params[:curatorVars]
           Analytics::Tracker.track_try_saved_event current_user, @try
 
