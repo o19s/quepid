@@ -18,24 +18,9 @@ module Api
             end
           end
 
-          # rubocop:disable Metrics/MethodLength
-          # rubocop:disable Metrics/AbcSize
-          # rubocop:disable Metrics/CyclomaticComplexity
-          # rubocop:disable Metrics/PerceivedComplexity
-          # rubocop:disable Metrics/BlockLength
-
           def show
             puts "Here we have case named #{@case.case_name}"
-
           end
-
-
-
-          # rubocop:enable Metrics/MethodLength
-          # rubocop:enable Metrics/AbcSize
-          # rubocop:enable Metrics/CyclomaticComplexity
-          # rubocop:enable Metrics/PerceivedComplexity
-          # rubocop:enable Metrics/BlockLength
 
           # https://stackoverflow.com/questions/5608918/pad-an-array-to-be-a-certain-size
           # rubocop:disable Naming/MethodParameterName

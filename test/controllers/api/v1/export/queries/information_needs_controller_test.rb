@@ -15,6 +15,7 @@ module Api
             login_user doug
           end
 
+          # rubocop:disable Layout/LineLength
           describe 'Exporting a case in basic csv format1' do
             let(:the_case) { cases(:one) }
 
@@ -29,7 +30,8 @@ module Api
               the_case.save!
 
               # add a query with no docs or ratings
-              query_info_need = Query.new query_text: 'star wars', case_id: the_case.id, information_need: 'Looking for the original blockbuster movie, followed by the most recent big movies.'
+              query_info_need = Query.new query_text: 'star wars', case_id: the_case.id,
+                                          information_need: 'Looking for the original blockbuster movie, followed by the most recent big movies.'
               the_case.queries << query_info_need
               the_case.save!
 
@@ -38,10 +40,10 @@ module Api
 
               csv = CSV.parse(response.body, headers: true)
 
-              assert_equal csv[0]['query_text'],                          'star wars' # notice csv injection vulnerability
-              assert_equal csv[0]['information_need'],                    "Looking for the original blockbuster movie, followed by the most recent big movies."
-
+              assert_equal csv[0]['query_text'], 'star wars' # notice csv injection vulnerability
+              assert_equal csv[0]['information_need'], 'Looking for the original blockbuster movie, followed by the most recent big movies.'
             end
+            # rubocop:enable Layout/LineLength
           end
         end
       end
