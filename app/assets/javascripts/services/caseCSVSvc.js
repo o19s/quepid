@@ -31,6 +31,7 @@
         self.exportBasicFormatSnapshot  = exportBasicFormatSnapshot;
         self.exportRREFormat            = exportRREFormat;
         self.exportLTRFormat            = exportLTRFormat;
+        self.exportInformationNeed      = exportInformationNeed;
         self.stringifyQueriesDetailed   = stringifyQueriesDetailed;
         self.stringifySnapshot          = stringifySnapshot;
         self.formatDownloadFileName     = formatDownloadFileName;
@@ -236,6 +237,18 @@
 
               /*global saveAs */
               saveAs(blob, formatDownloadFileName(aCase.caseName + '_ltr.txt'));
+            });
+        }
+
+        function exportInformationNeed(aCase) {
+          $http.get('/api/export/queries/information_needs/' + aCase.caseNo + '.csv')
+            .then(function(response) {
+              var blob = new Blob([response.data], {
+                type: 'text/csv'
+              });
+
+              /*global saveAs */
+              saveAs(blob, formatDownloadFileName(aCase.caseName + '_info_need.csv'));
             });
         }
 

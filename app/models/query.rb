@@ -15,6 +15,7 @@
 #  created_at     :datetime         not null
 #  updated_at     :datetime         not null
 #  options        :text(65535)
+#  information_need :string
 #
 
 require 'arrangement/item'

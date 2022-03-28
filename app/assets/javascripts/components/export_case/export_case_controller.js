@@ -123,6 +123,11 @@ angular.module('QuepidApp')
          caseCSVSvc.exportLTRFormat(ctrl.theCase);
 
         }
+        else if ( options.which === 'information_need' ) {
+         $log.info('Selected "information_need" as export option.');
+         caseCSVSvc.exportInformationNeed(ctrl.theCase);
+
+        }
       }
 
       function prompt() {

@@ -140,6 +140,9 @@ Rails.application.routes.draw do
       # Exports
       namespace :export do
         resources :ratings, only: [ :show ], param: :case_id
+        namespace :queries do
+          resources :information_needs, only: [ :show ], param: :case_id
+        end
       end
 
       namespace :bulk do
