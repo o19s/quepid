@@ -179,6 +179,7 @@ angular.module('QuepidApp')
         self.notes          = queryWithRatings.notes;
         self.modifiedAt      = queryWithRatings.modified_at;
 
+        self.informationNeed = queryWithRatings.information_need;
         self.ratingVariance   = queryWithRatings.rating_variance;
 
         self.modified = queryWithRatings.updated_at;
@@ -224,7 +225,7 @@ angular.module('QuepidApp')
         this.touchModifiedAt = function() {
           this.modifiedAt = new Date().toISOString();
         };
-        
+
         this.persisted = function() {
           return (this.queryId && this.queryId >= 0);
         };
