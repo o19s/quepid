@@ -14,6 +14,7 @@ angular.module('QuepidApp')
       self.importCSVFormat = importCSVFormat;
       self.importRREFormat = importRREFormat;
       self.importLTRFormat = importLTRFormat;
+      self.importInformationNeeds = importInformationNeeds;
 
       function importCSVFormat(theCase, csv, clearQueries) {
         var ratings = [];
@@ -59,5 +60,28 @@ angular.module('QuepidApp')
         return $http.post('/api/import/ratings?file_format=ltr', data);
 
       }
+
+      function importInformationNeeds(theCase, csv, clearQueries) {
+        //var queries = [];
+
+        //angular.forEach(csv, function(query) {
+        //  queries.push({
+        //    query_id:             query['query_id'],
+        //    query_text:           query['query_text'],
+        //    information_need:     query['information_need'],
+        //  });
+        //});
+
+        var data = {
+          //queries:        queries,
+          csv_text:       csv,
+          case_id:        theCase.caseNo,
+          clear_queries:  clearQueries,
+        };
+
+        // The API only sees a hash of ratings.
+        return $http.post('/api/import/queries/information_needs', data);
+      }
+
     }
   ]);

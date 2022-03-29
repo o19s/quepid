@@ -135,6 +135,9 @@ Rails.application.routes.draw do
       # Imports
       namespace :import do
         resources :ratings, only: [ :create ]
+        namespace :queries do
+          resources :information_needs, only: [ :create ], param: :case_id
+        end
       end
 
       # Exports

@@ -20,6 +20,13 @@ angular.module('QuepidApp')
         separatorVisible: false,
         result:           null
       };
+      ctrl.information_needs = {
+        content:          null,
+        header:           true,
+        separator:        ',',
+        separatorVisible: false,
+        result:           null
+      };
 
       ctrl.rre         = {
         content:           null
@@ -40,6 +47,15 @@ angular.module('QuepidApp')
           ctrl.import.alert = undefined;
           ctrl.checkCSVHeaders();
           ctrl.checkCSVBody();
+        }
+      },true);
+
+      $scope.$watch('ctrl.information_needs.content', function(newVal, oldVal) {
+        if (newVal !== oldVal) {
+          ctrl.options.which = 'information_needs';
+          ctrl.import.alert = undefined;
+          ctrl.checkInformationNeedsHeaders();
+          ctrl.checkInformationNeedsBody();
         }
       },true);
 
@@ -85,7 +101,25 @@ angular.module('QuepidApp')
         // check if any alerts defined.
         if (ctrl.import.alert === undefined) {
           ctrl.loading = true;
-          if ( ctrl.options.which === 'csv' ) {
+          if ( ctrl.options.which === 'information_needs' ) {
+            importRatingsSvc.importInformationNeeds(
+              ctrl.theCase,
+              ctrl.information_needs.content,
+              ctrl.clearQueries
+            ).then(function() {
+                ctrl.loading = false;
+                $uibModalInstance.close();
+              },
+              function(response) {
+                var error = 'Unable to import information needs from CSV: ';
+                error += response.status;
+                error += ' - ' + response.statusText;
+                ctrl.loading = false;
+                $uibModalInstance.close(error);
+              });
+
+          }
+          else if ( ctrl.options.which === 'csv' ) {
 
             importRatingsSvc.importCSVFormat(
               ctrl.theCase,
@@ -176,6 +210,45 @@ angular.module('QuepidApp')
             alert += line;
             alert += '<br />';
           }
+        }
+        if (alert !== undefined){
+          alert += '</strong>';
+          ctrl.import.alert = alert;
+        }
+      };
+
+      ctrl.checkInformationNeedsHeaders = function() {
+        var headers = ctrl.information_needs.content.split('\n')[0];
+        headers     = headers.split(ctrl.csv.separator);
+
+        var expectedHeaders = [
+          'query_id', 'query_text', 'information_need'
+        ];
+
+        if (!angular.equals(headers, expectedHeaders)) {
+          var alert = 'Headers mismatch! Please make sure you have the correct headers in you file (check for correct spelling and capitalization): ';
+          alert += '<br /><strong>';
+          alert += expectedHeaders.join(',');
+          alert += '</strong>';
+
+          ctrl.import.alert = alert;
+        }
+      };
+      ctrl.checkInformationNeedsBody = function() {
+        var lines = ctrl.information_needs.content.split('\n');
+        var i = 1;
+        var alert;
+        for (i = 1; i < lines.length; i++) {
+          var line = lines[i];
+          //if (line && line.split(ctrl.csv.separator).length > 3){
+          //  if (alert === undefined){
+          //    alert = 'Must have three (or fewer) columns for every line in CSV file: ';
+          //    alert += '<br /><strong>';
+          //  }
+          //  alert += 'line ' + (i + 1) + ': ';
+          //  alert += line;
+          //  alert += '<br />';
+          //}
         }
         if (alert !== undefined){
           alert += '</strong>';

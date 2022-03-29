@@ -17,6 +17,38 @@
   <p>Please select the file format to import:</p>
 
   <div class="form-group">
+    <input type="radio" id="information_needs" name="importSelection" value="information_needs" ng-model="ctrl.options.which">
+    <label for="information_needs">Information Needs CSV</label>
+    <span class="help-block">
+      The CSV file should have the headers: <code>query_id, query_text,information_need</code> and lines:
+      <pre>
+query_id,query_text,information_need
+3574597,star wars,"The original movie"</pre>
+    </span>
+    <p>Select CSV file to import:</p>
+
+    <ng-csv-import
+      class="import"
+      content="ctrl.information_needs.content"
+      header="ctrl.information_needs.header"
+      header-visible="true"
+      separator="ctrl.csv.separator"
+      separator-visible="ctrl.csv.separatorVisible"
+      result="ctrl.information_needs.result">
+    </ng-csv-import>
+
+
+
+    <div ng-if="ctrl.information_needs.content" class="block left">
+      <h2>CSV</h2>
+      <div ng-show="ctrl.import.alert" class="text-danger bg-danger import-content" ng-bind-html="ctrl.import.alert">
+      </div>
+      <div class="content import-content"><pre>{{ ctrl.information_needs.content }}</pre></div>
+    </div>
+  </div>
+
+
+  <div class="form-group">
     <input type="radio" id="csv" name="importSelection" value="csv" ng-model="ctrl.options.which">
     <label for="csv">CSV</label>
     <span class="help-block">

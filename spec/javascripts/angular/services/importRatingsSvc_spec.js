@@ -111,4 +111,55 @@ describe('Service: importRatingsSvc', function () {
       $rootScope.$apply();
     });
   });
+
+  describe('Import information needs', function() {
+    var $rootScope;
+
+    beforeEach(function() {
+      inject(function (_$rootScope_) {
+        $rootScope = _$rootScope_;
+      });
+    });
+
+    var mockCsv = [
+      {
+        'query_id':         '1',
+        'query_text':       'star wars',
+        'information_need': 'The original epic star wars movie'
+      },
+      {
+        'query_id':         '2',
+        'query_text':       'tough times on hoth',
+        'information_need': 'The Empire Strikes back movie'
+      },
+      {
+        'query_id':         '3',
+        'query_text':       'tatooine in star wars',
+        'information_need': 'Any of the star wars movies mentioning tatooine, plus the mandalorian and story of boba fett'
+      },
+      {
+        'query_id':         '4',
+        'query_text':       'star trek',
+        'information_need': 'The star trek movies, but definitly not any star wars movies.'
+      }
+    ];
+
+    var mockCase = {
+      caseNo: 8
+    };
+
+
+
+    it('imports information needs', function() {
+      var url = '/api/import/queries/information_needs';
+
+      $httpBackend.expectPOST(url).respond(200, {});
+
+      importRatingsSvc.importInformationNeeds(mockCase, mockCsv);
+
+      $httpBackend.flush();
+      $rootScope.$apply();
+    });
+
+  });
 });
