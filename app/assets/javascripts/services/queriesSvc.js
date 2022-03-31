@@ -515,14 +515,15 @@ angular.module('QuepidApp')
               });
         };
 
-        this.saveNotes = function(notes) {
+        this.saveNotes = function(notes, informationNeed) {
           var that = this;
-          var notesJson = { query: { notes: notes } };
+          var notesJson = { query: { notes: notes, information_need: informationNeed} };
           var url = '/api/cases/' + caseNo + '/queries/' + that.queryId + '/notes';
 
           return $http.put(url , notesJson)
             .then(function() {
               that.notes = notes;
+              that.informationNeed = informationNeed;
             }, function(response) {
               $log.debug('Failed to save notes: ', response);
               return response;
@@ -538,6 +539,7 @@ angular.module('QuepidApp')
           return $http.get(url)
             .then(function(response) {
               that.notes = response.data.notes;
+              that.informationNeed = response.data.information_need;
             }, function(response) {
               $log.debug('Failed to load notes: ', response);
               return response;

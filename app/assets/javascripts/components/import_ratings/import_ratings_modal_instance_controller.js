@@ -236,10 +236,11 @@ angular.module('QuepidApp')
       };
       ctrl.checkInformationNeedsBody = function() {
         var lines = ctrl.information_needs.content.split('\n');
-        var i = 1;
-        var alert;
-        for (i = 1; i < lines.length; i++) {
-          var line = lines[i];
+        // we should validate on the server side.
+        //var i = 1;
+        //var alert;
+        //for (i = 1; i < lines.length; i++) {
+          //var line = lines[i];
           //if (line && line.split(ctrl.csv.separator).length > 3){
           //  if (alert === undefined){
           //    alert = 'Must have three (or fewer) columns for every line in CSV file: ';
@@ -249,7 +250,7 @@ angular.module('QuepidApp')
           //  alert += line;
           //  alert += '<br />';
           //}
-        }
+        //}
         if (alert !== undefined){
           alert += '</strong>';
           ctrl.import.alert = alert;

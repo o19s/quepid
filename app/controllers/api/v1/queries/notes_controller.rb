@@ -20,7 +20,7 @@ module Api
         private
 
         def query_params
-          params.require(:query).permit(:notes)
+          params.require(:query).permit(:notes, :information_need)
         end
       end
     end
