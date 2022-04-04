@@ -1,0 +1,7 @@
+<%
+headers = [:query_id, :query_text, :information_need]
+%>
+<%= ::CSV.generate_line(headers).html_safe %><%
+@case.queries.each do |query|
+%><%= ::CSV.generate_line([query.id, query.query_text, query.information_need]).html_safe %><%
+end %>

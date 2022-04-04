@@ -111,4 +111,35 @@ describe('Service: importRatingsSvc', function () {
       $rootScope.$apply();
     });
   });
+
+  describe('Import information needs', function() {
+    var $rootScope;
+
+    beforeEach(function() {
+      inject(function (_$rootScope_) {
+        $rootScope = _$rootScope_;
+      });
+    });
+
+    var mockCsv = 'query_id,query_text,information_need\n'
+    mockCsv = mockCsv + '3,tatooine in star wars,Any of the star wars movies mentioning tatooine\n'
+
+    var mockCase = {
+      caseNo: 8
+    };
+
+
+
+    it('imports information needs', function() {
+      var url = '/api/import/queries/information_needs';
+
+      $httpBackend.expectPOST(url).respond(200, {});
+
+      importRatingsSvc.importInformationNeeds(mockCase, mockCsv);
+
+      $httpBackend.flush();
+      $rootScope.$apply();
+    });
+
+  });
 });

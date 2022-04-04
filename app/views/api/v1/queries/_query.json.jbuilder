@@ -8,6 +8,7 @@ json.threshold          query.threshold
 json.thresholdEnabled   query.threshold_enbl
 json.options            query.options
 json.notes              query.notes
+json.information_need   query.information_need
 
 # pick the most recent update between a query and it's ratings to represent modified_at
 json.modified_at [ query, query.ratings ].flatten.max_by(&:updated_at).updated_at

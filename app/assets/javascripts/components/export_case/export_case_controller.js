@@ -123,6 +123,11 @@ angular.module('QuepidApp')
          caseCSVSvc.exportLTRFormat(ctrl.theCase);
 
         }
+        else if ( options.which === 'information_need' ) {
+         $log.info('Selected "information_need" as export option.');
+         caseCSVSvc.exportInformationNeed(ctrl.theCase);
+
+        }
       }
 
       function prompt() {
@@ -130,6 +135,7 @@ angular.module('QuepidApp')
           templateUrl:  'export_case/_modal.html',
           controller:   'ExportCaseModalInstanceCtrl',
           controllerAs: 'ctrl',
+          size: 'lg',
           resolve:      {
             theCase: function() {
               return ctrl.theCase;
