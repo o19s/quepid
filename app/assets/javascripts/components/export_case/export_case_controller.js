@@ -135,6 +135,7 @@ angular.module('QuepidApp')
           templateUrl:  'export_case/_modal.html',
           controller:   'ExportCaseModalInstanceCtrl',
           controllerAs: 'ctrl',
+          size: 'lg',
           resolve:      {
             theCase: function() {
               return ctrl.theCase;
