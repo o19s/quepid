@@ -103,7 +103,8 @@ angular.module('QuepidApp')
         // exit early if we have the TLS issue, this really should be part of the below logic.
         // validator.validateTLS().then.validateURL().then....
         if ($scope.showTLSChangeWarning){
-          return;
+          console.log("showTLSChangeWarning is true")
+          //return;
         }
 
         var validator = new SettingsValidatorFactory($scope.pendingWizardSettings);
