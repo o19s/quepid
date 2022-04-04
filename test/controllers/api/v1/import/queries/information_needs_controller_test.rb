@@ -55,11 +55,10 @@ module Api
                 csv_text = "#{q[:query_id]}, #{q[:query_text]}, #{q[:information_need]}\n"
               end
 
-
               acase.save!
 
               assert_no_difference 'acase.queries.count' do
-                post :create, params: {case_id: acase.id, csv_text: csv_text}
+                post :create, params: { case_id: acase.id, csv_text: csv_text }
 
                 assert_response :ok
               end
@@ -97,11 +96,11 @@ module Api
               end
               acase.save!
 
-              queries <<   {
+              queries << {
                 query_text:       'indiana jones',
                 information_need: 'the wonderful adventure movies, and then the tv show.',
               }
-              queries <<   {
+              queries << {
                 query_id:         '-1',
                 query_text:       'boxing movie',
                 information_need: 'Rocky series.',
@@ -113,7 +112,7 @@ module Api
               end
 
               assert_no_difference 'acase.queries.count' do
-                post :create, params: {case_id: acase.id, csv_text: csv_text}
+                post :create, params: { case_id: acase.id, csv_text: csv_text }
 
                 assert_response :ok
               end
