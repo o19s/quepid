@@ -23,29 +23,26 @@ module Api
               acase.queries = []
               acase.save!
 
-              data = {
-                case_id: acase.id,
-                queries: [
-                  {
-                    query_text:       'star wars',
-                    information_need: 'The original epic star wars movie',
-                  },
-                  {
-                    query_text:       'tough times on hoth',
-                    information_need: 'The Empire Strikes back movie',
-                  },
-                  {
-                    query_text:       'tatooine in star wars',
-                    information_need: 'Any of the star wars movies mentioning tatooine, plus the mandalorian and story of boba fett',
-                  },
-                  {
-                    query_text:       'star trek',
-                    information_need: 'The star trek movies, but definitly not any star wars movies.',
-                  }
-                ],
-              }
+              queries = [
+                {
+                  query_text:       'star wars',
+                  information_need: 'The original epic star wars movie',
+                },
+                {
+                  query_text:       'tough times on hoth',
+                  information_need: 'The Empire Strikes back movie',
+                },
+                {
+                  query_text:       'tatooine in star wars',
+                  information_need: 'Any of the star wars movies mentioning tatooine, plus the mandalorian and story of boba fett',
+                },
+                {
+                  query_text:       'star trek',
+                  information_need: 'The star trek movies, but definitly not any star wars movies.',
+                }
+              ]
 
-              data[:queries].each do |q|
+              queries.each do |q|
                 query = Query.new(query_text: q[:query_text])
                 query.case = acase
                 query.save!
@@ -53,10 +50,16 @@ module Api
                 acase.queries << query
               end
 
+              csv_text = 'query_id,query_text,information_need\n'
+              queries.each do |q|
+                csv_text = "#{q[:query_id]}, #{q[:query_text]}, #{q[:information_need]}\n"
+              end
+
+
               acase.save!
 
               assert_no_difference 'acase.queries.count' do
-                post :create, params: data
+                post :create, params: {case_id: acase.id, csv_text: csv_text}
 
                 assert_response :ok
               end
@@ -66,29 +69,26 @@ module Api
               acase.queries = []
               acase.save!
 
-              data = {
-                case_id: acase.id,
-                queries: [
-                  {
-                    query_text:       'star wars',
-                    information_need: 'The original epic star wars movie',
-                  },
-                  {
-                    query_text:       'tough times on hoth',
-                    information_need: 'The Empire Strikes back movie',
-                  },
-                  {
-                    query_text:       'tatooine in star wars',
-                    information_need: 'Any of the star wars movies mentioning tatooine, plus the mandalorian and story of boba fett',
-                  },
-                  {
-                    query_text:       'star trek',
-                    information_need: 'The star trek movies, but definitly not any star wars movies.',
-                  }
-                ],
-              }
+              queries = [
+                {
+                  query_text:       'star wars',
+                  information_need: 'The original epic star wars movie',
+                },
+                {
+                  query_text:       'tough times on hoth',
+                  information_need: 'The Empire Strikes back movie',
+                },
+                {
+                  query_text:       'tatooine in star wars',
+                  information_need: 'Any of the star wars movies mentioning tatooine, plus the mandalorian and story of boba fett',
+                },
+                {
+                  query_text:       'star trek',
+                  information_need: 'The star trek movies, but definitly not any star wars movies.',
+                }
+              ]
 
-              data[:queries].each do |q|
+              queries.each do |q|
                 query = Query.new(query_text: q[:query_text])
                 query.case = acase
                 query.save!
@@ -97,18 +97,23 @@ module Api
               end
               acase.save!
 
-              data[:queries] <<   {
+              queries <<   {
                 query_text:       'indiana jones',
                 information_need: 'the wonderful adventure movies, and then the tv show.',
               }
-              data[:queries] <<   {
+              queries <<   {
                 query_id:         '-1',
                 query_text:       'boxing movie',
                 information_need: 'Rocky series.',
               }
 
+              csv_text = 'query_id,query_text,information_need\n'
+              queries.each do |q|
+                csv_text = "#{q[:query_id]}, #{q[:query_text]}, #{q[:information_need]}\n"
+              end
+
               assert_no_difference 'acase.queries.count' do
-                post :create, params: data
+                post :create, params: {case_id: acase.id, csv_text: csv_text}
 
                 assert_response :ok
               end

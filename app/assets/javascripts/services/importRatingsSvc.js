@@ -61,22 +61,11 @@ angular.module('QuepidApp')
 
       }
 
-      function importInformationNeeds(theCase, csv, clearQueries) {
-        //var queries = [];
-
-        //angular.forEach(csv, function(query) {
-        //  queries.push({
-        //    query_id:             query['query_id'],
-        //    query_text:           query['query_text'],
-        //    information_need:     query['information_need'],
-        //  });
-        //});
+      function importInformationNeeds(theCase, csv) {
 
         var data = {
-          //queries:        queries,
-          csv_text:       csv,
           case_id:        theCase.caseNo,
-          clear_queries:  clearQueries,
+          csv_text:       csv
         };
 
         // The API only sees a hash of ratings.

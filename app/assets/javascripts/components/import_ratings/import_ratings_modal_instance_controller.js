@@ -55,7 +55,6 @@ angular.module('QuepidApp')
           ctrl.options.which = 'information_needs';
           ctrl.import.alert = undefined;
           ctrl.checkInformationNeedsHeaders();
-          ctrl.checkInformationNeedsBody();
         }
       },true);
 
@@ -104,8 +103,7 @@ angular.module('QuepidApp')
           if ( ctrl.options.which === 'information_needs' ) {
             importRatingsSvc.importInformationNeeds(
               ctrl.theCase,
-              ctrl.information_needs.content,
-              ctrl.clearQueries
+              ctrl.information_needs.content
             ).then(function() {
                 ctrl.loading = false;
                 $uibModalInstance.close();
@@ -231,28 +229,6 @@ angular.module('QuepidApp')
           alert += expectedHeaders.join(',');
           alert += '</strong>';
 
-          ctrl.import.alert = alert;
-        }
-      };
-      ctrl.checkInformationNeedsBody = function() {
-        var lines = ctrl.information_needs.content.split('\n');
-        // we should validate on the server side.
-        //var i = 1;
-        //var alert;
-        //for (i = 1; i < lines.length; i++) {
-          //var line = lines[i];
-          //if (line && line.split(ctrl.csv.separator).length > 3){
-          //  if (alert === undefined){
-          //    alert = 'Must have three (or fewer) columns for every line in CSV file: ';
-          //    alert += '<br /><strong>';
-          //  }
-          //  alert += 'line ' + (i + 1) + ': ';
-          //  alert += line;
-          //  alert += '<br />';
-          //}
-        //}
-        if (alert !== undefined){
-          alert += '</strong>';
           ctrl.import.alert = alert;
         }
       };

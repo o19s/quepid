@@ -248,7 +248,7 @@
               });
 
               /*global saveAs */
-              saveAs(blob, formatDownloadFileName(aCase.caseName + '_info_need.csv'));
+              saveAs(blob, formatDownloadFileName(aCase.caseName + '_information_need.csv'));
             });
         }
 

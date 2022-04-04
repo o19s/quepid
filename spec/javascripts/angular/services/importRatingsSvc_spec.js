@@ -121,28 +121,8 @@ describe('Service: importRatingsSvc', function () {
       });
     });
 
-    var mockCsv = [
-      {
-        'query_id':         '1',
-        'query_text':       'star wars',
-        'information_need': 'The original epic star wars movie'
-      },
-      {
-        'query_id':         '2',
-        'query_text':       'tough times on hoth',
-        'information_need': 'The Empire Strikes back movie'
-      },
-      {
-        'query_id':         '3',
-        'query_text':       'tatooine in star wars',
-        'information_need': 'Any of the star wars movies mentioning tatooine, plus the mandalorian and story of boba fett'
-      },
-      {
-        'query_id':         '4',
-        'query_text':       'star trek',
-        'information_need': 'The star trek movies, but definitly not any star wars movies.'
-      }
-    ];
+    var mockCsv = 'query_id,query_text,information_need\n'
+    mockCsv = mockCsv + '3,tatooine in star wars,Any of the star wars movies mentioning tatooine\n'
 
     var mockCase = {
       caseNo: 8
