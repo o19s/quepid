@@ -11,21 +11,22 @@ angular.module('QuepidApp')
 
       ctrl.theCase      = theCase;
       ctrl.loading      = false;
-      ctrl.import       = {};
       ctrl.clearQueries = false;
       ctrl.csv          = {
         content:          null,
         header:           true,
         separator:        ',',
         separatorVisible: false,
-        result:           null
+        result:           null,
+        import:           {}
       };
       ctrl.information_needs = {
         content:          null,
         header:           true,
         separator:        ',',
         separatorVisible: false,
-        result:           null
+        result:           null,
+        import:           {}
       };
 
       ctrl.rre         = {
@@ -44,7 +45,7 @@ angular.module('QuepidApp')
       $scope.$watch('ctrl.csv.content', function(newVal, oldVal) {
         if (newVal !== oldVal) {
           ctrl.options.which = 'csv';
-          ctrl.import.alert = undefined;
+          ctrl.csv.import.alert = undefined;
           ctrl.checkCSVHeaders();
           ctrl.checkCSVBody();
         }
@@ -53,7 +54,7 @@ angular.module('QuepidApp')
       $scope.$watch('ctrl.information_needs.content', function(newVal, oldVal) {
         if (newVal !== oldVal) {
           ctrl.options.which = 'information_needs';
-          ctrl.import.alert = undefined;
+          ctrl.information_needs.import.alert = undefined;
           ctrl.checkInformationNeedsHeaders();
         }
       },true);
@@ -98,7 +99,7 @@ angular.module('QuepidApp')
         }
 
         // check if any alerts defined.
-        if (ctrl.import.alert === undefined) {
+        if (ctrl.csv.import.alert === undefined && ctrl.information_needs.import.alert === undefined) {
           ctrl.loading = true;
           if ( ctrl.options.which === 'information_needs' ) {
             importRatingsSvc.importInformationNeeds(
@@ -190,7 +191,7 @@ angular.module('QuepidApp')
           alert += expectedHeaders.join(',');
           alert += '</strong>';
 
-          ctrl.import.alert = alert;
+          ctrl.csv.import.alert = alert;
         }
       };
       ctrl.checkCSVBody = function() {
@@ -211,7 +212,7 @@ angular.module('QuepidApp')
         }
         if (alert !== undefined){
           alert += '</strong>';
-          ctrl.import.alert = alert;
+          ctrl.csv.import.alert = alert;
         }
       };
 
@@ -229,7 +230,7 @@ angular.module('QuepidApp')
           alert += expectedHeaders.join(',');
           alert += '</strong>';
 
-          ctrl.import.alert = alert;
+          ctrl.information_needs.import.alert = alert;
         }
       };
     }
