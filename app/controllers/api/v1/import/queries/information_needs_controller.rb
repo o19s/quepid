@@ -33,33 +33,6 @@ module Api
 
             render json: { message: 'Success!' }, status: :ok
           end
-
-          def create_via_json_data_structure
-            # convert from ActionController::Parameters to a Hash, symbolize, and
-            # then return just the ratings as an array.
-            queries = params.permit(queries: [ :query_id, :query_text,
-                                               :information_need ]).to_h.deep_symbolize_keys[:queries]
-
-            begin
-              queries.each do |query_input|
-                query = Query.find_by(id: query_input[:query_id])
-                unless query.nil?
-                  query.information_need = query_input[:information_need]
-                  query.save
-                end
-              end
-
-              render json: { message: 'Success!' }, status: :ok
-            # rubocop:disable Lint/RescueException
-            rescue Exception => e
-              # TODO: report this to logging infrastructure so we won't lose any important
-              # errors that we might have to fix.
-              Rails.logger.debug { "Import query Information Needs failed: #{e.inspect}" }
-
-              render json: { message: e.message }, status: :bad_request
-            end
-            # rubocop:enable Lint/RescueException
-          end
         end
       end
     end
