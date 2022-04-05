@@ -64,6 +64,39 @@ module Api
               end
             end
 
+            test 'handles double quotes around comma in the text' do
+              acase.queries = []
+              acase.save!
+
+              queries = [
+                {
+                  query_text:       'pandas',
+                  information_need: '"Looking for eats, shoots, and leaves."',
+                }
+              ]
+
+              queries.each do |q|
+                query = Query.new(query_text: q[:query_text])
+                query.case = acase
+                query.save!
+                q[:query_id] = query.id
+                acase.queries << query
+              end
+
+              csv_text = 'query_id,query_text,information_need\n'
+              queries.each do |q|
+                csv_text = "#{q[:query_id]}, #{q[:query_text]}, #{q[:information_need]}\n"
+              end
+
+              acase.save!
+
+              assert_no_difference 'acase.queries.count' do
+                post :create, params: { case_id: acase.id, csv_text: csv_text }
+
+                assert_response :ok
+              end
+            end
+
             test 'skips over queries where the id or the query text does not exit' do
               acase.queries = []
               acase.save!
