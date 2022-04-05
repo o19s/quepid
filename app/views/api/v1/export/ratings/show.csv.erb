@@ -1,2 +1,2 @@
 <% # Super complex logic, see the controller for why this is so horrible %>
-<% for index in (0...@csv_array.length) %><%= (index + 1) == @csv_array.length ? ::CSV.generate_line(@csv_array[index]).chop : ::CSV.generate_line(@csv_array[index]) %><% end %>
+<% for index in (0...@csv_array.length) %><%= (index + 1) == @csv_array.length ? ::CSV.generate_line(@csv_array[index]).html_safe.chop : ::CSV.generate_line(@csv_array[index]).html_safe %><% end %>

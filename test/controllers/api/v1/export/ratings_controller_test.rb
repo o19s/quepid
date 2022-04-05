@@ -97,6 +97,21 @@ module Api
             assert_equal csv[0]['query'], the_case.queries[0].query_text
           end
 
+          test 'CSV export properly deals with a comma in the query_text' do
+            the_case.queries[0].query_text = "I like, commas!"
+            the_case.queries[0].save
+            get :show, params: { case_id: the_case.id, format: :csv, file_format: 'basic' }
+            assert_response :ok
+
+            expected_csv = "query,docid,rating\n"\
+                           "\"I like, commas!\",,\n"\
+                           "one,,\n"
+            assert_equal response.body, expected_csv
+
+            csv = CSV.parse(response.body, headers: true)            
+            assert_equal csv[0]['query'], the_case.queries[0].query_text
+          end
+
           test 'CSV response should not have a trailing line feed' do
             # See https://github.com/o19s/quepid/issues/354
             lines_expected = the_case.queries.count + 1 # include csv header line!
