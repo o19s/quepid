@@ -98,7 +98,7 @@ module Api
           end
 
           test 'CSV export properly deals with a comma in the query_text' do
-            the_case.queries[0].query_text = "I like, commas!"
+            the_case.queries[0].query_text = 'I like, commas!'
             the_case.queries[0].save
             get :show, params: { case_id: the_case.id, format: :csv, file_format: 'basic' }
             assert_response :ok
@@ -108,7 +108,7 @@ module Api
                            "one,,\n"
             assert_equal response.body, expected_csv
 
-            csv = CSV.parse(response.body, headers: true)            
+            csv = CSV.parse(response.body, headers: true)
             assert_equal csv[0]['query'], the_case.queries[0].query_text
           end
 
