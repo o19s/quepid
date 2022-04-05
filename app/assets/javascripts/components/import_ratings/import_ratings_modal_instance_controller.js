@@ -201,6 +201,10 @@ angular.module('QuepidApp')
         for (i = 1; i < lines.length; i++) {
           var line = lines[i];
           if (line && line.split(ctrl.csv.separator).length > 3){
+            // check for wrapping in double quotes.
+            if (line.match(/"/g).length === 2){
+              break; // two double quotes means we are okay
+            }
             if (alert === undefined){
               alert = 'Must have three (or fewer) columns for every line in CSV file: ';
               alert += '<br /><strong>';
