@@ -22,7 +22,7 @@ class TriesAncestryLifecycleTest < ActionDispatch::IntegrationTest
     root.save!
     root_tries << root
 
-    valueTooLongConditionHit = false
+    value_too_long_condition_hit = false
     parent = root
     300.times do |i|
       try = Try.new(name: "Try #{i}")
@@ -30,7 +30,7 @@ class TriesAncestryLifecycleTest < ActionDispatch::IntegrationTest
       begin
         try.save!
       rescue ActiveRecord::ValueTooLong
-        valueTooLongConditionHit = true
+        value_too_long_condition_hit = true
         try.parent = nil
         try.save!
         root_tries << try
@@ -38,7 +38,7 @@ class TriesAncestryLifecycleTest < ActionDispatch::IntegrationTest
       parent = try
     end
 
-    assert valueTooLongConditionHit
+    assert value_too_long_condition_hit
     assert_equal 2, root_tries.length
   end
 end

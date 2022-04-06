@@ -11,6 +11,8 @@ module Api
         @tries = @case.tries
       end
 
+      # rubocop:disable Metrics/MethodLength
+      # rubocop:disable Metrics/AbcSize
       def create
         parameters_to_use = try_params
         if params[:parent_try_number] # We need special translation from try_number to the try.id
@@ -25,13 +27,13 @@ module Api
 
         # be smart about ancestry tracking leading too long of a string for database column.
         begin
-          caseSaved = @case.save
+          case_saved = @case.save
         rescue ActiveRecord::ValueTooLong
-          @try.parent = nil  # restart the ancestry tracking!
-          caseSaved = @case.save
+          @try.parent = nil # restart the ancestry tracking!
+          case_saved = @case.save
         end
 
-        if caseSaved
+        if case_saved
           @try.add_curator_vars params[:curatorVars]
           Analytics::Tracker.track_try_saved_event current_user, @try
 
@@ -40,6 +42,8 @@ module Api
           render json: @try.errors.concat(@case.errors), status: :bad_request
         end
       end
+      # rubocop:enable Metrics/MethodLength
+      # rubocop:enable Metrics/AbcSize
 
       def show
         respond_with @try
