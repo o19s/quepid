@@ -3,9 +3,8 @@
 require 'test_helper'
 
 class TriesAncestryLifecycleTest < ActionDispatch::IntegrationTest
-
   test 'create 200 tries behavior' do
-    root = Try.new(name: "Try Root")
+    root = Try.new(name: 'Try Root')
     root.save!
 
     parent = root
@@ -19,7 +18,7 @@ class TriesAncestryLifecycleTest < ActionDispatch::IntegrationTest
 
   test 'Creates a new root try when ancestry tree gets to be too much' do
     root_tries = []
-    root = Try.new(name: "Try Root")
+    root = Try.new(name: 'Try Root')
     root.save!
     root_tries << root
 
@@ -42,5 +41,4 @@ class TriesAncestryLifecycleTest < ActionDispatch::IntegrationTest
     assert valueTooLongConditionHit
     assert_equal 2, root_tries.length
   end
-
 end
