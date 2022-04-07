@@ -3,8 +3,18 @@
     <h2>
       Admin Panel
     </h2>
-  <%= link_to 'Users', admin_users_path %><br />
-  <%= link_to 'Quepid Communal Scorers', admin_communal_scorers_path %><br />
-  <a href="/admin/jobs">Job Manager</a>
+  <ul>
+  <li><%= link_to 'Users', admin_users_path %>
+  <li><%= link_to 'Quepid Communal Scorers', admin_communal_scorers_path %></li>
+
+  <li><a href="/admin/jobs">Job Manager</a><em>
+  <% if Rails.application.config.google_analytics_enabled %>
+    Google Analytics enabled, so Redis is setup.
+  <% else %>
+    Google Analytics disabled, so Redis not required.
+  <% end %></em>
+
+  </li>
+  </ul>
   </div>
 </div>
