@@ -1,2 +1,3 @@
 web:    bundle exec puma -C config/puma.rb
-worker: bundle exec sidekiq -e production -C config/sidekiq.yml -q default
+# Enable the worker if you have Google Analytics set up.
+#worker: bundle exec sidekiq -e production -C config/sidekiq.yml -q default

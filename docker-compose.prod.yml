@@ -13,11 +13,13 @@ services:
     volumes:
       - ./volumes/mysql_data:/var/lib/mysql
 
-  redis:
-    container_name: quepid_prod_redis
-    image: redis:6.0.5
-    ports:
-      - 6379:6379
+#  Redis is used to support sending to Google Analytics events.
+#  Enable this if you are running in Docker and have GA setup.
+#  redis:
+#    container_name: quepid_prod_redis
+#    image: redis:6.0.5
+#    ports:
+#      - 6379:6379
 
   app:
     container_name: quepid_prod_app
@@ -39,6 +41,7 @@ services:
       - TC_URL=
       - PRIVACY_URL=
       - COOKIES_URL=
+      - QUEPID_GA=
       - QUEPID_DOMAIN=https://example.com
       - EMAIL_MARKETING_MODE=false
       - QUEPID_DEFAULT_SCORER=AP@10
