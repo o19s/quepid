@@ -6,6 +6,7 @@ This document explains how Quepid can be operated and configured.
 - [Mail](#mail)
 - [OAuth](#OAuth)
 - [Legal Pages & GDPR](#legal-pages-&-gdpr)
+- [User Tracking](#user-tracking)
 - [Heathcheck Endpoint](#healthcheck)
 
 ## Running behind a load balancer
@@ -148,6 +149,10 @@ We currently only support Google Analytics, and you enable it by setting the fol
 ```
 QUEPID_GA=XXXXXXXXXXXX  # Your Google Analytics Key
 ```
+
+You will need Redis to support sending events to GA.   In production, uncomment the Redis
+configuration in `docker-compose.yml` to set up a local Redis.  Also uncomment the `worker` in
+the file `Procfile`
 
 
 ## Healthcheck
