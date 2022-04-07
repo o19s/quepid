@@ -6,6 +6,7 @@ This document explains how Quepid can be operated and configured.
 - [Mail](#mail)
 - [OAuth](#OAuth)
 - [Legal Pages & GDPR](#legal-pages-&-gdpr)
+- [User Tracking](#user-tracking)
 - [Heathcheck Endpoint](#healthcheck)
 
 ## Running behind a load balancer
