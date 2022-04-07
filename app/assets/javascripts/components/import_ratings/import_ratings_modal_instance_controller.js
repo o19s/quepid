@@ -11,14 +11,22 @@ angular.module('QuepidApp')
 
       ctrl.theCase      = theCase;
       ctrl.loading      = false;
-      ctrl.import       = {};
       ctrl.clearQueries = false;
       ctrl.csv          = {
         content:          null,
         header:           true,
         separator:        ',',
         separatorVisible: false,
-        result:           null
+        result:           null,
+        import:           {}
+      };
+      ctrl.information_needs = {
+        content:          null,
+        header:           true,
+        separator:        ',',
+        separatorVisible: false,
+        result:           null,
+        import:           {}
       };
 
       ctrl.rre         = {
@@ -37,9 +45,17 @@ angular.module('QuepidApp')
       $scope.$watch('ctrl.csv.content', function(newVal, oldVal) {
         if (newVal !== oldVal) {
           ctrl.options.which = 'csv';
-          ctrl.import.alert = undefined;
+          ctrl.csv.import.alert = undefined;
           ctrl.checkCSVHeaders();
           ctrl.checkCSVBody();
+        }
+      },true);
+
+      $scope.$watch('ctrl.information_needs.content', function(newVal, oldVal) {
+        if (newVal !== oldVal) {
+          ctrl.options.which = 'information_needs';
+          ctrl.information_needs.import.alert = undefined;
+          ctrl.checkInformationNeedsHeaders();
         }
       },true);
 
@@ -83,9 +99,26 @@ angular.module('QuepidApp')
         }
 
         // check if any alerts defined.
-        if (ctrl.import.alert === undefined) {
+        if (ctrl.csv.import.alert === undefined && ctrl.information_needs.import.alert === undefined) {
           ctrl.loading = true;
-          if ( ctrl.options.which === 'csv' ) {
+          if ( ctrl.options.which === 'information_needs' ) {
+            importRatingsSvc.importInformationNeeds(
+              ctrl.theCase,
+              ctrl.information_needs.content
+            ).then(function() {
+                ctrl.loading = false;
+                $uibModalInstance.close();
+              },
+              function(response) {
+                var error = 'Unable to import information needs from CSV: ';
+                error += response.status;
+                error += ' - ' + response.statusText;
+                ctrl.loading = false;
+                $uibModalInstance.close(error);
+              });
+
+          }
+          else if ( ctrl.options.which === 'csv' ) {
 
             importRatingsSvc.importCSVFormat(
               ctrl.theCase,
@@ -158,7 +191,7 @@ angular.module('QuepidApp')
           alert += expectedHeaders.join(',');
           alert += '</strong>';
 
-          ctrl.import.alert = alert;
+          ctrl.csv.import.alert = alert;
         }
       };
       ctrl.checkCSVBody = function() {
@@ -168,6 +201,10 @@ angular.module('QuepidApp')
         for (i = 1; i < lines.length; i++) {
           var line = lines[i];
           if (line && line.split(ctrl.csv.separator).length > 3){
+            // check for wrapping in double quotes.
+            if (line.match(/"/g).length === 2){
+              break; // two double quotes means we are okay
+            }
             if (alert === undefined){
               alert = 'Must have three (or fewer) columns for every line in CSV file: ';
               alert += '<br /><strong>';
@@ -179,7 +216,25 @@ angular.module('QuepidApp')
         }
         if (alert !== undefined){
           alert += '</strong>';
-          ctrl.import.alert = alert;
+          ctrl.csv.import.alert = alert;
+        }
+      };
+
+      ctrl.checkInformationNeedsHeaders = function() {
+        var headers = ctrl.information_needs.content.split('\n')[0];
+        headers     = headers.split(ctrl.csv.separator);
+
+        var expectedHeaders = [
+          'query_id', 'query_text', 'information_need'
+        ];
+
+        if (!angular.equals(headers, expectedHeaders)) {
+          var alert = 'Headers mismatch! Please make sure you have the correct headers in you file (check for correct spelling and capitalization): ';
+          alert += '<br /><strong>';
+          alert += expectedHeaders.join(',');
+          alert += '</strong>';
+
+          ctrl.information_needs.import.alert = alert;
         }
       };
     }

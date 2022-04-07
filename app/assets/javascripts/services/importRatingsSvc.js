@@ -14,6 +14,7 @@ angular.module('QuepidApp')
       self.importCSVFormat = importCSVFormat;
       self.importRREFormat = importRREFormat;
       self.importLTRFormat = importLTRFormat;
+      self.importInformationNeeds = importInformationNeeds;
 
       function importCSVFormat(theCase, csv, clearQueries) {
         var ratings = [];
@@ -59,5 +60,17 @@ angular.module('QuepidApp')
         return $http.post('/api/import/ratings?file_format=ltr', data);
 
       }
+
+      function importInformationNeeds(theCase, csv) {
+
+        var data = {
+          case_id:        theCase.caseNo,
+          csv_text:       csv
+        };
+
+        // The API only sees a hash of ratings.
+        return $http.post('/api/import/queries/information_needs', data);
+      }
+
     }
   ]);

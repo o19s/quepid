@@ -798,7 +798,7 @@ describe('Service: queriesSvc', function () {
 
     /** Notes Testing **/
   describe('- Notes Tests: ', function() {
-    var mockNotes = { notes: 'lorem ipsum lots of toast' };
+    var mockNotes = { notes: 'lorem ipsum lots of toast', information_need:'this is my need' };
     var testQuery;
 
     beforeEach(function() {
@@ -813,6 +813,7 @@ describe('Service: queriesSvc', function () {
       testQuery.fetchNotes()
         .then(function() {
           expect(testQuery.notes).toEqual(mockNotes.notes);
+          expect(testQuery.informationNeed).toEqual(mockNotes.information_need);
         });
 
       $httpBackend.flush();

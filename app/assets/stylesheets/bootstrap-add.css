@@ -1166,6 +1166,8 @@ li.annotation {
 .tooltip-inner {
 	text-align: left;
 	padding: 10px;
+  min-width: 100px;
+  max-width: 100%
 }
 
 .modal-title .modal-case {

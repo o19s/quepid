@@ -20,6 +20,7 @@ angular.module('QuepidApp')
           templateUrl:  'import_ratings/_modal.html',
           controller:   'ImportRatingsModalInstanceCtrl',
           controllerAs: 'ctrl',
+          size: 'lg',
           resolve:      {
             theCase: function() {
               return ctrl.acase;
