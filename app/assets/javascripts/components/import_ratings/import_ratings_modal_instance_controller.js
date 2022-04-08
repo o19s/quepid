@@ -202,7 +202,7 @@ angular.module('QuepidApp')
         for (i = 1; i < lines.length; i++) {
           var line = lines[i];
           if (line && line.split(ctrl.csv.separator).length > 3){
-            if (line.match(/"/g) != undefined && line.match(/"/g).length === 2){
+            if (line.match(/"/g) !== undefined && line.match(/"/g).length === 2){
              // two double quotes means we are okay
             }
             else {
@@ -248,7 +248,7 @@ angular.module('QuepidApp')
         for (i = 1; i < lines.length; i++) {
           var line = lines[i];
           if (line && line.split(ctrl.information_needs.separator).length > 3){
-            if (line.match(/"/g) != undefined && line.match(/"/g).length >= 2){
+            if (line.match(/"/g) !== undefined && line.match(/"/g).length >= 2){
               // two double quotes (or more) means we are okay, it's not a perfect check
             }
             else {
