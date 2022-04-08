@@ -56,6 +56,7 @@ angular.module('QuepidApp')
           ctrl.options.which = 'information_needs';
           ctrl.information_needs.import.alert = undefined;
           ctrl.checkInformationNeedsHeaders();
+          ctrl.checkInformationNeedsBody();
         }
       },true);
 
@@ -201,17 +202,19 @@ angular.module('QuepidApp')
         for (i = 1; i < lines.length; i++) {
           var line = lines[i];
           if (line && line.split(ctrl.csv.separator).length > 3){
-            // check for wrapping in double quotes.
-            if (line.match(/"/g).length === 2){
-              break; // two double quotes means we are okay
+            if (line.match(/"/g) != undefined && line.match(/"/g).length === 2){
+             // two double quotes means we are okay
             }
-            if (alert === undefined){
-              alert = 'Must have three (or fewer) columns for every line in CSV file: ';
-              alert += '<br /><strong>';
+            else {
+              // check for wrapping in double quotes.
+              if (alert === undefined){
+                alert = 'Must have three (or fewer) columns for every line in CSV file: ';
+                alert += '<br /><strong>';
+              }
+              alert += 'line ' + (i + 1) + ': ';
+              alert += line;
+              alert += '<br />';
             }
-            alert += 'line ' + (i + 1) + ': ';
-            alert += line;
-            alert += '<br />';
           }
         }
         if (alert !== undefined){
@@ -222,7 +225,7 @@ angular.module('QuepidApp')
 
       ctrl.checkInformationNeedsHeaders = function() {
         var headers = ctrl.information_needs.content.split('\n')[0];
-        headers     = headers.split(ctrl.csv.separator);
+        headers     = headers.split(ctrl.information_needs.separator);
 
         var expectedHeaders = [
           'query_id', 'query_text', 'information_need'
@@ -234,6 +237,33 @@ angular.module('QuepidApp')
           alert += expectedHeaders.join(',');
           alert += '</strong>';
 
+          ctrl.information_needs.import.alert = alert;
+        }
+      };
+
+      ctrl.checkInformationNeedsBody = function() {
+        var lines = ctrl.information_needs.content.split('\n');
+        var i = 1;
+        var alert;
+        for (i = 1; i < lines.length; i++) {
+          var line = lines[i];
+          if (line && line.split(ctrl.information_needs.separator).length > 3){
+            if (line.match(/"/g) != undefined && line.match(/"/g).length >= 2){
+              // two double quotes (or more) means we are okay, it's not a perfect check
+            }
+            else {
+              if (alert === undefined){
+                alert = 'Must have three (or fewer) columns for every line in CSV file: ';
+                alert += '<br /><strong>';
+              }
+              alert += 'line ' + (i + 1) + ': ';
+              alert += line;
+              alert += '<br />';
+            }
+          }
+        }
+        if (alert !== undefined){
+          alert += '</strong>';
           ctrl.information_needs.import.alert = alert;
         }
       };
