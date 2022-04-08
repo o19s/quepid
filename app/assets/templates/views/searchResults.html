@@ -140,7 +140,6 @@
         <span class="glyphicon glyphicon-chevron-up text-primary" ng-click="query.toggle()" uib-popover="Close the results pane"></span>
         <span ng-if="query.numFound > query.docs.length">
           <a
-            ng-show='query.numFound > 10'
             class="btn btn-default"
             ng-click="query.paginate()"
           >
