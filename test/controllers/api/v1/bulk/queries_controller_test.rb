@@ -73,7 +73,7 @@ module Api
         describe 'Deletes all queries for a case.' do
           test 'deletes all' do
             data = {
-              case_id: acase.id
+              case_id: acase.id,
             }
 
             assert_difference 'acase.queries.count', 0 do
