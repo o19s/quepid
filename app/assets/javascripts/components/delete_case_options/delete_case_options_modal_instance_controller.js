@@ -19,13 +19,13 @@ angular.module('QuepidApp')
       ctrl.buttonName = function() {
         switch(ctrl.options.action) {
           case 'delete_all_queries':
-            return "Delete All Queries";
+            return 'Delete All Queries';
           case 'archive_case':
-            return "Archive";
+            return 'Archive';
           case 'delete_case':
-            return "Delete";
+            return 'Delete';
           default:
-            return "Delete";
+            return 'Delete';
 
         }
       };

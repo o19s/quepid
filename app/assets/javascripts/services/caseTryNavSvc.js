@@ -81,8 +81,7 @@ angular.module('QuepidApp')
       };
 
       this.navigateToCasesListing = function(){
-        console.log("Here is the $location.path:" + $location.path());
-        $location.path("/cases/");
+        $location.path('/cases/');
       };
 
       this.getCaseNo = function() {

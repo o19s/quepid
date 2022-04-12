@@ -56,7 +56,6 @@ angular.module('QuepidApp')
         caseSvc.deleteCaseQueries(ctrl.acase).then(
           function () {
             flash.success = 'Case queries all deleted.';
-            //caseTryNavSvc.navigateToCasesListing();
             caseTryNavSvc.navigateTo({'caseNo': ctrl.acase.caseNo, 'tryNo': ctrl.acase.lastTry});
           }, function (data) {
             var message = 'Oooops! Could not delete all the queries for this case. ';
@@ -81,8 +80,6 @@ angular.module('QuepidApp')
 
         modalInstance.result.then(
           function (options) {
-            console.log("Here are options");
-
             switch(options.action) {
               case 'delete_all_queries':
                 ctrl.deleteCaseQueries();
@@ -95,7 +92,6 @@ angular.module('QuepidApp')
                 break;
 
             }
-            //ctrl.cloneCase(options);
           },
           function() {
             $log.info('INFO: Modal dismissed');
