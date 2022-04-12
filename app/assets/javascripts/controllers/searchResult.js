@@ -59,11 +59,11 @@ angular.module('QuepidApp')
         var imgUrl = $scope.doc.image;
         if ($scope.doc.image_options){
           if ($scope.doc.image_options.prefix){
-            imgUrl = $scope.doc.image_options.prefix + imgUrl
+            imgUrl = $scope.doc.image_options.prefix + imgUrl;
           }
         }
         return imgUrl;
-      }
+      };
 
       $scope.snippets = $scope.doc.subSnippets('<strong>', '</strong>');
 
