@@ -95,4 +95,9 @@ describe('Service: caseTryNavSvc', function () {
     expect(caseTryNavSvc.getCaseNo()).toBe(5);
     expect(caseTryNavSvc.getTryNo()).toBe(1);
   });
+
+  it('is smart about navigating to case listing page', function() {
+    caseTryNavSvc.navigateToCasesListing();
+    expect(locationMock.path).toHaveBeenCalledWith('/cases/');
+  });
 });

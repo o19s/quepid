@@ -194,6 +194,19 @@ angular.module('QuepidApp')
           });
       };
 
+      this.deleteCaseQueries = function(caseToDeleteQueries) {
+        var that        = this;
+        var caseNumber  = caseToDeleteQueries.caseNo;
+
+        return $http.delete('/api/bulk/cases/' + caseNumber + '/queries/delete')
+          .then(function() {
+            that.refetchCaseLists();
+            if( selectedCase !== null && selectedCase.caseNo === caseNumber ) {
+              selectedCase = null;
+            }
+          });
+      };
+
       this.archiveCase = function(caseToArchive) {
         var caseNumber  = caseToArchive.caseNo;
         var url         = '/api/cases/' + caseNumber;

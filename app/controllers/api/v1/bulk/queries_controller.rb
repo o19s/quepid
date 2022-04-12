@@ -45,6 +45,11 @@ module Api
           end
         end
         # rubocop:enable Metrics/MethodLength
+
+        def destroy
+          @case.queries.destroy_all
+          head :no_content
+        end
       end
     end
   end
