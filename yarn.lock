@@ -7285,10 +7285,10 @@ spdy@^4.0.2:
     select-hose "^2.0.0"
     spdy-transport "^3.0.0"
 
-splainer-search@2.14.0:
-  version "2.14.0"
-  resolved "https://registry.yarnpkg.com/splainer-search/-/splainer-search-2.14.0.tgz#0d1dc7077798d30819caa4113aad2cf255a18ed5"
-  integrity sha512-7v+deK5v978aPqfC2zduJ6YW9MsD9NHbFTvS+SWi1vzB/1M+x08TCoF8xxxRALMbnqBCBoiOkq1ZAYgcusPygw==
+splainer-search@2.15.0:
+  version "2.15.0"
+  resolved "https://registry.yarnpkg.com/splainer-search/-/splainer-search-2.15.0.tgz#7d915f1276160e4f5fb2ddf10adb0bcf358dda01"
+  integrity sha512-mmkeQXQBgoN9RqgemYqLXhbvEtA18fP8ny62iNxYJC+n2nW5p2I7vEPbdNp9WyGFmmMx20V8K+I0U8pJFOI3GQ==
   dependencies:
     angular "^1.7.9"
     urijs "^1.19.7"
