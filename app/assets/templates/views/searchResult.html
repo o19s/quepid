@@ -22,7 +22,7 @@
           <img class="img-thumbnail result-thumbnail" ng-src="{{doc.thumb}}">
         </div>
         <div ng-show="doc.hasImage()" class="col-image" style="text-align: center">
-          <img class="img-thumbnail result-image" ng-src="{{doc.image}}">
+          <img class="img-thumbnail result-image" ng-src="{{formatImageUrl()}}" />
         </div>
 
         <!-- Fields -->
