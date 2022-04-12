@@ -55,6 +55,16 @@ angular.module('QuepidApp')
         }
       };
 
+      $scope.formatImageUrl = function() {
+        var imgUrl = $scope.doc.image;
+        if ($scope.doc.image_options){
+          if ($scope.doc.image_options.prefix){
+            imgUrl = $scope.doc.image_options.prefix + imgUrl
+          }
+        }
+        return imgUrl;
+      }
+
       $scope.snippets = $scope.doc.subSnippets('<strong>', '</strong>');
 
       $scope.showDoc = function() {
