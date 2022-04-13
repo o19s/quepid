@@ -31,7 +31,7 @@ services:
       - RACK_ENV=production
       - RAILS_ENV=production
       - DATABASE_URL=mysql2://root:password@mysql:3306/quepid
-      - REDIS_URL=redis://redis:6379/1
+#      - REDIS_URL=redis://redis:6379/1
       - FORCE_SSL=false
       - MAX_THREADS=2
       - WEB_CONCURRENCY=2
@@ -55,7 +55,7 @@ services:
       - 80:3000 # Map to port 80 for outside users.
     links:
       - mysql
-      - redis
+#      - redis
     depends_on:
       - mysql
-      - redis
+#      - redis
