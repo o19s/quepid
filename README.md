@@ -424,7 +424,7 @@ Then check in the updated `package.json` and `yarn.lock` files.
 
 Use `bin/docker r yarn outdated` to see what packages you can update!!!!
 
-## I'd like to use a new Ruby Gem, or update a existing one
+## I'd like to use a new Ruby Gem, or update an existing one
 
 Typically you would simply do:
 
@@ -454,6 +454,40 @@ To understand if you have gems that are out of date run:
 ```
 bin/docker r bundle outdated --groups
 ```
+
+## I'd like to run and test out a local build
+
+Those steps should get you up and running locally
+
+- Make the desired changes to the code
+- From the root dir in the project run the following to build a new docker image:
+```
+docker build -t o19s/quepid -f Dockerfile.prod .
+```
+This could error on first run. Try again if that happens
+
+- Tag a new version of your image. 
+- You can either hard code your version or use a sys var for it (like QUEPID_VERSION=10.0.0) or if you prefer use 'latest'
+```
+docker tag o19s/quepid o19s/quepid:$QUEPID_VERSION
+```
+
+- Bring up the mysql container 
+```
+docker-compose up -d mysql
+```
+- Run the initialization scripts. This can take a few seconds
+```
+docker-compose run --rm app bin/rake db:setup
+```
+- Update your docker-compose.prod.yml file to use your image by updating the image version in the app ```image: o19s/quepid:10.0.0```
+
+- Start up the app either as a Daemon (-d) or as an active container
+```
+docker-compose up [-d]
+```
+- You should be able to access the app through [http://localhost](http://localhost)
+
 
 
 ## I'd like to test SSL
