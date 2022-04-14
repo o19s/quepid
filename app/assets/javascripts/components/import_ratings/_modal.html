@@ -23,7 +23,7 @@
         <input type="radio" id="csv" name="importSelection" value="csv" ng-model="ctrl.options.which">
         <label for="csv">CSV</label>
         <span class="help-block">
-          The CSV file should have the headers: <code>query,docid,rating</code> and lines:
+          The CSV file should have the headers: <code>query,docid,rating</code> and lines similar to:
           <pre>
 query,docid,rating
 star wars,3574597,3
@@ -86,9 +86,9 @@ star trek,,</pre>
         <input type="radio" id="information_needs" name="importSelection" value="information_needs" ng-model="ctrl.options.which">
         <label for="information_needs">Information Needs CSV</label>
         <span class="help-block">
-          The CSV file should have the headers: <code>query_id, query_text,information_need</code> and lines:
+          The CSV file should have the headers: <code>query_id, query,information_need</code> and lines similar to:
           <pre>
-query_id,query_text,information_need
+query_id,query,information_need
 3574597,star wars,"The original movie"</pre>
         </span>
         <p>Select CSV file to import:</p>
