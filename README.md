@@ -455,9 +455,10 @@ To understand if you have gems that are out of date run:
 bin/docker r bundle outdated --groups
 ```
 
-## I'd like to run and test out a local build
+## I'd like to run and test out a local PRODUCTION build
 
-Those steps should get you up and running locally
+Those steps should get you up and running locally a production build (versus the developer build)
+of Quepid.
 
 - Make the desired changes to the code
 - From the root dir in the project run the following to build a new docker image:
@@ -466,13 +467,13 @@ docker build -t o19s/quepid -f Dockerfile.prod .
 ```
 This could error on first run. Try again if that happens
 
-- Tag a new version of your image. 
+- Tag a new version of your image.
 - You can either hard code your version or use a sys var for it (like QUEPID_VERSION=10.0.0) or if you prefer use 'latest'
 ```
 docker tag o19s/quepid o19s/quepid:$QUEPID_VERSION
 ```
 
-- Bring up the mysql container 
+- Bring up the mysql container
 ```
 docker-compose up -d mysql
 ```
