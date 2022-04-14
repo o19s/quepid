@@ -121,7 +121,7 @@ describe('Service: importRatingsSvc', function () {
       });
     });
 
-    var mockCsv = 'query_id,query_text,information_need\n'
+    var mockCsv = 'query_id,query,information_need\n'
     mockCsv = mockCsv + '3,tatooine in star wars,Any of the star wars movies mentioning tatooine\n'
 
     var mockCase = {

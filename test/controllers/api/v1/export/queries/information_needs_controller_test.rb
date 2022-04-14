@@ -40,7 +40,7 @@ module Api
 
               csv = CSV.parse(response.body, headers: true)
 
-              assert_equal csv[0]['query_text'], 'star wars' # notice csv injection vulnerability
+              assert_equal csv[0]['query'], 'star wars' # notice csv injection vulnerability
               assert_equal csv[0]['information_need'], 'Looking for the original blockbuster movie, followed by the most recent big movies.'
             end
             # rubocop:enable Layout/LineLength

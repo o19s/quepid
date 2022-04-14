@@ -50,7 +50,7 @@ module Api
                 acase.queries << query
               end
 
-              csv_text = 'query_id,query_text,information_need\n'
+              csv_text = 'query_id,query,information_need\n'
               queries.each do |q|
                 csv_text = "#{q[:query_id]}, #{q[:query_text]}, #{q[:information_need]}\n"
               end
@@ -83,7 +83,7 @@ module Api
                 acase.queries << query
               end
 
-              csv_text = 'query_id,query_text,information_need\n'
+              csv_text = 'query_id,query,information_need\n'
               queries.each do |q|
                 csv_text = "#{q[:query_id]}, #{q[:query_text]}, #{q[:information_need]}\n"
               end
@@ -139,7 +139,7 @@ module Api
                 information_need: 'Rocky series.',
               }
 
-              csv_text = 'query_id,query_text,information_need\n'
+              csv_text = 'query_id,query,information_need\n'
               queries.each do |q|
                 csv_text = "#{q[:query_id]}, #{q[:query_text]}, #{q[:information_need]}\n"
               end
