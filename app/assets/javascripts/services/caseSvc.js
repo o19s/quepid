@@ -204,6 +204,7 @@ angular.module('QuepidApp')
             if( selectedCase !== null && selectedCase.caseNo === caseNumber ) {
               selectedCase = null;
             }
+            queriesSvc.reset();
           });
       };
 
