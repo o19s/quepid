@@ -24,8 +24,8 @@ angular.module('QuepidApp')
       $scope.selectedTry  = settingsSvc.applicableSettings();
 
       // Refresh rated-only docs if ratings have changed
-      $rootScope.$on('rating-changed', function() {
-        if (!queriesSvc.showOnlyRated) {
+      $rootScope.$on('rating-changed', function(e, queryId) {
+        if (!queriesSvc.showOnlyRated && $scope.query.queryId == queryId) {
           $scope.query.refreshRatedDocs();
         }
       });
