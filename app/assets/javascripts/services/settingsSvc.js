@@ -17,6 +17,7 @@ angular.module('QuepidApp')
       TryFactory, SettingsFactory,
       broadcastSvc
     ) {
+      // many of these defaults are defined server side in the Try.rb set_defaults method
       this.defaults = {
         solr: {
           queryParams:  [
@@ -28,6 +29,7 @@ angular.module('QuepidApp')
           ].join('\n'),
 
           escapeQuery:      true,
+          apiMethod:        'jsonp',
           fieldSpec:        'id:id, title:title',
           idField:          'id',
           titleField:       'title',
@@ -55,6 +57,7 @@ angular.module('QuepidApp')
           ].join('\n'),
 
           escapeQuery:       true,
+          apiMethod:        'post',
           fieldSpec:         'id:_id, title:title',
           idField:           '_id',
           titleField:        'title',
@@ -126,6 +129,7 @@ angular.module('QuepidApp')
           }
 
           settings.escapeQuery   = tryToUse.escapeQuery;
+          settings.apiMethod     = tryToUse.apiMethod;
           settings.fieldSpec     = tryToUse.fieldSpec;
           settings.numberOfRows  = tryToUse.numberOfRows;
           settings.queryParams   = tryToUse.queryParams;
@@ -182,6 +186,7 @@ angular.module('QuepidApp')
         //sentData.name            = settingsToSave.selectedTry.name;
         sentData.curatorVars       = settingsToSave.selectedTry.curatorVarsDict();
         sentData.escape_query      = settingsToSave.escapeQuery;
+        sentData.api_method        = settingsToSave.apiMethod;
         //sentData.fields          = settingsToSave.createFieldSpec().fields;
         sentData.field_spec        = settingsToSave.fieldSpec;
         sentData.number_of_rows    = settingsToSave.numberOfRows;
@@ -235,6 +240,7 @@ angular.module('QuepidApp')
         // tries are odd, cause we pretty much only create new ones!
         sentData.curatorVars       = settingsToSave.selectedTry.curatorVarsDict();
         sentData.escape_query      = settingsToSave.escapeQuery;
+        sentData.api_method        = settingsToSave.apiMethod;
         sentData.field_spec        = settingsToSave.fieldSpec;
         sentData.number_of_rows    = settingsToSave.numberOfRows;
         sentData.query_params      = settingsToSave.selectedTry.queryParams;

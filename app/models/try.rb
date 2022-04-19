@@ -13,6 +13,7 @@
 #  name           :string(50)
 #  search_engine  :string(50)       default("solr")
 #  escape_query   :boolean          default(TRUE)
+#  api_method     :string(50)
 #  number_of_rows :integer          default(10)
 #  created_at     :datetime         not null
 #  updated_at     :datetime         not null
@@ -35,6 +36,7 @@ class Try < ApplicationRecord
       query_params: 'q=#$query##',
       search_url:   'http://quepid-solr.dev.o19s.com:8985/solr/tmdb/select',
       field_spec:   'id:id title:title',
+      api_method:   'JSONP'
     },
     es:            {
       query_params:
@@ -53,6 +55,7 @@ class Try < ApplicationRecord
 }',
       search_url:   'http://quepid-elasticsearch.dev.o19s.com:9206/tmdb/_search',
       field_spec:   'id:_id, title:title',
+      api_method:   'POST'
     },
   }.freeze
 
@@ -147,6 +150,7 @@ class Try < ApplicationRecord
     self.name = "Try #{try_number}" if name.blank?
 
     self.search_engine = DEFAULTS[:search_engine] if search_engine.blank?
+    self.api_method    = DEFAULTS[search_engine.to_sym][:api_method]    if api_method.blank?
     self.field_spec    = DEFAULTS[search_engine.to_sym][:field_spec]    if field_spec.blank?
     self.query_params  = DEFAULTS[search_engine.to_sym][:query_params]  if query_params.blank?
     self.search_url    = DEFAULTS[search_engine.to_sym][:search_url]    if search_url.blank?

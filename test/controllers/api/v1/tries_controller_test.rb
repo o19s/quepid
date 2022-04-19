@@ -21,6 +21,7 @@ module Api
         assert_equal try.name,         response['name'] if response['name']
         assert_equal try.solr_args,    response['args']
         assert_equal try.escape_query, response['escape_query']
+        assert_equal try.api_method,   response['api_method']
 
         assert_curator_vars_equal try.curator_vars_map, response['curatorVars']
       end
@@ -31,6 +32,7 @@ module Api
         assert_equal try.search_url,   params[:search_url]   if params[:search_url]
         assert_equal try.name,         params[:name]         if params[:name]
         assert_equal try.escape_query, params[:escape_query] if params[:escape_query]
+        assert_equal try.api_method,   params[:api_method]   if params[:api_method]
       end
 
       def assert_curator_vars_equal vars, response_vars
@@ -286,6 +288,18 @@ module Api
           assert_equal false, created_try.escape_query
         end
 
+        test 'sets api_method param' do
+          post :create, params: { case_id: the_case.id, try: { api_method: 'get' } }
+
+          assert_response :ok
+
+          the_case.reload
+          created_try = the_case.tries.where(try_number: json_response['try_number']).first
+
+          assert_equal 'get', json_response['api_method']
+          assert_equal 'get', created_try.api_method
+        end
+
         test 'sets number of rows' do
           post :create, params: { case_id: the_case.id, try: { number_of_rows: 20 } }
 
@@ -317,6 +331,8 @@ module Api
           assert_not_nil created_try.search_url
           assert_not_nil created_try.query_params
           assert_not_nil created_try.escape_query
+
+          assert_nil created_try.api_method
 
           assert_equal created_try.search_engine,   Try::DEFAULTS[:search_engine]
           assert_equal created_try.field_spec,      Try::DEFAULTS[:solr][:field_spec]
@@ -419,6 +435,8 @@ module Api
             assert_not_nil created_try.search_url
             assert_not_nil created_try.query_params
             assert_not_nil created_try.escape_query
+
+            assert_nil created_try.api_method
 
             assert_equal created_try.search_engine, 'es'
             assert_equal created_try.field_spec,    Try::DEFAULTS[:es][:field_spec]

@@ -90,6 +90,7 @@ angular.module('QuepidApp')
           args:           $scope.settings.selectedTry.args,
           curatorVars:    $scope.settings.selectedTry.curatorVarsDict(),
           escape_query:   $scope.settings.selectedTry.escapeQuery,
+          api_method:     $scope.settings.selectedTry.apiMethod,
           field_spec:     $scope.settings.selectedTry.fieldSpec,
           name:           $scope.settings.selectedTry.name,
           numberOfRows:   $scope.settings.selectedTry.numberOfRows,

@@ -83,7 +83,7 @@ curl -X POST -H 'Content-type:application/json' -d '{
           <div ng-if="urlValid" class="alert alert-success">Quepid can search this! Hit 'Continue' to keep working through setup.</div>
         </div>
 
-        <form class="form-inline">
+        <form class="">
           <div class="form-group" style="width: 100%">
 
             <div class="row">
@@ -95,7 +95,38 @@ curl -X POST -H 'Content-type:application/json' -d '{
                 Tip: Your URL should look like this {{pendingWizardSettings.urlFormat}}.
               </p>
             </div>
+          </div>
 
+
+          <p>
+            <button type="button" class="btn btn-sm btn-default" ng-click="isCollapsed = !isCollapsed">Solr Configuration</button>
+          </p>
+          <div uib-collapse="!isCollapsed">
+             <div class="well well-sm">
+              <div class="form-group clearfix">
+                <label class="col-sm-3 control-label">API Method</label>
+                <div class="col-sm-9">
+                  {{ pendingWizardSettings.apiMethod }}
+                  <select class="form-control" ng-model="pendingWizardSettings.apiMethod">
+                    <option>JSONP</option>
+                    <option>GET</option>
+                  </select>
+                  <p class="help-block">What field should we treat as the 'title' when displaying results?</p>
+                </div>
+              </div>
+
+              <div class="form-group clearfix">
+                <label class="col-sm-3 control-label">ID Field</label>
+                <div class="col-sm-9">
+                  <input type="text" class="form-control" ng-model="pendingWizardSettings.idField" ng-change="updateDisplayFields('id', pendingWizardSettings.idField)" typeahead-on-select="updateDisplayFields('id', pendingWizardSettings.idField)" uib-typeahead="field for field in idFields | filter:$viewValue | limitTo:8" class="form-control" placeholder="Begin typing to show suggestions">
+                  <p class="help-block">What field is the unique identifier for your search results?</p>
+                  <p ng-if="idFieldRequired" class="text-danger">This field is required. Please select an ID field.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group" style="width: 100%">
             <div class="clearfix"></div>
 
             <div class="row" style="margin-top: 50px;">

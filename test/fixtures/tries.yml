@@ -23,6 +23,7 @@ one:
   search_url:     http://test.com/solr/tmdb/select
   search_engine:  solr
   field_spec:     id:id title:title
+  api_method:     get
 
 two:
   case:           :two

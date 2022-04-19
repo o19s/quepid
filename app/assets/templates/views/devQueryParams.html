@@ -172,6 +172,27 @@
           </div>
         </div>
         <!-- end of Escape Queries -->
+        <!-- API Method -->
+        <div class="setting-div">
+          <div class="dev-header" ng-click="devSettingsApiMethod.toggle = !devSettingsApiMethod.toggle">
+            API Method <span ng-class="{true: 'glyphicon-plus-sign', false: 'glyphicon-minus-sign'}[!devSettingsApiMethod.toggle]" class="glyphicon"></span>
+          </div>
+
+          <div class="dev-body checkbox" ng-show="devSettingsApiMethod.toggle">
+            <label>
+              API Method <input class="form-control" name="apiMethod" ng-model="settings.apiMethod" class="ng-pristine ng-valid" style="margin-bottom: 10px">
+            </label>
+
+            <p class="pull-right">
+              <span class="label label-info">
+                <a href="#" uib-tooltip-html="'(advanced) -- If your queries use Solr|Elasticsearch <br/>query syntax (like text:law) then disable this feature'" tooltip-placement="left">
+                  <span class="fa fa-question-circle" aria-hidden="true"></span>
+                </a>
+              </span>
+            </p>
+          </div>
+        </div>
+        <!-- end of Escape Queries -->
       </div> <!-- end .rerunnable-settings-tab -->
     </div> <!-- end .settings-tab (Settings) -->
 

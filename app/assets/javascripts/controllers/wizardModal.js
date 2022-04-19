@@ -19,7 +19,7 @@ angular.module('QuepidApp')
 
 
 
-
+      // I don't think we need this as we look it up from the Try we create by default on the server side!
       $scope.pendingWizardSettings = angular.copy(settingsSvc.defaults.solr);
 
       // if we have restarted the wizard, then grab the searchUrl, searchEngine,
@@ -45,6 +45,7 @@ angular.module('QuepidApp')
         $scope.pendingWizardSettings.fieldSpec                = settings.fieldSpec;
         $scope.pendingWizardSettings.idField                  = settings.idField;
         $scope.pendingWizardSettings.searchEngine             = settings.searchEngine;
+        $scope.pendingWizardSettings.apiMethod                = settings.apiMethod;
         $scope.pendingWizardSettings.searchUrl                = settings.searchUrl;
         $scope.pendingWizardSettings.selectedTry.queryParams  = settings.queryParams;
         $scope.pendingWizardSettings.titleField               = settings.titleField;

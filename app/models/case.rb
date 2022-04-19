@@ -175,6 +175,7 @@ class Case < ApplicationRecord
   def clone_try the_try, preserve_history
     new_try = Try.new(
       escape_query:  the_try.escape_query,
+      api_method:    the_try.api_method,
       field_spec:    the_try.field_spec,
       name:          the_try.name,
       query_params:  the_try.query_params,
