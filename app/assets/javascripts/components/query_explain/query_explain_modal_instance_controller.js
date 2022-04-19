@@ -10,6 +10,9 @@ angular.module('QuepidApp')
     ) {
       var ctrl = this;
 
+      // default to showing the params toggle.
+      ctrl.toggleParams = true;
+
       ctrl.query = query;
 
       ctrl.parsedQueryDetails = angular.toJson(query.searcher.parsedQueryDetails, true);
