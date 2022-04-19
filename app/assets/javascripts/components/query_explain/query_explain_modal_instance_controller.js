@@ -15,7 +15,12 @@ angular.module('QuepidApp')
 
       ctrl.query = query;
 
-      ctrl.parsedQueryDetails = angular.toJson(query.searcher.parsedQueryDetails, true);
+      var sortedJsonKeys = Object.keys(query.searcher.parsedQueryDetails).sort();
+      var tempObj = {};
+
+      sortedJsonKeys.map(key => tempObj[key] = query.searcher.parsedQueryDetails[key])
+
+      ctrl.parsedQueryDetails = angular.toJson(tempObj, true);
 
       ctrl.queryDetailsMessage = null;
       // Only solr has this, not ES.  So a check if it exists.  It may just be empty {}.
@@ -24,7 +29,11 @@ angular.module('QuepidApp')
           ctrl.queryDetailsMessage = 'The list of query parameters used to construct the query was not returned by Solr.';
         }
         else {
-          ctrl.queryDetails = angular.toJson(query.searcher.queryDetails, true);
+          var sortedJsonKeys = Object.keys(query.searcher.queryDetails).sort();
+          var tempObj = {};
+
+          sortedJsonKeys.map(key => tempObj[key] = query.searcher.queryDetails[key])
+          ctrl.queryDetails = angular.toJson(tempObj, true);
         }
       }
       else {
