@@ -36,7 +36,7 @@ class Try < ApplicationRecord
       query_params: 'q=#$query##',
       search_url:   'http://quepid-solr.dev.o19s.com:8985/solr/tmdb/select',
       field_spec:   'id:id title:title',
-      api_method:   'JSONP'
+      api_method:   'JSONP',
     },
     es:            {
       query_params:
@@ -55,7 +55,7 @@ class Try < ApplicationRecord
 }',
       search_url:   'http://quepid-elasticsearch.dev.o19s.com:9206/tmdb/_search',
       field_spec:   'id:_id, title:title',
-      api_method:   'POST'
+      api_method:   'POST',
     },
   }.freeze
 

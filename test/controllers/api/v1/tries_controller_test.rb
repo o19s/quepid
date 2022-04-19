@@ -332,12 +332,11 @@ module Api
           assert_not_nil created_try.query_params
           assert_not_nil created_try.escape_query
 
-          assert_nil created_try.api_method
-
           assert_equal created_try.search_engine,   Try::DEFAULTS[:search_engine]
           assert_equal created_try.field_spec,      Try::DEFAULTS[:solr][:field_spec]
           assert_equal created_try.search_url,      Try::DEFAULTS[:solr][:search_url]
           assert_equal created_try.escape_query,    true
+          assert_equal created_try.api_method,      Try::DEFAULTS[:solr][:api_method]
           assert_equal created_try.number_of_rows,  10
         end
 
@@ -436,11 +435,10 @@ module Api
             assert_not_nil created_try.query_params
             assert_not_nil created_try.escape_query
 
-            assert_nil created_try.api_method
-
             assert_equal created_try.search_engine, 'es'
             assert_equal created_try.field_spec,    Try::DEFAULTS[:es][:field_spec]
             assert_equal created_try.search_url,    Try::DEFAULTS[:es][:search_url]
+            assert_equal created_try.api_method,    Try::DEFAULTS[:es][:api_method]
             assert_equal created_try.query_params,  Try::DEFAULTS[:es][:query_params]
             assert_equal created_try.escape_query,  true
           end

@@ -22,8 +22,8 @@ one:
   query_params:   'q=#$query##'
   search_url:     http://test.com/solr/tmdb/select
   search_engine:  solr
+  api_method:     GET
   field_spec:     id:id title:title
-  api_method:     get
 
 two:
   case:           :two
@@ -31,6 +31,7 @@ two:
   query_params:   'q=#$query##'
   search_url:     http://test.com/solr/tmdb/select
   search_engine:  solr
+  api_method:     JSONP
 
 for_shared_team_case:
   case:           :shared_team_case
@@ -38,6 +39,7 @@ for_shared_team_case:
   query_params:   'q=#$query##'
   search_url:     http://test.com/solr/tmdb/select
   search_engine:  solr
+  api_method:     JSONP
 
 for_shared_case:
   case:           :shared_case
@@ -45,6 +47,7 @@ for_shared_case:
   query_params:   'q=#$query##'
   search_url:     http://test.com/solr/tmdb/select
   search_engine:  solr
+  api_method:     JSONP
 
 archived:
   case:           :archived
@@ -52,6 +55,7 @@ archived:
   query_params:   'q=#$query##'
   search_url:     http://test.com/solr/tmdb/select
   search_engine:  solr
+  api_method:     JSONP
 
 for_metadata_case:
   case:           :with_metadata
@@ -59,6 +63,7 @@ for_metadata_case:
   query_params:   'q=#$query##'
   search_url:     http://test.com/solr/tmdb/select
   search_engine:  solr
+  api_method:     JSONP
 
 for_case_with_scorer:
   case:           :with_scorer
@@ -66,6 +71,7 @@ for_case_with_scorer:
   query_params:   'q=#$query##'
   search_url:     http://test.com/solr/tmdb/select
   search_engine:  solr
+  api_method:     JSONP
 
 for_case_with_one_try:
   case:           :case_with_one_try
@@ -73,6 +79,7 @@ for_case_with_one_try:
   search_url:     http://test.com/solr/tmdb/select
   try_number:     1
   search_engine:  solr
+  api_method:     JSONP
 
 first_for_case_with_two_tries:
   case:           :case_with_two_tries
@@ -80,6 +87,7 @@ first_for_case_with_two_tries:
   search_url:     http://test.com/solr/tmdb/select
   try_number:     1
   search_engine:  solr
+  api_method:     JSONP
   name:           Try 1
 
 second_for_case_with_two_tries:
@@ -88,6 +96,7 @@ second_for_case_with_two_tries:
   search_url:     http://test.com/solr/tmdb/select
   try_number:     2
   search_engine:  solr
+  api_method:     JSONP
   name:           Second Try
   ancestry:       '<%= ActiveRecord::FixtureSet.identify(:first_for_case_with_two_tries) %>'
 
@@ -97,6 +106,7 @@ first_try_for_score_case:
   search_url:     http://test.com/solr/tmdb/select
   try_number:     1
   search_engine:  solr
+  api_method:     JSONP
 
 second_try_for_score_case:
   case:           :score_case
@@ -104,6 +114,7 @@ second_try_for_score_case:
   search_url:     http://test.com/solr/tmdb/select
   try_number:     2
   search_engine:  solr
+  api_method:     JSONP
 
 first_try_for_other_score_case:
   case:           :other_score_case
@@ -111,6 +122,7 @@ first_try_for_other_score_case:
   search_url:     test.com
   try_number:     1
   search_engine:  solr
+  api_method:     JSONP
 
 second_try_for_other_score_case:
   case:           :other_score_case
@@ -118,6 +130,7 @@ second_try_for_other_score_case:
   search_url:     http://test.com/solr/tmdb/select
   try_number:     2
   search_engine:  solr
+  api_method:     JSONP
 
 try_without_curator_vars:
   case:           :random_case
@@ -125,6 +138,7 @@ try_without_curator_vars:
   search_url:     http://test.com/solr/tmdb/select
   try_number:     2
   search_engine:  solr
+  api_method:     JSONP
   field_spec:     id:id title:title
 
 try_with_curator_vars:
@@ -133,6 +147,7 @@ try_with_curator_vars:
   search_url:     http://test.com/solr/tmdb/select
   try_number:     3
   search_engine:  solr
+  api_method:     JSONP
   field_spec:     id:id title:title
 
 es_try:
@@ -171,6 +186,7 @@ for_case_without_score_try_1:
   search_url:     http://test.com/solr/tmdb/select
   try_number:     1
   search_engine:  solr
+  api_method:     JSONP
 
 for_case_with_score_for_first_try_try_1:
   case:           :case_with_score_for_first_try
@@ -185,6 +201,7 @@ for_case_with_score_for_first_try_try_2:
   search_url:     http://test.com/solr/tmdb/select
   try_number:     2
   search_engine:  solr
+  api_method:     JSONP
 
 for_case_with_score_try_1:
   case:           :case_with_score
@@ -199,6 +216,7 @@ for_case_with_score_try_2:
   search_url:     http://test.com/solr/tmdb/select
   try_number:     2
   search_engine:  solr
+  api_method:     JSONP
 
 for_case_with_score_try_3:
   case:           :case_with_score
@@ -206,3 +224,4 @@ for_case_with_score_try_3:
   search_url:     http://test.com/solr/tmdb/select
   try_number:     2
   search_engine:  solr
+  api_method:     JSONP  
