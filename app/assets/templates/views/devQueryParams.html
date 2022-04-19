@@ -173,14 +173,18 @@
         </div>
         <!-- end of Escape Queries -->
         <!-- API Method -->
-        <div class="setting-div">
+        <div class="setting-div" ng-show="settings.searchEngine == 'solr'">
           <div class="dev-header" ng-click="devSettingsApiMethod.toggle = !devSettingsApiMethod.toggle">
             API Method <span ng-class="{true: 'glyphicon-plus-sign', false: 'glyphicon-minus-sign'}[!devSettingsApiMethod.toggle]" class="glyphicon"></span>
           </div>
 
           <div class="dev-body checkbox" ng-show="devSettingsApiMethod.toggle">
             <label>
-              API Method <input class="form-control" name="apiMethod" ng-model="settings.apiMethod" class="ng-pristine ng-valid" style="margin-bottom: 10px">
+              API Method
+              <select class="form-control ng-pristine ng-valid" ng-model="settings.apiMethod" style="margin-bottom: 10px">
+                <option>JSONP</option>
+                <option>GET</option>
+              </select>
             </label>
 
             <p class="pull-right">
