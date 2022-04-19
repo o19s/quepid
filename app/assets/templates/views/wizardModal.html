@@ -97,7 +97,7 @@ curl -X POST -H 'Content-type:application/json' -d '{
             </div>
           </div>
 
-
+          <span ng-if="pendingWizardSettings.searchEngine === 'solr'">
           <p>
             <button type="button" class="btn btn-sm btn-default" ng-click="isCollapsed = !isCollapsed">Solr Configuration</button>
           </p>
@@ -106,25 +106,16 @@ curl -X POST -H 'Content-type:application/json' -d '{
               <div class="form-group clearfix">
                 <label class="col-sm-3 control-label">API Method</label>
                 <div class="col-sm-9">
-                  {{ pendingWizardSettings.apiMethod }}
-                  <select class="form-control" ng-model="pendingWizardSettings.apiMethod">
+                  <select class="form-control" ng-model="pendingWizardSettings.apiMethod" ng-change="resetUrlValid()">
                     <option>JSONP</option>
                     <option>GET</option>
                   </select>
-                  <p class="help-block">What field should we treat as the 'title' when displaying results?</p>
-                </div>
-              </div>
-
-              <div class="form-group clearfix">
-                <label class="col-sm-3 control-label">ID Field</label>
-                <div class="col-sm-9">
-                  <input type="text" class="form-control" ng-model="pendingWizardSettings.idField" ng-change="updateDisplayFields('id', pendingWizardSettings.idField)" typeahead-on-select="updateDisplayFields('id', pendingWizardSettings.idField)" uib-typeahead="field for field in idFields | filter:$viewValue | limitTo:8" class="form-control" placeholder="Begin typing to show suggestions">
-                  <p class="help-block">What field is the unique identifier for your search results?</p>
-                  <p ng-if="idFieldRequired" class="text-danger">This field is required. Please select an ID field.</p>
+                  <p class="help-block">Use JSONP if you are talking directly to Solr, otherwise if you are talking to a API you can use GET.</p>
                 </div>
               </div>
             </div>
           </div>
+          </span>
 
           <div class="form-group" style="width: 100%">
             <div class="clearfix"></div>

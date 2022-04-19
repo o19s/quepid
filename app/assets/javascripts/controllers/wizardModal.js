@@ -58,6 +58,7 @@ angular.module('QuepidApp')
       $scope.setupDefaults  = setupDefaults;
       $scope.submit         = submit;
       $scope.reset          = reset;
+      $scope.resetUrlValid  = resetUrlValid;
       $scope.checkTLSForSearchEngineUrl = checkTLSForSearchEngineUrl;
       $scope.reset();
       $scope.searchFields   = [];
@@ -72,6 +73,10 @@ angular.module('QuepidApp')
         $scope.urlValid = $scope.urlInvalid = false;
         $scope.checkTLSForSearchEngineUrl();
 
+      }
+
+      function resetUrlValid() {
+        $scope.urlValid =false;
       }
 
       function submit() {
@@ -306,6 +311,7 @@ angular.module('QuepidApp')
         // pass pending settings on to be saved
         $scope.pendingWizardSettings.submit = function() {
           $log.debug('Submitting settings (from wizard modal)');
+
           settingsSvc.update($scope.pendingWizardSettings)
           .then(function() {
             var latestSettings = settingsSvc.editableSettings();

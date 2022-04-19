@@ -17,7 +17,8 @@ angular.module('QuepidApp')
       TryFactory, SettingsFactory,
       broadcastSvc
     ) {
-      // many of these defaults are defined server side in the Try.rb set_defaults method
+      // many of these defaults like apiMethod are defined server side in
+      // the Try.rb set_defaults method
       this.defaults = {
         solr: {
           queryParams:  [
@@ -29,7 +30,7 @@ angular.module('QuepidApp')
           ].join('\n'),
 
           escapeQuery:      true,
-          apiMethod:        'jsonp',
+          apiMethod:        'JSONP',
           fieldSpec:        'id:id, title:title',
           idField:          'id',
           titleField:       'title',
@@ -57,7 +58,7 @@ angular.module('QuepidApp')
           ].join('\n'),
 
           escapeQuery:       true,
-          apiMethod:        'post',
+          apiMethod:        'POST',
           fieldSpec:         'id:_id, title:title',
           idField:           '_id',
           titleField:        'title',
@@ -223,6 +224,10 @@ angular.module('QuepidApp')
         }
 
         settingsToSave.selectedTry.updateVars();
+
+        // Not sure why we have this.  Handoff from wizard requires it though.
+        settingsToSave.selectedTry.apiMethod = settingsToSave.apiMethod;
+
         // post up
         // (1) searchUrl
         // (2) fieldSpec
