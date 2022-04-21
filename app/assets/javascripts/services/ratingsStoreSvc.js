@@ -26,7 +26,7 @@ angular.module('QuepidApp')
           version++;
           svcVersion++;
 
-          $scope.$emit('rating-changed');
+          $scope.$emit('rating-changed', queryId);
         };
 
         this.setQueryId = function(newQueryId) {
