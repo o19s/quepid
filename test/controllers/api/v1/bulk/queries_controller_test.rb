@@ -69,6 +69,18 @@ module Api
             assert_equal 5, acase.queries.size
           end
         end
+
+        describe 'Deletes all queries for a case.' do
+          test 'deletes all' do
+            data = {
+              case_id: acase.id,
+            }
+
+            assert_difference 'acase.queries.count', 0 do
+              delete :destroy, params: data
+            end
+          end
+        end
       end
     end
   end

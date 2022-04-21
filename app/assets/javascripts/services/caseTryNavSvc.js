@@ -80,6 +80,10 @@ angular.module('QuepidApp')
         $location.path('/404.html');
       };
 
+      this.navigateToCasesListing = function(){
+        $location.path('/cases/');
+      };
+
       this.getCaseNo = function() {
         return caseNo;
       };
