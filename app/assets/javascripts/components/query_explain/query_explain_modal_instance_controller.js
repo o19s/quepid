@@ -15,9 +15,14 @@ angular.module('QuepidApp')
 
       ctrl.query = query;
 
-      ctrl.sortJsonByKeys = sortJsonByKeys;
+      ctrl.sortJsonByKeys = function (obj) {
+        var sortedJsonKeys = Object.keys(obj).sort();
+        var tempObj = {};
+        sortedJsonKeys.map(key => tempObj[key] = obj[key]);
+        return angular.toJson(tempObj, true);
+      };
 
-      ctrl.parsedQueryDetails = sortJsonByKeys(query.searcher.parsedQueryDetails);
+      ctrl.parsedQueryDetails = ctrl.sortJsonByKeys(query.searcher.parsedQueryDetails);
 
       ctrl.queryDetailsMessage = null;
       // Only solr has this, not ES.  So a check if it exists.  It may just be empty {}.
@@ -26,19 +31,12 @@ angular.module('QuepidApp')
           ctrl.queryDetailsMessage = 'The list of query parameters used to construct the query was not returned by Solr.';
         }
         else {
-          ctrl.queryDetails = sortJsonByKeys(query.searcher.queryDetails);
+          ctrl.queryDetails = ctrl.sortJsonByKeys(query.searcher.queryDetails);
         }
       }
       else {
         ctrl.queryDetailsMessage = 'Query parameters are not returned by Elasticsearch.';
       }
-
-      function sortJsonByKeys (obj) {
-        var sortedJsonKeys = Object.keys(obj).sort();
-        var tempObj = {};
-        sortedJsonKeys.map(key => tempObj[key] = obj[key]);
-        return angular.toJson(tempObj, true);
-      };
 
       ctrl.cancel = function () {
         $uibModalInstance.dismiss('cancel');
