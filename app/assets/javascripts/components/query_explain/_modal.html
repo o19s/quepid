@@ -7,20 +7,20 @@
   <p>These are details returned from the search engine on how it processed the input query</p>
 
   <uib-tabset active="active">
-    <uib-tab index="0" heading="Params">
+    <uib-tab index="0" heading="Params" ng-click="ctrl.toggleParams = true">
       <p class='bg-warning text-warning padded-text' ng-show="ctrl.queryDetailsMessage">
         <i class="fa fa-exclamation-triangle" aria-hidden="true"></i>
         {{ctrl.queryDetailsMessage}}
       </p>
       <span ng-show="!ctrl.queryDetailsMessage">
-        <p>These are the query parameters sent to the search engine.</p>
+        <p>These are the query parameters processed by the search engine.</p>
         <json-explorer
           json-data="ctrl.queryDetails"
           collapsed="false">
         </json-explorer>
       </span>
     </uib-tab>
-    <uib-tab index="1" heading="Parsing" disable="false">
+    <uib-tab index="1" heading="Parsing" disable="false"  ng-click="ctrl.toggleParams = false">
       <p>This is how the search engine parsed the query.</p>
       <json-explorer
         json-data="ctrl.parsedQueryDetails"
@@ -31,5 +31,7 @@
 </div>
 
 <div class="modal-footer">
-  <button class="btn btn-default" ng-click="ctrl.cancel()">Close</button>
+  <button class="btn btn-default float-left" ng-show="ctrl.toggleParams === true" ng-click="ctrl.cancel()" ngclipboard data-clipboard-text="{{ctrl.queryDetails}}"><i class="glyphicon glyphicon-copy"></i> Copy</button>
+  <button class="btn btn-default float-left" ng-show="ctrl.toggleParams === false" ng-click="ctrl.cancel()" ngclipboard data-clipboard-text="{{ctrl.parsedQueryDetails}}"><i class="glyphicon glyphicon-copy"></i> Copy</button>
+  <button class="btn btn-default btn-primary" ng-click="ctrl.cancel()">Close</button>
 </div>
