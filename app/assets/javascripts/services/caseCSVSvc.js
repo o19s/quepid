@@ -45,6 +45,7 @@
             'Score',
             'Date Last Scored',
             'Count',
+            'Information Need',
             'Notes'
           ];
 
@@ -127,6 +128,7 @@
 
             var query = aCase.queries.filter(function(q) { return q.queryId === id; })[0];
             var notes = query ? query.notes || null : null;
+            var informationNeed = query ? query.information_need || null : null;
 
             infoArray = [];
 
@@ -137,6 +139,7 @@
             infoArray.push(stringifyField(score));
             infoArray.push(stringifyField(aCase.lastScore.updated_at));
             infoArray.push(stringifyField(count));
+            infoArray.push(stringifyField(informationNeed));
             infoArray.push(stringifyField(notes));
 
             dataString = infoArray.join(',');
