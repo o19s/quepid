@@ -58,7 +58,7 @@
 //= require clipboard/dist/clipboard
 //= require ngclipboard/dist/ngclipboard
 //= require ng-tags-input/build/ng-tags-input
-//= require FileSaver.js/FileSaver
+//= require file-saver/dist/FileSaver
 //= require urijs/src/URI
 //= require utilitiesModule
 //= require app
