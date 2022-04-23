@@ -1,5 +1,44 @@
 # Changelog
 
+## 6.11.0 - 2022-04-23
+
+### Features
+
+* Documenting the explicit Information Need of the user is a core part of running human judgements, and historically people used the Notes field for this.   Now we have a Information Need attribute for every Query, and you can import/export that data via CSV, as well as edit it in the UI.  Mouse over the query to see exactly what the user is trying to do!  https://github.com/o19s/quepid/pull/480 by @epugh.
+
+* The details of a specific query exposed by the Explain Query modal is in a Human readable format, but isn't in a JSON compliant format.   Now we sort the keys alphabetically, which helps the user dig through the details, and have a Copy as JSON button so you can use other tools to look at the JSON information.  https://github.com/o19s/quepid/pull/497 by
+@epugh fixes https://github.com/o19s/quepid/issues/492.
+
+* Delete All Queries for a Case was requested by @negyesi in https://github.com/o19s/quepid/issues/475.   At the case level added a Delete button that brings up a modal that lets you delete the case, archive the case, or delete all the queries.  https://github.com/o19s/quepid/pull/486 by @epugh.
+
+* Frustrated that your custom API that _looks_ like Solr to Quepid has to deal with JSONP callbacks?  Now you don't, as we have introduced the ability to swap from the default JSONP to GET api methods when you define your Solr end point.  This is going to simplify the work that folks have to do.   https://github.com/o19s/quepid/pull/495 by @epugh.  For more information refer to the docs at https://github.com/o19s/quepid/blob/master/docs/endpoints_solr.md#solr-endpoints-structure.
+
+* Do you have a relative image url in your search engine that you want to show via `thumb:` or `image:`?   You can now provide some JSON in the field specification to provide that data: `id,title:title,{"name": "image_url", "type":"image", "prefix": "https://www.example.org/images"}, description`.   This feature is experimental as we learn more about how to have richer field specifications, and may change!  https://github.com/o19s/quepid/pull/487 by @epugh.
+
+### Improvements
+
+* The link to view a single Solr document specifies XML, which I realize is a very _OK boomer_ approach these days!  https://github.com/o19s/splainer-search/pull/107 by @begomeister fixes https://github.com/o19s/quepid/issues/494 by swapping to JSON format instead.
+
+* github.com/teleborder/FileSaver.js repo disappeared, so migrate to an actual published node module `file-saver` instead.  https://github.com/o19s/quepid/pull/498 by @epugh.
+
+* We had a mish-mash of `query` and `query_text` as headers in our CSV files, so we've standardized on `query` to make export/import simpler.  https://github.com/o19s/quepid/pull/489 by @epugh.
+
+* We discovered that Redis was ONLY used in Quepid to support sending events to Google Analytics!  If your `QUEPID_GA` isn't specified, then Redis is no longer required.  Thanks to @rbednarzCBI for updating the production docker settings to remove Redis in https://github.com/o19s/quepid/pull/488.
+
+### Bugs
+
+* The various CSV upload and export features didn't really handle `,` in the text properly, so we gave that a good going over.  https://github.com/o19s/quepid/issues/482 by @atarora fixed by https://github.com/o19s/quepid/pull/483 and https://github.com/o19s/quepid/pull/485 by @epugh
+
+* Tracking the history of your tries, we had a limit in the database that prevented you from having lots of tries.  https://github.com/o19s/quepid/issues/478 by @KennyLindahl and https://github.com/o19s/quepid/issues/470 by @korlowski.   Fixed by https://github.com/o19s/quepid/pull/479 by @epugh.  Thanks @KennyLindahl for the additional testing work you did to help me fix this!
+
+* Fixed the ability to peek at the next page of result when you have less then 10 results left.   Thanks @anegyesi for submitting https://github.com/o19s/quepid/issues/473 and fixed in https://github.com/o19s/quepid/pull/496.
+
+* Noticed the case level graph isn't useful?  PR https://github.com/o19s/quepid/pull/491 by @worleydl, Save scores less often, fixes stretching of graph, fixes this.
+
+* @thePanz opened a ticket a year ago (https://github.com/o19s/quepid/issues/330) about ratings getting progressively slower in the UI, and a huge amount of updates to the backend.  Thanks to @worleydl and https://github.com/o19s/quepid/pull/490 this _should_ be fixed.   
+
+
+
 ## 6.10.1 - 2022-02-28
 
 ### Bugs
@@ -12,6 +51,8 @@
 with the default Solr query params!  https://github.com/o19s/quepid/issues/457 by @epugh and @wrigleyDan.  Fixed by https://github.com/o19s/quepid/pull/464 by @epugh.
 
 * Build was failing for Apple Silicon M1 users!  https://github.com/o19s/quepid/issues/430 by @llermaly and fixed by @wrigleyDan via https://github.com/o19s/quepid/pull/460.
+
+* Missing doc" error when comparing with snapshot in Elastic when using non standard Id, https://github.com/o19s/quepid/issues/466 by @KennyLindahl fixed by splainer-search 2.13.0.
 
 
 ## 6.10.0 - 2022-01-03
