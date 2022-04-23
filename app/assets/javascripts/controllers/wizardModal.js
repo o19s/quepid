@@ -19,7 +19,7 @@ angular.module('QuepidApp')
 
 
 
-
+      // I don't think we need this as we look it up from the Try we create by default on the server side!
       $scope.pendingWizardSettings = angular.copy(settingsSvc.defaults.solr);
 
       // if we have restarted the wizard, then grab the searchUrl, searchEngine,
@@ -45,6 +45,7 @@ angular.module('QuepidApp')
         $scope.pendingWizardSettings.fieldSpec                = settings.fieldSpec;
         $scope.pendingWizardSettings.idField                  = settings.idField;
         $scope.pendingWizardSettings.searchEngine             = settings.searchEngine;
+        $scope.pendingWizardSettings.apiMethod                = settings.apiMethod;
         $scope.pendingWizardSettings.searchUrl                = settings.searchUrl;
         $scope.pendingWizardSettings.selectedTry.queryParams  = settings.queryParams;
         $scope.pendingWizardSettings.titleField               = settings.titleField;
@@ -57,6 +58,7 @@ angular.module('QuepidApp')
       $scope.setupDefaults  = setupDefaults;
       $scope.submit         = submit;
       $scope.reset          = reset;
+      $scope.resetUrlValid  = resetUrlValid;
       $scope.checkTLSForSearchEngineUrl = checkTLSForSearchEngineUrl;
       $scope.reset();
       $scope.searchFields   = [];
@@ -71,6 +73,10 @@ angular.module('QuepidApp')
         $scope.urlValid = $scope.urlInvalid = false;
         $scope.checkTLSForSearchEngineUrl();
 
+      }
+
+      function resetUrlValid() {
+        $scope.urlValid =false;
       }
 
       function submit() {
@@ -305,6 +311,7 @@ angular.module('QuepidApp')
         // pass pending settings on to be saved
         $scope.pendingWizardSettings.submit = function() {
           $log.debug('Submitting settings (from wizard modal)');
+
           settingsSvc.update($scope.pendingWizardSettings)
           .then(function() {
             var latestSettings = settingsSvc.editableSettings();

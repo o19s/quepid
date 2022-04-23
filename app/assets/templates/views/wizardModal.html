@@ -83,7 +83,7 @@ curl -X POST -H 'Content-type:application/json' -d '{
           <div ng-if="urlValid" class="alert alert-success">Quepid can search this! Hit 'Continue' to keep working through setup.</div>
         </div>
 
-        <form class="form-inline">
+        <form class="">
           <div class="form-group" style="width: 100%">
 
             <div class="row">
@@ -95,7 +95,29 @@ curl -X POST -H 'Content-type:application/json' -d '{
                 Tip: Your URL should look like this {{pendingWizardSettings.urlFormat}}.
               </p>
             </div>
+          </div>
 
+          <span ng-if="pendingWizardSettings.searchEngine === 'solr'">
+          <p>
+            <button type="button" class="btn btn-sm btn-default" ng-click="isCollapsed = !isCollapsed">Solr Configuration</button>
+          </p>
+          <div uib-collapse="!isCollapsed">
+             <div class="well well-sm">
+              <div class="form-group clearfix">
+                <label class="col-sm-3 control-label">API Method</label>
+                <div class="col-sm-9">
+                  <select class="form-control" ng-model="pendingWizardSettings.apiMethod" ng-change="resetUrlValid()">
+                    <option>JSONP</option>
+                    <option>GET</option>
+                  </select>
+                  <p class="help-block">Use JSONP if you are talking directly to Solr, otherwise if you are talking to a API you can use GET.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          </span>
+
+          <div class="form-group" style="width: 100%">
             <div class="clearfix"></div>
 
             <div class="row" style="margin-top: 50px;">

@@ -31,6 +31,7 @@
       self.args          = data.args;
       self.deleted       = false;
       self.escapeQuery   = data.escape_query;
+      self.apiMethod     = data.api_method;
       self.fieldSpec     = data.field_spec;
       self.name          = data.name;
       self.numberOfRows  = data.number_of_rows;

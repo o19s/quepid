@@ -22,6 +22,7 @@ module Api
           assert_equal try.name,         response['name']
           assert_equal try.solr_args,    response['args']
           assert_equal try.escape_query, response['escape_query']
+          assert_equal try.api_method,   response['api_method']
 
           assert_curator_vars_equal try.curator_vars_map, response['curatorVars']
         end
@@ -31,6 +32,7 @@ module Api
           assert_equal try.query_params, a_try.query_params
           assert_equal try.search_url,   a_try.search_url
           assert_equal try.escape_query, a_try.escape_query
+          assert_equal try.api_method,   a_try.api_method
         end
 
         def assert_curator_vars_equal vars, response_vars

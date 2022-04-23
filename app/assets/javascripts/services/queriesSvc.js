@@ -81,11 +81,19 @@ angular.module('QuepidApp')
 
         if (passedInSettings && passedInSettings.selectedTry) {
 
+          var options = {
+            escapeQuery:   passedInSettings.escapeQuery,
+            numberOfRows:  passedInSettings.numberOfRows,
+          };
 
           if (passedInSettings.searchEngine === 'solr') {
             // add echoParams=all if we don't have it defined to provide query details.
             if (args['echoParams'] === undefined) {
               args['echoParams'] = 'all';
+            }
+
+            if (passedInSettings.apiMethod !== undefined) {
+              options.apiMethod = passedInSettings.apiMethod;
             }
 
           }
@@ -109,15 +117,14 @@ angular.module('QuepidApp')
           }
 
 
+
+
           return searchSvc.createSearcher(
             passedInSettings.createFieldSpec(),
             passedInSettings.selectedTry.searchUrl,
             args,
             queryText,
-            {
-              escapeQuery:   passedInSettings.escapeQuery,
-              numberOfRows:  passedInSettings.numberOfRows,
-            },
+            options,
             passedInSettings.searchEngine
           );
         }
