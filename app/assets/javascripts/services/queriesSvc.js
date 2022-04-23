@@ -789,9 +789,7 @@ angular.module('QuepidApp')
              * We have the split here so the progress bar progresses instead of flying thru
              * after all searches complete.
              */
-            svc.scoreAll().then( () => {
-              $scope.$emit('scoring-complete');
-            });
+            svc.scoreAll();
           });
         });
       };

@@ -151,6 +151,7 @@ Rails.application.routes.draw do
       namespace :bulk do
         resources :cases, only: [] do
           resources :queries, only: [ :create ]
+          delete '/queries/delete' => 'queries#destroy'
         end
       end
     end

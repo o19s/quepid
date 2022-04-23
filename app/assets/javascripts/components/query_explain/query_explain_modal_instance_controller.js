@@ -10,9 +10,19 @@ angular.module('QuepidApp')
     ) {
       var ctrl = this;
 
+      // default to showing the params toggle.
+      ctrl.toggleParams = true;
+
       ctrl.query = query;
 
-      ctrl.parsedQueryDetails = angular.toJson(query.searcher.parsedQueryDetails, true);
+      ctrl.sortJsonByKeys = function (obj) {
+        var sortedJsonKeys = Object.keys(obj).sort();
+        var tempObj = {};
+        sortedJsonKeys.map(key => tempObj[key] = obj[key]);
+        return angular.toJson(tempObj, true);
+      };
+
+      ctrl.parsedQueryDetails = ctrl.sortJsonByKeys(query.searcher.parsedQueryDetails);
 
       ctrl.queryDetailsMessage = null;
       // Only solr has this, not ES.  So a check if it exists.  It may just be empty {}.
@@ -21,7 +31,7 @@ angular.module('QuepidApp')
           ctrl.queryDetailsMessage = 'The list of query parameters used to construct the query was not returned by Solr.';
         }
         else {
-          ctrl.queryDetails = angular.toJson(query.searcher.queryDetails, true);
+          ctrl.queryDetails = ctrl.sortJsonByKeys(query.searcher.queryDetails);
         }
       }
       else {

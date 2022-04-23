@@ -48,16 +48,19 @@ describe('Service: caseCSVSvc', function () {
       {
         "queryId":1,
         "query_text": "dog",
+        "information_need":"",
         "notes": "This dog looks like a great dog."
       },
       {
         "queryId":2,
         "query_text": "cat",
+        "information_need":"",
         "notes": 'Is this "really" a "cat"?'
       },
       {
         "queryId":3,
         "query_text": "foo",
+        "information_need":"",
         "notes": "chil'laxin"
       }
     ]
@@ -67,7 +70,7 @@ describe('Service: caseCSVSvc', function () {
     it('returns a comma separated string of query scores with the header', function () {
       var result = caseCSVSvc.stringify(mockCase, true);
 
-      var expectedResult = "Team Name,Case Name,Case ID,Query Text,Score,Date Last Scored,Count,Notes\r\nTest Team,Test Case,8,dog,30,2015-07-14 16:08:55,,This dog looks like a great dog.\r\nTest Team,Test Case,8,cat,0,2015-07-14 16:08:55,,Is this \"\"really\"\" a \"\"cat\"\"?\r\nTest Team,Test Case,8,foo,,2015-07-14 16:08:55,,chil'laxin\r\n";
+      var expectedResult = "Team Name,Case Name,Case ID,Query Text,Score,Date Last Scored,Count,Information Need,Notes\r\nTest Team,Test Case,8,dog,30,2015-07-14 16:08:55,,,This dog looks like a great dog.\r\nTest Team,Test Case,8,cat,0,2015-07-14 16:08:55,,,Is this \"\"really\"\" a \"\"cat\"\"?\r\nTest Team,Test Case,8,foo,,2015-07-14 16:08:55,,,chil'laxin\r\n";
 
       expect(result).toEqual(expectedResult);
     });
@@ -75,7 +78,7 @@ describe('Service: caseCSVSvc', function () {
     it('returns a comma separated string of query scores without the header', function () {
       var result = caseCSVSvc.stringify(mockCase);
 
-      var expectedResult = "Test Team,Test Case,8,dog,30,2015-07-14 16:08:55,,This dog looks like a great dog.\r\nTest Team,Test Case,8,cat,0,2015-07-14 16:08:55,,Is this \"\"really\"\" a \"\"cat\"\"?\r\nTest Team,Test Case,8,foo,,2015-07-14 16:08:55,,chil'laxin\r\n";
+      var expectedResult = "Test Team,Test Case,8,dog,30,2015-07-14 16:08:55,,,This dog looks like a great dog.\r\nTest Team,Test Case,8,cat,0,2015-07-14 16:08:55,,,Is this \"\"really\"\" a \"\"cat\"\"?\r\nTest Team,Test Case,8,foo,,2015-07-14 16:08:55,,,chil'laxin\r\n";
 
       expect(result).toEqual(expectedResult);
     });
@@ -86,7 +89,7 @@ describe('Service: caseCSVSvc', function () {
 
       var result = caseCSVSvc.stringify(newMockCase);
 
-      var expectedResult = 'Test Team,Test ""Case"",8,dog,30,2015-07-14 16:08:55,,This dog looks like a great dog.\r\nTest Team,Test ""Case"",8,cat,0,2015-07-14 16:08:55,,Is this ""really"" a ""cat""?\r\nTest Team,Test ""Case"",8,foo,,2015-07-14 16:08:55,,chil\'laxin\r\n';
+      var expectedResult = 'Test Team,Test ""Case"",8,dog,30,2015-07-14 16:08:55,,,This dog looks like a great dog.\r\nTest Team,Test ""Case"",8,cat,0,2015-07-14 16:08:55,,,Is this ""really"" a ""cat""?\r\nTest Team,Test ""Case"",8,foo,,2015-07-14 16:08:55,,,chil\'laxin\r\n';
 
       expect(result).toEqual(expectedResult);
     });
@@ -97,7 +100,7 @@ describe('Service: caseCSVSvc', function () {
 
       var result = caseCSVSvc.stringify(newMockCase);
 
-      var expectedResult = 'Test Team,"Test \n Case",8,dog,30,2015-07-14 16:08:55,,This dog looks like a great dog.\r\nTest Team,"Test \n Case",8,cat,0,2015-07-14 16:08:55,,Is this ""really"" a ""cat""?\r\nTest Team,"Test \n Case",8,foo,,2015-07-14 16:08:55,,chil\'laxin\r\n';
+      var expectedResult = 'Test Team,"Test \n Case",8,dog,30,2015-07-14 16:08:55,,,This dog looks like a great dog.\r\nTest Team,"Test \n Case",8,cat,0,2015-07-14 16:08:55,,,Is this ""really"" a ""cat""?\r\nTest Team,"Test \n Case",8,foo,,2015-07-14 16:08:55,,,chil\'laxin\r\n';
 
       expect(result).toEqual(expectedResult);
     });
@@ -108,7 +111,7 @@ describe('Service: caseCSVSvc', function () {
 
       var result = caseCSVSvc.stringify(newMockCase);
 
-      var expectedResult = 'Test Team,"Test \r Case",8,dog,30,2015-07-14 16:08:55,,This dog looks like a great dog.\r\nTest Team,"Test \r Case",8,cat,0,2015-07-14 16:08:55,,Is this ""really"" a ""cat""?\r\nTest Team,"Test \r Case",8,foo,,2015-07-14 16:08:55,,chil\'laxin\r\n';
+      var expectedResult = 'Test Team,"Test \r Case",8,dog,30,2015-07-14 16:08:55,,,This dog looks like a great dog.\r\nTest Team,"Test \r Case",8,cat,0,2015-07-14 16:08:55,,,Is this ""really"" a ""cat""?\r\nTest Team,"Test \r Case",8,foo,,2015-07-14 16:08:55,,,chil\'laxin\r\n';
 
       expect(result).toEqual(expectedResult);
     });
@@ -119,7 +122,7 @@ describe('Service: caseCSVSvc', function () {
 
       var result = caseCSVSvc.stringify(newMockCase);
 
-      var expectedResult = 'Test Team,"Test \n\r Case",8,dog,30,2015-07-14 16:08:55,,This dog looks like a great dog.\r\nTest Team,"Test \n\r Case",8,cat,0,2015-07-14 16:08:55,,Is this ""really"" a ""cat""?\r\nTest Team,"Test \n\r Case",8,foo,,2015-07-14 16:08:55,,chil\'laxin\r\n';
+      var expectedResult = 'Test Team,"Test \n\r Case",8,dog,30,2015-07-14 16:08:55,,,This dog looks like a great dog.\r\nTest Team,"Test \n\r Case",8,cat,0,2015-07-14 16:08:55,,,Is this ""really"" a ""cat""?\r\nTest Team,"Test \n\r Case",8,foo,,2015-07-14 16:08:55,,,chil\'laxin\r\n';
 
       expect(result).toEqual(expectedResult);
     });
@@ -130,7 +133,7 @@ describe('Service: caseCSVSvc', function () {
 
       var result = caseCSVSvc.stringify(newMockCase);
 
-      var expectedResult = 'Test Team,"Test, Case",8,dog,30,2015-07-14 16:08:55,,This dog looks like a great dog.\r\nTest Team,"Test, Case",8,cat,0,2015-07-14 16:08:55,,Is this ""really"" a ""cat""?\r\nTest Team,"Test, Case",8,foo,,2015-07-14 16:08:55,,chil\'laxin\r\n';
+      var expectedResult = 'Test Team,"Test, Case",8,dog,30,2015-07-14 16:08:55,,,This dog looks like a great dog.\r\nTest Team,"Test, Case",8,cat,0,2015-07-14 16:08:55,,,Is this ""really"" a ""cat""?\r\nTest Team,"Test, Case",8,foo,,2015-07-14 16:08:55,,,chil\'laxin\r\n';
 
       expect(result).toEqual(expectedResult);
     });
@@ -141,7 +144,7 @@ describe('Service: caseCSVSvc', function () {
 
       var result = caseCSVSvc.stringify(newMockCase);
 
-      var expectedResult = 'Test Team, =Test Case,8,dog,30,2015-07-14 16:08:55,,This dog looks like a great dog.\r\nTest Team, =Test Case,8,cat,0,2015-07-14 16:08:55,,Is this ""really"" a ""cat""?\r\nTest Team, =Test Case,8,foo,,2015-07-14 16:08:55,,chil\'laxin\r\n';
+      var expectedResult = 'Test Team, =Test Case,8,dog,30,2015-07-14 16:08:55,,,This dog looks like a great dog.\r\nTest Team, =Test Case,8,cat,0,2015-07-14 16:08:55,,,Is this ""really"" a ""cat""?\r\nTest Team, =Test Case,8,foo,,2015-07-14 16:08:55,,,chil\'laxin\r\n';
 
       expect(result).toEqual(expectedResult);
     });
@@ -152,7 +155,7 @@ describe('Service: caseCSVSvc', function () {
 
       var result = caseCSVSvc.stringify(newMockCase);
 
-      var expectedResult = 'Test Team, @Test Case,8,dog,30,2015-07-14 16:08:55,,This dog looks like a great dog.\r\nTest Team, @Test Case,8,cat,0,2015-07-14 16:08:55,,Is this ""really"" a ""cat""?\r\nTest Team, @Test Case,8,foo,,2015-07-14 16:08:55,,chil\'laxin\r\n';;
+      var expectedResult = 'Test Team, @Test Case,8,dog,30,2015-07-14 16:08:55,,,This dog looks like a great dog.\r\nTest Team, @Test Case,8,cat,0,2015-07-14 16:08:55,,,Is this ""really"" a ""cat""?\r\nTest Team, @Test Case,8,foo,,2015-07-14 16:08:55,,,chil\'laxin\r\n';;
 
       expect(result).toEqual(expectedResult);
     });
@@ -163,7 +166,7 @@ describe('Service: caseCSVSvc', function () {
 
       var result = caseCSVSvc.stringify(newMockCase);
 
-      var expectedResult = 'Test Team, +Test Case,8,dog,30,2015-07-14 16:08:55,,This dog looks like a great dog.\r\nTest Team, +Test Case,8,cat,0,2015-07-14 16:08:55,,Is this ""really"" a ""cat""?\r\nTest Team, +Test Case,8,foo,,2015-07-14 16:08:55,,chil\'laxin\r\n';;
+      var expectedResult = 'Test Team, +Test Case,8,dog,30,2015-07-14 16:08:55,,,This dog looks like a great dog.\r\nTest Team, +Test Case,8,cat,0,2015-07-14 16:08:55,,,Is this ""really"" a ""cat""?\r\nTest Team, +Test Case,8,foo,,2015-07-14 16:08:55,,,chil\'laxin\r\n';;
 
       expect(result).toEqual(expectedResult);
     });
@@ -174,7 +177,7 @@ describe('Service: caseCSVSvc', function () {
 
       var result = caseCSVSvc.stringify(newMockCase);
 
-      var expectedResult = 'Test Team, -Test Case,8,dog,30,2015-07-14 16:08:55,,This dog looks like a great dog.\r\nTest Team, -Test Case,8,cat,0,2015-07-14 16:08:55,,Is this ""really"" a ""cat""?\r\nTest Team, -Test Case,8,foo,,2015-07-14 16:08:55,,chil\'laxin\r\n';;
+      var expectedResult = 'Test Team, -Test Case,8,dog,30,2015-07-14 16:08:55,,,This dog looks like a great dog.\r\nTest Team, -Test Case,8,cat,0,2015-07-14 16:08:55,,,Is this ""really"" a ""cat""?\r\nTest Team, -Test Case,8,foo,,2015-07-14 16:08:55,,,chil\'laxin\r\n';;
 
       expect(result).toEqual(expectedResult);
     });

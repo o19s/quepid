@@ -3,7 +3,7 @@
     <div class="pane_main results-control">
       <div id="case-header" class="row">
         <div class="col-sm-12">
-          <div ng-controller="QueriesCtrl" style="display: inline-block">
+          <div style="display: inline-block">
             <qscore
               class="case-score"
               diff-label="queries.selectedDiffName()"
@@ -93,6 +93,11 @@
               <clone-case
                 acase="caseModel.selectedCase()"
               ></clone-case>
+            </li>
+            <li>
+              <delete-case-options
+                acase="caseModel.selectedCase()"
+              ></delete-case-options>
             </li>
             <li>
               <export-case
