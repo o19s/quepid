@@ -2,7 +2,13 @@
 
 This document explains what endpoints Quepid hits on Solr.
 
-Query responses are JSON formatted, wrapped in [JSONP](https://en.wikipedia.org/wiki/JSONP) function name:
+However, before we begin, I want to talk about the two ways Quepid can connect to Solr.  
+To connect directly to Solr we use JSONP, which lets Quepid avoid CORS issues that control when a browser app
+hosted on one domain connects to an API hosted on another domain.   However, if your Quepid is hosted on the
+same domain as your Solr, then you can use traditional GET requests as there won't be any CORS issue.
+
+When your endpoint is set up to be JSONP, then the Query responses are JSON formatted,
+wrapped in [JSONP](https://en.wikipedia.org/wiki/JSONP) function name:
 
 ```
 http://quepid-solr.dev.o19s.com:8985/solr/tmdb/select?q=yoursearchgoeshere&wt=json&json.wrf=angular.callbacks._2
@@ -32,6 +38,28 @@ angular.callbacks._2({
   }})
 ```
 
+Otherwise, if you use GET, then you get a normal JSON response that looks like:
+
+```
+"responseHeader":{
+  "zkConnected":true,
+  "status":0,
+  "QTime":0,
+  "params":{
+    "q":"*:*",
+    "json.wrf":"angular.callbacks._0",
+    "debug":"true",
+    "wt":"json"}},
+"response":{"numFound":100384,"start":0,"numFoundExact":true,"docs":[
+    {
+      "id":"43000",
+      "title":["The Elusive Corporal"]},
+    {
+      "id":"43001",
+      "title":["Sundays and Cybele"]}]
+}
+```
+
 ## Ping Solr During Case Setup
 
 Quepid checks that that Solr is available and responding during the Case Setup Wizard, and if not
@@ -45,6 +73,7 @@ http://quepid-solr.dev.o19s.com:8985/solr/tmdb/select?q=*:*&fl=*&wt=json&debug=t
 1. `q=*:*` is meant to be a query all docs, and is just to help you get a sample doc.  As long as you get one doc back, this is fine.
 1. `fl=*` is to get a listing of fields back, for the UI in the Case Setup Wizard.
 1. `wt=json` is to ensure the response is in JSON format that Quepid expects.
+1. `json.wrf=angular.callbacks._5` to avoid needing to use CORS, we use JSONP, which requires this parameter to be sent to Solr, and wraps the resulting JSON response in the function `angular.callbacks._5()`.
 
 ## Queries
 
@@ -128,12 +157,12 @@ http://quepid-solr.dev.o19s.com:8985/solr/tmdb/select?defType=lucene&rows=15&q=i
 From the detailed document modal view, you can view the document in Solr in a new browser window.  Notice no use of JSONP.
 
 ```
-http://quepid-solr.dev.o19s.com:8985/solr/tmdb/select?indent=true&wt=xml&facet=true&facet.field=id&facet.field=title&facet.field=poster_path&facet.field=overview&facet.field=cast&facet.mincount=1&q=id:26965
+http://quepid-solr.dev.o19s.com:8985/solr/tmdb/select?indent=true&wt=json&facet=true&facet.field=id&facet.field=title&facet.field=poster_path&facet.field=overview&facet.field=cast&facet.mincount=1&q=id:26965
 ````
 
 Quepid formats this request with these parameters:
 
 1. `indent=true` to do pretty printing of the response.
-1. `wt=xml` to return in XML in the browser, though these days probably returning in JSON makes more sense.
+1. `wt=json` to return the document in JSON format.
 1. `facet=true` to turn on faceting, though I am unclear why we would want to facet over all the fields, maybe to give you a sense of the attributes available?  This CAN cause major performance issue to your Solr!
 1. `q=id:26965` this is the heart of the query, a look up by ID.
