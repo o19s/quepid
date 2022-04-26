@@ -7,6 +7,7 @@
     .factory('TryFactory', [
       '$http',
       '$log',
+      'configurationSvc',
       'fieldSpecSvc', 'caseTryNavSvc','varExtractorSvc',
       TryFactory
     ]);
@@ -14,6 +15,7 @@
   function TryFactory(
     $http,
     $log,
+    cfg,
     fieldSpecSvc, caseTryNavSvc, varExtractorSvc
   ) {
     var Try = function(data) {
@@ -111,7 +113,7 @@
         var caseNo  = caseTryNavSvc.getCaseNo();
         var nameReq = {'name': newName};
 
-        return $http.put('/api/cases/' + caseNo + '/tries/' + self.tryNo, nameReq)
+        return $http.put(cfg.getApiPath() + 'cases/' + caseNo + '/tries/' + self.tryNo, nameReq)
           .then(function() {
             self.name = newName;
           });

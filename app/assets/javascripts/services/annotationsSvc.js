@@ -7,9 +7,10 @@ angular.module('QuepidApp')
     '$http',
     'broadcastSvc',
     'AnnotationFactory',
-    function annotationsSvc($http, broadcastSvc, AnnotationFactory) {
+    'configurationSvc',
+    function annotationsSvc($http, broadcastSvc, AnnotationFactory, cfg) {
       var self    = this;
-      var baseURL = '/api/cases/';
+      var baseURL = cfg.getApiPath() + 'cases/';
 
       var annotationsUrl = function(caseId) {
         return baseURL + caseId + '/annotations';

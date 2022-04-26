@@ -5,6 +5,7 @@ angular.module('QuepidApp')
   .service('settingsSvc', [
     '$http',
     '$q',
+    'configurationSvc',
     'settingsIdValue',
     'caseTryNavSvc',
     'TryFactory', 'SettingsFactory',
@@ -12,6 +13,7 @@ angular.module('QuepidApp')
     function settingsSvc(
       $http,
       $q,
+      cfg,
       settingsIdValue,
       caseTryNavSvc,
       TryFactory, SettingsFactory,
@@ -93,7 +95,7 @@ angular.module('QuepidApp')
         var caseNo  = caseTryNavSvc.getCaseNo();
         var tryNo   = caseTryNavSvc.getTryNo();
 
-        var path = '/api/cases/' + caseNo + '/tries';
+        var path = cfg.getApiPath() + 'cases/' + caseNo + '/tries';
         return $http.get(path)
           .then(function(response) {
             currSettings = new Settings(response.data.tries);
@@ -196,7 +198,7 @@ angular.module('QuepidApp')
         sentData.search_url        = settingsToSave.searchUrl;
         sentData.parent_try_number = settingsToSave.selectedTry.tryNo;
 
-        return $http.post('/api/cases/' + currCaseNo + '/tries', sentData)
+        return $http.post(cfg.getApiPath() + 'cases/' + currCaseNo + '/tries', sentData)
           .then(function(response) {
             var tryJson = response.data;
             var newTry  = currSettings.addTry(tryJson);
@@ -253,7 +255,7 @@ angular.module('QuepidApp')
         sentData.search_url        = settingsToSave.searchUrl;
         sentData.parent_try_number = settingsToSave.selectedTry.tryNo;
 
-        return $http.put('/api/cases/' + currCaseNo + '/tries/' + currTryNo, sentData)
+        return $http.put(cfg.getApiPath() + 'cases/' + currCaseNo + '/tries/' + currTryNo, sentData)
           .then(function() {
 
             // Broadcast that settings for case have been updated

@@ -4,11 +4,11 @@
 
 angular.module('QuepidApp')
   .service('querySnapshotSvc', [
-    '$http', '$q',
+    '$http', '$q', 'configurationSvc',
     'settingsSvc', 'docCacheSvc', 'normalDocsSvc',
     'SnapshotFactory',
     function querySnapshotSvc(
-      $http, $q,
+      $http, $q, cfg,
       settingsSvc, docCacheSvc, normalDocsSvc,
       SnapshotFactory
     ) {
@@ -55,7 +55,7 @@ angular.module('QuepidApp')
         caseNo = newCaseNo;
         this.snapshots = {};
 
-        return $http.get('/api/cases/' + caseNo + '/snapshots')
+        return $http.get(cfg.getApiPath() + 'cases/' + caseNo + '/snapshots')
           .then(function(response) {
             return addSnapshotResp(response.data.snapshots)
               .then(function() {
@@ -87,7 +87,7 @@ angular.module('QuepidApp')
           }
         };
 
-        return $http.post('/api/cases/' + caseNo + '/snapshots', saved)
+        return $http.post(cfg.getApiPath() + 'cases/' + caseNo + '/snapshots', saved)
           .then(function(response) {
             return addSnapshotResp([response.data])
               .then(function() {
@@ -97,7 +97,7 @@ angular.module('QuepidApp')
       };
 
       this.deleteSnapshot = function(snapshotId) {
-        var url = '/api/cases/' + caseNo + '/snapshots/' + snapshotId;
+        var url = cfg.getApiPath() + 'cases/' + caseNo + '/snapshots/' + snapshotId;
 
         return $http.delete(url)
           .then(function() {
@@ -142,7 +142,7 @@ angular.module('QuepidApp')
         });
 
         function callApi (caseId, snapshotData) {
-          var url = '/api/cases/' + caseId + '/snapshots/imports';
+          var url = cfg.getApiPath() + 'cases/' + caseId + '/snapshots/imports';
           return $http.post(url, { snapshots: [snapshotData] })
             .then(function(response) {
               return addSnapshotResp(response.data.snapshots);
@@ -169,7 +169,7 @@ angular.module('QuepidApp')
       }
 
       function get(snapshotId) {
-        var url     = '/api/cases/' + caseNo + '/snapshots/' + snapshotId;
+        var url     = cfg.getApiPath() + 'cases/' + caseNo + '/snapshots/' + snapshotId;
 
         return $http.get(url)
           .then(function(response) {

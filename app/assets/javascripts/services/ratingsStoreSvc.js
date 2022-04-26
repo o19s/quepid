@@ -12,14 +12,15 @@ angular.module('QuepidApp')
   .service('ratingsStoreSvc', [
     '$rootScope',
     '$http',
-    function ratingsStoreSvc($scope, $http) {
+    'configurationSvc',
+    function ratingsStoreSvc($scope, $http, cfg) {
       var svcVersion = 0;
 
       var RatingsStore = function(caseNo, queryId, ratingsDict) {
         var version   = 0;
 
         var basePath  = function() {
-          return '/api/cases/' + caseNo + '/queries/' + queryId;
+          return cfg.getApiPath() + 'cases/' + caseNo + '/queries/' + queryId;
         };
 
         var markDirty = function() {

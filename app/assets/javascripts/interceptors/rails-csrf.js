@@ -17,7 +17,7 @@ angular.module('ng-rails-csrf', [] )
       $httpProvider.interceptors.push(function() {
         return {
          'request': function(config) {
-            if ( 'string' === typeof(config.url) && config.url.indexOf('/api') === 0 ) {
+            if ( 'string' === typeof(config.url) && config.url.indexOf('/api/') >= 0 ) {
               var headers = config.headers;
               var token   = getToken();
 

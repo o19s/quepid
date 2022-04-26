@@ -1,7 +1,7 @@
 <header id="header" class="navbar-inverse navbar-secondary clearfix">
   <div class="container container-home">
     <div class="navbar-header">
-      <%= link_to '/', class: "navbar-brand", target: "_self" do %>
+      <%= link_to root_path, class: "navbar-brand", target: "_self" do %>
         Quepid
         <span class="hover"><%= image_tag 'tagline-sm.png' %></span>
       <% end %>
@@ -29,7 +29,7 @@
               </li>
 
               <li class="actions">
-                <a href="/cases" class="btn btn-default btn-block" ng-attr-target="{{ isRailsGoingToAngular() ? '_self' : undefined }}">
+                <a href="cases" class="btn btn-default btn-block" ng-attr-target="{{ isRailsGoingToAngular() ? '_self' : undefined }}">
                   View all cases
                   <small class="text-muted">
                     ({{ headerScope.casesCount }} active)
@@ -42,8 +42,8 @@
           </li>
           <!-- End case selector -->
 
-          <li><a ng-attr-target="{{ isRailsGoingToAngular() ? '_self' : undefined }}" href="/teams">Teams</a></li>
-          <li><a ng-attr-target="{{ isRailsGoingToAngular() ? '_self' : undefined }}" href="/scorers">Scorers</a></li>
+          <li><a ng-attr-target="{{ isRailsGoingToAngular() ? '_self' : undefined }}" href="teams">Teams</a></li>
+          <li><a ng-attr-target="{{ isRailsGoingToAngular() ? '_self' : undefined }}" href="scorers">Scorers</a></li>
         </ul>
       <% end %>
       <ul class="navbar-right nav navbar-nav">
@@ -63,7 +63,7 @@
             <li><%= link_to 'Admin Home', admin_path, class: 'dropdown-link', target: '_self' %></li>
             <li><%= link_to 'Users', admin_users_path, class: 'dropdown-link', target: '_self' %></li>
             <li><%= link_to 'Quepid Scorers', admin_communal_scorers_path, class: 'dropdown-link', target: '_self' %></li>
-            <li><a class="dropdown-link" href="/admin/jobs" target="_self">Job Manager</a></li>
+            <li><a class="dropdown-link" href="admin/jobs" target="_self">Job Manager</a></li>
             <% end %>
           </ul>
         </li> <!-- End account management -->

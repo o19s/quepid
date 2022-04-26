@@ -8,7 +8,7 @@ angular.module('UtilitiesModule')
       var prefixPath;
 
       this.getApiPath = function() {
-        return prefixPath() + "api/";
+        return this.prefixPath() + "api/";
       }
 
       this.setCommunalScorersOnly = function(val) {
