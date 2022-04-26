@@ -9,7 +9,7 @@ services:
     env_file:
       - .env
     environment:
-      - RAILS_RELATIVE_URL_ROOT=/quepid-app
+      #- RAILS_RELATIVE_URL_ROOT=/quepid-app
       - LAUNCHY_DRY_RUN=true # dev only letter_opener gem wants to open a browser when sending emails.
       - BROWSER=/dev/null
     volumes:

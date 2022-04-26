@@ -8,8 +8,8 @@ angular.module('UtilitiesModule')
       var prefixPath;
 
       this.getApiPath = function() {
-        return this.prefixPath() + "api/";
-      }
+        return this.prefixPath() + 'api/';
+      };
 
       this.setCommunalScorersOnly = function(val) {
         communalScorersOnly = JSON.parse(val);
@@ -25,8 +25,8 @@ angular.module('UtilitiesModule')
 
       this.prefixPath = function() {
         // Rails doesn't work if path ends with slash, angular requires it
-        return prefixPath ? (prefixPath + "/") : "/";
-      }
+        return prefixPath ? (prefixPath + '/') : '/';
+      };
 
       this.setQueryListSortable = function (val) {
         queryListSortable = JSON.parse(val);
