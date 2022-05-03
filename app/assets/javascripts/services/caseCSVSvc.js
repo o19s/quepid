@@ -281,7 +281,7 @@
 
           angular.forEach(queries, function (query) {
             var docs = query.docs;
-            if (docs === 0 ) {
+            if (docs.length === 0 ) {
               var dataString;
               var infoArray = [];
               infoArray.push(stringifyField(aCase.teamNames()));
@@ -381,7 +381,7 @@
             }
           }
           if (typeof data === 'string') {
-            data = data.replace(/"/g, '""'); // Escape double quotes
+            data = data.trim().replace(/"/g, '""'); // Escape double quotes
 
             if (data.indexOf(',') > -1 || data.indexOf('\n') > -1 || data.indexOf('\r') > -1) {
               data = textDelimiter + data + textDelimiter;
