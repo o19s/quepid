@@ -281,26 +281,37 @@
 
           angular.forEach(queries, function (query) {
             var docs = query.docs;
-
-            angular.forEach(docs, function (doc) {
+            if (docs.length === 0 ) {
               var dataString;
               var infoArray = [];
-
               infoArray.push(stringifyField(aCase.teamNames()));
               infoArray.push(stringifyField(aCase.caseName));
               infoArray.push(stringifyField(aCase.lastScore.case_id));
               infoArray.push(stringifyField(query.queryText));
-              infoArray.push(stringifyField(doc.id));
-              infoArray.push(stringifyField(doc.title));
-              infoArray.push(stringifyField(doc.getRating()));
-
-              angular.forEach(fields, function(field) {
-                infoArray.push(stringifyField(doc.doc[field]));
-              });
-
               dataString = infoArray.join(',');
               csvContent += dataString + EOL;
-            });
+            }
+            else {
+              angular.forEach(docs, function (doc) {
+                var dataString;
+                var infoArray = [];
+
+                infoArray.push(stringifyField(aCase.teamNames()));
+                infoArray.push(stringifyField(aCase.caseName));
+                infoArray.push(stringifyField(aCase.lastScore.case_id));
+                infoArray.push(stringifyField(query.queryText));
+                infoArray.push(stringifyField(doc.id));
+                infoArray.push(stringifyField(doc.title));
+                infoArray.push(stringifyField(doc.getRating()));
+
+                angular.forEach(fields, function (field) {
+                  infoArray.push(stringifyField(doc.doc[field]));
+                });
+
+                dataString = infoArray.join(',');
+                csvContent += dataString + EOL;
+              });
+            }
           });
 
           return csvContent;
@@ -370,7 +381,7 @@
             }
           }
           if (typeof data === 'string') {
-            data = data.replace(/"/g, '""'); // Escape double quotes
+            data = data.trim().replace(/"/g, '""'); // Escape double quotes
 
             if (data.indexOf(',') > -1 || data.indexOf('\n') > -1 || data.indexOf('\r') > -1) {
               data = textDelimiter + data + textDelimiter;
