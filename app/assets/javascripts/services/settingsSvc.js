@@ -17,15 +17,14 @@ angular.module('QuepidApp')
       TryFactory, SettingsFactory,
       broadcastSvc
     ) {
-      // many of these defaults like apiMethod are defined server side in
-      // the Try.rb set_defaults method
+      // the Try.rb set_defaults method.  These appear to only be used when you
+      // click the radio box to pick a search engine, either solr or elasticsearch.
       this.defaults = {
         solr: {
           queryParams:  [
+            'q=#$query##',
             '&defType=edismax',
             '&qf=text_all',
-            '&indent=on',
-            '&q=#$query##',
             '&tie=1.0',
           ].join('\n'),
 
