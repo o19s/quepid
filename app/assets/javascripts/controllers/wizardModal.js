@@ -20,6 +20,7 @@ angular.module('QuepidApp')
 
 
       // I don't think we need this as we look it up from the Try we create by default on the server side!
+      // Except that it's also defined in settingsSvc.  Sigh.
       $scope.pendingWizardSettings = angular.copy(settingsSvc.defaults.solr);
 
       // if we have restarted the wizard, then grab the searchUrl, searchEngine,
@@ -47,7 +48,7 @@ angular.module('QuepidApp')
         $scope.pendingWizardSettings.searchEngine             = settings.searchEngine;
         $scope.pendingWizardSettings.apiMethod                = settings.apiMethod;
         $scope.pendingWizardSettings.searchUrl                = settings.searchUrl;
-        $scope.pendingWizardSettings.selectedTry.queryParams  = settings.queryParams;
+        $scope.pendingWizardSettings.queryParams              = settings.queryParams;
         $scope.pendingWizardSettings.titleField               = settings.titleField;
         $scope.pendingWizardSettings.urlFormat                = settings.urlFormat;
         $scope.reset();
@@ -60,7 +61,7 @@ angular.module('QuepidApp')
       $scope.reset          = reset;
       $scope.resetUrlValid  = resetUrlValid;
       $scope.checkTLSForSearchEngineUrl = checkTLSForSearchEngineUrl;
-      $scope.reset();
+      $scope.updateSettingsDefaults();
       $scope.searchFields   = [];
 
       $scope.extractSolrConfigApiUrl = function(searchUrl) {
@@ -272,7 +273,13 @@ angular.module('QuepidApp')
 
       $scope.$watch('wizardSettingsModel.settingsId()', function() {
         // Reinit our pending settings from the service
+        var tempSearchUrl = $scope.pendingWizardSettings.searchUrl;
+        var tempApiMethod = $scope.pendingWizardSettings.apiMethod;
+        var tempQueryParams = $scope.pendingWizardSettings.queryParams;
         angular.merge($scope.pendingWizardSettings, settingsSvc.editableSettings());
+        $scope.pendingWizardSettings.searchUrl = tempSearchUrl;
+        $scope.pendingWizardSettings.apiMethod = tempApiMethod;
+        $scope.pendingWizardSettings.queryParams = tempQueryParams;
         $scope.pendingWizardSettings.newQueries = [];
 
         if(userSvc.getUser().completedCaseWizard===false){

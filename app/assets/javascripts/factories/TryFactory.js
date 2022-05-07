@@ -20,10 +20,21 @@
       // This method converts the response from the API to angular objects.
       var self  = this;
 
+      // check if the backend has populated these fields or not?
       if ( angular.isUndefined(data.search_engine) ) {
-        $log.info('We have an undefined data.search_engine so setting to Solr, should this ever happen?');
         data.search_engine = 'solr';
       }
+
+      if ( data.query_params === null ) {
+        // this app
+        if (data.search_engine === 'solr'){
+          data.query_params = '';
+        }
+        else {
+          data.query_params = '{}';
+        }
+      }
+
 
       // Attributes
       // Note, if you are changing these, then you probably to fix the
@@ -39,6 +50,7 @@
       self.searchEngine  = data.search_engine;
       self.searchUrl     = data.search_url;
       self.tryNo         = data.try_number;
+
 
       // transform curator vars to be more angular friendly
       var ngFriendlyCuratorVars = [];

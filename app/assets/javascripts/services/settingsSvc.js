@@ -226,6 +226,7 @@ angular.module('QuepidApp')
 
         // Not sure why we have this.  Handoff from wizard requires it though.
         settingsToSave.selectedTry.apiMethod = settingsToSave.apiMethod;
+        settingsToSave.selectedTry.queryParams = settingsToSave.queryParams;
 
         // post up
         // (1) searchUrl
