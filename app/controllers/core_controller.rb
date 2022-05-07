@@ -56,16 +56,13 @@ class CoreController < ApplicationController
         # Reset the default queries
         if @try.search_engine != params[:searchEngine]
           @try.search_engine = params[:searchEngine]
-          @try.query_params  = Try::DEFAULTS[@try.search_engine.to_sym][:query_params]
-          @try.field_spec = Try::DEFAULTS[@try.search_engine.to_sym][:field_spec]
-
         end
         @try.search_url = params[:searchUrl]
       end
       @try.save
     end
 
-    search_engine_starts_with_https = @try.present? ? @try.search_url.starts_with?('https') : false
+    search_engine_starts_with_https = @try.present? && @try.search_url.present? ? @try.search_url.starts_with?('https') : false
 
     if search_engine_starts_with_https && !request.ssl? # redirect to SSL
       original_url = request.original_url

@@ -4,6 +4,7 @@ require 'json'
 
 module EsArgParser
   def self.parse query_string, vars = {}
+    query_string = '{}' if query_string.nil?
     # Remove new line characters
     json_string = query_string.gsub(/\\n/, '').gsub(/\\r/, '').gsub(/%/, '%%')
 

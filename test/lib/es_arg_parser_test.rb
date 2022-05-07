@@ -3,6 +3,13 @@
 require 'test_helper'
 
 class EsArgParserTest < ActiveSupport::TestCase
+
+  test 'parses nil value' do
+    params = nil
+    result = EsArgParser.parse(params)
+    assert result.empty?
+  end
+
   test 'parses basic case' do
     params = '{ "foo": 1234 }'
     result = EsArgParser.parse(params)
