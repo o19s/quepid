@@ -51,7 +51,7 @@ angular.module('QuepidApp')
         $scope.pendingWizardSettings.urlFormat                = settings.urlFormat;
         var quepidStartsWithHttps = $location.protocol() === 'https';
         if ($scope.pendingWizardSettings.searchEngine === 'es' ){
-          $scope.pendingWizardSettings.searchUrl = settings.searchUrl
+          $scope.pendingWizardSettings.searchUrl = settings.searchUrl;
         }
         else if (quepidStartsWithHttps === true){
           $scope.pendingWizardSettings.searchUrl = settings.secureSearchUrl;
