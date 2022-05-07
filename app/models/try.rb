@@ -115,15 +115,7 @@ class Try < ApplicationRecord
 
   private
 
-  # rubocop:disable Metrics/AbcSize
   def set_defaults
     self.name = "Try #{try_number}" if name.blank?
-
-    #self.search_engine = DEFAULTS[:search_engine] if search_engine.blank?
-
-    #self.query_params = "" if query_params.nil?
-    #self.api_method = "" if api_method.nil?
-    #self.field_spec = "" if field_spec.nil?
   end
-  # rubocop:enable Metrics/AbcSize
 end

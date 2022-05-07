@@ -114,17 +114,14 @@ class CaseTest < ActiveSupport::TestCase
       assert_equal acase.tries.second.try_number, 1
     end
 
-    test 'sets the default try to the default search engine attributes' do
+    test 'sets the default try to the defaults' do
       acase = Case.create(case_name: 'test case')
 
       default_try = acase.tries.first
       assert_not_nil default_try
 
-      assert_equal default_try.search_engine, Try::DEFAULTS[:search_engine]
-      assert_equal default_try.field_spec,    Try::DEFAULTS[:solr][:field_spec]
-      assert_equal default_try.search_url,    Try::DEFAULTS[:solr][:search_url]
-      assert_equal default_try.query_params,  Try::DEFAULTS[:solr][:query_params]
-      assert_equal default_try.escape_query,  true
+      assert_equal default_try.name, 'Try 1'
+      assert_equal default_try.escape_query, true
     end
   end
 

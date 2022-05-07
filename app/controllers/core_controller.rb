@@ -54,9 +54,7 @@ class CoreController < ApplicationController
       # Deal with front end UI changes to search engine being stored in backend
       if params[:searchEngine].present?
         # Reset the default queries
-        if @try.search_engine != params[:searchEngine]
-          @try.search_engine = params[:searchEngine]
-        end
+        @try.search_engine = params[:searchEngine] if @try.search_engine != params[:searchEngine]
         @try.search_url = params[:searchUrl]
       end
       @try.save
