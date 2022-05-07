@@ -38,6 +38,7 @@ class CoreController < ApplicationController
   # Similarily we may have only HTTPS set up for Quepid, and therefore need to stay on HTTPS,
   # so this method is only conditionally called if force_ssl is false.
   #
+  # rubocop:disable Layout/LineLength
   # rubocop:disable Metrics/MethodLength
   # rubocop:disable Metrics/AbcSize
   # rubocop:disable Metrics/CyclomaticComplexity
@@ -76,6 +77,7 @@ class CoreController < ApplicationController
       true
     end
   end
+  # rubocop:enable Layout/LineLength
   # rubocop:enable Metrics/MethodLength
   # rubocop:enable Metrics/AbcSize
   # rubocop:enable Metrics/CyclomaticComplexity
