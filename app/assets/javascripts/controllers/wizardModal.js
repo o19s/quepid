@@ -21,19 +21,18 @@ angular.module('QuepidApp')
 
       // I don't think we need this as we look it up from the Try we create by default on the server side!
       // Except that it's also defined in settingsSvc.  Sigh.
-      $scope.pendingWizardSettings = angular.copy(settingsSvc.defaults.solr);
+      var defaultSettings = settingsSvc.defaults['solr'];
 
-      // if we have restarted the wizard, then grab the searchUrl, searchEngine,
-      // and caseName from the params and override the default values.
-      // We should pass this stuff in externally, not do it here.
-      if (angular.isDefined($location.search().searchEngine)){
-        $scope.pendingWizardSettings.searchEngine = $location.search().searchEngine;
+      $scope.pendingWizardSettings = angular.copy(defaultSettings);
+      var quepidStartsWithHttps = $location.protocol() === 'https';
+      if ($scope.pendingWizardSettings.searchEngine === 'es' ){
+        $scope.pendingWizardSettings.searchUrl = defaultSettings.searchUrl;
       }
-      if (angular.isDefined($location.search().searchUrl)){
-        $scope.pendingWizardSettings.searchUrl = $location.search().searchUrl;
+      else if (quepidStartsWithHttps === true){
+        $scope.pendingWizardSettings.searchUrl = defaultSettings.secureSearchUrl;
       }
-      if (angular.isDefined($location.search().caseName)){
-        $scope.pendingWizardSettings.caseName = $location.search().caseName;
+      else {
+        $scope.pendingWizardSettings.searchUrl = defaultSettings.insecureSearchUrl;
       }
 
       $scope.wizardSettingsModel.settingsId = function() {
@@ -47,10 +46,19 @@ angular.module('QuepidApp')
         $scope.pendingWizardSettings.idField                  = settings.idField;
         $scope.pendingWizardSettings.searchEngine             = settings.searchEngine;
         $scope.pendingWizardSettings.apiMethod                = settings.apiMethod;
-        $scope.pendingWizardSettings.searchUrl                = settings.searchUrl;
         $scope.pendingWizardSettings.queryParams              = settings.queryParams;
         $scope.pendingWizardSettings.titleField               = settings.titleField;
         $scope.pendingWizardSettings.urlFormat                = settings.urlFormat;
+        var quepidStartsWithHttps = $location.protocol() === 'https';
+        if ($scope.pendingWizardSettings.searchEngine === 'es' ){
+          $scope.pendingWizardSettings.searchUrl = settings.searchUrl
+        }
+        else if (quepidStartsWithHttps === true){
+          $scope.pendingWizardSettings.searchUrl = settings.secureSearchUrl;
+        }
+        else {
+          $scope.pendingWizardSettings.searchUrl = settings.insecureSearchUrl;
+        }
         $scope.reset();
       };
 
@@ -63,6 +71,19 @@ angular.module('QuepidApp')
       $scope.checkTLSForSearchEngineUrl = checkTLSForSearchEngineUrl;
       $scope.updateSettingsDefaults();
       $scope.searchFields   = [];
+
+      // if we have restarted the wizard, then grab the searchUrl, searchEngine,
+      // and caseName from the params and override the default values.
+      // We should pass this stuff in externally, not do it here.
+      if (angular.isDefined($location.search().searchEngine)){
+        $scope.pendingWizardSettings.searchEngine = $location.search().searchEngine;
+      }
+      if (angular.isDefined($location.search().searchUrl)){
+        $scope.pendingWizardSettings.searchUrl = $location.search().searchUrl;
+      }
+      if (angular.isDefined($location.search().caseName)){
+        $scope.pendingWizardSettings.caseName = $location.search().caseName;
+      }
 
       $scope.extractSolrConfigApiUrl = function(searchUrl) {
         return searchUrl.substring(0, searchUrl.lastIndexOf('/')) + '/config';
@@ -167,9 +188,20 @@ angular.module('QuepidApp')
         // if the URL is still set as the default
         var searchEngine  = $scope.pendingWizardSettings.searchEngine;
         var defaults      = settingsSvc.defaults[searchEngine];
-        var defaultUrl    = defaults.searchUrl;
         var newUrl        = $scope.pendingWizardSettings.searchUrl;
-        if ( newUrl === defaultUrl ) {
+        var useDefaultSettings = false;
+        if ($scope.pendingWizardSettings.searchEngine === 'solr'){
+          if (newUrl === defaults.insecureSearchUrl || newUrl === defaults.secureSearchUrl ){
+            useDefaultSettings = true;
+          }
+        }
+        else {
+          if (newUrl === defaults.searchUrl) {
+            useDefaultSettings = true;
+          }
+        }
+
+        if ( useDefaultSettings ) {
           $scope.pendingWizardSettings.idField          = defaults.idField;
           $scope.pendingWizardSettings.titleField       = defaults.titleField;
           $scope.pendingWizardSettings.additionalFields = defaults.additionalFields;

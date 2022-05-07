@@ -17,8 +17,8 @@ angular.module('QuepidApp')
       TryFactory, SettingsFactory,
       broadcastSvc
     ) {
-      // the Try.rb set_defaults method.  These appear to only be used when you
-      // click the radio box to pick a search engine, either solr or elasticsearch.
+
+      // Used by the wizard
       this.defaults = {
         solr: {
           queryParams:  [
@@ -36,7 +36,8 @@ angular.module('QuepidApp')
           additionalFields: ['overview','cast','thumb:poster_path'],
           numberOfRows:     10,
           searchEngine:     'solr',
-          searchUrl:        'http://quepid-solr.dev.o19s.com:8985/solr/tmdb/select',
+          insecureSearchUrl:'http://quepid-solr.dev.o19s.com:8985/solr/tmdb/select',
+          secureSearchUrl:  'https://quepid-solr.dev.o19s.com/solr/tmdb/select',
           urlFormat:        'http(s?)://yourdomain.com:8983/<index>/select',
         },
         es: {
