@@ -383,5 +383,15 @@ angular.module('QuepidApp')
         }
         $location.search('reverse', $scope.reverse);
       }
+
+      $scope.matchQueryFilter = function(query) {
+        if ($scope.queryFilter !== undefined) {
+          return query.queryText.startsWith($scope.queryFilter)
+        }
+        else {
+          return true;
+        }
+      };
+
     }
   ]);
