@@ -386,7 +386,7 @@ angular.module('QuepidApp')
 
       $scope.matchQueryFilter = function(query) {
         if ($scope.queryFilter !== undefined) {
-          return query.queryText.startsWith($scope.queryFilter)
+          return query.queryText.startsWith($scope.queryFilter);
         }
         else {
           return true;
