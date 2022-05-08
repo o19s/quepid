@@ -17,15 +17,14 @@ angular.module('QuepidApp')
       TryFactory, SettingsFactory,
       broadcastSvc
     ) {
-      // many of these defaults like apiMethod are defined server side in
-      // the Try.rb set_defaults method
+
+      // Used by the wizard
       this.defaults = {
         solr: {
           queryParams:  [
+            'q=#$query##',
             '&defType=edismax',
             '&qf=text_all',
-            '&indent=on',
-            '&q=#$query##',
             '&tie=1.0',
           ].join('\n'),
 
@@ -37,7 +36,8 @@ angular.module('QuepidApp')
           additionalFields: ['overview','cast','thumb:poster_path'],
           numberOfRows:     10,
           searchEngine:     'solr',
-          searchUrl:        'http://quepid-solr.dev.o19s.com:8985/solr/tmdb/select',
+          insecureSearchUrl:'http://quepid-solr.dev.o19s.com:8985/solr/tmdb/select',
+          secureSearchUrl:  'https://quepid-solr.dev.o19s.com/solr/tmdb/select',
           urlFormat:        'http(s?)://yourdomain.com:8983/<index>/select',
         },
         es: {
@@ -227,6 +227,7 @@ angular.module('QuepidApp')
 
         // Not sure why we have this.  Handoff from wizard requires it though.
         settingsToSave.selectedTry.apiMethod = settingsToSave.apiMethod;
+        settingsToSave.selectedTry.queryParams = settingsToSave.queryParams;
 
         // post up
         // (1) searchUrl
