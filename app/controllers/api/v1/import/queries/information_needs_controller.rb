@@ -8,6 +8,10 @@ module Api
           before_action :find_case
           before_action :check_case
 
+          # rubocop:disable Metrics/AbcSize
+          # rubocop:disable Metrics/CyclomaticComplexity
+          # rubocop:disable Metrics/MethodLength
+          # rubocop:disable Metrics/PerceivedComplexity
           def create
             # https://github.com/usahg/csv_upload_rails/blob/master/app/controllers/location_controller.rb#L17
             # why importing csv within upload method and not in controller class?
@@ -27,9 +31,7 @@ module Api
             missing_queries = []
 
             data.each do |query_input|
-              if !Query.exists?(query_input['query_id'])
-                missing_queries << query_input['query_id']
-              end
+              missing_queries << query_input['query_id'] unless Query.exists?(query_input['query_id'])
             end
             if missing_queries.empty?
               data.each do |query_input|
@@ -39,9 +41,14 @@ module Api
               end
               render json: { message: 'Success!' }, status: :ok
             else
-              render json: { message: "Didn't find these queries in the database: #{missing_queries.to_sentence}" }, status: :unprocessable_entity
+              render json:   { message: "Didn't find these queries in the database: #{missing_queries.to_sentence}" },
+                     status: :unprocessable_entity
             end
           end
+          # rubocop:enable Metrics/AbcSize
+          # rubocop:enable Metrics/CyclomaticComplexity
+          # rubocop:enable Metrics/MethodLength
+          # rubocop:enable Metrics/PerceivedComplexity
         end
       end
     end

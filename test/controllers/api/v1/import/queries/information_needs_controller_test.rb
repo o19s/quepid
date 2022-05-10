@@ -123,7 +123,7 @@ module Api
                 information_need: 'Rocky series.',
               }
 
-              csv_text = "query_id,query,information_need"
+              csv_text = 'query_id,query,information_need'
               queries.each do |q|
                 csv_text += "#{q[:query_id]}, #{q[:query_text]}, #{q[:information_need]}\n"
               end
