@@ -112,8 +112,14 @@ angular.module('QuepidApp')
               },
               function(response) {
                 var error = 'Unable to import information needs from CSV: ';
-                error += response.status;
-                error += ' - ' + response.statusText;
+                if (response.data && response.data.message){
+                  error += ' - ' + response.data.message;
+                }
+                else {
+                  error += response.status;
+                  error += ' - ' + response.statusText;
+                }
+
                 ctrl.loading = false;
                 $uibModalInstance.close(error);
               });

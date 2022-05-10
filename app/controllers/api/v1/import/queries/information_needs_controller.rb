@@ -13,7 +13,7 @@ module Api
             # why importing csv within upload method and not in controller class?
             # it saves memory on the server, if csv is imported in the controller class-
             # everytime any controller method is called an import will be called
-            # but, as below, if csv is imported inside upload method, everytime theres a controller call-
+            # but, as below, if csv is imported inside upload method, everytime there is a controller call-
             # for "this specific" methods, csv will be imported / required
             require 'csv'
 
@@ -23,15 +23,24 @@ module Api
             headers = csv_data.shift.map(&:to_s)
             string_data = csv_data.map { |row| row.map(&:to_s) }
             data = string_data.map { |row| Hash[*headers.zip(row).flatten] }
+
+            missing_queries = []
+
             data.each do |query_input|
-              query = Query.find_by(id: query_input['query_id'])
-              unless query.nil?
+              if !Query.exists?(query_input['query_id'])
+                missing_queries << query_input['query_id']
+              end
+            end
+            if missing_queries.empty?
+              data.each do |query_input|
+                query = Query.find_by(id: query_input['query_id'])
                 query.information_need = query_input['information_need']
                 query.save
               end
+              render json: { message: 'Success!' }, status: :ok
+            else
+              render json: { message: "Didn't find these queries in the database: #{missing_queries.to_sentence}" }, status: :unprocessable_entity
             end
-
-            render json: { message: 'Success!' }, status: :ok
           end
         end
       end
