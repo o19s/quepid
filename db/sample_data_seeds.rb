@@ -185,13 +185,14 @@ end
 ######################################
 
 solr_case = solr_case_user.cases.create case_name: 'SOLR CASE'
+solr_try = solr_case.tries.latest
 solr_params = {
   search_engine: :solr,
   search_url:   "http://quepid-solr.dev.o19s.com:8985/solr/tmdb/select",
   field_spec:   "id:id, title:title",
   query_params: 'q=*:*'
 }
-es_try.update es_params
+solr_try.update solr_params
 print_case_info solr_case
 
 ######################################
