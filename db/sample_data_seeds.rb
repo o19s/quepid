@@ -185,6 +185,13 @@ end
 ######################################
 
 solr_case = solr_case_user.cases.create case_name: 'SOLR CASE'
+solr_params = {
+  search_engine: :solr,
+  search_url:   "http://quepid-solr.dev.o19s.com:8985/solr/tmdb/select",
+  field_spec:   "id:id, title:title",
+  query_params: 'q=*:*'
+}
+es_try.update es_params
 print_case_info solr_case
 
 ######################################
@@ -195,9 +202,9 @@ es_case = es_case_user.cases.create case_name: 'ES CASE'
 es_try = es_case.tries.latest
 es_params = {
   search_engine: :es,
-  search_url:   Try::DEFAULTS[:es][:search_url],
-  field_spec:   Try::DEFAULTS[:es][:field_spec],
-  query_params: Try::DEFAULTS[:es][:query_params],
+  search_url:   "http://quepid-elasticsearch.dev.o19s.com:9206/tmdb/_search",
+  field_spec:   "id:_id, title:title",
+  query_params: '{"query": {"match_all": {}}}'
 }
 es_try.update es_params
 print_case_info es_case
