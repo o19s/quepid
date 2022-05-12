@@ -50,9 +50,9 @@ module Api
                 acase.queries << query
               end
 
-              csv_text = 'query_id,query,information_need\n'
+              csv_text = 'query,information_need\n'
               queries.each do |q|
-                csv_text = "#{q[:query_id]}, #{q[:query_text]}, #{q[:information_need]}\n"
+                csv_text += "#{q[:query_text]}, #{q[:information_need]}\n"
               end
 
               acase.save!
@@ -83,9 +83,9 @@ module Api
                 acase.queries << query
               end
 
-              csv_text = 'query_id,query,information_need\n'
+              csv_text = 'query,information_need\n'
               queries.each do |q|
-                csv_text = "#{q[:query_id]}, #{q[:query_text]}, #{q[:information_need]}\n"
+                csv_text += "#{q[:query_text]}, #{q[:information_need]}\n"
               end
 
               acase.save!
@@ -97,7 +97,7 @@ module Api
               end
             end
 
-            test 'skips over queries where the id or the query text does not exit' do
+            test 'throws an error where the id does not exist' do
               acase.queries = []
               acase.save!
 
@@ -105,18 +105,6 @@ module Api
                 {
                   query_text:       'star wars',
                   information_need: 'The original epic star wars movie',
-                },
-                {
-                  query_text:       'tough times on hoth',
-                  information_need: 'The Empire Strikes back movie',
-                },
-                {
-                  query_text:       'tatooine in star wars',
-                  information_need: 'Any of the star wars movies mentioning tatooine, plus the mandalorian and story of boba fett',
-                },
-                {
-                  query_text:       'star trek',
-                  information_need: 'The star trek movies, but definitly not any star wars movies.',
                 }
               ]
 
@@ -124,30 +112,24 @@ module Api
                 query = Query.new(query_text: q[:query_text])
                 query.case = acase
                 query.save!
-                q[:query_id] = query.id
                 acase.queries << query
               end
               acase.save!
 
               queries << {
-                query_text:       'indiana jones',
-                information_need: 'the wonderful adventure movies, and then the tv show.',
-              }
-              queries << {
-                query_id:         '-1',
                 query_text:       'boxing movie',
                 information_need: 'Rocky series.',
               }
 
-              csv_text = 'query_id,query,information_need\n'
+              csv_text = 'query,information_need'
               queries.each do |q|
-                csv_text = "#{q[:query_id]}, #{q[:query_text]}, #{q[:information_need]}\n"
+                csv_text += "#{q[:query_text]}, #{q[:information_need]}\n"
               end
-
               assert_no_difference 'acase.queries.count' do
                 post :create, params: { case_id: acase.id, csv_text: csv_text }
 
-                assert_response :ok
+                assert_response :unprocessable_entity
+                assert_equal "Didn't find this query for the case: boxing movie", json_response['message']
               end
             end
           end

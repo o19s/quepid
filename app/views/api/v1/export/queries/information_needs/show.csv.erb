@@ -1,5 +1,5 @@
-query_id,query,information_need
+query,information_need
 <%
 @case.queries.each do |query|
-%><%= ::CSV.generate_line([query.id, query.query_text, query.information_need]).html_safe %><%
+%><%= ::CSV.generate_line([query.query_text, query.information_need]).html_safe %><%
 end %>
