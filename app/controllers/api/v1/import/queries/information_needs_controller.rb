@@ -23,6 +23,8 @@ module Api
             require 'csv'
 
             text = params[:csv_text]
+            bool = ActiveRecord::Type::Boolean.new
+            create_queries = bool.deserialize(params[:create_queries]) || false
 
             csv_data = CSV.parse(text, liberal_parsing: true)
             headers = csv_data.shift.map(&:to_s)
@@ -35,6 +37,15 @@ module Api
               missing_queries << query_input['query'] unless Query.exists?({ query_text: query_input['query'],
                                                                              case:       @case })
             end
+
+            if create_queries # if we are creating queries, then go ahead and create the missing ones.
+              missing_queries.each do |missing_query|
+                query = Query.new query_text: missing_query, case: @case
+                query.save!
+              end
+              missing_queries.clear
+            end
+
             if missing_queries.empty?
               data.each do |query_input|
                 query = Query.find_by({ query_text: query_input['query'], case: @case })

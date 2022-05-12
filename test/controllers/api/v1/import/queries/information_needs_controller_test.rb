@@ -97,7 +97,7 @@ module Api
               end
             end
 
-            test 'throws an error where the id does not exist' do
+            test 'throws an error where the query does not exist' do
               acase.queries = []
               acase.save!
 
@@ -130,6 +130,41 @@ module Api
 
                 assert_response :unprocessable_entity
                 assert_equal "Didn't find this query for the case: boxing movie", json_response['message']
+              end
+            end
+
+            test 'creates missing queries when create_queries is true' do
+              acase.queries = []
+              acase.save!
+
+              queries = [
+                {
+                  query_text:       'star wars',
+                  information_need: 'The original epic star wars movie',
+                }
+              ]
+
+              queries.each do |q|
+                query = Query.new(query_text: q[:query_text])
+                query.case = acase
+                query.save!
+                acase.queries << query
+              end
+              acase.save!
+
+              queries << {
+                query_text:       'boxing movie',
+                information_need: 'Rocky series.',
+              }
+
+              csv_text = 'query,information_need'
+              queries.each do |q|
+                csv_text += "#{q[:query_text]}, #{q[:information_need]}\n"
+              end
+              assert_difference 'acase.queries.count' do
+                post :create, params: { case_id: acase.id, csv_text: csv_text, create_queries: true }
+
+                assert_response :ok
               end
             end
           end

@@ -85,6 +85,13 @@ star trek,,</pre>
       <div class="form-group">
         <input type="radio" id="information_needs" name="importSelection" value="information_needs" ng-model="ctrl.options.which">
         <label for="information_needs">Information Needs CSV</label>
+        <div class="checkbox">
+          <label>
+            <input id="clear-existing-queries" type="checkbox" ng-model='ctrl.createQueries'> Create missing queries?
+            <span class="glyphicon glyphicon-question-sign" aria-hidden="true" popover-trigger="'mouseenter'" popover-placement="right" uib-popover="Select to create any missing queries, useful when populating a new case with queries with info needs."></span>
+          </label>
+        </div>
+
         <span class="help-block">
           The CSV file should have the headers: <code>query,information_need</code> and lines similar to:
           <pre>
