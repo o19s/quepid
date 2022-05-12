@@ -12,6 +12,7 @@ angular.module('QuepidApp')
       ctrl.theCase      = theCase;
       ctrl.loading      = false;
       ctrl.clearQueries = false;
+      ctrl.createQueries= false;
       ctrl.csv          = {
         content:          null,
         header:           true,
@@ -105,7 +106,8 @@ angular.module('QuepidApp')
           if ( ctrl.options.which === 'information_needs' ) {
             importRatingsSvc.importInformationNeeds(
               ctrl.theCase,
-              ctrl.information_needs.content
+              ctrl.information_needs.content,
+              ctrl.createQueries
             ).then(function() {
                 ctrl.loading = false;
                 $uibModalInstance.close();
