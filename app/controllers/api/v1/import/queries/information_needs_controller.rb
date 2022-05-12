@@ -31,17 +31,17 @@ module Api
             missing_queries = []
 
             data.each do |query_input|
-              missing_queries << query_input['query_id'] unless Query.exists?(query_input['query_id'])
+              missing_queries << query_input['query'] unless Query.exists?({query_text: query_input['query'], case: @case})
             end
             if missing_queries.empty?
               data.each do |query_input|
-                query = Query.find_by(id: query_input['query_id'])
+                query = Query.find_by({query_text: query_input['query'], case: @case})
                 query.information_need = query_input['information_need']
                 query.save
               end
               render json: { message: 'Success!' }, status: :ok
             else
-              render json:   { message: "Didn't find these queries in the database: #{missing_queries.to_sentence}" },
+              render json:   { message: "Didn't find these queries for the case: #{missing_queries.to_sentence}" },
                      status: :unprocessable_entity
             end
           end

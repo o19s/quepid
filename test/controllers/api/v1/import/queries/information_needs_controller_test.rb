@@ -50,9 +50,9 @@ module Api
                 acase.queries << query
               end
 
-              csv_text = 'query_id,query,information_need\n'
+              csv_text = 'query,information_need\n'
               queries.each do |q|
-                csv_text += "#{q[:query_id]}, #{q[:query_text]}, #{q[:information_need]}\n"
+                csv_text += "#{q[:query_text]}, #{q[:information_need]}\n"
               end
 
               acase.save!
@@ -83,9 +83,9 @@ module Api
                 acase.queries << query
               end
 
-              csv_text = 'query_id,query,information_need\n'
+              csv_text = 'query,information_need\n'
               queries.each do |q|
-                csv_text += "#{q[:query_id]}, #{q[:query_text]}, #{q[:information_need]}\n"
+                csv_text += "#{q[:query_text]}, #{q[:information_need]}\n"
               end
 
               acase.save!
@@ -112,20 +112,18 @@ module Api
                 query = Query.new(query_text: q[:query_text])
                 query.case = acase
                 query.save!
-                q[:query_id] = query.id
                 acase.queries << query
               end
               acase.save!
 
               queries << {
-                query_id:         '-1',
                 query_text:       'boxing movie',
                 information_need: 'Rocky series.',
               }
 
-              csv_text = 'query_id,query,information_need'
+              csv_text = 'query,information_need'
               queries.each do |q|
-                csv_text += "#{q[:query_id]}, #{q[:query_text]}, #{q[:information_need]}\n"
+                csv_text += "#{q[:query_text]}, #{q[:information_need]}\n"
               end
               assert_no_difference 'acase.queries.count' do
                 post :create, params: { case_id: acase.id, csv_text: csv_text }
