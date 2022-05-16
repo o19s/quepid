@@ -5,6 +5,7 @@ class BetterTextEncodingInDatabase < ActiveRecord::Migration[6.1]
 
     BetterTextEncodingInDatabase.connection.execute(
       "
+      SET SESSION MAX_EXECUTION_TIME=360000;
       ALTER TABLE snapshot_docs CHANGE `explain` `explain` MEDIUMTEXT  CHARACTER SET `utf8mb4`  COLLATE `utf8mb4_general_ci`  NULL;
       "
     )
