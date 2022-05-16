@@ -5,13 +5,13 @@ describe('Controller: QueriesCtrl', function () {
   // load the controller's module
   beforeEach(module('QuepidTest'));
 
-  var QueriesCtrl,
+  let QueriesCtrl,
     scope;
 
-  var starWarsQuery = {queryId: 1, queryText: 'star wars'};
-  var starTrekQuery = {queryId: 2, queryText: 'star trek'};
-  var starManQuery = {queryId: 3, queryText: 'STARMAN'};
-  var boxingQuery = {queryId: 4, queryText: 'The Boxing Match'};
+  const starWarsQuery = {queryId: 1, queryText: 'star wars'};
+  const starTrekQuery = {queryId: 2, queryText: 'star trek'};
+  const starManQuery = {queryId: 3, queryText: 'STARMAN'};
+  const boxingQuery = {queryId: 4, queryText: 'The Boxing Match'};
 
   // Initialize the controller and a mock scope
   beforeEach(inject(function ($controller, $rootScope) {
