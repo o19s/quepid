@@ -5,8 +5,8 @@ describe('Controller: QueriesCtrl', function () {
   // load the controller's module
   beforeEach(module('QuepidTest'));
 
-  let QueriesCtrl,
-    scope;
+  let QueriesCtrl = null;
+  let scope = null;
 
   const starWarsQuery = {queryId: 1, queryText: 'star wars'};
   const starTrekQuery = {queryId: 2, queryText: 'star trek'};
