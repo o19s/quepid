@@ -386,7 +386,8 @@ angular.module('QuepidApp')
 
       $scope.matchQueryFilter = function(query) {
         if ($scope.queryFilter !== undefined) {
-          return query.queryText.startsWith($scope.queryFilter);
+          var lowercaseQueryText = query.queryText.toLowerCase();
+          return lowercaseQueryText.includes($scope.queryFilter.toLowerCase());
         }
         else {
           return true;
