@@ -45,8 +45,9 @@ coverage/
 # Docker artifacts
 public/srv
 
-# Jupyter Lite Base Files
+# Jupyterlite
 public/jupyterlite
+.jupyterlite.doit.db
 
 # Test Reports
 test/reports
