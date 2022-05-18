@@ -35,7 +35,10 @@ Dir.chdir APP_ROOT do
   system "bin/docker r ./wait-for mysql:3306 -- bin/rake db:setup"
   system "bin/docker r bin/rake db:migrate"
   system "bin/docker r ./wait-for mysql:3306 -- bin/rake db:create RAILS_ENV=test"
-  
+
+  puts "\n== Setting up Jupyter Lite Notebooks =="
+  system "bin/docker r jupyter lite init --lite-dir ./jupyterlite --output-dir /srv/app/public/jupyterlite"
+
   puts "\n== Setting up Seed Data for Development =="
   system "bin/docker r bin/rake db:seed:sample_users"
 end
