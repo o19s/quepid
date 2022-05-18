@@ -1,5 +1,8 @@
 development:
-  adapter: async
+  #adapter: async
+  adapter: redis
+  url: <%= ENV.fetch("REDIS_URL") { "redis://localhost:6379/1" } %>
+  channel_prefix: quepid_dev
 
 test:
   adapter: test

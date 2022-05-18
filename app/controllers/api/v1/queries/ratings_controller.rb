@@ -10,6 +10,11 @@ module Api
           @rating = @query.ratings.find_or_create_by doc_id: @doc_id
 
           if @rating.update rating_params
+            #ActionCable.server.broadcast "calls", "message"
+
+            #StatChannel.ratingsinprogress
+            ActionCable.server.broadcast "case-#{current_case.id}", @rating.to_json
+
             Analytics::Tracker.track_rating_created_event current_user, @rating
             respond_with @rating
           else
@@ -20,6 +25,13 @@ module Api
         def destroy
           @rating = @query.ratings.where(doc_id: @doc_id).first
           @rating.delete
+
+          StatChannel.broadcast_to(
+            current_user,
+            title: 'New things!',
+            body: 'All the news fit to print'
+          )
+
           Analytics::Tracker.track_rating_deleted_event current_user, @rating
 
           head :no_content
