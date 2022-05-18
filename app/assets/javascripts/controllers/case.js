@@ -3,10 +3,10 @@
 angular.module('QuepidApp')
   .controller('CaseCtrl', [
     '$scope', '$uibModal', '$log',
-    'caseSvc', 'ActionCableChannel',
+    'caseSvc', 'caseTryNavSvc', 'queryViewSvc', 'ActionCableChannel',
     function (
       $scope, $uibModal, $log,
-      caseSvc, ActionCableChannel
+      caseSvc, caseTryNavSvc, queryViewSvc, ActionCableChannel
     ) {
       $scope.caseModel = {};
       $scope.caseModel.cases = caseSvc.allCases;
@@ -14,19 +14,7 @@ angular.module('QuepidApp')
       $scope.caseModel.reorderEnabled = false;
       $scope.scores  = [];
       $scope.theCase = caseSvc.getSelectedCase();
-
-      // connect to ActionCable
-      var consumer = new ActionCableChannel("StatChannel", {case_id:8});
-      var callback = function(message){
-        console.log("HERE WE GO");
-        console.log(message);
-        //$scope.myData.push(message);
-      };
-      consumer.subscribe(callback).then(function(){
-        $scope.$on("$destroy", function(){
-          consumer.unsubscribe();
-        });
-      });
+      $scope.caseNeedsRefresh = false;
 
       $scope.caseName = {
         name: null,
@@ -63,8 +51,30 @@ angular.module('QuepidApp')
         if (aCase) {
           $scope.theCase = aCase;
           $scope.scores  = aCase.scores;
+
+          // connect to ActionCable
+          var consumer = new ActionCableChannel("StatChannel", { case_id: $scope.theCase.caseNo });
+          var callback = function(message){
+            console.log('running callback');
+            console.log(message)
+            response = JSON.parse(message);
+            $scope.caseNeedsRefresh = true;
+            console.log("Marking query " + response.query_id + ' as dirty');
+            queryViewSvc.markQueryNeedsRefresh(response.query_id);
+
+          };
+          consumer.subscribe(callback).then(function(){
+            $scope.$on("$destroy", function(){
+              consumer.unsubscribe();
+            });
+          });
         }
       });
+
+      // Not currently used as the refreshCase seems to not be happy with ActionCable reconnection.
+      $scope.refreshCase = function() {
+        caseTryNavSvc.navigateTo({'caseNo': $scope.theCase.caseNo, 'tryNo': $scope.theCase.lastTry});
+      }
 
       $scope.caseModel.selectedCase = function() {
         if (caseSvc.isCaseSelected()) {

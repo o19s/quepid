@@ -51,6 +51,10 @@ angular.module('QuepidApp')
         return true;
       };
 
+      $scope.query.needsRefresh = function() {
+        return queryViewSvc.isQueryRefreshed($scope.query.queryId);
+      };
+
       //$scope.query.moused = false;
       $scope.query.isToggled = function() {
         return queryViewSvc.isQueryToggled($scope.query.queryId);

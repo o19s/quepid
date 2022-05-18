@@ -20,6 +20,20 @@ angular.module('QuepidApp')
         return (this.queryToggles[queryId]);
       };
 
+      this.markQueryNeedsRefresh = function(queryId) {
+        if (!this.queryNeedsRefresh.hasOwnProperty(queryId)) {
+          this.queryNeedsRefresh[queryId] = false;
+        }
+        this.queryNeedsRefresh[queryId] = true;
+      };
+
+      this.isQueryRefreshed = function(queryId) {
+        if (!this.queryNeedsRefresh.hasOwnProperty(queryId)) {
+          this.queryNeedsRefresh[queryId] = false;
+        }
+        return (this.queryNeedsRefresh[queryId]);
+      };
+
       this.toggleQuery = function(queryId) {
         if (!this.queryToggles.hasOwnProperty(queryId)) {
           this.queryToggles[queryId] = false;
@@ -34,6 +48,7 @@ angular.module('QuepidApp')
       this.reset = function() {
         this.diffSetting = null;
         this.queryToggles = {}; // the toggles, they do nothing
+        this.queryNeedsRefresh = {} // the refreshes, they do nothing!
       };
 
       this.reset();
