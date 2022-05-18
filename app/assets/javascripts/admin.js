@@ -17,7 +17,7 @@
 
 
 
-this.channel = App.cable.subscriptions.create({channel: 'StatChannel', case:8}, {
+this.channel = App.cable.subscriptions.create({channel: 'StatChannel', case_id:8}, {
     connected: function () {
       console.log('here')
     },

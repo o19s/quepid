@@ -8,6 +8,7 @@ angular.module('QuepidApp', [
   'ngSanitize',
   'ui.bootstrap',
   'mgo-angular-wizard',
+  'ngActionCable',
   'ui.sortable',
   'ngJsonExplorer',
   'o19s.splainer-search',
@@ -22,4 +23,8 @@ angular.module('QuepidApp', [
   'ngAnimate',
   'countUp',
   'ngclipboard'
-]);
+])
+.run(function (ActionCableConfig){
+  ActionCableConfig.debug = true;
+})
+;

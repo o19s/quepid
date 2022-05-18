@@ -3,10 +3,10 @@
 angular.module('QuepidApp')
   .controller('CaseCtrl', [
     '$scope', '$uibModal', '$log',
-    'caseSvc',
+    'caseSvc', 'ActionCableChannel',
     function (
       $scope, $uibModal, $log,
-      caseSvc
+      caseSvc, ActionCableChannel
     ) {
       $scope.caseModel = {};
       $scope.caseModel.cases = caseSvc.allCases;
@@ -14,6 +14,20 @@ angular.module('QuepidApp')
       $scope.caseModel.reorderEnabled = false;
       $scope.scores  = [];
       $scope.theCase = caseSvc.getSelectedCase();
+
+      // connect to ActionCable
+      var consumer = new ActionCableChannel("StatChannel", {case_id:8});
+      var callback = function(message){
+        console.log("HERE WE GO");
+        console.log(message);
+        //$scope.myData.push(message);
+      };
+      consumer.subscribe(callback).then(function(){
+        $scope.$on("$destroy", function(){
+          consumer.unsubscribe();
+        });
+      });
+
       $scope.caseName = {
         name: null,
         startRename: false,
