@@ -22,6 +22,7 @@ module Api
           end
         end
 
+        StatChannel.rating_bulk_updated_event @case, current_user, @query
         Analytics::Tracker.track_rating_bulk_updated_event current_user, @query
         head :no_content
       end
@@ -34,6 +35,7 @@ module Api
           end
         end
 
+        StatChannel.rating_bulk_updated_event @case, current_user, @query
         Analytics::Tracker.track_rating_bulk_deleted_event current_user, @query
         head :no_content
       end

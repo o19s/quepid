@@ -20,8 +20,26 @@ class StatChannel < ApplicationCable::Channel
   def caseupdate
   end
 
-  def ratingsinprogress
+  def self.rating_created_event (current_case, current_user, rating)
     puts "ratins are in progress"
+    ActionCable.server.broadcast "case-#{current_case.id}", {
+      user: {
+        name: current_user.name,
+        id: current_user.id
+      },
+      query_id: rating.query.id
+    }
+  end
+
+  def self.rating_bulk_updated_event (current_case, current_user, query)
+    puts "rating_bulk_updated_event"
+    ActionCable.server.broadcast "case-#{current_case.id}", {
+      user: {
+        name: current_user.name,
+        id: current_user.id
+      },
+      query_id: query.id
+    }
   end
 
   def ratingsdone

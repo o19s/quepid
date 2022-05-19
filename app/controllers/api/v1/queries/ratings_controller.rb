@@ -13,7 +13,10 @@ module Api
             #ActionCable.server.broadcast "calls", "message"
 
             #StatChannel.ratingsinprogress
-            ActionCable.server.broadcast "case-#{current_case.id}", @rating.to_json
+            puts @rating.to_json
+
+            StatChannel.rating_created_event @case, current_user, @rating
+
 
             Analytics::Tracker.track_rating_created_event current_user, @rating
             respond_with @rating
@@ -26,11 +29,7 @@ module Api
           @rating = @query.ratings.where(doc_id: @doc_id).first
           @rating.delete
 
-          StatChannel.broadcast_to(
-            current_user,
-            title: 'New things!',
-            body: 'All the news fit to print'
-          )
+          StatChannel.rating_created_event @case, current_user, @rating
 
           Analytics::Tracker.track_rating_deleted_event current_user, @rating
 

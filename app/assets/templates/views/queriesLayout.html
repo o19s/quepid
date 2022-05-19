@@ -59,7 +59,7 @@
 
               <span ng-show="caseNeedsRefresh">
                 <div class="alert alert-warning" role="alert">
-                  this case has been updated, please refresh
+                  ratings updated by {{ caseMessage.user.name }}, please refresh
                   <!-- This button seems to cause the unsubscribe to sockets to run, and we never get alerts,
                   so going with just the hard refresh of the browser ;-) -->
                   <!-- button class="btn btn-primary" ng-click="refreshCase()"> Refresh</button-->
