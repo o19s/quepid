@@ -54,17 +54,15 @@ angular.module('QuepidApp')
 
           // connect to ActionCable
           var consumer = new ActionCableChannel("StatChannel", { case_id: $scope.theCase.caseNo });
-          var callback = function(payload){
+          var callback = function(message){
             console.log('running callback');
-            console.log(payload)
+            console.log(message)
             // wonder if we should map from snake to camel case?
-            message = payload //JSON.parse(payload);
             if (message.user.id !== $scope.currentUser.id) {
               $scope.caseNeedsRefresh = true;
               $scope.caseMessage = message;
               queryViewSvc.markQueryNeedsRefresh(message.query_id);
             }
-
           };
           consumer.subscribe(callback).then(function(){
             $scope.$on("$destroy", function(){
