@@ -3,6 +3,7 @@
 This document explains how Quepid can be operated and configured.
 
 - [Running behind a load balancer](#loadbalancer)
+- [Setting up a Context Path](#contextpath)
 - [Mail](#mail)
 - [OAuth](#OAuth)
 - [Legal Pages & GDPR](#legal-pages-&-gdpr)
@@ -63,6 +64,15 @@ FORCE_SSL=true                   # Enable this to use https only connections
 
 > ⚠️ Setting `FORCE_SSL=true` will prevent you from testing search engines
 > that are not TLS enabled (`https`)!
+
+## Setting up a Context Path
+
+If you wish to host Quepid in a folder other than the root folder (`/`), specify the `RAILS_RELATIVE_URL_ROOT` env var.
+
+__Note 1:__: The context path should not have a trailing-slash.  If you do not wish to setup a context path you can leave this variable blank.
+
+__Note 2:__: If you are utilizing the context path, be sure to specify the env var when building the Docker images or you may have issues with asset paths. 
+
 
 ## Mail
 
