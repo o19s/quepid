@@ -19,12 +19,12 @@ angular.module('UtilitiesModule')
           defaultScorerId = parseInt(userObj.defaultScorerId);
         }
 
-        self.company         = userObj.company;
-        self.defaultScorerId = defaultScorerId;
+        self.company                  = userObj.company;
+        self.defaultScorerId          = defaultScorerId;
         self.completedCaseWizard      = userObj.completed_case_wizard;
-        self.id              = userObj.id;
-        self.permissions     = userObj.permissions;
-        self.email           = userObj.email;
+        self.id                       = userObj.id;
+        self.permissions              = userObj.permissions;
+        self.email                    = userObj.email;
         self.casesInvolvedWithCount   = userObj.cases_involved_with_count;
         self.teamsInvolvedWithCount   = userObj.teams_involved_with_count;
 
