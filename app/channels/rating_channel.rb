@@ -1,8 +1,8 @@
-class StatChannel < ApplicationCable::Channel
+class RatingChannel < ApplicationCable::Channel
   def subscribed
 
-    # this is fun.  From straight up JS: {channel: 'StatChannel', case:7} is {"channel"=>"StatChannel", "case"=>7}
-    # but in Angular ActionCable: {channel: 'StatChannel', case:7} is {"channel"=>"StatChannel", "data"=>{"case"=>7}}
+    # this is fun.  From straight up JS: {channel: 'RatingChannel', case:7} is {"channel"=>"RatingChannel", "case"=>7}
+    # but in Angular ActionCable: {channel: 'RatingChannel', case:7} is {"channel"=>"RatingChannel", "data"=>{"case"=>7}}
     puts "in sbuscribed."
     puts params
     case_id = params['data'].present? ? params['data']['case_id'] : params['case_id']
@@ -17,11 +17,7 @@ class StatChannel < ApplicationCable::Channel
     # Any cleanup needed when channel is unsubscribed
   end
 
-  def caseupdate
-  end
-
   def self.rating_created_event (current_case, current_user, rating)
-    puts "ratins are in progress"
     ActionCable.server.broadcast "case-#{current_case.id}", {
       user: {
         name: current_user.name,
@@ -32,7 +28,6 @@ class StatChannel < ApplicationCable::Channel
   end
 
   def self.rating_bulk_updated_event (current_case, current_user, query)
-    puts "rating_bulk_updated_event"
     ActionCable.server.broadcast "case-#{current_case.id}", {
       user: {
         name: current_user.name,
@@ -42,6 +37,4 @@ class StatChannel < ApplicationCable::Channel
     }
   end
 
-  def ratingsdone
-  end
 end

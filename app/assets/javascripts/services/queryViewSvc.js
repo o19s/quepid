@@ -48,7 +48,7 @@ angular.module('QuepidApp')
       this.reset = function() {
         this.diffSetting = null;
         this.queryToggles = {}; // the toggles, they do nothing
-        this.queryNeedsRefresh = {} // the refreshes, they do nothing!
+        this.queryNeedsRefresh = {}; // the refreshes, they do nothing!
       };
 
       this.reset();

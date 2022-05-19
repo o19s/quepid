@@ -10,15 +10,10 @@ module Api
           @rating = @query.ratings.find_or_create_by doc_id: @doc_id
 
           if @rating.update rating_params
-            #ActionCable.server.broadcast "calls", "message"
 
-            #StatChannel.ratingsinprogress
-            puts @rating.to_json
-
-            StatChannel.rating_created_event @case, current_user, @rating
-
-
+            RatingChannel.rating_created_event @case, current_user, @rating
             Analytics::Tracker.track_rating_created_event current_user, @rating
+
             respond_with @rating
           else
             render json: @rating.errors, status: :bad_request
@@ -29,8 +24,7 @@ module Api
           @rating = @query.ratings.where(doc_id: @doc_id).first
           @rating.delete
 
-          StatChannel.rating_created_event @case, current_user, @rating
-
+          RatingChannel.rating_created_event @case, current_user, @rating
           Analytics::Tracker.track_rating_deleted_event current_user, @rating
 
           head :no_content

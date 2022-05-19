@@ -53,10 +53,10 @@ angular.module('QuepidApp')
           $scope.scores  = aCase.scores;
 
           // connect to ActionCable
-          var consumer = new ActionCableChannel("StatChannel", { case_id: $scope.theCase.caseNo });
+          var consumer = new ActionCableChannel('RatingChannel', { case_id: $scope.theCase.caseNo });
           var callback = function(message){
             console.log('running callback');
-            console.log(message)
+            console.log(message);
             // wonder if we should map from snake to camel case?
             if (message.user.id !== $scope.currentUser.id) {
               $scope.caseNeedsRefresh = true;
@@ -65,7 +65,7 @@ angular.module('QuepidApp')
             }
           };
           consumer.subscribe(callback).then(function(){
-            $scope.$on("$destroy", function(){
+            $scope.$on('$destroy', function(){
               consumer.unsubscribe();
             });
           });
@@ -75,7 +75,7 @@ angular.module('QuepidApp')
       // Not currently used as the refreshCase seems to not be happy with ActionCable reconnection.
       $scope.refreshCase = function() {
         caseTryNavSvc.navigateTo({'caseNo': $scope.theCase.caseNo, 'tryNo': $scope.theCase.lastTry});
-      }
+      };
 
       $scope.caseModel.selectedCase = function() {
         if (caseSvc.isCaseSelected()) {

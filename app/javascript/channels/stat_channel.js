@@ -1,7 +1,7 @@
 // NOTE NOT USED TODAY BECAUSE WE ARE SOMEHOW NOT HIP WIHT THIS BUILD TOOL AND MORE LIKE RAILS 5
 import consumer from "./consumer"
 
-consumer.subscriptions.create("StatChannel", {
+consumer.subscriptions.create("RatingChannel", {
   connected() {
     // Called when the subscription is ready for use on the server
   },
