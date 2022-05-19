@@ -2,7 +2,6 @@
 
 class RatingChannel < ApplicationCable::Channel
   def subscribed
-
     # rubocop:disable Layout/LineLength
     # this is fun.  From straight up JS: {channel: 'RatingChannel', case:7} is {"channel"=>"RatingChannel", "case"=>7}
     # but in Angular ActionCable: {channel: 'RatingChannel', case:7} is {"channel"=>"RatingChannel", "data"=>{"case"=>7}}
