@@ -154,7 +154,7 @@ angular.module('QuepidApp')
       // Remote Query subscription mgmt
       cableSvc.setupSubscription(caseNo).then(function() {
         $scope.$on('$destroy', function() {
-          caseSvc.unsubscribe();
+          cableSvc.unsubscribe();
         });
       });
     }
