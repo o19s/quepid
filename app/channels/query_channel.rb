@@ -2,8 +2,8 @@
 
 class QueryChannel < ApplicationCable::Channel
   def subscribed
-    puts "New subscription"
     case_id = params['data'].present? ? params['data']['case_id'] : params['case_id']
+    puts "New subscription #{case_id}"
     stream_from stream_name(case_id) 
   end
 
@@ -14,6 +14,7 @@ class QueryChannel < ApplicationCable::Channel
 
   # Frontend will call this when it wants a set of queries
   def new_job params
+    puts "New job"
     ActionCable.server.broadcast stream_name(params['message']), {
       type: 'new',
       case_id: params['message']

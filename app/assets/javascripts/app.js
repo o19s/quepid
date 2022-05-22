@@ -25,5 +25,5 @@ angular.module('QuepidApp', [
   'ngclipboard'
 ])
 .run(function (ActionCableConfig) {
-  // ActionCableConfig.debug = true;
+  //ActionCableConfig.debug = true;
 });

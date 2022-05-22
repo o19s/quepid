@@ -37,6 +37,7 @@ angular.module('QuepidApp')
       svc.renameCase         = renameCase;
       svc.requestQueries     = requestQueries;
       svc.setupSubscription  = setupSubscription;
+      svc.unsubscribe        = unsubscribe;
 
       // an individual case, ie
       // a search problem to be solved
@@ -439,30 +440,39 @@ angular.module('QuepidApp')
        * Setup ActionCable subscription
        */
       function setupSubscription(caseID) {
-        // Remote Query consumer mgmt
-        if (svc.remoteQueryConsumer) {
-          svc.remoteQueryConsumer.unsubscribe();
-        }
+        return svc.unsubscribe().then(function() {
+          // Remote Query consumer mgmt
+          svc.remoteQueryConsumer = new ActionCableChannel('QueryChannel', {
+            'case_id': caseID
+          });
 
-        svc.remoteQueryConsumer = new ActionCableChannel('QueryChannel', {
-          'case_id': caseID
+          var queryCallback = function(payload) {
+            switch (payload.type) {
+              case 'heartbeat':
+                console.log('Heartbeat from query executor');
+                break;
+              case 'complete':
+                console.log('Query Job complete.');
+                console.log(payload.responses);
+                break;
+              default:
+                console.log('Unsupported message type');
+            }
+          };
+
+          console.log('Setting up new subscription', caseID);
+          return svc.remoteQueryConsumer.subscribe(queryCallback)
         });
+      }
 
-        var queryCallback = function(payload) {
-          switch (payload.type) {
-            case 'heartbeat':
-              console.log('Heartbeat from query executor');
-              break;
-            case 'complete':
-              console.log('Query Job complete.');
-              console.log(payload.responses);
-              break;
-            default:
-              console.log('Unsupported message type');
-          }
-        };
-
-        svc.remoteQueryConsumer.subscribe(queryCallback)
+      function unsubscribe() {
+        if (svc.remoteQueryConsumer) {
+          return svc.remoteQueryConsumer.unsubscribe().then(function() {
+            svc.remoteQueryConsumer = null;
+          });
+        } else {
+          return $q.resolve();
+        }
       }
 
 

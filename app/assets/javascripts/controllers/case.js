@@ -3,10 +3,10 @@
 angular.module('QuepidApp')
   .controller('CaseCtrl', [
     '$scope', '$uibModal', '$log',
-    'caseSvc', 'ActionCableChannel',
+    'caseSvc',
     function (
       $scope, $uibModal, $log,
-      caseSvc, ActionCableChannel
+      caseSvc
     ) {
       $scope.caseModel = {};
       $scope.caseModel.cases = caseSvc.allCases;
@@ -50,8 +50,6 @@ angular.module('QuepidApp')
         if (aCase) {
           $scope.theCase = aCase;
           $scope.scores  = aCase.scores;
-
-          caseSvc.setupSubscription(aCase.caseNo);
         }
       });
 
@@ -88,6 +86,7 @@ angular.module('QuepidApp')
         }
       };
 
+    // Temporary function for debugging actioncable
     $scope.play = function() {
       caseSvc.requestQueries($scope.theCase.caseNo);
     };

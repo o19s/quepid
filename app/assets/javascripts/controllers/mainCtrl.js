@@ -150,5 +150,12 @@ angular.module('QuepidApp')
           $(document).trigger('toggleEast');
         };
       }
+
+      // Remote Query subscription mgmt
+      caseSvc.setupSubscription(caseNo).then(function() {
+        $scope.$on('$destroy', function() {
+          caseSvc.unsubscribe();
+        });
+      });
     }
   ]);

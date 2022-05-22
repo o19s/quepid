@@ -11,6 +11,7 @@ services:
     environment:
       - LAUNCHY_DRY_RUN=true # dev only letter_opener gem wants to open a browser when sending emails.
       - BROWSER=/dev/null
+      - REDIS_URL=redis://redis:6739/1
     volumes:
       - .:/srv/app
       - ./log:/log
