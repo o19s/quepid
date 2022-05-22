@@ -85,11 +85,5 @@ angular.module('QuepidApp')
           });
         }
       };
-
-    // Temporary function for debugging actioncable
-    $scope.play = function() {
-      caseSvc.requestQueries($scope.theCase.caseNo);
-    };
     }
-
   ]);

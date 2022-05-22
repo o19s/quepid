@@ -5,12 +5,12 @@ angular.module('QuepidApp')
     '$http', '$filter', '$q', '$rootScope',
     'flash',
     'caseTryNavSvc', 'queriesSvc', 'settingsSvc',
-    'broadcastSvc', 'ActionCableChannel',
+    'broadcastSvc',
     function caseSvc(
       $http, $filter, $q, $rootScope,
       flash,
       caseTryNavSvc, queriesSvc, settingsSvc,
-      broadcastSvc, ActionCableChannel
+      broadcastSvc
     ) {
 
       var bootstrapped = false;
@@ -22,7 +22,6 @@ angular.module('QuepidApp')
       this.archived           = [];
       this.dropdownCases      = [];
       svc.casesCount          = 0;
-      svc.remoteQueryConsumer = null;
 
       // Functions
       svc.cloneCase          = cloneCase;
@@ -35,9 +34,6 @@ angular.module('QuepidApp')
       svc.refetchCaseLists   = refetchCaseLists;
       svc.saveDefaultScorer  = saveDefaultScorer;
       svc.renameCase         = renameCase;
-      svc.requestQueries     = requestQueries;
-      svc.setupSubscription  = setupSubscription;
-      svc.unsubscribe        = unsubscribe;
 
       // an individual case, ie
       // a search problem to be solved
@@ -423,55 +419,6 @@ angular.module('QuepidApp')
             }, function() {
               caseTryNavSvc.notFound();
             });
-        }
-      }
-
-      /*
-       * Request remote execution of queries via websocket
-       */
-      function requestQueries(caseID) {
-        if (svc.remoteQueryConsumer) {
-          console.log('Requesting remote query execution.');
-          svc.remoteQueryConsumer.send(caseID, 'new_job');
-        }
-      }
-
-      /*
-       * Setup ActionCable subscription
-       */
-      function setupSubscription(caseID) {
-        return svc.unsubscribe().then(function() {
-          // Remote Query consumer mgmt
-          svc.remoteQueryConsumer = new ActionCableChannel('QueryChannel', {
-            'case_id': caseID
-          });
-
-          var queryCallback = function(payload) {
-            switch (payload.type) {
-              case 'heartbeat':
-                console.log('Heartbeat from query executor');
-                break;
-              case 'complete':
-                console.log('Query Job complete.');
-                console.log(payload.responses);
-                break;
-              default:
-                console.log('Unsupported message type');
-            }
-          };
-
-          console.log('Setting up new subscription', caseID);
-          return svc.remoteQueryConsumer.subscribe(queryCallback)
-        });
-      }
-
-      function unsubscribe() {
-        if (svc.remoteQueryConsumer) {
-          return svc.remoteQueryConsumer.unsubscribe().then(function() {
-            svc.remoteQueryConsumer = null;
-          });
-        } else {
-          return $q.resolve();
         }
       }
 

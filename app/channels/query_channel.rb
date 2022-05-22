@@ -13,14 +13,18 @@ class QueryChannel < ApplicationCable::Channel
 
 
   # Frontend will call this when it wants a set of queries
-  def new_job params
+  def new_job data
     puts "New job"
-    ActionCable.server.broadcast stream_name(params['message']), {
+    ActionCable.server.broadcast "qompanion_#{data['message']['user_id']}", {
       type: 'new',
-      case_id: params['message']
+      case_id: data['message']['case_id'],
+      href: data['message']['href'],
+      query: data['message']['query'],
+      query_id: data['message']['query_id'],
     }
   end
 
+  # TODO: Use or delete
   # Executor will call this to let frontend know it's working
   def self.query_job_running case_id
     ActionCable.server.broadcast stream_name(case_id), {
@@ -28,18 +32,10 @@ class QueryChannel < ApplicationCable::Channel
     }
   end
 
-  # 
-  def self.query_job_complete case_id, payload
-    ActionCable.server.broadcast stream_name(case_id), {
-      type: 'complete',
-      responses: payload
-    }
-  end
-
   private
 
   def stream_name case_id
-    return "remote-query-#{case_id}"
+    return "remote_query_#{case_id}"
   end
 
 end

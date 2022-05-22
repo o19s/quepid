@@ -5,13 +5,13 @@ angular.module('QuepidApp')
   // is responsible for bootstrapping everyone so...
   .controller('MainCtrl', [
     '$scope', '$routeParams', '$location', '$rootScope', '$log',
-    'flash',
+    'flash', 'cableSvc',
     'caseSvc', 'settingsSvc', 'querySnapshotSvc', 'caseTryNavSvc',
     'queryViewSvc', 'queriesSvc', 'docCacheSvc', 'diffResultsSvc', 'scorerSvc',
     'paneSvc',
     function (
       $scope, $routeParams, $location, $rootScope, $log,
-      flash,
+      flash, cableSvc,
       caseSvc, settingsSvc, querySnapshotSvc, caseTryNavSvc,
       queryViewSvc, queriesSvc, docCacheSvc, diffResultsSvc, scorerSvc,
       paneSvc
@@ -152,7 +152,7 @@ angular.module('QuepidApp')
       }
 
       // Remote Query subscription mgmt
-      caseSvc.setupSubscription(caseNo).then(function() {
+      cableSvc.setupSubscription(caseNo).then(function() {
         $scope.$on('$destroy', function() {
           caseSvc.unsubscribe();
         });

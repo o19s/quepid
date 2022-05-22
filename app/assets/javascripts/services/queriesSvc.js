@@ -14,12 +14,14 @@ angular.module('QuepidApp')
     '$log',
     '$sce',
     'broadcastSvc',
+    'cableSvc',
     'caseTryNavSvc',
     'scorerSvc',
     'qscoreSvc',
     'searchSvc',
     'solrUrlSvc',
     'ratingsStoreSvc',
+    'userSvc',
     'DocListFactory',
     'diffResultsSvc',
     'searchErrorTranslatorSvc',
@@ -33,12 +35,14 @@ angular.module('QuepidApp')
       $log,
       $sce,
       broadcastSvc,
+      cableSvc,
       caseTryNavSvc,
       scorerSvc,
       qscoreSvc,
       searchSvc,
       solrUrlSvc,
       ratingsStoreSvc,
+      userSvc,
       DocListFactory,
       diffResultsSvc,
       searchErrorTranslatorSvc,
@@ -169,6 +173,7 @@ angular.module('QuepidApp')
         var version = 1;
 
         self.hasBeenScored  = false;
+        self.deferred       = null;
         self.docsSet        = false;
         self.allRated       = true;
         self.ratingsPromise = null;
@@ -439,27 +444,7 @@ angular.module('QuepidApp')
             resultsReturned = false;
 
             var promises = [];
-
-            promises.push(self.searcher.search()
-              .then(function() {
-                            }, function(response) {
-                self.linkUrl = self.searcher.linkUrl;
-                self.setDocs([], 0);
-
-                var msg = searchErrorTranslatorSvc.parseResponseObject(response, self.searcher.linkUrl, currSettings.searchEngine);
-
-                self.onError(msg);
-                reject(msg);
-              }).catch(function(response) {
-                $log.debug('Failed to load search results');
-                return response;
-              }));
-
-
-            // This is okay for smaller cases but bogs down the app for 100's of queries
-            //promises.push(self.refreshRatedDocs());
-
-            $q.all(promises).then( () => {
+            var searcherSuccessCallback = () => {
               self.linkUrl = self.searcher.linkUrl;
 
               if (self.searcher.inError) {
@@ -475,10 +460,50 @@ angular.module('QuepidApp')
                   self.othersExplained = self.searcher.othersExplained;
 
                   resolve();
-
                 }
               }
-            });
+            }
+
+            self.deferred = $q.defer();
+            cableSvc.registerPromise(self.queryId, self.deferred);
+            var remoteMode = true; // TODO: Make this configurable
+
+            // Remote query execution
+            if (remoteMode) {
+              cableSvc.requestQuery({
+                'user_id': userSvc.getUser().id,
+                'case_id': caseNo,
+                'href': self.searcher.callUrl,
+                'query': self.queryText,
+                'query_id': self.queryId
+              });
+
+              self.deferred.promise.then(function(resp){
+                self.searcher.search(resp).then(searcherSuccessCallback);
+              });
+            // Classic direct request from browser
+            } else {
+              promises.push(self.searcher.search()
+                .then(function() {
+                              }, function(response) {
+                  self.linkUrl = self.searcher.linkUrl;
+                  self.setDocs([], 0);
+
+                  var msg = searchErrorTranslatorSvc.parseResponseObject(response, self.searcher.linkUrl, currSettings.searchEngine);
+
+                  self.onError(msg);
+                  reject(msg);
+                }).catch(function(response) {
+                  $log.debug('Failed to load search results');
+                  return response;
+                }));
+
+
+              // This is okay for smaller cases but bogs down the app for 100's of queries
+              //promises.push(self.refreshRatedDocs());
+
+              $q.all(promises).then(searcherSuccessCallback);
+            }
           });
         };
 
