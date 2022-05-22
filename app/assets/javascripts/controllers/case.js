@@ -3,15 +3,16 @@
 angular.module('QuepidApp')
   .controller('CaseCtrl', [
     '$scope', '$uibModal', '$log',
-    'caseSvc',
+    'caseSvc', 'ActionCableChannel',
     function (
       $scope, $uibModal, $log,
-      caseSvc
+      caseSvc, ActionCableChannel
     ) {
       $scope.caseModel = {};
       $scope.caseModel.cases = caseSvc.allCases;
       $scope.caseModel.dropdownCases = caseSvc.dropdownCases;
       $scope.caseModel.reorderEnabled = false;
+      $scope.remoteQueryConsumer = null;
       $scope.scores  = [];
       $scope.theCase = caseSvc.getSelectedCase();
       $scope.caseName = {
@@ -49,6 +50,8 @@ angular.module('QuepidApp')
         if (aCase) {
           $scope.theCase = aCase;
           $scope.scores  = aCase.scores;
+
+          caseSvc.setupSubscription(aCase.caseNo);
         }
       });
 
@@ -84,5 +87,10 @@ angular.module('QuepidApp')
           });
         }
       };
+
+    $scope.play = function() {
+      caseSvc.requestQueries($scope.theCase.caseNo);
+    };
     }
+
   ]);

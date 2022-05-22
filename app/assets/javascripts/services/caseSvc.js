@@ -5,12 +5,12 @@ angular.module('QuepidApp')
     '$http', '$filter', '$q', '$rootScope',
     'flash',
     'caseTryNavSvc', 'queriesSvc', 'settingsSvc',
-    'broadcastSvc',
+    'broadcastSvc', 'ActionCableChannel',
     function caseSvc(
       $http, $filter, $q, $rootScope,
       flash,
       caseTryNavSvc, queriesSvc, settingsSvc,
-      broadcastSvc
+      broadcastSvc, ActionCableChannel
     ) {
 
       var bootstrapped = false;
@@ -18,22 +18,25 @@ angular.module('QuepidApp')
       var selectedCase = null;
       var svc = this;
 
-      svc.allCases          = [];
-      this.archived         = [];
-      this.dropdownCases    = [];
-      svc.casesCount        = 0;
+      svc.allCases            = [];
+      this.archived           = [];
+      this.dropdownCases      = [];
+      svc.casesCount          = 0;
+      svc.remoteQueryConsumer = null;
 
       // Functions
-      svc.cloneCase         = cloneCase;
-      svc.constructFromData = constructFromData;
-      svc.filterCases       = filterCases;
-      svc.get               = get;
-      svc.getCases          = getCases;
-      svc.isBootstrapped    = isBootstrapped;
-      svc.listContainsCase  = listContainsCase;
-      svc.refetchCaseLists  = refetchCaseLists;
-      svc.saveDefaultScorer = saveDefaultScorer;
-      svc.renameCase        = renameCase;
+      svc.cloneCase          = cloneCase;
+      svc.constructFromData  = constructFromData;
+      svc.filterCases        = filterCases;
+      svc.get                = get;
+      svc.getCases           = getCases;
+      svc.isBootstrapped     = isBootstrapped;
+      svc.listContainsCase   = listContainsCase;
+      svc.refetchCaseLists   = refetchCaseLists;
+      svc.saveDefaultScorer  = saveDefaultScorer;
+      svc.renameCase         = renameCase;
+      svc.requestQueries     = requestQueries;
+      svc.setupSubscription  = setupSubscription;
 
       // an individual case, ie
       // a search problem to be solved
@@ -420,6 +423,46 @@ angular.module('QuepidApp')
               caseTryNavSvc.notFound();
             });
         }
+      }
+
+      /*
+       * Request remote execution of queries via websocket
+       */
+      function requestQueries(caseID) {
+        if (svc.remoteQueryConsumer) {
+          console.log('Requesting remote query execution.');
+          svc.remoteQueryConsumer.send(caseID, 'new_job');
+        }
+      }
+
+      /*
+       * Setup ActionCable subscription
+       */
+      function setupSubscription(caseID) {
+        // Remote Query consumer mgmt
+        if (svc.remoteQueryConsumer) {
+          svc.remoteQueryConsumer.unsubscribe();
+        }
+
+        svc.remoteQueryConsumer = new ActionCableChannel('QueryChannel', {
+          'case_id': caseID
+        });
+
+        var queryCallback = function(payload) {
+          switch (payload.type) {
+            case 'heartbeat':
+              console.log('Heartbeat from query executor');
+              break;
+            case 'complete':
+              console.log('Query Job complete.');
+              console.log(payload.responses);
+              break;
+            default:
+              console.log('Unsupported message type');
+          }
+        };
+
+        svc.remoteQueryConsumer.subscribe(queryCallback)
       }
 
 
