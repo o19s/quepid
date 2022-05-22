@@ -18,22 +18,22 @@ angular.module('QuepidApp')
       var selectedCase = null;
       var svc = this;
 
-      svc.allCases            = [];
-      this.archived           = [];
-      this.dropdownCases      = [];
-      svc.casesCount          = 0;
+      svc.allCases          = [];
+      this.archived         = [];
+      this.dropdownCases    = [];
+      svc.casesCount        = 0;
 
       // Functions
-      svc.cloneCase          = cloneCase;
-      svc.constructFromData  = constructFromData;
-      svc.filterCases        = filterCases;
-      svc.get                = get;
-      svc.getCases           = getCases;
-      svc.isBootstrapped     = isBootstrapped;
-      svc.listContainsCase   = listContainsCase;
-      svc.refetchCaseLists   = refetchCaseLists;
-      svc.saveDefaultScorer  = saveDefaultScorer;
-      svc.renameCase         = renameCase;
+      svc.cloneCase         = cloneCase;
+      svc.constructFromData = constructFromData;
+      svc.filterCases       = filterCases;
+      svc.get               = get;
+      svc.getCases          = getCases;
+      svc.isBootstrapped    = isBootstrapped;
+      svc.listContainsCase  = listContainsCase;
+      svc.refetchCaseLists  = refetchCaseLists;
+      svc.saveDefaultScorer = saveDefaultScorer;
+      svc.renameCase        = renameCase;
 
       // an individual case, ie
       // a search problem to be solved
