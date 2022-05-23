@@ -12,7 +12,6 @@ angular.module('QuepidApp')
       $scope.caseModel.cases = caseSvc.allCases;
       $scope.caseModel.dropdownCases = caseSvc.dropdownCases;
       $scope.caseModel.reorderEnabled = false;
-      $scope.remoteQueryConsumer = null;
       $scope.scores  = [];
       $scope.theCase = caseSvc.getSelectedCase();
       $scope.caseName = {
