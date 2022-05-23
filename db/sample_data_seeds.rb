@@ -51,7 +51,7 @@ try_defaults = {
 user_specifics = {
   administrator:    true,
   name:             'Admin User',
-  email:            'quepid+admin@o19s.com',
+  email:            'admin@quepid.com',
 }
 user_params = user_defaults.merge(user_specifics)
 admin_user  = seed_user user_params
@@ -63,7 +63,7 @@ print_user_info user_params
 
 user_specifics = {
   name:             'One Case User',
-  email:            'quepid+1case@o19s.com',
+  email:            '1case@quepid.com',
 }
 user_params   = user_defaults.merge(user_specifics)
 one_case_user = seed_user user_params
@@ -75,7 +75,7 @@ print_user_info user_params
 
 user_specifics = {
   name:             'Two Case User',
-  email:            'quepid+2case@o19s.com',
+  email:            '2case@quepid.com',
 }
 user_params   = user_defaults.merge(user_specifics)
 two_case_user = seed_user user_params
@@ -87,7 +87,7 @@ print_user_info user_params
 
 user_specifics = {
   name:             'User with Solr Case',
-  email:            'quepid+solr@o19s.com',
+  email:            'solr@quepid.com',
 }
 user_params    = user_defaults.merge(user_specifics)
 solr_case_user = seed_user user_params
@@ -99,7 +99,7 @@ print_user_info user_params
 
 user_specifics = {
   name:             'User with ES Case',
-  email:            'quepid+es@o19s.com',
+  email:            'es@quepid.com',
 }
 user_params  = user_defaults.merge(user_specifics)
 es_case_user = seed_user user_params
@@ -111,7 +111,7 @@ print_user_info user_params
 
 user_specifics = {
   name:             'User with Realistic Activity in Quepid',
-  email:            'quepid+realisticActivity@o19s.com',
+  email:            'realisticActivity@quepid.com',
 }
 user_params          = user_defaults.merge(user_specifics)
 realistic_activity_user = seed_user user_params
@@ -123,7 +123,7 @@ print_user_info user_params
 
 user_specifics = {
   name:             'OSC Team Owner',
-  email:            'quepid+oscOwner@o19s.com',
+  email:            'oscOwner@quepid.com',
 }
 user_params    = user_defaults.merge(user_specifics)
 osc_owner_user = seed_user user_params
@@ -135,7 +135,7 @@ print_user_info user_params
 
 user_specifics = {
   name:             'OSC Team Member',
-  email:            'quepid+oscMember@o19s.com'
+  email:            'oscMember@quepid.com'
 }
 user_params     = user_defaults.merge(user_specifics)
 osc_member_user = seed_user user_params
@@ -146,7 +146,7 @@ print_user_info user_params
 ######################################
 user_specifics = {
   name:             'User with Custom Scorer',
-  email:            'quepid+CustomScorer@o19s.com',
+  email:            'CustomScorer@quepid.com',
 }
 user_params = user_defaults.merge(user_specifics)
 custom_scorer_user = seed_user user_params
@@ -158,7 +158,7 @@ print_user_info user_params
 
 user_specifics = {
   name:             'User with Custom Scorer as Default',
-  email:            'quepid+CustomScorerDefault@o19s.com',
+  email:            'CustomScorerDefault@quepid.com',
 }
 user_params = user_defaults.merge(user_specifics)
 custom_scorer_as_default_user = seed_user user_params
@@ -305,14 +305,20 @@ end
 print_step "End of seeding tries................"
 
 # Teams
-print_step "Seeding teams................"
+print_step "Seeding example team................"
 
 ######################################
-# OSC Team
+# Example Team
 ######################################
 
-osc = Team.where(owner_id: osc_owner_user.id, name: 'OSC').first_or_create
-osc.members << osc_member_user
+example_team = Team.where(owner_id: osc_owner_user.id, name: 'Example Team').first_or_create
+example_team.members << osc_owner_user
+example_team.members << osc_member_user
+example_team.members << realistic_activity_user
+
+example_team.cases << tens_of_queries_case
+
+example_team.save
 print_step "End of seeding teams................"
 
 # Big Cases
@@ -325,7 +331,7 @@ if ENV['SEED_LARGE_CASES']
 
   user_specifics = {
     name:             'User with 100s of Queries',
-    email:            'quepid+100sOfQueries@o19s.com',
+    email:            '100sOfQueries@quepid.com',
   }
   user_params = user_defaults.merge(user_specifics)
   hundreds_of_queries_user = seed_user user_params
@@ -337,7 +343,7 @@ if ENV['SEED_LARGE_CASES']
 
   user_specifics = {
     name:             'User with 1000s of Queries',
-    email:            'quepid+1000sOfQueries@o19s.com',
+    email:            '1000sOfQueries@quepid.com',
   }
   user_params = user_defaults.merge(user_specifics)
   thousands_of_queries_user = seed_user user_params

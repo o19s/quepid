@@ -225,7 +225,7 @@ If you want to create a LOT of queries for a user for testing, then run
 bin/docker r bin/rake db:seed:large_cases
 ```
 
-You will have two users, `quepid+100sOfQueries@o19s.com` and `quepid+1000sOfQueries@o19s.com` to test with.
+You will have two users, `100sOfQueries@quepid.com` and `1000sOfQueries@quepid.com` to test with.
 
 ## IV. Debugging
 
@@ -557,7 +557,7 @@ heroku restart -a quepid-staging
 The following accounts are created through the seeds. They all follow the following format:
 
 ```
-email: quepid+[type]@o19s.com
+email: [type]@quepid.com
 password: password
 ```
 
@@ -571,10 +571,13 @@ where type is one of the following:
 * `realisticActivity`: A user with a Solr case that has 10s of queries and 30 tries
 * `100sOfQueries`: A user with a Solr case that has 100s of queries (usually disabled)
 * `1000sOfQueries`: A user with a Solr case that has 1000s of queries (usually disabled)
-* `oscOwner`: A user who owns the team 'OSC'
-* `oscMember`: A user who is a member of the team 'OSC'
+* `oscOwner`: A user who owns the team 'Example Team'
+* `oscMember`: A user who is a member of the team 'Example Team'
 * `CustomScorer`: A user who has a custom scorer
 * `CustomScorerDefault`: A user who has a custom scorer that is set as their default
+
+`oscOwner@quepid.com`, `oscMember@quepid.com`, and `realisticActivity@quepid.com` are all
+members of a single team and share a case that is populated with queries and ratings.
 
 # Data Map
 
