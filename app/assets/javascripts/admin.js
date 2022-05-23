@@ -1,5 +1,3 @@
-'use strict';
-
 //= require bootstrap/dist/js/bootstrap.bundle
 //= require rails-ujs
 //= require jquery
@@ -20,8 +18,6 @@
 
   App.cable = ActionCable.createConsumer();
 }).call(this);
-
-
 
 
 this.channel = App.cable.subscriptions.create({channel: 'RatingChannel', case_id:8}, {
