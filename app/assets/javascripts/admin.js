@@ -22,13 +22,13 @@
 
 this.channel = App.cable.subscriptions.create({channel: 'RatingChannel', case_id:8}, {
     connected: function () {
-      console.log('here');
+      console.log('Connected to RatingChannel');
     },
     disconnected: function () {
-      console.log('gone');
+      console.log('Disconnected from RatingChannel');
     },
     received: function (data) {
-      console.log('Got something');
+      console.log('Received some data from RatingChannel Case 8:');
       console.log(data);
     }
 });
