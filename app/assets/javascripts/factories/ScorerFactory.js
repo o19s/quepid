@@ -582,6 +582,8 @@
       }
 
       function score(query, total, docs, bestDocs, options) {
+        bestDocs = bestDocs || [];
+
         // Don't score if there are no ratings
         if (bestDocs.length === 0) {
           var d = $q.defer();
