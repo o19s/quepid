@@ -319,6 +319,10 @@ example_team.members << realistic_activity_user
 example_team.cases << tens_of_queries_case
 
 example_team.save
+
+print_step "Seeded #{example_team.name} team with members #{example_team.members.map(&:email).to_sentence}"
+
+
 print_step "End of seeding teams................"
 
 # Big Cases
