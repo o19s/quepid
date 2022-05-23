@@ -582,6 +582,13 @@
       }
 
       function score(query, total, docs, bestDocs, options) {
+        // Don't score if there are no ratings
+        if (bestDocs.length === 0) {
+          var d = $q.defer();
+          d.resolve('--');
+          return d.promise;
+        }
+
         var maxScore  = self.maxScore();
         return self.runCode(
           query,
@@ -617,6 +624,7 @@
           return null;
         });
       }
+
     };
 
     return Scorer;
