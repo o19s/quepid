@@ -2,6 +2,7 @@
 
 require 'active_support/core_ext/integer/time'
 Sprockets.register_compressor 'application/javascript', :terser, Terser::Compressor
+# rubocop:disable Metrics/BlockLength
 Rails.application.configure do
   # Settings specified here will take precedence over those in config/application.rb.
 
@@ -109,3 +110,4 @@ Rails.application.configure do
 
   config.web_socket_server_url = 'wss://action-cable-example.herokuapp.com/cable'
 end
+# rubocop:enable Metrics/BlockLength
