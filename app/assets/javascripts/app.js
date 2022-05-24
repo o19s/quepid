@@ -24,7 +24,15 @@ angular.module('QuepidApp', [
   'countUp',
   'ngclipboard'
 ])
-.run(function (ActionCableConfig){
+.run(function ($location, ActionCableConfig){
+  // Handle setting up websockets for ActionCable and AngularJS.
   ActionCableConfig.debug = true;
+  var quepidStartsWithHttps = $location.protocol() === 'https';
+  if (quepidStartsWithHttps) {
+    ActionCableConfig.wsUri= "wss://" + $location.host() + "/cable";
+  }
+  else {
+    ActionCableConfig.wsUri= "ws://" + $location.host() + "/cable";
+  }
 })
 ;
