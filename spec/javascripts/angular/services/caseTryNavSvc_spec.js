@@ -11,6 +11,8 @@ describe('Service: caseTryNavSvc', function () {
 
   beforeEach(function() {
     locationMock = {
+      protocol: jasmine.createSpy(),
+      host: jasmine.createSpy(),
       path: jasmine.createSpy(),
       search: jasmine.createSpy()
     };
