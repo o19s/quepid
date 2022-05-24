@@ -103,4 +103,9 @@ Rails.application.configure do
   config.active_record.dump_schema_after_migration = false
 
   config.action_mailer.default_url_options = { host: ENV['QUEPID_DOMAIN'] }
+
+  config.action_cable.allowed_request_origins = ['https://action-cable-example.herokuapp.com', 'http://action-cable-example.herokuapp.com']
+
+  config.web_socket_server_url = "wss://action-cable-example.herokuapp.com/cable"
+
 end
