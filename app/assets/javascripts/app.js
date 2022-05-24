@@ -29,10 +29,10 @@ angular.module('QuepidApp', [
   ActionCableConfig.debug = true;
   var quepidStartsWithHttps = $location.protocol() === 'https';
   if (quepidStartsWithHttps) {
-    ActionCableConfig.wsUri= "wss://" + $location.host() + "/cable";
+    ActionCableConfig.wsUri= 'wss://' + $location.host() + '/cable';
   }
   else {
-    ActionCableConfig.wsUri= "ws://" + $location.host() + "/cable";
+    ActionCableConfig.wsUri= 'ws://' + $location.host() + '/cable';
   }
 })
 ;
