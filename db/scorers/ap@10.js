@@ -1,7 +1,7 @@
 let k = 10; // @Rank
 let count = 0;
 let totalRel = 0;
-total = 0;
+let total = 0;
 // if less than K results, need to reduce K now or final score is too low
 k = numReturned() < k ? numReturned() : k
 // for each returned document, calculate precision each time a new
