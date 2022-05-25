@@ -14,12 +14,12 @@
           '// This is the AP@10 formula as an example',
 	  'let k = 10; // @Rank',
 	  'let count = 0;',
-	  'let totalRel = 0;'
-	  'let total = 0;'
-	  '// if less than K results, need to reduce K now or final score is too low'
+	  'let totalRel = 0;',
+	  'total = 0;',
+	  '// if less than K results, need to reduce K now or final score is too low',
 	  'k = numReturned() < k ? numReturned() : k',
-	  '// for each returned document, calculate precision each time a new'
-	  '// relevant document is added to the ranked list.'
+	  '// for each returned document, calculate precision each time a new',
+	  '// relevant document is added to the ranked list.',
 	  'eachDoc(function(doc, i) {',
 	  'if (hasDocRating(i) && (docRating(i)) > 0) {',
           'count++;',
