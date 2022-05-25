@@ -13,8 +13,8 @@ eachDoc(function(doc, i) {
     }
 }, k);
 // count up the total number of relevant (not judged) documents
-eachRatedDoc(function(doc, rating) {
-    if (rating > 0) {
+eachDocWithRating(function(doc) {
+    if (doc.rating > 0) {
         totalRel++;
     }
 }, bestDocs.length);
