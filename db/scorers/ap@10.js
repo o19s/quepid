@@ -1,6 +1,6 @@
-var k = 10; // @Rank
-var count = 0;
-var totalRel = 0;
+let k = 10; // @Rank
+let count = 0;
+let totalRel = 0;
 total = 0;
 // if less than K results, need to reduce K now or final score is too low
 k = numReturned() < k ? numReturned() : k
@@ -20,5 +20,5 @@ for (let i = 0; i < bestDocs.length; i++) {
 }
 // AP is the sum of the precision points divided by the total
 // number of relevant documents
-let score = total / totalRel;
+const score = total / totalRel;
 setScore(score);
