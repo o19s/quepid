@@ -195,7 +195,6 @@ class Case < ApplicationRecord
   end
   # rubocop:enable Metrics/MethodLength
 
-  # rubocop:disable Metrics/MethodLength
   def clone_query query, clone_ratings
     new_query = query.dup
 
@@ -212,7 +211,5 @@ class Case < ApplicationRecord
 
     queries << new_query
   end
-
-  # rubocop:enable Metrics/MethodLength
 end
 # rubocop:enable Metrics/ClassLength
