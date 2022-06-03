@@ -1,4 +1,4 @@
-let k = 10; // @Rank
+const k = 10; // @Rank
 let rank = 0;
 eachDoc(function(doc, i) {
     if (rank === 0 && hasDocRating(i) && (docRating(i)) > 0) {
