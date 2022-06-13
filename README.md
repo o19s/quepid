@@ -105,7 +105,7 @@ This is useful for stress testing Quepid!  Especially the front end application!
 
 #### 3. Running the app
 
-Now fire up Quepid locally at http://localhost:3000:
+Now fire up Quepid locally at http://localhost:
 
 ```
 bin/docker server
