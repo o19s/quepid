@@ -1,0 +1,17 @@
+.fas[data-count]{
+    position:relative;
+}
+.fas[data-count]:after{
+    position: absolute;
+    right: -0.75em;
+    top: -.75em;
+    content: attr(data-count);
+    padding: .5em;
+    border-radius: 5em;
+    line-height: .9em;
+    color: white;
+    background: rgba(255,0,0,.5);
+    text-align: center;
+    min-width: 2em;
+    font: bold .3em sans-serif;
+}
