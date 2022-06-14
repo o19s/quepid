@@ -15,3 +15,26 @@
     min-width: 2em;
     font: bold .3em sans-serif;
 }
+
+.frog-pond {
+  height: 550px;
+  width: 898px;
+}
+
+.frog-pond::before{
+  content: '';
+  background-image: image-url("frog-pond.jpg");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  position: absolute;
+  height: 550px;
+  width: 898px;
+  top: 0;
+  left: 0;
+  opacity: 0.5;
+}
+
+.frog-pond p {
+
+}
