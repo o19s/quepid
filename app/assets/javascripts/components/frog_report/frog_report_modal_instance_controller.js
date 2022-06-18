@@ -8,13 +8,7 @@ angular.module('QuepidApp')
       var ctrl = this;
 
       ctrl.theCase = theCase;
-      ctrl.queriesSvc = queriesSvc
-      ctrl.options = {
-        history:  false,
-        queries:  true,
-        ratings:  false,
-        caseName: ''
-      };
+      ctrl.queriesSvc = queriesSvc;
 
       ctrl.numberOfMissingRatings = function() {
         var countMissingRatings = 0;
@@ -23,17 +17,16 @@ angular.module('QuepidApp')
         });
 
         return countMissingRatings;
-      }
+      };
 
       ctrl.numberOfRatings = function() {
         var countRatings = 0;
         angular.forEach(queriesSvc.queries, function(q) {
           countRatings = countRatings + Object.keys(q.ratings).length;
-
         });
 
         return countRatings;
-      }
+      };
 
       ctrl.cannotClone = function() {
         return !ctrl.options.caseName || ctrl.options.caseName === '';

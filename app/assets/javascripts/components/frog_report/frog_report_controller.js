@@ -41,8 +41,7 @@ angular.module('QuepidApp')
         });
 
         modalInstance.result.then(
-          function (options) {
-            //ctrl.cloneCase(options);
+          function () {
           },
           function() {
             $log.info('INFO: Modal dismissed');
