@@ -371,6 +371,7 @@ GEM
       concurrent-ruby (~> 1.0)
     unicode-display_width (2.0.0)
     uniform_notifier (1.14.2)
+    vega (0.2.6)
     warden (1.2.9)
       rack (>= 2.0.9)
     webmock (3.14.0)
@@ -444,6 +445,7 @@ DEPENDENCIES
   simplecov
   terser
   turbolinks (~> 5)
+  vega (~> 0.2.6)
   webmock
   webpacker (= 5.4.0)
 
