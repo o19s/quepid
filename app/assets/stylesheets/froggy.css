@@ -26,15 +26,19 @@
   background-image: image-url("frog-pond.jpg");
   background-position: center;
   background-repeat: no-repeat;
-  background-size: cover;
   position: absolute;
   height: 550px;
   width: 898px;
   top: 0;
   left: 0;
-  opacity: 0.5;
+  opacity: 0.35;
 }
 
-.frog-pond p {
+.frog-pond-content {
+  opacity: .99;  // 1.0 doesn't work.
+}
 
+.vega-embed {
+  width: 100%;
+  height: 100%;
 }

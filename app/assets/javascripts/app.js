@@ -21,5 +21,6 @@ angular.module('QuepidApp', [
   'templates',
   'ngAnimate',
   'countUp',
-  'ngclipboard'
+  'ngclipboard',
+  'ngVega'
 ]);
