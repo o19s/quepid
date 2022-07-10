@@ -12,17 +12,17 @@ var ngVega = angular.module('ngVega', []);
 // So yeah...
 
 ngVega.directive('vega', function() {
+    /* jshint ignore:start */
     function link(scope, element, attrs) {
         //scope.$watch('spec', function () {
-            //var r = vega.parse(scope.spec);
-            /* jshint ignore:start */
+            //var r = vega.parse(scope.spec);          
             vegaEmbed('#'+attrs.id, scope.spec).then(result => console.log(result)).catch(console.error);
-            /* jshint ignore:end */
             //vg.parse.spec(scope.spec, function(chart) {
             //    chart({el:"#"+attrs.id}).update();
             // })
         //}, true)
     }
+    /* jshint ignore:end */
 
     return {
         restrict: 'A',
