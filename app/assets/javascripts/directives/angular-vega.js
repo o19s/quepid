@@ -1,3 +1,5 @@
+'use strict';
+
 // hacked up from https://github.com/eptify/angular-vega/blob/master/src/angular-vega.js
 
 var ngVega = angular.module('ngVega', []);
@@ -11,12 +13,11 @@ var ngVega = angular.module('ngVega', []);
 
 ngVega.directive('vega', function() {
     function link(scope, element, attrs) {
-      console.log("linking");
-
-
         //scope.$watch('spec', function () {
             //var r = vega.parse(scope.spec);
-            vegaEmbed("#"+attrs.id, scope.spec).then(result => console.log(result)).catch(console.error);
+            /* jshint ignore:start */
+            vegaEmbed('#'+attrs.id, scope.spec).then(result => console.log(result)).catch(console.error);
+            /* jshint ignore:end */
             //vg.parse.spec(scope.spec, function(chart) {
             //    chart({el:"#"+attrs.id}).update();
             // })
@@ -29,5 +30,5 @@ ngVega.directive('vega', function() {
         scope: {
             spec: '='
         }
-    }
+    };
 });
