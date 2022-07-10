@@ -2,6 +2,8 @@
 
 // hacked up from https://github.com/eptify/angular-vega/blob/master/src/angular-vega.js
 
+/* jshint ignore:start */
+
 var ngVega = angular.module('ngVega', []);
 
 // Some Notes:
@@ -12,17 +14,17 @@ var ngVega = angular.module('ngVega', []);
 // So yeah...
 
 ngVega.directive('vega', function() {
-    /* jshint ignore:start */
+
     function link(scope, element, attrs) {
         //scope.$watch('spec', function () {
-            //var r = vega.parse(scope.spec);          
+            //var r = vega.parse(scope.spec);
             vegaEmbed('#'+attrs.id, scope.spec).then(result => console.log(result)).catch(console.error);
             //vg.parse.spec(scope.spec, function(chart) {
             //    chart({el:"#"+attrs.id}).update();
             // })
         //}, true)
     }
-    /* jshint ignore:end */
+
 
     return {
         restrict: 'A',
@@ -32,3 +34,4 @@ ngVega.directive('vega', function() {
         }
     };
 });
+/* jshint ignore:end */
