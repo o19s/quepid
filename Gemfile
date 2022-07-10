@@ -78,4 +78,4 @@ gem 'omniauth-google-oauth2', '~> 1.0'
 
 gem 'rails-healthcheck', '~> 1.4'
 
-gem "vega", "~> 0.2.6"
+gem 'vega', '~> 0.2.6'
