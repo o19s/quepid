@@ -1000,7 +1000,8 @@ angular.module('QuepidApp')
             }
 
             if (scoreInfo.score !== null) {
-              avg += scoreInfo.score;
+              // Treat non-rated queries as zeroes when calculating case score
+              avg += scoreInfo.score === '--' ? 0 : scoreInfo.score;
               tot++;
               queryScores[scorable.queryId] = {
                 score:    scoreInfo.score,
