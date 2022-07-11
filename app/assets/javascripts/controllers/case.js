@@ -3,10 +3,10 @@
 angular.module('QuepidApp')
   .controller('CaseCtrl', [
     '$scope', '$uibModal', '$log',
-    'caseSvc', 'caseTryNavSvc', 'queryViewSvc', 'ActionCableChannel',
+    'caseSvc', 'caseTryNavSvc', 'queryViewSvc', 'ActionCableChannel', 'ActionCableConfig',
     function (
       $scope, $uibModal, $log,
-      caseSvc, caseTryNavSvc, queryViewSvc, ActionCableChannel
+      caseSvc, caseTryNavSvc, queryViewSvc, ActionCableChannel, ActionCableConfig
     ) {
       $scope.caseModel = {};
       $scope.caseModel.cases = caseSvc.allCases;
@@ -53,6 +53,7 @@ angular.module('QuepidApp')
           $scope.scores  = aCase.scores;
 
           // connect to ActionCable
+          ActionCableConfig.wsUri = "wss://quepid-pr-515.herokuapp.com/cable"
           var consumer = new ActionCableChannel('RatingChannel', { case_id: $scope.theCase.caseNo });
           var callback = function(message){
             console.log('running callback');
