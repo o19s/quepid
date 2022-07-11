@@ -21,6 +21,16 @@
       <div class="container">
         <%= yield %>
       </div>
+
+
+      <div id="vis2"></div>
+
+<script type="text/javascript">
+  var spec = "https://raw.githubusercontent.com/vega/vega/master/docs/examples/bar-chart.vg.json";
+  vegaEmbed('#vis2', spec).then(function(result) {
+    // Access the Vega view instance (https://vega.github.io/vega/docs/api/view/) as result.view
+  }).catch(console.error);
+</script>
     </main>
 
     <%= render 'layouts/footer' %>
