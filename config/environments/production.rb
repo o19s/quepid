@@ -108,9 +108,6 @@ Rails.application.configure do
   # Change to false and provide your urls via the allowed_request_origins.
   config.action_cable.disable_request_forgery_protection = true
   config.action_cable.allowed_request_origins = [ 'http://app.quepid.com',
-                                                  /http:\/\/app.quepid.com.*/ ]
-
-  #config.action_cable.url = 'wss://quepid-pr-515.herokuapp.com/cable'
-
+                                                  %r{http://app.quepid.com.*} ]
 end
 # rubocop:enable Metrics/BlockLength
