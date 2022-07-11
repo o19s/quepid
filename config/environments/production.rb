@@ -109,6 +109,6 @@ Rails.application.configure do
   config.action_cable.allowed_request_origins = [ 'http://quepid-pr-515.herokuapp.com',
                                                   /http:\/\/quepid-pr-515.herokuapp.com.*/ ]
 
-  config.action_cable.url = 'wss://quepid-pr-515.herokuapp.com/cable'
+  #config.action_cable.url = 'wss://quepid-pr-515.herokuapp.com/cable'
 end
 # rubocop:enable Metrics/BlockLength
