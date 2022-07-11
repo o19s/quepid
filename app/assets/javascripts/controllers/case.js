@@ -2,10 +2,10 @@
 
 angular.module('QuepidApp')
   .controller('CaseCtrl', [
-    '$scope', '$uibModal', '$log',
+    '$scope', '$uibModal', '$log', '$location',
     'caseSvc', 'caseTryNavSvc', 'queryViewSvc', 'ActionCableChannel', 'ActionCableConfig',
     function (
-      $scope, $uibModal, $log,
+      $scope, $uibModal, $log, $location,
       caseSvc, caseTryNavSvc, queryViewSvc, ActionCableChannel, ActionCableConfig
     ) {
       $scope.caseModel = {};
@@ -53,10 +53,10 @@ angular.module('QuepidApp')
           $scope.scores  = aCase.scores;
 
           // connect to ActionCable
-          ActionCableConfig.wsUri = "wss://quepid-pr-515.herokuapp.com/cable"
+          ActionCableConfig.wsUri = 'wss://' + $location.host() + '/cable';
           var consumer = new ActionCableChannel('RatingChannel', { case_id: $scope.theCase.caseNo });
           var callback = function(message){
-            console.log('running callback');
+            console.log('running callback in core app');
             console.log(message);
             // wonder if we should map from snake to camel case?
             if (message.user.id !== $scope.currentUser.id) {
