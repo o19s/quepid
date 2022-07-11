@@ -106,8 +106,8 @@ Rails.application.configure do
   config.action_mailer.default_url_options = { host: ENV['QUEPID_DOMAIN'] }
 
   config.action_cable.disable_request_forgery_protection = true
-  config.action_cable.allowed_request_origins = [ 'https://quepid-pr-515.herokuapp.com',
-                                                  'http://quepid-pr-515.herokuapp.com' ]
+  config.action_cable.allowed_request_origins = [ 'http://quepid-pr-515.herokuapp.com',
+                                                  /http:\/\/quepid-pr-515.herokuapp.com.*/ ]
 
   config.web_socket_server_url = 'wss://quepid-pr-515.herokuapp.com/cable'
 end
