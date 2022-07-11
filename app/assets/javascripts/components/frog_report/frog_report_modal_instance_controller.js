@@ -17,9 +17,16 @@ angular.module('QuepidApp')
         "$schema": "https://vega.github.io/schema/vega/v5.json",
         "description": "A basic bar chart example, with value labels shown upon mouse hover.",
         "width": 800,
-        "height": 150,
+        "height": 200,
         "padding": 5,
-
+        "title": {
+           "text": "Summary of Query Rating Status",
+           "subtitle": "Number of queries grouped by missing ratings",
+           "subtitleFontStyle": "italic",
+           "frame": "group",
+           "anchor": "start",
+           "offset": 10
+         },
         "data": [
           {
             "name": "table",
@@ -68,8 +75,8 @@ angular.module('QuepidApp')
         ],
 
         "axes": [
-          { "orient": "bottom", "scale": "xscale" },
-          { "orient": "left", "scale": "yscale" }
+          { "orient": "bottom", "scale": "xscale", "title": "Rating Status" },
+          { "orient": "left", "scale": "yscale", "title": "Number Queries" }
         ],
 
         "marks": [
@@ -112,149 +119,6 @@ angular.module('QuepidApp')
           }
         ]
       };
-
-
-      $scope.spec2 = {
-        "$schema": "https://vega.github.io/schema/vega/v5.json",
-        "description": "Visualize the evolution of your Tries",
-        "width": 200,
-        "height": 150,
-        "padding": 5,
-
-        "signals": [
-          {
-            "name": "labels", "value": true,
-            "bind": {"input": "checkbox"}
-          },
-          {
-            "name": "layout", "value": "tidy",
-            "bind": {"input": "radio", "options": ["tidy", "cluster"]}
-          },
-          {
-            "name": "links", "value": "diagonal",
-            "bind": {
-              "input": "select",
-              "options": ["line", "curve", "diagonal", "orthogonal"]
-            }
-          },
-          {
-            "name": "separation", "value": false,
-            "bind": {"input": "checkbox"}
-          }
-        ],
-
-        "data": [
-          {
-            "name": "tree",
-            "urloff": "http://localhost:3000/analytics/tries_visualization/4/vega_data.json",
-            "values": [
-              {
-                "id": 36,
-                "name": "Try 2",
-                "parent": 4,
-                "size": 10,
-                "url": "http://localhost:3000/case/4/try/2",
-                "query_params": "{\n  \"query\": {\n    \"match_all\": {}\n  }\n}"
-              },
-              {
-                "id": 4,
-                "name": "Try 1",
-                "size": 10,
-                "url": "http://localhost:3000/case/4/try/1",
-                "query_params": "{\"query\": {\"match_all\": {}}}"
-              }
-            ],
-            "transform": [
-              {
-                "type": "stratify",
-                "key": "id",
-                "parentKey": "parent"
-              },
-              {
-                "type": "tree",
-                "method": {"signal": "layout"},
-                "size": [{"signal": "height"}, {"signal": "width - 100"}],
-                "separation": {"signal": "separation"},
-                "as": ["y", "x", "depth", "children"]
-              }
-            ]
-          },
-          {
-            "name": "links",
-            "source": "tree",
-            "transform": [
-              { "type": "treelinks" },
-              {
-                "type": "linkpath",
-                "orient": "horizontal",
-                "shape": {"signal": "links"}
-              }
-            ]
-          }
-        ],
-
-        "scales": [
-          {
-            "name": "color",
-            "type": "linear",
-            "range": {"scheme": "magma"},
-            "domain": {"data": "tree", "field": "depth"},
-            "zero": true
-          }
-        ],
-
-        "marks": [
-          {
-            "type": "path",
-            "from": {"data": "links"},
-            "encode": {
-              "update": {
-                "path": {"field": "path"},
-                "stroke": {"value": "#ccc"}
-              }
-            }
-          },
-          {
-            "type": "symbol",
-            "from": {"data": "tree"},
-            "encode": {
-              "enter": {
-                "size": {"value": 100},
-                "stroke": {"value": "#fff"},
-                "href": {"field": "url", "type": "nominal"},
-                "tooltip": {"field": "query_params", "type": "nominal"}
-              },
-              "update": {
-                "x": {"field": "x"},
-                "y": {"field": "y"},
-                "fill": {"scale": "color", "field": "depth"}
-              }
-            }
-          },
-          {
-            "type": "text",
-            "from": {"data": "tree"},
-            "encode": {
-              "enter": {
-                "text": {"field": "name"},
-                "fontSize": {"value": 9},
-                "baseline": {"value": "middle"},
-                "href": {"field": "url", "type": "nominal"},
-                "tooltip": {"field": "query_params", "type": "nominal"}
-              },
-              "update": {
-                "x": {"field": "x"},
-                "y": {"field": "y"},
-                "dx": {"signal": "datum.children ? -7 : 7"},
-                "align": {"signal": "datum.children ? 'right' : 'left'"},
-                "opacity": {"signal": "labels ? 1 : 0"}
-              }
-            }
-          }
-        ]
-      };
-
-
 
       /* jshint ignore:end */
       ctrl.tableOfRatings = function () {
