@@ -105,10 +105,12 @@ Rails.application.configure do
 
   config.action_mailer.default_url_options = { host: ENV['QUEPID_DOMAIN'] }
 
+  # Change to false and provide your urls via the allowed_request_origins.
   config.action_cable.disable_request_forgery_protection = true
-  config.action_cable.allowed_request_origins = [ 'http://quepid-pr-515.herokuapp.com',
-                                                  /http:\/\/quepid-pr-515.herokuapp.com.*/ ]
+  config.action_cable.allowed_request_origins = [ 'http://app.quepid.com',
+                                                  /http:\/\/app.quepid.com.*/ ]
 
   #config.action_cable.url = 'wss://quepid-pr-515.herokuapp.com/cable'
+
 end
 # rubocop:enable Metrics/BlockLength
