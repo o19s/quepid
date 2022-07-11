@@ -17,7 +17,6 @@ class RatingChannel < ApplicationCable::Channel
   end
 
   def self.rating_created_event current_case, current_user, rating
-    puts "about to do a rating_created event for case #{current_case.id}"
     ActionCable.server.broadcast "case-#{current_case.id}", {
       user:     {
         name: current_user.name,
