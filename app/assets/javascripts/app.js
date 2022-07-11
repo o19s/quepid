@@ -22,7 +22,8 @@ angular.module('QuepidApp', [
   'templates',
   'ngAnimate',
   'countUp',
-  'ngclipboard'
+  'ngclipboard',
+  'ngVega'
 ])
 .run(function ($location, ActionCableConfig){
   // Handle setting up websockets for ActionCable and AngularJS.

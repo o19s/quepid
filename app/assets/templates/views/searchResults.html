@@ -43,7 +43,7 @@
     </span>
 
     <span ng-show="query.isNotAllRated()" class="froggy pull-right fa-stack fa-lg" style="margin-right: 20px;" title="Hop to it!  There are unrated results!">
-      <i class="fa fa-frog fa-stack-2x" ng-class="{ 'fa-rotate-180': query.needsRefresh() }" ></i>
+      <i class="fas fa-frog fa-stack-2x" data-count="{{ query.currentScore.countMissingRatings }}" ng-class="{ 'fa-rotate-180': query.needsRefresh() }" ></i>
     </span>
 
 

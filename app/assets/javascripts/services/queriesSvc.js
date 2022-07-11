@@ -257,9 +257,11 @@ angular.module('QuepidApp')
 
         this.scoreOthers = function(otherDocs) {
           var allRated = true;
+          var countMissingRatings = 0;
           angular.forEach(otherDocs, function(doc) {
             if (!doc.hasRating()) {
               allRated = false;
+              countMissingRatings = countMissingRatings + 1;
             }
           });
 
@@ -276,10 +278,11 @@ angular.module('QuepidApp')
             var color     = qscoreSvc.scoreToColor(score, maxScore);
 
             return {
-              score:            score || 0.0,
-              maxScore:         maxScore,
-              allRated:         allRated,
-              backgroundColor:  color
+              score:                score || 0.0,
+              maxScore:             maxScore,
+              allRated:             allRated,
+              countMissingRatings:  countMissingRatings,
+              backgroundColor:      color
             };
           });
         };
