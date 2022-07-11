@@ -13,16 +13,16 @@
 
 @import "style";
 
+// We use Bootstrap 5 everywhere except the core app, which is stuck in Bootstrap 3.
+// This loads Bootstrap 3.
 @import "bootstrap";
 
-@import "font-awesome-sprockets";
 @import "font-awesome";
 
 @import "cookies_eu";
 
 @import "fonts";
 @import "panes";
-//@import "resize"; # this file here is a candidate for deleting, appears we don't use it.
 @import "stackedChart";
 @import "bootstrap-add";
 @import "base";
@@ -44,4 +44,5 @@
 
 // Other
 @import "misc";
-@import "animation"
+@import "animation";
+@import "froggy";
