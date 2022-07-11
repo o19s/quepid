@@ -20,7 +20,7 @@
 }).call(this);
 
 
-this.channel = App.cable.subscriptions.create({channel: 'RatingChannel', case_id:5}, {
+this.channel = App.cable.subscriptions.create({channel: 'RatingChannel', case_id:2289}, {
     connected: function () {
       console.log('Connected to RatingChannel');
     },

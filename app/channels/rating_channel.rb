@@ -6,6 +6,7 @@ class RatingChannel < ApplicationCable::Channel
     # this is fun.  From straight up JS: {channel: 'RatingChannel', case:7} is {"channel"=>"RatingChannel", "case"=>7}
     # but in Angular ActionCable: {channel: 'RatingChannel', case:7} is {"channel"=>"RatingChannel", "data"=>{"case"=>7}}
     # rubocop:enable Layout/LineLength
+    puts "I am in subscribed"
     case_id = params['data'].present? ? params['data']['case_id'] : params['case_id']
 
     stream_from "case-#{case_id}"
@@ -17,6 +18,7 @@ class RatingChannel < ApplicationCable::Channel
   end
 
   def self.rating_created_event current_case, current_user, rating
+    puts "about to do a rating_created event for case #{current_case.id}"
     ActionCable.server.broadcast "case-#{current_case.id}", {
       user:     {
         name: current_user.name,
