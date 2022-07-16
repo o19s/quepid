@@ -116,6 +116,7 @@ class Try < ApplicationRecord
   private
 
   def set_defaults
+    self.try_number = 1 if try_number.blank?
     self.name = "Try #{try_number}" if name.blank?
   end
 end

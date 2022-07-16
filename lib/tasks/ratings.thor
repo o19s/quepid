@@ -45,7 +45,7 @@ class Ratings < Thor
       return
     end
 
-    puts "Importing ratings for case: '#{acase.caseName}'".yellow
+    puts "Importing ratings for case: '#{acase.case_name}'".yellow
 
     begin
       ratings = ::CSV.read(filepath)
