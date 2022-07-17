@@ -256,14 +256,6 @@ angular.module('QuepidApp')
         this.lastScoreVersion = -5;
 
         this.scoreOthers = function(otherDocs) {
-          var allRated = true;
-          var countMissingRatings = 0;
-          angular.forEach(otherDocs, function(doc) {
-            if (!doc.hasRating()) {
-              allRated = false;
-              countMissingRatings = countMissingRatings + 1;
-            }
-          });
 
           var bestDocs  = this.ratingsStore.bestDocs();
           var scorer    = this.effectiveScorer();
@@ -275,6 +267,20 @@ angular.module('QuepidApp')
 
 
           return promise.then(function(score) {
+
+            // We want to flag missing ratings based on the scorer "k" property, not on the
+            // number of documents returned by the query.
+            var docsToCheck = that.docs.slice(0, that.depthOfRating);
+            var allRated = true;
+            var countMissingRatings = 0;
+
+            angular.forEach(docsToCheck, function(doc) {
+              if (!doc.hasRating()) {
+                allRated = false;
+                countMissingRatings = countMissingRatings + 1;
+              }
+            });
+
             var color     = qscoreSvc.scoreToColor(score, maxScore);
 
             return {
