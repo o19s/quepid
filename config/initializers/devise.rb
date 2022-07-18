@@ -326,9 +326,9 @@ Devise.setup do |config|
   if Rails.application.config.keycloak_realm.present?
     config.omniauth :keycloak_openid, 'quepid', 'example-secret-if-configured',
                     client_options: {
-                      site:  Rails.application.config.keycloak_site,
-                      realm: Rails.application.config.keycloak_realm,
-                      base_url: ''
+                      site:     Rails.application.config.keycloak_site,
+                      realm:    Rails.application.config.keycloak_realm,
+                      base_url: '',
                     },
                     strategy_class: OmniAuth::Strategies::KeycloakOpenId
   end
