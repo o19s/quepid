@@ -63,19 +63,27 @@
         angular.forEach(qDocs, function loopBody(sDoc) {
           var doc = docCacheSvc.getDoc(sDoc.id);
 
-          if (doc === null) {
-            $log.debug('' + sDoc.id + ' is null');
+          if (sDoc === null) {
+            $log.debug('sDoc is null, and we do not expect it');
           }
 
-          // Apply rated only for filtering
-          doc.explain = sDoc.explain;
-          doc.rated_only = sDoc.rated_only;
+          if (doc === null) {
+            $log.debug('Document with id ' + sDoc.id + ' is null');
+          }
 
-          var explAsJson  = angular.fromJson(doc.explain);
-          var nDoc = angular.copy(doc);
-          nDoc = normalDocsSvc.explainDoc(nDoc, explAsJson);
+          // only run this if we have documents, sometimes we don't because of
+          // a bad query to the back end.
+          if (doc != null) {
+            // Apply rated only for filtering
+            doc.explain = sDoc.explain;
+            doc.rated_only = sDoc.rated_only;
 
-          searchResults.push(nDoc);
+            var explAsJson  = angular.fromJson(doc.explain);
+            var nDoc = angular.copy(doc);
+            nDoc = normalDocsSvc.explainDoc(nDoc, explAsJson);
+
+            searchResults.push(nDoc);
+          }
         });
 
         return searchResults;
