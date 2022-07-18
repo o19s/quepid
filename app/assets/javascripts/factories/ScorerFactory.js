@@ -354,6 +354,7 @@
         return deferred.promise;
       }
 
+      // mode may no longer be used..  maybe it was for unit test style scorers?
       function runCode(query, total, docs, bestDocs, mode, options) {
         var scale     = self.scale;
         var max       = scale[scale.length-1];
@@ -523,6 +524,7 @@
 
         var recordDepthOfRanking = function (k){
           query.depthOfRating = k;
+          self.depthOfRating = k;
         };
 
         /*jshint unused:false */
