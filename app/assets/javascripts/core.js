@@ -36,6 +36,9 @@
 //= require ace-builds/src-min-noconflict/mode-javascript
 //= require ace-builds/src-min-noconflict/mode-lucene
 
+//= require vega
+//= require vega-lite
+//= require vega-embed
 
 //= require angular-resource/angular-resource
 //= require angular-cookies/angular-cookies

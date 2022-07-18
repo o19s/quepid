@@ -46,12 +46,12 @@ angular.module('QuepidApp')
       solrExplainExtractorSvc
     ) {
 
-      var caseNo = -1;
-      var currSettings = {};
+      let caseNo = -1;
+      let currSettings = {};
       this.error = false;
-      var svcVersion = 0;
+      let svcVersion = 0;
 
-      var svc = this;
+      let svc = this;
       this.displayOrder = [];
       this.queries = {};
       this.linkUrl = '';
@@ -77,11 +77,11 @@ angular.module('QuepidApp')
       });
 
       function createSearcherFromSettings(passedInSettings, queryText, query) {
-        var args = angular.copy(passedInSettings.selectedTry.args);
+        let args = angular.copy(passedInSettings.selectedTry.args);
 
         if (passedInSettings && passedInSettings.selectedTry) {
 
-          var options = {
+          let options = {
             escapeQuery:   passedInSettings.escapeQuery,
             numberOfRows:  passedInSettings.numberOfRows,
           };
@@ -100,7 +100,7 @@ angular.module('QuepidApp')
           // Modify query if ratings were passed in
           if (query) {
             if (passedInSettings.searchEngine === 'es') {
-              var mainQuery = args['query'];
+              let mainQuery = args['query'];
               args['query'] = {
                 'bool': {
                   'should': mainQuery,
@@ -131,7 +131,7 @@ angular.module('QuepidApp')
       }
 
       function normalizeDocExplains(query, searcher, fieldSpec) {
-        var normed = [];
+        let normed = [];
 
         if (searcher.type === 'es') {
           normed = esExplainExtractorSvc.docsWithExplainOther(searcher.docs, fieldSpec);
@@ -139,7 +139,7 @@ angular.module('QuepidApp')
           normed = solrExplainExtractorSvc.docsWithExplainOther(searcher.docs, fieldSpec, searcher.othersExplained);
         }
 
-        var docs = [];
+        let docs = [];
         angular.forEach(normed, function(doc) {
           docs.push(query.ratingsStore.createRateableDoc(doc));
         });
@@ -162,11 +162,11 @@ angular.module('QuepidApp')
       // ***********************************
       // An individual search query that
       // gets executed
-      var Query = function(queryWithRatings) {
-        var self    = this;
+      let Query = function(queryWithRatings) {
+        let self    = this;
 
-        var qt      = 'query_text';
-        var version = 1;
+        let qt      = 'query_text';
+        let version = 1;
 
         self.hasBeenScored  = false;
         self.docsSet        = false;
@@ -219,8 +219,8 @@ angular.module('QuepidApp')
           self.ratings
         );
 
-        var resultsReturned = false;
-        var that = this;
+        let resultsReturned = false;
+        let that = this;
 
         that.setDirty = function() {
           version++;
@@ -238,7 +238,7 @@ angular.module('QuepidApp')
         };
 
         this.effectiveScorer = function() {
-          var scorer = this.scorer;
+          let scorer = this.scorer;
 
           if (!scorer) {
           /* use the case default scorer if none
@@ -256,37 +256,46 @@ angular.module('QuepidApp')
         this.lastScoreVersion = -5;
 
         this.scoreOthers = function(otherDocs) {
-          var allRated = true;
-          angular.forEach(otherDocs, function(doc) {
-            if (!doc.hasRating()) {
-              allRated = false;
-            }
-          });
 
-          var bestDocs  = this.ratingsStore.bestDocs();
-          var scorer    = this.effectiveScorer();
+          let bestDocs  = this.ratingsStore.bestDocs();
+          let scorer    = this.effectiveScorer();
 
           // The defaults are set below because sometimes quepid saves out scores with no values.
           // TODO: Defaults can be removed if the quepid scoring persistence issue is cleaned up
-          var promise   = scorer.score(this, this.numFound, otherDocs, bestDocs, this.options) || 0.0;
-          var maxScore  = scorer.maxScore() || 1.0;
+          let promise   = scorer.score(this, this.numFound, otherDocs, bestDocs, this.options) || 0.0;
+          let maxScore  = scorer.maxScore() || 1.0;
 
 
           return promise.then(function(score) {
-            var color     = qscoreSvc.scoreToColor(score, maxScore);
+
+            // We want to flag missing ratings based on the scorer "k" property, not on the
+            // number of documents returned by the query.
+            let docsToCheck = that.docs.slice(0, that.depthOfRating);
+            let allRated = true;
+            let countMissingRatings = 0;
+
+            angular.forEach(docsToCheck, function(doc) {
+              if (!doc.hasRating()) {
+                allRated = false;
+                countMissingRatings = countMissingRatings + 1;
+              }
+            });
+
+            let color     = qscoreSvc.scoreToColor(score, maxScore);
 
             return {
-              score:            score || 0.0,
-              maxScore:         maxScore,
-              allRated:         allRated,
-              backgroundColor:  color
+              score:                score || 0.0,
+              maxScore:             maxScore,
+              allRated:             allRated,
+              countMissingRatings:  countMissingRatings,
+              backgroundColor:      color
             };
           });
         };
 
         this.score = function() {
           if (this.lastScoreVersion === this.version()) {
-            var deferred = $q.defer();
+            let deferred = $q.defer();
             deferred.resolve(this.currentScore);
             return deferred.promise;
           }
@@ -313,7 +322,7 @@ angular.module('QuepidApp')
         };
 
         this.maxDocScore = function() {
-          var maxDocScore = 0;
+          let maxDocScore = 0;
           angular.forEach(this.docs, function(doc) {
             maxDocScore = Math.max(doc.score(), maxDocScore);
           });
@@ -323,7 +332,7 @@ angular.module('QuepidApp')
 
         // This method allows scorers to wait on rated documents before trying to score
         this.awaitRatedDocs = function() {
-          var deferred = $q.defer();
+          let deferred = $q.defer();
 
           // Immediately resolve if the docs are ready
           if (this.ratingsReady) {
@@ -346,7 +355,7 @@ angular.module('QuepidApp')
 
 
         this.refreshRatedDocs = function(pageSize) {
-          var settings = angular.copy(currSettings);
+          let settings = angular.copy(currSettings);
 
           if (pageSize) {
             settings.numberOfRows = pageSize;
@@ -358,14 +367,14 @@ angular.module('QuepidApp')
               self
             );
 
-          var ratedDocsStaging = [];
+          let ratedDocsStaging = [];
           return self.ratedSearcher.search().then(function() {
             self.ratedUrl = self.ratedSearcher.linkUrl;
 
-            var normed = normalizeDocExplains(self, self.ratedSearcher, currSettings.createFieldSpec());
+            let normed = normalizeDocExplains(self, self.ratedSearcher, currSettings.createFieldSpec());
 
             angular.forEach(normed, function(doc) {
-              var rateableDoc = self.ratingsStore.createRateableDoc(doc);
+              let rateableDoc = self.ratingsStore.createRateableDoc(doc);
               ratedDocsStaging.push(rateableDoc);
             });
 
@@ -383,9 +392,9 @@ angular.module('QuepidApp')
           that.errorText   = '';
           that.setDirty();
 
-          var fieldSpec = currSettings.createFieldSpec();
-          var error     = false;
-          var docList   = new DocListFactory(
+          let fieldSpec = currSettings.createFieldSpec();
+          let error     = false;
+          let docList   = new DocListFactory(
             newDocs,
             fieldSpec,
             that.ratingsStore
@@ -420,7 +429,7 @@ angular.module('QuepidApp')
         };
 
         this.search = function() {
-          var self = this;
+          let self = this;
 
           return $q(function(resolve, reject) {
             self.hasBeenScored = false;
@@ -438,7 +447,7 @@ angular.module('QuepidApp')
 
             resultsReturned = false;
 
-            var promises = [];
+            let promises = [];
 
             promises.push(self.searcher.search()
               .then(function() {
@@ -446,7 +455,7 @@ angular.module('QuepidApp')
                 self.linkUrl = self.searcher.linkUrl;
                 self.setDocs([], 0);
 
-                var msg = searchErrorTranslatorSvc.parseResponseObject(response, self.searcher.linkUrl, currSettings.searchEngine);
+                let msg = searchErrorTranslatorSvc.parseResponseObject(response, self.searcher.linkUrl, currSettings.searchEngine);
 
                 self.onError(msg);
                 reject(msg);
@@ -467,7 +476,7 @@ angular.module('QuepidApp')
                 self.setDocs([], 0);
                 self.onError('Please click browse to see the error');
               } else {
-                var error = self.setDocs(self.searcher.docs, self.searcher.numFound);
+                let error = self.setDocs(self.searcher.docs, self.searcher.numFound);
                 if (error) {
                   self.onError(error);
                   reject(error);
@@ -483,7 +492,7 @@ angular.module('QuepidApp')
         };
 
         this.paginate = function() {
-          var self = this;
+          let self = this;
 
           if (self.searcher === null) {
             return;
@@ -493,10 +502,10 @@ angular.module('QuepidApp')
 
           return self.searcher.search()
             .then(function() {
-              var ratingsStore  = self.ratingsStore;
-              var docs          = self.searcher.docs;
-              var fieldSpec     = currSettings.createFieldSpec();
-              var docList       = new DocListFactory(docs, fieldSpec, ratingsStore);
+              let ratingsStore  = self.ratingsStore;
+              let docs          = self.searcher.docs;
+              let fieldSpec     = currSettings.createFieldSpec();
+              let docList       = new DocListFactory(docs, fieldSpec, ratingsStore);
               self.docs         = self.docs.concat(docList.list());
             }, function(response) {
               $log.debug('Failed to load search: ', response);
@@ -508,7 +517,7 @@ angular.module('QuepidApp')
         };
 
         this.ratedPaginate = function() {
-            var self = this;
+            let self = this;
 
             if (self.ratedSearcher === null) {
               return;
@@ -517,15 +526,15 @@ angular.module('QuepidApp')
             self.ratedSearcher = self.ratedSearcher.pager();
             return self.ratedSearcher.search()
               .then(function() {
-                var normed = svc.normalizeDocExplains(self, self.ratedSearcher, currSettings.createFieldSpec());
+                let normed = svc.normalizeDocExplains(self, self.ratedSearcher, currSettings.createFieldSpec());
                 self.ratedDocs = self.ratedDocs.concat(normed);
               });
         };
 
         this.saveNotes = function(notes, informationNeed) {
-          var that = this;
-          var notesJson = { query: { notes: notes, information_need: informationNeed} };
-          var url = '/api/cases/' + caseNo + '/queries/' + that.queryId + '/notes';
+          let that = this;
+          let notesJson = { query: { notes: notes, information_need: informationNeed} };
+          let url = '/api/cases/' + caseNo + '/queries/' + that.queryId + '/notes';
 
           return $http.put(url , notesJson)
             .then(function() {
@@ -541,8 +550,8 @@ angular.module('QuepidApp')
         };
 
         this.fetchNotes = function() {
-          var that  = this;
-          var url   = '/api/cases/' + caseNo + '/queries/' + that.queryId + '/notes';
+          let that  = this;
+          let url   = '/api/cases/' + caseNo + '/queries/' + that.queryId + '/notes';
           return $http.get(url)
             .then(function(response) {
               that.notes = response.data.notes;
@@ -557,9 +566,9 @@ angular.module('QuepidApp')
         };
 
         this.saveOptions = function(options) {
-          var that = this;
-          var optionsJson = { query: { options: options } };
-          var url = '/api/cases/' + caseNo + '/queries/' + that.queryId + '/options';
+          let that = this;
+          let optionsJson = { query: { options: options } };
+          let url = '/api/cases/' + caseNo + '/queries/' + that.queryId + '/options';
 
           return $http.put(url , optionsJson)
             .then(function() {
@@ -576,8 +585,8 @@ angular.module('QuepidApp')
         };
 
         this.fetchOptions = function() {
-          var that  = this;
-          var url   = '/api/cases/' + caseNo + '/queries/' + that.queryId + '/options';
+          let that  = this;
+          let url   = '/api/cases/' + caseNo + '/queries/' + that.queryId + '/options';
 
           return $http.get(url)
             .then(function(response) {
@@ -592,9 +601,9 @@ angular.module('QuepidApp')
         };
 
         this.setThreshold = function(enabled, threshold) {
-          var that          = this;
-          var url           = '/api/cases/' + caseNo + '/queries/' + that.queryId + '/threshold';
-          var thresholdJson = {
+          let that          = this;
+          let url           = '/api/cases/' + caseNo + '/queries/' + that.queryId + '/threshold';
+          let thresholdJson = {
             query: {
               threshold:      threshold,
               threshold_enbl: enabled
@@ -642,17 +651,17 @@ angular.module('QuepidApp')
         };
 
         this.filterToRatings = function(settings, slice) {
-          var ratedIDs = self.ratings ? Object.keys(self.ratings) : [];
+          let ratedIDs = self.ratings ? Object.keys(self.ratings) : [];
 
           // Explain other cannot page thru results, this allows for retrieving slices of the ratings
           if (slice !== undefined) {
             ratedIDs = ratedIDs.slice(slice, settings.numberOfRows + slice);
           }
 
-          var fieldSpec = settings.createFieldSpec();
+          let fieldSpec = settings.createFieldSpec();
 
           if (settings.searchEngine === 'es') {
-            var esQuery = {
+            let esQuery = {
               'terms': {}
             };
             esQuery['terms'][fieldSpec.id] = ratedIDs;
@@ -685,19 +694,19 @@ angular.module('QuepidApp')
         return Object.keys(this.queries).length;
       };
 
-      var that = this;
-      var addQueriesFromResp = function(data) {
+      let that = this;
+      let addQueriesFromResp = function(data) {
         // Update the display order
         svcVersion++;
         that.displayOrder = data.displayOrder;
 
         // Parse query array
-        var newQueries = [];
+        let newQueries = [];
         angular.forEach(data.queries, function(queryWithRatings) {
-          var newQuery = null;
+          let newQuery = null;
           if (!(queryWithRatings.hasOwnProperty('deleted') &&
                 queryWithRatings.deleted === 'true')) {
-            var newQueryId = queryWithRatings.queryId;
+            let newQueryId = queryWithRatings.queryId;
             if (typeof(queryWithRatings.queryId) === 'string') {
               queryWithRatings.queryId = parseInt(queryWithRatings.queryId, 10);
             }
@@ -711,10 +720,10 @@ angular.module('QuepidApp')
         return newQueries;
       };
 
-      var querySearchableDeferred = $q.defer();
+      let querySearchableDeferred = $q.defer();
       function bootstrapQueries(caseNo) {
         querySearchableDeferred = $q.defer();
-        var path = '/api/cases/' + caseNo + '/queries?bootstrap=true';
+        let path = '/api/cases/' + caseNo + '/queries?bootstrap=true';
 
         $http.get(path)
           .then(function(response) {
@@ -765,11 +774,11 @@ angular.module('QuepidApp')
 
 
       this.searchAll = function() {
-        var promises = [];
-        var scorePromises = [];
+        let promises = [];
+        let scorePromises = [];
 
         angular.forEach(this.queries, function(query) {
-          var promise = query.search().then( () => {
+          let promise = query.search().then( () => {
             scorePromises.push(query.score());
           });
 
@@ -800,17 +809,17 @@ angular.module('QuepidApp')
       };
 
       this.createQuery = function(queryText) {
-        var queryJson = {
+        let queryJson = {
           'query_text': queryText,
           queryId:      -1
         };
-        var newQuery = new Query(queryJson);
+        let newQuery = new Query(queryJson);
         diffResultsSvc.createQueryDiff(newQuery);
         return newQuery;
       };
 
       this.persistQuery = function(query) {
-        var self = this;
+        let self = this;
 
         return $q(function(resolve, reject) {
           if (query.persisted()) {
@@ -818,8 +827,8 @@ angular.module('QuepidApp')
             return;
           }
 
-          var path = '/api/cases/' + caseNo + '/queries';
-          var postData = {
+          let path = '/api/cases/' + caseNo + '/queries';
+          let postData = {
             query: {
               query_text: query.queryText
             }
@@ -827,7 +836,7 @@ angular.module('QuepidApp')
 
           $http.post(path, postData)
             .then(function(response) {
-              var data = response.data;
+              let data = response.data;
               if ( response.status === 204 ) {
                 // This typically happens when the query already exists, so
                 // no change happened
@@ -836,7 +845,7 @@ angular.module('QuepidApp')
                 // Update the display order based on the new one after the query creation
                 self.displayOrder = data.displayOrder;
 
-                var addedQuery = data.query;
+                let addedQuery = data.query;
 
                 query.queryId = parseInt(addedQuery.queryId, 10);
                 query.ratingsStore.setQueryId(addedQuery.queryId);
@@ -847,7 +856,7 @@ angular.module('QuepidApp')
                 resolve();
               }
             }, function(response) {
-              var data = response.data;
+              let data = response.data;
               reject(data);
             }).catch(function(response) {
               $log.debug('Failed to persist query');
@@ -857,9 +866,9 @@ angular.module('QuepidApp')
       };
 
       this.persistQueries = function(queries) {
-        var deferred = $q.defer();
+        let deferred = $q.defer();
 
-        var queryTexts = [];
+        let queryTexts = [];
         angular.forEach(queries, function(query) {
           if ( !query.persisted() ) {
             queryTexts.push(query.queryText);
@@ -871,15 +880,15 @@ angular.module('QuepidApp')
           return deferred.promise;
         }
 
-        var path = '/api/bulk/cases/' + caseNo + '/queries';
-        var data = {
+        let path = '/api/bulk/cases/' + caseNo + '/queries';
+        let data = {
           queries: queryTexts
         };
 
-        var that = this;
+        let that = this;
         $http.post(path, data)
           .then(function(response) {
-            var data = response.data;
+            let data = response.data;
             if ( response.status === 204 ) {
               // This typically happens when the query already exists, so
               // no change happened
@@ -891,7 +900,7 @@ angular.module('QuepidApp')
               deferred.resolve();
             }
           }, function(response) {
-            var data = response.data;
+            let data = response.data;
             deferred.reject(data);
           }).catch(function(response) {
             $log.debug('Failed to persist queries');
@@ -904,10 +913,10 @@ angular.module('QuepidApp')
       // get the full list of queries sorted by create/manual order
       // only call this when our version() changes
       this.queryArray = function() {
-        var rVal = [];
+        let rVal = [];
 
-        for (var displayIter = 0; displayIter < this.displayOrder.length; ++displayIter) {
-          var currQueryId = this.displayOrder[displayIter];
+        for (let displayIter = 0; displayIter < this.displayOrder.length; ++displayIter) {
+          let currQueryId = this.displayOrder[displayIter];
           if (this.queries.hasOwnProperty(currQueryId)) {
             this.queries[currQueryId].defaultCaseOrder = displayIter;
             rVal.push(this.queries[currQueryId]);
@@ -917,8 +926,8 @@ angular.module('QuepidApp')
       };
 
       this.updateQueryDisplayPosition = function(queryId, oldQueryId, reverse) {
-        var url     = '/api/cases/' + caseNo + '/queries/' + queryId + '/position';
-        var data    = {
+        let url     = '/api/cases/' + caseNo + '/queries/' + queryId + '/position';
+        let data    = {
           after:    oldQueryId,
           reverse:  reverse
         };
@@ -937,8 +946,8 @@ angular.module('QuepidApp')
 
       // Delete a query
       this.deleteQuery = function(queryId) {
-        var path = '/api/cases/' + caseNo + '/queries/' + queryId;
-        var that = this;
+        let path = '/api/cases/' + caseNo + '/queries/' + queryId;
+        let that = this;
 
         return $http.delete(path)
           .then(function() {
@@ -955,8 +964,8 @@ angular.module('QuepidApp')
 
       // Move a query
       this.moveQuery = function(query, targetCase) {
-        var path = '/api/cases/' + query.caseNo + '/queries/' + query.queryId;
-        var data = {'other_case_id': targetCase.caseNo};
+        let path = '/api/cases/' + query.caseNo + '/queries/' + query.queryId;
+        let data = {'other_case_id': targetCase.caseNo};
 
         return $http.put(path, data)
           .then(function() {
@@ -980,16 +989,16 @@ angular.module('QuepidApp')
        *
        */
       this.scoreAll = function(scorables) {
-        var avg = 0;
-        var tot = 0;
-        var allRated = true;
+        let avg = 0;
+        let tot = 0;
+        let allRated = true;
         if (scorables === undefined) {
           scorables = this.queries;
         }
 
-        var queryScores =  {};
+        let queryScores =  {};
 
-        var promises = [];
+        let promises = [];
         angular.forEach(scorables, function(scorable) {
           promises.push(scorable.score().then(function(scoreInfo) {
             if (!scoreInfo.allRated) {
@@ -997,7 +1006,8 @@ angular.module('QuepidApp')
             }
 
             if (scoreInfo.score !== null) {
-              avg += scoreInfo.score;
+              // Treat non-rated queries as zeroes when calculating case score
+              avg += scoreInfo.score === '--' ? 0 : scoreInfo.score;
               tot++;
               queryScores[scorable.queryId] = {
                 score:    scoreInfo.score,
@@ -1043,7 +1053,7 @@ angular.module('QuepidApp')
       };
 
       this.scoreAllDiffs = function() {
-        var diffs = [];
+        let diffs = [];
         angular.forEach(this.queries, function(query) {
           if (query.diff !== null) {
             diffs.push(query.diff);
