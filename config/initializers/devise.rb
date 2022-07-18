@@ -328,6 +328,7 @@ Devise.setup do |config|
                     client_options: {
                       site:  Rails.application.config.keycloak_site,
                       realm: Rails.application.config.keycloak_realm,
+                      base_url: ''
                     },
                     strategy_class: OmniAuth::Strategies::KeycloakOpenId
   end
