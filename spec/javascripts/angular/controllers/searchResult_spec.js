@@ -5,10 +5,10 @@ describe('Controller: SearchResultCtrl', function () {
   // load the controller's module
   beforeEach(module('QuepidTest'));
 
-  var SearchResultCtrl,
+  let SearchResultCtrl,
     scope;
 
-  var mockDoc = {
+  let mockDoc = {
     subSnippets: function(hlPre, hlPost) {
       return [];
     }

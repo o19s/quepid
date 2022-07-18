@@ -5,7 +5,7 @@ describe('Controller: QueryparamsCtrl', function () {
   // load the controller's module
   beforeEach(module('QuepidTest'));
 
-  var QueryparamsCtrl,
+  let QueryparamsCtrl,
     scope,
     testTry;
 
@@ -14,8 +14,8 @@ describe('Controller: QueryparamsCtrl', function () {
   beforeEach(inject(function ($controller, $rootScope, settingsSvc, TryFactory) {
     scope = $rootScope.$new();
 
-    var queryParams = 'q=#$query##';
-    var curatorVars = {};
+    let queryParams = 'q=#$query##';
+    let curatorVars = {};
 
     testTry = new TryFactory({ tryNo: 0, query_params: queryParams, curatorVars: curatorVars });
     scope.settings = {selectedTry: testTry};

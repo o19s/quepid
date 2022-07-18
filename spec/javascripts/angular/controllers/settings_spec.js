@@ -5,7 +5,7 @@ describe('Controller: SettingsCtrl', function () {
   // load the controller's module
   beforeEach(module('QuepidTest'));
 
-  var SettingsCtrl,
+  let SettingsCtrl,
     scope;
 
   // Initialize the controller and a mock scope
