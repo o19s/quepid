@@ -187,7 +187,7 @@ angular.module('QuepidApp')
         self.modifiedAt      = queryWithRatings.modified_at;
 
         self.informationNeed = queryWithRatings.information_need;
-        self.ratingletiance   = queryWithRatings.rating_letiance;
+        self.ratingVariance   = queryWithRatings.rating_variance;
 
         self.modified = queryWithRatings.updated_at;
 
