@@ -4,7 +4,11 @@ require 'colorize'
 
 class Case < Thor
   # rubocop:disable Metrics/MethodLength
-  desc 'create NAME SEARCH_ENGINE SEARCH_URL API_METHOD FIELD_SPEC QUERY_PARAMS SCORER_NAME OWNER_EMAIL', 'creates a new case'
+  # rubocop:disable Style/VariableInterpolation
+  # rubocop:disable Style/GlobalVars
+  # rubocop:disable Metrics/ParameterLists
+  desc 'create NAME SEARCH_ENGINE SEARCH_URL API_METHOD FIELD_SPEC QUERY_PARAMS SCORER_NAME OWNER_EMAIL',
+       'creates a new case'
   long_desc <<-LONGDESC
     `case:create` creates a new case with the passed in name, search url, field specification, query_params, scorer and owner.
 
@@ -14,7 +18,6 @@ class Case < Thor
 
   LONGDESC
   def create name, search_engine, search_url, api_method, field_spec, query_params, scorer_name, owner_email
-
     load_environment
     puts "about to look for #{scorer_name}".yellow
 
@@ -31,21 +34,19 @@ class Case < Thor
 
     puts "Creating a new case for the user #{owner.name} with the scorer #{scorer.name}".yellow
 
-
     case_params = {
-      case_name:      name,
-      owner:          owner,
-      scorer:         scorer
+      case_name: name,
+      owner:     owner,
+      scorer:    scorer,
     }
 
     try_params = {
-      search_engine:  search_engine,
-      search_url:     search_url,
-      api_method:     api_method,
-      field_spec:     field_spec,
-      query_params:   query_params
+      search_engine: search_engine,
+      search_url:    search_url,
+      api_method:    api_method,
+      field_spec:    field_spec,
+      query_params:  query_params,
     }
-
 
     acase = ::Case.new(case_params)
     acase.tries << Try.new(try_params)
@@ -100,6 +101,9 @@ class Case < Thor
     end
   end
   # rubocop:enable Metrics/MethodLength
+  # rubocop:enable Style/VariableInterpolation
+  # rubocop:enable Style/GlobalVars
+  # rubocop:enable Metrics/ParameterLists
 
   private
 
