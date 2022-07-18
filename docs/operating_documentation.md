@@ -123,6 +123,8 @@ We have a Realm called `Quepid`, and it includes a Client called `quepid`.  The 
 
 We *assume* that the client definition in Keycloak will be named `quepid`, you can't change that.  You can pick your Realm name however.
 
+Keycloak 17+ removes the `/auth` portion of the url.  If you are using earlier versions of keycloak, you need to set `base_url:'/auth'` in devise.rb.
+
 
 
 ## Legal Pages & GDPR
