@@ -10,40 +10,9 @@
   function ScorerFactory($q, $timeout) {
     var Scorer = function(data) {
       var self = this;
-      var defaultAlgorithm = [
-          '// This is the AP@10 formula as an example',
-	  'let k = 10; // @Rank',
-	  'let count = 0;',
-	  'let totalRel = 0;',
-	  'total = 0;',
-	  '// if less than K results, need to reduce K now or final score is too low',
-	  'k = numReturned() < k ? numReturned() : k',
-	  '// for each returned document, calculate precision each time a new',
-	  '// relevant document is added to the ranked list.',
-	  'eachDoc(function(doc, i) {',
-	  'if (hasDocRating(i) && (docRating(i)) > 0) {',
-          'count++;',
-	  'total += count/(i+1)',
-	  '}',
-	  '}, k);',
-	  '// count up the total number of relevant (not judged) documents',
-	  'eachDocWithRating(function(doc) {',
-	  'if (doc.rating > 0) {',
-          'totalRel++;',
-	  '}',
-	  '}, bestDocs.length);',
-	  '// AP is the sum of the precision points divided by the total',
-	  '// number of relevant documents',
-	  'const score = total / totalRel;',
-        'setScore(score);',
-      ].join('\n');
 
       if (angular.isUndefined(data)) {
         data = {};
-      }
-
-      if ( angular.isUndefined(data.code) ) {
-        data.code = defaultAlgorithm;
       }
 
       if ( angular.isUndefined(data.scale) ) {
@@ -54,7 +23,6 @@
       // Attributes
       self.code                   = data.code;
       self.colors                 = scaleToColors(data.scale);
-      self.defaultAlgorithm       = defaultAlgorithm;
       self.displayName            = setDisplayName(data.name, data.communal);
       self.error                  = false;
       self.manualMaxScore         = data.manualMaxScore || false;
@@ -92,7 +60,7 @@
       self.getBestRatings         = getBestRatings;
 
 
-      var DEFAULT_NUM_DOCS = 10;
+      const DEFAULT_NUM_DOCS = 10;
 
 
       // public functions

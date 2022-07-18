@@ -14,7 +14,7 @@ describe('Service: ScorerFactory', function () {
     var mockScorer = {
       'scorerId': 1,
       'name':     'Scorer 1',
-      'code':     scorerSvc.defaultAlgorithm,
+      'code':     "setScore(99)",
       'scale':    [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
       'owner_id': 1
     };
