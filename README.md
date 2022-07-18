@@ -352,6 +352,7 @@ Examples include:
 ```
 case
 ----
+thor case:create NAME ...      # creates a new case
 thor case:share CASEID TEAMID  # shares case with an team
 
 ratings

@@ -6,10 +6,8 @@
 #
 #  id              :integer          not null, primary key
 #  case_name       :string(191)
-#  search_url      :string(500)
-#  field_spec      :string(500)
 #  last_try_number :integer
-#  owner_id         :integer
+#  owner_id        :integer
 #  archived        :boolean
 #  scorer_id       :integer
 #  created_at      :datetime         not null
