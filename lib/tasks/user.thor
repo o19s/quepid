@@ -27,13 +27,13 @@ class User < Thor
     load_environment
 
     user_params = {
-      email:                  email,
-      name:                   name,
-      password:               password,
-      administrator:          is_administrator,
-      agreed_time:            Time.zone.now,
-      agreed:                 true,
-      completed_case_wizard:  is_administrator   # skip wizard for admins
+      email:                 email,
+      name:                  name,
+      password:              password,
+      administrator:         is_administrator,
+      agreed_time:           Time.zone.now,
+      agreed:                true,
+      completed_case_wizard: is_administrator, # skip wizard for admins
     }
     user = ::User.new(user_params)
 

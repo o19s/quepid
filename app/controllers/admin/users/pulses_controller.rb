@@ -59,9 +59,9 @@ module Admin
             .count
         end
         # rubocop:disable Style/HashTransformKeys
-        @data = @data.map do |k, v|
+        @data = @data.to_h do |k, v|
           [ k.to_i, v ]
-        end.to_h
+        end
         # rubocop:enable Style/HashTransformKeys
       end
       # rubocop:enable Metrics/AbcSize

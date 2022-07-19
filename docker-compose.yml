@@ -18,11 +18,11 @@ services:
       - 3000:3000
     links:
       - mysql
-      - redis
+#      - redis
       - keycloak
     depends_on:
       - mysql
-      - redis
+#      - redis
       - keycloak
 
   mysql:
@@ -33,11 +33,11 @@ services:
     environment:
       - MYSQL_ROOT_PASSWORD=password
 
-  redis:
-    container_name: quepid_redis
-    image: redis:6.0.5
-    ports:
-      - 6379:6379
+  #redis:
+  #  container_name: quepid_redis
+  #  image: redis:6.0.5
+  #  ports:
+  #    - 6379:6379
 
   keycloak:
     image: quay.io/keycloak/keycloak:18.0.2

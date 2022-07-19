@@ -87,8 +87,8 @@ module Api
             get :show, params: { case_id: the_case.id, format: :csv, file_format: 'basic' }
             assert_response :ok
 
-            expected_csv = "query,docid,rating\n"\
-                           "two,,\n"\
+            expected_csv = "query,docid,rating\n" \
+                           "two,,\n" \
                            "one,,\n"
             assert_equal response.body, expected_csv
 
@@ -103,8 +103,8 @@ module Api
             get :show, params: { case_id: the_case.id, format: :csv, file_format: 'basic' }
             assert_response :ok
 
-            expected_csv = "query,docid,rating\n"\
-                           "\"I like, commas!\",,\n"\
+            expected_csv = "query,docid,rating\n" \
+                           "\"I like, commas!\",,\n" \
                            "one,,\n"
             assert_equal response.body, expected_csv
 

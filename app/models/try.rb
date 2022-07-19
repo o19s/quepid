@@ -60,7 +60,7 @@ class Try < ApplicationRecord
   end
 
   def curator_vars_map
-    curator_variables.map { |each| [ each.name.to_sym, each.value ] }.to_h
+    curator_variables.to_h { |each| [ each.name.to_sym, each.value ] }
   end
 
   def solr_args
