@@ -28,7 +28,7 @@ Previously# Changelog
 
 * 'Information need' import doesn't works for an empty case.  https://github.com/o19s/quepid/pull/508 by @epugh fixes https://github.com/o19s/quepid/issues/507 by @atarora.
 
-* Bump to latest Rails to pick up CVE fixes, and Ruby 2.7.6 recommended by Heroku.
+* Bump to latest Rails to pick up CVE fixes, Ruby 2.7.6 recommended by Heroku, Bundler 2.3.18, plus general updates to gem dependencies.
 
 ### Bugs
 
