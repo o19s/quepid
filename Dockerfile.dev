@@ -1,4 +1,4 @@
-FROM ruby:2.7.4-buster
+FROM ruby:2.7.6-buster
 
 LABEL maintainer="quepid_admin@opensourceconnections.com"
 
