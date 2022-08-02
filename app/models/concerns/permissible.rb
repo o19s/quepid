@@ -218,7 +218,6 @@ module Permissible
     true
   end
 
-  # rubocop:disable Naming/AccessorMethodName
   # rubocop:disable Metrics/MethodLength
   def set_permissions level: :user
     PERMISSIONS.each do |permission|
@@ -242,6 +241,5 @@ module Permissible
     end
   end
   # rubocop:enable Metrics/MethodLength
-  # rubocop:enable Naming/AccessorMethodName
 end
 # rubocop:enable Metrics/ModuleLength

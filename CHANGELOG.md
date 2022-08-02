@@ -18,7 +18,7 @@ Previously# Changelog
 
 * Gray out Queries with no ratings.  Previously they showed up as Red with a 0.0 score, the same as if everything had bad ratings!  https://github.com/o19s/quepid/pull/516 by @worleydl and suggested by @renekrie.
 
-* Keycloak Version 17 changed the default url to not have the `/auth` in the namespaces.  https://github.com/o19s/quepid/pull/536 by @epugh fixes https://github.com/o19s/quepid/issues/528.   We now test with Keycloak 18.
+* Keycloak Version 17 changed the default url to not have the `/auth` in the namespaces.  https://github.com/o19s/quepid/pull/536 by @epugh fixes https://github.com/o19s/quepid/issues/528.   We now test Quepid with Keycloak 18.
 
 * Average Precision Scorer AP@10 wasn't implemented following the most common definition of AP.  https://github.com/o19s/quepid/pull/535 by @david-fisher fixes this!  Thanks David!
 
@@ -27,6 +27,8 @@ Previously# Changelog
 * Remove some more unused AngularJS code.  https://github.com/o19s/quepid/pull/529 by @epugh.
 
 * 'Information need' import doesn't works for an empty case.  https://github.com/o19s/quepid/pull/508 by @epugh fixes https://github.com/o19s/quepid/issues/507 by @atarora.
+
+* Bump to latest Rails to pick up CVE fixes, Ruby 2.7.6 recommended by Heroku, Bundler 2.3.18, plus general updates to gem dependencies.
 
 ### Bugs
 

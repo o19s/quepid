@@ -62,7 +62,7 @@ namespace :karma  do
   end
 
   def unit_js
-    File.open('spec/karma/config/unit.js', 'r').read
+    File.read('spec/karma/config/unit.js')
   end
 
   def set_assets_path

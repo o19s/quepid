@@ -2,7 +2,7 @@ version: 2
 jobs:
   build:
     docker:
-      - image: circleci/ruby:2.7.4-node-browsers
+      - image: cimg/ruby:2.7.6-browsers
         environment: # environment variables for primary container
           BUNDLE_JOBS: 3
           BUNDLE_RETRY: 3
@@ -15,7 +15,7 @@ jobs:
           DB_NAME: quepid
           MYSQL_ALLOW_EMPTY_PASSWORD: true
 
-      - image: circleci/mysql:5.7
+      - image: cimg/mysql:5.7
         command: mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_bin
         environment: # environment variables for database
           MYSQL_DATABASE: quepid_test
@@ -28,7 +28,7 @@ jobs:
 
       - run:
           name: Specify bundler!
-          command: gem install bundler:1.17.3
+          command: gem install bundler:2.3.18
 
       - run:
           name: Which bundler?

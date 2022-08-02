@@ -2,7 +2,7 @@
 
 source 'https://rubygems.org'
 
-ruby '2.7.4'
+ruby '2.7.6'
 
 gem 'activerecord-import', '>= 1.0.7'
 gem 'acts_as_list', '>= 1.0.1'
@@ -25,7 +25,7 @@ gem 'postmark-rails'
 gem 'puma', '~> 5.0'
 gem 'puma_worker_killer'
 gem 'pundit'
-gem 'rails', '= 6.1.4.1' # starting Rails 6 the webpack is included by default.
+gem 'rails', '= 6.1.6.1'
 gem 'responders'
 gem 'sidekiq'
 gem 'terser'
