@@ -5,7 +5,7 @@
 if Rails.application.config.google_analytics_enabled
   Sidekiq::Extensions.enable_delay!
 
-  sidekiq_config = { url:        ENV['REDIS_URL'],
+  sidekiq_config = { url:        ENV.fetch('REDIS_URL', nil),
                      ssl_params: { verify_mode: OpenSSL::SSL::VERIFY_NONE } }
 
   Sidekiq.configure_server do |config|

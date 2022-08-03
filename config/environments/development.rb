@@ -71,7 +71,7 @@ Rails.application.configure do
   config.file_watcher = ActiveSupport::EventedFileUpdateChecker
 
   config.action_mailer.delivery_method = :letter_opener
-  config.action_mailer.default_url_options = { host: ENV['QUEPID_DOMAIN'], port: ENV['PORT'] }
+  config.action_mailer.default_url_options = { host: ENV.fetch('QUEPID_DOMAIN', nil), port: ENV.fetch('PORT', nil) }
 
   config.after_initialize do
     Bullet.enable = true

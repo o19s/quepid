@@ -198,10 +198,10 @@ To check the Ruby syntax:
 bin/docker r bundle exec rubocop
 ```
 
-Rubocop can often autocorrect many of the lint issues it runs into via `--auto-correct-all`:
+Rubocop can often autocorrect many of the lint issues it runs into via `--autocorrect-all`:
 
 ```
-bin/docker r bundle exec rubocop --auto-correct-all
+bin/docker r bundle exec rubocop --autocorrect-all
 ```
 
 If there is a new "Cop" as they call their rules that we don't like, you can add it to the `./rubocop.yml` file.
@@ -352,6 +352,7 @@ Examples include:
 ```
 case
 ----
+thor case:create NAME ...      # creates a new case
 thor case:share CASEID TEAMID  # shares case with an team
 
 ratings

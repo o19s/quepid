@@ -28,14 +28,6 @@ class Score < ApplicationRecord
   belongs_to :annotation, optional: true
 
   # Validations
-  validates :case_id,
-            presence: true
-
-  validates :user_id,
-            presence: true
-
-  validates :try_id,
-            presence: true
 
   # Scores
   scope :last_one, -> {

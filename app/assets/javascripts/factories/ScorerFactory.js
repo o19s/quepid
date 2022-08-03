@@ -10,26 +10,9 @@
   function ScorerFactory($q, $timeout) {
     var Scorer = function(data) {
       var self = this;
-      var defaultAlgorithm = [
-        '// This is the AP@10 formula as an example',
-        'var k = 10; // @Rank',
-        'total = 0;',
-        '// if less than K results, need to reduce K now or final score is too low',
-        'k = numReturned() < k ? numReturned() : k',
-        '',
-        'eachDoc(function(doc, i) {',
-        '  total += avgRating(i+1)',
-        '}, k);',
-        'var score = total / k;',
-        'setScore(score);',
-      ].join('\n');
 
       if (angular.isUndefined(data)) {
         data = {};
-      }
-
-      if ( angular.isUndefined(data.code) ) {
-        data.code = defaultAlgorithm;
       }
 
       if ( angular.isUndefined(data.scale) ) {
@@ -40,7 +23,6 @@
       // Attributes
       self.code                   = data.code;
       self.colors                 = scaleToColors(data.scale);
-      self.defaultAlgorithm       = defaultAlgorithm;
       self.displayName            = setDisplayName(data.name, data.communal);
       self.error                  = false;
       self.manualMaxScore         = data.manualMaxScore || false;
@@ -78,7 +60,7 @@
       self.getBestRatings         = getBestRatings;
 
 
-      var DEFAULT_NUM_DOCS = 10;
+      const DEFAULT_NUM_DOCS = 10;
 
 
       // public functions
@@ -354,6 +336,7 @@
         return deferred.promise;
       }
 
+      // mode may no longer be used..  maybe it was for unit test style scorers?
       function runCode(query, total, docs, bestDocs, mode, options) {
         var scale     = self.scale;
         var max       = scale[scale.length-1];
@@ -523,6 +506,7 @@
 
         var recordDepthOfRanking = function (k){
           query.depthOfRating = k;
+          self.depthOfRating = k;
         };
 
         /*jshint unused:false */
@@ -582,6 +566,15 @@
       }
 
       function score(query, total, docs, bestDocs, options) {
+        bestDocs = bestDocs || [];
+
+        // Don't score if there are no ratings
+        if (bestDocs.length === 0) {
+          var d = $q.defer();
+          d.resolve('--');
+          return d.promise;
+        }
+
         var maxScore  = self.maxScore();
         return self.runCode(
           query,
@@ -617,6 +610,7 @@
           return null;
         });
       }
+
     };
 
     return Scorer;

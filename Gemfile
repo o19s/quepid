@@ -2,7 +2,7 @@
 
 source 'https://rubygems.org'
 
-ruby '2.7.4'
+ruby '2.7.6'
 
 gem 'activerecord-import', '>= 1.0.7'
 gem 'acts_as_list', '>= 1.0.1'
@@ -25,7 +25,7 @@ gem 'postmark-rails'
 gem 'puma', '~> 5.0'
 gem 'puma_worker_killer'
 gem 'pundit'
-gem 'rails', '= 6.1.4.1' # starting Rails 6 the webpack is included by default.
+gem 'rails', '= 6.1.6.1'
 gem 'responders'
 gem 'sidekiq'
 gem 'terser'
@@ -33,7 +33,11 @@ gem 'bootsnap', '>= 1.4.4', require: false
 gem 'listen', '~> 3.3'
 gem 'd3-rails', '~> 3.5.5' # we have a very old version of D3.  This provides D3 assets.
 gem 'cal-heatmap-rails', '~> 3.6' # provides assets for cal heatmap, that requires old d3
+
+# Using this as it wires in via Sprockets and I can't get npm version to work with the main app.
+# Had no luck with js/svg approach ;-(
 gem 'font-awesome-sass'
+
 gem 'webpacker', '= 5.4.0'
 gem 'rack-cors', '~> 1.1'
 gem 'foreman'
@@ -66,10 +70,12 @@ end
 
 gem 'omniauth', '~> 2.0'
 
-gem 'omniauth-keycloak', '~> 1.3'
+gem 'omniauth-keycloak'
 
-gem 'omniauth-rails_csrf_protection', '~> 1.0'
+gem 'omniauth-rails_csrf_protection'
 
-gem 'omniauth-google-oauth2', '~> 1.0'
+gem 'omniauth-google-oauth2'
 
 gem 'rails-healthcheck', '~> 1.4'
+
+gem 'vega', '~> 0.2.6'

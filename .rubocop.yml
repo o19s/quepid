@@ -14,6 +14,9 @@ AllCops:
     - config/initializers/content_security_policy.rb
     - test/support/json_response.rb
 
+Rails/I18nLocaleTexts:
+  Enabled: false  # we are only english
+  
 Naming/VariableNumber:
   Enabled: false  # we have a lot of legacy code to update
 

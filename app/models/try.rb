@@ -60,7 +60,7 @@ class Try < ApplicationRecord
   end
 
   def curator_vars_map
-    curator_variables.map { |each| [ each.name.to_sym, each.value ] }.to_h
+    curator_variables.to_h { |each| [ each.name.to_sym, each.value ] }
   end
 
   def solr_args
@@ -116,6 +116,7 @@ class Try < ApplicationRecord
   private
 
   def set_defaults
+    self.try_number = 1 if try_number.blank?
     self.name = "Try #{try_number}" if name.blank?
   end
 end

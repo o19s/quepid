@@ -1,4 +1,44 @@
-# Changelog
+Previously# Changelog
+
+## 6.12.0 - ????
+
+### Features
+
+* Search box (to find queries).  https://github.com/o19s/quepid/pull/506 and https://github.com/o19s/quepid/pull/512 by @epugh fixes https://github.com/o19s/quepid/issues/493 by  @theaaronposc.  Thanks Aaron!
+
+* You can now generate a new Case through the `thor` command line tools, useful when setting up lots of cases or as part of a script.   https://github.com/o19s/quepid/pull/533 by @epugh.  
+
+* Surface how many unrated documents you have for a query as an alert bubble.  https://github.com/o19s/quepid/pull/532 by @epugh.
+
+* The Frog Pond Report tells you about the state of your ratings.   Understand the distribution of queries that need ratings and decide if you need to "hop to it" ;-).  https://github.com/o19s/quepid/pull/526 by @epugh.
+
+* Create missing queries when importing ratings.  https://github.com/o19s/quepid/pull/509 by @epugh.
+
+### Improvements
+
+* Gray out Queries with no ratings.  Previously they showed up as Red with a 0.0 score, the same as if everything had bad ratings!  https://github.com/o19s/quepid/pull/516 by @worleydl and suggested by @renekrie.
+
+* Keycloak Version 17 changed the default url to not have the `/auth` in the namespaces.  https://github.com/o19s/quepid/pull/536 by @epugh fixes https://github.com/o19s/quepid/issues/528.   We now test Quepid with Keycloak 18.
+
+* Average Precision Scorer AP@10 wasn't implemented following the most common definition of AP.  https://github.com/o19s/quepid/pull/535 by @david-fisher fixes this!  Thanks David!
+
+* Taking a Snapshot is intensive process that makes a unique query to the search engine.  https://github.com/o19s/quepid/pull/513 by @epugh provides nicer error message.
+
+* Remove some more unused AngularJS code.  https://github.com/o19s/quepid/pull/529 by @epugh.
+
+* 'Information need' import doesn't works for an empty case.  https://github.com/o19s/quepid/pull/508 by @epugh fixes https://github.com/o19s/quepid/issues/507 by @atarora.
+
+* Bump to latest Rails to pick up CVE fixes, Ruby 2.7.6 recommended by Heroku, Bundler 2.3.18, plus general updates to gem dependencies.
+
+### Bugs
+
+* The detailed export of the case doesn't exports the 0 documents matching queries.  https://github.com/o19s/quepid/pull/504 by @atarora fixes https://github.com/o19s/quepid/issues/501.
+
+* Move the logic for the default ES and Solr server definitions from server AND client side to just client side.  https://github.com/o19s/quepid/pull/505 by @epugh fixes https://github.com/o19s/quepid/issues/503.
+
+* Limited encoding renders snapshots unusable.  https://github.com/o19s/quepid/pull/510 by @epugh fixes https://github.com/o19s/quepid/issues/499 by @KennyLindahl.  Thanks Kenny for the analysis!
+
+* Fixed missing query fields from cloning a case.  https://github.com/o19s/quepid/pull/520 by @epugh
 
 ## 6.11.0 - 2022-04-23
 
@@ -24,6 +64,8 @@
 * We had a mish-mash of `query` and `query_text` as headers in our CSV files, so we've standardized on `query` to make export/import simpler.  https://github.com/o19s/quepid/pull/489 by @epugh.
 
 * We discovered that Redis was ONLY used in Quepid to support sending events to Google Analytics!  If your `QUEPID_GA` isn't specified, then Redis is no longer required.  Thanks to @rbednarzCBI for updating the production docker settings to remove Redis in https://github.com/o19s/quepid/pull/488.
+
+* preserve search engine type when swapping protocol, don't default to Solr!  https://github.com/o19s/quepid/pull/459 by @epugh.
 
 ### Bugs
 
