@@ -2,7 +2,7 @@
 
 module Admin
   class CommunalScorersController < Admin::AdminController
-    before_action :set_scorer, only: [ :show, :edit, :update ]
+    before_action :set_scorer, only: [ :show, :edit, :update, :destroy ]
 
     def index
       @scorers = Scorer.communal
@@ -64,6 +64,16 @@ module Admin
       @scorer.errors.add(:scale, :type)
 
       render action: :edit
+    end
+
+    # DELETE /admin/communal_scorers/1
+    # DELETE /admin/communal_scorers/1.json
+    def destroy
+      @scorer.destroy
+      respond_to do |format|
+        format.html { redirect_to admin_communal_scorers_url, notice: 'Scorer was successfully deleted.' }
+        format.json { head :no_content }
+      end
     end
 
     private
