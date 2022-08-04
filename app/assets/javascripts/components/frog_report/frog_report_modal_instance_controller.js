@@ -185,7 +185,7 @@ angular.module('QuepidApp')
         var numberOfMissingRatings = $scope.numberOfMissingRatings;
         var totalNumberOfRatings = $scope.totalNumberOfRatingsNeeded;
 
-        return Math.trunc((numberOfMissingRatings / totalNumberOfRatings) * 100);
+        return Math.round((numberOfMissingRatings / totalNumberOfRatings) * 100 * 10)/10;
       };
 
       ctrl.totalNumberOfRatingsNeeded = function () {
