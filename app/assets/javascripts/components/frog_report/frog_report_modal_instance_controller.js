@@ -192,7 +192,7 @@ angular.module('QuepidApp')
         var totalNumberOfRatingsNeeded = 0;
         angular.forEach(queriesSvc.queries, function(q) {
           if (q.depthOfRating){
-            $scope.totalNumberQueriesWithResults += 1
+            $scope.totalNumberQueriesWithResults += 1;
             totalNumberOfRatingsNeeded = totalNumberOfRatingsNeeded + q.depthOfRating;
           }
           else {
