@@ -1,6 +1,6 @@
 Previously# Changelog
 
-## 6.12.0 - ????
+## 6.12.0 - 2022-08-09
 
 ### Features
 
