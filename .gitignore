@@ -52,6 +52,7 @@ public/jupyterlite
 # Test Reports
 test/reports
 
+/public/notebooks
 /public/packs
 /public/packs-test
 yarn-debug.log*
