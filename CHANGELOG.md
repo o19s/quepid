@@ -1,6 +1,13 @@
-Previously# Changelog
+# Changelog
 
-## 6.12.0 - ????
+
+## 6.12.1 - 2022-08-11
+
+### Bugs
+
+* "Show Only Rated" feature in Quepid busted for ES. Highlighting on _id after a terms match in ES causes a index out of bounds exception. Also, the API method in explainOther needed to have the right case, might make a constants file at some point. https://github.com/o19s/splainer-search/pull/109 by @worleydl fixed the issue in Splainer.  Bumped in Quepid via https://github.com/o19s/quepid/pull/547 by @epugh.
+
+## 6.12.0 - 2022-08-09
 
 ### Features
 

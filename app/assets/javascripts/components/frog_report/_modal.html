@@ -9,15 +9,16 @@
 
   <h4>Summary</h4>
 
-  You have {{ ctrl.theCase.queriesCount}} Queries for this case, which means you need {{ ctrl.totalNumberOfRatingsNeeded() }}
-  ratings to eliminate all the frogs.<br/>
+  You have {{ ctrl.theCase.queriesCount}} Queries for this case, of which {{ totalNumberQueriesWithResults }} return results, and {{ totalNumberQueriesWithoutResults }} return <strong>zero</strong> results.
+
+  You need a total of {{ totalNumberOfRatingsNeeded }} ratings to eliminate all the frogs.<br/>
   <span ng-if="ctrl.theCase.lastScore.all_rated">
   All the queries have been fully rated!  Congratulations!
   </span>
   <span ng-if="!ctrl.theCase.lastScore.all_rated">
-  There are {{ ctrl.numberOfMissingRatings() }} ratings missing, leading to {{ ctrl.missingRatingsRate() }}% missing rate.
-  We recommend maintaining less than 5% ratings missing to have confidence in the scores you are calculating.
-  <span ng-if="ctrl.missingRatingsRate() > 5">
+  There are currently {{ numberOfMissingRatings }} ratings missing, leading to {{ missingRatingsRate }}% missing rate.
+  We recommend maintaining less than a 5% missing ratings to have confidence in the scores you are calculating.
+  <span ng-if="missingRatingsRate > 5">
   <br/>
   So hop to it!
   </span>

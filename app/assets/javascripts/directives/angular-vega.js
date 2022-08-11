@@ -18,6 +18,7 @@ ngVega.directive('vega', function() {
     function link(scope, element, attrs) {
         //scope.$watch('spec', function () {
             //var r = vega.parse(scope.spec);
+            console.log("Please ignore the Promise.resolve error, it appears to not matter and I can't eliminate it.  Have Ideas?  Talk to me!  - Eric")
             vegaEmbed('#'+attrs.id, scope.spec).then(result => console.log(result)).catch(console.error);
             //vg.parse.spec(scope.spec, function(chart) {
             //    chart({el:"#"+attrs.id}).update();
