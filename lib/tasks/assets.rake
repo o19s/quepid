@@ -26,7 +26,7 @@ namespace :assets do
   end
 
   desc 'Unpack Jupyterlite assets'
-  task gzip: :jupyterlite do
+  task jupyterlite: :environment do
     puts "HERE I AM< TO SAVE THE DAY!"
   end
 
