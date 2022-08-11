@@ -34,12 +34,8 @@ namespace :assets do
 
   desc 'Unpack Jupyterlite assets'
   task jupyterlite: :environment do
-    puts 'HERE I AM< TO SAVE THE DAY!'
-
-    notebooks_zip = File.join(Rails.root, 'jupyterlite', 'notebooks.gz')
-    destination = File.join(Rails.root, 'public', 'notebooks')
-
-    puts "DESTINATION IS #{destination}"
+    notebooks_zip = Rails.root.join('jupyterlite/notebooks.gz')
+    destination = Rails.public_path.join('notebooks')
 
     Gem::Package::TarReader.new( Zlib::GzipReader.open(notebooks_zip) ) do |tar|
       dest = nil
