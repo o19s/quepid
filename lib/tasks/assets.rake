@@ -25,8 +25,14 @@ namespace :assets do
     end
   end
 
+  desc 'Unpack Jupyterlite assets'
+  task gzip: :jupyterlite do
+    puts "HERE I AM< TO SAVE THE DAY!"
+  end
+
   # Hook into existing assets:precompile task
   Rake::Task['assets:precompile'].enhance do
     Rake::Task['assets:gzip'].invoke
+    Rake::Task['assets:jupyterlite'].invoke
   end
 end
