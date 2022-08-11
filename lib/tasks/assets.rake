@@ -1,6 +1,12 @@
 # frozen_string_literal: true
 
+require 'rubygems/package'
+require 'zlib'
+
+GZIPPED_BASE_PATH_FOR_NOTEBOOKS = '/srv/app/public/notebooks'
 namespace :assets do
+
+  # Does this actually do anything for us?
   desc 'Create .gz versions of assets'
   task gzip: :environment do
     zip_types = /\.(?:css|html|js|otf|svg|txt|xml)$/
@@ -28,6 +34,42 @@ namespace :assets do
   desc 'Unpack Jupyterlite assets'
   task jupyterlite: :environment do
     puts "HERE I AM< TO SAVE THE DAY!"
+
+    notebooks_zip = File.join(Rails.root, 'jupyterlite', 'notebooks.gz')
+    destination = File.join(Rails.root, 'public', 'notebooks')
+
+    puts "DESTINATION IS #{destination}"
+
+    Gem::Package::TarReader.new( Zlib::GzipReader.open notebooks_zip ) do |tar|
+      dest = nil
+      tar.each do |entry|
+        entry_path = entry.full_name
+        entry_path = entry_path[GZIPPED_BASE_PATH_FOR_NOTEBOOKS.length..-1]
+
+        dest ||= File.join destination, entry_path
+        if entry.directory?
+          FileUtils.rm_rf dest unless File.directory? dest
+          FileUtils.mkdir_p dest, :mode => entry.header.mode, :verbose => false
+        elsif entry.file?
+          FileUtils.rm_rf dest unless File.file? dest
+          File.open dest, "wb" do |f|
+            f.print entry.read
+          end
+          FileUtils.chmod entry.header.mode, dest, :verbose => false
+        elsif entry.header.typeflag == '2' #Symlink!
+          File.symlink entry.header.linkname, dest
+        end
+        dest = nil
+      end
+    end
+
+
+#    File.open(notebooks_zip) do |f|
+#      gz = Zlib::GzipReader.new(f)
+#      print gz.full_name
+#      gz.close
+#    end
+
   end
 
   # Hook into existing assets:precompile task
