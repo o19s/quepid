@@ -62,14 +62,6 @@ namespace :assets do
         dest = nil
       end
     end
-
-
-#    File.open(notebooks_zip) do |f|
-#      gz = Zlib::GzipReader.new(f)
-#      print gz.full_name
-#      gz.close
-#    end
-
   end
 
   # Hook into existing assets:precompile task

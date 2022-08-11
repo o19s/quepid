@@ -46,13 +46,12 @@ coverage/
 public/srv
 
 # Jupyterlite
-public/jupyterlite
+public/notebooks
 .jupyterlite.doit.db
 
 # Test Reports
 test/reports
 
-/public/notebooks
 /public/packs
 /public/packs-test
 yarn-debug.log*
