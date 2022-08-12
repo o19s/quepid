@@ -47,6 +47,7 @@ public/srv
 
 # Jupyterlite
 public/notebooks
+public/notebooks-*
 .jupyterlite.doit.db
 
 # Test Reports
