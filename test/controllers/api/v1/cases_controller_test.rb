@@ -88,7 +88,7 @@ module Api
           body = JSON.parse(response.body)
 
           assert_equal body['case_name'], the_case.case_name
-          assert_equal body['case_id'],    the_case.id
+          assert_equal body['case_id'], the_case.id
         end
 
         test 'returns tries from newest to oldest' do
@@ -435,7 +435,7 @@ module Api
 
           assert cases.length == doug.cases.where(archived: true).length
           assert_equal cases.first['case_name'],  archived.case_name
-          assert_equal cases.first['case_id'],     archived.id
+          assert_equal cases.first['case_id'], archived.id
         end
 
         test 'archived flag works as a string' do
@@ -448,7 +448,7 @@ module Api
 
           assert cases.length == doug.cases.where(archived: true).length
           assert_equal cases.first['case_name'],  archived.case_name
-          assert_equal cases.first['case_id'],     archived.id
+          assert_equal cases.first['case_id'], archived.id
         end
 
         test 'only returns owned archived cases' do
