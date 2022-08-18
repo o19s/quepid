@@ -7,6 +7,8 @@
 #  id          :integer          not null, primary key
 #  query_id    :integer
 #  snapshot_id :integer
+#  score       :float(24)
+#  all_rated   :boolean
 #
 
 class SnapshotQuery < ApplicationRecord

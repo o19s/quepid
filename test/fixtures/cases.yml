@@ -94,6 +94,7 @@ queries_case:
   owner:     :random
   case_name: A case to test queries positions
   archived: false
+  scorer: :random_scorer
 
 move_query_to_me:
   owner:     :random

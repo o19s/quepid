@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2022_05_13_180755) do
+ActiveRecord::Schema.define(version: 2022_08_17_163239) do
 
   create_table "annotations", id: :integer, charset: "utf8", force: :cascade do |t|
     t.text "message"
@@ -124,6 +124,8 @@ ActiveRecord::Schema.define(version: 2022_05_13_180755) do
   create_table "snapshot_queries", id: :integer, charset: "latin1", force: :cascade do |t|
     t.integer "query_id"
     t.integer "snapshot_id"
+    t.float "score"
+    t.boolean "all_rated"
     t.index ["query_id"], name: "query_id"
     t.index ["snapshot_id"], name: "snapshot_id"
   end
@@ -133,7 +135,11 @@ ActiveRecord::Schema.define(version: 2022_05_13_180755) do
     t.datetime "created_at"
     t.integer "case_id"
     t.datetime "updated_at", null: false
+    t.bigint "try_id"
+    t.bigint "scorer_id"
     t.index ["case_id"], name: "case_id"
+    t.index ["scorer_id"], name: "index_snapshots_on_scorer_id"
+    t.index ["try_id"], name: "index_snapshots_on_try_id"
   end
 
   create_table "teams", id: :integer, charset: "latin1", force: :cascade do |t|

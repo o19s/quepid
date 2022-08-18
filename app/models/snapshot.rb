@@ -8,12 +8,16 @@
 #  name       :string(250)
 #  created_at :datetime
 #  case_id    :integer
+#  try_id     :integer
+#  scorer_id  :integer
 #  updated_at :datetime         not null
 #
 
 class Snapshot < ApplicationRecord
   # Associations
   belongs_to  :case, optional: true # shouldn't be optional!
+  belongs_to  :try, optional: true # shouldn't be optional!
+  belongs_to  :scorer, optional: true # shouldn't be optional!
   has_many    :snapshot_queries, dependent: :destroy
 
   # Validations
