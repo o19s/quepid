@@ -26,7 +26,7 @@ describe('Service: queriesSvc', function () {
   };
 
   var mockFullQueriesResp = {
-    displayOrder: [2,1,0],
+    display_order: [2,1,0],
     queries: [
       {
         'arrangedAt':   '3681400536',
@@ -347,7 +347,7 @@ describe('Service: queriesSvc', function () {
 
     var emptyQueryResp = {
       queries: {
-        displayOrder: [],
+        display_order: [],
         queries: {}
       }
     };
@@ -412,7 +412,7 @@ describe('Service: queriesSvc', function () {
   describe('adds queries ', function() {
     var newQueryText = 'added by test';
     var newQueryResp = {
-      displayOrder: [2,3,1,0],
+      display_order: [2,3,1,0],
       query: {
         'query_text': newQueryText,
         'queryId':    '3',
@@ -470,7 +470,7 @@ describe('Service: queriesSvc', function () {
   describe('adds queries in bulk', function() {
     var queryTexts    = ['one', 'two', 'three'];
     var bulkResponse  = {
-      displayOrder: [1, 2, 3],
+      display_order: [1, 2, 3],
       queries: [
         {
           'query_text': 'one',
@@ -651,7 +651,7 @@ describe('Service: queriesSvc', function () {
 
   it('rates queries after persisting', function() {
     var newQueryResp = {
-      displayOrder: [2,3,1,0],
+      display_order: [2,3,1,0],
       query: {
         'query_text': 'search text',
         'queryId':    '3',

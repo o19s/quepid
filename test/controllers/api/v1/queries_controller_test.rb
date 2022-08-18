@@ -48,7 +48,7 @@ module Api
 
           assert_response :ok
 
-          display_order = json_response['displayOrder']
+          display_order = json_response['display_order']
 
           assert_not_nil display_order
           assert_instance_of Array, display_order

@@ -99,7 +99,7 @@ describe('Controller: WizardModalCtrl', function () {
     });
 
     var newQueryResp = {
-      displayOrder: [2,3,1,0],
+      display_order: [2,3,1,0],
       query: {
         'query_text': 'foo',
         'queryId': '3',
@@ -107,7 +107,7 @@ describe('Controller: WizardModalCtrl', function () {
       }
     };
     var mockFullQueriesResp = {
-      displayOrder: [2,1,0],
+      display_order: [2,1,0],
       queries: [
         {
           'arrangedAt':   '3681400536',

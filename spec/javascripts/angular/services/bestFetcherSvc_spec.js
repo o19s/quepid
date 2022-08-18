@@ -20,7 +20,7 @@ describe('Service: bestFetcherSvc', function () {
   var mockFieldSpec = null;
 
   var mockFullQueriesResp = {
-    displayOrder: [2,1,0],
+    display_order: [2,1,0],
     queries: [
       {
         'arrangedAt':   '3681400536',

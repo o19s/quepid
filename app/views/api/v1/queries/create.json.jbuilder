@@ -4,4 +4,4 @@ json.query do
   json.partial! 'query', query: @query
 end
 
-json.displayOrder @display_order
+json.display_order @display_order

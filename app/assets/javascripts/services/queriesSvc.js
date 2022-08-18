@@ -698,7 +698,7 @@ angular.module('QuepidApp')
       let addQueriesFromResp = function(data) {
         // Update the display order
         svcVersion++;
-        that.displayOrder = data.displayOrder;
+        that.displayOrder = data.display_order;
 
         // Parse query array
         let newQueries = [];
@@ -843,7 +843,7 @@ angular.module('QuepidApp')
                 resolve();
               } else {
                 // Update the display order based on the new one after the query creation
-                self.displayOrder = data.displayOrder;
+                self.displayOrder = data.display_order;
 
                 let addedQuery = data.query;
 
@@ -934,7 +934,7 @@ angular.module('QuepidApp')
 
         return $http.put(url, data)
           .then(function(response) {
-            svc.displayOrder = response.data.displayOrder;
+            svc.displayOrder = response.data.display_order;
             svcVersion++;
           }, function() {
             svcVersion++;
