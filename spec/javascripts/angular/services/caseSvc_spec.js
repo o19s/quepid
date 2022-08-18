@@ -6,31 +6,31 @@ describe('Service: caseSvc', function () {
   beforeEach(module('QuepidTest'));
 
   var mockCase1 = {
-    'caseNo':   1,
+    'case_id':   1,
     'case_name': 'test case',
-    'lastTry':  4,
+    'last_try_number':  4,
     'owned':    true
   };
 
   var mockCases = {
-    allCases: [
+    all_cases: [
       mockCase1,
       {
-        'caseNo':   2,
+        'case_id':   2,
         'case_name': 'test case 2',
-        'lastTry':  3,
+        'last_try_number':  3,
         'owned':    true
       },
       {
-        'caseNo':   3,
+        'case_id':   3,
         'case_name': 'test case 3',
-        'lastTry':  0,
+        'last_try_number':  0,
         'owned':    false
       },
       {
-        'caseNo':   4,
+        'case_id':   4,
         'case_name': 'test case 4',
-        'lastTry':  0,
+        'last_try_number':  0,
         'owned':    false
       }
     ]
@@ -49,7 +49,7 @@ describe('Service: caseSvc', function () {
 
   var expectToRefetchCases = function() {
     var returnedCases = {
-      allCases: []
+      all_cases: []
     };
     $httpBackend.expectGET('/api/cases').respond(200, returnedCases);
     $httpBackend.expectGET('/api/dropdown/cases').respond(200, returnedCases);
@@ -100,6 +100,11 @@ describe('Service: caseSvc', function () {
       caseNo: 5,
       case_name: 'new case'
     };
+    var mockNewTryResp = {
+      last_try_number: 1,
+      case_id: 5,
+      case_name: 'new case'
+    };
 
     it('filters cases', function() {
       var ownedCase = caseSvc.filterCases(caseSvc.allCases, true);
@@ -122,7 +127,7 @@ describe('Service: caseSvc', function () {
     });
 
     it('creates cases with expected name', function() {
-      $httpBackend.expectPOST('/api/cases').respond(201, mockNewTry);
+      $httpBackend.expectPOST('/api/cases').respond(201, mockNewTryResp);
       caseSvc.createCase();
       $httpBackend.flush();
       caseSvc.selectCase(mockNewTry.caseNo);
@@ -131,7 +136,7 @@ describe('Service: caseSvc', function () {
     });
 
     it('renames case with expected name', function() {
-      $httpBackend.expectPOST('/api/cases').respond(201, mockNewTry);
+      $httpBackend.expectPOST('/api/cases').respond(201, mockNewTryResp);
       caseSvc.createCase();
       $httpBackend.flush();
       caseSvc.selectCase(mockNewTry.caseNo);
@@ -158,7 +163,7 @@ describe('Service: caseSvc', function () {
         var addCaseParsed = angular.fromJson(content);
         return addCaseParsed.case_name === name;
       }
-      ).respond(201, mockNewTry);
+      ).respond(201, mockNewTryResp);
       caseSvc.createCase(name);
       $httpBackend.flush();
       caseSvc.selectCase(mockNewTry.caseNo);
@@ -173,7 +178,7 @@ describe('Service: caseSvc', function () {
         var addCaseParsed = angular.fromJson(content);
         return addCaseParsed.queries.queries['5']['query_text'] === 'foo';
       }
-      ).respond(201, mockNewTry);
+      ).respond(201, mockNewTryResp);
       caseSvc.createCase(undefined, queries);
       $httpBackend.flush();
       caseSvc.selectCase(mockNewTry.caseNo);
@@ -187,7 +192,7 @@ describe('Service: caseSvc', function () {
         var addCaseParsed = angular.fromJson(content);
         return addCaseParsed.tries[0].searchUrl === 'foo';
       }
-      ).respond(201, mockNewTry);
+      ).respond(201, mockNewTryResp);
       caseSvc.createCase(undefined, undefined, tries);
       $httpBackend.flush();
       caseSvc.selectCase(mockNewTry.caseNo);
@@ -266,9 +271,9 @@ describe('Service: caseSvc', function () {
     });
 
     var archivedCasesAPIResponse = {
-      allCases: [
+      all_cases: [
         {
-          'caseNo':   6,
+          'case_id':   6,
           'case_name': 'archived',
           'last_try_number':  4
         }
@@ -291,7 +296,7 @@ describe('Service: caseSvc', function () {
       expect(called).toBe(1);
 
       var archivedCaseNo = caseSvc.archived[0].caseNo;
-      $httpBackend.expectPUT('/api/cases/' + archivedCaseNo).respond(200, archivedCasesAPIResponse.allCases[0]);
+      $httpBackend.expectPUT('/api/cases/' + archivedCaseNo).respond(200, archivedCasesAPIResponse.all_cases[0]);
 
       var casesBefore = caseSvc.allCases.length;
       caseSvc.unarchiveCase(caseSvc.archived[0]).then(function() {
@@ -337,16 +342,16 @@ describe('Service: caseSvc', function () {
 
     it('larger archive', function() {
       var archiveAPIResponse = angular.copy(archivedCasesAPIResponse);
-      var baseNo = archiveAPIResponse.allCases[0].caseNo;
-      var baseName = archiveAPIResponse.allCases[0].case_name;
+      var baseNo = archiveAPIResponse.all_cases[0].case_id;
+      var baseName = archiveAPIResponse.all_cases[0].case_name;
       var numArchived = 10;
       for (var i = 0; i < numArchived - 1; i++) {
         var newCase = {
-          'caseNo':   baseNo + (i + 1),
+          'case_id':   baseNo + (i + 1),
           'case_name': baseName + (i + 1),
-          'lastTry':  i
+          'last_try_number':  i
         };
-        archiveAPIResponse.allCases.push(newCase);
+        archiveAPIResponse.all_cases.push(newCase);
       }
 
       $httpBackend.expectGET('/api/cases?archived=true').respond(200, archiveAPIResponse);
@@ -364,7 +369,7 @@ describe('Service: caseSvc', function () {
       angular.forEach(caseSvc.archived, function(aCase) {
         if (aCase.caseNo % 2 === 1) {
           undeleted.push(aCase.caseNo);
-          $httpBackend.expectPUT('/api/cases/' + aCase.caseNo).respond(200, archiveAPIResponse.allCases[aCase.caseNo - baseNo]);
+          $httpBackend.expectPUT('/api/cases/' + aCase.caseNo).respond(200, archiveAPIResponse.all_cases[aCase.caseNo - baseNo]);
           caseSvc.unarchiveCase(aCase)
           .then(function() {
             called++;
@@ -402,16 +407,16 @@ describe('Service: caseSvc', function () {
       $httpBackend.flush();
 
       var dropdownCases = {
-        allCases: [
+        all_cases: [
           {
-            'caseNo':   2,
+            'case_id':   2,
             'case_name': 'test case 2',
-            'lastTry':  3
+            'last_try_number':  3
           },
           {
-            'caseNo':   1,
+            'case_id':   1,
             'case_name': 'test case',
-            'lastTry':  4,
+            'last_try_number':  4,
           }
         ]
       };
@@ -555,9 +560,9 @@ describe('Service: caseSvc', function () {
 
   describe('Fetch last score', function() {
     var caseData = {
-      'caseNo':   1,
+      'case_id':   1,
       'case_name': 'test case 1',
-      'lastTry':  3,
+      'last_try_number':  3,
       'owned':    true
     };
 

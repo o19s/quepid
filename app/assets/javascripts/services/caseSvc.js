@@ -40,14 +40,14 @@ angular.module('QuepidApp')
       var Case = function(data) {
         var theCase               = this;
 
-        theCase.caseNo            = data.caseNo;
+        theCase.caseNo            = data.case_id;
         theCase.lastTry           = data.last_try_number;
         theCase.caseName          = data.case_name;
-        theCase.lastScore         = data.lastScore;
-        theCase.scorerId          = data.scorerId;
+        theCase.lastScore         = data.last_core;
+        theCase.scorerId          = data.scorer_id;
         theCase.owned             = data.owned;
         theCase.ownerName         = data.owner_name;
-        theCase.queriesCount      = data.queriesCount;
+        theCase.queriesCount      = data.queries_count;
         theCase.teams             = data.teams || [];
         theCase.tries             = data.tries || [];
         theCase.scores            = data.scores || [];
@@ -251,7 +251,7 @@ angular.module('QuepidApp')
 
         return $http.get('/api/cases?archived=true')
           .then(function(response) {
-            angular.forEach(response.data.allCases, function(rawCase) {
+            angular.forEach(response.data.all_cases, function(rawCase) {
               var newCase = constructFromData(rawCase);
 
               if ( !listContainsCase(svc.archived, newCase) ) {
@@ -266,9 +266,9 @@ angular.module('QuepidApp')
         self.dropdownCases.length = 0;
         return $http.get('/api/dropdown/cases')
           .then(function(response) {
-            self.casesCount = response.data.casesCount;
+            self.casesCount = response.data.cases_count;
 
-            angular.forEach(response.data.allCases, function(rawCase) {
+            angular.forEach(response.data.all_cases, function(rawCase) {
               var newCase = new Case(rawCase);
 
               if ( !listContainsCase(svc.dropdownCases, newCase) ) {
@@ -356,7 +356,7 @@ angular.module('QuepidApp')
           .then(function(response) {
             var data = response.data;
 
-            angular.forEach(data.allCases, function(rawCase) {
+            angular.forEach(data.all_cases, function(rawCase) {
               var newCase = constructFromData(rawCase);
 
               if ( !listContainsCase(svc.allCases, newCase) ) {

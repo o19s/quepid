@@ -111,7 +111,7 @@ module Api
           assert_instance_of  Array, scorers
           assert_equal        team.scorers.count, scorers.length
 
-          ids = scorers.map { |scorer| scorer['scorerId'] }
+          ids = scorers.map { |scorer| scorer['scorer_id'] }
 
           assert_includes ids, scorer1.id
           assert_includes ids, scorer2.id

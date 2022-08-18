@@ -30,9 +30,14 @@ describe('Service: userSvc', function () {
       'defaultScorerId': 10,
       'id':       1,
     };
+    var mockUserResponse = {
+      'email': 'mockEmail@example.com',
+      'default_scorer_id': 10,
+      'id':       1,
+    };
 
     var url = '/api/users/' + mockUser.id;
-    $httpBackend.expectGET(url).respond(200, mockUser);
+    $httpBackend.expectGET(url).respond(200, mockUserResponse);
 
     userSvc.get(mockUser.id)
       .then(function(response) {
@@ -48,13 +53,19 @@ describe('Service: userSvc', function () {
 
     var mockUser = {
       'email': 'mockEmail@example.com',
-      'scorerId': 10,
+      'defaultScorerId': 10,
+      'id':       1,
+    };
+
+    var mockUserResponse = {
+      'email': 'mockEmail@example.com',
+      'default_scorer_id': 10,
       'id':       1,
     };
 
     beforeEach(inject(function () {
       var url = '/api/users/' + mockUser.id;
-      $httpBackend.expectGET(url).respond(200, mockUser);
+      $httpBackend.expectGET(url).respond(200, mockUserResponse);
 
       userSvc.get(mockUser.id)
         .then(function(response) {
@@ -68,7 +79,7 @@ describe('Service: userSvc', function () {
       var url           = '/api/users/' + mockUser.id;
       var data          = { user: { completed_case_wizard: true } };
 
-      $httpBackend.expectPUT(url, data).respond(200, mockUser);
+      $httpBackend.expectPUT(url, data).respond(200, mockUserResponse);
 
       currUser.shownIntroWizard();
 
@@ -83,7 +94,7 @@ describe('Service: userSvc', function () {
       var data          = { user: { default_scorer_id: newScorerId } };
       mockUser.defaultScorerId = newScorerId;
 
-      $httpBackend.expectPUT(url, data).respond(200, mockUser);
+      $httpBackend.expectPUT(url, data).respond(200, mockUserResponse);
 
       currUser.updateUserScorer(newScorerId);
 

@@ -49,7 +49,7 @@ module Api
             post :create, params: data.merge(case_id: acase.id)
 
             assert_response :ok
-            puts response.body
+
             snapshot = JSON.parse(response.body)
 
             assert_not_nil snapshot['time']

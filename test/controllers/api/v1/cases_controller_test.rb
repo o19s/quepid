@@ -88,7 +88,7 @@ module Api
           body = JSON.parse(response.body)
 
           assert_equal body['case_name'], the_case.case_name
-          assert_equal body['caseNo'],    the_case.id
+          assert_equal body['case_id'],    the_case.id
         end
 
         test 'returns tries from newest to oldest' do
@@ -314,7 +314,7 @@ module Api
           get :index
 
           body = JSON.parse(response.body)
-          cases = body['allCases']
+          cases = body['all_cases']
 
           cases.each do |c|
             assert_nil c['tries']
@@ -328,9 +328,9 @@ module Api
           assert_response :ok
 
           body  = JSON.parse(response.body)
-          cases = body['allCases']
+          cases = body['all_cases']
 
-          ids = cases.map { |c| c['caseNo'] }
+          ids = cases.map { |c| c['case_id'] }
 
           assert_includes ids, first_case.id
           assert_includes ids, second_case.id
@@ -343,8 +343,8 @@ module Api
 
           get :index
           body = JSON.parse(response.body)
-          test_team_ids = body['allCases'].find_all do |c|
-            c['caseNo'] == shared.id
+          test_team_ids = body['all_cases'].find_all do |c|
+            c['case_id'] == shared.id
           end
 
           test_team_ids = test_team_ids.flat_map do |c|
@@ -363,9 +363,9 @@ module Api
           assert_response :ok
 
           body  = JSON.parse(response.body)
-          cases = body['allCases']
+          cases = body['all_cases']
 
-          ids = cases.map { |c| c['caseNo'] }
+          ids = cases.map { |c| c['case_id'] }
 
           assert_includes ids, shared.id
         end
@@ -375,13 +375,13 @@ module Api
 
           assert_response :ok
 
-          cases = json_response['allCases']
+          cases = json_response['all_cases']
 
-          ids = cases.map { |c| c['caseNo'] }
+          ids = cases.map { |c| c['case_id'] }
 
           assert_includes ids, shared_with_owner.id
 
-          the_case = cases.select { |c| c['caseNo'] == shared_with_owner.id }.first
+          the_case = cases.select { |c| c['case_id'] == shared_with_owner.id }.first
 
           assert_not_nil the_case['teams']
           assert the_case['teams'].count.positive?
@@ -392,9 +392,9 @@ module Api
 
           assert_response :ok
 
-          cases = json_response['allCases']
+          cases = json_response['all_cases']
 
-          ids = cases.map { |c| c['caseNo'] }
+          ids = cases.map { |c| c['case_id'] }
 
           assert_not_includes ids, not_shared.id
         end
@@ -405,9 +405,9 @@ module Api
           assert_response :ok
 
           body  = JSON.parse(response.body)
-          cases = body['allCases']
+          cases = body['all_cases']
 
-          ids = cases.map { |c| c['caseNo'] }
+          ids = cases.map { |c| c['case_id'] }
 
           assert_includes ids, not_marked.id
         end
@@ -418,9 +418,9 @@ module Api
           assert_response :ok
 
           body  = JSON.parse(response.body)
-          cases = body['allCases']
+          cases = body['all_cases']
 
-          ids = cases.map { |c| c['caseNo'] }
+          ids = cases.map { |c| c['case_id'] }
 
           assert_not_includes ids, archived.id
         end
@@ -431,11 +431,11 @@ module Api
           assert_response :ok
 
           body  = JSON.parse(response.body)
-          cases = body['allCases']
+          cases = body['all_cases']
 
           assert cases.length == doug.cases.where(archived: true).length
           assert_equal cases.first['case_name'],  archived.case_name
-          assert_equal cases.first['caseNo'],     archived.id
+          assert_equal cases.first['case_id'],     archived.id
         end
 
         test 'archived flag works as a string' do
@@ -444,11 +444,11 @@ module Api
           assert_response :ok
 
           body  = JSON.parse(response.body)
-          cases = body['allCases']
+          cases = body['all_cases']
 
           assert cases.length == doug.cases.where(archived: true).length
           assert_equal cases.first['case_name'],  archived.case_name
-          assert_equal cases.first['caseNo'],     archived.id
+          assert_equal cases.first['case_id'],     archived.id
         end
 
         test 'only returns owned archived cases' do
@@ -458,7 +458,7 @@ module Api
 
           assert_response :ok
 
-          cases = json_response['allCases']
+          cases = json_response['all_cases']
           names = cases.map { |c| c['case_name'] }
 
           assert_not_includes names, shared.case_name
@@ -470,7 +470,7 @@ module Api
           assert_response :ok
 
           body  = JSON.parse(response.body)
-          cases = body['allCases']
+          cases = body['all_cases']
 
           assert cases.length <= 3
         end
@@ -486,9 +486,9 @@ module Api
           assert_response :ok
 
           body  = JSON.parse(response.body)
-          cases = body['allCases']
+          cases = body['all_cases']
 
-          ids = cases.map { |c| c['caseNo'] }
+          ids = cases.map { |c| c['case_id'] }
 
           assert_equal ids.first, second_case.id
         end
@@ -504,9 +504,9 @@ module Api
           assert_response :ok
 
           body  = JSON.parse(response.body)
-          cases = body['allCases']
+          cases = body['all_cases']
 
-          ids = cases.map { |c| c['caseNo'] }
+          ids = cases.map { |c| c['case_id'] }
 
           assert_equal ids.first, shared.id
         end

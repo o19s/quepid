@@ -22,7 +22,7 @@ module Api
 
           scorer = json_response
 
-          assert_not_nil scorer['scorerId']
+          assert_not_nil scorer['scorer_id']
           assert_nil     scorer['code']
           assert_not_nil scorer['name']
           assert_not_nil scorer['scale']
@@ -60,7 +60,7 @@ module Api
 
           scorer = JSON.parse(response.body)
 
-          assert_not_nil scorer['scorerId']
+          assert_not_nil scorer['scorer_id']
           assert_not_nil scorer['code']
           assert_not_nil scorer['name']
           assert_not_nil scorer['scale']
@@ -85,7 +85,7 @@ module Api
 
           scorer = JSON.parse(response.body)
 
-          assert_not_nil scorer['scorerId']
+          assert_not_nil scorer['scorer_id']
           assert_nil     scorer['code']
           assert_not_nil scorer['name']
           assert_not_nil scorer['scale']
@@ -105,7 +105,7 @@ module Api
 
           scorer = JSON.parse(response.body)
 
-          assert_not_nil scorer['scorerId']
+          assert_not_nil scorer['scorer_id']
           assert_nil     scorer['code']
           assert_not_nil scorer['name']
           assert_not_nil scorer['scale']
@@ -147,7 +147,7 @@ module Api
 
           scorer = JSON.parse(response.body)
 
-          assert_not_nil scorer['scorerId']
+          assert_not_nil scorer['scorer_id']
           assert_nil     scorer['code']
           assert_not_nil scorer['name']
           assert_not_nil scorer['scale']
@@ -198,7 +198,7 @@ module Api
 
           scorer_response = JSON.parse(response.body)
 
-          assert_equal scorer.id,         scorer_response['scorerId']
+          assert_equal scorer.id,         scorer_response['scorer_id']
           assert_equal scorer.name,       scorer_response['name']
           assert_equal scorer.code,       scorer_response['code']
           assert_equal user.id,           scorer_response['owner_id']
@@ -212,7 +212,7 @@ module Api
 
           scorer_response = JSON.parse(response.body)
 
-          assert_equal shared_scorer.id,          scorer_response['scorerId']
+          assert_equal shared_scorer.id,          scorer_response['scorer_id']
           assert_equal shared_scorer.name,        scorer_response['name']
           assert_equal shared_scorer.code,        scorer_response['code']
           assert_not_equal user.id,               scorer_response['owner_id']
@@ -530,7 +530,7 @@ module Api
           scorers = JSON.parse(response.body)
 
           expected_owned_response = {
-            'scorerId'            => owned_scorer.id,
+            'scorer_id'            => owned_scorer.id,
             'communal'            => owned_scorer.communal,
             'code'                => owned_scorer.code,
             'name'                => owned_scorer.name,
@@ -538,10 +538,10 @@ module Api
             'owner_id'            => owned_scorer.owner_id,
             'owned'               => true,
             'owner_name'          => owned_scorer.owner.name,
-            'manualMaxScore'      => false,
-            'manualMaxScoreValue' => 100,
-            'showScaleLabels'     => false,
-            'scaleWithLabels'     => nil,
+            'manual_max_score'      => false,
+            'manual_max_score_value' => 100,
+            'show_scale_labels'     => false,
+            'scale_with_labels'     => nil,
             'teams'               => [],
           }
 
@@ -554,7 +554,7 @@ module Api
           end
 
           expected_shared_response = {
-            'scorerId'            => shared_scorer.id,
+            'scorer_id'            => shared_scorer.id,
             'communal'            => owned_scorer.communal,
             'code'                => shared_scorer.code,
             'name'                => shared_scorer.name,
@@ -562,17 +562,17 @@ module Api
             'owner_id'            => shared_scorer.owner_id,
             'owned'               => false,
             'owner_name'          => shared_scorer.owner.name,
-            'manualMaxScore'      => false,
-            'manualMaxScoreValue' => 100,
-            'showScaleLabels'     => false,
-            'scaleWithLabels'     => nil,
+            'manual_max_score'      => false,
+            'manual_max_score_value' => 100,
+            'show_scale_labels'     => false,
+            'scale_with_labels'     => nil,
             'teams'               => teams,
           }
 
           assert_includes scorers['user_scorers'], expected_owned_response
           assert_includes scorers['user_scorers'], expected_shared_response
 
-          ids = scorers['user_scorers'].map { |s| s['scorerId'] }
+          ids = scorers['user_scorers'].map { |s| s['scorer_id'] }
 
           assert_not_includes ids, communal_scorer.id
         end
