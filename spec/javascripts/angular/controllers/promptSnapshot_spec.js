@@ -53,7 +53,7 @@ describe('Controller: PromptSnapshotCtrl', function () {
         $uibModalInstance: modalInstance,
       });
 
-      $httpBackend.expectGET('/api/cases/2/snapshots').respond(200, {'snapshots': {}});
+      $httpBackend.expectGET('/api/cases/2/snapshots?shallow=true').respond(200, {'snapshots': {}});
 
       querySnapshotSvc.bootstrap(2);
       $httpBackend.flush();
