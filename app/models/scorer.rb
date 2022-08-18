@@ -27,6 +27,9 @@ class Scorer < ApplicationRecord
   # not sure about this!
   # has_many :users, dependent: :nullify
 
+  has_many   :snapshots,
+             dependent: :nullify
+
   # too late now!
   # rubocop:disable Rails/HasAndBelongsToMany
   has_and_belongs_to_many :teams,

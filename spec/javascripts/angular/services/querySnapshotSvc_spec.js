@@ -60,8 +60,10 @@ describe('Service: querySnapshotSvc', function () {
 
   var fakeQueries = [
     {'queryId': 0,
+    'currentScore': {'score':0.45, 'allRated': true},
      'docs': [{'id': '1', explain: explFunc}, {'id': '4', explain: explFunc}, {'id': '7', explain: explFunc}]},
     {'queryId': 1,
+    'currentScore': {'score':'--', 'allRated': false},
      'docs': [{'id': 'cat', explain: explFunc}, {'id': 'banana', explain: explFunc}, {'id': 'dog', explain:explFunc}]}
   ];
 
@@ -162,6 +164,16 @@ describe('Service: querySnapshotSvc', function () {
           {id: 'banana', explain: rawExpl},
           {id: 'doc', explain: rawExpl}
         ],
+      },
+      queries: {
+        '0': {
+          score: 0.45,
+          all_rated: true
+        },
+        '1': {
+          score: 9,
+          all_rated: false
+        }
       }
     };
 
@@ -172,6 +184,12 @@ describe('Service: querySnapshotSvc', function () {
         valid = (valid && reqJson.snapshot.name === 'myname');
         valid = (valid && reqJson.snapshot.docs['0'][0].id === '1');
         valid = (valid && reqJson.snapshot.docs['0'][0].explain === rawExpl);
+        valid = (valid && reqJson.snapshot.queries[0].score === 0.45);
+        valid = (valid && reqJson.snapshot.queries[0].all_rated === true);
+
+        // Can't figure out how to make this check work!
+        //valid = (valid && angular.isUndefined(reqJson.snapshot.queries[1].score ));
+        valid = (valid && reqJson.snapshot.queries[1].all_rated === false);
         return valid;
       }).respond(200, addedSnapResp);
 

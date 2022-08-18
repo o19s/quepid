@@ -21,8 +21,8 @@ module Api
         test 'adds snapshot to case' do
           data = {
             snapshot: {
-              name: 'New Snapshot',
-              docs: {
+              name:    'New Snapshot',
+              docs:    {
                 first_query.id  => [
                   { id: 'doc1', explain: '1' },
                   { id: 'doc2', explain: '2' }
@@ -32,6 +32,16 @@ module Api
                   { id: 'doc4', explain: '4' }
                 ],
               },
+              queries: {
+                first_query.id  => {
+                  score:     0.87,
+                  all_rated: true,
+                },
+                second_query.id => {
+                  score:     0.45,
+                  all_rated: false,
+                },
+              },
             },
           }
 
@@ -39,7 +49,7 @@ module Api
             post :create, params: data.merge(case_id: acase.id)
 
             assert_response :ok
-
+            puts response.body
             snapshot = JSON.parse(response.body)
 
             assert_not_nil snapshot['time']
@@ -58,14 +68,17 @@ module Api
 
             assert_equal data_doc[:id],       response_doc['id']
             assert_equal data_doc[:explain],  response_doc['explain']
+
+            assert_not_nil snapshot['scorer']
+            assert_not_nil snapshot['try']
           end
         end
 
         test 'handles queries with no docs' do
           data = {
             snapshot: {
-              name: 'New Snapshot',
-              docs: {
+              name:    'New Snapshot',
+              docs:    {
                 first_query.id  => [
                   { id: 'doc1', explain: '1' },
                   { id: 'doc2', explain: '2' }
@@ -74,6 +87,16 @@ module Api
                 # but in Rails 5, the second_query doesn't show up because the array that is empty
                 # gets converted from [] to a nil!   Which then means we don't see second_query.id at all!
                 second_query.id => [ '' ],
+              },
+              queries: {
+                first_query.id  => {
+                  score:     '--',
+                  all_rated: true,
+                },
+                second_query.id => {
+                  score:     '--',
+                  all_rated: false,
+                },
               },
             },
           }
@@ -123,8 +146,8 @@ module Api
         test 'sets name to default if blank' do
           data = {
             snapshot: {
-              name: '',
-              docs: {
+              name:    '',
+              docs:    {
                 first_query.id  => [
                   { id: 'doc1', explain: '1' },
                   { id: 'doc2', explain: '2' }
@@ -133,6 +156,16 @@ module Api
                   { id: 'doc3', explain: '3' },
                   { id: 'doc4', explain: '4' }
                 ],
+              },
+              queries: {
+                first_query.id  => {
+                  score:     0.87,
+                  all_rated: true,
+                },
+                second_query.id => {
+                  score:     0.45,
+                  all_rated: false,
+                },
               },
             },
           }
@@ -147,7 +180,7 @@ module Api
 
           data = {
             snapshot: {
-              docs: {
+              docs:    {
                 first_query.id  => [
                   { id: 'doc1', explain: '1' },
                   { id: 'doc2', explain: '2' }
@@ -156,6 +189,16 @@ module Api
                   { id: 'doc3', explain: '3' },
                   { id: 'doc4', explain: '4' }
                 ],
+              },
+              queries: {
+                first_query.id  => {
+                  score:     0.87,
+                  all_rated: true,
+                },
+                second_query.id => {
+                  score:     0.45,
+                  all_rated: false,
+                },
               },
             },
           }
@@ -228,7 +271,7 @@ module Api
         let(:acase)     { cases(:snapshot_case) }
         let(:snapshot)  { snapshots(:a_snapshot) }
 
-        test 'returns full snapshot details' do
+        test 'deletes the snapshot' do
           assert_difference 'acase.snapshots.count', -1 do
             delete :destroy, params: { case_id: acase.id, id: snapshot.id }
 
@@ -253,6 +296,18 @@ module Api
         let(:acase) { cases(:snapshot_case) }
 
         test 'returns compact list of snapshots for case' do
+          get :index, params: { case_id: acase.id, shallow: true }
+
+          assert_response :ok
+
+          data = JSON.parse(response.body)
+
+          assert_equal data['snapshots'].length, acase.snapshots.count
+          assert_nil data['snapshots'][0]['try']
+          assert_nil data['snapshots'][0]['scorer']
+        end
+
+        test 'returns list of snapshots for case' do
           get :index, params: { case_id: acase.id }
 
           assert_response :ok
@@ -260,6 +315,8 @@ module Api
           data = JSON.parse(response.body)
 
           assert_equal data['snapshots'].length, acase.snapshots.count
+          assert_not_nil data['snapshots'][0]['try']
+          assert_not_nil data['snapshots'][0]['scorer']
         end
       end
     end

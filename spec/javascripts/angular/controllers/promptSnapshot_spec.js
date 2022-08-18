@@ -68,7 +68,7 @@ describe('Controller: PromptSnapshotCtrl', function () {
 
   describe('Ok', function () {
     it('it sets the prompt values properly and closes the modal only after success', function () {
-      $httpBackend.expectPOST('/api/cases/2/snapshots', {"snapshot":{"name":"","docs":{}}})
+      $httpBackend.expectPOST('/api/cases/2/snapshots', {"snapshot":{"name":"","docs":{},"queries":{}}})
       .respond(200, addedSnapResp);
 
       scope.ok();
