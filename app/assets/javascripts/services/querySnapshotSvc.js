@@ -55,7 +55,7 @@ angular.module('QuepidApp')
         caseNo = newCaseNo;
         this.snapshots = {};
 
-        return $http.get('/api/cases/' + caseNo + '/snapshots')
+        return $http.get('/api/cases/' + caseNo + '/snapshots?shallow=true')
           .then(function(response) {
             return addSnapshotResp(response.data.snapshots)
               .then(function() {
@@ -183,7 +183,7 @@ angular.module('QuepidApp')
       }
 
       function get(snapshotId) {
-        var url     = '/api/cases/' + caseNo + '/snapshots/' + snapshotId;
+        var url     = '/api/cases/' + caseNo + '/snapshots/' + snapshotId + '?shallow=true';
 
         return $http.get(url)
           .then(function(response) {

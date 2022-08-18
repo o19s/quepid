@@ -46,6 +46,7 @@ module Api
       # rubocop:enable Metrics/MethodLength
 
       def show
+        @shallow = params[:shallow] || false
         respond_with @snapshot
       end
 
