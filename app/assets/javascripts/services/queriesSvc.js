@@ -174,7 +174,7 @@ angular.module('QuepidApp')
         self.ratingsPromise = null;
         self.ratingsReady   = false;
 
-        self.queryId        = queryWithRatings.queryId;
+        self.queryId        = queryWithRatings.query_id;
         self.caseNo         = caseNo;
         self.queryText      = queryWithRatings[qt];
         self.ratings        = {};
@@ -194,7 +194,7 @@ angular.module('QuepidApp')
 
         // Threshold properties
         self.threshold        = queryWithRatings.threshold;
-        self.thresholdEnabled = queryWithRatings.thresholdEnabled;
+        self.thresholdEnabled = queryWithRatings.threshold_enabled;
 
         // Error
         self.errorText = '';
@@ -605,8 +605,8 @@ angular.module('QuepidApp')
           let url           = '/api/cases/' + caseNo + '/queries/' + that.queryId + '/threshold';
           let thresholdJson = {
             query: {
-              threshold:      threshold,
-              threshold_enbl: enabled
+              threshold:          threshold,
+              threshold_enabled:  enabled
             }
           };
 
@@ -811,7 +811,7 @@ angular.module('QuepidApp')
       this.createQuery = function(queryText) {
         let queryJson = {
           'query_text': queryText,
-          queryId:      -1
+          query_id:      -1
         };
         let newQuery = new Query(queryJson);
         diffResultsSvc.createQueryDiff(newQuery);

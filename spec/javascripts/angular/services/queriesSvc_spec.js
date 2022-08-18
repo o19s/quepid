@@ -849,7 +849,7 @@ describe('Service: queriesSvc', function () {
     var mockThresholdResponse = {
       queryId:          1,
       threshold:        20,
-      thresholdEnabled: true
+      threshold_enabled: true
     };
     var testQuery;
 
@@ -873,7 +873,7 @@ describe('Service: queriesSvc', function () {
     });
 
     it('Disabling threshold on backend', function() {
-      mockThresholdResponse.thresholdEnabled = false;
+      mockThresholdResponse.threshold_enabled = false;
 
       $httpBackend.expectPUT('/api/cases/2/queries/' + testQuery.queryId + '/threshold')
         .respond(200, mockThresholdResponse);

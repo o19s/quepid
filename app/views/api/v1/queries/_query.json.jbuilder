@@ -1,10 +1,10 @@
 # frozen_string_literal: true
 
-json.arranged_at        query.arranged_at
-json.queryId            query.id
+json.arranged_at query.arranged_at
+json.query_id query.id
 json.query_text         query.query_text
 json.threshold          query.threshold
-json.thresholdEnabled   query.threshold_enbl
+json.threshold_enabled query.threshold_enbl
 json.options            query.options
 json.notes              query.notes
 json.information_need   query.information_need

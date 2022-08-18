@@ -32,13 +32,13 @@ module Api
 
           query_response = json_response['query']
 
-          assert_not_nil  query_response['queryId']
+          assert_not_nil  query_response['query_id']
           assert_equal    query_response['arranged_at'], 0
           assert_equal    query_response['query_text'], query_text
 
           query = acase.queries.first
 
-          assert_equal query.id,          query_response['queryId']
+          assert_equal query.id,          query_response['query_id']
           assert_equal query.query_text,  query_text
         end
 
@@ -63,13 +63,13 @@ module Api
 
           query_response = json_response['query']
 
-          assert_not_nil  query_response['queryId']
+          assert_not_nil  query_response['query_id']
           assert_equal    query_response['query_text'], query_text
 
           acase.reload
           query = acase.queries[position]
 
-          assert_equal query.id,          query_response['queryId']
+          assert_equal query.id,          query_response['query_id']
           assert_equal query.query_text,  query_text
         end
 
@@ -81,7 +81,7 @@ module Api
 
           query_response = json_response['query']
 
-          assert_not_nil  query_response['queryId']
+          assert_not_nil  query_response['query_id']
           assert_equal    query_response['arranged_at'], 0
           assert_equal    query_response['query_text'], query_text
         end
@@ -94,7 +94,7 @@ module Api
 
           query_response = json_response['query']
 
-          assert_not_nil  query_response['queryId']
+          assert_not_nil  query_response['query_id']
           assert_equal    query_response['arranged_at'], 0
           assert_equal    query_response['query_text'], query_text
 
@@ -119,7 +119,7 @@ module Api
 
           query_response = json_response['query']
 
-          assert_not_nil  query_response['queryId']
+          assert_not_nil  query_response['query_id']
           assert_equal    query_response['arranged_at'], 0
           assert_equal    query_response['query_text'], query_text.strip
 
