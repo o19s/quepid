@@ -33,7 +33,7 @@ module Api
           query_response = json_response['query']
 
           assert_not_nil  query_response['queryId']
-          assert_equal    query_response['arrangedAt'], 0
+          assert_equal    query_response['arranged_at'], 0
           assert_equal    query_response['query_text'], query_text
 
           query = acase.queries.first
@@ -82,7 +82,7 @@ module Api
           query_response = json_response['query']
 
           assert_not_nil  query_response['queryId']
-          assert_equal    query_response['arrangedAt'], 0
+          assert_equal    query_response['arranged_at'], 0
           assert_equal    query_response['query_text'], query_text
         end
 
@@ -95,7 +95,7 @@ module Api
           query_response = json_response['query']
 
           assert_not_nil  query_response['queryId']
-          assert_equal    query_response['arrangedAt'], 0
+          assert_equal    query_response['arranged_at'], 0
           assert_equal    query_response['query_text'], query_text
 
           count = acase.queries.count
@@ -120,7 +120,7 @@ module Api
           query_response = json_response['query']
 
           assert_not_nil  query_response['queryId']
-          assert_equal    query_response['arrangedAt'], 0
+          assert_equal    query_response['arranged_at'], 0
           assert_equal    query_response['query_text'], query_text.strip
 
           count = acase.queries.count
@@ -211,9 +211,9 @@ module Api
 
           queries = JSON.parse(response.body)['queries']
 
-          assert_equal queries[0]['arrangedAt'], 1
-          assert_equal queries[1]['arrangedAt'], 2
-          assert_equal queries[2]['arrangedAt'], 3
+          assert_equal queries[0]['arranged_at'], 1
+          assert_equal queries[1]['arranged_at'], 2
+          assert_equal queries[2]['arranged_at'], 3
         end
       end
 
