@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 json.args           try.args
-json.curatorVars    try.curator_vars_map
+json.curator_vars   try.curator_vars_map
 json.escape_query   try.escape_query
 json.api_method     try.api_method
 json.field_spec     try.field_spec

@@ -9,14 +9,13 @@ describe('Service: settingsSvc', function () {
   var settingsSvc = null;
   var caseTryNavSvc = null;
   var $httpBackend = null;
-  // TODO think about renaming mockSettings0 to mockSettings0Api to
-  // be clear these are mocked up API calls.
-  var mockSettings0 = {
+
+  var mockSettings0Response = {
     tries: [
       {
        'try_number': 0,
        'query_params': 'q=#$query##&fq=title:foo&fq=sub:bar',
-       'curatorVars': {},
+       'curator_vars': {},
        'args': {'q': ['#$query##'],
                     'fq': ['title:foo', 'sub:bar']},
        'search_url': 'http://example.com:1234/solr/collection1',
@@ -28,7 +27,7 @@ describe('Service: settingsSvc', function () {
       {
        'try_number': 1,
        'query_params': 'q=#$query##&fq=title:2&fq=ub:2',
-       'curatorVars': {},
+       'curator_vars': {},
        'args': {'q': ['#$query##'],
                     'fq': ['title:foo', 'sub:2']},
        'search_url': 'http://example.com:1234/solr/collection1',
@@ -41,12 +40,12 @@ describe('Service: settingsSvc', function () {
 
   };
 
-  var mockSettings1 = {
+  var mockSettings1Response = {
     tries: [
       {
        'try_number': 0,
        'query_params': 'q=#$query##&fq=title:foo&fq=sub:bar',
-       'curatorVars': {},
+       'curator_vars': {},
        'args': {'q': ['#$query##'],
                     'fq': ['title:foo', 'sub:bar']},
        'search_url': 'http://doug.com:1234/solr/collection1',
@@ -58,7 +57,7 @@ describe('Service: settingsSvc', function () {
       {
        'try_number': 1,
        'query_params': 'q=#$query##&bq=title:foo^##titleboost##&bq=sub:2',
-       'curatorVars': {titleboost: 5},
+       'curator_vars': {titleboost: 5},
        'args': {'q': ['#$query##'],
                     'bq': ['title:foo^5', 'sub:2']},
        'search_url': 'http://doug.com:1234/solr/collection1',
@@ -70,7 +69,7 @@ describe('Service: settingsSvc', function () {
       {
        'try_number': 2,
        'query_params': 'q=#$query##&bq=title:##titleboost##&bq=sub:2&qf=title',
-       'curatorVars': {titleboost: 5},
+       'curator_vars': {titleboost: 5},
        'args': {'q': ['#$query##'],
                     'bq': ['title:foo^5', 'sub:2'],
                     'qf': ['title']},
@@ -111,20 +110,20 @@ describe('Service: settingsSvc', function () {
 
   it(' gets settings on case change', function () {
     $httpBackend.expectGET('/api/cases/0/tries')
-                .respond(200,  mockSettings0);
+                .respond(200,  mockSettings0Response);
     settingsSvc.bootstrap(0, 0)
     .then(function() {
       var settingsCpy = settingsSvc.editableSettings();
-      expect(settingsCpy.fieldSpec).toBe(mockSettings0.tries[0].field_spec);
-      expect(settingsCpy.searchUrl).toBe(mockSettings0.tries[0].search_url);
+      expect(settingsCpy.fieldSpec).toBe(mockSettings0Response.tries[0].field_spec);
+      expect(settingsCpy.searchUrl).toBe(mockSettings0Response.tries[0].search_url);
       expect(settingsCpy.tries[0].queryParams)
-            .toEqual(mockSettings0.tries[0].query_params);
+            .toEqual(mockSettings0Response.tries[0].query_params);
       expect(settingsCpy.tries[0].curatorVarsDict())
-            .toEqual(mockSettings0.tries[0].curatorVars);
+            .toEqual(mockSettings0Response.tries[0].curator_vars);
       expect(settingsCpy.tries[1].queryParams)
-            .toEqual(mockSettings0.tries[1].query_params);
+            .toEqual(mockSettings0Response.tries[1].query_params);
       expect(settingsCpy.tries[1].curatorVarsDict())
-            .toEqual(mockSettings0.tries[1].curatorVars);
+            .toEqual(mockSettings0Response.tries[1].curator_vars);
     });
     $httpBackend.flush();
     $httpBackend.verifyNoOutstandingExpectation();
@@ -136,7 +135,7 @@ describe('Service: settingsSvc', function () {
         {
          'try_number': 0,
          'query_params': 'q=#$query##&bq=title:##titleboost##&bq=sub:2&qf=title',
-         'curatorVars': {titleboost: 5, missing: 11},
+         'curator_vars': {titleboost: 5, missing: 11},
          'args': {'q': ['#$query##'],
                       'bq': ['title:foo^5', 'sub:2'],
                       'qf': ['title']},
@@ -182,31 +181,31 @@ describe('Service: settingsSvc', function () {
 
   it('switches cases', function () {
     $httpBackend.expectGET('/api/cases/0/tries')
-                .respond(200,  mockSettings0);
+                .respond(200,  mockSettings0Response);
     caseTryNavSvc.navigationCompleted({caseNo: 0, tryNo: 0});
     settingsSvc.bootstrap();
     $httpBackend.flush();
 
     $httpBackend.expectGET('/api/cases/1/tries')
-                .respond(200,  mockSettings1);
+                .respond(200,  mockSettings1Response);
     caseTryNavSvc.navigationCompleted({caseNo: 1, tryNo: 0});
     settingsSvc.bootstrap()
     .then(function() {
       var settingsCpy = settingsSvc.editableSettings();
-      expect(settingsCpy.fieldSpec).toBe(mockSettings1.tries[0].field_spec);
-      expect(settingsCpy.searchUrl).toBe(mockSettings1.tries[0].search_url);
+      expect(settingsCpy.fieldSpec).toBe(mockSettings1Response.tries[0].field_spec);
+      expect(settingsCpy.searchUrl).toBe(mockSettings1Response.tries[0].search_url);
       expect(settingsCpy.tries[0].queryParams)
-            .toEqual(mockSettings1.tries[0].query_params);
+            .toEqual(mockSettings1Response.tries[0].query_params);
       expect(settingsCpy.tries[0].curatorVarsDict())
-            .toEqual(mockSettings1.tries[0].curatorVars);
+            .toEqual(mockSettings1Response.tries[0].curator_vars);
       expect(settingsCpy.tries[1].queryParams)
-            .toEqual(mockSettings1.tries[1].query_params);
+            .toEqual(mockSettings1Response.tries[1].query_params);
       expect(settingsCpy.tries[1].curatorVarsDict())
-            .toEqual(mockSettings1.tries[1].curatorVars);
+            .toEqual(mockSettings1Response.tries[1].curator_vars);
       expect(settingsCpy.tries[2].queryParams)
-            .toEqual(mockSettings1.tries[2].query_params);
+            .toEqual(mockSettings1Response.tries[2].query_params);
       expect(settingsCpy.tries[2].curatorVarsDict())
-            .toEqual(mockSettings1.tries[2].curatorVars);
+            .toEqual(mockSettings1Response.tries[2].curator_vars);
     });
     $httpBackend.flush();
     $httpBackend.verifyNoOutstandingExpectation();
@@ -215,7 +214,7 @@ describe('Service: settingsSvc', function () {
 
   var mockTry = {
     'query_params': 'ADDED',
-    'curatorVars': {},
+    'curator_vars': {},
     'args': {},
     'search_url': 'http://doug.com:1234/solr/collection1',
     'search_engine':'solr',
@@ -226,7 +225,7 @@ describe('Service: settingsSvc', function () {
 
   it('saves new tries', function() {
     $httpBackend.expectGET('/api/cases/0/tries')
-      .respond(200,  mockSettings0);
+      .respond(200,  mockSettings0Response);
 
     settingsSvc.bootstrap(0, 0);
     $httpBackend.flush();
@@ -250,7 +249,7 @@ describe('Service: settingsSvc', function () {
       'bq': ['title:foo^5', 'sub:2'],
       'qf': ['title']
     },
-    curatorVars:  { titleboost: 5 },
+    curator_vars:  { titleboost: 5 },
     escape_query:  false,
     field_spec:    'CHANGED',
     name:          'try 2',
@@ -262,7 +261,7 @@ describe('Service: settingsSvc', function () {
 
   it('saves changes to fieldSpec', function() {
     $httpBackend.expectGET('/api/cases/0/tries')
-                .respond(200,  mockSettings0);
+                .respond(200,  mockSettings0Response);
     settingsSvc.bootstrap(0, 0);
     $httpBackend.flush();
 
@@ -281,7 +280,7 @@ describe('Service: settingsSvc', function () {
 
   it('saves escapeQuery', function() {
     $httpBackend.expectGET('/api/cases/0/tries')
-                .respond(200,  mockSettings0);
+                .respond(200,  mockSettings0Response);
     settingsSvc.bootstrap(0, 0);
     $httpBackend.flush();
     $httpBackend.expectPOST('/api/cases/0/tries')
@@ -300,7 +299,7 @@ describe('Service: settingsSvc', function () {
   var mockSettingsAddNewVarsResp = {
     'try_number': 2,
     'query_params': 'q=#$query##&fq=title:foo&fq=sub:bar&new=##newvar##',
-    'curatorVars': {newvar: 10},
+    'curator_vars': {newvar: 10},
     'args': {
       'q':    ['#$query##'],
       'fq':   ['title:foo', 'sub:bar'],
@@ -314,7 +313,7 @@ describe('Service: settingsSvc', function () {
 
   it('gathers new curatorVars on submit', function() {
     $httpBackend.expectGET('/api/cases/0/tries')
-                .respond(200,  mockSettings0);
+                .respond(200,  mockSettings0Response);
     settingsSvc.bootstrap(0, 0);
     $httpBackend.flush();
 
@@ -333,7 +332,7 @@ describe('Service: settingsSvc', function () {
 
   it('handles deleted settings', function() {
     $httpBackend.expectGET('/api/cases/0/tries')
-                .respond(200,  mockSettings1);
+                .respond(200,  mockSettings1Response);
     settingsSvc.bootstrap(0, 0);
     $httpBackend.flush();
     var settingsCpy = settingsSvc.editableSettings();
@@ -349,8 +348,8 @@ describe('Service: settingsSvc', function () {
 
   it('handles deleting selected try', function() {
     $httpBackend.expectGET('/api/cases/0/tries')
-                .respond(200,  mockSettings1);
-    var lastTry = mockSettings1.tries[2].try_number;
+                .respond(200,  mockSettings1Response);
+    var lastTry = mockSettings1Response.tries[2].try_number;
     settingsSvc.bootstrap(0, 0);
     $httpBackend.flush();
     var settingsCpy = settingsSvc.editableSettings();
@@ -364,7 +363,7 @@ describe('Service: settingsSvc', function () {
   });
 
   it('wont delete last try', function() {
-    var mockSettingsDel = angular.copy(mockSettings1);
+    var mockSettingsDel = angular.copy(mockSettings1Response);
     mockSettingsDel.tries.splice(1,2);
     var remTry = mockSettingsDel.tries[0];
     $httpBackend.expectGET('/api/cases/0/tries')
@@ -384,7 +383,7 @@ describe('Service: settingsSvc', function () {
 
   it('updates settingsId after delete', function() {
     $httpBackend.expectGET('/api/cases/0/tries')
-                .respond(200,  mockSettings1);
+                .respond(200,  mockSettings1Response);
     settingsSvc.bootstrap(0, 0);
     $httpBackend.flush();
     var settingsId = settingsSvc.settingsId();
@@ -396,7 +395,7 @@ describe('Service: settingsSvc', function () {
   });
 
   it('bootstraps with deleted tries', function() {
-    var mockSettingsDel = angular.copy(mockSettings1);
+    var mockSettingsDel = angular.copy(mockSettings1Response);
     var splicedTry = mockSettingsDel.tries[1].try_number;
     mockSettingsDel.tries.splice(1,1);
     $httpBackend.expectGET('/api/cases/0/tries')
@@ -413,7 +412,7 @@ describe('Service: settingsSvc', function () {
 
   it('renames tries', function() {
     $httpBackend.expectGET('/api/cases/0/tries')
-      .respond(200,  mockSettings1);
+      .respond(200,  mockSettings1Response);
 
     settingsSvc.bootstrap(0, 0);
     $httpBackend.flush();
@@ -444,11 +443,11 @@ describe('Service: settingsSvc', function () {
   });
 
   it('clones a try', function() {
-    //var aTry  = mockSettings1.tries[0];
+    //var aTry  = mockSettings1Response.tries[0];
     var mockResponse = {
      'try_number':   3,
      'query_params': 'q=#$query##&fq=title:foo&fq=sub:bar',
-     'curatorVars': {},
+     'curator_vars': {},
      'args':        {'q': ['#$query##'],
                      'fq': ['title:foo', 'sub:bar']},
      'search_url':  'http://doug.com:1234/solr/collection1',
@@ -459,7 +458,7 @@ describe('Service: settingsSvc', function () {
     };
 
     $httpBackend.expectGET('/api/cases/0/tries')
-                .respond(200,  mockSettings1);
+                .respond(200,  mockSettings1Response);
     settingsSvc.bootstrap(0, 0);
     $httpBackend.flush();
 
