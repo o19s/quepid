@@ -45,6 +45,11 @@ coverage/
 # Docker artifacts
 public/srv
 
+# Jupyterlite
+public/notebooks
+public/notebooks-*
+.jupyterlite.doit.db
+
 # Test Reports
 test/reports
 

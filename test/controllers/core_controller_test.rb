@@ -18,7 +18,6 @@ class CoreControllerTest < ActionController::TestCase
     test 'should get index' do
       get :index
       assert_response :success
-      puts "Request is #{request.ssl?}"
     end
   end
 
