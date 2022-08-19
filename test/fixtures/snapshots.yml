@@ -6,6 +6,8 @@
 #  name       :string(250)
 #  created_at :datetime
 #  case_id    :integer
+#  try_id     :integer
+#  scorer_id  :integer
 #  updated_at :datetime         not null
 #
 

@@ -1,8 +1,15 @@
 # frozen_string_literal: true
 
+shallow ||= false
+
 json.id     snapshot.id
 json.name   snapshot.name
 json.time   snapshot.created_at
+
+unless shallow
+  json.scorer snapshot.scorer, partial: 'api/v1/scorers/communal_scorer', as: :scorer
+  json.try snapshot.try, partial: 'api/v1/tries/try', as: :try
+end
 
 if with_docs
   json.docs do

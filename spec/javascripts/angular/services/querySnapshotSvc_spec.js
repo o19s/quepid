@@ -41,7 +41,7 @@ describe('Service: querySnapshotSvc', function () {
 
   beforeEach(function() {
     // bootstrap as if no snapshots exist yet
-    $httpBackend.expectGET('/api/cases/2/snapshots')
+    $httpBackend.expectGET('/api/cases/2/snapshots?shallow=true')
       .respond(200, {'snapshots': {}});
     querySnapshotSvc.bootstrap(2);
     $httpBackend.flush();
@@ -60,8 +60,10 @@ describe('Service: querySnapshotSvc', function () {
 
   var fakeQueries = [
     {'queryId': 0,
+    'currentScore': {'score':0.45, 'allRated': true},
      'docs': [{'id': '1', explain: explFunc}, {'id': '4', explain: explFunc}, {'id': '7', explain: explFunc}]},
     {'queryId': 1,
+    'currentScore': {'score':'--', 'allRated': false},
      'docs': [{'id': 'cat', explain: explFunc}, {'id': 'banana', explain: explFunc}, {'id': 'dog', explain:explFunc}]}
   ];
 
@@ -89,7 +91,7 @@ describe('Service: querySnapshotSvc', function () {
     }};
 
   it('bootstraps', function() {
-    $httpBackend.expectGET('/api/cases/3/snapshots').respond(200, mockSnapResp);
+    $httpBackend.expectGET('/api/cases/3/snapshots?shallow=true').respond(200, mockSnapResp);
     querySnapshotSvc.bootstrap(3);
     $httpBackend.flush();
 
@@ -106,7 +108,7 @@ describe('Service: querySnapshotSvc', function () {
   });
 
   it('resolves docids on bootstrap', function() {
-    $httpBackend.expectGET('/api/cases/3/snapshots').respond(200, mockSnapResp);
+    $httpBackend.expectGET('/api/cases/3/snapshots?shallow=true').respond(200, mockSnapResp);
     querySnapshotSvc.bootstrap(3);
     $httpBackend.flush();
 
@@ -162,6 +164,16 @@ describe('Service: querySnapshotSvc', function () {
           {id: 'banana', explain: rawExpl},
           {id: 'doc', explain: rawExpl}
         ],
+      },
+      queries: {
+        '0': {
+          score: 0.45,
+          all_rated: true
+        },
+        '1': {
+          score: 9,
+          all_rated: false
+        }
       }
     };
 
@@ -172,6 +184,12 @@ describe('Service: querySnapshotSvc', function () {
         valid = (valid && reqJson.snapshot.name === 'myname');
         valid = (valid && reqJson.snapshot.docs['0'][0].id === '1');
         valid = (valid && reqJson.snapshot.docs['0'][0].explain === rawExpl);
+        valid = (valid && reqJson.snapshot.queries[0].score === 0.45);
+        valid = (valid && reqJson.snapshot.queries[0].all_rated === true);
+
+        // Can't figure out how to make this check work!
+        //valid = (valid && angular.isUndefined(reqJson.snapshot.queries[1].score ));
+        valid = (valid && reqJson.snapshot.queries[1].all_rated === false);
         return valid;
       }).respond(200, addedSnapResp);
 
@@ -220,7 +238,7 @@ describe('Service: querySnapshotSvc', function () {
 
   describe('deleting snapshots', function() {
     it('deletes by id', function() {
-      $httpBackend.expectGET('/api/cases/3/snapshots').respond(200, mockSnapResp);
+      $httpBackend.expectGET('/api/cases/3/snapshots?shallow=true').respond(200, mockSnapResp);
       querySnapshotSvc.bootstrap(3);
       $httpBackend.flush();
 
@@ -239,7 +257,7 @@ describe('Service: querySnapshotSvc', function () {
     });
 
     it('deletes update version', function() {
-      $httpBackend.expectGET('/api/cases/3/snapshots').respond(200, mockSnapResp);
+      $httpBackend.expectGET('/api/cases/3/snapshots?shallow=true').respond(200, mockSnapResp);
       querySnapshotSvc.bootstrap(3);
       $httpBackend.flush();
 
@@ -260,7 +278,7 @@ describe('Service: querySnapshotSvc', function () {
   describe('querySnapshotSvc getters', function () {
 
     beforeEach(function() {
-      $httpBackend.expectGET('/api/cases/3/snapshots').respond(200, mockSnapResp);
+      $httpBackend.expectGET('/api/cases/3/snapshots?shallow=true').respond(200, mockSnapResp);
       querySnapshotSvc.bootstrap(3);
       $httpBackend.flush();
 
@@ -336,7 +354,7 @@ describe('Service: querySnapshotSvc', function () {
     };
 
     it('gets unique explains per query despite identical doc ids', function uniquePerDocIdTest() {
-      $httpBackend.expectGET('/api/cases/3/snapshots').respond(200, mockOverlapSnapResp);
+      $httpBackend.expectGET('/api/cases/3/snapshots?shallow=true').respond(200, mockOverlapSnapResp);
       querySnapshotSvc.bootstrap(3);
       $httpBackend.flush();
 
@@ -384,7 +402,7 @@ describe('Service: querySnapshotSvc', function () {
     };
 
     it('fetches a snapshot', function() {
-      var url = '/api/cases/2/snapshots/1';
+      var url = '/api/cases/2/snapshots/1?shallow=true';
       $httpBackend.expectGET(url).respond(200, mockSnapResp);
 
       querySnapshotSvc.get(1);

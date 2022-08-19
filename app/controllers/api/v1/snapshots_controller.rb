@@ -11,18 +11,24 @@ module Api
       def index
         @snapshots = @case.snapshots
 
+        @shallow = params[:shallow] || false
+
         respond_with @snapshots
       end
 
+      # rubocop:disable Metrics/MethodLength
       def create
         @snapshot = @case.snapshots.build snapshot_params
+        @snapshot.scorer = @case.scorer
+        @snapshot.try = @case.tries.first
 
         if @snapshot.save
           service = SnapshotManager.new(@snapshot)
 
           snapshot_docs = params[:snapshot][:docs]
+          snapshot_queries = params[:snapshot][:queries]
 
-          service.add_docs params[:snapshot][:docs] if snapshot_docs
+          service.add_docs snapshot_docs, snapshot_queries if snapshot_docs
 
           Analytics::Tracker.track_snapshot_created_event current_user, @snapshot
 
@@ -37,8 +43,10 @@ module Api
           render json: @snapshot.errors, status: :bad_request
         end
       end
+      # rubocop:enable Metrics/MethodLength
 
       def show
+        @shallow = params[:shallow] || false
         respond_with @snapshot
       end
 

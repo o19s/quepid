@@ -35,6 +35,9 @@ class Try < ApplicationRecord
               dependent:  :destroy,
               inverse_of: :try
 
+  has_many   :snapshots,
+             dependent: :nullify
+
   # Callbacks
   before_create :set_defaults
 
