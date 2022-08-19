@@ -30,7 +30,7 @@ if with_docs
   end
 end
 
-if with_docs
+unless shallow
   json.scores do
     json.array! snapshot.snapshot_queries, partial: 'api/v1/snapshots/snapshot_query', as: :snapshot_query
   end
