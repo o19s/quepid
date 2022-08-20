@@ -28,11 +28,17 @@ class FixNullCreatedAtUpdatedAt < ActiveRecord::Migration[6.1]
 
     queries = Query.where(created_at: nil)
     queries.each do |query|
+      if query.query_text.blank?
+        query.query_text = 'BLANK'
+      end
       query.created_at = Time.new(2016, 12, 14, 0, 0, 0)
       query.save!
     end
     queries = Query.where(updated_at: nil)
     queries.each do |query|
+      if query.query_text.blank?
+        query.query_text = 'BLANK'
+      end
       query.updated_at = Time.new(2016, 12, 14, 0, 0, 0)
       query.save!
     end
