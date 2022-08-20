@@ -26,6 +26,7 @@ class FixNullCreatedAtUpdatedAt < ActiveRecord::Migration[6.1]
       kase.save!
     end
 
+
     queries_to_destroy = Query.where(case_id: nil)
     queries_to_destroy.each do |query|
       query.destroy!
@@ -58,7 +59,7 @@ class FixNullCreatedAtUpdatedAt < ActiveRecord::Migration[6.1]
       rating.created_at = Time.new(2016, 12, 14, 0, 0, 0)
       rating.save!
     end
-    queries = Rating.where(updated_at: nil)
+    ratings = Rating.where(updated_at: nil)
     ratings.each do |rating|
       rating.updated_at = Time.new(2016, 12, 14, 0, 0, 0)
       rating.save!
