@@ -11,11 +11,17 @@ class FixNullCreatedAtUpdatedAt < ActiveRecord::Migration[6.1]
   def change
     cases = Case.where(created_at: nil)
     cases.each do |kase|
+      if kase.case_name.blank?
+        kase.case_name = 'BLANK'
+      end
       kase.created_at = Time.new(2016, 12, 14, 0, 0, 0)
       kase.save!
     end
     cases = Case.where(updated_at: nil)
     cases.each do |kase|
+      if kase.case_name.blank?
+        kase.case_name = 'BLANK'
+      end
       kase.updated_at = Time.new(2016, 12, 14, 0, 0, 0)
       kase.save!
     end
