@@ -26,6 +26,11 @@ class FixNullCreatedAtUpdatedAt < ActiveRecord::Migration[6.1]
       kase.save!
     end
 
+    queries_to_destroy = Query.where(case_id: nil)
+    queries_to_destroy.each do |query|
+      query.destroy!
+    end
+
     queries = Query.where(created_at: nil)
     queries.each do |query|
       if query.query_text.blank?
