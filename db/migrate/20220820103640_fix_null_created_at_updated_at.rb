@@ -48,6 +48,11 @@ class FixNullCreatedAtUpdatedAt < ActiveRecord::Migration[6.1]
       query.save!
     end
 
+    ratings_to_destroy = Rating.where(query_id: nil)
+    ratings_to_destroy.each do |rating|
+      rating.destroy!
+    end
+
     ratings = Rating.where(created_at: nil)
     ratings.each do |rating|
       rating.created_at = Time.new(2016, 12, 14, 0, 0, 0)
