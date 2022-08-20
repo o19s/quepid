@@ -135,6 +135,18 @@ class FixNullCreatedAtUpdatedAt < ActiveRecord::Migration[6.1]
       cv.save!
     end
 
+
+    scores_to_destroy = Score.where(try_id: nil)
+    scores_to_destroy.each do |score|
+      score.destroy!
+    end
+
+    # remnant of the unit test style scorer.
+    scores_to_destroy = Score.where(try_id: 0)
+    scores_to_destroy.each do |score|
+      score.destroy!
+    end
+
     scores = Score.where(updated_at: nil)
     scores.each do |s|
       s.updated_at = s.created_at
