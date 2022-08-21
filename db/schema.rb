@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2022_08_20_142609) do
+ActiveRecord::Schema.define(version: 2022_08_21_103132) do
 
   create_table "annotations", id: :integer, charset: "utf8", force: :cascade do |t|
     t.text "message"
@@ -126,6 +126,7 @@ ActiveRecord::Schema.define(version: 2022_08_20_142609) do
     t.integer "snapshot_id"
     t.float "score"
     t.boolean "all_rated"
+    t.integer "number_of_results"
     t.index ["query_id"], name: "query_id"
     t.index ["snapshot_id"], name: "snapshot_id"
   end

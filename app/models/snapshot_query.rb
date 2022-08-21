@@ -4,11 +4,12 @@
 #
 # Table name: snapshot_queries
 #
-#  id          :integer          not null, primary key
-#  query_id    :integer
-#  snapshot_id :integer
-#  score       :float(24)
-#  all_rated   :boolean
+#  id                   :integer          not null, primary key
+#  query_id             :integer
+#  snapshot_id          :integer
+#  score                :float(24)
+#  all_rated            :boolean
+#  number_of_results    :integer
 #
 
 class SnapshotQuery < ApplicationRecord

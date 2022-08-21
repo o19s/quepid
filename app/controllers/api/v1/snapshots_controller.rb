@@ -33,7 +33,7 @@ module Api
           Analytics::Tracker.track_snapshot_created_event current_user, @snapshot
 
           # Refetch snapshot because after bulk creating the docs
-          # the snapshot object is then  stale
+          # the snapshot object is then stale
           @snapshot = Snapshot.where(id: @snapshot.id)
             .includes([ snapshot_queries: [ :snapshot_docs ] ])
             .first

@@ -63,6 +63,7 @@ class SnapshotManager
       queries[query_id]['score'] = nil if '--' == queries[query_id]['score']
       snapshot_query.score = queries[query_id][:score]
       snapshot_query.all_rated = queries[query_id][:all_rated]
+      snapshot_query.number_of_results = queries[query_id][:number_of_results]
 
       queries_to_import << snapshot_query
     end
