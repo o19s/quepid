@@ -24,13 +24,13 @@ class SnapshotManagerTest < ActiveSupport::TestCase
         },
         queries: {
           first_query.id  => {
-            score:     0.87,
-            all_rated: true,
+            score:             0.87,
+            all_rated:         true,
             number_of_results: 42,
           },
           second_query.id => {
-            score:     0.45,
-            all_rated: false,
+            score:             0.45,
+            all_rated:         false,
             number_of_results: nil,
           },
         },

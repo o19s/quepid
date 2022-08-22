@@ -62,7 +62,7 @@ describe('Service: querySnapshotSvc', function () {
     return 42;
   };
 
-  var fakeQueries = [
+  var mockQueries = [
     {'queryId': 0,
      getNumFound: getNumFound,
     'currentScore': {'score':0.45, 'allRated': true},
@@ -200,9 +200,9 @@ describe('Service: querySnapshotSvc', function () {
       }).respond(200, addedSnapResp);
 
       // Make sure how we defined the getNumFound() function works!
-      expect (fakeQueries[0].getNumFound()).toEqual(42);
+      expect (mockQueries[0].getNumFound()).toEqual(42);
 
-      querySnapshotSvc.addSnapshot('myname', fakeQueries);
+      querySnapshotSvc.addSnapshot('myname', mockQueries);
       $httpBackend.flush();
       expect(querySnapshotSvc.snapshots['5'].id).toBe('5');
       expect(querySnapshotSvc.snapshots['5'].docIdsPerQuery['0']).toEqual(['1', '4', '7']);
@@ -215,7 +215,7 @@ describe('Service: querySnapshotSvc', function () {
       var priorVersion = querySnapshotSvc.version();
       $httpBackend.expectPOST('/api/cases/2/snapshots')
                   .respond(200, addedSnapResp);
-      querySnapshotSvc.addSnapshot('myname', fakeQueries);
+      querySnapshotSvc.addSnapshot('myname', mockQueries);
       $httpBackend.flush();
       expect(querySnapshotSvc.version()).toEqual(priorVersion + 1);
       $httpBackend.verifyNoOutstandingExpectation();
@@ -225,7 +225,7 @@ describe('Service: querySnapshotSvc', function () {
     it('resolves ids->docs', function resolveAddSnapTest() {
       $httpBackend.expectPOST('/api/cases/2/snapshots')
                   .respond(200, addedSnapResp);
-      querySnapshotSvc.addSnapshot('myname', fakeQueries);
+      querySnapshotSvc.addSnapshot('myname', mockQueries);
       $httpBackend.flush();
 
       var mockResolver = docResolverSvc.mockResolver;
