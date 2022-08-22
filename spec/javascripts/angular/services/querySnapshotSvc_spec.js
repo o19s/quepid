@@ -58,11 +58,17 @@ describe('Service: querySnapshotSvc', function () {
     return {rawStr: function() {return rawExpl;}};
   };
 
+  var getNumFound = function() {
+    return 42;
+  };
+
   var fakeQueries = [
     {'queryId': 0,
+     getNumFound: getNumFound,
     'currentScore': {'score':0.45, 'allRated': true},
      'docs': [{'id': '1', explain: explFunc}, {'id': '4', explain: explFunc}, {'id': '7', explain: explFunc}]},
     {'queryId': 1,
+     getNumFound: getNumFound,
     'currentScore': {'score':'--', 'allRated': false},
      'docs': [{'id': 'cat', explain: explFunc}, {'id': 'banana', explain: explFunc}, {'id': 'dog', explain:explFunc}]}
   ];
@@ -192,6 +198,9 @@ describe('Service: querySnapshotSvc', function () {
         valid = (valid && reqJson.snapshot.queries[1].all_rated === false);
         return valid;
       }).respond(200, addedSnapResp);
+
+      // Make sure how we defined the getNumFound() function works!
+      expect (fakeQueries[0].getNumFound()).toEqual(42);
 
       querySnapshotSvc.addSnapshot('myname', fakeQueries);
       $httpBackend.flush();
