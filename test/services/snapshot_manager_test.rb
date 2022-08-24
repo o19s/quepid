@@ -24,12 +24,14 @@ class SnapshotManagerTest < ActiveSupport::TestCase
         },
         queries: {
           first_query.id  => {
-            score:     0.87,
-            all_rated: true,
+            score:             0.87,
+            all_rated:         true,
+            number_of_results: 42,
           },
           second_query.id => {
-            score:     0.45,
-            all_rated: false,
+            score:             0.45,
+            all_rated:         false,
+            number_of_results: nil,
           },
         },
       }
@@ -50,11 +52,13 @@ class SnapshotManagerTest < ActiveSupport::TestCase
         assert_equal    first_snapshot_query.query_id, first_query.id
         assert_equal    first_snapshot_query.score, 0.87
         assert_equal true, first_snapshot_query.all_rated
+        assert_equal 42, first_snapshot_query.number_of_results
 
         assert_not_nil  second_snapshot_query
         assert_equal    second_snapshot_query.query_id, second_query.id
         assert_equal    second_snapshot_query.score, 0.45
         assert_equal    false, second_snapshot_query.all_rated
+        assert_nil      second_snapshot_query.number_of_results
 
         data_doc      = data[:docs][first_query.id][0]
         response_doc  = first_snapshot_query.snapshot_docs[0]
