@@ -44,6 +44,7 @@ angular.module('QuepidApp')
         $scope.pendingWizardSettings.additionalFields         = settings.additionalFields;
         $scope.pendingWizardSettings.fieldSpec                = settings.fieldSpec;
         $scope.pendingWizardSettings.idField                  = settings.idField;
+        $scope.pendingWizardSettings.remoteEnabled            = settings.remoteEnabled;
         $scope.pendingWizardSettings.searchEngine             = settings.searchEngine;
         $scope.pendingWizardSettings.apiMethod                = settings.apiMethod;
         $scope.pendingWizardSettings.queryParams              = settings.queryParams;
@@ -308,10 +309,12 @@ angular.module('QuepidApp')
         var tempSearchUrl = $scope.pendingWizardSettings.searchUrl;
         var tempApiMethod = $scope.pendingWizardSettings.apiMethod;
         var tempQueryParams = $scope.pendingWizardSettings.queryParams;
+        var tempRemoteEnabled = $scope.pendingWizardSettings.remoteEnabled;
         angular.merge($scope.pendingWizardSettings, settingsSvc.editableSettings());
         $scope.pendingWizardSettings.searchUrl = tempSearchUrl;
         $scope.pendingWizardSettings.apiMethod = tempApiMethod;
         $scope.pendingWizardSettings.queryParams = tempQueryParams;
+        $scope.pendingWizardSettings.remoteEnabled = tempRemoteEnabled;
         $scope.pendingWizardSettings.newQueries = [];
 
         if(userSvc.getUser().completedCaseWizard===false){

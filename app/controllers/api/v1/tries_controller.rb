@@ -80,6 +80,7 @@ module Api
           :field_spec,
           :name,
           :number_of_rows,
+          :remote_enabled,
           :query_params,
           :search_engine,
           :search_url,

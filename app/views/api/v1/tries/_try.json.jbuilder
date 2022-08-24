@@ -7,6 +7,7 @@ json.api_method     try.api_method
 json.field_spec     try.field_spec
 json.name           try.name
 json.number_of_rows try.number_of_rows || 10
+json.remote_enabled try.remote_enabled
 json.query_params   try.query_params
 json.search_engine  try.search_engine
 json.search_url     try.search_url

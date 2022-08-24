@@ -35,6 +35,7 @@ angular.module('QuepidApp')
           titleField:       'title',
           additionalFields: ['overview','cast','thumb:poster_path'],
           numberOfRows:     10,
+          remoteEnabled:    false,
           searchEngine:     'solr',
           insecureSearchUrl:'http://quepid-solr.dev.o19s.com:8985/solr/tmdb/select',
           secureSearchUrl:  'https://quepid-solr.dev.o19s.com/solr/tmdb/select',
@@ -64,6 +65,7 @@ angular.module('QuepidApp')
           titleField:        'title',
           additionalFields:  ['overview','cast','thumb:poster_path'],
           numberOfRows:      10,
+          remoteEnabled:     false,
           searchEngine:      'es',
           searchUrl:         'http://quepid-elasticsearch.dev.o19s.com:9206/tmdb/_search',
           urlFormat:         'http(s?)://yourdomain.com:9200/<index>/_search',
@@ -133,6 +135,7 @@ angular.module('QuepidApp')
           settings.apiMethod     = tryToUse.apiMethod;
           settings.fieldSpec     = tryToUse.fieldSpec;
           settings.numberOfRows  = tryToUse.numberOfRows;
+          settings.remoteEnabled = tryToUse.remoteEnabled;
           settings.queryParams   = tryToUse.queryParams;
           settings.searchEngine  = tryToUse.searchEngine;
           settings.searchUrl     = tryToUse.searchUrl;
@@ -192,6 +195,7 @@ angular.module('QuepidApp')
         sentData.field_spec        = settingsToSave.fieldSpec;
         sentData.number_of_rows    = settingsToSave.numberOfRows;
         sentData.query_params      = settingsToSave.selectedTry.queryParams;
+        sentData.remote_enabled    = settingsToSave.remoteEnabled;
         sentData.search_engine     = settingsToSave.searchEngine;
         sentData.search_url        = settingsToSave.searchUrl;
         sentData.parent_try_number = settingsToSave.selectedTry.tryNo;
@@ -250,6 +254,7 @@ angular.module('QuepidApp')
         sentData.field_spec        = settingsToSave.fieldSpec;
         sentData.number_of_rows    = settingsToSave.numberOfRows;
         sentData.query_params      = settingsToSave.selectedTry.queryParams;
+        sentData.remote_enabled    = settingsToSave.remoteEnabled;
         sentData.search_engine     = settingsToSave.searchEngine;
         sentData.search_url        = settingsToSave.searchUrl;
         sentData.parent_try_number = settingsToSave.selectedTry.tryNo;

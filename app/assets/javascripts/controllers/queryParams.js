@@ -95,6 +95,7 @@ angular.module('QuepidApp')
           name:           $scope.settings.selectedTry.name,
           numberOfRows:   $scope.settings.selectedTry.numberOfRows,
           query_params:   $scope.settings.selectedTry.queryParams,
+          remote_enabled: $scope.settings.selectedTry.remoteEnabled,
           search_engine:  $scope.settings.selectedTry.searchEngine,
           search_url:     $scope.settings.selectedTry.searchUrl,
           try_number:     $scope.settings.selectedTry.tryNo,

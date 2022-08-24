@@ -196,7 +196,30 @@
             </p>
           </div>
         </div>
-        <!-- end of Escape Queries -->
+        <!-- end of API Method -->
+
+        <!-- Remote Queries -->
+        <div class="setting-div">
+          <div class="dev-header" ng-click="devSettingsRemoteQueries.toggle = !devSettingsRemoteQueries.toggle">
+            Remote Queries <span ng-class="{true: 'glyphicon-plus-sign', false: 'glyphicon-minus-sign'}[!devSettingsRemoteQueries.toggle]" class="glyphicon"></span>
+          </div>
+
+          <div class="dev-body checkbox" ng-show="devSettingsRemoteQueries.toggle">
+            <label>
+              <input type="checkbox" ng-model="settings.remoteEnabled" > Remote Queries
+            </label>
+
+            <p class="pull-right">
+              <span class="label label-info">
+                <a href="#" uib-tooltip-html="'(advanced) -- Run queries via websocket'" tooltip-placement="left">
+                  <span class="fa fa-question-circle" aria-hidden="true"></span>
+                </a>
+              </span>
+            </p>
+          </div>
+        </div>
+        <!-- end of Remote Queries -->
+
       </div> <!-- end .rerunnable-settings-tab -->
     </div> <!-- end .settings-tab (Settings) -->
 

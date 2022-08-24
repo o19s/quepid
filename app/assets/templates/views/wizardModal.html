@@ -99,9 +99,9 @@ curl -X POST -H 'Content-type:application/json' -d '{
 
           <span ng-if="pendingWizardSettings.searchEngine === 'solr'">
           <p>
-            <button type="button" class="btn btn-sm btn-default" ng-click="isCollapsed = !isCollapsed">Solr Configuration</button>
+            <button type="button" class="btn btn-sm btn-default" ng-click="isSolrCollapsed = !isSolrCollapsed">Solr Configuration</button>
           </p>
-          <div uib-collapse="!isCollapsed">
+          <div uib-collapse="!isSolrCollapsed">
              <div class="well well-sm">
               <div class="form-group clearfix">
                 <label class="col-sm-3 control-label">API Method</label>
@@ -116,6 +116,27 @@ curl -X POST -H 'Content-type:application/json' -d '{
             </div>
           </div>
           </span>
+
+          <span> 
+          <p>
+            <button type="button" class="btn btn-sm btn-default" ng-click="isRemoteCollapsed = !isRemoteCollapsed">Remote Query Configuration</button>
+          </p>
+          <div uib-collapse="!isRemoteCollapsed">
+             <div class="well well-sm">
+              <div class="form-group clearfix">
+                <label class="col-sm-3 control-label">Remote Query</label>
+                <div class="col-sm-9">
+                  <select class="form-control" ng-model="pendingWizardSettings.remoteEnabled">
+                    <option ng-value="false">Disabled</option>
+                    <option ng-value="true">Enabled</option>
+                  </select>
+                  <p class="help-block"><i>Advanced:</i> Run queries via Qompanion websocket pipeline. Useful for working in secure environments.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          </span>
+
 
           <div class="form-group" style="width: 100%">
             <div class="clearfix"></div>

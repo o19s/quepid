@@ -466,10 +466,9 @@ angular.module('QuepidApp')
 
             self.deferred = $q.defer();
             cableSvc.registerPromise(self.queryId, self.deferred);
-            var remoteMode = true; // TODO: Make this configurable
 
             // Remote query execution
-            if (remoteMode) {
+            if (currSettings.remoteEnabled) {
               cableSvc.requestQuery({
                 'user_id': userSvc.getUser().id,
                 'case_id': caseNo,

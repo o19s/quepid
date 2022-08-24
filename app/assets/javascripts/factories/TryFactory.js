@@ -47,6 +47,7 @@
       self.name          = data.name;
       self.numberOfRows  = data.number_of_rows;
       self.queryParams   = data.query_params;
+      self.remoteEnabled = data.remote_enabled;
       self.searchEngine  = data.search_engine;
       self.searchUrl     = data.search_url;
       self.tryNo         = data.try_number;

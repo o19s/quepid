@@ -179,6 +179,7 @@ class Case < ApplicationRecord
       field_spec:    the_try.field_spec,
       name:          the_try.name,
       query_params:  the_try.query_params,
+      remote_enabled: the_try.remote_enabled,
       search_engine: the_try.search_engine,
       search_url:    the_try.search_url,
       try_number:    preserve_history ? the_try.try_number : 0

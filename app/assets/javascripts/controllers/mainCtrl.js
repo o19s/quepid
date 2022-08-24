@@ -150,12 +150,5 @@ angular.module('QuepidApp')
           $(document).trigger('toggleEast');
         };
       }
-
-      // Remote Query subscription mgmt
-      cableSvc.setupSubscription(caseNo).then(function() {
-        $scope.$on('$destroy', function() {
-          cableSvc.unsubscribe();
-        });
-      });
     }
   ]);

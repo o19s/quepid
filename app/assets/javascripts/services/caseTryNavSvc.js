@@ -7,8 +7,8 @@
 // What did I do here, like implement a router on top of my router!?!?
 angular.module('QuepidApp')
   .service('caseTryNavSvc', [
-    '$location', '$timeout', '$window',
-    function caseTryNavSvc($location, $timeout, $window) {
+    '$location', '$timeout', '$window', 'cableSvc',
+    function caseTryNavSvc($location, $timeout, $window, cableSvc) {
       var caseNo = 0;
       var tryNo = 0;
       var bootstrapPath = null;
@@ -70,6 +70,9 @@ angular.module('QuepidApp')
       this.navigationCompleted = function(caseTryObj) {
         caseNo = caseTryObj.caseNo;
         tryNo = caseTryObj.tryNo;
+
+        // Remote Query subscription mgmt
+        cableSvc.setupSubscription(caseNo);
 
         $timeout(function() {
           isLoading = false;
