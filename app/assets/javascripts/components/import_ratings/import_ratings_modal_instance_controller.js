@@ -96,15 +96,16 @@ angular.module('QuepidApp')
 
       ctrl.showWarning = function () {
         return (ctrl.options.which !== undefined);
-      }
+      };
+
       ctrl.clearSelection = function () {
         ctrl.options.which = undefined;
         ctrl.clearQueries = false;
-      }
+      };
 
       ctrl.ratingsTypePicked = function () {
         return (ctrl.options.which === 'csv' || ctrl.options.which === 'rre' || ctrl.options.which === 'ltr' );
-      }
+      };
 
       ctrl.ok = function () {
         if ( ctrl.options.which === 'csv' ) {
