@@ -5,17 +5,36 @@ angular.module('QuepidApp')
   .service('cableSvc', [
     '$rootScope',
     '$q',
-    'ActionCableChannel', function cableSvc($rootScope, $q, ActionCableChannel) {
+    'ActionCableChannel',
+    'userSvc', function cableSvc($rootScope, $q, ActionCableChannel, userSvc) {
       var svc = this;
 
+      svc.HEARTBEAT_LIMIT = 2000;
+
       svc.promises = {};
+      svc.lastHeartbeat = Date.now();
 
       svc.remoteQueryConsumer = null;
 
+      svc.checkHeartbeat    = checkHeartbeat;
       svc.registerPromise   = registerPromise;
       svc.requestQuery      = requestQuery;
+      svc.sendHeartbeat     = sendHeartbeat;
       svc.setupSubscription = setupSubscription;
       svc.unsubscribe       = unsubscribe;
+
+      function checkHeartbeat() {
+        return (Date.now() - svc.lastHeartbeat) < svc.HEARTBEAT_LIMIT;
+      }
+
+      function sendHeartbeat(caseNo) {
+        if (svc.remoteQueryConsumer) {
+          svc.remoteQueryConsumer.send({
+            'user_id': userSvc.getUser().id,
+            'case_id': caseNo
+          }, 'heartbeat');
+        }
+      }
 
       function registerPromise(queryId, promise) {
         svc.promises[queryId] = promise;
@@ -45,10 +64,9 @@ angular.module('QuepidApp')
             switch (payload.type) {
               case 'heartbeat':
                 console.log('Heartbeat from query executor');
+                svc.lastHeartbeat = Date.now();
                 break;
               case 'complete':
-                console.log('Query Job complete.');
-
                 if (svc.promises.hasOwnProperty(payload.query_id)) {
                   svc.promises[payload.query_id].resolve(payload.resp);
                   delete svc.promises[payload.query_id];
@@ -60,7 +78,6 @@ angular.module('QuepidApp')
             }
           };
 
-          console.log('Setting up new subscription', caseID);
           return svc.remoteQueryConsumer.subscribe(queryCallback)
         });
       }

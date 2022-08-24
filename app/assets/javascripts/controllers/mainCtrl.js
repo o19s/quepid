@@ -5,13 +5,13 @@ angular.module('QuepidApp')
   // is responsible for bootstrapping everyone so...
   .controller('MainCtrl', [
     '$scope', '$routeParams', '$location', '$rootScope', '$log',
-    'flash', 'cableSvc',
+    '$interval', 'flash', 'cableSvc',
     'caseSvc', 'settingsSvc', 'querySnapshotSvc', 'caseTryNavSvc',
     'queryViewSvc', 'queriesSvc', 'docCacheSvc', 'diffResultsSvc', 'scorerSvc',
     'paneSvc',
     function (
       $scope, $routeParams, $location, $rootScope, $log,
-      flash, cableSvc,
+      $interval, flash, cableSvc,
       caseSvc, settingsSvc, querySnapshotSvc, caseTryNavSvc,
       queryViewSvc, queriesSvc, docCacheSvc, diffResultsSvc, scorerSvc,
       paneSvc
@@ -22,6 +22,8 @@ angular.module('QuepidApp')
       var tryNo   = parseInt($routeParams.tryNo, 10);
 
       var initialCaseNo = angular.copy(caseTryNavSvc.getCaseNo());
+
+      var remoteErrorDetected = false;
 
       var caseChanged = function() {
         return initialCaseNo !== caseNo;
@@ -150,5 +152,15 @@ angular.module('QuepidApp')
           $(document).trigger('toggleEast');
         };
       }
+
+      // Watch heartbeat & show error if comms stop
+      $interval(() => {
+        cableSvc.sendHeartbeat(caseNo);
+      }, 500);
+      $scope.$watch(cableSvc.checkHeartbeat, (n, o) => {
+        if (settingsSvc.editableSettings().remoteEnabled && !n) {
+          flash.error = "You have enabled remote queries but no heartbeat has been received from Qompanion.  Please ensure Qompanion is running and has proper credentials for this case.";
+        }
+      });
     }
   ]);

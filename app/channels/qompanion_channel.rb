@@ -11,6 +11,12 @@ class QompanionChannel < ApplicationCable::Channel
 
   end
 
+  def heartbeat data
+    ActionCable.server.broadcast "remote_query_#{data['case_id']}", {
+      'type': 'heartbeat'
+    }
+  end
+
   def query_complete data
     ActionCable.server.broadcast "remote_query_#{data['case_id']}", {
       type: 'complete', 

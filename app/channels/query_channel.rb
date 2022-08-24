@@ -11,10 +11,10 @@ class QueryChannel < ApplicationCable::Channel
 
   end
 
-
   # Frontend will call this when it wants a set of queries
   def new_job data
     puts "New job"
+    # TODO: How to share single qompanion with multiple users?
     ActionCable.server.broadcast "qompanion_#{data['message']['user_id']}", {
       type: 'new',
       case_id: data['message']['case_id'],
@@ -24,11 +24,10 @@ class QueryChannel < ApplicationCable::Channel
     }
   end
 
-  # TODO: Use or delete
-  # Executor will call this to let frontend know it's working
-  def self.query_job_running case_id
-    ActionCable.server.broadcast stream_name(case_id), {
-      type: 'heartbeat'
+  def heartbeat data
+    ActionCable.server.broadcast "qompanion_#{data['message']['user_id']}", {
+      'type': 'heartbeat',
+      'case_id': data['message']['case_id']
     }
   end
 
