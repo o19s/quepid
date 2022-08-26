@@ -28,6 +28,7 @@
       self.manualMaxScore         = data.manualMaxScore || false;
       self.manualMaxScoreValue    = data.manualMaxScoreValue || 100;
       self.name                   = data.name;
+      self.tooltip                = data.tooltip;
       self.owned                  = data.owned;
       self.ownerId                = data.owner_id;
       self.ownerName              = data.owner_name;

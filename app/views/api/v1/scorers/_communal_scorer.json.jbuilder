@@ -4,6 +4,7 @@ json.scorerId             scorer.id
 json.communal             scorer.communal
 json.code                 scorer.code
 json.name                 scorer.name
+json.tooltip              scorer.tooltip
 json.scale                scorer.scale
 json.manualMaxScore       scorer.manual_max_score
 json.manualMaxScoreValue  scorer.manual_max_score_value

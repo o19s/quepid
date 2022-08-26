@@ -56,6 +56,8 @@ class Scorer < ApplicationRecord
 
   scope :communal, -> { where(communal: true) }
 
+  enum rollup_method: [:average_of_scores, :sum_of_scores]
+
   # the default scorer for users who don't have one specified.
   def self.system_default_scorer
     find_by(name: Rails.application.config.quepid_default_scorer)

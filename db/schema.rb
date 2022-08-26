@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2022_08_21_103132) do
+ActiveRecord::Schema.define(version: 2022_08_24_161522) do
 
   create_table "annotations", id: :integer, charset: "utf8", force: :cascade do |t|
     t.text "message"
@@ -110,6 +110,9 @@ ActiveRecord::Schema.define(version: 2022_08_21_103132) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.boolean "communal", default: false
+    t.string "tooltip"
+    t.text "description"
+    t.integer "rollup_method", default: 0
   end
 
   create_table "snapshot_docs", id: :integer, charset: "latin1", force: :cascade do |t|

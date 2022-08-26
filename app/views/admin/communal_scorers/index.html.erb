@@ -7,12 +7,14 @@
     <tr>
       <th>ID</th>
       <th>Name</th>
+      <th>Tooltip</th>
       <th>Code</th>
       <th>Scale</th>
       <th>Manual Max Score?</th>
       <th>Manual Max Score Value</th>
       <th>Show Scale Labels?</th>
       <th>Scale with Labels</th>
+      <th>Description</th>
       <th>Updated At</th>
       <th colspan="2"></th>
     </tr>
@@ -23,6 +25,7 @@
       <tr class='scorer'>
         <td><%= scorer.id %></td>
         <td><%= scorer.name %></td>
+        <td><%= scorer.tooltip %></td>
         <td class='code'>
           <div
             id="code-<%= scorer.id %>"
@@ -35,6 +38,7 @@
         <td><%= scorer.manual_max_score_value %></td>
         <td><%= scorer.show_scale_labels? %></td>
         <td><%= scorer.scale_with_labels %></td>
+        <td><%= scorer.description %></td>
         <td>
           <%= scorer.updated_at %>
           <% if scorer.updated_at %>

@@ -64,6 +64,19 @@
     </div>
   </div>
 
+  <div class="mb-3">
+    <%= f.label :tooltip, class: 'form-label' %>
+    <%= f.text_field :tooltip, class: 'form-control' %>
+    <div class="form-text">A short "tooltip" style description.</div>
+  </div>
+
+  <div class="mb-3">
+    <%= f.label :description, class: 'form-label' %>
+    <div class="form-text">The gory details about this Scorer!</div>
+    <%= f.text_area :description %>
+  </div>
+
+
   <%= f.submit class: 'btn btn-primary' %>
 
 <% end %>
