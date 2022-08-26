@@ -11,7 +11,7 @@
 #  manual_max_score       :boolean          default(FALSE)
 #  manual_max_score_value :integer          default(100)
 #  name                   :string(255)
-#  rollup_method          :integer          default(0)
+#  rollup_method          :integer          default("average_of_scores")
 #  scale                  :string(255)
 #  scale_with_labels      :text(65535)
 #  show_scale_labels      :boolean          default(FALSE)
