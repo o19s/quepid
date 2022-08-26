@@ -5,11 +5,19 @@
 # Table name: snapshot_docs
 #
 #  id                :integer          not null, primary key
-#  doc_id            :string(500)
-#  position          :integer
-#  snapshot_query_id :integer
 #  explain           :text(16777215)
-#  rated_only        :tinyint
+#  position          :integer
+#  rated_only        :boolean          default(FALSE)
+#  doc_id            :string(500)
+#  snapshot_query_id :integer
+#
+# Indexes
+#
+#  snapshot_query_id  (snapshot_query_id)
+#
+# Foreign Keys
+#
+#  snapshot_docs_ibfk_1  (snapshot_query_id => snapshot_queries.id)
 #
 
 class SnapshotDoc < ApplicationRecord

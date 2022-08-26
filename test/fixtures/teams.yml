@@ -4,9 +4,18 @@
 #
 #  id         :integer          not null, primary key
 #  name       :string(255)
-#  owner_id   :integer          not null
 #  created_at :datetime         not null
 #  updated_at :datetime         not null
+#  owner_id   :integer          not null
+#
+# Indexes
+#
+#  index_teams_on_name  (name)
+#  owner_id             (owner_id)
+#
+# Foreign Keys
+#
+#  teams_ibfk_1  (owner_id => users.id)
 #
 
 valid:
