@@ -520,6 +520,9 @@ bin/docker r bundle exec bin/rails g migration FixCuratorVariablesTriesForeignKe
 
 Followed by `bin/docker r bundle exec rake db:migrate`
 
+You should also update the schema annotation data by running `bin/docker r bundle exec annotations`
+when you change the schema.
+
 ## Updating RubyGems
 
 Modify the file `Gemfile` and then run:

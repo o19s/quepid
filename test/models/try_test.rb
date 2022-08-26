@@ -5,17 +5,28 @@
 # Table name: tries
 #
 #  id             :integer          not null, primary key
-#  try_number     :integer
-#  query_params   :text(65535)
-#  case_id        :integer
-#  field_spec     :string(500)
-#  search_url     :string(500)
-#  name           :string(50)
-#  search_engine  :string(50)       default("solr")
+#  ancestry       :string(3072)
+#  api_method     :string(255)
 #  escape_query   :boolean          default(TRUE)
+#  field_spec     :string(500)
+#  name           :string(50)
 #  number_of_rows :integer          default(10)
+#  query_params   :string(20000)
+#  search_engine  :string(50)       default("solr")
+#  search_url     :string(500)
+#  try_number     :integer
 #  created_at     :datetime         not null
 #  updated_at     :datetime         not null
+#  case_id        :integer
+#
+# Indexes
+#
+#  case_id              (case_id)
+#  ix_queryparam_tryNo  (try_number)
+#
+# Foreign Keys
+#
+#  tries_ibfk_1  (case_id => cases.id)
 #
 
 require 'test_helper'
