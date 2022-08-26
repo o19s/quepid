@@ -5,11 +5,20 @@
 # Table name: ratings
 #
 #  id         :integer          not null, primary key
-#  doc_id     :string(500)
 #  rating     :integer
-#  query_id   :integer
 #  created_at :datetime         not null
 #  updated_at :datetime         not null
+#  doc_id     :string(500)
+#  query_id   :integer
+#
+# Indexes
+#
+#  index_ratings_on_doc_id  (doc_id)
+#  query_id                 (query_id)
+#
+# Foreign Keys
+#
+#  ratings_ibfk_1  (query_id => queries.id)
 #
 
 class Rating < ApplicationRecord
