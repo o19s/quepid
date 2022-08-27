@@ -38,6 +38,7 @@
       self.scaleWithLabels        = data.scaleWithLabels;
       self.scorerId               = data.scorerId;
       self.communal               = data.communal;
+      self.rollupMethod           = data.rollup_method;
       self.showScaleLabels        = data.showScaleLabels || false;
       self.teams                  = data.teams || [];
 
