@@ -6,7 +6,8 @@ json.scorerId             scorer.id
 json.communal             scorer.communal
 json.code                 scorer.code
 json.name                 scorer.name
-json.tooltip                 scorer.tooltip
+json.tooltip              scorer.tooltip
+json.description          scorer.description
 json.scale                scorer.scale
 json.owner_id             scorer.owner_id
 json.owned                scorer.owner_id == current_user.id

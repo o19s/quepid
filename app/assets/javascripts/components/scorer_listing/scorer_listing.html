@@ -1,6 +1,8 @@
 <div class="item-box row">
   <div class="col-xs-1">
     {{ ctrl.scorer.name }}
+    <br/>
+    <small class="text-muted">{{ ctrl.scorer.tooltip }}</small>
 
     <span class="item-actions">
       <span ng-if="!ctrl.scorer.communal">

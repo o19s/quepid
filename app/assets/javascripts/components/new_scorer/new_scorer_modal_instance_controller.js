@@ -20,10 +20,6 @@ angular.module('QuepidApp')
       ctrl.scaleChoice  = 'binaryScale';
       ctrl.scorer       = defaultScorer;
 
-      ctrl.scorerOptions = {
-        showName: true
-      };
-
       ctrl.ok = function () {
         $uibModalInstance.close(ctrl.scorer);
       };

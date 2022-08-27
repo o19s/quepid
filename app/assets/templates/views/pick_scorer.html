@@ -10,7 +10,7 @@
       ng-repeat="scorer in communalScorers track by scorer.scorerId"
         ng-class="{ active: scorer.scorerId === activeScorer.scorerId }"
         ng-click="selectScorer(scorer)">
-        {{scorer.name}}
+        {{scorer.name}} <small class="text-muted">{{ scorer.tooltip }}</small>
       </li>
     </ul>
 

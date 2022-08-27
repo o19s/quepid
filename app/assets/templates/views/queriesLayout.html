@@ -54,7 +54,7 @@
 
               <small class="text-muted">
                 &mdash;
-                {{ getScorer().name }} | {{ getScorer().tooltip }}
+                <span aria-hidden="true" popover-trigger="'mouseenter'" popover-placement="right" uib-popover="{{ getScorer().tooltip }}">{{ getScorer().name }}</span>                
               </small>
             </h1>
           </div>

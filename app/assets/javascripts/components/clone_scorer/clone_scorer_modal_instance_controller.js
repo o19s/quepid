@@ -22,12 +22,6 @@ angular.module('QuepidApp')
 
       scorerControllerActionsSvc.figureOutScaleChoice(ctrl);
 
-
-
-      ctrl.scorerOptions = {
-        showName: true
-      };
-
       ctrl.ok = function () {
         $uibModalInstance.close(ctrl.scorer);
       };

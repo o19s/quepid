@@ -82,6 +82,8 @@
             'manual_max_score_value': scorer.manualMaxScoreValue,
             'show_scale_labels':      scorer.showScaleLabels,
             'scale_with_labels':      scorer.scaleWithLabels,
+            'tooltip':                scorer.tooltip,
+            'description':            scorer.description,
           };
 
 
@@ -116,6 +118,8 @@
               'manual_max_score_value': scorer.manualMaxScoreValue,
               'show_scale_labels':      scorer.showScaleLabels,
               'scale_with_labels':      scorer.scaleWithLabels,
+              'tooltip':                scorer.tooltip,
+              'description':            scorer.description,
             }
           };
 

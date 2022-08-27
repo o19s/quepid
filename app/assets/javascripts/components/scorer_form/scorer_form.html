@@ -1,4 +1,4 @@
-<div class="form-group" ng-show='ctrl.scorerOptions.showName'>
+<div class="form-group">
   <label>Name</label>
   <input id="scorer-name" type="text" class="form-control" ng-required="true" ng-model="ctrl.scorer.name" placeholder="Give your scorer a name" autoFocus>
 </div>
@@ -17,8 +17,17 @@
   ng-model="ctrl.scorer.code"></div>
 </div>
 
+<div class="form-group">
+  <label>Tooltip</label>
+  <input id="scorer-tooltip" type="text" class="form-control" ng-required="true" ng-model="ctrl.scorer.tooltip" placeholder="Short tool tip descripton" autoFocus>
+</div>
+<div class="form-group">
+  <label>Description</label>
+  <input id="scorer-description" type="text" class="form-control" ng-required="true" ng-model="ctrl.scorer.description" placeholder="The gory details of how your Scorer works." autoFocus>
+</div>
+
 <div class='form-group scorer max-score'>
-  <label>Max Score:</label></br />
+  <label>Max Score:</label><br/>
   <label>
     <input id="manual-max-score" type="radio" ng-model="ctrl.scorer.manualMaxScore" ng-value="false">
     Automatic

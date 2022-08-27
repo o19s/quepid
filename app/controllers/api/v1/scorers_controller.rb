@@ -184,6 +184,8 @@ module Api
           :manual_max_score_value,
           :show_scale_labels,
           :communal,
+          :tooltip,
+          :description,
           scale:             [],
           scale_with_labels: {}
         )
