@@ -102,6 +102,8 @@ angular.module('QuepidApp')
 
       $scope.getScorer                = getScorer;
 
+      $scope.pickScorable         = pickScorable;
+
       $scope.reverse = $location.search().reverse;
       $scope.sortBy($location.search().sort || 'default', !$scope.reverse);
 
@@ -167,11 +169,14 @@ angular.module('QuepidApp')
         }
       };
 
-      // a simulated "query" that the results view uses for display
       var lastVersion = -1;
+
+      // a simulated "query" that the results view uses for display
+      // This method is used by scorers whose rollupMethod is averaging
       var avgQuery = {
         lastScore: -1,
         calcScore: function() {
+          console.log("In avgQuery calcScore");
           // rescore only if
           // - there are no unscored queries
           // - we seem to have a new version of the query service
@@ -183,12 +188,49 @@ angular.module('QuepidApp')
           }
         },
         score: () => {
+          console.log("In avgQuery score");
           var deferred = $q.defer();
           deferred.resolve($scope.queries.avgQuery.diff.currentScore);
           return deferred.promise;
         },
         diff: {
           score: function() {
+            console.log("In avgQuery diff score");
+            return queriesSvc.scoreAllDiffs().then( (scoreInfo) => {
+              $scope.queries.avgQuery.diff.currentScore = scoreInfo;
+              return scoreInfo;
+            });
+          }
+        }
+        //var diff: null, // TODO fill out
+      };
+
+      // a simulated "query" that the results view uses for display
+      // This method is used by scorers whose rollupMethod is sum
+      // note: this hasn't actually been converted to a SUM!
+      var sumQuery = {
+        lastScore: -1,
+        calcScore: function() {
+          console.log("In sumQuery calcScore");
+          // rescore only if
+          // - there are no unscored queries
+          // - we seem to have a new version of the query service
+          if (!queriesSvc.hasUnscoredQueries() &&
+              (lastVersion !== queriesSvc.version())) {
+
+            runScore(this);
+            saveScoring();
+          }
+        },
+        score: () => {
+          console.log("In sumQuery score");
+          var deferred = $q.defer();
+          deferred.resolve($scope.queries.avgQuery.diff.currentScore);
+          return deferred.promise;
+        },
+        diff: {
+          score: function() {
+            console.log("In sumQuery diff score");
             return queriesSvc.scoreAllDiffs().then( (scoreInfo) => {
               $scope.queries.avgQuery.diff.currentScore = scoreInfo;
               return scoreInfo;
@@ -268,7 +310,9 @@ angular.module('QuepidApp')
         }
       }
 
+      // Do we need to define them here, or can, based on the type of scorer, we define it later???
       $scope.queries.avgQuery = avgQuery;
+      $scope.queries.sumQuery = sumQuery;
 
       // get all the queries for this case for the query service
       $scope.queriesList = [];
@@ -314,6 +358,19 @@ angular.module('QuepidApp')
 
       function getScorer() {
         return scorerSvc.defaultScorer;
+      }
+
+      function pickScorable() {
+        var scorable;
+        switch (getScorer().rollupMethod) {
+          case 'sum_of_scores':
+            scorable = $scope.queries.sumQuery;
+            break;
+          case 'average_of_scores':
+            scorable = $scope.queries.avgQuery;
+            break;
+        }
+        return scorable;
       }
 
       /*jslint latedef:false*/

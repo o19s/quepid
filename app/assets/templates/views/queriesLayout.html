@@ -4,12 +4,13 @@
       <div id="case-header" class="row">
         <div class="col-sm-12">
           <div style="display: inline-block">
+            {{ getScorer().rollupMethod }}
             <qscore
               class="case-score"
               diff-label="queries.selectedDiffName()"
               full-diff-name="queries.fullDiffName()"
               max-score="maxScore || 1";
-              scorable="queries.avgQuery"
+              scorable="pickScorable()"
               score-label="getScorer().name"
               score-type="'header'"
               scores="scores"
@@ -54,7 +55,7 @@
 
               <small class="text-muted">
                 &mdash;
-                <span aria-hidden="true" popover-trigger="'mouseenter'" popover-placement="right" uib-popover="{{ getScorer().tooltip }}">{{ getScorer().name }}</span>                
+                <span aria-hidden="true" popover-trigger="'mouseenter'" popover-placement="right" uib-popover="{{ getScorer().tooltip }}">{{ getScorer().name }}</span>
               </small>
             </h1>
           </div>

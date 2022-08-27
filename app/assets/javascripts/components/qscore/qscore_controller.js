@@ -11,7 +11,7 @@ angular.module('QuepidApp')
       ctrl.diffScore    = '?';
       ctrl.diffStyle    = {};
       ctrl.score        = '?';
-      ctrl.scoreType    = ctrl.scoreType || 'normal';
+      ctrl.scoreType    = ctrl.scoreType;  // either header or query
       ctrl.style        = { 'background-color': qscoreSvc.scoreToColor(ctrl.score, ctrl.maxScore) };
 
       $scope.$watch('ctrl.scorable.currentScore', function() {
