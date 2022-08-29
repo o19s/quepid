@@ -7,15 +7,12 @@
 #  id                     :integer          not null, primary key
 #  code                   :text(65535)
 #  communal               :boolean          default(FALSE)
-#  description            :text(65535)
 #  manual_max_score       :boolean          default(FALSE)
 #  manual_max_score_value :integer          default(100)
 #  name                   :string(255)
-#  rollup_method          :integer          default(0)
 #  scale                  :string(255)
 #  scale_with_labels      :text(65535)
 #  show_scale_labels      :boolean          default(FALSE)
-#  tooltip                :string(255)
 #  created_at             :datetime         not null
 #  updated_at             :datetime         not null
 #  owner_id               :integer
