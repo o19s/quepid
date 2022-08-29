@@ -10,8 +10,7 @@ angular.module('QuepidApp')
     ) {
       var ctrl = this;
 
-      // default to showing the params toggle.
-      ctrl.toggleParams = true;
+      ctrl.copyText = null;
 
       ctrl.query = query;
 
@@ -22,7 +21,17 @@ angular.module('QuepidApp')
         return angular.toJson(tempObj, true);
       };
 
+      ctrl.formatJson = function (obj) {
+        var jsonKeys = Object.keys(obj);
+        var tempObj = {};
+        jsonKeys.map(key => tempObj[key] = obj[key]);
+        return angular.toJson(tempObj, true);
+      };
+
       ctrl.parsedQueryDetails = ctrl.sortJsonByKeys(query.searcher.parsedQueryDetails);
+      ctrl.timingDetails = ctrl.formatJson(query.searcher.timingDetails);
+
+
 
       ctrl.queryDetailsMessage = null;
       // Only solr has this, not ES.  So a check if it exists.  It may just be empty {}.
@@ -32,11 +41,14 @@ angular.module('QuepidApp')
         }
         else {
           ctrl.queryDetails = ctrl.sortJsonByKeys(query.searcher.queryDetails);
+          ctrl.copyText = ctrl.queryDetails;
         }
       }
       else {
         ctrl.queryDetailsMessage = 'Query parameters are not returned by Elasticsearch.';
       }
+
+
 
       ctrl.cancel = function () {
         $uibModalInstance.dismiss('cancel');
