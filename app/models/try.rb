@@ -85,7 +85,7 @@ class Try < ApplicationRecord
   end
 
   def id_from_field_spec
-    # logic is inspired by https://github.com/o19s/splainer-search/blob/master/services/fieldSpecSvc.js
+    # logic is inspired by https://github.com/o19s/splainer-search/blob/main/services/fieldSpecSvc.js
 
     # rubocop:disable Style/IfUnlessModifier
     # rubocop:disable Style/MultipleComparison

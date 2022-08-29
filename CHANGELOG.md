@@ -2,6 +2,9 @@
 
 ## 6.13.0 - ??
 
+### Improvements
+
+* We've moved away from the "master" terminology to "main" for the default code branch, and updated links for that.
 
 ## 6.12.1 - 2022-08-11
 
@@ -60,7 +63,7 @@
 
 * Delete All Queries for a Case was requested by @negyesi in https://github.com/o19s/quepid/issues/475.   At the case level added a Delete button that brings up a modal that lets you delete the case, archive the case, or delete all the queries.  https://github.com/o19s/quepid/pull/486 by @epugh.
 
-* Frustrated that your custom API that _looks_ like Solr to Quepid has to deal with JSONP callbacks?  Now you don't, as we have introduced the ability to swap from the default JSONP to GET api methods when you define your Solr end point.  This is going to simplify the work that folks have to do.   https://github.com/o19s/quepid/pull/495 by @epugh.  For more information refer to the docs at https://github.com/o19s/quepid/blob/master/docs/endpoints_solr.md#solr-endpoints-structure.
+* Frustrated that your custom API that _looks_ like Solr to Quepid has to deal with JSONP callbacks?  Now you don't, as we have introduced the ability to swap from the default JSONP to GET api methods when you define your Solr end point.  This is going to simplify the work that folks have to do.   https://github.com/o19s/quepid/pull/495 by @epugh.  For more information refer to the docs at https://github.com/o19s/quepid/blob/main/docs/endpoints_solr.md#solr-endpoints-structure.
 
 * Do you have a relative image url in your search engine that you want to show via `thumb:` or `image:`?   You can now provide some JSON in the field specification to provide that data: `id,title:title,{"name": "image_url", "type":"image", "prefix": "https://www.example.org/images"}, description`.   This feature is experimental as we learn more about how to have richer field specifications, and may change!  https://github.com/o19s/quepid/pull/487 by @epugh.
 
@@ -310,7 +313,7 @@ introduced into 6.9.0 based on what we've learned in the real world.
 
 ## 6.5.0 - 2021-04-22
 
-![favicon](https://raw.githubusercontent.com/o19s/quepid/master/app/assets/images/favicon.ico)
+![favicon](https://raw.githubusercontent.com/o19s/quepid/main/app/assets/images/favicon.ico)
 
 I can sum up this release of Quepid as either the _Hey friend, come join me in improving search_ release or the _so much technical debt has been paid down_ release.   
 
@@ -529,7 +532,7 @@ files, not other formats like RRE.  https://github.com/o19s/quepid/pull/193 by @
 ### Improvements
 
 * When exporting for RRE, we need the ES or Solr index name.  Extract this from the url for the most recent try and save a step!  https://github.com/o19s/quepid/pull/167 by @epugh fixes https://github.com/o19s/quepid/issues/159.
-* If you link to either a case that doesn't exist, or you don't have permission for, or a try that doesn't exist for a case, then provide messaging back in the UI!  Let's share some Quepid Cases!  933ed257198ebe21ff86b7e35573d3172cc2e593, 99ac27c1f8698ed726580a4c46eaf6810a4372d2, and 37b95b89fa848b0af2bae3d5a9541141e5d80d62 by @epugh to master branch fixes https://github.com/o19s/quepid/issues/158.
+* If you link to either a case that doesn't exist, or you don't have permission for, or a try that doesn't exist for a case, then provide messaging back in the UI!  Let's share some Quepid Cases!  933ed257198ebe21ff86b7e35573d3172cc2e593, 99ac27c1f8698ed726580a4c46eaf6810a4372d2, and 37b95b89fa848b0af2bae3d5a9541141e5d80d62 by @epugh to main branch fixes https://github.com/o19s/quepid/issues/158.
 * `getCaseByNo` only used in tests. https://github.com/o19s/quepid/pull/173 by @epugh removes code.
 * There was a partially working attempt at a result grid view instead of list view.  It wasn't rendering in the UI, and we want to have a more general solution in the future, so removing the code to simplify Quepid. https://github.com/o19s/quepid/pull/174 by @epugh fixes https://github.com/o19s/quepid/issues/171.
 

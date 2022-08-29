@@ -554,7 +554,7 @@ works on Heroku and the production Docker image.
 # QA
 
 There is a code deployment pipeline to the http://quepid-staging.herokuapp.com site that
-is run on successful commits to `master`.  
+is run on successful commits to `main`.  
 
 If you have pending migrations you will need to run them via:
 
