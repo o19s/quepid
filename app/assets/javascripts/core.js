@@ -39,6 +39,7 @@
 //= require vega
 //= require vega-lite
 //= require vega-embed
+//= require vega-interpreter
 
 //= require angular-resource/angular-resource
 //= require angular-cookies/angular-cookies
