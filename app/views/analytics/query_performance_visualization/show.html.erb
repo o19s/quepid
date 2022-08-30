@@ -11,11 +11,11 @@
 "height": 600,
 "background": null,
 "encoding": {
-  "x": {"aggregate": "sum", "field": "yield", "title": "Summed up yield"},
-  "y": {"field": "variety", "title": "Variety of food"},
-  "color": {"field": "site", "title": "Site"}
+  "x": {"aggregate": "sum", "field": "yield", "title": "Duration in Milliseconds"},
+  "y": {"field": "variety", "title": "Query"},
+  "color": {"field": "site", "title": "Events"}
 },
-"title": "Weather type",
+"title": "Duration of Queries Performance",
 "config": {}
 };
   vegaEmbed("#vis", spec, {mode: "vega-lite"}).then(console.log).catch(console.warn);
