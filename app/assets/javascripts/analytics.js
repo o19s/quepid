@@ -22,3 +22,4 @@
 //= require vega
 //= require vega-lite
 //= require vega-embed
+//= require vega-interpreter

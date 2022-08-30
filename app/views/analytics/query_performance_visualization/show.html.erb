@@ -1,0 +1,22 @@
+<%= link_to 'Back to Case', case_core_path(@case) %>
+
+
+<div id="vis"/>
+<script>
+  const spec = {
+"$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+"data": {"url": "<%= analytics_query_performance_visualization_vega_data_url(case_id: @case.id, format: :json) %>"},
+"mark": "bar",
+"width": 1000,
+"height": 600,
+"background": null,
+"encoding": {
+  "x": {"aggregate": "sum", "field": "yield", "title": "Summed up yield"},
+  "y": {"field": "variety", "title": "Variety of food"},
+  "color": {"field": "site", "title": "Site"}
+},
+"title": "Weather type",
+"config": {}
+};
+  vegaEmbed("#vis", spec, {mode: "vega-lite"}).then(console.log).catch(console.warn);
+</script>

@@ -35,6 +35,11 @@ Rails.application.routes.draw do
     get 'tries_visualization/:case_id/vega_specification' => 'tries_visualization#vega_specification',
         as: :tries_visualization_vega_specification
     get 'tries_visualization/:case_id/vega_data' => 'tries_visualization#vega_data', as: :tries_visualization_vega_data
+
+    get 'query_performance_visualization/:case_id' => 'query_performance_visualization#show', as: :query_performance_visualization
+    get 'query_performance_visualization/:case_id/vega_specification' => 'query_performance_visualization#vega_specification',
+        as: :query_performance_visualization_vega_specification
+    get 'query_performance_visualization/:case_id/vega_data' => 'query_performance_visualization#vega_data', as: :query_performance_visualization_vega_data
   end
 
   namespace :admin do
