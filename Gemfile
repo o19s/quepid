@@ -2,7 +2,7 @@
 
 source 'https://rubygems.org'
 
-ruby '2.7.6'
+ruby '3.1.2', :patchlevel => '20'
 
 gem 'activerecord-import', '>= 1.0.7'
 gem 'acts_as_list', '>= 1.0.1'
@@ -21,6 +21,7 @@ gem 'redis', '~> 4.0'
 gem 'jquery-rails'
 gem 'jquery-ui-rails' # Can we narrow the widgets to load faster?
 gem 'mysql2'
+gem 'net-smtp'
 gem 'postmark-rails'
 gem 'puma', '~> 5.0'
 gem 'puma_worker_killer'
