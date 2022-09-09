@@ -12,15 +12,11 @@ services:
       - MYSQL_ROOT_PASSWORD=password
     volumes:
       - ./volumes/mysql_data:/var/lib/mysql
-
-#  Redis is used to support sending to Google Analytics events.
-#  Enable this if you are running in Docker and have GA setup.
   redis:
     container_name: quepid_prod_redis
     image: redis:6.0.5
     ports:
       - 6379:6379
-
   app:
     container_name: quepid_prod_app
     image: o19s/quepid:latest
@@ -52,7 +48,7 @@ services:
       - QUERY_LIST_SORTABLE=true
     command: "foreman s -f Procfile"
     ports:
-      - 3000:3000 # Map to port 80 for outside users when you are not using Nginx
+    #  - 80:3000 # Map to port 80 for outside users when you are not using Nginx
     links:
       - mysql
       - redis
