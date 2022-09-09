@@ -15,7 +15,7 @@ namespace :karma  do
   desc 'Run karma tests in single run mode'
   task run: :environment do
     cleanup_assets
-    result = with_tmp_config :start, '--single-run'
+    result = with_tmp_config :start, '--single-run --log-level debug'
     cleanup_assets
     exit result unless result
   end
