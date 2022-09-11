@@ -29,7 +29,7 @@
     "angular-wizard": "https://github.com/softwaredoug/angular-wizard.git#0.4.2",
     "bootstrap": "5.2.1",
     "codemirror": "5.65.8",
-    "d3": "~6.6.2",
+    "d3": "~7.6.1",
     "d3-tip": "~0.9.1",
     "file-saver": "^2.0.5",
     "jquery": "~3.6.1",
