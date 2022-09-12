@@ -3,13 +3,11 @@ WORKDIR /srv/app
 COPY package.json yarn.lock ./
 RUN yarn install --production=true
 
-FROM ruby:2.7.6-buster
+FROM ruby:3.1.2-bullseye
 
 LABEL maintainer="quepid_admin@opensourceconnections.com"
 
 # Must have packages
-# The next line is a list of dependencies if we move to slim-buster, however it only shaves 80MB off the image.
-# mariadb-server libmariadbclient-dev mariadb-client mysql-common ruby-mysql2 libmariadbd-dev build-essential patch ruby-dev zlib1g-dev liblzma-dev gnupg
 RUN apt-get update -qq && apt-get install -y --no-install-recommends vim curl apt-transport-https ca-certificates \
   && rm -rf /var/lib/apt/lists/*
 
@@ -61,6 +59,7 @@ COPY ./Rakefile ./Rakefile
 COPY ./README.md ./README.md
 COPY ./vendor ./vendor
 COPY ./yarn.lock ./yarn.lock
+COPY ./jupyterlite/notebooks.gz ./jupyterlite/notebooks.gz
 
 RUN mkdir -p tmp/pids
 
