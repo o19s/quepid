@@ -2,9 +2,23 @@
 
 ## 6.13.0 - ??
 
+### Features
+
+* Jupyter Notebooks In Quepid :confetti_ball:. Everyone wants to customize their analytics and have different visualizations, so let's make that easier.  Quepid now integrates [Jupyterlite](https://github.com/jupyterlite/jupyterlite), a in browser version of Jupyter.  So you can write your notebooks using the Python you know and love, and not have to worry about installing dependencies, as Quepid ships all the typical ones.  This is an area that I expect a lot of improvement and change as we get to know how to ship sample analytics as Jupyter notebooks.  https://github.com/o19s/quepid/pull/544 by @epugh.
+
+* Our first sample notebook let's you compare the scores of two snapshots using a histogram.  Really drives home the "before and after" story of Relevance Tuning.  To support this notebook, we needed to preserve the score and if all the docs are rated in the snapshot datastructure.   https://github.com/o19s/quepid/pull/550 by @epugh.
+
+* Snapshots now include the total number of results for a query, useful for analytics.  Also expose the Quepid API for looking up snapshots in the snapshots modal UI.  https://github.com/o19s/quepid/pull/553 by @epugh fixes https://github.com/o19s/quepid/issues/539 by @renekrie.
+
 ### Improvements
 
 * We've moved away from the "master" terminology to "main" for the default code branch, and updated links for that.
+
+* Moved to Ruby 3!   Ruby 3.1.2 on Bullseye is apparently twice as fast as Ruby 2.  These two changes let Quepid run on Apple Silicon.   It also lets us simplify our Dockerfile setup for Chromium, which we use for testing our frontend application.  Lastly, we ripped out Webpacker (Webpack).  Webpacker was added for JS toolingduring our migration to Rails 6, however we never actually used it in our development tooling, and is no longer preferred as part of Rails 7.  https://github.com/o19s/quepid/pull/558 by @epugh and @mkr.
+
+* Integrate updating of database schema annotations into build processes.  This leverages the `annotations` gem, which we've had for years, but wasn't documented and therefore wasn't being manually run.  https://github.com/o19s/quepid/pull/555 by @epugh.
+
+* When we first moved to Rails from python, we had various database table constraints that were not enforced.  Over the years we've started enforcing them, but never cleaned up the old data, till now!  https://github.com/o19s/quepid/pull/552 by @epugh.  Mostly of interest to folks with a deployment of Quepid back to 2016 ;-).
 
 ## 6.12.1 - 2022-08-11
 
