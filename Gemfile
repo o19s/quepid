@@ -79,3 +79,5 @@ gem 'omniauth-google-oauth2'
 gem 'rails-healthcheck', '~> 1.4'
 
 gem 'vega', '~> 0.2.6'
+
+gem "net-pop", "~> 0.1.1"
