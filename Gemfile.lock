@@ -193,6 +193,10 @@ GEM
     multi_json (1.15.0)
     multi_xml (0.6.0)
     mysql2 (0.5.4)
+    net-imap (0.2.3)
+      digest
+      net-protocol
+      strscan
     net-pop (0.1.1)
       digest
       net-protocol
@@ -354,6 +358,7 @@ GEM
       actionpack (>= 5.2)
       activesupport (>= 5.2)
       sprockets (>= 3.0.0)
+    strscan (3.0.4)
     terser (1.1.12)
       execjs (>= 0.3.0, < 3)
     thor (1.2.1)
@@ -411,6 +416,7 @@ DEPENDENCIES
   minitest-reporters (>= 0.5.0)
   mocha (~> 1.11)
   mysql2
+  net-imap (~> 0.2.3)
   net-pop (~> 0.1.1)
   net-smtp
   omniauth (~> 2.0)
