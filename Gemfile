@@ -23,8 +23,8 @@ gem 'jquery-ui-rails' # Can we narrow the widgets to load faster?
 gem 'mysql2'
 
 gem 'net-smtp'
-gem "net-pop", "~> 0.1.1"
-gem "net-imap", "~> 0.2.3"
+gem 'net-pop', '~> 0.1.1'
+gem 'net-imap', '~> 0.2.3'
 gem 'postmark-rails'
 gem 'puma', '~> 5.0'
 gem 'puma_worker_killer'
