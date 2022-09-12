@@ -20,6 +20,8 @@
 
 * When we first moved to Rails from python, we had various database table constraints that were not enforced.  Over the years we've started enforcing them, but never cleaned up the old data, till now!  https://github.com/o19s/quepid/pull/552 by @epugh.  Mostly of interest to folks with a deployment of Quepid back to 2016 ;-).
 
+* During the Rails 6 migration we found out Redis wasn't critical to running Quepid, and attempted to make it optional.  However that turned out to be confusing, and future features will __require__ Redis.  So let's put it back in our default production docker compose setup.  https://github.com/o19s/quepid/pull/557 by first time contributor @OkkeKlein.  Thanks!
+
 ## 6.12.1 - 2022-08-11
 
 ### Bugs
