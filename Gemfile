@@ -21,7 +21,10 @@ gem 'redis', '~> 4.0'
 gem 'jquery-rails'
 gem 'jquery-ui-rails' # Can we narrow the widgets to load faster?
 gem 'mysql2'
+
 gem 'net-smtp'
+gem "net-pop", "~> 0.1.1"
+gem "net-imap", "~> 0.2.3"
 gem 'postmark-rails'
 gem 'puma', '~> 5.0'
 gem 'puma_worker_killer'
@@ -43,6 +46,15 @@ gem 'rack-cors', '~> 1.1'
 gem 'foreman'
 gem 'racc', '~> 1.4.0'
 gem 'ancestry'
+
+gem 'omniauth', '~> 2.0'
+gem 'omniauth-keycloak'
+gem 'omniauth-rails_csrf_protection'
+gem 'omniauth-google-oauth2'
+
+gem 'rails-healthcheck', '~> 1.4'
+
+gem 'vega', '~> 0.2.6'
 
 group :development, :test do
   gem 'annotate'
@@ -67,19 +79,3 @@ group :test do
   gem 'webmock'
   gem 'rails-controller-testing' # bring back compatibility with rails 4 assigns in controller tests.
 end
-
-gem 'omniauth', '~> 2.0'
-
-gem 'omniauth-keycloak'
-
-gem 'omniauth-rails_csrf_protection'
-
-gem 'omniauth-google-oauth2'
-
-gem 'rails-healthcheck', '~> 1.4'
-
-gem 'vega', '~> 0.2.6'
-
-gem "net-pop", "~> 0.1.1"
-
-gem "net-imap", "~> 0.2.3"
