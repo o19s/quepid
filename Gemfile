@@ -39,7 +39,6 @@ gem 'cal-heatmap-rails', '~> 3.6' # provides assets for cal heatmap, that requir
 # Had no luck with js/svg approach ;-(
 gem 'font-awesome-sass'
 
-gem 'webpacker', '= 5.4.0'
 gem 'rack-cors', '~> 1.1'
 gem 'foreman'
 gem 'racc', '~> 1.4.0'

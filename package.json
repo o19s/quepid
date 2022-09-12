@@ -10,7 +10,6 @@
     "@rails/actioncable": "^6.0.0",
     "@rails/activestorage": "^6.0.0",
     "@rails/ujs": "^6.0.0",
-    "@rails/webpacker": "5.4.0",
     "ace-builds": "1.10.1",
     "angular": "~1.8.3",
     "angular-animate": "^1.8.3",
@@ -40,9 +39,7 @@
     "splainer-search": "2.17.0",
     "tether-shepherd": "latest",
     "turbolinks": "^5.2.0",
-    "vega": "5.22.1",
-    "webpack": "^4.46.0",
-    "webpack-cli": "^3.3.12"
+    "vega": "5.22.1"
   },
   "devDependencies": {
     "angular-mocks": "~1.8.3",
@@ -51,8 +48,7 @@
     "karma": "6.3.17",
     "karma-chrome-launcher": "3.1.1",
     "karma-jasmine": "4.0.1",
-    "puppeteer": "^17.1.1",
-    "webpack-dev-server": "^3.11.2"
+    "puppeteer": "^17.1.1"
   },
   "resolutions": {}
 }
