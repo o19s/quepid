@@ -25,7 +25,7 @@ angular.module('QuepidApp')
 
       $scope.pendingWizardSettings = angular.copy(defaultSettings);
       var quepidStartsWithHttps = $location.protocol() === 'https';
-      if ($scope.pendingWizardSettings.searchEngine === 'es' ){
+      if ($scope.pendingWizardSettings.searchEngine === 'es' || $scope.pendingWizardSettings.searchEngine === 'os') {
         $scope.pendingWizardSettings.searchUrl = defaultSettings.searchUrl;
       }
       else if (quepidStartsWithHttps === true){
@@ -50,7 +50,7 @@ angular.module('QuepidApp')
         $scope.pendingWizardSettings.titleField               = settings.titleField;
         $scope.pendingWizardSettings.urlFormat                = settings.urlFormat;
         var quepidStartsWithHttps = $location.protocol() === 'https';
-        if ($scope.pendingWizardSettings.searchEngine === 'es' ){
+        if ($scope.pendingWizardSettings.searchEngine === 'es' || $scope.pendingWizardSettings.searchEngine === 'os'){
           $scope.pendingWizardSettings.searchUrl = settings.searchUrl;
         }
         else if (quepidStartsWithHttps === true){
@@ -207,7 +207,7 @@ angular.module('QuepidApp')
           $scope.pendingWizardSettings.additionalFields = defaults.additionalFields;
         } else {
           $scope.pendingWizardSettings.idField          = '';
-          if (searchEngine === 'es') {
+          if (searchEngine === 'es' || searchEngine === 'os') {
             $scope.pendingWizardSettings.idField        = '_id';
           }
           $scope.pendingWizardSettings.titleField       = '';

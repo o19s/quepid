@@ -57,6 +57,8 @@ class Try < ApplicationRecord
       solr_args
     when 'es'
       es_args
+    when 'os'
+      os_args
     end
   end
 
@@ -81,6 +83,11 @@ class Try < ApplicationRecord
   end
 
   def es_args
+    EsArgParser.parse(query_params, curator_vars_map)
+  end
+
+  def os_args
+    # Use the EsArgParser as currently queries are the same
     EsArgParser.parse(query_params, curator_vars_map)
   end
 
@@ -116,11 +123,9 @@ class Try < ApplicationRecord
 
   def index_name_from_search_url
     # rubocop:disable Lint/DuplicateBranch
-    # NOTE: fix me when we add antoher engine!
+    # NOTE: currently all supported engines have the index name as second to last element, refactor when this changes
     case search_engine
-    when 'solr'
-      search_url.split('/')[-2]
-    when 'es'
+    when 'solr', 'es', 'os'
       search_url.split('/')[-2]
     end
     # rubocop:enable Lint/DuplicateBranch

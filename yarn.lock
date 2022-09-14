@@ -168,15 +168,15 @@ angular-utils-pagination@~0.11.1:
   version "0.4.2"
   resolved "https://github.com/softwaredoug/angular-wizard.git#d86e03e77296e60c9115622ab7c81221fad37649"
 
+angular@1.8.3, angular@~1.8.3:
+  version "1.8.3"
+  resolved "https://registry.yarnpkg.com/angular/-/angular-1.8.3.tgz#851ad75d5163c105a7e329555ef70c90aa706894"
+  integrity sha512-5qjkWIQQVsHj4Sb5TcEs4WZWpFeVFHXwxEBHUhrny41D8UrBAd6T/6nPPAsLngJCReIOqi95W3mxdveveutpZw==
+
 angular@>=1.2.x, angular@^1.2.10:
   version "1.8.2"
   resolved "https://registry.yarnpkg.com/angular/-/angular-1.8.2.tgz#5983bbb5a9fa63e213cb7749199e0d352de3a2f1"
   integrity sha512-IauMOej2xEe7/7Ennahkbb5qd/HFADiNuLSESz9Q27inmi32zB0lnAsFeLEWcox3Gd1F6YhNd1CP7/9IukJ0Gw==
-
-angular@^1.7.9, angular@~1.8.3:
-  version "1.8.3"
-  resolved "https://registry.yarnpkg.com/angular/-/angular-1.8.3.tgz#851ad75d5163c105a7e329555ef70c90aa706894"
-  integrity sha512-5qjkWIQQVsHj4Sb5TcEs4WZWpFeVFHXwxEBHUhrny41D8UrBAd6T/6nPPAsLngJCReIOqi95W3mxdveveutpZw==
 
 ansi-regex@^5.0.1:
   version "5.0.1"
@@ -1699,12 +1699,12 @@ spark-md5@^3.0.0:
   resolved "https://registry.yarnpkg.com/spark-md5/-/spark-md5-3.0.1.tgz#83a0e255734f2ab4e5c466e5a2cfc9ba2aa2124d"
   integrity sha512-0tF3AGSD1ppQeuffsLDIOWlKUd3lS92tFxcsrh5Pe3ZphhnoK+oXIBTzOAThZCiuINZLvpiLH/1VS1/ANEJVig==
 
-splainer-search@2.17.0:
-  version "2.17.0"
-  resolved "https://registry.yarnpkg.com/splainer-search/-/splainer-search-2.17.0.tgz#4e4b69c6852686b98bf27da4c674663b468e7981"
-  integrity sha512-yxN2ckch8IjdhdKDrnivKZaqrnFR85ICRPrievBBo6AgNxxi7UVPzLpgng9eRXii8C1qofQYxwqwiFs9Rc6MLA==
+splainer-search@2.19.0:
+  version "2.19.0"
+  resolved "https://registry.yarnpkg.com/splainer-search/-/splainer-search-2.19.0.tgz#81b006332decbf78ad5a7306db1a621fca8cf0ad"
+  integrity sha512-r7Z8ws7BaHJKM66cKESL581WRuHdLIZ5q4pTT319G1MVOdtqZ+TAPVJjxRSMuVB2DNMbVTpS4Y7rsXZyiWo5Yw==
   dependencies:
-    angular "^1.7.9"
+    angular "1.8.3"
     urijs "^1.19.7"
 
 "statuses@>= 1.5.0 < 2", statuses@~1.5.0:

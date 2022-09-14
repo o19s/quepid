@@ -46,7 +46,7 @@ angular.module('QuepidApp')
       });
 
       function submit () {
-        if ( $scope.pendingSettings.searchEngine === 'es' ) {
+        if ( $scope.pendingSettings.searchEngine === 'es'  || $scope.pendingSettings.searchEngine === 'os') {
           // Verify that JSON is valid
           try {
             var jsonObject = JSON.parse($scope.pendingSettings.selectedTry.queryParams);

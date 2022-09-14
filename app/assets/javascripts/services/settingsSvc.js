@@ -67,6 +67,34 @@ angular.module('QuepidApp')
           searchEngine:      'es',
           searchUrl:         'http://quepid-elasticsearch.dev.o19s.com:9206/tmdb/_search',
           urlFormat:         'http(s?)://yourdomain.com:9200/<index>/_search',
+        },
+        os: {
+          queryParams:  [
+            '{',
+            '  "query": {',
+            '    "multi_match": {',
+            '      "query": "#$query##",',
+            '      "type": "best_fields",',
+            '      "fields": [',
+            '        "title^10",',
+            '        "overview",',
+            '        "cast"',
+            '      ]',
+            '    }',
+            '  }',
+            '}',
+          ].join('\n'),
+
+          escapeQuery:       true,
+          apiMethod:        'POST',
+          fieldSpec:         'id:_id, title:title',
+          idField:           '_id',
+          titleField:        'title',
+          additionalFields:  ['overview','cast','thumb:poster_path'],
+          numberOfRows:      10,
+          searchEngine:      'os',
+          searchUrl:         'http://quepid-opensearch.dev.o19s.com:9206/tmdb/_search',
+          urlFormat:         'http(s?)://yourdomain.com:9200/<index>/_search',
         }
       };
 
