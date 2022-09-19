@@ -93,7 +93,7 @@ angular.module('QuepidApp')
           additionalFields:  ['overview','cast','thumb:poster_path'],
           numberOfRows:      10,
           searchEngine:      'os',
-          searchUrl:         'http://quepid-opensearch.dev.o19s.com:9206/tmdb/_search',
+          searchUrl:         'https://reader:reader@quepid-opensearch.dev.o19s.com:9000/tmdb/_search',
           urlFormat:         'http(s?)://yourdomain.com:9200/<index>/_search',
         }
       };
