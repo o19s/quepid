@@ -87,21 +87,21 @@
             Change Search Engine:<br />
             <div>
               <label>
-                <input type="radio" value="solr" ng-model="settings.searchEngine" ng-change="settings.reset()">
+                <input type="radio" value="solr" ng-model="settings.searchEngine" ng-change="changeSearchEngine()">
                 Solr
               </label>
             </div>
 
             <div>
               <label>
-                <input type="radio" value="es" ng-model="settings.searchEngine" ng-change="settings.reset()">
+                <input type="radio" value="es" ng-model="settings.searchEngine" ng-change="changeSearchEngine()">
                 Elasticsearch
               </label>
             </div>
 
             <div>
               <label>
-                <input type="radio" value="os" ng-model="settings.searchEngine" ng-change="settings.reset()">
+                <input type="radio" value="os" ng-model="settings.searchEngine" ng-change="changeSearchEngine()">
                 OpenSearch
               </label>
             </div>
@@ -239,7 +239,7 @@
 <span ng-show="qp.curTab == 'developer' || qp.curTab == 'engineSettings' || qp.curTab == 'curator'">
   <span ng-show="showTLSChangeWarning">
     <a href="{{quepidUrlToSwitchTo}}" class="btn btn-primary form-control">
-      <span class="glyphicon glyphicon-refresh"></span> Reload Quepid in <code>{{protocolToSwitchTo}}</code> TLS Protocol
+      <span class="glyphicon glyphicon-refresh"></span> Reload Quepid in <code>{{protocolToSwitchTo}}</code> Protocol
     </a>
   </span>
 

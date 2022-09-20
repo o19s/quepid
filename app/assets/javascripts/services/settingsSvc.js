@@ -58,7 +58,7 @@ angular.module('QuepidApp')
           ].join('\n'),
 
           escapeQuery:       true,
-          apiMethod:        'POST',
+          apiMethod:         'POST',
           fieldSpec:         'id:_id, title:title',
           idField:           '_id',
           titleField:        'title',
@@ -86,7 +86,7 @@ angular.module('QuepidApp')
           ].join('\n'),
 
           escapeQuery:       true,
-          apiMethod:        'POST',
+          apiMethod:         'POST',
           fieldSpec:         'id:_id, title:title',
           idField:           '_id',
           titleField:        'title',

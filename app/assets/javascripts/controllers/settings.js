@@ -4,9 +4,10 @@
 angular.module('QuepidApp')
   .controller('SettingsCtrl', [
     '$scope',
+    '$location',
     'flash',
     'settingsSvc',
-    function ($scope, flash, settingsSvc) {
+    function ($scope, $location, flash, settingsSvc) {
       $scope.settingsModel = {};
       $scope.pendingSettings = {
         searchEngine: '',
@@ -24,10 +25,26 @@ angular.module('QuepidApp')
           currSettings = settingsSvc.defaults[$scope.pendingSettings.searchEngine];
         }
         this.searchEngine             = currSettings.searchEngine;
-        this.searchUrl                = currSettings.searchUrl;
+        this.apiMethod                = currSettings.apiMethod;
+
+
+        if (this.searchEngine === 'solr') {
+          var quepidStartsWithHttps = $location.protocol() === 'https';
+          if (quepidStartsWithHttps === true){
+            this.searchUrl = currSettings.secureSearchUrl;
+          }
+          else {
+            this.searchUrl = currSettings.insecureSearchUrl;
+          }
+        }
+        else {
+          this.searchUrl = currSettings.searchUrl;
+        }
+
+
         this.fieldSpec                = currSettings.fieldSpec;
         this.selectedTry.queryParams  = currSettings.queryParams;
-        this.urlFormat                = settingsSvc.defaults[currSettings.searchEngine].urlFormat;
+        this.urlFormat                = currSettings.urlFormat;
 
         this.submit = submit;
       };

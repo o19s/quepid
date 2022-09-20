@@ -39,7 +39,8 @@ angular.module('QuepidApp')
             $scope.showTLSChangeWarning = true;
             $scope.quepidUrlToSwitchTo = $location.protocol() + '://' + $location.host() + $location.path();
 
-            $scope.quepidUrlToSwitchTo = $scope.quepidUrlToSwitchTo + '?searchUrl=' + $scope.settings.searchUrl;
+            $scope.quepidUrlToSwitchTo = $scope.quepidUrlToSwitchTo + '?searchEngine=' + $scope.settings.searchEngine + '&searchUrl=' + $scope.settings.searchUrl + '&showWizard=false&apiMethod=' + $scope.settings.apiMethod;
+
 
             if (searchEngineStartsWithHttps){
               $scope.protocolToSwitchTo = 'https';
@@ -101,6 +102,11 @@ angular.module('QuepidApp')
         });
         tmp.updateVars();
         $scope.settings.selectedTry = tmp;
+        $scope.validateSearchEngineUrl();
+      };
+
+      $scope.changeSearchEngine = function() {
+        $scope.settings.reset();
         $scope.validateSearchEngineUrl();
       };
     }
