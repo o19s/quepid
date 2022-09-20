@@ -32,11 +32,11 @@
     "d3-tip": "~0.9.1",
     "file-saver": "^2.0.5",
     "jquery": "~3.6.1",
-    "ng-json-explorer": "http://github.com/odra/ng-json-explorer",
+    "ng-json-explorer": "http://github.com/o19s/ng-json-explorer",
     "ng-tags-input": "3.2.0",
     "ngclipboard": "^2.0.0",
     "popper.js": "^1.16.1",
-    "splainer-search": "2.17.0",
+    "splainer-search": "2.19.0",
     "tether-shepherd": "latest",
     "turbolinks": "^5.2.0",
     "vega": "5.22.1"

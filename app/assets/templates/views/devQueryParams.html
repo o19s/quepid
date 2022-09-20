@@ -32,6 +32,14 @@
             theme:        'chrome'
           }" ng-model="settings.selectedTry.queryParams">
         </div>
+
+        <div id='os-query-params-editor' class='os-query-params' ng-show="settings.searchEngine == 'os'" ui-ace="{
+            require:      ['ace/ext/language_tools'],
+            useWrapMode:  false,
+            mode:         'json',
+            theme:        'chrome'
+          }" ng-model="settings.selectedTry.queryParams">
+        </div>
       </div> <!-- end .rerunnable-settings-tab -->
     </div> <!-- end .settings-tab (Query Sandbox) -->
 
@@ -79,15 +87,22 @@
             Change Search Engine:<br />
             <div>
               <label>
-                <input type="radio" value="solr" ng-model="settings.searchEngine" ng-change="settings.reset()">
+                <input type="radio" value="solr" ng-model="settings.searchEngine" ng-change="changeSearchEngine()">
                 Solr
               </label>
             </div>
 
             <div>
               <label>
-                <input type="radio" value="es" ng-model="settings.searchEngine" ng-change="settings.reset()">
+                <input type="radio" value="es" ng-model="settings.searchEngine" ng-change="changeSearchEngine()">
                 Elasticsearch
+              </label>
+            </div>
+
+            <div>
+              <label>
+                <input type="radio" value="os" ng-model="settings.searchEngine" ng-change="changeSearchEngine()">
+                OpenSearch
               </label>
             </div>
           </div>
@@ -164,7 +179,7 @@
 
             <p class="pull-right">
               <span class="label label-info">
-                <a href="#" uib-tooltip-html="'(advanced) -- If your queries use Solr|Elasticsearch <br/>query syntax (like text:law) then disable this feature'" tooltip-placement="left">
+                <a href="#" uib-tooltip-html="'(advanced) -- If your queries use Solr|Elasticsearch|OpenSearch <br/>query syntax (like text:law) then disable this feature'" tooltip-placement="left">
                   <span class="fa fa-question-circle" aria-hidden="true"></span>
                 </a>
               </span>
@@ -224,7 +239,7 @@
 <span ng-show="qp.curTab == 'developer' || qp.curTab == 'engineSettings' || qp.curTab == 'curator'">
   <span ng-show="showTLSChangeWarning">
     <a href="{{quepidUrlToSwitchTo}}" class="btn btn-primary form-control">
-      <span class="glyphicon glyphicon-refresh"></span> Reload Quepid in <code>{{protocolToSwitchTo}}</code> TLS Protocol
+      <span class="glyphicon glyphicon-refresh"></span> Reload Quepid in <code>{{protocolToSwitchTo}}</code> Protocol
     </a>
   </span>
 
