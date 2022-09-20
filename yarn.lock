@@ -1435,9 +1435,9 @@ negotiator@0.6.3:
   resolved "https://registry.yarnpkg.com/negotiator/-/negotiator-0.6.3.tgz#58e323a72fedc0d6f9cd4d31fe49f51479590ccd"
   integrity sha512-+EUsqGPLsM+j/zdChZjsnX51g4XrHFOIXwfnCVPGlQk/k5giakcKsuxCObBRu6DSm9opw/O6slWbJdghQM4bBg==
 
-"ng-json-explorer@http://github.com/odra/ng-json-explorer":
+"ng-json-explorer@http://github.com/o19s/ng-json-explorer":
   version "1.3.6"
-  resolved "http://github.com/odra/ng-json-explorer#66dc1d84ef1c3a10fbe9ff354c8dc198a0c13811"
+  resolved "http://github.com/o19s/ng-json-explorer#50b57f0914687528a49c880473f9c41d3e9aa310"
 
 ng-tags-input@3.2.0:
   version "3.2.0"

@@ -32,7 +32,7 @@
     "d3-tip": "~0.9.1",
     "file-saver": "^2.0.5",
     "jquery": "~3.6.1",
-    "ng-json-explorer": "http://github.com/odra/ng-json-explorer",
+    "ng-json-explorer": "http://github.com/o19s/ng-json-explorer",
     "ng-tags-input": "3.2.0",
     "ngclipboard": "^2.0.0",
     "popper.js": "^1.16.1",
