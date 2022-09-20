@@ -122,13 +122,11 @@ class Try < ApplicationRecord
   end
 
   def index_name_from_search_url
-    # rubocop:disable Lint/DuplicateBranch
     # NOTE: currently all supported engines have the index name as second to last element, refactor when this changes
     case search_engine
     when 'solr', 'es', 'os'
       search_url.split('/')[-2]
     end
-    # rubocop:enable Lint/DuplicateBranch
   end
 
   private
