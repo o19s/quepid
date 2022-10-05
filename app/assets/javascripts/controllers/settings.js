@@ -44,8 +44,8 @@ angular.module('QuepidApp')
 
         this.fieldSpec                = currSettings.fieldSpec;
         this.selectedTry.queryParams  = currSettings.queryParams;
-        this.urlFormat                = currSettings.urlFormat;
-
+        this.urlFormat                = settingsSvc.defaults[currSettings.searchEngine].urlFormat;
+        this.apiKey                   = currSettings.apiKey;
         this.submit = submit;
       };
 
@@ -63,7 +63,7 @@ angular.module('QuepidApp')
       });
 
       function submit () {
-        if ( $scope.pendingSettings.searchEngine === 'es'  || $scope.pendingSettings.searchEngine === 'os') {
+        if ( $scope.pendingSettings.searchEngine === 'es'  || $scope.pendingSettings.searchEngine === 'os'|| $scope.pendingSettings.searchEngine === 'ec') {
           // Verify that JSON is valid
           try {
             var jsonObject = JSON.parse($scope.pendingSettings.selectedTry.queryParams);

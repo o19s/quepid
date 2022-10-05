@@ -40,6 +40,13 @@
             theme:        'chrome'
           }" ng-model="settings.selectedTry.queryParams">
         </div>
+        <div id='os-query-params-editor' class='os-query-params' ng-show="settings.searchEngine == 'ec'" ui-ace="{
+            require:      ['ace/ext/language_tools'],
+            useWrapMode:  false,
+            mode:         'json',
+            theme:        'chrome'
+          }" ng-model="settings.selectedTry.queryParams">
+        </div>
       </div> <!-- end .rerunnable-settings-tab -->
     </div> <!-- end .settings-tab (Query Sandbox) -->
 
@@ -103,6 +110,12 @@
               <label>
                 <input type="radio" value="os" ng-model="settings.searchEngine" ng-change="changeSearchEngine()">
                 OpenSearch
+              </label>
+            </div>
+            <div>
+              <label>
+                <input type="radio" value="ec" ng-model="settings.searchEngine" ng-change="changeSearchEngine()">
+                ElasticCloud
               </label>
             </div>
           </div>

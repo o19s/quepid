@@ -46,6 +46,10 @@ angular.module('QuepidApp')
             $scope.pendingWizardSettings.searchUrl = settings.insecureSearchUrl;
           }
         }
+        else if($scope.pendingWizardSettings.searchEngine === 'ec' ){
+          $scope.pendingWizardSettings.searchUrl = settings.searchUrl;
+          $scope.pendingWizardSettings.apiKey = settings.apiKey;
+        }
         else {
           $scope.pendingWizardSettings.searchUrl = settings.searchUrl;
         }
@@ -203,7 +207,7 @@ angular.module('QuepidApp')
           $scope.pendingWizardSettings.additionalFields = defaults.additionalFields;
         } else {
           $scope.pendingWizardSettings.idField          = '';
-          if (searchEngine === 'es' || searchEngine === 'os') {
+          if (searchEngine === 'es' || searchEngine === 'os' || searchEngine === 'ec') {
             $scope.pendingWizardSettings.idField        = '_id';
           }
           $scope.pendingWizardSettings.titleField       = '';

@@ -95,6 +95,35 @@ angular.module('QuepidApp')
           searchEngine:      'os',
           searchUrl:         'https://reader:reader@quepid-opensearch.dev.o19s.com:9000/tmdb/_search',
           urlFormat:         'http(s?)://yourdomain.com:9200/<index>/_search',
+        },
+        ec: {
+          queryParams:  [
+            '{',
+            '  "query": {',
+            '    "multi_match": {',
+            '      "query": "#$query##",',
+            '      "type": "best_fields",',
+            '      "fields": [',
+            '        "title^10",',
+            '        "overview",',
+            '        "cast"',
+            '      ]',
+            '    }',
+            '  }',
+            '}',
+          ].join('\n'),
+
+          escapeQuery:       true,
+          apiMethod:        'POST',
+          fieldSpec:         'id:_id, title:title',
+          idField:           '_id',
+          titleField:        'title',
+          additionalFields:  ['overview','cast','thumb:poster_path'],
+          numberOfRows:      10,
+          searchEngine:      'ec',
+          searchUrl:         'http://quepid-elasticcloud.dev.o19s.com:9206/tmdb/_search',
+          apiKey:            'API Key',
+          urlFormat:         'http(s?)://yourdomain.com:9200/<index>/_search',
         }
       };
 
@@ -164,6 +193,7 @@ angular.module('QuepidApp')
           settings.queryParams   = tryToUse.queryParams;
           settings.searchEngine  = tryToUse.searchEngine;
           settings.searchUrl     = tryToUse.searchUrl;
+          settings.apiKey        = tryToUse.apiKey;
 
           return settings;
   			} else {
@@ -223,6 +253,7 @@ angular.module('QuepidApp')
         sentData.search_engine     = settingsToSave.searchEngine;
         sentData.search_url        = settingsToSave.searchUrl;
         sentData.parent_try_number = settingsToSave.selectedTry.tryNo;
+        sentData.api_key           = settingsToSave.apiKey;
 
         return $http.post('/api/cases/' + currCaseNo + '/tries', sentData)
           .then(function(response) {
@@ -281,6 +312,7 @@ angular.module('QuepidApp')
         sentData.search_engine     = settingsToSave.searchEngine;
         sentData.search_url        = settingsToSave.searchUrl;
         sentData.parent_try_number = settingsToSave.selectedTry.tryNo;
+        sentData.api_key           = settingsToSave.apiKey;
 
         return $http.put('/api/cases/' + currCaseNo + '/tries/' + currTryNo, sentData)
           .then(function() {

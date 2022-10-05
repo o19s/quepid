@@ -26,7 +26,7 @@
       </div>
     </wz-step>
     <wz-step title="Engine" id="step-three">
-      <h2>Solr, Elasticsearch, or OpenSearch?</h2>
+      <h2>Solr, Elasticsearch, OpenSearch, or ElasticCloud?</h2>
       <div>
 
         <div style="text-align: center;">
@@ -41,6 +41,11 @@
           <label>
             <input type="radio" value="os" ng-model="pendingWizardSettings.searchEngine" ng-change="updateSettingsDefaults()">
             <img ng-src="/images/opensearch.png" alt='OpenSearch' width="150px" />
+          </label>
+          <label>
+            <input type="radio" value="ec" ng-model="pendingWizardSettings.searchEngine"
+            ng-change="updateSettingsDefaults()">
+            <img ng-src="/images/elasticcloud.png" alt='Elasticcloud' width="150px"  />
           </label>
         </div>
 
@@ -57,6 +62,7 @@
             Sorry, we're not getting any search results from your
             <span ng-show="pendingWizardSettings.searchEngine === 'es'">Elasticsearch</span>
             <span ng-show="pendingWizardSettings.searchEngine === 'os'">OpenSearch</span>
+            <span ng-show="pendingWizardSettings.searchEngine === 'ec'">ElasticCloud</span>
             <span ng-show="pendingWizardSettings.searchEngine === 'solr'">Solr</span>.
 
             <ul ng-if="pendingWizardSettings.searchEngine === 'es'">
@@ -73,6 +79,13 @@
               <li>Is your OpenSearch setup for CORS to talk to Quepid's web app (http://app.quepid.com)?</li>
               <li>Double check if you have an ad blocker blocking your queries.</li>
               <li>See the <a target="_blank" href="https://github.com/o19s/quepid/wiki/Troubleshooting-OpenSearch-and-Quepid/">Troubleshooting OpenSearch and Quepid</a> wiki page for more help!</li>
+            </ul>
+            <ul ng-if="pendingWizardSettings.searchEngine === 'ec'">
+              <li>Is your ElasticCloud behind a firewall or proxy? Try acessing the <a target="_blank" href="{{pendingWizardSettings.searchUrl}}">URL directly</a> and see if you get a response</li>
+              <li>Does your ElasticCloud accept HTTP POST requests?</li>
+              <li>Is your ElasticCloud setup for CORS to talk to Quepid's web app (http://app.quepid.com)?</li>
+              <li>Double check if you have an ad blocker blocking your queries.</li>
+              <li>See the <a target="_blank" href="https://github.com/o19s/quepid/wiki/Troubleshooting-OpenSearch-and-Quepid/">Troubleshooting ElasticCloud and Quepid</a> wiki page for more help!</li>
             </ul>
 
             <ul ng-if="pendingWizardSettings.searchEngine === 'solr'">
@@ -106,6 +119,9 @@ curl -X POST -H 'Content-type:application/json' -d '{
 
             <div class="row">
               <input style="width: 100%" type="text" ng-change="reset()" ng-model="pendingWizardSettings.searchUrl" class="form-control" />
+              <p style="margin-top: 5px;" ng-show="pendingWizardSettings.searchEngine === 'ec'">API Key:</p>
+              <input style="width: 100%;margin-top: 5px;" type="text" ng-change="reset()"
+                ng-model="pendingWizardSettings.apiKey" class="form-control" ng-show="pendingWizardSettings.searchEngine === 'ec'"/>
               <small title="Manually validates Quepid can get retrieve search results from your URL before continuing" class="pull-right"><button type="button" class="btn btn-link btn-sm" ng-click="validate(true)" ng-disabled="showTLSChangeWarning">ping it</button></small>
               <p class="help-block">Unsure? <a href="http://quepid.com/how-quepid-works/" target="_blank">Learn More</a> about Quepid's light touch with your search engine &amp; data.
 

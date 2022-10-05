@@ -22,7 +22,7 @@ angular.module('QuepidApp')
       $scope.showTLSChangeWarning = false;
 
       $scope.validateSearchEngineUrl  = function() {
-        if ($scope.settings.searchEngine === 'es' || $scope.settings.searchEngine === 'os'){
+        if ($scope.settings.searchEngine === 'es' || $scope.settings.searchEngine === 'os' || $scope.settings.searchEngine === 'ec'){
           var uri       = esUrlSvc.parseUrl($scope.settings.searchUrl);
           $scope.showESTemplateWarning = esUrlSvc.isTemplateCall(uri);
         }
