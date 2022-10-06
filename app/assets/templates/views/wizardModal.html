@@ -99,9 +99,9 @@ curl -X POST -H 'Content-type:application/json' -d '{
 
           <span ng-if="pendingWizardSettings.searchEngine === 'solr'">
           <p>
-            <button type="button" class="btn btn-sm btn-default" ng-click="isCollapsed = !isCollapsed">Solr Configuration</button>
+            <button type="button" class="btn btn-sm btn-default" ng-click="isSolrCollapsed = !isSolrCollapsed">Solr Configuration</button>
           </p>
-          <div uib-collapse="!isCollapsed">
+          <div uib-collapse="!isSolrCollapsed">
              <div class="well well-sm">
               <div class="form-group clearfix">
                 <label class="col-sm-3 control-label">API Method</label>
@@ -116,6 +116,34 @@ curl -X POST -H 'Content-type:application/json' -d '{
             </div>
           </div>
           </span>
+
+          <p>
+            <button type="button" class="btn btn-sm btn-default" ng-click="isHeaderConfigCollapsed = !isHeaderConfigCollapsed">Advanced</button>
+          </p>
+          <div uib-collapse="!isHeaderConfigCollapsed">
+             <div class="well well-sm">
+              <div class="form-group clearfix">
+                <label class="col-sm-3 control-label">Custom Headers</label>
+                <div class="col-sm-9">
+                  <select class="form-control" ng-model="pendingWizardSettings.headerType" ng-change="updateHeaders()">
+                    <option>None</option>
+                    <option>API Key</option>
+                    <option>Custom</option>
+                  </select>
+                  <div id='custom-header-editor' ui-ace="{
+                      require:      ['ace/ext/language_tools'],
+                      useWrapMode:  false,
+                      mode:         'json',
+                      theme:        'chrome'
+                    }" ng-model="pendingWizardSettings.customHeaders">
+                  </div>
+
+                  <p class="help-block">If you need to send headers to authenticate with your search engine you can specify them here.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
 
           <div class="form-group" style="width: 100%">
             <div class="clearfix"></div>

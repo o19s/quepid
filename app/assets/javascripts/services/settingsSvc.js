@@ -29,6 +29,8 @@ angular.module('QuepidApp')
           ].join('\n'),
 
           escapeQuery:      true,
+          customHeaders:    '',
+          headerType:       'None',
           apiMethod:        'JSONP',
           fieldSpec:        'id:id, title:title',
           idField:          'id',
@@ -59,6 +61,8 @@ angular.module('QuepidApp')
 
           escapeQuery:       true,
           apiMethod:        'POST',
+          customHeaders:    '',
+          headerType:       'None',
           fieldSpec:         'id:_id, title:title',
           idField:           '_id',
           titleField:        'title',
@@ -188,6 +192,7 @@ angular.module('QuepidApp')
         sentData.curatorVars       = settingsToSave.selectedTry.curatorVarsDict();
         sentData.escape_query      = settingsToSave.escapeQuery;
         sentData.api_method        = settingsToSave.apiMethod;
+        sentData.custom_headers    = settingsToSave.customHeaders;
         //sentData.fields          = settingsToSave.createFieldSpec().fields;
         sentData.field_spec        = settingsToSave.fieldSpec;
         sentData.number_of_rows    = settingsToSave.numberOfRows;
@@ -247,6 +252,7 @@ angular.module('QuepidApp')
         sentData.curatorVars       = settingsToSave.selectedTry.curatorVarsDict();
         sentData.escape_query      = settingsToSave.escapeQuery;
         sentData.api_method        = settingsToSave.apiMethod;
+        sentData.custom_headers    = settingsToSave.customHeaders;
         sentData.field_spec        = settingsToSave.fieldSpec;
         sentData.number_of_rows    = settingsToSave.numberOfRows;
         sentData.query_params      = settingsToSave.selectedTry.queryParams;

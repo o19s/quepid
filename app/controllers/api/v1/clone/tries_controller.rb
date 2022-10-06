@@ -11,13 +11,14 @@ module Api
         # rubocop:disable Metrics/MethodLength
         def create
           new_try_params = {
-            escape_query:   @try.escape_query,
-            api_method:     @try.api_method,
-            field_spec:     @try.field_spec,
-            number_of_rows: @try.number_of_rows,
-            query_params:   @try.query_params,
-            search_engine:  @try.search_engine,
-            search_url:     @try.search_url,
+            escape_query:     @try.escape_query,
+            api_method:       @try.api_method,
+            customer_headers: @try.custom_headers,
+            field_spec:       @try.field_spec,
+            number_of_rows:   @try.number_of_rows,
+            query_params:     @try.query_params,
+            search_engine:    @try.search_engine,
+            search_url:       @try.search_url,
           }
 
           @new_try = @case.tries.build new_try_params
@@ -56,6 +57,7 @@ module Api
             :search_engine,
             :escape_query,
             :api_method,
+            :custom_headers,
             :number_of_rows
           )
         end

@@ -44,6 +44,7 @@ coverage/
 
 # Docker artifacts
 public/srv
+docker-compose.override.yml
 
 # Test Reports
 test/reports

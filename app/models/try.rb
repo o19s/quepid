@@ -14,6 +14,7 @@
 #  search_engine  :string(50)       default("solr")
 #  escape_query   :boolean          default(TRUE)
 #  api_method     :string(50)
+#  custom_headers :string(1000)
 #  number_of_rows :integer          default(10)
 #  created_at     :datetime         not null
 #  updated_at     :datetime         not null
