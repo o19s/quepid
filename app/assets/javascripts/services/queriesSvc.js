@@ -82,6 +82,7 @@ angular.module('QuepidApp')
         if (passedInSettings && passedInSettings.selectedTry) {
 
           let options = {
+            customHeaders: passedInSettings.customHeaders,
             escapeQuery:   passedInSettings.escapeQuery,
             numberOfRows:  passedInSettings.numberOfRows,
           };
