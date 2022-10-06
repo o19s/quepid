@@ -121,29 +121,8 @@ curl -X POST -H 'Content-type:application/json' -d '{
             <button type="button" class="btn btn-sm btn-default" ng-click="isHeaderConfigCollapsed = !isHeaderConfigCollapsed">Advanced</button>
           </p>
           <div uib-collapse="!isHeaderConfigCollapsed">
-             <div class="well well-sm">
-              <div class="form-group clearfix">
-                <label class="col-sm-3 control-label">Custom Headers</label>
-                <div class="col-sm-9">
-                  <select class="form-control" ng-model="pendingWizardSettings.headerType" ng-change="updateHeaders()">
-                    <option>None</option>
-                    <option>API Key</option>
-                    <option>Custom</option>
-                  </select>
-                  <div id='custom-header-editor' ui-ace="{
-                      require:      ['ace/ext/language_tools'],
-                      useWrapMode:  false,
-                      mode:         'json',
-                      theme:        'chrome'
-                    }" ng-model="pendingWizardSettings.customHeaders">
-                  </div>
-
-                  <p class="help-block">If you need to send headers to authenticate with your search engine you can specify them here.</p>
-                </div>
-              </div>
-            </div>
+            <custom-headers settings="pendingWizardSettings"></custom-headers>
           </div>
-
 
           <div class="form-group" style="width: 100%">
             <div class="clearfix"></div>

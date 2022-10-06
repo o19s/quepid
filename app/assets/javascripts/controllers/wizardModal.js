@@ -72,7 +72,6 @@ angular.module('QuepidApp')
       $scope.checkTLSForSearchEngineUrl = checkTLSForSearchEngineUrl;
       $scope.updateSettingsDefaults();
       $scope.searchFields   = [];
-      $scope.updateHeaders  = updateHeaders;
 
       // if we have restarted the wizard, then grab the searchUrl, searchEngine,
       // and caseName from the params and override the default values.
@@ -115,15 +114,6 @@ angular.module('QuepidApp')
         setupDefaults(validator);
 
         WizardHandler.wizard().next();
-      }
-
-      function updateHeaders() {
-        console.log('okay');
-        if($scope.pendingWizardSettings.headerType !== 'API Key') {
-          $scope.pendingWizardSettings.customHeaders = "";
-        } else {
-          $scope.pendingWizardSettings.customHeaders = '{\n  "Authorization": "ApiKey XXX"\n}';
-        }
       }
 
       function validate (justValidate) {

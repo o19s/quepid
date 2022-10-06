@@ -135,11 +135,17 @@ angular.module('QuepidApp')
 
           settings.escapeQuery   = tryToUse.escapeQuery;
           settings.apiMethod     = tryToUse.apiMethod;
+          settings.customHeaders = tryToUse.customHeaders || '';
           settings.fieldSpec     = tryToUse.fieldSpec;
           settings.numberOfRows  = tryToUse.numberOfRows;
           settings.queryParams   = tryToUse.queryParams;
           settings.searchEngine  = tryToUse.searchEngine;
           settings.searchUrl     = tryToUse.searchUrl;
+
+          // TODO: Store type in db?...
+          settings.headerType = settings.customHeaders.includes('ApiKey') ? 'API Key'
+            : settings.customHeaders.length > 0 ? 'Custom' : 'None';
+
 
           return settings;
   			} else {
