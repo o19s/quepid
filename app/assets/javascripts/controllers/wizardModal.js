@@ -150,10 +150,10 @@ angular.module('QuepidApp')
       function validateHeaders () {
         $scope.invalidHeaders = false;
 
-        if ($scope.pendingWizardSettings.searchEngine !== 'solr'
-          && $scope.pendingWizardSettings.customHeaders.length > 0) {
+        if ($scope.pendingWizardSettings.searchEngine !== 'solr'&&
+          $scope.pendingWizardSettings.customHeaders.length > 0) {
           try {
-            var jsonObject = JSON.parse($scope.pendingWizardSettings.customHeaders);
+            JSON.parse($scope.pendingWizardSettings.customHeaders);
           } catch (e) {
             $scope.invalidHeaders = true;
             $scope.validating = false;

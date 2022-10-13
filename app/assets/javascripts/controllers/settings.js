@@ -76,7 +76,7 @@ angular.module('QuepidApp')
           // Verify that custom headers are valid if set
           try {
             if ($scope.pendingSettings.customHeaders.length > 0) {
-              var jsonObject = JSON.parse($scope.pendingSettings.customHeaders);
+              JSON.parse($scope.pendingSettings.customHeaders);
             }
           } catch (e) {
             flash.error = 'Please provide a valid JSON object for the custom headers.';
