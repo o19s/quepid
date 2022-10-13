@@ -29,7 +29,13 @@ angular.module('QuepidApp')
       };
 
       ctrl.parsedQueryDetails = ctrl.sortJsonByKeys(query.searcher.parsedQueryDetails);
-      ctrl.timingDetails = ctrl.formatJson(query.searcher.timingDetails);
+      if (angular.isDefined(query.searcher.timingDetails)) {
+        ctrl.timingDetails = ctrl.formatJson(query.searcher.timingDetails);
+      }
+      else {
+        console.log('We do NOT have timing details from the query.searcher for some reason');
+        ctrl.timingDetails = {};
+      }
 
 
 

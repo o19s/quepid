@@ -85,6 +85,9 @@ Rails.application.routes.draw do
           post '/duplicate' => 'duplicate_tries#create', as: :duplicate_try
         end
 
+        # maybe should be in a scope?
+        resources :raw_contents
+
         # Case Scorers
         resources :scorers, only: [ :index, :update ], controller: :case_scorers
 

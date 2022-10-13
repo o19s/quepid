@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2022_08_21_103132) do
+ActiveRecord::Schema.define(version: 2022_08_30_212539) do
 
   create_table "annotations", id: :integer, charset: "utf8", force: :cascade do |t|
     t.text "message"
@@ -96,6 +96,13 @@ ActiveRecord::Schema.define(version: 2022_08_21_103132) do
     t.datetime "updated_at", null: false
     t.index ["doc_id"], name: "index_ratings_on_doc_id", length: 191
     t.index ["query_id"], name: "query_id"
+  end
+
+  create_table "raw_contents", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
+    t.text "content"
+    t.integer "try_id"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
   end
 
   create_table "scorers", id: :integer, charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
