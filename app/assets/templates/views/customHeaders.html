@@ -1,7 +1,11 @@
  <div class="well well-sm">
+  <div class="col-sm-12 clearfix">
+    <label class="control-label">Custom Headers</label>
+    <p class="help-block">If you need to send headers to authenticate with your search engine you can specify them here.</p>
+  </div>
+
   <div class="form-group clearfix">
-    <label class="col-sm-3 control-label">Custom Headers</label>
-    <div class="col-sm-9">
+    <div class="col-sm-12">
       <select class="form-control" ng-model="settings.headerType" ng-change="updateHeaders()">
         <option>None</option>
         <option>API Key</option>
@@ -12,10 +16,8 @@
           useWrapMode:  false,
           mode:         'json',
           theme:        'chrome'
-        }" ng-model="settings.customHeaders">
+        }" ng-model="settings.customHeaders" ng-readonly="settings.headerType === 'None'">
       </div>
-
-      <p class="help-block">If you need to send headers to authenticate with your search engine you can specify them here.</p>
     </div>
   </div>
 </div>

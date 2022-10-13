@@ -117,12 +117,15 @@ curl -X POST -H 'Content-type:application/json' -d '{
           </div>
           </span>
 
+
+          <span ng-if="pendingWizardSettings.searchEngine !== 'solr'">
           <p>
             <button type="button" class="btn btn-sm btn-default" ng-click="isHeaderConfigCollapsed = !isHeaderConfigCollapsed">Advanced</button>
           </p>
           <div uib-collapse="!isHeaderConfigCollapsed">
             <custom-headers settings="pendingWizardSettings"></custom-headers>
           </div>
+          </span>
 
           <div class="form-group" style="width: 100%">
             <div class="clearfix"></div>

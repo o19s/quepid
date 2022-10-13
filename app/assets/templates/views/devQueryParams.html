@@ -198,13 +198,18 @@
         </div>
         <!-- end of API Method -->
 
-        <div class="dev-header" ng-click="devSettingsHeaderToggle = !devSettingsHeaderToggle">
-          Advanced <span ng-class="{true: 'glyphicon-plus-sign', false: 'glyphicon-minus-sign'}[!devSettingsHeaderToggle]" class="glyphicon"></span>
-        </div>
 
-        <span ng-show="devSettingsHeaderToggle">
-          <custom-headers class="black-label" settings="settings"></custom-headers>
-        </span>
+        <!-- Custom Headers -->
+        <div class="setting-div" ng-show="settings.searchEngine !== 'solr'">
+          <div class="dev-header" ng-click="devSettingsHeaderToggle = !devSettingsHeaderToggle">
+            Advanced <span ng-class="{true: 'glyphicon-plus-sign', false: 'glyphicon-minus-sign'}[!devSettingsHeaderToggle]" class="glyphicon"></span>
+          </div>
+
+          <span ng-show="devSettingsHeaderToggle">
+            <custom-headers class="black-label" settings="settings"></custom-headers>
+          </span>
+        </div>
+        <!-- end of Custom Headers -->
 
       </div> <!-- end .rerunnable-settings-tab -->
     </div> <!-- end .settings-tab (Settings) -->
