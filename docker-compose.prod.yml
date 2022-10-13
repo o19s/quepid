@@ -14,7 +14,7 @@ services:
       - ./volumes/mysql_data:/var/lib/mysql
   redis:
     container_name: quepid_prod_redis
-    image: redis:6.0.5
+    image: redis:7.0.5-alpine3.16
     ports:
       - 6379:6379
   app:
@@ -47,7 +47,7 @@ services:
       - EMAIL_SENDER=
       - QUERY_LIST_SORTABLE=true
     command: "foreman s -f Procfile"
-    ports:
+    #ports:
     #  - 80:3000 # Map to port 80 for outside users when you are not using Nginx
     links:
       - mysql
