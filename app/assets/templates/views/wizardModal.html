@@ -47,6 +47,11 @@
         <br>
         <p>Paste the URL to the endpoint of your search engine for Quepid to search (you can also just experiment with the demo servers):</p>
         <div class="row">
+          <div ng-show="invalidHeaders" class="alert alert-danger">
+            <span>
+              Custom Headers must be a valid JSON object
+            </span>
+          </div>
           <div ng-show="showTLSChangeWarning" class="alert alert-warning">
             <span>
             You have specified a search engine url that is on a different protocol ( <code>{{protocolToSwitchTo}}</code> ) than Quepid is currently on,
