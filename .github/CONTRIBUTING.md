@@ -22,7 +22,7 @@ This guide is essential to keeping the contribution process easy and simple for 
   * Use a short but descriptive name of the branch that matches the ticket title or summary (eg. `feature/123-add-csv-import`).
   * Use dashes in the name as a separator.
   * To quickly create a topic branch based on staging; `git checkout -b feature/123-add-csv-import staging`. Please avoid working directly on the
-    `master` or the `staging` branch.
+    `main` or the `staging` branch.
 * Make commits of logical units.
 * Check for unnecessary whitespace with `git diff --check` before committing.
   * Make sure you have setup your editor to trim ending whitespace.
@@ -116,7 +116,7 @@ the new documentation or comments added.
 * Try to keep PRs small, focused and self-contained. The goal is to have a high velocity of small changes instead of less frequent, large changes.
 * Assign another developer as the primary reviewer. They should try to review the PR within one business day time.
 * Try to respond to PR feedback within one business day. If a requested change is going to require more time to develop, at least acknowledge the comment and consider applying an "updating per feedback" label to the PR.
-* PRs may not be merged to master until they have been approved by at least one other developer.
+* PRs may not be merged to main until they have been approved by at least one other developer.
 * Use PR labels to flag special cases, like "not ready for review" or "do not deploy"
 * You can mention other developers that might be interested in a comment or description with an `FYI @username` reference.
 

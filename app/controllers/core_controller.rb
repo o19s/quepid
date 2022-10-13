@@ -57,6 +57,7 @@ class CoreController < ApplicationController
         # Reset the default queries
         @try.search_engine = params[:searchEngine] if @try.search_engine != params[:searchEngine]
         @try.search_url = params[:searchUrl]
+        @try.api_method = params[:apiMethod]
       end
       @try.save
     end

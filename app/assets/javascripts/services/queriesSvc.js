@@ -100,7 +100,7 @@ angular.module('QuepidApp')
           }
           // Modify query if ratings were passed in
           if (query) {
-            if (passedInSettings.searchEngine === 'es') {
+            if (passedInSettings.searchEngine === 'es' || passedInSettings.searchEngine === 'os') {
               let mainQuery = args['query'];
               args['query'] = {
                 'bool': {
@@ -134,7 +134,7 @@ angular.module('QuepidApp')
       function normalizeDocExplains(query, searcher, fieldSpec) {
         let normed = [];
 
-        if (searcher.type === 'es') {
+        if (searcher.type === 'es' || searcher.type === 'os') {
           normed = esExplainExtractorSvc.docsWithExplainOther(searcher.docs, fieldSpec);
         } else {
           normed = solrExplainExtractorSvc.docsWithExplainOther(searcher.docs, fieldSpec, searcher.othersExplained);
@@ -661,7 +661,7 @@ angular.module('QuepidApp')
 
           let fieldSpec = settings.createFieldSpec();
 
-          if (settings.searchEngine === 'es') {
+          if (settings.searchEngine === 'es' || settings.searchEngine === 'os') {
             let esQuery = {
               'terms': {}
             };

@@ -12,7 +12,7 @@ class SnapshotManagerTest < ActiveSupport::TestCase
   describe 'Adds docs to a snapshot' do
     test 'adds snapshot to case' do
       data = {
-        docs: {
+        docs:    {
           first_query.id  => [
             { id: 'doc1', explain: '1' },
             { id: 'doc2', explain: '2' }
@@ -22,25 +22,43 @@ class SnapshotManagerTest < ActiveSupport::TestCase
             { id: 'doc4', explain: '4' }
           ],
         },
+        queries: {
+          first_query.id  => {
+            score:             0.87,
+            all_rated:         true,
+            number_of_results: 42,
+          },
+          second_query.id => {
+            score:             0.45,
+            all_rated:         false,
+            number_of_results: nil,
+          },
+        },
       }
 
       assert_difference 'snapshot.snapshot_queries.count', 2 do
-        service.add_docs data[:docs]
+        service.add_docs data[:docs], data[:queries]
 
         # This is needed or else we get wrong numbers
         snapshot.reload
-        queries = snapshot.snapshot_queries
+        snapshot_queries = snapshot.snapshot_queries
 
-        assert_equal queries.length, data[:docs].length
+        assert_equal snapshot_queries.length, data[:docs].length
 
-        first_snapshot_query  = queries.where(query_id: first_query.id).first
-        second_snapshot_query = queries.where(query_id: second_query.id).first
+        first_snapshot_query  = snapshot_queries.where(query_id: first_query.id).first
+        second_snapshot_query = snapshot_queries.where(query_id: second_query.id).first
 
         assert_not_nil  first_snapshot_query
         assert_equal    first_snapshot_query.query_id, first_query.id
+        assert_equal    first_snapshot_query.score, 0.87
+        assert_equal true, first_snapshot_query.all_rated
+        assert_equal 42, first_snapshot_query.number_of_results
 
         assert_not_nil  second_snapshot_query
         assert_equal    second_snapshot_query.query_id, second_query.id
+        assert_equal    second_snapshot_query.score, 0.45
+        assert_equal    false, second_snapshot_query.all_rated
+        assert_nil      second_snapshot_query.number_of_results
 
         data_doc      = data[:docs][first_query.id][0]
         response_doc  = first_snapshot_query.snapshot_docs[0]

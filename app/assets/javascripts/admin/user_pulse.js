@@ -11,7 +11,7 @@ errors that we then ignored.
 
 
 (function() {
-  
+
   'use strict';
 
 

@@ -1,4 +1,32 @@
-Previously# Changelog
+# Changelog
+
+## 6.13.0 - ??
+
+### Features
+
+* Jupyter Notebooks In Quepid :confetti_ball:. Everyone wants to customize their analytics and have different visualizations, so let's make that easier.  Quepid now integrates [Jupyterlite](https://github.com/jupyterlite/jupyterlite), a in browser version of Jupyter.  So you can write your notebooks using the Python you know and love, and not have to worry about installing dependencies, as Quepid ships all the typical ones.  This is an area that I expect a lot of improvement and change as we get to know how to ship sample analytics as Jupyter notebooks.  https://github.com/o19s/quepid/pull/544 by @epugh.
+
+* Our first sample notebook let's you compare the scores of two snapshots using a histogram.  Really drives home the "before and after" story of Relevance Tuning.  To support this notebook, we needed to preserve the score and if all the docs are rated in the snapshot datastructure.   https://github.com/o19s/quepid/pull/550 by @epugh.
+
+* Snapshots now include the total number of results for a query, useful for analytics.  Also expose the Quepid API for looking up snapshots in the snapshots modal UI.  https://github.com/o19s/quepid/pull/553 by @epugh fixes https://github.com/o19s/quepid/issues/539 by @renekrie.
+
+### Improvements
+
+* We've moved away from the "master" terminology to "main" for the default code branch, and updated links for that.
+
+* Moved to Ruby 3!   Ruby 3.1.2 on Bullseye is apparently twice as fast as Ruby 2.  These two changes let Quepid run on Apple Silicon.   It also lets us simplify our Dockerfile setup for Chromium, which we use for testing our frontend application.  Lastly, we ripped out Webpacker (Webpack).  Webpacker was added for JS toolingduring our migration to Rails 6, however we never actually used it in our development tooling, and is no longer preferred as part of Rails 7.  https://github.com/o19s/quepid/pull/558 by @epugh and @mkr.
+
+* Integrate updating of database schema annotations into build processes.  This leverages the `annotations` gem, which we've had for years, but wasn't documented and therefore wasn't being manually run.  https://github.com/o19s/quepid/pull/555 by @epugh.
+
+* When we first moved to Rails from python, we had various database table constraints that were not enforced.  Over the years we've started enforcing them, but never cleaned up the old data, till now!  https://github.com/o19s/quepid/pull/552 by @epugh.  Mostly of interest to folks with a deployment of Quepid back to 2016 ;-).
+
+* During the Rails 6 migration we found out Redis wasn't critical to running Quepid, and attempted to make it optional.  However that turned out to be confusing, and future features will __require__ Redis.  So let's put it back in our default production docker compose setup.  https://github.com/o19s/quepid/pull/557 by first time contributor @OkkeKlein.  Thanks!
+
+## 6.12.1 - 2022-08-11
+
+### Bugs
+
+* "Show Only Rated" feature in Quepid busted for ES. Highlighting on _id after a terms match in ES causes a index out of bounds exception. Also, the API method in explainOther needed to have the right case, might make a constants file at some point. https://github.com/o19s/splainer-search/pull/109 by @worleydl fixed the issue in Splainer.  Bumped in Quepid via https://github.com/o19s/quepid/pull/547 by @epugh.
 
 ## 6.12.0 - 2022-08-09
 
@@ -51,7 +79,7 @@ Previously# Changelog
 
 * Delete All Queries for a Case was requested by @negyesi in https://github.com/o19s/quepid/issues/475.   At the case level added a Delete button that brings up a modal that lets you delete the case, archive the case, or delete all the queries.  https://github.com/o19s/quepid/pull/486 by @epugh.
 
-* Frustrated that your custom API that _looks_ like Solr to Quepid has to deal with JSONP callbacks?  Now you don't, as we have introduced the ability to swap from the default JSONP to GET api methods when you define your Solr end point.  This is going to simplify the work that folks have to do.   https://github.com/o19s/quepid/pull/495 by @epugh.  For more information refer to the docs at https://github.com/o19s/quepid/blob/master/docs/endpoints_solr.md#solr-endpoints-structure.
+* Frustrated that your custom API that _looks_ like Solr to Quepid has to deal with JSONP callbacks?  Now you don't, as we have introduced the ability to swap from the default JSONP to GET api methods when you define your Solr end point.  This is going to simplify the work that folks have to do.   https://github.com/o19s/quepid/pull/495 by @epugh.  For more information refer to the docs at https://github.com/o19s/quepid/blob/main/docs/endpoints_solr.md#solr-endpoints-structure.
 
 * Do you have a relative image url in your search engine that you want to show via `thumb:` or `image:`?   You can now provide some JSON in the field specification to provide that data: `id,title:title,{"name": "image_url", "type":"image", "prefix": "https://www.example.org/images"}, description`.   This feature is experimental as we learn more about how to have richer field specifications, and may change!  https://github.com/o19s/quepid/pull/487 by @epugh.
 
@@ -301,7 +329,7 @@ introduced into 6.9.0 based on what we've learned in the real world.
 
 ## 6.5.0 - 2021-04-22
 
-![favicon](https://raw.githubusercontent.com/o19s/quepid/master/app/assets/images/favicon.ico)
+![favicon](https://raw.githubusercontent.com/o19s/quepid/main/app/assets/images/favicon.ico)
 
 I can sum up this release of Quepid as either the _Hey friend, come join me in improving search_ release or the _so much technical debt has been paid down_ release.   
 
@@ -520,7 +548,7 @@ files, not other formats like RRE.  https://github.com/o19s/quepid/pull/193 by @
 ### Improvements
 
 * When exporting for RRE, we need the ES or Solr index name.  Extract this from the url for the most recent try and save a step!  https://github.com/o19s/quepid/pull/167 by @epugh fixes https://github.com/o19s/quepid/issues/159.
-* If you link to either a case that doesn't exist, or you don't have permission for, or a try that doesn't exist for a case, then provide messaging back in the UI!  Let's share some Quepid Cases!  933ed257198ebe21ff86b7e35573d3172cc2e593, 99ac27c1f8698ed726580a4c46eaf6810a4372d2, and 37b95b89fa848b0af2bae3d5a9541141e5d80d62 by @epugh to master branch fixes https://github.com/o19s/quepid/issues/158.
+* If you link to either a case that doesn't exist, or you don't have permission for, or a try that doesn't exist for a case, then provide messaging back in the UI!  Let's share some Quepid Cases!  933ed257198ebe21ff86b7e35573d3172cc2e593, 99ac27c1f8698ed726580a4c46eaf6810a4372d2, and 37b95b89fa848b0af2bae3d5a9541141e5d80d62 by @epugh to main branch fixes https://github.com/o19s/quepid/issues/158.
 * `getCaseByNo` only used in tests. https://github.com/o19s/quepid/pull/173 by @epugh removes code.
 * There was a partially working attempt at a result grid view instead of list view.  It wasn't rendering in the UI, and we want to have a more general solution in the future, so removing the code to simplify Quepid. https://github.com/o19s/quepid/pull/174 by @epugh fixes https://github.com/o19s/quepid/issues/171.
 

@@ -53,7 +53,7 @@ describe('Controller: PromptSnapshotCtrl', function () {
         $uibModalInstance: modalInstance,
       });
 
-      $httpBackend.expectGET('/api/cases/2/snapshots').respond(200, {'snapshots': {}});
+      $httpBackend.expectGET('/api/cases/2/snapshots?shallow=true').respond(200, {'snapshots': {}});
 
       querySnapshotSvc.bootstrap(2);
       $httpBackend.flush();
@@ -68,7 +68,7 @@ describe('Controller: PromptSnapshotCtrl', function () {
 
   describe('Ok', function () {
     it('it sets the prompt values properly and closes the modal only after success', function () {
-      $httpBackend.expectPOST('/api/cases/2/snapshots', {"snapshot":{"name":"","docs":{}}})
+      $httpBackend.expectPOST('/api/cases/2/snapshots', {"snapshot":{"name":"","docs":{},"queries":{}}})
       .respond(200, addedSnapResp);
 
       scope.ok();

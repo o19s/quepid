@@ -35,7 +35,7 @@ angular.module('QuepidApp')
         }
       }
       else {
-        ctrl.queryDetailsMessage = 'Query parameters are not returned by Elasticsearch.';
+        ctrl.queryDetailsMessage = 'Query parameters are not returned by the current Search Engine.';
       }
 
       ctrl.cancel = function () {

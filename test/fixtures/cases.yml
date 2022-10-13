@@ -3,13 +3,21 @@
 # Table name: cases
 #
 #  id              :integer          not null, primary key
+#  archived        :boolean
 #  case_name       :string(191)
 #  last_try_number :integer
-#  owner_id         :integer
-#  archived        :boolean
-#  scorer_id       :integer
 #  created_at      :datetime         not null
 #  updated_at      :datetime         not null
+#  owner_id        :integer
+#  scorer_id       :integer
+#
+# Indexes
+#
+#  user_id  (owner_id)
+#
+# Foreign Keys
+#
+#  cases_ibfk_1  (owner_id => users.id)
 #
 
 one:
@@ -94,6 +102,7 @@ queries_case:
   owner:     :random
   case_name: A case to test queries positions
   archived: false
+  scorer: :random_scorer
 
 move_query_to_me:
   owner:     :random

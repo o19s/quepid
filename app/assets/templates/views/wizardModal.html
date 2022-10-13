@@ -26,17 +26,21 @@
       </div>
     </wz-step>
     <wz-step title="Engine" id="step-three">
-      <h2>Solr or Elasticsearch?</h2>
+      <h2>Solr, Elasticsearch, or OpenSearch?</h2>
       <div>
 
         <div style="text-align: center;">
           <label style="margin-right: 25px;">
-            <img ng-src="/images/solr.png" alt='Solr' width="100px" />
             <input type="radio" value="solr" ng-model="pendingWizardSettings.searchEngine" ng-change="updateSettingsDefaults()">
+            <img ng-src="/images/solr.png" alt='Solr' width="100px" />
           </label>
-          <label>
+          <label style="margin-right: 25px;">
             <input type="radio" value="es" ng-model="pendingWizardSettings.searchEngine" ng-change="updateSettingsDefaults()">
             <img ng-src="/images/elasticsearch.png" alt='Elasticsearch' width="150px" />
+          </label>
+          <label>
+            <input type="radio" value="os" ng-model="pendingWizardSettings.searchEngine" ng-change="updateSettingsDefaults()">
+            <img ng-src="/images/opensearch.png" alt='OpenSearch' width="150px" />
           </label>
         </div>
 
@@ -49,7 +53,12 @@
             so you need to reload Quepid on that protocol first, and then continue the Wizard.  This is to comply with browser security issues.
             </span>
           </div>
-          <div ng-if="urlInvalid && !showTLSChangeWarning" class="alert alert-danger">Sorry, we're not getting any search results from your <span ng-show="pendingWizardSettings.searchEngine === 'es'">Elasticsearch</span><span ng-show="pendingWizardSettings.searchEngine === 'solr'">Solr</span>.
+          <div ng-if="urlInvalid && !showTLSChangeWarning" class="alert alert-danger">
+            Sorry, we're not getting any search results from your
+            <span ng-show="pendingWizardSettings.searchEngine === 'es'">Elasticsearch</span>
+            <span ng-show="pendingWizardSettings.searchEngine === 'os'">OpenSearch</span>
+            <span ng-show="pendingWizardSettings.searchEngine === 'solr'">Solr</span>.
+
             <ul ng-if="pendingWizardSettings.searchEngine === 'es'">
               <li>Is your Elasticsearch behind a firewall or proxy? Try acessing the <a target="_blank" href="{{pendingWizardSettings.searchUrl}}">URL directly</a> and see if you get a response</li>
               <li>Does your Elasticsearch accept HTTP POST requests?</li>
@@ -57,6 +66,15 @@
               <li>Double check if you have an ad blocker blocking your queries.</li>
               <li>See the <a target="_blank" href="https://github.com/o19s/quepid/wiki/Troubleshooting-Elasticsearch-and-Quepid/">Troubleshooting Elasticsearch and Quepid</a> wiki page for more help!</li>
             </ul>
+
+            <ul ng-if="pendingWizardSettings.searchEngine === 'os'">
+              <li>Is your OpenSearch behind a firewall or proxy? Try acessing the <a target="_blank" href="{{pendingWizardSettings.searchUrl}}">URL directly</a> and see if you get a response</li>
+              <li>Does your OpenSearch accept HTTP POST requests?</li>
+              <li>Is your OpenSearch setup for CORS to talk to Quepid's web app (http://app.quepid.com)?</li>
+              <li>Double check if you have an ad blocker blocking your queries.</li>
+              <li>See the <a target="_blank" href="https://github.com/o19s/quepid/wiki/Troubleshooting-OpenSearch-and-Quepid/">Troubleshooting OpenSearch and Quepid</a> wiki page for more help!</li>
+            </ul>
+
             <ul ng-if="pendingWizardSettings.searchEngine === 'solr'">
               <li>Do you see any errors when you visit your <a target="_blank" href="{{pendingWizardSettings.searchUrl}}">Solr URL directly?</a></li>
               <li>
@@ -143,7 +161,7 @@ curl -X POST -H 'Content-type:application/json' -d '{
 
                 <span ng-show="showTLSChangeWarning">
                   <a href="{{quepidUrlToSwitchTo}}" class="btn btn-primary form-control">
-                    <span class="glyphicon glyphicon-refresh"></span> Reload Quepid in <code>{{protocolToSwitchTo}}</code> TLS Protocol
+                    <span class="glyphicon glyphicon-refresh"></span> Reload Quepid in <code>{{protocolToSwitchTo}}</code> Protocol
                   </a>
                 </span>
 

@@ -105,7 +105,7 @@ This is useful for stress testing Quepid!  Especially the front end application!
 
 #### 3. Running the app
 
-Now fire up Quepid locally at http://localhost:3000:
+Now fire up Quepid locally at http://localhost:
 
 ```
 bin/docker server
@@ -520,6 +520,9 @@ bin/docker r bundle exec bin/rails g migration FixCuratorVariablesTriesForeignKe
 
 Followed by `bin/docker r bundle exec rake db:migrate`
 
+You should also update the schema annotation data by running `bin/docker r bundle exec annotations`
+when you change the schema.
+
 ## Updating RubyGems
 
 Modify the file `Gemfile` and then run:
@@ -541,10 +544,17 @@ For the various Admin pages, we actually are using Bootstrap 5! That is included
 We currently use Rails Sprockets to compile everything, but do have dreams of moving the JavaScript
 over to Webpacker.
 
+## I'd like to develop Jupyterlite
+
+Run the `./bin/setup_jupyterlite` to update the archive file `./jupyterlite/notebooks.gz`.  This
+also sets up the static files in the `./public/notebooks` directory.  However, so we don't check in hundreds of files,
+we ignore that directory.   At `asset:precompile` time we unpack the `./jupyterlite/notebooks.gz` file instead.  This
+works on Heroku and the production Docker image.
+
 # QA
 
 There is a code deployment pipeline to the http://quepid-staging.herokuapp.com site that
-is run on successful commits to `master`.  
+is run on successful commits to `main`.  
 
 If you have pending migrations you will need to run them via:
 

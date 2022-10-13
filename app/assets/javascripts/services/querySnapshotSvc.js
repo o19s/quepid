@@ -55,7 +55,7 @@ angular.module('QuepidApp')
         caseNo = newCaseNo;
         this.snapshots = {};
 
-        return $http.get('/api/cases/' + caseNo + '/snapshots')
+        return $http.get('/api/cases/' + caseNo + '/snapshots?shallow=true')
           .then(function(response) {
             return addSnapshotResp(response.data.snapshots)
               .then(function() {
@@ -65,8 +65,22 @@ angular.module('QuepidApp')
       };
 
       this.addSnapshot = function(name, queries) {
+        // we may want to refactor the payload structure in the future.
         var docs = {};
+        var queriesPayload = {};
         angular.forEach(queries, function(query) {
+          queriesPayload[query.queryId] = {
+            'score': query.currentScore.score,
+            'all_rated': query.currentScore.allRated,
+            'number_of_results': query.getNumFound()
+          };
+
+          // The score can be -- if it hasn't actually been scored, so convert
+          // that to null for the call to the backend.
+          if (queriesPayload[query.queryId].score === '--') {
+            queriesPayload[query.queryId].score = null;
+          }
+
           docs[query.queryId] = [];
 
           // Save all matches
@@ -84,6 +98,7 @@ angular.module('QuepidApp')
           'snapshot': {
             'name': name,
             'docs': docs,
+            'queries': queriesPayload
           }
         };
 
@@ -169,7 +184,7 @@ angular.module('QuepidApp')
       }
 
       function get(snapshotId) {
-        var url     = '/api/cases/' + caseNo + '/snapshots/' + snapshotId;
+        var url     = '/api/cases/' + caseNo + '/snapshots/' + snapshotId + '?shallow=true';
 
         return $http.get(url)
           .then(function(response) {

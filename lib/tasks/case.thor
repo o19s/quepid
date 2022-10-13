@@ -19,7 +19,6 @@ class Case < Thor
   LONGDESC
   def create name, search_engine, search_url, api_method, field_spec, query_params, scorer_name, owner_email
     load_environment
-    puts "about to look for #{scorer_name}".yellow
 
     scorer = Scorer.find_by! name: scorer_name
     unless scorer
