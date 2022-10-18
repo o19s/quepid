@@ -4,6 +4,8 @@
 
 ### Features
 
+* Quepid now supports Elastic Cloud and Elasticsearch auth with API Keys!   Thanks to the work by @aditya-kanekar in https://github.com/o19s/quepid/pull/563 and then extended by @worleydl in https://github.com/o19s/quepid/pull/566.   @aditya-kanekar also wrote up the docs on https://github.com/o19s/quepid/wiki/Troubleshooting-Elastic-Cloud-and-Quepid for how to set up Elastic Cloud!
+
 * Jupyter Notebooks In Quepid :confetti_ball:. Everyone wants to customize their analytics and have different visualizations, so let's make that easier.  Quepid now integrates [Jupyterlite](https://github.com/jupyterlite/jupyterlite), a in browser version of Jupyter.  So you can write your notebooks using the Python you know and love, and not have to worry about installing dependencies, as Quepid ships all the typical ones.  This is an area that I expect a lot of improvement and change as we get to know how to ship sample analytics as Jupyter notebooks.  https://github.com/o19s/quepid/pull/544 by @epugh.
 
 * Our first sample notebook let's you compare the scores of two snapshots using a histogram.  Really drives home the "before and after" story of Relevance Tuning.  To support this notebook, we needed to preserve the score and if all the docs are rated in the snapshot datastructure.   https://github.com/o19s/quepid/pull/550 by @epugh.
