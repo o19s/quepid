@@ -1,6 +1,6 @@
 {
   "name": "quepid",
-  "description": "Give your queries some love!"
+  "description": "Give your queries some love!",
   "addons": [
     "jawsdb",
     "logdna",
