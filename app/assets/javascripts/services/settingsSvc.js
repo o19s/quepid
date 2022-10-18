@@ -29,6 +29,8 @@ angular.module('QuepidApp')
           ].join('\n'),
 
           escapeQuery:      true,
+          customHeaders:    '',
+          headerType:       'None',
           apiMethod:        'JSONP',
           fieldSpec:        'id:id, title:title',
           idField:          'id',
@@ -58,7 +60,9 @@ angular.module('QuepidApp')
           ].join('\n'),
 
           escapeQuery:       true,
-          apiMethod:         'POST',
+          apiMethod:        'POST',
+          customHeaders:    '',
+          headerType:       'None',
           fieldSpec:         'id:_id, title:title',
           idField:           '_id',
           titleField:        'title',
@@ -159,11 +163,17 @@ angular.module('QuepidApp')
 
           settings.escapeQuery   = tryToUse.escapeQuery;
           settings.apiMethod     = tryToUse.apiMethod;
+          settings.customHeaders = tryToUse.customHeaders || '';
           settings.fieldSpec     = tryToUse.fieldSpec;
           settings.numberOfRows  = tryToUse.numberOfRows;
           settings.queryParams   = tryToUse.queryParams;
           settings.searchEngine  = tryToUse.searchEngine;
           settings.searchUrl     = tryToUse.searchUrl;
+
+          // TODO: Store type in db?...
+          settings.headerType = settings.customHeaders.includes('ApiKey') ? 'API Key'
+            : settings.customHeaders.length > 0 ? 'Custom' : 'None';
+
 
           return settings;
   			} else {
@@ -216,6 +226,7 @@ angular.module('QuepidApp')
         sentData.curatorVars       = settingsToSave.selectedTry.curatorVarsDict();
         sentData.escape_query      = settingsToSave.escapeQuery;
         sentData.api_method        = settingsToSave.apiMethod;
+        sentData.custom_headers    = settingsToSave.customHeaders;
         //sentData.fields          = settingsToSave.createFieldSpec().fields;
         sentData.field_spec        = settingsToSave.fieldSpec;
         sentData.number_of_rows    = settingsToSave.numberOfRows;
@@ -275,6 +286,7 @@ angular.module('QuepidApp')
         sentData.curatorVars       = settingsToSave.selectedTry.curatorVarsDict();
         sentData.escape_query      = settingsToSave.escapeQuery;
         sentData.api_method        = settingsToSave.apiMethod;
+        sentData.custom_headers    = settingsToSave.customHeaders;
         sentData.field_spec        = settingsToSave.fieldSpec;
         sentData.number_of_rows    = settingsToSave.numberOfRows;
         sentData.query_params      = settingsToSave.selectedTry.queryParams;

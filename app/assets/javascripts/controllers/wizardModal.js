@@ -32,6 +32,7 @@ angular.module('QuepidApp')
         $scope.pendingWizardSettings.idField                  = settings.idField;
         $scope.pendingWizardSettings.searchEngine             = settings.searchEngine;
         $scope.pendingWizardSettings.apiMethod                = settings.apiMethod;
+        $scope.pendingWizardSettings.customHeaders            = settings.customHeaders;
         $scope.pendingWizardSettings.queryParams              = settings.queryParams;
         $scope.pendingWizardSettings.titleField               = settings.titleField;
         $scope.pendingWizardSettings.urlFormat                = settings.urlFormat;
@@ -78,6 +79,7 @@ angular.module('QuepidApp')
       $scope.resetUrlValid  = resetUrlValid;
       $scope.checkTLSForSearchEngineUrl = checkTLSForSearchEngineUrl;
       $scope.updateSettingsDefaults();
+      $scope.validateHeaders = validateHeaders;
       $scope.searchFields   = [];
 
 
@@ -88,9 +90,8 @@ angular.module('QuepidApp')
 
       function reset() {
         $scope.validating = false;
-        $scope.urlValid = $scope.urlInvalid = false;
+        $scope.urlValid = $scope.urlInvalid = $scope.invalidHeaders = false;
         $scope.checkTLSForSearchEngineUrl();
-
       }
 
       function resetUrlValid() {
@@ -123,10 +124,11 @@ angular.module('QuepidApp')
         $scope.showTLSChangeWarning = false;
 
         $scope.checkTLSForSearchEngineUrl();
+        $scope.validateHeaders();
 
         // exit early if we have the TLS issue, this really should be part of the below logic.
         // validator.validateTLS().then.validateURL().then....
-        if ($scope.showTLSChangeWarning){
+        if ($scope.showTLSChangeWarning || $scope.invalidHeaders){
           return;
         }
 
@@ -143,6 +145,21 @@ angular.module('QuepidApp')
           $scope.urlInvalid = true;
           $scope.validating = false;
         });
+      }
+
+      function validateHeaders () {
+        $scope.invalidHeaders = false;
+
+        if ($scope.pendingWizardSettings.searchEngine !== 'solr'&&
+          $scope.pendingWizardSettings.customHeaders.length > 0) {
+          try {
+            JSON.parse($scope.pendingWizardSettings.customHeaders);
+          } catch (e) {
+            $scope.invalidHeaders = true;
+            $scope.validating = false;
+          }
+        }
+
       }
 
       // Copied validateSearchEngineUrl from controllers/queryParams.js and renamed it checkTLSForSearchEngineUrl

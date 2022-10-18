@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2022_08_21_103132) do
+ActiveRecord::Schema.define(version: 2022_10_06_170449) do
 
   create_table "annotations", id: :integer, charset: "utf8", force: :cascade do |t|
     t.text "message"
@@ -187,6 +187,7 @@ ActiveRecord::Schema.define(version: 2022_08_21_103132) do
     t.datetime "updated_at", null: false
     t.string "ancestry", limit: 3072
     t.string "api_method"
+    t.string "custom_headers", limit: 1000
     t.index ["case_id"], name: "case_id"
     t.index ["try_number"], name: "ix_queryparam_tryNo"
   end

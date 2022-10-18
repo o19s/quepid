@@ -72,6 +72,17 @@ angular.module('QuepidApp')
             flash.error = 'Please provide a valid JSON object for the query DSL.';
             return;
           }
+
+          // Verify that custom headers are valid if set
+          try {
+            if ($scope.pendingSettings.customHeaders.length > 0) {
+              JSON.parse($scope.pendingSettings.customHeaders);
+            }
+          } catch (e) {
+            flash.error = 'Please provide a valid JSON object for the custom headers.';
+            return;
+          }
+
         }
 
         settingsSvc.save($scope.pendingSettings);

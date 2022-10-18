@@ -10,6 +10,7 @@
 #  escape_query   :boolean          default(TRUE)
 #  field_spec     :string(500)
 #  name           :string(50)
+#  custom_headers :string(1000)
 #  number_of_rows :integer          default(10)
 #  query_params   :string(20000)
 #  search_engine  :string(50)       default("solr")

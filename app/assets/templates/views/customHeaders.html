@@ -1,0 +1,24 @@
+ <div class="well well-sm">
+  <div class="col-sm-12 clearfix">
+    <label class="control-label">Custom Headers</label>
+    <p class="help-block">If you need to send headers to authenticate with your search engine you can specify them here.</p>
+  </div>
+
+  <div class="form-group clearfix">
+    <div class="col-sm-12">
+      <select class="form-control" ng-model="settings.headerType" ng-change="updateHeaders()">
+        <option>None</option>
+        <option>API Key</option>
+        <option>Custom</option>
+      </select>
+      <div id='custom-header-editor' ui-ace="{
+          require:      ['ace/ext/language_tools'],
+          useWrapMode:  false,
+          mode:         'json',
+          theme:        'chrome'
+        }" ng-model="settings.customHeaders" ng-readonly="settings.headerType === 'None'">
+      </div>
+    </div>
+  </div>
+</div>
+

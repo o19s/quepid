@@ -44,6 +44,7 @@ coverage/
 
 # Docker artifacts
 public/srv
+docker-compose.override.yml
 
 # Jupyterlite
 public/notebooks

@@ -77,6 +77,7 @@ module Api
         params.require(:try).permit(
           :escape_query,
           :api_method,
+          :custom_headers,
           :field_spec,
           :name,
           :number_of_rows,
