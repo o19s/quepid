@@ -72,7 +72,7 @@ angular.module('QuepidApp')
           queriesPayload[query.queryId] = {
             'score': query.currentScore.score,
             'all_rated': query.currentScore.allRated,
-            'number_of_results': query.getNumFound()
+            'number_of_results': query.numFound
           };
 
           // The score can be -- if it hasn't actually been scored, so convert
