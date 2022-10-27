@@ -187,6 +187,7 @@ class Case < ApplicationRecord
       query_params:  the_try.query_params,
       search_engine: the_try.search_engine,
       search_url:    the_try.search_url,
+      number_of_rows:the_try.number_of_rows,
       try_number:    preserve_history ? the_try.try_number : 0
     )
     tries << new_try
