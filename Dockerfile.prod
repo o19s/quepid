@@ -7,6 +7,9 @@ FROM ruby:3.1.2-bullseye
 
 LABEL maintainer="quepid_admin@opensourceconnections.com"
 
+ARG QUEPID_VERSION_VARIABLE
+ENV QUEPID_VERSION=$QUEPID_VERSION_VARIABLE
+
 # Must have packages
 RUN apt-get update -qq && apt-get install -y --no-install-recommends vim curl apt-transport-https ca-certificates \
   && rm -rf /var/lib/apt/lists/*
