@@ -120,7 +120,7 @@ class User < ApplicationRecord
             if:         :terms_and_conditions?
 
   def terms_and_conditions?
-    Rails.application.config.terms_and_conditions_url.length.positive?
+    Rails.application.config.terms_and_conditions_url.present?
   end
 
   # Callbacks
