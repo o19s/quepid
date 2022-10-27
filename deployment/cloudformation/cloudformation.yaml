@@ -1,0 +1,250 @@
+Description:  This template deploys Quepid and supporting resources.
+
+Parameters:
+
+  EnvironmentName:
+    Description: An environment name that is prefixed to resource names
+    Type: String
+    Default: Quepid
+
+  DockerHubUsername:
+    Description: DockerHub username for pulling Quepid image
+    Type: String
+
+  DockerHubPassword:
+    Description: DockerHub password for pulling Quepid image
+    Type: String    
+
+  KeyName:
+    Description: The name of the keypair for the instance
+    Type: AWS::EC2::KeyPair::KeyName
+
+  VpcCIDR:
+    Description: Please enter the IP range (CIDR notation) for this VPC
+    Type: String
+    Default: 10.0.0.0/16
+
+  PublicSubnet1CIDR:
+    Description: Please enter the IP range (CIDR notation) for the public subnet in the first Availability Zone
+    Type: String
+    Default: 10.0.10.0/24
+
+  PublicSubnet2CIDR:
+    Description: Please enter the IP range (CIDR notation) for the public subnet in the second Availability Zone
+    Type: String
+    Default: 10.0.11.0/24
+
+  # DatabaseSubnet1CIDR:
+  #   Description: Please enter the IP range (CIDR notation) for the database subnet in the first Availability Zone
+  #   Type: String
+  #   Default: 10.0.20.0/24
+
+  # DatabaseSubnet2CIDR:
+  #   Description: Please enter the IP range (CIDR notation) for the database subnet in the second Availability Zone
+  #   Type: String
+  #   Default: 10.0.21.0/24
+
+Resources:
+
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: !Ref VpcCIDR
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      Tags:
+        - Key: Name
+          Value: !Ref EnvironmentName
+
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: !Ref EnvironmentName
+
+  InternetGatewayAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      InternetGatewayId: !Ref InternetGateway
+      VpcId: !Ref VPC
+
+  PublicSubnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      AvailabilityZone: !Select [ 0, !GetAZs '' ]
+      CidrBlock: !Ref PublicSubnet1CIDR
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: !Sub ${EnvironmentName} Public Subnet (AZ1)
+
+  PublicSubnet2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      AvailabilityZone: !Select [ 1, !GetAZs  '' ]
+      CidrBlock: !Ref PublicSubnet2CIDR
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: !Sub ${EnvironmentName} Public Subnet (AZ2)
+
+  # DatabaseSubnet1:
+  #   Type: AWS::EC2::Subnet
+  #   Properties:
+  #     VpcId: !Ref VPC
+  #     AvailabilityZone: !Select [ 0, !GetAZs  '' ]
+  #     CidrBlock: !Ref DatabaseSubnet1CIDR
+  #     Tags:
+  #       - Key: Name
+  #         Value: !Sub ${EnvironmentName} Database Subnet (AZ1)
+
+  # DatabaseSubnet2:
+  #   Type: AWS::EC2::Subnet
+  #   Properties:
+  #     VpcId: !Ref VPC
+  #     AvailabilityZone: !Select [ 1, !GetAZs  '' ]
+  #     CidrBlock: !Ref DatabaseSubnet2CIDR
+  #     Tags:
+  #       - Key: Name
+  #         Value: !Sub ${EnvironmentName} Database Subnet (AZ2)          
+
+  PublicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: !Sub ${EnvironmentName} Public Routes
+
+  DefaultPublicRoute:
+    Type: AWS::EC2::Route
+    DependsOn: InternetGatewayAttachment
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGateway
+
+  PublicSubnet1RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      SubnetId: !Ref PublicSubnet1
+
+  PublicSubnet2RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      SubnetId: !Ref PublicSubnet2
+
+  QuepidSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    DependsOn: VPC
+    Properties:
+      GroupDescription: Quepid security group
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0   
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: 0.0.0.0/0      
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0                  
+
+  # QuepidDatabaseSecurityGroup:
+  #   Type: AWS::EC2::SecurityGroup
+  #   DependsOn: VPC
+  #   Properties:
+  #     GroupDescription: Quepid database security group
+  #     VpcId: !Ref VPC
+  #     SecurityGroupIngress:
+  #       - IpProtocol: tcp
+  #         FromPort: 3306
+  #         ToPort: 3306
+  #         CidrIp: 10.0.0.0/16   
+
+  # QuepidDatabaseSubnetGroup:
+  #   Type: AWS::RDS::DBSubnetGroup
+  #   Properties:
+  #     DBSubnetGroupDescription: Quepid database subnet group
+  #     SubnetIds:
+  #       - !Ref DatabaseSubnet1
+  #       - !Ref DatabaseSubnet2
+
+  # QuepidDatabase:
+  #   Type: AWS::RDS::DBInstance
+  #   DeletionPolicy: Snapshot
+  #   Properties:
+  #     AllocatedStorage: 20
+  #     AllocatedStorage: 5
+  #     DBInstanceClass: db.t2.small
+  #     DBName: quepid
+  #     DBSubnetGroupName: !Ref QuepidDatabaseSubnetGroup
+  #     Engine: MySQL
+  #     EngineVersion: 8.0.25
+  #     MasterUsername: root
+  #     MasterUserPassword: RandomPassword123!
+  #     VPCSecurityGroups:
+  #       - !Ref QuepidDatabaseSecurityGroup    
+
+  QuepidInstance: 
+    Type: AWS::EC2::Instance
+  #  DependsOn: QuepidDatabase
+    Properties: 
+      ImageId: ami-0149b2da6ceec4bb0
+      InstanceType: t3.large
+      KeyName: !Ref KeyName
+      SecurityGroupIds: 
+      - !Ref QuepidSecurityGroup
+      SubnetId: !Ref PublicSubnet1
+      UserData:
+        Fn::Base64: 
+          !Sub |
+            #!/bin/bash -xe
+            exec > >(tee /var/log/user-data.log|logger -t user-data -s 2>/dev/console) 2>&1
+
+            apt-get update
+            apt-get install ca-certificates curl gnupg lsb-release git
+            mkdir -p /etc/apt/keyrings
+            curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+            echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
+            apt-get update
+            apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
+            
+            curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+            chmod +x /usr/local/bin/docker-compose
+
+            # Configure Quepid
+            wget https://raw.githubusercontent.com/o19s/quepid/master/docker-compose.prod.yml -O docker-compose.yml
+            wget https://raw.githubusercontent.com/o19s/quepid/main/nginx.conf
+            mkdir -p .ssl
+            wget https://raw.githubusercontent.com/o19s/quepid/main/.ssl/localhost.crt -O ./.ssl/localhost.crt
+            wget https://raw.githubusercontent.com/o19s/quepid/main/.ssl/localhost.key -O ./.ssl/localhost.key
+
+            # Pull images
+            docker login --username ${DockerHubUsername} --password ${DockerHubPassword}
+            docker-compose pull
+            docker-compose up -d mysql
+
+            # Must wait here for MySQL to start and be up
+            sleep 60
+
+            docker-compose run --rm app bin/rake db:setup
+            docker-compose up -d
+
+            docker-compose run app thor user:create -a admin@example.com Administrator mysuperstrongpassword
+            docker-compose run app thor user:grant_administrator admin@example.com 
+
+Outputs:
+
+  QuepidInstancePublicIP:
+    Description: The public IP address of the Quepid instance
+    Value: !GetAtt QuepidInstance.PublicIp

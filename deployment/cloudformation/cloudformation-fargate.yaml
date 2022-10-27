@@ -1,0 +1,306 @@
+Description:  This template deploys Quepid and supporting resources.
+
+Parameters:
+
+  EnvironmentName:
+    Description: An environment name that is prefixed to resource names
+    Type: String
+    Default: Quepid
+
+  DockerHubUsername:
+    Description: DockerHub username for pulling Quepid image
+    Type: String
+
+  DockerHubPassword:
+    Description: DockerHub password for pulling Quepid image
+    Type: String    
+
+  VpcCIDR:
+    Description: Please enter the IP range (CIDR notation) for this VPC
+    Type: String
+    Default: 10.0.0.0/16
+
+  PublicSubnet1CIDR:
+    Description: Please enter the IP range (CIDR notation) for the public subnet in the first Availability Zone
+    Type: String
+    Default: 10.0.10.0/24
+
+  PublicSubnet2CIDR:
+    Description: Please enter the IP range (CIDR notation) for the public subnet in the second Availability Zone
+    Type: String
+    Default: 10.0.11.0/24
+
+  DatabaseSubnet1CIDR:
+    Description: Please enter the IP range (CIDR notation) for the database subnet in the first Availability Zone
+    Type: String
+    Default: 10.0.20.0/24
+
+  DatabaseSubnet2CIDR:
+    Description: Please enter the IP range (CIDR notation) for the database subnet in the second Availability Zone
+    Type: String
+    Default: 10.0.21.0/24
+
+Resources:
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: !Ref VpcCIDR
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      Tags:
+        - Key: Name
+          Value: !Ref EnvironmentName
+
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: !Ref EnvironmentName
+
+  InternetGatewayAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      InternetGatewayId: !Ref InternetGateway
+      VpcId: !Ref VPC
+
+  PublicSubnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      AvailabilityZone: !Select [ 0, !GetAZs '' ]
+      CidrBlock: !Ref PublicSubnet1CIDR
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: !Sub ${EnvironmentName} Public Subnet (AZ1)
+
+  PublicSubnet2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      AvailabilityZone: !Select [ 1, !GetAZs  '' ]
+      CidrBlock: !Ref PublicSubnet2CIDR
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: !Sub ${EnvironmentName} Public Subnet (AZ2)
+
+  DatabaseSubnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      AvailabilityZone: !Select [ 0, !GetAZs  '' ]
+      CidrBlock: !Ref DatabaseSubnet1CIDR
+      Tags:
+        - Key: Name
+          Value: !Sub ${EnvironmentName} Database Subnet (AZ1)
+
+  DatabaseSubnet2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      AvailabilityZone: !Select [ 1, !GetAZs  '' ]
+      CidrBlock: !Ref DatabaseSubnet2CIDR
+      Tags:
+        - Key: Name
+          Value: !Sub ${EnvironmentName} Database Subnet (AZ2)          
+
+  PublicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: !Sub ${EnvironmentName} Public Routes
+
+  DefaultPublicRoute:
+    Type: AWS::EC2::Route
+    DependsOn: InternetGatewayAttachment
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGateway
+
+  PublicSubnet1RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      SubnetId: !Ref PublicSubnet1
+
+  PublicSubnet2RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      SubnetId: !Ref PublicSubnet2
+
+  QuepidSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    DependsOn: VPC
+    Properties:
+      GroupDescription: Quepid database security group
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+        - IpProtocol: -1
+          CidrIp: 0.0.0.0/0   
+
+  QuepidDatabaseSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    DependsOn: VPC
+    Properties:
+      GroupDescription: Quepid database security group
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 3306
+          ToPort: 3306
+          CidrIp: 10.0.0.0/16   
+
+  QuepidDatabaseSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupDescription: "Quepid database subnet group"
+      SubnetIds:
+        - !Ref DatabaseSubnet1
+        - !Ref DatabaseSubnet2
+
+  QuepidDatabase:
+    Type: AWS::RDS::DBInstance
+    DeletionPolicy: Snapshot
+    Properties:
+      AllocatedStorage: 20
+      AllocatedStorage: 5
+      DBInstanceClass: db.t2.small
+      DBName: quepid
+      DBSubnetGroupName: !Ref QuepidDatabaseSubnetGroup
+      Engine: MySQL
+      EngineVersion: 8.0.25
+      MasterUsername: root
+      MasterUserPassword: RandomPassword123!
+      VPCSecurityGroups:
+        - !Ref QuepidDatabaseSecurityGroup    
+
+  QuepidCluster:
+    Type: AWS::ECS::Cluster
+    DependsOn: QuepidDatabase
+    Properties:
+      ClusterName: !Sub ${EnvironmentName}
+      CapacityProviders:
+        - FARGATE
+        - FARGATE_SPOT
+      DefaultCapacityProviderStrategy:
+        - CapacityProvider: FARGATE
+          Weight: 1
+        - CapacityProvider: FARGATE_SPOT
+          Weight: 1
+
+  QuepidFargateTaskExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - ecs-tasks.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy
+        - arn:aws:iam::aws:policy/SecretsManagerReadWrite
+
+  QuepidTaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    DependsOn: DockerHubSecret
+    Properties:
+      RequiresCompatibilities:
+        - FARGATE
+      Cpu: 512
+      Memory: 4096
+      NetworkMode: awsvpc
+      ExecutionRoleArn: !Ref QuepidFargateTaskExecutionRole
+      TaskRoleArn: !Ref QuepidTaskRole
+      ContainerDefinitions:
+        - Name: quepid
+          Image: o19s/quepid:6.12.1
+          Environment:
+            - Name: DATABASE_URL
+              Value: !Sub "mysql2://root:RandomPassword123!@${QuepidDatabase.Endpoint.Address}:3306/quepid"
+            - Name: FORCE_SSL
+              Value: false
+            - Name: PORT
+              Value: 8080          
+            - Name: RAILS_ENV
+              Value: production
+            - Name: SECRET_KEY_BASE
+              Value: fake_out_devise
+            #- Name: REDIS_URL
+            #  VALUE: redis://redis:6379/1
+          RepositoryCredentials:
+            CredentialsParameter: !Ref DockerHubSecret
+
+  DockerHubSecret:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Description: DockerHub login credentials for Qupeid
+      SecretString: !Sub '{ "username" : "${DockerHubUsername}" , "password" : "${DockerHubPassword}" }'
+
+  QuepidService:
+    Type: AWS::ECS::Service
+    Properties:
+      Cluster: !Ref QuepidCluster
+      LaunchType: FARGATE
+      DesiredCount: 1
+      TaskDefinition: !Ref QuepidTaskDefinition
+      ServiceName: "quepid-service"
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: ENABLED
+          SecurityGroups:
+            - !Ref QuepidSecurityGroup
+          Subnets:
+            - !Ref PublicSubnet1
+            - !Ref PublicSubnet2
+
+  QuepidTaskRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - ecs-tasks.amazonaws.com
+            Action:
+              - sts:AssumeRole                     
+
+Outputs:
+  VPC:
+    Description: A reference to the created VPC
+    Value: !Ref VPC
+
+  PublicSubnets:
+    Description: A list of the public subnets
+    Value: !Join [ ",", [ !Ref PublicSubnet1, !Ref PublicSubnet2 ]]
+
+  DatabaseSubnets:
+    Description: A list of the Database subnets
+    Value: !Join [ ",", [ !Ref DatabaseSubnet1, !Ref DatabaseSubnet2 ]]
+
+  PublicSubnet1:
+    Description: A reference to the public subnet in the 1st Availability Zone
+    Value: !Ref PublicSubnet1
+
+  PublicSubnet2:
+    Description: A reference to the public subnet in the 2nd Availability Zone
+    Value: !Ref PublicSubnet2
+
+  DatabaseSubnet1:
+    Description: A reference to the Database subnet in the 1st Availability Zone
+    Value: !Ref DatabaseSubnet1
+
+  DatabaseSubnet2:
+    Description: A reference to the Database subnet in the 2nd Availability Zone
+    Value: !Ref DatabaseSubnet2
