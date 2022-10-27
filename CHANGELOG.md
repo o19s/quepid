@@ -4,6 +4,8 @@
 
 ### Features
 
+* Quepid now supports OpenSearch!  https://github.com/o19s/quepid/issues/319 was opened 18 months ago by @flaxsearch, and contributed to by @DmitryKey.  Huge thanks to @mkr for stepping up and adding the support to both `splainer-search` and Quepid in https://github.com/o19s/quepid/pull/559.
+
 * Quepid now supports Elastic Cloud and Elasticsearch auth with API Keys!   Thanks to the work by @aditya-kanekar in https://github.com/o19s/quepid/pull/563 and then extended by @worleydl in https://github.com/o19s/quepid/pull/566.   @aditya-kanekar also wrote up the docs on https://github.com/o19s/quepid/wiki/Troubleshooting-Elastic-Cloud-and-Quepid for how to set up Elastic Cloud!
 
 * Jupyter Notebooks In Quepid :confetti_ball:. Everyone wants to customize their analytics and have different visualizations, so let's make that easier.  Quepid now integrates [Jupyterlite](https://github.com/jupyterlite/jupyterlite), a in browser version of Jupyter.  So you can write your notebooks using the Python you know and love, and not have to worry about installing dependencies, as Quepid ships all the typical ones.  This is an area that I expect a lot of improvement and change as we get to know how to ship sample analytics as Jupyter notebooks.  https://github.com/o19s/quepid/pull/544 by @epugh.
@@ -11,6 +13,8 @@
 * Our first sample notebook let's you compare the scores of two snapshots using a histogram.  Really drives home the "before and after" story of Relevance Tuning.  To support this notebook, we needed to preserve the score and if all the docs are rated in the snapshot datastructure.   https://github.com/o19s/quepid/pull/550 by @epugh.
 
 * Snapshots now include the total number of results for a query, useful for analytics.  Also expose the Quepid API for looking up snapshots in the snapshots modal UI.  https://github.com/o19s/quepid/pull/553 by @epugh fixes https://github.com/o19s/quepid/issues/539 by @renekrie.
+
+* Curious what version of Quepid you are running?  So are the rest of us!  Display the Quepid version number in the page footer, https://github.com/o19s/quepid/issues/570 by @jzonthemtn is fixed by https://github.com/o19s/quepid/pull/576 by @epugh.
 
 ### Improvements
 
@@ -23,6 +27,20 @@
 * When we first moved to Rails from python, we had various database table constraints that were not enforced.  Over the years we've started enforcing them, but never cleaned up the old data, till now!  https://github.com/o19s/quepid/pull/552 by @epugh.  Mostly of interest to folks with a deployment of Quepid back to 2016 ;-).
 
 * During the Rails 6 migration we found out Redis wasn't critical to running Quepid, and attempted to make it optional.  However that turned out to be confusing, and future features will __require__ Redis.  So let's put it back in our default production docker compose setup.  https://github.com/o19s/quepid/pull/557 by first time contributor @OkkeKlein.  Thanks!
+
+### Bugs
+
+* Number of results to show is not preserved when cloning a case.  https://github.com/o19s/quepid/pull/578 by @epugh fixes https://github.com/o19s/quepid/issues/565 submitted by @MassimilianoUngheretti-TomTom.  
+
+* Occasionally the Case snapshot isn't successful and there is no snapshot status information displayed to the user.  https://github.com/o19s/quepid/pull/569 by @atarora fixes https://github.com/o19s/quepid/issues/568, also by @atarora.
+
+* The Snapshot Comparison Jupyter notebook doesn't show the number of results found.  https://github.com/o19s/quepid/issues/571 fixes https://github.com/o19s/quepid/pull/572, both by @atarora.
+
+* If your `TC_URL` isn't defined, then that causes Quepid to blow up.  https://github.com/o19s/quepid/issues/573 by @jzonthemtn is fixed by https://github.com/o19s/quepid/pull/575 by @epugh.
+
+* `docker-compose.prod.yml` is out of date and needs Redis and Nginx.   https://github.com/o19s/quepid/pull/557 by @OkkeKlein fixes https://github.com/o19s/quepid/issues/554.
+
+* Changing Search Engines doesn't reset the api_method, so you could have ES attmepting to use JSONP, which is Solr specific.  https://github.com/o19s/quepid/issues/560 opened by @epugh fixed by https://github.com/o19s/quepid/pull/559 by @mkr and @epugh.
 
 ## 6.12.1 - 2022-08-11
 
