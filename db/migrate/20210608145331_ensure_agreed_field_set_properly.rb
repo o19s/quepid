@@ -6,7 +6,7 @@
 class EnsureAgreedFieldSetProperly < ActiveRecord::Migration[5.2]
   def change
 
-    if !Rails.application.config.terms_and_conditions_url.blank?
+    if Rails.application.config.terms_and_conditions_url.present?
       EnsureAgreedFieldSetProperly.connection.execute(
         "
         UPDATE users set agreed = 1
