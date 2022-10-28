@@ -1,6 +1,10 @@
 # Changelog
 
-## 6.13.0 - ??
+## 6.13.0 - 2022-10-28
+
+It's my sister Megan's birthday :birthday:, so I figured I would give her a release of Quepid.  Happy birthday Megan!
+
+There is so much to celebrate in this release, however I have to call out adding support for OpenSearch, enabling API keys to work with Elasticsearch, and the first release supporting Jupyter notebooks runing in Quepid!
 
 ### Features
 
