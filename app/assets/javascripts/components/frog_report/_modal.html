@@ -9,9 +9,16 @@
 
   <h4>Summary</h4>
 
-  You have {{ ctrl.theCase.queriesCount}} Queries for this case, of which {{ totalNumberQueriesWithResults }} return results, and {{ totalNumberQueriesWithoutResults }} return <strong>zero</strong> results.
+  You have {{ ctrl.theCase.queriesCount}} Queries for this case, of which {{ totalNumberQueriesWithResults }} return results,
+  and
+  <ng-pluralize count="totalNumberQueriesWithoutResults"
+      when="{'0': 'none return',
+             'one': 'only one returns',
+             'other': '{} return'}">
+  </ng-pluralize>
+  <strong>zero</strong> results.
 
-  You need a total of {{ totalNumberOfRatingsNeeded }} ratings to eliminate all the frogs.<br/>
+  You need to maintain a total of {{ totalNumberOfRatingsNeeded }} ratings to eliminate all the frogs.<br/>
   <span ng-if="ctrl.theCase.lastScore.all_rated">
   All the queries have been fully rated!  Congratulations!
   </span>

@@ -191,13 +191,20 @@ angular.module('QuepidApp')
       ctrl.totalNumberOfRatingsNeeded = function () {
         var totalNumberOfRatingsNeeded = 0;
         angular.forEach(queriesSvc.queries, function(q) {
-          if (q.depthOfRating){
-            $scope.totalNumberQueriesWithResults += 1;
-            totalNumberOfRatingsNeeded = totalNumberOfRatingsNeeded + q.depthOfRating;
-          }
-          else {
+
+          if (q.docs.length == 0){
             $scope.totalNumberQueriesWithoutResults += 1;
           }
+          else {
+            $scope.totalNumberQueriesWithResults += 1;
+            if (q.depthOfRating){
+              totalNumberOfRatingsNeeded = totalNumberOfRatingsNeeded + q.depthOfRating;
+            }
+            else {
+              totalNumberOfRatingsNeeded = totalNumberOfRatingsNeeded + ctrl.depthOfRating();
+            }
+          }
+
         });
         $scope.totalNumberOfRatingsNeeded = totalNumberOfRatingsNeeded;
       };
