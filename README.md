@@ -103,6 +103,13 @@ bin/docker r bin/rake db:seed:large_cases
 
 This is useful for stress testing Quepid!  Especially the front end application!
 
+Lastly, to run the Jupyter notebooks, you need to run:
+
+```
+bin/setup_jupyterlite
+```
+
+
 #### 3. Running the app
 
 Now fire up Quepid locally at http://localhost:
@@ -509,6 +516,8 @@ The `docker-compose.yml` file contains an nginx reverse proxy that uses these ce
 ## I'd like to test OpenID Auth
 
 Add dev docs here!
+
+The developer deploy of Keycloak Admin console credentials are `admin` and `password`.
 
 
 ## Modifying the database
