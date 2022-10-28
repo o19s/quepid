@@ -192,7 +192,7 @@ angular.module('QuepidApp')
         var totalNumberOfRatingsNeeded = 0;
         angular.forEach(queriesSvc.queries, function(q) {
 
-          if (q.docs.length == 0){
+          if (q.docs.length === 0){
             $scope.totalNumberQueriesWithoutResults += 1;
           }
           else {
