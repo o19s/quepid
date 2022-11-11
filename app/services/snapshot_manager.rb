@@ -183,7 +183,7 @@ class SnapshotManager
         explain:    doc[:explain],
         position:   doc[:position] || (index + 1),
         rated_only: doc[:rated_only] || false,
-        fields:     doc[:fields].to_json,
+        fields:     doc[:fields].blank? ? nil :doc[:fields].to_json,
       }
 
       results << query.snapshot_docs.build(doc_params)

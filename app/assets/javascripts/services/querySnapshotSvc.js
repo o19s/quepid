@@ -85,21 +85,34 @@ angular.module('QuepidApp')
 
           // Save all matches
           angular.forEach(query.docs, function(doc) {
-            var fields = {};
-            angular.forEach(Object.values(doc.subsList), function(field) {
-              fields[field['field']] = field['value'];
-            });
-            docs[query.queryId].push({'id': doc.id, 'explain': doc.explain().rawStr(), 'rated_only': false, 'fields': fields});
+
+            var docPayload = {'id': doc.id, 'explain': doc.explain().rawStr(), 'rated_only': false};
+            if (recordDocumentFields) {
+              var fields = {};
+              angular.forEach(Object.values(doc.subsList), function(field) {
+                fields[field['field']] = field['value'];
+              });
+
+              docPayload['fields'] = fields;
+            }
+
+            docs[query.queryId].push(docPayload);
 
           });
 
           // Save rated only matches
           angular.forEach(query.ratedDocs, function(doc) {
-            var fields = {};
-            angular.forEach(Object.values(doc.subsList), function(field) {
-              fields[field['field']] = field['value'];
-            });
-            docs[query.queryId].push({'id': doc.id, 'explain': doc.explain().rawStr(), 'rated_only': true, 'fields': fields});
+            var docPayload = {'id': doc.id, 'explain': doc.explain().rawStr(), 'rated_only': true};
+
+            if (recordDocumentFields) {
+              var fields = {};
+              angular.forEach(Object.values(doc.subsList), function(field) {
+                fields[field['field']] = field['value'];
+              });
+
+              docPayload['fields'] = fields;
+            }
+            docs[query.queryId].push(docPayload);
           });
         });
 
