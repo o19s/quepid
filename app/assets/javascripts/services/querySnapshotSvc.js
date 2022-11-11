@@ -64,7 +64,7 @@ angular.module('QuepidApp')
           });
       };
 
-      this.addSnapshot = function(name, queries) {
+      this.addSnapshot = function(name, recordDocumentFields, queries) {
         // we may want to refactor the payload structure in the future.
         var docs = {};
         var queriesPayload = {};
@@ -85,12 +85,21 @@ angular.module('QuepidApp')
 
           // Save all matches
           angular.forEach(query.docs, function(doc) {
-            docs[query.queryId].push({'id': doc.id, 'explain': doc.explain().rawStr(), 'rated_only': false});
+            var fields = {};
+            angular.forEach(Object.values(doc.subsList), function(field) {
+              fields[field['field']] = field['value'];
+            });
+            docs[query.queryId].push({'id': doc.id, 'explain': doc.explain().rawStr(), 'rated_only': false, 'fields': fields});
+
           });
 
           // Save rated only matches
           angular.forEach(query.ratedDocs, function(doc) {
-            docs[query.queryId].push({'id': doc.id, 'explain': doc.explain().rawStr(), 'rated_only': true});
+            var fields = {};
+            angular.forEach(Object.values(doc.subsList), function(field) {
+              fields[field['field']] = field['value'];
+            });
+            docs[query.queryId].push({'id': doc.id, 'explain': doc.explain().rawStr(), 'rated_only': true, 'fields': fields});
           });
         });
 
