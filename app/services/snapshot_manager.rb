@@ -167,6 +167,7 @@ class SnapshotManager
 
   private
 
+  # rubocop:disable Metrics/MethodLength
   def setup_docs_for_query query, docs
     results = []
 
@@ -182,6 +183,7 @@ class SnapshotManager
         explain:    doc[:explain],
         position:   doc[:position] || (index + 1),
         rated_only: doc[:rated_only] || false,
+        fields:     doc[:fields].to_json,
       }
 
       results << query.snapshot_docs.build(doc_params)
@@ -189,6 +191,7 @@ class SnapshotManager
 
     results
   end
+  # rubocop:enable Metrics/MethodLength
 
   def extract_doc_info row
     case @options[:format]

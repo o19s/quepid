@@ -11,15 +11,17 @@ class SnapshotManagerTest < ActiveSupport::TestCase
 
   describe 'Adds docs to a snapshot' do
     test 'adds snapshot to case' do
+      sample_fields = { title: 'some title', 'thumb:product_image': 'http://example.com/image.png' }
+
       data = {
         docs:    {
           first_query.id  => [
-            { id: 'doc1', explain: '1' },
-            { id: 'doc2', explain: '2' }
+            { id: 'doc1', explain: '1', fields: sample_fields },
+            { id: 'doc2', explain: '2', fields: sample_fields }
           ],
           second_query.id => [
-            { id: 'doc3', explain: '3' },
-            { id: 'doc4', explain: '4' }
+            { id: 'doc3', explain: '3', fields: sample_fields },
+            { id: 'doc4', explain: '4', fields: sample_fields }
           ],
         },
         queries: {
@@ -66,6 +68,7 @@ class SnapshotManagerTest < ActiveSupport::TestCase
         assert_equal data_doc[:id],       response_doc.doc_id
         assert_equal data_doc[:explain],  response_doc.explain
         assert_equal 1,                   response_doc.position
+        assert_equal sample_fields.to_json, response_doc.fields
 
         data_doc      = data[:docs][second_query.id][0]
         response_doc  = second_snapshot_query.snapshot_docs[0]
@@ -73,6 +76,7 @@ class SnapshotManagerTest < ActiveSupport::TestCase
         assert_equal data_doc[:id],       response_doc.doc_id
         assert_equal data_doc[:explain],  response_doc.explain
         assert_equal 1,                   response_doc.position
+        assert_equal sample_fields.to_json, response_doc.fields
       end
     end
   end

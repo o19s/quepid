@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2022_10_06_170449) do
+ActiveRecord::Schema.define(version: 2022_11_11_223031) do
 
   create_table "annotations", id: :integer, charset: "utf8", force: :cascade do |t|
     t.text "message"
@@ -118,6 +118,7 @@ ActiveRecord::Schema.define(version: 2022_10_06_170449) do
     t.integer "snapshot_query_id"
     t.text "explain", size: :medium, collation: "utf8mb4_general_ci"
     t.boolean "rated_only", default: false
+    t.text "fields", size: :medium, collation: "utf8mb4_general_ci"
     t.index ["snapshot_query_id"], name: "snapshot_query_id"
   end
 

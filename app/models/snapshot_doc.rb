@@ -6,6 +6,7 @@
 #
 #  id                :integer          not null, primary key
 #  explain           :text(16777215)
+#  fields            :text(16777215)
 #  position          :integer
 #  rated_only        :boolean          default(FALSE)
 #  doc_id            :string(500)
