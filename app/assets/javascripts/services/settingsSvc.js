@@ -186,8 +186,7 @@ angular.module('QuepidApp')
       var Settings = SettingsFactory;
       var currSettings = null;
 
-      this.pickSettingsToUse = function(newUrl, searchEngine) {
-          var settingsToUse = null;
+      this.pickSettingsToUse = function(searchEngine, newUrl) {
           var useTMDBDemoSettings = false;
           if (searchEngine === 'solr'){
             if (newUrl === null){

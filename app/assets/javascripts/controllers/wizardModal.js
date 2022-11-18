@@ -28,7 +28,7 @@ angular.module('QuepidApp')
             // We then give you options to change from there.
             $scope.pendingWizardSettings = angular.copy(settingsSvc.tmdbSettings['solr']);
         }
-        var settings = settingsSvc.pickSettingsToUse(null, 'solr')
+        var settings = settingsSvc.pickSettingsToUse('solr', null);
         $scope.pendingWizardSettings.additionalFields         = settings.additionalFields;
         $scope.pendingWizardSettings.fieldSpec                = settings.fieldSpec;
         $scope.pendingWizardSettings.idField                  = settings.idField;
@@ -206,7 +206,7 @@ angular.module('QuepidApp')
         var searchEngine  = $scope.pendingWizardSettings.searchEngine;
         var newUrl        = $scope.pendingWizardSettings.searchUrl;
 
-        var settingsToUse = settingsSvc.pickSettingsToUse(newUrl, searchEngine);
+        var settingsToUse = settingsSvc.pickSettingsToUse(searchEngine, newUrl);
 
         $scope.pendingWizardSettings.idField          = settingsToUse.idField;
         $scope.pendingWizardSettings.titleField       = settingsToUse.titleField;

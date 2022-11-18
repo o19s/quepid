@@ -22,8 +22,8 @@ angular.module('QuepidApp')
       var reset = function() {
         var currSettings = settingsSvc.editableSettings();
         if ( this.searchEngine !== currSettings.searchEngine) {
-          currSettings = settingsSvc.pickSettingsToUse(null, $scope.pendingSettings.searchEngine);
-          currSettings.fieldSpec = currSettings.fieldSpec + ', ' + currSettings.additionalFields.join(', ')
+          currSettings = settingsSvc.pickSettingsToUse($scope.pendingSettings.searchEngine, null);
+          currSettings.fieldSpec = currSettings.fieldSpec + ', ' + currSettings.additionalFields.join(', ');
           $scope.pendingSettings.urlFormat = currSettings.urlFormat;
         }
         this.searchEngine             = currSettings.searchEngine;
@@ -57,7 +57,7 @@ angular.module('QuepidApp')
         $scope.pendingSettings.reset = reset;
 
         if ( angular.isDefined($scope.pendingSettings.searchEngine) ) {
-          var settingsToUse = settingsSvc.pickSettingsToUse($scope.pendingSettings.searchUrl, $scope.pendingSettings.searchEngine);
+          var settingsToUse = settingsSvc.pickSettingsToUse($scope.pendingSettings.searchEngine, $scope.pendingSettings.searchUrl);
           $scope.pendingSettings.urlFormat = settingsToUse.urlFormat;
         }
 
