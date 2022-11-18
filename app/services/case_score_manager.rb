@@ -58,7 +58,8 @@ class CaseScoreManager
   def same_score_source last_score, score_data
     return false if last_score.blank?
     return false if last_score.try_id.blank?
-    return false if last_score.try_id != score_data[:try_id].to_i unless score_data[:try_id].blank?
+
+    return false if score_data[:try_id].blank? && (last_score.try_id != score_data[:try_id].to_i)
     return false if last_score.user_id != score_data[:user_id].to_i
 
     true
