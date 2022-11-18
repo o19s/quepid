@@ -18,14 +18,95 @@ angular.module('QuepidApp')
       broadcastSvc
     ) {
 
-      // Used by the wizard
-      this.defaults = {
+      // Used by the wizard for any search engine.
+      this.defaultSettings = {
+        solr: {
+          queryParams:  [
+            'q=#$query##',
+            '&tie=1.0',
+          ].join('\n'),
+
+          escapeQuery:      true,
+          customHeaders:    '',
+          headerType:       'None',
+          apiMethod:        'JSONP',
+          fieldSpec:        'id:id, title:title',
+          idField:          'id',
+          titleField:       'title',
+          additionalFields: [],
+          numberOfRows:     10,
+          searchEngine:     'solr',
+          //insecureSearchUrl:'http://quepid-solr.dev.o19s.com:8985/solr/tmdb/select',
+          //secureSearchUrl:  'https://quepid-solr.dev.o19s.com/solr/tmdb/select',
+          urlFormat:        'http(s?)://yourdomain.com:8983/<index>/select',
+        },
+        es: {
+          queryParams:  [
+            '{',
+            '  "query": {',
+            '    "multi_match": {',
+            '      "query": "#$query##",',
+            '      "type": "best_fields",',
+            '      "fields": [',
+            '        "title^10"',
+            '      ]',
+            '    }',
+            '  }',
+            '}',
+          ].join('\n'),
+
+          escapeQuery:       true,
+          apiMethod:        'POST',
+          customHeaders:    '',
+          headerType:       'None',
+          fieldSpec:         'id:_id, title:title',
+          idField:           '_id',
+          titleField:        'title',
+          additionalFields:  ['overview','cast','thumb:poster_path'],
+          numberOfRows:      10,
+          searchEngine:      'es',
+          searchUrl:         'http://quepid-elasticsearch.dev.o19s.com:9206/tmdb/_search',
+          urlFormat:         'http(s?)://yourdomain.com:9200/<index>/_search',
+        },
+        os: {
+          queryParams:  [
+            '{',
+            '  "query": {',
+            '    "multi_match": {',
+            '      "query": "#$query##",',
+            '      "type": "best_fields",',
+            '      "fields": [',
+            '        "title^10",',
+            '        "overview",',
+            '        "cast"',
+            '      ]',
+            '    }',
+            '  }',
+            '}',
+          ].join('\n'),
+
+          escapeQuery:       true,
+          apiMethod:         'POST',
+          fieldSpec:         'id:_id, title:title',
+          idField:           '_id',
+          titleField:        'title',
+          additionalFields:  ['overview','cast','thumb:poster_path'],
+          numberOfRows:      10,
+          searchEngine:      'os',
+          searchUrl:         'https://reader:reader@quepid-opensearch.dev.o19s.com:9000/tmdb/_search',
+          urlFormat:         'http(s?)://yourdomain.com:9200/<index>/_search',
+        }
+      };
+      // used by the wizard for TMDB demo search engine
+      this.tmdbSettings = {
         solr: {
           queryParams:  [
             'q=#$query##',
             '&defType=edismax',
             '&qf=text_all',
+            '&pf=title',
             '&tie=1.0',
+            '&bf=vote_average',
           ].join('\n'),
 
           escapeQuery:      true,
@@ -104,6 +185,36 @@ angular.module('QuepidApp')
 
       var Settings = SettingsFactory;
       var currSettings = null;
+
+      this.pickSettingsToUse = function(newUrl, searchEngine) {
+          var settingsToUse = null;
+          var useTMDBDemoSettings = false;
+          if (searchEngine === 'solr'){
+            if (newUrl === null){
+              useTMDBDemoSettings = true;
+            }
+            else if (newUrl === this.tmdbSettings['solr'].insecureSearchUrl || newUrl === this.tmdbSettings['solr'].secureSearchUrl ){
+              useTMDBDemoSettings = true;
+            }
+            else {
+              useTMDBDemoSettings = false;
+            }
+          }
+          else {
+            if (newUrl === this.tmdbSettings[searchEngine].searchUrl) {
+              useTMDBDemoSettings = true;
+            }
+            else {
+              useTMDBDemoSettings = false;
+            }
+          }
+          if (useTMDBDemoSettings){
+            return angular.copy(this.tmdbSettings[searchEngine]);
+          }
+          else {
+            return angular.copy(this.defaultSettings[searchEngine]);
+          }
+      };
 
       this.setCaseTries = function(tries) {
         currSettings = new Settings(tries);

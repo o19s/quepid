@@ -24,9 +24,11 @@ angular.module('QuepidApp')
       $scope.updateSettingsDefaults = function() {
 
         if (angular.isUndefined($scope.pendingWizardSettings)){
-            $scope.pendingWizardSettings = angular.copy(settingsSvc.defaults['solr']);
+            // When we run the case wizard, we assume that you want to use our Solr based TMDB demo setup.
+            // We then give you options to change from there.
+            $scope.pendingWizardSettings = angular.copy(settingsSvc.tmdbSettings['solr']);
         }
-        var settings = angular.copy(settingsSvc.defaults[$scope.pendingWizardSettings.searchEngine]);
+        var settings = settingsSvc.pickSettingsToUse(null, 'solr')
         $scope.pendingWizardSettings.additionalFields         = settings.additionalFields;
         $scope.pendingWizardSettings.fieldSpec                = settings.fieldSpec;
         $scope.pendingWizardSettings.idField                  = settings.idField;
@@ -190,6 +192,7 @@ angular.module('QuepidApp')
         }
       }
 
+
       function setupDefaults(validator) {
         $scope.validating   = false;
         $scope.urlValid     = true;
@@ -199,33 +202,18 @@ angular.module('QuepidApp')
         // Since the defaults are being overridden by the editableSettings(),
         // make sure the default id, title, and additional fields are set
         // if the URL is still set as the default
-        var searchEngine  = $scope.pendingWizardSettings.searchEngine;
-        var defaults      = settingsSvc.defaults[searchEngine];
-        var newUrl        = $scope.pendingWizardSettings.searchUrl;
-        var useDefaultSettings = false;
-        if ($scope.pendingWizardSettings.searchEngine === 'solr'){
-          if (newUrl === defaults.insecureSearchUrl || newUrl === defaults.secureSearchUrl ){
-            useDefaultSettings = true;
-          }
-        }
-        else {
-          if (newUrl === defaults.searchUrl) {
-            useDefaultSettings = true;
-          }
-        }
 
-        if ( useDefaultSettings ) {
-          $scope.pendingWizardSettings.idField          = defaults.idField;
-          $scope.pendingWizardSettings.titleField       = defaults.titleField;
-          $scope.pendingWizardSettings.additionalFields = defaults.additionalFields;
-        } else {
-          $scope.pendingWizardSettings.idField          = '';
-          if (searchEngine === 'es' || searchEngine === 'os') {
-            $scope.pendingWizardSettings.idField        = '_id';
-          }
-          $scope.pendingWizardSettings.titleField       = '';
-          $scope.pendingWizardSettings.additionalFields = '';
-        }
+        var searchEngine  = $scope.pendingWizardSettings.searchEngine;
+        var newUrl        = $scope.pendingWizardSettings.searchUrl;
+
+        var settingsToUse = settingsSvc.pickSettingsToUse(newUrl, searchEngine);
+
+        $scope.pendingWizardSettings.idField          = settingsToUse.idField;
+        $scope.pendingWizardSettings.titleField       = settingsToUse.titleField;
+        $scope.pendingWizardSettings.additionalFields = settingsToUse.additionalFields;
+        $scope.pendingWizardSettings.queryParams      = settingsToUse.queryParams;
+        $scope.pendingWizardSettings.apiMethod        = settingsToUse.apiMethod;
+
       }
 
       $scope.validateFieldSpec = validateFieldSpec;
