@@ -21,12 +21,51 @@ angular.module('QuepidApp')
         return settingsSvc.settingsId();
       };
 
+      // used when you swap radio buttons for the search engine.
+      $scope.changeSearchEngine = function() {
+
+        if (angular.isUndefined($scope.pendingWizardSettings)){
+            // When we run the case wizard, we assume that you want to use our Solr based TMDB demo setup.
+            // We then give you options to change from there.
+            $scope.pendingWizardSettings = angular.copy(settingsSvc.tmdbSettings['solr']);
+        }
+        var settings = settingsSvc.pickSettingsToUse($scope.pendingWizardSettings.searchEngine, $scope.pendingWizardSettings.searchUrl);
+        $scope.pendingWizardSettings.additionalFields         = settings.additionalFields;
+        $scope.pendingWizardSettings.fieldSpec                = settings.fieldSpec;
+        $scope.pendingWizardSettings.idField                  = settings.idField;
+        $scope.pendingWizardSettings.searchEngine             = settings.searchEngine;
+        $scope.pendingWizardSettings.apiMethod                = settings.apiMethod;
+        $scope.pendingWizardSettings.customHeaders            = settings.customHeaders;
+        $scope.pendingWizardSettings.queryParams              = settings.queryParams;
+        $scope.pendingWizardSettings.titleField               = settings.titleField;
+        $scope.pendingWizardSettings.urlFormat                = settings.urlFormat;
+
+        var quepidStartsWithHttps = $location.protocol() === 'https';
+
+        if ($scope.pendingWizardSettings.searchEngine === 'solr') {
+          if (quepidStartsWithHttps === true){
+            $scope.pendingWizardSettings.searchUrl = settings.secureSearchUrl;
+          }
+          else {
+            $scope.pendingWizardSettings.searchUrl = settings.insecureSearchUrl;
+          }
+        }
+        else {
+          $scope.pendingWizardSettings.searchUrl = settings.searchUrl;
+        }
+
+        $scope.reset();
+      };
+
+      // used when we first launch the wizard, and it handles reloading from http to https
       $scope.updateSettingsDefaults = function() {
 
         if (angular.isUndefined($scope.pendingWizardSettings)){
-            $scope.pendingWizardSettings = angular.copy(settingsSvc.defaults['solr']);
+            // When we run the case wizard, we assume that you want to use our Solr based TMDB demo setup.
+            // We then give you options to change from there.
+            $scope.pendingWizardSettings = angular.copy(settingsSvc.tmdbSettings['solr']);
         }
-        var settings = angular.copy(settingsSvc.defaults[$scope.pendingWizardSettings.searchEngine]);
+        var settings = settingsSvc.pickSettingsToUse($scope.pendingWizardSettings.searchEngine, $scope.pendingWizardSettings.searchUrl);
         $scope.pendingWizardSettings.additionalFields         = settings.additionalFields;
         $scope.pendingWizardSettings.fieldSpec                = settings.fieldSpec;
         $scope.pendingWizardSettings.idField                  = settings.idField;
@@ -56,7 +95,7 @@ angular.module('QuepidApp')
         // We should pass this stuff in externally, not do it here.
         if (angular.isDefined($location.search().searchEngine)){
           $scope.pendingWizardSettings.searchEngine = $location.search().searchEngine;
-          $scope.pendingWizardSettings.queryParams = settingsSvc.defaults[$scope.pendingWizardSettings.searchEngine].queryParams;
+//          $scope.pendingWizardSettings.queryParams = settingsSvc.defaults[$scope.pendingWizardSettings.searchEngine].queryParams;
         }
         if (angular.isDefined($location.search().searchUrl)){
           $scope.pendingWizardSettings.searchUrl = $location.search().searchUrl;
@@ -91,7 +130,11 @@ angular.module('QuepidApp')
       function reset() {
         $scope.validating = false;
         $scope.urlValid = $scope.urlInvalid = $scope.invalidHeaders = false;
-        $scope.checkTLSForSearchEngineUrl();
+        //$scope.pendingWizardSettings = angular.copy(settingsSvc.tmdbSettings['solr']);
+        // when you reset back to Solr, we actually don't have a url due to a glitch in picking the right one, sigh.
+        if ($scope.pendingWizardSettings.searchUrl){
+          $scope.checkTLSForSearchEngineUrl();
+        }
       }
 
       function resetUrlValid() {
@@ -190,6 +233,7 @@ angular.module('QuepidApp')
         }
       }
 
+
       function setupDefaults(validator) {
         $scope.validating   = false;
         $scope.urlValid     = true;
@@ -199,33 +243,18 @@ angular.module('QuepidApp')
         // Since the defaults are being overridden by the editableSettings(),
         // make sure the default id, title, and additional fields are set
         // if the URL is still set as the default
-        var searchEngine  = $scope.pendingWizardSettings.searchEngine;
-        var defaults      = settingsSvc.defaults[searchEngine];
-        var newUrl        = $scope.pendingWizardSettings.searchUrl;
-        var useDefaultSettings = false;
-        if ($scope.pendingWizardSettings.searchEngine === 'solr'){
-          if (newUrl === defaults.insecureSearchUrl || newUrl === defaults.secureSearchUrl ){
-            useDefaultSettings = true;
-          }
-        }
-        else {
-          if (newUrl === defaults.searchUrl) {
-            useDefaultSettings = true;
-          }
-        }
 
-        if ( useDefaultSettings ) {
-          $scope.pendingWizardSettings.idField          = defaults.idField;
-          $scope.pendingWizardSettings.titleField       = defaults.titleField;
-          $scope.pendingWizardSettings.additionalFields = defaults.additionalFields;
-        } else {
-          $scope.pendingWizardSettings.idField          = '';
-          if (searchEngine === 'es' || searchEngine === 'os') {
-            $scope.pendingWizardSettings.idField        = '_id';
-          }
-          $scope.pendingWizardSettings.titleField       = '';
-          $scope.pendingWizardSettings.additionalFields = '';
-        }
+        var searchEngine  = $scope.pendingWizardSettings.searchEngine;
+        var newUrl        = $scope.pendingWizardSettings.searchUrl;
+
+        var settingsToUse = settingsSvc.pickSettingsToUse(searchEngine, newUrl);
+
+        $scope.pendingWizardSettings.idField          = settingsToUse.idField;
+        $scope.pendingWizardSettings.titleField       = settingsToUse.titleField;
+        $scope.pendingWizardSettings.additionalFields = settingsToUse.additionalFields;
+        $scope.pendingWizardSettings.queryParams      = settingsToUse.queryParams;
+        $scope.pendingWizardSettings.apiMethod        = settingsToUse.apiMethod;
+
       }
 
       $scope.validateFieldSpec = validateFieldSpec;
@@ -363,6 +392,13 @@ angular.module('QuepidApp')
         // pass pending settings on to be saved
         $scope.pendingWizardSettings.submit = function() {
           $log.debug('Submitting settings (from wizard modal)');
+
+          // if we aren't using a demo, then lets finalize our queryParams with our title field.
+         if (!settingsSvc.demoSettingsChosen($scope.pendingWizardSettings.searchEngine, $scope.pendingWizardSettings.searchUrl)){
+           if ($scope.pendingWizardSettings.searchEngine === 'os' || $scope.pendingWizardSettings.searchEngine === 'es'){
+             $scope.pendingWizardSettings.queryParams = $scope.pendingWizardSettings.queryParams.replace('REPLACE_ME', $scope.pendingWizardSettings.titleField);
+           }
+         }
 
           settingsSvc.update($scope.pendingWizardSettings)
           .then(function() {
