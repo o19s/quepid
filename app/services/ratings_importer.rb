@@ -15,6 +15,7 @@ class RatingsImporter
       format:         :csv,
       logger:         Rails.logger,
       show_progress:  false,
+      drop_header:    false
     }
 
     @options  = default_options.merge(opts.deep_symbolize_keys)
@@ -46,6 +47,9 @@ class RatingsImporter
       Rating.delete ratings
     end
 
+    if @options[:drop_header]
+      @ratings = @ratings.drop(1) # get rid of header row
+    end
     #
     # 2 ways to import ratings:
     #   i. The naive way:
