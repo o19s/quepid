@@ -15,7 +15,7 @@ class RatingsImporter
       format:         :csv,
       logger:         Rails.logger,
       show_progress:  false,
-      drop_header:    false
+      drop_header:    false,
     }
 
     @options  = default_options.merge(opts.deep_symbolize_keys)

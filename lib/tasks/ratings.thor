@@ -55,7 +55,7 @@ class Ratings < Thor
         clear_existing: options[:clear],
         force:          options[:clear],
         show_progress:  true,
-        drop_header:    true
+        drop_header:    true,
       }
       opts    = opts.merge(logger: Logger.new($stdout)) if options[:logger]
       service = ::RatingsImporter.new acase, ratings, opts
