@@ -21,6 +21,43 @@ angular.module('QuepidApp')
         return settingsSvc.settingsId();
       };
 
+      // used when you swap radio buttons for the search engine.
+      $scope.changeSearchEngine = function() {
+
+        if (angular.isUndefined($scope.pendingWizardSettings)){
+            // When we run the case wizard, we assume that you want to use our Solr based TMDB demo setup.
+            // We then give you options to change from there.
+            $scope.pendingWizardSettings = angular.copy(settingsSvc.tmdbSettings['solr']);
+        }
+        var settings = settingsSvc.pickSettingsToUse($scope.pendingWizardSettings.searchEngine, $scope.pendingWizardSettings.searchUrl);
+        $scope.pendingWizardSettings.additionalFields         = settings.additionalFields;
+        $scope.pendingWizardSettings.fieldSpec                = settings.fieldSpec;
+        $scope.pendingWizardSettings.idField                  = settings.idField;
+        $scope.pendingWizardSettings.searchEngine             = settings.searchEngine;
+        $scope.pendingWizardSettings.apiMethod                = settings.apiMethod;
+        $scope.pendingWizardSettings.customHeaders            = settings.customHeaders;
+        $scope.pendingWizardSettings.queryParams              = settings.queryParams;
+        $scope.pendingWizardSettings.titleField               = settings.titleField;
+        $scope.pendingWizardSettings.urlFormat                = settings.urlFormat;
+
+        var quepidStartsWithHttps = $location.protocol() === 'https';
+
+        if ($scope.pendingWizardSettings.searchEngine === 'solr') {
+          if (quepidStartsWithHttps === true){
+            $scope.pendingWizardSettings.searchUrl = settings.secureSearchUrl;
+          }
+          else {
+            $scope.pendingWizardSettings.searchUrl = settings.insecureSearchUrl;
+          }
+        }
+        else {
+          $scope.pendingWizardSettings.searchUrl = settings.searchUrl;
+        }
+
+        $scope.reset();
+      };
+
+      // used when we first launch the wizard, and it handles reloading from http to https
       $scope.updateSettingsDefaults = function() {
 
         if (angular.isUndefined($scope.pendingWizardSettings)){
@@ -28,7 +65,7 @@ angular.module('QuepidApp')
             // We then give you options to change from there.
             $scope.pendingWizardSettings = angular.copy(settingsSvc.tmdbSettings['solr']);
         }
-        var settings = settingsSvc.pickSettingsToUse('solr', null);
+        var settings = settingsSvc.pickSettingsToUse($scope.pendingWizardSettings.searchEngine, $scope.pendingWizardSettings.searchUrl);
         $scope.pendingWizardSettings.additionalFields         = settings.additionalFields;
         $scope.pendingWizardSettings.fieldSpec                = settings.fieldSpec;
         $scope.pendingWizardSettings.idField                  = settings.idField;
@@ -58,7 +95,7 @@ angular.module('QuepidApp')
         // We should pass this stuff in externally, not do it here.
         if (angular.isDefined($location.search().searchEngine)){
           $scope.pendingWizardSettings.searchEngine = $location.search().searchEngine;
-          $scope.pendingWizardSettings.queryParams = settingsSvc.defaults[$scope.pendingWizardSettings.searchEngine].queryParams;
+//          $scope.pendingWizardSettings.queryParams = settingsSvc.defaults[$scope.pendingWizardSettings.searchEngine].queryParams;
         }
         if (angular.isDefined($location.search().searchUrl)){
           $scope.pendingWizardSettings.searchUrl = $location.search().searchUrl;
@@ -93,7 +130,11 @@ angular.module('QuepidApp')
       function reset() {
         $scope.validating = false;
         $scope.urlValid = $scope.urlInvalid = $scope.invalidHeaders = false;
-        $scope.checkTLSForSearchEngineUrl();
+        //$scope.pendingWizardSettings = angular.copy(settingsSvc.tmdbSettings['solr']);
+        // when you reset back to Solr, we actually don't have a url due to a glitch in picking the right one, sigh.
+        if ($scope.pendingWizardSettings.searchUrl){
+          $scope.checkTLSForSearchEngineUrl();
+        }
       }
 
       function resetUrlValid() {

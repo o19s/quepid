@@ -36,9 +36,11 @@ angular.module('QuepidApp')
           additionalFields: [],
           numberOfRows:     10,
           searchEngine:     'solr',
-          //insecureSearchUrl:'http://quepid-solr.dev.o19s.com:8985/solr/tmdb/select',
-          //secureSearchUrl:  'https://quepid-solr.dev.o19s.com/solr/tmdb/select',
+          // perfect world we wouldn't have this here and we would instead populate with urlFormat instead.
+          insecureSearchUrl:'http://quepid-solr.dev.o19s.com:8985/solr/tmdb/select',
+          secureSearchUrl:  'https://quepid-solr.dev.o19s.com/solr/tmdb/select',
           urlFormat:        'http(s?)://yourdomain.com:8983/<index>/select',
+          customHeaders:     '',
         },
         es: {
           queryParams:  [
@@ -67,6 +69,7 @@ angular.module('QuepidApp')
           searchEngine:      'es',
           searchUrl:         'http://quepid-elasticsearch.dev.o19s.com:9206/tmdb/_search',
           urlFormat:         'http(s?)://yourdomain.com:9200/<index>/_search',
+          customHeaders:     '',
         },
         os: {
           queryParams:  [
@@ -95,6 +98,7 @@ angular.module('QuepidApp')
           searchEngine:      'os',
           searchUrl:         'https://reader:reader@quepid-opensearch.dev.o19s.com:9000/tmdb/_search',
           urlFormat:         'http(s?)://yourdomain.com:9200/<index>/_search',
+          customHeaders:     '',
         }
       };
       // used by the wizard for TMDB demo search engine
@@ -122,6 +126,7 @@ angular.module('QuepidApp')
           insecureSearchUrl:'http://quepid-solr.dev.o19s.com:8985/solr/tmdb/select',
           secureSearchUrl:  'https://quepid-solr.dev.o19s.com/solr/tmdb/select',
           urlFormat:        'http(s?)://yourdomain.com:8983/<index>/select',
+          customHeaders:    '',
         },
         es: {
           queryParams:  [
@@ -152,6 +157,7 @@ angular.module('QuepidApp')
           searchEngine:      'es',
           searchUrl:         'http://quepid-elasticsearch.dev.o19s.com:9206/tmdb/_search',
           urlFormat:         'http(s?)://yourdomain.com:9200/<index>/_search',
+          customHeaders:     '',
         },
         os: {
           queryParams:  [
@@ -180,6 +186,7 @@ angular.module('QuepidApp')
           searchEngine:      'os',
           searchUrl:         'https://reader:reader@quepid-opensearch.dev.o19s.com:9000/tmdb/_search',
           urlFormat:         'http(s?)://yourdomain.com:9200/<index>/_search',
+          customHeaders:     '',
         }
       };
 
@@ -189,7 +196,7 @@ angular.module('QuepidApp')
       this.pickSettingsToUse = function(searchEngine, newUrl) {
           var useTMDBDemoSettings = false;
           if (searchEngine === 'solr'){
-            if (newUrl === null){
+            if (newUrl === null || angular.isUndefined(newUrl)){
               useTMDBDemoSettings = true;
             }
             else if (newUrl === this.tmdbSettings['solr'].insecureSearchUrl || newUrl === this.tmdbSettings['solr'].secureSearchUrl ){
