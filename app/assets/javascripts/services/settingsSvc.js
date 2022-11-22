@@ -18,6 +18,7 @@ angular.module('QuepidApp')
       broadcastSvc
     ) {
 
+      /* jshint ignore:start */
       // Used by the wizard for any search engine.
       this.defaultSettings = {
         solr: {
@@ -184,6 +185,8 @@ angular.module('QuepidApp')
         }
       };
 
+      /* jshint ignore:end */
+
       var Settings = SettingsFactory;
       var currSettings = null;
 
@@ -209,7 +212,7 @@ angular.module('QuepidApp')
           }
         }
         return useTMDBDemoSettings;
-      }
+      };
 
       this.pickSettingsToUse = function(searchEngine, newUrl) {
         if (this.demoSettingsChosen(searchEngine, newUrl)){
