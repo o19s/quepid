@@ -49,9 +49,7 @@ angular.module('QuepidApp')
             '    "multi_match": {',
             '      "query": "#$query##",',
             '      "type": "best_fields",',
-            '      "fields": [',
-            '        "title^10"',
-            '      ]',
+            '      "fields": ["REPLACE_ME"]',
             '    }',
             '  }',
             '}',
@@ -78,11 +76,7 @@ angular.module('QuepidApp')
             '    "multi_match": {',
             '      "query": "#$query##",',
             '      "type": "best_fields",',
-            '      "fields": [',
-            '        "title^10",',
-            '        "overview",',
-            '        "cast"',
-            '      ]',
+            '      "fields": ["REPLACE_ME"]',
             '    }',
             '  }',
             '}',
@@ -193,33 +187,37 @@ angular.module('QuepidApp')
       var Settings = SettingsFactory;
       var currSettings = null;
 
+      this.demoSettingsChosen = function(searchEngine, newUrl){
+        var useTMDBDemoSettings = false;
+        if (searchEngine === 'solr'){
+          if (newUrl === null || angular.isUndefined(newUrl)){
+            useTMDBDemoSettings = true;
+          }
+          else if (newUrl === this.tmdbSettings['solr'].insecureSearchUrl || newUrl === this.tmdbSettings['solr'].secureSearchUrl ){
+            useTMDBDemoSettings = true;
+          }
+          else {
+            useTMDBDemoSettings = false;
+          }
+        }
+        else {
+          if (newUrl === this.tmdbSettings[searchEngine].searchUrl) {
+            useTMDBDemoSettings = true;
+          }
+          else {
+            useTMDBDemoSettings = false;
+          }
+        }
+        return useTMDBDemoSettings;
+      }
+
       this.pickSettingsToUse = function(searchEngine, newUrl) {
-          var useTMDBDemoSettings = false;
-          if (searchEngine === 'solr'){
-            if (newUrl === null || angular.isUndefined(newUrl)){
-              useTMDBDemoSettings = true;
-            }
-            else if (newUrl === this.tmdbSettings['solr'].insecureSearchUrl || newUrl === this.tmdbSettings['solr'].secureSearchUrl ){
-              useTMDBDemoSettings = true;
-            }
-            else {
-              useTMDBDemoSettings = false;
-            }
-          }
-          else {
-            if (newUrl === this.tmdbSettings[searchEngine].searchUrl) {
-              useTMDBDemoSettings = true;
-            }
-            else {
-              useTMDBDemoSettings = false;
-            }
-          }
-          if (useTMDBDemoSettings){
-            return angular.copy(this.tmdbSettings[searchEngine]);
-          }
-          else {
-            return angular.copy(this.defaultSettings[searchEngine]);
-          }
+        if (this.demoSettingsChosen(searchEngine, newUrl)){
+          return angular.copy(this.tmdbSettings[searchEngine]);
+        }
+        else {
+          return angular.copy(this.defaultSettings[searchEngine]);
+        }
       };
 
       this.setCaseTries = function(tries) {
