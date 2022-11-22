@@ -1,8 +1,6 @@
 # Changelog
 
-## 6.14.0 - ??
-
-### Features
+## 6.14.0 - 2022-11-22
 
 ### Improvements
 
@@ -10,6 +8,7 @@
 
 ### Bugs
 
+* Command line tool `thor import:ratings` didn't handle a csv file with a header row.  Now filters off the header row.  Thanks @wrigleyDan for spotting this problem.  https://github.com/o19s/quepid/issues/581 by @epugh and fixed in https://github.com/o19s/quepid/pull/583.  
 
 ## 6.13.0 - 2022-10-28
 
