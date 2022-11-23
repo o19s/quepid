@@ -1,0 +1,31 @@
+<p id="notice"><%= notice %></p>
+
+<h1>Judgements</h1>
+
+<table>
+  <thead>
+    <tr>
+      <th>User</th>
+      <th>Rating</th>
+      <th>Query doc pair</th>
+      <th colspan="3"></th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <% @judgements.each do |judgement| %>
+      <tr>
+        <td><%= judgement.user_id %></td>
+        <td><%= judgement.rating %></td>
+        <td><%= judgement.query_doc_pair_id %></td>
+        <td><%= link_to 'Show', judgement %></td>
+        <td><%= link_to 'Edit', edit_judgement_path(judgement) %></td>
+        <td><%= link_to 'Destroy', judgement, method: :delete, data: { confirm: 'Are you sure?' } %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+
+<br>
+
+<%= link_to 'New Judgement', new_judgement_path %>

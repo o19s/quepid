@@ -1,0 +1,19 @@
+<p id="notice"><%= notice %></p>
+
+<p>
+  <strong>User:</strong>
+  <%= @judgement.user_id %>
+</p>
+
+<p>
+  <strong>Rating:</strong>
+  <%= @judgement.rating %>
+</p>
+
+<p>
+  <strong>Query doc pair:</strong>
+  <%= @judgement.query_doc_pair_id %>
+</p>
+
+<%= link_to 'Edit', edit_judgement_path(@judgement) %> |
+<%= link_to 'Back', judgements_path %>

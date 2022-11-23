@@ -1,0 +1,49 @@
+<p id="notice"><%= notice %></p>
+
+<%
+  @users = User.all
+  @user_name_lookup = {}
+  @users.each do |s|
+    @user_name_lookup[s.id] = s.email
+  end
+%>
+
+
+<%
+  @books = Book.all
+  @books_name_lookup = {}
+  @books.each do |s|
+    @books_name_lookup[s.id] = s.name
+  end
+  @book_name = @books_name_lookup[@query_doc_pair.book_id]
+%>
+
+<h1>Query Doc Pair</h1>
+
+<p>
+  <strong>Book:</strong>
+  <%= @book_name %>
+  <br>
+  <strong>Created by User:</strong>
+  <%= @user_name_lookup[@query_doc_pair.user_id] %>
+</p>
+<br>
+<p>
+  <strong>Query text:</strong>
+  <%= @query_doc_pair.query_text %>
+</p>
+
+<p>
+  <strong>Rank:</strong>
+  <%= @query_doc_pair.rank %>
+</p>
+
+<p>
+  <strong>Document fields:</strong>
+  <%= @query_doc_pair.document_fields %>
+</p>
+
+<%= button_to 'Edit', edit_query_doc_pair_path(@query_doc_pair), method: :get %> <br>
+<%= button_to 'Back to QueryDocPairs for ' + @book_name, query_doc_pairs_path, params: {book_id: @query_doc_pair.book_id}, method: :get %><br>
+
+

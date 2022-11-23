@@ -1,0 +1,52 @@
+<p id="notice"><%= notice %></p>
+
+<%
+  @teams = Team.for_user(current_user)
+  @teams_name_lookup = {}
+  @teams.each do |t|
+    @teams_name_lookup[t.id] = t.name
+  end
+
+  @scorers = Scorer.all
+  @scorers_name_lookup = {}
+  @scorers.each do |s|
+    @scorers_name_lookup[s.id] = s.name
+  end
+
+  @selection_strategies = SelectionStrategy.all
+  @selection_strategies_name_lookup = {}
+  @selection_strategies.each do |s|
+    @selection_strategies_name_lookup[s.id] = s.name
+  end
+%>
+
+<h1> Book </h1>
+<h2> Name: <%= @book.name %> </h2>
+
+<p>
+  <strong>Team:</strong>
+  <%= @teams_name_lookup[@book.team_id] %>
+</p>
+
+<p>
+  <strong>Scorer:</strong>
+  <%= @scorers_name_lookup[@book.scorer_id] %>
+</p>
+
+<p>
+  <strong>Selection strategy:</strong>
+  <%= @selection_strategies_name_lookup[@book.selection_strategy_id] %>
+</p>
+
+<%= button_to 'Show QueryDocPairs', query_doc_pairs_url, params: {book_id: @book.id}, method: :get %>
+
+<br>
+
+<%= button_to 'Edit', edit_book_path(@book), method: :get %>
+
+<br>
+
+
+<%= button_to 'Back to Books', books_path, method: :get %>
+
+<br>

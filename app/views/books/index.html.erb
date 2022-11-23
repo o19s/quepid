@@ -1,0 +1,72 @@
+<link href="/assets/stylesheets/books.scss" media="all" rel="stylesheet" />
+
+<style>
+    table, tbody, thead, th, tr, td {
+        border: 1px solid black;
+        padding: 5px;
+    }
+</style>
+
+<p id="notice"><%= notice %></p>
+
+<%
+  @teams = Team.for_user(current_user)
+  @teams_name_lookup = {}
+  @teams.each do |t|
+    @teams_name_lookup[t.id] = t.name
+  end
+
+  @scorers = Scorer.all
+  @scorers_name_lookup = {}
+  @scorers.each do |s|
+    @scorers_name_lookup[s.id] = s.name
+  end
+
+  @selection_strategies = SelectionStrategy.all
+  @selection_strategies_name_lookup = {}
+  @selection_strategies.each do |s|
+    @selection_strategies_name_lookup[s.id] = s.name
+  end
+%>
+
+<h1>Books</h1>
+
+<% if @books.size == 0 %>
+  Create your first book by clicking on the New Book button below.
+  <br>
+<% end %>
+
+<% if @books.size > 0 %>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Team</th>
+      <th>Scorer</th>
+      <th>Selection strategy</th>
+<!--      <th colspan="4">Actions</th>-->
+    </tr>
+  </thead>
+
+  <tbody>
+    <% @books.each do |book| %>
+      <tr>
+        <td><%= link_to book.name, book, method: :get %></td>
+        <td><%= @teams_name_lookup[book.team_id] %></td>
+        <td><%= @scorers_name_lookup[book.scorer_id] %> </td>
+        <td><%= @selection_strategies_name_lookup[book.selection_strategy_id] %> </td>
+<!--        <td><%#= button_to 'Edit', edit_book_path(book), method: :get %></td>-->
+<!--        <td><%#= button_to 'Destroy', book, method: :delete %></td>-->
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+
+<% end %>
+
+<br>
+
+<%= button_to 'New Book', new_book_path, method: :get %>
+<%#= link_to 'New Book', new_book_path %>
+<br>
