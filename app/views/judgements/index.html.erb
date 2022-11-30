@@ -113,8 +113,9 @@
     </tbody>
   </table>
   <br>
+
   <% if @random_query_doc_pair_id != -1 %>
-    <%= button_to 'New Judgement', new_book_query_doc_pair_judgement_path(@book, query_doc_pair_id: @random_query_doc_pair_id), method: :get %>
+    <%= button_to 'New Judgement', new_book_query_doc_pair_judgement_url(@book, query_doc_pair_id: @random_query_doc_pair_id), method: :get %>
   <% else %>
     <span style="color:green;font-weight:bold;"> Congratulations! There are no more QueryDocPairs for you to judge in this book.</span>
     <br>

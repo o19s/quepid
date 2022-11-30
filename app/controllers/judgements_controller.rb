@@ -4,7 +4,7 @@ class JudgementsController < ApplicationController
   respond_to :html
 
   def index
-    @judgements = Judgement.all
+    @judgements = Judgement.all.includes([:query_doc_pair])
     respond_with(@judgements)
   end
 
@@ -32,11 +32,12 @@ class JudgementsController < ApplicationController
     #   puts "judgement was nil"
     # end
     # puts @judgement.to_s
-    # begin
-    #   @judgement.save!
-    # rescue => e
-    #   puts e.backtrace
-    # end
+
+    begin
+      @judgement.save!
+    rescue => e
+      puts e.backtrace
+    end
 
     respond_with(@judgement, :location => book_judgements_path)
 
