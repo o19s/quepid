@@ -57,12 +57,15 @@ gem 'rails-healthcheck', '~> 1.4'
 
 gem 'vega', '~> 0.2.6'
 
+gem 'rswag'
+
 group :development, :test do
   gem 'annotate'
   gem 'bullet'
   gem 'byebug'
   gem 'memory_profiler'
   gem 'rack-mini-profiler', '>= 2.3.3'
+  gem 'rspec-rails', '~> 6.0.0'
 end
 
 group :development do
