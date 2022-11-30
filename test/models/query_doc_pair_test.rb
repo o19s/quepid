@@ -9,6 +9,7 @@
 #  created_at      :datetime         not null
 #  updated_at      :datetime         not null
 #  book_id         :bigint           not null
+#  doc_id          :string(255)
 #  user_id         :integer
 #
 # Indexes

@@ -44,6 +44,6 @@ class QueryDocPairsController < ApplicationController
     end
 
     def query_doc_pair_params
-      params.require(:query_doc_pair).permit(:user_id, :query_text, :rank, :document_fields, :book_id)
+      params.require(:query_doc_pair).permit(:user_id, :query_text, :rank, :document_fields, :book_id, :doc_id)
     end
 end

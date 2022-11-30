@@ -40,11 +40,12 @@ table,tr,td,th { border: 1px solid black; padding: 4px; }
   <table>
     <thead>
     <tr>
+      <th>ID</th>
       <th>Query text</th>
       <th>Rank</th>
+      <th>Doc ID</th>
       <th>Document fields</th>
       <th>Created by User</th>
-<!--      <th colspan="3"></th>-->
     </tr>
     </thead>
 
@@ -54,15 +55,15 @@ table,tr,td,th { border: 1px solid black; padding: 4px; }
         <tr>
 
           <td>
-            <%= link_to query_doc_pair.query_text, book_query_doc_pair_url(id: query_doc_pair.id) %>
-            <%#= link_to query_doc_pair.query_text, query_doc_pair %>
+            <%= link_to query_doc_pair.id, book_query_doc_pair_url(id: query_doc_pair.id) %>
+
           </td>
 
+          <td><%= query_doc_pair.query_text %></td>
           <td><%= query_doc_pair.rank %></td>
-
+          <td><%= query_doc_pair.doc_id %></td>
           <td><%= query_doc_pair.document_fields %></td>
           <td><%= @user_lookup[query_doc_pair.user_id] %></td>
-
 <!--          <td><%#= link_to 'Edit', edit_query_doc_pair_path(query_doc_pair) %></td>-->
 <!--          <td><%#= link_to 'Destroy', query_doc_pair, method: :delete, data: { confirm: 'Are you sure?' } %></td>-->
         </tr>

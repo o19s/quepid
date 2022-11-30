@@ -7,7 +7,7 @@ class QueryDocPairsTest < ApplicationSystemTestCase
 
   test "visiting the index" do
     visit query_doc_pairs_url
-    assert_selector "h1", text: "Query Doc Pairs"
+    assert_selector "h1", text: "Query Doc Pairs"  # TODO this should be starts with, not equals
   end
 
   test "creating a Query doc pair" do
@@ -19,6 +19,7 @@ class QueryDocPairsTest < ApplicationSystemTestCase
     fill_in "Query text", with: @query_doc_pair.query_text
     fill_in "Rank", with: @query_doc_pair.rank
     fill_in "User", with: @query_doc_pair.user_id
+    fill_in "Doc ID", with: @query_doc_pair.doc_id
     click_on "Create Query doc pair"
 
     assert_text "Query doc pair was successfully created"
@@ -34,6 +35,7 @@ class QueryDocPairsTest < ApplicationSystemTestCase
     fill_in "Query text", with: @query_doc_pair.query_text
     fill_in "Rank", with: @query_doc_pair.rank
     fill_in "User", with: @query_doc_pair.user_id
+    fill_in "Doc ID", with: @query_doc_pair.doc_id
     click_on "Update Query doc pair"
 
     assert_text "Query doc pair was successfully updated"
