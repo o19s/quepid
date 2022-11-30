@@ -1,5 +1,5 @@
-<p id="notice"><%= notice %></p>
-
+<!--<p id="notice"><%#= notice %></p>-->
+<p></p>
 <%
   @teams = Team.for_user(current_user)
   @teams_name_lookup = {}
@@ -19,9 +19,7 @@
     @selection_strategies_name_lookup[s.id] = s.name
   end
 %>
-
-<h1> Book </h1>
-<h2> Name: <%= @book.name %> </h2>
+<h1> Book <%= @book.id %> "<%= @book.name %>"</h1>
 
 <p>
   <strong>Team:</strong>
@@ -38,11 +36,15 @@
   <%= @selection_strategies_name_lookup[@book.selection_strategy_id] %>
 </p>
 
-<%= button_to 'Show QueryDocPairs', query_doc_pairs_url, params: {book_id: @book.id}, method: :get %>
+<%= button_to 'Show Judgements', book_judgements_url(@book), method: :get %>
 
 <br>
 
-<%= button_to 'Edit', edit_book_path(@book), method: :get %>
+<%= button_to 'Show QueryDocPairs', book_query_doc_pairs_url(@book), method: :get %>
+
+<br>
+
+<%= button_to 'Edit Book ' + @book.id.to_s + ' "' + @book.name + '"', edit_book_path(@book), method: :get %>
 
 <br>
 

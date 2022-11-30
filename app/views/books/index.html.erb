@@ -41,6 +41,7 @@
 <table>
   <thead>
     <tr>
+      <th>ID</th>
       <th>Name</th>
       <th>Team</th>
       <th>Scorer</th>
@@ -52,7 +53,8 @@
   <tbody>
     <% @books.each do |book| %>
       <tr>
-        <td><%= link_to book.name, book, method: :get %></td>
+        <td><%= link_to book.id, book, method: :get %></td>
+        <td><%= book.name %></td>
         <td><%= @teams_name_lookup[book.team_id] %></td>
         <td><%= @scorers_name_lookup[book.scorer_id] %> </td>
         <td><%= @selection_strategies_name_lookup[book.selection_strategy_id] %> </td>

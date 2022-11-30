@@ -1,4 +1,5 @@
-<p id="notice"><%= notice %></p>
+<!--<p id="notice"><%#= notice %></p>-->
+<p></p>
 
 <%
   @users = User.all
@@ -15,19 +16,16 @@
   @books.each do |s|
     @books_name_lookup[s.id] = s.name
   end
+  @book_id = @query_doc_pair.book_id
   @book_name = @books_name_lookup[@query_doc_pair.book_id]
 %>
 
 <h1>Query Doc Pair</h1>
 
 <p>
-  <strong>Book:</strong>
-  <%= @book_name %>
-  <br>
-  <strong>Created by User:</strong>
-  <%= @user_name_lookup[@query_doc_pair.user_id] %>
+  in Book <%= @book_id %> "<%= @book_name %>"
 </p>
-<br>
+
 <p>
   <strong>Query text:</strong>
   <%= @query_doc_pair.query_text %>
@@ -43,7 +41,12 @@
   <%= @query_doc_pair.document_fields %>
 </p>
 
-<%= button_to 'Edit', edit_query_doc_pair_path(@query_doc_pair), method: :get %> <br>
-<%= button_to 'Back to QueryDocPairs for ' + @book_name, query_doc_pairs_path, params: {book_id: @query_doc_pair.book_id}, method: :get %><br>
 
+<p>
+  <strong>Created by User:</strong>
+  <%= @user_name_lookup[@query_doc_pair.user_id] %>
+</p>
 
+<%= button_to 'Edit QueryDocPair', edit_book_query_doc_pair_path(@query_doc_pair.book_id, @query_doc_pair.id), method: :get %> <br>
+
+<%= button_to 'Back to QueryDocPairs for ' + @book_name, book_query_doc_pairs_url(book_id: @query_doc_pair.book_id, query_doc_pair_id: @query_doc_pair.id), method: :get %><br>

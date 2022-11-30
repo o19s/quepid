@@ -1,8 +1,14 @@
+<p></p>
 <h1>Editing Query Doc Pair</h1>
 
 <%= render 'form', query_doc_pair: @query_doc_pair %>
+
 <br>
-<%= button_to 'Show', @query_doc_pair, method: :get %>
+
+<%= button_to 'Cancel', book_query_doc_pair_url, method: :get %>
+
 <br>
-<%= button_to 'Back', query_doc_pairs_path, params: {book_id: @query_doc_pair.book_id}, method: :get %>
+
+<%= button_to 'Delete Query Doc Pair', book_query_doc_pair_url, method: :delete %>
+
 <br>

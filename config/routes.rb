@@ -4,16 +4,17 @@ require 'sidekiq/web'
 
 # rubocop:disable Metrics/BlockLength
 Rails.application.routes.draw do
-  resources :judgements
-  resources :query_doc_pairs
+  #resources :judgements #cjm get this out of here
+  #resources :query_doc_pairs #cjm get this out of here
+
   resources :selection_strategies
 
   resources :books do
-    resources :query_doc_pairs
     resources :judgements
+    resources :query_doc_pairs do
+      resources :judgements
+    end
   end
-
-
 
   Healthcheck.routes(self)
   # For details on the DSL available within this file, see https://guides.rubyonrails.org/routing.html

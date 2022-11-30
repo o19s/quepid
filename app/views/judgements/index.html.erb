@@ -1,31 +1,142 @@
-<p id="notice"><%= notice %></p>
+<!--<p id="notice"><%#= notice %></p>-->
+<p></p>
 
-<h1>Judgements</h1>
+<style>
+    table,tr,td,th { border: 1px solid black; padding: 4px; }
+</style>
 
-<table>
-  <thead>
+<%
+  @books = Book.all
+  #return @books.to_s
+  #return @books.to_s
+  #puts params
+  @book_id = params["book_id"].to_i
+
+  #@query_doc_pair_id = params["query_doc_pair_id"].to_i
+  #@book_id = QueryDocPair.find(@query_doc_pair_id).book_id
+  #@book_id = params["book_id"]
+
+  #return @book_id
+  #@book_name = nil
+
+
+  @book_names = []
+  @other_book_names = []
+  @books.each do |b|
+    if b != nil
+      if b.id == @book_id
+        @book = b
+        @book_name = b.name
+        #return b.name
+        @book_names << @book_name
+
+      else
+        @other_book_names << b.name
+      end
+    end
+  end
+
+  @random_query_doc_pair_id = @book.get_random_query_doc_pair_id
+
+%>
+
+<%
+  @users = User.all
+  @user_lookup = {}
+  @users.each do |u|
+    @user_lookup[u.id] = u.email
+  end
+%>
+
+<%
+  @books = Book.all
+  @book_lookup = {}
+  @books.each do |b|
+    @book_lookup[b.id] = b.name
+  end
+%>
+
+<% if @book_name != nil %>
+<h1>Judgements for Book <%= @book_id %> "<%= @book_name %>"</h1>
+
+
+  <table>
+    <thead>
     <tr>
-      <th>User</th>
+      <th>ID</th>
+
+      <th>QueryDocPair ID</th>
+
       <th>Rating</th>
-      <th>Query doc pair</th>
-      <th colspan="3"></th>
+<!--      <th>Document fields</th>-->
+      <th>Created by User</th>
+      <!--      <th colspan="3"></th>-->
     </tr>
-  </thead>
+    </thead>
 
-  <tbody>
+    <tbody>
     <% @judgements.each do |judgement| %>
-      <tr>
-        <td><%= judgement.user_id %></td>
-        <td><%= judgement.rating %></td>
-        <td><%= judgement.query_doc_pair_id %></td>
-        <td><%= link_to 'Show', judgement %></td>
-        <td><%= link_to 'Edit', edit_judgement_path(judgement) %></td>
-        <td><%= link_to 'Destroy', judgement, method: :delete, data: { confirm: 'Are you sure?' } %></td>
-      </tr>
+      <%
+        @query_doc_paid_id = judgement.query_doc_pair_id
+        @judgement_book_id = QueryDocPair.find(@query_doc_paid_id).book_id
+        if @judgement_book_id == @book_id %>
+        <tr>
+
+          <td>
+            <%= link_to judgement.id, book_judgement_url(id: judgement.id) %>
+          </td>
+
+          <td>
+            <%= judgement.query_doc_pair_id %>
+          </td>
+
+          <td>
+            <%= judgement.rating %>
+          </td>
+
+<!--          <td><%#= query_doc_pair.document_fields %></td>-->
+          <td><%= @user_lookup[judgement.user_id] %></td>
+
+        </tr>
+      <% end %>
     <% end %>
-  </tbody>
-</table>
+    </tbody>
+  </table>
+  <br>
+  <%= button_to 'New Judgement', new_book_query_doc_pair_judgement_path(@book, query_doc_pair_id: @random_query_doc_pair_id), method: :get %>
+  <br>
+  <%= button_to 'Back to Book ' + @book_id.to_s + ' "' + @book.name + '"', @book, method: :get %>
 
+
+<% else %>
+
+  Specify a book_id please. <br>
+<% end %>
 <br>
+<!--<table>-->
+<!--  <thead>-->
+<!--    <tr>-->
+<!--      <th>User</th>-->
+<!--      <th>Rating</th>-->
+<!--      <th>Query doc pair</th>-->
+<!--      <th colspan="3"></th>-->
+<!--    </tr>-->
+<!--  </thead>-->
 
-<%= link_to 'New Judgement', new_judgement_path %>
+<!--  <tbody>-->
+    <%# @judgements.each do |judgement| %>
+<!--      <tr>-->
+<!--        <td><%#= judgement.user_id %></td>-->
+<!--        <td><%#= judgement.rating %></td>-->
+<!--        <td><%#= judgement.query_doc_pair_id %></td>-->
+<!--        <td><%#= link_to 'Show', judgement %></td>-->
+<!--        <td><%#= link_to 'Edit', edit_judgement_path(judgement) %></td>-->
+<!--        <td><%#= link_to 'Destroy', judgement, method: :delete, data: { confirm: 'Are you sure?' } %></td>-->
+<!--      </tr>-->
+    <%# end %>
+<!--  </tbody>-->
+<!--</table>-->
+
+<!--<br>-->
+
+<%#= link_to 'New Judgement', new_judgement_path %>

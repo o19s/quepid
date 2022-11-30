@@ -20,4 +20,11 @@
 #
 class Book < ApplicationRecord
   belongs_to :selection_strategy
+  has_many :query_doc_pairs, dependent: :destroy
+
+  def get_random_query_doc_pair_id
+    @all_query_doc_pairs = QueryDocPair.where(:book_id => self.id)
+    item = @all_query_doc_pairs[rand(@all_query_doc_pairs.size)]
+    return item.id
+  end
 end

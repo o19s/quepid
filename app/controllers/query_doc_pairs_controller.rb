@@ -23,17 +23,19 @@ class QueryDocPairsController < ApplicationController
   def create
     @query_doc_pair = QueryDocPair.new(query_doc_pair_params)
     @query_doc_pair.save
-    respond_with(@query_doc_pair)
+    # respond_with(@query_doc_pair, :location => new_book_query_doc_pair_path(@query_doc_pair))
+    respond_with(@query_doc_pair, :location => book_query_doc_pairs_path)
   end
 
   def update
     @query_doc_pair.update(query_doc_pair_params)
-    respond_with(@query_doc_pair)
+    respond_with(@query_doc_pair, :location => book_query_doc_pair_path)
   end
 
   def destroy
+    @book_id = @query_doc_pair.book_id
     @query_doc_pair.destroy
-    respond_with(@query_doc_pair)
+    respond_with(@query_doc_pair, :location => book_query_doc_pairs_path)
   end
 
   private

@@ -21,4 +21,6 @@
 #
 class QueryDocPair < ApplicationRecord
   belongs_to :book
+  has_many :judgements, dependent: :destroy
+  #accepts_nested_attributes_for :book
 end

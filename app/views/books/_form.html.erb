@@ -1,4 +1,10 @@
 <%= form_with(model: book) do |form| %>
+
+  <%
+    @book_id = book.id
+    @book_name = book.name
+  %>
+
   <% if book.errors.any? %>
     <div id="error_explanation">
       <h2><%= pluralize(book.errors.count, "error") %> prohibited this book from being saved:</h2>
@@ -69,11 +75,8 @@
 
   <br>
 
-
   <div class="actions">
     <%= form.submit %>
   </div>
-
-
 
 <% end %>

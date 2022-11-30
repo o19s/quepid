@@ -1,9 +1,10 @@
-<p id="notice"><%= notice %></p>
+<!--<p id="notice"><%#= notice %></p>-->
+<p></p>
 
 <style>
 table,tr,td,th { border: 1px solid black; padding: 4px; }
-
 </style>
+
 <%
   @books = Book.all
   @book_id = params["book_id"].to_i
@@ -32,10 +33,10 @@ table,tr,td,th { border: 1px solid black; padding: 4px; }
   end
 %>
 
-<h1>Query Doc Pairs</h1>
+<h1>Query Doc Pairs for Book <%= @book_id %> "<%= @book_name %>"</h1>
 
 <% if @book_name != nil %>
-  <h2>for Book <%= @book_name %></h2>
+
   <table>
     <thead>
     <tr>
@@ -51,7 +52,11 @@ table,tr,td,th { border: 1px solid black; padding: 4px; }
     <% @query_doc_pairs.each do |query_doc_pair| %>
       <% if query_doc_pair.book_id == @book_id %>
         <tr>
-          <td><%= link_to query_doc_pair.query_text, query_doc_pair %></td>
+
+          <td>
+            <%= link_to query_doc_pair.query_text, book_query_doc_pair_url(id: query_doc_pair.id) %>
+            <%#= link_to query_doc_pair.query_text, query_doc_pair %>
+          </td>
 
           <td><%= query_doc_pair.rank %></td>
 
@@ -66,6 +71,10 @@ table,tr,td,th { border: 1px solid black; padding: 4px; }
     </tbody>
   </table>
   <br>
+  <%= button_to 'New Query Doc Pair', new_book_query_doc_pair_path, method: :get %>
+  <br>
+  <%= button_to 'Back to Book ' + @book_id.to_s + ' "' + @book.name + '"', @book, method: :get %>
+
 <% else %>
 
   Specify a book_id please. <br>
@@ -101,12 +110,4 @@ table,tr,td,th { border: 1px solid black; padding: 4px; }
 
 <% end %>
 
-<% if @book_name != nil %>
-
-<%= button_to 'New Query Doc Pair', new_query_doc_pair_path, params: {book_id: @book_id}, method: :get %>
-  <br>
-  <%= button_to 'Back to Book ' + @book.name, @book, method: :get %>
-<!--<%#= button_to 'Back to Book ' + @book_name, books_path, params: {book_id: @query_doc_pair.book_id}, method: :get %><br>-->
-
-<% end %>
 <br>

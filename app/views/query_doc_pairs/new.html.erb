@@ -1,5 +1,14 @@
+<p></p>
 <h1>New Query Doc Pair</h1>
 
 <%= render 'form', query_doc_pair: @query_doc_pair %>
 
-<%= link_to 'Back', query_doc_pairs_path %>
+<%#= link_to 'Back', query_doc_pairs_path %>
+<br>
+
+<%#= button_to 'Back', book_query_doc_pairs_url %>
+<% if @book_id != nil %>
+  <%= button_to 'Cancel', book_query_doc_pairs_url(book_id: @book_id), method: :get %>
+<% end %>
+
+<br>
