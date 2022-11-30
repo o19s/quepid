@@ -36,7 +36,12 @@
     end
   end
 
-  @random_query_doc_pair_id = @book.get_random_query_doc_pair_id
+  @random_query_doc_pair_id = @book.get_random_query_doc_pair_id(current_user.id)
+
+  # if @random_query_doc_pair_id == -1
+  #   puts "oops"
+  #   return "oops"
+  # end
 
 %>
 
@@ -64,21 +69,21 @@
     <thead>
     <tr>
       <th>ID</th>
-
-      <th>QueryDocPair ID</th>
-
+      <th>Query Text</th>
+      <th>Document fields</th>
       <th>Rating</th>
-<!--      <th>Document fields</th>-->
       <th>Created by User</th>
-      <!--      <th colspan="3"></th>-->
+
+
     </tr>
     </thead>
 
     <tbody>
     <% @judgements.each do |judgement| %>
       <%
-        @query_doc_paid_id = judgement.query_doc_pair_id
-        @judgement_book_id = QueryDocPair.find(@query_doc_paid_id).book_id
+        @query_doc_pair_id = judgement.query_doc_pair_id
+        @query_doc_pair = judgement.query_doc_pair
+        @judgement_book_id = @query_doc_pair.book_id
         if @judgement_book_id == @book_id %>
         <tr>
 
@@ -87,8 +92,13 @@
           </td>
 
           <td>
-            <%= judgement.query_doc_pair_id %>
+            <%= @query_doc_pair.query_text %>
           </td>
+
+          <td>
+            <%= @query_doc_pair.document_fields %>
+          </td>
+
 
           <td>
             <%= judgement.rating %>
@@ -103,7 +113,13 @@
     </tbody>
   </table>
   <br>
-  <%= button_to 'New Judgement', new_book_query_doc_pair_judgement_path(@book, query_doc_pair_id: @random_query_doc_pair_id), method: :get %>
+  <% if @random_query_doc_pair_id != -1 %>
+    <%= button_to 'New Judgement', new_book_query_doc_pair_judgement_path(@book, query_doc_pair_id: @random_query_doc_pair_id), method: :get %>
+  <% else %>
+    <span style="color:green;font-weight:bold;"> Congratulations! There are no more QueryDocPairs for you to judge in this book.</span>
+    <br>
+  <% end %>
+
   <br>
   <%= button_to 'Back to Book ' + @book_id.to_s + ' "' + @book.name + '"', @book, method: :get %>
 

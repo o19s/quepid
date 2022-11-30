@@ -22,9 +22,27 @@ class Book < ApplicationRecord
   belongs_to :selection_strategy
   has_many :query_doc_pairs, dependent: :destroy
 
-  def get_random_query_doc_pair_id
-    @all_query_doc_pairs = QueryDocPair.where(:book_id => self.id)
-    item = @all_query_doc_pairs[rand(@all_query_doc_pairs.size)]
-    return item.id
+  def get_random_query_doc_pair_id(user_id)
+    @all_query_doc_pairs_with_judgements =
+      QueryDocPair.joins("LEFT JOIN judgements on "\
+    + "judgements.query_doc_pair_id = query_doc_pairs.id "\
+    + " and judgements.user_id = '#{user_id}'").where(:book_id => self.id)
+
+    @all_possible_query_doc_pair_ids_to_rate = []
+    @all_query_doc_pairs_with_judgements.each do |row|
+      puts row.id
+      if row.judgements[0] == nil
+        @all_possible_query_doc_pair_ids_to_rate << row.id
+      end
+    end
+
+    size_ary = @all_possible_query_doc_pair_ids_to_rate.size
+    puts "size: #{size_ary}"
+    if size_ary == 0
+      return -1
+    else
+      id = @all_possible_query_doc_pair_ids_to_rate[rand(size_ary)]
+      return id
+    end
   end
 end

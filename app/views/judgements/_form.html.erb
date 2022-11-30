@@ -4,12 +4,11 @@
 
 <%
   @path = ""
+  @query_doc_pair = QueryDocPair.find(params["query_doc_pair_id"])
   if @judgement.persisted?
     @path = book_query_doc_pair_judgement_path
-    @query_doc_pair = QueryDocPair.find(params["query_doc_pair_id"])
   else
     @path = book_query_doc_pair_judgements_path
-    @query_doc_pair = QueryDocPair.find(params["query_doc_pair_id"])
   end
 %>
 
