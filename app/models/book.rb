@@ -30,14 +30,12 @@ class Book < ApplicationRecord
 
     @all_possible_query_doc_pair_ids_to_rate = []
     @all_query_doc_pairs_with_judgements.each do |row|
-      puts row.id
       if row.judgements[0] == nil
         @all_possible_query_doc_pair_ids_to_rate << row.id
       end
     end
 
     size_ary = @all_possible_query_doc_pair_ids_to_rate.size
-    puts "size: #{size_ary}"
     if size_ary == 0
       return -1
     else

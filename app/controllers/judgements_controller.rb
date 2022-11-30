@@ -22,21 +22,21 @@ class JudgementsController < ApplicationController
 
   def create
     @judgement = Judgement.new(judgement_params)
-    puts "$$$$$"
-    if @judgement != nil
-      puts "id: " + @judgement.id.to_s
-      puts "qdp_id: " + @judgement.query_doc_pair_id.to_s
-      puts "user_id: " + @judgement.user_id.to_s
-      puts "rating: " + @judgement.rating.to_s
-    else
-      puts "judgement was nil"
-    end
-    puts @judgement.to_s
-    begin
-      @judgement.save!
-    rescue => e
-      puts e.backtrace
-    end
+
+    # if @judgement != nil
+    #   puts "id: " + @judgement.id.to_s
+    #   puts "qdp_id: " + @judgement.query_doc_pair_id.to_s
+    #   puts "user_id: " + @judgement.user_id.to_s
+    #   puts "rating: " + @judgement.rating.to_s
+    # else
+    #   puts "judgement was nil"
+    # end
+    # puts @judgement.to_s
+    # begin
+    #   @judgement.save!
+    # rescue => e
+    #   puts e.backtrace
+    # end
 
     respond_with(@judgement, :location => book_judgements_path)
 

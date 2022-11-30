@@ -35,7 +35,7 @@
       end
     %>
     <%=
-      form.select(:team_id, options_for_select(@options), { prompt: true }, required: true)
+      form.select(:team_id, options_for_select(@options, book.team_id), { prompt: true }, required: true)
     %>
   </div>
 
@@ -52,7 +52,7 @@
       end
     %>
     <%=
-      form.select(:scorer_id, options_for_select(@options), { prompt: true }, required: true)
+      form.select(:scorer_id, options_for_select(@options, book.scorer_id), { prompt: true }, required: true)
     %>
   </div>
 
@@ -69,7 +69,7 @@
       end
     %>
     <%=
-      form.select(:selection_strategy_id, options_for_select(@options), { prompt: true }, required: true)
+      form.select(:selection_strategy_id, options_for_select(@options, book.selection_strategy_id), { prompt: true }, required: true)
     %>
   </div>
 
