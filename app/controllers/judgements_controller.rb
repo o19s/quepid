@@ -39,7 +39,21 @@ class JudgementsController < ApplicationController
       puts e.backtrace
     end
 
-    respond_with(@judgement, :location => book_judgements_path)
+    if @judgement.query_doc_pair_id != nil
+      @query_doc_pair = QueryDocPair.find(@judgement.query_doc_pair_id)
+      if @query_doc_pair != nil and @query_doc_pair.book_id != nil
+        @book = Book.find(@query_doc_pair.book_id)
+      end
+    end
+    @random_query_doc_pair_id = @book.get_random_query_doc_pair_id(current_user.id)
+
+    if @random_query_doc_pair_id == -1
+      respond_with(@judgement, :location => book_judgements_path)
+    else
+      respond_with(@judgement, :location => new_book_query_doc_pair_judgement_url(@book, query_doc_pair_id: @random_query_doc_pair_id))
+    end
+
+
 
     #puts "create judgement_params .. "+ judgement_params.to_s
 
@@ -130,12 +144,7 @@ class JudgementsController < ApplicationController
   private
     def set_judgement
       @judgement = Judgement.find(params[:id])
-      # if @judgement.query_doc_pair_id != nil
-      #   @query_doc_pair = QueryDocPair.find(@judgement.query_doc_pair_id)
-      #   if @query_doc_pair != nil and @query_doc_pair.book_id != nil
-      #     @book = Book.find(@query_doc_pair.book_id)
-      #   end
-      # end
+
     end
 
     def judgement_params

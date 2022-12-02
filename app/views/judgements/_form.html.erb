@@ -1,6 +1,19 @@
 <style>
     .field { padding: 5px; }
+
+    .red-button {background-color:red; box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19); color: #ddd !important;}
+    .red-button:hover { background-color: red !important;  box-shadow: 0 12px 16px 0 rgba(0,0,0,0.34), 0 17px 50px 0 rgba(0,0,0,0.19); color: white !important;}
+    .green-button {background-color:green; box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19); color: #ddd !important;}
+    .green-button:hover {background-color:green !important;  box-shadow: 0 12px 16px 0 rgba(0,0,0,0.34), 0 17px 50px 0 rgba(0,0,0,0.19); color: white !important; }
+
 </style>
+
+<script>
+  function rate(rating) {
+      document.getElementById("judgement_rating").value = rating;
+      document.getElementsByName("commit")[0].click()
+  }
+</script>
 
 <%
   @path = ""
@@ -24,7 +37,6 @@
       </ul>
     </div>
   <% end %>
-
 
   <%
     @book_id = @query_doc_pair.book_id
@@ -50,8 +62,12 @@
         end
       end
     end
+
   %>
 
+  <div class="field" style="">
+    Doc ID: <%= @query_doc_pair.doc_id.to_s %>
+  </div>
 
   <div class="field">
     Query Text: <%= @query_doc_pair.query_text.to_s %>
@@ -66,25 +82,25 @@
     <%= form.number_field :user_id, :value => current_user.id %>
   </div>
 
-  <div class="field">
+  <div class="field" style="visibility: hidden; display: none;">
     <%= form.label :rating %>
     <%= form.number_field :rating %>
   </div>
-
   <div class="field" style="visibility: hidden; display: none;">
     <%= form.label :query_doc_pair_id %>
     <%= form.text_field :query_doc_pair_id, :value => @query_doc_pair.id.to_s %>
   </div>
-
   <% if @user_name != nil %>
-    <div class="field">
-      Created by User: <%= @user_name %>
-    </div>
+<!--    <div class="field">-->
+<!--      Created by User: <%#= @user_name %>-->
+<!--    </div>-->
   <% end %>
-
   <br>
-
-  <div class="actions">
+  <div class="actions" style="visibility: hidden; display:none;">
     <%= form.submit %>
   </div>
+
+  <%= button_tag "Rate 0", type: 'button', onclick: "rate(0)", class: 'btn btn-default red-button' %>
+  <%= button_tag "Rate 1", type: 'button', onclick: "rate(1)", class: 'btn btn-default green-button' %>
+
 <% end %>

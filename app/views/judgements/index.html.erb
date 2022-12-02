@@ -64,16 +64,15 @@
 <% if @book_name != nil %>
 <h1>Judgements for Book <%= @book_id %> "<%= @book_name %>"</h1>
 
-
   <table>
     <thead>
     <tr>
       <th>ID</th>
       <th>Query Text</th>
+      <th>Doc ID</th>
       <th>Document fields</th>
       <th>Rating</th>
       <th>Created by User</th>
-
 
     </tr>
     </thead>
@@ -96,9 +95,12 @@
           </td>
 
           <td>
-            <%= @query_doc_pair.document_fields %>
+            <%= @query_doc_pair.doc_id %>
           </td>
 
+          <td>
+            <%= @query_doc_pair.document_fields %>
+          </td>
 
           <td>
             <%= judgement.rating %>
