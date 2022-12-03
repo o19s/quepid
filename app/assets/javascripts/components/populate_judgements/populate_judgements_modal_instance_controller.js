@@ -32,8 +32,7 @@ angular.module('QuepidApp')
         }
       });
 
-
-
+      // why do we do this pattern?
       ctrl.share = {
         acase:            acase,
         books:            [],
@@ -43,7 +42,7 @@ angular.module('QuepidApp')
 
       ctrl.activeBookId = acase.bookId;
 
-      $scope.selectBook      = selectBook;
+      $scope.selectBook = selectBook;
 
       function selectBook(book) {
         var name = (!book ? 'none' : book.name);
@@ -81,7 +80,6 @@ angular.module('QuepidApp')
         ctrl.share.teams.push(team);
       };
 
-
       teamSvc.list(false)
         .then(function() {
           angular.forEach(teamSvc.teams, function(team) {
@@ -95,6 +93,31 @@ angular.module('QuepidApp')
         }, function(response) {
           $log.debug(response.data);
         });
+
+      ctrl.specificActionLabel = function () {
+        var label = "";
+        var refreshOnly = false;
+        if (ctrl.share.acase.bookId === null && ctrl.activeBookId){
+          label = "Select Book";
+        }
+        else if (ctrl.share.acase.bookId !== ctrl.activeBookId){
+          label = "Change Book";
+        }
+        else if (ctrl.share.acase.bookId === ctrl.activeBookId){
+          label = ""
+          refreshOnly = true;
+        }
+
+        if (ctrl.populateBook){
+          if (refreshOnly){
+            label = "Refresh Query/Doc Pairs for Book"
+          }
+          else {
+            label = label + " and Populate";
+          }
+        }
+        return label;
+      };
 
       ctrl.ok = function () {
         $uibModalInstance.close(ctrl.share);
