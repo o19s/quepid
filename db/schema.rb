@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2022_11_30_192356) do
+ActiveRecord::Schema.define(version: 2022_12_03_171213) do
 
   create_table "annotations", id: :integer, charset: "utf8", force: :cascade do |t|
     t.text "message"
@@ -62,6 +62,7 @@ ActiveRecord::Schema.define(version: 2022_11_30_192356) do
     t.integer "scorer_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "book_id"
     t.index ["owner_id"], name: "user_id"
   end
 

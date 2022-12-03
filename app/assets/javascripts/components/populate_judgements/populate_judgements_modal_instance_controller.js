@@ -32,7 +32,7 @@ angular.module('QuepidApp')
         }
       });
 
-      ctrl.activeBook = null;
+
 
       ctrl.share = {
         acase:            acase,
@@ -40,6 +40,8 @@ angular.module('QuepidApp')
         teams:            [],
         loading:          true,
       };
+
+      ctrl.activeBookId = acase.bookId;
 
       $scope.selectBook      = selectBook;
 
@@ -49,9 +51,9 @@ angular.module('QuepidApp')
         $log.info('selected book: ' + name);
 
         if (!book) {
-          ctrl.activeBook = null;
+          ctrl.activeBookId = null;
         } else {
-          ctrl.activeBook = book;
+          ctrl.activeBookId = book.id;
         }
       }
 
@@ -78,6 +80,7 @@ angular.module('QuepidApp')
         // ERic: unclear if we care about the sharing status of a case or not!
         ctrl.share.teams.push(team);
       };
+
 
       teamSvc.list(false)
         .then(function() {

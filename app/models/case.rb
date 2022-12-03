@@ -10,6 +10,7 @@
 #  last_try_number :integer
 #  created_at      :datetime         not null
 #  updated_at      :datetime         not null
+#  book_id         :integer
 #  owner_id        :integer
 #  scorer_id       :integer
 #
@@ -62,6 +63,8 @@ class Case < ApplicationRecord
   has_many   :annotations,
              through:   :scores,
              dependent: :destroy
+
+  belongs_to  :book, optional: true
 
   # Validations
   validates :case_name, presence: true

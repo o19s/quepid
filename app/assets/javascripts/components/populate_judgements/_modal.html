@@ -45,7 +45,7 @@
       Create a book
     </a>
   </div>
-
+hi: {{ctrl.share.acase.bookId}} | hi: {{ctrl.activeBookId}}
   <div ng-show="ctrl.share.books.length > 0 && !ctrl.share.loading">
     <div>
       <h4>Select a Book of Judgements to be populated from this Case:</h4>
@@ -53,7 +53,7 @@
       <ul class="list-group">
         <li class="list-group-item"
           ng-repeat="book in ctrl.share.books track by book.name"
-          ng-class="{ active: book.id === ctrl.activeBook.id }"
+          ng-class="{ active: book.id === ctrl.activeBookId }"
           ng-click="selectBook(book)">
           {{book.name}}
         </li>
