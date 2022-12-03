@@ -9,6 +9,10 @@ Rails.application.routes.draw do
 
   resources :selection_strategies
 
+  resources :cases, only: [] do
+    resource :book
+  end
+
   resources :books do
     resources :judgements
     resources :query_doc_pairs do
@@ -142,6 +146,7 @@ Rails.application.routes.draw do
         resources :scorers, only: [ :index, :create, :destroy ], controller: :team_scorers
         resources :cases,   only: [ :index, :create, :destroy ], controller: :team_cases
         resources :owners,  only: [ :update ], controller: :team_owners
+        resources :books,   only: [ :index ], controller: :team_books
       end
 
       # Imports

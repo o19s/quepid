@@ -8,8 +8,5 @@
 #  updated_at :datetime         not null
 #
 
-one:
-  name: MyString
-
-two:
-  name: MyString
+super_crazy_picker:
+  name: Super Crazy Picker

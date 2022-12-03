@@ -37,6 +37,9 @@ class Team < ApplicationRecord
                           join_table: 'teams_scorers'
   # rubocop:enable Rails/HasAndBelongsToMany
 
+  has_many   :books,
+             dependent: :destroy
+
   # Every owner is also a member of the team.  So when we care about access to a team,
   # we only need to check the team.members or the case.team.members.
   belongs_to :owner,

@@ -19,14 +19,14 @@
 #  fk_rails_...  (selection_strategy_id => selection_strategies.id)
 #
 
-one:
-  team_id: 1
-  scorer_id: 1
-  selection_strategy: one
-  name: MyString
+book_of_star_wars_judgements:
+  team: :shared
+  scorer: :quepid_default_scorer
+  selection_strategy: :super_crazy_picker
+  name: TMDB Star Wars Judgements
 
-two:
-  team_id: 1
-  scorer_id: 1
-  selection_strategy: two
-  name: MyString
+book_of_comedy_films:
+  team: :shared
+  scorer: :quepid_default_scorer
+  selection_strategy: :super_crazy_picker
+  name: TMDB Greatest Comedies

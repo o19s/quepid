@@ -19,7 +19,9 @@
 #  fk_rails_...  (selection_strategy_id => selection_strategies.id)
 #
 class Book < ApplicationRecord
+  belongs_to :team
   belongs_to :selection_strategy
+  belongs_to :scorer
   has_many :query_doc_pairs, dependent: :destroy
 
   def get_random_query_doc_pair_id(user_id, query_doc_pair_id_to_exclude=nil)
