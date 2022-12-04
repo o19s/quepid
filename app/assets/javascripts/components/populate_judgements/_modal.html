@@ -68,10 +68,15 @@
     <span class="glyphicon glyphicon-question-sign" aria-hidden="true" popover-trigger="'mouseenter'" popover-placement="right" uib-popover="Select to update the list of Judgements to be rated with any new query / doc pairs that aren't currently in the Book."></span>
   </label>
 
+  <div class='text-danger' ng-show="processingPrompt.error">
+    An error ({{processingPrompt.error}}) occurred, please try again.<br />
+    If the error persist, contact customer for further assistance.
+  </div>
+
 </div>
 
 <div class="modal-footer">
-  <a class="btn btn-primary pull-left" href="/books/new" target="_self">
+  <a class="btn btn-primary pull-left" href="/books/new" target="_self" ng-disabled="processingPrompt.inProgress">
     <i class="glyphicon glyphicon-plus" style="color: #FFF"></i>
     Create a book
   </a>
@@ -80,8 +85,14 @@
     class="btn btn-success"
     ng-show="ctrl.canUpdateCase && ctrl.activeBookId && ctrl.specificActionLabel()"
     ng-click="ctrl.ok()"
+    ng-disabled="processingPrompt.inProgress"
   >
     {{ ctrl.specificActionLabel() }}
   </button>
-  <button class="btn btn-default" ng-click="ctrl.cancel()">Cancel</button>
+  <button class="btn btn-default" ng-click="ctrl.cancel()" ng-disabled="processingPrompt.inProgress">Cancel</button>
+  <div ng-show="processingPrompt.inProgress">
+    <div ng-show="!processingPrompt.done">
+      Dealing with judgements (this can take a minute or so)
+    </div>
+  </div>
 </div>

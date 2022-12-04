@@ -686,6 +686,43 @@ module Analytics
       end
 
       #
+      # Creates an event when a user populates an empty book of judgements with query doc pairs
+      #
+      # @param user,      User
+      # @param the_case,  Case
+      #
+      def user_populated_book user, book
+        data = {
+          category: 'Books',
+          action:   'Populated empty book',
+          label:    user.email,
+          value:    1,
+          bounce:   false,
+        }
+
+        create_event data
+      end
+
+      #
+      # Creates an event when a user refreshes a book with new query doc pairss.
+      #
+      # @param user,      User
+      # @param the_case,  Case
+      #
+      def user_refreshed_book user, book
+        data = {
+          category: 'Books',
+          action:   'Refreshed a book',
+          label:    book.name,
+          value:    1,
+          bounce:   false,
+        }
+
+        create_event data
+      end
+
+
+      #
       # Creates an event in GA
       #
       # @param data, Hash

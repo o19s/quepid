@@ -9,6 +9,7 @@ angular.module('QuepidApp')
     '$location',
     'teamSvc',
     'bookSvc',
+    'queriesSvc',
     'acase',
     function (
       $rootScope,
@@ -18,6 +19,7 @@ angular.module('QuepidApp')
       $location,
       teamSvc,
       bookSvc,
+      queriesSvc,
       acase
      ) {
       var ctrl = this;
@@ -41,6 +43,8 @@ angular.module('QuepidApp')
       };
 
       ctrl.activeBookId = acase.bookId;
+
+      $scope.processingPrompt = { inProgress: false, error: null};
 
       $scope.selectBook = selectBook;
 
@@ -120,8 +124,24 @@ angular.module('QuepidApp')
       };
 
       ctrl.ok = function () {
-        $uibModalInstance.close(ctrl.share);
+        $scope.processingPrompt.inProgress  = true;
+        $scope.processingPrompt.error       = null;
+
+        bookSvc.updateQueryDocPairs(ctrl.activeBookId, queriesSvc.queryArray())
+        .then(function() {
+          $scope.processingPrompt.inProgress = false;
+          $uibModalInstance.close();
+
+          flash.success = 'Book of judgements updated.';
+        }, function(response) {
+          $scope.processingPrompt.inProgress  = false;
+          $scope.processingPrompt.error       = response.data.statusText;
+        });
       };
+
+      //ctrl.ok = function () {
+        //$uibModalInstance.close(ctrl.share);
+      //};
 
       ctrl.cancel = function () {
         $uibModalInstance.dismiss('cancel');

@@ -65,5 +65,35 @@ angular.module('QuepidApp')
             });
           });
       };
+
+      this.updateQueryDocPairs = function(bookId, queries) {
+        var queryDocPairsPayload = [];
+        angular.forEach(queries, function(query) {
+          // Save all matches
+          angular.forEach(query.docs, function(doc) {
+
+            var fields = {};
+            angular.forEach(Object.values(doc.subsList), function(field) {
+              fields[field['field']] = field['value'];
+            });
+
+            var queryDocPair = {
+              'query_text': query.query_text,
+              'doc_id': doc.id,
+              'rank': 1,
+              'document_fields': fields
+            };
+
+
+            queryDocPairsPayload.push(queryDocPair);
+
+          });
+        });
+
+        return $http.post('/api/books/' + bookId, queryDocPairsPayload)
+          .then(function(response) {
+            console.log("Updated payload");
+          });
+      };
     }
   ]);

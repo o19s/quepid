@@ -123,6 +123,11 @@ Rails.application.routes.draw do
           resources :imports, only: [ :create ]
         end
 
+        # Book related to a Case
+        resource :book, only: [] do
+          post '/populate' => 'populate_book#update'
+        end
+
         # Case Metadata/Scores
         resource :metadata, only: [ :update ], controller: :case_metadata
         resource :scores, only: [ :index, :update, :show ], controller: :case_scores

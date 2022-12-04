@@ -23,12 +23,12 @@
 
 one:
   owner: :doug
-  archived: false
+  archived:  false
   case_name: one
 
 two:
   owner: :doug
-  archived: false
+  archived:  false
   case_name: two
 
 case_not_marked_if_archived:
@@ -37,29 +37,29 @@ case_not_marked_if_archived:
 
 with_metadata:
   owner: :doug
-  archived: false
+  archived:  false
   case_name: with_metadata
 
 with_scorer:
   owner:     :random
-  archived: false
+  archived:  false
   case_name: with default scorer
   scorer:   :for_case_with_scorer
 
 for_default_scorer:
   owner:     :random
-  archived: false
+  archived:  false
   case_name: for default scorer
   scorer:   :case_default_scorer
 
 shared_with_team:
   owner: :random
-  archived: false
+  archived:  false
   case_name: shared with sharing team
 
 shared_through_owned_team:
   owner: :random
-  archived: false
+  archived:  false
   case_name: shared through team doug owns
 
 archived:
@@ -69,25 +69,25 @@ archived:
 
 matt_case:
   owner: :matt
-  archived: false
+  archived:  false
   case_name: Matt's Case
 
 case_with_one_try:
   owner: :joey
-  archived: false
+  archived:  false
   case_name: Case with one try
   last_try_number: 1
 
 case_with_two_tries:
   owner: :joey
-  archived: false
+  archived:  false
   case_name: Case with two tries
   last_try_number: 2
 
 owned_case:
   owner:     :case_finder_user
   case_name: Case owned by Case Finder User
-  archived: false
+  archived:  false
 
 owned_team_case:
   owner:           :random
@@ -102,105 +102,111 @@ shared_team_case:
 queries_case:
   owner:     :random
   case_name: A case to test queries positions
-  archived: false
+  archived:  false
   scorer: :random_scorer
 
 move_query_to_me:
   owner:     :random
   case_name: A case to test moving queries
-  archived: false
+  archived:  false
 
 metadata_case:
   owner:     :random
   case_name: Metadata Case
-  archived: false
+  archived:  false
 
 snapshot_case:
   owner:     :random
   case_name: Snapshot Case
-  archived: false
+  archived:  false
 
 score_case:
   owner:     :random
   case_name: Score Case
-  archived: false
+  archived:  false
 
 other_score_case:
   owner:     :random
   case_name: Other Score Case
-  archived: false
+  archived:  false
 
 shared_case:
   owner:     :random_2
   case_name: Score Case
-  archived: false
+  archived:  false
 
 random_case:
   owner:     :random_1
   case_name: Random Case
-  archived: false
+  archived:  false
 
 random_case_1:
   owner:     :random_1
   case_name: Random Case 1
-  archived: false
+  archived:  false
 
 random_case_2:
   owner:     :random_1
   case_name: Random Case 2
-  archived: false
+  archived:  false
 
 bootstrap_case:
   owner:     :bootstrap_user
   case_name: Boostrapped Case
-  archived: false
+  archived:  false
 
 import_ratings_case:
   owner:     :random
   case_name: Import Ratings Case
-  archived: false
+  archived:  false
 
 not_shared:
   owner:     :not_shared_case_owner
-  archived: false
+  archived:  false
   case_name: Case not shared
 
 shared_with_owner:
   owner:     :random
-  archived: false
+  archived:  false
   case_name: Case shared with owner
 
 dropdown_case_1:
   owner:     :dropdown_user
-  archived: false
+  archived:  false
   case_name: dropdown_case_1
 
 dropdown_case_2:
   owner:     :dropdown_user
-  archived: false
+  archived:  false
   case_name: dropdown_case_2
 
 dropdown_case_archived:
   owner:     :dropdown_user
-  archived: true
+  archived:  true
   case_name: dropdown_case_archived
 
 case_without_score:
   owner:     :random
   case_name: Case without Score
-  archived: false
+  archived:  false
 
 case_with_score_for_first_try:
   owner:     :random
   case_name: case_with_score_for_first_try
-  archived: false
+  archived:  false
 
 case_with_score:
   owner:     :random
   case_name: case_with_score
-  archived: false
+  archived:  false
 
 case_owned_by_team_owner:
   owner:     :team_owner
   case_name: Case owned by Case Finder User
-  archived: false
+  archived:  false
+
+case_with_book:
+  owner:     :random
+  case_name: Case With Book
+  archived:  false
+  book:      :book_of_star_wars_judgements

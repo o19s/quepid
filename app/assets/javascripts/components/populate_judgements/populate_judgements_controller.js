@@ -38,16 +38,8 @@ angular.module('QuepidApp')
         });
 
         modalInstance.result.then(
-          function(share) {
-            var caseNo  = share.acase.caseNo;
-            var team    = share.selectedTeam;
-
-            teamSvc.shareCase(team, caseNo)
-              .then(function() {
-                flash.success = 'Case shared with team successfully.';
-              }, function() {
-                flash.error = 'Unable to share case with team.';
-              });
+          function() {
+            
           },
           function() {
             $log.info('INFO: Modal dismissed');
