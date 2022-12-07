@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # == Schema Information
 #
 # Table name: books
@@ -18,7 +20,7 @@
 #
 #  fk_rails_...  (selection_strategy_id => selection_strategies.id)
 #
-require "test_helper"
+require 'test_helper'
 
 class BookTest < ActiveSupport::TestCase
   # test "the truth" do

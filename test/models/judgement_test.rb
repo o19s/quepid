@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # == Schema Information
 #
 # Table name: judgements
@@ -17,7 +19,7 @@
 #
 #  fk_rails_...  (query_doc_pair_id => query_doc_pairs.id)
 #
-require "test_helper"
+require 'test_helper'
 
 class JudgementTest < ActiveSupport::TestCase
   # test "the truth" do

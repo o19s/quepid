@@ -4,8 +4,8 @@ require 'sidekiq/web'
 
 # rubocop:disable Metrics/BlockLength
 Rails.application.routes.draw do
-  #resources :judgements #cjm get this out of here
-  #resources :query_doc_pairs #cjm get this out of here
+  # resources :judgements #cjm get this out of here
+  # resources :query_doc_pairs #cjm get this out of here
 
   resources :selection_strategies
 
@@ -131,7 +131,7 @@ Rails.application.routes.draw do
         resources :annotations, except: [ :show ]
       end
 
-      resources :books, only: [:update] do
+      resources :books, only: [ :update ] do
         put '/populate' => 'books/populate#update'
       end
 

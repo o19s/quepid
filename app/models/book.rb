@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # == Schema Information
 #
 # Table name: books
@@ -34,27 +36,27 @@ class Book < ApplicationRecord
     ', user.id)
   }
 
-  def get_random_query_doc_pair_id(user_id, query_doc_pair_id_to_exclude=nil)
+  # rubocop:disable Metrics/MethodLength
+  def get_random_query_doc_pair_id user_id, query_doc_pair_id_to_exclude = nil
     @all_query_doc_pairs_with_judgements =
-      QueryDocPair.joins("LEFT JOIN judgements on "\
-    + "judgements.query_doc_pair_id = query_doc_pairs.id "\
-    + " and judgements.user_id = '#{user_id}'").where(:book_id => self.id)
+      QueryDocPair.joins("
+        LEFT JOIN `judgements` on `judgements`.`query_doc_pair_id` = `query_doc_pairs`.`id`
+        AND `judgements`.`user_id` = '#{user_id}'").where(:book_id => id)
 
     @all_possible_query_doc_pair_ids_to_rate = []
     @all_query_doc_pairs_with_judgements.each do |row|
-      if row.judgements[0] == nil
-        @all_possible_query_doc_pair_ids_to_rate << row.id
-      end
+      @all_possible_query_doc_pair_ids_to_rate << row.id if row.judgements[0].nil?
     end
-    if query_doc_pair_id_to_exclude != nil
+    unless query_doc_pair_id_to_exclude.nil?
       @all_possible_query_doc_pair_ids_to_rate.delete(query_doc_pair_id_to_exclude)
     end
     size_ary = @all_possible_query_doc_pair_ids_to_rate.size
-    if size_ary == 0
-      return -1
+    if size_ary.zero?
+      -1
     else
       id = @all_possible_query_doc_pair_ids_to_rate[rand(size_ary)]
-      return id
+      id
     end
   end
+  # rubocop:enable Metrics/MethodLength
 end

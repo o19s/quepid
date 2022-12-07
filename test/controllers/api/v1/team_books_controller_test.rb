@@ -16,10 +16,8 @@ module Api
         login_user user
       end
 
-
       describe 'Lists all team books' do
         test "returns a list of all the team's books" do
-
           get :index, params: { team_id: team.id }
 
           assert_response :ok

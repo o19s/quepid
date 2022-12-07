@@ -691,7 +691,7 @@ module Analytics
       # @param user,      User
       # @param the_case,  Case
       #
-      def user_populated_book user, book
+      def user_populated_book user, _book
         data = {
           category: 'Books',
           action:   'Populated empty book',
@@ -709,7 +709,7 @@ module Analytics
       # @param user,      User
       # @param the_case,  Case
       #
-      def user_refreshed_book user, book
+      def user_refreshed_book _user, book
         data = {
           category: 'Books',
           action:   'Refreshed a book',
@@ -720,7 +720,6 @@ module Analytics
 
         create_event data
       end
-
 
       #
       # Creates an event in GA

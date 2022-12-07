@@ -17,7 +17,8 @@ module Api
           is_book_empty = @book.query_doc_pairs.empty?
 
           params[:query_doc_pairs].each do |pair|
-            query_doc_pair = @book.query_doc_pairs.find_or_create_by query_text: pair[:query_text], doc_id: pair[:doc_id]
+            query_doc_pair = @book.query_doc_pairs.find_or_create_by query_text: pair[:query_text],
+                                                                     doc_id:     pair[:doc_id]
             query_doc_pair.position = pair[:position]
             query_doc_pair.document_fields = pair[:document_fields].to_json
             query_doc_pair.save
@@ -32,6 +33,7 @@ module Api
         def find_book
           @book = current_user.books_involved_with.where(id: params[:book_id]).first
         end
+
         def check_book
           render json: { message: 'Book not found!' }, status: :not_found unless @book
         end

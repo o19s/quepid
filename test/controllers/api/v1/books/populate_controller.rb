@@ -17,34 +17,31 @@ module Api
           login_user user
         end
 
-
-
         describe 'populate empty book' do
           test 'creates all query doc pairs' do
             data = {
-              book_id: book.id,
+              book_id:         book.id,
               query_doc_pairs: [
                 {
-                  'query_text': 'star wars',
-                  'doc_id': 'https://www.themoviedb.org/movie/11-star-wars',
-                  'position': 0,
-                  'document_fields': {
-                    'title': 'Star Wars',
-                    'year': '1977'
-                  }
+                  query_text:      'star wars',
+                  doc_id:          'https://www.themoviedb.org/movie/11-star-wars',
+                  position:        0,
+                  document_fields: {
+                    title: 'Star Wars',
+                    year:  '1977',
+                  },
                 },
                 {
-                  'query_text': 'star wars',
-                  'doc_id': 'https://www.themoviedb.org/movie/782054-2021',
-                  'position': 1,
-                  'document_fields': {
-                    'title': 'Doraemon: Nobita\'s Little Star Wars 2021',
-                    'year': '2022'
-                  }
-                },
-              ]
+                  query_text:      'star wars',
+                  doc_id:          'https://www.themoviedb.org/movie/782054-2021',
+                  position:        1,
+                  document_fields: {
+                    title: 'Doraemon: Nobita\'s Little Star Wars 2021',
+                    year:  '2022',
+                  },
+                }
+              ],
             }
-
 
             assert_difference 'book.query_doc_pairs.count', 2 do
               put :update, params: data
@@ -56,38 +53,36 @@ module Api
 
               assert_response :no_content
             end
-
           end
         end
 
         describe 'refresh a existing book' do
           test 'updates the position and doc fields' do
             data = {
-              book_id: book.id,
+              book_id:         book.id,
               query_doc_pairs: [
                 {
-                  'query_text': 'star wars',
-                  'doc_id': 'https://www.themoviedb.org/movie/11-star-wars',
-                  'position': 0,
-                  'document_fields': {
-                    'title': 'Star Wars',
-                    'year': '1977'
-                  }
+                  query_text:      'star wars',
+                  doc_id:          'https://www.themoviedb.org/movie/11-star-wars',
+                  position:        0,
+                  document_fields: {
+                    title: 'Star Wars',
+                    year:  '1977',
+                  },
                 },
                 {
-                  'query_text': 'star wars',
-                  'doc_id': 'https://www.themoviedb.org/movie/782054-2021',
-                  'position': 1,
-                  'document_fields': {
-                    'title': 'Doraemon: Nobita\'s Little Star Wars 2021',
-                    'year': '2022'
-                  }
+                  query_text:      'star wars',
+                  doc_id:          'https://www.themoviedb.org/movie/782054-2021',
+                  position:        1,
+                  document_fields: {
+                    title: 'Doraemon: Nobita\'s Little Star Wars 2021',
+                    year:  '2022',
+                  },
                 }
-              ]
+              ],
             }
 
             put :update, params: data
-
 
             # change position and document fields to test
             data[:query_doc_pairs][0][:document_fields][:year] = '3000'
@@ -95,7 +90,6 @@ module Api
             data[:query_doc_pairs][1][:position] = 2
             data[:query_doc_pairs][1][:document_fields][:director] = 'Susumu Yamaguchi'
             assert_difference 'book.query_doc_pairs.count', 0 do
-
               put :update, params: data
 
               query_doc_pair_star_wars = book.query_doc_pairs.find_by(query_text: 'star wars', doc_id: 'https://www.themoviedb.org/movie/11-star-wars')
@@ -112,50 +106,48 @@ module Api
 
               assert_response :no_content
             end
-
           end
 
           test 'updates with a new query doc pair' do
             data = {
-              book_id: book.id,
+              book_id:         book.id,
               query_doc_pairs: [
                 {
-                  'query_text': 'star wars',
-                  'doc_id': 'https://www.themoviedb.org/movie/11-star-wars',
-                  'position': 0,
-                  'document_fields': {
-                    'title': 'Star Wars',
-                    'year': '1977'
-                  }
+                  query_text:      'star wars',
+                  doc_id:          'https://www.themoviedb.org/movie/11-star-wars',
+                  position:        0,
+                  document_fields: {
+                    title: 'Star Wars',
+                    year:  '1977',
+                  },
                 },
                 {
-                  'query_text': 'star wars',
-                  'doc_id': 'https://www.themoviedb.org/movie/782054-2021',
-                  'position': 1,
-                  'document_fields': {
-                    'title': 'Doraemon: Nobita\'s Little Star Wars 2021',
-                    'year': '2022'
-                  }
+                  query_text:      'star wars',
+                  doc_id:          'https://www.themoviedb.org/movie/782054-2021',
+                  position:        1,
+                  document_fields: {
+                    title: 'Doraemon: Nobita\'s Little Star Wars 2021',
+                    year:  '2022',
+                  },
                 }
-              ]
+              ],
             }
 
             put :update, params: data
 
             query_doc_pair = {
-              'query_text': 'star wars',
-              'doc_id': 'https://www.themoviedb.org/movie/140607-star-wars-the-force-awakens',
-              'position': 3,
-              'document_fields': {
-                'title': 'Star Wars: The Force Awakens',
-                'year': '2015'
-              }
+              query_text:      'star wars',
+              doc_id:          'https://www.themoviedb.org/movie/140607-star-wars-the-force-awakens',
+              position:        3,
+              document_fields: {
+                title: 'Star Wars: The Force Awakens',
+                year:  '2015',
+              },
             }
 
             data[:query_doc_pairs] << query_doc_pair
 
             assert_difference 'book.query_doc_pairs.count', 1 do
-
               put :update, params: data
 
               assert_response :no_content

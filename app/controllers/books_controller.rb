@@ -1,5 +1,7 @@
+# frozen_string_literal: true
+
 class BooksController < ApplicationController
-  before_action :set_book, only: [:show, :edit, :update, :destroy]
+  before_action :set_book, only: [ :show, :edit, :update, :destroy ]
 
   respond_to :html
 
@@ -37,11 +39,12 @@ class BooksController < ApplicationController
   end
 
   private
-    def set_book
-      @book = Book.find(params[:id])
-    end
 
-    def book_params
-      params.require(:book).permit(:team_id, :scorer_id, :selection_strategy_id, :name)
-    end
+  def set_book
+    @book = Book.find(params[:id])
+  end
+
+  def book_params
+    params.require(:book).permit(:team_id, :scorer_id, :selection_strategy_id, :name)
+  end
 end
