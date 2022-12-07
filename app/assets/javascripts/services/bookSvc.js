@@ -81,7 +81,7 @@ angular.module('QuepidApp')
             var queryDocPair = {
               'query_text': query.queryText,
               'doc_id': doc.id,
-              'rank': 1,
+              'position': 1,
               'document_fields': fields
             };
 
