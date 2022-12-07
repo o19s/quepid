@@ -67,6 +67,7 @@ angular.module('QuepidApp')
       };
 
       this.updateQueryDocPairs = function(bookId, queries) {
+        // http POST /api/books/<int:bookId>/populate
         var queryDocPairsPayload = [];
         angular.forEach(queries, function(query) {
           // Save all matches
@@ -78,7 +79,7 @@ angular.module('QuepidApp')
             });
 
             var queryDocPair = {
-              'query_text': query.query_text,
+              'query_text': query.queryText,
               'doc_id': doc.id,
               'rank': 1,
               'document_fields': fields
@@ -90,7 +91,11 @@ angular.module('QuepidApp')
           });
         });
 
-        return $http.post('/api/books/' + bookId, queryDocPairsPayload)
+        var payload = {
+          'query_doc_pairs': queryDocPairsPayload
+        }
+
+        return $http.put('/api/books/' + bookId + '/populate', payload)
           .then(function(response) {
             console.log("Updated payload");
           });
