@@ -24,6 +24,16 @@ class Book < ApplicationRecord
   belongs_to :scorer
   has_many :query_doc_pairs, dependent: :destroy
 
+  scope :for_user, ->(user) {
+    joins('
+      LEFT OUTER JOIN `teams` ON `teams`.`id` = `books`.`team_id`
+      LEFT OUTER JOIN `teams_members` ON `teams_members`.`team_id` = `teams`.`id`
+      LEFT OUTER JOIN `users` ON `users`.`id` = `teams_members`.`member_id`
+    ').where('
+        `teams_members`.`member_id` = ?
+    ', user.id)
+  }
+
   def get_random_query_doc_pair_id(user_id, query_doc_pair_id_to_exclude=nil)
     @all_query_doc_pairs_with_judgements =
       QueryDocPair.joins("LEFT JOIN judgements on "\
