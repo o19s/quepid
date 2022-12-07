@@ -47,7 +47,6 @@
       document.getElementsByName("commit")[0].click()
   }
 
-
   function sleep(ms) {
       return new Promise(resolve => setTimeout(resolve, ms));
   }
@@ -62,27 +61,6 @@
 
   function getRandomInt(max) {
       return Math.floor(Math.random() * max);
-  }
-
-  function reset_query_doc_id_pair() {
-      var query_id = getRandomInt(100000);
-      var doc_id = getRandomInt(100000);
-      $("#query_id").text(query_id);
-      $("#doc_id").text(doc_id);
-
-      var possible_queries = ["fast", "big", "cute", "flying", "quick", "tall", "heavy", "wild", "domesticated", "swims", "strong", "ferocious", "scary", "dangerous", "loving"]
-      var possible_titles = ["cheetah", "elephant", "dog", "cat", "bird", "giraffe", "fish", "bear", "lion"]
-      var possible_descriptions = ["This animal typically loves to...", "This animal typically lives in the...",
-          "There are many types of this animal in...", "Countries who have this animal as their...", "Sports teams who have this animal..."]
-      var description_index = getRandomInt(possible_descriptions.length);
-      var title_index = getRandomInt(possible_titles.length);
-      var query_index = getRandomInt(possible_queries.length);
-
-      $("#query_text_span").text(possible_queries[query_index]);
-      $("#title_span").text(possible_titles[title_index]);
-      $("#description_span").text(possible_descriptions[description_index]);
-
-
   }
 
   function key_a_down() {
