@@ -7,6 +7,7 @@ angular.module('QuepidApp')
     '$uibModalInstance',
     '$log',
     '$location',
+    'flash',
     'teamSvc',
     'bookSvc',
     'queriesSvc',
@@ -17,6 +18,7 @@ angular.module('QuepidApp')
       $uibModalInstance,
       $log,
       $location,
+      flash,
       teamSvc,
       bookSvc,
       queriesSvc,
@@ -46,7 +48,7 @@ angular.module('QuepidApp')
 
       $scope.processingPrompt = { inProgress: false, error: null};
 
-      $scope.selectBook = selectBook;
+
 
       function selectBook(book) {
         var name = (!book ? 'none' : book.name);
@@ -60,11 +62,7 @@ angular.module('QuepidApp')
         }
       }
 
-      var listDoesNotHaveTeam = function(list, team) {
-        return list.filter(function(o) {
-          return o.id === team.id;
-        }).length === 0;
-      };
+      $scope.selectBook = selectBook;
 
       var listDoesNotHaveBook = function(list, book) {
         return list.filter(function(o) {
@@ -78,7 +76,7 @@ angular.module('QuepidApp')
             ctrl.share.books.push(book);
           }
         });
-      }
+      };
       var addTeamToLists = function(team) {
         // ERic: unclear if we care about the sharing status of a case or not!
         ctrl.share.teams.push(team);
@@ -99,25 +97,25 @@ angular.module('QuepidApp')
         });
 
       ctrl.specificActionLabel = function () {
-        var label = "";
+        var label = '';
         var refreshOnly = false;
         if (ctrl.share.acase.bookId === null && ctrl.activeBookId){
-          label = "Select Book";
+          label = 'Select Book';
         }
         else if (ctrl.share.acase.bookId !== ctrl.activeBookId){
-          label = "Change Book";
+          label = 'Change Book';
         }
         else if (ctrl.share.acase.bookId === ctrl.activeBookId){
-          label = ""
+          label = '';
           refreshOnly = true;
         }
 
         if (ctrl.populateBook){
           if (refreshOnly){
-            label = "Refresh Query/Doc Pairs for Book"
+            label = 'Refresh Query/Doc Pairs for Book';
           }
           else {
-            label = label + " and Populate";
+            label = label + ' and Populate';
           }
         }
         return label;

@@ -93,11 +93,11 @@ angular.module('QuepidApp')
 
         var payload = {
           'query_doc_pairs': queryDocPairsPayload
-        }
+        };
 
         return $http.put('/api/books/' + bookId + '/populate', payload)
           .then(function(response) {
-            console.log("Updated payload");
+            console.log('Updated book' + response.data);
           });
       };
     }
