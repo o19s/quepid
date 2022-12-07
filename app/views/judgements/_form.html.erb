@@ -405,6 +405,15 @@
       end
     end
 
+    @document_fields_parses_as_json = false
+
+    begin
+      @document_fields = JSON.parse(@query_doc_pair.document_fields)
+      @document_fields_parses_as_json = true
+    rescue
+      nil
+    end
+
   %>
 
   <div class="field" style="">
@@ -415,9 +424,22 @@
     Query Text: <%= @query_doc_pair.query_text.to_s %>
   </div>
 
-  <div class="field">
-    Document Fields: <%= @query_doc_pair.document_fields.to_s %>
-  </div>
+  <% if @document_fields_parses_as_json %>
+    <div class="field">
+      Document Fields:
+    </div>
+    <div class="field">
+      <% @document_fields.keys.each do |key| %>
+        <div class="field">
+          &nbsp;&nbsp;&nbsp;<strong><%= key %></strong> <%= @document_fields[key] %>
+        </div>
+      <% end %>
+    </div>
+  <% else %>
+    <div class="field">
+      Document Fields: <%= @query_doc_pair.document_fields.to_s %>
+    </div>
+  <% end %>
 
   <div class="field" style="visibility: hidden; display: none;">
     <%= form.label :user_id %>
