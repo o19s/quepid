@@ -19,7 +19,7 @@ class QueryDocPairsTest < ApplicationSystemTestCase
     fill_in 'Book', with: @query_doc_pair.book_id
     fill_in 'Document fields', with: @query_doc_pair.document_fields
     fill_in 'Query text', with: @query_doc_pair.query_text
-    fill_in 'Rank', with: @query_doc_pair.rank
+    fill_in 'Position', with: @query_doc_pair.position
     fill_in 'User', with: @query_doc_pair.user_id
     fill_in 'Doc ID', with: @query_doc_pair.doc_id
     click_on 'Create Query doc pair'
@@ -35,7 +35,7 @@ class QueryDocPairsTest < ApplicationSystemTestCase
     fill_in 'Book', with: @query_doc_pair.book_id
     fill_in 'Document fields', with: @query_doc_pair.document_fields
     fill_in 'Query text', with: @query_doc_pair.query_text
-    fill_in 'Rank', with: @query_doc_pair.rank
+    fill_in 'Position', with: @query_doc_pair.position
     fill_in 'User', with: @query_doc_pair.user_id
     fill_in 'Doc ID', with: @query_doc_pair.doc_id
     click_on 'Update Query doc pair'
