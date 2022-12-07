@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2022_12_07_203946) do
+ActiveRecord::Schema.define(version: 2022_12_07_214123) do
 
   create_table "annotations", id: :integer, charset: "utf8", force: :cascade do |t|
     t.text "message"
@@ -111,7 +111,7 @@ ActiveRecord::Schema.define(version: 2022_12_07_203946) do
   create_table "query_doc_pairs", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.integer "user_id"
     t.string "query_text"
-    t.float "position"
+    t.integer "position"
     t.text "document_fields"
     t.bigint "book_id", null: false
     t.datetime "created_at", precision: 6, null: false

@@ -261,7 +261,6 @@
     def calculate_button_class(value, max_value)
       value_f = value.to_f
       max_value_f = max_value.to_f
-      puts value_f / max_value_f
       if value_f <= 0.0
         return "button00"
 
@@ -361,7 +360,6 @@
     @use_backup_labels = false
     @hide_keyboard_shortcuts = false
     if @book != nil
-      puts "scorerid : " + @book.scorer_id.to_s
       @scorer = Scorer.find(@book.scorer_id)
       @rating_buttons = []
       max = @scorer.scale.max
@@ -384,7 +382,6 @@
         end
         rating_button["class"] = calculate_button_class(s, max)
         @rating_buttons << rating_button
-        puts rating_button.to_s
       end
       if @use_backup_labels
         @rating_buttons.each do |rating_button|
