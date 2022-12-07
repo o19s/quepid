@@ -142,12 +142,13 @@ class JudgementsController < ApplicationController
   end
 
   private
+
     def set_judgement
       @judgement = Judgement.find(params[:id])
-
     end
 
     def judgement_params
       params.require(:judgement).permit(:user_id, :rating, :query_doc_pair_id)
     end
+
 end

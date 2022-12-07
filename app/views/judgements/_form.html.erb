@@ -1,18 +1,317 @@
 <style>
     .field { padding: 5px; }
 
-    .red-button {background-color:red; box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19); color: #ddd !important;}
-    .red-button:hover { background-color: red !important;  box-shadow: 0 12px 16px 0 rgba(0,0,0,0.34), 0 17px 50px 0 rgba(0,0,0,0.19); color: white !important;}
-    .green-button {background-color:green; box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19); color: #ddd !important;}
-    .green-button:hover {background-color:green !important;  box-shadow: 0 12px 16px 0 rgba(0,0,0,0.34), 0 17px 50px 0 rgba(0,0,0,0.19); color: white !important; }
+    .button00 {background-color: #ff0000; box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19); color: #666 !important;}
+    .button00:hover { background-color: #ff0000 !important;  box-shadow: 0 12px 16px 0 rgba(0,0,0,0.34), 0 17px 50px 0 rgba(0,0,0,0.19); color: black !important;}
 
+    .button01 {background-color: #fe4000; box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19); color: #666 !important;}
+    .button01:hover { background-color: #fe4000 !important;  box-shadow: 0 12px 16px 0 rgba(0,0,0,0.34), 0 17px 50px 0 rgba(0,0,0,0.19); color: black !important;}
+
+    .button02 {background-color: #f96000; box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19); color: #666 !important;}
+    .button02:hover { background-color: #f96000 !important;  box-shadow: 0 12px 16px 0 rgba(0,0,0,0.34), 0 17px 50px 0 rgba(0,0,0,0.19); color: black !important;}
+
+    .button03 {background-color: #f17a00; box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19); color: #666 !important;}
+    .button03:hover { background-color: #f17a00 !important;  box-shadow: 0 12px 16px 0 rgba(0,0,0,0.34), 0 17px 50px 0 rgba(0,0,0,0.19); color: black !important;}
+
+    .button04 {background-color: #e59100; box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19); color: #666 !important;}
+    .button04:hover { background-color: #e59100 !important;  box-shadow: 0 12px 16px 0 rgba(0,0,0,0.34), 0 17px 50px 0 rgba(0,0,0,0.19); color: black !important;}
+
+    .button05 {background-color: #d7a700; box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19); color: #666 !important;}
+    .button05:hover { background-color: #d7a700 !important;  box-shadow: 0 12px 16px 0 rgba(0,0,0,0.34), 0 17px 50px 0 rgba(0,0,0,0.19); color: black !important;}
+
+    .button06 {background-color: #c4ba00; box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19); color: #666 !important;}
+    .button06:hover { background-color: #c4ba00 !important;  box-shadow: 0 12px 16px 0 rgba(0,0,0,0.34), 0 17px 50px 0 rgba(0,0,0,0.19); color: black !important;}
+
+    .button07 {background-color: #aecd00; box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19); color: #666 !important;}
+    .button07:hover { background-color: #aecd00 !important;  box-shadow: 0 12px 16px 0 rgba(0,0,0,0.34), 0 17px 50px 0 rgba(0,0,0,0.19); color: black !important;}
+
+    .button08 {background-color: #91df00; box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19); color: #666 !important;}
+    .button08:hover { background-color: #91df00 !important;  box-shadow: 0 12px 16px 0 rgba(0,0,0,0.34), 0 17px 50px 0 rgba(0,0,0,0.19); color: black !important;}
+
+    .button09 {background-color: #6aef00; box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19); color: #666 !important;}
+    .button09:hover { background-color: #6aef00 !important;  box-shadow: 0 12px 16px 0 rgba(0,0,0,0.34), 0 17px 50px 0 rgba(0,0,0,0.19); color: black !important;}
+
+    .button10 {background-color: #00ff00; box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19); color: #666 !important;}
+    .button10:hover {background-color: #00ff00 !important;  box-shadow: 0 12px 16px 0 rgba(0,0,0,0.34), 0 17px 50px 0 rgba(0,0,0,0.19); color: black !important; }
+
+    .button-other {background-color:gray; box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19); color: #666 !important;}
+    .button-other:hover {background-color:gray !important;  box-shadow: 0 12px 16px 0 rgba(0,0,0,0.34), 0 17px 50px 0 rgba(0,0,0,0.19); color: black !important; }
+
+    .light_box {
+        background: #666;
+    }
+
+    #light1 {
+        border-radius: 25px;
+        background: #666;
+        padding: 5px 15px 25px 15px;
+        width: 15px;
+        height: 20px;
+        color:white;
+    }
+
+    #light2 {
+        border-radius: 25px;
+        background: #666;
+        padding: 5px 15px 25px 15px;
+        width: 15px;
+        height: 20px;
+        color:white;
+    }
+
+    #light3 {
+        border-radius: 25px;
+        background: #666;
+        padding: 5px 15px 25px 15px;
+        width: 15px;
+        height: 20px;
+        color:white;
+    }
+
+    #light4 {
+        border-radius: 25px;
+        background: #666;
+        padding: 5px 15px 25px 15px;
+        width: 15px;
+        height: 20px;
+        color:white;
+    }
+
+    #rounded_corners_red1 {
+        border-radius: 25px;
+        background: red;
+        padding: 5px 15px 25px 15px;
+        width: 15px;
+        height: 20px;
+        color:white;
+    }
+
+    #rounded_corners_red2 {
+        border-radius: 25px;
+        background: darkred;
+        padding: 5px 15px 25px 15px;
+        width: 15px;
+        height: 20px;
+        color:white;
+    }
+
+
+    #rounded_corners_green1 {
+        border-radius: 25px;
+        background: green;
+        padding: 5px 15px 25px 15px;
+        width: 15px;
+        height: 20px;
+        color:white;
+    }
+
+
+    #rounded_corners_green2 {
+        border-radius: 25px;
+        background: lime;
+        padding: 5px 15px 25px 15px;
+        width: 15px;
+        height: 20px;
+        color:black;
+    }
 </style>
 
-<script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
+<script language="javascript">
   function rate(rating) {
       document.getElementById("judgement_rating").value = rating;
       document.getElementsByName("commit")[0].click()
   }
+
+
+  function sleep(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  $(document).ready(function() {
+      $("#key_pressed_count").text("0");
+      reset_query_doc_id_pair();
+  });
+
+  var count = 0;
+  var last_key_pressed = -1;
+
+  function getRandomInt(max) {
+      return Math.floor(Math.random() * max);
+  }
+
+  function reset_query_doc_id_pair() {
+      var query_id = getRandomInt(100000);
+      var doc_id = getRandomInt(100000);
+      $("#query_id").text(query_id);
+      $("#doc_id").text(doc_id);
+
+      var possible_queries = ["fast", "big", "cute", "flying", "quick", "tall", "heavy", "wild", "domesticated", "swims", "strong", "ferocious", "scary", "dangerous", "loving"]
+      var possible_titles = ["cheetah", "elephant", "dog", "cat", "bird", "giraffe", "fish", "bear", "lion"]
+      var possible_descriptions = ["This animal typically loves to...", "This animal typically lives in the...",
+          "There are many types of this animal in...", "Countries who have this animal as their...", "Sports teams who have this animal..."]
+      var description_index = getRandomInt(possible_descriptions.length);
+      var title_index = getRandomInt(possible_titles.length);
+      var query_index = getRandomInt(possible_queries.length);
+
+      $("#query_text_span").text(possible_queries[query_index]);
+      $("#title_span").text(possible_titles[title_index]);
+      $("#description_span").text(possible_descriptions[description_index]);
+
+
+  }
+
+  function key_a_down() {
+      $("#span-for-a").css("color", "black").css("font-weight", "bold");
+  }
+
+  function key_a_pressed() {
+      $("#button-for-a").click();
+  }
+
+
+  function key_s_down() {
+      $("#span-for-s").css("color", "black").css("font-weight", "bold");
+  }
+
+  function key_s_pressed() {
+      $("#button-for-s").click();
+  }
+
+
+  function key_d_down() {
+      $("#span-for-d").css("color", "black").css("font-weight", "bold");
+  }
+
+  function key_d_pressed() {
+      $("#button-for-d").click();
+  }
+
+
+  function key_f_down() {
+      $("#span-for-f").css("color", "black").css("font-weight", "bold");
+  }
+
+  function key_f_pressed() {
+      $("#button-for-f").click();
+  }
+
+
+
+  function key_g_down() {
+      $("#span-for-g").css("color", "black").css("font-weight", "bold");
+  }
+
+  function key_g_pressed() {
+      $("#button-for-g").click();
+  }
+
+
+
+  function key_h_down() {
+      $("#span-for-h").css("color", "black").css("font-weight", "bold");
+  }
+
+  function key_h_pressed() {
+      $("#button-for-h").click();
+  }
+
+
+
+  function key_j_down() {
+      $("#span-for-j").css("color", "black").css("font-weight", "bold");
+  }
+
+  function key_j_pressed() {
+      $("#button-for-j").click();
+  }
+
+
+  function key_k_down() {
+      $("#span-for-k").css("color", "black").css("font-weight", "bold");
+  }
+
+  function key_k_pressed() {
+      $("#button-for-k").click();
+  }
+
+
+  function key_l_down() {
+      $("#span-for-l").css("color", "black").css("font-weight", "bold");
+  }
+
+  function key_l_pressed() {
+      $("#button-for-l").click();
+  }
+
+
+  function key_sc_down() {
+      $("#span-for-sc").css("color", "black").css("font-weight", "bold");
+  }
+
+  function key_sc_pressed() {
+      $("#button-for-sc").click();
+  }
+
+
+
+
+  $(document).on('keypress', function(e) {
+      var tag = e.target.tagName.toLowerCase();
+
+      if (e.which == 97 || e.which == 65) {
+          key_a_pressed();
+      } else if (e.which == 115 || e.which == 83) {
+          key_s_pressed();
+      } else if (e.which == 100 || e.which == 68) {
+          key_d_pressed();
+      } else if (e.which == 102 || e.which == 70) {
+          key_f_pressed();
+      } else if (e.which == 103 || e.which == 71) {
+          key_g_pressed();
+      } else if (e.which == 104 || e.which == 72) {
+          key_h_pressed();
+      } else if (e.which == 106 || e.which == 74) {
+          key_j_pressed();
+      } else if (e.which == 107 || e.which == 75) {
+          key_k_pressed();
+      } else if (e.which == 108 || e.which == 76) {
+          key_l_pressed();
+      } else if (e.which == 59 || e.which == 186) {
+          key_sc_pressed();
+      }
+  });
+
+  $(document).on('keydown', function(e) {
+      var tag = e.target.tagName.toLowerCase();
+
+      if (e.which == 97 || e.which == 65) {
+          key_a_down();
+      } else if (e.which == 115 || e.which == 83) {
+          key_s_down();
+      } else if (e.which == 100 || e.which == 68) {
+          key_d_down();
+      } else if (e.which == 102 || e.which == 70) {
+          key_f_down();
+      } else if (e.which == 103 || e.which == 71) {
+          key_g_down();
+      } else if (e.which == 104 || e.which == 72) {
+          key_h_down();
+      } else if (e.which == 106 || e.which == 74) {
+          key_j_down();
+      } else if (e.which == 107 || e.which == 75) {
+          key_k_down();
+      } else if (e.which == 108 || e.which == 76) {
+          key_l_down();
+      } else if (e.which == 59 || e.which == 186) {
+          key_sc_down();
+      }
+
+  });
+
+
+
+
 </script>
 
 <%
@@ -52,6 +351,126 @@
           @book = b
         end
       end
+    end
+
+    def random_color
+      return "blue-button"
+    end
+
+    def calculate_button_class(value, max_value)
+      value_f = value.to_f
+      max_value_f = max_value.to_f
+      puts value_f / max_value_f
+      if value_f <= 0.0
+        return "button00"
+
+      elsif value_f / max_value_f < 0.1
+        return "button01"
+
+      elsif value_f / max_value_f < 0.2
+        return "button02"
+
+      elsif value_f / max_value_f < 0.3
+        return "button03"
+
+      elsif value_f / max_value_f < 0.4
+        return "button04"
+
+      elsif value_f / max_value_f < 0.5
+        return "button05"
+
+      elsif value_f / max_value_f < 0.6
+        return "button06"
+
+      elsif value_f / max_value_f < 0.7
+        return "button07"
+
+      elsif value_f / max_value_f < 0.8
+        return "button08"
+
+      elsif value_f / max_value_f < 0.9
+        return "button09"
+
+      elsif value_f / max_value_f == 1.0
+        return "button10"
+
+      else return "button-other"
+      end
+
+    end
+
+    def calculate_key(value, max_value)
+      if max_value == 1
+        if value == 0
+          return {"name": "d", "display_name": "d" }
+        else
+          return {"name": "f", "display_name": "f" }
+        end
+      end
+      if max_value == 3
+        if value == 0
+          return {"name": "a", "display_name": "a" }
+        elsif value == 1
+          return {"name": "s", "display_name": "s" }
+        elsif value == 2
+          return {"name": "d", "display_name": "d" }
+        elsif value == 3
+          return {"name": "f", "display_name": "f" }
+        end
+      end
+
+      if max_value == 4
+        if value == 1
+          return {"name": "a", "display_name": "a" }
+        elsif value == 2
+          return {"name": "s", "display_name": "s" }
+        elsif value == 3
+          return {"name": "d", "display_name": "d" }
+        elsif value == 4
+          return {"name": "f", "display_name": "f" }
+        end
+      end
+
+      if max_value == 9
+        if value == 0
+          return {"name": "a", "display_name": "a" }
+        elsif value == 1
+          return {"name": "s", "display_name": "s" }
+        elsif value == 2
+          return {"name": "d", "display_name": "d" }
+        elsif value == 3
+          return {"name": "f", "display_name": "f" }
+        elsif value == 4
+          return {"name": "g", "display_name": "g" }
+        elsif value == 5
+          return {"name": "h", "display_name": "h" }
+        elsif value == 6
+          return {"name": "j", "display_name": "j" }
+        elsif value == 7
+          return {"name": "k", "display_name": "k" }
+        elsif value == 8
+          return {"name": "l", "display_name": "l" }
+        elsif value == 9
+          return {"name": "sc", "display_name": ";" }
+        end
+      end
+    end
+
+    if @book != nil
+      puts "scorerid : " + @book.scorer_id.to_s
+      @scorer = Scorer.find(@book.scorer_id)
+      @rating_buttons = []
+      max = @scorer.scale.max
+      @scorer.scale.each do |s|
+        rating_button = {}
+        rating_button["value"] = s.to_s
+        rating_button["key"] = calculate_key(s, max)
+        puts rating_button["key"]
+        rating_button["label"] = @scorer.scale_with_labels[s.to_s]
+        rating_button["class"] = calculate_button_class(s, max)
+        @rating_buttons << rating_button
+      end
+
     end
 
     if @query_doc_pair.user_id != nil
@@ -100,7 +519,26 @@
     <%= form.submit %>
   </div>
 
-  <%= button_tag "Rate 0", type: 'button', onclick: "rate(0)", class: 'btn btn-default red-button' %>
-  <%= button_tag "Rate 1", type: 'button', onclick: "rate(1)", class: 'btn btn-default green-button' %>
+  <table style="padding:5px;">
+    <tr>
+      <td style="padding:5px;text-align: left; color: #ccc;">
+        Buttons
+      </td>
+      <% @rating_buttons.each do |b| %>
+        <td style="padding:5px;">
+        <%= button_tag b["label"], type: 'button', onclick: "rate("+b["value"]+")", class: 'btn btn-default '+b["class"], id:"button-for-"+b["key"][:name].to_s %>
+        </td>
+      <% end %>
+    </tr>
+
+    <tr>
+      <td style="padding:5px;text-align: center; color: #ccc;">
+        Keyboard shortcuts
+      </td>
+      <% @rating_buttons.each do |b| %>
+        <td style="padding:5px;text-align: center; color: #999;"><span id=<%= "span-for-" + b["key"][:name].to_s %>><%= b["key"][:display_name] %></span></td>
+      <% end %>
+    </tr>
+  </table>
 
 <% end %>
