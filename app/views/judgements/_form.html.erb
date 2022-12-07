@@ -379,6 +379,7 @@
       end
     end
 
+    @use_backup_labels = false
     if @book != nil
       puts "scorerid : " + @book.scorer_id.to_s
       @scorer = Scorer.find(@book.scorer_id)
@@ -389,9 +390,18 @@
         rating_button["value"] = s.to_s
         rating_button["key"] = calculate_key(s, max)
         puts rating_button["key"]
+        rating_button["label_backup"] = s.to_s
         rating_button["label"] = @scorer.scale_with_labels[s.to_s]
+        if rating_button["label"].blank?
+          @use_backup_labels = true
+        end
         rating_button["class"] = calculate_button_class(s, max)
         @rating_buttons << rating_button
+      end
+      if @use_backup_labels
+        @rating_buttons.each do |rating_button|
+          rating_button["label"] = rating_button["label_backup"]
+        end
       end
 
     end
