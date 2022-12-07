@@ -4,8 +4,8 @@ require 'sidekiq/web'
 
 # rubocop:disable Metrics/BlockLength
 Rails.application.routes.draw do
-  #resources :judgements #cjm get this out of here
-  #resources :query_doc_pairs #cjm get this out of here
+  # resources :judgements #cjm get this out of here
+  # resources :query_doc_pairs #cjm get this out of here
 
   resources :selection_strategies
 
@@ -123,17 +123,16 @@ Rails.application.routes.draw do
           resources :imports, only: [ :create ]
         end
 
-        # Book related to a Case
-        resource :book, only: [] do
-          post '/populate' => 'populate_book#update'
-        end
-
         # Case Metadata/Scores
         resource :metadata, only: [ :update ], controller: :case_metadata
         resource :scores, only: [ :index, :update, :show ], controller: :case_scores
         get '/scores/all' => 'case_scores#index'
 
         resources :annotations, except: [ :show ]
+      end
+
+      resources :books, only: [ :update ] do
+        put '/populate' => 'books/populate#update'
       end
 
       namespace :clone do

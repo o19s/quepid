@@ -1,5 +1,7 @@
+# frozen_string_literal: true
+
 class QueryDocPairsController < ApplicationController
-  before_action :set_query_doc_pair, only: [:show, :edit, :update, :destroy]
+  before_action :set_query_doc_pair, only: [ :show, :edit, :update, :destroy ]
 
   respond_to :html
 
@@ -42,11 +44,12 @@ class QueryDocPairsController < ApplicationController
   end
 
   private
-    def set_query_doc_pair
-      @query_doc_pair = QueryDocPair.find(params[:id])
-    end
 
-    def query_doc_pair_params
-      params.require(:query_doc_pair).permit(:user_id, :query_text, :position, :document_fields, :book_id, :doc_id)
-    end
+  def set_query_doc_pair
+    @query_doc_pair = QueryDocPair.find(params[:id])
+  end
+
+  def query_doc_pair_params
+    params.require(:query_doc_pair).permit(:user_id, :query_text, :position, :document_fields, :book_id, :doc_id)
+  end
 end

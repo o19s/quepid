@@ -7,18 +7,10 @@ angular.module('QuepidApp')
     '$scope',
     '$uibModal',
     '$log',
-    '$routeParams',
-    'flash',
-    'caseSvc',
-    'teamSvc',
     function (
       $scope,
       $uibModal,
-      $log,
-      $routeParams,
-      flash,
-      caseSvc,
-      teamSvc
+      $log
     ) {
       var ctrl = this;
 
@@ -39,7 +31,7 @@ angular.module('QuepidApp')
 
         modalInstance.result.then(
           function() {
-            
+
           },
           function() {
             $log.info('INFO: Modal dismissed');

@@ -1,1 +1,3 @@
-json.partial! "query_doc_pairs/query_doc_pair", query_doc_pair: @query_doc_pair
+# frozen_string_literal: true
+
+json.partial! 'query_doc_pairs/query_doc_pair', query_doc_pair: @query_doc_pair

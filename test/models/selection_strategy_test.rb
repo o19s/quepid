@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # == Schema Information
 #
 # Table name: selection_strategies
@@ -7,7 +9,7 @@
 #  created_at :datetime         not null
 #  updated_at :datetime         not null
 #
-require "test_helper"
+require 'test_helper'
 
 class SelectionStrategyTest < ActiveSupport::TestCase
   # test "the truth" do

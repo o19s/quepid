@@ -1,5 +1,7 @@
+# frozen_string_literal: true
+
 class SelectionStrategiesController < ApplicationController
-  before_action :set_selection_strategy, only: [:show, :edit, :update, :destroy]
+  before_action :set_selection_strategy, only: [ :show, :edit, :update, :destroy ]
 
   respond_to :html
 
@@ -37,11 +39,12 @@ class SelectionStrategiesController < ApplicationController
   end
 
   private
-    def set_selection_strategy
-      @selection_strategy = SelectionStrategy.find(params[:id])
-    end
 
-    def selection_strategy_params
-      params.require(:selection_strategy).permit(:name)
-    end
+  def set_selection_strategy
+    @selection_strategy = SelectionStrategy.find(params[:id])
+  end
+
+  def selection_strategy_params
+    params.require(:selection_strategy).permit(:name)
+  end
 end

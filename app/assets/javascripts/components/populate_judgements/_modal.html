@@ -21,10 +21,8 @@
     Explicit Judgements created by humans are a good way to start measuring your search quality.
   </p>
   <p>
-    Quepid supports taking the current list of queries and the documents and creating a <i>Book of Judgements</i> that can then be rated.
+    Populating judgements takes the list of queries and docs in the Case and updates a <i>Book of Judgements</i> that can then be rated.
   </p>
-
-
 
   <div class="text-center" ng-show="ctrl.share.teams.length === 0 && !ctrl.share.loading">
     <p>
@@ -64,7 +62,7 @@
   </div>
 
   <label>
-    <input id="populate-book" type="checkbox" ng-model='ctrl.populateBook'> Populate Book
+    <input id="populate-book" type="checkbox" ng-model='ctrl.populateBook' ng-disabled="ctrl.share.books.length === 0 || ctrl.share.teams.length === 0"> Populate Book
     <span class="glyphicon glyphicon-question-sign" aria-hidden="true" popover-trigger="'mouseenter'" popover-placement="right" uib-popover="Select to update the list of Judgements to be rated with any new query / doc pairs that aren't currently in the Book."></span>
   </label>
 

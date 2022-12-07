@@ -64,7 +64,7 @@ class Case < ApplicationRecord
              through:   :scores,
              dependent: :destroy
 
-  belongs_to  :book, optional: true
+  belongs_to :book, optional: true
 
   # Validations
   validates :case_name, presence: true

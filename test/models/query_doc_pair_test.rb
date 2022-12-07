@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # == Schema Information
 #
 # Table name: query_doc_pairs
@@ -20,7 +22,7 @@
 #
 #  fk_rails_...  (book_id => books.id)
 #
-require "test_helper"
+require 'test_helper'
 
 class QueryDocPairTest < ActiveSupport::TestCase
   # test "the truth" do
