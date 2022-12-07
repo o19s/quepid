@@ -42,7 +42,7 @@ table,tr,td,th { border: 1px solid black; padding: 4px; }
     <tr>
       <th>ID</th>
       <th>Query text</th>
-      <th>Rank</th>
+      <th>Position</th>
       <th>Doc ID</th>
       <th>Document fields</th>
       <th>Created by User</th>
@@ -60,7 +60,7 @@ table,tr,td,th { border: 1px solid black; padding: 4px; }
           </td>
 
           <td><%= query_doc_pair.query_text %></td>
-          <td><%= query_doc_pair.rank %></td>
+          <td><%= query_doc_pair.position %></td>
           <td><%= query_doc_pair.doc_id %></td>
           <td><%= query_doc_pair.document_fields %></td>
           <td><%= @user_lookup[query_doc_pair.user_id] %></td>
