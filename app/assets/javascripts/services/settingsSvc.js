@@ -18,14 +18,94 @@ angular.module('QuepidApp')
       broadcastSvc
     ) {
 
-      // Used by the wizard
-      this.defaults = {
+      /* jshint ignore:start */
+      // Used by the wizard for any search engine.
+      this.defaultSettings = {
+        solr: {
+          queryParams:  [
+            'q=#$query##',
+            '&tie=1.0',
+          ].join('\n'),
+
+          escapeQuery:      true,
+          customHeaders:    '',
+          headerType:       'None',
+          apiMethod:        'JSONP',
+          fieldSpec:        'id:id',
+          idField:          'id',
+          titleField:       '',
+          additionalFields: [],
+          numberOfRows:     10,
+          searchEngine:     'solr',
+          // perfect world we wouldn't have this here and we would instead populate with urlFormat instead.
+          insecureSearchUrl:'http://quepid-solr.dev.o19s.com:8985/solr/tmdb/select',
+          secureSearchUrl:  'https://quepid-solr.dev.o19s.com/solr/tmdb/select',
+          urlFormat:        'http(s?)://yourdomain.com:8983/<index>/select',
+          customHeaders:     '',
+        },
+        es: {
+          queryParams:  [
+            '{',
+            '  "query": {',
+            '    "multi_match": {',
+            '      "query": "#$query##",',
+            '      "type": "best_fields",',
+            '      "fields": ["REPLACE_ME"]',
+            '    }',
+            '  }',
+            '}',
+          ].join('\n'),
+
+          escapeQuery:       true,
+          apiMethod:        'POST',
+          customHeaders:    '',
+          headerType:       'None',
+          fieldSpec:         'id:_id',
+          idField:           '_id',
+          titleField:        '',
+          additionalFields:  [],
+          numberOfRows:      10,
+          searchEngine:      'es',
+          searchUrl:         'http://quepid-elasticsearch.dev.o19s.com:9206/tmdb/_search',
+          urlFormat:         'http(s?)://yourdomain.com:9200/<index>/_search',
+          customHeaders:     '',
+        },
+        os: {
+          queryParams:  [
+            '{',
+            '  "query": {',
+            '    "multi_match": {',
+            '      "query": "#$query##",',
+            '      "type": "best_fields",',
+            '      "fields": ["REPLACE_ME"]',
+            '    }',
+            '  }',
+            '}',
+          ].join('\n'),
+
+          escapeQuery:       true,
+          apiMethod:         'POST',
+          fieldSpec:         'id:_id',
+          idField:           '_id',
+          titleField:        '',
+          additionalFields:  [],
+          numberOfRows:      10,
+          searchEngine:      'os',
+          searchUrl:         'https://reader:reader@quepid-opensearch.dev.o19s.com:9000/tmdb/_search',
+          urlFormat:         'http(s?)://yourdomain.com:9200/<index>/_search',
+          customHeaders:     '',
+        }
+      };
+      // used by the wizard for TMDB demo search engine
+      this.tmdbSettings = {
         solr: {
           queryParams:  [
             'q=#$query##',
             '&defType=edismax',
             '&qf=text_all',
+            '&pf=title',
             '&tie=1.0',
+            '&bf=vote_average',
           ].join('\n'),
 
           escapeQuery:      true,
@@ -41,6 +121,7 @@ angular.module('QuepidApp')
           insecureSearchUrl:'http://quepid-solr.dev.o19s.com:8985/solr/tmdb/select',
           secureSearchUrl:  'https://quepid-solr.dev.o19s.com/solr/tmdb/select',
           urlFormat:        'http(s?)://yourdomain.com:8983/<index>/select',
+          customHeaders:    '',
         },
         es: {
           queryParams:  [
@@ -71,6 +152,7 @@ angular.module('QuepidApp')
           searchEngine:      'es',
           searchUrl:         'http://quepid-elasticsearch.dev.o19s.com:9206/tmdb/_search',
           urlFormat:         'http(s?)://yourdomain.com:9200/<index>/_search',
+          customHeaders:     '',
         },
         os: {
           queryParams:  [
@@ -99,11 +181,47 @@ angular.module('QuepidApp')
           searchEngine:      'os',
           searchUrl:         'https://reader:reader@quepid-opensearch.dev.o19s.com:9000/tmdb/_search',
           urlFormat:         'http(s?)://yourdomain.com:9200/<index>/_search',
+          customHeaders:     '',
         }
       };
 
+      /* jshint ignore:end */
+
       var Settings = SettingsFactory;
       var currSettings = null;
+
+      this.demoSettingsChosen = function(searchEngine, newUrl){
+        var useTMDBDemoSettings = false;
+        if (searchEngine === 'solr'){
+          if (newUrl === null || angular.isUndefined(newUrl)){
+            useTMDBDemoSettings = true;
+          }
+          else if (newUrl === this.tmdbSettings['solr'].insecureSearchUrl || newUrl === this.tmdbSettings['solr'].secureSearchUrl ){
+            useTMDBDemoSettings = true;
+          }
+          else {
+            useTMDBDemoSettings = false;
+          }
+        }
+        else {
+          if (newUrl === this.tmdbSettings[searchEngine].searchUrl) {
+            useTMDBDemoSettings = true;
+          }
+          else {
+            useTMDBDemoSettings = false;
+          }
+        }
+        return useTMDBDemoSettings;
+      };
+
+      this.pickSettingsToUse = function(searchEngine, newUrl) {
+        if (this.demoSettingsChosen(searchEngine, newUrl)){
+          return angular.copy(this.tmdbSettings[searchEngine]);
+        }
+        else {
+          return angular.copy(this.defaultSettings[searchEngine]);
+        }
+      };
 
       this.setCaseTries = function(tries) {
         currSettings = new Settings(tries);

@@ -31,15 +31,15 @@
 
         <div style="text-align: center;">
           <label style="margin-right: 25px;">
-            <input type="radio" value="solr" ng-model="pendingWizardSettings.searchEngine" ng-change="updateSettingsDefaults()">
+            <input type="radio" value="solr" ng-model="pendingWizardSettings.searchEngine" ng-change="changeSearchEngine()">
             <img ng-src="/images/solr.png" alt='Solr' width="100px" />
           </label>
           <label style="margin-right: 25px;">
-            <input type="radio" value="es" ng-model="pendingWizardSettings.searchEngine" ng-change="updateSettingsDefaults()">
+            <input type="radio" value="es" ng-model="pendingWizardSettings.searchEngine" ng-change="changeSearchEngine()">
             <img ng-src="/images/elasticsearch.png" alt='Elasticsearch' width="150px" />
           </label>
           <label>
-            <input type="radio" value="os" ng-model="pendingWizardSettings.searchEngine" ng-change="updateSettingsDefaults()">
+            <input type="radio" value="os" ng-model="pendingWizardSettings.searchEngine" ng-change="changeSearchEngine()">
             <img ng-src="/images/opensearch.png" alt='OpenSearch' width="150px" />
           </label>
         </div>

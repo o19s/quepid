@@ -58,6 +58,7 @@ class CoreController < ApplicationController
         @try.search_engine = params[:searchEngine] if @try.search_engine != params[:searchEngine]
         @try.search_url = params[:searchUrl]
         @try.api_method = params[:apiMethod]
+        @try.field_spec = params[:fieldSpec]
       end
       @try.save
     end

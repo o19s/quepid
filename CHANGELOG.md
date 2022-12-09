@@ -1,5 +1,15 @@
 # Changelog
 
+## 6.14.0 - 2022-11-22
+
+### Improvements
+
+* Rework the selection of settings for a search engine so that we are smarter about if you pick a TMDB demo server, use great defaults, but if you are picking your own search engine, then we make fewer assumptions about query structure, which reduces the chance the first query will blow up!  This was first identified by @macohen as part of https://github.com/querqy/chorus/issues/129.   Tracked as https://github.com/o19s/quepid/issues/580 by @epugh and fixed in https://github.com/o19s/quepid/pull/582,
+
+### Bugs
+
+* Command line tool `thor import:ratings` didn't handle a csv file with a header row.  Now filters off the header row.  Thanks @wrigleyDan for spotting this problem.  https://github.com/o19s/quepid/issues/581 by @epugh and fixed in https://github.com/o19s/quepid/pull/583.  
+
 ## 6.13.0 - 2022-10-28
 
 It's my sister Megan's birthday :birthday:, so I figured I would give her a release of Quepid.  Happy birthday Megan!
