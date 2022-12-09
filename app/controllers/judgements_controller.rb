@@ -2,11 +2,13 @@
 
 class JudgementsController < ApplicationController
   before_action :set_judgement, only: [ :show, :edit, :update, :destroy ]
+  before_action :find_book#, only: [ :index ]
+  #before_action :check_book, only: [ :index ]
 
   respond_to :html
 
   def index
-    @judgements = Judgement.all.includes([ :query_doc_pair ])
+    @judgements = @book.judgements
     respond_with(@judgements)
   end
 
@@ -66,5 +68,13 @@ class JudgementsController < ApplicationController
 
   def judgement_params
     params.require(:judgement).permit(:user_id, :rating, :query_doc_pair_id)
+  end
+
+  def find_book
+    @book = current_user.books_involved_with.where(id: params[:book_id]).first
+  end
+
+  def check_book
+    render json: { message: 'Book not found!' }, status: :not_found unless @book
   end
 end

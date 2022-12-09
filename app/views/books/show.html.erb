@@ -1,39 +1,21 @@
 <!--<p id="notice"><%#= notice %></p>-->
 <p></p>
-<%
-  @teams = Team.for_user(current_user)
-  @teams_name_lookup = {}
-  @teams.each do |t|
-    @teams_name_lookup[t.id] = t.name
-  end
 
-  @scorers = Scorer.all
-  @scorers_name_lookup = {}
-  @scorers.each do |s|
-    @scorers_name_lookup[s.id] = s.name
-  end
-
-  @selection_strategies = SelectionStrategy.all
-  @selection_strategies_name_lookup = {}
-  @selection_strategies.each do |s|
-    @selection_strategies_name_lookup[s.id] = s.name
-  end
-%>
 <h1> Book <%= @book.id %> "<%= @book.name %>"</h1>
 
 <p>
   <strong>Team:</strong>
-  <%= @teams_name_lookup[@book.team_id] %>
+  <%= @book.team.name %>
 </p>
 
 <p>
   <strong>Scorer:</strong>
-  <%= @scorers_name_lookup[@book.scorer_id] %>
+  <%= @book.scorer.name %>
 </p>
 
 <p>
   <strong>Selection strategy:</strong>
-  <%= @selection_strategies_name_lookup[@book.selection_strategy_id] %>
+  <%= @book.selection_strategy.name %>
 </p>
 
 <%= button_to 'Show Judgements', book_judgements_url(@book), method: :get %>

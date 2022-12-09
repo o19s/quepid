@@ -1,7 +1,8 @@
 # frozen_string_literal: true
 
 class BooksController < ApplicationController
-  before_action :set_book, only: [ :show, :edit, :update, :destroy ]
+  before_action :find_book, only: [ :show, :edit, :update, :destroy ]
+  before_action :check_book, only: [ :show, :edit, :update, :destroy ]
 
   respond_to :html
 
@@ -40,8 +41,13 @@ class BooksController < ApplicationController
 
   private
 
-  def set_book
-    @book = Book.find(params[:id])
+
+  def find_book
+    @book = current_user.books_involved_with.where(id: params[:id]).first
+  end
+
+  def check_book
+    render json: { message: 'Book not found!' }, status: :not_found unless @book
   end
 
   def book_params

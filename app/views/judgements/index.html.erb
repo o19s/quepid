@@ -1,46 +1,24 @@
 <!--<p id="notice"><%#= notice %></p>-->
 
 <%
-  @books = Book.all
-  @book_id = params["book_id"].to_i
 
-  @book_names = []
-  @other_book_names = []
-  @books.each do |b|
-    if b != nil
-      if b.id == @book_id
-        @book = b
-        @book_name = b.name
-        @book_names << @book_name
-
-      else
-        @other_book_names << b.name
-      end
-    end
-  end
 
   @random_query_doc_pair_id = @book.get_random_query_doc_pair_id(current_user.id)
 
 %>
 
-<%
-  @users = User.all
-  @user_lookup = {}
-  @users.each do |u|
-    @user_lookup[u.id] = u.email
-  end
-%>
 
-<%
-  @books = Book.all
-  @book_lookup = {}
-  @books.each do |b|
-    @book_lookup[b.id] = b.name
-  end
-%>
+<h1>Judgements for Book "<%= @book.name %>"</h1>
 
-<% if @book_name != nil %>
-<h1>Judgements for Book <%= @book_id %> "<%= @book_name %>"</h1>
+<% if @random_query_doc_pair_id != -1 %>
+  <%= button_to 'New Judgement', new_book_query_doc_pair_judgement_url(@book, query_doc_pair_id: @random_query_doc_pair_id), method: :get %>
+<% else %>
+  <span style="color:green;font-weight:bold;"> Congratulations! There are no more QueryDocPairs for you to judge in this book.</span>
+  <br>
+<% end %>
+<%= button_to 'Back to Book ' + @book_id.to_s + ' "' + @book.name + '"', @book, method: :get %>
+
+
 
 <table class="table table-striped table-hover table-sm">
   <thead>
@@ -50,89 +28,36 @@
       <th>Doc ID</th>
       <th>Document fields</th>
       <th>Rating</th>
-      <th>Created by User</th>
 
     </tr>
     </thead>
 
     <tbody>
     <% @judgements.each do |judgement| %>
-      <%
-        @query_doc_pair_id = judgement.query_doc_pair_id
-        @query_doc_pair = judgement.query_doc_pair
-        @judgement_book_id = @query_doc_pair.book_id
-        if @judgement_book_id == @book_id %>
+
         <tr>
-
           <td>
-            <%= link_to judgement.id, book_judgement_url(id: judgement.id) %>
+            <%= link_to judgement.id, book_judgement_url(@book, judgement) %>
           </td>
 
           <td>
-            <%= @query_doc_pair.query_text %>
+            <%= judgement.query_doc_pair.query_text %>
           </td>
 
           <td>
-            <%= @query_doc_pair.doc_id %>
+            <%= judgement.query_doc_pair.doc_id %>
           </td>
 
           <td>
-            <%= @query_doc_pair.document_fields %>
+            <%= judgement.query_doc_pair.document_fields %>
           </td>
 
           <td>
             <%= judgement.rating %>
           </td>
-
-          <td><%= @user_lookup[judgement.user_id] %></td>
-
         </tr>
-      <% end %>
+
     <% end %>
     </tbody>
   </table>
   <br>
-
-  <% if @random_query_doc_pair_id != -1 %>
-    <%= button_to 'New Judgement', new_book_query_doc_pair_judgement_url(@book, query_doc_pair_id: @random_query_doc_pair_id), method: :get %>
-  <% else %>
-    <span style="color:green;font-weight:bold;"> Congratulations! There are no more QueryDocPairs for you to judge in this book.</span>
-    <br>
-  <% end %>
-
-  <br>
-  <%= button_to 'Back to Book ' + @book_id.to_s + ' "' + @book.name + '"', @book, method: :get %>
-
-
-<% else %>
-
-  Specify a book_id please. <br>
-<% end %>
-<br>
-<!--<table>-->
-<!--  <thead>-->
-<!--    <tr>-->
-<!--      <th>User</th>-->
-<!--      <th>Rating</th>-->
-<!--      <th>Query doc pair</th>-->
-<!--      <th colspan="3"></th>-->
-<!--    </tr>-->
-<!--  </thead>-->
-
-<!--  <tbody>-->
-    <%# @judgements.each do |judgement| %>
-<!--      <tr>-->
-<!--        <td><%#= judgement.user_id %></td>-->
-<!--        <td><%#= judgement.rating %></td>-->
-<!--        <td><%#= judgement.query_doc_pair_id %></td>-->
-<!--        <td><%#= link_to 'Show', judgement %></td>-->
-<!--        <td><%#= link_to 'Edit', edit_judgement_path(judgement) %></td>-->
-<!--        <td><%#= link_to 'Destroy', judgement, method: :delete, data: { confirm: 'Are you sure?' } %></td>-->
-<!--      </tr>-->
-    <%# end %>
-<!--  </tbody>-->
-<!--</table>-->
-
-<!--<br>-->
-
-<%#= link_to 'New Judgement', new_judgement_path %>
