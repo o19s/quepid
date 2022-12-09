@@ -79,6 +79,11 @@
     Create a book
   </a>
 
+  <a class="btn btn-default pull-left" href="/books/{{ctrl.activeBookId}}" target="_self" ng-show="ctrl.canUpdateCase && ctrl.activeBookId && ctrl.specificActionLabel()">
+    <i class="glyphicon glyphicon-book"></i>
+    Open book
+  </a>
+
   <button
     class="btn btn-success"
     ng-show="ctrl.canUpdateCase && ctrl.activeBookId && ctrl.specificActionLabel()"
