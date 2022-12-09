@@ -1,9 +1,4 @@
 <!--<p id="notice"><%#= notice %></p>-->
-<p></p>
-
-<style>
-table,tr,td,th { border: 1px solid black; padding: 4px; }
-</style>
 
 <%
   @books = Book.all
@@ -37,8 +32,8 @@ table,tr,td,th { border: 1px solid black; padding: 4px; }
 
 <% if @book_name != nil %>
 
-  <table>
-    <thead>
+<table class="table table-striped table-hover table-sm">
+  <thead>
     <tr>
       <th>ID</th>
       <th>Query text</th>

@@ -1,24 +1,8 @@
 <!--<p id="notice"><%#= notice %></p>-->
-<p></p>
-
-<style>
-    table,tr,td,th { border: 1px solid black; padding: 4px; }
-</style>
 
 <%
   @books = Book.all
-  #return @books.to_s
-  #return @books.to_s
-  #puts params
   @book_id = params["book_id"].to_i
-
-  #@query_doc_pair_id = params["query_doc_pair_id"].to_i
-  #@book_id = QueryDocPair.find(@query_doc_pair_id).book_id
-  #@book_id = params["book_id"]
-
-  #return @book_id
-  #@book_name = nil
-
 
   @book_names = []
   @other_book_names = []
@@ -27,7 +11,6 @@
       if b.id == @book_id
         @book = b
         @book_name = b.name
-        #return b.name
         @book_names << @book_name
 
       else
@@ -37,11 +20,6 @@
   end
 
   @random_query_doc_pair_id = @book.get_random_query_doc_pair_id(current_user.id)
-
-  # if @random_query_doc_pair_id == -1
-  #   puts "oops"
-  #   return "oops"
-  # end
 
 %>
 
@@ -64,8 +42,8 @@
 <% if @book_name != nil %>
 <h1>Judgements for Book <%= @book_id %> "<%= @book_name %>"</h1>
 
-  <table>
-    <thead>
+<table class="table table-striped table-hover table-sm">
+  <thead>
     <tr>
       <th>ID</th>
       <th>Query Text</th>
@@ -106,7 +84,6 @@
             <%= judgement.rating %>
           </td>
 
-<!--          <td><%#= query_doc_pair.document_fields %></td>-->
           <td><%= @user_lookup[judgement.user_id] %></td>
 
         </tr>
