@@ -4,7 +4,6 @@ require 'sidekiq/web'
 
 # rubocop:disable Metrics/BlockLength
 Rails.application.routes.draw do
-
   Healthcheck.routes(self)
   # For details on the DSL available within this file, see https://guides.rubyonrails.org/routing.html
   constraints(AdminConstraint) do
@@ -34,7 +33,7 @@ Rails.application.routes.draw do
     resources :query_doc_pairs do
       resources :judgements
     end
-  end  
+  end
 
   devise_for :users, controllers: {
     passwords:          'users/passwords',
