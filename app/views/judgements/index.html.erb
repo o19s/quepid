@@ -3,20 +3,20 @@
 <%
 
 
-  @random_query_doc_pair_id = @book.get_random_query_doc_pair_id(current_user.id)
+  @random_query_doc_pair = @book.random_query_doc_pair_for_rating
 
 %>
 
 
 <h1>Judgements for Book "<%= @book.name %>"</h1>
 
-<% if @random_query_doc_pair_id != -1 %>
-  <%= button_to 'New Judgement', new_book_query_doc_pair_judgement_url(@book, query_doc_pair_id: @random_query_doc_pair_id), method: :get %>
+<% if @random_query_doc_pair_id %>
+  <%= button_to 'New Judgement', book_judge_path(@book), method: :get %>
 <% else %>
-  <span style="color:green;font-weight:bold;"> Congratulations! There are no more QueryDocPairs for you to judge in this book.</span>
+  <span style="color:green;font-weight:bold;"> Congratulations! There are no more Query/Doc Pairs for you to judge in this book.</span>
   <br>
 <% end %>
-<%= button_to 'Back to Book ' + @book_id.to_s + ' "' + @book.name + '"', @book, method: :get %>
+<%= button_to 'Back to Book "' + @book.name + '"'', @book, method: :get %>
 
 
 

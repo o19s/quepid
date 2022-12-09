@@ -41,7 +41,6 @@ class BooksController < ApplicationController
 
   private
 
-
   def find_book
     @book = current_user.books_involved_with.where(id: params[:id]).first
   end

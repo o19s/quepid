@@ -39,27 +39,24 @@ class Book < ApplicationRecord
     ', user.id)
   }
 
-  # rubocop:disable Metrics/MethodLength
-  def get_random_query_doc_pair_id user_id, query_doc_pair_id_to_exclude = nil
+  def random_query_doc_pair_for_rating
     @all_query_doc_pairs_with_judgements =
-      QueryDocPair.joins("
+      QueryDocPair.joins('
         LEFT JOIN `judgements` on `judgements`.`query_doc_pair_id` = `query_doc_pairs`.`id`
-        AND `judgements`.`user_id` = '#{user_id}'").where(:book_id => id)
+        ').includes([ :judgements ])
+        .where(:book_id => id)
 
-    @all_possible_query_doc_pair_ids_to_rate = []
+    @all_possible_query_doc_pairs_to_rate = []
     @all_query_doc_pairs_with_judgements.each do |row|
-      @all_possible_query_doc_pair_ids_to_rate << row.id if row.judgements[0].nil?
+      @all_possible_query_doc_pairs_to_rate << row if row.judgements[0].nil?
     end
-    unless query_doc_pair_id_to_exclude.nil?
-      @all_possible_query_doc_pair_ids_to_rate.delete(query_doc_pair_id_to_exclude)
-    end
-    size_ary = @all_possible_query_doc_pair_ids_to_rate.size
-    if size_ary.zero?
-      -1
-    else
-      id = @all_possible_query_doc_pair_ids_to_rate[rand(size_ary)]
-      id
-    end
+
+    # size_ary = @all_possible_query_doc_pairs_to_rate.size
+    # if size_ary.zero?
+    #  nil
+    # else
+    #    @all_possible_query_doc_pair_ids_to_rate[rand(size_ary)]
+    #  end
+    @all_possible_query_doc_pairs_to_rate.sample
   end
-  # rubocop:enable Metrics/MethodLength
 end

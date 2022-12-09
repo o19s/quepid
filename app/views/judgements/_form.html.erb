@@ -217,11 +217,10 @@
 
 <%
   @path = ""
-  @query_doc_pair = QueryDocPair.find(params["query_doc_pair_id"])
   if @judgement.persisted?
     @path = book_query_doc_pair_judgement_path
   else
-    @path = book_query_doc_pair_judgements_path
+    @path = book_query_doc_pair_judgements_url(@book, @query_doc_pair)
   end
 %>
 
@@ -239,20 +238,7 @@
   <% end %>
 
   <%
-    @book_id = @query_doc_pair.book_id
-    if @book_id == nil and params["book_id"] != nil
-      @book_id = params["book_id"].to_i
-    end
-    if @book_id != nil
-      @books = Book.all
-      @book_name = nil
-      @books.each do |b|
-        if b.id == @book_id
-          @book_name = b.name
-          @book = b
-        end
-      end
-    end
+
 
     def random_color
       return "blue-button"
@@ -359,48 +345,37 @@
 
     @use_backup_labels = false
     @hide_keyboard_shortcuts = false
-    if @book != nil
-      @scorer = Scorer.find(@book.scorer_id)
-      @rating_buttons = []
-      max = @scorer.scale.max
-      @scorer.scale.each do |s|
-        rating_button = {}
 
-        rating_button["value"] = s.to_s
-        calculated_key = calculate_key(s, max)
-        if calculated_key != nil
-          rating_button["key"] = calculated_key
-        else
-          @hide_keyboard_shortcuts = true
-          rating_button["key"] = rating_button["value"]
-        end
-        rating_button["label_backup"] = s.to_s
-        rating_button["label"] = @scorer.scale_with_labels[s.to_s]
-        if rating_button["label"].blank?
-          @use_backup_labels = true
-          rating_button["label"] = rating_button["label_backup"]
-        end
-        rating_button["class"] = calculate_button_class(s, max)
-        @rating_buttons << rating_button
-      end
-      if @use_backup_labels
-        @rating_buttons.each do |rating_button|
-          rating_button["label"] = rating_button["label_backup"]
-        end
-      end
+    @rating_buttons = []
+    max = @book.scorer.scale.max
+    @book.scorer.scale.each do |s|
+      rating_button = {}
 
+      rating_button["value"] = s.to_s
+      calculated_key = calculate_key(s, max)
+      if calculated_key != nil
+        rating_button["key"] = calculated_key
+      else
+        @hide_keyboard_shortcuts = true
+        rating_button["key"] = rating_button["value"]
+      end
+      rating_button["label_backup"] = s.to_s
+      rating_button["label"] = @book.scorer.scale_with_labels[s.to_s]
+      if rating_button["label"].blank?
+        @use_backup_labels = true
+        rating_button["label"] = rating_button["label_backup"]
+      end
+      rating_button["class"] = calculate_button_class(s, max)
+      @rating_buttons << rating_button
     end
+    if @use_backup_labels
+      @rating_buttons.each do |rating_button|
+        rating_button["label"] = rating_button["label_backup"]
+      end
+    end
+
 
     @show_keyboard_shortcuts = not(@hide_keyboard_shortcuts)
-
-    if @query_doc_pair.user_id != nil
-      @users = User.all
-      @users.each do |u|
-        if u.id == @query_doc_pair.user_id
-          @user_name = u.email
-        end
-      end
-    end
 
     @document_fields_parses_as_json = false
 
@@ -451,11 +426,7 @@
     <%= form.label :query_doc_pair_id %>
     <%= form.text_field :query_doc_pair_id, :value => @query_doc_pair.id.to_s %>
   </div>
-  <% if @user_name != nil %>
-<!--    <div class="field">-->
-<!--      Created by User: <%#= @user_name %>-->
-<!--    </div>-->
-  <% end %>
+
   <br>
   <div class="actions" style="visibility: hidden; display:none;">
     <%= form.submit %>

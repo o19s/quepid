@@ -33,6 +33,7 @@ Rails.application.routes.draw do
     resources :query_doc_pairs do
       resources :judgements
     end
+    get 'judge' => 'judgements#new'
   end
 
   devise_for :users, controllers: {

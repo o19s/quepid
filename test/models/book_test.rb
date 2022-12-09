@@ -23,7 +23,41 @@
 require 'test_helper'
 
 class BookTest < ActiveSupport::TestCase
-  # test "the truth" do
-  #   assert true
-  # end
+  describe 'sampling random query doc pairs' do
+    let(:book) { books(:book_of_star_wars_judgements) }
+
+    it 'returns a random query doc pair' do
+      query_doc_pair_1 = book.query_doc_pairs.create query_text: 'star wars', doc_id: 'rogue_one'
+      query_doc_pair_2 = book.query_doc_pairs.create query_text: 'star wars', doc_id: 'solo_story'
+
+      random_query_doc_pair = book.random_query_doc_pair_for_rating
+      assert_not_nil random_query_doc_pair
+      assert(random_query_doc_pair == query_doc_pair_1 || random_query_doc_pair == query_doc_pair_2)
+    end
+
+    it 'doesnt return a rated query doc pair' do
+      query_doc_pair_1 = book.query_doc_pairs.create query_text: 'star wars', doc_id: 'rogue_one'
+      query_doc_pair_2 = book.query_doc_pairs.create query_text: 'star wars', doc_id: 'solo_story'
+
+      query_doc_pair_1.judgements.create rating: 2.0
+
+      # only one of two is a candidate, so sampling will return it every time.
+      random_query_doc_pair = book.random_query_doc_pair_for_rating
+      assert_equal query_doc_pair_2, random_query_doc_pair
+
+      random_query_doc_pair = book.random_query_doc_pair_for_rating
+      assert_equal query_doc_pair_2, random_query_doc_pair
+    end
+
+    it 'returns nil if there are none left' do
+      query_doc_pair_1 = book.query_doc_pairs.create query_text: 'star wars', doc_id: 'rogue_one'
+      query_doc_pair_2 = book.query_doc_pairs.create query_text: 'star wars', doc_id: 'solo_story'
+
+      query_doc_pair_1.judgements.create rating: 2.0
+      query_doc_pair_2.judgements.create rating: 2.0
+
+      random_query_doc_pair = book.random_query_doc_pair_for_rating
+      assert_nil random_query_doc_pair
+    end
+  end
 end
