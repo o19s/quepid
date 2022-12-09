@@ -6,7 +6,7 @@ class BooksController < ApplicationController
   respond_to :html
 
   def index
-    @books = Book.all
+    @books = current_user.books_involved_with
     respond_with(@books)
   end
 
