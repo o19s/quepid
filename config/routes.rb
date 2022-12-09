@@ -4,21 +4,6 @@ require 'sidekiq/web'
 
 # rubocop:disable Metrics/BlockLength
 Rails.application.routes.draw do
-  # resources :judgements #cjm get this out of here
-  # resources :query_doc_pairs #cjm get this out of here
-
-  resources :selection_strategies
-
-  resources :cases, only: [] do
-    resource :book
-  end
-
-  resources :books do
-    resources :judgements
-    resources :query_doc_pairs do
-      resources :judgements
-    end
-  end
 
   Healthcheck.routes(self)
   # For details on the DSL available within this file, see https://guides.rubyonrails.org/routing.html
@@ -39,6 +24,17 @@ Rails.application.routes.draw do
   resources :sessions
   resource :account, only: [ :update, :destroy ]
   resource :profile, only: [ :show, :update ]
+
+  resources :cases, only: [] do
+    resource :book
+  end
+
+  resources :books do
+    resources :judgements
+    resources :query_doc_pairs do
+      resources :judgements
+    end
+  end  
 
   devise_for :users, controllers: {
     passwords:          'users/passwords',
