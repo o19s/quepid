@@ -9,6 +9,7 @@ angular.module('QuepidApp')
     '$location',
     'flash',
     'teamSvc',
+    'caseSvc',
     'bookSvc',
     'queriesSvc',
     'acase',
@@ -20,6 +21,7 @@ angular.module('QuepidApp')
       $location,
       flash,
       teamSvc,
+      caseSvc,
       bookSvc,
       queriesSvc,
       acase
@@ -28,6 +30,8 @@ angular.module('QuepidApp')
 
       ctrl.canUpdateCase = false;
       ctrl.canCreateTeam = false;
+      ctrl.refreshOnly = false;
+      ctrl.updateAssociatedBook = false;
 
       $rootScope.$watch('currentUser', function() {
         if ( $rootScope.currentUser ) {
@@ -60,6 +64,7 @@ angular.module('QuepidApp')
         } else {
           ctrl.activeBookId = book.id;
         }
+        ctrl.updateAssociatedBook = true;
       }
 
       $scope.selectBook = selectBook;
@@ -78,7 +83,6 @@ angular.module('QuepidApp')
         });
       };
       var addTeamToLists = function(team) {
-        // ERic: unclear if we care about the sharing status of a case or not!
         ctrl.share.teams.push(team);
       };
 
@@ -98,7 +102,7 @@ angular.module('QuepidApp')
 
       ctrl.specificActionLabel = function () {
         var label = '';
-        var refreshOnly = false;
+
         if (ctrl.share.acase.bookId === null && ctrl.activeBookId){
           label = 'Select Book';
         }
@@ -107,11 +111,11 @@ angular.module('QuepidApp')
         }
         else if (ctrl.share.acase.bookId === ctrl.activeBookId){
           label = '';
-          refreshOnly = true;
+          ctrl.refreshOnly = true;
         }
 
         if (ctrl.populateBook){
-          if (refreshOnly){
+          if (!ctrl.updateAssociatedBook){
             label = 'Refresh Query/Doc Pairs for Book';
           }
           else {
@@ -125,16 +129,25 @@ angular.module('QuepidApp')
         $scope.processingPrompt.inProgress  = true;
         $scope.processingPrompt.error       = null;
 
-        bookSvc.updateQueryDocPairs(ctrl.activeBookId, queriesSvc.queryArray())
-        .then(function() {
-          $scope.processingPrompt.inProgress = false;
-          $uibModalInstance.close();
+        if (ctrl.updateAssociatedBook){
+          // not handling any errors ;-(
+          caseSvc.associateBook(acase, ctrl.activeBookId);
+        }
+        if (ctrl.populateBook) {
+          bookSvc.updateQueryDocPairs(ctrl.activeBookId, queriesSvc.queryArray())
+          .then(function() {
+            $scope.processingPrompt.inProgress = false;
+            $uibModalInstance.close();
 
-          flash.success = 'Book of judgements updated.';
-        }, function(response) {
-          $scope.processingPrompt.inProgress  = false;
-          $scope.processingPrompt.error       = response.data.statusText;
-        });
+            flash.success = 'Book of judgements updated.';
+          }, function(response) {
+            $scope.processingPrompt.inProgress  = false;
+            $scope.processingPrompt.error       = response.data.statusText;
+          });
+        }
+        else {
+          $uibModalInstance.close();
+        }
       };
 
       //ctrl.ok = function () {

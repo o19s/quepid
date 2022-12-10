@@ -10,6 +10,7 @@ json.case_name        acase.case_name
 json.caseNo           acase.id
 json.scorerId         acase.scorer_id
 json.bookId           acase.book_id
+json.bookName         acase.book.name if acase.book.present?
 json.owned            acase.owner_id == current_user.id
 json.owner_name       acase.owner.name if acase.owner.present?
 json.queriesCount     acase.queries.count
