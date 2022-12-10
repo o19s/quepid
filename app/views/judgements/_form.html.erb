@@ -218,14 +218,11 @@
 <%
   @path = ""
   if @judgement.persisted?
-    puts "persisted"
     @path = book_query_doc_pair_judgement_path
     @query_doc_pair = @judgement.query_doc_pair
   else
     @query_doc_pair = @book.random_query_doc_pair_for_rating
-    puts @query_doc_pair
     if @query_doc_pair == nil
-      puts "it is nil"
       controller.redirect_to book_judgements_path(@book)
       return
     end
