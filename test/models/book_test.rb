@@ -23,6 +23,19 @@
 require 'test_helper'
 
 class BookTest < ActiveSupport::TestCase
+
+  describe 'returning books for a user' do
+    let(:user)                  { users(:random) }
+    let(:team)                  { teams(:shared) }
+    let(:book1)                 { books(:book_of_star_wars_judgements) }
+    let(:book2)                 { books(:book_of_comedy_films) }
+
+    it 'returns books by alphabetical name for a team' do
+      assert_equal book2, team.books.first
+      assert_equal book1, team.books.second
+    end
+  end
+
   describe 'sampling random query doc pairs' do
     let(:book) { books(:book_of_star_wars_judgements) }
 
