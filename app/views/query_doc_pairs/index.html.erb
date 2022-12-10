@@ -69,7 +69,7 @@
   <br>
   <%= button_to 'New Query Doc Pair', new_book_query_doc_pair_path, method: :get %>
   <br>
-  <%= button_to 'Back to Book ' + @book_id.to_s + ' "' + @book.name + '"', @book, method: :get %>
+  <%= button_to "Back to Book #{@book.name}", @book, method: :get %>
 
 <% else %>
 

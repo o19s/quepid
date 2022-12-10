@@ -1,7 +1,7 @@
 <!--<p id="notice"><%#= notice %></p>-->
 <p></p>
 
-<h1> Book <%= @book.id %> "<%= @book.name %>"</h1>
+<h1> Book <%= @book.name %></h1>
 
 <p>
   <strong>Team:</strong>
@@ -26,7 +26,7 @@
 
 <br>
 
-<%= button_to 'Edit Book ' + @book.id.to_s + ' "' + @book.name + '"', edit_book_path(@book), method: :get %>
+<%= button_to "Edit Book #{@book.name}", edit_book_path(@book), method: :get %>
 
 <br>
 
