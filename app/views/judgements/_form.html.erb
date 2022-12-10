@@ -218,8 +218,17 @@
 <%
   @path = ""
   if @judgement.persisted?
+    puts "persisted"
     @path = book_query_doc_pair_judgement_path
+    @query_doc_pair = @judgement.query_doc_pair
   else
+    @query_doc_pair = @book.random_query_doc_pair_for_rating
+    puts @query_doc_pair
+    if @query_doc_pair == nil
+      puts "it is nil"
+      controller.redirect_to book_judgements_path(@book)
+      return
+    end
     @path = book_query_doc_pair_judgements_url(@book, @query_doc_pair)
   end
 %>
@@ -238,11 +247,6 @@
   <% end %>
 
   <%
-
-
-    def random_color
-      return "blue-button"
-    end
 
     def calculate_button_class(value, max_value)
       value_f = value.to_f
@@ -374,7 +378,6 @@
       end
     end
 
-
     @show_keyboard_shortcuts = not(@hide_keyboard_shortcuts)
 
     @document_fields_parses_as_json = false
@@ -386,6 +389,9 @@
       nil
     end
 
+    unless @document_fields.respond_to?(:keys)
+      @document_fields_parses_as_json = false
+    end
   %>
 
   <div class="field" style="">
