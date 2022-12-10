@@ -23,8 +23,6 @@ class QueryDocPairsController < ApplicationController
   end
 
   def create
-    raise StandardError, 'yo!' if 'why' == query_doc_pair_params['position']
-
     @query_doc_pair = QueryDocPair.new(query_doc_pair_params)
     @query_doc_pair.save
     # respond_with(@query_doc_pair, :location => new_book_query_doc_pair_path(@query_doc_pair))
