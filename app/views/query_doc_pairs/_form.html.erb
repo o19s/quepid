@@ -1,0 +1,99 @@
+<style>
+  .field { padding: 5px; }
+</style>
+
+<%
+  @path = ""
+  if @query_doc_pair.persisted?
+    @path = book_query_doc_pair_path
+  else
+    @path = book_query_doc_pairs_path
+  end
+%>
+
+<%= form_for([query_doc_pair.book, query_doc_pair], url: @path) do |form| %>
+  <% if query_doc_pair.errors.any? %>
+    <div id="error_explanation">
+      <h2><%= pluralize(query_doc_pair.errors.count, "error") %> prohibited this query_doc_pair from being saved:</h2>
+
+      <ul>
+        <% query_doc_pair.errors.each do |error| %>
+          <li><%= error.full_message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <%
+    @book_id = @query_doc_pair.book_id
+    if @book_id == nil and params["book_id"] != nil
+      @book_id = params["book_id"].to_i
+    end
+    if @book_id != nil
+      @books = Book.all
+      @book_name = nil
+      @books.each do |b|
+        if b.id == @book_id
+          @book_name = b.name
+        end
+      end
+    end
+
+    if @query_doc_pair.user_id != nil
+      @users = User.all
+      @users.each do |u|
+        if u.id == @query_doc_pair.user_id
+          @user_name = u.email
+        end
+      end
+    end
+  %>
+
+  <% if @book_id != nil %>
+    <div class="field">
+      in Book <%= @book_id %> "<%= @book_name %>"
+    </div>
+  <% end %>
+
+  <div class="field" style="visibility: hidden; display: none;">
+    <%= form.label :user_id %>
+    <%= form.number_field :user_id, :value => current_user.id %>
+  </div>
+
+  <div class="field">
+    <%= form.label :query_text %>
+    <%= form.text_field :query_text %>
+  </div>
+
+  <div class="field">
+    <%= form.label :position %>
+    <%= form.text_field :position %>
+  </div>
+
+  <div class="field">
+    <%= form.label :doc_id, "Doc ID" %>
+    <%= form.text_field :doc_id %>
+  </div>
+
+  <div class="field">
+    <%= form.label :document_fields %>
+    <%= form.text_area :document_fields %>
+  </div>
+
+  <div class="field" style="visibility: hidden; display: none;">
+    <%= form.label :book_id %>
+    <%= form.text_field :book_id, value: @book_id %>
+  </div>
+
+  <% if @user_name != nil %>
+    <div class="field">
+      Created by User: <%= @user_name %>
+    </div>
+  <% end %>
+
+  <br>
+
+  <div class="actions">
+    <%= form.submit %>
+  </div>
+<% end %>

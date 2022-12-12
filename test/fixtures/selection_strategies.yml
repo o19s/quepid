@@ -1,0 +1,12 @@
+# == Schema Information
+#
+# Table name: selection_strategies
+#
+#  id         :bigint           not null, primary key
+#  name       :string(255)
+#  created_at :datetime         not null
+#  updated_at :datetime         not null
+#
+
+super_crazy_picker:
+  name: Super Crazy Picker
