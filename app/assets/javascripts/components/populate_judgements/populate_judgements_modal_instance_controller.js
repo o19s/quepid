@@ -143,6 +143,9 @@ angular.module('QuepidApp')
           }, function(response) {
             $scope.processingPrompt.inProgress  = false;
             $scope.processingPrompt.error       = response.data.statusText;
+
+            // we could take the error and pass it out via
+            //$uibModalInstance.close($scope.processingPrompt.error);
           });
         }
         else {

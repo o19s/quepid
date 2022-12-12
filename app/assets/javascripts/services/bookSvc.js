@@ -108,7 +108,7 @@ angular.module('QuepidApp')
         var payload = {
         };
 
-        return $http.put('/api/books/' + bookId + '/case/' + caseId + '/refresh', payload)
+        return $http.put('/api/books/' + bookId + '/cases/' + caseId + '/refresh', payload)
           .then(function(response) {
             console.log('refreshed ratings' + response.data);
           });

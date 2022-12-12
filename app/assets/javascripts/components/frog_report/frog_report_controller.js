@@ -41,12 +41,21 @@ angular.module('QuepidApp')
         });
 
         modalInstance.result.then(
-          function () {
-          },
-          function() {
-            $log.info('INFO: Modal dismissed');
-          }
+          function(error) {
+            if ( !error ) {
+              queriesSvc.reset();
+              queriesSvc.bootstrapQueries(caseSvc.getSelectedCase().caseNo)
+                .then(function() {
+                  queriesSvc.searchAll();
+                });
+
+              flash.success = 'Ratings refreshed successfully!';
+            } else {
+              flash.error = error;
+            }
+          }, function() { }
         );
+
 
       }
     }
