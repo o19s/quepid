@@ -2,9 +2,9 @@
 
 angular.module('QuepidApp')
   .controller('FrogReportModalInstanceCtrl', [
-    '$uibModalInstance', '$scope',
+    '$uibModalInstance', '$scope', 'flash',
     'theCase', 'queriesSvc','bookSvc',
-    function ($uibModalInstance, $scope, theCase, queriesSvc, bookSvc) {
+    function ($uibModalInstance, $scope,flash, theCase, queriesSvc, bookSvc) {
       var ctrl = this;
 
       ctrl.theCase = theCase;
@@ -248,10 +248,10 @@ angular.module('QuepidApp')
           $scope.processingPrompt.inProgress = true;
           $uibModalInstance.close();
 
-          flash.success = 'Ratings have been reloaded.';
+          flash.success = 'Ratings have been refreshed.';
         }, function(response) {
           $scope.processingPrompt.inProgress  = false;
-          $scope.processingPrompt.error       = "boom"; //response.data.statusText;
+          $scope.processingPrompt.error       = response.data.statusText;
         });
       };
 
