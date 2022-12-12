@@ -3,12 +3,14 @@
 angular.module('QuepidApp')
   .controller('FrogReportModalInstanceCtrl', [
     '$uibModalInstance', '$scope',
-    'theCase', 'queriesSvc',
-    function ($uibModalInstance, $scope, theCase, queriesSvc) {
+    'theCase', 'queriesSvc','bookSvc',
+    function ($uibModalInstance, $scope, theCase, queriesSvc, bookSvc) {
       var ctrl = this;
 
       ctrl.theCase = theCase;
       ctrl.queriesSvc = queriesSvc;
+
+      $scope.processingPrompt = { inProgress: false, error: null};
 
       $scope.totalNumberOfRatingsNeeded = null;
       $scope.missingRatingsRate = null;
@@ -30,8 +32,8 @@ angular.module('QuepidApp')
         "height": 200,
         "padding": 5,
         "title": {
-           "text": "Summary of Query Rating Status",
-           "subtitle": "Number of queries grouped by missing ratings",
+           "text": "",
+           "subtitle": "Number of queries grouped by count of missing ratings",
            "subtitleFontStyle": "italic",
            "frame": "group",
            "anchor": "start",
@@ -238,6 +240,21 @@ angular.module('QuepidApp')
           $scope.numberOfMissingRatings = ctrl.numberOfMissingRatings();
           $scope.missingRatingsRate = ctrl.missingRatingsRate();
       };
+
+      ctrl.refreshRatingsFromBook = function () {
+        //$uibModalInstance.close(ctrl.options);
+        bookSvc.refreshCaseRatingsFromBook(ctrl.theCase.caseNo, ctrl.theCase.bookId)
+        .then(function() {
+          $scope.processingPrompt.inProgress = true;
+          $uibModalInstance.close();
+
+          flash.success = 'Ratings have been reloaded.';
+        }, function(response) {
+          $scope.processingPrompt.inProgress  = false;
+          $scope.processingPrompt.error       = "boom"; //response.data.statusText;
+        });
+      };
+
 
       ctrl.ok = function () {
         $uibModalInstance.close(ctrl.options);

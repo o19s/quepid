@@ -30,3 +30,9 @@ book_of_comedy_films:
   scorer: :quepid_default_scorer
   selection_strategy: :super_crazy_picker
   name: TMDB Greatest Comedies
+
+james_bond_movies:   # this has some query doc pairs and ratings.
+  team: :shared
+  scorer: :quepid_default_scorer
+  selection_strategy: :super_crazy_picker
+  name: James Bond Movies

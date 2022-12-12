@@ -4,8 +4,8 @@ module Api
   module V1
     module Books
       class PopulateController < Api::ApiController
-        before_action :find_book
-        before_action :check_book
+        before_action :find_book, only: [ :update ]
+        before_action :check_book, only: [ :update ]
 
         # We get a messy set of params in this method, so we don't use the normal
         # approach of strong parameter validation.  We hardcode the only params

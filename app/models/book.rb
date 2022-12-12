@@ -37,7 +37,7 @@ class Book < ApplicationRecord
     ').where('
         `teams_members`.`member_id` = ?
     ', user.id)
-    .order(name: :desc)
+      .order(name: :desc)
   }
 
   def random_query_doc_pair_for_rating

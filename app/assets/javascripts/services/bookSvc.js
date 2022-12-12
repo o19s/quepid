@@ -101,5 +101,17 @@ angular.module('QuepidApp')
             console.log('Updated book' + response.data);
           });
       };
+
+      this.refreshCaseRatingsFromBook = function(caseId, bookId) {
+        // http POST /api/books/<int:bookId>/case/<int:caseId>/refresh
+
+        var payload = {
+        };
+
+        return $http.put('/api/books/' + bookId + '/case/' + caseId + '/refresh', payload)
+          .then(function(response) {
+            console.log('refreshed ratings' + response.data);
+          });
+      };
     }
   ]);

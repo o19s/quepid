@@ -21,4 +21,7 @@
 #
 class Judgement < ApplicationRecord
   belongs_to :query_doc_pair
+
+  validates :rating,
+            presence: true
 end

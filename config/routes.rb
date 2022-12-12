@@ -129,6 +129,9 @@ Rails.application.routes.draw do
 
       resources :books, only: [ :update ] do
         put '/populate' => 'books/populate#update'
+        resources :cases do
+          put 'refresh' => 'books/refresh#update'
+        end
       end
 
       namespace :clone do

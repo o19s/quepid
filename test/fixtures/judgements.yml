@@ -27,3 +27,13 @@ two:
   user_id: 1
   rating: 1.5
   query_doc_pair: two
+
+high_judgement:
+  user_id: 1
+  rating: 3
+  query_doc_pair: :qdp1
+
+low_judgement:
+  user_id: 1
+  rating: 0
+  query_doc_pair: :qdp2

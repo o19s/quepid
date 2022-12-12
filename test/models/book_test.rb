@@ -23,7 +23,6 @@
 require 'test_helper'
 
 class BookTest < ActiveSupport::TestCase
-
   describe 'returning books for a user' do
     let(:user)                  { users(:random) }
     let(:team)                  { teams(:shared) }
