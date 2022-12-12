@@ -29,7 +29,6 @@ class BookTest < ActiveSupport::TestCase
     let(:book1)                 { books(:book_of_comedy_films) }
     let(:book2)                 { books(:book_of_star_wars_judgements) }
 
-
     it 'returns books by alphabetical name of book for a team' do
       assert_equal book1, team.books.second
       assert_equal book2, team.books.third
