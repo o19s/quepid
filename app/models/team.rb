@@ -38,7 +38,8 @@ class Team < ApplicationRecord
   # rubocop:enable Rails/HasAndBelongsToMany
 
   has_many   :books, -> { order(name: :asc) },
-             dependent: :destroy
+             dependent:  :destroy,
+             inverse_of: :team
 
   # Every owner is also a member of the team.  So when we care about access to a team,
   # we only need to check the team.members or the case.team.members.
