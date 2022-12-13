@@ -83,12 +83,12 @@ angular.module('QuepidApp')
       ctrl.selectTeam = function(selectedTeam) {
         ctrl.share.selectedTeam = selectedTeam;
         ctrl.share.unselectedTeam = null;
-        ctrl.share.action = "select";
+        ctrl.share.action = 'select';
       };
       ctrl.unselectTeam = function(selectedTeam) {
         ctrl.share.selectedTeam = null;
         ctrl.share.unselectedTeam = selectedTeam;
-        ctrl.share.action = "unselect";
+        ctrl.share.action = 'unselect';
       };
 
       ctrl.ok = function () {

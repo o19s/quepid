@@ -40,8 +40,9 @@ angular.module('QuepidApp')
         modalInstance.result.then(
           function(share) {
             var caseNo  = share.acase.caseNo;
+            var team    = null;
             if (share.action === 'select') {
-              var team    = share.selectedTeam;
+              team    = share.selectedTeam;
 
               teamSvc.shareCase(team, caseNo)
                 .then(function() {
@@ -51,7 +52,7 @@ angular.module('QuepidApp')
                 });
             }
             else {
-              var team    = share.unselectedTeam;
+              team    = share.unselectedTeam;
 
               teamSvc.unshareCase(team, caseNo)
                 .then(function() {
