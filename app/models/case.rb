@@ -8,6 +8,7 @@
 #  archived        :boolean
 #  case_name       :string(191)
 #  last_try_number :integer
+#  public          :boolean
 #  created_at      :datetime         not null
 #  updated_at      :datetime         not null
 #  book_id         :integer
@@ -97,6 +98,8 @@ class Case < ApplicationRecord
         `cases`.`owner_id` = ?
     ',  user.id)
   }
+
+  scope :public_cases, -> { where(public: true) }
 
   scope :for_user, ->(user) {
     ids = for_user_via_teams(user).pluck(:id) + for_user_directly_owned(user).pluck(:id)

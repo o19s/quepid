@@ -12,8 +12,30 @@ class UserCaseFinderTest < ActiveSupport::TestCase
   let(:owned_case)        { cases(:owned_case) }
   let(:owned_team_case)   { cases(:owned_team_case) }
   let(:shared_team_case)  { cases(:shared_team_case) }
+  let(:public_case)       { cases(:public_case) }
 
-  # let(:service) { UserCaseFinder.new(user) }
+  describe 'public cases' do
+    test 'we have a scope that returns a public case' do
+      result = Case.public_cases.where(id: public_case.id).first
+      assert_equal result, public_case
+    end
+
+    test 'doesnt include public cases in a users list when you look up all' do
+      result = user.cases_involved_with
+
+      assert_not_includes result, public_case
+    end
+
+    test 'includes cases owned by user that are ALSO public' do
+      owned_case.public = true
+      owned_case.save
+
+      result = user.cases_involved_with
+
+      assert_includes result, owned_case
+      assert_not_includes result, public_case
+    end
+  end
 
   describe 'Find all cases' do
     test 'returns an array of cases' do
