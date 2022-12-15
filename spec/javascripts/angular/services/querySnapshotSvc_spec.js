@@ -13,6 +13,8 @@ describe('Service: querySnapshotSvc', function () {
   var settingsSvc = null;
   var docResolverSvc;
 
+  var recordDocumentFields = false;
+
   beforeEach(function() {
     module(function($provide) {
       /*global MockSettingsSvc*/
@@ -202,7 +204,7 @@ describe('Service: querySnapshotSvc', function () {
       // Make sure how we defined the getNumFound() function works!
       expect (mockQueries[0].getNumFound()).toEqual(42);
 
-      querySnapshotSvc.addSnapshot('myname', mockQueries);
+      querySnapshotSvc.addSnapshot('myname', recordDocumentFields, mockQueries);
       $httpBackend.flush();
       expect(querySnapshotSvc.snapshots['5'].id).toBe('5');
       expect(querySnapshotSvc.snapshots['5'].docIdsPerQuery['0']).toEqual(['1', '4', '7']);
@@ -215,7 +217,7 @@ describe('Service: querySnapshotSvc', function () {
       var priorVersion = querySnapshotSvc.version();
       $httpBackend.expectPOST('/api/cases/2/snapshots')
                   .respond(200, addedSnapResp);
-      querySnapshotSvc.addSnapshot('myname', mockQueries);
+      querySnapshotSvc.addSnapshot('myname', recordDocumentFields, mockQueries);
       $httpBackend.flush();
       expect(querySnapshotSvc.version()).toEqual(priorVersion + 1);
       $httpBackend.verifyNoOutstandingExpectation();
@@ -225,7 +227,7 @@ describe('Service: querySnapshotSvc', function () {
     it('resolves ids->docs', function resolveAddSnapTest() {
       $httpBackend.expectPOST('/api/cases/2/snapshots')
                   .respond(200, addedSnapResp);
-      querySnapshotSvc.addSnapshot('myname', mockQueries);
+      querySnapshotSvc.addSnapshot('myname', recordDocumentFields, mockQueries);
       $httpBackend.flush();
 
       var mockResolver = docResolverSvc.mockResolver;

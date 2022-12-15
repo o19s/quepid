@@ -32,7 +32,7 @@
   </span>
   <br/>
 
-  <h4 style="margin-top: 80px;">Distribution of Queries Needing Ratings</h4>
+  <h4 style="margin-top: 60px;">Distribution of Queries Needing Ratings</h4>
 
 
   <div vega id="chart1" spec="spec"></div>
@@ -43,5 +43,14 @@
   </div>
 </div>
 <div class="modal-footer">
-  <button class="btn btn-primary" ng-click="ctrl.cancel()">Done</button>
+  <a class="btn btn-default" ng-click="ctrl.refreshRatingsFromBook()" ng-disabled="processingPrompt.inProgress">
+    <i class="glyphicon glyphicon-refresh"></i>
+    Refresh ratings from book <i>{{ctrl.theCase.bookName}}</i>
+  </a>
+  <button class="btn btn-primary" ng-click="ctrl.cancel()" ng-disabled="processingPrompt.inProgress">Close</button>
+
+  <div class='text-danger' ng-show="processingPrompt.error">
+    An error ({{processingPrompt.error}}) occurred, please try again.<br />
+    If the error persist, contact administrator for further assistance.
+  </div>
 </div>

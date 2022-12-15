@@ -255,6 +255,22 @@ class UserTest < ActiveSupport::TestCase
       assert_not shared_team_case.destroyed?
     end
   end
+
+  describe 'User accessing Books' do
+    let(:user_with_book_access)             { users(:doug) }
+    let(:user_without_book_access)          { users(:joey) }
+    let(:book_of_comedy_films)              { books(:book_of_comedy_films) }
+    let(:book_of_star_wars_judgements)      { books(:book_of_star_wars_judgements) }
+
+    it 'provides access to the books that a user has access because of membership in a team' do
+      assert_equal user_with_book_access.books_involved_with.where(id: book_of_comedy_films.id).first, book_of_comedy_films
+      assert_equal user_with_book_access.books_involved_with.where(id: book_of_star_wars_judgements.id).first, book_of_star_wars_judgements
+    end
+
+    it 'prevents access to the books because the user is not part of a team' do
+      assert_nil user_without_book_access.books_involved_with.where(id: book_of_comedy_films).first
+    end
+  end
 end
 
 # rubocop:enable Layout/LineLength

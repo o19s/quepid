@@ -197,6 +197,11 @@ class User < ApplicationRecord
     Case.for_user(self)
   end
 
+  # This method returns all the books that the user has access to via it's teams.
+  def books_involved_with
+    Book.for_user(self)
+  end
+
   def locked?
     true == locked
   end

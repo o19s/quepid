@@ -12,6 +12,7 @@ require_relative 'tracker/user'
 
 module Analytics
   module Tracker
+    extend Book
     extend Case
     extend Query
     extend Rating

@@ -1,0 +1,39 @@
+# == Schema Information
+#
+# Table name: judgements
+#
+#  id                :bigint           not null, primary key
+#  rating            :float(24)
+#  created_at        :datetime         not null
+#  updated_at        :datetime         not null
+#  query_doc_pair_id :bigint           not null
+#  user_id           :integer
+#
+# Indexes
+#
+#  index_judgements_on_query_doc_pair_id  (query_doc_pair_id)
+#
+# Foreign Keys
+#
+#  fk_rails_...  (query_doc_pair_id => query_doc_pairs.id)
+#
+
+one:
+  user_id: 1
+  rating: 1.5
+  query_doc_pair: one
+
+two:
+  user_id: 1
+  rating: 1.5
+  query_doc_pair: two
+
+high_judgement:
+  user_id: 1
+  rating: 3
+  query_doc_pair: :qdp1
+
+low_judgement:
+  user_id: 1
+  rating: 0
+  query_doc_pair: :qdp2

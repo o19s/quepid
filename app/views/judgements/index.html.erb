@@ -1,0 +1,56 @@
+<!--<p id="notice"><%#= notice %></p>-->
+
+<h1>Judgements for Book <%= @book.name %></h1>
+
+<% if @book.random_query_doc_pair_for_rating %>
+  <%= button_to 'More Judgements are Needed!', book_judge_path(@book), method: :get %>
+<% else %>
+  <span style="color:green;font-weight:bold;"> Congratulations! There are no more Query/Doc Pairs for you to judge in this book.</span>
+  <br>
+<% end %>
+<p/>
+<%= button_to "Back to Book #{@book.name}", @book, method: :get %>
+
+
+
+<table class="table table-striped table-hover table-sm">
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Query Text</th>
+      <th>Doc ID</th>
+      <th>Document fields</th>
+      <th>Rating</th>
+
+    </tr>
+    </thead>
+
+    <tbody>
+    <% @judgements.each do |judgement| %>
+
+        <tr>
+          <td>
+            <%= link_to judgement.id, book_judgement_url(@book, judgement) %>
+          </td>
+
+          <td>
+            <%= judgement.query_doc_pair.query_text %>
+          </td>
+
+          <td>
+            <%= judgement.query_doc_pair.doc_id %>
+          </td>
+
+          <td>
+            <%= judgement.query_doc_pair.document_fields %>
+          </td>
+
+          <td>
+            <%= judgement.rating %>
+          </td>
+        </tr>
+
+    <% end %>
+    </tbody>
+  </table>
+  <br>
