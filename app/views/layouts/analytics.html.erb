@@ -14,6 +14,25 @@
   <body class="d-flex flex-column h-100">
     <header>
       <%= render 'layouts/header' %>
+      <% if @case %>
+        <script>
+          $(function() {
+            new ClipboardJS('#public-url');
+          });
+        </script>
+
+        <h3 class="public-share">
+          <a id='public-url' href="#" data-clipboard-text="<%= analytics_tries_visualization_url(@case.public_id) %>">
+            <span class="badge bg-success">Public</span>
+            <i
+              class="clipboard-icon fa fa-clipboard"
+              aria-hidden="true"
+              title="Copy public url to your clipboard"
+              alt="Copy public url to your clipboard"
+            ></i>
+          </a>
+        </h3>
+      <% end %>
     </header>
 
     <!-- Begin page content -->

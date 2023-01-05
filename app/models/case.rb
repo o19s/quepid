@@ -153,12 +153,25 @@ class Case < ApplicationRecord
     save
   end
 
+  def mark_public
+    self.public = true
+  end
+
+  def mark_public!
+    mark_public
+    save
+  end
+
   def rearrange_queries
     Arrangement::List.sequence queries
   end
 
   def last_score
     scores.last_one
+  end
+
+  def public_id
+    Rails.application.message_verifier("magic").generate(self.id)
   end
 
   private
