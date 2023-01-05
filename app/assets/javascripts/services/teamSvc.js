@@ -242,6 +242,17 @@ angular.module('QuepidApp')
           });
       };
 
+      this.unshareCase = function(team, caseNo) {
+        // http DELETE /api/teams/<int:teamId>/cases/<int:caseId>
+        var url   = '/api/teams/' + team.id + '/cases/' + caseNo;
+        var data  = { id: caseNo };
+
+        return $http.delete(url, data)
+          .then(function() {
+
+          });
+      };
+
       this.shareScorer = function(team, scorerId) {
         // http POST /api/teams/<int:teamId>/scorers
         var url   = '/api/teams/' + team.id + '/scorers';
