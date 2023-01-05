@@ -21,7 +21,6 @@
           <div ng-controller="CaseCtrl" style="display:inline-block;vertical-align:top">
             <h1 class="">
               <small class="text-muted">Current case</small>
-              <small class="text-muted pull-right" ng-show="caseModel.selectedCase().public"><span class="label label-success">Public</span></small>
               <br>
               <span ng-dblclick="caseNameEditModeToggle()">
                 <span ng-hide="caseName.startRename">
@@ -56,8 +55,6 @@
                 &mdash;
                 {{ getScorer().name }}
               </small>
-
-
             </h1>
           </div>
         </div>
