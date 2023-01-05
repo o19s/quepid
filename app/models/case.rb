@@ -171,7 +171,7 @@ class Case < ApplicationRecord
   end
 
   def public_id
-    Rails.application.message_verifier("magic").generate(self.id)
+    Rails.application.message_verifier('magic').generate(id)
   end
 
   private

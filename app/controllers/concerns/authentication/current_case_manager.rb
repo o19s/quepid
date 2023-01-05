@@ -22,12 +22,11 @@ module Authentication
       case_id = params[:case_id]
       is_encrypted_case_id = !Float(case_id, exception: false)
 
-      if is_encrypted_case_id
-        @case = Case.public_cases.find_by(id: decrypt_case_id(case_id))
-      else
-        @case = current_user.cases_involved_with.where(id: case_id).first
-      end
-
+      @case = if is_encrypted_case_id
+                Case.public_cases.find_by(id: decrypt_case_id(case_id))
+              else
+                current_user.cases_involved_with.where(id: case_id).first
+              end
     end
 
     def find_case
@@ -51,7 +50,7 @@ module Authentication
     end
 
     def decrypt_case_id encrypted_value
-      Rails.application.message_verifier("magic").verify(encrypted_value)
+      Rails.application.message_verifier('magic').verify(encrypted_value)
     end
   end
 end
