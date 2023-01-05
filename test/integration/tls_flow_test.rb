@@ -15,7 +15,7 @@ class TlsFlowTest < ActionDispatch::IntegrationTest
     try_http = kase.tries.first
     try_https = kase.tries.second
 
-    assert_not try_http.search_url.starts_with?('https')    
+    assert_not try_http.search_url.starts_with?('https')
     assert try_https.search_url.starts_with?('https')
 
     # Navigate to a try that is http TLS protocol
