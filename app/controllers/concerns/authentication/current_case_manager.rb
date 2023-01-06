@@ -52,11 +52,9 @@ module Authentication
     end
 
     def decrypt_case_id encrypted_value
-      begin
-        Rails.application.message_verifier('magic').verify(encrypted_value)
-      rescue ActiveSupport::MessageVerifier::InvalidSignature
-        nil
-      end
+      Rails.application.message_verifier('magic').verify(encrypted_value)
+    rescue ActiveSupport::MessageVerifier::InvalidSignature
+      nil
     end
   end
 end
