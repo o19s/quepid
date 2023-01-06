@@ -556,9 +556,13 @@ over to Webpacker.
 ## I'd like to develop Jupyterlite
 
 Run the `./bin/setup_jupyterlite` to update the archive file `./jupyterlite/notebooks.gz`.  This
-also sets up the static files in the `./public/notebooks` directory.  However, so we don't check in hundreds of files,
-we ignore that directory.   At `asset:precompile` time we unpack the `./jupyterlite/notebooks.gz` file instead.  This
-works on Heroku and the production Docker image.
+also sets up the static files in the `./public/notebooks` directory.  However, so that we don't check in hundreds of files,
+we ignore that directory from Github.   At `asset:precompile` time we unpack the `./jupyterlite/notebooks.gz` file instead.  
+This works on Heroku and the production Docker image.
+
+To update the version of Jupyterlite edit `Dockerfile.dev` and `Dockerfile.prod` and update the `pip install` version.
+
+Question?  Does jupyterlite work in localhost????
 
 # QA
 
