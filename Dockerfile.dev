@@ -32,7 +32,7 @@ RUN wget --no-check-certificate -qO - https://dl.yarnpkg.com/debian/pubkey.gpg |
 
 # Jupyterlite
 RUN apt-get update -qq && apt-get install -y python3 python3-pip && rm -rf /var/lib/apt/lists/*
-RUN python3 -m pip install jupyterlite[lab] jupyterlab-webrtc-docprovider
+RUN python3 -m pip install jupyterlite[lab]==0.1.0b14 jupyterlab-webrtc-docprovider
 
 
 # Clean environment
