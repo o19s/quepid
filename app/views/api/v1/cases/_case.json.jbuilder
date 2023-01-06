@@ -14,10 +14,11 @@ json.bookName         acase.book.name if acase.book.present?
 json.owned            acase.owner_id == current_user.id
 json.owner_name       acase.owner.name if acase.owner.present?
 json.queriesCount     acase.queries.count
-
-json.teams            teams unless no_teams
+json.public           acase.public.presence || false
 
 json.last_try_number acase.tries.latest.try_number unless no_tries || acase.tries.blank? || acase.tries.latest.blank?
+
+json.teams teams unless no_teams
 
 unless shallow
   json.queries do

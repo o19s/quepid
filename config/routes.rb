@@ -47,6 +47,9 @@ Rails.application.routes.draw do
     get 'tries_visualization/:case_id/vega_specification' => 'tries_visualization#vega_specification',
         as: :tries_visualization_vega_specification
     get 'tries_visualization/:case_id/vega_data' => 'tries_visualization#vega_data', as: :tries_visualization_vega_data
+    resources :cases do
+      resource :visibility, only: [ :update ], module: :cases
+    end
   end
 
   namespace :admin do

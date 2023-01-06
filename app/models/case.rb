@@ -8,6 +8,7 @@
 #  archived        :boolean
 #  case_name       :string(191)
 #  last_try_number :integer
+#  public          :boolean
 #  created_at      :datetime         not null
 #  updated_at      :datetime         not null
 #  book_id         :integer
@@ -98,6 +99,8 @@ class Case < ApplicationRecord
     ',  user.id)
   }
 
+  scope :public_cases, -> { where(public: true) }
+
   scope :for_user, ->(user) {
     ids = for_user_via_teams(user).pluck(:id) + for_user_directly_owned(user).pluck(:id)
     where(id: ids.uniq)
@@ -150,12 +153,33 @@ class Case < ApplicationRecord
     save
   end
 
+  def public?
+    true == public
+  end
+
+  def mark_public
+    self.public = true
+  end
+
+  def mark_private
+    self.public = false
+  end
+
+  def mark_public!
+    mark_public
+    save
+  end
+
   def rearrange_queries
     Arrangement::List.sequence queries
   end
 
   def last_score
     scores.last_one
+  end
+
+  def public_id
+    Rails.application.message_verifier('magic').generate(id)
   end
 
   private

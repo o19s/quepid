@@ -6,6 +6,7 @@
 #  archived        :boolean
 #  case_name       :string(191)
 #  last_try_number :integer
+#  public          :boolean
 #  created_at      :datetime         not null
 #  updated_at      :datetime         not null
 #  book_id         :integer
@@ -210,3 +211,9 @@ case_with_book:
   case_name: Case With Book
   archived:  false
   book:      :book_of_star_wars_judgements
+
+public_case:
+  owner:     :random
+  case_name: Public Book
+  archived:  false
+  public:    :true  
