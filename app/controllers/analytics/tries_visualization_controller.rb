@@ -4,6 +4,7 @@ module Analytics
   class TriesVisualizationController < ApplicationController
     layout 'analytics'
 
+    skip_before_action :require_login   # we allow anonymous users.   Not the best way to do this ;-)
     before_action :set_case, only: [ :show, :vega_specification, :vega_data ]
 
     def show

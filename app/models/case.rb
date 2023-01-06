@@ -153,8 +153,16 @@ class Case < ApplicationRecord
     save
   end
 
+  def public?
+    true == public
+  end
+
   def mark_public
     self.public = true
+  end
+
+  def mark_private
+    self.public = false
   end
 
   def mark_public!

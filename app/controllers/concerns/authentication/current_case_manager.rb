@@ -24,8 +24,10 @@ module Authentication
 
       @case = if is_encrypted_case_id
                 Case.public_cases.find_by(id: decrypt_case_id(case_id))
-              else
+              elsif current_user
                 current_user.cases_involved_with.where(id: case_id).first
+              else
+                Case.public_cases.find_by(id: case_id)
               end
     end
 
@@ -50,7 +52,11 @@ module Authentication
     end
 
     def decrypt_case_id encrypted_value
-      Rails.application.message_verifier('magic').verify(encrypted_value)
+      begin
+        Rails.application.message_verifier('magic').verify(encrypted_value)
+      rescue ActiveSupport::MessageVerifier::InvalidSignature
+        nil
+      end
     end
   end
 end

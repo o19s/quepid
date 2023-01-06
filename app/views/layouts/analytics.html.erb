@@ -14,7 +14,8 @@
   <body class="d-flex flex-column h-100">
     <header>
       <%= render 'layouts/header' %>
-      <% if @case %>
+      <% if @case.public? %>
+        <!-- This is probably not the best place for this label long term, but for now -->
         <script>
           $(function() {
             new ClipboardJS('#public-url');
@@ -33,6 +34,11 @@
           </a>
         </h3>
       <% end %>
+      <p>
+        <% if @current_user %>
+          <%= button_to (@case.public? ? 'Make Private' : 'Make public'), analytics_case_visibility_path(@case), method: :patch, class: 'btn btn-danger' %>
+        <% end %>
+      </p>
     </header>
 
     <!-- Begin page content -->
