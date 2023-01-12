@@ -10,7 +10,8 @@ Dir.chdir APP_ROOT do
 
   puts "\n== Setting up Jupyter Lite Notebooks =="
   system "bin/docker r mv /srv/app/public/notebooks /srv/app/public/notebooks-$(date +%s)"
-  system "bin/docker r jupyter lite build  --lite-dir /srv/app/jupyterlite --apps=lab --no-sourcemaps --contents ./jupyterlite/files --output-dir /srv/app/public/notebooks"
+  system "bin/docker r mkdir /srv/app/public/notebooks"
+  system "bin/docker r jupyter lite build --apps=lab --lite-dir /srv/app/jupyterlite  --output-dir /srv/app/public/notebooks"
   system "bin/docker r tar -czf /srv/app/jupyterlite/notebooks.gz /srv/app/public/notebooks"
 
 end
