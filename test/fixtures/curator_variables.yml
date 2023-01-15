@@ -2,12 +2,20 @@
 #
 # Table name: curator_variables
 #
-#  id             :integer          not null, primary key
-#  name           :string(500)
-#  value          :float(24)
-#  try_id         :integer
-#  created_at     :datetime         not null
-#  updated_at     :datetime         not null
+#  id         :integer          not null, primary key
+#  name       :string(500)
+#  value      :float(24)
+#  created_at :datetime         not null
+#  updated_at :datetime         not null
+#  try_id     :integer
+#
+# Indexes
+#
+#  try_id  (try_id)
+#
+# Foreign Keys
+#
+#  curator_variables_ibfk_1  (try_id => tries.id)
 #
 
 one:

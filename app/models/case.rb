@@ -5,13 +5,23 @@
 # Table name: cases
 #
 #  id              :integer          not null, primary key
+#  archived        :boolean
 #  case_name       :string(191)
 #  last_try_number :integer
-#  owner_id        :integer
-#  archived        :boolean
-#  scorer_id       :integer
+#  public          :boolean
 #  created_at      :datetime         not null
 #  updated_at      :datetime         not null
+#  book_id         :integer
+#  owner_id        :integer
+#  scorer_id       :integer
+#
+# Indexes
+#
+#  user_id  (owner_id)
+#
+# Foreign Keys
+#
+#  cases_ibfk_1  (owner_id => users.id)
 #
 
 # rubocop:disable Metrics/ClassLength
@@ -35,16 +45,16 @@ class Case < ApplicationRecord
   has_many   :metadata,
              dependent: :destroy
 
-  # has_many   :ratings,  # we don't actually need this.
-  #           through: :queries
-
   # rubocop:disable Rails/InverseOf
   has_many   :queries,  -> { order(arranged_at: :asc) },
              autosave:  true,
              dependent: :destroy
   # rubocop:enable Rails/InverseOf
 
-  has_many   :scores,   -> { order(updated_at:  :desc) },
+  has_many   :ratings,
+             through: :queries
+
+  has_many   :scores, -> { order(updated_at: :desc) },
              dependent:  :destroy,
              inverse_of: :case
 
@@ -54,6 +64,8 @@ class Case < ApplicationRecord
   has_many   :annotations,
              through:   :scores,
              dependent: :destroy
+
+  belongs_to :book, optional: true
 
   # Validations
   validates :case_name, presence: true
@@ -86,6 +98,8 @@ class Case < ApplicationRecord
         `cases`.`owner_id` = ?
     ',  user.id)
   }
+
+  scope :public_cases, -> { where(public: true) }
 
   scope :for_user, ->(user) {
     ids = for_user_via_teams(user).pluck(:id) + for_user_directly_owned(user).pluck(:id)
@@ -139,12 +153,33 @@ class Case < ApplicationRecord
     save
   end
 
+  def public?
+    true == public
+  end
+
+  def mark_public
+    self.public = true
+  end
+
+  def mark_private
+    self.public = false
+  end
+
+  def mark_public!
+    mark_public
+    save
+  end
+
   def rearrange_queries
     Arrangement::List.sequence queries
   end
 
   def last_score
     scores.last_one
+  end
+
+  def public_id
+    Rails.application.message_verifier('magic').generate(id)
   end
 
   private
@@ -172,14 +207,15 @@ class Case < ApplicationRecord
   # rubocop:disable Metrics/MethodLength
   def clone_try the_try, preserve_history
     new_try = Try.new(
-      escape_query:  the_try.escape_query,
-      api_method:    the_try.api_method,
-      field_spec:    the_try.field_spec,
-      name:          the_try.name,
-      query_params:  the_try.query_params,
-      search_engine: the_try.search_engine,
-      search_url:    the_try.search_url,
-      try_number:    preserve_history ? the_try.try_number : 0
+      escape_query:   the_try.escape_query,
+      api_method:     the_try.api_method,
+      field_spec:     the_try.field_spec,
+      name:           the_try.name,
+      query_params:   the_try.query_params,
+      search_engine:  the_try.search_engine,
+      search_url:     the_try.search_url,
+      number_of_rows: the_try.number_of_rows,
+      try_number:     preserve_history ? the_try.try_number : 0
     )
     tries << new_try
 

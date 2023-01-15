@@ -44,6 +44,12 @@ coverage/
 
 # Docker artifacts
 public/srv
+docker-compose.override.yml
+
+# Jupyterlite
+public/notebooks
+public/notebooks-*
+.jupyterlite.doit.db
 
 # Test Reports
 test/reports

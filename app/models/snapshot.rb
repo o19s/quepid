@@ -7,10 +7,20 @@
 #  id         :integer          not null, primary key
 #  name       :string(250)
 #  created_at :datetime
-#  case_id    :integer
-#  try_id     :integer
-#  scorer_id  :integer
 #  updated_at :datetime         not null
+#  case_id    :integer
+#  scorer_id  :bigint
+#  try_id     :bigint
+#
+# Indexes
+#
+#  case_id                       (case_id)
+#  index_snapshots_on_scorer_id  (scorer_id)
+#  index_snapshots_on_try_id     (try_id)
+#
+# Foreign Keys
+#
+#  snapshots_ibfk_1  (case_id => cases.id)
 #
 
 class Snapshot < ApplicationRecord

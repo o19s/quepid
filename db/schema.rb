@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2022_08_17_163239) do
+ActiveRecord::Schema.define(version: 2022_12_14_165324) do
 
   create_table "annotations", id: :integer, charset: "utf8", force: :cascade do |t|
     t.text "message"
@@ -19,6 +19,16 @@ ActiveRecord::Schema.define(version: 2022_08_17_163239) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["user_id"], name: "index_annotations_on_user_id"
+  end
+
+  create_table "books", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
+    t.integer "team_id"
+    t.integer "scorer_id"
+    t.bigint "selection_strategy_id", null: false
+    t.string "name"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["selection_strategy_id"], name: "index_books_on_selection_strategy_id"
   end
 
   create_table "case_metadata", id: :integer, charset: "latin1", force: :cascade do |t|
@@ -52,6 +62,8 @@ ActiveRecord::Schema.define(version: 2022_08_17_163239) do
     t.integer "scorer_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "book_id"
+    t.boolean "public"
     t.index ["owner_id"], name: "user_id"
   end
 
@@ -62,6 +74,15 @@ ActiveRecord::Schema.define(version: 2022_08_17_163239) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["try_id"], name: "try_id"
+  end
+
+  create_table "judgements", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
+    t.integer "user_id"
+    t.float "rating"
+    t.bigint "query_doc_pair_id", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["query_doc_pair_id"], name: "index_judgements_on_query_doc_pair_id"
   end
 
   create_table "permissions", id: :integer, charset: "utf8", force: :cascade do |t|
@@ -88,6 +109,18 @@ ActiveRecord::Schema.define(version: 2022_08_17_163239) do
     t.index ["case_id"], name: "case_id"
   end
 
+  create_table "query_doc_pairs", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
+    t.integer "user_id"
+    t.string "query_text"
+    t.integer "position"
+    t.text "document_fields"
+    t.bigint "book_id", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.string "doc_id"
+    t.index ["book_id"], name: "index_query_doc_pairs_on_book_id"
+  end
+
   create_table "ratings", id: :integer, charset: "latin1", force: :cascade do |t|
     t.string "doc_id", limit: 500
     t.integer "rating"
@@ -112,12 +145,19 @@ ActiveRecord::Schema.define(version: 2022_08_17_163239) do
     t.boolean "communal", default: false
   end
 
+  create_table "selection_strategies", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
+    t.string "name"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+  end
+
   create_table "snapshot_docs", id: :integer, charset: "latin1", force: :cascade do |t|
     t.string "doc_id", limit: 500
     t.integer "position"
     t.integer "snapshot_query_id"
     t.text "explain", size: :medium, collation: "utf8mb4_general_ci"
     t.boolean "rated_only", default: false
+    t.text "fields", size: :medium, collation: "utf8mb4_general_ci"
     t.index ["snapshot_query_id"], name: "snapshot_query_id"
   end
 
@@ -126,6 +166,7 @@ ActiveRecord::Schema.define(version: 2022_08_17_163239) do
     t.integer "snapshot_id"
     t.float "score"
     t.boolean "all_rated"
+    t.integer "number_of_results"
     t.index ["query_id"], name: "query_id"
     t.index ["snapshot_id"], name: "snapshot_id"
   end
@@ -186,6 +227,7 @@ ActiveRecord::Schema.define(version: 2022_08_17_163239) do
     t.datetime "updated_at", null: false
     t.string "ancestry", limit: 3072
     t.string "api_method"
+    t.string "custom_headers", limit: 1000
     t.index ["case_id"], name: "case_id"
     t.index ["try_number"], name: "ix_queryparam_tryNo"
   end
@@ -225,6 +267,7 @@ ActiveRecord::Schema.define(version: 2022_08_17_163239) do
   end
 
   add_foreign_key "annotations", "users"
+  add_foreign_key "books", "selection_strategies"
   add_foreign_key "case_metadata", "cases", name: "case_metadata_ibfk_1"
   add_foreign_key "case_metadata", "users", name: "case_metadata_ibfk_2"
   add_foreign_key "case_scores", "annotations"
@@ -232,7 +275,9 @@ ActiveRecord::Schema.define(version: 2022_08_17_163239) do
   add_foreign_key "case_scores", "users", name: "case_scores_ibfk_2"
   add_foreign_key "cases", "users", column: "owner_id", name: "cases_ibfk_1"
   add_foreign_key "curator_variables", "tries", name: "curator_variables_ibfk_1"
+  add_foreign_key "judgements", "query_doc_pairs"
   add_foreign_key "queries", "cases", name: "queries_ibfk_1"
+  add_foreign_key "query_doc_pairs", "books"
   add_foreign_key "ratings", "queries", name: "ratings_ibfk_1"
   add_foreign_key "snapshot_docs", "snapshot_queries", name: "snapshot_docs_ibfk_1"
   add_foreign_key "snapshot_queries", "queries", name: "snapshot_queries_ibfk_1"

@@ -2,13 +2,15 @@
 
 angular.module('QuepidApp')
   .controller('FrogReportModalInstanceCtrl', [
-    '$uibModalInstance', '$scope',
-    'theCase', 'queriesSvc',
-    function ($uibModalInstance, $scope, theCase, queriesSvc) {
+    '$uibModalInstance', '$scope', 'flash',
+    'theCase', 'queriesSvc','bookSvc',
+    function ($uibModalInstance, $scope,flash, theCase, queriesSvc, bookSvc) {
       var ctrl = this;
 
       ctrl.theCase = theCase;
       ctrl.queriesSvc = queriesSvc;
+
+      $scope.processingPrompt = { inProgress: false, error: null};
 
       $scope.totalNumberOfRatingsNeeded = null;
       $scope.missingRatingsRate = null;
@@ -30,8 +32,8 @@ angular.module('QuepidApp')
         "height": 200,
         "padding": 5,
         "title": {
-           "text": "Summary of Query Rating Status",
-           "subtitle": "Number of queries grouped by missing ratings",
+           "text": "",
+           "subtitle": "Number of queries grouped by count of missing ratings",
            "subtitleFontStyle": "italic",
            "frame": "group",
            "anchor": "start",
@@ -191,13 +193,20 @@ angular.module('QuepidApp')
       ctrl.totalNumberOfRatingsNeeded = function () {
         var totalNumberOfRatingsNeeded = 0;
         angular.forEach(queriesSvc.queries, function(q) {
-          if (q.depthOfRating){
-            $scope.totalNumberQueriesWithResults += 1;
-            totalNumberOfRatingsNeeded = totalNumberOfRatingsNeeded + q.depthOfRating;
-          }
-          else {
+
+          if (q.docs.length === 0){
             $scope.totalNumberQueriesWithoutResults += 1;
           }
+          else {
+            $scope.totalNumberQueriesWithResults += 1;
+            if (q.depthOfRating){
+              totalNumberOfRatingsNeeded = totalNumberOfRatingsNeeded + q.depthOfRating;
+            }
+            else {
+              totalNumberOfRatingsNeeded = totalNumberOfRatingsNeeded + ctrl.depthOfRating();
+            }
+          }
+
         });
         $scope.totalNumberOfRatingsNeeded = totalNumberOfRatingsNeeded;
       };
@@ -231,6 +240,21 @@ angular.module('QuepidApp')
           $scope.numberOfMissingRatings = ctrl.numberOfMissingRatings();
           $scope.missingRatingsRate = ctrl.missingRatingsRate();
       };
+
+      ctrl.refreshRatingsFromBook = function () {
+        //$uibModalInstance.close(ctrl.options);
+        bookSvc.refreshCaseRatingsFromBook(ctrl.theCase.caseNo, ctrl.theCase.bookId)
+        .then(function() {
+          $scope.processingPrompt.inProgress = true;
+          $uibModalInstance.close();
+
+          flash.success = 'Ratings have been refreshed.';
+        }, function(response) {
+          $scope.processingPrompt.inProgress  = false;
+          $scope.processingPrompt.error       = response.data.statusText;
+        });
+      };
+
 
       ctrl.ok = function () {
         $uibModalInstance.close(ctrl.options);

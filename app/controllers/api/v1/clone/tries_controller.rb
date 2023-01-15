@@ -13,6 +13,7 @@ module Api
           new_try_params = {
             escape_query:   @try.escape_query,
             api_method:     @try.api_method,
+            custom_headers: @try.custom_headers,
             field_spec:     @try.field_spec,
             number_of_rows: @try.number_of_rows,
             query_params:   @try.query_params,
@@ -56,6 +57,7 @@ module Api
             :search_engine,
             :escape_query,
             :api_method,
+            :custom_headers,
             :number_of_rows
           )
         end

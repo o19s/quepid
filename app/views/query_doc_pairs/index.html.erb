@@ -1,0 +1,109 @@
+<!--<p id="notice"><%#= notice %></p>-->
+
+<%
+  @books = Book.all
+  @book_id = params["book_id"].to_i
+  @book_name = nil
+  @books.each do |b|
+    if b.id == @book_id
+      @book_name = b.name
+      @book = b
+    end
+  end
+%>
+
+<%
+  @users = User.all
+  @user_lookup = {}
+  @users.each do |u|
+    @user_lookup[u.id] = u.email
+  end
+%>
+
+<%
+  @books = Book.all
+  @book_lookup = {}
+  @books.each do |b|
+    @book_lookup[b.id] = b.name
+  end
+%>
+
+<h1>Query Doc Pairs for Book <%= @book_id %> "<%= @book_name %>"</h1>
+
+<% if @book_name != nil %>
+
+<table class="table table-striped table-hover table-sm">
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Query text</th>
+      <th>Position</th>
+      <th>Doc ID</th>
+      <th>Document fields</th>
+      <th>Created by User</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    <% @query_doc_pairs.each do |query_doc_pair| %>
+      <% if query_doc_pair.book_id == @book_id %>
+        <tr>
+
+          <td>
+            <%= link_to query_doc_pair.id, book_query_doc_pair_url(id: query_doc_pair.id) %>
+
+          </td>
+
+          <td><%= query_doc_pair.query_text %></td>
+          <td><%= query_doc_pair.position %></td>
+          <td><%= query_doc_pair.doc_id %></td>
+          <td><%= query_doc_pair.document_fields %></td>
+          <td><%= @user_lookup[query_doc_pair.user_id] %></td>
+<!--          <td><%#= link_to 'Edit', edit_query_doc_pair_path(query_doc_pair) %></td>-->
+<!--          <td><%#= link_to 'Destroy', query_doc_pair, method: :delete, data: { confirm: 'Are you sure?' } %></td>-->
+        </tr>
+      <% end %>
+    <% end %>
+    </tbody>
+  </table>
+  <br>
+  <%= button_to 'New Query Doc Pair', new_book_query_doc_pair_path, method: :get %>
+  <br>
+  <%= button_to "Back to Book #{@book.name}", @book, method: :get %>
+
+<% else %>
+
+  Specify a book_id please. <br>
+<!--  <h2>for All Books</h2>-->
+<!--  <table>-->
+<!--    <thead>-->
+<!--    <tr>-->
+<!--      <th>Created by User</th>-->
+<!--      <th>Query text</th>-->
+<!--      <th>Rank</th>-->
+<!--      <th>Document fields</th>-->
+<!--      <th>Book</th>-->
+<!--      <th colspan="3"></th>-->
+<!--    </tr>-->
+<!--    </thead>-->
+
+<!--    <tbody>-->
+    <%# @query_doc_pairs.each do |query_doc_pair| %>
+<!--      <tr>-->
+<!--        <td><%#= @user_lookup[query_doc_pair.user_id] %></td>-->
+<!--        <td><%#= query_doc_pair.query_text %></td>-->
+<!--        <td><%#= query_doc_pair.rank %></td>-->
+<!--        <td><%#= query_doc_pair.document_fields %></td>-->
+<!--        <td><%#= @book_lookup[query_doc_pair.book_id] %></td>-->
+<!--        <td><%#= link_to 'Show', query_doc_pair %></td>-->
+<!--        <td><%#= link_to 'Edit', edit_query_doc_pair_path(query_doc_pair) %></td>-->
+<!--        <td><%#= link_to 'Destroy', query_doc_pair, method: :delete, data: { confirm: 'Are you sure?' } %></td>-->
+<!--      </tr>-->
+    <%# end %>
+<!--    </tbody>-->
+<!--  </table>-->
+<!--  <br>-->
+
+<% end %>
+
+<br>

@@ -24,3 +24,16 @@
 
  @import "fonts";
  @import "signup";
+
+
+.public-share {
+  .clipboard-icon {
+    visibility:hidden;
+  }
+
+  &:hover {
+    .clipboard-icon {
+      visibility:visible;
+    }
+  }
+}

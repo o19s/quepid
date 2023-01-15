@@ -34,6 +34,7 @@ angular.module('QuepidApp')
       svc.refetchCaseLists  = refetchCaseLists;
       svc.saveDefaultScorer = saveDefaultScorer;
       svc.renameCase        = renameCase;
+      svc.associateBook     = associateBook;
 
       // an individual case, ie
       // a search problem to be solved
@@ -47,7 +48,10 @@ angular.module('QuepidApp')
         theCase.scorerId          = data.scorer_id;
         theCase.owned             = data.owned;
         theCase.ownerName         = data.owner_name;
-        theCase.queriesCount      = data.queries_count;
+        theCase.bookId            = data.bookId;
+        theCase.bookName          = data.bookName;
+        theCase.queriesCount      = data.queriesCount;
+        theCase.public            = data.public;
         theCase.teams             = data.teams || [];
         theCase.tries             = data.tries || [];
         theCase.scores            = data.scores || [];
@@ -420,6 +424,28 @@ angular.module('QuepidApp')
               caseTryNavSvc.notFound();
             });
         }
+      }
+
+      /*
+       * update which book the case is tied to.  This could be refactored into a more
+       * general "update" method.
+       */
+      function associateBook(theCase, bookId) {
+
+        // HTTP PUT /api/cases/<int:caseId>
+        var url  = '/api/cases/' + theCase.caseNo;
+        var data = {
+          book_id: bookId
+        };
+
+        return $http.put(url, data)
+          .then(function(response) {
+
+            theCase.bookId = bookId;
+            theCase.bookName = response.bookName;
+          }, function() {
+            caseTryNavSvc.notFound();
+          });
       }
 
 

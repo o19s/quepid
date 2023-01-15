@@ -28,6 +28,22 @@ class RatingsImporterTest < ActiveSupport::TestCase
       assert_equal 'Mexican Food', rating.query.query_text
     end
 
+    test 'strips header row when configured with :drop_header true' do
+      ratings = [
+        { query_text: 'query_text', doc_id: 'doc_id', rating: 'rating' },
+        { query_text: 'Mexican Food2',   doc_id: ' 720784-021190', rating: ' 5' },
+        { query_text: 'Mexican Food2',   doc_id: ' 843075-031090', rating: ' 6' },
+        { query_text: 'Mexican Food2', doc_id: '748785-005680', rating: ' 2' }
+      ]
+
+      options[:drop_header] = true
+
+      ratings_importer = RatingsImporter.new owned_case, ratings, options
+      ratings_importer.import
+      owned_case.reload
+      assert_nil Query.find_by(case_id: owned_case.id, query_text: 'query_text')
+    end
+
     test 'includes queries with no ratings as queries but no ratings' do
       ratings = [
         { query_text: 'Mexican Food', doc_id: '720784-021190', rating: '5' },

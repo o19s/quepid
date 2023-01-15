@@ -5,18 +5,29 @@
 # Table name: tries
 #
 #  id             :integer          not null, primary key
-#  try_number     :integer
-#  query_params   :text(65535)
-#  case_id        :integer
-#  field_spec     :string(500)
-#  search_url     :string(500)
-#  name           :string(50)
-#  search_engine  :string(50)       default("solr")
+#  ancestry       :string(3072)
+#  api_method     :string(255)
 #  escape_query   :boolean          default(TRUE)
-#  api_method     :string(50)
+#  field_spec     :string(500)
+#  name           :string(50)
+#  custom_headers :string(1000)
 #  number_of_rows :integer          default(10)
+#  query_params   :string(20000)
+#  search_engine  :string(50)       default("solr")
+#  search_url     :string(500)
+#  try_number     :integer
 #  created_at     :datetime         not null
 #  updated_at     :datetime         not null
+#  case_id        :integer
+#
+# Indexes
+#
+#  case_id              (case_id)
+#  ix_queryparam_tryNo  (try_number)
+#
+# Foreign Keys
+#
+#  tries_ibfk_1  (case_id => cases.id)
 #
 
 require 'solr_arg_parser'
@@ -47,6 +58,8 @@ class Try < ApplicationRecord
       solr_args
     when 'es'
       es_args
+    when 'os'
+      os_args
     end
   end
 
@@ -74,8 +87,13 @@ class Try < ApplicationRecord
     EsArgParser.parse(query_params, curator_vars_map)
   end
 
+  def os_args
+    # Use the EsArgParser as currently queries are the same
+    EsArgParser.parse(query_params, curator_vars_map)
+  end
+
   def id_from_field_spec
-    # logic is inspired by https://github.com/o19s/splainer-search/blob/master/services/fieldSpecSvc.js
+    # logic is inspired by https://github.com/o19s/splainer-search/blob/main/services/fieldSpecSvc.js
 
     # rubocop:disable Style/IfUnlessModifier
     # rubocop:disable Style/MultipleComparison
@@ -105,15 +123,11 @@ class Try < ApplicationRecord
   end
 
   def index_name_from_search_url
-    # rubocop:disable Lint/DuplicateBranch
-    # NOTE: fix me when we add antoher engine!
+    # NOTE: currently all supported engines have the index name as second to last element, refactor when this changes
     case search_engine
-    when 'solr'
-      search_url.split('/')[-2]
-    when 'es'
+    when 'solr', 'es', 'os'
       search_url.split('/')[-2]
     end
-    # rubocop:enable Lint/DuplicateBranch
   end
 
   private

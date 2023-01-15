@@ -74,21 +74,34 @@ module Api
         let(:the_case)            { cases(:one) }
         let(:matt_case)           { cases(:matt_case) }
         let(:case_with_two_tries) { cases(:case_with_two_tries) }
-        let(:joey) { users(:joey) }
+        let(:joey)                { users(:joey) }
+        let(:public_case)         { cases(:public_case) }
 
         test "returns a not found error if the case is not in the signed in user's case list" do
           get :show, params: { case_id: matt_case.id }
           assert_response :not_found
         end
 
-        test 'returns case info' do
+        test 'returns case info for a public case' do
+          get :show, params: { case_id: public_case.id }
+          assert_response :ok
+
+          body = JSON.parse(response.body)
+
+          assert_equal body['case_name'], public_case.case_name
+          assert_equal body['caseNo'],    public_case.id
+          assert_equal body['public'],    true
+        end
+
+        test 'returns case info for a regular case' do
           get :show, params: { case_id: the_case.id }
           assert_response :ok
 
           body = JSON.parse(response.body)
 
           assert_equal body['case_name'], the_case.case_name
-          assert_equal body['case_id'], the_case.id
+          assert_equal body['caseNo'],    the_case.id
+          assert_equal body['public'],    false
         end
 
         test 'returns tries from newest to oldest' do

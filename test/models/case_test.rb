@@ -5,13 +5,23 @@
 # Table name: cases
 #
 #  id              :integer          not null, primary key
+#  archived        :boolean
 #  case_name       :string(191)
 #  last_try_number :integer
-#  user_id         :integer
-#  archived        :boolean
-#  scorer_id       :integer
+#  public          :boolean
 #  created_at      :datetime         not null
 #  updated_at      :datetime         not null
+#  book_id         :integer
+#  owner_id        :integer
+#  scorer_id       :integer
+#
+# Indexes
+#
+#  user_id  (owner_id)
+#
+# Foreign Keys
+#
+#  cases_ibfk_1  (owner_id => users.id)
 #
 
 require 'test_helper'

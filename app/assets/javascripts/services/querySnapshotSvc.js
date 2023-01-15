@@ -64,14 +64,15 @@ angular.module('QuepidApp')
           });
       };
 
-      this.addSnapshot = function(name, queries) {
+      this.addSnapshot = function(name, recordDocumentFields, queries) {
         // we may want to refactor the payload structure in the future.
         var docs = {};
         var queriesPayload = {};
         angular.forEach(queries, function(query) {
           queriesPayload[query.queryId] = {
             'score': query.currentScore.score,
-            'all_rated': query.currentScore.allRated
+            'all_rated': query.currentScore.allRated,
+            'number_of_results': query.numFound
           };
 
           // The score can be -- if it hasn't actually been scored, so convert
@@ -84,12 +85,35 @@ angular.module('QuepidApp')
 
           // Save all matches
           angular.forEach(query.docs, function(doc) {
-            docs[query.queryId].push({'id': doc.id, 'explain': doc.explain().rawStr(), 'rated_only': false});
+
+            var docPayload = {'id': doc.id, 'explain': doc.explain().rawStr(), 'rated_only': false};
+            if (recordDocumentFields) {
+              var fields = {};
+              angular.forEach(Object.values(doc.subsList), function(field) {
+                fields[field['field']] = field['value'];
+              });
+              fields[doc.titleField] = doc.title;
+
+              docPayload['fields'] = fields;
+            }
+
+            docs[query.queryId].push(docPayload);
+
           });
 
           // Save rated only matches
           angular.forEach(query.ratedDocs, function(doc) {
-            docs[query.queryId].push({'id': doc.id, 'explain': doc.explain().rawStr(), 'rated_only': true});
+            var docPayload = {'id': doc.id, 'explain': doc.explain().rawStr(), 'rated_only': true};
+
+            if (recordDocumentFields) {
+              var fields = {};
+              angular.forEach(Object.values(doc.subsList), function(field) {
+                fields[field['field']] = field['value'];
+              });
+
+              docPayload['fields'] = fields;
+            }
+            docs[query.queryId].push(docPayload);
           });
         });
 

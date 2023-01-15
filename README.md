@@ -103,9 +103,16 @@ bin/docker r bin/rake db:seed:large_cases
 
 This is useful for stress testing Quepid!  Especially the front end application!
 
+Lastly, to run the Jupyter notebooks, you need to run:
+
+```
+bin/setup_jupyterlite
+```
+
+
 #### 3. Running the app
 
-Now fire up Quepid locally at http://localhost:3000:
+Now fire up Quepid locally at http://localhost:
 
 ```
 bin/docker server
@@ -510,6 +517,8 @@ The `docker-compose.yml` file contains an nginx reverse proxy that uses these ce
 
 Add dev docs here!
 
+The developer deploy of Keycloak Admin console credentials are `admin` and `password`.
+
 
 ## Modifying the database
 
@@ -519,6 +528,9 @@ bin/docker r bundle exec bin/rails g migration FixCuratorVariablesTriesForeignKe
 ```
 
 Followed by `bin/docker r bundle exec rake db:migrate`
+
+You should also update the schema annotation data by running `bin/docker r bundle exec annotations`
+when you change the schema.
 
 ## Updating RubyGems
 
@@ -541,10 +553,21 @@ For the various Admin pages, we actually are using Bootstrap 5! That is included
 We currently use Rails Sprockets to compile everything, but do have dreams of moving the JavaScript
 over to Webpacker.
 
+## I'd like to develop Jupyterlite
+
+Run the `./bin/setup_jupyterlite` to update the archive file `./jupyterlite/notebooks.gz`.  This
+also sets up the static files in the `./public/notebooks` directory.  However, so that we don't check in hundreds of files,
+we ignore that directory from Github.   At `asset:precompile` time we unpack the `./jupyterlite/notebooks.gz` file instead.  
+This works on Heroku and the production Docker image.
+
+To update the version of Jupyterlite edit `Dockerfile.dev` and `Dockerfile.prod` and update the `pip install` version.
+
+Question?  Does jupyterlite work in localhost????
+
 # QA
 
 There is a code deployment pipeline to the http://quepid-staging.herokuapp.com site that
-is run on successful commits to `master`.  
+is run on successful commits to `main`.  
 
 If you have pending migrations you will need to run them via:
 

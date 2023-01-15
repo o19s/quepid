@@ -22,32 +22,37 @@ angular.module('QuepidApp')
       $scope.showTLSChangeWarning = false;
 
       $scope.validateSearchEngineUrl  = function() {
-        if ($scope.settings.searchEngine === 'es'){
-          var uri       = esUrlSvc.parseUrl($scope.settings.searchUrl);
-          $scope.showESTemplateWarning = esUrlSvc.isTemplateCall(uri);
-        }
-
-        if ($scope.settings.searchEngine !== ''){
-          // Figure out if we need to redirect based on our search engine's url.
-          var quepidStartsWithHttps = $location.protocol() === 'https';
-          var searchEngineStartsWithHttps = $scope.settings.searchUrl.startsWith('https');
-
-          if ((quepidStartsWithHttps.toString() === searchEngineStartsWithHttps.toString())){
-            $scope.showTLSChangeWarning = false;
+        if (!angular.isUndefined($scope.settings.searchUrl)){
+          if ($scope.settings.searchEngine === 'es' || $scope.settings.searchEngine === 'os'){
+            var uri       = esUrlSvc.parseUrl($scope.settings.searchUrl);
+            $scope.showESTemplateWarning = esUrlSvc.isTemplateCall(uri);
           }
-          else {
-            $scope.showTLSChangeWarning = true;
-            $scope.quepidUrlToSwitchTo = $location.protocol() + '://' + $location.host() + $location.path();
 
-            $scope.quepidUrlToSwitchTo = $scope.quepidUrlToSwitchTo + '?searchUrl=' + $scope.settings.searchUrl;
+          if ($scope.settings.searchEngine !== '' && !angular.isUndefined($scope.settings.searchUrl)){
+            // Figure out if we need to redirect based on our search engine's url.
+            var quepidStartsWithHttps = $location.protocol() === 'https';
+            var searchEngineStartsWithHttps = $scope.settings.searchUrl.startsWith('https');
 
-            if (searchEngineStartsWithHttps){
-              $scope.protocolToSwitchTo = 'https';
-              $scope.quepidUrlToSwitchTo = $scope.quepidUrlToSwitchTo.replace('http', 'https');
+            if ((quepidStartsWithHttps.toString() === searchEngineStartsWithHttps.toString())){
+              $scope.showTLSChangeWarning = false;
             }
             else {
-              $scope.protocolToSwitchTo = 'http';
-              $scope.quepidUrlToSwitchTo = $scope.quepidUrlToSwitchTo.replace('https', 'http');
+              $scope.showTLSChangeWarning = true;
+              $scope.quepidUrlToSwitchTo = $location.protocol() + '://' + $location.host() + $location.path();
+
+              $scope.quepidUrlToSwitchTo = $scope.quepidUrlToSwitchTo + '?searchEngine=' + $scope.settings.searchEngine + '&searchUrl=' + $scope.settings.searchUrl + '&showWizard=false&apiMethod=' + $scope.settings.apiMethod;
+              $scope.quepidUrlToSwitchTo = $scope.quepidUrlToSwitchTo + '&fieldSpec=' + $scope.settings.fieldSpec;
+
+
+
+              if (searchEngineStartsWithHttps){
+                $scope.protocolToSwitchTo = 'https';
+                $scope.quepidUrlToSwitchTo = $scope.quepidUrlToSwitchTo.replace('http', 'https');
+              }
+              else {
+                $scope.protocolToSwitchTo = 'http';
+                $scope.quepidUrlToSwitchTo = $scope.quepidUrlToSwitchTo.replace('https', 'http');
+              }
             }
           }
         }
@@ -91,6 +96,7 @@ angular.module('QuepidApp')
           curator_vars:    $scope.settings.selectedTry.curatorVarsDict(),
           escape_query:   $scope.settings.selectedTry.escapeQuery,
           api_method:     $scope.settings.selectedTry.apiMethod,
+          custom_headers: $scope.settings.selectedTry.customHeaders,
           field_spec:     $scope.settings.selectedTry.fieldSpec,
           name:           $scope.settings.selectedTry.name,
           number_of_rows:   $scope.settings.selectedTry.numberOfRows,
@@ -101,6 +107,11 @@ angular.module('QuepidApp')
         });
         tmp.updateVars();
         $scope.settings.selectedTry = tmp;
+        $scope.validateSearchEngineUrl();
+      };
+
+      $scope.changeSearchEngine = function() {
+        $scope.settings.reset();
         $scope.validateSearchEngineUrl();
       };
     }

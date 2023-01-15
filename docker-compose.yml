@@ -11,6 +11,8 @@ services:
     environment:
       - LAUNCHY_DRY_RUN=true # dev only letter_opener gem wants to open a browser when sending emails.
       - BROWSER=/dev/null
+      - PUPPETEER_SKIP_DOWNLOAD=true
+      - PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
     volumes:
       - .:/srv/app
       - ./log:/log

@@ -16,7 +16,7 @@ AllCops:
 
 Rails/I18nLocaleTexts:
   Enabled: false  # we are only english
-  
+
 Naming/VariableNumber:
   Enabled: false  # we have a lot of legacy code to update
 
@@ -112,3 +112,6 @@ Style/TrailingCommaInHashLiteral:
 
 Style/YodaCondition:
   EnforcedStyle: require_for_equality_operators_only
+
+Style/HashSyntax:
+  Enabled: false  

@@ -63,6 +63,7 @@ class SnapshotManager
       queries[query_id]['score'] = nil if '--' == queries[query_id]['score']
       snapshot_query.score = queries[query_id][:score]
       snapshot_query.all_rated = queries[query_id][:all_rated]
+      snapshot_query.number_of_results = queries[query_id][:number_of_results]
 
       queries_to_import << snapshot_query
     end
@@ -166,6 +167,7 @@ class SnapshotManager
 
   private
 
+  # rubocop:disable Metrics/MethodLength
   def setup_docs_for_query query, docs
     results = []
 
@@ -181,6 +183,7 @@ class SnapshotManager
         explain:    doc[:explain],
         position:   doc[:position] || (index + 1),
         rated_only: doc[:rated_only] || false,
+        fields:     doc[:fields].blank? ? nil : doc[:fields].to_json,
       }
 
       results << query.snapshot_docs.build(doc_params)
@@ -188,6 +191,7 @@ class SnapshotManager
 
     results
   end
+  # rubocop:enable Metrics/MethodLength
 
   def extract_doc_info row
     case @options[:format]

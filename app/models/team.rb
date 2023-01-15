@@ -6,9 +6,18 @@
 #
 #  id         :integer          not null, primary key
 #  name       :string(255)
-#  owner_id   :integer          not null
 #  created_at :datetime         not null
 #  updated_at :datetime         not null
+#  owner_id   :integer          not null
+#
+# Indexes
+#
+#  index_teams_on_name  (name)
+#  owner_id             (owner_id)
+#
+# Foreign Keys
+#
+#  teams_ibfk_1  (owner_id => users.id)
 #
 
 class Team < ApplicationRecord
@@ -27,6 +36,10 @@ class Team < ApplicationRecord
   has_and_belongs_to_many :scorers,
                           join_table: 'teams_scorers'
   # rubocop:enable Rails/HasAndBelongsToMany
+
+  has_many   :books, -> { order(name: :asc) },
+             dependent:  :destroy,
+             inverse_of: :team
 
   # Every owner is also a member of the team.  So when we care about access to a team,
   # we only need to check the team.members or the case.team.members.
