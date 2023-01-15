@@ -13,6 +13,8 @@ angular.module('QuepidApp')
       $scope.teamModel   = {};
       var teamId         = parseInt($routeParams.teamId, 10);
       $scope.currentTeam = {};
+      $scope.casesScope               = {};
+      $scope.casesScope.typeFilter    = 'all';
 
       // Functions
       function fetchTeam (teamId) {
