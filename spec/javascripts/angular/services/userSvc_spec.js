@@ -27,17 +27,23 @@ describe('Service: userSvc', function () {
   it('fetches user info', function() {
     var mockUser = {
       'email': 'mockEmail@example.com',
+      'defaultScorerId': 10,
+      'id':       1,
+    };
+
+    var mockUserResponse = {
+      'email': 'mockEmail@example.com',
       'default_scorer_id': 10,
       'id':       1,
     };
 
     var url = '/api/users/' + mockUser.id;
-    $httpBackend.expectGET(url).respond(200, mockUser);
+    $httpBackend.expectGET(url).respond(200, mockUserResponse);
 
     userSvc.get(mockUser.id)
       .then(function(response) {
         expect(response.email).toEqual(mockUser.email);
-        expect(response.defaultScorerId).toEqual(mockUser.defaultScorerId);
+        expect(response.default_scorer_id).toEqual(mockUser.default_scorer_id);
       });
 
     $httpBackend.flush();
