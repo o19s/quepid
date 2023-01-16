@@ -93,7 +93,7 @@ angular.module('QuepidApp')
         // UGH, this temp requires mapping back to API format of the data!
         var tmp = new TryFactory({
           args:           $scope.settings.selectedTry.args,
-          curatorVars:    $scope.settings.selectedTry.curatorVarsDict(),
+          curator_vars:    $scope.settings.selectedTry.curatorVarsDict(),
           escape_query:   $scope.settings.selectedTry.escapeQuery,
           api_method:     $scope.settings.selectedTry.apiMethod,
           custom_headers: $scope.settings.selectedTry.customHeaders,
