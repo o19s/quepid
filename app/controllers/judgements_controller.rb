@@ -2,8 +2,7 @@
 
 class JudgementsController < ApplicationController
   before_action :set_judgement, only: [ :show, :edit, :update, :destroy ]
-  before_action :find_book # , only: [ :index ]
-  # before_action :check_book, only: [ :index ]
+  before_action :find_book
 
   respond_to :html
 
@@ -30,12 +29,14 @@ class JudgementsController < ApplicationController
 
     @judgement.save
 
+    session["last_judgement_id"] = @judgement["id"]
+
     redirect_to book_judge_path(@book)
   end
 
   def update
     @judgement.update(judgement_params)
-    respond_with(@judgement, :location => book_judgement_path)
+    respond_with(@judgement, :location => book_query_doc_pair_judgements_path)
   end
 
   def destroy

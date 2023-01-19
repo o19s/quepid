@@ -37,6 +37,8 @@
     .button-other {background-color:gray; box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19); color: #666 !important;}
     .button-other:hover {background-color:gray !important;  box-shadow: 0 12px 16px 0 rgba(0,0,0,0.34), 0 17px 50px 0 rgba(0,0,0,0.19); color: black !important; }
 
+    .btn-preselected { color: black !important; font-weight: bold; font-style: italic;}
+
 </style>
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
@@ -218,8 +220,14 @@
 <%
   @path = ""
   if @judgement.persisted?
-    @path = book_query_doc_pair_judgement_path
+    @existing_rating = @judgement.rating
     @query_doc_pair = @judgement.query_doc_pair
+    begin
+      @path = book_query_doc_pair_judgement_path
+    rescue
+      controller.redirect_to book_query_doc_pair_judgement_url(@book, @query_doc_pair, @judgement)
+    end
+
   else
     @query_doc_pair = @book.random_query_doc_pair_for_rating
     if @query_doc_pair == nil
@@ -242,6 +250,8 @@
       </ul>
     </div>
   <% end %>
+
+<%  %>
 
   <%
 
@@ -443,18 +453,27 @@
           Buttons
         </td>
         <% @rating_buttons.each do |b| %>
+          <%
+            @button_classes = "btn btn-default "
+            if @existing_rating == b["value"].to_i
+              @button_classes = @button_classes + "btn-preselected "
+            end
+          %>
           <td style="padding:5px;">
-            <%= button_tag b["label"], type: 'button', onclick: "rate("+b["value"]+")", class: 'btn btn-default '+b["class"], id:"button-for-"+b["key"][:name].to_s %>
+            <%= button_tag b["label"], type: 'button', onclick: "rate("+b["value"]+")", class: @button_classes + b["class"], id:"button-for-"+b["key"][:name].to_s %>
           </td>
         <% end %>
       </tr>
-
       <tr>
         <td style="padding:5px;text-align: center; color: #ccc;">
           Keyboard shortcuts
         </td>
-        <% @rating_buttons.each do |b| %>
-          <td style="padding:5px;text-align: center; color: #999;"><span id=<%= "span-for-" + b["key"][:name].to_s %>><%= b["key"][:display_name] %></span></td>
+        <% @rating_buttons.each do |b|
+            @span_style = ""
+            if @existing_rating == b["value"].to_i
+              @span_style = "color:black;font-weight:bold;"
+            end %>
+            <td style="padding:5px;text-align: center; color: #999;"><span style=@span_stle id=<%#= "span-for-" + b["key"][:name].to_s %>><%#= b["key"][:display_name]%></span></td>
         <% end %>
       </tr>
     </table>

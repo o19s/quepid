@@ -3,6 +3,7 @@
 <h1>Judgements for Book <%= @book.name %></h1>
 
 <% if @book.random_query_doc_pair_for_rating %>
+  <% session["last_judgement_id"] = nil %>
   <%= button_to 'More Judgements are Needed!', book_judge_path(@book), method: :get %>
 <% else %>
   <span style="color:green;font-weight:bold;"> Congratulations! There are no more Query/Doc Pairs for you to judge in this book.</span>
@@ -30,7 +31,7 @@
 
         <tr>
           <td>
-            <%= link_to judgement.id, book_judgement_url(@book, judgement) %>
+            <%= link_to judgement.id, edit_book_query_doc_pair_judgement_path(judgement.query_doc_pair.book, judgement.query_doc_pair, judgement), method: :get %>
           </td>
 
           <td>
