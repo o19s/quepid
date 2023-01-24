@@ -25,8 +25,8 @@
       self.colors                 = scaleToColors(data.scale);
       self.displayName            = setDisplayName(data.name, data.communal);
       self.error                  = false;
-      self.manualMaxScore         = data.manualMaxScore || false;
-      self.manualMaxScoreValue    = data.manualMaxScoreValue || 100;
+      self.manualMaxScore         = data.manual_max_score || false;
+      self.manualMaxScoreValue    = data.manual_max_score_value || 100;
       self.name                   = data.name;
       self.owned                  = data.owned;
       self.ownerId                = data.owner_id;

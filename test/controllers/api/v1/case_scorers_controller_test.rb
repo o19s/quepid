@@ -25,19 +25,19 @@ module Api
           data = JSON.parse(response.body)
 
           expected_response = {
-            'scorerId'            => scorer.id,
-            'communal'            => scorer.communal,
-            'code'                => scorer.code,
-            'name'                => scorer.name,
-            'scale'               => scorer.scale,
-            'owner_id'            => scorer.owner_id,
-            'owned'               => false,
-            'owner_name'          => scorer.owner.name,
-            'manualMaxScore'      => scorer.manual_max_score,
-            'manualMaxScoreValue' => scorer.manual_max_score_value,
-            'showScaleLabels'     => scorer.show_scale_labels,
-            'scaleWithLabels'     => scorer.scale_with_labels,
-            'teams'               => [],
+            'scorerId'               => scorer.id,
+            'communal'               => scorer.communal,
+            'code'                   => scorer.code,
+            'name'                   => scorer.name,
+            'scale'                  => scorer.scale,
+            'owner_id'               => scorer.owner_id,
+            'owned'                  => false,
+            'owner_name'             => scorer.owner.name,
+            'manual_max_score'       => scorer.manual_max_score,
+            'manual_max_score_value' => scorer.manual_max_score_value,
+            'showScaleLabels'        => scorer.show_scale_labels,
+            'scaleWithLabels'        => scorer.scale_with_labels,
+            'teams'                  => [],
           }
 
           assert_equal expected_response, data['default']
