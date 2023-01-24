@@ -55,7 +55,7 @@
 
       // transform curator vars to be more angular friendly
       var ngFriendlyCuratorVars = [];
-      angular.forEach(data.curatorVars, function(varValue, varName) {
+      angular.forEach(data.curator_vars, function(varValue, varName) {
         ngFriendlyCuratorVars.push({name: varName, value: varValue});
       });
 

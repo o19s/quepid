@@ -40,10 +40,10 @@ module Api
             get :index
 
             body = JSON.parse(response.body)
-            cases = body['allCases']
+            cases = body['all_cases']
             cases.each do |c|
               assert_nil c['tries']
-              assert_nil c['lastScore']['queries'] if c['lastScore']
+              assert_nil c['last_score']['queries'] if c['last_score']
             end
           end
 
@@ -53,7 +53,7 @@ module Api
             assert_response :ok
 
             body  = JSON.parse(response.body)
-            cases = body['allCases']
+            cases = body['all_cases']
 
             ids = cases.map { |c| c['caseNo'] }
 
@@ -67,7 +67,7 @@ module Api
             assert_response :ok
 
             body  = JSON.parse(response.body)
-            cases = body['allCases']
+            cases = body['all_cases']
 
             ids = cases.map { |c| c['caseNo'] }
 
@@ -80,7 +80,7 @@ module Api
             assert_response :ok
 
             body  = JSON.parse(response.body)
-            cases = body['allCases']
+            cases = body['all_cases']
 
             ids = cases.map { |c| c['caseNo'] }
 
@@ -93,7 +93,7 @@ module Api
             assert_response :ok
 
             body  = JSON.parse(response.body)
-            cases = body['allCases']
+            cases = body['all_cases']
 
             assert cases.length <= 3
           end
@@ -114,7 +114,7 @@ module Api
             assert_response :ok
 
             body  = JSON.parse(response.body)
-            cases = body['allCases']
+            cases = body['all_cases']
 
             ids = cases.map { |c| c['caseNo'] }
 
@@ -127,7 +127,7 @@ module Api
             assert_response :ok
 
             body  = JSON.parse(response.body)
-            count = body['casesCount']
+            count = body['cases_count']
 
             assert_not_nil count
           end
