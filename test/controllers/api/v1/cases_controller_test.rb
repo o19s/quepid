@@ -331,7 +331,7 @@ module Api
 
           cases.each do |c|
             assert_nil c['tries']
-            assert_nil c['lastScore']['queries'] if c['lastScore']
+            assert_nil c['last_score']['queries'] if c['last_score']
           end
         end
 

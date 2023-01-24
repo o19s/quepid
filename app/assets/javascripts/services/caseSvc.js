@@ -44,7 +44,7 @@ angular.module('QuepidApp')
         theCase.caseNo            = data.caseNo;
         theCase.lastTry           = data.last_try_number;
         theCase.caseName          = data.case_name;
-        theCase.lastScore         = data.lastScore;
+        theCase.lastScore         = data.last_score;
         theCase.scorerId          = data.scorerId;
         theCase.owned             = data.owned;
         theCase.ownerName         = data.owner_name;
