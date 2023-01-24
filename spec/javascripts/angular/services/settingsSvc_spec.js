@@ -16,7 +16,7 @@ describe('Service: settingsSvc', function () {
       {
        'try_number': 0,
        'query_params': 'q=#$query##&fq=title:foo&fq=sub:bar',
-       'curatorVars': {},
+       'curator_vars': {},
        'args': {'q': ['#$query##'],
                     'fq': ['title:foo', 'sub:bar']},
        'search_url': 'http://example.com:1234/solr/collection1',
@@ -28,7 +28,7 @@ describe('Service: settingsSvc', function () {
       {
        'try_number': 1,
        'query_params': 'q=#$query##&fq=title:2&fq=ub:2',
-       'curatorVars': {},
+       'curator_vars': {},
        'args': {'q': ['#$query##'],
                     'fq': ['title:foo', 'sub:2']},
        'search_url': 'http://example.com:1234/solr/collection1',
@@ -46,7 +46,7 @@ describe('Service: settingsSvc', function () {
       {
        'try_number': 0,
        'query_params': 'q=#$query##&fq=title:foo&fq=sub:bar',
-       'curatorVars': {},
+       'curator_vars': {},
        'args': {'q': ['#$query##'],
                     'fq': ['title:foo', 'sub:bar']},
        'search_url': 'http://doug.com:1234/solr/collection1',
@@ -58,7 +58,7 @@ describe('Service: settingsSvc', function () {
       {
        'try_number': 1,
        'query_params': 'q=#$query##&bq=title:foo^##titleboost##&bq=sub:2',
-       'curatorVars': {titleboost: 5},
+       'curator_vars': {titleboost: 5},
        'args': {'q': ['#$query##'],
                     'bq': ['title:foo^5', 'sub:2']},
        'search_url': 'http://doug.com:1234/solr/collection1',
@@ -70,7 +70,7 @@ describe('Service: settingsSvc', function () {
       {
        'try_number': 2,
        'query_params': 'q=#$query##&bq=title:##titleboost##&bq=sub:2&qf=title',
-       'curatorVars': {titleboost: 5},
+       'curator_vars': {titleboost: 5},
        'args': {'q': ['#$query##'],
                     'bq': ['title:foo^5', 'sub:2'],
                     'qf': ['title']},
@@ -120,11 +120,11 @@ describe('Service: settingsSvc', function () {
       expect(settingsCpy.tries[0].queryParams)
             .toEqual(mockSettings0.tries[0].query_params);
       expect(settingsCpy.tries[0].curatorVarsDict())
-            .toEqual(mockSettings0.tries[0].curatorVars);
+            .toEqual(mockSettings0.tries[0].curator_vars);
       expect(settingsCpy.tries[1].queryParams)
             .toEqual(mockSettings0.tries[1].query_params);
       expect(settingsCpy.tries[1].curatorVarsDict())
-            .toEqual(mockSettings0.tries[1].curatorVars);
+            .toEqual(mockSettings0.tries[1].curator_vars);
     });
     $httpBackend.flush();
     $httpBackend.verifyNoOutstandingExpectation();
@@ -136,7 +136,7 @@ describe('Service: settingsSvc', function () {
         {
          'try_number': 0,
          'query_params': 'q=#$query##&bq=title:##titleboost##&bq=sub:2&qf=title',
-         'curatorVars': {titleboost: 5, missing: 11},
+         'curator_vars': {titleboost: 5, missing: 11},
          'args': {'q': ['#$query##'],
                       'bq': ['title:foo^5', 'sub:2'],
                       'qf': ['title']},
@@ -198,15 +198,15 @@ describe('Service: settingsSvc', function () {
       expect(settingsCpy.tries[0].queryParams)
             .toEqual(mockSettings1.tries[0].query_params);
       expect(settingsCpy.tries[0].curatorVarsDict())
-            .toEqual(mockSettings1.tries[0].curatorVars);
+            .toEqual(mockSettings1.tries[0].curator_vars);
       expect(settingsCpy.tries[1].queryParams)
             .toEqual(mockSettings1.tries[1].query_params);
       expect(settingsCpy.tries[1].curatorVarsDict())
-            .toEqual(mockSettings1.tries[1].curatorVars);
+            .toEqual(mockSettings1.tries[1].curator_vars);
       expect(settingsCpy.tries[2].queryParams)
             .toEqual(mockSettings1.tries[2].query_params);
       expect(settingsCpy.tries[2].curatorVarsDict())
-            .toEqual(mockSettings1.tries[2].curatorVars);
+            .toEqual(mockSettings1.tries[2].curator_vars);
     });
     $httpBackend.flush();
     $httpBackend.verifyNoOutstandingExpectation();
@@ -215,7 +215,7 @@ describe('Service: settingsSvc', function () {
 
   var mockTry = {
     'query_params': 'ADDED',
-    'curatorVars': {},
+    'curator_vars': {},
     'args': {},
     'search_url': 'http://doug.com:1234/solr/collection1',
     'search_engine':'solr',
@@ -250,7 +250,7 @@ describe('Service: settingsSvc', function () {
       'bq': ['title:foo^5', 'sub:2'],
       'qf': ['title']
     },
-    curatorVars:  { titleboost: 5 },
+    curator_vars:  { titleboost: 5 },
     escape_query:  false,
     field_spec:    'CHANGED',
     name:          'try 2',
@@ -300,7 +300,7 @@ describe('Service: settingsSvc', function () {
   var mockSettingsAddNewVarsResp = {
     'try_number': 2,
     'query_params': 'q=#$query##&fq=title:foo&fq=sub:bar&new=##newvar##',
-    'curatorVars': {newvar: 10},
+    'curator_vars': {newvar: 10},
     'args': {
       'q':    ['#$query##'],
       'fq':   ['title:foo', 'sub:bar'],
@@ -448,7 +448,7 @@ describe('Service: settingsSvc', function () {
     var mockResponse = {
      'try_number':   3,
      'query_params': 'q=#$query##&fq=title:foo&fq=sub:bar',
-     'curatorVars': {},
+     'curator_vars': {},
      'args':        {'q': ['#$query##'],
                      'fq': ['title:foo', 'sub:bar']},
      'search_url':  'http://doug.com:1234/solr/collection1',

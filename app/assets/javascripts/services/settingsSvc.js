@@ -341,7 +341,7 @@ angular.module('QuepidApp')
 
         // We create the default name on the server side
         //sentData.name            = settingsToSave.selectedTry.name;
-        sentData.curatorVars       = settingsToSave.selectedTry.curatorVarsDict();
+        sentData.curator_vars      = settingsToSave.selectedTry.curatorVarsDict();
         sentData.escape_query      = settingsToSave.escapeQuery;
         sentData.api_method        = settingsToSave.apiMethod;
         sentData.custom_headers    = settingsToSave.customHeaders;

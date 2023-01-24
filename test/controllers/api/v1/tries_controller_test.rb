@@ -23,7 +23,7 @@ module Api
         assert_equal try.escape_query, response['escape_query']
         assert_equal try.api_method,   response['api_method']
 
-        assert_curator_vars_equal try.curator_vars_map, response['curatorVars']
+        assert_curator_vars_equal try.curator_vars_map, response['curator_vars']
       end
 
       def assert_try_matches_params params, try
@@ -234,7 +234,7 @@ module Api
           }
 
           assert_difference 'CuratorVariable.count', 2 do
-            post :create, params: { case_id: the_case.id, try: try_params, curatorVars: curator_vars_params }
+            post :create, params: { case_id: the_case.id, try: try_params, curator_vars: curator_vars_params }
 
             assert_response :ok
 

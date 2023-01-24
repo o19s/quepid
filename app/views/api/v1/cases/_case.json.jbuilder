@@ -33,7 +33,7 @@ unless shallow
 end
 
 # rubocop:disable Style/MultilineIfModifier
-json.lastScore do
+json.last_score do
   json.partial! 'api/v1/case_scores/score', score: acase.last_score, shallow: shallow
 end if acase.last_score.present?
 # rubocop:enable Style/MultilineIfModifier
