@@ -473,7 +473,7 @@
             if @existing_rating == b["value"].to_i
               @span_style = "color:black;font-weight:bold;"
             end %>
-            <td style="padding:5px;text-align: center; color: #999;"><span style=@span_stle id=<%#= "span-for-" + b["key"][:name].to_s %>><%#= b["key"][:display_name]%></span></td>
+            <td style="padding:5px;text-align: center; color: #999;"><span style=@span_stle id=<%= "span-for-" + b["key"][:name].to_s %>><%= b["key"][:display_name]%></span></td>
         <% end %>
       </tr>
     </table>
