@@ -33,10 +33,10 @@
       self.ownerName              = data.owner_name;
       self.queryId                = data.queryId;
       self.scale                  = data.scale;
-      self.scaleWithLabels        = data.scaleWithLabels;
+      self.scaleWithLabels        = data.scale_with_labels;
       self.scorerId               = data.scorerId;
       self.communal               = data.communal;
-      self.showScaleLabels        = data.showScaleLabels || false;
+      self.showScaleLabels        = data.show_scale_labels || false;
       self.teams                  = data.teams || [];
 
       // Functions

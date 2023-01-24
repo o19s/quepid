@@ -540,8 +540,8 @@ module Api
             'owner_name'             => owned_scorer.owner.name,
             'manual_max_score'       => false,
             'manual_max_score_value' => 100,
-            'showScaleLabels'        => false,
-            'scaleWithLabels'        => nil,
+            'show_scale_labels'      => false,
+            'scale_with_labels'      => nil,
             'teams'                  => [],
           }
 
@@ -564,8 +564,8 @@ module Api
             'owner_name'             => shared_scorer.owner.name,
             'manual_max_score'       => false,
             'manual_max_score_value' => 100,
-            'showScaleLabels'        => false,
-            'scaleWithLabels'        => nil,
+            'show_scale_labels'      => false,
+            'scale_with_labels'      => nil,
             'teams'                  => teams,
           }
 
