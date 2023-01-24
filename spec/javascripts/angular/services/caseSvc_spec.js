@@ -13,7 +13,7 @@ describe('Service: caseSvc', function () {
   };
 
   var mockCases = {
-    allCases: [
+    all_cases: [
       mockCase1,
       {
         'caseNo':   2,
@@ -48,11 +48,11 @@ describe('Service: caseSvc', function () {
   };
 
   var expectToRefetchCases = function() {
-    var returnedCases = {
-      allCases: []
+    var mockReturnedCases = {
+      all_cases: []
     };
-    $httpBackend.expectGET('/api/cases').respond(200, returnedCases);
-    $httpBackend.expectGET('/api/dropdown/cases').respond(200, returnedCases);
+    $httpBackend.expectGET('/api/cases').respond(200, mockReturnedCases);
+    $httpBackend.expectGET('/api/dropdown/cases').respond(200, mockReturnedCases);
   };
 
   // instantiate service
@@ -266,7 +266,7 @@ describe('Service: caseSvc', function () {
     });
 
     var archivedCasesAPIResponse = {
-      allCases: [
+      all_cases: [
         {
           'caseNo':   6,
           'case_name': 'archived',
@@ -291,7 +291,7 @@ describe('Service: caseSvc', function () {
       expect(called).toBe(1);
 
       var archivedCaseNo = caseSvc.archived[0].caseNo;
-      $httpBackend.expectPUT('/api/cases/' + archivedCaseNo).respond(200, archivedCasesAPIResponse.allCases[0]);
+      $httpBackend.expectPUT('/api/cases/' + archivedCaseNo).respond(200, archivedCasesAPIResponse.all_cases[0]);
 
       var casesBefore = caseSvc.allCases.length;
       caseSvc.unarchiveCase(caseSvc.archived[0]).then(function() {
@@ -337,8 +337,8 @@ describe('Service: caseSvc', function () {
 
     it('larger archive', function() {
       var archiveAPIResponse = angular.copy(archivedCasesAPIResponse);
-      var baseNo = archiveAPIResponse.allCases[0].caseNo;
-      var baseName = archiveAPIResponse.allCases[0].case_name;
+      var baseNo = archiveAPIResponse.all_cases[0].caseNo;
+      var baseName = archiveAPIResponse.all_cases[0].case_name;
       var numArchived = 10;
       for (var i = 0; i < numArchived - 1; i++) {
         var newCase = {
@@ -346,7 +346,7 @@ describe('Service: caseSvc', function () {
           'case_name': baseName + (i + 1),
           'lastTry':  i
         };
-        archiveAPIResponse.allCases.push(newCase);
+        archiveAPIResponse.all_cases.push(newCase);
       }
 
       $httpBackend.expectGET('/api/cases?archived=true').respond(200, archiveAPIResponse);
@@ -364,7 +364,7 @@ describe('Service: caseSvc', function () {
       angular.forEach(caseSvc.archived, function(aCase) {
         if (aCase.caseNo % 2 === 1) {
           undeleted.push(aCase.caseNo);
-          $httpBackend.expectPUT('/api/cases/' + aCase.caseNo).respond(200, archiveAPIResponse.allCases[aCase.caseNo - baseNo]);
+          $httpBackend.expectPUT('/api/cases/' + aCase.caseNo).respond(200, archiveAPIResponse.all_cases[aCase.caseNo - baseNo]);
           caseSvc.unarchiveCase(aCase)
           .then(function() {
             called++;
@@ -402,7 +402,7 @@ describe('Service: caseSvc', function () {
       $httpBackend.flush();
 
       var dropdownCases = {
-        allCases: [
+        all_cases: [
           {
             'caseNo':   2,
             'case_name': 'test case 2',
