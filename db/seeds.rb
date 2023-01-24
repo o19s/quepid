@@ -12,9 +12,7 @@ Scorer.where(name: 'nDCG@10').first_or_create!(
   show_scale_labels:      true,
   code:                   File.readlines('./db/scorers/ndcg@10.js','\n').join('\n'),
   name:                   'nDCG@10',
-  communal:               true,
-  manual_max_score:       true,
-  manual_max_score_value: 1
+  communal:               true
 )
 
 Scorer.where(name: 'DCG@10').first_or_create(

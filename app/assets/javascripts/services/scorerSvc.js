@@ -78,8 +78,6 @@
             'name':                   scorer.name,
             'code':                   scorer.code,
             'scale':                  scale,
-            'manual_max_score':       scorer.manualMaxScore,
-            'manual_max_score_value': scorer.manualMaxScoreValue,
             'show_scale_labels':      scorer.showScaleLabels,
             'scale_with_labels':      scorer.scaleWithLabels,
           };
@@ -112,8 +110,6 @@
               'name':                   scorer.name,
               'code':                   scorer.code,
               'scale':                  scale,
-              'manual_max_score':       scorer.manualMaxScore,
-              'manual_max_score_value': scorer.manualMaxScoreValue,
               'show_scale_labels':      scorer.showScaleLabels,
               'scale_with_labels':      scorer.scaleWithLabels,
             }

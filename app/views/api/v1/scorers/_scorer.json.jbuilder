@@ -10,8 +10,6 @@ json.scale                scorer.scale
 json.owner_id             scorer.owner_id
 json.owned                scorer.owner_id == current_user.id
 json.owner_name           scorer.owner.name unless scorer.owner.nil?
-json.manualMaxScore       scorer.manual_max_score
-json.manualMaxScoreValue  scorer.manual_max_score_value
 json.showScaleLabels      scorer.show_scale_labels
 json.scaleWithLabels      scorer.scale_with_labels
 json.teams                teams

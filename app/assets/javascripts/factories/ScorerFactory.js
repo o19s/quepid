@@ -25,8 +25,6 @@
       self.colors                 = scaleToColors(data.scale);
       self.displayName            = setDisplayName(data.name, data.communal);
       self.error                  = false;
-      self.manualMaxScore         = data.manualMaxScore || false;
-      self.manualMaxScoreValue    = data.manualMaxScoreValue || 100;
       self.name                   = data.name;
       self.owned                  = data.owned;
       self.ownerId                = data.owner_id;
@@ -562,7 +560,7 @@
       }
 
       function maxScore() {
-        return self.manualMaxScore ? self.manualMaxScore : self.scale[-1];
+        return self.scale[-1];
       }
 
       function score(query, total, docs, bestDocs, options) {

@@ -33,8 +33,6 @@ module Api
             'owner_id'            => scorer.owner_id,
             'owned'               => false,
             'owner_name'          => scorer.owner.name,
-            'manualMaxScore'      => scorer.manual_max_score,
-            'manualMaxScoreValue' => scorer.manual_max_score_value,
             'showScaleLabels'     => scorer.show_scale_labels,
             'scaleWithLabels'     => scorer.scale_with_labels,
             'teams'               => [],
