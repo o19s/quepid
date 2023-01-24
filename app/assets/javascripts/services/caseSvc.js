@@ -240,7 +240,9 @@ angular.module('QuepidApp')
             var newCase = new Case(data);
 
             svc.allCases.push(newCase);
-            svc.archived.splice(svc.archived.indexOf(newCase), 1);
+            svc.archived = svc.archived.filter( function(acase) {
+              acase.caseNo !== newCase.caseNo;
+            });
 
             broadcastSvc.send('updatedCasesList', svc.allCases);
           });
