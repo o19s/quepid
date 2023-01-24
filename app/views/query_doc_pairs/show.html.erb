@@ -41,16 +41,56 @@
   <%= @query_doc_pair.doc_id %>
 </p>
 
-<p>
-  <strong>Document fields:</strong>
-  <%= @query_doc_pair.document_fields %>
-</p>
+<%
+  @cjm_testing = true
 
+  @document_fields_parses_as_json = false
 
-<p>
-  <strong>Created by User:</strong>
-  <%= @user_name_lookup[@query_doc_pair.user_id] %>
-</p>
+  begin
+    @document_fields = JSON.parse(@query_doc_pair.document_fields)
+    @document_fields_parses_as_json = true
+  rescue
+    nil
+  end
+
+  unless @document_fields.respond_to?(:keys)
+    @document_fields_parses_as_json = false
+  end
+
+%>
+
+<% if @cjm_testing and @document_fields_parses_as_json %>
+  <div class="field">
+    <strong>Document fields:</strong>
+  </div>
+  <div class="field">
+    <% @document_fields.keys.each do |key| %>
+      <% if key == "title" %>
+        <div class="field">
+          &nbsp;&nbsp;&nbsp;<strong><%= key %></strong> <%= @document_fields[key] %>
+        </div>
+      <% end %>
+    <% end %>
+    <% @document_fields.keys.each do |key| %>
+      <% if key != "title" %>
+        <div class="field">
+          &nbsp;&nbsp;&nbsp;<strong><%= key %></strong> <%= @document_fields[key] %>
+        </div>
+      <% end %>
+    <% end %>
+  </div>
+<% else %>
+  <div class="field">
+    <strong>Document fields:</strong> <%= @query_doc_pair.document_fields.to_s %>
+  </div>
+<% end %>
+
+<p></p>
+
+<!--<p>-->
+<!--  <strong>Created by User:</strong>-->
+  <%#= @user_name_lookup[@query_doc_pair.user_id] %>
+<!--</p>-->
 
 <%= button_to 'Edit QueryDocPair', edit_book_query_doc_pair_path(@query_doc_pair.book_id, @query_doc_pair.id), method: :get %> <br>
 

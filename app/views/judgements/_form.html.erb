@@ -251,7 +251,6 @@
     </div>
   <% end %>
 
-<%  %>
 
   <%
 
@@ -415,9 +414,18 @@
     </div>
     <div class="field">
       <% @document_fields.keys.each do |key| %>
-        <div class="field">
-          &nbsp;&nbsp;&nbsp;<strong><%= key %></strong> <%= @document_fields[key] %>
-        </div>
+        <% if key == "title" %>
+          <div class="field">
+            &nbsp;&nbsp;&nbsp;<strong><%= key %></strong> <%= @document_fields[key] %>
+          </div>
+        <% end %>
+      <% end %>
+      <% @document_fields.keys.each do |key| %>
+        <% if key != "title" %>
+          <div class="field">
+            &nbsp;&nbsp;&nbsp;<strong><%= key %></strong> <%= @document_fields[key] %>
+          </div>
+        <% end %>
       <% end %>
     </div>
   <% else %>
