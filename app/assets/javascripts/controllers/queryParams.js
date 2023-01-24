@@ -99,7 +99,7 @@ angular.module('QuepidApp')
           custom_headers: $scope.settings.selectedTry.customHeaders,
           field_spec:     $scope.settings.selectedTry.fieldSpec,
           name:           $scope.settings.selectedTry.name,
-          numberOfRows:   $scope.settings.selectedTry.numberOfRows,
+          number_of_rows: $scope.settings.selectedTry.numberOfRows,
           query_params:   $scope.settings.selectedTry.queryParams,
           search_engine:  $scope.settings.selectedTry.searchEngine,
           search_url:     $scope.settings.selectedTry.searchUrl,
