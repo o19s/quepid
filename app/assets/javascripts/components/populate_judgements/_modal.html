@@ -52,7 +52,7 @@
 
       <ul class="list-group">
         <li class="list-group-item"
-          ng-repeat="book in ctrl.share.books track by book.name"
+          ng-repeat="book in ctrl.share.books track by book.id"
           ng-class="{ active: book.id === ctrl.activeBookId }"
           ng-click="selectBook(book)">
           {{book.name}}
