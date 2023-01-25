@@ -10,7 +10,7 @@
     "@rails/actioncable": "^6.0.0",
     "@rails/activestorage": "^6.0.0",
     "@rails/ujs": "^6.0.0",
-    "ace-builds": "1.14.0",
+    "ace-builds": "1.15.0",
     "angular": "~1.8.3",
     "angular-animate": "^1.8.3",
     "angular-cookies": "~1.8.3",
@@ -32,7 +32,7 @@
     "d3": "~7.6.1",
     "d3-tip": "~0.9.1",
     "file-saver": "^2.0.5",
-    "jquery": "~3.6.1",
+    "jquery": "~3.6.3",
     "ng-json-explorer": "http://github.com/o19s/ng-json-explorer",
     "ng-tags-input": "3.2.0",
     "ngclipboard": "^2.0.0",
@@ -45,8 +45,8 @@
   "devDependencies": {
     "angular-mocks": "~1.8.3",
     "jasmine-core": "3.99.0",
-    "jshint": "2.13.5",
-    "karma": "6.3.17",
+    "jshint": "2.13.6",
+    "karma": "6.4.1",
     "karma-chrome-launcher": "3.1.1",
     "karma-jasmine": "4.0.1",
     "puppeteer": "^17.1.1"
