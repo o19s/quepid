@@ -48,6 +48,7 @@ module Api
           render json: @snapshot.errors, status: :bad_request
         end
       end
+      # rubocop:enable Metrics/MethodLength
 
       def destroy
         @snapshot.destroy

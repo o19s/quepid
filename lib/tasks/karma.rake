@@ -27,14 +27,14 @@ namespace :karma  do
 
     rm_rf Rails.root.join('tmp/cache/assets/test')
 
-    ::Rake.application['assets:environment'].invoke
+    Rake.application['assets:environment'].invoke
 
     set_assets_path
 
-    ::Rake.application['assets:clean'].reenable
-    ::Rake.application['assets:clean'].invoke
-    ::Rake.application['assets:clobber'].reenable
-    ::Rake.application['assets:clobber'].invoke
+    Rake.application['assets:clean'].reenable
+    Rake.application['assets:clean'].invoke
+    Rake.application['assets:clobber'].reenable
+    Rake.application['assets:clobber'].invoke
 
     puts 'Finished cleaning up assets'.yellow
     puts '-' * 100
@@ -70,21 +70,21 @@ namespace :karma  do
 
     # temporarily set the static assets location from public/assets to the
     # tmp directory
-    ::Rails.application.config.assets.prefix    = '../tmp/assets'
-    ::Rails.application.config.assets.manifest  = File.join(Rails.public_path, dir)
+    Rails.application.config.assets.prefix    = '../tmp/assets'
+    Rails.application.config.assets.manifest  = File.join(Rails.public_path, dir)
   end
 
   # this method compiles all the same javascript files your app will
   def precompile_app_assets
     puts 'Precompiling assets...'.yellow
     # make sure the Rails environment is loaded
-    ::Rake.application['assets:environment'].invoke
+    Rake.application['assets:environment'].invoke
 
     set_assets_path
 
     # once the assets have been cleared, recompile them into the tmp directory
-    ::Rake.application['assets:precompile'].reenable
-    ::Rake.application['assets:precompile'].invoke
+    Rake.application['assets:precompile'].reenable
+    Rake.application['assets:precompile'].invoke
   end
 end
 # rubocop:enable Metrics/BlockLength

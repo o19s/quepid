@@ -46,6 +46,8 @@ module Api
           render json: @try.errors.concat(@case.errors), status: :bad_request
         end
       end
+      # rubocop:enable Metrics/MethodLength
+      # rubocop:enable Metrics/AbcSize
 
       def update
         if @try.update try_params

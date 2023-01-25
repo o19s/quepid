@@ -59,6 +59,9 @@ Rails/Pluck:
 Rails/RootPathnameMethods:
   Enabled: false # this was causing an issue in our rake scripts
 
+Rails/ActionControllerTestCase:
+  Enabled: false # we have a ton of these, and changing will take a while.  Wish we could grandfather them in?
+
 Style/Documentation:
   Enabled: false
 
