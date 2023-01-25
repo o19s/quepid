@@ -37,7 +37,11 @@
     .button-other {background-color:gray; box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19); color: #666 !important;}
     .button-other:hover {background-color:gray !important;  box-shadow: 0 12px 16px 0 rgba(0,0,0,0.34), 0 17px 50px 0 rgba(0,0,0,0.19); color: black !important; }
 
-    .btn-preselected { color: black !important; font-weight: bold; font-style: italic;}
+    .btn-preselected { color: black !important; font-weight: bold; font-style: italic; }
+
+    .bold-and-black { color: black; font-weight: bold; }
+
+    .keyboard-shortcuts-td { padding: 5px; text-align: center; color: #999; }
 
 </style>
 
@@ -408,12 +412,8 @@
         <td style="padding:5px;text-align: center; color: #ccc;">
           Keyboard shortcuts
         </td>
-        <% @rating_buttons.each do |b|
-            @span_style = ""
-            if @existing_rating == b["value"].to_i
-              @span_style = "color:black;font-weight:bold;"
-            end %>
-            <td style="padding:5px;text-align: center; color: #999;"><span style="<%= @span_style %>" id=<%= "span-for-" + b["key"][:name].to_s %>><%= b["key"][:display_name]%></span></td>
+        <% @rating_buttons.each do |b| %>
+            <td class="keyboard-shortcuts-td"><span class="<%= @existing_rating == b["value"].to_i ? 'bold-and-black' : '' %>" id=<%= "span-for-" + b["key"][:name].to_s %>><%= b["key"][:display_name]%></span></td>
         <% end %>
       </tr>
     </table>
