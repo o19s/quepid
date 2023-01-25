@@ -47,7 +47,7 @@
       key_down(key_name);
       reset_styles_except(key_name);
       document.getElementById("judgement_rating").value = rating;
-      delay(500).then(() => (document.getElementsByName("commit")[0].click()));
+      delay(250).then(() => (document.getElementsByName("commit")[0].click()));
   }
 
   function sleep(ms) {
@@ -99,124 +99,29 @@
       delay(500).then(() => ($("#button-for-" + suffix).click()));
   }
 
-  function key_a_down() {
-      key_down("a");
-  }
-
-  function key_a_pressed() {
-      key_pressed("a");
-  }
-
-
-  function key_s_down() {
-      key_down("s");
-  }
-
-  function key_s_pressed() {
-      key_pressed("s");
-  }
-
-
-  function key_d_down() {
-      key_down("d");
-  }
-
-  function key_d_pressed() {
-      key_pressed("d");
-  }
-
-
-  function key_f_down() {
-      key_down("f");
-  }
-
-  function key_f_pressed() {
-      key_pressed("f");
-  }
-
-
-
-  function key_g_down() {
-      key_down("g");
-  }
-
-  function key_g_pressed() {
-      key_pressed("g");
-  }
-
-
-
-  function key_h_down() {
-      key_down("h");
-  }
-
-  function key_h_pressed() {
-      key_pressed("h");
-  }
-
-
-
-  function key_j_down() {
-      key_down("j");
-  }
-
-  function key_j_pressed() {
-      key_pressed("j");
-  }
-
-
-  function key_k_down() {
-      key_down("k");
-  }
-
-  function key_k_pressed() {
-      key_pressed("k");
-  }
-
-
-  function key_l_down() {
-      key_down("l");
-  }
-
-  function key_l_pressed() {
-      key_pressed("l");
-  }
-
-
-  function key_sc_down() {
-        key_down("sc");
-  }
-
-  function key_sc_pressed() {
-      key_pressed("sc");
-  }
-
-
-
-
   $(document).on('keypress', function(e) {
       var tag = e.target.tagName.toLowerCase();
 
       if (e.which == 97 || e.which == 65) {
-          key_a_pressed();
+          key_pressed("a");
       } else if (e.which == 115 || e.which == 83) {
-          key_s_pressed();
+          key_pressed("s");
       } else if (e.which == 100 || e.which == 68) {
-          key_d_pressed();
+          key_pressed("d");
       } else if (e.which == 102 || e.which == 70) {
-          key_f_pressed();
+          key_pressed("f");
       } else if (e.which == 103 || e.which == 71) {
-          key_g_pressed();
+          key_pressed("g");
       } else if (e.which == 104 || e.which == 72) {
-          key_h_pressed();
+          key_pressed("h");
       } else if (e.which == 106 || e.which == 74) {
-          key_j_pressed();
+          key_pressed("j");
       } else if (e.which == 107 || e.which == 75) {
-          key_k_pressed();
+          key_pressed("k");
       } else if (e.which == 108 || e.which == 76) {
-          key_l_pressed();
+          key_pressed("l");
       } else if (e.which == 59 || e.which == 186) {
-          key_sc_pressed();
+          key_pressed("sc");
       }
   });
 
@@ -224,25 +129,25 @@
       var tag = e.target.tagName.toLowerCase();
 
       if (e.which == 97 || e.which == 65) {
-          key_a_down();
+          key_down("a");
       } else if (e.which == 115 || e.which == 83) {
-          key_s_down();
+          key_down("s");
       } else if (e.which == 100 || e.which == 68) {
-          key_d_down();
+          key_down("d");
       } else if (e.which == 102 || e.which == 70) {
-          key_f_down();
+          key_down("f");
       } else if (e.which == 103 || e.which == 71) {
-          key_g_down();
+          key_down("g");
       } else if (e.which == 104 || e.which == 72) {
-          key_h_down();
+          key_down("h");
       } else if (e.which == 106 || e.which == 74) {
-          key_j_down();
+          key_down("j");
       } else if (e.which == 107 || e.which == 75) {
-          key_k_down();
+          key_down("k");
       } else if (e.which == 108 || e.which == 76) {
-          key_l_down();
+          key_down("l");
       } else if (e.which == 59 || e.which == 186) {
-          key_sc_down();
+          key_down("sc");
       }
 
   });
