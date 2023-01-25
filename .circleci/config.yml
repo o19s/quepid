@@ -28,7 +28,7 @@ jobs:
 
       - run:
           name: Specify bundler!
-          command: gem install bundler:2.3.18
+          command: gem install bundler:2.3.25
 
       - run:
           name: Which bundler?
