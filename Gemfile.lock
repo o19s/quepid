@@ -181,7 +181,7 @@ GEM
     method_source (1.0.0)
     mini_histogram (0.3.1)
     mini_mime (1.1.2)
-    mini_portile2 (2.8.0)
+    mini_portile2 (2.8.1)
     minitest (5.16.2)
     minitest-reporters (1.5.0)
       ansi
@@ -208,7 +208,7 @@ GEM
       net-protocol
       timeout
     nio4r (2.5.8)
-    nokogiri (1.13.7)
+    nokogiri (1.14.0)
       mini_portile2 (~> 2.8.0)
       racc (~> 1.4)
     oauth2 (1.4.10)
