@@ -73,4 +73,26 @@ module ApplicationHelper
     nil
   end
   # rubocop:enable Metrics/MethodLength
+  def document_fields_parses_as_json
+    @document_fields_parses_as_json = false
+    begin
+      @document_fields = JSON.parse(@query_doc_pair.document_fields)
+      @document_fields_parses_as_json = true
+    rescue
+      nil
+    end
+
+    unless @document_fields.respond_to?(:keys)
+      @document_fields_parses_as_json = false
+    end
+
+    @document_fields_parses_as_json
+  end
+
+  def try_somepin document_fields
+    puts "somepin 0000"
+    puts document_fields
+    puts document_fields['title']
+    puts "somepin 1000"
+  end
 end

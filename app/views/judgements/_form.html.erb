@@ -41,8 +41,7 @@
 
 </style>
 
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
-<script language="javascript">
+<script>
 
   function rate(rating) {
       document.getElementById("judgement_rating").value = rating;
@@ -239,6 +238,7 @@
 %>
 
 <%= form_for([judgement], url: @path) do |form| %>
+
   <% if judgement.errors.any? %>
     <div id="error_explanation">
       <h2><%= pluralize(judgement.errors.count, "error") %> prohibited this judgement from being saved:</h2>
@@ -251,9 +251,7 @@
     </div>
   <% end %>
 
-
   <%
-
     def calculate_button_class(value, max_value)
       value_f = value.to_f
       max_value_f = max_value.to_f
@@ -385,18 +383,10 @@
     end
 
     @show_keyboard_shortcuts = not(@hide_keyboard_shortcuts)
-
-    @document_fields_parses_as_json = false
-
-    begin
-      @document_fields = JSON.parse(@query_doc_pair.document_fields)
-      @document_fields_parses_as_json = true
-    rescue
-      nil
-    end
-
-    unless @document_fields.respond_to?(:keys)
-      @document_fields_parses_as_json = false
+    @document_fields_parses_as_json = document_fields_parses_as_json
+    if @document_fields_parses_as_json
+      @title_value = @document_fields['title']
+      @document_fields_except_title = @document_fields.except('title')
     end
   %>
 
@@ -410,27 +400,23 @@
 
   <% if @document_fields_parses_as_json %>
     <div class="field">
-      Document Fields:
+      Document:
     </div>
     <div class="field">
-      <% @document_fields.keys.each do |key| %>
-        <% if key == "title" %>
-          <div class="field">
-            &nbsp;&nbsp;&nbsp;<strong><%= key %></strong> <%= @document_fields[key] %>
-          </div>
-        <% end %>
+      <% if @title_value %>
+        <div class="field">
+          <strong>title</strong> <%= @title_value %>
+        </div>
       <% end %>
-      <% @document_fields.keys.each do |key| %>
-        <% if key != "title" %>
-          <div class="field">
-            &nbsp;&nbsp;&nbsp;<strong><%= key %></strong> <%= @document_fields[key] %>
-          </div>
-        <% end %>
+      <% @document_fields_except_title.keys.each do |key| %>
+        <div class="field">
+          <strong><%= key %></strong> <%= @document_fields_except_title[key] %>
+        </div>
       <% end %>
     </div>
   <% else %>
     <div class="field">
-      Document Fields: <%= @query_doc_pair.document_fields.to_s %>
+      Document: <%= @query_doc_pair.document_fields.to_s %>
     </div>
   <% end %>
 
