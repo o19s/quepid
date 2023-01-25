@@ -14,4 +14,3 @@
 
 //= require bootstrap/dist/js/bootstrap.bundle
 //= require jquery
-//= require cookies_eu
