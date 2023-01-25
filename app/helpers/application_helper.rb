@@ -89,10 +89,4 @@ module ApplicationHelper
     @document_fields_parses_as_json
   end
 
-  def try_somepin document_fields
-    puts "somepin 0000"
-    puts document_fields
-    puts document_fields['title']
-    puts "somepin 1000"
-  end
 end
