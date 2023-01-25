@@ -43,9 +43,11 @@
 
 <script>
 
-  function rate(rating) {
+  function rate(rating, key_name) {
+      key_down(key_name);
+      reset_styles_except(key_name);
       document.getElementById("judgement_rating").value = rating;
-      document.getElementsByName("commit")[0].click()
+      delay(500).then(() => (document.getElementsByName("commit")[0].click()));
   }
 
   function sleep(ms) {
@@ -63,96 +65,130 @@
       return Math.floor(Math.random() * max);
   }
 
+  function reset_styles() {
+      let keyboard_shortcuts_suffixes = ["a", "s", "d", "f", "g", "h", "j", "k", "l", "sc"];
+      keyboard_shortcuts_suffixes.forEach(suffix => {
+              $("#span-for-" + suffix).css("color", "gray").css("font-weight", "normal");
+              $("#button-for-" + suffix).removeClass("btn-preselected");
+          }
+      );
+  }
+
+  function reset_styles_except(except_suffix){
+      let keyboard_shortcuts_suffixes = ["a", "s", "d", "f", "g", "h", "j", "k", "l", "sc"];
+      keyboard_shortcuts_suffixes.forEach(suffix => {
+              if (suffix !== except_suffix) {
+                  $("#span-for-" + suffix).css("color", "gray").css("font-weight", "normal");
+                  $("#button-for-" + suffix).removeClass("btn-preselected");
+              }
+          }
+      );
+  }
+
+  function key_down(suffix) {
+      reset_styles();
+      $("#span-for-" + suffix).css("color", "black").css("font-weight", "bold");
+      $("#button-for-" + suffix).addClass("btn-preselected");
+  }
+
+  function delay(time) {
+      return new Promise(resolve => setTimeout(resolve, time));
+  }
+
+  function key_pressed(suffix) {
+      delay(500).then(() => ($("#button-for-" + suffix).click()));
+  }
+
   function key_a_down() {
-      $("#span-for-a").css("color", "black").css("font-weight", "bold");
+      key_down("a");
   }
 
   function key_a_pressed() {
-      $("#button-for-a").click();
+      key_pressed("a");
   }
 
 
   function key_s_down() {
-      $("#span-for-s").css("color", "black").css("font-weight", "bold");
+      key_down("s");
   }
 
   function key_s_pressed() {
-      $("#button-for-s").click();
+      key_pressed("s");
   }
 
 
   function key_d_down() {
-      $("#span-for-d").css("color", "black").css("font-weight", "bold");
+      key_down("d");
   }
 
   function key_d_pressed() {
-      $("#button-for-d").click();
+      key_pressed("d");
   }
 
 
   function key_f_down() {
-      $("#span-for-f").css("color", "black").css("font-weight", "bold");
+      key_down("f");
   }
 
   function key_f_pressed() {
-      $("#button-for-f").click();
+      key_pressed("f");
   }
 
 
 
   function key_g_down() {
-      $("#span-for-g").css("color", "black").css("font-weight", "bold");
+      key_down("g");
   }
 
   function key_g_pressed() {
-      $("#button-for-g").click();
+      key_pressed("g");
   }
 
 
 
   function key_h_down() {
-      $("#span-for-h").css("color", "black").css("font-weight", "bold");
+      key_down("h");
   }
 
   function key_h_pressed() {
-      $("#button-for-h").click();
+      key_pressed("h");
   }
 
 
 
   function key_j_down() {
-      $("#span-for-j").css("color", "black").css("font-weight", "bold");
+      key_down("j");
   }
 
   function key_j_pressed() {
-      $("#button-for-j").click();
+      key_pressed("j");
   }
 
 
   function key_k_down() {
-      $("#span-for-k").css("color", "black").css("font-weight", "bold");
+      key_down("k");
   }
 
   function key_k_pressed() {
-      $("#button-for-k").click();
+      key_pressed("k");
   }
 
 
   function key_l_down() {
-      $("#span-for-l").css("color", "black").css("font-weight", "bold");
+      key_down("l");
   }
 
   function key_l_pressed() {
-      $("#button-for-l").click();
+      key_pressed("l");
   }
 
 
   function key_sc_down() {
-      $("#span-for-sc").css("color", "black").css("font-weight", "bold");
+        key_down("sc");
   }
 
   function key_sc_pressed() {
-      $("#button-for-sc").click();
+      key_pressed("sc");
   }
 
 
@@ -368,7 +404,11 @@
         rating_button["key"] = rating_button["value"]
       end
       rating_button["label_backup"] = s.to_s
-      rating_button["label"] = @book.scorer.scale_with_labels[s.to_s]
+      begin
+        rating_button["label"] = @book.scorer.scale_with_labels[s.to_s]
+      rescue
+        rating_button["label"] = ""
+      end
       if rating_button["label"].blank?
         @use_backup_labels = true
         rating_button["label"] = rating_button["label_backup"]
@@ -388,6 +428,7 @@
       @title_value = @document_fields['title']
       @document_fields_except_title = @document_fields.except('title')
     end
+    
   %>
 
   <div class="field" style="">
@@ -454,7 +495,7 @@
             end
           %>
           <td style="padding:5px;">
-            <%= button_tag b["label"], type: 'button', onclick: "rate("+b["value"]+")", class: @button_classes + b["class"], id:"button-for-"+b["key"][:name].to_s %>
+            <%= button_tag b["label"], type: 'button', onclick: "rate("+b["value"]+",\""+b["key"][:name].to_s+"\")", class: @button_classes + b["class"], id:"button-for-"+b["key"][:name].to_s %>
           </td>
         <% end %>
       </tr>
@@ -467,7 +508,7 @@
             if @existing_rating == b["value"].to_i
               @span_style = "color:black;font-weight:bold;"
             end %>
-            <td style="padding:5px;text-align: center; color: #999;"><span style=@span_stle id=<%= "span-for-" + b["key"][:name].to_s %>><%= b["key"][:display_name]%></span></td>
+            <td style="padding:5px;text-align: center; color: #999;"><span style="<%= @span_style %>" id=<%= "span-for-" + b["key"][:name].to_s %>><%= b["key"][:display_name]%></span></td>
         <% end %>
       </tr>
     </table>
@@ -479,7 +520,7 @@
         </td>
         <% @rating_buttons.each do |b| %>
           <td style="padding:5px;">
-            <%= button_tag b["label"], type: 'button', onclick: "rate("+b["value"]+")", class: 'btn btn-default '+b["class"], id:"button-for-"+b["key"].to_s %>
+            <%= button_tag b["label"], type: 'button', onclick: "rate("+b["value"]+",\""+ b["key"][:name].to_s + "\")", class: 'btn btn-default '+b["class"], id:"button-for-"+b["key"][:name].to_s %>
           </td>
         <% end %>
       </tr>
