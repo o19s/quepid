@@ -42,6 +42,10 @@
     .bold-and-black { color: black; font-weight: bold; }
 
     .keyboard-shortcuts-td { padding: 5px; text-align: center; color: #999; }
+    .padded { padding:5px; }
+    .left-aligned { text-align: left; }
+    .gray { color: #ccc; }
+    .hidden { visibility: hidden!important; display: none!important; }
 
 </style>
 
@@ -340,7 +344,7 @@
 
   %>
 
-  <div class="field" style="">
+  <div class="field">
     Doc ID: <%= @query_doc_pair.doc_id.to_s %>
   </div>
 
@@ -370,30 +374,30 @@
     </div>
   <% end %>
 
-  <div class="field" style="visibility: hidden; display: none;">
+  <div class="hidden field">
     <%= form.label :user_id %>
     <%= form.number_field :user_id, :value => current_user.id %>
   </div>
 
-  <div class="field" style="visibility: hidden; display: none;">
+  <div class="hidden field">
     <%= form.label :rating %>
     <%= form.number_field :rating %>
   </div>
-  <div class="field" style="visibility: hidden; display: none;">
+  <div class="hidden field">
     <%= form.label :query_doc_pair_id %>
     <%= form.text_field :query_doc_pair_id, :value => @query_doc_pair.id.to_s %>
   </div>
 
   <br>
-  <div class="actions" style="visibility: hidden; display:none;">
+  <div class="hidden actions">
     <%= form.submit %>
   </div>
 
 
   <% if @show_keyboard_shortcuts %>
-    <table style="padding:5px;">
+    <table class="padded">
       <tr>
-        <td style="padding:5px;text-align: left; color: #ccc;">
+        <td class="padded left-aligned gray">
           Buttons
         </td>
         <% @rating_buttons.each do |b| %>
@@ -403,13 +407,13 @@
               @button_classes = @button_classes + "btn-preselected "
             end
           %>
-          <td style="padding:5px;">
+          <td class="padded">
             <%= button_tag b["label"], type: 'button', onclick: "rate("+b["value"]+",\""+b["key"][:name].to_s+"\")", class: @button_classes + b["class"], id:"button-for-"+b["key"][:name].to_s %>
           </td>
         <% end %>
       </tr>
       <tr>
-        <td style="padding:5px;text-align: center; color: #ccc;">
+        <td class="padded left-aligned gray">
           Keyboard shortcuts
         </td>
         <% @rating_buttons.each do |b| %>
@@ -418,13 +422,13 @@
       </tr>
     </table>
   <% else %>
-    <table style="padding:5px;">
+    <table class="padded">
       <tr>
-        <td style="padding:5px;text-align: left; color: #ccc;">
+        <td class="padded left-aligned gray">
           Buttons
         </td>
         <% @rating_buttons.each do |b| %>
-          <td style="padding:5px;">
+          <td class="padded">
             <%= button_tag b["label"], type: 'button', onclick: "rate("+b["value"]+",\""+ b["key"][:name].to_s + "\")", class: 'btn btn-default '+b["class"], id:"button-for-"+b["key"][:name].to_s %>
           </td>
         <% end %>
