@@ -1,5 +1,8 @@
-<!--<p id="notice"><%#= notice %></p>-->
 <p></p>
+
+<style>
+    .left-padded { padding: 0px 0px 0px 20px }
+</style>
 
 <%
   @users = User.all
@@ -54,12 +57,12 @@
   <div class="field">
     <% if @title_value %>
       <div class="field">
-        <span style="padding: 0px 0px 0px 20px"><strong>title</strong> <%= @title_value %></span>
+        <span class="left-padded"><strong>title</strong> <%= @title_value %></span>
       </div>
     <% end %>
     <% @document_fields_except_title.keys.each do |key| %>
       <div class="field">
-        <span style="padding: 0px 0px 0px 20px"><strong><%= key %></strong> <%= @document_fields_except_title[key] %></span>
+        <span class="left-padded"><strong><%= key %></strong> <%= @document_fields_except_title[key] %></span>
       </div>
     <% end %>
   </div>
