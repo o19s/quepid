@@ -52,6 +52,7 @@ Scorer.where(name: 'AP@10').first_or_create(
   name:               'AP@10',
   communal:           true
 )
+
 Scorer.where(name: 'RR@10').first_or_create(
   scale:              (0..1).to_a,
   scale_with_labels:  {"0":"Irrelevant","1":"Relevant"},
