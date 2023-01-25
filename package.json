@@ -7,8 +7,8 @@
   "license": "Apache-2.0",
   "dependencies": {
     "@popperjs/core": "^2.11.6",
-    "@rails/actioncable": "6.1.7.2",
-    "@rails/activestorage": "6.1.7.2",
+    "@rails/actioncable": "6.1.7-2",
+    "@rails/activestorage": "6.1.7-2",
     "@rails/ujs": "6.1.7.2",
     "ace-builds": "1.15.0",
     "angular": "~1.8.3",
