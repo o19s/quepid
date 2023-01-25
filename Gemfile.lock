@@ -138,7 +138,7 @@ GEM
     gabba (1.0.1)
     get_process_mem (0.2.7)
       ffi (~> 1.0)
-    globalid (1.0.1)
+    globalid (1.1.0)
       activesupport (>= 5.0)
     hashdiff (1.0.1)
     hashie (5.0.0)
@@ -376,7 +376,7 @@ GEM
       concurrent-ruby (~> 1.0)
     unicode-display_width (2.4.2)
     uniform_notifier (1.16.0)
-    vega (0.2.7)
+    vega (0.3.0)
     warden (1.2.9)
       rack (>= 2.0.9)
     webmock (3.18.1)
@@ -448,7 +448,7 @@ DEPENDENCIES
   simplecov
   terser
   turbolinks (~> 5)
-  vega (~> 0.2.6)
+  vega (~> 0.3.0)
   webmock
 
 RUBY VERSION
