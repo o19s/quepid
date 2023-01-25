@@ -10,6 +10,11 @@ module Users
       teams_path_url(resource.teams.first)
     end
 
+    # rubocop:disable Lint/UselessMethodDefinition
+    def edit
+      super
+    end
+
     def update
       unless signup_enabled?
         flash.now[:error] = 'Signups are disabled.'
@@ -23,10 +28,6 @@ module Users
       Analytics::Tracker.track_signup_event @user
     end
 
-    # rubocop:disable Lint/UselessMethodDefinition
-    def edit
-      super
-    end
     # rubocop:enable Lint/UselessMethodDefinition
 
     private

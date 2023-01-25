@@ -16,6 +16,8 @@ module Admin
       @scorer.communal = true
     end
 
+    def edit; end
+
     def create
       @scorer = Scorer.new scorer_params
       @scorer.communal = true
@@ -40,8 +42,6 @@ module Admin
 
       render action: :new
     end
-
-    def edit; end
 
     def update
       if @scorer.update scorer_params

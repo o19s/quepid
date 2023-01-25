@@ -53,6 +53,12 @@ Rails/Output:
 Rails/ContentTag:
   Enabled: false # we have legacy in helpers that seem to require this.
 
+Rails/Pluck:
+  Enabled: false  # we use this, it doesn't bother me.
+
+Rails/RootPathnameMethods:
+  Enabled: false # this was causing an issue in our rake scripts
+
 Style/Documentation:
   Enabled: false
 
@@ -114,4 +120,4 @@ Style/YodaCondition:
   EnforcedStyle: require_for_equality_operators_only
 
 Style/HashSyntax:
-  Enabled: false  
+  Enabled: false

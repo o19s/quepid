@@ -11,6 +11,10 @@ module Api
         @tries = @case.tries
       end
 
+      def show
+        respond_with @try
+      end
+
       # rubocop:disable Metrics/MethodLength
       # rubocop:disable Metrics/AbcSize
       def create
@@ -41,12 +45,6 @@ module Api
         else
           render json: @try.errors.concat(@case.errors), status: :bad_request
         end
-      end
-      # rubocop:enable Metrics/MethodLength
-      # rubocop:enable Metrics/AbcSize
-
-      def show
-        respond_with @try
       end
 
       def update

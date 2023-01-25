@@ -42,6 +42,6 @@ unless shallow
   json.scores acase.scores.includes(:annotation).limit(10) do |s|
     json.score      s.score
     json.updated_at s.updated_at
-    json.note       s.annotation ? s.annotation.message : nil
+    json.note       s.annotation&.message
   end
 end
