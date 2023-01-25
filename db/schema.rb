@@ -136,8 +136,6 @@ ActiveRecord::Schema.define(version: 2023_01_25_114057) do
     t.string "name"
     t.integer "owner_id"
     t.string "scale"
-    t.boolean "manual_max_score", default: false
-    t.integer "manual_max_score_value", default: 100
     t.boolean "show_scale_labels", default: false
     t.text "scale_with_labels"
     t.datetime "created_at", null: false

@@ -622,4 +622,5 @@ Specifically we would like to thank Erik Bugge and the folks at Kobler for fundi
 
 Quepid wasn't always open source!  Check out the [credits](docs/credits.md) for a list of contributors to the project.
 
+
 If you would like to fund development of a new feature for Quepid do [get in touch](http://www.opensourceconnections.com/contact/)!

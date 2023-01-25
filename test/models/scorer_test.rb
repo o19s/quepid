@@ -4,18 +4,16 @@
 #
 # Table name: scorers
 #
-#  id                     :integer          not null, primary key
-#  code                   :text(65535)
-#  communal               :boolean          default(FALSE)
-#  manual_max_score       :boolean          default(FALSE)
-#  manual_max_score_value :integer          default(100)
-#  name                   :string(255)
-#  scale                  :string(255)
-#  scale_with_labels      :text(65535)
-#  show_scale_labels      :boolean          default(FALSE)
-#  created_at             :datetime         not null
-#  updated_at             :datetime         not null
-#  owner_id               :integer
+#  id                :integer          not null, primary key
+#  code              :text(65535)
+#  communal          :boolean          default(FALSE)
+#  name              :string(255)
+#  scale             :string(255)
+#  scale_with_labels :text(65535)
+#  show_scale_labels :boolean          default(FALSE)
+#  created_at        :datetime         not null
+#  updated_at        :datetime         not null
+#  owner_id          :integer
 #
 
 require 'test_helper'
