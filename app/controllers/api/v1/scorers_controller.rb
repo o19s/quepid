@@ -180,8 +180,6 @@ module Api
         params.require(:scorer).permit(
           :code,
           :name,
-          :manual_max_score,
-          :manual_max_score_value,
           :show_scale_labels,
           :communal,
           scale:             [],
