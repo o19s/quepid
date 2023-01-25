@@ -6,8 +6,6 @@ angular.module('QuepidApp')
     'caseSvc',
     function ($scope, $uibModalInstance, caseSvc) {
 
-      $scope.selectedCase = 'football';
-
       $scope.loading = true;
       caseSvc.fetchArchived()
         .then(function() {

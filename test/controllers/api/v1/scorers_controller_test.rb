@@ -530,19 +530,19 @@ module Api
           scorers = JSON.parse(response.body)
 
           expected_owned_response = {
-            'scorerId'            => owned_scorer.id,
-            'communal'            => owned_scorer.communal,
-            'code'                => owned_scorer.code,
-            'name'                => owned_scorer.name,
-            'scale'               => owned_scorer.scale,
-            'owner_id'            => owned_scorer.owner_id,
-            'owned'               => true,
-            'owner_name'          => owned_scorer.owner.name,
-            'manualMaxScore'      => false,
-            'manualMaxScoreValue' => 100,
-            'showScaleLabels'     => false,
-            'scaleWithLabels'     => nil,
-            'teams'               => [],
+            'scorerId'               => owned_scorer.id,
+            'communal'               => owned_scorer.communal,
+            'code'                   => owned_scorer.code,
+            'name'                   => owned_scorer.name,
+            'scale'                  => owned_scorer.scale,
+            'owner_id'               => owned_scorer.owner_id,
+            'owned'                  => true,
+            'owner_name'             => owned_scorer.owner.name,
+            'manual_max_score'       => false,
+            'manual_max_score_value' => 100,
+            'show_scale_labels'      => false,
+            'scale_with_labels'      => nil,
+            'teams'                  => [],
           }
 
           teams = shared_scorer.teams.map do |team|
@@ -554,19 +554,19 @@ module Api
           end
 
           expected_shared_response = {
-            'scorerId'            => shared_scorer.id,
-            'communal'            => owned_scorer.communal,
-            'code'                => shared_scorer.code,
-            'name'                => shared_scorer.name,
-            'scale'               => shared_scorer.scale,
-            'owner_id'            => shared_scorer.owner_id,
-            'owned'               => false,
-            'owner_name'          => shared_scorer.owner.name,
-            'manualMaxScore'      => false,
-            'manualMaxScoreValue' => 100,
-            'showScaleLabels'     => false,
-            'scaleWithLabels'     => nil,
-            'teams'               => teams,
+            'scorerId'               => shared_scorer.id,
+            'communal'               => owned_scorer.communal,
+            'code'                   => shared_scorer.code,
+            'name'                   => shared_scorer.name,
+            'scale'                  => shared_scorer.scale,
+            'owner_id'               => shared_scorer.owner_id,
+            'owned'                  => false,
+            'owner_name'             => shared_scorer.owner.name,
+            'manual_max_score'       => false,
+            'manual_max_score_value' => 100,
+            'show_scale_labels'      => false,
+            'scale_with_labels'      => nil,
+            'teams'                  => teams,
           }
 
           assert_includes scorers['user_scorers'], expected_owned_response

@@ -39,7 +39,7 @@ angular.module('QuepidApp')
       };
 
       ctrl.options = {
-        which: 'undefined'
+        which: undefined
       };
 
       // Watches
@@ -92,6 +92,19 @@ angular.module('QuepidApp')
         };
 
         r.readAsText(f);
+      };
+
+      ctrl.showWarning = function () {
+        return (ctrl.options.which !== undefined);
+      };
+
+      ctrl.clearSelection = function () {
+        ctrl.options.which = undefined;
+        ctrl.clearQueries = false;
+      };
+
+      ctrl.ratingsTypePicked = function () {
+        return (ctrl.options.which === 'csv' || ctrl.options.which === 'rre' || ctrl.options.which === 'ltr' );
       };
 
       ctrl.ok = function () {

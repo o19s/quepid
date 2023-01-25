@@ -34,6 +34,7 @@ angular.module('QuepidApp')
       configurationSvc
     ) {
       $scope.queriesSvc = queriesSvc;
+      $scope.caseSvc = caseSvc;
       $scope.queryListSortable = configurationSvc.isQueryListSortable();
 
       $rootScope.$on('scoring-complete', () => {

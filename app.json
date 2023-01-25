@@ -1,4 +1,6 @@
 {
+  "name": "quepid",
+  "description": "Give your queries some love!",
   "addons": [
     "jawsdb",
     "logdna",
@@ -85,14 +87,15 @@
   },
   "formation": {
     "worker": {
-      "quantity": 1
+      "quantity": 1,
+      "size": "standard-1x"
     },
     "web": {
-      "quantity": 1
+      "quantity": 1,
+      "size": "standard-1x"
     }
   },
-  "name": "quepid",
   "scripts": {
   },
-  "stack": "heroku-20"
+  "stack": "heroku-22"
 }

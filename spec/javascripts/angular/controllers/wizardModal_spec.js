@@ -29,7 +29,7 @@ describe('Controller: WizardModalCtrl', function () {
       {
         search_url: 'http://quepid-solr.dev.o19s.com:8985/solr/tmdb/select',
         field_spec: 'catch_line',
-        curatorVars: {},
+        curator_vars: {},
         query_params: 'q=#$query##',
         args: {
           q: ['#$query##']
@@ -42,7 +42,7 @@ describe('Controller: WizardModalCtrl', function () {
   var mockTry = {
     search_url: 'http://quepid-solr.dev.o19s.com:8985/solr/tmdb/select',
     field_spec: 'catch_line',
-    curatorVars: {},
+    curator_vars: {},
     query_params: 'q=#$query##',
     args: {
       q: ['#$query##']

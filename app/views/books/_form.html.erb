@@ -1,0 +1,82 @@
+<%= form_with(model: book) do |form| %>
+
+  <%
+    @book_id = book.id
+    @book_name = book.name
+  %>
+
+  <% if book.errors.any? %>
+    <div id="error_explanation">
+      <h2><%= pluralize(book.errors.count, "error") %> prohibited this book from being saved:</h2>
+
+      <ul>
+        <% book.errors.each do |error| %>
+          <li><%= error.full_message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="field">
+    <%= form.label :name %>
+    <%= form.text_field :name, required: true %>
+  </div>
+
+  <br>
+
+  <div class="field">
+    <%= form.label :team_id %>
+    <%
+      @list = Team.for_user(current_user)
+      @options = []
+      @list.each do |item|
+        option = [item.name , item.id]
+        @options << option
+      end
+    %>
+    <%=
+      form.select(:team_id, options_for_select(@options, book.team_id), { prompt: true }, required: true)
+    %>
+  </div>
+
+  <br>
+
+  <div class="field">
+    <%= form.label :scorer_id %>
+    <%
+      @list = Scorer.all
+      @options = []
+      @list.each do |item|
+        option = [item.name , item.id]
+        @options << option
+      end
+    %>
+    <%=
+      form.select(:scorer_id, options_for_select(@options, book.scorer_id), { prompt: true }, required: true)
+    %>
+  </div>
+
+  <br>
+
+  <div class="field">
+    <%= form.label :selection_strategy_id %>
+    <%
+      @list = SelectionStrategy.all
+      @options = []
+      @list.each do |item|
+        option = [item.name , item.id]
+        @options << option
+      end
+    %>
+    <%=
+      form.select(:selection_strategy_id, options_for_select(@options, book.selection_strategy_id), { prompt: true }, required: true)
+    %>
+  </div>
+
+  <br>
+
+  <div class="actions">
+    <%= form.submit %>
+  </div>
+
+<% end %>

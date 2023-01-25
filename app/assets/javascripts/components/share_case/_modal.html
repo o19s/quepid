@@ -40,7 +40,7 @@
     <h4>Already shared with:</h4>
 
     <ul class="list-group">
-      <li class="list-group-item list-group-item-success" ng-repeat="team in ctrl.share.sharedTeams">
+      <li class="list-group-item list-group-item-success" ng-repeat="team in ctrl.share.sharedTeams" ng-class="{ active: team == ctrl.share.unselectedTeam }" ng-click="ctrl.unselectTeam(team)">
         {{ team.name }}
       </li>
     </ul>
@@ -51,13 +51,20 @@
     <i class="fa fa-plus"></i>
     Create a team
   </a>
-
+  
   <button
     class="btn btn-success"
-    ng-show="ctrl.canUpdateCase && ctrl.share.selectedTeam"
+    ng-show="ctrl.canUpdateCase && ctrl.share.selectedTeam && ctrl.share.action ==='select'"
     ng-click="ctrl.ok()"
   >
     Share with {{ ctrl.share.selectedTeam.name }}
+  </button>
+  <button
+    class="btn btn-success"
+    ng-show="ctrl.canUpdateCase && ctrl.share.unselectedTeam && ctrl.share.action ==='unselect'"
+    ng-click="ctrl.ok()"
+  >
+    Unshare from {{ ctrl.share.unselectedTeam.name }}
   </button>
   <button class="btn btn-default" ng-click="ctrl.cancel()">Cancel</button>
 </div>

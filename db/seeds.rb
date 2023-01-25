@@ -61,6 +61,10 @@ Scorer.where(name: 'RR@10').first_or_create(
   communal:           true
 )
 
+SelectionStrategy.where(name: 'TOTALLY_RANDOM').first_or_create(
+  name: 'TOTALLY_RANDOM'
+)
+
 if ENV['SEED_SAMPLE_DATA']
   require_relative 'sample_data_seeds'
 end

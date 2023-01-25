@@ -16,7 +16,7 @@ class CasePolicy < ApplicationPolicy
     if @record.instance_of? Class
       permissions[:read]
     else
-      permissions[:read] && ( @record.is_owner?(@user) || @record.shared_with?(@user) )
+      permissions[:read] && ( @record.is_owner?(@user) || @record.shared_with?(@user) || @record.public? )
     end
   end
 

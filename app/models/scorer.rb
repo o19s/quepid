@@ -6,16 +6,16 @@
 #
 #  id                     :integer          not null, primary key
 #  code                   :text(65535)
-#  name                   :string(191)
-#  owner_id               :integer
-#  scale                  :string(255)
+#  communal               :boolean          default(FALSE)
 #  manual_max_score       :boolean          default(FALSE)
 #  manual_max_score_value :integer          default(100)
-#  show_scale_labels      :boolean          default(FALSE)
+#  name                   :string(255)
+#  scale                  :string(255)
 #  scale_with_labels      :text(65535)
+#  show_scale_labels      :boolean          default(FALSE)
 #  created_at             :datetime         not null
 #  updated_at             :datetime         not null
-#  communal               :boolean
+#  owner_id               :integer
 #
 
 require 'scale_serializer'
@@ -26,6 +26,9 @@ class Scorer < ApplicationRecord
 
   # not sure about this!
   # has_many :users, dependent: :nullify
+
+  has_many   :snapshots,
+             dependent: :nullify
 
   # too late now!
   # rubocop:disable Rails/HasAndBelongsToMany

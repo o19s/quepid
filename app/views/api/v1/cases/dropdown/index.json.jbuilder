@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-json.allCases do
+json.all_cases do
   json.array! @cases do |acase|
     json.case_name        acase.case_name
     json.caseNo           acase.id
@@ -10,4 +10,4 @@ json.allCases do
   end
 end
 
-json.casesCount current_user.cases_involved_with.not_archived.count
+json.cases_count current_user.cases_involved_with.not_archived.count

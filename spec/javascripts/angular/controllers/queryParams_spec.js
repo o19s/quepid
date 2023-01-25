@@ -17,9 +17,12 @@ describe('Controller: QueryparamsCtrl', function () {
     var queryParams = 'q=#$query##';
     var curatorVars = {};
 
-    testTry = new TryFactory({ tryNo: 0, query_params: queryParams, curatorVars: curatorVars });
+    testTry = new TryFactory({ tryNo: 0, query_params: queryParams, curator_vars: curatorVars });
     scope.settings = {selectedTry: testTry};
-    scope.settings.searchUrl = 'http://example.com'
+    scope.settings.searchUrl = 'http://example.com';
+    scope.settings.searchEngine = 'solr';
+    scope.settings.apiMethod = 'JSONP';
+    scope.settings.fieldSpec = "id:id title:title";
 
     QueryparamsCtrl = $controller('QueryParamsCtrl', {
       $scope: scope
@@ -84,7 +87,7 @@ describe('Controller: QueryparamsCtrl', function () {
     scope.settings.searchUrl = 'https://example.com'
     scope.qp.toggleTab();
     expect(scope.showTLSChangeWarning).toBeTruthy();
-    expect(scope.quepidUrlToSwitchTo).toEqual('https://server/?searchUrl=https://example.com')
+    expect(scope.quepidUrlToSwitchTo).toEqual('https://server/?searchEngine=solr&searchUrl=https://example.com&showWizard=false&apiMethod=JSONP&fieldSpec=id:id title:title')
     scope.settings.searchUrl = 'http://example.com'
     scope.qp.toggleTab();
     expect(scope.showTLSChangeWarning).toBeFalsy();

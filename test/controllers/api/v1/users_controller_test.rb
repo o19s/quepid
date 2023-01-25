@@ -35,7 +35,7 @@ module Api
             body = JSON.parse(response.body)
 
             assert body['email'] == doug.email
-            assert body['defaultScorerId'] == doug.default_scorer.id
+            assert body['default_scorer_id'] == doug.default_scorer.id
           end
 
           test 'returns a not found error if user does not exist' do

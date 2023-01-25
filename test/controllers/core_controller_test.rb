@@ -3,8 +3,8 @@
 require 'test_helper'
 
 class CoreControllerTest < ActionController::TestCase
-  TRY_INFO        = /bootstrapTryNo.*?(\d*);/.freeze
-  CASE_INFO       = /bootstrapCaseNo.*?(\d*);/.freeze
+  TRY_INFO        = /bootstrapTryNo.*?(\d*);/
+  CASE_INFO       = /bootstrapCaseNo.*?(\d*);/
 
   before do
     @controller = CoreController.new
@@ -18,7 +18,6 @@ class CoreControllerTest < ActionController::TestCase
     test 'should get index' do
       get :index
       assert_response :success
-      puts "Request is #{request.ssl?}"
     end
   end
 

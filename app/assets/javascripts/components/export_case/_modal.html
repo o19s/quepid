@@ -83,8 +83,28 @@
       LTR uses a rather odd format of <code>rating qid:queryid # docid query</code>, eg <code>3 qid:1 # 1370 star trek</code>.
     </span>
   </div>
+  <hr/>
+  <div class="form-group">
+    <label for="ltr">Quepid API</label>
+    <span class="help-block">
+      Quepid has a API that you can export data in the JSON format via.  Append the parameter <code>?shallow=true</code> to return a smaller dataset.
+    </span>
+
+    Retrieve the <a ng-href="/api/cases/{{ctrl.theCase.caseNo}}.json?shallow=false" target="_blank">Case</a>, <a ng-href="/api/cases/{{ctrl.theCase.caseNo}}/queries.json?shallow=false" target="_blank">Queries</a>, <a ng-href="/api/cases/{{ctrl.theCase.caseNo}}/annotations.json" target="_blank">Annotations</a>, <a ng-href="/api/cases/{{ctrl.theCase.caseNo}}/scores.json" target="_blank">Scores</a>, <a ng-href="/api/export/ratings/{{ctrl.theCase.caseNo}}.json" target="_blank">Ratings</a>, or a Snapshot
+    <select ng-model="ctrl.options.api_snapshot">
+      <option ng-repeat="snapshot in ctrl.snapshots"
+              value="{{snapshot.id}}"
+              title="{{snapshot.name()}}">
+           {{snapshot.name()}}
+      </option>
+    </select>
+    <span ng-if="ctrl.options.api_snapshot">
+      <a ng-href="/api/cases/{{ctrl.theCase.caseNo}}/snapshots/{{ ctrl.options.api_snapshot }}.json?shallow=false" target="_blank">here</a>
+    </span>
+     from API.
+  </div>
 </div>
 <div class="modal-footer">
   <button class="btn btn-default float-left" ng-click="ctrl.cancel()">Cancel</button>
-  <button class="btn btn-primary" ng-click="ctrl.ok()" ng-disabled="ctrl.options.which === 'undefined' || ctrl.options.which==='detailed' && !ctrl.supportsDetailedExport">Export</button>
+  <button class="btn btn-primary" ng-click="ctrl.ok()" ng-disabled="ctrl.options.which === undefined || ctrl.options.which==='detailed' && !ctrl.supportsDetailedExport">Export</button>
 </div>

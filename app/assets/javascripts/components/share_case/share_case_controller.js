@@ -40,14 +40,27 @@ angular.module('QuepidApp')
         modalInstance.result.then(
           function(share) {
             var caseNo  = share.acase.caseNo;
-            var team    = share.selectedTeam;
+            var team    = null;
+            if (share.action === 'select') {
+              team    = share.selectedTeam;
 
-            teamSvc.shareCase(team, caseNo)
-              .then(function() {
-                flash.success = 'Case shared with team successfully.';
-              }, function() {
-                flash.error = 'Unable to share case with team.';
-              });
+              teamSvc.shareCase(team, caseNo)
+                .then(function() {
+                  flash.success = 'Case shared with team successfully.';
+                }, function() {
+                  flash.error = 'Unable to share case with team.';
+                });
+            }
+            else {
+              team    = share.unselectedTeam;
+
+              teamSvc.unshareCase(team, caseNo)
+                .then(function() {
+                  flash.success = 'Case unshared from team successfully.';
+                }, function() {
+                  flash.error = 'Unable to unshare case from team.';
+                });
+            }
           },
           function() {
             $log.info('INFO: Modal dismissed');

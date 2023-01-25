@@ -34,6 +34,7 @@ angular.module('QuepidApp')
       svc.refetchCaseLists  = refetchCaseLists;
       svc.saveDefaultScorer = saveDefaultScorer;
       svc.renameCase        = renameCase;
+      svc.associateBook     = associateBook;
 
       // an individual case, ie
       // a search problem to be solved
@@ -43,11 +44,14 @@ angular.module('QuepidApp')
         theCase.caseNo            = data.caseNo;
         theCase.lastTry           = data.last_try_number;
         theCase.caseName          = data.case_name;
-        theCase.lastScore         = data.lastScore;
+        theCase.lastScore         = data.last_score;
         theCase.scorerId          = data.scorerId;
         theCase.owned             = data.owned;
         theCase.ownerName         = data.owner_name;
+        theCase.bookId            = data.bookId;
+        theCase.bookName          = data.bookName;
         theCase.queriesCount      = data.queriesCount;
+        theCase.public            = data.public;
         theCase.teams             = data.teams || [];
         theCase.tries             = data.tries || [];
         theCase.scores            = data.scores || [];
@@ -218,10 +222,8 @@ angular.module('QuepidApp')
             var data    = response.data;
             var newCase = new Case(data);
 
-            svc.allCases.push(newCase);
-            svc.archived = svc.archived.filter( function(acase) {
-              acase.caseNo !== newCase.caseNo;
-            });
+            svc.allCases.splice(svc.allCases.indexOf(newCase), 1);
+            svc.archived.push(newCase);
 
             broadcastSvc.send('updatedCasesList', svc.allCases);
           });
@@ -251,7 +253,7 @@ angular.module('QuepidApp')
 
         return $http.get('/api/cases?archived=true')
           .then(function(response) {
-            angular.forEach(response.data.allCases, function(rawCase) {
+            angular.forEach(response.data.all_cases, function(rawCase) {
               var newCase = constructFromData(rawCase);
 
               if ( !listContainsCase(svc.archived, newCase) ) {
@@ -266,9 +268,9 @@ angular.module('QuepidApp')
         self.dropdownCases.length = 0;
         return $http.get('/api/dropdown/cases')
           .then(function(response) {
-            self.casesCount = response.data.casesCount;
+            self.casesCount = response.data.cases_count;
 
-            angular.forEach(response.data.allCases, function(rawCase) {
+            angular.forEach(response.data.all_cases, function(rawCase) {
               var newCase = new Case(rawCase);
 
               if ( !listContainsCase(svc.dropdownCases, newCase) ) {
@@ -356,7 +358,7 @@ angular.module('QuepidApp')
           .then(function(response) {
             var data = response.data;
 
-            angular.forEach(data.allCases, function(rawCase) {
+            angular.forEach(data.all_cases, function(rawCase) {
               var newCase = constructFromData(rawCase);
 
               if ( !listContainsCase(svc.allCases, newCase) ) {
@@ -420,6 +422,28 @@ angular.module('QuepidApp')
               caseTryNavSvc.notFound();
             });
         }
+      }
+
+      /*
+       * update which book the case is tied to.  This could be refactored into a more
+       * general "update" method.
+       */
+      function associateBook(theCase, bookId) {
+
+        // HTTP PUT /api/cases/<int:caseId>
+        var url  = '/api/cases/' + theCase.caseNo;
+        var data = {
+          book_id: bookId
+        };
+
+        return $http.put(url, data)
+          .then(function(response) {
+
+            theCase.bookId = bookId;
+            theCase.bookName = response.bookName;
+          }, function() {
+            caseTryNavSvc.notFound();
+          });
       }
 
 

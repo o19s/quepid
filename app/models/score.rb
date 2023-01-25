@@ -5,15 +5,27 @@
 # Table name: case_scores
 #
 #  id            :integer          not null, primary key
-#  case_id       :integer
-#  user_id       :integer
-#  try_id        :integer
-#  score         :float(24)
 #  all_rated     :boolean
-#  created_at    :datetime
 #  queries       :binary(16777215)
-#  annotation_id :integer
+#  score         :float(24)
+#  created_at    :datetime
 #  updated_at    :datetime
+#  annotation_id :integer
+#  case_id       :integer
+#  try_id        :integer
+#  user_id       :integer
+#
+# Indexes
+#
+#  case_id                             (case_id)
+#  index_case_scores_on_annotation_id  (annotation_id)
+#  user_id                             (user_id)
+#
+# Foreign Keys
+#
+#  case_scores_ibfk_1  (case_id => cases.id)
+#  case_scores_ibfk_2  (user_id => users.id)
+#  fk_rails_...        (annotation_id => annotations.id)
 #
 
 class Score < ApplicationRecord
@@ -28,14 +40,6 @@ class Score < ApplicationRecord
   belongs_to :annotation, optional: true
 
   # Validations
-  validates :case_id,
-            presence: true
-
-  validates :user_id,
-            presence: true
-
-  validates :try_id,
-            presence: true
 
   # Scores
   scope :last_one, -> {

@@ -2,7 +2,7 @@
 
 source 'https://rubygems.org'
 
-ruby '2.7.4'
+ruby '3.1.2', :patchlevel => '20'
 
 gem 'activerecord-import', '>= 1.0.7'
 gem 'acts_as_list', '>= 1.0.1'
@@ -21,24 +21,41 @@ gem 'redis', '~> 4.0'
 gem 'jquery-rails'
 gem 'jquery-ui-rails' # Can we narrow the widgets to load faster?
 gem 'mysql2'
+
+gem 'net-smtp'
+gem 'net-pop', '~> 0.1.1'
+gem 'net-imap', '~> 0.2.3'
 gem 'postmark-rails'
 gem 'puma', '~> 5.0'
 gem 'puma_worker_killer'
 gem 'pundit'
-gem 'rails', '= 6.1.4.1' # starting Rails 6 the webpack is included by default.
+gem 'rails', '= 6.1.6.1'
 gem 'responders'
 gem 'sidekiq'
 gem 'terser'
 gem 'bootsnap', '>= 1.4.4', require: false
 gem 'listen', '~> 3.3'
-gem 'd3-rails', '~> 3.5.5' # we have a very old version of D3.  This provides D3 assets.
+
 gem 'cal-heatmap-rails', '~> 3.6' # provides assets for cal heatmap, that requires old d3
+gem 'd3-rails', '~> 3.5.5' # For cal heatmap
+
+# Using this as it wires in via Sprockets and I can't get npm version to work with the main app.
+# Had no luck with js/svg approach ;-(
 gem 'font-awesome-sass'
-gem 'webpacker', '= 5.4.0'
+
 gem 'rack-cors', '~> 1.1'
 gem 'foreman'
 gem 'racc', '~> 1.4.0'
 gem 'ancestry'
+
+gem 'omniauth', '~> 2.0'
+gem 'omniauth-keycloak'
+gem 'omniauth-rails_csrf_protection'
+gem 'omniauth-google-oauth2'
+
+gem 'rails-healthcheck', '~> 1.4'
+
+gem 'vega', '~> 0.2.6'
 
 group :development, :test do
   gem 'annotate'
@@ -63,13 +80,3 @@ group :test do
   gem 'webmock'
   gem 'rails-controller-testing' # bring back compatibility with rails 4 assigns in controller tests.
 end
-
-gem 'omniauth', '~> 2.0'
-
-gem 'omniauth-keycloak', '~> 1.3'
-
-gem 'omniauth-rails_csrf_protection', '~> 1.0'
-
-gem 'omniauth-google-oauth2', '~> 1.0'
-
-gem 'rails-healthcheck', '~> 1.4'
