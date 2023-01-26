@@ -29,7 +29,6 @@
       self.owned                  = data.owned;
       self.ownerId                = data.owner_id;
       self.ownerName              = data.owner_name;
-      self.queryId                = data.queryId;
       self.scale                  = data.scale;
       self.scaleWithLabels        = data.scale_with_labels;
       self.scorerId               = data.scorer_id;

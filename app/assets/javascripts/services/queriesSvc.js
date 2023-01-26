@@ -195,7 +195,7 @@ angular.module('QuepidApp')
 
         // Threshold properties
         self.threshold        = queryWithRatings.threshold;
-        self.thresholdEnabled = queryWithRatings.thresholdEnabled;
+        self.thresholdEnabled = queryWithRatings.threshold_enabled;
 
         // Error
         self.errorText = '';
@@ -699,7 +699,7 @@ angular.module('QuepidApp')
       let addQueriesFromResp = function(data) {
         // Update the display order
         svcVersion++;
-        that.displayOrder = data.displayOrder;
+        that.displayOrder = data.display_order;
 
         // Parse query array
         let newQueries = [];
@@ -707,10 +707,12 @@ angular.module('QuepidApp')
           let newQuery = null;
           if (!(queryWithRatings.hasOwnProperty('deleted') &&
                 queryWithRatings.deleted === 'true')) {
-            let newQueryId = queryWithRatings.queryId;
-            if (typeof(queryWithRatings.queryId) === 'string') {
-              queryWithRatings.queryId = parseInt(queryWithRatings.queryId, 10);
-            }
+            let newQueryId = queryWithRatings.query_id;
+            queryWithRatings.queryId = queryWithRatings.query_id;
+            // Eric thinks below is not needed.
+            //if (typeof(queryWithRatings.queryId) === 'string') {
+            //  queryWithRatings.queryId = parseInt(queryWithRatings.queryId, 10);
+            //}
             newQuery = new Query(queryWithRatings);
             that.queries[newQueryId] = newQuery;
             newQueries.push(newQueryId);
@@ -844,12 +846,15 @@ angular.module('QuepidApp')
                 resolve();
               } else {
                 // Update the display order based on the new one after the query creation
-                self.displayOrder = data.displayOrder;
+                self.displayOrder = data.display_order;
 
+                // Eric thinks we should be running this through a factory to map api to front end...
                 let addedQuery = data.query;
+                addedQuery.queryId = addedQuery.query_id
 
-                query.queryId = parseInt(addedQuery.queryId, 10);
+                query.queryId = addedQuery.query_id;
                 query.ratingsStore.setQueryId(addedQuery.queryId);
+
                 self.queries[query.queryId] = query;
                 svcVersion++;
                 broadcastSvc.send('updatedQueriesList');
@@ -935,7 +940,7 @@ angular.module('QuepidApp')
 
         return $http.put(url, data)
           .then(function(response) {
-            svc.displayOrder = response.data.displayOrder;
+            svc.displayOrder = response.data.display_order;
             svcVersion++;
           }, function() {
             svcVersion++;

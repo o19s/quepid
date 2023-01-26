@@ -48,8 +48,8 @@ angular.module('QuepidApp')
         theCase.scorerId          = data.scorer_id;
         theCase.owned             = data.owned;
         theCase.ownerName         = data.owner_name;
-        theCase.bookId            = data.bookId;
-        theCase.bookName          = data.bookName;
+        theCase.bookId            = data.book_id;
+        theCase.bookName          = data.book_name;
         theCase.queriesCount      = data.queriesCount;
         theCase.public            = data.public;
         theCase.teams             = data.teams || [];
@@ -440,7 +440,7 @@ angular.module('QuepidApp')
           .then(function(response) {
 
             theCase.bookId = bookId;
-            theCase.bookName = response.bookName;
+            theCase.bookName = response.book_name;
           }, function() {
             caseTryNavSvc.notFound();
           });
