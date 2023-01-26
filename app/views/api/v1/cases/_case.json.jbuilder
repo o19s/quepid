@@ -8,7 +8,7 @@ teams = acase.teams.find_all { |t| current_user.teams.all.include?(t) } unless n
 
 json.case_name        acase.case_name
 json.case_id          acase.id
-json.scorerId         acase.scorer_id
+json.scorer_id        acase.scorer_id
 json.bookId           acase.book_id
 json.bookName         acase.book.name if acase.book.present?
 json.owned            acase.owner_id == current_user.id
