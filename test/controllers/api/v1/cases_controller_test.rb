@@ -448,7 +448,7 @@ module Api
 
           assert cases.length == doug.cases.where(archived: true).length
           assert_equal cases.first['case_name'],  archived.case_name
-          assert_equal cases.first['case_id'],     archived.id
+          assert_equal cases.first['case_id'], archived.id
         end
 
         test 'archived flag works as a string' do
@@ -461,7 +461,7 @@ module Api
 
           assert cases.length == doug.cases.where(archived: true).length
           assert_equal cases.first['case_name'],  archived.case_name
-          assert_equal cases.first['case_id'],     archived.id
+          assert_equal cases.first['case_id'], archived.id
         end
 
         test 'only returns owned archived cases' do
