@@ -17,6 +17,10 @@ module Api
         respond_with @teams
       end
 
+      def show
+        respond_with @team
+      end
+
       def create
         @team = current_user.owned_teams.build team_params
         @team.members << current_user
@@ -27,10 +31,6 @@ module Api
         else
           render json: @team.errors, status: :bad_request
         end
-      end
-
-      def show
-        respond_with @team
       end
 
       def update

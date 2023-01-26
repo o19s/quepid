@@ -28,7 +28,10 @@
 //= require jquery-autoGrowInput
 //= require d3
 //= require d3-tip
+
+// Cookie prompt only renders properly in the core app
 //= require cookies_eu
+
 //= require angular/angular
 //= require ace-builds/src-min-noconflict/ace
 //= require ace-builds/src-min-noconflict/ext-language_tools

@@ -2,7 +2,7 @@
 
 source 'https://rubygems.org'
 
-ruby '3.1.2', :patchlevel => '20'
+ruby '3.2.0'
 
 gem 'activerecord-import', '>= 1.0.7'
 gem 'acts_as_list', '>= 1.0.1'
@@ -17,7 +17,7 @@ gem 'devise_invitable', '~> 2.0'
 gem 'gabba'
 gem 'intercom-rails'
 gem 'jbuilder', '~> 2.7'
-gem 'redis', '~> 4.0'
+gem 'redis', '~> 5.0.6'
 gem 'jquery-rails'
 gem 'jquery-ui-rails' # Can we narrow the widgets to load faster?
 gem 'mysql2'
@@ -29,7 +29,7 @@ gem 'postmark-rails'
 gem 'puma', '~> 5.0'
 gem 'puma_worker_killer'
 gem 'pundit'
-gem 'rails', '= 6.1.6.1'
+gem 'rails', '= 6.1.7.2'
 gem 'responders'
 gem 'sidekiq'
 gem 'terser'
@@ -55,7 +55,7 @@ gem 'omniauth-google-oauth2'
 
 gem 'rails-healthcheck', '~> 1.4'
 
-gem 'vega', '~> 0.2.6'
+gem 'vega', '~> 0.3.0'
 
 group :development, :test do
   gem 'annotate'
