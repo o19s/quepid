@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-json.scorerId               scorer.id
+json.scorer_id              scorer.id
 json.communal               scorer.communal
 json.code                   scorer.code
 json.name                   scorer.name

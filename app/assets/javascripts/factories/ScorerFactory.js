@@ -32,7 +32,7 @@
       self.queryId                = data.queryId;
       self.scale                  = data.scale;
       self.scaleWithLabels        = data.scale_with_labels;
-      self.scorerId               = data.scorerId;
+      self.scorerId               = data.scorer_id;
       self.communal               = data.communal;
       self.showScaleLabels        = data.show_scale_labels || false;
       self.teams                  = data.teams || [];
