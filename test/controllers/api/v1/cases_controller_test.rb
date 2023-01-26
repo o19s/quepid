@@ -327,11 +327,11 @@ module Api
           get :index
 
           body = JSON.parse(response.body)
-          cases = body['allCases']
+          cases = body['all_cases']
 
           cases.each do |c|
             assert_nil c['tries']
-            assert_nil c['lastScore']['queries'] if c['lastScore']
+            assert_nil c['last_score']['queries'] if c['last_score']
           end
         end
 
@@ -341,7 +341,7 @@ module Api
           assert_response :ok
 
           body  = JSON.parse(response.body)
-          cases = body['allCases']
+          cases = body['all_cases']
 
           ids = cases.map { |c| c['caseNo'] }
 
@@ -356,7 +356,7 @@ module Api
 
           get :index
           body = JSON.parse(response.body)
-          test_team_ids = body['allCases'].find_all do |c|
+          test_team_ids = body['all_cases'].find_all do |c|
             c['caseNo'] == shared.id
           end
 
@@ -376,7 +376,7 @@ module Api
           assert_response :ok
 
           body  = JSON.parse(response.body)
-          cases = body['allCases']
+          cases = body['all_cases']
 
           ids = cases.map { |c| c['caseNo'] }
 
@@ -388,7 +388,7 @@ module Api
 
           assert_response :ok
 
-          cases = json_response['allCases']
+          cases = json_response['all_cases']
 
           ids = cases.map { |c| c['caseNo'] }
 
@@ -405,7 +405,7 @@ module Api
 
           assert_response :ok
 
-          cases = json_response['allCases']
+          cases = json_response['all_cases']
 
           ids = cases.map { |c| c['caseNo'] }
 
@@ -418,7 +418,7 @@ module Api
           assert_response :ok
 
           body  = JSON.parse(response.body)
-          cases = body['allCases']
+          cases = body['all_cases']
 
           ids = cases.map { |c| c['caseNo'] }
 
@@ -431,7 +431,7 @@ module Api
           assert_response :ok
 
           body  = JSON.parse(response.body)
-          cases = body['allCases']
+          cases = body['all_cases']
 
           ids = cases.map { |c| c['caseNo'] }
 
@@ -444,7 +444,7 @@ module Api
           assert_response :ok
 
           body  = JSON.parse(response.body)
-          cases = body['allCases']
+          cases = body['all_cases']
 
           assert cases.length == doug.cases.where(archived: true).length
           assert_equal cases.first['case_name'],  archived.case_name
@@ -457,7 +457,7 @@ module Api
           assert_response :ok
 
           body  = JSON.parse(response.body)
-          cases = body['allCases']
+          cases = body['all_cases']
 
           assert cases.length == doug.cases.where(archived: true).length
           assert_equal cases.first['case_name'],  archived.case_name
@@ -471,7 +471,7 @@ module Api
 
           assert_response :ok
 
-          cases = json_response['allCases']
+          cases = json_response['all_cases']
           names = cases.map { |c| c['case_name'] }
 
           assert_not_includes names, shared.case_name
@@ -483,7 +483,7 @@ module Api
           assert_response :ok
 
           body  = JSON.parse(response.body)
-          cases = body['allCases']
+          cases = body['all_cases']
 
           assert cases.length <= 3
         end
@@ -499,7 +499,7 @@ module Api
           assert_response :ok
 
           body  = JSON.parse(response.body)
-          cases = body['allCases']
+          cases = body['all_cases']
 
           ids = cases.map { |c| c['caseNo'] }
 
@@ -517,7 +517,7 @@ module Api
           assert_response :ok
 
           body  = JSON.parse(response.body)
-          cases = body['allCases']
+          cases = body['all_cases']
 
           ids = cases.map { |c| c['caseNo'] }
 

@@ -33,6 +33,10 @@ module Api
 
         respond_with @cases
       end
+
+      def show
+        respond_with @case
+      end
       # rubocop:enable Metrics/MethodLength
       # rubocop:enable Metrics/AbcSize
 
@@ -46,10 +50,6 @@ module Api
         else
           render json: @case.errors, status: :bad_request
         end
-      end
-
-      def show
-        respond_with @case
       end
 
       # rubocop:disable Metrics/MethodLength

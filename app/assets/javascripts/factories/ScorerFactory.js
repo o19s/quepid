@@ -25,18 +25,16 @@
       self.colors                 = scaleToColors(data.scale);
       self.displayName            = setDisplayName(data.name, data.communal);
       self.error                  = false;
-      self.manualMaxScore         = data.manualMaxScore || false;
-      self.manualMaxScoreValue    = data.manualMaxScoreValue || 100;
       self.name                   = data.name;
       self.owned                  = data.owned;
       self.ownerId                = data.owner_id;
       self.ownerName              = data.owner_name;
       self.queryId                = data.queryId;
       self.scale                  = data.scale;
-      self.scaleWithLabels        = data.scaleWithLabels;
+      self.scaleWithLabels        = data.scale_with_labels;
       self.scorerId               = data.scorerId;
       self.communal               = data.communal;
-      self.showScaleLabels        = data.showScaleLabels || false;
+      self.showScaleLabels        = data.show_scale_labels || false;
       self.teams                  = data.teams || [];
 
       // Functions
@@ -562,7 +560,7 @@
       }
 
       function maxScore() {
-        return self.manualMaxScore ? self.manualMaxScore : self.scale[-1];
+        return self.scale[-1];
       }
 
       function score(query, total, docs, bestDocs, options) {

@@ -24,7 +24,7 @@ module Api
           assert_equal try.escape_query, response['escape_query']
           assert_equal try.api_method,   response['api_method']
 
-          assert_curator_vars_equal try.curator_vars_map, response['curatorVars']
+          assert_curator_vars_equal try.curator_vars_map, response['curator_vars']
         end
 
         def assert_tries_match a_try, try

@@ -16,6 +16,11 @@ module Api
         respond_with @snapshots
       end
 
+      def show
+        @shallow = params[:shallow] || false
+        respond_with @snapshot
+      end
+
       # rubocop:disable Metrics/MethodLength
       def create
         @snapshot = @case.snapshots.build snapshot_params
@@ -44,11 +49,6 @@ module Api
         end
       end
       # rubocop:enable Metrics/MethodLength
-
-      def show
-        @shallow = params[:shallow] || false
-        respond_with @snapshot
-      end
 
       def destroy
         @snapshot.destroy

@@ -253,7 +253,6 @@ describe('Service: ScorerFactory', function () {
       ]);
       var bestDocs = [{rating: 10}, {rating: 9}, {rating: 9}];
 
-      scorer.manualMaxScore = true;
       scorer.code = [
         'var score = 0;',
         'var perfectScore = 0;',
