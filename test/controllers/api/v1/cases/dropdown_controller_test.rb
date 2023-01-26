@@ -55,7 +55,7 @@ module Api
             body  = JSON.parse(response.body)
             cases = body['all_cases']
 
-            ids = cases.map { |c| c['caseNo'] }
+            ids = cases.map { |c| c['case_id'] }
 
             assert_includes ids, first_case.id
             assert_includes ids, second_case.id
@@ -69,7 +69,7 @@ module Api
             body  = JSON.parse(response.body)
             cases = body['all_cases']
 
-            ids = cases.map { |c| c['caseNo'] }
+            ids = cases.map { |c| c['case_id'] }
 
             assert_includes ids, shared.id
           end
@@ -82,7 +82,7 @@ module Api
             body  = JSON.parse(response.body)
             cases = body['all_cases']
 
-            ids = cases.map { |c| c['caseNo'] }
+            ids = cases.map { |c| c['case_id'] }
 
             assert_not_includes ids, archived.id
           end
@@ -116,7 +116,7 @@ module Api
             body  = JSON.parse(response.body)
             cases = body['all_cases']
 
-            ids = cases.map { |c| c['caseNo'] }
+            ids = cases.map { |c| c['case_id'] }
 
             assert_equal ids.first, second_case.id
           end

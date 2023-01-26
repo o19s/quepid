@@ -7,7 +7,7 @@ no_teams ||= false
 teams = acase.teams.find_all { |t| current_user.teams.all.include?(t) } unless no_teams
 
 json.case_name        acase.case_name
-json.caseNo           acase.id
+json.case_id          acase.id
 json.scorerId         acase.scorer_id
 json.bookId           acase.book_id
 json.bookName         acase.book.name if acase.book.present?

@@ -41,7 +41,7 @@ angular.module('QuepidApp')
       var Case = function(data) {
         var theCase               = this;
 
-        theCase.caseNo            = data.caseNo;
+        theCase.caseNo            = data.case_id;
         theCase.lastTry           = data.last_try_number;
         theCase.caseName          = data.case_name;
         theCase.lastScore         = data.last_score;
