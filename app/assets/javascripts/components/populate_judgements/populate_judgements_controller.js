@@ -22,6 +22,7 @@ angular.module('QuepidApp')
           templateUrl:  'populate_judgements/_modal.html',
           controller:   'PopulateJudgementsModalInstanceCtrl',
           controllerAs: 'ctrl',
+          size: 'lg',
           resolve: {
             acase: function() {
               return ctrl.acase;

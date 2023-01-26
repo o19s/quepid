@@ -7,7 +7,7 @@
 #  id              :bigint           not null, primary key
 #  document_fields :text(65535)
 #  position        :integer
-#  query_text      :string(255)
+#  query_text      :string(500)
 #  created_at      :datetime         not null
 #  updated_at      :datetime         not null
 #  book_id         :bigint           not null
