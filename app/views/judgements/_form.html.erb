@@ -55,7 +55,7 @@
       key_down(key_name);
       reset_styles_except(key_name);
       document.getElementById("judgement_rating").value = rating;
-      delay(250).then(() => (document.getElementsByName("commit")[0].click()));
+      delay(100).then(() => (document.getElementsByName("commit")[0].click()));
   }
 
   function sleep(ms) {
