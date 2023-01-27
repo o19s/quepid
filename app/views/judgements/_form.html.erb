@@ -336,10 +336,10 @@
     end
 
     @show_keyboard_shortcuts = not(@hide_keyboard_shortcuts)
-    @document_fields_parses_as_json = document_fields_parses_as_json
-    if @document_fields_parses_as_json
-      @title_value = @document_fields['title']
-      @document_fields_except_title = @document_fields.except('title')
+    @document_fields_as_json = document_fields_parses_as_json (@query_doc_pair.document_fields)
+    if @document_fields_as_json
+      @title_value = @document_fields_as_json['title']
+      @document_fields_except_title = @document_fields_as_json.except('title')
     end
 
   %>

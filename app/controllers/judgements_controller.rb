@@ -29,7 +29,7 @@ class JudgementsController < ApplicationController
 
     @judgement.save
 
-    session["last_judgement_id"] = @judgement["id"]
+    session['last_judgement_id'] = @judgement['id']
 
     redirect_to book_judge_path(@book)
   end

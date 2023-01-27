@@ -72,21 +72,17 @@ module ApplicationHelper
 
     nil
   end
+
   # rubocop:enable Metrics/MethodLength
-  def document_fields_parses_as_json
-    @document_fields_parses_as_json = false
+  def document_fields_parses_as_json document_fields
     begin
-      @document_fields = JSON.parse(@query_doc_pair.document_fields)
-      @document_fields_parses_as_json = true
-    rescue
-      nil
+      document_fields = JSON.parse document_fields
+    rescue StandardError
+      document_fields = nil
     end
 
-    unless @document_fields.respond_to?(:keys)
-      @document_fields_parses_as_json = false
-    end
+    document_fields = nil unless document_fields.respond_to?(:keys)
 
-    @document_fields_parses_as_json
+    document_fields
   end
-
 end
