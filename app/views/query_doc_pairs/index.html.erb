@@ -1,5 +1,4 @@
-<!--<p id="notice"><%#= notice %></p>-->
-
+<p></p>
 <%
   @books = Book.all
   @book_id = params["book_id"].to_i
@@ -40,7 +39,6 @@
       <th>Position</th>
       <th>Doc ID</th>
       <th>Document fields</th>
-      <th>Created by User</th>
     </tr>
     </thead>
 
@@ -51,16 +49,13 @@
 
           <td>
             <%= link_to query_doc_pair.id, book_query_doc_pair_url(id: query_doc_pair.id) %>
-
           </td>
 
           <td><%= query_doc_pair.query_text %></td>
           <td><%= query_doc_pair.position %></td>
           <td><%= query_doc_pair.doc_id %></td>
           <td><%= query_doc_pair.document_fields %></td>
-          <td><%= @user_lookup[query_doc_pair.user_id] %></td>
-<!--          <td><%#= link_to 'Edit', edit_query_doc_pair_path(query_doc_pair) %></td>-->
-<!--          <td><%#= link_to 'Destroy', query_doc_pair, method: :delete, data: { confirm: 'Are you sure?' } %></td>-->
+
         </tr>
       <% end %>
     <% end %>
@@ -74,35 +69,6 @@
 <% else %>
 
   Specify a book_id please. <br>
-<!--  <h2>for All Books</h2>-->
-<!--  <table>-->
-<!--    <thead>-->
-<!--    <tr>-->
-<!--      <th>Created by User</th>-->
-<!--      <th>Query text</th>-->
-<!--      <th>Rank</th>-->
-<!--      <th>Document fields</th>-->
-<!--      <th>Book</th>-->
-<!--      <th colspan="3"></th>-->
-<!--    </tr>-->
-<!--    </thead>-->
-
-<!--    <tbody>-->
-    <%# @query_doc_pairs.each do |query_doc_pair| %>
-<!--      <tr>-->
-<!--        <td><%#= @user_lookup[query_doc_pair.user_id] %></td>-->
-<!--        <td><%#= query_doc_pair.query_text %></td>-->
-<!--        <td><%#= query_doc_pair.rank %></td>-->
-<!--        <td><%#= query_doc_pair.document_fields %></td>-->
-<!--        <td><%#= @book_lookup[query_doc_pair.book_id] %></td>-->
-<!--        <td><%#= link_to 'Show', query_doc_pair %></td>-->
-<!--        <td><%#= link_to 'Edit', edit_query_doc_pair_path(query_doc_pair) %></td>-->
-<!--        <td><%#= link_to 'Destroy', query_doc_pair, method: :delete, data: { confirm: 'Are you sure?' } %></td>-->
-<!--      </tr>-->
-    <%# end %>
-<!--    </tbody>-->
-<!--  </table>-->
-<!--  <br>-->
 
 <% end %>
 

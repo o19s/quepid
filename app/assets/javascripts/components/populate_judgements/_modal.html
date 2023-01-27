@@ -1,6 +1,6 @@
 <div class="modal-header">
   <button type="button" class="close" ng-click="ctrl.cancel()" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-  <h3 class="modal-title">Populate Judgements</h3>
+  <h3 class="modal-title">Judgements</h3>
 </div>
 <div class="modal-body" ng-hide="ctrl.canUpdateCase">
   <p>You do not have edit permissions for cases.</p>
@@ -52,7 +52,7 @@
 
       <ul class="list-group">
         <li class="list-group-item"
-          ng-repeat="book in ctrl.share.books track by book.name"
+          ng-repeat="book in ctrl.share.books track by book.id"
           ng-class="{ active: book.id === ctrl.activeBookId }"
           ng-click="selectBook(book)">
           {{book.name}}
@@ -63,7 +63,7 @@
 
   <label>
     <input id="populate-book" type="checkbox" ng-model='ctrl.populateBook' ng-disabled="ctrl.share.books.length === 0 || ctrl.share.teams.length === 0"> Populate Book
-    <span class="glyphicon glyphicon-question-sign" aria-hidden="true" popover-trigger="'mouseenter'" popover-placement="right" uib-popover="Select to update the list of Judgements to be rated with any new query / doc pairs that aren't currently in the Book."></span>
+    <span class="glyphicon glyphicon-question-sign" aria-hidden="true" popover-trigger="'mouseenter'" popover-placement="right" uib-popover="Update the list of query / doc pairs to be judged from the current search results."></span>
   </label>
 
   <div class='text-danger' ng-show="processingPrompt.error">
@@ -82,6 +82,11 @@
   <a class="btn btn-default pull-left" href="/books/{{ctrl.activeBookId}}" target="_self" ng-show="ctrl.canUpdateCase && ctrl.activeBookId">
     <i class="glyphicon glyphicon-book"></i>
     Open book
+  </a>
+
+  <a class="btn btn-default pull-left" ng-click="ctrl.refreshRatingsFromBook()" ng-disabled="processingPrompt.inProgress || ctrl.populateBook || !ctrl.activeBookId">
+    <i class="glyphicon glyphicon-refresh"></i>
+    Refresh ratings from selected book
   </a>
 
   <button

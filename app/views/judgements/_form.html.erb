@@ -37,14 +37,25 @@
     .button-other {background-color:gray; box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19); color: #666 !important;}
     .button-other:hover {background-color:gray !important;  box-shadow: 0 12px 16px 0 rgba(0,0,0,0.34), 0 17px 50px 0 rgba(0,0,0,0.19); color: black !important; }
 
+    .btn-preselected { color: black !important; font-weight: bold; font-style: italic; }
+
+    .bold-and-black { color: black; font-weight: bold; }
+
+    .keyboard-shortcuts-td { padding: 5px; text-align: center; color: #999; }
+    .padded { padding:5px; }
+    .left-aligned { text-align: left; }
+    .gray { color: #ccc; }
+    .hidden { visibility: hidden!important; display: none!important; }
+
 </style>
 
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
-<script language="javascript">
+<script>
 
-  function rate(rating) {
+  function rate(rating, key_name) {
+      key_down(key_name);
+      reset_styles_except(key_name);
       document.getElementById("judgement_rating").value = rating;
-      document.getElementsByName("commit")[0].click()
+      delay(100).then(() => (document.getElementsByName("commit")[0].click()));
   }
 
   function sleep(ms) {
@@ -62,124 +73,63 @@
       return Math.floor(Math.random() * max);
   }
 
-  function key_a_down() {
-      $("#span-for-a").css("color", "black").css("font-weight", "bold");
+  function reset_styles() {
+      let keyboard_shortcuts_suffixes = ["a", "s", "d", "f", "g", "h", "j", "k", "l", "sc"];
+      keyboard_shortcuts_suffixes.forEach(suffix => {
+              $("#span-for-" + suffix).css("color", "gray").css("font-weight", "normal");
+              $("#button-for-" + suffix).removeClass("btn-preselected");
+          }
+      );
   }
 
-  function key_a_pressed() {
-      $("#button-for-a").click();
+  function reset_styles_except(except_suffix){
+      let keyboard_shortcuts_suffixes = ["a", "s", "d", "f", "g", "h", "j", "k", "l", "sc"];
+      keyboard_shortcuts_suffixes.forEach(suffix => {
+              if (suffix !== except_suffix) {
+                  $("#span-for-" + suffix).css("color", "gray").css("font-weight", "normal");
+                  $("#button-for-" + suffix).removeClass("btn-preselected");
+              }
+          }
+      );
   }
 
-
-  function key_s_down() {
-      $("#span-for-s").css("color", "black").css("font-weight", "bold");
+  function key_down(suffix) {
+      reset_styles();
+      $("#span-for-" + suffix).css("color", "black").css("font-weight", "bold");
+      $("#button-for-" + suffix).addClass("btn-preselected");
   }
 
-  function key_s_pressed() {
-      $("#button-for-s").click();
+  function delay(time) {
+      return new Promise(resolve => setTimeout(resolve, time));
   }
 
-
-  function key_d_down() {
-      $("#span-for-d").css("color", "black").css("font-weight", "bold");
+  function key_pressed(suffix) {
+      delay(500).then(() => ($("#button-for-" + suffix).click()));
   }
-
-  function key_d_pressed() {
-      $("#button-for-d").click();
-  }
-
-
-  function key_f_down() {
-      $("#span-for-f").css("color", "black").css("font-weight", "bold");
-  }
-
-  function key_f_pressed() {
-      $("#button-for-f").click();
-  }
-
-
-
-  function key_g_down() {
-      $("#span-for-g").css("color", "black").css("font-weight", "bold");
-  }
-
-  function key_g_pressed() {
-      $("#button-for-g").click();
-  }
-
-
-
-  function key_h_down() {
-      $("#span-for-h").css("color", "black").css("font-weight", "bold");
-  }
-
-  function key_h_pressed() {
-      $("#button-for-h").click();
-  }
-
-
-
-  function key_j_down() {
-      $("#span-for-j").css("color", "black").css("font-weight", "bold");
-  }
-
-  function key_j_pressed() {
-      $("#button-for-j").click();
-  }
-
-
-  function key_k_down() {
-      $("#span-for-k").css("color", "black").css("font-weight", "bold");
-  }
-
-  function key_k_pressed() {
-      $("#button-for-k").click();
-  }
-
-
-  function key_l_down() {
-      $("#span-for-l").css("color", "black").css("font-weight", "bold");
-  }
-
-  function key_l_pressed() {
-      $("#button-for-l").click();
-  }
-
-
-  function key_sc_down() {
-      $("#span-for-sc").css("color", "black").css("font-weight", "bold");
-  }
-
-  function key_sc_pressed() {
-      $("#button-for-sc").click();
-  }
-
-
-
 
   $(document).on('keypress', function(e) {
       var tag = e.target.tagName.toLowerCase();
 
       if (e.which == 97 || e.which == 65) {
-          key_a_pressed();
+          key_pressed("a");
       } else if (e.which == 115 || e.which == 83) {
-          key_s_pressed();
+          key_pressed("s");
       } else if (e.which == 100 || e.which == 68) {
-          key_d_pressed();
+          key_pressed("d");
       } else if (e.which == 102 || e.which == 70) {
-          key_f_pressed();
+          key_pressed("f");
       } else if (e.which == 103 || e.which == 71) {
-          key_g_pressed();
+          key_pressed("g");
       } else if (e.which == 104 || e.which == 72) {
-          key_h_pressed();
+          key_pressed("h");
       } else if (e.which == 106 || e.which == 74) {
-          key_j_pressed();
+          key_pressed("j");
       } else if (e.which == 107 || e.which == 75) {
-          key_k_pressed();
+          key_pressed("k");
       } else if (e.which == 108 || e.which == 76) {
-          key_l_pressed();
+          key_pressed("l");
       } else if (e.which == 59 || e.which == 186) {
-          key_sc_pressed();
+          key_pressed("sc");
       }
   });
 
@@ -187,25 +137,25 @@
       var tag = e.target.tagName.toLowerCase();
 
       if (e.which == 97 || e.which == 65) {
-          key_a_down();
+          key_down("a");
       } else if (e.which == 115 || e.which == 83) {
-          key_s_down();
+          key_down("s");
       } else if (e.which == 100 || e.which == 68) {
-          key_d_down();
+          key_down("d");
       } else if (e.which == 102 || e.which == 70) {
-          key_f_down();
+          key_down("f");
       } else if (e.which == 103 || e.which == 71) {
-          key_g_down();
+          key_down("g");
       } else if (e.which == 104 || e.which == 72) {
-          key_h_down();
+          key_down("h");
       } else if (e.which == 106 || e.which == 74) {
-          key_j_down();
+          key_down("j");
       } else if (e.which == 107 || e.which == 75) {
-          key_k_down();
+          key_down("k");
       } else if (e.which == 108 || e.which == 76) {
-          key_l_down();
+          key_down("l");
       } else if (e.which == 59 || e.which == 186) {
-          key_sc_down();
+          key_down("sc");
       }
 
   });
@@ -218,8 +168,14 @@
 <%
   @path = ""
   if @judgement.persisted?
-    @path = book_query_doc_pair_judgement_path
+    @existing_rating = @judgement.rating
     @query_doc_pair = @judgement.query_doc_pair
+    begin
+      @path = book_query_doc_pair_judgement_path
+    rescue
+      controller.redirect_to book_query_doc_pair_judgement_url(@book, @query_doc_pair, @judgement)
+    end
+
   else
     @query_doc_pair = @book.random_query_doc_pair_for_rating
     if @query_doc_pair == nil
@@ -231,6 +187,7 @@
 %>
 
 <%= form_for([judgement], url: @path) do |form| %>
+
   <% if judgement.errors.any? %>
     <div id="error_explanation">
       <h2><%= pluralize(judgement.errors.count, "error") %> prohibited this judgement from being saved:</h2>
@@ -244,7 +201,6 @@
   <% end %>
 
   <%
-
     def calculate_button_class(value, max_value)
       value_f = value.to_f
       max_value_f = max_value.to_f
@@ -361,7 +317,11 @@
         rating_button["key"] = rating_button["value"]
       end
       rating_button["label_backup"] = s.to_s
-      rating_button["label"] = @book.scorer.scale_with_labels[s.to_s]
+      begin
+        rating_button["label"] = @book.scorer.scale_with_labels[s.to_s]
+      rescue
+        rating_button["label"] = ""
+      end
       if rating_button["label"].blank?
         @use_backup_labels = true
         rating_button["label"] = rating_button["label_backup"]
@@ -376,22 +336,15 @@
     end
 
     @show_keyboard_shortcuts = not(@hide_keyboard_shortcuts)
-
-    @document_fields_parses_as_json = false
-
-    begin
-      @document_fields = JSON.parse(@query_doc_pair.document_fields)
-      @document_fields_parses_as_json = true
-    rescue
-      nil
+    @document_fields_as_json = document_fields_parses_as_json (@query_doc_pair.document_fields)
+    if @document_fields_as_json
+      @title_value = @document_fields_as_json['title']
+      @document_fields_except_title = @document_fields_as_json.except('title')
     end
 
-    unless @document_fields.respond_to?(:keys)
-      @document_fields_parses_as_json = false
-    end
   %>
 
-  <div class="field" style="">
+  <div class="field">
     Doc ID: <%= @query_doc_pair.doc_id.to_s %>
   </div>
 
@@ -401,72 +354,82 @@
 
   <% if @document_fields_parses_as_json %>
     <div class="field">
-      Document Fields:
+      Document:
     </div>
     <div class="field">
-      <% @document_fields.keys.each do |key| %>
+      <% if @title_value %>
         <div class="field">
-          &nbsp;&nbsp;&nbsp;<strong><%= key %></strong> <%= @document_fields[key] %>
+          <strong>title</strong> <%= @title_value %>
+        </div>
+      <% end %>
+      <% @document_fields_except_title.keys.each do |key| %>
+        <div class="field">
+          <strong><%= key %></strong> <%= @document_fields_except_title[key] %>
         </div>
       <% end %>
     </div>
   <% else %>
     <div class="field">
-      Document Fields: <%= @query_doc_pair.document_fields.to_s %>
+      Document: <%= @query_doc_pair.document_fields.to_s %>
     </div>
   <% end %>
 
-  <div class="field" style="visibility: hidden; display: none;">
+  <div class="hidden field">
     <%= form.label :user_id %>
     <%= form.number_field :user_id, :value => current_user.id %>
   </div>
 
-  <div class="field" style="visibility: hidden; display: none;">
+  <div class="hidden field">
     <%= form.label :rating %>
     <%= form.number_field :rating %>
   </div>
-  <div class="field" style="visibility: hidden; display: none;">
+  <div class="hidden field">
     <%= form.label :query_doc_pair_id %>
     <%= form.text_field :query_doc_pair_id, :value => @query_doc_pair.id.to_s %>
   </div>
 
   <br>
-  <div class="actions" style="visibility: hidden; display:none;">
+  <div class="hidden actions">
     <%= form.submit %>
   </div>
 
 
   <% if @show_keyboard_shortcuts %>
-    <table style="padding:5px;">
+    <table class="padded">
       <tr>
-        <td style="padding:5px;text-align: left; color: #ccc;">
+        <td class="padded left-aligned gray">
           Buttons
         </td>
         <% @rating_buttons.each do |b| %>
-          <td style="padding:5px;">
-            <%= button_tag b["label"], type: 'button', onclick: "rate("+b["value"]+")", class: 'btn btn-default '+b["class"], id:"button-for-"+b["key"][:name].to_s %>
+          <%
+            @button_classes = "btn btn-default "
+            if @existing_rating == b["value"].to_i
+              @button_classes = @button_classes + "btn-preselected "
+            end
+          %>
+          <td class="padded">
+            <%= button_tag b["label"], type: 'button', onclick: "rate("+b["value"]+",\""+b["key"][:name].to_s+"\")", class: @button_classes + b["class"], id:"button-for-"+b["key"][:name].to_s %>
           </td>
         <% end %>
       </tr>
-
       <tr>
-        <td style="padding:5px;text-align: center; color: #ccc;">
+        <td class="padded left-aligned gray">
           Keyboard shortcuts
         </td>
         <% @rating_buttons.each do |b| %>
-          <td style="padding:5px;text-align: center; color: #999;"><span id=<%= "span-for-" + b["key"][:name].to_s %>><%= b["key"][:display_name] %></span></td>
+            <td class="keyboard-shortcuts-td"><span class="<%= @existing_rating == b["value"].to_i ? 'bold-and-black' : '' %>" id=<%= "span-for-" + b["key"][:name].to_s %>><%= b["key"][:display_name]%></span></td>
         <% end %>
       </tr>
     </table>
   <% else %>
-    <table style="padding:5px;">
+    <table class="padded">
       <tr>
-        <td style="padding:5px;text-align: left; color: #ccc;">
+        <td class="padded left-aligned gray">
           Buttons
         </td>
         <% @rating_buttons.each do |b| %>
-          <td style="padding:5px;">
-            <%= button_tag b["label"], type: 'button', onclick: "rate("+b["value"]+")", class: 'btn btn-default '+b["class"], id:"button-for-"+b["key"].to_s %>
+          <td class="padded">
+            <%= button_tag b["label"], type: 'button', onclick: "rate("+b["value"]+",\""+ b["key"][:name].to_s + "\")", class: 'btn btn-default '+b["class"], id:"button-for-"+b["key"][:name].to_s %>
           </td>
         <% end %>
       </tr>

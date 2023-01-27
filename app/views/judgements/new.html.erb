@@ -5,6 +5,23 @@
 
 <br>
 
+<%
+  @last_judgement_id = session["last_judgement_id"]
+  if @last_judgement_id
+    begin
+      @last_judgement = Judgement.find(@last_judgement_id)
+    rescue
+      @last_judgement = nil
+    end
+  end
+%>
+<% if @last_judgement %>
+  <%= button_to 'Back', book_judgement_url(@book, @last_judgement), method: :get %>
+  <br>
+<% end %>
 <%= button_to 'Skip', book_judge_path(@book), method: :get %>
+<br>
+<%= button_to 'Cancel', book_judgements_url(@book), method: :get %>
+<br>
 
 <br>
