@@ -32,7 +32,7 @@ describe('Service: queriesSvc', function () {
         'arranged_at':   '3681400536',
         'arranged_next': '4294967295',
         'deleted':      'false',
-        'queryId':      '0',
+        'query_id':      '0',
         'query_text':   'symptoms of heart attack',
         'ratings':      {
           'doc1': '5',
@@ -43,7 +43,7 @@ describe('Service: queriesSvc', function () {
         'arranged_at':   '3067833780',
         'arranged_next': '3681400536',
         'deleted':      'true',
-        'queryId':      '1',
+        'query_id':      '1',
         'query_text':   'how is kidney cancer diagnosed'
       },
       {
@@ -51,7 +51,7 @@ describe('Service: queriesSvc', function () {
         'arranged_next': '613566756',
         'deleted':      'false',
         'l_31284':      '10',
-        'queryId':      '2',
+        'query_id':      '2',
         'query_text':   'prognosis of alzheimers',
         'ratings':      {
           'doc1': '1',
@@ -415,7 +415,7 @@ describe('Service: queriesSvc', function () {
       display_order: [2,3,1,0],
       query: {
         'query_text': newQueryText,
-        'queryId':    '3',
+        'query_id':    '3',
         'deleted':    'false'
       }
     };
@@ -474,17 +474,17 @@ describe('Service: queriesSvc', function () {
       queries: [
         {
           'query_text': 'one',
-          'queryId':    '1',
+          'query_id':    '1',
           'deleted':    'false'
         },
         {
           'query_text': 'two',
-          'queryId':    '2',
+          'query_id':    '2',
           'deleted':    'false'
         },
         {
           'query_text': 'three',
-          'queryId':    '3',
+          'query_id':    '3',
           'deleted':    'false'
         },
       ]
@@ -654,7 +654,7 @@ describe('Service: queriesSvc', function () {
       display_order: [2,3,1,0],
       query: {
         'query_text': 'search text',
-        'queryId':    '3',
+        'query_id':    '3',
         'deleted':    'false'
       }
     };
