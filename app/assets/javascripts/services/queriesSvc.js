@@ -850,7 +850,7 @@ angular.module('QuepidApp')
 
                 // Eric thinks we should be running this through a factory to map api to front end...
                 let addedQuery = data.query;
-                addedQuery.queryId = addedQuery.query_id
+                addedQuery.queryId = addedQuery.query_id;
 
                 query.queryId = addedQuery.query_id;
                 query.ratingsStore.setQueryId(addedQuery.queryId);
