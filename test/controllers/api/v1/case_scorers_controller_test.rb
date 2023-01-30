@@ -25,7 +25,7 @@ module Api
           data = JSON.parse(response.body)
 
           expected_response = {
-            'scorerId'          => scorer.id,
+            'scorer_id'         => scorer.id,
             'communal'          => scorer.communal,
             'code'              => scorer.code,
             'name'              => scorer.name,

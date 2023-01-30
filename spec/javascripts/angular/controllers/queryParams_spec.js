@@ -17,7 +17,7 @@ describe('Controller: QueryparamsCtrl', function () {
     var queryParams = 'q=#$query##';
     var curatorVars = {};
 
-    testTry = new TryFactory({ tryNo: 0, query_params: queryParams, curator_vars: curatorVars });
+    testTry = new TryFactory({ try_number: 0, query_params: queryParams, curator_vars: curatorVars });
     scope.settings = {selectedTry: testTry};
     scope.settings.searchUrl = 'http://example.com';
     scope.settings.searchEngine = 'solr';
@@ -28,6 +28,10 @@ describe('Controller: QueryparamsCtrl', function () {
       $scope: scope
     });
   }));
+
+  it('maps try_number in api to tryNo in JS obect', function (){
+    expect(testTry.tryNo).toEqual(0);
+  });
 
   it('extract no curator vars', function () {
     scope.qp.toggleTab();

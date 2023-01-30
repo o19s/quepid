@@ -111,7 +111,7 @@ module Api
           assert_instance_of  Array, cases
           assert_equal        team.cases.count, cases.length
 
-          ids = cases.map { |c| c['caseNo'] }
+          ids = cases.map { |c| c['case_id'] }
 
           assert_includes ids, case1.id
           assert_includes ids, case2.id

@@ -41,15 +41,15 @@ angular.module('QuepidApp')
       var Case = function(data) {
         var theCase               = this;
 
-        theCase.caseNo            = data.caseNo;
+        theCase.caseNo            = data.case_id;
         theCase.lastTry           = data.last_try_number;
         theCase.caseName          = data.case_name;
         theCase.lastScore         = data.last_score;
-        theCase.scorerId          = data.scorerId;
+        theCase.scorerId          = data.scorer_id;
         theCase.owned             = data.owned;
         theCase.ownerName         = data.owner_name;
-        theCase.bookId            = data.bookId;
-        theCase.bookName          = data.bookName;
+        theCase.bookId            = data.book_id;
+        theCase.bookName          = data.book_name;
         theCase.queriesCount      = data.queriesCount;
         theCase.public            = data.public;
         theCase.teams             = data.teams || [];
@@ -440,7 +440,7 @@ angular.module('QuepidApp')
           .then(function(response) {
 
             theCase.bookId = bookId;
-            theCase.bookName = response.bookName;
+            theCase.bookName = response.book_name;
           }, function() {
             caseTryNavSvc.notFound();
           });

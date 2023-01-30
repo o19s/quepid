@@ -2,7 +2,7 @@
 
 teams = scorer.teams.find_all { |t| current_user.teams.all.include?(t) }
 
-json.scorerId             scorer.id
+json.scorer_id            scorer.id
 json.communal             scorer.communal
 json.code                 scorer.code
 json.name                 scorer.name
