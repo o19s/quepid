@@ -25,19 +25,6 @@
   <% end %>
 
   <%
-    @book_id = @query_doc_pair.book_id
-    if @book_id == nil and params["book_id"] != nil
-      @book_id = params["book_id"].to_i
-    end
-    if @book_id != nil
-      @books = Book.all
-      @book_name = nil
-      @books.each do |b|
-        if b.id == @book_id
-          @book_name = b.name
-        end
-      end
-    end
 
     if @query_doc_pair.user_id != nil
       @users = User.all
@@ -48,12 +35,6 @@
       end
     end
   %>
-
-  <% if @book_id != nil %>
-    <div class="field">
-      in Book <%= @book_id %> "<%= @book_name %>"
-    </div>
-  <% end %>
 
   <div class="field" style="visibility: hidden; display: none;">
     <%= form.label :user_id %>
@@ -78,11 +59,6 @@
   <div class="field">
     <%= form.label :document_fields %>
     <%= form.text_area :document_fields %>
-  </div>
-
-  <div class="field" style="visibility: hidden; display: none;">
-    <%= form.label :book_id %>
-    <%= form.text_field :book_id, value: @book_id %>
   </div>
 
   <br>
