@@ -95,7 +95,7 @@ module Admin
     end
 
     def set_scorer
-      @scorer = Scorer.where(id: params[:id]).first
+      @scorer = Scorer.find(params[:id])
 
       render json: { error: 'Not Found!' }, status: :not_found unless @scorer
     end
