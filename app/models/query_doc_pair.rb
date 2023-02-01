@@ -25,4 +25,6 @@
 class QueryDocPair < ApplicationRecord
   belongs_to :book
   has_many :judgements, dependent: :destroy
+
+  validates :position, numericality: { only_integer: true }, allow_nil: true
 end
