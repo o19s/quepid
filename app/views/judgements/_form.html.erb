@@ -184,6 +184,8 @@
     end
     @path = book_query_doc_pair_judgements_url(@book, @query_doc_pair)
   end
+
+  @document_fields_as_json = document_fields_parses_as_json (@query_doc_pair.document_fields)
 %>
 
 <%= form_for([judgement], url: @path) do |form| %>
@@ -201,6 +203,8 @@
   <% end %>
 
   <%
+
+
     def calculate_button_class(value, max_value)
       value_f = value.to_f
       max_value_f = max_value.to_f
@@ -336,7 +340,7 @@
     end
 
     @show_keyboard_shortcuts = not(@hide_keyboard_shortcuts)
-    @document_fields_as_json = document_fields_parses_as_json (@query_doc_pair.document_fields)
+
     if @document_fields_as_json
       @title_value = @document_fields_as_json['title']
       @document_fields_except_title = @document_fields_as_json.except('title')
@@ -345,17 +349,14 @@
   %>
 
   <div class="field">
-    Doc ID: <%= @query_doc_pair.doc_id.to_s %>
+    Query: <i><%= @query_doc_pair.query_text.to_s %></i>
   </div>
 
-  <div class="field">
-    Query Text: <%= @query_doc_pair.query_text.to_s %>
-  </div>
-
-  <% if @document_fields_parses_as_json %>
+  <% unless @document_fields_as_json.blank? %>
     <div class="field">
       Document:
     </div>
+    <br/>
     <div class="field">
       <% if @title_value %>
         <div class="field">
@@ -373,11 +374,6 @@
       Document: <%= @query_doc_pair.document_fields.to_s %>
     </div>
   <% end %>
-
-  <div class="hidden field">
-    <%= form.label :user_id %>
-    <%= form.number_field :user_id, :value => current_user.id %>
-  </div>
 
   <div class="hidden field">
     <%= form.label :rating %>

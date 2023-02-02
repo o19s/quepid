@@ -1,0 +1,12 @@
+<% if book.random_query_doc_pair_for_rating %>
+  <% session["last_judgement_id"] = nil %>
+
+  <div class="alert alert-warning" role="alert">
+    <%= button_to 'More Judgements are Needed!', book_judge_path(book), method: :get %>
+  </div>
+<% else %>
+  <div class="alert alert-success" role="alert">
+    Congratulations! All the query/doc pairs have been judged.
+  </div>
+<% end %>
+<p/>

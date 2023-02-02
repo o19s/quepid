@@ -3,6 +3,9 @@
 
 <h2> Book <%= @book.name %></h2>
 Books organize all the query/doc pairs that are needed for evaluating your search queries.
+
+<%= render 'judgements/moar_judgements_needed', book: @book %>
+
 <p>
   <strong>Team:</strong>
   <%= @book.team.name %>

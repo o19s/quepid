@@ -20,7 +20,7 @@ class QueryDocPairsController < ApplicationController
     @query_doc_pair = QueryDocPair.new query_doc_pair_params
     @book.query_doc_pairs << @query_doc_pair
     if @book.save
-      redirect_to book_query_doc_pairs_path(@book,@query_doc_pair)
+      redirect_to book_query_doc_pairs_path(@book, @query_doc_pair)
     else
       render action: :new
     end
@@ -29,7 +29,7 @@ class QueryDocPairsController < ApplicationController
   def update
     @query_doc_pair.update query_doc_pair_params
     if @query_doc_pair.save
-      redirect_to book_query_doc_pairs_path(@book,@query_doc_pair)
+      redirect_to book_query_doc_pairs_path(@book, @query_doc_pair)
     else
       render action: :edit
     end
