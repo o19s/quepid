@@ -21,21 +21,18 @@
 #
 
 one:
-  user_id: 1
   query_text: MyString
   position: 1
   document_fields: MyText
   book: one
 
 two:
-  user_id: 1
   query_text: MyString
   position: 2
   document_fields: MyText
   book: two
 
 qdp1:
-  user_id: 1
   query_text: Best Bond Ever
   position: 1
   doc_id: ShawnConnery
@@ -43,7 +40,6 @@ qdp1:
   book: :james_bond_movies
 
 qdp2:
-  user_id: 1
   query_text: Best Bond Ever
   position: 2
   doc_id: TimothyDalton
