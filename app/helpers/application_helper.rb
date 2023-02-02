@@ -88,10 +88,9 @@ module ApplicationHelper
 
   def document_fields_except_title document_fields
     document_fields_json = JSON.parse(document_fields)
-    document_fields_keys = document_fields_json.keys
-    special_field_name = "title"
-    if special_field_name in document_fields_keys
-      document_fields_json.except("title")
+    special_field_name = 'title'
+    if special_field_name in document_fields_json
+      document_fields_json.except(special_field_name)
     else
       document_fields_json
     end
