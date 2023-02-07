@@ -2,42 +2,42 @@
 
 class QueryDocPairsController < ApplicationController
   before_action :set_query_doc_pair, only: [ :show, :edit, :update, :destroy ]
-
-  respond_to :html
+  before_action :find_book
 
   def index
-    @query_doc_pairs = QueryDocPair.all
-    respond_with(@query_doc_pairs)
+    @query_doc_pairs = @book.query_doc_pairs
   end
 
-  def show
-    respond_with(@query_doc_pair)
-  end
+  def show; end
 
   def new
     @query_doc_pair = QueryDocPair.new
-    respond_with(@query_doc_pair)
   end
 
-  def edit
-  end
+  def edit; end
 
   def create
-    @query_doc_pair = QueryDocPair.new(query_doc_pair_params)
-    @query_doc_pair.save
-    # respond_with(@query_doc_pair, :location => new_book_query_doc_pair_path(@query_doc_pair))
-    respond_with(@query_doc_pair, :location => book_query_doc_pairs_path)
+    @query_doc_pair = QueryDocPair.new query_doc_pair_params
+    @book.query_doc_pairs << @query_doc_pair
+    if @book.save
+      redirect_to book_query_doc_pairs_path(@book, @query_doc_pair)
+    else
+      render action: :new
+    end
   end
 
   def update
-    @query_doc_pair.update(query_doc_pair_params)
-    respond_with(@query_doc_pair, :location => book_query_doc_pair_path)
+    @query_doc_pair.update query_doc_pair_params
+    if @query_doc_pair.save
+      redirect_to book_query_doc_pairs_path(@book, @query_doc_pair)
+    else
+      render action: :edit
+    end
   end
 
   def destroy
-    @book_id = @query_doc_pair.book_id
     @query_doc_pair.destroy
-    respond_with(@query_doc_pair, :location => book_query_doc_pairs_path)
+    redirect_to book_path(@book)
   end
 
   private
@@ -47,6 +47,10 @@ class QueryDocPairsController < ApplicationController
   end
 
   def query_doc_pair_params
-    params.require(:query_doc_pair).permit(:user_id, :query_text, :position, :document_fields, :book_id, :doc_id)
+    params.require(:query_doc_pair).permit(:query_text, :position, :document_fields, :doc_id)
+  end
+
+  def find_book
+    @book = current_user.books_involved_with.where(id: params[:book_id]).first
   end
 end

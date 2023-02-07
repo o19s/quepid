@@ -11,8 +11,7 @@
 #  created_at      :datetime         not null
 #  updated_at      :datetime         not null
 #  book_id         :bigint           not null
-#  doc_id          :string(255)
-#  user_id         :integer
+#  doc_id          :string(500)
 #
 # Indexes
 #
@@ -25,4 +24,6 @@
 class QueryDocPair < ApplicationRecord
   belongs_to :book
   has_many :judgements, dependent: :destroy
+
+  validates :position, numericality: { only_integer: true }, allow_nil: true
 end
