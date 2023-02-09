@@ -437,18 +437,8 @@
     </div>
   </div>
 
-  <div class="hidden field">
-    <%= form.label :rating %>
-    <%= form.number_field :rating %>
-  </div>
-  <div class="hidden field">
-    <%= form.label :query_doc_pair_id %>
-    <%= form.text_field :query_doc_pair_id, :value => @query_doc_pair.id.to_s %>
-  </div>
-
-  <br>
-  <div class="hidden actions">
-    <%= form.submit %>
-  </div>
+  <%= form.hidden_field :rating %>
+  <%= form.hidden_field :query_doc_pair_id, :value => @query_doc_pair.id.to_s %>
+  <%= form.submit class: 'hidden'%>
 
 <% end %>
