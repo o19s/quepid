@@ -197,7 +197,7 @@
 
   end
 
-  def calculateKey(value, max_value)
+  def calculate_key(value, max_value)
     if max_value == 1
       if value == 0
         return {"name": "d", "display_name": "d" }
@@ -264,7 +264,7 @@
     rating_button = {}
 
     rating_button["value"] = s.to_s
-    calculated_key = calculateKey(s, max)
+    calculated_key = calculate_key(s, max)
     if calculated_key != nil
       rating_button["key"] = calculated_key
     else
@@ -290,9 +290,15 @@
     end
   end
 
-%>
+  scoring_guidelines = {}
+  scoring_guidelines['Poor'] = 'Customer feeling: <i>These results are terrible! Maybe I’ll look somewhere else.</i> <br/><mark>0</mark>’s are used when there is clearly something wrong. Most queries should never show <mark>0</mark>’s, they should only show <mark>1</mark>’s, <mark>2</mark>’s and <mark>3</mark>’s.'
+  scoring_guidelines['Fair'] = 'Customer feeling: <i>These results aren’t what I’m looking for, I can see why they are returned.</i> <br/> A <mark>1</mark> (fair) is used for results that are likely not relevant for the query, and are usually considered to be noise. It can be OK when there are <mark>3</mark>’s and <mark>2</mark>’s at the top of the results, and <mark>1</mark>’s are at the bottom. It’s not OK when <mark>1</mark>’s are mixed in with <mark>2</mark>’s and <mark>3</mark>’s, and they should never be at the top.'
+  scoring_guidelines['Good'] = 'Customer feeling: <i>These results are good! Now I can look more and decide which to buy.</i> <br/> A <mark>2</mark> (good) is for relevant results in response to an exploratory or survey information need query. <mark>2</mark>’s are what the customer is looking for, but they haven’t been specific enough to provide exact results.'
+  scoring_guidelines['Perfect'] = 'Customer feeling: <i>This is what I am looking for! I’m going to buy one.</i> <br/> A <mark>3</mark> (perfect) is usually reserved for exact results in response to a targeted information need query. These should be one or two products that the customer is specifically looking for. A good search metric for <mark>3</mark> results is Precision@1 or Precision@4.'
 
-<%
+  scoring_guidelines['Irrelevant'] = 'These are not the droids I am looking for.'
+  scoring_guidelines['Relevant'] = 'These appear to be good droids.'
+
   @path = ""
   if @judgement.persisted?
     @existing_rating = @judgement.rating
@@ -339,42 +345,59 @@
           Scoring Guidelines
         </a>
       </p>
-      <div class="collapse" id="collapseExample">
+      <div class="collapse pb-3" id="collapseExample">
         <div class="card card-body">
-          Some placeholder content for the collapse component. This panel is hidden by default but revealed when the user activates the relevant trigger.
+          <table class="table table-sm">
+            <span>Read more about <a href="https://github.com/o19s/quepid/wiki/Judgement-Rating-Best-Practices" target="_blank">Judgement Rating Best Practices</a></span>
+            <tbody>
+              <% @rating_buttons.each do |b| %>
+              <tr>
+                <td><%= button_tag b["label"], type: 'button', class: "btn #{b["class"]}" %></td>
+                <td><%= scoring_guidelines[b["label"]].html_safe %></td>
+              </tr>
+              <% end %>
+            </tbody>
+          </table>
         </div>
       </div>
 
-      <div class="float-end pt-3"><%= link_to 'Skip this Query', book_judge_path(@query_doc_pair.book), class: 'btn btn-warning', role: 'button' %></div>
+      <div class="float-end"><%= link_to 'Skip this Query', book_judge_path(@query_doc_pair.book), class: 'btn btn-warning', role: 'button' %></div>
 
 
 
       <p class="card-text">
         <%
         @document_fields_as_json = document_fields_parses_as_json (@query_doc_pair.document_fields)
-        @title_value = @document_fields_as_json['title']
-        @document_fields_except_title = @document_fields_as_json.except('title')
-        %>
-        <h5>
-        Title: <%= @title_value %>
-        </h5>
-
-        <%
-        @document_fields_as_json.except('title').map do |key, value|
+        if @document_fields_as_json.nil?
           %>
-          <p>
-          <h6><%= key.capitalize %>:</h6>
-          <% if value.is_a? String %>
-            <% if value.starts_with?('http') %>
-              <%= link_to value, value, target: "_blank" %>
-            <% else %>
-              <%= value %>
-            <% end %>
-          <% elsif value.is_a? Array %>
-            <%= value.size == 1 ? value.first : value.to_sentence %>
-          <% end %>
-          </p>
+          <%= @query_doc_pair.document_fields %>
           <%
+        else
+
+          @title_value = @document_fields_as_json['title']
+          @document_fields_except_title = @document_fields_as_json.except('title')
+          %>
+          <h5>
+          Title: <%= @title_value %>
+          </h5>
+
+          <%
+          @document_fields_as_json.except('title').map do |key, value|
+            %>
+            <p>
+            <h6><%= key.capitalize %>:</h6>
+            <% if value.is_a? String %>
+              <% if value.starts_with?('http') %>
+                <%= link_to value, value, target: "_blank" %>
+              <% else %>
+                <%= value %>
+              <% end %>
+            <% elsif value.is_a? Array %>
+              <%= value.size == 1 ? value.first : value.to_sentence %>
+            <% end %>
+            </p>
+            <%
+          end
         end
         %>
       </p>
