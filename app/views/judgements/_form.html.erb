@@ -52,28 +52,20 @@
 <script>
 
   function rate(rating, key_name) {
-      key_down(key_name);
-      reset_styles_except(key_name);
+      keyDown(key_name);
+      resetStylesExcept(key_name);
       document.getElementById("judgement_rating").value = rating;
       delay(100).then(() => (document.getElementsByName("commit")[0].click()));
   }
 
-  function sleep(ms) {
-      return new Promise(resolve => setTimeout(resolve, ms));
-  }
-
   $(document).ready(function() {
-      $("#key_pressed_count").text("0");
+      $("#keyPressed_count").text("0");
   });
 
   var count = 0;
-  var last_key_pressed = -1;
+  var last_keyPressed = -1;
 
-  function getRandomInt(max) {
-      return Math.floor(Math.random() * max);
-  }
-
-  function reset_styles() {
+  function resetStyles() {
       let keyboard_shortcuts_suffixes = ["a", "s", "d", "f", "g", "h", "j", "k", "l", "sc"];
       keyboard_shortcuts_suffixes.forEach(suffix => {
               $("#span-for-" + suffix).css("color", "gray").css("font-weight", "normal");
@@ -82,7 +74,7 @@
       );
   }
 
-  function reset_styles_except(except_suffix){
+  function resetStylesExcept(except_suffix){
       let keyboard_shortcuts_suffixes = ["a", "s", "d", "f", "g", "h", "j", "k", "l", "sc"];
       keyboard_shortcuts_suffixes.forEach(suffix => {
               if (suffix !== except_suffix) {
@@ -93,8 +85,8 @@
       );
   }
 
-  function key_down(suffix) {
-      reset_styles();
+  function keyDown(suffix) {
+      resetStyles();
       $("#span-for-" + suffix).css("color", "black").css("font-weight", "bold");
       $("#button-for-" + suffix).addClass("btn-preselected");
   }
@@ -103,7 +95,7 @@
       return new Promise(resolve => setTimeout(resolve, time));
   }
 
-  function key_pressed(suffix) {
+  function keyPressed(suffix) {
       delay(500).then(() => ($("#button-for-" + suffix).click()));
   }
 
@@ -111,25 +103,25 @@
       var tag = e.target.tagName.toLowerCase();
 
       if (e.which == 97 || e.which == 65) {
-          key_pressed("a");
+          keyPressed("a");
       } else if (e.which == 115 || e.which == 83) {
-          key_pressed("s");
+          keyPressed("s");
       } else if (e.which == 100 || e.which == 68) {
-          key_pressed("d");
+          keyPressed("d");
       } else if (e.which == 102 || e.which == 70) {
-          key_pressed("f");
+          keyPressed("f");
       } else if (e.which == 103 || e.which == 71) {
-          key_pressed("g");
+          keyPressed("g");
       } else if (e.which == 104 || e.which == 72) {
-          key_pressed("h");
+          keyPressed("h");
       } else if (e.which == 106 || e.which == 74) {
-          key_pressed("j");
+          keyPressed("j");
       } else if (e.which == 107 || e.which == 75) {
-          key_pressed("k");
+          keyPressed("k");
       } else if (e.which == 108 || e.which == 76) {
-          key_pressed("l");
+          keyPressed("l");
       } else if (e.which == 59 || e.which == 186) {
-          key_pressed("sc");
+          keyPressed("sc");
       }
   });
 
@@ -137,25 +129,25 @@
       var tag = e.target.tagName.toLowerCase();
 
       if (e.which == 97 || e.which == 65) {
-          key_down("a");
+          keyDown("a");
       } else if (e.which == 115 || e.which == 83) {
-          key_down("s");
+          keyDown("s");
       } else if (e.which == 100 || e.which == 68) {
-          key_down("d");
+          keyDown("d");
       } else if (e.which == 102 || e.which == 70) {
-          key_down("f");
+          keyDown("f");
       } else if (e.which == 103 || e.which == 71) {
-          key_down("g");
+          keyDown("g");
       } else if (e.which == 104 || e.which == 72) {
-          key_down("h");
+          keyDown("h");
       } else if (e.which == 106 || e.which == 74) {
-          key_down("j");
+          keyDown("j");
       } else if (e.which == 107 || e.which == 75) {
-          key_down("k");
+          keyDown("k");
       } else if (e.which == 108 || e.which == 76) {
-          key_down("l");
+          keyDown("l");
       } else if (e.which == 59 || e.which == 186) {
-          key_down("sc");
+          keyDown("sc");
       }
 
   });
@@ -205,7 +197,7 @@
 
   end
 
-  def calculate_key(value, max_value)
+  def calculateKey(value, max_value)
     if max_value == 1
       if value == 0
         return {"name": "d", "display_name": "d" }
@@ -272,7 +264,7 @@
     rating_button = {}
 
     rating_button["value"] = s.to_s
-    calculated_key = calculate_key(s, max)
+    calculated_key = calculateKey(s, max)
     if calculated_key != nil
       rating_button["key"] = calculated_key
     else
@@ -341,10 +333,19 @@
     <div class="card-body">
       <h5 class="card-title">Query: <%= @query_doc_pair.query_text %></h5>
       <h6 class="card-subtitle mb-2 text-muted"><i>I am looking for one of the big movies, or recent tv shows.</i></h6>
-      <a href="#" class="card-link">Scoring Guidelines</a>
-      <a href="#" class="card-link">Another link</a>
 
-      <div class="float-end"><%= link_to 'Skip this Query', book_judge_path(@query_doc_pair.book), class: 'btn btn-warning', role: 'button' %></div>
+      <p>
+        <a class="card-link" data-bs-toggle="collapse" href="#collapseExample" role="button" aria-expanded="false" aria-controls="collapseExample">
+          Scoring Guidelines
+        </a>
+      </p>
+      <div class="collapse" id="collapseExample">
+        <div class="card card-body">
+          Some placeholder content for the collapse component. This panel is hidden by default but revealed when the user activates the relevant trigger.
+        </div>
+      </div>
+
+      <div class="float-end pt-3"><%= link_to 'Skip this Query', book_judge_path(@query_doc_pair.book), class: 'btn btn-warning', role: 'button' %></div>
 
 
 
