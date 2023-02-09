@@ -341,23 +341,28 @@
     <div class="card-body">
       <h5 class="card-title">Query: <%= @query_doc_pair.query_text %></h5>
       <h6 class="card-subtitle mb-2 text-muted"><i>I am looking for one of the big movies, or recent tv shows.</i></h6>
-      <a href="#" class="card-link">Card link</a>
+      <a href="#" class="card-link">Scoring Guidelines</a>
       <a href="#" class="card-link">Another link</a>
+
+      <div class="float-end"><%= link_to 'Skip this Query', book_judge_path(@query_doc_pair.book), class: 'btn btn-warning', role: 'button' %></div>
+
+
+
       <p class="card-text">
         <%
         @document_fields_as_json = document_fields_parses_as_json (@query_doc_pair.document_fields)
         @title_value = @document_fields_as_json['title']
         @document_fields_except_title = @document_fields_as_json.except('title')
         %>
-        <p>
+        <h5>
         Title: <%= @title_value %>
-        </p>
+        </h5>
 
         <%
         @document_fields_as_json.except('title').map do |key, value|
           %>
           <p>
-          <%= key.capitalize %>:
+          <h6><%= key.capitalize %>:</h6>
           <% if value.is_a? String %>
             <% if value.starts_with?('http') %>
               <%= link_to value, value, target: "_blank" %>
@@ -365,7 +370,7 @@
               <%= value %>
             <% end %>
           <% elsif value.is_a? Array %>
-            <%= value.size == 1 ? value.first : value %>
+            <%= value.size == 1 ? value.first : value.to_sentence %>
           <% end %>
           </p>
           <%
