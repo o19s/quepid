@@ -71,21 +71,27 @@ angular.module('QuepidApp')
         var queryDocPairsPayload = [];
         angular.forEach(queries, function(query) {
           // Save all matches
+          var i = 0;
           angular.forEach(query.docs, function(doc) {
-
+            i = i + 1;
             var fields = {};
             angular.forEach(Object.values(doc.subsList), function(field) {
               fields[field['field']] = field['value'];
             });
             fields[doc.titleField] = doc.title;
+            if (doc.hasThumb()) {
+              fields['thumb'] = doc.thumb;
+            }
+            if (doc.hasImage()){
+              fields['image'] = doc.image;
+            }
 
             var queryDocPair = {
               'query_text': query.queryText,
               'doc_id': doc.id,
-              'position': 1,
+              'position': i,
               'document_fields': fields
             };
-
 
             queryDocPairsPayload.push(queryDocPair);
 

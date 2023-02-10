@@ -1,7 +1,7 @@
 'use strict';
 
 angular.module('QuepidApp')
-  .controller('PopulateJudgementsModalInstanceCtrl', [
+  .controller('JudgementsModalInstanceCtrl', [
     '$rootScope',
     '$scope',
     '$uibModalInstance',
@@ -123,6 +123,20 @@ angular.module('QuepidApp')
           }
         }
         return label;
+      };
+
+      ctrl.refreshRatingsFromBook = function () {
+        //$uibModalInstance.close(ctrl.options);
+        bookSvc.refreshCaseRatingsFromBook(ctrl.share.acase.caseNo, ctrl.activeBookId)
+        .then(function() {
+          $scope.processingPrompt.inProgress = true;
+          $uibModalInstance.close();
+
+          flash.success = 'Ratings have been refreshed.';
+        }, function(response) {
+          $scope.processingPrompt.inProgress  = false;
+          $scope.processingPrompt.error       = response.data.statusText;
+        });
       };
 
       ctrl.ok = function () {
