@@ -10,13 +10,16 @@ class JudgementsController < ApplicationController
 
   def show; end
 
+  # rubocop:disable Layout/LineLength
   def new
     @query_doc_pair = @book.random_query_doc_pair_for_rating
-    if @query_doc_pair then
-      @query = @current_user.queries.where.not(information_need: [nil, ""]).where(query_text: @query_doc_pair.query_text).first
+    if @query_doc_pair
+      @query = @current_user.queries.where(query_text: @query_doc_pair.query_text).where.not(information_need: [ nil,
+                                                                                                                 '' ]).first
     end
     @judgement = Judgement.new
   end
+  # rubocop:enable Layout/LineLength
 
   def edit; end
 
