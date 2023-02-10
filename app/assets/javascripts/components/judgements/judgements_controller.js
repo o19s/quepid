@@ -7,10 +7,14 @@ angular.module('QuepidApp')
     '$scope',
     '$uibModal',
     '$log',
+    'flash',
+    'queriesSvc',
     function (
       $scope,
       $uibModal,
-      $log
+      $log,
+      flash,
+      queriesSvc
     ) {
       var ctrl = this;
 
@@ -31,12 +35,19 @@ angular.module('QuepidApp')
         });
 
         modalInstance.result.then(
-          function() {
+          function(error) {
+            if ( !error ) {
+              queriesSvc.reset();
+              queriesSvc.bootstrapQueries(ctrl.acase.caseNo)
+                .then(function() {
+                  queriesSvc.searchAll();
+                });
 
-          },
-          function() {
-            $log.info('INFO: Modal dismissed');
-          }
+              flash.success = 'Ratings refreshed successfully!';
+            } else {
+              flash.error = error;
+            }
+          }, function() { }
         );
       }
     }
