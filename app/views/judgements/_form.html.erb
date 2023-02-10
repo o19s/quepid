@@ -52,20 +52,28 @@
 <script>
 
   function rate(rating, key_name) {
-      keyDown(key_name);
-      resetStylesExcept(key_name);
+      key_down(key_name);
+      reset_styles_except(key_name);
       document.getElementById("judgement_rating").value = rating;
       delay(100).then(() => (document.getElementsByName("commit")[0].click()));
   }
 
+  function sleep(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
   $(document).ready(function() {
-      $("#keyPressed_count").text("0");
+      $("#key_pressed_count").text("0");
   });
 
   var count = 0;
-  var last_keyPressed = -1;
+  var last_key_pressed = -1;
 
-  function resetStyles() {
+  function getRandomInt(max) {
+      return Math.floor(Math.random() * max);
+  }
+
+  function reset_styles() {
       let keyboard_shortcuts_suffixes = ["a", "s", "d", "f", "g", "h", "j", "k", "l", "sc"];
       keyboard_shortcuts_suffixes.forEach(suffix => {
               $("#span-for-" + suffix).css("color", "gray").css("font-weight", "normal");
@@ -74,7 +82,7 @@
       );
   }
 
-  function resetStylesExcept(except_suffix){
+  function reset_styles_except(except_suffix){
       let keyboard_shortcuts_suffixes = ["a", "s", "d", "f", "g", "h", "j", "k", "l", "sc"];
       keyboard_shortcuts_suffixes.forEach(suffix => {
               if (suffix !== except_suffix) {
@@ -85,8 +93,8 @@
       );
   }
 
-  function keyDown(suffix) {
-      resetStyles();
+  function key_down(suffix) {
+      reset_styles();
       $("#span-for-" + suffix).css("color", "black").css("font-weight", "bold");
       $("#button-for-" + suffix).addClass("btn-preselected");
   }
@@ -95,7 +103,7 @@
       return new Promise(resolve => setTimeout(resolve, time));
   }
 
-  function keyPressed(suffix) {
+  function key_pressed(suffix) {
       delay(500).then(() => ($("#button-for-" + suffix).click()));
   }
 
@@ -103,25 +111,25 @@
       var tag = e.target.tagName.toLowerCase();
 
       if (e.which == 97 || e.which == 65) {
-          keyPressed("a");
+          key_pressed("a");
       } else if (e.which == 115 || e.which == 83) {
-          keyPressed("s");
+          key_pressed("s");
       } else if (e.which == 100 || e.which == 68) {
-          keyPressed("d");
+          key_pressed("d");
       } else if (e.which == 102 || e.which == 70) {
-          keyPressed("f");
+          key_pressed("f");
       } else if (e.which == 103 || e.which == 71) {
-          keyPressed("g");
+          key_pressed("g");
       } else if (e.which == 104 || e.which == 72) {
-          keyPressed("h");
+          key_pressed("h");
       } else if (e.which == 106 || e.which == 74) {
-          keyPressed("j");
+          key_pressed("j");
       } else if (e.which == 107 || e.which == 75) {
-          keyPressed("k");
+          key_pressed("k");
       } else if (e.which == 108 || e.which == 76) {
-          keyPressed("l");
+          key_pressed("l");
       } else if (e.which == 59 || e.which == 186) {
-          keyPressed("sc");
+          key_pressed("sc");
       }
   });
 
@@ -129,25 +137,25 @@
       var tag = e.target.tagName.toLowerCase();
 
       if (e.which == 97 || e.which == 65) {
-          keyDown("a");
+          key_down("a");
       } else if (e.which == 115 || e.which == 83) {
-          keyDown("s");
+          key_down("s");
       } else if (e.which == 100 || e.which == 68) {
-          keyDown("d");
+          key_down("d");
       } else if (e.which == 102 || e.which == 70) {
-          keyDown("f");
+          key_down("f");
       } else if (e.which == 103 || e.which == 71) {
-          keyDown("g");
+          key_down("g");
       } else if (e.which == 104 || e.which == 72) {
-          keyDown("h");
+          key_down("h");
       } else if (e.which == 106 || e.which == 74) {
-          keyDown("j");
+          key_down("j");
       } else if (e.which == 107 || e.which == 75) {
-          keyDown("k");
+          key_down("k");
       } else if (e.which == 108 || e.which == 76) {
-          keyDown("l");
+          key_down("l");
       } else if (e.which == 59 || e.which == 186) {
-          keyDown("sc");
+          key_down("sc");
       }
 
   });
@@ -290,15 +298,9 @@
     end
   end
 
-  scoring_guidelines = {}
-  scoring_guidelines['Poor'] = 'Customer feeling: <i>These results are terrible! Maybe I’ll look somewhere else.</i> <br/><mark>0</mark>’s are used when there is clearly something wrong. Most queries should never show <mark>0</mark>’s, they should only show <mark>1</mark>’s, <mark>2</mark>’s and <mark>3</mark>’s.'
-  scoring_guidelines['Fair'] = 'Customer feeling: <i>These results aren’t what I’m looking for, I can see why they are returned.</i> <br/> A <mark>1</mark> (fair) is used for results that are likely not relevant for the query, and are usually considered to be noise. It can be OK when there are <mark>3</mark>’s and <mark>2</mark>’s at the top of the results, and <mark>1</mark>’s are at the bottom. It’s not OK when <mark>1</mark>’s are mixed in with <mark>2</mark>’s and <mark>3</mark>’s, and they should never be at the top.'
-  scoring_guidelines['Good'] = 'Customer feeling: <i>These results are good! Now I can look more and decide which to buy.</i> <br/> A <mark>2</mark> (good) is for relevant results in response to an exploratory or survey information need query. <mark>2</mark>’s are what the customer is looking for, but they haven’t been specific enough to provide exact results.'
-  scoring_guidelines['Perfect'] = 'Customer feeling: <i>This is what I am looking for! I’m going to buy one.</i> <br/> A <mark>3</mark> (perfect) is usually reserved for exact results in response to a targeted information need query. These should be one or two products that the customer is specifically looking for. A good search metric for <mark>3</mark> results is Precision@1 or Precision@4.'
+%>
 
-  scoring_guidelines['Irrelevant'] = 'These are not the droids I am looking for.'
-  scoring_guidelines['Relevant'] = 'These appear to be good droids.'
-
+<%
   @path = ""
   if @judgement.persisted?
     @existing_rating = @judgement.rating
@@ -319,7 +321,7 @@
   end
 
   @document_fields_as_json = document_fields_parses_as_json (@query_doc_pair.document_fields)
-  has_thumb = !@document_fields_as_json.nil? && !@document_fields_as_json['thumb'].empty?
+  has_thumb = !@document_fields_as_json.nil? && @document_fields_as_json.has_key?('thumb')
 
 %>
 
@@ -337,79 +339,38 @@
     </div>
   <% end %>
 
-  <% if has_thumb %>
-  <div class="card" style="">
-    <div class="row g-0">
-      <div class="col-md-auto p-2">
-        <img src="<%= @document_fields_as_json['thumb'] %>" class="img-fluid rounded-start rounded-end" alt="Thumbnail Image">
-      </div>
-      <div class="col-md-10">
-  <% end %>
   <div class="card">
     <div class="card-body">
       <h5 class="card-title">Query: <%= @query_doc_pair.query_text %></h5>
-      <% if @query %>
-      <h6 class="card-subtitle mb-2 text-muted">Information Need: <i><%= @query.information_need %></i></h6>
-      <% end %>
-
-      <p>
-        <a class="card-link" data-bs-toggle="collapse" href="#collapseExample" role="button" aria-expanded="false" aria-controls="collapseExample">
-          Scoring Guidelines
-        </a>
-      </p>
-      <div class="collapse pb-3" id="collapseExample">
-        <div class="card card-body">
-          <table class="table table-sm">
-            <span>Read more about <a href="https://github.com/o19s/quepid/wiki/Judgement-Rating-Best-Practices" target="_blank">Judgement Rating Best Practices</a></span>
-            <tbody>
-              <% @rating_buttons.each do |b| %>
-              <tr>
-                <td><%= button_tag b["label"], type: 'button', class: "btn #{b["class"]}" %></td>
-                <td><%= scoring_guidelines[b["label"]].html_safe %></td>
-              </tr>
-              <% end %>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <div class="float-end"><%= link_to 'Skip this Query', book_judge_path(@query_doc_pair.book), class: 'btn btn-warning', role: 'button' %></div>
-
-
-
+      <h6 class="card-subtitle mb-2 text-muted"><i>I am looking for one of the big movies, or recent tv shows.</i></h6>
+      <a href="#" class="card-link">Card link</a>
+      <a href="#" class="card-link">Another link</a>
       <p class="card-text">
         <%
+        @document_fields_as_json = document_fields_parses_as_json (@query_doc_pair.document_fields)
+        @title_value = @document_fields_as_json['title']
+        @document_fields_except_title = @document_fields_as_json.except('title')
+        %>
+        <p>
+        Title: <%= @title_value %>
+        </p>
 
-        if @document_fields_as_json.nil?
+        <%
+        @document_fields_as_json.except('title').map do |key, value|
           %>
-          <%= @query_doc_pair.document_fields %>
-          <%
-        else
-
-          @title_value = @document_fields_as_json['title']
-          @document_fields_except_title = @document_fields_as_json.except('title')
-          %>
-          <h5>
-          Title: <%= @title_value %>
-          </h5>
-
-          <%
-          @document_fields_as_json.except('title').map do |key, value|
-            %>
-            <p>
-            <h6><%= key.capitalize %>:</h6>
-            <% if value.is_a? String %>
-              <% if value.starts_with?('http') %>
-                <%= link_to value, value, target: "_blank" %>
-              <% else %>
-                <%= value %>
-              <% end %>
-            <% elsif value.is_a? Array %>
-              <%= value.size == 1 ? value.first : value.to_sentence %>
+          <p>
+          <%= key.capitalize %>:
+          <% if value.is_a? String %>
+            <% if value.starts_with?('http') %>
+              <%= link_to value, value, target: "_blank" %>
+            <% else %>
+              <%= value %>
             <% end %>
-            </p>
-            <%
-          end
+          <% elsif value.is_a? Array %>
+            <%= value.size == 1 ? value.first : value %>
+          <% end %>
+          </p>
+          <%
         end
         %>
       </p>
@@ -448,14 +409,19 @@
       <% end %>
     </div>
   </div>
-  <% if has_thumb %>
-      </div>
-    </div>
-  </div>
-  <% end %>
 
-  <%= form.hidden_field :rating %>
-  <%= form.hidden_field :query_doc_pair_id, :value => @query_doc_pair.id.to_s %>
-  <%= form.submit class: 'hidden'%>
+  <div class="hidden field">
+    <%= form.label :rating %>
+    <%= form.number_field :rating %>
+  </div>
+  <div class="hidden field">
+    <%= form.label :query_doc_pair_id %>
+    <%= form.text_field :query_doc_pair_id, :value => @query_doc_pair.id.to_s %>
+  </div>
+
+  <br>
+  <div class="hidden actions">
+    <%= form.submit %>
+  </div>
 
 <% end %>
