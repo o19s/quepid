@@ -338,120 +338,124 @@
   <% end %>
 
   <% if has_thumb %>
-  <div class="card" style="">
+  <div class="card mb-3" style="">
     <div class="row g-0">
       <div class="col-md-auto p-2">
         <img src="<%= @document_fields_as_json['thumb'] %>" class="img-fluid rounded-start rounded-end" alt="Thumbnail Image">
       </div>
       <div class="col-md-10">
-  <% end %>
+  <% else %>
   <div class="card">
-    <div class="card-body">
-      <h5 class="card-title">Query: <%= @query_doc_pair.query_text %></h5>
-      <% if @query %>
-      <h6 class="card-subtitle mb-2 text-muted">Information Need: <i><%= @query.information_need %></i></h6>
-      <% end %>
+  <% end %>
 
-      <p>
-        <a class="card-link" data-bs-toggle="collapse" href="#collapseExample" role="button" aria-expanded="false" aria-controls="collapseExample">
-          Scoring Guidelines
-        </a>
-      </p>
-      <div class="collapse pb-3" id="collapseExample">
-        <div class="card card-body">
-          <table class="table table-sm">
-            <span>Read more about <a href="https://github.com/o19s/quepid/wiki/Judgement-Rating-Best-Practices" target="_blank">Judgement Rating Best Practices</a></span>
-            <tbody>
-              <% @rating_buttons.each do |b| %>
-              <tr>
-                <td><%= button_tag b["label"], type: 'button', class: "btn #{b["class"]}" %></td>
-                <td><%= scoring_guidelines[b["label"]].html_safe %></td>
-              </tr>
-              <% end %>
-            </tbody>
-          </table>
-        </div>
+  <div class="card-body">
+    <h5 class="card-title">Query: <%= @query_doc_pair.query_text %></h5>
+    <% if @query %>
+    <h6 class="card-subtitle mb-2 text-muted">Information Need: <i><%= @query.information_need %></i></h6>
+    <% end %>
+
+    <p>
+      <a class="card-link" data-bs-toggle="collapse" href="#collapseExample" role="button" aria-expanded="false" aria-controls="collapseExample">
+        Scoring Guidelines
+      </a>
+    </p>
+    <div class="collapse pb-3" id="collapseExample">
+      <div class="card card-body">
+        <table class="table table-sm">
+          <span>Read more about <a href="https://github.com/o19s/quepid/wiki/Judgement-Rating-Best-Practices" target="_blank">Judgement Rating Best Practices</a></span>
+          <tbody>
+            <% @rating_buttons.each do |b| %>
+            <tr>
+              <td><%= button_tag b["label"], type: 'button', class: "btn #{b["class"]}" %></td>
+              <td><%= scoring_guidelines[b["label"]].html_safe %></td>
+            </tr>
+            <% end %>
+          </tbody>
+        </table>
       </div>
-
-      <div class="float-end"><%= link_to 'Skip this Query', book_judge_path(@query_doc_pair.book), class: 'btn btn-warning', role: 'button' %></div>
-
-
-
-      <p class="card-text">
-        <%
-
-        if @document_fields_as_json.nil?
-          %>
-          <%= @query_doc_pair.document_fields %>
-          <%
-        else
-
-          @title_value = @document_fields_as_json['title']
-          @document_fields_except_title = @document_fields_as_json.except('title')
-          %>
-          <h5>
-          Title: <%= @title_value %>
-          </h5>
-
-          <%
-          @document_fields_as_json.except('title').except('thumb').map do |key, value|
-            %>
-            <p>
-            <h6><%= key.capitalize.humanize %>:</h6>
-            <% if value.is_a? String %>
-              <% if value.starts_with?('http') %>
-                <%= link_to value, value, target: "_blank" %>
-              <% else %>
-                <%= value %>
-              <% end %>
-            <% elsif value.is_a? Array %>
-              <%= truncate((value.size == 1 ? value.first : value.to_sentence), length: 1000) %>
-            <% end %>
-            </p>
-            <%
-          end
-        end
-        %>
-      </p>
-
-      <% if @show_keyboard_shortcuts %>
-        <table class="padded">
-          <tr>
-            <% @rating_buttons.each do |b| %>
-              <%
-                @button_classes = "btn btn-default "
-                if @existing_rating == b["value"].to_i
-                  @button_classes = @button_classes + "btn-preselected "
-                end
-              %>
-              <td class="padded">
-                <%= button_tag b["label"], type: 'button', onclick: "rate("+b["value"]+",\""+b["key"][:name].to_s+"\")", class: @button_classes + b["class"], id:"button-for-"+b["key"][:name].to_s %>
-              </td>
-            <% end %>
-          </tr>
-          <tr>
-            <% @rating_buttons.each do |b| %>
-                <td class="keyboard-shortcuts-td"><span class="<%= @existing_rating == b["value"].to_i ? 'bold-and-black' : '' %>" id=<%= "span-for-" + b["key"][:name].to_s %>><%= b["key"][:display_name]%></span></td>
-            <% end %>
-          </tr>
-        </table>
-      <% else %>
-        <table class="padded">
-          <tr>
-            <% @rating_buttons.each do |b| %>
-              <td class="padded">
-                <%= button_tag b["label"], type: 'button', onclick: "rate("+b["value"]+",\""+ b["key"][:name].to_s + "\")", class: 'btn btn-default '+b["class"], id:"button-for-"+b["key"][:name].to_s %>
-              </td>
-            <% end %>
-          </tr>
-        </table>
-      <% end %>
     </div>
+
+    <div class="float-end"><%= link_to 'Skip this Query', book_judge_path(@query_doc_pair.book), class: 'btn btn-warning', role: 'button' %></div>
+
+
+
+    <p class="card-text">
+      <%
+
+      if @document_fields_as_json.nil?
+        %>
+        <%= @query_doc_pair.document_fields %>
+        <%
+      else
+
+        @title_value = @document_fields_as_json['title']
+        @document_fields_except_title = @document_fields_as_json.except('title')
+        %>
+        <h5>
+        Title: <%= @title_value %>
+        </h5>
+
+        <%
+        @document_fields_as_json.except('title').except('thumb').map do |key, value|
+          %>
+          <p>
+          <h6><%= key.capitalize.humanize %>:</h6>
+          <% if value.is_a? String %>
+            <% if value.starts_with?('http') %>
+              <%= link_to value, value, target: "_blank" %>
+            <% else %>
+              <%= value %>
+            <% end %>
+          <% elsif value.is_a? Array %>
+            <%= truncate((value.size == 1 ? value.first : value.to_sentence), length: 1000) %>
+          <% end %>
+          </p>
+          <%
+        end
+      end
+      %>
+    </p>
+
+    <% if @show_keyboard_shortcuts %>
+      <table class="padded">
+        <tr>
+          <% @rating_buttons.each do |b| %>
+            <%
+              @button_classes = "btn btn-default "
+              if @existing_rating == b["value"].to_i
+                @button_classes = @button_classes + "btn-preselected "
+              end
+            %>
+            <td class="padded">
+              <%= button_tag b["label"], type: 'button', onclick: "rate("+b["value"]+",\""+b["key"][:name].to_s+"\")", class: @button_classes + b["class"], id:"button-for-"+b["key"][:name].to_s %>
+            </td>
+          <% end %>
+        </tr>
+        <tr>
+          <% @rating_buttons.each do |b| %>
+              <td class="keyboard-shortcuts-td"><span class="<%= @existing_rating == b["value"].to_i ? 'bold-and-black' : '' %>" id=<%= "span-for-" + b["key"][:name].to_s %>><%= b["key"][:display_name]%></span></td>
+          <% end %>
+        </tr>
+      </table>
+    <% else %>
+      <table class="padded">
+        <tr>
+          <% @rating_buttons.each do |b| %>
+            <td class="padded">
+              <%= button_tag b["label"], type: 'button', onclick: "rate("+b["value"]+",\""+ b["key"][:name].to_s + "\")", class: 'btn btn-default '+b["class"], id:"button-for-"+b["key"][:name].to_s %>
+            </td>
+          <% end %>
+        </tr>
+      </table>
+    <% end %>
   </div>
   <% if has_thumb %>
       </div>
     </div>
   </div>
+  <% else %>
+  </div>
+
   <% end %>
 
   <%= form.hidden_field :rating %>
