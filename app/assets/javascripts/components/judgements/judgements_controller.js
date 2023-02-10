@@ -3,7 +3,7 @@
 /*jshint latedef:false*/
 
 angular.module('QuepidApp')
-  .controller('PopulateJudgementsCtrl', [
+  .controller('JudgementsCtrl', [
     '$scope',
     '$uibModal',
     '$log',
@@ -19,8 +19,8 @@ angular.module('QuepidApp')
 
       function prompt() {
         var modalInstance = $uibModal.open({
-          templateUrl:  'populate_judgements/_modal.html',
-          controller:   'PopulateJudgementsModalInstanceCtrl',
+          templateUrl:  'judgements/_modal.html',
+          controller:   'JudgementsModalInstanceCtrl',
           controllerAs: 'ctrl',
           size: 'lg',
           resolve: {

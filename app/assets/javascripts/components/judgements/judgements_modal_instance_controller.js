@@ -1,7 +1,7 @@
 'use strict';
 
 angular.module('QuepidApp')
-  .controller('PopulateJudgementsModalInstanceCtrl', [
+  .controller('JudgementsModalInstanceCtrl', [
     '$rootScope',
     '$scope',
     '$uibModalInstance',
