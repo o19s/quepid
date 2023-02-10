@@ -12,6 +12,9 @@ class JudgementsController < ApplicationController
 
   def new
     @query_doc_pair = @book.random_query_doc_pair_for_rating
+    if @query_doc_pair then
+      @query = @current_user.queries.where.not(information_need: [nil, ""]).where(query_text: @query_doc_pair.query_text).first
+    end
     @judgement = Judgement.new
   end
 

@@ -348,7 +348,9 @@
   <div class="card">
     <div class="card-body">
       <h5 class="card-title">Query: <%= @query_doc_pair.query_text %></h5>
-      <h6 class="card-subtitle mb-2 text-muted"><i>I am looking for one of the big movies, or recent tv shows.</i></h6>
+      <% if @query %>
+      <h6 class="card-subtitle mb-2 text-muted">Information Need: <i><%= @query.information_need %></i></h6>
+      <% end %>
 
       <p>
         <a class="card-link" data-bs-toggle="collapse" href="#collapseExample" role="button" aria-expanded="false" aria-controls="collapseExample">
