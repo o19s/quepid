@@ -319,6 +319,8 @@
   end
 
   @document_fields_as_json = document_fields_parses_as_json (@query_doc_pair.document_fields)
+  has_thumb = !@document_fields_as_json.nil? && !@document_fields_as_json['thumb'].empty?
+
 %>
 
 <%= form_for([judgement], url: @path) do |form| %>
@@ -335,6 +337,14 @@
     </div>
   <% end %>
 
+  <% if has_thumb %>
+  <div class="card" style="">
+    <div class="row g-0">
+      <div class="col-md-auto p-2">
+        <img src="<%= @document_fields_as_json['thumb'] %>" class="img-fluid rounded-start rounded-end" alt="Thumbnail Image">
+      </div>
+      <div class="col-md-10">
+  <% end %>
   <div class="card">
     <div class="card-body">
       <h5 class="card-title">Query: <%= @query_doc_pair.query_text %></h5>
@@ -367,7 +377,7 @@
 
       <p class="card-text">
         <%
-        @document_fields_as_json = document_fields_parses_as_json (@query_doc_pair.document_fields)
+
         if @document_fields_as_json.nil?
           %>
           <%= @query_doc_pair.document_fields %>
@@ -436,6 +446,11 @@
       <% end %>
     </div>
   </div>
+  <% if has_thumb %>
+      </div>
+    </div>
+  </div>
+  <% end %>
 
   <%= form.hidden_field :rating %>
   <%= form.hidden_field :query_doc_pair_id, :value => @query_doc_pair.id.to_s %>

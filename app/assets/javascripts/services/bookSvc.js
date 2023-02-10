@@ -79,6 +79,12 @@ angular.module('QuepidApp')
               fields[field['field']] = field['value'];
             });
             fields[doc.titleField] = doc.title;
+            if (doc.hasThumb()) {
+              fields['thumb'] = doc.thumb;
+            }
+            if (doc.hasImage()){
+              fields['image'] = doc.image;
+            }
 
             var queryDocPair = {
               'query_text': query.queryText,
