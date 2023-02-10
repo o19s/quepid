@@ -319,7 +319,7 @@
   end
 
   @document_fields_as_json = document_fields_parses_as_json (@query_doc_pair.document_fields)
-  has_thumb = !@document_fields_as_json.nil? && !@document_fields_as_json['thumb'].empty?
+  has_thumb = !@document_fields_as_json.nil? && @document_fields_as_json.has_key?('thumb')
 
 %>
 
