@@ -30,11 +30,12 @@ Dir.chdir APP_ROOT do
 
   puts "\n== Building Docker container =="
   system "docker-compose up #{build_arg} --no-start"
-  system "bin/docker r bundle install" # can be removed if we don't reference git repo in Gemfile.
+  #system "bin/docker r bundle install" # can be removed if we don't reference git repo in Gemfile.
   system "bin/docker r yarn"
-  system "bin/docker r ./wait-for mysql:3306 -- bin/rake db:setup"
+  system "bin/docker r ./wait-for --timeout=60 mysql:3306 -- bin/rake db:setup"
   system "bin/docker r bin/rake db:migrate"
-  system "bin/docker r ./wait-for mysql:3306 -- bin/rake db:create RAILS_ENV=test"
+  # Does db:setup already do this for me?
+  #system "bin/docker r ./wait-for --timeout=50 mysql:3306 -- bin/rake db:create RAILS_ENV=test"
 
   puts "\n== Setting up Seed Data for Development =="
   system "bin/docker r bin/rake db:seed:sample_users"

@@ -12,7 +12,7 @@
 
 ActiveRecord::Schema.define(version: 2023_02_01_122058) do
 
-  create_table "annotations", id: :integer, charset: "utf8", force: :cascade do |t|
+  create_table "annotations", id: :integer, charset: "utf8mb3", force: :cascade do |t|
     t.text "message"
     t.string "source"
     t.integer "user_id"
@@ -54,7 +54,7 @@ ActiveRecord::Schema.define(version: 2023_02_01_122058) do
     t.index ["user_id"], name: "user_id"
   end
 
-  create_table "cases", id: :integer, charset: "utf8", force: :cascade do |t|
+  create_table "cases", id: :integer, charset: "utf8mb3", force: :cascade do |t|
     t.string "case_name", limit: 191
     t.integer "last_try_number"
     t.integer "owner_id"
@@ -85,7 +85,7 @@ ActiveRecord::Schema.define(version: 2023_02_01_122058) do
     t.index ["query_doc_pair_id"], name: "index_judgements_on_query_doc_pair_id"
   end
 
-  create_table "permissions", id: :integer, charset: "utf8", force: :cascade do |t|
+  create_table "permissions", id: :integer, charset: "utf8mb3", force: :cascade do |t|
     t.integer "user_id"
     t.string "model_type", null: false
     t.string "action", null: false
@@ -181,7 +181,7 @@ ActiveRecord::Schema.define(version: 2023_02_01_122058) do
   end
 
   create_table "teams", id: :integer, charset: "latin1", force: :cascade do |t|
-    t.string "name", collation: "utf8_bin"
+    t.string "name", collation: "utf8mb3_bin"
     t.integer "owner_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
