@@ -15,7 +15,7 @@ jobs:
           DB_NAME: quepid
           MYSQL_ALLOW_EMPTY_PASSWORD: true
 
-      - image: cimg/mysql:5.7
+      - image: cimg/mysql:8
         command: mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_bin
         environment: # environment variables for database
           MYSQL_DATABASE: quepid_test
