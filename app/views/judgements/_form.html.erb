@@ -291,13 +291,13 @@
   end
 
   scoring_guidelines = {}
-  scoring_guidelines['Poor'] = 'Customer feeling: <i>These results are terrible! Maybe I’ll look somewhere else.</i> <br/><mark>0</mark>’s are used when there is clearly something wrong. Most queries should never show <mark>0</mark>’s, they should only show <mark>1</mark>’s, <mark>2</mark>’s and <mark>3</mark>’s.'
-  scoring_guidelines['Fair'] = 'Customer feeling: <i>These results aren’t what I’m looking for, I can see why they are returned.</i> <br/> A <mark>1</mark> (fair) is used for results that are likely not relevant for the query, and are usually considered to be noise. It can be OK when there are <mark>3</mark>’s and <mark>2</mark>’s at the top of the results, and <mark>1</mark>’s are at the bottom. It’s not OK when <mark>1</mark>’s are mixed in with <mark>2</mark>’s and <mark>3</mark>’s, and they should never be at the top.'
-  scoring_guidelines['Good'] = 'Customer feeling: <i>These results are good! Now I can look more and decide which to buy.</i> <br/> A <mark>2</mark> (good) is for relevant results in response to an exploratory or survey information need query. <mark>2</mark>’s are what the customer is looking for, but they haven’t been specific enough to provide exact results.'
-  scoring_guidelines['Perfect'] = 'Customer feeling: <i>This is what I am looking for! I’m going to buy one.</i> <br/> A <mark>3</mark> (perfect) is usually reserved for exact results in response to a targeted information need query. These should be one or two products that the customer is specifically looking for. A good search metric for <mark>3</mark> results is Precision@1 or Precision@4.'
+  scoring_guidelines['Poor'] = 'Customer feeling: <i>These results are terrible! Maybe I’ll look somewhere else.</i> <br/><mark>0</mark>’s are used when the result is clearly not desired. The goal is for most queries to only show <mark>1</mark>’s, <mark>2</mark>’s and <mark>3</mark>’s. These are our negative examples.'
+  scoring_guidelines['Fair'] = 'Customer feeling: <i>These results aren’t what I’m looking for, but I can see why they were returned.</i> <br/> A <mark>1</mark> (fair) is used for results that have some of the right words, but are not really about what the query is looking for. Having some <mark>1</mark>’s far down the result list can be ok.'
+  scoring_guidelines['Good'] = 'Customer feeling: <i>These results are good! Looking them over is worth my time.</i> A <mark>2</mark> (good) is for results that provide survey information or a part of the entire information need.'
+  scoring_guidelines['Perfect'] = 'Customer feeling: <i>This is what I am looking for! I do not have to look any further.</i> <br/> A <mark>3</mark> (perfect) is usually reserved for exact results in response to a targeted information need query.'
 
-  scoring_guidelines['Irrelevant'] = 'These are not the droids I am looking for.'
-  scoring_guidelines['Relevant'] = 'These appear to be good droids.'
+  scoring_guidelines['Irrelevant'] = 'These are not the droids I am looking for. The result item is not helpful.'
+  scoring_guidelines['Relevant'] = 'These appear to be good droids. The result item addresses some aspect of my information need.'
 
   @path = ""
   if @judgement.persisted?
