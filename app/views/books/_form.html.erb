@@ -12,36 +12,28 @@
     </div>
   <% end %>
 
-  <div class="field">
-    <%= form.label :name %>
-    <%= form.text_field :name, required: true %>
+  <div class="mb-3">
+    <%= form.label :name, class: 'form-label' %>
+    <%= form.text_field :name, required: true, class: 'form-control' %>
+    <div class="form-text">The book's name often reflects the goal for the judgements, like <em>Baseline Measurement</em> or a specific problem.</div>
   </div>
 
-  <br>
-
-  <div class="field">
-    <%= form.label :team_id %>
-    <%=
-      form.collection_select(:team_id, current_user.teams, :id, :name, { prompt: true }, required: true)
-    %>
+  <div class="mb-3">
+    <%= form.label :team_id, class: 'form-label' %>
+    <%= form.collection_select(:team_id, current_user.teams, :id, :name, { prompt: true }, required: true, class: 'form-control') %>
+    <div class="form-text">Books are meant to be shared with human raters and relevance engineers, access is controlled by what team you pick.</div>
   </div>
 
-  <br>
-
-  <div class="field">
-    <%= form.label :scorer_id %>
-    <%=
-      form.collection_select(:scorer_id, current_user.scorers.all, :id, :name, { prompt: true }, required: true)
-    %>
+  <div class="mb-3">
+    <%= form.label :scorer_id, class: 'form-label' %>
+    <%= form.collection_select(:scorer_id, current_user.scorers, :id, :name, { prompt: true }, required: true, class: 'form-control') %>
+    <div class="form-text">The scorer you pick drives the options for rating.  So AP@10 would give you relevant and irrelevant, whereas NDCG would give your a four point scale.</div>
   </div>
 
-  <br>
-
-  <div class="field">
-    <%= form.label :selection_strategy_id %>
-    <%=
-      form.collection_select(:selection_strategy_id, SelectionStrategy.all, :id, :name, { prompt: true }, required: true)
-    %>
+  <div class="mb-3">
+    <%= form.label :selection_strategy_id, class: 'form-label' %>
+    <%= form.collection_select(:selection_strategy_id, SelectionStrategy.all, :id, :name, { prompt: true }, required: true, class: 'form-control') %>
+    <div class="form-text">Today, we only support a single strategy which is a single person rates each query/doc pair, similar to how core Quepid works.</div>
   </div>
 
   <br>
