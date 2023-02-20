@@ -27,6 +27,7 @@
     "angular-utils-pagination": "~0.11.1",
     "angular-wizard": "https://github.com/softwaredoug/angular-wizard.git#0.4.2",
     "bootstrap": "5.2.3",
+    "bootstrap-icons": "^1.10.3",
     "clipboard": "^2.0.11",
     "codemirror": "5.65.8",
     "d3": "~7.8.2",

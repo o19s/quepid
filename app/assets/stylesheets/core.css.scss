@@ -13,9 +13,17 @@
 
 @import "style";
 
+// We use Bootstrap Icons to have icons that work between core and the rest of the app
+@import "bootstrap-icons/font/bootstrap-icons";
+@font-face {
+  font-family: "bootstrap-icons";
+  src: font-url("bootstrap-icons/font/fonts/bootstrap-icons.woff2") format("woff2"), font-url("bootstrap-icons/font/fonts/bootstrap-icons.woff") format("woff");
+}
+
 // We use Bootstrap 5 everywhere except the core app, which is stuck in Bootstrap 3.
 // This loads Bootstrap 3.
 @import "bootstrap";
+
 
 @import "font-awesome";
 
