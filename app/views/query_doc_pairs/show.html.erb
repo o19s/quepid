@@ -1,42 +1,8 @@
-<p></p>
-
-<style>
-    .left-padded { padding: 0px 0px 0px 20px }
-</style>
-
-<%
-  @users = User.all
-  @user_name_lookup = {}
-  @users.each do |s|
-    @user_name_lookup[s.id] = s.email
-  end
-%>
-
-
-<%
-  @books = Book.all
-  @books_name_lookup = {}
-  @books.each do |s|
-    @books_name_lookup[s.id] = s.name
-  end
-  @book_id = @query_doc_pair.book_id
-  @book_name = @books_name_lookup[@query_doc_pair.book_id]
-
-  @document_fields = @query_doc_pair.document_fields
-  if @document_fields
-    @document_fields_parses_as_json = document_fields_parses_as_json(@document_fields)
-    if @document_fields_parses_as_json
-      @title_value = @document_fields['title']
-
-      @document_fields_except_title = document_fields_except_title(@document_fields)
-    end
-  end
-%>
 
 <h2>Query Doc Pair</h2>
 
 <p>
-  in Book <%= @book_id %> "<%= @book_name %>"
+  in Book "<%= @book.name %>"
 </p>
 
 <p>
@@ -54,30 +20,17 @@
   <%= @query_doc_pair.doc_id %>
 </p>
 
-<% if @document_fields_parses_as_json %>
-  <div class="field">
-    <strong>Document:</strong>
-  </div>
-  <div class="field">
-    <% if @title_value %>
-      <div class="field">
-        <span class="left-padded"><strong>title</strong> <%= @title_value %></span>
-      </div>
-    <% end %>
-    <% @document_fields_except_title.keys.each do |key| %>
-      <div class="field">
-        <span class="left-padded"><strong><%= key %></strong> <%= @document_fields_except_title[key] %></span>
-      </div>
-    <% end %>
-  </div>
-<% else %>
-  <div class="field">
-    <strong>Document:</strong> <%= @query_doc_pair.document_fields.to_s %>
-  </div>
-<% end %>
+<p>
+  <strong>Doc ID:</strong>
+  <%= @query_doc_pair.doc_id %>
+</p>
+
+<% @document_fields_as_json = document_fields_parses_as_json (@query_doc_pair.document_fields) %>
+<%= render 'query_doc_pairs/document_fields', document_fields_as_json: @document_fields_as_json %>
+
 
 <p></p>
 
-<%= button_to 'Edit Query Doc Pair', edit_book_query_doc_pair_path(@query_doc_pair.book_id, @query_doc_pair.id), method: :get %> <br>
+<%= button_to 'Edit Query Doc Pair', edit_book_query_doc_pair_path(@query_doc_pair.book, @query_doc_pair), method: :get %> <br>
 
-<%= button_to 'Back to Query Doc Pairs for ' + @book_name, book_query_doc_pairs_url(book_id: @query_doc_pair.book_id, query_doc_pair_id: @query_doc_pair.id), method: :get %><br>
+<%= button_to 'Back', book_query_doc_pairs_url(book: @query_doc_pair.book, query_doc_pair: @query_doc_pair), method: :get %><br>

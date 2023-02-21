@@ -375,45 +375,12 @@
       </div>
     </div>
 
-    <div class="float-end"><%= link_to 'Skip this Query', book_judge_path(@query_doc_pair.book), class: 'btn btn-warning', role: 'button' %></div>
+    <div class="float-end"><%= link_to 'Skip this Document', book_judge_path(@query_doc_pair.book), class: 'btn btn-warning', role: 'button' %></div>
 
 
 
     <p class="card-text">
-      <%
-
-      if @document_fields_as_json.nil?
-        %>
-        <%= @query_doc_pair.document_fields %>
-        <%
-      else
-
-        @title_value = @document_fields_as_json['title']
-        @document_fields_except_title = @document_fields_as_json.except('title')
-        %>
-        <h5>
-        Title: <%= @title_value %>
-        </h5>
-
-        <%
-        @document_fields_as_json.except('title').except('thumb').map do |key, value|
-          %>
-          <p>
-          <h6><%= key.capitalize.humanize %>:</h6>
-          <% if value.is_a? String %>
-            <% if value.starts_with?('http') %>
-              <%= link_to value, value, target: "_blank" %>
-            <% else %>
-              <%= value %>
-            <% end %>
-          <% elsif value.is_a? Array %>
-            <%= truncate((value.size == 1 ? value.first : value.to_sentence), length: 1000) %>
-          <% end %>
-          </p>
-          <%
-        end
-      end
-      %>
+      <%= render 'query_doc_pairs/document_fields', document_fields_as_json: @document_fields_as_json %>
     </p>
 
     <% if @show_keyboard_shortcuts %>
