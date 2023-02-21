@@ -34,9 +34,10 @@ class Case < Thor
     puts "Creating a new case for the user #{owner.name} with the scorer #{scorer.name}".yellow
 
     case_params = {
-      case_name: name,
-      owner:     owner,
-      scorer:    scorer,
+      case_name:       name,
+      owner:           owner,
+      scorer:          scorer,
+      last_try_number: 1,
     }
 
     try_params = {
