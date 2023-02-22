@@ -164,4 +164,4 @@ Want to monitor if Quepid is behaving?  Just monitor `/healthcheck`, and you wil
 
 ## Database Management
 
-See the details in [](.data_mapping.md).
+See the details in [](./data_mapping.md).
