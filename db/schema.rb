@@ -21,7 +21,7 @@ ActiveRecord::Schema.define(version: 2023_02_01_122058) do
     t.index ["user_id"], name: "index_annotations_on_user_id"
   end
 
-  create_table "books", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
+  create_table "books", charset: "utf8mb3", collation: "utf8mb3_unicode_ci", force: :cascade do |t|
     t.integer "team_id"
     t.integer "scorer_id"
     t.bigint "selection_strategy_id", null: false
@@ -76,7 +76,7 @@ ActiveRecord::Schema.define(version: 2023_02_01_122058) do
     t.index ["try_id"], name: "try_id"
   end
 
-  create_table "judgements", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
+  create_table "judgements", charset: "utf8mb3", collation: "utf8mb3_unicode_ci", force: :cascade do |t|
     t.integer "user_id"
     t.float "rating"
     t.bigint "query_doc_pair_id", null: false
@@ -94,7 +94,7 @@ ActiveRecord::Schema.define(version: 2023_02_01_122058) do
     t.datetime "updated_at", null: false
   end
 
-  create_table "queries", id: :integer, charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
+  create_table "queries", id: :integer, charset: "utf8mb3", force: :cascade do |t|
     t.bigint "arranged_next"
     t.bigint "arranged_at"
     t.string "query_text", limit: 500
@@ -109,7 +109,7 @@ ActiveRecord::Schema.define(version: 2023_02_01_122058) do
     t.index ["case_id"], name: "case_id"
   end
 
-  create_table "query_doc_pairs", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
+  create_table "query_doc_pairs", charset: "utf8mb3", collation: "utf8mb3_unicode_ci", force: :cascade do |t|
     t.string "query_text", limit: 500
     t.integer "position"
     t.text "document_fields"
@@ -130,7 +130,7 @@ ActiveRecord::Schema.define(version: 2023_02_01_122058) do
     t.index ["query_id"], name: "query_id"
   end
 
-  create_table "scorers", id: :integer, charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
+  create_table "scorers", id: :integer, charset: "latin1", force: :cascade do |t|
     t.text "code"
     t.string "name"
     t.integer "owner_id"
@@ -142,7 +142,7 @@ ActiveRecord::Schema.define(version: 2023_02_01_122058) do
     t.boolean "communal", default: false
   end
 
-  create_table "selection_strategies", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
+  create_table "selection_strategies", charset: "utf8mb3", collation: "utf8mb3_unicode_ci", force: :cascade do |t|
     t.string "name"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
@@ -152,9 +152,9 @@ ActiveRecord::Schema.define(version: 2023_02_01_122058) do
     t.string "doc_id", limit: 500
     t.integer "position"
     t.integer "snapshot_query_id"
-    t.text "explain", size: :medium, collation: "utf8mb4_general_ci"
+    t.text "explain", size: :medium, collation: "utf8mb4_0900_ai_ci"
     t.boolean "rated_only", default: false
-    t.text "fields", size: :medium, collation: "utf8mb4_general_ci"
+    t.text "fields", size: :medium, collation: "utf8mb4_0900_ai_ci"
     t.index ["snapshot_query_id"], name: "snapshot_query_id"
   end
 
@@ -271,7 +271,6 @@ ActiveRecord::Schema.define(version: 2023_02_01_122058) do
   add_foreign_key "case_scores", "cases", name: "case_scores_ibfk_1"
   add_foreign_key "case_scores", "users", name: "case_scores_ibfk_2"
   add_foreign_key "cases", "users", column: "owner_id", name: "cases_ibfk_1"
-  add_foreign_key "curator_variables", "tries", name: "curator_variables_ibfk_1"
   add_foreign_key "judgements", "query_doc_pairs"
   add_foreign_key "queries", "cases", name: "queries_ibfk_1"
   add_foreign_key "query_doc_pairs", "books"
