@@ -1,4 +1,7 @@
-.byebug_history
+
+/tmp/storage/*
+!/tmp/storage/
+!/tmp/storage/.keep
 
 # puppeteer testing
 /spec/puppeteer/node_modules

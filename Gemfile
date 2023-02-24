@@ -32,7 +32,7 @@ gem 'rails', '= 7.0.4.2'
 gem 'responders'
 gem 'sidekiq'
 gem 'terser'
-gem 'bootsnap', '>= 1.4.4', require: false
+gem 'bootsnap', require: false
 gem 'listen', '~> 3.3'
 
 gem 'cal-heatmap-rails', '~> 3.6' # provides assets for cal heatmap, that requires old d3
@@ -59,12 +59,18 @@ gem 'vega', '~> 0.3.0'
 group :development, :test do
   gem 'annotate'
   gem 'bullet'
-  gem 'byebug'
+  # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
+	gem "debug", platforms: %i[ mri mingw x64_mingw ]
   gem 'memory_profiler'
-  gem 'rack-mini-profiler', '>= 2.3.3'
 end
 
 group :development do
+  # Use console on exceptions pages [https://github.com/rails/web-console]
+  gem "web-console"
+
+  # Add speed badges [https://github.com/MiniProfiler/rack-mini-profiler]
+  gem "rack-mini-profiler"
+
   gem 'derailed_benchmarks'
   gem 'letter_opener'
   gem 'rubocop', require: false
@@ -78,4 +84,9 @@ group :test do
   gem 'simplecov', require: false
   gem 'webmock'
   gem 'rails-controller-testing' # bring back compatibility with rails 4 assigns in controller tests.
+
+  # Use system testing [https://guides.rubyonrails.org/testing.html#system-testing]
+  gem "capybara"
+  gem "selenium-webdriver"
+  gem "webdrivers"
 end
