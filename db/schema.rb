@@ -10,8 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2023_02_01_122058) do
-
+ActiveRecord::Schema[7.0].define(version: 2023_02_01_122058) do
   create_table "annotations", id: :integer, charset: "utf8mb3", force: :cascade do |t|
     t.text "message"
     t.string "source"
@@ -26,8 +25,8 @@ ActiveRecord::Schema.define(version: 2023_02_01_122058) do
     t.integer "scorer_id"
     t.bigint "selection_strategy_id", null: false
     t.string "name"
-    t.datetime "created_at", precision: 6, null: false
-    t.datetime "updated_at", precision: 6, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
     t.index ["selection_strategy_id"], name: "index_books_on_selection_strategy_id"
   end
 
@@ -80,8 +79,8 @@ ActiveRecord::Schema.define(version: 2023_02_01_122058) do
     t.integer "user_id"
     t.float "rating"
     t.bigint "query_doc_pair_id", null: false
-    t.datetime "created_at", precision: 6, null: false
-    t.datetime "updated_at", precision: 6, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
     t.index ["query_doc_pair_id"], name: "index_judgements_on_query_doc_pair_id"
   end
 
@@ -114,8 +113,8 @@ ActiveRecord::Schema.define(version: 2023_02_01_122058) do
     t.integer "position"
     t.text "document_fields"
     t.bigint "book_id", null: false
-    t.datetime "created_at", precision: 6, null: false
-    t.datetime "updated_at", precision: 6, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
     t.string "doc_id", limit: 500
     t.index ["book_id"], name: "index_query_doc_pairs_on_book_id"
   end
@@ -144,8 +143,8 @@ ActiveRecord::Schema.define(version: 2023_02_01_122058) do
 
   create_table "selection_strategies", charset: "utf8mb3", collation: "utf8mb3_unicode_ci", force: :cascade do |t|
     t.string "name"
-    t.datetime "created_at", precision: 6, null: false
-    t.datetime "updated_at", precision: 6, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
   create_table "snapshot_docs", id: :integer, charset: "latin1", force: :cascade do |t|
