@@ -67,7 +67,8 @@ group :development do
   gem 'web-console'
 
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
-  gem 'debug', platforms: [ :mri, :mingw, :x64_mingw ]
+  # Add me back in when Ruby 3.2.X comes out https://github.com/ruby/debug/issues/898
+  #gem 'debug', platforms: [ :mri, :mingw, :x64_mingw ]
 
   # Add speed badges [https://github.com/MiniProfiler/rack-mini-profiler]
   gem 'rack-mini-profiler'
