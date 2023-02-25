@@ -22,7 +22,7 @@ module Api
 
           assert_response :ok
 
-          books = JSON.parse(response.body)['books']
+          books = response.parsed_body['books']
 
           assert_instance_of  Array, books
           assert_equal        team.books.count, books.length

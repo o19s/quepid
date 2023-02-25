@@ -38,7 +38,7 @@ module Api
 
           assert_response :bad_request
 
-          body = JSON.parse(response.body)
+          body = response.parsed_body
           assert body['case_name'].include? "can't be blank"
         end
 
@@ -86,7 +86,7 @@ module Api
           get :show, params: { case_id: public_case.id }
           assert_response :ok
 
-          body = JSON.parse(response.body)
+          body = response.parsed_body
 
           assert_equal body['case_name'], public_case.case_name
           assert_equal body['case_id'],   public_case.id
@@ -97,7 +97,7 @@ module Api
           get :show, params: { case_id: the_case.id }
           assert_response :ok
 
-          body = JSON.parse(response.body)
+          body = response.parsed_body
 
           assert_equal body['case_name'], the_case.case_name
           assert_equal body['case_id'],   the_case.id
@@ -110,7 +110,7 @@ module Api
           get :show, params: { case_id: case_with_two_tries.id }
           assert_response :ok
 
-          body = JSON.parse(response.body)
+          body = response.parsed_body
 
           assert_equal body['tries'][0]['try_number'], 2
           assert_equal body['tries'][1]['try_number'], 1
@@ -122,7 +122,7 @@ module Api
 
         before do
           get :show, params: { case_id: the_case.id }
-          @body = JSON.parse(response.body)
+          @body = response.parsed_body
         end
 
         test 'shows score history' do
@@ -326,7 +326,7 @@ module Api
         test 'returns only shallow information about cases' do
           get :index
 
-          body = JSON.parse(response.body)
+          body = response.parsed_body
           cases = body['all_cases']
 
           cases.each do |c|
@@ -340,7 +340,7 @@ module Api
 
           assert_response :ok
 
-          body  = JSON.parse(response.body)
+          body  = response.parsed_body
           cases = body['all_cases']
 
           ids = cases.map { |c| c['case_id'] }
@@ -355,7 +355,7 @@ module Api
           shared.save!
 
           get :index
-          body = JSON.parse(response.body)
+          body = response.parsed_body
           test_team_ids = body['all_cases'].find_all do |c|
             c['case_id'] == shared.id
           end
@@ -375,7 +375,7 @@ module Api
 
           assert_response :ok
 
-          body  = JSON.parse(response.body)
+          body  = response.parsed_body
           cases = body['all_cases']
 
           ids = cases.map { |c| c['case_id'] }
@@ -417,7 +417,7 @@ module Api
 
           assert_response :ok
 
-          body  = JSON.parse(response.body)
+          body  = response.parsed_body
           cases = body['all_cases']
 
           ids = cases.map { |c| c['case_id'] }
@@ -430,7 +430,7 @@ module Api
 
           assert_response :ok
 
-          body  = JSON.parse(response.body)
+          body  = response.parsed_body
           cases = body['all_cases']
 
           ids = cases.map { |c| c['case_id'] }
@@ -443,7 +443,7 @@ module Api
 
           assert_response :ok
 
-          body  = JSON.parse(response.body)
+          body  = response.parsed_body
           cases = body['all_cases']
 
           assert cases.length == doug.cases.where(archived: true).length
@@ -456,7 +456,7 @@ module Api
 
           assert_response :ok
 
-          body  = JSON.parse(response.body)
+          body  = response.parsed_body
           cases = body['all_cases']
 
           assert cases.length == doug.cases.where(archived: true).length
@@ -482,7 +482,7 @@ module Api
 
           assert_response :ok
 
-          body  = JSON.parse(response.body)
+          body  = response.parsed_body
           cases = body['all_cases']
 
           assert cases.length <= 3
@@ -498,7 +498,7 @@ module Api
 
           assert_response :ok
 
-          body  = JSON.parse(response.body)
+          body  = response.parsed_body
           cases = body['all_cases']
 
           ids = cases.map { |c| c['case_id'] }
@@ -516,7 +516,7 @@ module Api
 
           assert_response :ok
 
-          body  = JSON.parse(response.body)
+          body  = response.parsed_body
           cases = body['all_cases']
 
           ids = cases.map { |c| c['case_id'] }

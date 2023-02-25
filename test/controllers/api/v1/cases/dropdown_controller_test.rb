@@ -39,7 +39,7 @@ module Api
           test 'returns only shallow information about cases' do
             get :index
 
-            body = JSON.parse(response.body)
+            body = response.parsed_body
             cases = body['all_cases']
             cases.each do |c|
               assert_nil c['tries']
@@ -52,7 +52,7 @@ module Api
 
             assert_response :ok
 
-            body  = JSON.parse(response.body)
+            body  = response.parsed_body
             cases = body['all_cases']
 
             ids = cases.map { |c| c['case_id'] }
@@ -66,7 +66,7 @@ module Api
 
             assert_response :ok
 
-            body  = JSON.parse(response.body)
+            body  = response.parsed_body
             cases = body['all_cases']
 
             ids = cases.map { |c| c['case_id'] }
@@ -79,7 +79,7 @@ module Api
 
             assert_response :ok
 
-            body  = JSON.parse(response.body)
+            body  = response.parsed_body
             cases = body['all_cases']
 
             ids = cases.map { |c| c['case_id'] }
@@ -92,7 +92,7 @@ module Api
 
             assert_response :ok
 
-            body  = JSON.parse(response.body)
+            body  = response.parsed_body
             cases = body['all_cases']
 
             assert cases.length <= 3
@@ -113,7 +113,7 @@ module Api
 
             assert_response :ok
 
-            body  = JSON.parse(response.body)
+            body  = response.parsed_body
             cases = body['all_cases']
 
             ids = cases.map { |c| c['case_id'] }
@@ -126,7 +126,7 @@ module Api
 
             assert_response :ok
 
-            body  = JSON.parse(response.body)
+            body  = response.parsed_body
             count = body['cases_count']
 
             assert_not_nil count

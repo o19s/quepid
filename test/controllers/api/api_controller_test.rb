@@ -13,7 +13,7 @@ module Api
         get :test
         assert_response :unauthorized
 
-        body = JSON.parse(response.body)
+        body = response.parsed_body
         assert 'Unauthorized!' == body['reason']
       end
     end
@@ -27,7 +27,7 @@ module Api
         get :test
         assert_response :ok
 
-        body = JSON.parse(response.body)
+        body = response.parsed_body
         assert 'Success!' == body['message']
       end
     end

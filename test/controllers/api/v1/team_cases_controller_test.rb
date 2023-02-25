@@ -106,7 +106,7 @@ module Api
 
           assert_response :ok
 
-          cases = JSON.parse(response.body)['cases']
+          cases = response.parsed_body['cases']
 
           assert_instance_of  Array, cases
           assert_equal        team.cases.count, cases.length
@@ -121,7 +121,7 @@ module Api
 
           assert_response :ok
 
-          cases = JSON.parse(response.body)['cases']
+          cases = response.parsed_body['cases']
 
           assert_instance_of  Array, cases
           assert_equal        shared_team.cases.count, cases.length

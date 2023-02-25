@@ -138,7 +138,7 @@ module Api
 
           assert_response :ok
 
-          scores = JSON.parse(response.body)['scores']
+          scores = response.parsed_body['scores']
 
           assert_equal [], scores
         end
@@ -152,7 +152,7 @@ module Api
 
           assert_response :ok
 
-          scores = JSON.parse(response.body)['scores']
+          scores = response.parsed_body['scores']
 
           assert_instance_of Array, scores
           assert_equal scores.length, 2
@@ -188,7 +188,7 @@ module Api
 
           assert_response :ok
 
-          score = JSON.parse(response.body)
+          score = response.parsed_body
 
           assert_equal score['score'],  @last_score.score
           assert_equal score['try_id'], @last_score.try_id

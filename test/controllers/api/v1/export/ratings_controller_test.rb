@@ -27,7 +27,7 @@ module Api
             get :show, params: { case_id: the_case.id }
             assert_response :ok
 
-            body = JSON.parse(response.body)
+            body = response.parsed_body
 
             assert_equal body['queries'].size,         the_case.queries.size
             assert_equal body['queries'][0]['query'],  the_case.queries[0].query_text
@@ -48,7 +48,7 @@ module Api
             get :show, params: { case_id: the_case.id, file_format: 'rre' }
             assert_response :ok
 
-            body = JSON.parse(response.body)
+            body = response.parsed_body
 
             assert_equal body['id_field'],                              'id'
             assert_equal body['index'],                                 the_case.tries.latest.index_name_from_search_url

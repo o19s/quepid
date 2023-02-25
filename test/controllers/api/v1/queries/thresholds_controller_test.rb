@@ -22,7 +22,7 @@ module Api
 
             assert_response :ok
 
-            data = JSON.parse(response.body)
+            data = response.parsed_body
 
             query.reload
             assert_equal  query.threshold, 1
@@ -39,7 +39,7 @@ module Api
 
             assert_response :ok
 
-            data = JSON.parse(response.body)
+            data = response.parsed_body
 
             query.reload
             assert_equal  query.threshold,      1

@@ -22,7 +22,7 @@ module Api
 
           assert_response :ok
 
-          data = JSON.parse(response.body)
+          data = response.parsed_body
 
           expected_response = {
             'scorer_id'         => scorer.id,
