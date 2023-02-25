@@ -117,7 +117,6 @@ GEM
     d3-rails (3.5.17)
       railties (>= 3.1)
     dead_end (4.0.0)
-    debug (1.7.1)
     derailed_benchmarks (2.1.2)
       benchmark-ips (~> 2)
       dead_end
@@ -437,7 +436,6 @@ DEPENDENCIES
   colorize
   cookies_eu
   d3-rails (~> 3.5.5)
-  debug
   derailed_benchmarks
   devise (>= 4.6.2)
   devise_invitable (~> 2.0)
