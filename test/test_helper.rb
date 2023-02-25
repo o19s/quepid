@@ -32,5 +32,15 @@ module ActiveSupport
       user ||= @user
       @controller.send(:auto_login, user)
     end
+
+    # in Minitest 6, it will fail to do an assert_equal on a nil, so weird workaround
+    # to shut up deprecation warnings.
+    def assert_nil_or_equal source, target
+      if source.blank?
+        assert_nil target
+      else
+        assert_equal source, target
+      end
+    end
   end
 end

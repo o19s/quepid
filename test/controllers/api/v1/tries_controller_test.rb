@@ -13,16 +13,6 @@ module Api
         login_user joey
       end
 
-      # in Minitest 6, it will fail to do an assert_equal on a nil, so weird workaround
-      # to shut up deprecation warnings.
-      def assert_nil_or_equal source, target
-        if source.blank?
-          assert_nil target
-        else
-          assert_equal source, target
-        end
-      end
-
       def assert_try_matches_response response, try
         assert_equal try.query_params, response['query_params']
         assert_equal try.field_spec,   response['field_spec'] if response['field_spec']
@@ -71,7 +61,7 @@ module Api
 
           assert_response :ok
 
-          body  = JSON.parse(response.body)
+          body  = response.parsed_body
           tries = body['tries']
 
           assert_equal tries.count, 1
@@ -80,7 +70,7 @@ module Api
 
           assert_response :ok
 
-          body  = JSON.parse(response.body)
+          body  = response.parsed_body
           tries = body['tries']
 
           assert_equal tries.count, 2
@@ -93,7 +83,7 @@ module Api
 
           assert_response :ok
 
-          body  = JSON.parse(response.body)
+          body  = response.parsed_body
           tries = body['tries']
 
           ids = tries.map { |each| each['try_number'] }
@@ -120,7 +110,7 @@ module Api
 
           assert_response :ok
 
-          body = JSON.parse(response.body)
+          body = response.parsed_body
 
           assert_try_matches_response body, first_for_case_with_two_tries
 
@@ -128,7 +118,7 @@ module Api
 
           assert_response :ok
 
-          body = JSON.parse(response.body)
+          body = response.parsed_body
 
           assert_try_matches_response body, second_for_case_with_two_tries
         end
@@ -146,7 +136,7 @@ module Api
           the_try.reload
           assert_equal the_try.name, 'New Name'
 
-          the_try = JSON.parse(response.body)
+          the_try = response.parsed_body
           assert_equal the_try['name'], 'New Name'
         end
 
@@ -190,7 +180,7 @@ module Api
             # but there's a bug currently in the responders gem
 
             the_case.reload
-            try_response  = JSON.parse(response.body)
+            try_response  = response.parsed_body
             created_try   = the_case.tries.where(try_number: try_response['try_number']).first
 
             assert_equal the_case.last_try_number, case_last_try + 1
@@ -223,7 +213,7 @@ module Api
 
             the_case.reload
             the_try.reload
-            try_response  = JSON.parse(response.body)
+            try_response  = response.parsed_body
             created_try   = the_case.tries.where(try_number: try_response['try_number']).first
 
             assert_includes the_try.children, created_try
@@ -274,7 +264,7 @@ module Api
           # but there's a bug currently in the responders gem
 
           the_case.reload
-          try_response  = JSON.parse(response.body)
+          try_response  = response.parsed_body
           created_try   = the_case.tries.where(try_number: try_response['try_number']).first
 
           assert_match( /Try/,                         created_try.name )
@@ -329,7 +319,7 @@ module Api
           # but there's a bug currently in the responders gem
 
           the_case.reload
-          try_response  = JSON.parse(response.body)
+          try_response  = response.parsed_body
           created_try   = the_case.tries.where(try_number: try_response['try_number']).first
 
           assert_match( /Try/,                         created_try.name )
@@ -403,7 +393,7 @@ module Api
             # but there's a bug currently in the responders gem
 
             the_case.reload
-            try_response  = JSON.parse(response.body)
+            try_response  = response.parsed_body
             created_try   = the_case.tries.where(try_number: try_response['try_number']).first
 
             assert_match( /Try/,                         created_try.name )
@@ -423,7 +413,7 @@ module Api
             # but there's a bug currently in the responders gem
 
             the_case.reload
-            try_response  = JSON.parse(response.body)
+            try_response  = response.parsed_body
             created_try   = the_case.tries.where(try_number: try_response['try_number']).first
 
             assert_match( /Try/,                         created_try.name )
@@ -446,7 +436,7 @@ module Api
             # but there's a bug currently in the responders gem
 
             the_case.reload
-            try_response  = JSON.parse(response.body)
+            try_response  = response.parsed_body
             created_try   = the_case.tries.where(try_number: try_response['try_number']).first
 
             assert_equal created_try.args,      'query' => '#$query##'
@@ -462,7 +452,7 @@ module Api
             # but there's a bug currently in the responders gem
 
             the_case.reload
-            try_response  = JSON.parse(response.body)
+            try_response  = response.parsed_body
             created_try   = the_case.tries.where(try_number: try_response['try_number']).first
 
             assert_nil created_try.args
