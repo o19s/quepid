@@ -59,17 +59,18 @@ gem 'vega', '~> 0.3.0'
 group :development, :test do
   gem 'annotate'
   gem 'bullet'
-  # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
-	gem "debug", platforms: %i[ mri mingw x64_mingw ]
   gem 'memory_profiler'
 end
 
 group :development do
   # Use console on exceptions pages [https://github.com/rails/web-console]
-  gem "web-console"
+  gem 'web-console'
+
+  # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
+  gem 'debug', platforms: [ :mri, :mingw, :x64_mingw ]  
 
   # Add speed badges [https://github.com/MiniProfiler/rack-mini-profiler]
-  gem "rack-mini-profiler"
+  gem 'rack-mini-profiler'
 
   gem 'derailed_benchmarks'
   gem 'letter_opener'
@@ -86,7 +87,7 @@ group :test do
   gem 'rails-controller-testing' # bring back compatibility with rails 4 assigns in controller tests.
 
   # Use system testing [https://guides.rubyonrails.org/testing.html#system-testing]
-  gem "capybara"
-  gem "selenium-webdriver"
-  gem "webdrivers"
+  gem 'capybara'
+  gem 'selenium-webdriver'
+  gem 'webdrivers'
 end
