@@ -2,5 +2,12 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
     "config:base"
-  ]
+  ],
+  "enabled": true,
+  "schedule": [
+    "* 8-20 * * *"
+  ],
+  "prConcurrentLimit": 5,
+  "prHourlyLimit": 5,
+  "stabilityDays": 5
 }
