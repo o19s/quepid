@@ -15,11 +15,11 @@ module Api
 
       # in Minitest 6, it will fail to do an assert_equal on a nil, so weird workaround
       # to shut up deprecation warnings.
-      def assert_nil_or_equal (source, target)
-        if source.nil? or source.empty?
+      def assert_nil_or_equal source, target
+        if source.blank?
           assert_nil target
         else
-          assert_equal source,   target
+          assert_equal source, target
         end
       end
 
@@ -31,7 +31,7 @@ module Api
         assert_equal try.name,         response['name'] if response['name']
         assert_equal try.solr_args,    response['args']
         assert_equal try.escape_query, response['escape_query']
-        assert_nil_or_equal try.api_method,   response['api_method']
+        assert_nil_or_equal try.api_method, response['api_method']
 
         assert_curator_vars_equal try.curator_vars_map, response['curator_vars']
       end
