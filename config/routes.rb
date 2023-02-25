@@ -4,8 +4,9 @@ require 'sidekiq/web'
 
 # rubocop:disable Metrics/BlockLength
 Rails.application.routes.draw do
+  # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
+
   Healthcheck.routes(self)
-  # For details on the DSL available within this file, see https://guides.rubyonrails.org/routing.html
   constraints(AdminConstraint) do
     mount Sidekiq::Web, at: 'admin/jobs'
   end
