@@ -25,12 +25,12 @@
 #
 # See upgrading guide for more information on how to build a rotator.
 # https://guides.rubyonrails.org/v7.0/upgrading_ruby_on_rails.html
-# Rails.application.config.active_support.key_generator_hash_digest_class = OpenSSL::Digest::SHA256
+Rails.application.config.active_support.key_generator_hash_digest_class = OpenSSL::Digest::SHA256
 
 # Change the digest class for ActiveSupport::Digest.
 # Changing this default means that for example Etags change and
 # various cache keys leading to cache invalidation.
-# Rails.application.config.active_support.hash_digest_class = OpenSSL::Digest::SHA256
+Rails.application.config.active_support.hash_digest_class = OpenSSL::Digest::SHA256
 
 # Don't override ActiveSupport::TimeWithZone.name and use the default Ruby
 # implementation.
@@ -87,7 +87,7 @@ Rails.application.config.action_controller.wrap_parameters_by_default = true
 #
 # See https://guides.rubyonrails.org/configuring.html#config-active-support-use-rfc4122-namespaced-uuids for
 # more information.
-# Rails.application.config.active_support.use_rfc4122_namespaced_uuids = true
+Rails.application.config.active_support.use_rfc4122_namespaced_uuids = true
 
 # Change the default headers to disable browsers' flawed legacy XSS protection.
 # Rails.application.config.action_dispatch.default_headers = {
@@ -106,7 +106,7 @@ Rails.application.config.action_controller.wrap_parameters_by_default = true
 # Only change this value after your application is fully deployed to Rails 7.0
 # and you have no plans to rollback.
 # When you're ready to change format, add this to `config/application.rb` (NOT this file):
-#  config.active_support.cache_format_version = 7.0
+# config.active_support.cache_format_version = 7.0
 
 # Cookie serializer: 2 options
 #
