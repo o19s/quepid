@@ -9,7 +9,7 @@ angular.module('QuepidApp')
     function teamSvc($http, broadcastSvc) {
       this.teams = [];
 
-      var Team = function(id, name, ownerId, owner, cases, cases_count, members, scorers, owned) {
+      var Team = function(id, name, ownerId, owner, cases, cases_count, members, scorers, owned, books) {
         this.id           = id;
         this.name         = name;
         this.ownerId      = ownerId;
@@ -19,6 +19,7 @@ angular.module('QuepidApp')
         this.members      = members;
         this.scorers      = scorers;
         this.owned        = owned;
+        this.books        = books;
 
 
         angular.forEach(this.cases, function(c) {
@@ -31,6 +32,11 @@ angular.module('QuepidApp')
         angular.forEach(this.scorers, function(s) {
           // This is really ugly.  We don't use our standard ScorerFactory mapping, and probably should!
           s.ownerName = s.owner_name;
+        });
+
+        angular.forEach(this.books, function(b) {
+          // This is really ugly.  We don't use our standard ScorerFactory mapping, and probably should!
+          b.selectionStrategy = b.selection_strategy;
         });
 
 
@@ -46,7 +52,8 @@ angular.module('QuepidApp')
           data.cases_count,
           data.members,
           data.scorers,
-          data.owned
+          data.owned,
+          data.books
         );
       };
 

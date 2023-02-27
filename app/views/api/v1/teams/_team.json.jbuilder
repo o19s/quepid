@@ -15,6 +15,10 @@ json.members do
   json.array! team.members, partial: 'api/v1/team_members/member', as: :member
 end
 
+json.books do
+  json.array! team.books, partial: 'api/v1/team_books/book', as: :book
+end
+
 if load_cases
   json.cases do
     # rubocop:disable Layout/LineLength

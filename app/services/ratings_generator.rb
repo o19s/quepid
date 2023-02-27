@@ -16,7 +16,7 @@ class RatingsGenerator
       number:        10,
       query:         '*:*',
       rows:          10,
-      scale:         (1..10).to_a,
+      scale:         (0..1).to_a,
       show_progress: false,
     }
 
