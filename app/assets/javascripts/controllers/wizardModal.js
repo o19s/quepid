@@ -253,8 +253,9 @@ angular.module('QuepidApp')
         $scope.pendingWizardSettings.titleField       = settingsToUse.titleField;
         $scope.pendingWizardSettings.additionalFields = settingsToUse.additionalFields;
         $scope.pendingWizardSettings.queryParams      = settingsToUse.queryParams;
-        $scope.pendingWizardSettings.apiMethod        = settingsToUse.apiMethod;
 
+        // Make sure to track what you might have picked
+        $scope.pendingWizardSettings.apiMethod        = validator.apiMethod;
       }
 
       $scope.validateFieldSpec = validateFieldSpec;
