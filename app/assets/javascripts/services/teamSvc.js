@@ -24,6 +24,8 @@ angular.module('QuepidApp')
 
         angular.forEach(this.cases, function(c) {
           // This is really ugly.  We don't use our standard CaseSvc mapping, and probably should!
+          c.caseNo = c.case_id;
+          c.lastScore = c.last_score;
           c.caseName = c.case_name;
           c.ownerName = c.owner_name;
           c.lastTry  = c.last_try_number;
