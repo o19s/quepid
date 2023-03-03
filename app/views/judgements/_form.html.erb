@@ -386,6 +386,7 @@
     <% if @show_keyboard_shortcuts %>
       <table class="padded">
         <tr>
+          <td></td>
           <% @rating_buttons.each do |b| %>
             <%
               @button_classes = "btn btn-default "
@@ -399,6 +400,7 @@
           <% end %>
         </tr>
         <tr>
+          <td><i class="bi-keyboard"></i></td>
           <% @rating_buttons.each do |b| %>
               <td class="keyboard-shortcuts-td"><span class="<%= @existing_rating == b["value"].to_i ? 'bold-and-black' : '' %>" id=<%= "span-for-" + b["key"][:name].to_s %>><%= b["key"][:display_name]%></span></td>
           <% end %>
