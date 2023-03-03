@@ -180,6 +180,24 @@ module Api
           end
         end
 
+        describe 'archiving user takes over ownership of a case' do
+          let(:matt_case)  { cases(:matt_case) }
+
+          test 'let doug archive matts case even though he is not the owner' do
+            assert_not_includes doug.cases, matt_case
+            assert_not_equal doug, matt_case.owner
+
+            put :update, params: { case_id: matt_case.id, case: { archived: true } }
+
+            doug.cases.reload
+            matt_case.reload
+
+            assert_includes doug.cases, matt_case
+            assert_equal doug, matt_case.owner
+
+          end
+        end
+
         describe 'analytics' do
           let(:one) { cases(:one) }
 

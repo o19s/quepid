@@ -75,7 +75,7 @@
         ></change-team-owner>
 
         <p ng-if="currentUser.id !== currentTeam.owner.id">
-          Only the owner, {{ currentTeam.owner.display_name }}, can change the owner of the team.
+          Only the owner, {{ currentTeam.owner.display_name }}, can change the ownership of the team.
         </p>
       </div>
     </div>
@@ -152,7 +152,8 @@
             <span class="col-xs-1">Last Score</span>
             <span class="col-xs-1">Last Run On</span>
             <span class="col-xs-2">Last Run By</span>
-            <span class="col-xs-2">Owner</span>
+            <span class="col-xs-1">Associated Judgements</span>
+            <span class="col-xs-1">Owner</span>
         </div>
 
         <ul class="cases-list" ng-model="currentTeam.cases">
@@ -197,7 +198,7 @@
       <p ng-if="currentTeam.books.length == 0">
         No judgements to show!
       </p>
-    </div> <!-- .team-books -->    
+    </div> <!-- .team-books -->
 
     <div class="clearfix"></div>
 

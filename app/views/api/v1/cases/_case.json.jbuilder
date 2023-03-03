@@ -13,6 +13,7 @@ json.book_id          acase.book_id
 json.book_name        acase.book.name if acase.book.present?
 json.owned            acase.owner_id == current_user.id
 json.owner_name       acase.owner.name if acase.owner.present?
+json.owner_id         acase.owner.id if acase.owner.present?
 json.queriesCount     acase.queries.count
 json.public           acase.public.presence || false
 
