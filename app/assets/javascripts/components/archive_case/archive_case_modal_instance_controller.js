@@ -19,7 +19,7 @@ angular.module('QuepidApp')
 
       ctrl.isOwnerOfCase = function() {
         return ($rootScope.currentUser.id === ctrl.theCase.ownerId);
-      }
+      };
 
       ctrl.ok = function () {
         $uibModalInstance.close(true);

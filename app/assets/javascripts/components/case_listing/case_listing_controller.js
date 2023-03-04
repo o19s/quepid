@@ -37,9 +37,7 @@ angular.module('QuepidApp')
       function goToTeam(teamId) {
         var path = '/teams/' + teamId;
         $location.path(path);
-      };
-
-
+      }
 
       $rootScope.$watch('currentUser', function() {
         if ( $rootScope.currentUser ) {
