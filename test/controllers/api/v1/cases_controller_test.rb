@@ -172,7 +172,7 @@ module Api
             count_unarchived  = doug.cases.where(archived: false).count
             count_archived    = doug.cases.where(archived: true).count
 
-            put :update, params: { case_id: one.id, case: { archived: true } }
+            put :update, params: { case_id: one.id, case: {  }, archived: true }
             assert_response :ok
 
             assert_equal count_unarchived - 1,  doug.cases.where(archived: false).count
@@ -187,7 +187,7 @@ module Api
             assert_not_includes doug.cases, matt_case
             assert_not_equal doug, matt_case.owner
 
-            put :update, params: { case_id: matt_case.id, case: { archived: true } }
+            put :update, params: { case_id: matt_case.id, case: { }, archived: true }
 
             doug.cases.reload
             matt_case.reload
@@ -205,7 +205,7 @@ module Api
             expects_any_ga_event_call
 
             perform_enqueued_jobs do
-              put :update, params: { case_id: one.id, case: { archived: true } }
+              put :update, params: { case_id: one.id, case: {  }, archived: true }
               assert_response :ok
             end
           end
