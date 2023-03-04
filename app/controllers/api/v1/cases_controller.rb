@@ -18,7 +18,7 @@ module Api
 
         if archived
           @no_tries = true
-          @no_teams = true
+          @no_teams = false
           @cases = Case.where(archived: archived, owner_id: current_user.id).all
         else
           @cases = if 'last_viewed_at' == sort_by

@@ -3,9 +3,10 @@
 angular.module('QuepidApp')
   .controller('UnarchiveCaseCtrl', [
     '$scope', '$uibModalInstance',
-    'caseSvc',
-    function ($scope, $uibModalInstance, caseSvc) {
+    'caseSvc','currentTeam',
+    function ($scope, $uibModalInstance, caseSvc, currentTeam) {
 
+      $scope.currentTeam = currentTeam; // can be null if we aren't looking at a current Team
       $scope.loading = true;
       caseSvc.fetchArchived()
         .then(function() {
@@ -13,7 +14,21 @@ angular.module('QuepidApp')
         });
 
       $scope.archivedCases = function() {
-        return caseSvc.archived;
+        if ($scope.currentTeam){
+          var matches = [];
+          for (let i = 0; i < caseSvc.archived.length; i++) {
+            for (let j = 0; j < caseSvc.archived[i].teams.length; j++) {
+              if (caseSvc.archived[i].teams[j].id === $scope.currentTeam.id){
+                matches.push(caseSvc.archived[i]);
+                break;
+              }
+            }
+          }
+          return matches;
+        }
+        else {
+          return caseSvc.archived;
+        }
       };
 
       $scope.selectedCase = null;
