@@ -55,10 +55,9 @@ module Api
       # rubocop:disable Metrics/MethodLength
       def update
         update_params = case_params
-
         update_params[:scorer_id] = Scorer.system_default_scorer.id if default_scorer_removed? update_params
         bool = ActiveRecord::Type::Boolean.new
-        archived = bool.deserialize(params[:archived]) || false
+        archived = bool.deserialize(update_params[:archived]) || false
         if archived
           @case.owner = current_user # archiving a case means current user takes it over, that should be better expressed.
           @case.mark_archived!

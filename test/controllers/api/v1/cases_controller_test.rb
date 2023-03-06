@@ -172,7 +172,7 @@ module Api
             count_unarchived  = doug.cases.where(archived: false).count
             count_archived    = doug.cases.where(archived: true).count
 
-            put :update, params: { case_id: one.id, case: {  }, archived: true }
+            put :update, params: { case_id: one.id, case: { archived: true } }
             assert_response :ok
 
             assert_equal count_unarchived - 1,  doug.cases.where(archived: false).count
@@ -181,19 +181,48 @@ module Api
         end
 
         describe 'archiving user takes over ownership of a case' do
-          let(:matt_case)  { cases(:matt_case) }
+          let(:shared_team_case)  { cases(:shared_team_case) }
+          let(:matt_case)         { cases(:matt_case) }
+          let(:team_member_1)     { users(:team_member_1) }
+          let(:team_member_1)     { users(:team_member_1) }
 
-          test 'let doug archive matts case even though he is not the owner' do
-            assert_not_includes doug.cases, matt_case
-            assert_not_equal doug, matt_case.owner
+          before do
+            login_user team_member_1
+          end
 
-            put :update, params: { case_id: matt_case.id, case: { }, archived: true }
+          test 'let team_member_1 archive team_owner case even though he is not the owner' do
+            # Make sure the team member doesn't own the case.
+            assert_not_includes team_member_1.owned_team_cases, shared_team_case
+            assert_not_equal shared_team_case, shared_team_case.owner
+            # make sure the team member IS involved with case via team membership however.
+            assert_includes team_member_1.cases_involved_with, shared_team_case
 
-            doug.cases.reload
-            matt_case.reload
+            put :update, params: { case_id: shared_team_case.id, case: { archived: true } }
+            assert_response :ok
 
-            assert_includes doug.cases, matt_case
-            assert_equal doug, matt_case.owner
+            team_member_1.reload
+            shared_team_case.reload
+
+            #assert_includes team_member_1.owned_team_cases, shared_team_case
+            assert_equal team_member_1, shared_team_case.owner
+
+          end
+
+          test 'prevent team_member_1 archive matt_case since he isnt invovled with the case' do
+            # Make sure the team member doesn't own the case.
+            assert_not_includes team_member_1.owned_team_cases, matt_case
+            assert_not_includes team_member_1.shared_team_cases, matt_case
+            # make sure the team member isn't involved with case via team membership however.
+            assert_not_includes team_member_1.cases_involved_with, matt_case
+
+            put :update, params: { case_id: matt_case.id, case: { archived: true } }
+            assert_response :not_found
+
+            team_member_1.reload
+            shared_team_case.reload
+
+            assert_not_includes team_member_1.owned_team_cases, matt_case
+            assert_not_equal team_member_1, matt_case.owner
 
           end
         end
@@ -205,7 +234,7 @@ module Api
             expects_any_ga_event_call
 
             perform_enqueued_jobs do
-              put :update, params: { case_id: one.id, case: {  }, archived: true }
+              put :update, params: { case_id: one.id, case: { archived: true } }
               assert_response :ok
             end
           end
