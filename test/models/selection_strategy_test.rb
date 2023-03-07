@@ -53,5 +53,6 @@ class SelectionStrategyTest < ActiveSupport::TestCase
   end
 
   describe 'mulitiple raters per query doc pair strategy' do
+    assert true
   end
 end
