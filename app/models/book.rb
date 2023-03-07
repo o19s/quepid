@@ -39,25 +39,4 @@ class Book < ApplicationRecord
     ', user.id)
       .order(name: :desc)
   }
-
-  def random_query_doc_pair_for_rating
-    @all_query_doc_pairs_with_judgements =
-      QueryDocPair.joins('
-        LEFT JOIN `judgements` on `judgements`.`query_doc_pair_id` = `query_doc_pairs`.`id`
-        ').includes([ :judgements ])
-        .where(:book_id => id)
-
-    @all_possible_query_doc_pairs_to_rate = []
-    @all_query_doc_pairs_with_judgements.each do |row|
-      @all_possible_query_doc_pairs_to_rate << row if row.judgements[0].nil?
-    end
-
-    # size_ary = @all_possible_query_doc_pairs_to_rate.size
-    # if size_ary.zero?
-    #  nil
-    # else
-    #    @all_possible_query_doc_pair_ids_to_rate[rand(size_ary)]
-    #  end
-    @all_possible_query_doc_pairs_to_rate.sample
-  end
 end

@@ -10,16 +10,14 @@ class JudgementsController < ApplicationController
 
   def show; end
 
-  # rubocop:disable Layout/LineLength
   def new
-    @query_doc_pair = @book.random_query_doc_pair_for_rating
+    @query_doc_pair = SelectionStrategy.better_random_query_doc_pair_for_single_judge(@book)
     if @query_doc_pair
-      @query = @current_user.queries.where(query_text: @query_doc_pair.query_text).where.not(information_need: [ nil,
-                                                                                                                 '' ]).first
+      @query = @current_user.queries.has_information_need.where(query_text: @query_doc_pair.query_text).first
+
     end
     @judgement = Judgement.new
   end
-  # rubocop:enable Layout/LineLength
 
   def edit; end
 
