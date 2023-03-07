@@ -59,7 +59,8 @@ module Api
         bool = ActiveRecord::Type::Boolean.new
         archived = bool.deserialize(update_params[:archived]) || false
         if archived
-          @case.owner = current_user # archiving a case means current user takes it over, that should be better expressed.
+          # archiving a case means current user takes it over, that should be better expressed.
+          @case.owner = current_user
           @case.mark_archived!
           Analytics::Tracker.track_case_archived_event current_user, @case
           respond_with @case
