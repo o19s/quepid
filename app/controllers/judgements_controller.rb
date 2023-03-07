@@ -8,13 +8,15 @@ class JudgementsController < ApplicationController
     @judgements = @book.judgements
   end
 
-  def show; end
+  def show
+    @query_doc_pair = @judgement.query_doc_pair
+    @query = @current_user.queries.has_information_need.where(query_text: @query_doc_pair.query_text).first
+  end
 
   def new
-    @query_doc_pair = SelectionStrategy.better_random_query_doc_pair_for_single_judge(@book)
+    @query_doc_pair = SelectionStrategy.random_query_doc_pair_for_single_judge(@book)
     if @query_doc_pair
       @query = @current_user.queries.has_information_need.where(query_text: @query_doc_pair.query_text).first
-
     end
     @judgement = Judgement.new
   end
@@ -26,7 +28,7 @@ class JudgementsController < ApplicationController
     @judgement.user = current_user
 
     if @judgement.save
-      session['last_judgement_id'] = @judgement['id']
+      session['previous_judgement_id'] = @judgement.id
       redirect_to book_judge_path(@book)
     else
       render action: :edit

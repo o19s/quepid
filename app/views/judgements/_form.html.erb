@@ -299,32 +299,13 @@
   scoring_guidelines['Irrelevant'] = 'These are not the droids I am looking for. The result item is not helpful.'
   scoring_guidelines['Relevant'] = 'These appear to be good droids. The result item addresses some aspect of my information need.'
 
-  @path = ""
-  if @judgement.persisted?
-    @existing_rating = @judgement.rating
-    @query_doc_pair = @judgement.query_doc_pair
-    begin
-      @path = book_query_doc_pair_judgement_path
-    rescue
-      controller.redirect_to book_query_doc_pair_judgement_url(@book, @query_doc_pair, @judgement)
-    end
 
-  else
-    @query_doc_pair = @book.random_query_doc_pair_for_rating
-    if @query_doc_pair == nil
-      controller.redirect_to book_judgements_path(@book)
-      return
-    end
-    @path = book_query_doc_pair_judgements_url(@book, @query_doc_pair)
-  end
-
-  @document_fields_as_json = document_fields_parses_as_json (@query_doc_pair.document_fields)
+  @document_fields_as_json = document_fields_parses_as_json (query_doc_pair.document_fields)
   has_thumb = !@document_fields_as_json.nil? && @document_fields_as_json.has_key?('thumb')
 
 %>
 
-<%= form_for([judgement], url: @path) do |form| %>
-
+<%= form_for(judgement, url: url_for_form) do |form| %>
   <% if judgement.errors.any? %>
     <div id="error_explanation">
       <h2><%= pluralize(judgement.errors.count, "error") %> prohibited this judgement from being saved:</h2>
@@ -349,7 +330,7 @@
   <% end %>
 
   <div class="card-body">
-    <h5 class="card-title">Query: <%= @query_doc_pair.query_text %></h5>
+    <h5 class="card-title">Query: <%= query_doc_pair.query_text %></h5>
     <% if @query %>
     <h6 class="card-subtitle mb-2 text-muted">Information Need: <i><%= @query.information_need %></i></h6>
     <% end %>
@@ -375,7 +356,7 @@
       </div>
     </div>
 
-    <div class="float-end"><%= link_to 'Skip this Document', book_judge_path(@query_doc_pair.book), class: 'btn btn-warning', role: 'button' %></div>
+    <div class="float-end"><%= link_to 'Skip this Document', book_judge_path(@book), class: 'btn btn-warning', role: 'button' %></div>
 
 
 
@@ -390,7 +371,7 @@
           <% @rating_buttons.each do |b| %>
             <%
               @button_classes = "btn btn-default "
-              if @existing_rating == b["value"].to_i
+              if judgement.rating == b["value"].to_i
                 @button_classes = @button_classes + "btn-preselected "
               end
             %>
@@ -402,7 +383,7 @@
         <tr>
           <td><i class="bi-keyboard"></i></td>
           <% @rating_buttons.each do |b| %>
-              <td class="keyboard-shortcuts-td"><span class="<%= @existing_rating == b["value"].to_i ? 'bold-and-black' : '' %>" id=<%= "span-for-" + b["key"][:name].to_s %>><%= b["key"][:display_name]%></span></td>
+              <td class="keyboard-shortcuts-td"><span class="<%= judgement.rating == b["value"].to_i ? 'bold-and-black' : '' %>" id=<%= "span-for-" + b["key"][:name].to_s %>><%= b["key"][:display_name]%></span></td>
           <% end %>
         </tr>
       </table>
@@ -428,7 +409,7 @@
   <% end %>
 
   <%= form.hidden_field :rating %>
-  <%= form.hidden_field :query_doc_pair_id, :value => @query_doc_pair.id.to_s %>
+  <%= form.hidden_field :query_doc_pair_id, :value => query_doc_pair.id %>
   <%= form.submit class: 'hidden'%>
 
 <% end %>
