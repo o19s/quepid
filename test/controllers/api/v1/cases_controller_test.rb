@@ -203,9 +203,8 @@ module Api
             team_member_1.reload
             shared_team_case.reload
 
-            #assert_includes team_member_1.owned_team_cases, shared_team_case
+            # assert_includes team_member_1.owned_team_cases, shared_team_case
             assert_equal team_member_1, shared_team_case.owner
-
           end
 
           test 'prevent team_member_1 archive matt_case since he isnt invovled with the case' do
@@ -223,7 +222,6 @@ module Api
 
             assert_not_includes team_member_1.owned_team_cases, matt_case
             assert_not_equal team_member_1, matt_case.owner
-
           end
         end
 
