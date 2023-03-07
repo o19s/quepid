@@ -20,4 +20,8 @@ class SelectionStrategy < ApplicationRecord
       .order(Arel.sql('-LOG(1.0 - RAND()) * position'))
       .first
   end
+
+  def descriptive_name
+    "#{name}: #{description}"
+  end
 end
