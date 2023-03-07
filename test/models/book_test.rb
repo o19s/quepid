@@ -42,7 +42,7 @@ class BookTest < ActiveSupport::TestCase
       query_doc_pair_1 = book.query_doc_pairs.create query_text: 'star wars', doc_id: 'rogue_one'
       query_doc_pair_2 = book.query_doc_pairs.create query_text: 'star wars', doc_id: 'solo_story'
 
-      random_query_doc_pair = book.random_query_doc_pair_for_rating
+      random_query_doc_pair = SelectionStrategy.random_query_doc_pair_for_single_judge(book)
       assert_not_nil random_query_doc_pair
       assert(random_query_doc_pair == query_doc_pair_1 || random_query_doc_pair == query_doc_pair_2)
     end
@@ -54,10 +54,10 @@ class BookTest < ActiveSupport::TestCase
       query_doc_pair_1.judgements.create rating: 2.0
 
       # only one of two is a candidate, so sampling will return it every time.
-      random_query_doc_pair = book.random_query_doc_pair_for_rating
+      random_query_doc_pair = SelectionStrategy.random_query_doc_pair_for_single_judge(book)
       assert_equal query_doc_pair_2, random_query_doc_pair
 
-      random_query_doc_pair = book.random_query_doc_pair_for_rating
+      random_query_doc_pair = SelectionStrategy.random_query_doc_pair_for_single_judge(book)
       assert_equal query_doc_pair_2, random_query_doc_pair
     end
 
@@ -68,7 +68,7 @@ class BookTest < ActiveSupport::TestCase
       query_doc_pair_1.judgements.create rating: 2.0
       query_doc_pair_2.judgements.create rating: 2.0
 
-      random_query_doc_pair = book.random_query_doc_pair_for_rating
+      random_query_doc_pair = SelectionStrategy.random_query_doc_pair_for_single_judge(book)
       assert_nil random_query_doc_pair
     end
   end

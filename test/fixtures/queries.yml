@@ -36,11 +36,13 @@ first_query:
   case:         :queries_case
   query_text:   First Query
   arranged_at:  1
+  information_need: I am the first query
 
 second_query:
   case:         :queries_case
   query_text:   Second Query
   arranged_at:  2
+  information_need: I am the second query
 
 third_query:
   case:         :queries_case
@@ -81,4 +83,10 @@ random_query:
 query_with_empty_ratings:
   case:         :random_case
   query_text:   Query With Empty Ratings
-  arranged_at:  1
+  arranged_at:  2
+
+query_for_best_bond_ever:
+  case:         :random_case
+  query_text:   Best Bond Ever
+  information_need: I am looking for Sean Connery as the actor, as he was the best!
+  arranged_at:  3

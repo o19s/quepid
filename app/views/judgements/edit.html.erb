@@ -1,11 +1,11 @@
 <p></p>
 <h2>Editing Judgement</h2>
 
-<%= render 'form', judgement: @judgement %>
+<%= render 'form', judgement: @judgement, query_doc_pair: @judgement.query_doc_pair, url_for_form: book_query_doc_pair_judgement_path(@book, @judgement.query_doc_pair, @judgement) %>
 
 <br>
 
-<%= button_to 'Exit', book_judgements_path(@judgement.query_doc_pair.book), method: :get %>
+<%= button_to 'Exit', book_judgements_path(@book), method: :get %>
 
 <br>
 

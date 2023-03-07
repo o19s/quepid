@@ -21,7 +21,7 @@
   <div class="mb-3">
     <%= form.label :team_id, class: 'form-label' %>
     <%= form.collection_select(:team_id, current_user.teams, :id, :name, { prompt: true }, required: true, class: 'form-control') %>
-    <div class="form-text">Books are meant to be shared with human raters and relevance engineers, access is controlled by what team you pick.</div>
+    <div class="form-text">Books are meant to be shared with human raters and relevance engineers, access to the book is controlled by what team you pick.</div>
   </div>
 
   <div class="mb-3">
@@ -32,8 +32,8 @@
 
   <div class="mb-3">
     <%= form.label :selection_strategy_id, class: 'form-label' %>
-    <%= form.collection_select(:selection_strategy_id, SelectionStrategy.all, :id, :name, { prompt: true }, required: true, class: 'form-control') %>
-    <div class="form-text">Today, we only support a single strategy which is a single person rates each query/doc pair, similar to how core Quepid works.</div>
+    <%= form.collection_select(:selection_strategy_id, SelectionStrategy.all, :id, :descriptive_name, { prompt: true }, required: true, class: 'form-control') %>
+
   </div>
 
   <br>

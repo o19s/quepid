@@ -75,7 +75,7 @@
         ></change-team-owner>
 
         <p ng-if="currentUser.id !== currentTeam.owner.id">
-          Only the owner, {{ currentTeam.owner.display_name }}, can change the owner of the team.
+          Only the owner, {{ currentTeam.owner.display_name }}, can change the ownership of the team.
         </p>
       </div>
     </div>
@@ -129,7 +129,7 @@
             <label
               class="btn btn-default"
               ng-controller="CaseCtrl"
-              ng-click="caseModel.unarchive()"
+              ng-click="caseModel.unarchive(currentTeam)"
             >
               Archived Cases
             </label>
@@ -146,13 +146,24 @@
       <div id='cases-listing' ng-if="currentTeam.cases.length !== 0">
         <div class="row listing-header">
           <span class="col-xs-1">ID</span>
-            <span class="col-xs-3">Case Title</span>
-            <span class="col-xs-1">Last Try #</span>
-            <span class="col-xs-1"># of Queries</span>
-            <span class="col-xs-1">Last Score</span>
-            <span class="col-xs-1">Last Run On</span>
-            <span class="col-xs-2">Last Run By</span>
-            <span class="col-xs-2">Owner</span>
+          <span class="col-xs-2">Case Title</span>
+          <span class="col-xs-1">Last Try #</span>
+          <span class="col-xs-1"># of Queries</span>
+          <span class="col-xs-1">Last Score</span>
+          <span class="col-xs-1">Last Run On</span>
+          <span class="col-xs-2">Last Run By</span>
+          <span class="col-xs-2">Associated
+            <div class="row">
+               <div class="col-xs-6">
+                 Judgements
+               </div>
+               <div class="col-xs-6">
+                 Teams
+               </div>
+             </div>
+          </span>
+
+          <span class="col-xs-1">Owner</span>
         </div>
 
         <ul class="cases-list" ng-model="currentTeam.cases">
@@ -197,7 +208,7 @@
       <p ng-if="currentTeam.books.length == 0">
         No judgements to show!
       </p>
-    </div> <!-- .team-books -->    
+    </div> <!-- .team-books -->
 
     <div class="clearfix"></div>
 

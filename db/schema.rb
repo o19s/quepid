@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2023_02_01_122058) do
+ActiveRecord::Schema.define(version: 2023_03_07_182739) do
 
   create_table "annotations", id: :integer, charset: "utf8", force: :cascade do |t|
     t.text "message"
@@ -146,6 +146,7 @@ ActiveRecord::Schema.define(version: 2023_02_01_122058) do
     t.string "name"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
+    t.string "description"
   end
 
   create_table "snapshot_docs", id: :integer, charset: "latin1", force: :cascade do |t|

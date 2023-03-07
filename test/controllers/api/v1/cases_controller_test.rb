@@ -180,6 +180,51 @@ module Api
           end
         end
 
+        describe 'archiving user takes over ownership of a case' do
+          let(:shared_team_case)  { cases(:shared_team_case) }
+          let(:matt_case)         { cases(:matt_case) }
+          let(:team_member_1)     { users(:team_member_1) }
+          let(:team_member_1)     { users(:team_member_1) }
+
+          before do
+            login_user team_member_1
+          end
+
+          test 'let team_member_1 archive team_owner case even though he is not the owner' do
+            # Make sure the team member doesn't own the case.
+            assert_not_includes team_member_1.owned_team_cases, shared_team_case
+            assert_not_equal shared_team_case, shared_team_case.owner
+            # make sure the team member IS involved with case via team membership however.
+            assert_includes team_member_1.cases_involved_with, shared_team_case
+
+            put :update, params: { case_id: shared_team_case.id, case: { archived: true } }
+            assert_response :ok
+
+            team_member_1.reload
+            shared_team_case.reload
+
+            # assert_includes team_member_1.owned_team_cases, shared_team_case
+            assert_equal team_member_1, shared_team_case.owner
+          end
+
+          test 'prevent team_member_1 archive matt_case since he isnt invovled with the case' do
+            # Make sure the team member doesn't own the case.
+            assert_not_includes team_member_1.owned_team_cases, matt_case
+            assert_not_includes team_member_1.shared_team_cases, matt_case
+            # make sure the team member isn't involved with case via team membership however.
+            assert_not_includes team_member_1.cases_involved_with, matt_case
+
+            put :update, params: { case_id: matt_case.id, case: { archived: true } }
+            assert_response :not_found
+
+            team_member_1.reload
+            shared_team_case.reload
+
+            assert_not_includes team_member_1.owned_team_cases, matt_case
+            assert_not_equal team_member_1, matt_case.owner
+          end
+        end
+
         describe 'analytics' do
           let(:one) { cases(:one) }
 

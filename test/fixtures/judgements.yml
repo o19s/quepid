@@ -37,3 +37,8 @@ low_judgement:
   user_id: 1
   rating: 0
   query_doc_pair: :qdp2
+
+qdp10_judgement:
+  user_id: 1
+  rating: 1
+  query_doc_pair: :qdp10
