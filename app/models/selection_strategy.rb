@@ -4,10 +4,11 @@
 #
 # Table name: selection_strategies
 #
-#  id         :bigint           not null, primary key
-#  name       :string(255)
-#  created_at :datetime         not null
-#  updated_at :datetime         not null
+#  id          :bigint           not null, primary key
+#  description :string(255)
+#  name        :string(255)
+#  created_at  :datetime         not null
+#  updated_at  :datetime         not null
 #
 class SelectionStrategy < ApplicationRecord
   # Randomly select a query doc where we don't have any judgements, and weight it by the position,

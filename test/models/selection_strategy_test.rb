@@ -4,10 +4,11 @@
 #
 # Table name: selection_strategies
 #
-#  id         :bigint           not null, primary key
-#  name       :string(255)
-#  created_at :datetime         not null
-#  updated_at :datetime         not null
+#  id          :bigint           not null, primary key
+#  description :string(255)
+#  name        :string(255)
+#  created_at  :datetime         not null
+#  updated_at  :datetime         not null
 #
 require 'test_helper'
 
@@ -52,7 +53,7 @@ class SelectionStrategyTest < ActiveSupport::TestCase
     end
   end
 
-  describe 'mulitiple raters per query doc pair strategy' do
-    assert true
-  end
+  # describe 'mulitiple raters per query doc pair strategy' do
+  #  assert true
+  # end
 end
