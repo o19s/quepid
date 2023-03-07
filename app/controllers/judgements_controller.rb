@@ -23,6 +23,7 @@ class JudgementsController < ApplicationController
 
   def create
     @judgement = Judgement.new(judgement_params)
+    @judgement.user = current_user
 
     if @judgement.save
       session['last_judgement_id'] = @judgement['id']
@@ -34,6 +35,7 @@ class JudgementsController < ApplicationController
 
   def update
     @judgement.update(judgement_params)
+    @judgement.user = current_user
     if @judgement.save
       redirect_to book_judge_path(@book)
     else
