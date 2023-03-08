@@ -32,15 +32,6 @@ class SelectionStrategyTest < ActiveSupport::TestCase
         assert_empty book.judgements
       end
 
-      # test "we weight linearly the position, with 1 being higher then 6" do
-
-      # 100.times do
-      #  query_doc_pair = SelectionStrategy.random_query_doc_pair_for_single_judge(book)
-      #  puts "Position: #{query_doc_pair.position}"
-      # end
-
-      # end
-
       it 'draws Sean Connery way more then George Lazenby due to postion in results' do
         # there can be false positive failures due to the RAND() in mysql...
         sean_connery_picks = times_drawn('SeanConnery', book)
@@ -58,6 +49,7 @@ class SelectionStrategyTest < ActiveSupport::TestCase
       let(:matt)                { users(:matt) }
       let(:joe)                 { users(:joe) }
       let(:jane)                { users(:jane) }
+      let(:doug)                { users(:doug) }
 
       before do
         book.query_doc_pairs.each { |query_doc_pair| query_doc_pair.judgements.delete_all }
@@ -83,6 +75,7 @@ class SelectionStrategyTest < ActiveSupport::TestCase
           query_doc_pair.judgements.create rating: 2.0, user: matt
         end
         book.reload
+
         # We have rated wide, so every query doc pair has one rating.
         book.query_doc_pairs.each { |qdp| assert_equal 1, qdp.judgements.size }
         book.query_doc_pairs.each { |qdp| assert_equal matt, qdp.judgements.first.user }
@@ -96,18 +89,23 @@ class SelectionStrategyTest < ActiveSupport::TestCase
           query_doc_pair.judgements.create rating: 3.0, user: jane
         end
         book.reload
-        # We have rated deep, so should have 3 judgements for each one
-        book.query_doc_pairs.each { |qdp| assert_equal 3, qdp.judgements.size, "Error: #{pp qdp.judgements}" }
+
+        # We have rated deep, so should have 3 judgements for each query doc pair
+        book.query_doc_pairs.each { |qdp| assert_equal 3, qdp.judgements.size }
         book.query_doc_pairs.each do |qdp|
           users = qdp.judgements.collect(&:user)
-          #           puts "here are users: #{users}"
           assert_includes users, matt
-          # assert_includes users, joe
-          # assert_includes users, jane
+          assert_includes users, joe
+          assert_includes users, jane
         end
 
         # No moar to be rated
+        assert_nil SelectionStrategy.random_query_doc_based_on_strategy(book, matt)
         assert_nil SelectionStrategy.random_query_doc_based_on_strategy(book, joe)
+        assert_nil SelectionStrategy.random_query_doc_based_on_strategy(book, jane)
+
+        # unfortunantly, you can have a fourth person do rating as well ;-)  No limits.
+        assert_not_nil SelectionStrategy.random_query_doc_based_on_strategy(book, doug)
       end
     end
   end

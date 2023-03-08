@@ -37,9 +37,8 @@ class SelectionStrategy < ApplicationRecord
   end
 
   # First go wide by getting a rating for every query, then start going deeper by
-  # randomly selecting a query doc where we have less than or equal to two judgements, and weight it by the position,
-  # so that position of 1 should be returned more often than a position of 5 or 10.
-  # we filter outselves out as well, so that if we have rated everything we can, we return nil.
+  # Struggled to get this to work, so now I don't think we have a good depth limit
+
   def self.random_query_doc_pair_for_multiple_judges book, user
     query_doc_pair = random_query_doc_pair_for_single_judge(book)
     if query_doc_pair.nil?
@@ -49,9 +48,14 @@ class SelectionStrategy < ApplicationRecord
       #  .having('count(*) < ? ', 3)
       ##  .first
 
+      # wish this was one query ;-)
       already_judged_query_doc_pair_ids = book.judgements.where(user_id: user.id).pluck(:query_doc_pair_id)
 
-      query_doc_pair = book.query_doc_pairs.where.not(id: already_judged_query_doc_pair_ids ).joins(:judgements).order(Arel.sql('-LOG(1.0 - RAND()) * position')).first
+      query_doc_pair = book.query_doc_pairs
+        .where.not(id: already_judged_query_doc_pair_ids )
+        .joins(:judgements)
+        .order(Arel.sql('-LOG(1.0 - RAND()) * position'))
+        .first
 
     end
     query_doc_pair
