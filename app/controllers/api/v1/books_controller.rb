@@ -9,6 +9,7 @@ module Api
       before_action :check_book, only: [ :show ]
 
       # rubocop:disable Metrics/MethodLength
+      # rubocop:disable Metrics/AbcSize
       def show
         respond_to do |format|
           format.json
@@ -37,6 +38,7 @@ module Api
         end
       end
       # rubocop:enable Metrics/MethodLength
+      # rubocop:enable Metrics/AbcSize
 
       private
 
