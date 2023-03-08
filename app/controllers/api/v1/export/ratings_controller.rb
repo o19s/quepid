@@ -82,8 +82,6 @@ module Api
         # rubocop:enable Metrics/PerceivedComplexity
         # rubocop:enable Metrics/BlockLength
 
-        private
-
         def make_csv_safe str
           if %w[- = + @].include?(str[0])
             " #{str}"
@@ -91,6 +89,8 @@ module Api
             str
           end
         end
+
+        private
 
         # https://stackoverflow.com/questions/5608918/pad-an-array-to-be-a-certain-size
         # rubocop:disable Naming/MethodParameterName
