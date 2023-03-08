@@ -23,6 +23,7 @@ class SelectionStrategyTest < ActiveSupport::TestCase
     counter
   end
 
+  # rubocop:disable Style/CombinableLoops
   describe 'single rater per query doc pair strategy' do
     describe 'return a weighted random based on position' do
       let(:book) { books(:james_bond_movies) }
@@ -109,4 +110,5 @@ class SelectionStrategyTest < ActiveSupport::TestCase
       end
     end
   end
+  # rubocop:enable Style/CombinableLoops
 end
