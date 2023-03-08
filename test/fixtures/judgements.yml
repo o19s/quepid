@@ -24,21 +24,21 @@ one:
   query_doc_pair: one
 
 two:
-  user_id: 1
-  rating: 1.5
+  user: :random
+  rating: 2
   query_doc_pair: two
 
 high_judgement:
-  user_id: 1
+  user: :doug
   rating: 3
   query_doc_pair: :qdp1
 
 low_judgement:
-  user_id: 1
+  user: :random
   rating: 0
   query_doc_pair: :qdp2
 
 qdp10_judgement:
-  user_id: 1
+  user: :doug
   rating: 1
   query_doc_pair: :qdp10

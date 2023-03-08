@@ -117,6 +117,7 @@ case_finder_user:
 random:
   <<: *default
   email: random@example.com
+  name: Random User
   administrator: false
 
 # This is user is used randomly when we need a user without affecting

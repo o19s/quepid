@@ -26,7 +26,7 @@ book_of_star_wars_judgements:
   name: TMDB Star Wars Judgements
 
 book_of_comedy_films:
-  team: :shared
+  team: :another_shared_team
   scorer: :quepid_default_scorer
   selection_strategy: :single_rater
   name: TMDB Greatest Comedies
