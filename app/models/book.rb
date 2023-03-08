@@ -39,4 +39,9 @@ class Book < ApplicationRecord
     ', user.id)
       .order(name: :desc)
   }
+
+  has_many :rated_query_doc_pairs, -> { has_judgements },
+           class_name: 'QueryDocPair',
+           dependent:  :destroy,
+           inverse_of: :book
 end

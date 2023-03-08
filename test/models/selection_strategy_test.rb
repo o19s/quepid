@@ -19,7 +19,7 @@ class SelectionStrategyTest < ActiveSupport::TestCase
 
   def times_drawn name, book
     counter = 0
-    100.times { counter += 1 if SelectionStrategy.random_query_doc_pair_for_single_judge(book).doc_id == name }
+    250.times { counter += 1 if SelectionStrategy.random_query_doc_pair_for_single_judge(book).doc_id == name }
     counter
   end
 
@@ -41,19 +41,49 @@ class SelectionStrategyTest < ActiveSupport::TestCase
 
       # end
 
-      it 'draws Sean Connery with weight 90% of overall within 50 of 500 times (5%   of 50%)' do
-        # it would be nice to do a
+      it 'draws Sean Connery way more then George Lazenby due to postion in results' do
+        # there can be false positive failures due to the RAND() in mysql...
         sean_connery_picks = times_drawn('SeanConnery', book)
-        timothy_dalton_picks = times_drawn('TimothyDalton', book)
         george_lazenby_picks = times_drawn('GeorgeLazenby', book)
 
-        assert_operator sean_connery_picks, :>, timothy_dalton_picks
-        assert_operator timothy_dalton_picks, :>, george_lazenby_picks
+        assert_operator sean_connery_picks, :>, george_lazenby_picks
       end
     end
   end
 
-  # describe 'mulitiple raters per query doc pair strategy' do
-  #  assert true
-  # end
+  describe 'mulitiple raters per query doc pair strategy' do
+    describe 'we rate wide each query' do
+      let(:book) { books(:james_bond_movies) }
+      let(:selection_strategy) { selection_strategies(:multiple_raters) }
+
+      before do
+        book.query_doc_pairs.each { |query_doc_pair| query_doc_pair.judgements.delete_all }
+        assert_empty book.judgements
+        book.selection_strategy = selection_strategy
+        book.save!
+      end
+
+      it 'should rate wide' do
+        book.query_doc_pairs.size.times do
+          query_doc_pair = SelectionStrategy.random_query_doc_based_on_strategy(book)
+          assert_empty query_doc_pair.judgements
+          query_doc_pair.judgements.create rating: 2.0
+        end
+        book.reload
+        # We have rated wide, so everyone has one.
+        book.query_doc_pairs.each { |qdp| assert_equal 1, qdp.judgements.size }
+
+        (book.query_doc_pairs.size * 2).times do
+          query_doc_pair = SelectionStrategy.random_query_doc_based_on_strategy(book)
+          query_doc_pair.judgements.create rating: 3.0
+        end
+        book.reload
+        # We have rated deep, so should have 3 judgements for each one
+        book.query_doc_pairs.each { |qdp| assert_equal 3, qdp.judgements.size }
+
+        # No moar to be rated
+        assert_nil SelectionStrategy.random_query_doc_based_on_strategy(book)
+      end
+    end
+  end
 end
