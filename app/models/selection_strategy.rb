@@ -11,12 +11,16 @@
 #  updated_at  :datetime         not null
 #
 class SelectionStrategy < ApplicationRecord
-  def self.random_query_doc_based_on_strategy book
+  def single_rater?
+    'Single Rater' == name
+  end
+
+  def self.random_query_doc_based_on_strategy book, user
     case book.selection_strategy.name
     when 'Single Rater'
       random_query_doc_pair_for_single_judge(book)
     when 'Multiple Raters'
-      random_query_doc_pair_for_multiple_judges(book)
+      random_query_doc_pair_for_multiple_judges(book, user)
     else
       raise "#{book.selection_strategy.name} is unknown!"
     end
@@ -33,16 +37,22 @@ class SelectionStrategy < ApplicationRecord
   end
 
   # First go wide by getting a rating for every query, then start going deeper by
-  # randomly selecting a query doc where we have less than or equal to three judgements, and weight it by the position,
+  # randomly selecting a query doc where we have less than or equal to two judgements, and weight it by the position,
   # so that position of 1 should be returned more often than a position of 5 or 10.
-  def self.random_query_doc_pair_for_multiple_judges book
+  # we filter outselves out as well, so that if we have rated everything we can, we return nil.
+  def self.random_query_doc_pair_for_multiple_judges book, user
     query_doc_pair = random_query_doc_pair_for_single_judge(book)
     if query_doc_pair.nil?
-      query_doc_pair = book.query_doc_pairs.joins(:judgements)
-        .group(:query_doc_pair_id)
-        .having('count(*) < ? ', 3)
-        .order(Arel.sql('-LOG(1.0 - RAND()) * position'))
-        .first
+      # query_doc_pair = book.query_doc_pairs.joins(:judgements)
+      #  .where.not(:judgements => { user_id: user.id })
+      #  .group(:query_doc_pair_id)
+      #  .having('count(*) < ? ', 3)
+      ##  .first
+
+      already_judged_query_doc_pair_ids = book.judgements.where(user_id: user.id).pluck(:query_doc_pair_id)
+
+      query_doc_pair = book.query_doc_pairs.where.not(id: already_judged_query_doc_pair_ids ).joins(:judgements).order(Arel.sql('-LOG(1.0 - RAND()) * position')).first
+
     end
     query_doc_pair
   end
