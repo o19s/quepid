@@ -26,4 +26,6 @@ class QueryDocPair < ApplicationRecord
   has_many :judgements, dependent: :destroy
 
   validates :position, numericality: { only_integer: true }, allow_nil: true
+
+  scope :has_judgements, -> { joins(:judgements) }
 end

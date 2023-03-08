@@ -9,5 +9,8 @@
 #  updated_at  :datetime         not null
 #
 
-super_crazy_picker:
-  name: Super Crazy Picker
+single_rater:
+  name: Single Rater
+
+multiple_raters:
+  name: Multiple Raters

@@ -9,17 +9,21 @@ module Api
         before_action :set_case, only: [ :update ]
         before_action :check_case, only: [ :update ]
 
+        # rubocop:disable Metrics/MethodLength
         def update
           @counts = {}
           rating_count = 0
           query_count = 0
 
-          @book.judgements.each do |judgement|
-            query = Query.find_or_initialize_by(case: @case, query_text: judgement.query_doc_pair.query_text)
+          @book.rated_query_doc_pairs.each do |query_doc_pair|
+            query = Query.find_or_initialize_by(case: @case, query_text: query_doc_pair.query_text)
             query_count += 1 if query.new_record?
-            rating = Rating.find_or_initialize_by(query: query, doc_id: judgement.query_doc_pair.doc_id)
+            rating = Rating.find_or_initialize_by(query: query, doc_id: query_doc_pair.doc_id)
             rating_count += 1 if rating.new_record?
-            rating.rating = judgement.rating.round # only have ints today in Quepid Ratings.
+            summed_rating = query_doc_pair.judgements.sum(&:rating)
+            count_of_judgements = query_doc_pair.judgements.size
+            rating.rating = (summed_rating / count_of_judgements).round # only have ints today in Quepid Ratings.
+
             rating.save
             query.save
           end
@@ -27,6 +31,7 @@ module Api
           @counts['ratings_created'] = rating_count
           respond_with @counts
         end
+        # rubocop:enable Metrics/MethodLength
 
         private
 
