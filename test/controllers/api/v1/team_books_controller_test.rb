@@ -30,7 +30,7 @@ module Api
           ids = books.map { |book| book['id'] }
 
           assert_includes ids, book1.id
-          #assert_includes ids, book2.id
+          # assert_includes ids, book2.id
         end
       end
     end
