@@ -10,6 +10,9 @@ module Api
 
       # rubocop:disable Metrics/MethodLength
       # rubocop:disable Metrics/AbcSize
+      # rubocop:disable Metrics/CyclomaticComplexity
+      # rubocop:disable Metrics/PerceivedComplexity
+      # rubocop:disable Metrics/BlockLength
       def show
         respond_to do |format|
           format.json
@@ -47,6 +50,9 @@ module Api
       end
       # rubocop:enable Metrics/MethodLength
       # rubocop:enable Metrics/AbcSize
+      # rubocop:enable Metrics/CyclomaticComplexity
+      # rubocop:enable Metrics/PerceivedComplexity
+      # rubocop:enable Metrics/BlockLength
 
       private
 
