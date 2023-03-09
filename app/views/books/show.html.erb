@@ -40,3 +40,14 @@ Books organize all the query/doc pairs that are needed for evaluating your searc
 <%= button_to 'Return to Case', root_path, method: :get %>
 
 <br/>
+<h3>Export Data</h3>
+<p>
+  You want to export your judgements?   I hear you!  You can do so in CSV and JSON ;-)
+</p>
+<p>
+Export in <%= link_to 'CSV', api_book_path(@book, format: :csv) %> or <%= link_to 'JSON', api_book_path(@book) %>
+</p>
+<p>
+To reference these judgements from a notebook or another system you can reference these Quepid API endpoints:
+<code><%= api_book_path(@book, format: :csv) %></code> or <code><%= api_book_path(@book) %></code>
+<p>
