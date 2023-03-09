@@ -348,7 +348,7 @@
             <% @rating_buttons.each do |b| %>
             <tr>
               <td><%= button_tag b["label"], type: 'button', class: "btn #{b["class"]}" %></td>
-              <td><%= scoring_guidelines[b["label"]].html_safe %></td>
+              <td><%= scoring_guidelines.has_key?(b["label"]) ? scoring_guidelines[b["label"]].html_safe : '' %></td>
             </tr>
             <% end %>
           </tbody>
