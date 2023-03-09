@@ -71,9 +71,7 @@ module Api
               headers['Content-Type'] ||= 'text/csv'
             end
             format.txt do
-              if 'trec_snapshot' == file_format
-                @snapshot = @case.snapshots.find_by(id: params[:snapshot_id])
-              end
+              @snapshot = @case.snapshots.find_by(id: params[:snapshot_id]) if 'trec_snapshot' == file_format
               headers['Content-Disposition'] = "attachment; filename=\"case_#{@case.id}_#{file_format}.txt\""
               headers['Content-Type'] ||= 'text/plain'
 
