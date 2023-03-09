@@ -34,7 +34,7 @@ module Api
 
               if 'basic_snapshot' == file_format
                 csv_filename = "case_#{@case.id}_snapshot_judgements.csv"
-                snapshot = Snapshot.find_by(id: params[:snapshot_id])
+                snapshot = @case.snapshots.find_by(id: params[:snapshot_id])
 
                 snapshot.snapshot_queries.each do |snapshot_query|
                   if snapshot_query.snapshot_docs.empty?
@@ -71,8 +71,14 @@ module Api
               headers['Content-Type'] ||= 'text/csv'
             end
             format.txt do
-              headers['Content-Disposition'] = "attachment; filename=\"case_#{@case.id}_judgements.txt\""
+              if 'trec_snapshot' == file_format
+                @snapshot = @case.snapshots.find_by(id: params[:snapshot_id])
+              end
+              headers['Content-Disposition'] = "attachment; filename=\"case_#{@case.id}_#{file_format}.txt\""
               headers['Content-Type'] ||= 'text/plain'
+
+              text_template = file_format.nil? ? 'show' : "show_#{file_format.downcase}"
+              render text_template, formats: :txt
             end
           end
         end

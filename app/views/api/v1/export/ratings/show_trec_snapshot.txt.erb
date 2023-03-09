@@ -1,0 +1,9 @@
+<%
+@snapshot.snapshot_queries.sort_by(&:id).each do |snapshot_query|
+  snapshot_query.snapshot_docs.each do |snapshot_doc|
+    rating = Rating.find_by(query_id: snapshot_query.query.id, doc_id: snapshot_doc.doc_id)
+   %>
+<%= snapshot_query.query.id %> 0 <%= snapshot_doc.doc_id %> <%= rating.rating %>
+<%
+  end
+end %>
