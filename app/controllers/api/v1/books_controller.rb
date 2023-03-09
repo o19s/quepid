@@ -18,15 +18,23 @@ module Api
             csv_headers = %w[query docid]
 
             unique_raters = @book.judgements.collect(&:user).uniq
-            unique_raters.each { |rater| csv_headers << make_csv_safe(rater.name) }
+            unique_raters.each { |rater| csv_headers << make_csv_safe(rater.nil? ? 'Unknown' : rater.name) }
 
             @csv_array << csv_headers
 
             @book.query_doc_pairs.each do |qdp|
               row = [ make_csv_safe(qdp.query_text), qdp.doc_id ]
               unique_raters.each do |rater|
-                judgement = qdp.judgements.where(user_id: rater.id).first
-                rating = judgement.nil? ? '' : judgement.rating
+                user_id = rater&.id
+                judgements = qdp.judgements.where(user_id: user_id)
+                if judgements.empty?
+                  rating = ''
+                elsif 1 == judgements.size
+                  judgement = judgements.first
+                  rating = judgement.nil? ? '' : judgement.rating
+                else
+                  rating = judgements.pluck(:rating).join('|')
+                end
                 row.append rating
               end
               @csv_array << row
