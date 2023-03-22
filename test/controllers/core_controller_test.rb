@@ -38,10 +38,6 @@ class CoreControllerTest < ActionController::TestCase
 
       try_info = TRY_INFO.match(response.body)
       assert_equal the_try.try_number.to_s, try_info[1]
-
-      puts "Here is search #{the_try.search_url}"
-
-      puts "Request SSL: #{request.ssl?}"
     end
 
     test 'bootstraps case with HTTPS search_engine ' do
@@ -50,11 +46,8 @@ class CoreControllerTest < ActionController::TestCase
 
       get :index
 
-      puts response.body
       assert_response :redirect
       assert response.body.include?('<a href="https://test.host/">redirected</a>')
-
-      puts "Request SSL: #{request.ssl?}"
     end
 
     test 'bootstraps non deleted/archived case' do

@@ -167,7 +167,7 @@ file_format: 'basic_snapshot' }
           let(:the_case) { cases(:one) }
 
           test 'returns case info' do
-            get :show, params: { case_id: the_case.id, format: :txt }
+            get :show, params: { case_id: the_case.id, format: :txt, file_format: 'ltr' }
             assert_response :ok
 
             # rubocop:disable  Lint/UselessAssignment

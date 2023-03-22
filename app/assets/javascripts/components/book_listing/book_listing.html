@@ -1,0 +1,33 @@
+<div class="item-box row">
+  <div class="col-xs-4">
+    {{ ctrl.book.name }}
+
+    <span class="item-actions">
+      <a ng-href="/books/{{ctrl.book.id}}/judge" target="_self" class="action-icon">
+        <i
+          class="bi bi-book-half"
+          aria-hidden="true"
+          title="Make Judgements"
+          alt="Make Judgements"
+        ></i>
+      </a>
+
+      <a ng-href="/books/{{ctrl.book.id}}/edit" target="_self" class="action-icon">
+        <i
+          class="fa fa-edit"
+          aria-hidden="true"
+          title="Edit"
+          alt="Edit"
+        ></i>
+      </a>
+    </span>
+  </div>
+
+  <div class="col-xs-4">
+    {{ ctrl.book.selectionStrategy }}
+  </div>
+
+  <div class="col-xs-4">
+    <i>Not Yet Implemented</i>
+  </div>
+</div>

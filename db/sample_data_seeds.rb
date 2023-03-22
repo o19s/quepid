@@ -313,6 +313,8 @@ print_step "Seeding teams................"
 
 osc = Team.where(owner_id: osc_owner_user.id, name: 'OSC').first_or_create
 osc.members << osc_member_user
+osc.members << realistic_activity_user
+osc.cases << tens_of_queries_case
 print_step "End of seeding teams................"
 
 # Big Cases

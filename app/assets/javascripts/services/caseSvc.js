@@ -48,6 +48,7 @@ angular.module('QuepidApp')
         theCase.scorerId          = data.scorer_id;
         theCase.owned             = data.owned;
         theCase.ownerName         = data.owner_name;
+        theCase.ownerId           = data.owner_id;
         theCase.bookId            = data.book_id;
         theCase.bookName          = data.book_name;
         theCase.queriesCount      = data.queriesCount;
@@ -222,7 +223,14 @@ angular.module('QuepidApp')
             var data    = response.data;
             var newCase = new Case(data);
 
-            svc.allCases.splice(svc.allCases.indexOf(newCase), 1);
+            // the .filter() should work, but doesn't so instead combine with a splice.
+            var indexOfCase = svc.allCases.indexOf( svc.allCases.filter( function (item) {
+              return item.caseNo === newCase.caseNo;
+            })[0] );
+            svc.allCases.splice(indexOfCase, 1);
+            //svc.allCases = svc.allCases.filter( function(acase) {
+            //  acase.caseNo !== newCase.caseNo;
+            //});
             svc.archived.push(newCase);
 
             broadcastSvc.send('updatedCasesList', svc.allCases);

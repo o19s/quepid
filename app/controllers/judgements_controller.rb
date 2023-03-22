@@ -8,26 +8,28 @@ class JudgementsController < ApplicationController
     @judgements = @book.judgements
   end
 
-  def show; end
+  def show
+    @query_doc_pair = @judgement.query_doc_pair
+    @query = @current_user.queries.has_information_need.where(query_text: @query_doc_pair.query_text).first
+  end
 
-  # rubocop:disable Layout/LineLength
   def new
-    @query_doc_pair = @book.random_query_doc_pair_for_rating
+    @query_doc_pair = SelectionStrategy.random_query_doc_based_on_strategy(@book, current_user)
+    redirect_to book_path(@book) if @query_doc_pair.nil? # no more query doc pairs to be judged!
     if @query_doc_pair
-      @query = @current_user.queries.where(query_text: @query_doc_pair.query_text).where.not(information_need: [ nil,
-                                                                                                                 '' ]).first
+      @query = @current_user.queries.has_information_need.where(query_text: @query_doc_pair.query_text).first
     end
     @judgement = Judgement.new
   end
-  # rubocop:enable Layout/LineLength
 
   def edit; end
 
   def create
     @judgement = Judgement.new(judgement_params)
+    @judgement.user = current_user
 
     if @judgement.save
-      session['last_judgement_id'] = @judgement['id']
+      session['previous_judgement_id'] = @judgement.id
       redirect_to book_judge_path(@book)
     else
       render action: :edit
@@ -36,6 +38,7 @@ class JudgementsController < ApplicationController
 
   def update
     @judgement.update(judgement_params)
+    @judgement.user = current_user
     if @judgement.save
       redirect_to book_judge_path(@book)
     else

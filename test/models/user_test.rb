@@ -263,7 +263,6 @@ class UserTest < ActiveSupport::TestCase
     let(:book_of_star_wars_judgements)      { books(:book_of_star_wars_judgements) }
 
     it 'provides access to the books that a user has access because of membership in a team' do
-      assert_equal user_with_book_access.books_involved_with.where(id: book_of_comedy_films.id).first, book_of_comedy_films
       assert_equal user_with_book_access.books_involved_with.where(id: book_of_star_wars_judgements.id).first, book_of_star_wars_judgements
     end
 

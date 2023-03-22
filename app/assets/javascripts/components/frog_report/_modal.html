@@ -43,7 +43,7 @@
   </div>
 </div>
 <div class="modal-footer">
-  <a class="btn btn-default" ng-click="ctrl.refreshRatingsFromBook()" ng-disabled="processingPrompt.inProgress">
+  <a class="btn btn-default" ng-if="ctrl.theCase.bookName" ng-click="ctrl.refreshRatingsFromBook()" ng-disabled="processingPrompt.inProgress">
     <i class="glyphicon glyphicon-refresh"></i>
     Refresh ratings from book <i>{{ctrl.theCase.bookName}}</i>
   </a>

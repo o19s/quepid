@@ -30,19 +30,25 @@
 
     <div class="team-stats col-xs-6 col-sm-6 col-md-4 col-lg-4">
       <div class="vcard-stats border-bottom row">
-        <span class="vcard-stat col-sm-4">
+        <span class="vcard-stat col-sm-3">
           <strong class="vcard-stat-count d-block">
             {{ currentTeam.members.length }}
           </strong>
           <span class="text-muted d-block">Members</span>
         </span>
-        <span class="vcard-stat col-sm-4">
+        <span class="vcard-stat col-sm-3">
           <strong class="vcard-stat-count d-block">
             {{ currentTeam.cases.length }}
           </strong>
           <span class="text-muted d-block">Cases</span>
         </span>
-        <span class="vcard-stat col-sm-4">
+        <span class="vcard-stat col-sm-3">
+          <strong class="vcard-stat-count d-block">
+            {{ currentTeam.books.length }}
+          </strong>
+          <span class="text-muted d-block">Books</span>
+        </span>
+        <span class="vcard-stat col-sm-3">
           <strong class="vcard-stat-count d-block">
             {{ currentTeam.scorers.length }}
           </strong>
@@ -69,7 +75,7 @@
         ></change-team-owner>
 
         <p ng-if="currentUser.id !== currentTeam.owner.id">
-          Only the owner, {{ currentTeam.owner.display_name }}, can change the owner of the team.
+          Only the owner, {{ currentTeam.owner.display_name }}, can change the ownership of the team.
         </p>
       </div>
     </div>
@@ -123,7 +129,7 @@
             <label
               class="btn btn-default"
               ng-controller="CaseCtrl"
-              ng-click="caseModel.unarchive()"
+              ng-click="caseModel.unarchive(currentTeam)"
             >
               Archived Cases
             </label>
@@ -140,13 +146,24 @@
       <div id='cases-listing' ng-if="currentTeam.cases.length !== 0">
         <div class="row listing-header">
           <span class="col-xs-1">ID</span>
-            <span class="col-xs-3">Case Title</span>
-            <span class="col-xs-1">Last Try #</span>
-            <span class="col-xs-1"># of Queries</span>
-            <span class="col-xs-1">Last Score</span>
-            <span class="col-xs-1">Last Run On</span>
-            <span class="col-xs-2">Last Run By</span>
-            <span class="col-xs-2">Owner</span>
+          <span class="col-xs-2">Case Title</span>
+          <span class="col-xs-1">Last Try #</span>
+          <span class="col-xs-1"># of Queries</span>
+          <span class="col-xs-1">Last Score</span>
+          <span class="col-xs-1">Last Run On</span>
+          <span class="col-xs-2">Last Run By</span>
+          <span class="col-xs-2">Associated
+            <div class="row">
+               <div class="col-xs-6">
+                 Judgements
+               </div>
+               <div class="col-xs-6">
+                 Teams
+               </div>
+             </div>
+          </span>
+
+          <span class="col-xs-1">Owner</span>
         </div>
 
         <ul class="cases-list" ng-model="currentTeam.cases">
@@ -160,6 +177,38 @@
         No cases to show!
       </p>
     </div> <!-- .team-cases -->
+
+    <div class="clearfix"></div>
+
+    <div class='team-judgements col-md-12'>
+      <h3>Judgements</h3>
+
+      <div class="row">
+        <div class="col-md-offset-8 col-md-4 filter-form">
+          <input type="search" ng-model="q2" placeholder="Filter books" aria-label="filter books" class="form-control" id='team-books-filter' />
+        </div>
+      </div>
+
+      <div class="clearfix"></div>
+
+      <div id='books-listing' ng-if="currentTeam.books.length !== 0">
+        <div class="row listing-header">
+          <span class="col-md-4">Name</span>
+          <span class="col-md-4">Selection Strategy</span>
+          <span class="col-md-4">Number of Query/Doc Pairs</span>
+        </div>
+
+        <ul class="books-list" ng-model="currentTeam.books">
+          <li ng-repeat="book in currentTeam.books | filter:q3" class="books-list-item">
+            <book-listing book="book" team="currentTeam"></book-listing>
+          </li>
+        </ul>
+      </div>
+
+      <p ng-if="currentTeam.books.length == 0">
+        No judgements to show!
+      </p>
+    </div> <!-- .team-books -->
 
     <div class="clearfix"></div>
 
@@ -193,5 +242,6 @@
         No scorers to show!
       </p>
     </div> <!-- .team-scorers -->
+
   </div> <!-- .row -->
 </div>

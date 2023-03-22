@@ -9,7 +9,7 @@ angular.module('QuepidApp')
     function teamSvc($http, broadcastSvc) {
       this.teams = [];
 
-      var Team = function(id, name, ownerId, owner, cases, cases_count, members, scorers, owned) {
+      var Team = function(id, name, ownerId, owner, cases, cases_count, members, scorers, owned, books) {
         this.id           = id;
         this.name         = name;
         this.ownerId      = ownerId;
@@ -19,18 +19,39 @@ angular.module('QuepidApp')
         this.members      = members;
         this.scorers      = scorers;
         this.owned        = owned;
+        this.books        = books;
 
 
         angular.forEach(this.cases, function(c) {
           // This is really ugly.  We don't use our standard CaseSvc mapping, and probably should!
+          c.caseNo = c.case_id;
+          delete c.case_id;
+          c.lastScore = c.last_score;
+          delete c.last_score;
           c.caseName = c.case_name;
+          delete c.case_name;
           c.ownerName = c.owner_name;
+          delete c.owner_name;
+          c.ownerId = c.owner_id;
+          delete c.owner_id;
           c.lastTry  = c.last_try_number;
+          delete c.last_try_number;
+          c.bookName = c.book_name;
+          delete c.book_name;
+          c.bookId = c.book_id;
+          delete c.book_id;
         });
 
         angular.forEach(this.scorers, function(s) {
           // This is really ugly.  We don't use our standard ScorerFactory mapping, and probably should!
           s.ownerName = s.owner_name;
+          delete s.owner_name;
+        });
+
+        angular.forEach(this.books, function(b) {
+          // This is really ugly.  We don't use our standard book mapping, and probably should!
+          b.selectionStrategy = b.selection_strategy;
+          delete b.selection_strategy;
         });
 
 
@@ -46,7 +67,8 @@ angular.module('QuepidApp')
           data.cases_count,
           data.members,
           data.scorers,
-          data.owned
+          data.owned,
+          data.books
         );
       };
 

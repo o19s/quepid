@@ -224,4 +224,22 @@ class QueryTest < ActiveSupport::TestCase
       assert_includes query.ratings.fully_rated, rating_with_rating
     end
   end
+
+  describe 'query scoping to information need defined' do
+    let(:query_with_info_need)               { queries(:first_query) }
+    let(:query_without_info_need)            { queries(:third_query) }
+    let(:query)                              { queries(:query_for_best_bond_ever) }
+    let(:query_doc_pair)                     { query_doc_pairs(:qdp1) }
+
+    test 'always fetches all the ratings' do
+      assert_includes(Query.has_information_need, query_with_info_need)
+      assert_not_includes(Query.has_information_need, query_without_info_need)
+    end
+
+    test 'we match on a multi word query' do
+      matching_query = Query.has_information_need.where(query_text: query_doc_pair.query_text).first
+      assert_not_nil matching_query
+      assert_equal query, matching_query
+    end
+  end
 end

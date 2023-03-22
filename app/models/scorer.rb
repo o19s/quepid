@@ -50,6 +50,7 @@ class Scorer < ApplicationRecord
       OR `scorers`.`owner_id` = ?
       OR `scorers`.`communal` = true
     ', user.id, user.id, user.id)
+      .distinct
   }
 
   scope :communal, -> { where(communal: true) }
