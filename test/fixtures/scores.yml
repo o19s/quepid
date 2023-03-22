@@ -32,7 +32,7 @@ one:
   try:        :one
   score:      0
   all_rated:  false
-  updated_at: <%= 1.hours.ago.to_s(:db) %>
+  updated_at: <%= 1.hours.ago.to_formatted_s(:db) %>
 
 <% for i in 1..10 %>
 valid_<%= i %>:
@@ -41,7 +41,7 @@ valid_<%= i %>:
   try:        :one
   score:      <%= i * 10 %>
   all_rated:  true
-  updated_at: <%= i.minutes.ago.to_s(:db) %>
+  updated_at: <%= i.minutes.ago.to_formatted_s(:db) %>
 <% end %>
 
 score:

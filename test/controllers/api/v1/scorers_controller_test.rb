@@ -58,7 +58,7 @@ module Api
 
           assert_response :ok
 
-          scorer = JSON.parse(response.body)
+          scorer = response.parsed_body
 
           assert_not_nil scorer['scorer_id']
           assert_not_nil scorer['code']
@@ -83,7 +83,7 @@ module Api
 
           assert_response :ok
 
-          scorer = JSON.parse(response.body)
+          scorer = response.parsed_body
 
           assert_not_nil scorer['scorer_id']
           assert_nil     scorer['code']
@@ -103,7 +103,7 @@ module Api
 
           assert_response :ok
 
-          scorer = JSON.parse(response.body)
+          scorer = response.parsed_body
 
           assert_not_nil scorer['scorer_id']
           assert_nil     scorer['code']
@@ -121,7 +121,7 @@ module Api
 
           assert_response :bad_request
 
-          result = JSON.parse(response.body)
+          result = response.parsed_body
 
           assert_includes result['scale'], 'must be limited to at most 10 values'
         end
@@ -133,7 +133,7 @@ module Api
 
           assert_response :bad_request
 
-          result = JSON.parse(response.body)
+          result = response.parsed_body
 
           assert_includes result['scale'], 'is invalid (only integers allowed)'
         end
@@ -145,7 +145,7 @@ module Api
 
           assert_response :ok
 
-          scorer = JSON.parse(response.body)
+          scorer = response.parsed_body
 
           assert_not_nil scorer['scorer_id']
           assert_nil     scorer['code']
@@ -163,7 +163,7 @@ module Api
 
           assert_response :forbidden
 
-          error = JSON.parse(response.body)
+          error = response.parsed_body
 
           assert_equal error['error'], 'Communal Scorers Only!'
         end
@@ -196,7 +196,7 @@ module Api
 
           assert_response :ok
 
-          scorer_response = JSON.parse(response.body)
+          scorer_response = response.parsed_body
 
           assert_equal scorer.id,         scorer_response['scorer_id']
           assert_equal scorer.name,       scorer_response['name']
@@ -210,7 +210,7 @@ module Api
 
           assert_response :ok
 
-          scorer_response = JSON.parse(response.body)
+          scorer_response = response.parsed_body
 
           assert_equal shared_scorer.id,          scorer_response['scorer_id']
           assert_equal shared_scorer.name,        scorer_response['name']
@@ -231,7 +231,7 @@ module Api
 
           assert_response :forbidden
 
-          error = JSON.parse(response.body)
+          error = response.parsed_body
 
           assert_equal error['error'], 'Cannot edit a scorer you do not own'
         end
@@ -243,7 +243,7 @@ module Api
 
           assert_response :forbidden
 
-          error = JSON.parse(response.body)
+          error = response.parsed_body
 
           assert_equal error['error'], 'Cannot edit a scorer you do not own'
         end
@@ -254,7 +254,7 @@ module Api
           put :update, params: { id: owned_scorer.id, scorer: { name: 'new name' } }
           assert_response :forbidden
 
-          error = JSON.parse(response.body)
+          error = response.parsed_body
 
           assert_equal error['error'], 'Communal Scorers Only!'
         end
@@ -266,7 +266,7 @@ module Api
 
           assert_response :ok
 
-          scorer = JSON.parse(response.body)
+          scorer = response.parsed_body
           owned_scorer.reload
 
           assert_equal name, scorer['name']
@@ -280,7 +280,7 @@ module Api
 
           assert_response :ok
 
-          scorer = JSON.parse(response.body)
+          scorer = response.parsed_body
           owned_scorer.reload
 
           assert_equal code, scorer['code']
@@ -294,7 +294,7 @@ module Api
 
           assert_response :ok
 
-          scorer = JSON.parse(response.body)
+          scorer = response.parsed_body
           owned_scorer.reload
 
           assert_equal scale, scorer['scale']
@@ -308,7 +308,7 @@ module Api
 
           assert_response :bad_request
 
-          result = JSON.parse(response.body)
+          result = response.parsed_body
 
           assert_includes result['scale'], 'must be limited to at most 10 values'
         end
@@ -320,7 +320,7 @@ module Api
 
           assert_response :bad_request
 
-          result = JSON.parse(response.body)
+          result = response.parsed_body
 
           assert_includes result['scale'], 'is invalid (only integers allowed)'
         end
@@ -332,7 +332,7 @@ module Api
 
           assert_response :ok
 
-          scorer = JSON.parse(response.body)
+          scorer = response.parsed_body
           owned_scorer.reload
 
           assert_equal scale.sort, scorer['scale']
@@ -364,7 +364,7 @@ module Api
 
             assert_response :forbidden
 
-            error = JSON.parse(response.body)
+            error = response.parsed_body
 
             assert_equal error['error'], 'Cannot delete a scorer you do not own'
           end
@@ -385,7 +385,7 @@ module Api
             delete :destroy, params: { id: owned_scorer.id }
             assert_response :forbidden
 
-            error = JSON.parse(response.body)
+            error = response.parsed_body
 
             assert_equal error['error'], 'Communal Scorers Only!'
           end
@@ -527,7 +527,7 @@ module Api
 
           assert_response :ok
 
-          scorers = JSON.parse(response.body)
+          scorers = response.parsed_body
 
           expected_owned_response = {
             'scorer_id'         => owned_scorer.id,
@@ -580,7 +580,7 @@ module Api
 
           assert_response :ok
 
-          scorers = JSON.parse(response.body)
+          scorers = response.parsed_body
 
           assert_empty scorers['user_scorers']
         end

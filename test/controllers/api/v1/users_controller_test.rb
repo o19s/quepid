@@ -22,7 +22,7 @@ module Api
             get :show, params: { id: matt.email }
             assert_response :ok
 
-            body = JSON.parse(response.body)
+            body = response.parsed_body
 
             assert body['email'] == matt.email
           end
@@ -32,7 +32,7 @@ module Api
             get :show, params: { id: doug.email }
             assert_response :ok
 
-            body = JSON.parse(response.body)
+            body = response.parsed_body
 
             assert body['email'] == doug.email
             assert body['default_scorer_id'] == doug.default_scorer.id
@@ -86,7 +86,7 @@ module Api
 
           assert_response :bad_request
 
-          body = JSON.parse(response.body)
+          body = response.parsed_body
           # rubocop:disable Layout/LineLength
           assert body['default_scorer_id'].include? I18n.t('activerecord.errors.models.user.attributes.default_scorer_id.existence')
           # rubocop:enable Layout/LineLength

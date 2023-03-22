@@ -8,6 +8,7 @@ This document explains how Quepid can be operated and configured.
 - [Legal Pages & GDPR](#legal-pages-&-gdpr)
 - [User Tracking](#user-tracking)
 - [Heathcheck Endpoint](#healthcheck)
+- [Database Management](#database-management)
 
 ## Running behind a load balancer
 
@@ -160,3 +161,7 @@ the file `Procfile`
 ## Healthcheck
 
 Want to monitor if Quepid is behaving?  Just monitor `/healthcheck`, and you will get 200 status codes from a healthy Quepid, and 503 if not.  The JSON output is `{"code":200,"status":{"database":"OK","migrations":"OK"}}`.
+
+## Database Management
+
+See the details in [](./database.md).

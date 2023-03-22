@@ -49,7 +49,7 @@ module Api
             post :create, params: data.merge(case_id: acase.id)
 
             assert_response :ok
-            snapshot = JSON.parse(response.body)
+            snapshot = response.parsed_body
 
             assert_not_nil snapshot['time']
 
@@ -105,7 +105,7 @@ module Api
 
             assert_response :ok
 
-            snapshot = JSON.parse(response.body)
+            snapshot = response.parsed_body
 
             assert_equal snapshot['name'],        data[:snapshot][:name]
             assert_equal snapshot['docs'].length, data[:snapshot][:docs].length
@@ -135,7 +135,7 @@ module Api
 
             assert_response :ok
 
-            snapshot = JSON.parse(response.body)
+            snapshot = response.parsed_body
 
             assert_equal  snapshot['name'], data[:snapshot][:name]
             assert_nil    snapshot['docs']
@@ -243,7 +243,7 @@ module Api
 
           assert_response :ok
 
-          data = JSON.parse(response.body)
+          data = response.parsed_body
 
           assert_equal data['name'],        snapshot.name
           assert_equal data['docs'].length, snapshot.snapshot_queries.length
@@ -258,7 +258,7 @@ module Api
 
           assert_response :ok
 
-          data = JSON.parse(response.body)
+          data = response.parsed_body
 
           assert_equal data['name'],           snapshot.name
           assert_equal data['docs'].length,    snapshot.snapshot_queries.length
@@ -299,7 +299,7 @@ module Api
 
           assert_response :ok
 
-          data = JSON.parse(response.body)
+          data = response.parsed_body
 
           assert_equal data['snapshots'].length, acase.snapshots.count
           assert_nil data['snapshots'][0]['try']
@@ -311,7 +311,7 @@ module Api
 
           assert_response :ok
 
-          data = JSON.parse(response.body)
+          data = response.parsed_body
 
           assert_equal data['snapshots'].length, acase.snapshots.count
           assert_not_nil data['snapshots'][0]['try']

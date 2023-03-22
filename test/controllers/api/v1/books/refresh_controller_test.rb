@@ -24,7 +24,8 @@ module Api
                 put :update, params: { case_id: case_without_ratings.id, book_id: book.id }
 
                 assert_response :success
-                body = JSON.parse(response.body)
+
+                body = response.parsed_body
                 assert_equal 2, body['queries_created']
                 assert_equal 3, body['ratings_created']
               end
@@ -39,7 +40,7 @@ module Api
                 put :update, params: { case_id: case_with_ratings.id, book_id: book.id }
 
                 assert_response :success
-                body = JSON.parse(response.body)
+                body = response.parsed_body
                 assert_equal 1, body['queries_created']
                 assert_equal 3, body['ratings_created']
               end
@@ -51,7 +52,7 @@ module Api
                 put :update, params: { case_id: case_with_ratings.id, book_id: book.id }
 
                 assert_response :success
-                body = JSON.parse(response.body)
+                body = response.parsed_body
                 assert_equal 0, body['queries_created']
                 assert_equal 0, body['ratings_created']
               end

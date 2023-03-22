@@ -209,7 +209,7 @@ module Api
 
           assert_response :ok
 
-          queries = JSON.parse(response.body)['queries']
+          queries = response.parsed_body['queries']
 
           assert_equal queries[0]['arranged_at'], 1
           assert_equal queries[1]['arranged_at'], 2

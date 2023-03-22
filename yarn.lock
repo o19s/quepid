@@ -33,22 +33,22 @@
   resolved "https://registry.yarnpkg.com/@popperjs/core/-/core-2.11.6.tgz#cee20bd55e68a1720bdab363ecf0c821ded4cd45"
   integrity sha512-50/17A98tWUfQ176raKiOGXuYpLyyVMkxxG6oylzL3BPOlA6ADGdK7EYunSa4I064xerltq9TGXs8HmOk5E+vw==
 
-"@rails/actioncable@6.1.7-2":
-  version "6.1.7-2"
-  resolved "https://registry.yarnpkg.com/@rails/actioncable/-/actioncable-6.1.7-2.tgz#9007f89d34923c9041fb7e348b88aaa35cb03550"
-  integrity sha512-Z7xx8BrMEsslkuIKfRC/T40HBi87ZN6he6u28PrRtsTjMcH2+wjLF+j1L5EX0V1B4hv3N3I6lCZV6LozkEf/KQ==
+"@rails/actioncable@7.0.4-2":
+  version "7.0.4-2"
+  resolved "https://registry.yarnpkg.com/@rails/actioncable/-/actioncable-7.0.4-2.tgz#d69d1314c5bb1c8b51f7eeef98e1db5bab80caba"
+  integrity sha512-mMmDa9pJczGN+bX4nPgrmu+PHqKDpokfwSLF3Sk5h6Z996miFmPAg44F2TvG7koJQQ0YFXEVeHshRXVg5jmshQ==
 
-"@rails/activestorage@6.1.7-2":
-  version "6.1.7-2"
-  resolved "https://registry.yarnpkg.com/@rails/activestorage/-/activestorage-6.1.7-2.tgz#e2c4af2a5cc20f1469861fb483250cefae7cdd40"
-  integrity sha512-E7+8tl/sKrOQedDU7iOd4AI9X1OtmuIVthxtiJ3OcKZPFsNpcUkT3tPNO66Gwrh6DDsBQbcBXU68/PXkIe6JKw==
+"@rails/activestorage@7.0.4-2":
+  version "7.0.4-2"
+  resolved "https://registry.yarnpkg.com/@rails/activestorage/-/activestorage-7.0.4-2.tgz#b535b1ff3087a929de4cdf7f686500d16e1cfc06"
+  integrity sha512-TVNuL13CmXlUb41+fgRzTmOp9Xf3LQtw1A3ntrOtQvDPipy4NOkZ9Emyr2m9Gq/5gPfWon6x8GWXBsMQw8a5mg==
   dependencies:
-    spark-md5 "^3.0.0"
+    spark-md5 "^3.0.1"
 
-"@rails/ujs@6.1.7.2":
-  version "6.1.7-2"
-  resolved "https://registry.yarnpkg.com/@rails/ujs/-/ujs-6.1.7-2.tgz#8d7f523b5a9722ed9639f06a8557149a6d515db0"
-  integrity sha512-nDUph11D9HJBgAwANry/Yp1f7iyvDUy9+prMrgVR7O+crqYZg04vjI0pJeH8o8MgAs2bbrnmHbf3Ttb/qxNakA==
+"@rails/ujs@7.0.4-2":
+  version "7.0.4-2"
+  resolved "https://registry.yarnpkg.com/@rails/ujs/-/ujs-7.0.4-2.tgz#62b108cc297c0c60f415720295673ee73f08e210"
+  integrity sha512-ec6e2+YSfg4DgrVzIYzpo7ayze6dOu+lZ6RsIR+COkuZCp2QGMEyHZQzNdHt065FjCtpv6wRZQIybAtWrzPqlQ==
 
 "@socket.io/base64-arraybuffer@~1.0.2":
   version "1.0.2"
@@ -1860,10 +1860,10 @@ source-map@^0.6.1:
   resolved "https://registry.yarnpkg.com/source-map/-/source-map-0.6.1.tgz#74722af32e9614e9c287a8d0bbde48b5e2f1a263"
   integrity sha512-UjgapumWlbMhkBgzT7Ykc5YXUT46F0iKu8SGXq0bcwP5dz/h0Plj6enJqjz1Zbq2l5WaqYnrVbwWOWMyF3F47g==
 
-spark-md5@^3.0.0:
-  version "3.0.1"
-  resolved "https://registry.yarnpkg.com/spark-md5/-/spark-md5-3.0.1.tgz#83a0e255734f2ab4e5c466e5a2cfc9ba2aa2124d"
-  integrity sha512-0tF3AGSD1ppQeuffsLDIOWlKUd3lS92tFxcsrh5Pe3ZphhnoK+oXIBTzOAThZCiuINZLvpiLH/1VS1/ANEJVig==
+spark-md5@^3.0.1:
+  version "3.0.2"
+  resolved "https://registry.yarnpkg.com/spark-md5/-/spark-md5-3.0.2.tgz#7952c4a30784347abcee73268e473b9c0167e3fc"
+  integrity sha512-wcFzz9cDfbuqe0FZzfi2or1sgyIrsDwmPwfZC4hiNidPdPINjeUwNfv5kldczoEAcjl9Y1L3SM7Uz2PUEQzxQw==
 
 splainer-search@2.20.1:
   version "2.20.1"

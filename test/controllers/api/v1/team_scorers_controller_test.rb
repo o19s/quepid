@@ -106,7 +106,7 @@ module Api
 
           assert_response :ok
 
-          scorers = JSON.parse(response.body)['scorers']
+          scorers = response.parsed_body['scorers']
 
           assert_instance_of  Array, scorers
           assert_equal        team.scorers.count, scorers.length
@@ -121,7 +121,7 @@ module Api
 
           assert_response :ok
 
-          scorers = JSON.parse(response.body)['scorers']
+          scorers = response.parsed_body['scorers']
 
           assert_instance_of  Array, scorers
           assert_equal        shared_team.scorers.count, scorers.length

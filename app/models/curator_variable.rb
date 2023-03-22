@@ -15,10 +15,6 @@
 #
 #  try_id  (try_id)
 #
-# Foreign Keys
-#
-#  curator_variables_ibfk_1  (try_id => tries.id)
-#
 
 class CuratorVariable < ApplicationRecord
   belongs_to :try,

@@ -18,7 +18,7 @@ module Api
 
           assert_response :bad_request
 
-          error = JSON.parse(response.body)
+          error = response.parsed_body
           assert_includes error['email'], I18n.t('errors.messages.blank')
         end
 
@@ -29,7 +29,7 @@ module Api
 
           assert_response :bad_request
 
-          error = JSON.parse(response.body)
+          error = response.parsed_body
           assert_includes error['email'], I18n.t('errors.messages.taken')
         end
 
@@ -53,7 +53,7 @@ module Api
 
           assert_response :bad_request
 
-          error = JSON.parse(response.body)
+          error = response.parsed_body
           assert_includes error['password'], I18n.t('errors.messages.blank')
         end
 
@@ -64,7 +64,7 @@ module Api
 
           assert_response :bad_request
 
-          error = JSON.parse(response.body)
+          error = response.parsed_body
           assert_includes error['agreed'], 'checkbox must be clicked to signify you agree to the terms and conditions.'
         end
 

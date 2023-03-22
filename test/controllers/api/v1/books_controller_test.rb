@@ -26,7 +26,7 @@ module Api
           get :show, params: { id: book.id }
           assert_response :ok
 
-          body = JSON.parse(response.body)
+          body = response.parsed_body
 
           assert_equal body['name'].size, book.name.size
           assert_equal body['query_doc_pairs'][0]['query'], book.query_doc_pairs[0].query_text
