@@ -2,7 +2,7 @@
 
 source 'https://rubygems.org'
 
-ruby '3.2.0'
+ruby '3.2.1'
 
 gem 'activerecord-import', '>= 1.0.7'
 gem 'acts_as_list', '>= 1.0.1'
