@@ -5,7 +5,7 @@ describe('Filter: scorerType', function () {
   // load the filter's module
   beforeEach(module('QuepidTest'));
 
-  const mockScorers = [
+  let mockScorers = [
       {
         'scorerId': 1,
         'name':     'Scorer 1 Communal Scorer',
@@ -34,19 +34,19 @@ describe('Filter: scorerType', function () {
   }));
 
   it('filters to just the communal scorers"', function () {
-    const results = scorerType(mockScorers, "communal");
+    let results = scorerType(mockScorers, "communal");
     expect(results.length).toBe(1);
     expect(results[0].name).toBe('Scorer 1 Communal Scorer');
   });
 
   it('filters to just the custom scorers"', function () {
-    const results = scorerType(mockScorers, "custom");
+    let results = scorerType(mockScorers, "custom");
     expect(results.length).toBe(1);
     expect(results[0].name).toBe('Scorer 2 Custom Scorer');
   });
 
   it('returns everything if you have a bogus filter"', function () {
-    const results = scorerType(mockScorers, "fake-filter");
+    let results = scorerType(mockScorers, "fake-filter");
     expect(results.length).toBe(2);
   });
 

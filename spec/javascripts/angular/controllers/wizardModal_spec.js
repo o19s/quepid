@@ -11,20 +11,20 @@ describe('Controller: WizardModalCtrl', function () {
   let $httpBackend;
 
   /*global jasmine*/
-  const mockModalInstance = {
+  let mockModalInstance = {
     close: jasmine.createSpy(),
     dismiss: jasmine.createSpy()
   };
 
 
 
-  const mockWizardHandler = {
+  let mockWizardHandler = {
     wizard: function(){
       return {goTo: function(){}}
     }
   };
 
-  const bootstrappedSettingsData = {
+  let bootstrappedSettingsData = {
     tries: [
       {
         search_url: 'http://quepid-solr.dev.o19s.com:8985/solr/tmdb/select',
@@ -39,7 +39,7 @@ describe('Controller: WizardModalCtrl', function () {
     ],
   };
 
-  const mockTry = {
+  let mockTry = {
     search_url: 'http://quepid-solr.dev.o19s.com:8985/solr/tmdb/select',
     field_spec: 'catch_line',
     curator_vars: {},
@@ -50,7 +50,7 @@ describe('Controller: WizardModalCtrl', function () {
     try_number: 0
   };
 
-  const mockUser = {
+  let mockUser = {
     completedCaseWizard:       true,
     introWizardSeen: false,
     shownIntroWizard: function() {
@@ -58,7 +58,7 @@ describe('Controller: WizardModalCtrl', function () {
     }
   };
 
-  const mockUserSvc = {
+  let mockUserSvc = {
     getUser: function() {
       return mockUser;
     }
@@ -98,7 +98,7 @@ describe('Controller: WizardModalCtrl', function () {
       $httpBackend.verifyNoOutstandingExpectation();
     });
 
-    const newQueryResp = {
+    let newQueryResp = {
       display_order: [2,3,1,0],
       query: {
         'query_text': 'foo',
@@ -107,7 +107,7 @@ describe('Controller: WizardModalCtrl', function () {
       }
     };
 
-    const mockFullQueriesResp = {
+    let mockFullQueriesResp = {
       display_order: [2,1,0],
       queries: [
         {
@@ -146,32 +146,32 @@ describe('Controller: WizardModalCtrl', function () {
 
     it ('gets title field for autocomplete', function() {
       scope.searchFields = ['title', 'body', 'image'];
-      const autocompleteList = scope.loadFields('ti');
+      let autocompleteList = scope.loadFields('ti');
       expect(autocompleteList.length).toBe(1);
     });
 
     it ('gets all fields for media: autocomplete', function() {
       scope.searchFields = ['title', 'body', 'image'];
-      const autocompleteList = scope.loadFields('media:');
+      let autocompleteList = scope.loadFields('media:');
       expect(autocompleteList.length).toBe(3);
     });
 
     it ('gets all fields for thumb: autocomplete', function() {
       scope.searchFields = ['title', 'body', 'image'];
-      const autocompleteList = scope.loadFields('thumb:');
+      let autocompleteList = scope.loadFields('thumb:');
       expect(autocompleteList.length).toBe(3);
     });
 
     it ('gets subset without modifier prefix', function() {
       scope.searchFields = ['title', 'body', 'image', 'imageAlt'];
-      const autocompleteList = scope.loadFields('im');
+      let autocompleteList = scope.loadFields('im');
       expect(autocompleteList.length).toBe(2);
       expect(autocompleteList).toEqual([{'text': 'image'}, {'text': 'imageAlt'}]);
     });
 
     it ('gets subset with modifier prefix', function() {
       scope.searchFields = ['title', 'body', 'image', 'imageAlt'];
-      const autocompleteList = scope.loadFields('thumb:im');
+      let autocompleteList = scope.loadFields('thumb:im');
       expect(autocompleteList.length).toBe(2);
       expect(autocompleteList).toEqual([{'text': 'thumb:image'}, {'text': 'thumb:imageAlt'}]);
     });
@@ -182,12 +182,12 @@ describe('Controller: WizardModalCtrl', function () {
       $httpBackend.expectGET('/api/cases/0/queries?bootstrap=true').respond(200, mockFullQueriesResp);
 
       for (let i = 0; i < 10; i++) {
-        const testQuery = 'foo ' + i;
+        let testQuery = 'foo ' + i;
         scope.pendingWizardSettings.addQuery(testQuery);
 
         expect(scope.pendingWizardSettings.newQueries).toContain({queryString: testQuery});
 
-        const newQueryRespIth = angular.copy(newQueryResp);
+        let newQueryRespIth = angular.copy(newQueryResp);
         newQueryRespIth.query['query_text'] = testQuery;
 
         $httpBackend.whenPOST('/api/cases/0/queries').respond(200, newQueryRespIth);

@@ -8,7 +8,7 @@ describe('Controller: SearchResultCtrl', function () {
   let SearchResultCtrl,
     scope;
 
-  const mockDoc = {
+  let mockDoc = {
     subSnippets: function(hlPre, hlPost) {
       return [];
     }

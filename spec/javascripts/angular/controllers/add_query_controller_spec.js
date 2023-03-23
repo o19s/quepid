@@ -96,7 +96,7 @@ describe('Controller: AddQueryCtrl', function () {
   });
 
   it('rejects empty or blank text', function() {
-    const newText;
+    let newText;
     ctrl.text   = newText;
 
     expect(mockQueriesSvc.lastCreatedQ()).toBe(undefined);
@@ -117,25 +117,25 @@ describe('Controller: AddQueryCtrl', function () {
     expect(mockQueriesSvc.lastCreatedQ()).toBe(undefined);
     ctrl.submit();
 
-    const createdQ  = mockQueriesSvc.lastCreatedQ();
-    const promise   = mockQueriesSvc.lastPersistPromise();
+    let createdQ  = mockQueriesSvc.lastCreatedQ();
+    let promise   = mockQueriesSvc.lastPersistPromise();
 
     expect(createdQ.queryText).toBe(newText);
     promise.resolve();
     $rootScope.$apply();
 
-    const persistedQ = mockQueriesSvc.lastPersistedQ();
+    let persistedQ = mockQueriesSvc.lastPersistedQ();
 
     expect(persistedQ).toBe(createdQ);
   });
 
   it('adds multiple queries', function() {
-    const queries = ['gross tacos', 'funny pizzas', 'elmer fudd hats'];
-    const delim   = ';';
+    let queries = ['gross tacos', 'funny pizzas', 'elmer fudd hats'];
+    let delim   = ';';
     ctrl.text   = queries.join(delim);
     ctrl.submit();
 
-    const createdQs = mockQueriesSvc.lastCreatedQs;
+    let createdQs = mockQueriesSvc.lastCreatedQs;
 
     expect(createdQs.length).toBe(3);
     expect(createdQs[0].queryText).toBe(queries[0]);
@@ -144,13 +144,13 @@ describe('Controller: AddQueryCtrl', function () {
   });
 
   it('trims away whitespace on queries', function() {
-    const queries = ['gross tacos', 'funny pizzas', ' elmer fudd hats ', ' '];
-    const delim   = ';';
+    let queries = ['gross tacos', 'funny pizzas', ' elmer fudd hats ', ' '];
+    let delim   = ';';
 
     ctrl.text = queries.join(delim);
     ctrl.submit();
 
-    const createdQs = mockQueriesSvc.lastCreatedQs;
+    let createdQs = mockQueriesSvc.lastCreatedQs;
 
     expect(createdQs.length).toBe(3);
     expect(createdQs[0].queryText).toBe('gross tacos');

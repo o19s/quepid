@@ -11,11 +11,11 @@ describe('Controller: QueryparamsCtrl', function () {
 
 
   // Initialize the controller and a mock scope
-  beforeEach(inject(function ($controller, $rootScope, TryFactory) {
+  beforeEach(inject(function ($controller, $rootScope, settingsSvc, TryFactory) {
     scope = $rootScope.$new();
 
-    const queryParams = 'q=#$query##';
-    const curatorVars = {};
+    let queryParams = 'q=#$query##';
+    let curatorVars = {};
 
     testTry = new TryFactory({ try_number: 0, query_params: queryParams, curator_vars: curatorVars });
     scope.settings = {selectedTry: testTry};
