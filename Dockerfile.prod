@@ -32,7 +32,7 @@ RUN apt-get update \
 # Install dependencies
 WORKDIR /srv/app
 COPY Gemfile Gemfile.lock ./
-RUN gem install bundler:2.4.7
+RUN gem install bundler:2.4.9
 
 # Clean up Bundle
 RUN bundle config set without 'development test'
