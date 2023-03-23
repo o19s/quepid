@@ -44,7 +44,7 @@ gem 'font-awesome-sass'
 
 gem 'rack-cors', '~> 1.1'
 gem 'foreman'
-gem 'racc', '~> 1.4.0'
+gem 'racc', '~> 1.6.0'
 gem 'ancestry'
 
 gem 'omniauth', '~> 2.0'
