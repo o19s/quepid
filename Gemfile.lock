@@ -211,7 +211,8 @@ GEM
       builder
       minitest (>= 5.0)
       ruby-progressbar
-    mocha (1.16.1)
+    mocha (2.0.2)
+      ruby2_keywords (>= 0.0.5)
     msgpack (1.6.1)
     multi_xml (0.6.0)
     mysql2 (0.5.5)
@@ -452,7 +453,7 @@ DEPENDENCIES
   listen (~> 3.3)
   memory_profiler
   minitest-reporters (>= 0.5.0)
-  mocha (~> 1.11)
+  mocha (~> 2.0)
   mysql2
   net-imap (~> 0.3.0)
   net-pop (~> 0.1.1)
