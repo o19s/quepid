@@ -251,6 +251,9 @@ GEM
     omniauth-oauth2 (1.7.3)
       oauth2 (>= 1.4, < 3)
       omniauth (>= 1.9, < 3)
+    omniauth-rails_csrf_protection (1.0.1)
+      actionpack (>= 4.2)
+      omniauth (~> 2.0)
     orm_adapter (0.5.0)
     parallel (1.22.1)
     parser (3.2.1.1)
@@ -458,6 +461,7 @@ DEPENDENCIES
   omniauth (~> 2.0)
   omniauth-google-oauth2
   omniauth-keycloak
+  omniauth-rails_csrf_protection (~> 1.0)
   postmark-rails
   puma
   pundit
