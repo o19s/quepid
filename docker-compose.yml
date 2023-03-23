@@ -42,7 +42,7 @@ services:
       - 6379:6379
 
   keycloak:
-    image: quay.io/keycloak/keycloak:18.0.2
+    image: quay.io/keycloak/keycloak:21.0.1
     container_name: quepid_keycloak
     hostname: keycloak
     command: ["start-dev", "--import-realm"]
