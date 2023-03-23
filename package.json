@@ -10,7 +10,7 @@
     "@rails/actioncable": "7.0.4-3",
     "@rails/activestorage": "7.0.4-3",
     "@rails/ujs": "7.0.4-3",
-    "ace-builds": "1.15.0",
+    "ace-builds": "1.16.0",
     "angular": "~1.8.3",
     "angular-animate": "^1.8.3",
     "angular-cookies": "~1.8.3",
