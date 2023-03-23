@@ -11,7 +11,7 @@ describe('Controller: QueryparamsCtrl', function () {
 
 
   // Initialize the controller and a mock scope
-  beforeEach(inject(function ($controller, $rootScope, settingsSvc, TryFactory) {
+  beforeEach(inject(function ($controller, $rootScope, TryFactory) {
     scope = $rootScope.$new();
 
     let queryParams = 'q=#$query##';
