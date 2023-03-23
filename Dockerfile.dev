@@ -11,7 +11,7 @@ RUN apt-get update -qq \
 
 COPY Gemfile* /srv/app/
 WORKDIR /srv/app
-RUN gem install bundler:2.4.7
+RUN gem install bundler:2.4.9
 RUN bundle install
 
 # Dependency for generating the ERD: 'graphviz'
@@ -26,7 +26,7 @@ RUN apt-get update -qq && apt-get install -y chromium \
 # Node and Yarn
 RUN wget --no-check-certificate -qO - https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add - \
   && echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list \
-  && curl -sL https://deb.nodesource.com/setup_16.x | bash - \
+  && curl -sL https://deb.nodesource.com/setup_19.x | bash - \
   && apt-get update -qq && apt-get install -y --no-install-recommends nodejs yarn netcat \
   && rm -rf /var/lib/apt/lists/*
 

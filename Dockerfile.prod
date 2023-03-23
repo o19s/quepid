@@ -1,4 +1,4 @@
-FROM node:16-buster AS build-dep
+FROM node:19-bullseye AS build-dep
 WORKDIR /srv/app
 COPY package.json yarn.lock ./
 RUN yarn install --production=true
@@ -32,7 +32,7 @@ RUN apt-get update \
 # Install dependencies
 WORKDIR /srv/app
 COPY Gemfile Gemfile.lock ./
-RUN gem install bundler:2.4.7
+RUN gem install bundler:2.4.9
 
 # Clean up Bundle
 RUN bundle config set without 'development test'

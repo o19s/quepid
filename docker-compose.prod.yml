@@ -14,7 +14,7 @@ services:
       - ./volumes/mysql_data:/var/lib/mysql
   redis:
     container_name: quepid_prod_redis
-    image: redis:6.2.11-alpine
+    image: redis:7.0.10-alpine
     ports:
       - 6379:6379
   app:
@@ -57,7 +57,7 @@ services:
       - mysql
       - redis
   nginx:
-    image: nginx:1.21.4
+    image: nginx:1.23.3
     container_name: quepid_nginx
     ports:
       - "443:8443"
