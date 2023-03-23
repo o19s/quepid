@@ -395,7 +395,7 @@ GEM
     unicode-display_width (2.4.2)
     uniform_notifier (1.16.0)
     vega (0.3.1)
-    version_gem (1.1.1)
+    version_gem (1.1.2)
     warden (1.2.9)
       rack (>= 2.0.9)
     web-console (4.2.0)
