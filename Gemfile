@@ -42,7 +42,7 @@ gem 'd3-rails', '~> 3.5.5' # For cal heatmap
 # Had no luck with js/svg approach ;-(
 gem 'font-awesome-sass'
 
-gem 'rack-cors', '~> 1.1'
+gem 'rack-cors', '~> 2.0'
 gem 'foreman'
 gem 'ancestry'
 
