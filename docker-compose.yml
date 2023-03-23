@@ -37,7 +37,7 @@ services:
 
   redis:
     container_name: quepid_redis
-    image: redis:6.2.11-alpine
+    image: redis:7.0.10-alpine
     ports:
       - 6379:6379
 
