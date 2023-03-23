@@ -114,7 +114,7 @@ GEM
     crack (0.4.5)
       rexml
     crass (1.0.6)
-    d3-rails (3.5.17)
+    d3-rails (7.0.0)
       railties (>= 3.1)
     date (0.0.1)
     dead_end (4.0.0)
@@ -433,7 +433,7 @@ DEPENDENCIES
   capybara
   colorize
   cookies_eu
-  d3-rails (~> 3.5.5)
+  d3-rails (~> 7.0.0)
   derailed_benchmarks
   devise (>= 4.6.2)
   devise_invitable (~> 2.0)

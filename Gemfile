@@ -36,7 +36,7 @@ gem 'bootsnap', require: false
 gem 'listen', '~> 3.3'
 
 gem 'cal-heatmap-rails', '~> 3.6' # provides assets for cal heatmap, that requires old d3
-gem 'd3-rails', '~> 3.5.5' # For cal heatmap
+gem 'd3-rails', '~> 7.0.0' # For cal heatmap
 
 # Using this as it wires in via Sprockets and I can't get npm version to work with the main app.
 # Had no luck with js/svg approach ;-(
