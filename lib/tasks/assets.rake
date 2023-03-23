@@ -10,6 +10,7 @@ namespace :assets do
   # Does this actually do anything for us?
   desc 'Create .gz versions of assets'
   task gzip: :environment do
+    if 1 == 2
     zip_types = /\.(?:css|html|js|otf|svg|txt|xml)$/
 
     public_assets = Rails.public_path.join(Rails.application.config.assets.prefix)
@@ -29,6 +30,7 @@ namespace :assets do
       end
 
       File.utime(mtime, mtime, gz_file)
+    end
     end
   end
 
