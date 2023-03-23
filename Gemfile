@@ -24,7 +24,7 @@ gem 'mysql2'
 
 gem 'net-smtp'
 gem 'net-pop', '~> 0.1.1'
-gem 'net-imap', '~> 0.2.3'
+gem 'net-imap', '~> 0.3.0'
 gem 'postmark-rails'
 gem 'puma'
 gem 'pundit'
