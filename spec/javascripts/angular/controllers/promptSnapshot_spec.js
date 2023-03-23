@@ -7,15 +7,15 @@ describe('Controller: PromptSnapshotCtrl', function () {
   let Ctrl, scope, modalInstance, $httpBackend;
   let querySnapshotSvc, settingsSvc, docResolverSvc;
 
-  let basicExplain1 = {
+  const basicExplain1 = {
     match:        true,
     value:        1.5,
     description: 'weight(text:law in 1234)',
     details:      []
   };
-  let rawExpl = angular.toJson(basicExplain1);
+  const rawExpl = angular.toJson(basicExplain1);
 
-  let addedSnapResp = {
+  const addedSnapResp = {
     'snapshots': {
       '5': {
         id: '5',
