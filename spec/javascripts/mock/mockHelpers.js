@@ -28,31 +28,6 @@ window.arrayContains = function(list, value) {
   return contains;
 };
 
-window.urlContainsParams = function(url, params) {
-  return {
-    test: function(requestedUrl) {
-      if (requestedUrl.indexOf(url) !== 0) {
-        return false;
-      }
-      var missingParam = false;
-      var urlEncodedArgs = requestedUrl.substr(url.length);
-      var parsedParams = parseUrlParams(urlEncodedArgs);
-      angular.forEach(params, function(values, param) {
-        if (values instanceof Array) {
-          angular.forEach(values, function(value) {
-            if (!arrayContains(parsedParams[param], value)) {
-              missingParam = true;
-            }
-          });
-        } else {
-          missingParam = true;
-        }
-      });
-      return !missingParam;
-    }
-  };
-};
-
 window.mockSolrUrl =  "http://example.com:1234/solr/example";
 
 window.expectedSolrUrl = function(expected) {
