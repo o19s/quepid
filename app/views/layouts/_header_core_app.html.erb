@@ -44,6 +44,7 @@
 
           <li><a ng-attr-target="{{ isRailsGoingToAngular() ? '_self' : undefined }}" href="/teams">Teams</a></li>
           <li><a ng-attr-target="{{ isRailsGoingToAngular() ? '_self' : undefined }}" href="/scorers">Scorers</a></li>
+          <li><a ng-attr-target="_blank" href="/notebooks/lab/index.html">Notebooks</a></li>
         </ul>
       <% end %>
       <ul class="navbar-right nav navbar-nav">
@@ -58,8 +59,10 @@
           <ul class="dropdown-menu dropdown-content" uib-dropdown-menu>
             <li><%= link_to 'My profile', profile_path, class: 'dropdown-link', target: '_self' %></li>
             <li><%= link_to 'Log out', logout_path, class: 'dropdown-link', target: '_self' %></li>
+            <li role="separator" class=""></li>
+            <li><%= link_to 'Judgements', books_path, class: 'dropdown-link', target: '_self' %></li>
             <% if current_user.administrator? %>
-            <li role="separator" class="divider"></li>
+            <li role="separator" class=""></li>
             <li><%= link_to 'Admin Home', admin_path, class: 'dropdown-link', target: '_self' %></li>
             <li><%= link_to 'Users', admin_users_path, class: 'dropdown-link', target: '_self' %></li>
             <li><%= link_to 'Quepid Scorers', admin_communal_scorers_path, class: 'dropdown-link', target: '_self' %></li>

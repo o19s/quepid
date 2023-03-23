@@ -3,13 +3,29 @@
   <h3 class="modal-title">Take a Snapshot of all your queries?</h3>
 </div>
 <div class="modal-body">
-  <p>Record the current results of your queries to compare future work against this milestone.  A snapshot
-  stores the individual queries in a case, and the ratings you made.</p>
-  Snapshot Name: <input type="text" ng-model="snapPrompt.name"></input>
+  <p>Record the current results of your queries is useful for two purposes: 1) to compare future work against this snapshot and 2) to faciliate creating ratings.  A snapshot
+  stores the individual queries in a case, the ratings made, and optionally all the fields returned for the documents.</p>
+
+  <label>Snapshot Name</label>
+  <input type="text" class="form-control" id="snapshotName"ng-model="snapPrompt.name" placeholder="Name your snapshot" ng-required="true"></input>
+
+  <br/>
+
+  <label>Include Document Fields</label>
+  <p>
+  To facilitate the human rating interface, you need to record as part of the snapshot all the displayed fields for each document returned.
+  This will be the <code>{{ fieldSpec }}</code> fields.
+  </p>
+
+  <div class="checkbox">
+    <label>
+      <input id="include-document-fields" type="checkbox" ng-model='snapPrompt.recordDocumentFields'> Record Document Fields?</input>
+    </label>
+  </div>
 
   <div class='text-danger' ng-show="snapPrompt.error">
     An error ({{snapPrompt.error}}) occurred, please try again.<br />
-    If the error persist, contact customer for further assistance.
+    If the error persist, contact adminstrator for further assistance.
   </div>
 </div>
 

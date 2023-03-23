@@ -22,7 +22,8 @@ module.exports = function(config) {
       'tmp/assets/application*.js',
       'tmp/assets/application_spec*.js',
       'spec/javascripts/mock/*.js',
-      'spec/javascripts/**/*_spec.js'
+      'spec/javascripts/**/*_spec.js',
+      'spec/karma/mockBackend.js'
     ],
 
     // list of files to exclude

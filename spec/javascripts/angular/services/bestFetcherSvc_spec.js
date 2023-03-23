@@ -20,11 +20,11 @@ describe('Service: bestFetcherSvc', function () {
   var mockFieldSpec = null;
 
   var mockFullQueriesResp = {
-    displayOrder: [2,1,0],
+    display_order: [2,1,0],
     queries: [
       {
-        'arrangedAt':   '3681400536',
-        'arrangedNext': '4294967295',
+        'arranged_at':   '3681400536',
+        'arranged_next': '4294967295',
         'deleted':      'false',
         'queryId':      '0',
         'query_text':   'symptoms of heart attack',
@@ -44,15 +44,15 @@ describe('Service: bestFetcherSvc', function () {
         }
       },
       {
-        'arrangedAt':   '3067833780',
-        'arrangedNext': '3681400536',
+        'arranged_at':   '3067833780',
+        'arranged_next': '3681400536',
         'deleted':      'true',
         'queryId':      '1',
         'query_text':   'how is kidney cancer diagnosed'
       },
       {
-        'arrangedAt':   '0',
-        'arrangedNext': '613566756',
+        'arranged_at':   '0',
+        'arranged_next': '613566756',
         'deleted':      'false',
         'queryId':      '2',
         'query_text':   'prognosis of alzheimers',

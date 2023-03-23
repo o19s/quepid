@@ -1,0 +1,38 @@
+# == Schema Information
+#
+# Table name: books
+#
+#  id                    :bigint           not null, primary key
+#  name                  :string(255)
+#  created_at            :datetime         not null
+#  updated_at            :datetime         not null
+#  scorer_id             :integer
+#  selection_strategy_id :bigint           not null
+#  team_id               :integer
+#
+# Indexes
+#
+#  index_books_on_selection_strategy_id  (selection_strategy_id)
+#
+# Foreign Keys
+#
+#  fk_rails_...  (selection_strategy_id => selection_strategies.id)
+#
+
+book_of_star_wars_judgements:
+  team: :shared
+  scorer: :quepid_default_scorer
+  selection_strategy: :single_rater
+  name: TMDB Star Wars Judgements
+
+book_of_comedy_films:
+  team: :another_shared_team
+  scorer: :quepid_default_scorer
+  selection_strategy: :single_rater
+  name: TMDB Greatest Comedies
+
+james_bond_movies:   # this has some query doc pairs and ratings.
+  team: :shared
+  scorer: :quepid_default_scorer
+  selection_strategy: :single_rater
+  name: James Bond Movies

@@ -10,26 +10,9 @@
   function ScorerFactory($q, $timeout) {
     var Scorer = function(data) {
       var self = this;
-      var defaultAlgorithm = [
-        '// This is the AP@10 formula as an example',
-        'var k = 10; // @Rank',
-        'total = 0;',
-        '// if less than K results, need to reduce K now or final score is too low',
-        'k = numReturned() < k ? numReturned() : k',
-        '',
-        'eachDoc(function(doc, i) {',
-        '  total += avgRating(i+1)',
-        '}, k);',
-        'var score = total / k;',
-        'setScore(score);',
-      ].join('\n');
 
       if (angular.isUndefined(data)) {
         data = {};
-      }
-
-      if ( angular.isUndefined(data.code) ) {
-        data.code = defaultAlgorithm;
       }
 
       if ( angular.isUndefined(data.scale) ) {
@@ -40,21 +23,17 @@
       // Attributes
       self.code                   = data.code;
       self.colors                 = scaleToColors(data.scale);
-      self.defaultAlgorithm       = defaultAlgorithm;
       self.displayName            = setDisplayName(data.name, data.communal);
       self.error                  = false;
-      self.manualMaxScore         = data.manualMaxScore || false;
-      self.manualMaxScoreValue    = data.manualMaxScoreValue || 100;
       self.name                   = data.name;
       self.owned                  = data.owned;
       self.ownerId                = data.owner_id;
       self.ownerName              = data.owner_name;
-      self.queryId                = data.queryId;
       self.scale                  = data.scale;
-      self.scaleWithLabels        = data.scaleWithLabels;
-      self.scorerId               = data.scorerId;
+      self.scaleWithLabels        = data.scale_with_labels;
+      self.scorerId               = data.scorer_id;
       self.communal               = data.communal;
-      self.showScaleLabels        = data.showScaleLabels || false;
+      self.showScaleLabels        = data.show_scale_labels || false;
       self.teams                  = data.teams || [];
 
       // Functions
@@ -78,7 +57,7 @@
       self.getBestRatings         = getBestRatings;
 
 
-      var DEFAULT_NUM_DOCS = 10;
+      const DEFAULT_NUM_DOCS = 10;
 
 
       // public functions
@@ -354,6 +333,7 @@
         return deferred.promise;
       }
 
+      // mode may no longer be used..  maybe it was for unit test style scorers?
       function runCode(query, total, docs, bestDocs, mode, options) {
         var scale     = self.scale;
         var max       = scale[scale.length-1];
@@ -523,6 +503,7 @@
 
         var recordDepthOfRanking = function (k){
           query.depthOfRating = k;
+          self.depthOfRating = k;
         };
 
         /*jshint unused:false */
@@ -578,7 +559,7 @@
       }
 
       function maxScore() {
-        return self.manualMaxScore ? self.manualMaxScore : self.scale[-1];
+        return self.scale[-1];
       }
 
       function score(query, total, docs, bestDocs, options) {

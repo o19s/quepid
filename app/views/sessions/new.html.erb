@@ -91,7 +91,7 @@
               <%= f.password_field :password_confirmation, class: 'form-control password-confirm', placeholder: 'Confirm Password' %>
           </div>
 
-          <% if Rails.application.config.terms_and_conditions_url.size > 0 %>
+          <% unless Rails.application.config.terms_and_conditions_url.blank? %>
           <div class="mb-3 form-check">
             <label>
               <%= f.check_box :agreed, class: 'form-check-input' %>

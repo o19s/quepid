@@ -4,17 +4,26 @@
 #
 # Table name: queries
 #
-#  id             :integer          not null, primary key
-#  arranged_next  :integer
-#  arranged_at    :integer
-#  query_text     :string(191)
-#  notes          :text(65535)
-#  threshold      :float(24)
-#  threshold_enbl :boolean
-#  case_id        :integer
-#  created_at     :datetime         not null
-#  updated_at     :datetime         not null
-#  options        :text(65535)
+#  id               :integer          not null, primary key
+#  arranged_at      :bigint
+#  arranged_next    :bigint
+#  information_need :string(255)
+#  notes            :text(65535)
+#  options          :text(65535)
+#  query_text       :string(500)
+#  threshold        :float(24)
+#  threshold_enbl   :boolean
+#  created_at       :datetime         not null
+#  updated_at       :datetime         not null
+#  case_id          :integer
+#
+# Indexes
+#
+#  case_id  (case_id)
+#
+# Foreign Keys
+#
+#  queries_ibfk_1  (case_id => cases.id)
 #
 
 require 'test_helper'
@@ -213,6 +222,24 @@ class QueryTest < ActiveSupport::TestCase
     test 'can filter out ratings that do not have a rating set' do
       assert_equal 1, query.ratings.fully_rated.size
       assert_includes query.ratings.fully_rated, rating_with_rating
+    end
+  end
+
+  describe 'query scoping to information need defined' do
+    let(:query_with_info_need)               { queries(:first_query) }
+    let(:query_without_info_need)            { queries(:third_query) }
+    let(:query)                              { queries(:query_for_best_bond_ever) }
+    let(:query_doc_pair)                     { query_doc_pairs(:qdp1) }
+
+    test 'always fetches all the ratings' do
+      assert_includes(Query.has_information_need, query_with_info_need)
+      assert_not_includes(Query.has_information_need, query_without_info_need)
+    end
+
+    test 'we match on a multi word query' do
+      matching_query = Query.has_information_need.where(query_text: query_doc_pair.query_text).first
+      assert_not_nil matching_query
+      assert_equal query, matching_query
     end
   end
 end

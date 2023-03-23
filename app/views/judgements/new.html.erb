@@ -1,0 +1,18 @@
+<p></p>
+<h2>Create a Judgement</h2>
+
+<%= render 'form', judgement: @judgement, query_doc_pair: @query_doc_pair, url_for_form: book_query_doc_pair_judgements_path(@book, @query_doc_pair) %>
+
+<br>
+
+<%
+  @previous_judgement = session["previous_judgement_id"].nil? ? nil : Judgement.find_by_id(session["previous_judgement_id"])
+%>
+<% if @previous_judgement %>
+  <%= button_to 'Previous Judgement', edit_book_query_doc_pair_judgement_path(@book, @previous_judgement.query_doc_pair, @previous_judgement.id), method: :get %>
+  <br>
+<% end %>
+<%= button_to 'Exit', book_url(@book), method: :get %>
+<br>
+
+<br>

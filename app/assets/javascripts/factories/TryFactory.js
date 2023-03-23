@@ -43,6 +43,7 @@
       self.deleted       = false;
       self.escapeQuery   = data.escape_query;
       self.apiMethod     = data.api_method;
+      self.customHeaders = data.custom_headers;
       self.fieldSpec     = data.field_spec;
       self.name          = data.name;
       self.numberOfRows  = data.number_of_rows;
@@ -54,7 +55,7 @@
 
       // transform curator vars to be more angular friendly
       var ngFriendlyCuratorVars = [];
-      angular.forEach(data.curatorVars, function(varValue, varName) {
+      angular.forEach(data.curator_vars, function(varValue, varName) {
         ngFriendlyCuratorVars.push({name: varName, value: varValue});
       });
 

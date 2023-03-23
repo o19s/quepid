@@ -29,7 +29,7 @@ describe('Controller: WizardModalCtrl', function () {
       {
         search_url: 'http://quepid-solr.dev.o19s.com:8985/solr/tmdb/select',
         field_spec: 'catch_line',
-        curatorVars: {},
+        curator_vars: {},
         query_params: 'q=#$query##',
         args: {
           q: ['#$query##']
@@ -42,7 +42,7 @@ describe('Controller: WizardModalCtrl', function () {
   let mockTry = {
     search_url: 'http://quepid-solr.dev.o19s.com:8985/solr/tmdb/select',
     field_spec: 'catch_line',
-    curatorVars: {},
+    curator_vars: {},
     query_params: 'q=#$query##',
     args: {
       q: ['#$query##']
@@ -99,19 +99,20 @@ describe('Controller: WizardModalCtrl', function () {
     });
 
     let newQueryResp = {
-      displayOrder: [2,3,1,0],
+      display_order: [2,3,1,0],
       query: {
         'query_text': 'foo',
         'queryId': '3',
         'deleted': 'false'
       }
     };
+
     let mockFullQueriesResp = {
-      displayOrder: [2,1,0],
+      display_order: [2,1,0],
       queries: [
         {
-          'arrangedAt':   '3681400536',
-          'arrangedNext': '4294967295',
+          'arranged_at':   '3681400536',
+          'arranged_next': '4294967295',
           'deleted':      'false',
           'queryId':      '0',
           'query_text':   'symptoms of heart attack',
@@ -121,15 +122,15 @@ describe('Controller: WizardModalCtrl', function () {
           }
         },
         {
-          'arrangedAt':   '3067833780',
-          'arrangedNext': '3681400536',
+          'arranged_at':   '3067833780',
+          'arranged_next': '3681400536',
           'deleted':      'true',
           'queryId':      '1',
           'query_text':   'how is kidney cancer diagnosed'
         },
         {
-          'arrangedAt':   '0',
-          'arrangedNext': '613566756',
+          'arranged_at':   '0',
+          'arranged_next': '613566756',
           'deleted':      'false',
           'queryId':      '2',
           'query_text':   'prognosis of alzheimers',

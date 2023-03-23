@@ -9,14 +9,6 @@ module Api
         before_action :find_case
         before_action :check_case
 
-        def make_csv_safe str
-          if %w[- = + @].include?(str[0])
-            " #{str}"
-          else
-            str
-          end
-        end
-
         # rubocop:disable Metrics/MethodLength
         # rubocop:disable Metrics/AbcSize
         # rubocop:disable Metrics/CyclomaticComplexity
@@ -42,7 +34,7 @@ module Api
 
               if 'basic_snapshot' == file_format
                 csv_filename = "case_#{@case.id}_snapshot_judgements.csv"
-                snapshot = Snapshot.find_by(id: params[:snapshot_id])
+                snapshot = @case.snapshots.find_by(id: params[:snapshot_id])
 
                 snapshot.snapshot_queries.each do |snapshot_query|
                   if snapshot_query.snapshot_docs.empty?
@@ -79,8 +71,12 @@ module Api
               headers['Content-Type'] ||= 'text/csv'
             end
             format.txt do
-              headers['Content-Disposition'] = "attachment; filename=\"case_#{@case.id}_judgements.txt\""
+              @snapshot = @case.snapshots.find_by(id: params[:snapshot_id]) if 'trec_snapshot' == file_format
+              headers['Content-Disposition'] = "attachment; filename=\"case_#{@case.id}_#{file_format}.txt\""
               headers['Content-Type'] ||= 'text/plain'
+
+              text_template = file_format.nil? ? 'show' : "show_#{file_format.downcase}"
+              render text_template, formats: :txt
             end
           end
         end
@@ -89,6 +85,16 @@ module Api
         # rubocop:enable Metrics/CyclomaticComplexity
         # rubocop:enable Metrics/PerceivedComplexity
         # rubocop:enable Metrics/BlockLength
+
+        def make_csv_safe str
+          if %w[- = + @].include?(str[0])
+            " #{str}"
+          else
+            str
+          end
+        end
+
+        private
 
         # https://stackoverflow.com/questions/5608918/pad-an-array-to-be-a-certain-size
         # rubocop:disable Naming/MethodParameterName

@@ -34,20 +34,25 @@ angular.module('QuepidApp')
       svc.refetchCaseLists  = refetchCaseLists;
       svc.saveDefaultScorer = saveDefaultScorer;
       svc.renameCase        = renameCase;
+      svc.associateBook     = associateBook;
 
       // an individual case, ie
       // a search problem to be solved
       var Case = function(data) {
         var theCase               = this;
 
-        theCase.caseNo            = data.caseNo;
+        theCase.caseNo            = data.case_id;
         theCase.lastTry           = data.last_try_number;
         theCase.caseName          = data.case_name;
-        theCase.lastScore         = data.lastScore;
-        theCase.scorerId          = data.scorerId;
+        theCase.lastScore         = data.last_score;
+        theCase.scorerId          = data.scorer_id;
         theCase.owned             = data.owned;
         theCase.ownerName         = data.owner_name;
+        theCase.ownerId           = data.owner_id;
+        theCase.bookId            = data.book_id;
+        theCase.bookName          = data.book_name;
         theCase.queriesCount      = data.queriesCount;
+        theCase.public            = data.public;
         theCase.teams             = data.teams || [];
         theCase.tries             = data.tries || [];
         theCase.scores            = data.scores || [];
@@ -218,10 +223,15 @@ angular.module('QuepidApp')
             var data    = response.data;
             var newCase = new Case(data);
 
-            svc.allCases.push(newCase);
-            svc.archived = svc.archived.filter( function(acase) {
-              acase.caseNo !== newCase.caseNo;
-            });
+            // the .filter() should work, but doesn't so instead combine with a splice.
+            var indexOfCase = svc.allCases.indexOf( svc.allCases.filter( function (item) {
+              return item.caseNo === newCase.caseNo;
+            })[0] );
+            svc.allCases.splice(indexOfCase, 1);
+            //svc.allCases = svc.allCases.filter( function(acase) {
+            //  acase.caseNo !== newCase.caseNo;
+            //});
+            svc.archived.push(newCase);
 
             broadcastSvc.send('updatedCasesList', svc.allCases);
           });
@@ -251,7 +261,7 @@ angular.module('QuepidApp')
 
         return $http.get('/api/cases?archived=true')
           .then(function(response) {
-            angular.forEach(response.data.allCases, function(rawCase) {
+            angular.forEach(response.data.all_cases, function(rawCase) {
               var newCase = constructFromData(rawCase);
 
               if ( !listContainsCase(svc.archived, newCase) ) {
@@ -266,9 +276,9 @@ angular.module('QuepidApp')
         self.dropdownCases.length = 0;
         return $http.get('/api/dropdown/cases')
           .then(function(response) {
-            self.casesCount = response.data.casesCount;
+            self.casesCount = response.data.cases_count;
 
-            angular.forEach(response.data.allCases, function(rawCase) {
+            angular.forEach(response.data.all_cases, function(rawCase) {
               var newCase = new Case(rawCase);
 
               if ( !listContainsCase(svc.dropdownCases, newCase) ) {
@@ -356,7 +366,7 @@ angular.module('QuepidApp')
           .then(function(response) {
             var data = response.data;
 
-            angular.forEach(data.allCases, function(rawCase) {
+            angular.forEach(data.all_cases, function(rawCase) {
               var newCase = constructFromData(rawCase);
 
               if ( !listContainsCase(svc.allCases, newCase) ) {
@@ -420,6 +430,28 @@ angular.module('QuepidApp')
               caseTryNavSvc.notFound();
             });
         }
+      }
+
+      /*
+       * update which book the case is tied to.  This could be refactored into a more
+       * general "update" method.
+       */
+      function associateBook(theCase, bookId) {
+
+        // HTTP PUT /api/cases/<int:caseId>
+        var url  = '/api/cases/' + theCase.caseNo;
+        var data = {
+          book_id: bookId
+        };
+
+        return $http.put(url, data)
+          .then(function(response) {
+
+            theCase.bookId = bookId;
+            theCase.bookName = response.book_name;
+          }, function() {
+            caseTryNavSvc.notFound();
+          });
       }
 
 

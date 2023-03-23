@@ -113,6 +113,18 @@ angular.module('QuepidApp')
          }
 
         }
+        else if ( options.which === 'trec' ) {
+         $log.info('Selected "trec" as export option.');
+         snapshotId = options.basic_snapshot;
+
+         if (snapshotId === undefined){
+           caseCSVSvc.exportTrecFormat(ctrl.theCase);
+         }
+         else {
+            caseCSVSvc.exportTrecFormatSnapshot(ctrl.theCase, snapshotId);
+         }
+
+        }
         else if ( options.which === 'rre' ) {
          $log.info('Selected "rre" as export option.');
          caseCSVSvc.exportRREFormat(ctrl.theCase);

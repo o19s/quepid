@@ -22,6 +22,10 @@
     this.setMockFieldSpec = function(fieldSpec) {
       mockFieldSpec = fieldSpec;
     };
+
+    this.applicableSettings = function() {
+      return mockTry;
+    };
   };
   wind.MockSettingsSvc = MockSettingsSvc;
 })(window);

@@ -11,7 +11,7 @@ require 'minitest/spec'
 require 'mocha/minitest'
 require 'webmock/minitest'
 
-Dir[Rails.root.join('test/support/**/*.rb')].sort
+Dir[Rails.root.join('test/support/**/*.rb')]
   .each { |f| require f }
 
 Minitest::Reporters.use! [ Minitest::Reporters::ProgressReporter.new, Minitest::Reporters::JUnitReporter.new ]
@@ -31,6 +31,16 @@ module ActiveSupport
     def login_user user = nil
       user ||= @user
       @controller.send(:auto_login, user)
+    end
+
+    # in Minitest 6, it will fail to do an assert_equal on a nil, so weird workaround
+    # to shut up deprecation warnings.
+    def assert_nil_or_equal source, target
+      if source.blank?
+        assert_nil target
+      else
+        assert_equal source, target
+      end
     end
   end
 end

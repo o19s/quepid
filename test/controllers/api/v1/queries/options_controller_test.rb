@@ -22,7 +22,7 @@ module Api
 
             assert_response :ok
 
-            data = JSON.parse(response.body)
+            data = response.parsed_body
 
             assert_nil data['options']
           end
@@ -36,7 +36,7 @@ module Api
 
             assert_response :ok
 
-            data = JSON.parse(response.body)
+            data = response.parsed_body
 
             assert_equal data['options'], options
           end
@@ -50,7 +50,7 @@ module Api
 
             assert_response :ok
 
-            data = JSON.parse(response.body)
+            data = response.parsed_body
 
             query.reload
             assert_equal  query.options,    options

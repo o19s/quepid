@@ -1,0 +1,53 @@
+<h1> Book <%= @book.name %></h1>
+Books organize all the query/doc pairs that are needed for evaluating your search queries.
+
+<%= render 'judgements/moar_judgements_needed', book: @book %>
+
+<p>
+  <strong>Team:</strong>
+  <%= @book.team.name %>
+</p>
+
+<p>
+  <strong>Scorer:</strong>
+  <%= @book.scorer.name %>
+</p>
+
+<p>
+  <strong>Selection strategy:</strong>
+  <%= @book.selection_strategy.name %>
+</p>
+<p>
+   <%= @book.selection_strategy.description %>
+</p>
+
+<%= button_to 'Show Judgements', book_judgements_url(@book), method: :get %>
+
+<br>
+
+<%= button_to 'Show Query Doc Pairs', book_query_doc_pairs_url(@book), method: :get %>
+
+<br>
+
+<%= button_to "Edit Book", edit_book_path(@book), method: :get %>
+
+<br>
+
+<%= button_to 'Back to Books', books_path, method: :get %>
+
+<br>
+
+<%= button_to 'Return to Case', root_path, method: :get %>
+
+<br/>
+<h3>Export Data</h3>
+<p>
+  You want to export your judgements?   I hear you!  You can do so in CSV and JSON ;-)
+</p>
+<p>
+Export in <%= link_to 'CSV', api_book_path(@book, format: :csv) %> or <%= link_to 'JSON', api_book_path(@book) %>
+</p>
+<p>
+To reference these judgements from a notebook or another system you can reference these Quepid API endpoints:
+<code><%= api_book_path(@book, format: :csv) %></code> or <code><%= api_book_path(@book) %></code>
+<p>

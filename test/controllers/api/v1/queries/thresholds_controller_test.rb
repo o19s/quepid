@@ -22,13 +22,13 @@ module Api
 
             assert_response :ok
 
-            data = JSON.parse(response.body)
+            data = response.parsed_body
 
             query.reload
             assert_equal  query.threshold, 1
 
-            assert_equal  data['threshold'],      1
-            assert_equal  data['thresholdEnbl'],  false
+            assert_equal  data['threshold'], 1
+            assert_equal  data['threshold_enabled'], false
           end
 
           test 'sets the query threshold enabled flag' do
@@ -39,14 +39,14 @@ module Api
 
             assert_response :ok
 
-            data = JSON.parse(response.body)
+            data = response.parsed_body
 
             query.reload
             assert_equal  query.threshold,      1
             assert_equal  query.threshold_enbl, true
 
-            assert_equal  data['threshold'],      1
-            assert_equal  data['thresholdEnbl'],  true
+            assert_equal  data['threshold'], 1
+            assert_equal  data['threshold_enabled'], true
           end
 
           describe 'analytics' do

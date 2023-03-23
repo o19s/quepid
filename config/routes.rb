@@ -4,8 +4,9 @@ require 'sidekiq/web'
 
 # rubocop:disable Metrics/BlockLength
 Rails.application.routes.draw do
+  # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
+
   Healthcheck.routes(self)
-  # For details on the DSL available within this file, see https://guides.rubyonrails.org/routing.html
   constraints(AdminConstraint) do
     mount Sidekiq::Web, at: 'admin/jobs'
   end
@@ -24,6 +25,18 @@ Rails.application.routes.draw do
   resource :account, only: [ :update, :destroy ]
   resource :profile, only: [ :show, :update ]
 
+  resources :cases, only: [] do
+    resource :book
+  end
+
+  resources :books do
+    resources :judgements
+    resources :query_doc_pairs do
+      resources :judgements
+    end
+    get 'judge' => 'judgements#new'
+  end
+
   devise_for :users, controllers: {
     passwords:          'users/passwords',
     invitations:        'users/invitations',
@@ -35,6 +48,9 @@ Rails.application.routes.draw do
     get 'tries_visualization/:case_id/vega_specification' => 'tries_visualization#vega_specification',
         as: :tries_visualization_vega_specification
     get 'tries_visualization/:case_id/vega_data' => 'tries_visualization#vega_data', as: :tries_visualization_vega_data
+    resources :cases do
+      resource :visibility, only: [ :update ], module: :cases
+    end
   end
 
   namespace :admin do
@@ -43,7 +59,7 @@ Rails.application.routes.draw do
       resource :lock, only: [ :update ], module: :users
       resource :pulse, only: [ :show ], module: :users
     end
-    resources :communal_scorers, except: [ :destroy ]
+    resources :communal_scorers
   end
 
   root 'core#index'
@@ -115,6 +131,13 @@ Rails.application.routes.draw do
         resources :annotations, except: [ :show ]
       end
 
+      resources :books, only: [ :show ] do
+        put '/populate' => 'books/populate#update'
+        resources :cases do
+          put 'refresh' => 'books/refresh#update'
+        end
+      end
+
       namespace :clone do
         resources :cases, only: [ :create ] do
           post 'tries/:try_number' => 'tries#create', as: :try
@@ -130,6 +153,7 @@ Rails.application.routes.draw do
         resources :scorers, only: [ :index, :create, :destroy ], controller: :team_scorers
         resources :cases,   only: [ :index, :create, :destroy ], controller: :team_cases
         resources :owners,  only: [ :update ], controller: :team_owners
+        resources :books,   only: [ :index ], controller: :team_books
       end
 
       # Imports
@@ -166,6 +190,6 @@ Rails.application.routes.draw do
   get '/scorers'                      => 'core#index'
 
   # Static pages
-  get '*page' => 'pages#show'
+  # get '*page' => 'pages#show'
 end
 # rubocop:enable Metrics/BlockLength

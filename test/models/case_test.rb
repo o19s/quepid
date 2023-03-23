@@ -5,13 +5,23 @@
 # Table name: cases
 #
 #  id              :integer          not null, primary key
+#  archived        :boolean
 #  case_name       :string(191)
 #  last_try_number :integer
-#  user_id         :integer
-#  archived        :boolean
-#  scorer_id       :integer
+#  public          :boolean
 #  created_at      :datetime         not null
 #  updated_at      :datetime         not null
+#  book_id         :integer
+#  owner_id        :integer
+#  scorer_id       :integer
+#
+# Indexes
+#
+#  user_id  (owner_id)
+#
+# Foreign Keys
+#
+#  cases_ibfk_1  (owner_id => users.id)
 #
 
 require 'test_helper'
@@ -236,7 +246,7 @@ class CaseTest < ActiveSupport::TestCase
     it 'destroys the related objects' do
       assert_difference 'Case.count', -1 do
         assert_difference 'Try.count', -4 do
-          assert_difference 'Query.count', -2 do
+          assert_difference 'Query.count', -3 do
             the_case.really_destroy
             assert the_case.destroyed?
           end
@@ -246,10 +256,10 @@ class CaseTest < ActiveSupport::TestCase
     end
 
     it 'handles destroyed queries' do
-      assert_difference 'Query.count', -2 do
-        assert_equal 2, the_case.queries.size
+      assert_difference 'Query.count', -3 do
+        assert_equal 3, the_case.queries.size
         the_case.queries.first.destroy
-        assert_equal 1, the_case.queries.size
+        assert_equal 2, the_case.queries.size
         the_case.really_destroy
         assert the_case.destroyed?
       end

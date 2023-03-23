@@ -2,7 +2,8 @@
 
 module Admin
   class CommunalScorersController < Admin::AdminController
-    before_action :set_scorer, only: [ :show, :edit, :update ]
+    # Properly we should only allow a user with Admin permissions to call this controller...
+    before_action :set_scorer, only: [ :show, :edit, :update, :destroy ]
 
     def index
       @scorers = Scorer.communal
@@ -14,6 +15,8 @@ module Admin
       @scorer = Scorer.new
       @scorer.communal = true
     end
+
+    def edit; end
 
     def create
       @scorer = Scorer.new scorer_params
@@ -40,8 +43,6 @@ module Admin
       render action: :new
     end
 
-    def edit; end
-
     def update
       if @scorer.update scorer_params
         redirect_to admin_communal_scorer_path(@scorer)
@@ -66,6 +67,16 @@ module Admin
       render action: :edit
     end
 
+    # DELETE /admin/communal_scorers/1
+    # DELETE /admin/communal_scorers/1.json
+    def destroy
+      @scorer.destroy
+      respond_to do |format|
+        format.html { redirect_to admin_communal_scorers_url, notice: 'Scorer was successfully deleted.' }
+        format.json { head :no_content }
+      end
+    end
+
     private
 
     def scorer_params
@@ -75,8 +86,6 @@ module Admin
         :code,
         :name,
         :communal,
-        :manual_max_score,
-        :manual_max_score_value,
         :show_scale_labels,
         :scale_list,  # alternate approach to the scale:[] array used in admin only
         :state,
@@ -86,7 +95,7 @@ module Admin
     end
 
     def set_scorer
-      @scorer = Scorer.where(id: params[:id]).first
+      @scorer = Scorer.find(params[:id])
 
       render json: { error: 'Not Found!' }, status: :not_found unless @scorer
     end

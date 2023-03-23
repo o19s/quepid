@@ -17,24 +17,6 @@
   ng-model="ctrl.scorer.code"></div>
 </div>
 
-<div class='form-group scorer max-score'>
-  <label>Max Score:</label></br />
-  <label>
-    <input id="manual-max-score" type="radio" ng-model="ctrl.scorer.manualMaxScore" ng-value="false">
-    Automatic
-    <a href="javascript:void();" tooltip="Calculated automatically by setting the rating of all docs to the highest rating in the scale." tooltip-placement="left">
-      <span class="fa fa-question-circle" aria-hidden="true"></span>
-    </a>
-  </label>
-
-  <label>
-    <input id="manual-max-score" type="radio" ng-model="ctrl.scorer.manualMaxScore" ng-value="true">
-    Custom
-  </label>
-
-  <input id="manual-max-score-value" type="text" ng-model="ctrl.scorer.manualMaxScoreValue" ng-disabled="!ctrl.scorer.manualMaxScore">
-</div>
-
 <div class='form-group'>
   <label>Scale for query ratings:</label></br />
   <p ng-if="ctrl.updatingScale" class='bg-warning text-warning padded-text'>

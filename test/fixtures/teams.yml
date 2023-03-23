@@ -4,9 +4,18 @@
 #
 #  id         :integer          not null, primary key
 #  name       :string(255)
-#  owner_id   :integer          not null
 #  created_at :datetime         not null
 #  updated_at :datetime         not null
+#  owner_id   :integer          not null
+#
+# Indexes
+#
+#  index_teams_on_name  (name)
+#  owner_id             (owner_id)
+#
+# Foreign Keys
+#
+#  teams_ibfk_1  (owner_id => users.id)
 #
 
 valid:
@@ -18,7 +27,7 @@ valid:
 shared:
   name:     a shared team
   owner:    :random
-  members:  doug, shared_scorer_owner, random, not_shared_case_owner, dropdown_user
+  members:  doug, shared_scorer_owner, random, not_shared_case_owner, dropdown_user, random_1
   scorers:  shared_scorer, shared_scorer1, shared_scorer2
   cases:    shared_with_team
 

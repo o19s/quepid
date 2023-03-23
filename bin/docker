@@ -10,8 +10,8 @@ command, *rest = ARGV
 Dir.chdir APP_ROOT do
   case command
   when 'server', 's'
-    system 'docker-compose up -d nginx'
-    system 'docker-compose run --service-ports app foreman s -f Procfile.dev'
+    system 'docker-compose up --no-deps -d nginx'
+    system 'docker-compose run --rm --service-ports app foreman s -f Procfile.dev'
   when 'bash', 'b'
     system 'docker-compose run --rm app bash'
   when 'console', 'c'
