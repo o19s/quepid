@@ -73,7 +73,7 @@ GEM
     addressable (2.8.1)
       public_suffix (>= 2.0.2, < 6.0)
     aes_key_wrap (1.1.0)
-    ancestry (4.2.0)
+    ancestry (4.3.1)
       activerecord (>= 5.2.6)
     angular-rails-templates (1.2.0)
       railties (>= 5.0, < 7.1)
