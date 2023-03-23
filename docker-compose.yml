@@ -58,7 +58,7 @@ services:
       - ./keycloak/realm-config/quepid-realm.json:/opt/keycloak/data/import/quepid-realm.json:ro
 
   nginx:
-    image: nginx:1.21.4
+    image: nginx:1.23.3
     container_name: quepid_nginx
     ports:
       - "443:8443"
