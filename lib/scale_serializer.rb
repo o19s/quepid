@@ -11,7 +11,7 @@ class ScaleSerializer
       scale
     end
   end
-  
+
   def self.load scale
     # TODO: escape ',' in labels
     return unless scale
