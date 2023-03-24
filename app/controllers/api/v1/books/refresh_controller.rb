@@ -20,8 +20,8 @@ module Api
             query_count += 1 if query.new_record?
             rating = Rating.find_or_initialize_by(query: query, doc_id: query_doc_pair.doc_id)
             rating_count += 1 if rating.new_record?
-            summed_rating = query_doc_pair.judgements.sum(&:rating)
-            count_of_judgements = query_doc_pair.judgements.size
+            summed_rating = query_doc_pair.judgements.rateable.sum(&:rating)
+            count_of_judgements = query_doc_pair.judgements.rateable.size
             rating.rating = (summed_rating / count_of_judgements).round # only have ints today in Quepid Ratings.
 
             rating.save
