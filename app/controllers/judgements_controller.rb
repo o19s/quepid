@@ -27,8 +27,21 @@ class JudgementsController < ApplicationController
   def create
     @judgement = Judgement.new(judgement_params)
     @judgement.user = current_user
+    @judgement.unrateable = false
 
     if @judgement.save
+      session['previous_judgement_id'] = @judgement.id
+      redirect_to book_judge_path(@book)
+    else
+      render action: :edit
+    end
+  end
+
+  def unrateable
+    @judgement = Judgement.new(query_doc_pair_id: params[:query_doc_pair_id])
+    @judgement.user = current_user
+
+    if @judgement.mark_unrateable!
       session['previous_judgement_id'] = @judgement.id
       redirect_to book_judge_path(@book)
     else
@@ -58,7 +71,7 @@ class JudgementsController < ApplicationController
   end
 
   def judgement_params
-    params.require(:judgement).permit(:user_id, :rating, :query_doc_pair_id)
+    params.require(:judgement).permit(:user_id, :rating, :query_doc_pair_id, :unrateable)
   end
 
   def find_book

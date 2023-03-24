@@ -33,6 +33,7 @@ Rails.application.routes.draw do
     resources :judgements
     resources :query_doc_pairs do
       resources :judgements
+      get 'unrateable' => 'judgements#unrateable'
     end
     get 'judge' => 'judgements#new'
   end

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_03_07_210408) do
+ActiveRecord::Schema[7.0].define(version: 2023_03_24_195152) do
   create_table "annotations", id: :integer, charset: "utf8mb3", force: :cascade do |t|
     t.text "message"
     t.string "source"
@@ -81,6 +81,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_03_07_210408) do
     t.bigint "query_doc_pair_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.boolean "unrateable", default: false
     t.index ["query_doc_pair_id"], name: "index_judgements_on_query_doc_pair_id"
   end
 
