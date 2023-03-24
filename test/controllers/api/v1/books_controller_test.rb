@@ -34,7 +34,8 @@ module Api
       end
 
       describe 'Exporting a book in basic csv format' do
-        let(:book) { books(:james_bond_movies) }
+        let(:book)        { books(:james_bond_movies) }
+        let(:judgement)   { judgements(:qdp10_judgement) }
 
         test 'returns book w/ query doc pairs and judgement info' do
           get :show, params: { id: book.id, format: :csv }
@@ -45,6 +46,19 @@ module Api
           assert_equal csv[1]['query'], book.query_doc_pairs[1].query_text
           assert_equal csv[1][book.query_doc_pairs[1].judgements[0].user.name],
                        book.query_doc_pairs[1].judgements[0].rating.to_s
+
+          assert_not_includes csv.headers, 'Unknown'
+        end
+
+        test 'handles a rating that is not associated with a user, and adds Unknown' do
+          judgement.user = nil
+          judgement.save!
+          get :show, params: { id: book.id, format: :csv }
+
+          assert_response :ok
+          puts response.body
+          csv = CSV.parse(response.body, headers: true)
+          assert_includes csv.headers, 'Unknown'
         end
       end
     end

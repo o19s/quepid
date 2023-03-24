@@ -49,7 +49,7 @@ gem 'ancestry'
 gem 'omniauth', '~> 2.0'
 gem 'omniauth-keycloak'
 gem 'omniauth-google-oauth2'
-gem "omniauth-rails_csrf_protection", "~> 1.0"
+gem 'omniauth-rails_csrf_protection', '~> 1.0'
 
 gem 'rails-healthcheck', '~> 1.4'
 
@@ -76,6 +76,7 @@ group :development do
   gem 'letter_opener'
   gem 'rubocop', require: false
   gem 'rubocop-rails', require: false
+  gem "rubocop-capybara", require: false
   gem 'rails-erd', '~> 1.6'
 end
 
