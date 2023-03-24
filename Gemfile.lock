@@ -342,6 +342,8 @@ GEM
       unicode-display_width (>= 2.4.0, < 3.0)
     rubocop-ast (1.27.0)
       parser (>= 3.2.1.0)
+    rubocop-capybara (2.17.1)
+      rubocop (~> 1.41)
     rubocop-rails (2.18.0)
       activesupport (>= 4.2.0)
       rack (>= 1.1)
@@ -474,6 +476,7 @@ DEPENDENCIES
   redis (~> 5.0.6)
   responders
   rubocop
+  rubocop-capybara
   rubocop-rails
   sassc-rails (~> 2.1)
   selenium-webdriver

@@ -317,6 +317,12 @@ osc.members << realistic_activity_user
 osc.cases << tens_of_queries_case
 print_step "End of seeding teams................"
 
+# Books
+print_step "Seeding books................"
+
+book = Book.where(name: "Book of Ratings", team:osc, scorer: Scorer.system_default_scorer, selection_strategy: SelectionStrategy.find_by(name:'Multiple Raters')).first_or_create
+
+
 # Big Cases
 
 if ENV['SEED_LARGE_CASES']
