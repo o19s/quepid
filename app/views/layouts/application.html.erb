@@ -1,16 +1,58 @@
-<!doctype html>
-<html lang="en" data-bs-theme="auto">
-  <head><script src="../assets/js/color-modes.js"></script>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
 
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="">
-    <meta name="author" content="Mark Otto, Jacob Thornton, and Bootstrap contributors">
-    <meta name="generator" content="Hugo 0.111.3">
-    <title>Dashboard Template · Bootstrap v5.3</title>
+<%= favicon_link_tag asset_path "favicon.ico" %>
 
-    <link rel="canonical" href="https://getbootstrap.com/docs/5.3/examples/dashboard/">
+<!-- Probably better way of doing this -->
+<% if flash[:unfurl] %>
+<!-- We have unfurl -->
 
+<title>Quepid: Case <%= flash[:unfurl]["case_name"] %></title>
+
+<!-— facebook open graph tags -->
+<meta property="og:type" content="website" />
+<% if flash[:unfurl]["id"] %>
+<meta property="og:url" content="<%=case_core_url(id: flash[:unfurl]["id"] ) %>" />
+<% end %>
+<meta property="og:title" content="Case <%= flash[:unfurl]["case_name"] %>" />
+<meta property="og:description" content="Case <%= flash[:unfurl]["case_name"] %> Description here." />
+<meta property="og:image" content="<%= image_url "quepid-icon.png" %>" />
+
+<!-— twitter card tags additive with the og: tags -->
+<meta name="twitter:card" content="summary">
+<meta name="twitter:site" content="@quepid_search">
+<meta name="twitter:domain" value="<%=URI.parse(root_url).host%>" />
+<meta name="twitter:title" value="Case <%= flash[:unfurl]["case_name"] %>" />
+<meta name="twitter:description" value="Case <%= flash[:unfurl]["case_name"] %> Description here" />
+<meta name="twitter:image" content="<%= image_url "quepid-icon.png" %>" />
+<% if flash[:unfurl]["id"] %>
+<meta name="twitter:url" value="<%=case_core_url(id: flash[:unfurl]["id"] ) %>" />
+<meta name="twitter:label1" value="Latest Try" />
+<meta name="twitter:data1" value="<%=Case.find_by_id(flash[:unfurl]["id"]).tries.latest.try_number %>" />
+<% end %>
+<% else %>
+<!-- We DO NOT have unfurl -->
+
+<title>Quepid -- Relevant Search Solved</title>
+
+<!-— facebook open graph tags -->
+<meta property="og:type" content="website" />
+<meta name="twitter:site" content="@quepid_search">
+<meta property="og:url" content="<%=root_url%>" />
+<meta property="og:title" content="Quepid -- Relevant Search Solved" />
+<meta property="og:description" content="Tired of irrelevant search results? Use Quepid products & services to help improve the quality and relevancy of your search results." />
+<meta property="og:image" content="<%= image_url "quepid-icon.png" %>" />
+
+<!-— twitter card tags additive with the og: tags -->
+<meta name="twitter:card" content="summary">
+<meta name="twitter:domain" value="<%=URI.parse(root_url).host%>" />
+<meta name="twitter:title" value="Quepid -- Relevant Search Solved" />
+<meta name="twitter:description" value="Tired of irrelevant search results? Use Quepid products & services to help improve the quality and relevancy of your search results." />
+<meta name="twitter:image" content="<%= image_url "quepid-icon.png" %>" />
+<meta name="twitter:url" value="<%=root_url%>" />
+<% end %>
 
 
 
@@ -25,7 +67,6 @@
 
 
     <!-- Custom styles for this template -->
-    <link href="ignoreme-dashboard.css" rel="stylesheet">
     <style>
       body {
         font-size: .875rem;
@@ -107,10 +148,13 @@
 
 
       </style>
-  </head>
-  <body>
 
-  <%= render 'layouts/header2' %>
+
+</head>
+
+<body>
+
+<%= render 'layouts/header2' %>
 
 <div class="container-fluid">
   <div class="row">
@@ -225,12 +269,16 @@
               <div class="card-body p-4">
                 <div class="d-flex text-black">
                   <div class="flex-shrink-0">
+                    <% if current_user %>
                     <%= image_tag current_user.avatar_url(:big), id: 'user-avatar', class:'img-fluid img-rounded', style:"width: 180px;" %>
+                    <% end %>
                   </div>
                   <div class="flex-grow-1 ms-3">
                     <h5 class="mb-1"><%= current_user.display_name %></h5>
                     <p class="mb-2 pb-1" style="color: #2b2a2a;">
+                    <% if current_user %>
                       <%= current_user.email %>
+                      <% end %> 
                     </p>
                     <div
                       class="d-flex justify-content-start rounded-3 p-2 mb-2"
@@ -355,5 +403,6 @@
   </div>
 </div>
 
-  </body>
+  <%= render 'layouts/common_js' %>
+</body>
 </html>
