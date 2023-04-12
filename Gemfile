@@ -52,6 +52,7 @@ gem 'omniauth-google-oauth2'
 gem 'omniauth-rails_csrf_protection', '~> 1.0'
 
 gem 'rails-healthcheck', '~> 1.4'
+gem 'rails-html-sanitizer'
 
 gem 'vega', '~> 0.3.0'
 
