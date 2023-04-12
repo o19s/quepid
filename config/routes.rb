@@ -36,6 +36,11 @@ Rails.application.routes.draw do
     get 'judge' => 'judgements#new'
   end
 
+  resources :recency do
+  end
+
+  get "/RevelEQ", to: redirect("/RevelEQ/index.html")
+
   devise_for :users, controllers: {
     passwords:          'users/passwords',
     invitations:        'users/invitations',

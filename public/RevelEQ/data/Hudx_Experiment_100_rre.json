@@ -1,0 +1,2195 @@
+{
+  "id_field": "url",
+  "index": "fess.search",
+  "template": "template.json",
+  "queries": [
+    {
+      "placeholders": {
+        "$query": "happy fair housing month"
+      },
+      "relevant_documents": {
+        "1": [
+          "https://www.hudexchange.info/programs/nfhta/digest/2022-04/",
+          "https://www.hudexchange.info/news/april-is-fair-housing-month-fair-housing-equals-opportunity/",
+          "https://www.hudexchange.info/programs/housing-counseling/housing-counseling-works/",
+          "https://www.hudexchange.info/programs/nfhta/digest/2022-05/",
+          "https://www.hudexchange.info/programs/nfhta/fair-housing-highlights/",
+          "https://www.hudexchange.info/programs/nfhta/courses/basics-of-fair-housing/",
+          "https://www.hudexchange.info/programs/fair-housing/",
+          "https://www.hudexchange.info/programs/fair-housing-planning/"
+        ],
+        "2": [
+          "https://www.hudexchange.info/news/fair-housing-month-2020-national-training-day-on-sexual-harassment-prevention-in-housing-april-29-2020/",
+          "https://www.hudexchange.info/news/fair-housing-month-hiv-housing-discrimination-poster-available/",
+          "https://www.hudexchange.info/trainings/courses/fair-housing-2021-what-counselors-need-to-know-fair-housing-in-practice/",
+          "https://www.hudexchange.info/resource/6699/housing-counseling-fair-housing-fact-sheet-for-housing-counselors/",
+          "https://www.hudexchange.info/news/new-resources-for-national-preparedness-month/",
+          "https://www.hudexchange.info/trainings/courses/2022-fair-housing-office-hours-session-12-fair-housing-issues-impediments-and-contributing-fact/4713/",
+          "https://www.hudexchange.info/trainings/courses/fair-housing-2021-what-counselors-need-to-know-fair-housing-in-disaster-recovery/",
+          "https://www.hudexchange.info/trainings/courses/nfhta-basics-of-fair-housing-september-2022/4755/",
+          "https://www.hudexchange.info/trainings/courses/fair-housing-act-s-familial-status-protections-webinar/",
+          "https://www.hudexchange.info/news/2022-fair-housing-office-hours/",
+          "https://www.hudexchange.info/trainings/courses/nfhta-fundamentals-of-fair-housing-intake-november-2022/4782/"
+        ]
+      }
+    },
+    {
+      "placeholders": {
+        "$query": "vawa"
+      },
+      "relevant_documents": {
+        "1": [
+          "https://www.hudexchange.info/programs/hopwa/",
+          "https://www.hudexchange.info/programs/cdbg-entitlement/"
+        ],
+        "2": [
+          "https://www.hudexchange.info/trainings/courses/vawa-implementation-call/",
+          "https://www.hudexchange.info/resource/4782/vawa-hopwa-project-demonstration-nofa-and-faqs/",
+          "https://www.hudexchange.info/news/reauthorization-of-the-violence-against-women-act-vawa/",
+          "https://www.hudexchange.info/faqs/programs/housing-choice-voucher-program/moves-and-portability/portability/do-violence-against-women-act-transfers-take-priority-over-all-other/",
+          "https://www.hudexchange.info/trainings/courses/vawa-housing-protections-implementation-considerations-for-esg-and-coc-programs/",
+          "https://www.hudexchange.info/resource/4718/federal-register-notice-proposed-rule-violence-against-women-act-2013-vawa-2013/",
+          "https://www.hudexchange.info/trainings/courses/upcoming-webcast-vawa-and-hopwa-project-demonstration-webcast/",
+          "https://www.hudexchange.info/trainings/courses/vawa-right-to-report-from-home-for-cdbg-recipients-webinar/4780/",
+          "https://www.hudexchange.info/faqs/programs/housing-choice-voucher-program/terminations/terminations/is-there-a-timeframe-by-which-an-alleged-victim-must-request-protection/"
+        ],
+        "3": [
+          "https://www.hudexchange.info/programs/hopwa/vawa-hopwa-demonstration/"
+        ]
+      }
+    },
+    {
+      "placeholders": {
+        "$query": "lsa"
+      },
+      "relevant_documents": {
+        "1": [
+          "https://www.hudexchange.info/trainings/courses/lsa-office-hours-for-communities-lsa-submission-process-discussion-session/2679/",
+          "https://www.hudexchange.info/resource/5829/preparing-lsa-files-for-stella-p/"
+        ],
+        "2": [
+          "https://www.hudexchange.info/resource/6210/lsa-training-video-uploading-lsa-files/",
+          "https://www.hudexchange.info/resource/5726/lsa-report-specifications-and-tools/",
+          "https://www.hudexchange.info/trainings/courses/lsa-reminder-and-office-hours/",
+          "https://www.hudexchange.info/resource/6546/preparing-for-the-lsa-guidance-on-common-data-quality-issues/",
+          "https://www.hudexchange.info/resource/5763/overview-of-the-lsa-submission-process/",
+          "https://www.hudexchange.info/resource/6556/lsa-common-flags-library/",
+          "https://www.hudexchange.info/news/stellavising-lsa-datasets-for-cocs/",
+          "https://www.hudexchange.info/resource/5736/lsa-summary-display-table-shells/"
+        ],
+        "3": [
+          "https://www.hudexchange.info/homelessness-assistance/lsa/"
+        ]
+      }
+    },
+    {
+      "placeholders": {
+        "$query": "consolidated plan"
+      },
+      "relevant_documents": {
+        "1": [
+          "https://www.hudexchange.info/faqs/programs/cdbg-entitlement-program/consolidated-plan/can-consolidated-plan-certifications-be-attached-to-the-plan-and-sent-in/",
+          "https://www.hudexchange.info/resource/4528/using-data-for-consolidated-planning/"
+        ],
+        "2": [
+          "https://www.hudexchange.info/programs/consolidated-plan/guides/",
+          "https://www.hudexchange.info/programs/consolidated-plan/consolidated-plan-regulations-and-federal-register-notices/",
+          "https://www.hudexchange.info/programs/consolidated-plan/con-plans-aaps-capers/",
+          "https://www.hudexchange.info/trainings/courses/2022-best-practices-for-the-consolidated-plan-and-action-plan-in-the-econ-planning-suite/4643/",
+          "https://www.hudexchange.info/resource/5040/consolidated-plan-quick-guides/",
+          "https://www.hudexchange.info/trainings/courses/incorporating-the-afh-in-the-consolidated-plan-webinar/2346/",
+          "https://www.hudexchange.info/resource/3179/consolidated-planning-data-sources/",
+          "https://www.hudexchange.info/news/best-practices-for-the-consolidated-plan-and-action-plan-in-the-econ-planning-suite/",
+          "https://www.hudexchange.info/trainings/courses/incorporating-the-afh-in-the-consolidated-plan-webinar/",
+          "https://www.hudexchange.info/resource/2728/esg-checklist-requirements-homelessness-annual-action-plan/",
+          "https://files.hudexchange.info/resources/documents/Incorporating-the-AFH-into-the-Consolidated-Plan.pdf"
+        ],
+        "3": [
+          "https://www.hudexchange.info/programs/consolidated-plan/"
+        ]
+      }
+    },
+    {
+      "placeholders": {
+        "$query": "cdbg-cv"
+      },
+      "relevant_documents": {
+        "2": [
+          "https://www.hudexchange.info/programs/cdbg-cv/cdbg-cv-toolkit/state-cdbg-cv-implementation/",
+          "https://www.hudexchange.info/programs/covid-19/",
+          "https://www.hudexchange.info/programs/cdbg-cv/cdbg-cv-toolkit/introduction/",
+          "https://www.hudexchange.info/programs/cdbg-cv/cdbg-cv-toolkit/duplication-of-benefits/",
+          "https://www.hudexchange.info/programs/cdbg-cv/cdbg-cv-toolkit/program-management/",
+          "https://www.hudexchange.info/programs/cdbg-cv/cdbg-cv-toolkit/eligible-uses/",
+          "https://www.hudexchange.info/news/cdbg-cv-notice-published/",
+          "https://www.hudexchange.info/programs/cdbg-cv/cdbg-cv-toolkit/national-objectives/",
+          "https://www.hudexchange.info/programs/cdbg-cv/cdbg-cv-toolkit/documentation/",
+          "https://www.hudexchange.info/trainings/cdbg-cv-webinars/"
+        ],
+        "3": [
+          "https://www.hudexchange.info/programs/cdbg-cv/"
+        ]
+      }
+    },
+    {
+      "placeholders": {
+        "$query": "transitional housing"
+      },
+      "relevant_documents": {
+        "0": [
+          "https://www.hudexchange.info/grantees/transition-house-california/",
+          "https://www.hudexchange.info/resource/4365/randolph-county-housing-and-transit-study/"
+        ],
+        "1": [
+          "https://www.hudexchange.info/resource/944/characteristics-of-transitional-housing-for-homeless-families/",
+          "https://www.hudexchange.info/faqs/reporting-systems/e-snaps-homeless-assistance-application-and-grants-management-system/project-application/other/we-have-a-transitional-housing-project-that-would-like-to-reallocate/",
+          "https://www.hudexchange.info/grantees/transitional-housing-services-new-jersey/?program=3",
+          "https://files.hudexchange.info/resources/documents/CDBG-Memorandum-Pre-agreement-Costs-for-Transitional-Housing.pdf",
+          "https://www.hudexchange.info/resource/3370/cdbg-memorandum-pre-agreement-costs-for-transitional-housing/"
+        ],
+        "2": [
+          "https://www.hudexchange.info/faqs/reporting-systems/e-snaps-homeless-assistance-application-and-grants-management-system/project-application/housing-for-participants/is-hud-attempting-to-phase-out-all-coc-funded-transitional-housing/",
+          "https://www.hudexchange.info/homelessness-assistance/coc-esg-virtual-binders/coc-program-components/transitional-housing/"
+        ],
+        "3": [
+          "https://www.hudexchange.info/news/snaps-weekly-focus-what-about-transitional-housing/",
+          "https://www.hudexchange.info/resource/6274/yhdp-th-rrh-joint-component-project/",
+          "https://www.hudexchange.info/news/snaps-in-focus-the-new-joint-transitional-housing-and-rapid-re-housing-component/"
+        ]
+      }
+    },
+    {
+      "placeholders": {
+        "$query": "tbra"
+      },
+      "relevant_documents": {
+        "2": [
+          "https://www.hudexchange.info/resource/2279/tbra-budget-worksheet/",
+          "https://www.hudexchange.info/resource/6133/emergency-home-tbra-sample-application/",
+          "https://www.hudexchange.info/programs/home/covid-19/",
+          "https://www.hudexchange.info/trainings/building-home/",
+          "https://www.hudexchange.info/trainings/courses/designing-and-implementing-an-emergency-home-tbra-program/3513/",
+          "https://www.hudexchange.info/programs/home/project-profiles/homeward-bound-tbra/",
+          "https://www.hudexchange.info/trainings/courses/using-idis-to-administer-a-home-tbra-program/",
+          "https://www.hudexchange.info/resource/6139/emergency-home-tbra-sample-subrecipient-agreement/",
+          "https://www.hudexchange.info/resource/2128/tbra-applications-for-rental-assistance/",
+          "https://www.hudexchange.info/trainings/courses/ebll-lshr-amendment-training-for-tbra-recipients/4824/",
+          "https://www.hudexchange.info/news/now-available-emergency-home-tbra-toolkit/"
+        ],
+        "3": [
+          "https://www.hudexchange.info/programs/home/emergency-tbra-toolkit/"
+        ]
+      }
+    },
+    {
+      "placeholders": {
+        "$query": "covid"
+      },
+      "relevant_documents": {
+        "0": [
+          "https://www.hudexchange.info/programs/coc/",
+          "https://www.hudexchange.info/programs/housing-counseling/"
+        ],
+        "1": [
+          "https://www.hudexchange.info/programs/esg/"
+        ],
+        "2": [
+          "https://www.hudexchange.info/programs/home/covid-19/",
+          "https://www.hudexchange.info/programs/cdbg/disease/",
+          "https://www.hudexchange.info/programs/cdbg-cv/",
+          "https://www.hudexchange.info/programs/hopwa/covid-19/",
+          "https://www.hudexchange.info/programs/home/home-after-the-covid-19-waivers/",
+          "https://www.hudexchange.info/programs/environmental-review/covid-19-guidance/",
+          "https://www.hudexchange.info/programs/htf/covid-19/",
+          "https://www.hudexchange.info/programs/better-buildings-challenge/covid-19/"
+        ],
+        "3": [
+          "https://www.hudexchange.info/programs/covid-19/"
+        ]
+      }
+    },
+    {
+      "placeholders": {
+        "$query": "ura"
+      },
+      "relevant_documents": {
+        "1": [
+          "https://www.hudexchange.info/trainings/courses/ura-dr-video/"
+        ],
+        "2": [
+          "https://www.hudexchange.info/trainings/courses/ura-overview-video/",
+          "https://www.hudexchange.info/trainings/courses/ura-the-hud-way-module-1-ura-overview/",
+          "https://www.hudexchange.info/trainings/ura-the-hud-way/resources/",
+          "https://www.hudexchange.info/trainings/courses/ura-al-estilo-hud-m-dulo-1-descripci-n-general-de-ura/",
+          "https://www.hudexchange.info/trainings/courses/ura-and-tenant-protections-nsp-webinar1/",
+          "https://www.hudexchange.info/resource/5754/ura-statute/",
+          "https://www.hudexchange.info/trainings/courses/ura-the-hud-way-module-3-ura-planning-budgeting/"
+        ],
+        "3": [
+          "https://www.hudexchange.info/trainings/ura-the-hud-way/",
+          "https://www.hudexchange.info/programs/relocation/"
+        ]
+      }
+    },
+    {
+      "placeholders": {
+        "$query": "system performance measures"
+      },
+      "relevant_documents": {
+        "0": [
+          "https://www.hudexchange.info/news/hud-releases-system-performance-measures-videos/"
+        ],
+        "1": [
+          "https://www.hudexchange.info/news/preparing-for-the-hud-system-performance-measures/",
+          "https://www.hudexchange.info/news/system-performance-measures-data-now-available/",
+          "https://www.hudexchange.info/sites/onecpd/assets/File/CoC-System-Performance-Measure-Video-Overview-Transcript.pdf",
+          "https://www.hudexchange.info/resource/3890/system-performance-measures-in-context/",
+          "https://files.hudexchange.info/course-content/2338/SPM-FY-2016-Data-Submission-Guidance-Webinar-Transcript.pdf",
+          "https://files.hudexchange.info/resources/documents/System-Performance-Measures-Table-Shells.pdf"
+        ],
+        "2": [
+          "https://www.hudexchange.info/resource/3894/system-performance-measures-introductory-guide/",
+          "https://www.hudexchange.info/news/system-performance-measures-updates-for-cocs/",
+          "https://www.hudexchange.info/resource/5081/system-performance-measures-hmis-review-handout/",
+          "https://www.hudexchange.info/faqs/programs/continuum-of-care-coc-program/system-performance-measures/do-the-system-performance-measures-replace-the-annual-performance-report/"
+        ],
+        "3": [
+          "https://www.hudexchange.info/programs/coc/system-performance-measures/",
+          "https://www.hudexchange.info/trainings/courses/coc-system-performance-measures-videos/",
+          "https://files.hudexchange.info/resources/documents/system-performance-measures-in-context.pdf"
+        ]
+      }
+    },
+    {
+      "placeholders": {
+        "$query": "point in time"
+      },
+      "relevant_documents": {
+        "1": [
+          "https://www.hudexchange.info/trainings/courses/point-in-time-count-office-hours/",
+          "https://www.hudexchange.info/news/snaps-in-focus-a-discussion-about-the-point-in-time-count/",
+          "https://www.hudexchange.info/trainings/courses/preparing-for-your-2018-housing-inventory-and-point-time-counts/2252/"
+        ],
+        "2": [
+          "https://www.hudexchange.info/resource/1760/state-of-iowa-point-in-time-unsheltered-homeless-count/",
+          "https://files.hudexchange.info/resources/documents/Point-in-Time-Mobile-Application.pdf",
+          "https://www.hudexchange.info/resource/5184/housing-and-school-partnership-on-the-pit-count/",
+          "https://www.hudexchange.info/resource/4036/point-in-time-count-methodology-guide/",
+          "https://www.hudexchange.info/news/reminder-point-in-time-count-resources/",
+          "https://www.hudexchange.info/news/new-point-in-time-count-resources-available/"
+        ],
+        "3": [
+          "https://www.hudexchange.info/programs/hdx/pit-hic/",
+          "https://www.hudexchange.info/resource/5198/point-in-time-mobile-application/",
+          "https://www.hudexchange.info/resource/3322/point-in-time-survey-tools/",
+          "https://www.hudexchange.info/resource/4433/point-in-time-count-implementation-tools/"
+        ]
+      }
+    },
+    {
+      "placeholders": {
+        "$query": "housing counseling"
+      },
+      "relevant_documents": {
+        "2": [
+          "https://www.hudexchange.info/programs/housing-counseling/the-bridge/",
+          "https://www.hudexchange.info/programs/housing-counseling/research/",
+          "https://www.hudexchange.info/programs/housing-counseling/hcs/",
+          "https://www.hudexchange.info/programs/housing-counseling/program-guidance/",
+          "https://www.hudexchange.info/trainings/courses/housing-counseling-webinar-remote-housing-counseling/",
+          "https://www.hudexchange.info/programs/housing-counseling/training-digest/",
+          "https://www.hudexchange.info/programs/housing-counseling/technology/",
+          "https://www.hudexchange.info/programs/housing-counseling/webinars/",
+          "https://www.hudexchange.info/programs/housing-counseling/housing-counseling-works/",
+          "https://www.hudexchange.info/trainings/courses/housing-counseling-webinar-delivering-housing-counseling-services1/",
+          "https://www.hudexchange.info/programs/housing-counseling/program-description/",
+          "https://www.hudexchange.info/programs/housing-counseling/training-partners/"
+        ],
+        "3": [
+          "https://www.hudexchange.info/programs/housing-counseling/"
+        ]
+      }
+    },
+    {
+      "placeholders": {
+        "$query": "continuum of care"
+      },
+      "relevant_documents": {
+        "1": [
+          "https://www.hudexchange.info/trainings/courses/continuum-of-care-forum1/",
+          "https://www.hudexchange.info/programs/coc/coc-2-0-training-materials/prezis/"
+        ],
+        "2": [
+          "https://www.hudexchange.info/programs/coc/gis-tools/",
+          "https://files.hudexchange.info/resources/documents/CoC101.pdf",
+          "https://www.hudexchange.info/faqs/programs/continuum-of-care-coc-program/program-administration/general/what-is-a-continuum-of-care/",
+          "https://www.hudexchange.info/programs/coc/coc-2-0-training-materials/broadcasts/",
+          "https://www.hudexchange.info/programs/e-snaps/fy-2020-coc-program-nofa-coc-program-competition/",
+          "https://www.hudexchange.info/resource/5735/balance-of-state-continuum-of-care-toolkit/"
+        ],
+        "3": [
+          "https://www.hudexchange.info/programs/coc/",
+          "https://www.hudexchange.info/resource/1187/continuum-of-care-101/",
+          "https://www.hudexchange.info/programs/coc/coc-2-0-training-materials/videos/",
+          "https://www.hudexchange.info/programs/coc/coc-program-eligibility-requirements/",
+          "https://www.hudexchange.info/programs/coc/coc-2-0-training-materials/podcasts/"
+        ]
+      }
+    },
+    {
+      "placeholders": {
+        "$query": "section 8"
+      },
+      "relevant_documents": {
+        "2": [
+          "https://www.hudexchange.info/faqs/programs/neighborhood-stabilization-program-nsp/homebuyer-assistance-programs/homebuyer-program-design-and-implementation/are-participants-in-the-section-8-homeownership-program-eligible-for-nsp/",
+          "https://www.hudexchange.info/programs/sro/",
+          "https://www.hudexchange.info/resource/3002/homefires-vol3-no8-impact-of-changes-to-section-8-income-calculation-methodology/",
+          "https://www.hudexchange.info/faqs/crosscutting-requirements/section-3/applicability/do-the-section-3-requirements-apply-to-section-8-project-based-rental/",
+          "https://www.hudexchange.info/resource/832/housing-homeless-individuals-through-huds-sro-program/",
+          "https://www.hudexchange.info/faqs/programs/neighborhood-stabilization-program-nsp/underwriting-and-project-selection/subsidy-layering/can-a-household-use-federally-funded-rental-assistance-such-as-section-8-or/",
+          "https://www.hudexchange.info/resource/3007/homefires-vol3-no3-section-8-exception-rent-limits-and-home-rent-exceptions/",
+          "https://www.hudexchange.info/faqs/programs/811-project-rental-assistance-pra/environmental-review/we-have-eight-properties-that-have-either-home-or-section-8-financing/",
+          "https://www.hudexchange.info/faqs/programs/housing-counseling/agency-activity-report-9902/regarding-sections-8-and-9-if-a-client-is-participating-in-a-rental/",
+          "https://www.hudexchange.info/resource/3596/cdbg-memorandum-funding-section-8-housing-options-programs-with-cdbg/",
+          "https://www.hudexchange.info/resource/5180/part-5-section-8-income-inclusions-and-exclusions/"
+        ]
+      }
+    },
+    {
+      "placeholders": {
+        "$query": "ross"
+      },
+      "relevant_documents": {
+        "2": [
+          "https://www.hudexchange.info/programs/ross/guide/introduction/",
+          "https://www.hudexchange.info/programs/ross/guide/internal-coordination-and-advocacy/advocating-internally/",
+          "https://www.hudexchange.info/programs/ross/guide/collaboration-and-partnerships/what-is-a-ross-pcc/",
+          "https://www.hudexchange.info/programs/ross/guide/ross-program-requirements-and-expectations/how-can-ross-program-funds-be-used/",
+          "https://www.hudexchange.info/programs/ross/guide/tracking-activities-measuring-performance-and-outcomes-and-preparing-for-hud-monitoring-visits-and-audits/why-benchmarks-and-outcomes-matter/tracking-outcomes-in-ross/",
+          "https://www.hudexchange.info/programs/ross/guide/ross-program-requirements-and-expectations/what-is-the-ross-program-and-what-is-its-purpose/",
+          "https://www.hudexchange.info/programs/ross/guide/collaboration-and-partnerships/what-is-a-ross-pcc/how-often-should-service-coordinators-meet-with-pcc-members/",
+          "https://www.hudexchange.info/programs/ross/guide/working-with-residents/",
+          "https://www.hudexchange.info/programs/ross/guide/ross-program-requirements-and-expectations/what-are-the-key-qualifications-expected-of-new-service-coordinators/",
+          "https://www.hudexchange.info/programs/ross/guide/tracking-activities-measuring-performance-and-outcomes-and-preparing-for-hud-monitoring-visits-and-audits/tracking-individual-participant-outcomes/selecting-a-data-tracking-system/",
+          "https://www.hudexchange.info/trainings/courses/ross-reporting-ross-data-guide-3-0/",
+          "https://www.hudexchange.info/programs/ross/guide/collaboration-and-partnerships/"
+        ]
+      }
+    },
+    {
+      "placeholders": {
+        "$query": "program income"
+      },
+      "relevant_documents": {
+        "1": [
+          "https://www.hudexchange.info/resource/4894/smart-management-of-cdbg-program-income-video/",
+          "https://www.hudexchange.info/faqs/reporting-systems/drgr/drawdown/program-income-receipts-rlfs-and-pi-accounts/the-available-amount-calculations-for-program-funds-or-program-income1/"
+        ],
+        "2": [
+          "https://www.hudexchange.info/homelessness-assistance/coc-esg-virtual-binders/coc-match/cash-match/program-income/",
+          "https://www.hudexchange.info/faqs/programs/neighborhood-stabilization-program-nsp/financial-and-grants-management/program-income/the-nsp-program-income-notice-states-that-nsp-program-income-can-be/",
+          "https://www.hudexchange.info/resource/5122/neighborhood-stabilization-program-program-income-transfer-instructions/",
+          "https://www.hudexchange.info/trainings/courses/nsp-program-income-planning-webinar/",
+          "https://www.hudexchange.info/faqs/programs/neighborhood-stabilization-program-nsp/financial-and-grants-management/program-income/what-is-not-considered-program-income/",
+          "https://www.hudexchange.info/faqs/reporting-systems/drgr/drawdown/program-income-receipts-rlfs-and-pi-accounts/how-do-i-create-a-program-income-account/",
+          "https://www.hudexchange.info/trainings/courses/nsp-program-income-transfer-procedures-and-faqs-webinar/",
+          "https://www.hudexchange.info/trainings/courses/greatest-hits-of-program-income-nsp-webinar1/",
+          "https://www.hudexchange.info/trainings/courses/effective-use-of-nsp2-program-income-webinar1/",
+          "https://www.hudexchange.info/faqs/programs/continuum-of-care-coc-program/financial-and-grants-management/program-income/what-are-the-eligible-uses-of-program-income-in-the-coc-program/",
+          "https://www.hudexchange.info/resource/5082/nsp-faqs-transfer-of-program-income/"
+        ]
+      }
+    },
+    {
+      "placeholders": {
+        "$query": "fss"
+      },
+      "relevant_documents": {
+        "2": [
+          "https://www.hudexchange.info/trainings/courses/fss-webinar-fss-enrollment-and-appointments/",
+          "https://www.hudexchange.info/trainings/courses/fss-webinar-developing-your-fss-infrastructure/",
+          "https://www.hudexchange.info/programs/multifamily-fss/resources/oarq-adjustment-basics/",
+          "https://www.hudexchange.info/programs/multifamily-fss/resources/your-fss-escrow-savings-account/",
+          "https://www.hudexchange.info/trainings/courses/fss-webinar-operating-fss-program-rules-and-regulations/",
+          "https://www.hudexchange.info/resource/6191/multifamily-fss-escrow-credit-worksheet/",
+          "https://www.hudexchange.info/trainings/courses/fss-webinar-preparing-to-launch-fss/",
+          "https://www.hudexchange.info/programs/multifamily-fss/resources/staffing-a-program/"
+        ],
+        "3": [
+          "https://www.hudexchange.info/programs/fss/",
+          "https://www.hudexchange.info/programs/multifamily-fss/",
+          "https://www.hudexchange.info/programs/multifamily-fss/resources/",
+          "https://www.hudexchange.info/programs/multifamily-fss/resources/mfh-fss-resources/"
+        ]
+      }
+    },
+    {
+      "placeholders": {
+        "$query": "ask a question"
+      },
+      "relevant_documents": {
+        "0": [
+          "https://www.hudexchange.info/resource/4060/ahar-frequently-asked-questions/",
+          "https://www.hudexchange.info/programs/housing-counseling/the-bridge/2018-03/counselormax/",
+          "https://www.hudexchange.info/resource/6739/ross-frequently-asked-questions/",
+          "https://files.hudexchange.info/resources/documents/Flood-Insurance-FAQs.pdf",
+          "https://www.hudexchange.info/programs/housing-counseling/the-bridge/2017-12/FAQs/",
+          "https://www.hudexchange.info/programs/nfhta/faqs/",
+          "https://www.hudexchange.info/resource/6738/commonly-asked-questions-about-monkeypox/",
+          "https://www.hudexchange.info/programs/housing-counseling/the-bridge/2018-02/faqs/",
+          "https://www.hudexchange.info/trainings/courses/heros-frequently-asked-questions-webinar/3643/",
+          "https://www.hudexchange.info/programs/cdbg/housing-activities/question-2e.html",
+          "https://www.hudexchange.info/programs/cdbg/housing-activities/question-2a.html",
+          "https://www.hudexchange.info/programs/cdbg/housing-activities/question-2c.html",
+          "https://www.hudexchange.info/programs/cdbg/housing-activities/question-3a.html",
+          "https://www.hudexchange.info/programs/cdbg/housing-activities/question-3b.html",
+          "https://www.hudexchange.info/programs/cdbg/housing-activities/question-3e.html",
+          "https://www.hudexchange.info/programs/cdbg/public-services/question-1a.html",
+          "https://www.hudexchange.info/programs/cdbg/housing-activities/question-2d.html",
+          "https://www.hudexchange.info/programs/cdbg/housing-activities/question-1b.html",
+          "https://files.hudexchange.info/resources/documents/Endangered-Species-FAQs.pdf",
+          "https://files.hudexchange.info/resources/documents/Historic-Preservation-FAQs.pdf"
+        ],
+        "1": [
+          "https://files.hudexchange.info/resources/documents/10-Important-Questions-to-Ask-Your-Home-Inspector.pdf",
+          "https://www.hudexchange.info/faqs/reporting-systems/e-snaps-homeless-assistance-application-and-grants-management-system/project-application/consolidation/on-the-renewal-grant-consolidation-screen-question-2-asks-if-this-is-an-in/",
+          "https://files.hudexchange.info/resources/documents/10-Important-Questions-to-Ask-Your-Home-Inspector-Spanish-Version.pdf",
+          "https://files.hudexchange.info/course-content/housing-counseling-webinar-home-inspections-tutorial1/10-Important-Questions-to-Ask-Your-Home-Inspector-Spanish-Version.pdf",
+          "https://www.hudexchange.info/resource/5295/standards-for-success-frequently-asked-questions/",
+          "https://www.hudexchange.info/resource/6217/hmis-homes-data-transfer-commonly-asked-questions/",
+          "https://www.hudexchange.info/programs/census/low-mod-income-summary-data/faqs/"
+        ],
+        "2": [
+          "https://www.hudexchange.info/news/new-homelessness-and-infectious-disease-ask-a-question-desk/"
+        ]
+      }
+    },
+    {
+      "placeholders": {
+        "$query": "pit"
+      },
+      "relevant_documents": {
+        "2": [
+          "https://www.hudexchange.info/news/2020-pit-count-announcement-and-additional-pit-count-resources/",
+          "https://www.hudexchange.info/resource/3031/pit-and-hic-data-since-2007/",
+          "https://www.hudexchange.info/news/register-now-for-upcoming-pit-count-office-hours/",
+          "https://www.hudexchange.info/news/2019-hic-and-pit-data-collection-notice-and-pit-count-office-hours/",
+          "https://www.hudexchange.info/resource/5770/2019-pit-count-poster/",
+          "https://www.hudexchange.info/trainings/courses/april-2021-pit-count-office-hours-submitting-the-2021-hic-and-pit-count-data/",
+          "https://www.hudexchange.info/resource/6570/reporting-gender-for-the-pit-count/",
+          "https://www.hudexchange.info/resource/1978/2012-point-in-time-pit-and-housing-inventory-count-hic-faqs/",
+          "https://www.hudexchange.info/resource/5170/2017-PIT-Count-Poster/",
+          "https://www.hudexchange.info/homelessness-assistance/ahar/"
+        ],
+        "3": [
+          "https://www.hudexchange.info/programs/hdx/guides/pit-hic/",
+          "https://www.hudexchange.info/programs/hdx/guides/pit-hic/?utm_source=HUD+Exchange+Mailing+List&utm_campaign=6e453d32ab-PIT+Count+Office+Hours+and+Resources+10.26.18&utm_medium=email&utm_term=0_f32b935a5f-6e453d32ab-19226917",
+          "https://www.hudexchange.info/programs/hdx/pit-hic/",
+          "https://www.hudexchange.info/news/register-today-pit-count-office-hours-january-12-2022/"
+        ]
+      }
+    },
+    {
+      "placeholders": {
+        "$query": "cdbg-dr"
+      },
+      "relevant_documents": {
+        "2": [
+          "https://www.hudexchange.info/programs/cdbg-dr/guidance/",
+          "https://www.hudexchange.info/programs/cdbg-dr/2020-grantees/",
+          "https://www.hudexchange.info/programs/cdbg-dr/overview/",
+          "https://www.hudexchange.info/programs/cdbg-dr/reports/",
+          "https://www.hudexchange.info/trainings/courses/cdbg-dr-financial-management-mapping-cdbg-dr-to-financial-systems-training/",
+          "https://www.hudexchange.info/news/allocations-for-cdbg-dr-and-implementation-of-the-cdbg-dr-consolidated-waivers-and-alternative-requirements-notice-2020-cdbg-dr-grantees/",
+          "https://www.hudexchange.info/programs/cdbg-dr/cdbg-dr-grantee-contact-information/",
+          "https://www.hudexchange.info/programs/cdbg-dr/resource/"
+        ],
+        "3": [
+          "https://www.hudexchange.info/programs/cdbg-dr/",
+          "https://www.hudexchange.info/programs/cdbg-dr/toolkits/"
+        ]
+      }
+    },
+    {
+      "placeholders": {
+        "$query": "hcs"
+      },
+      "relevant_documents": {
+        "1": [
+          "https://www.hudexchange.info/programs/housing-counseling/the-bridge/2019-08/Improving-data-quality/",
+          "https://www.hudexchange.info/programs/housing-counseling/certification/fhac-application/introduction/",
+          "https://www.hudexchange.info/programs/housing-counseling/the-bridge/2018-10/cms-hcs/",
+          "https://www.hudexchange.info/resource/4738/9902-form-and-instructions/",
+          "https://www.hudexchange.info/news/instructions-for-updating-hcs-with-your-hcas-unique-entity-identifier/"
+        ],
+        "2": [
+          "https://www.hudexchange.info/programs/housing-counseling/",
+          "https://www.hudexchange.info/news/hcs-pii-removal-notification-for-housing-counseling-agencies/",
+          "https://www.hudexchange.info/programs/housing-counseling/the-bridge/2018-02/HCS/",
+          "https://www.hudexchange.info/programs/housing-counseling/the-bridge/2018-10/data-HCS/",
+          "https://www.hudexchange.info/trainings/courses/housing-counseling-webinar-hcs-agency-profile-training/",
+          "https://www.hudexchange.info/trainings/courses/housing-counseling-webinar-hud-client-projections-in-hcs1/"
+        ],
+        "3": [
+          "https://www.hudexchange.info/resource/6743/hcs-cms-and-9902-submission-errors-codes/",
+          "https://www.hudexchange.info/programs/housing-counseling/hcs/"
+        ]
+      }
+    },
+    {
+      "placeholders": {
+        "$query": "ahar"
+      },
+      "relevant_documents": {
+        "1": [
+          "https://www.hudexchange.info/resource/987/the-second-annual-homeless-assessment-report-ahar-to-congress/",
+          "https://www.hudexchange.info/resource/1872/2010-annual-homeless-assessment-report-ahar/",
+          "https://www.hudexchange.info/resource/1966/2011-ahar-to-congress-and-supplemental-reports/",
+          "https://www.hudexchange.info/resource/1165/2008-annual-homeless-assessment-report-ahar-to-congress/",
+          "https://www.hudexchange.info/resource/999/2007-annual-homeless-assessment-report-ahar-to-congress/",
+          "https://www.hudexchange.info/resource/1177/the-first-annual-homeless-assessment-report-ahar-to-congress/",
+          "https://www.hudexchange.info/programs/hdx/"
+        ],
+        "2": [
+          "https://www.hudexchange.info/resource/4780/ahar-submission-report/",
+          "https://www.hudexchange.info/resource/4830/ahar-data-mapping-instructions/",
+          "https://www.hudexchange.info/faqs/reporting-systems/homelessness-data-exchange-hdx/ahar/ahar-overview/how-do-cocs-use-their-ahar-data-post-submission/"
+        ],
+        "3": [
+          "https://www.hudexchange.info/homelessness-assistance/ahar/",
+          "https://www.hudexchange.info/resource/1227/introductory-guide-to-the-annual-homeless-assessment-report-ahar/"
+        ]
+      }
+    },
+    {
+      "placeholders": {
+        "$query": "nsp"
+      },
+      "relevant_documents": {
+        "2": [
+          "https://www.hudexchange.info/programs/nsp/",
+          "https://www.hudexchange.info/programs/nsp/nsp-multimedia/",
+          "https://www.hudexchange.info/programs/nsp/nsp-eligibility-requirements/",
+          "https://www.hudexchange.info/programs/nsp/nsp-demolition-toolkit/",
+          "https://www.hudexchange.info/programs/nsp/toolkits/",
+          "https://www.hudexchange.info/programs/nsp/nsp-closeout-guidance/additional-resources/",
+          "https://www.hudexchange.info/resource/361/hud-nsp-policy-alert-program-income-in-nsp/",
+          "https://www.hudexchange.info/programs/nsp/nsp-action-plans/",
+          "https://www.hudexchange.info/programs/nsp/nsp-toolkits-disposition/",
+          "https://www.hudexchange.info/programs/nsp/nsp-production-reports/",
+          "https://www.hudexchange.info/programs/nsp/nsp-snapshot-reports/"
+        ]
+      }
+    },
+    {
+      "placeholders": {
+        "$query": "aaq"
+      },
+      "relevant_documents": {
+        "0": [
+          "https://www.hudexchange.info/programs/e-snaps/",
+          "https://www.hudexchange.info/programs/drgr/",
+          "https://www.hudexchange.info/programs/e-snaps/fy-2013-coc-program-nofa-coc-program-competition/",
+          "https://www.hudexchange.info/programs/cdbg-cv/",
+          "https://www.hudexchange.info/news/deadline-extension-for-lsa-data-validation/",
+          "https://www.hudexchange.info/programs/e-snaps/fy-2016-coc-program-nofa-coc-program-competition/",
+          "https://www.hudexchange.info/programs/e-snaps/fy-2017-coc-program-nofa-coc-program-competition/",
+          "https://www.hudexchange.info/programs/e-snaps/fy-2020-coc-program-nofa-coc-program-competition/"
+        ],
+        "2": [
+          "https://www.hudexchange.info/trainings/courses/how-to-submit-a-question-to-the-map-guide-aaq/",
+          "https://www.hudexchange.info/news/home-arp-allocation-plan-aaq-help-desk-now-open/",
+          "https://files.hudexchange.info/course-content/how-to-submit-a-question-to-the-map-guide-aaq/How-to-Submit-a-Question-to-the-MAP-Guide-AAQ-Transcript.pdf"
+        ]
+      }
+    },
+    {
+      "placeholders": {
+        "$query": "building home"
+      },
+      "relevant_documents": {
+        "2": [
+          "https://www.hudexchange.info/trainings/courses/building-home-home-program-administration/",
+          "https://www.hudexchange.info/trainings/courses/building-home-home-match/",
+          "https://www.hudexchange.info/trainings/courses/building-home-home-program-requirements/",
+          "https://www.hudexchange.info/trainings/courses/building-home-overview-of-the-home-program/",
+          "https://www.hudexchange.info/trainings/building-home/tour/",
+          "https://www.hudexchange.info/news/building-home-online-training/",
+          "https://www.hudexchange.info/trainings/courses/building-home-chdos/",
+          "https://www.hudexchange.info/resource/2368/building-home-a-home-program-primer/",
+          "https://www.hudexchange.info/trainings/courses/2018-building-home-webinar-series/2386/",
+          "https://www.hudexchange.info/trainings/courses/building-home-homebuyer-programs/"
+        ],
+        "3": [
+          "https://www.hudexchange.info/trainings/building-home/"
+        ]
+      }
+    },
+    {
+      "placeholders": {
+        "$query": "income calculator"
+      },
+      "relevant_documents": {
+        "0": [
+          "https://www.hudexchange.info/programs/environmental-review/dnl-calculator/"
+        ],
+        "1": [
+          "https://www.hudexchange.info/programs/census/low-mod-income-summary-data/calculation/",
+          "https://www.hudexchange.info/faqs/programs/neighborhood-stabilization-program-nsp/program-requirements/eligible-activitiesuses/how-is-area-median-income-calculated/"
+        ],
+        "2": [
+          "https://www.hudexchange.info/trainings/courses/using-the-income-calculator-to-determine-annual-income-webinar1/",
+          "https://www.hudexchange.info/news/cpd-income-eligibility-calculator-updated-with-income-limits/",
+          "https://www.hudexchange.info/news/update-for-cpd-income-eligibility-calculator-users/",
+          "https://www.hudexchange.info/resource/1835/hopwa-income-resident-rent-calculation/",
+          "https://www.hudexchange.info/resource/3002/homefires-vol3-no8-impact-of-changes-to-section-8-income-calculation-methodology/",
+          "https://www.hudexchange.info/trainings/courses/using-the-income-calculator-for-rental-and-tbra-programs-webinar1/",
+          "https://files.hudexchange.info/resources/documents/CPDIncomeEligibilityCalculator_User_Manual.pdf",
+          "https://www.hudexchange.info/resource/2079/cpd-income-eligibility-calculator/",
+          "https://www.hudexchange.info/news/update-for-cpd-income-eligibility-calculator-users1/",
+          "https://www.hudexchange.info/news/information-for-hopwa-grantees-related-to-the-cpd-income-eligibility-calculator/"
+        ],
+        "3": [
+          "https://www.hudexchange.info/incomecalculator/"
+        ]
+      }
+    },
+    {
+      "placeholders": {
+        "$query": "wiser"
+      },
+      "relevant_documents": {
+        "2": [
+          "https://www.hudexchange.info/trainings/courses/wiser-farmlands-online-module/",
+          "https://www.hudexchange.info/trainings/courses/wiser-historic-preservation-online-module/",
+          "https://www.hudexchange.info/news/new-web-based-instructional-system-for-environmental-review-wiser-training-modules-now-available/",
+          "https://www.hudexchange.info/trainings/courses/wiser-environmental-justice-online-module/",
+          "https://www.hudexchange.info/trainings/courses/wiser-air-quality-online-module/",
+          "https://www.hudexchange.info/trainings/courses/wiser-site-contamination-online-module/",
+          "https://www.hudexchange.info/trainings/courses/wiser-endangered-species-online-module/",
+          "https://www.hudexchange.info/trainings/courses/wiser-airport-hazards-online-module/",
+          "https://www.hudexchange.info/trainings/courses/wiser-environmental-assessment-factors/",
+          "https://www.hudexchange.info/trainings/courses/wiser-noise-abatement-and-control-online-module/",
+          "https://www.hudexchange.info/trainings/courses/wiser-floodplain-management-wetlands-and-flood-insurance/"
+        ],
+        "3": [
+          "https://www.hudexchange.info/trainings/wiser/"
+        ]
+      }
+    },
+    {
+      "placeholders": {
+        "$query": "coordinated entry"
+      },
+      "relevant_documents": {
+        "2": [
+          "https://www.hudexchange.info/trainings/courses/implementing-and-operating-a-coordinated-entry-system-project/"
+        ],
+        "3": [
+          "https://www.hudexchange.info/programs/coc/toolkit/responsibilities-and-duties/coordinated-entry-samples-toolkit/",
+          "https://www.hudexchange.info/resource/5758/coordinated-entry-management-and-data-guide/",
+          "https://www.hudexchange.info/resource/5340/coordinated-entry-core-elements/",
+          "https://www.hudexchange.info/resource/4427/coordinated-entry-policy-brief/",
+          "https://www.hudexchange.info/resource/5219/coordinated-entry-self-assessment/",
+          "https://files.hudexchange.info/resources/documents/coordinated-entry-for-youth-brief.pdf",
+          "https://www.hudexchange.info/resource/5135/coordinated-entry-and-youth-faqs/",
+          "https://www.hudexchange.info/resource/4430/coordinated-entry-and-hmis-faqs/",
+          "https://www.hudexchange.info/resource/5320/coordinated-entry-for-youth-brief/",
+          "https://www.hudexchange.info/news/coordinated-entry-guidebook-now-available/",
+          "https://www.hudexchange.info/resource/6643/coordinated-entry-data-and-system-performance/"
+        ]
+      }
+    },
+    {
+      "placeholders": {
+        "$query": "basically cdbg"
+      },
+      "relevant_documents": {
+        "2": [
+          "https://www.hudexchange.info/resource/269/basically-cdbg-for-states/",
+          "https://www.hudexchange.info/resource/19/basically-cdbg-training-guidebook-and-slides/",
+          "https://www.hudexchange.info/trainings/courses/basically-cdbg-online-training/",
+          "https://www.hudexchange.info/trainings/basically-cdbg-online/idis-and-cdbg/",
+          "https://www.hudexchange.info/trainings/courses/basically-cdbg-for-states/",
+          "https://www.hudexchange.info/trainings/courses/basically-cdbg-online-idis-and-cdbg/",
+          "https://www.hudexchange.info/trainings/courses/basically-cdbg-for-entitlements-training/",
+          "https://www.hudexchange.info/trainings/basically-cdbg-online/public-services/",
+          "https://www.hudexchange.info/trainings/basically-cdbg-online/financial-management/",
+          "https://www.hudexchange.info/trainings/basically-cdbg-online/idis-and-cdbg/reinforce/"
+        ],
+        "3": [
+          "https://www.hudexchange.info/trainings/basically-cdbg/"
+        ]
+      }
+    },
+    {
+      "placeholders": {
+        "$query": "rapid rehousing"
+      },
+      "relevant_documents": {
+        "1": [
+          "https://www.hudexchange.info/resource/6274/yhdp-th-rrh-joint-component-project/",
+          "https://files.hudexchange.info/resources/documents/2018-Rapid-Rehousing-Institute-Agenda-and-Session-List-9-7-18.pdf"
+        ],
+        "2": [
+          "https://www.hudexchange.info/trainings/courses/a-discussion-of-wioa-rapid-rehousing-and-rapid-job-placement/",
+          "https://www.hudexchange.info/trainings/courses/rapid-rehousing-roundtable-discussion-series-rapid-resolution-rapid-exit/",
+          "https://www.hudexchange.info/trainings/courses/rapid-rehousing-roundtable-discussion-series-equity-as-a-foundation/",
+          "https://www.hudexchange.info/news/rapid-rehousing-roundtable-discussion-series/",
+          "https://www.hudexchange.info/trainings/courses/rapid-rehousing-roundtable-discussion-series-innovation-in-rrh/",
+          "https://www.hudexchange.info/trainings/courses/rapid-rehousing-roundtable-discussion-series-assertive-engagement-in-practice/"
+        ],
+        "3": [
+          "https://www.hudexchange.info/homelessness-assistance/resources-for-homeless-youth/rrh-models-for-homeless-youth/",
+          "https://www.hudexchange.info/programs/esg/onboarding-toolkits-for-esg-funded-programs/program-director/staffing-in-rapid-rehousing/",
+          "https://files.hudexchange.info/resources/documents/Rapid-Re-Housing-for-Youth-Checklist.pdf"
+        ]
+      }
+    },
+    {
+      "placeholders": {
+        "$query": "heros"
+      },
+      "relevant_documents": {
+        "1": [
+          "https://www.hudexchange.info/news/heros-quick-guides/",
+          "https://www.hudexchange.info/programs/environmental-review/"
+        ],
+        "2": [
+          "https://www.hudexchange.info/trainings/courses/heros-e-tutorial-accessing-heros1/",
+          "https://www.hudexchange.info/resource/3150/heros-user-guide/",
+          "https://www.hudexchange.info/resource/5848/heros-quick-guides/",
+          "https://www.hudexchange.info/trainings/courses/using-heros-as-a-partner/",
+          "https://www.hudexchange.info/faqs/reporting-systems/heros/general/when-will-heros-become-mandatory/",
+          "https://www.hudexchange.info/trainings/courses/heros-working-with-partners/",
+          "https://www.hudexchange.info/trainings/courses/heros-administrative-functions/",
+          "https://www.hudexchange.info/news/hud-publishes-heros-quick-guides-and-an-update-to-the-heros-user-guide/",
+          "https://www.hudexchange.info/programs/environmental-review/heros-e-tutorials/",
+          "https://www.hudexchange.info/trainings/courses/heros-frequently-asked-questions-webinar/3643/",
+          "https://www.hudexchange.info/news/heros-hours-of-operation/"
+        ],
+        "3": [
+          "https://www.hudexchange.info/programs/environmental-review/heros/"
+        ]
+      }
+    },
+    {
+      "placeholders": {
+        "$query": "fair housing"
+      },
+      "relevant_documents": {
+        "1": [
+          "https://www.hudexchange.info/news/april-is-fair-housing-month-fair-housing-equals-opportunity/"
+        ],
+        "2": [
+          "https://www.hudexchange.info/programs/nfhta/fair-housing-highlights/",
+          "https://www.hudexchange.info/programs/nfhta/forums/",
+          "https://www.hudexchange.info/programs/nfhta/fair-housing-highlights/7/",
+          "https://www.hudexchange.info/programs/nfhta/fair-housing-highlights/2/",
+          "https://www.hudexchange.info/programs/nfhta/fair-housing-highlights/3/",
+          "https://www.hudexchange.info/programs/nfhta/courses/litigating-fair-housing-cases/",
+          "https://www.hudexchange.info/programs/nfhta/courses/basics-of-fair-housing/",
+          "https://www.hudexchange.info/programs/housing-counseling/fheo/",
+          "https://www.hudexchange.info/programs/nfhta/fair-housing-highlights/5/",
+          "https://www.hudexchange.info/programs/nfhta/fair-housing-highlights/4/"
+        ],
+        "3": [
+          "https://www.hudexchange.info/programs/fair-housing/"
+        ]
+      }
+    },
+    {
+      "placeholders": {
+        "$query": "income limits"
+      },
+      "relevant_documents": {
+        "1": [
+          "https://www.hudexchange.info/sites/onecpd/assets/File/HOME_IncomeLmts_UncappedIncomeLimitsMemo_2004.pdf",
+          "https://www.hudexchange.info/sites/onecpd/assets/File/HOME_IncomeLmts_UncappedIncomeLimitsMemo_2012.pdf",
+          "https://www.hudexchange.info/sites/onecpd/assets/File/HOME_IncomeLmts_Memo_2005.pdf",
+          "https://www.hudexchange.info/sites/onecpd/assets/File/HOME_IncomeLmts_Memo_2011.pdf",
+          "https://www.hudexchange.info/sites/onecpd/assets/File/HOME_IncomeLmts_Memo_2004.pdf",
+          "https://www.hudexchange.info/sites/onecpd/assets/File/HOME_IncomeLmts_Memo_2003.pdf"
+        ],
+        "2": [
+          "https://www.hudexchange.info/incomecalculator/",
+          "https://www.hudexchange.info/resource/5079/esg-income-limits/",
+          "https://www.hudexchange.info/resource/5332/hopwa-income-limits/"
+        ],
+        "3": [
+          "https://www.hudexchange.info/programs/home/home-income-limits/",
+          "https://www.hudexchange.info/programs/htf/htf-income-limits/",
+          "https://www.hudexchange.info/resource/5334/cdbg-income-limits/",
+          "https://www.hudexchange.info/resource/6499/home-arp-income-limits/",
+          "https://www.hudexchange.info/resource/3680/nsp-income-limits/"
+        ]
+      }
+    },
+    {
+      "placeholders": {
+        "$query": "esnaps"
+      },
+      "relevant_documents": {
+        "1": [
+          "https://www.hudexchange.info/resource/1288/hprp-webinar-hprp-quarterly-reporting/",
+          "https://www.hudexchange.info/news/fy-2017-coc-program-registration-notice-is-now-posted-and-e-snaps-is-available/",
+          "https://www.hudexchange.info/resource/2712/fy2012-coc-program-nofa/",
+          "https://www.hudexchange.info/news/fy-2017-coc-program-registration-process-deadline-reminder/",
+          "https://www.hudexchange.info/news/fy-2017-coc-program-registration-coc-review-step-in-e-snaps-is-now-available/",
+          "https://www.hudexchange.info/news/fy-2017-continuum-of-care-coc-program-competition-technical-correction-posted-for-fy-2017-coc-program-competition-nofa/",
+          "https://files.hudexchange.info/resources/documents/esnaps-CoC-APR-Guidebook.pdf",
+          "https://files.hudexchange.info/course-content/tips-on-accessing-your-apr-in-e-snaps-webinar/TipsonAccessingYourAPRine-snaps_Transcript.pdf",
+          "https://files.hudexchange.info/course-content/apr-training-overview-of-the-sage-hmis-repository-webinar/APR-Training-Overview-of-the-Sage-HMIS-Repository-Webinar-Transcript-2017-03-16.pdf",
+          "https://www.hudexchange.info/news/fy-2017-continuum-of-care-coc-program-competition-e-snaps-is-now-available/"
+        ],
+        "2": [
+          "https://www.hudexchange.info/faqs/reporting-systems/e-snaps-homeless-assistance-application-and-grants-management-system/apr/apr-general/what-is-the-annual-performance-report-is-it-the-same-as-the-hud-40118/",
+          "https://files.hudexchange.info/resources/documents/Updating-the-Project-Applicant-Authorized-Representative.pdf"
+        ],
+        "3": [
+          "https://www.hudexchange.info/faqs/reporting-systems/e-snaps-homeless-assistance-application-and-grants-management-system/apr/apr-general/what-do-i-do-after-logging-in/",
+          "https://www.hudexchange.info/faqs/reporting-systems/e-snaps-homeless-assistance-application-and-grants-management-system/apr/apr-general/what-is-the-website-for-e-snaps/"
+        ]
+      }
+    },
+    {
+      "placeholders": {
+        "$query": "hopwa"
+      },
+      "relevant_documents": {
+        "1": [
+          "https://www.hudexchange.info/news/hopwa-in-focus-hopwa-formula-modernization/"
+        ],
+        "2": [
+          "https://www.hudexchange.info/programs/hopwa/hopwa-cpd-notices/",
+          "https://www.hudexchange.info/programs/hmis/federal-partner-participation/hopwa/",
+          "https://www.hudexchange.info/trainings/courses/hopwa-modernization-managing-your-hopwa-budget-in-the-context-of-modernization/",
+          "https://www.hudexchange.info/news/changes-to-the-hopwa-pathway-in-idis-to-support-gba-compliance-for-hopwa-formula-grantees/",
+          "https://www.hudexchange.info/programs/hopwa/in-focus/",
+          "https://www.hudexchange.info/programs/hopwa/hopwa-performance-profiles/",
+          "https://www.hudexchange.info/programs/hopwa/formula-modernization/",
+          "https://www.hudexchange.info/programs/hopwa/hopwa-eligibility-requirements/",
+          "https://www.hudexchange.info/news/idis-update-for-hopwa-hopwa-c-grantees/",
+          "https://www.hudexchange.info/programs/hopwa/hopwa-national-technical-assistance/"
+        ],
+        "3": [
+          "https://www.hudexchange.info/programs/hopwa/"
+        ]
+      }
+    },
+    {
+      "placeholders": {
+        "$query": "coc"
+      },
+      "relevant_documents": {
+        "2": [
+          "https://www.hudexchange.info/programs/e-snaps/fy-2021-coc-program-nofa-coc-program-competition/",
+          "https://www.hudexchange.info/faqs/reporting-systems/e-snaps-homeless-assistance-application-and-grants-management-system/project-application/coc-planning-costs/the-coc-planning-grant-that-our-coc-was-awarded-in-the-previous-coc-program/",
+          "https://www.hudexchange.info/resource/2905/coc-application-component-of-the-coc-consolidated-application/",
+          "https://www.hudexchange.info/resource/5106/coc-pprn-proposed-formula-impacts-by-coc/",
+          "https://www.hudexchange.info/programs/coc/toolkit/program-components-and-eligible-costs/"
+        ],
+        "3": [
+          "https://www.hudexchange.info/programs/e-snaps/fy-2022-coc-program-nofa-coc-program-competition/",
+          "https://www.hudexchange.info/programs/coc/",
+          "https://www.hudexchange.info/resource/2900/coc-registration-instructional-guide-coc-registration-coc-review/",
+          "https://www.hudexchange.info/programs/coc/toolkit/introduction-to-the-coc-program/",
+          "https://www.hudexchange.info/resource/2916/project-priority-listing-coc-consolidated-application/",
+          "https://www.hudexchange.info/programs/coc/toolkit/responsibilities-and-duties/",
+          "https://www.hudexchange.info/homelessness-assistance/coc-esg-virtual-binders/coc-ufas/becoming-a-ufa/applying-for-coc-funds/",
+          "https://www.hudexchange.info/homelessness-assistance/coc-esg-virtual-binders/coc-eligible-activities/coc-acq-rehab-new-construction/property-with-multiple-coc-activities/"
+        ]
+      }
+    },
+    {
+      "placeholders": {
+        "$query": "esg"
+      },
+      "relevant_documents": {
+        "2": [
+          "https://www.hudexchange.info/programs/esg/onboarding-toolkits-for-esg-funded-programs/grant-administrator/esg-policy-guidance/",
+          "https://www.hudexchange.info/programs/esg/onboarding-toolkits-for-esg-funded-programs/grant-administrator/esg-program-overview/",
+          "https://www.hudexchange.info/programs/esg/onboarding-toolkits-for-esg-funded-programs/program-director/esg-housing-and-shelter-standards/",
+          "https://www.hudexchange.info/programs/esg/onboarding-toolkits-for-esg-funded-programs/program-director/esg-program-components/",
+          "https://www.hudexchange.info/programs/esg/guides/",
+          "https://www.hudexchange.info/programs/esg/esg-requirements/",
+          "https://www.hudexchange.info/programs/esg/onboarding-toolkits-for-esg-funded-programs/grant-administrator/esg-policy-guidance/quiz/",
+          "https://www.hudexchange.info/news/esg-and-esg-cv-reporting-office-hours/",
+          "https://www.hudexchange.info/trainings/courses/esg-and-esg-cv-reporting-office-hours/",
+          "https://www.hudexchange.info/resource/5624/sage-esg-caper-guidebook-for-esgfunded-programs/"
+        ],
+        "3": [
+          "https://www.hudexchange.info/programs/esg/"
+        ]
+      }
+    },
+    {
+      "placeholders": {
+        "$query": "caper"
+      },
+      "relevant_documents": {
+        "0": [
+          "https://www.hudexchange.info/programs/hopwa/"
+        ],
+        "2": [
+          "https://www.hudexchange.info/trainings/courses/using-ecart-for-the-esg-caper/",
+          "https://www.hudexchange.info/news/esg-caper-submission-updates/",
+          "https://www.hudexchange.info/trainings/courses/preparing-for-the-caper-webinar/3616/",
+          "https://www.hudexchange.info/trainings/courses/2020-completing-the-caper-webinar1/3751/",
+          "https://www.hudexchange.info/trainings/courses/esg-recipient-caper-training/",
+          "https://www.hudexchange.info/programs/consolidated-plan/",
+          "https://www.hudexchange.info/trainings/courses/2020-completing-the-caper-webinar/3751/"
+        ],
+        "3": [
+          "https://www.hudexchange.info/programs/sage/esg-caper/",
+          "https://www.hudexchange.info/programs/hopwa/new-consolidated-apr-caper/",
+          "https://www.hudexchange.info/trainings/courses/hopwa-caper-training-modules1/",
+          "https://www.hudexchange.info/resource/1156/hopwa-caper-training-modules/"
+        ]
+      }
+    },
+    {
+      "placeholders": {
+        "$query": "environmental review"
+      },
+      "relevant_documents": {
+        "2": [
+          "https://www.hudexchange.info/programs/environmental-review/environmental-review-records/",
+          "https://www.hudexchange.info/programs/environmental-review/environmental-review-training/",
+          "https://www.hudexchange.info/programs/environmental-review/tiered-environmental-reviews/?utm_source=HUD+Exchange+Mailing+List&utm_campaign=b311dbe441-RT%3A+HEROS_Tier_Enviro_Review_Web_April+19%2C+2017&utm_medium=email&utm_term=0_f32b935a5f-b311dbe441-",
+          "https://www.hudexchange.info/programs/environmental-review/orientation-to-environmental-reviews/",
+          "https://www.hudexchange.info/resource/47/cdbg-crosscutting-issues-environmental-review-environmental-review-flowchart/",
+          "https://www.hudexchange.info/programs/environmental-review/tiered-environmental-reviews/",
+          "https://www.hudexchange.info/homelessness-assistance/coc-esg-virtual-binders/coc-esg-environmental-review/completing-the-environmental-review/",
+          "https://www.hudexchange.info/programs/environmental-review/heros/",
+          "https://www.hudexchange.info/programs/environmental-review/housing/",
+          "https://www.hudexchange.info/programs/environmental-review/housing/fact-sheets/",
+          "https://www.hudexchange.info/resource/48/cdbg-crosscutting-issues-environmental-review-five-methods-for-managing-the-environmental-review-process/",
+          "https://www.hudexchange.info/resource/45/cdbg-crosscutting-issues-environmental-review-case-study-conducting-an-environmental-review/"
+        ],
+        "3": [
+          "https://www.hudexchange.info/programs/environmental-review/"
+        ]
+      }
+    },
+    {
+      "placeholders": {
+        "$query": "hmis"
+      },
+      "relevant_documents": {
+        "2": [
+          "https://www.hudexchange.info/programs/hmis/federal-partner-participation/hopwa/",
+          "https://www.hudexchange.info/programs/hmis/hmis-data-standards/standards/",
+          "https://www.hudexchange.info/trainings/courses/hmis-101-understanding-the-interconnectedness-of-hmis-data/",
+          "https://www.hudexchange.info/programs/hmis/hmis-data-and-technical-standards/"
+        ],
+        "3": [
+          "https://www.hudexchange.info/programs/hmis/hmis-requirements/",
+          "https://www.hudexchange.info/resource/3824/hmis-data-dictionary/",
+          "https://www.hudexchange.info/programs/hmis/hmis-guides/",
+          "https://www.hudexchange.info/trainings/courses/hmis-system-administrator-training-hmis-1011/",
+          "https://www.hudexchange.info/faqs/programs/emergency-solutions-grants-esg-program/program-requirements/hmis-participation-for-esg-grantees/whose-responsibility-is-it-to-designate-the-hmis-and-hmis-lead-agency/",
+          "https://www.hudexchange.info/programs/hmis/community-examples/"
+        ]
+      }
+    },
+    {
+      "placeholders": {
+        "$query": "home"
+      },
+      "relevant_documents": {
+        "0": [
+          "https://www.hudexchange.info/programs/cdbg/public-facilities-and-improvements/",
+          "https://www.hudexchange.info/programs/cdbg/public-services/",
+          "https://www.hudexchange.info/programs/cdbg/housing-activities/"
+        ],
+        "1": [
+          "https://www.hudexchange.info/programs/home/home-webcasts/",
+          "https://www.hudexchange.info/programs/home/topics/monitoring/"
+        ],
+        "2": [
+          "https://www.hudexchange.info/trainings/building-home/",
+          "https://www.hudexchange.info/programs/home/home-income-limits/",
+          "https://www.hudexchange.info/programs/home/home-rent-limits/",
+          "https://www.hudexchange.info/programs/home/home-facts/",
+          "https://www.hudexchange.info/programs/home/topics/homeownership/",
+          "https://www.hudexchange.info/programs/home/topics/consortia/",
+          "https://www.hudexchange.info/programs/home/covid-19/"
+        ],
+        "3": [
+          "https://www.hudexchange.info/programs/home/"
+        ]
+      }
+    },
+    {
+      "placeholders": {
+        "$query": "idis"
+      },
+      "relevant_documents": {
+        "0": [
+          "https://www.hudexchange.info/programs/covid-19/"
+        ],
+        "1": [
+          "https://www.hudexchange.info/programs/cdbg/"
+        ],
+        "2": [
+          "https://www.hudexchange.info/programs/idis/guides/home/",
+          "https://www.hudexchange.info/programs/idis/idis-reporting/",
+          "https://www.hudexchange.info/trainings/idis-cdbg/",
+          "https://www.hudexchange.info/programs/idis/idis-technical-assistance/",
+          "https://www.hudexchange.info/trainings/courses/idis-cdbg-introduction-to-idis-training-for-cdbg-grantees/",
+          "https://www.hudexchange.info/resource/2822/cdbg-changes-in-idis-instructions-for-grantees-idis-release-114/",
+          "https://www.hudexchange.info/resource/3734/idis-release-notes/",
+          "https://www.hudexchange.info/faqs/reporting-systems/integrated-disbursement-and-information-system-idis/plansprojectsactivities/addeditcopy-projects/how-should-idis-projects-be-set-up-in-idis/",
+          "https://www.hudexchange.info/news/new-home-idis-faq-and-updates-to-existing-idis-faqs-now-available/"
+        ],
+        "3": [
+          "https://www.hudexchange.info/programs/idis/"
+        ]
+      }
+    },
+    {
+      "placeholders": {
+        "$query": "cdbg"
+      },
+      "relevant_documents": {
+        "1": [
+          "https://www.hudexchange.info/programs/cdbg-cv/",
+          "https://www.hudexchange.info/programs/cdbg-cv/cdbg-cv-toolkit/state-cdbg-cv-implementation/",
+          "https://www.hudexchange.info/programs/cdbg-dr/reports/"
+        ],
+        "2": [
+          "https://www.hudexchange.info/programs/cdbg/cdbg-ta-products/",
+          "https://www.hudexchange.info/programs/cdbg/disease/",
+          "https://www.hudexchange.info/trainings/idis-cdbg/",
+          "https://www.hudexchange.info/programs/cdbg/cdbg-memoranda/"
+        ],
+        "3": [
+          "https://www.hudexchange.info/programs/cdbg-entitlement/",
+          "https://www.hudexchange.info/programs/cdbg-state/",
+          "https://www.hudexchange.info/programs/cdbg/"
+        ]
+      }
+    },
+    {
+      "placeholders": {
+        "$query": "section 3"
+      }
+    },
+    {
+      "placeholders": {
+        "$query": "homeless"
+      },
+      "relevant_documents": {
+        "1": [
+          "https://www.hudexchange.info/resource/6136/covid19-homeless-system-response-estimating-future-homelessness/",
+          "https://www.hudexchange.info/faqs/programs/cdbg-entitlement-program/homeless/can-persons-presenting-evidence-of-homelessness-be-considered-homeless-for/",
+          "https://www.hudexchange.info/faqs/reporting-systems/homelessness-data-exchange-hdx/pit/pit-general/we-are-aware-of-homeless-persons-especially-homeless-youth-who-are-known/",
+          "https://www.hudexchange.info/resource/2796/2013-hic-and-pit-supplemental-guidance-counting-homeless-youth/"
+        ],
+        "2": [
+          "https://www.hudexchange.info/homelessness-assistance/coc-esg-virtual-binders/coc-esg-homeless-eligibility/definition-of-chronic-homelessness/",
+          "https://www.hudexchange.info/programs/coc/coc-homeless-populations-and-subpopulations-reports/",
+          "https://www.hudexchange.info/homelessness-assistance/employment/",
+          "https://www.hudexchange.info/programs/hmis/",
+          "https://www.hudexchange.info/resource/1250/guidance-for-counting-unaccompanied-homeless-children-during-2011-pit/",
+          "https://www.hudexchange.info/homelessness-assistance/coc-esg-virtual-binders/coc-esg-homeless-eligibility/four-categories/",
+          "https://www.hudexchange.info/resource/4847/hearth-defining-chronically-homeless-final-rule/",
+          "https://www.hudexchange.info/trainings/courses/recording-and-documenting-homeless-status/",
+          "https://www.hudexchange.info/resource/4783/determining-homeless-status-of-youth/",
+          "https://www.hudexchange.info/resource/1928/hearth-defining-homeless-final-rule/"
+        ],
+        "3": [
+          "https://www.hudexchange.info/trainings/courses/homelessness-101/",
+          "https://www.hudexchange.info/homelessness-assistance/resources-for-lgbt-homelessness/",
+          "https://www.hudexchange.info/homelessness-assistance/coc-esg-virtual-binders/coc-esg-homeless-eligibility/four-categories/at-risk-of-homelessness/",
+          "https://www.hudexchange.info/programs/yhdp/"
+        ]
+      }
+    },
+    {
+      "placeholders": {
+        "$query": "sage"
+      }
+    },
+    {
+      "placeholders": {
+        "$query": "drgr"
+      }
+    },
+    {
+      "placeholders": {
+        "$query": "environmental"
+      }
+    },
+    {
+      "placeholders": {
+        "$query": "chdo"
+      },
+      "relevant_documents": {
+        "0": [
+          "https://www.hudexchange.info/trainings/courses/chdo-training/",
+          "https://www.hudexchange.info/programs/home/home-facts/",
+          "https://www.hudexchange.info/programs/home/home-laws-and-regulations/fy-2012-home-appropriations-law-requirements/"
+        ],
+        "1": [
+          "https://www.hudexchange.info/faqs/programs/home-investment-partnerships-program-home/chdo/set-aside-funds/can-a-pj-provide-chdo-set-aside-funds-to-a-chdo-that-has-the-capacity-to/",
+          "https://www.hudexchange.info/resource/2385/chdo-survivor-kit/",
+          "https://www.hudexchange.info/faqs/reporting-systems/integrated-disbursement-and-information-system-idis/grant/addedit-subfunds/what-is-the-process-to-commit-funds-to-a-chdo-activity/",
+          "https://www.hudexchange.info/news/suspension-of-the-home-commitment-and-chdo-reservation-deadline/"
+        ],
+        "2": [
+          "https://www.hudexchange.info/trainings/building-home/",
+          "https://www.hudexchange.info/news/chdo-opportunities-in-home-online-course-now-available/",
+          "https://www.hudexchange.info/resource/2386/chdo-toolbox-for-home-pjs/",
+          "https://www.hudexchange.info/programs/home/home-final-rule/section-by-section-summary/subpart-g/",
+          "https://www.hudexchange.info/trainings/courses/chdo-opportunities-in-home-introduction/"
+        ],
+        "3": [
+          "https://www.hudexchange.info/programs/home/topics/chdo/",
+          "https://www.hudexchange.info/trainings/courses/building-home-chdos/"
+        ]
+      }
+    },
+    {
+      "placeholders": {
+        "$query": "homeless definition"
+      },
+      "relevant_documents": {
+        "0": [
+          "https://files.hudexchange.info/resources/documents/HPRP_HomelessDefinition_4.20.10.pdf"
+        ],
+        "1": [
+          "https://www.hudexchange.info/homelessness-assistance/coc-esg-virtual-binders/coc-esg-homeless-eligibility/determining-and-documenting-disability/disability-definition/",
+          "https://www.hudexchange.info/faqs/reporting-systems/e-snaps-homeless-assistance-application-and-grants-management-system/nofasnotices/fy-2017-nofa/if-a-program-participant-meets-the-definition-of-chronically-homeless-as/"
+        ],
+        "2": [
+          "https://www.hudexchange.info/news/huds-definition-of-homelessness-resources-and-guidance/",
+          "https://www.hudexchange.info/resource/1935/conplan-reg-amend-esg-interim-rule-homeless-definition-final-rule/",
+          "https://www.hudexchange.info/faqs/programs/continuum-of-care-coc-program/program-requirements/definition-of-homelessness/with-regard-to-the-final-rule-on-the-definition/",
+          "https://www.hudexchange.info/faqs/programs/continuum-of-care-coc-program/program-requirements/definition-of-homelessness/the-homeless-definition-final-rule-published-in-the-federal-register/",
+          "https://files.hudexchange.info/resources/documents/HUDs-Homeless-Definition-as-it-Relates-to-Children-and-Youth.pdf"
+        ],
+        "3": [
+          "https://www.hudexchange.info/resource/1975/criteria-for-definition-of-at-risk-of-homelessness/",
+          "https://www.hudexchange.info/resource/1974/criteria-and-recordkeeping-requirements-for-definition-of-homeless/",
+          "https://www.hudexchange.info/homelessness-assistance/coc-esg-virtual-binders/coc-esg-homeless-eligibility/definition-of-chronic-homelessness/",
+          "https://www.hudexchange.info/resource/4062/huds-definition-of-homeless-as-it-relates-to-children-and-youth/",
+          "https://files.hudexchange.info/resources/documents/HomelessResources_6.5.12.pdf",
+          "https://www.hudexchange.info/resource/5181/flowchart-of-huds-definition-of-chronic-homelessness/",
+          "https://www.hudexchange.info/homelessness-assistance/coc-esg-virtual-binders/coc-esg-homeless-eligibility/four-categories/"
+        ]
+      }
+    },
+    {
+      "placeholders": {
+        "$query": "homelessness"
+      },
+      "relevant_documents": {
+        "2": [
+          "https://www.hudexchange.info/programs/hmis/",
+          "https://www.hudexchange.info/homelessness-assistance/employment/",
+          "https://www.hudexchange.info/homelessness-assistance/resources-for-family-homelessness/",
+          "https://www.hudexchange.info/homelessness-assistance/rural/",
+          "https://www.hudexchange.info/faqs/programs/cdbg-entitlement-program/homeless/can-persons-presenting-evidence-of-homelessness-be-considered-homeless-for/",
+          "https://www.hudexchange.info/homelessness-assistance/alternatives-to-criminalizing-homelessness/",
+          "https://www.hudexchange.info/homelessness-assistance/resources-for-homeless-veterans/",
+          "https://www.hudexchange.info/homelessness-assistance/resources-for-chronic-homelessness/",
+          "https://www.hudexchange.info/homelessness-assistance/"
+        ],
+        "3": [
+          "https://www.hudexchange.info/programs/yhdp/",
+          "https://www.hudexchange.info/homelessness-assistance/coc-esg-virtual-binders/coc-esg-homeless-eligibility/four-categories/at-risk-of-homelessness/",
+          "https://www.hudexchange.info/homelessness-assistance/resources-for-lgbt-homelessness/",
+          "https://www.hudexchange.info/news/partner-resource-usich-releases-voting-guides-for-homeless-providers-and-people-experiencing-homelessness/",
+          "https://www.hudexchange.info/trainings/courses/homelessness-101/",
+          "https://www.hudexchange.info/housing-and-homeless-assistance/homeless-help/?na=60&start=4"
+        ]
+      }
+    },
+    {
+      "placeholders": {
+        "$query": "davis bacon"
+      }
+    },
+    {
+      "placeholders": {
+        "$query": "housing first"
+      },
+      "relevant_documents": {
+        "0": [
+          "https://www.hudexchange.info/news/snaps-weekly-focus-adopting-a-housing-first-approach/",
+          "https://www.hudexchange.info/resource/5322/using-a-housing-first-philosophy-when-serving-youth/",
+          "https://www.hudexchange.info/grantees/housing-first-alabama/",
+          "https://www.hudexchange.info/resource/1201/organizational-change-adopting-a-housing-first-approach/",
+          "https://www.hudexchange.info/grantees/housing-first-alabama/?program=3"
+        ],
+        "2": [
+          "https://www.hudexchange.info/news/housing-first-implementation-resources-now-available/",
+          "https://www.hudexchange.info/news/coc-competition-focus-housing-first/"
+        ],
+        "3": [
+          "https://www.hudexchange.info/programs/coc/toolkit/responsibilities-and-duties/housing-first-implementation-resources/",
+          "https://www.hudexchange.info/resource/5294/housing-first-assessment-tool/",
+          "https://www.hudexchange.info/resource/3892/housing-first-in-permanent-supportive-housing-brief/",
+          "https://www.hudexchange.info/news/hud-releases-the-housing-first-assessment-tool/"
+        ]
+      }
+    },
+    {
+      "placeholders": {
+        "$query": "procurement"
+      }
+    },
+    {
+      "placeholders": {
+        "$query": "application"
+      }
+    },
+    {
+      "placeholders": {
+        "$query": "forms"
+      }
+    },
+    {
+      "placeholders": {
+        "$query": "housing"
+      }
+    },
+    {
+      "placeholders": {
+        "$query": "apr"
+      }
+    },
+    {
+      "placeholders": {
+        "$query": "nofa"
+      }
+    },
+    {
+      "placeholders": {
+        "$query": "monitoring"
+      }
+    },
+    {
+      "placeholders": {
+        "$query": "permanent supportive housing"
+      },
+      "relevant_documents": {
+        "1": [
+          "https://www.hudexchange.info/resource/4797/pay-for-success-permanent-supportive-housing-demonstration-nofa/",
+          "https://www.hudexchange.info/faqs/programs/continuum-of-care-coc-program/permanent-supportive-housing/is-it-permissible-for-a-permanent-supportive-housing-project-that-receives/",
+          "https://www.hudexchange.info/resource/4901/pfs-demonstration-faqs/",
+          "https://www.hudexchange.info/news/pay-for-success-permanent-supportive-housing-demonstration-application-deadline-reminder/",
+          "https://www.hudexchange.info/news/fy-2020-hopwa-permanent-supportive-housing-renewal-awards-announced/",
+          "https://www.hudexchange.info/faqs/reporting-systems/homelessness-data-exchange-hdx/ahar/identifying-projects-to-use-in-your-ahar-data/are-vouchers-factored-in-when-calculating-permanent-supportive-housing-psh/",
+          "https://www.hudexchange.info/faqs/reporting-systems/homelessness-data-exchange-hdx/hic/do-people-in-permanent-supportive-housing-count-as-persons-listed-in-our/"
+        ],
+        "2": [
+          "https://files.hudexchange.info/resources/documents/Housing-First-Permanent-Supportive-Housing-Brief.pdf"
+        ],
+        "3": [
+          "https://www.hudexchange.info/resource/3892/housing-first-in-permanent-supportive-housing-brief/",
+          "https://www.hudexchange.info/sites/onecpd/assets/File/HOPWA-FY2013-Permanent-Supportive-Housing-Renewal-Grant-Summaries.pdf",
+          "https://www.hudexchange.info/news/snaps-in-focus-moving-on-strategies-to-support-stable-transitions-from-permanent-supportive-housing/",
+          "https://www.hudexchange.info/resource/6128/permanent-supportive-housing-psh-moving-on-services-guide/"
+        ]
+      }
+    },
+    {
+      "placeholders": {
+        "$query": "lead the way"
+      }
+    },
+    {
+      "placeholders": {
+        "$query": "financial management"
+      }
+    },
+    {
+      "placeholders": {
+        "$query": "rad"
+      }
+    },
+    {
+      "placeholders": {
+        "$query": "grants"
+      }
+    },
+    {
+      "placeholders": {
+        "$query": "match"
+      }
+    },
+    {
+      "placeholders": {
+        "$query": "apply"
+      }
+    },
+    {
+      "placeholders": {
+        "$query": "cpd"
+      }
+    },
+    {
+      "placeholders": {
+        "$query": "2 cfr 200"
+      }
+    },
+    {
+      "placeholders": {
+        "$query": "fmr"
+      },
+      "relevant_documents": {
+        "0": [
+          "https://www.hudexchange.info/programs/coc/awards/2020/",
+          "https://www.hudexchange.info/faqs/programs/811-project-rental-assistance-pra/program-requirements/calculating-rents-and-utility-allowances/does-a-grantee-require-hud-approval-whenever-they-approve/"
+        ],
+        "1": [
+          "https://www.hudexchange.info/programs/home/home-rent-limits/",
+          "https://www.hudexchange.info/faqs/reporting-systems/e-snaps-homeless-assistance-application-and-grants-management-system/project-application/fair-market-rents-fmrs/if-one-or-more-of-a-cocs-eligible-renewal-projects/",
+          "https://files.hudexchange.info/resources/documents/Get-the-Facts-HOPWA-and-COVID-19-Response-FMR-Standard.pdf",
+          "https://www.hudexchange.info/programs/public-housing/small-area-fair-market-rents/"
+        ],
+        "2": [
+          "https://files.hudexchange.info/resources/documents/ESG-Rent-Reasonableness-and-FMR.pdf",
+          "https://www.hudexchange.info/faqs/programs/continuum-of-care-coc-program/rental-assistance/coc-program-funds-for-rental-assistance-be-used-to-pay-rent-for-units/"
+        ],
+        "3": [
+          "https://files.hudexchange.info/resources/documents/SAFMRs-Implementing-Small-Area-Fair-Market-Rents-Implementation-Guidebook.pdf",
+          "https://www.hudexchange.info/faqs/programs/811-project-rental-assistance-pra/program-requirements/calculating-rents-and-utility-allowances/does-the-fair-market-rent-fmr-include-utilities/",
+          "https://www.hudexchange.info/resource/4694/payment-standards-and-fair-market-rents-faqs/",
+          "https://www.hudexchange.info/homelessness-assistance/coc-esg-virtual-binders/coc-leasing-rental-assistance-requirements/fmr/",
+          "https://www.huduser.gov/portal/datasets/fmr/smallarea/index.html"
+        ]
+      }
+    },
+    {
+      "placeholders": {
+        "$query": "cares act"
+      },
+      "relevant_documents": {
+        "0": [
+          "https://www.hudexchange.info/programs/covid-19/"
+        ],
+        "1": [
+          "https://www.hudexchange.info/trainings/courses/cares-act-virtual-conference-2021/",
+          "https://www.hudexchange.info/programs/housing-counseling/the-bridge/2021-quarter-1/CARES-Act-Funding/"
+        ],
+        "2": [
+          "https://www.hudexchange.info/news/cares-act-supplemental-award-information-for-hopwa-grantees/",
+          "https://www.hudexchange.info/trainings/cares-act-virtual-conferences/",
+          "https://www.hudexchange.info/trainings/courses/implementing-the-hopwa-cares-act-for-competitive-renewal-grantees/",
+          "https://www.hudexchange.info/trainings/courses/cares-act-virtual-conference-2022/",
+          "https://www.hudexchange.info/trainings/courses/cdbg-cares-act-webinar-series-co-managing-disaster-recovery-and-cares-act-programs/4408/",
+          "https://www.hudexchange.info/news/flyer-for-hopwa-participants-on-cares-act-eviction-moratorium/",
+          "https://www.hudexchange.info/resource/6042/flyer-for-hopwa-participants-on-cares-act-eviction-moratorium/",
+          "https://www.hudexchange.info/resource/6086/setting-up-a-substantial-amendment-for-cares-act-funding/"
+        ],
+        "3": [
+          "https://www.hudexchange.info/programs/cdbg-cv/",
+          "https://www.hudexchange.info/programs/esg/esg-cv/"
+        ]
+      }
+    },
+    {
+      "placeholders": {
+        "$query": "annual action plan"
+      },
+      "relevant_documents": {
+        "1": [
+          "https://files.hudexchange.info/resources/documents/Amending-a-Con-Plan-Action-Plan-for-State-Entitlement-Grantees.pdf",
+          "https://files.hudexchange.info/resources/documents/eCon-Planning-Suite-FAQs.pdf",
+          "https://www.hudexchange.info/faqs/programs/cdbg-entitlement-program/cost-reasonableness/when-are-funds-for-a-project-in-our-annual-action-plan-considered-to-be1/"
+        ],
+        "2": [
+          "https://www.hudexchange.info/resource/2728/esg-checklist-requirements-homelessness-annual-action-plan/",
+          "https://files.hudexchange.info/course-content/incorporating-the-afh-in-the-consolidated-plan-webinar/Incorporating-AFH-into-the-Consolidated-and-Annual-Action-Plan-slides.pdf",
+          "https://www.hudexchange.info/trainings/courses/econ-planning-suite-preparing-an-annual-action-plan-in-idis-online-webinar1/",
+          "https://files.hudexchange.info/resources/documents/Amending-a-Con-Plan-Action-Plan-for-Consortia-Grantee.pdf",
+          "https://files.hudexchange.info/resources/documents/Amending-a-Con-Plan-Action-Plan-for-Regional-Grantees.pdf",
+          "https://files.hudexchange.info/resources/documents/Project-Setup-in-the-Annual-Action-Plan.pdf",
+          "https://www.hudexchange.info/trainings/courses/the-new-way-to-amend-consolidated-plans-and-annual-action-plans-in-the-econ-planning-suite-webinar/3263/",
+          "https://files.hudexchange.info/resources/documents/ESGActionPlanChecklist.pdf"
+        ],
+        "3": [
+          "https://www.hudexchange.info/programs/consolidated-plan/con-plans-aaps-capers/"
+        ]
+      }
+    },
+    {
+      "placeholders": {
+        "$query": "cdbg income limits"
+      },
+      "relevant_documents": {
+        "0": [
+          "https://www.hudexchange.info/programs/home/home-income-limits/",
+          "https://www.hudexchange.info/programs/htf/htf-income-limits/",
+          "https://www.hudexchange.info/sites/onecpd/assets/File/HOME_IncomeLmts_Memo_2011.pdf",
+          "https://www.hudexchange.info/resource/3680/nsp-income-limits/",
+          "https://www.hudexchange.info/resource/5079/esg-income-limits/",
+          "https://www.hudexchange.info/resource/5332/hopwa-income-limits/"
+        ],
+        "1": [
+          "https://files.hudexchange.info/resources/documents/CDBG_IncomeLmts_Natl_2019.xlsx",
+          "https://files.hudexchange.info/resources/documents/CDBG_IncomeLmts_Natl_2020.xlsx",
+          "https://www.hudexchange.info/sites/onecpd/assets/File/HOME_IncomeLmts_Memo_2005.pdf"
+        ],
+        "3": [
+          "https://www.hudexchange.info/resource/5334/cdbg-income-limits/",
+          "https://www.hudexchange.info/incomecalculator/",
+          "https://www.hudexchange.info/programs/cdbg/cdbg-reports-program-data-and-income-limits/"
+        ]
+      }
+    },
+    {
+      "placeholders": {
+        "$query": "eloccs"
+      },
+      "relevant_documents": {
+        "1": [
+          "https://www.hudexchange.info/news/huds-office-of-housing-counseling-eloccs-reminder/",
+          "https://www.hudexchange.info/news/technical-difficulties-accessing-eloccs-system/",
+          "https://www.hudexchange.info/programs/housing-counseling/the-bridge/2019-06/faqs/",
+          "https://www.hudexchange.info/news/eloccs-policy-update/",
+          "https://www.hudexchange.info/programs/multifamily-housing/financial-management-toolkit/15-service-coordinators-in-multifamily-housing-scmf-program/15f-changes-to-noa/"
+        ],
+        "2": [
+          "https://www.hudexchange.info/programs/housing-counseling/the-bridge/2017-12/eloccs/",
+          "https://files.hudexchange.info/resources/documents/eLOCCS-Recertification-Guide.pdf",
+          "https://www.hudexchange.info/faqs/programs/housing-counseling/recordkeeping/how-can-i-assure-that-my-agency-is-able-to-access-the-eloccs-system-as-soon/",
+          "https://www.hudexchange.info/news/coc-program-reporting-and-voucher-due-date/"
+        ],
+        "3": [
+          "https://www.hudexchange.info/programs/housing-counseling/",
+          "https://www.hudexchange.info/homelessness-assistance/coc-esg-virtual-binders/coc-esg-financial-management/eloccs/"
+        ]
+      }
+    },
+    {
+      "placeholders": {
+        "$query": "e-snaps"
+      },
+      "relevant_documents": {
+        "1": [
+          "https://www.hudexchange.info/programs/e-snaps/fy-2021-coc-program-nofa-coc-program-competition/",
+          "https://files.hudexchange.info/resources/documents/e-snaps-icons.pdf"
+        ],
+        "2": [
+          "https://files.hudexchange.info/resources/documents/e-snaps-Glossary.pdf",
+          "https://www.hudexchange.info/news/explore-e-snaps-101-and-201-toolkits/",
+          "https://www.hudexchange.info/programs/e-snaps/fy-2022-coc-program-nofa-coc-program-competition/",
+          "https://files.hudexchange.info/resources/documents/Common-Issues-Encountered-in-e-snaps.pdf",
+          "https://www.hudexchange.info/faqs/reporting-systems/e-snaps-homeless-assistance-application-and-grants-management-system/project-application/subrecipients/may-a-project-subrecipient-submit-a-project-application-in-e-snaps/",
+          "https://www.hudexchange.info/faqs/reporting-systems/e-snaps-homeless-assistance-application-and-grants-management-system/apr/apr-general/who-should-submit-the-apr-in-e-snaps/",
+          "https://www.hudexchange.info/news/e-snaps-applications-coc-program-competition/",
+          "https://www.hudexchange.info/faqs/reporting-systems/e-snaps-homeless-assistance-application-and-grants-management-system/apr/apr-general/what-is-the-website-for-e-snaps/"
+        ],
+        "3": [
+          "https://www.hudexchange.info/programs/e-snaps/",
+          "https://www.hudexchange.info/resource/6170/esnaps-101-toolkit/",
+          "https://www.hudexchange.info/resource/6171/esnaps-201-toolkit/"
+        ]
+      }
+    },
+    {
+      "placeholders": {
+        "$query": "lead based paint"
+      },
+      "relevant_documents": {
+        "2": [
+          "https://www.hudexchange.info/trainings/lead-based-paint/",
+          "https://www.hudexchange.info/programs/lead-based-paint/evaluating-lead-based-paint-in-hud-assisted-housing-videos/",
+          "https://www.hudexchange.info/faqs/programs/811-project-rental-assistance-pra/program-requirements/general/do-lead-based-paint-requirements-pra-217-lead-based-paint-apply-to-any/",
+          "https://www.hudexchange.info/resource/1209/hprp-lead-based-paint-documentation-checklist/",
+          "https://www.hudexchange.info/resource/1205/hprp-lead-based-paint-screening-worksheet/",
+          "https://www.hudexchange.info/resource/1208/hprp-lead-based-paint-property-owner-certification-template/",
+          "https://www.hudexchange.info/faqs/programs/housing-opportunities-for-persons-with-aids-hopwa-program/rental-assistance/short-term-rent-mortgage-and-utility-assistance-strmu-payments/how-do-requirements-for-lead-based-paint-inspections-apply-for-strmu/",
+          "https://www.hudexchange.info/resource/3332/cdbg-memorandum-home-program-lead-based-paint-q-and-a/",
+          "https://www.hudexchange.info/resource/1206/hprp-lead-based-paint-resident-instructions-template/",
+          "https://files.hudexchange.info/resources/documents/HPRP_LeadPaintGuidance.pdf"
+        ],
+        "3": [
+          "https://www.hudexchange.info/programs/lead-based-paint/",
+          "https://www.hudexchange.info/programs/lead-based-paint/regulations/"
+        ]
+      }
+    },
+    {
+      "placeholders": {
+        "$query": "relocation"
+      },
+      "relevant_documents": {
+        "1": [
+          "https://www.hudexchange.info/faqs/programs/recovery-housing-program/eligible-activities/can-relocation-involve-a-person-in-recovery/"
+        ],
+        "2": [
+          "https://www.hudexchange.info/programs/relocation/forms/",
+          "https://www.hudexchange.info/programs/relocation/training/",
+          "https://www.hudexchange.info/programs/relocation/hudrap/",
+          "https://www.hudexchange.info/resource/6253/lshr-guidance-on-relocation/",
+          "https://www.hudexchange.info/programs/relocation/publications/",
+          "https://www.hudexchange.info/programs/relocation/laws/",
+          "https://www.hudexchange.info/resource/6240/lshr-guidance-on-relocation-/"
+        ],
+        "3": [
+          "https://www.hudexchange.info/programs/relocation/",
+          "https://www.hudexchange.info/programs/relocation/overview/",
+          "https://www.hudexchange.info/programs/relocation/guidance/"
+        ]
+      }
+    },
+    {
+      "placeholders": {
+        "$query": "noise"
+      },
+      "relevant_documents": {
+        "1": [
+          "https://www.hudexchange.info/trainings/courses/noise-assessment-training1/",
+          "https://www.hudexchange.info/news/noise-levels-research-synthesis-webinar/",
+          "https://www.hudexchange.info/trainings/wiser/"
+        ],
+        "2": [
+          "https://www.hudexchange.info/sites/onecpd/assets/File/Noise-Guidebook-Chapter-4-Supplement.doc",
+          "https://www.hudexchange.info/faqs/programs/neighborhood-stabilization-program-nsp/environmental-review/what-is-the-process-for-assessing-the-noise-pollution-affecting-a-property/",
+          "https://www.hudexchange.info/programs/environmental-review/bpm-calculator/"
+        ],
+        "3": [
+          "https://www.hudexchange.info/programs/environmental-review/noise-abatement-and-control/",
+          "https://www.hudexchange.info/trainings/courses/wiser-noise-abatement-and-control-online-module/",
+          "https://www.hudexchange.info/resource/313/hud-noise-guidebook/",
+          "https://www.hudexchange.info/programs/environmental-review/daynight-noise-level-electronic-assessment-tool/",
+          "https://www.hudexchange.info/programs/environmental-review/dnl-calculator/",
+          "https://www.hudexchange.info/resource/2830/day-night-noise-level-assessment-tool/"
+        ]
+      }
+    },
+    {
+      "placeholders": {
+        "$query": "9902"
+      },
+      "relevant_documents": {
+        "1": [
+          "https://www.hudexchange.info/programs/housing-counseling/the-bridge/"
+        ],
+        "2": [
+          "https://www.hudexchange.info/programs/housing-counseling/9902/general-overview/",
+          "https://www.hudexchange.info/programs/housing-counseling/the-bridge/2018-02/9902/",
+          "https://www.hudexchange.info/programs/housing-counseling/the-bridge/2022-quarter-1/9902/",
+          "https://www.hudexchange.info/programs/housing-counseling/",
+          "https://www.hudexchange.info/programs/housing-counseling/the-bridge/2018-08/HUD-9902s/",
+          "https://www.hudexchange.info/programs/housing-counseling/the-bridge/2018-04/9902/",
+          "https://www.hudexchange.info/programs/housing-counseling/the-bridge/2018-07/9902/",
+          "https://www.hudexchange.info/programs/housing-counseling/9902/completing-the-9902/"
+        ],
+        "3": [
+          "https://www.hudexchange.info/programs/housing-counseling/9902-quarterly-reports/",
+          "https://www.hudexchange.info/programs/housing-counseling/9902/"
+        ]
+      }
+    },
+    {
+      "placeholders": {
+        "$query": "home arp"
+      },
+      "relevant_documents": {
+        "2": [
+          "https://www.hudexchange.info/programs/home-arp/overview/",
+          "https://www.hudexchange.info/trainings/courses/home-arp-idis-activity-e-tutorials-home-arp-allocation-plan/",
+          "https://www.hudexchange.info/resource/6498/homearp-allocation-plan-template/",
+          "https://www.hudexchange.info/resource/6544/home-arp-faqs/",
+          "https://www.hudexchange.info/trainings/courses/home-arp-public-participation-video-faq/",
+          "https://www.hudexchange.info/news/home-arp-idis-activity-e-tutorials-home-arp-allocation-plan-now-available/",
+          "https://www.hudexchange.info/resource/6497/homearp-allocation-plan-certifications/",
+          "https://www.hudexchange.info/trainings/courses/home-arp-idis-activity-tutorials-home-arp-allocation-plan/",
+          "https://www.hudexchange.info/resource/6480/home-arp-implementation-notice-fact-sheets/",
+          "https://www.hudexchange.info/trainings/courses/home-arp-idis-activity-tutorials-elements-of-home-arp-administration-and-planning-activities/"
+        ],
+        "3": [
+          "https://www.hudexchange.info/programs/home-arp/",
+          "https://www.hudexchange.info/resource/6499/home-arp-income-limits/",
+          "https://www.hudexchange.info/resource/6500/home-arp-rent-limits/"
+        ]
+      }
+    },
+    {
+      "placeholders": {
+        "$query": "cpd notices"
+      },
+      "relevant_documents": {
+        "0": [
+          "https://www.hudexchange.info/programs/e-snaps/fy-2022-coc-program-nofa-coc-program-competition/",
+          "https://www.hudexchange.info/programs/section-3/",
+          "https://www.hudexchange.info/programs/cdbg/",
+          "https://www.hudexchange.info/programs/cdbg-entitlement/",
+          "https://www.hudexchange.info/programs/hopwa/",
+          "https://www.hudexchange.info/programs/cdbg-dr/"
+        ],
+        "1": [
+          "https://www.hudexchange.info/resource/2360/notice-cpd-01-11-environmental-review-home/",
+          "https://www.hudexchange.info/resource/2186/notice-cpd-00-02-commitment-expenditure-deadline-home/"
+        ],
+        "2": [
+          "https://www.hudexchange.info/resource/2676/notice-cpd-97-03-home-program-match-guidance/",
+          "https://www.hudexchange.info/resource/2144/notice-cpd-03-06-procedures-designating-consortia-home/",
+          "https://www.hudexchange.info/resource/2162/notice-cpd-97-11-guidance-chdos-under-home/",
+          "https://www.hudexchange.info/resource/2126/notice-cpd-98-09-home-program-conflict-of-interest-provisions/",
+          "https://files.hudexchange.info/resources/documents/98-11%20(1).pdf"
+        ],
+        "3": [
+          "https://www.hudexchange.info/programs/hopwa/hopwa-cpd-notices/",
+          "https://www.hudexchange.info/programs/htf/notices/",
+          "https://www.hudexchange.info/programs/home/home-cpd-notices/",
+          "https://www.hudexchange.info/programs/cpd-notices/"
+        ]
+      }
+    },
+    {
+      "placeholders": {
+        "$query": "home program"
+      },
+      "relevant_documents": {
+        "1": [
+          "https://www.hudexchange.info/programs/home-arp/",
+          "https://www.hudexchange.info/trainings/courses/home-program-20th-anniversary-conference/",
+          "https://www.hudexchange.info/trainings/courses/allocating-costs-in-the-home-program-webinar/1761/"
+        ],
+        "2": [
+          "https://www.hudexchange.info/trainings/courses/opportunity-zones-and-the-home-program/",
+          "https://www.hudexchange.info/resources/using-home-htf-funds-within-opportunity-zones/the-essentials-of-oz-home-htf-programs/the-home-program-101-basics/what-is-the-home-program/"
+        ],
+        "3": [
+          "https://www.hudexchange.info/programs/home/",
+          "https://www.hudexchange.info/trainings/courses/building-home-home-program-administration/",
+          "https://www.hudexchange.info/programs/home/topics/program-administration-and-management/",
+          "https://www.hudexchange.info/trainings/courses/building-home-overview-of-the-home-program/",
+          "https://www.hudexchange.info/trainings/courses/building-home-home-program-requirements/",
+          "https://www.hudexchange.info/programs/home/topics/home-and-other-federal-programs/"
+        ]
+      }
+    },
+    {
+      "placeholders": {
+        "$query": "giw"
+      },
+      "relevant_documents": {
+        "0": [
+          "https://www.hudexchange.info/programs/e-snaps/fy-2012-coc-program-nofa-coc-program-competition/",
+          "https://www.hudexchange.info/programs/coc/"
+        ],
+        "1": [
+          "https://www.hudexchange.info/resource/5312/fy-2017-giw-change-form/",
+          "https://www.hudexchange.info/programs/e-snaps/fy-2017-coc-program-nofa-coc-program-competition/",
+          "https://www.hudexchange.info/programs/e-snaps/fy-2015-coc-program-nofa-coc-program-competition/",
+          "https://www.hudexchange.info/news/fy-2017-coc-program-grant-inventory-worksheets-are-available-for-review-on-the-hud-exchange/",
+          "https://www.hudexchange.info/news/fy-2018-coc-program-registration-process-coc-program-registration-notice-posted-to-the-hud-exchange/"
+        ],
+        "2": [
+          "https://www.hudexchange.info/faqs/reporting-systems/e-snaps-homeless-assistance-application-and-grants-management-system/grant-inventory-worksheets-giws/other/what-is-the-purpose-of-the-giw-change-form-why-can-we-not-just-send/",
+          "https://www.hudexchange.info/resource/4409/grant-inventory-worksheet-giw-instructions/",
+          "https://www.hudexchange.info/resource/4410/grant-inventory-worksheet-giw-webcast/",
+          "https://www.hudexchange.info/resource/5698/giw-change-form-with-rental-assistance-worksheet/",
+          "https://www.hudexchange.info/resource/6713/giw-change-form-with-rental-assistance-worksheet/",
+          "https://www.hudexchange.info/news/revised-fy-2021-giws-posted/",
+          "https://www.hudexchange.info/news/giws-available-for-coc-review/"
+        ],
+        "3": [
+          "https://www.hudexchange.info/programs/coc/coc-giw-reports/"
+        ]
+      }
+    },
+    {
+      "placeholders": {
+        "$query": "section 108"
+      },
+      "relevant_documents": {
+        "2": [
+          "https://www.hudexchange.info/programs/section-108/project-profiles/",
+          "https://www.hudexchange.info/trainings/section-108-webinars/",
+          "https://www.hudexchange.info/resource/6288/section-108-underwriting-guidelines-for-business-loans-for-section-108-loan-guarantee-recipients/",
+          "https://www.hudexchange.info/programs/section-108/section-108-program-eligibility-requirements/",
+          "https://www.hudexchange.info/trainings/courses/section-108-loan-guarantee-program-webinar-series-leveraging-section-108-with-lihtcs/3832/",
+          "https://www.hudexchange.info/trainings/courses/section-108-loan-guarantee-program-webinar-series-leveraging-section-108-with-nmtcs/3855/",
+          "https://www.hudexchange.info/trainings/courses/section-108-loan-guarantee-program-webinar-series-leveraging-section-108-with-oz-and-htc-financing/4320/",
+          "https://www.hudexchange.info/resource/6485/leveraging-cdbg-section-108-with-lihtcs/"
+        ],
+        "3": [
+          "https://www.hudexchange.info/programs/section-108/",
+          "https://www.hudexchange.info/resource/6073/section-108-business-assessment-tool/"
+        ]
+      }
+    },
+    {
+      "placeholders": {
+        "$query": "domestic violence"
+      },
+      "relevant_documents": {
+        "2": [
+          "https://www.hudexchange.info/grantees/alabama-coalition-against-domestic-violence/?program=3",
+          "https://www.hudexchange.info/grantees/chrysalis-shelter-for-victims-of-domestic-violence/",
+          "https://www.hudexchange.info/grantees/catalyst-domestic-violence-services/?program=3",
+          "https://www.hudexchange.info/grantees/branches-domestic-violence-shelter/",
+          "https://www.hudexchange.info/grantees/catalyst-domestic-violence-services/",
+          "https://www.hudexchange.info/grantees/steps-to-end-domestic-violence/?program=3",
+          "https://www.hudexchange.info/grantees/branches-domestic-violence-shelter/?program=3",
+          "https://www.hudexchange.info/resource/5657/guidance-for-domestic-violence-partners-and-cocs-on-participating-in-the-pit-count/",
+          "https://www.hudexchange.info/news/snaps-in-focus-ensuring-access-for-survivors-of-domestic-violence/"
+        ],
+        "3": [
+          "https://www.hudexchange.info/homelessness-assistance/domestic-violence/",
+          "https://www.hudexchange.info/grantees/steps-to-end-domestic-violence/",
+          "https://www.hudexchange.info/trainings/courses/addressing-the-intersection-of-domestic-violence-and-hiv-aids/"
+        ]
+      }
+    },
+    {
+      "placeholders": {
+        "$query": "utility allowance"
+      },
+      "relevant_documents": {
+        "0": [
+          "https://www.hudexchange.info/programs/better-buildings-challenge/energy-and-water-efficiency-resources/utility-benchmarking/",
+          "https://www.hudexchange.info/faqs/programs/811-project-rental-assistance-pra/program-requirements/calculating-rents-and-utility-allowances/how-is-the-total-tenant-payment-ttp-and-tenant-rent-calculated-for-the/"
+        ],
+        "1": [
+          "https://www.hudexchange.info/faqs/programs/home-investment-partnerships-program-home/tenant-based-rental-assistance/section-92-252-d-requires-the-participating-jurisdiction-pj-to-use-the/",
+          "https://www.hudexchange.info/programs/home/topics/rental-housing/",
+          "https://www.hudexchange.info/programs/mtw/mtw-expansion-training/all-available-mtw-waivers/1-tenant-rent-policies-waivers/",
+          "https://www.hudexchange.info/resource/133/tenant-paid-utility-data-sampling-calculator/"
+        ],
+        "2": [
+          "https://www.hudexchange.info/resource/2267/utility-allowance-guidebook/",
+          "https://www.hudexchange.info/trainings/courses/hud-utility-schedule-model-calculating-utility-allowances-for-home-webinar1/",
+          "https://www.hudexchange.info/homelessness-assistance/coc-esg-virtual-binders/coc-rent-calculation/rent-calculation-process/step-9-determine-the-utility-allowance/",
+          "https://www.hudexchange.info/resource/2096/home-rent-determination-chart-2-utility-allowance/",
+          "https://files.hudexchange.info/course-content/hud-utility-schedule-model-calculating-utility-allowances-for-home-webinar/HUD-Utility-Schedule-Model-Calculating-Utility-Allowances-for-HOME-Webinar.pdf",
+          "https://www.hudexchange.info/faqs/programs/emergency-solutions-grants-esg-program/program-requirements/eligible-activitiesuses/is-it-allowable-to-use-esg-funds-to-provide-utility-assistance-to-homeowner/",
+          "https://www.hudexchange.info/resource/5034/homefires-vol-13-no-2-guidance-on-how-to-establish-utility-allowances-for-home-assisted-rental-units/",
+          "https://www.hudexchange.info/faqs/programs/811-project-rental-assistance-pra/program-requirements/general/can-pra-inspection-utility-allowance-and-rent-adjustment-effective-dates1/",
+          "https://files.hudexchange.info/resources/documents/Utility-Allowance-Guidebook-Appendices.pdf",
+          "https://files.hudexchange.info/resources/documents/HOME-Rent-Determination-Chart-2-Utility-Allowance.pdf"
+        ]
+      }
+    },
+    {
+      "placeholders": {
+        "$query": "idis login"
+      },
+      "relevant_documents": {
+        "0": [
+          "https://www.hudexchange.info/faqs/reporting-systems/drgr/administration/admin-general/can-i-access-other-hud-cpd-planning-tools-from-drgr/",
+          "https://www.hudexchange.info/programs/hopwa/hopwa-national-technical-assistance/",
+          "https://www.hudexchange.info/faqs/reporting-systems/homelessness-data-exchange-hdx/general/how-do-i-obtain-an-hdx-login/",
+          "https://www.hudexchange.info/faqs/reporting-systems/e-snaps-homeless-assistance-application-and-grants-management-system/apr/apr-general/how-do-i-obtain-an-apr-login-and-password/"
+        ],
+        "1": [
+          "https://www.hudexchange.info/news/register-today-understanding-recent-idis-changes-based-on-the-home-commitment-interim-rule-april-26-27-2017/"
+        ],
+        "2": [
+          "https://www.hudexchange.info/faqs/reporting-systems/integrated-disbursement-and-information-system-idis/administration/account-basics-troubleshooting/what-computer-settings-do-i-need-to-log-in/",
+          "https://www.hudexchange.info/faqs/reporting-systems/integrated-disbursement-and-information-system-idis/reports/access-reports/how-do-you-run-the-idis-pr30-report/",
+          "https://www.hudexchange.info/faqs/reporting-systems/integrated-disbursement-and-information-system-idis/reports/access-reports/is-there-a-report-that-identifies-the-last-time-a-user-logged/",
+          "https://www.hudexchange.info/faqs/reporting-systems/integrated-disbursement-and-information-system-idis/administration/account-basics-troubleshooting/when-i-try-to-log-into-idis-it-takes-me-straight-to-heros-and-not-into-idis/",
+          "https://www.hudexchange.info/faqs/reporting-systems/integrated-disbursement-and-information-system-idis/administration/account-basics-troubleshooting/how-often-am-i-required-to-certify-my-personal-contact-information-in-idis/",
+          "https://www.hudexchange.info/sites/onecpd/assets/File/IDIS-Online-Reports-User-Guide-Chapter-2.pdf"
+        ],
+        "3": [
+          "https://www.hudexchange.info/faqs/reporting-systems/integrated-disbursement-and-information-system-idis/administration/account-basics-troubleshooting/how-do-i-log-into-idis/",
+          "https://www.hudexchange.info/programs/idis/idis-technical-assistance/"
+        ]
+      }
+    },
+    {
+      "placeholders": {
+        "$query": "lead"
+      },
+      "relevant_documents": {
+        "0": [
+          "https://www.hudexchange.info/trainings/courses/lead-the-way-pha-governance-and-financial-management/",
+          "https://www.hudexchange.info/programs/hmis/hmis-lead-sys-admin-webinars/",
+          "https://www.hudexchange.info/trainings/courses/hmis-lead-monitoring/",
+          "https://www.hudexchange.info/faqs/programs/continuum-of-care-coc-program/program-administration/general/what-is-the-hmis-lead/",
+          "https://www.hudexchange.info/resource/6261/hmis-lead-series/",
+          "https://www.hudexchange.info/faqs/programs/continuum-of-care-coc-program/program-administration/general/what-are-the-responsibilities-of-the-hmis-lead/"
+        ],
+        "2": [
+          "https://www.hudexchange.info/programs/lead-based-paint/resources/",
+          "https://www.hudexchange.info/trainings/lead-based-paint/lshr/",
+          "https://www.hudexchange.info/resource/3198/historic-properties-and-the-lead-safe-housing-rule/",
+          "https://www.hudexchange.info/trainings/lead-based-paint/"
+        ],
+        "3": [
+          "https://www.hudexchange.info/programs/lead-based-paint/",
+          "https://www.hudexchange.info/programs/lead-based-paint/regulations/"
+        ]
+      }
+    },
+    {
+      "placeholders": {
+        "$query": "rental assistance"
+      },
+      "relevant_documents": {
+        "0": [
+          "https://www.hudexchange.info/resource/3099/coc-program-rental-assistance/"
+        ],
+        "2": [
+          "https://www.hudexchange.info/resource/2099/home-rental-assistance-contract/",
+          "https://www.hudexchange.info/resource/2128/tbra-applications-for-rental-assistance/",
+          "https://www.hudexchange.info/resource/2100/home-rental-assistance-coupon/",
+          "https://www.hudexchange.info/programs/section-3/section-3-guidebook/program-specific-application/housing-rental-assistance-demonstration/",
+          "https://www.hudexchange.info/resource/6140/emergency-home-tbra-sample-rental-assistance-contract/",
+          "https://www.hudexchange.info/faqs/programs/continuum-of-care-coc-program/rental-assistance/what-is-long-term-rental-assistance/",
+          "https://www.hudexchange.info/faqs/programs/continuum-of-care-coc-program/rental-assistance/what-is-medium-term-rental-assistance/",
+          "https://www.hudexchange.info/faqs/programs/continuum-of-care-coc-program/rental-assistance/what-is-short-term-rental-assistance/"
+        ],
+        "3": [
+          "https://www.hudexchange.info/programs/rad/",
+          "https://www.hudexchange.info/programs/home/topics/tbra/",
+          "https://www.hudexchange.info/resource/2818/hopwa-rental-assistance-guidebook/"
+        ]
+      }
+    },
+    {
+      "placeholders": {
+        "$query": "lihtc"
+      },
+      "relevant_documents": {
+        "0": [
+          "https://www.hudexchange.info/programs/home/ad-hoc-reports/",
+          "https://www.hudexchange.info/programs/home/project-profiles/wisdom-village-of-northlake-phase-2/",
+          "https://www.hudexchange.info/programs/environmental-review/historic-preservation/tax-credit/",
+          "https://www.hudexchange.info/programs/811-pra/pra-program-eligibility-requirements/"
+        ],
+        "1": [
+          "https://www.hudexchange.info/faqs/programs/811-project-rental-assistance-pra/environmental-review/we-have-two-properties-that-are-low-income-housing-tax-credit-lihtc-sites/"
+        ],
+        "2": [
+          "https://www.hudexchange.info/resource/6485/leveraging-cdbg-section-108-with-lihtcs/",
+          "https://www.hudexchange.info/trainings/courses/year-15-transition-strategies-for-expiring-lihtc-properties-webinar/",
+          "https://www.hudexchange.info/faqs/programs/housing-choice-voucher-program/rent-reasonableness/program-requirements/can-an-owner-of-a-low-income-housing-tax-credit-lihtc-development-charge/",
+          "https://www.hudexchange.info/faqs/programs/housing-choice-voucher-program/rent-reasonableness/program-requirements/can-an-owner-of-a-low-income-housing-tax-credit-lihtc-property-increase/",
+          "https://files.hudexchange.info/course-content/4529/Leveraging-Section-108-with-LIHTCs-Questions-and-Answers.pdf",
+          "https://www.hudexchange.info/trainings/courses/section-108-loan-guarantee-program-webinar-series-leveraging-section-108-with-lihtcs/3832/",
+          "https://files.hudexchange.info/course-content/4529/Leveraging-Section-108-with-LIHTCs-Slides.pdf",
+          "https://www.hudexchange.info/faqs/programs/811-project-rental-assistance-pra/fair-housing-and-section-504/some-of-our-older-home-and-low-income-housing-tax-credit-lihtc-properties/",
+          "https://www.hudexchange.info/resource/4684/implementing-the-fair-housing-equity-assessment-advancing-opportunity-through-the-low-income-housing-tax-credits/",
+          "https://files.hudexchange.info/course-content/section-108-loan-guarantee-program-webinar-series-leveraging-section-108-with-lihtcs/Leveraging-Section-108-with-LIHTCs-Case-Study-2.pdf",
+          "https://files.hudexchange.info/course-content/section-108-loan-guarantee-program-webinar-series-leveraging-section-108-with-lihtcs/Leveraging-Section-108-with-LIHTCs-Case-Study-1.pdf"
+        ]
+      }
+    },
+    {
+      "placeholders": {
+        "$query": "hmis data standards"
+      },
+      "relevant_documents": {
+        "1": [
+          "https://www.hudexchange.info/news/hud-releases-2017-hmis-data-standards-data-dictionary/",
+          "https://files.hudexchange.info/resources/documents/HMIS-Data-Standards-Manual-2017.pdf",
+          "https://files.hudexchange.info/resources/documents/HMIS-Data-Dictionary-2018.pdf",
+          "https://files.hudexchange.info/resources/documents/HMIS-Data-Standards-Management-Process-Overview.pdf"
+        ],
+        "2": [
+          "https://www.hudexchange.info/programs/hmis/hmis-data-standards/standards/",
+          "https://www.hudexchange.info/news/hud-releases-fy-2022-hmis-data-standards/",
+          "https://files.hudexchange.info/resources/documents/HMIS-Data-Standards-Request-For-Services-Template.docx",
+          "https://www.hudexchange.info/resource/6745/fy-2024-hmis-data-standards-update-management-process/"
+        ],
+        "3": [
+          "https://www.hudexchange.info/resource/3824/hmis-data-dictionary/",
+          "https://www.hudexchange.info/programs/hmis/hmis-data-standards/",
+          "https://www.hudexchange.info/programs/hmis/hmis-data-and-technical-standards/"
+        ]
+      }
+    },
+    {
+      "placeholders": {
+        "$query": "hqs"
+      },
+      "relevant_documents": {
+        "2": [
+          "https://www.hudexchange.info/programs/mtw/mtw-expansion-training/all-available-mtw-waivers/5-housing-quality-standards-hqs/",
+          "https://www.hudexchange.info/resource/1827/hqs-habitability-standards/",
+          "https://files.hudexchange.info/resources/documents/PIH-HCV-Landlord-HQS-Biennial-Inspection-Flowchart-Spanish.pdf",
+          "https://www.hudexchange.info/resource/2091/home-housing-quality-standards-hqs-inspection-form/",
+          "https://www.hudexchange.info/faqs/programs/housing-opportunities-for-persons-with-aids-hopwa-program/rental-assistance/short-term-rent-mortgage-and-utility-assistance-strmu-payments/are-hqs-inspections-required-in-units-eligible-for-strmu-assistance/",
+          "https://www.hudexchange.info/faqs/programs/housing-choice-voucher-program/uncategorized/housing-quality-standards-hqs/do-housing-quality-standards-hqs-inspections-require-smoke-detectors/",
+          "https://files.hudexchange.info/resources/documents/PIH-HCV-Landlord-HQS-Biennial-Inspection-Flowchart.pdf",
+          "https://files.hudexchange.info/resources/documents/PIH-HCV-Landlord-HQS-Initial-Inspection-Flowchart.pdf",
+          "https://files.hudexchange.info/resources/documents/NSPIRE-and-HQS-Comparison-Job-Aid.pdf",
+          "https://www.hudexchange.info/faqs/programs/housing-choice-voucher-program/uncategorized/housing-quality-standards-hqs/must-a-housing-quality-standards-hqs-inspector-revisit-a-unit-that-has-a/",
+          "https://www.hudexchange.info/faqs/programs/housing-choice-voucher-program/uncategorized/housing-quality-standards-hqs/what-are-the-hqs-requirements-for-exterior-paint/",
+          "https://www.hudexchange.info/faqs/programs/housing-choice-voucher-program/uncategorized/housing-quality-standards-hqs/please-clarify-housing-quality-standard-requirements-before-public/"
+        ]
+      }
+    },
+    {
+      "placeholders": {
+        "$query": "cdbg idis"
+      },
+      "relevant_documents": {
+        "0": [
+          "https://www.hudexchange.info/programs/covid-19/"
+        ],
+        "1": [
+          "https://www.hudexchange.info/programs/cdbg-entitlement/",
+          "https://www.hudexchange.info/trainings/courses/idis-for-state-cdbg-grantees/123/",
+          "https://www.hudexchange.info/programs/cdbg/"
+        ],
+        "2": [
+          "https://www.hudexchange.info/trainings/idis-cdbg/",
+          "https://www.hudexchange.info/trainings/courses/idis-cdbg-introduction-to-idis-training-for-cdbg-grantees/",
+          "https://www.hudexchange.info/news/hud-publishes-new-cdbg-idis-faqs/",
+          "https://www.hudexchange.info/trainings/courses/basically-cdbg-online-idis-and-cdbg/",
+          "https://www.hudexchange.info/resource/2822/cdbg-changes-in-idis-instructions-for-grantees-idis-release-114/",
+          "https://www.hudexchange.info/news/new-cdbg-idis-faqs-available-on-the-hud-exchange/",
+          "https://www.hudexchange.info/trainings/basically-cdbg-online/idis-and-cdbg/",
+          "https://www.hudexchange.info/resource/3087/faqs-cdbg-idis-11-4-system-changes/"
+        ],
+        "3": [
+          "https://www.hudexchange.info/programs/idis/guides/cdbg/"
+        ]
+      }
+    },
+    {
+      "placeholders": {
+        "$query": "htf"
+      },
+      "relevant_documents": {
+        "2": [
+          "https://www.hudexchange.info/resources/using-home-htf-funds-within-opportunity-zones/the-essentials-of-oz-home-htf-programs/comparison-of-home-and-htf/",
+          "https://www.hudexchange.info/programs/environmental-review/htf/",
+          "https://www.hudexchange.info/resources/using-home-htf-funds-within-opportunity-zones/the-essentials-of-oz-home-htf-programs/the-htf-program-101-basics/additional-htf-resources/",
+          "https://www.hudexchange.info/programs/htf/notices/",
+          "https://www.hudexchange.info/resources/using-home-htf-funds-within-opportunity-zones/the-essentials-of-oz-home-htf-programs/the-htf-program-101-basics/what-is-htf/",
+          "https://www.hudexchange.info/programs/htf/guides/",
+          "https://www.hudexchange.info/programs/htf/htf-national-production-reports/",
+          "https://www.hudexchange.info/programs/htf/htf-open-activities-reports/",
+          "https://www.hudexchange.info/resources/using-home-htf-funds-within-opportunity-zones/the-essentials-of-oz-home-htf-programs/the-htf-program-101-basics/",
+          "https://www.hudexchange.info/programs/htf/laws-regulations/",
+          "https://www.hudexchange.info/resources/using-home-htf-funds-within-opportunity-zones/the-essentials-of-oz-home-htf-programs/the-htf-program-101-basics/htf-eligible-activities-and-costs/"
+        ],
+        "3": [
+          "https://www.hudexchange.info/programs/htf/"
+        ]
+      }
+    },
+    {
+      "placeholders": {
+        "$query": "faq"
+      },
+      "relevant_documents": {
+        "1": [
+          "https://www.hudexchange.info/news/new-home-idis-faq-and-updates-to-existing-idis-faqs-now-available/",
+          "https://www.hudexchange.info/resource/3869/promise-zones-archived-application-materials/",
+          "https://www.hudexchange.info/news/home-arp-public-participation-video-faq-now-available/",
+          "https://www.hudexchange.info/resource/6184/faq-your-fss-escrow-savings-account/",
+          "https://www.hudexchange.info/faqs/programs/cdbg-entitlement-program/consolidated-plan/what-are-the-types-of-agreements-that-the-entitlement-city-in-faq-3540/",
+          "https://www.hudexchange.info/resource/6605/homearp-housing-production-goal-calculation-worksheet-and-faq/",
+          "https://www.hudexchange.info/news/new-home-arp-idis-fact-sheet-and-faq-now-available/"
+        ],
+        "2": [
+          "https://www.hudexchange.info/programs/coc/faqs/",
+          "https://www.hudexchange.info/resource/3715/historic-preservation-faqs/",
+          "https://www.hudexchange.info/programs/location-affordability-index/faqs/",
+          "https://www.hudexchange.info/resource/3821/farmlands-protection-faqs/",
+          "https://www.hudexchange.info/resource/4891/cdbg-broadband-infrastructure-faqs/",
+          "https://www.hudexchange.info/trainings/courses/home-arp-public-participation-video-faq/",
+          "https://files.hudexchange.info/course-content/housing-choice-voucher-homeownership-webinar/HCV-Homeownership-Lender-FAQ.pdf",
+          "https://www.hudexchange.info/resource/3763/flood-insurance-faqs/",
+          "https://www.hudexchange.info/resource/5155/microstrategy-faqs/",
+          "https://files.hudexchange.info/resources/documents/HCV-Homeownership-Lender-FAQ.pdf",
+          "https://www.hudexchange.info/resource/3820/endangered-species-faqs/"
+        ],
+        "3": [
+          "https://www.hudexchange.info/faqs/"
+        ]
+      }
+    },
+    {
+      "placeholders": {
+        "$query": "home income limits"
+      },
+      "relevant_documents": {
+        "1": [
+          "https://www.hudexchange.info/sites/onecpd/assets/File/HOME_IncomeLmts_Memo_2005.pdf",
+          "https://www.hudexchange.info/sites/onecpd/assets/File/HOME_IncomeLmts_Memo_2011.pdf",
+          "https://www.hudexchange.info/sites/onecpd/assets/File/HOME_IncomeLmts_UncappedIncomeLimitsMemo_2012.pdf",
+          "https://www.hudexchange.info/sites/onecpd/assets/File/HOME_IncomeLmts_UncappedIncomeLimitsMemo_2004.pdf",
+          "https://www.hudexchange.info/sites/onecpd/assets/File/HOME_IncomeLmts_Memo_2004.pdf",
+          "https://www.hudexchange.info/sites/onecpd/assets/File/HOME_IncomeLmts_Memo_2006.pdf",
+          "https://www.hudexchange.info/sites/onecpd/assets/File/HOME_IncomeLmts_Memo_2012.pdf",
+          "https://www.hudexchange.info/sites/onecpd/assets/File/HOME_IncomeLmts_Memo_2007.pdf",
+          "https://www.hudexchange.info/sites/onecpd/assets/File/HOME_IncomeLmts_Memo_2003.pdf",
+          "https://www.hudexchange.info/sites/onecpd/assets/File/HOME_IncomeLmts_Memo_2010.pdf",
+          "https://www.hudexchange.info/sites/onecpd/assets/File/HOME_IncomeLmts_Memo_2009.pdf",
+          "https://www.hudexchange.info/sites/onecpd/assets/File/HOME_IncomeLmts_Memo_2013.pdf",
+          "https://www.hudexchange.info/sites/onecpd/assets/File/HOME_IncomeLmts_Memo_2008.pdf"
+        ],
+        "2": [
+          "https://www.hudexchange.info/resource/6499/home-arp-income-limits/"
+        ],
+        "3": [
+          "https://www.hudexchange.info/programs/home/home-income-limits/"
+        ]
+      }
+    },
+    {
+      "placeholders": {
+        "$query": "hic"
+      },
+      "relevant_documents": {
+        "1": [
+          "https://www.hudexchange.info/resource/5987/2020-hic-and-pit-count-data-submission-guidance/",
+          "https://www.hudexchange.info/resource/6300/2021-hic-and-pit-count-data-submission-guidance/",
+          "https://www.hudexchange.info/news/submittal-deadline-reminders-2018-hic-and-pit-count-data-and-fy-2017-system-performance-measures-report/",
+          "https://files.hudexchange.info/resources/documents/2013HICandPITDataSubmissionGuidance.pdf",
+          "https://www.hudexchange.info/resource/1978/2012-point-in-time-pit-and-housing-inventory-count-hic-faqs/",
+          "https://www.hudexchange.info/resource/1241/2011-housing-inventory-count-hic-instruction-guide/",
+          "https://www.hudexchange.info/faqs/reporting-systems/homelessness-data-exchange-hdx/hic/is-there-a-way-to-edit-the-program-name-in-the-hic/",
+          "https://www.hudexchange.info/resource/4453/2015-hic-and-pit-data-submission-guidance/",
+          "https://www.hudexchange.info/resource/3764/2014-hic-and-pit-of-homeless-persons-data-collection-guidance/",
+          "https://www.hudexchange.info/resource/4960/2016-hic-and-pit-data-submission-guidance/",
+          "https://www.hudexchange.info/resource/5314/2017-hic-and-pit-data-submission-presentation/"
+        ],
+        "2": [
+          "https://www.hudexchange.info/faqs/reporting-systems/homelessness-data-exchange-hdx/hic/how-should-vash-vouchers-be-reported-on-the-hic/",
+          "https://www.hudexchange.info/resource/5205/veterans-hicpit-count-data-guidance-tool/",
+          "https://www.hudexchange.info/faqs/reporting-systems/homelessness-data-exchange-hdx/hic/what-should-be-included-in-the-hic/"
+        ],
+        "3": [
+          "https://www.hudexchange.info/programs/hdx/guides/pit-hic/?utm_source=HUD+Exchange+Mailing+List&utm_campaign=6e453d32ab-PIT+Count+Office+Hours+and+Resources+10.26.18&utm_medium=email&utm_term=0_f32b935a5f-6e453d32ab-19226917",
+          "https://www.hudexchange.info/programs/hdx/guides/pit-hic/",
+          "https://www.hudexchange.info/programs/hdx/pit-hic/"
+        ]
+      }
+    },
+    {
+      "placeholders": {
+        "$query": "esg-cv"
+      },
+      "relevant_documents": {
+        "2": [
+          "https://www.hudexchange.info/programs/covid-19/",
+          "https://www.hudexchange.info/trainings/courses/esg-cv-funds-reallocation-overview/",
+          "https://www.hudexchange.info/trainings/courses/esg-cv-updates-webinar/",
+          "https://www.hudexchange.info/trainings/courses/esg-cv-notice-webinar/",
+          "https://www.hudexchange.info/trainings/courses/esg-cv-reporting-requirements-training-series-for-state-territory-esg-recipients/",
+          "https://www.hudexchange.info/news/esg-hopwa-waiver-memo-and-idis-instructions-for-submitting-a-substantial-amendment-for-cdbg-cv-esg-cv-and-hopwa-cv-grants/",
+          "https://www.hudexchange.info/news/esg-cv-expenditure-deadline-updates/",
+          "https://www.hudexchange.info/news/the-first-esg-cv-quarterly-report-is-open-in-sage/",
+          "https://www.hudexchange.info/news/esg-cv-reporting-requirements-training-series-for-esg-recipients/",
+          "https://www.hudexchange.info/trainings/courses/esg-and-esg-cv-reporting-office-hours/",
+          "https://www.hudexchange.info/news/esg-and-esg-cv-reporting-office-hours/",
+          "https://www.hudexchange.info/news/esg-cv-award-letters-distributed/"
+        ]
+      }
+    },
+    {
+      "placeholders": {
+        "$query": "yhdp"
+      },
+      "relevant_documents": {
+        "1": [
+          "https://www.hudexchange.info/programs/yhdp/fy-2016-application-resources/",
+          "https://www.hudexchange.info/programs/yhdp/fy-2018-yhdp-application-resources/",
+          "https://www.hudexchange.info/programs/yhdp/fy-2017-application-resources/",
+          "https://www.hudexchange.info/resource/5679/fy-2016-yhdp-debrief/",
+          "https://www.hudexchange.info/programs/yhdp/fy-2021-application-resources/"
+        ],
+        "2": [
+          "https://www.hudexchange.info/programs/yhdp/listening-sessions/",
+          "https://www.hudexchange.info/resource/5733/yhdp-lessons-learned/",
+          "https://www.hudexchange.info/programs/e-snaps/fy-2021-coc-program-nofa-coc-program-competition/"
+        ],
+        "3": [
+          "https://www.hudexchange.info/programs/yhdp/community-resources/",
+          "https://www.hudexchange.info/programs/yhdp/",
+          "https://www.hudexchange.info/resource/6178/yhdp-hmis-manual/"
+        ]
+      }
+    },
+    {
+      "placeholders": {
+        "$query": "calculator"
+      },
+      "relevant_documents": {
+        "1": [
+          "https://www.hudexchange.info/programs/mtw/mtw-expansion-training/mtw-funding-calculations/step-by-step-how-to-calculate-mtw-hap-renewal-funding/funding-calculation-examples/",
+          "https://www.hudexchange.info/programs/mtw/mtw-expansion-training/statutory-requirements/3-substantially-the-same-number-of-households/hcv-families-housed-calculation/",
+          "https://www.hudexchange.info/news/update-for-cpd-income-eligibility-calculator-users/",
+          "https://www.hudexchange.info/news/update-for-cpd-income-eligibility-calculator-users1/",
+          "https://www.hudexchange.info/faqs/programs/housing-counseling/certification-exam-and-training/the-certification-exam/can-a-calculator-be-used-during-the-certification-examination/",
+          "https://www.hudexchange.info/trainings/courses/using-the-income-calculator-for-rental-and-tbra-programs-webinar1/",
+          "https://www.hudexchange.info/trainings/courses/using-the-income-calculator-to-determine-annual-income-webinar1/",
+          "https://www.hudexchange.info/resource/6132/mortgage-interest-differential-payment-calculators/",
+          "https://www.hudexchange.info/resource/133/tenant-paid-utility-data-sampling-calculator/"
+        ],
+        "2": [
+          "https://www.hudexchange.info/programs/environmental-review/dnl-calculator/",
+          "https://www.hudexchange.info/programs/environmental-review/bpm-calculator/",
+          "https://www.hudexchange.info/programs/mtw/mtw-expansion-training/mtw-funding-calculations/",
+          "https://www.hudexchange.info/resource/1835/hopwa-income-resident-rent-calculation/",
+          "https://www.hudexchange.info/programs/census/low-mod-income-summary-data/calculation/",
+          "https://www.hudexchange.info/resource/2079/cpd-income-eligibility-calculator/"
+        ],
+        "3": [
+          "https://www.hudexchange.info/incomecalculator/"
+        ]
+      }
+    },
+    {
+      "placeholders": {
+        "$query": "affh"
+      },
+      "relevant_documents": {
+        "1": [
+          "https://www.hudexchange.info/trainings/courses/2022-fair-housing-office-hours-session-14-data-collection-and-analysis/4715/",
+          "https://www.hudexchange.info/trainings/courses/2022-fair-housing-office-hours-session-10/4709/",
+          "https://www.hudexchange.info/trainings/courses/2022-fair-housing-office-hours-session-2/4544/",
+          "https://www.hudexchange.info/trainings/courses/2022-fair-housing-office-hours-session-8/4554/",
+          "https://www.hudexchange.info/trainings/courses/2022-fair-housing-office-hours-session-6/4553/"
+        ],
+        "2": [
+          "https://www.hudexchange.info/trainings/courses/2022-fair-housing-office-hours-session-16-goal-setting-and-reporting/4724/",
+          "https://www.hudexchange.info/trainings/courses/2022-fair-housing-office-hours-session-3/4549/",
+          "https://www.hudexchange.info/trainings/courses/2022-fair-housing-office-hours-session-1/4543/",
+          "https://www.hudexchange.info/trainings/courses/2022-fair-housing-office-hours-session-12-fair-housing-issues-impediments-and-contributing-fact/4713/",
+          "https://www.hudexchange.info/trainings/courses/2022-fair-housing-office-hours-session-13-general-questions/4714/",
+          "https://www.hudexchange.info/trainings/courses/2022-fair-housing-office-hours-session-11-general-questions/4712/",
+          "https://www.hudexchange.info/news/2022-fair-housing-office-hours/",
+          "https://www.hudexchange.info/trainings/courses/2022-fair-housing-office-hours-session-4/4552/",
+          "https://www.hudexchange.info/trainings/courses/engaging-the-disability-community-in-fair-housing-planning-affh-for-individuals-with-disabilities/4616/"
+        ],
+        "3": [
+          "https://www.hudexchange.info/programs/fair-housing-planning/"
+        ]
+      }
+    },
+    {
+      "placeholders": {
+        "$query": "income"
+      },
+      "relevant_documents": {
+        "1": [
+          "https://www.hudexchange.info/programs/home/home-income-limits/",
+          "https://www.hudexchange.info/programs/htf/htf-income-limits/",
+          "https://www.hudexchange.info/trainings/courses/income-determination-workshop/",
+          "https://www.hudexchange.info/faqs/programs/811-project-rental-assistance-pra/program-requirements/calculating-rents-and-utility-allowances/is-employment-income-or-other-income-of-a-live-in-aide/",
+          "https://www.hudexchange.info/programs/home/topics/income-determination/",
+          "https://www.hudexchange.info/faqs/programs/public-housing/reexaminations/reexamination-process/for-continued-eligibility-is-adjusted-income-or-gross-income-used-to/"
+        ],
+        "2": [
+          "https://www.hudexchange.info/news/cpd-income-eligibility-calculator-updated-with-income-limits/",
+          "https://www.hudexchange.info/faqs/programs/neighborhood-stabilization-program-nsp/homebuyer-assistance-programs/homebuyer-program-design-and-implementation/whose-income-is-used-to-determine-household-income/",
+          "https://www.hudexchange.info/trainings/courses/using-the-income-calculator-to-determine-annual-income-webinar1/",
+          "https://www.hudexchange.info/programs/cdbg/cdbg-income-survey-toolkit/"
+        ],
+        "3": [
+          "https://www.hudexchange.info/incomecalculator/"
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>RelevEQ</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link type="image/png" sizes="32x32" rel="icon" href="assets/images/icons8-globe-32.png">
+  <script defer src="bundle.js"></script></head>
+
+  <body>
+
+    <header>
+      <div class="title-wrapper">
+        <img src="assets/images/graphic_equalizer.png"/>
+        <div class="title-wrapper-inner">
+          <h1 >RelevEQ</h1>
+          <h2 class="tagline">The Relevance vs. Recency Equalizer</h2>
+        </div>
+      </div>
+    </header>
+
+    <div class="toggleButtons">
+        <button id="keywordListToggleButton"   onclick="document.getElementById('keywordListAreaPane').classList.toggle('hidden')">Keyword List</button>
+        <button id="queryTemplateToggleButtonControl" onclick="document.getElementById('queryTemplateAreaPaneControl').classList.toggle('hidden')">Control Query</button>
+        <button id="queryTemplateToggleButtonExperimentA" onclick="document.getElementById('queryTemplateAreaPaneExperimentA').classList.toggle('hidden')">Experiment A Query</button>
+        <button id="queryTemplateToggleButtonExperimentB" onclick="document.getElementById('queryTemplateAreaPaneExperimentB').classList.toggle('hidden')">Experiment B Query</button>
+        <button id="engineToggleButton"        onclick="document.getElementById('enginePane').classList.toggle('hidden')">Engine</button>
+        <!-- <button id="testingToggleButton"        onclick="document.getElementById('testingPane').classList.toggle('hidden')">Testing</button> -->
+      </div>
+
+    <div id="settings">
+
+      <div id="keywordListAreaPane" class="hidden padding2" >
+        <label for="keywordListArea">Keyword List:</label><br/>
+        <textarea id="keywordListArea" rows="20" style="width: 80%; height: auto"></textarea><br/>
+        <button id="keywordListApply">Apply</button>
+      </div>
+
+      <div id="queryTemplateAreaPaneControl" class="hidden padding2">
+        <label for="queryTemplateAreaControl">Control Query:</label><br/>
+        <textarea id="queryTemplateAreaControl" rows="20" style="width: 80%; height: auto"></textarea><br/>
+        <button id="queryTemplateApplyControl">Apply</button>
+      </div>
+
+      <div id="queryTemplateAreaPaneExperimentA" class="hidden padding2">
+        <label for="queryTemplateAreaExperimentA">Experiment A Query:</label><br/>
+        <textarea id="queryTemplateAreaExperimentA" rows="20" style="width: 80%; height: auto"></textarea><br/>
+        <button id="queryTemplateApplyExperimentA">Apply</button>
+      </div>
+
+      <div id="queryTemplateAreaPaneExperimentB" class="hidden padding2">
+        <label for="queryTemplateAreaExperimentB">Experiment B Query:</label><br/>
+        <textarea id="queryTemplateAreaExperimentB" rows="20" style="width: 80%; height: auto"></textarea><br/>
+        <button id="queryTemplateApplyExperimentB">Apply</button>
+      </div>
+
+      <div id="enginePane" class="hidden padding2">
+        <label for="engineUrl">Engine URL:</label><br/>
+        <input type="text" id="engineUrl"> <button id="engineApply">Apply</button>
+      </div>
+
+      <!-- <div id="testingPane" class="hidden padding2">
+        <label for="testingTextAreaControl">Testing:</label><br/>
+        <textarea id="testingTextAreaControl" rows="20" style="width: 80%; height: auto"></textarea><br/>
+      </div> -->
+
+    <div id="score-recency-visualization"></div>
+
+    <div class="hidden2" id="summary"></div>
+
+      <div id="search-result-container">
+
+
+
+
+      <div class="padding10" id="myDataTableDiv">
+        <table id="queriesTableMerged"></table>
+      </div>
+
+      <div id="search-results-control">
+
+        <div class="control">
+          <h2>Control</h2>
+          (baseline query template with no date boosting parameters)
+        </div>
+
+        <div id="search-divider-control" class="search-divider">&nbsp;</div>
+        <div id="search-summary-control"></div>
+        <div id="result-docs-control" class="result-docs">
+          <ol id="result-doc-list-control"></ol>
+        </div>
+      </div>
+
+      <div id="search-results-experiment-a">
+
+        <div class="sliders-a">
+          <h2>Experiment A</h2>
+          Date boost settings:
+          <br>&nbsp;<br>
+
+          <form method="get" class="slider-form">
+            <label class="label-class" for="decay-slider-a">Decay A:</label><br>
+            <input type="range" id="decay-slider-a" name="decay" min="0.0" max=".95" step="0.05">
+            <output id="decay-slider-value-a"></output>
+          </form>
+
+          <form method="get" class="slider-form">
+            <label class="label-class" for="weight-slider-a">Weight A:</label><br>
+            <input type="range" id="weight-slider-a" name="weight" min="0" max="50.0" step="0.5">
+            <output id="weight-slider-value-a"></output>
+          </form>
+
+          <form method="get" class="slider-form">
+            <label class="label-class" for="scale-slider">Scale A:</label><br>
+            <input type="range" id="scale-slider-a" name="weight" min="30" max="1100" step="10">
+            <output id="scale-slider-value-a"></output>
+          </form>
+
+          <form method="get" class="slider-form">
+            <label class="label-class" for="offset-slider-a">Offset A:</label><br>
+            <input type="range" id="offset-slider-a" name="weight" min="0" max="800" step="10">
+            <output id="offset-slider-value-a"></output>
+          </form>
+        </div>
+
+        <div id="search-divider-experiment-a" class="search-divider">&nbsp;</div>
+        <div id="search-summary-experiment-a"></div>
+        <div id="result-docs-experiment-a" class="result-docs">
+          <ol id="result-doc-list-experiment-a"></ol>
+        </div>
+      </div>
+
+      <div id="search-results-experiment-b">
+
+        <div class="sliders-b">
+          <h2>Experiment B</h2>
+          Date boost settings:
+          <br>&nbsp;<br>
+          <form method="get" class="slider-form">
+            <label class="label-class" for="decay-slider-b">Decay B:</label><br>
+            <input type="range" id="decay-slider-b" name="decay" min="0.0" max=".95" step="0.05">
+            <output id="decay-slider-value-b"></output>
+          </form>
+
+          <form method="get" class="slider-form">
+            <label class="label-class" for="weight-slider-b">Weight B:</label><br>
+            <input type="range" id="weight-slider-b" name="weight" min="0" max="50.0" step="0.5">
+            <output id="weight-slider-value-b"></output>
+          </form>
+
+          <form method="get" class="slider-form">
+            <label class="label-class" for="scale-slider-b">Scale B:</label><br>
+            <input type="range" id="scale-slider-b" name="weight" min="30" max="1100" step="10">
+            <output id="scale-slider-value-b"></output>
+          </form>
+
+          <form method="get" class="slider-form">
+            <label class="label-class" for="offset-slider-b">Offset B:</label><br>
+            <input type="range" id="offset-slider-b" name="weight" min="0" max="800" step="10">
+            <output id="offset-slider-value-b"></output>
+          </form>
+        </div>
+
+        <div id="search-divider-experiment-b" class="search-divider">&nbsp;</div>
+        <div id="search-summary-experiment-b"></div>
+        <div id="result-docs-experiment-b" class="result-docs">
+          <ol id="result-doc-list-experiment-b"></ol>
+        </div>
+      </div>
+
+      <div>
+        <table>
+          <tr>
+            <td class="result-visualization-wrapper">
+              <div id="result-visualization"></div>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <table>
+                <tr>
+                  <td>
+                    <span id="working">Loading...please wait</span>
+                    <span id="loading">Done Loading...</span>
+                  </td>
+                </tr>
+                <tr>
+                  <td id="controlFA1_td">
+                    Control, Days Average, Averaged: <span id="controlFA1"></span><br>
+                  </td>
+                </tr>
+                <tr>
+                  <td id="controlFA2_td">
+                    Control, nDCG Average: <span id="controlFA2"></span><br>
+                  </td>
+                </tr>
+                <tr>
+                  <td id="experimentAFA1_td">
+                    Experiment A, Days Average, Averaged: <span id="experimentAFA1"></span><br>
+                  </td>
+                </tr>
+                <tr>
+                  <td id="experimentAFA2_td">
+                    Experiment A, nDCG Average: <span id="experimentAFA2"></span><br>
+                  </td>
+                </tr>
+                <tr>
+                  <td id="experimentBFA1_td">
+                    Experiment B, Days Average, Averaged: <span id="experimentBFA1"></span><br>
+                  </td>
+                </tr>
+                <tr>
+                  <td id="experimentBFA2_td">
+                    Experiment B, nDCG Average: <span id="experimentBFA2"></span><br>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <div id="button1_wrapper">
+                      <input id="button1" value="download ratings by position" type="button" />
+                    </div>
+                  </td>
+                </tr>
+              </table>
+
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <div class="paddingRight20">
+                <div id="helpPane">
+                  <div class="decayGraph">
+                      <img src="./assets/images/decay_2d.png" height="200px;" alt="decay"><br>
+                      <pre class="helpPaneComment">We are using "exp". Source: <a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-function-score-query.html">elastic</a></pre>
+                    </div>
+                  </div>
+                </div>
+            </td>
+          </tr>
+        </table>
+      </div>
+    </div>
+
+  </div>
+  </body>
+</html>

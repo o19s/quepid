@@ -149,6 +149,16 @@ angular.module('QuepidApp')
           $rootScope.devSettings = !$rootScope.devSettings;
           $(document).trigger('toggleEast');
         };
+
+        $scope.openRelevEQ = function() {
+            let case_id = caseNo;
+            let try_number = tryNo;
+            let quepidBaseUrl = 'http://localhost:3000/'; //TODO get the actual base url + port for Quepid
+            let relevEqBaseUrl = quepidBaseUrl + 'RevelEQ/index.html?';
+            //btoa: base 64 encode
+            let relevEqUrl = relevEqBaseUrl + 'quepid_url=' + btoa(quepidBaseUrl) + '&case_id=' + case_id + '&try_number=' + try_number;
+            window.open(relevEqUrl, '_blank');
+        };
       }
     }
   ]);

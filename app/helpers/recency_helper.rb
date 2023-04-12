@@ -1,0 +1,2 @@
+module RecencyHelper
+end
