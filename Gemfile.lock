@@ -473,6 +473,7 @@ DEPENDENCIES
   rails-controller-testing
   rails-erd (~> 1.6)
   rails-healthcheck (~> 1.4)
+  rails-html-sanitizer
   redis (~> 5.0.6)
   responders
   rubocop
