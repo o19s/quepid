@@ -42,17 +42,17 @@ gem 'd3-rails', '~> 3.5.5' # For cal heatmap
 # Had no luck with js/svg approach ;-(
 gem 'font-awesome-sass'
 
-gem 'rack-cors', '~> 2.0'
+gem 'rack-cors', '~> 1.1'
 gem 'foreman'
+gem 'racc', '~> 1.4.0'
 gem 'ancestry'
 
 gem 'omniauth', '~> 2.0'
 gem 'omniauth-keycloak'
+gem 'omniauth-rails_csrf_protection'
 gem 'omniauth-google-oauth2'
-gem 'omniauth-rails_csrf_protection', '~> 1.0'
 
 gem 'rails-healthcheck', '~> 1.4'
-gem 'rails-html-sanitizer'
 
 gem 'vega', '~> 0.3.0'
 
@@ -77,13 +77,12 @@ group :development do
   gem 'letter_opener'
   gem 'rubocop', require: false
   gem 'rubocop-rails', require: false
-  gem 'rubocop-capybara', require: false
   gem 'rails-erd', '~> 1.6'
 end
 
 group :test do
   gem 'minitest-reporters', '>= 0.5.0'
-  gem 'mocha', '~> 2.0'
+  gem 'mocha', '~> 1.11'
   gem 'simplecov', require: false
   gem 'webmock'
   gem 'rails-controller-testing' # bring back compatibility with rails 4 assigns in controller tests.
