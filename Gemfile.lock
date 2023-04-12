@@ -225,7 +225,7 @@ GEM
       timeout
     net-smtp (0.3.3)
       net-protocol
-    nio4r (2.5.8)
+    nio4r (2.5.9)
     nokogiri (1.14.3-x86_64-linux)
       racc (~> 1.4)
     oauth2 (2.0.9)
@@ -264,7 +264,7 @@ GEM
       actionmailer (>= 3.0.0)
       postmark (>= 1.21.3, < 2.0)
     public_suffix (5.0.1)
-    puma (6.2.0)
+    puma (6.2.1)
       nio4r (~> 2.0)
     pundit (2.3.0)
       activesupport (>= 3.0.0)
