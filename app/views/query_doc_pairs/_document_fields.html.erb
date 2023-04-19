@@ -2,7 +2,7 @@
 
 if @document_fields_as_json.nil?
   %>
-  <%= @query_doc_pair.document_fields %>
+  <%= sanitize @query_doc_pair.document_fields %>
   <%
 else
 
@@ -10,22 +10,22 @@ else
   @document_fields_except_title = @document_fields_as_json.except('title')
   %>
   <h5>
-  Title: <%= @title_value %>
+  Title: <%= sanitize @title_value %>
   </h5>
 
   <%
-  @document_fields_as_json.except('title').except('thumb').map do |key, value|
+  @document_fields_as_json.except('title').except('thumb').map do |field, value|
     %>
     <p>
-    <h6><%= key.capitalize.humanize %>:</h6>
+    <h6><%= field.capitalize.humanize %>:</h6>
     <% if value.is_a? String %>
       <% if value.starts_with?('http') %>
         <%= link_to value, value, target: "_blank" %>
       <% else %>
-        <%= value %>
+        <%= sanitize value %>
       <% end %>
     <% elsif value.is_a? Array %>
-      <%= truncate((value.size == 1 ? value.first : value.to_sentence), length: 1000) %>
+      <%= (truncate(sanitize(value.size == 1 ? value.first : value.to_sentence), length: 1000)) %>
     <% end %>
     </p>
     <%
