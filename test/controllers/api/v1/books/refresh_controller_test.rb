@@ -31,6 +31,27 @@ module Api
               end
             end
           end
+
+          it 'handles unrated docs' do
+            # clear out ratings and mark as unrateable instead.
+            book.judgements.each do |judgement|
+              judgement.rating = nil
+              judgement.unrateable = true
+              judgement.save!
+            end
+
+            assert_difference 'case_without_ratings.queries.count', 0 do
+              assert_difference 'case_without_ratings.ratings.count', 0 do
+                put :update, params: { case_id: case_without_ratings.id, book_id: book.id }
+
+                assert_response :success
+
+                body = response.parsed_body
+                assert_equal 0, body['queries_created']
+                assert_equal 0, body['ratings_created']
+              end
+            end
+          end
         end
 
         describe 'refresh a case with existing ratings' do

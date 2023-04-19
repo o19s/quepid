@@ -17,15 +17,19 @@ module Api
 
           @book.rated_query_doc_pairs.each do |query_doc_pair|
             query = Query.find_or_initialize_by(case: @case, query_text: query_doc_pair.query_text)
-            query_count += 1 if query.new_record?
-            rating = Rating.find_or_initialize_by(query: query, doc_id: query_doc_pair.doc_id)
-            rating_count += 1 if rating.new_record?
-            summed_rating = query_doc_pair.judgements.rateable.sum(&:rating)
-            count_of_judgements = query_doc_pair.judgements.rateable.size
-            rating.rating = (summed_rating / count_of_judgements).round # only have ints today in Quepid Ratings.
 
-            rating.save
-            query.save
+            count_of_judgements = query_doc_pair.judgements.rateable.size
+            summed_rating = query_doc_pair.judgements.rateable.sum(&:rating)
+            if count_of_judgements > 0 # only calculate this if we have valid judgements.  If everything is unrateable, then don't proceed.
+              rating = Rating.find_or_initialize_by(query: query, doc_id: query_doc_pair.doc_id)
+              rating.rating = (summed_rating / count_of_judgements).round # only have ints today in Quepid Ratings.
+
+              query_count += 1 if query.new_record?
+              rating_count += 1 if rating.new_record?
+
+              rating.save
+              query.save
+            end
           end
           @counts['queries_created'] = query_count
           @counts['ratings_created'] = rating_count
