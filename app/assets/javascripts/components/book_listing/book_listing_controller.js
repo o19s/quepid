@@ -13,6 +13,9 @@ angular.module('QuepidApp')
       ctrl.team  = $scope.team;
 
       // Functions
+      function goToCase() {
+        caseTryNavSvc.navigateTo({'caseNo': ctrl.thisCase.caseNo, 'tryNo': ctrl.thisCase.lastTry});
+      }      
 
     }
   ]);
