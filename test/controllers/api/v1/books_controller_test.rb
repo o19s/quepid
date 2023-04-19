@@ -56,7 +56,6 @@ module Api
           get :show, params: { id: book.id, format: :csv }
 
           assert_response :ok
-          puts response.body
           csv = CSV.parse(response.body, headers: true)
           assert_includes csv.headers, 'Unknown'
         end
