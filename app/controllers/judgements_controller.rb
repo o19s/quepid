@@ -13,6 +13,11 @@ class JudgementsController < ApplicationController
     @query = @current_user.queries.has_information_need.where(query_text: @query_doc_pair.query_text).first
   end
 
+  def skip_judging
+    session['previous_judgement_id'] = nil
+    redirect_to book_judge_path(@book)
+  end
+
   def new
     @query_doc_pair = SelectionStrategy.random_query_doc_based_on_strategy(@book, current_user)
     redirect_to book_path(@book) if @query_doc_pair.nil? # no more query doc pairs to be judged!
@@ -27,8 +32,21 @@ class JudgementsController < ApplicationController
   def create
     @judgement = Judgement.new(judgement_params)
     @judgement.user = current_user
+    @judgement.unrateable = false
 
     if @judgement.save
+      session['previous_judgement_id'] = @judgement.id
+      redirect_to book_judge_path(@book)
+    else
+      render action: :edit
+    end
+  end
+
+  def unrateable
+    @judgement = Judgement.new(query_doc_pair_id: params[:query_doc_pair_id])
+    @judgement.user = current_user
+
+    if @judgement.mark_unrateable!
       session['previous_judgement_id'] = @judgement.id
       redirect_to book_judge_path(@book)
     else
@@ -58,7 +76,7 @@ class JudgementsController < ApplicationController
   end
 
   def judgement_params
-    params.require(:judgement).permit(:user_id, :rating, :query_doc_pair_id)
+    params.require(:judgement).permit(:user_id, :rating, :query_doc_pair_id, :unrateable)
   end
 
   def find_book

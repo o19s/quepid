@@ -356,7 +356,11 @@
       </div>
     </div>
 
-    <div class="float-end"><%= link_to 'Skip this Document', book_judge_path(@book), class: 'btn btn-warning', role: 'button' %></div>
+    <div class="float-end">
+      <%= link_to 'Skip this Document', book_skip_judging_path(@book), class: 'btn btn-info m-1', role: 'button' %>
+      <br/>
+      <%= link_to "I Can't Rate This Document", book_query_doc_pair_unrateable_path(@book, query_doc_pair), class: 'btn btn-warning m-1', role: 'button' %>
+    </div>
 
 
 

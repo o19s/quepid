@@ -20,7 +20,8 @@ module Api
             @csv_array = []
             csv_headers = %w[query docid]
 
-            unique_raters = @book.judgements.collect(&:user).uniq
+            # Only return rateable judgements, filter out the unrateable ones.
+            unique_raters = @book.judgements.rateable.collect(&:user).uniq
             unique_raters.each { |rater| csv_headers << make_csv_safe(rater.nil? ? 'Unknown' : rater.name) }
 
             @csv_array << csv_headers

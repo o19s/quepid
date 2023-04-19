@@ -12,7 +12,7 @@ angular.module('QuepidApp')
       ctrl.book = $scope.book;
       ctrl.team  = $scope.team;
 
-      // Functions
+      // Functions    
 
     }
   ]);

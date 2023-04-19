@@ -21,6 +21,11 @@ Books organize all the query/doc pairs that are needed for evaluating your searc
    <%= @book.selection_strategy.description %>
 </p>
 
+<p>
+<strong>Related cases:</strong>
+<%= render(partial: 'books/case', collection: @cases, as: :kase) || "There are no cases available." %>
+</p>
+
 <%= button_to 'Show Judgements', book_judgements_url(@book), method: :get %>
 
 <br>
@@ -35,11 +40,8 @@ Books organize all the query/doc pairs that are needed for evaluating your searc
 
 <%= button_to 'Back to Books', books_path, method: :get %>
 
-<br>
 
-<%= button_to 'Return to Case', root_path, method: :get %>
 
-<br/>
 <h3>Export Data</h3>
 <p>
   You want to export your judgements?   I hear you!  You can do so in CSV and JSON ;-)

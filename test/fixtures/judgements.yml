@@ -4,6 +4,7 @@
 #
 #  id                :bigint           not null, primary key
 #  rating            :float(24)
+#  unrateable        :boolean          default(FALSE)
 #  created_at        :datetime         not null
 #  updated_at        :datetime         not null
 #  query_doc_pair_id :bigint           not null
