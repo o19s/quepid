@@ -20,16 +20,17 @@ module Api
 
             count_of_judgements = query_doc_pair.judgements.rateable.size
             summed_rating = query_doc_pair.judgements.rateable.sum(&:rating)
-            if count_of_judgements > 0 # only calculate this if we have valid judgements.  If everything is unrateable, then don't proceed.
-              rating = Rating.find_or_initialize_by(query: query, doc_id: query_doc_pair.doc_id)
-              rating.rating = (summed_rating / count_of_judgements).round # only have ints today in Quepid Ratings.
+            # only calculate this if we have valid judgements.  If everything is unrateable, then don't proceed.
+            next unless count_of_judgements.positive?
 
-              query_count += 1 if query.new_record?
-              rating_count += 1 if rating.new_record?
+            rating = Rating.find_or_initialize_by(query: query, doc_id: query_doc_pair.doc_id)
+            rating.rating = (summed_rating / count_of_judgements).round # only have ints today in Quepid Ratings.
 
-              rating.save
-              query.save
-            end
+            query_count += 1 if query.new_record?
+            rating_count += 1 if rating.new_record?
+
+            rating.save
+            query.save
           end
           @counts['queries_created'] = query_count
           @counts['ratings_created'] = rating_count

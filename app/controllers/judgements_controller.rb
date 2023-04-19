@@ -14,7 +14,7 @@ class JudgementsController < ApplicationController
   end
 
   def skip_judging
-    session["previous_judgement_id"] = nil
+    session['previous_judgement_id'] = nil
     redirect_to book_judge_path(@book)
   end
 
