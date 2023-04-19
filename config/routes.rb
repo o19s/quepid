@@ -36,6 +36,7 @@ Rails.application.routes.draw do
       get 'unrateable' => 'judgements#unrateable'
     end
     get 'judge' => 'judgements#new'
+    get 'skip_judging' => 'judgements#skip_judging'
   end
 
   devise_for :users, controllers: {

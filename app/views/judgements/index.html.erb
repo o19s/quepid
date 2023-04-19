@@ -15,6 +15,7 @@
       <th>Doc ID</th>
       <th>Document fields</th>
       <th>Rating</th>
+      <th>Unrateable</th>
       <th>Rater</th>
 
     </tr>
@@ -42,6 +43,9 @@
 
           <td>
             <%= judgement.rating %>
+          </td>
+          <td>
+            <%= judgement.unrateable? ? 'X' : '' %>
           </td>
           <td>
             <%= judgement&.user&.name %>

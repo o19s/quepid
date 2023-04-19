@@ -12,6 +12,7 @@ class BooksController < ApplicationController
   end
 
   def show
+    @cases = Case.where(book_id: @book.id)
     respond_with(@book)
   end
 
