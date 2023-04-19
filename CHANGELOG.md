@@ -21,11 +21,35 @@ This rating interface features:
  * Ability to mark a query/doc pair as "I can't Rate This Document" so we can find edge/confusing cases.
  * You control what shows up on the card using the same display configuration as in your typical Quepid case.
  * Supports thumbnails and hero images in the card.
+ * There are Scoring Guidelines for your Raters to understand what the scoring scale means.
 
-This work was inspired by the great work that the folks at the Wikimedia Foundation did on Discernatron.
+ To make the life of a Relevancy Engineer better, you can now import your queries and ratings from a _Book of Judgments_.
+ Indeed you can roundtrip from a Case with query/doc pairs to a Book of judgements, get them rated, and then import then back into your Case.
 
+This work was inspired by the great work that the folks at the Wikimedia Foundation did on Discernatron, their human rating tool.
 
-Quepid is now the big 7.0!   
+Quepid is now the big 7.0!  There have been 98 PR's since release 6.14.0.  We are now running on Rails 7, which is great for opening the door to future improvements and keeping us from accumulating tech debt.   This also means we took the opportunity to bump the versions of Redis and MySQL we use, as well as Node, Ruby, and all the other libraries.  We're now on a modern infrastructure everywhere except for the Relevance Engineer's UI which is still on AngularJS.
+
+Below are details on some selected PR's.
+
+### Features
+
+ * As mentioned above, the human rater interface is a big feature.  There are too many PR's and Issues to call them out individually.  However, I do want to thank everyone who contributed to that really important feature.  You know who you are!
+
+ * Allow a Case to be marked Public to facilitate sharing analytics.  Public cases don't require you to log in for certain screens.  https://github.com/o19s/quepid/pull/595.
+
+ * Jupyter notebook for calculating Jaccard Similarity between Snapshots.  https://github.com/o19s/quepid/pull/586 by @atarora.
+
+ * Add Reciprocal Rank as a default Scorer.   https://github.com/o19s/quepid/pull/525 by @david-fisher.
+
+### Improvements
+
+* Rails 7 Upgrade!  This would be enough to move us from Quepid 6 to Quepid 7 by itself.  Turned out to be pretty painless upgrade.  Most of the work was in https://github.com/o19s/quepid/pull/627.
+
+* We enabled RenovateBot to provide automatic PR's for dependencies.  In the past three months we had a flood of dependency updates, which improves our security profile and helps us deal with tech debt by ensuring we aren't falling behind.
+
+* Refactor to remove manualMaxScore and manualMaxScoreValue from custom scorers as not used.  https://github.com/o19s/quepid/pull/609.
+
 
 ## 6.14.0 - 2022-11-22
 
