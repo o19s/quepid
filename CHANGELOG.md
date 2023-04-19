@@ -1,5 +1,32 @@
 # Changelog
 
+## 7.0.0 - 2022-04-??
+
+Are you ready to launch a [Human Rating Program](https://haystackconf.com/2019/human-judgement/)?   Quepid is now finally able to support you and your fellow human judges in gathering explicit ratings on your search results.
+
+Since the dawn of Quepid, we've suffered from an _ahem_ sub optimal rating interface for gathering human judgements.
+
+The rating interface failed most best practices for human rating, including sorting the docs in a specific order, only supporting a single rating per query/doc pair, requiring lots of mouse movement and clicking.
+All that, and the UI is a combination of that required for a Relevancy Engineer with that of a Human Judge.  
+It's enough to make you weep.  
+Just to make life harder, the rating interface requires a live connection to your search engine, which often required additional technical hoops to be jumped by your decidedly untechnical subject matter experts.
+
+However that is no longer the case!
+
+![Quepid Human Rater Interface](./docs/rating-card-interface.png)
+
+This rating interface features:
+ * You can have up to three independent ratings for every query/doc pair, opening the door to interesting measurements of rating quality.
+ * A static dataset for rating that is populated from your live search engine.  Now your set of query/doc pairs won't change over time unless you want them to.
+ * Ability to mark a query/doc pair as "I can't Rate This Document" so we can find edge/confusing cases.
+ * You control what shows up on the card using the same display configuration as in your typical Quepid case.
+ * Supports thumbnails and hero images in the card.
+
+This work was inspired by the great work that the folks at the Wikimedia Foundation did on Discernatron.
+
+
+Quepid is now the big 7.0!   
+
 ## 6.14.0 - 2022-11-22
 
 ### Improvements
