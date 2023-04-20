@@ -1,5 +1,57 @@
 # Changelog
 
+## 7.0.0 - 2022-04-??
+
+Are you ready to launch a [Human Rating Program](https://haystackconf.com/2019/human-judgement/)?   Quepid is now finally able to support you and your fellow human judges in gathering explicit ratings on your search results.
+
+Since the dawn of Quepid, we've suffered from an _ahem_ sub optimal rating interface for gathering human judgements.
+
+The rating interface failed most best practices for human rating, including suffering from position bias by listing documents in the order the search engine returned them, only supporting a single rating per query/doc pair, requiring lots of mouse movement and clicking.
+All that, and the UI is a combination of features required for a Relevancy Engineer with those of a Human Judge.  
+It's enough to make you weep.  
+Just to make life harder, the rating interface requires a live connection to your search engine, which often required additional technical hoops to be jumped by your decidedly untechnical subject matter experts.
+
+However that is no longer the case!
+
+![Quepid Human Rater Interface](./docs/rating-card-interface.png)
+
+This rating interface features:
+ * You can have up to three independent ratings for every query/doc pair, opening the door to interesting measurements of rating quality.
+ * A static dataset for rating that is populated from your live search engine.  Now your set of query/doc pairs won't change over time unless you want them to.
+ * Query/doc pair are randomly sampled, but with a bias in favour of higher positioned results over lower positioned so you can get to meaningful numbers quicker.
+ * Ability to mark a query/doc pair as "I can't Rate This Document" so we can find edge/confusing cases.
+ * You control what shows up on the card using the same display configuration as in your typical Quepid case.
+ * Supports thumbnails and hero images in the card.
+ * There are Scoring Guidelines for your Raters to understand what the scoring scale means.
+
+ To make the life of a Relevancy Engineer better, you can now import your queries and ratings from a _Book of Judgments_.
+ Indeed you can roundtrip from a Case with query/doc pairs to a Book of judgements, get them rated, and then import then back into your Case.
+
+This work was inspired by the great work that the folks at the Wikimedia Foundation did on Discernatron, their human rating tool.
+
+Quepid is now the big 7.0!  There have been 98 PR's since release 6.14.0.  We are now running on Rails 7, which is great for opening the door to future improvements and keeping us from accumulating tech debt.   This also means we took the opportunity to bump the versions of Redis and MySQL we use, as well as Node, Ruby, and all the other libraries.  We're now on a modern infrastructure everywhere except for the Relevance Engineer's UI which is still on AngularJS.
+
+Below are details on some selected PR's.
+
+### Features
+
+ * As mentioned above, the human rater interface is a big feature.  There are too many PR's and Issues to call them out individually.  However, I do want to thank everyone who contributed to that really important feature.  You know who you are!
+
+ * Allow a Case to be marked Public to facilitate sharing analytics.  Public cases don't require you to log in for certain screens.  https://github.com/o19s/quepid/pull/595.
+
+ * Jupyter notebook for calculating Jaccard Similarity between Snapshots.  https://github.com/o19s/quepid/pull/586 by @atarora.
+
+ * Add Reciprocal Rank as a default Scorer.   https://github.com/o19s/quepid/pull/525 by @david-fisher.
+
+### Improvements
+
+* Rails 7 Upgrade!  This would be enough to move us from Quepid 6 to Quepid 7 by itself.  Turned out to be pretty painless upgrade.  Most of the work was in https://github.com/o19s/quepid/pull/627.
+
+* We enabled RenovateBot to provide automatic PR's for dependencies.  In the past three months we had a flood of dependency updates, which improves our security profile and helps us deal with tech debt by ensuring we aren't falling behind.
+
+* Refactor to remove manualMaxScore and manualMaxScoreValue from custom scorers as not used.  https://github.com/o19s/quepid/pull/609.
+
+
 ## 6.14.0 - 2022-11-22
 
 ### Improvements
