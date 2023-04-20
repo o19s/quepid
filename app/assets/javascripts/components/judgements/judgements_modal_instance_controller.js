@@ -8,7 +8,6 @@ angular.module('QuepidApp')
     '$log',
     '$location',
     'flash',
-    'teamSvc',
     'caseSvc',
     'bookSvc',
     'queriesSvc',
@@ -20,7 +19,6 @@ angular.module('QuepidApp')
       $log,
       $location,
       flash,
-      teamSvc,
       caseSvc,
       bookSvc,
       queriesSvc,
@@ -86,19 +84,15 @@ angular.module('QuepidApp')
         ctrl.share.teams.push(team);
       };
 
-      teamSvc.list(false)
-        .then(function() {
-          angular.forEach(teamSvc.teams, function(team) {
-            addTeamToLists(team);
-            bookSvc.list(team).then(function(){
-              addBooksToLists(bookSvc.books);
-            });
-          });
-
-          ctrl.share.loading = false;
-        }, function(response) {
-          $log.debug(response.data);
+      // Start loading the list of teams from the case
+      angular.forEach(acase.teams, function(team) {
+        addTeamToLists(team);
+        bookSvc.list(team).then(function(){
+          addBooksToLists(bookSvc.books);
         });
+      });
+      ctrl.share.loading = false;
+      // And done, hide loading message.
 
       ctrl.specificActionLabel = function () {
         var label = '';

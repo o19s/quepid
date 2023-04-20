@@ -48,7 +48,7 @@
 
   <div ng-show="ctrl.share.books.length > 0 && !ctrl.share.loading">
     <div>
-      <label>Select a Book of Judgements</label>
+      <label>Select a Book of Judgements <span class="glyphicon glyphicon-question-sign" aria-hidden="true" popover-trigger="'mouseenter'" popover-placement="right" uib-popover="All the Books related to all the Teams this Case has been shared with are listed below.  If you don't see the Book you want, check that you shared the Case with the right Team."></span></label>
 
       <ul class="list-group">
         <li class="list-group-item"
@@ -63,7 +63,7 @@
 
   <label>
     <input id="populate-book" type="checkbox" ng-model='ctrl.populateBook' ng-disabled="ctrl.share.books.length === 0 || ctrl.share.teams.length === 0"> Populate Book
-    <span class="glyphicon glyphicon-question-sign" aria-hidden="true" popover-trigger="'mouseenter'" popover-placement="right" uib-popover="Update the list of query / doc pairs to be judged from the current search results."></span>
+    <span class="glyphicon glyphicon-question-sign" aria-hidden="true" popover-trigger="'mouseenter'" popover-placement="right" uib-popover="Update the list of query / doc pairs to be judged using the current search results."></span>
   </label>
 
   <div class='text-danger' ng-show="processingPrompt.error">
