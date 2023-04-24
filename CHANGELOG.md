@@ -1,6 +1,6 @@
 # Changelog
 
-## 7.0.0 - 2022-04-??
+## 7.0.0 - 2022-04-24
 
 Are you ready to launch a [Human Rating Program](https://haystackconf.com/2019/human-judgement/)?   Quepid is now finally able to support you and your fellow human judges in gathering explicit ratings on your search results.
 
@@ -30,6 +30,8 @@ This rating interface features:
 This work was inspired by the great work that the folks at the Wikimedia Foundation did on Discernatron, their human rating tool.
 
 Quepid is now the big 7.0!  There have been 98 PR's since release 6.14.0.  We are now running on Rails 7, which is great for opening the door to future improvements and keeping us from accumulating tech debt.   This also means we took the opportunity to bump the versions of Redis and MySQL we use, as well as Node, Ruby, and all the other libraries.  We're now on a modern infrastructure everywhere except for the Relevance Engineer's UI which is still on AngularJS.
+
+Do back up your data before doing this upgrade!  Normally I'm pretty cavalier about updates in Quepid-land, but this changes a lot of things, including the MySQL version from 5.6 to 8....   So please back up your data, and for good measure, use those export options to export your precious ratings that you've collected.
 
 Below are details on some selected PR's.
 
