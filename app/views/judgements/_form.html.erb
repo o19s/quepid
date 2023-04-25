@@ -321,10 +321,10 @@
   <% if has_thumb %>
   <div class="card mb-3" style="">
     <div class="row g-0">
-      <div class="col-md-auto p-2">
+      <div class="col-md-4 p-2">
         <img src="<%= @document_fields_as_json['thumb'] %>" class="img-fluid rounded-start rounded-end" alt="Thumbnail Image">
       </div>
-      <div class="col-md-10">
+      <div class="col-md-8">
   <% else %>
   <div class="card">
   <% end %>
@@ -416,7 +416,6 @@
   </div>
   <% else %>
   </div>
-
   <% end %>
 
   <%= form.hidden_field :rating %>
