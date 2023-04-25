@@ -89,12 +89,6 @@ Run the local Ruby based setup script to setup your Docker images:
 bin/setup_docker
 ```
 
-Optionally you can seed the database with sample data (the output will print out credentials you can use to login as various sample users):
-
-```
-bin/docker r bin/rake db:seed:sample_users
-```
-
 If you want to create some cases that have 100's and 1000's of queries, then do:
 
 ```
