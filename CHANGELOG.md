@@ -1,5 +1,13 @@
 # Changelog
 
+## 7.0.X - ???
+
+### Bugs
+
+* Using templates in OpenSearch (and Elasticsearch) clashes with how we display (or hide) the fieldSpec field.  https://github.com/o19s/quepid/pull/706 by @mkr fixes https://github.com/o19s/quepid/issues/699.
+
+* The "Find Missing Docs" UI doesn't actual work with OpenSearch.  https://github.com/o19s/quepid/pull/707 by @mkr fixes https://github.com/o19s/quepid/issues/700.   Nicer help text as well.
+
 ## 7.0.0 - 2022-04-24
 
 Are you ready to launch a [Human Rating Program](https://haystackconf.com/2019/human-judgement/)?   Quepid is now finally able to support you and your fellow human judges in gathering explicit ratings on your search results.
