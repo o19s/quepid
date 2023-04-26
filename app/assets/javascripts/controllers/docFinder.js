@@ -40,7 +40,7 @@ angular.module('QuepidApp')
             var normalizedDocs;
             if ( $scope.docFinder.searcher.type === 'solr' ) {
               normalizedDocs = solrExplainExtractorSvc.docsWithExplainOther($scope.docFinder.searcher.docs, fieldSpec, $scope.docFinder.searcher.othersExplained);
-            } else if ( $scope.docFinder.searcher.type === 'es' ) {
+            } else if ( $scope.docFinder.searcher.type === 'es' || $scope.docFinder.searcher.type === 'os') {
               normalizedDocs = esExplainExtractorSvc.docsWithExplainOther($scope.docFinder.searcher.docs, fieldSpec);
             }
 
@@ -84,7 +84,7 @@ angular.module('QuepidApp')
             var normalizedDocs;
             if ( $scope.docFinder.searcher.type === 'solr' ) {
               normalizedDocs = solrExplainExtractorSvc.docsWithExplainOther($scope.docFinder.searcher.docs, fieldSpec, $scope.docFinder.searcher.othersExplained);
-            } else if ( $scope.docFinder.searcher.type === 'es' ) {
+            } else if ( $scope.docFinder.searcher.type === 'es' || $scope.docFinder.searcher.type === 'os' ) {
               normalizedDocs = esExplainExtractorSvc.docsWithExplainOther($scope.docFinder.searcher.docs, fieldSpec);
             }
 
@@ -105,7 +105,7 @@ angular.module('QuepidApp')
         var fieldSpec     = settings.createFieldSpec();
 
 
-        if ($scope.docFinder.searcher.type === 'es') {
+        if ($scope.docFinder.searcher.type === 'es' || $scope.docFinder.searcher.type === 'os') {
           var filter = {
             'query': $scope.query.filterToRatings(currSettings, $scope.docFinder.docs.length)
           };
@@ -188,7 +188,7 @@ angular.module('QuepidApp')
 
         $scope.docFinder.searcher = queriesSvc.createSearcherFromSettings(currSettings, $scope.query.queryText);
 
-        if ($scope.docFinder.searcher.type === 'es') {
+        if ($scope.docFinder.searcher.type === 'es' || $scope.docFinder.searcher.type === 'os') {
           var filter = {
             'query': $scope.query.filterToRatings(currSettings, $scope.docFinder.docs.length)
           };
