@@ -4,18 +4,18 @@ describe('Controller: PromptSnapshotCtrl', function () {
 
   beforeEach(module('QuepidTest'));
 
-  var Ctrl, scope, modalInstance, $httpBackend;
-  var querySnapshotSvc, settingsSvc, docResolverSvc;
+  let Ctrl, scope, modalInstance, $httpBackend;
+  let querySnapshotSvc, settingsSvc, docResolverSvc;
 
-  var basicExplain1 = {
+  let basicExplain1 = {
     match:        true,
     value:        1.5,
     description: 'weight(text:law in 1234)',
     details:      []
   };
-  var rawExpl = angular.toJson(basicExplain1);
+  let rawExpl = angular.toJson(basicExplain1);
 
-  var addedSnapResp = {
+  let addedSnapResp = {
     'snapshots': {
       '5': {
         id: '5',

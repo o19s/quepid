@@ -9,7 +9,7 @@ name = "javascript"
 enabled = true
 
   [analyzers.meta]
-  plugins = ["angular"]
+  plugins = ["angularjs"]
 
 [[analyzers]]
 name = "docker"
