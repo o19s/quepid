@@ -70,7 +70,7 @@
 
         function create(scorer) {
           // http POST /api/scorers
-          var url   = cfg.getApiPath() + 'scorers';
+          var url   = 'api/scorers';
           var scale = scorer.scale;
           if (angular.isString(scale)) {
             scale = scaleToArray(scale);
@@ -99,7 +99,7 @@
         // hard reload the Case to get the newly edited scorer ;-(.
         function edit(scorer) {
           // http PUT /api/scorers/<int:scorerId>
-          var url   = cfg.getApiPath() + 'scorers/' + scorer.scorerId;
+          var url   = 'api/scorers/' + scorer.scorerId;
 
           var scale = scorer.scale;
           if (angular.isString(scale)) {
@@ -133,7 +133,7 @@
 
         function deleteScorer(scorer) {
           // http DELETE /api/scorers/<int:scorerId>
-          var url   = cfg.getApiPath() + 'scorers/' + scorer.scorerId;
+          var url   = 'api/scorers/' + scorer.scorerId;
 
           return $http.delete(url)
           .then(function() {
@@ -149,7 +149,7 @@
 
           useCache   = typeof useCache !== 'undefined' ?  useCache : true;
           // http GET /api/scorers/<int:scorerId>
-          var url    = cfg.getApiPath() + 'scorers/' + id;
+          var url    = 'api/scorers/' + id;
           var scorer = self.scorers.filter(function(item) { return item.scorerId === id; })[0];
 
           if (useCache && scorer) {
@@ -172,7 +172,7 @@
         }
 
         function list() {
-          var url   = cfg.getApiPath() + 'scorers';
+          var url   = 'api/scorers';
 
           return $http.get(url)
           .then(function(response) {
@@ -200,7 +200,7 @@
 
         // bootstrap
         function bootstrap(caseNo) {
-          var url = cfg.getApiPath() + 'cases/' + caseNo + '/scorers';
+          var url = 'api/cases/' + caseNo + '/scorers';
 
           return $http.get(url)
           .then(function(response) {

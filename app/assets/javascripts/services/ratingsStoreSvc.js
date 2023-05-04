@@ -20,7 +20,7 @@ angular.module('QuepidApp')
         var version   = 0;
 
         var basePath  = function() {
-          return cfg.getApiPath() + 'cases/' + caseNo + '/queries/' + queryId;
+          return 'api/cases/' + caseNo + '/queries/' + queryId;
         };
 
         var markDirty = function() {

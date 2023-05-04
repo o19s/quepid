@@ -35,7 +35,7 @@ angular.module('QuepidApp')
         };
 
         // The API only sees a hash of ratings.
-        return $http.post(cfg.getApiPath() + 'import/ratings?file_format=hash', data);
+        return $http.post('api/import/ratings?file_format=hash', data);
       }
 
       function importRREFormat(theCase, rreJson, clearQueries) {
@@ -46,7 +46,7 @@ angular.module('QuepidApp')
           clear_queries:  clearQueries,
         };
 
-        return $http.post(cfg.getApiPath() + 'import/ratings?file_format=rre', data);
+        return $http.post('api/import/ratings?file_format=rre', data);
 
       }
 
@@ -58,7 +58,7 @@ angular.module('QuepidApp')
           clear_queries:  clearQueries,
         };
 
-        return $http.post(cfg.getApiPath() + 'import/ratings?file_format=ltr', data);
+        return $http.post('api/import/ratings?file_format=ltr', data);
 
       }
 
@@ -71,7 +71,7 @@ angular.module('QuepidApp')
         };
 
         // The API only sees a hash of ratings.
-        return $http.post(cfg.getApiPath() + 'import/queries/information_needs', data);
+        return $http.post('api/import/queries/information_needs', data);
       }
 
     }

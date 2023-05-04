@@ -537,7 +537,7 @@ angular.module('QuepidApp')
         this.saveNotes = function(notes, informationNeed) {
           var that = this;
           var notesJson = { query: { notes: notes, information_need: informationNeed} };
-          var url = cfg.getApiPath() + 'cases/' + caseNo + '/queries/' + that.queryId + '/notes';
+          var url = 'api/cases/' + caseNo + '/queries/' + that.queryId + '/notes';
 
           return $http.put(url , notesJson)
             .then(function() {
@@ -554,7 +554,7 @@ angular.module('QuepidApp')
 
         this.fetchNotes = function() {
           var that  = this;
-          var url   = cfg.getApiPath() + 'cases/' + caseNo + '/queries/' + that.queryId + '/notes';
+          var url   = 'api/cases/' + caseNo + '/queries/' + that.queryId + '/notes';
           return $http.get(url)
             .then(function(response) {
               that.notes = response.data.notes;
@@ -571,7 +571,7 @@ angular.module('QuepidApp')
         this.saveOptions = function(options) {
           var that = this;
           var optionsJson = { query: { options: options } };
-          var url = cfg.getApiPath() + 'cases/' + caseNo + '/queries/' + that.queryId + '/options';
+          var url = 'api/cases/' + caseNo + '/queries/' + that.queryId + '/options';
 
           return $http.put(url , optionsJson)
             .then(function() {
@@ -589,7 +589,7 @@ angular.module('QuepidApp')
 
         this.fetchOptions = function() {
           var that  = this;
-          var url   = cfg.getApiPath() + 'cases/' + caseNo + '/queries/' + that.queryId + '/options';
+          var url   = 'api/cases/' + caseNo + '/queries/' + that.queryId + '/options';
 
           return $http.get(url)
             .then(function(response) {
@@ -605,7 +605,7 @@ angular.module('QuepidApp')
 
         this.setThreshold = function(enabled, threshold) {
           var that          = this;
-          var url           = cfg.getApiPath() + 'cases/' + caseNo + '/queries/' + that.queryId + '/threshold';
+          var url           = 'api/cases/' + caseNo + '/queries/' + that.queryId + '/threshold';
           var thresholdJson = {
             query: {
               threshold:      threshold,
@@ -728,7 +728,7 @@ angular.module('QuepidApp')
       let querySearchableDeferred = $q.defer();
       function bootstrapQueries(caseNo) {
         querySearchableDeferred = $q.defer();
-        var path = cfg.getApiPath() + 'cases/' + caseNo + '/queries?bootstrap=true';
+        var path = 'api/cases/' + caseNo + '/queries?bootstrap=true';
 
         $http.get(path)
           .then(function(response) {
@@ -832,7 +832,7 @@ angular.module('QuepidApp')
             return;
           }
 
-          var path = cfg.getApiPath() + 'cases/' + caseNo + '/queries';
+          var path = 'api/cases/' + caseNo + '/queries';
           var postData = {
             query: {
               query_text: query.queryText
@@ -888,7 +888,7 @@ angular.module('QuepidApp')
           return deferred.promise;
         }
 
-        var path = cfg.getApiPath() + 'bulk/cases/' + caseNo + '/queries';
+        var path = 'api/bulk/cases/' + caseNo + '/queries';
         var data = {
           queries: queryTexts
         };
@@ -934,7 +934,7 @@ angular.module('QuepidApp')
       };
 
       this.updateQueryDisplayPosition = function(queryId, oldQueryId, reverse) {
-        var url     = cfg.getApiPath() + 'cases/' + caseNo + '/queries/' + queryId + '/position';
+        var url     = 'api/cases/' + caseNo + '/queries/' + queryId + '/position';
         var data    = {
           after:    oldQueryId,
           reverse:  reverse
@@ -954,7 +954,7 @@ angular.module('QuepidApp')
 
       // Delete a query
       this.deleteQuery = function(queryId) {
-        var path = cfg.getApiPath() + 'cases/' + caseNo + '/queries/' + queryId;
+        var path = 'api/cases/' + caseNo + '/queries/' + queryId;
         var that = this;
 
         return $http.delete(path)
@@ -972,7 +972,7 @@ angular.module('QuepidApp')
 
       // Move a query
       this.moveQuery = function(query, targetCase) {
-        var path = cfg.getApiPath() + 'cases/' + query.caseNo + '/queries/' + query.queryId;
+        var path = 'api/cases/' + query.caseNo + '/queries/' + query.queryId;
         var data = {'other_case_id': targetCase.caseNo};
 
         return $http.put(path, data)

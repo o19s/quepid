@@ -128,7 +128,7 @@
         }
 
         var index = self.tries.indexOf(theTry);
-        return $http.delete(cfg.getApiPath() + 'cases/' + caseNo + '/tries/' + tryNo)
+        return $http.delete('api/cases/' + caseNo + '/tries/' + tryNo)
           .then(function() {
             self.settingsId               = settingsIdValue.id++;
             self.tries[index].deleted  = true;
@@ -142,7 +142,7 @@
 
       function duplicateTry(tryNo) {
         var caseNo  = caseTryNavSvc.getCaseNo();
-        var url     = cfg.getApiPath() + 'clone/cases/' + caseNo + '/tries/' + tryNo;
+        var url     = 'api/clone/cases/' + caseNo + '/tries/' + tryNo;
 
         return $http.post(url)
           .then(function(response) {

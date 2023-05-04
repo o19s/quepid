@@ -200,7 +200,7 @@
          *
          */
         function exportBasicFormat(aCase) {
-          $http.get(cfg.getApiPath() + 'export/ratings/' + aCase.caseNo + '.csv?file_format=basic')
+          $http.get('api/export/ratings/' + aCase.caseNo + '.csv?file_format=basic')
             .then(function(response) {
               var blob = new Blob([response.data], {
                 type: 'text/csv'
@@ -211,7 +211,7 @@
             });
         }
         function exportBasicFormatSnapshot(aCase, snapshotId) {
-          $http.get(cfg.getApiPath() + 'export/ratings/' + aCase.caseNo + '.csv?file_format=basic_snapshot&snapshot_id=' + snapshotId)
+          $http.get('api/export/ratings/' + aCase.caseNo + '.csv?file_format=basic_snapshot&snapshot_id=' + snapshotId)
             .then(function(response) {
               var blob = new Blob([response.data], {
                 type: 'text/csv'
@@ -247,7 +247,7 @@
 
 
         function exportRREFormat(aCase) {
-          $http.get(cfg.getApiPath() + 'export/ratings/' + aCase.caseNo + '.json?file_format=rre')
+          $http.get('api/export/ratings/' + aCase.caseNo + '.json?file_format=rre')
             .then(function(response) {
               var blob = new Blob([$filter('json')(response.data)], {
                 type: 'application/json'
@@ -259,7 +259,7 @@
         }
 
         function exportLTRFormat(aCase) {
-          $http.get(cfg.getApiPath() + 'export/ratings/' + aCase.caseNo + '.txt?file_format=ltr')
+          $http.get('api/export/ratings/' + aCase.caseNo + '.txt?file_format=ltr')
             .then(function(response) {
               var blob = new Blob([response.data], {
                 type: 'text/plain'
@@ -271,7 +271,7 @@
         }
 
         function exportInformationNeed(aCase) {
-          $http.get(cfg.getApiPath() + 'export/queries/information_needs/' + aCase.caseNo + '.csv')
+          $http.get('api/export/queries/information_needs/' + aCase.caseNo + '.csv')
             .then(function(response) {
               var blob = new Blob([response.data], {
                 type: 'text/csv'

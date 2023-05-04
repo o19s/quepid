@@ -22,7 +22,7 @@ angular.module('UtilitiesModule')
         this.shownIntroWizard = function() {
           var self  = this;
           self.introWizardSeen=true;
-          var url   = cfg.getApiPath() + 'users/' + self.id;
+          var url   = 'api/users/' + self.id;
           var data  = {
             user: {
               completed_case_wizard: true
@@ -39,7 +39,7 @@ angular.module('UtilitiesModule')
 
         this.updateUserScorer = function(defaultScorerId) {
           var self  = this;
-          var url   = cfg.getApiPath() + 'users/' + self.id;
+          var url   = 'api/users/' + self.id;
           var data  = {
             user: {
               default_scorer_id: defaultScorerId
@@ -64,14 +64,14 @@ angular.module('UtilitiesModule')
       };
 
       this.users = function(prefix) {
-        var url     = cfg.getApiPath() + 'users';
+        var url     = 'api/users';
         var params  = { prefix: prefix };
 
         return $http.get(url, { params: params });
       };
 
       this.get = function(id) {
-        var url     = cfg.getApiPath() + 'users/' + id;
+        var url     = 'api/users/' + id;
 
         return $http.get(url)
           .then(function(response) {
@@ -80,7 +80,7 @@ angular.module('UtilitiesModule')
       };
 
       this.getCurrentUser = function() {
-        var url     = cfg.getApiPath() + 'users/current';
+        var url     = 'api/users/current';
         var self    = this;
 
         return $http.get(url)
