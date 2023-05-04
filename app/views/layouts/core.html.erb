@@ -32,7 +32,6 @@
         'bootstrapSvc', 'configurationSvc',
         function(bootstrapSvc, configurationSvc) {
           configurationSvc.setCommunalScorersOnly('<%= Rails.application.config.communal_scorers_only %>');
-          configurationSvc.setPrefixPath('<%= Rails.application.config.relative_url_root %>');
           configurationSvc.setQueryListSortable('<%= Rails.application.config.query_list_sortable %>');
 
           var bootstrapCaseNo = <%= @case.present? ? @case.id : 0 %>;

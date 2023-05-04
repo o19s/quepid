@@ -4,11 +4,11 @@
 
 angular.module('QuepidApp')
   .service('querySnapshotSvc', [
-    '$http', '$q', 'configurationSvc',
+    '$http', '$q',
     'settingsSvc', 'docCacheSvc', 'normalDocsSvc',
     'SnapshotFactory',
     function querySnapshotSvc(
-      $http, $q, cfg,
+      $http, $q,
       settingsSvc, docCacheSvc, normalDocsSvc,
       SnapshotFactory
     ) {

@@ -3,8 +3,7 @@
 angular.module('UtilitiesModule')
   .service('userSvc', [
     '$http',
-    'configurationSvc',
-    function userSvc($http, cfg) {
+    function userSvc($http) {
       var currUser = null;
 
       var User = function(userObj) {

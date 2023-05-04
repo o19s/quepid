@@ -5,9 +5,8 @@
 angular.module('QuepidApp')
   .service('importRatingsSvc', [
     '$http',
-    'configurationSvc',
     function importRatingsSvc(
-      $http, cfg
+      $http
     ) {
       var self = this;
 

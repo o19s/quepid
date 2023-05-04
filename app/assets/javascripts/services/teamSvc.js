@@ -5,9 +5,8 @@ angular.module('QuepidApp')
   // AngularJS will instantiate a singleton by calling "new" on this function
   .service('teamSvc', [
     '$http',
-    'configurationSvc',
     'broadcastSvc',
-    function teamSvc($http, cfg, broadcastSvc) {
+    function teamSvc($http, broadcastSvc) {
       this.teams = [];
 
       var Team = function(id, name, ownerId, owner, cases, cases_count, members, scorers, owned, books) {

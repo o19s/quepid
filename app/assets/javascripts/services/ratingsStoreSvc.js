@@ -12,8 +12,7 @@ angular.module('QuepidApp')
   .service('ratingsStoreSvc', [
     '$rootScope',
     '$http',
-    'configurationSvc',
-    function ratingsStoreSvc($scope, $http, cfg) {
+    function ratingsStoreSvc($scope, $http) {
       var svcVersion = 0;
 
       var RatingsStore = function(caseNo, queryId, ratingsDict) {

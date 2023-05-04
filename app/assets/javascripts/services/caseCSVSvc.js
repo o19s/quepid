@@ -15,9 +15,8 @@
     .service('caseCSVSvc', [
       '$http',
       '$filter',
-      'configurationSvc',
       'queriesSvc',
-      function($http, $filter, cfg, queriesSvc) {
+      function($http, $filter, queriesSvc) {
         var self          = this;
         var EOL           = '\r\n';
         var textDelimiter = '"';

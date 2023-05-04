@@ -7,7 +7,6 @@
     .factory('TryFactory', [
       '$http',
       '$log',
-      'configurationSvc',
       'fieldSpecSvc', 'caseTryNavSvc','varExtractorSvc',
       TryFactory
     ]);
@@ -15,7 +14,6 @@
   function TryFactory(
     $http,
     $log,
-    cfg,
     fieldSpecSvc, caseTryNavSvc, varExtractorSvc
   ) {
     var Try = function(data) {

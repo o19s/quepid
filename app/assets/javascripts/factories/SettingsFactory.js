@@ -7,7 +7,6 @@
     .factory('SettingsFactory', [
       '$http',
       '$q',
-      'configurationSvc',
       'settingsIdValue',
       'caseTryNavSvc',
       'TryFactory',
@@ -17,7 +16,6 @@
   function SettingsFactory(
     $http,
     $q,
-    cfg,
     settingsIdValue,
     caseTryNavSvc,
     TryFactory

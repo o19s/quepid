@@ -9,10 +9,9 @@
   angular.module('QuepidApp')
     .service('scorerSvc', [
       '$http', '$q', '$log',
-      'configurationSvc',
       'broadcastSvc',
       'ScorerFactory',
-      function($http, $q, $log, cfg, broadcastSvc, ScorerFactory) {
+      function($http, $q, $log, broadcastSvc, ScorerFactory) {
         var self = this;
 
         // make sure we have all scorers used for a case
