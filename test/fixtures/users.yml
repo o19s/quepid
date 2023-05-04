@@ -35,6 +35,7 @@
 #  index_users_on_default_scorer_id     (default_scorer_id)
 #  index_users_on_invitation_token      (invitation_token) UNIQUE
 #  index_users_on_invited_by_id         (invited_by_id)
+#  index_users_on_name                  (name)
 #  index_users_on_reset_password_token  (reset_password_token) UNIQUE
 #  ix_user_username                     (email) UNIQUE
 #
