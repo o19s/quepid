@@ -31,6 +31,12 @@
         "railties",
         "rails"
       ]
+    },
+    {
+      "updateTypes": [
+        "patch"
+      ],
+      "enabled": false
     }
   ]
 }
