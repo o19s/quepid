@@ -38,6 +38,7 @@ class CoreController < ApplicationController
   # Similarily we may have only HTTPS set up for Quepid, and therefore need to stay on HTTPS,
   # so this method is only conditionally called if force_ssl is false.
   #
+  # rubocop:disable Layout/LineLength
   # rubocop:disable Metrics/MethodLength
   # rubocop:disable Metrics/AbcSize
   # rubocop:disable Metrics/CyclomaticComplexity
@@ -54,18 +55,15 @@ class CoreController < ApplicationController
       # Deal with front end UI changes to search engine being stored in backend
       if params[:searchEngine].present?
         # Reset the default queries
-        if @try.search_engine != params[:searchEngine]
-          @try.search_engine = params[:searchEngine]
-          @try.query_params  = Try::DEFAULTS[@try.search_engine.to_sym][:query_params]
-          @try.field_spec = Try::DEFAULTS[@try.search_engine.to_sym][:field_spec]
-
-        end
+        @try.search_engine = params[:searchEngine] if @try.search_engine != params[:searchEngine]
         @try.search_url = params[:searchUrl]
+        @try.api_method = params[:apiMethod]
+        @try.field_spec = params[:fieldSpec]
       end
       @try.save
     end
 
-    search_engine_starts_with_https = @try.present? ? @try.search_url.starts_with?('https') : false
+    search_engine_starts_with_https = @try.present? && @try.search_url.present? ? @try.search_url.starts_with?('https') : false
 
     if search_engine_starts_with_https && !request.ssl? # redirect to SSL
       original_url = request.original_url
@@ -81,6 +79,7 @@ class CoreController < ApplicationController
       true
     end
   end
+  # rubocop:enable Layout/LineLength
   # rubocop:enable Metrics/MethodLength
   # rubocop:enable Metrics/AbcSize
   # rubocop:enable Metrics/CyclomaticComplexity

@@ -6,12 +6,14 @@ angular.module('QuepidApp')
   .controller('CaseListingCtrl', [
     '$rootScope',
     '$scope',
+    '$location',
     'flash',
     'caseTryNavSvc',
     'caseSvc',
     function (
       $rootScope,
       $scope,
+      $location,
       flash,
       caseTryNavSvc,
       caseSvc
@@ -23,14 +25,19 @@ angular.module('QuepidApp')
       ctrl.clickToEdit.oldVal   = ctrl.thisCase.caseName.slice(0);
       ctrl.clickToEdit.currVal  = ctrl.thisCase.caseName.slice(0);
       ctrl.clickToEdit.clicked  = false;
+      ctrl.canUpdate = false;
 
       // Functions
       ctrl.cancel     = cancel;
       ctrl.goToCase   = goToCase;
       ctrl.rename     = rename;
       ctrl.submit     = submit;
+      ctrl.goToTeam   = goToTeam;
 
-      ctrl.canUpdate = false;
+      function goToTeam(teamId) {
+        var path = '/teams/' + teamId;
+        $location.path(path);
+      }
 
       $rootScope.$watch('currentUser', function() {
         if ( $rootScope.currentUser ) {

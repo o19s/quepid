@@ -6,6 +6,7 @@ module SolrArgParser
   def self.parse query_string, vars = {}
     # join lines, remove extraneous whitespace
     # rubocop:disable Style/RedundantArgument
+    query_string = '' if query_string.nil?
     query_string = query_string.lines.map(&:strip).join('')
     # rubocop:enable Style/RedundantArgument
 

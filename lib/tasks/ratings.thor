@@ -18,6 +18,7 @@ class Ratings < Thor
 
     Where import.csv is the following file:
     ```
+    query_text, doc_id, rating
     ADAPTERKABEL, 6484460,  4
     ADAPTERKABEL, 6484454,  4
     万用表,        4597924,  2
@@ -45,7 +46,7 @@ class Ratings < Thor
       return
     end
 
-    puts "Importing ratings for case: '#{acase.caseName}'".yellow
+    puts "Importing ratings for case: '#{acase.case_name}'".yellow
 
     begin
       ratings = ::CSV.read(filepath)
@@ -54,6 +55,7 @@ class Ratings < Thor
         clear_existing: options[:clear],
         force:          options[:clear],
         show_progress:  true,
+        drop_header:    true,
       }
       opts    = opts.merge(logger: Logger.new($stdout)) if options[:logger]
       service = ::RatingsImporter.new acase, ratings, opts

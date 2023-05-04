@@ -46,7 +46,7 @@ module Api
 
             assert_response :ok
 
-            snapshots = JSON.parse(response.body)['snapshots']
+            snapshots = response.parsed_body['snapshots']
 
             first_snapshot_response = snapshots.first
             first_snapshot_data     = data[:snapshots].first
@@ -102,7 +102,7 @@ module Api
 
             assert_response :ok
 
-            snapshots = JSON.parse(response.body)['snapshots']
+            snapshots = response.parsed_body['snapshots']
 
             assert_equal snapshots.length, data[:snapshots].length
 

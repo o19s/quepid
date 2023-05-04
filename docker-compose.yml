@@ -12,6 +12,8 @@ services:
       #- RAILS_RELATIVE_URL_ROOT=/quepid-app
       - LAUNCHY_DRY_RUN=true # dev only letter_opener gem wants to open a browser when sending emails.
       - BROWSER=/dev/null
+      - PUPPETEER_SKIP_DOWNLOAD=true
+      - PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
     volumes:
       - .:/srv/app
       - ./log:/log
@@ -28,7 +30,7 @@ services:
 
   mysql:
     container_name: quepid_db
-    image: amd64/mysql:5.7.36
+    image: amd64/mysql:8.0.33
     ports:
       - 3306:3306
     environment:
@@ -36,27 +38,38 @@ services:
 
   redis:
     container_name: quepid_redis
-    image: redis:6.0.5
+    image: redis:7.0.10-alpine
     ports:
       - 6379:6379
 
   keycloak:
-    image: quay.io/keycloak/keycloak:13.0.0
-    container_name: quepid_keycloak
-    hostname: keycloak
-    command: ["-b", "0.0.0.0", "-Dkeycloak.migration.action=import", "-Dkeycloak.migration.provider=dir", "-Dkeycloak.migration.dir=/opt/jboss/keycloak/realm-config", "-Dkeycloak.migration.strategy=OVERWRITE_EXISTING", "-Djboss.socket.binding.port-offset=1000", "-Dkeycloak.profile.feature.upload_scripts=enabled"]
+    image: chorus-keycloak
+    container_name: keycloak
+    build:
+      context: ./keycloak
+      dockerfile: Dockerfile
+    command: start --optimized --import-realm
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:8080/health"]
     ports:
       - 9080:9080
-      - 9443:9443
     environment:
-      KEYCLOAK_USER: admin
-      KEYCLOAK_PASSWORD: password
-      DB_VENDOR: h2
+      - KC_HTTP_ENABLED=true
+      - KC_HTTP_PORT=9080
+      - KC_HOSTNAME=keycloak
+      - KC_HOSTNAME_STRICT=false
+      - KC_HOSTNAME_STRICT_HTTPS=false
+      - PROXY_ADDRESS_FORWARDING=true
+      - KEYCLOAK_ADMIN=admin
+      - KEYCLOAK_ADMIN_PASSWORD=password
+      - DB_VENDOR=h2
     volumes:
-      - ./keycloak/realm-config:/opt/jboss/keycloak/realm-config
+      - ./keycloak/realm-config/quepid-realm.json:/opt/keycloak/data/import/quepid-realm.json:ro    
+
 
   nginx:
-    image: nginx:1.21.4
+    image: nginx:1.23.4
     container_name: quepid_nginx
     ports:
       - "443:8443"

@@ -138,7 +138,7 @@ module Api
 
           assert_response :ok
 
-          scores = JSON.parse(response.body)['scores']
+          scores = response.parsed_body['scores']
 
           assert_equal [], scores
         end
@@ -152,7 +152,7 @@ module Api
 
           assert_response :ok
 
-          scores = JSON.parse(response.body)['scores']
+          scores = response.parsed_body['scores']
 
           assert_instance_of Array, scores
           assert_equal scores.length, 2
@@ -165,10 +165,12 @@ module Api
           now       = DateTime.current
           yesterday = DateTime.current - 1.day
 
+          # we actually query over the updated_at field, not the created_at to find last score
           @last_score = acase.scores.create(
             try_id:     first_try.id,
             user_id:    user.id,
             created_at: now,
+            updated_at: now,
             score:      80
           )
 
@@ -176,18 +178,17 @@ module Api
             try_id:     second_try.id,
             user_id:    user.id,
             created_at: yesterday,
+            updated_at: yesterday,
             score:      80
           )
         end
 
         test 'returns the last created/updated score' do
-          # This test sometimes fails due to timing issues, and we should
-          # harden it.
           get :show, params: { case_id: acase.id }
 
           assert_response :ok
 
-          score = JSON.parse(response.body)
+          score = response.parsed_body
 
           assert_equal score['score'],  @last_score.score
           assert_equal score['try_id'], @last_score.try_id

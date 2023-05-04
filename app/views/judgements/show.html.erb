@@ -1,0 +1,14 @@
+<p></p>
+<h2>Editing Judgement</h2>
+
+<%= render 'form', judgement: @judgement %>
+
+<br>
+
+<%= button_to 'Exit', book_path(@judgement.query_doc_pair.book), method: :get %>
+
+<br>
+
+<%= button_to 'Unrate', book_judgement_url, method: :delete %>
+
+<br>

@@ -27,7 +27,7 @@ module Api
             get :show, params: { case_id: the_case.id }
             assert_response :ok
 
-            body = JSON.parse(response.body)
+            body = response.parsed_body
 
             assert_equal body['queries'].size,         the_case.queries.size
             assert_equal body['queries'][0]['query'],  the_case.queries[0].query_text
@@ -48,7 +48,7 @@ module Api
             get :show, params: { case_id: the_case.id, file_format: 'rre' }
             assert_response :ok
 
-            body = JSON.parse(response.body)
+            body = response.parsed_body
 
             assert_equal body['id_field'],                              'id'
             assert_equal body['index'],                                 the_case.tries.latest.index_name_from_search_url
@@ -87,8 +87,8 @@ module Api
             get :show, params: { case_id: the_case.id, format: :csv, file_format: 'basic' }
             assert_response :ok
 
-            expected_csv = "query,docid,rating\n"\
-                           "two,,\n"\
+            expected_csv = "query,docid,rating\n" \
+                           "two,,\n" \
                            "one,,\n"
             assert_equal response.body, expected_csv
 
@@ -103,8 +103,8 @@ module Api
             get :show, params: { case_id: the_case.id, format: :csv, file_format: 'basic' }
             assert_response :ok
 
-            expected_csv = "query,docid,rating\n"\
-                           "\"I like, commas!\",,\n"\
+            expected_csv = "query,docid,rating\n" \
+                           "\"I like, commas!\",,\n" \
                            "one,,\n"
             assert_equal response.body, expected_csv
 
@@ -167,7 +167,7 @@ file_format: 'basic_snapshot' }
           let(:the_case) { cases(:one) }
 
           test 'returns case info' do
-            get :show, params: { case_id: the_case.id, format: :txt }
+            get :show, params: { case_id: the_case.id, format: :txt, file_format: 'ltr' }
             assert_response :ok
 
             # rubocop:disable  Lint/UselessAssignment

@@ -12,9 +12,7 @@ Scorer.where(name: 'nDCG@10').first_or_create!(
   show_scale_labels:      true,
   code:                   File.readlines('./db/scorers/ndcg@10.js','\n').join('\n'),
   name:                   'nDCG@10',
-  communal:               true,
-  manual_max_score:       true,
-  manual_max_score_value: 1
+  communal:               true
 )
 
 Scorer.where(name: 'DCG@10').first_or_create(
@@ -51,6 +49,25 @@ Scorer.where(name: 'AP@10').first_or_create(
   code:               File.readlines('./db/scorers/ap@10.js','\n').join('\n'),
   name:               'AP@10',
   communal:           true
+)
+
+Scorer.where(name: 'RR@10').first_or_create(
+  scale:              (0..1).to_a,
+  scale_with_labels:  {"0":"Irrelevant","1":"Relevant"},
+  show_scale_labels:  true,
+  code:               File.readlines('./db/scorers/rr@10.js','\n').join('\n'),
+  name:               'RR@10',
+  communal:           true
+)
+
+SelectionStrategy.where(name: 'Single Rater').first_or_create(
+  name: 'Single Rater',
+  description: 'A single rating for each query/doc pair is all that is required.  The fastest way to get a lot of ratings, with lower quality.'
+)
+
+SelectionStrategy.where(name: 'Multiple Raters').first_or_create(
+  name: 'Multiple Raters',
+  description: 'Allows you to have up to three ratings for each query/doc pair.   Gives higher quality ratings, however with more work.'
 )
 
 if ENV['SEED_SAMPLE_DATA']

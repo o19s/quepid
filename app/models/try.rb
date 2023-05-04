@@ -5,18 +5,29 @@
 # Table name: tries
 #
 #  id             :integer          not null, primary key
-#  try_number     :integer
-#  query_params   :text(65535)
-#  case_id        :integer
-#  field_spec     :string(500)
-#  search_url     :string(500)
-#  name           :string(50)
-#  search_engine  :string(50)       default("solr")
+#  ancestry       :string(3072)
+#  api_method     :string(255)
 #  escape_query   :boolean          default(TRUE)
-#  api_method     :string(50)
+#  field_spec     :string(500)
+#  name           :string(50)
+#  custom_headers :string(1000)
 #  number_of_rows :integer          default(10)
+#  query_params   :string(20000)
+#  search_engine  :string(50)       default("solr")
+#  search_url     :string(500)
+#  try_number     :integer
 #  created_at     :datetime         not null
 #  updated_at     :datetime         not null
+#  case_id        :integer
+#
+# Indexes
+#
+#  case_id              (case_id)
+#  ix_queryparam_tryNo  (try_number)
+#
+# Foreign Keys
+#
+#  tries_ibfk_1  (case_id => cases.id)
 #
 
 require 'solr_arg_parser'
@@ -28,43 +39,15 @@ class Try < ApplicationRecord
   # Scopes
   scope :latest, -> { order(id: :desc).first } # The try created the most recently
 
-  # Defaults for defining a search engine.  These defaults
-  # are duplicated in the Angular SPA layer too ;-(
-  DEFAULTS = {
-    search_engine: 'solr',
-    solr:          {
-      query_params: 'q=#$query##',
-      search_url:   'http://quepid-solr.dev.o19s.com:8985/solr/tmdb/select',
-      field_spec:   'id:id title:title',
-      api_method:   'JSONP',
-    },
-    es:            {
-      query_params:
-                    '{
-  "query": {
-    "multi_match": {
-      "query": "#$query##",
-      "type": "best_fields",
-      "fields": [
-        "title^10",
-        "overview",
-        "cast"
-      ]
-    }
-  }
-}',
-      search_url:   'http://quepid-elasticsearch.dev.o19s.com:9206/tmdb/_search',
-      field_spec:   'id:_id, title:title',
-      api_method:   'POST',
-    },
-  }.freeze
-
   # Associations
   belongs_to  :case, optional: true # shouldn't be optional, but was in rails 4
 
   has_many    :curator_variables,
               dependent:  :destroy,
               inverse_of: :try
+
+  has_many   :snapshots,
+             dependent: :nullify
 
   # Callbacks
   before_create :set_defaults
@@ -75,6 +58,8 @@ class Try < ApplicationRecord
       solr_args
     when 'es'
       es_args
+    when 'os'
+      os_args
     end
   end
 
@@ -91,7 +76,7 @@ class Try < ApplicationRecord
   end
 
   def curator_vars_map
-    curator_variables.map { |each| [ each.name.to_sym, each.value ] }.to_h
+    curator_variables.to_h { |each| [ each.name.to_sym, each.value ] }
   end
 
   def solr_args
@@ -102,8 +87,13 @@ class Try < ApplicationRecord
     EsArgParser.parse(query_params, curator_vars_map)
   end
 
+  def os_args
+    # Use the EsArgParser as currently queries are the same
+    EsArgParser.parse(query_params, curator_vars_map)
+  end
+
   def id_from_field_spec
-    # logic is inspired by https://github.com/o19s/splainer-search/blob/master/services/fieldSpecSvc.js
+    # logic is inspired by https://github.com/o19s/splainer-search/blob/main/services/fieldSpecSvc.js
 
     # rubocop:disable Style/IfUnlessModifier
     # rubocop:disable Style/MultipleComparison
@@ -133,28 +123,18 @@ class Try < ApplicationRecord
   end
 
   def index_name_from_search_url
-    # rubocop:disable Lint/DuplicateBranch
-    # NOTE: fix me when we add antoher engine!
+    # NOTE: currently all supported engines have the index name as second to last element, refactor when this changes
     case search_engine
-    when 'solr'
-      search_url.split('/')[-2]
-    when 'es'
+    when 'solr', 'es', 'os'
       search_url.split('/')[-2]
     end
-    # rubocop:enable Lint/DuplicateBranch
   end
 
   private
 
-  # rubocop:disable Metrics/AbcSize
   def set_defaults
+    self.try_number = 1 if try_number.blank?
     self.name = "Try #{try_number}" if name.blank?
-
-    self.search_engine = DEFAULTS[:search_engine] if search_engine.blank?
-    self.api_method    = DEFAULTS[search_engine.to_sym][:api_method]    if api_method.blank?
-    self.field_spec    = DEFAULTS[search_engine.to_sym][:field_spec]    if field_spec.blank?
-    self.query_params  = DEFAULTS[search_engine.to_sym][:query_params]  if query_params.blank?
-    self.search_url    = DEFAULTS[search_engine.to_sym][:search_url]    if search_url.blank?
+    self.number_of_rows = 10 if number_of_rows.blank?
   end
-  # rubocop:enable Metrics/AbcSize
 end

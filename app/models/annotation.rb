@@ -7,9 +7,17 @@
 #  id         :integer          not null, primary key
 #  message    :text(65535)
 #  source     :string(255)
-#  user_id    :integer
 #  created_at :datetime         not null
 #  updated_at :datetime         not null
+#  user_id    :integer
+#
+# Indexes
+#
+#  index_annotations_on_user_id  (user_id)
+#
+# Foreign Keys
+#
+#  fk_rails_...  (user_id => users.id)
 #
 
 class Annotation < ApplicationRecord

@@ -17,4 +17,9 @@
 
 //= require bootstrap/dist/js/bootstrap.bundle
 //= require jquery
-//= require cookies_eu
+
+//= require clipboard
+
+//= require vega
+//= require vega-lite
+//= require vega-embed

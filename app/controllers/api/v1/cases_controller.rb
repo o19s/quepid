@@ -18,7 +18,7 @@ module Api
 
         if archived
           @no_tries = true
-          @no_teams = true
+          @no_teams = false
           @cases = Case.where(archived: archived, owner_id: current_user.id).all
         else
           @cases = if 'last_viewed_at' == sort_by
@@ -32,6 +32,10 @@ module Api
         end
 
         respond_with @cases
+      end
+
+      def show
+        respond_with @case
       end
       # rubocop:enable Metrics/MethodLength
       # rubocop:enable Metrics/AbcSize
@@ -48,18 +52,15 @@ module Api
         end
       end
 
-      def show
-        respond_with @case
-      end
-
       # rubocop:disable Metrics/MethodLength
       def update
         update_params = case_params
-
         update_params[:scorer_id] = Scorer.system_default_scorer.id if default_scorer_removed? update_params
         bool = ActiveRecord::Type::Boolean.new
-        archived = bool.deserialize(params[:archived]) || false
+        archived = bool.deserialize(update_params[:archived]) || false
         if archived
+          # archiving a case means current user takes it over, that should be better expressed.
+          @case.owner = current_user
           @case.mark_archived!
           Analytics::Tracker.track_case_archived_event current_user, @case
           respond_with @case
@@ -84,7 +85,7 @@ module Api
       private
 
       def case_params
-        params.require(:case).permit(:case_name, :scorer_id, :archived)
+        params.require(:case).permit(:case_name, :scorer_id, :archived, :book_id)
       end
 
       def default_scorer_removed? params = {}

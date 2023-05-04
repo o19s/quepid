@@ -37,8 +37,11 @@ angular.module('QuepidApp')
           templateUrl:  'archive_case/_modal.html',
           controller:   'ArchiveCaseModalInstanceCtrl',
           controllerAs: 'ctrl',
-          size:         'sm',
-          resolve:      {}
+          resolve:      {
+            theCase: function() {
+              return ctrl.thisCase;
+            }
+          }
         });
 
         modalInstance.result.then(function (archiveClicked) {

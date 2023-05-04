@@ -11,6 +11,9 @@ angular.module('QuepidApp')
         scope:        {
           thisCase: '=',
         },
+        bindings:     {
+          thisCase: '<',
+        }
       };
     }
   ]);

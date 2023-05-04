@@ -47,9 +47,9 @@ class SnapshotManager
   # }
   # manager.add_docs data
   #
-  def add_docs data
+  def add_docs docs, queries
     queries_to_import = []
-    keys              = data.keys
+    keys              = docs.keys
 
     # Start by adding queries to snapshot.
     # First, setup all queries to be added in an array.
@@ -58,6 +58,12 @@ class SnapshotManager
       query_id = keys[i]
 
       snapshot_query = @snapshot.snapshot_queries.where(query_id: query_id).first_or_initialize
+
+      # Quepid front end can send -- as no score.
+      queries[query_id]['score'] = nil if '--' == queries[query_id]['score']
+      snapshot_query.score = queries[query_id][:score]
+      snapshot_query.all_rated = queries[query_id][:all_rated]
+      snapshot_query.number_of_results = queries[query_id][:number_of_results]
 
       queries_to_import << snapshot_query
     end
@@ -69,7 +75,7 @@ class SnapshotManager
     # Then import docs for the queries that were just created.
     # This method is shared with the `import_queries` method
     # which does the same thing with a slightly different set of data.
-    import_docs keys, data
+    import_docs keys, docs
 
     self
   end
@@ -161,6 +167,7 @@ class SnapshotManager
 
   private
 
+  # rubocop:disable Metrics/MethodLength
   def setup_docs_for_query query, docs
     results = []
 
@@ -176,6 +183,7 @@ class SnapshotManager
         explain:    doc[:explain],
         position:   doc[:position] || (index + 1),
         rated_only: doc[:rated_only] || false,
+        fields:     doc[:fields].blank? ? nil : doc[:fields].to_json,
       }
 
       results << query.snapshot_docs.build(doc_params)
@@ -183,6 +191,7 @@ class SnapshotManager
 
     results
   end
+  # rubocop:enable Metrics/MethodLength
 
   def extract_doc_info row
     case @options[:format]

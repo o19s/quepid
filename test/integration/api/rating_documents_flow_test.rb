@@ -3,7 +3,7 @@
 require 'test_helper'
 
 class RatingDocumentsFlowTest < ActionDispatch::IntegrationTest
-  it 'can rate documents where the doc_id isnt in the route' do
+  it 'can rate documents where the doc_id is not in the route' do
     assert_routing(
       {
         method: 'put',

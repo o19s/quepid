@@ -27,7 +27,7 @@ module Api
             put :update, params: { case_id: acase.id, query_id: query.id, rating: rating }
             assert_response :ok
 
-            data = JSON.parse(response.body)
+            data = response.parsed_body
 
             assert_equal data['rating'],    4
             assert_equal data['doc_id'],    doc_id
@@ -49,7 +49,7 @@ module Api
             put :update, params: { case_id: acase.id, query_id: query.id, rating: rating }
             assert_response :ok
 
-            data = JSON.parse(response.body)
+            data = response.parsed_body
 
             assert_equal data['rating'],    5
             assert_equal data['doc_id'],    doc_id
@@ -72,7 +72,7 @@ module Api
             put :update, params: { case_id: acase.id, query_id: query.id, rating: rating }
             assert_response :ok
 
-            data = JSON.parse(response.body)
+            data = response.parsed_body
 
             assert_equal data['rating'],    5
             assert_equal data['doc_id'],    doc_id
@@ -105,7 +105,7 @@ module Api
             put :update, params: { case_id: acase.id, query_id: query.id, rating: rating }
             assert_response :ok
 
-            data = JSON.parse(response.body)
+            data = response.parsed_body
 
             assert_equal data['rating'],    5
             assert_equal data['doc_id'],    doc_id
@@ -136,7 +136,7 @@ module Api
             put :update, params: { case_id: acase.id, query_id: query.id, rating: rating }
             assert_response :ok
 
-            data = JSON.parse(response.body)
+            data = response.parsed_body
 
             assert_equal data['rating'],    6
             assert_equal data['doc_id'],    doc_id
@@ -168,7 +168,7 @@ module Api
             put :update, params: { case_id: acase.id, query_id: query.id, rating: rating }
             assert_response :ok
 
-            data = JSON.parse(response.body)
+            data = response.parsed_body
 
             assert_equal data['rating'],    6
             assert_equal data['doc_id'],    doc_id
@@ -189,7 +189,7 @@ module Api
             put :update, params: { case_id: acase.id, query_id: query.id, rating: rating }
             assert_response :ok
 
-            data = JSON.parse(response.body)
+            data = response.parsed_body
 
             assert_equal data['rating'],    5
             assert_equal data['doc_id'],    doc_id

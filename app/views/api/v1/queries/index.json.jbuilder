@@ -4,4 +4,4 @@ json.queries do
   json.array! @queries, partial: 'query', as: :query
 end
 
-json.displayOrder @display_order
+json.display_order @display_order

@@ -1,0 +1,7 @@
+<%
+@case.queries.sort_by(&:id).each do |query|
+  query.ratings.fully_rated.each do |rating| %>
+<%= query.id %> 0 <%= rating.doc_id %> <%= rating.rating %>
+<%
+  end
+end %>

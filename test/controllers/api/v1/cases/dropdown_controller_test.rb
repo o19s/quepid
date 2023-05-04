@@ -39,11 +39,11 @@ module Api
           test 'returns only shallow information about cases' do
             get :index
 
-            body = JSON.parse(response.body)
-            cases = body['allCases']
+            body = response.parsed_body
+            cases = body['all_cases']
             cases.each do |c|
               assert_nil c['tries']
-              assert_nil c['lastScore']['queries'] if c['lastScore']
+              assert_nil c['last_score']['queries'] if c['last_score']
             end
           end
 
@@ -52,10 +52,10 @@ module Api
 
             assert_response :ok
 
-            body  = JSON.parse(response.body)
-            cases = body['allCases']
+            body  = response.parsed_body
+            cases = body['all_cases']
 
-            ids = cases.map { |c| c['caseNo'] }
+            ids = cases.map { |c| c['case_id'] }
 
             assert_includes ids, first_case.id
             assert_includes ids, second_case.id
@@ -66,10 +66,10 @@ module Api
 
             assert_response :ok
 
-            body  = JSON.parse(response.body)
-            cases = body['allCases']
+            body  = response.parsed_body
+            cases = body['all_cases']
 
-            ids = cases.map { |c| c['caseNo'] }
+            ids = cases.map { |c| c['case_id'] }
 
             assert_includes ids, shared.id
           end
@@ -79,10 +79,10 @@ module Api
 
             assert_response :ok
 
-            body  = JSON.parse(response.body)
-            cases = body['allCases']
+            body  = response.parsed_body
+            cases = body['all_cases']
 
-            ids = cases.map { |c| c['caseNo'] }
+            ids = cases.map { |c| c['case_id'] }
 
             assert_not_includes ids, archived.id
           end
@@ -92,8 +92,8 @@ module Api
 
             assert_response :ok
 
-            body  = JSON.parse(response.body)
-            cases = body['allCases']
+            body  = response.parsed_body
+            cases = body['all_cases']
 
             assert cases.length <= 3
           end
@@ -113,10 +113,10 @@ module Api
 
             assert_response :ok
 
-            body  = JSON.parse(response.body)
-            cases = body['allCases']
+            body  = response.parsed_body
+            cases = body['all_cases']
 
-            ids = cases.map { |c| c['caseNo'] }
+            ids = cases.map { |c| c['case_id'] }
 
             assert_equal ids.first, second_case.id
           end
@@ -126,8 +126,8 @@ module Api
 
             assert_response :ok
 
-            body  = JSON.parse(response.body)
-            count = body['casesCount']
+            body  = response.parsed_body
+            count = body['cases_count']
 
             assert_not_nil count
           end

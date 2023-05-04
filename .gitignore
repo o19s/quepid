@@ -1,4 +1,7 @@
-.byebug_history
+
+/tmp/storage/*
+!/tmp/storage/
+!/tmp/storage/.keep
 
 # puppeteer testing
 /spec/puppeteer/node_modules
@@ -44,6 +47,12 @@ coverage/
 
 # Docker artifacts
 public/srv
+docker-compose.override.yml
+
+# Jupyterlite
+public/notebooks
+public/notebooks-*
+.jupyterlite.doit.db
 
 # Test Reports
 test/reports

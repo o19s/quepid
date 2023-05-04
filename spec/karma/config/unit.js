@@ -15,12 +15,15 @@ module.exports = function(config) {
 
 
     // list of files / patterns to load in the browser
+    // change 'spec/javascripts/**/*_spec.js' to 'spec/javascripts/**/queriesCtrl_spec.js'
+    // to run a single one
     files: [
       'tmp/assets/core*.js',
       'tmp/assets/application*.js',
       'tmp/assets/application_spec*.js',
       'spec/javascripts/mock/*.js',
-      'spec/javascripts/**/*_spec.js'
+      'spec/javascripts/**/*_spec.js',
+      'spec/karma/mockBackend.js'
     ],
 
     // list of files to exclude

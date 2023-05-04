@@ -26,37 +26,61 @@
       </div>
     </wz-step>
     <wz-step title="Engine" id="step-three">
-      <h2>Solr or Elasticsearch?</h2>
+      <h2>Solr, Elasticsearch, or OpenSearch?</h2>
       <div>
 
         <div style="text-align: center;">
           <label style="margin-right: 25px;">
+            <input type="radio" value="solr" ng-model="pendingWizardSettings.searchEngine" ng-change="changeSearchEngine()">
             <img ng-src="images/solr.png" alt='Solr' width="100px" />
-            <input type="radio" value="solr" ng-model="pendingWizardSettings.searchEngine" ng-change="updateSettingsDefaults()">
+          </label>
+          <label style="margin-right: 25px;">
+            <input type="radio" value="es" ng-model="pendingWizardSettings.searchEngine" ng-change="changeSearchEngine()">
+            <img ng-src="images/elasticsearch.png" alt='Elasticsearch' width="150px" />
           </label>
           <label>
-            <input type="radio" value="es" ng-model="pendingWizardSettings.searchEngine" ng-change="updateSettingsDefaults()">
-            <img ng-src="images/elasticsearch.png" alt='Elasticsearch' width="150px" />
+            <input type="radio" value="os" ng-model="pendingWizardSettings.searchEngine" ng-change="changeSearchEngine()">
+            <img ng-src="images/opensearch.png" alt='OpenSearch' width="150px" />
           </label>
         </div>
 
         <br>
         <p>Paste the URL to the endpoint of your search engine for Quepid to search (you can also just experiment with the demo servers):</p>
         <div class="row">
+          <div ng-show="invalidHeaders" class="alert alert-danger">
+            <span>
+              Custom Headers must be a valid JSON object
+            </span>
+          </div>
           <div ng-show="showTLSChangeWarning" class="alert alert-warning">
             <span>
             You have specified a search engine url that is on a different protocol ( <code>{{protocolToSwitchTo}}</code> ) than Quepid is currently on,
             so you need to reload Quepid on that protocol first, and then continue the Wizard.  This is to comply with browser security issues.
             </span>
           </div>
-          <div ng-if="urlInvalid && !showTLSChangeWarning" class="alert alert-danger">Sorry, we're not getting any search results from your <span ng-show="pendingWizardSettings.searchEngine === 'es'">Elasticsearch</span><span ng-show="pendingWizardSettings.searchEngine === 'solr'">Solr</span>.
+          <div ng-if="urlInvalid && !showTLSChangeWarning" class="alert alert-danger">
+            Sorry, we're not getting any search results from your
+            <span ng-show="pendingWizardSettings.searchEngine === 'es'">Elasticsearch</span>
+            <span ng-show="pendingWizardSettings.searchEngine === 'os'">OpenSearch</span>
+            <span ng-show="pendingWizardSettings.searchEngine === 'solr'">Solr</span>.
+
             <ul ng-if="pendingWizardSettings.searchEngine === 'es'">
               <li>Is your Elasticsearch behind a firewall or proxy? Try acessing the <a target="_blank" href="{{pendingWizardSettings.searchUrl}}">URL directly</a> and see if you get a response</li>
               <li>Does your Elasticsearch accept HTTP POST requests?</li>
               <li>Is your Elasticsearch setup for CORS to talk to Quepid's web app (http://app.quepid.com)?</li>
+              <li>Do you need an API Key?  If so, set one up under Advanced pane --> Custom Headers.</li>
               <li>Double check if you have an ad blocker blocking your queries.</li>
               <li>See the <a target="_blank" href="https://github.com/o19s/quepid/wiki/Troubleshooting-Elasticsearch-and-Quepid/">Troubleshooting Elasticsearch and Quepid</a> wiki page for more help!</li>
             </ul>
+
+            <ul ng-if="pendingWizardSettings.searchEngine === 'os'">
+              <li>Is your OpenSearch behind a firewall or proxy? Try acessing the <a target="_blank" href="{{pendingWizardSettings.searchUrl}}">URL directly</a> and see if you get a response</li>
+              <li>Does your OpenSearch accept HTTP POST requests?</li>
+              <li>Is your OpenSearch setup for CORS to talk to Quepid's web app (http://app.quepid.com)?</li>
+              <li>Double check if you have an ad blocker blocking your queries.</li>
+              <li>See the <a target="_blank" href="https://github.com/o19s/quepid/wiki/Troubleshooting-OpenSearch-and-Quepid/">Troubleshooting OpenSearch and Quepid</a> wiki page for more help!</li>
+            </ul>
+
             <ul ng-if="pendingWizardSettings.searchEngine === 'solr'">
               <li>Do you see any errors when you visit your <a target="_blank" href="{{pendingWizardSettings.searchUrl}}">Solr URL directly?</a></li>
               <li>
@@ -88,7 +112,7 @@ curl -X POST -H 'Content-type:application/json' -d '{
 
             <div class="row">
               <input style="width: 100%" type="text" ng-change="reset()" ng-model="pendingWizardSettings.searchUrl" class="form-control" />
-              <small title="Manually validates Quepid can get retrieve search results from your URL before continuing" class="pull-right"><a ng-click="validate(true)">ping it</a></small>
+              <small title="Manually validates Quepid can get retrieve search results from your URL before continuing" class="pull-right"><button type="button" class="btn btn-link btn-sm" ng-click="validate(true)" ng-disabled="showTLSChangeWarning">ping it</button></small>
               <p class="help-block">Unsure? <a href="http://quepid.com/how-quepid-works/" target="_blank">Learn More</a> about Quepid's light touch with your search engine &amp; data.
 
               <p class="help-block tip">
@@ -99,9 +123,9 @@ curl -X POST -H 'Content-type:application/json' -d '{
 
           <span ng-if="pendingWizardSettings.searchEngine === 'solr'">
           <p>
-            <button type="button" class="btn btn-sm btn-default" ng-click="isCollapsed = !isCollapsed">Solr Configuration</button>
+            <button type="button" class="btn btn-sm btn-default" ng-click="isSolrCollapsed = !isSolrCollapsed">Solr Configuration</button>
           </p>
-          <div uib-collapse="!isCollapsed">
+          <div uib-collapse="!isSolrCollapsed">
              <div class="well well-sm">
               <div class="form-group clearfix">
                 <label class="col-sm-3 control-label">API Method</label>
@@ -114,6 +138,16 @@ curl -X POST -H 'Content-type:application/json' -d '{
                 </div>
               </div>
             </div>
+          </div>
+          </span>
+
+
+          <span ng-if="pendingWizardSettings.searchEngine !== 'solr'">
+          <p>
+            <button type="button" class="btn btn-sm btn-default" ng-click="isHeaderConfigCollapsed = !isHeaderConfigCollapsed">Advanced</button>
+          </p>
+          <div uib-collapse="!isHeaderConfigCollapsed">
+            <custom-headers settings="pendingWizardSettings"></custom-headers>
           </div>
           </span>
 
@@ -133,7 +167,7 @@ curl -X POST -H 'Content-type:application/json' -d '{
 
                 <span ng-show="showTLSChangeWarning">
                   <a href="{{quepidUrlToSwitchTo}}" class="btn btn-primary form-control">
-                    <span class="glyphicon glyphicon-refresh"></span> Reload Quepid in <code>{{protocolToSwitchTo}}</code> TLS Protocol
+                    <span class="glyphicon glyphicon-refresh"></span> Reload Quepid in <code>{{protocolToSwitchTo}}</code> Protocol
                   </a>
                 </span>
 

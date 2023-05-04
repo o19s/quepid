@@ -12,6 +12,7 @@ angular.module('QuepidApp')
       ctrl.theCase      = theCase;
       ctrl.loading      = false;
       ctrl.clearQueries = false;
+      ctrl.createQueries= false;
       ctrl.csv          = {
         content:          null,
         header:           true,
@@ -38,7 +39,7 @@ angular.module('QuepidApp')
       };
 
       ctrl.options = {
-        which: 'undefined'
+        which: undefined
       };
 
       // Watches
@@ -93,6 +94,19 @@ angular.module('QuepidApp')
         r.readAsText(f);
       };
 
+      ctrl.showWarning = function () {
+        return (ctrl.options.which !== undefined);
+      };
+
+      ctrl.clearSelection = function () {
+        ctrl.options.which = undefined;
+        ctrl.clearQueries = false;
+      };
+
+      ctrl.ratingsTypePicked = function () {
+        return (ctrl.options.which === 'csv' || ctrl.options.which === 'rre' || ctrl.options.which === 'ltr' );
+      };
+
       ctrl.ok = function () {
         if ( ctrl.options.which === 'csv' ) {
           ctrl.checkCSVHeaders();
@@ -105,15 +119,22 @@ angular.module('QuepidApp')
           if ( ctrl.options.which === 'information_needs' ) {
             importRatingsSvc.importInformationNeeds(
               ctrl.theCase,
-              ctrl.information_needs.content
+              ctrl.information_needs.content,
+              ctrl.createQueries
             ).then(function() {
                 ctrl.loading = false;
                 $uibModalInstance.close();
               },
               function(response) {
-                var error = 'Unable to import information needs from CSV: ';
-                error += response.status;
-                error += ' - ' + response.statusText;
+                var error = 'Unable to import information needs from CSV. ';
+                if (response.data && response.data.message){
+                  error += response.data.message;
+                }
+                else {
+                  error += response.status;
+                  error += ' - ' + response.statusText;
+                }
+
                 ctrl.loading = false;
                 $uibModalInstance.close(error);
               });
@@ -229,7 +250,7 @@ angular.module('QuepidApp')
         headers     = headers.split(ctrl.information_needs.separator);
 
         var expectedHeaders = [
-          'query_id', 'query', 'information_need'
+          'query', 'information_need'
         ];
 
         if (!angular.equals(headers, expectedHeaders)) {
@@ -248,14 +269,14 @@ angular.module('QuepidApp')
         var alert;
         for (i = 1; i < lines.length; i++) {
           var line = lines[i];
-          if (line && line.split(ctrl.information_needs.separator).length > 3){
+          if (line && line.split(ctrl.information_needs.separator).length > 2){
             var matches = line.match(/"/g);
             if (matches !== undefined && matches !== null && matches.length >= 2){
               // two double quotes (or more) means we are okay, it's not a perfect check
             }
             else {
               if (alert === undefined){
-                alert = 'Must have three (or fewer) columns for every line in CSV file.  Make sure to wrap any query and information_need with <code>,</code> in double quotes.';
+                alert = 'Must have two (or fewer) columns for every line in CSV file.  Make sure to wrap any query and information_need with <code>,</code> in double quotes.';
                 alert += '<br /><strong>';
               }
               alert += 'line ' + (i + 1) + ': ';

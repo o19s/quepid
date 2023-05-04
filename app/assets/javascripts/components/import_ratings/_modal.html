@@ -5,7 +5,7 @@
 
 <div class="modal-body">
   <uib-tabset active="active">
-    <uib-tab index="0" heading="Ratings">
+    <uib-tab index="0" heading="Ratings" select="ctrl.clearSelection()">
       <p>
         Importing ratings is a great way to manage the rating process outside of Quepid, for example in your own custom application.
         There are a number of formats for importing this data into Quepid.
@@ -78,18 +78,25 @@ star trek,,</pre>
           onchange="angular.element(this).scope().pickedLTRFile()"/>
       </div>
     </uib-tab>
-    <uib-tab index="1" heading="Information Needs">
+    <uib-tab index="1" heading="Information Needs" select="ctrl.clearSelection()">
       <p>
         Importing information needs is the easiest way to update a lot of queries.  You should export the template file via the 'Export' feature first.
       </p>
       <div class="form-group">
         <input type="radio" id="information_needs" name="importSelection" value="information_needs" ng-model="ctrl.options.which">
         <label for="information_needs">Information Needs CSV</label>
+        <div class="checkbox">
+          <label>
+            <input id="clear-existing-queries" type="checkbox" ng-model='ctrl.createQueries'> Create missing queries?
+            <span class="glyphicon glyphicon-question-sign" aria-hidden="true" popover-trigger="'mouseenter'" popover-placement="right" uib-popover="Select to create any missing queries, useful when populating a new case with queries with info needs."></span>
+          </label>
+        </div>
+
         <span class="help-block">
-          The CSV file should have the headers: <code>query_id, query,information_need</code> and lines similar to:
+          The CSV file should have the headers: <code>query,information_need</code> and lines similar to:
           <pre>
-query_id,query,information_need
-3574597,star wars,"The original movie"</pre>
+query,information_need
+star wars,"The original movie"</pre>
         </span>
         <p>Select CSV file to import:</p>
 
@@ -117,12 +124,13 @@ query_id,query,information_need
 
 </div>
 <div class="modal-footer">
-  <p class='bg-warning text-warning padded-text'>
+
+  <p class='bg-warning text-warning padded-text' ng-if="ctrl.showWarning()">
     <i class="fa fa-exclamation-triangle" aria-hidden="true"></i>
-    <span ng-show="ctrl.options.which != 'information_needs'">
+    <span ng-show="ctrl.ratingsTypePicked()">
     This operation WILL override your existing ratings. Proceed with caution!
     </span>
-    <span ng-show="ctrl.options.which === 'information_needs'">
+    <span ng-show="!ctrl.ratingsTypePicked()">
     This operation WILL override your existing information needs. Proceed with caution!
     </span>
   </p>
@@ -130,6 +138,6 @@ query_id,query,information_need
   <i class="fa fa-spinner fa-spin" aria-hidden="true" ng-show="ctrl.loading"></i>
 
   <button class="btn btn-default float-left" ng-click="ctrl.cancel()">Cancel</button>
-  <button class="btn btn-primary" ng-click="ctrl.ok()" ng-disabled="ctrl.options.which === 'undefined' || ctrl.csv.import.alert !== undefined || ctrl.information_needs.import.alert !== undefined">Import</button>
+  <button class="btn btn-primary" ng-click="ctrl.ok()" ng-disabled="!ctrl.showWarning()">Import</button>
 
 </div>

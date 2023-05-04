@@ -134,7 +134,7 @@ module Api
 
           assert_response :ok
 
-          members = JSON.parse(response.body)['members']
+          members = response.parsed_body['members']
 
           assert_instance_of  Array, members
           assert_equal        team.members.count, members.length
@@ -154,7 +154,7 @@ module Api
             get :index, params: { team_id: team.id }
 
             assert_response :ok
-            members = JSON.parse(response.body)['members']
+            members = response.parsed_body['members']
             member = members.find { |m| m['id'].to_i == invitee.id }
             assert member['pending_invite']
           end
@@ -170,7 +170,7 @@ module Api
             get :index, params: { team_id: team.id }
 
             assert_response :ok
-            members = JSON.parse(response.body)['members']
+            members = response.parsed_body['members']
             member = members.find { |m| m['id'].to_i == invitee.id }
             assert_not member['pending_invite']
           end
@@ -184,7 +184,7 @@ module Api
             get :index, params: { team_id: team.id }
 
             assert_response :ok
-            members = JSON.parse(response.body)['members']
+            members = response.parsed_body['members']
             member = members.find { |m| m['id'].to_i == invitee.id }
             assert_not member['pending_invite']
           end

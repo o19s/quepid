@@ -9,6 +9,7 @@ This document explains how Quepid can be operated and configured.
 - [Legal Pages & GDPR](#legal-pages-&-gdpr)
 - [User Tracking](#user-tracking)
 - [Heathcheck Endpoint](#healthcheck)
+- [Database Management](#database-management)
 
 ## Running behind a load balancer
 
@@ -133,6 +134,8 @@ We have a Realm called `Quepid`, and it includes a Client called `quepid`.  The 
 
 We *assume* that the client definition in Keycloak will be named `quepid`, you can't change that.  You can pick your Realm name however.
 
+Keycloak 17+ removes the `/auth` portion of the url.  If you are using earlier versions of keycloak, you need to set `base_url:'/auth'` in devise.rb.
+
 
 
 ## Legal Pages & GDPR
@@ -168,3 +171,7 @@ the file `Procfile`
 ## Healthcheck
 
 Want to monitor if Quepid is behaving?  Just monitor `/healthcheck`, and you will get 200 status codes from a healthy Quepid, and 503 if not.  The JSON output is `{"code":200,"status":{"database":"OK","migrations":"OK"}}`.
+
+## Database Management
+
+See the details in [](./database.md).

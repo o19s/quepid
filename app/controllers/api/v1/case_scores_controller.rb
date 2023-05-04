@@ -12,6 +12,13 @@ module Api
         respond_with @scores
       end
 
+      def show
+        @score    = @case.scores.first
+        @shallow  = false
+
+        respond_with @score
+      end
+
       def update
         service = CaseScoreManager.new @case
 
@@ -28,13 +35,6 @@ module Api
         rescue ActiveRecord::RecordInvalid
           render json: service.errors, status: :bad_request
         end
-      end
-
-      def show
-        @score    = @case.scores.first
-        @shallow  = false
-
-        respond_with @score
       end
 
       private

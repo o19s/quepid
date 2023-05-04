@@ -4,23 +4,45 @@
 #
 # Table name: users
 #
-#  id                     :integer          not null, primary key
-#  email                  :string(80)
-#  password               :string(120)
-#  agreed_time            :datetime
-#  agreed                 :boolean
-#  completed_case_wizard  :boolean
-#  num_logins             :integer
-#  name                   :string(255)
-#  administrator          :boolean          default(FALSE)
-#  reset_password_token   :string(255)
-#  reset_password_sent_at :datetime
-#  company                :string(255)
-#  locked                 :boolean
-#  locked_at              :datetime
-#  created_at             :datetime         not null
-#  updated_at             :datetime         not null
-#  default_scorer_id      :integer
+#  id                          :integer          not null, primary key
+#  administrator               :boolean          default(FALSE)
+#  agreed                      :boolean
+#  agreed_time                 :datetime
+#  company                     :string(255)
+#  completed_case_wizard       :boolean          default(FALSE), not null
+#  email                       :string(80)
+#  email_marketing             :boolean          default(FALSE), not null
+#  invitation_accepted_at      :datetime
+#  invitation_created_at       :datetime
+#  invitation_limit            :integer
+#  invitation_sent_at          :datetime
+#  invitation_token            :string(255)
+#  invitations_count           :integer          default(0)
+#  locked                      :boolean
+#  locked_at                   :datetime
+#  name                        :string(255)
+#  num_logins                  :integer
+#  password                    :string(120)
+#  profile_pic                 :string(255)
+#  reset_password_sent_at      :datetime
+#  reset_password_token        :string(255)
+#  stored_raw_invitation_token :string(255)
+#  created_at                  :datetime         not null
+#  updated_at                  :datetime         not null
+#  default_scorer_id           :integer
+#  invited_by_id               :integer
+#
+# Indexes
+#
+#  index_users_on_default_scorer_id     (default_scorer_id)
+#  index_users_on_invitation_token      (invitation_token) UNIQUE
+#  index_users_on_invited_by_id         (invited_by_id)
+#  index_users_on_reset_password_token  (reset_password_token) UNIQUE
+#  ix_user_username                     (email) UNIQUE
+#
+# Foreign Keys
+#
+#  fk_rails_...  (default_scorer_id => scorers.id)
 #
 
 require 'test_helper'
@@ -114,6 +136,10 @@ class UserTest < ActiveSupport::TestCase
     test 'Sets agreed_time when agreed set to true when T&C not set' do
       terms_and_conditions_url = Rails.application.config.terms_and_conditions_url
       Rails.application.config.terms_and_conditions_url = ''
+      user = User.create
+      assert_not user.terms_and_conditions?
+
+      Rails.application.config.terms_and_conditions_url = nil
       user = User.create
       assert_not user.terms_and_conditions?
 
@@ -227,6 +253,21 @@ class UserTest < ActiveSupport::TestCase
 
       shared_team_case.reload
       assert_not shared_team_case.destroyed?
+    end
+  end
+
+  describe 'User accessing Books' do
+    let(:user_with_book_access)             { users(:doug) }
+    let(:user_without_book_access)          { users(:joey) }
+    let(:book_of_comedy_films)              { books(:book_of_comedy_films) }
+    let(:book_of_star_wars_judgements)      { books(:book_of_star_wars_judgements) }
+
+    it 'provides access to the books that a user has access because of membership in a team' do
+      assert_equal user_with_book_access.books_involved_with.where(id: book_of_star_wars_judgements.id).first, book_of_star_wars_judgements
+    end
+
+    it 'prevents access to the books because the user is not part of a team' do
+      assert_nil user_without_book_access.books_involved_with.where(id: book_of_comedy_films).first
     end
   end
 end

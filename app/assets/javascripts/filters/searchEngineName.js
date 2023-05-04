@@ -5,7 +5,8 @@ angular.module('QuepidApp')
     function () {
       var searchEngineName = {
         solr: 'Solr',
-        es:   'Elasticsearch'
+        es:   'Elasticsearch',
+        os:   'OpenSearch'
       };
 
       return function (input) {

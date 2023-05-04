@@ -185,6 +185,14 @@ end
 ######################################
 
 solr_case = solr_case_user.cases.create case_name: 'SOLR CASE'
+solr_try = solr_case.tries.latest
+solr_params = {
+  search_engine: :solr,
+  search_url:   "http://quepid-solr.dev.o19s.com:8985/solr/tmdb/select",
+  field_spec:   "id:id, title:title",
+  query_params: 'q=*:*'
+}
+solr_try.update solr_params
 print_case_info solr_case
 
 ######################################
@@ -195,9 +203,9 @@ es_case = es_case_user.cases.create case_name: 'ES CASE'
 es_try = es_case.tries.latest
 es_params = {
   search_engine: :es,
-  search_url:   Try::DEFAULTS[:es][:search_url],
-  field_spec:   Try::DEFAULTS[:es][:field_spec],
-  query_params: Try::DEFAULTS[:es][:query_params],
+  search_url:   "http://quepid-elasticsearch.dev.o19s.com:9206/tmdb/_search",
+  field_spec:   "id:_id, title:title",
+  query_params: '{"query": {"match_all": {}}}'
 }
 es_try.update es_params
 print_case_info es_case
@@ -305,7 +313,15 @@ print_step "Seeding teams................"
 
 osc = Team.where(owner_id: osc_owner_user.id, name: 'OSC').first_or_create
 osc.members << osc_member_user
+osc.members << realistic_activity_user
+osc.cases << tens_of_queries_case
 print_step "End of seeding teams................"
+
+# Books
+print_step "Seeding books................"
+
+book = Book.where(name: "Book of Ratings", team:osc, scorer: Scorer.system_default_scorer, selection_strategy: SelectionStrategy.find_by(name:'Multiple Raters')).first_or_create
+
 
 # Big Cases
 

@@ -1,0 +1,10 @@
+<p></p>
+<h2>New Query Doc Pair in book <%= @book.name %></h2>
+
+<%= render 'form', query_doc_pair: @query_doc_pair %>
+
+<br>
+
+<%= button_to 'Cancel', book_query_doc_pairs_url(book: @book), method: :get %>
+
+<br>

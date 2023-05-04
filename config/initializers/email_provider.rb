@@ -4,18 +4,18 @@
 if Rails.application.config.email_provider.casecmp?('smtp')
   Rails.application.config.action_mailer.delivery_method = :smtp
   Rails.application.config.action_mailer.smtp_settings = {
-    address:              ENV['SMTP_HOST'],
-    port:                 ENV['SMTP_PORT'],
-    domain:               ENV['MAIL_DOMAIN'],
-    user_name:            ENV['SMTP_USERNAME'],
-    password:             ENV['SMTP_PASSWORD'],
-    authentication:       ENV['SMTP_AUTHENTICATION_TYPE'],
-    enable_starttls_auto: ENV['SMTP_ENABLE_STARTTLS'],
+    address:              ENV.fetch('SMTP_HOST', nil),
+    port:                 ENV.fetch('SMTP_PORT', nil),
+    domain:               ENV.fetch('MAIL_DOMAIN', nil),
+    user_name:            ENV.fetch('SMTP_USERNAME', nil),
+    password:             ENV.fetch('SMTP_PASSWORD', nil),
+    authentication:       ENV.fetch('SMTP_AUTHENTICATION_TYPE', nil),
+    enable_starttls_auto: ENV.fetch('SMTP_ENABLE_STARTTLS', nil),
   }
 elsif Rails.application.config.email_provider.casecmp?('postmark')
   Rails.application.config.action_mailer.delivery_method = :postmark
   Rails.application.config.action_mailer.postmark_settings = {
-    api_token: ENV['POSTMARK_API_TOKEN'],
+    api_token: ENV.fetch('POSTMARK_API_TOKEN', nil),
   }
 
 end

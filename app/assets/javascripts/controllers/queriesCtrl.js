@@ -34,6 +34,7 @@ angular.module('QuepidApp')
       configurationSvc
     ) {
       $scope.queriesSvc = queriesSvc;
+      $scope.caseSvc = caseSvc;
       $scope.queryListSortable = configurationSvc.isQueryListSortable();
 
       $rootScope.$on('scoring-complete', () => {
@@ -383,5 +384,16 @@ angular.module('QuepidApp')
         }
         $location.search('reverse', $scope.reverse);
       }
+
+      $scope.matchQueryFilter = function(query) {
+        if ($scope.queryFilter !== undefined) {
+          var lowercaseQueryText = query.queryText.toLowerCase();
+          return lowercaseQueryText.includes($scope.queryFilter.toLowerCase());
+        }
+        else {
+          return true;
+        }
+      };
+
     }
   ]);

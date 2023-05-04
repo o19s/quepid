@@ -1,0 +1,42 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:base"
+  ],
+  "enabled": true,
+  "schedule": [
+    "* 8-20 1 * *"
+  ],
+  "prConcurrentLimit": 5,
+  "prHourlyLimit": 5,
+  "stabilityDays": 10,
+  "packageRules": [
+    {
+      "groupName": "Ruby on Rails packages",
+      "matchDatasources": [
+        "rubygems"
+      ],
+      "matchPackageNames": [
+        "actioncable",
+        "actionmailbox",
+        "actionmailer",
+        "actionpack",
+        "actiontext",
+        "actionview",
+        "activejob",
+        "activemodel",
+        "activerecord",
+        "activestorage",
+        "activesupport",
+        "railties",
+        "rails"
+      ]
+    },
+    {
+      "updateTypes": [
+        "patch"
+      ],
+      "enabled": false
+    }
+  ]
+}

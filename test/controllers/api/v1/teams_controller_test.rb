@@ -31,7 +31,7 @@ module Api
 
           assert_response :ok
 
-          body = JSON.parse(response.body)
+          body = response.parsed_body
           assert body['name'] == team_name
 
           assert_equal jane.owned_teams.count,      count + 1
@@ -43,7 +43,7 @@ module Api
 
           assert_response :bad_request
 
-          body = JSON.parse(response.body)
+          body = response.parsed_body
           assert_includes body['name'], "can't be blank"
         end
 
@@ -52,7 +52,7 @@ module Api
 
           assert_response :bad_request
 
-          body = JSON.parse(response.body)
+          body = response.parsed_body
           assert_includes body['name'], 'has already been taken'
         end
 
@@ -81,7 +81,7 @@ module Api
           get :show, params: { team_id: the_team.id }
           assert_response :ok
 
-          body = JSON.parse(response.body)
+          body = response.parsed_body
 
           assert_equal body['name'],   the_team.name
           assert_equal body['id'],     the_team.id
@@ -92,7 +92,7 @@ module Api
           get :show, params: { team_id: shared_team.id }
           assert_response :ok
 
-          body = JSON.parse(response.body)
+          body = response.parsed_body
 
           assert_equal body['name'],   shared_team.name
           assert_equal body['id'],     shared_team.id
@@ -183,7 +183,7 @@ module Api
           get :index
 
           assert_response :ok
-          body  = JSON.parse(response.body)
+          body  = response.parsed_body
           teams = body['teams']
 
           names = teams.map { |team| team['name'] }
@@ -198,7 +198,7 @@ module Api
           get :index
 
           assert_response :ok
-          body  = JSON.parse(response.body)
+          body  = response.parsed_body
           teams = body['teams']
 
           names = teams.map { |team| team['name'] }
@@ -214,7 +214,7 @@ module Api
 
           assert_response :ok
 
-          body  = JSON.parse(response.body)
+          body  = response.parsed_body
           teams = body['teams']
 
           # sometimes it's the first team, sometimes it's the second team in the array.

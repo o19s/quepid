@@ -1,0 +1,37 @@
+<h2>Books</h2>
+
+<p id="notice"><%= notice %></p>
+
+<% if @books.size == 0 %>
+  Create your first book by clicking on the New Book button below.
+  <br>
+<% end %>
+
+
+<table class="table table-striped table-hover table-sm">
+
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Team</th>
+      <th>Scorer</th>
+      <th>Selection strategy</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <% @books.each do |book| %>
+      <tr>
+        <td><%= link_to book.name, book_path(book) %></td>
+        <td><%= book.team.name %></td>
+        <td><%= book.scorer.name %> </td>
+        <td><%= book.selection_strategy.name %> </td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+
+<br>
+
+<%= button_to 'New Book', new_book_path, method: :get %>
+<br>

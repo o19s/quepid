@@ -10,18 +10,8 @@ angular.module('UtilitiesModule')
       var User = function(userObj) {
         var self = this;
 
-        // Make sure the user's scorerId is an int instead of a string.
-        // In the Scorers screen, the dropdown lists the scorers' id as a number
-        // so the comparison fails if the user's scorerId is a string, and
-        // even if the user has a default scorer it would look like as
-        // if he does not.
-        var defaultScorerId;
-        if ( !isNaN(parseInt(userObj.defaultScorerId)) ) {
-          defaultScorerId = parseInt(userObj.defaultScorerId);
-        }
-
         self.company         = userObj.company;
-        self.defaultScorerId = defaultScorerId;
+        self.defaultScorerId = userObj.default_scorer_id;
         self.completedCaseWizard      = userObj.completed_case_wizard;
         self.id              = userObj.id;
         self.permissions     = userObj.permissions;

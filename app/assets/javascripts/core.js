@@ -28,13 +28,20 @@
 //= require jquery-autoGrowInput
 //= require d3
 //= require d3-tip
+
+// Cookie prompt only renders properly in the core app
 //= require cookies_eu
+
 //= require angular/angular
 //= require ace-builds/src-min-noconflict/ace
 //= require ace-builds/src-min-noconflict/ext-language_tools
 //= require ace-builds/src-min-noconflict/mode-json
 //= require ace-builds/src-min-noconflict/mode-javascript
 //= require ace-builds/src-min-noconflict/mode-lucene
+
+//= require vega
+//= require vega-lite
+//= require vega-embed
 
 //= require angular-resource/angular-resource
 //= require angular-cookies/angular-cookies

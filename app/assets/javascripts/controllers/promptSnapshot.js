@@ -4,20 +4,22 @@ angular.module('QuepidApp')
   .controller('PromptSnapshotCtrl', [
     '$scope', '$uibModalInstance',
     'flash',
-    'queriesSvc', 'querySnapshotSvc',
+    'queriesSvc', 'querySnapshotSvc','settingsSvc',
     function(
       $scope, $uibModalInstance,
       flash,
-      queriesSvc, querySnapshotSvc
+      queriesSvc, querySnapshotSvc, settingsSvc
     ) {
 
-      $scope.snapPrompt = {name: '', inProgress: false, error: null};
+      $scope.snapPrompt = {name: '', recordDocumentFields: false, inProgress: false, error: null};
+
+      $scope.fieldSpec = settingsSvc.applicableSettings().fieldSpec;
 
       $scope.ok = function() {
         $scope.snapPrompt.inProgress  = true;
         $scope.snapPrompt.error       = null;
 
-        querySnapshotSvc.addSnapshot($scope.snapPrompt.name, queriesSvc.queryArray())
+        querySnapshotSvc.addSnapshot($scope.snapPrompt.name, $scope.snapPrompt.recordDocumentFields, queriesSvc.queryArray())
         .then(function() {
           $scope.snapPrompt.inProgress = false;
           $uibModalInstance.close();

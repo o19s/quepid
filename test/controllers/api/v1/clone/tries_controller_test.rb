@@ -16,7 +16,7 @@ module Api
 
         def assert_try_matches_response response, try
           assert_equal try.query_params, response['query_params']
-          assert_equal try.field_spec,   response['field_spec']
+          assert_nil_or_equal try.field_spec, response['field_spec']
           assert_equal try.search_url,   response['search_url']
           assert_equal try.try_number,   response['try_number']
           assert_equal try.name,         response['name']
@@ -24,7 +24,7 @@ module Api
           assert_equal try.escape_query, response['escape_query']
           assert_equal try.api_method,   response['api_method']
 
-          assert_curator_vars_equal try.curator_vars_map, response['curatorVars']
+          assert_curator_vars_equal try.curator_vars_map, response['curator_vars']
         end
 
         def assert_tries_match a_try, try
@@ -62,7 +62,7 @@ module Api
               assert_response :ok
 
               the_case.reload
-              try_response  = JSON.parse(response.body)
+              try_response  = response.parsed_body
               created_try   = the_case.tries.first
 
               assert_try_matches_response try_response,     created_try

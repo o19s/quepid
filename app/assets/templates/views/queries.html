@@ -94,6 +94,15 @@
       <div class="pull-right p-r-10">
         Number of Queries: {{ queriesList.length }}
       </div>
+      <div class="pull-right p-r-10">
+        <input type="search" ng-model="queryFilter" placeholder="Filter Queries" aria-label="filter queries" class="form-control input-sm" id='queries-filter' />
+      </div>
+      <div class="pull-right p-r-10">
+        <frog-report
+          the-case="caseSvc.selectedCase()"
+
+        ></frog-report>
+      </div>
 
       <div class="clearfix"></div>
 
@@ -103,7 +112,7 @@
 
       <!-- let the user know what we're looking at-->
       <ul class="results-list-element" ui-sortable="queries.sortableOptions" ng-model="queriesList" ng-class="!queryListSortable ? 'unsortable' : dragging === true ? 'dragging' : ''">
-        <li ng-class="query.isToggled() ? 'unsortable' : ''" dir-paginate="query in queriesList | orderBy:sort:reverse | itemsPerPage: pagination.pageSize" current-page="pagination.currentPage" >
+        <li ng-class="query.isToggled() ? 'unsortable' : ''" dir-paginate="query in queriesList | filter:matchQueryFilter | orderBy:sort:reverse | itemsPerPage: pagination.pageSize" current-page="pagination.currentPage" >
           <search-results query="query" issortingenabled="queries.isSortingEnabled">
           </search-results>
         </li>

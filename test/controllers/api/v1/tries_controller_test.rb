@@ -16,14 +16,14 @@ module Api
       def assert_try_matches_response response, try
         assert_equal try.query_params, response['query_params']
         assert_equal try.field_spec,   response['field_spec'] if response['field_spec']
-        assert_equal try.search_url,   response['search_url']
+        assert_nil_or_equal try.search_url, response['search_url']
         assert_equal try.try_number,   response['try_number']
         assert_equal try.name,         response['name'] if response['name']
         assert_equal try.solr_args,    response['args']
         assert_equal try.escape_query, response['escape_query']
-        assert_equal try.api_method,   response['api_method']
+        assert_nil_or_equal try.api_method, response['api_method']
 
-        assert_curator_vars_equal try.curator_vars_map, response['curatorVars']
+        assert_curator_vars_equal try.curator_vars_map, response['curator_vars']
       end
 
       def assert_try_matches_params params, try
@@ -61,7 +61,7 @@ module Api
 
           assert_response :ok
 
-          body  = JSON.parse(response.body)
+          body  = response.parsed_body
           tries = body['tries']
 
           assert_equal tries.count, 1
@@ -70,7 +70,7 @@ module Api
 
           assert_response :ok
 
-          body  = JSON.parse(response.body)
+          body  = response.parsed_body
           tries = body['tries']
 
           assert_equal tries.count, 2
@@ -83,7 +83,7 @@ module Api
 
           assert_response :ok
 
-          body  = JSON.parse(response.body)
+          body  = response.parsed_body
           tries = body['tries']
 
           ids = tries.map { |each| each['try_number'] }
@@ -110,7 +110,7 @@ module Api
 
           assert_response :ok
 
-          body = JSON.parse(response.body)
+          body = response.parsed_body
 
           assert_try_matches_response body, first_for_case_with_two_tries
 
@@ -118,7 +118,7 @@ module Api
 
           assert_response :ok
 
-          body = JSON.parse(response.body)
+          body = response.parsed_body
 
           assert_try_matches_response body, second_for_case_with_two_tries
         end
@@ -136,7 +136,7 @@ module Api
           the_try.reload
           assert_equal the_try.name, 'New Name'
 
-          the_try = JSON.parse(response.body)
+          the_try = response.parsed_body
           assert_equal the_try['name'], 'New Name'
         end
 
@@ -180,7 +180,7 @@ module Api
             # but there's a bug currently in the responders gem
 
             the_case.reload
-            try_response  = JSON.parse(response.body)
+            try_response  = response.parsed_body
             created_try   = the_case.tries.where(try_number: try_response['try_number']).first
 
             assert_equal the_case.last_try_number, case_last_try + 1
@@ -213,7 +213,7 @@ module Api
 
             the_case.reload
             the_try.reload
-            try_response  = JSON.parse(response.body)
+            try_response  = response.parsed_body
             created_try   = the_case.tries.where(try_number: try_response['try_number']).first
 
             assert_includes the_try.children, created_try
@@ -234,7 +234,7 @@ module Api
           }
 
           assert_difference 'CuratorVariable.count', 2 do
-            post :create, params: { case_id: the_case.id, try: try_params, curatorVars: curator_vars_params }
+            post :create, params: { case_id: the_case.id, try: try_params, curator_vars: curator_vars_params }
 
             assert_response :ok
 
@@ -264,7 +264,7 @@ module Api
           # but there's a bug currently in the responders gem
 
           the_case.reload
-          try_response  = JSON.parse(response.body)
+          try_response  = response.parsed_body
           created_try   = the_case.tries.where(try_number: try_response['try_number']).first
 
           assert_match( /Try/,                         created_try.name )
@@ -319,7 +319,7 @@ module Api
           # but there's a bug currently in the responders gem
 
           the_case.reload
-          try_response  = JSON.parse(response.body)
+          try_response  = response.parsed_body
           created_try   = the_case.tries.where(try_number: try_response['try_number']).first
 
           assert_match( /Try/,                         created_try.name )
@@ -327,17 +327,17 @@ module Api
           assert_match( /#{created_try.try_number}/,   created_try.name )
 
           assert_not_nil created_try.search_engine
-          assert_not_nil created_try.field_spec
-          assert_not_nil created_try.search_url
-          assert_not_nil created_try.query_params
-          assert_not_nil created_try.escape_query
+          assert_nil created_try.field_spec
+          assert_nil created_try.search_url
+          assert_nil created_try.query_params
+          assert created_try.escape_query
 
-          assert_equal created_try.search_engine,   Try::DEFAULTS[:search_engine]
-          assert_equal created_try.field_spec,      Try::DEFAULTS[:solr][:field_spec]
-          assert_equal created_try.search_url,      Try::DEFAULTS[:solr][:search_url]
-          assert_equal created_try.escape_query,    true
-          assert_equal created_try.api_method,      Try::DEFAULTS[:solr][:api_method]
-          assert_equal created_try.number_of_rows,  10
+          # assert_equal created_try.search_engine,   Try::DEFAULTS[:search_engine]
+          # assert_equal created_try.field_spec,      Try::DEFAULTS[:solr][:field_spec]
+          # assert_equal created_try.search_url,      Try::DEFAULTS[:solr][:search_url]
+          # assert_equal created_try.escape_query,    true
+          # assert_equal created_try.api_method,      Try::DEFAULTS[:solr][:api_method]
+          assert_equal created_try.number_of_rows, 10
         end
 
         describe 'analytics' do
@@ -393,7 +393,7 @@ module Api
             # but there's a bug currently in the responders gem
 
             the_case.reload
-            try_response  = JSON.parse(response.body)
+            try_response  = response.parsed_body
             created_try   = the_case.tries.where(try_number: try_response['try_number']).first
 
             assert_match( /Try/,                         created_try.name )
@@ -401,16 +401,7 @@ module Api
             assert_match( /#{created_try.try_number}/,   created_try.name )
 
             assert_not_nil created_try.search_engine
-            assert_not_nil created_try.field_spec
-            assert_not_nil created_try.search_url
-            assert_not_nil created_try.query_params
-            assert_not_nil created_try.escape_query
-
-            assert_equal created_try.search_engine, Try::DEFAULTS[:search_engine]
-            assert_equal created_try.field_spec,    Try::DEFAULTS[:solr][:field_spec]
-            assert_equal created_try.search_url,    Try::DEFAULTS[:solr][:search_url]
-            assert_equal created_try.query_params,  Try::DEFAULTS[:solr][:query_params]
-            assert_equal created_try.escape_query,  true
+            assert_equal created_try.escape_query, true
           end
         end
 
@@ -422,7 +413,7 @@ module Api
             # but there's a bug currently in the responders gem
 
             the_case.reload
-            try_response  = JSON.parse(response.body)
+            try_response  = response.parsed_body
             created_try   = the_case.tries.where(try_number: try_response['try_number']).first
 
             assert_match( /Try/,                         created_try.name )
@@ -430,16 +421,9 @@ module Api
             assert_match( /#{created_try.try_number}/,   created_try.name )
 
             assert_not_nil created_try.search_engine
-            assert_not_nil created_try.field_spec
-            assert_not_nil created_try.search_url
-            assert_not_nil created_try.query_params
             assert_not_nil created_try.escape_query
 
             assert_equal created_try.search_engine, 'es'
-            assert_equal created_try.field_spec,    Try::DEFAULTS[:es][:field_spec]
-            assert_equal created_try.search_url,    Try::DEFAULTS[:es][:search_url]
-            assert_equal created_try.api_method,    Try::DEFAULTS[:es][:api_method]
-            assert_equal created_try.query_params,  Try::DEFAULTS[:es][:query_params]
             assert_equal created_try.escape_query,  true
           end
 
@@ -452,7 +436,7 @@ module Api
             # but there's a bug currently in the responders gem
 
             the_case.reload
-            try_response  = JSON.parse(response.body)
+            try_response  = response.parsed_body
             created_try   = the_case.tries.where(try_number: try_response['try_number']).first
 
             assert_equal created_try.args,      'query' => '#$query##'
@@ -468,7 +452,7 @@ module Api
             # but there's a bug currently in the responders gem
 
             the_case.reload
-            try_response  = JSON.parse(response.body)
+            try_response  = response.parsed_body
             created_try   = the_case.tries.where(try_number: try_response['try_number']).first
 
             assert_nil created_try.args

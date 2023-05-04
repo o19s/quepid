@@ -24,8 +24,8 @@ angular.module('QuepidApp')
       }
 
       ctrl.options = {
-        which: 'undefined',
-        snapshot: 'undefined'
+        which: undefined,
+        snapshot: undefined
       };
 
       // Watches

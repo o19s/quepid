@@ -32,6 +32,14 @@
             theme:        'chrome'
           }" ng-model="settings.selectedTry.queryParams">
         </div>
+
+        <div id='os-query-params-editor' class='os-query-params' ng-show="settings.searchEngine == 'os'" ui-ace="{
+            require:      ['ace/ext/language_tools'],
+            useWrapMode:  false,
+            mode:         'json',
+            theme:        'chrome'
+          }" ng-model="settings.selectedTry.queryParams">
+        </div>
       </div> <!-- end .rerunnable-settings-tab -->
     </div> <!-- end .settings-tab (Query Sandbox) -->
 
@@ -79,15 +87,22 @@
             Change Search Engine:<br />
             <div>
               <label>
-                <input type="radio" value="solr" ng-model="settings.searchEngine" ng-change="settings.reset()">
+                <input type="radio" value="solr" ng-model="settings.searchEngine" ng-change="changeSearchEngine()">
                 Solr
               </label>
             </div>
 
             <div>
               <label>
-                <input type="radio" value="es" ng-model="settings.searchEngine" ng-change="settings.reset()">
+                <input type="radio" value="es" ng-model="settings.searchEngine" ng-change="changeSearchEngine()">
                 Elasticsearch
+              </label>
+            </div>
+
+            <div>
+              <label>
+                <input type="radio" value="os" ng-model="settings.searchEngine" ng-change="changeSearchEngine()">
+                OpenSearch
               </label>
             </div>
           </div>
@@ -122,9 +137,11 @@
           </div>
 
           <div class="dev-body" ng-show="devSettingsFields.toggle">
-            <input class="form-control" name="fields" ng-model="settings.fieldSpec" class="ng-pristine ng-valid" style="margin-bottom: 10px" ng-show="!showESTemplateWarning">
+            <input class="form-control" name="fields" ng-model="settings.fieldSpec" class="ng-pristine ng-valid" style="margin-bottom: 10px">
             <span ng-show="showESTemplateWarning">
-              When using ES Templates, specify fields to view via <code>_source</code> defined in the search template.
+              When using ES/OS Query Templates, make sure that either your template includes the fields above in its
+              source field filter section (<code>_source</code> declaration) or does not restrict the fields returned via
+              <code>_source</code> at all.
             </span>
           </div>
         </div>
@@ -164,7 +181,7 @@
 
             <p class="pull-right">
               <span class="label label-info">
-                <a href="#" uib-tooltip-html="'(advanced) -- If your queries use Solr|Elasticsearch <br/>query syntax (like text:law) then disable this feature'" tooltip-placement="left">
+                <a href="#" uib-tooltip-html="'(advanced) -- If your queries use Solr|Elasticsearch|OpenSearch <br/>query syntax (like text:law) then disable this feature'" tooltip-placement="left">
                   <span class="fa fa-question-circle" aria-hidden="true"></span>
                 </a>
               </span>
@@ -196,7 +213,21 @@
             </p>
           </div>
         </div>
-        <!-- end of Escape Queries -->
+        <!-- end of API Method -->
+
+
+        <!-- Custom Headers -->
+        <div class="setting-div" ng-show="settings.searchEngine !== 'solr'">
+          <div class="dev-header" ng-click="devSettingsHeaderToggle = !devSettingsHeaderToggle">
+            Advanced <span ng-class="{true: 'glyphicon-plus-sign', false: 'glyphicon-minus-sign'}[!devSettingsHeaderToggle]" class="glyphicon"></span>
+          </div>
+
+          <span ng-show="devSettingsHeaderToggle">
+            <custom-headers class="black-label" settings="settings"></custom-headers>
+          </span>
+        </div>
+        <!-- end of Custom Headers -->
+
       </div> <!-- end .rerunnable-settings-tab -->
     </div> <!-- end .settings-tab (Settings) -->
 
@@ -224,7 +255,7 @@
 <span ng-show="qp.curTab == 'developer' || qp.curTab == 'engineSettings' || qp.curTab == 'curator'">
   <span ng-show="showTLSChangeWarning">
     <a href="{{quepidUrlToSwitchTo}}" class="btn btn-primary form-control">
-      <span class="glyphicon glyphicon-refresh"></span> Reload Quepid in <code>{{protocolToSwitchTo}}</code> TLS Protocol
+      <span class="glyphicon glyphicon-refresh"></span> Reload Quepid in <code>{{protocolToSwitchTo}}</code> Protocol
     </a>
   </span>
 

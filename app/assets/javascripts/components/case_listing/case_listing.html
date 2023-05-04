@@ -3,7 +3,7 @@
     {{ ctrl.thisCase.caseNo }}
   </div>
 
-  <div class="col-xs-3">
+  <div class="col-xs-2">
     <span ng-switch="ctrl.clickToEdit.clicked">
       <span ng-switch-when="false">
         <span
@@ -12,13 +12,12 @@
         >
           {{ ctrl.thisCase.caseName }}
         </span>
-
+        <br/>
         <span class="item-actions">
           <action-icon title="'Rename'" icon-class="'fa fa-edit'" fn-call="ctrl.rename()"></action-icon>
 
           <delete-case this-case="ctrl.thisCase"></delete-case>
           <archive-case this-case="ctrl.thisCase"></archive-case>
-          <delete-case-options acase="ctrl.thisCase"></delete-case-options>
 
           <span>
             <export-case icon-only="true" the-case="ctrl.thisCase" supports-detailed-export="false"></export-case>
@@ -67,8 +66,15 @@
   <div class="col-xs-2">
     {{ ctrl.thisCase.lastScore.email }}
   </div>
-
-  <div class="col-xs-2">
+  <div class="col-xs-1">
+    <a ng-if="ctrl.thisCase.bookName" ng-attr-target="_self" href="/books/{{ ctrl.thisCase.bookId }}">{{ ctrl.thisCase.bookName }}</a>
+  </div>
+  <div class="col-xs-1">
+    <ul>
+      <li ng-repeat="team in ctrl.thisCase.teams"><a href="#" ng-click="ctrl.goToTeam(team.id)">{{ team.name }}</a></li>
+    </ul>
+  </div>
+  <div class="col-xs-1">
     <div class="owner" ng-if="ctrl.thisCase.owned">
       Me
     </div>

@@ -1,0 +1,425 @@
+<style>
+    .field { padding: 5px; }
+
+    .button00 {background-color: #ff0000; box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19); color: #666 !important;}
+    .button00:hover { background-color: #ff0000 !important;  box-shadow: 0 12px 16px 0 rgba(0,0,0,0.34), 0 17px 50px 0 rgba(0,0,0,0.19); color: black !important;}
+
+    .button01 {background-color: #fe4000; box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19); color: #666 !important;}
+    .button01:hover { background-color: #fe4000 !important;  box-shadow: 0 12px 16px 0 rgba(0,0,0,0.34), 0 17px 50px 0 rgba(0,0,0,0.19); color: black !important;}
+
+    .button02 {background-color: #f96000; box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19); color: #666 !important;}
+    .button02:hover { background-color: #f96000 !important;  box-shadow: 0 12px 16px 0 rgba(0,0,0,0.34), 0 17px 50px 0 rgba(0,0,0,0.19); color: black !important;}
+
+    .button03 {background-color: #f17a00; box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19); color: #666 !important;}
+    .button03:hover { background-color: #f17a00 !important;  box-shadow: 0 12px 16px 0 rgba(0,0,0,0.34), 0 17px 50px 0 rgba(0,0,0,0.19); color: black !important;}
+
+    .button04 {background-color: #e59100; box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19); color: #666 !important;}
+    .button04:hover { background-color: #e59100 !important;  box-shadow: 0 12px 16px 0 rgba(0,0,0,0.34), 0 17px 50px 0 rgba(0,0,0,0.19); color: black !important;}
+
+    .button05 {background-color: #d7a700; box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19); color: #666 !important;}
+    .button05:hover { background-color: #d7a700 !important;  box-shadow: 0 12px 16px 0 rgba(0,0,0,0.34), 0 17px 50px 0 rgba(0,0,0,0.19); color: black !important;}
+
+    .button06 {background-color: #c4ba00; box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19); color: #666 !important;}
+    .button06:hover { background-color: #c4ba00 !important;  box-shadow: 0 12px 16px 0 rgba(0,0,0,0.34), 0 17px 50px 0 rgba(0,0,0,0.19); color: black !important;}
+
+    .button07 {background-color: #aecd00; box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19); color: #666 !important;}
+    .button07:hover { background-color: #aecd00 !important;  box-shadow: 0 12px 16px 0 rgba(0,0,0,0.34), 0 17px 50px 0 rgba(0,0,0,0.19); color: black !important;}
+
+    .button08 {background-color: #91df00; box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19); color: #666 !important;}
+    .button08:hover { background-color: #91df00 !important;  box-shadow: 0 12px 16px 0 rgba(0,0,0,0.34), 0 17px 50px 0 rgba(0,0,0,0.19); color: black !important;}
+
+    .button09 {background-color: #6aef00; box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19); color: #666 !important;}
+    .button09:hover { background-color: #6aef00 !important;  box-shadow: 0 12px 16px 0 rgba(0,0,0,0.34), 0 17px 50px 0 rgba(0,0,0,0.19); color: black !important;}
+
+    .button10 {background-color: #00ff00; box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19); color: #666 !important;}
+    .button10:hover {background-color: #00ff00 !important;  box-shadow: 0 12px 16px 0 rgba(0,0,0,0.34), 0 17px 50px 0 rgba(0,0,0,0.19); color: black !important; }
+
+    .button-other {background-color:gray; box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19); color: #666 !important;}
+    .button-other:hover {background-color:gray !important;  box-shadow: 0 12px 16px 0 rgba(0,0,0,0.34), 0 17px 50px 0 rgba(0,0,0,0.19); color: black !important; }
+
+    .btn-preselected { color: black !important; font-weight: bold; font-style: italic; }
+
+    .bold-and-black { color: black; font-weight: bold; }
+
+    .keyboard-shortcuts-td { padding: 5px; text-align: center; color: #999; }
+    .padded { padding:5px; }
+    .left-aligned { text-align: left; }
+    .gray { color: #ccc; }
+    .hidden { visibility: hidden!important; display: none!important; }
+
+</style>
+
+<script>
+
+  function rate(rating, key_name) {
+      keyDown(key_name);
+      resetStylesExcept(key_name);
+      document.getElementById("judgement_rating").value = rating;
+      delay(100).then(() => (document.getElementsByName("commit")[0].click()));
+  }
+
+  $(document).ready(function() {
+      $("#keyPressed_count").text("0");
+  });
+
+  var count = 0;
+  var last_keyPressed = -1;
+
+  function resetStyles() {
+      let keyboard_shortcuts_suffixes = ["a", "s", "d", "f", "g", "h", "j", "k", "l", "sc"];
+      keyboard_shortcuts_suffixes.forEach(suffix => {
+              $("#span-for-" + suffix).css("color", "gray").css("font-weight", "normal");
+              $("#button-for-" + suffix).removeClass("btn-preselected");
+          }
+      );
+  }
+
+  function resetStylesExcept(except_suffix){
+      let keyboard_shortcuts_suffixes = ["a", "s", "d", "f", "g", "h", "j", "k", "l", "sc"];
+      keyboard_shortcuts_suffixes.forEach(suffix => {
+              if (suffix !== except_suffix) {
+                  $("#span-for-" + suffix).css("color", "gray").css("font-weight", "normal");
+                  $("#button-for-" + suffix).removeClass("btn-preselected");
+              }
+          }
+      );
+  }
+
+  function keyDown(suffix) {
+      resetStyles();
+      $("#span-for-" + suffix).css("color", "black").css("font-weight", "bold");
+      $("#button-for-" + suffix).addClass("btn-preselected");
+  }
+
+  function delay(time) {
+      return new Promise(resolve => setTimeout(resolve, time));
+  }
+
+  function keyPressed(suffix) {
+      delay(500).then(() => ($("#button-for-" + suffix).click()));
+  }
+
+  $(document).on('keypress', function(e) {
+      var tag = e.target.tagName.toLowerCase();
+
+      if (e.which == 97 || e.which == 65) {
+          keyPressed("a");
+      } else if (e.which == 115 || e.which == 83) {
+          keyPressed("s");
+      } else if (e.which == 100 || e.which == 68) {
+          keyPressed("d");
+      } else if (e.which == 102 || e.which == 70) {
+          keyPressed("f");
+      } else if (e.which == 103 || e.which == 71) {
+          keyPressed("g");
+      } else if (e.which == 104 || e.which == 72) {
+          keyPressed("h");
+      } else if (e.which == 106 || e.which == 74) {
+          keyPressed("j");
+      } else if (e.which == 107 || e.which == 75) {
+          keyPressed("k");
+      } else if (e.which == 108 || e.which == 76) {
+          keyPressed("l");
+      } else if (e.which == 59 || e.which == 186) {
+          keyPressed("sc");
+      }
+  });
+
+  $(document).on('keydown', function(e) {
+      var tag = e.target.tagName.toLowerCase();
+
+      if (e.which == 97 || e.which == 65) {
+          keyDown("a");
+      } else if (e.which == 115 || e.which == 83) {
+          keyDown("s");
+      } else if (e.which == 100 || e.which == 68) {
+          keyDown("d");
+      } else if (e.which == 102 || e.which == 70) {
+          keyDown("f");
+      } else if (e.which == 103 || e.which == 71) {
+          keyDown("g");
+      } else if (e.which == 104 || e.which == 72) {
+          keyDown("h");
+      } else if (e.which == 106 || e.which == 74) {
+          keyDown("j");
+      } else if (e.which == 107 || e.which == 75) {
+          keyDown("k");
+      } else if (e.which == 108 || e.which == 76) {
+          keyDown("l");
+      } else if (e.which == 59 || e.which == 186) {
+          keyDown("sc");
+      }
+
+  });
+</script>
+
+<%
+
+
+  def calculate_button_class(value, max_value)
+    value_f = value.to_f
+    max_value_f = max_value.to_f
+    if value_f <= 0.0
+      return "button00"
+
+    elsif value_f / max_value_f < 0.1
+      return "button01"
+
+    elsif value_f / max_value_f < 0.2
+      return "button02"
+
+    elsif value_f / max_value_f < 0.3
+      return "button03"
+
+    elsif value_f / max_value_f < 0.4
+      return "button04"
+
+    elsif value_f / max_value_f < 0.5
+      return "button05"
+
+    elsif value_f / max_value_f < 0.6
+      return "button06"
+
+    elsif value_f / max_value_f < 0.7
+      return "button07"
+
+    elsif value_f / max_value_f < 0.8
+      return "button08"
+
+    elsif value_f / max_value_f < 0.9
+      return "button09"
+
+    elsif value_f / max_value_f == 1.0
+      return "button10"
+
+    else return "button-other"
+    end
+
+  end
+
+  def calculate_key(value, max_value)
+    if max_value == 1
+      if value == 0
+        return {"name": "d", "display_name": "d" }
+      else
+        return {"name": "f", "display_name": "f" }
+      end
+    end
+    if max_value == 3
+      if value == 0
+        return {"name": "a", "display_name": "a" }
+      elsif value == 1
+        return {"name": "s", "display_name": "s" }
+      elsif value == 2
+        return {"name": "d", "display_name": "d" }
+      elsif value == 3
+        return {"name": "f", "display_name": "f" }
+      end
+    end
+
+    if max_value == 4
+      if value == 1
+        return {"name": "a", "display_name": "a" }
+      elsif value == 2
+        return {"name": "s", "display_name": "s" }
+      elsif value == 3
+        return {"name": "d", "display_name": "d" }
+      elsif value == 4
+        return {"name": "f", "display_name": "f" }
+      end
+    end
+
+    if max_value == 9
+      if value == 0
+        return {"name": "a", "display_name": "a" }
+      elsif value == 1
+        return {"name": "s", "display_name": "s" }
+      elsif value == 2
+        return {"name": "d", "display_name": "d" }
+      elsif value == 3
+        return {"name": "f", "display_name": "f" }
+      elsif value == 4
+        return {"name": "g", "display_name": "g" }
+      elsif value == 5
+        return {"name": "h", "display_name": "h" }
+      elsif value == 6
+        return {"name": "j", "display_name": "j" }
+      elsif value == 7
+        return {"name": "k", "display_name": "k" }
+      elsif value == 8
+        return {"name": "l", "display_name": "l" }
+      elsif value == 9
+        return {"name": "sc", "display_name": ";" }
+      end
+    end
+    return nil
+  end
+
+  @use_backup_labels = false
+  @show_keyboard_shortcuts = true
+
+  @rating_buttons = []
+  max = @book.scorer.scale.max
+  @book.scorer.scale.each do |s|
+    rating_button = {}
+
+    rating_button["value"] = s.to_s
+    calculated_key = calculate_key(s, max)
+    if calculated_key != nil
+      rating_button["key"] = calculated_key
+    else
+      @show_keyboard_shortcuts = false
+      rating_button["key"] = rating_button["value"]
+    end
+    rating_button["label_backup"] = s.to_s
+    begin
+      rating_button["label"] = @book.scorer.scale_with_labels[s.to_s]
+    rescue
+      rating_button["label"] = ""
+    end
+    if rating_button["label"].blank?
+      @use_backup_labels = true
+      rating_button["label"] = rating_button["label_backup"]
+    end
+    rating_button["class"] = calculate_button_class(s, max)
+    @rating_buttons << rating_button
+  end
+  if @use_backup_labels
+    @rating_buttons.each do |rating_button|
+      rating_button["label"] = rating_button["label_backup"]
+    end
+  end
+
+  scoring_guidelines = {}
+  scoring_guidelines['Poor'] = 'Customer feeling: <i>These results are terrible! Maybe I’ll look somewhere else.</i> <br/><mark>0</mark>’s are used when the result is clearly not desired. The goal is for most queries to only show <mark>1</mark>’s, <mark>2</mark>’s and <mark>3</mark>’s. These are our negative examples.'
+  scoring_guidelines['Fair'] = 'Customer feeling: <i>These results aren’t what I’m looking for, but I can see why they were returned.</i> <br/> A <mark>1</mark> (fair) is used for results that have some of the right words, but are not really about what the query is looking for. Having some <mark>1</mark>’s far down the result list can be ok.'
+  scoring_guidelines['Good'] = 'Customer feeling: <i>These results are good! Looking them over is worth my time.</i> A <mark>2</mark> (good) is for results that provide survey information or a part of the entire information need.'
+  scoring_guidelines['Perfect'] = 'Customer feeling: <i>This is what I am looking for! I do not have to look any further.</i> <br/> A <mark>3</mark> (perfect) is usually reserved for exact results in response to a targeted information need query.'
+
+  scoring_guidelines['Irrelevant'] = 'These are not the droids I am looking for. The result item is not helpful.'
+  scoring_guidelines['Relevant'] = 'These appear to be good droids. The result item addresses some aspect of my information need.'
+
+
+  @document_fields_as_json = document_fields_parses_as_json (query_doc_pair.document_fields)
+  has_thumb = !@document_fields_as_json.nil? && @document_fields_as_json.has_key?('thumb')
+
+%>
+
+<%= form_for(judgement, url: url_for_form) do |form| %>
+  <% if judgement.errors.any? %>
+    <div id="error_explanation">
+      <h2><%= pluralize(judgement.errors.count, "error") %> prohibited this judgement from being saved:</h2>
+
+      <ul>
+        <% judgement.errors.each do |error| %>
+          <li><%= error.full_message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <% if has_thumb %>
+  <div class="card mb-3" style="">
+    <div class="row g-0">
+      <div class="col-md-4 p-2">
+        <img src="<%= @document_fields_as_json['thumb'] %>" class="img-fluid rounded-start rounded-end" alt="Thumbnail Image">
+      </div>
+      <div class="col-md-8">
+  <% else %>
+  <div class="card">
+  <% end %>
+
+  <div class="card-body">
+    <h5 class="card-title">Query: <%= query_doc_pair.query_text %></h5>
+    <% if @query %>
+    <h6 class="card-subtitle mb-2 text-muted">Information Need: <i><%= @query.information_need %></i></h6>
+    <% end %>
+
+    <p>
+      <a class="card-link" data-bs-toggle="collapse" href="#collapseExample" role="button" aria-expanded="false" aria-controls="collapseExample">
+        Scoring Guidelines
+      </a>
+    </p>
+    <div class="collapse pb-3" id="collapseExample">
+      <div class="card card-body">
+        <table class="table table-sm">
+          <span>Read more about <a href="https://github.com/o19s/quepid/wiki/Judgement-Rating-Best-Practices" target="_blank">Judgement Rating Best Practices</a></span>
+          <tbody>
+            <% @rating_buttons.each do |b| %>
+            <tr>
+              <td><%= button_tag b["label"], type: 'button', class: "btn #{b["class"]}" %></td>
+              <td><%= scoring_guidelines.has_key?(b["label"]) ? scoring_guidelines[b["label"]].html_safe : '' %></td>
+            </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="float-end">
+      <%= link_to 'Skip this Document', book_skip_judging_path(@book), class: 'btn btn-info m-1', role: 'button' %>
+      <br/>
+      <%= link_to "I Can't Rate This Document", book_query_doc_pair_unrateable_path(@book, query_doc_pair), class: 'btn btn-warning m-1', role: 'button' %>
+    </div>
+
+
+
+    <p class="card-text">
+      <%= render 'query_doc_pairs/document_fields', document_fields_as_json: @document_fields_as_json %>
+    </p>
+
+    <% if @show_keyboard_shortcuts %>
+      <table class="padded">
+        <tr>
+          <td></td>
+          <% @rating_buttons.each do |b| %>
+            <%
+              @button_classes = "btn btn-default "
+              if judgement.rating == b["value"].to_i
+                @button_classes = @button_classes + "btn-preselected "
+              end
+            %>
+            <td class="padded">
+
+              <%= button_tag b["label"], type: 'button', onclick: "rate("+b["value"]+",\""+b["key"][:name].to_s+"\")", class: @button_classes + b["class"], id:"button-for-#{b["key"][:name]}" %>
+            </td>
+          <% end %>
+        </tr>
+        <tr>
+          <td><i class="bi-keyboard"></i></td>
+          <% @rating_buttons.each do |b| %>
+              <td class="keyboard-shortcuts-td"><span class="<%= judgement.rating == b["value"].to_i ? 'bold-and-black' : '' %>" id=<%= "span-for-" + b["key"][:name].to_s %>><%= b["key"][:display_name]%></span></td>
+          <% end %>
+        </tr>
+      </table>
+    <% else %>
+      <table class="padded">
+        <tr>
+          <% @rating_buttons.each do |b| %>
+            <%
+              @button_classes = "btn btn-default "
+              if judgement.rating == b["value"].to_i
+                @button_classes = @button_classes + "btn-preselected "
+              end
+            %>
+            <td class="padded">
+              <%= button_tag b["label"], type: 'button', onclick: "rate("+b["value"]+",\""+ b["key"].to_s + "\")", class: @button_classes + b["class"], id:"button-for-"+b["key"].to_s %>
+            </td>
+          <% end %>
+        </tr>
+      </table>
+    <% end %>
+  </div>
+  <% if has_thumb %>
+      </div>
+    </div>
+  </div>
+  <% else %>
+  </div>
+  <% end %>
+
+  <%= form.hidden_field :rating %>
+  <%= form.hidden_field :query_doc_pair_id, :value => query_doc_pair.id %>
+  <%= form.submit class: 'hidden'%>
+
+<% end %>

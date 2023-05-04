@@ -1,0 +1,45 @@
+<%= form_with(model: book) do |form| %>
+
+  <% if book.errors.any? %>
+    <div id="error_explanation">
+      <h2><%= pluralize(book.errors.count, "error") %> prohibited this book from being saved:</h2>
+
+      <ul>
+        <% book.errors.each do |error| %>
+          <li><%= error.full_message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="mb-3">
+    <%= form.label :name, class: 'form-label' %>
+    <%= form.text_field :name, required: true, class: 'form-control' %>
+    <div class="form-text">The book's name often reflects the goal for the judgements, like <em>Baseline Measurement</em> or a specific problem.</div>
+  </div>
+
+  <div class="mb-3">
+    <%= form.label :team_id, class: 'form-label' %>
+    <%= form.collection_select(:team_id, current_user.teams, :id, :name, { prompt: true }, required: true, class: 'form-control') %>
+    <div class="form-text">Books are meant to be shared with human raters and relevance engineers, access to the book is controlled by what team you pick.</div>
+  </div>
+
+  <div class="mb-3">
+    <%= form.label :scorer_id, class: 'form-label' %>
+    <%= form.collection_select(:scorer_id, current_user.scorers, :id, :name, { prompt: true }, required: true, class: 'form-control') %>
+    <div class="form-text">The scorer you pick drives the options for rating.  So AP@10 would give you relevant and irrelevant, whereas NDCG would give your a four point scale.</div>
+  </div>
+
+  <div class="mb-3">
+    <%= form.label :selection_strategy_id, class: 'form-label' %>
+    <%= form.collection_select(:selection_strategy_id, SelectionStrategy.all, :id, :descriptive_name, { prompt: true }, required: true, class: 'form-control') %>
+
+  </div>
+
+  <br>
+
+  <div class="actions">
+    <%= form.submit %>
+  </div>
+
+<% end %>

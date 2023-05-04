@@ -21,7 +21,7 @@ module Api
             get :show
             assert_response :ok
 
-            body = JSON.parse(response.body)
+            body = response.parsed_body
 
             assert body['email'] == matt.email
           end
@@ -69,7 +69,7 @@ module Api
             get :show
             assert_response :ok
 
-            body = JSON.parse(response.body)
+            body = response.parsed_body
 
             assert_equal body['permissions']['scorer']['update_communal'], true
           end
@@ -86,7 +86,7 @@ module Api
             get :show
             assert_response :ok
 
-            body = JSON.parse(response.body)
+            body = response.parsed_body
 
             assert_equal body['permissions']['scorer']['update_communal'], false
           end

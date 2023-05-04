@@ -1,0 +1,84 @@
+# == Schema Information
+#
+# Table name: query_doc_pairs
+#
+#  id              :bigint           not null, primary key
+#  document_fields :text(65535)
+#  position        :integer
+#  query_text      :string(500)
+#  created_at      :datetime         not null
+#  updated_at      :datetime         not null
+#  book_id         :bigint           not null
+#  doc_id          :string(500)
+#
+# Indexes
+#
+#  index_query_doc_pairs_on_book_id  (book_id)
+#
+# Foreign Keys
+#
+#  fk_rails_...  (book_id => books.id)
+#
+
+# Bond actors ranked sourced from https://www.imdb.com/list/ls068945808/
+
+one:
+  query_text: MyString
+  position: 1
+  document_fields: MyText
+  book: one
+
+two:
+  query_text: MyString
+  position: 2
+  document_fields: MyText
+  book: two
+
+qdp1:
+  query_text: Best Bond Ever
+  position: 1
+  doc_id: SeanConnery
+  document_fields: MyTex
+  book: :james_bond_movies
+
+qdp2:
+  query_text: Best Bond Ever
+  position: 2
+  doc_id: DanielCraig
+  document_fields: MyTex
+  book: :james_bond_movies
+
+qdp3:
+  query_text: Best Bond Ever
+  position: 3
+  doc_id: TimothyDalton
+  document_fields: MyTex
+  book: :james_bond_movies
+
+qdp4:
+  query_text: Best Bond Ever
+  position: 4
+  doc_id: RogerMoore
+  document_fields: MyTex
+  book: :james_bond_movies
+
+qdp5:
+  query_text: Best Bond Ever
+  position: 5
+  doc_id: PierceBrosnan
+  document_fields: MyTex
+  book: :james_bond_movies
+
+qdp6:
+  query_text: Best Bond Ever
+  position: 6
+  doc_id: GeorgeLazenby
+  document_fields: MyTex
+  book: :james_bond_movies
+
+qdp10:
+  query_text: Action Movies
+  position: 1
+  doc_id: Moonraker
+  document_fields: MyTex
+  book: :james_bond_movies

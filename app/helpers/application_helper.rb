@@ -72,5 +72,27 @@ module ApplicationHelper
 
     nil
   end
+
   # rubocop:enable Metrics/MethodLength
+  def document_fields_parses_as_json document_fields
+    begin
+      document_fields = JSON.parse document_fields
+    rescue StandardError
+      document_fields = nil
+    end
+
+    document_fields = nil unless document_fields.respond_to?(:keys)
+
+    document_fields
+  end
+
+  def document_fields_except_title document_fields
+    document_fields_json = JSON.parse(document_fields)
+    special_field_name = 'title'
+    if special_field_name in document_fields_json
+      document_fields_json.except(special_field_name)
+    else
+      document_fields_json
+    end
+  end
 end

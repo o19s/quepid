@@ -4,6 +4,7 @@
 [![CircleCI](https://circleci.com/gh/o19s/quepid.svg?style=svg)](https://circleci.com/gh/o19s/quepid)
 [![Docker Hub](https://img.shields.io/docker/pulls/o19s/quepid.svg)](https://hub.docker.com/r/o19s/quepid/ "Docker Pulls")
 [![Rails Style Guide](https://img.shields.io/badge/code_style-rubocop-brightgreen.svg)](https://github.com/rubocop-hq/rubocop-rails)
+[![Slack](https://img.shields.io/badge/slack--channel-blue?logo=slack)](https://www.opensourceconnections.com/slack)
 
 <img src="https://quepid.com/images/logo.png" alt="Quepid logo" title="Quepid" align="right" />
 
@@ -89,12 +90,6 @@ Run the local Ruby based setup script to setup your Docker images:
 bin/setup_docker
 ```
 
-Optionally you can seed the database with sample data (the output will print out credentials you can use to login as various sample users):
-
-```
-bin/docker r bin/rake db:seed:sample_users
-```
-
 If you want to create some cases that have 100's and 1000's of queries, then do:
 
 ```
@@ -103,9 +98,16 @@ bin/docker r bin/rake db:seed:large_cases
 
 This is useful for stress testing Quepid!  Especially the front end application!
 
+Lastly, to run the Jupyter notebooks, you need to run:
+
+```
+bin/setup_jupyterlite
+```
+
+
 #### 3. Running the app
 
-Now fire up Quepid locally at http://localhost:3000:
+Now fire up Quepid locally at http://localhost:
 
 ```
 bin/docker server
@@ -198,10 +200,10 @@ To check the Ruby syntax:
 bin/docker r bundle exec rubocop
 ```
 
-Rubocop can often autocorrect many of the lint issues it runs into via `--auto-correct-all`:
+Rubocop can often autocorrect many of the lint issues it runs into via `--autocorrect-all`:
 
 ```
-bin/docker r bundle exec rubocop --auto-correct-all
+bin/docker r bundle exec rubocop --autocorrect-all
 ```
 
 If there is a new "Cop" as they call their rules that we don't like, you can add it to the `./rubocop.yml` file.
@@ -245,7 +247,8 @@ In the Rails application you can use the logger for the output:
 Rails.logger object.inspect
 ```
 
-If that's not enough and you want to run a debugger, the `byebug` gem is included for that. Add the line `byebug` in your Rails code wherever you want a breakpoint and then run the code and you will get an inline REPL.   Even in unit tests!
+If that's not enough and you want to run a debugger, the `debug` gem is included for that.
+See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem.
 
 Also, we have the `derailed` gem available which helps you understand memory issues.
 
@@ -352,6 +355,7 @@ Examples include:
 ```
 case
 ----
+thor case:create NAME ...      # creates a new case
 thor case:share CASEID TEAMID  # shares case with an team
 
 ratings
@@ -374,7 +378,7 @@ Usage:
   thor user:create EMAIL USERNAME PASSWORD
 
 Options:
-  -a, [--administrator], [--no-administrator]  
+  -a, [--administrator], [--no-administrator]
 
 Description:
   `user:create` creates a new user with the passed in email, name and password.
@@ -509,6 +513,8 @@ The `docker-compose.yml` file contains an nginx reverse proxy that uses these ce
 
 Add dev docs here!
 
+The developer deploy of Keycloak Admin console credentials are `admin` and `password`.
+
 
 ## Modifying the database
 
@@ -518,6 +524,9 @@ bin/docker r bundle exec bin/rails g migration FixCuratorVariablesTriesForeignKe
 ```
 
 Followed by `bin/docker r bundle exec rake db:migrate`
+
+You should also update the schema annotation data by running `bin/docker r bundle exec annotations`
+when you change the schema.
 
 ## Updating RubyGems
 
@@ -533,17 +542,28 @@ You will see a updated `Gemfile.lock`, go ahead and check it and `Gemfile` into 
 
 We use Angular 1 for the front end, and as part of that we use the `angular-ui-bootstrap` package
 for all our UI components.   This package is tied to Bootstrap version 3.   We import the Bootstrap 3
-CSS directly via the file `bootstrap.css`.   
+CSS directly via the file `bootstrap.css`.
 
-For the various Admin pages, we actually are using Bootstrap 5! That is included via the `package.json` using NPM.  See `admin.js` for the line `//= require bootstrap/dist/js/bootstrap.bundle` which is where we are including.   
+For the various Admin pages, we actually are using Bootstrap 5! That is included via the `package.json` using NPM.  See `admin.js` for the line `//= require bootstrap/dist/js/bootstrap.bundle` which is where we are including.
 
 We currently use Rails Sprockets to compile everything, but do have dreams of moving the JavaScript
 over to Webpacker.
 
+## I'd like to develop Jupyterlite
+
+Run the `./bin/setup_jupyterlite` to update the archive file `./jupyterlite/notebooks.gz`.  This
+also sets up the static files in the `./public/notebooks` directory.  However, so that we don't check in hundreds of files,
+we ignore that directory from Github.   At `asset:precompile` time we unpack the `./jupyterlite/notebooks.gz` file instead.
+This works on Heroku and the production Docker image.
+
+To update the version of Jupyterlite edit `Dockerfile.dev` and `Dockerfile.prod` and update the `pip install` version.
+
+Question?  Does jupyterlite work in localhost????
+
 # QA
 
 There is a code deployment pipeline to the http://quepid-staging.herokuapp.com site that
-is run on successful commits to `master`.  
+is run on successful commits to `main`.
 
 If you have pending migrations you will need to run them via:
 
@@ -592,10 +612,11 @@ Check out the [Operating Documentation](docs/operating_documentation.md) file fo
 
 # Thank You's
 
-Quepid would not be possible without the contributions from many individuals and organizations.   
+Quepid would not be possible without the contributions from many individuals and organizations.
 
 Specifically we would like to thank Erik Bugge and the folks at Kobler for funding the Only Rated feature released in Quepid [6.4.0](https://github.com/o19s/quepid/releases/tag/v6.4.0).
 
 Quepid wasn't always open source!  Check out the [credits](docs/credits.md) for a list of contributors to the project.
+
 
 If you would like to fund development of a new feature for Quepid do [get in touch](http://www.opensourceconnections.com/contact/)!
