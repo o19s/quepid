@@ -4,7 +4,7 @@
 [![CircleCI](https://circleci.com/gh/o19s/quepid.svg?style=svg)](https://circleci.com/gh/o19s/quepid)
 [![Docker Hub](https://img.shields.io/docker/pulls/o19s/quepid.svg)](https://hub.docker.com/r/o19s/quepid/ "Docker Pulls")
 [![Rails Style Guide](https://img.shields.io/badge/code_style-rubocop-brightgreen.svg)](https://github.com/rubocop-hq/rubocop-rails)
-[![Slack](https://img.shields.io/badge/slack--channel-blue?logo=slack)](https://wwww.opensourceconnections.com/slack)
+[![Slack](https://img.shields.io/badge/slack--channel-blue?logo=slack)](https://www.opensourceconnections.com/slack)
 
 <img src="https://quepid.com/images/logo.png" alt="Quepid logo" title="Quepid" align="right" />
 
