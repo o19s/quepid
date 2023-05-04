@@ -4,6 +4,7 @@
 [![CircleCI](https://circleci.com/gh/o19s/quepid.svg?style=svg)](https://circleci.com/gh/o19s/quepid)
 [![Docker Hub](https://img.shields.io/docker/pulls/o19s/quepid.svg)](https://hub.docker.com/r/o19s/quepid/ "Docker Pulls")
 [![Rails Style Guide](https://img.shields.io/badge/code_style-rubocop-brightgreen.svg)](https://github.com/rubocop-hq/rubocop-rails)
+[![Slack](https://img.shields.io/badge/slack--channel-blue?logo=slack)](https://wwww.opensourceconnections.com/slack)
 
 <img src="https://quepid.com/images/logo.png" alt="Quepid logo" title="Quepid" align="right" />
 
@@ -377,7 +378,7 @@ Usage:
   thor user:create EMAIL USERNAME PASSWORD
 
 Options:
-  -a, [--administrator], [--no-administrator]  
+  -a, [--administrator], [--no-administrator]
 
 Description:
   `user:create` creates a new user with the passed in email, name and password.
@@ -541,9 +542,9 @@ You will see a updated `Gemfile.lock`, go ahead and check it and `Gemfile` into 
 
 We use Angular 1 for the front end, and as part of that we use the `angular-ui-bootstrap` package
 for all our UI components.   This package is tied to Bootstrap version 3.   We import the Bootstrap 3
-CSS directly via the file `bootstrap.css`.   
+CSS directly via the file `bootstrap.css`.
 
-For the various Admin pages, we actually are using Bootstrap 5! That is included via the `package.json` using NPM.  See `admin.js` for the line `//= require bootstrap/dist/js/bootstrap.bundle` which is where we are including.   
+For the various Admin pages, we actually are using Bootstrap 5! That is included via the `package.json` using NPM.  See `admin.js` for the line `//= require bootstrap/dist/js/bootstrap.bundle` which is where we are including.
 
 We currently use Rails Sprockets to compile everything, but do have dreams of moving the JavaScript
 over to Webpacker.
@@ -552,7 +553,7 @@ over to Webpacker.
 
 Run the `./bin/setup_jupyterlite` to update the archive file `./jupyterlite/notebooks.gz`.  This
 also sets up the static files in the `./public/notebooks` directory.  However, so that we don't check in hundreds of files,
-we ignore that directory from Github.   At `asset:precompile` time we unpack the `./jupyterlite/notebooks.gz` file instead.  
+we ignore that directory from Github.   At `asset:precompile` time we unpack the `./jupyterlite/notebooks.gz` file instead.
 This works on Heroku and the production Docker image.
 
 To update the version of Jupyterlite edit `Dockerfile.dev` and `Dockerfile.prod` and update the `pip install` version.
@@ -562,7 +563,7 @@ Question?  Does jupyterlite work in localhost????
 # QA
 
 There is a code deployment pipeline to the http://quepid-staging.herokuapp.com site that
-is run on successful commits to `main`.  
+is run on successful commits to `main`.
 
 If you have pending migrations you will need to run them via:
 
@@ -611,7 +612,7 @@ Check out the [Operating Documentation](docs/operating_documentation.md) file fo
 
 # Thank You's
 
-Quepid would not be possible without the contributions from many individuals and organizations.   
+Quepid would not be possible without the contributions from many individuals and organizations.
 
 Specifically we would like to thank Erik Bugge and the folks at Kobler for funding the Only Rated feature released in Quepid [6.4.0](https://github.com/o19s/quepid/releases/tag/v6.4.0).
 
