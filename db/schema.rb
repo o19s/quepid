@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_03_24_195152) do
+ActiveRecord::Schema[7.0].define(version: 2023_05_04_182246) do
   create_table "annotations", id: :integer, charset: "utf8mb3", force: :cascade do |t|
     t.text "message"
     t.string "source"
@@ -261,6 +261,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_03_24_195152) do
     t.index ["email"], name: "ix_user_username", unique: true
     t.index ["invitation_token"], name: "index_users_on_invitation_token", unique: true, length: 191
     t.index ["invited_by_id"], name: "index_users_on_invited_by_id"
+    t.index ["name"], name: "index_users_on_name"
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true, length: 191
   end
 

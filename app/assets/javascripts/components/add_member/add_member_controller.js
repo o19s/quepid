@@ -7,7 +7,7 @@ angular.module('QuepidApp')
     '$scope',
     'flash',
     'teamSvc', 'userSvc',
-    function (
+    function(
       $scope,
       flash,
       teamSvc, userSvc
@@ -19,8 +19,8 @@ angular.module('QuepidApp')
       });
 
       // Functions
-      ctrl.addMember    = addMember;
-      ctrl.getUsers     = getUsers;
+      ctrl.addMember = addMember;
+      ctrl.getUsers = getUsers;
       ctrl.selectMember = selectMember;
       ctrl.testIsEmailAddress = testIsEmailAddress;
       ctrl.inviteUserToJoin = inviteUserToJoin;
@@ -30,7 +30,7 @@ angular.module('QuepidApp')
       }
 
       function addMember() {
-        if ( angular.isDefined(ctrl.selectedMember) ) {
+        if (angular.isDefined(ctrl.selectedMember)) {
           teamSvc.addMember(ctrl.team, ctrl.selectedMember)
             .then(function() {
               flash.success = 'New member added';
@@ -49,8 +49,8 @@ angular.module('QuepidApp')
         }
       }
 
-      function getUsers(val) {
-        return userSvc.users(val)
+      function getUsers(prefix) {
+        return userSvc.users(prefix)
           .then(function(response) {
             return response.data.users;
           });
@@ -69,7 +69,7 @@ angular.module('QuepidApp')
 
       function testIsEmailAddress(val) {
         const emailVer = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-        if( emailVer.test(val) ){
+        if (emailVer.test(val)) {
           return true;
         }
         else {
