@@ -27,7 +27,7 @@ angular.module('QuepidApp')
 
       this.list = function(team) {
         // http GET /teams/<int:teamId>/books
-        var url   = '/api/teams/' + team.id + '/books';
+        var url   = 'api/teams/' + team.id + '/books';
         var self  = this;
 
         // Clear the list just in case the data on the server changed,
@@ -49,7 +49,7 @@ angular.module('QuepidApp')
 
       this.shareCase = function(team, book, caseNo) {
         // http POST /api/teams/<int:teamId>/cases
-        var url   = '/api/teams/' + team.id + '/cases';
+        var url   = 'api/teams/' + team.id + '/cases';
         var data  = {
           id: caseNo,
           book_id: book.id
@@ -102,7 +102,7 @@ angular.module('QuepidApp')
           'query_doc_pairs': queryDocPairsPayload
         };
 
-        return $http.put('/api/books/' + bookId + '/populate', payload)
+        return $http.put('api/books/' + bookId + '/populate', payload)
           .then(function(response) {
             console.log('Updated book' + response.data);
           });
@@ -114,7 +114,7 @@ angular.module('QuepidApp')
         var payload = {
         };
 
-        return $http.put('/api/books/' + bookId + '/cases/' + caseId + '/refresh', payload)
+        return $http.put('api/books/' + bookId + '/cases/' + caseId + '/refresh', payload)
           .then(function(response) {
             console.log('refreshed ratings' + response.data);
           });

@@ -223,7 +223,7 @@
         }
 
         function exportTrecFormat(aCase) {
-          $http.get('/api/export/ratings/' + aCase.caseNo + '.txt?file_format=trec')
+          $http.get('api/export/ratings/' + aCase.caseNo + '.txt?file_format=trec')
             .then(function(response) {
               var blob = new Blob([response.data], {
                 type: 'text/plain'
@@ -234,7 +234,7 @@
             });
         }
         function exportTrecFormatSnapshot(aCase, snapshotId) {
-          $http.get('/api/export/ratings/' + aCase.caseNo + '.txt?file_format=trec_snapshot&snapshot_id=' + snapshotId)
+          $http.get('api/export/ratings/' + aCase.caseNo + '.txt?file_format=trec_snapshot&snapshot_id=' + snapshotId)
             .then(function(response) {
               var blob = new Blob([response.data], {
                 type: 'text/plain'
