@@ -25,7 +25,7 @@ describe('Service: scorerSvc', function () {
       },
       {
         'scorer_id': 3,
-        'name':     'Scorer 3',
+        'name':     'A Scorer 3',
         'code':     'pass()',
         'owner_id': 2,
         'owned':    false,
@@ -67,6 +67,7 @@ describe('Service: scorerSvc', function () {
     scorerSvc.list()
       .then(function() {
         expect(scorerSvc.scorers.length).toBe(3);
+        expect(scorerSvc.scorers[2].name).toBe('A Scorer 3');
       });
     $httpBackend.flush();
   });
