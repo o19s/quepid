@@ -72,8 +72,6 @@ If you wish to host Quepid in a folder other than the root folder (`/`), specify
 
 __Note 1:__ The context path should not have a trailing-slash.  If you do not wish to setup a context path you can leave this variable blank.
 
-__Note 2:__ If you are utilizing the context path, be sure to specify the env var when building the Docker images or you may have issues with asset paths. 
-
 
 ## Mail
 
