@@ -74,7 +74,7 @@
 </div>
 
 <div class="modal-footer">
-  <a class="btn btn-primary pull-left" href="/books/new" target="_self" ng-disabled="processingPrompt.inProgress">
+  <a class="btn btn-primary pull-left" href="books/new?book[scorer_id]={{ctrl.share.acase.scorerId}}" target="_self" ng-disabled="processingPrompt.inProgress">
     <i class="glyphicon glyphicon-plus" style="color: #FFF"></i>
     Create a book
   </a>
