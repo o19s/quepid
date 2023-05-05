@@ -110,7 +110,7 @@ describe('Service: settingsSvc', function () {
 
 
   it(' gets settings on case change', function () {
-    $httpBackend.expectGET('/api/cases/0/tries')
+    $httpBackend.expectGET('api/cases/0/tries')
                 .respond(200,  mockSettings0);
     settingsSvc.bootstrap(0, 0)
     .then(function() {
@@ -149,7 +149,7 @@ describe('Service: settingsSvc', function () {
 
     };
     beforeEach(function() {
-      $httpBackend.expectGET('/api/cases/0/tries')
+      $httpBackend.expectGET('api/cases/0/tries')
                   .respond(200,  mockCvSettings);
       settingsSvc.bootstrap(0, 0);
       $httpBackend.flush();
@@ -181,13 +181,13 @@ describe('Service: settingsSvc', function () {
 
 
   it('switches cases', function () {
-    $httpBackend.expectGET('/api/cases/0/tries')
+    $httpBackend.expectGET('api/cases/0/tries')
                 .respond(200,  mockSettings0);
     caseTryNavSvc.navigationCompleted({caseNo: 0, tryNo: 0});
     settingsSvc.bootstrap();
     $httpBackend.flush();
 
-    $httpBackend.expectGET('/api/cases/1/tries')
+    $httpBackend.expectGET('api/cases/1/tries')
                 .respond(200,  mockSettings1);
     caseTryNavSvc.navigationCompleted({caseNo: 1, tryNo: 0});
     settingsSvc.bootstrap()
@@ -225,13 +225,13 @@ describe('Service: settingsSvc', function () {
   };
 
   it('saves new tries', function() {
-    $httpBackend.expectGET('/api/cases/0/tries')
+    $httpBackend.expectGET('api/cases/0/tries')
       .respond(200,  mockSettings0);
 
     settingsSvc.bootstrap(0, 0);
     $httpBackend.flush();
 
-    $httpBackend.expectPOST('/api/cases/0/tries')
+    $httpBackend.expectPOST('api/cases/0/tries')
       .respond(200,  mockTry);
 
     var editableSettings = settingsSvc.editableSettings();
@@ -261,12 +261,12 @@ describe('Service: settingsSvc', function () {
   };
 
   it('saves changes to fieldSpec', function() {
-    $httpBackend.expectGET('/api/cases/0/tries')
+    $httpBackend.expectGET('api/cases/0/tries')
                 .respond(200,  mockSettings0);
     settingsSvc.bootstrap(0, 0);
     $httpBackend.flush();
 
-    $httpBackend.expectPOST('/api/cases/0/tries')
+    $httpBackend.expectPOST('api/cases/0/tries')
                 .respond(200,  mockSettingsChangeFieldSpecResp);
     var editableSettings = settingsSvc.editableSettings();
     editableSettings.fieldSpec = 'CHANGED';
@@ -280,11 +280,11 @@ describe('Service: settingsSvc', function () {
   });
 
   it('saves escapeQuery', function() {
-    $httpBackend.expectGET('/api/cases/0/tries')
+    $httpBackend.expectGET('api/cases/0/tries')
                 .respond(200,  mockSettings0);
     settingsSvc.bootstrap(0, 0);
     $httpBackend.flush();
-    $httpBackend.expectPOST('/api/cases/0/tries')
+    $httpBackend.expectPOST('api/cases/0/tries')
                 .respond(200,  mockSettingsChangeFieldSpecResp);
     var editableSettings = settingsSvc.editableSettings();
     expect(editableSettings.selectedTry.escapeQuery).toBe(true);
@@ -313,12 +313,12 @@ describe('Service: settingsSvc', function () {
   };
 
   it('gathers new curatorVars on submit', function() {
-    $httpBackend.expectGET('/api/cases/0/tries')
+    $httpBackend.expectGET('api/cases/0/tries')
                 .respond(200,  mockSettings0);
     settingsSvc.bootstrap(0, 0);
     $httpBackend.flush();
 
-    $httpBackend.expectPOST('/api/cases/0/tries')
+    $httpBackend.expectPOST('api/cases/0/tries')
                 .respond(200,  mockSettingsAddNewVarsResp);
     var editableSettings = settingsSvc.editableSettings();
     editableSettings.selectedTry.queryParams += '&new=##newvar##';
@@ -332,12 +332,12 @@ describe('Service: settingsSvc', function () {
   });
 
   it('handles deleted settings', function() {
-    $httpBackend.expectGET('/api/cases/0/tries')
+    $httpBackend.expectGET('api/cases/0/tries')
                 .respond(200,  mockSettings1);
     settingsSvc.bootstrap(0, 0);
     $httpBackend.flush();
     var settingsCpy = settingsSvc.editableSettings();
-    $httpBackend.expectDELETE('/api/cases/0/tries/1')
+    $httpBackend.expectDELETE('api/cases/0/tries/1')
                 .respond(200);
     settingsSvc.deleteTry(1);
     $httpBackend.flush();
@@ -348,13 +348,13 @@ describe('Service: settingsSvc', function () {
   });
 
   it('handles deleting selected try', function() {
-    $httpBackend.expectGET('/api/cases/0/tries')
+    $httpBackend.expectGET('api/cases/0/tries')
                 .respond(200,  mockSettings1);
     var lastTry = mockSettings1.tries[2].try_number;
     settingsSvc.bootstrap(0, 0);
     $httpBackend.flush();
     var settingsCpy = settingsSvc.editableSettings();
-    $httpBackend.expectDELETE('/api/cases/0/tries/' + settingsCpy.selectedTry.tryNo)
+    $httpBackend.expectDELETE('api/cases/0/tries/' + settingsCpy.selectedTry.tryNo)
                 .respond(200);
     settingsSvc.deleteTry(settingsCpy.selectedTry.tryNo);
     $httpBackend.flush();
@@ -367,7 +367,7 @@ describe('Service: settingsSvc', function () {
     var mockSettingsDel = angular.copy(mockSettings1);
     mockSettingsDel.tries.splice(1,2);
     var remTry = mockSettingsDel.tries[0];
-    $httpBackend.expectGET('/api/cases/0/tries')
+    $httpBackend.expectGET('api/cases/0/tries')
                 .respond(200,  mockSettingsDel);
     settingsSvc.bootstrap(0, 0);
     $httpBackend.flush();
@@ -383,12 +383,12 @@ describe('Service: settingsSvc', function () {
   });
 
   it('updates settingsId after delete', function() {
-    $httpBackend.expectGET('/api/cases/0/tries')
+    $httpBackend.expectGET('api/cases/0/tries')
                 .respond(200,  mockSettings1);
     settingsSvc.bootstrap(0, 0);
     $httpBackend.flush();
     var settingsId = settingsSvc.settingsId();
-    $httpBackend.expectDELETE('/api/cases/0/tries/1')
+    $httpBackend.expectDELETE('api/cases/0/tries/1')
                 .respond(200);
     settingsSvc.deleteTry(1);
     $httpBackend.flush();
@@ -399,7 +399,7 @@ describe('Service: settingsSvc', function () {
     var mockSettingsDel = angular.copy(mockSettings1);
     var splicedTry = mockSettingsDel.tries[1].try_number;
     mockSettingsDel.tries.splice(1,1);
-    $httpBackend.expectGET('/api/cases/0/tries')
+    $httpBackend.expectGET('api/cases/0/tries')
                 .respond(200,  mockSettingsDel);
     settingsSvc.bootstrap(0, 0);
     $httpBackend.flush();
@@ -412,7 +412,7 @@ describe('Service: settingsSvc', function () {
   });
 
   it('renames tries', function() {
-    $httpBackend.expectGET('/api/cases/0/tries')
+    $httpBackend.expectGET('api/cases/0/tries')
       .respond(200,  mockSettings1);
 
     settingsSvc.bootstrap(0, 0);
@@ -422,7 +422,7 @@ describe('Service: settingsSvc', function () {
     var called = 0;
     var settingsId = settingsSvc.settingsId();
 
-    $httpBackend.expectPUT('/api/cases/0/tries/0')
+    $httpBackend.expectPUT('api/cases/0/tries/0')
       .respond(200, {'name': newName});
 
     settingsSvc.renameTry(0, newName)
@@ -458,7 +458,7 @@ describe('Service: settingsSvc', function () {
      'name':        'try 3'
     };
 
-    $httpBackend.expectGET('/api/cases/0/tries')
+    $httpBackend.expectGET('api/cases/0/tries')
                 .respond(200,  mockSettings1);
     settingsSvc.bootstrap(0, 0);
     $httpBackend.flush();
@@ -468,7 +468,7 @@ describe('Service: settingsSvc', function () {
 
     var aTry = tries[0];
 
-    $httpBackend.expectPOST('/api/clone/cases/0/tries/0')
+    $httpBackend.expectPOST('api/clone/cases/0/tries/0')
                 .respond(200,  mockResponse);
 
     settingsSvc.duplicateTry(aTry.tryNo);

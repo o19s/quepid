@@ -88,7 +88,7 @@ describe('Controller: WizardModalCtrl', function () {
   describe('query adding', function() {
     beforeEach(function() {
       var settingsBootstrapped = 0;
-      $httpBackend.expectGET('/api/cases/0/tries').respond(200, bootstrappedSettingsData);
+      $httpBackend.expectGET('api/cases/0/tries').respond(200, bootstrappedSettingsData);
       settingsSvc.bootstrap()
       .then(function() {
         settingsBootstrapped++;
@@ -176,9 +176,9 @@ describe('Controller: WizardModalCtrl', function () {
     });
 
     it('adds queries', function() {
-      $httpBackend.expectPUT('/api/cases/0/tries/0').respond(200, mockTry);
-      $httpBackend.expectGET('/api/cases/0/scorers').respond(200, {});
-      $httpBackend.expectGET('/api/cases/0/queries?bootstrap=true').respond(200, mockFullQueriesResp);
+      $httpBackend.expectPUT('api/cases/0/tries/0').respond(200, mockTry);
+      $httpBackend.expectGET('api/cases/0/scorers').respond(200, {});
+      $httpBackend.expectGET('api/cases/0/queries?bootstrap=true').respond(200, mockFullQueriesResp);
 
       for (var i = 0; i < 10; i++) {
         var testQuery = 'foo ' + i;
@@ -189,7 +189,7 @@ describe('Controller: WizardModalCtrl', function () {
         var newQueryRespIth = angular.copy(newQueryResp);
         newQueryRespIth.query['query_text'] = testQuery;
 
-        $httpBackend.whenPOST('/api/cases/0/queries').respond(200, newQueryRespIth);
+        $httpBackend.whenPOST('api/cases/0/queries').respond(200, newQueryRespIth);
         $httpBackend.whenJSONP(expectedSolrUrl(mockTry.search_url)).respond(200, {});
       }
 
