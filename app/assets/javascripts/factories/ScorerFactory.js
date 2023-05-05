@@ -22,6 +22,9 @@
 
       // Attributes
       self.code                   = data.code;
+      self.showScaleLabels        = data.show_scale_labels || false;
+      self.scaleWithLabels        = data.scale_with_labels;
+      self.scale                  = data.scale;
       self.colors                 = scaleToColors(data.scale);
       self.displayName            = setDisplayName(data.name, data.communal);
       self.error                  = false;
@@ -29,11 +32,10 @@
       self.owned                  = data.owned;
       self.ownerId                = data.owner_id;
       self.ownerName              = data.owner_name;
-      self.scale                  = data.scale;
-      self.scaleWithLabels        = data.scale_with_labels;
+      
       self.scorerId               = data.scorer_id;
       self.communal               = data.communal;
-      self.showScaleLabels        = data.show_scale_labels || false;
+      
       self.teams                  = data.teams || [];
 
       // Functions
