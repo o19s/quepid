@@ -153,24 +153,24 @@ module Api
           # so we are removing for now.  Someday if we have a real search index on
           # users we could put this back.
           it 'does a case insensitive match on name' do
-            get :index,  params: { prefix: 'Doug T'}
+            get :index, params: { prefix: 'Doug T' }
 
             assert_response :ok
 
-            assert_instance_of  Array,  json_response['users']
-            assert_equal        1,     json_response['users'].size
+            assert_instance_of  Array, json_response['users']
+            assert_equal        1, json_response['users'].size
 
-            emails      = json_response['users'].pluck('email')
+            emails = json_response['users'].pluck('email')
             assert_includes emails, 'doug@example.com'
 
-            get :index,  params: { prefix: 'DOUG'}
+            get :index, params: { prefix: 'DOUG' }
 
             assert_response :ok
 
-            assert_instance_of  Array,  json_response['users']
-            assert_equal        1,     json_response['users'].size
+            assert_instance_of  Array, json_response['users']
+            assert_equal        1, json_response['users'].size
 
-            emails      = json_response['users'].pluck('email')
+            emails = json_response['users'].pluck('email')
             assert_includes emails, 'doug@example.com'
           end
         end
