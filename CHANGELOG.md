@@ -1,6 +1,18 @@
 # Changelog
 
-## 7.0.X - ???
+## 7.1.0 - 2023-05-05
+
+### Features
+
+Some bigger organizations deploying Quepid want to nest it under another domain, like https://tools.bigcorp.com/quepid instead of the more typical https://quepid.bigcorp.com.   @worleydl open a PR to support this eleven months ago, and now we finally have it over the finish line!  Just specify the `RAILS_RELATIVE_URL_ROOT` for when you want to nest Quepid under another domain. https://github.com/o19s/quepid/pull/500 by @worleydl.
+
+### Improvements
+
+* Custom scorers are sorted by the order from oldest to newest in the modal picker UI.  Instead, lets sort them alphabetically.  https://github.com/o19s/quepid/pull/717 by @epugh fixes https://github.com/o19s/quepid/issues/695.
+
+* `teamSvc` unit test was failing a lot, and now has been dealt with...   By ignoring the checks.  :-(.
+
+* When creating a new Book of judgements, seed the Scorer with the one from the Case you were using.  https://github.com/o19s/quepid/pull/716 by @epugh fixes https://github.com/o19s/quepid/issues/705.
 
 ### Bugs
 
@@ -8,7 +20,13 @@
 
 * The "Find Missing Docs" UI doesn't actual work with OpenSearch.  https://github.com/o19s/quepid/pull/707 by @mkr fixes https://github.com/o19s/quepid/issues/700.   Nicer help text as well.
 
-## 7.0.0 - 2022-04-24
+* Generated link to individual OpenSearch (and Elasticsearch) document changed, and didn't render properly.  https://github.com/o19s/splainer-search/pull/117 by @mkr fixes https://github.com/o19s/quepid/issues/701.
+
+* Swapping from one Scorer to another Scorer would lose the labels in the popup window.  https://github.com/o19s/quepid/pull/717 by @epugh fixes https://github.com/o19s/quepid/issues/704 and https://github.com/o19s/quepid/issues/696 by @epugh.  It may also fix https://github.com/o19s/quepid/issues/613 by @atarora ;-).   
+
+
+
+## 7.0.0 - 2023-04-24
 
 Are you ready to launch a [Human Rating Program](https://haystackconf.com/2019/human-judgement/)?   Quepid is now finally able to support you and your fellow human judges in gathering explicit ratings on your search results.
 
