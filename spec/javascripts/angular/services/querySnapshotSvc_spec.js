@@ -43,7 +43,7 @@ describe('Service: querySnapshotSvc', function () {
 
   beforeEach(function() {
     // bootstrap as if no snapshots exist yet
-    $httpBackend.expectGET('/api/cases/2/snapshots?shallow=true')
+    $httpBackend.expectGET('api/cases/2/snapshots?shallow=true')
       .respond(200, {'snapshots': {}});
     querySnapshotSvc.bootstrap(2);
     $httpBackend.flush();
@@ -99,7 +99,7 @@ describe('Service: querySnapshotSvc', function () {
     }};
 
   it('bootstraps', function() {
-    $httpBackend.expectGET('/api/cases/3/snapshots?shallow=true').respond(200, mockSnapResp);
+    $httpBackend.expectGET('api/cases/3/snapshots?shallow=true').respond(200, mockSnapResp);
     querySnapshotSvc.bootstrap(3);
     $httpBackend.flush();
 
@@ -116,7 +116,7 @@ describe('Service: querySnapshotSvc', function () {
   });
 
   it('resolves docids on bootstrap', function() {
-    $httpBackend.expectGET('/api/cases/3/snapshots?shallow=true').respond(200, mockSnapResp);
+    $httpBackend.expectGET('api/cases/3/snapshots?shallow=true').respond(200, mockSnapResp);
     querySnapshotSvc.bootstrap(3);
     $httpBackend.flush();
 
@@ -186,7 +186,7 @@ describe('Service: querySnapshotSvc', function () {
     };
 
     it('should snapshot the passed in docs', function () {
-      $httpBackend.expectPOST('/api/cases/2/snapshots', function(response) {
+      $httpBackend.expectPOST('api/cases/2/snapshots', function(response) {
         var reqJson = angular.fromJson(response);
         var valid = true;
         valid = (valid && reqJson.snapshot.name === 'myname');
@@ -215,7 +215,7 @@ describe('Service: querySnapshotSvc', function () {
 
     it('updates the version on new snapshot', function() {
       var priorVersion = querySnapshotSvc.version();
-      $httpBackend.expectPOST('/api/cases/2/snapshots')
+      $httpBackend.expectPOST('api/cases/2/snapshots')
                   .respond(200, addedSnapResp);
       querySnapshotSvc.addSnapshot('myname', recordDocumentFields, mockQueries);
       $httpBackend.flush();
@@ -225,7 +225,7 @@ describe('Service: querySnapshotSvc', function () {
     });
 
     it('resolves ids->docs', function resolveAddSnapTest() {
-      $httpBackend.expectPOST('/api/cases/2/snapshots')
+      $httpBackend.expectPOST('api/cases/2/snapshots')
                   .respond(200, addedSnapResp);
       querySnapshotSvc.addSnapshot('myname', recordDocumentFields, mockQueries);
       $httpBackend.flush();
@@ -249,11 +249,11 @@ describe('Service: querySnapshotSvc', function () {
 
   describe('deleting snapshots', function() {
     it('deletes by id', function() {
-      $httpBackend.expectGET('/api/cases/3/snapshots?shallow=true').respond(200, mockSnapResp);
+      $httpBackend.expectGET('api/cases/3/snapshots?shallow=true').respond(200, mockSnapResp);
       querySnapshotSvc.bootstrap(3);
       $httpBackend.flush();
 
-      $httpBackend.expectDELETE('/api/cases/3/snapshots/5')
+      $httpBackend.expectDELETE('api/cases/3/snapshots/5')
                     .respond(200, '');
       var promise = querySnapshotSvc.deleteSnapshot(5);
       var called = 0;
@@ -268,11 +268,11 @@ describe('Service: querySnapshotSvc', function () {
     });
 
     it('deletes update version', function() {
-      $httpBackend.expectGET('/api/cases/3/snapshots?shallow=true').respond(200, mockSnapResp);
+      $httpBackend.expectGET('api/cases/3/snapshots?shallow=true').respond(200, mockSnapResp);
       querySnapshotSvc.bootstrap(3);
       $httpBackend.flush();
 
-      $httpBackend.expectDELETE('/api/cases/3/snapshots/5')
+      $httpBackend.expectDELETE('api/cases/3/snapshots/5')
                     .respond(200, '');
       var promise = querySnapshotSvc.deleteSnapshot(5);
       var called = 0;
@@ -289,7 +289,7 @@ describe('Service: querySnapshotSvc', function () {
   describe('querySnapshotSvc getters', function () {
 
     beforeEach(function() {
-      $httpBackend.expectGET('/api/cases/3/snapshots?shallow=true').respond(200, mockSnapResp);
+      $httpBackend.expectGET('api/cases/3/snapshots?shallow=true').respond(200, mockSnapResp);
       querySnapshotSvc.bootstrap(3);
       $httpBackend.flush();
 
@@ -365,7 +365,7 @@ describe('Service: querySnapshotSvc', function () {
     };
 
     it('gets unique explains per query despite identical doc ids', function uniquePerDocIdTest() {
-      $httpBackend.expectGET('/api/cases/3/snapshots?shallow=true').respond(200, mockOverlapSnapResp);
+      $httpBackend.expectGET('api/cases/3/snapshots?shallow=true').respond(200, mockOverlapSnapResp);
       querySnapshotSvc.bootstrap(3);
       $httpBackend.flush();
 
@@ -413,7 +413,7 @@ describe('Service: querySnapshotSvc', function () {
     };
 
     it('fetches a snapshot', function() {
-      var url = '/api/cases/2/snapshots/1?shallow=true';
+      var url = 'api/cases/2/snapshots/1?shallow=true';
       $httpBackend.expectGET(url).respond(200, mockSnapResp);
 
       querySnapshotSvc.get(1);
@@ -503,7 +503,7 @@ describe('Service: querySnapshotSvc', function () {
     };
 
     it('imports multiple snapshots for the same case', function() {
-      var url = '/api/cases/8/snapshots/imports';
+      var url = 'api/cases/8/snapshots/imports';
       $httpBackend.expectPOST(url).respond(200, firstMockSnapResp);
       $httpBackend.expectPOST(url).respond(200, secondMockSnapResp);
 

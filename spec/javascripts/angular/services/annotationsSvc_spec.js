@@ -61,7 +61,7 @@ describe('Service: annotationsSvc', function () {
         annotation: annotation
       };
 
-      $httpBackend.expectPOST('/api/cases/1/annotations', data).respond(response);
+      $httpBackend.expectPOST('api/cases/1/annotations', data).respond(response);
 
       annotationsSvc.create(1, data);
       $httpBackend.flush();
@@ -73,7 +73,7 @@ describe('Service: annotationsSvc', function () {
         annotation: annotation
       };
 
-      $httpBackend.expectPOST('/api/cases/1/annotations', data).respond(response);
+      $httpBackend.expectPOST('api/cases/1/annotations', data).respond(response);
 
       annotationsSvc.create(1, data)
         .then(function (annotation) {
@@ -123,7 +123,7 @@ describe('Service: annotationsSvc', function () {
         }
       };
 
-      $httpBackend.expectPUT('/api/cases/1/annotations/1', data).respond(response);
+      $httpBackend.expectPUT('api/cases/1/annotations/1', data).respond(response);
 
       annotationsSvc.update(annotation);
       $httpBackend.flush();
@@ -137,7 +137,7 @@ describe('Service: annotationsSvc', function () {
         }
       };
 
-      $httpBackend.expectPUT('/api/cases/1/annotations/1', data).respond(response);
+      $httpBackend.expectPUT('api/cases/1/annotations/1', data).respond(response);
 
       annotationsSvc.update(annotation)
         .then(function (annotation) {
@@ -156,7 +156,7 @@ describe('Service: annotationsSvc', function () {
     };
 
     it('makes an API call', function() {
-      $httpBackend.expectDELETE('/api/cases/1/annotations/1').respond({});
+      $httpBackend.expectDELETE('api/cases/1/annotations/1').respond({});
 
       annotationsSvc.delete(annotation);
       $httpBackend.flush();

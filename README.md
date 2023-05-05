@@ -459,6 +459,10 @@ To understand if you have gems that are out of date run:
 bin/docker r bundle outdated --groups
 ```
 
+## How to test nesting Quepid under a domain.
+
+Uncomment in `docker-compose.yml` the setting `- RAILS_RELATIVE_URL_ROOT=/quepid-app` and then open http://localhost:3000/quepid-app.
+
 ## I'd like to run and test out a local PRODUCTION build
 
 Those steps should get you up and running locally a production build (versus the developer build)

@@ -90,7 +90,7 @@ describe('Service: importRatingsSvc', function () {
 
 
     it('imports ratings multiple queries and multiple docs', function() {
-      var url = '/api/import/ratings?file_format=hash';
+      var url = 'api/import/ratings?file_format=hash';
 
       $httpBackend.expectPOST(url).respond(200, {});
 
@@ -101,7 +101,7 @@ describe('Service: importRatingsSvc', function () {
     });
 
     it('imports rre format', function() {
-      var url = '/api/import/ratings?file_format=rre';
+      var url = 'api/import/ratings?file_format=rre';
 
       $httpBackend.expectPOST(url).respond(200, {});
 
@@ -131,7 +131,7 @@ describe('Service: importRatingsSvc', function () {
 
 
     it('imports information needs', function() {
-      var url = '/api/import/queries/information_needs';
+      var url = 'api/import/queries/information_needs';
 
       $httpBackend.expectPOST(url).respond(200, {});
 

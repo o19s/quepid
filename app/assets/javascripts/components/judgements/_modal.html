@@ -40,7 +40,7 @@
       You have no Books of Judgements created yet, so go ahead and create a new Book!
     </p>
 
-    <a class="btn btn-primary btn-lg" href="/books/new" target="_self">
+    <a class="btn btn-primary btn-lg" href="books/new" target="_self">
       <i class="fa fa-plus"></i>
       Create a book
     </a>
@@ -74,12 +74,13 @@
 </div>
 
 <div class="modal-footer">
+
   <a class="btn btn-primary pull-left" href="books/new?book[scorer_id]={{ctrl.share.acase.scorerId}}" target="_self" ng-disabled="processingPrompt.inProgress">
     <i class="glyphicon glyphicon-plus" style="color: #FFF"></i>
     Create a book
   </a>
 
-  <a class="btn btn-default pull-left" href="/books/{{ctrl.activeBookId}}/judge" target="_self" ng-show="ctrl.canUpdateCase && ctrl.activeBookId">
+  <a class="btn btn-default pull-left" href="books/{{ctrl.activeBookId}}/judge" target="_self" ng-show="ctrl.canUpdateCase && ctrl.activeBookId">
     <i class="glyphicon glyphicon-book"></i>
     Make Judgements!
   </a>

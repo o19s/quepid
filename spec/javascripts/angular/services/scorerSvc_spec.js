@@ -62,7 +62,7 @@ describe('Service: scorerSvc', function () {
   });
 
   it('gets a list of scorers', function() {
-    var url = '/api/scorers';
+    var url = 'api/scorers';
     $httpBackend.expectGET(url).respond(200, mockScorersResp);
     scorerSvc.list()
       .then(function() {
@@ -72,7 +72,7 @@ describe('Service: scorerSvc', function () {
   });
 
   it('creates a scorer', function() {
-    var url = '/api/scorers';
+    var url = 'api/scorers';
     $httpBackend.expectPOST(url).respond(201, mockScorerResp);
 
     scorerSvc.create(mockScorer)
@@ -90,7 +90,7 @@ describe('Service: scorerSvc', function () {
     editedScorer.name = 'Edited Scorer';
     editedScorerResp.name = 'Edited Scorer';
 
-    var url = '/api/scorers/' + mockScorer.scorerId;
+    var url = 'api/scorers/' + mockScorer.scorerId;
     $httpBackend.expectPUT(url).respond(200, editedScorerResp);
 
     scorerSvc.edit(editedScorer)
@@ -101,7 +101,7 @@ describe('Service: scorerSvc', function () {
   });
 
   it('fetches a scorer', function() {
-    var url = '/api/scorers/' + mockScorer.scorerId;
+    var url = 'api/scorers/' + mockScorer.scorerId;
     $httpBackend.expectGET(url).respond(200, mockScorerResp);
 
     scorerSvc.get(mockScorer.scorerId)
@@ -112,7 +112,7 @@ describe('Service: scorerSvc', function () {
   });
 
   it('updates the cache when editing a scorer', function() {
-    var url = '/api/scorers/' + mockScorer.scorerId;
+    var url = 'api/scorers/' + mockScorer.scorerId;
     mockScorer.name = 'New Name';
     mockScorerResp.name = 'New Name';
     $httpBackend.expectPUT(url).respond(200, mockScorerResp);
@@ -146,7 +146,7 @@ describe('Service: scorerSvc', function () {
     var caseNo = 1;
 
     it('sets the default to the default scorer if the API returns an empty default', function() {
-      var url = '/api/cases/' + caseNo + '/scorers';
+      var url = 'api/cases/' + caseNo + '/scorers';
       $httpBackend.expectGET(url).respond(200, mockResponse);
 
       scorerSvc.bootstrap(caseNo);
