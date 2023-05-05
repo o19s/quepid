@@ -67,7 +67,8 @@ describe('Service: scorerSvc', function () {
     scorerSvc.list()
       .then(function() {
         expect(scorerSvc.scorers.length).toBe(3);
-        expect(scorerSvc.scorers[2].name).toBe('A Scorer 3');
+        expect(scorerSvc.scorers[0].name).toBe('A Scorer 3');
+        expect(scorerSvc.scorers[0].scorerId).toBe(3);
       });
     $httpBackend.flush();
   });
