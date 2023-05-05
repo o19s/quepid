@@ -188,7 +188,7 @@ Rails.application.routes.draw do
   get '/cases'                        => 'core#index'
   get '/case'                         => 'core#index'
   get '/cases/import'                 => 'core#index'
-  get '/teams(/:id)'                  => 'core#index', as: :teams_path
+  get '/teams(/:id)'                  => 'core#index', as: :teams
   get '/scorers'                      => 'core#index'
 
   # Static pages

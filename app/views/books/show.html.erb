@@ -5,7 +5,7 @@ Books organize all the query/doc pairs that are needed for evaluating your searc
 
 <p>
   <strong>Team:</strong>
-  <%= @book.team.name %>
+  <%= link_to @book.team.name, teams_path(@book.team) %>
 </p>
 
 <p>
