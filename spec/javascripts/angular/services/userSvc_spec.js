@@ -37,7 +37,7 @@ describe('Service: userSvc', function () {
       'id':       1,
     };
 
-    var url = '/api/users/' + mockUser.id;
+    var url = 'api/users/' + mockUser.id;
     $httpBackend.expectGET(url).respond(200, mockUserResponse);
 
     userSvc.get(mockUser.id)
@@ -65,7 +65,7 @@ describe('Service: userSvc', function () {
     };
 
     beforeEach(inject(function () {
-      var url = '/api/users/' + mockUser.id;
+      var url = 'api/users/' + mockUser.id;
       $httpBackend.expectGET(url).respond(200, mockUserResponse);
 
       userSvc.get(mockUser.id)
@@ -77,7 +77,7 @@ describe('Service: userSvc', function () {
     }));
 
     it('updates user after first login', function() {
-      var url           = '/api/users/' + mockUser.id;
+      var url           = 'api/users/' + mockUser.id;
       var data          = { user: { completed_case_wizard: true } };
 
       $httpBackend.expectPUT(url, data).respond(200, mockUserResponse);
@@ -90,7 +90,7 @@ describe('Service: userSvc', function () {
     });
 
     it('updates a user\'s scorer', function() {
-      var url           = '/api/users/' + mockUser.id;
+      var url           = 'api/users/' + mockUser.id;
       var newScorerId   = 90;
       var data          = { user: { default_scorer_id: newScorerId } };
       mockUser.defaultScorerId = newScorerId;

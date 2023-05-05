@@ -230,7 +230,7 @@ describe('Service: queriesSvc', function () {
       caseNo = altCaseNo;
     }
 
-    var url = '/api/cases/' + caseNo + '/queries?bootstrap=true';
+    var url = 'api/cases/' + caseNo + '/queries?bootstrap=true';
     mockSearchSvc.reset();
 
     $httpBackend.expectGET(url).respond(200, qResp);
@@ -386,7 +386,7 @@ describe('Service: queriesSvc', function () {
     it('reports bootstrapped through querySearchReady promise', function() {
       mockSearchSvc.reset();
       var caseNo = 2;
-      $httpBackend.expectGET('/api/cases/' + caseNo + '/queries?bootstrap=true').respond(200, mockFullQueriesResp);
+      $httpBackend.expectGET('api/cases/' + caseNo + '/queries?bootstrap=true').respond(200, mockFullQueriesResp);
       var called = 0;
       queriesSvc.changeSettings(caseNo, mockSettings);
 
@@ -426,7 +426,7 @@ describe('Service: queriesSvc', function () {
       setupQuerySvc();
       $httpBackend.verifyNoOutstandingExpectation();
 
-      var url = '/api/cases/2/queries';
+      var url = 'api/cases/2/queries';
       $httpBackend.expectPOST(url).respond(200, newQueryResp);
 
       versionBeforeAdd = queriesSvc.version();
@@ -456,7 +456,7 @@ describe('Service: queriesSvc', function () {
 
     it('ignores exact duplicate query text', function() {
       versionBeforeAdd = queriesSvc.version();
-      $httpBackend.expectPOST('/api/cases/2/queries').respond(204);
+      $httpBackend.expectPOST('api/cases/2/queries').respond(204);
 
       var q = queriesSvc.createQuery(newQueryText);
       queriesSvc.persistQuery(q);
@@ -496,7 +496,7 @@ describe('Service: queriesSvc', function () {
       setupQuerySvc();
       $httpBackend.verifyNoOutstandingExpectation();
 
-      var url = '/api/bulk/cases/2/queries';
+      var url = 'api/bulk/cases/2/queries';
       $httpBackend.expectPOST(url).respond(200, bulkResponse);
 
       versionBeforeAdd = queriesSvc.version();
@@ -531,7 +531,7 @@ describe('Service: queriesSvc', function () {
       setupQuerySvc();
 
       versionBeforeDelete = queriesSvc.version();
-      $httpBackend.expectDELETE('/api/cases/2/queries/0').respond(200, '');
+      $httpBackend.expectDELETE('api/cases/2/queries/0').respond(200, '');
       queriesSvc.deleteQuery(0);
       $httpBackend.flush();
     });
@@ -555,7 +555,7 @@ describe('Service: queriesSvc', function () {
       setupQuerySvc();
 
       versionBeforeDelete = queriesSvc.version();
-      $httpBackend.expectPUT('/api/cases/2/queries/0').respond(200, '');
+      $httpBackend.expectPUT('api/cases/2/queries/0').respond(200, '');
       queriesSvc.moveQuery({queryId: 0, caseNo: 2}, {caseNo:1});
       $httpBackend.flush();
     });
@@ -573,14 +573,14 @@ describe('Service: queriesSvc', function () {
   });
 
   it('provides working case no', function() {
-    $httpBackend.expectGET('/api/cases/2/queries?bootstrap=true').respond(200, mockFullQueriesResp);
+    $httpBackend.expectGET('api/cases/2/queries?bootstrap=true').respond(200, mockFullQueriesResp);
     queriesSvc.changeSettings(2, mockSettings);
     $httpBackend.flush();
     expect(queriesSvc.getCaseNo()).toBe(2);
   });
 
   it('loading state reported' , function() {
-    $httpBackend.expectGET('/api/cases/2/queries?bootstrap=true').respond(200, mockFullQueriesResp);
+    $httpBackend.expectGET('api/cases/2/queries?bootstrap=true').respond(200, mockFullQueriesResp);
     queriesSvc.changeSettings(2, mockSettings);
     $httpBackend.flush();
     queriesSvc.searchAll();
@@ -597,7 +597,7 @@ describe('Service: queriesSvc', function () {
   });
 
   it('no results state reported', function() {
-    $httpBackend.expectGET('/api/cases/2/queries?bootstrap=true').respond(200, mockFullQueriesResp);
+    $httpBackend.expectGET('api/cases/2/queries?bootstrap=true').respond(200, mockFullQueriesResp);
     queriesSvc.changeSettings(2, mockSettings);
     $httpBackend.flush();
     queriesSvc.searchAll();
@@ -616,7 +616,7 @@ describe('Service: queriesSvc', function () {
   });
 
   it('no results state clears', function() {
-    $httpBackend.expectGET('/api/cases/2/queries?bootstrap=true').respond(200, mockFullQueriesResp);
+    $httpBackend.expectGET('api/cases/2/queries?bootstrap=true').respond(200, mockFullQueriesResp);
     queriesSvc.changeSettings(2, mockSettings);
     $httpBackend.flush();
     queriesSvc.searchAll();
@@ -664,12 +664,12 @@ describe('Service: queriesSvc', function () {
     expect(newQ.persisted()).toBeFalsy();
     newQ.search();
     mockSearchSvc.fulfill(mockResults);
-    $httpBackend.expectPOST('/api/cases/2/queries').respond(200, newQueryResp);
+    $httpBackend.expectPOST('api/cases/2/queries').respond(200, newQueryResp);
     expect(newQ.diff).toBe(null);
     queriesSvc.persistQuery(newQ);
     $httpBackend.flush();
 
-    $httpBackend.expectPUT('/api/cases/2/queries/3/ratings').respond(200, {doc_id: 'doc1', rating: 10});
+    $httpBackend.expectPUT('api/cases/2/queries/3/ratings').respond(200, {doc_id: 'doc1', rating: 10});
     newQ.docs[0].rate('10');
     $httpBackend.flush();
     $httpBackend.verifyNoOutstandingExpectation();
@@ -736,7 +736,7 @@ describe('Service: queriesSvc', function () {
 
       testQuery = queriesSvc.queries['0'];
       testDoc = testQuery.docs[0];
-      $httpBackend.expectPUT('/api/cases/2/queries/' + testQuery.queryId + '/ratings').respond(200, {doc_id: testDoc.id, rating: 10});
+      $httpBackend.expectPUT('api/cases/2/queries/' + testQuery.queryId + '/ratings').respond(200, {doc_id: testDoc.id, rating: 10});
       versionBeforeRate = queriesSvc.version();
       testDoc.rate(10);
       $httpBackend.flush();
@@ -751,7 +751,7 @@ describe('Service: queriesSvc', function () {
   it('generated docs rates correct case,query,docid after case change', function() {
     setupQuerySvc();
 
-    $httpBackend.expectGET('/api/cases/3/queries?bootstrap=true').respond(200, mockFullQueriesResp);
+    $httpBackend.expectGET('api/cases/3/queries?bootstrap=true').respond(200, mockFullQueriesResp);
     var newMockTry = angular.copy(mockTry);
     newMockTry.tryNo = 4;
     var mockNewSettings = {selectedTry: newMockTry,
@@ -767,8 +767,8 @@ describe('Service: queriesSvc', function () {
 
     var testQuery = queriesSvc.queries['0'];
     var testDoc = testQuery.docs[0];
-    $httpBackend.expectPUT('/api/cases/3/queries/' + testQuery.queryId + '/ratings').respond(200, {doc_id: testDoc.id, rating: 10});
-    //$httpBackend.expectPUT('/api/cases/3/queries/' + testQuery.queryId + '/ratings/' + testDoc.id).respond(200, '');
+    $httpBackend.expectPUT('api/cases/3/queries/' + testQuery.queryId + '/ratings').respond(200, {doc_id: testDoc.id, rating: 10});
+    //$httpBackend.expectPUT('api/cases/3/queries/' + testQuery.queryId + '/ratings/' + testDoc.id).respond(200, '');
     testDoc.rate(10);
     testQuery.score().then(function(score) {
       expect(score.score).toBeGreaterThan(0);
@@ -779,7 +779,7 @@ describe('Service: queriesSvc', function () {
   });
 
   it('reports state as error on error response', function() {
-    $httpBackend.expectGET('/api/cases/2/queries?bootstrap=true').respond(200, mockFullQueriesResp);
+    $httpBackend.expectGET('api/cases/2/queries?bootstrap=true').respond(200, mockFullQueriesResp);
     queriesSvc.changeSettings(2, mockSettings);
     $httpBackend.flush();
     queriesSvc.searchAll();
@@ -807,7 +807,7 @@ describe('Service: queriesSvc', function () {
     });
 
     it('Fetching notes from the backend', function() {
-      $httpBackend.expectGET('/api/cases/2/queries/' + testQuery.queryId + '/notes')
+      $httpBackend.expectGET('api/cases/2/queries/' + testQuery.queryId + '/notes')
         .respond(200, mockNotes);
 
       testQuery.fetchNotes()
@@ -823,7 +823,7 @@ describe('Service: queriesSvc', function () {
       var testNewNotes  = 'more notes! I HAS NOTES!';
       mockNotes.notes   = testNewNotes;
 
-      $httpBackend.expectPUT('/api/cases/2/queries/' + testQuery.queryId + '/notes')
+      $httpBackend.expectPUT('api/cases/2/queries/' + testQuery.queryId + '/notes')
         .respond(200, mockNotes);
 
       testQuery.saveNotes(testNewNotes)
@@ -859,7 +859,7 @@ describe('Service: queriesSvc', function () {
     });
 
     it('Setting threshold on backend', function() {
-      $httpBackend.expectPUT('/api/cases/2/queries/' + testQuery.queryId + '/threshold')
+      $httpBackend.expectPUT('api/cases/2/queries/' + testQuery.queryId + '/threshold')
         .respond(200, mockThresholdResponse);
       var testNewThreshold = 20;
 
@@ -875,7 +875,7 @@ describe('Service: queriesSvc', function () {
     it('Disabling threshold on backend', function() {
       mockThresholdResponse.threshold_enabled = false;
 
-      $httpBackend.expectPUT('/api/cases/2/queries/' + testQuery.queryId + '/threshold')
+      $httpBackend.expectPUT('api/cases/2/queries/' + testQuery.queryId + '/threshold')
         .respond(200, mockThresholdResponse);
 
       testQuery.setThreshold(false)
@@ -917,7 +917,7 @@ describe('Service: queriesSvc', function () {
     };
 
     it('calculates max doc score', function() {
-      $httpBackend.expectGET('/api/cases/2/queries?bootstrap=true').respond(200, mockFullQueriesResp);
+      $httpBackend.expectGET('api/cases/2/queries?bootstrap=true').respond(200, mockFullQueriesResp);
       queriesSvc.changeSettings(2, mockSettings);
       $httpBackend.flush();
       queriesSvc.searchAll();
@@ -930,7 +930,7 @@ describe('Service: queriesSvc', function () {
     });
 
     it('resets max doc score', function() {
-      $httpBackend.expectGET('/api/cases/2/queries?bootstrap=true').respond(200, mockFullQueriesResp);
+      $httpBackend.expectGET('api/cases/2/queries?bootstrap=true').respond(200, mockFullQueriesResp);
       queriesSvc.changeSettings(2, mockSettings);
       $httpBackend.flush();
       queriesSvc.searchAll();

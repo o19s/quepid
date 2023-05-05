@@ -533,9 +533,9 @@ angular.module('QuepidApp')
         };
 
         this.saveNotes = function(notes, informationNeed) {
-          let that = this;
-          let notesJson = { query: { notes: notes, information_need: informationNeed} };
-          let url = '/api/cases/' + caseNo + '/queries/' + that.queryId + '/notes';
+          var that = this;
+          var notesJson = { query: { notes: notes, information_need: informationNeed} };
+          var url = 'api/cases/' + caseNo + '/queries/' + that.queryId + '/notes';
 
           return $http.put(url , notesJson)
             .then(function() {
@@ -551,8 +551,8 @@ angular.module('QuepidApp')
         };
 
         this.fetchNotes = function() {
-          let that  = this;
-          let url   = '/api/cases/' + caseNo + '/queries/' + that.queryId + '/notes';
+          var that  = this;
+          var url   = 'api/cases/' + caseNo + '/queries/' + that.queryId + '/notes';
           return $http.get(url)
             .then(function(response) {
               that.notes = response.data.notes;
@@ -567,9 +567,9 @@ angular.module('QuepidApp')
         };
 
         this.saveOptions = function(options) {
-          let that = this;
-          let optionsJson = { query: { options: options } };
-          let url = '/api/cases/' + caseNo + '/queries/' + that.queryId + '/options';
+          var that = this;
+          var optionsJson = { query: { options: options } };
+          var url = 'api/cases/' + caseNo + '/queries/' + that.queryId + '/options';
 
           return $http.put(url , optionsJson)
             .then(function() {
@@ -586,8 +586,8 @@ angular.module('QuepidApp')
         };
 
         this.fetchOptions = function() {
-          let that  = this;
-          let url   = '/api/cases/' + caseNo + '/queries/' + that.queryId + '/options';
+          var that  = this;
+          var url   = 'api/cases/' + caseNo + '/queries/' + that.queryId + '/options';
 
           return $http.get(url)
             .then(function(response) {
@@ -602,9 +602,9 @@ angular.module('QuepidApp')
         };
 
         this.setThreshold = function(enabled, threshold) {
-          let that          = this;
-          let url           = '/api/cases/' + caseNo + '/queries/' + that.queryId + '/threshold';
-          let thresholdJson = {
+          var that          = this;
+          var url           = 'api/cases/' + caseNo + '/queries/' + that.queryId + '/threshold';
+          var thresholdJson = {
             query: {
               threshold:      threshold,
               threshold_enbl: enabled
@@ -726,7 +726,7 @@ angular.module('QuepidApp')
       let querySearchableDeferred = $q.defer();
       function bootstrapQueries(caseNo) {
         querySearchableDeferred = $q.defer();
-        let path = '/api/cases/' + caseNo + '/queries?bootstrap=true';
+        var path = 'api/cases/' + caseNo + '/queries?bootstrap=true';
 
         $http.get(path)
           .then(function(response) {
@@ -830,8 +830,8 @@ angular.module('QuepidApp')
             return;
           }
 
-          let path = '/api/cases/' + caseNo + '/queries';
-          let postData = {
+          var path = 'api/cases/' + caseNo + '/queries';
+          var postData = {
             query: {
               query_text: query.queryText
             }
@@ -886,8 +886,8 @@ angular.module('QuepidApp')
           return deferred.promise;
         }
 
-        let path = '/api/bulk/cases/' + caseNo + '/queries';
-        let data = {
+        var path = 'api/bulk/cases/' + caseNo + '/queries';
+        var data = {
           queries: queryTexts
         };
 
@@ -932,8 +932,8 @@ angular.module('QuepidApp')
       };
 
       this.updateQueryDisplayPosition = function(queryId, oldQueryId, reverse) {
-        let url     = '/api/cases/' + caseNo + '/queries/' + queryId + '/position';
-        let data    = {
+        var url     = 'api/cases/' + caseNo + '/queries/' + queryId + '/position';
+        var data    = {
           after:    oldQueryId,
           reverse:  reverse
         };
@@ -952,8 +952,8 @@ angular.module('QuepidApp')
 
       // Delete a query
       this.deleteQuery = function(queryId) {
-        let path = '/api/cases/' + caseNo + '/queries/' + queryId;
-        let that = this;
+        var path = 'api/cases/' + caseNo + '/queries/' + queryId;
+        var that = this;
 
         return $http.delete(path)
           .then(function() {
@@ -970,8 +970,8 @@ angular.module('QuepidApp')
 
       // Move a query
       this.moveQuery = function(query, targetCase) {
-        let path = '/api/cases/' + query.caseNo + '/queries/' + query.queryId;
-        let data = {'other_case_id': targetCase.caseNo};
+        var path = 'api/cases/' + query.caseNo + '/queries/' + query.queryId;
+        var data = {'other_case_id': targetCase.caseNo};
 
         return $http.put(path, data)
           .then(function() {

@@ -46,7 +46,7 @@
              <%= f.password_field :password, class: 'form-control password', placeholder: 'Password' %>
           </div>
           <div>
-            <a href='/users/password/new' target="_self">Forgot Password?</a>
+            <%= link_to 'Forgot Password?', new_user_password_path %>
           </div>
           <br/>
           <%= f.submit 'Sign in', class: 'btn btn-primary login' %>

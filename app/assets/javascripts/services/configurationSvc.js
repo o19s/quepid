@@ -6,7 +6,6 @@ angular.module('UtilitiesModule')
       var communalScorersOnly;
       var queryListSortable;
 
-
       this.setCommunalScorersOnly = function(val) {
         communalScorersOnly = JSON.parse(val);
       };
