@@ -192,6 +192,17 @@
                 self.communalScorers.push(scorer);
               }
             });
+            
+            // Sort our custom scorers by name
+            self.scorers.sort(function (a, b) {
+              if (a.name.toLowerCase ( ) < b.name.toLowerCase ( )) {
+                return -1;
+              }
+              if (a.name.toLowerCase ( ) > b.name.toLowerCase ( )) {
+                return 1;
+              }
+              return 0;
+            });
 
             broadcastSvc.send('updatedScorersList');
           });
@@ -220,9 +231,20 @@
                 self.communalScorers.push(scorer);
               }
             });
+            
+            // Sort our custom scorers by name
+            self.scorers.sort(function (a, b) {
+              if (a.name.toLowerCase ( ) < b.name.toLowerCase ( )) {
+                return -1;
+              }
+              if (a.name.toLowerCase ( ) > b.name.toLowerCase ( )) {
+                return 1;
+              }
+              return 0;
+            });
 
             if(data.default) {
-              setDefault(response.data.default);
+              setDefault(self.constructFromData(data.default));
             } else {
               resetScorer();
             }
@@ -233,7 +255,7 @@
 
         function setDefault(scorer) {
           var deferred = $q.defer();
-          scorer = self.constructFromData(scorer);
+          //scorer = self.constructFromData(scorer);
 
           self.defaultScorer = scorer;
           deferred.resolve();
