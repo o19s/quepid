@@ -17,7 +17,12 @@ class BooksController < ApplicationController
   end
 
   def new
-    @book = Book.new
+    # we actually support passing in starting point configuration for a book
+    @book = if params[:book]
+              Book.new(book_params)
+            else
+              Book.new
+            end
     respond_with(@book)
   end
 
