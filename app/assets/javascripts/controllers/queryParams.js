@@ -38,7 +38,10 @@ angular.module('QuepidApp')
             }
             else {
               $scope.showTLSChangeWarning = true;
-              $scope.quepidUrlToSwitchTo = $location.protocol() + '://' + $location.host() + $location.path();
+              // Grab just the absolute url without any trailing query parameters
+              var absUrl = $location.absUrl();
+              var n = absUrl.indexOf('?');
+              $scope.quepidUrlToSwitchTo = absUrl.substring(0, n != -1 ? n : absUrl.length);
 
               $scope.quepidUrlToSwitchTo = $scope.quepidUrlToSwitchTo + '?searchEngine=' + $scope.settings.searchEngine + '&searchUrl=' + $scope.settings.searchUrl + '&showWizard=false&apiMethod=' + $scope.settings.apiMethod;
               $scope.quepidUrlToSwitchTo = $scope.quepidUrlToSwitchTo + '&fieldSpec=' + $scope.settings.fieldSpec;
