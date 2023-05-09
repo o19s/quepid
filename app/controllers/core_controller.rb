@@ -4,7 +4,7 @@
 class CoreController < ApplicationController
   before_action :set_case_or_bootstrap
 
-  before_action :redirect_to_correct_tls # force a match to the URL of the search engine
+  #before_action :redirect_to_correct_tls # force a match to the URL of the search engine
 
   def index
     # return unless current_user
@@ -44,6 +44,7 @@ class CoreController < ApplicationController
   # rubocop:disable Metrics/CyclomaticComplexity
   # rubocop:disable Metrics/PerceivedComplexity
   def redirect_to_correct_tls
+    return true unless Rails.application.config.redirect_to_match_search_engine_tls
     return true if @case.blank? # shortcut if we don't have an @case.
 
     if @case.present? && params[:caseName]

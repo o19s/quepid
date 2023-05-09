@@ -133,7 +133,7 @@ angular.module('QuepidApp')
         //$scope.pendingWizardSettings = angular.copy(settingsSvc.tmdbSettings['solr']);
         // when you reset back to Solr, we actually don't have a url due to a glitch in picking the right one, sigh.
         if ($scope.pendingWizardSettings.searchUrl){
-          $scope.checkTLSForSearchEngineUrl();
+          //$scope.checkTLSForSearchEngineUrl();
         }
       }
 
@@ -166,7 +166,7 @@ angular.module('QuepidApp')
 
         $scope.showTLSChangeWarning = false;
 
-        $scope.checkTLSForSearchEngineUrl();
+        //$scope.checkTLSForSearchEngineUrl();
         $scope.validateHeaders();
 
         // exit early if we have the TLS issue, this really should be part of the below logic.
@@ -218,7 +218,8 @@ angular.module('QuepidApp')
         else {
           $scope.showTLSChangeWarning = true;
 
-          $scope.quepidUrlToSwitchTo = $location.protocol() + '://' + $location.host() + $location.path();
+          //$scope.quepidUrlToSwitchTo = $location.protocol() + '://' + $location.host() + $location.path();
+          $scope.quepidUrlToSwitchTo = $location.absUrl();
           $scope.quepidUrlToSwitchTo = $scope.quepidUrlToSwitchTo + '?searchEngine=' + $scope.pendingWizardSettings.searchEngine + '&searchUrl=' + $scope.pendingWizardSettings.searchUrl + '&showWizard=true&caseName=' + $scope.pendingWizardSettings.caseName + '&apiMethod=' + $scope.pendingWizardSettings.apiMethod;
 
           if (searchEngineStartsWithHttps){

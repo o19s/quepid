@@ -91,3 +91,6 @@ Rails.application.config.google_analytics_enabled = Rails.application.config.goo
 # Certain features, like sending emails and Google Analytics require you to set the domain that Quepid
 # is set up under.
 Rails.application.config.quepid_domain = ENV.fetch('QUEPID_DOMAIN', '')
+
+# == Disable redirecting to match the TLS setting
+Rails.application.config.redirect_to_match_search_engine_tls = ENV.fetch('REDIRECT_TO_MATCH_SEARCH_ENGINE_TLS', true)
