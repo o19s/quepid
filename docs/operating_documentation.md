@@ -72,6 +72,8 @@ If you wish to host Quepid in a folder other than the root folder (`/`), specify
 
 __Note 1:__ The context path should not have a trailing-slash.  If you do not wish to setup a context path you can leave this variable blank.
 
+__Note 2:__ The precompiled assets also need to know about the RAILS_RELATIVE_URL_ROOT in the production docker image.   Add to your `entrypoint.sh` the instruction `RAILS_ENV=production bundle exec rake assets:precompile RAILS_RELATIVE_URL_ROOT=/quepid-app` to redo the image.
+
 
 ## Mail
 

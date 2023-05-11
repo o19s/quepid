@@ -206,6 +206,10 @@ angular.module('QuepidApp')
       }
 
       // Copied validateSearchEngineUrl from controllers/queryParams.js and renamed it checkTLSForSearchEngineUrl
+      // If Quepid is running on HTTPS, like on Heroku, then it needs to switch
+      // to HTTP in order to make calls to a Solr that is running in HTTP as well, otherwise
+      // you get this "Mixed Content", which browsers block as a security issue.
+      // https://developer.mozilla.org/en-US/docs/Web/Security/Mixed_content
       function checkTLSForSearchEngineUrl () {
 
         // Figure out if we need to reload Quepid on a different http/https port to match search engine.
@@ -218,7 +222,11 @@ angular.module('QuepidApp')
         else {
           $scope.showTLSChangeWarning = true;
 
-          $scope.quepidUrlToSwitchTo = $location.protocol() + '://' + $location.host() + $location.path();
+          // Grab just the absolute url without any trailing query parameters
+          var absUrl = $location.absUrl();
+          var n = absUrl.indexOf('?');
+          $scope.quepidUrlToSwitchTo = absUrl.substring(0, n !== -1 ? n : absUrl.length);
+          
           $scope.quepidUrlToSwitchTo = $scope.quepidUrlToSwitchTo + '?searchEngine=' + $scope.pendingWizardSettings.searchEngine + '&searchUrl=' + $scope.pendingWizardSettings.searchUrl + '&showWizard=true&caseName=' + $scope.pendingWizardSettings.caseName + '&apiMethod=' + $scope.pendingWizardSettings.apiMethod;
 
           if (searchEngineStartsWithHttps){
