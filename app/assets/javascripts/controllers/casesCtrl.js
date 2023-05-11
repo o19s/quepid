@@ -27,6 +27,25 @@ angular.module('QuepidApp')
       };
 
       $scope.casesScope.goToCase  = goToCase;
+      $scope.sortBy                   = sortBy;
+      
+      function sortBy(field) {       
+        console.log("Here i am:" + field);
+        if (field === 'caseName'){
+          $scope.casesScope.allCases = $scope.casesScope.allCases.sort(function (a, b) {
+            var alc = a[field].toLowerCase(),
+                  blc = b[field].toLowerCase();
+            return alc > blc ? 1 : alc < blc ? -1 : 0;
+          });
+        }
+        else if (field === 'lastScore') {     
+          $scope.casesScope.allCases = $scope.casesScope.allCases.sort(function (a, b) {     
+            let da = angular.isUndefined(a.lastScore)? new Date() : new Date(a.lastScore.created_at);
+            let db = angular.isUndefined(b.lastScore)? new Date() : new Date(b.lastScore.created_at);
+            return da - db;
+          });
+        }
+      }
 
       var fetchDeepCaseList = function() {
         $scope.casesScope.loadingCases = true;
