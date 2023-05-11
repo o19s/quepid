@@ -24,7 +24,7 @@ class TlsFlowTest < ActionDispatch::IntegrationTest
 
     # Navigate to a try that is https TLS protocol
     get case_core_url(id: kase.id, try_number: try_https.try_number)
-    #assert_response :redirect
+    # assert_response :redirect
     assert_response :ok
   end
 end

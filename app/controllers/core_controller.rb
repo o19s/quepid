@@ -29,9 +29,7 @@ class CoreController < ApplicationController
     end
   end
 
-  
   def populate_from_params
-
     if @case.present? && params[:caseName]
       @case.case_name = params[:caseName]
       @case.save

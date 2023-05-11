@@ -40,7 +40,7 @@ class CoreControllerTest < ActionController::TestCase
       assert_equal the_try.try_number.to_s, try_info[1]
     end
 
-    # We used to redirect the browser to match the 
+    # We used to redirect the browser to match the
     # search engine URL, but don't do that anymore.'
     test 'bootstraps case with HTTPS search_engine ' do
       the_try.search_url = 'https://somesearch.com'
@@ -49,7 +49,7 @@ class CoreControllerTest < ActionController::TestCase
       get :index
 
       assert_response :ok
-      #assert response.body.include?('<a href="https://test.host/">redirected</a>')
+      # assert response.body.include?('<a href="https://test.host/">redirected</a>')
     end
 
     test 'bootstraps non deleted/archived case' do

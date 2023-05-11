@@ -56,7 +56,7 @@ Rails.application.configure do
   # Info include generic and useful information about system operation, but avoids logging too much
   # information to avoid inadvertent exposure of personally identifiable information (PII). Use "debug"
   # for everything.
-  config.log_level = ENV.fetch("RAILS_LOG_LEVEL") { "info" }
+  config.log_level = ENV.fetch('RAILS_LOG_LEVEL', 'info')
 
   # Prepend all log lines with the following tags.
   config.log_tags = [ :request_id ]
