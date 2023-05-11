@@ -37,7 +37,6 @@ namespace :assets do
 
   # Hook into existing assets:precompile task
   Rake::Task['assets:precompile'].enhance do
-    Rake::Task['assets:gzip'].invoke
     Rake::Task['assets:jupyterlite'].invoke
   end
 end
