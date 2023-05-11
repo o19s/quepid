@@ -5,7 +5,6 @@ require 'zlib'
 
 # rubocop:disable Metrics/BlockLength
 
-#GZIPPED_BASE_PATH_FOR_NOTEBOOKS = '/notebooks'
 namespace :assets do
   desc 'Unpack Jupyterlite assets'
   task jupyterlite: :environment do
