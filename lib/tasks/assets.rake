@@ -5,7 +5,7 @@ require 'zlib'
 
 # rubocop:disable Metrics/BlockLength
 
-GZIPPED_BASE_PATH_FOR_NOTEBOOKS = '/srv/app/public/notebooks'
+#GZIPPED_BASE_PATH_FOR_NOTEBOOKS = '/srv/app/public/notebooks'
 namespace :assets do
   # Does this actually do anything for us?
   desc 'Create .gz versions of assets'
@@ -41,7 +41,8 @@ namespace :assets do
       dest = nil
       tar.each do |entry|
         entry_path = entry.full_name
-        entry_path = entry_path[GZIPPED_BASE_PATH_FOR_NOTEBOOKS.length..]
+        puts entry_path
+        #entry_path = entry_path[GZIPPED_BASE_PATH_FOR_NOTEBOOKS.length..]
 
         dest ||= File.join destination, entry_path
         if entry.directory?
