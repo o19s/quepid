@@ -5,45 +5,18 @@ require 'zlib'
 
 # rubocop:disable Metrics/BlockLength
 
-#GZIPPED_BASE_PATH_FOR_NOTEBOOKS = '/srv/app/public/notebooks'
+#GZIPPED_BASE_PATH_FOR_NOTEBOOKS = '/notebooks'
 namespace :assets do
-  # Does this actually do anything for us?
-  desc 'Create .gz versions of assets'
-  task gzip: :environment do
-    zip_types = /\.(?:css|html|js|otf|svg|txt|xml)$/
-
-    public_assets = Rails.public_path.join(Rails.application.config.assets.prefix)
-
-    Dir["#{public_assets}/**/*"].each do |f|
-      next unless !File.directory?(f) && f =~ zip_types
-
-      mtime = File.mtime(f)
-      gz_file = "#{f}.gz"
-      next if File.exist?(gz_file) && File.mtime(gz_file) >= mtime
-
-      File.open(gz_file, 'wb') do |dest|
-        gz = Zlib::GzipWriter.new(dest, Zlib::BEST_COMPRESSION)
-        gz.mtime = mtime.to_i
-        IO.copy_stream(File.open(f), gz)
-        gz.close
-      end
-
-      File.utime(mtime, mtime, gz_file)
-    end
-  end
-
   desc 'Unpack Jupyterlite assets'
   task jupyterlite: :environment do
     notebooks_zip = Rails.root.join('jupyterlite/notebooks.gz')
-    destination = Rails.public_path.join('notebooks')
+    destination = Rails.public_path #.join('notebooks')
 
     Gem::Package::TarReader.new( Zlib::GzipReader.open(notebooks_zip) ) do |tar|
       dest = nil
       tar.each do |entry|
         entry_path = entry.full_name
-        puts entry_path
-        #entry_path = entry_path[GZIPPED_BASE_PATH_FOR_NOTEBOOKS.length..]
-
+        
         dest ||= File.join destination, entry_path
         if entry.directory?
           FileUtils.rm_rf dest unless File.directory? dest
