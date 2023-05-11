@@ -9,9 +9,7 @@ namespace :assets do
     notebooks_gz = Rails.root.join('jupyterlite/notebooks.gz')
     destination = Rails.public_path
 
-    puts "Destination is #{destination}"
-    system 'ls -alh'
-
+    puts "Unpacking Jupyterlite into #{destination}"
     system "tar -xzf #{notebooks_gz} --directory #{destination}"
   end
 
