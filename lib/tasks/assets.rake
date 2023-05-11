@@ -10,14 +10,15 @@ namespace :assets do
   desc 'Unpack Jupyterlite assets'
   task jupyterlite: :environment do
     notebooks_zip = Rails.root.join('jupyterlite/notebooks.gz')
-    destination = Rails.public_path #.join('notebooks')
+    destination = Rails.public_path
 
     Gem::Package::TarReader.new( Zlib::GzipReader.open(notebooks_zip) ) do |tar|
       dest = nil
       tar.each do |entry|
         entry_path = entry.full_name
-        
+        puts entry_path
         dest ||= File.join destination, entry_path
+        puts dest
         if entry.directory?
           FileUtils.rm_rf dest unless File.directory? dest
           FileUtils.mkdir_p dest, mode: entry.header.mode, verbose: false
@@ -28,6 +29,7 @@ namespace :assets do
           end
           FileUtils.chmod entry.header.mode, dest, verbose: false
         elsif '2' == entry.header.typeflag # Symlink!
+          puts "We have a symlink for dest: #{entry_path}"
           File.symlink entry.header.linkname, dest
         end
         dest = nil
