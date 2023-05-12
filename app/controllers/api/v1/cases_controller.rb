@@ -6,16 +6,16 @@ module Api
       before_action :set_case, only: [ :update, :destroy ]
       before_action :case_with_all_the_bells_whistles, only: [ :show ]
       before_action :check_case, only: [ :show, :update, :destroy ]
-      
+
       # Spiking out can we make an API public?
       def authenticate_api!
         set_case
-        if @case.public?
+        if @case&.public?
           return true
-        else 
-          return true if current_user
+        elsif current_user
+          return true
         end
-          
+
         render json:   { reason: 'Unauthorized!' },
                status: :unauthorized
       end
