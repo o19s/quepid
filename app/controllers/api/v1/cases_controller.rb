@@ -7,6 +7,15 @@ module Api
       before_action :case_with_all_the_bells_whistles, only: [ :show ]
       before_action :check_case, only: [ :show, :update, :destroy ]
 
+      # Spiking out can we make an API public?
+      def authenticate_api!
+        set_case
+        return true if @case&.public? || current_user
+
+        render json:   { reason: 'Unauthorized!' },
+               status: :unauthorized
+      end
+
       # rubocop:disable Metrics/MethodLength
       # rubocop:disable Metrics/AbcSize
       def index
