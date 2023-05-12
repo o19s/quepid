@@ -343,7 +343,7 @@
           return csvContent;
         }
 
-        let stringifyField = function (data) {
+        const stringifyField = function (data) {
           if (typeof data === 'object'){
             if (data === null){
               data = '';
