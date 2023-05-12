@@ -10,9 +10,7 @@ module Api
       # Spiking out can we make an API public?
       def authenticate_api!
         set_case
-        if @case&.public? || current_user
-          return true
-        end
+        return true if @case&.public? || current_user
 
         render json:   { reason: 'Unauthorized!' },
                status: :unauthorized
