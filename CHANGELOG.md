@@ -1,5 +1,17 @@
 # Changelog
 
+## 7.2.1 - 2023-05-12
+
+Well, that didn't take long...   Wanted to use the "Import Snapshot" function, and discovered that the "Export Snapshot" function was busted.   
+
+### Features
+
+* We've had the ability to mark a Case as "Public" for a while, but we only supported it for the visualization of tries screen.  As a spike, trial allowing public access to /api/cases/CASE_ID.json and /api/cases/CASE_ID/snapshots/SNAPSHOT_ID.json end points.  https://github.com/o19s/quepid/pull/723 by @epugh.
+
+### Bugs
+
+* Fix Export Snapshot.  https://github.com/o19s/quepid/pull/722 by @depahelix2021.
+
 ## 7.2.0 - 2023-05-11
 
 ### Features
