@@ -387,15 +387,15 @@
           }
 
           angular.forEach(snapshot.docs, function (docs, queryId) {
-            let queryIdAsInt = parseInt(queryId, 10);
-            let matchingQuery = snapshot.queries.filter(function(query) {
-              return query.queryId === queryIdAsInt;
+            const queryIdToMatch = parseInt(queryId, 10);
+            const matchingQuery = snapshot.queries.filter(function(query) {
+              return query.queryId === queryIdToMatch;
             });
             if (matchingQuery[0]) {
-              let matchingQueryText = matchingQuery[0].query_text;
+              const matchingQueryText = matchingQuery[0].query_text;
               if (matchingQueryText) {
                 angular.forEach(docs, function (doc, idx) {
-                  let infoArray = [];
+                  const infoArray = [];
                   infoArray.push(stringifyField(snapshotName));
                   infoArray.push(stringifyField(snapshotTime));
                   infoArray.push(stringifyField(caseNumber));
