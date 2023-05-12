@@ -115,7 +115,7 @@ describe('Service: teamSvc', function () {
       .then(function(response) {
         // Magic commented out console calls make test pass??  WTF?
         //console.log("Response is");
-        //console.log(response)
+        console.log(response)
         expect(response).toEqual(mockTeam);
       });
     $httpBackend.flush();
