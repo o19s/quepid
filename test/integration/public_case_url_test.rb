@@ -23,10 +23,14 @@ class PublicCaseUrlTest < ActionDispatch::IntegrationTest
     assert_response :redirect
 
     # We don't have access to the case as logged out user
-  rescue NoMethodError do
-           get analytics_tries_visualization_url(case_id: kase.id)
-           raise "shouldn't have made it to here"
-         end
+    rescue NoMethodError do
+      get analytics_tries_visualization_url(case_id: kase.id)
+      raise "shouldn't have made it to here"
+    end
+
+    #assert_raises NoMethodError do
+    #  get analytics_tries_visualization_url(case_id: kase.id)
+    #end
 
     # Navigate to the case using the encrypted "public" version of the case id
     get analytics_tries_visualization_url(case_id: kase.public_id)

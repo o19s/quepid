@@ -7,6 +7,19 @@ module Api
       before_action :check_case
       before_action :set_snapshot,    only: [ :show, :destroy ]
       before_action :check_snapshot,  only: [ :show, :destroy ]
+      
+      # Spiking out can we make an API public?
+      def authenticate_api!
+        find_case
+        if @case.public?
+          return true
+        else 
+          return true if current_user
+        end
+          
+        render json:   { reason: 'Unauthorized!' },
+               status: :unauthorized
+      end
 
       def index
         @snapshots = @case.snapshots
