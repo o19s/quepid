@@ -377,29 +377,25 @@
          */
 
         function stringifySnapshot (aCase, snapshot, withHeader) {
-          let infoArray = [];
-          let matchingQuery = null;
-          let matchingQueryText = null;
           const snapshotName = snapshot.name();
           const snapshotTime = snapshot.time;
           const caseNumber = aCase.caseNo;
           let csvContent = '';
-          let queryIdAsInt = 0;
 
           if (withHeader) {
             csvContent += self.snapshotHeaderToCSV();
           }
 
           angular.forEach(snapshot.docs, function (docs, queryId) {
-            queryIdAsInt = parseInt(queryId, 10);
-            matchingQuery = snapshot.queries.filter(function(query) {
+            let queryIdAsInt = parseInt(queryId, 10);
+            let matchingQuery = snapshot.queries.filter(function(query) {
               return query.queryId === queryIdAsInt;
             });
             if (matchingQuery[0]) {
-              matchingQueryText = matchingQuery[0].query_text;
+              let matchingQueryText = matchingQuery[0].query_text;
               if (matchingQueryText) {
                 angular.forEach(docs, function (doc, idx) {
-                  infoArray = [];
+                  let infoArray = [];
                   infoArray.push(stringifyField(snapshotName));
                   infoArray.push(stringifyField(snapshotTime));
                   infoArray.push(stringifyField(caseNumber));
