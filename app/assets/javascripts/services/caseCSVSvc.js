@@ -343,7 +343,7 @@
           return csvContent;
         }
 
-        var stringifyField = function (data) {
+        let stringifyField = function (data) {
           if (typeof data === 'object'){
             if (data === null){
               data = '';
@@ -360,7 +360,7 @@
             }
 
             if (data.startsWith('=') || data.startsWith('@') || data.startsWith('+') || data.startsWith('-')) {
-              data = ' ' + data;
+              data = ` ${data}`;
             }
 
             return data;
