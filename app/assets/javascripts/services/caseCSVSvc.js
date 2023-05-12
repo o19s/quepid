@@ -343,6 +343,32 @@
           return csvContent;
         }
 
+        var stringifyField = function (data) {
+          if (typeof data === 'object'){
+            if (data === null){
+              data = '';
+            }
+            else {
+              data = data.join(',');
+            }
+          }
+          if (typeof data === 'string') {
+            data = data.trim().replace(/"/g, '""'); // Escape double quotes
+
+            if (data.indexOf(',') > -1 || data.indexOf('\n') > -1 || data.indexOf('\r') > -1) {
+              data = textDelimiter + data + textDelimiter;
+            }
+
+            if (data.startsWith('=') || data.startsWith('@') || data.startsWith('+') || data.startsWith('-')) {
+              data = ' ' + data;
+            }
+
+            return data;
+          }
+
+          return data;
+        };
+
         /**
          * Creates CSV string of snapshot
          *
@@ -354,9 +380,9 @@
           let infoArray = [];
           let matchingQuery = null;
           let matchingQueryText = null;
-          let snapshotName = snapshot.name();
-          let snapshotTime = snapshot.time;
-          let caseNumber = aCase.caseNo;
+          const snapshotName = snapshot.name();
+          const snapshotTime = snapshot.time;
+          const caseNumber = aCase.caseNo;
           let csvContent = '';
           let queryIdAsInt = 0;
 
@@ -402,32 +428,6 @@
           return downloadFileName;
         }
 
-
-        var stringifyField = function (data) {
-          if (typeof data === 'object'){
-            if (data === null){
-              data = '';
-            }
-            else {
-              data = data.join(',');
-            }
-          }
-          if (typeof data === 'string') {
-            data = data.trim().replace(/"/g, '""'); // Escape double quotes
-
-            if (data.indexOf(',') > -1 || data.indexOf('\n') > -1 || data.indexOf('\r') > -1) {
-              data = textDelimiter + data + textDelimiter;
-            }
-
-            if (data.startsWith('=') || data.startsWith('@') || data.startsWith('+') || data.startsWith('-')) {
-              data = ' ' + data;
-            }
-
-            return data;
-          }
-
-          return data;
-        };
       }
     ]);
 })();
