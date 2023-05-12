@@ -393,7 +393,7 @@
           angular.forEach(snapshot.docs, function (docs, queryId) {
             queryIdAsInt = parseInt(queryId, 10);
             matchingQuery = snapshot.queries.filter(function(query) {
-              return query.query_id === queryIdAsInt;
+              return query.queryId === queryIdAsInt;
             });
             if (matchingQuery[0]) {
               matchingQueryText = matchingQuery[0].query_text;

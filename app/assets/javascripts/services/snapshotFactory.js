@@ -26,6 +26,12 @@
       self.timestamp        = timestamp;
 
       self.docIdsPerQuery   = {};
+      
+      // Map from snake_case to camelCase.
+      angular.forEach(self.queries, function(query) {
+        query.queryId = query.query_id;
+        delete query.query_id;
+      });
 
       angular.forEach(self.docs, function(docs, queryId) {
         self.docIdsPerQuery[queryId] = [];
