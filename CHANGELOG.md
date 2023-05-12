@@ -1,5 +1,19 @@
 # Changelog
 
+## 7.2.0 - 2023-05-11
+
+### Features
+
+* Interested in Rank Biased Overlap as a more powerful version of the venerable Jaccard metric?   We have it now as an example Jupter notebook.   Thanks to Tito Sierra at the 2023 US Haystack for introducing me to this metric.  Thanks to @mkr for creating the draft notebook.   
+
+* Provide link to Team from Book of Judgements.  https://github.com/o19s/quepid/pull/718 by @epugh.
+
+### Improvements
+
+* Lots of fixes and cleanups for nesting Quepid under another domain in https://github.com/o19s/quepid/pull/719.   Credit to @frankcelia for figuring out that we were too smart by half in letting the Rails app redirect traffic to try and match Quepid TLS to the search engine's TLS.   Pulling that out has simplified our logic immensely.   https://github.com/o19s/quepid/pull/719 by @epugh and @frankcelia.
+
+* We're now on Jupyterlite 0.1.0 from our relatively old 0.1.0b14, and have a build process that will let us stay up to date with this rapidly evolving project.  https://github.com/o19s/quepid/pull/709 by @mkr.
+
 ## 7.1.0 - 2023-05-05
 
 ### Features
