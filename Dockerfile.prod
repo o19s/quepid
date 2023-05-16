@@ -62,7 +62,8 @@ COPY ./Rakefile ./Rakefile
 COPY ./README.md ./README.md
 COPY ./vendor ./vendor
 COPY ./yarn.lock ./yarn.lock
-COPY ./jupyterlite/notebooks.gz ./jupyterlite/notebooks.gz
+#COPY ./jupyterlite/notebooks.gz ./jupyterlite/notebooks.gz
+ADD https://github.com/o19s/quepid-jupyterlite/releases/download/0.2/jupyter-lite-build.tgz ./jupyterlite/notebooks.gz
 
 RUN mkdir -p tmp/pids
 
