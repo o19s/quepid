@@ -56,25 +56,25 @@ angular.module('QuepidApp')
       ctrl.importSnapshotCSV = function(csv, overrideCase) {
         console.log('js 66398476539457869 overrideCase:', overrideCase);
         console.log('js 6629843563678465 csv.result', csv.result);
-        return querySnapshotSvc.importSnapshotsToSpecificCase(csv.result, theCase.caseNo)
-            .then(function() {
-              queriesSvc.reset();
-
-              //if (caseSvc.isCaseSelected()) {
-              var theCase = overrideCase; //caseSvc.getSelectedCase();
-              queriesSvc.bootstrapQueries(theCase.caseNo)
-                  .then(function() {
-                    angular.forEach(queriesSvc.queries, function(q) {
-                      q.search()
-                          .then(function success() {
-                          }, function error(errorMsg) {
-                            flash.error = 'Your new query had an error';
-                            flash.to('search-error').error = errorMsg;
-                          });
-                    });
-                  });
-              //}
-            });
+        return querySnapshotSvc.importSnapshotsToSpecificCase(csv.result, theCase.caseNo);
+            // .then(function() {
+            //   queriesSvc.reset();
+            //
+            //   //if (caseSvc.isCaseSelected()) {
+            //   var theCase = overrideCase; //caseSvc.getSelectedCase();
+            //   queriesSvc.bootstrapQueries(theCase.caseNo)
+            //       .then(function() {
+            //         angular.forEach(queriesSvc.queries, function(q) {
+            //           q.search()
+            //               .then(function success() {
+            //               }, function error(errorMsg) {
+            //                 flash.error = 'Your new query had an error';
+            //                 flash.to('search-error').error = errorMsg;
+            //               });
+            //         });
+            //       });
+            //   //}
+            // });
       };
 
       // Watches

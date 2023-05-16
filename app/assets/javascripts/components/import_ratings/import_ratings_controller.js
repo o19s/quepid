@@ -14,9 +14,9 @@ angular.module('QuepidApp')
       var ctrl = this;
 
       // Functions
-      ctrl.create = create(caseSvc, querySnapshotSvc, flash, queriesSvc);
+      ctrl.create = create;
 
-      function create (caseSvc, querySnapshotSvc, flash, queriesSvc) {
+      function create () {
         var modalInstance = $uibModal.open({
           templateUrl:  'import_ratings/_modal.html',
           controller:   'ImportRatingsModalInstanceCtrl',
