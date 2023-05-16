@@ -122,12 +122,12 @@ star wars,"The original movie"</pre>
     </uib-tab>
     <uib-tab index="2" heading="Snapshots" select="ctrl.clearSelection()">
       <p>
-        Importing snapshots is fun!  Any missing queries will be created.
+        Importing snapshots is fun!  Any missing queries will be created.  Any case id given in the uploaded CSV file will be replaced so that all rows will be imported into the current case.
       </p>
       <div class="form-group">
-        <input type="radio" id="snapshots145" name="importSelection" value="snapshots"
+        <input type="radio" id="snapshots" name="importSelection" value="snapshots"
                ng-model="ctrl.options.which">
-        <label for="snapshots145">Snapshot CSV</label>
+        <label for="snapshots">Snapshot CSV</label>
 <!--        <div class="checkbox">-->
 <!--          <label>-->
 <!--            <input id="clear-existing-queries2" type="checkbox" ng-model='ctrl.createQueries'> Create22 missing queries?-->
