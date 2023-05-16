@@ -40,17 +40,17 @@ angular.module('QuepidApp')
 
         modalInstance.result.then(
           function(response) {
-              if ( !response.error ) {
-                  queriesSvc.reset();
-                  queriesSvc.bootstrapQueries(ctrl.acase.caseNo)
-                      .then(function() {
-                          queriesSvc.searchAll();
-                      });
+            if ( !response.error ) {
+              queriesSvc.reset();
+              queriesSvc.bootstrapQueries(ctrl.acase.caseNo)
+                  .then(function() {
+                    queriesSvc.searchAll();
+                  });
 
-                  flash.success = response.message;
-              } else {
-                  flash.error = response.message;
-              }
+              flash.success = response.message;
+            } else {
+              flash.error = response.message;
+            }
           }, function() { }
         );
       }
