@@ -24,9 +24,9 @@ angular.module('QuepidApp')
           size: 'lg',
           resolve:      {
             theCase: function() {
-              //console.log('caseSvc.getSelectedCase()', caseSvc.getSelectedCase());
-              //return caseSvc.getSelectedCase();
-              return ctrl.acase;
+              console.log('caseSvc.getSelectedCase()', caseSvc.getSelectedCase());
+              return caseSvc.getSelectedCase();
+              //return ctrl.acase;
             },
             querySnapshotSvc: function() {
               return querySnapshotSvc;
