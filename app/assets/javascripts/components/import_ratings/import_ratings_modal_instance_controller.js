@@ -128,10 +128,6 @@ angular.module('QuepidApp')
         return (ctrl.options.which === 'information_needs');
       };
 
-      ctrl.snapshotsTypePicked = function () {
-        return (ctrl.options.which === 'snapshots');
-      };
-
       ctrl.ok = function () {
         if (ctrl.options.which === 'snapshots') {
           var headers = ctrl.snapshots.content.split('\n')[0];
