@@ -7,9 +7,7 @@ angular.module('QuepidApp')
     'importRatingsSvc',
     'theCase',
     'querySnapshotSvc',
-    'flash',
-    'queriesSvc',
-    function ($scope, $uibModalInstance, importRatingsSvc, theCase, querySnapshotSvc, flash, queriesSvc) {
+    function ($scope, $uibModalInstance, importRatingsSvc, theCase, querySnapshotSvc) {
       var ctrl = this;
 
       ctrl.theCase      = theCase;
@@ -53,30 +51,6 @@ angular.module('QuepidApp')
         which: undefined
       };
 
-      ctrl.importSnapshotCSV = function(csv, overrideCase) {
-        console.log('js 66398476539457869 overrideCase:', overrideCase);
-        console.log('js 6629843563678465 csv.result', csv.result);
-        return querySnapshotSvc.importSnapshotsToSpecificCase(csv.result, theCase.caseNo);
-            // .then(function() {
-            //   queriesSvc.reset();
-            //
-            //   //if (caseSvc.isCaseSelected()) {
-            //   var theCase = overrideCase; //caseSvc.getSelectedCase();
-            //   queriesSvc.bootstrapQueries(theCase.caseNo)
-            //       .then(function() {
-            //         angular.forEach(queriesSvc.queries, function(q) {
-            //           q.search()
-            //               .then(function success() {
-            //               }, function error(errorMsg) {
-            //                 flash.error = 'Your new query had an error';
-            //                 flash.to('search-error').error = errorMsg;
-            //               });
-            //         });
-            //       });
-            //   //}
-            // });
-      };
-
       // Watches
       $scope.$watch('ctrl.csv.content', function(newVal, oldVal) {
         if (newVal !== oldVal) {
@@ -105,7 +79,6 @@ angular.module('QuepidApp')
           ctrl.checkSnapshotBody();
         }
       },true);
-
 
       $scope.pickedRREFile = function() {
         var f = document.getElementById('rreFile').files[0],
@@ -153,25 +126,13 @@ angular.module('QuepidApp')
       };
 
       ctrl.ok = function () {
-        console.log('js 30495830485');
-        console.log('js 86475837643 ctrl.options.which', ctrl.options.which);
-
         if ( ctrl.options.which === 'snapshots' ) {
-          ctrl.checkSnapshotHeaders(); //placeholder function
-          ctrl.checkSnapshotBody(); //placeholder function
-
-          console.log('js 9826374587623');
-
           var headers = ctrl.snapshots.content.split('\n')[0];
           headers     = headers.split(ctrl.snapshots.separator);
 
           var expectedHeaders = [
             'Snapshot Name', 'Snapshot Time', 'Case ID', 'Query Text', 'Doc ID', 'Doc Position'
           ];
-
-          console.log('js 3958732098y54');
-          console.log('js 2938457928475 headers', headers);
-          console.log('js 2985723938874 exp headers', expectedHeaders);
 
           if ( !angular.equals(headers, expectedHeaders) ) {
             var alert = 'Headers mismatch! Please make sure you have the correct headers in you file (check for correct spelling and capitalization): ';
@@ -184,22 +145,16 @@ angular.module('QuepidApp')
               'type': 'text-danger'
             };
           } else {
-
             ctrl.snapshots.import.loading = true;
-            console.log('js 092734986753', ctrl.theCase);
-            console.log('js 348759384759', ctrl.theCase.caseNo);
-            ctrl.importSnapshotCSV(ctrl.snapshots, ctrl.theCase)
+            querySnapshotSvc.importSnapshotsToSpecificCase(ctrl.snapshots.result, theCase.caseNo)
                 .then(function() {
-                  console.log('js lsd2398475978');
                   var result = {
                     success: true,
                     message: 'Snapshots imported successfully!',
                   };
-                  console.log('js 309875394875y');
                   ctrl.snapshots.import.loading = false;
                   $uibModalInstance.close(result);
                 }, function() {
-                  console.log('js 39847593847593847');
                   var result = {
                     error:    true,
                     message:  'Could not import snapshots successfully! Please try again.',
@@ -210,39 +165,45 @@ angular.module('QuepidApp')
                 });
           }
 
-        } else {
-
-          if (ctrl.options.which === 'csv') {
+        } else if (ctrl.options.which === 'csv') {
             ctrl.checkCSVHeaders();
             ctrl.checkCSVBody();
-          }
+        }
 
-          // check if any alerts defined.
-          if (ctrl.csv.import.alert === undefined && ctrl.information_needs.import.alert === undefined) {
-            ctrl.loading = true;
-            if (ctrl.options.which === 'information_needs') {
-              importRatingsSvc.importInformationNeeds(
-                  ctrl.theCase,
-                  ctrl.information_needs.content,
-                  ctrl.createQueries
-              ).then(function () {
+        // check if any alerts defined.
+        if (ctrl.csv.import.alert === undefined && ctrl.information_needs.import.alert === undefined) {
+          ctrl.loading = true;
+          if (ctrl.options.which === 'information_needs') {
+            importRatingsSvc.importInformationNeeds(
+                ctrl.theCase,
+                ctrl.information_needs.content,
+                ctrl.createQueries
+            ).then(function () {
                     ctrl.loading = false;
-                    $uibModalInstance.close();
+                    let modalResponse = {
+                      success: true,
+                      message: 'Successfully imported information needs from CSV.'
+                    };
+                    $uibModalInstance.close(modalResponse);
                   },
-                  function (response) {
-                    var error = 'Unable to import information needs from CSV. ';
-                    if (response.data && response.data.message) {
-                      error += response.data.message;
-                    } else {
-                      error += response.status;
-                      error += ' - ' + response.statusText;
-                    }
+                function (response) {
+                  let errorMessage = 'Unable to import information needs from CSV. ';
+                  if (response.data && response.data.message) {
+                    errorMessage += response.data.message;
+                  } else {
+                    errorMessage += response.status;
+                    errorMessage += ' - ' + response.statusText;
+                  }
 
-                    ctrl.loading = false;
-                    $uibModalInstance.close(error);
-                  });
+                  let modalResponse = {
+                    error: true,
+                    message: errorMessage.toString()
+                  };
 
-            } else if (ctrl.options.which === 'csv') {
+                  ctrl.loading = false;
+                  $uibModalInstance.close(modalResponse);
+                });
+         } else if (ctrl.options.which === 'csv') {
 
               importRatingsSvc.importCSVFormat(
                   ctrl.theCase,
@@ -250,14 +211,24 @@ angular.module('QuepidApp')
                   ctrl.clearQueries
               ).then(function () {
                     ctrl.loading = false;
-                    $uibModalInstance.close();
+                    let modalResponse = {
+                      success: true,
+                      message: 'Successfully imported ratings from CSV.'
+                    };
+                    $uibModalInstance.close(modalResponse);
                   },
                   function (response) {
-                    var error = 'Unable to import ratings from CSV: ';
-                    error += response.status;
-                    error += ' - ' + response.statusText;
+                    let errorMessage = 'Unable to import ratings from CSV: ';
+                    errorMessage += response.status;
+                    errorMessage += ' - ' + response.statusText;
+
+                    let modalResponse = {
+                      error: true,
+                      message: errorMessage.toString()
+                    };
+
                     ctrl.loading = false;
-                    $uibModalInstance.close(error);
+                    $uibModalInstance.close(modalResponse);
                   });
             } else if (ctrl.options.which === 'rre') {
               importRatingsSvc.importRREFormat(
@@ -266,32 +237,51 @@ angular.module('QuepidApp')
                   ctrl.clearQueries
               ).then(function () {
                     ctrl.loading = false;
-                    $uibModalInstance.close();
+                    let modalResponse = {
+                      success: true,
+                      message: 'Successfully imported ratings from RRE.'
+                    };
+                    $uibModalInstance.close(modalResponse);
                   },
                   function (response) {
-                    var error = 'Unable to import ratings from RRE: ';
-                    error += response.status;
-                    error += ' - ' + response.statusText;
+                    let errorMessage = 'Unable to import ratings from RRE: ';
+                    errorMessage += response.status;
+                    errorMessage += ' - ' + response.statusText;
+
+                    let modalResponse = {
+                      error: true,
+                      message: errorMessage.toString()
+                    };
+
                     ctrl.loading = false;
-                    $uibModalInstance.close(error);
+                    $uibModalInstance.close(modalResponse);
                   });
             } else if (ctrl.options.which === 'ltr') {
-              importRatingsSvc.importLTRFormat(
-                  ctrl.theCase,
-                  ctrl.ltr.content,
-                  ctrl.clearQueries
-              ).then(function () {
-                    ctrl.loading = false;
-                    $uibModalInstance.close();
-                  },
-                  function (response) {
-                    var error = 'Unable to import ratings from LTR: ';
-                    error += response.status;
-                    error += ' - ' + response.statusText;
-                    ctrl.loading = false;
-                    $uibModalInstance.close(error);
-                  });
-            }
+            importRatingsSvc.importLTRFormat(
+                ctrl.theCase,
+                ctrl.ltr.content,
+                ctrl.clearQueries
+            ).then(function () {
+                  ctrl.loading = false;
+                  let modalResponse = {
+                    success: true,
+                    message: 'Successfully imported ratings from LTR.'
+                  };
+                  $uibModalInstance.close(modalResponse);
+                },
+                function (response) {
+                  let errorMessage = 'Unable to import ratings from LTR: ';
+                  errorMessage += response.status;
+                  errorMessage += ' - ' + response.statusText;
+
+                  let modalResponse = {
+                    error: true,
+                    message: errorMessage.toString()
+                  };
+
+                  ctrl.loading = false;
+                  $uibModalInstance.close(modalResponse);
+                });
           }
         }
       };
@@ -391,16 +381,6 @@ angular.module('QuepidApp')
           ctrl.information_needs.import.alert = alert;
         }
       };
-
-      ctrl.checkSnapshotHeaders = function() {
-        console.log('239875439875');
-      };
-      ctrl.checkSnapshotBody = function() {
-        console.log('923845792634');
-      };
-
-
-
 
     }
   ]);

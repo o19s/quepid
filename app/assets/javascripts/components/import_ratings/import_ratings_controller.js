@@ -24,9 +24,7 @@ angular.module('QuepidApp')
           size: 'lg',
           resolve:      {
             theCase: function() {
-              console.log('caseSvc.getSelectedCase()', caseSvc.getSelectedCase());
-              return caseSvc.getSelectedCase();
-              //return ctrl.acase;
+              return caseSvc.getSelectedCase(); //TODO not sure why this is needed for import snapshot to work?
             },
             querySnapshotSvc: function() {
               return querySnapshotSvc;
@@ -41,19 +39,20 @@ angular.module('QuepidApp')
         });
 
         modalInstance.result.then(
-          function(error) {
-            if ( !error ) {
-              queriesSvc.reset();
-              queriesSvc.bootstrapQueries(ctrl.acase.caseNo)
-                .then(function() {
-                  queriesSvc.searchAll();
-                });
+            function(response) {
+                console.log('js 3495873495783', response);
+                if ( !response.error ) {
+                    queriesSvc.reset();
+                    queriesSvc.bootstrapQueries(ctrl.acase.caseNo)
+                        .then(function() {
+                            queriesSvc.searchAll();
+                        });
 
-              flash.success = 'Ratings imported successfully!';
-            } else {
-              flash.error = error;
-            }
-          }, function() { }
+                    flash.success = response.message;
+                } else {
+                    flash.error = response.message;
+                }
+            }, function() { }
         );
       }
     }
