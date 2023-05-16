@@ -39,20 +39,19 @@ angular.module('QuepidApp')
         });
 
         modalInstance.result.then(
-            function(response) {
-                console.log('js 3495873495783', response);
-                if ( !response.error ) {
-                    queriesSvc.reset();
-                    queriesSvc.bootstrapQueries(ctrl.acase.caseNo)
-                        .then(function() {
-                            queriesSvc.searchAll();
-                        });
+          function(response) {
+              if ( !response.error ) {
+                  queriesSvc.reset();
+                  queriesSvc.bootstrapQueries(ctrl.acase.caseNo)
+                      .then(function() {
+                          queriesSvc.searchAll();
+                      });
 
-                    flash.success = response.message;
-                } else {
-                    flash.error = response.message;
-                }
-            }, function() { }
+                  flash.success = response.message;
+              } else {
+                  flash.error = response.message;
+              }
+          }, function() { }
         );
       }
     }

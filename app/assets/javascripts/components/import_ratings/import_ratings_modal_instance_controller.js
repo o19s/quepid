@@ -71,7 +71,6 @@ angular.module('QuepidApp')
       },true);
 
       $scope.$watch('ctrl.snapshots.content', function(newVal, oldVal) {
-        console.log('js 394850398450934');
         if (newVal !== oldVal) {
           ctrl.options.which = 'snapshots';
           ctrl.snapshots.import.alert = undefined;
