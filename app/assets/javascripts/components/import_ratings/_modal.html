@@ -133,7 +133,7 @@ star wars,"The original movie"</pre>
 <!--            <input id="clear-existing-queries2" type="checkbox" ng-model='ctrl.createQueries'> Create22 missing queries?-->
 <!--            <span class="glyphicon glyphicon-question-sign" aria-hidden="true" popover-trigger="'mouseenter'"-->
 <!--                  popover-placement="right"-->
-<!--                  uib-popover="Select23 to create any missing queries, useful when populating a new case with queries with info needs."></span>-->
+<!--                  uib-popover="Select to create any missing queries, useful when populating a new case with queries with info needs."></span>-->
 <!--          </label>-->
 <!--        </div>-->
 
@@ -145,7 +145,7 @@ Snapshot: testsnap1,2023-05-12T18:22:22.245Z,6,test,9426,2
 Snapshot: testsnap1,2023-05-12T18:22:22.245Z,6,test,1921,3
           </pre>
         </span>
-        <p>Select CSV file to import (for snapshot A394857):</p>
+        <p>Select Snapshot CSV file to import:</p>
 
         <ng-csv-import
                 class="import"
@@ -178,8 +178,11 @@ Snapshot: testsnap1,2023-05-12T18:22:22.245Z,6,test,1921,3
     <span ng-show="ctrl.ratingsTypePicked()">
     This operation WILL override your existing ratings. Proceed with caution!
     </span>
-    <span ng-show="!ctrl.ratingsTypePicked()">
+    <span ng-show="ctrl.informationNeedsTypePicked()">
     This operation WILL override your existing information needs. Proceed with caution!
+    </span>
+    <span ng-show="ctrl.snapshotsTypePicked()">
+    This operation may override some queries. Proceed with caution!
     </span>
   </p>
 
