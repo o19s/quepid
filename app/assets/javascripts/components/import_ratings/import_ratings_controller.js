@@ -24,7 +24,7 @@ angular.module('QuepidApp')
           size: 'lg',
           resolve: {
             theCase: function () {
-              return caseSvc.getSelectedCase(); //TODO not sure why this is needed for import snapshot to work?
+              return ctrl.acase;
             },
             querySnapshotSvc: function () {
               return querySnapshotSvc;
