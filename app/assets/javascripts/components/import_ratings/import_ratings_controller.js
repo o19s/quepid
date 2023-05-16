@@ -9,13 +9,14 @@ angular.module('QuepidApp')
     'flash',
     'caseSvc',
     'queriesSvc',
-    function($scope, $uibModal, flash, caseSvc, queriesSvc) {
+    'querySnapshotSvc',
+    function($scope, $uibModal, flash, caseSvc, queriesSvc, querySnapshotSvc) {
       var ctrl = this;
 
       // Functions
-      ctrl.create = create;
+      ctrl.create = create(caseSvc, querySnapshotSvc, flash, queriesSvc);
 
-      function create () {
+      function create (caseSvc, querySnapshotSvc, flash, queriesSvc) {
         var modalInstance = $uibModal.open({
           templateUrl:  'import_ratings/_modal.html',
           controller:   'ImportRatingsModalInstanceCtrl',
@@ -23,7 +24,18 @@ angular.module('QuepidApp')
           size: 'lg',
           resolve:      {
             theCase: function() {
+              //console.log('caseSvc.getSelectedCase()', caseSvc.getSelectedCase());
+              //return caseSvc.getSelectedCase();
               return ctrl.acase;
+            },
+            querySnapshotSvc: function() {
+              return querySnapshotSvc;
+            },
+            flash: function() {
+              return flash;
+            },
+            queriesSvc: function() {
+              return flash;
             }
           }
         });

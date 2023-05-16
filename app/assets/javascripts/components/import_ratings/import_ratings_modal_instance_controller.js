@@ -6,7 +6,10 @@ angular.module('QuepidApp')
     '$uibModalInstance',
     'importRatingsSvc',
     'theCase',
-    function ($scope, $uibModalInstance, importRatingsSvc, theCase) {
+    'querySnapshotSvc',
+    'flash',
+    'queriesSvc',
+    function ($scope, $uibModalInstance, importRatingsSvc, theCase, querySnapshotSvc, flash, queriesSvc) {
       var ctrl = this;
 
       ctrl.theCase      = theCase;
@@ -29,6 +32,14 @@ angular.module('QuepidApp')
         result:           null,
         import:           {}
       };
+      ctrl.snapshots = {
+        content:          null,
+        header:           true,
+        separator:        ',',
+        separatorVisible: false,
+        result:           null,
+        import:           {}
+      };
 
       ctrl.rre         = {
         content:           null
@@ -40,6 +51,30 @@ angular.module('QuepidApp')
 
       ctrl.options = {
         which: undefined
+      };
+
+      ctrl.importSnapshotCSV = function(csv, overrideCase) {
+        console.log('js 66398476539457869 overrideCase:', overrideCase);
+        console.log('js 6629843563678465 csv.result', csv.result);
+        return querySnapshotSvc.importSnapshotsToSpecificCase(csv.result, theCase.caseNo)
+            .then(function() {
+              queriesSvc.reset();
+
+              //if (caseSvc.isCaseSelected()) {
+              var theCase = overrideCase; //caseSvc.getSelectedCase();
+              queriesSvc.bootstrapQueries(theCase.caseNo)
+                  .then(function() {
+                    angular.forEach(queriesSvc.queries, function(q) {
+                      q.search()
+                          .then(function success() {
+                          }, function error(errorMsg) {
+                            flash.error = 'Your new query had an error';
+                            flash.to('search-error').error = errorMsg;
+                          });
+                    });
+                  });
+              //}
+            });
       };
 
       // Watches
@@ -58,6 +93,16 @@ angular.module('QuepidApp')
           ctrl.information_needs.import.alert = undefined;
           ctrl.checkInformationNeedsHeaders();
           ctrl.checkInformationNeedsBody();
+        }
+      },true);
+
+      $scope.$watch('ctrl.snapshots.content', function(newVal, oldVal) {
+        console.log('js 394850398450934');
+        if (newVal !== oldVal) {
+          ctrl.options.which = 'snapshots';
+          ctrl.snapshots.import.alert = undefined;
+          ctrl.checkSnapshotHeaders();
+          ctrl.checkSnapshotBody();
         }
       },true);
 
@@ -108,89 +153,145 @@ angular.module('QuepidApp')
       };
 
       ctrl.ok = function () {
-        if ( ctrl.options.which === 'csv' ) {
-          ctrl.checkCSVHeaders();
-          ctrl.checkCSVBody();
-        }
+        console.log('js 30495830485');
+        console.log('js 86475837643 ctrl.options.which', ctrl.options.which);
 
-        // check if any alerts defined.
-        if (ctrl.csv.import.alert === undefined && ctrl.information_needs.import.alert === undefined) {
-          ctrl.loading = true;
-          if ( ctrl.options.which === 'information_needs' ) {
-            importRatingsSvc.importInformationNeeds(
-              ctrl.theCase,
-              ctrl.information_needs.content,
-              ctrl.createQueries
-            ).then(function() {
-                ctrl.loading = false;
-                $uibModalInstance.close();
-              },
-              function(response) {
-                var error = 'Unable to import information needs from CSV. ';
-                if (response.data && response.data.message){
-                  error += response.data.message;
-                }
-                else {
-                  error += response.status;
-                  error += ' - ' + response.statusText;
-                }
+        if ( ctrl.options.which === 'snapshots' ) {
+          ctrl.checkSnapshotHeaders(); //placeholder function
+          ctrl.checkSnapshotBody(); //placeholder function
 
-                ctrl.loading = false;
-                $uibModalInstance.close(error);
-              });
+          console.log('js 9826374587623');
 
+          var headers = ctrl.snapshots.content.split('\n')[0];
+          headers     = headers.split(ctrl.snapshots.separator);
+
+          var expectedHeaders = [
+            'Snapshot Name', 'Snapshot Time', 'Case ID', 'Query Text', 'Doc ID', 'Doc Position'
+          ];
+
+          console.log('js 3958732098y54');
+          console.log('js 2938457928475 headers', headers);
+          console.log('js 2985723938874 exp headers', expectedHeaders);
+
+          if ( !angular.equals(headers, expectedHeaders) ) {
+            var alert = 'Headers mismatch! Please make sure you have the correct headers in you file (check for correct spelling and capitalization): ';
+            alert += '<br /><strong>';
+            alert += expectedHeaders.join(',');
+            alert += '</strong>';
+
+            ctrl.snapshots.import.alert = {
+              'text': alert,
+              'type': 'text-danger'
+            };
+          } else {
+
+            ctrl.snapshots.import.loading = true;
+            console.log('js 092734986753', ctrl.theCase);
+            console.log('js 348759384759', ctrl.theCase.caseNo);
+            ctrl.importSnapshotCSV(ctrl.snapshots, ctrl.theCase)
+                .then(function() {
+                  console.log('js lsd2398475978');
+                  var result = {
+                    success: true,
+                    message: 'Snapshots imported successfully!',
+                  };
+                  console.log('js 309875394875y');
+                  ctrl.snapshots.import.loading = false;
+                  $uibModalInstance.close(result);
+                }, function() {
+                  console.log('js 39847593847593847');
+                  var result = {
+                    error:    true,
+                    message:  'Could not import snapshots successfully! Please try again.',
+                  };
+
+                  ctrl.snapshots.import.loading = false;
+                  $uibModalInstance.close(result);
+                });
           }
-          else if ( ctrl.options.which === 'csv' ) {
 
-            importRatingsSvc.importCSVFormat(
-              ctrl.theCase,
-              ctrl.csv.result,
-              ctrl.clearQueries
-            ).then(function() {
-                ctrl.loading = false;
-                $uibModalInstance.close();
-              },
-              function(response) {
-                var error = 'Unable to import ratings from CSV: ';
-                error += response.status;
-                error += ' - ' + response.statusText;
-                ctrl.loading = false;
-                $uibModalInstance.close(error);
-              });
+        } else {
+
+          if (ctrl.options.which === 'csv') {
+            ctrl.checkCSVHeaders();
+            ctrl.checkCSVBody();
           }
-          else if (ctrl.options.which === 'rre' ) {
-            importRatingsSvc.importRREFormat(
-              ctrl.theCase,
-              ctrl.rre.content,
-              ctrl.clearQueries
-            ).then(function() {
-                ctrl.loading = false;
-                $uibModalInstance.close();
-              },
-              function(response) {
-                var error = 'Unable to import ratings from RRE: ';
-                error += response.status;
-                error += ' - ' + response.statusText;
-                ctrl.loading = false;
-                $uibModalInstance.close(error);
-              });
-          }
-          else if (ctrl.options.which === 'ltr' ) {
-            importRatingsSvc.importLTRFormat(
-              ctrl.theCase,
-              ctrl.ltr.content,
-              ctrl.clearQueries
-            ).then(function() {
-                ctrl.loading = false;
-                $uibModalInstance.close();
-              },
-              function(response) {
-                var error = 'Unable to import ratings from LTR: ';
-                error += response.status;
-                error += ' - ' + response.statusText;
-                ctrl.loading = false;
-                $uibModalInstance.close(error);
-              });
+
+          // check if any alerts defined.
+          if (ctrl.csv.import.alert === undefined && ctrl.information_needs.import.alert === undefined) {
+            ctrl.loading = true;
+            if (ctrl.options.which === 'information_needs') {
+              importRatingsSvc.importInformationNeeds(
+                  ctrl.theCase,
+                  ctrl.information_needs.content,
+                  ctrl.createQueries
+              ).then(function () {
+                    ctrl.loading = false;
+                    $uibModalInstance.close();
+                  },
+                  function (response) {
+                    var error = 'Unable to import information needs from CSV. ';
+                    if (response.data && response.data.message) {
+                      error += response.data.message;
+                    } else {
+                      error += response.status;
+                      error += ' - ' + response.statusText;
+                    }
+
+                    ctrl.loading = false;
+                    $uibModalInstance.close(error);
+                  });
+
+            } else if (ctrl.options.which === 'csv') {
+
+              importRatingsSvc.importCSVFormat(
+                  ctrl.theCase,
+                  ctrl.csv.result,
+                  ctrl.clearQueries
+              ).then(function () {
+                    ctrl.loading = false;
+                    $uibModalInstance.close();
+                  },
+                  function (response) {
+                    var error = 'Unable to import ratings from CSV: ';
+                    error += response.status;
+                    error += ' - ' + response.statusText;
+                    ctrl.loading = false;
+                    $uibModalInstance.close(error);
+                  });
+            } else if (ctrl.options.which === 'rre') {
+              importRatingsSvc.importRREFormat(
+                  ctrl.theCase,
+                  ctrl.rre.content,
+                  ctrl.clearQueries
+              ).then(function () {
+                    ctrl.loading = false;
+                    $uibModalInstance.close();
+                  },
+                  function (response) {
+                    var error = 'Unable to import ratings from RRE: ';
+                    error += response.status;
+                    error += ' - ' + response.statusText;
+                    ctrl.loading = false;
+                    $uibModalInstance.close(error);
+                  });
+            } else if (ctrl.options.which === 'ltr') {
+              importRatingsSvc.importLTRFormat(
+                  ctrl.theCase,
+                  ctrl.ltr.content,
+                  ctrl.clearQueries
+              ).then(function () {
+                    ctrl.loading = false;
+                    $uibModalInstance.close();
+                  },
+                  function (response) {
+                    var error = 'Unable to import ratings from LTR: ';
+                    error += response.status;
+                    error += ' - ' + response.statusText;
+                    ctrl.loading = false;
+                    $uibModalInstance.close(error);
+                  });
+            }
           }
         }
       };
@@ -290,5 +391,16 @@ angular.module('QuepidApp')
           ctrl.information_needs.import.alert = alert;
         }
       };
+
+      ctrl.checkSnapshotHeaders = function() {
+        console.log('239875439875');
+      };
+      ctrl.checkSnapshotBody = function() {
+        console.log('923845792634');
+      };
+
+
+
+
     }
   ]);

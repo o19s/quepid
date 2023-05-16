@@ -120,6 +120,54 @@ star wars,"The original movie"</pre>
         </div>
       </div>
     </uib-tab>
+    <uib-tab index="2" heading="Snapshots" select="ctrl.clearSelection()">
+      <p>
+        Importing snapshots is fun!  Any missing queries will be created.
+      </p>
+      <div class="form-group">
+        <input type="radio" id="snapshots145" name="importSelection" value="snapshots"
+               ng-model="ctrl.options.which">
+        <label for="snapshots145">Snapshot CSV</label>
+<!--        <div class="checkbox">-->
+<!--          <label>-->
+<!--            <input id="clear-existing-queries2" type="checkbox" ng-model='ctrl.createQueries'> Create22 missing queries?-->
+<!--            <span class="glyphicon glyphicon-question-sign" aria-hidden="true" popover-trigger="'mouseenter'"-->
+<!--                  popover-placement="right"-->
+<!--                  uib-popover="Select23 to create any missing queries, useful when populating a new case with queries with info needs."></span>-->
+<!--          </label>-->
+<!--        </div>-->
+
+        <span class="help-block">
+          The CSV file should have the headers: <code>Snapshot Name,Snapshot Time,Case ID,Query Text,Doc ID,Doc Position</code> and lines similar to:
+          <pre>
+Snapshot: testsnap1,2023-05-12T18:22:22.245Z,6,test,527641,1
+Snapshot: testsnap1,2023-05-12T18:22:22.245Z,6,test,9426,2
+Snapshot: testsnap1,2023-05-12T18:22:22.245Z,6,test,1921,3
+          </pre>
+        </span>
+        <p>Select CSV file to import (for snapshot A394857):</p>
+
+        <ng-csv-import
+                class="import"
+                content="ctrl.snapshots.content"
+                header="ctrl.snapshots.header"
+                header-visible="true"
+                separator="ctrl.snapshots.separator"
+                separator-visible="ctrl.snapshots.separatorVisible"
+                result="ctrl.snapshots.result">
+        </ng-csv-import>
+
+        <div ng-if="ctrl.snapshots.content" class="block left">
+          <h2>CSV</h2>
+          <div ng-show="ctrl.snapshots.import.alert" class="text-danger bg-danger import-content"
+               ng-bind-html="ctrl.snapshots.import.alert">
+          </div>
+          <div class="content import-content">
+            <pre>{{ ctrl.snapshots.content }}</pre>
+          </div>
+        </div>
+      </div>
+    </uib-tab>
   </uib-tabset>
 
 </div>
