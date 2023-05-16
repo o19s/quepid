@@ -224,8 +224,12 @@ angular.module('QuepidApp')
 
           // Grab just the absolute url without any trailing query parameters
           var absUrl = $location.absUrl();
+          // In development you might be on port 3000, and for https we need you not on port 3000
+          absUrl = absUrl.replace(':3000','');
           var n = absUrl.indexOf('?');
           $scope.quepidUrlToSwitchTo = absUrl.substring(0, n !== -1 ? n : absUrl.length);
+          
+
           
           $scope.quepidUrlToSwitchTo = $scope.quepidUrlToSwitchTo + '?searchEngine=' + $scope.pendingWizardSettings.searchEngine + '&searchUrl=' + $scope.pendingWizardSettings.searchUrl + '&showWizard=true&caseName=' + $scope.pendingWizardSettings.caseName + '&apiMethod=' + $scope.pendingWizardSettings.apiMethod;
 
