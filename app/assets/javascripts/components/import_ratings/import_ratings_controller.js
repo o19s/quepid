@@ -9,39 +9,50 @@ angular.module('QuepidApp')
     'flash',
     'caseSvc',
     'queriesSvc',
-    function($scope, $uibModal, flash, caseSvc, queriesSvc) {
+    'querySnapshotSvc',
+    function ($scope, $uibModal, flash, caseSvc, queriesSvc, querySnapshotSvc) {
       var ctrl = this;
 
       // Functions
       ctrl.create = create;
 
-      function create () {
+      function create() {
         var modalInstance = $uibModal.open({
-          templateUrl:  'import_ratings/_modal.html',
-          controller:   'ImportRatingsModalInstanceCtrl',
+          templateUrl: 'import_ratings/_modal.html',
+          controller: 'ImportRatingsModalInstanceCtrl',
           controllerAs: 'ctrl',
           size: 'lg',
-          resolve:      {
-            theCase: function() {
+          resolve: {
+            theCase: function () {
               return ctrl.acase;
+            },
+            querySnapshotSvc: function () {
+              return querySnapshotSvc;
+            },
+            flash: function () {
+              return flash;
+            },
+            queriesSvc: function () {
+              return flash;
             }
           }
         });
 
         modalInstance.result.then(
-          function(error) {
-            if ( !error ) {
+          function (response) {
+            if (!response.error) {
               queriesSvc.reset();
               queriesSvc.bootstrapQueries(ctrl.acase.caseNo)
-                .then(function() {
+                .then(function () {
                   queriesSvc.searchAll();
                 });
 
-              flash.success = 'Ratings imported successfully!';
+              flash.success = response.message;
             } else {
-              flash.error = error;
+              flash.error = response.message;
             }
-          }, function() { }
+          }, function () {
+          }
         );
       }
     }
