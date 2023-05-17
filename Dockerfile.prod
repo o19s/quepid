@@ -10,6 +10,8 @@ LABEL maintainer="quepid_admin@opensourceconnections.com"
 ARG QUEPID_VERSION_VARIABLE
 ENV QUEPID_VERSION=$QUEPID_VERSION_VARIABLE
 
+ENV QUEPID_NOTEBOOKS_VERSION=0.2
+
 # Must have packages
 RUN apt-get update -qq && apt-get install -y --no-install-recommends vim curl apt-transport-https ca-certificates \
   && rm -rf /var/lib/apt/lists/*
@@ -62,8 +64,8 @@ COPY ./Rakefile ./Rakefile
 COPY ./README.md ./README.md
 COPY ./vendor ./vendor
 COPY ./yarn.lock ./yarn.lock
-#COPY ./jupyterlite/notebooks.gz ./jupyterlite/notebooks.gz
-ADD https://github.com/o19s/quepid-jupyterlite/releases/download/0.2/jupyter-lite-build.tgz ./jupyterlite/notebooks.gz
+
+ADD https://github.com/o19s/quepid-jupyterlite/releases/download/${QUEPID_NOTEBOOKS_VERSION}/jupyter-lite-build.tgz ./jupyterlite/notebooks.gz
 
 RUN mkdir -p tmp/pids
 
