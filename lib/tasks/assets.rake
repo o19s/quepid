@@ -8,10 +8,9 @@ namespace :assets do
   task jupyterlite: :environment do
     notebooks_gz = Rails.root.join('jupyterlite/notebooks.gz')
     destination = Rails.public_path
-    
-    
-    if !File.exist?(notebooks_gz)
-      puts "Downloading Quepid Notebooks from https://github.com/o19s/quepid-jupyterlite/releases/download/"
+
+    unless File.exist?(notebooks_gz)
+      puts 'Downloading Quepid Notebooks from https://github.com/o19s/quepid-jupyterlite/releases/download/'
       system "wget -O #{notebooks_gz} https://github.com/o19s/quepid-jupyterlite/releases/download/0.2/jupyter-lite-build.tgz"
     end
     system "tar -xzf #{notebooks_gz} --directory #{destination}"
