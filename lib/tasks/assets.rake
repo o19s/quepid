@@ -10,7 +10,7 @@ namespace :assets do
     destination = Rails.public_path
     
     
-    if !File.exists(notebooks_gz)
+    if !File.exist(notebooks_gz)
       puts "Downloading Quepid Notebooks from https://github.com/o19s/quepid-jupyterlite/releases/download/"
       system "wget -O #{notebooks_gz} https://github.com/o19s/quepid-jupyterlite/releases/download/0.2/jupyter-lite-build.tgz"
     end
