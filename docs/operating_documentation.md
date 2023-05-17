@@ -10,7 +10,7 @@ This document explains how Quepid can be operated and configured.
 - [User Tracking](#user-tracking)
 - [Heathcheck Endpoint](#healthcheck)
 - [Database Management](#database-management)
-
+- [Jupyterlite Notebooks](#jupyterlite-notebooks)
 ## Running behind a load balancer
 
 > ⚠️ _Quepid will run in TLS (`https`) or plain `http` mode depending on the
@@ -175,3 +175,7 @@ Want to monitor if Quepid is behaving?  Just monitor `/healthcheck`, and you wil
 ## Database Management
 
 See the details in [](./database.md).
+
+## Jupuyterlite Notebooks
+
+See the details in [](./jupyterlite.md).
