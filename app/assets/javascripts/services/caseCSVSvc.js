@@ -377,6 +377,7 @@
          */
 
         function stringifySnapshot (aCase, snapshot, withHeader) {
+          console.log("About to stringifysnaptho");
           const snapshotName = snapshot.name();
           const snapshotTime = snapshot.time;
           const caseNumber = aCase.caseNo;
@@ -385,14 +386,17 @@
           if (withHeader) {
             csvContent += self.snapshotHeaderToCSV();
           }
-
+          console.log("Here we are " + csvContent);
           angular.forEach(snapshot.docs, function (docs, queryId) {
             const queryIdToMatch = parseInt(queryId, 10);
+            console.log("Here is queryIdToMatch" + queryIdToMatch);
             const matchingQuery = snapshot.queries.filter(function(query) {
               return query.queryId === queryIdToMatch;
             });
+            console.log("Do we have matchingQuery0?" + (matchingQuery[0]));
             if (matchingQuery[0]) {
-              const matchingQueryText = matchingQuery[0].query_text;
+              const matchingQueryText = matchingQuery[0].queryText;
+              console.log("here is matchingQueryText");
               if (matchingQueryText) {
                 angular.forEach(docs, function (doc, idx) {
                   const infoArray = [];

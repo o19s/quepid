@@ -65,7 +65,7 @@ COPY ./README.md ./README.md
 COPY ./vendor ./vendor
 COPY ./yarn.lock ./yarn.lock
 
-ADD https://github.com/o19s/quepid-jupyterlite/releases/download/${QUEPID_NOTEBOOKS_VERSION}/jupyter-lite-build.tgz ./jupyterlite/notebooks.gz
+ADD https://github.com/o19s/quepid-jupyterlite/releases/download/${QUEPID_NOTEBOOKS_VERSION}/jupyter-lite-build.tgz ./notebooks.gz
 
 RUN mkdir -p tmp/pids
 
