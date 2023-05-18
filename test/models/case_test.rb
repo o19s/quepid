@@ -162,6 +162,8 @@ class CaseTest < ActiveSupport::TestCase
             assert_equal 0, cloned_case.tries.first.try_number
             assert_equal the_try.search_engine, cloned_try.search_engine
             assert_equal the_try.escape_query,  cloned_try.escape_query
+            assert cloned_try.custom_headers.present?
+            assert_equal the_try.custom_headers, cloned_try.custom_headers
           end
         end
       end
@@ -245,7 +247,7 @@ class CaseTest < ActiveSupport::TestCase
 
     it 'destroys the related objects' do
       assert_difference 'Case.count', -1 do
-        assert_difference 'Try.count', -4 do
+        assert_difference 'Try.count', -5 do
           assert_difference 'Query.count', -3 do
             the_case.really_destroy
             assert the_case.destroyed?
