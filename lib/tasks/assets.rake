@@ -13,10 +13,10 @@ namespace :assets do
       puts 'Downloading latest Quepid Notebooks from https://github.com/o19s/quepid-jupyterlite'
       system "wget -O #{notebooks_gz} https://github.com/o19s/quepid-jupyterlite/releases/latest/download/jupyter-lite-build.tgz"
     end
-  
+
     puts "Unpacking Jupyterlite into #{destination}"
     system "tar -xzf #{notebooks_gz} --directory #{destination}"
-    
+
     File.delete(notebooks_gz)
   end
 
