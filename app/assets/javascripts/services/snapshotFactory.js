@@ -31,6 +31,8 @@
       angular.forEach(self.queries, function(query) {
         query.queryId = query.query_id;
         delete query.query_id;
+        query.queryText = query.query_text;
+        delete query.query_text;
       });
 
       angular.forEach(self.docs, function(docs, queryId) {

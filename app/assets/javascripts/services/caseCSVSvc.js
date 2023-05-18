@@ -314,6 +314,7 @@
               infoArray.push(stringifyField(aCase.caseName));
               infoArray.push(stringifyField(aCase.lastScore.case_id));
               infoArray.push(stringifyField(query.queryText));
+                          
               dataString = infoArray.join(',');
               csvContent += dataString + EOL;
             }
@@ -333,7 +334,6 @@
                 angular.forEach(fields, function (field) {
                   infoArray.push(stringifyField(doc.doc[field]));
                 });
-
                 dataString = infoArray.join(',');
                 csvContent += dataString + EOL;
               });
@@ -385,17 +385,16 @@
           if (withHeader) {
             csvContent += self.snapshotHeaderToCSV();
           }
-
           angular.forEach(snapshot.docs, function (docs, queryId) {
             const queryIdToMatch = parseInt(queryId, 10);
             const matchingQuery = snapshot.queries.filter(function(query) {
               return query.queryId === queryIdToMatch;
             });
             if (matchingQuery[0]) {
-              const matchingQueryText = matchingQuery[0].query_text;
+              const matchingQueryText = matchingQuery[0].queryText;
               if (matchingQueryText) {
                 angular.forEach(docs, function (doc, idx) {
-                  const infoArray = [];
+                  let infoArray = [];
                   infoArray.push(stringifyField(snapshotName));
                   infoArray.push(stringifyField(snapshotTime));
                   infoArray.push(stringifyField(caseNumber));
