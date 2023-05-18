@@ -9,5 +9,5 @@ APP_ROOT = Pathname.new File.expand_path('../../',  __FILE__)
 
 Dir.chdir APP_ROOT do
   puts "\n== Downloading and extracting Jupyter Lite Build =="
-  system "bin/docker r bash -c 'rm -rf /srv/app/public/notebooks && wget -qO- #{JUPYTER_BUILD_DOWNLOAD_URL} | tar -C /srv/app/public -zxvf -'"
+  system "bin/docker r bash -c 'rm -rf /srv/app/public/notebooks && wget -qO- #{JUPYTER_BUILD_DOWNLOAD_URL} | tar -C /srv/app/public -zxf -'"
 end
