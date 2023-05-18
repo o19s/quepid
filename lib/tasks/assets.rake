@@ -10,8 +10,8 @@ namespace :assets do
     destination = Rails.public_path
 
     unless File.exist?(notebooks_gz)
-      puts 'Downloading Quepid Notebooks from https://github.com/o19s/quepid-jupyterlite/releases/download/'
-      system "wget -O #{notebooks_gz} https://github.com/o19s/quepid-jupyterlite/releases/download/0.2/jupyter-lite-build.tgz"
+      puts 'Downloading latest Quepid Notebooks from https://github.com/o19s/quepid-jupyterlite'
+      system "wget -O #{notebooks_gz} https://github.com/o19s/quepid-jupyterlite/releases/latest/download/jupyter-lite-build.tgz"
     end
   
     puts "Unpacking Jupyterlite into #{destination}"

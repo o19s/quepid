@@ -2,8 +2,7 @@
 require 'pathname'
 
 # Update our Jupyterlite setup from the latest.
-JUPYTER_LITE_RELEASE_TAG   = "0.2"
-JUPYTER_BUILD_DOWNLOAD_URL = "https://github.com/o19s/quepid-jupyterlite/releases/download/#{JUPYTER_LITE_RELEASE_TAG}/jupyter-lite-build.tgz"
+JUPYTER_BUILD_DOWNLOAD_URL = "https://github.com/o19s/quepid-jupyterlite/releases/latest/download/jupyter-lite-build.tgz"
 
 # path to your application root.
 APP_ROOT = Pathname.new File.expand_path('../../',  __FILE__)
