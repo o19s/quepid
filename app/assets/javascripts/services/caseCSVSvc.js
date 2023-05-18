@@ -314,6 +314,9 @@
               infoArray.push(stringifyField(aCase.caseName));
               infoArray.push(stringifyField(aCase.lastScore.case_id));
               infoArray.push(stringifyField(query.queryText));
+              
+              console.log("HERE WE GO< About to call a join");
+              console.log("Do we have an array? " + Array.isArray(infoArray));
               dataString = infoArray.join(',');
               csvContent += dataString + EOL;
             }
@@ -333,7 +336,8 @@
                 angular.forEach(fields, function (field) {
                   infoArray.push(stringifyField(doc.doc[field]));
                 });
-
+                console.log("About to call a join");
+                console.log("Do we have an array? " + Array.isArray(infoArray));
                 dataString = infoArray.join(',');
                 csvContent += dataString + EOL;
               });
@@ -398,7 +402,7 @@
               const matchingQueryText = matchingQuery[0].queryText;
               console.log('here is matchingQueryText' + matchingQueryText);
               if (matchingQueryText) {
-                console.log('about to look at docs')
+                console.log('about to look at docs');
                 angular.forEach(docs, function (doc, idx) {
                   console.log('in for each');
                   let infoArray = [];
