@@ -11,7 +11,7 @@ namespace :assets do
 
     unless File.exist?(notebooks_gz)
       puts 'Downloading latest Quepid Notebooks from https://github.com/o19s/quepid-jupyterlite'
-      system "wget -O #{notebooks_gz} https://github.com/o19s/quepid-jupyterlite/releases/latest/download/jupyter-lite-build.tgz"
+      system "wget --no-verbose -O #{notebooks_gz} https://github.com/o19s/quepid-jupyterlite/releases/latest/download/jupyter-lite-build.tgz"
     end
 
     puts "Unpacking Jupyterlite into #{destination}"
