@@ -102,7 +102,7 @@ angular.module('QuepidApp')
           var quepidStartsWithHttps = $location.protocol() === 'https';
           var searchEngineStartsWithHttps = searchUrl.startsWith('https');
   
-          return (quepidStartsWithHttps != searchEngineStartsWithHttps);
+          return (quepidStartsWithHttps !== searchEngineStartsWithHttps);
         } else {
           return false;
         }
@@ -118,7 +118,7 @@ angular.module('QuepidApp')
         
         var quepidUrlStartsWithHttps = absUrl.startsWith('https');
         var quepidUrlToSwitchTo = absUrl.substring(0, n !== -1 ? n : absUrl.length);
-        
+        var protocolToSwitchTo = null;
         if (quepidUrlStartsWithHttps){
           protocolToSwitchTo = 'http';
           quepidUrlToSwitchTo = quepidUrlToSwitchTo.replace('https', 'http');
@@ -129,7 +129,7 @@ angular.module('QuepidApp')
         }
         
         return [quepidUrlToSwitchTo, protocolToSwitchTo];
-      }
+      };
 
     }
   ]);

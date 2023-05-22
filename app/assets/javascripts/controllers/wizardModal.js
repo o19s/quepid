@@ -206,8 +206,7 @@ angular.module('QuepidApp')
       }
 
       function checkTLSForSearchEngineUrl () {
-
-        $scope.showTLSChangeWarning = caseTryNavSvc.needToRedirectQuepidProtocol($scope.pendingWizardSettings.searchUrl)
+        $scope.showTLSChangeWarning = caseTryNavSvc.needToRedirectQuepidProtocol($scope.pendingWizardSettings.searchUrl);
         
         if ($scope.showTLSChangeWarning){
          

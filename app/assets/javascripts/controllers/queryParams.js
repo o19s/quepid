@@ -30,7 +30,7 @@ angular.module('QuepidApp')
           }
 
           if ($scope.settings.searchEngine !== '' && !angular.isUndefined($scope.settings.searchUrl)){
-             $scope.showTLSChangeWarning = caseTryNavSvc.needToRedirectQuepidProtocol($scope.settings.searchUrl)
+             $scope.showTLSChangeWarning = caseTryNavSvc.needToRedirectQuepidProtocol($scope.settings.searchUrl);
              
             if ($scope.showTLSChangeWarning){
              
