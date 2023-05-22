@@ -56,6 +56,7 @@ angular.module('QuepidApp')
       var bootstrapCase = function() {
         return caseSvc.get(caseNo)
           .then(function(acase) {
+
             caseSvc.selectTheCase(acase);
             settingsSvc.setCaseTries(acase.tries);
             if ( isNaN(tryNo) ) {  // If we didn't specify a tryNo via the URL
@@ -65,6 +66,19 @@ angular.module('QuepidApp')
             settingsSvc.setCurrentTry(tryNo);
             if (!settingsSvc.isTrySelected()){
               flash.to('search-error').error = 'The try that was specified for the case does not actually exist!';
+            }
+            else {
+
+              var quepidStartsWithHttps = $location.protocol() === 'https';
+              var searchEngineStartsWithHttps = settingsSvc.editableSettings().searchUrl .startsWith('https');
+              $log.info("quepidStartsWithHttps:" + quepidStartsWithHttps);
+              $log.info("searchEngineStartsWithHttps:" + searchEngineStartsWithHttps);
+              if ((quepidStartsWithHttps != searchEngineStartsWithHttps)){
+                $scope.showTLSChangeWarning = true;
+                $log.info("Need to redirect to differnt TLS");
+                throw new Error("Need to change to different TLS"); // throw an error if the operation fails
+              }
+
             }
           });
       };
@@ -128,12 +142,33 @@ angular.module('QuepidApp')
       if ( caseNo === 0 ) {
         flash.error = 'You don\'t have any Cases created in Quepid.  Click \'Create a Case\' from the Relevancy Cases dropdown to get started.';
       }
-      if ( caseNo > 0 ) {
+      else if ( caseNo > 0 ) {
         queriesSvc.querySearchPromiseReset();
 
         bootstrapCase()
           .then(function() {
             loadQueries();
+            loadSnapshots();
+            updateCaseMetadata();
+            paneSvc.refreshElements();
+          }).catch(function() {
+            $log.info('boom ');
+            
+            var absUrl = $location.absUrl();
+            // In development you might be on port 3000, and for https we need you not on port 3000
+            absUrl = absUrl.replace(':3000','');              
+            var n = absUrl.indexOf('?');
+            $scope.quepidUrlToSwitchTo = absUrl.substring(0, n !== -1 ? n : absUrl.length);
+            var quepidStartsWithHttps = $location.protocol() === 'https';
+            if (!quepidStartsWithHttps){
+               $scope.protocolToSwitchTo = 'https';
+              $scope.quepidUrlToSwitchTo = $scope.quepidUrlToSwitchTo.replace('http', 'https');
+            }
+            else {
+              $scope.protocolToSwitchTo = 'http';
+              $scope.quepidUrlToSwitchTo = $scope.quepidUrlToSwitchTo.replace('https', 'http');
+            }
+            flash.to('search-error').error = '<a href="' + $scope.quepidUrlToSwitchTo + '" class="btn btn-primary form-control">Click Here to <span class="glyphicon glyphicon-refresh"></span> Reload Quepid in <code>' + $scope.protocolToSwitchTo + '</code> Protocol!';
             loadSnapshots();
             updateCaseMetadata();
             paneSvc.refreshElements();
