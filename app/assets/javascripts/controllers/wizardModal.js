@@ -205,43 +205,18 @@ angular.module('QuepidApp')
 
       }
 
-      // Copied validateSearchEngineUrl from controllers/queryParams.js and renamed it checkTLSForSearchEngineUrl
-      // If Quepid is running on HTTPS, like on Heroku, then it needs to switch
-      // to HTTP in order to make calls to a Solr that is running in HTTP as well, otherwise
-      // you get this "Mixed Content", which browsers block as a security issue.
-      // https://developer.mozilla.org/en-US/docs/Web/Security/Mixed_content
       function checkTLSForSearchEngineUrl () {
 
-        // Figure out if we need to reload Quepid on a different http/https port to match search engine.
-        var quepidStartsWithHttps = $location.protocol() === 'https';
-        var searchEngineStartsWithHttps = $scope.pendingWizardSettings.searchUrl.startsWith('https');
-
-        if ((quepidStartsWithHttps.toString() === searchEngineStartsWithHttps.toString())){
-          $scope.showTLSChangeWarning = false;
-        }
-        else {
-          $scope.showTLSChangeWarning = true;
-
-          // Grab just the absolute url without any trailing query parameters
-          var absUrl = $location.absUrl();
-          // In development you might be on port 3000, and for https we need you not on port 3000
-          absUrl = absUrl.replace(':3000','');
-          var n = absUrl.indexOf('?');
-          $scope.quepidUrlToSwitchTo = absUrl.substring(0, n !== -1 ? n : absUrl.length);
+        $scope.showTLSChangeWarning = caseTryNavSvc.needToRedirectQuepidProtocol($scope.pendingWizardSettings.searchUrl)
+        
+        if ($scope.showTLSChangeWarning){
+         
+          var resultsTuple = caseTryNavSvc.swapQuepidUrlTLS();
           
-
-          
+          $scope.quepidUrlToSwitchTo = resultsTuple[0];
+          $scope.protocolToSwitchTo = resultsTuple[1];
+                    
           $scope.quepidUrlToSwitchTo = $scope.quepidUrlToSwitchTo + '?searchEngine=' + $scope.pendingWizardSettings.searchEngine + '&searchUrl=' + $scope.pendingWizardSettings.searchUrl + '&showWizard=true&caseName=' + $scope.pendingWizardSettings.caseName + '&apiMethod=' + $scope.pendingWizardSettings.apiMethod;
-
-          if (searchEngineStartsWithHttps){
-            $scope.protocolToSwitchTo = 'https';
-            $scope.quepidUrlToSwitchTo = $scope.quepidUrlToSwitchTo.replace('http', 'https');
-          }
-          else {
-            $scope.protocolToSwitchTo = 'http';
-            $scope.quepidUrlToSwitchTo = $scope.quepidUrlToSwitchTo.replace('https', 'http');
-          }
-
         }
       }
 

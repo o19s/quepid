@@ -67,18 +67,9 @@ angular.module('QuepidApp')
             if (!settingsSvc.isTrySelected()){
               flash.to('search-error').error = 'The try that was specified for the case does not actually exist!';
             }
-            else {
-
-              var quepidStartsWithHttps = $location.protocol() === 'https';
-              var searchEngineStartsWithHttps = settingsSvc.editableSettings().searchUrl .startsWith('https');
-              $log.info("quepidStartsWithHttps:" + quepidStartsWithHttps);
-              $log.info("searchEngineStartsWithHttps:" + searchEngineStartsWithHttps);
-              if ((quepidStartsWithHttps != searchEngineStartsWithHttps)){
-                $scope.showTLSChangeWarning = true;
-                $log.info("Need to redirect to differnt TLS");
-                throw new Error("Need to change to different TLS"); // throw an error if the operation fails
-              }
-
+            else if (caseTryNavSvc.needToRedirectQuepidProtocol(settingsSvc.editableSettings().searchUrl)){
+              $log.info("Need to redirect browser to different TLS");
+              throw new Error("Need to change to different TLS"); // Signal that we need to change TLS.              
             }
           });
       };
@@ -152,23 +143,12 @@ angular.module('QuepidApp')
             updateCaseMetadata();
             paneSvc.refreshElements();
           }).catch(function() {
-            $log.info('boom ');
+            var resultsTuple = caseTryNavSvc.swapQuepidUrlTLS();
             
-            var absUrl = $location.absUrl();
-            // In development you might be on port 3000, and for https we need you not on port 3000
-            absUrl = absUrl.replace(':3000','');              
-            var n = absUrl.indexOf('?');
-            $scope.quepidUrlToSwitchTo = absUrl.substring(0, n !== -1 ? n : absUrl.length);
-            var quepidStartsWithHttps = $location.protocol() === 'https';
-            if (!quepidStartsWithHttps){
-               $scope.protocolToSwitchTo = 'https';
-              $scope.quepidUrlToSwitchTo = $scope.quepidUrlToSwitchTo.replace('http', 'https');
-            }
-            else {
-              $scope.protocolToSwitchTo = 'http';
-              $scope.quepidUrlToSwitchTo = $scope.quepidUrlToSwitchTo.replace('https', 'http');
-            }
-            flash.to('search-error').error = '<a href="' + $scope.quepidUrlToSwitchTo + '" class="btn btn-primary form-control">Click Here to <span class="glyphicon glyphicon-refresh"></span> Reload Quepid in <code>' + $scope.protocolToSwitchTo + '</code> Protocol!';
+            var quepidUrlToSwitchTo = resultsTuple[0];
+            var protocolToSwitchTo = resultsTuple[1];
+            
+            flash.to('search-error').error = '<a href="' + quepidUrlToSwitchTo + '" class="btn btn-primary form-control">Click Here to <span class="glyphicon glyphicon-refresh"></span> Reload Quepid in <code>' + protocolToSwitchTo + '</code> Protocol!';
             loadSnapshots();
             updateCaseMetadata();
             paneSvc.refreshElements();
