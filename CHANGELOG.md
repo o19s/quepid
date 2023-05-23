@@ -1,5 +1,21 @@
 # Changelog
 
+## 7.3.0 - 2023-05-23
+
+### Improvements
+
+* Importing Snapshots was a feature from the dawn of Quepid, but @epugh had never used it till now.  Originally you had to put into the csv file the id of the Case you want to import into, which is awkward and error prone.  Now you can import a snapshot via the Import modal for a Case.  https://github.com/o19s/quepid/pull/727 by @depahelix2021 fixes https://github.com/o19s/quepid/issues/724 by @epugh.
+
+### Bugs
+
+* OpenSearch and Elasticsearch have a `_source` field that is nested JSON.  Turns out we don't support stringifying a JSON object in detailed exports or Snapshots.  https://github.com/o19s/quepid/pull/732 by @depahelix2021 fixes https://github.com/o19s/quepid/issues/730 by @epugh.  
+
+* With the logic for matching Quepid TLS to the search engine TLS happening only via frontend logic (introduced in https://github.com/o19s/quepid/pull/719), we found the User Experience really rough.  https://github.com/o19s/quepid/pull/731 by @epugh reworks the UX to be clear about when you need to reload your Quepid.  
+
+* We ship Jupyterlite for data manipulation, but maybe you don't have public network access? https://github.com/o19s/quepid/pull/728 by @mkr fixes https://github.com/o19s/quepid/issues/721 by @epugh.
+
+* Cloning a Case loses the advanced settings.  https://github.com/o19s/quepid/pull/729 by @epugh fixes https://github.com/o19s/quepid/issues/725 opened by @jvia.  Thanks @jvia for reporting this!
+
 ## 7.2.1 - 2023-05-12
 
 Well, that didn't take long...   Wanted to use the "Import Snapshot" function, and discovered that the "Export Snapshot" function was busted.   
