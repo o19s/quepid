@@ -353,10 +353,10 @@
         const stringifyField = function (data) {
           if (typeof data === 'object'){
             if (data === null){
-              return '';
+              data = '';
             }
             else {
-              return escapeJsonStringForCSV(JSON.stringify(data));
+              data = escapeJsonStringForCSV(JSON.stringify(data));
             }
           }
           else if (typeof data === 'string') {
@@ -369,7 +369,6 @@
             if (data.startsWith('=') || data.startsWith('@') || data.startsWith('+') || data.startsWith('-')) {
               data = ` ${data}`;
             }
-            return data;
           }
           return data;
         };
