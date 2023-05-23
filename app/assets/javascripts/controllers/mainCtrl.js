@@ -56,6 +56,7 @@ angular.module('QuepidApp')
       var bootstrapCase = function() {
         return caseSvc.get(caseNo)
           .then(function(acase) {
+
             caseSvc.selectTheCase(acase);
             settingsSvc.setCaseTries(acase.tries);
             if ( isNaN(tryNo) ) {  // If we didn't specify a tryNo via the URL
@@ -65,6 +66,10 @@ angular.module('QuepidApp')
             settingsSvc.setCurrentTry(tryNo);
             if (!settingsSvc.isTrySelected()){
               flash.to('search-error').error = 'The try that was specified for the case does not actually exist!';
+            }
+            else if (caseTryNavSvc.needToRedirectQuepidProtocol(settingsSvc.editableSettings().searchUrl)){
+              $log.info('Need to redirect browser to different TLS');
+              throw new Error('Need to change to different TLS'); // Signal that we need to change TLS.              
             }
           });
       };
@@ -128,12 +133,22 @@ angular.module('QuepidApp')
       if ( caseNo === 0 ) {
         flash.error = 'You don\'t have any Cases created in Quepid.  Click \'Create a Case\' from the Relevancy Cases dropdown to get started.';
       }
-      if ( caseNo > 0 ) {
+      else if ( caseNo > 0 ) {
         queriesSvc.querySearchPromiseReset();
 
         bootstrapCase()
           .then(function() {
             loadQueries();
+            loadSnapshots();
+            updateCaseMetadata();
+            paneSvc.refreshElements();
+          }).catch(function() {
+            var resultsTuple = caseTryNavSvc.swapQuepidUrlTLS();
+            
+            var quepidUrlToSwitchTo = resultsTuple[0];
+            var protocolToSwitchTo = resultsTuple[1];
+            
+            flash.to('search-error').error = '<a href="' + quepidUrlToSwitchTo + '" class="btn btn-primary form-control">Click Here to <span class="glyphicon glyphicon-refresh"></span> Reload Quepid in <code>' + protocolToSwitchTo + '</code> Protocol!';
             loadSnapshots();
             updateCaseMetadata();
             paneSvc.refreshElements();

@@ -21,12 +21,7 @@ angular.module('QuepidApp')
 
       $scope.showTLSChangeWarning = false;
 
-      // Copied validateSearchEngineUrl from controllers/queryParams.js and renamed it checkTLSForSearchEngineUrl
-      // Update wizardModal.js version
-      // If Quepid is running on HTTPS, like on Heroku, then it needs to switch
-      // to HTTP in order to make calls to a Solr that is running in HTTP as well, otherwise
-      // you get this "Mixed Content", which browsers block as a security issue.
-      // https://developer.mozilla.org/en-US/docs/Web/Security/Mixed_content
+
       $scope.validateSearchEngineUrl  = function() {
         if (!angular.isUndefined($scope.settings.searchUrl)){
           if ($scope.settings.searchEngine === 'es' || $scope.settings.searchEngine === 'os'){
@@ -35,35 +30,17 @@ angular.module('QuepidApp')
           }
 
           if ($scope.settings.searchEngine !== '' && !angular.isUndefined($scope.settings.searchUrl)){
-            // Figure out if we need to redirect based on our search engine's url.
-            var quepidStartsWithHttps = $location.protocol() === 'https';
-            var searchEngineStartsWithHttps = $scope.settings.searchUrl.startsWith('https');
-
-            if ((quepidStartsWithHttps.toString() === searchEngineStartsWithHttps.toString())){
-              $scope.showTLSChangeWarning = false;
-            }
-            else {
-              $scope.showTLSChangeWarning = true;
-              // Grab just the absolute url without any trailing query parameters
-              var absUrl = $location.absUrl();
-              // In development you might be on port 3000, and for https we need you not on port 3000
-              absUrl = absUrl.replace(':3000','');              
-              var n = absUrl.indexOf('?');
-              $scope.quepidUrlToSwitchTo = absUrl.substring(0, n !== -1 ? n : absUrl.length);
+             $scope.showTLSChangeWarning = caseTryNavSvc.needToRedirectQuepidProtocol($scope.settings.searchUrl);
+             
+            if ($scope.showTLSChangeWarning){
+             
+              var resultsTuple = caseTryNavSvc.swapQuepidUrlTLS();
+              
+              $scope.quepidUrlToSwitchTo = resultsTuple[0];
+              $scope.protocolToSwitchTo = resultsTuple[1];
 
               $scope.quepidUrlToSwitchTo = $scope.quepidUrlToSwitchTo + '?searchEngine=' + $scope.settings.searchEngine + '&searchUrl=' + $scope.settings.searchUrl + '&showWizard=false&apiMethod=' + $scope.settings.apiMethod;
               $scope.quepidUrlToSwitchTo = $scope.quepidUrlToSwitchTo + '&fieldSpec=' + $scope.settings.fieldSpec;
-
-
-
-              if (searchEngineStartsWithHttps){
-                $scope.protocolToSwitchTo = 'https';
-                $scope.quepidUrlToSwitchTo = $scope.quepidUrlToSwitchTo.replace('http', 'https');
-              }
-              else {
-                $scope.protocolToSwitchTo = 'http';
-                $scope.quepidUrlToSwitchTo = $scope.quepidUrlToSwitchTo.replace('https', 'http');
-              }
             }
           }
         }
