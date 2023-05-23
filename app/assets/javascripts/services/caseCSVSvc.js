@@ -343,16 +343,23 @@
           return csvContent;
         }
 
+        const escapeJsonStringForCSV = function (input) {
+          if (typeof input === 'string') {
+            return `"${input.replace(/\"/g, '""')}"`;
+          }
+          return input;
+        };
+
         const stringifyField = function (data) {
           if (typeof data === 'object'){
             if (data === null){
               data = '';
             }
             else {
-              data = data.join(',');
+              data = escapeJsonStringForCSV(JSON.stringify(data));
             }
           }
-          if (typeof data === 'string') {
+          else if (typeof data === 'string') {
             data = data.trim().replace(/"/g, '""'); // Escape double quotes
 
             if (data.indexOf(',') > -1 || data.indexOf('\n') > -1 || data.indexOf('\r') > -1) {
@@ -362,10 +369,7 @@
             if (data.startsWith('=') || data.startsWith('@') || data.startsWith('+') || data.startsWith('-')) {
               data = ` ${data}`;
             }
-
-            return data;
           }
-
           return data;
         };
 
