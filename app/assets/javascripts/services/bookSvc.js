@@ -48,7 +48,7 @@ angular.module('QuepidApp')
       };
 
       this.shareCase = function(team, book, caseNo) {
-        // http POST /api/teams/<int:teamId>/cases
+        // http POST api/teams/<int:teamId>/cases
         var url   = 'api/teams/' + team.id + '/cases';
         var data  = {
           id: caseNo,
@@ -67,7 +67,7 @@ angular.module('QuepidApp')
       };
 
       this.updateQueryDocPairs = function(bookId, queries) {
-        // http POST /api/books/<int:bookId>/populate
+        // http POST api/books/<int:bookId>/populate
         var queryDocPairsPayload = [];
         angular.forEach(queries, function(query) {
           // Save all matches
@@ -109,7 +109,7 @@ angular.module('QuepidApp')
       };
 
       this.refreshCaseRatingsFromBook = function(caseId, bookId) {
-        // http POST /api/books/<int:bookId>/case/<int:caseId>/refresh
+        // http POST api/books/<int:bookId>/case/<int:caseId>/refresh
 
         var payload = {
         };
