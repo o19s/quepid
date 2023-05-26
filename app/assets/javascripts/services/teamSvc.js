@@ -138,7 +138,7 @@ angular.module('QuepidApp')
       };
 
       this.get = function(id, load_cases) {
-        // http GET /api/teams/<int:teamId>
+        // http GET api/teams/<int:teamId>
         var url   = 'api/teams/' + id;
         var self  = this;
 
@@ -266,7 +266,7 @@ angular.module('QuepidApp')
 
       this.unshareCase = function(team, caseNo) {
         // http DELETE /api/teams/<int:teamId>/cases/<int:caseId>
-        var url   = '/api/teams/' + team.id + '/cases/' + caseNo;
+        var url   = 'api/teams/' + team.id + '/cases/' + caseNo;
         var data  = { id: caseNo };
 
         return $http.delete(url, data)
