@@ -1,5 +1,9 @@
 # Changelog
 
+## 7.3.1 - 2023-05-26
+
+* Fixed some additional API paths for use with a nested Quepid context.  https://github.com/o19s/quepid/pull/736 by @epugh.  Follow up to https://github.com/o19s/quepid/pull/719.  
+
 ## 7.3.0 - 2023-05-23
 
 ### Improvements
