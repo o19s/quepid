@@ -330,7 +330,7 @@
   <% end %>
 
   <div class="card-body">
-    <h5 class="card-title">Query: <%= query_doc_pair.query_text %></h5>
+    <h5 class="card-title">Query: <em><%= query_doc_pair.query_text %></em></h5>
     <% if @query %>
     <h6 class="card-subtitle mb-2 text-muted">Information Need: <i><%= @query.information_need %></i></h6>
     <% end %>
@@ -357,9 +357,9 @@
     </div>
 
     <div class="float-end">
-      <%= link_to 'Skip this Document', book_skip_judging_path(@book), class: 'btn btn-info m-1', role: 'button' %>
+      <%= link_to 'I will Judge Later', book_skip_judging_path(@book), class: 'btn btn-info m-1', role: 'button' %>
       <br/>
-      <%= link_to "I Can't Rate This Document", book_query_doc_pair_unrateable_path(@book, query_doc_pair), class: 'btn btn-warning m-1', role: 'button' %>
+      <%= link_to "I Can't Tell", book_query_doc_pair_unrateable_path(@book, query_doc_pair), class: 'btn btn-warning m-1', role: 'button' %>
     </div>
 
 
