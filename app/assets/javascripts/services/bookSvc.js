@@ -78,7 +78,7 @@ angular.module('QuepidApp')
             angular.forEach(Object.values(doc.subsList), function(field) {
               fields[field['field']] = field['value'];
             });
-            fields[doc.titleField] = doc.title;
+            fields['title'] = doc.title;
             if (doc.hasThumb()) {
               fields['thumb'] = doc.thumb;
             }
