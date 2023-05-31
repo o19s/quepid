@@ -2,22 +2,17 @@
 <h2>Query Doc Pair</h2>
 
 <p>
-  in Book "<%= @book.name %>"
+  from Book "<%= @book.name %>"
 </p>
 
 <p>
   <strong>Query text:</strong>
-  <%= @query_doc_pair.query_text %>
+  <em><%= @query_doc_pair.query_text %></em>
 </p>
 
 <p>
   <strong>Position:</strong>
   <%= @query_doc_pair.position %>
-</p>
-
-<p>
-  <strong>Doc ID:</strong>
-  <%= @query_doc_pair.doc_id %>
 </p>
 
 <p>
