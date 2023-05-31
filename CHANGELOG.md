@@ -1,6 +1,6 @@
 # Changelog
 
-## 7.3.2 - 2023-05-30
+## 7.3.3 - 2023-05-30
 
 * When populating a book of judgements, if the title field wasn't `title`, then it wouldn't show up with the correct name.   https://github.com/o19s/quepid/pull/737 by @epugh fixes this.
 
