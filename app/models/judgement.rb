@@ -24,6 +24,7 @@ class Judgement < ApplicationRecord
   belongs_to :query_doc_pair
   belongs_to :user, optional: true
 
+  validates :user_id, :uniqueness => { :scope => :query_doc_pair_id }
   validates :rating,
             presence: true, unless: :unrateable
 

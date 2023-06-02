@@ -22,9 +22,15 @@ module Api
 
             # Only return rateable judgements, filter out the unrateable ones.
             unique_raters = @book.judgements.rateable.collect(&:user).uniq
-            
+
             # this logic about using email versus name is kind of awful.  Think about user.full_name or user.identifier?
-            unique_raters.each { |rater| csv_headers << make_csv_safe(rater.nil? ? 'Unknown' : rater.name.blank? ? rater.email : rater.name) }
+            unique_raters.each do |rater|
+              csv_headers << make_csv_safe(if rater.nil?
+                                             'Unknown'
+                                           else
+                                             (rater.name.presence || rater.email)
+                                           end)
+            end
 
             @csv_array << csv_headers
 

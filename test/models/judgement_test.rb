@@ -23,6 +23,23 @@
 require 'test_helper'
 
 class JudgementTest < ActiveSupport::TestCase
+  describe 'uniqueness of judgements' do
+    let(:query_doc_pair) { query_doc_pairs(:one) }
+    let(:user) { users(:random) }
+    let(:user2) { users(:doug) }
+
+    test 'Prevent saving two judgements from the same user' do
+      judgement = Judgement.create(user: user, query_doc_pair: query_doc_pair, rating: 4.4)
+      assert judgement.save
+
+      duplicate_judgement = Judgement.create(user: user, query_doc_pair: query_doc_pair, rating: 1.0)
+      assert_not duplicate_judgement.save
+      assert duplicate_judgement.errors.include?(:user_id)
+
+      judgement2 = Judgement.create(user: user2, query_doc_pair: query_doc_pair, rating: 1.0)
+      assert judgement2.save
+    end
+  end
   describe 'unrateable attribute behavior' do
     let(:query_doc_pair) { query_doc_pairs(:one) }
 
