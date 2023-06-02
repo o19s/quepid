@@ -32,6 +32,7 @@ class Judgement < ApplicationRecord
 
   def mark_unrateable
     self.unrateable = true
+    self.rating = nil
   end
 
   def mark_unrateable!

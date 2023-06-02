@@ -62,5 +62,11 @@ class JudgementTest < ActiveSupport::TestCase
 
       assert judgement.valid?
     end
+    
+    test 'mark a judgement with ratings as unrateble clears exiting rating' do
+      judgement = Judgement.create(query_doc_pair: query_doc_pair, rating: 4.4)
+      judgement.mark_unrateable!
+      assert_nil judgement.rating
+    end
   end
 end
