@@ -43,20 +43,17 @@ class JudgementsController < ApplicationController
   end
 
   def unrateable
-    @judgement = Judgement.new(query_doc_pair_id: params[:query_doc_pair_id])
-    @judgement.user = current_user
-
-    if @judgement.mark_unrateable!
-      session['previous_judgement_id'] = @judgement.id
-      redirect_to book_judge_path(@book)
-    else
-      render action: :edit
-    end
+    @judgement = Judgement.find_or_initialize_by(query_doc_pair_id: params[:query_doc_pair_id], user: current_user)
+    
+    @judgement.mark_unrateable!
+    session['previous_judgement_id'] = @judgement.id
+    redirect_to book_judge_path(@book)
   end
 
   def update
     @judgement.update(judgement_params)
     @judgement.user = current_user
+    @judgement.unrateable = false
     if @judgement.save
       redirect_to book_judge_path(@book)
     else
