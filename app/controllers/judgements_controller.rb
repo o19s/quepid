@@ -44,7 +44,7 @@ class JudgementsController < ApplicationController
 
   def unrateable
     @judgement = Judgement.find_or_initialize_by(query_doc_pair_id: params[:query_doc_pair_id], user: current_user)
-    
+
     @judgement.mark_unrateable!
     session['previous_judgement_id'] = @judgement.id
     redirect_to book_judge_path(@book)

@@ -37,16 +37,12 @@ module Api
             @book.query_doc_pairs.each do |qdp|
               row = [ make_csv_safe(qdp.query_text), qdp.doc_id ]
               unique_raters.each do |rater|
-                user_id = rater&.id
-                judgements = qdp.judgements.where(user_id: user_id)
-                if judgements.empty?
-                  rating = ''
-                elsif 1 == judgements.size
-                  judgement = judgements.first
-                  rating = judgement.nil? ? '' : judgement.rating
-                else
-                  rating = judgements.pluck(:rating).join('|')
-                end
+                judgement = qdp.judgements.find { |judgement| judgement.user = rater }
+                rating = if judgement.nil?
+                           ''
+                         else
+                           judgement.nil? ? '' : judgement.rating
+                         end
                 row.append rating
               end
               @csv_array << row
@@ -66,7 +62,7 @@ module Api
       private
 
       def find_book
-        @book = current_user.books_involved_with.where(id: params[:id]).first
+        @book = current_user.books_involved_with.where(id: params[:id]).includes(:query_doc_pairs).preload([ query_doc_pairs: [ :judgements ] ]).first
       end
 
       def check_book
