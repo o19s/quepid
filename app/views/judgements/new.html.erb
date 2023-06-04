@@ -6,13 +6,11 @@
 <br>
 
 <%
-  @previous_judgement = session["previous_judgement_id"].nil? ? nil : Judgement.find_by_id(session["previous_judgement_id"])
+  previous_judgement = @judgement.previous_judgement_made
 %>
-<% if @previous_judgement %>
-  <%= button_to 'Go Back to Previous Query/Doc Pair', edit_book_query_doc_pair_judgement_path(@book, @previous_judgement.query_doc_pair, @previous_judgement.id), method: :get %>
+<% if previous_judgement %>
+  <%= button_to 'Go Back to Previous Query/Doc Pair', edit_book_query_doc_pair_judgement_path(@book, previous_judgement.query_doc_pair, previous_judgement), method: :get %>
   <br>
 <% end %>
 <%= button_to 'Exit', book_url(@book), method: :get %>
-<br>
-
 <br>

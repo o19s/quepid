@@ -14,7 +14,8 @@
 #
 # Indexes
 #
-#  index_judgements_on_query_doc_pair_id  (query_doc_pair_id)
+#  index_judgements_on_query_doc_pair_id              (query_doc_pair_id)
+#  index_judgements_on_user_id_and_query_doc_pair_id  (user_id,query_doc_pair_id) UNIQUE
 #
 # Foreign Keys
 #
@@ -38,5 +39,15 @@ class Judgement < ApplicationRecord
   def mark_unrateable!
     mark_unrateable
     save
+  end
+
+  # Based on a judgement, find the previous one made by the
+  # same user
+  def previous_judgement_made
+    # if self.query_doc_pair
+    query_doc_pair.book.judgements.where(judgements: { user_id: user.id }).where(
+      'judgements.updated_at < ?', updated_at
+    ).order('judgements.updated_at DESC').first
+    # end
   end
 end
