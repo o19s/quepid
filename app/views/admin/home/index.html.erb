@@ -7,7 +7,8 @@
   <li><%= link_to 'Users', admin_users_path %>
   <li><%= link_to 'Quepid Communal Scorers', admin_communal_scorers_path %></li>
 
-  <li><a href="/admin/jobs">Job Manager</a><em>
+  <li><%= link_to 'Job Manager', sidekiq_web_path %>
+    <em>
   <% if Rails.application.config.google_analytics_enabled %>
     Google Analytics enabled, so Redis is setup.
   <% else %>

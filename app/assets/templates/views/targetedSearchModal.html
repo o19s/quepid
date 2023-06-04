@@ -40,9 +40,15 @@
           </p>
 
           <p class="help-block">
+            Solr:
             Use the simple <a href="https://www.lucenetutorial.com/lucene-query-syntax.html" target="_blank">Lucene query syntax</a> (<code>field:value</code>).<br />
-            Solr example: <code>id:123</code>.<br />
-            ES/OS example: <code>_id:123</code>.
+            Example: <code>id:123</code>.<br />
+            <br />
+            Elasticsearch/OpenSearch:
+            Entered keywords will replace the <code>#$query##</code> placeholder in your configured query. Lucene syntax is
+            only supported for specific query types such as
+            <a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-query-string-query.html">query string queries</a>
+            Example: <code>directors:cameron</code> (when using queries supporting Lucene syntax), or <code>cameron</code> (when not).
           </p>
         </div>
         <div class="col-sm-3">

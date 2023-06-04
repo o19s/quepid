@@ -6,6 +6,7 @@
 #
 #  id                :bigint           not null, primary key
 #  rating            :float(24)
+#  unrateable        :boolean          default(FALSE)
 #  created_at        :datetime         not null
 #  updated_at        :datetime         not null
 #  query_doc_pair_id :bigint           not null
@@ -24,5 +25,16 @@ class Judgement < ApplicationRecord
   belongs_to :user, optional: true
 
   validates :rating,
-            presence: true
+            presence: true, unless: :unrateable
+
+  scope :rateable, -> { where(unrateable: false) }
+
+  def mark_unrateable
+    self.unrateable = true
+  end
+
+  def mark_unrateable!
+    mark_unrateable
+    save
+  end
 end

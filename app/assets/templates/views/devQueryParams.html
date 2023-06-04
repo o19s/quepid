@@ -137,9 +137,11 @@
           </div>
 
           <div class="dev-body" ng-show="devSettingsFields.toggle">
-            <input class="form-control" name="fields" ng-model="settings.fieldSpec" class="ng-pristine ng-valid" style="margin-bottom: 10px" ng-show="!showESTemplateWarning">
+            <input class="form-control" name="fields" ng-model="settings.fieldSpec" class="ng-pristine ng-valid" style="margin-bottom: 10px">
             <span ng-show="showESTemplateWarning">
-              When using ES Templates, specify fields to view via <code>_source</code> defined in the search template.
+              When using ES/OS Query Templates, make sure that either your template includes the fields above in its
+              source field filter section (<code>_source</code> declaration) or does not restrict the fields returned via
+              <code>_source</code> at all.
             </span>
           </div>
         </div>
@@ -233,7 +235,7 @@
     <div class="settings-tab" ng-show="qp.curTab == 'history'">
       <div class="container">
         <p>
-          <a ng-href="/analytics/tries_visualization/{{ caseNo }}" target="_self">Visualize your tries</a></p>
+          <a ng-href="analytics/tries_visualization/{{ caseNo }}" target="_self">Visualize your tries</a></p>
         <p>
           To switch back to a previous try, click on the try listing.<br />
           Click on the "..." when you hover over a listing to edit a try.

@@ -199,7 +199,7 @@
          *
          */
         function exportBasicFormat(aCase) {
-          $http.get('/api/export/ratings/' + aCase.caseNo + '.csv?file_format=basic')
+          $http.get('api/export/ratings/' + aCase.caseNo + '.csv?file_format=basic')
             .then(function(response) {
               var blob = new Blob([response.data], {
                 type: 'text/csv'
@@ -210,7 +210,7 @@
             });
         }
         function exportBasicFormatSnapshot(aCase, snapshotId) {
-          $http.get('/api/export/ratings/' + aCase.caseNo + '.csv?file_format=basic_snapshot&snapshot_id=' + snapshotId)
+          $http.get('api/export/ratings/' + aCase.caseNo + '.csv?file_format=basic_snapshot&snapshot_id=' + snapshotId)
             .then(function(response) {
               var blob = new Blob([response.data], {
                 type: 'text/csv'
@@ -222,7 +222,7 @@
         }
 
         function exportTrecFormat(aCase) {
-          $http.get('/api/export/ratings/' + aCase.caseNo + '.txt?file_format=trec')
+          $http.get('api/export/ratings/' + aCase.caseNo + '.txt?file_format=trec')
             .then(function(response) {
               var blob = new Blob([response.data], {
                 type: 'text/plain'
@@ -233,7 +233,7 @@
             });
         }
         function exportTrecFormatSnapshot(aCase, snapshotId) {
-          $http.get('/api/export/ratings/' + aCase.caseNo + '.txt?file_format=trec_snapshot&snapshot_id=' + snapshotId)
+          $http.get('api/export/ratings/' + aCase.caseNo + '.txt?file_format=trec_snapshot&snapshot_id=' + snapshotId)
             .then(function(response) {
               var blob = new Blob([response.data], {
                 type: 'text/plain'
@@ -246,7 +246,7 @@
 
 
         function exportRREFormat(aCase) {
-          $http.get('/api/export/ratings/' + aCase.caseNo + '.json?file_format=rre')
+          $http.get('api/export/ratings/' + aCase.caseNo + '.json?file_format=rre')
             .then(function(response) {
               var blob = new Blob([$filter('json')(response.data)], {
                 type: 'application/json'
@@ -258,7 +258,7 @@
         }
 
         function exportLTRFormat(aCase) {
-          $http.get('/api/export/ratings/' + aCase.caseNo + '.txt?file_format=ltr')
+          $http.get('api/export/ratings/' + aCase.caseNo + '.txt?file_format=ltr')
             .then(function(response) {
               var blob = new Blob([response.data], {
                 type: 'text/plain'
@@ -270,7 +270,7 @@
         }
 
         function exportInformationNeed(aCase) {
-          $http.get('/api/export/queries/information_needs/' + aCase.caseNo + '.csv')
+          $http.get('api/export/queries/information_needs/' + aCase.caseNo + '.csv')
             .then(function(response) {
               var blob = new Blob([response.data], {
                 type: 'text/csv'
@@ -314,6 +314,7 @@
               infoArray.push(stringifyField(aCase.caseName));
               infoArray.push(stringifyField(aCase.lastScore.case_id));
               infoArray.push(stringifyField(query.queryText));
+                          
               dataString = infoArray.join(',');
               csvContent += dataString + EOL;
             }
@@ -333,7 +334,6 @@
                 angular.forEach(fields, function (field) {
                   infoArray.push(stringifyField(doc.doc[field]));
                 });
-
                 dataString = infoArray.join(',');
                 csvContent += dataString + EOL;
               });
@@ -343,6 +343,36 @@
           return csvContent;
         }
 
+        const escapeJsonStringForCSV = function (input) {
+          if (typeof input === 'string') {
+            return `"${input.replace(/\"/g, '""')}"`;
+          }
+          return input;
+        };
+
+        const stringifyField = function (data) {
+          if (typeof data === 'object'){
+            if (data === null){
+              data = '';
+            }
+            else {
+              data = escapeJsonStringForCSV(JSON.stringify(data));
+            }
+          }
+          else if (typeof data === 'string') {
+            data = data.trim().replace(/"/g, '""'); // Escape double quotes
+
+            if (data.indexOf(',') > -1 || data.indexOf('\n') > -1 || data.indexOf('\r') > -1) {
+              data = textDelimiter + data + textDelimiter;
+            }
+
+            if (data.startsWith('=') || data.startsWith('@') || data.startsWith('+') || data.startsWith('-')) {
+              data = ` ${data}`;
+            }
+          }
+          return data;
+        };
+
         /**
          * Creates CSV string of snapshot
          *
@@ -351,34 +381,35 @@
          */
 
         function stringifySnapshot (aCase, snapshot, withHeader) {
-          var csvContent  = '';
-
+          const snapshotName = snapshot.name();
+          const snapshotTime = snapshot.time;
+          const caseNumber = aCase.caseNo;
+          let csvContent = '';
 
           if (withHeader) {
             csvContent += self.snapshotHeaderToCSV();
           }
-
-          angular.forEach(snapshot.docs, function (docs,queryId) {
-            angular.forEach(docs, function (doc,idx) {
-              var dataString;
-              var infoArray = [];
-
-              infoArray.push(stringifyField(snapshot.name()));
-              infoArray.push(stringifyField(snapshot.time));
-              infoArray.push(stringifyField(aCase.caseNo));
-
-              queryId = parseInt(queryId,10);
-              var query = snapshot.queries.filter(function(q) { return q.queryId === queryId; })[0];
-
-              infoArray.push(stringifyField(query.query_text));
-              infoArray.push(stringifyField(doc.id));
-              infoArray.push(stringifyField(idx+1));
-
-              dataString = infoArray.join(',');
-              csvContent += dataString + EOL;
+          angular.forEach(snapshot.docs, function (docs, queryId) {
+            const queryIdToMatch = parseInt(queryId, 10);
+            const matchingQuery = snapshot.queries.filter(function(query) {
+              return query.queryId === queryIdToMatch;
             });
+            if (matchingQuery[0]) {
+              const matchingQueryText = matchingQuery[0].queryText;
+              if (matchingQueryText) {
+                angular.forEach(docs, function (doc, idx) {
+                  let infoArray = [];
+                  infoArray.push(stringifyField(snapshotName));
+                  infoArray.push(stringifyField(snapshotTime));
+                  infoArray.push(stringifyField(caseNumber));
+                  infoArray.push(stringifyField(matchingQueryText));
+                  infoArray.push(stringifyField(doc.id));
+                  infoArray.push(stringifyField(idx + 1));
+                  csvContent += infoArray.join(',') + EOL;
+                });
+              }
+            }
           });
-
 
           return csvContent;
         }
@@ -396,32 +427,6 @@
           return downloadFileName;
         }
 
-
-        var stringifyField = function (data) {
-          if (typeof data === 'object'){
-            if (data === null){
-              data = '';
-            }
-            else {
-              data = data.join(',');
-            }
-          }
-          if (typeof data === 'string') {
-            data = data.trim().replace(/"/g, '""'); // Escape double quotes
-
-            if (data.indexOf(',') > -1 || data.indexOf('\n') > -1 || data.indexOf('\r') > -1) {
-              data = textDelimiter + data + textDelimiter;
-            }
-
-            if (data.startsWith('=') || data.startsWith('@') || data.startsWith('+') || data.startsWith('-')) {
-              data = ' ' + data;
-            }
-
-            return data;
-          }
-
-          return data;
-        };
       }
     ]);
 })();

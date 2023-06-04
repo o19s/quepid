@@ -51,8 +51,8 @@ describe('Service: caseSvc', function () {
     var mockReturnedCases = {
       all_cases: []
     };
-    $httpBackend.expectGET('/api/cases').respond(200, mockReturnedCases);
-    $httpBackend.expectGET('/api/dropdown/cases').respond(200, mockReturnedCases);
+    $httpBackend.expectGET('api/cases').respond(200, mockReturnedCases);
+    $httpBackend.expectGET('api/dropdown/cases').respond(200, mockReturnedCases);
   };
 
   // instantiate service
@@ -68,8 +68,8 @@ describe('Service: caseSvc', function () {
   });
 
   it('tests get cases', function () {
-    $httpBackend.expectGET('/api/cases').respond(200, mockCases);
-    $httpBackend.expectGET('/api/dropdown/cases').respond(200, mockCases);
+    $httpBackend.expectGET('api/cases').respond(200, mockCases);
+    $httpBackend.expectGET('api/dropdown/cases').respond(200, mockCases);
 
     caseSvc.uponBeingBootstrapped().
       then(function() {
@@ -82,8 +82,8 @@ describe('Service: caseSvc', function () {
 
   describe('tests after bootstrap', function() {
     beforeEach(function() {
-      $httpBackend.expectGET('/api/cases').respond(200, mockCases);
-      $httpBackend.expectGET('/api/dropdown/cases').respond(200, mockCases);
+      $httpBackend.expectGET('api/cases').respond(200, mockCases);
+      $httpBackend.expectGET('api/dropdown/cases').respond(200, mockCases);
 
 
 
@@ -128,7 +128,7 @@ describe('Service: caseSvc', function () {
     });
 
     it('creates cases with expected name', function() {
-      $httpBackend.expectPOST('/api/cases').respond(201, mockNewTryResp);
+      $httpBackend.expectPOST('api/cases').respond(201, mockNewTryResp);
       caseSvc.createCase();
       $httpBackend.flush();
       caseSvc.selectCase(mockNewTry.caseNo);
@@ -137,7 +137,7 @@ describe('Service: caseSvc', function () {
     });
 
     it('renames case with expected name', function() {
-      $httpBackend.expectPOST('/api/cases').respond(201, mockNewTryResp);
+      $httpBackend.expectPOST('api/cases').respond(201, mockNewTryResp);
       caseSvc.createCase();
       $httpBackend.flush();
       caseSvc.selectCase(mockNewTry.caseNo);
@@ -145,7 +145,7 @@ describe('Service: caseSvc', function () {
       expect(newCase.caseName).toBe(mockNewTry.caseName);
 
       var newName = 'blah';
-      $httpBackend.expectPUT('/api/cases/' + newCase.caseNo).respond(201, {});
+      $httpBackend.expectPUT('api/cases/' + newCase.caseNo).respond(201, {});
       caseSvc.renameCase(newCase, newName);
       $httpBackend.flush();
       var sameCase = caseSvc.getSelectedCase();
@@ -160,7 +160,7 @@ describe('Service: caseSvc', function () {
 
     it('creates cases with specified name', function() {
       var name = 'El Case-o-dilla';
-      $httpBackend.expectPOST('/api/cases', function(content) {
+      $httpBackend.expectPOST('api/cases', function(content) {
         var addCaseParsed = angular.fromJson(content);
         return addCaseParsed.case_name === name;
       }
@@ -175,7 +175,7 @@ describe('Service: caseSvc', function () {
 
     it('creates cases with passed in queries', function() {
       var queries = {'queries': {'5': {'query_text': 'foo'}}, 'displayOrder': ['5']};
-      $httpBackend.expectPOST('/api/cases', function(content) {
+      $httpBackend.expectPOST('api/cases', function(content) {
         var addCaseParsed = angular.fromJson(content);
         return addCaseParsed.queries.queries['5']['query_text'] === 'foo';
       }
@@ -189,7 +189,7 @@ describe('Service: caseSvc', function () {
 
     it('creates cases with passed in tries', function() {
       var tries = [{searchUrl: 'foo'}];
-      $httpBackend.expectPOST('/api/cases', function(content) {
+      $httpBackend.expectPOST('api/cases', function(content) {
         var addCaseParsed = angular.fromJson(content);
         return addCaseParsed.tries[0].searchUrl === 'foo';
       }
@@ -202,7 +202,7 @@ describe('Service: caseSvc', function () {
     });
 
     it('gets a case by number', function() {
-      $httpBackend.expectGET('/api/cases/1').respond(200, mockCase1);
+      $httpBackend.expectGET('api/cases/1').respond(200, mockCase1);
       caseSvc.get(1,false).then(function(acase) {
         expect(acase.caseName).toEqual('test case');
       });
@@ -211,8 +211,8 @@ describe('Service: caseSvc', function () {
 
 
     it('deletes a case', function() {
-      $httpBackend.expectGET('/api/cases/1').respond(200, mockCase1);
-      $httpBackend.expectDELETE('/api/cases/1').respond(200, '');
+      $httpBackend.expectGET('api/cases/1').respond(200, mockCase1);
+      $httpBackend.expectDELETE('api/cases/1').respond(200, '');
       expectToRefetchCases();
 
       caseSvc.get(1,false).then(function(acase) {
@@ -232,8 +232,8 @@ describe('Service: caseSvc', function () {
     });
 
     it('deletes and calls promise', function(){
-      $httpBackend.expectGET('/api/cases/1').respond(200, mockCase1);
-      $httpBackend.expectDELETE('/api/cases/1').respond(200, '');
+      $httpBackend.expectGET('api/cases/1').respond(200, mockCase1);
+      $httpBackend.expectDELETE('api/cases/1').respond(200, '');
       expectToRefetchCases();
       var called = false;
       caseSvc.get(1,false).then(function(acase) {
@@ -248,8 +248,8 @@ describe('Service: caseSvc', function () {
     it('deletes currently selected case, calls promise', function(){
       caseSvc.selectCase(1);
       expect(caseSvc.getSelectedCase().caseNo).toEqual(1);
-      $httpBackend.expectGET('/api/cases/1').respond(200, mockCase1);
-      $httpBackend.expectDELETE('/api/cases/1').respond(200, '');
+      $httpBackend.expectGET('api/cases/1').respond(200, mockCase1);
+      $httpBackend.expectDELETE('api/cases/1').respond(200, '');
       expectToRefetchCases();
       caseSvc.get(1,false).then(function(acase) {
         caseSvc.deleteCase(acase);
@@ -261,8 +261,8 @@ describe('Service: caseSvc', function () {
     it('deletes currently selected case, calls promise', function(){
       caseSvc.selectCase(2);
       expect(caseSvc.getSelectedCase().caseNo).toEqual(2);
-      $httpBackend.expectGET('/api/cases/1').respond(200, mockCase1);
-      $httpBackend.expectDELETE('/api/cases/1').respond(200, '');
+      $httpBackend.expectGET('api/cases/1').respond(200, mockCase1);
+      $httpBackend.expectDELETE('api/cases/1').respond(200, '');
       expectToRefetchCases();
       caseSvc.get(1,false).then(function(acase) {
         caseSvc.deleteCase(acase);
@@ -282,7 +282,7 @@ describe('Service: caseSvc', function () {
     };
 
     it('add back archived case', function() {
-      $httpBackend.expectGET('/api/cases?archived=true').respond(200, archivedCasesAPIResponse);
+      $httpBackend.expectGET('api/cases?archived=true').respond(200, archivedCasesAPIResponse);
       var called = 0;
       caseSvc.fetchArchived()
       .then(function() {
@@ -297,7 +297,7 @@ describe('Service: caseSvc', function () {
       expect(called).toBe(1);
 
       var archivedCaseNo = caseSvc.archived[0].caseNo;
-      $httpBackend.expectPUT('/api/cases/' + archivedCaseNo).respond(200, archivedCasesAPIResponse.all_cases[0]);
+      $httpBackend.expectPUT('api/cases/' + archivedCaseNo).respond(200, archivedCasesAPIResponse.all_cases[0]);
 
       var casesBefore = caseSvc.allCases.length;
       caseSvc.unarchiveCase(caseSvc.archived[0]).then(function() {
@@ -313,7 +313,7 @@ describe('Service: caseSvc', function () {
     });
 
     it('refetch archive', function() {
-      $httpBackend.expectGET('/api/cases?archived=true').respond(200, archivedCasesAPIResponse);
+      $httpBackend.expectGET('api/cases?archived=true').respond(200, archivedCasesAPIResponse);
       var called = 0;
       caseSvc.fetchArchived()
       .then(function() {
@@ -327,7 +327,7 @@ describe('Service: caseSvc', function () {
       $httpBackend.flush();
       expect(called).toBe(1);
 
-      $httpBackend.expectGET('/api/cases?archived=true').respond(200, archivedCasesAPIResponse);
+      $httpBackend.expectGET('api/cases?archived=true').respond(200, archivedCasesAPIResponse);
       caseSvc.fetchArchived()
       .then(function() {
         called++;
@@ -355,7 +355,7 @@ describe('Service: caseSvc', function () {
         archiveAPIResponse.all_cases.push(newCase);
       }
 
-      $httpBackend.expectGET('/api/cases?archived=true').respond(200, archiveAPIResponse);
+      $httpBackend.expectGET('api/cases?archived=true').respond(200, archiveAPIResponse);
       var called = 0;
       caseSvc.fetchArchived()
       .then(function() {
@@ -370,7 +370,7 @@ describe('Service: caseSvc', function () {
       angular.forEach(caseSvc.archived, function(aCase) {
         if (aCase.caseNo % 2 === 1) {
           undeleted.push(aCase.caseNo);
-          $httpBackend.expectPUT('/api/cases/' + aCase.caseNo).respond(200, archiveAPIResponse.all_cases[aCase.caseNo - baseNo]);
+          $httpBackend.expectPUT('api/cases/' + aCase.caseNo).respond(200, archiveAPIResponse.all_cases[aCase.caseNo - baseNo]);
           caseSvc.unarchiveCase(aCase)
           .then(function() {
             called++;
@@ -395,15 +395,15 @@ describe('Service: caseSvc', function () {
     });
 
     it('set the last viewed at date', function() {
-      $httpBackend.expectPUT('/api/cases/1/metadata').respond(200, '');
+      $httpBackend.expectPUT('api/cases/1/metadata').respond(200, '');
       caseSvc.trackLastViewedAt(1);
       $httpBackend.flush();
     });
 
     it('returns cases sorted by last viewed at', function() {
-      $httpBackend.expectPUT('/api/cases/2/metadata').respond(200, '');
+      $httpBackend.expectPUT('api/cases/2/metadata').respond(200, '');
       caseSvc.trackLastViewedAt(2);
-      $httpBackend.expectPUT('/api/cases/1/metadata').respond(200, '');
+      $httpBackend.expectPUT('api/cases/1/metadata').respond(200, '');
       caseSvc.trackLastViewedAt(1);
       $httpBackend.flush();
 
@@ -422,7 +422,7 @@ describe('Service: caseSvc', function () {
         ]
       };
 
-      $httpBackend.expectGET('/api/dropdown/cases').respond(200, dropdownCases);
+      $httpBackend.expectGET('api/dropdown/cases').respond(200, dropdownCases);
 
       caseSvc.fetchDropdownCases()
       .then(function() {
@@ -472,7 +472,7 @@ describe('Service: caseSvc', function () {
     }));
 
     it('tracks the last score successfully', function() {
-      $httpBackend.expectPUT('/api/cases/1/scores').respond(200, '');
+      $httpBackend.expectPUT('api/cases/1/scores').respond(200, '');
 
       caseSvc.trackLastScore(1, scoreData);
       $httpBackend.flush();
@@ -483,7 +483,7 @@ describe('Service: caseSvc', function () {
       delete scoreData['try_id'];
       scoreData.try_number = 33;
 
-      $httpBackend.expectPUT('/api/cases/1/scores').respond(200, '');
+      $httpBackend.expectPUT('api/cases/1/scores').respond(200, '');
 
       caseSvc.trackLastScore(1, scoreData);
       $httpBackend.flush();
@@ -503,7 +503,7 @@ describe('Service: caseSvc', function () {
       var data = angular.copy(scoreData)
       data.score   = 0;
 
-      $httpBackend.expectPUT('/api/cases/1/scores').respond(200, '');
+      $httpBackend.expectPUT('api/cases/1/scores').respond(200, '');
 
       caseSvc.trackLastScore(1, data);
 
@@ -517,7 +517,7 @@ describe('Service: caseSvc', function () {
       var created_at = $filter('date')(new Date().toUTCString(), dateFormat);
       mockResponse.created_at = created_at;
 
-      $httpBackend.expectPUT('/api/cases/1/scores').respond(200, mockResponse);
+      $httpBackend.expectPUT('api/cases/1/scores').respond(200, mockResponse);
 
       caseSvc.trackLastScore(1, scoreData);
       $httpBackend.flush();
@@ -545,7 +545,7 @@ describe('Service: caseSvc', function () {
       var created_at = $filter('date')(new Date().toUTCString(), dateFormat);
       mockResponse.created_at = created_at;
 
-      $httpBackend.expectPUT('/api/cases/1/scores').respond(200, mockResponse);
+      $httpBackend.expectPUT('api/cases/1/scores').respond(200, mockResponse);
 
       caseSvc.trackLastScore(1, scoreData);
       $httpBackend.flush();
@@ -577,7 +577,7 @@ describe('Service: caseSvc', function () {
     it('tracks the last score successfully', function() {
       var theCase = caseSvc.constructFromData(caseData);
 
-      $httpBackend.expectGET('/api/cases/1/scores').respond(200, scoreData);
+      $httpBackend.expectGET('api/cases/1/scores').respond(200, scoreData);
 
       theCase.fetchCaseScore()
         .then(function(response) { theCase = response; });
@@ -589,9 +589,9 @@ describe('Service: caseSvc', function () {
 
   describe('Fetch shared cases', function() {
     it('gets the shared cases and assigns the list to the internal array', function() {
-      var url = '/api/cases';
+      var url = 'api/cases';
       $httpBackend.expectGET(url).respond(200, mockCases);
-      $httpBackend.expectGET('/api/dropdown/cases').respond(200, mockCases);
+      $httpBackend.expectGET('api/dropdown/cases').respond(200, mockCases);
 
       caseSvc.uponBeingBootstrapped().
         then(function() {
@@ -637,7 +637,7 @@ describe('Service: caseSvc', function () {
     }));
 
     it('clones a case successfully', function() {
-      var url = '/api/clone/cases';
+      var url = 'api/clone/cases';
       $httpBackend.expectPOST(url).respond(200, expectedResponse);
 
       caseSvc.cloneCase(theCase);

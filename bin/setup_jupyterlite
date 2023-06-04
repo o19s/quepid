@@ -2,16 +2,12 @@
 require 'pathname'
 
 # Update our Jupyterlite setup from the latest.
+JUPYTER_BUILD_DOWNLOAD_URL = "https://github.com/o19s/quepid-jupyterlite/releases/latest/download/jupyter-lite-build.tgz"
 
 # path to your application root.
 APP_ROOT = Pathname.new File.expand_path('../../',  __FILE__)
 
 Dir.chdir APP_ROOT do
-
-  puts "\n== Setting up Jupyter Lite Notebooks =="
-  system "bin/docker r mv /srv/app/public/notebooks /srv/app/public/notebooks-$(date +%s)"
-  system "bin/docker r mkdir /srv/app/public/notebooks"
-  system "bin/docker r jupyter lite build --apps=lab --lite-dir /srv/app/jupyterlite  --output-dir /srv/app/public/notebooks"
-  system "bin/docker r tar -czf /srv/app/jupyterlite/notebooks.gz /srv/app/public/notebooks"
-
+  puts "\n== Downloading and extracting Jupyter Lite Build =="
+  system "bin/docker r bash -c 'rm -rf /srv/app/public/notebooks && wget -qO- #{JUPYTER_BUILD_DOWNLOAD_URL} | tar -C /srv/app/public -zxf -'"
 end

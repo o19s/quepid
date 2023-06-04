@@ -24,6 +24,7 @@ angular.module('QuepidApp')
       };
 
       svc.importSnapshots = importSnapshots;
+      svc.importSnapshotsToSpecificCase = importSnapshotsToSpecificCase;
       svc.get             = get;
 
       var addSnapshotResp = function(snapshots) {
@@ -55,7 +56,7 @@ angular.module('QuepidApp')
         caseNo = newCaseNo;
         this.snapshots = {};
 
-        return $http.get('/api/cases/' + caseNo + '/snapshots?shallow=true')
+        return $http.get('api/cases/' + caseNo + '/snapshots?shallow=true')
           .then(function(response) {
             return addSnapshotResp(response.data.snapshots)
               .then(function() {
@@ -125,7 +126,7 @@ angular.module('QuepidApp')
           }
         };
 
-        return $http.post('/api/cases/' + caseNo + '/snapshots', saved)
+        return $http.post('api/cases/' + caseNo + '/snapshots', saved)
           .then(function(response) {
             return addSnapshotResp([response.data])
               .then(function() {
@@ -135,7 +136,7 @@ angular.module('QuepidApp')
       };
 
       this.deleteSnapshot = function(snapshotId) {
-        var url = '/api/cases/' + caseNo + '/snapshots/' + snapshotId;
+        var url = 'api/cases/' + caseNo + '/snapshots/' + snapshotId;
 
         return $http.delete(url)
           .then(function() {
@@ -148,6 +149,14 @@ angular.module('QuepidApp')
       this.version = function() {
         return version;
       };
+
+      function importSnapshotsToSpecificCase(docs, targetCaseNo) {
+        let docsWithCaseOverridden = docs;
+        angular.forEach(docsWithCaseOverridden, function(doc) {
+          doc['Case ID'] = targetCaseNo;
+        });
+        return importSnapshots(docsWithCaseOverridden);
+      }
 
       function importSnapshots (docs) {
         var cases = {};
@@ -180,7 +189,7 @@ angular.module('QuepidApp')
         });
 
         function callApi (caseId, snapshotData) {
-          var url = '/api/cases/' + caseId + '/snapshots/imports';
+          var url = 'api/cases/' + caseId + '/snapshots/imports';
           return $http.post(url, { snapshots: [snapshotData] })
             .then(function(response) {
               return addSnapshotResp(response.data.snapshots);
@@ -207,7 +216,7 @@ angular.module('QuepidApp')
       }
 
       function get(snapshotId) {
-        var url     = '/api/cases/' + caseNo + '/snapshots/' + snapshotId + '?shallow=true';
+        var url     = 'api/cases/' + caseNo + '/snapshots/' + snapshotId+ '?shallow=true';
 
         return $http.get(url)
           .then(function(response) {

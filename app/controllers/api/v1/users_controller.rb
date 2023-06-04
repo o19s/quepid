@@ -9,7 +9,8 @@ module Api
         @users = []
         if params[:prefix]
           prefix = params[:prefix].downcase
-          @users = User.where('`email` LIKE :prefix', prefix: "#{prefix}%").limit(8)
+          @users = User.where('`email` LIKE :prefix',
+                              prefix: "#{prefix}%").or(User.where('`name` LIKE :prefix', prefix: "#{prefix}%")).limit(8)
         end
         respond_with @users
       end

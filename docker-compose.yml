@@ -9,6 +9,8 @@ services:
     env_file:
       - .env
     environment:
+      #- RAILS_RELATIVE_URL_ROOT=/quepid-app # Use to nest under a context path like tools.mycompany.com/quepid-app
+      - QUEPID_DOMAIN=tools.dev.mycorp.com
       - LAUNCHY_DRY_RUN=true # dev only letter_opener gem wants to open a browser when sending emails.
       - BROWSER=/dev/null
       - PUPPETEER_SKIP_DOWNLOAD=true
@@ -29,7 +31,7 @@ services:
 
   mysql:
     container_name: quepid_db
-    image: amd64/mysql:8.0.32
+    image: amd64/mysql:8.0.33
     ports:
       - 3306:3306
     environment:
@@ -68,7 +70,7 @@ services:
 
 
   nginx:
-    image: nginx:1.23.3
+    image: nginx:1.23.4
     container_name: quepid_nginx
     ports:
       - "443:8443"

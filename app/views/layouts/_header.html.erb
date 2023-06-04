@@ -1,6 +1,6 @@
 <nav class="navbar navbar-expand-lg navbar-secondary">
   <div class="container-fluid">
-    <%= link_to '/', class: "navbar-brand", target: "_self" do %>
+    <%= link_to root_path, class: "navbar-brand", target: "_self" do %>
       Quepid
       <span class="hover"><%= image_tag 'tagline-sm.png' %></span>
     <% end %>
@@ -44,7 +44,7 @@
             <li><%= link_to 'Admin Home', admin_path, class: 'dropdown-item', target: '_self' %></li>
             <li><%= link_to 'Users', admin_users_path, class: 'dropdown-item', target: '_self' %></li>
             <li><%= link_to 'Quepid Scorers', admin_communal_scorers_path, class: 'dropdown-item', target: '_self' %></li>
-            <li><a class="dropdown-item" href="/admin/jobs" target="_self">Job Manager</a></li>
+            <li><%= link_to 'Job Manager', sidekiq_web_path, class: 'dropdown-item', target: '_self' %></li>
             <% end %>
 
           </ul>

@@ -1,5 +1,135 @@
 # Changelog
 
+## 7.3.3 - 2023-05-30
+
+* When populating a book of judgements, if the title field wasn't `title`, then it wouldn't show up with the correct name.   https://github.com/o19s/quepid/pull/737 by @epugh fixes this.
+
+## 7.3.1 - 2023-05-26
+
+* Fixed some additional API paths for use with a nested Quepid context.  https://github.com/o19s/quepid/pull/736 by @epugh.  Follow up to https://github.com/o19s/quepid/pull/719.  
+
+## 7.3.0 - 2023-05-23
+
+### Improvements
+
+* Importing Snapshots was a feature from the dawn of Quepid, but @epugh had never used it till now.  Originally you had to put into the csv file the id of the Case you want to import into, which is awkward and error prone.  Now you can import a snapshot via the Import modal for a Case.  https://github.com/o19s/quepid/pull/727 by @depahelix2021 fixes https://github.com/o19s/quepid/issues/724 by @epugh.
+
+### Bugs
+
+* OpenSearch and Elasticsearch have a `_source` field that is nested JSON.  Turns out we don't support stringifying a JSON object in detailed exports or Snapshots.  https://github.com/o19s/quepid/pull/732 by @depahelix2021 fixes https://github.com/o19s/quepid/issues/730 by @epugh.  
+
+* With the logic for matching Quepid TLS to the search engine TLS happening only via frontend logic (introduced in https://github.com/o19s/quepid/pull/719), we found the User Experience really rough.  https://github.com/o19s/quepid/pull/731 by @epugh reworks the UX to be clear about when you need to reload your Quepid.  
+
+* We ship Jupyterlite for data manipulation, but maybe you don't have public network access? https://github.com/o19s/quepid/pull/728 by @mkr fixes https://github.com/o19s/quepid/issues/721 by @epugh.
+
+* Cloning a Case loses the advanced settings.  https://github.com/o19s/quepid/pull/729 by @epugh fixes https://github.com/o19s/quepid/issues/725 opened by @jvia.  Thanks @jvia for reporting this!
+
+## 7.2.1 - 2023-05-12
+
+Well, that didn't take long...   Wanted to use the "Import Snapshot" function, and discovered that the "Export Snapshot" function was busted.   
+
+### Features
+
+* We've had the ability to mark a Case as "Public" for a while, but we only supported it for the visualization of tries screen.  As a spike, trial allowing public access to /api/cases/CASE_ID.json and /api/cases/CASE_ID/snapshots/SNAPSHOT_ID.json end points.  https://github.com/o19s/quepid/pull/723 by @epugh.
+
+### Bugs
+
+* Fix Export Snapshot.  https://github.com/o19s/quepid/pull/722 by @depahelix2021.
+
+## 7.2.0 - 2023-05-11
+
+### Features
+
+* Interested in Rank Biased Overlap as a more powerful version of the venerable Jaccard metric?   We have it now as an example Jupter notebook.   Thanks to Tito Sierra at the 2023 US Haystack for introducing me to this metric.  Thanks to @mkr for creating the draft notebook.   
+
+* Provide link to Team from Book of Judgements.  https://github.com/o19s/quepid/pull/718 by @epugh.
+
+### Improvements
+
+* Lots of fixes and cleanups for nesting Quepid under another domain in https://github.com/o19s/quepid/pull/719.   Credit to @frankcelia for figuring out that we were too smart by half in letting the Rails app redirect traffic to try and match Quepid TLS to the search engine's TLS.   Pulling that out has simplified our logic immensely.   https://github.com/o19s/quepid/pull/719 by @epugh and @frankcelia.
+
+* We're now on Jupyterlite 0.1.0 from our relatively old 0.1.0b14, and have a build process that will let us stay up to date with this rapidly evolving project.  https://github.com/o19s/quepid/pull/709 by @mkr.
+
+## 7.1.0 - 2023-05-05
+
+### Features
+
+Some bigger organizations deploying Quepid want to nest it under another domain, like https://tools.bigcorp.com/quepid instead of the more typical https://quepid.bigcorp.com.   @worleydl open a PR to support this eleven months ago, and now we finally have it over the finish line!  Just specify the `RAILS_RELATIVE_URL_ROOT` for when you want to nest Quepid under another domain. https://github.com/o19s/quepid/pull/500 by @worleydl.
+
+### Improvements
+
+* Custom scorers are sorted by the order from oldest to newest in the modal picker UI.  Instead, lets sort them alphabetically.  https://github.com/o19s/quepid/pull/717 by @epugh fixes https://github.com/o19s/quepid/issues/695.
+
+* `teamSvc` unit test was failing a lot, and now has been dealt with...   By ignoring the checks.  :-(.
+
+* When creating a new Book of judgements, seed the Scorer with the one from the Case you were using.  https://github.com/o19s/quepid/pull/716 by @epugh fixes https://github.com/o19s/quepid/issues/705.
+
+### Bugs
+
+* Using templates in OpenSearch (and Elasticsearch) clashes with how we display (or hide) the fieldSpec field.  https://github.com/o19s/quepid/pull/706 by @mkr fixes https://github.com/o19s/quepid/issues/699.
+
+* The "Find Missing Docs" UI doesn't actual work with OpenSearch.  https://github.com/o19s/quepid/pull/707 by @mkr fixes https://github.com/o19s/quepid/issues/700.   Nicer help text as well.
+
+* Generated link to individual OpenSearch (and Elasticsearch) document changed, and didn't render properly.  https://github.com/o19s/splainer-search/pull/117 by @mkr fixes https://github.com/o19s/quepid/issues/701.
+
+* Swapping from one Scorer to another Scorer would lose the labels in the popup window.  https://github.com/o19s/quepid/pull/717 by @epugh fixes https://github.com/o19s/quepid/issues/704 and https://github.com/o19s/quepid/issues/696 by @epugh.  It may also fix https://github.com/o19s/quepid/issues/613 by @atarora ;-).   
+
+
+
+## 7.0.0 - 2023-04-24
+
+Are you ready to launch a [Human Rating Program](https://haystackconf.com/2019/human-judgement/)?   Quepid is now finally able to support you and your fellow human judges in gathering explicit ratings on your search results.
+
+Since the dawn of Quepid, we've suffered from an _ahem_ sub optimal rating interface for gathering human judgements.
+
+The rating interface failed most best practices for human rating, including suffering from position bias by listing documents in the order the search engine returned them, only supporting a single rating per query/doc pair, requiring lots of mouse movement and clicking.
+All that, and the UI is a combination of features required for a Relevancy Engineer with those of a Human Judge.  
+It's enough to make you weep.  
+Just to make life harder, the rating interface requires a live connection to your search engine, which often required additional technical hoops to be jumped by your decidedly untechnical subject matter experts.
+
+However that is no longer the case!
+
+![Quepid Human Rater Interface](./docs/rating-card-interface.png)
+
+This rating interface features:
+ * You can have up to three independent ratings for every query/doc pair, opening the door to interesting measurements of rating quality.
+ * A static dataset for rating that is populated from your live search engine.  Now your set of query/doc pairs won't change over time unless you want them to.
+ * Query/doc pair are randomly sampled, but with a bias in favour of higher positioned results over lower positioned so you can get to meaningful numbers quicker.
+ * Ability to mark a query/doc pair as "I can't Rate This Document" so we can find edge/confusing cases.
+ * You control what shows up on the card using the same display configuration as in your typical Quepid case.
+ * Supports thumbnails and hero images in the card.
+ * There are Scoring Guidelines for your Raters to understand what the scoring scale means.
+
+ To make the life of a Relevancy Engineer better, you can now import your queries and ratings from a _Book of Judgments_.
+ Indeed you can roundtrip from a Case with query/doc pairs to a Book of judgements, get them rated, and then import then back into your Case.
+
+This work was inspired by the great work that the folks at the Wikimedia Foundation did on Discernatron, their human rating tool.
+
+Quepid is now the big 7.0!  There have been 98 PR's since release 6.14.0.  We are now running on Rails 7, which is great for opening the door to future improvements and keeping us from accumulating tech debt.   This also means we took the opportunity to bump the versions of Redis and MySQL we use, as well as Node, Ruby, and all the other libraries.  We're now on a modern infrastructure everywhere except for the Relevance Engineer's UI which is still on AngularJS.
+
+Do back up your data before doing this upgrade!  Normally I'm pretty cavalier about updates in Quepid-land, but this changes a lot of things, including the MySQL version from 5.6 to 8....   So please back up your data, and for good measure, use those export options to export your precious ratings that you've collected.
+
+Below are details on some selected PR's.
+
+### Features
+
+ * As mentioned above, the human rater interface is a big feature.  There are too many PR's and Issues to call them out individually.  However, I do want to thank everyone who contributed to that really important feature.  You know who you are!
+
+ * Allow a Case to be marked Public to facilitate sharing analytics.  Public cases don't require you to log in for certain screens.  https://github.com/o19s/quepid/pull/595.
+
+ * Jupyter notebook for calculating Jaccard Similarity between Snapshots.  https://github.com/o19s/quepid/pull/586 by @atarora.
+
+ * Add Reciprocal Rank as a default Scorer.   https://github.com/o19s/quepid/pull/525 by @david-fisher.
+
+### Improvements
+
+* Rails 7 Upgrade!  This would be enough to move us from Quepid 6 to Quepid 7 by itself.  Turned out to be pretty painless upgrade.  Most of the work was in https://github.com/o19s/quepid/pull/627.
+
+* We enabled RenovateBot to provide automatic PR's for dependencies.  In the past three months we had a flood of dependency updates, which improves our security profile and helps us deal with tech debt by ensuring we aren't falling behind.
+
+* Refactor to remove manualMaxScore and manualMaxScoreValue from custom scorers as not used.  https://github.com/o19s/quepid/pull/609.
+
+
 ## 6.14.0 - 2022-11-22
 
 ### Improvements

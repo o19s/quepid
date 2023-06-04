@@ -51,8 +51,7 @@ docker-compose.override.yml
 
 # Jupyterlite
 public/notebooks
-public/notebooks-*
-.jupyterlite.doit.db
+notebooks.gz
 
 # Test Reports
 test/reports

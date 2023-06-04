@@ -1,9 +1,14 @@
 <div class="item-box row">
   <div class="col-xs-4">
-    {{ ctrl.book.name }}
+
+    <span class="book-title">
+      <a ng-href="books/{{ctrl.book.id}}" target="_self" class="action-icon">
+      {{ ctrl.book.name }}
+      </a>
+    </span>
 
     <span class="item-actions">
-      <a ng-href="/books/{{ctrl.book.id}}/judge" target="_self" class="action-icon">
+      <a ng-href="books/{{ctrl.book.id}}/judge" target="_self" class="action-icon">
         <i
           class="bi bi-book-half"
           aria-hidden="true"
@@ -12,7 +17,7 @@
         ></i>
       </a>
 
-      <a ng-href="/books/{{ctrl.book.id}}/edit" target="_self" class="action-icon">
+      <a ng-href="books/{{ctrl.book.id}}/edit" target="_self" class="action-icon">
         <i
           class="fa fa-edit"
           aria-hidden="true"

@@ -69,8 +69,8 @@ angular.module('QuepidApp')
         };
 
         theCase.fetchCaseScore = function() {
-          // HTTP GET /api/cases/<int:caseId>/scores
-          var url = '/api/cases/' + theCase.caseNo + '/scores';
+          // http GET api/cases/<int:caseId>/scores
+          var url = 'api/cases/' + theCase.caseNo + '/scores';
 
           return $http.get(url)
             .then(function(response) {
@@ -81,8 +81,8 @@ angular.module('QuepidApp')
         };
 
         theCase.fetchCaseScores = function() {
-          // HTTP GET /api/cases/<int:caseId>/scores/all
-          var url = '/api/cases/' + theCase.caseNo + '/scores/all';
+          // http GET api/cases/<int:caseId>/scores/all
+          var url = 'api/cases/' + theCase.caseNo + '/scores/all';
 
           return $http.get(url)
             .then(function(response) {
@@ -150,7 +150,7 @@ angular.module('QuepidApp')
       };
 
       this.createCase = function(caseName, queries, tries) {
-        // HTTP POST /api/cases
+        // http POST api/cases
         // returns as if we did HTTP GET /cases/<caseNo>
         // on success, sets current case number to case number
         var data = {'case_name': 'Case: ' + this.casesCount};
@@ -164,7 +164,7 @@ angular.module('QuepidApp')
           data.tries = tries;
         }
         var that = this;
-        $http.post('/api/cases', data)
+        $http.post('api/cases', data)
           .then(function(response) {
             var newCase   = new Case(response.data);
             var caseTries = response.data.tries;
@@ -189,7 +189,7 @@ angular.module('QuepidApp')
         var that        = this;
         var caseNumber  = caseToDelete.caseNo;
 
-        return $http.delete('/api/cases/' + caseNumber)
+        return $http.delete('api/cases/' + caseNumber)
           .then(function() {
             that.refetchCaseLists();
 
@@ -203,7 +203,7 @@ angular.module('QuepidApp')
         var that        = this;
         var caseNumber  = caseToDeleteQueries.caseNo;
 
-        return $http.delete('/api/bulk/cases/' + caseNumber + '/queries/delete')
+        return $http.delete('api/bulk/cases/' + caseNumber + '/queries/delete')
           .then(function() {
             that.refetchCaseLists();
             if( selectedCase !== null && selectedCase.caseNo === caseNumber ) {
@@ -215,7 +215,7 @@ angular.module('QuepidApp')
 
       this.archiveCase = function(caseToArchive) {
         var caseNumber  = caseToArchive.caseNo;
-        var url         = '/api/cases/' + caseNumber;
+        var url         = 'api/cases/' + caseNumber;
         var data        = { archived: true };
 
         return $http.put(url, data)
@@ -239,7 +239,7 @@ angular.module('QuepidApp')
 
       this.unarchiveCase = function(caseToUnarchive) {
         var caseNumber  = caseToUnarchive.caseNo;
-        var url         = '/api/cases/' + caseNumber;
+        var url         = 'api/cases/' + caseNumber;
         var data        = { archived: false };
 
         return $http.put(url, data)
@@ -259,7 +259,7 @@ angular.module('QuepidApp')
       this.fetchArchived = function() {
         svc.archived = [];
 
-        return $http.get('/api/cases?archived=true')
+        return $http.get('api/cases?archived=true')
           .then(function(response) {
             angular.forEach(response.data.all_cases, function(rawCase) {
               var newCase = constructFromData(rawCase);
@@ -274,7 +274,7 @@ angular.module('QuepidApp')
       this.fetchDropdownCases = function() {
         var self = this;
         self.dropdownCases.length = 0;
-        return $http.get('/api/dropdown/cases')
+        return $http.get('api/dropdown/cases')
           .then(function(response) {
             self.casesCount = response.data.cases_count;
 
@@ -291,7 +291,7 @@ angular.module('QuepidApp')
       };
 
       this.trackLastViewedAt = function(caseNo) {
-        var url         = '/api/cases/'+ caseNo + '/metadata';
+        var url         = 'api/cases/'+ caseNo + '/metadata';
         var dateFormat  = 'yyyy-MM-dd HH:mm:ss';
         var data        = {
           'metadata': {
@@ -314,7 +314,7 @@ angular.module('QuepidApp')
           });
         }
 
-        var url         = '/api/cases/'+ caseNo + '/scores';
+        var url         = 'api/cases/'+ caseNo + '/scores';
 
         // Replace null values by an empty string for query scores,
         // in order to normalize values when score is not present:
@@ -354,8 +354,8 @@ angular.module('QuepidApp')
       /*jslint latedef:false*/
       function getCases (deep) {
         deep = deep || false;
-        // HTTP GET /api/cases
-        var url = '/api/cases';
+        // http GET api/cases
+        var url = 'api/cases';
 
         if (deep) {
           url += '?deep=' + deep;
@@ -399,9 +399,9 @@ angular.module('QuepidApp')
        * to the server to save on a case
        */
       function saveDefaultScorer(caseId, scorerId) {
-        // http PUT /api/cases/<int:caseId>/scorers/<int:scorerId>
+        // http PUT api/cases/<int:caseId>/scorers/<int:scorerId>
         scorerId  =  scorerId || 0;
-        var url   = '/api/cases/' + caseId + '/scorers/' + scorerId;
+        var url   = 'api/cases/' + caseId + '/scorers/' + scorerId;
         var data  = {};
 
         return $http.put(url, data)
@@ -416,8 +416,8 @@ angular.module('QuepidApp')
        */
       function renameCase(theCase, newName) {
         if (newName.length > 0) {
-          // HTTP PUT /api/cases/<int:caseId>
-          var url  = '/api/cases/' + theCase.caseNo;
+          // http PUT api/cases/<int:caseId>
+          var url  = 'api/cases/' + theCase.caseNo;
           var data = {
             case_name: newName
           };
@@ -438,8 +438,8 @@ angular.module('QuepidApp')
        */
       function associateBook(theCase, bookId) {
 
-        // HTTP PUT /api/cases/<int:caseId>
-        var url  = '/api/cases/' + theCase.caseNo;
+        // HTTP PUT api/cases/<int:caseId>
+        var url  = 'api/cases/' + theCase.caseNo;
         var data = {
           book_id: bookId
         };
@@ -456,8 +456,8 @@ angular.module('QuepidApp')
 
 
       function get(id, useCache) {
-        // http GET /api/cases/<int:caseId>
-        var url  = '/api/cases/' + id;
+        // http GET api/cases/<int:caseId>
+        var url  = 'api/cases/' + id;
         useCache = typeof useCache !== 'undefined' ?  useCache : true;
 
         var ccase = cases[id];
@@ -486,7 +486,7 @@ angular.module('QuepidApp')
       }
 
       function cloneCase(theCase, options) {
-        var url             = '/api/clone/cases';
+        var url             = 'api/clone/cases';
 
         if ( angular.isUndefined(options) ) {
           options = {};

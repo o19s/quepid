@@ -33,8 +33,10 @@ Rails.application.routes.draw do
     resources :judgements
     resources :query_doc_pairs do
       resources :judgements
+      get 'unrateable' => 'judgements#unrateable'
     end
     get 'judge' => 'judgements#new'
+    get 'skip_judging' => 'judgements#skip_judging'
   end
 
   devise_for :users, controllers: {
@@ -186,7 +188,7 @@ Rails.application.routes.draw do
   get '/cases'                        => 'core#index'
   get '/case'                         => 'core#index'
   get '/cases/import'                 => 'core#index'
-  get '/teams(/:id)'                  => 'core#index', as: :teams_path
+  get '/teams(/:id)'                  => 'core#index', as: :teams
   get '/scorers'                      => 'core#index'
 
   # Static pages

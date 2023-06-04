@@ -81,7 +81,6 @@ angular.module('QuepidApp')
           // Snapshot Name	Snapshot Time	Case ID	Query Text	Doc ID	Doc Position
 
           querySnapshotSvc.get(snapshotId).then(function() {
-
             var snapshot = querySnapshotSvc.snapshots[snapshotId];
             csv         = caseCSVSvc.stringifySnapshot(
               ctrl.theCase,
@@ -91,13 +90,12 @@ angular.module('QuepidApp')
             blob        = new Blob([csv], {
               type: 'text/csv'
             });
-
             /*global saveAs */
             saveAs(blob, caseCSVSvc.formatDownloadFileName(ctrl.theCase.caseName + '_snapshot.csv'));
 
           }, function (response) {
-            $log.debug('error fetching snapshot:');
-            $log.debug(response);
+            $log.info('error fetching snapshot:');
+            $log.info(response);
           });
 
         }

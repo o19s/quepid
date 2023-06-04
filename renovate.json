@@ -5,11 +5,11 @@
   ],
   "enabled": true,
   "schedule": [
-    "* 8-20 * * *"
+    "* 8-20 1 * *"
   ],
   "prConcurrentLimit": 5,
   "prHourlyLimit": 5,
-  "stabilityDays": 5,
+  "stabilityDays": 10,
   "packageRules": [
     {
       "groupName": "Ruby on Rails packages",
@@ -31,6 +31,12 @@
         "railties",
         "rails"
       ]
+    },
+    {
+      "updateTypes": [
+        "patch"
+      ],
+      "enabled": false
     }
   ]
 }

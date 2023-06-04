@@ -12,11 +12,17 @@ class BooksController < ApplicationController
   end
 
   def show
+    @cases = Case.where(book_id: @book.id)
     respond_with(@book)
   end
 
   def new
-    @book = Book.new
+    # we actually support passing in starting point configuration for a book
+    @book = if params[:book]
+              Book.new(book_params)
+            else
+              Book.new
+            end
     respond_with(@book)
   end
 

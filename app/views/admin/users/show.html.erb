@@ -81,7 +81,7 @@
     data-pulse
     data-item-selector="#cases-viewed"
     data-signup-date="<%= @pulse_chart_start_date %>"
-    data-url="<%= "/admin/users/#{@user.id}/pulse.json?data=metadata" %>"
+    data-url="<%= url_for admin_user_pulse_path @user, params: {data: 'metadata'} %>"
   >
   </div>
 
@@ -91,7 +91,7 @@
     data-pulse
     data-item-selector="#cases-scored"
     data-signup-date="<%= @pulse_chart_start_date %>"
-    data-url="<%= "/admin/users/#{@user.id}/pulse.json?data=scores" %>"
+    data-url="<%= url_for admin_user_pulse_path @user, params: {data: 'scores'} %>"
   >
   </div>
 
@@ -101,7 +101,7 @@
     data-pulse
     data-item-selector="#cases-created"
     data-signup-date="<%= @pulse_chart_start_date %>"
-    data-url="<%= "/admin/users/#{@user.id}/pulse.json?data=cases-created" %>"
+    data-url="<%= url_for admin_user_pulse_path @user, params: {data: 'cases-created'} %>"
   >
   </div>
 
@@ -111,7 +111,7 @@
     data-pulse
     data-item-selector="#teams-created"
     data-signup-date="<%= @pulse_chart_start_date %>"
-    data-url="<%= "/admin/users/#{@user.id}/pulse.json?data=teams-created" %>"
+    data-url="<%= url_for admin_user_pulse_path @user, params: {data: 'teams-created'} %>"
   >
   </div>
 
@@ -121,7 +121,7 @@
     data-pulse
     data-item-selector="#queries-created"
     data-signup-date="<%= @pulse_chart_start_date %>"
-    data-url="<%= "/admin/users/#{@user.id}/pulse.json?data=queries-created" %>"
+    data-url="<%= url_for admin_user_pulse_path @user, params: {data: 'queries-created'} %>"
   >
   </div>
 

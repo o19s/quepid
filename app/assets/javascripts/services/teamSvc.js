@@ -82,7 +82,7 @@ angular.module('QuepidApp')
 
       this.create = function(name) {
         // http POST /api/teams
-        var url   = '/api/teams';
+        var url   = 'api/teams';
         var data  = { 'name': name };
         var self  = this;
 
@@ -98,7 +98,7 @@ angular.module('QuepidApp')
 
       this.edit = function(team) {
         // http PUT /teams/<int:teamId>
-        var url   = '/api/teams/' + team.id;
+        var url   = 'api/teams/' + team.id;
         var data  = { 'name': team.name };
         var self  = this;
 
@@ -112,7 +112,7 @@ angular.module('QuepidApp')
 
       this.changeOwner = function(team, newOwnerId) {
         // http PUT /teams/<int:teamId>/owners/<int:id>
-        var url   = '/api/teams/' + team.id + '/owners/' + newOwnerId;
+        var url   = 'api/teams/' + team.id + '/owners/' + newOwnerId;
         var data  = {};
         var self  = this;
 
@@ -128,7 +128,7 @@ angular.module('QuepidApp')
 
       this.delete = function(team) {
         // http DELETE /api/teams/<int:teamId>
-        var url   = '/api/teams/' + team.id;
+        var url   = 'api/teams/' + team.id;
         var self  = this;
 
         return $http.delete(url)
@@ -138,8 +138,8 @@ angular.module('QuepidApp')
       };
 
       this.get = function(id, load_cases) {
-        // http GET /api/teams/<int:teamId>
-        var url   = '/api/teams/' + id;
+        // http GET api/teams/<int:teamId>
+        var url   = 'api/teams/' + id;
         var self  = this;
 
         if ( load_cases ) {
@@ -155,7 +155,7 @@ angular.module('QuepidApp')
       };
 
       this.list = function(load_cases) {
-        var url   = '/api/teams';
+        var url   = 'api/teams';
         var self  = this;
 
         if ( load_cases ) {
@@ -181,7 +181,7 @@ angular.module('QuepidApp')
 
       this.addMember = function(team, member) {
         // http POST /api/teams/<int:teamId>/members
-        var url   = '/api/teams/' + team.id + '/members';
+        var url   = 'api/teams/' + team.id + '/members';
         var data  = { id:  member.id };
 
         if ( team.members === undefined ) {
@@ -198,7 +198,7 @@ angular.module('QuepidApp')
 
       this.addMemberByEmail = function(team, email) {
         // http POST /api/teams/<int:teamId>/members
-        var url   = '/api/teams/' + team.id + '/members';
+        var url   = 'api/teams/' + team.id + '/members';
         var data  = { id:  email };
 
         if ( team.members === undefined ) {
@@ -217,7 +217,7 @@ angular.module('QuepidApp')
 
       this.inviteUserToJoin = function(team, email) {
         // http POST /api/teams/<int:teamId>/members/invite
-        var url   = '/api/teams/' + team.id + '/members/invite';
+        var url   = 'api/teams/' + team.id + '/members/invite';
         var data  = { id:  email };
 
         if ( team.members === undefined ) {
@@ -236,7 +236,7 @@ angular.module('QuepidApp')
 
       this.removeMember = function(team, member) {
         // http DELETE /api/teams/<int:teamId>/members/<int:memberId>
-        var url   = '/api/teams/' + team.id + '/members/' + member.id;
+        var url   = 'api/teams/' + team.id + '/members/' + member.id;
 
         if ( team.members === undefined ) {
           team.members = [];
@@ -250,7 +250,7 @@ angular.module('QuepidApp')
 
       this.shareCase = function(team, caseNo) {
         // http POST /api/teams/<int:teamId>/cases
-        var url   = '/api/teams/' + team.id + '/cases';
+        var url   = 'api/teams/' + team.id + '/cases';
         var data  = { id: caseNo };
 
         return $http.post(url, data)
@@ -266,7 +266,7 @@ angular.module('QuepidApp')
 
       this.unshareCase = function(team, caseNo) {
         // http DELETE /api/teams/<int:teamId>/cases/<int:caseId>
-        var url   = '/api/teams/' + team.id + '/cases/' + caseNo;
+        var url   = 'api/teams/' + team.id + '/cases/' + caseNo;
         var data  = { id: caseNo };
 
         return $http.delete(url, data)
@@ -277,7 +277,7 @@ angular.module('QuepidApp')
 
       this.shareScorer = function(team, scorerId) {
         // http POST /api/teams/<int:teamId>/scorers
-        var url   = '/api/teams/' + team.id + '/scorers';
+        var url   = 'api/teams/' + team.id + '/scorers';
         var data  = { id: scorerId };
 
         return $http.post(url, data)
@@ -288,7 +288,7 @@ angular.module('QuepidApp')
 
       this.removeScorer = function(team, scorer) {
         // http DELETE /api/teams/<int:teamId>/scorers/<int:scorerId>
-        var url   = '/api/teams/' + team.id + '/scorers/' + scorer.scorerId;
+        var url   = 'api/teams/' + team.id + '/scorers/' + scorer.scorerId;
 
         if ( team.scorers === undefined ) {
           team.scorers = [];

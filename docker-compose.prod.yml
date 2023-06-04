@@ -5,7 +5,7 @@ version: '3'
 services:
   mysql:
     container_name: quepid_prod_db
-    image: amd64/mysql:8.0.32
+    image: amd64/mysql:8.0.33
     ports:
       - 3306:3306
     environment:
@@ -57,7 +57,7 @@ services:
       - mysql
       - redis
   nginx:
-    image: nginx:1.23.3
+    image: nginx:1.23.4
     container_name: quepid_nginx
     ports:
       - "443:8443"

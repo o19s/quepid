@@ -27,7 +27,7 @@ angular.module('QuepidApp')
 
       this.list = function(team) {
         // http GET /teams/<int:teamId>/books
-        var url   = '/api/teams/' + team.id + '/books';
+        var url   = 'api/teams/' + team.id + '/books';
         var self  = this;
 
         // Clear the list just in case the data on the server changed,
@@ -48,8 +48,8 @@ angular.module('QuepidApp')
       };
 
       this.shareCase = function(team, book, caseNo) {
-        // http POST /api/teams/<int:teamId>/cases
-        var url   = '/api/teams/' + team.id + '/cases';
+        // http POST api/teams/<int:teamId>/cases
+        var url   = 'api/teams/' + team.id + '/cases';
         var data  = {
           id: caseNo,
           book_id: book.id
@@ -67,7 +67,7 @@ angular.module('QuepidApp')
       };
 
       this.updateQueryDocPairs = function(bookId, queries) {
-        // http POST /api/books/<int:bookId>/populate
+        // http POST api/books/<int:bookId>/populate
         var queryDocPairsPayload = [];
         angular.forEach(queries, function(query) {
           // Save all matches
@@ -78,7 +78,7 @@ angular.module('QuepidApp')
             angular.forEach(Object.values(doc.subsList), function(field) {
               fields[field['field']] = field['value'];
             });
-            fields[doc.titleField] = doc.title;
+            fields['title'] = doc.title;
             if (doc.hasThumb()) {
               fields['thumb'] = doc.thumb;
             }
@@ -102,19 +102,19 @@ angular.module('QuepidApp')
           'query_doc_pairs': queryDocPairsPayload
         };
 
-        return $http.put('/api/books/' + bookId + '/populate', payload)
+        return $http.put('api/books/' + bookId + '/populate', payload)
           .then(function(response) {
             console.log('Updated book' + response.data);
           });
       };
 
       this.refreshCaseRatingsFromBook = function(caseId, bookId) {
-        // http POST /api/books/<int:bookId>/case/<int:caseId>/refresh
+        // http POST api/books/<int:bookId>/case/<int:caseId>/refresh
 
         var payload = {
         };
 
-        return $http.put('/api/books/' + bookId + '/cases/' + caseId + '/refresh', payload)
+        return $http.put('api/books/' + bookId + '/cases/' + caseId + '/refresh', payload)
           .then(function(response) {
             console.log('refreshed ratings' + response.data);
           });

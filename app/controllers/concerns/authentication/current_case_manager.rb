@@ -37,13 +37,15 @@ module Authentication
     end
 
     def case_with_all_the_bells_whistles
-      @case = current_user
-        .cases_involved_with
-        .where(id: params[:case_id])
-        .includes(:tries )
-        .preload([ queries: [ :ratings ], tries: [ :curator_variables ] ])
-        .order('tries.try_number DESC')
-        .first
+      if current_user
+        @case = current_user
+          .cases_involved_with
+          .where(id: params[:case_id])
+          .includes(:tries )
+          .preload([ queries: [ :ratings ], tries: [ :curator_variables ] ])
+          .order('tries.try_number DESC')
+          .first
+      end
       @case = Case.public_cases.find_by(id: params[:case_id]) if @case.nil?
     end
 

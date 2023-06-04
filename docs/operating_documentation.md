@@ -3,13 +3,14 @@
 This document explains how Quepid can be operated and configured.
 
 - [Running behind a load balancer](#loadbalancer)
+- [Setting up a Context Path](#setting-up-a-context-path)
 - [Mail](#mail)
 - [OAuth](#OAuth)
 - [Legal Pages & GDPR](#legal-pages-&-gdpr)
 - [User Tracking](#user-tracking)
 - [Heathcheck Endpoint](#healthcheck)
 - [Database Management](#database-management)
-
+- [Jupyterlite Notebooks](#jupyterlite-notebooks)
 ## Running behind a load balancer
 
 > ⚠️ _Quepid will run in TLS (`https`) or plain `http` mode depending on the
@@ -64,6 +65,15 @@ FORCE_SSL=true                   # Enable this to use https only connections
 
 > ⚠️ Setting `FORCE_SSL=true` will prevent you from testing search engines
 > that are not TLS enabled (`https`)!
+
+## Setting up a Context Path
+
+If you wish to host Quepid in a folder other than the root folder (`/`), specify the `RAILS_RELATIVE_URL_ROOT` env var.
+
+__Note 1:__ The context path should not have a trailing-slash.  If you do not wish to setup a context path you can leave this variable blank.
+
+__Note 2:__ The precompiled assets also need to know about the RAILS_RELATIVE_URL_ROOT in the production docker image.   Add to your `entrypoint.sh` the instruction `RAILS_ENV=production bundle exec rake assets:precompile RAILS_RELATIVE_URL_ROOT=/quepid-app` to redo the image.
+
 
 ## Mail
 
@@ -165,3 +175,7 @@ Want to monitor if Quepid is behaving?  Just monitor `/healthcheck`, and you wil
 ## Database Management
 
 See the details in [](./database.md).
+
+## Jupuyterlite Notebooks
+
+See the details in [](./jupyterlite.md).

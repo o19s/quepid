@@ -2,7 +2,7 @@
 
 source 'https://rubygems.org'
 
-ruby '3.2.1'
+ruby '3.2.2'
 
 gem 'activerecord-import', '>= 1.0.7'
 gem 'acts_as_list', '>= 1.0.1'
@@ -52,6 +52,7 @@ gem 'omniauth-google-oauth2'
 gem 'omniauth-rails_csrf_protection', '~> 1.0'
 
 gem 'rails-healthcheck', '~> 1.4'
+gem 'rails-html-sanitizer'
 
 gem 'vega', '~> 0.3.0'
 

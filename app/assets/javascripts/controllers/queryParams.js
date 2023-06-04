@@ -21,6 +21,7 @@ angular.module('QuepidApp')
 
       $scope.showTLSChangeWarning = false;
 
+
       $scope.validateSearchEngineUrl  = function() {
         if (!angular.isUndefined($scope.settings.searchUrl)){
           if ($scope.settings.searchEngine === 'es' || $scope.settings.searchEngine === 'os'){
@@ -29,30 +30,17 @@ angular.module('QuepidApp')
           }
 
           if ($scope.settings.searchEngine !== '' && !angular.isUndefined($scope.settings.searchUrl)){
-            // Figure out if we need to redirect based on our search engine's url.
-            var quepidStartsWithHttps = $location.protocol() === 'https';
-            var searchEngineStartsWithHttps = $scope.settings.searchUrl.startsWith('https');
-
-            if ((quepidStartsWithHttps.toString() === searchEngineStartsWithHttps.toString())){
-              $scope.showTLSChangeWarning = false;
-            }
-            else {
-              $scope.showTLSChangeWarning = true;
-              $scope.quepidUrlToSwitchTo = $location.protocol() + '://' + $location.host() + $location.path();
+             $scope.showTLSChangeWarning = caseTryNavSvc.needToRedirectQuepidProtocol($scope.settings.searchUrl);
+             
+            if ($scope.showTLSChangeWarning){
+             
+              var resultsTuple = caseTryNavSvc.swapQuepidUrlTLS();
+              
+              $scope.quepidUrlToSwitchTo = resultsTuple[0];
+              $scope.protocolToSwitchTo = resultsTuple[1];
 
               $scope.quepidUrlToSwitchTo = $scope.quepidUrlToSwitchTo + '?searchEngine=' + $scope.settings.searchEngine + '&searchUrl=' + $scope.settings.searchUrl + '&showWizard=false&apiMethod=' + $scope.settings.apiMethod;
               $scope.quepidUrlToSwitchTo = $scope.quepidUrlToSwitchTo + '&fieldSpec=' + $scope.settings.fieldSpec;
-
-
-
-              if (searchEngineStartsWithHttps){
-                $scope.protocolToSwitchTo = 'https';
-                $scope.quepidUrlToSwitchTo = $scope.quepidUrlToSwitchTo.replace('http', 'https');
-              }
-              else {
-                $scope.protocolToSwitchTo = 'http';
-                $scope.quepidUrlToSwitchTo = $scope.quepidUrlToSwitchTo.replace('https', 'http');
-              }
             }
           }
         }

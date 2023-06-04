@@ -3,7 +3,7 @@ WORKDIR /srv/app
 COPY package.json yarn.lock ./
 RUN yarn install --production=true
 
-FROM ruby:3.2.1-bullseye
+FROM ruby:3.2.2-bullseye
 
 LABEL maintainer="quepid_admin@opensourceconnections.com"
 
@@ -17,7 +17,7 @@ RUN apt-get update -qq && apt-get install -y --no-install-recommends vim curl ap
 # Node and Yarn
 RUN wget --no-check-certificate -qO - https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
 RUN echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list
-RUN curl -sL https://deb.nodesource.com/setup_16.x | bash -
+RUN curl -sL https://deb.nodesource.com/setup_19.x | bash -
 
 RUN apt-get update \
   && apt-get install -y --no-install-recommends \
@@ -62,10 +62,12 @@ COPY ./Rakefile ./Rakefile
 COPY ./README.md ./README.md
 COPY ./vendor ./vendor
 COPY ./yarn.lock ./yarn.lock
-COPY ./jupyterlite/notebooks.gz ./jupyterlite/notebooks.gz
+
+ADD https://github.com/o19s/quepid-jupyterlite/releases/latest/download/jupyter-lite-build.tgz ./notebooks.gz
 
 RUN mkdir -p tmp/pids
 
+# Also unpacks the ./notebooks.gz file
 RUN RAILS_ENV=production SECRET_KEY_BASE=fake_out_devise bundle exec rake assets:precompile
 
 # Remove some files not needed in resulting image
