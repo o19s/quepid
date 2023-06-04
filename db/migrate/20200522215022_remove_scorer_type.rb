@@ -1,4 +1,4 @@
-class RemoveScorerType < ActiveRecord::Migration
+class RemoveScorerType < ActiveRecord::Migration[4.2]
   # Note: we are leaving the default_scorer table alone for now in case
   # we need to bring it back, we don't want to lose the data.  Just in case..
   def change

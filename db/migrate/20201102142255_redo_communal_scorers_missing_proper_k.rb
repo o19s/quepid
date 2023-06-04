@@ -1,6 +1,6 @@
 # It appears that we still have k=5, even through the scores are labeled as @10, so fix this.
 # caused by the previous scorer had an errant "," after the scorer.code line
-class RedoCommunalScorersMissingProperK < ActiveRecord::Migration
+class RedoCommunalScorersMissingProperK < ActiveRecord::Migration[4.2]
   def change
 
     scorers_to_update = ['P@10', 'AP@10','nDCG@10', 'DCG@10', 'CG@10']
