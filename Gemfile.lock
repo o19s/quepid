@@ -149,7 +149,7 @@ GEM
       faraday (>= 1, < 3)
     faraday-net_http (3.0.2)
     ffi (1.15.5)
-    font-awesome-sass (6.3.0)
+    font-awesome-sass (6.4.0)
       sassc (~> 2.0)
     foreman (0.87.2)
     gabba (1.0.1)
