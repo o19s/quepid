@@ -7,150 +7,60 @@
 
 <!-- Probably better way of doing this -->
 <% if flash[:unfurl] %>
-<!-- We have unfurl -->
-
-<title>Quepid: Case <%= flash[:unfurl]["case_name"] %></title>
-
-<!-— facebook open graph tags -->
-<meta property="og:type" content="website" />
-<% if flash[:unfurl]["id"] %>
-<meta property="og:url" content="<%=case_core_url(id: flash[:unfurl]["id"] ) %>" />
-<% end %>
-<meta property="og:title" content="Case <%= flash[:unfurl]["case_name"] %>" />
-<meta property="og:description" content="Case <%= flash[:unfurl]["case_name"] %> Description here." />
-<meta property="og:image" content="<%= image_url "quepid-icon.png" %>" />
-
-<!-— twitter card tags additive with the og: tags -->
-<meta name="twitter:card" content="summary">
-<meta name="twitter:site" content="@quepid_search">
-<meta name="twitter:domain" value="<%=URI.parse(root_url).host%>" />
-<meta name="twitter:title" value="Case <%= flash[:unfurl]["case_name"] %>" />
-<meta name="twitter:description" value="Case <%= flash[:unfurl]["case_name"] %> Description here" />
-<meta name="twitter:image" content="<%= image_url "quepid-icon.png" %>" />
-<% if flash[:unfurl]["id"] %>
-<meta name="twitter:url" value="<%=case_core_url(id: flash[:unfurl]["id"] ) %>" />
-<meta name="twitter:label1" value="Latest Try" />
-<meta name="twitter:data1" value="<%=Case.find_by_id(flash[:unfurl]["id"]).tries.latest.try_number %>" />
-<% end %>
+  <!-- We have unfurl -->
+  
+  <title>Quepid: Case <%= flash[:unfurl]["case_name"] %></title>
+  
+  <!-— facebook open graph tags -->
+  <meta property="og:type" content="website" />
+  <% if flash[:unfurl]["id"] %>
+    <meta property="og:url" content="<%=case_core_url(id: flash[:unfurl]["id"] ) %>" />
+  <% end %>
+  <meta property="og:title" content="Case <%= flash[:unfurl]["case_name"] %>" />
+  <meta property="og:description" content="Case <%= flash[:unfurl]["case_name"] %> Description here." />
+  <meta property="og:image" content="<%= image_url "quepid-icon.png" %>" />
+  
+  <!-— twitter card tags additive with the og: tags -->
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:site" content="@quepid_search">
+  <meta name="twitter:domain" value="<%=URI.parse(root_url).host%>" />
+  <meta name="twitter:title" value="Case <%= flash[:unfurl]["case_name"] %>" />
+  <meta name="twitter:description" value="Case <%= flash[:unfurl]["case_name"] %> Description here" />
+  <meta name="twitter:image" content="<%= image_url "quepid-icon.png" %>" />
+  <% if flash[:unfurl]["id"] %>
+    <meta name="twitter:url" value="<%=case_core_url(id: flash[:unfurl]["id"] ) %>" />
+    <meta name="twitter:label1" value="Latest Try" />
+    <meta name="twitter:data1" value="<%=Case.find_by_id(flash[:unfurl]["id"]).tries.latest.try_number %>" />
+  <% end %>
 <% else %>
-<!-- We DO NOT have unfurl -->
-
-<title>Quepid -- Relevant Search Solved</title>
-
-<!-— facebook open graph tags -->
-<meta property="og:type" content="website" />
-<meta name="twitter:site" content="@quepid_search2">
-<meta property="og:url" content="<%= root_path %>" />
-<meta property="og:title" content="Quepid -- Relevant Search Solved" />
-<meta property="og:description" content="Tired of irrelevant search results? Use Quepid products & services to help improve the quality and relevancy of your search results." />
-<meta property="og:image" content="<%= image_url "quepid-icon.png" %>" />
-
-<!-— twitter card tags additive with the og: tags -->
-<meta name="twitter:card" content="summary">
-<meta name="twitter:domain" value="<%=URI.parse(root_url).host%>" />
-<meta name="twitter:title" value="Quepid -- Relevant Search Solved" />
-<meta name="twitter:description" value="Tired of irrelevant search results? Use Quepid products & services to help improve the quality and relevancy of your search results." />
-<meta name="twitter:image" content="<%= image_url "quepid-icon.png" %>" />
-<meta name="twitter:url" value="<%=root_url%>" />
+  <!-- We DO NOT have unfurl -->
+  
+  <title>Quepid -- Relevant Search Solved</title>
+  
+  <!-— facebook open graph tags -->
+  <meta property="og:type" content="website" />
+  <meta name="twitter:site" content="@quepid_search2">
+  <meta property="og:url" content="<%= root_path %>" />
+  <meta property="og:title" content="Quepid -- Relevant Search Solved" />
+  <meta property="og:description" content="Tired of irrelevant search results? Use Quepid products & services to help improve the quality and relevancy of your search results." />
+  <meta property="og:image" content="<%= image_url "quepid-icon.png" %>" />
+  
+  <!-— twitter card tags additive with the og: tags -->
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:domain" value="<%=URI.parse(root_url).host%>" />
+  <meta name="twitter:title" value="Quepid -- Relevant Search Solved" />
+  <meta name="twitter:description" value="Tired of irrelevant search results? Use Quepid products & services to help improve the quality and relevancy of your search results." />
+  <meta name="twitter:image" content="<%= image_url "quepid-icon.png" %>" />
+  <meta name="twitter:url" value="<%=root_url%>" />
 <% end %>
 
 
 
-    <%= stylesheet_link_tag 'application', media: 'all' %>
-    <%= csrf_meta_tags %>
-    <%= javascript_include_tag 'application' %>
+<%= stylesheet_link_tag 'application', media: 'all' %>
+<%= csrf_meta_tags %>
+<%= javascript_include_tag 'application' %>
 
-    <style>
-
-
-    </style>
-
-
-    <!-- Custom styles for this template -->
-    <style>
-      body {
-        font-size: .875rem;
-      }
-
-      /* eric - this is the icon in the navbar placeholder */
-      .feather {
-        width: 16px;
-        height: 16px;
-      }
-
-      /*
-       * Sidebar
-       */
-
-      .sidebar {
-        position: fixed;
-        top: 0;
-        /* rtl:raw:
-        right: 0;
-        */
-        bottom: 0;
-        /* rtl:remove */
-        left: 0;
-        z-index: 100; /* Behind the navbar */
-        padding: 48px 0 0; /* Height of navbar */
-        box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
-      }
-
-      @media (max-width: 767.98px) {
-        .sidebar {
-          top: 5rem;
-        }
-      }
-
-      .sidebar-sticky {
-        height: calc(100vh - 48px);
-        overflow-x: hidden;
-        overflow-y: auto; /* Scrollable contents if viewport is shorter than content. */
-      }
-
-      .sidebar .nav-link {
-        font-weight: 500;
-        color: #333;
-      }
-
-      .sidebar .nav-link .feather {
-        margin-right: 4px;
-        color: #727272;
-      }
-
-      .sidebar .nav-link.active {
-        color: #2470dc;
-      }
-
-      .sidebar .nav-link:hover .feather,
-      .sidebar .nav-link.active .feather {
-        color: inherit;
-      }
-
-      .sidebar-heading {
-        font-size: .75rem;
-      }
-
-      .feather {
-        width: 16px;
-        height: 16px;
-      }
-
-      .feather-off {
-        width: 16px;
-        height: 16px;
-      }
-
-      /*
-       * Navbar
-       */
-
-
-
-      </style>
-
-
-</head>
+ </head>
 
 <body>
 
@@ -158,81 +68,24 @@
 
 <div class="container-fluid">
   <div class="row">
-    <nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block bg-body-tertiary sidebar collapse">
-      <div class="position-sticky pt-3 sidebar-sticky">
-        <ul class="nav flex-column">
-
-
-          <li class="nav-item">
-            <% if current_page?(books_path) %>
-              <span class="nav-link active">
-                <i class="bi bi-book-half feather" aria-hidden="true" title="Books" alt="Books" class="align-text-bottom"></i>
-                Books
-              </span>
-            <% else %>
-              <%= link_to books_path, class: 'nav-link' do %>
-                <i class="bi bi-book-half feather" aria-hidden="true" title="Books" alt="Books" class="align-text-bottom"></i>
-                Books
-              <% end %>
-            <% end %>
-          </li>
-
-        </ul>
-
-        <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-body-secondary text-uppercase">
-          <span>Saved reports</span>
-          <a class="link-secondary" href="#" aria-label="Add a new report">
-            <span data-feather="plus-circle" class="align-text-bottom"></span>
-          </a>
-        </h6>
-        <ul class="nav flex-column mb-2">
-          <li class="nav-item">
-            <a class="nav-link" href="#">
-              <span data-feather="file-text" class="align-text-bottom"></span>
-              Current month
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="#">
-              <span data-feather="file-text" class="align-text-bottom"></span>
-              Last quarter
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="#">
-              <span data-feather="file-text" class="align-text-bottom"></span>
-              Social engagement
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="#">
-              <span data-feather="file-text" class="align-text-bottom"></span>
-              Year-end sale
-            </a>
-          </li>
-        </ul>
-      </div>
-    </nav>
-
+    
+    <%= render 'layouts/sidebar' %>
+    
     <!-- Begin page content -->
-
     <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
-
-    <%= yield %>
-
+      <!--
+      <nav aria-label="breadcrumb">
+          <ol class="breadcrumb">
+              <li class="breadcrumb-item"><a href="#">Home</a></li>
+              <li class="breadcrumb-item active" aria-current="page">Overview</li>
+          </ol>
+      </nav>
+      -->
+      <%= yield %>
     </main>
+
+
     <!--
-    <section styled="background-color: #9de2ff;">
-      <div class="container py-5 h-100">
-        <div class="row d-flex justify-content-center align-items-center h-100">
-            Sunday, March 26
-            <br/>
-            Good Evening, Eric
-
-        </div>
-      </div>
-    </section>
-
     <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
         <div class="row">
     <div class="col-sm-6 mb-3 mb-sm-0">
@@ -260,124 +113,7 @@
 
 
 
-    <section>
-      <div class="container py-5 h-100">
-        <div class="row d-flex justify-content-center align-items-center h-100">
-          <div class="col-4">
-
-            <div class="card" style="border-radius: 15px;">
-              <div class="card-body p-4">
-                <div class="d-flex text-black">
-                  <div class="flex-shrink-0">
-                    <% if current_user %>
-                    <%= image_tag current_user.avatar_url(:big), id: 'user-avatar', class:'img-fluid img-rounded', style:"width: 180px;" %>
-                    <% end %>
-                  </div>
-                  <div class="flex-grow-1 ms-3">
-                    <h5 class="mb-1"><%= current_user.display_name %></h5>
-                    <p class="mb-2 pb-1" style="color: #2b2a2a;">
-                    <% if current_user %>
-                      <%= current_user.email %>
-                      <% end %> 
-                    </p>
-                    <div
-                      class="d-flex justify-content-start rounded-3 p-2 mb-2"
-                      style="background-color: #efefef;"
-                    >
-                      <div>
-                        <p class="small text-muted mb-1">
-                          Cases
-                        </p>
-                        <p class="mb-0"><%= current_user.cases.count %></p>
-                      </div>
-                      <div class="px-3">
-                        <p class="small text-muted mb-1">
-                          Teams
-                        </p>
-                        <p class="mb-0"><%= current_user.teams.count %></p>
-                      </div>
-                      <div>
-                        <p class="small text-muted mb-1">
-                          Queries
-                        </p>
-                        <p class="mb-0"><%= current_user.queries.count %></p>
-                      </div>
-                      <div class="px-3">
-                        <p class="small text-muted mb-1">
-                          Ratings
-                        </p>
-                        <p class="mb-0">n/a</p>
-                      </div>
-                    </div>
-                    <div class="d-flex pt-1">
-                      <p class="small text-muted">
-                        Member since <%= time_ago_in_words current_user.created_at %> ago
-                      </p>
-
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="col-4">
-
-            <div class="card" style="border-radius: 15px;">
-              <div class="card-body p-4">
-                <div class="d-flex text-black">
-                  <div class="flex-shrink-0">
-                    <%= image_tag current_user.avatar_url(:big), id: 'user-avatar', class:'img-fluid img-rounded', style:"width: 180px;" %>
-                  </div>
-                  <div class="flex-grow-1 ms-3">
-                    <h5 class="mb-1"><%= current_user.display_name %></h5>
-                    <p class="mb-2 pb-1" style="color: #2b2a2a;">
-                      <%= current_user.email %>
-                    </p>
-                    <div
-                      class="d-flex justify-content-start rounded-3 p-2 mb-2"
-                      style="background-color: #efefef;"
-                    >
-                      <div>
-                        <p class="small text-muted mb-1">
-                          Cases
-                        </p>
-                        <p class="mb-0"><%= current_user.cases.count %></p>
-                      </div>
-                      <div class="px-3">
-                        <p class="small text-muted mb-1">
-                          Teams
-                        </p>
-                        <p class="mb-0"><%= current_user.teams.count %></p>
-                      </div>
-                      <div>
-                        <p class="small text-muted mb-1">
-                          Queries
-                        </p>
-                        <p class="mb-0"><%= current_user.queries.count %></p>
-                      </div>
-                      <div class="px-3">
-                        <p class="small text-muted mb-1">
-                          Ratings
-                        </p>
-                        <p class="mb-0">n/a</p>
-                      </div>
-                    </div>
-                    <div class="d-flex pt-1">
-                      <p class="small text-muted">
-                        Member since <%= time_ago_in_words current_user.created_at %> ago
-                      </p>
-
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
--->
+    
 
 
     <!--

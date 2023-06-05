@@ -4,6 +4,8 @@ require 'sidekiq/web'
 
 # rubocop:disable Metrics/BlockLength
 Rails.application.routes.draw do
+  #get 'home/show'
+  root 'home#show'
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
   Healthcheck.routes(self)
@@ -63,8 +65,6 @@ Rails.application.routes.draw do
     end
     resources :communal_scorers
   end
-
-  root 'core#index'
 
   # preview routes for mailers
   if Rails.env.development?
