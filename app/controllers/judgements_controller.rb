@@ -14,7 +14,6 @@ class JudgementsController < ApplicationController
   end
 
   def skip_judging
-    session['previous_judgement_id'] = nil
     redirect_to book_judge_path(@book)
   end
 
@@ -24,10 +23,11 @@ class JudgementsController < ApplicationController
     if @query_doc_pair
       @query = @current_user.queries.has_information_need.where(query_text: @query_doc_pair.query_text).first
     end
-    @judgement = Judgement.new
+    @judgement = Judgement.new(query_doc_pair: @query_doc_pair, user: @current_user, updated_at: Time.zone.now)
   end
 
-  def edit; end
+  def edit
+  end
 
   def create
     @judgement = Judgement.new(judgement_params)
@@ -35,7 +35,6 @@ class JudgementsController < ApplicationController
     @judgement.unrateable = false
 
     if @judgement.save
-      session['previous_judgement_id'] = @judgement.id
       redirect_to book_judge_path(@book)
     else
       render action: :edit
@@ -43,20 +42,16 @@ class JudgementsController < ApplicationController
   end
 
   def unrateable
-    @judgement = Judgement.new(query_doc_pair_id: params[:query_doc_pair_id])
-    @judgement.user = current_user
+    @judgement = Judgement.find_or_initialize_by(query_doc_pair_id: params[:query_doc_pair_id], user: current_user)
 
-    if @judgement.mark_unrateable!
-      session['previous_judgement_id'] = @judgement.id
-      redirect_to book_judge_path(@book)
-    else
-      render action: :edit
-    end
+    @judgement.mark_unrateable!
+    redirect_to book_judge_path(@book)
   end
 
   def update
     @judgement.update(judgement_params)
     @judgement.user = current_user
+    @judgement.unrateable = false
     if @judgement.save
       redirect_to book_judge_path(@book)
     else

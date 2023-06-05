@@ -4,7 +4,13 @@
 <%= render 'form', judgement: @judgement, query_doc_pair: @judgement.query_doc_pair, url_for_form: book_query_doc_pair_judgement_path(@book, @judgement.query_doc_pair, @judgement) %>
 
 <br>
-
+<%
+  previous_judgement = @judgement.previous_judgement_made
+%>
+<% if previous_judgement %>
+  <%= button_to 'Go Back to Previous Query/Doc Pair', edit_book_query_doc_pair_judgement_path(@book, previous_judgement.query_doc_pair, previous_judgement), method: :get %>
+  <br>
+<% end %>
 <%= button_to 'Exit', book_judgements_path(@book), method: :get %>
 
 <br>

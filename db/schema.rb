@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_05_04_182246) do
+ActiveRecord::Schema[7.0].define(version: 2023_06_04_121856) do
   create_table "annotations", id: :integer, charset: "utf8mb3", force: :cascade do |t|
     t.text "message"
     t.string "source"
@@ -83,6 +83,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_05_04_182246) do
     t.datetime "updated_at", null: false
     t.boolean "unrateable", default: false
     t.index ["query_doc_pair_id"], name: "index_judgements_on_query_doc_pair_id"
+    t.index ["user_id", "query_doc_pair_id"], name: "index_judgements_on_user_id_and_query_doc_pair_id", unique: true
   end
 
   create_table "permissions", id: :integer, charset: "utf8mb3", force: :cascade do |t|
