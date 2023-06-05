@@ -1,5 +1,5 @@
 # See https://github.com/o19s/quepid/issues/225
-class BugfixApNdcgScorers < ActiveRecord::Migration
+class BugfixApNdcgScorers < ActiveRecord::Migration[4.2]
   def change
     scorers_to_update = ['AP@10','nDCG@10']
     scorers_to_update.each do |scorer_name|

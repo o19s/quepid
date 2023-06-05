@@ -1,4 +1,4 @@
-class UpdateDemoSolrEsToNonDefaultPorts < ActiveRecord::Migration
+class UpdateDemoSolrEsToNonDefaultPorts < ActiveRecord::Migration[4.2]
   # Our demo Solr and ES instances were getting drive by vandalism by running on
   # default ports on the Internet.  So we moved to non defaults.  Update existing
   # cases.  https://github.com/o19s/quepid/issues/104

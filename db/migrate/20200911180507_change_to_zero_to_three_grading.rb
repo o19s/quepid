@@ -1,4 +1,4 @@
-class ChangeToZeroToThreeGrading < ActiveRecord::Migration
+class ChangeToZeroToThreeGrading < ActiveRecord::Migration[4.2]
   def change
 
     scale_with_labels = {"0":"Poor","1":"Fair","2":"Good","3":"Perfect"}

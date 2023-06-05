@@ -1,4 +1,4 @@
-class RenameQueryParamsInTries < ActiveRecord::Migration
+class RenameQueryParamsInTries < ActiveRecord::Migration[4.2]
   def change
     # Note, this failed once on werid data in queryParams, but manually running worked:
     # ALTER TABLE `tries` CHANGE `queryParams` `query_params` varchar(20000) DEFAULT NULL

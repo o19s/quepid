@@ -1,4 +1,4 @@
-class UpdateDefaultScorersForLegacyV1Behavior < ActiveRecord::Migration
+class UpdateDefaultScorersForLegacyV1Behavior < ActiveRecord::Migration[4.2]
   def up
     UpdateDefaultScorersForLegacyV1Behavior.connection.execute(
       "UPDATE default_scorers
