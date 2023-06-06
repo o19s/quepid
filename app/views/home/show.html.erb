@@ -7,7 +7,7 @@ Inspired by https://dev.to/themesberg/tutorial-how-to-build-a-simple-admin-dashb
 <div class="text-center">
     <p/>
     <h5 class="card-title"><%= Time.now.strftime("%A, %B %d") %></h5>
-    <h2 class="card-title"><%= greeting() %>, <%= @current_user.name %></h2>
+    <h2 class="card-title"><%= greeting() %>, <%= @current_user.name.titleize %></h2>
 </div>
 
   
