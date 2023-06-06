@@ -85,5 +85,4 @@ module ApplicationHelper
 
     document_fields
   end
-
 end

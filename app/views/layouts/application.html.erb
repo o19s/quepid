@@ -69,10 +69,12 @@
 <div class="container-fluid">
   <div class="row">
     
-    <%= render 'layouts/sidebar' %>
+    <% if @current_user %>
+      <%= render 'layouts/sidebar' %>
+    <% end %>
     
     <!-- Begin page content -->
-    <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+    <main class="col-md-10 ms-sm-auto col-lg-<%= @current_user ? '10' : '12' %> px-md-5">
       <!--
       <nav aria-label="breadcrumb">
           <ol class="breadcrumb">
@@ -110,10 +112,6 @@
 
     </main>
 
-
-
-
-    
 
 
     <!--

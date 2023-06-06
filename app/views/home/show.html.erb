@@ -5,8 +5,9 @@ Inspired by https://dev.to/themesberg/tutorial-how-to-build-a-simple-admin-dashb
 <h1 class="h2">Dashboard</h1>
 -->
 <div class="text-center">
-    <h5 class="card-title">Sunday, March 26</h5>
-    <h2 class="card-title">Good Evening, Eric</h2>
+    <p/>
+    <h5 class="card-title"><%= Time.now.strftime("%A, %B %d") %></h5>
+    <h2 class="card-title"><%= greeting() %>, <%= @current_user.name %></h2>
 </div>
 
   
