@@ -57,7 +57,13 @@ COPY ./LICENSE ./LICENSE
 COPY ./package.json ./package.json
 COPY ./postcss.config.js ./postcss.config.js
 COPY ./Procfile ./Procfile
-COPY ./public ./public
+
+# Exclude the /public/notebook directory
+COPY ./public/images ./public/images
+COPY ./public/javascripts ./public/javascripts
+COPY ./public/*.html ./public
+COPY ./public/robots.txt ./public
+
 COPY ./Rakefile ./Rakefile
 COPY ./README.md ./README.md
 COPY ./vendor ./vendor
