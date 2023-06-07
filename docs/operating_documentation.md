@@ -9,6 +9,7 @@ This document explains how Quepid can be operated and configured.
 - [Legal Pages & GDPR](#legal-pages-&-gdpr)
 - [User Tracking](#user-tracking)
 - [Heathcheck Endpoint](#healthcheck)
+- [Troubleshoot Your Deploy](#troubleshoot-your-deploy)
 - [Database Management](#database-management)
 - [Jupyterlite Notebooks](#jupyterlite-notebooks)
 ## Running behind a load balancer
@@ -171,6 +172,17 @@ the file `Procfile`
 ## Healthcheck
 
 Want to monitor if Quepid is behaving?  Just monitor `/healthcheck`, and you will get 200 status codes from a healthy Quepid, and 503 if not.  The JSON output is `{"code":200,"status":{"database":"OK","migrations":"OK"}}`.
+
+## Troubleshoot Your Deploy
+
+When errors occur, Quepid logs them and shows a generic page.  
+However sometimes getting to those logs is difficult, and you just want the message immediately.
+
+You can enable this behavior by setting the follow `ENV` var:
+
+```
+QUEPID_CONSIDER_ALL_REQUESTS_LOCAL=true
+```
 
 ## Database Management
 
