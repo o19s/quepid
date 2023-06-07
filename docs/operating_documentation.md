@@ -184,6 +184,8 @@ You can enable this behavior by setting the follow `ENV` var:
 QUEPID_CONSIDER_ALL_REQUESTS_LOCAL=true
 ```
 
+Confirm the setup by visiting `/api/test_exception` which raises an error and will give you the debugging page "RuntimeError in Api::ApiController#test_exception".
+
 ## Database Management
 
 See the details in [](./database.md).

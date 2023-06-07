@@ -74,6 +74,7 @@ Rails.application.routes.draw do
 
   namespace :api, defaults: { format: :json } do
     get 'test' => 'api#test'
+    get 'test_exception' => 'api#test_exception'
 
     scope module: :v1, constraints: ApiConstraint.new(version: 1, default: true) do
       resources :users,   only: [ :index, :show, :update ] do
