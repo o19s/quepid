@@ -10,7 +10,7 @@ angular.module('QuepidApp')
       $log,
       query
     ) {
-      var ctrl = this;
+      let ctrl = this;
 
       // default to showing the params panels.
       ctrl.toggledPanel = 'queryDetails';
@@ -23,8 +23,8 @@ angular.module('QuepidApp')
       ctrl.isTemplatedQuery = false;
 
       ctrl.sortJsonByKeys = function (obj) {
-        var sortedJsonKeys = Object.keys(obj).sort();
-        var tempObj = {};
+        let sortedJsonKeys = Object.keys(obj).sort();
+        let tempObj = {};
         sortedJsonKeys.map(key => tempObj[key] = obj[key]);
         return angular.toJson(tempObj, true);
       };
