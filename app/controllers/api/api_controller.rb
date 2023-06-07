@@ -17,7 +17,7 @@ module Api
     before_action :set_default_response_format
     before_action :set_current_user
     before_action :check_current_user_locked!
-    before_action :authenticate_api!, except: [:test, :test_exception]
+    before_action :authenticate_api!, except: [ :test, :test_exception ]
 
     protect_from_forgery with: :null_session
 
@@ -30,7 +30,7 @@ module Api
 
     # Use to test that exception are rendered properly.
     def test_exception
-      raise "boom"
+      raise 'boom'
     end
 
     def signup_enabled?
