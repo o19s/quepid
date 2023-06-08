@@ -205,6 +205,17 @@
         return {"name": "f", "display_name": "f" }
       end
     end
+
+    if max_value == 2
+      if value == 0
+        return {"name": "s", "display_name": "s" }
+      elsif value == 1
+        return {"name": "d", "display_name": "d" }
+      else
+        return {"name": "f", "display_name": "f" }
+      end
+    end
+
     if max_value == 3
       if value == 0
         return {"name": "a", "display_name": "a" }
