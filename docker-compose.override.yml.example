@@ -5,4 +5,5 @@ version: '3'
 services:
   app:
     volumes:
-      - /Users/epugh/Documents/projects/splainer-search/:/srv/app/node_modules/splainer-search
+      - /Users/epugh/Documents/projects/splainer-search/package.json:/srv/app/node_modules/splainer-search/package.json
+      - /Users/epugh/Documents/projects/splainer-search/splainer-search.js:/srv/app/node_modules/splainer-search/splainer-search.js

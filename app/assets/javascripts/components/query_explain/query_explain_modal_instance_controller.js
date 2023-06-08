@@ -3,21 +3,28 @@
 angular.module('QuepidApp')
   .controller('QueryExplainModalInstanceCtrl', [
     '$uibModalInstance',
+    '$log',
     'query',
     function (
       $uibModalInstance,
+      $log,
       query
     ) {
-      var ctrl = this;
+      let ctrl = this;
 
-      // default to showing the params toggle.
-      ctrl.toggleParams = true;
+      // default to showing the params panels.
+      ctrl.toggledPanel = 'queryDetails';
+      
+      ctrl.togglePanel = function(panel) {
+        ctrl.toggledPanel = panel;
+      };
 
       ctrl.query = query;
+      ctrl.isTemplatedQuery = false;
 
       ctrl.sortJsonByKeys = function (obj) {
-        var sortedJsonKeys = Object.keys(obj).sort();
-        var tempObj = {};
+        let sortedJsonKeys = Object.keys(obj).sort();
+        let tempObj = {};
         sortedJsonKeys.map(key => tempObj[key] = obj[key]);
         return angular.toJson(tempObj, true);
       };
@@ -37,7 +44,17 @@ angular.module('QuepidApp')
       else {
         ctrl.queryDetailsMessage = 'Query parameters are not returned by the current Search Engine.';
       }
-
+      
+      ctrl.renderQueryTemplate = function(){
+        ctrl.isTemplatedQuery = query.searcher.isTemplateCall(query.searcher.args);      
+        
+        query.searcher.renderTemplate().then(function() {
+          ctrl.renderedQueryTemplate = query.searcher.renderedTemplateJson;
+          ctrl.togglePanel('renderedQueryTemplate');
+        }, function(response) {
+          $log.debug(response.data);
+        });
+      };
       ctrl.cancel = function () {
         $uibModalInstance.dismiss('cancel');
       };
