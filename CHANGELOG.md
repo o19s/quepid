@@ -1,6 +1,6 @@
 # Changelog
 
-## 7.4.0 - 2023-06-09
+## 7.4.1 - 2023-06-09
 
 Lots of small things from working with Quepid using templates with OpenSearch.  Also, if you haven't used https://github.com/o19s/agent_q, it's been updated to work with Quepid 7.x line.   I use it to automate pulling my relevance metrics daily from Quepid cases ;-).
 
