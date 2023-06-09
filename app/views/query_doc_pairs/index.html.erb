@@ -18,7 +18,7 @@
   <% @query_doc_pairs.each do |query_doc_pair| %>
     <tr>
       <td>
-        <%= link_to query_doc_pair.id, book_query_doc_pair_url(@book, query_doc_pair) %>
+        <%= link_to query_doc_pair.id, book_query_doc_pair_path(@book, query_doc_pair) %>
       </td>
 
       <td><%= query_doc_pair.query_text %></td>

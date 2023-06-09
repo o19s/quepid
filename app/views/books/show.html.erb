@@ -26,11 +26,11 @@ Books organize all the query/doc pairs that are needed for evaluating your searc
 <%= render(partial: 'books/case', collection: @cases, as: :kase) || "There are no cases available." %>
 </p>
 
-<%= button_to 'Show Judgements', book_judgements_url(@book), method: :get %>
+<%= button_to 'Show Judgements', book_judgements_path(@book), method: :get %>
 
 <br>
 
-<%= button_to 'Show Query Doc Pairs', book_query_doc_pairs_url(@book), method: :get %>
+<%= button_to 'Show Query Doc Pairs', book_query_doc_pairs_path(@book), method: :get %>
 
 <br>
 

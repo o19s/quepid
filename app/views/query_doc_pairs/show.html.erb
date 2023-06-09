@@ -28,4 +28,4 @@
 
 <%= button_to 'Edit Query Doc Pair', edit_book_query_doc_pair_path(@query_doc_pair.book, @query_doc_pair), method: :get %> <br>
 
-<%= button_to 'Back', book_query_doc_pairs_url(book: @query_doc_pair.book, query_doc_pair: @query_doc_pair), method: :get %><br>
+<%= button_to 'Back', book_query_doc_pairs_path(book: @query_doc_pair.book, query_doc_pair: @query_doc_pair), method: :get %><br>

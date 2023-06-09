@@ -4,7 +4,7 @@
 <script type="text/javascript">
   var tries_tree_view;
 
-  fetch('<%= analytics_tries_visualization_vega_specification_url(case_id: @case.id) %>')
+  fetch('<%= analytics_tries_visualization_vega_specification_path(case_id: @case.id) %>')
     .then(res => res.json())
     .then(spec => render(spec))
     .catch(err => console.error(err));
