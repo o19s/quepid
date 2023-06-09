@@ -208,7 +208,7 @@ angular.module('QuepidApp')
             $scope.docFinder.searcher.explainOther(
               filter, fieldSpec)
               .then(function() {
-                var normed = queriesSvc.normalizeDocExplains($scope.query, $scope.docFinder.searcher, fieldSpec);
+                let normed = queriesSvc.normalizeDocExplains($scope.query, $scope.docFinder.searcher, fieldSpec);
                 $scope.docFinder.docs = normed;
 
                 $scope.defaultList = true;
