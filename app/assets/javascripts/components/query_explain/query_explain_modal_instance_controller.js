@@ -14,7 +14,7 @@ angular.module('QuepidApp')
 
       // default to showing the params panels.
       ctrl.toggledPanel = 'queryDetails';
-      
+
       ctrl.togglePanel = function(panel) {
         ctrl.toggledPanel = panel;
       };
@@ -44,17 +44,18 @@ angular.module('QuepidApp')
       else {
         ctrl.queryDetailsMessage = 'Query parameters are not returned by the current Search Engine.';
       }
-      
+
       ctrl.renderQueryTemplate = function(){
-        ctrl.isTemplatedQuery = query.searcher.isTemplateCall(query.searcher.args);      
-        
+        ctrl.isTemplatedQuery = query.searcher.isTemplateCall(query.searcher.args);
+
         query.searcher.renderTemplate().then(function() {
-          ctrl.renderedQueryTemplate = query.searcher.renderedTemplateJson;
+          ctrl.renderedQueryTemplate = angular.toJson(query.searcher.renderedTemplateJson.template_output,true);
           ctrl.togglePanel('renderedQueryTemplate');
         }, function(response) {
           $log.debug(response.data);
         });
       };
+
       ctrl.cancel = function () {
         $uibModalInstance.dismiss('cancel');
       };

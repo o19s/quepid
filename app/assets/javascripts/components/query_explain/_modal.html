@@ -31,12 +31,16 @@
       <p ng-hide="ctrl.isTemplatedQuery">This is not a templated query.</p>
       <span ng-show="ctrl.isTemplatedQuery">
         <p>This is what the populated query template looks like</p>
-        <json-explorer
-          json-data="ctrl.renderedQueryTemplate"
-          collapsed="false">
-        </json-explorer>
+        <div id='render-template' class='es-query-params' ui-ace="{
+            require:      ['ace/ext/language_tools'],
+            useWrapMode:  false,
+            mode:         'json',
+            theme:        'chrome',
+            readOnly:     true
+          }" ng-model="ctrl.renderedQueryTemplate">
+        </div>
       </span>
-    </uib-tab>    
+    </uib-tab>
   </uib-tabset>
 </div>
 
