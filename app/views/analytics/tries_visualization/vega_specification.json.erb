@@ -30,7 +30,7 @@
   "data": [
     {
       "name": "tree",
-      "url": "<%= analytics_tries_visualization_vega_data_url(case_id: @case.id, format: :json) %>",
+      "url": "<%= analytics_tries_visualization_vega_data_path(case_id: @case.id, format: :json) %>",
       "transform": [
         {
           "type": "stratify",
