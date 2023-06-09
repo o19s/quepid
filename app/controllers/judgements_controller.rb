@@ -37,7 +37,7 @@ class JudgementsController < ApplicationController
     if @judgement.save
       redirect_to book_judge_path(@book)
     else
-      render action: :edit
+      render action: :new
     end
   end
 
