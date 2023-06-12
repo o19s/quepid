@@ -25,6 +25,8 @@ class QueryDocPair < ApplicationRecord
   belongs_to :book
   has_many :judgements, dependent: :destroy
 
+  validates :query_text, presence: true, allow_blank: false
+  validates :doc_id, presence: true, allow_blank: false
   validates :position, numericality: { only_integer: true }, allow_nil: true
 
   scope :has_judgements, -> { joins(:judgements) }
