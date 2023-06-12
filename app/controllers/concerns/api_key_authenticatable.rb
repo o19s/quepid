@@ -16,7 +16,6 @@ module ApiKeyAuthenticatable
   # Use this to raise an error and automatically respond with a 401 HTTP status
   # code when API key authentication fails
   def authenticate_with_api_key!
-
     if @current_user.nil? && !request.headers['Authorization'].nil?
       @current_user = authenticate_or_request_with_http_token(&method(:authenticator))
     end
