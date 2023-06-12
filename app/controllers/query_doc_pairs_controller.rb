@@ -52,7 +52,6 @@ class QueryDocPairsController < ApplicationController
   end
 
   def find_book
-    puts "DO I have a current user?  #{current_user.nil?}"
     @book = current_user.books_involved_with.where(id: params[:book_id]).first
   end
 end
