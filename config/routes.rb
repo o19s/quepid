@@ -141,6 +141,8 @@ Rails.application.routes.draw do
         resources :cases do
           put 'refresh' => 'books/refresh#update'
         end
+        resources :query_doc_pairs
+        resources :judgements
       end
 
       namespace :clone do
