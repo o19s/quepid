@@ -25,12 +25,14 @@
 one:
   query_text: MyString
   position: 1
+  doc_id: "MyDocA"
   document_fields: MyText
   book: one
 
 two:
   query_text: MyString
   position: 2
+  doc_id: "MyDocB"
   document_fields: MyText
   book: two
 
