@@ -21,12 +21,11 @@ ActiveRecord::Schema[7.0].define(version: 2023_06_11_183949) do
   end
 
   create_table "api_keys", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
-    t.integer "bearer_id", null: false
-    t.string "bearer_type", null: false
-    t.string "token", null: false
+    t.integer "bearer_id"
+    t.string "bearer_type"
+    t.string "token"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["bearer_id", "bearer_type"], name: "index_api_keys_on_bearer_id_and_bearer_type"
     t.index ["token"], name: "index_api_keys_on_token", unique: true
   end
 
