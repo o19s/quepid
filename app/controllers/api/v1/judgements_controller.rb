@@ -22,7 +22,6 @@ module Api
 
       # rubocop:disable Metrics/AbcSize
       def create
-        puts 'HERE I AM'
         # @judgement = @book.judgements.build judgement_params
         @judgement = @book.judgements.find_or_create_by query_doc_pair_id: params[:judgement][:query_doc_pair_id],
                                                         user_id:           params[:judgement][:user]

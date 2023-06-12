@@ -17,6 +17,7 @@ class JudgementsController < ApplicationController
     redirect_to book_judge_path(@book)
   end
 
+  # rubocop:disable Layout/LineLength
   def new
     @query_doc_pair = SelectionStrategy.random_query_doc_based_on_strategy(@book, current_user)
     redirect_to book_path(@book) if @query_doc_pair.nil? # no more query doc pairs to be judged!
@@ -26,6 +27,7 @@ class JudgementsController < ApplicationController
     end
     @judgement = Judgement.new(query_doc_pair: @query_doc_pair, user: @current_user, updated_at: Time.zone.now)
   end
+  # rubocop:enable Layout/LineLength
 
   def edit
   end
