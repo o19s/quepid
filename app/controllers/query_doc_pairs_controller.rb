@@ -17,6 +17,7 @@ class QueryDocPairsController < ApplicationController
   def edit; end
 
   def create
+    puts 'YOU ARE HITTING the NON API version of QueryDocPairsController'
     @query_doc_pair = QueryDocPair.new query_doc_pair_params
     @book.query_doc_pairs << @query_doc_pair
     if @book.save
@@ -51,6 +52,7 @@ class QueryDocPairsController < ApplicationController
   end
 
   def find_book
+    puts "DO I have a current user?  #{current_user.nil?}"
     @book = current_user.books_involved_with.where(id: params[:book_id]).first
   end
 end

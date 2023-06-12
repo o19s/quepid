@@ -26,7 +26,7 @@ module ApiKeyAuthenticatable
 
   private
 
-  attr_writer :current_api_key, :current_bearer
+  attr_writer :current_api_key, :current_user
 
   def authenticator http_token, _options
     @current_api_key = ApiKey.find_by token: http_token

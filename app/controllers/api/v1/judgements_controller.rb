@@ -7,6 +7,8 @@ module Api
       before_action :check_book
       before_action :set_judgement,   only: [ :show, :update, :destroy ]
       before_action :check_judgement, only: [ :show, :update, :destroy ]
+      skip_before_action :verify_authenticity_token
+      protect_from_forgery with: :null_session
 
       def index
         @judgements = @book.judgements
@@ -18,16 +20,27 @@ module Api
         respond_with @judgement
       end
 
+      # rubocop:disable Metrics/AbcSize
       def create
         puts 'HERE I AM'
-        @judgement = @book.judgements.build judgement_params
+        # @judgement = @book.judgements.build judgement_params
+        @judgement = @book.judgements.find_or_create_by query_doc_pair_id: params[:judgement][:query_doc_pair_id],
+                                                        user_id:           params[:judgement][:user]
 
+        @judgement.rating = params[:judgement][:rating] unless params[:judgement][:rating].nil?
+
+        if params[:judgement][:user_id]
+          user = User.find(params[:judgement][:user_id])
+          @judgement.user = user
+        end
+        @judgement.mark_unrateable if params[:judgement][:unrateable] && (true == params[:judgement][:unrateable])
         if @judgement.save
-          respond_with @book, @judgement
+          respond_with @judgement
         else
           render json: @judgement.errors, status: :bad_request
         end
       end
+      # rubocop:enable Metrics/AbcSize
 
       def update
         update_params = judgement_params
@@ -50,6 +63,7 @@ module Api
       end
 
       def find_book
+        puts "do we have current user?  #{!current_user.nil?}"
         @book = current_user.books_involved_with.where(id: params[:book_id]).first
       end
 
