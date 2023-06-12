@@ -200,7 +200,7 @@ See the details in [](./jupyterlite.md).
 Accessing the Quepid API like http://localhost:3000/api/cases/5.json is protected by you logging in and having the appropriate cookies set. But what if we want to have an automated process?   Then you need to create a Personal Access Token.  Using that, you can then do a curl request like:
 
 ```
-curl -X GET -H 'Authorization: Bearer 4a82040bf1b2d255c63833cb59fa9275' http://localhost:3000/api/cases/2.json
+curl -X GET -H 'Authorization: Bearer 53e41835979d649775243ababd4312e8' http://localhost:3000/api/cases/5.json
 >> {"name":"Book of Ratings","book_id":1,"query_doc_pairs":[{"query_doc_pair_id":1,"position":1,"query":"adsf","doc_id":"asdf","judgements":[]}]}%
 ```
 Here is an example of creating a query doc pair:
