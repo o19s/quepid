@@ -12,6 +12,7 @@ This document explains how Quepid can be operated and configured.
 - [Troubleshoot Your Deploy](#troubleshoot-your-deploy)
 - [Database Management](#database-management)
 - [Jupyterlite Notebooks](#jupyterlite-notebooks)
+- [Using Personal Access Tokens](#using-personal-access-tokens)
 ## Running behind a load balancer
 
 > ⚠️ _Quepid will run in TLS (`https`) or plain `http` mode depending on the
@@ -193,3 +194,12 @@ See the details in [](./database.md).
 ## Jupuyterlite Notebooks
 
 See the details in [](./jupyterlite.md).
+
+## Using Personal Access Tokens
+
+Accessing the Quepid API like http://localhost:3000/api/cases/5.json is protected by you logging in and having the appropriate cookies set. But what if we want to have an automated process?   Then you need to create a Personal Access Token.  Using that, you can then do a curl request like:
+
+```
+curl -X GET -H 'Authorization: Bearer 53e41835979d649775243ababd4312e8' http://localhost:3000/api/cases/5.json
+>> {"name":"Book of Ratings","book_id":1,"query_doc_pairs":[{"query_doc_pair_id":1,"position":1,"query":"adsf","doc_id":"asdf","judgements":[]}]}% 
+```

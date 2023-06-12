@@ -564,6 +564,10 @@ To update the version of Jupyterlite edit `Dockerfile.dev` and `Dockerfile.prod`
 
 Question?  Does jupyterlite work in localhost????
 
+## How does the Personal Access Tokens work?
+
+See this great blog post: https://keygen.sh/blog/how-to-implement-api-key-authentication-in-rails-without-devise/.
+
 # QA
 
 There is a code deployment pipeline to the http://quepid-staging.herokuapp.com site that

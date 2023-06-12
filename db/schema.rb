@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_06_04_121856) do
+ActiveRecord::Schema[7.0].define(version: 2023_06_11_183949) do
   create_table "annotations", id: :integer, charset: "utf8mb3", force: :cascade do |t|
     t.text "message"
     t.string "source"
@@ -18,6 +18,16 @@ ActiveRecord::Schema[7.0].define(version: 2023_06_04_121856) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["user_id"], name: "index_annotations_on_user_id"
+  end
+
+  create_table "api_keys", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
+    t.integer "bearer_id", null: false
+    t.string "bearer_type", null: false
+    t.string "token", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["bearer_id", "bearer_type"], name: "index_api_keys_on_bearer_id_and_bearer_type"
+    t.index ["token"], name: "index_api_keys_on_token", unique: true
   end
 
   create_table "books", charset: "utf8mb3", collation: "utf8mb3_unicode_ci", force: :cascade do |t|

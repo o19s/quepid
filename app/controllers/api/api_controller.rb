@@ -12,8 +12,10 @@ module Api
     include Authentication::CurrentQueryManager
     include Authentication::CurrentTeamManager
     include NotificationsManager
+    include ApiKeyAuthenticatable
 
     respond_to :json
+    prepend_before_action :authenticate_with_api_key! # , only: [:index]
     before_action :set_default_response_format
     before_action :set_current_user
     before_action :check_current_user_locked!
