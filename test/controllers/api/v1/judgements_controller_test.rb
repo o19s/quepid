@@ -31,7 +31,7 @@ module Api
                 query_doc_pair_id: qdp.id,
               },
             }
-            assert_response :created
+            assert_response :ok
           end
         end
       end

@@ -44,3 +44,8 @@ qdp10_judgement:
   user: :doug
   rating: 1
   query_doc_pair: :qdp10
+
+qdp10_judgement2:
+  user: :random
+  rating: 2
+  query_doc_pair: :qdp10

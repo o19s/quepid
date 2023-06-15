@@ -20,7 +20,7 @@ module Api
             csv_headers = %w[query docid]
 
             # Only return rateable judgements, filter out the unrateable ones.
-            unique_raters = @book.judgements.rateable.collect(&:user).uniq
+            unique_raters = @book.judgements.rateable.preload(:user).collect(&:user).uniq
 
             # this logic about using email versus name is kind of awful.  Think about user.full_name or user.identifier?
             unique_raters.each do |rater|
@@ -32,11 +32,10 @@ module Api
             end
 
             @csv_array << csv_headers
-
             @book.query_doc_pairs.each do |qdp|
               row = [ make_csv_safe(qdp.query_text), qdp.doc_id ]
               unique_raters.each do |rater|
-                judgement = qdp.judgements.find { |j| j.user = rater }
+                judgement = qdp.judgements.detect { |j| j.user == rater }
                 rating = judgement.nil? ? '' : judgement.rating
 
                 row.append rating

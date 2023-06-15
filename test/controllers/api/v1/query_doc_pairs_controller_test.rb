@@ -51,6 +51,32 @@ query_text: '', doc_id: qdp.doc_id } }
           body = response.parsed_body
           assert body['query_text'].include? "can't be blank"
         end
+
+        test 'prevents duplicates' do
+          assert_difference 'book.query_doc_pairs.count', 1 do
+            post :create, params: {
+              book_id:        book.id,
+              query_doc_pair: {
+                document_fields: qdp.document_fields,
+                position:        qdp.position,
+                query_text:      qdp.query_text,
+                doc_id:          qdp.doc_id,
+              },
+            }
+            assert_response :ok
+
+            post :create, params: {
+              book_id:        book.id,
+              query_doc_pair: {
+                document_fields: qdp.document_fields,
+                position:        qdp.position,
+                query_text:      qdp.query_text,
+                doc_id:          qdp.doc_id,
+              },
+            }
+            assert_response :ok
+          end
+        end
       end
     end
   end

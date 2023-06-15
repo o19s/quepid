@@ -28,8 +28,8 @@
   </div>
 
   <div class="field">
-    <%= form.label :document_fields %>
-    <%= form.text_area :document_fields %>
+    <%= form.label :document_fields %> <small>Either text or JSON</small><br/>
+    <%= form.text_area :document_fields, size: "80x20" %>
   </div>
 
   <br>

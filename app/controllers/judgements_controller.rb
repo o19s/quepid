@@ -17,15 +17,17 @@ class JudgementsController < ApplicationController
     redirect_to book_judge_path(@book)
   end
 
+  # rubocop:disable Layout/LineLength
   def new
     @query_doc_pair = SelectionStrategy.random_query_doc_based_on_strategy(@book, current_user)
     redirect_to book_path(@book) if @query_doc_pair.nil? # no more query doc pairs to be judged!
     if @query_doc_pair
       # @query = @current_user.queries.has_information_need.where(query_text: @query_doc_pair.query_text).first
-      @query = Query.joins(:case).where(case: { book_id: @query_doc_pair.book.id }).has_information_need.first
+      @query = Query.joins(:case).where(case: { book_id: @query_doc_pair.book.id }).has_information_need.where(query_text: @query_doc_pair.query_text).first
     end
     @judgement = Judgement.new(query_doc_pair: @query_doc_pair, user: @current_user, updated_at: Time.zone.now)
   end
+  # rubocop:enable Layout/LineLength
 
   def edit
   end

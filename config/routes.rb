@@ -11,6 +11,8 @@ Rails.application.routes.draw do
     mount Sidekiq::Web, at: 'admin/jobs'
   end
 
+  resources :api_keys, path: 'api-keys', only: [ :create, :destroy ]
+
   # rubocop:disable Layout/LineLength
   # let's encrypt verification (can be removed in the future)
   get '.well-known/acme-challenge/9IWOgATbRmEtWKsOOJQ-E4-lrIT9tHsHv_9bl5Zt6fI', to: proc { [ 200, {}, [ '9IWOgATbRmEtWKsOOJQ-E4-lrIT9tHsHv_9bl5Zt6fI.fDzklrX7i2PRMRsPtxEvo2yRZDSfy2LO3t--NfWfgaA' ] ] }
