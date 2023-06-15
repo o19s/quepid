@@ -24,7 +24,7 @@ module ApiKeyAuthenticatable
   # Use this for optional API key authentication
   def authenticate_with_api_key
     if @current_user.nil? && request.headers['Authorization'].nil?
-      @current_bearer = authenticate_with_http_token(&method(:authenticator))
+      @current_user = authenticate_with_http_token(&method(:authenticator))
     end
   end
 
@@ -33,8 +33,8 @@ module ApiKeyAuthenticatable
   attr_writer :current_api_key, :current_user
 
   def authenticator http_token, _options
-    @current_api_key = ApiKey.find_by token: http_token
+    @current_api_key = ApiKey.find_by token_digest: http_token
 
-    current_api_key&.bearer
+    current_api_key&.user
   end
 end

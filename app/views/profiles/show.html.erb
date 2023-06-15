@@ -158,7 +158,7 @@
       </h2>
       
       <p class="form-text">
-        This allows you to access Quepid API's using a header like <code>Authorization: Bearer <%= current_user.api_keys.empty? ? '2d499887717072dd1a31f3d9be4e295e' : current_user.api_keys.first.token %></code>.
+        These allow you to access Quepid's APIs using a header <code>Authorization: Bearer <%= current_user.api_keys.empty? ? '2d499887717072dd1a31f3d9be4e295e' : current_user.api_keys.first.token_digest %></code>.
         Treat these like you would your password!
       </p>
       <table class="table table-hover table-sm">
@@ -174,7 +174,7 @@
           <% current_user.api_keys.each do |api_key| %>
             <tr>
               <td><%= api_key.id %></td>
-              <td><%= api_key.token %></td>
+              <td><%= api_key.token_digest %></td>
               <td><%= button_to 'Destroy', api_key_path(api_key),class: "btn btn-sm btn-outline-danger", method: :delete, data: { confirm: 'Are you sure you want to delete this personal access token?' } %></td>
             </tr>
           <% end %>
