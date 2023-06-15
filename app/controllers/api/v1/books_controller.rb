@@ -35,7 +35,7 @@ module Api
             @book.query_doc_pairs.each do |qdp|
               row = [ make_csv_safe(qdp.query_text), qdp.doc_id ]
               unique_raters.each do |rater|
-                judgement = qdp.judgements.detect { |j| j.user == rater }                              
+                judgement = qdp.judgements.detect { |j| j.user == rater }
                 rating = judgement.nil? ? '' : judgement.rating
 
                 row.append rating

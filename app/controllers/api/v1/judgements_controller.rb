@@ -7,7 +7,7 @@ module Api
       before_action :check_book
       before_action :set_judgement,   only: [ :show, :update, :destroy ]
       before_action :check_judgement, only: [ :show, :update, :destroy ]
-      
+
       def index
         @judgements = @book.judgements
 
