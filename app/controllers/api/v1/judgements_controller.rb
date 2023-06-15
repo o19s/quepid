@@ -7,9 +7,7 @@ module Api
       before_action :check_book
       before_action :set_judgement,   only: [ :show, :update, :destroy ]
       before_action :check_judgement, only: [ :show, :update, :destroy ]
-      skip_before_action :verify_authenticity_token
-      protect_from_forgery with: :null_session
-
+      
       def index
         @judgements = @book.judgements
 
@@ -62,7 +60,6 @@ module Api
       end
 
       def find_book
-        puts "do we have current user?  #{!current_user.nil?}"
         @book = current_user.books_involved_with.where(id: params[:book_id]).first
       end
 

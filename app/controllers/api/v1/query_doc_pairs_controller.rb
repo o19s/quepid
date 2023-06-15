@@ -7,8 +7,6 @@ module Api
       before_action :check_book
       before_action :set_query_doc_pair,   only: [ :show, :update, :destroy ]
       before_action :check_query_doc_pair, only: [ :show, :update, :destroy ]
-      skip_before_action :verify_authenticity_token
-      protect_from_forgery with: :null_session
 
       def index
         @query_doc_pairs = @book.query_doc_pairs.includes([ :judgements ])
