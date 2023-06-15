@@ -1,5 +1,30 @@
 # Changelog
 
+## 7.5.0 - 2023-06-15
+
+Need to interact with Quepid API's from outside of Quepid??  We now support Personal Access Tokens!  From your Profile page you can generate your own token and then use that to authenticate against Quepid.  For example, you can programatically load a judgement directly into Quepid:
+```
+curl -X POST http://localhost:3000/api/books/2/judgements/ -H 'Authorization: Bearer 4a82040bf1b2d255c63833cb59fa9275' -H 'Content-Type: application/json' -d '{
+  "judgement": {
+    "query_doc_pair_id": 201
+    "rating": 1
+  }
+}'
+```
+https://github.com/o19s/quepid/pull/759 and https://github.com/o19s/quepid/pull/756 by @epugh.
+
+In support of this, we added new API's for judgements and ratings in https://github.com/o19s/quepid/pull/757 by @epugh.
+
+### Bugs
+
+* Exporting Ratings in CSV format was returning the same rating for every single rater, regardless of what they did!  Fixed in by @epugh with special help from @grahamwren.   I randomly sat next to him on plane flight home and we paired on it ;-).  
+
+* Looking up the wrong info need for a Query Doc Pair!  Fixed in https://github.com/o19s/quepid/pull/755 by @epugh.
+
+* Missed a relative path for the tries history visualization.  Fixed in https://github.com/o19s/quepid/pull/754.
+
+
+
 ## 7.4.1 - 2023-06-09
 
 Lots of small things from working with Quepid using templates with OpenSearch.  Also, if you haven't used https://github.com/o19s/agent_q, it's been updated to work with Quepid 7.x line.   I use it to automate pulling my relevance metrics daily from Quepid cases ;-).
