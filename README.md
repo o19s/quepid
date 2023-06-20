@@ -523,6 +523,7 @@ The developer deploy of Keycloak Admin console credentials are `admin` and `pass
 ## Modifying the database
 
 Here is an example of generating a migration:
+
 ```
 bin/docker r bundle exec bin/rails g migration FixCuratorVariablesTriesForeignKeyName
 ```
