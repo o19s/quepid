@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_06_15_131930) do
+ActiveRecord::Schema[7.0].define(version: 2023_06_20_132103) do
   create_table "annotations", id: :integer, charset: "utf8mb3", force: :cascade do |t|
     t.text "message"
     t.string "source"
@@ -35,6 +35,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_06_15_131930) do
     t.string "name"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.boolean "support_implicit_judgements"
     t.index ["selection_strategy_id"], name: "index_books_on_selection_strategy_id"
   end
 
@@ -131,7 +132,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_06_15_131930) do
 
   create_table "ratings", id: :integer, charset: "latin1", force: :cascade do |t|
     t.string "doc_id", limit: 500
-    t.integer "rating"
+    t.float "rating"
     t.integer "query_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false

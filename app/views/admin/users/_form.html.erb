@@ -22,16 +22,19 @@
     </div>
   </div>
 
+  <p/>
   <div class="form-group clearfix">
-    <div class="col-sm-offset-2 col-sm-10">
-      <div class="checkbox">
-        <%= f.label :administrator do %>
-          <%= f.check_box :administrator %>
+    <div class="col-sm-offset-2 col-sm-10m" >
+      <div class="form-check form-switch">
+        <%= f.label :administrator, class:'form-check-label' do %>
+          <%= f.check_box :administrator, class:'form-check-input' %>
           Quepid Administrator?
         <% end %>
       </div>
     </div>
   </div>
+
+  <p/>
 
   <div class="form-group clearfix">
       <%= f.submit class: 'btn btn-primary btn-lg' %>

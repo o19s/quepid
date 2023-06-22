@@ -5,7 +5,7 @@
 # Table name: ratings
 #
 #  id         :integer          not null, primary key
-#  rating     :integer
+#  rating     :float(24)
 #  created_at :datetime         not null
 #  updated_at :datetime         not null
 #  doc_id     :string(500)

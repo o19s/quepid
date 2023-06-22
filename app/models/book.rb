@@ -4,13 +4,14 @@
 #
 # Table name: books
 #
-#  id                    :bigint           not null, primary key
-#  name                  :string(255)
-#  created_at            :datetime         not null
-#  updated_at            :datetime         not null
-#  scorer_id             :integer
-#  selection_strategy_id :bigint           not null
-#  team_id               :integer
+#  id                          :bigint           not null, primary key
+#  name                        :string(255)
+#  support_implicit_judgements :boolean
+#  created_at                  :datetime         not null
+#  updated_at                  :datetime         not null
+#  scorer_id                   :integer
+#  selection_strategy_id       :bigint           not null
+#  team_id                     :integer
 #
 # Indexes
 #

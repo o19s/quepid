@@ -22,6 +22,11 @@ Books organize all the query/doc pairs that are needed for evaluating your searc
 </p>
 
 <p>
+  <strong>Supports Implicit Judgements:</strong>
+  <%= @book.support_implicit_judgements? %>
+</p>
+
+<p>
 <strong>Related cases:</strong>
 <%= render(partial: 'books/case', collection: @cases, as: :kase) || "There are no cases available." %>
 </p>

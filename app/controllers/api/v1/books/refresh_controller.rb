@@ -24,7 +24,13 @@ module Api
             next unless count_of_judgements.positive?
 
             rating = Rating.find_or_initialize_by(query: query, doc_id: query_doc_pair.doc_id)
-            rating.rating = (summed_rating / count_of_judgements).round # only have ints today in Quepid Ratings.
+
+            rating.rating = if @book.support_implicit_judgements?
+                              summed_rating / count_of_judgements
+                            else
+                              # explicit judgements only work with integers.
+                              (summed_rating / count_of_judgements).round
+                            end
 
             query_count += 1 if query.new_record?
             rating_count += 1 if rating.new_record?
