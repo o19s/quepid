@@ -45,6 +45,15 @@ class BooksController < ApplicationController
     respond_with(@book)
   end
 
+  def combine
+    book_ids = params[:book_ids].select { |_key, value| '1' == value }.keys.map(&:to_i)
+    puts "I got params: #{book_ids}"
+    book_ids.each do |book_id|
+      book_to_merge = current_user.books_involved_with.where(id: book_id).first
+      puts "#{book_to_merge.name}: #{book_to_merge.query_doc_pairs.count} qdps, #{book_to_merge.judgements.count} j"
+    end
+  end
+
   private
 
   def find_book
