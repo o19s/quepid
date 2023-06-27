@@ -328,7 +328,7 @@ tens_of_queries_case.queries.each do |query|
   query.ratings.each do |rating|
     query_doc_pair = book.query_doc_pairs.find_or_create_by query_text: query.query_text,
                                                            doc_id:     rating.doc_id
-    query_doc_pair.judgements << Judgement.new(rating: rating.rating)
+    query_doc_pair.judgements << Judgement.new(rating: rating.rating, user: osc_member_user)
     query_doc_pair.save
   end
 

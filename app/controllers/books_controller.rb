@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
 class BooksController < ApplicationController
-  before_action :find_book, only: [ :show, :edit, :update, :destroy ]
-  before_action :check_book, only: [ :show, :edit, :update, :destroy ]
+  before_action :find_book, only: [ :show, :edit, :update, :destroy, :combine ]
+  before_action :check_book, only: [ :show, :edit, :update, :destroy, :combine ]
 
   respond_to :html
 
@@ -45,16 +45,34 @@ class BooksController < ApplicationController
     respond_with(@book)
   end
 
+  # rubocop:disable Metrics/AbcSize
+  # rubocop:disable Metrics/MethodLength
   def combine
     book_ids = params[:book_ids].select { |_key, value| '1' == value }.keys.map(&:to_i)
     puts "I got params: #{book_ids}"
+
+    query_doc_pair_count = 0
+
     book_ids.each do |book_id|
       book_to_merge = current_user.books_involved_with.where(id: book_id).first
       puts "#{book_to_merge.name}: #{book_to_merge.query_doc_pairs.count} qdps, #{book_to_merge.judgements.count} j"
+      book_to_merge.query_doc_pairs.each do |qdp|
+        query_doc_pair = @book.query_doc_pairs.find_or_create_by query_text: qdp.query_text,
+                                                                 doc_id:     qdp.doc_id
+
+        qdp.judgements.rateable.includes([ :user ]).each do |j|
+          query_doc_pair.judgements << Judgement.new(rating: j.rating, user: j.user)
+        end
+        query_doc_pair_count += 1 # if query_doc_pair.new_record?
+
+        query_doc_pair.save
+      end
     end
 
-    redirect_to books_path, :notice => 'ok'
+    redirect_to books_path, :notice => "ok.  Combined #{query_doc_pair_count} query/doc pairs."
   end
+  # rubocop:enable Metrics/AbcSize
+  # rubocop:enable Metrics/MethodLength
 
   private
 

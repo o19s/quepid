@@ -229,7 +229,7 @@ class QueryTest < ActiveSupport::TestCase
     let(:query_with_info_need)               { queries(:first_query) }
     let(:query_without_info_need)            { queries(:third_query) }
     let(:query)                              { queries(:query_for_best_bond_ever) }
-    let(:query_doc_pair)                     { query_doc_pairs(:qdp1) }
+    let(:query_doc_pair)                     { query_doc_pairs(:jbm_qdp1) }
 
     test 'always fetches all the ratings' do
       assert_includes(Query.has_information_need, query_with_info_need)
