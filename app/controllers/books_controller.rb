@@ -7,7 +7,7 @@ class BooksController < ApplicationController
   respond_to :html
 
   def index
-    @books = current_user.books_involved_with.includes([:team, :scorer,:selection_strategy])
+    @books = current_user.books_involved_with.includes([ :team, :scorer, :selection_strategy ])
     respond_with(@books)
   end
 
@@ -52,8 +52,8 @@ class BooksController < ApplicationController
       book_to_merge = current_user.books_involved_with.where(id: book_id).first
       puts "#{book_to_merge.name}: #{book_to_merge.query_doc_pairs.count} qdps, #{book_to_merge.judgements.count} j"
     end
-    
-    redirect_to books_path, :notice => "ok"
+
+    redirect_to books_path, :notice => 'ok'
   end
 
   private
