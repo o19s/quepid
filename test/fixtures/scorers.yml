@@ -111,20 +111,6 @@ case_default_scorer:
   scale:      1, 2, 3, 4
   communal:   false
 
-query_default_scorer:
-  code:       test code
-  name:       query_default_scorer
-  owner:      :random
-  scale:      1, 2, 3, 4
-  communal:   false
-
-query_scorer:
-  code:       pass();
-  name:       Scorer for Query
-  owner:      :random
-  scale:      1, 2, 3, 4
-  communal:   false
-
 random_scorer:
   code:       pass();
   name:       Scorer for sharing
