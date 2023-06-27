@@ -44,8 +44,7 @@ module Api
 
           assert_response :ok
           csv = CSV.parse(response.body, headers: true)
-          #puts "HERE WE GO"
-          puts response.body
+
           assert_equal 'Action Movies', csv[0]['query']
           assert_equal 'Moonraker', csv[0]['docid']
           assert_equal '2.0', csv[0]['Random User']

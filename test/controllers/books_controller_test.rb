@@ -52,22 +52,20 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
   end
   # rubocop:enable Metrics/AbcSize
   # rubocop:enable Metrics/MethodLength
-  
+
   def test_more
-    
-    
     # post the login and follow through to the home page
     post '/users/login', params: { user: { email: user.email, password: 'password' } }
     follow_redirect!
     assert_equal 200, status
     assert_equal '/', path
-    
+
     assert_equal book.query_doc_pairs.count, 0
 
     patch "/books/#{book.id}/combine", params: { book_ids: { "#{james_bond_movies.id}": '1' } }
     follow_redirect!
     assert_equal 'ok.  Combined 7 query/doc pairs.', flash[:notice]
-    
+
     assert_equal book.query_doc_pairs.count, 7
   end
 end
