@@ -58,7 +58,7 @@ starwars_qdp1_judgement:
 starwars_qdp2_judgement:
   user: :random
   rating: 2
-  query_doc_pair: :starwars_qdp2
+  query_doc_pair: :starwars_qdp2  
   
 comedy_qdp1_judgement:
   user: :random

@@ -47,6 +47,9 @@ class BooksController < ApplicationController
 
   # rubocop:disable Metrics/AbcSize
   # rubocop:disable Metrics/MethodLength
+  # rubocop:disable Metrics/CyclomaticComplexity
+  # rubocop:disable Metrics/PerceivedComplexity
+  # rubocop:disable Layout/LineLength
   def combine
     book_ids = params[:book_ids].select { |_key, value| '1' == value }.keys.map(&:to_i)
     puts "I got params: #{book_ids}"
@@ -56,16 +59,18 @@ class BooksController < ApplicationController
     books = []
     book_ids.each do |book_id|
       book_to_merge = current_user.books_involved_with.where(id: book_id).first
-      books << book_to_merge      
+      books << book_to_merge
     end
-    
-    if books.any? {|b| b.scorer.scale != @book.scorer.scale}
-      redirect_to books_path, :alert => "One of the books chosen doesn't have a scorer with the scale #{@book.scorer.scale}" and return
+
+    if books.any? { |b| b.scorer.scale != @book.scorer.scale }
+      redirect_to books_path,
+                  :alert => "One of the books chosen doesn't have a scorer with the scale #{@book.scorer.scale}" and return
     end
+
     puts "Target book #{@book.name}: #{@book.query_doc_pairs.count} qdps, #{@book.judgements.count} j"
     books.each do |book_to_merge|
       puts "Source book #{book_to_merge.name}: #{book_to_merge.query_doc_pairs.count} qdps, #{book_to_merge.judgements.count} j"
-      
+
       book_to_merge.query_doc_pairs.each do |qdp|
         query_doc_pair = @book.query_doc_pairs.find_or_create_by query_text: qdp.query_text,
                                                                  doc_id:     qdp.doc_id
@@ -73,33 +78,33 @@ class BooksController < ApplicationController
         puts "Looking at mergining into target Query Doc Pair #{query_doc_pair.id}"
         puts "For source qdp #{qdp.query_text}/#{qdp.doc_id} I have #{qdp.judgements.rateable.size}"
         qdp.judgements.rateable.each do |j|
-          puts "I am a judgement, I am here."
+          puts 'I am a judgement, I am here.'
           puts "Source rating is #{j.rating} and user is #{j.user.name}"
           judgement = query_doc_pair.judgements.find_or_initialize_by(user: j.user)
           puts "Does target judgment already have a rating?  #{judgement.rating}"
           puts "Does target judgment have a primary key?  #{judgement.id}"
           puts "Does target judgment have errors?  #{judgement.errors.count}"
           puts "Does target judgment have errors message?  #{judgement.errors.full_messages.to_sentence}"
-          if judgement.rating
-            judgement.rating = ((judgement.rating + j.rating)/2).round
-          else
-            judgement.rating = j.rating
-          end
+          judgement.rating = if judgement.rating
+                               ((judgement.rating + j.rating) / 2).round
+                             else
+                               j.rating
+                             end
           puts "Target query_doc_pair judgemetns size #{query_doc_pair.judgements.size}"
-          if !judgement.save
-            puts "Boom!!!!!!!!!"
-            flash.alert = "Could save query doc pair"
-          end
+          # unless judgement.save
+          # puts 'Boom!!!!!!!!!'
+          #  flash.alert = 'Could save query doc pair'
+          # end
         end
         query_doc_pair_count += 1
-        if !query_doc_pair.save
-          puts "Boom!!!!!!!!!"
-          flash.alert = "Could save query doc pair"
-        end
+        # unless query_doc_pair.save
+        #  puts 'Boom!!!!!!!!!'
+        #  flash.alert = 'Could save query doc pair'
+        # end
       end
     end
-    
-    puts "Lets see about changes to save..."
+
+    puts 'Lets see about changes to save...'
     puts "@book.has_changes_to_save? #{@book.has_changes_to_save?}"
     @book.query_doc_pairs.each do |qdp|
       puts "qdp #{qdp.id} has changes to save? #{qdp.has_changes_to_save?}"
@@ -108,11 +113,15 @@ class BooksController < ApplicationController
     if @book.save
       redirect_to books_path, :notice => "Combined #{query_doc_pair_count} query/doc pairs."
     else
-     redirect_to books_path, :alert => "Could not merge due to errors: #{@book.errors.full_messages.to_sentence}. #{query_doc_pair_count} query/doc pairs."
+      redirect_to books_path,
+                  :alert => "Could not merge due to errors: #{@book.errors.full_messages.to_sentence}. #{query_doc_pair_count} query/doc pairs."
     end
   end
   # rubocop:enable Metrics/AbcSize
   # rubocop:enable Metrics/MethodLength
+  # rubocop:enable Metrics/CyclomaticComplexity
+  # rubocop:enable Metrics/PerceivedComplexity
+  # rubocop:enable Layout/LineLength
 
   private
 

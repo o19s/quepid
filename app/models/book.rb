@@ -25,7 +25,7 @@ class Book < ApplicationRecord
   belongs_to :team
   belongs_to :selection_strategy
   belongs_to :scorer
-  has_many :query_doc_pairs, dependent: :destroy
+  has_many :query_doc_pairs, dependent: :destroy, autosave: true
   has_many   :judgements,
              through:   :query_doc_pairs,
              dependent: :destroy

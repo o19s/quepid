@@ -23,7 +23,7 @@
 #
 class QueryDocPair < ApplicationRecord
   belongs_to :book
-  has_many :judgements, dependent: :destroy
+  has_many :judgements, dependent: :destroy, autosave: true
 
   validates :query_text, presence: true
   validates :doc_id, presence: true
