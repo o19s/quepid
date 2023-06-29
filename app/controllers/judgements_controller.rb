@@ -30,6 +30,7 @@ class JudgementsController < ApplicationController
   # rubocop:enable Layout/LineLength
 
   def edit
+    @query_doc_pair = @judgement.query_doc_pair
   end
 
   def create
