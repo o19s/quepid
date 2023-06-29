@@ -6,6 +6,7 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
   let(:user) { users(:random) }
   let(:book) { books(:book_of_comedy_films) }
   let(:james_bond_movies) { books(:james_bond_movies) }
+  let(:communal_scorer) { scorers(:communal_scorer) }
 
   # rubocop:disable Metrics/AbcSize
   # rubocop:disable Metrics/MethodLength
@@ -17,18 +18,14 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
     assert_equal 302, status
     follow_redirect!
 
-    # post the login and follow through to the home page
-    post '/users/login', params: { user: { email: user.email, password: 'password' } }
-    follow_redirect!
-    assert_equal 200, status
-    assert_equal '/', path
+    login_user
 
     get '/books'
     assert_equal 200, status
 
     patch "/books/#{book.id}/combine", params: { book_ids: { "#{james_bond_movies.id}": '1' } }
     follow_redirect!
-    assert_equal 'ok.  Combined 7 query/doc pairs.', flash[:notice]
+    assert_equal 'Combined 7 query/doc pairs.', flash[:notice]
 
     book.reload
     assert_equal book.query_doc_pairs.count, james_bond_movies.query_doc_pairs.count
@@ -37,7 +34,7 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
     patch "/books/#{book.id}/combine",
           params: { book_ids: { "#{james_bond_movies.id}": '1', "#{james_bond_movies.id}": '1' } }
     follow_redirect!
-    assert_equal 'ok.  Combined 7 query/doc pairs.', flash[:notice]
+    assert_equal 'Combined 7 query/doc pairs.', flash[:notice]
 
     book.reload
     assert_equal book.query_doc_pairs.count, james_bond_movies.query_doc_pairs.count
@@ -45,7 +42,7 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
 
     patch "/books/#{book.id}/combine", params: { book_ids: { "#{book.id}": '1' } }
     follow_redirect!
-    assert_equal 'ok.  Combined 7 query/doc pairs.', flash[:notice]
+    assert_equal 'Combined 7 query/doc pairs.', flash[:notice]
 
     book.reload
     assert_equal book.query_doc_pairs.count, 7
@@ -54,18 +51,68 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
   # rubocop:enable Metrics/MethodLength
 
   def test_more
+    login_user
+
+    assert_equal book.query_doc_pairs.count, 0
+
+    patch "/books/#{book.id}/combine", params: { book_ids: { "#{james_bond_movies.id}": '1' } }
+    follow_redirect!    
+    assert_equal 'Combined 7 query/doc pairs.', flash[:notice]
+
+    assert_equal book.query_doc_pairs.count, 7
+  end
+  
+  def test_differing_scales_blows_up
+    login_user
+
+    book_to_merge = Book.new(name: "Book with a 1,2,3,4 scorer", team: book.team, scorer: communal_scorer, selection_strategy: SelectionStrategy.find_by(name: 'Multiple Raters'))
+    book_to_merge.save!
+    
+    params = { book_ids: { "#{book_to_merge.id}": '1' } }
+    
+    puts "params #{params}"
+
+    patch "/books/#{book.id}/combine", params: params
+    follow_redirect!
+    assert_equal "One of the books chosen doesn't have a scorer with the scale [0, 1]", flash[:alert]
+  end
+  
+  let(:single_rater_book) { books(:book_of_star_wars_judgements) }
+  let(:single_rater_book2) { books(:book_of_comedy_films) }
+  def test_combining_single_rater_strategy_into_multiple_rater_strategy_book_works
+    
+    login_user
+      
+    book_with_multiple_raters = Book.create(name: "Book with a 1,2,3,4 scorer", team: single_rater_book.team, scorer: single_rater_book.scorer, selection_strategy: SelectionStrategy.find_by(name: 'Multiple Raters'))
+    
+    params = { book_ids: { "#{single_rater_book.id}": '1', "#{single_rater_book2.id}": '1' } }
+    
+    patch "/books/#{book_with_multiple_raters.id}/combine", params: params
+    follow_redirect!
+    assert_nil flash[:alert]
+    assert_equal 'Combined 3 query/doc pairs.', flash[:notice]
+
+    assert_equal book_with_multiple_raters.query_doc_pairs.count, 2
+    
+    require 'pp'
+    pp book_with_multiple_raters.judgements
+    assert_equal book_with_multiple_raters.judgements.count, 3
+  end
+  
+  def test_combinining_multiple_rater_strategy_into_single_works
+  end
+  
+  def test_combining_same_user_same_query_doc_merges
+    
+  end
+  
+  
+  
+  def login_user
     # post the login and follow through to the home page
     post '/users/login', params: { user: { email: user.email, password: 'password' } }
     follow_redirect!
     assert_equal 200, status
     assert_equal '/', path
-
-    assert_equal book.query_doc_pairs.count, 0
-
-    patch "/books/#{book.id}/combine", params: { book_ids: { "#{james_bond_movies.id}": '1' } }
-    follow_redirect!
-    assert_equal 'ok.  Combined 7 query/doc pairs.', flash[:notice]
-
-    assert_equal book.query_doc_pairs.count, 7
   end
 end

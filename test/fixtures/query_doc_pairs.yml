@@ -84,3 +84,25 @@ jbm_qdp10:
   doc_id: Moonraker
   document_fields: MyTex
   book: :james_bond_movies
+  
+starwars_qdp1:
+  query_text: Han
+  position: 1
+  doc_id: Han Solo-A Star Wars Story
+  document_fields: MyTex
+  book: :book_of_star_wars_judgements
+  
+starwars_qdp2:
+  query_text: Han
+  position: 2
+  doc_id: Star Wars The Movie
+  document_fields: MyTex
+  book: :book_of_star_wars_judgements
+  
+# This query doc pair overlaps with starwars_qdp2, to test merging books.
+book_of_comedy_qdp1:
+  query_text: Han
+  position: 1
+  doc_id: Star Wars The Movie
+  document_fields: MyTex
+  book: :book_of_comedy_films

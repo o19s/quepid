@@ -49,3 +49,18 @@ jbm_qdp10_judgement2:
   user: :random
   rating: 2
   query_doc_pair: :jbm_qdp10
+  
+starwars_qdp1_judgement:
+  user: :random
+  rating: 1
+  query_doc_pair: :starwars_qdp1
+  
+starwars_qdp2_judgement:
+  user: :random
+  rating: 2
+  query_doc_pair: :starwars_qdp2
+  
+comedy_qdp1_judgement:
+  user: :random
+  rating: 0
+  query_doc_pair: :book_of_comedy_qdp1
