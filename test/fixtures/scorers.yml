@@ -28,13 +28,6 @@ quepid_default_scorer:
   show_scale_labels:  false
   communal: true
 
-v1:
-  code: pass();
-  name: v1
-  scale: 1, 2, 3, 4
-  show_scale_labels:  false
-  communal: true
-
 communal_scorer:
   code: communal scorer
   name: communal scorer
