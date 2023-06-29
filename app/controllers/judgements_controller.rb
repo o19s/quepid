@@ -5,7 +5,7 @@ class JudgementsController < ApplicationController
   before_action :find_book
 
   def index
-    @judgements = @book.judgements
+    @judgements = @book.judgements.includes([ :query_doc_pair, :user ])
   end
 
   def show

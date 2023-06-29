@@ -52,7 +52,6 @@ class BooksController < ApplicationController
   # rubocop:disable Layout/LineLength
   def combine
     book_ids = params[:book_ids].select { |_key, value| '1' == value }.keys.map(&:to_i)
-    puts "I got params: #{book_ids}"
 
     query_doc_pair_count = 0
 
@@ -67,10 +66,7 @@ class BooksController < ApplicationController
                   :alert => "One of the books chosen doesn't have a scorer with the scale #{@book.scorer.scale}" and return
     end
 
-    puts "Target book #{@book.name}: #{@book.query_doc_pairs.count} qdps, #{@book.judgements.count} j"
     books.each do |book_to_merge|
-      puts "Source book #{book_to_merge.name}: #{book_to_merge.query_doc_pairs.count} qdps, #{book_to_merge.judgements.count} j"
-
       book_to_merge.query_doc_pairs.each do |qdp|
         query_doc_pair = @book.query_doc_pairs.find_or_create_by query_text: qdp.query_text,
                                                                  doc_id:     qdp.doc_id
@@ -83,26 +79,23 @@ class BooksController < ApplicationController
         # copy over the position if our source has a position and our target doesn't.
         query_doc_pair.position = qdp.position if query_doc_pair.position.nil? && !qdp.position.nil?
 
-        puts "Looking at mergining into target Query Doc Pair #{query_doc_pair.id}"
-        puts "For source qdp #{qdp.query_text}/#{qdp.doc_id} I have #{qdp.judgements.rateable.size}"
-        qdp.judgements.rateable.each do |j|
-          puts "Source rating is #{j.rating} and user is #{j.user.name}"
+        qdp.judgements.includes([ :user ]).rateable.each do |j|
           judgement = query_doc_pair.judgements.find_or_initialize_by(user: j.user)
 
           judgement.rating = if judgement.rating
-                               ((judgement.rating + j.rating) / 2).round
+                               (judgement.rating + j.rating) / 2
                              else
                                j.rating
                              end
-          puts "Target query_doc_pair judgemetns size #{query_doc_pair.judgements.size}"
-          # unless judgement.save
-          # puts 'Boom!!!!!!!!!'
-          #  flash.alert = 'Could save query doc pair'
-          # end
+
+          judgement.rating = judgement.rating.round unless @book.support_implicit_judgements
+
+          judgement.save
         end
         query_doc_pair_count += 1
+
         # This .save seems required though I don't know why.'
-        flash.alert = 'Could save query doc pair' and return unless query_doc_pair.save
+        query_doc_pair.save
       end
     end
 

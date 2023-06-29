@@ -28,8 +28,8 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
     assert_equal 'Combined 7 query/doc pairs.', flash[:notice]
 
     book.reload
-    assert_equal book.query_doc_pairs.count, james_bond_movies.query_doc_pairs.count
-    assert_equal book.judgements.count, james_bond_movies.judgements.count
+    assert_equal book.query_doc_pairs.count, james_bond_movies.query_doc_pairs.count + 1
+    assert_equal book.judgements.count, james_bond_movies.judgements.count + 1
 
     patch "/books/#{book.id}/combine",
           params: { book_ids: { "#{james_bond_movies.id}": '1', "#{james_bond_movies.id}": '1' } }
@@ -37,15 +37,15 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
     assert_equal 'Combined 7 query/doc pairs.', flash[:notice]
 
     book.reload
-    assert_equal book.query_doc_pairs.count, james_bond_movies.query_doc_pairs.count
-    assert_equal book.judgements.count, james_bond_movies.judgements.count
+    assert_equal book.query_doc_pairs.count, james_bond_movies.query_doc_pairs.count + 1
+    assert_equal book.judgements.count, james_bond_movies.judgements.count + 1
 
     patch "/books/#{book.id}/combine", params: { book_ids: { "#{book.id}": '1' } }
     follow_redirect!
-    assert_equal 'Combined 7 query/doc pairs.', flash[:notice]
+    assert_equal 'Combined 8 query/doc pairs.', flash[:notice]
 
     book.reload
-    assert_equal book.query_doc_pairs.count, 7
+    assert_equal book.query_doc_pairs.count, 8
   end
   # rubocop:enable Metrics/AbcSize
   # rubocop:enable Metrics/MethodLength
@@ -53,13 +53,13 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
   def test_more
     login_user
 
-    assert_equal book.query_doc_pairs.count, 0
+    assert_equal book.query_doc_pairs.count, 1
 
     patch "/books/#{book.id}/combine", params: { book_ids: { "#{james_bond_movies.id}": '1' } }
     follow_redirect!
     assert_equal 'Combined 7 query/doc pairs.', flash[:notice]
 
-    assert_equal book.query_doc_pairs.count, 7
+    assert_equal book.query_doc_pairs.count, 8
   end
 
   def test_differing_scales_blows_up
@@ -70,8 +70,6 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
     book_to_merge.save!
 
     params = { book_ids: { "#{book_to_merge.id}": '1' } }
-
-    puts "params #{params}"
 
     patch "/books/#{book.id}/combine", params: params
     follow_redirect!
@@ -96,8 +94,6 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
     assert_equal 'Combined 2 query/doc pairs.', flash[:notice]
 
     assert_equal book_with_multiple_raters.query_doc_pairs.count, 2
-
-    pp book_with_multiple_raters.judgements
     assert_equal book_with_multiple_raters.judgements.count, 2
   end
 

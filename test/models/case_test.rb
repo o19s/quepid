@@ -53,7 +53,7 @@ class CaseTest < ActiveSupport::TestCase
     end
 
     test "sets the scorer to the user's quepid scorer" do
-      q_scorer            = scorers(:v1)
+      q_scorer            = scorers(:communal_scorer)
       user                = users(:random)
       user.default_scorer = q_scorer
       user.save

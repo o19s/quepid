@@ -26,10 +26,9 @@ class Book < ApplicationRecord
   belongs_to :selection_strategy
   belongs_to :scorer
   has_many :query_doc_pairs, dependent: :destroy, autosave: true
-  has_many   :judgements,
+  has_many   :judgements, -> { order('query_doc_pair_id') },
              through:   :query_doc_pairs,
              dependent: :destroy
-
   scope :for_user, ->(user) {
     joins('
       LEFT OUTER JOIN `teams` ON `teams`.`id` = `books`.`team_id`
