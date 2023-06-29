@@ -75,16 +75,20 @@ class BooksController < ApplicationController
         query_doc_pair = @book.query_doc_pairs.find_or_create_by query_text: qdp.query_text,
                                                                  doc_id:     qdp.doc_id
 
+        # copy over the document fields if our source is newer than our target.
+        # if qdp.updated_at > query_doc_pair.updated_at or query_doc_pair.document_fields.blank?
+        query_doc_pair.document_fields = qdp.document_fields
+        # end
+
+        # copy over the position if our source has a position and our target doesn't.
+        query_doc_pair.position = qdp.position if query_doc_pair.position.nil? && !qdp.position.nil?
+
         puts "Looking at mergining into target Query Doc Pair #{query_doc_pair.id}"
         puts "For source qdp #{qdp.query_text}/#{qdp.doc_id} I have #{qdp.judgements.rateable.size}"
         qdp.judgements.rateable.each do |j|
-          puts 'I am a judgement, I am here.'
           puts "Source rating is #{j.rating} and user is #{j.user.name}"
           judgement = query_doc_pair.judgements.find_or_initialize_by(user: j.user)
-          puts "Does target judgment already have a rating?  #{judgement.rating}"
-          puts "Does target judgment have a primary key?  #{judgement.id}"
-          puts "Does target judgment have errors?  #{judgement.errors.count}"
-          puts "Does target judgment have errors message?  #{judgement.errors.full_messages.to_sentence}"
+
           judgement.rating = if judgement.rating
                                ((judgement.rating + j.rating) / 2).round
                              else
@@ -97,17 +101,9 @@ class BooksController < ApplicationController
           # end
         end
         query_doc_pair_count += 1
-        # unless query_doc_pair.save
-        #  puts 'Boom!!!!!!!!!'
-        #  flash.alert = 'Could save query doc pair'
-        # end
+        # This .save seems required though I don't know why.'
+        flash.alert = 'Could save query doc pair' and return unless query_doc_pair.save
       end
-    end
-
-    puts 'Lets see about changes to save...'
-    puts "@book.has_changes_to_save? #{@book.has_changes_to_save?}"
-    @book.query_doc_pairs.each do |qdp|
-      puts "qdp #{qdp.id} has changes to save? #{qdp.has_changes_to_save?}"
     end
 
     if @book.save

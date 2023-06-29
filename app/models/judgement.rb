@@ -31,6 +31,14 @@ class Judgement < ApplicationRecord
 
   scope :rateable, -> { where(unrateable: false) }
 
+  def check_unrateable_for_rating
+  end
+
+  def rating= val
+    self.unrateable = false unless val.nil?
+    write_attribute(:rating, val)
+  end
+
   def mark_unrateable
     self.unrateable = true
     self.rating = nil
