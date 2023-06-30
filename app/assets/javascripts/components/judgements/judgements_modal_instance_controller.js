@@ -142,7 +142,7 @@ angular.module('QuepidApp')
           caseSvc.associateBook(acase, ctrl.activeBookId);
         }
         if (ctrl.populateBook) {
-          bookSvc.updateQueryDocPairs(ctrl.activeBookId, queriesSvc.queryArray())
+          bookSvc.updateQueryDocPairs(ctrl.activeBookId,ctrl.share.acase.caseNo, queriesSvc.queryArray())
           .then(function() {
             $scope.processingPrompt.inProgress = false;
             $uibModalInstance.close();

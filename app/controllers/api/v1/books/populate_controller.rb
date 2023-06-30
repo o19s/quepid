@@ -6,10 +6,15 @@ module Api
       class PopulateController < Api::ApiController
         before_action :find_book, only: [ :update ]
         before_action :check_book, only: [ :update ]
+        before_action :find_case
+        before_action :check_case
 
         # We get a messy set of params in this method, so we don't use the normal
         # approach of strong parameter validation.  We hardcode the only params
         # we care about.
+        # rubocop:disable Metrics/AbcSize
+        # rubocop:disable Metrics/MethodLength
+        # rubocop:disable Layout/LineLength
         def update
           # down the road we should be using ActiveRecord-import and first_or_initialize instead.
           # See how snapshots are managed.
@@ -21,12 +26,24 @@ module Api
                                                                      doc_id:     pair[:doc_id]
             query_doc_pair.position = pair[:position]
             query_doc_pair.document_fields = pair[:document_fields].to_json
-            query_doc_pair.save
+
+            if pair[:rating]
+              rating = @case.queries.find_by(query_text: query_doc_pair.query_text).ratings.find_by(doc_id: query_doc_pair.doc_id)
+              judgement = query_doc_pair.judgements.find_or_create_by user_id: rating.user_id
+              judgement.rating = pair[:rating]
+              judgement.user = rating.user
+              judgement.save!
+            end
+
+            query_doc_pair.save!
           end
 
           Analytics::Tracker.track_query_doc_pairs_bulk_updated_event current_user, @book, is_book_empty
           head :no_content
         end
+        # rubocop:enable Metrics/AbcSize
+        # rubocop:enable Metrics/MethodLength
+        # rubocop:enable Layout/LineLength
 
         private
 
