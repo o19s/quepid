@@ -21,6 +21,7 @@ module Api
           test 'creates all query doc pairs' do
             data = {
               book_id:         book.id,
+              case_id:         acase.id,
               query_doc_pairs: [
                 {
                   query_text:      'star wars',
@@ -60,6 +61,7 @@ module Api
           test 'updates the position and doc fields' do
             data = {
               book_id:         book.id,
+              case_id:         acase.id,
               query_doc_pairs: [
                 {
                   query_text:      'star wars',
@@ -111,6 +113,7 @@ module Api
           test 'updates with a new query doc pair' do
             data = {
               book_id:         book.id,
+              case_id:         acase.id,
               query_doc_pairs: [
                 {
                   query_text:      'star wars',
