@@ -86,7 +86,7 @@ angular.module('QuepidApp')
               fields['image'] = doc.image;
             }
 
-            var queryDocPair = {
+            const queryDocPair = {
               'query_text': query.queryText,
               'doc_id': doc.id,
               'rating': doc.hasRating() ? doc.getRating() : null,
@@ -99,7 +99,7 @@ angular.module('QuepidApp')
           });
         });
 
-        var payload = {
+        const payload = {
           'case_id': caseId,
           'query_doc_pairs': queryDocPairsPayload
         };
