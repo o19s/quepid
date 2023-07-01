@@ -8,6 +8,7 @@
 #  updated_at :datetime         not null
 #  doc_id     :string(500)
 #  query_id   :integer
+#  user_id    :integer
 #
 # Indexes
 #

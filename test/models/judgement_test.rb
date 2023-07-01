@@ -69,5 +69,14 @@ class JudgementTest < ActiveSupport::TestCase
       judgement.mark_unrateable!
       assert_nil judgement.rating
     end
+
+    test 'set a rating on a judgement that was marked unrateable, flips it to rateable' do
+      judgement = Judgement.create(query_doc_pair: query_doc_pair)
+      judgement.mark_unrateable!
+      assert judgement.unrateable
+      judgement.rating = 4
+      assert_not judgement.unrateable
+      assert judgement.valid?
+    end
   end
 end

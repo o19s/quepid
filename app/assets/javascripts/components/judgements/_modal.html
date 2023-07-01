@@ -62,6 +62,10 @@
           ng-class="{ active: book.id === ctrl.activeBookId }"
           ng-click="selectBook(book)">
           {{book.name}}
+          <a ng-href="books/{{book.id}}" target="_self" class="btn btn-default btn-xs pull-right">
+            View
+          </a>
+
         </li>
       </ul>
     </div>

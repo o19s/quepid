@@ -16,6 +16,7 @@
       <th>Team</th>
       <th>Scorer</th>
       <th>Selection strategy</th>
+      
     </tr>
   </thead>
 
@@ -26,6 +27,7 @@
         <td><%= book.team.name %></td>
         <td><%= book.scorer.name %> </td>
         <td><%= book.selection_strategy.name %> </td>
+        <td><span class="badge bg-primary rounded-pill"><%= book.rated_query_doc_pairs.count %> rated query/doc pairs</span></td>
       </tr>
     <% end %>
   </tbody>

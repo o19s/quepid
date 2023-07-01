@@ -5,7 +5,7 @@ class JudgementsController < ApplicationController
   before_action :find_book
 
   def index
-    @judgements = @book.judgements
+    @judgements = @book.judgements.includes([ :query_doc_pair, :user ])
   end
 
   def show
@@ -30,6 +30,7 @@ class JudgementsController < ApplicationController
   # rubocop:enable Layout/LineLength
 
   def edit
+    @query_doc_pair = @judgement.query_doc_pair
   end
 
   def create

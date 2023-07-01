@@ -36,51 +36,73 @@ two:
   document_fields: MyText
   book: two
 
-qdp1:
+jbm_qdp1:
   query_text: Best Bond Ever
   position: 1
   doc_id: SeanConnery
   document_fields: MyTex
   book: :james_bond_movies
 
-qdp2:
+jbm_qdp2:
   query_text: Best Bond Ever
   position: 2
   doc_id: DanielCraig
   document_fields: MyTex
   book: :james_bond_movies
 
-qdp3:
+jbm_qdp3:
   query_text: Best Bond Ever
   position: 3
   doc_id: TimothyDalton
   document_fields: MyTex
   book: :james_bond_movies
 
-qdp4:
+jbm_qdp4:
   query_text: Best Bond Ever
   position: 4
   doc_id: RogerMoore
   document_fields: MyTex
   book: :james_bond_movies
 
-qdp5:
+jbm_qdp5:
   query_text: Best Bond Ever
   position: 5
   doc_id: PierceBrosnan
   document_fields: MyTex
   book: :james_bond_movies
 
-qdp6:
+jbm_qdp6:
   query_text: Best Bond Ever
   position: 6
   doc_id: GeorgeLazenby
   document_fields: MyTex
   book: :james_bond_movies
 
-qdp10:
+jbm_qdp10:
   query_text: Action Movies
   position: 1
   doc_id: Moonraker
   document_fields: MyTex
   book: :james_bond_movies
+  
+starwars_qdp1:
+  query_text: Han
+  position: 1
+  doc_id: Han Solo-A Star Wars Story
+  document_fields: MyTex
+  book: :book_of_star_wars_judgements
+  
+starwars_qdp2:
+  query_text: Han
+  position: 2
+  doc_id: Star Wars The Movie
+  document_fields: MyTex
+  book: :book_of_star_wars_judgements
+  
+# This query doc pair overlaps with starwars_qdp2, to test merging books.
+book_of_comedy_qdp1:
+  query_text: Han
+  position: 1
+  doc_id: Star Wars The Movie
+  document_fields: MyTex
+  book: :book_of_comedy_films

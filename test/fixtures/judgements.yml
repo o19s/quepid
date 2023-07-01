@@ -33,19 +33,34 @@ two:
 high_judgement:
   user: :doug
   rating: 3
-  query_doc_pair: :qdp1
+  query_doc_pair: :jbm_qdp1
 
 low_judgement:
   user: :random
   rating: 0
-  query_doc_pair: :qdp2
+  query_doc_pair: :jbm_qdp2
 
-qdp10_judgement:
+jbm_qdp10_judgement:
   user: :doug
   rating: 1
-  query_doc_pair: :qdp10
+  query_doc_pair: :jbm_qdp10
 
-qdp10_judgement2:
+jbm_qdp10_judgement2:
   user: :random
   rating: 2
-  query_doc_pair: :qdp10
+  query_doc_pair: :jbm_qdp10
+  
+starwars_qdp1_judgement:
+  user: :random
+  rating: 1
+  query_doc_pair: :starwars_qdp1
+  
+starwars_qdp2_judgement:
+  user: :random
+  rating: 2
+  query_doc_pair: :starwars_qdp2  
+  
+comedy_qdp1_judgement:
+  user: :random
+  rating: 0
+  query_doc_pair: :book_of_comedy_qdp1

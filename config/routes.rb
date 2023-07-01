@@ -39,6 +39,9 @@ Rails.application.routes.draw do
     end
     get 'judge' => 'judgements#new'
     get 'skip_judging' => 'judgements#skip_judging'
+    member do
+      patch 'combine'
+    end
   end
 
   devise_for :users, controllers: {

@@ -47,6 +47,7 @@
 default: &default
   password:         $2a$12$Yf6zIiRvsHWDrhBxN0trXe/b/TTTSE3nK736Qbz2bGsowrjn3n2xC
   agreed_time:      <%= Time.now - 1.day %>
+  agreed:           1
 
 doug:
   <<: *default

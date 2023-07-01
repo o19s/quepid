@@ -66,7 +66,7 @@ angular.module('QuepidApp')
           });
       };
 
-      this.updateQueryDocPairs = function(bookId, queries) {
+      this.updateQueryDocPairs = function(bookId, caseId, queries) {
         // http POST api/books/<int:bookId>/populate
         var queryDocPairsPayload = [];
         angular.forEach(queries, function(query) {
@@ -86,9 +86,10 @@ angular.module('QuepidApp')
               fields['image'] = doc.image;
             }
 
-            var queryDocPair = {
+            const queryDocPair = {
               'query_text': query.queryText,
               'doc_id': doc.id,
+              'rating': doc.hasRating() ? doc.getRating() : null,
               'position': i,
               'document_fields': fields
             };
@@ -98,7 +99,8 @@ angular.module('QuepidApp')
           });
         });
 
-        var payload = {
+        const payload = {
+          'case_id': caseId,
           'query_doc_pairs': queryDocPairsPayload
         };
 

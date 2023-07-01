@@ -35,5 +35,5 @@ book_of_comedy_films:
 james_bond_movies:   # this has some query doc pairs and ratings.
   team: :shared
   scorer: :quepid_default_scorer
-  selection_strategy: :single_rater
+  selection_strategy: :multiple_raters
   name: James Bond Movies
