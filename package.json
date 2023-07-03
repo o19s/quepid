@@ -37,6 +37,7 @@
     "ng-json-explorer": "http://github.com/o19s/ng-json-explorer",
     "ng-tags-input": "3.2.0",
     "ngclipboard": "^2.0.0",
+    "party-js": "^2.2.0",
     "popper.js": "^1.16.1",
     "splainer-search": "2.22.2",
     "tether-shepherd": "latest",
