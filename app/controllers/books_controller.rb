@@ -13,6 +13,13 @@ class BooksController < ApplicationController
 
   def show
     @cases = Case.where(book_id: @book.id)
+    @leaderboard_data = []
+    unique_judges = @book.judgements.rateable.preload(:user).collect(&:user).uniq
+    unique_judges.each do |judge|
+      @leaderboard_data << { judge:      judge.nil? ? 'anonymous' : judge.name,
+                             judgements: @book.judgements.where(user: judge).count }
+    end
+
     respond_with(@book)
   end
 
