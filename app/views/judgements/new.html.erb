@@ -1,16 +1,59 @@
-<p></p>
-<h2>Create a Judgement</h2>
 
-<%= render 'form', judgement: @judgement, query_doc_pair: @query_doc_pair, url_for_form: book_query_doc_pair_judgements_path(@book, @query_doc_pair) %>
+<% if @party_time %>
+  <div id="party_here" class="alert alert-success" role="alert">
+    Yay!  You just finished another batch of 20 ratings!   Time to take a mental break.
+  </div>
+  <script>
+    party.confetti( document.getElementById("party_here"));
+  </script>
+  
+  <div class="float-end">    
+    <%= link_to "I'm Ready for Moar!", book_skip_judging_path(@book), class: 'btn btn-info m-1', role: 'button' %>
+  </div>
+  <script>
+  
+  
+  </script>
+  <div class="card">
+    <div class="card-body">
+      <h5 class="card-title">Your Progress</h3>
+      <h6 class="card-subtitle mb-2 text-body-secondary">Judge all the documents to chase the frogs out of the pond!</h6>
+      <div class="progress" role="progressbar" aria-label="Animated striped example" aria-valuenow="<%= @judged_by_user %>" aria-valuemin="0" aria-valuemax="<%= @total_pool_of_judgements%>">
+        <div class="progress-bar progress-bar-striped progress-bar-animated" style="width: <%=number_to_percentage((@judged_by_user / @total_pool_of_judgements) * 100, precision: 0)%>  "></div>
+      </div>
+    </div>
+  </div>
+  <p/>
+  <div class="card">
+    <div class="card-body">
+      <h5 class="card-title">Leaderboard</h3>
+      <h6 class="card-subtitle mb-2 text-body-secondary">Who is closest to having all query/doc pairs judged</h6>
+      <%=
+      Vega.lite
+        #.data([{judge: "A", judgements: 28}, {judge: "B", judgements: 55}, {judge: "C", judgements: 43}])
+        .data(@leaderboard_data)
+        .mark(type: "bar", tooltip: true)
+        .encoding(
+          x: {field: "judge", type: "nominal", "axis": {"labelAngle": 0}},
+          y: {field: "judgements", type: "quantitative"}
+        )
+      %>
+    </div>
+  </div>
 
-<br>
-
-<%
-  previous_judgement = @judgement.previous_judgement_made
-%>
-<% if previous_judgement %>
-  <%= button_to 'Go Back to Previous Query/Doc Pair', edit_book_query_doc_pair_judgement_path(@book, previous_judgement.query_doc_pair, previous_judgement), method: :get %>
+<% else %>
+  
+  <h2>Create a Judgement</h2>
+  
+  <%= render 'form', judgement: @judgement, query_doc_pair: @query_doc_pair, url_for_form: book_query_doc_pair_judgements_path(@book, @query_doc_pair) %>
+  
   <br>
+  
+  <% if @previous_judgement %>
+    <%= button_to 'Go Back to Previous Query/Doc Pair', edit_book_query_doc_pair_judgement_path(@book, @previous_judgement.query_doc_pair, @previous_judgement), method: :get %>
+    <br>
+  <% end %>
+  <%= button_to 'Exit', book_path(@book), method: :get %>
+  <br>
+  
 <% end %>
-<%= button_to 'Exit', book_path(@book), method: :get %>
-<br>

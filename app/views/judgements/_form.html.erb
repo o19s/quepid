@@ -55,6 +55,7 @@
       keyDown(key_name);
       resetStylesExcept(key_name);
       document.getElementById("judgement_rating").value = rating;
+      //party.confetti(document.getElementById("judgement_rating"));
       delay(100).then(() => (document.getElementsByName("commit")[0].click()));
   }
 

@@ -57,4 +57,25 @@ Export in <%= link_to 'CSV', api_book_path(@book, format: :csv) %> or <%= link_t
 <p>
 To reference these judgements from a notebook or another system you can reference these Quepid API endpoints:
 <code><%= api_book_path(@book, format: :csv) %></code> or <code><%= api_book_path(@book) %></code>
-<p>
+</p>
+
+<h3>Leaderboard</h3>
+<div class="card">
+  <div class="card-body">
+
+    <h5 class="card-title" href="#collapseExample">Leaderboard</h3>
+    <h6 class="card-subtitle mb-2 text-body-secondary">Who is closest to having all query/doc pairs judged</h6>
+    
+    <%=
+    Vega.lite
+      .data(@leaderboard_data)
+      .mark(type: "bar", tooltip: true)
+      .encoding(
+        x: {field: "judge", type: "nominal", "axis": {"labelAngle": 0}},
+        y: {field: "judgements", type: "quantitative"}
+      )
+    %>
+  </div>
+</div>
+
+<p/>
