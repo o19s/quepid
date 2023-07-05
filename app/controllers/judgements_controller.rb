@@ -23,7 +23,7 @@ class JudgementsController < ApplicationController
   # rubocop:disable Metrics/MethodLength
   # rubocop:disable Metrics/PerceivedComplexity
   def new
-    track_judging = session[:track_judging].symbolize_keys
+    track_judging = session[:track_judging]&.symbolize_keys
 
     track_judging = { book_id: @book.id, counter: 0 } if track_judging.nil? || (track_judging[:book_id] != @book.id)
 
