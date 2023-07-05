@@ -1,8 +1,23 @@
 # Changelog
 
+## 7.6.0 - 2023-07-05
+
+Big overhaul on the human rating side of things.  We now roundtrip ratings that you have made from the core Case screen into your Book of Judgements when you populate it.   (We are also now tracking who the last person was to rate a doc in the Case screen).   You can now also merge ratings from multiple Book's into a new Book, which lets you reuse your judgements in new combinations.
+
+
+Additionally, to encourage your human judges, a progress screen has been added every 20 judgements showing progress and a leaderboard.
+
+* https://github.com/o19s/quepid/pull/778 by @epugh introduces some "fun" into the rating process ;-).  
+
+* https://github.com/o19s/quepid/pull/766 introduced the synthesizing of a Book, and fixes https://github.com/o19s/quepid/issues/765, track who rates in the main quepid ui, https://github.com/o19s/quepid/issues/763, link from list of books in judgements to the book itself, and https://github.com/o19s/quepid/issues/761, Combining books loses judgments but still produces scores.  
+
+* https://github.com/o19s/quepid/pull/760 changes Quepid to use floats for ratings and judgements, which opens the door to implicit judgements.
+
+
+
 ## 7.5.0 - 2023-06-15
 
-Need to interact with Quepid API's from outside of Quepid??  We now support Personal Access Tokens!  From your Profile page you can generate your own token and then use that to authenticate against Quepid.  For example, you can programatically load a judgement directly into Quepid:
+Need to interact with Quepid API's from outside of Quepid?  We now support Personal Access Tokens!  From your Profile page you can generate your own token and then use that to authenticate against Quepid.  For example, you can programatically load a judgement directly into Quepid:
 ```
 curl -X POST http://localhost:3000/api/books/2/judgements/ -H 'Authorization: Bearer 4a82040bf1b2d255c63833cb59fa9275' -H 'Content-Type: application/json' -d '{
   "judgement": {
