@@ -1,5 +1,9 @@
 # Changelog
 
+## 7.6.1 - 2023-07-06
+
+* Chased down bug with showing you the previous judgement on the Human Judgement page.  https://github.com/o19s/quepid/pull/779 by @epugh.
+
 ## 7.6.0 - 2023-07-05
 
 Big overhaul on the human rating side of things.  We now roundtrip ratings that you have made from the core Case screen into your Book of Judgements when you populate it.   (We are also now tracking who the last person was to rate a doc in the Case screen).   You can now also merge ratings from multiple Book's into a new Book, which lets you reuse your judgements in new combinations.
