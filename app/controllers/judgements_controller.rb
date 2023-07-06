@@ -31,24 +31,27 @@ class JudgementsController < ApplicationController
     session[:track_judging] = track_judging
 
     @query_doc_pair = SelectionStrategy.random_query_doc_based_on_strategy(@book, current_user)
-    redirect_to book_path(@book) if @query_doc_pair.nil? # no more query doc pairs to be judged!
-    if @query_doc_pair
-      @query = Query.joins(:case).where(case: { book_id: @query_doc_pair.book.id }).has_information_need.where(query_text: @query_doc_pair.query_text).first
-    end
-    @judgement = Judgement.new(query_doc_pair: @query_doc_pair, user: @current_user, updated_at: Time.zone.now)
-    @previous_judgement = @judgement.previous_judgement_made unless @judgement.new_record?
-
-    if (track_judging[:counter] % 20).zero? # It's party time!
-      @party_time = true
-      @judged_by_user = @book.judgements.where(user: @current_user).count.to_f
-      @total_pool_of_judgements = @book.query_doc_pairs.count.to_f
-
-      @leaderboard_data = []
-      unique_judges = @book.judgements.rateable.preload(:user).collect(&:user).uniq
-      unique_judges.each do |judge|
-        @leaderboard_data << { judge: judge.nil? ? 'anonymous' : judge.name, judgements: @book.judgements.where(user: judge).count }
+    if @query_doc_pair.nil? # no more query doc pairs to be judged!
+      redirect_to book_path(@book)
+    else
+      if @query_doc_pair
+        @query = Query.joins(:case).where(case: { book_id: @query_doc_pair.book.id }).has_information_need.where(query_text: @query_doc_pair.query_text).first
       end
+      @judgement = Judgement.new(query_doc_pair: @query_doc_pair, user: @current_user, updated_at: Time.zone.now)
+      @previous_judgement = @judgement.previous_judgement_made # unless @judgement.new_record?
 
+      if (track_judging[:counter] % 20).zero? # It's party time!
+        @party_time = true
+        @judged_by_user = @book.judgements.where(user: @current_user).count.to_f
+        @total_pool_of_judgements = @book.query_doc_pairs.count.to_f
+
+        @leaderboard_data = []
+        unique_judges = @book.judgements.rateable.preload(:user).collect(&:user).uniq
+        unique_judges.each do |judge|
+          @leaderboard_data << { judge: judge.nil? ? 'anonymous' : judge.name, judgements: @book.judgements.where(user: judge).count }
+        end
+
+      end
     end
   end
   # rubocop:enable Layout/LineLength
