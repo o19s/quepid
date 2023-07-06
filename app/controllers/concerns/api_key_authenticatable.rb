@@ -6,8 +6,7 @@ module ApiKeyAuthenticatable
 
   include ActionController::HttpAuthentication::Token::ControllerMethods
 
-  attr_reader :current_api_key
-  attr_reader :current_user
+  attr_reader :current_api_key, :current_user
 
   # both of the authentication_with_api_key methods need to work with our Devise based
   # approach of using a Session.  So only kick this is when we don't have a current user (i.e no session)
