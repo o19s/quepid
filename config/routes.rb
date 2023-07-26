@@ -59,7 +59,12 @@ Rails.application.routes.draw do
     get 'tries_visualization/:case_id/vega_data' => 'tries_visualization#vega_data', as: :tries_visualization_vega_data
     resources :cases do
       resource :visibility, only: [ :update ], module: :cases
+      
     end
+    get 'sparkline/vega_specification' => 'sparkline#vega_specification',
+        as: :sparkline_vega_specification
+    get 'sparkline/vega_data' => 'sparkline#vega_data', as: :sparkline_vega_data
+    
   end
 
   namespace :admin do
