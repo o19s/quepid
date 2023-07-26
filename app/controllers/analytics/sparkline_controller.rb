@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-
+require 'csv'
 module Analytics
   class SparklineController < ApplicationController
     layout 'analytics'
@@ -14,7 +14,8 @@ module Analytics
     end
 
     def vega_data
-      @scores = Case.find(8).scores
+      @scores = Score.all
+    
     end
   end
 end

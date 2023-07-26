@@ -1,0 +1,14 @@
+<div class="col-12 col-md-6 mb-4 mb-lg-0 col-lg-3">
+    <div class="card">
+      <h5 class="card-header"><%= kase.case_name %></h5>
+        <div class="card-body">
+          <h5 class="card-title"><%= kase.last_score.score %></h5>
+          <p class="card-text"><%= kase.created_at.to_date.to_fs(:short) %> - <%= kase.updated_at.to_date.to_fs(:short) %>, <%= kase.scorer.name %></p>
+          <% if [true, false].sample %>
+          <p class="card-text text-success">18.2% increase since last month</p>
+          <% else %>
+          <p class="card-text text-danger">6.2% decreate since last week</p>
+          <% end %>
+        </div>
+      </div>
+</div>
