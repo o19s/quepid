@@ -322,6 +322,18 @@ print_step "Seeding books................"
 
 book = Book.where(name: "Book of Ratings", team:osc, scorer: Scorer.system_default_scorer, selection_strategy: SelectionStrategy.find_by(name:'Multiple Raters')).first_or_create
 
+# this code copied from populate_controller.rb and should be in a service...
+# has a hacked in judgement creator...
+tens_of_queries_case.queries.each do |query|
+  query.ratings.each do |rating|
+    query_doc_pair = book.query_doc_pairs.find_or_create_by query_text: query.query_text,
+                                                           doc_id:     rating.doc_id
+    query_doc_pair.judgements << Judgement.new(rating: rating.rating, user: osc_member_user)
+    query_doc_pair.save
+  end
+
+end
+
 
 # Big Cases
 

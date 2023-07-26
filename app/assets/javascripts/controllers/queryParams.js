@@ -25,8 +25,13 @@ angular.module('QuepidApp')
       $scope.validateSearchEngineUrl  = function() {
         if (!angular.isUndefined($scope.settings.searchUrl)){
           if ($scope.settings.searchEngine === 'es' || $scope.settings.searchEngine === 'os'){
-            var uri       = esUrlSvc.parseUrl($scope.settings.searchUrl);
-            $scope.showESTemplateWarning = esUrlSvc.isTemplateCall(uri);
+            try {
+              const args = JSON.parse($scope.settings.queryParams);
+              $scope.showESTemplateWarning = esUrlSvc.isTemplateCall(args);
+            }
+            catch (error){
+              // Ignore if we don't have valid JSON in queryParams.
+            }
           }
 
           if ($scope.settings.searchEngine !== '' && !angular.isUndefined($scope.settings.searchUrl)){

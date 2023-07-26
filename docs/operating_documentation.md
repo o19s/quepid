@@ -9,8 +9,10 @@ This document explains how Quepid can be operated and configured.
 - [Legal Pages & GDPR](#legal-pages-&-gdpr)
 - [User Tracking](#user-tracking)
 - [Heathcheck Endpoint](#healthcheck)
+- [Troubleshoot Your Deploy](#troubleshoot-your-deploy)
 - [Database Management](#database-management)
 - [Jupyterlite Notebooks](#jupyterlite-notebooks)
+- [Using Personal Access Tokens](#using-personal-access-tokens)
 ## Running behind a load balancer
 
 > ⚠️ _Quepid will run in TLS (`https`) or plain `http` mode depending on the
@@ -172,6 +174,19 @@ the file `Procfile`
 
 Want to monitor if Quepid is behaving?  Just monitor `/healthcheck`, and you will get 200 status codes from a healthy Quepid, and 503 if not.  The JSON output is `{"code":200,"status":{"database":"OK","migrations":"OK"}}`.
 
+## Troubleshoot Your Deploy
+
+When errors occur, Quepid logs them and shows a generic page.  
+However sometimes getting to those logs is difficult, and you just want the message immediately.
+
+You can enable this behavior by setting the follow `ENV` var:
+
+```
+QUEPID_CONSIDER_ALL_REQUESTS_LOCAL=true
+```
+
+Confirm the setup by visiting `/api/test_exception` which raises an error and will give you the debugging page "RuntimeError in Api::ApiController#test_exception".
+
 ## Database Management
 
 See the details in [](./database.md).
@@ -179,3 +194,33 @@ See the details in [](./database.md).
 ## Jupuyterlite Notebooks
 
 See the details in [](./jupyterlite.md).
+
+## Using Personal Access Tokens
+
+Accessing the Quepid API like http://localhost:3000/api/cases/5.json is protected by you logging in and having the appropriate cookies set. But what if we want to have an automated process?   Then you need to create a Personal Access Token.  Using that, you can then do a curl request like:
+
+```
+curl -X GET -H 'Authorization: Bearer 53e41835979d649775243ababd4312e8' http://localhost:3000/api/cases/5.json
+>> {"name":"Book of Ratings","book_id":1,"query_doc_pairs":[{"query_doc_pair_id":1,"position":1,"query":"adsf","doc_id":"asdf","judgements":[]}]}%
+```
+Here is an example of creating a query doc pair:
+
+```
+curl -X POST http://localhost:3000/api/books/2/query_doc_pairs/ -H 'Authorization: Bearer 4a82040bf1b2d255c63833cb59fa9275' -H 'Content-Type: application/json' -d '{
+  "query_doc_pair": {
+    "document_fields": "{title:My Document}",
+    "query_text": "my search",
+    "doc_id": "some_special_doc_id_52",
+    "position": 1
+  }
+}'
+```
+
+```
+curl -X POST http://localhost:3000/api/books/2/judgements/ -H 'Authorization: Bearer 4a82040bf1b2d255c63833cb59fa9275' -H 'Content-Type: application/json' -d '{
+  "judgement": {
+    "query_doc_pair_id": 201
+    "rating": 1
+  }
+}'
+```

@@ -1,4 +1,4 @@
-class MigrateUserDefaultScorer < ActiveRecord::Migration
+class MigrateUserDefaultScorer < ActiveRecord::Migration[4.2]
   def change
 
     if foreign_keys("users").any?{|k| k[:to_table] == "default_scorers"}

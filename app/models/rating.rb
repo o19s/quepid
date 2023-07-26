@@ -5,11 +5,12 @@
 # Table name: ratings
 #
 #  id         :integer          not null, primary key
-#  rating     :integer
+#  rating     :float(24)
 #  created_at :datetime         not null
 #  updated_at :datetime         not null
 #  doc_id     :string(500)
 #  query_id   :integer
+#  user_id    :integer
 #
 # Indexes
 #
@@ -23,6 +24,7 @@
 
 class Rating < ApplicationRecord
   belongs_to :query
+  belongs_to :user, optional: true
 
   # arguably we shouldn't need this, however today you can have a rating object that doesn't have a
   # value set.  fully_rated means that the rating integer has been set.

@@ -26,16 +26,22 @@
 
   <div class="text-center" ng-show="ctrl.share.teams.length === 0 && !ctrl.share.loading">
     <p>
-      Books of Judgements are meant to be shared with a team, so go ahead and create a new team!
+      Books of Judgements are meant to be shared with a team, so either create a new team or close this modal and use <i
+        class="fa fa-share"
+        aria-hidden="true"
+        title="Share Case"
+        alt="Share Case"
+      ></i> Share Case first.
     </p>
 
     <a class="btn btn-primary btn-lg" ng-click="ctrl.goToTeamsPage()">
       <i class="fa fa-plus"></i>
       Create a team
     </a>
+
   </div>
 
-  <div class="text-center" ng-show="ctrl.share.books.length === 0 && !ctrl.share.loading">
+  <div class="text-center" ng-show="ctrl.share.teams.length > 0 &&  ctrl.share.books.length === 0 && !ctrl.share.loading">
     <p>
       You have no Books of Judgements created yet, so go ahead and create a new Book!
     </p>
@@ -56,6 +62,10 @@
           ng-class="{ active: book.id === ctrl.activeBookId }"
           ng-click="selectBook(book)">
           {{book.name}}
+          <a ng-href="books/{{book.id}}" target="_self" class="btn btn-default btn-xs pull-right">
+            View
+          </a>
+
         </li>
       </ul>
     </div>

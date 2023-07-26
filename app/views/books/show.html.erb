@@ -35,15 +35,20 @@ Books organize all the query/doc pairs that are needed for evaluating your searc
 </p>
 
 <p>
+  <strong>Supports Implicit Judgements:</strong>
+  <%= @book.support_implicit_judgements? %>
+</p>
+
+<p>
 <strong>Related cases:</strong>
 <%= render(partial: 'books/case', collection: @cases, as: :kase) || "There are no cases available." %>
 </p>
 
-<%= button_to 'Show Judgements', book_judgements_url(@book), method: :get %>
+<%= button_to 'Show Judgements', book_judgements_path(@book), method: :get %>
 
 <br>
 
-<%= button_to 'Show Query Doc Pairs', book_query_doc_pairs_url(@book), method: :get %>
+<%= button_to 'Show Query Doc Pairs', book_query_doc_pairs_path(@book), method: :get %>
 
 <br>
 
@@ -65,3 +70,25 @@ Export in <%= link_to 'CSV', api_book_path(@book, format: :csv) %> or <%= link_t
 <p>
 To reference these judgements from a notebook or another system you can reference these Quepid API endpoints:
 <code><%= api_book_path(@book, format: :csv) %></code> or <code><%= api_book_path(@book) %></code>
+</p>
+
+<h3>Leaderboard</h3>
+<div class="card">
+  <div class="card-body">
+
+    <h5 class="card-title" href="#collapseExample">Leaderboard</h3>
+    <h6 class="card-subtitle mb-2 text-body-secondary">Who is closest to having all query/doc pairs judged</h6>
+
+    <%=
+    Vega.lite
+      .data(@leaderboard_data)
+      .mark(type: "bar", tooltip: true)
+      .encoding(
+        x: {field: "judge", type: "nominal", "axis": {"labelAngle": 0}},
+        y: {field: "judgements", type: "quantitative"}
+      )
+    %>
+  </div>
+</div>
+
+<p/>

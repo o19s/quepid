@@ -7,12 +7,14 @@
 
 
 
-<table class="table table-striped table-hover table-sm">
+<table class="table table-hover table-sm">
   <thead>
     <tr>
-      <th>ID</th>
+      
+      <th>Query Doc ID</th>
       <th>Query</th>
       <th>Doc ID</th>
+      <th>ID</th>
       <th>Document fields</th>
       <th>Rating</th>
       <th>Unrateable</th>
@@ -22,21 +24,30 @@
     </thead>
 
     <tbody>
+    <%
+    last_query_doc_pair_id = nil
+    table_row_style = nil #cycle('', 'table-primary')
+    %>
     <% @judgements.each do |judgement| %>
-
-        <tr>
+        <% 
+        if last_query_doc_pair_id != judgement.query_doc_pair_id
+          table_row_style = cycle('table-active', '')
+          last_query_doc_pair_id = judgement.query_doc_pair_id
+        end
+        %>
+        <tr class="<%= table_row_style %>">
           <td>
-            <%= link_to judgement.id, edit_book_query_doc_pair_judgement_path(judgement.query_doc_pair.book, judgement.query_doc_pair, judgement) %>
+            <%= judgement.query_doc_pair.id %> 
           </td>
-
           <td>
             <%= judgement.query_doc_pair.query_text %>
           </td>
-
           <td>
             <%= judgement.query_doc_pair.doc_id %>
           </td>
-
+          <td>
+            <%= link_to judgement.id, edit_book_query_doc_pair_judgement_path(@book, judgement.query_doc_pair, judgement) %>
+          </td>
           <td>
             <%= truncate(judgement.query_doc_pair.document_fields, length: 100) %>
           </td>

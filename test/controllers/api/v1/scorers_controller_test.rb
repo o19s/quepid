@@ -436,7 +436,7 @@ module Api
           let(:default_scorer)        { scorers(:case_default_scorer) }
           let(:user)                  { users(:random) }
           let(:acase)                 { cases(:for_default_scorer) }
-          let(:replacement_scorer)    { scorers(:v1) }
+          let(:replacement_scorer)    { scorers(:communal_scorer) }
 
           before do
             login_user user

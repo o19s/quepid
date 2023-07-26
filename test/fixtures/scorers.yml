@@ -28,13 +28,6 @@ quepid_default_scorer:
   show_scale_labels:  false
   communal: true
 
-v1:
-  code: pass();
-  name: v1
-  scale: 1, 2, 3, 4
-  show_scale_labels:  false
-  communal: true
-
 communal_scorer:
   code: communal scorer
   name: communal scorer
@@ -107,20 +100,6 @@ default_scorer:
 case_default_scorer:
   code:       test code
   name:       case_default_scorer
-  owner:      :random
-  scale:      1, 2, 3, 4
-  communal:   false
-
-query_default_scorer:
-  code:       test code
-  name:       query_default_scorer
-  owner:      :random
-  scale:      1, 2, 3, 4
-  communal:   false
-
-query_scorer:
-  code:       pass();
-  name:       Scorer for Query
   owner:      :random
   scale:      1, 2, 3, 4
   communal:   false

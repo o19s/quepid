@@ -1,6 +1,4 @@
-<% if SelectionStrategy.random_query_doc_based_on_strategy(book, current_user) %>
-  <% session["previous_judgement_id"] = nil %>
-
+<% if SelectionStrategy.random_query_doc_based_on_strategy(book, current_user) %>  
   <div class="alert alert-warning" role="alert">
     <%= link_to 'Moar Judgements are Needed!', book_judge_path(book), class: 'btn btn-primary', role: 'button' %>
   </div>

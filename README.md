@@ -523,6 +523,7 @@ The developer deploy of Keycloak Admin console credentials are `admin` and `pass
 ## Modifying the database
 
 Here is an example of generating a migration:
+
 ```
 bin/docker r bundle exec bin/rails g migration FixCuratorVariablesTriesForeignKeyName
 ```
@@ -563,6 +564,10 @@ This works on Heroku and the production Docker image.
 To update the version of Jupyterlite edit `Dockerfile.dev` and `Dockerfile.prod` and update the `pip install` version.
 
 Question?  Does jupyterlite work in localhost????
+
+## How does the Personal Access Tokens work?
+
+See this great blog post: https://keygen.sh/blog/how-to-implement-api-key-authentication-in-rails-without-devise/.
 
 # QA
 

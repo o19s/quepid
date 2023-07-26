@@ -13,6 +13,8 @@ Rails.application.routes.draw do
     mount Sidekiq::Web, at: 'admin/jobs'
   end
 
+  resources :api_keys, path: 'api-keys', only: [ :create, :destroy ]
+
   # rubocop:disable Layout/LineLength
   # let's encrypt verification (can be removed in the future)
   get '.well-known/acme-challenge/9IWOgATbRmEtWKsOOJQ-E4-lrIT9tHsHv_9bl5Zt6fI', to: proc { [ 200, {}, [ '9IWOgATbRmEtWKsOOJQ-E4-lrIT9tHsHv_9bl5Zt6fI.fDzklrX7i2PRMRsPtxEvo2yRZDSfy2LO3t--NfWfgaA' ] ] }
@@ -39,6 +41,9 @@ Rails.application.routes.draw do
     end
     get 'judge' => 'judgements#new'
     get 'skip_judging' => 'judgements#skip_judging'
+    member do
+      patch 'combine'
+    end
   end
 
   devise_for :users, controllers: {
@@ -74,6 +79,7 @@ Rails.application.routes.draw do
 
   namespace :api, defaults: { format: :json } do
     get 'test' => 'api#test'
+    get 'test_exception' => 'api#test_exception'
 
     scope module: :v1, constraints: ApiConstraint.new(version: 1, default: true) do
       resources :users,   only: [ :index, :show, :update ] do
@@ -138,6 +144,8 @@ Rails.application.routes.draw do
         resources :cases do
           put 'refresh' => 'books/refresh#update'
         end
+        resources :query_doc_pairs
+        resources :judgements
       end
 
       namespace :clone do

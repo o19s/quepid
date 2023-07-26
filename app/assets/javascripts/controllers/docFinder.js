@@ -192,14 +192,28 @@ angular.module('QuepidApp')
           var filter = {
             'query': $scope.query.filterToRatings(currSettings, $scope.docFinder.docs.length)
           };
-          $scope.docFinder.searcher.explainOther(
-            filter, fieldSpec)
-            .then(function() {
+          if($scope.docFinder.searcher.isTemplateCall($scope.docFinder.searcher.args)){
+            // Do a normal search if it's a templated call as we can't get the explain.
+            delete $scope.docFinder.searcher.args.id;
+            delete $scope.docFinder.searcher.args.params;
+            $scope.docFinder.searcher.queryDsl = filter; // is this terrible?
+            $scope.docFinder.searcher.search(filter).then(function(){
               var normed = queriesSvc.normalizeDocExplains($scope.query, $scope.docFinder.searcher, fieldSpec);
               $scope.docFinder.docs = normed;
 
               $scope.defaultList = true;
-          });
+            });
+          }
+          else {
+            $scope.docFinder.searcher.explainOther(
+              filter, fieldSpec)
+              .then(function() {
+                let normed = queriesSvc.normalizeDocExplains($scope.query, $scope.docFinder.searcher, fieldSpec);
+                $scope.docFinder.docs = normed;
+
+                $scope.defaultList = true;
+            });
+          }
 
         } else if ($scope.docFinder.searcher.type === 'solr') {
           $scope.docFinder.searcher.explainOther(

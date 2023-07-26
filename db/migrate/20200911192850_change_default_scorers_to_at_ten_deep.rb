@@ -1,4 +1,4 @@
-class ChangeDefaultScorersToAtTenDeep < ActiveRecord::Migration
+class ChangeDefaultScorersToAtTenDeep < ActiveRecord::Migration[4.2]
   def change
 
     scorers_to_update = ['P@5', 'AP@5','nDCG@5', 'DCG@5', 'CG@5']
