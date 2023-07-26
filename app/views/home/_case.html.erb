@@ -1,0 +1,21 @@
+<tr>
+  <th scope="row"><%= kase.case_name %></th>
+  <td><%= kase.queries.count %>/td>
+  <td>
+    <% unless kase.last_score.blank? %>
+      <%= kase.last_score.score %>
+    <% end %>
+  </td>
+  <td>
+    <% unless kase.last_score.blank? %>
+      <%= kase.last_score.created_at%>
+    <% end %>
+  </td>
+  <td>
+    <% unless kase.last_score.blank? %>
+      <%= kase.last_score.user.name%>
+    <% end %>
+  </td>
+ 
+  <td><%= link_to 'View', case_core_path(kase), class: 'btn btn-sm btn-primary', role: 'button' %></td>
+</tr>

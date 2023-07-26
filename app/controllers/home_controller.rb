@@ -2,5 +2,6 @@
 
 class HomeController < ApplicationController
   def show
+    @cases = @current_user.cases
   end
 end

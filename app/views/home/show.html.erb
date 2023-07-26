@@ -186,3 +186,31 @@ Inspired by https://dev.to/themesberg/tutorial-how-to-build-a-simple-admin-dashb
         showArea: true
     });
 </script>
+
+
+<hr/>
+
+<div class="card">
+    <h5 class="card-header">Cases Summary</h5>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                  <tr>
+                    <th scope="col">Case Title</th>
+                    <th scope="col"># of Queries</th>
+                    <th scope="col">Last Score</th>
+                    <th scope="col">Last Run On</th>
+                    <th scope="col">Last Run By</th>
+                    <th scope="col"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <%= render partial: "case", collection: @cases, as: :kase %>
+                </tbody>
+              </table>
+        </div>
+        <%= link_to 'View all', cases_path(), class: 'btn btn-block btn-light', role: 'button' %>
+        
+    </div>
+</div>
