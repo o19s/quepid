@@ -38,7 +38,7 @@ class HomeController < ApplicationController
     end
 
     # map to objects
-    most_recent_cases = Case.includes(:tries).where(id: [ case_ids ])
+    most_recent_cases = Case.includes([:scorer,:scores]).where(id: [ case_ids ])
     most_recent_cases = most_recent_cases.select { |kase| !kase.last_score.blank? }
     most_recent_cases = most_recent_cases.sort_by { |x| x.case_name }
     most_recent_cases
