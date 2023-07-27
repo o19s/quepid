@@ -1,13 +1,14 @@
 <div class="col-12 col-md-6 mb-4 mb-lg-0 col-lg-3">
   <div class="card">
     <h5 class="card-header">
-      <%= link_to kase.case_name, case_core_path(kase) %>
+      <%= link_to case_title(kase), case_core_path(kase) %>
     </h5>
     
     <div class="card-body">
       <h5 class="card-title"><%= kase.last_score.score %></h5>
       <p class="card-text"><%= kase.created_at.to_date.to_fs(:short) %> - <%= kase.last_score.updated_at.to_date.to_fs(:short) %>, <%= kase.scorer.name %>
       </p>
+      <!-- Look at https://github.com/ankane/prophet-ruby -->
       <% if [true, false].sample %>
         <p class="card-text text-success">18.2% increase since last month</p>
       <% else %>

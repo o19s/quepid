@@ -6,6 +6,20 @@ class HomeController < ApplicationController
 
     # copied from dropdown_contoller.rb
     @most_recent_cases = lookup_most_recent_cases
+    
+    @books_missing_judgements = []
+    @lookup_for_books = {}
+    @current_user.books_involved_with.order(:updated_at).each do |book|
+      judged_by_current_user = book.judgements.where(user: @current_user).count
+      if judged_by_current_user < book.query_doc_pairs.count 
+        @books_missing_judgements << book
+        @lookup_for_books[book] = book.query_doc_pairs.count - judged_by_current_user
+      
+      end
+      if @books_missing_judgements.count == 4
+        break
+      end
+    end
   end
 
   private

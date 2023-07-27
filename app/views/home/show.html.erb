@@ -124,10 +124,14 @@ https://getbootstrap.com/docs/5.2/examples/navbars-offcanvas/# for example of of
   <%= render partial: "case_summary", collection: @most_recent_cases, as: :kase %>
 </div>
 
+<div class="row my-4">
+  <%= render partial: "book_summary", collection: @books_missing_judgements, as: :book %>
+</div>
+
 <div class="row">
     <div class="col-12 col-xl-8 mb-4 mb-lg-0">
       <div class="card">
-          <h5 class="card-header">Cases Summary</h5>
+          <h5 class="card-header">Cases</h5>
           <div class="card-body">
               <div class="table-responsive">
                   <table class="table">
