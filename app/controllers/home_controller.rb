@@ -40,7 +40,8 @@ class HomeController < ApplicationController
 
     # map to objects
     most_recent_cases = Case.includes([ :scorer, :scores ]).where(id: [ case_ids ])
-    most_recent_cases = most_recent_cases.reject { |kase| kase.last_score.present? }
+    most_recent_cases = most_recent_cases.select { |kase| kase.last_score.present? }
+    # rubocop:enable
     most_recent_cases = most_recent_cases.sort_by(&:case_name)
     most_recent_cases
   end
