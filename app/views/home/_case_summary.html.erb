@@ -1,14 +1,40 @@
 <div class="col-12 col-md-6 mb-4 mb-lg-0 col-lg-3">
-    <div class="card">
-      <h5 class="card-header"><%= kase.case_name %></h5>
-        <div class="card-body">
-          <h5 class="card-title"><%= kase.last_score.score %></h5>
-          <p class="card-text"><%= kase.created_at.to_date.to_fs(:short) %> - <%= kase.updated_at.to_date.to_fs(:short) %>, <%= kase.scorer.name %></p>
-          <% if [true, false].sample %>
-          <p class="card-text text-success">18.2% increase since last month</p>
-          <% else %>
-          <p class="card-text text-danger">6.2% decreate since last week</p>
-          <% end %>
-        </div>
-      </div>
+  <div class="card">
+    <h5 class="card-header">
+      <%= link_to kase.case_name, case_core_path(kase) %>
+    </h5>
+    
+    <div class="card-body">
+      <h5 class="card-title"><%= kase.last_score.score %></h5>
+      <p class="card-text"><%= kase.created_at.to_date.to_fs(:short) %> - <%= kase.last_score.updated_at.to_date.to_fs(:short) %>, <%= kase.scorer.name %>
+      </p>
+      <% if [true, false].sample %>
+        <p class="card-text text-success">18.2% increase since last month</p>
+      <% else %>
+        <p class="card-text text-danger">6.2% decrease since last week</p>
+      <% end %>
+      
+      <% 
+        # look at https://github.com/ankane/prophet-ruby to remove outliers.
+        data = kase.scores.collect{ |score| {x: score.created_at.to_date.to_fs(:db), y: score.score } }.uniq
+        # warning! blunt filter below!
+        data = data.uniq { |h| h[:x] }
+      %>
+      <!-- Data for Chart 
+      <%= data %>
+        -->
+      
+
+      
+      <%= Vega.lite
+        .data(data)
+        .mark(type: "line", tooltip: true, interpolate: "cardinal", point: {size: 60})
+        .encoding(
+          x: {field: "x", type: "temporal", scale: {type: "utc"}, axis: {format: "%b %e"}},
+          y: {field: "y", type: "quantitative"}
+        )
+        .height(50)
+        .config(axis: {title: nil, labelFontSize: 12}) %>            
+    </div>
+  </div>
 </div>
