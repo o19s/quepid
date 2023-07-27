@@ -10,6 +10,7 @@ class HomeController < ApplicationController
 
   private
 
+  # rubocop:disable Metrics/MethodLength
   def lookup_most_recent_cases
     # Using joins/includes will not return the proper list in the
     # correct order because rails refuses to include the
@@ -38,9 +39,10 @@ class HomeController < ApplicationController
     end
 
     # map to objects
-    most_recent_cases = Case.includes([:scorer,:scores]).where(id: [ case_ids ])
-    most_recent_cases = most_recent_cases.select { |kase| !kase.last_score.blank? }
-    most_recent_cases = most_recent_cases.sort_by { |x| x.case_name }
+    most_recent_cases = Case.includes([ :scorer, :scores ]).where(id: [ case_ids ])
+    most_recent_cases = most_recent_cases.reject { |kase| kase.last_score.present? }
+    most_recent_cases = most_recent_cases.sort_by(&:case_name)
     most_recent_cases
   end
+  # rubocop:enable Metrics/MethodLength
 end
