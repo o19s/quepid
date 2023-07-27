@@ -1,13 +1,122 @@
 <!--
 Inspired by https://dev.to/themesberg/tutorial-how-to-build-a-simple-admin-dashboard-interface-using-bootstrap-5-2734
 -->
+
 <!--
-<h1 class="h2">Dashboard</h1>
+https://getbootstrap.com/docs/5.2/examples/navbars-offcanvas/# for example of offcanvas nav
 -->
 <div class="text-center">
     <p/>
     <h5 class="card-title"><%= Time.now.strftime("%A, %B %d") %></h5>
     <h2 class="card-title"><%= greeting() %>, <%= @current_user.name.titleize %></h2>
+</div>
+
+
+
+<div class="offcanvas offcanvas-start" tabindex="-1" id="offcanvasExample" aria-labelledby="offcanvasExampleLabel">
+  <div class="offcanvas-header">
+    <h5 class="offcanvas-title" id="offcanvasExampleLabel">Navigation</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+  </div>
+  <div class="offcanvas-body">
+  
+    <div class="position-sticky pt-md-5">
+      <ul class="nav flex-column">
+        <li class="nav-item">
+          <a class="nav-link active" aria-current="page" href="#">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-home"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+            <span class="ml-2">Dashboard</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-file"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><polyline points="13 2 13 9 20 9"></polyline></svg>
+            <span class="ml-2">Orders</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-shopping-cart"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+            <span class="ml-2">Products</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-users"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+            <span class="ml-2">Customers</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-bar-chart-2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+            <span class="ml-2">Reports</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-layers"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
+            <span class="ml-2">Integrations</span>
+          </a>
+        </li>
+      </ul>
+    </div>
+  
+    
+    <div class="position-sticky pt-3 sidebar-sticky">
+      <ul class="nav flex-column">
+  
+  
+        <li class="nav-item">
+          <% if current_page?(books_path) %>
+            <span class="nav-link active">
+              <i class="bi bi-book-half feather" aria-hidden="true" title="Books" alt="Books" class="align-text-bottom"></i>
+              Books
+            </span>
+          <% else %>
+            <%= link_to books_path, class: 'nav-link' do %>
+              <i class="bi bi-book-half feather" aria-hidden="true" title="Books" alt="Books" class="align-text-bottom"></i>
+              Books
+            <% end %>
+          <% end %>
+        </li>
+  
+      </ul>
+  
+      <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-body-secondary text-uppercase">
+        <span>Saved reports</span>
+        <a class="link-secondary" href="#" aria-label="Add a new report">
+          <span data-feather="plus-circle" class="align-text-bottom"></span>
+        </a>
+      </h6>
+      <ul class="nav flex-column mb-2">
+        <li class="nav-item">
+          <a class="nav-link" href="#">
+            <span data-feather="file-text" class="align-text-bottom"></span>
+            Current month
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#">
+            <span data-feather="file-text" class="align-text-bottom"></span>
+            Last quarter
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#">
+            <span data-feather="file-text" class="align-text-bottom"></span>
+            Social engagement
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#">
+            <span data-feather="file-text" class="align-text-bottom"></span>
+            Year-end sale
+          </a>
+        </li>
+      </ul>
+    </div>
+    
+  </div>
 </div>
 
 
@@ -17,76 +126,30 @@ Inspired by https://dev.to/themesberg/tutorial-how-to-build-a-simple-admin-dashb
 
 <div class="row">
     <div class="col-12 col-xl-8 mb-4 mb-lg-0">
-        <div class="card">
-            <h5 class="card-header">Latest transactions</h5>
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table">
-                        <thead>
-                          <tr>
-                            <th scope="col">Order</th>
-                            <th scope="col">Product</th>
-                            <th scope="col">Customer</th>
-                            <th scope="col">Total</th>
-                            <th scope="col">Date</th>
-                            <th scope="col"></th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          <tr>
-                            <th scope="row">17371705</th>
-                            <td>Volt Premium Bootstrap 5 Dashboard</td>
-                            <td>johndoe@gmail.com</td>
-                            <td>€61.11</td>
-                            <td>Aug 31 2020</td>
-                            <td><a href="#" class="btn btn-sm btn-primary">View</a></td>
-                          </tr>
-                          <tr>
-                            <th scope="row">17370540</th>
-                            <td>Pixel Pro Premium Bootstrap UI Kit</td>
-                            <td>jacob.monroe@company.com</td>
-                            <td>$153.11</td>
-                            <td>Aug 28 2020</td>
-                            <td><a href="#" class="btn btn-sm btn-primary">View</a></td>
-                          </tr>
-                          <tr>
-                            <th scope="row">17371705</th>
-                            <td>Volt Premium Bootstrap 5 Dashboard</td>
-                            <td>johndoe@gmail.com</td>
-                            <td>€61.11</td>
-                            <td>Aug 31 2020</td>
-                            <td><a href="#" class="btn btn-sm btn-primary">View</a></td>
-                          </tr>
-                          <tr>
-                            <th scope="row">17370540</th>
-                            <td>Pixel Pro Premium Bootstrap UI Kit</td>
-                            <td>jacob.monroe@company.com</td>
-                            <td>$153.11</td>
-                            <td>Aug 28 2020</td>
-                            <td><a href="#" class="btn btn-sm btn-primary">View</a></td>
-                          </tr>
-                          <tr>
-                            <th scope="row">17371705</th>
-                            <td>Volt Premium Bootstrap 5 Dashboard</td>
-                            <td>johndoe@gmail.com</td>
-                            <td>€61.11</td>
-                            <td>Aug 31 2020</td>
-                            <td><a href="#" class="btn btn-sm btn-primary">View</a></td>
-                          </tr>
-                          <tr>
-                            <th scope="row">17370540</th>
-                            <td>Pixel Pro Premium Bootstrap UI Kit</td>
-                            <td>jacob.monroe@company.com</td>
-                            <td>$153.11</td>
-                            <td>Aug 28 2020</td>
-                            <td><a href="#" class="btn btn-sm btn-primary">View</a></td>
-                          </tr>
-                        </tbody>
-                      </table>
-                </div>
-                <a href="#" class="btn btn-block btn-light">View all</a>
-            </div>
-        </div>
+      <div class="card">
+          <h5 class="card-header">Cases Summary</h5>
+          <div class="card-body">
+              <div class="table-responsive">
+                  <table class="table">
+                      <thead>
+                        <tr>
+                          <th scope="col">Case Title</th>
+                          <th scope="col"># of Queries</th>
+                          <th scope="col">Last Score</th>
+                          <th scope="col">Last Run On</th>
+                          <th scope="col">Last Run By</th>
+                          <th scope="col"></th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <%= render partial: "case", collection: @cases, as: :kase %>
+                      </tbody>
+                    </table>
+              </div>
+              <%= link_to 'View all', cases_path(), class: 'btn btn-block btn-light', role: 'button' %>
+              
+          </div>
+      </div>      
     </div>
     <div class="col-12 col-xl-4">
         <div class="card">
@@ -148,34 +211,6 @@ Inspired by https://dev.to/themesberg/tutorial-how-to-build-a-simple-admin-dashb
         showArea: true
     });
 </script>
-
-
-<hr/>
-
-<div class="card">
-    <h5 class="card-header">Cases Summary</h5>
-    <div class="card-body">
-        <div class="table-responsive">
-            <table class="table">
-                <thead>
-                  <tr>
-                    <th scope="col">Case Title</th>
-                    <th scope="col"># of Queries</th>
-                    <th scope="col">Last Score</th>
-                    <th scope="col">Last Run On</th>
-                    <th scope="col">Last Run By</th>
-                    <th scope="col"></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <%= render partial: "case", collection: @cases, as: :kase %>
-                </tbody>
-              </table>
-        </div>
-        <%= link_to 'View all', cases_path(), class: 'btn btn-block btn-light', role: 'button' %>
-        
-    </div>
-</div>
 
 <hr/>
 <div id="vis"></div>
