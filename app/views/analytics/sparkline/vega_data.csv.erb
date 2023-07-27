@@ -1,0 +1,2 @@
+"date","state","positive","positiveIncrease"
+<% @scores.each do |score| %><%= ::CSV.generate_line([score.created_at.to_date.to_fs(:number), score.case.case_name, 100, (score.score * 100).to_i]).html_safe %><% end %>

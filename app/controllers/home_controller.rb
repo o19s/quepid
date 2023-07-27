@@ -2,15 +2,14 @@
 
 class HomeController < ApplicationController
   def show
-    @cases = @current_user.cases
-    
+    @cases = @current_user.cases.not_archived
+
     # copied from dropdown_contoller.rb
     @most_recent_cases = lookup_most_recent_cases
   end
-  
-  
+
   private
-  
+
   def lookup_most_recent_cases
     # Using joins/includes will not return the proper list in the
     # correct order because rails refuses to include the
@@ -40,7 +39,8 @@ class HomeController < ApplicationController
 
     # map to objects
     most_recent_cases = Case.includes(:tries).where(id: [ case_ids ])
+    most_recent_cases = most_recent_cases.select { |kase| !kase.last_score.blank? }
     most_recent_cases = most_recent_cases.sort_by { |x| case_ids.index x.id }
-    return most_recent_cases
+    most_recent_cases
   end
 end
