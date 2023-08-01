@@ -1,4 +1,4 @@
-FROM node:19-bullseye AS build-dep
+FROM node:20-bullseye AS build-dep
 WORKDIR /srv/app
 COPY package.json yarn.lock ./
 RUN yarn install --production=true
