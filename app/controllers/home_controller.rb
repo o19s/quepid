@@ -7,16 +7,16 @@ class HomeController < ApplicationController
     # copied from dropdown_contoller.rb
     @most_recent_cases = lookup_most_recent_cases
     
-    @books_missing_judgements = []
+    @most_recent_books = []
     @lookup_for_books = {}
     @current_user.books_involved_with.order(:updated_at).each do |book|
+      @most_recent_books << book
       judged_by_current_user = book.judgements.where(user: @current_user).count
-      if judged_by_current_user < book.query_doc_pairs.count 
-        @books_missing_judgements << book
+      if judged_by_current_user > 0 && judged_by_current_user < book.query_doc_pairs.count         
         @lookup_for_books[book] = book.query_doc_pairs.count - judged_by_current_user
       
       end
-      if @books_missing_judgements.count == 4
+      if @most_recent_books.count == 4
         break
       end
     end
