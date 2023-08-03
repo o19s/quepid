@@ -331,6 +331,12 @@ tens_of_queries_case.queries.each do |query|
     query_doc_pair.judgements << Judgement.new(rating: rating.rating, user: osc_member_user)
     query_doc_pair.save
   end
+  
+  book.reload
+  book.query_doc_pairs.shuffle[0..2].each do |query_doc_pair|
+    query_doc_pair.judgements << Judgement.new(rating: query_doc_pair.judgements.first.rating, user: realistic_activity_user)
+    query_doc_pair.save
+  end
 
 end
 
