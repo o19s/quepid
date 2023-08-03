@@ -93,3 +93,5 @@ group :test do
   gem 'selenium-webdriver'
   gem 'webdrivers'
 end
+
+gem 'prophet-rb', '~> 0.4.2'

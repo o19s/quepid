@@ -44,9 +44,9 @@ class Score < ApplicationRecord
   # Scores
   scope :last_one, -> {
     where(annotation_id: nil)
-      .order(updated_at:  :desc)
-      #.order(created_at:  :desc)
-      #.order(id:          :desc)
+      .order(updated_at: :desc)
+      # .order(created_at:  :desc)
+      # .order(id:          :desc)
       .limit(1)
       .first
   }

@@ -281,12 +281,24 @@ print_step "Seeding tries................"
 
   new_try = tens_of_queries_case.tries.build try_params
 
+
   try_number = tens_of_queries_case.last_try_number + 1
 
   new_try.try_number   = try_number
   tens_of_queries_case.last_try_number = try_number
 
   new_try.save
+  
+  score_specifics = {
+    user: realistic_activity_user,
+    try: new_try, 
+    score: (0.01 * counter),
+    created_at: DateTime.now - (30 - counter).days,
+    updated_at: DateTime.now - (30 - counter).days
+  }
+  new_case_score = tens_of_queries_case.scores.build (score_specifics)
+  new_case_score.save
+  
   tens_of_queries_case.save
 
   # seventy percent of the time lets grab a new origin for the try in the tree
