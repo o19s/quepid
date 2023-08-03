@@ -15,7 +15,7 @@ module Analytics
     end
 
     def vega_data
-      @scores = Score.where(case_id: @current_user.cases.not_archived.select(:id)).includes([:case])
+      @scores = Score.where(case_id: @current_user.cases.not_archived.select(:id)).includes([ :case ])
     end
   end
 end
