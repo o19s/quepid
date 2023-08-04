@@ -1,15 +1,14 @@
 # frozen_string_literal: true
 
 module ApplicationHelper
-  
-  def make_active?(options)
-    if (options.key?(:path))
+  def make_active? options
+    if options.key?(:path)
       request.fullpath.include?(options[:path])
-    elsif (options.key?(:controller))
-      controller_name == options[:controller] 
+    elsif options.key?(:controller)
+      controller_name == options[:controller]
     end
   end
-    
+
   def bootstrap_class_for flash_type
     {
       success: 'alert-success',
