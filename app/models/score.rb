@@ -50,4 +50,6 @@ class Score < ApplicationRecord
       .limit(1)
       .first
   }
+
+  scope :scored, -> { where('score > ?', 0) }
 end

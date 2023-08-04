@@ -1,8 +1,9 @@
 # frozen_string_literal: true
 
 class HomeController < ApplicationController
+  # rubocop:disable Metrics/AbcSize
   def show
-    @cases = @current_user.cases.not_archived
+    @cases = @current_user.cases.not_archived.includes([ :scores ])
 
     # copied from dropdown_contoller.rb
     @most_recent_cases = lookup_most_recent_cases
@@ -19,9 +20,11 @@ class HomeController < ApplicationController
       break if 4 == @most_recent_books.count
     end
 
-    @grouped_cases = @cases.group_by { |kase| kase.case_name.split(':').first }
+    candidate_cases = @cases.select { |kase| kase.scores.scored.count.positive? }
+    @grouped_cases = candidate_cases.group_by { |kase| kase.case_name.split(':').first }
     @grouped_cases = @grouped_cases.select { |_key, value| value.count > 1 }
   end
+  # rubocop:enable Metrics/AbcSize
 
   private
 
