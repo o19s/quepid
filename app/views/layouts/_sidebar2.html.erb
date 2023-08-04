@@ -118,8 +118,9 @@
           ></i>
         <% end %>        
       </li>
+ 
       <li>
-        <%= link_to cases_path, class: "nav-link #{make_active?({path: 'case'}) ? 'active' : ''} py-3 border-bottom rounded-0", 'data-bs-toggle':'tooltip', 'data-bs-placement':'right', 'aria-label':'Notebooks', 'data-bs-original-title':'Notebooks' do %>
+        <%= link_to '/notebooks/lab/index.html', target: '_blank', class: "nav-link py-3 border-bottom rounded-0", 'data-bs-toggle':'tooltip', 'data-bs-placement':'right', 'aria-label':'Notebooks', 'data-bs-original-title':'Notebooks' do %>
           <i
             class="bi bi-journal-medical"
             aria-hidden="true"
@@ -128,7 +129,7 @@
             style="font-size: 1.5rem; color: <%= make_active?({path: 'case'}) ? 'white' : 'cornflowerblue' %>;"
           ></i>
         <% end %>        
-      </li>      
+      </li> 
     </ul>
     <div class="dropdown border-top">
       <a href="#" class="d-flex align-items-center justify-content-center p-3 link-body-emphasis text-decoration-none dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
