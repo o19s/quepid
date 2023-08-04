@@ -1,0 +1,19 @@
+<div class="card">
+  <h5 class="card-header">Results for <%=grouped_cases_name %> Cases</h5>
+  <div class="card-body">
+    
+    <% grouped_cases_data =  grouped_cases.each.collect{|kase| kase.scores.collect{ |score| {x: score.created_at.to_date.to_fs(:db), y: score.score, z: score.case.case_name } }}.flatten.uniq
+    %>
+    
+  <%= Vega.lite
+    .data(grouped_cases_data)
+    .mark(type: "line", point: {size: 60}, tooltip: true, interpolate: "cardinal")
+    .encoding(
+      x: {field: "x", type: "temporal", scale: {type: "utc"}, axis: {format: "%b %e"}},
+      y: {field: "y", type: "quantitative"},
+      color: {field: "z", axis: {title: nil}}
+    )
+    .config(axis: {title: nil, labelFontSize: 12}) %>
+  
+  </div>
+</div>

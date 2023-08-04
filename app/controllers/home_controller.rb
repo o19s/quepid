@@ -18,6 +18,9 @@ class HomeController < ApplicationController
       end
       break if 4 == @most_recent_books.count
     end
+
+    @grouped_cases = @cases.group_by { |kase| kase.case_name.split(':').first }
+    @grouped_cases = @grouped_cases.select { |_key, value| value.count > 1 }
   end
 
   private

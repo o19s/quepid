@@ -156,65 +156,13 @@ https://getbootstrap.com/docs/5.2/examples/navbars-offcanvas/# for example of of
       </div>      
     </div>
     <div class="col-12 col-xl-4">
-        <div class="card">
-            <h5 class="card-header">Traffic last 6 months</h5>
-            <div class="card-body">
-                <div id="traffic-chart"></div>
-            </div>
-        </div>
-        
-        <div class="card" styled="width: 18rem;">
-          <h5 class="card-header">Recent Activity</h5>
-          <div class="card-body">
-          </div>
-          <ul class="list-group list-group-flush">
-            <li class="list-group-item"><span class="glyphicon glyphicon-edit"></span>
-              <small class="text-muted">
-              	<time datetime="2023-06-05T13:46:42Z" data-local="time-ago">June  5, 2023  1:46pm</time>
-              	
-              </small>
-              <br/>
-              <strong>
-              	Guest
-              </strong>
-                added the report <a href="/raw_data/13262">Resource Utilization by Organization for TM v2.xml</a>.
-</li>
-            <li class="list-group-item">
-              <span class="glyphicon glyphicon-edit"></span>
-                <small class="text-muted">
-                	<time datetime="2023-06-05T13:46:42Z" data-local="time-ago">June  5, 2023  1:46pm</time>
-                	<img class="avatar" width="20" height="20" alt="OSCar" src="https://logo.clearbit.com/opensourceconnections.com" />
-                </small>
-                <br/>
-                <strong>
-                	OSCar
-                </strong>
-                  received a email2webhook call for <a href="/service_calls/14103">Resource Utilization by Organization for TM v2.xml</a>.
-            </li>
-            <li class="list-group-item">A third item</li>
-          </ul>
-          <div class="card-body">
-            <a href="#" class="card-link">Card link</a>
-            <a href="#" class="card-link">Another link</a>
-          </div>
-        </div>
+      
+      <% @grouped_cases.keys[0..2].each do |key| %>
+      <%= render partial: "grouped_cases", locals: {grouped_cases_name: key, grouped_cases: @grouped_cases[key]}%>
+      <% end %>
+                    
     </div>
 </div>
-            
-<script src="https://cdn.jsdelivr.net/chartist.js/latest/chartist.min.js"></script>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/chartist.js/latest/chartist.min.css">
-
-<script>
-    new Chartist.Line('#traffic-chart', {
-        labels: ['January', 'Februrary', 'March', 'April', 'May', 'June'],
-        series: [
-            [23000, 25000, 19000, 34000, 56000, 64000]
-        ]
-        }, {
-        low: 0,
-        showArea: true
-    });
-</script>
 
 <hr/>
 <div id="vis"></div>
