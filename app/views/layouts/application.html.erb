@@ -64,17 +64,17 @@
 
 <body>
 
-<%= render 'layouts/header2' %>
+<%= render 'layouts/header' %>
 
 <div class="container-fluid">
   <div class="row">
     
     <% if @current_user %>
-      <%= render 'layouts/sidebar' %>
+      <%= render 'layouts/sidebar2' %>
     <% end %>
     
     <!-- Begin page content -->
-    <main class="col-md-10 ms-sm-auto col-lg-<%= @current_user ? '10' : '12' %> px-md-5">
+    <main class="col-md-10 ms-sm-auto col-lg-<%= @current_user ? '11' : '12' %> px-md-5">
       <!--
       <nav aria-label="breadcrumb">
           <ol class="breadcrumb">
