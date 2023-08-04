@@ -70,100 +70,75 @@
 <div class="sidebar d-flex flex-column flex-shrink-0 bg-body-tertiary" style="width: 3.5rem;">
     <ul class="nav nav-pills nav-flush flex-column mb-auto text-center">
       <li class="nav-item">
-        <!-- eliminating this nav-item causes layout issues, so making svg by 0x0 instead :-( -->
         <a href="#" class="nav-link active py-3 border-bottom rounded-0" aria-current="page" data-bs-toggle="tooltip" data-bs-placement="right" aria-label="Home" data-bs-original-title="Home">
-          <svg class="bi pe-none" width="0" height="0" role="img" aria-label="Home"><use xlink:href="#home"></use></svg>
+          <svg class="bi pe-none" width="24" height="24" role="img" aria-label="Home"><use xlink:href="#home"></use></svg>
         </a>
       </li>
-      <li class="nav-item">
-        <a class="nav-link active py-3 border-bottom rounded-0" href="#" data-bs-toggle="tooltip" data-bs-placement="right" aria-label="Dashboard" data-bs-original-title="Dashboard">
+      <li>
+        <%= link_to root_path, class: "nav-link #{make_active?({controller: 'home'}) ? 'active' : ''} py-3 border-bottom rounded-0", 'data-bs-toggle':'tooltip', 'data-bs-placement':'right', 'aria-label':'Dashboard', 'data-bs-original-title':'Dashboard' do %>
           <i
             class="bi bi-speedometer2"
             aria-hidden="true"
             title="Dashboard"
             alt="Dashboard"
-            style="font-size: 1.5rem; color: white;"
+            style="font-size: 1.5rem; color: <%= make_active?({controller: 'home'}) ? 'white' : 'cornflowerblue' %>;"
           ></i>
-        </a>
-      </li> 
+        <% end %>
+      </li>       
       <li>
-        <a class="nav-link py-3 border-bottom rounded-0" href="#" data-bs-toggle="tooltip" data-bs-placement="right" aria-label="Relevancy Cases" data-bs-original-title="Relevancy Cases">
+        <%= link_to books_path, class: "nav-link #{make_active?({path: 'book'}) ? 'active' : ''} py-3 border-bottom rounded-0", 'data-bs-toggle':'tooltip', 'data-bs-placement':'right', 'aria-label':'Judgements', 'data-bs-original-title':'Judgements' do %>
+          <i
+            class="fa fa-book"
+            aria-hidden="true"
+            title="Judgements"
+            alt="Judgements"
+            style="font-size: 1.5rem; color: <%= make_active?({path: 'book'}) ? 'white' : 'cornflowerblue' %>;"
+          ></i>
+        <% end %>
+      </li>   
+      <li>
+        <%= link_to cases_path, class: "nav-link #{make_active?({path: 'case'}) ? 'active' : ''} py-3 border-bottom rounded-0", 'data-bs-toggle':'tooltip', 'data-bs-placement':'right', 'aria-label':'Relevancy Cases', 'data-bs-original-title':'Relevancy Cases' do %>
           <i
             class="fa fa-briefcase"
             aria-hidden="true"
             title="Relevancy Cases"
             alt="Relevancy Cases"
-            style="font-size: 1.5rem; color: cornflowerblue;"
+            style="font-size: 1.5rem; color: <%= make_active?({path: 'case'}) ? 'white' : 'cornflowerblue' %>;"
           ></i>
-        </a>
-      </li>         
+        <% end %>        
+      </li> 
       <li>
-        <a class="nav-link py-3 border-bottom rounded-0" href="#" data-bs-toggle="tooltip" data-bs-placement="right" aria-label="Judgements" data-bs-original-title="Judgements">
-          <i
-            class="bi bi-book-half"
-            aria-hidden="true"
-            title="Judgements"
-            alt="Judgements"
-            style="font-size: 1.5rem; color: cornflowerblue;"
-          ></i>
-        </a>
-      </li>    
-      <li>
-        <a class="nav-link py-3 border-bottom rounded-0" href="#" data-bs-toggle="tooltip" data-bs-placement="right" aria-label="Teams" data-bs-original-title="Teams">
-          <i
-            class="fa fa-people-group"
-            aria-hidden="true"
-            title="Teams"
-            alt="Teams"
-            style="font-size: 1.5rem; color: cornflowerblue;"
-          ></i>
-        </a>
-      </li>       
-      
-      <li>
-        <a class="nav-link py-3 border-bottom rounded-0" href="#" data-bs-toggle="tooltip" data-bs-placement="right" aria-label="Scorers" data-bs-original-title="Scorers">
+        <%= link_to scorers_path, class: "nav-link #{make_active?({path: 'case'}) ? 'active' : ''} py-3 border-bottom rounded-0", 'data-bs-toggle':'tooltip', 'data-bs-placement':'right', 'aria-label':'Scorers', 'data-bs-original-title':'Scorers' do %>
           <i
             class="bi bi-list-task"
             aria-hidden="true"
             title="Scorers"
             alt="Scorers"
-            style="font-size: 1.5rem; color: cornflowerblue;"
+            style="font-size: 1.5rem; color: <%= make_active?({path: 'case'}) ? 'white' : 'cornflowerblue' %>;"
           ></i>
-        </a>
-      </li> 
-      <li>
-        <a href="#" class="nav-link py-3 border-bottom rounded-0" data-bs-toggle="tooltip" data-bs-placement="right" aria-label="Dashboard" data-bs-original-title="Dashboard">
-          <svg class="bi pe-none" width="24" height="24" role="img" aria-label="Dashboard">
-            <use xlink:href="#speedometer2"></use>
-          </svg>
-        </a>
+        <% end %>        
       </li>
       <li>
-        <a href="#" class="nav-link py-3 border-bottom rounded-0" data-bs-toggle="tooltip" data-bs-placement="right" aria-label="Orders" data-bs-original-title="Orders">
-          <svg class="bi pe-none" width="24" height="24" role="img" aria-label="Orders"><use xlink:href="#table"></use></svg>
-        </a>
-      </li>
-      <li>
-        <a href="#" class="nav-link py-3 border-bottom rounded-0" data-bs-toggle="tooltip" data-bs-placement="right" aria-label="Products" data-bs-original-title="Products">
-          <svg class="bi pe-none" width="24" height="24" role="img" aria-label="Products"><use xlink:href="#grid"></use></svg>
-        </a>
-      </li>
-      <li>
-        <a href="#" class="nav-link py-3 border-bottom rounded-0" data-bs-toggle="tooltip" data-bs-placement="right" aria-label="Customers" data-bs-original-title="Customers">
-          <svg class="bi pe-none" width="24" height="24" role="img" aria-label="Customers"><use xlink:href="#people-circle"></use></svg>
-        </a>
-      </li>
+        <%= link_to cases_path, class: "nav-link #{make_active?({path: 'case'}) ? 'active' : ''} py-3 border-bottom rounded-0", 'data-bs-toggle':'tooltip', 'data-bs-placement':'right', 'aria-label':'Notebooks', 'data-bs-original-title':'Notebooks' do %>
+          <i
+            class="bi bi-journal-medical"
+            aria-hidden="true"
+            title="Notebooks"
+            alt="Notebooks"
+            style="font-size: 1.5rem; color: <%= make_active?({path: 'case'}) ? 'white' : 'cornflowerblue' %>;"
+          ></i>
+        <% end %>        
+      </li>      
     </ul>
     <div class="dropdown border-top">
       <a href="#" class="d-flex align-items-center justify-content-center p-3 link-body-emphasis text-decoration-none dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
         <%= image_tag current_user.avatar_url, size: '24x24', class: 'rounded-circle' %>
       </a>
       <ul class="dropdown-menu text-small shadow">
-        <li><a class="dropdown-item" href="#">New project...</a></li>
-        <li><a class="dropdown-item" href="#">Settings</a></li>
-        <li><a class="dropdown-item" href="#">Profile</a></li>
+        <li><a class="dropdown-item" href="#">New case...</a></li>
+        <li><%= link_to "Profile", profile_path, class:'dropdown-item' %></li>
         <li><hr class="dropdown-divider"></li>
-        <li><a class="dropdown-item" href="#">Sign out</a></li>
+        <li><%= link_to "Log out", logout_path, class:'dropdown-item' %></li>
       </ul>
     </div>
   </div>
