@@ -4,13 +4,13 @@ angular.module('QuepidApp')
   // there's a lot of dependencies here, but this guy
   // is responsible for bootstrapping everyone so...
   .controller('MainCtrl', [
-    '$scope', '$routeParams', '$location', '$rootScope', '$log',
+    '$scope', '$routeParams', '$rootScope', '$log',
     'flash',
     'caseSvc', 'settingsSvc', 'querySnapshotSvc', 'caseTryNavSvc',
     'queryViewSvc', 'queriesSvc', 'docCacheSvc', 'diffResultsSvc', 'scorerSvc',
     'paneSvc',
     function (
-      $scope, $routeParams, $location, $rootScope, $log,
+      $scope, $routeParams, $rootScope, $log,
       flash,
       caseSvc, settingsSvc, querySnapshotSvc, caseTryNavSvc,
       queryViewSvc, queriesSvc, docCacheSvc, diffResultsSvc, scorerSvc,
