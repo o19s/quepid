@@ -6,9 +6,12 @@ module HomeHelper
       'Good Day',
       'Hello',
       "How's your day",
+      "How's your day going",
       'Good to see you',
+      'So good to see you',
       'Hiya!',
-      'Bonjour'
+      'Bonjour',
+      'Hola!'
     ]
     greetings.sample
   end
