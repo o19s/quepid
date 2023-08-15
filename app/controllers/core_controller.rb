@@ -6,14 +6,13 @@ class CoreController < ApplicationController
   before_action :populate_from_params, except: :new
 
   def index
-
   end
 
   def new
     @case = current_user.cases.build case_name: "Case #{current_user.cases.size}"
     @case.save!
 
-    redirect_to case_core_path(@case,@case.tries.first.try_number, params:{sort: 'default', showWizard: true})
+    redirect_to case_core_path(@case, @case.tries.first.try_number, params: { showWizard: true })
   end
 
   private

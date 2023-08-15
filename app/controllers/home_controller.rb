@@ -3,7 +3,8 @@
 class HomeController < ApplicationController
   # rubocop:disable Metrics/AbcSize
   def show
-    @cases = @current_user.cases.not_archived.includes([ :scores ])
+    # @cases = @current_user.cases.not_archived.includes([ :scores ])
+    @cases = @current_user.cases.not_archived
 
     # copied from dropdown_contoller.rb
     @most_recent_cases = lookup_most_recent_cases
