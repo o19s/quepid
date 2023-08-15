@@ -2,11 +2,19 @@
 
 # This hosts the main Angular 1 application that runs in the client.
 class CoreController < ApplicationController
-  before_action :set_case_or_bootstrap
-  before_action :populate_from_params
+  before_action :set_case_or_bootstrap, except: :new
+  before_action :populate_from_params, except: :new
 
   def index
     # return unless current_user
+  end
+  
+  def new
+    @case = current_user.cases.build case_name: "Case #{current_user.cases.size}"
+    @case.save!
+    # Need to figure out the proper way to create this url
+    #redirect_to case_core_path(@case), params: {sort: :default, showWizard: true}
+    redirect_to "/case/#{@case.id}/try/#{@case.tries.first.try_number}?sort=default&showWizard=true"
   end
 
   private

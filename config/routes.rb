@@ -196,6 +196,7 @@ Rails.application.routes.draw do
 
   # Routes handled by angular
   get '/case/:id(/try/:try_number)'   => 'core#index', as: :case_core
+  get '/cases/new'                    => 'core#new', as: :case_new
   get '/cases'                        => 'core#index'
   get '/case'                         => 'core#index'
   get '/cases/import'                 => 'core#index'
