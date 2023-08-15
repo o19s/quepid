@@ -1,7 +1,7 @@
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
   "data": {
-    "url": "http://localhost:3000/analytics/sparkline/vega_data.csv",
+    "url": "<%=link_to analytics_tries_visualization_vega_data_path, format: csv %> ",
     "name": "dataset",
     "format": {"type": "csv"}
   },
