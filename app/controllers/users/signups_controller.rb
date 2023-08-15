@@ -17,6 +17,7 @@ module Users
           @user.assign_attributes(user_params_to_save)
         else
           @user = User.new user_params_to_save
+        end
       end
 
       respond_to do |format|
