@@ -7,32 +7,16 @@
 // What did I do here, like implement a router on top of my router!?!?
 angular.module('QuepidApp')
   .service('caseTryNavSvc', [
-    '$location', '$timeout', '$window',
-    function caseTryNavSvc($location, $timeout, $window) {
+    '$location', '$timeout',
+    function caseTryNavSvc($location, $timeout) {
       var caseNo = 0;
       var tryNo = 0;
-      var bootstrapPath = null;
 
       var currNavDelay = 1000;
       var isLoading = false;
 
-
-      this.pathRequested = function(caseTryObj) {
-        bootstrapPath = caseTryObj;
-      };
-
       this.isLoading = function() {
         return isLoading;
-      };
-
-
-      this.bootstrap = function() {
-        if (bootstrapPath) {
-          this.navigateTo(bootstrapPath);
-          bootstrapPath = null;
-        } else {
-          $window.location.reload();
-        }
       };
 
       this.navigateTo = function(caseTryObj, navDelay) {

@@ -63,12 +63,6 @@ describe('Service: caseTryNavSvc', function () {
     expect(locationMock.path).toHaveBeenCalledWith('/case/5/try/2/');
   });
 
-  it('bootstraps', function() {
-    caseTryNavSvc.pathRequested({caseNo: 1, tryNo: 2});
-    caseTryNavSvc.bootstrap();
-    expect(locationMock.path).toHaveBeenCalledWith('/case/1/try/2/');
-  });
-
   it('doesnt save nav till confirmed', function() {
     caseTryNavSvc.navigateTo({caseNo: 5, tryNo: 1});
     expect(locationMock.path).toHaveBeenCalledWith('/case/5/try/1/');

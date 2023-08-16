@@ -2,11 +2,17 @@
 
 # This hosts the main Angular 1 application that runs in the client.
 class CoreController < ApplicationController
-  before_action :set_case_or_bootstrap
-  before_action :populate_from_params
+  before_action :set_case_or_bootstrap, except: :new
+  before_action :populate_from_params, except: :new
 
   def index
-    # return unless current_user
+  end
+
+  def new
+    @case = current_user.cases.build case_name: "Case #{current_user.cases.size}"
+    @case.save!
+
+    redirect_to case_core_path(@case, @case.tries.first.try_number, params: { showWizard: true })
   end
 
   private

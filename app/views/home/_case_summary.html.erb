@@ -1,0 +1,78 @@
+<div class="col-12 col-md-6 mb-4 mb-lg-0 col-lg-3">
+  <div class="card">
+    <h5 class="card-header">
+      <%= link_to case_title(kase), case_core_path(kase) %>
+    </h5>
+    
+    <div class="card-body">
+      <h5 class="card-title"><%= kase.last_score.score %> <%= kase.scorer.name %></h5>
+      <p class="card-text"><%= kase.created_at.to_date.to_fs(:short) %> - <%= kase.last_score.updated_at.to_date.to_fs(:short) %>
+      </p>
+      <!-- Look at https://github.com/ankane/prophet-ruby -->
+      <%
+      #df = Rover.read_csv("example.csv")    
+      data = kase.scores.collect{ |score| {ds: score.created_at.to_date.to_fs(:db), y: score.score, datetime: score.created_at.to_date } }.uniq
+      # warning! blunt filter below!
+      data = data.uniq { |h| h[:ds] }
+      data = data.map {|h| h.transform_keys(&:to_s)  }
+      
+      do_changepoints = data.length >= 3 ? true : false # need at least 3...
+      
+      if do_changepoints
+        df = Rover::DataFrame.new(data)
+        m = Prophet.new()
+        m.fit(df)
+      %>
+        <!-- Data for Prophet 
+        <%= data.to_csv %>
+       
+        
+        <%= m.changepoints.last %>
+        <%
+        last_changepoint = DateTime.parse(m.changepoints.last.to_s)
+        initial = data.find{ |h| h['datetime'].all_day.overlaps?(last_changepoint.all_day)}["y"] 
+        final = kase.scores.last_one.score
+        %>
+        data:
+        <%= data.find{ |h| h['datetime'].all_day.overlaps?(last_changepoint.all_day)} %>
+        <%= initial %>
+        <%= final %>
+        
+        <%
+        change = 100 * (final - initial) / initial
+        %>
+        <%= change %>
+        -->
+        <% if change > 0 %>
+          <% if change.positive? %>
+            <p class="card-text text-success"><%= number_to_percentage(change, precision:0) %> increase since <%=time_ago_in_words(last_changepoint) %> ago</p>
+          <% else %>
+            <p class="card-text text-danger"><%= number_to_percentage(change, precision:0) %> decrease since <%=time_ago_in_words(last_changepoint) %> ago</p>
+          <% end %>
+        <% end %>
+      <% end # if do_changepoint %>
+      
+      <% 
+        # look at https://github.com/ankane/prophet-ruby to remove outliers.
+        data = kase.scores.collect{ |score| {x: score.created_at.to_date.to_fs(:db), y: score.score } }.uniq
+        # warning! blunt filter below!
+        data = data.uniq { |h| h[:x] }
+      %>
+      <!-- Data for Chart 
+      <%= data %>
+        -->
+      
+
+      
+      <%= Vega.lite
+        .data(data)
+        .mark(type: "line", tooltip: true, interpolate: "cardinal", point: {size: 60})
+        .encoding(
+          x: {field: "x", type: "temporal", scale: {type: "utc"}, axis: {format: "%b %e"}},
+          y: {field: "y", type: "quantitative"}
+        )
+        .height(60)
+        .config(axis: {title: nil, labelFontSize: 12}) %>            
+    </div>
+  </div>
+</div>

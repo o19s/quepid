@@ -4,6 +4,8 @@ require 'sidekiq/web'
 
 # rubocop:disable Metrics/BlockLength
 Rails.application.routes.draw do
+  # get 'home/show'
+  root 'home#show'
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
   Healthcheck.routes(self)
@@ -58,6 +60,9 @@ Rails.application.routes.draw do
     resources :cases do
       resource :visibility, only: [ :update ], module: :cases
     end
+    get 'sparkline/vega_specification' => 'sparkline#vega_specification',
+        as: :sparkline_vega_specification
+    get 'sparkline/vega_data' => 'sparkline#vega_data', as: :sparkline_vega_data
   end
 
   namespace :admin do
@@ -68,8 +73,6 @@ Rails.application.routes.draw do
     end
     resources :communal_scorers
   end
-
-  root 'core#index'
 
   # preview routes for mailers
   if Rails.env.development?
@@ -193,6 +196,7 @@ Rails.application.routes.draw do
 
   # Routes handled by angular
   get '/case/:id(/try/:try_number)'   => 'core#index', as: :case_core
+  get '/cases/new'                    => 'core#new', as: :case_new
   get '/cases'                        => 'core#index'
   get '/case'                         => 'core#index'
   get '/cases/import'                 => 'core#index'

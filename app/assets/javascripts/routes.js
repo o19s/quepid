@@ -23,10 +23,6 @@ angular.module('QuepidApp')
       $locationProvider.html5Mode(true);
 
       $routeProvider
-        .when('/', {
-          controller: 'BootstrapCtrl',
-          template: ''
-        })
         .when('/case/:caseNo/try/:tryNo', {
           templateUrl: 'views/queriesLayout.html',
           controller: 'MainCtrl',
@@ -36,10 +32,6 @@ angular.module('QuepidApp')
           templateUrl: 'views/queriesLayout.html',
           controller: 'MainCtrl',
           reloadOnSearch: false
-        })
-        .when('/case', {
-          templateUrl: 'views/cases/index.html',
-          controller: 'CasesCtrl'
         })
         .when('/cases', {
           templateUrl: 'views/cases/index.html',
