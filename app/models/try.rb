@@ -4,21 +4,18 @@
 #
 # Table name: tries
 #
-#  id             :integer          not null, primary key
-#  ancestry       :string(3072)
-#  api_method     :string(255)
-#  escape_query   :boolean          default(TRUE)
-#  field_spec     :string(500)
-#  name           :string(50)
-#  custom_headers :string(1000)
-#  number_of_rows :integer          default(10)
-#  query_params   :string(20000)
-#  search_engine  :string(50)       default("solr")
-#  search_url     :string(500)
-#  try_number     :integer
-#  created_at     :datetime         not null
-#  updated_at     :datetime         not null
-#  case_id        :integer
+#  id                 :integer          not null, primary key
+#  ancestry           :string(3072)
+#  escape_query       :boolean          default(TRUE)
+#  field_spec         :string(500)
+#  name               :string(50)
+#  number_of_rows     :integer          default(10)
+#  query_params       :string(20000)
+#  try_number         :integer
+#  created_at         :datetime         not null
+#  updated_at         :datetime         not null
+#  case_id            :integer
+#  search_endpoint_id :bigint
 #
 # Indexes
 #
@@ -40,7 +37,9 @@ class Try < ApplicationRecord
   scope :latest, -> { order(id: :desc).first } # The try created the most recently
 
   # Associations
-  belongs_to  :case, optional: true # shouldn't be optional, but was in rails 4
+  belongs_to :case, optional: true # shouldn't be optional, but was in rails 4
+
+  belongs_to :search_endpoint, optional: true # see above too!#dependent: :nullify
 
   has_many    :curator_variables,
               dependent:  :destroy,
@@ -53,7 +52,9 @@ class Try < ApplicationRecord
   before_create :set_defaults
 
   def args
-    case search_engine
+    return unless search_endpoint
+
+    case search_endpoint.search_engine
     when 'solr'
       solr_args
     when 'es'
@@ -124,9 +125,9 @@ class Try < ApplicationRecord
 
   def index_name_from_search_url
     # NOTE: currently all supported engines have the index name as second to last element, refactor when this changes
-    case search_engine
+    case search_endpoint.search_engine
     when 'solr', 'es', 'os'
-      search_url.split('/')[-2]
+      search_endpoint.endpoint_url.split('/')[-2]
     end
   end
 

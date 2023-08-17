@@ -22,7 +22,19 @@ module Api
         if params[:parent_try_number] # We need special translation from try_number to the try.id
           parameters_to_use[:parent_id] = @case.tries.where(try_number: params[:parent_try_number]).first.id
         end
+
         @try = @case.tries.build parameters_to_use
+
+        search_endpoint_params_to_use = search_endpoint_params
+        puts 'Here are the search_endpoint_params_to_use'
+        # not quite right because it could be via team, needs to be a scope.
+        search_endpoint_params_to_use['owner_id'] = @case.owner_id
+        puts search_endpoint_params_to_use
+
+        unless search_endpoint_params_to_use['search_engine'].nil?
+          search_endpoint = SearchEndpoint.find_or_create_by search_endpoint_params_to_use
+          @try.search_endpoint = search_endpoint
+        end
 
         try_number = @case.last_try_number + 1
 
@@ -76,16 +88,28 @@ module Api
       def try_params
         params.require(:try).permit(
           :escape_query,
-          :api_method,
-          :custom_headers,
+          # :api_method,
+          # :custom_headers,
           :field_spec,
           :name,
           :number_of_rows,
           :query_params,
-          :search_engine,
-          :search_url,
+          # :search_engine,
+          # :search_url,
           :parent_id
         )
+      end
+
+      def search_endpoint_params
+        params_to_return = params.require(:try).permit(
+          :api_method,
+          :custom_headers,
+          :search_engine,
+          :search_url
+        )
+        # map from the old name to the new name
+        params_to_return['endpoint_url'] = params_to_return.delete 'search_url'
+        params_to_return
       end
     end
   end

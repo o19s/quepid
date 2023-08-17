@@ -13,26 +13,28 @@ module Api
         login_user joey
       end
 
+      # rubocop:disable Metrics/AbcSize
       def assert_try_matches_response response, try
         assert_equal try.query_params, response['query_params']
         assert_equal try.field_spec,   response['field_spec'] if response['field_spec']
-        assert_nil_or_equal try.search_url, response['search_url']
+        assert_nil_or_equal try.search_endpoint.endpoint_url, response['search_url']
         assert_equal try.try_number,   response['try_number']
         assert_equal try.name,         response['name'] if response['name']
         assert_equal try.solr_args,    response['args']
         assert_equal try.escape_query, response['escape_query']
-        assert_nil_or_equal try.api_method, response['api_method']
+        assert_nil_or_equal try.search_endpoint.api_method, response['api_method']
 
         assert_curator_vars_equal try.curator_vars_map, response['curator_vars']
       end
+      # rubocop:enable Metrics/AbcSize
 
       def assert_try_matches_params params, try
         assert_equal try.query_params, params[:query_params] if params[:query_params]
         assert_equal try.field_spec,   params[:field_spec]   if params[:field_spec]
-        assert_equal try.search_url,   params[:search_url]   if params[:search_url]
+        assert_equal try.search_endpoint.endpoint_url, params[:search_url] if params[:search_url]
         assert_equal try.name,         params[:name]         if params[:name]
         assert_equal try.escape_query, params[:escape_query] if params[:escape_query]
-        assert_equal try.api_method,   params[:api_method]   if params[:api_method]
+        assert_equal try.search_endpoint.api_method, params[:api_method] if params[:api_method]
       end
 
       def assert_curator_vars_equal vars, response_vars
@@ -289,7 +291,7 @@ module Api
         end
 
         test 'sets api_method param' do
-          post :create, params: { case_id: the_case.id, try: { api_method: 'get' } }
+          post :create, params: { case_id: the_case.id, try: { search_engine: 'es', api_method: 'get' } }
 
           assert_response :ok
 
@@ -297,7 +299,7 @@ module Api
           created_try = the_case.tries.where(try_number: json_response['try_number']).first
 
           assert_equal 'get', json_response['api_method']
-          assert_equal 'get', created_try.api_method
+          assert_equal 'get', created_try.search_endpoint.api_method
         end
 
         test 'sets number of rows' do
@@ -326,9 +328,9 @@ module Api
           assert_match( /#{the_case.last_try_number}/, created_try.name )
           assert_match( /#{created_try.try_number}/,   created_try.name )
 
-          assert_not_nil created_try.search_engine
+          assert_nil created_try.search_endpoint
           assert_nil created_try.field_spec
-          assert_nil created_try.search_url
+          assert_nil created_try.search_endpoint
           assert_nil created_try.query_params
           assert created_try.escape_query
 
@@ -387,7 +389,7 @@ module Api
 
         describe 'Solr' do
           test 'sets the proper default values' do
-            post :create, params: { case_id: the_case.id, try: { name: '' } }
+            post :create, params: { case_id: the_case.id, try: { name: '', search_engine: 'solr' } }
 
             assert_response :ok # should be :created,
             # but there's a bug currently in the responders gem
@@ -400,7 +402,7 @@ module Api
             assert_match( /#{the_case.last_try_number}/, created_try.name )
             assert_match( /#{created_try.try_number}/,   created_try.name )
 
-            assert_not_nil created_try.search_engine
+            assert_not_nil created_try.search_endpoint.search_engine
             assert_equal created_try.escape_query, true
           end
         end
@@ -420,11 +422,11 @@ module Api
             assert_match( /#{the_case.last_try_number}/, created_try.name )
             assert_match( /#{created_try.try_number}/,   created_try.name )
 
-            assert_not_nil created_try.search_engine
+            assert_not_nil created_try.search_endpoint.search_engine
             assert_not_nil created_try.escape_query
 
-            assert_equal created_try.search_engine, 'es'
-            assert_equal created_try.escape_query,  true
+            assert_equal created_try.search_endpoint.search_engine, 'es'
+            assert_equal created_try.escape_query, true
           end
 
           test 'parses args properly' do

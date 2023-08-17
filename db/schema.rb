@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_06_30_124311) do
+ActiveRecord::Schema[7.0].define(version: 2023_08_16_195233) do
   create_table "annotations", id: :integer, charset: "utf8mb3", force: :cascade do |t|
     t.text "message"
     t.string "source"
@@ -153,6 +153,17 @@ ActiveRecord::Schema[7.0].define(version: 2023_06_30_124311) do
     t.boolean "communal", default: false
   end
 
+  create_table "search_endpoints", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
+    t.string "name"
+    t.integer "owner_id"
+    t.string "search_engine", limit: 50
+    t.string "endpoint_url", limit: 500
+    t.string "api_method"
+    t.string "custom_headers", limit: 1000
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
   create_table "selection_strategies", charset: "utf8mb3", collation: "utf8mb3_unicode_ci", force: :cascade do |t|
     t.string "name"
     t.datetime "created_at", null: false
@@ -222,21 +233,23 @@ ActiveRecord::Schema[7.0].define(version: 2023_06_30_124311) do
     t.index ["team_id"], name: "index_teams_scorers_on_team_id"
   end
 
+  create_table "teams_search_endpoints", id: false, charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
+    t.bigint "search_endpoint_id", null: false
+    t.bigint "team_id", null: false
+  end
+
   create_table "tries", id: :integer, charset: "latin1", force: :cascade do |t|
     t.integer "try_number"
     t.string "query_params", limit: 20000
     t.integer "case_id"
     t.string "field_spec", limit: 500
-    t.string "search_url", limit: 500
     t.string "name", limit: 50
-    t.string "search_engine", limit: 50, default: "solr"
     t.boolean "escape_query", default: true
     t.integer "number_of_rows", default: 10
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "ancestry", limit: 3072
-    t.string "api_method"
-    t.string "custom_headers", limit: 1000
+    t.bigint "search_endpoint_id"
     t.index ["case_id"], name: "case_id"
     t.index ["try_number"], name: "ix_queryparam_tryNo"
   end

@@ -11,14 +11,12 @@ module Api
         # rubocop:disable Metrics/MethodLength
         def create
           new_try_params = {
-            escape_query:   @try.escape_query,
-            api_method:     @try.api_method,
-            custom_headers: @try.custom_headers,
-            field_spec:     @try.field_spec,
-            number_of_rows: @try.number_of_rows,
-            query_params:   @try.query_params,
-            search_engine:  @try.search_engine,
-            search_url:     @try.search_url,
+            escape_query:    @try.escape_query,
+            search_endpoint: @try.search_endpoint,
+            field_spec:      @try.field_spec,
+            number_of_rows:  @try.number_of_rows,
+            query_params:    @try.query_params,
+
           }
 
           @new_try = @case.tries.build new_try_params
@@ -49,15 +47,16 @@ module Api
         end
 
         def try_params
+          # Eric: I think we don't need to have all of these unless cloning a try chagnes the search end point..'
           params.require(:try).permit(
             :name,
-            :search_url,
+            # :search_url,
             :field_spec,
             :query_params,
-            :search_engine,
+            # :search_engine,
             :escape_query,
-            :api_method,
-            :custom_headers,
+            # :api_method,
+            # :custom_headers,
             :number_of_rows
           )
         end

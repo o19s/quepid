@@ -43,7 +43,7 @@ class CoreControllerTest < ActionController::TestCase
     # We used to redirect the browser to match the
     # search engine URL, but don't do that anymore.'
     test 'bootstraps case with HTTPS search_engine ' do
-      the_try.search_url = 'https://somesearch.com'
+      the_try.search_endpoint.endpoint_url = 'https://somesearch.com'
       the_try.save!
 
       get :index
