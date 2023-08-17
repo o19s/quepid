@@ -200,6 +200,7 @@ class Case < ApplicationRecord
     try_number  = (last_try_number || 0) + 1
     the_try     = tries.create(try_number: try_number)
     the_try.case = self
+    # the_try.search_endpoint = SearchEndpoint.create(search_engine: 'solr')
     tries << the_try
     update last_try_number: the_try.try_number
   end

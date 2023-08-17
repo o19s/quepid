@@ -16,6 +16,17 @@ def print_user_info info
   print_step "Seeded user: email: #{info[:email]}, password: #{info[:password]}"
 end
 
+# Search Endpoints
+print_step "Seeding search endpoints................"
+
+statedecoded_solr_endpoint = SearchEndpoint.find_or_create_by search_engine: :solr, endpoint_url:   "http://quepid-solr.dev.o19s.com:8985/solr/statedecoded/select"
+tmdb_solr_endpoint = SearchEndpoint.find_or_create_by search_engine: :solr, endpoint_url:   "http://quepid-solr.dev.o19s.com:8985/solr/tmdb/select"
+
+tmdb_es_endpoint = SearchEndpoint.find_or_create_by   search_engine: :es, endpoint_url:   "http://quepid-elasticsearch.dev.o19s.com:9206/tmdb/_search"
+
+
+print_step "End of seeding search endpoints................"
+
 # Users
 print_step "Seeding users................"
 
@@ -38,9 +49,8 @@ user_defaults = {
 try_defaults = {
   try_number:       '1',
   query_params:     'q=#$query##',
-  search_url:       search_url,
-  search_engine:    'solr',
   field_spec:       'id:id title:catch_line structure text',
+  search_endpoint_id: statedecoded_solr_endpoint.id
 
 }
 
@@ -187,11 +197,10 @@ end
 solr_case = solr_case_user.cases.create case_name: 'SOLR CASE'
 solr_try = solr_case.tries.latest
 solr_params = {
-  search_engine: :solr,
-  search_url:   "http://quepid-solr.dev.o19s.com:8985/solr/tmdb/select",
   field_spec:   "id:id, title:title",
   query_params: 'q=*:*'
 }
+solr_try.search_endpoint = tmdb_solr_endpoint
 solr_try.update solr_params
 print_case_info solr_case
 
@@ -202,11 +211,10 @@ print_case_info solr_case
 es_case = es_case_user.cases.create case_name: 'ES CASE'
 es_try = es_case.tries.latest
 es_params = {
-  search_engine: :es,
-  search_url:   "http://quepid-elasticsearch.dev.o19s.com:9206/tmdb/_search",
   field_spec:   "id:_id, title:title",
   query_params: '{"query": {"match_all": {}}}'
 }
+es_try.search_endpoint = tmdb_es_endpoint
 es_try.update es_params
 print_case_info es_case
 
@@ -274,7 +282,7 @@ print_step "Seeding tries................"
 
   try_specifics = {
     try_number:       counter,
-    query_params:     'q=#$query##&magicBoost=' + (counter+2).to_s
+    query_params:     'q=#$query##&magicBoost=' + (counter+2).to_s    
   }
 
   try_params = try_defaults.merge(try_specifics)

@@ -342,6 +342,19 @@ module Api
           assert_equal created_try.number_of_rows, 10
         end
 
+        test 'updates search endpoint' do
+          try = the_case.tries.first
+          post :create, params: { case_id: the_case.id, try: { search_engine: 'os', search_url: 'http://my.os.url' } }
+
+          assert_response :ok
+
+          the_case.reload
+          created_try = the_case.tries.where(try_number: json_response['try_number']).first
+
+          assert_not_equal try, created_try
+          assert_equal created_try.search_endpoint.search_engine, 'os'
+        end
+
         describe 'analytics' do
           test 'posts event' do
             expects_any_ga_event_call

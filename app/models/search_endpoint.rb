@@ -31,4 +31,15 @@ class SearchEndpoint < ApplicationRecord
   # Validations
   # validates :case_name, presence: true
   # validates_with ScorerExistsValidator
+  #
+  #
+  def fullname
+    middle_truncate "#{search_engine.capitalize} #{endpoint_url}"
+  end
+
+  private
+
+  def middle_truncate str, total: 30, lead: 15, trail: 15
+    str.truncate(total, omission: "#{str.first(lead)}...#{str.last(trail)}")
+  end
 end

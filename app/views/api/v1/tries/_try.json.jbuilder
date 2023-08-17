@@ -12,3 +12,4 @@ json.query_params   try.query_params
 json.search_engine  try.search_endpoint&.search_engine
 json.search_url     try.search_endpoint&.endpoint_url
 json.try_number     try.try_number
+json.endpoint_name  try.search_endpoint&.fullname

@@ -62,7 +62,9 @@ module Api
       # rubocop:enable Metrics/AbcSize
 
       def update
-        if @try.update try_params
+        try_update = @try.update try_params
+        search_endpoint_update = @try.search_endpoint.update search_endpoint_params
+        if try_update && search_endpoint_update
           respond_with @try
         else
           render json: @try.errors, status: :bad_request
