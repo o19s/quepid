@@ -400,30 +400,17 @@ angular.module('QuepidApp')
             }
             var length = $scope.pendingWizardSettings.newQueries.length;
             var query = null;
-
-            var queryPromise = function(q) {
-              return queriesSvc.persistQuery(q);
-            };
-
-            var createPromises = [];
-
+            
             for(var queryIndex = 0; queryIndex < length; queryIndex++){
               query = $scope.pendingWizardSettings.newQueries[queryIndex];
 
               if( typeof(query.queryString) !== 'undefined' && query.queryString !== '' ) {
                 var q = queriesSvc.createQuery(query.queryString);
-
-                createPromises.push(queryPromise(q));
+                queriesSvc.persistQuery(q);
               }
             }
 
-            $q.all(createPromises).then( () => {
-              queriesSvc.searchAll();
-            });
-
-
             $rootScope.currentUser.shownIntroWizard();
-
 
             $uibModalInstance.close();
           });
