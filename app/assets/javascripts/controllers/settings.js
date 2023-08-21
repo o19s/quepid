@@ -22,6 +22,7 @@ angular.module('QuepidApp')
       var reset = function() {
         var currSettings = settingsSvc.editableSettings();
         if ( this.searchEngine !== currSettings.searchEngine) {
+          console.log("Location A");
           currSettings = settingsSvc.pickSettingsToUse($scope.pendingSettings.searchEngine, null);
           currSettings.fieldSpec = currSettings.fieldSpec + ', ' + currSettings.additionalFields.join(', ');
           $scope.pendingSettings.urlFormat = currSettings.urlFormat;
@@ -56,13 +57,18 @@ angular.module('QuepidApp')
         $scope.pendingSettings = settingsSvc.editableSettings();
         $scope.pendingSettings.reset = reset;
 
-        if ( angular.isDefined($scope.pendingSettings.searchEngine) ) {
+        //if ( angular.isDefined($scope.pendingSettings.searchEngine) ) {
+        if ( angular.isDefined($scope.pendingSettings.searchEngine) && $scope.pendingSettings.searchEngine !== null ) {
+          console.log("In settings, search engine is " + $scope.pendingSettings.searchEngine );
+          console.log("In settings, search url is " + $scope.pendingSettings.searchUrl );
           var settingsToUse = settingsSvc.pickSettingsToUse($scope.pendingSettings.searchEngine, $scope.pendingSettings.searchUrl);
           $scope.pendingSettings.urlFormat = settingsToUse.urlFormat;
+          
+          // pass pending settings onward to be saved
+          $scope.pendingSettings.submit = submit;
         }
 
-        // pass pending settings onward to be saved
-        $scope.pendingSettings.submit = submit;
+
       });
 
       function submit () {

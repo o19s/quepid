@@ -44,10 +44,16 @@ class CoreController < ApplicationController
     if @try.present?
       # Deal with front end UI changes to search engine being stored in backend
       if params[:searchEngine].present?
-        # Reset the default queries
-        @try.search_engine = params[:searchEngine] if @try.search_engine != params[:searchEngine]
-        @try.search_url = params[:searchUrl]
-        @try.api_method = params[:apiMethod]
+      
+        search_endpoint_params = {
+          search_engine: params[:searchEngine],
+          endpoint_url: params[:searchUrl],
+          api_method: params[:apiMethod]
+          
+        }
+        search_endpoint = SearchEndpoint.find_or_create_by search_endpoint_params
+        puts "Found search end point with id #{search_endpoint.id} and name #{search_endpoint.fullname}"
+        @try.search_endpoint = search_endpoint
         @try.field_spec = params[:fieldSpec]
       end
       @try.save

@@ -62,9 +62,17 @@ module Api
       # rubocop:enable Metrics/AbcSize
 
       def update
-        try_update = @try.update try_params
-        search_endpoint_update = @try.search_endpoint.update search_endpoint_params
-        if try_update && search_endpoint_update
+        puts "About to look up search end point for #{search_endpoint_params}"
+        puts "Is it empty?  #{search_endpoint_params.empty?}"
+        #
+        # if (search_endpoint_params['endpoint_url'] )
+        unless search_endpoint_params.empty?
+          search_endpoint = SearchEndpoint.find_or_create_by search_endpoint_params
+          puts "Found search end point with id #{search_endpoint.id} and name #{search_endpoint.fullname}"
+          @try.search_endpoint = search_endpoint
+        end
+        # search_endpoint_update =
+        if @try.update try_params
           respond_with @try
         else
           render json: @try.errors, status: :bad_request
@@ -103,14 +111,17 @@ module Api
       end
 
       def search_endpoint_params
-        params_to_return = params.require(:try).permit(
+        # params_to_return = params.require(:try).permit(
+        params_to_return = params.permit(
           :api_method,
           :custom_headers,
           :search_engine,
           :search_url
         )
-        # map from the old name to the new name
-        params_to_return['endpoint_url'] = params_to_return.delete 'search_url'
+        if params_to_return.key? 'search_url'
+          # map from the old name to the new name
+          params_to_return['endpoint_url'] = params_to_return.delete 'search_url'
+        end
         params_to_return
       end
     end
