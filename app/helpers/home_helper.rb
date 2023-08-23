@@ -44,14 +44,6 @@ module HomeHelper
   # rubocop:enable Metrics/AbcSize
   # rubocop:enable Metrics/MethodLength
 
-  def book_title book
-    if book.name.downcase.starts_with?('book')
-      book.name
-    else
-      "Book #{book.name}"
-    end
-  end
-
   def case_title kase
     if kase.case_name.downcase.starts_with?('case')
       kase.case_name

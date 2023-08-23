@@ -7,18 +7,95 @@ angular.module('QuepidApp')
     '$rootScope', '$scope', '$uibModalInstance', '$log', '$window', '$q', '$location',
     'WizardHandler',
     'settingsSvc', 'SettingsValidatorFactory',
-    'docCacheSvc', 'queriesSvc', 'caseTryNavSvc', 'caseSvc', 'userSvc',
+    'docCacheSvc', 'queriesSvc', 'caseTryNavSvc', 'caseSvc', 'userSvc','searchEndpointSvc',
     function (
       $rootScope, $scope, $uibModalInstance, $log, $window, $q, $location,
       WizardHandler,
       settingsSvc, SettingsValidatorFactory,
-      docCacheSvc, queriesSvc, caseTryNavSvc, caseSvc, userSvc
+      docCacheSvc, queriesSvc, caseTryNavSvc, caseSvc, userSvc, searchEndpointSvc
     ) {
       $log.debug('Init Wizard settings ctrl');
       $scope.wizardSettingsModel = {};
 
       $scope.wizardSettingsModel.settingsId = function() {
         return settingsSvc.settingsId();
+      };
+      
+      $scope.haveSearchEndpoints = false;
+      
+      
+      //$scope.wizardSettingsModel.searchEndpoints = function() {
+        //return "hi";
+       // return searchEndpointSvc.list();
+       //}
+
+       searchEndpointSvc.list()
+       .then(function() {
+         console.log("okay, got end points")
+         $scope.searchEndpoints = searchEndpointSvc.searchEndpoints;
+         if ($scope.searchEndpoints.length > 0) {
+           $scope.haveSearchEndpoints = true;
+         }
+         else {
+           $scope.haveSearchEndpoints = false;
+         }
+       });
+       
+       $scope.filterEndpointsByType = function() {
+         return searchEndpointSvc.filteredEndpoints($scope.pendingWizardSettings.searchEngine);
+       }
+
+      // used when we first launch the wizard, and it handles reloading from http to https
+      $scope.updateSettingsDefaults = function() {
+
+        if (angular.isUndefined($scope.pendingWizardSettings)){
+             // When we run the case wizard, we assume that you want to use our Solr based TMDB demo setup.
+             // We then give you options to change from there.
+             $scope.pendingWizardSettings = angular.copy(settingsSvc.tmdbSettings['solr']);
+        }
+        var settings = settingsSvc.pickSettingsToUse($scope.pendingWizardSettings.searchEngine, $scope.pendingWizardSettings.searchUrl);
+        $scope.pendingWizardSettings.additionalFields         = settings.additionalFields;
+        $scope.pendingWizardSettings.fieldSpec                = settings.fieldSpec;
+        $scope.pendingWizardSettings.idField                  = settings.idField;
+        $scope.pendingWizardSettings.searchEngine             = settings.searchEngine;
+        $scope.pendingWizardSettings.apiMethod                = settings.apiMethod;
+        $scope.pendingWizardSettings.customHeaders            = settings.customHeaders;
+        $scope.pendingWizardSettings.queryParams              = settings.queryParams;
+        $scope.pendingWizardSettings.titleField               = settings.titleField;
+        $scope.pendingWizardSettings.urlFormat                = settings.urlFormat;    
+        $scope.pendingWizardSettings.searchEndpointId         = null;
+        $scope.searchEndpoints = searchEndpointSvc.list();
+
+        var quepidStartsWithHttps = $location.protocol() === 'https';
+
+        if ($scope.pendingWizardSettings.searchEngine === 'solr') {
+          if (quepidStartsWithHttps === true){
+            $scope.pendingWizardSettings.searchUrl = settings.secureSearchUrl;
+          }
+          else {
+            $scope.pendingWizardSettings.searchUrl = settings.insecureSearchUrl;
+          }
+        }
+        else {
+          $scope.pendingWizardSettings.searchUrl = settings.searchUrl;
+        }
+
+        // if we have restarted the wizard, then grab the searchUrl, searchEngine, apiMethod,
+        // and caseName from the params and override the default values.
+        // We should pass this stuff in externally, not do it here.
+        if (angular.isDefined($location.search().searchEngine)){
+          $scope.pendingWizardSettings.searchEngine = $location.search().searchEngine;
+        }
+        if (angular.isDefined($location.search().searchUrl)){
+          $scope.pendingWizardSettings.searchUrl = $location.search().searchUrl;
+        }
+        if (angular.isDefined($location.search().caseName)){
+          $scope.pendingWizardSettings.caseName = $location.search().caseName;
+        }
+        if (angular.isDefined($location.search().apiMethod)){
+          $scope.pendingWizardSettings.apiMethod = $location.search().apiMethod;
+        }
+        $scope.reset();
       };
 
       // used when you swap radio buttons for the search engine.
@@ -56,62 +133,17 @@ angular.module('QuepidApp')
 
         $scope.reset();
       };
-
-      // used when we first launch the wizard, and it handles reloading from http to https
-      $scope.updateSettingsDefaults = function() {
-
-        if (angular.isUndefined($scope.pendingWizardSettings)){
-            // When we run the case wizard, we assume that you want to use our Solr based TMDB demo setup.
-            // We then give you options to change from there.
-            $scope.pendingWizardSettings = angular.copy(settingsSvc.tmdbSettings['solr']);
-        }
-        var settings = settingsSvc.pickSettingsToUse($scope.pendingWizardSettings.searchEngine, $scope.pendingWizardSettings.searchUrl);
-        $scope.pendingWizardSettings.additionalFields         = settings.additionalFields;
-        $scope.pendingWizardSettings.fieldSpec                = settings.fieldSpec;
-        $scope.pendingWizardSettings.idField                  = settings.idField;
-        $scope.pendingWizardSettings.searchEngine             = settings.searchEngine;
-        $scope.pendingWizardSettings.apiMethod                = settings.apiMethod;
-        $scope.pendingWizardSettings.customHeaders            = settings.customHeaders;
-        $scope.pendingWizardSettings.queryParams              = settings.queryParams;
-        $scope.pendingWizardSettings.titleField               = settings.titleField;
-        $scope.pendingWizardSettings.urlFormat                = settings.urlFormat;
-
-        var quepidStartsWithHttps = $location.protocol() === 'https';
-
-        if ($scope.pendingWizardSettings.searchEngine === 'solr') {
-          if (quepidStartsWithHttps === true){
-            $scope.pendingWizardSettings.searchUrl = settings.secureSearchUrl;
-          }
-          else {
-            $scope.pendingWizardSettings.searchUrl = settings.insecureSearchUrl;
-          }
-        }
-        else {
-          $scope.pendingWizardSettings.searchUrl = settings.searchUrl;
-        }
-
-        // if we have restarted the wizard, then grab the searchUrl, searchEngine, apiMethod,
-        // and caseName from the params and override the default values.
-        // We should pass this stuff in externally, not do it here.
-        if (angular.isDefined($location.search().searchEngine)){
-          $scope.pendingWizardSettings.searchEngine = $location.search().searchEngine;
-//          $scope.pendingWizardSettings.queryParams = settingsSvc.defaults[$scope.pendingWizardSettings.searchEngine].queryParams;
-        }
-        if (angular.isDefined($location.search().searchUrl)){
-          $scope.pendingWizardSettings.searchUrl = $location.search().searchUrl;
-        }
-        if (angular.isDefined($location.search().caseName)){
-          $scope.pendingWizardSettings.caseName = $location.search().caseName;
-        }
-        if (angular.isDefined($location.search().apiMethod)){
-          $scope.pendingWizardSettings.apiMethod = $location.search().apiMethod;
-        }
-
-        $scope.reset();
+      
+      // used when you click the accordion for new search endpoint
+      $scope.switchToCreateNewSearchEndpoint = function() {
+       console.log("I was just clicked");
+       $scope.pendingWizardSettings.searchEndpointId = null;
+       
       };
-
+      
       $scope.validate       = validate;
       $scope.skipValidation = skipValidation;
+      $scope.pickSearchEndpoint = pickSearchEndpoint;
       $scope.setupDefaults  = setupDefaults;
       $scope.submit         = submit;
       $scope.reset          = reset;
@@ -120,7 +152,6 @@ angular.module('QuepidApp')
       $scope.updateSettingsDefaults();
       $scope.validateHeaders = validateHeaders;
       $scope.searchFields   = [];
-
 
       $scope.extractSolrConfigApiUrl = function(searchUrl) {
         return searchUrl.substring(0, searchUrl.lastIndexOf('/')) + '/config';
@@ -145,6 +176,29 @@ angular.module('QuepidApp')
         if ($scope.urlValid) {
           WizardHandler.wizard().next();
         }
+      }
+      
+      function pickSearchEndpoint() {
+        console.log("In pickSearchEndpoint");
+        searchEndpointSvc.get($scope.pendingWizardSettings.searchEndpointId)
+          .then( function (searchEndpoint){
+            console.log("Got a search endpoint");
+            
+            // Maybe we should refactor to have searchEndpoint a first class object and use it
+            // Everywhere?
+            
+            $scope.pendingWizardSettings.searchEngine = searchEndpoint.searchEngine;
+            $scope.pendingWizardSettings.searchUrl = searchEndpoint.endpointUrl;
+            $scope.pendingWizardSettings.apiMethod   = searchEndpoint.apiMethod;
+            $scope.pendingWizardSettings.customHeaders = searchEndpoint.customHeaders;
+            
+            // Are there any places wehre we do validate(true)
+            validate();
+            
+          });
+        // populate $scope.pendingWizardSettings
+        // validate()
+        
       }
 
       function skipValidation() {
@@ -174,7 +228,6 @@ angular.module('QuepidApp')
         if ($scope.showTLSChangeWarning || $scope.invalidHeaders){
           return;
         }
-
         var validator = new SettingsValidatorFactory($scope.pendingWizardSettings);
         validator.validateUrl()
         .then(function () {
@@ -337,10 +390,12 @@ angular.module('QuepidApp')
         var tempSearchUrl = $scope.pendingWizardSettings.searchUrl;
         var tempApiMethod = $scope.pendingWizardSettings.apiMethod;
         var tempQueryParams = $scope.pendingWizardSettings.queryParams;
+        var tempSearchEngine = $scope.pendingWizardSettings.searchEngine;
         angular.merge($scope.pendingWizardSettings, settingsSvc.editableSettings());
         $scope.pendingWizardSettings.searchUrl = tempSearchUrl;
         $scope.pendingWizardSettings.apiMethod = tempApiMethod;
         $scope.pendingWizardSettings.queryParams = tempQueryParams;
+        $scope.pendingWizardSettings.searchEngine = tempSearchEngine;
         $scope.pendingWizardSettings.newQueries = [];
 
         if(userSvc.getUser().completedCaseWizard===false){

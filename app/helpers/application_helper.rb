@@ -1,6 +1,14 @@
 # frozen_string_literal: true
 
 module ApplicationHelper
+  def book_title book
+    if book.name.downcase.starts_with?('book')
+      book.name
+    else
+      "Book #{book.name}"
+    end
+  end
+
   def make_active? options
     if options.key?(:path)
       request.fullpath.include?(options[:path])

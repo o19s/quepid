@@ -192,7 +192,7 @@ angular.module('QuepidApp')
 
       this.demoSettingsChosen = function(searchEngine, newUrl){
         var useTMDBDemoSettings = false;
-        if (searchEngine === 'solr'){
+    if (searchEngine === 'solr'){
           if (newUrl === null || angular.isUndefined(newUrl)){
             useTMDBDemoSettings = true;
           }
@@ -204,6 +204,7 @@ angular.module('QuepidApp')
           }
         }
         else {
+          console.log("The serach engine is " + searchEngine);
           if (newUrl === this.tmdbSettings[searchEngine].searchUrl) {
             useTMDBDemoSettings = true;
           }

@@ -109,18 +109,21 @@
         </div>
         <!-- end of Search Engine -->
 
-        <!-- Search Engine Request Handler -->
+        <!-- Search Endpoint -->
         <div class="setting-div">
           <div class="dev-header" ng-click="devSettingsUrl.toggle = !devSettingsUrl.toggle">
-            Search Engine Request Handler <span ng-class="{true: 'glyphicon-plus-sign', false: 'glyphicon-minus-sign'}[!devSettingsUrl.toggle]" class="glyphicon"></span>
+            Search Endpoint <span ng-class="{true: 'glyphicon-plus-sign', false: 'glyphicon-minus-sign'}[!devSettingsUrl.toggle]" class="glyphicon"></span>
           </div>
 
-          <div class="dev-body" ng-show="devSettingsUrl.toggle">
+          <div class="dev-body" ng-show="devSettingsUrl.toggle">            
             <input type="text" class="form-control" id="" placeholder="Enter Your Search Engine URL" ng-model="settings.searchUrl" ng-change="validateSearchEngineUrl()">
 
             <p class="help-block tip">
               Tip: Your URL should look like this {{settings.urlFormat}}.
             </p>
+            <p>
+              <a ng-href="search_endpoints/" target="_self">Manage Search Endpoints</a></p>
+            <p>
 
             <span ng-show="showTLSChangeWarning">
               You have specified a search engine url that is on a different protocol ( <code>{{protocolToSwitchTo}}</code> ) than Quepid is currently on,
@@ -128,7 +131,7 @@
             </span>
           </div>
         </div>
-        <!-- end of Search Engine Request Handler -->
+        <!-- end of Search Endpoint -->
 
         <!-- Display Fields -->
         <div class="setting-div" ng-init="validateSearchEngineUrl()">

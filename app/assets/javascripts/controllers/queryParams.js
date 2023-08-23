@@ -2,11 +2,11 @@
 
 angular.module('QuepidApp')
   .controller('QueryParamsCtrl', [
-    '$scope','$location', '$window',
-    'esUrlSvc','caseTryNavSvc',
+    '$scope',
+    'esUrlSvc','caseTryNavSvc','searchEndpointSvc',
     'TryFactory',
-    function ($scope, $location, $window,
-      esUrlSvc, caseTryNavSvc,
+    function ($scope,
+      esUrlSvc, caseTryNavSvc,searchEndpointSvc,
       TryFactory) {
 
       $scope.qp = {};
@@ -20,7 +20,8 @@ angular.module('QuepidApp')
       $scope.showESTemplateWarning = false;
 
       $scope.showTLSChangeWarning = false;
-
+      
+      $scope.searchEndpoints = searchEndpointSvc.list();
 
       $scope.validateSearchEngineUrl  = function() {
         if (!angular.isUndefined($scope.settings.searchUrl)){

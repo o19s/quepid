@@ -119,7 +119,6 @@
           ></i>
         <% end %>        
       </li>
- 
       <li>
         <%= link_to '/notebooks/lab/index.html', target: '_blank', class: "nav-link py-3 border-bottom rounded-0", 'data-bs-toggle':'tooltip', 'data-bs-placement':'right', 'aria-label':'Notebooks', 'data-bs-original-title':'Notebooks' do %>
           <i
@@ -130,6 +129,17 @@
             style="font-size: 1.5rem; color: <%= make_active?({path: 'case'}) ? 'white' : 'cornflowerblue' %>;"
           ></i>
         <% end %>        
+      </li>
+      <li>
+        <%= link_to search_endpoints_path, class: "nav-link #{make_active?({path: 'search_endpoint'}) ? 'active' : ''} py-3 border-bottom rounded-0", 'data-bs-toggle':'tooltip', 'data-bs-placement':'right', 'aria-label':'Search Endpoints', 'data-bs-original-title':'Search Endpoints' do %>
+          <i
+            class="fa fa-paper-plane"
+            aria-hidden="true"
+            title="Search Endpoints"
+            alt="Search Endpoints"
+            style="font-size: 1.5rem; color: <%= make_active?({path: 'search_endpoint'}) ? 'white' : 'cornflowerblue' %>;"
+          ></i>
+        <% end %>
       </li> 
     </ul>
     <div class="dropdown border-top">
