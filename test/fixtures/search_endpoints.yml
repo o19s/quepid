@@ -14,109 +14,109 @@
 #
 
 one:
-  name:           Solr http://test.com/solr/tmdb/select
-  endpoint_url:     http://test.com/solr/tmdb/select
+  name:           One
+  endpoint_url:   http://test.com/solr/tmdb/select
   search_engine:  solr
   api_method:     GET
   
 two:
-  name:           Solr http://test.com/solr/tmdb/select
-  endpoint_url:     http://test.com/solr/tmdb/select
+  name:           Two
+  endpoint_url:   http://test.com/solr/tmdb/select
   search_engine:  solr
   api_method:     JSONP
 
 for_shared_team_case:
-  name:           Solr http://test.com/solr/tmdb/select
-  endpoint_url:     http://test.com/solr/tmdb/select
+  name:           for_shared_team_case
+  endpoint_url:   http://test.com/solr/tmdb/select
   search_engine:  solr
   api_method:     JSONP
 
 for_shared_case:
   name:           Solr http://test.com/solr/tmdb/select
-  endpoint_url:     http://test.com/solr/tmdb/select
+  endpoint_url:   http://test.com/solr/tmdb/select
   search_engine:  solr
   api_method:     JSONP
 
 archived:
-  name:           Solr http://test.com/solr/tmdb/select  
-  endpoint_url:     http://test.com/solr/tmdb/select
+  name:           archived
+  endpoint_url:   http://test.com/solr/tmdb/select
   search_engine:  solr
   api_method:     JSONP
 
 for_metadata_case:
   name:           Solr http://test.com/solr/tmdb/select
-  endpoint_url:     http://test.com/solr/tmdb/select
+  endpoint_url:   http://test.com/solr/tmdb/select
   search_engine:  solr
   api_method:     JSONP
 
 for_case_with_scorer:
-  name:           Solr http://test.com/solr/tmdb/select  
-  endpoint_url:     http://test.com/solr/tmdb/select
+  name:           for_case_with_scorer
+  endpoint_url:   http://test.com/solr/tmdb/select
   search_engine:  solr
   api_method:     JSONP
 
 for_case_with_one_try:
-  name:           Solr http://test.com/solr/tmdb/select  
-  endpoint_url:     http://test.com/solr/tmdb/select
+  name:           for_case_with_one_try
+  endpoint_url:   http://test.com/solr/tmdb/select
   search_engine:  solr
   api_method:     JSONP
 
 first_for_case_with_two_tries:
   name:           Solr http://test.com/solr/tmdb/select
-  endpoint_url:     http://test.com/solr/tmdb/select
+  endpoint_url:   http://test.com/solr/tmdb/select
   search_engine:  solr
   api_method:     JSONP
   
 second_for_case_with_two_tries:
   name:           Solr http://test.com/solr/tmdb/select
-  endpoint_url:     http://test.com/solr/tmdb/select
+  endpoint_url:   http://test.com/solr/tmdb/select
   search_engine:  solr
   api_method:     JSONP
 
 first_try_for_score_case:
   name:           Solr http://test.com/solr/tmdb/select
-  endpoint_url:     http://test.com/solr/tmdb/select
+  endpoint_url:   http://test.com/solr/tmdb/select
   search_engine:  solr
   api_method:     JSONP
 
 second_try_for_score_case:
   name:           Solr http://test.com/solr/tmdb/select
-  endpoint_url:     http://test.com/solr/tmdb/select
+  endpoint_url:   http://test.com/solr/tmdb/select
   search_engine:  solr
   api_method:     JSONP
 
 first_try_for_other_score_case:
   name:           Solr test.com
-  endpoint_url:     test.com
+  endpoint_url:   test.com
   search_engine:  solr
   api_method:     JSONP
 
 second_try_for_other_score_case:
   name:           Solr http://test.com/solr/tmdb/select
-  endpoint_url:     http://test.com/solr/tmdb/select
+  endpoint_url:   http://test.com/solr/tmdb/select
   search_engine:  solr
   api_method:     JSONP
 
 try_without_curator_vars:
   name:           Solr http://test.com/solr/tmdb/select
-  endpoint_url:     http://test.com/solr/tmdb/select
+  endpoint_url:   http://test.com/solr/tmdb/select
   search_engine:  solr
   api_method:     JSONP
   
 try_with_curator_vars:
   name:           Solr http://test.com/solr/tmdb/select
-  endpoint_url:     http://test.com/solr/tmdb/select
+  endpoint_url:   http://test.com/solr/tmdb/select
   search_engine:  solr
   api_method:     JSONP
   
 es_try:
   name:           Es http://test.com:9200/tmdb/_search
-  endpoint_url:     http://test.com:9200/tmdb/_search
+  endpoint_url:   http://test.com:9200/tmdb/_search
   search_engine:  es
   
 es_try_with_curator_vars:
   name:           Es http://test.com:9200/tmdb/_search
-  endpoint_url:     http://test.com:9200/tmdb/_search
+  endpoint_url:   http://test.com:9200/tmdb/_search
   search_engine:  es
   
 try_with_headers:
@@ -129,50 +129,50 @@ try_with_headers:
   
 bootstrap_try_1:
   name:           Solr https://test.com
-  endpoint_url:     https://test.com
+  endpoint_url:   https://test.com
   search_engine:  solr
 
 bootstrap_try_2:
   name:           Es http://test.com:9200/tmdb/_search
-  endpoint_url:     http://test.com:9200/tmdb/_search
+  endpoint_url:   http://test.com:9200/tmdb/_search
   search_engine:  es
 
 for_case_without_score_try_1:
   name:           Solr http://test.com/solr/tmdb/select
-  endpoint_url:     http://test.com/solr/tmdb/select
+  endpoint_url:   http://test.com/solr/tmdb/select
   search_engine:  solr
   api_method:     JSONP
 
 for_case_with_score_for_first_try_try_1:
   name:           Solr http://test.com/solr/tmdb/select
-  endpoint_url:     http://test.com/solr/tmdb/select
+  endpoint_url:   http://test.com/solr/tmdb/select
   search_engine:  solr
 
 for_case_with_score_for_first_try_try_2:
   name:           Solr http://test.com/solr/tmdb/select
-  endpoint_url:     http://test.com/solr/tmdb/select
+  endpoint_url:   http://test.com/solr/tmdb/select
   search_engine:  solr
   api_method:     JSONP
 
 for_case_with_score_try_1:
   name:           Solr http://test.com/solr/tmdb/select
-  endpoint_url:     http://test.com/solr/tmdb/select
+  endpoint_url:   http://test.com/solr/tmdb/select
   search_engine:  solr
 
 for_case_with_score_try_2:
   name:           Solr http://test.com/solr/tmdb/select
-  endpoint_url:     http://test.com/solr/tmdb/select
+  endpoint_url:   http://test.com/solr/tmdb/select
   search_engine:  solr
   api_method:     JSONP
 
 for_case_with_score_try_3:
   name:           Solr http://test.com/solr/tmdb/select
-  endpoint_url:     http://test.com/solr/tmdb/select
+  endpoint_url:   http://test.com/solr/tmdb/select
   search_engine:  solr
   api_method:     JSONP
 
 for_case_queries_case:
   name:           Solr http://test.com/solr/tmdb/select
-  endpoint_url:     http://test.com/solr/tmdb/select
+  endpoint_url:   http://test.com/solr/tmdb/select
   search_engine:  solr
   api_method:     JSONP

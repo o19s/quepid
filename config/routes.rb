@@ -157,6 +157,7 @@ Rails.application.routes.draw do
         end
       end
 
+      resources :search_endpoints, only: [ :index, :show ]
       resources :scorers, except: [ :new, :edit ]
 
       resources :teams, except: [ :new, :edit ], param: :team_id

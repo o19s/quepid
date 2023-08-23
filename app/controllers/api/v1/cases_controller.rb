@@ -3,7 +3,7 @@
 module Api
   module V1
     class CasesController < Api::ApiController
-      before_action :set_case, only: [ :update, :destroy ]
+      before_action :set_case, only: [ :show, :update, :destroy ]
       before_action :case_with_all_the_bells_whistles, only: [ :show ]
       before_action :check_case, only: [ :show, :update, :destroy ]
 

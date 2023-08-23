@@ -206,6 +206,11 @@ class User < ApplicationRecord
     Book.for_user(self)
   end
 
+  # This method rpeturns all the search_endpoints that the user has access to via it's teams.
+  def search_endpoints_involved_with
+    SearchEndpoint.for_user(self)
+  end
+
   def locked?
     true == locked
   end

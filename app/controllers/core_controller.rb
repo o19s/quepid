@@ -35,6 +35,7 @@ class CoreController < ApplicationController
     end
   end
 
+  # rubocop:disable Metrics/MethodLength
   def populate_from_params
     if @case.present? && params[:caseName]
       @case.case_name = params[:caseName]
@@ -44,12 +45,12 @@ class CoreController < ApplicationController
     if @try.present?
       # Deal with front end UI changes to search engine being stored in backend
       if params[:searchEngine].present?
-      
+
         search_endpoint_params = {
           search_engine: params[:searchEngine],
-          endpoint_url: params[:searchUrl],
-          api_method: params[:apiMethod]
-          
+          endpoint_url:  params[:searchUrl],
+          api_method:    params[:apiMethod],
+
         }
         search_endpoint = SearchEndpoint.find_or_create_by search_endpoint_params
         puts "Found search end point with id #{search_endpoint.id} and name #{search_endpoint.fullname}"
@@ -58,7 +59,6 @@ class CoreController < ApplicationController
       end
       @try.save
     end
-
-    true
   end
+  # rubocop:enable Metrics/MethodLength
 end
