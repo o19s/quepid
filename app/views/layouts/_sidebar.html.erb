@@ -87,17 +87,6 @@
         <% end %>
       </li>       
       <li>
-        <%= link_to books_path, class: "nav-link #{make_active?({path: 'book'}) ? 'active' : ''} py-3 border-bottom rounded-0", 'data-bs-toggle':'tooltip', 'data-bs-placement':'right', 'aria-label':'Judgements', 'data-bs-original-title':'Judgements' do %>
-          <i
-            class="fa fa-book"
-            aria-hidden="true"
-            title="Judgements"
-            alt="Judgements"
-            style="font-size: 1.5rem; color: <%= make_active?({path: 'book'}) ? 'white' : 'cornflowerblue' %>;"
-          ></i>
-        <% end %>
-      </li>   
-      <li>
         <%= link_to cases_path, class: "nav-link #{make_active?({path: 'case'}) ? 'active' : ''} py-3 border-bottom rounded-0", 'data-bs-toggle':'tooltip', 'data-bs-placement':'right', 'aria-label':'Relevancy Cases', 'data-bs-original-title':'Relevancy Cases' do %>
           <i
             class="fa fa-briefcase"
@@ -107,7 +96,18 @@
             style="font-size: 1.5rem; color: <%= make_active?({path: 'case'}) ? 'white' : 'cornflowerblue' %>;"
           ></i>
         <% end %>        
-      </li> 
+      </li>
+      <li>
+        <%= link_to books_path, class: "nav-link #{make_active?({path: 'book'}) ? 'active' : ''} py-3 border-bottom rounded-0", 'data-bs-toggle':'tooltip', 'data-bs-placement':'right', 'aria-label':'Judgements', 'data-bs-original-title':'Judgements' do %>
+          <i
+            class="fa fa-book"
+            aria-hidden="true"
+            title="Judgements"
+            alt="Judgements"
+            style="font-size: 1.5rem; color: <%= make_active?({path: 'book'}) ? 'white' : 'cornflowerblue' %>;"
+          ></i>
+        <% end %>
+      </li>      
       <li>
         <%= link_to scorers_path, class: "nav-link #{make_active?({path: 'case'}) ? 'active' : ''} py-3 border-bottom rounded-0", 'data-bs-toggle':'tooltip', 'data-bs-placement':'right', 'aria-label':'Scorers', 'data-bs-original-title':'Scorers' do %>
           <i
@@ -140,7 +140,18 @@
             style="font-size: 1.5rem; color: <%= make_active?({path: 'search_endpoint'}) ? 'white' : 'cornflowerblue' %>;"
           ></i>
         <% end %>
-      </li> 
+      </li>
+      <li>
+        <%= link_to teams_path, class: "nav-link #{make_active?({path: 'teams'}) ? 'active' : ''} py-3 border-bottom rounded-0", 'data-bs-toggle':'tooltip', 'data-bs-placement':'right', 'aria-label':'Search Endpoints', 'data-bs-original-title':'Search Endpoints' do %>
+          <i
+            class="bi bi-people-fill"
+            aria-hidden="true"
+            title="Teams"
+            alt="Teams"
+            style="font-size: 1.5rem; color: <%= make_active?({path: 'teams'}) ? 'white' : 'cornflowerblue' %>;"
+          ></i>
+        <% end %>
+      </li>       
     </ul>
     <div class="dropdown border-top">
       <a href="#" class="d-flex align-items-center justify-content-center p-3 link-body-emphasis text-decoration-none dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
