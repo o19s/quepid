@@ -8,7 +8,7 @@ https://getbootstrap.com/docs/5.2/examples/navbars-offcanvas/# for example of of
 <div class="text-center">
     <p/>
     <h5 class="card-title"><%= Time.now.strftime("%A, %B %d") %></h5>
-    <h2 class="card-title"><%= greeting() %>, <%= @current_user.name.titleize %></h2>
+    <h2 class="card-title"><%= greeting() %>, <%= @current_user.fullname %></h2>
 </div>
 
 <div class="row my-4">

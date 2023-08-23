@@ -34,8 +34,21 @@ module Admin
       @pulse_chart_start_date = @pulse_chart_start_date.strftime('%Y-%m-%d')
     end
 
+    def new
+      @user = User.new
+    end
+
     # GET /admin/users/1/edit
     def edit; end
+
+    def create
+      @user = User.new user_params
+      if @user.save
+        redirect_to admin_user_path(@user)
+      else
+        render action: :new
+      end
+    end
 
     # PATCH/PUT /admin/users/1
     # PATCH/PUT /admin/users/1.json
@@ -75,6 +88,8 @@ module Admin
       params.require(:user).permit(
         :administrator,
         :email,
+        :name,
+        :company,
         :password,
         :password_confirmation
       )
