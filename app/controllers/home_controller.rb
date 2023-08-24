@@ -8,6 +8,7 @@ class HomeController < ApplicationController
     @cases = @current_user.cases.not_archived
       .left_outer_joins(:metadata)
       .order(Arel.sql('`case_metadata`.`last_viewed_at` DESC, `cases`.`updated_at` DESC'))
+      .distinct
 
     # copied from dropdown_contoller.rb
     @most_recent_cases = lookup_most_recent_cases
