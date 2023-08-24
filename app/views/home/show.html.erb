@@ -81,7 +81,7 @@ https://getbootstrap.com/docs/5.2/examples/navbars-offcanvas/# for example of of
    var yourVlSpec = {
      "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
      "data": {
-       "url": "http://localhost:3000/analytics/sparkline/vega_data.csv",
+       "url": "<%= analytics_sparkline_vega_data_path format: :csv %>",
        "name": "dataset",
        "format": {"type": "csv"}
      },
