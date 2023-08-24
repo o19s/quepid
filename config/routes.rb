@@ -205,5 +205,9 @@ Rails.application.routes.draw do
 
   # Static pages
   # get '*page' => 'pages#show'
+  #
+
+  # Deal with ACE Editor really really wanting this file here
+  get '/javascripts/ace/theme-textmate.js' => 'pages#theme_textmate'
 end
 # rubocop:enable Metrics/BlockLength

@@ -3,12 +3,12 @@
 angular.module('QuepidApp')
   .service('caseSvc', [
     '$http', '$filter', '$q', '$rootScope',
-    'flash',
+    '$log',
     'caseTryNavSvc', 'queriesSvc', 'settingsSvc',
     'broadcastSvc',
     function caseSvc(
       $http, $filter, $q, $rootScope,
-      flash,
+      $log,
       caseTryNavSvc, queriesSvc, settingsSvc,
       broadcastSvc
     ) {
@@ -478,9 +478,8 @@ angular.module('QuepidApp')
 
               svc.allCases[index] = acase;
               return acase;
-            }, function(response) {
-              flash.to('search-error').error = 'Either the case does not exist or you do not have permissions to access it!';
-              return response;
+            }, function() {
+              $log.info('Did not find the case ' + id);              
           });
         }
       }
