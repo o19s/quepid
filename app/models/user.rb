@@ -49,6 +49,9 @@
 # rubocop:disable Metrics/ClassLength
 class User < ApplicationRecord
   # Associations
+
+  has_many :api_keys, dependent: :destroy
+
   belongs_to :default_scorer, class_name: 'Scorer', optional: true # for communal scorers there isn't a owner
 
   # has_many :cases,
@@ -215,6 +218,10 @@ class User < ApplicationRecord
   def unlock
     self.locked     = false
     self.locked_at  = nil
+  end
+
+  def fullname
+    name.blank? ? email : name.titleize
   end
 
   def after_database_authentication

@@ -32,3 +32,11 @@
 
 en:
   hello: 'world'
+  
+  activerecord:
+    errors:
+      models:
+        user:
+          attributes:
+            default_scorer_id:
+              existence: 'Does not exist'

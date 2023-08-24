@@ -3,12 +3,12 @@
 angular.module('QuepidApp')
   .service('caseSvc', [
     '$http', '$filter', '$q', '$rootScope',
-    'flash',
+    '$log',
     'caseTryNavSvc', 'queriesSvc', 'settingsSvc',
     'broadcastSvc',
     function caseSvc(
       $http, $filter, $q, $rootScope,
-      flash,
+      $log,
       caseTryNavSvc, queriesSvc, settingsSvc,
       broadcastSvc
     ) {
@@ -69,7 +69,7 @@ angular.module('QuepidApp')
         };
 
         theCase.fetchCaseScore = function() {
-          // HTTP GET /api/cases/<int:caseId>/scores
+          // http GET api/cases/<int:caseId>/scores
           var url = 'api/cases/' + theCase.caseNo + '/scores';
 
           return $http.get(url)
@@ -81,7 +81,7 @@ angular.module('QuepidApp')
         };
 
         theCase.fetchCaseScores = function() {
-          // HTTP GET /api/cases/<int:caseId>/scores/all
+          // http GET api/cases/<int:caseId>/scores/all
           var url = 'api/cases/' + theCase.caseNo + '/scores/all';
 
           return $http.get(url)
@@ -150,7 +150,7 @@ angular.module('QuepidApp')
       };
 
       this.createCase = function(caseName, queries, tries) {
-        // HTTP POST /api/cases
+        // http POST api/cases
         // returns as if we did HTTP GET /cases/<caseNo>
         // on success, sets current case number to case number
         var data = {'case_name': 'Case: ' + this.casesCount};
@@ -354,7 +354,7 @@ angular.module('QuepidApp')
       /*jslint latedef:false*/
       function getCases (deep) {
         deep = deep || false;
-        // HTTP GET /api/cases
+        // http GET api/cases
         var url = 'api/cases';
 
         if (deep) {
@@ -399,7 +399,7 @@ angular.module('QuepidApp')
        * to the server to save on a case
        */
       function saveDefaultScorer(caseId, scorerId) {
-        // http PUT /api/cases/<int:caseId>/scorers/<int:scorerId>
+        // http PUT api/cases/<int:caseId>/scorers/<int:scorerId>
         scorerId  =  scorerId || 0;
         var url   = 'api/cases/' + caseId + '/scorers/' + scorerId;
         var data  = {};
@@ -416,7 +416,7 @@ angular.module('QuepidApp')
        */
       function renameCase(theCase, newName) {
         if (newName.length > 0) {
-          // HTTP PUT /api/cases/<int:caseId>
+          // http PUT api/cases/<int:caseId>
           var url  = 'api/cases/' + theCase.caseNo;
           var data = {
             case_name: newName
@@ -438,8 +438,8 @@ angular.module('QuepidApp')
        */
       function associateBook(theCase, bookId) {
 
-        // HTTP PUT /api/cases/<int:caseId>
-        var url  = '/api/cases/' + theCase.caseNo;
+        // HTTP PUT api/cases/<int:caseId>
+        var url  = 'api/cases/' + theCase.caseNo;
         var data = {
           book_id: bookId
         };
@@ -456,7 +456,7 @@ angular.module('QuepidApp')
 
 
       function get(id, useCache) {
-        // http GET /api/cases/<int:caseId>
+        // http GET api/cases/<int:caseId>
         var url  = 'api/cases/' + id;
         useCache = typeof useCache !== 'undefined' ?  useCache : true;
 
@@ -478,9 +478,8 @@ angular.module('QuepidApp')
 
               svc.allCases[index] = acase;
               return acase;
-            }, function(response) {
-              flash.to('search-error').error = 'Either the case does not exist or you do not have permissions to access it!';
-              return response;
+            }, function() {
+              $log.info('Did not find the case ' + id);              
           });
         }
       }

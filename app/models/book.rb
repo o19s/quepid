@@ -4,13 +4,14 @@
 #
 # Table name: books
 #
-#  id                    :bigint           not null, primary key
-#  name                  :string(255)
-#  created_at            :datetime         not null
-#  updated_at            :datetime         not null
-#  scorer_id             :integer
-#  selection_strategy_id :bigint           not null
-#  team_id               :integer
+#  id                          :bigint           not null, primary key
+#  name                        :string(255)
+#  support_implicit_judgements :boolean
+#  created_at                  :datetime         not null
+#  updated_at                  :datetime         not null
+#  scorer_id                   :integer
+#  selection_strategy_id       :bigint           not null
+#  team_id                     :integer
 #
 # Indexes
 #
@@ -24,11 +25,10 @@ class Book < ApplicationRecord
   belongs_to :team
   belongs_to :selection_strategy
   belongs_to :scorer
-  has_many :query_doc_pairs, dependent: :destroy
-  has_many   :judgements,
+  has_many :query_doc_pairs, dependent: :destroy, autosave: true
+  has_many   :judgements, -> { order('query_doc_pair_id') },
              through:   :query_doc_pairs,
              dependent: :destroy
-
   scope :for_user, ->(user) {
     joins('
       LEFT OUTER JOIN `teams` ON `teams`.`id` = `books`.`team_id`

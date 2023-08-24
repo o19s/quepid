@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_05_04_182246) do
+ActiveRecord::Schema[7.0].define(version: 2023_06_30_124311) do
   create_table "annotations", id: :integer, charset: "utf8mb3", force: :cascade do |t|
     t.text "message"
     t.string "source"
@@ -20,6 +20,14 @@ ActiveRecord::Schema[7.0].define(version: 2023_05_04_182246) do
     t.index ["user_id"], name: "index_annotations_on_user_id"
   end
 
+  create_table "api_keys", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
+    t.integer "user_id"
+    t.string "token_digest", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["token_digest"], name: "index_api_keys_on_token_digest"
+  end
+
   create_table "books", charset: "utf8mb3", collation: "utf8mb3_unicode_ci", force: :cascade do |t|
     t.integer "team_id"
     t.integer "scorer_id"
@@ -27,6 +35,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_05_04_182246) do
     t.string "name"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.boolean "support_implicit_judgements"
     t.index ["selection_strategy_id"], name: "index_books_on_selection_strategy_id"
   end
 
@@ -83,6 +92,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_05_04_182246) do
     t.datetime "updated_at", null: false
     t.boolean "unrateable", default: false
     t.index ["query_doc_pair_id"], name: "index_judgements_on_query_doc_pair_id"
+    t.index ["user_id", "query_doc_pair_id"], name: "index_judgements_on_user_id_and_query_doc_pair_id", unique: true
   end
 
   create_table "permissions", id: :integer, charset: "utf8mb3", force: :cascade do |t|
@@ -122,10 +132,11 @@ ActiveRecord::Schema[7.0].define(version: 2023_05_04_182246) do
 
   create_table "ratings", id: :integer, charset: "latin1", force: :cascade do |t|
     t.string "doc_id", limit: 500
-    t.integer "rating"
+    t.float "rating"
     t.integer "query_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "user_id"
     t.index ["doc_id"], name: "index_ratings_on_doc_id", length: 191
     t.index ["query_id"], name: "query_id"
   end

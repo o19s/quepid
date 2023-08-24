@@ -1,4 +1,4 @@
-class AddNewDefaultScorers < ActiveRecord::Migration
+class AddNewDefaultScorers < ActiveRecord::Migration[4.2]
   def change
 
     Scorer.where(name: 'v1').first_or_create(

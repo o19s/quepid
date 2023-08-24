@@ -8,7 +8,7 @@ json.created_at annotation.created_at
 json.updated_at annotation.updated_at
 
 json.score do
-  json.partial! '/api/v1/case_scores/score', score: annotation.score, shallow: true
+  json.partial! 'api/v1/case_scores/score', score: annotation.score, shallow: true
 end
 
 json.user do

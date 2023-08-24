@@ -28,6 +28,10 @@ class PublicCaseUrlTest < ActionDispatch::IntegrationTest
            raise "shouldn't have made it to here"
          end
 
+    # assert_raises NoMethodError do
+    #  get analytics_tries_visualization_url(case_id: kase.id)
+    # end
+
     # Navigate to the case using the encrypted "public" version of the case id
     get analytics_tries_visualization_url(case_id: kase.public_id)
     assert_response :ok

@@ -1,5 +1,127 @@
 # Changelog
 
+## 7.6.1 - 2023-07-06
+
+* Chased down bug with showing you the previous judgement on the Human Judgement page.  https://github.com/o19s/quepid/pull/779 by @epugh.
+
+## 7.6.0 - 2023-07-05
+
+Big overhaul on the human rating side of things.  We now roundtrip ratings that you have made from the core Case screen into your Book of Judgements when you populate it.   (We are also now tracking who the last person was to rate a doc in the Case screen).   You can now also merge ratings from multiple Book's into a new Book, which lets you reuse your judgements in new combinations.
+
+
+Additionally, to encourage your human judges, a progress screen has been added every 20 judgements showing progress and a leaderboard.
+
+* https://github.com/o19s/quepid/pull/778 by @epugh introduces some "fun" into the rating process ;-).  
+
+* https://github.com/o19s/quepid/pull/766 introduced the synthesizing of a Book, and fixes https://github.com/o19s/quepid/issues/765, track who rates in the main quepid ui, https://github.com/o19s/quepid/issues/763, link from list of books in judgements to the book itself, and https://github.com/o19s/quepid/issues/761, Combining books loses judgments but still produces scores.  
+
+* https://github.com/o19s/quepid/pull/760 changes Quepid to use floats for ratings and judgements, which opens the door to implicit judgements.
+
+
+
+## 7.5.0 - 2023-06-15
+
+Need to interact with Quepid API's from outside of Quepid?  We now support Personal Access Tokens!  From your Profile page you can generate your own token and then use that to authenticate against Quepid.  For example, you can programatically load a judgement directly into Quepid:
+```
+curl -X POST http://localhost:3000/api/books/2/judgements/ -H 'Authorization: Bearer 4a82040bf1b2d255c63833cb59fa9275' -H 'Content-Type: application/json' -d '{
+  "judgement": {
+    "query_doc_pair_id": 201
+    "rating": 1
+  }
+}'
+```
+https://github.com/o19s/quepid/pull/759 and https://github.com/o19s/quepid/pull/756 by @epugh.
+
+In support of this, we added new API's for judgements and ratings in https://github.com/o19s/quepid/pull/757 by @epugh.
+
+### Bugs
+
+* Exporting Ratings in CSV format was returning the same rating for every single rater, regardless of what they did!  Fixed in by @epugh with special help from @grahamwren.   I randomly sat next to him on plane flight home and we paired on it ;-).  
+
+* Looking up the wrong info need for a Query Doc Pair!  Fixed in https://github.com/o19s/quepid/pull/755 by @epugh.
+
+* Missed a relative path for the tries history visualization.  Fixed in https://github.com/o19s/quepid/pull/754.
+
+
+
+## 7.4.1 - 2023-06-09
+
+Lots of small things from working with Quepid using templates with OpenSearch.  Also, if you haven't used https://github.com/o19s/agent_q, it's been updated to work with Quepid 7.x line.   I use it to automate pulling my relevance metrics daily from Quepid cases ;-).
+
+### Features
+
+* Rework how we handle OS/ES templates in Quepid so that you don't need to append `/template` to the url, instead, use the existence of the `{"id":"my-template"}` in the query parameters to decide what URL to use.  This simplifies life when you are using a mix of templates and not since you don't need to change the url constantly.  This was mostly in the Splainer-Search v2.22, v2.22.1, and v2.22.2 releases. https://github.com/o19s/splainer-search/
+
+* Now, under Explain Query modal, you can see the rendered template query for a specific query!  https://github.com/o19s/quepid/pull/751 by @epugh.
+
+### Improvements
+
+* Kind of in the weeds, but early database migrations in Quepid back in Rails 4 days didn't have a version spec.  Rails 7 complains about this.  https://github.com/o19s/quepid/issues/739 fixed by https://github.com/o19s/quepid/pull/746 by @epugh.
+
+* Introduced a new environment variable `QUEPID_CONSIDER_ALL_REQUESTS_LOCAL` that lets you bubble up errors message in a production Rails environment, which is helpful in troubleshooting deployments when you can't see the logs.  https://github.com/o19s/quepid/pull/750 by @epugh.
+
+* Package Jupyterlite to not require external network calls.  https://github.com/o19s/quepid/issues/721 by @epugh fixed by https://github.com/o19s/quepid/pull/728 by @mkr.
+
+### Bugs
+
+* A three point custom scorer should support keyboard shortcuts.  https://github.com/o19s/quepid/issues/738 by @epugh fixed by https://github.com/o19s/quepid/pull/752 by @depahelix2021.
+
+* Missing Documents Modal doesn't work when an ES/OS Query Template is defined.  https://github.com/o19s/quepid/issues/747 fixed by https://github.com/o19s/quepid/pull/753 by @epugh.
+
+* Populating a book of judgements would blow up.  Plus the data model allowed a single user to rate a query/doc pair multiple times, which was icky.  https://github.com/o19s/quepid/issues/734 fixed by https://github.com/o19s/quepid/pull/745 by @epugh.
+
+* Use relative paths everywhere so when Quepid is behind proxies it works properly.  https://github.com/o19s/quepid/pull/754 by @epugh.
+
+## 7.3.3 - 2023-05-30
+
+* When populating a book of judgements, if the title field wasn't `title`, then it wouldn't show up with the correct name.   https://github.com/o19s/quepid/pull/737 by @epugh fixes this.
+
+## 7.3.1 - 2023-05-26
+
+* Fixed some additional API paths for use with a nested Quepid context.  https://github.com/o19s/quepid/pull/736 by @epugh.  Follow up to https://github.com/o19s/quepid/pull/719.  
+
+## 7.3.0 - 2023-05-23
+
+### Improvements
+
+* Importing Snapshots was a feature from the dawn of Quepid, but @epugh had never used it till now.  Originally you had to put into the csv file the id of the Case you want to import into, which is awkward and error prone.  Now you can import a snapshot via the Import modal for a Case.  https://github.com/o19s/quepid/pull/727 by @depahelix2021 fixes https://github.com/o19s/quepid/issues/724 by @epugh.
+
+### Bugs
+
+* OpenSearch and Elasticsearch have a `_source` field that is nested JSON.  Turns out we don't support stringifying a JSON object in detailed exports or Snapshots.  https://github.com/o19s/quepid/pull/732 by @depahelix2021 fixes https://github.com/o19s/quepid/issues/730 by @epugh.  
+
+* With the logic for matching Quepid TLS to the search engine TLS happening only via frontend logic (introduced in https://github.com/o19s/quepid/pull/719), we found the User Experience really rough.  https://github.com/o19s/quepid/pull/731 by @epugh reworks the UX to be clear about when you need to reload your Quepid.  
+
+* We ship Jupyterlite for data manipulation, but maybe you don't have public network access? https://github.com/o19s/quepid/pull/728 by @mkr fixes https://github.com/o19s/quepid/issues/721 by @epugh.
+
+* Cloning a Case loses the advanced settings.  https://github.com/o19s/quepid/pull/729 by @epugh fixes https://github.com/o19s/quepid/issues/725 opened by @jvia.  Thanks @jvia for reporting this!
+
+## 7.2.1 - 2023-05-12
+
+Well, that didn't take long...   Wanted to use the "Import Snapshot" function, and discovered that the "Export Snapshot" function was busted.   
+
+### Features
+
+* We've had the ability to mark a Case as "Public" for a while, but we only supported it for the visualization of tries screen.  As a spike, trial allowing public access to /api/cases/CASE_ID.json and /api/cases/CASE_ID/snapshots/SNAPSHOT_ID.json end points.  https://github.com/o19s/quepid/pull/723 by @epugh.
+
+### Bugs
+
+* Fix Export Snapshot.  https://github.com/o19s/quepid/pull/722 by @depahelix2021.
+
+## 7.2.0 - 2023-05-11
+
+### Features
+
+* Interested in Rank Biased Overlap as a more powerful version of the venerable Jaccard metric?   We have it now as an example Jupter notebook.   Thanks to Tito Sierra at the 2023 US Haystack for introducing me to this metric.  Thanks to @mkr for creating the draft notebook.   
+
+* Provide link to Team from Book of Judgements.  https://github.com/o19s/quepid/pull/718 by @epugh.
+
+### Improvements
+
+* Lots of fixes and cleanups for nesting Quepid under another domain in https://github.com/o19s/quepid/pull/719.   Credit to @frankcelia for figuring out that we were too smart by half in letting the Rails app redirect traffic to try and match Quepid TLS to the search engine's TLS.   Pulling that out has simplified our logic immensely.   https://github.com/o19s/quepid/pull/719 by @epugh and @frankcelia.
+
+* We're now on Jupyterlite 0.1.0 from our relatively old 0.1.0b14, and have a build process that will let us stay up to date with this rapidly evolving project.  https://github.com/o19s/quepid/pull/709 by @mkr.
+
 ## 7.1.0 - 2023-05-05
 
 ### Features

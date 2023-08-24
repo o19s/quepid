@@ -2,10 +2,20 @@
 
 class PagesController < ApplicationController
   skip_before_action :require_login
-  before_action :check_page
+  skip_before_action :verify_authenticity_token, only: [ :theme_textmate ]
+  # before_action :check_page, only: [:show]
 
-  def show
-    render template: "pages/#{params[:page]}"
+  # def show
+  # render template: "pages/#{params[:page]}"
+  # end
+
+  # this is how we deal with the ACE editor wanting this specific file.
+  # There is another mode-json.js file that it wants from /assets/mode-json.js,
+  # and that we are able to just add to /app/assets/javascripts.
+  def theme_textmate
+    path = 'node_modules/ace-builds/src-min-noconflict/theme-textmate.js'
+    file_contents = File.read(path)
+    render js: file_contents
   end
 
   private

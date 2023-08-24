@@ -147,7 +147,7 @@
           }
 
           useCache   = typeof useCache !== 'undefined' ?  useCache : true;
-          // http GET /api/scorers/<int:scorerId>
+          // http GET api/scorers/<int:scorerId>
           var url    = 'api/scorers/' + id;
           var scorer = self.scorers.filter(function(item) { return item.scorerId === id; })[0];
 

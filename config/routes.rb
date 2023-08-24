@@ -4,12 +4,16 @@ require 'sidekiq/web'
 
 # rubocop:disable Metrics/BlockLength
 Rails.application.routes.draw do
+  # get 'home/show'
+  root 'home#show'
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
   Healthcheck.routes(self)
   constraints(AdminConstraint) do
     mount Sidekiq::Web, at: 'admin/jobs'
   end
+
+  resources :api_keys, path: 'api-keys', only: [ :create, :destroy ]
 
   # rubocop:disable Layout/LineLength
   # let's encrypt verification (can be removed in the future)
@@ -37,6 +41,9 @@ Rails.application.routes.draw do
     end
     get 'judge' => 'judgements#new'
     get 'skip_judging' => 'judgements#skip_judging'
+    member do
+      patch 'combine'
+    end
   end
 
   devise_for :users, controllers: {
@@ -53,18 +60,19 @@ Rails.application.routes.draw do
     resources :cases do
       resource :visibility, only: [ :update ], module: :cases
     end
+    get 'sparkline/vega_specification' => 'sparkline#vega_specification',
+        as: :sparkline_vega_specification
+    get 'sparkline/vega_data' => 'sparkline#vega_data', as: :sparkline_vega_data
   end
 
   namespace :admin do
     get '/' => 'home#index'
-    resources :users, except: [ :new, :create ] do
+    resources :users do
       resource :lock, only: [ :update ], module: :users
       resource :pulse, only: [ :show ], module: :users
     end
     resources :communal_scorers
   end
-
-  root 'core#index'
 
   # preview routes for mailers
   if Rails.env.development?
@@ -74,6 +82,7 @@ Rails.application.routes.draw do
 
   namespace :api, defaults: { format: :json } do
     get 'test' => 'api#test'
+    get 'test_exception' => 'api#test_exception'
 
     scope module: :v1, constraints: ApiConstraint.new(version: 1, default: true) do
       resources :users,   only: [ :index, :show, :update ] do
@@ -138,6 +147,8 @@ Rails.application.routes.draw do
         resources :cases do
           put 'refresh' => 'books/refresh#update'
         end
+        resources :query_doc_pairs
+        resources :judgements
       end
 
       namespace :clone do
@@ -185,13 +196,18 @@ Rails.application.routes.draw do
 
   # Routes handled by angular
   get '/case/:id(/try/:try_number)'   => 'core#index', as: :case_core
+  get '/cases/new'                    => 'core#new', as: :case_new
   get '/cases'                        => 'core#index'
   get '/case'                         => 'core#index'
   get '/cases/import'                 => 'core#index'
-  get '/teams(/:id)'                  => 'core#index', as: :teams
+  get '/teams(/:id)'                  => 'core#teams', as: :teams
   get '/scorers'                      => 'core#index'
 
   # Static pages
   # get '*page' => 'pages#show'
+  #
+
+  # Deal with ACE Editor really really wanting this file here
+  get '/javascripts/ace/theme-textmate.js' => 'pages#theme_textmate'
 end
 # rubocop:enable Metrics/BlockLength

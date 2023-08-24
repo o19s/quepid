@@ -281,12 +281,24 @@ print_step "Seeding tries................"
 
   new_try = tens_of_queries_case.tries.build try_params
 
+
   try_number = tens_of_queries_case.last_try_number + 1
 
   new_try.try_number   = try_number
   tens_of_queries_case.last_try_number = try_number
 
   new_try.save
+  
+  score_specifics = {
+    user: realistic_activity_user,
+    try: new_try, 
+    score: (0.01 * counter),
+    created_at: DateTime.now - (30 - counter).days,
+    updated_at: DateTime.now - (30 - counter).days
+  }
+  new_case_score = tens_of_queries_case.scores.build (score_specifics)
+  new_case_score.save
+  
   tens_of_queries_case.save
 
   # seventy percent of the time lets grab a new origin for the try in the tree
@@ -322,6 +334,81 @@ print_step "Seeding books................"
 
 book = Book.where(name: "Book of Ratings", team:osc, scorer: Scorer.system_default_scorer, selection_strategy: SelectionStrategy.find_by(name:'Multiple Raters')).first_or_create
 
+# this code copied from populate_controller.rb and should be in a service...
+# has a hacked in judgement creator...
+tens_of_queries_case.queries.each do |query|
+  query.ratings.each do |rating|
+    query_doc_pair = book.query_doc_pairs.find_or_create_by query_text: query.query_text,
+                                                           doc_id:     rating.doc_id
+    query_doc_pair.judgements << Judgement.new(rating: rating.rating, user: osc_member_user)
+    query_doc_pair.save
+  end
+  
+  book.reload
+  book.query_doc_pairs.shuffle[0..2].each do |query_doc_pair|
+    query_doc_pair.judgements << Judgement.new(rating: query_doc_pair.judgements.first.rating, user: realistic_activity_user)
+    query_doc_pair.save
+  end
+
+end
+
+# Mulitple Cases
+print_step "Seeding Multiple cases................"
+case_names = ["Typeahead: Dairy", "Typeahead: Meats", "Typeahead: Dessert", "Typeahead: Fruit & Veg"]
+
+case_names.each do |case_name|
+  
+  kase = realistic_activity_user.cases.create case_name: case_name
+  
+  days_of_experimentation = rand(3..20) # somewhere between 
+  
+  days_of_experimentation.times do |counter|
+  
+    try_specifics = {
+      try_number:       counter,
+      query_params:     'q=#$query##&magicBoost=' + (counter+2).to_s
+    }
+  
+    try_params = try_defaults.merge(try_specifics)
+  
+    new_try = kase.tries.build try_params
+  
+  
+    try_number = kase.last_try_number + 1
+  
+    new_try.try_number   = try_number
+    kase.last_try_number = try_number
+  
+    new_try.save
+    
+    score_specifics = {
+      user: realistic_activity_user,
+      try: new_try, 
+      score: (0.01 * counter),
+      created_at: DateTime.now - (days_of_experimentation - counter).days,
+      updated_at: DateTime.now - (days_of_experimentation - counter).days
+    }
+    new_case_score = kase.scores.build (score_specifics)
+    new_case_score.save
+    
+    kase.save
+  
+    # seventy percent of the time lets grab a new origin for the try in the tree
+    # 30 percent of the time we just add a new one
+    if rand(0..100) <= 70
+      parent_try = kase.tries.sample
+    end
+    new_try.parent = parent_try
+  
+    new_try.save
+  
+  
+  end
+  
+
+end
+
+print_step "End of Multiple cases................"
 
 # Big Cases
 

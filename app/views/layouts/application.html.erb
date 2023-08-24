@@ -7,75 +7,79 @@
 
 <!-- Probably better way of doing this -->
 <% if flash[:unfurl] %>
-<!-- We have unfurl -->
-
-<title>Quepid: Case <%= flash[:unfurl]["case_name"] %></title>
-
-<!-— facebook open graph tags -->
-<meta property="og:type" content="website" />
-<% if flash[:unfurl]["id"] %>
-<meta property="og:url" content="<%=case_core_url(id: flash[:unfurl]["id"] ) %>" />
-<% end %>
-<meta property="og:title" content="Case <%= flash[:unfurl]["case_name"] %>" />
-<meta property="og:description" content="Case <%= flash[:unfurl]["case_name"] %> Description here." />
-<meta property="og:image" content="<%= image_url "quepid-icon.png" %>" />
-
-<!-— twitter card tags additive with the og: tags -->
-<meta name="twitter:card" content="summary">
-<meta name="twitter:site" content="@quepid_search">
-<meta name="twitter:domain" value="<%=URI.parse(root_url).host%>" />
-<meta name="twitter:title" value="Case <%= flash[:unfurl]["case_name"] %>" />
-<meta name="twitter:description" value="Case <%= flash[:unfurl]["case_name"] %> Description here" />
-<meta name="twitter:image" content="<%= image_url "quepid-icon.png" %>" />
-<% if flash[:unfurl]["id"] %>
-<meta name="twitter:url" value="<%=case_core_url(id: flash[:unfurl]["id"] ) %>" />
-<meta name="twitter:label1" value="Latest Try" />
-<meta name="twitter:data1" value="<%=Case.find_by_id(flash[:unfurl]["id"]).tries.latest.try_number %>" />
-<% end %>
+  <!-- We have unfurl -->
+  
+  <title>Quepid: Case <%= flash[:unfurl]["case_name"] %></title>
+  
+  <!-— facebook open graph tags -->
+  <meta property="og:type" content="website" />
+  <% if flash[:unfurl]["id"] %>
+    <meta property="og:url" content="<%=case_core_url(id: flash[:unfurl]["id"] ) %>" />
+  <% end %>
+  <meta property="og:title" content="Case <%= flash[:unfurl]["case_name"] %>" />
+  <meta property="og:description" content="Case <%= flash[:unfurl]["case_name"] %> Description here." />
+  <meta property="og:image" content="<%= image_url "quepid-icon.png" %>" />
+  
+  <!-— twitter card tags additive with the og: tags -->
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:site" content="@quepid_search">
+  <meta name="twitter:domain" value="<%=URI.parse(root_url).host%>" />
+  <meta name="twitter:title" value="Case <%= flash[:unfurl]["case_name"] %>" />
+  <meta name="twitter:description" value="Case <%= flash[:unfurl]["case_name"] %> Description here" />
+  <meta name="twitter:image" content="<%= image_url "quepid-icon.png" %>" />
+  <% if flash[:unfurl]["id"] %>
+    <meta name="twitter:url" value="<%=case_core_url(id: flash[:unfurl]["id"] ) %>" />
+    <meta name="twitter:label1" value="Latest Try" />
+    <meta name="twitter:data1" value="<%=Case.find_by_id(flash[:unfurl]["id"]).tries.latest.try_number %>" />
+  <% end %>
 <% else %>
-<!-- We DO NOT have unfurl -->
-
-<title>Quepid -- Relevant Search Solved</title>
-
-<!-— facebook open graph tags -->
-<meta property="og:type" content="website" />
-<meta name="twitter:site" content="@quepid_search">
-<meta property="og:url" content="<%=root_url%>" />
-<meta property="og:title" content="Quepid -- Relevant Search Solved" />
-<meta property="og:description" content="Tired of irrelevant search results? Use Quepid products & services to help improve the quality and relevancy of your search results." />
-<meta property="og:image" content="<%= image_url "quepid-icon.png" %>" />
-
-<!-— twitter card tags additive with the og: tags -->
-<meta name="twitter:card" content="summary">
-<meta name="twitter:domain" value="<%=URI.parse(root_url).host%>" />
-<meta name="twitter:title" value="Quepid -- Relevant Search Solved" />
-<meta name="twitter:description" value="Tired of irrelevant search results? Use Quepid products & services to help improve the quality and relevancy of your search results." />
-<meta name="twitter:image" content="<%= image_url "quepid-icon.png" %>" />
-<meta name="twitter:url" value="<%=root_url%>" />
+  <!-- We DO NOT have unfurl -->
+  
+  <title>Quepid -- Relevant Search Solved</title>
+  
+  <!-— facebook open graph tags -->
+  <meta property="og:type" content="website" />
+  <meta name="twitter:site" content="@quepid_search2">
+  <meta property="og:url" content="<%= root_path %>" />
+  <meta property="og:title" content="Quepid -- Relevant Search Solved" />
+  <meta property="og:description" content="Tired of irrelevant search results? Use Quepid products & services to help improve the quality and relevancy of your search results." />
+  <meta property="og:image" content="<%= image_url "quepid-icon.png" %>" />
+  
+  <!-— twitter card tags additive with the og: tags -->
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:domain" value="<%=URI.parse(root_url).host%>" />
+  <meta name="twitter:title" value="Quepid -- Relevant Search Solved" />
+  <meta name="twitter:description" value="Tired of irrelevant search results? Use Quepid products & services to help improve the quality and relevancy of your search results." />
+  <meta name="twitter:image" content="<%= image_url "quepid-icon.png" %>" />
+  <meta name="twitter:url" value="<%=root_url%>" />
 <% end %>
 
-<meta name="viewport" content="width=device-width">
+
 
 <%= stylesheet_link_tag 'application', media: 'all' %>
 <%= csrf_meta_tags %>
 <%= javascript_include_tag 'application' %>
 
-</head>
-<body class="d-flex flex-column h-100">
-  <header>
-    <%= render 'layouts/header' %>
-  </header>
+ </head>
 
-  <!-- Begin page content -->
-  <main class="flex-shrink-0">
-    <div class="container">
+<body>
+
+<%= render 'layouts/header' %>
+
+<div class="container-fluid">
+  <div class="row">
+    
+    <% if @current_user  && !(controller_name == 'judgements' and ['new','edit'].any? params[:action]) %>
+      <%= render 'layouts/sidebar' %>
+    <% end %>
+    
+    <!-- Begin page content -->
+    <main class="col-md-10 ms-sm-auto col-lg-<%= @current_user ? '11' : '12' %> px-md-5">
       <%= yield %>
-    </div>
-  </main>
-
-  <%= render 'layouts/footer' %>
+    </main>
+  </div>
+</div>
 
   <%= render 'layouts/common_js' %>
-
 </body>
 </html>

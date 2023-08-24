@@ -1,7 +1,7 @@
 <h1>Editing User</h1>
 
 <div class="clearfix">
-<%= render 'form' %>
+<%= render partial: 'form', locals: {passed_in_action: 'update'} %>
 </div>
 
 <%= link_to 'Show', admin_user_path(@user) %> |

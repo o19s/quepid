@@ -7,7 +7,7 @@
   <p>These are details returned from the search engine on how it processed the input query</p>
 
   <uib-tabset active="active">
-    <uib-tab index="0" heading="Params" ng-click="ctrl.toggleParams = true">
+    <uib-tab index="0" heading="Params" ng-click="ctrl.togglePanel('queryDetails')">
       <p class='bg-warning text-warning padded-text' ng-show="ctrl.queryDetailsMessage">
         <i class="fa fa-exclamation-triangle" aria-hidden="true"></i>
         {{ctrl.queryDetailsMessage}}
@@ -20,18 +20,33 @@
         </json-explorer>
       </span>
     </uib-tab>
-    <uib-tab index="1" heading="Parsing" disable="false"  ng-click="ctrl.toggleParams = false">
+    <uib-tab index="1" heading="Parsing" disable="false"  ng-click="ctrl.togglePanel('parsedQueryDetails')">
       <p>This is how the search engine parsed the query.</p>
       <json-explorer
         json-data="ctrl.parsedQueryDetails"
         collapsed="false">
       </json-explorer>
     </uib-tab>
+    <uib-tab index="2" heading="Query Template" disable="false"  ng-click="ctrl.renderQueryTemplate()">
+      <p ng-hide="ctrl.isTemplatedQuery">This is not a templated query.</p>
+      <span ng-show="ctrl.isTemplatedQuery">
+        <p>This is what the populated query template looks like</p>
+        <div id='render-template' class='es-query-params' ui-ace="{
+            require:      ['ace/ext/language_tools'],
+            useWrapMode:  false,
+            mode:         'json',
+            theme:        'chrome',
+            readOnly:     true
+          }" ng-model="ctrl.renderedQueryTemplate">
+        </div>
+      </span>
+    </uib-tab>
   </uib-tabset>
 </div>
 
 <div class="modal-footer">
-  <button class="btn btn-default float-left" ng-show="ctrl.toggleParams === true" ng-click="ctrl.cancel()" ngclipboard data-clipboard-text="{{ctrl.queryDetails}}"><i class="glyphicon glyphicon-copy"></i> Copy</button>
-  <button class="btn btn-default float-left" ng-show="ctrl.toggleParams === false" ng-click="ctrl.cancel()" ngclipboard data-clipboard-text="{{ctrl.parsedQueryDetails}}"><i class="glyphicon glyphicon-copy"></i> Copy</button>
+  <button class="btn btn-default float-left" ng-show="ctrl.toggledPanel === 'queryDetails'" ng-click="ctrl.cancel()" ngclipboard data-clipboard-text="{{ctrl.queryDetails}}"><i class="glyphicon glyphicon-copy"></i> Copy</button>
+  <button class="btn btn-default float-left" ng-show="ctrl.toggledPanel === 'parsedQueryDetails'" ng-click="ctrl.cancel()" ngclipboard data-clipboard-text="{{ctrl.parsedQueryDetails}}"><i class="glyphicon glyphicon-copy"></i> Copy</button>
+  <button class="btn btn-default float-left" ng-show="ctrl.toggledPanel === 'renderedQueryTemplate'" ng-click="ctrl.cancel()" ngclipboard data-clipboard-text="{{ctrl.renderedQueryTemplate}}"><i class="glyphicon glyphicon-copy"></i> Copy</button>
   <button class="btn btn-default btn-primary" ng-click="ctrl.cancel()">Close</button>
 </div>

@@ -7,32 +7,16 @@
 // What did I do here, like implement a router on top of my router!?!?
 angular.module('QuepidApp')
   .service('caseTryNavSvc', [
-    '$location', '$timeout', '$window',
-    function caseTryNavSvc($location, $timeout, $window) {
+    '$location', '$timeout',
+    function caseTryNavSvc($location, $timeout) {
       var caseNo = 0;
       var tryNo = 0;
-      var bootstrapPath = null;
 
       var currNavDelay = 1000;
       var isLoading = false;
 
-
-      this.pathRequested = function(caseTryObj) {
-        bootstrapPath = caseTryObj;
-      };
-
       this.isLoading = function() {
         return isLoading;
-      };
-
-
-      this.bootstrap = function() {
-        if (bootstrapPath) {
-          this.navigateTo(bootstrapPath);
-          bootstrapPath = null;
-        } else {
-          $window.location.reload();
-        }
       };
 
       this.navigateTo = function(caseTryObj, navDelay) {
@@ -90,6 +74,45 @@ angular.module('QuepidApp')
 
       this.getTryNo = function() {
         return tryNo;
+      };
+      
+      // If Quepid is running on HTTPS, like on Heroku, then it needs to switch
+      // to HTTP in order to make calls to a Solr that is running in HTTP as well, otherwise
+      // you get this "Mixed Content", which browsers block as a security issue.
+      // https://developer.mozilla.org/en-US/docs/Web/Security/Mixed_content
+      this.needToRedirectQuepidProtocol = function(searchUrl) {
+        if (searchUrl){          
+          // Figure out if we need to redirect based on our search engine's url.
+          var quepidStartsWithHttps = $location.protocol() === 'https';
+          var searchEngineStartsWithHttps = searchUrl.startsWith('https');
+  
+          return (quepidStartsWithHttps !== searchEngineStartsWithHttps);
+        } else {
+          return false;
+        }
+      };
+      
+      // Return the tuple [quepidUrlToSwitchTo, protocolToSwitchTo]
+      this.swapQuepidUrlTLS = function(){
+        // Grab just the absolute url without any trailing query parameters
+        var absUrl = $location.absUrl();
+        // In development you might be on port 3000, and for https we need you not on port 3000
+        absUrl = absUrl.replace(':3000','');              
+        var n = absUrl.indexOf('?');
+        
+        var quepidUrlStartsWithHttps = absUrl.startsWith('https');
+        var quepidUrlToSwitchTo = absUrl.substring(0, n !== -1 ? n : absUrl.length);
+        var protocolToSwitchTo = null;
+        if (quepidUrlStartsWithHttps){
+          protocolToSwitchTo = 'http';
+          quepidUrlToSwitchTo = quepidUrlToSwitchTo.replace('https', 'http');
+        }
+        else {
+          protocolToSwitchTo = 'https';
+          quepidUrlToSwitchTo = quepidUrlToSwitchTo.replace('http', 'https');
+        }
+        
+        return [quepidUrlToSwitchTo, protocolToSwitchTo];
       };
 
     }

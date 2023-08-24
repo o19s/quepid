@@ -8,7 +8,7 @@
   <%= image_tag @user.avatar_url(:big), size:'96x96', class:'img-rounded' %>
 
   <div class="form-group">
-    <label class="col-sm-2 control-label">Username</label>
+    <label class="col-sm-2 control-label">Email</label>
     <div class="col-sm-10">
       <p class="form-control-static"><%= @user.email %></p>
     </div>
@@ -21,6 +21,13 @@
     </div>
   </div>
 
+  <div class="form-group">
+    <label class="col-sm-2 control-label">Company</label>
+    <div class="col-sm-10">
+      <p class="form-control-static"><%= @user.company %></p>
+    </div>
+  </div>
+  
   <div class="form-group">
     <label class="col-sm-2 control-label">Signed Up</label>
     <div class="col-sm-10">
@@ -81,7 +88,7 @@
     data-pulse
     data-item-selector="#cases-viewed"
     data-signup-date="<%= @pulse_chart_start_date %>"
-    data-url="<%= "/admin/users/#{@user.id}/pulse.json?data=metadata" %>"
+    data-url="<%= url_for admin_user_pulse_path @user, params: {data: 'metadata'} %>"
   >
   </div>
 
@@ -91,7 +98,7 @@
     data-pulse
     data-item-selector="#cases-scored"
     data-signup-date="<%= @pulse_chart_start_date %>"
-    data-url="<%= "/admin/users/#{@user.id}/pulse.json?data=scores" %>"
+    data-url="<%= url_for admin_user_pulse_path @user, params: {data: 'scores'} %>"
   >
   </div>
 
@@ -101,7 +108,7 @@
     data-pulse
     data-item-selector="#cases-created"
     data-signup-date="<%= @pulse_chart_start_date %>"
-    data-url="<%= "/admin/users/#{@user.id}/pulse.json?data=cases-created" %>"
+    data-url="<%= url_for admin_user_pulse_path @user, params: {data: 'cases-created'} %>"
   >
   </div>
 
@@ -111,7 +118,7 @@
     data-pulse
     data-item-selector="#teams-created"
     data-signup-date="<%= @pulse_chart_start_date %>"
-    data-url="<%= "/admin/users/#{@user.id}/pulse.json?data=teams-created" %>"
+    data-url="<%= url_for admin_user_pulse_path @user, params: {data: 'teams-created'} %>"
   >
   </div>
 
@@ -121,7 +128,7 @@
     data-pulse
     data-item-selector="#queries-created"
     data-signup-date="<%= @pulse_chart_start_date %>"
-    data-url="<%= "/admin/users/#{@user.id}/pulse.json?data=queries-created" %>"
+    data-url="<%= url_for admin_user_pulse_path @user, params: {data: 'queries-created'} %>"
   >
   </div>
 

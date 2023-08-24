@@ -204,19 +204,9 @@ class Case < ApplicationRecord
     update last_try_number: the_try.try_number
   end
 
-  # rubocop:disable Metrics/MethodLength
   def clone_try the_try, preserve_history
-    new_try = Try.new(
-      escape_query:   the_try.escape_query,
-      api_method:     the_try.api_method,
-      field_spec:     the_try.field_spec,
-      name:           the_try.name,
-      query_params:   the_try.query_params,
-      search_engine:  the_try.search_engine,
-      search_url:     the_try.search_url,
-      number_of_rows: the_try.number_of_rows,
-      try_number:     preserve_history ? the_try.try_number : 0
-    )
+    new_try = the_try.dup
+    new_try.try_number = preserve_history ? the_try.try_number : 0
     tries << new_try
 
     the_try.curator_variables.each do |a_curator_variable|
@@ -227,7 +217,6 @@ class Case < ApplicationRecord
       new_try.curator_variables << new_curator_variable
     end
   end
-  # rubocop:enable Metrics/MethodLength
 
   def clone_query query, clone_ratings
     new_query = query.dup

@@ -205,31 +205,17 @@ angular.module('QuepidApp')
 
       }
 
-      // Copied validateSearchEngineUrl from controllers/queryParams.js and renamed it checkTLSForSearchEngineUrl
       function checkTLSForSearchEngineUrl () {
-
-        // Figure out if we need to reload Quepid on a different http/https port to match search engine.
-        var quepidStartsWithHttps = $location.protocol() === 'https';
-        var searchEngineStartsWithHttps = $scope.pendingWizardSettings.searchUrl.startsWith('https');
-
-        if ((quepidStartsWithHttps.toString() === searchEngineStartsWithHttps.toString())){
-          $scope.showTLSChangeWarning = false;
-        }
-        else {
-          $scope.showTLSChangeWarning = true;
-
-          $scope.quepidUrlToSwitchTo = $location.protocol() + '://' + $location.host() + $location.path();
+        $scope.showTLSChangeWarning = caseTryNavSvc.needToRedirectQuepidProtocol($scope.pendingWizardSettings.searchUrl);
+        
+        if ($scope.showTLSChangeWarning){
+         
+          var resultsTuple = caseTryNavSvc.swapQuepidUrlTLS();
+          
+          $scope.quepidUrlToSwitchTo = resultsTuple[0];
+          $scope.protocolToSwitchTo = resultsTuple[1];
+                    
           $scope.quepidUrlToSwitchTo = $scope.quepidUrlToSwitchTo + '?searchEngine=' + $scope.pendingWizardSettings.searchEngine + '&searchUrl=' + $scope.pendingWizardSettings.searchUrl + '&showWizard=true&caseName=' + $scope.pendingWizardSettings.caseName + '&apiMethod=' + $scope.pendingWizardSettings.apiMethod;
-
-          if (searchEngineStartsWithHttps){
-            $scope.protocolToSwitchTo = 'https';
-            $scope.quepidUrlToSwitchTo = $scope.quepidUrlToSwitchTo.replace('http', 'https');
-          }
-          else {
-            $scope.protocolToSwitchTo = 'http';
-            $scope.quepidUrlToSwitchTo = $scope.quepidUrlToSwitchTo.replace('https', 'http');
-          }
-
         }
       }
 

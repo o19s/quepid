@@ -1,4 +1,4 @@
-class AddFkToScorers < ActiveRecord::Migration
+class AddFkToScorers < ActiveRecord::Migration[4.2]
   def change
 
     remove_column :users, :scorer_id

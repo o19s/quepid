@@ -87,7 +87,7 @@
                 If you are using a version of Solr between 8.4 and 9.0, you may need to tweak the content-type being set by <code>wt=json</code>.
                 You can do this via the below curl command:
 <pre>
-curl -X POST -H 'Content-type:application/json' -d '{
+curl -k -X POST -H 'Content-type:application/json' -d '{
   "update-queryresponsewriter": {
     "name": "json",
     "class": "solr.JSONResponseWriter",

@@ -151,7 +151,7 @@ try_without_curator_vars:
   try_number:     2
   search_engine:  solr
   api_method:     JSONP
-  field_spec:     id:id title:title
+  field_spec:     id:id title:title 
 
 try_with_curator_vars:
   case:           :random_case
@@ -161,7 +161,7 @@ try_with_curator_vars:
   search_engine:  solr
   api_method:     JSONP
   field_spec:     id:id title:title
-
+  
 es_try:
   case:           :random_case
   query_params:   '{ "query": { "match": { "text": "#$query##" } } }'
@@ -178,6 +178,17 @@ es_try_with_curator_vars:
   search_engine:  es
   field_spec:     id:_id title:title
 
+try_with_headers:
+  case:           :random_case
+  query_params:   'q=#$query##'
+  search_url:     http://test.com/solr/tmdb/select
+  try_number:     6
+  search_engine:  solr
+  api_method:     JSONP
+  field_spec:     id:id title:title  
+  custom_headers: '{"Authorization": "ApiKey TEF5QkFJUUJVUnRsNG1fekNCR3E6WmRYUFJRRVdTMHlBVWotWFdqQWxuUQ=="}'
+  
+  
 bootstrap_try_1:
   case:           :bootstrap_case
   query_params:   'q=#$query##'

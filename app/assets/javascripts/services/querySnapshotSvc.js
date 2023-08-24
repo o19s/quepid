@@ -24,6 +24,7 @@ angular.module('QuepidApp')
       };
 
       svc.importSnapshots = importSnapshots;
+      svc.importSnapshotsToSpecificCase = importSnapshotsToSpecificCase;
       svc.get             = get;
 
       var addSnapshotResp = function(snapshots) {
@@ -148,6 +149,14 @@ angular.module('QuepidApp')
       this.version = function() {
         return version;
       };
+
+      function importSnapshotsToSpecificCase(docs, targetCaseNo) {
+        let docsWithCaseOverridden = docs;
+        angular.forEach(docsWithCaseOverridden, function(doc) {
+          doc['Case ID'] = targetCaseNo;
+        });
+        return importSnapshots(docsWithCaseOverridden);
+      }
 
       function importSnapshots (docs) {
         var cases = {};

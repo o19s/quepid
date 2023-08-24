@@ -31,3 +31,6 @@ Rails.application.config.assets.precompile += %w[
   ng-tags-input/build/ng-tags-input.min.css
   ng-tags-input/build/ng-tags-input.bootstrap.min.css
 ]
+
+# For some reason the mapping in core.css.scss isn't working, so do this.'
+Rails.application.config.assets.paths << Rails.root.join('node_modules/bootstrap-icons/font')

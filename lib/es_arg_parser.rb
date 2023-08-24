@@ -6,7 +6,7 @@ module EsArgParser
   def self.parse query_string, vars = {}
     query_string = '{}' if query_string.nil?
     # Remove new line characters
-    json_string = query_string.gsub(/\\n/, '').gsub(/\\r/, '').gsub(/%/, '%%')
+    json_string = query_string.gsub('\\n', '').gsub('\\r', '').gsub('%', '%%')
 
     # Ready string to accept curator vars
     converted_string = json_string.clone
@@ -16,7 +16,7 @@ module EsArgParser
     converted_string = converted_string % vars if converted_string != json_string
 
     # If there are any remaining escaped `%`, unescape them
-    converted_string.gsub!(/%%/, '%')
+    converted_string.gsub!('%%', '%')
 
     # Parse the JSON string
     # rubocop:disable Style/RedundantReturn

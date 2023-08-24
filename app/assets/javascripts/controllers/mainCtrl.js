@@ -4,13 +4,13 @@ angular.module('QuepidApp')
   // there's a lot of dependencies here, but this guy
   // is responsible for bootstrapping everyone so...
   .controller('MainCtrl', [
-    '$scope', '$routeParams', '$location', '$rootScope', '$log',
+    '$scope', '$routeParams', '$rootScope', '$log',
     'flash',
     'caseSvc', 'settingsSvc', 'querySnapshotSvc', 'caseTryNavSvc',
     'queryViewSvc', 'queriesSvc', 'docCacheSvc', 'diffResultsSvc', 'scorerSvc',
     'paneSvc',
     function (
-      $scope, $routeParams, $location, $rootScope, $log,
+      $scope, $routeParams, $rootScope, $log,
       flash,
       caseSvc, settingsSvc, querySnapshotSvc, caseTryNavSvc,
       queryViewSvc, queriesSvc, docCacheSvc, diffResultsSvc, scorerSvc,
@@ -56,6 +56,10 @@ angular.module('QuepidApp')
       var bootstrapCase = function() {
         return caseSvc.get(caseNo)
           .then(function(acase) {
+            if (angular.isUndefined(acase)){
+              throw new Error('Could not retrieve case ' + caseNo + '.   Confirm that the case has been shared with you via a team you are a member of!');
+            }
+
             caseSvc.selectTheCase(acase);
             settingsSvc.setCaseTries(acase.tries);
             if ( isNaN(tryNo) ) {  // If we didn't specify a tryNo via the URL
@@ -65,6 +69,10 @@ angular.module('QuepidApp')
             settingsSvc.setCurrentTry(tryNo);
             if (!settingsSvc.isTrySelected()){
               flash.to('search-error').error = 'The try that was specified for the case does not actually exist!';
+            }
+            else if (caseTryNavSvc.needToRedirectQuepidProtocol(settingsSvc.editableSettings().searchUrl)){
+              $log.info('Need to redirect browser to different TLS');
+              throw new Error('Need to change to different TLS'); // Signal that we need to change TLS.              
             }
           });
       };
@@ -128,7 +136,7 @@ angular.module('QuepidApp')
       if ( caseNo === 0 ) {
         flash.error = 'You don\'t have any Cases created in Quepid.  Click \'Create a Case\' from the Relevancy Cases dropdown to get started.';
       }
-      if ( caseNo > 0 ) {
+      else if ( caseNo > 0 ) {
         queriesSvc.querySearchPromiseReset();
 
         bootstrapCase()
@@ -136,6 +144,26 @@ angular.module('QuepidApp')
             loadQueries();
             loadSnapshots();
             updateCaseMetadata();
+            paneSvc.refreshElements();
+          }).catch(function(error) {            
+            // brittle logic, but check if we throw the TLS error or if it's from something else.'
+            var message = error.message;
+            if (message === 'Need to change to different TLS'){
+              var resultsTuple = caseTryNavSvc.swapQuepidUrlTLS();
+            
+              var quepidUrlToSwitchTo = resultsTuple[0];
+              var protocolToSwitchTo = resultsTuple[1];
+            
+              flash.to('search-error').error = '<a href="' + quepidUrlToSwitchTo + '" class="btn btn-primary form-control">Click Here to <span class="glyphicon glyphicon-refresh"></span> Reload Quepid in <code>' + protocolToSwitchTo + '</code> Protocol!';
+            }
+            else if (message.startsWith('Could not retrieve case')){
+              flash.to('search-error').error = message;
+            }
+            else {
+              flash.to('search-error').error = 'Could not load the case ' + caseNo + ' due to: ' + message;
+            }
+            //loadSnapshots();
+            //updateCaseMetadata();
             paneSvc.refreshElements();
           });
 

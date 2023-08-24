@@ -57,15 +57,23 @@ COPY ./LICENSE ./LICENSE
 COPY ./package.json ./package.json
 COPY ./postcss.config.js ./postcss.config.js
 COPY ./Procfile ./Procfile
-COPY ./public ./public
+
+# Exclude the /public/notebook directory
+COPY ./public/images ./public/images
+COPY ./public/javascripts ./public/javascripts
+COPY ./public/*.html ./public
+COPY ./public/robots.txt ./public
+
 COPY ./Rakefile ./Rakefile
 COPY ./README.md ./README.md
 COPY ./vendor ./vendor
 COPY ./yarn.lock ./yarn.lock
-COPY ./jupyterlite/notebooks.gz ./jupyterlite/notebooks.gz
+
+ADD https://github.com/o19s/quepid-jupyterlite/releases/latest/download/jupyter-lite-build.tgz ./notebooks.gz
 
 RUN mkdir -p tmp/pids
 
+# Also unpacks the ./notebooks.gz file
 RUN RAILS_ENV=production SECRET_KEY_BASE=fake_out_devise bundle exec rake assets:precompile
 
 # Remove some files not needed in resulting image
