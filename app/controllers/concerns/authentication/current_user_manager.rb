@@ -44,7 +44,7 @@ module Authentication
 
     def require_login
       unless @current_user
-        # check if we are redirected from the case page, and if so lets support unfurling
+        # check if we are redirected from the case page, and if so support unfurling
         # by populating the flash so it renders in the start.html.erb layout.
         if 'core' == params[:controller] && 'index' == params[:action] && params[:id]
           flash[:unfurl] = Case.find_by(id: params[:id])
