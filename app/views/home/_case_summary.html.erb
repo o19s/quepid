@@ -10,7 +10,6 @@
       </p>
       <!-- Look at https://github.com/ankane/prophet-ruby -->
       <%
-      #df = Rover.read_csv("example.csv")    
       data = kase.scores.collect{ |score| {ds: score.created_at.to_date.to_fs(:db), y: score.score, datetime: score.created_at.to_date } }.uniq
       # warning! blunt filter below!
       data = data.uniq { |h| h[:ds] }
@@ -18,7 +17,7 @@
       
       do_changepoints = data.length >= 3 ? true : false # need at least 3...
       
-      if do_changepoints
+      if Rails.application.config.quepid_prophet_analytics && do_changepoints
         df = Rover::DataFrame.new(data)
         m = Prophet.new()
         m.fit(df)
