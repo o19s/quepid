@@ -2,27 +2,22 @@
 
 class HomeController < ApplicationController
   # rubocop:disable Metrics/AbcSize
-  # rubocop:disable Metrics/MethodLength
   def show
     # @cases = @current_user.cases.not_archived.includes([ :scores ])
-    @cases = @current_user.cases.not_archived
-      .left_outer_joins(:metadata)
-      .order(Arel.sql('`case_metadata`.`last_viewed_at` DESC, `cases`.`updated_at` DESC'))
-      .uniq
+    @cases = @current_user.cases.not_archived.recent.uniq
 
     # copied from dropdown_contoller.rb
     @most_recent_cases = lookup_most_recent_cases
 
     @most_recent_books = []
     @lookup_for_books = {}
-    @current_user.books_involved_with.order(:updated_at).each do |book|
+    @current_user.books_involved_with.order(:updated_at).limit(4).each do |book|
       @most_recent_books << book
       judged_by_current_user = book.judgements.where(user: @current_user).count
       if judged_by_current_user.positive? && judged_by_current_user < book.query_doc_pairs.count
         @lookup_for_books[book] = book.query_doc_pairs.count - judged_by_current_user
 
       end
-      break if 4 == @most_recent_books.count
     end
 
     candidate_cases = @cases.select { |kase| kase.scores.scored.count.positive? }
@@ -30,7 +25,6 @@ class HomeController < ApplicationController
     @grouped_cases = @grouped_cases.select { |_key, value| value.count > 1 }
   end
   # rubocop:enable Metrics/AbcSize
-  # rubocop:enable Metrics/MethodLength
 
   private
 
@@ -42,7 +36,7 @@ class HomeController < ApplicationController
     # which will then cause the ordering not to work properly.
     # So instead, we have this beauty!
     sql = "
-      SELECT  DISTINCT `cases`.`id`, `case_metadata`.`last_viewed_at`
+      SELECT DISTINCT `cases`.`id`, `case_metadata`.`last_viewed_at`
       FROM `cases`
       LEFT OUTER JOIN `case_metadata` ON `case_metadata`.`case_id` = `cases`.`id`
       LEFT OUTER JOIN `teams_cases` ON `teams_cases`.`case_id` = `cases`.`id`
@@ -63,8 +57,10 @@ class HomeController < ApplicationController
     end
 
     # map to objects
-    most_recent_cases = Case.includes([ :scorer, :scores ]).where(id: [ case_ids ])
+    # Don't include 'scores' until we solve the issue of some cases haveing 60,000+ records!
+    most_recent_cases = Case.includes([ :scorer ]).where(id: [ case_ids ])
     most_recent_cases = most_recent_cases.select { |kase| kase.last_score.present? }
+
     # rubocop:enable
     most_recent_cases = most_recent_cases.sort_by(&:case_name)
     most_recent_cases
