@@ -2,7 +2,7 @@
 
 class PagesController < ApplicationController
   skip_before_action :require_login
-  skip_before_action :verify_authenticity_token, only: [ :theme_textmate ]
+  skip_before_action :verify_authenticity_token, only: [ :theme_textmate. :mode_json ]
   # before_action :check_page, only: [:show]
 
   # def show
