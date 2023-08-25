@@ -10,14 +10,15 @@ class PagesController < ApplicationController
   # end
 
   # this is how we deal with the ACE editor wanting this specific file.
-  # There is another mode-json.js file that it wants from /assets/mode-json.js,
-  # and that we are able to just add to /app/assets/javascripts.
+
   def theme_textmate
     path = 'node_modules/ace-builds/src-min-noconflict/theme-textmate.js'
     file_contents = File.read(path)
     render js: file_contents, content_type: Mime::Type.lookup('application/javascript')
   end
-  
+
+  # In production this route kicks in, and in dev we load /assets/mode-json.js from
+  # the /app/assets/javascripts/mode-json.js location..
   def mode_json
     path = 'node_modules/ace-builds/src-min-noconflict/mode-json.js'
     file_contents = File.read(path)

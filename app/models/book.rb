@@ -29,6 +29,9 @@ class Book < ApplicationRecord
   has_many   :judgements, -> { order('query_doc_pair_id') },
              through:   :query_doc_pairs,
              dependent: :destroy
+
+  has_many :cases, dependent: :nullify
+
   scope :for_user, ->(user) {
     joins('
       LEFT OUTER JOIN `teams` ON `teams`.`id` = `books`.`team_id`
