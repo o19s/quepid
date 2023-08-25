@@ -22,7 +22,6 @@
 #  fk_rails_...  (selection_strategy_id => selection_strategies.id)
 #
 class Book < ApplicationRecord
-  
   # Associations
   belongs_to :team
   belongs_to :selection_strategy
@@ -33,14 +32,13 @@ class Book < ApplicationRecord
              dependent: :destroy
 
   has_many :cases, dependent: :nullify
-  
 
   has_many :rated_query_doc_pairs, -> { has_judgements },
-             class_name: 'QueryDocPair',
-             dependent:  :destroy,
-             inverse_of: :book  
+           class_name: 'QueryDocPair',
+           dependent:  :destroy,
+           inverse_of: :book
 
-  # Scopes    
+  # Scopes
   scope :for_user, ->(user) {
     joins('
       LEFT OUTER JOIN `teams` ON `teams`.`id` = `books`.`team_id`
@@ -51,6 +49,4 @@ class Book < ApplicationRecord
     ', user.id)
       .order(name: :desc)
   }
-
-
 end

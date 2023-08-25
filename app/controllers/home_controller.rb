@@ -19,7 +19,7 @@ class HomeController < ApplicationController
         @lookup_for_books[book] = book.query_doc_pairs.count - judged_by_current_user
       end
     end
-    
+
     @most_recent_books.sort_by!(&:name)
 
     candidate_cases = @cases.select { |kase| kase.scores.scored.count.positive? }
