@@ -15,7 +15,7 @@ class PagesController < ApplicationController
   def theme_textmate
     path = 'node_modules/ace-builds/src-min-noconflict/theme-textmate.js'
     file_contents = File.read(path)
-    render js: file_contents, content_type: Mime::Type.lookup("application/javascript") 
+    render js: file_contents, content_type: Mime::Type.lookup('application/javascript')
   end
 
   private
