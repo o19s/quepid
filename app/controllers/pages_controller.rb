@@ -17,6 +17,12 @@ class PagesController < ApplicationController
     file_contents = File.read(path)
     render js: file_contents, content_type: Mime::Type.lookup('application/javascript')
   end
+  
+  def mode_json
+    path = 'node_modules/ace-builds/src-min-noconflict/mode-json.js'
+    file_contents = File.read(path)
+    render js: file_contents, content_type: Mime::Type.lookup('application/javascript')
+  end
 
   private
 
