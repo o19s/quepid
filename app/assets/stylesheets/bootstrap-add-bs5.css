@@ -33,12 +33,6 @@ body {
 	color: #FFF !important;
 }
 
-.sub-brand {
-	font-size: 13px;
-	color: #999;
-	font-weight: bold;
-}
-
 .navbar-brand .hover {
 	display: none;
 }
