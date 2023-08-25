@@ -10,7 +10,7 @@
       </p>
       <!-- Look at https://github.com/ankane/prophet-ruby -->
       <%
-      data = kase.scores.collect{ |score| {ds: score.created_at.to_date.to_fs(:db), y: score.score, datetime: score.created_at.to_date } }.uniq
+      data = kase.scores.sampled(kase.id,100).collect{ |score| {ds: score.created_at.to_date.to_fs(:db), y: score.score, datetime: score.created_at.to_date } }.uniq
       # warning! blunt filter below!
       data = data.uniq { |h| h[:ds] }
       data = data.map {|h| h.transform_keys(&:to_s)  }
@@ -53,7 +53,7 @@
       
       <% 
         # look at https://github.com/ankane/prophet-ruby to remove outliers.
-        data = kase.scores.collect{ |score| {x: score.created_at.to_date.to_fs(:db), y: score.score } }.uniq
+        data = kase.scores.sampled(kase.id, 100).collect{ |score| {x: score.created_at.to_date.to_fs(:db), y: score.score } }.uniq
         # warning! blunt filter below!
         data = data.uniq { |h| h[:x] }
       %>

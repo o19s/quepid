@@ -2,7 +2,7 @@
   <h5 class="card-header">Results for <%=grouped_cases_name %> Cases</h5>
   <div class="card-body">
     
-    <% grouped_cases_data =  grouped_cases.each.collect{|kase| kase.scores.collect{ |score| {x: score.created_at.to_date.to_fs(:db), y: score.score, z: score.case.case_name } }}.flatten.uniq
+    <% grouped_cases_data =  grouped_cases.each.collect{|kase| kase.scores.sampled(kase.id,100).collect{ |score| {x: score.created_at.to_date.to_fs(:db), y: score.score, z: score.case.case_name } }}.flatten.uniq
     %>
     
   <%= Vega.lite
