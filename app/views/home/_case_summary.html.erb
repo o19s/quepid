@@ -5,8 +5,8 @@
     </h5>
     
     <div class="card-body">
-      <h5 class="card-title"><%= kase.last_score.score %> <%= kase.scorer.name %></h5>
-      <p class="card-text"><%= kase.created_at.to_date.to_fs(:short) %> - <%= kase.last_score.updated_at.to_date.to_fs(:short) %>
+      <h5 class="card-title"><%= kase.last_score.score unless kase.scores.empty? %> <%= kase.scorer.name %></h5>
+      <p class="card-text"><%= kase.created_at.to_date.to_fs(:short) %> - <%= kase.last_score.updated_at.to_date.to_fs(:short) unless kase.scores.empty?%>
       </p>
       <!-- Look at https://github.com/ankane/prophet-ruby -->
       <%

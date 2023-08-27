@@ -63,6 +63,7 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
   end
 
   def test_differing_scales_blows_up
+
     login_user
 
     book_to_merge = Book.new(name: 'Book with a 1,2,3,4 scorer', team: book.team, scorer: communal_scorer,
@@ -104,10 +105,15 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
   end
 
   def login_user
+    
+    # We don't actually want to load up scores...
+    Bullet.enable = false
     # post the login and follow through to the home page
     post '/users/login', params: { user: { email: user.email, password: 'password' } }
     follow_redirect!
     assert_equal 200, status
     assert_equal '/', path
+    
+    Bullet.enable = true
   end
 end

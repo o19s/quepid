@@ -7,6 +7,7 @@
 
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
       <ul class="navbar-nav me-auto">
+        <% if @current_user.present? %>
         <li class="nav-item dropdown">
 
           <a class="nav-link dropdown-toggle" href="#" id="dropdownCases" role="button" data-bs-toggle="dropdown">
@@ -36,6 +37,7 @@
         <li class="nav-item">
           <%= link_to "Teams", teams_path, class: "nav-link" %>
         </li>
+        <% end %>
       </ul>
 
 
