@@ -55,11 +55,10 @@ angular.module('QuepidApp')
         }
       };
 
-      $scope.formatImageUrl = function() {
-        var imgUrl = $scope.doc.image;
-        if ($scope.doc.image_options){
-          if ($scope.doc.image_options.prefix){
-            imgUrl = $scope.doc.image_options.prefix + imgUrl;
+      $scope.formatImageUrl = function(imgUrl, options) {
+        if (options){
+          if (options.prefix){
+            imgUrl = options.prefix + imgUrl;
           }
         }
         return imgUrl;

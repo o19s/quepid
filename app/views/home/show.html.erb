@@ -19,7 +19,7 @@ https://getbootstrap.com/docs/5.2/examples/navbars-offcanvas/# for example of of
   <%= render partial: "book_summary", collection: @most_recent_books, as: :book %>
 </div>
 
-<% if @cases.empty? %>
+<% if @cases.empty? && @most_recent_books.empty?  %>
 <div class="container my-5">
   <div class="p-5 text-center bg-body-tertiary rounded-3">
     <h1 class="text-body-emphasis">Welcome to Quepid!</h1>
