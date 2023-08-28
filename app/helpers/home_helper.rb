@@ -3,15 +3,18 @@
 module HomeHelper
   def greeting
     greetings = [
-      'Good Day',
+      "G'Day",
       'Hello',
-      "How's your day",
-      "How's your day going",
+      "How's your day?",
       'Good to see you',
       'So good to see you',
       'Hiya!',
       'Bonjour',
-      'Hola!'
+      'Hola!',
+      'こんにちは',
+      '你好',
+      'नमस्ते'
+      'Guten Tag'
     ]
     greetings.sample
   end
