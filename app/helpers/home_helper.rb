@@ -13,7 +13,7 @@ module HomeHelper
       'Hola!',
       'こんにちは',
       '你好',
-      'नमस्ते'
+      'नमस्ते',
       'Guten Tag'
     ]
     greetings.sample
