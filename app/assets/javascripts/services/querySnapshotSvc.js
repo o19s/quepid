@@ -5,11 +5,11 @@
 angular.module('QuepidApp')
   .service('querySnapshotSvc', [
     '$http', '$q',
-    'settingsSvc', 'docCacheSvc', 'normalDocsSvc',
+    'settingsSvc', 'docCacheSvc',
     'SnapshotFactory',
     function querySnapshotSvc(
       $http, $q,
-      settingsSvc, docCacheSvc, normalDocsSvc,
+      settingsSvc, docCacheSvc,
       SnapshotFactory
     ) {
       // caches normal docs for all snapshots

@@ -4,13 +4,11 @@
 
 angular.module('QuepidApp')
   .controller('ImportRatingsCtrl', [
-    '$scope',
     '$uibModal',
     'flash',
-    'caseSvc',
     'queriesSvc',
     'querySnapshotSvc',
-    function ($scope, $uibModal, flash, caseSvc, queriesSvc, querySnapshotSvc) {
+    function ($uibModal, flash, queriesSvc, querySnapshotSvc) {
       var ctrl = this;
 
       // Functions

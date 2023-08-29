@@ -4,20 +4,14 @@
 
 angular.module('QuepidApp')
   .controller('ShareCaseCtrl', [
-    '$scope',
     '$uibModal',
     '$log',
-    '$routeParams',
     'flash',
-    'caseSvc',
     'teamSvc',
     function (
-      $scope,
       $uibModal,
       $log,
-      $routeParams,
       flash,
-      caseSvc,
       teamSvc
     ) {
       var ctrl = this;

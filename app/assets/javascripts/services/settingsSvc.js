@@ -5,16 +5,14 @@ angular.module('QuepidApp')
   .service('settingsSvc', [
     '$http',
     '$q',
-    'settingsIdValue',
     'caseTryNavSvc',
-    'TryFactory', 'SettingsFactory',
+    'SettingsFactory',
     'broadcastSvc',
     function settingsSvc(
       $http,
       $q,
-      settingsIdValue,
       caseTryNavSvc,
-      TryFactory, SettingsFactory,
+      SettingsFactory,
       broadcastSvc
     ) {
 
