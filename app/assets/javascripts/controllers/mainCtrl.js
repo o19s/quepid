@@ -103,6 +103,7 @@ angular.module('QuepidApp')
                   bootstrapped = true;
                   return queriesSvc.searchAll()
                     .then(function() {
+                      console.log("mainCtrl.js 106 finished queriesSvc.searchAll")
                       flash.success = 'All queries finished successfully!';
                     }, function(errorMsg) {
                       var mainErrorMsg = 'Some queries failed to resolve!';
