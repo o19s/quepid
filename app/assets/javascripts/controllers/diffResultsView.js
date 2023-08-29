@@ -7,6 +7,7 @@ angular.module('QuepidApp')
   .controller('DiffResultsCtrl', [
     '$scope',
     function ($scope) {
-      $scope.diffEnbl = true;
+      // can this control be removed?
+      //$scope.diffEnbl = true;
     }
   ]);
