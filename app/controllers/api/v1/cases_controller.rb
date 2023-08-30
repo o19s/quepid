@@ -47,6 +47,8 @@ module Api
         respond_with @cases
       end
 
+      api :GET, '/api/cases/:case_id'
+      param :id, :number, desc: 'id of the requested case'
       def show
         respond_with @case
       end

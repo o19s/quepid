@@ -84,6 +84,9 @@ GEM
       activerecord (>= 3.2, < 8.0)
       rake (>= 10.4, < 14.0)
     ansi (1.5.0)
+    apipie-rails (1.2.2)
+      actionpack (>= 5.0)
+      activesupport (>= 5.0)
     ast (2.4.2)
     bcrypt (3.1.18)
     benchmark-ips (2.12.0)
@@ -448,6 +451,7 @@ DEPENDENCIES
   ancestry
   angular-rails-templates (>= 1.0.0.beta)
   annotate
+  apipie-rails (~> 1.2)
   bcrypt (~> 3.1.7)
   bootsnap
   bullet
