@@ -96,4 +96,4 @@ end
 
 gem 'prophet-rb', '~> 0.4.2'
 
-gem "apipie-rails", "~> 1.2"
+gem 'apipie-rails', '~> 1.2'
