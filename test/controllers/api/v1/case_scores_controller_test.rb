@@ -140,7 +140,7 @@ module Api
 
           scores = response.parsed_body['scores']
 
-          assert_equal [], scores
+          assert_empty(scores)
         end
 
         test 'returns an array of all the case scores' do
