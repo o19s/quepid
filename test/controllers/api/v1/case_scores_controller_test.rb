@@ -25,9 +25,9 @@ module Api
 
         test 'returns no content if the score is empty' do
           data = {
-            score:     0,
-            all_rated: [ true, false ].sample,
-            try_id:    first_try.id,
+            score:      0,
+            all_rated:  [ true, false ].sample,
+            try_number: first_try.try_number,
           }
 
           put :update, params: { case_id: acase.id, case_score: data }
@@ -37,9 +37,9 @@ module Api
 
         test 'creates a new score if the case does not already have one' do
           data = {
-            score:     (1..100).to_a.sample,
-            all_rated: [ true, false ].sample,
-            try_id:    first_try.id,
+            score:      (1..100).to_a.sample,
+            all_rated:  [ true, false ].sample,
+            try_number: first_try.try_number,
           }
 
           put :update, params: { case_id: acase.id, case_score: data }
@@ -54,10 +54,10 @@ module Api
 
         test 'saves hash of query scores' do
           data = {
-            score:     (1..100).to_a.sample,
-            all_rated: [ true, false ].sample,
-            try_id:    first_try.id,
-            queries:   {
+            score:      (1..100).to_a.sample,
+            all_rated:  [ true, false ].sample,
+            try_number: first_try.try_number,
+            queries:    {
               '1' => {
                 'text'  => 'first query',
                 'score' => '1',
@@ -81,9 +81,9 @@ module Api
           old_score = acase.scores.create(user_id: user.id, try_id: first_try.id, score: 80)
 
           data = {
-            score:     (1..100).to_a.sample,
-            all_rated: [ true, false ].sample,
-            try_id:    first_try.id,
+            score:      (1..100).to_a.sample,
+            all_rated:  [ true, false ].sample,
+            try_number: first_try.try_number,
           }
 
           assert_no_difference 'acase.scores.count' do
@@ -112,9 +112,9 @@ module Api
           )
 
           data = {
-            score:     (1..100).to_a.sample,
-            all_rated: [ true, false ].sample,
-            try_id:    first_try.id,
+            score:      (1..100).to_a.sample,
+            all_rated:  [ true, false ].sample,
+            try_number: first_try.try_number,
           }
 
           assert_difference 'acase.scores.count' do
@@ -140,7 +140,7 @@ module Api
 
           scores = response.parsed_body['scores']
 
-          assert_equal [], scores
+          assert_empty(scores)
         end
 
         test 'returns an array of all the case scores' do

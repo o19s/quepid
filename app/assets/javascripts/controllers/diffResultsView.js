@@ -5,8 +5,6 @@
 // for a given query
 angular.module('QuepidApp')
   .controller('DiffResultsCtrl', [
-    '$scope',
-    function ($scope) {
-      $scope.diffEnbl = true;
+    function () {
     }
   ]);

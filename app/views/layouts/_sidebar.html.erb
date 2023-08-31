@@ -109,13 +109,13 @@
         <% end %>
       </li>      
       <li>
-        <%= link_to scorers_path, class: "nav-link #{make_active?({path: 'case'}) ? 'active' : ''} py-3 border-bottom rounded-0", 'data-bs-toggle':'tooltip', 'data-bs-placement':'right', 'aria-label':'Scorers', 'data-bs-original-title':'Scorers' do %>
+        <%= link_to scorers_path, class: "nav-link #{make_active?({path: 'scorers'}) ? 'active' : ''} py-3 border-bottom rounded-0", 'data-bs-toggle':'tooltip', 'data-bs-placement':'right', 'aria-label':'Scorers', 'data-bs-original-title':'Scorers' do %>
           <i
             class="bi bi-list-task"
             aria-hidden="true"
             title="Scorers"
             alt="Scorers"
-            style="font-size: 1.5rem; color: <%= make_active?({path: 'case'}) ? 'white' : 'cornflowerblue' %>;"
+            style="font-size: 1.5rem; color: <%= make_active?({path: 'scorers'}) ? 'white' : 'cornflowerblue' %>;"
           ></i>
         <% end %>        
       </li>

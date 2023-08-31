@@ -5,14 +5,12 @@
 angular.module('QuepidApp')
   .controller('DeleteCaseOptionsCtrl', [
     '$uibModal',
-    '$rootScope',
     '$log',
     'flash',
     'caseSvc',
     'caseTryNavSvc',
     function (
       $uibModal,
-      $rootScope,
       $log,
       flash,
       caseSvc,

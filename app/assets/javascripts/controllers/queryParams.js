@@ -2,10 +2,10 @@
 
 angular.module('QuepidApp')
   .controller('QueryParamsCtrl', [
-    '$scope','$location', '$window',
+    '$scope',
     'esUrlSvc','caseTryNavSvc',
     'TryFactory',
-    function ($scope, $location, $window,
+    function ($scope,
       esUrlSvc, caseTryNavSvc,
       TryFactory) {
 
