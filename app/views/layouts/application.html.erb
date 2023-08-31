@@ -5,7 +5,6 @@
 
 <%= favicon_link_tag asset_path "favicon.ico" %>
 
-<!-- Probably better way of doing this -->
 <% if flash[:unfurl] %>
   <!-- We have unfurl -->
   
@@ -33,7 +32,6 @@
     <meta name="twitter:data1" value="<%=Case.find_by_id(flash[:unfurl]["id"]).tries.latest.try_number %>" />
   <% end %>
 <% else %>
-  <!-- We DO NOT have unfurl -->
   
   <title>Quepid -- Relevant Search Solved</title>
   
@@ -60,7 +58,7 @@
 <%= csrf_meta_tags %>
 <%= javascript_include_tag 'application' %>
 
- </head>
+</head>
 
 <body>
 
