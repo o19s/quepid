@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-require 'pp'
+
 class CaseScoreManager
   attr_accessor :the_case, :errors
 
@@ -14,15 +14,15 @@ class CaseScoreManager
     return nil if empty_score? score_data
 
     last_score = @the_case.last_score
-    
-    puts "LAST SCORE"
+
+    puts 'LAST SCORE'
     pp last_score
-    
-    puts "SCORE DATA"
+
+    puts 'SCORE DATA'
     pp score_data
-    
+
     puts "same_score_source last_score, score_data: #{same_score_source last_score, score_data}"
-    
+
     if same_score_source last_score, score_data
       puts "user_ratings_docs? last_score, score_data: #{user_ratings_docs? last_score, score_data}"
       puts "same_score? last_score, score_data: #{same_score? last_score, score_data}"
@@ -39,8 +39,8 @@ class CaseScoreManager
         return last_score # ignore
       end
     end
-    
-    puts "MOVING ON"
+
+    puts 'MOVING ON'
 
     # Look up the try using the try_number if we passed that in.
     if score_data[:try_number]
@@ -49,7 +49,7 @@ class CaseScoreManager
       score_data[:try_id] = try.id
     end
 
-    puts "ABOUT TO BUILD A SCORE"
+    puts 'ABOUT TO BUILD A SCORE'
     @score = @the_case.scores.build score_data
 
     return @score if @score.save
@@ -68,9 +68,10 @@ class CaseScoreManager
     false
   end
 
-  def same_score_source last_score, score_data  
+  def same_score_source last_score, score_data
     return false if last_score.blank?
     return false if last_score.try_id.blank?
+
     puts "last_score.try.try_number != score_data[:try_number].to_i is #{last_score.try.try_number} and #{score_data[:try_number].to_i}"
     return false if last_score.try.try_number != score_data[:try_number].to_i
     return false if last_score.user_id != score_data[:user_id].to_i
@@ -88,7 +89,7 @@ class CaseScoreManager
 
   def same_score? last_score, score_data
     return false if last_score.updated_at.blank?
-    
+
     return false unless same_number? last_score, score_data
     return false if     last_score_old? last_score
     return false if     added_query? last_score, score_data
@@ -111,15 +112,14 @@ class CaseScoreManager
 
     last_score_queries = {}
     score_data_queries = {}
-    last_score.queries.each do |key,value|
+    last_score.queries.each do |key, value|
       last_score_queries[key.to_s] = value.symbolize_keys
     end
-    score_data[:queries].each do |key,value|
+    score_data[:queries].each do |key, value|
       score_data_queries[key.to_s] = value.symbolize_keys
     end
-    
-    added_query = last_score_queries != score_data_queries
-    
+
+    last_score_queries != score_data_queries
   end
 
   def queries_empty? queries

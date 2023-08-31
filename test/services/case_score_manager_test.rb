@@ -10,11 +10,11 @@ class CaseScoreManagerTest < ActiveSupport::TestCase
 
   let(:score_data) do
     {
-      all_rated: [ true, false ].sample,
-      queries:   {},
-      score:     (1..100).to_a.sample,
-      try_id:    the_try.id,
-      user_id:   user.id,
+      all_rated:  [ true, false ].sample,
+      queries:    {},
+      score:      (1..100).to_a.sample,
+      try_number: the_try.try_number,
+      user_id:    user.id,
     }
   end
 
