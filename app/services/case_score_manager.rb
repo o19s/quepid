@@ -15,17 +15,7 @@ class CaseScoreManager
 
     last_score = @the_case.last_score
 
-    puts 'LAST SCORE'
-    pp last_score
-
-    puts 'SCORE DATA'
-    pp score_data
-
-    puts "same_score_source last_score, score_data: #{same_score_source last_score, score_data}"
-
     if same_score_source last_score, score_data
-      puts "user_ratings_docs? last_score, score_data: #{user_ratings_docs? last_score, score_data}"
-      puts "same_score? last_score, score_data: #{same_score? last_score, score_data}"
       if user_ratings_docs? last_score, score_data
         update_params = {
           all_rated: score_data[:all_rated],
@@ -40,8 +30,6 @@ class CaseScoreManager
       end
     end
 
-    puts 'MOVING ON'
-
     # Look up the try using the try_number if we passed that in.
     if score_data[:try_number]
       try = @the_case.tries.where(try_number: score_data[:try_number]).first
@@ -49,7 +37,6 @@ class CaseScoreManager
       score_data[:try_id] = try.id
     end
 
-    puts 'ABOUT TO BUILD A SCORE'
     @score = @the_case.scores.build score_data
 
     return @score if @score.save
@@ -72,7 +59,6 @@ class CaseScoreManager
     return false if last_score.blank?
     return false if last_score.try_id.blank?
 
-    puts "last_score.try.try_number != score_data[:try_number].to_i is #{last_score.try.try_number} and #{score_data[:try_number].to_i}"
     return false if last_score.try.try_number != score_data[:try_number].to_i
     return false if last_score.user_id != score_data[:user_id].to_i
 
@@ -105,6 +91,8 @@ class CaseScoreManager
     last_score.updated_at < 1.day.ago
   end
 
+  # rubocop:disable Metrics/CyclomaticComplexity
+  # rubocop:disable Metrics/PerceivedComplexity
   def added_query? last_score, score_data
     return true  if last_score.nil? && !score_data.empty?
     return false if last_score.nil? && score_data.empty?
@@ -121,6 +109,8 @@ class CaseScoreManager
 
     last_score_queries != score_data_queries
   end
+  # rubocop:enable Metrics/CyclomaticComplexity
+  # rubocop:enable Metrics/PerceivedComplexity
 
   def queries_empty? queries
     queries.blank?
