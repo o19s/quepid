@@ -27,7 +27,7 @@ module Api
           data = {
             score:     0,
             all_rated: [ true, false ].sample,
-            try_id:    first_try.id,
+            try_number:    first_try.try_number,
           }
 
           put :update, params: { case_id: acase.id, case_score: data }
@@ -39,7 +39,7 @@ module Api
           data = {
             score:     (1..100).to_a.sample,
             all_rated: [ true, false ].sample,
-            try_id:    first_try.id,
+            try_number:    first_try.try_number,
           }
 
           put :update, params: { case_id: acase.id, case_score: data }
@@ -56,7 +56,7 @@ module Api
           data = {
             score:     (1..100).to_a.sample,
             all_rated: [ true, false ].sample,
-            try_id:    first_try.id,
+            try_number:    first_try.try_number,
             queries:   {
               '1' => {
                 'text'  => 'first query',
@@ -83,7 +83,7 @@ module Api
           data = {
             score:     (1..100).to_a.sample,
             all_rated: [ true, false ].sample,
-            try_id:    first_try.id,
+            try_number:    first_try.try_number,
           }
 
           assert_no_difference 'acase.scores.count' do
@@ -114,7 +114,7 @@ module Api
           data = {
             score:     (1..100).to_a.sample,
             all_rated: [ true, false ].sample,
-            try_id:    first_try.id,
+            try_number:    first_try.try_number,
           }
 
           assert_difference 'acase.scores.count' do
