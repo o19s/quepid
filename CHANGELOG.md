@@ -1,6 +1,6 @@
 # Changelog
 
-## 7.7.0 - ?
+## 7.7.0 - 2023-08-31
 
 We finally have a brand new homepage!  Quepid started as a tool for relevancy engineers only, but today we have human judges using Quepid to rate documents, Search Managers who are keeping an eye on the offline metrics, and of course in more complex setups, networking types who configure the connection between Quepid and the Search Engine.   In the past, regardless of who you were, we dropped you right into a Case.  If you had never created one before, well, you got shoved into the Case creation wizard, whether you wanted it or not.   It made for a unpleasant first experience for anyone other than the hard core relevancy engineer.   
 
@@ -18,11 +18,19 @@ The new dashboard is an attempt to change that UX.  It's just a first cut, and h
 
 * Reworked the messageing (and error handling) when you attempt to open a case that hasn't been shared with you (or doesn't exist!).   We had been showing the "You need to reload Quepid in the HTTPS" type message, when actually it was a "Make sure this case has been shared with you!" situation.  Also reduced the amount of error messages in the browser and the server in this situation by being smarter.  Thanks @cmorley for surfacing this.  https://github.com/o19s/quepid/issues/792 by @epugh fixed by https://github.com/o19s/quepid/pull/793.
 
+* Thumb images can use a `prefix_url`, just like regular images.  https://github.com/o19s/quepid/issues/790 by @OkkeKlein is fixed in https://github.com/o19s/quepid/pull/805 by @epugh.
+
+* Using Nginx and have huge documents being snapshotted etc.  New configuration suggested by @OkkeKlein allows Nginx to be happy.  https://github.com/o19s/quepid/pull/804 by @epugh.
+
 ### Bugs
 
 * Drop a link in Slack to team 3, and you see details about case 3;-).  https://github.com/o19s/quepid/issues/733 by @epugh fixed by https://github.com/o19s/quepid/pull/794 by @epugh to only do unfurling for cases.
 
 * Ace code editor insists on loading two javascript files from specific paths in Quepid.  Despite best effort, couldn't change this.  So https://github.com/o19s/quepid/pull/793 just mounts those javascript where Ace wants it to shut up some very loud error messages in the browser console.  If you can't beat'em, join'em.  
+
+* When judging ratings using the Book of Judgements, you could sometimes get a situation where you create a judgement, and then tried to create a new one, hitting a constraint.  https://github.com/o19s/quepid/pull/809 by @epugh makes this more robust.
+
+* Guess what?  7 GB out of our 9 GB production database is scores for cases being inserted OVER AND OVER again!  The AngularJS app uses event emitting to signal when scoring is completed, this causes extra events to be triggered, causing extra PUT of the case scores.   This shouldn't matter as we have logic on the server side.  However, due to a bug, that logic doesn't actually work.  The unit tests for the front end and the back end each independently validate the logic, it's just when you put them together it doesn't work.  This didn't matter for years, but the new Dashboard surfaces scores ;-).  Fixed in https://github.com/o19s/quepid/pull/807 by @epugh.
 
 
 
