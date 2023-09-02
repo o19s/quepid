@@ -5,7 +5,7 @@ class QueryDocPairsController < ApplicationController
   before_action :find_book
 
   def index
-    @query_doc_pairs = @book.query_doc_pairs
+    @query_doc_pairs = @book.query_doc_pairs.order(:query_text )
   end
 
   def show; end

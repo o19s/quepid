@@ -43,6 +43,7 @@ Rails.application.routes.draw do
     get 'skip_judging' => 'judgements#skip_judging'
     member do
       patch 'combine'
+      patch 'assign_anonymous'
     end
   end
 
