@@ -142,7 +142,9 @@ module ActiveSupport
             'Accept'          => '*/*',
             'Accept-Encoding' => 'gzip;q=1.0,deflate;q=0.6,identity;q=0.3',
             'Content-Type'    => 'application/json',
-            'User-Agent'      => 'Ruby',
+            'Cookie'          => '',
+            'Https'           => 'off',
+            'User-Agent'      => 'Faraday v2.7.4',
           }
         )
         .to_return(status: 200, body: '
@@ -192,12 +194,14 @@ module ActiveSupport
 
       stub_request(:post, 'http://solr.quepid.com:8983/solr/statedecoded/select')
         .with(
-          body:    'query',
+          body:    '{"query":"star","key2":"value2"}',
           headers: {
             'Accept'          => '*/*',
             'Accept-Encoding' => 'gzip;q=1.0,deflate;q=0.6,identity;q=0.3',
             'Content-Type'    => 'application/json',
-            'User-Agent'      => 'Ruby',
+            'Cookie'          => '',
+            'Https'           => 'off',
+            'User-Agent'      => 'Faraday v2.7.4',
           }
         )
         .to_return(status: 200, body: '
