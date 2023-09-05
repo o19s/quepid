@@ -1,8 +1,9 @@
 # frozen_string_literal: true
 
+# rubocop:disable Metrics/ClassLength
 class BooksController < ApplicationController
-  before_action :find_book, only: [ :show, :edit, :update, :destroy, :combine ]
-  before_action :check_book, only: [ :show, :edit, :update, :destroy, :combine ]
+  before_action :find_book, only: [ :show, :edit, :update, :destroy, :combine, :assign_anonymous ]
+  before_action :check_book, only: [ :show, :edit, :update, :destroy, :combine, :assign_anonymous ]
 
   respond_to :html
 
@@ -12,7 +13,12 @@ class BooksController < ApplicationController
   end
 
   def show
-    @cases = Case.where(book_id: @book.id)
+    @count_of_anonymous_book_judgements = @book.judgements.where(user: nil).count
+    @count_of_anonymous_case_judgements = 0
+    @book.cases.each do |kase|
+      @count_of_anonymous_case_judgements += kase.ratings.where(user: nil).count
+    end
+    @cases = @book.cases
     @leaderboard_data = []
     unique_judges = @book.judgements.rateable.preload(:user).collect(&:user).uniq
     unique_judges.each do |judge|
@@ -119,6 +125,26 @@ class BooksController < ApplicationController
   # rubocop:enable Metrics/PerceivedComplexity
   # rubocop:enable Layout/LineLength
 
+  def assign_anonymous
+    assignee = @book.team.members.where(id: params[:assignee_id]).take
+    @book.judgements.where(user: nil).each do |judgement|
+      judgement.user = assignee
+      judgement.save!
+    end
+    @book.cases.each do |kase|
+      kase.ratings.where(user: nil).each do |rating|
+        rating.user = assignee
+        rating.save!
+      end
+    end
+
+    # if @book.save
+    redirect_to books_path, :notice => "Assigned #{assignee.fullname} to ratings and judgements."
+    # else
+    ##           :alert => "Could not merge due to errors: #{@book.errors.full_messages.to_sentence}."
+    # end
+  end
+
   private
 
   def find_book
@@ -133,3 +159,5 @@ class BooksController < ApplicationController
     params.require(:book).permit(:team_id, :scorer_id, :selection_strategy_id, :name, :support_implicit_judgements)
   end
 end
+
+# rubocop:enable Metrics/ClassLength
