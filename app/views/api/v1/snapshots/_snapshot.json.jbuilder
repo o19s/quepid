@@ -15,7 +15,12 @@ if with_docs
   json.docs do
     snapshot.snapshot_queries.each do |snapshot_query|
       docs = snapshot_query.snapshot_docs.map do |doc|
-        { id: doc.doc_id, explain: doc.explain, rated_only: doc.rated_only }
+        { 
+          id: doc.doc_id, 
+          explain: JSON.parse(doc.explain), 
+          rated_only: doc.rated_only,
+          fields: JSON.parse(doc.fields)
+        }
       end
 
       json.set! snapshot_query.query_id, docs
