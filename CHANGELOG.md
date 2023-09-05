@@ -1,5 +1,9 @@
 # Changelog
 
+## 7.7.1 - 2023-09-31
+
+For folks who have been using Quepid prior to 7.6.0, they will have lots of ratings from the main Cases screen that are anonymous, because we didn't associate a user with the ratings.   If you now import those ratings into a Book of Judgements, you will have to rerate them if you chose the "multiple raters" options, because you are different than the anonymous user.   We have added on the edit book screen an option to map anonymous ratings to a specific user in both a Book and it's associated Cases to support the migration.
+
 ## 7.7.0 - 2023-08-31
 
 We finally have a brand new homepage!  Quepid started as a tool for relevancy engineers only, but today we have human judges using Quepid to rate documents, Search Managers who are keeping an eye on the offline metrics, and of course in more complex setups, networking types who configure the connection between Quepid and the Search Engine.   In the past, regardless of who you were, we dropped you right into a Case.  If you had never created one before, well, you got shoved into the Case creation wizard, whether you wanted it or not.   It made for a unpleasant first experience for anyone other than the hard core relevancy engineer.   
