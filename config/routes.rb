@@ -4,11 +4,9 @@ require 'sidekiq/web'
 
 # rubocop:disable Metrics/BlockLength
 Rails.application.routes.draw do
-  
-
   get 'proxy/fetch'
   post 'proxy/fetch'
-    
+
   # get 'home/show'
   root 'home#show'
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
