@@ -7,7 +7,7 @@ class JudgementsController < ApplicationController
   def index
     bool = ActiveRecord::Type::Boolean.new
     @shallow = bool.deserialize(params[:shallow] || true )
-    
+
     @judgements = @book.judgements.includes([ :query_doc_pair, :user ])
   end
 

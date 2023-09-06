@@ -64,7 +64,7 @@
 </p>
 <p>
 <strong>Related cases to be updated:</strong>
-<%= render(partial: 'books/case', collection: @book.cases, as: :kase) || "There are no cases available." %>
+<%= render(partial: 'books/case', collection: @book.cases, as: :kase) || "There are no cases associated." %>
 </p>
 <%= form_for(@book, url: assign_anonymous_book_path(@book)) do |form| %>
 <div class="mb-3">

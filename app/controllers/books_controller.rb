@@ -125,11 +125,18 @@ class BooksController < ApplicationController
   # rubocop:enable Metrics/PerceivedComplexity
   # rubocop:enable Layout/LineLength
 
+  # rubocop:disable Metrics/MethodLength
   def assign_anonymous
     assignee = @book.team.members.where(id: params[:assignee_id]).take
     @book.judgements.where(user: nil).each do |judgement|
       judgement.user = assignee
-      judgement.save!
+      # if we are mapping a user to a judgement,
+      # and they have already judged that query_doc_pair, then just delete it.
+      if !judgement.valid? && (judgement.errors.added? :user_id, :taken, value: assignee.id)
+        judgement.delete
+      else
+        judgement.save!
+      end
     end
     @book.cases.each do |kase|
       kase.ratings.where(user: nil).each do |rating|
@@ -138,12 +145,9 @@ class BooksController < ApplicationController
       end
     end
 
-    # if @book.save
     redirect_to books_path, :notice => "Assigned #{assignee.fullname} to ratings and judgements."
-    # else
-    ##           :alert => "Could not merge due to errors: #{@book.errors.full_messages.to_sentence}."
-    # end
   end
+  # rubocop:enable Metrics/MethodLength
 
   private
 
