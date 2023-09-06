@@ -23,22 +23,22 @@ a_doc:
   doc_id:         "doc a"
   position:       1
   snapshot_query: :first_snapshot_query
-  explain:        "Explain Me"
+  explain:        '{"message": "Explain Me"}'
 
 b_doc:
   doc_id:         "doc b"
   position:       1
   snapshot_query: :first_snapshot_query
-  explain:        "Explain Me"
+  explain:        '{"message": "Explain Me"}'
 
 c_doc:
   doc_id:         "doc c"
   position:       1
   snapshot_query: :second_snapshot_query
-  explain:        "Explain Me"
+  explain:        '{"message": "Explain Me"}'
 
 d_doc:
   doc_id:         "doc d"
   position:       1
   snapshot_query: :second_snapshot_query
-  explain:        "Explain Me"
+  explain:        '{"message": "Explain Me"}'
