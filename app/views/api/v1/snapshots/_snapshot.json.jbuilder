@@ -17,7 +17,7 @@ if with_docs
       docs = snapshot_query.snapshot_docs.map do |doc|
         {
           id:         doc.doc_id,
-          explain:    JSON.parse(doc.explain),
+          explain:    doc.explain.blank? ? nil : JSON.parse(doc.explain),
           rated_only: doc.rated_only,
           fields:     doc.fields.blank? ? nil : JSON.parse(doc.fields),
         }
