@@ -461,10 +461,10 @@
            subsetArray.forEach(function(value) {
              if (!containingArray.includes(value)) {
                return false;
-             };
+             }
            });
            return true;
-        };
+        }
           
 
       }
