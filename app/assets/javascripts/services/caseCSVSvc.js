@@ -37,6 +37,7 @@
         self.stringifyQueriesDetailed   = stringifyQueriesDetailed;
         self.stringifySnapshot          = stringifySnapshot;
         self.formatDownloadFileName     = formatDownloadFileName;
+        self.arrayContains              = arrayContains;
 
         function caseHeaderToCSV () {
           var header = [
@@ -455,6 +456,16 @@
         
           return mergedArray;
         }
+        
+        function arrayContains(containingArray, subsetArray){
+           subsetArray.forEach(function(value) {
+             if (!containingArray.includes(value)) {
+               return false;
+             };
+           });
+           return true;
+        };
+          
 
       }
     ]);
