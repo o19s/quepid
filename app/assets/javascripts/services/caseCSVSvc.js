@@ -88,7 +88,7 @@
           return '' + headerString + EOL;
         }
 
-        function snapshotHeaderToCSV () {
+        function snapshotHeaderToCSV (fieldList) {
           var header = [
             'Snapshot Name',
             'Snapshot Time',
@@ -97,6 +97,10 @@
             'Doc ID',
             'Doc Position',
           ];
+          
+          angular.forEach(fieldList, function(fieldName) {
+            header.push(fieldName);
+          });
 
           var headerString = header.join(',');
 
@@ -385,9 +389,16 @@
           const snapshotTime = snapshot.time;
           const caseNumber = aCase.caseNo;
           let csvContent = '';
+          
+          var fields = [];
+          angular.forEach(snapshot.docs, function (docs) {
+            angular.forEach(docs, function (doc) {
+              fields = mergeArrays(fields, Object.keys(doc.fields));
+            });
+          });
 
           if (withHeader) {
-            csvContent += self.snapshotHeaderToCSV();
+            csvContent += self.snapshotHeaderToCSV(fields);
           }
           angular.forEach(snapshot.docs, function (docs, queryId) {
             const queryIdToMatch = parseInt(queryId, 10);
@@ -405,6 +416,11 @@
                   infoArray.push(stringifyField(matchingQueryText));
                   infoArray.push(stringifyField(doc.id));
                   infoArray.push(stringifyField(idx + 1));
+                  
+                  angular.forEach(fields, function (field) {
+                    infoArray.push(stringifyField(doc.fields[field]));
+                  });
+                  
                   csvContent += infoArray.join(',') + EOL;
                 });
               }
@@ -420,11 +436,24 @@
          * @param aCase
          *
          */
-
         function formatDownloadFileName (fileName) {
           var downloadFileName = fileName.replace(/ /g,'_').replace(/:/g,'_');
 
           return downloadFileName;
+        }
+
+        function mergeArrays(...arrays) {
+          var mergedArray = [];
+        
+          arrays.forEach(function(array) {
+            array.forEach(function(value) {
+              if (!mergedArray.includes(value)) {
+                mergedArray.push(value);
+              }
+            });
+          });
+        
+          return mergedArray;
         }
 
       }
