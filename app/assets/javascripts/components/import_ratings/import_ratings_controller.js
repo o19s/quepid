@@ -39,7 +39,7 @@ angular.module('QuepidApp')
         modalInstance.result.then(
           function (response) {
             if (!response.error) {
-              if (response.message != 'Snapshots imported successfully!') {
+              if (response.message !== 'Snapshots imported successfully!') {
                 queriesSvc.reset();
                 queriesSvc.bootstrapQueries(ctrl.acase.caseNo)
                   .then(function () {

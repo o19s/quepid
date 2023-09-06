@@ -19,7 +19,7 @@ if with_docs
           id: doc.doc_id, 
           explain: JSON.parse(doc.explain), 
           rated_only: doc.rated_only,
-          fields: JSON.parse(doc.fields)
+          fields: doc.fields.blank? ? nil :JSON.parse(doc.fields)
         }
       end
 
