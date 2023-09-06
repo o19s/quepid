@@ -7,8 +7,8 @@ angular.module('QuepidApp')
     'importRatingsSvc',
     'theCase',
     'querySnapshotSvc',
-    'caseCsvSvc',
-    function ($scope, $uibModalInstance, importRatingsSvc, theCase, querySnapshotSvc, caseCsvSvc) {
+    'caseCSVSvc',
+    function ($scope, $uibModalInstance, importRatingsSvc, theCase, querySnapshotSvc, caseCSVSvc) {
       var ctrl = this;
 
       ctrl.theCase = theCase;
@@ -334,7 +334,7 @@ angular.module('QuepidApp')
           'Snapshot Name', 'Snapshot Time', 'Case ID', 'Query Text', 'Doc ID', 'Doc Position'
         ];
 
-        if (!caseCsvSvc.arrayContains(headers, expectedHeaders)) {
+        if (!caseCSVSvc.arrayContains(headers, expectedHeaders)) {
           var alert = 'Required headers mismatch! Please make sure you have the correct headers in you file (check for correct spelling and capitalization): ';
           alert += '<br /><strong>';
           alert += expectedHeaders.join(',');
