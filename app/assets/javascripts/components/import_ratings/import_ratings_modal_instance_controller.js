@@ -7,7 +7,8 @@ angular.module('QuepidApp')
     'importRatingsSvc',
     'theCase',
     'querySnapshotSvc',
-    function ($scope, $uibModalInstance, importRatingsSvc, theCase, querySnapshotSvc) {
+    'caseCsvSvc',
+    function ($scope, $uibModalInstance, importRatingsSvc, theCase, querySnapshotSvc, caseCsvSvc) {
       var ctrl = this;
 
       ctrl.theCase = theCase;
@@ -75,7 +76,7 @@ angular.module('QuepidApp')
           ctrl.options.which = 'snapshots';
           ctrl.snapshots.import.alert = undefined;
           ctrl.checkSnapshotHeaders();
-          ctrl.checkSnapshotBody();
+          //ctrl.checkSnapshotBody();
         }
       }, true);
 
@@ -127,47 +128,34 @@ angular.module('QuepidApp')
       ctrl.informationNeedsTypePicked = function () {
         return (ctrl.options.which === 'information_needs');
       };
+      
+      ctrl.snapshotTypePicked = function () {
+        return (ctrl.options.which === 'snapshots');
+      };
 
       ctrl.ok = function () {
         if (ctrl.options.which === 'snapshots') {
-          var headers = ctrl.snapshots.content.split('\n')[0];
-          headers = headers.split(ctrl.snapshots.separator);
+          //ctrl.checkCSVHeaders();
+        
+          ctrl.snapshots.import.loading = true;
+          querySnapshotSvc.importSnapshotsToSpecificCase(ctrl.snapshots.result, theCase.caseNo)
+            .then(function () {
+              var result = {
+                success: true,
+                message: 'Snapshots imported successfully!',
+              };
+              ctrl.snapshots.import.loading = false;
+              $uibModalInstance.close(result);
+            }, function () {
+              var result = {
+                error: true,
+                message: 'Could not import snapshots successfully! Please try again.',
+              };
 
-          var expectedHeaders = [
-            'Snapshot Name', 'Snapshot Time', 'Case ID', 'Query Text', 'Doc ID', 'Doc Position'
-          ];
-
-          if (!angular.equals(headers, expectedHeaders)) {
-            var alert = 'Headers mismatch! Please make sure you have the correct headers in you file (check for correct spelling and capitalization): ';
-            alert += '<br /><strong>';
-            alert += expectedHeaders.join(',');
-            alert += '</strong>';
-
-            ctrl.snapshots.import.alert = {
-              'text': alert,
-              'type': 'text-danger'
-            };
-          } else {
-            ctrl.snapshots.import.loading = true;
-            querySnapshotSvc.importSnapshotsToSpecificCase(ctrl.snapshots.result, theCase.caseNo)
-              .then(function () {
-                var result = {
-                  success: true,
-                  message: 'Snapshots imported successfully!',
-                };
-                ctrl.snapshots.import.loading = false;
-                $uibModalInstance.close(result);
-              }, function () {
-                var result = {
-                  error: true,
-                  message: 'Could not import snapshots successfully! Please try again.',
-                };
-
-                ctrl.snapshots.import.loading = false;
-                $uibModalInstance.close(result);
-              });
-          }
-
+              ctrl.snapshots.import.loading = false;
+              $uibModalInstance.close(result);
+            });
+          
         } else if (ctrl.options.which === 'csv') {
           ctrl.checkCSVHeaders();
           ctrl.checkCSVBody();
@@ -338,6 +326,24 @@ angular.module('QuepidApp')
         }
       };
 
+      ctrl.checkSnapshotHeaders = function () {
+        var headers = ctrl.snapshots.content.split('\n')[0];
+        headers = headers.split(ctrl.snapshots.separator);
+
+        var expectedHeaders = [
+          'Snapshot Name', 'Snapshot Time', 'Case ID', 'Query Text', 'Doc ID', 'Doc Position'
+        ];
+
+        if (!caseCsvSvc.arrayContains(headers, expectedHeaders)) {
+          var alert = 'Required headers mismatch! Please make sure you have the correct headers in you file (check for correct spelling and capitalization): ';
+          alert += '<br /><strong>';
+          alert += expectedHeaders.join(',');
+          alert += '</strong>';
+
+          ctrl.snapshots.import.alert = alert;
+        }
+      };
+      
       ctrl.checkInformationNeedsHeaders = function () {
         var headers = ctrl.information_needs.content.split('\n')[0];
         headers = headers.split(ctrl.information_needs.separator);
