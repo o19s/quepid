@@ -21,9 +21,9 @@ module Api
       def index
         bool = ActiveRecord::Type::Boolean.new
 
-        archived  = bool.deserialize(params[:archived]) || false
+        archived  = bool.deserialize params[:archived]
         sort_by   = params[:sortBy]
-        @deep     = bool.deserialize(params[:deep]) || false
+        @deep     = bool.deserialize params[:deep]
 
         if archived
           @no_tries = true
