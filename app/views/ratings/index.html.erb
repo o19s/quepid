@@ -1,0 +1,41 @@
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+  <h1 class="h2">Ratings for Case <%= @case.case_name %></h1>
+  <div class="btn-toolbar mb-2 mb-md-0">
+    <div class="btn-group me-2">
+      <%= link_to "Back to Case #{@case.case_name}", case_path(@case), class: "btn btn-sm btn-outline-secondary" %>      
+    </div>
+  </div>
+</div>
+
+<table class="table table-hover table-sm">
+  <thead>
+    <tr>
+      <th>Rating ID</th>     
+      <th>Query</th>
+      <th>Doc ID</th>
+      <th>Rating</th>         
+      <th>User</th>
+      <th>Created At</th>
+      <th>Updated At</th>   
+      
+    </tr>
+  </thead>
+
+  <tbody>
+    <% @ratings.each do |rating| %>
+      <tr>
+        <td><%= rating.id %></td>
+        <td><%= rating.query.query_text %></td>
+        <td><%= rating.doc_id %></td>
+        <td><%= rating.rating %></td>
+        <td><%= rating&.user&.fullname %></td>
+        <td>
+          <%= rating.created_at %>
+        </td>
+        <td>
+          <%= rating.updated_at %>
+        </td>  
+      </tr>
+    <% end %>
+  </tbody>
+</table>

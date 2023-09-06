@@ -4,7 +4,6 @@ require 'sidekiq/web'
 
 # rubocop:disable Metrics/BlockLength
 Rails.application.routes.draw do
-  # get 'home/show'
   root 'home#show'
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
@@ -31,6 +30,7 @@ Rails.application.routes.draw do
 
   resources :cases, only: [] do
     resource :book
+    resources :ratings, only: [ :index ]
   end
 
   resources :books do
