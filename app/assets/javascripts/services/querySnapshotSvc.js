@@ -185,7 +185,7 @@ angular.module('QuepidApp')
 
           var query = snapshot.queries[doc['Query Text']];
           
-          docPayload = { 'id': doc['Doc ID'], 'position': doc['Doc Position'] }
+          var docPayload = { 'id': doc['Doc ID'], 'position': doc['Doc Position'] };
           
           // Remove the properties of the doc that exist elsewhere.
           delete doc['Doc ID'];
@@ -197,7 +197,7 @@ angular.module('QuepidApp')
           delete doc['Query Text'];
           
           // map any remaining properties of the doc as fields.
-          docPayload['fields'] = doc
+          docPayload['fields'] = doc;
 
           query.docs.push(docPayload );
         });
