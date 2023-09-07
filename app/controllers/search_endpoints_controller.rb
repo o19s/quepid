@@ -41,7 +41,7 @@ class SearchEndpointsController < ApplicationController
   private
 
   def set_search_endpoint
-    @search_endpoint = SearchEndpoint.find(params[:id])
+    @search_endpoint = current_user.search_endpoints_involved_with.where(id: params[:id]).first
   end
 
   def search_endpoint_params
