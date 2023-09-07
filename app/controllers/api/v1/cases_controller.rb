@@ -32,15 +32,14 @@ module Api
         else
           @cases = if 'last_viewed_at' == sort_by
                      current_user.cases_involved_with.not_archived.includes(:metadata).references(:metadata)
-                       .order(Arel.sql('`case_metadata`.`last_viewed_at` DESC, `cases`.`id`')).limit(3)
+                       .recent.limit(3)
                    elsif sort_by
                      current_user.cases_involved_with.preload( :tries).not_archived.order(sort_by)
                    else
                      current_user.cases_involved_with.preload(:tries, :teams,
                                                               :cases_teams)
                        .not_archived
-                       .left_outer_joins(:metadata)
-                       .order(Arel.sql('`case_metadata`.`last_viewed_at` DESC, `cases`.`updated_at` DESC'))
+                       .recent
                    end
         end
 

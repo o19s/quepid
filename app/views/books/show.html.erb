@@ -51,6 +51,11 @@ Books organize all the query/doc pairs that are needed for evaluating your searc
 </p>
 
 <p>
+  <strong>Show Rank of Documents when Judging:</strong>
+  <%= @book.show_rank? %>
+</p>
+
+<p>
 <strong>Related cases:</strong>
 <%= render(partial: 'books/case', collection: @cases, as: :kase) || "There are no cases associated." %>
 </p>

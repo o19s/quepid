@@ -75,7 +75,7 @@ class BooksController < ApplicationController
     end
 
     if books.any? { |b| b.scorer.scale != @book.scorer.scale }
-      redirect_to books_path,
+      redirect_to book_path(@book),
                   :alert => "One of the books chosen doesn't have a scorer with the scale #{@book.scorer.scale}" and return
     end
 
@@ -113,9 +113,9 @@ class BooksController < ApplicationController
     end
 
     if @book.save
-      redirect_to books_path, :notice => "Combined #{query_doc_pair_count} query/doc pairs."
+      redirect_to book_path(@book), :notice => "Combined #{query_doc_pair_count} query/doc pairs."
     else
-      redirect_to books_path,
+      redirect_to book_path(@book),
                   :alert => "Could not merge due to errors: #{@book.errors.full_messages.to_sentence}. #{query_doc_pair_count} query/doc pairs."
     end
   end
@@ -145,7 +145,7 @@ class BooksController < ApplicationController
       end
     end
 
-    redirect_to books_path, :notice => "Assigned #{assignee.fullname} to ratings and judgements."
+    redirect_to book_path(@book), :notice => "Assigned #{assignee.fullname} to ratings and judgements."
   end
   # rubocop:enable Metrics/MethodLength
 
@@ -160,7 +160,8 @@ class BooksController < ApplicationController
   end
 
   def book_params
-    params.require(:book).permit(:team_id, :scorer_id, :selection_strategy_id, :name, :support_implicit_judgements)
+    params.require(:book).permit(:team_id, :scorer_id, :selection_strategy_id, :name, :support_implicit_judgements,
+                                 :show_rank)
   end
 end
 
