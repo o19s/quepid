@@ -34,6 +34,11 @@
     <%= form.label :selection_strategy_id, class: 'form-label' %>
     <%= form.collection_select(:selection_strategy_id, SelectionStrategy.all, :id, :descriptive_name, { prompt: true }, required: true, class: 'form-control') %>
   </div>
+  <div class="mb-3">
+    <%= form.label :show_rank, class: 'form-check-label' %>
+    <%= form.check_box :show_rank, class: 'form-check-input' %>
+    <div class="form-text">Typically you don't want to convey to the Judge what Rank (or position) a Document was returned at.  If you are comparing across judging to an existing SERP page you may need this info.</div>
+  </div>  
 
   <div class="mb-3">
     <div class="form-check form-switch">

@@ -4,6 +4,7 @@
 #
 #  id                          :bigint           not null, primary key
 #  name                        :string(255)
+#  show_rank                   :boolean          default(FALSE)
 #  support_implicit_judgements :boolean
 #  created_at                  :datetime         not null
 #  updated_at                  :datetime         not null
