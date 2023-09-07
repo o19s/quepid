@@ -113,11 +113,13 @@ es_try:
   name:           Es http://test.com:9200/tmdb/_search
   endpoint_url:   http://test.com:9200/tmdb/_search
   search_engine:  es
+  api_method:     POST  
   
 es_try_with_curator_vars:
   name:           Es http://test.com:9200/tmdb/_search
   endpoint_url:   http://test.com:9200/tmdb/_search
   search_engine:  es
+  api_method:     POST
   
 try_with_headers:
   name:           Solr http://test.com:9200/tmdb/_search
@@ -125,6 +127,7 @@ try_with_headers:
   search_engine:  solr
   api_method:     JSONP
   custom_headers: '{"Authorization": "ApiKey TEF5QkFJUUJVUnRsNG1fekNCR3E6WmRYUFJRRVdTMHlBVWotWFdqQWxuUQ=="}'
+  
   
   
 bootstrap_try_1:

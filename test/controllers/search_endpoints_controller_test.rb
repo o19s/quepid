@@ -3,9 +3,8 @@
 require 'test_helper'
 
 class SearchEndpointsControllerTest < ActionDispatch::IntegrationTest
-  
   let(:user) { users(:joey) }
-  
+
   setup do
     @search_endpoint = search_endpoints(:first_for_case_with_two_tries)
 
@@ -66,8 +65,7 @@ class SearchEndpointsControllerTest < ActionDispatch::IntegrationTest
 
     assert_redirected_to search_endpoints_url
   end
-  
-  
+
   def login_user
     # We don't actually want to load up scores during login, yet we get an error...
     Bullet.enable = false

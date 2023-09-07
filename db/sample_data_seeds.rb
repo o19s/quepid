@@ -19,10 +19,10 @@ end
 # Search Endpoints
 print_step "Seeding search endpoints................"
 
-statedecoded_solr_endpoint = SearchEndpoint.find_or_create_by search_engine: :solr, endpoint_url:   "http://quepid-solr.dev.o19s.com:8985/solr/statedecoded/select"
-tmdb_solr_endpoint = SearchEndpoint.find_or_create_by search_engine: :solr, endpoint_url:   "http://quepid-solr.dev.o19s.com:8985/solr/tmdb/select"
+statedecoded_solr_endpoint = SearchEndpoint.find_or_create_by search_engine: :solr, endpoint_url:   "http://quepid-solr.dev.o19s.com:8985/solr/statedecoded/select", api_method: 'JSONP'
+tmdb_solr_endpoint = SearchEndpoint.find_or_create_by name:"TMDB Solr", search_engine: :solr, endpoint_url: "http://quepid-solr.dev.o19s.com:8985/solr/tmdb/select", api_method: 'JSONP'
 
-tmdb_es_endpoint = SearchEndpoint.find_or_create_by   search_engine: :es, endpoint_url:   "http://quepid-elasticsearch.dev.o19s.com:9206/tmdb/_search"
+tmdb_es_endpoint = SearchEndpoint.find_or_create_by   search_engine: :es, endpoint_url:   "http://quepid-elasticsearch.dev.o19s.com:9206/tmdb/_search", api_method: 'POST'
 
 
 print_step "End of seeding search endpoints................"
