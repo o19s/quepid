@@ -4,13 +4,11 @@
 
 angular.module('QuepidApp')
   .controller('ImportRatingsCtrl', [
-    '$scope',
     '$uibModal',
     'flash',
-    'caseSvc',
     'queriesSvc',
     'querySnapshotSvc',
-    function ($scope, $uibModal, flash, caseSvc, queriesSvc, querySnapshotSvc) {
+    function ($uibModal, flash, queriesSvc, querySnapshotSvc) {
       var ctrl = this;
 
       // Functions
@@ -41,11 +39,13 @@ angular.module('QuepidApp')
         modalInstance.result.then(
           function (response) {
             if (!response.error) {
-              queriesSvc.reset();
-              queriesSvc.bootstrapQueries(ctrl.acase.caseNo)
-                .then(function () {
-                  queriesSvc.searchAll();
-                });
+              if (response.message !== 'Snapshots imported successfully!') {
+                queriesSvc.reset();
+                queriesSvc.bootstrapQueries(ctrl.acase.caseNo)
+                  .then(function () {
+                    queriesSvc.searchAll();
+                  });
+              }
 
               flash.success = response.message;
             } else {

@@ -5,7 +5,7 @@ require 'sidekiq/web'
 # rubocop:disable Metrics/BlockLength
 Rails.application.routes.draw do
   resources :search_endpoints
-  # get 'home/show'
+
   root 'home#show'
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
@@ -32,6 +32,7 @@ Rails.application.routes.draw do
 
   resources :cases, only: [] do
     resource :book
+    resources :ratings, only: [ :index ]
   end
 
   resources :books do
@@ -44,6 +45,7 @@ Rails.application.routes.draw do
     get 'skip_judging' => 'judgements#skip_judging'
     member do
       patch 'combine'
+      patch 'assign_anonymous'
     end
   end
 
@@ -60,6 +62,7 @@ Rails.application.routes.draw do
     get 'tries_visualization/:case_id/vega_data' => 'tries_visualization#vega_data', as: :tries_visualization_vega_data
     resources :cases do
       resource :visibility, only: [ :update ], module: :cases
+      resource :duplicate_scores, only: [ :show ], module: :cases
     end
     get 'sparkline/vega_specification' => 'sparkline#vega_specification',
         as: :sparkline_vega_specification
@@ -68,7 +71,7 @@ Rails.application.routes.draw do
 
   namespace :admin do
     get '/' => 'home#index'
-    resources :users, except: [ :new, :create ] do
+    resources :users do
       resource :lock, only: [ :update ], module: :users
       resource :pulse, only: [ :show ], module: :users
     end
@@ -202,10 +205,15 @@ Rails.application.routes.draw do
   get '/cases'                        => 'core#index'
   get '/case'                         => 'core#index'
   get '/cases/import'                 => 'core#index'
-  get '/teams(/:id)'                  => 'core#index', as: :teams
+  get '/teams(/:id)'                  => 'core#teams', as: :teams
   get '/scorers'                      => 'core#index'
 
   # Static pages
   # get '*page' => 'pages#show'
+  #
+
+  # Deal with ACE Editor really really wanting this file here
+  get '/javascripts/ace/theme-textmate.js' => 'pages#theme_textmate'
+  get '/assets/mode-json.js' => 'pages#mode_json'
 end
 # rubocop:enable Metrics/BlockLength

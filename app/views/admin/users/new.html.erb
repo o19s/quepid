@@ -1,0 +1,25 @@
+<h1>New User</h1>
+
+<%= render partial: 'form', locals: {passed_in_action: 'create'} %>
+
+<hr/>
+<p/>
+<h3>Assign Anonymous Ratings to a User</h3>
+<p class="form-text">
+  If you used Quepid before version 7.6, then ratings on the main Case page were all anonynmous.
+  Those ratings will show up in the book as Anonymous, which means you will have to re-rate them.
+  This allows you to map those Anonymous ratings to an existing Judge, both in this book and update the ratings in the Case.
+</p>
+<%= form_with url: '/assign_anonymous' do |form| %>
+<div class="mb-3">
+  <%= form.label :user_id, class: 'form-label' %>
+  <%= form.collection_select(:user_id, book.team.members, :id, :name, { prompt: true }, required: true, class: 'form-control') %>
+</div>
+<p>
+<div class="actions">
+  <%= form.submit 'Assign Ratings and Judgements' %>
+</div>
+</p>
+<% end %>
+
+<%= link_to 'Back', admin_users_path %>

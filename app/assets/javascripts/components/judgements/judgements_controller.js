@@ -4,15 +4,11 @@
 
 angular.module('QuepidApp')
   .controller('JudgementsCtrl', [
-    '$scope',
     '$uibModal',
-    '$log',
     'flash',
     'queriesSvc',
     function (
-      $scope,
       $uibModal,
-      $log,
       flash,
       queriesSvc
     ) {

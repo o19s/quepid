@@ -1,14 +1,44 @@
 <nav class="navbar navbar-expand-lg navbar-secondary">
   <div class="container-fluid">
-    <%= link_to root_path, class: "navbar-brand", target: "_self" do %>
+    <%= link_to root_path, class: "navbar-brand" do %>
       Quepid
       <span class="hover"><%= image_tag 'tagline-sm.png' %></span>
     <% end %>
 
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
       <ul class="navbar-nav me-auto">
+        <% if @current_user.present? %>
+        <li class="nav-item dropdown">
 
+          <a class="nav-link dropdown-toggle" href="#" id="dropdownCases" role="button" data-bs-toggle="dropdown">
+            <span class="nav-label">Relevancy Cases</span>
+            <!--i class="fa fa-chevron-down"></i-->
+          </a>
+          <ul class="dropdown-menu p-2" style="left: auto; width:250px;" aria-labelledby="navbarDropdown">
+            <li class="text-muted">
+              RECENT CASES
+            </li>
+            <li><hr class="dropdown-divider"></li>
+            <% @current_user.cases_involved_with.not_archived.recent.limit(3).each do |kase| %>
+              <li><%= link_to kase.case_name, case_core_path(kase, kase.last_try_number), class: 'cases-nav-listing' %></li>
+              <li><hr class="dropdown-divider"></li>
+            <% end %>
+          
+            <li class="actions">
+              <div class="d-grid gap-2">
+              <%= link_to "View all cases", cases_path, class: "btn btn-outline-secondary" %>
+              <%= link_to 'Create a case', case_new_path, class: 'btn btn-success' %>
+              </div>
+            </li>
+            
+          </ul>
+        </li>
+        <li class="nav-item">
+          <%= link_to "Teams", teams_path, class: "nav-link" %>
+        </li>
+        <% end %>
       </ul>
+
 
       <ul class="navbar-right nav navbar-nav">
         <% if current_user.present? %>
@@ -32,7 +62,7 @@
           <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
             <%= image_tag current_user.avatar_url, size: '24x24', class: 'img-rounded' %>
             <span data-display-name><%= current_user.display_name %> </span>
-            <i class="fa fa-chevron-down"></i>
+            <!--i class="fa fa-chevron-down"></i-->
           </a>
           <ul class="dropdown-menu navbar-right" style="right: 0; left: auto;" aria-labelledby="navbarDropdown">
             <li><%= link_to 'My profile', profile_path, class: 'dropdown-item', target: '_self' %></li>

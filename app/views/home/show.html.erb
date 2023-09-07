@@ -8,7 +8,7 @@ https://getbootstrap.com/docs/5.2/examples/navbars-offcanvas/# for example of of
 <div class="text-center">
     <p/>
     <h5 class="card-title"><%= Time.now.strftime("%A, %B %d") %></h5>
-    <h2 class="card-title"><%= greeting() %>, <%= @current_user.name.titleize %></h2>
+    <h2 class="card-title"><%= greeting() %>, <%= @current_user.fullname %></h2>
 </div>
 
 <div class="row my-4">
@@ -19,7 +19,7 @@ https://getbootstrap.com/docs/5.2/examples/navbars-offcanvas/# for example of of
   <%= render partial: "book_summary", collection: @most_recent_books, as: :book %>
 </div>
 
-<% if @cases.empty? %>
+<% if @cases.empty? && @most_recent_books.empty?  %>
 <div class="container my-5">
   <div class="p-5 text-center bg-body-tertiary rounded-3">
     <h1 class="text-body-emphasis">Welcome to Quepid!</h1>
@@ -81,7 +81,7 @@ https://getbootstrap.com/docs/5.2/examples/navbars-offcanvas/# for example of of
    var yourVlSpec = {
      "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
      "data": {
-       "url": "http://localhost:3000/analytics/sparkline/vega_data.csv",
+       "url": "<%= analytics_sparkline_vega_data_path format: :csv %>",
        "name": "dataset",
        "format": {"type": "csv"}
      },

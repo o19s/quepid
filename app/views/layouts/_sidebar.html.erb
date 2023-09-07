@@ -15,7 +15,7 @@
       //const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
     </script>
 
-    
+
 <style>
 .sidebar {
   position: fixed;
@@ -85,7 +85,7 @@
             style="font-size: 1.5rem; color: <%= make_active?({controller: 'home'}) ? 'white' : 'cornflowerblue' %>;"
           ></i>
         <% end %>
-      </li>       
+      </li>
       <li>
         <%= link_to cases_path, class: "nav-link #{make_active?({path: 'case'}) ? 'active' : ''} py-3 border-bottom rounded-0", 'data-bs-toggle':'tooltip', 'data-bs-placement':'right', 'aria-label':'Relevancy Cases', 'data-bs-original-title':'Relevancy Cases' do %>
           <i
@@ -95,7 +95,7 @@
             alt="Relevancy Cases"
             style="font-size: 1.5rem; color: <%= make_active?({path: 'case'}) ? 'white' : 'cornflowerblue' %>;"
           ></i>
-        <% end %>        
+        <% end %>
       </li>
       <li>
         <%= link_to books_path, class: "nav-link #{make_active?({path: 'book'}) ? 'active' : ''} py-3 border-bottom rounded-0", 'data-bs-toggle':'tooltip', 'data-bs-placement':'right', 'aria-label':'Judgements', 'data-bs-original-title':'Judgements' do %>
@@ -107,17 +107,28 @@
             style="font-size: 1.5rem; color: <%= make_active?({path: 'book'}) ? 'white' : 'cornflowerblue' %>;"
           ></i>
         <% end %>
-      </li>      
+      </li>
       <li>
-        <%= link_to scorers_path, class: "nav-link #{make_active?({path: 'case'}) ? 'active' : ''} py-3 border-bottom rounded-0", 'data-bs-toggle':'tooltip', 'data-bs-placement':'right', 'aria-label':'Scorers', 'data-bs-original-title':'Scorers' do %>
+        <%= link_to books_path, class: "nav-link #{make_active?({path: 'book'}) ? 'active' : ''} py-3 border-bottom rounded-0", 'data-bs-toggle':'tooltip', 'data-bs-placement':'right', 'aria-label':'Judgements', 'data-bs-original-title':'Judgements' do %>
+          <i
+            class="fa fa-book"
+            aria-hidden="true"
+            title="Judgements"
+            alt="Judgements"
+            style="font-size: 1.5rem; color: <%= make_active?({path: 'book'}) ? 'white' : 'cornflowerblue' %>;"
+          ></i>
+        <% end %>
+      </li>
+      <li>
+        <%= link_to scorers_path, class: "nav-link #{make_active?({path: 'scorers'}) ? 'active' : ''} py-3 border-bottom rounded-0", 'data-bs-toggle':'tooltip', 'data-bs-placement':'right', 'aria-label':'Scorers', 'data-bs-original-title':'Scorers' do %>
           <i
             class="bi bi-list-task"
             aria-hidden="true"
             title="Scorers"
             alt="Scorers"
-            style="font-size: 1.5rem; color: <%= make_active?({path: 'case'}) ? 'white' : 'cornflowerblue' %>;"
+            style="font-size: 1.5rem; color: <%= make_active?({path: 'scorers'}) ? 'white' : 'cornflowerblue' %>;"
           ></i>
-        <% end %>        
+        <% end %>
       </li>
       <li>
         <%= link_to '/notebooks/lab/index.html', target: '_blank', class: "nav-link py-3 border-bottom rounded-0", 'data-bs-toggle':'tooltip', 'data-bs-placement':'right', 'aria-label':'Notebooks', 'data-bs-original-title':'Notebooks' do %>
@@ -128,7 +139,7 @@
             alt="Notebooks"
             style="font-size: 1.5rem; color: <%= make_active?({path: 'case'}) ? 'white' : 'cornflowerblue' %>;"
           ></i>
-        <% end %>        
+        <% end %>
       </li>
       <li>
         <%= link_to search_endpoints_path, class: "nav-link #{make_active?({path: 'search_endpoint'}) ? 'active' : ''} py-3 border-bottom rounded-0", 'data-bs-toggle':'tooltip', 'data-bs-placement':'right', 'aria-label':'Search Endpoints', 'data-bs-original-title':'Search Endpoints' do %>
@@ -151,7 +162,7 @@
             style="font-size: 1.5rem; color: <%= make_active?({path: 'teams'}) ? 'white' : 'cornflowerblue' %>;"
           ></i>
         <% end %>
-      </li>       
+      </li>
     </ul>
     <div class="dropdown border-top">
       <a href="#" class="d-flex align-items-center justify-content-center p-3 link-body-emphasis text-decoration-none dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">

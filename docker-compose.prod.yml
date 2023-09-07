@@ -46,6 +46,7 @@ services:
       - EMAIL_PROVIDER=
       - EMAIL_SENDER=
       - QUERY_LIST_SORTABLE=true
+      - QUEPID_PROPHET_ANALYTICS=true
     command: "foreman s -f Procfile"
     ports:
     #  - 80:3000 # Map to port 80 for outside users when you are not using Nginx
@@ -57,7 +58,7 @@ services:
       - mysql
       - redis
   nginx:
-    image: nginx:1.23.4
+    image: nginx:1.25.2
     container_name: quepid_nginx
     ports:
       - "443:8443"

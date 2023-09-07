@@ -5,6 +5,9 @@ class JudgementsController < ApplicationController
   before_action :find_book
 
   def index
+    bool = ActiveRecord::Type::Boolean.new
+    @shallow = bool.deserialize(params[:shallow] || true )
+
     @judgements = @book.judgements.includes([ :query_doc_pair, :user ])
   end
 
@@ -70,9 +73,19 @@ class JudgementsController < ApplicationController
     @judgement.user = current_user
     @judgement.unrateable = false
 
+    # Make sure that we haven't already created the same judgement before
+    # This create UI can happen very quickly, and somehow we get overlapping creates..
+    if !@judgement.valid? && (@judgement.errors.added? :user_id, :taken, value: @current_user.id)
+      @judgement = Judgement.find_by(user_id: @current_user.id, query_doc_pair_id: @judgement.query_doc_pair_id)
+      @judgement.update(judgement_params)
+      @judgement.user = current_user
+      @judgement.unrateable = false
+    end
+
     if @judgement.save
       redirect_to book_judge_path(@book)
     else
+      @query_doc_pair = @judgement.query_doc_pair
       render action: :new
     end
   end

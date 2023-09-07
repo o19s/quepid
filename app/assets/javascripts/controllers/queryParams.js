@@ -3,10 +3,10 @@
 angular.module('QuepidApp')
   .controller('QueryParamsCtrl', [
     '$scope',
-    'esUrlSvc','caseTryNavSvc','searchEndpointSvc',
+    'esUrlSvc','caseTryNavSvc',
     'TryFactory',
     function ($scope,
-      esUrlSvc, caseTryNavSvc,searchEndpointSvc,
+      esUrlSvc, caseTryNavSvc,
       TryFactory) {
 
       $scope.qp = {};
@@ -20,7 +20,7 @@ angular.module('QuepidApp')
       $scope.showESTemplateWarning = false;
 
       $scope.showTLSChangeWarning = false;
-      
+
       $scope.searchEndpoints = searchEndpointSvc.list();
 
       $scope.validateSearchEngineUrl  = function() {
@@ -37,11 +37,11 @@ angular.module('QuepidApp')
 
           if ($scope.settings.searchEngine !== '' && !angular.isUndefined($scope.settings.searchUrl)){
              $scope.showTLSChangeWarning = caseTryNavSvc.needToRedirectQuepidProtocol($scope.settings.searchUrl);
-             
+
             if ($scope.showTLSChangeWarning){
-             
+
               var resultsTuple = caseTryNavSvc.swapQuepidUrlTLS();
-              
+
               $scope.quepidUrlToSwitchTo = resultsTuple[0];
               $scope.protocolToSwitchTo = resultsTuple[1];
 

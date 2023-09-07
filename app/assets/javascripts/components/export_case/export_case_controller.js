@@ -76,7 +76,6 @@ angular.module('QuepidApp')
         }
         else if ( options.which === 'snapshot' ) {
           $log.info('Selected "snapshot" as export option.');
-          $log.info('Exporting snapshot ' + options.snapshot_snapshot + '.');
           snapshotId = options.snapshot_snapshot;
           // Snapshot Name	Snapshot Time	Case ID	Query Text	Doc ID	Doc Position
 

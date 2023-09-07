@@ -4,9 +4,8 @@
 
 angular.module('QuepidApp')
   .controller('CurrSettingsCtrl', [
-    '$scope', '$rootScope',
-    'settingsSvc',
-    function ($scope, $rootScope, settingsSvc) {
+    '$scope', 'settingsSvc',
+    function ($scope, settingsSvc) {
       $scope.currentTry = {
         selectedTry: selectedTry
       };

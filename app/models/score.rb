@@ -52,4 +52,16 @@ class Score < ApplicationRecord
   }
 
   scope :scored, -> { where('score > ?', 0) }
+
+  # Due to a bug, we have cases with 60,000+ scores, which kills our performance.
+  # This is a terrible workaround till we get that problem fixed.
+  # Have to pass in the case_id and the number of records to randomly sample.
+  # Yes, needing to pass in the case_id is awkward if you have kase.scorers.sampled(kase.id, 100).count
+  scope :sampled, ->(case_id, count) {
+    joins("
+      JOIN (
+        SELECT id FROM case_scores where case_id=#{case_id} ORDER BY RAND() LIMIT #{count}
+      ) as filtered_case_scores ON `case_scores`.`id`=filtered_case_scores.id
+    ")
+  }
 end

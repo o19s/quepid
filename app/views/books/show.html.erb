@@ -16,6 +16,17 @@ Books organize all the query/doc pairs that are needed for evaluating your searc
 
 <%= render 'judgements/moar_judgements_needed', book: @book %>
 
+<% if @count_of_anonymous_book_judgements > 0 %>
+<div class="alert alert-warning" role="alert">
+  This book has <%= @count_of_anonymous_book_judgements %> anonymous judgements that should be mapped to a user.
+</div>
+<% end %>
+<% if @count_of_anonymous_case_judgements > 0 %>
+<div class="alert alert-warning" role="alert">
+  The associated cases have <%= @count_of_anonymous_case_judgements %> anonymous ratings that should be mapped to a user.
+</div>
+<% end %>
+
 <p>
   <strong>Team:</strong>
   <%= link_to @book.team.name, teams_path(@book.team) %>
@@ -40,8 +51,13 @@ Books organize all the query/doc pairs that are needed for evaluating your searc
 </p>
 
 <p>
-  <strong>Related cases:</strong>
-  <%= render(partial: 'books/case', collection: @cases, as: :kase) || "There are no cases available." %>
+  <strong>Show Rank of Documents when Judging:</strong>
+  <%= @book.show_rank? %>
+</p>
+
+<p>
+<strong>Related cases:</strong>
+<%= render(partial: 'books/case', collection: @cases, as: :kase) || "There are no cases associated." %>
 </p>
 
 <%= button_to 'Show Judgements', book_judgements_path(@book), method: :get %>

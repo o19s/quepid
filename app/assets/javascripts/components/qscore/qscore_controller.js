@@ -3,8 +3,8 @@
 
 angular.module('QuepidApp')
   .controller('QscoreCtrl', [
-    '$scope', 'qscoreSvc',
-    function ($scope, qscoreSvc) {
+    '$scope', 'qscoreSvc', 'queryViewSvc',
+    function ($scope, qscoreSvc, queryViewSvc) {
       var ctrl          = this;
       var defaultStyle  = { 'background-color': 'hsl(0, 0%, 0%, 0.5)'};
 
@@ -31,7 +31,9 @@ angular.module('QuepidApp')
 
       // This watch updates the diffs in the main query list and the avgQuery
       $scope.$watchGroup(['ctrl.scorable.diff', 'ctrl.diffLabel'], () => {
-        setDiff();
+        if (queryViewSvc.isDiffEnabled()){
+          setDiff();  
+        }        
       });
 
       ctrl.diffInfo = {

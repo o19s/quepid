@@ -107,7 +107,7 @@ GEM
       xpath (~> 3.2)
     choice (0.2.0)
     cmdstan (0.2.2)
-    colorize (0.8.1)
+    colorize (1.1.0)
     concurrent-ruby (1.2.2)
     connection_pool (2.4.0)
     cookies_eu (1.7.8)
@@ -340,7 +340,7 @@ GEM
     responders (3.1.0)
       actionpack (>= 5.2)
       railties (>= 5.2)
-    rexml (3.2.5)
+    rexml (3.2.6)
     rover-df (0.3.4)
       numo-narray (>= 0.9.1.9)
     rubocop (1.54.1)
@@ -376,7 +376,7 @@ GEM
       sprockets (> 3.0)
       sprockets-rails
       tilt
-    selenium-webdriver (4.8.6)
+    selenium-webdriver (4.11.0)
       rexml (~> 3.2, >= 3.2.5)
       rubyzip (>= 1.2.2, < 3.0)
       websocket (~> 1.0)

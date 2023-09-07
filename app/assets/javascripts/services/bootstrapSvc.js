@@ -8,7 +8,7 @@ angular.module('UtilitiesModule')
   .service('bootstrapSvc', [
     '$rootScope',
     'userSvc',
-    function bootstrapSvc( $rootScope, userSvc) {
+    function bootstrapSvc($rootScope, userSvc) {
       var self = this;
 
       // Public Functions
@@ -23,6 +23,7 @@ angular.module('UtilitiesModule')
             // Assign it so all controllers have access to the current user
             // instead of having to call the userSvc.getUser() function all the time.
             $rootScope.currentUser = user;
+
           });
       }
     }
