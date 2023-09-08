@@ -6,7 +6,7 @@ class SearchEndpointsController < ApplicationController
   respond_to :html
 
   def index
-    @search_endpoints = SearchEndpoint.all
+    @search_endpoints = @current_user.search_endpoints_involved_with
     respond_with(@search_endpoints)
   end
 
@@ -24,6 +24,7 @@ class SearchEndpointsController < ApplicationController
 
   def create
     @search_endpoint = SearchEndpoint.new(search_endpoint_params)
+    @search_endpoint.owner = @current_user
     @search_endpoint.save
     respond_with(@search_endpoint)
   end

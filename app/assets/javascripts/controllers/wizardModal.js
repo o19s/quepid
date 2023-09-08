@@ -41,9 +41,9 @@ angular.module('QuepidApp')
          }
        });
        
-       $scope.filterEndpointsByType = function() {
-         return searchEndpointSvc.filteredEndpoints($scope.pendingWizardSettings.searchEngine);
-       }
+       $scope.listSearchEndpoints = function() {
+        return $scope.searchEndpoints;
+      }
 
       // used when we first launch the wizard, and it handles reloading from http to https
       $scope.updateSettingsDefaults = function() {
@@ -64,7 +64,7 @@ angular.module('QuepidApp')
         $scope.pendingWizardSettings.titleField               = settings.titleField;
         $scope.pendingWizardSettings.urlFormat                = settings.urlFormat;    
         $scope.pendingWizardSettings.searchEndpointId         = null;
-        $scope.searchEndpoints = searchEndpointSvc.list();
+        //$scope.searchEndpoints = searchEndpointSvc.list();
 
         var quepidStartsWithHttps = $location.protocol() === 'https';
 
@@ -246,8 +246,8 @@ angular.module('QuepidApp')
       function validateHeaders () {
         $scope.invalidHeaders = false;
 
-        if ($scope.pendingWizardSettings.searchEngine !== 'solr'&&
-          $scope.pendingWizardSettings.customHeaders.length > 0) {
+        if (
+          $scope.pendingWizardSettings.customHeaders && $scope.pendingWizardSettings.customHeaders.length > 0) {
           try {
             JSON.parse($scope.pendingWizardSettings.customHeaders);
           } catch (e) {

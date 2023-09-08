@@ -25,8 +25,8 @@
         <br><br><br><br><br>
       </div>
     </wz-step>
-    <wz-step title="Engine" id="step-three">
-      <h2>Solr, Elasticsearch, or OpenSearch?</h2>
+    <wz-step title="Endpoint" id="step-three">
+      <h2>What Search Endpoint do you want to connect to?</h2>
       <div>
         <uib-accordion>
           <div uib-accordion-group class="panel-default" heading="Use an existing Search Endpoint" >
@@ -36,11 +36,10 @@
             <select
               id="searchEndpoint"
               ng-model="pendingWizardSettings.searchEndpointId"
-              ng-options="searchEndpoint.id as searchEndpoint.name for searchEndpoint in filterEndpointsByType()"
+              ng-options="searchEndpoint.id as searchEndpoint.name for searchEndpoint in listSearchEndpoints()"
             >
               <option value="">Create a new Search Endpoint<option>
             </select>
-            SEP:{{pendingWizardSettings.searchEndpointId}}
             
             <button class="btn btn-primary pull-right continue" ng-click="pickSearchEndpoint()" ng-disabled="pendingWizardSettings.searchEndpointId == null">Continue</button>
             
@@ -56,11 +55,11 @@
             </label>
             <label style="margin-right: 25px;">
               <input type="radio" value="es" ng-model="pendingWizardSettings.searchEngine" ng-change="changeSearchEngine()">
-              <img ng-src="images/elasticsearch.png" alt='Elasticsearch' width="150px" />
+              <img ng-src="images/es.png" alt='Elasticsearch' width="150px" />
             </label>
             <label>
               <input type="radio" value="os" ng-model="pendingWizardSettings.searchEngine" ng-change="changeSearchEngine()">
-              <img ng-src="images/opensearch.png" alt='OpenSearch' width="150px" />
+              <img ng-src="images/os.png" alt='OpenSearch' width="150px" />
             </label>
           </div>
   

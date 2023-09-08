@@ -52,7 +52,7 @@ class SearchEndpoint < ApplicationRecord
   }
 
   scope :for_user, ->(user) {
-    ids = for_user_via_teams(user).pluck(:id) + for_user_directly_owned(user).pluck(:id)
+    ids = for_user_via_teams(user).distinct.pluck(:id) + for_user_directly_owned(user).distinct.pluck(:id)
     where(id: ids.uniq)
   }
 

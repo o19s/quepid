@@ -36,7 +36,7 @@ Search Endpoints represents an API (or search engine!) that is receiving queries
     <% @search_endpoints.each do |search_endpoint| %>
       <tr>
         <td><%= link_to search_endpoint.fullname, search_endpoint_path(search_endpoint) %></td>
-        <td><%= search_endpoint.search_engine %></td>
+        <td><%= image_tag "#{search_endpoint.search_engine}-icon.png", size:'32x32', class:'rounded-circle' %> <%= search_endpoint.search_engine %></td>
         <td><%= search_endpoint.endpoint_url %> </td>
         <td><%= search_endpoint.custom_headers %> </td>
         <td><%= search_endpoint.api_method %></td>

@@ -3,10 +3,10 @@
 angular.module('QuepidApp')
   .controller('QueryParamsCtrl', [
     '$scope',
-    'esUrlSvc','caseTryNavSvc',
+    'esUrlSvc','caseTryNavSvc','searchEndpointSvc',
     'TryFactory',
     function ($scope,
-      esUrlSvc, caseTryNavSvc,
+      esUrlSvc, caseTryNavSvc,searchEndpointSvc,
       TryFactory) {
 
       $scope.qp = {};

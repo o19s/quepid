@@ -74,9 +74,9 @@ angular.module('QuepidApp')
             angular.forEach(response.data.search_endpoints, function(dataSearchEndpoint) {
               var searchEndpoint = self.constructFromShallowData(dataSearchEndpoint);
 
-              //if(!contains(self.searchEndpoint, search_endpoint)) {
+              if(!contains(self.searchEndpoints, searchEndpoint)) {
                 self.searchEndpoints.push(searchEndpoint);
-                //}
+              }
             });
           });
       };

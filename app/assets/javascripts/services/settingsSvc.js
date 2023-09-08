@@ -190,7 +190,7 @@ angular.module('QuepidApp')
 
       this.demoSettingsChosen = function(searchEngine, newUrl){
         var useTMDBDemoSettings = false;
-    if (searchEngine === 'solr'){
+        if (searchEngine === 'solr'){
           if (newUrl === null || angular.isUndefined(newUrl)){
             useTMDBDemoSettings = true;
           }
@@ -335,24 +335,32 @@ angular.module('QuepidApp')
         // (4) possibly modified curator vars
         // probably could be a bit more restful
         // Note that we map between camelCase in JS and snake_case in API here.
-        var sentData = {};
+        
         var currCaseNo = caseTryNavSvc.getCaseNo();
 
+        var payload = {};
+        var payloadTry = {};
+        var payloadSearchEndpoint = {};
+        payload.try = payloadTry;
+        payload.search_endpoint = payloadSearchEndpoint;
+        
+        payload.parent_try_number = settingsToSave.selectedTry.tryNo;
+        payload.curator_vars      = settingsToSave.selectedTry.curatorVarsDict();
+        
         // We create the default name on the server side
-        //sentData.name            = settingsToSave.selectedTry.name;
-        sentData.curator_vars      = settingsToSave.selectedTry.curatorVarsDict();
-        sentData.escape_query      = settingsToSave.escapeQuery;
-        sentData.api_method        = settingsToSave.apiMethod;
-        sentData.custom_headers    = settingsToSave.customHeaders;
-        //sentData.fields          = settingsToSave.createFieldSpec().fields;
-        sentData.field_spec        = settingsToSave.fieldSpec;
-        sentData.number_of_rows    = settingsToSave.numberOfRows;
-        sentData.query_params      = settingsToSave.selectedTry.queryParams;
-        sentData.search_engine     = settingsToSave.searchEngine;
-        sentData.search_url        = settingsToSave.searchUrl;
-        sentData.parent_try_number = settingsToSave.selectedTry.tryNo;
+        //payloadTry.name            = settingsToSave.selectedTry.name;
+        
+        payloadTry.escape_query      = settingsToSave.escapeQuery;
+        payloadTry.field_spec        = settingsToSave.fieldSpec;
+        payloadTry.number_of_rows    = settingsToSave.numberOfRows;
+        payloadTry.query_params      = settingsToSave.selectedTry.queryParams;
+        payloadSearchEndpoint.search_engine     = settingsToSave.searchEngine;
+        payloadSearchEndpoint.endpoint_url      = settingsToSave.searchUrl;
+        payloadSearchEndpoint.api_method        = settingsToSave.apiMethod;
+        payloadSearchEndpoint.custom_headers    = settingsToSave.customHeaders;        
+        
 
-        return $http.post('api/cases/' + currCaseNo + '/tries', sentData)
+        return $http.post('api/cases/' + currCaseNo + '/tries', payload)
           .then(function(response) {
             var tryJson = response.data;
             var newTry  = currSettings.addTry(tryJson);
@@ -392,7 +400,6 @@ angular.module('QuepidApp')
         // (4) possibly modified curator vars
         // probably could be a bit more restful
         // Note that we map between camelCase in JS and snake_case in API here.
-        var sentData = {};
         var currCaseNo = caseTryNavSvc.getCaseNo();
         var currTryNo = caseTryNavSvc.getTryNo();
 
@@ -400,18 +407,29 @@ angular.module('QuepidApp')
         // we don't have a sentData.name = settingsToSave.selectedTry.name
         // for completeness we should.   If we enable more edit of existing try
         // tries are odd, cause we pretty much only create new ones!
-        sentData.curatorVars       = settingsToSave.selectedTry.curatorVarsDict();
-        sentData.escape_query      = settingsToSave.escapeQuery;
-        sentData.api_method        = settingsToSave.apiMethod;
-        sentData.custom_headers    = settingsToSave.customHeaders;
-        sentData.field_spec        = settingsToSave.fieldSpec;
-        sentData.number_of_rows    = settingsToSave.numberOfRows;
-        sentData.query_params      = settingsToSave.selectedTry.queryParams;
-        sentData.search_engine     = settingsToSave.searchEngine;
-        sentData.search_url        = settingsToSave.searchUrl;
-        sentData.parent_try_number = settingsToSave.selectedTry.tryNo;
 
-        return $http.put('api/cases/' + currCaseNo + '/tries/' + currTryNo, sentData)
+        var payload = {};
+        var payloadTry = {};
+        var payloadSearchEndpoint = {};
+        payload.try = payloadTry;
+        payload.search_endpoint = payloadSearchEndpoint;
+        
+        payload.parent_try_number = settingsToSave.selectedTry.tryNo;
+        payload.curator_vars      = settingsToSave.selectedTry.curatorVarsDict();
+        
+        // We create the default name on the server side
+        //payloadTry.name            = settingsToSave.selectedTry.name;
+
+        payloadTry.escape_query      = settingsToSave.escapeQuery;
+        payloadTry.field_spec        = settingsToSave.fieldSpec;
+        payloadTry.number_of_rows    = settingsToSave.numberOfRows;
+        payloadTry.query_params      = settingsToSave.selectedTry.queryParams;
+        payloadSearchEndpoint.search_engine     = settingsToSave.searchEngine;
+        payloadSearchEndpoint.endpoint_url      = settingsToSave.searchUrl;
+        payloadSearchEndpoint.api_method        = settingsToSave.apiMethod;
+        payloadSearchEndpoint.custom_headers    = settingsToSave.customHeaders;           
+
+        return $http.put('api/cases/' + currCaseNo + '/tries/' + currTryNo, payload)
           .then(function() {
 
             // Broadcast that settings for case have been updated
