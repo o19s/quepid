@@ -55,9 +55,7 @@ class Try < ApplicationRecord
     # return unless search_endpoint
     unless search_endpoint.nil?
       case search_endpoint.search_engine
-      when 'solr'
-        solr_args
-      when 'snapshot'
+      when 'solr' || 'snapshot'
         solr_args
       when 'es'
         es_args

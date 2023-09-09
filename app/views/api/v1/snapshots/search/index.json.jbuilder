@@ -10,7 +10,7 @@ json.responseHeader do
 end
 
 json.response do
-  json.numFound @snapshot_docs.count
+  json.numFound @number_found
   json.start 0
   json.numFoundExact true
   json.docs do

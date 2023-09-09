@@ -28,8 +28,8 @@ module Api
 
             data = response.parsed_body
 
-            assert_equal data['responseHeader']['params']['q'], query_text
-            assert_equal data['response']['docs'].length, snapshot_query.snapshot_docs.count
+            assert_equal query_text, data['responseHeader']['params']['q']
+            assert_equal snapshot_query.snapshot_docs.count, data['response']['docs'].length
           end
 
           test 'handles a *:* search' do
@@ -39,19 +39,63 @@ module Api
 
             data = response.parsed_body
 
-            assert_equal data['responseHeader']['params']['q'], '*:*'
-            assert_equal data['response']['docs'].length, 2
+            assert_equal '*:*', data['responseHeader']['params']['q']
+            assert_equal 2, data['response']['docs'].length
           end
 
-          test 'handles a missing query search' do
+          test 'handles a query that doesnt match any snapshotted queries' do
             get :index, params: { case_id: acase.id, snapshot_id: snapshot.id, q: 'missing query' }
 
             assert_response :ok
 
             data = response.parsed_body
 
-            assert_equal data['responseHeader']['params']['q'], 'missing query'
-            assert_equal data['response']['docs'].length, 0
+            assert_equal 'missing query', data['responseHeader']['params']['q']
+            assert_equal 0, data['response']['docs'].length
+          end
+
+          test 'looks up an individual doc by its ID' do
+            snapshot_query = snapshot.snapshot_queries.first
+            doc_id = snapshot_query.snapshot_docs.first.doc_id
+            query_text = "id:#{doc_id}"
+
+            get :index, params: { case_id: acase.id, snapshot_id: snapshot.id, q: query_text }
+
+            assert_response :ok
+
+            data = response.parsed_body
+
+            assert_equal query_text, data['responseHeader']['params']['q']
+            assert_equal 1, data['response']['docs'].length
+          end
+
+          test 'looks up an individual doc that doesnt exist' do
+            query_text = 'id:fake'
+
+            get :index, params: { case_id: acase.id, snapshot_id: snapshot.id, q: query_text }
+
+            assert_response :ok
+
+            data = response.parsed_body
+
+            assert_equal query_text, data['responseHeader']['params']['q']
+            assert_equal 0, data['response']['docs'].length
+          end
+
+          test 'deals with rows' do
+            snapshot_query = snapshot.snapshot_queries.first
+            query_text = snapshot_query.query.query_text
+
+            rows = 1
+            get :index, params: { case_id: acase.id, snapshot_id: snapshot.id, q: query_text, rows: rows }
+
+            assert_response :ok
+
+            data = response.parsed_body
+
+            assert_equal query_text, data['responseHeader']['params']['q']
+            assert_equal 2, data['response']['numFound']
+            assert_equal rows, data['response']['docs'].length
           end
         end
       end
