@@ -5,8 +5,8 @@ module Api
     class SnapshotsController < Api::ApiController
       before_action :find_case
       before_action :check_case
-      before_action :set_snapshot,    only: [ :show, :destroy ]
-      before_action :check_snapshot,  only: [ :show, :destroy ]
+      before_action :set_snapshot,    only: [ :show, :destroy, :query ]
+      before_action :check_snapshot,  only: [ :show, :destroy, :query ]
 
       # Spiking out can we make an API public?
       def authenticate_api!

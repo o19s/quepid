@@ -52,15 +52,18 @@ class Try < ApplicationRecord
   before_create :set_defaults
 
   def args
-    return unless search_endpoint
-
-    case search_endpoint.search_engine
-    when 'solr'
-      solr_args
-    when 'es'
-      es_args
-    when 'os'
-      os_args
+    # return unless search_endpoint
+    unless search_endpoint.nil?
+      case search_endpoint.search_engine
+      when 'solr'
+        solr_args
+      when 'snapshot'
+        solr_args
+      when 'es'
+        es_args
+      when 'os'
+        os_args
+      end
     end
   end
 

@@ -92,6 +92,27 @@ angular.module('QuepidApp')
           searchUrl:         'https://reader:reader@quepid-opensearch.dev.o19s.com:9000/tmdb/_search',
           urlFormat:         'http(s?)://yourdomain.com:9200/<index>/_search',
           customHeaders:     '',
+        },
+        snapshot: {
+          queryParams:  [
+            'q=#$query##'
+          ].join('\n'),
+          escapeQuery:      true,
+          customHeaders:    '',
+          headerType:       'None',
+          apiMethod:        'GET',
+          fieldSpec:        'id:id',
+          idField:          'id',
+          titleField:       '',
+          additionalFields: [],
+          numberOfRows:     10,
+          searchEngine:     'snapshot',
+          // perfect world we wouldn't have this here and we would instead populate with urlFormat instead.
+          insecureSearchUrl:'http://localhost:3000/api/cases/5/snapshots/1/search',
+          secureSearchUrl:  'https://localhost:3000/api/cases/5/snapshots/1/search',
+          urlFormat:        'http(s?)://localhost:3000/api/cases/<caseId>/snapshots/<snapshotId>/search',
+          customHeaders:     '',
+          responseParser:   'solr'
         }
       };
       // used by the wizard for TMDB demo search engine
@@ -180,7 +201,29 @@ angular.module('QuepidApp')
           searchUrl:         'https://reader:reader@quepid-opensearch.dev.o19s.com:9000/tmdb/_search',
           urlFormat:         'http(s?)://yourdomain.com:9200/<index>/_search',
           customHeaders:     '',
-        }
+        },
+        snapshot: {
+          queryParams:  [
+            'q=#$query##'
+          ].join('\n'),
+
+          escapeQuery:      true,
+          customHeaders:    '',
+          headerType:       'None',
+          apiMethod:        'GET',
+          fieldSpec:        'id:id, title:title',
+          idField:          'id',
+          titleField:       'title',
+          additionalFields: ['overview','cast','thumb:poster_path'],
+          numberOfRows:     10,
+          searchEngine:     'snapshot',
+          insecureSearchUrl:'http://localhost:3000/api/cases/5/snapshots/1/search',
+          secureSearchUrl:  'https://localhost:3000/api/cases/5/snapshots/1/search',
+          urlFormat:        'http(s?)://localhost:3000/api/cases/<caseId>/snapshots/<snapshotId>/search',
+          customHeaders:    '',
+          responseParser:   'solr'
+        },
+        
       };
 
       /* jshint ignore:end */

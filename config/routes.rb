@@ -133,7 +133,11 @@ Rails.application.routes.draw do
         end
 
         # Case Snapshots
-        resources :snapshots, except: [ :new, :edit, :update ]
+        resources :snapshots, except: [ :new, :edit, :update ] do
+          scope module: :snapshots do
+            resources :search, only: [ :index ]
+          end
+        end
         namespace :snapshots do
           resources :imports, only: [ :create ]
         end

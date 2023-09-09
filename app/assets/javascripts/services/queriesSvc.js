@@ -78,6 +78,14 @@ angular.module('QuepidApp')
             escapeQuery:   passedInSettings.escapeQuery,
             numberOfRows:  passedInSettings.numberOfRows,
           };
+          
+          if (passedInSettings.searchEngine === 'snapshot'){
+            // Similar to logic in Splainer-searches SettingsValidatorFactory for snapshots.
+            // we need a better way of handling this.   Basically nwe are saying a snapshot is
+            // treated like Solr.   But if we have more generic search apis, they will need a 
+            // custom parser...
+            passedInSettings.searchEngine = 'solr'; 
+          }
 
           if (passedInSettings.searchEngine === 'solr') {
             // add echoParams=all if we don't have it defined to provide query details.

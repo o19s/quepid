@@ -116,10 +116,11 @@ angular.module('QuepidApp')
         $scope.pendingWizardSettings.queryParams              = settings.queryParams;
         $scope.pendingWizardSettings.titleField               = settings.titleField;
         $scope.pendingWizardSettings.urlFormat                = settings.urlFormat;
+        $scope.pendingWizardSettings.responseParser           = settings.responseParser; // not used
 
         var quepidStartsWithHttps = $location.protocol() === 'https';
 
-        if ($scope.pendingWizardSettings.searchEngine === 'solr') {
+        if ($scope.pendingWizardSettings.searchEngine === 'solr' || $scope.pendingWizardSettings.searchEngine === 'snapshot') {
           if (quepidStartsWithHttps === true){
             $scope.pendingWizardSettings.searchUrl = settings.secureSearchUrl;
           }
@@ -136,7 +137,6 @@ angular.module('QuepidApp')
       
       // used when you click the accordion for new search endpoint
       $scope.switchToCreateNewSearchEndpoint = function() {
-       console.log("I was just clicked");
        $scope.pendingWizardSettings.searchEndpointId = null;
        
       };
