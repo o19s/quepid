@@ -30,6 +30,7 @@ angular.module('QuepidApp')
       ctrl.canCreateTeam = false;
       ctrl.refreshOnly = false;
       ctrl.updateAssociatedBook = false;
+      ctrl.populateJudgements = false;
 
       $rootScope.$watch('currentUser', function() {
         if ( $rootScope.currentUser ) {
