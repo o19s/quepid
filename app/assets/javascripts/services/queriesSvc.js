@@ -140,7 +140,7 @@ angular.module('QuepidApp')
           // search engine with no explain output
           normed = searcher.docs.map(function(doc) {
             return normalDocsSvc.createNormalDoc(fieldSpec, doc);
-          })
+          });
         }
 
         let docs = [];
@@ -674,7 +674,7 @@ angular.module('QuepidApp')
             return '{!terms f=' + fieldSpec.id + '}' + ratedIDs.join(',');
           } else if (settings.searchEngine === 'vectara') {
             return ratedIDs.map(function(id) {
-              return "doc.id = '" + id + "'";
+              return 'doc.id = \'' + id + '\'';
             }).join(' OR ');
           }
         };
