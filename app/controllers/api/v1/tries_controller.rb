@@ -67,8 +67,7 @@ module Api
         search_endpoint_params_to_use = search_endpoint_params
         search_endpoint_params_to_use = convert_blank_values_to_nil search_endpoint_params_to_use
         unless search_endpoint_params_to_use.empty?
-          puts 'Here are the params'
-          puts search_endpoint_params_to_use.except :name
+
           # really hsould be a search_endpoint_id
           search_endpoint = @current_user.search_endpoints_involved_with
             .find_by search_endpoint_params_to_use.except :name

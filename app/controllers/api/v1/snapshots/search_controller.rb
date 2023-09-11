@@ -10,6 +10,9 @@ module Api
         before_action :check_snapshot
 
         # rubocop:disable Metrics/MethodLength
+        # rubocop:disable Metrics/AbcSize
+        # rubocop:disable Metrics/CyclomaticComplexity
+        # rubocop:disable Metrics/PerceivedComplexity
         def index
           @q = params[:q]
           query = if '*:*' == @q
@@ -30,14 +33,30 @@ module Api
             @snapshot_docs = []
           end
 
-          rows = params[:rows]
+          rows = params[:rows].to_i if params[:rows]
+          start = params[:start].to_i if params[:start]
 
           @number_found = @snapshot_docs.count
-          @snapshot_docs = @snapshot_docs.take rows if rows
+
+          if start && rows
+            end_index = rows + start
+            @snapshot_docs = @snapshot_docs[start...end_index]
+          elsif rows
+            @snapshot_docs = @snapshot_docs.take rows if rows
+          end
+
+          @solr_params = {
+            q: @q,
+          }
+          @solr_params[:rows] = params[:rows] if params[:rows]
+          @solr_params[:start] = params[:start] if params[:start]
 
           respond_with @snapshot
         end
         # rubocop:enable Metrics/MethodLength
+        # rubocop:enable Metrics/AbcSize
+        # rubocop:enable Metrics/CyclomaticComplexity
+        # rubocop:enable Metrics/PerceivedComplexity
 
         private
 

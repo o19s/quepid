@@ -97,6 +97,32 @@ module Api
             assert_equal 2, data['response']['numFound']
             assert_equal rows, data['response']['docs'].length
           end
+
+          test 'deals with pagination' do
+            snapshot_query = snapshot.snapshot_queries.first
+            query_text = snapshot_query.query.query_text
+            solr_params = {
+              q:     query_text,
+              rows:  1,
+              start: 1,
+            }
+            params = {
+              case_id: acase.id, snapshot_id: snapshot.id
+            }
+            params = params.merge(solr_params)
+
+            get :index, params: params
+
+            assert_response :ok
+
+            data = response.parsed_body
+
+            assert_equal query_text, data['responseHeader']['params']['q']
+            assert_equal 2, data['response']['numFound']
+            assert_equal solr_params[:rows], data['response']['docs'].length
+
+            assert_equal data['responseHeader']['params'], solr_params.stringify_keys.transform_values(&:to_s)
+          end
         end
       end
     end

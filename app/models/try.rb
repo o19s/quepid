@@ -55,8 +55,10 @@ class Try < ApplicationRecord
     # return unless search_endpoint
     unless search_endpoint.nil?
       case search_endpoint.search_engine
-      when 'solr' || 'snapshot'
+      when 'solr'
         solr_args
+      when 'snapshot'
+        snapshot_args
       when 'es'
         es_args
       when 'os'
@@ -92,6 +94,11 @@ class Try < ApplicationRecord
   def os_args
     # Use the EsArgParser as currently queries are the same
     EsArgParser.parse(query_params, curator_vars_map)
+  end
+
+  def snapshot_args
+    # Use the SolrArgParser as that is the only snapshot format we know
+    SolrArgParser.parse(query_params, curator_vars_map)
   end
 
   def id_from_field_spec

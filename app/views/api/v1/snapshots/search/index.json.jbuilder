@@ -4,9 +4,7 @@ json.responseHeader do
   json.status 2
   json.QTime 0
 
-  json.params do
-    json.q @q
-  end
+  json.params @solr_params
 end
 
 json.response do

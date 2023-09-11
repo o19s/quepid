@@ -20,6 +20,10 @@
 
 
         <div class='clearfix'></div>
+        
+        <p ng-show="settings.searchEngine == 'snapshot'">
+          With a static (snapshot) search endpoint there are no query settings to play with ;-(.
+        </p>
 
         <p ng-show="showQueryParamsWarning" id="query-params-warn" class="alert alert-warning" ng-bind-html="queryParamsWarning">{{ queryParamsWarning }}</p>
 
@@ -50,6 +54,10 @@
           What's this tab do? Knobs allow you to fine tune your search!
           Define variables in your query template with <code>##</code>, such as this boost: <code>title^##titleBoost##</code>.
           Play with the values in this tab. Submit to rerun with the new values!
+        </p>
+        
+        <p ng-show="settings.searchEngine == 'snapshot'">
+          With a static (snapshot) search endpoint there are no tuning knobs to play with ;-(.
         </p>
 
         <h4>Tuning Knobs</h4>
