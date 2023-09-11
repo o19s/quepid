@@ -42,6 +42,10 @@
             <input type="radio" value="os" ng-model="pendingWizardSettings.searchEngine" ng-change="changeSearchEngine()">
             <img ng-src="images/opensearch.png" alt='OpenSearch' width="150px" />
           </label>
+          <label>
+            <input type="radio" value="vectara" ng-model="pendingWizardSettings.searchEngine" ng-change="changeSearchEngine()">
+            <img ng-src="images/vectara.png" alt='Vectara' width="150px" />
+          </label>
         </div>
 
         <br>
@@ -62,7 +66,8 @@
             Sorry, we're not getting any search results from your
             <span ng-show="pendingWizardSettings.searchEngine === 'es'">Elasticsearch</span>
             <span ng-show="pendingWizardSettings.searchEngine === 'os'">OpenSearch</span>
-            <span ng-show="pendingWizardSettings.searchEngine === 'solr'">Solr</span>.
+            <span ng-show="pendingWizardSettings.searchEngine === 'solr'">Solr</span>
+            <span ng-show="pendingWizardSettings.searchEngine === 'vectara'">Vectara</span>.
 
             <ul ng-if="pendingWizardSettings.searchEngine === 'es'">
               <li>Is your Elasticsearch behind a firewall or proxy? Try acessing the <a target="_blank" href="{{pendingWizardSettings.searchUrl}}">URL directly</a> and see if you get a response</li>
@@ -122,23 +127,23 @@ curl -k -X POST -H 'Content-type:application/json' -d '{
           </div>
 
           <span ng-if="pendingWizardSettings.searchEngine === 'solr'">
-          <p>
-            <button type="button" class="btn btn-sm btn-default" ng-click="isSolrCollapsed = !isSolrCollapsed">Solr Configuration</button>
-          </p>
-          <div uib-collapse="!isSolrCollapsed">
-             <div class="well well-sm">
-              <div class="form-group clearfix">
-                <label class="col-sm-3 control-label">API Method</label>
-                <div class="col-sm-9">
-                  <select class="form-control" ng-model="pendingWizardSettings.apiMethod" ng-change="resetUrlValid()">
-                    <option>JSONP</option>
-                    <option>GET</option>
-                  </select>
-                  <p class="help-block">Use JSONP if you are talking directly to Solr, otherwise if you are talking to an API you can use GET.</p>
+            <p>
+              <button type="button" class="btn btn-sm btn-default" ng-click="isSolrCollapsed = !isSolrCollapsed">Solr Configuration</button>
+            </p>
+            <div uib-collapse="!isSolrCollapsed">
+               <div class="well well-sm">
+                <div class="form-group clearfix">
+                  <label class="col-sm-3 control-label">API Method</label>
+                  <div class="col-sm-9">
+                    <select class="form-control" ng-model="pendingWizardSettings.apiMethod" ng-change="resetUrlValid()">
+                      <option>JSONP</option>
+                      <option>GET</option>
+                    </select>
+                    <p class="help-block">Use JSONP if you are talking directly to Solr, otherwise if you are talking to an API you can use GET.</p>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
           </span>
 
 

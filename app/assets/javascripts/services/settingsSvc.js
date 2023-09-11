@@ -38,8 +38,7 @@ angular.module('QuepidApp')
           // perfect world we wouldn't have this here and we would instead populate with urlFormat instead.
           insecureSearchUrl:'http://quepid-solr.dev.o19s.com:8985/solr/tmdb/select',
           secureSearchUrl:  'https://quepid-solr.dev.o19s.com/solr/tmdb/select',
-          urlFormat:        'http(s?)://yourdomain.com:8983/<index>/select',
-          customHeaders:     '',
+          urlFormat:        'http(s?)://yourdomain.com:8983/<index>/select'
         },
         es: {
           queryParams:  [
@@ -65,8 +64,7 @@ angular.module('QuepidApp')
           numberOfRows:      10,
           searchEngine:      'es',
           searchUrl:         'http://quepid-elasticsearch.dev.o19s.com:9206/tmdb/_search',
-          urlFormat:         'http(s?)://yourdomain.com:9200/<index>/_search',
-          customHeaders:     '',
+          urlFormat:         'http(s?)://yourdomain.com:9200/<index>/_search'
         },
         os: {
           queryParams:  [
@@ -83,6 +81,7 @@ angular.module('QuepidApp')
 
           escapeQuery:       true,
           apiMethod:         'POST',
+          customHeaders:     '',
           fieldSpec:         'id:_id',
           idField:           '_id',
           titleField:        '',
@@ -91,7 +90,39 @@ angular.module('QuepidApp')
           searchEngine:      'os',
           searchUrl:         'https://reader:reader@quepid-opensearch.dev.o19s.com:9000/tmdb/_search',
           urlFormat:         'http(s?)://yourdomain.com:9200/<index>/_search',
+        },
+        vectara: {
+          queryParams:  [
+            '{',
+            '  "query": [',
+            '     {',
+            '       "query": "#$query##",',
+            '       "start": 0,',
+            '       "numResults": 10,',
+            '       "corpusKey": [{',
+            '          "customerId": 123456789,',
+            '          "corpusId": 1,',
+            '          "lexicalInterpolationConfig": {',
+            '            "lambda": 0.025',
+            '          },',
+            '          "dim": []',
+            '       }]',
+            '     }',
+            '  ]',
+            '}'
+          ].join('\n'),
+
+          escapeQuery:       true,
+          apiMethod:         'POST',
           customHeaders:     '',
+          fieldSpec:         'id:id',
+          idField:           'id',
+          titleField:        'title',
+          additionalFields:  [],
+          numberOfRows:      10,
+          searchEngine:      'vectara',
+          searchUrl:         'https://api.vectara.io/v1/query',
+          urlFormat:         'https://api.vectara.io/v1/query'
         }
       };
       // used by the wizard for TMDB demo search engine
@@ -118,8 +149,7 @@ angular.module('QuepidApp')
           searchEngine:     'solr',
           insecureSearchUrl:'http://quepid-solr.dev.o19s.com:8985/solr/tmdb/select',
           secureSearchUrl:  'https://quepid-solr.dev.o19s.com/solr/tmdb/select',
-          urlFormat:        'http(s?)://yourdomain.com:8983/<index>/select',
-          customHeaders:    '',
+          urlFormat:        'http(s?)://yourdomain.com:8983/<index>/select'
         },
         es: {
           queryParams:  [
@@ -149,8 +179,7 @@ angular.module('QuepidApp')
           numberOfRows:      10,
           searchEngine:      'es',
           searchUrl:         'http://quepid-elasticsearch.dev.o19s.com:9206/tmdb/_search',
-          urlFormat:         'http(s?)://yourdomain.com:9200/<index>/_search',
-          customHeaders:     '',
+          urlFormat:         'http(s?)://yourdomain.com:9200/<index>/_search'
         },
         os: {
           queryParams:  [
@@ -200,8 +229,9 @@ angular.module('QuepidApp')
           else {
             useTMDBDemoSettings = false;
           }
-        }
-        else {
+        } else if (searchEngine === 'vectara') {
+          useTMDBDemoSettings = false;
+        } else {
           if (newUrl === this.tmdbSettings[searchEngine].searchUrl) {
             useTMDBDemoSettings = true;
           }

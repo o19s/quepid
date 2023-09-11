@@ -55,7 +55,7 @@ angular.module('QuepidApp')
         var docIds    = Object.keys(docsToFetch);
         var resolver  = docResolverSvc.createResolver(docIds, settings, 15);
 
-        if ( docIds.length > 0 ) {
+        if ( docIds.length > 0 && settings.searchEngine !== 'vectara') { // 'vectara' does not support doc lookup by ID
           return resolver.fetchDocs()
             .then(function () {
               angular.forEach(resolver.docs, function (doc) {
