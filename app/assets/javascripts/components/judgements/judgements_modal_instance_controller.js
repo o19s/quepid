@@ -115,6 +115,9 @@ angular.module('QuepidApp')
           else {
             label = label + ' and Populate';
           }
+          if (ctrl.populateJudgements){
+            label = label + ' and Create Judgements';
+          }
         }
         return label;
       };
@@ -142,7 +145,7 @@ angular.module('QuepidApp')
           caseSvc.associateBook(acase, ctrl.activeBookId);
         }
         if (ctrl.populateBook) {
-          bookSvc.updateQueryDocPairs(ctrl.activeBookId,ctrl.share.acase.caseNo, queriesSvc.queryArray())
+          bookSvc.updateQueryDocPairs(ctrl.activeBookId,ctrl.share.acase.caseNo, queriesSvc.queryArray(), ctrl.populateJudgements)
           .then(function() {
             $scope.processingPrompt.inProgress = false;
             $uibModalInstance.close();
