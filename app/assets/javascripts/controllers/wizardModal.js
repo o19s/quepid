@@ -23,13 +23,7 @@ angular.module('QuepidApp')
       
       $scope.haveSearchEndpoints = false;
       
-      
-      //$scope.wizardSettingsModel.searchEndpoints = function() {
-        //return "hi";
-       // return searchEndpointSvc.list();
-       //}
-
-       searchEndpointSvc.list()
+      searchEndpointSvc.list()
        .then(function() {
          $scope.searchEndpoints = searchEndpointSvc.searchEndpoints;
          if ($scope.searchEndpoints.length > 0) {
@@ -40,7 +34,7 @@ angular.module('QuepidApp')
          }
        });
        
-       $scope.listSearchEndpoints = function() {
+      $scope.listSearchEndpoints = function() {
         return $scope.searchEndpoints;
       };
 
