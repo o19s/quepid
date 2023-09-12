@@ -38,7 +38,6 @@
               ng-model="pendingWizardSettings.searchEndpointId"
               ng-options="searchEndpoint.id as searchEndpoint.name for searchEndpoint in listSearchEndpoints()"
             >
-              <option value="">Create a new Search Endpoint<option>
             </select>
             
             <button class="btn btn-primary pull-right continue" ng-click="pickSearchEndpoint()" ng-disabled="pendingWizardSettings.searchEndpointId == null">Continue</button>
