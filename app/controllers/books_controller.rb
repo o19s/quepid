@@ -2,8 +2,10 @@
 
 # rubocop:disable Metrics/ClassLength
 class BooksController < ApplicationController
-  before_action :find_book, only: [ :show, :edit, :update, :destroy, :combine, :assign_anonymous ]
-  before_action :check_book, only: [ :show, :edit, :update, :destroy, :combine, :assign_anonymous ]
+  before_action :find_book,
+                only: [ :show, :edit, :update, :destroy, :combine, :assign_anonymous, :delete_ratings_by_assignee ]
+  before_action :check_book,
+                only: [ :show, :edit, :update, :destroy, :combine, :assign_anonymous, :delete_ratings_by_assignee ]
 
   respond_to :html
 
@@ -148,6 +150,18 @@ class BooksController < ApplicationController
     redirect_to book_path(@book), :notice => "Assigned #{assignee.fullname} to ratings and judgements."
   end
   # rubocop:enable Metrics/MethodLength
+
+  def delete_ratings_by_assignee
+    assignee = @book.team.members.where(id: params[:assignee_id]).take
+
+    judgements_to_delete = @book.judgements.where(user: assignee)
+
+    judgements_count = judgements_to_delete.count
+
+    judgements_to_delete.destroy_all
+
+    redirect_to book_path(@book), :notice => "Deleted #{judgements_count} judgements belonging to #{assignee.fullname}."
+  end
 
   private
 

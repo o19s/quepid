@@ -29,6 +29,8 @@ module Api
 
             if pair[:rating]
               rating = @case.queries.find_by(query_text: query_doc_pair.query_text).ratings.find_by(doc_id: query_doc_pair.doc_id)
+
+              # we are smart and just look up the correct user id from rating.user_id via the database, no API data needed.
               judgement = query_doc_pair.judgements.find_or_create_by user_id: rating.user_id
               judgement.rating = pair[:rating]
               judgement.user = rating.user

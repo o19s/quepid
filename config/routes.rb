@@ -44,6 +44,7 @@ Rails.application.routes.draw do
     member do
       patch 'combine'
       patch 'assign_anonymous'
+      delete 'delete_ratings_by_assignee'
     end
   end
 
