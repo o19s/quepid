@@ -25,8 +25,8 @@ module Api
             :desc          => 'Whether or not to include archived cases in the response.',
             :required      => false,
             :default_value => false
-      param :sortBy, [], # TODO: Unsure of the valid values here.
-            :desc     => '',
+      param :sortBy, String,
+            :desc     => 'Sort the cases returned by any field on the case object, in asceding order.',
             :required => false
       param :deep, [ true, false ],
             :desc          => '', # TODO: Unsure of what deep adds, it isn't used in the body below.
