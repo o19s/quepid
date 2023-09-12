@@ -63,7 +63,8 @@ class Try < ApplicationRecord
       when 'os'
         os_args
       when 'vectara'
-        vectara_args        
+        vectara_args
+      end
     end
   end
 
@@ -100,7 +101,7 @@ class Try < ApplicationRecord
     # Use the SolrArgParser as that is the only snapshot format we know
     SolrArgParser.parse(query_params, curator_vars_map)
   end
-    
+
   def vectara_args
     # Use the EsArgParser as currently queries are the same
     EsArgParser.parse(query_params, curator_vars_map)

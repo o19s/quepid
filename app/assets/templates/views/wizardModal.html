@@ -62,14 +62,17 @@
               <img ng-src="images/os.png" alt='OpenSearch' width="150px" />
             </label>
             <label>
+              <input type="radio" value="vectara" ng-model="pendingWizardSettings.searchEngine" ng-change="changeSearchEngine()">
+              <img ng-src="images/vectara.png" alt='Vectara' width="150px" />
+            </label>            
+            <label>
               <input type="radio" value="snapshot" ng-model="pendingWizardSettings.searchEngine" ng-change="changeSearchEngine()">
               <img ng-src="images/snapshot.png" alt='Snapshot' width="150px" height="50px" />
             </label>
-            <label>
-              <input type="radio" value="vectara" ng-model="pendingWizardSettings.searchEngine" ng-change="changeSearchEngine()">
-              <img ng-src="images/vectara.png" alt='Vectara' width="150px" />
-            </label>
           </div>
+  
+    
+          
           
           <br>
           <p ng-if="!pendingWizardSettings.searchEngine === 'snapshot'">
@@ -152,88 +155,54 @@ curl -k -X POST -H 'Content-type:application/json' -d '{
             </div>
   
             <span ng-if="pendingWizardSettings.searchEngine === 'solr'">
-              <p>
-                <button type="button" class="btn btn-sm btn-default" ng-click="isSolrCollapsed = !isSolrCollapsed">Solr Configuration</button>
-              </p>
-              <div uib-collapse="!isSolrCollapsed">
-                <div class="well well-sm">
-                  <div class="form-group clearfix">
-                    <label class="col-sm-3 control-label">API Method</label>
-                    <div class="col-sm-9">
-                      <select class="form-control" ng-model="pendingWizardSettings.apiMethod" ng-change="resetUrlValid()">
-                        <option>JSONP</option>
-                        <option>GET</option>
-                      </select>
-                      <p class="help-block">Use JSONP if you are talking directly to Solr, otherwise if you are talking to an API you can use GET.</p>
-                    </div>
+            <p>
+              <button type="button" class="btn btn-sm btn-default" ng-click="isSolrCollapsed = !isSolrCollapsed">Solr Configuration</button>
+            </p>
+            <div uib-collapse="!isSolrCollapsed">
+              <div class="well well-sm">
+                <div class="form-group clearfix">
+                  <label class="col-sm-3 control-label">API Method</label>
+                  <div class="col-sm-9">
+                    <select class="form-control" ng-model="pendingWizardSettings.apiMethod" ng-change="resetUrlValid()">
+                      <option>JSONP</option>
+                      <option>GET</option>
+                    </select>
+                    <p class="help-block">Use JSONP if you are talking directly to Solr, otherwise if you are talking to an API you can use GET.</p>
                   </div>
                 </div>
               </div>
-
+            </div>
             </span>
             
             <span ng-if="pendingWizardSettings.searchEngine === 'snapshot'">
-              <p>
-                <button type="button" class="btn btn-sm btn-default" ng-click="isSnapshotCollapsed = !isSnapshotCollapsed">Snapshot Configuration</button>
-              </p>
-              <div uib-collapse="!isSnapshotCollapsed">
-                <div class="well well-sm">
-                  <div class="form-group clearfix">
-                    <label class="col-sm-3 control-label">API Method</label>
-                    <div class="col-sm-9">
-                      <select class="form-control" ng-model="pendingWizardSettings.apiMethod" ng-change="resetUrlValid()">
-                        <option>JSONP</option>
-                        <option>GET</option>
-                        <option>POST</option>
-                      </select>
-                      <p class="help-block">??  may not need</p>
-                    </div>
-                  </div>
-                
-                  <div class="form-group clearfix">
-                    <label class="col-sm-3 control-label">Response Parser</label>
-                    <div class="col-sm-9">
-                      <select class="form-control" ng-model="pendingWizardSettings.responseParser">
-                        <option>solr</option>
-                        <option>es</option>
-                        <option>os</option>
-                      </select>
-                      <p class="help-block">Pick the response format of the search endpoint, it needs to be one Quepid understands!</p>
-                    </div>
+            <p>
+              <button type="button" class="btn btn-sm btn-default" ng-click="isSnapshotCollapsed = !isSnapshotCollapsed">Snapshot Configuration</button>
+            </p>
+            <div uib-collapse="!isSnapshotCollapsed">
+              <div class="well well-sm">
+                <div class="form-group clearfix">
+                  <label class="col-sm-3 control-label">API Method</label>
+                  <div class="col-sm-9">
+                    <select class="form-control" ng-model="pendingWizardSettings.apiMethod" ng-change="resetUrlValid()">
+                      <option>JSONP</option>
+                      <option>GET</option>
+                      <option>POST</option>
+                    </select>
+                    <p class="help-block">??  may not need</p>
                   </div>
                 </div>
-              </div>
-            </span>
-
-
-          <span ng-if="pendingWizardSettings.searchEngine !== 'solr'">
-          <p>
-            <button type="button" class="btn btn-sm btn-default" ng-click="isHeaderConfigCollapsed = !isHeaderConfigCollapsed">Advanced</button>
-          </p>
-          <div uib-collapse="!isHeaderConfigCollapsed">
-            <custom-headers settings="pendingWizardSettings"></custom-headers>
-          </div>
-          </span>
-
-          <div class="form-group" style="width: 100%">
-            <div class="clearfix"></div>
-
-            <div class="row" style="margin-top: 50px;">
-              <div class="pull-right">
-                <button ng-show="!showTLSChangeWarning" class="btn btn-primary pull-right continue" ng-click="validate()" ng-disabled="validating">
-                  <span ng-hide="validating">Continue</span>
-                  <span ng-show="validating">Validating...</span>
-                </button>
-
-                <button class="btn btn-danger" ng-show="urlInvalid && !showTLSChangeWarning" ng-click="skipValidation()" ng-disabled="validating">
-                  <span ng-hide="validating">Skip Validation</span>
-                </button>
-
-                <span ng-show="showTLSChangeWarning">
-                  <a href="{{quepidUrlToSwitchTo}}" class="btn btn-primary form-control">
-                    <span class="glyphicon glyphicon-refresh"></span> Reload Quepid in <code>{{protocolToSwitchTo}}</code> Protocol
-                  </a>
-                </span>
+                
+                <div class="form-group clearfix">
+                  <label class="col-sm-3 control-label">Response Parser</label>
+                  <div class="col-sm-9">
+                    <select class="form-control" ng-model="pendingWizardSettings.responseParser">
+                      <option>solr</option>
+                      <option>es</option>
+                      <option>os</option>
+                    </select>
+                    <p class="help-block">Pick the response format of the search endpoint, it needs to be one Quepid understands!</p>
+                  </div>
+                </div>
               </div>
             </div>
             </span>
@@ -355,7 +324,3 @@ curl -k -X POST -H 'Content-type:application/json' -d '{
     </wz-step>
   </wizard>
 </div>
-<!--div class="modal-footer">
-  <button class="btn btn-primary" ng-click="pendingWizardSettings.submit()">Continue</button>
-  <button class="btn btn-warning" ng-click="close()">Cancel</button>
-</div-->
