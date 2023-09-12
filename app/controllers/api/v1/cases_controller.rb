@@ -7,6 +7,13 @@ module Api
       before_action :case_with_all_the_bells_whistles, only: [ :show ]
       before_action :check_case, only: [ :show, :update, :destroy ]
 
+      def_param_group :case do
+        param :case_name, String
+        param :scorer_id, Integer
+        param :archived, [ true, false ]
+        param :book_id, Integer
+      end
+
       # Spiking out can we make an API public?
       def authenticate_api!
         set_case
@@ -126,13 +133,6 @@ module Api
 
       def case_params
         params.require(:case).permit(:case_name, :scorer_id, :archived, :book_id)
-      end
-
-      def_param_group :case do
-        param :case_name, String
-        param :scorer_id, Integer
-        param :archived, [ true, false ]
-        param :book_id, Integer
       end
 
       def default_scorer_removed? params = {}
