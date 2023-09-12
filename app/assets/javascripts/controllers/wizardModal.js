@@ -31,7 +31,6 @@ angular.module('QuepidApp')
 
        searchEndpointSvc.list()
        .then(function() {
-         console.log("okay, got end points")
          $scope.searchEndpoints = searchEndpointSvc.searchEndpoints;
          if ($scope.searchEndpoints.length > 0) {
            $scope.haveSearchEndpoints = true;
@@ -43,7 +42,7 @@ angular.module('QuepidApp')
        
        $scope.listSearchEndpoints = function() {
         return $scope.searchEndpoints;
-      }
+      };
 
       // used when we first launch the wizard, and it handles reloading from http to https
       $scope.updateSettingsDefaults = function() {
@@ -179,10 +178,8 @@ angular.module('QuepidApp')
       }
       
       function pickSearchEndpoint() {
-        console.log("In pickSearchEndpoint");
         searchEndpointSvc.get($scope.pendingWizardSettings.searchEndpointId)
           .then( function (searchEndpoint){
-            console.log("Got a search endpoint");
             
             // Maybe we should refactor to have searchEndpoint a first class object and use it
             // Everywhere?

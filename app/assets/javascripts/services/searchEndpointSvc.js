@@ -95,7 +95,7 @@ angular.module('QuepidApp')
       };
       
       this.filteredEndpoints = function(searchEngine){
-        return this.searchEndpoints.filter(function(item) { return item.searchEngine === searchEngine; })
-      }
+        return this.searchEndpoints.filter(function(item) { return item.searchEngine === searchEngine; });
+      };
     }
   ]);

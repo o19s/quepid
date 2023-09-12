@@ -277,7 +277,6 @@ angular.module('QuepidApp')
           useTMDBDemoSettings = false;
         } 
         else {
-          console.log("The search engine is " + searchEngine);
           if (newUrl === this.tmdbSettings[searchEngine].searchUrl) {
             useTMDBDemoSettings = true;
           }

@@ -47,12 +47,10 @@ angular.module('QuepidApp')
           controller:   'WizardModalCtrl', 
           backdrop:     'static'
         });
-        console.log("have we completed case wizrd?" + $rootScope.currentUser.completedCaseWizard);
 
         if (!$rootScope.currentUser.completedCaseWizard) {
           modalInstance.result.then(function() {
             /* global setupAndStartTour */
-            console.log("about to fire up the tour! have we completed case wizrd?" + $rootScope.currentUser.completedCaseWizard);
             $timeout(setupAndStartTour, 1500);
           });
         }
