@@ -114,10 +114,10 @@ angular.module('QuepidApp')
             label = 'Refresh Query/Doc Pairs for Book';
           }
           else {
-            label = label + ' and Populate';
+            label = `${label} and Populate`;
           }
           if (ctrl.populateJudgements){
-            label = label + ' and Create Judgements';
+            label = `${label} and Create Judgements`;
           }
         }
         return label;

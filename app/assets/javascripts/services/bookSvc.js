@@ -86,7 +86,7 @@ angular.module('QuepidApp')
               fields['image'] = doc.image;
             }
 
-            let queryDocPair = {
+            const queryDocPair = {
               'query_text': query.queryText,
               'doc_id': doc.id,
               
@@ -95,7 +95,7 @@ angular.module('QuepidApp')
             };
             
             if (populateJudgements){
-              queryDocPair['rating'] = doc.hasRating() ? doc.getRating() : null;
+              queryDocPair.rating = doc.hasRating() ? doc.getRating() : null;
             }
 
             queryDocPairsPayload.push(queryDocPair);
