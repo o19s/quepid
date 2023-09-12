@@ -52,7 +52,6 @@ class Try < ApplicationRecord
   before_create :set_defaults
 
   def args
-    # return unless search_endpoint
     unless search_endpoint.nil?
       case search_endpoint.search_engine
       when 'solr'
@@ -63,7 +62,8 @@ class Try < ApplicationRecord
         es_args
       when 'os'
         os_args
-      end
+      when 'vectara'
+        vectara_args        
     end
   end
 
@@ -99,6 +99,11 @@ class Try < ApplicationRecord
   def snapshot_args
     # Use the SolrArgParser as that is the only snapshot format we know
     SolrArgParser.parse(query_params, curator_vars_map)
+  end
+    
+  def vectara_args
+    # Use the EsArgParser as currently queries are the same
+    EsArgParser.parse(query_params, curator_vars_map)
   end
 
   def id_from_field_spec

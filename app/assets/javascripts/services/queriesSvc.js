@@ -21,6 +21,7 @@ angular.module('QuepidApp')
     'searchErrorTranslatorSvc',
     'esExplainExtractorSvc',
     'solrExplainExtractorSvc',
+    'normalDocsSvc',
     function queriesSvc(
       $scope,
       $http,
@@ -35,7 +36,8 @@ angular.module('QuepidApp')
       diffResultsSvc,
       searchErrorTranslatorSvc,
       esExplainExtractorSvc,
-      solrExplainExtractorSvc
+      solrExplainExtractorSvc,
+      normalDocsSvc
     ) {
 
       let caseNo = -1;
@@ -69,7 +71,7 @@ angular.module('QuepidApp')
       });
 
       function createSearcherFromSettings(passedInSettings, queryText, query) {
-        let args = angular.copy(passedInSettings.selectedTry.args);
+        let args = angular.copy(passedInSettings.selectedTry.args) || {};
 
         if (passedInSettings && passedInSettings.selectedTry) {
 
@@ -108,13 +110,17 @@ angular.module('QuepidApp')
                   'filter': query.filterToRatings(passedInSettings)
                 }
               };
-            } else {
+            } else if (passedInSettings.searchEngine === 'solr') {
               if (args['fq'] === undefined) {
                 args['fq'] = [];
               }
               args['fq'].push(query.filterToRatings(passedInSettings));
+            } else if (passedInSettings.searchEngine === 'vectara') {
+              // currently doc id filtering frequently produces 0 results
+              // args['query'] = args['query'].map(function addFilter(query) {
+              //  query['metadata_filter'] = query.filterToRatings(passedInSettings);
+              // });
             }
-
           }
 
 
@@ -136,8 +142,13 @@ angular.module('QuepidApp')
 
         if (searcher.type === 'es' || searcher.type === 'os') {
           normed = esExplainExtractorSvc.docsWithExplainOther(searcher.docs, fieldSpec);
-        } else {
+        } else if (searcher.type === 'solr') {
           normed = solrExplainExtractorSvc.docsWithExplainOther(searcher.docs, fieldSpec, searcher.othersExplained);
+        } else {
+          // search engine with no explain output
+          normed = searcher.docs.map(function(doc) {
+            return normalDocsSvc.createNormalDoc(fieldSpec, doc);
+          });
         }
 
         let docs = [];
@@ -667,8 +678,12 @@ angular.module('QuepidApp')
             };
             esQuery['terms'][fieldSpec.id] = ratedIDs;
             return esQuery;
-          } else {
+          } else if (settings.searchEngine === 'solr') {
             return '{!terms f=' + fieldSpec.id + '}' + ratedIDs.join(',');
+          } else if (settings.searchEngine === 'vectara') {
+            return ratedIDs.map(function(id) {
+              return 'doc.id = \'' + id + '\'';
+            }).join(' OR ');
           }
         };
       };

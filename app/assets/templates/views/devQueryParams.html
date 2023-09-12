@@ -44,6 +44,15 @@
             theme:        'chrome'
           }" ng-model="settings.selectedTry.queryParams">
         </div>
+
+        <div id='vectara-query-params-editor' class='vectara-query-params' ng-show="settings.searchEngine == 'vectara'" ui-ace="{
+            require:      ['ace/ext/language_tools'],
+            useWrapMode:  false,
+            mode:         'json',
+            theme:        'chrome'
+          }" ng-model="settings.selectedTry.queryParams">
+        </div>
+
       </div> <!-- end .rerunnable-settings-tab -->
     </div> <!-- end .settings-tab (Query Sandbox) -->
 
@@ -111,6 +120,13 @@
               <label>
                 <input type="radio" value="os" ng-model="settings.searchEngine" ng-change="changeSearchEngine()">
                 OpenSearch
+              </label>
+            </div>
+
+            <div>
+              <label>
+                <input type="radio" value="vectara" ng-model="settings.searchEngine" ng-change="changeSearchEngine()">
+                Vectara
               </label>
             </div>
           </div>
