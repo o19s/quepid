@@ -95,7 +95,7 @@ angular.module('QuepidApp')
             };
             
             if (populateJudgements){
-              queryDocPair['rating'] = doc.hasRating() ? doc.getRating() : null
+              queryDocPair['rating'] = doc.hasRating() ? doc.getRating() : null;
             }
 
             queryDocPairsPayload.push(queryDocPair);
