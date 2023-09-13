@@ -1,4 +1,4 @@
-class DeleteBogusTries < ActiveRecord::Migration[7.0]
+class CreateSearchEndpointsFromTries < ActiveRecord::Migration[7.0]
   def change    
     puts "Found #{Try.all.where(case_id: nil).count} tries with no Case.  Any is bad!"
     
