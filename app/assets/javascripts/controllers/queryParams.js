@@ -21,7 +21,22 @@ angular.module('QuepidApp')
 
       $scope.showTLSChangeWarning = false;
 
-      $scope.searchEndpoints = searchEndpointSvc.list();
+      $scope.haveSearchEndpoints = false;
+      
+      searchEndpointSvc.list()
+       .then(function() {
+         $scope.searchEndpoints = searchEndpointSvc.searchEndpoints;
+         if ($scope.searchEndpoints.length > 0) {
+           $scope.haveSearchEndpoints = true;
+         }
+         else {
+           $scope.haveSearchEndpoints = false;
+         }
+       });      
+      
+      $scope.listSearchEndpoints = function() {
+        return $scope.searchEndpoints;
+      };
 
       $scope.validateSearchEngineUrl  = function() {
         if (!angular.isUndefined($scope.settings.searchUrl)){
@@ -95,6 +110,8 @@ angular.module('QuepidApp')
           name:           $scope.settings.selectedTry.name,
           number_of_rows: $scope.settings.selectedTry.numberOfRows,
           query_params:   $scope.settings.selectedTry.queryParams,
+          search_endpoint_id:  $scope.settings.selectedTry.searchEndpointId,
+          endpoint_name:  $scope.settings.selectedTry.endpointName,
           search_engine:  $scope.settings.selectedTry.searchEngine,
           search_url:     $scope.settings.selectedTry.searchUrl,
           try_number:     $scope.settings.selectedTry.tryNo,
@@ -108,5 +125,11 @@ angular.module('QuepidApp')
         $scope.settings.reset();
         $scope.validateSearchEngineUrl();
       };
+      
+      $scope.changeSearchEngine2 = function() {
+        console.log("In changeSearchEngine2 and we don't do anything here!");
+        //$scope.settings.reset();
+        //$scope.validateSearchEngineUrl();
+      };      
     }
   ]);

@@ -2,7 +2,7 @@ class CreateSearchEndpointsFromTries < ActiveRecord::Migration[7.0]
   def change    
     puts "Found #{Try.all.where(case_id: nil).count} tries with no Case.  Any is bad!"
     
-    Try.all.each do |try|
+    Try.all.where(search_endpoint: nil).limit(10000).each do |try|
       
       # Go through and find each unique set of values from all the tries,
       # and create a single end point that is used by multiple tries where it

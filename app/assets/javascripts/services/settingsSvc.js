@@ -359,6 +359,7 @@ angular.module('QuepidApp')
           settings.numberOfRows  = tryToUse.numberOfRows;
           settings.queryParams   = tryToUse.queryParams;
           settings.searchEngine  = tryToUse.searchEngine;
+          settings.searchEndpointId  = tryToUse.searchEndpointId;
           settings.searchUrl     = tryToUse.searchUrl;
 
           // TODO: Store type in db?...
@@ -428,6 +429,7 @@ angular.module('QuepidApp')
         payloadTry.field_spec        = settingsToSave.fieldSpec;
         payloadTry.number_of_rows    = settingsToSave.numberOfRows;
         payloadTry.query_params      = settingsToSave.selectedTry.queryParams;
+        payloadSearchEndpoint.search_endpoint_id     = settingsToSave.searchEndpointId;
         payloadSearchEndpoint.search_engine     = settingsToSave.searchEngine;
         payloadSearchEndpoint.endpoint_url      = settingsToSave.searchUrl;
         payloadSearchEndpoint.api_method        = settingsToSave.apiMethod;

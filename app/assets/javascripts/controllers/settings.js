@@ -3,33 +3,45 @@
 
 angular.module('QuepidApp')
   .controller('SettingsCtrl', [
-    '$scope',
-    '$location',
+    '$scope','$location',
     'flash',
     'settingsSvc',
-    function ($scope, $location, flash, settingsSvc) {
+    function (
+      $scope, $location, 
+      flash, 
+      settingsSvc
+    ) {
       $scope.settingsModel = {};
       $scope.pendingSettings = {
         searchEngine: '',
         searchUrl:    '',
-        titleField:   ''
+        titleField:   '',
+        searchEndpointId: ''
       };
-
+      
+      $scope.whoami = function() {
+        console.log("I am settings.js");
+      }
+            
       $scope.settingsModel.settingsId = function() {
         return settingsSvc.settingsId();
       };
 
       var reset = function() {
         var currSettings = settingsSvc.editableSettings();
-        if ( this.searchEngine !== currSettings.searchEngine) {
-          currSettings = settingsSvc.pickSettingsToUse($scope.pendingSettings.searchEngine, null);
-          currSettings.fieldSpec = currSettings.fieldSpec + ', ' + currSettings.additionalFields.join(', ');
-          $scope.pendingSettings.urlFormat = currSettings.urlFormat;
+        if ( this.searchEndpointId !== currSettings.searchEndpointId) {
+          console.log("We don't do this anymore");
+          //currSettings = settingsSvc.pickSettingsToUse($scope.pendingSettings.searchEngine, null);
+          //currSettings.fieldSpec = currSettings.fieldSpec + ', ' + currSettings.additionalFields.join(', ');
+          //$scope.pendingSettings.urlFormat = currSettings.urlFormat;
         }
+        this.searchEndpointId         = currSettings.searchEndpointId;
+        this.endpointName             = currSettings.endpointName;
         this.searchEngine             = currSettings.searchEngine;
-        this.apiMethod                = currSettings.apiMethod;
+        //this.apiMethod                = currSettings.apiMethod;
 
 
+        if (false){
         if (this.searchEngine === 'solr') {
           var quepidStartsWithHttps = $location.protocol() === 'https';
           if (quepidStartsWithHttps === true){
@@ -41,6 +53,7 @@ angular.module('QuepidApp')
         }
         else {
           this.searchUrl = currSettings.searchUrl;
+        }
         }
 
 

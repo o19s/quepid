@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_09_07_102331) do
+ActiveRecord::Schema[7.0].define(version: 2023_09_13_181833) do
   create_table "annotations", id: :integer, charset: "utf8mb3", force: :cascade do |t|
     t.text "message"
     t.string "source"
@@ -281,7 +281,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_09_07_102331) do
     t.integer "invitations_count", default: 0
     t.boolean "completed_case_wizard", default: false, null: false
     t.string "stored_raw_invitation_token"
-    t.string "profile_pic"
+    t.string "profile_pic", limit: 4000
     t.index ["default_scorer_id"], name: "index_users_on_default_scorer_id"
     t.index ["email"], name: "ix_user_username", unique: true
     t.index ["invitation_token"], name: "index_users_on_invitation_token", unique: true, length: 191

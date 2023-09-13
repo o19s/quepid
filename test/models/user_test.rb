@@ -23,7 +23,7 @@
 #  name                        :string(255)
 #  num_logins                  :integer
 #  password                    :string(120)
-#  profile_pic                 :string(255)
+#  profile_pic                 :string(4000)
 #  reset_password_sent_at      :datetime
 #  reset_password_token        :string(255)
 #  stored_raw_invitation_token :string(255)

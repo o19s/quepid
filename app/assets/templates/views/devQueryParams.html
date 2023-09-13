@@ -10,7 +10,10 @@
   <div id="queryParamsCanvas">
     <!-- Query Sandbox -->
     <div class="settings-tab query-sandbox" ng-show="qp.curTab == 'developer'">
-      <div class="rerunnable-settings-tab" id='query-params-editor'>
+      <p ng-if="settings.searchEngine == 'snapshot'">
+        With a static search endpoint there are no query settings to play with ;-(.
+      </p>
+      <div ng-if="settings.searchEngine !== 'snapshot'" class="rerunnable-settings-tab" id='query-params-editor'>
         <h4 class="pull-left">Query Sandbox:</h4>
         <p class="pull-right">
           <a href="http://quepid.com/docs/#tuning" class="query-help" target="_blank">
@@ -19,11 +22,7 @@
         </p>
 
 
-        <div class='clearfix'></div>
-        
-        <p ng-show="settings.searchEngine == 'snapshot'">
-          With a static (snapshot) search endpoint there are no query settings to play with ;-(.
-        </p>
+        <div class='clearfix'></div>      
 
         <p ng-show="showQueryParamsWarning" id="query-params-warn" class="alert alert-warning" ng-bind-html="queryParamsWarning">{{ queryParamsWarning }}</p>
 
@@ -59,31 +58,32 @@
     <!-- Variables -->
     <div class="settings-tab" ng-show="qp.curTab == 'curator'">
       <div class="rerunnable-settings-tab">
-        <p ng-show="settings.selectedTry.curatorVars.length == 0">
-          What's this tab do? Knobs allow you to fine tune your search!
-          Define variables in your query template with <code>##</code>, such as this boost: <code>title^##titleBoost##</code>.
-          Play with the values in this tab. Submit to rerun with the new values!
+        <p ng-if="settings.searchEngine == 'snapshot'">
+          With a static search endpoint there are tuning knobs to play with ;-(.
         </p>
-        
-        <p ng-show="settings.searchEngine == 'snapshot'">
-          With a static (snapshot) search endpoint there are no tuning knobs to play with ;-(.
-        </p>
-
-        <h4>Tuning Knobs</h4>
-
-        <p class="help-block tip">
-          Add and remove knobs from here by editing your query.
-        </p>
-        <div ng-repeat="curatorVar in settings.selectedTry.curatorVars">
-          <div ng-show="curatorVar.inQueryParams" class="slider-wrap clearfix">
-              <label>{{ curatorVar.name }}:</label>
-              <input type="number" class="slider-val" min=0 max=10000000000 ng-model="curatorVar.value" auto-grow/>
-              <p ng-show="curatorVar.inQueryParams != true">
-                This knob/dial is not currently used by the query!
-              </p>
+          <div ng-if="settings.searchEngine !== 'snapshot'">
+          <p ng-show="settings.selectedTry.curatorVars.length == 0">
+            What's this tab do? Knobs allow you to fine tune your search!
+            Define variables in your query template with <code>##</code>, such as this boost: <code>title^##titleBoost##</code>.
+            Play with the values in this tab. Submit to rerun with the new values!
+          </p>
+  
+          <h4>Tuning Knobs</h4>
+  
+          <p class="help-block tip">
+            Add and remove knobs from here by editing your query.
+          </p>
+          <div ng-repeat="curatorVar in settings.selectedTry.curatorVars">
+            <div ng-show="curatorVar.inQueryParams" class="slider-wrap clearfix">
+                <label>{{ curatorVar.name }}:</label>
+                <input type="number" class="slider-val" min=0 max=10000000000 ng-model="curatorVar.value" auto-grow/>
+                <p ng-show="curatorVar.inQueryParams != true">
+                  This knob/dial is not currently used by the query!
+                </p>
+            </div>
           </div>
-        </div>
-      </div> <!-- end .rerunnable-settings-tab -->
+        </div> <!-- end .rerunnable-settings-tab -->
+      </div>
     </div> <!-- end .settings-tab (Variables) -->
 
     <!-- Settings -->
@@ -95,40 +95,24 @@
       <div class="rerunnable-settings-tab">
         <!-- Search Engine -->
         <div class="setting-div">
-          <div class="dev-header" ng-click="devSettingsSearchEngine.toggle = !devSettingsSearchEngine.toggle">
-            Search Engine <span ng-class="{true: 'glyphicon-plus-sign', false: 'glyphicon-minus-sign'}[!devSettingsSearchEngine.toggle]" class="glyphicon"></span>
+          <div class="dev-header" ng-click="devSettingsSearchEndpoint.toggle = !devSettingsSearchEndpoint.toggle">
+            Search Endpoints <span ng-class="{true: 'glyphicon-plus-sign', false: 'glyphicon-minus-sign'}[!devSettingsSearchEndpoint.toggle]" class="glyphicon"></span>
           </div>
 
 
-          <div class="dev-body" ng-show="devSettingsSearchEngine.toggle">
-            Change Search Engine:<br />
-            <div>
-              <label>
-                <input type="radio" value="solr" ng-model="settings.searchEngine" ng-change="changeSearchEngine()">
-                Solr
-              </label>
-            </div>
+          <div class="dev-body" ng-show="devSettingsSearchEndpoint.toggle">
+            Pick Search Endpoint:<br />
 
+            settings.searchEndpointId is {{settings.searchEndpointId}}
             <div>
-              <label>
-                <input type="radio" value="es" ng-model="settings.searchEngine" ng-change="changeSearchEngine()">
-                Elasticsearch
-              </label>
-            </div>
-
-            <div>
-              <label>
-                <input type="radio" value="os" ng-model="settings.searchEngine" ng-change="changeSearchEngine()">
-                OpenSearch
-              </label>
-            </div>
-
-            <div>
-              <label>
-                <input type="radio" value="vectara" ng-model="settings.searchEngine" ng-change="changeSearchEngine()">
-                Vectara
-              </label>
-            </div>
+              <select              
+                ng-model="settings.searchEndpointId"
+                ng-options="searchEndpoint.id as searchEndpoint.name for searchEndpoint in listSearchEndpoints()"
+                ng-change="changeSearchEngine2()"
+                class="form-control"
+              >
+              </select>
+            </div>           
           </div>
         </div>
         <!-- end of Search Engine -->
@@ -136,17 +120,20 @@
         <!-- Search Endpoint -->
         <div class="setting-div">
           <div class="dev-header" ng-click="devSettingsUrl.toggle = !devSettingsUrl.toggle">
-            Search Endpoint <span ng-class="{true: 'glyphicon-plus-sign', false: 'glyphicon-minus-sign'}[!devSettingsUrl.toggle]" class="glyphicon"></span>
+            Endpoint Details <span ng-class="{true: 'glyphicon-plus-sign', false: 'glyphicon-minus-sign'}[!devSettingsUrl.toggle]" class="glyphicon"></span>
           </div>
 
-          <div class="dev-body" ng-show="devSettingsUrl.toggle">            
-            <input type="text" class="form-control" id="" placeholder="Enter Your Search Engine URL" ng-model="settings.searchUrl" ng-change="validateSearchEngineUrl()">
 
-            <p class="help-block tip">
-              Tip: Your URL should look like this {{settings.urlFormat}}.
+          <div class="dev-body" ng-show="devSettingsUrl.toggle">            
+            
+            <p>
+              Name: {{ settings.selectedTry.endpointName }}
             </p>
             <p>
-              <a ng-href="search_endpoints/" target="_self">Manage Search Endpoints</a></p>
+              <img ng-if="settings.selectedTry.searchEngine" ng-src="images/{{ settings.selectedTry.searchEngine }}-icon.png" width="32px" /> &nbsp; {{settings.searchUrl}}            
+            </p>
+            <p>
+              <a ng-href="search_endpoints/{{ settings.selectedTry.searchEndpointId }}" target="_self">More</a></p>
             <p>
 
             <span ng-show="showTLSChangeWarning">
@@ -216,44 +203,6 @@
           </div>
         </div>
         <!-- end of Escape Queries -->
-        <!-- API Method -->
-        <div class="setting-div" ng-show="settings.searchEngine == 'solr'">
-          <div class="dev-header" ng-click="devSettingsApiMethod.toggle = !devSettingsApiMethod.toggle">
-            API Method <span ng-class="{true: 'glyphicon-plus-sign', false: 'glyphicon-minus-sign'}[!devSettingsApiMethod.toggle]" class="glyphicon"></span>
-          </div>
-
-          <div class="dev-body checkbox" ng-show="devSettingsApiMethod.toggle">
-            <label>
-              API Method
-              <select class="form-control ng-pristine ng-valid" ng-model="settings.apiMethod" style="margin-bottom: 10px">
-                <option>JSONP</option>
-                <option>GET</option>
-              </select>
-            </label>
-
-            <p class="pull-right">
-              <span class="label label-info">
-                <a href="#" uib-tooltip-html="'Use JSONP if you are talking directly to Solr, otherwise if you are talking to an API you can use GET.'" tooltip-placement="left">
-                  <span class="fa fa-question-circle" aria-hidden="true"></span>
-                </a>
-              </span>
-            </p>
-          </div>
-        </div>
-        <!-- end of API Method -->
-
-
-        <!-- Custom Headers -->
-        <div class="setting-div" ng-show="settings.searchEngine !== 'solr'">
-          <div class="dev-header" ng-click="devSettingsHeaderToggle = !devSettingsHeaderToggle">
-            Advanced <span ng-class="{true: 'glyphicon-plus-sign', false: 'glyphicon-minus-sign'}[!devSettingsHeaderToggle]" class="glyphicon"></span>
-          </div>
-
-          <span ng-show="devSettingsHeaderToggle">
-            <custom-headers class="black-label" settings="settings"></custom-headers>
-          </span>
-        </div>
-        <!-- end of Custom Headers -->
 
       </div> <!-- end .rerunnable-settings-tab -->
     </div> <!-- end .settings-tab (Settings) -->
