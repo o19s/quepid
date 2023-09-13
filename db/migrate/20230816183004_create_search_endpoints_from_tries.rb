@@ -6,7 +6,7 @@ class CreateSearchEndpointsFromTries < ActiveRecord::Migration[7.0]
     puts "Found #{Try.all.where(case_id: nil).count} bogus tries to destroy."
     
     Try.all.where(case_id: nil) do |try|
-      t.destroy!
+      try.destroy!
     end
     
     puts "Now, found #{Try.all.where(case_id: nil).count} bogus tries to destroy."
