@@ -5,7 +5,7 @@ class DeleteBogusTries < ActiveRecord::Migration[7.0]
     
     puts "Found #{Try.all.where(case_id: nil).count} bogus tries to destroy."
     
-    Try.all.where(case_id: nil) do |try|
+    Try.all.where(case_id: nil).each do |try|
       try.destroy!
     end
   end
