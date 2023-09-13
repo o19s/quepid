@@ -33,7 +33,7 @@ module Api
             :required      => false,
             :default_value => false
       param :sortBy, String,
-            :desc     => 'Sort the cases returned by any field on the case object, in asceding order.',
+            :desc     => 'Sort the cases returned by any field on the case object, in ascending order.',
             :required => false
       param :deep, [ true, false ],
             :desc          => '', # TODO: Unsure of what deep adds, it isn't used in the body below.
