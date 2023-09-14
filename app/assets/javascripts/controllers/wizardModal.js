@@ -448,7 +448,7 @@ angular.module('QuepidApp')
           angular.forEach($scope.listOfStaticQueries, function(queryText) {
             $scope.pendingWizardSettings.addQuery(queryText);
           });          
-         }
+         };
 
         // pass pending settings on to be saved
         $scope.pendingWizardSettings.submit = function() {
@@ -496,7 +496,6 @@ angular.module('QuepidApp')
       };
       
       function createSnapshot() {
-          console.log("About to save snapshot");
           $scope.staticContent.import.loading = true;
           $scope.isStaticCollapsed = false;
           
@@ -510,28 +509,28 @@ angular.module('QuepidApp')
           querySnapshotSvc.importSnapshotsToSpecificCase($scope.staticContent.result, caseTryNavSvc.getCaseNo())
             .then(function () {
               const keys = Object.keys(querySnapshotSvc.snapshots);
-              const snapshotId = keys[keys.length - 1]
-              
-              
+              const snapshotId = keys[keys.length - 1];
                             
-              $scope.pendingWizardSettings.searchUrl = 'http://localhost:3000/api/cases/' + caseTryNavSvc.getCaseNo() + '/snapshots/' + snapshotId  + '/search';
+              console.log($location.absUrl)     ;         
+              $scope.pendingWizardSettings.searchUrl = $location.protocol() + '://' + $location.host() + ':' + $location.port() + '/api/cases/' + caseTryNavSvc.getCaseNo() + '/snapshots/' + snapshotId  + '/search';
               $scope.isStaticCollapsed = false;
-              var result = {
-                success: true,
-                message: 'Static Data imported successfully!',
-              };
+              //var result = {
+              //  success: true,
+              //  message: 'Static Data imported successfully!',
+              // };
               $scope.staticContent.import.loading = false;
             }, function () {
-              var result = {
-                error: true,
-                message: 'Could not import static data successfully! Please try again.',
-              };
+              //var result = {
+               // error: true,
+               // message: 'Could not import static data successfully! Please try again.',
+              //};
 
               $scope.staticContent.import.loading = false;
             });
       }
-      
-      checkStaticHeaders = function () {
+      $scope.checkStaticHeaders = checkStaticHeaders;
+      function checkStaticHeaders () {
+
         var headers = $scope.staticContent.content.split('\n')[0];
         headers = headers.split($scope.staticContent.separator);
 
@@ -549,14 +548,12 @@ angular.module('QuepidApp')
 
           $scope.staticContent.import.alert = alert;
         }
-      };
+      }
       
       $scope.$watch('staticContent.content', function (newVal, oldVal) {
         if (newVal !== oldVal) {
           $scope.staticContent.import.alert = undefined;
-          console.log("Imported static")
           checkStaticHeaders();
-          //ctrl.checkSnapshotBody();
         }
       }, true);
     }
