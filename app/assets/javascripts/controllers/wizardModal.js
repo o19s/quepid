@@ -21,17 +21,9 @@ angular.module('QuepidApp')
         return settingsSvc.settingsId();
       };
       
-      $scope.haveSearchEndpoints = false;
-      
       searchEndpointSvc.list()
        .then(function() {
-         $scope.searchEndpoints = searchEndpointSvc.searchEndpoints;
-         if ($scope.searchEndpoints.length > 0) {
-           $scope.haveSearchEndpoints = true;
-         }
-         else {
-           $scope.haveSearchEndpoints = false;
-         }
+         $scope.searchEndpoints = searchEndpointSvc.searchEndpoints;        
        });
        
       $scope.listSearchEndpoints = function() {
@@ -53,12 +45,14 @@ angular.module('QuepidApp')
         $scope.pendingWizardSettings.searchEngine             = settings.searchEngine;
         $scope.pendingWizardSettings.apiMethod                = settings.apiMethod;
         $scope.pendingWizardSettings.customHeaders            = settings.customHeaders;
+        $scope.pendingWizardSettings.headerType               = settings.headerType;
         $scope.pendingWizardSettings.queryParams              = settings.queryParams;
         $scope.pendingWizardSettings.titleField               = settings.titleField;
         $scope.pendingWizardSettings.urlFormat                = settings.urlFormat;    
         $scope.pendingWizardSettings.searchEndpointId         = null;
-        //$scope.searchEndpoints = searchEndpointSvc.list();
 
+        $scope.isHeaderConfigCollapsed = true;
+        
         var quepidStartsWithHttps = $location.protocol() === 'https';
 
         if ($scope.pendingWizardSettings.searchEngine === 'solr') {
@@ -68,6 +62,11 @@ angular.module('QuepidApp')
           else {
             $scope.pendingWizardSettings.searchUrl = settings.insecureSearchUrl;
           }
+        }
+        else if ($scope.pendingWizardSettings.searchEngine === 'static') {
+          console.log("Got static so we don't have a serachEngine URL!");
+          $scope.isHeaderConfigCollapsed = false;
+          $scope.pendingWizardSettings.searchUrl = "/search";
         }
         else {
           $scope.pendingWizardSettings.searchUrl = settings.searchUrl;
@@ -106,20 +105,27 @@ angular.module('QuepidApp')
         $scope.pendingWizardSettings.searchEngine             = settings.searchEngine;
         $scope.pendingWizardSettings.apiMethod                = settings.apiMethod;
         $scope.pendingWizardSettings.customHeaders            = settings.customHeaders;
+        $scope.pendingWizardSettings.headerType               = settings.headerType;
         $scope.pendingWizardSettings.queryParams              = settings.queryParams;
         $scope.pendingWizardSettings.titleField               = settings.titleField;
         $scope.pendingWizardSettings.urlFormat                = settings.urlFormat;
-        $scope.pendingWizardSettings.responseParser           = settings.responseParser; // not used
+        
+        $scope.isHeaderConfigCollapsed = true;
 
         var quepidStartsWithHttps = $location.protocol() === 'https';
 
-        if ($scope.pendingWizardSettings.searchEngine === 'solr' || $scope.pendingWizardSettings.searchEngine === 'snapshot') {
+        if ($scope.pendingWizardSettings.searchEngine === 'solr') {
           if (quepidStartsWithHttps === true){
             $scope.pendingWizardSettings.searchUrl = settings.secureSearchUrl;
           }
           else {
             $scope.pendingWizardSettings.searchUrl = settings.insecureSearchUrl;
           }
+        }
+        else if ($scope.pendingWizardSettings.searchEngine === 'static') {
+          console.log("Got static so we don't have a serachEngine URL!");
+          $scope.isHeaderConfigCollapsed = false;
+          $scope.pendingWizardSettings.searchUrl = "/search";
         }
         else {
           $scope.pendingWizardSettings.searchUrl = settings.searchUrl;
@@ -183,13 +189,10 @@ angular.module('QuepidApp')
             $scope.pendingWizardSettings.apiMethod   = searchEndpoint.apiMethod;
             $scope.pendingWizardSettings.customHeaders = searchEndpoint.customHeaders;
             
-            // Are there any places wehre we do validate(true)
+            // Are there any places where we do validate(true)?
             validate();
             
-          });
-        // populate $scope.pendingWizardSettings
-        // validate()
-        
+          });        
       }
 
       function skipValidation() {

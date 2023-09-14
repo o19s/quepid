@@ -19,6 +19,10 @@ json.books do
   json.array! team.books, partial: 'api/v1/team_books/book', as: :book
 end
 
+json.search_endpoints do
+  json.array! team.search_endpoints, partial: 'api/v1/search_endpoints/search_endpoint', as: :search_endpoint
+end
+
 if load_cases
   json.cases do
     # rubocop:disable Layout/LineLength

@@ -1,3 +1,12 @@
+<!-- Filters are:
+q: members
+q1: cases
+q2: scores
+q3: books
+q4: searchEndpoints
+
+-->
+
 <div class='team container'>
   <h2>Team: {{ currentTeam.name }}</h2>
 
@@ -185,7 +194,7 @@
 
       <div class="row">
         <div class="col-md-offset-8 col-md-4 filter-form">
-          <input type="search" ng-model="q2" placeholder="Filter books" aria-label="filter books" class="form-control" id='team-books-filter' />
+          <input type="search" ng-model="q3" placeholder="Filter books" aria-label="filter books" class="form-control" id='team-books-filter' />
         </div>
       </div>
 
@@ -210,6 +219,40 @@
       </p>
     </div> <!-- .team-books -->
 
+    
+    <div class="clearfix"></div>
+
+    <div class='team-search-endpoints col-md-12'>
+      <h3>Search Endpoints</h3>
+
+      <div class="row">
+        <div class="col-md-offset-8 col-md-4 filter-form">
+          <input type="search" ng-model="q4" placeholder="Filter Search Endpoints" aria-label="filter search endpoints" class="form-control" id='team-search-endpoints-filter' />
+        </div>
+      </div>
+
+      <div class="clearfix"></div>
+
+      <div id='search-endpoints-listing' ng-if="currentTeam.searchEndpoints.length !== 0">
+        <div class="row listing-header">
+          <span class="col-md-4">Name</span>
+          <span class="col-md-4">Search Engine</span>
+          <span class="col-md-4">??</span>
+        </div>
+
+        <ul class="search-endpoints-list" ng-model="currentTeam.searchEndpoints">
+
+          <li ng-repeat="searchEndpoint in currentTeam.searchEndpoints | filter:q4" class="search-endpoints-list-item">
+            <search-endpoint-listing search-endpoint="searchEndpoint" team="currentTeam"></search-endpoint-listing>
+          </li>
+        </ul>
+      </div>
+
+      <p ng-if="currentTeam.searchEndpoints.length == 0">
+        No search endpoints to show!
+      </p>
+    </div> <!-- .team-books -->
+    
     <div class="clearfix"></div>
 
     <div class='team-scorers col-md-12'>

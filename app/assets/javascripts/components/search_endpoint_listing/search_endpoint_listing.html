@@ -1,0 +1,30 @@
+<div class="item-box row">
+  <div class="col-xs-4">
+    <span class="search-endpoints-title">
+      <a ng-href="search_endpoints/{{ctrl.searchEndpoint.searchEndpointId}}" target="_self" class="action-icon">
+      {{ ctrl.searchEndpoint.name }}
+      </a>
+    </span>
+
+    <span class="item-actions">
+
+      <a ng-href="search_endpoints/{{ctrl.searchEndpoint.searchEndpointId}}/edit" target="_self" class="action-icon">
+        <i
+          class="fa fa-edit"
+          aria-hidden="true"
+          title="Edit"
+          alt="Edit"
+        ></i>
+      </a>
+    </span>
+  </div>
+
+  <div class="col-xs-4">
+    <img ng-if="ctrl.searchEndpoint.searchEngine" ng-src="images/{{ ctrl.searchEndpoint.searchEngine }}-icon.png" width="32px" />
+    {{ ctrl.searchEndpoint.searchEngine }}
+  </div>
+
+  <div class="col-xs-4">
+    <i>Not Yet Implemented</i>
+  </div>
+</div>

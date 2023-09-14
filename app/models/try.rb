@@ -56,8 +56,8 @@ class Try < ApplicationRecord
       case search_endpoint.search_engine
       when 'solr'
         solr_args
-      when 'snapshot'
-        snapshot_args
+      when 'static'
+        static_args
       when 'es'
         es_args
       when 'os'
@@ -97,8 +97,8 @@ class Try < ApplicationRecord
     EsArgParser.parse(query_params, curator_vars_map)
   end
 
-  def snapshot_args
-    # Use the SolrArgParser as that is the only snapshot format we know
+  def static_args
+    # Use the SolrArgParser as that is the only parser that the Static search endpoint knows
     SolrArgParser.parse(query_params, curator_vars_map)
   end
 

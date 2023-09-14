@@ -65,13 +65,13 @@
               <img ng-src="images/vectara.png" alt='Vectara' width="150px" />
             </label>            
             <label>
-              <input type="radio" value="snapshot" ng-model="pendingWizardSettings.searchEngine" ng-change="changeSearchEngine()">
-              <img ng-src="images/snapshot.png" alt='Snapshot' width="150px" height="50px" />
+              <input type="radio" value="static" ng-model="pendingWizardSettings.searchEngine" ng-change="changeSearchEngine()">
+              <img ng-src="images/static.png" alt='Static' width="150px" height="50px" />
             </label>
           </div>
           
           <br>
-          <p ng-if="!pendingWizardSettings.searchEngine === 'snapshot'">
+          <p ng-if="!pendingWizardSettings.searchEngine === 'static'">
             Paste the URL to the endpoint of your search engine for Quepid to search (you can also just experiment with the demo servers):
           </p>
           <div class="row">
@@ -137,8 +137,7 @@ curl -k -X POST -H 'Content-type:application/json' -d '{
           </div>
   
           <form class="">
-            <div class="form-group" style="width: 100%">
-  
+            <div ng-if="pendingWizardSettings.searchEngine !== 'static'" class="form-group" style="width: 100%">
               <div class="row">
                 <input style="width: 100%" type="text" ng-change="reset()" ng-model="pendingWizardSettings.searchUrl" class="form-control" />
                 <small title="Manually validates Quepid can get retrieve search results from your URL before continuing" class="pull-right"><button type="button" class="btn btn-link btn-sm" ng-click="validate(true)" ng-disabled="showTLSChangeWarning">ping it</button></small>
@@ -149,6 +148,10 @@ curl -k -X POST -H 'Content-type:application/json' -d '{
                 </p>
               </div>
             </div>
+            
+            <span ng-if="pendingWizardSettings.searchEngine === 'static'">
+              upload csv
+            </span>
   
             <span ng-if="pendingWizardSettings.searchEngine === 'solr'">
             <p>
@@ -168,46 +171,12 @@ curl -k -X POST -H 'Content-type:application/json' -d '{
                 </div>
               </div>
             </div>
-            </span>
-            
-            <span ng-if="pendingWizardSettings.searchEngine === 'snapshot'">
-            <p>
-              <button type="button" class="btn btn-sm btn-default" ng-click="isSnapshotCollapsed = !isSnapshotCollapsed">Snapshot Configuration</button>
-            </p>
-            <div uib-collapse="!isSnapshotCollapsed">
-              <div class="well well-sm">
-                <div class="form-group clearfix">
-                  <label class="col-sm-3 control-label">API Method</label>
-                  <div class="col-sm-9">
-                    <select class="form-control" ng-model="pendingWizardSettings.apiMethod" ng-change="resetUrlValid()">
-                      <option>JSONP</option>
-                      <option>GET</option>
-                      <option>POST</option>
-                    </select>
-                    <p class="help-block">??  may not need</p>
-                  </div>
-                </div>
-                
-                <div class="form-group clearfix">
-                  <label class="col-sm-3 control-label">Response Parser</label>
-                  <div class="col-sm-9">
-                    <select class="form-control" ng-model="pendingWizardSettings.responseParser">
-                      <option>solr</option>
-                      <option>es</option>
-                      <option>os</option>
-                    </select>
-                    <p class="help-block">Pick the response format of the search endpoint, it needs to be one Quepid understands!</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-            </span>
+            </span>                       
   
-  
-            <span ng-if="pendingWizardSettings.searchEngine !== 'solr'">
+            <span ng-if="pendingWizardSettings.searchEngine !== 'solr' && pendingWizardSettings.searchEngine !== 'static'">
             <p>
               <button type="button" class="btn btn-sm btn-default" ng-click="isHeaderConfigCollapsed = !isHeaderConfigCollapsed">Advanced</button>
-            </p>
+            </p> 
             <div uib-collapse="!isHeaderConfigCollapsed">
               <custom-headers settings="pendingWizardSettings"></custom-headers>
             </div>

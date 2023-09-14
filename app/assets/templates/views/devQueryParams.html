@@ -10,10 +10,10 @@
   <div id="queryParamsCanvas">
     <!-- Query Sandbox -->
     <div class="settings-tab query-sandbox" ng-show="qp.curTab == 'developer'">
-      <p ng-if="settings.searchEngine == 'snapshot'">
-        With a static search endpoint there are no query settings to play with ;-(.
+      <p ng-if="settings.searchEngine == 'static'">
+        With a Static search endpoint there are no query settings to play with ;-(.
       </p>
-      <div ng-if="settings.searchEngine !== 'snapshot'" class="rerunnable-settings-tab" id='query-params-editor'>
+      <div ng-if="settings.searchEngine !== 'static'" class="rerunnable-settings-tab" id='query-params-editor'>
         <h4 class="pull-left">Query Sandbox:</h4>
         <p class="pull-right">
           <a href="http://quepid.com/docs/#tuning" class="query-help" target="_blank">
@@ -58,10 +58,10 @@
     <!-- Variables -->
     <div class="settings-tab" ng-show="qp.curTab == 'curator'">
       <div class="rerunnable-settings-tab">
-        <p ng-if="settings.searchEngine == 'snapshot'">
-          With a static search endpoint there are tuning knobs to play with ;-(.
+        <p ng-if="settings.searchEngine == 'static'">
+          With a Static search endpoint there are tuning knobs to play with ;-(.
         </p>
-          <div ng-if="settings.searchEngine !== 'snapshot'">
+          <div ng-if="settings.searchEngine !== 'static'">
           <p ng-show="settings.selectedTry.curatorVars.length == 0">
             What's this tab do? Knobs allow you to fine tune your search!
             Define variables in your query template with <code>##</code>, such as this boost: <code>title^##titleBoost##</code>.

@@ -9,7 +9,7 @@ angular.module('QuepidApp')
     function teamSvc($http, broadcastSvc) {
       this.teams = [];
 
-      var Team = function(id, name, ownerId, owner, cases, cases_count, members, scorers, owned, books) {
+      var Team = function(id, name, ownerId, owner, cases, cases_count, members, scorers, owned, books, search_endpoints) {
         this.id           = id;
         this.name         = name;
         this.ownerId      = ownerId;
@@ -20,6 +20,7 @@ angular.module('QuepidApp')
         this.scorers      = scorers;
         this.owned        = owned;
         this.books        = books;
+        this.searchEndpoints  = search_endpoints;  // camel case mapping
 
 
         angular.forEach(this.cases, function(c) {
@@ -53,6 +54,22 @@ angular.module('QuepidApp')
           b.selectionStrategy = b.selection_strategy;
           delete b.selection_strategy;
         });
+        
+        angular.forEach(this.searchEndpoints, function(b) {
+          // This is really ugly.  We don't use our standard book mapping, and probably should!
+          b.searchEndpointId = b.search_endpoint_id;
+          delete b.search_endpoint_id;
+          b.apiMethod = b.api_method;
+          delete b.api_method;
+          b.customHeaders = b.custom_headers;
+          delete b.custom_headers;
+          b.endpointUrl = b.endpoint_url;
+          delete b.endpoint_url;
+          b.searchEngine = b.search_engine;
+          delete b.search_engine;     
+          b.ownerId = b.owner_id;
+          delete b.owner_id;     
+        });
 
 
       };
@@ -68,7 +85,8 @@ angular.module('QuepidApp')
           data.members,
           data.scorers,
           data.owned,
-          data.books
+          data.books,
+          data.search_endpoints
         );
       };
 

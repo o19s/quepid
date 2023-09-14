@@ -20,18 +20,10 @@ angular.module('QuepidApp')
       $scope.showESTemplateWarning = false;
 
       $scope.showTLSChangeWarning = false;
-
-      $scope.haveSearchEndpoints = false;
       
       searchEndpointSvc.list()
        .then(function() {
-         $scope.searchEndpoints = searchEndpointSvc.searchEndpoints;
-         if ($scope.searchEndpoints.length > 0) {
-           $scope.haveSearchEndpoints = true;
-         }
-         else {
-           $scope.haveSearchEndpoints = false;
-         }
+         $scope.searchEndpoints = searchEndpointSvc.searchEndpoints;        
        });      
       
       $scope.listSearchEndpoints = function() {

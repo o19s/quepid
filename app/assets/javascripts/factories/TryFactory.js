@@ -53,8 +53,7 @@
       self.endpointName  = data.endpoint_name;
       self.searchUrl     = data.search_url;
       self.tryNo         = data.try_number;
-      self.endpointName  = data.endpoint_name;
-     
+      self.endpointName  = data.endpoint_name;     
 
 
       // transform curator vars to be more angular friendly
