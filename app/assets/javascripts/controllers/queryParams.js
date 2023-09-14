@@ -119,7 +119,7 @@ angular.module('QuepidApp')
       };
       
       $scope.changeSearchEngine2 = function() {
-        console.log("In changeSearchEngine2 and we don't do anything here!");
+        console.log('In changeSearchEngine2 and we dont do anything here!');
         //$scope.settings.reset();
         //$scope.validateSearchEngineUrl();
       };      

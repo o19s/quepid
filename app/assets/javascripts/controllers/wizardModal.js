@@ -75,9 +75,8 @@ angular.module('QuepidApp')
           }
         }
         else if ($scope.pendingWizardSettings.searchEngine === 'static') {
-          console.log("Got static so we don't have a serachEngine URL!");
           $scope.isHeaderConfigCollapsed = false;
-          $scope.pendingWizardSettings.searchUrl = "/search";
+          //$scope.pendingWizardSettings.searchUrl = '';
         }
         else {
           $scope.pendingWizardSettings.searchUrl = settings.searchUrl;
@@ -134,9 +133,8 @@ angular.module('QuepidApp')
           }
         }
         else if ($scope.pendingWizardSettings.searchEngine === 'static') {
-          console.log("Got static so we don't have a serachEngine URL!");
           $scope.isHeaderConfigCollapsed = false;
-          $scope.pendingWizardSettings.searchUrl = "/search";
+          //$scope.pendingWizardSettings.searchUrl = "/search";
         }
         else {
           $scope.pendingWizardSettings.searchUrl = settings.searchUrl;

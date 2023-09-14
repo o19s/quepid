@@ -18,10 +18,6 @@ angular.module('QuepidApp')
         titleField:   '',
         searchEndpointId: ''
       };
-      
-      $scope.whoami = function() {
-        console.log("I am settings.js");
-      }
             
       $scope.settingsModel.settingsId = function() {
         return settingsSvc.settingsId();
@@ -30,7 +26,7 @@ angular.module('QuepidApp')
       var reset = function() {
         var currSettings = settingsSvc.editableSettings();
         if ( this.searchEndpointId !== currSettings.searchEndpointId) {
-          console.log("We don't do this anymore");
+          console.log('We dont do this anymore');
           //currSettings = settingsSvc.pickSettingsToUse($scope.pendingSettings.searchEngine, null);
           //currSettings.fieldSpec = currSettings.fieldSpec + ', ' + currSettings.additionalFields.join(', ');
           //$scope.pendingSettings.urlFormat = currSettings.urlFormat;
