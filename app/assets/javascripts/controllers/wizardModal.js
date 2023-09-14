@@ -4,17 +4,28 @@
 
 angular.module('QuepidApp')
   .controller('WizardModalCtrl', [
-    '$rootScope', '$scope', '$uibModalInstance', '$log', '$window', '$q', '$location',
+    '$rootScope', '$scope', '$uibModalInstance', '$log', '$window', '$location',
     'WizardHandler',
     'settingsSvc', 'SettingsValidatorFactory',
-    'docCacheSvc', 'queriesSvc', 'caseTryNavSvc', 'caseSvc', 'userSvc','searchEndpointSvc',
+    'docCacheSvc', 'queriesSvc', 'caseTryNavSvc', 'caseSvc', 'userSvc','searchEndpointSvc','caseCSVSvc','querySnapshotSvc',
     function (
-      $rootScope, $scope, $uibModalInstance, $log, $window, $q, $location,
+      $rootScope, $scope, $uibModalInstance, $log, $window, $location,
       WizardHandler,
       settingsSvc, SettingsValidatorFactory,
-      docCacheSvc, queriesSvc, caseTryNavSvc, caseSvc, userSvc, searchEndpointSvc
+      docCacheSvc, queriesSvc, caseTryNavSvc, caseSvc, userSvc, searchEndpointSvc, caseCSVSvc, querySnapshotSvc
     ) {
       $log.debug('Init Wizard settings ctrl');
+      
+      $scope.isStaticCollapsed = true;
+      $scope.staticContent = {
+        content: null,
+        header: true,
+        separator: ',',
+        separatorVisible: false,
+        result: null,
+        import: {}
+      };
+      
       $scope.wizardSettingsModel = {};
 
       $scope.wizardSettingsModel.settingsId = function() {
@@ -151,6 +162,7 @@ angular.module('QuepidApp')
       $scope.updateSettingsDefaults();
       $scope.validateHeaders = validateHeaders;
       $scope.searchFields   = [];
+      $scope.createSnapshot = createSnapshot;
 
       $scope.extractSolrConfigApiUrl = function(searchUrl) {
         return searchUrl.substring(0, searchUrl.lastIndexOf('/')) + '/config';
@@ -222,7 +234,16 @@ angular.module('QuepidApp')
         if ($scope.showTLSChangeWarning || $scope.invalidHeaders){
           return;
         }
-        var validator = new SettingsValidatorFactory($scope.pendingWizardSettings);
+        var settingsForValidation  = $scope.pendingWizardSettings;
+        if ($scope.pendingWizardSettings.searchEngine === 'static'){
+          // We pretend to be Solr for validating the URL.
+          settingsForValidation = angular.copy($scope.pendingWizardSettings);
+          settingsForValidation.searchEngine = 'solr';
+        }
+        
+        var validator = new SettingsValidatorFactory(settingsForValidation);
+        
+       
         validator.validateUrl()
         .then(function () {
 
@@ -277,18 +298,18 @@ angular.module('QuepidApp')
         // make sure the default id, title, and additional fields are set
         // if the URL is still set as the default
 
-        var searchEngine  = $scope.pendingWizardSettings.searchEngine;
-        var newUrl        = $scope.pendingWizardSettings.searchUrl;
+        //var searchEngine  = $scope.pendingWizardSettings.searchEngine;
+        //var newUrl        = $scope.pendingWizardSettings.searchUrl;
 
-        var settingsToUse = settingsSvc.pickSettingsToUse(searchEngine, newUrl);
+        //var settingsToUse = settingsSvc.pickSettingsToUse(searchEngine, newUrl);
 
-        $scope.pendingWizardSettings.idField          = settingsToUse.idField;
-        $scope.pendingWizardSettings.titleField       = settingsToUse.titleField;
-        $scope.pendingWizardSettings.additionalFields = settingsToUse.additionalFields;
-        $scope.pendingWizardSettings.queryParams      = settingsToUse.queryParams;
+        //$scope.pendingWizardSettings.idField          = settingsToUse.idField;
+        //$scope.pendingWizardSettings.titleField       = settingsToUse.titleField;
+        //$scope.pendingWizardSettings.additionalFields = settingsToUse.additionalFields;
+       // $scope.pendingWizardSettings.queryParams      = settingsToUse.queryParams;
 
         // Make sure to track what you might have picked
-        $scope.pendingWizardSettings.apiMethod        = validator.apiMethod;
+        //$scope.pendingWizardSettings.apiMethod        = validator.apiMethod;
       }
 
       $scope.validateFieldSpec = validateFieldSpec;
@@ -424,6 +445,12 @@ angular.module('QuepidApp')
             }
           }
         };
+        
+        $scope.pendingWizardSettings.addQueryStaticQueries = function() {
+          angular.forEach($scope.listOfStaticQueries, function(queryText) {
+            $scope.pendingWizardSettings.addQuery(queryText);
+          });          
+         }
 
         // pass pending settings on to be saved
         $scope.pendingWizardSettings.submit = function() {
@@ -469,5 +496,70 @@ angular.module('QuepidApp')
       $scope.close = function() {
         $uibModalInstance.dismiss('cancel');
       };
+      
+      function createSnapshot() {
+          console.log("About to save snapshot");
+          $scope.staticContent.import.loading = true;
+          $scope.isStaticCollapsed = false;
+          
+          $scope.listOfStaticQueries = [];
+          angular.forEach($scope.staticContent.result, function(doc) {
+            if (!$scope.listOfStaticQueries.includes(doc['Query Text'])){
+              $scope.listOfStaticQueries.push(doc['Query Text']);
+            }
+          });
+             
+          querySnapshotSvc.importSnapshotsToSpecificCase($scope.staticContent.result, caseTryNavSvc.getCaseNo())
+            .then(function () {
+              const keys = Object.keys(querySnapshotSvc.snapshots);
+              const snapshotId = keys[keys.length - 1]
+              
+              
+                            
+              $scope.pendingWizardSettings.searchUrl = 'http://localhost:3000/api/cases/' + caseTryNavSvc.getCaseNo() + '/snapshots/' + snapshotId  + '/search';
+              $scope.isStaticCollapsed = false;
+              var result = {
+                success: true,
+                message: 'Static Data imported successfully!',
+              };
+              $scope.staticContent.import.loading = false;
+            }, function () {
+              var result = {
+                error: true,
+                message: 'Could not import static data successfully! Please try again.',
+              };
+
+              $scope.staticContent.import.loading = false;
+            });
+      }
+      
+      checkStaticHeaders = function () {
+        var headers = $scope.staticContent.content.split('\n')[0];
+        headers = headers.split($scope.staticContent.separator);
+
+        var expectedHeaders = [
+          'Query Text', 'Doc ID', 'Doc Position'
+        ];
+        console.log(headers);
+        console.log(expectedHeaders);
+
+        if (!caseCSVSvc.arrayContains(headers, expectedHeaders)) {
+          var alert = 'Required headers mismatch! Please make sure you have the correct headers in you file (check for correct spelling and capitalization): ';
+          alert += '<br /><strong>';
+          alert += expectedHeaders.join(',');
+          alert += '</strong>';
+
+          $scope.staticContent.import.alert = alert;
+        }
+      };
+      
+      $scope.$watch('staticContent.content', function (newVal, oldVal) {
+        if (newVal !== oldVal) {
+          $scope.staticContent.import.alert = undefined;
+          console.log("Imported static")
+          checkStaticHeaders();
+          //ctrl.checkSnapshotBody();
+        }
+      }, true);
     }
   ]);

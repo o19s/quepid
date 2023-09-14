@@ -910,17 +910,12 @@ angular.module('QuepidApp')
         $http.post(path, data)
           .then(function(response) {
             let data = response.data;
-            if ( response.status === 204 ) {
-              // This typically happens when the query already exists, so
-              // no change happened
-              deferred.resolve();
-            } else {
-              // Update the display order based on the new one after the query creation
-              that.queries = {};
-              addQueriesFromResp(data);
-              deferred.resolve();
-            }
-          }, function(response) {
+    
+            // Update the display order based on the new one after the query creation
+            that.queries = {};
+            addQueriesFromResp(data);
+            deferred.resolve();
+        }, function(response) {
             let data = response.data;
             deferred.reject(data);
           }).catch(function(response) {

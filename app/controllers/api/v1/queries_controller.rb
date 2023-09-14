@@ -17,13 +17,17 @@ module Api
       end
 
       # rubocop:disable Metrics/MethodLength
+      # rubocop:disable Metrics/AbcSize
       def create
         q_params              = query_params
         q_params[:query_text] = q_params[:query_text].strip if q_params[:query_text]
 
         query = 'BINARY query_text = ?'
         if @case.queries.exists?([ query, q_params[:query_text] ])
-          head :no_content
+          # sometimes the query is already created even though we are hitting this..
+          @query = @case.queries.where([ query, q_params[:query_text] ]).take
+          @display_order = @case.queries.map(&:id)
+          respond_with @query, @display_order
           return
         end
 
@@ -43,6 +47,7 @@ module Api
         end
       end
       # rubocop:enable Metrics/MethodLength
+      # rubocop:enable Metrics/AbcSize
 
       def update
         @other_case = Case.where(id: params[:other_case_id]).first

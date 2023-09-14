@@ -150,7 +150,61 @@ curl -k -X POST -H 'Content-type:application/json' -d '{
             </div>
             
             <span ng-if="pendingWizardSettings.searchEngine === 'static'">
-              upload csv
+              <!-- Copied from import-ratings component -->
+              <p>
+                A "Static" search endpoint is a great way to gather human judgements and leverage Quepid's existing evaluation tools.                 
+              </p>
+                {{pendingWizardSettings.searchUrl}}
+                also: {{isStaticCollapsed}}
+              
+              <p>
+                <button type="button" class="btn btn-sm btn-default" ng-click="isStaticCollapsed = !isStaticCollapsed">Static Dataset</button>
+              </p>
+              
+              <div uib-collapse="!isStaticCollapsed">
+                <div class="well well-sm">
+                  <p>
+                    Create the CSV file and upload it here.
+                    Under the covers we use the Snapshot CSV format, so you can export a snapshot from Quepid and then upload it here to to create Static search endpoint.
+                  </p>
+                  
+                  <span class="help-block">
+                    The CSV file should have the headers: <code>Query Text,Doc ID,Doc Position</code>.  
+                    Then, all the document fields you want displayed follow as columns with the header being the name of the field.
+                    <pre>
+    Query Text,Doc ID,Doc Position, Movie Title
+    star wars,527641,1, Star Wars
+    star wars,9426,2, Star Wars: The Empire Strikes Back
+    star wars,1921,3, Star Wars: Return of the Jedi
+                    </pre>
+                    Please note that the additional columns that a Snapshot export has are ignored.
+                  </span>
+                  
+                  <p>Select CSV file to import:</p>
+          
+                  <ng-csv-import
+                          class="import"
+                          content="staticContent.content"
+                          header="staticContent.header"
+                          header-visible="true"
+                          separator="staticContent.separator"
+                          separator-visible="staticContent.separatorVisible"
+                          result="staticContent.result">
+                  </ng-csv-import>
+                  
+                  <div ng-if="staticContent.content" class="block left">
+                    <h2>CSV</h2>
+                    <div ng-show="staticContent.import.alert" class="text-danger bg-danger import-content"
+                         ng-bind-html="staticContent.import.alert">
+                    </div>
+                    <div class="content import-content">
+                      <pre>{{ staticContent.content }}</pre>
+                    </div>
+                    
+                    <button class="btn btn-primary" ng-click="createSnapshot()"> Import</button>
+                  </div>
+                </div>
+              </div>            
             </span>
   
             <span ng-if="pendingWizardSettings.searchEngine === 'solr'">
@@ -257,6 +311,15 @@ curl -k -X POST -H 'Content-type:application/json' -d '{
       <br><br><br><br><br>
     </wz-step>
     <wz-step title="Query" id="step-five">
+      <span ng-if="pendingWizardSettings.searchEngine === 'static'">
+        <h2>Search Queries</h2>
+        <div>
+          <p class="help-block">All of the queries defined in the static upload will be created.</p>
+          <button class="btn btn-primary pull-right continue" wz-next ng-click="pendingWizardSettings.addQueryStaticQueries()">Continue</button>
+        </div>
+        <br><br><br><br><br>
+      </span>
+      <span ng-if="pendingWizardSettings.searchEngine !== 'static'">
       <h2>Add Your Search Queries</h2>
       <div>
         <p class="help-block">Start out tuning a couple important search queries:</p>
@@ -280,6 +343,7 @@ curl -k -X POST -H 'Content-type:application/json' -d '{
 
         <br><br><br><br><br>
       </div>
+      </span>
     </wz-step>
     <wz-step title="Finish" id="step-six">
       <h1>That's It!</h1>
