@@ -46,7 +46,7 @@ angular.module('QuepidApp')
 
       this.get = function(searchEndpointId) {
         // http GET /api/search_endpoints/<int:searchEndpointId>/
-        var url   = 'api/search_endpoints/' + searchEndpointId;
+        var url   = `api/search_endpoints/${searchEndpointId}`;
         var self  = this;
 
         
@@ -83,7 +83,7 @@ angular.module('QuepidApp')
 
       this.shareEndpoint = function(team, searchEndpoint) {
         // http POST api/teams/<int:teamId>/cases
-        var url   = 'api/teams/' + team.id + '/search_endpoints';
+        var url   = `api/teams/${team.id}/search_endpoints`;
         var data  = {
           id: searchEndpoint.id
         };

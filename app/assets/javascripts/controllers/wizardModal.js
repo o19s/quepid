@@ -517,7 +517,7 @@ angular.module('QuepidApp')
               const snapshotId = keys[keys.length - 1];
                             
               console.log($location.absUrl)     ;         
-              $scope.pendingWizardSettings.searchUrl = $location.protocol() + '://' + $location.host() + ':' + $location.port() + '/api/cases/' + caseTryNavSvc.getCaseNo() + '/snapshots/' + snapshotId  + '/search';
+              $scope.pendingWizardSettings.searchUrl = `${$location.protocol()}://${$location.host()}:${$location.port()}/api/cases/${caseTryNavSvc.getCaseNo()}/snapshots/${snapshotId}/search`;
               $scope.isStaticCollapsed = false;
               //var result = {
               //  success: true,

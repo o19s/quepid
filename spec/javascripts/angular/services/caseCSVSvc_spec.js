@@ -77,7 +77,7 @@ describe('Service: caseCSVSvc', function () {
         }
       ];
       
-      let result = caseCSVSvc.fixObjectKeys(mockResultFromUploadingCSVWithSpaces);
+      const result = caseCSVSvc.fixObjectKeys(mockResultFromUploadingCSVWithSpaces);
 
       expect(result).toEqual([{
         "Query Text": "star wars",
