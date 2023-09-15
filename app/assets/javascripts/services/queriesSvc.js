@@ -86,7 +86,10 @@ angular.module('QuepidApp')
             // we need a better way of handling this.   Basically we are saying a static search engine is
             // treated like Solr.   But if we have more generic search apis, they will need a 
             // custom parser...
-            passedInSettings.searchEngine = 'solr'; 
+            passedInSettings.searchEngine = 'solr';           
+          }
+          else if (passedInSettings.searchEngine === 'searchapi'){
+            passedInSettings.searchEngine = 'es';
           }
 
           if (passedInSettings.searchEngine === 'solr') {

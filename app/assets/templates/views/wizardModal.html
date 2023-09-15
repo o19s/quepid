@@ -30,7 +30,7 @@
       <div>
         <uib-accordion>
           <div uib-accordion-group class="panel-default" heading="Use an existing Search Endpoint" >
-            <div class="alert alert-warning" role="alert" ng-if="!haveSearchEndpoints">
+            <div class="alert alert-warning" role="alert" ng-if="listSearchEndpoints().length === 0">
               You do not have any Search Endpoints created yet.
             </div>
             <select
@@ -42,7 +42,7 @@
             
             <button class="btn btn-primary pull-right continue" ng-click="pickSearchEndpoint()" ng-disabled="pendingWizardSettings.searchEndpointId == null">Continue</button>
             
-            <button class="btn btn-danger" ng-click="skipValidation()" ng-disabled="validating">
+            <button class="btn btn-danger" ng-click="skipValidation()" ng-disabled="validating" ng-show="pendingWizardSettings.searchEndpointId">
               <span ng-hide="validating">Skip Validation</span>
             </button>
           </div>
@@ -60,14 +60,20 @@
               <input type="radio" value="os" ng-model="pendingWizardSettings.searchEngine" ng-change="changeSearchEngine()">
               <img ng-src="images/os.png" alt='OpenSearch' width="150px" />
             </label>
-            <label>
+          </div>
+          <div style="text-align: center;">
+            <label style="margin-right: 25px;">
               <input type="radio" value="vectara" ng-model="pendingWizardSettings.searchEngine" ng-change="changeSearchEngine()">
               <img ng-src="images/vectara.png" alt='Vectara' width="150px" />
             </label>            
-            <label>
+            <label style="margin-right: 25px;">
               <input type="radio" value="static" ng-model="pendingWizardSettings.searchEngine" ng-change="changeSearchEngine()">
               <img ng-src="images/static.png" alt='Static' width="150px" height="50px" />
             </label>
+            <label>
+              <input type="radio" value="searchapi" ng-model="pendingWizardSettings.searchEngine" ng-change="changeSearchEngine()">
+              <img ng-src="images/searchapi.png" alt='Search API' width="50px" height="50px" />
+            </label>            
           </div>
           
           <br>
@@ -152,7 +158,7 @@ curl -k -X POST -H 'Content-type:application/json' -d '{
             <span ng-if="pendingWizardSettings.searchEngine === 'static'">
               <!-- Copied from import-ratings component -->
               <p>
-                A "Static" search endpoint is a great way to gather human judgements and leverage Quepid's existing evaluation tools without having a live connection to a search engine.                 
+                A "Static" (or "Offline") search endpoint is a great way to gather human judgements and leverage Quepid's existing evaluation tools without requiring a live connection to a search engine.                 
               </p>
               <p>
                 <button type="button" class="btn btn-sm btn-default" ng-click="isStaticCollapsed = !isStaticCollapsed">Static Dataset</button>
@@ -169,10 +175,10 @@ curl -k -X POST -H 'Content-type:application/json' -d '{
                     The CSV file should have the headers: <code>Query Text,Doc ID,Doc Position</code>.  
                     Then, all the document fields you want displayed follow as columns with the header being the name of the field.
                     <pre>
-    Query Text,Doc ID,Doc Position, Movie Title
-    star wars,527641,1, Star Wars
-    star wars,9426,2, Star Wars: The Empire Strikes Back
-    star wars,1921,3, Star Wars: Return of the Jedi
+Query Text,Doc ID,Doc Position, Movie Title
+star wars,527641,1, Star Wars
+star wars,9426,2, Star Wars: The Empire Strikes Back
+star wars,1921,3, Star Wars: Return of the Jedi
                     </pre>
                     Please note that the additional columns that a Snapshot export has are ignored.
                   </span>
@@ -222,7 +228,40 @@ curl -k -X POST -H 'Content-type:application/json' -d '{
                 </div>
               </div>
             </div>
-            </span>                       
+            </span>  
+
+            <span ng-if="pendingWizardSettings.searchEngine === 'searchapi'">
+            <p>
+              <button type="button" class="btn btn-sm btn-default" ng-click="isSearchAPICollapsed = !isSearchAPICollapsed">Search API Configuration</button>
+            </p>
+            <div uib-collapse="!isSearchAPICollapsed">
+              <div class="well well-sm">
+                <div class="form-group clearfix">
+                  <label class="col-sm-3 control-label">API Method</label>
+                  <div class="col-sm-9">
+                    <select class="form-control" ng-model="pendingWizardSettings.apiMethod" ng-change="resetUrlValid()">
+                      <option>POST</option>
+                      <option>GET</option>  
+                      <option>JSONP</option>                                          
+                    </select>
+                    <p class="help-block">POST and GET are the most common.</p>
+                  </div>
+                </div>
+                <div class="form-group clearfix">
+                  <label class="col-sm-3 control-label">Response Parser</label>
+                  <div class="col-sm-9">
+                    <select class="form-control" ng-model="pendingWizardSettings.responseParser" ng-change="resetUrlValid()">
+                      <option>solr</option>  
+                      <option>es</option>
+                      <option>os</option>  
+                      <option>vectara</option>                        
+                    </select>
+                    <p class="help-block">We need to know how to parse the response from your search engine using a Splainer supported parser.</p>
+                  </div>
+                </div>                
+              </div>
+            </div>
+            </span>   
   
             <span ng-if="pendingWizardSettings.searchEngine !== 'solr' && pendingWizardSettings.searchEngine !== 'static'">
             <p>

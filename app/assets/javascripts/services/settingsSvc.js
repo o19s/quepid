@@ -145,6 +145,21 @@ angular.module('QuepidApp')
           numberOfRows:     10,
           searchEngine:     'static'         
           // no searchUrl or urlFormat because it's code generated!
+        },
+        searchapi: {
+          queryParams:      '{ }',
+          escapeQuery:      true,
+          apiMethod:        'POST',
+          headerType:       'None',
+          customHeaders:    '',
+          fieldSpec:        'id:_id',
+          idField:          'id',
+          titleField:       'title',
+          additionalFields: [],
+          numberOfRows:     10,
+          searchEngine:     'searchapi',
+          urlFormat:         'http(s?)://yourdomain.com:9200/<path>/<etc>',
+          // no searchUrl or urlFormat because it's code generated!
         }
       };
       
@@ -243,29 +258,31 @@ angular.module('QuepidApp')
 
       this.demoSettingsChosen = function(searchEngine, newUrl){
         var useTMDBDemoSettings = false;
-        if (searchEngine === 'solr'){
-          if (newUrl === null || angular.isUndefined(newUrl)){
-            useTMDBDemoSettings = true;
-          }
-          else if (newUrl === this.tmdbSettings['solr'].insecureSearchUrl || newUrl === this.tmdbSettings['solr'].secureSearchUrl ){
-            useTMDBDemoSettings = true;
+        if (angular.isUndefined(this.tmdbSettings[searchEngine])){
+          useTMDBDemoSettings = false; // yes this isn't actually needed.
+        }
+        else {          
+          if (searchEngine === 'solr'){
+            if (newUrl === null || angular.isUndefined(newUrl)){
+              useTMDBDemoSettings = true;
+            }
+            // We actually have seperate demos for Solr based on http and https urls.
+            else if (newUrl === this.tmdbSettings['solr'].insecureSearchUrl || newUrl === this.tmdbSettings['solr'].secureSearchUrl ){
+              useTMDBDemoSettings = true;
+            }
+            else {
+              useTMDBDemoSettings = false;
+            }
           }
           else {
-            useTMDBDemoSettings = false;
+            if (newUrl === this.tmdbSettings[searchEngine].searchUrl) {
+              useTMDBDemoSettings = true;
+            }
+            else {
+              useTMDBDemoSettings = false;
+            }
           }
-        }
-        // Could be refactored
-        else if (searchEngine === 'vectara' || searchEngine === 'static') {
-          useTMDBDemoSettings = false;
-        } 
-        else {
-          if (newUrl === this.tmdbSettings[searchEngine].searchUrl) {
-            useTMDBDemoSettings = true;
-          }
-          else {
-            useTMDBDemoSettings = false;
-          }
-        }
+        }       
         return useTMDBDemoSettings;
       };
 

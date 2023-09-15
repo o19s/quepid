@@ -470,14 +470,14 @@
         function fixObjectKeys (docs){
           var newDocs = [];
           angular.forEach(docs, function (doc) {
-            var newDoc = {}
+            var newDoc = {};
             Object.keys(doc).forEach(key => {              
               const trimmedKey = key.trim();
               newDoc[trimmedKey] = doc[key];
             });
             newDocs.push(newDoc);
           });
-          return newDocs
+          return newDocs;
         }          
       }
     ]);

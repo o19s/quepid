@@ -238,6 +238,11 @@ angular.module('QuepidApp')
           settingsForValidation = angular.copy($scope.pendingWizardSettings);
           settingsForValidation.searchEngine = 'solr';
         }
+        else if ($scope.pendingWizardSettings.searchEngine === 'searchapi'){
+          // we map to our response parser to use.
+          settingsForValidation = angular.copy($scope.pendingWizardSettings);
+          settingsForValidation.searchEngine = $scope.pendingWizardSettings.responseParser;
+        }
         
         var validator = new SettingsValidatorFactory(settingsForValidation);
         
