@@ -152,11 +152,8 @@ curl -k -X POST -H 'Content-type:application/json' -d '{
             <span ng-if="pendingWizardSettings.searchEngine === 'static'">
               <!-- Copied from import-ratings component -->
               <p>
-                A "Static" search endpoint is a great way to gather human judgements and leverage Quepid's existing evaluation tools.                 
+                A "Static" search endpoint is a great way to gather human judgements and leverage Quepid's existing evaluation tools without having a live connection to a search engine.                 
               </p>
-                {{pendingWizardSettings.searchUrl}}
-                also: {{isStaticCollapsed}}
-              
               <p>
                 <button type="button" class="btn btn-sm btn-default" ng-click="isStaticCollapsed = !isStaticCollapsed">Static Dataset</button>
               </p>
