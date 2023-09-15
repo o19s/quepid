@@ -553,7 +553,8 @@ angular.module('QuepidApp')
       $scope.$watch('staticContent.content', function (newVal, oldVal) {
         if (newVal !== oldVal) {
           $scope.staticContent.import.alert = undefined;
-          checkStaticHeaders();
+          $scope.staticContent.result = caseCSVSvc.fixObjectKeys($scope.staticContent.result);
+          checkStaticHeaders();          
         }
       }, true);
     }
