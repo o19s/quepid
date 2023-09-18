@@ -5,8 +5,8 @@ require 'csv'
 module Api
   module V1
     class BooksController < Api::ApiController
-      before_action :find_book, only: [ :show ]
-      before_action :check_book, only: [ :show ]
+      before_action :find_book, only: [ :show, :update, :destroy ]
+      before_action :check_book, only: [ :show, :update, :destroy ]
 
       # rubocop:disable Metrics/MethodLength
       # rubocop:disable Metrics/AbcSize
@@ -53,7 +53,43 @@ module Api
       # rubocop:enable Metrics/CyclomaticComplexity
       # rubocop:enable Metrics/PerceivedComplexity
 
+      def create
+        @book = Book.new(book_params)
+
+        if @book.save
+          # first = 1 == current_user.cases.count
+          # Analytics::Tracker.track_case_created_event current_user, @case, first
+          respond_with @book
+        else
+          render json: @book.errors, status: :bad_request
+        end
+      end
+
+      def update
+        update_params = book_params
+        if @book.update update_params
+          # Analytics::Tracker.track_case_updated_event current_user, @case
+          respond_with @book
+        else
+          render json: @book.errors, status: :bad_request
+        end
+        # rescue ActiveRecord::InvalidForeignKey
+        # render json: { error: 'Invalid id' }, status: :bad_request
+      end
+
+      def destroy
+        @book.destroy
+        # Analytics::Tracker.track_case_deleted_event current_user, @case
+
+        render json: {}, status: :no_content
+      end
+
       private
+
+      def book_params
+        params.require(:book).permit(:team_id, :scorer_id, :selection_strategy_id, :name, :support_implicit_judgements,
+                                     :show_rank)
+      end
 
       # rubocop:disable Layout/LineLength
       def find_book

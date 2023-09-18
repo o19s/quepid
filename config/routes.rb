@@ -145,7 +145,7 @@ Rails.application.routes.draw do
         resources :annotations, except: [ :show ]
       end
 
-      resources :books, only: [ :show ] do
+      resources :books, only: [ :show, :create, :update, :destroy ] do
         put '/populate' => 'books/populate#update'
         resources :cases do
           put 'refresh' => 'books/refresh#update'
