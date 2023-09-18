@@ -92,8 +92,9 @@ To reference these judgements from a notebook or another system you can referenc
   <div class="card-body">
 
     <h5 class="card-title" href="#collapseExample">Leaderboard</h3>
-    <h6 class="card-subtitle mb-2 text-body-secondary">Who is closest to having all query/doc pairs judged</h6>
-
+    <h6 class="card-subtitle mb-2 text-body-secondary">Who is closest to having all <%= @book.query_doc_pairs.count %> query/doc pairs judged?</h6>
+    
+    
     <%=
     Vega.lite
       .data(@leaderboard_data)

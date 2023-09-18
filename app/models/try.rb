@@ -64,6 +64,8 @@ class Try < ApplicationRecord
         os_args
       when 'vectara'
         vectara_args
+      when 'searchapi'
+        os_args
       end
     end
   end

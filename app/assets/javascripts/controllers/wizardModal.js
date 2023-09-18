@@ -242,6 +242,7 @@ angular.module('QuepidApp')
           // we map to our response parser to use.
           settingsForValidation = angular.copy($scope.pendingWizardSettings);
           settingsForValidation.searchEngine = $scope.pendingWizardSettings.responseParser;
+          settingsForValidation.args = $scope.pendingWizardSettings.queryParams;
         }
         
         var validator = new SettingsValidatorFactory(settingsForValidation);

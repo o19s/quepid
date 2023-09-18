@@ -246,8 +246,7 @@ star wars,1921,3, Star Wars: Return of the Jedi
                     </select>
                     <p class="help-block">POST and GET are the most common.</p>
                   </div>
-                </div>
-                <div class="form-group clearfix">
+                  
                   <label class="col-sm-3 control-label">Response Parser</label>
                   <div class="col-sm-9">
                     <select class="form-control" ng-model="pendingWizardSettings.responseParser" ng-change="resetUrlValid()">
@@ -258,7 +257,23 @@ star wars,1921,3, Star Wars: Return of the Jedi
                     </select>
                     <p class="help-block">We need to know how to parse the response from your search engine using a Splainer supported parser.</p>
                   </div>
-                </div>                
+                </div>
+                <div class="col-sm-12 clearfix">
+                  <label class="control-label">Query Structure</label>
+                  <p class="help-block">Enter a basic query structure that will return at least one document. You can edit this later.</p>
+                </div>
+              
+                <div class="form-group clearfix">
+                  <div class="col-sm-12">
+                    <div id='custom-header-editor' ui-ace="{
+                        require:      ['ace/ext/language_tools'],
+                        useWrapMode:  false,
+                        mode:         'json',
+                        theme:        'chrome'
+                      }" ng-model="pendingWizardSettings.queryParams">
+                    </div>
+                  </div>
+                </div>                   
               </div>
             </div>
             </span>   

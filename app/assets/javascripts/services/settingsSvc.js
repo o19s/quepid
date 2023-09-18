@@ -20,28 +20,28 @@ angular.module('QuepidApp')
       // Used by the wizard for any search engine.
       this.defaultSettings = {
         solr: {
-          queryParams:  [
+          queryParams: [
             'q=#$query##',
             '&tie=1.0',
           ].join('\n'),
 
-          escapeQuery:      true,
-          customHeaders:    '',
-          headerType:       'None',
-          apiMethod:        'JSONP',
-          fieldSpec:        'id:id',
-          idField:          'id',
-          titleField:       '',
+          escapeQuery: true,
+          customHeaders: '',
+          headerType: 'None',
+          apiMethod: 'JSONP',
+          fieldSpec: 'id:id',
+          idField: 'id',
+          titleField: '',
           additionalFields: [],
-          numberOfRows:     10,
-          searchEngine:     'solr',
+          numberOfRows: 10,
+          searchEngine: 'solr',
           // perfect world we wouldn't have this here and we would instead populate with urlFormat instead.
-          insecureSearchUrl:'http://quepid-solr.dev.o19s.com:8985/solr/tmdb/select',
-          secureSearchUrl:  'https://quepid-solr.dev.o19s.com/solr/tmdb/select',
-          urlFormat:        'http(s?)://yourdomain.com:8983/<index>/select'
+          insecureSearchUrl: 'http://quepid-solr.dev.o19s.com:8985/solr/tmdb/select',
+          secureSearchUrl: 'https://quepid-solr.dev.o19s.com/solr/tmdb/select',
+          urlFormat: 'http(s?)://yourdomain.com:8983/<index>/select'
         },
         es: {
-          queryParams:  [
+          queryParams: [
             '{',
             '  "query": {',
             '    "multi_match": {',
@@ -53,21 +53,21 @@ angular.module('QuepidApp')
             '}',
           ].join('\n'),
 
-          escapeQuery:       true,
-          apiMethod:        'POST',
-          customHeaders:    '',
-          headerType:       'None',
-          fieldSpec:         'id:_id',
-          idField:           '_id',
-          titleField:        '',
-          additionalFields:  [],
-          numberOfRows:      10,
-          searchEngine:      'es',
-          searchUrl:         'http://quepid-elasticsearch.dev.o19s.com:9206/tmdb/_search',
-          urlFormat:         'http(s?)://yourdomain.com:9200/<index>/_search'
+          escapeQuery: true,
+          apiMethod: 'POST',
+          customHeaders: '',
+          headerType: 'None',
+          fieldSpec: 'id:_id',
+          idField: '_id',
+          titleField: '',
+          additionalFields: [],
+          numberOfRows: 10,
+          searchEngine: 'es',
+          searchUrl: 'http://quepid-elasticsearch.dev.o19s.com:9206/tmdb/_search',
+          urlFormat: 'http(s?)://yourdomain.com:9200/<index>/_search'
         },
         os: {
-          queryParams:  [
+          queryParams: [
             '{',
             '  "query": {',
             '    "multi_match": {',
@@ -79,20 +79,20 @@ angular.module('QuepidApp')
             '}',
           ].join('\n'),
 
-          escapeQuery:       true,
-          apiMethod:         'POST',
-          customHeaders:     '',
-          fieldSpec:         'id:_id',
-          idField:           '_id',
-          titleField:        '',
-          additionalFields:  [],
-          numberOfRows:      10,
-          searchEngine:      'os',
-          searchUrl:         'https://reader:reader@quepid-opensearch.dev.o19s.com:9000/tmdb/_search',
-          urlFormat:         'http(s?)://yourdomain.com:9200/<index>/_search',
+          escapeQuery: true,
+          apiMethod: 'POST',
+          customHeaders: '',
+          fieldSpec: 'id:_id',
+          idField: '_id',
+          titleField: '',
+          additionalFields: [],
+          numberOfRows: 10,
+          searchEngine: 'os',
+          searchUrl: 'https://reader:reader@quepid-opensearch.dev.o19s.com:9000/tmdb/_search',
+          urlFormat: 'http(s?)://yourdomain.com:9200/<index>/_search',
         },
         vectara: {
-          queryParams:  [
+          queryParams: [
             '{',
             '  "query": [',
             '     {',
@@ -112,62 +112,69 @@ angular.module('QuepidApp')
             '}'
           ].join('\n'),
 
-          escapeQuery:       true,
-          apiMethod:         'POST',
-          headerType:       'Custom',
-          customHeaders:  [
+          escapeQuery: true,
+          apiMethod: 'POST',
+          headerType: 'Custom',
+          customHeaders: [
             '{',
             '  "customer-id": "YOUR_CUSTOMER_ID",',
             '  "x-api-key": "YOUR_API_KEY"',
             '}'
-          ].join('\n'),          
-          fieldSpec:         'id:id',
-          idField:           'id',
-          titleField:        'title',
-          additionalFields:  [],
-          numberOfRows:      10,
-          searchEngine:      'vectara',
-          searchUrl:         'https://api.vectara.io/v1/query',
-          urlFormat:         'https://api.vectara.io/v1/query'
+          ].join('\n'),
+          fieldSpec: 'id:id',
+          idField: 'id',
+          titleField: 'title',
+          additionalFields: [],
+          numberOfRows: 10,
+          searchEngine: 'vectara',
+          searchUrl: 'https://api.vectara.io/v1/query',
+          urlFormat: 'https://api.vectara.io/v1/query'
         },
         static: {
-          queryParams:  [
+          queryParams: [
             'q=#$query##'
           ].join('\n'),
-          escapeQuery:      true,
-          headerType:       'None',
-          apiMethod:        'GET',
-          customHeaders:     '',
-          fieldSpec:        'id:id',
-          idField:          'id',
-          titleField:       '',
+          escapeQuery: true,
+          headerType: 'None',
+          apiMethod: 'GET',
+          customHeaders: '',
+          fieldSpec: 'id:id',
+          idField: 'id',
+          titleField: '',
           additionalFields: [],
-          numberOfRows:     10,
-          searchEngine:     'static'         
+          numberOfRows: 10,
+          searchEngine: 'static'
           // no searchUrl or urlFormat because it's code generated!
         },
         searchapi: {
-          queryParams:      '{ }',
-          escapeQuery:      true,
-          apiMethod:        'POST',
-          headerType:       'None',
-          customHeaders:    '',
-          fieldSpec:        'id:_id',
-          idField:          'id',
-          titleField:       'title',
+          queryParams: [
+            '{',
+            '  "query": "united states",',
+            '  "searchType": "mdc_globalsearch_research",',
+            '  "index": "mdc_research",',
+            '  "size": 1',
+            '}'
+          ].join('\n'),
+          escapeQuery: true,
+          apiMethod: 'POST',
+          headerType: 'None',
+          customHeaders: '',
+          fieldSpec: 'id:_id',
+          idField: '_id',
+          titleField: 'title',
           additionalFields: [],
-          numberOfRows:     10,
-          searchEngine:     'searchapi',
-          urlFormat:         'http(s?)://yourdomain.com:9200/<path>/<etc>',
+          numberOfRows: 1,
+          searchEngine: 'searchapi',
+          urlFormat: 'http(s?)://yourdomain.com:9200/<path>/<etc>',
           // no searchUrl or urlFormat because it's code generated!
         }
       };
-      
+
       // used by the wizard for TMDB demo search engine settings.
       // Not all seachEngines have a TMDB demo set up.
       this.tmdbSettings = {
         solr: {
-          queryParams:  [
+          queryParams: [
             'q=#$query##',
             '&defType=edismax',
             '&qf=text_all',
@@ -176,22 +183,22 @@ angular.module('QuepidApp')
             '&bf=vote_average',
           ].join('\n'),
 
-          escapeQuery:      true,
-          customHeaders:    '',
-          headerType:       'None',
-          apiMethod:        'JSONP',
-          fieldSpec:        'id:id, title:title',
-          idField:          'id',
-          titleField:       'title',
-          additionalFields: ['overview','cast','thumb:poster_path'],
-          numberOfRows:     10,
-          searchEngine:     'solr',
-          insecureSearchUrl:'http://quepid-solr.dev.o19s.com:8985/solr/tmdb/select',
-          secureSearchUrl:  'https://quepid-solr.dev.o19s.com/solr/tmdb/select',
-          urlFormat:        'http(s?)://yourdomain.com:8983/<index>/select'
+          escapeQuery: true,
+          customHeaders: '',
+          headerType: 'None',
+          apiMethod: 'JSONP',
+          fieldSpec: 'id:id, title:title',
+          idField: 'id',
+          titleField: 'title',
+          additionalFields: ['overview', 'cast', 'thumb:poster_path'],
+          numberOfRows: 10,
+          searchEngine: 'solr',
+          insecureSearchUrl: 'http://quepid-solr.dev.o19s.com:8985/solr/tmdb/select',
+          secureSearchUrl: 'https://quepid-solr.dev.o19s.com/solr/tmdb/select',
+          urlFormat: 'http(s?)://yourdomain.com:8983/<index>/select'
         },
         es: {
-          queryParams:  [
+          queryParams: [
             '{',
             '  "query": {',
             '    "multi_match": {',
@@ -207,21 +214,21 @@ angular.module('QuepidApp')
             '}',
           ].join('\n'),
 
-          escapeQuery:       true,
-          apiMethod:        'POST',
-          customHeaders:    '',
-          headerType:       'None',
-          fieldSpec:         'id:_id, title:title',
-          idField:           '_id',
-          titleField:        'title',
-          additionalFields:  ['overview','cast','thumb:poster_path'],
-          numberOfRows:      10,
-          searchEngine:      'es',
-          searchUrl:         'http://quepid-elasticsearch.dev.o19s.com:9206/tmdb/_search',
-          urlFormat:         'http(s?)://yourdomain.com:9200/<index>/_search'
+          escapeQuery: true,
+          apiMethod: 'POST',
+          customHeaders: '',
+          headerType: 'None',
+          fieldSpec: 'id:_id, title:title',
+          idField: '_id',
+          titleField: 'title',
+          additionalFields: ['overview', 'cast', 'thumb:poster_path'],
+          numberOfRows: 10,
+          searchEngine: 'es',
+          searchUrl: 'http://quepid-elasticsearch.dev.o19s.com:9206/tmdb/_search',
+          urlFormat: 'http(s?)://yourdomain.com:9200/<index>/_search'
         },
         os: {
-          queryParams:  [
+          queryParams: [
             '{',
             '  "query": {',
             '    "multi_match": {',
@@ -237,18 +244,18 @@ angular.module('QuepidApp')
             '}',
           ].join('\n'),
 
-          escapeQuery:       true,
-          apiMethod:         'POST',
-          fieldSpec:         'id:_id, title:title',
-          idField:           '_id',
-          titleField:        'title',
-          additionalFields:  ['overview','cast','thumb:poster_path'],
-          numberOfRows:      10,
-          searchEngine:      'os',
-          searchUrl:         'https://reader:reader@quepid-opensearch.dev.o19s.com:9000/tmdb/_search',
-          urlFormat:         'http(s?)://yourdomain.com:9200/<index>/_search',
-          customHeaders:     '',
-        }        
+          escapeQuery: true,
+          apiMethod: 'POST',
+          fieldSpec: 'id:_id, title:title',
+          idField: '_id',
+          titleField: 'title',
+          additionalFields: ['overview', 'cast', 'thumb:poster_path'],
+          numberOfRows: 10,
+          searchEngine: 'os',
+          searchUrl: 'https://reader:reader@quepid-opensearch.dev.o19s.com:9000/tmdb/_search',
+          urlFormat: 'http(s?)://yourdomain.com:9200/<index>/_search',
+          customHeaders: '',
+        }
       };
 
       /* jshint ignore:end */
@@ -256,18 +263,18 @@ angular.module('QuepidApp')
       var Settings = SettingsFactory;
       var currSettings = null;
 
-      this.demoSettingsChosen = function(searchEngine, newUrl){
+      this.demoSettingsChosen = function(searchEngine, newUrl) {
         var useTMDBDemoSettings = false;
-        if (angular.isUndefined(this.tmdbSettings[searchEngine])){
+        if (angular.isUndefined(this.tmdbSettings[searchEngine])) {
           useTMDBDemoSettings = false; // yes this isn't actually needed.
         }
-        else {          
-          if (searchEngine === 'solr'){
-            if (newUrl === null || angular.isUndefined(newUrl)){
+        else {
+          if (searchEngine === 'solr') {
+            if (newUrl === null || angular.isUndefined(newUrl)) {
               useTMDBDemoSettings = true;
             }
             // We actually have seperate demos for Solr based on http and https urls.
-            else if (newUrl === this.tmdbSettings['solr'].insecureSearchUrl || newUrl === this.tmdbSettings['solr'].secureSearchUrl ){
+            else if (newUrl === this.tmdbSettings['solr'].insecureSearchUrl || newUrl === this.tmdbSettings['solr'].secureSearchUrl) {
               useTMDBDemoSettings = true;
             }
             else {
@@ -282,12 +289,12 @@ angular.module('QuepidApp')
               useTMDBDemoSettings = false;
             }
           }
-        }       
+        }
         return useTMDBDemoSettings;
       };
 
       this.pickSettingsToUse = function(searchEngine, newUrl) {
-        if (this.demoSettingsChosen(searchEngine, newUrl)){
+        if (this.demoSettingsChosen(searchEngine, newUrl)) {
           return angular.copy(this.tmdbSettings[searchEngine]);
         }
         else {
@@ -312,8 +319,8 @@ angular.module('QuepidApp')
       // An external change in case, we need
       // to rebootstrap ourselves
       this.bootstrap = function() {
-        var caseNo  = caseTryNavSvc.getCaseNo();
-        var tryNo   = caseTryNavSvc.getTryNo();
+        var caseNo = caseTryNavSvc.getCaseNo();
+        var tryNo = caseTryNavSvc.getTryNo();
 
         var path = 'api/cases/' + caseNo + '/tries';
         return $http.get(path)
@@ -322,12 +329,12 @@ angular.module('QuepidApp')
             currSettings.selectTry(tryNo);
 
             var args = {
-              caseNo:   caseNo,
+              caseNo: caseNo,
               settings: currSettings
             };
             broadcastSvc.send('settings-changed', args);
 
-          }, function(){
+          }, function() {
             caseTryNavSvc.notFound();
           });
       };
@@ -343,23 +350,23 @@ angular.module('QuepidApp')
 
       // Get a copy of the settings for later submission
       this.editableSettings = function(tryToUse) {
-  			if(currSettings !== null){
-  				var settings = angular.copy(currSettings);
+        if (currSettings !== null) {
+          var settings = angular.copy(currSettings);
 
           if (tryToUse === undefined) {
             tryToUse = settings.selectedTry;
             settings.selectTry(tryToUse.tryNo);
           }
 
-          settings.escapeQuery   = tryToUse.escapeQuery;
-          settings.apiMethod     = tryToUse.apiMethod;
+          settings.escapeQuery = tryToUse.escapeQuery;
+          settings.apiMethod = tryToUse.apiMethod;
           settings.customHeaders = tryToUse.customHeaders || '';
-          settings.fieldSpec     = tryToUse.fieldSpec;
-          settings.numberOfRows  = tryToUse.numberOfRows;
-          settings.queryParams   = tryToUse.queryParams;
-          settings.searchEngine  = tryToUse.searchEngine;
-          settings.searchEndpointId  = tryToUse.searchEndpointId;
-          settings.searchUrl     = tryToUse.searchUrl;
+          settings.fieldSpec = tryToUse.fieldSpec;
+          settings.numberOfRows = tryToUse.numberOfRows;
+          settings.queryParams = tryToUse.queryParams;
+          settings.searchEngine = tryToUse.searchEngine;
+          settings.searchEndpointId = tryToUse.searchEndpointId;
+          settings.searchUrl = tryToUse.searchUrl;
 
           // TODO: Store type in db?...
           settings.headerType = settings.customHeaders.includes('ApiKey') ? 'API Key'
@@ -367,13 +374,13 @@ angular.module('QuepidApp')
 
 
           return settings;
-  			} else {
-  				return {};
-  			}
+        } else {
+          return {};
+        }
       };
 
       this.applicableSettings = function() {
-        if(currSettings !== null){
+        if (currSettings !== null) {
           return currSettings.selectedTry;
         } else {
           return {};
@@ -409,7 +416,7 @@ angular.module('QuepidApp')
         // (4) possibly modified curator vars
         // probably could be a bit more restful
         // Note that we map between camelCase in JS and snake_case in API here.
-        
+
         var currCaseNo = caseTryNavSvc.getCaseNo();
 
         var payload = {};
@@ -417,39 +424,39 @@ angular.module('QuepidApp')
         var payloadSearchEndpoint = {};
         payload.try = payloadTry;
         payload.search_endpoint = payloadSearchEndpoint;
-        
+
         payload.parent_try_number = settingsToSave.selectedTry.tryNo;
-        payload.curator_vars      = settingsToSave.selectedTry.curatorVarsDict();
-        
+        payload.curator_vars = settingsToSave.selectedTry.curatorVarsDict();
+
         // We create the default name on the server side
         //payloadTry.name            = settingsToSave.selectedTry.name;
-        
-        payloadTry.escape_query      = settingsToSave.escapeQuery;
-        payloadTry.field_spec        = settingsToSave.fieldSpec;
-        payloadTry.number_of_rows    = settingsToSave.numberOfRows;
-        payloadTry.query_params      = settingsToSave.selectedTry.queryParams;
-        payloadSearchEndpoint.search_endpoint_id     = settingsToSave.searchEndpointId;
-        payloadSearchEndpoint.search_engine     = settingsToSave.searchEngine;
-        payloadSearchEndpoint.endpoint_url      = settingsToSave.searchUrl;
-        payloadSearchEndpoint.api_method        = settingsToSave.apiMethod;
-        payloadSearchEndpoint.custom_headers    = settingsToSave.customHeaders;        
-        
+
+        payloadTry.escape_query = settingsToSave.escapeQuery;
+        payloadTry.field_spec = settingsToSave.fieldSpec;
+        payloadTry.number_of_rows = settingsToSave.numberOfRows;
+        payloadTry.query_params = settingsToSave.selectedTry.queryParams;
+        payloadSearchEndpoint.search_endpoint_id = settingsToSave.searchEndpointId;
+        payloadSearchEndpoint.search_engine = settingsToSave.searchEngine;
+        payloadSearchEndpoint.endpoint_url = settingsToSave.searchUrl;
+        payloadSearchEndpoint.api_method = settingsToSave.apiMethod;
+        payloadSearchEndpoint.custom_headers = settingsToSave.customHeaders;
+
 
         return $http.post('api/cases/' + currCaseNo + '/tries', payload)
           .then(function(response) {
             var tryJson = response.data;
-            var newTry  = currSettings.addTry(tryJson);
+            var newTry = currSettings.addTry(tryJson);
             currSettings.selectTry(newTry.tryNo);
 
             // Broadcast that settings for case have been updated
             var args = {
-              caseNo:   currCaseNo,
-              lastTry:  newTry
+              caseNo: currCaseNo,
+              lastTry: newTry
             };
             broadcastSvc.send('settings-updated', args);
 
             // navigate to what was selected in case try no changed
-            caseTryNavSvc.navigateTo({tryNo: newTry.tryNo});
+            caseTryNavSvc.navigateTo({ tryNo: newTry.tryNo });
           });
       };
 
@@ -488,38 +495,38 @@ angular.module('QuepidApp')
         var payloadSearchEndpoint = {};
         payload.try = payloadTry;
         payload.search_endpoint = payloadSearchEndpoint;
-        
+
         payload.parent_try_number = settingsToSave.selectedTry.tryNo;
-        payload.curator_vars      = settingsToSave.selectedTry.curatorVarsDict();
-        
+        payload.curator_vars = settingsToSave.selectedTry.curatorVarsDict();
+
         // We create the default name on the server side
         //payloadTry.name            = settingsToSave.selectedTry.name;
 
-        payloadTry.escape_query      = settingsToSave.escapeQuery;
-        payloadTry.field_spec        = settingsToSave.fieldSpec;
-        payloadTry.number_of_rows    = settingsToSave.numberOfRows;
-        payloadTry.query_params      = settingsToSave.selectedTry.queryParams;
-        payloadSearchEndpoint.search_engine     = settingsToSave.searchEngine;
-        payloadSearchEndpoint.endpoint_url      = settingsToSave.searchUrl;
-        payloadSearchEndpoint.api_method        = settingsToSave.apiMethod;
-        payloadSearchEndpoint.custom_headers    = settingsToSave.customHeaders;           
+        payloadTry.escape_query = settingsToSave.escapeQuery;
+        payloadTry.field_spec = settingsToSave.fieldSpec;
+        payloadTry.number_of_rows = settingsToSave.numberOfRows;
+        payloadTry.query_params = settingsToSave.selectedTry.queryParams;
+        payloadSearchEndpoint.search_engine = settingsToSave.searchEngine;
+        payloadSearchEndpoint.endpoint_url = settingsToSave.searchUrl;
+        payloadSearchEndpoint.api_method = settingsToSave.apiMethod;
+        payloadSearchEndpoint.custom_headers = settingsToSave.customHeaders;
 
         return $http.put('api/cases/' + currCaseNo + '/tries/' + currTryNo, payload)
           .then(function() {
 
             // Broadcast that settings for case have been updated
             var args = {
-              caseNo:   currCaseNo,
-              lastTry:  settingsToSave.selectedTry
+              caseNo: currCaseNo,
+              lastTry: settingsToSave.selectedTry
             };
             broadcastSvc.send('settings-updated', args);
 
             // navigate to what was selected in case try no changed
-            caseTryNavSvc.navigateTo({tryNo: settingsToSave.selectedTry.tryNo});
+            caseTryNavSvc.navigateTo({ tryNo: settingsToSave.selectedTry.tryNo });
           });
       };
 
-      this.setSettings = function (tries, selectedTryNo) {
+      this.setSettings = function(tries, selectedTryNo) {
         currSettings = new Settings(tries);
         currSettings.selectTry(selectedTryNo);
       };

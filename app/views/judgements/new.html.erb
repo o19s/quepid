@@ -28,7 +28,7 @@
   <div class="card">
     <div class="card-body">
       <h5 class="card-title">Leaderboard</h3>
-      <h6 class="card-subtitle mb-2 text-body-secondary">Who is closest to having all query/doc pairs judged</h6>
+      <h6 class="card-subtitle mb-2 text-body-secondary">Who is closest to having all <%= @book.query_doc_pairs.count %> query/doc pairs judged?</h6>
       <%=
       Vega.lite
         #.data([{judge: "A", judgements: 28}, {judge: "B", judgements: 55}, {judge: "C", judgements: 43}])
