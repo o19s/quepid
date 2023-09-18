@@ -10,6 +10,9 @@ module Admin
     # GET /admin/users.json
     # GET /admin/users.csv
     def index
+      bool = ActiveRecord::Type::Boolean.new
+      @shallow = bool.deserialize(params[:shallow] || true )
+
       @users = User.all
 
       respond_to do |format|
