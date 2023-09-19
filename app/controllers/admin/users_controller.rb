@@ -10,8 +10,7 @@ module Admin
     # GET /admin/users.json
     # GET /admin/users.csv
     def index
-      bool = ActiveRecord::Type::Boolean.new
-      @shallow = bool.deserialize(params[:shallow] || true )
+      @shallow = 'true' == params[:shallow]
 
       @users = User.all
 
@@ -45,8 +44,22 @@ module Admin
     def edit; end
 
     def create
-      @user = User.new user_params
+      params_to_use = user_params
+      if params[:password_encrypted].present?
+        params_to_use[:password] = 'blah'
+        params_to_use[:password_confirmation] = 'blah'
+      end
+
+      @user = User.new params_to_use
+
       if @user.save
+        if params[:password_encrypted].present?
+          # avoid the encrypt call back
+          # rubocop:disable Rails/SkipsModelValidations
+          @user.update_column(:password, params[:password_encrypted])
+          # rubocop:enable Rails/SkipsModelValidations
+        end
+
         redirect_to admin_user_path(@user)
       else
         render action: :new
@@ -55,9 +68,24 @@ module Admin
 
     # PATCH/PUT /admin/users/1
     # PATCH/PUT /admin/users/1.json
+    # rubocop:disable Metrics/MethodLength
     def update
       respond_to do |format|
-        if @user.update(user_params)
+        params_to_use = user_params
+
+        if params[:password_encrypted].present?
+          # avoid the encrypt call back
+          params_to_use[:password] = 'blah'
+          params_to_use[:password_confirmation] = 'blah'
+        end
+
+        if @user.update(params_to_use)
+          if params[:password_encrypted].present?
+            # avoid the encrypt call back
+            # rubocop:disable Rails/SkipsModelValidations
+            @user.update_column(:password, params[:password_encrypted])
+            # rubocop:enable Rails/SkipsModelValidations
+          end
           Analytics::Tracker.track_user_updated_by_admin_event @user
 
           format.html { redirect_to admin_user_path @user }
@@ -68,6 +96,7 @@ module Admin
         end
       end
     end
+    # rubocop:enable Metrics/MethodLength
 
     # DELETE /admin/users/1
     # DELETE /admin/users/1.json
