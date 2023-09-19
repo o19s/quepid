@@ -11,6 +11,7 @@ module Api
     include Authentication::CurrentCaseManager
     include Authentication::CurrentQueryManager
     include Authentication::CurrentTeamManager
+    include Authentication::CurrentBookManager
     include NotificationsManager
     include ApiKeyAuthenticatable
 

@@ -6,6 +6,7 @@ require 'analytics'
 class ApplicationController < ActionController::Base
   include Authentication::CurrentUserManager
   include Authentication::CurrentCaseManager
+  include Authentication::CurrentBookManager
 
   self.responder = ApplicationResponder
 
