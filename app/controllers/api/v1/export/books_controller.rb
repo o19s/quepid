@@ -8,6 +8,7 @@ module Api
         before_action :check_book
 
         def show
+          respond_with @book
         end
       end
     end

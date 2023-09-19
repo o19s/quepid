@@ -174,6 +174,7 @@ Rails.application.routes.draw do
 
       # Imports
       namespace :import do
+        resources :books, only: [ :create ]
         resources :ratings, only: [ :create ]
         namespace :queries do
           resources :information_needs, only: [ :create ], param: :case_id
@@ -182,6 +183,7 @@ Rails.application.routes.draw do
 
       # Exports
       namespace :export do
+        resources :books, only: [ :show ], param: :book_id
         resources :ratings, only: [ :show ], param: :case_id
         namespace :queries do
           resources :information_needs, only: [ :show ], param: :case_id

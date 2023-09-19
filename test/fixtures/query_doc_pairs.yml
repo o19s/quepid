@@ -82,7 +82,7 @@ jbm_qdp10:
   query_text: Action Movies
   position: 1
   doc_id: Moonraker
-  document_fields: MyTex
+  document_fields: '{"title":"Moonraker", "year":2023}'
   book: :james_bond_movies
   
 starwars_qdp1:
