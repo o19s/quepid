@@ -89,9 +89,61 @@ module Api
           assert_response :ok
 
           body = response.parsed_body
+          assert_not assigns(:export)
 
           assert_equal body['name'].size, book.name.size
           assert_equal body['query_doc_pairs'][0]['query'], book.query_doc_pairs[0].query_text
+          assert_nil body['query_doc_pairs'][0]['document_fields']
+        end
+
+        test 'returns book info with export specified' do
+          get :show, params: { id: book.id, export: false }
+          assert_response :ok
+
+          body = response.parsed_body
+          assert_not assigns(:export)
+
+          assert_equal body['name'].size, book.name.size
+          assert_equal body['query_doc_pairs'][0]['query'], book.query_doc_pairs[0].query_text
+          assert_nil body['query_doc_pairs'][0]['document_fields']
+        end
+
+        test 'returns detailed query_doc_pair and judgement info' do
+          get :show, params: { id: book.id, export: true }
+          assert_response :ok
+
+          body = response.parsed_body
+          puts body
+          assert assigns(:export)
+
+          assert_equal body['name'].size, book.name.size
+          assert_equal body['query_doc_pairs'][0]['query'], book.query_doc_pairs[0].query_text
+          assert_equal body['query_doc_pairs'][0]['document_fields'], book.query_doc_pairs[0].document_fields
+        end
+      end
+
+      describe 'Exporting a book in json' do
+        let(:book)        { books(:james_bond_movies) }
+        let(:judgement)   { judgements(:jbm_qdp10_judgement) }
+        let(:doug)        { users(:doug) }
+        let(:random_user) { users(:random) }
+
+        test 'the AR object ids are replaced with names' do
+          get :show, params: { id: book.id, export: true }
+          assert_response :ok
+          body = response.parsed_body
+          require 'json'
+          puts JSON.pretty_generate(body)
+          assert_nil body['book_id']
+          assert_not_nil body['name']
+
+          assert_nil body['scorer_id']
+          assert_not_nil body['scorer']
+          assert_nil body['scorer']['scorer_id']
+          assert_empty body['scorer']['teams']
+
+          assert_nil body['selection_strategy_id']
+          assert_not_nil body['selection_strategy']
         end
       end
 
