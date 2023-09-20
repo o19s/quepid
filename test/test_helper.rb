@@ -25,7 +25,7 @@ module ActiveSupport
     # Setup all fixtures in test/fixtures/*.yml for all tests in alphabetical order.
     fixtures :all
 
-    extend MiniTest::Spec::DSL
+    extend Minitest::Spec::DSL
 
     # Add more helper methods to be used by all tests here...
     def login_user user = nil
