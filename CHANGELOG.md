@@ -1,5 +1,25 @@
 # Changelog
 
+## 7.9.3 - 2023-09-20
+
+You can now export and import Case's and Book's cleanly from one Quepid to another Quepid, with proper error handling.  You can also use this to export a Case or Book, make a bunch of changes externally using other tools, and then bring it back in.
+
+Get a dump file named `case_25.json` via:
+
+```
+python case_export.py --case_id=25 --root_url=https://app.quepid.com --access_token=YOUR_ACCESS_TOKEN
+```
+
+And bring it back in via:
+
+```
+python case_import.py --case_file=case_25.json --root_url=http://localhost:3000 --access_token=YOUR_ACCESS_TOKEN
+```
+
+More docs and some sample scripts coming soon.
+
+https://github.com/o19s/quepid/pull/834 by @epugh.
+
 ## 7.9.0 - 2023-09-12
 
 * In running the Case --> Book --> Case lifecycle, we found that the automatic creation of Judgements for a Book from Ratings for a Case was creating extra averaged ratings when a Case supports multiple raters.  (it's fine if there is only one rater).   This was messing up the scores.  https://github.com/o19s/quepid/pull/827 by @epugh fixes this by making it an Advanced option, and introducing a Edit Book option to delete judgements by specific judge.  Thanks @david-fisher for figuring this out.
