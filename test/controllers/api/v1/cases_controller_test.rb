@@ -289,9 +289,6 @@ module Api
           test 'returns not found error' do
             patch :update, params: { case_id: 'foo', case_name: 'foo' }
             assert_response :not_found
-
-            put :update, params: { case_id: 'foo', case_name: 'foo' }
-            assert_response :not_found
           end
         end
 

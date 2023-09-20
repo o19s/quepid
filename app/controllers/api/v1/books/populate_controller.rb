@@ -46,16 +46,6 @@ module Api
         # rubocop:enable Metrics/AbcSize
         # rubocop:enable Metrics/MethodLength
         # rubocop:enable Layout/LineLength
-
-        private
-
-        def find_book
-          @book = current_user.books_involved_with.where(id: params[:book_id]).first
-        end
-
-        def check_book
-          render json: { message: 'Book not found!' }, status: :not_found unless @book
-        end
       end
     end
   end

@@ -165,12 +165,9 @@ class BooksController < ApplicationController
 
   private
 
+  # This find_book is different because we use :id, not :book_id.
   def find_book
     @book = current_user.books_involved_with.where(id: params[:id]).first
-  end
-
-  def check_book
-    render json: { message: 'Book not found!' }, status: :not_found unless @book
   end
 
   def book_params

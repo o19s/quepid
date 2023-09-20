@@ -54,14 +54,6 @@ module Api
         params.require(:query_doc_pair).permit(:document_fields, :position, :query_text, :doc_id)
       end
 
-      def find_book
-        @book = current_user.books_involved_with.where(id: params[:book_id]).first
-      end
-
-      def check_book
-        render json: { message: 'Book not found!' }, status: :not_found unless @book
-      end
-
       def set_query_doc_pair
         @query_doc_pair = @book.query_doc_pairs.where(id: params[:id]).first
       end
