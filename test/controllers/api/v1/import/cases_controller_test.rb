@@ -89,13 +89,45 @@ module Api
             assert_nil Case.find_by(case_name: 'test case')
           end
 
+          test 'alerts when a owner associated with a case does not exist' do
+            data = {
+              case_name:   'test case',
+              owner_email: 'fakeowner@fake.com',
+              scorer:      {
+                name: 'fake scorer',
+
+              },
+              try:         acase.tries.last.as_json,
+              queries:     [],
+            }
+
+            post :create, params: { case: data, format: :json }
+
+            assert_response :bad_request
+
+            body = response.parsed_body
+
+            assert_includes body['base'],
+                            "User with email 'fakeowner@fake.com' needs to be migrated over first."
+            assert_nil Case.find_by(case_name: 'test case')
+          end
+
           test 'creates a new book' do
             data = {
-              case_name: 'test case',
-              scorer:    acase.scorer.as_json(only: [ :name ]),
-              try:       acase.tries.last.as_json(only: [ :api_method, :custom_headers, :escape_query,
-                                                          :search_url, :try_number ]),
-              queries:   [
+              case_name:   'test case',
+              owner_email: user.email,
+              scorer:      acase.scorer.as_json(only: [ :name ]),
+
+              try:         {
+                custom_headers:    nil,
+                curator_variables: [ {
+                  name:  'anInt',
+                  value: 1,
+                } ],
+                escape_query:      true,
+                api_method:        'JSONP',
+              },
+              queries:     [
                 {
                   arranged_at:      1,
                   arranged_next:    nil,
@@ -142,6 +174,8 @@ module Api
             assert_equal 2, @case.queries.count
             assert_equal 2, @case.ratings.count
             assert_equal 1, @case.tries.count
+            assert_equal 1, @case.tries.first.curator_variables.count
+            assert_equal user, @case.owner
           end
         end
       end

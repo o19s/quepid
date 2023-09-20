@@ -9,31 +9,29 @@ module Api
         # rubocop:disable Metrics/CyclomaticComplexity
         # rubocop:disable Metrics/PerceivedComplexity
         def create
+          list_of_emails_of_users = []
           params_to_use = case_params.to_h.deep_symbolize_keys
 
           @case = Case.new
 
-          @case.owner = current_user
+          list_of_emails_of_users << params_to_use[:owner_email]
 
           scorer_name = params_to_use[:scorer][:name]
           unless Scorer.exists?(name: scorer_name)
             @case.errors.add(:scorer, "Scorer with name '#{scorer_name}' needs to be migrated over first.")
           end
 
-          if params_to_use[:queries]
-            list_of_emails_of_users = []
-            params_to_use[:queries].each do |query|
-              next unless query[:ratings]
+          params_to_use[:queries]&.each do |query|
+            next unless query[:ratings]
 
-              query[:ratings].each do |rating|
-                list_of_emails_of_users << rating[:user_email]
-              end
+            query[:ratings].each do |rating|
+              list_of_emails_of_users << rating[:user_email] if rating[:user_email].present?
             end
-            list_of_emails_of_users.uniq!
-            list_of_emails_of_users.each do |email|
-              unless User.exists?(email: email)
-                @case.errors.add(:base, "User with email '#{email}' needs to be migrated over first.")
-              end
+          end
+
+          list_of_emails_of_users.uniq.each do |email|
+            unless User.exists?(email: email)
+              @case.errors.add(:base, "User with email '#{email}' needs to be migrated over first.")
             end
           end
 
@@ -47,6 +45,8 @@ module Api
 
           @case.scorer = Scorer.find_by(name: scorer_name)
 
+          @case.owner = User.find_by(email: params_to_use[:owner_email])
+
           # For some reason we can't do @case.queries.build with out forcing a save.
           # Works fine with book however.
           unless @case.save
@@ -59,14 +59,18 @@ module Api
             next unless query[:ratings]
 
             query[:ratings].each do |rating|
-              rating[:user] = User.find_by(email: rating[:user_email])
+              rating[:user] = User.find_by(email: rating[:user_email]) if rating[:user_email].present?
               new_query.ratings.build(rating.except(:user_email))
             end
           end
 
           params_to_use[:try][:try_number] = 1
 
-          @case.tries.first.update(params_to_use[:try])
+          @case.tries.first.update(params_to_use[:try].except(:curator_variables))
+          params_to_use[:try][:curator_variables].each do |curator_variable|
+            # not sure why build and then the @case.save doesn't cascade down.
+            @case.tries.first.curator_variables.create curator_variable
+          end
 
           if @case.save
             respond_with @case

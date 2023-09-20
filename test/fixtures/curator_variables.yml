@@ -36,3 +36,8 @@ a_float:
 an_int:
   name:   anInt
   value:  1
+
+another_int:
+  name:   anInt
+  value:  1
+  try:    :for_case_queries_case

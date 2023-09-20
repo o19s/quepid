@@ -16,6 +16,6 @@ end
 
 unless acase.tries.empty?
   json.try do
-    json.partial! 'try', try: acase.tries.last
+    json.partial! 'try', try: acase.tries.first
   end
 end
