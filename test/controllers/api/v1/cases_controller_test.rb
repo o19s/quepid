@@ -489,7 +489,7 @@ module Api
           cases = body['all_cases']
 
           assert cases.length == doug.cases.where(archived: true).length
-          assert_equal cases.first['case_name'],  archived.case_name
+          assert_equal cases.first['case_name'], archived.case_name
           assert_equal cases.first['case_id'], archived.id
         end
 
@@ -502,7 +502,7 @@ module Api
           cases = body['all_cases']
 
           assert cases.length == doug.cases.where(archived: true).length
-          assert_equal cases.first['case_name'],  archived.case_name
+          assert_equal cases.first['case_name'], archived.case_name
           assert_equal cases.first['case_id'], archived.id
         end
 
