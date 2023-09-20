@@ -58,9 +58,6 @@ gem 'rails-html-sanitizer'
 
 gem 'vega', '~> 0.3.0'
 
-
-
-
 group :development, :test do
   gem 'annotate'
   gem 'bullet'
