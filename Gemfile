@@ -7,6 +7,7 @@ ruby '3.2.2'
 gem 'activerecord-import', '>= 1.0.7'
 gem 'acts_as_list', '>= 1.0.1'
 gem 'angular-rails-templates', '>= 1.0.0.beta'
+gem 'apipie-rails', '~> 1.2'
 gem 'bcrypt', '~> 3.1.7'
 gem 'sassc-rails', '~> 2.1'
 gem 'turbolinks', '~> 5'
@@ -51,10 +52,14 @@ gem 'omniauth-keycloak'
 gem 'omniauth-google-oauth2'
 gem 'omniauth-rails_csrf_protection', '~> 1.0'
 
+gem 'prophet-rb', '~> 0.5.0'
 gem 'rails-healthcheck', '~> 1.4'
 gem 'rails-html-sanitizer'
 
 gem 'vega', '~> 0.3.0'
+
+
+
 
 group :development, :test do
   gem 'annotate'
@@ -93,7 +98,3 @@ group :test do
   gem 'selenium-webdriver'
   gem 'webdrivers'
 end
-
-gem 'prophet-rb', '~> 0.4.2'
-
-gem 'apipie-rails', '~> 1.2'
