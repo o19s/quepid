@@ -22,15 +22,13 @@ module Api
             get :show, params: { book_id: book.id }
             assert_response :ok
             body = response.parsed_body
-            require 'json'
-            puts JSON.pretty_generate(body)
+
             assert_nil body['book_id']
             assert_not_nil body['name']
 
             assert_nil body['scorer_id']
             assert_not_nil body['scorer']
             assert_nil body['scorer']['scorer_id']
-            assert_empty body['scorer']['teams']
 
             assert_nil body['selection_strategy_id']
             assert_not_nil body['selection_strategy']

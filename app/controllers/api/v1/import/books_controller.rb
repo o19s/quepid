@@ -4,9 +4,6 @@ module Api
   module V1
     module Import
       class BooksController < Api::ApiController
-        # before_action :find_book
-        # before_action :check_case
-
         # rubocop:disable Metrics/MethodLength
         # rubocop:disable Metrics/AbcSize
         # rubocop:disable Metrics/CyclomaticComplexity
@@ -22,7 +19,7 @@ module Api
 
           scorer_name = params_to_use[:scorer][:name]
           unless Scorer.exists?(name: scorer_name)
-            @book.errors.add(:base, "Scorer with name '#{scorer_name}' needs to be migrated over first.")
+            @book.errors.add(:scorer, "Scorer with name '#{scorer_name}' needs to be migrated over first.")
           end
 
           selection_strategy_name = params_to_use[:selection_strategy][:name]

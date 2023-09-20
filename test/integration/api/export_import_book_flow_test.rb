@@ -8,7 +8,7 @@ class ExportImportBookFlowTest < ActionDispatch::IntegrationTest
   let(:book) { books(:james_bond_movies) }
   let(:team) { teams(:shared) }
 
-  test 'Export a complete book, and then modify the name, the scorer, and reimport it with same users' do
+  test 'Export a complete book, and then modify the name, and reimport it with same users' do
     post users_login_url params: { user: { email: 'doug@example.com', password: 'password' }, format: :json }
 
     # export the book
@@ -23,11 +23,7 @@ class ExportImportBookFlowTest < ActionDispatch::IntegrationTest
     # Modify the book into a NEW book and import.
     response_json['name'] = 'New James Bond Movies'
 
-    puts JSON.pretty_generate(response_json)
-
     post api_import_books_url params: { team_id: team.id, book: response_json, format: :json }
-
-    puts response.parsed_body
 
     new_book = Book.find(response.parsed_body['id'])
     assert_not_nil(new_book)
