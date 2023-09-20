@@ -13,7 +13,6 @@ angular.module('QuepidApp')
     'queriesSvc',
     'queryViewSvc',
     'querySnapshotSvc',
-    'diffResultsSvc',
     'caseSvc',
     'scorerSvc',
     'configurationSvc',
@@ -28,7 +27,6 @@ angular.module('QuepidApp')
       queriesSvc,
       queryViewSvc,
       querySnapshotSvc,
-      diffResultsSvc,
       caseSvc,
       scorerSvc,
       configurationSvc

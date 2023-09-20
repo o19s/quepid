@@ -10,7 +10,7 @@
     "@rails/actioncable": "7.0.4-3",
     "@rails/activestorage": "7.0.4-3",
     "@rails/ujs": "7.0.4-3",
-    "ace-builds": "1.23.0",
+    "ace-builds": "1.24.2",
     "angular": "~1.8.3",
     "angular-animate": "^1.8.3",
     "angular-cookies": "~1.8.3",
@@ -39,7 +39,7 @@
     "ngclipboard": "^2.0.0",
     "party-js": "^2.2.0",
     "popper.js": "^1.16.1",
-    "splainer-search": "2.24.0",
+    "splainer-search": "2.25.0",
     "tether-shepherd": "latest",
     "turbolinks": "^5.2.0",
     "vega": "5.25.0"

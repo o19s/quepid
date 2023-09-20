@@ -4,9 +4,9 @@ class HomeController < ApplicationController
   # rubocop:disable Metrics/AbcSize
   def show
     # @cases = @current_user.cases.not_archived.includes([ :scores ])
-    @cases = @current_user.cases.not_archived.recent.uniq
+    @cases = @current_user.cases_involved_with.not_archived
 
-    @most_recent_cases = @cases[0...4].sort_by(&:case_name)
+    @most_recent_cases = @current_user.cases_involved_with.not_archived.recent.limit(4).sort_by(&:case_name)
 
     @most_recent_books = []
     @lookup_for_books = {}

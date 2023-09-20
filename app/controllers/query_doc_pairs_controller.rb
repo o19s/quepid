@@ -5,7 +5,7 @@ class QueryDocPairsController < ApplicationController
   before_action :find_book
 
   def index
-    @query_doc_pairs = @book.query_doc_pairs
+    @query_doc_pairs = @book.query_doc_pairs.order(:query_text )
   end
 
   def show; end
@@ -48,9 +48,5 @@ class QueryDocPairsController < ApplicationController
 
   def query_doc_pair_params
     params.require(:query_doc_pair).permit(:query_text, :position, :document_fields, :doc_id)
-  end
-
-  def find_book
-    @book = current_user.books_involved_with.where(id: params[:book_id]).first
   end
 end

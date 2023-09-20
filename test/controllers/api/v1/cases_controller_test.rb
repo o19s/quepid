@@ -289,9 +289,6 @@ module Api
           test 'returns not found error' do
             patch :update, params: { case_id: 'foo', case_name: 'foo' }
             assert_response :not_found
-
-            put :update, params: { case_id: 'foo', case_name: 'foo' }
-            assert_response :not_found
           end
         end
 
@@ -492,7 +489,7 @@ module Api
           cases = body['all_cases']
 
           assert cases.length == doug.cases.where(archived: true).length
-          assert_equal cases.first['case_name'],  archived.case_name
+          assert_equal cases.first['case_name'], archived.case_name
           assert_equal cases.first['case_id'], archived.id
         end
 
@@ -505,7 +502,7 @@ module Api
           cases = body['all_cases']
 
           assert cases.length == doug.cases.where(archived: true).length
-          assert_equal cases.first['case_name'],  archived.case_name
+          assert_equal cases.first['case_name'], archived.case_name
           assert_equal cases.first['case_id'], archived.id
         end
 

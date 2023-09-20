@@ -5,12 +5,10 @@
 angular.module('QuepidApp')
   .controller('CasesCtrl', [
     '$scope',
-    '$q',
     'broadcastSvc',
     'caseSvc', 'caseTryNavSvc',
     function (
       $scope,
-      $q,
       broadcastSvc,
       caseSvc, caseTryNavSvc
     ) {

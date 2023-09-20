@@ -5,15 +5,11 @@
 angular.module('QuepidApp')
   .controller('FrogReportCtrl', [
     '$uibModal',
-    '$rootScope',
-    '$log',
     'flash',
     'caseSvc',
     'queriesSvc',
     function (
       $uibModal,
-      $rootScope,
-      $log,
       flash,
       caseSvc,
       queriesSvc

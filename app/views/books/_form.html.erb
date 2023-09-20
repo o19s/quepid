@@ -34,6 +34,11 @@
     <%= form.label :selection_strategy_id, class: 'form-label' %>
     <%= form.collection_select(:selection_strategy_id, SelectionStrategy.all, :id, :descriptive_name, { prompt: true }, required: true, class: 'form-control') %>
   </div>
+  <div class="mb-3">
+    <%= form.label :show_rank, class: 'form-check-label' %>
+    <%= form.check_box :show_rank, class: 'form-check-input' %>
+    <div class="form-text">Typically you don't want to convey to the Judge what Rank (or position) a Document was returned at.  If you are comparing across judging to an existing SERP page you may need this info.</div>
+  </div>  
 
   <div class="mb-3">
     <div class="form-check form-switch">
@@ -50,47 +55,4 @@
     <%= form.submit %>
   </div>
 
-<% end %>
-
-<hr/>
-<p/>
-<h3> Populate This Book from other Books</h3>
-<p class="form-text">
-  Combine the query/doc pairs and individual ratings from other books into this book.
-  It will update any missing query/doc pairs and merge in ratings.
-</p>
-
-<% if book.new_record? %>
-  <div class="alert alert-info" role="alert">
-    You must first create the book before populating it!
-  </div>
-<% else %>
-  <%= form_for(book, url: combine_book_path(book)) do |form| %>
-    <ul class="list-group">  
-      <% @current_user.books_involved_with.includes([:scorer,:rated_query_doc_pairs]).where.not(id: book.id).each do |book| %>
-        <li class="list-group-item list-group-item-action">
-          <div class="d-flex w-100 justify-content-between align-items-center">        
-            <h5 class="mb-1">
-              <%= check_box('book_ids', book.id, class: 'form-check-input me-1', disabled: book.rated_query_doc_pairs.empty?) %>
-              <label for="book_ids_<%= book.id %>" class="form-check-label stretched">
-              <%= book.name %>
-              </label>
-            </h5>
-            <label for="book_ids_<%= book.id %>" class="form-check-label stretched">
-            <span class="badge bg-primary rounded-pill"><%= book.rated_query_doc_pairs.count %> rated query/doc pairs</span>
-            </label>
-          </div>
-          <label for="book_ids_<%= book.id %>" class="form-check-label stretched">
-            <p class="mb-1">Uses a <%= book.scorer.name %> scorer and <%= book.support_implicit_judgements? ? 'supports':'does not support' %> implicit judgements.</p>
-            <small class="text-muted">Updated <%= time_ago_in_words book.updated_at %> ago</small>
-          </label>
-        </li>
-      <% end %>
-    </ul>
-    <p>
-    <div class="actions">
-      <%= form.submit 'Merge these Books into this Book' %>
-    </div>
-    </p>
-  <% end %>
 <% end %>

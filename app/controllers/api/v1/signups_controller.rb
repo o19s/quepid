@@ -21,9 +21,6 @@ module Api
             @user.assign_attributes(user_params_to_save)
           else
             @user = User.new user_params_to_save
-            # in this flow, we have a new user joining, so we create a empty case for them, which
-            # on the core_controller.rb triggers the bootstrap and the new case wizard.
-            @user.cases.build case_name: "Case #{@user.cases.size}"
           end
         end
 

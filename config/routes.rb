@@ -5,7 +5,6 @@ require 'sidekiq/web'
 # rubocop:disable Metrics/BlockLength
 Rails.application.routes.draw do
   apipie
-  # get 'home/show'
   root 'home#show'
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
@@ -32,6 +31,7 @@ Rails.application.routes.draw do
 
   resources :cases, only: [] do
     resource :book
+    resources :ratings, only: [ :index ]
   end
 
   resources :books do
@@ -44,6 +44,8 @@ Rails.application.routes.draw do
     get 'skip_judging' => 'judgements#skip_judging'
     member do
       patch 'combine'
+      patch 'assign_anonymous'
+      delete 'delete_ratings_by_assignee'
     end
   end
 
@@ -60,6 +62,7 @@ Rails.application.routes.draw do
     get 'tries_visualization/:case_id/vega_data' => 'tries_visualization#vega_data', as: :tries_visualization_vega_data
     resources :cases do
       resource :visibility, only: [ :update ], module: :cases
+      resource :duplicate_scores, only: [ :show ], module: :cases
     end
     get 'sparkline/vega_specification' => 'sparkline#vega_specification',
         as: :sparkline_vega_specification
@@ -143,7 +146,7 @@ Rails.application.routes.draw do
         resources :annotations, except: [ :show ]
       end
 
-      resources :books, only: [ :show ] do
+      resources :books, only: [ :show, :create, :update, :destroy ] do
         put '/populate' => 'books/populate#update'
         resources :cases do
           put 'refresh' => 'books/refresh#update'
@@ -172,6 +175,8 @@ Rails.application.routes.draw do
 
       # Imports
       namespace :import do
+        resources :books, only: [ :create ]
+        resources :cases, only: [ :create ]
         resources :ratings, only: [ :create ]
         namespace :queries do
           resources :information_needs, only: [ :create ], param: :case_id
@@ -180,6 +185,8 @@ Rails.application.routes.draw do
 
       # Exports
       namespace :export do
+        resources :books, only: [ :show ], param: :book_id
+        resources :cases, only: [ :show ], param: :case_id
         resources :ratings, only: [ :show ], param: :case_id
         namespace :queries do
           resources :information_needs, only: [ :show ], param: :case_id

@@ -60,6 +60,8 @@ class Try < ApplicationRecord
       es_args
     when 'os'
       os_args
+    when 'vectara'
+      vectara_args
     end
   end
 
@@ -88,6 +90,11 @@ class Try < ApplicationRecord
   end
 
   def os_args
+    # Use the EsArgParser as currently queries are the same
+    EsArgParser.parse(query_params, curator_vars_map)
+  end
+
+  def vectara_args
     # Use the EsArgParser as currently queries are the same
     EsArgParser.parse(query_params, curator_vars_map)
   end

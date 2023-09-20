@@ -1,8 +1,11 @@
 # frozen_string_literal: true
 
+# rubocop:disable Metrics/ClassLength
 class BooksController < ApplicationController
-  before_action :find_book, only: [ :show, :edit, :update, :destroy, :combine ]
-  before_action :check_book, only: [ :show, :edit, :update, :destroy, :combine ]
+  before_action :find_book,
+                only: [ :show, :edit, :update, :destroy, :combine, :assign_anonymous, :delete_ratings_by_assignee ]
+  before_action :check_book,
+                only: [ :show, :edit, :update, :destroy, :combine, :assign_anonymous, :delete_ratings_by_assignee ]
 
   respond_to :html
 
@@ -12,7 +15,12 @@ class BooksController < ApplicationController
   end
 
   def show
-    @cases = Case.where(book_id: @book.id)
+    @count_of_anonymous_book_judgements = @book.judgements.where(user: nil).count
+    @count_of_anonymous_case_judgements = 0
+    @book.cases.each do |kase|
+      @count_of_anonymous_case_judgements += kase.ratings.where(user: nil).count
+    end
+    @cases = @book.cases
     @leaderboard_data = []
     unique_judges = @book.judgements.rateable.preload(:user).collect(&:user).uniq
     unique_judges.each do |judge|
@@ -69,7 +77,7 @@ class BooksController < ApplicationController
     end
 
     if books.any? { |b| b.scorer.scale != @book.scorer.scale }
-      redirect_to books_path,
+      redirect_to book_path(@book),
                   :alert => "One of the books chosen doesn't have a scorer with the scale #{@book.scorer.scale}" and return
     end
 
@@ -107,9 +115,9 @@ class BooksController < ApplicationController
     end
 
     if @book.save
-      redirect_to books_path, :notice => "Combined #{query_doc_pair_count} query/doc pairs."
+      redirect_to book_path(@book), :notice => "Combined #{query_doc_pair_count} query/doc pairs."
     else
-      redirect_to books_path,
+      redirect_to book_path(@book),
                   :alert => "Could not merge due to errors: #{@book.errors.full_messages.to_sentence}. #{query_doc_pair_count} query/doc pairs."
     end
   end
@@ -119,17 +127,53 @@ class BooksController < ApplicationController
   # rubocop:enable Metrics/PerceivedComplexity
   # rubocop:enable Layout/LineLength
 
+  # rubocop:disable Metrics/MethodLength
+  def assign_anonymous
+    assignee = @book.team.members.where(id: params[:assignee_id]).take
+    @book.judgements.where(user: nil).each do |judgement|
+      judgement.user = assignee
+      # if we are mapping a user to a judgement,
+      # and they have already judged that query_doc_pair, then just delete it.
+      if !judgement.valid? && (judgement.errors.added? :user_id, :taken, value: assignee.id)
+        judgement.delete
+      else
+        judgement.save!
+      end
+    end
+    @book.cases.each do |kase|
+      kase.ratings.where(user: nil).each do |rating|
+        rating.user = assignee
+        rating.save!
+      end
+    end
+
+    redirect_to book_path(@book), :notice => "Assigned #{assignee.fullname} to ratings and judgements."
+  end
+  # rubocop:enable Metrics/MethodLength
+
+  def delete_ratings_by_assignee
+    assignee = @book.team.members.where(id: params[:assignee_id]).take
+
+    judgements_to_delete = @book.judgements.where(user: assignee)
+
+    judgements_count = judgements_to_delete.count
+
+    judgements_to_delete.destroy_all
+
+    redirect_to book_path(@book), :notice => "Deleted #{judgements_count} judgements belonging to #{assignee.fullname}."
+  end
+
   private
 
+  # This find_book is different because we use :id, not :book_id.
   def find_book
     @book = current_user.books_involved_with.where(id: params[:id]).first
   end
 
-  def check_book
-    render json: { message: 'Book not found!' }, status: :not_found unless @book
-  end
-
   def book_params
-    params.require(:book).permit(:team_id, :scorer_id, :selection_strategy_id, :name, :support_implicit_judgements)
+    params.require(:book).permit(:team_id, :scorer_id, :selection_strategy_id, :name, :support_implicit_judgements,
+                                 :show_rank)
   end
 end
+
+# rubocop:enable Metrics/ClassLength
