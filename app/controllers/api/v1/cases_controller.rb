@@ -7,6 +7,13 @@ module Api
       before_action :case_with_all_the_bells_whistles, only: [ :show ]
       before_action :check_case, only: [ :show, :update, :destroy ]
 
+      def_param_group :case do
+        param :case_name, String
+        param :scorer_id, Integer
+        param :archived, [ true, false ]
+        param :book_id, Integer
+      end
+
       # Spiking out can we make an API public?
       def authenticate_api!
         set_case
@@ -18,6 +25,20 @@ module Api
 
       # rubocop:disable Metrics/MethodLength
       # rubocop:disable Metrics/AbcSize
+      api :GET, '/api/cases',
+          'List all cases to which the user has access.'
+      error :code => 401, :desc => 'Unauthorized'
+      param :archived, [ true, false ],
+            :desc          => 'Whether or not to include archived cases in the response.',
+            :required      => false,
+            :default_value => false
+      param :sortBy, String,
+            :desc     => 'Sort the cases returned by any field on the case object, in ascending order.',
+            :required => false
+      param :deep, [ true, false ],
+            :desc          => '', # TODO: Unsure of what deep adds, it isn't used in the body below.
+            :required      => false,
+            :default_value => false
       def index
         bool = ActiveRecord::Type::Boolean.new
 
@@ -46,14 +67,20 @@ module Api
         respond_with @cases
       end
 
-      api :GET, '/api/cases/:case_id'
-      param :id, :number, desc: 'id of the requested case'
+      api :GET, '/api/cases/:case_id',
+          'Show the case with the given ID.'
+      param :id, :number,
+            desc: 'The ID of the requested case.'
       def show
         respond_with @case
       end
       # rubocop:enable Metrics/MethodLength
       # rubocop:enable Metrics/AbcSize
 
+      api :POST, '/api/cases', 'Create a new case.'
+      param :id, :number,
+            desc: 'The ID of the requested case.'
+      param_group :case
       def create
         @case = current_user.cases.build case_params
 
@@ -67,6 +94,10 @@ module Api
       end
 
       # rubocop:disable Metrics/MethodLength
+      api :PUT, '/api/cases/:case_id', 'Update a given case.'
+      param :id, :number,
+            desc: 'The ID of the requested case.'
+      param_group :case
       def update
         update_params = case_params
         update_params[:scorer_id] = Scorer.system_default_scorer.id if default_scorer_removed? update_params
@@ -89,6 +120,7 @@ module Api
       end
       # rubocop:enable Metrics/MethodLength
 
+      api :DELETE, '/api/cases/:case_id', 'Delete a given case.'
       def destroy
         @case.really_destroy
         Analytics::Tracker.track_case_deleted_event current_user, @case
