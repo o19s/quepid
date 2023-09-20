@@ -1,6 +1,6 @@
 # Changelog
 
-## 7.9.3 - 2023-09-20
+## 7.9.2 - 2023-09-20
 
 You can now export and import Case's and Book's cleanly from one Quepid to another Quepid, with proper error handling.  You can also use this to export a Case or Book, make a bunch of changes externally using other tools, and then bring it back in.
 
