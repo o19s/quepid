@@ -58,7 +58,8 @@ class CaseScoreManager
   def same_score_source last_score, score_data
     return false if last_score.blank?
     return false if last_score.try_id.blank?
-    return false if last_score.try_id != score_data[:try_id].to_i
+
+    return false if last_score.try.try_number != score_data[:try_number].to_i
     return false if last_score.user_id != score_data[:user_id].to_i
 
     true
@@ -74,6 +75,7 @@ class CaseScoreManager
 
   def same_score? last_score, score_data
     return false if last_score.updated_at.blank?
+
     return false unless same_number? last_score, score_data
     return false if     last_score_old? last_score
     return false if     added_query? last_score, score_data
@@ -89,13 +91,26 @@ class CaseScoreManager
     last_score.updated_at < 1.day.ago
   end
 
+  # rubocop:disable Metrics/CyclomaticComplexity
+  # rubocop:disable Metrics/PerceivedComplexity
   def added_query? last_score, score_data
     return true  if last_score.nil? && !score_data.empty?
     return false if last_score.nil? && score_data.empty?
     return false if queries_empty?(last_score.queries) && queries_empty?(score_data[:queries])
 
-    last_score.queries != score_data[:queries]
+    last_score_queries = {}
+    score_data_queries = {}
+    last_score.queries.each do |key, value|
+      last_score_queries[key.to_s] = value.symbolize_keys
+    end
+    score_data[:queries].each do |key, value|
+      score_data_queries[key.to_s] = value.symbolize_keys
+    end
+
+    last_score_queries != score_data_queries
   end
+  # rubocop:enable Metrics/CyclomaticComplexity
+  # rubocop:enable Metrics/PerceivedComplexity
 
   def queries_empty? queries
     queries.blank?

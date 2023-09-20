@@ -85,6 +85,7 @@ GEM
       rake (>= 10.4, < 14.0)
     ansi (1.5.0)
     ast (2.4.2)
+    base64 (0.1.1)
     bcrypt (3.1.18)
     benchmark-ips (2.12.0)
     bindata (2.4.15)
@@ -106,7 +107,8 @@ GEM
       regexp_parser (>= 1.5, < 3.0)
       xpath (~> 3.2)
     choice (0.2.0)
-    colorize (0.8.1)
+    cmdstan (0.2.2)
+    colorize (1.1.0)
     concurrent-ruby (1.2.2)
     connection_pool (2.4.0)
     cookies_eu (1.7.8)
@@ -212,7 +214,7 @@ GEM
       builder
       minitest (>= 5.0)
       ruby-progressbar
-    mocha (2.0.2)
+    mocha (2.1.0)
       ruby2_keywords (>= 0.0.5)
     msgpack (1.6.1)
     multi_xml (0.6.0)
@@ -231,6 +233,7 @@ GEM
       racc (~> 1.4)
     nokogiri (1.15.2-x86_64-linux)
       racc (~> 1.4)
+    numo-narray (0.9.2.1)
     oauth2 (2.0.9)
       faraday (>= 0.17.3, < 3.0)
       jwt (>= 1.0, < 3.0)
@@ -267,6 +270,10 @@ GEM
     postmark-rails (0.22.1)
       actionmailer (>= 3.0.0)
       postmark (>= 1.21.3, < 2.0)
+    prophet-rb (0.4.2)
+      cmdstan (>= 0.2)
+      numo-narray (>= 0.9.1.7)
+      rover-df
     public_suffix (5.0.1)
     puma (6.3.0)
       nio4r (~> 2.0)
@@ -334,8 +341,11 @@ GEM
     responders (3.1.0)
       actionpack (>= 5.2)
       railties (>= 5.2)
-    rexml (3.2.5)
-    rubocop (1.54.1)
+    rexml (3.2.6)
+    rover-df (0.3.4)
+      numo-narray (>= 0.9.1.9)
+    rubocop (1.56.2)
+      base64 (~> 0.1.1)
       json (~> 2.3)
       language_server-protocol (>= 3.17.0)
       parallel (~> 1.10)
@@ -343,7 +353,7 @@ GEM
       rainbow (>= 2.2.2, < 4.0)
       regexp_parser (>= 1.8, < 3.0)
       rexml (>= 3.2.5, < 4.0)
-      rubocop-ast (>= 1.28.0, < 2.0)
+      rubocop-ast (>= 1.28.1, < 2.0)
       ruby-progressbar (~> 1.7)
       unicode-display_width (>= 2.4.0, < 3.0)
     rubocop-ast (1.29.0)
@@ -368,7 +378,7 @@ GEM
       sprockets (> 3.0)
       sprockets-rails
       tilt
-    selenium-webdriver (4.8.6)
+    selenium-webdriver (4.11.0)
       rexml (~> 3.2, >= 3.2.5)
       rubyzip (>= 1.2.2, < 3.0)
       websocket (~> 1.0)
@@ -472,6 +482,7 @@ DEPENDENCIES
   omniauth-keycloak
   omniauth-rails_csrf_protection (~> 1.0)
   postmark-rails
+  prophet-rb (~> 0.4.2)
   puma
   pundit
   rack-cors (~> 2.0)

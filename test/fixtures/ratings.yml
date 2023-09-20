@@ -43,3 +43,14 @@ rating_with_rating:
 rating_without_rating:
   doc_id: '234'
   query:  :query_with_empty_ratings
+  
+second_query_rating1:
+  query: :second_query
+  doc_id: "doca"
+  rating: 3
+  
+second_query_rating2:
+  query: :second_query
+  user:  :random
+  doc_id: "docb"
+  rating: 1

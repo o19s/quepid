@@ -13,7 +13,6 @@ angular.module('QuepidApp')
     'queriesSvc',
     'queryViewSvc',
     'querySnapshotSvc',
-    'diffResultsSvc',
     'caseSvc',
     'scorerSvc',
     'configurationSvc',
@@ -28,7 +27,6 @@ angular.module('QuepidApp')
       queriesSvc,
       queryViewSvc,
       querySnapshotSvc,
-      diffResultsSvc,
       caseSvc,
       scorerSvc,
       configurationSvc
@@ -241,18 +239,23 @@ angular.module('QuepidApp')
         if ( isNaN(tryNo) ) {  // If we didn't specify a try, then we need to get the latest
           caseSvc.get(caseNo)
             .then(function(acase) {
-
-              tryNo = acase.lastTry;
-              console.log('We do not have a tryNo, so we grabbed the lastTry from the case, and using it as the id:' + tryNo);
-              lastScoreTracker = {
-                'score':      $scope.queries.avgQuery.currentScore.score,
-                'all_rated':  $scope.queries.avgQuery.currentScore.allRated,
-                'try_number': tryNo,
-                'queries':    $scope.queries.avgQuery.currentScore.queries,
-              };
-
-              $log.info('sending score information to mothership');
-              caseSvc.trackLastScore(caseNo, lastScoreTracker);
+              if (angular.isUndefined(acase)){
+                $log.info('Did not find a case for ' + caseNo + ' and therefore not scoring');
+              }
+              else {
+                tryNo = acase.lastTry;
+              
+                $log.info('We do not have a tryNo, so we grabbed the lastTry from the case, and using it as the id:' + tryNo);
+                lastScoreTracker = {
+                  'score':      $scope.queries.avgQuery.currentScore.score,
+                  'all_rated':  $scope.queries.avgQuery.currentScore.allRated,
+                  'try_number': tryNo,
+                  'queries':    $scope.queries.avgQuery.currentScore.queries,
+                };
+  
+                $log.info('sending score information to mothership');
+                caseSvc.trackLastScore(caseNo, lastScoreTracker);
+              }
             });
         }
         else {

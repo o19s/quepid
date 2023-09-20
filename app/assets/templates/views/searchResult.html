@@ -19,10 +19,10 @@
       <div class="col-summary" ng-class="summaryColumnStyle()">
         <!-- thumbnail/image if the doc has one -->
         <div ng-show="doc.hasThumb()" class="col-thumbnail" style="text-align: center">
-          <img class="img-thumbnail result-thumbnail" ng-src="{{doc.thumb}}">
+          <img class="img-thumbnail result-thumbnail" ng-src="{{formatImageUrl(doc.thumb, doc.thumb_options)}}">
         </div>
         <div ng-show="doc.hasImage()" class="col-image" style="text-align: center">
-          <img class="img-thumbnail result-image" ng-src="{{formatImageUrl()}}" />
+          <img class="img-thumbnail result-image" ng-src="{{formatImageUrl(doc.image, doc.image_options)}}" />
         </div>
 
         <!-- Fields -->

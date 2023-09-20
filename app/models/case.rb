@@ -106,6 +106,12 @@ class Case < ApplicationRecord
     where(id: ids.uniq)
   }
 
+  # return cases sorted by recently either updated or viewed by the user
+  scope :recent, -> {
+    left_outer_joins(:metadata)
+      .order(Arel.sql('`case_metadata`.`last_viewed_at` DESC, `cases`.`updated_at` DESC'))
+  }
+
   # Not proud of this method, but it's the only way I can get the dependent
   # objects of a Case to actually delete!
   def really_destroy

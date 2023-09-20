@@ -4,8 +4,16 @@
   </div>
 <% elsif book.query_doc_pairs.empty? %>
   <div class="alert alert-warning" role="alert">
-    You don't have any query/doc pairs. Please
-    <%= link_to 'return to the Case', root_path, class: 'alert-link' %> and click on <b><i class="bi bi-book-half"></i> Judgements</b> to populate this book with query/doc pairs for rating.
+    You don't have any query/doc pairs. 
+    <% if book.cases.empty? %>
+      You can populate this Book with query/doc pairs for judging by <%= link_to 'picking a Case', cases_path, class: 'alert-link' %> and using the <b><i class="bi bi-book-half"></i> Judgements</b> tool to populate this book with query/doc pairs from your search engine.
+    <% else %>
+      Return to the linked Case
+      <% book.cases.each do |kase| %>
+        <%= link_to kase.case_name, case_core_path(kase, kase.last_try_number), class: 'alert-link' %> 
+      <% end %>
+      and using the <b><i class="bi bi-book-half"></i> Judgements</b> to populate this Book with query/doc pairs for judging.
+    <% end %>
 
   </div>
 <% else %>

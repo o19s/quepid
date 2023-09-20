@@ -385,6 +385,11 @@ judgement.id: <%= judgement.id %>
     <p class="card-text">
       <%= render 'query_doc_pairs/document_fields', document_fields_as_json: @document_fields_as_json %>
     </p>
+    <% if @book.show_rank? %>
+    <p class="card-text">
+      <b>Document Rank: </b><%= judgement.query_doc_pair.position %>
+    </p>
+    <% end %>
 
     <% if @show_keyboard_shortcuts %>
       <table class="padded">

@@ -6,6 +6,7 @@
 #
 #  id                          :bigint           not null, primary key
 #  name                        :string(255)
+#  show_rank                   :boolean          default(FALSE)
 #  support_implicit_judgements :boolean
 #  created_at                  :datetime         not null
 #  updated_at                  :datetime         not null
@@ -22,6 +23,7 @@
 #  fk_rails_...  (selection_strategy_id => selection_strategies.id)
 #
 class Book < ApplicationRecord
+  # Associations
   belongs_to :team
   belongs_to :selection_strategy
   belongs_to :scorer
@@ -29,6 +31,15 @@ class Book < ApplicationRecord
   has_many   :judgements, -> { order('query_doc_pair_id') },
              through:   :query_doc_pairs,
              dependent: :destroy
+
+  has_many :cases, dependent: :nullify
+
+  has_many :rated_query_doc_pairs, -> { has_judgements },
+           class_name: 'QueryDocPair',
+           dependent:  :destroy,
+           inverse_of: :book
+
+  # Scopes
   scope :for_user, ->(user) {
     joins('
       LEFT OUTER JOIN `teams` ON `teams`.`id` = `books`.`team_id`
@@ -39,9 +50,4 @@ class Book < ApplicationRecord
     ', user.id)
       .order(name: :desc)
   }
-
-  has_many :rated_query_doc_pairs, -> { has_judgements },
-           class_name: 'QueryDocPair',
-           dependent:  :destroy,
-           inverse_of: :book
 end

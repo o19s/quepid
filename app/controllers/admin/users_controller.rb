@@ -10,6 +10,8 @@ module Admin
     # GET /admin/users.json
     # GET /admin/users.csv
     def index
+      @shallow = 'true' == params[:shallow]
+
       @users = User.all
 
       respond_to do |format|
@@ -34,14 +36,56 @@ module Admin
       @pulse_chart_start_date = @pulse_chart_start_date.strftime('%Y-%m-%d')
     end
 
+    def new
+      @user = User.new
+    end
+
     # GET /admin/users/1/edit
     def edit; end
 
+    def create
+      params_to_use = user_params
+      if params[:password_encrypted].present?
+        params_to_use[:password] = 'blah'
+        params_to_use[:password_confirmation] = 'blah'
+      end
+
+      @user = User.new params_to_use
+
+      if @user.save
+        if params[:password_encrypted].present?
+          # avoid the encrypt call back
+          # rubocop:disable Rails/SkipsModelValidations
+          @user.update_column(:password, params[:password_encrypted])
+          # rubocop:enable Rails/SkipsModelValidations
+        end
+
+        redirect_to admin_user_path(@user)
+      else
+        render action: :new
+      end
+    end
+
     # PATCH/PUT /admin/users/1
     # PATCH/PUT /admin/users/1.json
+    # rubocop:disable Metrics/MethodLength
     def update
       respond_to do |format|
-        if @user.update(user_params)
+        params_to_use = user_params
+
+        if params[:password_encrypted].present?
+          # avoid the encrypt call back
+          params_to_use[:password] = 'blah'
+          params_to_use[:password_confirmation] = 'blah'
+        end
+
+        if @user.update(params_to_use)
+          if params[:password_encrypted].present?
+            # avoid the encrypt call back
+            # rubocop:disable Rails/SkipsModelValidations
+            @user.update_column(:password, params[:password_encrypted])
+            # rubocop:enable Rails/SkipsModelValidations
+          end
           Analytics::Tracker.track_user_updated_by_admin_event @user
 
           format.html { redirect_to admin_user_path @user }
@@ -52,6 +96,7 @@ module Admin
         end
       end
     end
+    # rubocop:enable Metrics/MethodLength
 
     # DELETE /admin/users/1
     # DELETE /admin/users/1.json
@@ -75,6 +120,8 @@ module Admin
       params.require(:user).permit(
         :administrator,
         :email,
+        :name,
+        :company,
         :password,
         :password_confirmation
       )

@@ -1,5 +1,83 @@
 # Changelog
 
+## 7.9.2 - 2023-09-20
+
+You can now export and import Case's and Book's cleanly from one Quepid to another Quepid, with proper error handling.  You can also use this to export a Case or Book, make a bunch of changes externally using other tools, and then bring it back in.
+
+Get a dump file named `case_25.json` via:
+
+```
+python case_export.py --case_id=25 --root_url=https://app.quepid.com --access_token=YOUR_ACCESS_TOKEN
+```
+
+And bring it back in via:
+
+```
+python case_import.py --case_file=case_25.json --root_url=http://localhost:3000 --access_token=YOUR_ACCESS_TOKEN
+```
+
+More docs and some sample scripts coming soon.
+
+https://github.com/o19s/quepid/pull/834 by @epugh.
+
+## 7.9.0 - 2023-09-12
+
+* In running the Case --> Book --> Case lifecycle, we found that the automatic creation of Judgements for a Book from Ratings for a Case was creating extra averaged ratings when a Case supports multiple raters.  (it's fine if there is only one rater).   This was messing up the scores.  https://github.com/o19s/quepid/pull/827 by @epugh fixes this by making it an Advanced option, and introducing a Edit Book option to delete judgements by specific judge.  Thanks @david-fisher for figuring this out.
+
+* [Vectara](https://www.vectara.com/), a vector search engine is now accesible from Quepid!  This is the first non Lucene keyword search engine to be surfaced in Quepid and we're learning a lot.  There are some limitations, like you don't get the Explain for the query, and we are focused on surfacing what Vectara calls "Documents" versus "Responses" in the Quepid UI.  https://github.com/o19s/quepid/pull/826 by @mkr.  Also https://github.com/o19s/splainer-search/pull/128 by @mkr.
+
+## 7.8.0 - 2023-09-08
+
+* Need to copy the query from the Cases screen?  Yes, there is now a little Copy to Clipboard icon.  https://github.com/o19s/quepid/pull/823 by @epugh fixes implements https://github.com/o19s/quepid/pull/823 by @jeffryedvm.  Thanks!
+
+* Some folks, like @jeffryedvm, really want to know the rank of the document when judging it in the Books interface.   https://github.com/o19s/quepid/pull/822 by @epugh implements request https://github.com/o19s/quepid/pull/823 by @jeffryedvm. 
+
+* Want to use the Snapshot capablity to import your case with it's queries with it's documents and all of it's document fields?  Now you can!  https://github.com/o19s/quepid/pull/821 let's you export a snapshot with any recorded document fields.   You can also now import them. https://github.com/o19s/quepid/pull/821 by @epugh for @mkr.
+
+* We're finding anonymous ratings in our Books, and it's a pain.  https://github.com/o19s/quepid/pull/819 lets you remap anonymous ratings and judgements to a specific user.  Thanks @david-fisher for identifying the issue.
+
+
+
+## 7.7.1 - 2023-08-31
+
+For folks who have been using Quepid prior to 7.6.0, they will have lots of ratings from the main Cases screen that are anonymous, because we didn't associate a user with the ratings.   If you now import those ratings into a Book of Judgements, you will have to rerate them if you chose the "multiple raters" options, because you are different than the anonymous user.   We have added on the edit book screen an option to map anonymous ratings to a specific user in both a Book and it's associated Cases to support the migration.
+
+https://github.com/o19s/quepid/pull/819 lets you remap anonymous ratings and judgements to a specific user.  Thanks @david-fisher for identifying the issue.
+
+## 7.7.0 - 2023-08-31
+
+We finally have a brand new homepage!  Quepid started as a tool for relevancy engineers only, but today we have human judges using Quepid to rate documents, Search Managers who are keeping an eye on the offline metrics, and of course in more complex setups, networking types who configure the connection between Quepid and the Search Engine.   In the past, regardless of who you were, we dropped you right into a Case.  If you had never created one before, well, you got shoved into the Case creation wizard, whether you wanted it or not.   It made for a unpleasant first experience for anyone other than the hard core relevancy engineer.   
+
+The new dashboard is an attempt to change that UX.  It's just a first cut, and honestly, it probably doesn't quite make anyone perfectly happy.   I'm hoping that we can get a lot of good feedback and learn from it.   I could imagine in the future that based on what you do, we surface information you care about.  For example, a network engineer would want to know that the Quepid can talk to each Search Engine.   A Search Manager would be more interested in insights and summary progress information.   Human judges want to know "what is my next task to do".   So please share feedback!
+
+### Features
+
+* New home page (and sidebar!) in https://github.com/o19s/quepid/issues/681 is added via https://github.com/o19s/quepid/pull/684 by @epugh.
+
+### Improvements
+
+* The feedback message after creating an empty book is now smart about if there are related cases or not, and gives better next steps instructions.  https://github.com/o19s/quepid/issues/796 by @OkkeKlein fixed by https://github.com/o19s/quepid/pull/797 by  @epugh.  Thanks Okke!
+
+* The Cases listing page shows your cases from oldest to newest.  @atarora opened https://github.com/o19s/quepid/issues/708 for sortable columns.  Implementing this didn't go well, so as an alternative, changed the sorting to be from newest to oldest, taking into account the case update time as well as the last time you viewed a specific case.  https://github.com/o19s/quepid/pull/795 by @epugh.  We may want to redo the entire Cases listing page at some point....  Hopefully this is better @atarora ;-).
+
+* Reworked the messageing (and error handling) when you attempt to open a case that hasn't been shared with you (or doesn't exist!).   We had been showing the "You need to reload Quepid in the HTTPS" type message, when actually it was a "Make sure this case has been shared with you!" situation.  Also reduced the amount of error messages in the browser and the server in this situation by being smarter.  Thanks @cmorley for surfacing this.  https://github.com/o19s/quepid/issues/792 by @epugh fixed by https://github.com/o19s/quepid/pull/793.
+
+* Thumb images can use a `prefix_url`, just like regular images.  https://github.com/o19s/quepid/issues/790 by @OkkeKlein is fixed in https://github.com/o19s/quepid/pull/805 by @epugh.
+
+* Using Nginx and have huge documents being snapshotted etc.  New configuration suggested by @OkkeKlein allows Nginx to be happy.  https://github.com/o19s/quepid/pull/804 by @epugh.
+
+### Bugs
+
+* Drop a link in Slack to team 3, and you see details about case 3;-).  https://github.com/o19s/quepid/issues/733 by @epugh fixed by https://github.com/o19s/quepid/pull/794 by @epugh to only do unfurling for cases.
+
+* Ace code editor insists on loading two javascript files from specific paths in Quepid.  Despite best effort, couldn't change this.  So https://github.com/o19s/quepid/pull/793 just mounts those javascript where Ace wants it to shut up some very loud error messages in the browser console.  If you can't beat'em, join'em.  
+
+* When judging ratings using the Book of Judgements, you could sometimes get a situation where you create a judgement, and then tried to create a new one, hitting a constraint.  https://github.com/o19s/quepid/pull/809 by @epugh makes this more robust.
+
+* Guess what?  7 GB out of our 9 GB production database is scores for cases being inserted OVER AND OVER again!  The AngularJS app uses event emitting to signal when scoring is completed, this causes extra events to be triggered, causing extra PUT of the case scores.   This shouldn't matter as we have logic on the server side.  However, due to a bug, that logic doesn't actually work.  The unit tests for the front end and the back end each independently validate the logic, it's just when you put them together it doesn't work.  This didn't matter for years, but the new Dashboard surfaces scores ;-).  Fixed in https://github.com/o19s/quepid/pull/807 by @epugh.
+
+
+
 ## 7.6.1 - 2023-07-06
 
 * Chased down bug with showing you the previous judgement on the Human Judgement page.  https://github.com/o19s/quepid/pull/779 by @epugh.

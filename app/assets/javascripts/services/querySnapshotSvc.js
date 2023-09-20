@@ -5,11 +5,11 @@
 angular.module('QuepidApp')
   .service('querySnapshotSvc', [
     '$http', '$q',
-    'settingsSvc', 'docCacheSvc', 'normalDocsSvc',
+    'settingsSvc', 'docCacheSvc',
     'SnapshotFactory',
     function querySnapshotSvc(
       $http, $q,
-      settingsSvc, docCacheSvc, normalDocsSvc,
+      settingsSvc, docCacheSvc,
       SnapshotFactory
     ) {
       // caches normal docs for all snapshots
@@ -184,8 +184,22 @@ angular.module('QuepidApp')
           }
 
           var query = snapshot.queries[doc['Query Text']];
+          
+          var docPayload = { 'id': doc['Doc ID'], 'position': doc['Doc Position'] };
+          
+          // Remove the properties of the doc that exist elsewhere.
+          delete doc['Doc ID'];
+          delete doc['Doc Position'];
+          
+          delete doc['Snapshot Name'];
+          delete doc['Snapshot Time'];
+          delete doc['Case ID'];
+          delete doc['Query Text'];
+          
+          // map any remaining properties of the doc as fields.
+          docPayload['fields'] = doc;
 
-          query.docs.push( { 'id': doc['Doc ID'], 'position': doc['Doc Position'] } );
+          query.docs.push(docPayload );
         });
 
         function callApi (caseId, snapshotData) {

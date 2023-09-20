@@ -3,11 +3,11 @@
 angular.module('QuepidApp')
   .controller('SearchResultsCtrl', [
     '$rootScope',
-    '$scope', '$uibModal', '$log', '$window',
-    'rateBulkSvc', 'userSvc', 'queriesSvc', 'queryViewSvc', 'settingsSvc',
+    '$scope', '$log', '$window',
+    'rateBulkSvc', 'queriesSvc', 'queryViewSvc', 'settingsSvc',
     function (
-      $rootScope, $scope, $uibModal, $log, $window,
-      rateBulkSvc, userSvc, queriesSvc, queryViewSvc, settingsSvc
+      $rootScope, $scope, $log, $window,
+      rateBulkSvc, queriesSvc, queryViewSvc, settingsSvc
     ) {
       $scope.queriesSvc = queriesSvc;
 

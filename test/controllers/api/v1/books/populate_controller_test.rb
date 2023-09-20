@@ -49,6 +49,7 @@ module Api
 
               query_doc_pair_star_wars = book.query_doc_pairs.find_by(query_text: 'star wars', doc_id: 'https://www.themoviedb.org/movie/11-star-wars')
               assert_not_nil query_doc_pair_star_wars
+              assert_empty query_doc_pair_star_wars.judgements
 
               assert_equal data[:query_doc_pairs][0][:document_fields].to_json, query_doc_pair_star_wars.document_fields
 

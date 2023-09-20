@@ -70,7 +70,7 @@ services:
 
 
   nginx:
-    image: nginx:1.23.4
+    image: nginx:1.25.2
     container_name: quepid_nginx
     ports:
       - "443:8443"

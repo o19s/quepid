@@ -220,6 +220,10 @@ class User < ApplicationRecord
     self.locked_at  = nil
   end
 
+  def fullname
+    name.blank? ? email : name.titleize
+  end
+
   def after_database_authentication
     # required by devise_invitable
   end

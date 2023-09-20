@@ -21,9 +21,9 @@ module Api
       def index
         bool = ActiveRecord::Type::Boolean.new
 
-        archived  = bool.deserialize(params[:archived]) || false
+        archived  = bool.deserialize params[:archived]
         sort_by   = params[:sortBy]
-        @deep     = bool.deserialize(params[:deep]) || false
+        @deep     = bool.deserialize params[:deep]
 
         if archived
           @no_tries = true
@@ -32,11 +32,14 @@ module Api
         else
           @cases = if 'last_viewed_at' == sort_by
                      current_user.cases_involved_with.not_archived.includes(:metadata).references(:metadata)
-                       .order(Arel.sql('`case_metadata`.`last_viewed_at` DESC, `cases`.`id`')).limit(3)
+                       .recent.limit(3)
                    elsif sort_by
                      current_user.cases_involved_with.preload( :tries).not_archived.order(sort_by)
                    else
-                     current_user.cases_involved_with.preload(:tries, :teams, :cases_teams).not_archived
+                     current_user.cases_involved_with.preload(:tries, :teams,
+                                                              :cases_teams)
+                       .not_archived
+                       .recent
                    end
         end
 

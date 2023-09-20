@@ -24,12 +24,12 @@ module Api
               name:    'New Snapshot',
               docs:    {
                 first_query.id  => [
-                  { id: 'doc1', explain: '1' },
-                  { id: 'doc2', explain: '2' }
+                  { id: 'doc1', explain: 1 },
+                  { id: 'doc2', explain: 2 }
                 ],
                 second_query.id => [
-                  { id: 'doc3', explain: '3' },
-                  { id: 'doc4', explain: '4' }
+                  { id: 'doc3', explain: 3 },
+                  { id: 'doc4', explain: 4 }
                 ],
               },
               queries: {
@@ -79,8 +79,8 @@ module Api
               name:    'New Snapshot',
               docs:    {
                 first_query.id  => [
-                  { id: 'doc1', explain: '1' },
-                  { id: 'doc2', explain: '2' }
+                  { id: 'doc1', explain: 1 },
+                  { id: 'doc2', explain: 2 }
                 ],
                 # in Rails 4, we could do second_query.id => [] and getting the second_query in,
                 # but in Rails 5, the second_query doesn't show up because the array that is empty
@@ -107,8 +107,8 @@ module Api
 
             snapshot = response.parsed_body
 
-            assert_equal snapshot['name'],        data[:snapshot][:name]
-            assert_equal snapshot['docs'].length, data[:snapshot][:docs].length
+            assert_equal data[:snapshot][:name],        snapshot['name']
+            assert_equal data[:snapshot][:docs].length, snapshot['docs'].length
 
             data_doc      = data[:snapshot][:docs][first_query.id][0]
             response_doc  = snapshot['docs'][first_query.id.to_s][0]
@@ -148,12 +148,12 @@ module Api
               name:    '',
               docs:    {
                 first_query.id  => [
-                  { id: 'doc1', explain: '1' },
-                  { id: 'doc2', explain: '2' }
+                  { id: 'doc1', explain: 1 },
+                  { id: 'doc2', explain: 2 }
                 ],
                 second_query.id => [
-                  { id: 'doc3', explain: '3' },
-                  { id: 'doc4', explain: '4' }
+                  { id: 'doc3', explain: 3 },
+                  { id: 'doc4', explain: 4 }
                 ],
               },
               queries: {
@@ -181,12 +181,12 @@ module Api
             snapshot: {
               docs:    {
                 first_query.id  => [
-                  { id: 'doc1', explain: '1' },
-                  { id: 'doc2', explain: '2' }
+                  { id: 'doc1', explain: 1 },
+                  { id: 'doc2', explain: 2 }
                 ],
                 second_query.id => [
-                  { id: 'doc3', explain: '3' },
-                  { id: 'doc4', explain: '4' }
+                  { id: 'doc3', explain: 3 },
+                  { id: 'doc4', explain: 4 }
                 ],
               },
               queries: {
