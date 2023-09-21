@@ -63,7 +63,7 @@ module Api
         @snapshot.destroy
         Analytics::Tracker.track_snapshot_deleted_event current_user, @snapshot
 
-        render json: {}, status: :no_content
+        head :no_content
       end
 
       private

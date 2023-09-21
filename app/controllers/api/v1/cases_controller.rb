@@ -93,7 +93,7 @@ module Api
         @case.really_destroy
         Analytics::Tracker.track_case_deleted_event current_user, @case
 
-        render json: {}, status: :no_content
+        head :no_content
       end
 
       private

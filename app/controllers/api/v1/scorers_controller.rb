@@ -164,7 +164,7 @@ module Api
         @scorer.delete
         Analytics::Tracker.track_scorer_deleted_event current_user, @scorer
 
-        render json: {}, status: :no_content
+        head :no_content
       end
       # rubocop:enable Metrics/AbcSize
       # rubocop:enable Metrics/CyclomaticComplexity

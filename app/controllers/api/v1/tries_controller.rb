@@ -60,7 +60,7 @@ module Api
       def destroy
         @try.destroy
 
-        render json: {}, status: :no_content
+        head :no_content
       end
 
       private

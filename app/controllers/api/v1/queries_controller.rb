@@ -80,7 +80,7 @@ module Api
         @case.rearrange_queries
         @case.save
 
-        render json: {}, status: :no_content
+        head :no_content
       end
 
       private

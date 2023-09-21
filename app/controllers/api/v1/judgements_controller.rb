@@ -50,7 +50,7 @@ module Api
 
       def destroy
         @judgement.destroy
-        render json: {}, status: :no_content
+        head :no_content
       end
 
       private

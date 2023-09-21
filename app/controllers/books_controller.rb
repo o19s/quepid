@@ -129,8 +129,8 @@ class BooksController < ApplicationController
 
   # rubocop:disable Metrics/MethodLength
   def assign_anonymous
-    assignee = @book.team.members.where(id: params[:assignee_id]).take
-    @book.judgements.where(user: nil).each do |judgement|
+    assignee = @book.team.members.find_by(id: params[:assignee_id])
+    @book.judgements.where(user: nil).find_each do |judgement|
       judgement.user = assignee
       # if we are mapping a user to a judgement,
       # and they have already judged that query_doc_pair, then just delete it.
@@ -141,7 +141,7 @@ class BooksController < ApplicationController
       end
     end
     @book.cases.each do |kase|
-      kase.ratings.where(user: nil).each do |rating|
+      kase.ratings.where(user: nil).find_each do |rating|
         rating.user = assignee
         rating.save!
       end
@@ -152,7 +152,7 @@ class BooksController < ApplicationController
   # rubocop:enable Metrics/MethodLength
 
   def delete_ratings_by_assignee
-    assignee = @book.team.members.where(id: params[:assignee_id]).take
+    assignee = @book.team.members.find_by(id: params[:assignee_id])
 
     judgements_to_delete = @book.judgements.where(user: assignee)
 
