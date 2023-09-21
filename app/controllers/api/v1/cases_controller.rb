@@ -46,6 +46,8 @@ module Api
         respond_with @cases
       end
 
+      api :GET, '/api/cases/:case_id'
+      param :id, :number, desc: 'id of the requested case'
       def show
         respond_with @case
       end
@@ -91,7 +93,7 @@ module Api
         @case.really_destroy
         Analytics::Tracker.track_case_deleted_event current_user, @case
 
-        render json: {}, status: :no_content
+        head :no_content
       end
 
       private

@@ -50,21 +50,13 @@ module Api
 
       def destroy
         @judgement.destroy
-        render json: {}, status: :no_content
+        head :no_content
       end
 
       private
 
       def judgement_params
         params.require(:judgement).permit(:rating, :unrateable, :query_doc_pair_id, :user_id)
-      end
-
-      def find_book
-        @book = current_user.books_involved_with.where(id: params[:book_id]).first
-      end
-
-      def check_book
-        render json: { message: 'Book not found!' }, status: :not_found unless @book
       end
 
       def set_judgement

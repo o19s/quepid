@@ -121,8 +121,4 @@ class JudgementsController < ApplicationController
   def judgement_params
     params.require(:judgement).permit(:user_id, :rating, :query_doc_pair_id, :unrateable)
   end
-
-  def find_book
-    @book = current_user.books_involved_with.where(id: params[:book_id]).first
-  end
 end

@@ -4,9 +4,9 @@ require 'sidekiq/web'
 
 # rubocop:disable Metrics/BlockLength
 Rails.application.routes.draw do
-  resources :search_endpoints
-
+  apipie
   root 'home#show'
+  resources :search_endpoints
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
   Healthcheck.routes(self)
@@ -151,7 +151,7 @@ Rails.application.routes.draw do
         resources :annotations, except: [ :show ]
       end
 
-      resources :books, only: [ :show ] do
+      resources :books, only: [ :show, :create, :update, :destroy ] do
         put '/populate' => 'books/populate#update'
         resources :cases do
           put 'refresh' => 'books/refresh#update'
@@ -181,6 +181,8 @@ Rails.application.routes.draw do
 
       # Imports
       namespace :import do
+        resources :books, only: [ :create ]
+        resources :cases, only: [ :create ]
         resources :ratings, only: [ :create ]
         namespace :queries do
           resources :information_needs, only: [ :create ], param: :case_id
@@ -189,6 +191,8 @@ Rails.application.routes.draw do
 
       # Exports
       namespace :export do
+        resources :books, only: [ :show ], param: :book_id
+        resources :cases, only: [ :show ], param: :case_id
         resources :ratings, only: [ :show ], param: :case_id
         namespace :queries do
           resources :information_needs, only: [ :show ], param: :case_id

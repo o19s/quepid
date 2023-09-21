@@ -45,21 +45,13 @@ module Api
 
       def destroy
         @query_doc_pair.destroy
-        render json: {}, status: :no_content
+        head :no_content
       end
 
       private
 
       def query_doc_pair_params
         params.require(:query_doc_pair).permit(:document_fields, :position, :query_text, :doc_id)
-      end
-
-      def find_book
-        @book = current_user.books_involved_with.where(id: params[:book_id]).first
-      end
-
-      def check_book
-        render json: { message: 'Book not found!' }, status: :not_found unless @book
       end
 
       def set_query_doc_pair

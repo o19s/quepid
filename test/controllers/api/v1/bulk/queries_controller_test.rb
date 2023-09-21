@@ -14,7 +14,7 @@ module Api
 
           login_user user
 
-          acase.queries.delete_all
+          acase.queries.destroy_all
         end
 
         describe 'Adds an array of queries' do

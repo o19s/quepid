@@ -49,8 +49,4 @@ class QueryDocPairsController < ApplicationController
   def query_doc_pair_params
     params.require(:query_doc_pair).permit(:query_text, :position, :document_fields, :doc_id)
   end
-
-  def find_book
-    @book = current_user.books_involved_with.where(id: params[:book_id]).first
-  end
 end

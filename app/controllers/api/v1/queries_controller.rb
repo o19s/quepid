@@ -85,13 +85,13 @@ module Api
         @case.rearrange_queries
         @case.save
 
-        render json: {}, status: :no_content
+        head :no_content
       end
 
       private
 
       def query_params
-        params.require(:query).permit(:query_text)
+        params.require(:query).permit(:query_text, :information_need, :options, :notes)
       end
     end
   end
