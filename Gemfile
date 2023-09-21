@@ -29,7 +29,7 @@ gem 'net-imap', '~> 0.3.0'
 gem 'postmark-rails'
 gem 'puma'
 gem 'pundit'
-gem 'rails', '= 7.0.4.3'
+gem 'rails', '~> 7.0.8'
 gem 'responders'
 gem 'sidekiq'
 gem 'terser'
@@ -93,5 +93,4 @@ group :test do
   # Use system testing [https://guides.rubyonrails.org/testing.html#system-testing]
   gem 'capybara'
   gem 'selenium-webdriver'
-  gem 'webdrivers'
 end
