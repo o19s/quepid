@@ -60,7 +60,7 @@ describe('Controller: QueryparamsCtrl', function () {
   });
 
   it('initializes initially undisplayed vars to the right value', function() {
-    $httpBackend.expectGET('api/search_endpoints?shallow=true').respond(200, {});
+    $httpBackend.expectGET('api/search_endpoints').respond(200, {});
     scope.settings.selectedTry.queryParams = 'q=#$query';
     scope.settings.selectedTry.curatorVars = [{name: 'testvar', value: 1337}];
     scope.qp.toggleTab();
