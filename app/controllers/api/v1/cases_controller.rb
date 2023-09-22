@@ -2,6 +2,7 @@
 
 module Api
   module V1
+    # rubocop:disable Metrics/ClassLength
     class CasesController < Api::ApiController
       before_action :set_case, only: [ :update, :destroy ]
       before_action :case_with_all_the_bells_whistles, only: [ :show ]
@@ -126,7 +127,7 @@ module Api
         @case.really_destroy
         Analytics::Tracker.track_case_deleted_event current_user, @case
 
-        render json: {}, status: :no_content
+        head :no_content
       end
 
       private
@@ -140,5 +141,6 @@ module Api
         params[:scorer_id].present? && [ 0, '0' ].include?(params[:scorer_id])
       end
     end
+    # rubocop:enable Metrics/ClassLength
   end
 end
