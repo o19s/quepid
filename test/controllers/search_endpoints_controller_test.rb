@@ -30,6 +30,7 @@ class SearchEndpointsControllerTest < ActionDispatch::IntegrationTest
              endpoint_url:   @search_endpoint.endpoint_url,
              name:           @search_endpoint.name,
              search_engine:  @search_endpoint.search_engine,
+             team_ids:       @search_endpoint.teams.pluck(:id),
            } }
     end
 
@@ -54,6 +55,7 @@ class SearchEndpointsControllerTest < ActionDispatch::IntegrationTest
             endpoint_url:   @search_endpoint.endpoint_url,
             name:           @search_endpoint.name,
             search_engine:  @search_endpoint.search_engine,
+            team_ids:       @search_endpoint.teams.pluck(:id),
           } }
     assert_redirected_to search_endpoint_url(@search_endpoint)
   end

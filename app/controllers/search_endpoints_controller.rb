@@ -30,7 +30,23 @@ class SearchEndpointsController < ApplicationController
   end
 
   def update
-    @search_endpoint.update(search_endpoint_params)
+    params_to_use = search_endpoint_params
+
+    params_to_use[:team_ids].compact_blank!
+
+    # this logic is crazy, but basically we don't want to touch the teams that are associated with
+    # an endpoint that the current_user CAN NOT see, so we clear out of the relationship all the ones
+    # they can see, and then repopulate it from the list of ids checked.  Checkboxes suck.
+    team_ids_belonging_to_user = current_user.teams.pluck(:id)
+    teams = @search_endpoint.teams.reject { |t| team_ids_belonging_to_user.include?(t.id) }
+    @search_endpoint.teams.clear
+    params_to_use[:team_ids].each do |team_id|
+      teams << Team.find(team_id)
+    end
+
+    @search_endpoint.teams.replace(teams)
+
+    @search_endpoint.update(search_endpoint_params.except(:team_ids))
     respond_with(@search_endpoint)
   end
 
@@ -46,6 +62,7 @@ class SearchEndpointsController < ApplicationController
   end
 
   def search_endpoint_params
-    params.require(:search_endpoint).permit(:name, :endpoint_url, :search_engine, :custom_headers, :api_method)
+    params.require(:search_endpoint).permit(:name, :endpoint_url, :search_engine, :custom_headers, :api_method,
+                                            team_ids: [])
   end
 end

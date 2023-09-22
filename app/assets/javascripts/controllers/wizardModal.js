@@ -100,6 +100,28 @@ angular.module('QuepidApp')
         $scope.reset();
       };
 
+      // used when you change a searchEndpoint that has already been set up, and then follow normal flow.
+      $scope.changeSearchEndpoint = function() {
+        var searchEndpointToUse = $scope.searchEndpoints.find(obj => obj.id === $scope.pendingWizardSettings.searchEndpointId);
+      
+        // From search endpoint
+        $scope.pendingWizardSettings.searchEngine             = searchEndpointToUse.searchEngine;
+        $scope.pendingWizardSettings.searchUrl                = searchEndpointToUse.endpointUrl; // notice remapping
+        $scope.pendingWizardSettings.apiMethod                = searchEndpointToUse.apiMethod;
+        $scope.pendingWizardSettings.customHeaders            = searchEndpointToUse.customHeaders;
+        
+        // Now grab default settings for the type of search endpoint you are using
+        var settings = settingsSvc.pickSettingsToUse($scope.pendingWizardSettings.searchEngine, $scope.pendingWizardSettings.searchUrl);         
+        $scope.pendingWizardSettings.additionalFields         = settings.additionalFields;
+        $scope.pendingWizardSettings.fieldSpec                = settings.fieldSpec;
+        $scope.pendingWizardSettings.idField                  = settings.idField;
+        $scope.pendingWizardSettings.queryParams              = settings.queryParams;
+        $scope.pendingWizardSettings.titleField               = settings.titleField;
+
+        
+        $scope.reset();
+      }
+      
       // used when you swap radio buttons for the search engine.
       $scope.changeSearchEngine = function() {
 
@@ -151,7 +173,6 @@ angular.module('QuepidApp')
       
       $scope.validate       = validate;
       $scope.skipValidation = skipValidation;
-      $scope.pickSearchEndpoint = pickSearchEndpoint;
       $scope.setupDefaults  = setupDefaults;
       $scope.submit         = submit;
       $scope.reset          = reset;
@@ -185,25 +206,7 @@ angular.module('QuepidApp')
         if ($scope.urlValid) {
           WizardHandler.wizard().next();
         }
-      }
-      
-      function pickSearchEndpoint() {
-        searchEndpointSvc.get($scope.pendingWizardSettings.searchEndpointId)
-          .then( function (searchEndpoint){
-            
-            // Maybe we should refactor to have searchEndpoint a first class object and use it
-            // Everywhere?
-            
-            $scope.pendingWizardSettings.searchEngine = searchEndpoint.searchEngine;
-            $scope.pendingWizardSettings.searchUrl = searchEndpoint.endpointUrl;
-            $scope.pendingWizardSettings.apiMethod   = searchEndpoint.apiMethod;
-            $scope.pendingWizardSettings.customHeaders = searchEndpoint.customHeaders;
-            
-            // Are there any places where we do validate(true)?
-            validate();
-            
-          });        
-      }
+      }      
 
       function skipValidation() {
         var validator = new SettingsValidatorFactory($scope.pendingWizardSettings);
@@ -246,14 +249,14 @@ angular.module('QuepidApp')
         }
         
         var validator = new SettingsValidatorFactory(settingsForValidation);
-        
-       
+      
         validator.validateUrl()
         .then(function () {
 
           setupDefaults(validator);
-
+          
           if (!justValidate) {
+            
             WizardHandler.wizard().next();
           }
         }, function () {
@@ -299,21 +302,16 @@ angular.module('QuepidApp')
         $scope.idFields     = validator.idFields;
 
         // Since the defaults are being overridden by the editableSettings(),
-        // make sure the default id, title, and additional fields are set
-        // if the URL is still set as the default
-
-        //var searchEngine  = $scope.pendingWizardSettings.searchEngine;
-        //var newUrl        = $scope.pendingWizardSettings.searchUrl;
-
-        //var settingsToUse = settingsSvc.pickSettingsToUse(searchEngine, newUrl);
-
-        //$scope.pendingWizardSettings.idField          = settingsToUse.idField;
-        //$scope.pendingWizardSettings.titleField       = settingsToUse.titleField;
-        //$scope.pendingWizardSettings.additionalFields = settingsToUse.additionalFields;
-       // $scope.pendingWizardSettings.queryParams      = settingsToUse.queryParams;
-
-        // Make sure to track what you might have picked
-        //$scope.pendingWizardSettings.apiMethod        = validator.apiMethod;
+        // we need to restore the TMDB demo settings if that matches our URL for the next screen.
+        var searchEngine  = $scope.pendingWizardSettings.searchEngine;
+        var newUrl        = $scope.pendingWizardSettings.searchUrl;
+        if (settingsSvc.demoSettingsChosen(searchEngine, newUrl)){
+          var settingsToUse = settingsSvc.getDemoSettings($scope.pendingWizardSettings.searchEngine);
+          $scope.pendingWizardSettings.idField          = settingsToUse.idField;
+          $scope.pendingWizardSettings.titleField       = settingsToUse.titleField;
+          $scope.pendingWizardSettings.additionalFields = settingsToUse.additionalFields;
+          $scope.pendingWizardSettings.queryParams      = settingsToUse.queryParams;
+        }
       }
 
       $scope.validateFieldSpec = validateFieldSpec;

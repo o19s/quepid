@@ -25,7 +25,7 @@
     <%= form.label :search_engine, class: 'form-label' %>
     <%= form.text_field :search_engine %>
     
-    <div class="form-text">Options are <code>solr</code>, <code>es</code>, <code>os</code>, <code>static</code>, and <code>vectara</code>.</div>
+    <div class="form-text">Options are <code>solr</code>, <code>es</code>, <code>os</code>, <code>static</code>, <code>searchapi</code>, and <code>vectara</code>.</div>
   </div>
 
   <div class="mb-3">
@@ -36,6 +36,17 @@
   <div class="mb-3">
     <%= form.label :api_method, class: 'form-label' %>
     <%= form.text_field :api_method %>
+  </div>
+  
+  <div class="mb-3">
+    <%=search_endpoint.teams.count %>
+    <%= form.label :teams, class: 'form-label' %>
+    <%= form.collection_check_boxes(:team_ids, @current_user.teams, :id, :name) do |b| %>
+      <div class="collection-check-box">
+        <%= b.check_box %>
+        <%= b.label %>
+      </div>
+    <% end %>
   </div>
 
   <div class="actions">

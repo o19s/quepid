@@ -16,6 +16,6 @@
 
 <br>
 
-<%= button_to 'Delete Search Endpoint', @search_endpoint, method: :delete %>
+<%= button_to 'Delete Search Endpoint', @search_endpoint, method: :delete, data: {turbo_method: :delete, turbo_confirm: 'Are you sure?'} %>
 
 </div>

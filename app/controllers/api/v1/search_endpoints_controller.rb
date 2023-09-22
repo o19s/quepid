@@ -5,7 +5,6 @@ module Api
     class SearchEndpointsController < Api::ApiController
       before_action :set_search_endpoint, only: [ :show ]
       def index
-        @shallow = params[:shallow] || true
         @search_endpoints = current_user.search_endpoints_involved_with
         respond_with @search_endpoints
       end

@@ -30,21 +30,31 @@
       <div>
         <uib-accordion>
           <div uib-accordion-group class="panel-default" heading="Use an existing Search Endpoint" >
-            <div class="alert alert-warning" role="alert" ng-if="listSearchEndpoints().length === 0">
-              You do not have any Search Endpoints created yet.
+            <div class="row">
+              <div class="alert alert-warning" role="alert" ng-if="listSearchEndpoints().length === 0">
+                You do not have any Search Endpoints created yet.
+              </div>
+              <select
+                id="searchEndpoint"
+                ng-if="listSearchEndpoints().length > 0"
+                ng-model="pendingWizardSettings.searchEndpointId"
+                ng-options="searchEndpoint.id as searchEndpoint.name for searchEndpoint in listSearchEndpoints()"
+                ng-change="changeSearchEndpoint()"
+              >
+              </select>
+              <small title="Manually validates Quepid can get retrieve search results from your URL before continuing" class="pull-right"><button type="button" class="btn btn-link btn-sm" ng-click="validate(true)" ng-disabled="pendingWizardSettings.searchEndpointId == null || showTLSChangeWarning">ping it</button></small>
             </div>
-            <select
-              id="searchEndpoint"
-              ng-model="pendingWizardSettings.searchEndpointId"
-              ng-options="searchEndpoint.id as searchEndpoint.name for searchEndpoint in listSearchEndpoints()"
-            >
-            </select>
-            
-            <button class="btn btn-primary pull-right continue" ng-click="pickSearchEndpoint()" ng-disabled="pendingWizardSettings.searchEndpointId == null">Continue</button>
-            
-            <button class="btn btn-danger" ng-click="skipValidation()" ng-disabled="validating" ng-show="pendingWizardSettings.searchEndpointId">
-              <span ng-hide="validating">Skip Validation</span>
-            </button>
+            <div ng-if="urlValid" class="alert alert-success">Quepid can search this! Hit 'Continue' to keep working through setup.</div>
+            <div class="row" style="margin-top: 50px;">
+              
+              <div class="pull-right">
+                <button class="btn btn-primary pull-right continue" ng-click="validate()" ng-disabled="pendingWizardSettings.searchEndpointId == null">Continue</button>
+                
+                <button class="btn btn-danger" ng-show="urlInvalid && !showTLSChangeWarning" ng-click="skipValidation()" ng-disabled="validating">
+                  <span ng-hide="validating">Skip Validation</span>
+                </button>
+              </div>
+            </div>
           </div>
           <div uib-accordion-group class="panel-default" heading="Create a new Search Endpoint" ng-click="switchToCreateNewSearchEndpoint()">
           <div style="text-align: center;">

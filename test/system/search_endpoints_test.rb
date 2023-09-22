@@ -2,6 +2,8 @@
 
 require 'application_system_test_case'
 
+# If we start using these, we should enable
+# Capybara/ClickLinkOrButtonStyle
 class SearchEndpointsTest < ApplicationSystemTestCase
   setup do
     @search_endpoint = search_endpoints(:one)

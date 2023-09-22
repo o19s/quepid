@@ -1,0 +1,596 @@
+diff --git a/.rubocop.yml b/.rubocop.yml
+index fae8ffc6..d99b890d 100644
+--- a/.rubocop.yml
++++ b/.rubocop.yml
+@@ -16,6 +16,9 @@ AllCops:
+     - config/initializers/content_security_policy.rb
+     - test/support/json_response.rb
+ 
++Capybara/ClickLinkOrButtonStyle:
++  Enabled: false # we aren't running system tests
++  
+ Rails/I18nLocaleTexts:
+   Enabled: false  # we are only english
+ 
+@@ -43,9 +46,6 @@ Lint/MissingSuper:
+ Style/GuardClause:
+   Enabled: false # I don't like this one, so ignore it!
+ 
+-
+-
+-
+ Rails:
+   Enabled: true
+ 
+diff --git a/app/assets/javascripts/controllers/queriesCtrl.js b/app/assets/javascripts/controllers/queriesCtrl.js
+index e571c07c..4b920154 100644
+--- a/app/assets/javascripts/controllers/queriesCtrl.js
++++ b/app/assets/javascripts/controllers/queriesCtrl.js
+@@ -235,6 +235,12 @@ angular.module('QuepidApp')
+         // finished a batch run, log the result!
+         var caseNo  = parseInt($routeParams.caseNo, 10);
+         var tryNo   = parseInt($routeParams.tryNo, 10);
++        
++        if (Object.keys($scope.queries.avgQuery.currentScore.queries).length === 0) {
++          // if we have no queries, then let's short circuit this.  We don't need to
++          // record scores for cases with zero queries.
++          return;
++        }
+ 
+         if ( isNaN(tryNo) ) {  // If we didn't specify a try, then we need to get the latest
+           caseSvc.get(caseNo)
+diff --git a/app/assets/javascripts/controllers/wizardModal.js b/app/assets/javascripts/controllers/wizardModal.js
+index 9a0001fc..dba7b062 100644
+--- a/app/assets/javascripts/controllers/wizardModal.js
++++ b/app/assets/javascripts/controllers/wizardModal.js
+@@ -100,6 +100,28 @@ angular.module('QuepidApp')
+         $scope.reset();
+       };
+ 
++      // used when you change a searchEndpoint that has already been set up, and then follow normal flow.
++      $scope.changeSearchEndpoint = function() {
++        var searchEndpointToUse = $scope.searchEndpoints.find(obj => obj.id === $scope.pendingWizardSettings.searchEndpointId);
++      
++        // From search endpoint
++        $scope.pendingWizardSettings.searchEngine             = searchEndpointToUse.searchEngine;
++        $scope.pendingWizardSettings.searchUrl                = searchEndpointToUse.endpointUrl; // notice remapping
++        $scope.pendingWizardSettings.apiMethod                = searchEndpointToUse.apiMethod;
++        $scope.pendingWizardSettings.customHeaders            = searchEndpointToUse.customHeaders;
++        
++        // Now grab default settings for the type of search endpoint you are using
++        var settings = settingsSvc.pickSettingsToUse($scope.pendingWizardSettings.searchEngine, $scope.pendingWizardSettings.searchUrl);         
++        $scope.pendingWizardSettings.additionalFields         = settings.additionalFields;
++        $scope.pendingWizardSettings.fieldSpec                = settings.fieldSpec;
++        $scope.pendingWizardSettings.idField                  = settings.idField;
++        $scope.pendingWizardSettings.queryParams              = settings.queryParams;
++        $scope.pendingWizardSettings.titleField               = settings.titleField;
++
++        
++        $scope.reset();
++      }
++      
+       // used when you swap radio buttons for the search engine.
+       $scope.changeSearchEngine = function() {
+ 
+@@ -151,7 +173,6 @@ angular.module('QuepidApp')
+       
+       $scope.validate       = validate;
+       $scope.skipValidation = skipValidation;
+-      $scope.pickSearchEndpoint = pickSearchEndpoint;
+       $scope.setupDefaults  = setupDefaults;
+       $scope.submit         = submit;
+       $scope.reset          = reset;
+@@ -185,25 +206,7 @@ angular.module('QuepidApp')
+         if ($scope.urlValid) {
+           WizardHandler.wizard().next();
+         }
+-      }
+-      
+-      function pickSearchEndpoint() {
+-        searchEndpointSvc.get($scope.pendingWizardSettings.searchEndpointId)
+-          .then( function (searchEndpoint){
+-            
+-            // Maybe we should refactor to have searchEndpoint a first class object and use it
+-            // Everywhere?
+-            
+-            $scope.pendingWizardSettings.searchEngine = searchEndpoint.searchEngine;
+-            $scope.pendingWizardSettings.searchUrl = searchEndpoint.endpointUrl;
+-            $scope.pendingWizardSettings.apiMethod   = searchEndpoint.apiMethod;
+-            $scope.pendingWizardSettings.customHeaders = searchEndpoint.customHeaders;
+-            
+-            // Are there any places where we do validate(true)?
+-            validate();
+-            
+-          });        
+-      }
++      }      
+ 
+       function skipValidation() {
+         var validator = new SettingsValidatorFactory($scope.pendingWizardSettings);
+@@ -246,14 +249,14 @@ angular.module('QuepidApp')
+         }
+         
+         var validator = new SettingsValidatorFactory(settingsForValidation);
+-        
+-       
++      
+         validator.validateUrl()
+         .then(function () {
+ 
+           setupDefaults(validator);
+-
++          
+           if (!justValidate) {
++            
+             WizardHandler.wizard().next();
+           }
+         }, function () {
+@@ -299,21 +302,16 @@ angular.module('QuepidApp')
+         $scope.idFields     = validator.idFields;
+ 
+         // Since the defaults are being overridden by the editableSettings(),
+-        // make sure the default id, title, and additional fields are set
+-        // if the URL is still set as the default
+-
+-        //var searchEngine  = $scope.pendingWizardSettings.searchEngine;
+-        //var newUrl        = $scope.pendingWizardSettings.searchUrl;
+-
+-        //var settingsToUse = settingsSvc.pickSettingsToUse(searchEngine, newUrl);
+-
+-        //$scope.pendingWizardSettings.idField          = settingsToUse.idField;
+-        //$scope.pendingWizardSettings.titleField       = settingsToUse.titleField;
+-        //$scope.pendingWizardSettings.additionalFields = settingsToUse.additionalFields;
+-       // $scope.pendingWizardSettings.queryParams      = settingsToUse.queryParams;
+-
+-        // Make sure to track what you might have picked
+-        //$scope.pendingWizardSettings.apiMethod        = validator.apiMethod;
++        // we need to restore the TMDB demo settings if that matches our URL for the next screen.
++        var searchEngine  = $scope.pendingWizardSettings.searchEngine;
++        var newUrl        = $scope.pendingWizardSettings.searchUrl;
++        if (settingsSvc.demoSettingsChosen(searchEngine, newUrl)){
++          var settingsToUse = settingsSvc.getDemoSettings($scope.pendingWizardSettings.searchEngine);
++          $scope.pendingWizardSettings.idField          = settingsToUse.idField;
++          $scope.pendingWizardSettings.titleField       = settingsToUse.titleField;
++          $scope.pendingWizardSettings.additionalFields = settingsToUse.additionalFields;
++          $scope.pendingWizardSettings.queryParams      = settingsToUse.queryParams;
++        }
+       }
+ 
+       $scope.validateFieldSpec = validateFieldSpec;
+diff --git a/app/assets/javascripts/services/searchEndpointSvc.js b/app/assets/javascripts/services/searchEndpointSvc.js
+index 0fb331fe..48c8b776 100644
+--- a/app/assets/javascripts/services/searchEndpointSvc.js
++++ b/app/assets/javascripts/services/searchEndpointSvc.js
+@@ -16,18 +16,6 @@ angular.module('QuepidApp')
+         this.apiMethod    = apiMethod;
+         this.customHeaders= customHeaders;
+       };
+-
+-      this.constructFromShallowData = function(data) {
+-        return new SearchEndpoint(
+-          data.search_endpoint_id,
+-          data.name,
+-          data.search_engine,
+-          null,
+-          null,
+-          null
+-        );
+-      };
+-      
+       
+       this.constructFromData = function(data) {
+         return new SearchEndpoint(
+@@ -61,7 +49,7 @@ angular.module('QuepidApp')
+       
+       this.list = function() {
+         // http GET /api/search_endpoints
+-        var url   = 'api/search_endpoints?shallow=true';
++        var url   = 'api/search_endpoints';
+         var self  = this;
+ 
+         // Clear the list just in case the data on the server changed,
+@@ -72,7 +60,7 @@ angular.module('QuepidApp')
+         return $http.get(url)
+           .then(function(response) {
+             angular.forEach(response.data.search_endpoints, function(dataSearchEndpoint) {
+-              var searchEndpoint = self.constructFromShallowData(dataSearchEndpoint);
++              var searchEndpoint = self.constructFromData(dataSearchEndpoint);
+ 
+               if(!contains(self.searchEndpoints, searchEndpoint)) {
+                 self.searchEndpoints.push(searchEndpoint);
+@@ -94,8 +82,5 @@ angular.module('QuepidApp')
+           });
+       };
+       
+-      this.filteredEndpoints = function(searchEngine){
+-        return this.searchEndpoints.filter(function(item) { return item.searchEngine === searchEngine; });
+-      };
+     }
+   ]);
+diff --git a/app/assets/javascripts/services/settingsSvc.js b/app/assets/javascripts/services/settingsSvc.js
+index 2a7cc21c..128c4ed5 100644
+--- a/app/assets/javascripts/services/settingsSvc.js
++++ b/app/assets/javascripts/services/settingsSvc.js
+@@ -301,6 +301,10 @@ angular.module('QuepidApp')
+           return angular.copy(this.defaultSettings[searchEngine]);
+         }
+       };
++      
++      this.getDemoSettings = function(searchEngine){
++        return angular.copy(this.tmdbSettings[searchEngine]);
++      }
+ 
+       this.setCaseTries = function(tries) {
+         currSettings = new Settings(tries);
+diff --git a/app/assets/templates/views/wizardModal.html b/app/assets/templates/views/wizardModal.html
+index d6770571..358f19e5 100644
+--- a/app/assets/templates/views/wizardModal.html
++++ b/app/assets/templates/views/wizardModal.html
+@@ -30,21 +30,31 @@
+       <div>
+         <uib-accordion>
+           <div uib-accordion-group class="panel-default" heading="Use an existing Search Endpoint" >
+-            <div class="alert alert-warning" role="alert" ng-if="listSearchEndpoints().length === 0">
+-              You do not have any Search Endpoints created yet.
++            <div class="row">
++              <div class="alert alert-warning" role="alert" ng-if="listSearchEndpoints().length === 0">
++                You do not have any Search Endpoints created yet.
++              </div>
++              <select
++                id="searchEndpoint"
++                ng-if="listSearchEndpoints().length > 0"
++                ng-model="pendingWizardSettings.searchEndpointId"
++                ng-options="searchEndpoint.id as searchEndpoint.name for searchEndpoint in listSearchEndpoints()"
++                ng-change="changeSearchEndpoint()"
++              >
++              </select>
++              <small title="Manually validates Quepid can get retrieve search results from your URL before continuing" class="pull-right"><button type="button" class="btn btn-link btn-sm" ng-click="validate(true)" ng-disabled="pendingWizardSettings.searchEndpointId == null || showTLSChangeWarning">ping it</button></small>
++            </div>
++            <div ng-if="urlValid" class="alert alert-success">Quepid can search this! Hit 'Continue' to keep working through setup.</div>
++            <div class="row" style="margin-top: 50px;">
++              
++              <div class="pull-right">
++                <button class="btn btn-primary pull-right continue" ng-click="validate()" ng-disabled="pendingWizardSettings.searchEndpointId == null">Continue</button>
++                
++                <button class="btn btn-danger" ng-show="urlInvalid && !showTLSChangeWarning" ng-click="skipValidation()" ng-disabled="validating">
++                  <span ng-hide="validating">Skip Validation</span>
++                </button>
++              </div>
+             </div>
+-            <select
+-              id="searchEndpoint"
+-              ng-model="pendingWizardSettings.searchEndpointId"
+-              ng-options="searchEndpoint.id as searchEndpoint.name for searchEndpoint in listSearchEndpoints()"
+-            >
+-            </select>
+-            
+-            <button class="btn btn-primary pull-right continue" ng-click="pickSearchEndpoint()" ng-disabled="pendingWizardSettings.searchEndpointId == null">Continue</button>
+-            
+-            <button class="btn btn-danger" ng-click="skipValidation()" ng-disabled="validating" ng-show="pendingWizardSettings.searchEndpointId">
+-              <span ng-hide="validating">Skip Validation</span>
+-            </button>
+           </div>
+           <div uib-accordion-group class="panel-default" heading="Create a new Search Endpoint" ng-click="switchToCreateNewSearchEndpoint()">
+           <div style="text-align: center;">
+diff --git a/app/controllers/api/v1/import/cases_controller.rb b/app/controllers/api/v1/import/cases_controller.rb
+index fe088b92..91d7d86c 100644
+--- a/app/controllers/api/v1/import/cases_controller.rb
++++ b/app/controllers/api/v1/import/cases_controller.rb
+@@ -64,11 +64,15 @@ module Api
+             end
+           end
+ 
++          search_endpoint = @current_user.search_endpoints_involved_with.find_or_create_by(
++            params_to_use[:try][:search_endpoint]
++          )
++          params_to_use[:try][:search_endpoint_id] = search_endpoint.id
+           params_to_use[:try][:try_number] = 1
+ 
+-          @case.tries.first.update(params_to_use[:try].except(:curator_variables))
++          @case.tries.first.update(params_to_use[:try].except(:curator_variables, :search_endpoint))
+           params_to_use[:try][:curator_variables].each do |curator_variable|
+-            # not sure why build and then the @case.save doesn't cascade down.
++            # not sure why curator_variables.build and then the @case.save doesn't cascade down.
+             @case.tries.first.curator_variables.create curator_variable
+           end
+ 
+diff --git a/app/controllers/api/v1/queries_controller.rb b/app/controllers/api/v1/queries_controller.rb
+index 8a8b41f1..865139fe 100644
+--- a/app/controllers/api/v1/queries_controller.rb
++++ b/app/controllers/api/v1/queries_controller.rb
+@@ -25,7 +25,7 @@ module Api
+         query = 'BINARY query_text = ?'
+         if @case.queries.exists?([ query, q_params[:query_text] ])
+           # sometimes the query is already created even though we are hitting this..
+-          @query = @case.queries.where([ query, q_params[:query_text] ]).take
++          @query = @case.queries.find_by([ query, q_params[:query_text] ])
+           @display_order = @case.queries.map(&:id)
+           respond_with @query, @display_order
+           return
+diff --git a/app/controllers/api/v1/search_endpoints_controller.rb b/app/controllers/api/v1/search_endpoints_controller.rb
+index 67347d0e..211d52bf 100644
+--- a/app/controllers/api/v1/search_endpoints_controller.rb
++++ b/app/controllers/api/v1/search_endpoints_controller.rb
+@@ -5,7 +5,6 @@ module Api
+     class SearchEndpointsController < Api::ApiController
+       before_action :set_search_endpoint, only: [ :show ]
+       def index
+-        @shallow = params[:shallow] || true
+         @search_endpoints = current_user.search_endpoints_involved_with
+         respond_with @search_endpoints
+       end
+diff --git a/app/controllers/search_endpoints_controller.rb b/app/controllers/search_endpoints_controller.rb
+index fb29a9ad..bba73580 100644
+--- a/app/controllers/search_endpoints_controller.rb
++++ b/app/controllers/search_endpoints_controller.rb
+@@ -30,7 +30,23 @@ class SearchEndpointsController < ApplicationController
+   end
+ 
+   def update
+-    @search_endpoint.update(search_endpoint_params)
++    params_to_use = search_endpoint_params
++
++    params_to_use[:team_ids].compact_blank!
++
++    # this logic is crazy, but basically we don't want to touch the teams that are associated with
++    # an endpoint that the current_user CAN NOT see, so we clear out of the relationship all the ones
++    # they can see, and then repopulate it from the list of ids checked.  Checkboxes suck.
++    team_ids_belonging_to_user = current_user.teams.pluck(:id)
++    teams = @search_endpoint.teams.reject { |t| team_ids_belonging_to_user.include?(t.id) }
++    @search_endpoint.teams.clear
++    params_to_use[:team_ids].each do |team_id|
++      teams << Team.find(team_id)
++    end
++
++    @search_endpoint.teams.replace(teams)
++
++    @search_endpoint.update(search_endpoint_params.except(:team_ids))
+     respond_with(@search_endpoint)
+   end
+ 
+@@ -46,6 +62,7 @@ class SearchEndpointsController < ApplicationController
+   end
+ 
+   def search_endpoint_params
+-    params.require(:search_endpoint).permit(:name, :endpoint_url, :search_engine, :custom_headers, :api_method)
++    params.require(:search_endpoint).permit(:name, :endpoint_url, :search_engine, :custom_headers, :api_method,
++                                            team_ids: [])
+   end
+ end
+diff --git a/app/models/try.rb b/app/models/try.rb
+index c1b5a662..e629a5fa 100644
+--- a/app/models/try.rb
++++ b/app/models/try.rb
+@@ -60,12 +60,10 @@ class Try < ApplicationRecord
+         static_args
+       when 'es'
+         es_args
+-      when 'os'
++      when 'os', 'searchapi'
+         os_args
+       when 'vectara'
+         vectara_args
+-      when 'searchapi'
+-        os_args
+       end
+     end
+   end
+diff --git a/app/views/api/v1/export/cases/_try.json.jbuilder b/app/views/api/v1/export/cases/_try.json.jbuilder
+index 6d8facfe..8a18a1f2 100644
+--- a/app/views/api/v1/export/cases/_try.json.jbuilder
++++ b/app/views/api/v1/export/cases/_try.json.jbuilder
+@@ -1,15 +1,17 @@
+ # frozen_string_literal: true
+ 
+-json.custom_headers try.custom_headers
+ json.escape_query   try.escape_query
+-json.api_method     try.api_method
+ json.field_spec     try.field_spec
+ json.name           try.name
+ json.number_of_rows try.number_of_rows
+ json.query_params   try.query_params
+-json.search_engine  try.search_engine
+-json.search_url     try.search_url
+ 
+ json.curator_variables do
+   json.array! try.curator_variables, partial: 'curator_variable', as: :curator_variable
+ end
++
++if try.search_endpoint.present?
++  json.search_endpoint do
++    json.partial! 'api/v1/search_endpoints/search_endpoint', search_endpoint: try.search_endpoint, export: true
++  end
++end
+diff --git a/app/views/api/v1/search_endpoints/_search_endpoint.json.jbuilder b/app/views/api/v1/search_endpoints/_search_endpoint.json.jbuilder
+index 837f8080..d1943fe7 100644
+--- a/app/views/api/v1/search_endpoints/_search_endpoint.json.jbuilder
++++ b/app/views/api/v1/search_endpoints/_search_endpoint.json.jbuilder
+@@ -1,12 +1,10 @@
+ # frozen_string_literal: true
+ 
+-shallow ||= false
++export ||= false
+ 
+ json.name                   search_endpoint.fullname
+-json.search_endpoint_id     search_endpoint.id
++json.search_endpoint_id     search_endpoint.id unless export
+ json.endpoint_url           search_endpoint.endpoint_url
+ json.search_engine          search_endpoint.search_engine
+-unless shallow
+-  json.api_method           search_endpoint.api_method
+-  json.custom_headers       search_endpoint.custom_headers
+-end
++json.api_method             search_endpoint.api_method
++json.custom_headers         search_endpoint.custom_headers
+diff --git a/app/views/layouts/_sidebar.html.erb b/app/views/layouts/_sidebar.html.erb
+index 8463e79d..889f8ea5 100644
+--- a/app/views/layouts/_sidebar.html.erb
++++ b/app/views/layouts/_sidebar.html.erb
+@@ -108,17 +108,6 @@
+           ></i>
+         <% end %>
+       </li>
+-      <li>
+-        <%= link_to books_path, class: "nav-link #{make_active?({path: 'book'}) ? 'active' : ''} py-3 border-bottom rounded-0", 'data-bs-toggle':'tooltip', 'data-bs-placement':'right', 'aria-label':'Judgements', 'data-bs-original-title':'Judgements' do %>
+-          <i
+-            class="fa fa-book"
+-            aria-hidden="true"
+-            title="Judgements"
+-            alt="Judgements"
+-            style="font-size: 1.5rem; color: <%= make_active?({path: 'book'}) ? 'white' : 'cornflowerblue' %>;"
+-          ></i>
+-        <% end %>
+-      </li>
+       <li>
+         <%= link_to scorers_path, class: "nav-link #{make_active?({path: 'scorers'}) ? 'active' : ''} py-3 border-bottom rounded-0", 'data-bs-toggle':'tooltip', 'data-bs-placement':'right', 'aria-label':'Scorers', 'data-bs-original-title':'Scorers' do %>
+           <i
+diff --git a/app/views/search_endpoints/_form.html.erb b/app/views/search_endpoints/_form.html.erb
+index 56ed5ce3..e521d6a9 100644
+--- a/app/views/search_endpoints/_form.html.erb
++++ b/app/views/search_endpoints/_form.html.erb
+@@ -25,7 +25,7 @@
+     <%= form.label :search_engine, class: 'form-label' %>
+     <%= form.text_field :search_engine %>
+     
+-    <div class="form-text">Options are <code>solr</code>, <code>es</code>, <code>os</code>, <code>static</code>, and <code>vectara</code>.</div>
++    <div class="form-text">Options are <code>solr</code>, <code>es</code>, <code>os</code>, <code>static</code>, <code>searchapi</code>, and <code>vectara</code>.</div>
+   </div>
+ 
+   <div class="mb-3">
+@@ -37,6 +37,17 @@
+     <%= form.label :api_method, class: 'form-label' %>
+     <%= form.text_field :api_method %>
+   </div>
++  
++  <div class="mb-3">
++    <%=search_endpoint.teams.count %>
++    <%= form.label :teams, class: 'form-label' %>
++    <%= form.collection_check_boxes(:team_ids, @current_user.teams, :id, :name) do |b| %>
++      <div class="collection-check-box">
++        <%= b.check_box %>
++        <%= b.label %>
++      </div>
++    <% end %>
++  </div>
+ 
+   <div class="actions">
+     <%= form.submit %>
+diff --git a/app/views/search_endpoints/edit.html.erb b/app/views/search_endpoints/edit.html.erb
+index aacbf60b..7bfc4359 100644
+--- a/app/views/search_endpoints/edit.html.erb
++++ b/app/views/search_endpoints/edit.html.erb
+@@ -16,6 +16,6 @@
+ 
+ <br>
+ 
+-<%= button_to 'Delete Search Endpoint', @search_endpoint, method: :delete %>
++<%= button_to 'Delete Search Endpoint', @search_endpoint, method: :delete, data: {turbo_method: :delete, turbo_confirm: 'Are you sure?'} %>
+ 
+ </div>
+diff --git a/app/views/search_endpoints/new.html.erb b/app/views/search_endpoints/new.html.erb
+index ab127e50..3f422f55 100644
+--- a/app/views/search_endpoints/new.html.erb
++++ b/app/views/search_endpoints/new.html.erb
+@@ -1,9 +1,13 @@
+-<h1>New search endpoint</h1>
++<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
++  <h1 class="h2">New Search Endpoint</h1>
++  <div class="btn-toolbar mb-2 mb-md-0">
++    <div class="btn-group me-2">
++      <%= link_to 'New Search Endpoint', new_search_endpoint_path, class: "btn btn-sm btn-outline-secondary" %>
++    </div>
++  </div>
++</div>
+ 
+ <%= render "form", search_endpoint: @search_endpoint %>
+-
+ <br>
+-
+-<div>
+-  <%= link_to "Back to search endpoints", search_endpoints_path %>
+-</div>
++<%= button_to 'Back to Search Endpoints', search_endpoints_path, method: :get %>
++<br>
+diff --git a/test/controllers/api/v1/export/cases_controller_test.rb b/test/controllers/api/v1/export/cases_controller_test.rb
+index 6f9b78d3..9f666101 100644
+--- a/test/controllers/api/v1/export/cases_controller_test.rb
++++ b/test/controllers/api/v1/export/cases_controller_test.rb
+@@ -31,6 +31,8 @@ module Api
+ 
+             assert_not_nil body['try']
+             assert_not_empty body['try']['curator_variables']
++            assert_not_empty body['try']['search_endpoint']
++            assert_nil body['try']['search_endpoint']['scorer_id']
+           end
+         end
+       end
+diff --git a/test/controllers/api/v1/import/cases_controller_test.rb b/test/controllers/api/v1/import/cases_controller_test.rb
+index 978596d3..77c6befd 100644
+--- a/test/controllers/api/v1/import/cases_controller_test.rb
++++ b/test/controllers/api/v1/import/cases_controller_test.rb
+@@ -8,6 +8,7 @@ module Api
+       class CasesControllerTest < ActionController::TestCase
+         let(:user) { users(:random) }
+         let(:acase) { cases(:queries_case) }
++        let(:search_endpoint) { search_endpoints(:one) }
+ 
+         before do
+           @controller = Api::V1::Import::CasesController.new
+@@ -117,15 +118,13 @@ module Api
+               case_name:   'test case',
+               owner_email: user.email,
+               scorer:      acase.scorer.as_json(only: [ :name ]),
+-
+               try:         {
+-                custom_headers:    nil,
+                 curator_variables: [ {
+                   name:  'anInt',
+                   value: 1,
+                 } ],
+                 escape_query:      true,
+-                api_method:        'JSONP',
++                search_endpoint:   search_endpoint.as_json(except: [ :id, :owner_id, :created_at, :updated_at ]),
+               },
+               queries:     [
+                 {
+@@ -176,6 +175,7 @@ module Api
+             assert_equal 1, @case.tries.count
+             assert_equal 1, @case.tries.first.curator_variables.count
+             assert_equal user, @case.owner
++            assert_equal search_endpoint.endpoint_url, @case.tries.first.search_endpoint.endpoint_url
+           end
+         end
+       end
+diff --git a/test/controllers/search_endpoints_controller_test.rb b/test/controllers/search_endpoints_controller_test.rb
+index dd5465d0..f3a0d7fd 100644
+--- a/test/controllers/search_endpoints_controller_test.rb
++++ b/test/controllers/search_endpoints_controller_test.rb
+@@ -30,6 +30,7 @@ class SearchEndpointsControllerTest < ActionDispatch::IntegrationTest
+              endpoint_url:   @search_endpoint.endpoint_url,
+              name:           @search_endpoint.name,
+              search_engine:  @search_endpoint.search_engine,
++             team_ids:       @search_endpoint.teams.pluck(:id),
+            } }
+     end
+ 
+@@ -54,6 +55,7 @@ class SearchEndpointsControllerTest < ActionDispatch::IntegrationTest
+             endpoint_url:   @search_endpoint.endpoint_url,
+             name:           @search_endpoint.name,
+             search_engine:  @search_endpoint.search_engine,
++            team_ids:       @search_endpoint.teams.pluck(:id),
+           } }
+     assert_redirected_to search_endpoint_url(@search_endpoint)
+   end
+diff --git a/test/system/search_endpoints_test.rb b/test/system/search_endpoints_test.rb
+index 7ddac30e..10d834de 100644
+--- a/test/system/search_endpoints_test.rb
++++ b/test/system/search_endpoints_test.rb
+@@ -2,6 +2,8 @@
+ 
+ require 'application_system_test_case'
+ 
++# If we start using these, we should enable
++# Capybara/ClickLinkOrButtonStyle
+ class SearchEndpointsTest < ApplicationSystemTestCase
+   setup do
+     @search_endpoint = search_endpoints(:one)

@@ -109,17 +109,6 @@
         <% end %>
       </li>
       <li>
-        <%= link_to books_path, class: "nav-link #{make_active?({path: 'book'}) ? 'active' : ''} py-3 border-bottom rounded-0", 'data-bs-toggle':'tooltip', 'data-bs-placement':'right', 'aria-label':'Judgements', 'data-bs-original-title':'Judgements' do %>
-          <i
-            class="fa fa-book"
-            aria-hidden="true"
-            title="Judgements"
-            alt="Judgements"
-            style="font-size: 1.5rem; color: <%= make_active?({path: 'book'}) ? 'white' : 'cornflowerblue' %>;"
-          ></i>
-        <% end %>
-      </li>
-      <li>
         <%= link_to scorers_path, class: "nav-link #{make_active?({path: 'scorers'}) ? 'active' : ''} py-3 border-bottom rounded-0", 'data-bs-toggle':'tooltip', 'data-bs-placement':'right', 'aria-label':'Scorers', 'data-bs-original-title':'Scorers' do %>
           <i
             class="bi bi-list-task"

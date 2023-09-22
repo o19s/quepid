@@ -16,18 +16,6 @@ angular.module('QuepidApp')
         this.apiMethod    = apiMethod;
         this.customHeaders= customHeaders;
       };
-
-      this.constructFromShallowData = function(data) {
-        return new SearchEndpoint(
-          data.search_endpoint_id,
-          data.name,
-          data.search_engine,
-          null,
-          null,
-          null
-        );
-      };
-      
       
       this.constructFromData = function(data) {
         return new SearchEndpoint(
@@ -61,7 +49,7 @@ angular.module('QuepidApp')
       
       this.list = function() {
         // http GET /api/search_endpoints
-        var url   = 'api/search_endpoints?shallow=true';
+        var url   = 'api/search_endpoints';
         var self  = this;
 
         // Clear the list just in case the data on the server changed,
@@ -72,7 +60,7 @@ angular.module('QuepidApp')
         return $http.get(url)
           .then(function(response) {
             angular.forEach(response.data.search_endpoints, function(dataSearchEndpoint) {
-              var searchEndpoint = self.constructFromShallowData(dataSearchEndpoint);
+              var searchEndpoint = self.constructFromData(dataSearchEndpoint);
 
               if(!contains(self.searchEndpoints, searchEndpoint)) {
                 self.searchEndpoints.push(searchEndpoint);
@@ -94,8 +82,5 @@ angular.module('QuepidApp')
           });
       };
       
-      this.filteredEndpoints = function(searchEngine){
-        return this.searchEndpoints.filter(function(item) { return item.searchEngine === searchEngine; });
-      };
     }
   ]);

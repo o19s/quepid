@@ -301,6 +301,10 @@ angular.module('QuepidApp')
           return angular.copy(this.defaultSettings[searchEngine]);
         }
       };
+      
+      this.getDemoSettings = function(searchEngine){
+        return angular.copy(this.tmdbSettings[searchEngine]);
+      }
 
       this.setCaseTries = function(tries) {
         currSettings = new Settings(tries);

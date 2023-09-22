@@ -25,7 +25,7 @@ module Api
         query = 'BINARY query_text = ?'
         if @case.queries.exists?([ query, q_params[:query_text] ])
           # sometimes the query is already created even though we are hitting this..
-          @query = @case.queries.where([ query, q_params[:query_text] ]).take
+          @query = @case.queries.find_by([ query, q_params[:query_text] ])
           @display_order = @case.queries.map(&:id)
           respond_with @query, @display_order
           return

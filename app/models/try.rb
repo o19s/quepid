@@ -60,12 +60,10 @@ class Try < ApplicationRecord
         static_args
       when 'es'
         es_args
-      when 'os'
+      when 'os', 'searchapi'
         os_args
       when 'vectara'
         vectara_args
-      when 'searchapi'
-        os_args
       end
     end
   end

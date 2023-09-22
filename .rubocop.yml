@@ -16,6 +16,9 @@ AllCops:
     - config/initializers/content_security_policy.rb
     - test/support/json_response.rb
 
+Capybara/ClickLinkOrButtonStyle:
+  Enabled: false # we aren't running system tests
+  
 Rails/I18nLocaleTexts:
   Enabled: false  # we are only english
 
@@ -42,9 +45,6 @@ Lint/MissingSuper:
 
 Style/GuardClause:
   Enabled: false # I don't like this one, so ignore it!
-
-
-
 
 Rails:
   Enabled: true
