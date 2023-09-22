@@ -120,7 +120,7 @@ angular.module('QuepidApp')
 
         
         $scope.reset();
-      }
+      };
       
       // used when you swap radio buttons for the search engine.
       $scope.changeSearchEngine = function() {
