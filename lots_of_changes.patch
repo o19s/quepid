@@ -1,0 +1,413 @@
+diff --git a/Dockerfile.prod b/Dockerfile.prod
+index a225f736..4fa812bf 100644
+--- a/Dockerfile.prod
++++ b/Dockerfile.prod
+@@ -36,6 +36,7 @@ RUN gem install bundler:2.4.9
+ 
+ # Clean up Bundle
+ RUN bundle config set without 'development test'
++RUN bundle config set deployment true
+ RUN bundle install && \
+   bundle clean --force && \
+   rm -rf /app/.bundle/cache && \
+diff --git a/app/assets/javascripts/controllers/queryParams.js b/app/assets/javascripts/controllers/queryParams.js
+index 17547030..a9e51b17 100644
+--- a/app/assets/javascripts/controllers/queryParams.js
++++ b/app/assets/javascripts/controllers/queryParams.js
+@@ -114,14 +114,30 @@ angular.module('QuepidApp')
+       };
+ 
+       $scope.changeSearchEngine = function() {
++        var searchEndpointToUse = $scope.searchEndpoints.find(obj => obj.id === $scope.settings.searchEndpointId);
+         $scope.settings.reset();
+         $scope.validateSearchEngineUrl();
+       };
+       
+       $scope.changeSearchEngine2 = function() {
+         console.log('In changeSearchEngine2 and we dont do anything here!');
+-        //$scope.settings.reset();
+-        //$scope.validateSearchEngineUrl();
++        var searchEndpointToUse = $scope.searchEndpoints.find(obj => obj.id === $scope.settings.searchEndpointId);
++      
++        // From search endpoint
++        //$scope.settings.pendingSettings.searchEngine             = searchEndpointToUse.searchEngine;
++        //$scope.settings.pendingSettings.searchUrl                = searchEndpointToUse.endpointUrl; // notice remapping
++        //$scope.settings.pendingSettings.apiMethod                = searchEndpointToUse.apiMethod;
++        //$scope.settings.pendingSettings.customHeaders            = searchEndpointToUse.customHeaders;
++        
++        // Now grab default settings for the type of search endpoint you are using
++        //var settings = settingsSvc.pickSettingsToUse($scope.pendingWizardSettings.searchEngine, $scope.pendingWizardSettings.searchUrl);         
++        //$scope.pendingWizardSettings.additionalFields         = settings.additionalFields;
++        //$scope.pendingWizardSettings.fieldSpec                = settings.fieldSpec;
++        //$scope.pendingWizardSettings.idField                  = settings.idField;
++        //$scope.pendingWizardSettings.queryParams              = settings.queryParams;
++        //$scope.pendingWizardSettings.titleField               = settings.titleField;
++        $scope.settings.reset();
++        $scope.validateSearchEngineUrl();
+       };      
+     }
+   ]);
+diff --git a/app/assets/javascripts/controllers/queryParamsHistory.js b/app/assets/javascripts/controllers/queryParamsHistory.js
+index 4eca7e1b..0c5611a7 100644
+--- a/app/assets/javascripts/controllers/queryParamsHistory.js
++++ b/app/assets/javascripts/controllers/queryParamsHistory.js
+@@ -8,12 +8,8 @@ angular.module('QuepidApp')
+     function($scope, $uibModal, flash, caseTryNavSvc) {
+       var urlsIveSeen = {};
+ 
+-      // This method trys to group search urls into names.
+-      // we use this to do some colour grouping in the history view by engine
+-      // and we use it to name the engine.  Eventually we will name our engines
+-      // and this can go away.
+-      // There is a known bug that after running the wizard, we have TWO tries, one
+-      // with a null url, and one that is actually from what you defined in the Wizard.
++      // This method trys to group search end urls into
++      // buckets to apply colour coding.
+       $scope.urlBucket = function(url, numBuckets) {
+         urlsIveSeen[url] = 0;
+         var allUrls = Object.keys(urlsIveSeen);
+diff --git a/app/assets/javascripts/controllers/settings.js b/app/assets/javascripts/controllers/settings.js
+index df6fbf7a..79dd5279 100644
+--- a/app/assets/javascripts/controllers/settings.js
++++ b/app/assets/javascripts/controllers/settings.js
+@@ -5,11 +5,11 @@ angular.module('QuepidApp')
+   .controller('SettingsCtrl', [
+     '$scope','$location',
+     'flash',
+-    'settingsSvc',
++    'settingsSvc','searchEndpointSvc',
+     function (
+       $scope, $location, 
+       flash, 
+-      settingsSvc
++      settingsSvc, searchEndpointSvc,
+     ) {
+       $scope.settingsModel = {};
+       $scope.pendingSettings = {
+@@ -18,15 +18,22 @@ angular.module('QuepidApp')
+         titleField:   '',
+         searchEndpointId: ''
+       };
++      
++      searchEndpointSvc.list()
++       .then(function() {
++         $scope.searchEndpoints = searchEndpointSvc.searchEndpoints;        
++       });      
+             
+       $scope.settingsModel.settingsId = function() {
++        console.log("$scope.settingsModel.settingsId returning settingsid")
+         return settingsSvc.settingsId();
+       };
+ 
+       var reset = function() {
++        console.log("settings.reset");
+         var currSettings = settingsSvc.editableSettings();
+         if ( this.searchEndpointId !== currSettings.searchEndpointId) {
+-          console.log('We dont do this anymore');
++          var searchEndpointToUse = $scope.searchEndpoints.find(obj => obj.id === $scope.settings.searchEndpointId);
+           //currSettings = settingsSvc.pickSettingsToUse($scope.pendingSettings.searchEngine, null);
+           //currSettings.fieldSpec = currSettings.fieldSpec + ', ' + currSettings.additionalFields.join(', ');
+           //$scope.pendingSettings.urlFormat = currSettings.urlFormat;
+@@ -37,7 +44,7 @@ angular.module('QuepidApp')
+         //this.apiMethod                = currSettings.apiMethod;
+ 
+ 
+-        if (false){
++
+         if (this.searchEngine === 'solr') {
+           var quepidStartsWithHttps = $location.protocol() === 'https';
+           if (quepidStartsWithHttps === true){
+@@ -50,7 +57,7 @@ angular.module('QuepidApp')
+         else {
+           this.searchUrl = currSettings.searchUrl;
+         }
+-        }
++        
+ 
+ 
+         this.fieldSpec                = currSettings.fieldSpec;
+@@ -60,23 +67,29 @@ angular.module('QuepidApp')
+         this.submit = submit;
+       };
+ 
++
++      
+       $scope.$watch('settingsModel.settingsId()', function() {
+-        // Reinit our pending settings from the service
+-        $scope.pendingSettings = settingsSvc.editableSettings();
+-        $scope.pendingSettings.reset = reset;
++          console.log('$scope.$watch(settingsModel.settingsId()');
++         // As updates to our settings are successfully submitted, the settingsId() is incremented, which
++         // triggers this, and then we update the pendingSettings for the UI.
++         // Reinit our pending settings from the service
++         $scope.pendingSettings = settingsSvc.editableSettings();
++         $scope.pendingSettings.reset = reset;
+ 
+-        if ( angular.isDefined($scope.pendingSettings.searchEngine) && $scope.pendingSettings.searchEngine !== null ) {
+-          var settingsToUse = settingsSvc.pickSettingsToUse($scope.pendingSettings.searchEngine, $scope.pendingSettings.searchUrl);
+-          $scope.pendingSettings.urlFormat = settingsToUse.urlFormat;
++         if ( angular.isDefined($scope.pendingSettings.searchEngine) && $scope.pendingSettings.searchEngine !== null ) {
++           var settingsToUse = settingsSvc.pickSettingsToUse($scope.pendingSettings.searchEngine, $scope.pendingSettings.searchUrl);
++           $scope.pendingSettings.urlFormat = settingsToUse.urlFormat;
+           
+-          // pass pending settings onward to be saved
+-          $scope.pendingSettings.submit = submit;
+-        }
++           // pass pending settings onward to be saved
++           $scope.pendingSettings.submit = submit;
++         }
+ 
+ 
+       });
+ 
+       function submit () {
++        console.log("settings.submit");
+         if ( $scope.pendingSettings.searchEngine === 'es'  || $scope.pendingSettings.searchEngine === 'os' ||
+              $scope.pendingSettings.searchEngine === 'vectara') {
+           // Verify that JSON is valid
+@@ -88,15 +101,16 @@ angular.module('QuepidApp')
+             return;
+           }
+ 
++          // With the Seach Endpoint Refactor, this is done in case wizard or in server side code.
+           // Verify that custom headers are valid if set
+-          try {
+-            if ($scope.pendingSettings.customHeaders.length > 0) {
+-              JSON.parse($scope.pendingSettings.customHeaders);
+-            }
+-          } catch (e) {
+-            flash.error = 'Please provide a valid JSON object for the custom headers.';
+-            return;
+-          }
++          //try {
++          //  if ($scope.pendingSettings.customHeaders.length > 0) {
++          //    JSON.parse($scope.pendingSettings.customHeaders);
++          //  }
++          //} catch (e) {
++          //  flash.error = 'Please provide a valid JSON object for the custom headers.';
++          //  return;
++          //}
+ 
+         }
+ 
+diff --git a/app/assets/javascripts/controllers/wizardModal.js b/app/assets/javascripts/controllers/wizardModal.js
+index b74901bf..1962126c 100644
+--- a/app/assets/javascripts/controllers/wizardModal.js
++++ b/app/assets/javascripts/controllers/wizardModal.js
+@@ -16,6 +16,11 @@ angular.module('QuepidApp')
+     ) {
+       $log.debug('Init Wizard settings ctrl');
+       
++      $scope.cancel = function () {
++        $uibModalInstance.dismiss('cancel');
++      };
++
++      
+       $scope.isStaticCollapsed = true;
+       $scope.staticContent = {
+         content: null,
+diff --git a/app/assets/javascripts/services/settingsSvc.js b/app/assets/javascripts/services/settingsSvc.js
+index c2b1aa16..cca708f2 100644
+--- a/app/assets/javascripts/services/settingsSvc.js
++++ b/app/assets/javascripts/services/settingsSvc.js
+@@ -149,10 +149,7 @@ angular.module('QuepidApp')
+         searchapi: {
+           queryParams: [
+             '{',
+-            '  "query": "united states",',
+-            '  "searchType": "mdc_globalsearch_research",',
+-            '  "index": "mdc_research",',
+-            '  "size": 1',
++            '  "query": "QUERY_THAT_MATCHES_AT_LEAST_ONE_DOC"',
+             '}'
+           ].join('\n'),
+           escapeQuery: true,
+@@ -428,7 +425,6 @@ angular.module('QuepidApp')
+         var payloadSearchEndpoint = {};
+         payload.try = payloadTry;
+         payload.search_endpoint = payloadSearchEndpoint;
+-
+         payload.parent_try_number = settingsToSave.selectedTry.tryNo;
+         payload.curator_vars = settingsToSave.selectedTry.curatorVarsDict();
+ 
+@@ -439,13 +435,19 @@ angular.module('QuepidApp')
+         payloadTry.field_spec = settingsToSave.fieldSpec;
+         payloadTry.number_of_rows = settingsToSave.numberOfRows;
+         payloadTry.query_params = settingsToSave.selectedTry.queryParams;
+-        payloadSearchEndpoint.search_endpoint_id = settingsToSave.searchEndpointId;
+-        payloadSearchEndpoint.search_engine = settingsToSave.searchEngine;
+-        payloadSearchEndpoint.endpoint_url = settingsToSave.searchUrl;
+-        payloadSearchEndpoint.api_method = settingsToSave.apiMethod;
+-        payloadSearchEndpoint.custom_headers = settingsToSave.customHeaders;
+-
+-
++        
++        // Either we are changing to a different, existing search endpoint
++        if (settingsToSave.searchEndpointId){
++          payloadTry.search_endpoint_id = settingsToSave.searchEndpointId;
++        }
++        // Or we are creating a new one.
++        else {
++          payloadSearchEndpoint.search_engine = settingsToSave.searchEngine;
++          payloadSearchEndpoint.endpoint_url = settingsToSave.searchUrl;
++          payloadSearchEndpoint.api_method = settingsToSave.apiMethod;
++          payloadSearchEndpoint.custom_headers = settingsToSave.customHeaders;
++        }
++        
+         return $http.post('api/cases/' + currCaseNo + '/tries', payload)
+           .then(function(response) {
+             var tryJson = response.data;
+diff --git a/app/assets/templates/views/devQueryParams.html b/app/assets/templates/views/devQueryParams.html
+index 5a5ae3d9..5d78cfc1 100644
+--- a/app/assets/templates/views/devQueryParams.html
++++ b/app/assets/templates/views/devQueryParams.html
+@@ -98,9 +98,10 @@
+     <div
+       class="settings-tab"
+       ng-show="qp.curTab == 'engineSettings'"
+-      ng-init="devSettingsFields.toggle = devSettingsUrl.toggle = devSettingsSearchEngine.toggle = devSettingsNumResults.toggle = devSettingsEscapeQueries.toggle = true"
++      ng-init="devSettingsFields.toggle = devSettingsUrl.toggle = devSettingsSearchEndpoint.toggle = devSettingsNumResults.toggle = devSettingsEscapeQueries.toggle = true"
+     >
+       <div class="rerunnable-settings-tab">
++        $scope.pendingSettings: {{$scope.pendingSettings}}
+         <!-- Search Engine -->
+         <div class="setting-div">
+           <div class="dev-header" ng-click="devSettingsSearchEndpoint.toggle = !devSettingsSearchEndpoint.toggle">
+@@ -116,7 +117,7 @@
+               <select              
+                 ng-model="settings.searchEndpointId"
+                 ng-options="searchEndpoint.id as searchEndpoint.name for searchEndpoint in listSearchEndpoints()"
+-                ng-change="changeSearchEngine2()"
++                ng-change="changeSearchEngine()"
+                 class="form-control"
+               >
+               </select>
+diff --git a/app/assets/templates/views/searchResults.html b/app/assets/templates/views/searchResults.html
+index 2917f12b..6c9b25d3 100644
+--- a/app/assets/templates/views/searchResults.html
++++ b/app/assets/templates/views/searchResults.html
+@@ -153,7 +153,7 @@
+             Peek at the next page of results
+           </a>
+         </span>
+-
++query browse: {{query.browseUrl()}}
+         <span ng-if="selectedTry.searchEngine == 'solr'">
+           <a ng-show="query.state() !== 'error'" class="btn btn-primary" href="{{query.browseUrl()}}" target="_blank">
+             <ng-pluralize count="query.numFound"
+@@ -185,8 +185,9 @@
+           >
+             Peek at the next page of results
+           </a>
++          query browse: {{query.browseUrl()}}
+         </span>
+-
++        browser url: {{query.browseUrl()}}
+         <span ng-if="selectedTry.searchEngine == 'solr'">
+           <a ng-show="query.state() !== 'error'" class="btn btn-primary" href="{{query.browseUrl()}}" target="_blank">
+             <ng-pluralize count="query.getNumFound()"
+diff --git a/app/assets/templates/views/wizardModal.html b/app/assets/templates/views/wizardModal.html
+index 358f19e5..a91b5977 100644
+--- a/app/assets/templates/views/wizardModal.html
++++ b/app/assets/templates/views/wizardModal.html
+@@ -1,4 +1,5 @@
+ <div class="modal-body" id="wizard">
++  <button type="button" class="close" ng-click="cancel()" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+   <wizard on-finish="pendingWizardSettings.submit()">
+     <wz-step title="Welcome" id="step-one">
+       <h1>Welcome To Quepid!</h1>
+diff --git a/app/controllers/api/v1/team_cases_controller.rb b/app/controllers/api/v1/team_cases_controller.rb
+index 49ec3386..ebd8942c 100644
+--- a/app/controllers/api/v1/team_cases_controller.rb
++++ b/app/controllers/api/v1/team_cases_controller.rb
+@@ -20,6 +20,11 @@ module Api
+         end
+ 
+         @team.cases << @case unless @team.cases.exists?(@case.id)
++        # if you share a case with a team, you also share it's search endpoint
++        search_endpoint = @case.tries.first.search_endpoint
++        if search_endpoint
++          @team.search_endpoints << search_endpoint unless @team.search_endpoints.exists?(search_endpoint.id)
++        end
+ 
+         if @team.save
+           Analytics::Tracker.track_case_shared_event current_user, @case, @team
+diff --git a/app/controllers/api/v1/tries_controller.rb b/app/controllers/api/v1/tries_controller.rb
+index dfa5c181..adaffd25 100644
+--- a/app/controllers/api/v1/tries_controller.rb
++++ b/app/controllers/api/v1/tries_controller.rb
+@@ -26,14 +26,10 @@ module Api
+ 
+         @try = @case.tries.build try_parameters_to_use
+ 
+-        search_endpoint_params_to_use = search_endpoint_params
+-        # puts 'Here are the search_endpoint_params_to_use'
+-        # not quite right because it could be via team, needs to be a scope.
+-        search_endpoint_params_to_use['owner_id'] = @case.owner_id
+-        # puts search_endpoint_params_to_use
+-
+-        unless search_endpoint_params_to_use['search_engine'].nil?
+-          search_endpoint = @current_user.search_endpoints_involved_with.find_or_create_by search_endpoint_params_to_use
++        puts "here is search_endpoint_params"
++        puts params[:search_endpoint].empty?
++        unless params[:search_endpoint].empty?
++          search_endpoint = @current_user.search_endpoints_involved_with.find_or_create_by search_endpoint_params
+           @try.search_endpoint = search_endpoint
+         end
+ 
+@@ -119,7 +115,7 @@ module Api
+           :name,
+           :number_of_rows,
+           :query_params,
+-          :parent_id  # need this one?
++          :search_endpoint_id,
+         )
+       end
+ 
+diff --git a/app/views/search_endpoints/_search_endpoint.html.erb b/app/views/search_endpoints/_search_endpoint.html.erb
+index 642566c3..113b3376 100644
+--- a/app/views/search_endpoints/_search_endpoint.html.erb
++++ b/app/views/search_endpoints/_search_endpoint.html.erb
+@@ -23,5 +23,10 @@
+     <strong>Api method:</strong>
+     <%= search_endpoint.api_method %>
+   </p>
++  
++  <p>
++  <strong>Related teams:</strong>
++  <%= render(partial: 'team', collection: search_endpoint.teams, as: :team) || "There are no teams associated." %>
++  </p>
+ 
+ </div>
+diff --git a/docker-compose.yml b/docker-compose.yml
+index e277d1ef..f4c45805 100644
+--- a/docker-compose.yml
++++ b/docker-compose.yml
+@@ -70,7 +70,7 @@ services:
+ 
+ 
+   nginx:
+-    image: nginx:1.25.2
++    image: nginx:1.25.2-alpine-slim
+     container_name: quepid_nginx
+     ports:
+       - "443:8443"
+diff --git a/test/controllers/api/v1/team_cases_controller_test.rb b/test/controllers/api/v1/team_cases_controller_test.rb
+index af94a7f7..1a4346d5 100644
+--- a/test/controllers/api/v1/team_cases_controller_test.rb
++++ b/test/controllers/api/v1/team_cases_controller_test.rb
+@@ -22,10 +22,13 @@ module Api
+ 
+       describe 'Adds new cases to team' do
+         test 'adds a new case successfully' do
++          assert_not_nil acase.tries.first.search_endpoint
+           assert_difference 'team.cases.count' do
+-            post :create, params: { team_id: team.id, id: acase.id }
++            assert_difference 'team.search_endpoints.count' do
++              post :create, params: { team_id: team.id, id: acase.id }
+ 
+-            assert_response :ok
++              assert_response :ok
++            end
+           end
+         end
