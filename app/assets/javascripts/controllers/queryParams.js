@@ -114,14 +114,30 @@ angular.module('QuepidApp')
       };
 
       $scope.changeSearchEngine = function() {
+        var searchEndpointToUse = $scope.searchEndpoints.find(obj => obj.id === $scope.settings.searchEndpointId);
         $scope.settings.reset();
         $scope.validateSearchEngineUrl();
       };
       
       $scope.changeSearchEngine2 = function() {
         console.log('In changeSearchEngine2 and we dont do anything here!');
-        //$scope.settings.reset();
-        //$scope.validateSearchEngineUrl();
+        var searchEndpointToUse = $scope.searchEndpoints.find(obj => obj.id === $scope.settings.searchEndpointId);
+      
+        // From search endpoint
+        //$scope.settings.pendingSettings.searchEngine             = searchEndpointToUse.searchEngine;
+        //$scope.settings.pendingSettings.searchUrl                = searchEndpointToUse.endpointUrl; // notice remapping
+        //$scope.settings.pendingSettings.apiMethod                = searchEndpointToUse.apiMethod;
+        //$scope.settings.pendingSettings.customHeaders            = searchEndpointToUse.customHeaders;
+        
+        // Now grab default settings for the type of search endpoint you are using
+        //var settings = settingsSvc.pickSettingsToUse($scope.pendingWizardSettings.searchEngine, $scope.pendingWizardSettings.searchUrl);         
+        //$scope.pendingWizardSettings.additionalFields         = settings.additionalFields;
+        //$scope.pendingWizardSettings.fieldSpec                = settings.fieldSpec;
+        //$scope.pendingWizardSettings.idField                  = settings.idField;
+        //$scope.pendingWizardSettings.queryParams              = settings.queryParams;
+        //$scope.pendingWizardSettings.titleField               = settings.titleField;
+        $scope.settings.reset();
+        $scope.validateSearchEngineUrl();
       };      
     }
   ]);

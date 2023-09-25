@@ -153,7 +153,7 @@
             Peek at the next page of results
           </a>
         </span>
-
+query browse: {{query.browseUrl()}}
         <span ng-if="selectedTry.searchEngine == 'solr'">
           <a ng-show="query.state() !== 'error'" class="btn btn-primary" href="{{query.browseUrl()}}" target="_blank">
             <ng-pluralize count="query.numFound"
@@ -185,8 +185,9 @@
           >
             Peek at the next page of results
           </a>
+          query browse: {{query.browseUrl()}}
         </span>
-
+        browser url: {{query.browseUrl()}}
         <span ng-if="selectedTry.searchEngine == 'solr'">
           <a ng-show="query.state() !== 'error'" class="btn btn-primary" href="{{query.browseUrl()}}" target="_blank">
             <ng-pluralize count="query.getNumFound()"

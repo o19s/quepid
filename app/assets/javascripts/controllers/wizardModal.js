@@ -16,6 +16,11 @@ angular.module('QuepidApp')
     ) {
       $log.debug('Init Wizard settings ctrl');
       
+      $scope.cancel = function () {
+        $uibModalInstance.dismiss('cancel');
+      };
+
+      
       $scope.isStaticCollapsed = true;
       $scope.staticContent = {
         content: null,

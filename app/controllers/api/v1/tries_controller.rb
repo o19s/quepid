@@ -26,14 +26,10 @@ module Api
 
         @try = @case.tries.build try_parameters_to_use
 
-        search_endpoint_params_to_use = search_endpoint_params
-        # puts 'Here are the search_endpoint_params_to_use'
-        # not quite right because it could be via team, needs to be a scope.
-        search_endpoint_params_to_use['owner_id'] = @case.owner_id
-        # puts search_endpoint_params_to_use
-
-        unless search_endpoint_params_to_use['search_engine'].nil?
-          search_endpoint = @current_user.search_endpoints_involved_with.find_or_create_by search_endpoint_params_to_use
+        puts 'here is search_endpoint_params'
+        puts params[:search_endpoint].empty?
+        unless params[:search_endpoint].empty?
+          search_endpoint = @current_user.search_endpoints_involved_with.find_or_create_by search_endpoint_params
           @try.search_endpoint = search_endpoint
         end
 
@@ -119,7 +115,9 @@ module Api
           :name,
           :number_of_rows,
           :query_params,
-          :parent_id  # need this one?
+          :parent_id,
+          :parent_try_number,
+          :search_endpoint_id
         )
       end
 

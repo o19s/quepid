@@ -23,5 +23,10 @@
     <strong>Api method:</strong>
     <%= search_endpoint.api_method %>
   </p>
+  
+  <p>
+  <strong>Related teams:</strong>
+  <%= render(partial: 'team', collection: search_endpoint.teams, as: :team) || "There are no teams associated." %>
+  </p>
 
 </div>

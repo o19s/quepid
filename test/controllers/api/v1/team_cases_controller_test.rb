@@ -22,10 +22,13 @@ module Api
 
       describe 'Adds new cases to team' do
         test 'adds a new case successfully' do
+          assert_not_nil acase.tries.first.search_endpoint
           assert_difference 'team.cases.count' do
-            post :create, params: { team_id: team.id, id: acase.id }
+            assert_difference 'team.search_endpoints.count' do
+              post :create, params: { team_id: team.id, id: acase.id }
 
-            assert_response :ok
+              assert_response :ok
+            end
           end
         end
 

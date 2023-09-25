@@ -149,10 +149,7 @@ angular.module('QuepidApp')
         searchapi: {
           queryParams: [
             '{',
-            '  "query": "united states",',
-            '  "searchType": "mdc_globalsearch_research",',
-            '  "index": "mdc_research",',
-            '  "size": 1',
+            '  "query": "QUERY_THAT_MATCHES_AT_LEAST_ONE_DOC"',
             '}'
           ].join('\n'),
           escapeQuery: true,
@@ -428,7 +425,6 @@ angular.module('QuepidApp')
         var payloadSearchEndpoint = {};
         payload.try = payloadTry;
         payload.search_endpoint = payloadSearchEndpoint;
-
         payload.parent_try_number = settingsToSave.selectedTry.tryNo;
         payload.curator_vars = settingsToSave.selectedTry.curatorVarsDict();
 
@@ -439,13 +435,19 @@ angular.module('QuepidApp')
         payloadTry.field_spec = settingsToSave.fieldSpec;
         payloadTry.number_of_rows = settingsToSave.numberOfRows;
         payloadTry.query_params = settingsToSave.selectedTry.queryParams;
-        payloadSearchEndpoint.search_endpoint_id = settingsToSave.searchEndpointId;
-        payloadSearchEndpoint.search_engine = settingsToSave.searchEngine;
-        payloadSearchEndpoint.endpoint_url = settingsToSave.searchUrl;
-        payloadSearchEndpoint.api_method = settingsToSave.apiMethod;
-        payloadSearchEndpoint.custom_headers = settingsToSave.customHeaders;
-
-
+        
+        // Either we are changing to a different, existing search endpoint
+        if (settingsToSave.searchEndpointId){
+          payloadTry.search_endpoint_id = settingsToSave.searchEndpointId;
+        }
+        // Or we are creating a new one.
+        else {
+          payloadSearchEndpoint.search_engine = settingsToSave.searchEngine;
+          payloadSearchEndpoint.endpoint_url = settingsToSave.searchUrl;
+          payloadSearchEndpoint.api_method = settingsToSave.apiMethod;
+          payloadSearchEndpoint.custom_headers = settingsToSave.customHeaders;
+        }
+        
         return $http.post('api/cases/' + currCaseNo + '/tries', payload)
           .then(function(response) {
             var tryJson = response.data;
