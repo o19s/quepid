@@ -79,10 +79,6 @@ angular.module('QuepidApp')
             $scope.pendingWizardSettings.searchUrl = settings.insecureSearchUrl;
           }
         }
-        else if ($scope.pendingWizardSettings.searchEngine === 'static') {
-          $scope.isHeaderConfigCollapsed = false;
-          //$scope.pendingWizardSettings.searchUrl = '';
-        }
         else {
           $scope.pendingWizardSettings.searchUrl = settings.searchUrl;
         }
@@ -159,10 +155,10 @@ angular.module('QuepidApp')
             $scope.pendingWizardSettings.searchUrl = settings.insecureSearchUrl;
           }
         }
-        else if ($scope.pendingWizardSettings.searchEngine === 'static') {
-          $scope.isHeaderConfigCollapsed = false;
+        //else if ($scope.pendingWizardSettings.searchEngine === 'static') {
+        //  $scope.isHeaderConfigCollapsed = false;
           //$scope.pendingWizardSettings.searchUrl = "/search";
-        }
+          //}
         else {
           $scope.pendingWizardSettings.searchUrl = settings.searchUrl;
         }
@@ -196,8 +192,8 @@ angular.module('QuepidApp')
       function reset() {
         $scope.validating = false;
         $scope.urlValid = $scope.urlInvalid = $scope.invalidHeaders = false;
-        //$scope.pendingWizardSettings = angular.copy(settingsSvc.tmdbSettings['solr']);
-        // when you reset back to Solr, we actually don't have a url due to a glitch in picking the right one, sigh.
+        
+        $scope.showTLSChangeWarning = false; // hope this doesn't cause a flicker.'
         if ($scope.pendingWizardSettings.searchUrl){
           $scope.checkTLSForSearchEngineUrl();
         }
