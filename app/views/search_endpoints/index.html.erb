@@ -27,8 +27,6 @@ Search Endpoints represents an API (or search engine!) that is receiving queries
       <th>Name</th>
       <th>Search Engine</th>
       <th>Endpoint Url</th>
-      <th>Custom Headers</th>
-      <th>Api Method</th>
     </tr>
   </thead>
 
@@ -38,8 +36,6 @@ Search Endpoints represents an API (or search engine!) that is receiving queries
         <td><%= link_to search_endpoint.fullname, search_endpoint_path(search_endpoint) %></td>
         <td><%= image_tag "#{search_endpoint.search_engine}-icon.png", size:'32x32', class:'rounded-circle' %> <%= search_endpoint.search_engine %></td>
         <td><%= search_endpoint.endpoint_url %> </td>
-        <td><%= search_endpoint.custom_headers %> </td>
-        <td><%= search_endpoint.api_method %></td>
       </tr>
     <% end %>
   </tbody>
