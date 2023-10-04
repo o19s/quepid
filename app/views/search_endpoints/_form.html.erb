@@ -10,22 +10,32 @@
       </ul>
     </div>
   <% end %>
-
+  
+  <% if @current_user.teams.empty? %>
+    <div class="alert alert-warning" role="alert">
+      Search Endpoints are meant to be shared with Teams, and you do not have any yet.      
+      <%= link_to 'Create a Team', teams_core_path, method: :get, class:'btn btn-primary' %>
+    </div>
+  <% end %>
+  
   <div class="mb-3">
     <%= form.label :name, class: 'form-label' %>
     <%= form.text_field :name %>
-  </div>
-
-  <div class="mb-3 col-12">
-    <%= form.label :endpoint_url, class: 'form-label' %>
-    <%= form.text_field :endpoint_url, size: 100 %>
+    <div class="form-text">Use a name to distingush the end point, like Dev or Stage or Prod.</div>
   </div>
 
   <div class="mb-3">
     <%= form.label :search_engine, class: 'form-label' %>
-    <%= form.text_field :search_engine %>
+    <%
+    options = [['Solr', 'solr'], ['Elasticsearch', 'es'], ['OpenSearch', 'os'], ['Vectara', 'vectara'], ['Static File', 'static'], ['Search API', 'searchapi']]
+    %>
+    <%= form.collection_select :search_engine, options, :last, :first, required: true, prompt:true,  class: 'form-control' %>
     
-    <div class="form-text">Options are <code>solr</code>, <code>es</code>, <code>os</code>, <code>static</code>, <code>searchapi</code>, and <code>vectara</code>.</div>
+  </div>
+  
+  <div class="mb-3 col-12">
+    <%= form.label :endpoint_url, class: 'form-label' %>
+    <%= form.text_field :endpoint_url, size: 100 %>
   </div>
 
   <div class="mb-3">
@@ -35,21 +45,23 @@
 
   <div class="mb-3">
     <%= form.label :api_method, class: 'form-label' %>
-    <%= form.text_field :api_method %>
+    <%= form.collection_select :api_method, [['GET', 'GET'], ['POST', 'POST'], ['JSONP', 'JSONP'], ['PUT', 'PUT']], :last, :first, required: true, prompt:true,  class: 'form-control' %>
+    
   </div>
   
-  <div class="mb-3">
-    <%=search_endpoint.teams.count %>
-    <%= form.label :teams, class: 'form-label' %>
+  <div class="mb-3">     
+    <%= form.label :teams, "Teams to Share this Endpoint With", class: 'form-label' %>
     <%= form.collection_check_boxes(:team_ids, @current_user.teams, :id, :name) do |b| %>
       <div class="collection-check-box">
         <%= b.check_box %>
         <%= b.label %>
       </div>
     <% end %>
+    <div class="form-text">Search endpoints are meant to be shared, and you do this by picking which teams can use them.</div>
   </div>
+  
 
   <div class="actions">
-    <%= form.submit %>
+    <%= form.submit class: "btn btn-primary #{@current_user.teams.empty? ? 'disabled' : ''}" %>
   </div>
 <% end %>

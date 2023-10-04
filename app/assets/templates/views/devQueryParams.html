@@ -98,10 +98,9 @@
     <div
       class="settings-tab"
       ng-show="qp.curTab == 'engineSettings'"
-      ng-init="devSettingsFields.toggle = devSettingsUrl.toggle = devSettingsSearchEndpoint.toggle = devSettingsNumResults.toggle = devSettingsEscapeQueries.toggle = true"
+      ng-init="devSettingsUrl.toggle = false && devSettingsFields.toggle == devSettingsSearchEndpoint.toggle = devSettingsNumResults.toggle = devSettingsEscapeQueries.toggle = true"
     >
       <div class="rerunnable-settings-tab">
-        $scope.pendingSettings: {{$scope.pendingSettings}}
         <!-- Search Engine -->
         <div class="setting-div">
           <div class="dev-header" ng-click="devSettingsSearchEndpoint.toggle = !devSettingsSearchEndpoint.toggle">
@@ -111,8 +110,6 @@
 
           <div class="dev-body" ng-show="devSettingsSearchEndpoint.toggle">
             Pick Search Endpoint:<br />
-
-            settings.searchEndpointId is {{settings.searchEndpointId}}
             <div>
               <select              
                 ng-model="settings.searchEndpointId"

@@ -67,7 +67,7 @@ angular.module('QuepidApp')
         $scope.pendingWizardSettings.urlFormat                = settings.urlFormat;    
         $scope.pendingWizardSettings.searchEndpointId         = null;
 
-        $scope.isHeaderConfigCollapsed = true;
+        //$scope.isHeaderConfigCollapsed = true;
         
         var quepidStartsWithHttps = $location.protocol() === 'https';
 

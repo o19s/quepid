@@ -115,29 +115,22 @@ angular.module('QuepidApp')
 
       $scope.changeSearchEngine = function() {
         var searchEndpointToUse = $scope.searchEndpoints.find(obj => obj.id === $scope.settings.searchEndpointId);
+        
+        // Update our settings with the new searchEndpoint values
+        $scope.settings.searchEndpointId         = searchEndpointToUse.id;
+        $scope.settings.searchEngine             = searchEndpointToUse.searchEngine;
+        $scope.settings.searchUrl                = searchEndpointToUse.endpointUrl; // notice remapping
+        $scope.settings.apiMethod                = searchEndpointToUse.apiMethod;
+        $scope.settings.customHeaders            = searchEndpointToUse.customHeaders;
+        
+        // The remaining settings remain the same from before, which means you can get a weird situation
+        // where you then need to fix the fields or the query params.
+        // This is different from the wizard where we have default values that we plop in for
+        // the fields and query params.
+               
         $scope.settings.reset();
         $scope.validateSearchEngineUrl();
       };
-      
-      $scope.changeSearchEngine2 = function() {
-        console.log('In changeSearchEngine2 and we dont do anything here!');
-        var searchEndpointToUse = $scope.searchEndpoints.find(obj => obj.id === $scope.settings.searchEndpointId);
-      
-        // From search endpoint
-        //$scope.settings.pendingSettings.searchEngine             = searchEndpointToUse.searchEngine;
-        //$scope.settings.pendingSettings.searchUrl                = searchEndpointToUse.endpointUrl; // notice remapping
-        //$scope.settings.pendingSettings.apiMethod                = searchEndpointToUse.apiMethod;
-        //$scope.settings.pendingSettings.customHeaders            = searchEndpointToUse.customHeaders;
-        
-        // Now grab default settings for the type of search endpoint you are using
-        //var settings = settingsSvc.pickSettingsToUse($scope.pendingWizardSettings.searchEngine, $scope.pendingWizardSettings.searchUrl);         
-        //$scope.pendingWizardSettings.additionalFields         = settings.additionalFields;
-        //$scope.pendingWizardSettings.fieldSpec                = settings.fieldSpec;
-        //$scope.pendingWizardSettings.idField                  = settings.idField;
-        //$scope.pendingWizardSettings.queryParams              = settings.queryParams;
-        //$scope.pendingWizardSettings.titleField               = settings.titleField;
-        $scope.settings.reset();
-        $scope.validateSearchEngineUrl();
-      };      
+            
     }
   ]);

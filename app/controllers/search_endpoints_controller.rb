@@ -25,6 +25,15 @@ class SearchEndpointsController < ApplicationController
   def create
     @search_endpoint = SearchEndpoint.new(search_endpoint_params)
     @search_endpoint.owner = @current_user
+
+    puts "Team state:  @search_endpoint.teams.empty?: #{@search_endpoint.teams.empty?}"
+    if @search_endpoint.teams.empty?
+      # Raise a custom validation error
+      @search_endpoint.errors.add(:teams, 'You must select at least one team to share this end point with.')
+      respond_with(@search_endpoint)
+      return
+    end
+
     @search_endpoint.save
     respond_with(@search_endpoint)
   end

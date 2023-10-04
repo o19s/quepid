@@ -9,7 +9,7 @@ angular.module('QuepidApp')
     function (
       $scope, $location, 
       flash, 
-      settingsSvc, searchEndpointSvc,
+      settingsSvc, searchEndpointSvc
     ) {
       $scope.settingsModel = {};
       $scope.pendingSettings = {
@@ -25,15 +25,14 @@ angular.module('QuepidApp')
        });      
             
       $scope.settingsModel.settingsId = function() {
-        console.log("$scope.settingsModel.settingsId returning settingsid")
+        console.log('$scope.settingsModel.settingsId returning settingsid');
         return settingsSvc.settingsId();
       };
 
       var reset = function() {
-        console.log("settings.reset");
         var currSettings = settingsSvc.editableSettings();
         if ( this.searchEndpointId !== currSettings.searchEndpointId) {
-          var searchEndpointToUse = $scope.searchEndpoints.find(obj => obj.id === $scope.settings.searchEndpointId);
+          //var searchEndpointToUse = $scope.searchEndpoints.find(obj => obj.id === $scope.settings.searchEndpointId);
           //currSettings = settingsSvc.pickSettingsToUse($scope.pendingSettings.searchEngine, null);
           //currSettings.fieldSpec = currSettings.fieldSpec + ', ' + currSettings.additionalFields.join(', ');
           //$scope.pendingSettings.urlFormat = currSettings.urlFormat;
@@ -77,19 +76,18 @@ angular.module('QuepidApp')
          $scope.pendingSettings = settingsSvc.editableSettings();
          $scope.pendingSettings.reset = reset;
 
-         if ( angular.isDefined($scope.pendingSettings.searchEngine) && $scope.pendingSettings.searchEngine !== null ) {
-           var settingsToUse = settingsSvc.pickSettingsToUse($scope.pendingSettings.searchEngine, $scope.pendingSettings.searchUrl);
-           $scope.pendingSettings.urlFormat = settingsToUse.urlFormat;
+         //if ( angular.isDefined($scope.pendingSettings.searchEngine) && $scope.pendingSettings.searchEngine !== null ) {
+         //  var settingsToUse = settingsSvc.pickSettingsToUse($scope.pendingSettings.searchEngine, $scope.pendingSettings.searchUrl);
+          // $scope.pendingSettings.urlFormat = settingsToUse.urlFormat;
           
            // pass pending settings onward to be saved
            $scope.pendingSettings.submit = submit;
-         }
+          //}
 
 
       });
 
       function submit () {
-        console.log("settings.submit");
         if ( $scope.pendingSettings.searchEngine === 'es'  || $scope.pendingSettings.searchEngine === 'os' ||
              $scope.pendingSettings.searchEngine === 'vectara') {
           // Verify that JSON is valid
