@@ -4,6 +4,7 @@ require 'test_helper'
 
 class SearchEndpointsControllerTest < ActionDispatch::IntegrationTest
   let(:user) { users(:joey) }
+  let(:team) { teams(:shared) }
 
   setup do
     @search_endpoint = search_endpoints(:first_for_case_with_two_tries)
@@ -21,6 +22,25 @@ class SearchEndpointsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
+  test 'throw error on attempting to create search_endpoint with no teams' do
+    assert_difference('SearchEndpoint.count', 0) do
+      post search_endpoints_url,
+           params: { search_endpoint: {
+             api_method:     @search_endpoint.api_method,
+             custom_headers: @search_endpoint.custom_headers,
+             endpoint_url:   @search_endpoint.endpoint_url,
+             name:           @search_endpoint.name,
+             search_engine:  @search_endpoint.search_engine,
+             team_ids:       [],
+           } }
+    end
+
+    assert_response :ok
+
+    # this assert could be better.
+    assert @response.parsed_body.include?('You must select at least one team to share this end point with')
+  end
+
   test 'should create search_endpoint' do
     assert_difference('SearchEndpoint.count') do
       post search_endpoints_url,
@@ -30,11 +50,12 @@ class SearchEndpointsControllerTest < ActionDispatch::IntegrationTest
              endpoint_url:   @search_endpoint.endpoint_url,
              name:           @search_endpoint.name,
              search_engine:  @search_endpoint.search_engine,
-             team_ids:       @search_endpoint.teams.pluck(:id),
+             team_ids:       [ team.id ],
            } }
     end
 
     assert_redirected_to search_endpoint_url(SearchEndpoint.last)
+    assert SearchEndpoint.last.teams.include?(team)
   end
 
   test 'should show search_endpoint' do
