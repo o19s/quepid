@@ -26,8 +26,6 @@ module Api
 
         @try = @case.tries.build try_parameters_to_use
 
-        puts 'here is search_endpoint_params'
-        puts params[:search_endpoint].empty?
         unless params[:search_endpoint].empty?
           search_endpoint = @current_user.search_endpoints_involved_with.find_or_create_by search_endpoint_params
           @try.search_endpoint = search_endpoint
