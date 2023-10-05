@@ -76,9 +76,25 @@ class SearchEndpointsControllerTest < ActionDispatch::IntegrationTest
             endpoint_url:   @search_endpoint.endpoint_url,
             name:           @search_endpoint.name,
             search_engine:  @search_endpoint.search_engine,
-            team_ids:       @search_endpoint.teams.pluck(:id),
+            team_ids:       [ team.id ],
           } }
     assert_redirected_to search_endpoint_url(@search_endpoint)
+  end
+
+  test 'allow updating a search_endpoint with no teams' do
+    patch search_endpoint_url(@search_endpoint),
+          params: { search_endpoint: {
+            api_method:     @search_endpoint.api_method,
+            custom_headers: @search_endpoint.custom_headers,
+            endpoint_url:   @search_endpoint.endpoint_url,
+            name:           @search_endpoint.name,
+            search_engine:  @search_endpoint.search_engine,
+            team_ids:       [],
+          } }
+
+    assert_redirected_to search_endpoint_url(@search_endpoint)
+
+    assert_not @response.parsed_body.include?('You must select at least one team to share this end point with')
   end
 
   test 'should destroy search_endpoint' do
