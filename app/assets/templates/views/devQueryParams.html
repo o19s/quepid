@@ -98,7 +98,7 @@
     <div
       class="settings-tab"
       ng-show="qp.curTab == 'engineSettings'"
-      ng-init="devSettingsUrl.toggle = false && devSettingsFields.toggle == devSettingsSearchEndpoint.toggle = devSettingsNumResults.toggle = devSettingsEscapeQueries.toggle = true"
+      ng-init="devSettingsFields.toggle = devSettingsEndpointDetails.toggle = devSettingsSearchEngine.toggle = devSettingsNumResults.toggle = true"
     >
       <div class="rerunnable-settings-tab">
         <!-- Search Engine -->
@@ -125,12 +125,12 @@
 
         <!-- Search Endpoint -->
         <div class="setting-div">
-          <div class="dev-header" ng-click="devSettingsUrl.toggle = !devSettingsUrl.toggle">
-            Endpoint Details <span ng-class="{true: 'glyphicon-plus-sign', false: 'glyphicon-minus-sign'}[!devSettingsUrl.toggle]" class="glyphicon"></span>
+          <div class="dev-header" ng-click="devSettingsEndpointDetails.toggle = !devSettingsEndpointDetails.toggle">
+            Endpoint Details <span ng-class="{true: 'glyphicon-plus-sign', false: 'glyphicon-minus-sign'}[!devSettingsEndpointDetails.toggle]" class="glyphicon"></span>
           </div>
 
 
-          <div class="dev-body" ng-show="devSettingsUrl.toggle">            
+          <div class="dev-body" ng-show="devSettingsEndpointDetails.toggle">            
             
             <p>
               Name: {{ settings.selectedTry.endpointName }}
