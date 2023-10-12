@@ -23,12 +23,13 @@ angular.module('QuepidApp')
       
       searchEndpointSvc.list()
        .then(function() {
-         $scope.searchEndpoints = searchEndpointSvc.searchEndpoints;        
+         $scope.searchEndpoints = searchEndpointSvc.searchEndpoints;               
        });      
       
       $scope.listSearchEndpoints = function() {
         return $scope.searchEndpoints;
       };
+      
 
       $scope.validateSearchEngineUrl  = function() {
         if (!angular.isUndefined($scope.settings.searchUrl)){
@@ -109,14 +110,33 @@ angular.module('QuepidApp')
           try_number:     $scope.settings.selectedTry.tryNo,
         });
         tmp.updateVars();
+        
+        var searchEndpointToUse = searchEndpointSvc.searchEndpoints.find(obj => obj.id === $scope.settings.searchEndpointId);
+        
+        $scope.selectedItem = searchEndpointToUse;
+        
         $scope.settings.selectedTry = tmp;
         $scope.validateSearchEngineUrl();
       };
 
+      $scope.onSelectSearchEndpoint = function (selectedItem) {
+        $scope.settings.searchEndpointId = selectedItem.id;
+        $scope.settings.searchEndpoint = selectedItem;
+      };
+      
+      $scope.searchOptions = function (searchText) {
+        // Perform filtering based on search text
+        return $scope.searchEndpoints.filter(function (result) {
+          return result.name.toLowerCase().indexOf(searchText.toLowerCase()) !== -1;
+        });
+      };
+     
+      
       $scope.changeSearchEngine = function() {
         var searchEndpointToUse = $scope.searchEndpoints.find(obj => obj.id === $scope.settings.searchEndpointId);
         
         // Update our settings with the new searchEndpoint values
+        $scope.settings.searchEndpoint           = searchEndpointToUse;
         $scope.settings.searchEndpointId         = searchEndpointToUse.id;
         $scope.settings.searchEngine             = searchEndpointToUse.searchEngine;
         $scope.settings.searchUrl                = searchEndpointToUse.endpointUrl; // notice remapping

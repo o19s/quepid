@@ -40,6 +40,7 @@ angular.module('QuepidApp')
         this.searchEndpointId         = currSettings.searchEndpointId;
         this.endpointName             = currSettings.endpointName;
         this.searchEngine             = currSettings.searchEngine;
+        this.searchEndpointId         = currSettings.searchEndpoint;
         //this.apiMethod                = currSettings.apiMethod;
 
 
