@@ -25,7 +25,7 @@ angular.module('QuepidApp')
        });      
             
       $scope.settingsModel.settingsId = function() {
-        console.log('$scope.settingsModel.settingsId returning settingsid');
+        //console.log('$scope.settingsModel.settingsId returning settingsid');
         return settingsSvc.settingsId();
       };
 
