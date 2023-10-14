@@ -67,6 +67,10 @@ class SearchEndpointsController < ApplicationController
 
   def set_search_endpoint
     @search_endpoint = current_user.search_endpoints_involved_with.where(id: params[:id]).first
+    if @search_endpoint.nil?
+      redirect_to :search_endpoints,
+                  notice: "Search Endpoint you are looking for either doesn't exist or you don't have permissions."
+    end
   end
 
   def search_endpoint_params

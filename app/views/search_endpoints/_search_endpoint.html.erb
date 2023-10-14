@@ -28,6 +28,8 @@
   <p>
   <strong>Shared with Teams:</strong>
   <%= render(partial: 'team', collection: search_endpoint.teams, as: :team) || "There are no teams associated." %>
+  
+  <div class="form-text">This shows all teams, not just the ones you are part of</div>
   </p>
   
   <p>

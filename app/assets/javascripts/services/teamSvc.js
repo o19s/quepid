@@ -45,8 +45,14 @@ angular.module('QuepidApp')
 
         angular.forEach(this.scorers, function(s) {
           // This is really ugly.  We don't use our standard ScorerFactory mapping, and probably should!
+          s.scorerId = s.scorer_id;
+          delete s.scorer_id;
           s.ownerName = s.owner_name;
           delete s.owner_name;
+          s.ownerId = s.owner_id;
+          delete s.owner_id; 
+          s.scaleWithLabels = s.scale_with_labels;
+          delete s.scale_with_labels;    
         });
 
         angular.forEach(this.books, function(b) {
@@ -155,13 +161,13 @@ angular.module('QuepidApp')
           });
       };
 
-      this.get = function(id, load_cases) {
+      this.get = function(id, forSharing) {
         // http GET api/teams/<int:teamId>
         var url   = 'api/teams/' + id;
         var self  = this;
 
-        if ( load_cases ) {
-          url += '?load_cases=true';
+        if ( forSharing ) {
+          url += '?for_sharing=true';
         }
 
         return $http.get(url)
@@ -172,12 +178,17 @@ angular.module('QuepidApp')
           });
       };
 
-      this.list = function(load_cases) {
+      // We return less data if it's to power the sharing interface.
+      this.listForSharing = function() {
+        return this.list(true);
+      }
+      
+      this.list = function(forSharing) {
         var url   = 'api/teams';
         var self  = this;
 
-        if ( load_cases ) {
-          url += '?load_cases=true';
+        if ( forSharing ) {
+          url += '?for_sharing=true';
         }
 
         // Clear the list just in case the data on the server changed,

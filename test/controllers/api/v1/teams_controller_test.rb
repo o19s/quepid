@@ -207,21 +207,40 @@ module Api
           assert_equal    teams.length,     user.teams.all.length
           assert_includes names,            shared_team.name
           assert_includes ids,              shared_team.id
+
+          # sometimes it's the first team, sometimes it's the second team in the array
+          # so we have a dynamic lookup
+          shared_team = teams.find { |team| 'Team shared with Team Finder User' == team['name'] }
+
+          assert_not_empty shared_team['cases']
+          assert_not_empty shared_team['scorers']
+
+          assert_not_empty shared_team['members']
+          assert_not_empty shared_team['search_endpoints']
+
+          assert_equal 1, shared_team['cases'][0]['last_try_number']
         end
 
-        test 'returns list of teams and loads case data' do
-          get :index, params: { load_cases: true }
+        test 'returns list of teams and loads case and scorer data to power sharing UI' do
+          get :index, params: { for_sharing: true }
 
           assert_response :ok
 
           body  = response.parsed_body
           teams = body['teams']
 
-          # sometimes it's the first team, sometimes it's the second team in the array.
-          assert_not_empty(teams.find { |team| 'Team shared with Team Finder User' == team['name'] }['cases'])
-          assert_equal 1, teams.find { |team|
-                            'Team shared with Team Finder User' == team['name']
-                          } ['cases'][0]['last_try_number']
+          # sometimes it's the first team, sometimes it's the second team in the array
+          # so we have a dynamic lookup
+          shared_team = teams.find { |team| 'Team shared with Team Finder User' == team['name'] }
+
+          assert_not_empty shared_team['cases']
+          assert_not_empty shared_team['scorers']
+
+          # verify we don't have these fields
+          assert_nil shared_team['members']
+          assert_nil shared_team['search_endpoints']
+
+          assert_nil shared_team['cases'][0]['last_try_number']
         end
       end
     end

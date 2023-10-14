@@ -29,6 +29,7 @@ module Api
 
         if @team.save
           Analytics::Tracker.track_case_shared_event current_user, @case, @team
+          @shallow = true
           respond_with @case
         else
           render json: @case.errors, status: :bad_request
