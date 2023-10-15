@@ -181,7 +181,7 @@ angular.module('QuepidApp')
       // We return less data if it's to power the sharing interface.
       this.listForSharing = function() {
         return this.list(true);
-      }
+      };
       
       this.list = function(forSharing) {
         var url   = 'api/teams';
