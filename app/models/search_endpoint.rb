@@ -6,6 +6,7 @@
 #
 #  id             :bigint           not null, primary key
 #  api_method     :string(255)
+#  archived       :boolean          default(FALSE)
 #  custom_headers :string(1000)
 #  endpoint_url   :string(500)
 #  name           :string(255)
@@ -28,6 +29,9 @@ class SearchEndpoint < ApplicationRecord
 
   has_many   :tries, dependent: :nullify, inverse_of: :search_endpoint
 
+  # Scopes
+  scope :not_archived, -> { where('`search_endpoints`.`archived` = false') }
+  
   # rubocop:disable Layout/LineLength
   scope :for_user_via_teams, ->(user) {
     joins('
@@ -55,6 +59,10 @@ class SearchEndpoint < ApplicationRecord
     ids = for_user_via_teams(user).distinct.pluck(:id) + for_user_directly_owned(user).distinct.pluck(:id)
     where(id: ids.uniq)
   }
+  
+  after_initialize do |se|
+    se.archived = false if se.archived.nil?
+  end
 
   # Validations
   # validates :case_name, presence: true
@@ -63,6 +71,15 @@ class SearchEndpoint < ApplicationRecord
   #
   def fullname
     (name.presence || middle_truncate("#{search_engine.capitalize} #{endpoint_url}"))
+  end
+  
+  def mark_archived
+    self.archived = true
+  end
+
+  def mark_archived!
+    mark_archived
+    save
   end
 
   private

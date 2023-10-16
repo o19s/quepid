@@ -36,5 +36,11 @@
   <strong>Used by Cases:</strong>
   <%= render(partial: 'case', collection: Case.find(search_endpoint.tries.pluck(:case_id)), as: :kase) || "There are no cases associated." %>
   </p>
+  
+  <p>
+    <strong>Archived:</strong>
+    <%= search_endpoint.archived? %>
+    <%= search_endpoint.archived? ? "You must unarchive this search endpoint to use it with new cases" :"" %>
+  </p>
 
 </div>

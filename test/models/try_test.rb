@@ -6,11 +6,15 @@
 #
 #  id                 :integer          not null, primary key
 #  ancestry           :string(3072)
+#  api_method         :string(255)
+#  custom_headers     :string(1000)
 #  escape_query       :boolean          default(TRUE)
 #  field_spec         :string(500)
 #  name               :string(50)
 #  number_of_rows     :integer          default(10)
 #  query_params       :string(20000)
+#  search_engine      :string(50)       default("solr")
+#  search_url         :string(500)
 #  try_number         :integer
 #  created_at         :datetime         not null
 #  updated_at         :datetime         not null

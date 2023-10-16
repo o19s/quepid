@@ -932,32 +932,6 @@ footer {
   border-radius: 15px;
 }
 
-.archived-case-list {
-  max-height: 400px;
-  overflow-y: auto;
-  padding-left: 0;
-}
-
-.archived-case-list li {
-  list-style: none;
-  padding: 10px;
-  border-bottom: 1px solid #CCC;
-  border-left: 1px solid #CCC;
-  border-right: 1px solid #CCC;
-  border-top: 1px solid #CCC;
-  background: #FFF;
-}
-
-.archived-case-list .selected-archived-case {
-  background: #EEE;
-  cursor: pointer;
-}
-
-.archived-case-list li:hover {
-  background: #EEE;
-  cursor: pointer;
-}
-
 .ace_editor {
     height: 400px;
 }

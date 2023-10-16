@@ -4,9 +4,10 @@
 angular.module('QuepidApp')
   // AngularJS will instantiate a singleton by calling "new" on this function
   .service('searchEndpointSvc', [
-    '$http',
-    function searchEndpointSvc($http) {
+    '$http', 'broadcastSvc',
+    function searchEndpointSvc($http, broadcastSvc) {
       this.searchEndpoints = [];
+      this.archived = [];
 
       var SearchEndpoint = function(id, name, searchEngine, endpointUrl, apiMethod, customHeaders) {
         this.id           = id;
@@ -49,7 +50,6 @@ angular.module('QuepidApp')
       
       this.list = function() {
         // http GET /api/search_endpoints
-        var url   = 'api/search_endpoints';
         var self  = this;
 
         // Clear the list just in case the data on the server changed,
@@ -57,7 +57,7 @@ angular.module('QuepidApp')
         // TODO: write tests for this.
         self.searchEndpoints = [];
 
-        return $http.get(url)
+        return $http.get('api/search_endpoints')
           .then(function(response) {
             angular.forEach(response.data.search_endpoints, function(dataSearchEndpoint) {
               var searchEndpoint = self.constructFromData(dataSearchEndpoint);
@@ -68,6 +68,43 @@ angular.module('QuepidApp')
             });
           });
       };
+      
+      this.fetchArchived = function(team) {
+        var self  = this;
+        self.archived = []; // reset this array
+
+        return $http.get('api/teams/' + team.id + '/search_endpoints?archived=true')
+          .then(function(response) {
+            angular.forEach(response.data.search_endpoints, function(dataSearchEndpoint) {
+              var searchEndpoint = self.constructFromData(dataSearchEndpoint);
+
+              if ( !contains(self.archived, searchEndpoint) ) {
+                self.archived.push(searchEndpoint);
+              }
+            });
+          });
+      };
+      
+      this.unarchiveSearchEndpoint = function(searchEndpointToUnarchive) {
+        var self  = this;
+        var searchEndpointId  = searchEndpointToUnarchive.id;
+        var url         = 'api/search_endpoints/' + searchEndpointId;
+        var data        = { archived: false };
+
+        return $http.put(url, data)
+          .then(function(response) {
+            var data    = response.data;
+            var searchEndpoint = self.constructFromData(data);
+
+            self.searchEndpoints.push(searchEndpoint);
+            self.archived = self.archived.filter( function(aSearchEndpoint) {
+              aSearchEndpoint.id !== searchEndpoint.id;
+            });
+
+            broadcastSvc.send('updatedSearchEndpointsList', self.searchEndpoints);
+          });
+      };      
+
 
       this.shareEndpoint = function(team, searchEndpoint) {
         // http POST api/teams/<int:teamId>/cases

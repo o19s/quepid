@@ -4,6 +4,7 @@
 #
 #  id             :bigint           not null, primary key
 #  api_method     :string(255)
+#  archived       :boolean          default(FALSE)
 #  custom_headers :string(1000)
 #  endpoint_url   :string(500)
 #  name           :string(255)

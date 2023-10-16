@@ -8,6 +8,7 @@ class ExtractSearchEndpoint < ActiveRecord::Migration[7.0]
       t.string "endpoint_url", limit: 500
       t.string "api_method"
       t.string "custom_headers", limit: 1000
+      t.boolean "archived", default: false
       t.timestamps
     end
     

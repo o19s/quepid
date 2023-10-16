@@ -74,7 +74,7 @@ class SearchEndpointsController < ApplicationController
   end
 
   def search_endpoint_params
-    params.require(:search_endpoint).permit(:name, :endpoint_url, :search_engine, :custom_headers, :api_method,
+    params.require(:search_endpoint).permit(:name, :endpoint_url, :search_engine, :custom_headers, :api_method, :archived,
                                             team_ids: [])
   end
 end

@@ -166,7 +166,7 @@ Rails.application.routes.draw do
         end
       end
 
-      resources :search_endpoints, only: [ :index, :show ]
+      resources :search_endpoints, only: [ :index, :show, :update ]
       resources :scorers, except: [ :new, :edit ]
 
       resources :teams, except: [ :new, :edit ], param: :team_id
@@ -177,6 +177,7 @@ Rails.application.routes.draw do
         resources :cases,   only: [ :index, :create, :destroy ], controller: :team_cases
         resources :owners,  only: [ :update ], controller: :team_owners
         resources :books,   only: [ :index ], controller: :team_books
+        resources :search_endpoints, only: [ :index ]
       end
 
       # Imports

@@ -226,7 +226,29 @@ q4: searchEndpoints
       <h3>Search Endpoints</h3>
 
       <div class="row">
-        <div class="col-md-offset-8 col-md-4 filter-form">
+        <div class='col-md-4'>
+
+        </div>
+        <div class='col-md-4'>
+          View
+          &nbsp;&nbsp;&nbsp;
+          <div class="btn-group">
+            <label
+              class="btn btn-default"
+              ng-model="searchEndpointsScope.typeFilter"
+              uib-btn-radio="'all'"
+            >
+              All
+            </label>
+            <label
+              class="btn btn-default"
+              ng-click="unarchiveSearchEndpoint(currentTeam)"
+            >
+              Archived Search Endpoints
+            </label>
+          </div>
+        </div>
+        <div class="col-md-4 filter-form">
           <input type="search" ng-model="q4" placeholder="Filter Search Endpoints" aria-label="filter search endpoints" class="form-control" id='team-search-endpoints-filter' />
         </div>
       </div>

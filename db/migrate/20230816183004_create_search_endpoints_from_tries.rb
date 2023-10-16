@@ -18,16 +18,24 @@ class CreateSearchEndpointsFromTries < ActiveRecord::Migration[7.0]
       
       search_endpoint.save!  
       try.save!
-      unless try.case.archived?
-        try.case.teams.each do |team|
-          # currently missing a database level constraint so manually check
-          unless search_endpoint.teams.include?(team)
-            search_endpoint.teams << team
-          end
+
+      try.case.teams.each do |team|
+        # currently missing a database level constraint so manually check
+        unless search_endpoint.teams.include?(team)
+          search_endpoint.teams << team
         end
-        search_endpoint.save!
       end
-            
-    end    
+      search_endpoint.save!
+    end  
+  
+    # find search_endpoints where all the cases are archived, and mark them archived.
+    SearchEndpoint.find_each do |search_endpoint|
+      all_cases_archived = true
+      search_endpoint.tries.each do |try|
+        all_cases_archived = false if !try.case.archived?
+      end
+      search_endpoint.archived = all_cases_archived
+      search_endpoint.save!
+    end
   end
 end
