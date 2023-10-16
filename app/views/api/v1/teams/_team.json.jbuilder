@@ -28,7 +28,8 @@ unless for_sharing
   end
 
   json.search_endpoints do
-    json.array! team.search_endpoints.not_archived, partial: 'api/v1/search_endpoints/search_endpoint', as: :search_endpoint
+    json.array! team.search_endpoints.not_archived, partial: 'api/v1/search_endpoints/search_endpoint',
+                                                    as:      :search_endpoint
   end
   json.owner do
     json.id             team.owner.id

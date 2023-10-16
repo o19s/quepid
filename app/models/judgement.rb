@@ -25,7 +25,10 @@ class Judgement < ApplicationRecord
   belongs_to :query_doc_pair
   belongs_to :user, optional: true
 
+  # rubocop:disable Rails/UniqueValidationWithoutIndex
   validates :user_id, :uniqueness => { :scope => :query_doc_pair_id }
+  # rubocop:enable Rails/UniqueValidationWithoutIndex
+
   validates :rating,
             presence: true, unless: :unrateable
 

@@ -31,7 +31,7 @@ class SearchEndpoint < ApplicationRecord
 
   # Scopes
   scope :not_archived, -> { where('`search_endpoints`.`archived` = false') }
-  
+
   # rubocop:disable Layout/LineLength
   scope :for_user_via_teams, ->(user) {
     joins('
@@ -59,7 +59,7 @@ class SearchEndpoint < ApplicationRecord
     ids = for_user_via_teams(user).distinct.pluck(:id) + for_user_directly_owned(user).distinct.pluck(:id)
     where(id: ids.uniq)
   }
-  
+
   after_initialize do |se|
     se.archived = false if se.archived.nil?
   end
@@ -72,7 +72,7 @@ class SearchEndpoint < ApplicationRecord
   def fullname
     (name.presence || middle_truncate("#{search_engine.capitalize} #{endpoint_url}"))
   end
-  
+
   def mark_archived
     self.archived = true
   end
