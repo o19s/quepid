@@ -63,7 +63,7 @@ angular.module('QuepidApp')
         
         angular.forEach(this.searchEndpoints, function(b) {
           // This is really ugly.  We don't use our standard book mapping, and probably should!
-          b.searchEndpointId = b.search_endpoint_id;
+          b.id = b.search_endpoint_id;
           delete b.search_endpoint_id;
           b.apiMethod = b.api_method;
           delete b.api_method;

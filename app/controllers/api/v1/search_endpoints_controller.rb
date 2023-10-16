@@ -6,8 +6,7 @@ module Api
       before_action :set_search_endpoint, only: [ :show, :update ]
       def index
         bool = ActiveRecord::Type::Boolean.new
-        archived  = bool.deserialize params[:archived]
-        puts "are we looking up archived?   #{archived}"
+        archived = bool.deserialize params[:archived]
 
         current_user.search_endpoints_involved_with
 

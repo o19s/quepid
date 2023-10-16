@@ -85,6 +85,31 @@ angular.module('QuepidApp')
           });
       };
       
+      this.archiveSearchEndpoint = function(searchEndpointToArchive) {
+        var self  = this;
+        var searchEndpointId  = searchEndpointToArchive.id;
+        var url         = 'api/search_endpoints/' + searchEndpointId;
+        var data        = { archived: true };
+
+        return $http.put(url, data)
+          .then(function(response) {
+            var data    = response.data;
+            var searchEndpoint = self.constructFromData(data);
+
+            // the .filter() should work, but doesn't so instead combine with a splice.
+            var indexOfSearchEndpoint = self.searchEndpoints.indexOf( self.searchEndpoints.filter( function (item) {
+              return item.id === searchEndpoint.id;
+            })[0] );
+            self.searchEndpoints.splice(indexOfSearchEndpoint, 1);
+            //svc.allCases = svc.allCases.filter( function(acase) {
+            //  acase.caseNo !== newCase.caseNo;
+            //});
+            self.archived.push(searchEndpoint);
+
+            broadcastSvc.send('updatedSearchEndpointsList', self.searchEndpoints);
+          });
+      };
+      
       this.unarchiveSearchEndpoint = function(searchEndpointToUnarchive) {
         var self  = this;
         var searchEndpointId  = searchEndpointToUnarchive.id;
