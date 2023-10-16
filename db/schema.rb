@@ -142,7 +142,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_10_14_175649) do
     t.index ["query_id"], name: "query_id"
   end
 
-  create_table "scorers", id: :integer, charset: "latin1", force: :cascade do |t|
+  create_table "scorers", id: :integer, charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.text "code"
     t.string "name"
     t.integer "owner_id"
