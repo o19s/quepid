@@ -38,13 +38,27 @@ angular.module('QuepidApp')
           function(share) {
             var scorerId  = share.scorer.scorerId;
             var team      = share.selectedTeam;
+            if (share.action === 'select') {
+              team    = share.selectedTeam;
 
-            teamSvc.shareScorer(team, scorerId)
-              .then(function() {
-                flash.success = 'Scorer shared with team successfully';
-              }, function(response) {
-                flash.error = response.data.message;
-              });
+              teamSvc.shareScorer(team, scorerId)
+                .then(function() {
+                  flash.success = 'Scorer shared with team successfully.';
+                }, function() {
+                  flash.error = 'Unable to share scorer with team.';
+                });
+            }
+            else {
+              team    = share.unselectedTeam;
+              var scorer  = share.scorer;
+
+              teamSvc.removeScorer(team, scorer)
+                .then(function() {
+                  flash.success = 'Scorer unshared from team successfully.';
+                }, function() {
+                  flash.error = 'Unable to unshare scorer from team.';
+                });
+            }                       
           },
           function() {
             $log.info('INFO: Modal dismissed');

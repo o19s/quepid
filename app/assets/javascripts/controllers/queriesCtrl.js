@@ -235,6 +235,12 @@ angular.module('QuepidApp')
         // finished a batch run, log the result!
         var caseNo  = parseInt($routeParams.caseNo, 10);
         var tryNo   = parseInt($routeParams.tryNo, 10);
+        
+        if (Object.keys($scope.queries.avgQuery.currentScore.queries).length === 0) {
+          // if we have no queries, then let's short circuit this.  We don't need to
+          // record scores for cases with zero queries.
+          return;
+        }
 
         if ( isNaN(tryNo) ) {  // If we didn't specify a try, then we need to get the latest
           caseSvc.get(caseNo)

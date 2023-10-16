@@ -13,26 +13,35 @@ module Api
         login_user joey
       end
 
+      # rubocop:disable Metrics/AbcSize
       def assert_try_matches_response response, try
         assert_equal try.query_params, response['query_params']
         assert_equal try.field_spec,   response['field_spec'] if response['field_spec']
-        assert_nil_or_equal try.search_url, response['search_url']
+        assert_nil_or_equal try.search_endpoint.endpoint_url, response['search_url']
         assert_equal try.try_number,   response['try_number']
         assert_equal try.name,         response['name'] if response['name']
         assert_equal try.solr_args,    response['args']
         assert_equal try.escape_query, response['escape_query']
-        assert_nil_or_equal try.api_method, response['api_method']
+        assert_nil_or_equal try.search_endpoint.api_method, response['api_method']
 
         assert_curator_vars_equal try.curator_vars_map, response['curator_vars']
       end
+      # rubocop:enable Metrics/AbcSize
 
       def assert_try_matches_params params, try
         assert_equal try.query_params, params[:query_params] if params[:query_params]
         assert_equal try.field_spec,   params[:field_spec]   if params[:field_spec]
-        assert_equal try.search_url,   params[:search_url]   if params[:search_url]
+        assert_equal try.search_endpoint.endpoint_url, params[:search_url] if params[:search_url]
         assert_equal try.name,         params[:name]         if params[:name]
         assert_equal try.escape_query, params[:escape_query] if params[:escape_query]
-        assert_equal try.api_method,   params[:api_method]   if params[:api_method]
+        assert_equal try.search_endpoint.api_method, params[:api_method] if params[:api_method]
+      end
+
+      def assert_search_endpoint_matches_response response, search_endpoint
+        assert_nil_or_equal search_endpoint.endpoint_url, response['endpoint_url']
+        assert_nil_or_equal search_endpoint.search_engine, response['search_engine']
+        assert_nil_or_equal search_endpoint.api_method, response['api_method']
+        assert_nil_or_equal search_endpoint.custom_headers, response['custom_headers']
       end
 
       def assert_curator_vars_equal vars, response_vars
@@ -129,7 +138,9 @@ module Api
         let(:the_try)   { tries(:first_for_case_with_two_tries) }
 
         test 'renames try successfully' do
-          put :update, params: { case_id: the_case.id, try_number: the_try.try_number, try: { name: 'New Name' } }
+          put :update,
+              params: { case_id: the_case.id, try_number: the_try.try_number, try: { name: 'New Name' },
+search_endpoint: { search_engine: 'solr' } }
 
           assert_response :ok
 
@@ -142,21 +153,26 @@ module Api
 
         test 'can change other parameters too' do
           old_no = the_try.try_number
-          put :update, params: { case_id: the_case.id, try_number: the_try.try_number, try: { query_params: 'New No' } }
+          put :update,
+              params: { case_id: the_case.id, try_number: the_try.try_number, try: { query_params: 'New No' },
+search_endpoint: { search_engine: 'es' } }
 
           assert_response :ok
 
           the_try.reload
           assert_not_equal  the_try.try_number, 'New No'
           assert_equal      the_try.try_number, old_no
+          assert_equal the_try.search_endpoint.search_engine, 'es'
 
           put :update,
-              params: { case_id: the_case.id, try_number: the_try.try_number, try: { field_spec: 'New field_spec' } }
+              params: { case_id: the_case.id, try_number: the_try.try_number, try: { field_spec: 'New field_spec' },
+search_endpoint: { search_engine: 'os' } }
 
           assert_response :ok
 
           the_try.reload
           assert_equal the_try.field_spec, 'New field_spec'
+          assert_equal the_try.search_endpoint.search_engine, 'os'
         end
       end
 
@@ -165,28 +181,35 @@ module Api
 
         test 'sets attribute successfully and assigns try to case' do
           try_params = {
-            search_url:    'http://solr.quepid.com',
-            field_spec:    'catch_line',
-            query_params:  'q=#$query##',
+
+            field_spec:   'catch_line',
+            query_params: 'q=#$query##',
+
+          }
+          search_endpoint_params = {
+            endpoint_url:  'http://solr.quepid.com',
             search_engine: 'solr',
           }
 
           case_last_try = the_case.last_try_number
 
           assert_difference 'the_case.tries.count' do
-            post :create, params: { case_id: the_case.id, try: try_params }
+            post :create, params: { case_id: the_case.id, try: try_params, search_endpoint: search_endpoint_params }
 
             assert_response :ok # should be :created,
             # but there's a bug currently in the responders gem
 
             the_case.reload
             try_response  = response.parsed_body
+
             created_try   = the_case.tries.where(try_number: try_response['try_number']).first
 
             assert_equal the_case.last_try_number, case_last_try + 1
 
             assert_try_matches_response try_response,  created_try
             assert_try_matches_params   try_params,    created_try
+
+            assert_search_endpoint_matches_response try_response['search_endpoint'], created_try.search_endpoint
 
             expected_value = { 'q' => [ '#$query##' ] }
 
@@ -206,7 +229,7 @@ module Api
           }
 
           assert_difference 'the_case.tries.count' do
-            post :create, params: { case_id: the_case.id, try: try_params }
+            post :create, params: { case_id: the_case.id, try: try_params, search_endpoint: { search_engine: 'solr' } }
 
             assert_response :ok # should be :created,
             # but there's a bug currently in the responders gem
@@ -222,9 +245,14 @@ module Api
 
         test 'adds curator vars to the try' do
           try_params = {
+
+            field_spec:   'catch_line',
+            query_params: 'q=#$query##',
+
+          }
+
+          search_endpoint_params = {
             search_url:    'http://solr.quepid.com',
-            field_spec:    'catch_line',
-            query_params:  'q=#$query##',
             search_engine: 'solr',
           }
 
@@ -234,7 +262,9 @@ module Api
           }
 
           assert_difference 'CuratorVariable.count', 2 do
-            post :create, params: { case_id: the_case.id, try: try_params, curator_vars: curator_vars_params }
+            post :create,
+                 params: { case_id: the_case.id, try: try_params, curator_vars: curator_vars_params,
+search_endpoint: search_endpoint_params }
 
             assert_response :ok
 
@@ -252,13 +282,12 @@ module Api
 
         test 'sets default name properly' do
           try_params = {
-            search_url:    'http://solr.quepid.com',
-            field_spec:    'catch_line',
-            query_params:  'q=#$query##',
-            search_engine: 'solr',
+            field_spec:   'catch_line',
+            query_params: 'q=#$query##',
+
           }
 
-          post :create, params: { case_id: the_case.id, try: try_params }
+          post :create, params: { case_id: the_case.id, try: try_params, search_endpoint: { search_engine: 'solr' } }
 
           assert_response :ok # should be :created,
           # but there's a bug currently in the responders gem
@@ -277,7 +306,9 @@ module Api
         end
 
         test 'sets escape_query param' do
-          post :create, params: { case_id: the_case.id, try: { escape_query: false } }
+          post :create,
+               params: { case_id: the_case.id, try: { escape_query: false },
+search_endpoint: { search_engine: 'solr' } }
 
           assert_response :ok
 
@@ -289,7 +320,9 @@ module Api
         end
 
         test 'sets api_method param' do
-          post :create, params: { case_id: the_case.id, try: { api_method: 'get' } }
+          post :create,
+               params: { case_id: the_case.id, try: { field_spec: 'catch_line' },
+search_endpoint: { search_engine: 'es', api_method: 'get' } }
 
           assert_response :ok
 
@@ -297,11 +330,12 @@ module Api
           created_try = the_case.tries.where(try_number: json_response['try_number']).first
 
           assert_equal 'get', json_response['api_method']
-          assert_equal 'get', created_try.api_method
+          assert_equal 'get', created_try.search_endpoint.api_method
         end
 
         test 'sets number of rows' do
-          post :create, params: { case_id: the_case.id, try: { number_of_rows: 20 } }
+          post :create,
+               params: { case_id: the_case.id, try: { number_of_rows: 20 }, search_endpoint: { search_engine: 'solr' } }
 
           assert_response :ok
 
@@ -313,7 +347,7 @@ module Api
         end
 
         test 'assigns default attributes' do
-          post :create, params: { case_id: the_case.id, try: { name: '' } }
+          post :create, params: { case_id: the_case.id, try: { name: '' }, search_endpoint: { search_engine: 'solr' } }
 
           assert_response :ok # should be :created,
           # but there's a bug currently in the responders gem
@@ -326,9 +360,7 @@ module Api
           assert_match( /#{the_case.last_try_number}/, created_try.name )
           assert_match( /#{created_try.try_number}/,   created_try.name )
 
-          assert_not_nil created_try.search_engine
           assert_nil created_try.field_spec
-          assert_nil created_try.search_url
           assert_nil created_try.query_params
           assert created_try.escape_query
 
@@ -340,12 +372,28 @@ module Api
           assert_equal created_try.number_of_rows, 10
         end
 
+        test 'updates search endpoint' do
+          try = the_case.tries.first
+          post :create,
+               params: { case_id: the_case.id, try: { try_number: try.try_number },
+search_endpoint: { search_engine: 'os', search_url: 'http://my.os.url' } }
+
+          assert_response :ok
+
+          the_case.reload
+          created_try = the_case.tries.where(try_number: json_response['try_number']).first
+
+          assert_not_equal try, created_try
+          assert_equal created_try.search_endpoint.search_engine, 'os'
+        end
+
         describe 'analytics' do
           test 'posts event' do
             expects_any_ga_event_call
 
             perform_enqueued_jobs do
-              post :create, params: { case_id: the_case.id, try: { name: 'blah' } }
+              post :create,
+                   params: { case_id: the_case.id, try: { name: 'blah' }, search_endpoint: { search_engine: 'solr' } }
 
               assert_response :ok
             end
@@ -382,12 +430,13 @@ module Api
         end
       end
 
-      describe 'Supports multiple search engines' do
+      describe 'Supports multiple search endpoints' do
         let(:the_case)  { cases(:case_with_one_try) }
 
         describe 'Solr' do
           test 'sets the proper default values' do
-            post :create, params: { case_id: the_case.id, try: { name: '' } }
+            post :create,
+                 params: { case_id: the_case.id, try: { name: '' }, search_endpoint: { search_engine: 'solr' } }
 
             assert_response :ok # should be :created,
             # but there's a bug currently in the responders gem
@@ -400,14 +449,14 @@ module Api
             assert_match( /#{the_case.last_try_number}/, created_try.name )
             assert_match( /#{created_try.try_number}/,   created_try.name )
 
-            assert_not_nil created_try.search_engine
+            assert_equal created_try.search_endpoint.search_engine, 'solr'
             assert_equal created_try.escape_query, true
           end
         end
 
         describe 'Elasticsearch' do
           test 'sets the proper default values' do
-            post :create, params: { case_id: the_case.id, try: { search_engine: 'es' } }
+            post :create, params: { case_id: the_case.id, try: { name: '' }, search_endpoint: { search_engine: 'es' } }
 
             assert_response :ok # should be :created,
             # but there's a bug currently in the responders gem
@@ -420,17 +469,19 @@ module Api
             assert_match( /#{the_case.last_try_number}/, created_try.name )
             assert_match( /#{created_try.try_number}/,   created_try.name )
 
-            assert_not_nil created_try.search_engine
+            assert_not_nil created_try.search_endpoint.search_engine
             assert_not_nil created_try.escape_query
 
-            assert_equal created_try.search_engine, 'es'
-            assert_equal created_try.escape_query,  true
+            assert_equal created_try.search_endpoint.search_engine, 'es'
+            assert_equal created_try.escape_query, true
           end
 
           test 'parses args properly' do
             query_params = '{ "query": "#$query##" }'
 
-            post :create, params: { case_id: the_case.id, try: { search_engine: 'es', query_params: query_params } }
+            post :create,
+                 params: { case_id: the_case.id, try: { query_params: query_params },
+search_endpoint: { search_engine: 'es' } }
 
             assert_response :ok # should be :created,
             # but there's a bug currently in the responders gem
@@ -446,7 +497,9 @@ module Api
           test 'handles bad JSON in query params' do
             query_params = '{ "query": "#$query##"'
 
-            post :create, params: { case_id: the_case.id, try: { search_engine: 'es', query_params: query_params } }
+            post :create,
+                 params: { case_id: the_case.id, try: { query_params: query_params },
+search_endpoint: { search_engine: 'es' } }
 
             assert_response :ok # should be :created,
             # but there's a bug currently in the responders gem
@@ -457,6 +510,46 @@ module Api
 
             assert_nil created_try.args
             assert_nil try_response['args']
+          end
+        end
+
+        describe 'Test finding search endpoints' do
+          test 'find by search_engine' do
+            post :create,
+                 params: { case_id: the_case.id, try: { name: '' }, search_endpoint: { search_engine: 'solr' } }
+
+            assert_response :ok # should be :created,
+            # but there's a bug currently in the responders gem
+
+            the_case.reload
+            try_response  = response.parsed_body
+            created_try   = the_case.tries.where(try_number: try_response['try_number']).first
+
+            solr_search_endpoint = created_try.search_endpoint
+
+            assert_equal solr_search_endpoint.search_engine, try_response['search_endpoint']['search_engine']
+
+            post :create, params: { case_id: the_case.id, try: { name: '' }, search_endpoint: { search_engine: 'es' } }
+            try_response  = response.parsed_body
+            created_try   = the_case.tries.where(try_number: try_response['try_number']).first
+
+            es_search_endpoint = created_try.search_endpoint
+
+            assert_not_equal solr_search_endpoint, es_search_endpoint
+            assert_equal es_search_endpoint.search_engine, try_response['search_endpoint']['search_engine']
+
+            post :create,
+                 params: { case_id: the_case.id, try: { name: '' },
+search_endpoint: { search_engine: 'solr', api_method: 'GET' } }
+            try_response  = response.parsed_body
+            created_try   = the_case.tries.where(try_number: try_response['try_number']).first
+
+            solr_get_search_endpoint = created_try.search_endpoint
+
+            assert_not_equal solr_search_endpoint, solr_get_search_endpoint
+            assert_not_equal es_search_endpoint, solr_get_search_endpoint
+            assert_equal solr_get_search_endpoint.search_engine, try_response['search_endpoint']['search_engine']
+            assert_equal solr_get_search_endpoint.api_method, 'GET'
           end
         end
       end

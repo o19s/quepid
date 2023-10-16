@@ -3,10 +3,10 @@
 angular.module('QuepidApp')
   .controller('QueryParamsCtrl', [
     '$scope',
-    'esUrlSvc','caseTryNavSvc',
+    'esUrlSvc','caseTryNavSvc','searchEndpointSvc',
     'TryFactory',
     function ($scope,
-      esUrlSvc, caseTryNavSvc,
+      esUrlSvc, caseTryNavSvc,searchEndpointSvc,
       TryFactory) {
 
       $scope.qp = {};
@@ -20,7 +20,16 @@ angular.module('QuepidApp')
       $scope.showESTemplateWarning = false;
 
       $scope.showTLSChangeWarning = false;
-
+      
+      searchEndpointSvc.list()
+       .then(function() {
+         $scope.searchEndpoints = searchEndpointSvc.searchEndpoints;               
+       });      
+      
+      $scope.listSearchEndpoints = function() {
+        return $scope.searchEndpoints;
+      };
+      
 
       $scope.validateSearchEngineUrl  = function() {
         if (!angular.isUndefined($scope.settings.searchUrl)){
@@ -36,11 +45,11 @@ angular.module('QuepidApp')
 
           if ($scope.settings.searchEngine !== '' && !angular.isUndefined($scope.settings.searchUrl)){
              $scope.showTLSChangeWarning = caseTryNavSvc.needToRedirectQuepidProtocol($scope.settings.searchUrl);
-             
+
             if ($scope.showTLSChangeWarning){
-             
+
               var resultsTuple = caseTryNavSvc.swapQuepidUrlTLS();
-              
+
               $scope.quepidUrlToSwitchTo = resultsTuple[0];
               $scope.protocolToSwitchTo = resultsTuple[1];
 
@@ -94,18 +103,54 @@ angular.module('QuepidApp')
           name:           $scope.settings.selectedTry.name,
           number_of_rows: $scope.settings.selectedTry.numberOfRows,
           query_params:   $scope.settings.selectedTry.queryParams,
+          search_endpoint_id:  $scope.settings.selectedTry.searchEndpointId,
+          endpoint_name:  $scope.settings.selectedTry.endpointName,
           search_engine:  $scope.settings.selectedTry.searchEngine,
           search_url:     $scope.settings.selectedTry.searchUrl,
           try_number:     $scope.settings.selectedTry.tryNo,
         });
         tmp.updateVars();
+        
+        var searchEndpointToUse = searchEndpointSvc.searchEndpoints.find(obj => obj.id === $scope.settings.searchEndpointId);
+        
+        $scope.selectedItem = searchEndpointToUse;
+        
         $scope.settings.selectedTry = tmp;
         $scope.validateSearchEngineUrl();
       };
 
+      $scope.onSelectSearchEndpoint = function (selectedItem) {
+        $scope.settings.searchEndpointId = selectedItem.id;
+        $scope.settings.searchEndpoint = selectedItem;
+      };
+      
+      $scope.searchOptions = function (searchText) {
+        // Perform filtering based on search text
+        return $scope.searchEndpoints.filter(function (result) {
+          return result.name.toLowerCase().indexOf(searchText.toLowerCase()) !== -1;
+        });
+      };
+     
+      
       $scope.changeSearchEngine = function() {
+        var searchEndpointToUse = $scope.searchEndpoints.find(obj => obj.id === $scope.settings.searchEndpointId);
+        
+        // Update our settings with the new searchEndpoint values
+        $scope.settings.searchEndpoint           = searchEndpointToUse;
+        $scope.settings.searchEndpointId         = searchEndpointToUse.id;
+        $scope.settings.searchEngine             = searchEndpointToUse.searchEngine;
+        $scope.settings.searchUrl                = searchEndpointToUse.endpointUrl; // notice remapping
+        $scope.settings.apiMethod                = searchEndpointToUse.apiMethod;
+        $scope.settings.customHeaders            = searchEndpointToUse.customHeaders;
+        
+        // The remaining settings remain the same from before, which means you can get a weird situation
+        // where you then need to fix the fields or the query params.
+        // This is different from the wizard where we have default values that we plop in for
+        // the fields and query params.
+               
         $scope.settings.reset();
         $scope.validateSearchEngineUrl();
       };
+            
     }
   ]);

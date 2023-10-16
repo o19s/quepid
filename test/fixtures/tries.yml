@@ -2,21 +2,22 @@
 #
 # Table name: tries
 #
-#  id             :integer          not null, primary key
-#  ancestry       :string(3072)
-#  api_method     :string(255)
-#  custom_headers :string(1000)
-#  escape_query   :boolean          default(TRUE)
-#  field_spec     :string(500)
-#  name           :string(50)
-#  number_of_rows :integer          default(10)
-#  query_params   :string(20000)
-#  search_engine  :string(50)       default("solr")
-#  search_url     :string(500)
-#  try_number     :integer
-#  created_at     :datetime         not null
-#  updated_at     :datetime         not null
-#  case_id        :integer
+#  id                 :integer          not null, primary key
+#  ancestry           :string(3072)
+#  api_method         :string(255)
+#  custom_headers     :string(1000)
+#  escape_query       :boolean          default(TRUE)
+#  field_spec         :string(500)
+#  name               :string(50)
+#  number_of_rows     :integer          default(10)
+#  query_params       :string(20000)
+#  search_engine      :string(50)       default("solr")
+#  search_url         :string(500)
+#  try_number         :integer
+#  created_at         :datetime         not null
+#  updated_at         :datetime         not null
+#  case_id            :integer
+#  search_endpoint_id :bigint
 #
 # Indexes
 #
@@ -32,227 +33,176 @@ one:
   case:           :one
   try_number:     1
   query_params:   'q=#$query##'
-  search_url:     http://test.com/solr/tmdb/select
-  search_engine:  solr
-  api_method:     GET
   field_spec:     id:id title:title
+  search_endpoint: :one
 
 two:
   case:           :two
   try_number:     2
   query_params:   'q=#$query##'
-  search_url:     http://test.com/solr/tmdb/select
-  search_engine:  solr
-  api_method:     JSONP
+  search_endpoint: :two
 
 for_shared_team_case:
   case:           :shared_team_case
   try_number:     1
   query_params:   'q=#$query##'
-  search_url:     http://test.com/solr/tmdb/select
-  search_engine:  solr
-  api_method:     JSONP
+  search_endpoint: :for_shared_team_case
 
 for_shared_case:
   case:           :shared_case
   try_number:     1
   query_params:   'q=#$query##'
-  search_url:     http://test.com/solr/tmdb/select
-  search_engine:  solr
-  api_method:     JSONP
+  search_endpoint: :for_shared_case
 
 archived:
   case:           :archived
   try_number:     1
   query_params:   'q=#$query##'
-  search_url:     http://test.com/solr/tmdb/select
-  search_engine:  solr
-  api_method:     JSONP
+  search_endpoint: :archived
 
 for_metadata_case:
   case:           :with_metadata
   try_number:     2
   query_params:   'q=#$query##'
-  search_url:     http://test.com/solr/tmdb/select
-  search_engine:  solr
-  api_method:     JSONP
+  search_endpoint: :for_metadata_case
 
 for_case_with_scorer:
   case:           :with_scorer
   try_number:     2
   query_params:   'q=#$query##'
-  search_url:     http://test.com/solr/tmdb/select
-  search_engine:  solr
-  api_method:     JSONP
+  search_endpoint: :for_case_with_scorer
 
 for_case_with_one_try:
   case:           :case_with_one_try
   query_params:   'q=#$query##'
-  search_url:     http://test.com/solr/tmdb/select
   try_number:     1
-  search_engine:  solr
-  api_method:     JSONP
+  search_endpoint: :for_case_with_one_try
 
 first_for_case_with_two_tries:
   case:           :case_with_two_tries
   query_params:   'q=#$query##'
-  search_url:     http://test.com/solr/tmdb/select
   try_number:     1
-  search_engine:  solr
-  api_method:     JSONP
   name:           Try 1
+  search_endpoint: :first_for_case_with_two_tries
 
 second_for_case_with_two_tries:
   case:           :case_with_two_tries
   query_params:   'q=#$query##'
-  search_url:     http://test.com/solr/tmdb/select
   try_number:     2
-  search_engine:  solr
-  api_method:     JSONP
   name:           Second Try
   ancestry:       '<%= ActiveRecord::FixtureSet.identify(:first_for_case_with_two_tries) %>'
+  search_endpoint: :second_for_case_with_two_tries
 
 first_try_for_score_case:
   case:           :score_case
   query_params:   'q=#$query##'
-  search_url:     http://test.com/solr/tmdb/select
   try_number:     1
-  search_engine:  solr
-  api_method:     JSONP
+  search_endpoint: :first_try_for_score_case
 
 second_try_for_score_case:
   case:           :score_case
   query_params:   'q=#$query##'
-  search_url:     http://test.com/solr/tmdb/select
   try_number:     2
-  search_engine:  solr
-  api_method:     JSONP
+  search_endpoint: :second_try_for_score_case
 
 first_try_for_other_score_case:
   case:           :other_score_case
   query_params:   'q=#$query##'
-  search_url:     test.com
   try_number:     1
-  search_engine:  solr
-  api_method:     JSONP
+  search_endpoint: :first_try_for_other_score_case
 
 second_try_for_other_score_case:
   case:           :other_score_case
   query_params:   'q=#$query##'
-  search_url:     http://test.com/solr/tmdb/select
   try_number:     2
-  search_engine:  solr
-  api_method:     JSONP
+  search_endpoint: :second_try_for_other_score_case
 
 try_without_curator_vars:
   case:           :random_case
   query_params:   'q=#$query##'
-  search_url:     http://test.com/solr/tmdb/select
   try_number:     2
-  search_engine:  solr
-  api_method:     JSONP
   field_spec:     id:id title:title 
+  search_endpoint: :try_without_curator_vars
 
 try_with_curator_vars:
   case:           :random_case
   query_params:   'q=#$query##&defType=edismax&qf=text^##one## catch_line^##two##'
-  search_url:     http://test.com/solr/tmdb/select
   try_number:     3
-  search_engine:  solr
-  api_method:     JSONP
   field_spec:     id:id title:title
+  search_endpoint: :try_with_curator_vars
   
 es_try:
   case:           :random_case
   query_params:   '{ "query": { "match": { "text": "#$query##" } } }'
-  search_url:     http://test.com:9200/tmdb/_search
   try_number:     4
-  search_engine:  es
   field_spec:     id:_id title:title
+  search_endpoint: :es_try
 
 es_try_with_curator_vars:
   case:           :random_case
   query_params:   '{ "query": { "multi_match": { "fields": "title, overview", "query": "#$query##", "tie_breaker": "##tieBreaker##" } } }'
-  search_url:     http://test.com:9200/tmdb/_search
   try_number:     5
-  search_engine:  es
   field_spec:     id:_id title:title
+  search_endpoint: :es_try_with_curator_vars
 
 try_with_headers:
   case:           :random_case
   query_params:   'q=#$query##'
-  search_url:     http://test.com/solr/tmdb/select
   try_number:     6
-  search_engine:  solr
-  api_method:     JSONP
   field_spec:     id:id title:title  
-  custom_headers: '{"Authorization": "ApiKey TEF5QkFJUUJVUnRsNG1fekNCR3E6WmRYUFJRRVdTMHlBVWotWFdqQWxuUQ=="}'
+  search_endpoint: :try_with_headers
   
   
 bootstrap_try_1:
   case:           :bootstrap_case
   query_params:   'q=#$query##'
-  search_url:     https://test.com
   try_number:     1
-  search_engine:  solr
+  search_endpoint: :bootstrap_try_1
 
 bootstrap_try_2:
   case:           :bootstrap_case
   query_params:   '{ "query": { "match": { "text": "#$query##" } } }'
-  search_url:     http://test.com:9200/tmdb/_search
   try_number:     2
-  search_engine:  es
+  search_endpoint: :bootstrap_try_2
 
 for_case_without_score_try_1:
   case:           :case_without_score
   query_params:   'q=#$query##'
-  search_url:     http://test.com/solr/tmdb/select
   try_number:     1
-  search_engine:  solr
-  api_method:     JSONP
+  search_endpoint: :for_case_without_score_try_1
 
 for_case_with_score_for_first_try_try_1:
   case:           :case_with_score_for_first_try
   query_params:   'q=#$query##'
-  search_url:     http://test.com/solr/tmdb/select
   try_number:     1
-  search_engine:  solr
+  search_endpoint: :for_case_with_score_for_first_try_try_1
 
 for_case_with_score_for_first_try_try_2:
   case:           :case_with_score_for_first_try
   query_params:   'q=#$query##'
-  search_url:     http://test.com/solr/tmdb/select
   try_number:     2
-  search_engine:  solr
-  api_method:     JSONP
+  search_endpoint: :for_case_with_score_for_first_try_try_2
 
 for_case_with_score_try_1:
   case:           :case_with_score
   query_params:   'q=#$query##'
-  search_url:     http://test.com/solr/tmdb/select
   try_number:     1
-  search_engine:  solr
+  search_endpoint: :for_case_with_score_try_1
 
 for_case_with_score_try_2:
   case:           :case_with_score
   query_params:   'q=#$query##'
-  search_url:     http://test.com/solr/tmdb/select
   try_number:     2
-  search_engine:  solr
-  api_method:     JSONP
+  search_endpoint: :for_case_with_score_try_2
 
 for_case_with_score_try_3:
   case:           :case_with_score
   query_params:   'q=#$query##'
-  search_url:     http://test.com/solr/tmdb/select
   try_number:     2
-  search_engine:  solr
-  api_method:     JSONP
+  search_endpoint: :for_case_with_score_try_3
 
 for_case_queries_case:
   case:           :queries_case
   query_params:   'q=#$query##'
-  search_url:     http://test.com/solr/tmdb/select
   try_number:     1
-  search_engine:  solr
-  api_method:     JSONP
+  search_endpoint: :for_case_queries_case

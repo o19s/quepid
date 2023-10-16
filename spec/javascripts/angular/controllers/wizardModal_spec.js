@@ -88,6 +88,7 @@ describe('Controller: WizardModalCtrl', function () {
   describe('query adding', function() {
     beforeEach(function() {
       var settingsBootstrapped = 0;
+      $httpBackend.expectGET('api/search_endpoints').respond(200, {});
       $httpBackend.expectGET('api/cases/0/tries').respond(200, bootstrappedSettingsData);
       settingsSvc.bootstrap()
       .then(function() {

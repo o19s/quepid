@@ -134,7 +134,7 @@ describe('Service: teamSvc', function () {
   });
 
   it('fetches an team with its cases', function() {
-    var url = 'api/teams/' + mockTeam.id + '?load_cases=true';
+    var url = 'api/teams/' + mockTeam.id + '?for_sharing=true';
 
     var mockTeamWithCasesResponse = {
         id:       1,
@@ -153,13 +153,13 @@ describe('Service: teamSvc', function () {
 
     $httpBackend.expectGET(url).respond(200, mockTeamWithCasesResponse);
 
-    var load_cases = true;
+    var forSharing = true;
 
-    teamSvc.get(mockTeam.id, load_cases)
+    teamSvc.get(mockTeam.id, forSharing)
       .then(function(response) {
         expect(response.cases[0].caseName).toBe('Case');
     });
-    //var team = teamSvc.get(mockTeam.id, load_cases);
+    //var team = teamSvc.get(mockTeam.id, forSharing);
     $httpBackend.flush();
     //$httpBackend.verifyNoOutstandingExpectation();
     //expect(team.cases[0].caseName).toBe('Case');
@@ -169,7 +169,6 @@ describe('Service: teamSvc', function () {
   it('adds a member to the team', function() {
     var url   = 'api/teams/' + mockTeam.id + '/members';
     var data  = { id:  mockMember.id };
-    var mockResponse = mockTeam;
 
     $httpBackend.expectPOST(url, data).respond(200);
 
@@ -209,7 +208,6 @@ describe('Service: teamSvc', function () {
   it('adds a case to the team', function() {
     var url   = 'api/teams/' + mockTeam.id + '/cases';
     var data  = { id: mockCase.caseNo };
-    var mockResponse = mockTeam;
 
     $httpBackend.expectPOST(url, data).respond(200, mockCase);
 
@@ -223,7 +221,6 @@ describe('Service: teamSvc', function () {
   it('adds a scorer to the team', function() {
     var url = 'api/teams/' + mockTeam.id + '/scorers';
     var data  = { id: mockScorer.scorerId };
-    var mockResponse = mockTeam;
 
     $httpBackend.expectPOST(url, data).respond(200, mockScorer);
 

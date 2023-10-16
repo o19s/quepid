@@ -2,10 +2,10 @@
 
 angular.module('QuepidApp')
   .controller('TeamCtrl', [
-    '$scope', '$routeParams', '$location',
+    '$scope', '$routeParams', '$location','$uibModal',
     'teamSvc',
     function (
-      $scope, $routeParams, $location,
+      $scope, $routeParams, $location,$uibModal,
       teamSvc
     ) {
       var ctrl = this;
@@ -39,6 +39,26 @@ angular.module('QuepidApp')
       $scope.$on('updatedCasesList', function() {
         fetchTeam(teamId);
       });
+      
+      $scope.$on('updatedSearchEndpointsList', function() {
+        fetchTeam(teamId);
+      });
+      
+      
+      
+      $scope.unarchiveSearchEndpoint = function() {
+        //$scope.currentTeam = currentTeam; // this can be null if we don't have a currentTeam
+       
+        $uibModal.open({
+          templateUrl: 'views/unarchiveSearchEndpointModal.html',
+          controller: 'UnarchiveSearchEndpointCtrl',
+          resolve : {
+            currentTeam: function() {
+              return $scope.currentTeam;
+            }
+          }
+        });
+      };      
 
       var init = function() {
         if (teamId) {

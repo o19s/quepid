@@ -8,11 +8,15 @@ describe('Controller: QueryparamsCtrl', function () {
   var QueryparamsCtrl,
     scope,
     testTry;
+  
+  var $httpBackend;
 
 
   // Initialize the controller and a mock scope
-  beforeEach(inject(function ($controller, $rootScope, settingsSvc, TryFactory) {
+  beforeEach(inject(function ($injector, $controller, $rootScope, TryFactory) {
     scope = $rootScope.$new();
+    
+    $httpBackend = $injector.get('$httpBackend');
 
     var queryParams = 'q=#$query##';
     var curatorVars = {};
@@ -56,6 +60,7 @@ describe('Controller: QueryparamsCtrl', function () {
   });
 
   it('initializes initially undisplayed vars to the right value', function() {
+    $httpBackend.expectGET('api/search_endpoints').respond(200, {});
     scope.settings.selectedTry.queryParams = 'q=#$query';
     scope.settings.selectedTry.curatorVars = [{name: 'testvar', value: 1337}];
     scope.qp.toggleTab();

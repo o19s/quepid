@@ -48,6 +48,7 @@ angular.module('QuepidApp')
       };
 
       ctrl.activeBookId = acase.bookId;
+      ctrl.activeBookName = acase.bookName;
 
       $scope.processingPrompt = { inProgress: false, error: null};
 
@@ -60,8 +61,10 @@ angular.module('QuepidApp')
 
         if (!book) {
           ctrl.activeBookId = null;
+          ctrl.activeBookName = null;
         } else {
           ctrl.activeBookId = book.id;
+          ctrl.activeBookName = book.name;
         }
         ctrl.updateAssociatedBook = true;
       }

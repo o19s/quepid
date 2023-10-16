@@ -30,6 +30,7 @@ shared:
   members:  doug, shared_scorer_owner, random, not_shared_case_owner, dropdown_user, random_1
   scorers:  shared_scorer, shared_scorer1, shared_scorer2
   cases:    shared_with_team
+  search_endpoints: one, for_shared_team_case
 
 case_finder_owned_team:
   name:     An team owned by the Case Finder User
@@ -53,6 +54,8 @@ shared_team:
   owner:    :random
   members:  team_finder_user, team_owner, shared_team_member, random
   cases:    shared_team_case
+  search_endpoints: for_shared_team_case
+  scorers:  random_scorer
 
 team_owner_team:
   name:     Team owned by Team Owner User

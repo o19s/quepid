@@ -8,6 +8,7 @@ module Api
       class CasesControllerTest < ActionController::TestCase
         let(:user) { users(:random) }
         let(:acase) { cases(:queries_case) }
+        let(:search_endpoint) { search_endpoints(:one) }
 
         before do
           @controller = Api::V1::Import::CasesController.new
@@ -117,15 +118,13 @@ module Api
               case_name:   'test case',
               owner_email: user.email,
               scorer:      acase.scorer.as_json(only: [ :name ]),
-
               try:         {
-                custom_headers:    nil,
                 curator_variables: [ {
                   name:  'anInt',
                   value: 1,
                 } ],
                 escape_query:      true,
-                api_method:        'JSONP',
+                search_endpoint:   search_endpoint.as_json(except: [ :id, :owner_id, :created_at, :updated_at ]),
               },
               queries:     [
                 {
@@ -176,6 +175,7 @@ module Api
             assert_equal 1, @case.tries.count
             assert_equal 1, @case.tries.first.curator_variables.count
             assert_equal user, @case.owner
+            assert_equal search_endpoint.endpoint_url, @case.tries.first.search_endpoint.endpoint_url
           end
         end
       end

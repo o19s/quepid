@@ -10,7 +10,7 @@
                 <button ng-click="tryDetails(try); $event.stopPropagation()" type="button" class="btn btn-circle try-details">...</button>
                 <span>{{try.formattedName()}}</span>
                 {{try.queryParams.slice(0,200)}}...
-                <span>using {{ try.searchEngine | searchEngineName }} {{urlBucket(try.searchUrl, 30) + 1}}</span>
+                <span>using {{ try.endpointName }}</span>
             </li>
         </ul>
     </div>

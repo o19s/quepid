@@ -1,4 +1,5 @@
 <div class="modal-body" id="wizard">
+  <button type="button" class="close" ng-click="cancel()" aria-label="Close"><span aria-hidden="true">&times;</span></button>
   <wizard on-finish="pendingWizardSettings.submit()">
     <wz-step title="Welcome" id="step-one">
       <h1>Welcome To Quepid!</h1>
@@ -25,72 +26,112 @@
         <br><br><br><br><br>
       </div>
     </wz-step>
-    <wz-step title="Engine" id="step-three">
-      <h2>Solr, Elasticsearch, or OpenSearch?</h2>
+    <wz-step title="Endpoint" id="step-three">
+      <h2>What Search Endpoint do you want to connect to?</h2>
       <div>
-
-        <div style="text-align: center;">
-          <label style="margin-right: 25px;">
-            <input type="radio" value="solr" ng-model="pendingWizardSettings.searchEngine" ng-change="changeSearchEngine()">
-            <img ng-src="images/solr.png" alt='Solr' width="100px" />
-          </label>
-          <label style="margin-right: 25px;">
-            <input type="radio" value="es" ng-model="pendingWizardSettings.searchEngine" ng-change="changeSearchEngine()">
-            <img ng-src="images/elasticsearch.png" alt='Elasticsearch' width="150px" />
-          </label>
-          <label>
-            <input type="radio" value="os" ng-model="pendingWizardSettings.searchEngine" ng-change="changeSearchEngine()">
-            <img ng-src="images/opensearch.png" alt='OpenSearch' width="150px" />
-          </label>
-          <label>
-            <input type="radio" value="vectara" ng-model="pendingWizardSettings.searchEngine" ng-change="changeSearchEngine()">
-            <img ng-src="images/vectara.png" alt='Vectara' width="150px" />
-          </label>
-        </div>
-
-        <br>
-        <p>Paste the URL to the endpoint of your search engine for Quepid to search (you can also just experiment with the demo servers):</p>
-        <div class="row">
-          <div ng-show="invalidHeaders" class="alert alert-danger">
-            <span>
-              Custom Headers must be a valid JSON object
-            </span>
+        <uib-accordion>
+          <div uib-accordion-group class="panel-default" heading="Use an existing Search Endpoint" >
+            <div class="row">
+              <div class="alert alert-warning" role="alert" ng-if="listSearchEndpoints().length === 0">
+                You do not have any Search Endpoints created yet.
+              </div>
+              <select
+                id="searchEndpoint"
+                ng-if="listSearchEndpoints().length > 0"
+                ng-model="pendingWizardSettings.searchEndpointId"
+                ng-options="searchEndpoint.id as searchEndpoint.name for searchEndpoint in listSearchEndpoints()"
+                ng-change="changeSearchEndpoint()"
+              >
+              </select>
+              <small title="Manually validates Quepid can get retrieve search results from your URL before continuing" class="pull-right"><button type="button" class="btn btn-link btn-sm" ng-click="validate(true)" ng-disabled="pendingWizardSettings.searchEndpointId == null || showTLSChangeWarning">ping it</button></small>
+            </div>
+            <div ng-if="urlValid" class="alert alert-success">Quepid can search this! Hit 'Continue' to keep working through setup.</div>
+            <div class="row" style="margin-top: 50px;">
+              
+              <div class="pull-right">
+                <button class="btn btn-primary pull-right continue" ng-click="validate()" ng-disabled="pendingWizardSettings.searchEndpointId == null">Continue</button>
+                
+                <button class="btn btn-danger" ng-show="urlInvalid && !showTLSChangeWarning" ng-click="skipValidation()" ng-disabled="validating">
+                  <span ng-hide="validating">Skip Validation</span>
+                </button>
+              </div>
+            </div>
           </div>
-          <div ng-show="showTLSChangeWarning" class="alert alert-warning">
-            <span>
-            You have specified a search engine url that is on a different protocol ( <code>{{protocolToSwitchTo}}</code> ) than Quepid is currently on,
-            so you need to reload Quepid on that protocol first, and then continue the Wizard.  This is to comply with browser security issues.
-            </span>
+          <div uib-accordion-group class="panel-default" heading="Create a new Search Endpoint" ng-click="switchToCreateNewSearchEndpoint()">
+          <div style="text-align: center;">
+            <label style="margin-right: 25px;">
+              <input type="radio" value="solr" ng-model="pendingWizardSettings.searchEngine" ng-change="changeSearchEngine()">
+              <img ng-src="images/solr.png" alt='Solr' width="100px" />
+            </label>
+            <label style="margin-right: 25px;">
+              <input type="radio" value="es" ng-model="pendingWizardSettings.searchEngine" ng-change="changeSearchEngine()">
+              <img ng-src="images/es.png" alt='Elasticsearch' width="150px" />
+            </label>
+            <label>
+              <input type="radio" value="os" ng-model="pendingWizardSettings.searchEngine" ng-change="changeSearchEngine()">
+              <img ng-src="images/os.png" alt='OpenSearch' width="150px" />
+            </label>
           </div>
-          <div ng-if="urlInvalid && !showTLSChangeWarning" class="alert alert-danger">
-            Sorry, we're not getting any search results from your
-            <span ng-show="pendingWizardSettings.searchEngine === 'es'">Elasticsearch</span>
-            <span ng-show="pendingWizardSettings.searchEngine === 'os'">OpenSearch</span>
-            <span ng-show="pendingWizardSettings.searchEngine === 'solr'">Solr</span>
-            <span ng-show="pendingWizardSettings.searchEngine === 'vectara'">Vectara</span>.
-
-            <ul ng-if="pendingWizardSettings.searchEngine === 'es'">
-              <li>Is your Elasticsearch behind a firewall or proxy? Try acessing the <a target="_blank" href="{{pendingWizardSettings.searchUrl}}">URL directly</a> and see if you get a response</li>
-              <li>Does your Elasticsearch accept HTTP POST requests?</li>
-              <li>Is your Elasticsearch setup for CORS to talk to Quepid's web app (http://app.quepid.com)?</li>
-              <li>Do you need an API Key?  If so, set one up under Advanced pane --> Custom Headers.</li>
-              <li>Double check if you have an ad blocker blocking your queries.</li>
-              <li>See the <a target="_blank" href="https://github.com/o19s/quepid/wiki/Troubleshooting-Elasticsearch-and-Quepid/">Troubleshooting Elasticsearch and Quepid</a> wiki page for more help!</li>
-            </ul>
-
-            <ul ng-if="pendingWizardSettings.searchEngine === 'os'">
-              <li>Is your OpenSearch behind a firewall or proxy? Try acessing the <a target="_blank" href="{{pendingWizardSettings.searchUrl}}">URL directly</a> and see if you get a response</li>
-              <li>Does your OpenSearch accept HTTP POST requests?</li>
-              <li>Is your OpenSearch setup for CORS to talk to Quepid's web app (http://app.quepid.com)?</li>
-              <li>Double check if you have an ad blocker blocking your queries.</li>
-              <li>See the <a target="_blank" href="https://github.com/o19s/quepid/wiki/Troubleshooting-OpenSearch-and-Quepid/">Troubleshooting OpenSearch and Quepid</a> wiki page for more help!</li>
-            </ul>
-
-            <ul ng-if="pendingWizardSettings.searchEngine === 'solr'">
-              <li>Do you see any errors when you visit your <a target="_blank" href="{{pendingWizardSettings.searchUrl}}">Solr URL directly?</a></li>
-              <li>
-                If you are using a version of Solr between 8.4 and 9.0, you may need to tweak the content-type being set by <code>wt=json</code>.
-                You can do this via the below curl command:
+          <div style="text-align: center;">
+            <label style="margin-right: 25px;">
+              <input type="radio" value="vectara" ng-model="pendingWizardSettings.searchEngine" ng-change="changeSearchEngine()">
+              <img ng-src="images/vectara.png" alt='Vectara' width="150px" />
+            </label>            
+            <label style="margin-right: 25px;">
+              <input type="radio" value="static" ng-model="pendingWizardSettings.searchEngine" ng-change="changeSearchEngine()">
+              <img ng-src="images/static.png" alt='Static' width="100px" height="50px" />
+            </label>
+            <label>
+              <input type="radio" value="searchapi" ng-model="pendingWizardSettings.searchEngine" ng-change="changeSearchEngine()">
+              <img ng-src="images/searchapi.png" alt='Search API' width="100px" height="50px" />
+            </label>            
+          </div>
+          
+          <br>
+          <p ng-if="!pendingWizardSettings.searchEngine === 'static'">
+            Paste the URL to the endpoint of your search engine for Quepid to search (you can also just experiment with the demo servers):
+          </p>
+          <div class="row">
+            <div ng-show="invalidHeaders" class="alert alert-danger">
+              <span>
+                Custom Headers must be a valid JSON object
+              </span>
+            </div>
+            <div ng-show="showTLSChangeWarning" class="alert alert-warning">
+              <span>
+              You have specified a search engine url that is on a different protocol ( <code>{{protocolToSwitchTo}}</code> ) than Quepid is currently on,
+              so you need to reload Quepid on that protocol first, and then continue the Wizard.  This is to comply with browser security issues.
+              </span>
+            </div>
+            <div ng-if="urlInvalid && !showTLSChangeWarning" class="alert alert-danger">
+              Sorry, we're not getting any search results from your
+              <span ng-show="pendingWizardSettings.searchEngine === 'es'">Elasticsearch</span>
+              <span ng-show="pendingWizardSettings.searchEngine === 'os'">OpenSearch</span>
+              <span ng-show="pendingWizardSettings.searchEngine === 'solr'">Solr</span>
+              <span ng-show="pendingWizardSettings.searchEngine === 'vectara'">Vectara</span>.
+  
+              <ul ng-if="pendingWizardSettings.searchEngine === 'es'">
+                <li>Is your Elasticsearch behind a firewall or proxy? Try acessing the <a target="_blank" href="{{pendingWizardSettings.searchUrl}}">URL directly</a> and see if you get a response</li>
+                <li>Does your Elasticsearch accept HTTP POST requests?</li>
+                <li>Is your Elasticsearch setup for CORS to talk to Quepid's web app (http://app.quepid.com)?</li>
+                <li>Do you need an API Key?  If so, set one up under Advanced pane --> Custom Headers.</li>
+                <li>Double check if you have an ad blocker blocking your queries.</li>
+                <li>See the <a target="_blank" href="https://github.com/o19s/quepid/wiki/Troubleshooting-Elasticsearch-and-Quepid/">Troubleshooting Elasticsearch and Quepid</a> wiki page for more help!</li>
+              </ul>
+  
+              <ul ng-if="pendingWizardSettings.searchEngine === 'os'">
+                <li>Is your OpenSearch behind a firewall or proxy? Try acessing the <a target="_blank" href="{{pendingWizardSettings.searchUrl}}">URL directly</a> and see if you get a response</li>
+                <li>Does your OpenSearch accept HTTP POST requests?</li>
+                <li>Is your OpenSearch setup for CORS to talk to Quepid's web app (http://app.quepid.com)?</li>
+                <li>Double check if you have an ad blocker blocking your queries.</li>
+                <li>See the <a target="_blank" href="https://github.com/o19s/quepid/wiki/Troubleshooting-OpenSearch-and-Quepid/">Troubleshooting OpenSearch and Quepid</a> wiki page for more help!</li>
+              </ul>
+  
+              <ul ng-if="pendingWizardSettings.searchEngine === 'solr'">
+                <li>Do you see any errors when you visit your <a target="_blank" href="{{pendingWizardSettings.searchUrl}}">Solr URL directly?</a></li>
+                <li>
+                  If you are using a version of Solr between 8.4 and 9.0, you may need to tweak the content-type being set by <code>wt=json</code>.
+                  You can do this via the below curl command:
 <pre>
 curl -k -X POST -H 'Content-type:application/json' -d '{
   "update-queryresponsewriter": {
@@ -100,38 +141,92 @@ curl -k -X POST -H 'Content-type:application/json' -d '{
   }
 }' {{ extractSolrConfigApiUrl(pendingWizardSettings.searchUrl) }}
 </pre>
-                If you get a error message back, change <code>update-queryresponsewriter</code> to <code>create-queryresponsewriter</code> and re-run.
-
-              </li>
-              <li>If Solr responds, check if you have an ad blocker blocking your queries.</li>
-              <li>Chrome does not accept self signed certificates on Solr, try Firefox.</li>
-              <li>See the <a target="_blank" href="https://github.com/o19s/quepid/wiki/Troubleshooting-Solr-and-Quepid">Troubleshooting Solr and Quepid</a> wiki page for more help!</li>
-            </ul>
-
-          </div>
-          <div ng-if="urlValid" class="alert alert-success">Quepid can search this! Hit 'Continue' to keep working through setup.</div>
-        </div>
-
-        <form class="">
-          <div class="form-group" style="width: 100%">
-
-            <div class="row">
-              <input style="width: 100%" type="text" ng-change="reset()" ng-model="pendingWizardSettings.searchUrl" class="form-control" />
-              <small title="Manually validates Quepid can get retrieve search results from your URL before continuing" class="pull-right"><button type="button" class="btn btn-link btn-sm" ng-click="validate(true)" ng-disabled="showTLSChangeWarning">ping it</button></small>
-              <p class="help-block">Unsure? <a href="http://quepid.com/how-quepid-works/" target="_blank">Learn More</a> about Quepid's light touch with your search engine &amp; data.
-
-              <p class="help-block tip">
-                Tip: Your URL should look like this {{pendingWizardSettings.urlFormat}}.
-              </p>
+                  If you get a error message back, change <code>update-queryresponsewriter</code> to <code>create-queryresponsewriter</code> and re-run.
+  
+                </li>
+                <li>If Solr responds, check if you have an ad blocker blocking your queries.</li>
+                <li>Chrome does not accept self signed certificates on Solr, try Firefox.</li>
+                <li>See the <a target="_blank" href="https://github.com/o19s/quepid/wiki/Troubleshooting-Solr-and-Quepid">Troubleshooting Solr and Quepid</a> wiki page for more help!</li>
+              </ul>
+  
             </div>
+            <div ng-if="urlValid" class="alert alert-success">Quepid can search this! Hit 'Continue' to keep working through setup.</div>
           </div>
-
-          <span ng-if="pendingWizardSettings.searchEngine === 'solr'">
+  
+          <form class="">
+            <div ng-if="pendingWizardSettings.searchEngine !== 'static'" class="form-group" style="width: 100%">
+              <div class="row">
+                <input style="width: 100%" type="text" ng-change="reset()" ng-model="pendingWizardSettings.searchUrl" class="form-control" />
+                <small title="Manually validates Quepid can get retrieve search results from your URL before continuing" class="pull-right"><button type="button" class="btn btn-link btn-sm" ng-click="validate(true)" ng-disabled="showTLSChangeWarning">ping it</button></small>
+                <p class="help-block">Unsure? <a href="http://quepid.com/how-quepid-works/" target="_blank">Learn More</a> about Quepid's light touch with your search engine &amp; data.
+  
+                <p class="help-block tip">
+                  Tip: Your URL should look like this {{pendingWizardSettings.urlFormat}}.
+                </p>
+              </div>
+            </div>
+            
+            <span ng-if="pendingWizardSettings.searchEngine === 'static'">
+              <!-- Copied from import-ratings component -->
+              <p>
+                A "Static" (or "Offline") search endpoint is a great way to gather human judgements and leverage Quepid's existing evaluation tools without requiring a live connection to a search engine.                 
+              </p>
+              <p>
+                <button type="button" class="btn btn-sm btn-default" ng-click="isStaticCollapsed = !isStaticCollapsed">Static Dataset</button>
+              </p>
+              
+              <div uib-collapse="!isStaticCollapsed">
+                <div class="well well-sm">
+                  <p>
+                    Create the CSV file and upload it here.
+                    Under the covers we use the Snapshot CSV format, so you can export a snapshot from Quepid and then upload it here to to create Static search endpoint.
+                  </p>
+                  
+                  <span class="help-block">
+                    The CSV file should have the headers: <code>Query Text,Doc ID,Doc Position</code>.  
+                    Then, all the document fields you want displayed follow as columns with the header being the name of the field.
+                    <pre>
+Query Text,Doc ID,Doc Position, Movie Title
+star wars,527641,1, Star Wars
+star wars,9426,2, Star Wars: The Empire Strikes Back
+star wars,1921,3, Star Wars: Return of the Jedi
+                    </pre>
+                    Please note that the additional columns that a Snapshot export has are ignored.
+                  </span>
+                  
+                  <p>Select CSV file to import:</p>
+          
+                  <ng-csv-import
+                          class="import"
+                          content="staticContent.content"
+                          header="staticContent.header"
+                          header-visible="true"
+                          separator="staticContent.separator"
+                          separator-visible="staticContent.separatorVisible"
+                          result="staticContent.result">
+                  </ng-csv-import>
+                  
+                  <div ng-if="staticContent.content" class="block left">
+                    <h2>CSV</h2>
+                    <div ng-show="staticContent.import.alert" class="text-danger bg-danger import-content"
+                         ng-bind-html="staticContent.import.alert">
+                    </div>
+                    <div class="content import-content">
+                      <pre>{{ staticContent.content }}</pre>
+                    </div>
+                    
+                    <button class="btn btn-primary" ng-click="createSnapshot()"> Import</button>
+                  </div>
+                </div>
+              </div>            
+            </span>
+  
+            <span ng-if="pendingWizardSettings.searchEngine === 'solr'">
             <p>
               <button type="button" class="btn btn-sm btn-default" ng-click="isSolrCollapsed = !isSolrCollapsed">Solr Configuration</button>
             </p>
             <div uib-collapse="!isSolrCollapsed">
-               <div class="well well-sm">
+              <div class="well well-sm">
                 <div class="form-group clearfix">
                   <label class="col-sm-3 control-label">API Method</label>
                   <div class="col-sm-9">
@@ -144,43 +239,93 @@ curl -k -X POST -H 'Content-type:application/json' -d '{
                 </div>
               </div>
             </div>
-          </span>
+            </span>  
 
-
-          <span ng-if="pendingWizardSettings.searchEngine !== 'solr'">
-          <p>
-            <button type="button" class="btn btn-sm btn-default" ng-click="isHeaderConfigCollapsed = !isHeaderConfigCollapsed">Advanced</button>
-          </p>
-          <div uib-collapse="!isHeaderConfigCollapsed">
-            <custom-headers settings="pendingWizardSettings"></custom-headers>
-          </div>
-          </span>
-
-          <div class="form-group" style="width: 100%">
-            <div class="clearfix"></div>
-
-            <div class="row" style="margin-top: 50px;">
-              <div class="pull-right">
-                <button ng-show="!showTLSChangeWarning" class="btn btn-primary pull-right continue" ng-click="validate()" ng-disabled="validating">
-                  <span ng-hide="validating">Continue</span>
-                  <span ng-show="validating">Validating...</span>
-                </button>
-
-                <button class="btn btn-danger" ng-show="urlInvalid && !showTLSChangeWarning" ng-click="skipValidation()" ng-disabled="validating">
-                  <span ng-hide="validating">Skip Validation</span>
-                </button>
-
-                <span ng-show="showTLSChangeWarning">
-                  <a href="{{quepidUrlToSwitchTo}}" class="btn btn-primary form-control">
-                    <span class="glyphicon glyphicon-refresh"></span> Reload Quepid in <code>{{protocolToSwitchTo}}</code> Protocol
-                  </a>
-                </span>
-
+            <span ng-if="pendingWizardSettings.searchEngine === 'searchapi'">
+            <p>
+              <button type="button" class="btn btn-sm btn-default" ng-click="isSearchAPICollapsed = !isSearchAPICollapsed">Search API Configuration</button>
+            </p>
+            <div uib-collapse="!isSearchAPICollapsed">
+              <div class="well well-sm">
+                <div class="form-group clearfix">
+                  <label class="col-sm-3 control-label">API Method</label>
+                  <div class="col-sm-9">
+                    <select class="form-control" ng-model="pendingWizardSettings.apiMethod" ng-change="resetUrlValid()">
+                      <option>POST</option>
+                      <option>GET</option>  
+                      <option>JSONP</option>                                          
+                    </select>
+                    <p class="help-block">POST and GET are the most common.</p>
+                  </div>
+                  
+                  <label class="col-sm-3 control-label">Response Parser</label>
+                  <div class="col-sm-9">
+                    <select class="form-control" ng-model="pendingWizardSettings.responseParser" ng-change="resetUrlValid()">
+                      <option>solr</option>  
+                      <option>es</option>
+                      <option>os</option>  
+                      <option>vectara</option>                        
+                    </select>
+                    <p class="help-block">We need to know how to parse the response from your search engine using a Splainer supported parser.</p>
+                  </div>
+                </div>
+                <div class="col-sm-12 clearfix">
+                  <label class="control-label">Query Structure</label>
+                  <p class="help-block">Enter a basic query structure that will return at least one document. You can edit this later.</p>
+                </div>
+              
+                <div class="form-group clearfix">
+                  <div class="col-sm-12">
+                    <div id='custom-header-editor' ui-ace="{
+                        require:      ['ace/ext/language_tools'],
+                        useWrapMode:  false,
+                        mode:         'json',
+                        theme:        'chrome'
+                      }" ng-model="pendingWizardSettings.queryParams">
+                    </div>
+                  </div>
+                </div>                   
               </div>
             </div>
+            </span>   
+  
+            <span ng-if="pendingWizardSettings.searchEngine !== 'solr' && pendingWizardSettings.searchEngine !== 'static'">
+            <p>
+              <button type="button" class="btn btn-sm btn-default" ng-click="isHeaderConfigCollapsed = !isHeaderConfigCollapsed">Advanced</button>
+            </p> 
+            <div uib-collapse="!isHeaderConfigCollapsed">
+              <custom-headers settings="pendingWizardSettings"></custom-headers>
+            </div>
+            </span>
+  
+            <div class="form-group" style="width: 100%">
+              <div class="clearfix"></div>
+  
+              <div class="row" style="margin-top: 50px;">
+                <div class="pull-right">
+                  <button ng-show="!showTLSChangeWarning" class="btn btn-primary pull-right continue" ng-click="validate()" ng-disabled="validating">
+                    <span ng-hide="validating">Continue</span>
+                    <span ng-show="validating">Validating...</span>
+                  </button>
+  
+                  <button class="btn btn-danger" ng-show="urlInvalid && !showTLSChangeWarning" ng-click="skipValidation()" ng-disabled="validating">
+                    <span ng-hide="validating">Skip Validation</span>
+                  </button>
+  
+                  <span ng-show="showTLSChangeWarning">
+                    <a href="{{quepidUrlToSwitchTo}}" class="btn btn-primary form-control">
+                      <span class="glyphicon glyphicon-refresh"></span> Reload Quepid in <code>{{protocolToSwitchTo}}</code> Protocol
+                    </a>
+                  </span>
+  
+                </div>
+              </div>
+            </div>
+          </form>
+  
+          
           </div>
-        </form>
-
+        </uib-accordion>
         <br><br><br><br>
       </div>
     </wz-step>
@@ -228,6 +373,15 @@ curl -k -X POST -H 'Content-type:application/json' -d '{
       <br><br><br><br><br>
     </wz-step>
     <wz-step title="Query" id="step-five">
+      <span ng-if="pendingWizardSettings.searchEngine === 'static'">
+        <h2>Search Queries</h2>
+        <div>
+          <p class="help-block">All of the queries defined in the static upload will be created.</p>
+          <button class="btn btn-primary pull-right continue" wz-next ng-click="pendingWizardSettings.addQueryStaticQueries()">Continue</button>
+        </div>
+        <br><br><br><br><br>
+      </span>
+      <span ng-if="pendingWizardSettings.searchEngine !== 'static'">
       <h2>Add Your Search Queries</h2>
       <div>
         <p class="help-block">Start out tuning a couple important search queries:</p>
@@ -251,6 +405,7 @@ curl -k -X POST -H 'Content-type:application/json' -d '{
 
         <br><br><br><br><br>
       </div>
+      </span>
     </wz-step>
     <wz-step title="Finish" id="step-six">
       <h1>That's It!</h1>
@@ -260,7 +415,3 @@ curl -k -X POST -H 'Content-type:application/json' -d '{
     </wz-step>
   </wizard>
 </div>
-<!--div class="modal-footer">
-  <button class="btn btn-primary" ng-click="pendingWizardSettings.submit()">Continue</button>
-  <button class="btn btn-warning" ng-click="close()">Cancel</button>
-</div-->

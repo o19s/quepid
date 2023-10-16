@@ -23,7 +23,7 @@
 #  name                        :string(255)
 #  num_logins                  :integer
 #  password                    :string(120)
-#  profile_pic                 :string(255)
+#  profile_pic                 :string(4000)
 #  reset_password_sent_at      :datetime
 #  reset_password_token        :string(255)
 #  stored_raw_invitation_token :string(255)
@@ -269,6 +269,26 @@ class UserTest < ActiveSupport::TestCase
 
     it 'prevents access to the books because the user is not part of a team' do
       assert_nil user_without_book_access.books_involved_with.where(id: book_of_comedy_films).first
+    end
+  end
+
+  describe 'User accessing Search Endpoints' do
+    let(:user_with_search_endpoint) { users(:doug) }
+    let(:joey) { users(:joey) }
+    let(:es_try) { search_endpoints(:es_try) }
+    let(:one) { search_endpoints(:one) }
+    let(:for_case_with_one_try) { search_endpoints(:for_case_with_one_try) }
+
+    it 'provides access to the search end points that a user has access because of membership in a team' do
+      assert_includes user_with_search_endpoint.search_endpoints_involved_with, one
+    end
+
+    it 'provides access to the search end points that a user has access because of using it in a try in a case' do
+      assert_includes joey.search_endpoints_involved_with, for_case_with_one_try
+    end
+
+    it 'prevents access to the search endpoint because the user is not part of a team' do
+      assert_not_includes user_with_search_endpoint.search_endpoints_involved_with, es_try
     end
   end
 end

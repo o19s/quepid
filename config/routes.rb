@@ -6,6 +6,7 @@ require 'sidekiq/web'
 Rails.application.routes.draw do
   apipie
   root 'home#show'
+  resources :search_endpoints
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
   Healthcheck.routes(self)
@@ -133,7 +134,11 @@ Rails.application.routes.draw do
         end
 
         # Case Snapshots
-        resources :snapshots, except: [ :new, :edit, :update ]
+        resources :snapshots, except: [ :new, :edit, :update ] do
+          scope module: :snapshots do
+            resources :search, only: [ :index ]
+          end
+        end
         namespace :snapshots do
           resources :imports, only: [ :create ]
         end
@@ -161,6 +166,7 @@ Rails.application.routes.draw do
         end
       end
 
+      resources :search_endpoints, only: [ :index, :show, :update ]
       resources :scorers, except: [ :new, :edit ]
 
       resources :teams, except: [ :new, :edit ], param: :team_id
@@ -171,6 +177,7 @@ Rails.application.routes.draw do
         resources :cases,   only: [ :index, :create, :destroy ], controller: :team_cases
         resources :owners,  only: [ :update ], controller: :team_owners
         resources :books,   only: [ :index ], controller: :team_books
+        resources :search_endpoints, only: [ :index ]
       end
 
       # Imports
@@ -208,7 +215,7 @@ Rails.application.routes.draw do
   get '/cases'                        => 'core#index'
   get '/case'                         => 'core#index'
   get '/cases/import'                 => 'core#index'
-  get '/teams(/:id)'                  => 'core#teams', as: :teams
+  get '/teams(/:id)'                  => 'core#teams', as: :teams_core
   get '/scorers'                      => 'core#index'
 
   # Static pages

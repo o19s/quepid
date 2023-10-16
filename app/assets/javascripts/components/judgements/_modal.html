@@ -116,7 +116,7 @@
 
   <a class="btn btn-default pull-left" ng-click="ctrl.refreshRatingsFromBook()" ng-disabled="processingPrompt.inProgress || ctrl.populateBook || !ctrl.activeBookId || ctrl.share.acase.bookId !== ctrl.activeBookId" >
     <i class="glyphicon glyphicon-refresh"></i>
-    Refresh ratings from book
+    Refresh ratings from book <i>{{ctrl.activeBookName}}
   </a>
 
   <button

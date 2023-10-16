@@ -38,6 +38,7 @@
         self.stringifySnapshot          = stringifySnapshot;
         self.formatDownloadFileName     = formatDownloadFileName;
         self.arrayContains              = arrayContains;
+        self.fixObjectKeys              = fixObjectKeys;
 
         function caseHeaderToCSV () {
           var header = [
@@ -465,8 +466,19 @@
            });
            return true;
         }
-          
-
+        
+        function fixObjectKeys (docs){
+          var newDocs = [];
+          angular.forEach(docs, function (doc) {
+            var newDoc = {};
+            Object.keys(doc).forEach(key => {              
+              const trimmedKey = key.trim();
+              newDoc[trimmedKey] = doc[key];
+            });
+            newDocs.push(newDoc);
+          });
+          return newDocs;
+        }          
       }
     ]);
 })();

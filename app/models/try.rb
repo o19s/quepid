@@ -4,21 +4,22 @@
 #
 # Table name: tries
 #
-#  id             :integer          not null, primary key
-#  ancestry       :string(3072)
-#  api_method     :string(255)
-#  escape_query   :boolean          default(TRUE)
-#  field_spec     :string(500)
-#  name           :string(50)
-#  custom_headers :string(1000)
-#  number_of_rows :integer          default(10)
-#  query_params   :string(20000)
-#  search_engine  :string(50)       default("solr")
-#  search_url     :string(500)
-#  try_number     :integer
-#  created_at     :datetime         not null
-#  updated_at     :datetime         not null
-#  case_id        :integer
+#  id                 :integer          not null, primary key
+#  ancestry           :string(3072)
+#  api_method         :string(255)
+#  custom_headers     :string(1000)
+#  escape_query       :boolean          default(TRUE)
+#  field_spec         :string(500)
+#  name               :string(50)
+#  number_of_rows     :integer          default(10)
+#  query_params       :string(20000)
+#  search_engine      :string(50)       default("solr")
+#  search_url         :string(500)
+#  try_number         :integer
+#  created_at         :datetime         not null
+#  updated_at         :datetime         not null
+#  case_id            :integer
+#  search_endpoint_id :bigint
 #
 # Indexes
 #
@@ -40,7 +41,9 @@ class Try < ApplicationRecord
   scope :latest, -> { order(id: :desc).first } # The try created the most recently
 
   # Associations
-  belongs_to  :case, optional: true # shouldn't be optional, but was in rails 4
+  belongs_to :case, optional: true # shouldn't be optional, but was in rails 4
+
+  belongs_to :search_endpoint, optional: true # see above too!#dependent: :nullify
 
   has_many    :curator_variables,
               dependent:  :destroy,
@@ -53,15 +56,19 @@ class Try < ApplicationRecord
   before_create :set_defaults
 
   def args
-    case search_engine
-    when 'solr'
-      solr_args
-    when 'es'
-      es_args
-    when 'os'
-      os_args
-    when 'vectara'
-      vectara_args
+    unless search_endpoint.nil?
+      case search_endpoint.search_engine
+      when 'solr'
+        solr_args
+      when 'static'
+        static_args
+      when 'es'
+        es_args
+      when 'os', 'searchapi'
+        os_args
+      when 'vectara'
+        vectara_args
+      end
     end
   end
 
@@ -92,6 +99,11 @@ class Try < ApplicationRecord
   def os_args
     # Use the EsArgParser as currently queries are the same
     EsArgParser.parse(query_params, curator_vars_map)
+  end
+
+  def static_args
+    # Use the SolrArgParser as that is the only parser that the Static search endpoint knows
+    SolrArgParser.parse(query_params, curator_vars_map)
   end
 
   def vectara_args
@@ -131,9 +143,9 @@ class Try < ApplicationRecord
 
   def index_name_from_search_url
     # NOTE: currently all supported engines have the index name as second to last element, refactor when this changes
-    case search_engine
+    case search_endpoint.search_engine
     when 'solr', 'es', 'os'
-      search_url.split('/')[-2]
+      search_endpoint.endpoint_url.split('/')[-2]
     end
   end
 

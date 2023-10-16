@@ -3,31 +3,46 @@
 
 angular.module('QuepidApp')
   .controller('SettingsCtrl', [
-    '$scope',
-    '$location',
+    '$scope','$location',
     'flash',
-    'settingsSvc',
-    function ($scope, $location, flash, settingsSvc) {
+    'settingsSvc','searchEndpointSvc',
+    function (
+      $scope, $location, 
+      flash, 
+      settingsSvc, searchEndpointSvc
+    ) {
       $scope.settingsModel = {};
       $scope.pendingSettings = {
         searchEngine: '',
         searchUrl:    '',
-        titleField:   ''
+        titleField:   '',
+        searchEndpointId: ''
       };
-
+      
+      searchEndpointSvc.list()
+       .then(function() {
+         $scope.searchEndpoints = searchEndpointSvc.searchEndpoints;        
+       });      
+            
       $scope.settingsModel.settingsId = function() {
+        //console.log('$scope.settingsModel.settingsId returning settingsid');
         return settingsSvc.settingsId();
       };
 
       var reset = function() {
         var currSettings = settingsSvc.editableSettings();
-        if ( this.searchEngine !== currSettings.searchEngine) {
-          currSettings = settingsSvc.pickSettingsToUse($scope.pendingSettings.searchEngine, null);
-          currSettings.fieldSpec = currSettings.fieldSpec + ', ' + currSettings.additionalFields.join(', ');
-          $scope.pendingSettings.urlFormat = currSettings.urlFormat;
+        if ( this.searchEndpointId !== currSettings.searchEndpointId) {
+          //var searchEndpointToUse = $scope.searchEndpoints.find(obj => obj.id === $scope.settings.searchEndpointId);
+          //currSettings = settingsSvc.pickSettingsToUse($scope.pendingSettings.searchEngine, null);
+          //currSettings.fieldSpec = currSettings.fieldSpec + ', ' + currSettings.additionalFields.join(', ');
+          //$scope.pendingSettings.urlFormat = currSettings.urlFormat;
         }
+        this.searchEndpointId         = currSettings.searchEndpointId;
+        this.endpointName             = currSettings.endpointName;
         this.searchEngine             = currSettings.searchEngine;
-        this.apiMethod                = currSettings.apiMethod;
+        this.searchEndpointId         = currSettings.searchEndpoint;
+        //this.apiMethod                = currSettings.apiMethod;
+
 
 
         if (this.searchEngine === 'solr') {
@@ -42,6 +57,7 @@ angular.module('QuepidApp')
         else {
           this.searchUrl = currSettings.searchUrl;
         }
+        
 
 
         this.fieldSpec                = currSettings.fieldSpec;
@@ -51,18 +67,25 @@ angular.module('QuepidApp')
         this.submit = submit;
       };
 
+
+      
       $scope.$watch('settingsModel.settingsId()', function() {
-        // Reinit our pending settings from the service
-        $scope.pendingSettings = settingsSvc.editableSettings();
-        $scope.pendingSettings.reset = reset;
+          console.log('$scope.$watch(settingsModel.settingsId()');
+         // As updates to our settings are successfully submitted, the settingsId() is incremented, which
+         // triggers this, and then we update the pendingSettings for the UI.
+         // Reinit our pending settings from the service
+         $scope.pendingSettings = settingsSvc.editableSettings();
+         $scope.pendingSettings.reset = reset;
 
-        if ( angular.isDefined($scope.pendingSettings.searchEngine) ) {
-          var settingsToUse = settingsSvc.pickSettingsToUse($scope.pendingSettings.searchEngine, $scope.pendingSettings.searchUrl);
-          $scope.pendingSettings.urlFormat = settingsToUse.urlFormat;
-        }
+         //if ( angular.isDefined($scope.pendingSettings.searchEngine) && $scope.pendingSettings.searchEngine !== null ) {
+         //  var settingsToUse = settingsSvc.pickSettingsToUse($scope.pendingSettings.searchEngine, $scope.pendingSettings.searchUrl);
+          // $scope.pendingSettings.urlFormat = settingsToUse.urlFormat;
+          
+           // pass pending settings onward to be saved
+           $scope.pendingSettings.submit = submit;
+          //}
 
-        // pass pending settings onward to be saved
-        $scope.pendingSettings.submit = submit;
+
       });
 
       function submit () {
@@ -77,15 +100,16 @@ angular.module('QuepidApp')
             return;
           }
 
+          // With the Seach Endpoint Refactor, this is done in case wizard or in server side code.
           // Verify that custom headers are valid if set
-          try {
-            if ($scope.pendingSettings.customHeaders.length > 0) {
-              JSON.parse($scope.pendingSettings.customHeaders);
-            }
-          } catch (e) {
-            flash.error = 'Please provide a valid JSON object for the custom headers.';
-            return;
-          }
+          //try {
+          //  if ($scope.pendingSettings.customHeaders.length > 0) {
+          //    JSON.parse($scope.pendingSettings.customHeaders);
+          //  }
+          //} catch (e) {
+          //  flash.error = 'Please provide a valid JSON object for the custom headers.';
+          //  return;
+          //}
 
         }
 

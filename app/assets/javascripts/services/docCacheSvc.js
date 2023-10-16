@@ -56,13 +56,16 @@ angular.module('QuepidApp')
         var resolver  = docResolverSvc.createResolver(docIds, settings, 15);
 
         // 'vectara' does not support doc lookup by ID.
-        let isVectara = false;
+        let supportLookupById = true;
         if (settings && settings.searchEngine === 'vectara'){
-          isVectara = true;
+          supportLookupById = false;
+        }
+        else if (settings && settings.searchEngine === 'searchapi'){
+          supportLookupById = false;
         }
       
         
-        if ( !isVectara && docIds.length > 0 ) { 
+        if ( supportLookupById && docIds.length > 0 ) { 
           return resolver.fetchDocs()
             .then(function () {
               angular.forEach(resolver.docs, function (doc) {

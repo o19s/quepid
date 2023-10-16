@@ -34,10 +34,7 @@
           configurationSvc.setCommunalScorersOnly('<%= Rails.application.config.communal_scorers_only %>');
           configurationSvc.setQueryListSortable('<%= Rails.application.config.query_list_sortable %>');
 
-          var bootstrapCaseNo = <%= @case.present? ? @case.id : 0 %>;
-          var bootstrapTryNo  = <%= @try.present? ? @try.try_number : 0 %>;
-
-          bootstrapSvc.run(bootstrapCaseNo, bootstrapTryNo);
+          bootstrapSvc.run();
         }
       ]);
   </script>

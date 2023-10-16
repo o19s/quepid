@@ -42,8 +42,7 @@ class JudgementsController < ApplicationController
       end
       @judgement = Judgement.new(query_doc_pair: @query_doc_pair, user: @current_user, updated_at: Time.zone.now)
       @previous_judgement = @judgement.previous_judgement_made # unless @judgement.new_record?
-
-      if (track_judging[:counter] % 20).zero? # It's party time!
+      if (track_judging[:counter] % 50).zero? # It's party time!
         @party_time = true
         @judged_by_user = @book.judgements.where(user: @current_user).count.to_f
         @total_pool_of_judgements = @book.query_doc_pairs.count.to_f

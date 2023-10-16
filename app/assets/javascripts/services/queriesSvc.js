@@ -80,6 +80,17 @@ angular.module('QuepidApp')
             escapeQuery:   passedInSettings.escapeQuery,
             numberOfRows:  passedInSettings.numberOfRows,
           };
+          
+          if (passedInSettings.searchEngine === 'static'){
+            // Similar to logic in Splainer-searches SettingsValidatorFactory for snapshots.
+            // we need a better way of handling this.   Basically we are saying a static search engine is
+            // treated like Solr.   But if we have more generic search apis, they will need a 
+            // custom parser...
+            passedInSettings.searchEngine = 'solr';           
+          }
+          else if (passedInSettings.searchEngine === 'searchapi'){
+            passedInSettings.searchEngine = 'es';
+          }
 
           if (passedInSettings.searchEngine === 'solr') {
             // add echoParams=all if we don't have it defined to provide query details.
@@ -902,17 +913,12 @@ angular.module('QuepidApp')
         $http.post(path, data)
           .then(function(response) {
             let data = response.data;
-            if ( response.status === 204 ) {
-              // This typically happens when the query already exists, so
-              // no change happened
-              deferred.resolve();
-            } else {
-              // Update the display order based on the new one after the query creation
-              that.queries = {};
-              addQueriesFromResp(data);
-              deferred.resolve();
-            }
-          }, function(response) {
+    
+            // Update the display order based on the new one after the query creation
+            that.queries = {};
+            addQueriesFromResp(data);
+            deferred.resolve();
+        }, function(response) {
             let data = response.data;
             deferred.reject(data);
           }).catch(function(response) {

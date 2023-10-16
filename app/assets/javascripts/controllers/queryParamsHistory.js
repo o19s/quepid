@@ -8,12 +8,8 @@ angular.module('QuepidApp')
     function($scope, $uibModal, flash, caseTryNavSvc) {
       var urlsIveSeen = {};
 
-      // This method trys to group search urls into names.
-      // we use this to do some colour grouping in the history view by engine
-      // and we use it to name the engine.  Eventually we will name our engines
-      // and this can go away.
-      // There is a known bug that after running the wizard, we have TWO tries, one
-      // with a null url, and one that is actually from what you defined in the Wizard.
+      // This method trys to group search end urls into
+      // buckets to apply colour coding.
       $scope.urlBucket = function(url, numBuckets) {
         urlsIveSeen[url] = 0;
         var allUrls = Object.keys(urlsIveSeen);

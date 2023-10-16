@@ -18,11 +18,18 @@ module Api
       # rubocop:disable Metrics/MethodLength
       # rubocop:disable Metrics/AbcSize
       def create
-        parameters_to_use = try_params
+        try_parameters_to_use = try_params
+
         if params[:parent_try_number] # We need special translation from try_number to the try.id
-          parameters_to_use[:parent_id] = @case.tries.where(try_number: params[:parent_try_number]).first.id
+          try_parameters_to_use[:parent_id] = @case.tries.where(try_number: params[:parent_try_number]).first.id
         end
-        @try = @case.tries.build parameters_to_use
+
+        @try = @case.tries.build try_parameters_to_use
+
+        unless params[:search_endpoint].empty?
+          search_endpoint = @current_user.search_endpoints_involved_with.find_or_create_by search_endpoint_params
+          @try.search_endpoint = search_endpoint
+        end
 
         try_number = @case.last_try_number + 1
 
@@ -49,13 +56,29 @@ module Api
       # rubocop:enable Metrics/MethodLength
       # rubocop:enable Metrics/AbcSize
 
+      # rubocop:disable Metrics/MethodLength
       def update
+        search_endpoint_params_to_use = search_endpoint_params
+        search_endpoint_params_to_use = convert_blank_values_to_nil search_endpoint_params_to_use
+        unless search_endpoint_params_to_use.empty?
+
+          # really hsould be a search_endpoint_id
+          search_endpoint = @current_user.search_endpoints_involved_with
+            .find_by search_endpoint_params_to_use.except :name
+          if search_endpoint.nil?
+            search_endpoint = SearchEndpoint.create search_endpoint_params_to_use
+            search_endpoint.owner = @current_user
+          end
+          @try.search_endpoint = search_endpoint
+        end
+
         if @try.update try_params
           respond_with @try
         else
           render json: @try.errors, status: :bad_request
         end
       end
+      # rubocop:enable Metrics/MethodLength
 
       def destroy
         @try.destroy
@@ -64,6 +87,16 @@ module Api
       end
 
       private
+
+      def convert_blank_values_to_nil hash
+        hash.each do |key, value|
+          if value.is_a?(Hash)
+            convert_blank_values_to_nil(value) # Recursively call the method for nested hashes
+          elsif value.blank?
+            hash[key] = nil
+          end
+        end
+      end
 
       def set_try
         # We always refer to a try as a incrementing linear number within the scope of
@@ -76,15 +109,23 @@ module Api
       def try_params
         params.require(:try).permit(
           :escape_query,
-          :api_method,
-          :custom_headers,
           :field_spec,
           :name,
           :number_of_rows,
           :query_params,
+          :parent_id,
+          :parent_try_number,
+          :search_endpoint_id
+        )
+      end
+
+      def search_endpoint_params
+        params.require(:search_endpoint).permit(
+          :name,
+          :api_method,
+          :custom_headers,
           :search_engine,
-          :search_url,
-          :parent_id
+          :endpoint_url
         )
       end
     end

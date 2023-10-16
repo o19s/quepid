@@ -1,0 +1,46 @@
+<div id="<%= dom_id search_endpoint %>">
+  <p>
+    <strong>Name:</strong>
+    <%= search_endpoint.name.blank? ? "None specified, using generated name" : search_endpoint.name %>
+  </p>
+
+  <p>
+    <strong>Search engine:</strong>
+    <%= image_tag "#{search_endpoint.search_engine}-icon.png", size:'32x32', class:'rounded-circle' %> 
+    <%= search_endpoint.search_engine %>
+  </p>
+  
+  <p>
+    <strong>Endpoint url:</strong>
+    <%= search_endpoint.endpoint_url %>
+  </p>
+
+  <p>
+    <strong>Custom headers:</strong>
+    <%= search_endpoint.custom_headers %>
+  </p>
+
+  <p>
+    <strong>API method:</strong>
+    <%= search_endpoint.api_method %>
+  </p>
+  
+  <p>
+  <strong>Shared with Teams:</strong>
+  <%= render(partial: 'team', collection: search_endpoint.teams, as: :team) || "There are no teams associated." %>
+  
+  <div class="form-text">This shows all teams, not just the ones you are part of</div>
+  </p>
+  
+  <p>
+  <strong>Used by Cases:</strong>
+  <%= render(partial: 'case', collection: Case.find(search_endpoint.tries.pluck(:case_id)), as: :kase) || "There are no cases associated." %>
+  </p>
+  
+  <p>
+    <strong>Archived:</strong>
+    <%= search_endpoint.archived? %>
+    <%= search_endpoint.archived? ? "You must unarchive this search endpoint to use it with new cases" :"" %>
+  </p>
+
+</div>
