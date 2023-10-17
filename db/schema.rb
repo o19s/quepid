@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_10_14_175649) do
+ActiveRecord::Schema[7.0].define(version: 2023_09_13_181833) do
   create_table "annotations", id: :integer, charset: "utf8mb3", force: :cascade do |t|
     t.text "message"
     t.string "source"
@@ -20,9 +20,9 @@ ActiveRecord::Schema[7.0].define(version: 2023_10_14_175649) do
     t.index ["user_id"], name: "index_annotations_on_user_id"
   end
 
-  create_table "api_keys", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+  create_table "api_keys", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.integer "user_id"
-    t.string "token_digest"
+    t.string "token_digest", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["token_digest"], name: "index_api_keys_on_token_digest"
@@ -154,16 +154,16 @@ ActiveRecord::Schema[7.0].define(version: 2023_10_14_175649) do
     t.boolean "communal", default: false
   end
 
-  create_table "search_endpoints", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+  create_table "search_endpoints", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.string "name"
     t.integer "owner_id"
     t.string "search_engine", limit: 50
     t.string "endpoint_url", limit: 500
     t.string "api_method"
     t.string "custom_headers", limit: 1000
+    t.boolean "archived", default: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.boolean "archived", default: false
   end
 
   create_table "selection_strategies", charset: "utf8mb3", collation: "utf8mb3_unicode_ci", force: :cascade do |t|
@@ -235,7 +235,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_10_14_175649) do
     t.index ["team_id"], name: "index_teams_scorers_on_team_id"
   end
 
-  create_table "teams_search_endpoints", id: false, charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+  create_table "teams_search_endpoints", id: false, charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.bigint "search_endpoint_id", null: false
     t.bigint "team_id", null: false
   end
@@ -257,6 +257,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_10_14_175649) do
     t.string "custom_headers", limit: 1000
     t.bigint "search_endpoint_id"
     t.index ["case_id"], name: "case_id"
+    t.index ["search_endpoint_id"], name: "index_tries_on_search_endpoint_id"
     t.index ["try_number"], name: "ix_queryparam_tryNo"
   end
 
