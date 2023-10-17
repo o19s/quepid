@@ -21,7 +21,7 @@ angular.module('QuepidApp')
 
       $scope.showTLSChangeWarning = false;
       
-      searchEndpointSvc.list()
+      searchEndpointSvc.fetchForCase($scope.caseNo)
        .then(function() {
          $scope.searchEndpoints = searchEndpointSvc.searchEndpoints;               
        });      
@@ -119,9 +119,10 @@ angular.module('QuepidApp')
         $scope.validateSearchEngineUrl();
       };
 
+      // We currently have two ways of picking an endpoint, one using a straight up SELECT
+      // and the other with a fancier UI.  Trying to figure out which is the right one ;-).
       $scope.onSelectSearchEndpoint = function (selectedItem) {
         $scope.settings.searchEndpointId = selectedItem.id;
-        $scope.settings.searchEndpoint = selectedItem;
       };
       
       $scope.searchOptions = function (searchText) {

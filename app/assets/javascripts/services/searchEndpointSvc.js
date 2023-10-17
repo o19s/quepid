@@ -69,6 +69,23 @@ angular.module('QuepidApp')
           });
       };
       
+      this.fetchForCase = function(caseNo) {
+        var self  = this;
+        self.searchEndpoints = [];
+
+        return $http.get('api/cases/' + caseNo + '/search_endpoints')
+          .then(function(response) {
+            angular.forEach(response.data.search_endpoints, function(dataSearchEndpoint) {
+              var searchEndpoint = self.constructFromData(dataSearchEndpoint);
+
+              if(!contains(self.searchEndpoints, searchEndpoint)) {
+                self.searchEndpoints.push(searchEndpoint);
+              }
+            });
+          });
+      };
+            
+      
       this.fetchArchived = function(team) {
         var self  = this;
         self.archived = []; // reset this array

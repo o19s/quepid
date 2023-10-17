@@ -4,6 +4,8 @@ module Api
   module V1
     class SearchEndpointsController < Api::ApiController
       before_action :set_search_endpoint, only: [ :show, :update ]
+
+      # rubocop:disable Metrics/MethodLength
       def index
         bool = ActiveRecord::Type::Boolean.new
         archived = bool.deserialize params[:archived] || false
@@ -14,6 +16,11 @@ module Api
                               current_user.search_endpoints_involved_with
                                 .where(archived: archived)
                                 .joins(:teams).where(teams: { id: params[:team_id] })
+                            elsif params[:case_id]
+                              set_case # inherited
+                              current_user.search_endpoints_involved_with
+                                .where(archived: archived)
+                                .joins(:teams).where(teams: { id: @case.teams.pluck(:id) })
                             else
                               current_user.search_endpoints_involved_with
                                 .where(archived: archived)
@@ -21,6 +28,7 @@ module Api
 
         respond_with @search_endpoints
       end
+      # rubocop:enable Metrics/MethodLength
 
       def show
         respond_with @search_endpoint

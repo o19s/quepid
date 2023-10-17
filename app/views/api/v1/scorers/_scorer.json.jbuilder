@@ -2,8 +2,6 @@
 
 export ||= false
 
-teams = scorer.teams.find_all { |t| current_user.teams.all.include?(t) }
-
 json.scorer_id            scorer.id unless export
 json.communal             scorer.communal
 json.code                 scorer.code
@@ -15,7 +13,8 @@ json.owner_name           scorer.owner.name if scorer.owner.present?
 json.show_scale_labels      scorer.show_scale_labels
 json.scale_with_labels      scorer.scale_with_labels
 
-unless export
+if export
+  teams = scorer.teams.find_all { |t| current_user.teams.all.include?(t) }
   json.teams teams do |team|
     json.id         team.id
     json.name       team.name

@@ -18,7 +18,7 @@ angular.module('QuepidApp')
 
       // Functions
       function fetchTeam (teamId) {
-        teamSvc.get(teamId, true)
+        teamSvc.get(teamId)
           .then(function(response) {
             $scope.currentTeam = response;
           }, function() {

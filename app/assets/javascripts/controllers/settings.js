@@ -19,10 +19,10 @@ angular.module('QuepidApp')
         searchEndpointId: ''
       };
       
-      searchEndpointSvc.list()
-       .then(function() {
-         $scope.searchEndpoints = searchEndpointSvc.searchEndpoints;        
-       });      
+      //searchEndpointSvc.list()
+      // .then(function() {
+      //   $scope.searchEndpoints = searchEndpointSvc.searchEndpoints;        
+      // });      
             
       $scope.settingsModel.settingsId = function() {
         //console.log('$scope.settingsModel.settingsId returning settingsid');
@@ -70,7 +70,6 @@ angular.module('QuepidApp')
 
       
       $scope.$watch('settingsModel.settingsId()', function() {
-          console.log('$scope.$watch(settingsModel.settingsId()');
          // As updates to our settings are successfully submitted, the settingsId() is incremented, which
          // triggers this, and then we update the pendingSettings for the UI.
          // Reinit our pending settings from the service

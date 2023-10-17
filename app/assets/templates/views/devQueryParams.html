@@ -118,11 +118,12 @@
 
 
           <div class="dev-body" ng-show="devSettingsSearchEndpoint.toggle">
-            Pick Search Endpoint:<br />
+            Pick Search Endpoint From Team:<br />
+            HERE: {{ settings.searchEndpointId }}
             <div>
               <select ng-model="settings.searchEndpointId"
                 ng-options="searchEndpoint.id as searchEndpoint.name for searchEndpoint in listSearchEndpoints()"
-                ng-change="changeSearchEngine()" class="form-control">
+                class="form-control">
               </select>
               <br />OR<br />
               <script type="text/ng-template" id="customTemplate.html">
@@ -136,7 +137,7 @@
                 uib-typeahead="searchEndpoint as searchEndpoint.name for searchEndpoint in searchOptions($viewValue)"
                 typeahead-template-url="customTemplate.html" class="form-control" typeahead-show-hint="true"
                 typeahead-min-length="0" typeahead-editable="false" typeahead-select-on-exact="false"
-                typeahead-no-results="noResults" typeahead-on-select="onSelectSearchEndpoint($item)">
+                typeahead-no-results="noResults" typeahead-on-select="onSelectSearchEndpoint($item)"/>
               <div ng-if="noResults">
                 No search endpoints found. Check your spelling!
               </div>
