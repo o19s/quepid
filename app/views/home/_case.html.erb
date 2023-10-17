@@ -1,6 +1,7 @@
 <tr>
   <th scope="row"><%= kase.case_name %></th>
   <td><%= kase.queries.count %></td>
+  <% if true == false %>
   <td>
     <% unless kase.last_score.blank? %>
       <%= kase.last_score.score %>
@@ -16,6 +17,7 @@
       <%= kase.last_score.user.name%>
     <% end %>
   </td>
+  <% end %>
  
   <td><%= link_to 'View', case_core_path(kase, kase.last_try_number), class: 'btn btn-sm btn-primary', role: 'button' %></td>
 </tr>
