@@ -42,7 +42,7 @@ module Authentication
           .cases_involved_with
           .where(id: params[:case_id])
           .includes(:tries )
-          .preload([ queries: [ :ratings ], tries: [ :curator_variables ] ])
+          .preload([ queries: [ :ratings ], tries: [ :curator_variables, :search_endpoint ] ])
           .order('tries.try_number DESC')
           .first
       end

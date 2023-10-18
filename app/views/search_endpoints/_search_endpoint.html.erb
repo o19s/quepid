@@ -45,7 +45,7 @@
   
   <p>
     <strong>Owner:</strong>
-    <%= search_endpoint.owner.fullname %>
+    <%= search_endpoint.owner ? search_endpoint.owner.fullname : "No owner specified" %>
   </p>
 
 </div>

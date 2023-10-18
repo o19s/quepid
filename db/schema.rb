@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_09_13_181833) do
+ActiveRecord::Schema[7.0].define(version: 2023_10_18_113955) do
   create_table "annotations", id: :integer, charset: "utf8mb3", force: :cascade do |t|
     t.text "message"
     t.string "source"
@@ -60,6 +60,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_09_13_181833) do
     t.datetime "updated_at", precision: nil
     t.index ["annotation_id"], name: "index_case_scores_on_annotation_id"
     t.index ["case_id"], name: "case_id"
+    t.index ["updated_at", "created_at", "id"], name: "support_last_score"
     t.index ["user_id"], name: "user_id"
   end
 

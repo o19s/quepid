@@ -24,6 +24,11 @@ module Api
       end
 
       def show
+        puts 'looking up team again.'
+        @shallow = true
+        @team = current_user.teams.where(id: params[:team_id])
+          .includes([ :scorers, :members, :books, :search_endpoints ])
+          .first
         respond_with @team
       end
 

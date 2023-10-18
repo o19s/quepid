@@ -42,6 +42,8 @@ angular.module('QuepidApp')
           delete c.book_name;
           c.bookId = c.book_id;
           delete c.book_id;
+          c.queriesCount = c.queries_count;
+          delete c.queries_count;
         });
 
         angular.forEach(this.scorers, function(s) {
