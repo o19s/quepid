@@ -5,6 +5,6 @@ class RatingsController < ApplicationController
 
   # GET /ratings or /ratings.json
   def index
-    @ratings = @case.ratings.includes([ :query, :user ])
+    @ratings = @case.ratings.includes([ :query, :user ]).limit(5000)
   end
 end
