@@ -35,7 +35,6 @@ module Api
             'owner_name'        => scorer.owner.name,
             'show_scale_labels' => scorer.show_scale_labels,
             'scale_with_labels' => scorer.scale_with_labels,
-            'teams'             => [],
           }
 
           assert_equal expected_response, data['default']

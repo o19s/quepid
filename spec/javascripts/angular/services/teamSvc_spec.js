@@ -134,7 +134,7 @@ describe('Service: teamSvc', function () {
   });
 
   it('fetches an team with its cases', function() {
-    var url = 'api/teams/' + mockTeam.id + '?for_sharing=true';
+    var url = 'api/teams/' + mockTeam.id;
 
     var mockTeamWithCasesResponse = {
         id:       1,

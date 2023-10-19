@@ -1,6 +1,9 @@
+<p>
+  List out duplicate scores for a specific day and try.  Count 1 is okay!
+</p>
 
 <pre>
   <% @duplicate_score_patterns.each do |dsp| %>
-    <%= dsp.count %> | try_id: <%= dsp.try_id %>  all_rated: <%= dsp.all_rated %> score: <%= dsp.score %>
+    Count: <%= dsp.count %> | try_id: <%= dsp.try_id %>  day: <%= dsp.day %> score: <%= dsp.score %>
   <% end %>
 </pre>

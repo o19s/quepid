@@ -540,16 +540,7 @@ module Api
             'owner_name'        => owned_scorer.owner.name,
             'show_scale_labels' => false,
             'scale_with_labels' => nil,
-            'teams'             => [],
           }
-
-          teams = shared_scorer.teams.map do |team|
-            {
-              'id'       => team.id,
-              'name'     => team.name,
-              'owner_id' => team.owner_id,
-            }
-          end
 
           expected_shared_response = {
             'scorer_id'         => shared_scorer.id,
@@ -562,7 +553,6 @@ module Api
             'owner_name'        => shared_scorer.owner.name,
             'show_scale_labels' => false,
             'scale_with_labels' => nil,
-            'teams'             => teams,
           }
 
           assert_includes scorers['user_scorers'], expected_owned_response

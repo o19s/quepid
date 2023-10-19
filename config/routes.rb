@@ -6,7 +6,7 @@ require 'sidekiq/web'
 Rails.application.routes.draw do
   apipie
   root 'home#show'
-  resources :search_endpoints
+
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
   Healthcheck.routes(self)
@@ -15,6 +15,8 @@ Rails.application.routes.draw do
   end
 
   resources :api_keys, path: 'api-keys', only: [ :create, :destroy ]
+
+  resources :search_endpoints
 
   # rubocop:disable Layout/LineLength
   # let's encrypt verification (can be removed in the future)
@@ -149,6 +151,8 @@ Rails.application.routes.draw do
         get '/scores/all' => 'case_scores#index'
 
         resources :annotations, except: [ :show ]
+
+        resources :search_endpoints, only: [ :index ]
       end
 
       resources :books, only: [ :show, :create, :update, :destroy ] do

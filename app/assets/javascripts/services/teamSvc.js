@@ -9,13 +9,14 @@ angular.module('QuepidApp')
     function teamSvc($http, broadcastSvc) {
       this.teams = [];
 
-      var Team = function(id, name, ownerId, owner, cases, cases_count, members, scorers, owned, books, search_endpoints) {
+      var Team = function(id, name, ownerId, owner, cases, cases_count, members_count, members, scorers, owned, books, search_endpoints) {
         this.id           = id;
         this.name         = name;
         this.ownerId      = ownerId;
         this.owner        = owner;
         this.cases        = cases;
-        this.cases_count  = cases_count;
+        this.casesCount   = cases_count;
+        this.membersCount = members_count;
         this.members      = members;
         this.scorers      = scorers;
         this.owned        = owned;
@@ -41,6 +42,8 @@ angular.module('QuepidApp')
           delete c.book_name;
           c.bookId = c.book_id;
           delete c.book_id;
+          c.queriesCount = c.queries_count;
+          delete c.queries_count;
         });
 
         angular.forEach(this.scorers, function(s) {
@@ -88,6 +91,7 @@ angular.module('QuepidApp')
           data.owner,
           data.cases,
           data.cases_count,
+          data.members_count,
           data.members,
           data.scorers,
           data.owned,
@@ -161,14 +165,10 @@ angular.module('QuepidApp')
           });
       };
 
-      this.get = function(id, forSharing) {
+      this.get = function(id) {
         // http GET api/teams/<int:teamId>
         var url   = 'api/teams/' + id;
         var self  = this;
-
-        if ( forSharing ) {
-          url += '?for_sharing=true';
-        }
 
         return $http.get(url)
           .then(function(response) {

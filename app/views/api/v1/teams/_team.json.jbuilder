@@ -1,12 +1,14 @@
 # frozen_string_literal: true
 
 for_sharing ||= false
+shallow ||= true
 
-json.id           team.id
-json.name         team.name
-json.owner_id     team.owner_id
-json.owned        team.owner_id == current_user.id
-json.cases_count  team.cases.not_archived.count
+json.id             team.id
+json.name           team.name
+json.owner_id       team.owner_id
+json.owned          team.owner_id == current_user.id
+json.cases_count    team.cases.not_archived.count
+json.members_count  team.members.count
 
 json.scorers do
   json.array! team.scorers, partial: 'api/v1/scorers/scorer', as: :scorer
@@ -14,7 +16,7 @@ end
 
 json.cases do
   # rubocop:disable Layout/LineLength
-  json.array! team.cases.not_archived, partial: 'api/v1/cases/case', as: :acase, locals: { shallow: true, no_teams: for_sharing, no_tries: for_sharing }
+  json.array! team.cases.not_archived, partial: 'api/v1/cases/case', as: :acase, locals: { shallow: shallow, no_teams: for_sharing, no_tries: for_sharing }
   # rubocop:enable Layout/LineLength
 end
 

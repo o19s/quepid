@@ -42,5 +42,10 @@
     <%= search_endpoint.archived? %>
     <%= search_endpoint.archived? ? "You must unarchive this search endpoint to use it with new cases" :"" %>
   </p>
+  
+  <p>
+    <strong>Owner:</strong>
+    <%= search_endpoint.owner ? search_endpoint.owner.fullname : "No owner specified" %>
+  </p>
 
 </div>

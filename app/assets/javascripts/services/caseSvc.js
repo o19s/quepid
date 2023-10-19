@@ -51,7 +51,7 @@ angular.module('QuepidApp')
         theCase.ownerId           = data.owner_id;
         theCase.bookId            = data.book_id;
         theCase.bookName          = data.book_name;
-        theCase.queriesCount      = data.queriesCount;
+        theCase.queriesCount      = data.queries_count;
         theCase.public            = data.public;
         theCase.archived          = data.archived;
         theCase.teams             = data.teams || [];

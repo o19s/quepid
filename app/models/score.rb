@@ -19,6 +19,7 @@
 #
 #  case_id                             (case_id)
 #  index_case_scores_on_annotation_id  (annotation_id)
+#  support_last_score                  (updated_at,created_at,id)
 #  user_id                             (user_id)
 #
 # Foreign Keys
@@ -41,10 +42,14 @@ class Score < ApplicationRecord
 
   # Validations
 
-  # Scores
+  # Scopes
+
+  # We have an index on updated_at, created_at, id to support this lookup.
+  # Case 4848 is an example of a case that struggles with this.
+  # The where(annotation_id: nil) part of the clause kills our performance.
   scope :last_one, -> {
-    where(annotation_id: nil)
-      .order(updated_at: :desc)
+    # where(annotation_id: nil)
+    order(updated_at: :desc)
       .order(created_at:  :desc)
       .order(id:          :desc)
       .limit(1)
