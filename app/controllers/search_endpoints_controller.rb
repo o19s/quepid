@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class SearchEndpointsController < ApplicationController
-  before_action :set_search_endpoint, only: [ :show, :edit, :update, :destroy ]
+  before_action :set_search_endpoint, only: [ :show, :edit, :update, :destroy, :clone ]
 
   respond_to :html
 
@@ -16,6 +16,12 @@ class SearchEndpointsController < ApplicationController
 
   def new
     @search_endpoint = SearchEndpoint.new
+    respond_with(@search_endpoint)
+  end
+
+  def clone
+    @search_endpoint = @search_endpoint.dup
+    @search_endpoint.name = "Clone #{@search_endpoint.name}"
     respond_with(@search_endpoint)
   end
 

@@ -27,11 +27,13 @@ end
 
 # possibility the front end doesn't use this and issues a seperate queries bootstrap api call!
 # We need to rethink these nesting templates!
+# rubocop:disable Lint/LiteralAsCondition
 if false && !shallow
   json.queries do
     json.array! acase.queries, partial: 'api/v1/queries/query', as: :query
   end
 end
+# rubocop:enable Lint/LiteralAsCondition
 
 unless shallow
   json.tries do
