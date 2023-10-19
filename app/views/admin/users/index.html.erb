@@ -25,7 +25,12 @@
   <tbody>
     <% @users.each do |user| %>
       <tr>
-        <td><%= user.email %></td>
+        <td>
+          <%= user.email %>
+          <% if user.locked? %>
+            <i class="bi bi-lock-fill"></i>
+          <% end %>
+        </td>
         <td><%= user.name %></td>
         <td>
           <%= user.agreed_time %>
