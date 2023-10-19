@@ -6,6 +6,9 @@
 // This loads the Bootstrap 5 defined in package.json and in node_modules/bootstrap
 @import "bootstrap/scss/bootstrap";
 
+// We use Bootstrap Icons to have icons that work between core and the rest of the app
+@import "bootstrap-icons/font/bootstrap-icons";
+
 @import "codemirror/lib/codemirror";
 
 @import "fonts";

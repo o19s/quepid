@@ -118,8 +118,10 @@
 
 
           <div class="dev-body" ng-show="devSettingsSearchEndpoint.toggle">
-            Pick Search Endpoint From Team:<br />
-            HERE: {{ settings.searchEndpointId }}
+            Pick Shared Endpoints:<br />
+            <span ng-show="listSearchEndpoints().length == 0">
+              You do not have any search endpoints shared with this case.  Share the case with a team first.
+            </span>
             <div>
               <select ng-model="settings.searchEndpointId"
                 ng-options="searchEndpoint.id as searchEndpoint.name for searchEndpoint in listSearchEndpoints()"
