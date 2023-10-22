@@ -1,5 +1,22 @@
 # Changelog
 
+## 7.10.0 - 2023-10-19
+
+Big feature!  Or should I say big refactoring?   Meet your new friend "The Search Endpoint".  You can now configure a connection to a search engine, maybe one of the classic ones like Solr, OpenSearch, or Elasticsearch, or some new ones like "Static CSV File" or even a "Custom Search API".  Once that is configured, then you can reuse that connection over and over.  Even better, you can share it with your friends in your Team, similar to how you share Cases and Scorers.
+
+You can say good by to search urls like "http://internal-ecs-m-loadb-1jj589wq3y25-167256740489.us-east-1.elb.amazonaws.com/" and welcome to "Stage Search" ;-).  If you change where "Stage Search" is pointing, update it one place and it is used by all the Cases (and Tries) that used it.
+
+### Features
+
+* Search Endpoints refactoring in https://github.com/o19s/quepid/pull/788, https://github.com/o19s/quepid/pull/850 and https://github.com/o19s/quepid/pull/852 by @epugh.
+
+* Documenting our APIs is started!  Thanks to @jvia, we have some basic docs on the Cases api.  https://github.com/o19s/quepid/pull/824, https://github.com/o19s/quepid/pull/838 by @jvia and https://github.com/o19s/quepid/pull/808 by @epugh.
+
+### Improvements
+
+* On to Node 20!  https://github.com/o19s/quepid/pull/837 by @epugh.
+
+
 ## 7.9.2 - 2023-09-20
 
 You can now export and import Case's and Book's cleanly from one Quepid to another Quepid, with proper error handling.  You can also use this to export a Case or Book, make a bunch of changes externally using other tools, and then bring it back in.
