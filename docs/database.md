@@ -1,24 +1,25 @@
 # Database
 
+## Backup a Database
+
+Install MysqlDB to get the mysqldump tool ;-) and then use a full path like `/usr/local/mysql/bin/`.
+
+```
+mysqldump -h OLDHOST -u OLDUSER -pOLDPASS OLDDATABASE  --column-statistics=0 --set-gtid-purged=OFF | zip > quepid_backup_`date +"%Y_%m_%d"`.sql.zip
+```
 
 ## Restore a Database
 
 Assuming you have used mysqldump to get a dump, you can restore to dev via:
 
 ```
-mysql --host=127.0.0.1 --port=3306 -u root -p quepid_development < quepid_prod_2021_03_02.sql
+/usr/local/mysql/bin/mysql --verbose --host=127.0.0.1 --port=3306 -u root -p quepid_development < quepid_prod_2021_03_02.sql
 ```
 
 Or if you have a Zip file:
 
 ```
 unzip -p quepid_prod_2021_03_02.sql.zip | mysql --host=127.0.0.1 --port=3306 -u root -p quepid_development
-```
-
-## Backup a Database
-
-```
-mysqldump -h OLDHOST -u OLDUSER -pOLDPASS OLDDATABASE  --column-statistics=0 --set-gtid-purged=OFF | zip > quepid_backup_`date +"%Y_%m_%d"`.sql.zip
 ```
 
 ## Emoji Support

@@ -1,0 +1,42 @@
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+  <h1 class="h2">Search Endpoints</h1>
+  <div class="btn-toolbar mb-2 mb-md-0">
+    <div class="btn-group me-2">
+      <%= link_to 'New Search Endpoint', new_search_endpoint_path, class: "btn btn-sm btn-outline-secondary" %>      
+    </div>    
+  </div>
+</div>
+
+Search Endpoints represents an API (or search engine!) that is receiving queries and responding with documents.
+
+
+<p id="notice"><%= notice %></p>
+
+<% if @search_endpoints.size == 0 %>
+  Create your first book by clicking on the New Search Endpoint button above.
+  <br>
+<% end %>
+
+<p style="color: green"><%= notice %></p>
+
+
+<table class="table table-striped table-hover">
+
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Search Engine</th>
+      <th>Endpoint Url</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <% @search_endpoints.each do |search_endpoint| %>
+      <tr>
+        <td><%= link_to search_endpoint.fullname, search_endpoint_path(search_endpoint) %></td>
+        <td><%= image_tag "#{search_endpoint.search_engine}-icon.png", size:'32x32', class:'rounded-circle' %> <%= search_endpoint.search_engine %></td>
+        <td><%= search_endpoint.endpoint_url %> </td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>

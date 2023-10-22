@@ -19,11 +19,17 @@
 
   <div class="row">
     <div class="col-sm-3">
-      {{ aTry.searchEngine | searchEngineName }} Instance
+      Search Endpoint
     </div>
     <div class="col-sm-9">
       <div>
-        {{aTry.searchUrl}} <a href="{{aTry.searchUrl}}">(link)</a>
+        <a ng-href="search_endpoints/{{ aTry.searchEndpointId }}" target="_self">
+        <img ng-if="aTry.searchEngine"
+          ng-src="images/{{ aTry.searchEngine }}-icon.png" width="16px" /> 
+        {{aTry.endpointName}}
+        </a>
+        --
+        <a href="{{aTry.searchUrl}}" target="_blank">Browse Search Endpoint</a>
       </div>
     </div>
   </div>

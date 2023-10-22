@@ -2,14 +2,14 @@
 <% if @party_time %>
   <p/>
   <div id="party_here" class="alert alert-success" role="alert">
-    Yay!  You just finished another batch of 20 ratings!   Time to take a mental break.
+    Yay!  You just finished another batch of 50 ratings!   Time to take a mental break.
   </div>
   <script>
     party.confetti( document.getElementById("party_here"));
   </script>
   
   <div class="float-end">    
-    <%= link_to "I'm Ready for Moar!", book_skip_judging_path(@book), class: 'btn btn-info m-1', role: 'button' %>
+    <%= link_to "I'm Ready for More!", book_skip_judging_path(@book), class: 'btn btn-info m-1', role: 'button' %>
   </div>
   <script>
   
@@ -28,7 +28,7 @@
   <div class="card">
     <div class="card-body">
       <h5 class="card-title">Leaderboard</h3>
-      <h6 class="card-subtitle mb-2 text-body-secondary">Who is closest to having all query/doc pairs judged</h6>
+      <h6 class="card-subtitle mb-2 text-body-secondary">Who is closest to having all <%= @book.query_doc_pairs.count %> query/doc pairs judged?</h6>
       <%=
       Vega.lite
         #.data([{judge: "A", judgements: 28}, {judge: "B", judgements: 55}, {judge: "C", judgements: 43}])
@@ -44,7 +44,7 @@
 
 <% else %>
   
-  <h2>Create a Judgement</h2>
+  <h2></h2>
   
   <%= render 'form', judgement: @judgement, query_doc_pair: @query_doc_pair, url_for_form: book_query_doc_pair_judgements_path(@book, @query_doc_pair) %>
   

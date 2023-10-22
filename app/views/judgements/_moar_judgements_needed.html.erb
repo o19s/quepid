@@ -1,6 +1,6 @@
 <% if SelectionStrategy.random_query_doc_based_on_strategy(book, current_user) %>  
   <div class="alert alert-warning" role="alert">
-    <%= link_to 'Moar Judgements are Needed!', book_judge_path(book), class: 'btn btn-primary', role: 'button' %>
+    <%= link_to 'More Judgements are Needed!', book_judge_path(book), class: 'btn btn-primary', role: 'button' %>
   </div>
 <% elsif book.query_doc_pairs.empty? %>
   <div class="alert alert-warning" role="alert">

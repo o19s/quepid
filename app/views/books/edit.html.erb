@@ -1,17 +1,16 @@
-<main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
-  <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-    <h1 class="h2">Edit Book <%= @book.name %></h1>
-    <div class="btn-toolbar mb-2 mb-md-0">
-      <div class="btn-group me-2">
-        <%= link_to 'New Book', new_book_path, class: "btn btn-sm btn-outline-secondary" %>
-        <button type="button" class="btn btn-sm btn-outline-secondary">Export</button>
-      </div>
-      <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle">
-        <span data-feather="calendar" class="align-text-bottom"></span>
-        This week
-      </button>
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+  <h1 class="h2">Edit <%= book_title @book %></h1>
+  <div class="btn-toolbar mb-2 mb-md-0">
+    <div class="btn-group me-2">
+      <%= link_to 'New Book', new_book_path, class: "btn btn-sm btn-outline-secondary" %>
+      <button type="button" class="btn btn-sm btn-outline-secondary">Export</button>
     </div>
+    <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle">
+      <span data-feather="calendar" class="align-text-bottom"></span>
+      This week
+    </button>
   </div>
+</div>
 
 <%= render 'form', book: @book %>
 
@@ -54,8 +53,11 @@
 <% end %>
 
 <hr/>
+<div class="alert alert-danger" role="alert">
+  Danger Zone!
+</div>
 <p/>
-<h3>Assign Anonymous Ratings to a User</h3>
+<h3>Assign Anonymous Judgements & Ratings to a User</h3>
 
 <p class="form-text">
   If you used Quepid before version 7.6, then ratings on the main Case page were all anonynmous.
@@ -64,7 +66,7 @@
 </p>
 <p>
 <strong>Related cases to be updated:</strong>
-<%= render(partial: 'books/case', collection: @book.cases, as: :kase) || "There are no cases available." %>
+<%= render(partial: 'books/case', collection: @book.cases, as: :kase) || "There are no cases associated." %>
 </p>
 <%= form_for(@book, url: assign_anonymous_book_path(@book)) do |form| %>
 <div class="mb-3">
@@ -78,6 +80,24 @@
 </p>
 <% end %>
 
+<h3>Delete Judgements by User</h3>
+
+<p class="form-text">
+  Let's you delete judgements made by a single user. 
+</p>
+ 
+<%= form_for(@book, url: delete_ratings_by_assignee_book_path(@book), method: :delete, data: { confirm: "Are you sure?" }) do |form| %>
+<div class="mb-3">
+  <%= form.label :assignee_id, class: 'form-label' %>
+  <%= select_tag "assignee_id", options_from_collection_for_select(@book.team.members, :id, :name, params.dig(:post, :category_id)), required: true, prompt: "Please select judge", class: 'form-control' %>
+</div>
+<p>
+<div class="actions">
+  <%= form.submit 'Delete Judgements' %>
+</div>
+</p>
+<% end %>
+
 <br>
 
 <%= button_to 'Cancel', @book, method: :get %>
@@ -86,4 +106,4 @@
 
 <%= button_to 'Delete Book', @book, method: :delete %>
 
-</main>
+</div>

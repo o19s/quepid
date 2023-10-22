@@ -28,9 +28,9 @@ angular.module('QuepidApp')
       };
 
       var getSearchEngine = function(tryNo) {
-        var sett = settingsSvc.editableSettings();
-        if (sett.hasOwnProperty('getTry')) {
-          var aTry = sett.getTry(tryNo);
+        var settings = settingsSvc.editableSettings();
+        if (settings.hasOwnProperty('getTry')) {
+          var aTry = settings.getTry(tryNo);
           if (aTry) {
             return aTry.searchUrl;
           }

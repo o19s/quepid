@@ -29,6 +29,8 @@ module Api
 
             if pair[:rating]
               rating = @case.queries.find_by(query_text: query_doc_pair.query_text).ratings.find_by(doc_id: query_doc_pair.doc_id)
+
+              # we are smart and just look up the correct user id from rating.user_id via the database, no API data needed.
               judgement = query_doc_pair.judgements.find_or_create_by user_id: rating.user_id
               judgement.rating = pair[:rating]
               judgement.user = rating.user
@@ -44,16 +46,6 @@ module Api
         # rubocop:enable Metrics/AbcSize
         # rubocop:enable Metrics/MethodLength
         # rubocop:enable Layout/LineLength
-
-        private
-
-        def find_book
-          @book = current_user.books_involved_with.where(id: params[:book_id]).first
-        end
-
-        def check_book
-          render json: { message: 'Book not found!' }, status: :not_found unless @book
-        end
       end
     end
   end

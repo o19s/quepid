@@ -13,7 +13,7 @@
 # Indexes
 #
 #  index_judgements_on_query_doc_pair_id              (query_doc_pair_id)
-#  index_judgements_on_user_id_and_query_doc_pair_id  (user_id,query_doc_pair_id) UNIQUE
+#  index_judgements_on_user_id_and_query_doc_pair_id  (user_id,query_doc_pair_id)
 #
 # Foreign Keys
 #

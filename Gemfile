@@ -7,6 +7,7 @@ ruby '3.2.2'
 gem 'activerecord-import', '>= 1.0.7'
 gem 'acts_as_list', '>= 1.0.1'
 gem 'angular-rails-templates', '>= 1.0.0.beta'
+gem 'apipie-rails', '~> 1.2'
 gem 'bcrypt', '~> 3.1.7'
 gem 'sassc-rails', '~> 2.1'
 gem 'turbolinks', '~> 5'
@@ -28,7 +29,7 @@ gem 'net-imap', '~> 0.3.0'
 gem 'postmark-rails'
 gem 'puma'
 gem 'pundit'
-gem 'rails', '= 7.0.4.3'
+gem 'rails', '~> 7.0.8'
 gem 'responders'
 gem 'sidekiq'
 gem 'terser'
@@ -51,6 +52,7 @@ gem 'omniauth-keycloak'
 gem 'omniauth-google-oauth2'
 gem 'omniauth-rails_csrf_protection', '~> 1.0'
 
+gem 'prophet-rb', '~> 0.5.0'
 gem 'rails-healthcheck', '~> 1.4'
 gem 'rails-html-sanitizer'
 
@@ -91,7 +93,4 @@ group :test do
   # Use system testing [https://guides.rubyonrails.org/testing.html#system-testing]
   gem 'capybara'
   gem 'selenium-webdriver'
-  gem 'webdrivers'
 end
-
-gem 'prophet-rb', '~> 0.4.2'

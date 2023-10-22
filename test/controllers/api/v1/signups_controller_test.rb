@@ -82,7 +82,7 @@ module Api
           assert BCrypt::Password.new(user.password) == password
         end
 
-        test 'sets the defaults, including a Case' do
+        test 'sets the defaults, which no longer includes a Case' do
           password = 'password'
           data = { user: { email: 'foo@example.com', password: password } }
 
@@ -95,10 +95,10 @@ module Api
           assert_not_nil user.completed_case_wizard
           assert_not_nil user.num_logins
 
-          assert_equal false,  user.completed_case_wizard
+          assert_equal false, user.completed_case_wizard
           assert_equal 0, user.num_logins
 
-          assert_equal 1, user.cases.count
+          assert_equal 0, user.cases.count
         end
 
         test 'does not care if the name is present' do

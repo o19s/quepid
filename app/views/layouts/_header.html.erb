@@ -19,7 +19,7 @@
               RECENT CASES
             </li>
             <li><hr class="dropdown-divider"></li>
-            <% @current_user.cases.not_archived.recent.limit(3).each do |kase| %>
+            <% @current_user.cases_involved_with.not_archived.recent.limit(3).each do |kase| %>
               <li><%= link_to kase.case_name, case_core_path(kase, kase.last_try_number), class: 'cases-nav-listing' %></li>
               <li><hr class="dropdown-divider"></li>
             <% end %>
@@ -34,7 +34,7 @@
           </ul>
         </li>
         <li class="nav-item">
-          <%= link_to "Teams", teams_path, class: "nav-link" %>
+          <%= link_to "Teams", teams_core_path, class: "nav-link" %>
         </li>
         <% end %>
       </ul>

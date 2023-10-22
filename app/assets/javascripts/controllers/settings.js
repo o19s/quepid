@@ -3,31 +3,35 @@
 
 angular.module('QuepidApp')
   .controller('SettingsCtrl', [
-    '$scope',
-    '$location',
+    '$scope','$location',
     'flash',
     'settingsSvc',
-    function ($scope, $location, flash, settingsSvc) {
+    function (
+      $scope, $location, 
+      flash, 
+      settingsSvc
+    ) {
       $scope.settingsModel = {};
       $scope.pendingSettings = {
         searchEngine: '',
         searchUrl:    '',
-        titleField:   ''
+        titleField:   '',
+        searchEndpointId: ''
       };
-
+                 
       $scope.settingsModel.settingsId = function() {
         return settingsSvc.settingsId();
       };
 
       var reset = function() {
         var currSettings = settingsSvc.editableSettings();
-        if ( this.searchEngine !== currSettings.searchEngine) {
-          currSettings = settingsSvc.pickSettingsToUse($scope.pendingSettings.searchEngine, null);
-          currSettings.fieldSpec = currSettings.fieldSpec + ', ' + currSettings.additionalFields.join(', ');
-          $scope.pendingSettings.urlFormat = currSettings.urlFormat;
-        }
+
+        this.searchEndpointId         = currSettings.searchEndpointId;
+        this.endpointName             = currSettings.endpointName;
         this.searchEngine             = currSettings.searchEngine;
+        this.searchEndpointId         = currSettings.searchEndpoint;
         this.apiMethod                = currSettings.apiMethod;
+
 
 
         if (this.searchEngine === 'solr') {
@@ -42,8 +46,7 @@ angular.module('QuepidApp')
         else {
           this.searchUrl = currSettings.searchUrl;
         }
-
-
+        
         this.fieldSpec                = currSettings.fieldSpec;
         this.selectedTry.queryParams  = currSettings.queryParams;
         this.urlFormat                = currSettings.urlFormat;
@@ -52,21 +55,19 @@ angular.module('QuepidApp')
       };
 
       $scope.$watch('settingsModel.settingsId()', function() {
-        // Reinit our pending settings from the service
-        $scope.pendingSettings = settingsSvc.editableSettings();
-        $scope.pendingSettings.reset = reset;
-
-        if ( angular.isDefined($scope.pendingSettings.searchEngine) ) {
-          var settingsToUse = settingsSvc.pickSettingsToUse($scope.pendingSettings.searchEngine, $scope.pendingSettings.searchUrl);
-          $scope.pendingSettings.urlFormat = settingsToUse.urlFormat;
-        }
-
-        // pass pending settings onward to be saved
-        $scope.pendingSettings.submit = submit;
+         // As updates to our settings are successfully submitted, the settingsId() is incremented, which
+         // triggers this, and then we update the pendingSettings for the UI.
+         // Reinit our pending settings from the service
+         $scope.pendingSettings = settingsSvc.editableSettings();
+         $scope.pendingSettings.reset = reset;
+         
+         // pass pending settings onward to be saved
+         $scope.pendingSettings.submit = submit;
       });
 
       function submit () {
-        if ( $scope.pendingSettings.searchEngine === 'es'  || $scope.pendingSettings.searchEngine === 'os') {
+        if ( $scope.pendingSettings.searchEngine === 'es'  || $scope.pendingSettings.searchEngine === 'os' ||
+             $scope.pendingSettings.searchEngine === 'vectara') {
           // Verify that JSON is valid
           try {
             var jsonObject = JSON.parse($scope.pendingSettings.selectedTry.queryParams);
@@ -75,17 +76,6 @@ angular.module('QuepidApp')
             flash.error = 'Please provide a valid JSON object for the query DSL.';
             return;
           }
-
-          // Verify that custom headers are valid if set
-          try {
-            if ($scope.pendingSettings.customHeaders.length > 0) {
-              JSON.parse($scope.pendingSettings.customHeaders);
-            }
-          } catch (e) {
-            flash.error = 'Please provide a valid JSON object for the custom headers.';
-            return;
-          }
-
         }
 
         settingsSvc.save($scope.pendingSettings);

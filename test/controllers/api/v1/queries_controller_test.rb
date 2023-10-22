@@ -103,7 +103,7 @@ module Api
           query_text = 'New Query'
           post :create, params: { case_id: acase.id, query: { query_text: query_text } }
 
-          assert_response :no_content
+          assert_response :ok
 
           acase.reload
           new_count = acase.queries.count
@@ -128,7 +128,7 @@ module Api
           query_text = ' New Query'
           post :create, params: { case_id: acase.id, query: { query_text: query_text } }
 
-          assert_response :no_content
+          assert_response :ok
 
           acase.reload
           new_count = acase.queries.count

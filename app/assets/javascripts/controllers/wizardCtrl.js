@@ -22,7 +22,9 @@ angular.module('QuepidApp')
 
         modalInstance.result.then(function() {
           /* global setupAndStartTour */
-          $timeout(setupAndStartTour, 1500);
+          if (!$rootScope.currentUser.completedCaseWizard) {
+            $timeout(setupAndStartTour, 1500);
+          }
         });
       };
 

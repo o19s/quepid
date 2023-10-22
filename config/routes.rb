@@ -4,11 +4,16 @@ require 'sidekiq/web'
 
 # rubocop:disable Metrics/BlockLength
 Rails.application.routes.draw do
+
+
+
+  # get 'home/show'
+  apipie
+  root 'home#show'
+  
   get 'proxy/fetch'
   post 'proxy/fetch'
 
-  # get 'home/show'
-  root 'home#show'
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
   Healthcheck.routes(self)
@@ -17,6 +22,9 @@ Rails.application.routes.draw do
   end
 
   resources :api_keys, path: 'api-keys', only: [ :create, :destroy ]
+
+  resources :search_endpoints
+  get 'search_endpoints/:id/clone' => 'search_endpoints#clone', as: :clone_search_endpoint
 
   # rubocop:disable Layout/LineLength
   # let's encrypt verification (can be removed in the future)
@@ -34,6 +42,7 @@ Rails.application.routes.draw do
 
   resources :cases, only: [] do
     resource :book
+    resources :ratings, only: [ :index ]
   end
 
   resources :books do
@@ -47,6 +56,7 @@ Rails.application.routes.draw do
     member do
       patch 'combine'
       patch 'assign_anonymous'
+      delete 'delete_ratings_by_assignee'
     end
   end
 
@@ -134,7 +144,11 @@ Rails.application.routes.draw do
         end
 
         # Case Snapshots
-        resources :snapshots, except: [ :new, :edit, :update ]
+        resources :snapshots, except: [ :new, :edit, :update ] do
+          scope module: :snapshots do
+            resources :search, only: [ :index ]
+          end
+        end
         namespace :snapshots do
           resources :imports, only: [ :create ]
         end
@@ -145,9 +159,11 @@ Rails.application.routes.draw do
         get '/scores/all' => 'case_scores#index'
 
         resources :annotations, except: [ :show ]
+
+        resources :search_endpoints, only: [ :index ]
       end
 
-      resources :books, only: [ :show ] do
+      resources :books, only: [ :show, :create, :update, :destroy ] do
         put '/populate' => 'books/populate#update'
         resources :cases do
           put 'refresh' => 'books/refresh#update'
@@ -162,6 +178,7 @@ Rails.application.routes.draw do
         end
       end
 
+      resources :search_endpoints, only: [ :index, :show, :update ]
       resources :scorers, except: [ :new, :edit ]
 
       resources :teams, except: [ :new, :edit ], param: :team_id
@@ -172,10 +189,13 @@ Rails.application.routes.draw do
         resources :cases,   only: [ :index, :create, :destroy ], controller: :team_cases
         resources :owners,  only: [ :update ], controller: :team_owners
         resources :books,   only: [ :index ], controller: :team_books
+        resources :search_endpoints, only: [ :index ]
       end
 
       # Imports
       namespace :import do
+        resources :books, only: [ :create ]
+        resources :cases, only: [ :create ]
         resources :ratings, only: [ :create ]
         namespace :queries do
           resources :information_needs, only: [ :create ], param: :case_id
@@ -184,6 +204,8 @@ Rails.application.routes.draw do
 
       # Exports
       namespace :export do
+        resources :books, only: [ :show ], param: :book_id
+        resources :cases, only: [ :show ], param: :case_id
         resources :ratings, only: [ :show ], param: :case_id
         namespace :queries do
           resources :information_needs, only: [ :show ], param: :case_id
@@ -205,7 +227,7 @@ Rails.application.routes.draw do
   get '/cases'                        => 'core#index'
   get '/case'                         => 'core#index'
   get '/cases/import'                 => 'core#index'
-  get '/teams(/:id)'                  => 'core#teams', as: :teams
+  get '/teams(/:id)'                  => 'core#teams', as: :teams_core
   get '/scorers'                      => 'core#index'
 
   # Static pages

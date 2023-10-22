@@ -23,7 +23,7 @@
 #  name                        :string(255)
 #  num_logins                  :integer
 #  password                    :string(120)
-#  profile_pic                 :string(255)
+#  profile_pic                 :string(4000)
 #  reset_password_sent_at      :datetime
 #  reset_password_token        :string(255)
 #  stored_raw_invitation_token :string(255)
@@ -204,6 +204,11 @@ class User < ApplicationRecord
   # This method returns all the books that the user has access to via it's teams.
   def books_involved_with
     Book.for_user(self)
+  end
+
+  # This method rpeturns all the search_endpoints that the user has access to via it's teams.
+  def search_endpoints_involved_with
+    SearchEndpoint.for_user(self)
   end
 
   def locked?

@@ -17,12 +17,12 @@ module Api
         def assert_try_matches_response response, try
           assert_equal try.query_params, response['query_params']
           assert_nil_or_equal try.field_spec, response['field_spec']
-          assert_equal try.search_url,   response['search_url']
+          assert_equal try.search_endpoint.endpoint_url, response['search_url']
           assert_equal try.try_number,   response['try_number']
           assert_equal try.name,         response['name']
           assert_equal try.solr_args,    response['args']
           assert_equal try.escape_query, response['escape_query']
-          assert_equal try.api_method,   response['api_method']
+          assert_equal try.search_endpoint.api_method, response['api_method']
 
           assert_curator_vars_equal try.curator_vars_map, response['curator_vars']
         end
@@ -30,9 +30,9 @@ module Api
         def assert_tries_match a_try, try
           assert_equal try.case_id,      a_try.case_id
           assert_equal try.query_params, a_try.query_params
-          assert_equal try.search_url,   a_try.search_url
+          assert_equal try.search_endpoint, a_try.search_endpoint
           assert_equal try.escape_query, a_try.escape_query
-          assert_equal try.api_method,   a_try.api_method
+          # assert_equal try.api_method,   a_try.api_method
         end
 
         def assert_curator_vars_equal vars, response_vars

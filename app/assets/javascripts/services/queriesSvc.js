@@ -21,6 +21,7 @@ angular.module('QuepidApp')
     'searchErrorTranslatorSvc',
     'esExplainExtractorSvc',
     'solrExplainExtractorSvc',
+    'normalDocsSvc',
     function queriesSvc(
       $scope,
       $http,
@@ -35,7 +36,8 @@ angular.module('QuepidApp')
       diffResultsSvc,
       searchErrorTranslatorSvc,
       esExplainExtractorSvc,
-      solrExplainExtractorSvc
+      solrExplainExtractorSvc,
+      normalDocsSvc
     ) {
 
       let caseNo = -1;
@@ -69,7 +71,7 @@ angular.module('QuepidApp')
       });
 
       function createSearcherFromSettings(passedInSettings, queryText, query) {
-        let args = angular.copy(passedInSettings.selectedTry.args);
+        let args = angular.copy(passedInSettings.selectedTry.args) || {};
 
         if (passedInSettings && passedInSettings.selectedTry) {
 
@@ -78,6 +80,17 @@ angular.module('QuepidApp')
             escapeQuery:   passedInSettings.escapeQuery,
             numberOfRows:  passedInSettings.numberOfRows,
           };
+          
+          if (passedInSettings.searchEngine === 'static'){
+            // Similar to logic in Splainer-searches SettingsValidatorFactory for snapshots.
+            // we need a better way of handling this.   Basically we are saying a static search engine is
+            // treated like Solr.   But if we have more generic search apis, they will need a 
+            // custom parser...
+            passedInSettings.searchEngine = 'solr';           
+          }
+          else if (passedInSettings.searchEngine === 'searchapi'){
+            passedInSettings.searchEngine = 'es';
+          }
 
           if (passedInSettings.searchEngine === 'solr') {
             // add echoParams=all if we don't have it defined to provide query details.
@@ -100,13 +113,17 @@ angular.module('QuepidApp')
                   'filter': query.filterToRatings(passedInSettings)
                 }
               };
-            } else {
+            } else if (passedInSettings.searchEngine === 'solr') {
               if (args['fq'] === undefined) {
                 args['fq'] = [];
               }
               args['fq'].push(query.filterToRatings(passedInSettings));
+            } else if (passedInSettings.searchEngine === 'vectara') {
+              // currently doc id filtering frequently produces 0 results
+              // args['query'] = args['query'].map(function addFilter(query) {
+              //  query['metadata_filter'] = query.filterToRatings(passedInSettings);
+              // });
             }
-
           }
 
 
@@ -128,8 +145,13 @@ angular.module('QuepidApp')
 
         if (searcher.type === 'es' || searcher.type === 'os') {
           normed = esExplainExtractorSvc.docsWithExplainOther(searcher.docs, fieldSpec);
-        } else {
+        } else if (searcher.type === 'solr') {
           normed = solrExplainExtractorSvc.docsWithExplainOther(searcher.docs, fieldSpec, searcher.othersExplained);
+        } else {
+          // search engine with no explain output
+          normed = searcher.docs.map(function(doc) {
+            return normalDocsSvc.createNormalDoc(fieldSpec, doc);
+          });
         }
 
         let docs = [];
@@ -659,8 +681,12 @@ angular.module('QuepidApp')
             };
             esQuery['terms'][fieldSpec.id] = ratedIDs;
             return esQuery;
-          } else {
+          } else if (settings.searchEngine === 'solr') {
             return '{!terms f=' + fieldSpec.id + '}' + ratedIDs.join(',');
+          } else if (settings.searchEngine === 'vectara') {
+            return ratedIDs.map(function(id) {
+              return 'doc.id = \'' + id + '\'';
+            }).join(' OR ');
           }
         };
       };
@@ -887,17 +913,12 @@ angular.module('QuepidApp')
         $http.post(path, data)
           .then(function(response) {
             let data = response.data;
-            if ( response.status === 204 ) {
-              // This typically happens when the query already exists, so
-              // no change happened
-              deferred.resolve();
-            } else {
-              // Update the display order based on the new one after the query creation
-              that.queries = {};
-              addQueriesFromResp(data);
-              deferred.resolve();
-            }
-          }, function(response) {
+    
+            // Update the display order based on the new one after the query creation
+            that.queries = {};
+            addQueriesFromResp(data);
+            deferred.resolve();
+        }, function(response) {
             let data = response.data;
             deferred.reject(data);
           }).catch(function(response) {

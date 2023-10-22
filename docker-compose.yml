@@ -31,7 +31,8 @@ services:
 
   mysql:
     container_name: quepid_db
-    image: amd64/mysql:8.0.33
+    image: mysql:8.0.33
+    platform: linux/arm64/v8
     ports:
       - 3306:3306
     environment:
@@ -39,7 +40,7 @@ services:
 
   redis:
     container_name: quepid_redis
-    image: redis:7.0.10-alpine
+    image: redis:7.2.0-alpine
     ports:
       - 6379:6379
 
@@ -70,7 +71,7 @@ services:
 
 
   nginx:
-    image: nginx:1.25.2
+    image: nginx:1.25.2-alpine-slim
     container_name: quepid_nginx
     ports:
       - "443:8443"

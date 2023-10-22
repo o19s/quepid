@@ -63,10 +63,29 @@ describe('Service: caseCSVSvc', function () {
         "information_need":"",
         "notes": "chil'laxin"
       }
-    ]
+    ];
 
     mockCase.queries = mockQueries;
 
+    it('strips leading and trailing spaces in the keys', function () {
+      
+      var mockResultFromUploadingCSVWithSpaces = [
+        {
+        "Query Text ": "star wars",
+        " Movie Title ": "Star Wars",
+        "MovieRating ": "PG"
+        }
+      ];
+      
+      const result = caseCSVSvc.fixObjectKeys(mockResultFromUploadingCSVWithSpaces);
+
+      expect(result).toEqual([{
+        "Query Text": "star wars",
+        "Movie Title": "Star Wars",
+        "MovieRating": "PG"
+      }]);
+    });
+    
     it('returns a comma separated string of query scores with the header', function () {
       var result = caseCSVSvc.stringify(mockCase, true);
 

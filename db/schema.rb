@@ -10,13 +10,13 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_06_30_124311) do
+ActiveRecord::Schema[7.0].define(version: 2023_10_18_113955) do
   create_table "annotations", id: :integer, charset: "utf8mb3", force: :cascade do |t|
     t.text "message"
     t.string "source"
     t.integer "user_id"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.index ["user_id"], name: "index_annotations_on_user_id"
   end
 
@@ -36,13 +36,14 @@ ActiveRecord::Schema[7.0].define(version: 2023_06_30_124311) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.boolean "support_implicit_judgements"
+    t.boolean "show_rank", default: false
     t.index ["selection_strategy_id"], name: "index_books_on_selection_strategy_id"
   end
 
   create_table "case_metadata", id: :integer, charset: "latin1", force: :cascade do |t|
     t.integer "user_id", null: false
     t.integer "case_id", null: false
-    t.datetime "last_viewed_at"
+    t.datetime "last_viewed_at", precision: nil
     t.index ["case_id"], name: "case_metadata_ibfk_1"
     t.index ["user_id", "case_id"], name: "case_metadata_user_id_case_id_index"
   end
@@ -53,12 +54,13 @@ ActiveRecord::Schema[7.0].define(version: 2023_06_30_124311) do
     t.integer "try_id"
     t.float "score"
     t.boolean "all_rated"
-    t.datetime "created_at"
+    t.datetime "created_at", precision: nil
     t.binary "queries", size: :medium
     t.integer "annotation_id"
-    t.datetime "updated_at"
+    t.datetime "updated_at", precision: nil
     t.index ["annotation_id"], name: "index_case_scores_on_annotation_id"
     t.index ["case_id"], name: "case_id"
+    t.index ["updated_at", "created_at", "id"], name: "support_last_score"
     t.index ["user_id"], name: "user_id"
   end
 
@@ -68,8 +70,8 @@ ActiveRecord::Schema[7.0].define(version: 2023_06_30_124311) do
     t.integer "owner_id"
     t.boolean "archived"
     t.integer "scorer_id"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.integer "book_id"
     t.boolean "public"
     t.index ["owner_id"], name: "user_id"
@@ -79,8 +81,8 @@ ActiveRecord::Schema[7.0].define(version: 2023_06_30_124311) do
     t.string "name", limit: 500
     t.float "value"
     t.integer "try_id"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.index ["try_id"], name: "try_id"
   end
 
@@ -92,7 +94,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_06_30_124311) do
     t.datetime "updated_at", null: false
     t.boolean "unrateable", default: false
     t.index ["query_doc_pair_id"], name: "index_judgements_on_query_doc_pair_id"
-    t.index ["user_id", "query_doc_pair_id"], name: "index_judgements_on_user_id_and_query_doc_pair_id", unique: true
+    t.index ["user_id", "query_doc_pair_id"], name: "index_judgements_on_user_id_and_query_doc_pair_id"
   end
 
   create_table "permissions", id: :integer, charset: "utf8mb3", force: :cascade do |t|
@@ -100,8 +102,8 @@ ActiveRecord::Schema[7.0].define(version: 2023_06_30_124311) do
     t.string "model_type", null: false
     t.string "action", null: false
     t.boolean "on", default: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
   end
 
   create_table "queries", id: :integer, charset: "utf8mb3", force: :cascade do |t|
@@ -112,8 +114,8 @@ ActiveRecord::Schema[7.0].define(version: 2023_06_30_124311) do
     t.float "threshold"
     t.boolean "threshold_enbl"
     t.integer "case_id"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.text "options"
     t.string "information_need"
     t.index ["case_id"], name: "case_id"
@@ -134,8 +136,8 @@ ActiveRecord::Schema[7.0].define(version: 2023_06_30_124311) do
     t.string "doc_id", limit: 500
     t.float "rating"
     t.integer "query_id"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.integer "user_id"
     t.index ["doc_id"], name: "index_ratings_on_doc_id", length: 191
     t.index ["query_id"], name: "query_id"
@@ -148,9 +150,21 @@ ActiveRecord::Schema[7.0].define(version: 2023_06_30_124311) do
     t.string "scale"
     t.boolean "show_scale_labels", default: false
     t.text "scale_with_labels"
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
+    t.boolean "communal", default: false
+  end
+
+  create_table "search_endpoints", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
+    t.string "name"
+    t.integer "owner_id"
+    t.string "search_engine", limit: 50
+    t.string "endpoint_url", limit: 500
+    t.string "api_method"
+    t.string "custom_headers", limit: 1000
+    t.boolean "archived", default: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.boolean "communal", default: false
   end
 
   create_table "selection_strategies", charset: "utf8mb3", collation: "utf8mb3_unicode_ci", force: :cascade do |t|
@@ -182,9 +196,9 @@ ActiveRecord::Schema[7.0].define(version: 2023_06_30_124311) do
 
   create_table "snapshots", id: :integer, charset: "latin1", force: :cascade do |t|
     t.string "name", limit: 250
-    t.datetime "created_at"
+    t.datetime "created_at", precision: nil
     t.integer "case_id"
-    t.datetime "updated_at", null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.bigint "try_id"
     t.bigint "scorer_id"
     t.index ["case_id"], name: "case_id"
@@ -195,8 +209,8 @@ ActiveRecord::Schema[7.0].define(version: 2023_06_30_124311) do
   create_table "teams", id: :integer, charset: "latin1", force: :cascade do |t|
     t.string "name", collation: "utf8mb3_bin"
     t.integer "owner_id", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.index ["name"], name: "index_teams_on_name", length: 191
     t.index ["owner_id"], name: "owner_id"
   end
@@ -222,6 +236,11 @@ ActiveRecord::Schema[7.0].define(version: 2023_06_30_124311) do
     t.index ["team_id"], name: "index_teams_scorers_on_team_id"
   end
 
+  create_table "teams_search_endpoints", id: false, charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
+    t.bigint "search_endpoint_id", null: false
+    t.bigint "team_id", null: false
+  end
+
   create_table "tries", id: :integer, charset: "latin1", force: :cascade do |t|
     t.integer "try_number"
     t.string "query_params", limit: 20000
@@ -232,42 +251,44 @@ ActiveRecord::Schema[7.0].define(version: 2023_06_30_124311) do
     t.string "search_engine", limit: 50, default: "solr"
     t.boolean "escape_query", default: true
     t.integer "number_of_rows", default: 10
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.string "ancestry", limit: 3072
     t.string "api_method"
     t.string "custom_headers", limit: 1000
+    t.bigint "search_endpoint_id"
     t.index ["case_id"], name: "case_id"
+    t.index ["search_endpoint_id"], name: "index_tries_on_search_endpoint_id"
     t.index ["try_number"], name: "ix_queryparam_tryNo"
   end
 
   create_table "users", id: :integer, charset: "latin1", force: :cascade do |t|
     t.string "email", limit: 80
     t.string "password", limit: 120
-    t.datetime "agreed_time"
+    t.datetime "agreed_time", precision: nil
     t.boolean "agreed"
     t.integer "num_logins"
     t.string "name"
     t.boolean "administrator", default: false
     t.string "reset_password_token"
-    t.datetime "reset_password_sent_at"
+    t.datetime "reset_password_sent_at", precision: nil
     t.string "company"
     t.boolean "locked"
-    t.datetime "locked_at"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "locked_at", precision: nil
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.integer "default_scorer_id"
     t.boolean "email_marketing", default: false, null: false
     t.string "invitation_token"
-    t.datetime "invitation_created_at"
-    t.datetime "invitation_sent_at"
-    t.datetime "invitation_accepted_at"
+    t.datetime "invitation_created_at", precision: nil
+    t.datetime "invitation_sent_at", precision: nil
+    t.datetime "invitation_accepted_at", precision: nil
     t.integer "invitation_limit"
     t.integer "invited_by_id"
     t.integer "invitations_count", default: 0
     t.boolean "completed_case_wizard", default: false, null: false
     t.string "stored_raw_invitation_token"
-    t.string "profile_pic"
+    t.string "profile_pic", limit: 4000
     t.index ["default_scorer_id"], name: "index_users_on_default_scorer_id"
     t.index ["email"], name: "ix_user_username", unique: true
     t.index ["invitation_token"], name: "index_users_on_invitation_token", unique: true, length: 191

@@ -9,17 +9,19 @@ angular.module('QuepidApp')
     function teamSvc($http, broadcastSvc) {
       this.teams = [];
 
-      var Team = function(id, name, ownerId, owner, cases, cases_count, members, scorers, owned, books) {
+      var Team = function(id, name, ownerId, owner, cases, cases_count, members_count, members, scorers, owned, books, search_endpoints) {
         this.id           = id;
         this.name         = name;
         this.ownerId      = ownerId;
         this.owner        = owner;
         this.cases        = cases;
-        this.cases_count  = cases_count;
+        this.casesCount   = cases_count;
+        this.membersCount = members_count;
         this.members      = members;
         this.scorers      = scorers;
         this.owned        = owned;
         this.books        = books;
+        this.searchEndpoints  = search_endpoints;  // camel case mapping
 
 
         angular.forEach(this.cases, function(c) {
@@ -40,18 +42,42 @@ angular.module('QuepidApp')
           delete c.book_name;
           c.bookId = c.book_id;
           delete c.book_id;
+          c.queriesCount = c.queries_count;
+          delete c.queries_count;
         });
 
         angular.forEach(this.scorers, function(s) {
           // This is really ugly.  We don't use our standard ScorerFactory mapping, and probably should!
+          s.scorerId = s.scorer_id;
+          delete s.scorer_id;
           s.ownerName = s.owner_name;
           delete s.owner_name;
+          s.ownerId = s.owner_id;
+          delete s.owner_id; 
+          s.scaleWithLabels = s.scale_with_labels;
+          delete s.scale_with_labels;    
         });
 
         angular.forEach(this.books, function(b) {
           // This is really ugly.  We don't use our standard book mapping, and probably should!
           b.selectionStrategy = b.selection_strategy;
           delete b.selection_strategy;
+        });
+        
+        angular.forEach(this.searchEndpoints, function(b) {
+          // This is really ugly.  We don't use our standard book mapping, and probably should!
+          b.id = b.search_endpoint_id;
+          delete b.search_endpoint_id;
+          b.apiMethod = b.api_method;
+          delete b.api_method;
+          b.customHeaders = b.custom_headers;
+          delete b.custom_headers;
+          b.endpointUrl = b.endpoint_url;
+          delete b.endpoint_url;
+          b.searchEngine = b.search_engine;
+          delete b.search_engine;     
+          b.ownerId = b.owner_id;
+          delete b.owner_id;     
         });
 
 
@@ -65,10 +91,12 @@ angular.module('QuepidApp')
           data.owner,
           data.cases,
           data.cases_count,
+          data.members_count,
           data.members,
           data.scorers,
           data.owned,
-          data.books
+          data.books,
+          data.search_endpoints
         );
       };
 
@@ -137,14 +165,10 @@ angular.module('QuepidApp')
           });
       };
 
-      this.get = function(id, load_cases) {
+      this.get = function(id) {
         // http GET api/teams/<int:teamId>
         var url   = 'api/teams/' + id;
         var self  = this;
-
-        if ( load_cases ) {
-          url += '?load_cases=true';
-        }
 
         return $http.get(url)
           .then(function(response) {
@@ -154,12 +178,17 @@ angular.module('QuepidApp')
           });
       };
 
-      this.list = function(load_cases) {
+      // We return less data if it's to power the sharing interface.
+      this.listForSharing = function() {
+        return this.list(true);
+      };
+      
+      this.list = function(forSharing) {
         var url   = 'api/teams';
         var self  = this;
 
-        if ( load_cases ) {
-          url += '?load_cases=true';
+        if ( forSharing ) {
+          url += '?for_sharing=true';
         }
 
         // Clear the list just in case the data on the server changed,

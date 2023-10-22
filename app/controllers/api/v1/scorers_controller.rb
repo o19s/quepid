@@ -101,7 +101,7 @@ module Api
       # you pass in the replacement_scorer_id then that scorer.
       def destroy
         bool = ActiveRecord::Type::Boolean.new
-        force  = bool.deserialize(params[:force]) || false
+        force  = bool.deserialize params[:force]
         if force
           replacement_scorer = params[:replacement_scorer_id].present? ? Scorer.find_by(id: params[:replacement_scorer_id]) : Scorer.system_default_scorer
         end
@@ -164,7 +164,7 @@ module Api
         @scorer.delete
         Analytics::Tracker.track_scorer_deleted_event current_user, @scorer
 
-        render json: {}, status: :no_content
+        head :no_content
       end
       # rubocop:enable Metrics/AbcSize
       # rubocop:enable Metrics/CyclomaticComplexity

@@ -1,7 +1,7 @@
-<div class="col-xs-12 col-sm-6 col-sm-offset-3">
-  <legend>
-    Account
-  </legend>
+<h3>Update A User</h3>
+<p class="form-text">
+  Update some basic attributes of a user.
+</p>
 <%= form_for(@user, url: {action: passed_in_action}, class: 'form-horizontal') do |f| %>
   <% if @user.errors.any? %>
     <div id="error_explanation">
@@ -50,20 +50,33 @@
 
   <p/>
 
-  <% # specially handling for passwords %>
+  <% # special handling for passwords %>
   <% if passed_in_action == 'create' %>
-  <div class="form-group">
-    <%= f.label :password, class: 'control-label' %>
-    <%= f.password_field :password, class: 'form-control input-lg', placeholder: 'New Password' %>
-
-  </div>
-
-  <div class="form-group">
-    <%= f.label :password_confirmation, class: 'control-label' %>
-    <%= f.password_field :password_confirmation, class: 'form-control input-lg', placeholder: 'Confirm New Password' %>
-  </div>
+    <h3>Manage Password</h3>
+    <p class="form-text">
+      You can either set the user's password in plain text, or, if you know their encrypted password provide it.
+    </p>
+    
+    <div class="form-group">
+      <%= f.label :password, class: 'control-label' %>
+      <%= f.password_field :password, class: 'form-control input-lg', placeholder: 'New Password' %>
+    </div>
   
-  <p/>
+    <div class="form-group">
+      <%= f.label :password_confirmation, class: 'control-label' %>
+      <%= f.password_field :password_confirmation, class: 'form-control input-lg', placeholder: 'Confirm New Password' %>
+    </div>
+    
+    <p/>
+    
+    OR
+    
+    <div class="form-group">
+      <%= label_tag :password_encrypted, 'Encrypted Password', class: 'col-sm-2 control-label' %>
+      <div class="col-sm-10">
+        <%= text_field_tag :password_encrypted, nil, class: "form-control" %>
+      </div>
+    </div>
   <% end %>
 
   <div class="form-group clearfix">
@@ -71,14 +84,15 @@
   </div>
 
 <% end %>
-</div>
 
-<div class="col-xs-12 col-sm-6 col-sm-offset-3">
 
+<% if passed_in_action == 'update' %>
+<h3>Manage Password</h3>
+<p class="form-text">
+  You can either set the user's password in plain text, or, if you know their encrypted password provide it.
+</p>
 <%= form_for(@user, url: {action: passed_in_action}, class: 'form-horizontal') do |f| %>
-    <legend>
-      Password
-    </legend>
+    
 
     <% if @user.errors.any? %>
       <div id="error_explanation">
@@ -102,9 +116,21 @@
       <%= f.label :password_confirmation, class: 'control-label' %>
       <%= f.password_field :password_confirmation, class: 'form-control input-lg', placeholder: 'Confirm New Password' %>
     </div>
+    
+    <p/>
+    
+    OR
+    
+    <div class="form-group">
+      <%= label_tag :password_encrypted, 'Encrypted Password', class: 'col-sm-2 control-label' %>
+      <div class="col-sm-10">
+        <%= text_field_tag :password_encrypted, nil, class: "form-control" %>
+
+      </div>
+    </div>
 
     <div class="form-group">
       <button type="submit" class="btn btn-primary btn-lg">Update password</button>
     </div>
   <% end %>
-</div>
+<% end %>

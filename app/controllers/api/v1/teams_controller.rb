@@ -6,18 +6,29 @@ module Api
       before_action :set_team,          only: [ :show, :update, :destroy ]
       before_action :check_team,        only: [ :show, :update, :destroy ]
       before_action :check_team_owner,  only: [ :update, :destroy ]
-      before_action :case_load,         only: [ :index, :show ]
+
+      # We have a custom :for_sharing that checks the parameter "for_sharing".
+      # If for_sharing is true, then we just need the minimal data to power the
+      # sharing dialogue boxes.   If it isn't for sharing something with a team, then we want the much
+      # deeper data set
+      before_action :for_sharing, only: [ :index, :show ]
 
       def index
         # @teams = current_user.teams_im_in
         # @teams = @teams.preload(:scorers, :members, :cases, :owner).all
         # There may be some more fields we could include...
-        @teams = current_user.teams.includes( :owner, :members, :cases, scorers: [ :teams ] ).all
+        # @teams = current_user.teams.includes( :owner, :members, :cases, scorers: [ :teams ] ).all
+        @teams = current_user.teams.includes( :cases ).all
 
         respond_with @teams
       end
 
       def show
+        puts 'looking up team again.'
+        @shallow = true
+        @team = current_user.teams.where(id: params[:team_id])
+          .includes([ :scorers, :members, :books, :search_endpoints ])
+          .first
         respond_with @team
       end
 
@@ -57,9 +68,9 @@ module Api
         params.require(:team).permit(:name)
       end
 
-      def case_load
+      def for_sharing
         bool = ActiveRecord::Type::Boolean.new
-        @load_cases = bool.deserialize(params[:load_cases]) || false
+        @for_sharing = bool.deserialize params[:for_sharing] || false
       end
     end
   end

@@ -5,6 +5,9 @@ class JudgementsController < ApplicationController
   before_action :find_book
 
   def index
+    bool = ActiveRecord::Type::Boolean.new
+    @shallow = bool.deserialize(params[:shallow] || true )
+
     @judgements = @book.judgements.includes([ :query_doc_pair, :user ])
   end
 
@@ -39,8 +42,7 @@ class JudgementsController < ApplicationController
       end
       @judgement = Judgement.new(query_doc_pair: @query_doc_pair, user: @current_user, updated_at: Time.zone.now)
       @previous_judgement = @judgement.previous_judgement_made # unless @judgement.new_record?
-
-      if (track_judging[:counter] % 20).zero? # It's party time!
+      if (track_judging[:counter] % 50).zero? # It's party time!
         @party_time = true
         @judged_by_user = @book.judgements.where(user: @current_user).count.to_f
         @total_pool_of_judgements = @book.query_doc_pairs.count.to_f
@@ -118,9 +120,5 @@ class JudgementsController < ApplicationController
 
   def judgement_params
     params.require(:judgement).permit(:user_id, :rating, :query_doc_pair_id, :unrateable)
-  end
-
-  def find_book
-    @book = current_user.books_involved_with.where(id: params[:book_id]).first
   end
 end

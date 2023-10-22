@@ -157,13 +157,15 @@ class CaseTest < ActiveSupport::TestCase
 
             assert_equal the_try.query_params,  cloned_try.query_params
             assert_equal the_try.field_spec,    cloned_try.field_spec
-            assert_equal the_try.search_url,    cloned_try.search_url
             assert_equal 'Try 0',               cloned_try.name
-            assert_equal 0, cloned_case.tries.first.try_number
-            assert_equal the_try.search_engine, cloned_try.search_engine
             assert_equal the_try.escape_query,  cloned_try.escape_query
-            assert cloned_try.custom_headers.present?
-            assert_equal the_try.custom_headers, cloned_try.custom_headers
+            assert_equal 0, cloned_case.tries.first.try_number
+            assert_equal the_try.search_endpoint, cloned_try.search_endpoint
+            # don't need these asserts once we assert same end point'
+            # assert_equal the_try.search_engine, cloned_try.search_engine
+
+            # assert cloned_try.custom_headers.present?
+            # assert_equal the_try.custom_headers, cloned_try.custom_headers
           end
         end
       end

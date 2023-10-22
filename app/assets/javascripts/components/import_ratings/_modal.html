@@ -132,16 +132,18 @@ star wars,"The original movie"</pre>
         <span class="help-block">
           The CSV file should have the headers: <code>Snapshot Name,Snapshot Time,Case ID,Query Text,Doc ID,Doc Position</code> and lines similar to:
           <pre>
-Snapshot: testsnap1,2023-05-12T18:22:22.245Z,6,test,527641,1
-Snapshot: testsnap1,2023-05-12T18:22:22.245Z,6,test,9426,2
-Snapshot: testsnap1,2023-05-12T18:22:22.245Z,6,test,1921,3
+Snapshot: Baseline,2023-05-12T18:22:22.245Z,6,star wars,527641,1
+Snapshot: Baseline,2023-05-12T18:22:22.245Z,6,star wars,9426,2
+Snapshot: Baseline,2023-05-12T18:22:22.245Z,6,star wars,1921,3
           </pre>
+          Please note that the <code>Case ID</code> column is ignored so you can export from one case and import into another.
+          Any additional columns will be treated as document fields and stored in the Snapshot.
         </span>
         <p>Select Snapshot CSV file to import:</p>
 
         <ng-csv-import
                 class="import"
-                content="ctrl.snapshots.content"
+                content="content"
                 header="ctrl.snapshots.header"
                 header-visible="true"
                 separator="ctrl.snapshots.separator"
@@ -173,6 +175,9 @@ Snapshot: testsnap1,2023-05-12T18:22:22.245Z,6,test,1921,3
     <span ng-show="ctrl.informationNeedsTypePicked()">
     This operation WILL override your existing information needs. Proceed with caution!
     </span>
+    <span ng-show="ctrl.snapshotTypePicked()">
+    This operation WILL replace any snapshots you have created that have the same Snapshot Name in the csv.
+    </span>    
   </p>
 
   <i class="fa fa-spinner fa-spin" aria-hidden="true" ng-show="ctrl.loading"></i>

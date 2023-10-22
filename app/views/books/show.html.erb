@@ -1,5 +1,5 @@
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-  <h1 class="h2">Book <%= @book.name %></h1>
+  <h1 class="h2"><%= book_title @book %></h1>
   <div class="btn-toolbar mb-2 mb-md-0">
     <div class="btn-group me-2">
       <%= link_to 'New Book', new_book_path, class: "btn btn-sm btn-outline-secondary" %>
@@ -29,7 +29,7 @@ Books organize all the query/doc pairs that are needed for evaluating your searc
 
 <p>
   <strong>Team:</strong>
-  <%= link_to @book.team.name, teams_path(@book.team) %>
+  <%= link_to @book.team.name, teams_core_path(@book.team) %>
 </p>
 
 <p>
@@ -51,8 +51,13 @@ Books organize all the query/doc pairs that are needed for evaluating your searc
 </p>
 
 <p>
+  <strong>Show Rank of Documents when Judging:</strong>
+  <%= @book.show_rank? %>
+</p>
+
+<p>
 <strong>Related cases:</strong>
-<%= render(partial: 'books/case', collection: @cases, as: :kase) || "There are no cases available." %>
+<%= render(partial: 'books/case', collection: @cases, as: :kase) || "There are no cases associated." %>
 </p>
 
 <%= button_to 'Show Judgements', book_judgements_path(@book), method: :get %>
@@ -68,7 +73,6 @@ Books organize all the query/doc pairs that are needed for evaluating your searc
 <br>
 
 <%= button_to 'Back to Books', books_path, method: :get %>
-
 
 
 <h3>Export Data</h3>
@@ -88,8 +92,9 @@ To reference these judgements from a notebook or another system you can referenc
   <div class="card-body">
 
     <h5 class="card-title" href="#collapseExample">Leaderboard</h3>
-    <h6 class="card-subtitle mb-2 text-body-secondary">Who is closest to having all query/doc pairs judged</h6>
-
+    <h6 class="card-subtitle mb-2 text-body-secondary">Who is closest to having all <%= @book.query_doc_pairs.count %> query/doc pairs judged?</h6>
+    
+    
     <%=
     Vega.lite
       .data(@leaderboard_data)

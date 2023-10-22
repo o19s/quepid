@@ -1,12 +1,11 @@
 # frozen_string_literal: true
 
 class HomeController < ApplicationController
-  # rubocop:disable Metrics/AbcSize
   def show
     # @cases = @current_user.cases.not_archived.includes([ :scores ])
-    @cases = @current_user.cases.not_archived
+    @cases = @current_user.cases_involved_with.not_archived
 
-    @most_recent_cases = @current_user.cases.not_archived.recent.limit(4).sort_by(&:case_name)
+    @most_recent_cases = @current_user.cases_involved_with.not_archived.recent.limit(4).sort_by(&:case_name)
 
     @most_recent_books = []
     @lookup_for_books = {}
@@ -22,9 +21,10 @@ class HomeController < ApplicationController
 
     @most_recent_books.sort_by!(&:name)
 
-    candidate_cases = @cases.select { |kase| kase.scores.scored.count.positive? }
-    @grouped_cases = candidate_cases.group_by { |kase| kase.case_name.split(':').first }
-    @grouped_cases = @grouped_cases.select { |_key, value| value.count > 1 }
+    # Homepage is too slow so we have to cut some stuff out ;-(
+    # candidate_cases = @cases.select { |kase| kase.scores.scored.count.positive? }
+    @cases
+    # @grouped_cases = candidate_cases.group_by { |kase| kase.case_name.split(':').first }
+    # @grouped_cases = @grouped_cases.select { |_key, value| value.count > 1 }
   end
-  # rubocop:enable Metrics/AbcSize
 end
