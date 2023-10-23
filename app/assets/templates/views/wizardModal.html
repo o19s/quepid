@@ -242,10 +242,7 @@ star wars,1921,3, Star Wars: Return of the Jedi
             </span>  
 
             <span ng-if="pendingWizardSettings.searchEngine === 'searchapi'">
-            <p>
-              <button type="button" class="btn btn-sm btn-default" ng-click="isSearchAPICollapsed = !isSearchAPICollapsed">Search API Configuration</button>
-            </p>
-            <div uib-collapse="!isSearchAPICollapsed">
+            <div>
               <div class="well well-sm">
                 <div class="form-group clearfix">
                   <label class="col-sm-3 control-label">API Method</label>
@@ -258,7 +255,7 @@ star wars,1921,3, Star Wars: Return of the Jedi
                     <p class="help-block">POST and GET are the most common.</p>
                   </div>
                   
-                  <label class="col-sm-3 control-label">Response Parser</label>
+                  <label class="col-sm-3 control-label">Target Search Engine</label>
                   <div class="col-sm-9">
                     <select class="form-control" ng-model="pendingWizardSettings.responseParser" ng-change="resetUrlValid()">
                       <option>solr</option>  
@@ -266,7 +263,7 @@ star wars,1921,3, Star Wars: Return of the Jedi
                       <option>os</option>  
                       <option>vectara</option>                        
                     </select>
-                    <p class="help-block">We need to know how to parse the response from your search engine using a Splainer supported parser.</p>
+                    <p class="help-block">We need to know how to parse the response from your search engine using one of the Splainer supported parsers.</p>
                   </div>
                 </div>
                 <div class="col-sm-12 clearfix">
@@ -284,7 +281,27 @@ star wars,1921,3, Star Wars: Return of the Jedi
                       }" ng-model="pendingWizardSettings.queryParams">
                     </div>
                   </div>
-                </div>                   
+                </div>  
+
+                <div class="col-sm-12 clearfix">
+                  <label class="control-label">Mapping</label>
+                  <p class="help-block">Enter JavaScript that formats from YOUR API to the JSON structure expected by the Target Search Engine.</p>
+                </div>
+              
+                <div class="form-group clearfix">
+                  <div class="col-sm-12">
+                    <div ui-ace="{
+                      require: ['ace/ext/language_tools'],
+                      advanced: {
+                        enableBasicAutocompletion: true,
+                        enableLiveAutocompletion: true
+                      },
+                      mode:   'javascript',
+                      theme:  'chrome'
+                    }"
+                    ng-model="pendingWizardSettings.docsMapperCode"></div>                    
+                  </div>
+                </div> 
               </div>
             </div>
             </span>   
