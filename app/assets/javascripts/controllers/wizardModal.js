@@ -66,8 +66,6 @@ angular.module('QuepidApp')
         $scope.pendingWizardSettings.titleField               = settings.titleField;
         $scope.pendingWizardSettings.urlFormat                = settings.urlFormat;    
         $scope.pendingWizardSettings.searchEndpointId         = null;
-
-        //$scope.isHeaderConfigCollapsed = true;
         
         var quepidStartsWithHttps = $location.protocol() === 'https';
 
@@ -142,8 +140,6 @@ angular.module('QuepidApp')
         $scope.pendingWizardSettings.queryParams              = settings.queryParams;
         $scope.pendingWizardSettings.titleField               = settings.titleField;
         $scope.pendingWizardSettings.urlFormat                = settings.urlFormat;
-        
-        $scope.isHeaderConfigCollapsed = true;
 
         var quepidStartsWithHttps = $location.protocol() === 'https';
 
@@ -245,8 +241,23 @@ angular.module('QuepidApp')
         else if ($scope.pendingWizardSettings.searchEngine === 'searchapi'){
           // we map to our response parser to use.
           settingsForValidation = angular.copy($scope.pendingWizardSettings);
-          settingsForValidation.searchEngine = $scope.pendingWizardSettings.responseParser;
+          //settingsForValidation.searchEngine = $scope.pendingWizardSettings.responseParser;
           settingsForValidation.args = $scope.pendingWizardSettings.queryParams;
+          // settingsForValidation.docsMapper = function(data){    
+          //   let docs = [];
+          //   for (let doc of data) {
+          //     docs.push ({
+          //       id: doc.publication_id,
+          //       publish_date_int: doc.publish_date_int,
+          //       title: doc.title,
+          //     }
+          //     )
+          //   }
+          //   return docs
+          // }
+          // 
+          eval(settingsForValidation.docsMapperCode);
+          settingsForValidation.docsMapper = docsMapper; // From eval
         }
         
         var validator = new SettingsValidatorFactory(settingsForValidation);
