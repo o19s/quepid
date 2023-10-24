@@ -82,9 +82,9 @@ class SearchEndpoint < ApplicationRecord
     mark_archived
     save
   end
-  
+
   def proxy_request?
-    return endpoint_url.include?('/proxy/fetch')
+    endpoint_url.include?('/proxy/fetch')
   end
 
   private

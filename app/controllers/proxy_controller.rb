@@ -49,7 +49,7 @@ class ProxyController < ApplicationController
         query_params.each do |param|
           req.params[param.first] = param.second
         end
-        
+
         # the url parameter often has a format like
         # http://myserver.com/search?query=text, and when this is passed in
         # we get http://localhost:3000/proxy/fetch?url=http://myserver.com/search?query=text&rows=10

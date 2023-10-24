@@ -101,7 +101,6 @@ module ActiveSupport
 
       ')
 
-     
       stub_request(:get, 'http://solr.quepid.com:8983/solr/statedecoded/select?fl=id,text&q=legal&rows=10&start=0')
         .with(
           headers: {
