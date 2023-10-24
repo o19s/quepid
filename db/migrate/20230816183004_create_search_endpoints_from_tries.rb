@@ -32,8 +32,10 @@ class CreateSearchEndpointsFromTries < ActiveRecord::Migration[7.0]
     SearchEndpoint.find_each do |search_endpoint|
       all_cases_archived = true
       search_endpoint.tries.each do |try|
-        all_cases_archived = false if !try.case.archived?
-        break
+        if !try.case.archived?
+          all_cases_archived = false 
+          break
+        end
       end
       search_endpoint.archived = all_cases_archived
       search_endpoint.save!
