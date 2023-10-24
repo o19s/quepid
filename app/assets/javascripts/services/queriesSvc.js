@@ -79,6 +79,7 @@ angular.module('QuepidApp')
             customHeaders: passedInSettings.customHeaders,
             escapeQuery:   passedInSettings.escapeQuery,
             numberOfRows:  passedInSettings.numberOfRows,
+            basicAuthCredential: passedInSettings.basicAuthCredential
           };
           
           if (passedInSettings.searchEngine === 'static'){

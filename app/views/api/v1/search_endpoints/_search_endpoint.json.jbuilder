@@ -8,3 +8,5 @@ json.endpoint_url           search_endpoint.endpoint_url
 json.search_engine          search_endpoint.search_engine
 json.api_method             search_endpoint.api_method
 json.custom_headers         search_endpoint.custom_headers
+json.proxy_requests         search_endpoint.proxy_requests
+json.basic_auth_credential  search_endpoint.basic_auth_credential

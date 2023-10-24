@@ -19,7 +19,7 @@ Assuming you have used mysqldump to get a dump, you can restore to dev via:
 Or if you have a Zip file:
 
 ```
-unzip -p quepid_prod_2021_03_02.sql.zip | mysql --host=127.0.0.1 --port=3306 -u root -p quepid_development
+unzip -p quepid_prod_2021_03_02.sql.zip | /usr/local/mysql/bin/mysql --host=127.0.0.1 --port=3306 -u root -p quepid_development
 ```
 
 ## Emoji Support

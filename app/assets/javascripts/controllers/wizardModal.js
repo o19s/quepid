@@ -66,6 +66,8 @@ angular.module('QuepidApp')
         $scope.pendingWizardSettings.titleField               = settings.titleField;
         $scope.pendingWizardSettings.urlFormat                = settings.urlFormat;    
         $scope.pendingWizardSettings.searchEndpointId         = null;
+        $scope.pendingWizardSettings.proxyRequests            = settings.proxyRequests;
+        $scope.pendingWizardSettings.basicAuthCredential      = settings.basicAuthCredential;
 
         //$scope.isHeaderConfigCollapsed = true;
         
@@ -118,6 +120,8 @@ angular.module('QuepidApp')
         $scope.pendingWizardSettings.idField                  = settings.idField;
         $scope.pendingWizardSettings.queryParams              = settings.queryParams;
         $scope.pendingWizardSettings.titleField               = settings.titleField;
+        $scope.pendingWizardSettings.proxyRequests            = settings.proxyRequests;
+        $scope.pendingWizardSettings.basicAuthCredential      = settings.basicAuthCredential;
 
         
         $scope.reset();
@@ -142,6 +146,8 @@ angular.module('QuepidApp')
         $scope.pendingWizardSettings.queryParams              = settings.queryParams;
         $scope.pendingWizardSettings.titleField               = settings.titleField;
         $scope.pendingWizardSettings.urlFormat                = settings.urlFormat;
+        $scope.pendingWizardSettings.proxyRequests            = settings.proxyRequests;
+        $scope.pendingWizardSettings.basicAuthCredential      = settings.basicAuthCredential;        
         
         $scope.isHeaderConfigCollapsed = true;
 
@@ -181,6 +187,7 @@ angular.module('QuepidApp')
       $scope.checkTLSForSearchEngineUrl = checkTLSForSearchEngineUrl;
       $scope.updateSettingsDefaults();
       $scope.validateHeaders = validateHeaders;
+      $scope.validateProxyApiMethod = validateProxyApiMethod;
       $scope.searchFields   = [];
       $scope.createSnapshot = createSnapshot;
 
@@ -188,10 +195,9 @@ angular.module('QuepidApp')
         return searchUrl.substring(0, searchUrl.lastIndexOf('/')) + '/config';
       };
 
-
       function reset() {
         $scope.validating = false;
-        $scope.urlValid = $scope.urlInvalid = $scope.invalidHeaders = false;
+        $scope.urlValid = $scope.urlInvalid = $scope.invalidHeaders = $scope.invalidProxyApiMethod = false;
         
         $scope.showTLSChangeWarning = false; // hope this doesn't cause a flicker.'
         if ($scope.pendingWizardSettings.searchUrl){
@@ -201,6 +207,7 @@ angular.module('QuepidApp')
 
       function resetUrlValid() {
         $scope.urlValid =false;
+        $scope.invalidProxyApiMethod =false;
       }
 
       function submit() {
@@ -230,10 +237,17 @@ angular.module('QuepidApp')
 
         $scope.checkTLSForSearchEngineUrl();
         $scope.validateHeaders();
+        
+        $scope.validateProxyApiMethod();
+        
+        if ($scope.pendingWizardSettings.proxyRequests === "true"){
+          $scope.pendingWizardSettings.searchUrl = "http://localhost:3000/proxy/fetch?url=" + $scope.pendingWizardSettings.searchUrl;
+        }
+        
 
         // exit early if we have the TLS issue, this really should be part of the below logic.
         // validator.validateTLS().then.validateURL().then....
-        if ($scope.showTLSChangeWarning || $scope.invalidHeaders){
+        if ($scope.showTLSChangeWarning || $scope.invalidHeaders || $scope.invalidProxyApiMethod){
           return;
         }
         var settingsForValidation  = $scope.pendingWizardSettings;
@@ -245,7 +259,7 @@ angular.module('QuepidApp')
         else if ($scope.pendingWizardSettings.searchEngine === 'searchapi'){
           // we map to our response parser to use.
           settingsForValidation = angular.copy($scope.pendingWizardSettings);
-          settingsForValidation.searchEngine = $scope.pendingWizardSettings.responseParser;
+          //settingsForValidation.searchEngine = $scope.pendingWizardSettings.responseParser;
           settingsForValidation.args = $scope.pendingWizardSettings.queryParams;
         }
         
@@ -276,6 +290,19 @@ angular.module('QuepidApp')
           } catch (e) {
             $scope.invalidHeaders = true;
             $scope.validating = false;
+          }
+        }
+
+      }
+      
+      function validateProxyApiMethod () {
+        $scope.invalidProxyApiMethod = false;
+        if ($scope.pendingWizardSettings.proxyRequests === "true"){
+          if (
+            $scope.pendingWizardSettings.apiMethod && $scope.pendingWizardSettings.apiMethod === 'JSONP') {
+            
+              $scope.invalidProxyApiMethod = true;
+              $scope.validating = false;
           }
         }
 

@@ -32,7 +32,6 @@ services:
   mysql:
     container_name: quepid_db
     image: mysql:8.0.33
-    platform: linux/arm64/v8
     ports:
       - 3306:3306
     environment:

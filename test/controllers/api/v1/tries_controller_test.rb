@@ -516,7 +516,7 @@ search_endpoint: { search_engine: 'es' } }
         describe 'Test finding search endpoints' do
           test 'find by search_engine' do
             post :create,
-                 params: { case_id: the_case.id, try: { name: '' }, search_endpoint: { search_engine: 'solr' } }
+                 params: { case_id: the_case.id, try: { name: '' }, search_endpoint: { search_engine: 'solr', proxy_requests: true } }
 
             assert_response :ok # should be :created,
             # but there's a bug currently in the responders gem
@@ -528,6 +528,8 @@ search_endpoint: { search_engine: 'es' } }
             solr_search_endpoint = created_try.search_endpoint
 
             assert_equal solr_search_endpoint.search_engine, try_response['search_endpoint']['search_engine']
+            assert solr_search_endpoint.proxy_requests, try_response['search_endpoint']['proxy_requests']
+            assert solr_search_endpoint.proxy_requests?
 
             post :create, params: { case_id: the_case.id, try: { name: '' }, search_endpoint: { search_engine: 'es' } }
             try_response  = response.parsed_body

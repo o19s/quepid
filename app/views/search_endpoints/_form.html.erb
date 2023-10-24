@@ -50,12 +50,25 @@
   </div>
   
   <div class="mb-3">
+    <%= form.label :basic_auth_credential, class: 'form-label' %>
+    <%= form.text_field :basic_auth_credential %>
+  </div>
+  
+  <div class="mb-3">
     <div class="form-check form-switch">
       <%= form.label :archived, class:'form-check-label' %>
       <%= form.check_box :archived, class:'form-check-input' %>
     </div>
     <div class="form-text">Archived search endpoints can't be selected for use.</div>
   </div>
+  
+  <div class="mb-3">
+    <div class="form-check form-switch">
+      <%= form.label :proxy_requests, class:'form-check-label' %>
+      <%= form.check_box :proxy_requests, class:'form-check-input' %>
+    </div>
+    <div class="form-text">Avoid CORS by proxying requests through Quepid server?</div>
+  </div>  
   
   <div class="mb-3">     
     <%= form.label :teams, "Teams to Share this Endpoint With", class: 'form-label' %>

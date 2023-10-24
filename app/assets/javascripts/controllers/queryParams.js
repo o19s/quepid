@@ -108,6 +108,8 @@ angular.module('QuepidApp')
           search_engine:  $scope.settings.selectedTry.searchEngine,
           search_url:     $scope.settings.selectedTry.searchUrl,
           try_number:     $scope.settings.selectedTry.tryNo,
+          proxy_requests:     $scope.settings.selectedTry.proxyRequests,
+          basic_auth_crendential:     $scope.settings.selectedTry.basicAuthCredential,
         });
         tmp.updateVars();
         
