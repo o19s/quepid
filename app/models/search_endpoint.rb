@@ -11,7 +11,6 @@
 #  custom_headers        :string(1000)
 #  endpoint_url          :string(500)
 #  name                  :string(255)
-#  proxy_requests        :boolean          default(FALSE)
 #  search_engine         :string(50)
 #  created_at            :datetime         not null
 #  updated_at            :datetime         not null
@@ -82,6 +81,10 @@ class SearchEndpoint < ApplicationRecord
   def mark_archived!
     mark_archived
     save
+  end
+  
+  def proxy_request?
+    return endpoint_url.include?('/proxy/fetch')
   end
 
   private

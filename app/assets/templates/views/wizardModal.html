@@ -99,8 +99,9 @@
             </div>
             <div ng-show="showTLSChangeWarning" class="alert alert-warning">
               <span>
-              You have specified a search engine url that is on a different protocol ( <code>{{protocolToSwitchTo}}</code> ) than Quepid is currently on,
-              so you need to reload Quepid on that protocol first, and then continue the Wizard.  This is to comply with browser security issues.
+              You have specified a search endpoint url that is on a different protocol ( <code>{{protocolToSwitchTo}}</code> ) than Quepid is running, 
+              and this triggers your browser to prevent communciation with the search endpoint.  Option 1 is Reload Quepid to run on the correct protocol
+              or Option 2 is to proxy the search requests THROUGH the Quepid server.
               </span>
             </div>
             <div ng-show="invalidProxyApiMethod" class="alert alert-danger">
@@ -262,17 +263,6 @@ star wars,1921,3, Star Wars: Return of the Jedi
                     </select>
                     <p class="help-block">POST and GET are the most common.</p>
                   </div>
-                  
-                  <label class="col-sm-3 control-label">Response Parser</label>
-                  <div class="col-sm-9">
-                    <select class="form-control" ng-model="pendingWizardSettings.responseParser" ng-change="resetUrlValid()">
-                      <option>solr</option>  
-                      <option>es</option>
-                      <option>os</option>  
-                      <option>vectara</option>                        
-                    </select>
-                    <p class="help-block">We need to know how to parse the response from your search engine using a Splainer supported parser.</p>
-                  </div>
                 </div>
                 <div class="col-sm-12 clearfix">
                   <label class="control-label">Query Structure</label>
@@ -303,9 +293,8 @@ star wars,1921,3, Star Wars: Return of the Jedi
                 <div class="form-group clearfix">
                   <label class="col-sm-3 control-label">Proxy Requests</label>
                   <div class="col-sm-9">
-                    {{pendingWizardSettings.proxyRequests}}
                     <select class="form-control" ng-model="pendingWizardSettings.proxyRequests" 
-                      ng-change="resetUrlValid() && validateProxyApiMethod()">
+                      ng-change="changeProxySetting()">
                       <option value="false">false</option>
                       <option value="true">true</option>
                     </select>

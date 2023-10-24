@@ -5,8 +5,7 @@ version: '3'
 services:
   mysql:
     container_name: quepid_prod_db
-    image: mysql:8.0.33
-    platform: linux/arm64/v8
+    image: mysql:8.1.0
     ports:
       - 3306:3306
     environment:

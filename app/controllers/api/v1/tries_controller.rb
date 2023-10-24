@@ -124,18 +124,14 @@ module Api
       end
 
       def search_endpoint_params
-        p = params.require(:search_endpoint).permit(
+        params.require(:search_endpoint).permit(
           :name,
           :api_method,
           :custom_headers,
           :search_engine,
           :endpoint_url,
-          :proxy_requests,
           :basic_auth_credential
         )
-        
-        p[:proxy_requests] = p[:proxy_requests] == 'true'
-        return p
       end
     end
   end

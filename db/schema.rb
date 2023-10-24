@@ -165,7 +165,6 @@ ActiveRecord::Schema[7.0].define(version: 2023_10_23_104651) do
     t.boolean "archived", default: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.boolean "proxy_requests", default: false
     t.string "basic_auth_credential", default: "0"
   end
 

@@ -36,6 +36,9 @@
   <div class="mb-3 col-12">
     <%= form.label :endpoint_url, class: 'form-label' %>
     <%= form.text_field :endpoint_url, size: 100 %>
+
+    <div class="form-text">Want to avoid CORS by proxying requests through Quepid server?  Just prepend the url with <code><%= "#{proxy_fetch_url}?url="  %></code></div>
+      
   </div>
 
   <div class="mb-3">
@@ -61,14 +64,6 @@
     </div>
     <div class="form-text">Archived search endpoints can't be selected for use.</div>
   </div>
-  
-  <div class="mb-3">
-    <div class="form-check form-switch">
-      <%= form.label :proxy_requests, class:'form-check-label' %>
-      <%= form.check_box :proxy_requests, class:'form-check-input' %>
-    </div>
-    <div class="form-text">Avoid CORS by proxying requests through Quepid server?</div>
-  </div>  
   
   <div class="mb-3">     
     <%= form.label :teams, "Teams to Share this Endpoint With", class: 'form-label' %>

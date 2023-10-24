@@ -53,8 +53,7 @@
       self.endpointName  = data.endpoint_name;
       self.searchUrl     = data.search_url;
       self.tryNo         = data.try_number;
-      self.endpointName  = data.endpoint_name;     
-      self.proxyRequests  = data.proxy_requests;     
+      self.endpointName  = data.endpoint_name;       
       self.basicAuthCredential  = data.basic_auth_credential;     
 
 

@@ -11,7 +11,6 @@
 #  custom_headers        :string(1000)
 #  endpoint_url          :string(500)
 #  name                  :string(255)
-#  proxy_requests        :boolean          default(FALSE)
 #  search_engine         :string(50)
 #  created_at            :datetime         not null
 #  updated_at            :datetime         not null

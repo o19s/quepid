@@ -12,7 +12,9 @@ describe('Service: caseTryNavSvc', function () {
   beforeEach(function() {
     locationMock = {
       path: jasmine.createSpy(),
-      search: jasmine.createSpy()
+      search: jasmine.createSpy(),
+      absUrl: jasmine.createSpy().and.returnValue('https://localhost:443/quepid/case/api/52?sort=default')
+
     };
 
     module(function($provide) {
@@ -93,5 +95,9 @@ describe('Service: caseTryNavSvc', function () {
   it('is smart about navigating to case listing page', function() {
     caseTryNavSvc.navigateToCasesListing();
     expect(locationMock.path).toHaveBeenCalledWith('/cases/');
+  });
+  
+  it('returns the quepid root url', function() {
+    expect(caseTryNavSvc.getQuepidRootUrl()).toEqual('https://localhost:443/quepid/');    
   });
 });

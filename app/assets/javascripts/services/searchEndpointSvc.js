@@ -28,7 +28,6 @@ angular.module('QuepidApp')
           data.endpoint_url,
           data.api_method,
           data.custom_headers,
-          data.proxy_requests,
           data.basic_auth_credential
         );
       };

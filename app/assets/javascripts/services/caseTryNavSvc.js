@@ -114,6 +114,13 @@ angular.module('QuepidApp')
         
         return [quepidUrlToSwitchTo, protocolToSwitchTo];
       };
+      
+      this.getQuepidRootUrl = function(){     
+        var absUrl = $location.absUrl();
+        var n = absUrl.indexOf('/case/');
+        var quepidRootUrl = absUrl.substring(0, n + 1 );
+        return quepidRootUrl;        
+      };
 
     }
   ]);

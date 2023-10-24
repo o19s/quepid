@@ -161,10 +161,6 @@ angular.module('QuepidApp')
             $scope.pendingWizardSettings.searchUrl = settings.insecureSearchUrl;
           }
         }
-        //else if ($scope.pendingWizardSettings.searchEngine === 'static') {
-        //  $scope.isHeaderConfigCollapsed = false;
-          //$scope.pendingWizardSettings.searchUrl = "/search";
-          //}
         else {
           $scope.pendingWizardSettings.searchUrl = settings.searchUrl;
         }
@@ -188,6 +184,7 @@ angular.module('QuepidApp')
       $scope.updateSettingsDefaults();
       $scope.validateHeaders = validateHeaders;
       $scope.validateProxyApiMethod = validateProxyApiMethod;
+      $scope.changeProxySetting = changeProxySetting;
       $scope.searchFields   = [];
       $scope.createSnapshot = createSnapshot;
 
@@ -237,32 +234,46 @@ angular.module('QuepidApp')
 
         $scope.checkTLSForSearchEngineUrl();
         $scope.validateHeaders();
-        
         $scope.validateProxyApiMethod();
         
-        if ($scope.pendingWizardSettings.proxyRequests === "true"){
-          $scope.pendingWizardSettings.searchUrl = "http://localhost:3000/proxy/fetch?url=" + $scope.pendingWizardSettings.searchUrl;
-        }
         
-
         // exit early if we have the TLS issue, this really should be part of the below logic.
         // validator.validateTLS().then.validateURL().then....
         if ($scope.showTLSChangeWarning || $scope.invalidHeaders || $scope.invalidProxyApiMethod){
           return;
         }
-        var settingsForValidation  = $scope.pendingWizardSettings;
+        
+        // copy the settings so we don't change the underlying settings during
+        // the validation process.
+        var settingsForValidation  = angular.copy($scope.pendingWizardSettings);
         if ($scope.pendingWizardSettings.searchEngine === 'static'){
           // We pretend to be Solr for validating the URL.
-          settingsForValidation = angular.copy($scope.pendingWizardSettings);
           settingsForValidation.searchEngine = 'solr';
         }
         else if ($scope.pendingWizardSettings.searchEngine === 'searchapi'){
-          // we map to our response parser to use.
-          settingsForValidation = angular.copy($scope.pendingWizardSettings);
-          //settingsForValidation.searchEngine = $scope.pendingWizardSettings.responseParser;
+          // this is suss
           settingsForValidation.args = $scope.pendingWizardSettings.queryParams;
+          
+          
+          //eval(kode);
+          settingsForValidation.docsMapper = function(data){    
+            let docs = [];
+            for (let doc of data) {
+              docs.push ({
+                id: doc.publication_id,
+                title: doc.title,
+                score: doc.score,
+                publish_date_int: doc.publish_date_int
+              });
+            }
+            return docs;
+          };
         }
         
+        if (settingsForValidation.proxyRequests === 'true'){
+          // set up the proxy URL through Quepid.
+          settingsForValidation.searchUrl = caseTryNavSvc.getQuepidRootUrl() + '/proxy/fetch?url=' + settingsForValidation.searchUrl;
+        }
         var validator = new SettingsValidatorFactory(settingsForValidation);
       
         validator.validateUrl()
@@ -270,8 +281,8 @@ angular.module('QuepidApp')
 
           setupDefaults(validator);
           
-          if (!justValidate) {
-            
+          if (!justValidate) {      
+            $scope.pendingWizardSettings.searchUrl = settingsForValidation.searchUrl;
             WizardHandler.wizard().next();
           }
         }, function () {
@@ -295,9 +306,17 @@ angular.module('QuepidApp')
 
       }
       
+      function changeProxySetting () {
+        if ($scope.pendingWizardSettings.proxyRequests === 'true'){
+          $scope.showTLSChangeWarning = false;
+        }
+        validateProxyApiMethod();
+        checkTLSForSearchEngineUrl();
+      }
+      
       function validateProxyApiMethod () {
         $scope.invalidProxyApiMethod = false;
-        if ($scope.pendingWizardSettings.proxyRequests === "true"){
+        if ($scope.pendingWizardSettings.proxyRequests === 'true'){
           if (
             $scope.pendingWizardSettings.apiMethod && $scope.pendingWizardSettings.apiMethod === 'JSONP') {
             
@@ -305,20 +324,23 @@ angular.module('QuepidApp')
               $scope.validating = false;
           }
         }
-
       }
 
       function checkTLSForSearchEngineUrl () {
-        $scope.showTLSChangeWarning = caseTryNavSvc.needToRedirectQuepidProtocol($scope.pendingWizardSettings.searchUrl);
-        
-        if ($scope.showTLSChangeWarning){
-         
-          var resultsTuple = caseTryNavSvc.swapQuepidUrlTLS();
+        if ($scope.pendingWizardSettings.proxyRequests === 'true'){
+          $scope.showTLSChangeWarning = false;
+        }
+        else {
+          $scope.showTLSChangeWarning = caseTryNavSvc.needToRedirectQuepidProtocol($scope.pendingWizardSettings.searchUrl);
           
-          $scope.quepidUrlToSwitchTo = resultsTuple[0];
-          $scope.protocolToSwitchTo = resultsTuple[1];
-                    
-          $scope.quepidUrlToSwitchTo = $scope.quepidUrlToSwitchTo + '?searchEngine=' + $scope.pendingWizardSettings.searchEngine + '&searchUrl=' + $scope.pendingWizardSettings.searchUrl + '&showWizard=true&caseName=' + $scope.pendingWizardSettings.caseName + '&apiMethod=' + $scope.pendingWizardSettings.apiMethod;
+          if ($scope.showTLSChangeWarning){         
+            var resultsTuple = caseTryNavSvc.swapQuepidUrlTLS();
+            
+            $scope.quepidUrlToSwitchTo = resultsTuple[0];
+            $scope.protocolToSwitchTo = resultsTuple[1];
+                      
+            $scope.quepidUrlToSwitchTo = $scope.quepidUrlToSwitchTo + '?searchEngine=' + $scope.pendingWizardSettings.searchEngine + '&searchUrl=' + $scope.pendingWizardSettings.searchUrl + '&showWizard=true&caseName=' + $scope.pendingWizardSettings.caseName + '&apiMethod=' + $scope.pendingWizardSettings.apiMethod;
+          }
         }
       }
 

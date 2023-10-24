@@ -463,7 +463,6 @@ angular.module('QuepidApp')
           payloadSearchEndpoint.endpoint_url = settingsToSave.searchUrl;
           payloadSearchEndpoint.api_method = settingsToSave.apiMethod;
           payloadSearchEndpoint.custom_headers = settingsToSave.customHeaders;
-          payloadSearchEndpoint.proxy_requests = settingsToSave.proxyRequests;
           payloadSearchEndpoint.basic_auth_credential = settingsToSave.basicAuthCredential;
         }
         
@@ -535,7 +534,6 @@ angular.module('QuepidApp')
         payloadSearchEndpoint.endpoint_url = settingsToSave.searchUrl;
         payloadSearchEndpoint.api_method = settingsToSave.apiMethod;
         payloadSearchEndpoint.custom_headers = settingsToSave.customHeaders;
-        payloadSearchEndpoint.proxy_requests = settingsToSave.proxyRequests;
         payloadSearchEndpoint.basic_auth_credential = settingsToSave.basicAuthCredential;
 
         return $http.put('api/cases/' + currCaseNo + '/tries/' + currTryNo, payload)
