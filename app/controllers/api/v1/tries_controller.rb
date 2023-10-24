@@ -26,7 +26,12 @@ module Api
 
         @try = @case.tries.build try_parameters_to_use
 
+        # if we are creating a new try with an existing search_endpoint_id,
+        # then the params[:search_endpoint] will be empty
         unless params[:search_endpoint].empty?
+          search_endpoint_params_to_use = search_endpoint_params
+          convert_blank_values_to_nil search_endpoint_params_to_use
+
           search_endpoint = @current_user.search_endpoints_involved_with.find_or_create_by search_endpoint_params
           @try.search_endpoint = search_endpoint
         end
@@ -125,7 +130,8 @@ module Api
           :api_method,
           :custom_headers,
           :search_engine,
-          :endpoint_url
+          :endpoint_url,
+          :basic_auth_credential
         )
       end
     end

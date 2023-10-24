@@ -26,6 +26,11 @@
   </p>
   
   <p>
+    <strong>Basic Auth Credential:</strong>
+    <%= search_endpoint.basic_auth_credential %>
+  </p>  
+  
+  <p>
   <strong>Shared with Teams:</strong>
   <%= render(partial: 'team', collection: search_endpoint.teams, as: :team) || "There are no teams associated." %>
   

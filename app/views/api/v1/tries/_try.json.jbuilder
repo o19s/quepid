@@ -13,7 +13,9 @@ json.custom_headers try.search_endpoint&.custom_headers
 json.api_method     try.search_endpoint&.api_method
 json.search_engine  try.search_endpoint&.search_engine
 json.search_url     try.search_endpoint&.endpoint_url
-json.try_number     try.try_number
+json.basic_auth_credential try.search_endpoint&.basic_auth_credential
+
+json.try_number try.try_number
 if try.search_endpoint.present?
   json.search_endpoint do
     json.partial! 'api/v1/search_endpoints/search_endpoint', search_endpoint: try.search_endpoint

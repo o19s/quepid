@@ -99,8 +99,14 @@
             </div>
             <div ng-show="showTLSChangeWarning" class="alert alert-warning">
               <span>
-              You have specified a search engine url that is on a different protocol ( <code>{{protocolToSwitchTo}}</code> ) than Quepid is currently on,
-              so you need to reload Quepid on that protocol first, and then continue the Wizard.  This is to comply with browser security issues.
+              You have specified a search endpoint url that is on a different protocol ( <code>{{protocolToSwitchTo}}</code> ) than Quepid is running, 
+              and this triggers your browser to prevent communciation with the search endpoint.  Option 1 is Reload Quepid to run on the correct protocol
+              or Option 2 is to proxy the search requests THROUGH the Quepid server.
+              </span>
+            </div>
+            <div ng-show="invalidProxyApiMethod" class="alert alert-danger">
+              <span>
+                You must change from JSONP to another API method when proxying.
               </span>
             </div>
             <div ng-if="urlInvalid && !showTLSChangeWarning" class="alert alert-danger">
@@ -111,7 +117,7 @@
               <span ng-show="pendingWizardSettings.searchEngine === 'vectara'">Vectara</span>.
   
               <ul ng-if="pendingWizardSettings.searchEngine === 'es'">
-                <li>Is your Elasticsearch behind a firewall or proxy? Try acessing the <a target="_blank" href="{{pendingWizardSettings.searchUrl}}">URL directly</a> and see if you get a response</li>
+                <li>Is your Elasticsearch behind a firewall or proxy? Try accessing the <a target="_blank" href="{{pendingWizardSettings.searchUrl}}">URL directly</a> and see if you get a response</li>
                 <li>Does your Elasticsearch accept HTTP POST requests?</li>
                 <li>Is your Elasticsearch setup for CORS to talk to Quepid's web app (http://app.quepid.com)?</li>
                 <li>Do you need an API Key?  If so, set one up under Advanced pane --> Custom Headers.</li>
@@ -120,7 +126,7 @@
               </ul>
   
               <ul ng-if="pendingWizardSettings.searchEngine === 'os'">
-                <li>Is your OpenSearch behind a firewall or proxy? Try acessing the <a target="_blank" href="{{pendingWizardSettings.searchUrl}}">URL directly</a> and see if you get a response</li>
+                <li>Is your OpenSearch behind a firewall or proxy? Try accessing the <a target="_blank" href="{{pendingWizardSettings.searchUrl}}">URL directly</a> and see if you get a response</li>
                 <li>Does your OpenSearch accept HTTP POST requests?</li>
                 <li>Is your OpenSearch setup for CORS to talk to Quepid's web app (http://app.quepid.com)?</li>
                 <li>Double check if you have an ad blocker blocking your queries.</li>
@@ -257,17 +263,6 @@ star wars,1921,3, Star Wars: Return of the Jedi
                     </select>
                     <p class="help-block">POST and GET are the most common.</p>
                   </div>
-                  
-                  <label class="col-sm-3 control-label">Response Parser</label>
-                  <div class="col-sm-9">
-                    <select class="form-control" ng-model="pendingWizardSettings.responseParser" ng-change="resetUrlValid()">
-                      <option>solr</option>  
-                      <option>es</option>
-                      <option>os</option>  
-                      <option>vectara</option>                        
-                    </select>
-                    <p class="help-block">We need to know how to parse the response from your search engine using a Splainer supported parser.</p>
-                  </div>
                 </div>
                 <div class="col-sm-12 clearfix">
                   <label class="control-label">Query Structure</label>
@@ -276,7 +271,7 @@ star wars,1921,3, Star Wars: Return of the Jedi
               
                 <div class="form-group clearfix">
                   <div class="col-sm-12">
-                    <div id='custom-header-editor' ui-ace="{
+                    <div id='query-params-editor' ui-ace="{
                         require:      ['ace/ext/language_tools'],
                         useWrapMode:  false,
                         mode:         'json',
@@ -289,12 +284,36 @@ star wars,1921,3, Star Wars: Return of the Jedi
             </div>
             </span>   
   
-            <span ng-if="pendingWizardSettings.searchEngine !== 'solr' && pendingWizardSettings.searchEngine !== 'static'">
+            <span ng-if="pendingWizardSettings.searchEngine !== 'static'">
             <p>
               <button type="button" class="btn btn-sm btn-default" ng-click="isHeaderConfigCollapsed = !isHeaderConfigCollapsed">Advanced</button>
             </p> 
             <div uib-collapse="!isHeaderConfigCollapsed">
+              <div class="well well-sm">
+                <div class="form-group clearfix">
+                  <label class="col-sm-3 control-label">Proxy Requests</label>
+                  <div class="col-sm-9">
+                    <select class="form-control" ng-model="pendingWizardSettings.proxyRequests" 
+                      ng-change="changeProxySetting()">
+                      <option value="false">false</option>
+                      <option value="true">true</option>
+                    </select>
+                    <p class="help-block">Fighting with CORS issues?  Proxy your search requests through Quepid server.</p>
+                  </div>
+                  
+                  <label class="col-sm-3 control-label">Basic Authentication</label>
+                  <div class="col-sm-9">
+                    <input type="text" class="form-control" 
+                      ng-model="pendingWizardSettings.basicAuthCredential" 
+                      ng-change="resetUrlValid()"
+                      placeholder="username:password">
+                        
+                    <p class="help-block">Specify your <code>username:password</code> here to access Basic Auth protected endpoints.</p>
+                  </div>
+                </div>                            
+              </div>
               <custom-headers settings="pendingWizardSettings"></custom-headers>
+              
             </div>
             </span>
   
@@ -346,7 +365,7 @@ star wars,1921,3, Star Wars: Return of the Jedi
           <div class="form-group clearfix">
             <label class="col-sm-3 control-label">ID Field</label>
             <div class="col-sm-9">
-              <input type="text" class="form-control" ng-model="pendingWizardSettings.idField" ng-change="updateDisplayFields('id', pendingWizardSettings.idField)" typeahead-on-select="updateDisplayFields('id', pendingWizardSettings.idField)" uib-typeahead="field for field in idFields | filter:$viewValue | limitTo:8" class="form-control" placeholder="Begin typing to show suggestions">
+              <input type="text" class="form-control" ng-model="pendingWizardSettings.idField" ng-change="updateDisplayFields('id', pendingWizardSettings.idField)" typeahead-on-select="updateDisplayFields('id', pendingWizardSettings.idField)" uib-typeahead="field for field in idFields | filter:$viewValue | limitTo:8" placeholder="Begin typing to show suggestions">
               <p class="help-block">What field is the unique identifier for your search results?</p>
               <p ng-if="idFieldRequired" class="text-danger">This field is required. Please select an ID field.</p>
             </div>

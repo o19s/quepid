@@ -36,6 +36,9 @@
   <div class="mb-3 col-12">
     <%= form.label :endpoint_url, class: 'form-label' %>
     <%= form.text_field :endpoint_url, size: 100 %>
+
+    <div class="form-text">Want to avoid CORS by proxying requests through Quepid server?  Just prepend the url with <code><%= "#{proxy_fetch_url}?url="  %></code></div>
+      
   </div>
 
   <div class="mb-3">
@@ -47,6 +50,11 @@
     <%= form.label :api_method, class: 'form-label' %>
     <%= form.collection_select :api_method, [['GET', 'GET'], ['POST', 'POST'], ['JSONP', 'JSONP'], ['PUT', 'PUT']], :last, :first, required: true, prompt:true,  class: 'form-control' %>
     
+  </div>
+  
+  <div class="mb-3">
+    <%= form.label :basic_auth_credential, class: 'form-label' %>
+    <%= form.text_field :basic_auth_credential %>
   </div>
   
   <div class="mb-3">

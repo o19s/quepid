@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require 'faraday'
-# require 'faraday_middleware'
+
 # rubocop:disable Layout/LineLength
 # rubocop:disable Metrics/AbcSize
 # rubocop:disable Metrics/MethodLength
@@ -14,14 +14,16 @@ class ProxyController < ApplicationController
   # curl -X POST "http://localhost:3000/proxy/fetch?url=https://quepid-solr.dev.o19s.com/solr/tmdb/query" -d '{"query":"star"}'
   #
   def fetch
-    uri = URI.parse(proxy_url_params)
+    url_param = proxy_url_params
+
+    uri = URI.parse(url_param)
     url_without_path = "#{uri.scheme}://#{uri.host}"
     url_without_path += ":#{uri.port}" unless uri.port.nil?
 
     connection = Faraday.new(url: url_without_path) do |faraday|
       # Configure the connection options, such as headers or middleware
       # faraday.response :logger, nil, { headers: true, bodies: true }
-      faraday.response :logger, nil, { headers: true, bodies: true, errors: true }
+      faraday.response :logger, nil, { headers: false, bodies: false, errors: true }
       faraday.ssl.verify = false
       faraday.request :url_encoded
 
@@ -46,6 +48,16 @@ class ProxyController < ApplicationController
 
         query_params.each do |param|
           req.params[param.first] = param.second
+        end
+
+        # the url parameter often has a format like
+        # http://myserver.com/search?query=text, and when this is passed in
+        # we get http://localhost:3000/proxy/fetch?url=http://myserver.com/search?query=text&rows=10
+        # which means the parameter "query=text" is lost because the URL is parsed and this part is dropped,
+        # so here we add this one parameter back in if we have it.
+        if url_param.include?('?')
+          extra_query_param = url_param.split('?')[1].split('=')
+          req.params[extra_query_param.first] = extra_query_param.second
         end
         unless body_params.empty?
 

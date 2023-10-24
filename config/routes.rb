@@ -4,13 +4,10 @@ require 'sidekiq/web'
 
 # rubocop:disable Metrics/BlockLength
 Rails.application.routes.draw do
-
-
-
   # get 'home/show'
   apipie
   root 'home#show'
-  
+
   get 'proxy/fetch'
   post 'proxy/fetch'
 

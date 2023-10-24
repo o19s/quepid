@@ -7,15 +7,6 @@ module ActiveSupport
   class TestCase
     # rubocop:disable Metrics/MethodLength
     def setup
-      stub_request(
-        :any,
-        'https://as6051jt:e3e08990d7bf3ef7c5adc012383cf67716176ad1@api.intercom.io/events'
-      )
-
-      stub_request(
-        :any,
-        'https://as6051jt:e3e08990d7bf3ef7c5adc012383cf67716176ad1@api.intercom.io/users'
-      )
       # rubocop:disable Style/RedundantRegexpEscape
       stub_request(
         :any,
@@ -110,33 +101,7 @@ module ActiveSupport
 
       ')
 
-      stub_request(
-        :get,
-        'http://solr.quepid.com/solr/statedecoded/select?rows=10&start=0&wt=json'
-      )
-        .with(
-          headers: {
-            'Accept'          => '*/*',
-            'Accept-Encoding' => 'gzip;q=1.0,deflate;q=0.6,identity;q=0.3',
-            'User-Agent'      => 'Faraday v0.15.4',
-          }
-        )
-        .to_return(status: 200, body: '', headers: {})
-
-      stub_request(
-        :get,
-        'http://solr.quepid.com/solr/statedecoded/select?wt=json'
-      )
-        .with(
-          headers: {
-            'Accept'          => '*/*',
-            'Accept-Encoding' => 'gzip;q=1.0,deflate;q=0.6,identity;q=0.3',
-            'User-Agent'      => 'Faraday v0.15.4',
-          }
-        )
-        .to_return(status: 200, body: '', headers: {})
-
-      stub_request(:get, 'http://solr.quepid.com:8983/solr/statedecoded/select?fl=id,text&q=*:*&rows=10&start=0')
+      stub_request(:get, 'http://solr.quepid.com:8983/solr/statedecoded/select?fl=id,text&q=legal&rows=10&start=0')
         .with(
           headers: {
             'Accept'          => '*/*',
@@ -144,7 +109,7 @@ module ActiveSupport
             'Content-Type'    => 'application/json',
             'Cookie'          => '',
             'Https'           => 'off',
-            'User-Agent'      => 'Faraday v2.7.4',
+            'User-Agent'      => /Faraday.*/,
           }
         )
         .to_return(status: 200, body: '
@@ -154,7 +119,7 @@ module ActiveSupport
                    "status":0,
                    "QTime":0,
                    "params":{
-                     "q":"*:*",
+                     "q":"legal",
                      "fl":"id,text",
                      "start":"0",
                      "rows":"10"}},
@@ -194,14 +159,14 @@ module ActiveSupport
 
       stub_request(:post, 'http://solr.quepid.com:8983/solr/statedecoded/select')
         .with(
-          body:    '{"query":"star","key2":"value2"}',
+          body:    '{"query":"trek","key2":"value2"}',
           headers: {
             'Accept'          => '*/*',
             'Accept-Encoding' => 'gzip;q=1.0,deflate;q=0.6,identity;q=0.3',
             'Content-Type'    => 'application/json',
             'Cookie'          => '',
             'Https'           => 'off',
-            'User-Agent'      => 'Faraday v2.7.4',
+            'User-Agent'      => /Faraday.*/,
           }
         )
         .to_return(status: 200, body: '

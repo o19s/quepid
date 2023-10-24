@@ -332,9 +332,9 @@ print_step "Seeding teams................"
 ######################################
 
 osc = Team.where(owner_id: osc_owner_user.id, name: 'OSC').first_or_create
-osc.members << osc_member_user
-osc.members << realistic_activity_user
-osc.cases << tens_of_queries_case
+osc.members << osc_member_user unless osc.members.include?(osc_member_user)
+osc.members << realistic_activity_user unless osc.members.include?(realistic_activity_user)
+osc.cases << tens_of_queries_case unless osc.members.include?(tens_of_queries_case)
 print_step "End of seeding teams................"
 
 # Books
@@ -445,8 +445,12 @@ if ENV['SEED_LARGE_CASES']
   user_params = user_defaults.merge(user_specifics)
   thousands_of_queries_user = seed_user user_params
   print_user_info user_params
-
+  
   hundreds_of_queries_case = hundreds_of_queries_user.cases.create case_name: '100s of Queries'
+  solr_try = hundreds_of_queries_case.tries.latest
+  solr_try.update try_defaults
+  solr_try.search_endpoint = statedecoded_solr_endpoint
+
 
   # was 200
   unless hundreds_of_queries_case.queries.count >= 400
@@ -462,6 +466,9 @@ if ENV['SEED_LARGE_CASES']
   end
 
   thousands_of_queries_case = thousands_of_queries_user.cases.create case_name: '1000s of Queries'
+  solr_try = thousands_of_queries_case.tries.latest
+  solr_try.update try_defaults
+  solr_try.search_endpoint = statedecoded_solr_endpoint
 
   unless thousands_of_queries_case.queries.count >= 2000
     generator = RatingsGenerator.new search_url, { number: 2000, show_progress: true }

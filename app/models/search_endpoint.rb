@@ -4,16 +4,17 @@
 #
 # Table name: search_endpoints
 #
-#  id             :bigint           not null, primary key
-#  api_method     :string(255)
-#  archived       :boolean          default(FALSE)
-#  custom_headers :string(1000)
-#  endpoint_url   :string(500)
-#  name           :string(255)
-#  search_engine  :string(50)
-#  created_at     :datetime         not null
-#  updated_at     :datetime         not null
-#  owner_id       :integer
+#  id                    :bigint           not null, primary key
+#  api_method            :string(255)
+#  archived              :boolean          default(FALSE)
+#  basic_auth_credential :string(255)      default("0")
+#  custom_headers        :string(1000)
+#  endpoint_url          :string(500)
+#  name                  :string(255)
+#  search_engine         :string(50)
+#  created_at            :datetime         not null
+#  updated_at            :datetime         not null
+#  owner_id              :integer
 #
 
 class SearchEndpoint < ApplicationRecord
@@ -80,6 +81,10 @@ class SearchEndpoint < ApplicationRecord
   def mark_archived!
     mark_archived
     save
+  end
+
+  def proxy_request?
+    endpoint_url.include?('/proxy/fetch')
   end
 
   private

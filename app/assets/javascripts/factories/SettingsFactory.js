@@ -20,7 +20,7 @@
     caseTryNavSvc,
     TryFactory
   ) {
-    var Settings = function(qpHist) {
+    var Settings = function(tryList) {
       var self = this;
       var Try  = TryFactory;
 
@@ -45,7 +45,7 @@
       self.addTry          = addTry;
 
       // Bootstrap
-      self.addTries(qpHist);
+      self.addTries(tryList);
 
       function getTry(tryNo) {
         var rVal = null;
