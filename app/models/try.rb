@@ -56,7 +56,6 @@ class Try < ApplicationRecord
   # Callbacks
   before_create :set_defaults
 
-  # rubocop:disable Layout/LineLength
   def args
     unless search_endpoint.nil?
       case search_endpoint.search_engine
@@ -75,7 +74,6 @@ class Try < ApplicationRecord
       end
     end
   end
-  # rubocop:enable Layout/LineLength
 
   def param
     try_number
