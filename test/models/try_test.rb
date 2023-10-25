@@ -117,12 +117,12 @@ class TryTest < ActiveSupport::TestCase
         assert_equal args, expected_vars
       end
     end
-    
-    describe "Search API" do
+
+    describe 'Search API' do
       test 'spots that args are JSON formatted and returns the appropriate object' do
-        try   = tries(:es_try)
+        try = tries(:es_try)
         try.search_endpoint.search_engine = 'searchapi'
-        args  = try.args
+        args = try.args
 
         expected_vars = {
           'query' => {
@@ -134,19 +134,19 @@ class TryTest < ActiveSupport::TestCase
 
         assert_equal args, expected_vars
       end
-      
+
       test 'spots that args are query param formatted and returns the appropriate object' do
-        try   = tries(:one)
+        try = tries(:one)
         try.search_endpoint.search_engine = 'searchapi'
 
-        args  = try.args
+        args = try.args
 
         expected_vars = {
-          "q"=>["\#$query##"]
+          'q' => [ "\#$query##" ],
         }
 
         assert_equal args, expected_vars
-      end      
+      end
     end
   end
 
