@@ -23,7 +23,7 @@ class ProxyController < ApplicationController
     connection = Faraday.new(url: url_without_path) do |faraday|
       # Configure the connection options, such as headers or middleware
       # faraday.response :logger, nil, { headers: true, bodies: true }
-      faraday.response :logger, nil, { headers: false, bodies: false, errors: true }
+      faraday.response :logger, nil, { headers: true, bodies: true, errors: true }
       faraday.ssl.verify = false
       faraday.request :url_encoded
 
@@ -55,7 +55,7 @@ class ProxyController < ApplicationController
         # we get http://localhost:3000/proxy/fetch?url=http://myserver.com/search?query=text&rows=10
         # which means the parameter "query=text" is lost because the URL is parsed and this part is dropped,
         # so here we add this one parameter back in if we have it.
-        if url_param.include?('?')
+        if url_param.include?('?') && !url_param.ends_with?('?')
           extra_query_param = url_param.split('?')[1].split('=')
           req.params[extra_query_param.first] = extra_query_param.second
         end

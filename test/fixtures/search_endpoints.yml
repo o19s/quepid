@@ -8,6 +8,7 @@
 #  basic_auth_credential :string(255)      default("0")
 #  custom_headers        :string(1000)
 #  endpoint_url          :string(500)
+#  mapper_code           :text(65535)
 #  name                  :string(255)
 #  search_engine         :string(50)
 #  created_at            :datetime         not null

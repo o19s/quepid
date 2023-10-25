@@ -14,6 +14,7 @@ json.api_method     try.search_endpoint&.api_method
 json.search_engine  try.search_endpoint&.search_engine
 json.search_url     try.search_endpoint&.endpoint_url
 json.basic_auth_credential try.search_endpoint&.basic_auth_credential
+json.mapper_code try.search_endpoint&.mapper_code
 
 json.try_number try.try_number
 if try.search_endpoint.present?

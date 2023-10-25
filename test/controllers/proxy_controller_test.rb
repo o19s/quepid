@@ -27,6 +27,13 @@ class ProxyControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
+  test 'should be able to handle a get with a trailing ? parameter and nothing else' do
+    get proxy_fetch_url params: {
+      url: 'http://solr.quepid.com:8983/solr/statedecoded/select?', fl: 'id,text', q: 'legal', rows: 10, start: 0
+    }
+    assert_response :success
+  end
+
   test 'should be able to handle a post' do
     json_data = { query: 'trek', key2: 'value2' }.to_json
 

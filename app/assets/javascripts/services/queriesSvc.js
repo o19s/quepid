@@ -81,6 +81,9 @@ angular.module('QuepidApp')
             numberOfRows:  passedInSettings.numberOfRows,
             basicAuthCredential: passedInSettings.basicAuthCredential
           };
+          if (passedInSettings.apiMethod !== undefined) {
+            options.apiMethod = passedInSettings.apiMethod;
+          }
           
           if (passedInSettings.searchEngine === 'static'){
             // Similar to logic in Splainer-searches SettingsValidatorFactory for snapshots.
@@ -90,7 +93,21 @@ angular.module('QuepidApp')
             passedInSettings.searchEngine = 'solr';           
           }
           else if (passedInSettings.searchEngine === 'searchapi'){
-            passedInSettings.searchEngine = 'es';
+            /*jshint evil:true */
+            eval(passedInSettings.mapperCode);
+            /*jshint evil:false */
+            
+            
+            if (typeof docsMapper === 'function') {
+              // jshint -W117
+              options.docsMapper = docsMapper; 
+            }
+            if (typeof numberOfResultsMapper === 'function') {
+              // jshint -W117
+              options.numberOfResultsMapper = numberOfResultsMapper;               
+            }
+            
+            
           }
 
           if (passedInSettings.searchEngine === 'solr') {
@@ -98,11 +115,6 @@ angular.module('QuepidApp')
             if (args['echoParams'] === undefined) {
               args['echoParams'] = 'all';
             }
-
-            if (passedInSettings.apiMethod !== undefined) {
-              options.apiMethod = passedInSettings.apiMethod;
-            }
-
           }
           // Modify query if ratings were passed in
           if (query) {

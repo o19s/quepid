@@ -131,7 +131,8 @@ module Api
           :custom_headers,
           :search_engine,
           :endpoint_url,
-          :basic_auth_credential
+          :basic_auth_credential,
+          :mapper_code
         )
       end
     end

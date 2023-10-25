@@ -65,10 +65,12 @@ class Try < ApplicationRecord
         static_args
       when 'es'
         es_args
-      when 'os', 'searchapi'
+      when 'os'
         os_args
       when 'vectara'
         vectara_args
+      when 'searchapi'
+        searchapi_args
       end
     end
   end
@@ -110,6 +112,16 @@ class Try < ApplicationRecord
   def vectara_args
     # Use the EsArgParser as currently queries are the same
     EsArgParser.parse(query_params, curator_vars_map)
+  end
+
+  def searchapi_args
+    if query_params.starts_with?('{')
+      EsArgParser.parse(query_params,
+                        curator_vars_map)
+    else
+      SolrArgParser.parse(query_params,
+                          curator_vars_map)
+    end
   end
 
   def id_from_field_spec

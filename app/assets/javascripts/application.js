@@ -19,3 +19,6 @@
 //= require vega-lite
 //= require vega-embed
 //= require party-js/bundle/party
+
+//= require codemirror/lib/codemirror
+//= require codemirror/mode/javascript/javascript

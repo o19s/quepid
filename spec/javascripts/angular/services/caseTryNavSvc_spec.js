@@ -98,6 +98,6 @@ describe('Service: caseTryNavSvc', function () {
   });
   
   it('returns the quepid root url', function() {
-    expect(caseTryNavSvc.getQuepidRootUrl()).toEqual('https://localhost:443/quepid/');    
+    expect(caseTryNavSvc.getQuepidRootUrl()).toEqual('https://localhost:443/quepid');    
   });
 });
