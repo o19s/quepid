@@ -54,7 +54,8 @@
       self.searchUrl     = data.search_url;
       self.tryNo         = data.try_number;
       self.endpointName  = data.endpoint_name;       
-      self.basicAuthCredential  = data.basic_auth_credential;     
+      self.basicAuthCredential  = data.basic_auth_credential;    
+      self.mapperCode    = data.mapper_code;
 
 
       // transform curator vars to be more angular friendly

@@ -31,6 +31,13 @@
   </p>  
   
   <p>
+    <strong>Custom Code Mapper:</strong>
+    <pre>
+<%= truncate(search_endpoint.mapper_code, length: 100) %>
+    </pre>
+  </p> 
+  
+  <p>
   <strong>Shared with Teams:</strong>
   <%= render(partial: 'team', collection: search_endpoint.teams, as: :team) || "There are no teams associated." %>
   

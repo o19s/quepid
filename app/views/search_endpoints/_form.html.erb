@@ -58,6 +58,12 @@
   </div>
   
   <div class="mb-3">
+    <%= form.label :mapper_code, class: 'form-label' %>
+    <div class="form-text">This Javascript is run in the browser to map custom search api responses to what Quepid understands.</div>
+    <%= form.text_area :mapper_code %>
+  </div>
+  
+  <div class="mb-3">
     <div class="form-check form-switch">
       <%= form.label :archived, class:'form-check-label' %>
       <%= form.check_box :archived, class:'form-check-input' %>
@@ -81,3 +87,12 @@
     <%= form.submit class: "btn btn-primary #{@current_user.teams.empty? ? 'disabled' : ''}" %>
   </div>
 <% end %>
+
+<script>
+  const codemirrorEditor = CodeMirror.fromTextArea(document.getElementById('search_endpoint_mapper_code'), {
+    lineNumbers: true,
+    mode: "javascript",
+    readOnly: false
+  });
+  codemirrorEditor.setSize(null, 800);
+</script>

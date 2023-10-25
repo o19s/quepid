@@ -171,7 +171,23 @@ angular.module('QuepidApp')
           numberOfRows: 1,
           searchEngine: 'searchapi',
           urlFormat: 'http(s?)://yourdomain.com:9200/<path>/<etc>',
-          proxyRequests: true
+          proxyRequests: true,
+          mapperCode: [
+            'numberOfResultsMapper = function(data){',
+            '  return data.length',
+            '};',
+            '',
+            'docsMapper = function(data){',
+            '  let docs = [];',
+            '  for (let doc of data) {',
+            '    docs.push ({',
+            '      id: doc.publication_id,',
+            '      title: doc.title,',
+            '    });',
+            '  }',
+            '  return docs;',
+            '};'
+          ].join('\n'),
           // no searchUrl or urlFormat because it's code generated!
         }
       };
@@ -385,6 +401,7 @@ angular.module('QuepidApp')
           settings.searchUrl = tryToUse.searchUrl;
           settings.proxyRequests = tryToUse.proxyRequests;
           settings.basicAuthCredential = tryToUse.basicAuthCredential;
+          settings.mapperCode = tryToUse.mapperCode;
 
           // TODO: Store type in db?...
           settings.headerType = settings.customHeaders.includes('ApiKey') ? 'API Key'
@@ -464,6 +481,7 @@ angular.module('QuepidApp')
           payloadSearchEndpoint.api_method = settingsToSave.apiMethod;
           payloadSearchEndpoint.custom_headers = settingsToSave.customHeaders;
           payloadSearchEndpoint.basic_auth_credential = settingsToSave.basicAuthCredential;
+          payloadSearchEndpoint.mapper_code = settingsToSave.mapperCode;
         }
         
         return $http.post('api/cases/' + currCaseNo + '/tries', payload)
@@ -535,6 +553,7 @@ angular.module('QuepidApp')
         payloadSearchEndpoint.api_method = settingsToSave.apiMethod;
         payloadSearchEndpoint.custom_headers = settingsToSave.customHeaders;
         payloadSearchEndpoint.basic_auth_credential = settingsToSave.basicAuthCredential;
+        payloadSearchEndpoint.mapper_code = settingsToSave.mapperCode;
 
         return $http.put('api/cases/' + currCaseNo + '/tries/' + currTryNo, payload)
           .then(function() {

@@ -118,7 +118,7 @@ angular.module('QuepidApp')
       this.getQuepidRootUrl = function(){     
         var absUrl = $location.absUrl();
         var n = absUrl.indexOf('/case/');
-        var quepidRootUrl = absUrl.substring(0, n + 1 );
+        var quepidRootUrl = absUrl.substring(0, n );
         return quepidRootUrl;        
       };
 

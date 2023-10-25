@@ -90,7 +90,21 @@ angular.module('QuepidApp')
             passedInSettings.searchEngine = 'solr';           
           }
           else if (passedInSettings.searchEngine === 'searchapi'){
-            passedInSettings.searchEngine = 'es';
+            /*jshint evil:true */
+            eval(passedInSettings.mapperCode);
+            /*jshint evil:false */
+            
+            
+            if (typeof docsMapper === 'function') {
+              // jshint -W117
+              options.docsMapper = docsMapper; 
+            }
+            if (typeof numberOfResultsMapper === 'function') {
+              // jshint -W117
+              options.numberOfResultsMapper = numberOfResultsMapper;               
+            }
+            
+            
           }
 
           if (passedInSettings.searchEngine === 'solr') {

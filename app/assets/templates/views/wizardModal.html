@@ -247,11 +247,7 @@ star wars,1921,3, Star Wars: Return of the Jedi
             </div>
             </span>  
 
-            <span ng-if="pendingWizardSettings.searchEngine === 'searchapi'">
-            <p>
-              <button type="button" class="btn btn-sm btn-default" ng-click="isSearchAPICollapsed = !isSearchAPICollapsed">Search API Configuration</button>
-            </p>
-            <div uib-collapse="!isSearchAPICollapsed">
+            <span ng-if="pendingWizardSettings.searchEngine === 'searchapi'">   
               <div class="well well-sm">
                 <div class="form-group clearfix">
                   <label class="col-sm-3 control-label">API Method</label>
@@ -279,9 +275,27 @@ star wars,1921,3, Star Wars: Return of the Jedi
                       }" ng-model="pendingWizardSettings.queryParams">
                     </div>
                   </div>
-                </div>                   
+                </div>   
+                <div class="col-sm-12 clearfix">
+                  <label class="control-label">Mapping</label>
+                  <p class="help-block">Enter JavaScript that formats from YOUR API to the JSON structure expected by the Target Search Engine.</p>
+                </div>
+
+                <div class="form-group clearfix">
+                  <div class="col-sm-12">
+                    <div ui-ace="{
+                      require: ['ace/ext/language_tools'],
+                      advanced: {
+                        enableBasicAutocompletion: true,
+                        enableLiveAutocompletion: true
+                      },
+                      mode:   'javascript',
+                      theme:  'chrome'
+                    }"
+                    ng-model="pendingWizardSettings.mapperCode"></div>                    
+                  </div>
+                </div> 
               </div>
-            </div>
             </span>   
   
             <span ng-if="pendingWizardSettings.searchEngine !== 'static'">
@@ -295,8 +309,8 @@ star wars,1921,3, Star Wars: Return of the Jedi
                   <div class="col-sm-9">
                     <select class="form-control" ng-model="pendingWizardSettings.proxyRequests" 
                       ng-change="changeProxySetting()">
-                      <option value="false">false</option>
-                      <option value="true">true</option>
+                      <option value="false">No</option>
+                      <option value="true">Yes</option>
                     </select>
                     <p class="help-block">Fighting with CORS issues?  Proxy your search requests through Quepid server.</p>
                   </div>

@@ -68,6 +68,7 @@ angular.module('QuepidApp')
         $scope.pendingWizardSettings.searchEndpointId         = null;
         $scope.pendingWizardSettings.proxyRequests            = settings.proxyRequests;
         $scope.pendingWizardSettings.basicAuthCredential      = settings.basicAuthCredential;
+        $scope.pendingWizardSettings.mapperCode               = settings.mapperCode;
 
         //$scope.isHeaderConfigCollapsed = true;
         
@@ -122,6 +123,7 @@ angular.module('QuepidApp')
         $scope.pendingWizardSettings.titleField               = settings.titleField;
         $scope.pendingWizardSettings.proxyRequests            = settings.proxyRequests;
         $scope.pendingWizardSettings.basicAuthCredential      = settings.basicAuthCredential;
+        $scope.pendingWizardSettings.mapperCode               = settings.mapperCode;
 
         
         $scope.reset();
@@ -147,7 +149,8 @@ angular.module('QuepidApp')
         $scope.pendingWizardSettings.titleField               = settings.titleField;
         $scope.pendingWizardSettings.urlFormat                = settings.urlFormat;
         $scope.pendingWizardSettings.proxyRequests            = settings.proxyRequests;
-        $scope.pendingWizardSettings.basicAuthCredential      = settings.basicAuthCredential;        
+        $scope.pendingWizardSettings.basicAuthCredential      = settings.basicAuthCredential; 
+        $scope.pendingWizardSettings.mapperCode               = settings.mapperCode;        
         
         $scope.isHeaderConfigCollapsed = true;
 
@@ -254,20 +257,28 @@ angular.module('QuepidApp')
           // this is suss
           settingsForValidation.args = $scope.pendingWizardSettings.queryParams;
           
+          /*jshint evil:true */
+          eval(settingsForValidation.mapperCode);
+          /*jshint evil:false */
+          
+          /* jshint undef: false */
+          settingsForValidation.docsMapper = docsMapper; 
+          settingsForValidation.numberOfResultsMapper = numberOfResultsMapper; 
+          /* jshint undef: true */
           
           //eval(kode);
-          settingsForValidation.docsMapper = function(data){    
-            let docs = [];
-            for (let doc of data) {
-              docs.push ({
-                id: doc.publication_id,
-                title: doc.title,
-                score: doc.score,
-                publish_date_int: doc.publish_date_int
-              });
-            }
-            return docs;
-          };
+          // settingsForValidation.docsMapper = function(data){    
+          //   let docs = [];
+          //   for (let doc of data) {
+          //     docs.push ({
+          //       id: doc.publication_id,
+          //       title: doc.title,
+          //       score: doc.score,
+          //       publish_date_int: doc.publish_date_int
+          //     });
+          //   }
+          //   return docs;
+          // };
         }
         
         if (settingsForValidation.proxyRequests === 'true'){
