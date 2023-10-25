@@ -81,6 +81,9 @@ angular.module('QuepidApp')
             numberOfRows:  passedInSettings.numberOfRows,
             basicAuthCredential: passedInSettings.basicAuthCredential
           };
+          if (passedInSettings.apiMethod !== undefined) {
+            options.apiMethod = passedInSettings.apiMethod;
+          }
           
           if (passedInSettings.searchEngine === 'static'){
             // Similar to logic in Splainer-searches SettingsValidatorFactory for snapshots.
@@ -112,11 +115,6 @@ angular.module('QuepidApp')
             if (args['echoParams'] === undefined) {
               args['echoParams'] = 'all';
             }
-
-            if (passedInSettings.apiMethod !== undefined) {
-              options.apiMethod = passedInSettings.apiMethod;
-            }
-
           }
           // Modify query if ratings were passed in
           if (query) {
