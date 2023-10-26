@@ -20,17 +20,12 @@ module Users
         end
       end
 
-      respond_to do |format|
-        format.html do
-          if @user.save
-            session[:current_user_id] = @user.id # not sure if we need to do more here?
-            Analytics::Tracker.track_signup_event @user
-            redirect_to root_path
-          else
-            render template: 'sessions/new'
-          end
-        end
-        format.js
+      if @user.save
+        session[:current_user_id] = @user.id # not sure if we need to do more here?
+        Analytics::Tracker.track_signup_event @user
+        redirect_to root_path
+      else
+        render template: 'sessions/new'
       end
     end
     # rubocop:enable Metrics/MethodLength
