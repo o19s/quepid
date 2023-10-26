@@ -3,6 +3,7 @@
 module Api
   module V1
     class QueryDocPairsController < Api::ApiController
+      api!
       before_action :find_book
       before_action :check_book
       before_action :set_query_doc_pair,   only: [ :show, :update, :destroy ]

@@ -5,6 +5,7 @@ module Api
     module Import
       module Queries
         class InformationNeedsController < Api::ApiController
+          api!
           before_action :find_case
           before_action :check_case
 
