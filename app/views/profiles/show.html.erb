@@ -153,16 +153,17 @@
   <div class="row mb-3">
     <hr/>
 
-      <h2>
-        Personal Access Tokens
-      </h2>
-      
-      <p class="form-text">
-        These allow you to access Quepid's APIs using a header <code>Authorization: Bearer <%= current_user.api_keys.empty? ? '2d499887717072dd1a31f3d9be4e295e' : current_user.api_keys.first.token_digest %></code>.
-        Treat these like you would your password!
-      </p>
+    <h2>
+      Personal Access Tokens
+    </h2>
+    
+    <p class="form-text">
+      These allow you to access Quepid's <%= link_to 'APIs', apipie_apipie_path %>. Treat these like you would your password!
+      <br/>
+      For example: <code>curl -H "Authorization: Bearer <%= current_user.api_keys.empty? ? "YOUR_TOKEN" : current_user.api_keys.first.token_digest %>" <%= api_user_url(current_user) %></code> to look at your own details.
+    </p>   
+    <p>
       <table class="table table-hover table-sm">
-      
         <thead>
           <tr>
             <th>Api Key Id</th>
@@ -181,11 +182,10 @@
           <% end %>
         </tbody>
       </table>
-      
-      <br>
-      
-      <%= button_to 'Generate new Token', api_keys_path, method: :post, class: 'btn btn-primary' %> 
-      <br>
+    </p>
+    <p>    
+    <%= button_to 'Generate new Token', api_keys_path, method: :post, class: 'btn btn-primary' %> 
+    </p>
 
   </div>
 
