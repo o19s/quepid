@@ -7,5 +7,5 @@ Apipie.configure do |config|
   # where is your API defined?
   config.api_controllers_matcher = Rails.root.join('app/controllers/api/**/*.rb').to_s
   config.namespaced_resources    = true
-  config.app_info                = "Give your queries some ❤️"
+  config.app_info                = "Give your queries some ❤️.  This documentation is a work in progress, we're looking for folks to contribute more annotation of the APIs!"
 end
