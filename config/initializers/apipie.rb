@@ -6,4 +6,6 @@ Apipie.configure do |config|
   config.doc_base_url            = '/apipie'
   # where is your API defined?
   config.api_controllers_matcher = Rails.root.join('app/controllers/api/**/*.rb').to_s
+  config.namespaced_resources    = true
+  config.app_info                = "Give your queries some ❤️"
 end
