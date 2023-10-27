@@ -4,6 +4,7 @@ module Api
   module V1
     module Import
       class BooksController < Api::ApiController
+        api!
         # rubocop:disable Metrics/MethodLength
         # rubocop:disable Metrics/AbcSize
         # rubocop:disable Metrics/CyclomaticComplexity

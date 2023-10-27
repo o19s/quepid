@@ -6,6 +6,7 @@ module Api
   module V1
     module Export
       class RatingsController < Api::ApiController
+        api!
         before_action :find_case
         before_action :check_case
 

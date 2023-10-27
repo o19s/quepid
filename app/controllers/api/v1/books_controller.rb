@@ -5,6 +5,7 @@ require 'csv'
 module Api
   module V1
     class BooksController < Api::ApiController
+      api!
       before_action :find_book, only: [ :show, :update, :destroy ]
       before_action :check_book, only: [ :show, :update, :destroy ]
 
