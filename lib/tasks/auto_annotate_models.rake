@@ -40,7 +40,7 @@ if Rails.env.development?
       'ignore_model_sub_dir'       => 'false',
       'ignore_columns'             => nil,
       'ignore_routes'              => nil,
-      'ignore_unknown_models'      => 'false',
+      'ignore_unknown_models'      => 'true',
       'hide_limit_column_types'    => 'integer,bigint,boolean',
       'hide_default_column_types'  => 'json,jsonb,hstore',
       'skip_on_db_migrate'         => 'false',

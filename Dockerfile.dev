@@ -11,7 +11,7 @@ RUN apt-get update -qq \
 
 COPY Gemfile* /srv/app/
 WORKDIR /srv/app
-RUN gem install bundler:2.4.9
+RUN gem install bundler:2.4.21
 RUN bundle install
 
 # Dependency for generating the ERD: 'graphviz'

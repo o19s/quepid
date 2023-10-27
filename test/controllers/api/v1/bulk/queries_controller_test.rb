@@ -42,7 +42,7 @@ module Api
             # for some reason using acase.queries.first doesn't work, I think
             # the arrangement stuff doesn't work...  It used to be an intermittant failure
             # and then became an "all the time" failure.  This works around it.
-            first_query = acase.queries[0]
+            first_query = acase.queries.first#acase.queries[0]
 
             assert_equal 'one', first_query.query_text
             assert_equal json_response['display_order'][0], first_query.id

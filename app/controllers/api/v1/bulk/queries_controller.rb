@@ -28,22 +28,28 @@ module Api
 
           non_existing_queries = unique_queries - existing_queries
           non_existing_queries.each_with_index do |query_text, index|
+            puts "building query #{query_text}"
+            puts @case.queries.size
             query = @case.queries.build(query_text: query_text)
-            query.insert_at(index + 1)
+            puts "query.id: #{query.id}"
+            query.insert_at(index + 1) # actually triggers an insert, but why???
             queries_to_import << query
+            puts "query.id: #{query.id}"
           end
 
           # Mass insert queries
-          if Query.import queries_to_import
+          require 'pp'
+          pp queries_to_import
+          #if Query.import queries_to_import
 
             @case.reload
             @queries        = @case.queries.includes([ :ratings ])
             @display_order  = @queries.map(&:id)
 
             respond_with @queries, @display_order
-          else
-            render status: :bad_request
-          end
+            #else
+            #render status: :bad_request
+            #end
         end
         # rubocop:enable Metrics/MethodLength
 

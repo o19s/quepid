@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require 'application_responder'
-require 'analytics'
+#require 'analytics'
 
 class ApplicationController < ActionController::Base
   include Authentication::CurrentUserManager
