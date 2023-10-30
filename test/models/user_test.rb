@@ -173,6 +173,17 @@ class UserTest < ActiveSupport::TestCase
       new_user = User.create(email: 'epugh+tag@o19s.com', password: 'password')
       assert_empty new_user.errors.messages
     end
+
+    test 'prevents duplicate emails' do
+      user = User.create(email: 'defaults@email.com', password: 'password')
+      assert_empty user.errors.messages
+
+      new_user = User.create(email: 'defaults@email.com', password: 'password')
+      assert_includes new_user.errors.messages[:email], 'has already been taken'
+      
+      new_user = User.create(email: 'DeFaultS@emaiL.COM', password: 'password')
+      assert_includes new_user.errors.messages[:email], 'has already been taken'
+    end
   end
 
   describe 'Default Case' do
