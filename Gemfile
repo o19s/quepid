@@ -44,7 +44,6 @@ gem 'd3-rails', '~> 3.5.5' # For cal heatmap
 gem 'font-awesome-sass'
 
 gem 'rack-cors', '~> 2.0'
-gem 'foreman'
 gem 'ancestry'
 
 gem 'omniauth', '~> 2.0'
