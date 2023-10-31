@@ -97,9 +97,64 @@
 
 <script>
   const codemirrorEditor = CodeMirror.fromTextArea(document.getElementById('search_endpoint_mapper_code'), {
-    lineNumbers: true,
     mode: "javascript",
-    readOnly: false
+    lineNumbers: true,
+    gutters: ["CodeMirror-lint-markers"],
+    lint: true
   });
-  codemirrorEditor.setSize(null, 800);
+  codemirrorEditor.setSize(null, 400);
+  
+  // Function to validate JavaScript syntax
+  function validateSyntax(code) {
+    try {
+      // Use the built-in `eval` function to check the syntax
+      eval(code);
+      return true;
+    } catch (error) {
+      return false;
+    }
+  }
+  
+
+  // Validate syntax on code change
+  codemirrorEditor.on("change", function() {
+    var code = codemirrorEditor.getValue();
+    var isValidSyntax = validateSyntax(code);
+    var errorAnnotation = isValidSyntax ? [] : [{
+      from: CodeMirror.Pos(0, 0),
+      to: CodeMirror.Pos(0, 0),
+      message: "Syntax Error",
+      severity: "error"
+    }];
+    CodeMirror.signal(codemirrorEditor, "lint", codemirrorEditor, errorAnnotation);
+  });
+
+  // Add linting annotations to show syntax errors
+  codemirrorEditor.on("lint", function(_, annotations) {
+    codemirrorEditor.clearGutter("CodeMirror-lint-markers");
+    annotations.forEach(function(annotation) {
+      codemirrorEditor.setGutterMarker(annotation.from.line, "CodeMirror-lint-markers", createMarker(annotation));
+    });
+  });
+
+  // Helper function to create gutter marker
+  function createMarker(annotation) {
+    var marker = document.createElement("div");
+    marker.className = "lint-marker " + annotation.severity;
+    marker.title = annotation.message;
+    return marker;
+  }  
 </script>
+
+<style>
+  .lint-marker {
+    width: 16px;
+    height: 16px;
+    background-color: red;
+    border-radius: 50%;
+  }
+
+  .lint-marker.error {
+    background-color: red;
+  }
+</style>
