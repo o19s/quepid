@@ -71,7 +71,7 @@ angular.module('QuepidApp')
           validateJson = true;
         }
         else if ($scope.pendingSettings.searchEngine === 'searchapi'){
-          validateJson = $scope.pendingSettings.selectedTry.queryParams.indexOf("{") === 0;
+          validateJson = $scope.pendingSettings.selectedTry.queryParams.indexOf('{') === 0;
         }
         if ( validateJson) {
           // Verify that JSON is valid
