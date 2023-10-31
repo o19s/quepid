@@ -23,7 +23,7 @@ class ProxyController < ApplicationController
     connection = Faraday.new(url: url_without_path) do |faraday|
       # Configure the connection options, such as headers or middleware
       # faraday.response :logger, nil, { headers: true, bodies: true }
-      faraday.response :logger, nil, { headers: true, bodies: true, errors: true }
+      faraday.response :logger, nil, { headers: true, bodies: false, errors: true }
       faraday.ssl.verify = false
       faraday.request :url_encoded
 

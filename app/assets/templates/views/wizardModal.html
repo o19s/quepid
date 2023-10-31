@@ -307,12 +307,11 @@ star wars,1921,3, Star Wars: Return of the Jedi
                 <div class="form-group clearfix">
                   <label class="col-sm-3 control-label">Proxy Requests</label>
                   <div class="col-sm-9">
-                    <select class="form-control" ng-model="pendingWizardSettings.proxyRequests" 
-                      ng-change="changeProxySetting()">
-                      <option value="false">No</option>
-                      <option value="true">Yes</option>
-                    </select>
-                    <p class="help-block">Fighting with CORS issues?  Proxy your search requests through Quepid server.</p>
+                    <div class="checkbox">
+                      <label>
+                        <p class="help-block"><input id="proxy-requests" type="checkbox" ng-model="pendingWizardSettings.proxyRequests" ng-change="changeProxySetting()">Fighting with CORS issues?  Proxy your search requests through Quepid server.</p>
+                      </label>
+                    </div>
                   </div>
                   
                   <label class="col-sm-3 control-label">Basic Authentication</label>

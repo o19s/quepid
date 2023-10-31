@@ -17,8 +17,8 @@ angular.module('QuepidApp')
         this.apiMethod    = apiMethod;
         this.customHeaders= customHeaders;
         this.proxyRequests= proxyRequests;
-        this.basicAuthCredential = basicAuthCredential;
-        this.docsMapper   = docsMapper;
+        this.basicAuthCredential  = basicAuthCredential;
+        this.docsMapper           = docsMapper;
       };
       
       this.constructFromData = function(data) {
@@ -29,6 +29,7 @@ angular.module('QuepidApp')
           data.endpoint_url,
           data.api_method,
           data.custom_headers,
+          data.proxy_requests,
           data.basic_auth_credential,
           data.docs_mapper
         );

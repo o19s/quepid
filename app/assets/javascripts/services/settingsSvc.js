@@ -402,7 +402,7 @@ angular.module('QuepidApp')
           settings.proxyRequests = tryToUse.proxyRequests;
           settings.basicAuthCredential = tryToUse.basicAuthCredential;
           settings.mapperCode = tryToUse.mapperCode;
-
+          
           // TODO: Store type in db?...
           settings.headerType = settings.customHeaders.includes('ApiKey') ? 'API Key'
             : settings.customHeaders.length > 0 ? 'Custom' : 'None';
@@ -482,6 +482,7 @@ angular.module('QuepidApp')
           payloadSearchEndpoint.custom_headers = settingsToSave.customHeaders;
           payloadSearchEndpoint.basic_auth_credential = settingsToSave.basicAuthCredential;
           payloadSearchEndpoint.mapper_code = settingsToSave.mapperCode;
+          payloadSearchEndpoint.proxy_requests = settingsToSave.proxyRequests;
         }
         
         return $http.post('api/cases/' + currCaseNo + '/tries', payload)
@@ -554,6 +555,7 @@ angular.module('QuepidApp')
         payloadSearchEndpoint.custom_headers = settingsToSave.customHeaders;
         payloadSearchEndpoint.basic_auth_credential = settingsToSave.basicAuthCredential;
         payloadSearchEndpoint.mapper_code = settingsToSave.mapperCode;
+        payloadSearchEndpoint.proxy_requests = settingsToSave.proxyRequests;
 
         return $http.put('api/cases/' + currCaseNo + '/tries/' + currTryNo, payload)
           .then(function() {

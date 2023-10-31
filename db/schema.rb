@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_10_24_205451) do
+ActiveRecord::Schema[7.0].define(version: 2023_10_31_155230) do
   create_table "annotations", id: :integer, charset: "utf8mb3", force: :cascade do |t|
     t.text "message"
     t.string "source"
@@ -167,6 +167,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_10_24_205451) do
     t.datetime "updated_at", null: false
     t.string "basic_auth_credential", default: "0"
     t.text "mapper_code"
+    t.boolean "proxy_requests", default: false
   end
 
   create_table "selection_strategies", charset: "utf8mb3", collation: "utf8mb3_unicode_ci", force: :cascade do |t|

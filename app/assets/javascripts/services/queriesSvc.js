@@ -16,6 +16,7 @@ angular.module('QuepidApp')
     'qscoreSvc',
     'searchSvc',
     'ratingsStoreSvc',
+    'caseTryNavSvc',
     'DocListFactory',
     'diffResultsSvc',
     'searchErrorTranslatorSvc',
@@ -32,6 +33,7 @@ angular.module('QuepidApp')
       qscoreSvc,
       searchSvc,
       ratingsStoreSvc,
+      caseTryNavSvc,
       DocListFactory,
       diffResultsSvc,
       searchErrorTranslatorSvc,
@@ -84,6 +86,10 @@ angular.module('QuepidApp')
           if (passedInSettings.apiMethod !== undefined) {
             options.apiMethod = passedInSettings.apiMethod;
           }
+          
+          if (passedInSettings.proxyRequests === true) {
+            options.proxyUrl = caseTryNavSvc.getQuepidProxyUrl();
+          }          
           
           if (passedInSettings.searchEngine === 'static'){
             // Similar to logic in Splainer-searches SettingsValidatorFactory for snapshots.

@@ -48,9 +48,16 @@
 
   <div class="mb-3">
     <%= form.label :api_method, class: 'form-label' %>
-    <%= form.collection_select :api_method, [['GET', 'GET'], ['POST', 'POST'], ['JSONP', 'JSONP'], ['PUT', 'PUT']], :last, :first, required: true, prompt:true,  class: 'form-control' %>
-    
+    <%= form.collection_select :api_method, [['GET', 'GET'], ['POST', 'POST'], ['JSONP', 'JSONP'], ['PUT', 'PUT']], :last, :first, required: true, prompt:true,  class: 'form-control' %>    
   </div>
+  
+  <div class="mb-3">
+    <div class="form-check form-switch">
+      <%= form.label :proxy_requests, class:'form-check-label' %>
+      <%= form.check_box :proxy_requests, class:'form-check-input' %>
+    </div>
+    <div class="form-text">Proxied requests avoid browser security issues however Quepid must be able to reach your Search Endpoint.</div>
+  </div>  
   
   <div class="mb-3">
     <%= form.label :basic_auth_credential, class: 'form-label' %>

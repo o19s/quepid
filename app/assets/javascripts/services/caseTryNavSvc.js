@@ -121,6 +121,10 @@ angular.module('QuepidApp')
         var quepidRootUrl = absUrl.substring(0, n );
         return quepidRootUrl;        
       };
+      
+      this.getQuepidProxyUrl = function(){
+        return this.getQuepidRootUrl() + '/proxy/fetch?url=';
+      }
 
     }
   ]);
