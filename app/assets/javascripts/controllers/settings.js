@@ -66,12 +66,19 @@ angular.module('QuepidApp')
       });
 
       function submit () {
-        if ( $scope.pendingSettings.searchEngine === 'es'  || $scope.pendingSettings.searchEngine === 'os' ||
-             $scope.pendingSettings.searchEngine === 'vectara') {
+        let validateJson = false;
+        if ( $scope.pendingSettings.searchEngine === 'es'  || $scope.pendingSettings.searchEngine === 'os' ||  $scope.pendingSettings.searchEngine === 'vectara'){
+          validateJson = true;
+        }
+        else if ($scope.pendingSettings.searchEngine === 'searchapi'){
+          validateJson = $scope.pendingSettings.selectedTry.queryParams.indexOf("{") === 0;
+        }
+        if ( validateJson) {
           // Verify that JSON is valid
           try {
             var jsonObject = JSON.parse($scope.pendingSettings.selectedTry.queryParams);
-            $scope.pendingSettings.selectedTry.queryParams = angular.toJson(jsonObject, true);
+            $scope.pendingSettings.selectedTry.queryParams = JSON.stringify(jsonObject, null, 2);
+            
           } catch (e) {
             flash.error = 'Please provide a valid JSON object for the query DSL.';
             return;
