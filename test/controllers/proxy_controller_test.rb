@@ -34,6 +34,27 @@ class ProxyControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
+  test 'should be able to handle a get with a ? character in the query' do
+    get proxy_fetch_url params: {
+      url: 'http://solr.quepid.com:8983/solr/statedecoded/select?q=tiger?', fl: 'id,text', rows: 10, start: 0
+    }
+    assert_response :success
+  end
+
+  test 'should be able to handle a get with multiple ? character in the query' do
+    get proxy_fetch_url params: {
+      url: 'http://solr.quepid.com:8983/solr/statedecoded/select?q=I like ? marks, do you like ? marks?', fl: 'id,text', rows: 10, start: 0
+    }
+    assert_response :success
+  end
+
+  test 'should be able to handle a get with spaces in the query' do
+    get proxy_fetch_url params: {
+      url: 'http://solr.quepid.com:8983/solr/statedecoded/select?q=can I own a tiger', fl: 'id,text', rows: 10, start: 0
+    }
+    assert_response :success
+  end
+
   test 'should be able to handle a post' do
     json_data = { query: 'trek', key2: 'value2' }.to_json
 

@@ -16,14 +16,16 @@ class ProxyController < ApplicationController
   def fetch
     url_param = proxy_url_params
 
+    puts "HERE IS THE url_param:#{url_param}"
+
     uri = URI.parse(url_param)
     url_without_path = "#{uri.scheme}://#{uri.host}"
     url_without_path += ":#{uri.port}" unless uri.port.nil?
-
+    puts "url_without_path: #{url_without_path}"
     connection = Faraday.new(url: url_without_path) do |faraday|
       # Configure the connection options, such as headers or middleware
       # faraday.response :logger, nil, { headers: true, bodies: true }
-      faraday.response :logger, nil, { headers: true, bodies: true, errors: true }
+      faraday.response :logger, nil, { headers: true, bodies: false, errors: true }
       faraday.ssl.verify = false
       faraday.request :url_encoded
 
@@ -55,8 +57,13 @@ class ProxyController < ApplicationController
         # we get http://localhost:3000/proxy/fetch?url=http://myserver.com/search?query=text&rows=10
         # which means the parameter "query=text" is lost because the URL is parsed and this part is dropped,
         # so here we add this one parameter back in if we have it.
-        if url_param.include?('?') && !url_param.ends_with?('?')
-          extra_query_param = url_param.split('?')[1].split('=')
+        puts "url_param.include?('?'): #{url_param.include?('?')}"
+        puts "!url_param.ends_with?('?'): #{!url_param.ends_with?('?')}"
+        if url_param.include?('?')
+          # sometimes our url looks like http://myserver.com/search?q=tiger
+          # But it could also be http://myserver.com/search?q=tiger? and that needs handling via the special .split
+          extra_query_param = url_param.split('?', 2).last.split('=')
+
           req.params[extra_query_param.first] = extra_query_param.second
         end
         unless body_params.empty?
