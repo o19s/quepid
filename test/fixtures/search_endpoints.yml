@@ -10,6 +10,7 @@
 #  endpoint_url          :string(500)
 #  mapper_code           :text(65535)
 #  name                  :string(255)
+#  proxy_requests        :boolean          default(FALSE)
 #  search_engine         :string(50)
 #  created_at            :datetime         not null
 #  updated_at            :datetime         not null

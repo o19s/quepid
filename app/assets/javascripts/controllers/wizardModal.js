@@ -266,6 +266,7 @@ angular.module('QuepidApp')
           settingsForValidation.numberOfResultsMapper = numberOfResultsMapper; 
           /* jshint undef: true */
           
+          // This is an example of what the above mapper code looks like.
           //eval(kode);
           // settingsForValidation.docsMapper = function(data){    
           //   let docs = [];
@@ -281,9 +282,9 @@ angular.module('QuepidApp')
           // };
         }
         
-        if (settingsForValidation.proxyRequests === 'true'){
-          // set up the proxy URL through Quepid.
-          settingsForValidation.searchUrl = caseTryNavSvc.getQuepidRootUrl() + '/proxy/fetch?url=' + settingsForValidation.searchUrl;
+        if (settingsForValidation.proxyRequests === true){
+          // Pass in the Quepid specific proxy url
+          settingsForValidation.proxyUrl = caseTryNavSvc.getQuepidProxyUrl();
         }
         var validator = new SettingsValidatorFactory(settingsForValidation);
       
@@ -318,7 +319,7 @@ angular.module('QuepidApp')
       }
       
       function changeProxySetting () {
-        if ($scope.pendingWizardSettings.proxyRequests === 'true'){
+        if ($scope.pendingWizardSettings.proxyRequests === true){
           $scope.showTLSChangeWarning = false;
         }
         validateProxyApiMethod();
@@ -327,7 +328,7 @@ angular.module('QuepidApp')
       
       function validateProxyApiMethod () {
         $scope.invalidProxyApiMethod = false;
-        if ($scope.pendingWizardSettings.proxyRequests === 'true'){
+        if ($scope.pendingWizardSettings.proxyRequests === true){
           if (
             $scope.pendingWizardSettings.apiMethod && $scope.pendingWizardSettings.apiMethod === 'JSONP') {
             
@@ -338,7 +339,7 @@ angular.module('QuepidApp')
       }
 
       function checkTLSForSearchEngineUrl () {
-        if ($scope.pendingWizardSettings.proxyRequests === 'true'){
+        if ($scope.pendingWizardSettings.proxyRequests === true){
           $scope.showTLSChangeWarning = false;
         }
         else {

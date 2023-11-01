@@ -132,7 +132,8 @@ module Api
           :search_engine,
           :endpoint_url,
           :basic_auth_credential,
-          :mapper_code
+          :mapper_code,
+          :proxy_requests
         )
       end
     end

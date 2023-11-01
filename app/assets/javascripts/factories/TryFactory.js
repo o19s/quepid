@@ -6,14 +6,12 @@
   angular.module('QuepidApp')
     .factory('TryFactory', [
       '$http',
-      '$log',
       'fieldSpecSvc', 'caseTryNavSvc','varExtractorSvc',
       TryFactory
     ]);
 
   function TryFactory(
     $http,
-    $log,
     fieldSpecSvc, caseTryNavSvc, varExtractorSvc
   ) {
     var Try = function(data) {
@@ -21,9 +19,9 @@
       var self  = this;
 
       // check if the backend has populated these fields or not?
-      if ( angular.isUndefined(data.search_engine) ) {
-        data.search_engine = 'solr';
-      }
+      //if ( angular.isUndefined(data.search_engine) ) {
+      //  data.search_engine = 'solr';
+      //}
 
       if ( data.query_params === null ) {
         // this app
@@ -56,6 +54,7 @@
       self.endpointName  = data.endpoint_name;       
       self.basicAuthCredential  = data.basic_auth_credential;    
       self.mapperCode    = data.mapper_code;
+      self.proxyRequests = data.proxy_requests;
 
 
       // transform curator vars to be more angular friendly
