@@ -222,7 +222,7 @@ GEM
     msgpack (1.7.2)
     multi_xml (0.6.0)
     mysql2 (0.5.5)
-    net-imap (0.3.7)
+    net-imap (0.4.3)
       date
       net-protocol
     net-pop (0.1.2)
@@ -474,7 +474,7 @@ DEPENDENCIES
   minitest-reporters (>= 0.5.0)
   mocha (~> 2.0)
   mysql2
-  net-imap (~> 0.3.0)
+  net-imap (~> 0.4.0)
   net-pop (~> 0.1.1)
   net-smtp
   omniauth (~> 2.0)
