@@ -17,7 +17,7 @@ angular.module('QuepidApp')
         var modalInstance = $uibModal.open({
           templateUrl: 'views/wizardModal.html',
           controller: 'WizardModalCtrl',
-          backdrop: 'static'
+          backdrop: 'static',
         });
 
         modalInstance.result.then(function() {

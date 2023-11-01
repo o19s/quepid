@@ -22,6 +22,7 @@ angular.module('QuepidApp')
 
       
       $scope.isStaticCollapsed = true;
+      $scope.showSearchApiJavaScriptEditor = true;
       $scope.staticContent = {
         content: null,
         header: true,
@@ -230,6 +231,7 @@ angular.module('QuepidApp')
         }
         $scope.validating = true;
         $scope.urlValid = $scope.urlInvalid = false;
+        $scope.mapperInvalid = false;
 
         // This logic maybe should live in Splainer Search if we wanted to support Splainer.io as well?
 
@@ -290,15 +292,23 @@ angular.module('QuepidApp')
       
         validator.validateUrl()
         .then(function () {
-
+          $scope.validatorLastResponse = JSON.stringify(validator.searcher.lastResponse,null,2);
           setupDefaults(validator);
           
           if (!justValidate) {      
             $scope.pendingWizardSettings.searchUrl = settingsForValidation.searchUrl;
             WizardHandler.wizard().next();
           }
-        }, function () {
-          $scope.urlInvalid = true;
+        }, function (error) {
+          
+          $scope.validatorLastResponse = JSON.stringify(validator.searcher.lastResponse,null,2);
+          
+          if (error.toString().startsWith("Error: MapperError")){
+            $scope.mapperInvalid = true;
+          }
+          else {
+            $scope.urlInvalid = true;
+          }              
           $scope.validating = false;
         });
       }
@@ -360,8 +370,9 @@ angular.module('QuepidApp')
       function setupDefaults(validator) {
         $scope.validating   = false;
         $scope.urlValid     = true;
+        $scope.mapperInvalid= false;
         $scope.searchFields = validator.fields;
-        $scope.idFields     = validator.idFields;
+        $scope.idFields     = validator.idFields;            
 
         // Since the defaults are being overridden by the editableSettings(),
         // we need to restore the TMDB demo settings if that matches our URL for the next screen.

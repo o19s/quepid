@@ -114,8 +114,17 @@
               <span ng-show="pendingWizardSettings.searchEngine === 'es'">Elasticsearch</span>
               <span ng-show="pendingWizardSettings.searchEngine === 'os'">OpenSearch</span>
               <span ng-show="pendingWizardSettings.searchEngine === 'solr'">Solr</span>
-              <span ng-show="pendingWizardSettings.searchEngine === 'vectara'">Vectara</span>.
+              <span ng-show="pendingWizardSettings.searchEngine === 'vectara'">Vectara</span>
+              <span ng-show="pendingWizardSettings.searchEngine === 'static'">Static file</span>
+              <span ng-show="pendingWizardSettings.searchEngine === 'searchapi'">Search API</span>.
   
+              <ul ng-if="pendingWizardSettings.searchEngine === 'searchapi'">
+                <li>Is your Search API behind a firewall or proxy? Try accessing the <a target="_blank" href="{{pendingWizardSettings.searchUrl}}">URL directly</a> and see if you get a response</li>
+                <li>Do you need an API Key?  If so, set one up under Advanced pane --> Custom Headers.</li>
+                <li>Double check if you have an ad blocker blocking your queries.</li>
+                <li>See the <a target="_blank" href="https://github.com/o19s/quepid/wiki/Troubleshooting-SearchAPI-and-Quepid/">Troubleshooting Search API and Quepid</a> wiki page for more help!</li>
+              </ul>
+              
               <ul ng-if="pendingWizardSettings.searchEngine === 'es'">
                 <li>Is your Elasticsearch behind a firewall or proxy? Try accessing the <a target="_blank" href="{{pendingWizardSettings.searchUrl}}">URL directly</a> and see if you get a response</li>
                 <li>Does your Elasticsearch accept HTTP POST requests?</li>
@@ -155,6 +164,14 @@ curl -k -X POST -H 'Content-type:application/json' -d '{
                 <li>See the <a target="_blank" href="https://github.com/o19s/quepid/wiki/Troubleshooting-Solr-and-Quepid">Troubleshooting Solr and Quepid</a> wiki page for more help!</li>
               </ul>
   
+            </div>
+            
+            <div ng-if="mapperInvalid" class="alert alert-danger">
+              Good news, we are getting results from the API, however we can't parse them...
+              <ul>
+                <li>You can use the Search API Response panel to see what you are getting back from the search engine.</li>   
+                <li>Use your browser Inspector to check the console, likely your JavaScript mapper code needs tweaks.</li>                            
+              </ul>
             </div>
             <div ng-if="urlValid" class="alert alert-success">Quepid can search this! Hit 'Continue' to keep working through setup.</div>
           </div>
@@ -254,10 +271,8 @@ star wars,1921,3, Star Wars: Return of the Jedi
                   <div class="col-sm-9">
                     <select class="form-control" ng-model="pendingWizardSettings.apiMethod" ng-change="resetUrlValid()">
                       <option>POST</option>
-                      <option>GET</option>  
-                      <option>JSONP</option>                                          
+                      <option>GET</option>                          
                     </select>
-                    <p class="help-block">POST and GET are the most common.</p>
                   </div>
                 </div>
                 <div class="col-sm-12 clearfix">
@@ -265,7 +280,7 @@ star wars,1921,3, Star Wars: Return of the Jedi
                   <p class="help-block">Enter a basic query structure that will return at least one document. You can edit this later.</p>
                 </div>
               
-                <div class="form-group clearfix">
+                <div class="form-group clearfix queryparams code">
                   <div class="col-sm-12">
                     <div id='query-params-editor' ui-ace="{
                         require:      ['ace/ext/language_tools'],
@@ -277,11 +292,19 @@ star wars,1921,3, Star Wars: Return of the Jedi
                   </div>
                 </div>   
                 <div class="col-sm-12 clearfix">
-                  <label class="control-label">Mapping</label>
+                  <label class="control-label">Mapping {{showSearchApiJavaScriptEditor }}</label>
                   <p class="help-block">Enter JavaScript that formats from YOUR API to the JSON structure expected by the Target Search Engine.</p>
                 </div>
+                <div class="btn-group btn-group-justified" role="group">
+                  <div class="btn-group" role="group">
+                    <button type="button" class="btn" ng-click="showSearchApiJavaScriptEditor=true" ng-class="showSearchApiJavaScriptEditor ? 'btn-primary' : 'btn-default'">Mapper Code</button>
+                  </div>
+                  <div class="btn-group" role="group">
+                    <button type="button" class="btn" ng-click="showSearchApiJavaScriptEditor=false" ng-class="showSearchApiJavaScriptEditor ? 'btn-default' : 'btn-primary'">Search API Response</button>
+                  </div>
+                </div>
 
-                <div class="form-group clearfix">
+                <div class="form-group clearfix" ng-show="showSearchApiJavaScriptEditor">
                   <div class="col-sm-12">
                     <div ui-ace="{
                       require: ['ace/ext/language_tools'],
@@ -294,7 +317,19 @@ star wars,1921,3, Star Wars: Return of the Jedi
                     }"
                     ng-model="pendingWizardSettings.mapperCode"></div>                    
                   </div>
-                </div> 
+                </div>
+                <div class="form-group clearfix" ng-show="!showSearchApiJavaScriptEditor">
+                  <div class="col-sm-12">
+                    <div ui-ace="{
+                      require:     ['ace/ext/language_tools'],
+                      useWrapMode: false,
+                      mode:        'json',
+                      theme:       'chrome'
+                    }"
+                    readonly
+                    ng-model="validatorLastResponse"></div>                    
+                  </div>
+                </div>
               </div>
             </span>   
   
@@ -442,6 +477,13 @@ star wars,1921,3, Star Wars: Return of the Jedi
     <wz-step title="Finish" id="step-six">
       <h1>That's It!</h1>
       <p class="help-block">Go to "Tune Relevance" to iterate on your relevance and manipulate searches</p>
+      
+      <div ng-show="pendingWizardSettings.searchEngine === 'searchapi'" class="alert alert-info">
+        <span>
+          You will need to modify the query template you provided to have the <code>#$query##</code> variable to run your actual queries under <i>Tune Relevance</i>
+        </span>
+      </div>
+      
       <button class="btn-lg btn-success pull-right finish" wz-next>Finish</button>
       <br><br><br><br><br>
     </wz-step>
