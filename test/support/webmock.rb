@@ -99,6 +99,19 @@ module ActiveSupport
         )
         .to_return(status: 200, body: mock_statedecoded_body, headers: {})
 
+      stub_request(:get, 'http://solr.quepid.com:8983/solr/statedecoded/select?fl=id,text&q=I%20like%20?%20marks,%20do%20you%20like%20?%20marks?&rows=10&start=0')
+        .with(
+          headers: {
+            'Accept'          => '*/*',
+            'Accept-Encoding' => 'gzip;q=1.0,deflate;q=0.6,identity;q=0.3',
+            'Content-Type'    => 'application/json',
+            'Cookie'          => '',
+            'Https'           => 'off',
+            'User-Agent'      => 'Faraday v2.7.11',
+          }
+        )
+        .to_return(status: 200, body: mock_statedecoded_body, headers: {})
+
       stub_request(
         :get,
         'http://solr.quepid.com:8983/solr/statedecoded/select?fl=id,text&q=*:*&rows=10&start=0'
