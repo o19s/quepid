@@ -10,7 +10,6 @@ gem 'angular-rails-templates', '>= 1.0.0.beta'
 gem 'apipie-rails', '~> 1.2'
 gem 'bcrypt', '~> 3.1.7'
 gem 'sassc-rails', '~> 2.1'
-gem 'turbolinks', '~> 5'
 gem 'colorize', require: false
 gem 'cookies_eu'
 gem 'devise', '>= 4.6.2'
@@ -93,3 +92,8 @@ group :test do
   gem 'capybara'
   gem 'selenium-webdriver'
 end
+
+gem "turbo-rails", "~> 1.5"
+
+gem "jsbundling-rails", "~> 1.2"
+gem "stimulus-rails", "~> 1.3"

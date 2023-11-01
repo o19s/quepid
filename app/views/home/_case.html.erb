@@ -19,5 +19,12 @@
   </td>
   <% end %>
  
-  <td><%= link_to 'View', case_core_path(kase, kase.last_try_number), class: 'btn btn-sm btn-primary', role: 'button' %></td>
+  <td>
+    <%= link_to 'View', 
+          case_core_path(kase, kase.last_try_number), 
+          class: 'btn btn-sm btn-primary', 
+          role: 'button',
+          data: { turbo_frame: "_top" }
+    %>
+  </td>
 </tr>

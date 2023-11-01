@@ -2,6 +2,8 @@
 
 class HomeController < ApplicationController
   def show
+    # https://www.gamecreatures.com/blog/2023/03/07/rails-add-turbo-hotwire-to-existing-sprockets-application/
+    @turbo = true
     # @cases = @current_user.cases.not_archived.includes([ :scores ])
     @cases = @current_user.cases_involved_with.not_archived
 
@@ -21,10 +23,39 @@ class HomeController < ApplicationController
 
     @most_recent_books.sort_by!(&:name)
 
+ 
+  end
+  
+  def bob
+    @case = Case.new
+    render :layout => false
+  end
+  
+  def cases
+    @cases = @current_user.cases_involved_with.not_archived
+    render :layout => false
+  end
+  
+  def grouped_cases
+    @cases = @current_user.cases_involved_with.not_archived
     # Homepage is too slow so we have to cut some stuff out ;-(
-    # candidate_cases = @cases.select { |kase| kase.scores.scored.count.positive? }
-    @cases
-    # @grouped_cases = candidate_cases.group_by { |kase| kase.case_name.split(':').first }
-    # @grouped_cases = @grouped_cases.select { |_key, value| value.count > 1 }
+    candidate_cases = @cases.select { |kase| kase.scores.scored.count.positive? }
+    @grouped_cases = candidate_cases.group_by { |kase| kase.case_name.split(':').first }
+    @grouped_cases = @grouped_cases.select { |_key, value| value.count > 1 }    
+    render :layout => false    
+  end
+  
+  def youruncle
+    
+    file = params[:case][:upload].read
+    data = JSON.parse(file)
+    puts data
+    #file_data = params[:case][:upload].tempfile
+    #File.read(file_data, 'r') do |file|  
+    #  person = JSON.parse(file)
+    #  puts person
+    #end
+    
+    redirect_to admin_users_url, notice: 'User account was successfully deleted.'
   end
 end

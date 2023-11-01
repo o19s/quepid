@@ -1,0 +1,5 @@
+<turbo-frame id="grouped-cases">
+  <% @grouped_cases.keys[0..2].each do |key| %>
+  <%= render partial: "grouped_cases", locals: {grouped_cases_name: key, grouped_cases: @grouped_cases[key]}%>
+  <% end %>
+</turbo-frame>

@@ -57,10 +57,11 @@
 <%= stylesheet_link_tag 'application', media: 'all' %>
 <%= csrf_meta_tags %>
 <%= javascript_include_tag 'application' %>
+<%= javascript_include_tag "app2", defer: true %>
 
 </head>
 
-<body>
+<body 'data-turbo'= <%= @turbo ? true : false %>' >
 
 <%= render 'layouts/header' %>
 

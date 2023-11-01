@@ -12,14 +12,14 @@ https://getbootstrap.com/docs/5.2/examples/navbars-offcanvas/# for example of of
 </div>
 
 <div class="row my-4">
-  <% if false %>
   <%= render partial: "case_summary", collection: @most_recent_cases, as: :kase %>
-  <% end %>
 </div>
 
 <div class="row my-4">
   <%= render partial: "book_summary", collection: @most_recent_books, as: :book %>
 </div>
+
+
 
 <% if @cases.empty? && @most_recent_books.empty?  %>
 <div class="container my-5">
@@ -39,40 +39,44 @@ https://getbootstrap.com/docs/5.2/examples/navbars-offcanvas/# for example of of
   </div>
 </div>
 <% else %>
+
+
 <div class="row">
     <div class="col-12 col-xl-8 mb-4 mb-lg-0">
       <div class="card">
           <h5 class="card-header">Cases</h5>
           <div class="card-body">
               <div class="table-responsive">
-                  <table class="table">
-                      <thead>
-                        <tr>
-                          <th scope="col">Case Title</th>
-                          <th scope="col"># of Queries</th>
-                          <th scope="col">Last Score</th>
-                          <th scope="col">Last Run On</th>
-                          <th scope="col">Last Run By</th>
-                          <th scope="col"></th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <%= render partial: "case", collection: @cases, as: :kase %>
-                      </tbody>
-                    </table>
+                <%= turbo_frame_tag "cases", src: home_cases_path do %>                                          
+                  <div>
+                    Placeholder content
+                  </div>                        
+                <% end %>
               </div>
-              <%= link_to 'View all', cases_path(), class: 'btn btn-block btn-light', role: 'button' %>
-              
+              <%= link_to 'View all', cases_path(), class: 'btn btn-block btn-light', role: 'button' %>              
           </div>
       </div>      
     </div>
     <div class="col-12 col-xl-4">
-      <% if true == false # disable%>
-      <% @grouped_cases.keys[0..2].each do |key| %>
-      <%= render partial: "grouped_cases", locals: {grouped_cases_name: key, grouped_cases: @grouped_cases[key]}%>
-      <% end %>
-      <% end %>
-                    
+      <%= turbo_frame_tag "grouped-cases", src: home_grouped_cases_path do %>                                          
+
+        <div class="card" aria-hidden="true">
+          <img src="..." class="card-img-top" alt="...">
+          <div class="card-body">
+            <h5 class="card-title placeholder-glow">
+              <span class="placeholder col-6"></span>
+            </h5>
+            <p class="card-text placeholder-glow">
+              <span class="placeholder col-7"></span>
+              <span class="placeholder col-4"></span>
+              <span class="placeholder col-4"></span>
+              <span class="placeholder col-6"></span>
+              <span class="placeholder col-8"></span>
+            </p>
+          </div>
+        </div>
+          
+      <% end %>                 
     </div>
 </div>
 <% end %>

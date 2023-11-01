@@ -6,6 +6,9 @@
   },
   "license": "Apache-2.0",
   "dependencies": {
+    "@hotwired/turbo-rails": "^7.3.0",
+    "@hotwired/stimulus": "^3.0",
+    "esbuild": "^0.17.11",
     "@popperjs/core": "^2.11.6",
     "@rails/actioncable": "7.0.8",
     "@rails/activestorage": "7.0.8",
@@ -41,7 +44,6 @@
     "popper.js": "^1.16.1",
     "splainer-search": "2.27.0",
     "tether-shepherd": "latest",
-    "turbolinks": "^5.2.0",
     "vega": "5.25.0"
   },
   "devDependencies": {
@@ -53,5 +55,8 @@
     "karma-jasmine": "5.1.0",
     "puppeteer": "^21.3.0"
   },
-  "resolutions": {}
+  "resolutions": {},
+  "scripts": {
+    "build": "esbuild app/javascript/*.* --bundle --sourcemap --outdir=app/assets/builds --public-path=assets"
+  }
 }

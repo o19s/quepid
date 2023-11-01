@@ -7,6 +7,10 @@ Rails.application.routes.draw do
   # get 'home/show'
   apipie
   root 'home#show'
+  get 'home/bob' => 'home#bob'
+  post 'home/youruncle' => 'home#youruncle'
+  get 'home/cases' => 'home#cases'
+  get 'home/grouped_cases' => 'home#grouped_cases'
 
   get 'proxy/fetch'
   post 'proxy/fetch'

@@ -1,0 +1,14 @@
+<turbo-frame id="cases">
+  <table class="table">
+    <tr>
+      <th scope="col">Case Title</th>
+      <th scope="col"># of Queries</th>
+      <th scope="col">Last Score</th>
+      <th scope="col">Last Run On</th>
+      <th scope="col">Last Run By</th>
+      <th scope="col"></th>
+    </tr>
+          
+    <%= render partial: "case", collection: @cases, as: :kase %>
+  </table>
+</turbo-frame>

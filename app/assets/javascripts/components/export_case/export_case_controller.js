@@ -122,6 +122,10 @@ angular.module('QuepidApp')
          }
 
         }
+        else if ( options.which === 'quepid' ) {
+         $log.info('Selected "quepid" as export option.');
+         caseCSVSvc.exportQuepidFormat(ctrl.theCase);
+        }        
         else if ( options.which === 'rre' ) {
          $log.info('Selected "rre" as export option.');
          caseCSVSvc.exportRREFormat(ctrl.theCase);

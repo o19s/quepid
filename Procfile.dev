@@ -1,2 +1,3 @@
 web:    bundle exec puma -C config/puma.rb
 worker: bundle exec sidekiq -e development -C config/sidekiq.yml -q default
+js: yarn build --watch
