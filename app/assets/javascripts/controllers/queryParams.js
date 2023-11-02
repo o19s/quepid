@@ -44,7 +44,12 @@ angular.module('QuepidApp')
           }
 
           if ($scope.settings.searchEngine !== '' && !angular.isUndefined($scope.settings.searchUrl)){
+            if ($scope.settings.proxyRequests === true){
+              $scope.showTLSChangeWarning = false;
+            }
+            else {
              $scope.showTLSChangeWarning = caseTryNavSvc.needToRedirectQuepidProtocol($scope.settings.searchUrl);
+            }
 
             if ($scope.showTLSChangeWarning){
 
