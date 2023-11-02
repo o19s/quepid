@@ -16,12 +16,9 @@ class ProxyController < ApplicationController
   def fetch
     url_param = proxy_url_params
 
-    puts "HERE IS THE url_param:#{url_param}"
-
     uri = URI.parse(url_param)
     url_without_path = "#{uri.scheme}://#{uri.host}"
     url_without_path += ":#{uri.port}" unless uri.port.nil?
-    puts "url_without_path: #{url_without_path}"
     connection = Faraday.new(url: url_without_path) do |faraday|
       # Configure the connection options, such as headers or middleware
       # faraday.response :logger, nil, { headers: true, bodies: true }
