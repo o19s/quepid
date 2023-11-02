@@ -303,7 +303,7 @@ angular.module('QuepidApp')
           
           $scope.validatorLastResponse = JSON.stringify(validator.searcher.lastResponse,null,2);
           
-          if (error.toString().startsWith("Error: MapperError")){
+          if (error.toString().startsWith('Error: MapperError')){
             $scope.mapperInvalid = true;
           }
           else {
