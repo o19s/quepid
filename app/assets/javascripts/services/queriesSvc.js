@@ -74,6 +74,7 @@ angular.module('QuepidApp')
       
       // This function is meant to be used in a mapper, and is duplicated
       // in wizardModal.js too ;-()
+      /* jshint ignore:start */
       function sha256(ascii) {
           function rightRotate(value, amount) {
               return (value>>>amount) | (value<<(32 - amount));
@@ -170,6 +171,7 @@ angular.module('QuepidApp')
           }
           return result;
       };
+      /* jshint ignore:end */
 
       function createSearcherFromSettings(passedInSettings, queryText, query) {
         let args = angular.copy(passedInSettings.selectedTry.args) || {};

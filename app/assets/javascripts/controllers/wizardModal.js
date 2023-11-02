@@ -34,6 +34,7 @@ angular.module('QuepidApp')
       
       // I can get sha256 to work, but not the messageDigest due to it's having an await.
       // this function is also copied into queriesSvc.js to use there.
+      /* jshint ignore:start */
       function sha256(ascii) {
           function rightRotate(value, amount) {
               return (value>>>amount) | (value<<(32 - amount));
@@ -130,7 +131,10 @@ angular.module('QuepidApp')
           }
           return result;
       };
+      /* jshint ignore:end */
       
+      /* jshint ignore:start */
+      // getting some warnings about es versions and crypto not being defined...
       async function digestMessage(message) {
         const msgUint8 = new TextEncoder().encode(message); // encode as (utf-8) Uint8Array
         const hashBuffer = await crypto.subtle.digest("SHA-256", msgUint8); // hash the message
@@ -140,6 +144,7 @@ angular.module('QuepidApp')
           .join(""); // convert bytes to hex string
         return hashHex;
       }
+      /* jshint ignore:end */
       
       
       $scope.wizardSettingsModel = {};
@@ -309,6 +314,9 @@ angular.module('QuepidApp')
       function reset() {
         $scope.validating = false;
         $scope.urlValid = $scope.urlInvalid = $scope.invalidHeaders = $scope.invalidProxyApiMethod = false;
+        $scope.mapperInvalid = false;
+        $scope.mapperErrorMessage = null;
+        
         
         $scope.showTLSChangeWarning = false; // hope this doesn't cause a flicker.'
         if ($scope.pendingWizardSettings.searchUrl){
@@ -415,6 +423,7 @@ angular.module('QuepidApp')
           
           if (error.toString().startsWith('Error: MapperError')){
             $scope.mapperInvalid = true;
+            $scope.mapperErrorMessage = error.toString();
           }
           else {
             $scope.urlInvalid = true;
@@ -481,6 +490,7 @@ angular.module('QuepidApp')
         $scope.validating   = false;
         $scope.urlValid     = true;
         $scope.mapperInvalid= false;
+        $scope.mapperErrorMessage = null;
         $scope.searchFields = validator.fields;
         $scope.idFields     = validator.idFields;            
 

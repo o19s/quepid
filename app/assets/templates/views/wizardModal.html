@@ -167,7 +167,9 @@ curl -k -X POST -H 'Content-type:application/json' -d '{
             </div>
             
             <div ng-if="mapperInvalid" class="alert alert-danger">
-              Good news, we are getting results from the API, however we can't parse them...
+              
+              Good news, we are getting results from the API, however we can't parse them...<br/>
+              <code>{{ mapperErrorMessage }}</code>
               <ul>
                 <li>You can use the Search API Response panel to see what you are getting back from the search engine.</li>   
                 <li>Use your browser Inspector to check the console, likely your JavaScript mapper code needs tweaks.</li>                            
