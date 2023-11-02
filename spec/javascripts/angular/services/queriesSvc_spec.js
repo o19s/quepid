@@ -15,6 +15,8 @@ describe('Service: queriesSvc', function () {
   var mockSearchSvc;
   var mockScorerSvc;
   var mockCaseSvc;
+  
+  var mockSolrUrl =  "http://example.com:1234/solr/example";
 
   var mockTry = {
     args: {
@@ -70,22 +72,6 @@ describe('Service: queriesSvc', function () {
       {id: 'doc2', field1: 'doc2field1val', field2: 'doc2field2val',
         origin:function() {return this;},  highlight: function() {return null;}, explain: function() {return null;}}
       ]
-    }
-  };
-
-  var mockNoResults = {
-    response: {
-      numFound: 0,
-      docs : []
-    }
-  };
-
-  // return true if the non-query string of the URL corresponds
-  // to our example.com URL, we don't check query params (thats for the
-  // solr searcher test)
-  var expectedSolrUrl = {
-    test: function(url) {
-      return url.indexOf(mockSolrUrl) === 0;
     }
   };
 
