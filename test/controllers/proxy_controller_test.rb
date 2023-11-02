@@ -62,15 +62,14 @@ class ProxyControllerTest < ActionDispatch::IntegrationTest
                                                                                   headers: { 'Content-Type' => 'application/json' }
     assert_response :success
   end
-  
-  
+
   describe 'logging of http requests by the proxy' do
     before do
       # Create a StringIO object to capture the output
       @output = StringIO.new
       $stdout = @output
     end
-    
+
     after do
       # Reset $stdout to its original value
       $stdout = STDOUT
@@ -82,18 +81,17 @@ class ProxyControllerTest < ActionDispatch::IntegrationTest
       }
       assert_response :success
       captured_output = @output.string
-      assert_includes captured_output, "For the purpose of this chapter"
+      assert_includes captured_output, 'For the purpose of this chapter'
     end
-    
+
     test 'logging of http is disabled by default' do
       get proxy_fetch_url params: {
         url: 'http://solr.quepid.com:8983/solr/statedecoded/select?', fl: 'id,text', q: 'legal', rows: 10, start: 0
       }
       assert_response :success
       captured_output = @output.string
-      assert_not_includes captured_output, "For the purpose of this chapter"
-    end    
+      assert_not_includes captured_output, 'For the purpose of this chapter'
+    end
   end
-
 end
 # rubocop:enable Layout/LineLength

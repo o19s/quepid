@@ -15,10 +15,10 @@ class ProxyController < ApplicationController
   #
   def fetch
     excluded_keys = [ :url, :action, :controller, :proxy_debug ]
-    
+
     url_param = proxy_url_params
-    
-    proxy_debug = params[:proxy_debug] == 'true'
+
+    proxy_debug = 'true' == params[:proxy_debug]
 
     uri = URI.parse(url_param)
     url_without_path = "#{uri.scheme}://#{uri.host}"
