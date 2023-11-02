@@ -28,58 +28,10 @@ window.arrayContains = function(list, value) {
   return contains;
 };
 
-window.mockSolrUrl =  "http://example.com:1234/solr/example";
-
 window.expectedSolrUrl = function(expected) {
   return {
     test: function(url) {
-      if (expected === undefined) {
-        expected = window.mockSolrUrl;
-      }
       return url.indexOf(expected) === 0;
     }
   };
-};
-
-window.mockFullQueriesResp = {
-  queries: {
-    displayOrder: [2,1,0],
-    queries: {
-      '0': {
-        'arranged_at': '3681400536',
-        'arranged_next': '4294967295',
-        'deleted': 'false',
-        'queryId': '0',
-        'query_text': 'symptoms of heart attack',
-        'doc1': '5',
-        'doc2': '9'
-      },
-      '1': {
-        'arranged_at': '3067833780',
-        'arranged_next': '3681400536',
-        'deleted': 'true',
-        'queryId': '1',
-        'query_text': 'how is kidney cancer diagnosed'
-      },
-      '2': {
-        'arranged_at': '0',
-        'arranged_next': '613566756',
-        'deleted': 'false',
-        'l_31284': '10',
-        'queryId': '2',
-        'query_text': 'prognosis of alzheimers',
-        'doc1': '1',
-        'doc2': '10'
-      }
-    }
-  }
-};
-window.mockResults = {
-  response: {
-    numFound: 2,
-    docs : [
-      {id: 'doc1', field1: 'doc1field1val', field2: 'doc1field2val'},
-      {id: 'doc2', field1: 'doc2field1val', field2: 'doc2field2val'}
-    ]
-  }
 };

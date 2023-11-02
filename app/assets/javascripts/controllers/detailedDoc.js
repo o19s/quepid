@@ -5,9 +5,18 @@ angular.module('QuepidApp')
     '$scope', '$uibModalInstance',
     'doc',
     function DetailedDocCtrl($scope, $uibModalInstance, doc) {
-      // this controller is a bit silly just because
-      // modals need their own controller
+      
       $scope.doc = doc;
+      
+      $scope.showAllFields = false;
+
+      $scope.allFields = function() {
+        return JSON.stringify($scope.doc.doc.origin(),null,2);
+      };
+      
+      $scope.allFieldsFormatted = $scope.allFields();
+      
+
 
       $scope.cancel = function() {
         $uibModalInstance.dismiss('cancel');
