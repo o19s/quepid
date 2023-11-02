@@ -954,6 +954,10 @@ footer {
   height: 125px;
 }
 
+.detaileddoc.code .ace_editor {
+  height: 300px;
+}
+
 .scorer .max-score input:disabled {
   background-color: #EEE;
 }
