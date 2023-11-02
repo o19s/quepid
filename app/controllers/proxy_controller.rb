@@ -14,7 +14,11 @@ class ProxyController < ApplicationController
   # curl -X POST "http://localhost:3000/proxy/fetch?url=https://quepid-solr.dev.o19s.com/solr/tmdb/query" -d '{"query":"star"}'
   #
   def fetch
+    excluded_keys = [ :url, :action, :controller, :proxy_debug ]
+    
     url_param = proxy_url_params
+    
+    proxy_debug = params[:proxy_debug] == 'true'
 
     uri = URI.parse(url_param)
     url_without_path = "#{uri.scheme}://#{uri.host}"
@@ -22,7 +26,7 @@ class ProxyController < ApplicationController
     connection = Faraday.new(url: url_without_path) do |faraday|
       # Configure the connection options, such as headers or middleware
       # faraday.response :logger, nil, { headers: true, bodies: true }
-      faraday.response :logger, nil, { headers: true, bodies: false, errors: true }
+      faraday.response :logger, nil, { headers: proxy_debug, bodies: proxy_debug, errors: true }
       faraday.ssl.verify = false
       faraday.request :url_encoded
 
@@ -41,7 +45,6 @@ class ProxyController < ApplicationController
     if request.get?
       response = connection.get do |req|
         req.path = uri.path
-        excluded_keys = [ :url, :action, :controller ]
         query_params = request.query_parameters.except(*excluded_keys)
         body_params = request.request_parameters.except(*query_params.keys)
 
@@ -54,8 +57,6 @@ class ProxyController < ApplicationController
         # we get http://localhost:3000/proxy/fetch?url=http://myserver.com/search?query=text&rows=10
         # which means the parameter "query=text" is lost because the URL is parsed and this part is dropped,
         # so here we add this one parameter back in if we have it.
-        puts "url_param.include?('?'): #{url_param.include?('?')}"
-        puts "!url_param.ends_with?('?'): #{!url_param.ends_with?('?')}"
         if url_param.include?('?')
           # sometimes our url looks like http://myserver.com/search?q=tiger
           # But it could also be http://myserver.com/search?q=tiger? and that needs handling via the special .split
@@ -72,7 +73,6 @@ class ProxyController < ApplicationController
     elsif request.post?
       response = connection.post do |req|
         req.path = uri.path
-        excluded_keys = [ :url, :action, :controller ]
         query_params = request.query_parameters.except(*excluded_keys)
         body_params = request.request_parameters.except(*query_params.keys) # not sure about this and the request.raw_post
         query_params.each do |param|
