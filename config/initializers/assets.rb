@@ -5,11 +5,6 @@
 # Version of your assets, change this if you want to expire all your assets.
 Rails.application.config.assets.version = '1.0'
 
-# Needed due to segfaults in sassc gem.  Remove in Rails 7!
-Rails.application.config.assets.configure do |env|
-  env.export_concurrent = false
-end
-
 # Add additional assets to the asset load path.
 # Rails.application.config.assets.paths << Emoji.images_path
 # Add Yarn node_modules folder to the asset load path.
