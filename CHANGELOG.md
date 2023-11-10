@@ -1,6 +1,6 @@
 # Changelog
 
-## 7.10.0 - 2023-10-19
+## 7.10.0 - 2023-11-03
 
 Big feature!  Or should I say big refactoring?   Meet your new friend "The Search Endpoint".  You can now configure a connection to a search engine, maybe one of the classic ones like Solr, OpenSearch, or Elasticsearch, or some new ones like "Static CSV File" or even a "Custom Search API".  Once that is configured, then you can reuse that connection over and over.  Even better, you can share it with your friends in your Team, similar to how you share Cases and Scorers.
 
