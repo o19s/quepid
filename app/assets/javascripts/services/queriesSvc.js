@@ -176,7 +176,7 @@ angular.module('QuepidApp')
       function createSearcherFromSettings(passedInSettings, query, options) {
         let queryText = query.queryText;
         let args = angular.copy(passedInSettings.selectedTry.args) || {};
-        options = options == null ? {} : options
+        options = options == null ? {} : options;
         
         if (passedInSettings && passedInSettings.selectedTry) {
 
