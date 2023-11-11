@@ -317,7 +317,7 @@ angular.module('QuepidApp')
         self.ratedDocs      = [];
         self.ratedDocsFound = 0;
         self.numFound       = 0;
-        self.options        = {};
+        self.options        = queryWithRatings.options == null ? {} : queryWithRatings.options;
         self.notes          = queryWithRatings.notes;
         self.modifiedAt      = queryWithRatings.modified_at;
 
@@ -333,15 +333,6 @@ angular.module('QuepidApp')
 
         // Error
         self.errorText = '';
-
-        // Set the query options
-        if (
-          queryWithRatings.hasOwnProperty('options') &&
-          queryWithRatings.options !== '' &&
-          queryWithRatings.options !== null
-        ) {
-          self.options  = JSON.parse(queryWithRatings.options);
-        }
 
         self.ratings = queryWithRatings.ratings;
         if ( self.ratings === undefined ) {
@@ -707,7 +698,7 @@ angular.module('QuepidApp')
 
           return $http.put(url , optionsJson)
             .then(function() {
-              that.options = JSON.parse(options);
+              that.options = options;
 
               that.setDirty();
             }, function(response) {
