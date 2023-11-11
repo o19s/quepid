@@ -44,7 +44,7 @@ module Api
 
         describe "Updates query's options" do
           test 'sets the new query options successfully' do
-            options = "{ foo: 'bar' }"
+            options = JSON.parse('{ "foo": "bar" }')
 
             put :update, params: { case_id: acase.id, query_id: query.id, query: { options: options } }
 
