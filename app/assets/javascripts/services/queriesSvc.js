@@ -173,23 +173,25 @@ angular.module('QuepidApp')
       };
       /* jshint ignore:end */
 
-      function createSearcherFromSettings(passedInSettings, queryText, query) {
+      function createSearcherFromSettings(passedInSettings, query, options) {
+        let queryText = query.queryText;
         let args = angular.copy(passedInSettings.selectedTry.args) || {};
-
+        options = options == null ? {} : options
+        
         if (passedInSettings && passedInSettings.selectedTry) {
 
-          let options = {
+          let searcherOptions = {
             customHeaders: passedInSettings.customHeaders,
             escapeQuery:   passedInSettings.escapeQuery,
             numberOfRows:  passedInSettings.numberOfRows,
             basicAuthCredential: passedInSettings.basicAuthCredential
           };
           if (passedInSettings.apiMethod !== undefined) {
-            options.apiMethod = passedInSettings.apiMethod;
+            searcherOptions.apiMethod = passedInSettings.apiMethod;
           }
           
           if (passedInSettings.proxyRequests === true) {
-            options.proxyUrl = caseTryNavSvc.getQuepidProxyUrl();
+            searcherOptions.proxyUrl = caseTryNavSvc.getQuepidProxyUrl();
           }          
           
           if (passedInSettings.searchEngine === 'static'){
@@ -207,11 +209,11 @@ angular.module('QuepidApp')
             
             if (typeof docsMapper === 'function') {
               // jshint -W117
-              options.docsMapper = docsMapper; 
+              searcherOptions.docsMapper = docsMapper; 
             }
             if (typeof numberOfResultsMapper === 'function') {
               // jshint -W117
-              options.numberOfResultsMapper = numberOfResultsMapper;               
+              searcherOptions.numberOfResultsMapper = numberOfResultsMapper;               
             }
             
             
@@ -224,7 +226,7 @@ angular.module('QuepidApp')
             }
           }
           // Modify query if ratings were passed in
-          if (query) {
+          if (options.filterToRated) {
             if (passedInSettings.searchEngine === 'es' || passedInSettings.searchEngine === 'os') {
               let mainQuery = args['query'];
               args['query'] = {
@@ -245,8 +247,10 @@ angular.module('QuepidApp')
               // });
             }
           }
-
-
+          
+          // This is for Mattias!  Merge our query specific options in as "qOption"
+          // which is what splainer-search expects. 
+          searcherOptions.qOption = query.options;
 
 
           return searchSvc.createSearcher(
@@ -254,7 +258,7 @@ angular.module('QuepidApp')
             passedInSettings.selectedTry.searchUrl,
             args,
             queryText,
-            options,
+            searcherOptions,
             passedInSettings.searchEngine
           );
         }
@@ -489,8 +493,8 @@ angular.module('QuepidApp')
 
           self.ratedSearcher = svc.createSearcherFromSettings(
               settings,
-              self.queryText,
-              self
+              self,
+              { filterToRated: true }
             );
 
           let ratedDocsStaging = [];
@@ -562,13 +566,13 @@ angular.module('QuepidApp')
 
             self.searcher = svc.createSearcherFromSettings(
               currSettings,
-              self.queryText
+              self
             );
 
             self.ratedSearcher = svc.createSearcherFromSettings(
               currSettings,
-              self.queryText,
-              self
+              self,
+              { filterToRated: true }
             );
 
             resultsReturned = false;
