@@ -43,6 +43,7 @@ module Api
 
           # passed first set of validations.
           @case.case_name = params_to_use[:case_name]
+          @case.options = params_to_use[:options]
 
           @case.scorer = Scorer.find_by(name: scorer_name)
 

@@ -28,5 +28,9 @@ class ExportImportCaseFlowTest < ActionDispatch::IntegrationTest
     new_case = Case.find(response.parsed_body['id'])
     assert_not_nil(new_case)
     assert_not_empty(new_case.tries.first.curator_vars_map)
+
+    # spot check some attributes
+    assert_equal acase.options.to_json, new_case.options.to_json
+    assert_equal acase.tries.first.search_endpoint.options.to_json, new_case.tries.first.search_endpoint.options.to_json
   end
 end

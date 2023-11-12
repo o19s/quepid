@@ -12,5 +12,4 @@ json.basic_auth_credential  search_endpoint.basic_auth_credential
 json.mapper_code            search_endpoint.mapper_code
 json.proxy_requests         search_endpoint.proxy_requests
 
-# not needed
-# json.options                search_endpoint.options
+json.options search_endpoint.options if export
