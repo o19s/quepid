@@ -31,6 +31,7 @@
         self.exportBasicFormatSnapshot  = exportBasicFormatSnapshot;
         self.exportTrecFormat           = exportTrecFormat;
         self.exportTrecFormatSnapshot   = exportTrecFormatSnapshot;
+        self.exportQuepidFormat         = exportQuepidFormat;
         self.exportRREFormat            = exportRREFormat;
         self.exportLTRFormat            = exportLTRFormat;
         self.exportInformationNeed      = exportInformationNeed;
@@ -249,7 +250,18 @@
               saveAs(blob, formatDownloadFileName(aCase.caseName + '_trec_snapshot.txt'));
             });
         }
+        
+        function exportQuepidFormat(aCase) {
+          $http.get('api/export/cases/' + aCase.caseNo)
+            .then(function(response) {
+              var blob = new Blob([$filter('json')(response.data)], {
+                type: 'application/json'
+              });
 
+              /*global saveAs */
+              saveAs(blob, formatDownloadFileName(aCase.caseName + '_quepid.json'));
+            });
+        }
 
         function exportRREFormat(aCase) {
           $http.get('api/export/ratings/' + aCase.caseNo + '.json?file_format=rre')
