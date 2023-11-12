@@ -20,6 +20,9 @@ json.archived         acase.archived
 
 json.last_try_number acase.tries.latest.try_number unless no_tries || acase.tries.blank? || acase.tries.latest.blank?
 
+# not needed
+# json.options         acase.options
+
 unless no_teams
   teams = acase.teams.find_all { |t| current_user.teams.all.include?(t) }
   json.teams teams

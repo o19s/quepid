@@ -17,6 +17,11 @@ json.basic_auth_credential try.search_endpoint&.basic_auth_credential
 json.mapper_code    try.search_endpoint&.mapper_code
 json.proxy_requests try.search_endpoint&.proxy_requests
 
+# json.se_options     try.search_endpoint&.options
+# json.case_options   try.case&.options
+
+json.options try.options
+
 json.try_number try.try_number
 if try.search_endpoint.present?
   json.search_endpoint do

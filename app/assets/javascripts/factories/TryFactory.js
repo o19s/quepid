@@ -55,6 +55,7 @@
       self.basicAuthCredential  = data.basic_auth_credential;    
       self.mapperCode    = data.mapper_code;
       self.proxyRequests = data.proxy_requests;
+      self.options       = data.options;
 
 
       // transform curator vars to be more angular friendly

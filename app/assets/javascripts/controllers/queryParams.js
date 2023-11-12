@@ -114,6 +114,7 @@ angular.module('QuepidApp')
           search_url:     $scope.settings.selectedTry.searchUrl,
           try_number:     $scope.settings.selectedTry.tryNo,
           basic_auth_crendential:     $scope.settings.selectedTry.basicAuthCredential,
+          options:        $scope.settings.selectedTry.options,
         });
         tmp.updateVars();
         

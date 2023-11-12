@@ -250,7 +250,7 @@ angular.module('QuepidApp')
           
           // This is for Mattias!  Merge our query specific options in as "qOption"
           // which is what splainer-search expects. 
-          searcherOptions.qOption = query.options;
+          searcherOptions.qOption = { ...passedInSettings.options, ...query.options};
 
 
           return searchSvc.createSearcher(
