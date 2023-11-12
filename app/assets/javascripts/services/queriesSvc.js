@@ -1,6 +1,7 @@
 'use strict';
 
-/*jslint latedef:false*/
+/* jslint latedef:false */
+/* jshint esversion: 9 */
 
 // Responsible for managing individual queries
 // so its a starting point for a lot of functionality...
