@@ -35,6 +35,7 @@
 require 'solr_arg_parser'
 require 'es_arg_parser'
 
+# rubocop:disable Metrics/ClassLength
 class Try < ApplicationRecord
   has_ancestry orphan_strategy: :adopt
 
@@ -78,13 +79,36 @@ class Try < ApplicationRecord
   # rubocop:enable Metrics/MethodLength
 
   # merge the search endpoint and case options together,
-  # with search endpoint taking precedence
+  # with search endpoint options taking precedence
+  # rubocop:disable Metrics/AbcSize
+  # rubocop:disable Metrics/MethodLength
+  # rubocop:disable Metrics/PerceivedComplexity
   def options
-    case_options = self.case.options.to_hash
-    search_endpoint_options = JSON.parse(search_endpoint.options)
+    # NOTE: there is weirdness that case options parse as json
+    # but search_endpoint options stay strings and we manually parse them
+    # except sometimes we don't ugh.'
+    case_options = {}
+    if self.case
+      if self.case.options.is_a? String
+        case_options = JSON.parse(self.case.options)
+      elsif self.case.options.present?
+        case_options = self.case.options.to_hash
+      end
+    end
+    search_endpoint_options = {}
+    if search_endpoint
+      if search_endpoint.options.is_a? String
+        search_endpoint_options = JSON.parse(search_endpoint.options)
+      elsif search_endpoint.options.present?
+        search_endpoint_options = search_endpoint.options.to_hash
+      end
+    end
     merged_hash = case_options.merge(search_endpoint_options)
     JSON.parse(merged_hash.to_json)
   end
+  # rubocop:enable Metrics/AbcSize
+  # rubocop:enable Metrics/MethodLength
+  # rubocop:enable Metrics/PerceivedComplexity
 
   def param
     try_number
@@ -181,3 +205,4 @@ class Try < ApplicationRecord
     self.number_of_rows = 10 if number_of_rows.blank?
   end
 end
+# rubocop:enable Metrics/ClassLength

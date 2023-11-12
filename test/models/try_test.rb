@@ -203,4 +203,51 @@ class TryTest < ActiveSupport::TestCase
       assert_includes try_one.children, try_three
     end
   end
+
+  describe 'handling options' do
+    test 'try options logic works when no options defined' do
+      try = Try.new
+      assert try.options.empty?
+    end
+
+    test 'try handles missing options' do
+      options_hash = {
+        a: 1,
+      }
+      try = tries(:one)
+      try.case.options = '{"a":1}'
+      try.case.save!
+
+      assert_equal options_hash.to_json, try.options.to_json
+
+      try.case.options = nil
+      try.case.save!
+      try.search_endpoint.options = '{"a":1}'
+      try.search_endpoint.save!
+
+      assert_equal options_hash.to_json, try.options.to_json
+    end
+
+    test 'try can merge search engine options OVER case options' do
+      try = tries(:one)
+      case_options = {
+        a: 1,
+        b: 'bee',
+      }
+      search_endpoint_options = {
+        a: 10,
+        c: 'sea',
+      }
+      expected_options = {
+        a: 10,
+        b: 'bee',
+        c: 'sea',
+      }
+
+      try.case.options = case_options
+      try.search_endpoint.options = search_endpoint_options
+
+      assert_equal expected_options.to_json, try.options.to_json
+    end
+  end
 end
