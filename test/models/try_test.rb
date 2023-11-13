@@ -210,6 +210,15 @@ class TryTest < ActiveSupport::TestCase
       assert try.options.empty?
     end
 
+    test 'try options logic works when options is not actually json' do
+      try = tries(:one)
+      try.search_endpoint.options = 'not a json string'
+      assert try.options.empty?
+      try.search_endpoint.options = nil
+      try.case.options = 'not a json string'
+      assert try.options.empty?
+    end
+
     test 'try handles missing options' do
       options_hash = {
         a: 1,

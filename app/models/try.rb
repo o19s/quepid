@@ -90,7 +90,10 @@ class Try < ApplicationRecord
     case_options = {}
     if self.case
       if self.case.options.is_a? String
-        case_options = JSON.parse(self.case.options)
+        begin
+          case_options = JSON.parse(self.case.options)
+        rescue JSON::ParserError
+        end
       elsif self.case.options.present?
         case_options = self.case.options.to_hash
       end
@@ -98,7 +101,10 @@ class Try < ApplicationRecord
     search_endpoint_options = {}
     if search_endpoint
       if search_endpoint.options.is_a? String
-        search_endpoint_options = JSON.parse(search_endpoint.options)
+        begin
+          search_endpoint_options = JSON.parse(search_endpoint.options)
+        rescue JSON::ParserError
+        end
       elsif search_endpoint.options.present?
         search_endpoint_options = search_endpoint.options.to_hash
       end
