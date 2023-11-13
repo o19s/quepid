@@ -83,6 +83,7 @@ class Try < ApplicationRecord
   # rubocop:disable Metrics/AbcSize
   # rubocop:disable Metrics/MethodLength
   # rubocop:disable Metrics/PerceivedComplexity
+  # rubocop:disable Metrics/CyclomaticComplexity
   def options
     # NOTE: there is weirdness that case options parse as json
     # but search_endpoint options stay strings and we manually parse them
@@ -93,6 +94,7 @@ class Try < ApplicationRecord
         begin
           case_options = JSON.parse(self.case.options)
         rescue JSON::ParserError
+          case_options = {}
         end
       elsif self.case.options.present?
         case_options = self.case.options.to_hash
@@ -104,6 +106,7 @@ class Try < ApplicationRecord
         begin
           search_endpoint_options = JSON.parse(search_endpoint.options)
         rescue JSON::ParserError
+          search_endpoint_options = {}
         end
       elsif search_endpoint.options.present?
         search_endpoint_options = search_endpoint.options.to_hash
@@ -115,6 +118,7 @@ class Try < ApplicationRecord
   # rubocop:enable Metrics/AbcSize
   # rubocop:enable Metrics/MethodLength
   # rubocop:enable Metrics/PerceivedComplexity
+  #
 
   def param
     try_number
