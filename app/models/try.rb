@@ -118,7 +118,7 @@ class Try < ApplicationRecord
   # rubocop:enable Metrics/AbcSize
   # rubocop:enable Metrics/MethodLength
   # rubocop:enable Metrics/PerceivedComplexity
-  #
+  # rubocop:disable Metrics/CyclomaticComplexity
 
   def param
     try_number
