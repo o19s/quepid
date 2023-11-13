@@ -16,7 +16,7 @@ module Api
         private
 
         def query_params
-          params.require(:query).permit(:threshold, :threshold_enbl)
+          params.require(:query).permit(:threshold, :threshold_enabled)
         end
       end
     end

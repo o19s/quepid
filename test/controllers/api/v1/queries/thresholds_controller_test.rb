@@ -35,15 +35,15 @@ module Api
             query.threshold = 1
             query.save
 
-            put :update, params: { case_id: acase.id, query_id: query.id, query: { threshold_enbl: true } }
+            put :update, params: { case_id: acase.id, query_id: query.id, query: { threshold_enabled: true } }
 
             assert_response :ok
 
             data = response.parsed_body
 
             query.reload
-            assert_equal  query.threshold,      1
-            assert_equal  query.threshold_enbl, true
+            assert_equal  query.threshold, 1
+            assert_equal  query.threshold_enabled, true
 
             assert_equal  data['threshold'], 1
             assert_equal  data['threshold_enabled'], true

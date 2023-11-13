@@ -737,8 +737,8 @@ angular.module('QuepidApp')
           var url           = 'api/cases/' + caseNo + '/queries/' + that.queryId + '/threshold';
           var thresholdJson = {
             query: {
-              threshold:      threshold,
-              threshold_enbl: enabled
+              threshold:         threshold,
+              threshold_enabled: enabled
             }
           };
 
