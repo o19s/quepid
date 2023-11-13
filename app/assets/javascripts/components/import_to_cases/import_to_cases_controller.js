@@ -7,15 +7,35 @@ angular.module('QuepidApp')
     '$uibModal',
     'flash',
     function ($uibModal, flash) {
-      var crtl = this;
+      var ctrl = this;
 
-      crtl.import = {};
-      crtl.import.prompt = promptModal;
+      ctrl.import = {};
+      ctrl.import.promptModalSnapshot = promptModalSnapshot;
+      ctrl.import.promptModalCase = promptModalCase;
 
-      function promptModal () {
+      function promptModalSnapshot () {
         var modalInstance = $uibModal.open({
-          templateUrl:  'import_to_cases/_modal.html',
+          templateUrl:  'import_to_cases/_modal_snapshot.html',
           controller:   'ImportSnapshotModalInstanceCtrl',
+          controllerAs: 'ctrl',
+        });
+
+        modalInstance.result.then(
+          function(result) {
+            if ( result.success ) {
+              flash.success = result.message;
+            } else if (result.error ) {
+              flash.error = result.message;
+            }
+          },
+          function() { }
+        );
+      }
+      
+      function promptModalCase () {
+        var modalInstance = $uibModal.open({
+          templateUrl:  'import_to_cases/_modal_case.html',
+          controller:   'ImportCaseModalInstanceCtrl',
           controllerAs: 'ctrl',
         });
 

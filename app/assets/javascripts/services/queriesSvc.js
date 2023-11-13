@@ -1,7 +1,6 @@
 'use strict';
 
 /* jslint latedef:false */
-/* jshint esversion: 9 */
 
 // Responsible for managing individual queries
 // so its a starting point for a lot of functionality...
@@ -251,7 +250,9 @@ angular.module('QuepidApp')
           
           // This is for Mattias!  Merge our query specific options in as "qOption"
           // which is what splainer-search expects. 
+          /*jshint ignore:start */
           searcherOptions.qOption = { ...passedInSettings.options, ...query.options};
+          /*jshint ignore:end */
 
 
           return searchSvc.createSearcher(

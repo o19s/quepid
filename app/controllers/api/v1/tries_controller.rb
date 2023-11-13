@@ -32,7 +32,13 @@ module Api
           search_endpoint_params_to_use = search_endpoint_params
           convert_blank_values_to_nil search_endpoint_params_to_use
 
-          search_endpoint = @current_user.search_endpoints_involved_with.find_or_create_by search_endpoint_params
+          search_endpoint = @current_user.search_endpoints_involved_with.find_by search_endpoint_params
+          if search_endpoint.nil?
+            search_endpoint = SearchEndpoint.new(search_endpoint_params)
+            search_endpoint.owner = @current_user
+            search_endpoint.save!
+          end
+
           @try.search_endpoint = search_endpoint
         end
 

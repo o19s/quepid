@@ -66,13 +66,21 @@ module Api
             end
           end
 
-          search_endpoint = @current_user.search_endpoints_involved_with.find_or_create_by(
+          # find_or_create_by wasn't working, so just doing it in two steps
+          search_endpoint = @current_user.search_endpoints_involved_with.find_by(
             params_to_use[:try][:search_endpoint]
           )
+          if search_endpoint.nil?
+            search_endpoint = SearchEndpoint.new(params_to_use[:try][:search_endpoint])
+            search_endpoint.owner = @current_user
+            search_endpoint.save!
+          end
+
           params_to_use[:try][:search_endpoint_id] = search_endpoint.id
           params_to_use[:try][:try_number] = 1
 
           @case.tries.first.update(params_to_use[:try].except(:curator_variables, :search_endpoint))
+
           params_to_use[:try][:curator_variables].each do |curator_variable|
             # not sure why curator_variables.build and then the @case.save doesn't cascade down.
             @case.tries.first.curator_variables.create curator_variable
