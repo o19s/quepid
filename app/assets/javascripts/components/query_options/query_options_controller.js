@@ -26,7 +26,7 @@ angular.module('QuepidApp')
           controller:   'QueryOptionsModalInstanceCtrl',
           controllerAs: 'ctrl',
           resolve: {
-            value: function() { return angular.toJson(ctrl.query.options, true); }
+            value: function() { return ctrl.query.options; }
           }
         });
 
@@ -39,7 +39,7 @@ angular.module('QuepidApp')
               return;
             }
 
-            ctrl.query.saveOptions(value)
+            ctrl.query.saveOptions(JSON.parse(value))
               .then(function() {
                 flash.success = 'Query options saved successfully.';
               }, function() {

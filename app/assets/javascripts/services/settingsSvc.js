@@ -106,7 +106,6 @@ angular.module('QuepidApp')
             '       "start": 0,',
             '       "numResults": 10,',
             '       "corpusKey": [{',
-            '          "customerId": 123456789,',
             '          "corpusId": 1,',
             '          "lexicalInterpolationConfig": {',
             '            "lambda": 0.025',
@@ -402,6 +401,7 @@ angular.module('QuepidApp')
           settings.proxyRequests = tryToUse.proxyRequests;
           settings.basicAuthCredential = tryToUse.basicAuthCredential;
           settings.mapperCode = tryToUse.mapperCode;
+          settings.options = tryToUse.options;
           
           // TODO: Store type in db?...
           settings.headerType = settings.customHeaders.includes('ApiKey') ? 'API Key'

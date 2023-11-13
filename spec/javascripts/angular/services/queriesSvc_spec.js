@@ -151,7 +151,7 @@ describe('Service: queriesSvc', function () {
       settings.args = args;
       settings.queryText = queryText;
 
-      var newSearcher = new MockSearcher(settings, queryText);
+      var newSearcher = new MockSearcher(settings, queryText, {});
 
       searchers.push(newSearcher);
 

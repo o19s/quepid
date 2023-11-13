@@ -2,6 +2,7 @@ FROM node:20-bullseye AS build-dep
 WORKDIR /srv/app
 COPY package.json yarn.lock ./
 RUN yarn install --production=true
+RUN yarn cache clean
 
 FROM ruby:3.2.2-bullseye
 
@@ -11,13 +12,11 @@ ARG QUEPID_VERSION_VARIABLE
 ENV QUEPID_VERSION=$QUEPID_VERSION_VARIABLE
 
 # Must have packages
-RUN apt-get update -qq && apt-get install -y --no-install-recommends vim curl netcat \
+RUN apt-get update -qq && apt-get upgrade -y && apt-get install -y --no-install-recommends vim curl netcat ca-certificates gnupg \
   && rm -rf /var/lib/apt/lists/*
 
 # Node Only
-RUN apt-get update -qq \
-  && apt-get install -y --no-install-recommends ca-certificates gnupg \
-  && mkdir -p /etc/apt/keyrings \
+RUN mkdir -p /etc/apt/keyrings \
   && curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg \
   && NODE_MAJOR=20 \
   && echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_$NODE_MAJOR.x nodistro main" | tee /etc/apt/sources.list.d/nodesource.list \
@@ -35,7 +34,7 @@ RUN gem install bundler:2.4.9
 # Clean up Bundle
 RUN bundle config set without 'development test'
 RUN bundle config set deployment true
-RUN bundle install && \
+RUN bundle install --jobs 4 && \
   bundle clean --force && \
   rm -rf /app/.bundle/cache && \
   rm -rf /app/vendor/bundle/ruby/*/cache
@@ -73,7 +72,8 @@ ADD https://github.com/o19s/quepid-jupyterlite/releases/latest/download/jupyter-
 RUN mkdir -p tmp/pids
 
 # Also unpacks the ./notebooks.gz file
-RUN RAILS_ENV=production SECRET_KEY_BASE=fake_out_devise bundle exec rake assets:precompile
+RUN RAILS_ENV=production SECRET_KEY_BASE=fake_out_devise bundle exec rake assets:precompile \
+  && rm -rf ./node_modules/ ./tmp/cache/* /tmp/*
 
 # Remove some files not needed in resulting image
 RUN rm package.json yarn.lock
