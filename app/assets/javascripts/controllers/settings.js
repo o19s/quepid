@@ -80,7 +80,7 @@ angular.module('QuepidApp')
             $scope.pendingSettings.selectedTry.queryParams = JSON.stringify(jsonObject, null, 2);
             
           } catch (e) {
-            flash.error = 'Please provide a valid JSON object for the query DSL.';
+            flash.error = 'Please provide a valid formatted JSON object for the query DSL.';
             return;
           }
         }
