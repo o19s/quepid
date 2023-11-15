@@ -1925,10 +1925,10 @@ spark-md5@^3.0.1:
   resolved "https://registry.yarnpkg.com/spark-md5/-/spark-md5-3.0.2.tgz#7952c4a30784347abcee73268e473b9c0167e3fc"
   integrity sha512-wcFzz9cDfbuqe0FZzfi2or1sgyIrsDwmPwfZC4hiNidPdPINjeUwNfv5kldczoEAcjl9Y1L3SM7Uz2PUEQzxQw==
 
-splainer-search@2.30.0:
-  version "2.30.0"
-  resolved "https://registry.yarnpkg.com/splainer-search/-/splainer-search-2.30.0.tgz#8648458606f79497f36aa70c4e74d5877096713d"
-  integrity sha512-QTdDiBTnjjkbLnI+LsE2J6a+eCFa0MmKuMbS0HnXnOlGijsoS/cURsYr5ur6UEUv8CFqO9kWroa4i9q8tMb3og==
+splainer-search@2.30.1:
+  version "2.30.1"
+  resolved "https://registry.yarnpkg.com/splainer-search/-/splainer-search-2.30.1.tgz#7e0f1ca90a84bfa2da339361b22437d27d22d94d"
+  integrity sha512-Nyi0/ZiXC09l20nFcd2rEDjgrmqqUq6pq649MxRr4xthuPnavszGqtdvFRd/qq7ZD1mny9rTXyLF7CrxeK9bTw==
   dependencies:
     angular "1.8.3"
     urijs "^1.19.7"
