@@ -68,8 +68,7 @@ COPY ./README.md ./README.md
 COPY ./vendor ./vendor
 COPY ./yarn.lock ./yarn.lock
 
-# This appears to not work ;-(  We can't see the file and assets.rake downloads the file instead.
-#ADD https://github.com/o19s/quepid-jupyterlite/releases/latest/download/jupyter-lite-build.tgz ./notebooks.gz
+ADD https://github.com/o19s/quepid-jupyterlite/releases/latest/download/jupyter-lite-build.tgz ./notebooks.gz
 
 RUN mkdir -p tmp/pids
 
