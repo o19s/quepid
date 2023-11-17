@@ -6,7 +6,9 @@
 
   <p>
     <strong>Search engine:</strong>
-    <%= image_tag "#{search_endpoint.search_engine}-icon.png", size:'32x32', class:'rounded-circle' %> 
+    <% if search_endpoint.search_engine %>
+      <%= image_tag "#{search_endpoint.search_engine}-icon.png", size:'32x32', class:'rounded-circle' %> 
+    <% end %>
     <%= search_endpoint.search_engine %>
   </p>
   
