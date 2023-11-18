@@ -39,11 +39,15 @@
                 id="searchEndpoint"
                 ng-if="listSearchEndpoints().length > 0"
                 ng-model="pendingWizardSettings.searchEndpointId"
-                ng-options="searchEndpoint.id as searchEndpoint.name for searchEndpoint in listSearchEndpoints()"
+                ng-options="searchEndpoint.id as searchEndpoint.name for searchEndpoint in listSearchEndpoints() | filter: {searchEngine: '!static'}"
                 ng-change="changeSearchEndpoint()"
               >
               </select>
+              
               <small title="Manually validates Quepid can get retrieve search results from your URL before continuing" class="pull-right"><button type="button" class="btn btn-link btn-sm" ng-click="validate(true)" ng-disabled="pendingWizardSettings.searchEndpointId == null || showTLSChangeWarning">ping it</button></small>
+              <p class="help-block tip" ng-if="hasStaticEndpoints">
+                FYI: your existing Static File endpoints are NOT sharable across cases.
+              </p>
             </div>
             <div ng-if="urlValid" class="alert alert-success">Quepid can search this! Hit 'Continue' to keep working through setup.</div>
             <div class="row" style="margin-top: 50px;">

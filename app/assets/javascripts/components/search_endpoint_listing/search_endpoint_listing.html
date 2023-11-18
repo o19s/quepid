@@ -22,7 +22,7 @@
 
   <div class="col-xs-4">
     <img ng-if="ctrl.searchEndpoint.searchEngine" ng-src="images/{{ ctrl.searchEndpoint.searchEngine }}-icon.png" width="32px" />
-    {{ ctrl.searchEndpoint.searchEngine }}
+    &nbsp;{{ ctrl.searchEndpoint.searchEngine | searchEngineName }}
   </div>
 
   <div class="col-xs-4">

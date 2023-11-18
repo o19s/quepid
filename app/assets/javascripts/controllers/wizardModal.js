@@ -155,7 +155,13 @@ angular.module('QuepidApp')
       
       searchEndpointSvc.list()
        .then(function() {
-         $scope.searchEndpoints = searchEndpointSvc.searchEndpoints;        
+         $scope.searchEndpoints = searchEndpointSvc.searchEndpoints; 
+         $scope.hasStaticEndpoints = false;
+         angular.forEach($scope.searchEndpoints, function(searchEndpoint) {
+          if (searchEndpoint.searchEngine === 'static'){
+            $scope.hasStaticEndpoints = true;
+          }
+        });
        });
        
       $scope.listSearchEndpoints = function() {

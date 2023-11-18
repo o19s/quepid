@@ -7,11 +7,17 @@ angular.module('QuepidApp')
         solr: 'Solr',
         es:   'Elasticsearch',
         os:   'OpenSearch',
-        vectara: 'Vectara'
+        vectara: 'Vectara',
+        static: 'Static File'
       };
 
       return function (input) {
-        return searchEngineName[input];
+        if (searchEngineName[input]){
+          return searchEngineName[input];
+        }
+        else {
+          return input;
+        }
       };
     }
   ]);
