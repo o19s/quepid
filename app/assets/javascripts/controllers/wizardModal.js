@@ -22,6 +22,7 @@ angular.module('QuepidApp')
 
       
       $scope.isStaticCollapsed = true;
+      $scope.addedStaticQueries = false;
       $scope.showSearchApiJavaScriptEditor = true;
       $scope.staticContent = {
         content: null,
@@ -301,7 +302,9 @@ angular.module('QuepidApp')
       
       $scope.validate       = validate;
       $scope.skipValidation = skipValidation;
+      $scope.readyToContinue = readyToContinue;
       $scope.setupDefaults  = setupDefaults;
+      $scope.linkToSearchEndpointUrl  = linkToSearchEndpointUrl;
       $scope.submit         = submit;
       $scope.reset          = reset;
       $scope.resetUrlValid  = resetUrlValid;
@@ -329,7 +332,16 @@ angular.module('QuepidApp')
           $scope.checkTLSForSearchEngineUrl();
         }
       }
-
+      
+      function linkToSearchEndpointUrl() {
+        if ($scope.pendingWizardSettings.proxyRequests === true){
+          return caseTryNavSvc.getQuepidProxyUrl() + $scope.pendingWizardSettings.searchUrl;
+        }
+        else {
+          return $scope.pendingWizardSettings.searchUrl;
+        }
+      }
+      
       function resetUrlValid() {
         $scope.urlValid =false;
         $scope.invalidProxyApiMethod =false;
@@ -340,6 +352,21 @@ angular.module('QuepidApp')
           WizardHandler.wizard().next();
         }
       }      
+      
+      function readyToContinue() {
+        if ($scope.validating){
+          return false;
+        }
+        if ($scope.pendingWizardSettings.searchEngine === 'static'){
+          if ($scope.addedStaticQueries){
+            return true;
+          }
+          else {
+            return false;
+          }
+        }
+        return true;
+      }
 
       function skipValidation() {
         var validator = new SettingsValidatorFactory($scope.pendingWizardSettings);
@@ -650,7 +677,7 @@ angular.module('QuepidApp')
         $scope.pendingWizardSettings.addQueryStaticQueries = function() {
           angular.forEach($scope.listOfStaticQueries, function(queryText) {
             $scope.pendingWizardSettings.addQuery(queryText);
-          });          
+          });                    
          };
 
         // pass pending settings on to be saved
@@ -717,6 +744,7 @@ angular.module('QuepidApp')
               console.log($location.absUrl)     ;         
               $scope.pendingWizardSettings.searchUrl = `${$location.protocol()}://${$location.host()}:${$location.port()}/api/cases/${caseTryNavSvc.getCaseNo()}/snapshots/${snapshotId}/search`;
               $scope.isStaticCollapsed = false;
+              $scope.addedStaticQueries = true;
               //var result = {
               //  success: true,
               //  message: 'Static Data imported successfully!',

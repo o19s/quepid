@@ -8,7 +8,8 @@ angular.module('QuepidApp')
         es:   'Elasticsearch',
         os:   'OpenSearch',
         vectara: 'Vectara',
-        static: 'Static File'
+        static: 'Static File',
+        searchapi: 'Search API'
       };
 
       return function (input) {
