@@ -3,7 +3,7 @@
 angular.module('QuepidApp')
   .filter('searchEngineName', [
     function () {
-      var searchEngineName = {
+      const searchEngineName = {
         solr: 'Solr',
         es:   'Elasticsearch',
         os:   'OpenSearch',
