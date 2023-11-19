@@ -86,9 +86,13 @@ class ProxyController < ApplicationController
       end
     end
 
-    data = JSON.parse(response.body)
-    # Process the data as needed
-    render json: data, status: response.status
+    begin
+      data = JSON.parse(response.body)
+      render json: data, status: response.status
+    rescue JSON::ParserError
+      # sometimes the API is returning plain old text, like a "Unauthorized" type message.
+      render plain: response.body, status: response.status
+    end
   end
 
   def proxy_url_params

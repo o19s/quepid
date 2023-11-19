@@ -39,18 +39,22 @@
                 id="searchEndpoint"
                 ng-if="listSearchEndpoints().length > 0"
                 ng-model="pendingWizardSettings.searchEndpointId"
-                ng-options="searchEndpoint.id as searchEndpoint.name for searchEndpoint in listSearchEndpoints()"
+                ng-options="searchEndpoint.id as searchEndpoint.name for searchEndpoint in listSearchEndpoints() | filter: {searchEngine: '!static'}"
                 ng-change="changeSearchEndpoint()"
               >
               </select>
+              
               <small title="Manually validates Quepid can get retrieve search results from your URL before continuing" class="pull-right"><button type="button" class="btn btn-link btn-sm" ng-click="validate(true)" ng-disabled="pendingWizardSettings.searchEndpointId == null || showTLSChangeWarning">ping it</button></small>
+              <p class="help-block tip" ng-if="hasStaticEndpoints">
+                FYI: your existing Static File endpoints are NOT sharable across cases.
+              </p>
             </div>
             <div ng-if="urlValid" class="alert alert-success">Quepid can search this! Hit 'Continue' to keep working through setup.</div>
             <div class="row" style="margin-top: 50px;">
               
               <div class="pull-right">
                 <button class="btn btn-primary pull-right continue" ng-click="validate()" ng-disabled="pendingWizardSettings.searchEndpointId == null">Continue</button>
-                
+
                 <button class="btn btn-danger" ng-show="urlInvalid && !showTLSChangeWarning" ng-click="skipValidation()" ng-disabled="validating">
                   <span ng-hide="validating">Skip Validation</span>
                 </button>
@@ -110,40 +114,34 @@
               </span>
             </div>
             <div ng-if="urlInvalid && !showTLSChangeWarning" class="alert alert-danger">
-              Sorry, we're not getting any search results from your
-              <span ng-show="pendingWizardSettings.searchEngine === 'es'">Elasticsearch</span>
-              <span ng-show="pendingWizardSettings.searchEngine === 'os'">OpenSearch</span>
-              <span ng-show="pendingWizardSettings.searchEngine === 'solr'">Solr</span>
-              <span ng-show="pendingWizardSettings.searchEngine === 'vectara'">Vectara</span>
-              <span ng-show="pendingWizardSettings.searchEngine === 'static'">Static file</span>
-              <span ng-show="pendingWizardSettings.searchEngine === 'searchapi'">Search API</span>.
-  
+              Sorry, we're not getting any search results from your {{ pendingWizardSettings.searchEngine | searchEngineName }}.
+              
               <ul ng-if="pendingWizardSettings.searchEngine === 'searchapi'">
-                <li>Is your Search API behind a firewall or proxy? Try accessing the <a target="_blank" href="{{pendingWizardSettings.searchUrl}}">URL directly</a> and see if you get a response</li>
+                <li>Is your Search API behind a firewall or proxy? Try accessing the <a target="_blank" ng-href="{{linkToSearchEndpointUrl()}}">URL directly</a> and see if you get a response</li>
                 <li>Do you need an API Key?  If so, set one up under Advanced pane --> Custom Headers.</li>
-                <li>Double check if you have an ad blocker blocking your queries.</li>
+                <li>Use the browser <i>Network Inspector</i> to see the actual request.</li>
                 <li>See the <a target="_blank" href="https://github.com/o19s/quepid/wiki/Troubleshooting-SearchAPI-and-Quepid/">Troubleshooting Search API and Quepid</a> wiki page for more help!</li>
               </ul>
               
               <ul ng-if="pendingWizardSettings.searchEngine === 'es'">
-                <li>Is your Elasticsearch behind a firewall or proxy? Try accessing the <a target="_blank" href="{{pendingWizardSettings.searchUrl}}">URL directly</a> and see if you get a response</li>
+                <li>Is your Elasticsearch behind a firewall or proxy? Try accessing the <a target="_blank" ng-href="{{linkToSearchEndpointUrl()}}">URL directly</a> and see if you get a response</li>
                 <li>Does your Elasticsearch accept HTTP POST requests?</li>
                 <li>Is your Elasticsearch setup for CORS to talk to Quepid's web app (http://app.quepid.com)?</li>
                 <li>Do you need an API Key?  If so, set one up under Advanced pane --> Custom Headers.</li>
-                <li>Double check if you have an ad blocker blocking your queries.</li>
+                <li>Use the browser <i>Network Inspector</i> to see the actual request.</li>
                 <li>See the <a target="_blank" href="https://github.com/o19s/quepid/wiki/Troubleshooting-Elasticsearch-and-Quepid/">Troubleshooting Elasticsearch and Quepid</a> wiki page for more help!</li>
               </ul>
   
               <ul ng-if="pendingWizardSettings.searchEngine === 'os'">
-                <li>Is your OpenSearch behind a firewall or proxy? Try accessing the <a target="_blank" href="{{pendingWizardSettings.searchUrl}}">URL directly</a> and see if you get a response</li>
+                <li>Is your OpenSearch behind a firewall or proxy? Try accessing the <a target="_blank" ng-href="{{linkToSearchEndpointUrl()}}">URL directly</a> and see if you get a response</li>
                 <li>Does your OpenSearch accept HTTP POST requests?</li>
                 <li>Is your OpenSearch setup for CORS to talk to Quepid's web app (http://app.quepid.com)?</li>
-                <li>Double check if you have an ad blocker blocking your queries.</li>
+                <li>Use the browser <i>Network Inspector</i> to see the actual request.</li>
                 <li>See the <a target="_blank" href="https://github.com/o19s/quepid/wiki/Troubleshooting-OpenSearch-and-Quepid/">Troubleshooting OpenSearch and Quepid</a> wiki page for more help!</li>
               </ul>
   
               <ul ng-if="pendingWizardSettings.searchEngine === 'solr'">
-                <li>Do you see any errors when you visit your <a target="_blank" href="{{pendingWizardSettings.searchUrl}}">Solr URL directly?</a></li>
+                <li>Do you see any errors when you visit your <a target="_blank" ng-href="{{linkToSearchEndpointUrl()}}">Solr URL directly?</a></li>
                 <li>
                   If you are using a version of Solr between 8.4 and 9.0, you may need to tweak the content-type being set by <code>wt=json</code>.
                   You can do this via the below curl command:
@@ -161,6 +159,7 @@ curl -k -X POST -H 'Content-type:application/json' -d '{
                 </li>
                 <li>If Solr responds, check if you have an ad blocker blocking your queries.</li>
                 <li>Chrome does not accept self signed certificates on Solr, try Firefox.</li>
+                <li>Use the browser <i>Network Inspector</i> to see the actual request.</li>
                 <li>See the <a target="_blank" href="https://github.com/o19s/quepid/wiki/Troubleshooting-Solr-and-Quepid">Troubleshooting Solr and Quepid</a> wiki page for more help!</li>
               </ul>
   
@@ -372,7 +371,8 @@ star wars,1921,3, Star Wars: Return of the Jedi
   
               <div class="row" style="margin-top: 50px;">
                 <div class="pull-right">
-                  <button ng-show="!showTLSChangeWarning" class="btn btn-primary pull-right continue" ng-click="validate()" ng-disabled="validating">
+          
+                  <button ng-show="!showTLSChangeWarning" class="btn btn-primary pull-right continue" ng-click="validate()" ng-disabled="!readyToContinue()">
                     <span ng-hide="validating">Continue</span>
                     <span ng-show="validating">Validating...</span>
                   </button>
