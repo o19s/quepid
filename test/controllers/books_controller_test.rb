@@ -24,7 +24,6 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
     # GET /books
     #   Need Counter Cache with Active Record size
     #        Book => [:rated_query_doc_pairs]
-    
     Bullet.enable = false
     get '/books'
     assert_equal 200, status
