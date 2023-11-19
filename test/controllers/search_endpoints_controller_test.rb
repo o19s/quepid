@@ -35,7 +35,7 @@ class SearchEndpointsControllerTest < ActionDispatch::IntegrationTest
            } }
     end
 
-    assert_redirected_to search_endpoint_url(SearchEndpoint.last)
+    assert_response :success
     assert_empty SearchEndpoint.last.teams
   end
 
