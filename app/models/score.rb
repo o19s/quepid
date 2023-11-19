@@ -32,7 +32,7 @@
 class Score < ApplicationRecord
   self.table_name = 'case_scores'
 
-  serialize :queries, JSON
+  serialize :queries, coder: JSON
 
   # Associations
   belongs_to :case
