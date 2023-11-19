@@ -22,8 +22,8 @@ class SearchEndpointsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
-  test 'should create search_endpoint with no teams' do
-    assert_difference('SearchEndpoint.count') do
+  test 'should create search_endpoint using existing parameters doesnt change anything' do
+    assert_difference('SearchEndpoint.count', 0) do
       post search_endpoints_url,
            params: { search_endpoint: {
              api_method:     @search_endpoint.api_method,
