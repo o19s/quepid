@@ -61,7 +61,7 @@ class Scorer < ApplicationRecord
   end
 
   # Transform scale from array to a string
-  serialize :scale, ScaleSerializer
+  serialize :scale, coder: ScaleSerializer
   serialize :scale_with_labels, coder: JSON
 
   after_initialize do |scorer|
