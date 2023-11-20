@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2023_10_24_205451) do
+ActiveRecord::Schema[7.1].define(version: 2023_11_11_181543) do
   create_table "annotations", id: :integer, charset: "utf8mb3", force: :cascade do |t|
     t.text "message"
     t.string "source"
@@ -74,6 +74,7 @@ ActiveRecord::Schema[7.1].define(version: 2023_10_24_205451) do
     t.datetime "updated_at", precision: nil, null: false
     t.integer "book_id"
     t.boolean "public"
+    t.json "options"
     t.index ["owner_id"], name: "user_id"
   end
 
@@ -116,7 +117,7 @@ ActiveRecord::Schema[7.1].define(version: 2023_10_24_205451) do
     t.integer "case_id"
     t.datetime "created_at", precision: nil, null: false
     t.datetime "updated_at", precision: nil, null: false
-    t.text "options"
+    t.text "options", collation: "utf8mb3_bin"
     t.string "information_need"
     t.index ["case_id"], name: "case_id"
   end
@@ -155,7 +156,7 @@ ActiveRecord::Schema[7.1].define(version: 2023_10_24_205451) do
     t.boolean "communal", default: false
   end
 
-  create_table "search_endpoints", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+  create_table "search_endpoints", charset: "utf8mb3", force: :cascade do |t|
     t.string "name"
     t.integer "owner_id"
     t.string "search_engine", limit: 50
@@ -165,8 +166,10 @@ ActiveRecord::Schema[7.1].define(version: 2023_10_24_205451) do
     t.boolean "archived", default: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.string "basic_auth_credential", default: "0"
+    t.string "basic_auth_credential"
     t.text "mapper_code"
+    t.boolean "proxy_requests", default: false
+    t.json "options"
   end
 
   create_table "selection_strategies", charset: "utf8mb3", collation: "utf8mb3_unicode_ci", force: :cascade do |t|

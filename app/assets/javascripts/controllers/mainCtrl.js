@@ -70,9 +70,14 @@ angular.module('QuepidApp')
             if (!settingsSvc.isTrySelected()){
               flash.to('search-error').error = 'The try that was specified for the case does not actually exist!';
             }
-            else if (caseTryNavSvc.needToRedirectQuepidProtocol(settingsSvc.editableSettings().searchUrl)){
-              $log.info('Need to redirect browser to different TLS');
-              throw new Error('Need to change to different TLS'); // Signal that we need to change TLS.              
+            else {
+              if (settingsSvc.editableSettings().proxyRequests === true){
+                $scope.showTLSChangeWarning = false;
+              }
+              else if  (caseTryNavSvc.needToRedirectQuepidProtocol(settingsSvc.editableSettings().searchUrl)){
+                $log.info('Need to redirect browser to different TLS');
+                throw new Error('Need to change to different TLS'); // Signal that we need to change TLS.              
+              }
             }
           });
       };

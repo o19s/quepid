@@ -936,12 +936,26 @@ footer {
     height: 400px;
 }
 
+/*
 .ace_unselected {
 
 }
+*/
 
 .scorer.code .ace_editor {
   height: 200px;
+}
+
+.queryparams.code .ace_editor {
+  height: 125px;
+}
+
+.customheaders.code .ace_editor {
+  height: 125px;
+}
+
+.detaileddoc.code .ace_editor {
+  height: 300px;
 }
 
 .scorer .max-score input:disabled {

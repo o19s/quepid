@@ -4,9 +4,10 @@
 </div>
 
 <div class="modal-body">
-  <p>Provide a JSON object specifying the query options</p>
+  <p>Provide a JSON object specifying query specific options</p>
   <label>
-    This key => value object will be available in the scorer so you can use it to access query specifics. You can access the values using the <code>qOption(key)</code> method.
+    This key => value object will be available in the scorer so you can use it to access query specifics. 
+    You can access the values using the <code>qOption('key')</code> method in Scorers or <code>#$qOption.key##</code> in Query Sandbox.
   </label>
 
   <div

@@ -23,7 +23,7 @@ angular.module('QuepidApp')
 
       $scope.findDocs = function() {
         var settings      = settingsSvc.editableSettings();
-        var query         = $scope.query.queryText;
+        var query         = $scope.query;
         var ratingsStore  = $scope.query.ratingsStore;
         var fieldSpec     = settings.createFieldSpec();
 
@@ -98,7 +98,7 @@ angular.module('QuepidApp')
       };
 
       $scope.paginateRatedQuery = function() {
-        $scope.docFinder.searcher = queriesSvc.createSearcherFromSettings(currSettings, $scope.query.queryText);
+        $scope.docFinder.searcher = queriesSvc.createSearcherFromSettings(currSettings, $scope.query, { filterToRated: true });
         $scope.docFinder.paging = true;
 
         var settings      = settingsSvc.editableSettings();
@@ -186,7 +186,7 @@ angular.module('QuepidApp')
         $scope.docFinder.numFound = ratedIDs.length;
         $scope.docFinder.totalRatings = ratedIDs.length;
 
-        $scope.docFinder.searcher = queriesSvc.createSearcherFromSettings(currSettings, $scope.query.queryText);
+        $scope.docFinder.searcher = queriesSvc.createSearcherFromSettings(currSettings, $scope.query);
 
         if ($scope.docFinder.searcher.type === 'es' || $scope.docFinder.searcher.type === 'os') {
           var filter = {

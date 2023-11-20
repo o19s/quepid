@@ -22,6 +22,8 @@ angular.module('QuepidApp')
 
       
       $scope.isStaticCollapsed = true;
+      $scope.addedStaticQueries = false;
+      $scope.showSearchApiJavaScriptEditor = true;
       $scope.staticContent = {
         content: null,
         header: true,
@@ -31,6 +33,121 @@ angular.module('QuepidApp')
         import: {}
       };
       
+      // I can get sha256 to work, but not the messageDigest due to it's having an await.
+      // this function is also copied into queriesSvc.js to use there.
+      /* jshint ignore:start */
+      function sha256(ascii) {
+          function rightRotate(value, amount) {
+              return (value>>>amount) | (value<<(32 - amount));
+          };
+          
+          var mathPow = Math.pow;
+          var maxWord = mathPow(2, 32);
+          var lengthProperty = 'length'
+          var i, j; // Used as a counter across the whole file
+          var result = ''
+      
+          var words = [];
+          var asciiBitLength = ascii[lengthProperty]*8;
+          
+          //* caching results is optional - remove/add slash from front of this line to toggle
+          // Initial hash value: first 32 bits of the fractional parts of the square roots of the first 8 primes
+          // (we actually calculate the first 64, but extra values are just ignored)
+          var hash = sha256.h = sha256.h || [];
+          // Round constants: first 32 bits of the fractional parts of the cube roots of the first 64 primes
+          var k = sha256.k = sha256.k || [];
+          var primeCounter = k[lengthProperty];
+          /*/
+          var hash = [], k = [];
+          var primeCounter = 0;
+          //*/
+      
+          var isComposite = {};
+          for (var candidate = 2; primeCounter < 64; candidate++) {
+              if (!isComposite[candidate]) {
+                  for (i = 0; i < 313; i += candidate) {
+                      isComposite[i] = candidate;
+                  }
+                  hash[primeCounter] = (mathPow(candidate, .5)*maxWord)|0;
+                  k[primeCounter++] = (mathPow(candidate, 1/3)*maxWord)|0;
+              }
+          }
+          
+          ascii += '\x80' // Append Ƈ' bit (plus zero padding)
+          while (ascii[lengthProperty]%64 - 56) ascii += '\x00' // More zero padding
+          for (i = 0; i < ascii[lengthProperty]; i++) {
+              j = ascii.charCodeAt(i);
+              if (j>>8) return; // ASCII check: only accept characters in range 0-255
+              words[i>>2] |= j << ((3 - i)%4)*8;
+          }
+          words[words[lengthProperty]] = ((asciiBitLength/maxWord)|0);
+          words[words[lengthProperty]] = (asciiBitLength)
+          
+          // process each chunk
+          for (j = 0; j < words[lengthProperty];) {
+              var w = words.slice(j, j += 16); // The message is expanded into 64 words as part of the iteration
+              var oldHash = hash;
+              // This is now the undefinedworking hash", often labelled as variables a...g
+              // (we have to truncate as well, otherwise extra entries at the end accumulate
+              hash = hash.slice(0, 8);
+              
+              for (i = 0; i < 64; i++) {
+                  var i2 = i + j;
+                  // Expand the message into 64 words
+                  // Used below if 
+                  var w15 = w[i - 15], w2 = w[i - 2];
+      
+                  // Iterate
+                  var a = hash[0], e = hash[4];
+                  var temp1 = hash[7]
+                      + (rightRotate(e, 6) ^ rightRotate(e, 11) ^ rightRotate(e, 25)) // S1
+                      + ((e&hash[5])^((~e)&hash[6])) // ch
+                      + k[i]
+                      // Expand the message schedule if needed
+                      + (w[i] = (i < 16) ? w[i] : (
+                              w[i - 16]
+                              + (rightRotate(w15, 7) ^ rightRotate(w15, 18) ^ (w15>>>3)) // s0
+                              + w[i - 7]
+                              + (rightRotate(w2, 17) ^ rightRotate(w2, 19) ^ (w2>>>10)) // s1
+                          )|0
+                      );
+                  // This is only used once, so *could* be moved below, but it only saves 4 bytes and makes things unreadble
+                  var temp2 = (rightRotate(a, 2) ^ rightRotate(a, 13) ^ rightRotate(a, 22)) // S0
+                      + ((a&hash[1])^(a&hash[2])^(hash[1]&hash[2])); // maj
+                  
+                  hash = [(temp1 + temp2)|0].concat(hash); // We don't bother trimming off the extra ones, they're harmless as long as we're truncating when we do the slice()
+                  hash[4] = (hash[4] + temp1)|0;
+              }
+              
+              for (i = 0; i < 8; i++) {
+                  hash[i] = (hash[i] + oldHash[i])|0;
+              }
+          }
+          
+          for (i = 0; i < 8; i++) {
+              for (j = 3; j + 1; j--) {
+                  var b = (hash[i]>>(j*8))&255;
+                  result += ((b < 16) ? 0 : '') + b.toString(16);
+              }
+          }
+          return result;
+      };
+      /* jshint ignore:end */
+      
+      /* jshint ignore:start */
+      // getting some warnings about es versions and crypto not being defined...
+      async function digestMessage(message) {
+        const msgUint8 = new TextEncoder().encode(message); // encode as (utf-8) Uint8Array
+        const hashBuffer = await crypto.subtle.digest("SHA-256", msgUint8); // hash the message
+        const hashArray = Array.from(new Uint8Array(hashBuffer)); // convert buffer to byte array
+        const hashHex = hashArray
+          .map((b) => b.toString(16).padStart(2, "0"))
+          .join(""); // convert bytes to hex string
+        return hashHex;
+      }
+      /* jshint ignore:end */
+      
+      
       $scope.wizardSettingsModel = {};
 
       $scope.wizardSettingsModel.settingsId = function() {
@@ -39,7 +156,13 @@ angular.module('QuepidApp')
       
       searchEndpointSvc.list()
        .then(function() {
-         $scope.searchEndpoints = searchEndpointSvc.searchEndpoints;        
+         $scope.searchEndpoints = searchEndpointSvc.searchEndpoints; 
+         $scope.hasStaticEndpoints = false;
+         angular.forEach($scope.searchEndpoints, function(searchEndpoint) {
+          if (searchEndpoint.searchEngine === 'static'){
+            $scope.hasStaticEndpoints = true;
+          }
+        });
        });
        
       $scope.listSearchEndpoints = function() {
@@ -179,7 +302,9 @@ angular.module('QuepidApp')
       
       $scope.validate       = validate;
       $scope.skipValidation = skipValidation;
+      $scope.readyToContinue = readyToContinue;
       $scope.setupDefaults  = setupDefaults;
+      $scope.linkToSearchEndpointUrl  = linkToSearchEndpointUrl;
       $scope.submit         = submit;
       $scope.reset          = reset;
       $scope.resetUrlValid  = resetUrlValid;
@@ -198,13 +323,25 @@ angular.module('QuepidApp')
       function reset() {
         $scope.validating = false;
         $scope.urlValid = $scope.urlInvalid = $scope.invalidHeaders = $scope.invalidProxyApiMethod = false;
+        $scope.mapperInvalid = false;
+        $scope.mapperErrorMessage = null;
+        
         
         $scope.showTLSChangeWarning = false; // hope this doesn't cause a flicker.'
         if ($scope.pendingWizardSettings.searchUrl){
           $scope.checkTLSForSearchEngineUrl();
         }
       }
-
+      
+      function linkToSearchEndpointUrl() {
+        if ($scope.pendingWizardSettings.proxyRequests === true){
+          return caseTryNavSvc.getQuepidProxyUrl() + $scope.pendingWizardSettings.searchUrl;
+        }
+        else {
+          return $scope.pendingWizardSettings.searchUrl;
+        }
+      }
+      
       function resetUrlValid() {
         $scope.urlValid =false;
         $scope.invalidProxyApiMethod =false;
@@ -215,6 +352,21 @@ angular.module('QuepidApp')
           WizardHandler.wizard().next();
         }
       }      
+      
+      function readyToContinue() {
+        if ($scope.validating){
+          return false;
+        }
+        if ($scope.pendingWizardSettings.searchEngine === 'static'){
+          if ($scope.addedStaticQueries){
+            return true;
+          }
+          else {
+            return false;
+          }
+        }
+        return true;
+      }
 
       function skipValidation() {
         var validator = new SettingsValidatorFactory($scope.pendingWizardSettings);
@@ -230,6 +382,7 @@ angular.module('QuepidApp')
         }
         $scope.validating = true;
         $scope.urlValid = $scope.urlInvalid = false;
+        $scope.mapperInvalid = false;
 
         // This logic maybe should live in Splainer Search if we wanted to support Splainer.io as well?
 
@@ -266,6 +419,7 @@ angular.module('QuepidApp')
           settingsForValidation.numberOfResultsMapper = numberOfResultsMapper; 
           /* jshint undef: true */
           
+          // This is an example of what the above mapper code looks like.
           //eval(kode);
           // settingsForValidation.docsMapper = function(data){    
           //   let docs = [];
@@ -281,23 +435,32 @@ angular.module('QuepidApp')
           // };
         }
         
-        if (settingsForValidation.proxyRequests === 'true'){
-          // set up the proxy URL through Quepid.
-          settingsForValidation.searchUrl = caseTryNavSvc.getQuepidRootUrl() + '/proxy/fetch?url=' + settingsForValidation.searchUrl;
+        if (settingsForValidation.proxyRequests === true){
+          // Pass in the Quepid specific proxy url
+          settingsForValidation.proxyUrl = caseTryNavSvc.getQuepidProxyUrl();
         }
         var validator = new SettingsValidatorFactory(settingsForValidation);
       
         validator.validateUrl()
         .then(function () {
-
+          $scope.validatorLastResponse = JSON.stringify(validator.searcher.lastResponse,null,2);
           setupDefaults(validator);
           
           if (!justValidate) {      
             $scope.pendingWizardSettings.searchUrl = settingsForValidation.searchUrl;
             WizardHandler.wizard().next();
           }
-        }, function () {
-          $scope.urlInvalid = true;
+        }, function (error) {
+          
+          $scope.validatorLastResponse = JSON.stringify(validator.searcher.lastResponse,null,2);
+          
+          if (error.toString().startsWith('Error: MapperError')){
+            $scope.mapperInvalid = true;
+            $scope.mapperErrorMessage = error.toString();
+          }
+          else {
+            $scope.urlInvalid = true;
+          }              
           $scope.validating = false;
         });
       }
@@ -318,7 +481,7 @@ angular.module('QuepidApp')
       }
       
       function changeProxySetting () {
-        if ($scope.pendingWizardSettings.proxyRequests === 'true'){
+        if ($scope.pendingWizardSettings.proxyRequests === true){
           $scope.showTLSChangeWarning = false;
         }
         validateProxyApiMethod();
@@ -327,7 +490,7 @@ angular.module('QuepidApp')
       
       function validateProxyApiMethod () {
         $scope.invalidProxyApiMethod = false;
-        if ($scope.pendingWizardSettings.proxyRequests === 'true'){
+        if ($scope.pendingWizardSettings.proxyRequests === true){
           if (
             $scope.pendingWizardSettings.apiMethod && $scope.pendingWizardSettings.apiMethod === 'JSONP') {
             
@@ -338,7 +501,7 @@ angular.module('QuepidApp')
       }
 
       function checkTLSForSearchEngineUrl () {
-        if ($scope.pendingWizardSettings.proxyRequests === 'true'){
+        if ($scope.pendingWizardSettings.proxyRequests === true){
           $scope.showTLSChangeWarning = false;
         }
         else {
@@ -359,8 +522,10 @@ angular.module('QuepidApp')
       function setupDefaults(validator) {
         $scope.validating   = false;
         $scope.urlValid     = true;
+        $scope.mapperInvalid= false;
+        $scope.mapperErrorMessage = null;
         $scope.searchFields = validator.fields;
-        $scope.idFields     = validator.idFields;
+        $scope.idFields     = validator.idFields;            
 
         // Since the defaults are being overridden by the editableSettings(),
         // we need to restore the TMDB demo settings if that matches our URL for the next screen.
@@ -512,7 +677,7 @@ angular.module('QuepidApp')
         $scope.pendingWizardSettings.addQueryStaticQueries = function() {
           angular.forEach($scope.listOfStaticQueries, function(queryText) {
             $scope.pendingWizardSettings.addQuery(queryText);
-          });          
+          });                    
          };
 
         // pass pending settings on to be saved
@@ -579,6 +744,7 @@ angular.module('QuepidApp')
               console.log($location.absUrl)     ;         
               $scope.pendingWizardSettings.searchUrl = `${$location.protocol()}://${$location.host()}:${$location.port()}/api/cases/${caseTryNavSvc.getCaseNo()}/snapshots/${snapshotId}/search`;
               $scope.isStaticCollapsed = false;
+              $scope.addedStaticQueries = true;
               //var result = {
               //  success: true,
               //  message: 'Static Data imported successfully!',

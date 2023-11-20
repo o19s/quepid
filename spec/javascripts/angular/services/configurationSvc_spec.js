@@ -6,7 +6,7 @@ describe('Service: ConfigurationSvc', function () {
   beforeEach(module('UtilitiesModule'));
 
   // instantiate service
-  var configurationSvc, windowMocker;
+  var configurationSvc;
   beforeEach(function(){
     inject(function (_configurationSvc_) {
       configurationSvc = _configurationSvc_;

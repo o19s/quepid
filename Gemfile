@@ -6,55 +6,48 @@ ruby '3.2.2'
 
 gem 'activerecord-import', '>= 1.0.7'
 gem 'acts_as_list', '>= 1.0.1'
+gem 'ancestry'
+gem 'angular-rails-templates', '>= 1.0.0.beta'
 gem 'apipie-rails', '~> 1.2'
 gem 'angular-rails-templates', '~> 1.2'
 gem 'bcrypt', '~> 3.1.7'
-gem 'sassc-rails', '~> 2.1'
-gem 'turbolinks', '~> 5'
+gem 'bootsnap', require: false
+gem 'cal-heatmap-rails', '~> 3.6' # provides assets for cal heatmap, that requires old d3
 gem 'colorize', require: false
 gem 'cookies_eu'
+gem 'd3-rails', '~> 3.5.5' # For cal heatmap
 gem 'devise', '>= 4.6.2'
 gem 'devise_invitable', '~> 2.0'
-gem 'gabba'
-gem 'intercom-rails'
-gem 'jbuilder', '~> 2.7'
-gem 'redis', '~> 5.0.6'
-gem 'jquery-rails'
-gem 'jquery-ui-rails' # Can we narrow the widgets to load faster?
-gem 'mysql2'
-
-gem 'net-smtp'
-gem 'net-pop', '~> 0.1.1'
-gem 'net-imap', '~> 0.3.0'
-gem 'postmark-rails'
-gem "puma", ">= 5.0"
-gem 'pundit'
-gem "rails", "~> 7.1.1"
-gem 'responders'
-gem 'sidekiq'
-gem 'terser'
-gem 'bootsnap', require: false
-gem 'listen', '~> 3.3'
-
-gem 'cal-heatmap-rails', '~> 3.6' # provides assets for cal heatmap, that requires old d3
-gem 'd3-rails', '~> 3.5.5' # For cal heatmap
 
 # Using this as it wires in via Sprockets and I can't get npm version to work with the main app.
 # Had no luck with js/svg approach ;-(
 gem 'font-awesome-sass'
-
-gem 'rack-cors', '~> 2.0'
-gem 'ancestry'
-
-gem 'omniauth', '~> 2.0'
-gem 'omniauth-keycloak'
+gem 'gabba'
+gem 'intercom-rails'
+gem 'jbuilder', '~> 2.7'
+gem 'jquery-rails'
+gem 'jquery-ui-rails' # Can we narrow the widgets to load faster?
+gem 'listen', '~> 3.3'
+gem 'mysql2'
+gem 'omniauth'
 gem 'omniauth-google-oauth2'
-gem 'omniauth-rails_csrf_protection', '~> 1.0'
-
+gem 'omniauth-keycloak'
+gem 'omniauth-rails_csrf_protection'
+gem 'postmark-rails'
 gem 'prophet-rb', '~> 0.5.0'
+gem 'puma'
+gem 'pundit'
+gem 'rails', '~> 7.1.2'
 gem 'rails-healthcheck', '~> 1.4'
 gem 'rails-html-sanitizer'
-
+gem 'rack-cors', '~> 2.0'
+gem 'redis', '~> 5.0.6'
+gem 'responders'
+gem 'sassc-rails', '~> 2.1'
+gem 'sidekiq'
+gem 'terser'
+gem 'thor'
+gem 'turbolinks', '~> 5'
 gem 'vega', '~> 0.3.0'
 
 group :development, :test do

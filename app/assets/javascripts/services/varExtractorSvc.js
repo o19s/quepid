@@ -18,6 +18,11 @@ angular.module('QuepidApp')
         return queryParams.replace(/#\$query##/g, '');
       };
 
+      // A strong possibility that the keyword stuff never really
+      // got traction, and could be removed.  Looking at tests in 
+      // splainer-search, I think the idea was you could take a query and rework it
+      // via $#keyword1## grabbing keyword in position 1, and $#keyword2## grabbing
+      // keyword 2.  Think of it as some sort of experimentation tooling ;-).
       var stripMagicKeywordVars = function(queryParams) {
         return queryParams.replace(/#\$keyword\d+##/g, '');
       };

@@ -48,13 +48,26 @@
 
   <div class="mb-3">
     <%= form.label :api_method, class: 'form-label' %>
-    <%= form.collection_select :api_method, [['GET', 'GET'], ['POST', 'POST'], ['JSONP', 'JSONP'], ['PUT', 'PUT']], :last, :first, required: true, prompt:true,  class: 'form-control' %>
-    
+    <%= form.collection_select :api_method, [['GET', 'GET'], ['POST', 'POST'], ['JSONP', 'JSONP'], ['PUT', 'PUT']], :last, :first, required: true, prompt:true,  class: 'form-control' %>    
   </div>
+  
+  <div class="mb-3">
+    <div class="form-check form-switch">
+      <%= form.label :proxy_requests, class:'form-check-label' %>
+      <%= form.check_box :proxy_requests, class:'form-check-input' %>
+    </div>
+    <div class="form-text">Proxied requests avoid browser security issues however Quepid must be able to reach your Search Endpoint.</div>
+  </div>  
   
   <div class="mb-3">
     <%= form.label :basic_auth_credential, class: 'form-label' %>
     <%= form.text_field :basic_auth_credential %>
+  </div>
+  
+  <div class="mb-3">
+    <%= form.label :options, class: 'form-label' %>
+    <div class="form-text">This JSON is for passing in settings to the Query Sandbox as a <code>qOption</code>.</div>
+    <%= form.text_area :options %>
   </div>
   
   <div class="mb-3">
@@ -84,15 +97,110 @@
   
 
   <div class="actions">
-    <%= form.submit class: "btn btn-primary #{@current_user.teams.empty? ? 'disabled' : ''}" %>
+    <%= form.submit class: "btn btn-primary" %>
   </div>
 <% end %>
 
 <script>
   const codemirrorEditor = CodeMirror.fromTextArea(document.getElementById('search_endpoint_mapper_code'), {
-    lineNumbers: true,
     mode: "javascript",
-    readOnly: false
+    lineNumbers: true,
+    gutters: ["CodeMirror-lint-markers"],
+    lint: true
   });
-  codemirrorEditor.setSize(null, 800);
+  codemirrorEditor.setSize(null, 400);
+  
+  const codemirrorEditor2 = CodeMirror.fromTextArea(document.getElementById('search_endpoint_options'), {
+    mode: "application/json",
+    lineNumbers: true,
+    gutters: ["CodeMirror-lint-markers"],
+    lint: true
+  });
+  codemirrorEditor2.setSize(null, 100);
+  
+  // Function to validate JavaScript syntax
+  function validateSyntax(code) {
+    try {
+      // Use the built-in `eval` function to check the syntax
+      eval(code);
+      return true;
+    } catch (error) {
+      return false;
+    }
+  }
+  
+  // Function to validate JavaScript syntax
+  function validateJsonSyntax(code) {
+    try {
+      // Use the built-in function to check the syntax
+      JSON.parse(code)
+      return true;
+    } catch (error) {
+      return false;
+    }
+  }
+  
+
+  // Validate syntax on code change
+  codemirrorEditor.on("change", function() {
+    var code = codemirrorEditor.getValue();
+    var isValidSyntax = validateSyntax(code);
+    var errorAnnotation = isValidSyntax ? [] : [{
+      from: CodeMirror.Pos(0, 0),
+      to: CodeMirror.Pos(0, 0),
+      message: "Syntax Error",
+      severity: "error"
+    }];
+    CodeMirror.signal(codemirrorEditor, "lint", codemirrorEditor, errorAnnotation);
+  });
+
+  // Add linting annotations to show syntax errors
+  codemirrorEditor.on("lint", function(_, annotations) {
+    codemirrorEditor.clearGutter("CodeMirror-lint-markers");
+    annotations.forEach(function(annotation) {
+      codemirrorEditor.setGutterMarker(annotation.from.line, "CodeMirror-lint-markers", createMarker(annotation));
+    });
+  });
+
+  // Helper function to create gutter marker
+  function createMarker(annotation) {
+    var marker = document.createElement("div");
+    marker.className = "lint-marker " + annotation.severity;
+    marker.title = annotation.message;
+    return marker;
+  }  
+  
+  // Validate syntax on code change
+  codemirrorEditor2.on("change", function() {
+    var code = codemirrorEditor2.getValue();
+    var isValidSyntax = validateJsonSyntax(code);
+    var errorAnnotation = isValidSyntax ? [] : [{
+      from: CodeMirror.Pos(0, 0),
+      to: CodeMirror.Pos(0, 0),
+      message: "Syntax Error",
+      severity: "error"
+    }];
+    CodeMirror.signal(codemirrorEditor2, "lint", codemirrorEditor2, errorAnnotation);
+  });
+
+  // Add linting annotations to show syntax errors
+  codemirrorEditor2.on("lint", function(_, annotations) {
+    codemirrorEditor2.clearGutter("CodeMirror-lint-markers");
+    annotations.forEach(function(annotation) {
+      codemirrorEditor2.setGutterMarker(annotation.from.line, "CodeMirror-lint-markers", createMarker(annotation));
+    });
+  });
 </script>
+
+<style>
+  .lint-marker {
+    width: 16px;
+    height: 16px;
+    background-color: red;
+    border-radius: 50%;
+  }
+
+  .lint-marker.error {
+    background-color: red;
+  }
+</style>

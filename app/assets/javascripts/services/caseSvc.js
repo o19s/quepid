@@ -290,6 +290,17 @@ angular.module('QuepidApp')
             broadcastSvc.send('fetchedDropdownCasesList', svc.allCases);
           });
       };
+      
+      this.importCase = function(caseToImport) {
+        var that = this;
+        var url         = 'api/import/cases';
+        var data        = { case: caseToImport };
+
+        return $http.post(url, data)
+          .then(function() {          
+              that.refetchCaseLists();
+          });
+      };
 
       this.trackLastViewedAt = function(caseNo) {
         var url         = 'api/cases/'+ caseNo + '/metadata';

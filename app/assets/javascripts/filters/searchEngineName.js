@@ -3,15 +3,22 @@
 angular.module('QuepidApp')
   .filter('searchEngineName', [
     function () {
-      var searchEngineName = {
+      const searchEngineName = {
         solr: 'Solr',
         es:   'Elasticsearch',
         os:   'OpenSearch',
-        vectara: 'Vectara'
+        vectara: 'Vectara',
+        static: 'Static File',
+        searchapi: 'Search API'
       };
 
       return function (input) {
-        return searchEngineName[input];
+        if (searchEngineName[input]){
+          return searchEngineName[input];
+        }
+        else {
+          return input;
+        }
       };
     }
   ]);

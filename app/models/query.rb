@@ -49,6 +49,8 @@ class Query < ApplicationRecord
 
   scope :has_information_need, -> { where.not(information_need: [ nil, '' ]) }
 
+  serialize :options, coder: JSON
+
   def parent_list
     self.case.queries
   end

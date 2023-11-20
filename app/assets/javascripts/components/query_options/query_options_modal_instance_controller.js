@@ -10,7 +10,7 @@ angular.module('QuepidApp')
     ) {
       var ctrl = this;
 
-      ctrl.value = value;
+      ctrl.value = JSON.stringify(value, null, 2);
 
       ctrl.ok = function () {
         $uibModalInstance.close(ctrl.value);

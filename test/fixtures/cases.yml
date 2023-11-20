@@ -6,6 +6,7 @@
 #  archived        :boolean
 #  case_name       :string(191)
 #  last_try_number :integer
+#  options         :json
 #  public          :boolean
 #  created_at      :datetime         not null
 #  updated_at      :datetime         not null
@@ -101,10 +102,11 @@ shared_team_case:
   archived:       false
 
 queries_case:
-  owner:     :random
-  case_name: A case to test queries positions
-  archived:  false
-  scorer: :random_scorer
+  owner:        :random
+  case_name:    A case to test queries positions
+  archived:     false
+  scorer:       :random_scorer
+  options:      '{"corpusId":987, "boostfactor":1.2}'
 
 move_query_to_me:
   owner:     :random
@@ -216,4 +218,4 @@ public_case:
   owner:     :random
   case_name: Public Book
   archived:  false
-  public:    :true  
+  public:    :true

@@ -44,7 +44,12 @@ angular.module('QuepidApp')
           }
 
           if ($scope.settings.searchEngine !== '' && !angular.isUndefined($scope.settings.searchUrl)){
+            if ($scope.settings.proxyRequests === true){
+              $scope.showTLSChangeWarning = false;
+            }
+            else {
              $scope.showTLSChangeWarning = caseTryNavSvc.needToRedirectQuepidProtocol($scope.settings.searchUrl);
+            }
 
             if ($scope.showTLSChangeWarning){
 
@@ -109,6 +114,7 @@ angular.module('QuepidApp')
           search_url:     $scope.settings.selectedTry.searchUrl,
           try_number:     $scope.settings.selectedTry.tryNo,
           basic_auth_crendential:     $scope.settings.selectedTry.basicAuthCredential,
+          options:        $scope.settings.selectedTry.options,
         });
         tmp.updateVars();
         

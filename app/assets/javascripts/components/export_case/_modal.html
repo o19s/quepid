@@ -99,7 +99,7 @@
   <div class="form-group">
     <label for="ltr">Quepid API</label>
     <span class="help-block">
-      Quepid has a API that you can export data in the JSON format via.  Append the parameter <code>?shallow=true</code> to return a smaller dataset.
+      Quepid <a ng-href="apipie" target="_blank">has an API</a> that you can export data in the JSON format via.  Append the parameter <code>?shallow=true</code> to return a smaller dataset.
     </span>
 
     Retrieve the <a ng-href="api/cases/{{ctrl.theCase.caseNo}}.json?shallow=false" target="_blank">Case</a>, <a ng-href="api/cases/{{ctrl.theCase.caseNo}}/queries.json?shallow=false" target="_blank">Queries</a>, <a ng-href="api/cases/{{ctrl.theCase.caseNo}}/annotations.json" target="_blank">Annotations</a>, <a ng-href="api/cases/{{ctrl.theCase.caseNo}}/scores.json" target="_blank">Scores</a>, <a ng-href="api/export/ratings/{{ctrl.theCase.caseNo}}.json" target="_blank">Ratings</a>, or a Snapshot
@@ -114,7 +114,18 @@
       <a ng-href="api/cases/{{ctrl.theCase.caseNo}}/snapshots/{{ ctrl.options.api_snapshot }}.json?shallow=false" target="_blank">here</a>
     </span>
      from API.
-  </div>
+  </div>  
+  <hr/>
+  <div class="form-group">
+    <input type="radio" id="rre" name="exportSelection" value="quepid" ng-model="ctrl.options.which">
+    <label for="quepid">Quepid</label>
+    <span class="help-block">
+      Need to move a Case between different Quepids?  This format lets you dump the complete Case.
+      You can also create a new Case outside Quepid and import using this format.
+      Use the Import Case function on the Cases Listing page to import it back in as a new Case.
+    </span>
+    Peek at <a ng-href="api/export/cases/{{ctrl.theCase.caseNo}}.json" target="_blank">the JSON format</a>.
+  </div>  
 </div>
 <div class="modal-footer">
   <button class="btn btn-default float-left" ng-click="ctrl.cancel()">Cancel</button>

@@ -10,3 +10,6 @@ json.api_method             search_endpoint.api_method
 json.custom_headers         search_endpoint.custom_headers
 json.basic_auth_credential  search_endpoint.basic_auth_credential
 json.mapper_code            search_endpoint.mapper_code
+json.proxy_requests         search_endpoint.proxy_requests
+
+json.options search_endpoint.options if export

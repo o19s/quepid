@@ -22,7 +22,7 @@ class SearchEndpointsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
-  test 'throw error on attempting to create search_endpoint with no teams' do
+  test 'should create search_endpoint using existing parameters doesnt change anything' do
     assert_difference('SearchEndpoint.count', 0) do
       post search_endpoints_url,
            params: { search_endpoint: {
@@ -35,10 +35,8 @@ class SearchEndpointsControllerTest < ActionDispatch::IntegrationTest
            } }
     end
 
-    assert_response :ok
-
-    # this assert could be better.
-    assert @response.parsed_body.include?('You must select at least one team to share this end point with')
+    assert_response :success
+    assert_empty SearchEndpoint.last.teams
   end
 
   test 'should create search_endpoint' do

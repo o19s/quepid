@@ -6,7 +6,9 @@
 
   <p>
     <strong>Search engine:</strong>
-    <%= image_tag "#{search_endpoint.search_engine}-icon.png", size:'32x32', class:'rounded-circle' %> 
+    <% if search_endpoint.search_engine %>
+      <%= image_tag "#{search_endpoint.search_engine}-icon.png", size:'32x32', class:'rounded-circle' %> 
+    <% end %>
     <%= search_endpoint.search_engine %>
   </p>
   
@@ -26,8 +28,18 @@
   </p>
   
   <p>
+    <strong>Proxy Requests:</strong>
+    <%= search_endpoint.proxy_requests %>
+  </p>  
+  
+  <p>
     <strong>Basic Auth Credential:</strong>
     <%= search_endpoint.basic_auth_credential %>
+  </p>  
+  
+  <p>
+    <strong>Options:</strong>
+    <%= search_endpoint.options %>
   </p>  
   
   <p>
