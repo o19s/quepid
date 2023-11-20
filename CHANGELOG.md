@@ -1,5 +1,19 @@
 # Changelog
 
+## 7.11.0 - 2023-11-19
+
+### Features
+
+Want to have custom filters or other variables per query?  You can now access a per query `#$qOption##` hash of JSON data in your query template.  For example, if you are accessing a RAG endpoint, and you are passing in a query and need some query specific document ids, you can now do that!
+
+https://github.com/o19s/quepid/pull/883 and https://github.com/o19s/quepid/pull/885 by @epugh.   Big thanks to @mkr for his work on splainer-search upgrades to support this, and @atarora for masterminding the use of the `qOption` in queries. 
+
+### Improvements
+
+* More robust handling of the Static File end point, and better handling of proxied queries that don't return json.  https://github.com/o19s/quepid/pull/886 by @epugh. 
+
+* On to Rails 7.1.2!  https://github.com/o19s/quepid/pull/837 by @epugh.
+
 ## 7.10.0 - 2023-11-03
 
 Big feature!  Or should I say big refactoring?   Meet your new friend "The Search Endpoint".  You can now configure a connection to a search engine, maybe one of the classic ones like Solr, OpenSearch, or Elasticsearch, or some new ones like "Static CSV File" or even a "Custom Search API".  Once that is configured, then you can reuse that connection over and over.  Even better, you can share it with your friends in your Team, similar to how you share Cases and Scorers.
