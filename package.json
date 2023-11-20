@@ -7,9 +7,9 @@
   "license": "Apache-2.0",
   "dependencies": {
     "@popperjs/core": "^2.11.6",
-    "@rails/actioncable": "7.0.8",
-    "@rails/activestorage": "7.0.8",
-    "@rails/ujs": "7.0.8",
+    "@rails/actioncable": "7.1.2",
+    "@rails/activestorage": "7.1.2",
+    "@rails/ujs": "7.1.2",
     "ace-builds": "1.31.1",
     "angular": "~1.8.3",
     "angular-animate": "^1.8.3",
@@ -42,7 +42,7 @@
     "splainer-search": "2.30.3",
     "tether-shepherd": "latest",
     "turbolinks": "^5.2.0",
-    "vega": "5.25.0"
+    "vega": "5.26.1"
   },
   "devDependencies": {
     "angular-mocks": "~1.8.3",
