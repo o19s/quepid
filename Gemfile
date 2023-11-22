@@ -7,8 +7,8 @@ ruby '3.2.2'
 gem 'activerecord-import', '>= 1.0.7'
 gem 'acts_as_list', '>= 1.0.1'
 gem 'ancestry'
-gem 'apipie-rails', '~> 1.2'
 gem 'angular-rails-templates', '~> 1.2'
+gem 'apipie-rails', '~> 1.2'
 gem 'bcrypt', '~> 3.1.7'
 gem 'bootsnap', require: false
 gem 'cal-heatmap-rails', '~> 3.6' # provides assets for cal heatmap, that requires old d3
