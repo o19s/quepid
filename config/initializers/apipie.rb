@@ -5,6 +5,7 @@ Apipie.configure do |config|
   config.app_name                = 'Quepid'
   config.api_base_url            = '/api'
   config.doc_base_url            = '/apipie'
+  config.validate                = :explicitly
   # where is your API defined?
   config.api_controllers_matcher = Rails.root.join('app/controllers/api/**/*.rb').to_s
   config.namespaced_resources    = true
