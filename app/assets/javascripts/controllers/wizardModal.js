@@ -23,6 +23,7 @@ angular.module('QuepidApp')
       
       $scope.isStaticCollapsed = true;
       $scope.addedStaticQueries = false;
+      $scope.listOfStaticQueries = [];
       $scope.showSearchApiJavaScriptEditor = true;
       $scope.staticContent = {
         content: null,
@@ -728,8 +729,7 @@ angular.module('QuepidApp')
       function createSnapshot() {
           $scope.staticContent.import.loading = true;
           $scope.isStaticCollapsed = false;
-          
-          $scope.listOfStaticQueries = [];
+                  
           angular.forEach($scope.staticContent.result, function(doc) {
             if (!$scope.listOfStaticQueries.includes(doc['Query Text'])){
               $scope.listOfStaticQueries.push(doc['Query Text']);

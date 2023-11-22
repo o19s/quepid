@@ -13,8 +13,17 @@ module Api
         # rubocop:disable Metrics/AbcSize
         # rubocop:disable Metrics/CyclomaticComplexity
         # rubocop:disable Metrics/PerceivedComplexity
+        # rubocop:disable Layout/LineLength
+        api :GET, '/api/cases/:case_id/snapshots/:snapshot_id/search?q=:q',
+            'Mimic a Solr query by looking up query/doc data from a specific snapshot, using the q parameter as the query'
+        param :case_id, :number,
+              desc: 'The ID of the requested case.', required: true
+        param :snapshot_id, :number,
+              desc: 'The ID of the snapshot for the case.', required: true
+        param :q, String,
+              desc: 'The query that you are looking up', required: true
         def index
-          @q = params[:q]
+          @q = search_params[:q]
           query = if '*:*' == @q
                     @snapshot.snapshot_queries.first.query
 
@@ -57,8 +66,16 @@ module Api
         # rubocop:enable Metrics/AbcSize
         # rubocop:enable Metrics/CyclomaticComplexity
         # rubocop:enable Metrics/PerceivedComplexity
+        # rubocop:enable Layout/LineLength
 
         private
+
+        def search_params
+          # Check if the 'q' parameter exists
+          raise ActionController::ParameterMissing, "Missing 'q' parameter" unless params.key?(:q)
+
+          params
+        end
 
         def set_snapshot
           @snapshot = @case.snapshots
