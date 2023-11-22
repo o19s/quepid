@@ -478,7 +478,7 @@ DEPENDENCIES
   activerecord-import (>= 1.0.7)
   acts_as_list (>= 1.0.1)
   ancestry
-  angular-rails-templates (>= 1.0.0.beta)
+  angular-rails-templates (~> 1.2)
   annotate
   apipie-rails (~> 1.2)
   bcrypt (~> 3.1.7)
