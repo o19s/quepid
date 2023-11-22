@@ -238,8 +238,7 @@ star wars,1921,3, Star Wars: Return of the Jedi
                     <div class="content import-content">
                       <pre>{{ staticContent.content }}</pre>
                     </div>
-                    
-                    <button class="btn btn-primary" ng-click="createSnapshot()"> Import</button>
+                    <button class="btn btn-primary" ng-click="createSnapshot()" ng-disabled="listOfStaticQueries.length > 0"> Import</button>
                   </div>
                 </div>
               </div>            
