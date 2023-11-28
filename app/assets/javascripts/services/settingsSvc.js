@@ -150,7 +150,8 @@ angular.module('QuepidApp')
           titleField: '',
           additionalFields: [],
           numberOfRows: 10,
-          searchEngine: 'static'
+          searchEngine: 'static',
+          proxyRequests: true
           // no searchUrl or urlFormat because it's code generated!
         },
         searchapi: {

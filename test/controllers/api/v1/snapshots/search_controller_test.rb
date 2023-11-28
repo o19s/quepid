@@ -124,6 +124,17 @@ module Api
             assert_equal data['responseHeader']['params'], solr_params.stringify_keys.transform_values(&:to_s)
           end
         end
+
+        describe 'handles edge cases' do
+          let(:acase)     { cases(:snapshot_case) }
+          let(:snapshot)  { snapshots(:a_snapshot) }
+
+          test 'replies with message when no parameters' do
+            assert_raises(ActionController::ParameterMissing) do
+              get :index, params: { case_id: acase.id, snapshot_id: snapshot.id }
+            end
+          end
+        end
       end
     end
   end
