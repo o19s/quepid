@@ -8,7 +8,7 @@
   </td>
   <td>
     <% unless kase.last_score.blank? %>
-      <%= kase.last_score.created_at%>
+      <%= local_time_ago(kase.last_score.created_at) %>
     <% end %>
   </td>
   <td>

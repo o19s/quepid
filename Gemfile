@@ -27,6 +27,7 @@ gem 'jbuilder', '~> 2.7'
 gem 'jquery-rails'
 gem 'jquery-ui-rails' # Can we narrow the widgets to load faster?
 gem 'listen', '~> 3.3'
+gem 'local_time'
 gem 'mysql2'
 gem 'omniauth'
 gem 'omniauth-google-oauth2'
