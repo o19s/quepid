@@ -9,7 +9,7 @@ json.case_id          acase.id
 json.scorer_id        acase.scorer_id
 json.book_id          acase.book_id
 json.owned            acase.owner_id == current_user.id if current_user.present?
-json.queries_count    acase.queries.count
+json.queries_count    acase.respond_to?(:queries_count) ? acase.queries_count : acase.queries.count
 unless shallow
   json.owner_name       acase.owner.name if acase.owner.present?
   json.owner_id         acase.owner.id if acase.owner.present?
@@ -44,12 +44,13 @@ unless shallow
   end
 end
 
+# rubocop:disable Style/MultilineIfModifier
+json.last_score do
+  json.partial! 'api/v1/case_scores/score', score: acase.last_score, shallow: shallow
+end if acase.last_score.present?
+# rubocop:enable Style/MultilineIfModifier
+
 unless shallow
-  # rubocop:disable Style/MultilineIfModifier
-  json.last_score do
-    json.partial! 'api/v1/case_scores/score', score: acase.last_score, shallow: shallow
-  end if acase.last_score.present?
-  # rubocop:enable Style/MultilineIfModifier
   json.scores acase.scores.sampled(acase.id, 10).includes(:annotation).limit(10) do |s|
     json.score      s.score
     json.updated_at s.updated_at
