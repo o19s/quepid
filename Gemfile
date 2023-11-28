@@ -6,6 +6,7 @@ ruby '3.2.2'
 
 gem 'activerecord-import', '>= 1.0.7'
 gem 'acts_as_list', '>= 1.0.1'
+gem 'ahoy_matey'
 gem 'ancestry'
 gem 'angular-rails-templates', '~> 1.2'
 gem 'apipie-rails', '~> 1.2'

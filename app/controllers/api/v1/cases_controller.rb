@@ -41,6 +41,7 @@ module Api
             :required      => false,
             :default_value => false
       def index
+        
         bool = ActiveRecord::Type::Boolean.new
 
         archived  = bool.deserialize(params[:archived]) || false

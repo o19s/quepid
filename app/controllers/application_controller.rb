@@ -1,12 +1,13 @@
 # frozen_string_literal: true
 
 require 'application_responder'
-#require 'analytics'
+require 'analytics'
 
 class ApplicationController < ActionController::Base
   include Authentication::CurrentUserManager
   include Authentication::CurrentCaseManager
   include Authentication::CurrentBookManager
+  include Trackable
 
   self.responder = ApplicationResponder
 
@@ -14,6 +15,7 @@ class ApplicationController < ActionController::Base
   before_action :set_current_user
   before_action :require_login
   before_action :check_current_user_locked!
+  after_action :track_action
 
   # Prevent CSRF attacks by raising an exception.
   # For APIs, you may want to use :null_session instead.
@@ -23,5 +25,9 @@ class ApplicationController < ActionController::Base
 
   def signup_enabled?
     Rails.application.config.signup_enabled
+  end
+  
+  def track_action
+    ahoy.track "Ran action", request.path_parameters
   end
 end

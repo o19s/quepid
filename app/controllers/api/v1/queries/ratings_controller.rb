@@ -11,7 +11,8 @@ module Api
           @rating.user = @current_user
 
           if @rating.update rating_params
-            Analytics::Tracker.track_rating_created_event current_user, @rating
+          #Analytics::Tracker.track_rating_created_event current_user, @rating
+            track_rating_created_event current_user, @rating
             respond_with @rating
           else
             render json: @rating.errors, status: :bad_request

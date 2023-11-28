@@ -51,6 +51,7 @@ class User < ApplicationRecord
   # Associations
 
   has_many :api_keys, dependent: :destroy
+  has_many :visits, class_name: "Ahoy::Visit"
 
   belongs_to :default_scorer, class_name: 'Scorer', optional: true # for communal scorers there isn't a owner
 
