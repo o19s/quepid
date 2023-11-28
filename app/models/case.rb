@@ -113,6 +113,17 @@ class Case < ApplicationRecord
       .order(Arel.sql('`case_metadata`.`last_viewed_at` DESC, `cases`.`updated_at` DESC'))
   }
 
+  # load up the queries count for the case, alternative to counter_cache
+  scope :with_counts, -> {
+                        select <<~SQL.squish
+                          cases.*,
+                          (
+                            SELECT COUNT(queries.id) FROM queries
+                            WHERE case_id = cases.id
+                          ) AS queries_count
+                        SQL
+                      }
+
   # Not proud of this method, but it's the only way I can get the dependent
   # objects of a Case to actually delete!
   def really_destroy

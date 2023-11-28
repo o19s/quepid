@@ -3,9 +3,9 @@
 class HomeController < ApplicationController
   def show
     # @cases = @current_user.cases.not_archived.includes([ :scores ])
-    @cases = @current_user.cases_involved_with.not_archived
+    @cases = @current_user.cases_involved_with.not_archived.with_counts
 
-    @most_recent_cases = @current_user.cases_involved_with.not_archived.recent.limit(4).sort_by(&:case_name)
+    @most_recent_cases = @current_user.cases_involved_with.not_archived.recent.limit(4).with_counts.sort_by(&:case_name)
 
     @most_recent_books = []
     @lookup_for_books = {}

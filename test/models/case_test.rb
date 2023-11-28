@@ -270,4 +270,24 @@ class CaseTest < ActiveSupport::TestCase
       end
     end
   end
+
+  describe 'with_counts scope' do
+    let(:the_case)    { cases(:random_case) }
+
+    it 'handles query counts accurately' do
+      case_id = the_case.id
+      the_case = Case.with_counts.where(id: case_id).first
+      assert_equal 3, the_case.queries_count
+
+      assert_difference 'Query.count', -1 do
+        assert_equal 3, the_case.queries.size
+        the_case.queries.first.destroy
+        assert_equal 2, the_case.queries.size
+      end
+
+      # instead of a reload
+      the_case = Case.with_counts.where(id: case_id).first
+      assert_equal 2, the_case.queries_count
+    end
+  end
 end
