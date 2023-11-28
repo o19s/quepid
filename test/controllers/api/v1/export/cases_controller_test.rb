@@ -28,6 +28,8 @@ module Api
             assert_nil body['scorer_id']
             assert_not_nil body['scorer']
             assert_nil body['scorer']['scorer_id']
+            assert_nil body['scorer']['code']
+            assert_nil body['scorer']['teams']
 
             assert_not_nil body['try']
             assert_not_empty body['try']['curator_variables']

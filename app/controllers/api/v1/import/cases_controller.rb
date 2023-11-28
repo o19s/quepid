@@ -15,8 +15,6 @@ module Api
 
           @case = Case.new
 
-          list_of_emails_of_users << params_to_use[:owner_email]
-
           scorer_name = params_to_use[:scorer][:name]
           unless Scorer.exists?(name: scorer_name)
             @case.errors.add(:scorer, "Scorer with name '#{scorer_name}' needs to be migrated over first.")
@@ -47,7 +45,8 @@ module Api
 
           @case.scorer = Scorer.find_by(name: scorer_name)
 
-          @case.owner = User.find_by(email: params_to_use[:owner_email])
+          # Force the imported case to be owned by the user doing the importing.  Otherwise you can loose the case!
+          @case.owner = User.find_by(email: current_user.email)
 
           # For some reason we can't do @case.queries.build with out forcing a save.
           # Works fine with book however.
