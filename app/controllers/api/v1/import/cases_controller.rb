@@ -80,11 +80,9 @@ module Api
 
           @case.tries.first.update(params_to_use[:try].except(:curator_variables, :search_endpoint))
 
-          unless params_to_use[:try][:curator_variables].nil?
-            params_to_use[:try][:curator_variables].each do |curator_variable|
-              # not sure why curator_variables.build and then the @case.save doesn't cascade down.
-              @case.tries.first.curator_variables.create curator_variable
-            end
+          params_to_use[:try][:curator_variables]&.each do |curator_variable|
+            # not sure why curator_variables.build and then the @case.save doesn't cascade down.
+            @case.tries.first.curator_variables.create curator_variable
           end
 
           if @case.save

@@ -102,7 +102,7 @@ module Api
             post :create, params: { case: data, format: :json }
 
             assert_response :created
-          
+
             kase = Case.find_by(case_name: 'test case')
             assert_not_nil kase
             kase.owner = user
