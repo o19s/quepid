@@ -521,6 +521,7 @@ module Api
         let(:owned_scorer)     { scorers(:owned_scorer) }
         let(:shared_scorer)    { scorers(:shared_scorer) }
         let(:communal_scorer)  { scorers(:quepid_default_scorer) }
+        let(:shared_team)      { teams(:shared) }
 
         test 'returns all scorers owned by user and those shared through teams' do
           get :index
@@ -530,29 +531,32 @@ module Api
           scorers = response.parsed_body
 
           expected_owned_response = {
+            'name'              => owned_scorer.name,
             'scorer_id'         => owned_scorer.id,
             'communal'          => owned_scorer.communal,
             'code'              => owned_scorer.code,
-            'name'              => owned_scorer.name,
             'scale'             => owned_scorer.scale,
             'owner_id'          => owned_scorer.owner_id,
             'owned'             => true,
             'owner_name'        => owned_scorer.owner.name,
             'show_scale_labels' => false,
             'scale_with_labels' => nil,
+            'teams'             => [],
           }
 
           expected_shared_response = {
+            'name'              => shared_scorer.name,
             'scorer_id'         => shared_scorer.id,
             'communal'          => owned_scorer.communal,
             'code'              => shared_scorer.code,
-            'name'              => shared_scorer.name,
             'scale'             => shared_scorer.scale,
             'owner_id'          => shared_scorer.owner_id,
             'owned'             => false,
             'owner_name'        => shared_scorer.owner.name,
             'show_scale_labels' => false,
             'scale_with_labels' => nil,
+            'teams'             => [ { 'id' => shared_team.id, 'name' => shared_team.name,
+'owner_id' => shared_team.owner_id } ],
           }
 
           assert_includes scorers['user_scorers'], expected_owned_response

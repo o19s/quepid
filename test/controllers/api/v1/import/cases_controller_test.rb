@@ -90,27 +90,22 @@ module Api
             assert_nil Case.find_by(case_name: 'test case')
           end
 
-          test 'alerts when a owner associated with a case does not exist' do
+          test 'overrides the existing owner of a case and assigns to the importer' do
             data = {
               case_name:   'test case',
               owner_email: 'fakeowner@fake.com',
-              scorer:      {
-                name: 'fake scorer',
-
-              },
+              scorer:      acase.scorer.as_json(only: [ :name ]),
               try:         acase.tries.last.as_json,
               queries:     [],
             }
 
             post :create, params: { case: data, format: :json }
 
-            assert_response :bad_request
+            assert_response :created
 
-            body = response.parsed_body
-
-            assert_includes body['base'],
-                            "User with email 'fakeowner@fake.com' needs to be migrated over first."
-            assert_nil Case.find_by(case_name: 'test case')
+            kase = Case.find_by(case_name: 'test case')
+            assert_not_nil kase
+            kase.owner = user
           end
 
           test 'creates a new book' do

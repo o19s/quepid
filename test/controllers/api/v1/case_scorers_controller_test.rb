@@ -25,16 +25,17 @@ module Api
           data = response.parsed_body
 
           expected_response = {
+            'name'              => scorer.name,
             'scorer_id'         => scorer.id,
             'communal'          => scorer.communal,
             'code'              => scorer.code,
-            'name'              => scorer.name,
             'scale'             => scorer.scale,
             'owner_id'          => scorer.owner_id,
             'owned'             => false,
             'owner_name'        => scorer.owner.name,
             'show_scale_labels' => scorer.show_scale_labels,
             'scale_with_labels' => scorer.scale_with_labels,
+            'teams'             => [],
           }
 
           assert_equal expected_response, data['default']
