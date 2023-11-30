@@ -5,10 +5,12 @@ angular.module('QuepidApp')
     '$q',
     '$log',
     'docResolverSvc',
+    'caseTryNavSvc',
     function docCacheSvc(
       $q,
       $log,
-      docResolverSvc
+      docResolverSvc,
+      caseTryNavSvc
     ) {
       var docCache = {};
 
@@ -52,6 +54,11 @@ angular.module('QuepidApp')
           }
         });
 
+        if (settings.proxyRequests === true){
+          // Pass in the Quepid specific proxy url
+          settings.proxyUrl = caseTryNavSvc.getQuepidProxyUrl();
+        }
+        
         var docIds    = Object.keys(docsToFetch);
         var resolver  = docResolverSvc.createResolver(docIds, settings, 15);
 

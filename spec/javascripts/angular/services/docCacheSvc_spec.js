@@ -10,7 +10,9 @@ describe('Service: docCacheSvc', function () {
   var $q;
   var docCacheSvc;
   var docResolverSvc;
-  var ignoredSettings = null;
+  var ignoredSettings = {
+    proxyRequests: false
+  };
 
   beforeEach(function() {
     inject(function(_$rootScope_, _$q_, _docCacheSvc_, _docResolverSvc_) {

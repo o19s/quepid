@@ -3,10 +3,23 @@
 angular.module('QuepidApp')
   .controller('DetailedDocCtrl', [
     '$scope', '$uibModalInstance',
+    'settingsSvc','caseTryNavSvc',
     'doc',
-    function DetailedDocCtrl($scope, $uibModalInstance, doc) {
+    function DetailedDocCtrl(
+      $scope, $uibModalInstance,
+      settingsSvc, caseTryNavSvc,
+      doc) {
       
       $scope.doc = doc;
+      
+      $scope.linkToDoc = function() {
+        let url = $scope.doc._url();
+        if (settingsSvc.applicableSettings().proxyRequests  === true) {
+          url = caseTryNavSvc.getQuepidProxyUrl() + url;
+        }
+        
+        return url;
+      };
       
       $scope.showAllFields = false;
 
