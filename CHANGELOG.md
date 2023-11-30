@@ -1,5 +1,30 @@
 # Changelog
 
+## 7.12.0 - 2023-11-30
+
+A flurry of changes based on feedback from the community.  This is basically a "improve" Quepid release.
+
+### Features
+
+* Now show the last run on using friendly times, like "one hour ago".  https://github.com/o19s/quepid/pull/892 by @epugh.
+
+### Improvements
+
+* Restored in the homepage and the case listing the "last run on" and "last run by" information.  Adding this had been causing performance issues, but hoping we worked this out. https://github.com/o19s/quepid/pull/891 by @epugh.
+
+* Some general fixes to handling static defined search case and search endpoints.  https://github.com/o19s/quepid/pull/886 by @epugh.
+
+* Also, the usual upgrades to Rails, Node etc.  We are now on Rails 7.1.3, though we still need to update some configuration settings from Rails 7.0 to 7.1.
+
+### Bugs
+
+* Respect the proxy setting for a search end point in doing a snapshot compare lookup, and in linking to individual docs.  https://github.com/o19s/quepid/pull/893 by @epugh.  Thanks @david-fisher for finding this.
+
+* We now support custom headers for search apis.  Thanks @dacox for the fix in https://github.com/o19s/splainer-search/pull/138.  
+
+* Made more robust the adding of queries for a static CSV case.  https://github.com/o19s/quepid/pull/889 by @epugh.  Thanks to @tiagoshin for identifying the issue.
+
+
 ## 7.11.0 - 2023-11-19
 
 ### Features
