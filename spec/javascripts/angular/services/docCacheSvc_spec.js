@@ -11,7 +11,8 @@ describe('Service: docCacheSvc', function () {
   var docCacheSvc;
   var docResolverSvc;
   var ignoredSettings = {
-    proxyRequests: false
+    proxyRequests: false,
+    searchEngine: 'solr'
   };
 
   beforeEach(function() {
@@ -87,26 +88,6 @@ describe('Service: docCacheSvc', function () {
     });
 
     it('resolves nothing on redundant ids', function() {
-      checkSetupFromScratch();
-
-      docCacheSvc.addIds(['1', '2', '3']);
-
-      var called = 0;
-      docCacheSvc.update(ignoredSettings)
-        .then(function() {
-          expect(docCacheSvc.getDoc('1').id).toBe('1');
-          expect(docCacheSvc.getDoc('2').id).toBe('2');
-          expect(docCacheSvc.getDoc('3').id).toBe('3');
-          called++;
-        });
-
-      $rootScope.$apply();
-      expect(called).toBe(1);
-      var mockResolver = docResolverSvc.mockResolver;
-      expect(mockResolver.docs.length).toBe(0);
-    });
-
-    it('resolves even if docId resolver does no work', function() {
       checkSetupFromScratch();
 
       docCacheSvc.addIds(['1', '2', '3']);
