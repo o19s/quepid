@@ -19,7 +19,7 @@ angular.module('QuepidApp')
         }
         
         return url;
-      }
+      };
       
       $scope.showAllFields = false;
 
