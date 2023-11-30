@@ -727,37 +727,37 @@ angular.module('QuepidApp')
       };
       
       function createSnapshot() {
-          $scope.staticContent.import.loading = true;
-          $scope.isStaticCollapsed = false;
-                  
-          angular.forEach($scope.staticContent.result, function(doc) {
-            if (!$scope.listOfStaticQueries.includes(doc['Query Text'])){
-              $scope.listOfStaticQueries.push(doc['Query Text']);
-            }
-          });
-             
-          querySnapshotSvc.importSnapshotsToSpecificCase($scope.staticContent.result, caseTryNavSvc.getCaseNo())
-            .then(function () {
-              const keys = Object.keys(querySnapshotSvc.snapshots);
-              const snapshotId = keys[keys.length - 1];
-                            
-              console.log($location.absUrl)     ;         
-              $scope.pendingWizardSettings.searchUrl = `${$location.protocol()}://${$location.host()}:${$location.port()}/api/cases/${caseTryNavSvc.getCaseNo()}/snapshots/${snapshotId}/search`;
-              $scope.isStaticCollapsed = false;
-              $scope.addedStaticQueries = true;
-              //var result = {
-              //  success: true,
-              //  message: 'Static Data imported successfully!',
-              // };
-              $scope.staticContent.import.loading = false;
-            }, function () {
-              //var result = {
-               // error: true,
-               // message: 'Could not import static data successfully! Please try again.',
-              //};
+        $scope.staticContent.import.loading = true;
+        $scope.isStaticCollapsed = false;
+                
+        angular.forEach($scope.staticContent.result, function(doc) {
+          if (!$scope.listOfStaticQueries.includes(doc['Query Text'])){
+            $scope.listOfStaticQueries.push(doc['Query Text']);
+          }
+        });
+            
+        querySnapshotSvc.importSnapshotsToSpecificCase($scope.staticContent.result, caseTryNavSvc.getCaseNo())
+          .then(function () {
+            const keys = Object.keys(querySnapshotSvc.snapshots);
+            const snapshotId = keys[keys.length - 1];
+                          
+            console.log($location.absUrl)     ;         
+            $scope.pendingWizardSettings.searchUrl = `${$location.protocol()}://${$location.host()}:${$location.port()}/api/cases/${caseTryNavSvc.getCaseNo()}/snapshots/${snapshotId}/search`;
+            $scope.isStaticCollapsed = false;
+            $scope.addedStaticQueries = true;
+            //var result = {
+            //  success: true,
+            //  message: 'Static Data imported successfully!',
+            // };
+            $scope.staticContent.import.loading = false;
+          }, function () {
+            //var result = {
+              // error: true,
+              // message: 'Could not import static data successfully! Please try again.',
+            //};
 
-              $scope.staticContent.import.loading = false;
-            });
+            $scope.staticContent.import.loading = false;
+          });
       }
       $scope.checkStaticHeaders = checkStaticHeaders;
       function checkStaticHeaders () {
@@ -779,6 +779,19 @@ angular.module('QuepidApp')
 
           $scope.staticContent.import.alert = alert;
         }
+        
+        const documentHeaders = headers.filter(item => !expectedHeaders.includes(item));
+        const containsSpace = documentHeaders.some(item => item.trim().includes(' '));
+        if (containsSpace) {
+          var alert = 'Document field names may not contain whitespace: ';
+          alert += '<br /><strong>';
+          alert += documentHeaders.join(',');
+          alert += '</strong>';
+
+          $scope.staticContent.import.alert = alert;
+        }
+        
+        
       }
       
       $scope.$watch('staticContent.content', function (newVal, oldVal) {
