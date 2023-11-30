@@ -79,6 +79,13 @@ angular.module('QuepidApp')
               fields[field['field']] = field['value'];
             });
             fields['title'] = doc.title;
+            // interesting issue, which is for a doc with attributes title and text, if the fieldspec is
+            // title:text, title, then we need special logic to actually GET the title attribute out and map it to title_field,
+            // because otherwise we just overwrite it.
+            if (doc.doc.title !== undefined && doc.doc.title !== doc.title){
+              fields['title_field'] = doc.doc.title;
+            }          
+            
             if (doc.hasThumb()) {
               fields['thumb'] = doc.thumb;
             }

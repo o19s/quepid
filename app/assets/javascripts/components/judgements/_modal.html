@@ -21,18 +21,19 @@
     Explicit Judgements created by humans are a good way to start measuring your search quality.
   </p>
   <p>
-    You populate the book with the data returned by the try to give your raters a set of query/doc pairs to judge.
+    Quepid organizes Judgements in a <b>Book</b> that consists of query and document pairs for human evaluation.
+    Checkmark the <b>Populate Book</b> option to update the book with new and changed queries and documents returned by the Case.
   </p>
 
   <div class="text-center" ng-show="ctrl.share.teams.length === 0 && !ctrl.share.loading">
     <p>
-      Books of Judgements are meant to be shared with a team, so either create a new team or close this modal and use <i
-        class="fa fa-share"
-        aria-hidden="true"
-        title="Share Case"
-        alt="Share Case"
-      ></i> Share Case first.
+      Judgements are meant to be shared with a team, so either create a new team or  
+      <share-case
+        acase="ctrl.share.acase" ng-click="ctrl.cancel()"
+      ></share-case> first.
     </p>
+    
+ 
 
     <a class="btn btn-primary btn-lg" ng-click="ctrl.goToTeamsPage()">
       <i class="fa fa-plus"></i>
@@ -43,7 +44,7 @@
 
   <div class="text-center" ng-show="ctrl.share.teams.length > 0 &&  ctrl.share.books.length === 0 && !ctrl.share.loading">
     <p>
-      You have no Books of Judgements created yet, so go ahead and create a new Book!
+      You have not created any Books of Judgements yet, so go ahead and create a new Book!
     </p>
 
     <a class="btn btn-primary btn-lg" href="books/new" target="_self">
@@ -116,7 +117,7 @@
 
   <a class="btn btn-default pull-left" ng-click="ctrl.refreshRatingsFromBook()" ng-disabled="processingPrompt.inProgress || ctrl.populateBook || !ctrl.activeBookId || ctrl.share.acase.bookId !== ctrl.activeBookId" >
     <i class="glyphicon glyphicon-refresh"></i>
-    Refresh ratings from book <i>{{ctrl.activeBookName}}
+    Refresh ratings from book <i>{{ctrl.activeBookName}}</i>
   </a>
 
   <button
