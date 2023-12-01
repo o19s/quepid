@@ -772,7 +772,7 @@ angular.module('QuepidApp')
         console.log(expectedHeaders);
 
         if (!caseCSVSvc.arrayContains(headers, expectedHeaders)) {
-          var alert = 'Required headers mismatch! Please make sure you have the correct headers in you file (check for correct spelling and capitalization): ';
+          let alert = 'Required headers mismatch! Please make sure you have the correct headers in you file (check for correct spelling and capitalization): ';
           alert += '<br /><strong>';
           alert += expectedHeaders.join(',');
           alert += '</strong>';
@@ -783,7 +783,7 @@ angular.module('QuepidApp')
         const documentHeaders = headers.filter(item => !expectedHeaders.includes(item));
         const containsSpace = documentHeaders.some(item => item.trim().includes(' '));
         if (containsSpace) {
-          var alert = 'Document field names may not contain whitespace: ';
+          let alert = 'Document field names may not contain whitespace: ';
           alert += '<br /><strong>';
           alert += documentHeaders.join(',');
           alert += '</strong>';
