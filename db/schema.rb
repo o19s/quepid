@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2023_11_11_181543) do
+ActiveRecord::Schema[7.1].define(version: 2023_12_01_201946) do
   create_table "annotations", id: :integer, charset: "utf8mb3", force: :cascade do |t|
     t.text "message"
     t.string "source"
@@ -162,7 +162,7 @@ ActiveRecord::Schema[7.1].define(version: 2023_11_11_181543) do
     t.string "search_engine", limit: 50
     t.string "endpoint_url", limit: 500
     t.string "api_method"
-    t.string "custom_headers", limit: 1000
+    t.string "custom_headers", limit: 6000
     t.boolean "archived", default: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
