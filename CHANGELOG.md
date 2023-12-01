@@ -45,11 +45,11 @@ A flurry of changes based on feedback from the community.  This is basically a "
 
 Want to have custom filters or other variables per query?  You can now access a per query `#$qOption##` hash of JSON data in your query template.  For example, if you are accessing a RAG endpoint, and you are passing in a query and need some query specific document ids, you can now do that!
 
-https://github.com/o19s/quepid/pull/883 and https://github.com/o19s/quepid/pull/885 by @epugh.   Big thanks to @mkr for his work on splainer-search upgrades to support this, and @atarora for masterminding the use of the `qOption` in queries. 
+https://github.com/o19s/quepid/pull/883 and https://github.com/o19s/quepid/pull/885 by @epugh.   Big thanks to @mkr for his work on splainer-search upgrades to support this, and @atarora for masterminding the use of the `qOption` in queries.
 
 ### Improvements
 
-* More robust handling of the Static File end point, and better handling of proxied queries that don't return json.  https://github.com/o19s/quepid/pull/886 by @epugh. 
+* More robust handling of the Static File end point, and better handling of proxied queries that don't return json.  https://github.com/o19s/quepid/pull/886 by @epugh.
 
 * On to Rails 7.1.2!  https://github.com/o19s/quepid/pull/837 by @epugh.
 
@@ -100,7 +100,7 @@ https://github.com/o19s/quepid/pull/834 by @epugh.
 
 * Need to copy the query from the Cases screen?  Yes, there is now a little Copy to Clipboard icon.  https://github.com/o19s/quepid/pull/823 by @epugh fixes implements https://github.com/o19s/quepid/pull/823 by @jeffryedvm.  Thanks!
 
-* Some folks, like @jeffryedvm, really want to know the rank of the document when judging it in the Books interface.   https://github.com/o19s/quepid/pull/822 by @epugh implements request https://github.com/o19s/quepid/pull/823 by @jeffryedvm. 
+* Some folks, like @jeffryedvm, really want to know the rank of the document when judging it in the Books interface.   https://github.com/o19s/quepid/pull/822 by @epugh implements request https://github.com/o19s/quepid/pull/823 by @jeffryedvm.
 
 * Want to use the Snapshot capablity to import your case with it's queries with it's documents and all of it's document fields?  Now you can!  https://github.com/o19s/quepid/pull/821 let's you export a snapshot with any recorded document fields.   You can also now import them. https://github.com/o19s/quepid/pull/821 by @epugh for @mkr.
 
