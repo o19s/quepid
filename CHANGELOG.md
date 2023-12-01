@@ -1,5 +1,11 @@
 # Changelog
 
+## 7.12.1 - 2023-12-01
+
+7.12.0 introduced a change in splainer-search that breaks `searchapi` :-(.
+
+* Rollback splainer changes, but also some polish on the UX for going from the Case judgement screen to the Share with a Team.   Also make parsing the csv file for the `static` api more robust.  https://github.com/o19s/quepid/pull/894
+
 ## 7.12.0 - 2023-11-30
 
 A flurry of changes based on feedback from the community.  This is basically a "improve" Quepid release.
