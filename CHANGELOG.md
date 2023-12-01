@@ -1,5 +1,9 @@
 # Changelog
 
+## 7.12.2 - 2023-12-01
+
+We discovered that your custom headers can be very long!  Thanks @tiagoshin for your patch.  https://github.com/o19s/quepid/pull/903 by @tiagoshin.
+
 ## 7.12.1 - 2023-12-01
 
 7.12.0 introduced a change in splainer-search that breaks `searchapi` :-(.
