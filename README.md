@@ -346,8 +346,14 @@ bin/docker r bin/rake test:jshint
 
 The see available tasks:
 
+In Development:
 ```
 bin/docker r thor list
+```
+
+In Production:
+```
+docker compose run app bin/thor list
 ```
 
 Examples include:

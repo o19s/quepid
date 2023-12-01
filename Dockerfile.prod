@@ -39,6 +39,8 @@ RUN bundle install --jobs 4 && \
   bundle clean --force && \
   rm -rf /app/.bundle/cache && \
   rm -rf /app/vendor/bundle/ruby/*/cache
+  
+RUN bundle binstubs thor --force
 
 COPY --from=build-dep /srv/app/node_modules ./node_modules/
 #COPY . .
