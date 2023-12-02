@@ -19,7 +19,7 @@ Quepid makes improving your app's search results a repeatable, reliable engineer
 
 **To learn more, please check out the [Quepid website](http://www.quepid.com) and the [Quepid wiki](http://github.com/o19s/quepid/wiki).**
 
-**If you are ready to dive right in, you can use the [Hosted Quepid](http://app.quepid.com) service right now or follow the [installation steps](https://github.com/o19s/quepid/wiki/Installation-Guide) to set up your own instance of Quepid.**
+**If you are ready to dive right in, you can use the [Hosted Quepid](http://app.quepid.com) service right now or follow the [installation steps](https://github.com/o19s/quepid/wiki/Installation-Guide) to set up your own instance of Quepid.  Then configure your instance by consulting the [Operating Documentation](docs/operating_documentation.md).**
 
 # Table of Contents
 Below is information related to developing the Quepid open source project, primarily for people interested in extending what Quepid can do!
