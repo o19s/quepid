@@ -236,3 +236,54 @@ curl -X POST http://localhost:3000/api/books/2/judgements/ -H 'Authorization: Be
   }
 }'
 ```
+
+## Script Based Interactions with Quepid
+
+You can perform some interactions with Quepid by running commands that ship with Quepid.  The scripts use a tool called `thor`.  Get a complete list of the options by running `docker compose run app bin/thor list`:
+
+```
+case
+----
+thor case:create NAME SEARCH_ENGINE SEARCH_URL API_METHOD FIELD_SPEC QUERY_PARAMS SCORER_NAME OWNER_EMAIL  # creates a new case
+thor case:share CASEID TEAMID                                                                              # shares case with an team
+
+ratings
+-------
+thor ratings:generate SOLRURL FILENAME  # generates random ratings into a .csv file
+thor ratings:import CASEID FILENAME     # imports ratings to a case
+
+snapshots
+---------
+thor snapshots:generate SOLRURL FILENAME            # generates a random snapshot into a .csv file
+thor snapshots:import CASEID SNAPSHOTNAME FILENAME  # imports a snapshot to a case
+
+user
+----
+thor user:create EMAIL USERNAME PASSWORD    # creates a new user
+thor user:grant_administrator EMAIL         # grant administrator privileges to user
+thor user:reset_password EMAIL NEWPASSWORD  # resets user's password
+```
+
+To see more details about any of the tasks, run `bin/docker r thor help TASKNAME`:
+
+```
+thor help user:create
+Usage:
+  thor user:create EMAIL USERNAME PASSWORD
+
+Options:
+  -a, [--administrator], [--no-administrator]
+
+Description:
+  `user:create` creates a new user with the passed in email, name and password.
+
+  EXAMPLES:
+
+  $ thor user:create foo@example.com "Eric Pugh" mysuperstrongpassword
+
+  With -a option, will mark the user as Administrator
+
+  EXAMPLES:
+
+  $ thor user:create -a admin@example.com Administrator mysuperstrongpassword
+```
