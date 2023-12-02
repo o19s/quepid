@@ -356,49 +356,9 @@ In Production:
 docker compose run app bin/thor list
 ```
 
-Examples include:
+See [Operating Documentation](docs/operating_documentation.md) for more details.
 
-```
-case
-----
-thor case:create NAME ...      # creates a new case
-thor case:share CASEID TEAMID  # shares case with an team
 
-ratings
--------
-thor ratings:generate SOLRURL FILENAME  # generates random ratings into a .csv file
-thor ratings:import CASEID FILENAME     # imports ratings to a case
-
-user
-----
-thor user:create EMAIL USERNAME PASSWORD    # creates a new user
-thor user:grant_administrator EMAIL         # grant administrator privileges to user
-thor user:reset_password EMAIL NEWPASSWORD  # resets user's password
-```
-
-To see more details about any of the tasks, run `bin/docker r thor help TASKNAME`:
-
-```
-thor help user:create
-Usage:
-  thor user:create EMAIL USERNAME PASSWORD
-
-Options:
-  -a, [--administrator], [--no-administrator]
-
-Description:
-  `user:create` creates a new user with the passed in email, name and password.
-
-  EXAMPLES:
-
-  $ thor user:create foo@example.com "Eric Pugh" mysuperstrongpassword
-
-  With -a option, will mark the user as Administrator
-
-  EXAMPLES:
-
-  $ thor user:create -a admin@example.com Administrator mysuperstrongpassword
-```
 
 # Elasticsearch
 
