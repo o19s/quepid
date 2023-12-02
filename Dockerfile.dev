@@ -12,7 +12,7 @@ RUN apt-get update -qq \
 COPY Gemfile* /srv/app/
 WORKDIR /srv/app
 RUN gem install foreman
-RUN gem install bundler:2.4.9
+RUN gem install bundler:2.4.22
 RUN bundle install --jobs 4
 
 # Dependency for generating the ERD: 'graphviz'
