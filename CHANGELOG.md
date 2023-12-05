@@ -2,7 +2,9 @@
 
 ## 7.12.3 - 2023-12-05
 
-Bump splainer-search to 2.30.7 to pass through basic auth properties to Solr.
+* Restore `thor` based scripts by letting you run `docker compose run app bin/thor list` to see all the thor scripts available for interacting with Quepid.  https://github.com/o19s/quepid/pull/904 by @epugh, reported by @vincetrumental in https://github.com/o19s/quepid/issues/888.
+
+* Bump splainer-search to 2.30.7 to pass through basic auth properties to Solr.
 
 ## 7.12.2 - 2023-12-01
 
