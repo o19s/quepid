@@ -12,6 +12,7 @@ class ProxyController < ApplicationController
   skip_before_action :verify_authenticity_token, only: [ :fetch ]
   # curl -X GET "http://localhost:3000/proxy/fetch?url=https://quepid-solr.dev.o19s.com/solr/tmdb/select&q=*:*"
   # curl -X POST "http://localhost:3000/proxy/fetch?url=https://quepid-solr.dev.o19s.com/solr/tmdb/query" -d '{"query":"star"}'
+  # curl -X GET "http://localhost:3000/proxy/fetch?url=http://quepid-solr.dev.o19s.com:8985/solr/media/select&q=*:*" -u 'solr:SolrRocks'
   #
   def fetch
     excluded_keys = [ :url, :action, :controller, :proxy_debug ]
