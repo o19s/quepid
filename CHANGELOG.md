@@ -1,8 +1,12 @@
 # Changelog
 
+## 7.12.3 - 2023-12-05
+
+Bump splainer-search to 2.30.7 to pass through basic auth properties to Solr.
+
 ## 7.12.2 - 2023-12-01
 
-We discovered that your custom headers can be very long!  Thanks @tiagoshin for your patch.  https://github.com/o19s/quepid/pull/903 by @tiagoshin.
+We discovered that your custom headers can be very long!  Thanks @tiagoshin for the patch to extend the length of custom headers in the database.  https://github.com/o19s/quepid/pull/903 by @tiagoshin.
 
 ## 7.12.1 - 2023-12-01
 
