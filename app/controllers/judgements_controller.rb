@@ -67,6 +67,7 @@ class JudgementsController < ApplicationController
     @previous_judgement = @judgement.previous_judgement_made
   end
 
+  # rubocop:disable Metrics/MethodLength
   def create
     @judgement = Judgement.new(judgement_params)
     @judgement.user = current_user
@@ -89,6 +90,7 @@ class JudgementsController < ApplicationController
       render action: :new
     end
   end
+  # rubocop:enable Metrics/MethodLength
 
   def unrateable
     @judgement = Judgement.find_or_initialize_by(query_doc_pair_id: params[:query_doc_pair_id], user: current_user)

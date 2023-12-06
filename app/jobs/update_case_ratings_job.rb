@@ -3,6 +3,7 @@
 class UpdateCaseRatingsJob < ApplicationJob
   queue_as :default
 
+  # rubocop:disable Metrics/MethodLength
   def perform judgement
     query_doc_pair = judgement.query_doc_pair
     book = judgement.query_doc_pair.book
@@ -27,4 +28,5 @@ class UpdateCaseRatingsJob < ApplicationJob
       query.save
     end
   end
+  # rubocop:enable Metrics/MethodLength
 end
