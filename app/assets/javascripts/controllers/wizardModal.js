@@ -532,13 +532,14 @@ angular.module('QuepidApp')
         // we need to restore the TMDB demo settings if that matches our URL for the next screen.
         var searchEngine  = $scope.pendingWizardSettings.searchEngine;
         var newUrl        = $scope.pendingWizardSettings.searchUrl;
-        if (settingsSvc.demoSettingsChosen(searchEngine, newUrl)){
-          var settingsToUse = settingsSvc.getDemoSettings($scope.pendingWizardSettings.searchEngine);
-          $scope.pendingWizardSettings.idField          = settingsToUse.idField;
-          $scope.pendingWizardSettings.titleField       = settingsToUse.titleField;
-          $scope.pendingWizardSettings.additionalFields = settingsToUse.additionalFields;
-          $scope.pendingWizardSettings.queryParams      = settingsToUse.queryParams;
-        }
+        
+        var settingsToUse = settingsSvc.pickSettingsToUse(searchEngine, newUrl);
+        
+        
+        $scope.pendingWizardSettings.idField          = settingsToUse.idField;
+        $scope.pendingWizardSettings.titleField       = settingsToUse.titleField;
+        $scope.pendingWizardSettings.additionalFields = settingsToUse.additionalFields;
+        $scope.pendingWizardSettings.queryParams      = settingsToUse.queryParams;
       }
 
       $scope.validateFieldSpec = validateFieldSpec;
