@@ -10,7 +10,7 @@ else
   @document_fields_except_title = @document_fields_as_json.except('title')
   %>
   <h5>
-  Title: <%= sanitize @title_value %>
+  <%= sanitize @title_value %>
   </h5>
 
   <%
