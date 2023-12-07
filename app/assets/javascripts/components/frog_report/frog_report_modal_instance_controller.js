@@ -197,7 +197,7 @@ angular.module('QuepidApp')
           else {
             $scope.totalNumberQueriesWithResults += 1;
           }
-          totalNumberOfRatingsNeeded = totalNumberOfRatingsNeeded + q.docs.length
+          totalNumberOfRatingsNeeded = totalNumberOfRatingsNeeded + q.docs.length;
 
         });
         $scope.totalNumberOfRatingsNeeded = totalNumberOfRatingsNeeded;
