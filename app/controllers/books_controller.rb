@@ -126,7 +126,7 @@ class BooksController < ApplicationController
     end
 
     if @book.save
-       UpdateCaseJob.perform_later @book
+      UpdateCaseJob.perform_later @book
       redirect_to book_path(@book), :notice => "Combined #{query_doc_pair_count} query/doc pairs."
     else
       redirect_to book_path(@book),
@@ -158,18 +158,17 @@ class BooksController < ApplicationController
         rating.save!
       end
     end
-    
+
     UpdateCaseJob.perform_later @book
     redirect_to book_path(@book), :notice => "Assigned #{assignee.fullname} to ratings and judgements."
   end
   # rubocop:enable Metrics/MethodLength
 
   def delete_ratings_by_assignee
-
     judgements_to_delete = @book.judgements.where(user: @user)
-    judgements_count = judgements_to_delete.count    
-    judgements_to_delete.destroy_all    
-    
+    judgements_count = judgements_to_delete.count
+    judgements_to_delete.destroy_all
+
     UpdateCaseJob.perform_later @book
     redirect_to book_path(@book), :notice => "Deleted #{judgements_count} judgements belonging to #{@user.fullname}."
   end

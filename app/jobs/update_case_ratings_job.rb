@@ -16,9 +16,7 @@ class UpdateCaseRatingsJob < ApplicationJob
 
       summed_rating = query_doc_pair.judgements.rateable.sum(&:rating)
       rating = Rating.find_or_initialize_by(query: query, doc_id: query_doc_pair.doc_id)
-      if rating.user.nil?      
-        rating.user = query_doc_pair.judgements.last.user
-      end
+      rating.user = query_doc_pair.judgements.last.user if rating.user.nil?
 
       rating.rating = if book.support_implicit_judgements?
                         summed_rating / count_of_judgements
