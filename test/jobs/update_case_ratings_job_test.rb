@@ -19,7 +19,7 @@ class UpdateCaseRatingsJobTest < ActiveJob::TestCase
 
     assert_difference 'case_with_book.ratings.count', 1 do
       perform_enqueued_jobs do
-        UpdateCaseRatingsJob.perform_now(judgement)
+        UpdateCaseRatingsJob.perform_now(query_doc_pair)
       end
     end
     rating = case_with_book.queries.where(query_text: 'my search').first.ratings.where(doc_id: 'DOC123456').first
@@ -29,7 +29,7 @@ class UpdateCaseRatingsJobTest < ActiveJob::TestCase
 
     assert_difference 'case_with_book.ratings.count', 0 do
       perform_enqueued_jobs do
-        UpdateCaseRatingsJob.perform_now(judgement)
+        UpdateCaseRatingsJob.perform_now(query_doc_pair)
       end
     end
     rating = case_with_book.queries.where(query_text: 'my search').first.ratings.where(doc_id: 'DOC123456').first

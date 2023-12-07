@@ -60,7 +60,7 @@
 <h3>Assign Anonymous Judgements & Ratings to a User</h3>
 
 <p class="form-text">
-  If you used Quepid before version 7.6, then ratings on the main Case page were all anonynmous.
+  If you used Quepid before version 7.6, then ratings on the main Case page were all anonymous.
   Those ratings will show up in the book as Anonymous, which means you will have to re-rate them.
   This allows you to map those Anonymous ratings to an existing Judge, both in this book and update the ratings in the Case.
 </p>
@@ -88,8 +88,8 @@
  
 <%= form_for(@book, url: delete_ratings_by_assignee_book_path(@book), method: :delete, data: { confirm: "Are you sure?" }) do |form| %>
 <div class="mb-3">
-  <%= form.label :assignee_id, class: 'form-label' %>
-  <%= select_tag "assignee_id", options_from_collection_for_select(@book.team.members, :id, :name, params.dig(:post, :category_id)), required: true, prompt: "Please select judge", class: 'form-control' %>
+  <%= form.label :user_id, class: 'form-label' %>
+  <%= select_tag "user_id", options_from_collection_for_select(@book.team.members, :id, :name, params.dig(:post, :category_id)), required: true, prompt: "Please select judge", class: 'form-control' %>
 </div>
 <p>
 <div class="actions">

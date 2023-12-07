@@ -83,7 +83,7 @@ class JudgementsController < ApplicationController
     end
 
     if @judgement.save
-      UpdateCaseRatingsJob.perform_later @judgement
+      UpdateCaseRatingsJob.perform_later @judgement.query_doc_pair
       redirect_to book_judge_path(@book)
     else
       @query_doc_pair = @judgement.query_doc_pair
@@ -96,7 +96,15 @@ class JudgementsController < ApplicationController
     @judgement = Judgement.find_or_initialize_by(query_doc_pair_id: params[:query_doc_pair_id], user: current_user)
 
     @judgement.mark_unrateable!
-    UpdateCaseRatingsJob.perform_later @judgement
+    UpdateCaseRatingsJob.perform_later @judgement.query_doc_pair
+    redirect_to book_judge_path(@book)
+  end
+
+  def judge_later
+    @judgement = Judgement.find_or_initialize_by(query_doc_pair_id: params[:query_doc_pair_id], user: current_user)
+
+    @judgement.mark_judge_later!
+    UpdateCaseRatingsJob.perform_later @judgement.query_doc_pair
     redirect_to book_judge_path(@book)
   end
 
@@ -105,7 +113,7 @@ class JudgementsController < ApplicationController
     @judgement.user = current_user
     @judgement.unrateable = false
     if @judgement.save
-      UpdateCaseRatingsJob.perform_later @judgement
+      UpdateCaseRatingsJob.perform_later @judgement.query_doc_pair
       redirect_to book_judge_path(@book)
     else
       render action: :edit
@@ -114,7 +122,7 @@ class JudgementsController < ApplicationController
 
   def destroy
     @judgement.destroy
-    UpdateCaseRatingsJob.perform_later @judgement
+    UpdateCaseRatingsJob.perform_later @judgement.query_doc_pair
     respond_with(@judgement, :location => book_judgements_path)
   end
 

@@ -47,13 +47,16 @@ Rails.application.routes.draw do
     resources :query_doc_pairs do
       resources :judgements
       get 'unrateable' => 'judgements#unrateable'
+      get 'judge_later' => 'judgements#judge_later'
     end
     get 'judge' => 'judgements#new'
     get 'skip_judging' => 'judgements#skip_judging'
     member do
       patch 'combine'
       patch 'assign_anonymous'
-      delete 'delete_ratings_by_assignee'
+      delete 'delete_ratings_by_assignee', action: :delete_ratings_by_assignee, as: :delete_ratings_by_assignee
+      delete 'reset_unrateable/:user_id', action: :reset_unrateable, as: :reset_unrateable
+      delete 'reset_judge_later/:user_id', action: :reset_judge_later, as: :reset_judge_later
     end
   end
 

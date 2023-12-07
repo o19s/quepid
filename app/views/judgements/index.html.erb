@@ -21,6 +21,7 @@
       <% end %>
       <th>Rating</th>
       <th>Unrateable</th>
+      <th>Judge Later</th>
       <th>Rater</th>
       <% unless @shallow %>
         <th>Created At</th>
@@ -65,6 +66,9 @@
           </td>
           <td>
             <%= judgement.unrateable? ? 'X' : '' %>
+          </td>
+          <td>
+            <%= judgement.judge_later? ? 'X' : '' %>
           </td>
           <td>
             <%= judgement&.user&.name %>

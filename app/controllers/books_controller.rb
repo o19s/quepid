@@ -3,9 +3,13 @@
 # rubocop:disable Metrics/ClassLength
 class BooksController < ApplicationController
   before_action :find_book,
-                only: [ :show, :edit, :update, :destroy, :combine, :assign_anonymous, :delete_ratings_by_assignee ]
+                only: [ :show, :edit, :update, :destroy, :combine, :assign_anonymous, :delete_ratings_by_assignee,
+                        :reset_unrateable, :reset_judge_later ]
   before_action :check_book,
-                only: [ :show, :edit, :update, :destroy, :combine, :assign_anonymous, :delete_ratings_by_assignee ]
+                only: [ :show, :edit, :update, :destroy, :combine, :assign_anonymous, :delete_ratings_by_assignee,
+                        :reset_unrateable, :reset_judge_later ]
+
+  before_action :find_user, only: [ :reset_unrateable, :reset_judge_later, :delete_ratings_by_assignee ]
 
   respond_to :html
 
@@ -22,10 +26,17 @@ class BooksController < ApplicationController
     end
     @cases = @book.cases
     @leaderboard_data = []
+    @stats_data = []
     unique_judges = @book.judgements.rateable.preload(:user).collect(&:user).uniq
     unique_judges.each do |judge|
       @leaderboard_data << { judge:      judge.nil? ? 'anonymous' : judge.name,
                              judgements: @book.judgements.where(user: judge).count }
+      @stats_data << {
+        judge:       judge,
+        judgements:  @book.judgements.where(user: judge).count,
+        unrateable:  @book.judgements.where(user: judge).where(unrateable: true).count,
+        judge_later: @book.judgements.where(user: judge).where(judge_later: true).count,
+      }
     end
 
     respond_with(@book)
@@ -115,6 +126,7 @@ class BooksController < ApplicationController
     end
 
     if @book.save
+       UpdateCaseJob.perform_later @book
       redirect_to book_path(@book), :notice => "Combined #{query_doc_pair_count} query/doc pairs."
     else
       redirect_to book_path(@book),
@@ -146,21 +158,38 @@ class BooksController < ApplicationController
         rating.save!
       end
     end
-
+    
+    UpdateCaseJob.perform_later @book
     redirect_to book_path(@book), :notice => "Assigned #{assignee.fullname} to ratings and judgements."
   end
   # rubocop:enable Metrics/MethodLength
 
   def delete_ratings_by_assignee
-    assignee = @book.team.members.find_by(id: params[:assignee_id])
 
-    judgements_to_delete = @book.judgements.where(user: assignee)
+    judgements_to_delete = @book.judgements.where(user: @user)
+    judgements_count = judgements_to_delete.count    
+    judgements_to_delete.destroy_all    
+    
+    UpdateCaseJob.perform_later @book
+    redirect_to book_path(@book), :notice => "Deleted #{judgements_count} judgements belonging to #{@user.fullname}."
+  end
 
+  def reset_unrateable
+    judgements_to_delete = @book.judgements.where(user: @user).where(unrateable: true)
     judgements_count = judgements_to_delete.count
-
     judgements_to_delete.destroy_all
 
-    redirect_to book_path(@book), :notice => "Deleted #{judgements_count} judgements belonging to #{assignee.fullname}."
+    redirect_to book_path(@book),
+                :notice => "Reset unrateable status for #{judgements_count} judgements belonging to #{@user.fullname}."
+  end
+
+  def reset_judge_later
+    judgements_to_delete = @book.judgements.where(user: @user).where(judge_later: true)
+    judgements_count = judgements_to_delete.count
+    judgements_to_delete.destroy_all
+
+    redirect_to book_path(@book),
+                :notice => "Reset judge later status for #{judgements_count} judgements belonging to #{@user.fullname}."
   end
 
   private
@@ -168,6 +197,10 @@ class BooksController < ApplicationController
   # This find_book is different because we use :id, not :book_id.
   def find_book
     @book = current_user.books_involved_with.where(id: params[:id]).first
+  end
+
+  def find_user
+    @user = User.find(params[:user_id])
   end
 
   def book_params
