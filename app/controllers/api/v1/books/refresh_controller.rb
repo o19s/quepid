@@ -24,7 +24,7 @@ module Api
             next unless count_of_judgements.positive?
 
             rating = Rating.find_or_initialize_by(query: query, doc_id: query_doc_pair.doc_id)
-
+            rating.user = query_doc_pair.judgements.last.user if rating.user.nil?
             rating.rating = if @book.support_implicit_judgements?
                               summed_rating / count_of_judgements
                             else
