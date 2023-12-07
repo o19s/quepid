@@ -18,6 +18,8 @@ class BooksController < ApplicationController
     respond_with(@books)
   end
 
+  # rubocop:disable Metrics/AbcSize
+  # rubocop:disable Metrics/MethodLength
   def show
     @count_of_anonymous_book_judgements = @book.judgements.where(user: nil).count
     @count_of_anonymous_case_judgements = 0
@@ -41,6 +43,8 @@ class BooksController < ApplicationController
 
     respond_with(@book)
   end
+  # rubocop:enable Metrics/AbcSize
+  # rubocop:enable Metrics/MethodLength
 
   def new
     # we actually support passing in starting point configuration for a book
