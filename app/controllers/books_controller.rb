@@ -4,10 +4,10 @@
 class BooksController < ApplicationController
   before_action :find_book,
                 only: [ :show, :edit, :update, :destroy, :combine, :assign_anonymous, :delete_ratings_by_assignee,
-                        :reset_unrateable, :reset_judge_later ]
+                        :reset_unrateable, :reset_judge_later, :delete_query_doc_pairs_below_position ]
   before_action :check_book,
                 only: [ :show, :edit, :update, :destroy, :combine, :assign_anonymous, :delete_ratings_by_assignee,
-                        :reset_unrateable, :reset_judge_later ]
+                        :reset_unrateable, :reset_judge_later, :delete_query_doc_pairs_below_position ]
 
   before_action :find_user, only: [ :reset_unrateable, :reset_judge_later, :delete_ratings_by_assignee ]
 
@@ -193,6 +193,17 @@ class BooksController < ApplicationController
 
     redirect_to book_path(@book),
                 :notice => "Reset judge later status for #{judgements_count} judgements belonging to #{@user.fullname}."
+  end
+
+  def delete_query_doc_pairs_below_position
+    threshold = params[:threshold]
+    query_doc_pairs_to_delete = @book.query_doc_pairs.where('position > ?', threshold)
+    query_doc_pairs_count = query_doc_pairs_to_delete.count
+    query_doc_pairs_to_delete.destroy_all
+
+    UpdateCaseJob.perform_later @book
+    redirect_to book_path(@book),
+                :notice => "Deleted #{query_doc_pairs_count} query/doc pairs below position #{threshold}."
   end
 
   private

@@ -345,9 +345,10 @@ book = Book.where(name: "Book of Ratings", team:osc, scorer: Scorer.system_defau
 # this code copied from populate_controller.rb and should be in a service...
 # has a hacked in judgement creator...
 tens_of_queries_case.queries.each do |query|
-  query.ratings.each do |rating|
+  query.ratings.each_with_index do |rating, index|
     query_doc_pair = book.query_doc_pairs.find_or_create_by query_text: query.query_text,
-                                                           doc_id:     rating.doc_id
+                                                           doc_id:     rating.doc_id,
+                                                           position: index
     query_doc_pair.judgements << Judgement.new(rating: rating.rating, user: osc_member_user)
     query_doc_pair.save
   end

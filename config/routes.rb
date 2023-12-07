@@ -57,6 +57,8 @@ Rails.application.routes.draw do
       delete 'delete_ratings_by_assignee', action: :delete_ratings_by_assignee, as: :delete_ratings_by_assignee
       delete 'reset_unrateable/:user_id', action: :reset_unrateable, as: :reset_unrateable
       delete 'reset_judge_later/:user_id', action: :reset_judge_later, as: :reset_judge_later
+      delete 'delete_query_doc_pairs_below_position', action: :delete_query_doc_pairs_below_position,
+                                                      as:     :delete_query_doc_pairs_below_position
     end
   end
 
