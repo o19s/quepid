@@ -59,6 +59,8 @@ Rails.application.routes.draw do
       delete 'reset_judge_later/:user_id', action: :reset_judge_later, as: :reset_judge_later
       delete 'delete_query_doc_pairs_below_position', action: :delete_query_doc_pairs_below_position,
                                                       as:     :delete_query_doc_pairs_below_position
+      patch 'eric_steered_us_wrong',
+            action: :eric_steered_us_wrong, as: :eric_steered_us_wrong
     end
   end
 

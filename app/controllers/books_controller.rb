@@ -4,10 +4,12 @@
 class BooksController < ApplicationController
   before_action :find_book,
                 only: [ :show, :edit, :update, :destroy, :combine, :assign_anonymous, :delete_ratings_by_assignee,
-                        :reset_unrateable, :reset_judge_later, :delete_query_doc_pairs_below_position ]
+                        :reset_unrateable, :reset_judge_later, :delete_query_doc_pairs_below_position,
+                        :eric_steered_us_wrong ]
   before_action :check_book,
                 only: [ :show, :edit, :update, :destroy, :combine, :assign_anonymous, :delete_ratings_by_assignee,
-                        :reset_unrateable, :reset_judge_later, :delete_query_doc_pairs_below_position ]
+                        :reset_unrateable, :reset_judge_later, :delete_query_doc_pairs_below_position,
+                        :eric_steered_us_wrong ]
 
   before_action :find_user, only: [ :reset_unrateable, :reset_judge_later, :delete_ratings_by_assignee ]
 
@@ -196,14 +198,29 @@ class BooksController < ApplicationController
   end
 
   def delete_query_doc_pairs_below_position
-    threshold = params[:threshold]
-    query_doc_pairs_to_delete = @book.query_doc_pairs.where('position > ?', threshold)
+    position = params[:position]
+    query_doc_pairs_to_delete = @book.query_doc_pairs.where('position > ?', position)
     query_doc_pairs_count = query_doc_pairs_to_delete.count
     query_doc_pairs_to_delete.destroy_all
 
     UpdateCaseJob.perform_later @book
     redirect_to book_path(@book),
-                :notice => "Deleted #{query_doc_pairs_count} query/doc pairs below position #{threshold}."
+                :notice => "Deleted #{query_doc_pairs_count} query/doc pairs below position #{position}."
+  end
+
+  def eric_steered_us_wrong
+    rating = params[:rating]
+    judgements_to_update = @book.judgements.where(judge_later: true)
+    judgements_to_update_count = judgements_to_update.count
+    judgements_to_update.each do |judgement|
+      judgement.judge_later = false
+      judgement.rating = rating
+      judgement.save
+    end
+
+    UpdateCaseJob.perform_later @book
+    redirect_to book_path(@book),
+                :notice => "Mapped #{judgements_to_update_count} judgements to have rating #{rating}."
   end
 
   private
