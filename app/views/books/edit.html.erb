@@ -120,7 +120,7 @@
 <p class="form-text">
   Currently it can be easier to skip judgements that you know are good (or bad) using the Judge Later option, and then come back and give them a rating.
 </p>
-<%= form_for(@book, url: eric_steered_us_wrong(@book), method: :patch, data: { confirm: "Are you sure?" }) do |form| %>
+<%= form_for(@book, url: eric_steered_us_wrong_book_path(@book), method: :patch, data: { confirm: "Are you sure?" }) do |form| %>
 <div class="mb-3">
   <%= form.label :rating, class: 'form-label' %>
   <%= select_tag "rating", options_for_select(@book.scorer.scale.sort), required: true, prompt: "Please select rating to assign", class: 'form-control' %>
