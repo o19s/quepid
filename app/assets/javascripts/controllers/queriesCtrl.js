@@ -329,7 +329,6 @@ angular.module('QuepidApp')
       function pickCaseScorer() {
         var modalInstance = $uibModal.open({
           templateUrl: 'views/pick_scorer.html',
-          backdrop:    'static',
           controller:  'ScorerCtrl',
           resolve:     {
             parent: function() {
