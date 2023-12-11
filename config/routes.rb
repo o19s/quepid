@@ -20,8 +20,12 @@ Rails.application.routes.draw do
 
   resources :api_keys, path: 'api-keys', only: [ :create, :destroy ]
 
-  resources :search_endpoints
-  get 'search_endpoints/:id/clone' => 'search_endpoints#clone', as: :clone_search_endpoint
+  resources :search_endpoints do
+    member do
+      post 'clone'
+    end
+  end
+  # post 'search_endpoints/:id/clone' => 'search_endpoints#clone', as: :clone_search_endpoint
 
   # rubocop:disable Layout/LineLength
   # let's encrypt verification (can be removed in the future)
