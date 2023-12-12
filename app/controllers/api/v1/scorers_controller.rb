@@ -9,7 +9,7 @@ module Api
 
       def index
         unless Rails.application.config.communal_scorers_only
-          @user_scorers = current_user.scorers.all.reject(&:communal?)
+          @user_scorers = current_user.scorers_involved_with.all.reject(&:communal?)
         end
         @communal_scorers = Scorer.communal
 
@@ -189,7 +189,7 @@ module Api
 
       def set_scorer
         # This block of logic should all be in user_scorer_finder.rb
-        @scorer = current_user.scorers.where(id: params[:id]).first
+        @scorer = current_user.scorers_involved_with.where(id: params[:id]).first
 
         if @scorer.nil? # Check if communal scorers has the scorer.  This logic should be in the .scorers. method!
           @scorer = Scorer.communal.where(id: params[:id]).first

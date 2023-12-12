@@ -379,7 +379,7 @@ module Api
 
             user.reload
 
-            assert_not_includes user.scorers, shared_scorer
+            assert_not_includes user.scorers_involved_with, shared_scorer
           end
 
           test 'removes scorer successfully and disassociates it from owner' do

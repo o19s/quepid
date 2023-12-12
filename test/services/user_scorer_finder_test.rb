@@ -19,19 +19,19 @@ class UserScorerFinderTest < ActiveSupport::TestCase
 
   describe 'Find all scorers' do
     test 'returns an array of scorers' do
-      result = user.scorers.all
+      result = user.scorers_involved_with.all
 
       assert_equal 'Scorer::ActiveRecord_Relation', result.class.to_s
     end
 
     test 'includes scorers owned by user' do
-      result = user.scorers.all
+      result = user.scorers_involved_with.all
 
       assert_includes result, owned_scorer
     end
 
     test 'includes scorers shared with user' do
-      result = user.scorers.all
+      result = user.scorers_involved_with.all
 
       assert_includes result, shared_scorer
     end
@@ -49,14 +49,14 @@ class UserScorerFinderTest < ActiveSupport::TestCase
 
   describe 'Find all scorers that match params' do
     test 'returns an empty array if no results match' do
-      result = user.scorers.where(id: 123).all
+      result = user.scorers_involved_with.where(id: 123).all
 
       assert_equal        'Scorer::ActiveRecord_Relation', result.class.to_s
       assert_equal        0, result.length
     end
 
     test 'works when filtering by id' do
-      result = user.scorers.where(id: owned_scorer.id).all
+      result = user.scorers_involved_with.where(id: owned_scorer.id).all
 
       assert_equal        'Scorer::ActiveRecord_Relation', result.class.to_s
       assert_equal        1,      result.length
@@ -64,7 +64,7 @@ class UserScorerFinderTest < ActiveSupport::TestCase
     end
 
     test 'works with complex where clause for owned scorers' do
-      result = user.scorers.where('`scorers`.`name` LIKE ?', '%Owned%').all
+      result = user.scorers_involved_with.where('`scorers`.`name` LIKE ?', '%Owned%').all
 
       assert_equal        'Scorer::ActiveRecord_Relation', result.class.to_s
       assert_equal        3,      result.length
@@ -72,7 +72,7 @@ class UserScorerFinderTest < ActiveSupport::TestCase
     end
 
     test 'works with complex where clause for shared scorers' do
-      result = user.scorers.where('`scorers`.`name` LIKE ?', '%Shared%').all
+      result = user.scorers_involved_with.where('`scorers`.`name` LIKE ?', '%Shared%').all
 
       assert_equal        'Scorer::ActiveRecord_Relation', result.class.to_s
       assert_equal        3,      result.length
@@ -81,7 +81,7 @@ class UserScorerFinderTest < ActiveSupport::TestCase
     end
 
     test 'works when querying on the name for owned scorers' do
-      result = user.scorers.where(name: 'Owned Scorer').all
+      result = user.scorers_involved_with.where(name: 'Owned Scorer').all
 
       assert_equal        'Scorer::ActiveRecord_Relation', result.class.to_s
       assert_equal        1,      result.length
@@ -89,7 +89,7 @@ class UserScorerFinderTest < ActiveSupport::TestCase
     end
 
     test 'works when querying on the name for shared scorers' do
-      result = user.scorers.where(name: 'Shared Scorer').all
+      result = user.scorers_involved_with.where(name: 'Shared Scorer').all
 
       assert_equal        'Scorer::ActiveRecord_Relation', result.class.to_s
       assert_equal        1,      result.length
@@ -100,13 +100,13 @@ class UserScorerFinderTest < ActiveSupport::TestCase
 
   describe 'Find first scorer that matches params' do
     test 'returns nil if no results match' do
-      result = user.scorers.where(id: 123).first
+      result = user.scorers_involved_with.where(id: 123).first
 
       assert_nil result
     end
 
     test 'works when filtering by id' do
-      result = user.scorers.where(id: owned_scorer.id)
+      result = user.scorers_involved_with.where(id: owned_scorer.id)
         .order(name: :asc)
         .first
 
@@ -115,7 +115,7 @@ class UserScorerFinderTest < ActiveSupport::TestCase
     end
 
     test 'works with complex where clause for owned scorers' do
-      result = user.scorers.where('`scorers`.`name` LIKE ?', '%Owned%')
+      result = user.scorers_involved_with.where('`scorers`.`name` LIKE ?', '%Owned%')
         .order(name: :asc)
         .first
 
@@ -124,7 +124,7 @@ class UserScorerFinderTest < ActiveSupport::TestCase
     end
 
     test 'works with complex where clause for shared scorers' do
-      result = user.scorers.where('`scorers`.`name` LIKE ?', '%Shared%')
+      result = user.scorers_involved_with.where('`scorers`.`name` LIKE ?', '%Shared%')
         .order(name: :asc)
         .first
 
@@ -134,7 +134,7 @@ class UserScorerFinderTest < ActiveSupport::TestCase
     end
 
     test 'works when querying on the name for owned scorers' do
-      result = user.scorers.where(name: 'Owned Scorer')
+      result = user.scorers_involved_with.where(name: 'Owned Scorer')
         .order(name: :asc)
         .first
 
@@ -143,7 +143,7 @@ class UserScorerFinderTest < ActiveSupport::TestCase
     end
 
     test 'works when querying on the name for shared scorers' do
-      result = user.scorers.where(name: 'Shared Scorer')
+      result = user.scorers_involved_with.where(name: 'Shared Scorer')
         .order(name: :asc)
         .first
 
@@ -155,13 +155,13 @@ class UserScorerFinderTest < ActiveSupport::TestCase
 
   describe 'Find last scorer that matches params' do
     test 'returns nil if no results match' do
-      result = user.scorers.where(id: 123).last
+      result = user.scorers_involved_with.where(id: 123).last
 
       assert_nil result
     end
 
     test 'works when filtering by id' do
-      result = user.scorers.where(id: owned_scorer.id)
+      result = user.scorers_involved_with.where(id: owned_scorer.id)
         .order(name: :desc)
         .last
 
@@ -170,7 +170,7 @@ class UserScorerFinderTest < ActiveSupport::TestCase
     end
 
     test 'works with complex where clause for owned scorers' do
-      result = user.scorers.where('`scorers`.`name` LIKE ?', '%Owned%')
+      result = user.scorers_involved_with.where('`scorers`.`name` LIKE ?', '%Owned%')
         .order(name: :desc)
         .last
 
@@ -179,7 +179,7 @@ class UserScorerFinderTest < ActiveSupport::TestCase
     end
 
     test 'works with complex where clause for shared scorers' do
-      result = user.scorers.where('`scorers`.`name` LIKE ?', '%Shared%')
+      result = user.scorers_involved_with.where('`scorers`.`name` LIKE ?', '%Shared%')
         .order(name: :desc)
         .last
 
@@ -189,7 +189,7 @@ class UserScorerFinderTest < ActiveSupport::TestCase
     end
 
     test 'works when querying on the name for owned scorers' do
-      result = user.scorers.where(name: 'Owned Scorer')
+      result = user.scorers_involved_with.where(name: 'Owned Scorer')
         .order(name: :desc)
         .last
 
@@ -198,7 +198,7 @@ class UserScorerFinderTest < ActiveSupport::TestCase
     end
 
     test 'works when querying on the name for shared scorers' do
-      result = user.scorers.where(name: 'Shared Scorer')
+      result = user.scorers_involved_with.where(name: 'Shared Scorer')
         .order(name: :desc)
         .last
 
@@ -208,7 +208,7 @@ class UserScorerFinderTest < ActiveSupport::TestCase
     end
 
     test 'includes the default communal scorer' do
-      result = user.scorers.all
+      result = user.scorers_involved_with.all
 
       assert_includes result, quepid_default_scorer
     end
