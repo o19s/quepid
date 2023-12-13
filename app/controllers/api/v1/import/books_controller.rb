@@ -16,7 +16,7 @@ module Api
 
           @book = Book.new
 
-          @book.team = Team.find(team_id)
+          @book.teams << Team.find(team_id)
 
           scorer_name = params_to_use[:scorer][:name]
           unless Scorer.exists?(name: scorer_name)

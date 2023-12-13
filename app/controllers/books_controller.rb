@@ -16,7 +16,7 @@ class BooksController < ApplicationController
   respond_to :html
 
   def index
-    @books = current_user.books_involved_with.includes([ :team, :scorer, :selection_strategy ])
+    @books = current_user.books_involved_with.includes([ :teams, :scorer, :selection_strategy ])
     respond_with(@books)
   end
 
@@ -68,7 +68,20 @@ class BooksController < ApplicationController
   end
 
   def update
-    @book.update(book_params)
+    # this logic is crazy, but basically we don't want to touch the teams that are associated with
+    # an book that the current_user CAN NOT see, so we clear out of the relationship all the ones
+    # they can see, and then repopulate it from the list of ids checked.  Checkboxes suck.
+    team_ids_belonging_to_user = current_user.teams.pluck(:id)
+    teams = @book.teams.reject { |t| team_ids_belonging_to_user.include?(t.id) }
+    @book.teams.clear
+    book_params[:team_ids].each do |team_id|
+      teams << Team.find(team_id)
+    end
+
+    @book.teams.replace(teams)
+
+    @book.update(book_params.except(:team_ids))
+
     respond_with(@book)
   end
 
@@ -147,7 +160,8 @@ class BooksController < ApplicationController
 
   # rubocop:disable Metrics/MethodLength
   def assign_anonymous
-    assignee = @book.team.members.find_by(id: params[:assignee_id])
+    # assignee = @book.team.members.find_by(id: params[:assignee_id])
+    assignee = User.find_by(id: params[:assignee_id])
     @book.judgements.where(user: nil).find_each do |judgement|
       judgement.user = assignee
       # if we are mapping a user to a judgement,
@@ -235,8 +249,11 @@ class BooksController < ApplicationController
   end
 
   def book_params
-    params.require(:book).permit(:team_id, :scorer_id, :selection_strategy_id, :name, :support_implicit_judgements,
-                                 :show_rank)
+    params_to_use = params.require(:book).permit(:scorer_id, :selection_strategy_id, :name,
+                                                 :support_implicit_judgements,
+                                                 :show_rank, team_ids: [])
+    params_to_use[:team_ids].compact_blank!
+    params_to_use
   end
 end
 

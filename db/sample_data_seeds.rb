@@ -24,7 +24,6 @@ tmdb_solr_endpoint = SearchEndpoint.find_or_create_by name:"TMDB Solr", search_e
 
 tmdb_es_endpoint = SearchEndpoint.find_or_create_by   search_engine: :es, endpoint_url:   "http://quepid-elasticsearch.dev.o19s.com:9206/tmdb/_search", api_method: 'POST'
 
-
 print_step "End of seeding search endpoints................"
 
 # Users
@@ -126,6 +125,15 @@ user_specifics = {
 user_params          = user_defaults.merge(user_specifics)
 realistic_activity_user = seed_user user_params
 print_user_info user_params
+
+# go ahead and assign the end point to this person.
+statedecoded_solr_endpoint.owner = realistic_activity_user
+tmdb_solr_endpoint.owner = realistic_activity_user
+tmdb_es_endpoint.owner = realistic_activity_user
+
+statedecoded_solr_endpoint.save
+tmdb_solr_endpoint.save
+tmdb_es_endpoint.save
 
 ######################################
 # OSC Team Owner
@@ -289,7 +297,6 @@ print_step "Seeding tries................"
 
   new_try = tens_of_queries_case.tries.build try_params
 
-
   try_number = tens_of_queries_case.last_try_number + 1
 
   new_try.try_number   = try_number
@@ -340,7 +347,9 @@ print_step "End of seeding teams................"
 # Books
 print_step "Seeding books................"
 
-book = Book.where(name: "Book of Ratings", team:osc, scorer: Scorer.system_default_scorer, selection_strategy: SelectionStrategy.find_by(name:'Multiple Raters')).first_or_create
+book = Book.where(name: "Book of Ratings", scorer: Scorer.system_default_scorer, selection_strategy: SelectionStrategy.find_by(name:'Multiple Raters')).first_or_create
+book.teams << osc
+boo.save
 
 # this code copied from populate_controller.rb and should be in a service...
 # has a hacked in judgement creator...

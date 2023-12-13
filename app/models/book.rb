@@ -10,9 +10,9 @@
 #  support_implicit_judgements :boolean
 #  created_at                  :datetime         not null
 #  updated_at                  :datetime         not null
+#  owner_id                    :integer
 #  scorer_id                   :integer
 #  selection_strategy_id       :bigint           not null
-#  team_id                     :integer
 #
 # Indexes
 #
@@ -24,7 +24,12 @@
 #
 class Book < ApplicationRecord
   # Associations
-  belongs_to :team
+  # belongs_to :team
+  # rubocop:disable Rails/HasAndBelongsToMany
+  has_and_belongs_to_many :teams,
+                          join_table: 'teams_books'
+  # rubocop:enable Rails/HasAndBelongsToMany
+
   belongs_to :selection_strategy
   belongs_to :scorer
   has_many :query_doc_pairs, dependent: :destroy, autosave: true
@@ -40,14 +45,26 @@ class Book < ApplicationRecord
            inverse_of: :book
 
   # Scopes
-  scope :for_user, ->(user) {
+  scope :for_user_via_teams, ->(user) {
     joins('
-      LEFT OUTER JOIN `teams` ON `teams`.`id` = `books`.`team_id`
+      LEFT OUTER JOIN `teams_books` ON `teams_books`.`book_id` = `books`.`id`
+      LEFT OUTER JOIN `teams` ON `teams`.`id` = `teams_books`.`team_id`
       LEFT OUTER JOIN `teams_members` ON `teams_members`.`team_id` = `teams`.`id`
       LEFT OUTER JOIN `users` ON `users`.`id` = `teams_members`.`member_id`
     ').where('
         `teams_members`.`member_id` = ?
     ', user.id)
       .order(name: :desc)
+  }
+
+  scope :for_user_directly_owned, ->(user) {
+    where('
+        `books`.`owner_id` = ?
+    ',  user.id)
+  }
+
+  scope :for_user, ->(user) {
+    ids = for_user_via_teams(user).pluck(:id) + for_user_directly_owned(user).pluck(:id)
+    where(id: ids.uniq)
   }
 end

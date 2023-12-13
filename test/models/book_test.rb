@@ -10,9 +10,9 @@
 #  support_implicit_judgements :boolean
 #  created_at                  :datetime         not null
 #  updated_at                  :datetime         not null
+#  owner_id                    :integer
 #  scorer_id                   :integer
 #  selection_strategy_id       :bigint           not null
-#  team_id                     :integer
 #
 # Indexes
 #

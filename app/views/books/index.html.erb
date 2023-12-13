@@ -26,7 +26,7 @@
   <thead>
     <tr>
       <th>Name</th>
-      <th>Team</th>
+      <th>Teams</th>
       <th>Scorer</th>
       <th>Selection strategy</th>
       <th></th>
@@ -37,7 +37,7 @@
     <% @books.each do |book| %>
       <tr>
         <td><%= link_to book.name, book_path(book) %></td>
-        <td><%= book.team.name %></td>
+        <td><%= book.teams.pluck(:name).join(',') %></td>
         <td><%= book.scorer.name %> </td>
         <td><%= book.selection_strategy.name %> </td>
         <td><span class="badge bg-primary rounded-pill"><%= book.rated_query_doc_pairs.count %> rated query/doc pairs</span></td>

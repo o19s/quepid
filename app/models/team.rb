@@ -38,11 +38,15 @@ class Team < ApplicationRecord
 
   has_and_belongs_to_many :search_endpoints,
                           join_table: 'teams_search_endpoints'
+
+  has_and_belongs_to_many :books,
+                          join_table: 'teams_books'
+
   # rubocop:enable Rails/HasAndBelongsToMany
 
-  has_many   :books, -> { order(name: :asc) },
-             dependent:  :destroy,
-             inverse_of: :team
+  # has_many   :books, -> { order(name: :asc) },
+  #           dependent:  :destroy,
+  #           inverse_of: :team
 
   # has_many   :search_endpoints, -> { order(name: :asc) },
   #            dependent:  :destroy,

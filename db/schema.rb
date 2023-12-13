@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2023_12_06_202557) do
+ActiveRecord::Schema[7.1].define(version: 2023_12_13_180159) do
   create_table "annotations", id: :integer, charset: "utf8mb3", force: :cascade do |t|
     t.text "message"
     t.string "source"
@@ -29,7 +29,6 @@ ActiveRecord::Schema[7.1].define(version: 2023_12_06_202557) do
   end
 
   create_table "books", charset: "utf8mb3", collation: "utf8mb3_unicode_ci", force: :cascade do |t|
-    t.integer "team_id"
     t.integer "scorer_id"
     t.bigint "selection_strategy_id", null: false
     t.string "name"
@@ -37,6 +36,7 @@ ActiveRecord::Schema[7.1].define(version: 2023_12_06_202557) do
     t.datetime "updated_at", null: false
     t.boolean "support_implicit_judgements"
     t.boolean "show_rank", default: false
+    t.integer "owner_id"
     t.index ["selection_strategy_id"], name: "index_books_on_selection_strategy_id"
   end
 
@@ -219,6 +219,11 @@ ActiveRecord::Schema[7.1].define(version: 2023_12_06_202557) do
     t.datetime "updated_at", precision: nil, null: false
     t.index ["name"], name: "index_teams_on_name", length: 191
     t.index ["owner_id"], name: "owner_id"
+  end
+
+  create_table "teams_books", id: false, charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
+    t.bigint "book_id", null: false
+    t.bigint "team_id", null: false
   end
 
   create_table "teams_cases", primary_key: ["case_id", "team_id"], charset: "latin1", force: :cascade do |t|
