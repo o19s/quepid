@@ -26,13 +26,13 @@ angular.module('QuepidApp')
       if ($scope.activeScorer.scorerId && ($scope.activeScorer.scorerId !== 'default')) {
         $scope.activeScorer.scorerId = parseInt($scope.activeScorer.scorerId);
       }
-     
+
       /*jslint latedef:false*/
       scorerSvc.list()
         .then(function() {
           $scope.userScorers     = scorerSvc.scorers;
           $scope.communalScorers = scorerSvc.communalScorers;
-           $scope.scorerAccessible = scorerAccessible();
+          $scope.scorerAccessible = scorerAccessible();
         });
 
       function cancel() {
