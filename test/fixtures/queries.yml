@@ -90,3 +90,9 @@ query_for_best_bond_ever:
   query_text:   Best Bond Ever
   information_need: I am looking for Sean Connery as the actor, as he was the best!
   arranged_at:  3
+  
+query_for_best_bond_ever2:
+  case:         :random_case_1
+  query_text:   Best Bond Ever
+  information_need: I am looking for Sean Connery as the actor, as he was the best!
+  arranged_at:  1

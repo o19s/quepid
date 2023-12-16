@@ -14,8 +14,8 @@ module Api
           service.sync_ratings_for_case(@case)
 
           @counts = {}
-          @counts['queries_created'] = service.query_count
-          @counts['ratings_created'] = service.rating_count
+          @counts['queries_created'] = service.queries_created
+          @counts['ratings_created'] = service.ratings_created
           respond_with @counts
         end
       end

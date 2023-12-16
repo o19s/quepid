@@ -5,6 +5,9 @@ require 'test_helper'
 module Api
   module V1
     module Books
+      # These tests are copied over into ratings_manager_test.rb and should
+      # be simplified to focus on the interaction of the control, not what
+      # the ratings_manager does.
       class RefreshControllerTest < ActionController::TestCase
         let(:user)                  { users(:random_1) }
         let(:case_with_ratings)     { cases(:random_case) }
