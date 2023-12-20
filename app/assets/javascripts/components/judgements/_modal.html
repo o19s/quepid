@@ -80,6 +80,12 @@
     &nbsp;&nbsp;<button ng-show="ctrl.populateBook" type="button" class="btn btn-sm btn-default" ng-click="isAdvancedPopulateConfigCollapsed = !isAdvancedPopulateConfigCollapsed">Advanced</button>
     
   </label>
+  <br/>
+  <label>
+    <input id="sync-queries" type="checkbox" ng-model='ctrl.syncQueries' ng-disabled="ctrl.share.books.length === 0 || ctrl.share.teams.length === 0"> Sync missing Queries
+      <span class="glyphicon glyphicon-question-sign" aria-hidden="true" popover-trigger="'mouseenter'" popover-placement="right" uib-popover="Sync all the queries in the Case with those defined in the Book."></span>
+    </input>  
+  </label>
   
   <span ng-show="ctrl.populateBook">
     <div uib-collapse="!isAdvancedPopulateConfigCollapsed">
@@ -118,6 +124,7 @@
   <a class="btn btn-default pull-left" ng-click="ctrl.refreshRatingsFromBook()" ng-disabled="processingPrompt.inProgress || ctrl.populateBook || !ctrl.activeBookId || ctrl.share.acase.bookId !== ctrl.activeBookId" >
     <i class="glyphicon glyphicon-refresh"></i>
     Refresh ratings from book <i>{{ctrl.activeBookName}}</i>
+    <span ng-if="ctrl.syncQueries">and creating missing queries</span>
   </a>
 
   <button

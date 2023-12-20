@@ -10,6 +10,8 @@ module Api
         before_action :check_case, only: [ :update ]
 
         def update
+          @export = 'true' == params[:export]
+          
           service = RatingsManager.new(@book)
           service.sync_ratings_for_case(@case)
 

@@ -235,7 +235,7 @@ angular.module('QuepidApp')
 
       ctrl.refreshRatingsFromBook = function () {
         //$uibModalInstance.close(ctrl.options);
-        bookSvc.refreshCaseRatingsFromBook(ctrl.theCase.caseNo, ctrl.theCase.bookId)
+        bookSvc.refreshCaseRatingsFromBook(ctrl.theCase.caseNo, ctrl.theCase.bookId, false)
         .then(function() {
           $scope.processingPrompt.inProgress = true;
           $uibModalInstance.close();
