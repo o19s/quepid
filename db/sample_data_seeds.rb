@@ -349,7 +349,7 @@ print_step "Seeding books................"
 
 book = Book.where(name: "Book of Ratings", scorer: Scorer.system_default_scorer, selection_strategy: SelectionStrategy.find_by(name:'Multiple Raters')).first_or_create
 book.teams << osc
-boo.save
+book.save
 
 # this code copied from populate_controller.rb and should be in a service...
 # has a hacked in judgement creator...
