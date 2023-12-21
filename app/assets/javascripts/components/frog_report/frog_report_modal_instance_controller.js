@@ -234,10 +234,10 @@ angular.module('QuepidApp')
       };
 
       ctrl.refreshRatingsFromBook = function () {
-        //$uibModalInstance.close(ctrl.options);
+        $scope.processingPrompt.inProgress = true;
         bookSvc.refreshCaseRatingsFromBook(ctrl.theCase.caseNo, ctrl.theCase.bookId, false)
         .then(function() {
-          $scope.processingPrompt.inProgress = true;
+          $scope.processingPrompt.inProgress  = false;
           $uibModalInstance.close();
 
           flash.success = 'Ratings have been refreshed.';

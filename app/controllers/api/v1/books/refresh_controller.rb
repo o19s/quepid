@@ -10,9 +10,9 @@ module Api
         before_action :check_case, only: [ :update ]
 
         def update
-          @export = 'true' == params[:export]
-          
-          service = RatingsManager.new(@book)
+          @create_missing_queries = 'true' == params[:create_missing_queries]
+
+          service = RatingsManager.new(@book, { create_missing_queries: @create_missing_queries })
           service.sync_ratings_for_case(@case)
 
           @counts = {}

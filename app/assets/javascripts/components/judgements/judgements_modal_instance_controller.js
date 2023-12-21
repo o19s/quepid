@@ -31,7 +31,7 @@ angular.module('QuepidApp')
       ctrl.refreshOnly = false;
       ctrl.updateAssociatedBook = false;
       ctrl.populateJudgements = false;
-      ctrl.syncQueries = false;
+      ctrl.createMissingQueries = false;
 
       $rootScope.$watch('currentUser', function() {
         if ( $rootScope.currentUser ) {
@@ -129,14 +129,15 @@ angular.module('QuepidApp')
 
       ctrl.refreshRatingsFromBook = function () {
         //$uibModalInstance.close(ctrl.options);
-        bookSvc.refreshCaseRatingsFromBook(ctrl.share.acase.caseNo, ctrl.activeBookId, ctrl.syncQueries)
+        $scope.processingPrompt.inProgress = true;
+        bookSvc.refreshCaseRatingsFromBook(ctrl.share.acase.caseNo, ctrl.activeBookId, ctrl.createMissingQueries)
         .then(function() {
-          $scope.processingPrompt.inProgress = true;
+          $scope.processingPrompt.inProgress  = false;
           $uibModalInstance.close();
 
           flash.success = 'Ratings have been refreshed.';
         }, function(response) {
-          $scope.processingPrompt.inProgress  = false;
+          
           $scope.processingPrompt.error       = response.data.statusText;
         });
       };

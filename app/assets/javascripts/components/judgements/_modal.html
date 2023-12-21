@@ -13,7 +13,7 @@
       <i class='fa fa-spinner fa-spin'></i>
     </p>
   </div>
-  <div class="alert alert-warning" role="alert" ng-if="ctrl.share.acase.queriesCount === 0">
+  <div class="alert alert-warning" role="alert" ng-if="ctrl.populateBook && ctrl.share.acase.queriesCount === 0">
     You do not have any queries to populate your book of judgements with.
   </div>
 
@@ -82,8 +82,8 @@
   </label>
   <br/>
   <label>
-    <input id="sync-queries" type="checkbox" ng-model='ctrl.syncQueries' ng-disabled="ctrl.share.books.length === 0 || ctrl.share.teams.length === 0"> Sync missing Queries
-      <span class="glyphicon glyphicon-question-sign" aria-hidden="true" popover-trigger="'mouseenter'" popover-placement="right" uib-popover="Sync all the queries in the Case with those defined in the Book."></span>
+    <input id="sync-queries" type="checkbox" ng-model='ctrl.createMissingQueries' ng-disabled="ctrl.share.books.length === 0 || ctrl.share.teams.length === 0"> Create missing Queries
+      <span class="glyphicon glyphicon-question-sign" aria-hidden="true" popover-trigger="'mouseenter'" popover-placement="right" uib-popover="Create queries in the Case thare are defined in the Book."></span>
     </input>  
   </label>
   
@@ -120,11 +120,10 @@
     <i class="glyphicon glyphicon-book"></i>
     Make Judgements!
   </a>
-
   <a class="btn btn-default pull-left" ng-click="ctrl.refreshRatingsFromBook()" ng-disabled="processingPrompt.inProgress || ctrl.populateBook || !ctrl.activeBookId || ctrl.share.acase.bookId !== ctrl.activeBookId" >
-    <i class="glyphicon glyphicon-refresh"></i>
+    <i class="glyphicon glyphicon-refresh" ng-class="{'fa-spin': processingPrompt.inProgress}"></i>
     Refresh ratings from book <i>{{ctrl.activeBookName}}</i>
-    <span ng-if="ctrl.syncQueries">and creating missing queries</span>
+    <span ng-if="ctrl.createMissingQueries">and creating missing queries</span>
   </a>
 
   <button
