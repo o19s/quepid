@@ -104,6 +104,9 @@ class User < ApplicationRecord
   has_many :metadata,
            dependent: :destroy
 
+  has_many :app_announcements, foreign_key: 'author_id', dependent: :destroy, inverse_of: :author
+  has_many :viewed_app_announcements, through: :app_announcements_viewed, source: :app_announcement
+
   # Validations
 
   # https://davidcel.is/posts/stop-validating-email-addresses-with-regex/
@@ -235,6 +238,13 @@ class User < ApplicationRecord
 
   def pending_invite?
     created_by_invite? && !invitation_accepted? && password.blank?
+  end
+
+  def unseen_app_notifications
+    AppAnnouncement
+      .left_outer_joins(:app_announcement_viewed)
+      .where('user_id != ? OR user_id IS NULL', id)
+      .order(:created_at)
   end
 
   private

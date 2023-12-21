@@ -42,6 +42,10 @@ Rails.application.routes.draw do
     resources :ratings, only: [ :index ]
   end
 
+  resources :app_announcements, only: [] do
+    resources :app_announcements_viewed, only: [ :create ]
+  end
+
   resources :books do
     resources :judgements
     resources :query_doc_pairs do
@@ -84,6 +88,7 @@ Rails.application.routes.draw do
       resource :pulse, only: [ :show ], module: :users
     end
     resources :communal_scorers
+    resources :app_announcements
   end
 
   # preview routes for mailers
