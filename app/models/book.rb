@@ -30,6 +30,9 @@ class Book < ApplicationRecord
                           join_table: 'teams_books'
   # rubocop:enable Rails/HasAndBelongsToMany
 
+  belongs_to :owner,
+             class_name: 'User', optional: true
+
   belongs_to :selection_strategy
   belongs_to :scorer
   has_many :query_doc_pairs, dependent: :destroy, autosave: true

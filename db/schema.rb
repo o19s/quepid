@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2023_12_13_180159) do
+ActiveRecord::Schema[7.1].define(version: 2023_12_22_115905) do
   create_table "annotations", id: :integer, charset: "utf8mb3", force: :cascade do |t|
     t.text "message"
     t.string "source"
@@ -131,6 +131,9 @@ ActiveRecord::Schema[7.1].define(version: 2023_12_13_180159) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "doc_id", limit: 500
+    t.string "information_need"
+    t.text "notes"
+    t.text "options", collation: "utf8mb3_bin"
     t.index ["book_id"], name: "index_query_doc_pairs_on_book_id"
   end
 

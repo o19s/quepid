@@ -31,7 +31,12 @@ book_of_comedy_films:
   selection_strategy: :single_rater
   name: TMDB Greatest Comedies
 
-james_bond_movies:   # this has some query doc pairs and ratings.
+james_bond_movies:
   scorer: :quepid_default_scorer
   selection_strategy: :multiple_raters
   name: James Bond Movies
+
+empty_book:
+  scorer: :quepid_default_scorer
+  selection_strategy: :single_rater
+  name: Empty Book
