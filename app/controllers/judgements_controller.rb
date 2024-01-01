@@ -12,8 +12,7 @@ class JudgementsController < ApplicationController
   end
 
   def show
-    @query_doc_pair = @judgement.query_doc_pair
-    @query = @current_user.queries.has_information_need.where(query_text: @query_doc_pair.query_text).first
+    @query_doc_pair = @judgement.query_doc_pair    
   end
 
   def skip_judging

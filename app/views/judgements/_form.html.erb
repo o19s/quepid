@@ -349,8 +349,8 @@ judgement.id: <%= judgement.id %>
 
   <div class="card-body">
     <h5 class="card-title">Query: <em><%= query_doc_pair.query_text %></em></h5>
-    <% if @query %>
-    <h6 class="card-subtitle mb-2 text-muted">Information Need: <i><%= @query.information_need %></i></h6>
+    <% if query_doc_pair.information_need %>
+      <h6 class="card-subtitle mb-2 text-muted">Information Need: <i><%= query_doc_pair.information_need %></i></h6>
     <% end %>
 
     <p>
