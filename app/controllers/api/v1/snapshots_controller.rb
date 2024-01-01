@@ -49,7 +49,7 @@ module Api
           # Refetch snapshot because after bulk creating the docs
           # the snapshot object is then stale
           @snapshot = Snapshot.where(id: @snapshot.id)
-            .includes([ snapshot_queries: [ :snapshot_docs, query: [:ratings] ] ])
+            .includes([ snapshot_queries: [ :snapshot_docs, { query: [ :ratings ] } ] ])
             .first
 
           respond_with @snapshot
