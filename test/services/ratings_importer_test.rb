@@ -122,7 +122,7 @@ class RatingsImporterTest < ActiveSupport::TestCase
   test 'handles when a doc id does not exist in our index, it is still inserted' do
     ratings = [
       { query_text: 'Swedish Food',   doc_id: ' 720784-021190', rating: nil },
-      { query_text: 'Swedish Food',   doc_id: 'NON_EXISTANT_DOC_IDzzz', rating: '6' }
+      { query_text: 'Swedish Food',   doc_id: 'NON_EXISTANT_DOC_ID', rating: '6' }
     ]
 
     ratings_importer = RatingsImporter.new owned_case, ratings, options
