@@ -106,17 +106,6 @@ module Api
           replacement_scorer = params[:replacement_scorer_id].present? ? Scorer.find_by(id: params[:replacement_scorer_id]) : Scorer.system_default_scorer
         end
 
-        # unless @scorer.owner == current_user
-        #   render(
-        #     json:   {
-        #       error: 'Cannot delete a scorer you do not own',
-        #     },
-        #     status: :forbidden
-        #   )
-
-        #   return
-        # end
-
         @users = User.where(default_scorer_id: @scorer.id)
         if @users.count.positive? && force
           # rubocop:disable Rails/SkipsModelValidations
@@ -148,18 +137,6 @@ module Api
 
           return
         end
-
-        # @teams = @scorer.teams
-        # if @teams.count.positive?
-        #   render(
-        #     json:   {
-        #       error: "Cannot delete the scorer because it is shared with #{@teams.count} #{'team'.pluralize(@teams.count)}: #{@teams.take(3).map(&:name).to_sentence}",
-        #     },
-        #     status: :bad_request
-        #   )
-
-        #   return
-        # end
 
         @scorer.destroy
         Analytics::Tracker.track_scorer_deleted_event current_user, @scorer
