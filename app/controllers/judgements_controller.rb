@@ -12,7 +12,7 @@ class JudgementsController < ApplicationController
   end
 
   def show
-    @query_doc_pair = @judgement.query_doc_pair    
+    @query_doc_pair = @judgement.query_doc_pair
   end
 
   def skip_judging
