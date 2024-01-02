@@ -122,11 +122,11 @@ To reference these judgements from a notebook or another system you can referenc
     </tr>
   </thead>
   <tbody>
-    <% @stats_data.each do | row| %>
+    <% @stats_data.each do | row | %>
     <tr>
       <th scope="row"><%=judge_name (row[:judge]) %></th>
-      <td><%=row[:unrateable] %> <%= link_to_if(row[:judge] && row[:unrateable] > 0, "reset", reset_unrateable_book_path(@book,row[:judge].id), method: :delete, data: { confirm: "Are you sure?" }){ '' } %></td>
-      <td><%=row[:judge_later] %> <%= link_to_if(row[:judge] && row[:judge_later] > 0, "reset", reset_judge_later_book_path(@book,row[:judge].id), method: :delete, data: { confirm: "Are you sure?" }){ '' } %></td>
+      <td><%=row[:unrateable] %> <%= link_to_if(row[:judge].id && row[:unrateable] > 0, "reset", reset_unrateable_book_path(@book,row[:judge].id), method: :delete, data: { confirm: "Are you sure?" }){ '' } %></td>
+      <td><%=row[:judge_later] %> <%= link_to_if(row[:judge].id && row[:judge_later] > 0, "reset", reset_judge_later_book_path(@book,row[:judge].id), method: :delete, data: { confirm: "Are you sure?" }){ '' } %></td>
       <td><%=row[:judgements] %></td>
     </tr>
     <% end %>
