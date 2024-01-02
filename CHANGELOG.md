@@ -6,15 +6,15 @@ Just in time for the New Year!
 
 A number of changes all wrapped up in one large PR https://github.com/o19s/quepid/pull/906 by @epugh.  This one is for you @david-fisher ;-).
 
-1.  Now when you judge a query doc pair for a Judgement Book we update in the background any associated Cases that have that query.  This eliminates the need to manually refresh the ratings for a Case from the Judgement Book!  Thanks @david-fisher for the suggestion in https://github.com/o19s/quepid/issues/829.
+*  Now when you judge a query doc pair for a Judgement Book we update in the background any associated Cases that have that query.  This eliminates the need to manually refresh the ratings for a Case from the Judgement Book!  Thanks @david-fisher for the suggestion in https://github.com/o19s/quepid/issues/829.
 
-1. Provide an option to allow queries that exist on a Book to be created in the Case if they are missing.   The default behavior is to NOT create queries in a Case from the Book.  Thanks to @jvia for this suggestion.  https://github.com/o19s/quepid/issues/871.
+* Provide an option to allow queries that exist on a Book to be created in the Case if they are missing.   The default behavior is to NOT create queries in a Case from the Book.  Thanks to @jvia for this suggestion.  https://github.com/o19s/quepid/issues/871.
 
-1. Band-aid the awkwardness that Cases have Queries/Ratings while Books have QueryDocPairs + Judgements, and that there are attributes on a Query like `information need`, `notes`, or `options` that don't exist on a QueryDocPair.   So now we preserve them, which facilitates round tripping better.   Upload a Book?  Upload a Case?  It doesn't matter ;-)  Long term we need to merge these two data structures...   
+* Band-aid the awkwardness that Cases have Queries/Ratings while Books have QueryDocPairs + Judgements, and that there are attributes on a Query like `information need`, `notes`, or `options` that don't exist on a QueryDocPair.   So now we preserve them, which facilitates round tripping better.   Upload a Book?  Upload a Case?  It doesn't matter ;-)  Long term we need to merge these two data structures...   
 
-1. When Books were first added to Quepid, they didn't follow the same permissions/sharing structure that Scores and Cases did.  Now you can share a Book with multiple Teams!  Fixes https://github.com/o19s/quepid/issues/907
+* When Books were first added to Quepid, they didn't follow the same permissions/sharing structure that Scores and Cases did.  Now you can share a Book with multiple Teams!  Fixes https://github.com/o19s/quepid/issues/907
 
-1. And as an aside, anyone can edit a custom scorer, not just the Owner of it.  https://github.com/o19s/quepid/issues/762 suggested by @david-fisher.
+* And as an aside, anyone can edit a custom scorer, not just the Owner of it.  https://github.com/o19s/quepid/issues/762 suggested by @david-fisher.
 
 
 ## 7.12.3 - 2023-12-05
