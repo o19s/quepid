@@ -60,10 +60,9 @@ module Api
 
       def create
         @book = Book.new(book_params)
-
+        team = Team.find_by(id: params[:book][:team_id])
+        @book.teams << team
         if @book.save
-          # first = 1 == current_user.cases.count
-          # Analytics::Tracker.track_case_created_event current_user, @case, first
           respond_with @book
         else
           render json: @book.errors, status: :bad_request
@@ -92,7 +91,7 @@ module Api
       private
 
       def book_params
-        params.require(:book).permit(:team_id, :scorer_id, :selection_strategy_id, :name, :support_implicit_judgements,
+        params.require(:book).permit(:scorer_id, :selection_strategy_id, :name, :support_implicit_judgements,
                                      :show_rank)
       end
 

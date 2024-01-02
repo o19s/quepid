@@ -100,12 +100,12 @@ class Case < ApplicationRecord
     ',  user.id)
   }
 
-  scope :public_cases, -> { where(public: true) }
-
   scope :for_user, ->(user) {
     ids = for_user_via_teams(user).pluck(:id) + for_user_directly_owned(user).pluck(:id)
     where(id: ids.uniq)
   }
+
+  scope :public_cases, -> { where(public: true) }
 
   # return cases sorted by recently either updated or viewed by the user
   scope :recent, -> {

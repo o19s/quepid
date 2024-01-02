@@ -5,6 +5,7 @@
 # Table name: judgements
 #
 #  id                :bigint           not null, primary key
+#  judge_later       :boolean          default(FALSE)
 #  rating            :float(24)
 #  unrateable        :boolean          default(FALSE)
 #  created_at        :datetime         not null
@@ -76,6 +77,45 @@ class JudgementTest < ActiveSupport::TestCase
       assert judgement.unrateable
       judgement.rating = 4
       assert_not judgement.unrateable
+      assert judgement.valid?
+    end
+  end
+
+  describe 'judge_later attribute behavior' do
+    let(:query_doc_pair) { query_doc_pairs(:one) }
+
+    test 'Saving a judgement marks unrateable as false' do
+      judgement = Judgement.create(query_doc_pair: query_doc_pair, rating: 4.4)
+      assert_not judgement.judge_later
+    end
+
+    test "a judgement with no rating that isn't marked judge_later fails" do
+      judgement = Judgement.create(query_doc_pair: query_doc_pair)
+      assert_not judgement.judge_later
+      assert_not judgement.valid?
+      assert judgement.errors.include?(:rating)
+    end
+
+    test 'mark a judgement with no ratings as judge_later works' do
+      judgement = Judgement.create(query_doc_pair: query_doc_pair)
+      judgement.mark_judge_later!
+      assert judgement.judge_later
+
+      assert judgement.valid?
+    end
+
+    test 'mark a judgement with ratings as judge_later clears exiting rating' do
+      judgement = Judgement.create(query_doc_pair: query_doc_pair, rating: 4.4)
+      judgement.mark_judge_later!
+      assert_nil judgement.rating
+    end
+
+    test 'set a rating on a judgement that was marked judge_later, flips it to rateable' do
+      judgement = Judgement.create(query_doc_pair: query_doc_pair)
+      judgement.mark_judge_later!
+      assert judgement.judge_later
+      judgement.rating = 4
+      assert_not judgement.judge_later
       assert judgement.valid?
     end
   end

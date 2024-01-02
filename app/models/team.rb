@@ -38,16 +38,11 @@ class Team < ApplicationRecord
 
   has_and_belongs_to_many :search_endpoints,
                           join_table: 'teams_search_endpoints'
+
+  has_and_belongs_to_many :books,
+                          join_table: 'teams_books'
+
   # rubocop:enable Rails/HasAndBelongsToMany
-
-  has_many   :books, -> { order(name: :asc) },
-             dependent:  :destroy,
-             inverse_of: :team
-
-  # has_many   :search_endpoints, -> { order(name: :asc) },
-  #            dependent:  :destroy,
-  #            inverse_of: :search_endpoint,
-  #            join_table: 'teams_search_endpoints'
 
   # Every owner is also a member of the team.  So when we care about access to a team,
   # we only need to check the team.members or the case.team.members.

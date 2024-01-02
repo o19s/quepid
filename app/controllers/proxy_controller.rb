@@ -26,7 +26,6 @@ class ProxyController < ApplicationController
     url_without_path += ":#{uri.port}" unless uri.port.nil?
     connection = Faraday.new(url: url_without_path) do |faraday|
       # Configure the connection options, such as headers or middleware
-      # faraday.response :logger, nil, { headers: true, bodies: true }
       faraday.response :logger, nil, { headers: proxy_debug, bodies: proxy_debug, errors: true }
       faraday.ssl.verify = false
       faraday.request :url_encoded

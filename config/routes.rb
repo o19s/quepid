@@ -20,8 +20,12 @@ Rails.application.routes.draw do
 
   resources :api_keys, path: 'api-keys', only: [ :create, :destroy ]
 
-  resources :search_endpoints
-  get 'search_endpoints/:id/clone' => 'search_endpoints#clone', as: :clone_search_endpoint
+  resources :search_endpoints do
+    member do
+      post 'clone'
+    end
+  end
+  # post 'search_endpoints/:id/clone' => 'search_endpoints#clone', as: :clone_search_endpoint
 
   # rubocop:disable Layout/LineLength
   # let's encrypt verification (can be removed in the future)
@@ -47,13 +51,20 @@ Rails.application.routes.draw do
     resources :query_doc_pairs do
       resources :judgements
       get 'unrateable' => 'judgements#unrateable'
+      get 'judge_later' => 'judgements#judge_later'
     end
     get 'judge' => 'judgements#new'
     get 'skip_judging' => 'judgements#skip_judging'
     member do
       patch 'combine'
       patch 'assign_anonymous'
-      delete 'delete_ratings_by_assignee'
+      delete 'delete_ratings_by_assignee', action: :delete_ratings_by_assignee, as: :delete_ratings_by_assignee
+      delete 'reset_unrateable/:user_id', action: :reset_unrateable, as: :reset_unrateable
+      delete 'reset_judge_later/:user_id', action: :reset_judge_later, as: :reset_judge_later
+      delete 'delete_query_doc_pairs_below_position', action: :delete_query_doc_pairs_below_position,
+                                                      as:     :delete_query_doc_pairs_below_position
+      patch 'eric_steered_us_wrong',
+            action: :eric_steered_us_wrong, as: :eric_steered_us_wrong
     end
   end
 

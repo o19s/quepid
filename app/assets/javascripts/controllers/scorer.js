@@ -18,7 +18,7 @@ angular.module('QuepidApp')
       $scope.gotoScorers        = gotoScorers;
       $scope.ok                 = ok;
       $scope.scorers            = [];
-      $scope.communalScorers    = [];
+      $scope.communalScorers    = [];     
       $scope.selectScorer       = selectScorer;
       $scope.usingDefaultScorer = usingDefaultScorer;
       $scope.communalScorersOnly = configurationSvc.isCommunalScorersOnly();
@@ -32,6 +32,7 @@ angular.module('QuepidApp')
         .then(function() {
           $scope.userScorers     = scorerSvc.scorers;
           $scope.communalScorers = scorerSvc.communalScorers;
+          $scope.scorerAccessible = scorerAccessible();
         });
 
       function cancel() {
@@ -47,6 +48,21 @@ angular.module('QuepidApp')
         setScorerForCase();
 
         $uibModalInstance.close($scope.activeScorer);
+      }
+      
+      function scorerAccessible() {
+        let scorerAccessible = false;
+        
+        if ($scope.activeScorer.scorerId) {
+          angular.forEach($scope.userScorers.concat($scope.communalScorers), function (scorer){
+            if (scorer.scorerId === $scope.activeScorer.scorerId){
+              scorerAccessible = true;
+              return scorerAccessible;
+            }
+          });
+        }
+        return scorerAccessible;        
+        
       }
 
       function selectScorer(scorer) {

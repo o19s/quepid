@@ -2,4 +2,5 @@
 
 json.rating         judgement.rating
 json.unrateable     judgement.unrateable
-json.user_email judgement.user.email if judgement.user
+json.judge_later    judgement.judge_later
+json.user_email     judgement.user.email if judgement.user

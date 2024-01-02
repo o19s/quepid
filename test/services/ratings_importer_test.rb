@@ -130,7 +130,7 @@ class RatingsImporterTest < ActiveSupport::TestCase
     rating = Rating.find_by(doc_id: '720784-021190')
     assert_nil(rating)
 
-    rating = Rating.find_by(doc_id: 'NON_EXISTANT_DOC_ID')
+    rating = Rating.find_by(doc_id: 'NON_EXISTANT_DOC_IDzzz')
     assert_not_nil(rating)
     assert_equal 'Swedish Food', rating.query.query_text
   end

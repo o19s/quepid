@@ -121,13 +121,13 @@ angular.module('QuepidApp')
           });
       };
 
-      this.refreshCaseRatingsFromBook = function(caseId, bookId) {
-        // http POST api/books/<int:bookId>/case/<int:caseId>/refresh
+      this.refreshCaseRatingsFromBook = function(caseId, bookId, createMissingQueries) {
+        // http POST api/books/<int:bookId>/case/<int:caseId>/refresh?sync_queries=<bool:createMissingQueries>
 
         var payload = {
         };
 
-        return $http.put('api/books/' + bookId + '/cases/' + caseId + '/refresh', payload)
+        return $http.put('api/books/' + bookId + '/cases/' + caseId + '/refresh?create_missing_queries=' + createMissingQueries, payload)
           .then(function(response) {
             console.log('refreshed ratings' + response.data);
           });

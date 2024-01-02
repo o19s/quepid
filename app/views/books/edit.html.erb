@@ -60,7 +60,7 @@
 <h3>Assign Anonymous Judgements & Ratings to a User</h3>
 
 <p class="form-text">
-  If you used Quepid before version 7.6, then ratings on the main Case page were all anonynmous.
+  If you used Quepid before version 7.6, then ratings on the main Case page were all anonymous.
   Those ratings will show up in the book as Anonymous, which means you will have to re-rate them.
   This allows you to map those Anonymous ratings to an existing Judge, both in this book and update the ratings in the Case.
 </p>
@@ -71,7 +71,7 @@
 <%= form_for(@book, url: assign_anonymous_book_path(@book)) do |form| %>
 <div class="mb-3">
   <%= form.label :assignee_id, class: 'form-label' %>
-  <%= select_tag "assignee_id", options_from_collection_for_select(@book.team.members, :id, :name, params.dig(:post, :category_id)), required: true, prompt: "Please select assignee", class: 'form-control' %>
+  <%= select_tag "assignee_id", options_from_collection_for_select(@book.teams.flat_map(&:members).uniq, :id, :name, params.dig(:post, :category_id)), required: true, prompt: "Please select assignee", class: 'form-control' %>
 </div>
 <p>
 <div class="actions">
@@ -88,12 +88,46 @@
  
 <%= form_for(@book, url: delete_ratings_by_assignee_book_path(@book), method: :delete, data: { confirm: "Are you sure?" }) do |form| %>
 <div class="mb-3">
-  <%= form.label :assignee_id, class: 'form-label' %>
-  <%= select_tag "assignee_id", options_from_collection_for_select(@book.team.members, :id, :name, params.dig(:post, :category_id)), required: true, prompt: "Please select judge", class: 'form-control' %>
+  <%= form.label :user_id, class: 'form-label' %>
+  <%= select_tag "user_id", options_from_collection_for_select(@book.teams.flat_map(&:members).uniq, :id, :name, params.dig(:post, :category_id)), required: true, prompt: "Please select judge", class: 'form-control' %>
 </div>
 <p>
 <div class="actions">
   <%= form.submit 'Delete Judgements' %>
+</div>
+</p>
+<% end %>
+
+<h3>Delete Query Doc Pairs Below a Threshold</h3>
+
+<p class="form-text">
+  Did you populate your book too deeply?  Discover you'll never finish rating them?   Here you can delete query doc pairs below a certain position (rank).
+</p>
+<%= form_for(@book, url: delete_query_doc_pairs_below_position_book_path(@book), method: :delete, data: { confirm: "Are you sure?" }) do |form| %>
+<div class="mb-3">
+  <%= form.label :position, class: 'form-label' %>
+  <%= select_tag "position", options_for_select(@book.query_doc_pairs.distinct.pluck(:position).sort), required: true, prompt: "Please select threshold to delete below", class: 'form-control' %>
+</div>
+<p>
+<div class="actions">
+  <%= form.submit 'Delete Query Doc Pairs' %>
+</div>
+</p>
+<% end %>
+
+<h3>Assign Rating to Judge Later Judgements</h3>
+
+<p class="form-text">
+  Currently it can be easier to skip judgements that you know are good (or bad) using the Judge Later option, and then come back and give them a rating.
+</p>
+<%= form_for(@book, url: eric_steered_us_wrong_book_path(@book), method: :patch, data: { confirm: "Are you sure?" }) do |form| %>
+<div class="mb-3">
+  <%= form.label :rating, class: 'form-label' %>
+  <%= select_tag "rating", options_for_select(@book.scorer.scale.sort), required: true, prompt: "Please select rating to assign", class: 'form-control' %>
+</div>
+<p>
+<div class="actions">
+  <%= form.submit 'Assign Rating and Clear Judge Later' %>
 </div>
 </p>
 <% end %>

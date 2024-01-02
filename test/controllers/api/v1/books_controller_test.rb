@@ -39,7 +39,7 @@ module Api
       end
 
       describe 'Updating book' do
-        let(:the_book) { books(:book_of_star_wars_judgements) }
+        let(:the_book) { books(:james_bond_movies) }
 
         describe 'when book does not exist' do
           test 'returns not found error' do
@@ -61,7 +61,7 @@ module Api
       describe 'Deleting a book' do
         describe 'when it is the last/only case' do
           let(:doug)      { users(:doug) }
-          let(:the_book)  { books(:book_of_star_wars_judgements) }
+          let(:the_book)  { books(:james_bond_movies) }
 
           before do
             login_user doug

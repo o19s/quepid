@@ -9,7 +9,7 @@ module Api
 
       def index
         unless Rails.application.config.communal_scorers_only
-          @user_scorers = current_user.scorers.all.reject(&:communal?)
+          @user_scorers = current_user.scorers_involved_with.all.reject(&:communal?)
         end
         @communal_scorers = Scorer.communal
 
@@ -106,17 +106,6 @@ module Api
           replacement_scorer = params[:replacement_scorer_id].present? ? Scorer.find_by(id: params[:replacement_scorer_id]) : Scorer.system_default_scorer
         end
 
-        unless @scorer.owner == current_user
-          render(
-            json:   {
-              error: 'Cannot delete a scorer you do not own',
-            },
-            status: :forbidden
-          )
-
-          return
-        end
-
         @users = User.where(default_scorer_id: @scorer.id)
         if @users.count.positive? && force
           # rubocop:disable Rails/SkipsModelValidations
@@ -149,19 +138,7 @@ module Api
           return
         end
 
-        @teams = @scorer.teams
-        if @teams.count.positive?
-          render(
-            json:   {
-              error: "Cannot delete the scorer because it is shared with #{@teams.count} #{'team'.pluralize(@teams.count)}: #{@teams.take(3).map(&:name).to_sentence}",
-            },
-            status: :bad_request
-          )
-
-          return
-        end
-
-        @scorer.delete
+        @scorer.destroy
         Analytics::Tracker.track_scorer_deleted_event current_user, @scorer
 
         head :no_content
@@ -189,7 +166,7 @@ module Api
 
       def set_scorer
         # This block of logic should all be in user_scorer_finder.rb
-        @scorer = current_user.scorers.where(id: params[:id]).first
+        @scorer = current_user.scorers_involved_with.where(id: params[:id]).first
 
         if @scorer.nil? # Check if communal scorers has the scorer.  This logic should be in the .scorers. method!
           @scorer = Scorer.communal.where(id: params[:id]).first

@@ -153,7 +153,6 @@ angular.module('QuepidApp')
         angular.forEach(queriesSvc.queries, function(q) {
           countMissingRatings = countMissingRatings + q.currentScore.countMissingRatings;
         });
-
         return countMissingRatings;
       };
 
@@ -178,7 +177,6 @@ angular.module('QuepidApp')
           }
           missingRatingsTable[missingCount].count = missingRatingsTable[missingCount].count + 1;
         });
-
         return missingRatingsTable;
       };
 
@@ -193,19 +191,13 @@ angular.module('QuepidApp')
       ctrl.totalNumberOfRatingsNeeded = function () {
         var totalNumberOfRatingsNeeded = 0;
         angular.forEach(queriesSvc.queries, function(q) {
-
           if (q.docs.length === 0){
             $scope.totalNumberQueriesWithoutResults += 1;
           }
           else {
             $scope.totalNumberQueriesWithResults += 1;
-            if (q.depthOfRating){
-              totalNumberOfRatingsNeeded = totalNumberOfRatingsNeeded + q.depthOfRating;
-            }
-            else {
-              totalNumberOfRatingsNeeded = totalNumberOfRatingsNeeded + ctrl.depthOfRating();
-            }
           }
+          totalNumberOfRatingsNeeded = totalNumberOfRatingsNeeded + q.docs.length;
 
         });
         $scope.totalNumberOfRatingsNeeded = totalNumberOfRatingsNeeded;
@@ -242,10 +234,10 @@ angular.module('QuepidApp')
       };
 
       ctrl.refreshRatingsFromBook = function () {
-        //$uibModalInstance.close(ctrl.options);
-        bookSvc.refreshCaseRatingsFromBook(ctrl.theCase.caseNo, ctrl.theCase.bookId)
+        $scope.processingPrompt.inProgress = true;
+        bookSvc.refreshCaseRatingsFromBook(ctrl.theCase.caseNo, ctrl.theCase.bookId, false)
         .then(function() {
-          $scope.processingPrompt.inProgress = true;
+          $scope.processingPrompt.inProgress  = false;
           $uibModalInstance.close();
 
           flash.success = 'Ratings have been refreshed.';
