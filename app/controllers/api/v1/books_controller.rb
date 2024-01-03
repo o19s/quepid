@@ -14,10 +14,6 @@ module Api
       # rubocop:disable Metrics/CyclomaticComplexity
       # rubocop:disable Metrics/PerceivedComplexity
       def show
-        ActiveRecord::Type::Boolean.new
-        # @export  = bool.deserialize params[:export] || false
-        @export = 'true' == params[:export]
-
         respond_to do |format|
           format.json
           format.csv do
