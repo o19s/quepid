@@ -3,7 +3,7 @@
   <div class="btn-toolbar mb-2 mb-md-0">
     <div class="btn-group me-2">
       <%= link_to 'New Book', new_book_path, class: "btn btn-sm btn-outline-secondary" %>
-      <button type="button" class="btn btn-sm btn-outline-secondary">Export</button>
+      <%= link_to 'Export', api_export_book_path(@book), class: "btn btn-sm btn-outline-secondary" %>
     </div>
     <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle">
       <span data-feather="calendar" class="align-text-bottom"></span>
@@ -62,6 +62,7 @@ Books organize all the query/doc pairs that are needed for evaluating your searc
 <%= render(partial: 'books/case', collection: @cases, as: :kase) || "There are no cases associated." %>
 </p>
 
+<p>
 <%= button_to 'Show Judgements', book_judgements_path(@book), method: :get %>
 
 <br>
@@ -75,20 +76,20 @@ Books organize all the query/doc pairs that are needed for evaluating your searc
 <br>
 
 <%= button_to 'Back to Books', books_path, method: :get %>
-
+</p>
 
 <h3>Export Data</h3>
 <p>
-  You want to export your judgements?   I hear you!  You can do so in CSV and JSON ;-)
+  Export just the <%= link_to 'judgement data', api_book_path(@book, format: :csv) %> in CSV format.
 </p>
 <p>
-Export in <%= link_to 'CSV', api_book_path(@book, format: :csv) %> or <%= link_to 'JSON', api_export_book_path(@book) %>
+  Export the <%= link_to 'entire book', api_export_book_path(@book) %> in JSON format.
 </p>
 <p>
-To reference these judgements from a notebook or another system you can reference these <%= link_to 'Quepid APIs', apipie_apipie_path %> endpoints:
-<code><%= api_book_path(@book, format: :csv) %></code> or <code><%= api_export_book_path(@book) %></code>
+  To reference these judgements from a notebook or another system you can reference these <%= link_to 'Quepid APIs', apipie_apipie_path %> endpoints:
+  <code><%= api_book_path(@book, format: :csv) %></code> or <code><%= api_export_book_path(@book) %></code>
 </p>
-
+  
 <h3>Leaderboard</h3>
 <div class="card">
   <div class="card-body">
