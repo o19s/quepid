@@ -1,6 +1,6 @@
 # Changelog
 
-## 7.13.0 - 2024-01-02
+## 7.13.0 - 2024-01-03
 
 Just in time for the New Year!
 
