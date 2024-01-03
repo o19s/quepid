@@ -18,12 +18,12 @@ Books organize all the query/doc pairs that are needed for evaluating your searc
 
 <% if @count_of_anonymous_book_judgements > 0 %>
 <div class="alert alert-warning" role="alert">
-  This book has <%= @count_of_anonymous_book_judgements %> anonymous judgements that should be mapped to a user.
+  This book has <%= @count_of_anonymous_book_judgements %> anonymous judgements that could be mapped to a user.
 </div>
 <% end %>
 <% if @count_of_anonymous_case_judgements > 0 %>
 <div class="alert alert-warning" role="alert">
-  The associated cases have <%= @count_of_anonymous_case_judgements %> anonymous ratings that should be mapped to a user.
+  The associated cases have <%= @count_of_anonymous_case_judgements %> anonymous ratings that could be mapped to a user.
 </div>
 <% end %>
 
@@ -125,8 +125,16 @@ To reference these judgements from a notebook or another system you can referenc
     <% @stats_data.each do | row | %>
     <tr>
       <th scope="row"><%=judge_name (row[:judge]) %></th>
-      <td><%=row[:unrateable] %> <%= link_to_if(row[:judge].id && row[:unrateable] > 0, "reset", reset_unrateable_book_path(@book,row[:judge].id), method: :delete, data: { confirm: "Are you sure?" }){ '' } %></td>
-      <td><%=row[:judge_later] %> <%= link_to_if(row[:judge].id && row[:judge_later] > 0, "reset", reset_judge_later_book_path(@book,row[:judge].id), method: :delete, data: { confirm: "Are you sure?" }){ '' } %></td>
+      <td>
+        <% if row[:judge] %>
+          <%=row[:unrateable] %> <%= link_to_if(row[:judge] && row[:unrateable] > 0, "reset", reset_unrateable_book_path(@book,row[:judge].id), method: :delete, data: { confirm: "Are you sure?" }){ '' } %>
+        <% end %>
+      </td>
+      <td>
+        <% if row[:judge] %>
+          <%=row[:judge_later] %> <%= link_to_if(row[:judge] && row[:judge_later] > 0, "reset", reset_judge_later_book_path(@book,row[:judge].id), method: :delete, data: { confirm: "Are you sure?" }){ '' } %>
+        <% end %>
+      </td>
       <td><%=row[:judgements] %></td>
     </tr>
     <% end %>
