@@ -16,6 +16,12 @@ Books organize all the query/doc pairs that are needed for evaluating your searc
 
 <%= render 'judgements/moar_judgements_needed', book: @book %>
 
+<% if @book.json_upload.attached? %>
+<div class="alert alert-danger" role="alert">
+  This book has an upload of data that is currently being processed and is not ready for use yet.
+</div>
+<% end %>
+
 <% if @count_of_anonymous_book_judgements > 0 %>
 <div class="alert alert-warning" role="alert">
   This book has <%= @count_of_anonymous_book_judgements %> anonymous judgements that could be mapped to a user.

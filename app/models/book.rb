@@ -24,7 +24,6 @@
 #
 class Book < ApplicationRecord
   # Associations
-  # belongs_to :team
   # rubocop:disable Rails/HasAndBelongsToMany
   has_and_belongs_to_many :teams,
                           join_table: 'teams_books'
@@ -46,6 +45,10 @@ class Book < ApplicationRecord
            class_name: 'QueryDocPair',
            dependent:  :destroy,
            inverse_of: :book
+
+  has_one_attached :json_upload
+
+  validate :validate_json_file
 
   # Scopes
   scope :for_user_via_teams, ->(user) {
@@ -70,4 +73,10 @@ class Book < ApplicationRecord
     ids = for_user_via_teams(user).pluck(:id) + for_user_directly_owned(user).pluck(:id)
     where(id: ids.uniq)
   }
+
+  def validate_json_file
+    if json_upload.attached? && !json_upload.content_type.in?(%w[application/json])
+      errors.add(:json_upload, 'must be a JSON file')
+    end
+  end
 end

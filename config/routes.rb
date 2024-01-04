@@ -68,6 +68,10 @@ Rails.application.routes.draw do
     end
   end
 
+  namespace :books do
+    resources :import, only: [ :new, :create ]
+  end
+
   devise_for :users, controllers: {
     passwords:          'users/passwords',
     invitations:        'users/invitations',
