@@ -626,9 +626,10 @@ angular.module('QuepidApp')
           .then(function () {
             const keys = Object.keys(querySnapshotSvc.snapshots);
             const snapshotId = keys[keys.length - 1];
-                                  
-            var baseUrl = $location.absUrl().split('/case')[0];         
-            $scope.pendingWizardSettings.searchUrl = `${baseUrl}/api/cases/${caseTryNavSvc.getCaseNo()}/snapshots/${snapshotId}/search`;
+            
+            // The magic URL for looking up queries as if we talked to a REAL Solr search engine ;-).
+            $scope.pendingWizardSettings.searchUrl = `${caseTryNavSvc.getQuepidRootUrl()}/api/cases/${caseTryNavSvc.getCaseNo()}/snapshots/${snapshotId}/search`;
+            
             $scope.isStaticCollapsed = false;
             $scope.addedStaticQueries = true;
             //var result = {
