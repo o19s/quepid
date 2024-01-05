@@ -63,8 +63,12 @@ class BooksController < ApplicationController
 
   def create
     @book = Book.new(book_params)
-    @book.save
-    respond_with(@book)
+    @book.owner = current_user
+    if @book.save
+      redirect_to @book, notice: 'Book was successfully created.'
+    else
+      render :new
+    end
   end
 
   def update
