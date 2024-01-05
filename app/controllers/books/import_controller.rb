@@ -9,9 +9,7 @@ module Books
     end
 
     # rubocop:disable Metrics/MethodLength
-    # rubocop:disable Metrics/AbcSize
-    # rubocop:disable Metrics/PerceivedComplexity
-    #
+    # rubocop:disable Security/Open
     def create
       @book = Book.new
       @book.owner = current_user
@@ -41,6 +39,8 @@ module Books
         render :new
       end
     end
+    # rubocop:enable Metrics/MethodLength
+    # rubocop:enable Security/Open
 
     def create2
       @book = Book.new
