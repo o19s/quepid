@@ -3,23 +3,22 @@
 require 'progress_indicator'
 
 class BookImporter
-  #include ProgressIndicator
+  # include ProgressIndicator
 
   attr_reader :logger, :options
 
   def initialize book, data_to_process, opts = {}
     default_options = {
-      logger:         Rails.logger,
-      show_progress:  false,
+      logger:        Rails.logger,
+      show_progress: false,
     }
 
-    @options  = default_options.merge(opts.deep_symbolize_keys)
+    @options = default_options.merge(opts.deep_symbolize_keys)
 
-    @book    = book
-    @data_to_process  = data_to_process
-    @logger   = @options[:logger]
+    @book = book
+    @data_to_process = data_to_process
+    @logger = @options[:logger]
   end
-
 
   def validate
     params_to_use = @data_to_process
@@ -55,15 +54,14 @@ class BookImporter
           @book.errors.add(:base, "User with email '#{email}' needs to be migrated over first.")
         end
       end
-    end    
+    end
   end
+
   # rubocop:disable Metrics/MethodLength
   # rubocop:disable Metrics/AbcSize
-  # rubocop:disable Metrics/PerceivedComplexity
-  # rubocop:disable Metrics/CyclomaticComplexity
   def import
     params_to_use = @data_to_process
-    
+
     # passed first set of validations.
     @book.name = params_to_use[:name]
     @book.show_rank = params_to_use[:show_rank]
@@ -83,13 +81,9 @@ class BookImporter
         qdp.judgements.build(judgement.except(:user_email))
       end
     end
-    
-    return @book.save
-    
+
+    @book.save
   end
-  # rubocop:enable Metrics/PerceivedComplexity
   # rubocop:enable Metrics/AbcSize
   # rubocop:enable Metrics/MethodLength
-  # rubocop:enable Metrics/CyclomaticComplexity
-
 end

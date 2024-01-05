@@ -11,13 +11,10 @@ module Books
     # rubocop:disable Metrics/MethodLength
     # rubocop:disable Metrics/AbcSize
     # rubocop:disable Metrics/PerceivedComplexity
-    # 
+    #
     def create
-      
       @book = Book.new
       @book.owner = current_user
-      
-     
 
       uploaded_file = params[:book][:json_upload]
       json_file = uploaded_file.tempfile
@@ -28,12 +25,11 @@ module Books
       begin
         params_to_use = JSON.parse(json_data.read).deep_symbolize_keys
 
-        @book.name = params_to_use[:name]        
+        @book.name = params_to_use[:name]
         @book.json_upload.attach(uploaded_file)
-        
+
         service = ::BookImporter.new @book, params_to_use, {}
-        service.validate       
-        
+        service.validate
       rescue JSON::ParserError => e
         @book.errors.add(:base, "Invalid JSON file format: #{e.message}")
       end
@@ -45,6 +41,7 @@ module Books
         render :new
       end
     end
+
     def create2
       @book = Book.new
       @book.owner = current_user

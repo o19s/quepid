@@ -10,7 +10,7 @@ module Api
         # rubocop:disable Metrics/CyclomaticComplexity
         # rubocop:disable Metrics/PerceivedComplexity
         # rubocop:disable Layout/LineLength
-        # 
+        #
         def create
           team_id = params.require(:team_id)
           params_to_use = book_params.to_h.deep_symbolize_keys
@@ -18,25 +18,23 @@ module Api
           @book = Book.new
 
           @book.teams << Team.find(team_id)
-          options    = {  }
+          options = {}
           service = ::BookImporter.new @book, params_to_use, options
-          
+
           service.validate
-          
+
           unless @book.errors.empty?
             render json: @book.errors, status: :bad_request
             return
           end
-          
+
           if service.import
             respond_with @book
           else
             render json: @book.errors, status: :bad_request
           end
-      
         end
-        
-        
+
         def create2
           team_id = params.require(:team_id)
           params_to_use = book_params.to_h.deep_symbolize_keys
