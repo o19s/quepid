@@ -256,7 +256,12 @@ class BooksController < ApplicationController
     params_to_use = params.require(:book).permit(:scorer_id, :selection_strategy_id, :name,
                                                  :support_implicit_judgements,
                                                  :show_rank, team_ids: [])
-    params_to_use[:team_ids].compact_blank!
+    
+    # Crafting a book[team_ids] parameter from the AngularJS side didn't work, so using top level parameter
+    if params[:team_ids]
+      params_to_use[:team_ids] = params[:team_ids]
+    end
+    params_to_use[:team_ids].compact_blank! if params_to_use[:team_ids]
     params_to_use
   end
 end
