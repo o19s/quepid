@@ -24,6 +24,7 @@ module Api
               desc: 'The query that you are looking up', required: true
         def index
           @q = search_params[:q]
+          @q = @q.gsub('\?', '?') # Since it's a GET, a ? in the query gets special escaping
           query = if '*:*' == @q
                     @snapshot.snapshot_queries.first.query
 
