@@ -49,7 +49,7 @@ class BookImporter
         next unless query_doc_pair[:judgements]
 
         query_doc_pair[:judgements].each do |judgement|
-          list_of_emails_of_users << judgement[:user_email]
+          list_of_emails_of_users << judgement[:user_email] unless judgement[:user_email].blank?
         end
       end
       list_of_emails_of_users.uniq!
