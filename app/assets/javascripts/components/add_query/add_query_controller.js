@@ -111,10 +111,10 @@ angular.module('QuepidApp')
       }
 
       function message() {
-        if (settingsSvc.isTrySelected() && settingsSvc.applicableSettings().searchEngine == 'static'){
+        if (settingsSvc.isTrySelected() && settingsSvc.applicableSettings().searchEngine === 'static'){
           ctrl.canAddQueries = false;
         }
-        if (ctrl.canAddQueries == true) {
+        if (ctrl.canAddQueries === true) {
           return 'Add a query to this case';
         }
         else {

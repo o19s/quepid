@@ -188,7 +188,7 @@ angular.module('QuepidApp')
           return `&team_ids[]=${team.id}`;
         });
         return `books/new?book[scorer_id]=${ctrl.share.acase.scorerId}${teamIds}`;
-      }
+      };
 
     }
   ]);
