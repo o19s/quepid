@@ -47,6 +47,7 @@ class Book < ApplicationRecord
            inverse_of: :book
 
   has_one_attached :json_upload
+  has_one_attached :json_export
 
   validate :validate_json_file
 
