@@ -12,7 +12,6 @@ module Api
         param :case_name, String
         param :scorer_id, Integer
         param :archived, [ true, false ]
-        param :book_id, Integer
       end
 
       # Spiking out can we make an API public?
@@ -71,7 +70,7 @@ module Api
       api :GET, '/api/cases/:case_id',
           'Show the case with the given ID.'
       param :id, :number,
-            desc: 'The ID of the requested case.'
+            desc: 'The ID of the requested case.', required: true
       def show
         respond_with @case
       end
@@ -79,8 +78,6 @@ module Api
       # rubocop:enable Metrics/AbcSize
 
       api :POST, '/api/cases', 'Create a new case.'
-      param :id, :number,
-            desc: 'The ID of the requested case.'
       param_group :case
       def create
         @case = current_user.cases.build case_params
@@ -97,7 +94,7 @@ module Api
       # rubocop:disable Metrics/MethodLength
       api :PUT, '/api/cases/:case_id', 'Update a given case.'
       param :id, :number,
-            desc: 'The ID of the requested case.'
+            desc: 'The ID of the requested case.', required: true
       param_group :case
       def update
         update_params = case_params
@@ -122,6 +119,8 @@ module Api
       # rubocop:enable Metrics/MethodLength
 
       api :DELETE, '/api/cases/:case_id', 'Delete a given case.'
+      param :id, :number,
+            desc: 'The ID of the requested case.', required: true
       def destroy
         @case.really_destroy
         Analytics::Tracker.track_case_deleted_event current_user, @case
