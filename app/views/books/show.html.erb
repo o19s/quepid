@@ -13,19 +13,35 @@
 </div>
 
 Books organize all the query/doc pairs that are needed for evaluating your search queries.
+This book consists of <%= @book.query_doc_pairs.count %> query document pairs and <%= @book.judgements.count %> judgements.
 
 <%= render 'judgements/moar_judgements_needed', book: @book %>
 
-<% if @book.json_upload.attached? %>
+<% if @book.import_file.attached? %>
 <div class="alert alert-danger" role="alert">
   This book has an upload of data that is currently being processed and is not ready for use yet.
   <br/>
-  Import file is  <%=link_to 'available here', rails_blob_path(@book.json_upload.blob, only_path: true) %>.
+  Import file is  <%=link_to 'available here', rails_blob_path(@book.import_file.blob, only_path: true) %>.
   Status: <%= @book.query_doc_pairs.count %>  
   <%= link_to book_path(@book) do %>
     Refresh
     <i
       class="bi arrow-clockwise"
+      aria-hidden="true"
+    ></i>
+  <% end %>
+  
+</div>
+<% end %>
+
+<% if @book.populate_file.attached? %>
+<div class="alert alert-danger" role="alert">
+  Currently populating this book with fresh data from a case.
+  <br/>
+  Status is the book has <%= @book.query_doc_pairs.count %>  query doc pairs.
+  <%= link_to book_path(@book) do %>
+    <i
+      class="bi bi-arrow-clockwise"
       aria-hidden="true"
     ></i>
   <% end %>
@@ -101,8 +117,8 @@ Books organize all the query/doc pairs that are needed for evaluating your searc
 </p>
 <p>
   Export the <%= link_to 'entire book', api_export_book_path(@book, download: true) %> in JSON format.
-  <% if @book.json_export.present? %>
-    There is currently an export file <%=link_to 'available here', rails_blob_path(@book.json_export.blob, only_path: true) %>.
+  <% if @book.export_file.present? %>
+    There is currently an export file made <%= time_ago_in_words @book.export_file.created_at %> ago <%=link_to 'available here', rails_blob_path(@book.export_file.blob, only_path: true) %>.
   <% end %>
 </p>
 <p>

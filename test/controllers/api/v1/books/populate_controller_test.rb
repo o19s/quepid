@@ -47,6 +47,8 @@ module Api
             assert_difference 'book.query_doc_pairs.count', 2 do
               put :update, params: data
 
+              perform_enqueued_jobs
+
               query_doc_pair_star_wars = book.query_doc_pairs.find_by(query_text: 'star wars', doc_id: 'https://www.themoviedb.org/movie/11-star-wars')
               assert_not_nil query_doc_pair_star_wars
               assert_empty query_doc_pair_star_wars.judgements
@@ -87,6 +89,8 @@ module Api
 
             put :update, params: data
 
+            perform_enqueued_jobs
+
             # change position and document fields to test
             data[:query_doc_pairs][0][:document_fields][:year] = '3000'
 
@@ -94,6 +98,8 @@ module Api
             data[:query_doc_pairs][1][:document_fields][:director] = 'Susumu Yamaguchi'
             assert_difference 'book.query_doc_pairs.count', 0 do
               put :update, params: data
+
+              perform_enqueued_jobs
 
               query_doc_pair_star_wars = book.query_doc_pairs.find_by(query_text: 'star wars', doc_id: 'https://www.themoviedb.org/movie/11-star-wars')
               assert_not_nil query_doc_pair_star_wars
@@ -139,6 +145,8 @@ module Api
 
             put :update, params: data
 
+            perform_enqueued_jobs
+
             query_doc_pair = {
               query_text:      'star wars',
               doc_id:          'https://www.themoviedb.org/movie/140607-star-wars-the-force-awakens',
@@ -153,6 +161,8 @@ module Api
 
             assert_difference 'book.query_doc_pairs.count', 1 do
               put :update, params: data
+
+              perform_enqueued_jobs
 
               assert_response :no_content
             end

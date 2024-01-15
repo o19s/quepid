@@ -18,6 +18,10 @@ gem 'd3-rails', '~> 3.5.5' # For cal heatmap
 gem 'devise', '>= 4.6.2'
 gem 'devise_invitable', '~> 2.0'
 
+gem 'active_storage_db'
+
+gem 'rubyzip'
+
 # Using this as it wires in via Sprockets and I can't get npm version to work with the main app.
 # Had no luck with js/svg approach ;-(
 gem 'font-awesome-sass'

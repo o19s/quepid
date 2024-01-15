@@ -46,8 +46,9 @@ class Book < ApplicationRecord
            dependent:  :destroy,
            inverse_of: :book
 
-  has_one_attached :json_upload
-  has_one_attached :json_export
+  has_one_attached :import_file
+  has_one_attached :export_file
+  has_one_attached :populate_file
 
   validate :validate_json_file
 
@@ -76,8 +77,8 @@ class Book < ApplicationRecord
   }
 
   def validate_json_file
-    if json_upload.attached? && !json_upload.content_type.in?(%w[application/json])
-      errors.add(:json_upload, 'must be a JSON file')
+    if import_file.attached? && !import_file.content_type.in?(%w[application/json])
+      errors.add(:import_file, 'must be a JSON file')
     end
   end
 end

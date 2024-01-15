@@ -4,6 +4,7 @@ require 'test_helper'
 
 class CaseToBookToCaseFlowTest < ActionDispatch::IntegrationTest
   include ActionMailer::TestHelper
+  include ActiveJob::TestHelper
 
   let(:kase) { cases(:random_case) }
   let(:book) { books(:empty_book) }
@@ -40,7 +41,11 @@ class CaseToBookToCaseFlowTest < ActionDispatch::IntegrationTest
 
     assert_response :no_content
 
-    response.parsed_body
+    assert_enqueued_jobs 1
+
+    perform_enqueued_jobs
+
+    assert_performed_jobs 1
 
     # the new Case that we will populate from a book...
     new_case = Case.create(case_name: 'test case', owner: user)

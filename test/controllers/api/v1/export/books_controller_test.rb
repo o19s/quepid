@@ -19,6 +19,8 @@ module Api
           let(:doug)        { users(:doug) }
 
           test 'the AR object ids are replaced with names' do
+            assert doug.books.include? book
+
             get :show, params: { book_id: book.id }
             assert_response :ok
             body = response.parsed_body

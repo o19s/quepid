@@ -36,7 +36,7 @@ Rails.application.configure do
   end
 
   # Store uploaded files on the local file system (see config/storage.yml for options).
-  config.active_storage.service = :local
+  config.active_storage.service = :db # :local
 
   config.active_storage.resolve_model_to_route = :rails_storage_proxy
 
@@ -101,7 +101,7 @@ Rails.application.configure do
     ActiveStorage::Current.url_options = {
       host:     ENV.fetch('QUEPID_DOMAIN', nil),
       port:     ENV.fetch('PORT', nil),
-      protocol: 'https', # Replace with 'https' if using HTTPS
+      protocol: 'https', # Replace with 'https' if using HTTPS  # we have relative urls so may not be sed
     }
   end
 

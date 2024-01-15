@@ -32,6 +32,7 @@ book_of_comedy_films:
   name: TMDB Greatest Comedies
 
 james_bond_movies:
+  owner: :doug
   scorer: :quepid_default_scorer
   selection_strategy: :multiple_raters
   name: James Bond Movies

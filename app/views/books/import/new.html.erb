@@ -15,7 +15,7 @@
 <% end %>
 
 <%= form_with model: @book, url: books_import_index_path do |form| %>
-  <%= form.file_field :json_upload %>
+  <%= form.file_field :import_file %>
   <%= form.submit "Upload" %>
 <% end %>
 

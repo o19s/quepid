@@ -3,16 +3,19 @@
 class ImportBookJob < ApplicationJob
   queue_as :default
 
+  # rubocop:disable Security/MarshalLoad
   def perform book
     options = {}
+    pp book.import_file
+    compressed_data = book.import_file.download
+    serialized_data = Zlib::Inflate.inflate(compressed_data)
+    params  = Marshal.load(serialized_data)
 
-    # Read and parse the JSON data
-    json_data = JSON.parse(book.json_upload.download)
-
-    service = ::BookImporter.new book, json_data.deep_symbolize_keys, options
+    service = ::BookImporter.new book, params, options
 
     service.import
-    book.json_upload.purge
+    book.import_file.purge
     book.save
   end
+  # rubocop:enable Security/MarshalLoad
 end

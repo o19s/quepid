@@ -1,15 +1,17 @@
 # frozen_string_literal: true
 
-require 'zlib'
+require 'zip'
+require 'action_view'
+
 module Api
   module V1
     module Export
       class BooksController < Api::ApiController
+        include ActionView::Helpers::NumberHelper
         api!
         before_action :find_book
         before_action :check_book
 
-        # rubocop:disable Metrics/MethodLength
         # rubocop:disable Layout/LineLength
         def show
           # do we want to make the file downloadable
@@ -18,26 +20,23 @@ module Api
           respond_to do |format|
             format.json do
               if download
-                # compressed_data = Zlib::Deflate.deflate(render_to_string(template: 'api/v1/export/books/show', locals: { book: @book }))
-                json_data = render_to_string(template: 'api/v1/export/books/show', locals: { book: @book })
+                json_data = render_to_string(template: 'api/v1/export/books/show')
 
-                puts 'about to attach'
-                @book.json_export.attach(io: StringIO.new(json_data), filename: "book_export_#{@book.id}.json",
-                                         content_type: 'application/json')
+                puts "the size of the json data is #{number_to_human_size(json_data.bytesize)}"
 
-                puts 'done with attach'
-                blob = @book.json_export.blob
-                puts 'about to geenrate url'
+                compressed_data = create_zip_from_json(json_data, "book_export_#{@book.id}.json")
+
+                @book.export_file.attach(io: compressed_data, filename: "book_export_#{@book.id}.json.zip",
+                                         content_type: 'application/zip')
+
+                blob = @book.export_file.blob
+
                 url = Rails.application.routes.url_helpers.rails_blob_url(blob, only_path: true)
-                puts "about to render ok with url: #{url}"
-                # render plain: "OK #{url}"
-
-                # send_data file_data, filename: blob.filename.to_s, type: blob.content_type, disposition: 'attachment'
+                render json: { download_file_url: url }
               end
             end
           end
         end
-        # rubocop:enable Metrics/MethodLength
 
         private
 
@@ -48,6 +47,15 @@ module Api
 
         def check_book
           render json: { message: 'Book not found!' }, status: :not_found unless @book
+        end
+
+        def create_zip_from_json json_string, filename
+          zip_data = Zip::OutputStream.write_buffer do |zipfile|
+            zipfile.put_next_entry(filename)
+            zipfile.write(json_string)
+          end
+          zip_data.rewind
+          zip_data
         end
       end
     end

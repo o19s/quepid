@@ -24,8 +24,8 @@ module Api
       param :id, :number,
             desc: 'The ID of the requested book.', required: true
       def index
-        @query_doc_pairs = @book.query_doc_pairs.includes([ :judgements ])
-
+        # @query_doc_pairs = @book.query_doc_pairs.includes([ :judgements ])
+        @query_doc_pairs = @book.query_doc_pairs
         respond_with @query_doc_pairs
       end
 
