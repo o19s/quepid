@@ -133,7 +133,7 @@ angular.module('QuepidApp')
         bookSvc.refreshCaseRatingsFromBook(ctrl.share.acase.caseNo, ctrl.activeBookId, ctrl.createMissingQueries)
         .then(function() {
           $scope.processingPrompt.inProgress  = false;
-          $uibModalInstance.close();
+          $uibModalInstance.close(true);
 
           flash.success = 'Ratings have been refreshed.';
         }, function(response) {
@@ -154,25 +154,20 @@ angular.module('QuepidApp')
           bookSvc.updateQueryDocPairs(ctrl.activeBookId,ctrl.share.acase.caseNo, queriesSvc.queryArray(), ctrl.populateJudgements)
           .then(function() {
             $scope.processingPrompt.inProgress = false;
-            $uibModalInstance.close();
+            $uibModalInstance.close(false);
 
             flash.success = 'Book of judgements updated.';
           }, function(response) {
             $scope.processingPrompt.inProgress  = false;
             $scope.processingPrompt.error       = response.data.statusText;
 
-            // we could take the error and pass it out via
-            //$uibModalInstance.close($scope.processingPrompt.error);
+
           });
         }
         else {
-          $uibModalInstance.close();
+          $uibModalInstance.close(false);
         }
       };
-
-      //ctrl.ok = function () {
-        //$uibModalInstance.close(ctrl.share);
-      //};
 
       ctrl.cancel = function () {
         $uibModalInstance.dismiss('cancel');

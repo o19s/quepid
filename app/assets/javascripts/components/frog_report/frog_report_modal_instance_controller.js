@@ -249,7 +249,7 @@ angular.module('QuepidApp')
 
 
       ctrl.ok = function () {
-        $uibModalInstance.close(ctrl.options);
+        $uibModalInstance.close();
       };
 
       ctrl.cancel = function () {

@@ -37,18 +37,15 @@ angular.module('QuepidApp')
         });
 
         modalInstance.result.then(
-          function(error) {
-            if ( !error ) {
-              queriesSvc.reset();
-              queriesSvc.bootstrapQueries(caseSvc.getSelectedCase().caseNo)
-                .then(function() {
-                  queriesSvc.searchAll();
-                });
+          function() {
+            queriesSvc.reset();
+            queriesSvc.bootstrapQueries(caseSvc.getSelectedCase().caseNo)
+              .then(function() {
+                queriesSvc.searchAll();
+              });
 
-              flash.success = 'Ratings refreshed successfully!';
-            } else {
-              flash.error = error;
-            }
+            flash.success = 'Ratings refreshed successfully!';
+          
           }, function() { }
         );
 

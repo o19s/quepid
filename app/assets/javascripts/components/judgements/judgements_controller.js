@@ -31,8 +31,8 @@ angular.module('QuepidApp')
         });
 
         modalInstance.result.then(
-          function(error) {
-            if ( !error ) {
+          function(bootstrapQueries) {
+            if ( bootstrapQueries ) {
               queriesSvc.reset();
               queriesSvc.bootstrapQueries(ctrl.acase.caseNo)
                 .then(function() {
@@ -40,8 +40,6 @@ angular.module('QuepidApp')
                 });
 
               flash.success = 'Ratings refreshed successfully!';
-            } else {
-              flash.error = error;
             }
           }, function() { }
         );
