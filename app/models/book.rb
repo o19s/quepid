@@ -50,7 +50,7 @@ class Book < ApplicationRecord
   has_one_attached :export_file
   has_one_attached :populate_file
 
-  validate :validate_json_file
+  after_destroy :delete_attachments
 
   # Scopes
   scope :for_user_via_teams, ->(user) {
@@ -76,9 +76,11 @@ class Book < ApplicationRecord
     where(id: ids.uniq)
   }
 
-  def validate_json_file
-    if import_file.attached? && !import_file.content_type.in?(%w[application/json])
-      errors.add(:import_file, 'must be a JSON file')
-    end
+  private
+
+  def delete_attachments
+    import_file.purge_later
+    export_file.purge_later
+    populate_file.purge_later
   end
 end

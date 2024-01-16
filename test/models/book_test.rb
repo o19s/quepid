@@ -77,4 +77,39 @@ class BookTest < ActiveSupport::TestCase
       assert_nil random_query_doc_pair
     end
   end
+
+  describe 'lifecycle of attachment to a book' do
+    let(:book) { books(:book_of_star_wars_judgements) }
+
+    it 'deletes the attachment when the book is destroyed' do
+      json_file = generate_json_file
+      assert_not book.import_file.present?
+      assert_not book.import_file.attached?
+      book.import_file.attach(io: File.open(json_file.path), filename: 'data.json')
+      assert book.import_file.present?
+      assert book.import_file.attached?
+
+      import_file = book.import_file
+
+      book.destroy
+
+      assert_nil import_file.download
+
+      json_file.unlink # get rid of temp file
+    end
+  end
+
+  def generate_json_file
+    data = {
+      key1: 'Lorem ipsum dolor sit amet',
+      key2: 'consectetur adipiscing elit',
+      key3: 'sed do eiusmod tempor incididunt',
+    }
+
+    file = Tempfile.new([ 'data', '.json' ])
+    file.write(data.to_json)
+    file.close
+
+    file
+  end
 end
