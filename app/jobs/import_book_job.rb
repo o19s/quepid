@@ -6,7 +6,7 @@ class ImportBookJob < ApplicationJob
   # rubocop:disable Security/MarshalLoad
   def perform book
     options = {}
-    pp book.import_file
+
     compressed_data = book.import_file.download
     serialized_data = Zlib::Inflate.inflate(compressed_data)
     params  = Marshal.load(serialized_data)
