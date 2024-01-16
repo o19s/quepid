@@ -184,7 +184,7 @@ angular.module('QuepidApp')
       };
       
       ctrl.createBookLink = function() {
-        let teamIds = ctrl.share.acase.teams.map(function(team) {
+        const teamIds = ctrl.share.acase.teams.map(function(team) {
           return `&team_ids[]=${team.id}`;
         });
         return `books/new?book[scorer_id]=${ctrl.share.acase.scorerId}${teamIds}&origin_case_id=${ctrl.share.acase.caseNo}`;
