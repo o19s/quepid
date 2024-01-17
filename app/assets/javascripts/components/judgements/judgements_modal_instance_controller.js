@@ -31,6 +31,7 @@ angular.module('QuepidApp')
       ctrl.refreshOnly = false;
       ctrl.updateAssociatedBook = false;
       ctrl.populateJudgements = false;
+      ctrl.createMissingQueries = false;
 
       $rootScope.$watch('currentUser', function() {
         if ( $rootScope.currentUser ) {
@@ -128,14 +129,15 @@ angular.module('QuepidApp')
 
       ctrl.refreshRatingsFromBook = function () {
         //$uibModalInstance.close(ctrl.options);
-        bookSvc.refreshCaseRatingsFromBook(ctrl.share.acase.caseNo, ctrl.activeBookId)
+        $scope.processingPrompt.inProgress = true;
+        bookSvc.refreshCaseRatingsFromBook(ctrl.share.acase.caseNo, ctrl.activeBookId, ctrl.createMissingQueries)
         .then(function() {
-          $scope.processingPrompt.inProgress = true;
-          $uibModalInstance.close();
+          $scope.processingPrompt.inProgress  = false;
+          $uibModalInstance.close(true);
 
           flash.success = 'Ratings have been refreshed.';
         }, function(response) {
-          $scope.processingPrompt.inProgress  = false;
+          
           $scope.processingPrompt.error       = response.data.statusText;
         });
       };
@@ -152,25 +154,20 @@ angular.module('QuepidApp')
           bookSvc.updateQueryDocPairs(ctrl.activeBookId,ctrl.share.acase.caseNo, queriesSvc.queryArray(), ctrl.populateJudgements)
           .then(function() {
             $scope.processingPrompt.inProgress = false;
-            $uibModalInstance.close();
+            $uibModalInstance.close(false);
 
             flash.success = 'Book of judgements updated.';
           }, function(response) {
             $scope.processingPrompt.inProgress  = false;
             $scope.processingPrompt.error       = response.data.statusText;
 
-            // we could take the error and pass it out via
-            //$uibModalInstance.close($scope.processingPrompt.error);
+
           });
         }
         else {
-          $uibModalInstance.close();
+          $uibModalInstance.close(false);
         }
       };
-
-      //ctrl.ok = function () {
-        //$uibModalInstance.close(ctrl.share);
-      //};
 
       ctrl.cancel = function () {
         $uibModalInstance.dismiss('cancel');
@@ -179,6 +176,13 @@ angular.module('QuepidApp')
       ctrl.goToTeamsPage = function () {
         $uibModalInstance.dismiss('cancel');
         $location.path('/teams');
+      };
+      
+      ctrl.createBookLink = function() {
+        const teamIds = ctrl.share.acase.teams.map(function(team) {
+          return `&team_ids[]=${team.id}`;
+        });
+        return `books/new?book[scorer_id]=${ctrl.share.acase.scorerId}${teamIds}&origin_case_id=${ctrl.share.acase.caseNo}`;
       };
 
     }

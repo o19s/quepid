@@ -8,7 +8,7 @@
 #  api_method            :string(255)
 #  archived              :boolean          default(FALSE)
 #  basic_auth_credential :string(255)
-#  custom_headers        :string(1000)
+#  custom_headers        :string(6000)
 #  endpoint_url          :string(500)
 #  mapper_code           :text(65535)
 #  name                  :string(255)

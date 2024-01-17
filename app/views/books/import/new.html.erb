@@ -1,0 +1,25 @@
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+  <h1 class="h2">Import Book</h1>
+</div>
+
+<% if @book.errors.any? %>
+  <div id="error_explanation">
+    <h2><%= pluralize(@book.errors.count, "error") %> prohibited this book from being saved:</h2>
+
+    <ul>
+      <% @book.errors.each do |error| %>
+        <li><%= error.full_message %></li>
+      <% end %>
+    </ul>
+  </div>
+<% end %>
+
+<%= form_with model: @book, url: books_import_index_path do |form| %>
+  <%= form.file_field :import_file %>
+  <%= form.submit "Upload" %>
+<% end %>
+
+<hr/>
+<br>
+<%= button_to 'Back to Books', books_path, method: :get %>
+<br>

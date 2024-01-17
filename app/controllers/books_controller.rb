@@ -3,17 +3,25 @@
 # rubocop:disable Metrics/ClassLength
 class BooksController < ApplicationController
   before_action :find_book,
-                only: [ :show, :edit, :update, :destroy, :combine, :assign_anonymous, :delete_ratings_by_assignee ]
+                only: [ :show, :edit, :update, :destroy, :combine, :assign_anonymous, :delete_ratings_by_assignee,
+                        :reset_unrateable, :reset_judge_later, :delete_query_doc_pairs_below_position,
+                        :eric_steered_us_wrong ]
   before_action :check_book,
-                only: [ :show, :edit, :update, :destroy, :combine, :assign_anonymous, :delete_ratings_by_assignee ]
+                only: [ :show, :edit, :update, :destroy, :combine, :assign_anonymous, :delete_ratings_by_assignee,
+                        :reset_unrateable, :reset_judge_later, :delete_query_doc_pairs_below_position,
+                        :eric_steered_us_wrong ]
+
+  before_action :find_user, only: [ :reset_unrateable, :reset_judge_later, :delete_ratings_by_assignee ]
 
   respond_to :html
 
   def index
-    @books = current_user.books_involved_with.includes([ :team, :scorer, :selection_strategy ])
+    @books = current_user.books_involved_with.includes([ :teams, :scorer, :selection_strategy ])
     respond_with(@books)
   end
 
+  # rubocop:disable Metrics/AbcSize
+  # rubocop:disable Metrics/MethodLength
   def show
     @count_of_anonymous_book_judgements = @book.judgements.where(user: nil).count
     @count_of_anonymous_case_judgements = 0
@@ -22,14 +30,23 @@ class BooksController < ApplicationController
     end
     @cases = @book.cases
     @leaderboard_data = []
-    unique_judges = @book.judgements.rateable.preload(:user).collect(&:user).uniq
+    @stats_data = []
+    unique_judges = @book.judgements.preload(:user).collect(&:user).uniq
     unique_judges.each do |judge|
       @leaderboard_data << { judge:      judge.nil? ? 'anonymous' : judge.name,
                              judgements: @book.judgements.where(user: judge).count }
+      @stats_data << {
+        judge:       judge,
+        judgements:  @book.judgements.where(user: judge).count,
+        unrateable:  @book.judgements.where(user: judge).where(unrateable: true).count,
+        judge_later: @book.judgements.where(user: judge).where(judge_later: true).count,
+      }
     end
 
     respond_with(@book)
   end
+  # rubocop:enable Metrics/AbcSize
+  # rubocop:enable Metrics/MethodLength
 
   def new
     # we actually support passing in starting point configuration for a book
@@ -46,12 +63,29 @@ class BooksController < ApplicationController
 
   def create
     @book = Book.new(book_params)
-    @book.save
-    respond_with(@book)
+    @book.owner = current_user
+    if @book.save
+      redirect_to @book, notice: 'Book was successfully created.'
+    else
+      render :new
+    end
   end
 
   def update
-    @book.update(book_params)
+    # this logic is crazy, but basically we don't want to touch the teams that are associated with
+    # an book that the current_user CAN NOT see, so we clear out of the relationship all the ones
+    # they can see, and then repopulate it from the list of ids checked.  Checkboxes suck.
+    team_ids_belonging_to_user = current_user.teams.pluck(:id)
+    teams = @book.teams.reject { |t| team_ids_belonging_to_user.include?(t.id) }
+    @book.teams.clear
+    book_params[:team_ids].each do |team_id|
+      teams << Team.find(team_id)
+    end
+
+    @book.teams.replace(teams)
+
+    @book.update(book_params.except(:team_ids))
+
     respond_with(@book)
   end
 
@@ -115,6 +149,7 @@ class BooksController < ApplicationController
     end
 
     if @book.save
+      UpdateCaseJob.perform_later @book
       redirect_to book_path(@book), :notice => "Combined #{query_doc_pair_count} query/doc pairs."
     else
       redirect_to book_path(@book),
@@ -129,7 +164,8 @@ class BooksController < ApplicationController
 
   # rubocop:disable Metrics/MethodLength
   def assign_anonymous
-    assignee = @book.team.members.find_by(id: params[:assignee_id])
+    # assignee = @book.team.members.find_by(id: params[:assignee_id])
+    assignee = User.find_by(id: params[:assignee_id])
     @book.judgements.where(user: nil).find_each do |judgement|
       judgement.user = assignee
       # if we are mapping a user to a judgement,
@@ -147,20 +183,62 @@ class BooksController < ApplicationController
       end
     end
 
+    UpdateCaseJob.perform_later @book
     redirect_to book_path(@book), :notice => "Assigned #{assignee.fullname} to ratings and judgements."
   end
   # rubocop:enable Metrics/MethodLength
 
   def delete_ratings_by_assignee
-    assignee = @book.team.members.find_by(id: params[:assignee_id])
-
-    judgements_to_delete = @book.judgements.where(user: assignee)
-
+    judgements_to_delete = @book.judgements.where(user: @user)
     judgements_count = judgements_to_delete.count
-
     judgements_to_delete.destroy_all
 
-    redirect_to book_path(@book), :notice => "Deleted #{judgements_count} judgements belonging to #{assignee.fullname}."
+    UpdateCaseJob.perform_later @book
+    redirect_to book_path(@book), :notice => "Deleted #{judgements_count} judgements belonging to #{@user.fullname}."
+  end
+
+  def reset_unrateable
+    judgements_to_delete = @book.judgements.where(user: @user).where(unrateable: true)
+    judgements_count = judgements_to_delete.count
+    judgements_to_delete.destroy_all
+
+    redirect_to book_path(@book),
+                :notice => "Reset unrateable status for #{judgements_count} judgements belonging to #{@user.fullname}."
+  end
+
+  def reset_judge_later
+    judgements_to_delete = @book.judgements.where(user: @user).where(judge_later: true)
+    judgements_count = judgements_to_delete.count
+    judgements_to_delete.destroy_all
+
+    redirect_to book_path(@book),
+                :notice => "Reset judge later status for #{judgements_count} judgements belonging to #{@user.fullname}."
+  end
+
+  def delete_query_doc_pairs_below_position
+    position = params[:position]
+    query_doc_pairs_to_delete = @book.query_doc_pairs.where('position > ?', position)
+    query_doc_pairs_count = query_doc_pairs_to_delete.count
+    query_doc_pairs_to_delete.destroy_all
+
+    UpdateCaseJob.perform_later @book
+    redirect_to book_path(@book),
+                :notice => "Deleted #{query_doc_pairs_count} query/doc pairs below position #{position}."
+  end
+
+  def eric_steered_us_wrong
+    rating = params[:rating]
+    judgements_to_update = @book.judgements.where(judge_later: true)
+    judgements_to_update_count = judgements_to_update.count
+    judgements_to_update.each do |judgement|
+      judgement.judge_later = false
+      judgement.rating = rating
+      judgement.save
+    end
+
+    UpdateCaseJob.perform_later @book
+    redirect_to book_path(@book),
+                :notice => "Mapped #{judgements_to_update_count} judgements to have rating #{rating}."
   end
 
   private
@@ -170,9 +248,19 @@ class BooksController < ApplicationController
     @book = current_user.books_involved_with.where(id: params[:id]).first
   end
 
+  def find_user
+    @user = User.find(params[:user_id])
+  end
+
   def book_params
-    params.require(:book).permit(:team_id, :scorer_id, :selection_strategy_id, :name, :support_implicit_judgements,
-                                 :show_rank)
+    params_to_use = params.require(:book).permit(:scorer_id, :selection_strategy_id, :name,
+                                                 :support_implicit_judgements,
+                                                 :show_rank, team_ids: [])
+
+    # Crafting a book[team_ids] parameter from the AngularJS side didn't work, so using top level parameter
+    params_to_use[:team_ids] = params[:team_ids] if params[:team_ids]
+    params_to_use[:team_ids]&.compact_blank!
+    params_to_use
   end
 end
 

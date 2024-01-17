@@ -1,5 +1,32 @@
 # Changelog
 
+## 7.13.0 - 2024-01-03
+
+Just in time for the New Year!
+
+A number of changes all wrapped up in one large PR https://github.com/o19s/quepid/pull/906 by @epugh.  This one is for you @david-fisher ;-).
+
+*  Now when you judge a query doc pair for a Judgement Book we update in the background any associated Cases that have that query.  This eliminates the need to manually refresh the ratings for a Case from the Judgement Book!  Thanks @david-fisher for the suggestion in https://github.com/o19s/quepid/issues/829.
+
+* Provide an option to allow queries that exist on a Book to be created in the Case if they are missing.   The default behavior is to NOT create queries in a Case from the Book.  Thanks to @jvia for this suggestion.  https://github.com/o19s/quepid/issues/871.
+
+* Band-aid the awkwardness that Cases have Queries/Ratings while Books have QueryDocPairs + Judgements, and that there are attributes on a Query like `information need`, `notes`, or `options` that don't exist on a QueryDocPair.   So now we preserve them, which facilitates round tripping better.   Upload a Book?  Upload a Case?  It doesn't matter ;-)  Long term we need to merge these two data structures...   
+
+* When Books were first added to Quepid, they didn't follow the same permissions/sharing structure that Scores and Cases did.  Now you can share a Book with multiple Teams!  Fixes https://github.com/o19s/quepid/issues/907
+
+* And as an aside, anyone can edit a custom scorer, not just the Owner of it.  https://github.com/o19s/quepid/issues/762 suggested by @david-fisher.
+
+
+## 7.12.3 - 2023-12-05
+
+* Restore `thor` based scripts by letting you run `docker compose run app bin/thor list` to see all the thor scripts available for interacting with Quepid.  https://github.com/o19s/quepid/pull/904 by @epugh, reported by @vincetrumental in https://github.com/o19s/quepid/issues/888.
+
+* Bump splainer-search to 2.30.7 to pass through basic auth properties to Solr.
+
+## 7.12.2 - 2023-12-01
+
+We discovered that your custom headers can be very long!  Thanks @tiagoshin for the patch to extend the length of custom headers in the database.  https://github.com/o19s/quepid/pull/903 by @tiagoshin.
+
 ## 7.12.1 - 2023-12-01
 
 7.12.0 introduced a change in splainer-search that breaks `searchapi` :-(.
@@ -37,11 +64,11 @@ A flurry of changes based on feedback from the community.  This is basically a "
 
 Want to have custom filters or other variables per query?  You can now access a per query `#$qOption##` hash of JSON data in your query template.  For example, if you are accessing a RAG endpoint, and you are passing in a query and need some query specific document ids, you can now do that!
 
-https://github.com/o19s/quepid/pull/883 and https://github.com/o19s/quepid/pull/885 by @epugh.   Big thanks to @mkr for his work on splainer-search upgrades to support this, and @atarora for masterminding the use of the `qOption` in queries. 
+https://github.com/o19s/quepid/pull/883 and https://github.com/o19s/quepid/pull/885 by @epugh.   Big thanks to @mkr for his work on splainer-search upgrades to support this, and @atarora for masterminding the use of the `qOption` in queries.
 
 ### Improvements
 
-* More robust handling of the Static File end point, and better handling of proxied queries that don't return json.  https://github.com/o19s/quepid/pull/886 by @epugh. 
+* More robust handling of the Static File end point, and better handling of proxied queries that don't return json.  https://github.com/o19s/quepid/pull/886 by @epugh.
 
 * On to Rails 7.1.2!  https://github.com/o19s/quepid/pull/837 by @epugh.
 
@@ -92,7 +119,7 @@ https://github.com/o19s/quepid/pull/834 by @epugh.
 
 * Need to copy the query from the Cases screen?  Yes, there is now a little Copy to Clipboard icon.  https://github.com/o19s/quepid/pull/823 by @epugh fixes implements https://github.com/o19s/quepid/pull/823 by @jeffryedvm.  Thanks!
 
-* Some folks, like @jeffryedvm, really want to know the rank of the document when judging it in the Books interface.   https://github.com/o19s/quepid/pull/822 by @epugh implements request https://github.com/o19s/quepid/pull/823 by @jeffryedvm. 
+* Some folks, like @jeffryedvm, really want to know the rank of the document when judging it in the Books interface.   https://github.com/o19s/quepid/pull/822 by @epugh implements request https://github.com/o19s/quepid/pull/823 by @jeffryedvm.
 
 * Want to use the Snapshot capablity to import your case with it's queries with it's documents and all of it's document fields?  Now you can!  https://github.com/o19s/quepid/pull/821 let's you export a snapshot with any recorded document fields.   You can also now import them. https://github.com/o19s/quepid/pull/821 by @epugh for @mkr.
 

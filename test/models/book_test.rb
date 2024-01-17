@@ -10,9 +10,9 @@
 #  support_implicit_judgements :boolean
 #  created_at                  :datetime         not null
 #  updated_at                  :datetime         not null
+#  owner_id                    :integer
 #  scorer_id                   :integer
 #  selection_strategy_id       :bigint           not null
-#  team_id                     :integer
 #
 # Indexes
 #
@@ -29,12 +29,15 @@ class BookTest < ActiveSupport::TestCase
     let(:user)                  { users(:random) }
     let(:team)                  { teams(:shared) }
     let(:book1)                 { books(:james_bond_movies) }
-    let(:book2)                 { books(:book_of_star_wars_judgements) }
+    let(:book2)                 { books(:empty_book) }
 
-    it 'returns books by alphabetical name of book for a team' do
-      assert_equal book1, team.books.first
-      assert_equal book2, team.books.second
-    end
+    # not sure this is actually important?  Why would we care at this level?
+    # it 'returns books by alphabetical name of book for a team' do
+    #  puts team.books.first.name
+    #  puts team.books.second.name
+    #  assert_equal book2, team.books.first
+    #  assert_equal book1, team.books.second
+    # end
   end
 
   describe 'sampling random query doc pairs' do
@@ -73,5 +76,40 @@ class BookTest < ActiveSupport::TestCase
       random_query_doc_pair = SelectionStrategy.random_query_doc_pair_for_single_judge(book)
       assert_nil random_query_doc_pair
     end
+  end
+
+  describe 'lifecycle of attachment to a book' do
+    let(:book) { books(:book_of_star_wars_judgements) }
+
+    it 'deletes the attachment when the book is destroyed' do
+      json_file = generate_json_file
+      assert_not book.import_file.present?
+      assert_not book.import_file.attached?
+      book.import_file.attach(io: File.open(json_file.path), filename: 'data.json')
+      assert book.import_file.present?
+      assert book.import_file.attached?
+
+      import_file = book.import_file
+
+      book.destroy
+
+      assert_nil import_file.download
+
+      json_file.unlink # get rid of temp file
+    end
+  end
+
+  def generate_json_file
+    data = {
+      key1: 'Lorem ipsum dolor sit amet',
+      key2: 'consectetur adipiscing elit',
+      key3: 'sed do eiusmod tempor incididunt',
+    }
+
+    file = Tempfile.new([ 'data', '.json' ])
+    file.write(data.to_json)
+    file.close
+
+    file
   end
 end

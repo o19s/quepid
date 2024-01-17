@@ -102,8 +102,8 @@
           <i
             class="fa fa-book"
             aria-hidden="true"
-            title="Judgements"
-            alt="Judgements"
+            title="Judgement Books"
+            alt="Judgement Books"
             style="font-size: 1.5rem; color: <%= make_active?({path: 'book'}) ? 'white' : 'cornflowerblue' %>;"
           ></i>
         <% end %>
@@ -120,7 +120,7 @@
         <% end %>
       </li>
       <li>
-        <%= link_to '/notebooks/lab/index.html', target: '_blank', class: "nav-link py-3 border-bottom rounded-0", 'data-bs-toggle':'tooltip', 'data-bs-placement':'right', 'aria-label':'Notebooks', 'data-bs-original-title':'Notebooks' do %>
+        <%= link_to "#{root_url}notebooks/lab/index.html", target: '_blank', class: "nav-link py-3 border-bottom rounded-0", 'data-bs-toggle':'tooltip', 'data-bs-placement':'right', 'aria-label':'Notebooks', 'data-bs-original-title':'Notebooks' do %>
           <i
             class="bi bi-journal-medical"
             aria-hidden="true"
@@ -158,7 +158,7 @@
         <%= image_tag current_user.avatar_url, size: '24x24', class: 'rounded-circle' %>
       </a>
       <ul class="dropdown-menu text-small shadow">
-        <li><%= link_to "New case...", case_new_path, class:'dropdown-item' %></li>
+        <li><%= link_to "Create case...", case_new_path, class:'dropdown-item' %></li>
         <li><%= link_to "Profile", profile_path, class:'dropdown-item' %></li>
         <li><hr class="dropdown-divider"></li>
         <li><%= link_to "Log out", logout_path, class:'dropdown-item' %></li>

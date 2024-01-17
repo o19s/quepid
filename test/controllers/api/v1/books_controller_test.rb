@@ -39,7 +39,7 @@ module Api
       end
 
       describe 'Updating book' do
-        let(:the_book) { books(:book_of_star_wars_judgements) }
+        let(:the_book) { books(:james_bond_movies) }
 
         describe 'when book does not exist' do
           test 'returns not found error' do
@@ -61,7 +61,7 @@ module Api
       describe 'Deleting a book' do
         describe 'when it is the last/only case' do
           let(:doug)      { users(:doug) }
-          let(:the_book)  { books(:book_of_star_wars_judgements) }
+          let(:the_book)  { books(:james_bond_movies) }
 
           before do
             login_user doug
@@ -107,11 +107,9 @@ module Api
 
           assert_response :ok
           csv = CSV.parse(response.body, headers: true)
-
-          assert_equal 'Action Movies', csv[0]['query']
-          assert_equal 'Moonraker', csv[0]['docid']
-          assert_equal '2.0', csv[0]['Random User']
-          assert_equal '1.0', csv[0]['Doug Turnbull']
+          assert_equal 'Best Bond Ever', csv[0]['query']
+          assert_equal 'GeorgeLazenby', csv[0]['docid']
+          assert_equal '3.0', csv[3]['Doug Turnbull']
 
           assert_not_includes csv.headers, 'Unknown'
         end

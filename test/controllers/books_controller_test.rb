@@ -71,7 +71,7 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
   def test_differing_scales_blows_up
     login_user
 
-    book_to_merge = Book.new(name: 'Book with a 1,2,3,4 scorer', team: book.team, scorer: communal_scorer,
+    book_to_merge = Book.new(name: 'Book with a 1,2,3,4 scorer', teams: book.teams, scorer: communal_scorer,
                              selection_strategy: SelectionStrategy.find_by(name: 'Multiple Raters'))
     book_to_merge.save!
 
@@ -88,7 +88,7 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
     login_user
 
     book_with_multiple_raters = Book.create(name:               'Book with a 1,2,3,4 scorer',
-                                            team:               single_rater_book.team,
+                                            teams:              single_rater_book.teams,
                                             scorer:             single_rater_book.scorer,
                                             selection_strategy: SelectionStrategy.find_by(name: 'Multiple Raters'))
 

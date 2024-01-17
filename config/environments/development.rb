@@ -36,7 +36,9 @@ Rails.application.configure do
   end
 
   # Store uploaded files on the local file system (see config/storage.yml for options).
-  config.active_storage.service = :local
+  config.active_storage.service = :db # :local
+
+  config.active_storage.resolve_model_to_route = :rails_storage_proxy
 
   # Don't care if the mailer can't send.
   config.action_mailer.raise_delivery_errors = false
@@ -93,6 +95,16 @@ Rails.application.configure do
     Bullet.rails_logger = true
     Bullet.add_footer = true
   end
+
+  # it's possible that this doesn't matter since we generate relative urls
+  config.after_initialize do
+    ActiveStorage::Current.url_options = {
+      host:     ENV.fetch('QUEPID_DOMAIN', nil),
+      port:     ENV.fetch('PORT', nil),
+      protocol: 'https', # Replace with 'https' if using HTTPS  # we have relative urls so may not be sed
+    }
+  end
+
   # Uncomment if you wish to allow Action Cable access from any origin.
   # config.action_cable.disable_request_forgery_protection = true
 end

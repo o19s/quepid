@@ -62,6 +62,12 @@ class User < ApplicationRecord
            inverse_of:  :owner,
            dependent:   :nullify
 
+  has_many :books,
+           class_name:  'Book',
+           foreign_key: :owner_id,
+           inverse_of:  :owner,
+           dependent:   :nullify
+
   has_many :queries, through: :cases
 
   has_many :owned_scorers,
@@ -190,8 +196,8 @@ class User < ApplicationRecord
     queries.count
   end
 
-  # All the scorers that you have access to, either as communal or as owner or team.
-  def scorers
+  # All the scorers that you have access to, either as communal or as owner or via a team.
+  def scorers_involved_with
     Scorer.for_user(self)
   end
 
@@ -206,7 +212,7 @@ class User < ApplicationRecord
     Book.for_user(self)
   end
 
-  # This method rpeturns all the search_endpoints that the user has access to via it's teams.
+  # This method rpeturns all the search_endpoints that the user has access as owner or via a team.
   def search_endpoints_involved_with
     SearchEndpoint.for_user(self)
   end

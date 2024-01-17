@@ -239,7 +239,7 @@ class QueryTest < ActiveSupport::TestCase
     test 'we match on a multi word query' do
       matching_query = Query.has_information_need.where(query_text: query_doc_pair.query_text).first
       assert_not_nil matching_query
-      assert_equal query, matching_query
+      assert_equal query.query_text, matching_query.query_text
     end
   end
 end

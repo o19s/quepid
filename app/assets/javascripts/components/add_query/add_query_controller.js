@@ -8,11 +8,13 @@ angular.module('QuepidApp')
     '$timeout',
     'flash',
     'queriesSvc',
+    'settingsSvc',
     function (
       $rootScope,
       $timeout,
       flash,
-      queriesSvc
+      queriesSvc,
+      settingsSvc
     ) {
       var ctrl  = this;
       var delim = ';';
@@ -25,8 +27,13 @@ angular.module('QuepidApp')
       ctrl.message      = message;
       ctrl.submit       = submit;
       ctrl.textInputIsEmpty = textInputIsEmpty;
+      ctrl.canAddQueries = true;
+      
+     
 
       var addOne = function(queryText) {
+        console.log(settingsSvc.settingsId());
+        console.log(settingsSvc);
         var q = queriesSvc.createQuery(queryText);
 
         queriesSvc.persistQuery(q)
@@ -104,7 +111,15 @@ angular.module('QuepidApp')
       }
 
       function message() {
-        return 'Add a query to this case';
+        if (settingsSvc.isTrySelected() && settingsSvc.applicableSettings().searchEngine === 'static'){
+          ctrl.canAddQueries = false;
+        }
+        if (ctrl.canAddQueries === true) {
+          return 'Add a query to this case';
+        }
+        else {
+          return 'Adding queries is not supported';
+        }
       }
     }
   ]);

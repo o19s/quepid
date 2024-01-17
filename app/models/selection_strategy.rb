@@ -15,6 +15,8 @@ class SelectionStrategy < ApplicationRecord
     'Single Rater' == name
   end
 
+  # Because of the way the logic looks up existing judgements, if you a judgement
+  # that is either unrateable or judge_later, then it won't be selected.
   def self.random_query_doc_based_on_strategy book, user
     case book.selection_strategy.name
     when 'Single Rater'

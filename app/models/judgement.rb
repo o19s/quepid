@@ -5,6 +5,7 @@
 # Table name: judgements
 #
 #  id                :bigint           not null, primary key
+#  judge_later       :boolean          default(FALSE)
 #  rating            :float(24)
 #  unrateable        :boolean          default(FALSE)
 #  created_at        :datetime         not null
@@ -30,15 +31,20 @@ class Judgement < ApplicationRecord
   # rubocop:enable Rails/UniqueValidationWithoutIndex
 
   validates :rating,
-            presence: true, unless: :unrateable
+            presence: true, unless: :rating_not_required?
 
-  scope :rateable, -> { where(unrateable: false) }
+  def rating_not_required?
+    unrateable || judge_later
+  end
+
+  scope :rateable, -> { where(unrateable: false).where(judge_later: false) }
 
   def check_unrateable_for_rating
   end
 
   def rating= val
     self.unrateable = false unless val.nil?
+    self.judge_later = false unless val.nil?
     write_attribute(:rating, val)
   end
 
@@ -49,6 +55,16 @@ class Judgement < ApplicationRecord
 
   def mark_unrateable!
     mark_unrateable
+    save
+  end
+
+  def mark_judge_later
+    self.judge_later = true
+    self.rating = nil
+  end
+
+  def mark_judge_later!
+    mark_judge_later
     save
   end
 

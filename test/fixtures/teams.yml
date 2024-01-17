@@ -31,6 +31,7 @@ shared:
   scorers:  shared_scorer, shared_scorer1, shared_scorer2
   cases:    shared_with_team
   search_endpoints: one, for_shared_team_case
+  books:    james_bond_movies, book_of_star_wars_judgements, empty_book
 
 case_finder_owned_team:
   name:     An team owned by the Case Finder User
@@ -56,6 +57,7 @@ shared_team:
   cases:    shared_team_case
   search_endpoints: for_shared_team_case
   scorers:  random_scorer
+  books:    book_of_star_wars_judgements
 
 team_owner_team:
   name:     Team owned by Team Owner User
@@ -80,6 +82,7 @@ another_shared_team:
   owner:    :random_2
   members:  random_1, random, random_2
   cases:    shared_case
+  books:    book_of_comedy_films
 
 team_for_case_shared_with_owner:
   name:     Team for case shared with owner
