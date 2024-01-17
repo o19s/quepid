@@ -32,7 +32,7 @@ module Api
 
           assert_response :ok
 
-          assert_equal json_response['name'], book_name
+          assert_equal response.parsed_body['name'], book_name
 
           assert_equal doug.books_involved_with.count, count + 1
         end

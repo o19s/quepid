@@ -38,7 +38,7 @@ module Api
 
             assert_response :ok
 
-            display_order = json_response['display_order']
+            display_order = response.parsed_body['display_order']
 
             assert_equal query.id,  display_order[1]
             assert_equal second.id, display_order[0]
@@ -52,7 +52,7 @@ module Api
 
             assert_response :ok
 
-            display_order = json_response['display_order']
+            display_order = response.parsed_body['display_order']
 
             assert_equal query.id,  display_order[0]
             assert_equal second.id, display_order[1]
@@ -66,7 +66,7 @@ module Api
 
             assert_response :ok
 
-            display_order = json_response['display_order']
+            display_order = response.parsed_body['display_order']
 
             assert_equal query.id, display_order.last
           end
@@ -79,7 +79,7 @@ module Api
 
             assert_response :ok
 
-            display_order = json_response['display_order']
+            display_order = response.parsed_body['display_order']
 
             assert_equal query.id,  display_order[2]
             assert_equal second.id, display_order[1]
@@ -93,7 +93,7 @@ module Api
 
             assert_response :ok
 
-            display_order = json_response['display_order']
+            display_order = response.parsed_body['display_order']
 
             assert_equal query.id,  display_order[1]
             assert_equal second.id, display_order[2]

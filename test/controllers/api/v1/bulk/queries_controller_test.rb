@@ -45,7 +45,7 @@ module Api
             first_query = acase.queries[0]
 
             assert_equal 'one', first_query.query_text
-            assert_equal json_response['display_order'][0], first_query.id
+            assert_equal response.parsed_body['display_order'][0], first_query.id
           end
 
           test 'doesnt allow duplicate queries to be created' do

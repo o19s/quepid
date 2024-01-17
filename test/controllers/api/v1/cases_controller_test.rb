@@ -28,7 +28,7 @@ module Api
 
           assert_response :ok
 
-          assert_equal json_response['case_name'], case_name
+          assert_equal response.parsed_body['case_name'], case_name
           assert_equal joe.cases.count,            count + 1
           assert_equal joe.cases.first.case_name,  case_name
         end
@@ -49,7 +49,7 @@ module Api
 
           assert_response :ok
 
-          assert_equal json_response['case_name'], case_name
+          assert_equal response.parsed_body['case_name'], case_name
           acase = Case.where(case_name: case_name).first
 
           assert_equal 1, acase.tries.count
@@ -430,7 +430,7 @@ module Api
 
           assert_response :ok
 
-          cases = json_response['all_cases']
+          cases = response.parsed_body['all_cases']
 
           ids = cases.map { |c| c['case_id'] }
 
@@ -447,7 +447,7 @@ module Api
 
           assert_response :ok
 
-          cases = json_response['all_cases']
+          cases = response.parsed_body['all_cases']
 
           ids = cases.map { |c| c['case_id'] }
 
@@ -513,7 +513,7 @@ module Api
 
           assert_response :ok
 
-          cases = json_response['all_cases']
+          cases = response.parsed_body['all_cases']
           names = cases.map { |c| c['case_name'] }
 
           assert_not_includes names, shared.case_name
@@ -614,7 +614,7 @@ module Api
 
           assert_response :bad_request
 
-          assert_equal json_response['scorer_id'], [ 'is not valid' ]
+          assert_equal response.parsed_body['scorer_id'], [ 'is not valid' ]
 
           one.reload
           assert_equal one.scorer, scorer

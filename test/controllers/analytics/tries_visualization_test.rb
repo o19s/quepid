@@ -19,7 +19,7 @@ module Analytics
 
         assert_response :ok
 
-        tries = json_response
+        tries = response.parsed_body
         assert_equal 2, tries.size
 
         tries.each do |json_try|
