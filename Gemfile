@@ -5,6 +5,7 @@ source 'https://rubygems.org'
 ruby '3.2.2'
 
 gem 'activerecord-import', '>= 1.0.7'
+gem 'active_storage_db'
 gem 'acts_as_list', '>= 1.0.1'
 gem 'ancestry'
 gem 'angular-rails-templates', '>= 1.0.0.beta'
@@ -17,10 +18,6 @@ gem 'cookies_eu'
 gem 'd3-rails', '~> 3.5.5' # For cal heatmap
 gem 'devise', '>= 4.6.2'
 gem 'devise_invitable', '~> 2.0'
-
-gem 'active_storage_db'
-
-gem 'rubyzip'
 
 # Using this as it wires in via Sprockets and I can't get npm version to work with the main app.
 # Had no luck with js/svg approach ;-(
@@ -48,6 +45,7 @@ gem 'rack-cors', '~> 2.0'
 gem 'rapidjson'
 gem 'redis', '~> 5.0.6'
 gem 'responders'
+gem 'rubyzip'
 gem 'sassc-rails', '~> 2.1'
 gem 'sidekiq'
 gem 'terser'
