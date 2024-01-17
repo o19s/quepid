@@ -11,8 +11,6 @@ AllCops:
     - bin/**/*
     - vendor/**/*
     - node_modules/**/*
-    - lib/templates/rails/jbuilder/index.json.jbuilder
-    - lib/railgun/mailer_decorator.rb
     - config/initializers/content_security_policy.rb
 
 Capybara/ClickLinkOrButtonStyle:
