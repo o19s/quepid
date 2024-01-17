@@ -619,7 +619,7 @@ Check out the [App Structure](docs/app_structure.md) file for more info on how Q
 
 Check out the [Operating Documentation](docs/operating_documentation.md) file for more informations how Quepid can be operated and configured for your company.
 
-# Thank You's
+# 🙏 Thank You's
 
 Quepid would not be possible without the contributions from many individuals and organizations.
 
@@ -627,5 +627,8 @@ Specifically we would like to thank Erik Bugge and the folks at Kobler for fundi
 
 Quepid wasn't always open source!  Check out the [credits](docs/credits.md) for a list of contributors to the project.
 
-
 If you would like to fund development of a new feature for Quepid do [get in touch](http://www.opensourceconnections.com/contact/)!
+
+## 🌟 Contributors
+
+[![quepid  contributors](https://contrib.rocks/image?repo=o19s/quepid&max=2000)](https://github.com/o19s/quepid/graphs/contributors)

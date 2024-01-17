@@ -3,7 +3,7 @@
   <td><%= kase.queries_count %></td>
   <td>
     <% unless kase.last_score.blank? %>
-      <%= kase.last_score.score %>
+      <%= number_with_precision(kase.last_score.score, precision: 2) %>
     <% end %>
   </td>
   <td>

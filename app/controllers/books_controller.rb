@@ -31,7 +31,7 @@ class BooksController < ApplicationController
     @cases = @book.cases
     @leaderboard_data = []
     @stats_data = []
-    unique_judges = @book.judgements.rateable.preload(:user).collect(&:user).uniq
+    unique_judges = @book.judgements.preload(:user).collect(&:user).uniq
     unique_judges.each do |judge|
       @leaderboard_data << { judge:      judge.nil? ? 'anonymous' : judge.name,
                              judgements: @book.judgements.where(user: judge).count }
@@ -63,8 +63,12 @@ class BooksController < ApplicationController
 
   def create
     @book = Book.new(book_params)
-    @book.save
-    respond_with(@book)
+    @book.owner = current_user
+    if @book.save
+      redirect_to @book, notice: 'Book was successfully created.'
+    else
+      render :new
+    end
   end
 
   def update
@@ -252,7 +256,10 @@ class BooksController < ApplicationController
     params_to_use = params.require(:book).permit(:scorer_id, :selection_strategy_id, :name,
                                                  :support_implicit_judgements,
                                                  :show_rank, team_ids: [])
-    params_to_use[:team_ids].compact_blank!
+
+    # Crafting a book[team_ids] parameter from the AngularJS side didn't work, so using top level parameter
+    params_to_use[:team_ids] = params[:team_ids] if params[:team_ids]
+    params_to_use[:team_ids]&.compact_blank!
     params_to_use
   end
 end

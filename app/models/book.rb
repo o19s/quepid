@@ -24,7 +24,6 @@
 #
 class Book < ApplicationRecord
   # Associations
-  # belongs_to :team
   # rubocop:disable Rails/HasAndBelongsToMany
   has_and_belongs_to_many :teams,
                           join_table: 'teams_books'
@@ -46,6 +45,12 @@ class Book < ApplicationRecord
            class_name: 'QueryDocPair',
            dependent:  :destroy,
            inverse_of: :book
+
+  has_one_attached :import_file
+  has_one_attached :export_file
+  has_one_attached :populate_file
+
+  after_destroy :delete_attachments
 
   # Scopes
   scope :for_user_via_teams, ->(user) {
@@ -70,4 +75,12 @@ class Book < ApplicationRecord
     ids = for_user_via_teams(user).pluck(:id) + for_user_directly_owned(user).pluck(:id)
     where(id: ids.uniq)
   }
+
+  private
+
+  def delete_attachments
+    import_file.purge_later
+    export_file.purge_later
+    populate_file.purge_later
+  end
 end

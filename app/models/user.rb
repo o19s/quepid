@@ -62,6 +62,12 @@ class User < ApplicationRecord
            inverse_of:  :owner,
            dependent:   :nullify
 
+  has_many :books,
+           class_name:  'Book',
+           foreign_key: :owner_id,
+           inverse_of:  :owner,
+           dependent:   :nullify
+
   has_many :queries, through: :cases
 
   has_many :owned_scorers,

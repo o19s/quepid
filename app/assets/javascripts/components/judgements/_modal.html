@@ -47,7 +47,7 @@
       You have not created any Books of Judgements yet, so go ahead and create a new Book!
     </p>
 
-    <a class="btn btn-primary btn-lg" href="books/new" target="_self">
+    <a class="btn btn-primary btn-lg" ng-href="{{ctrl.createBookLink()}}" target="_self">
       <i class="fa fa-plus"></i>
       Create a book
     </a>
@@ -83,7 +83,7 @@
   <br/>
   <label>
     <input id="sync-queries" type="checkbox" ng-model='ctrl.createMissingQueries' ng-disabled="ctrl.share.books.length === 0 || ctrl.share.teams.length === 0"> Create missing Queries
-      <span class="glyphicon glyphicon-question-sign" aria-hidden="true" popover-trigger="'mouseenter'" popover-placement="right" uib-popover="Create queries in the Case thare are defined in the Book."></span>
+      <span class="glyphicon glyphicon-question-sign" aria-hidden="true" popover-trigger="'mouseenter'" popover-placement="right" uib-popover="Create queries in the Case that are defined in the Book."></span>
     </input>  
   </label>
   
@@ -110,8 +110,7 @@
 </div>
 
 <div class="modal-footer">
-
-  <a class="btn btn-primary pull-left" href="books/new?book[scorer_id]={{ctrl.share.acase.scorerId}}" target="_self" ng-disabled="processingPrompt.inProgress">
+  <a class="btn btn-primary pull-left" ng-href="{{ctrl.createBookLink()}}" target="_self" ng-disabled="processingPrompt.inProgress">
     <i class="glyphicon glyphicon-plus" style="color: #FFF"></i>
     Create a book
   </a>

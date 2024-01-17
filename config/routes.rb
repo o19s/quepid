@@ -11,6 +11,8 @@ Rails.application.routes.draw do
   get 'proxy/fetch'
   post 'proxy/fetch'
 
+  mount ActiveStorageDB::Engine => '/active_storage_db'
+
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
   Healthcheck.routes(self)
@@ -66,6 +68,10 @@ Rails.application.routes.draw do
       patch 'eric_steered_us_wrong',
             action: :eric_steered_us_wrong, as: :eric_steered_us_wrong
     end
+  end
+
+  namespace :books do
+    resources :import, only: [ :new, :create ]
   end
 
   devise_for :users, controllers: {
@@ -171,7 +177,7 @@ Rails.application.routes.draw do
         resources :search_endpoints, only: [ :index ]
       end
 
-      resources :books, only: [ :show, :create, :update, :destroy ] do
+      resources :books do
         put '/populate' => 'books/populate#update'
         resources :cases do
           put 'refresh' => 'books/refresh#update'

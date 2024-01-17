@@ -3,7 +3,7 @@
 # rubocop:disable Layout/LineLength
 Apipie.configure do |config|
   config.app_name                = 'Quepid'
-  config.api_base_url            = '/api'
+  config.api_base_url            = ''
   config.doc_base_url            = '/apipie'
   config.validate                = :explicitly
   # where is your API defined?

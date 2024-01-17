@@ -17,6 +17,7 @@
 # Indexes
 #
 #  index_query_doc_pairs_on_book_id  (book_id)
+#  unique_query_doc_pair             (query_text,doc_id,book_id) UNIQUE
 #
 # Foreign Keys
 #
