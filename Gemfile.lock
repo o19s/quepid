@@ -1,3 +1,13 @@
+GIT
+  remote: https://github.com/mcelaney/omniauth-keycloak.git
+  revision: ec5da57ec5f01546e1bf02dc58e21cd77eec334e
+  specs:
+    omniauth-keycloak (1.5.1)
+      faraday
+      json-jwt (> 1.13.0)
+      omniauth (>= 2.0)
+      omniauth-oauth2 (>= 1.7, < 1.9)
+
 GEM
   remote: https://rubygems.org/
   specs:
@@ -270,18 +280,14 @@ GEM
       hashie (>= 3.4.6)
       rack (>= 2.2.3)
       rack-protection
-    omniauth-google-oauth2 (0.8.0)
+    omniauth-google-oauth2 (1.1.1)
       jwt (>= 2.0)
-      omniauth (>= 1.1.1)
-      omniauth-oauth2 (>= 1.6)
-    omniauth-keycloak (1.5.1)
-      faraday
-      json-jwt (> 1.13.0)
-      omniauth (>= 2.0)
-      omniauth-oauth2 (~> 1.7.1)
-    omniauth-oauth2 (1.7.3)
+      oauth2 (~> 2.0.6)
+      omniauth (~> 2.0)
+      omniauth-oauth2 (~> 1.8.0)
+    omniauth-oauth2 (1.8.0)
       oauth2 (>= 1.4, < 3)
-      omniauth (>= 1.9, < 3)
+      omniauth (~> 2.0)
     omniauth-rails_csrf_protection (1.0.1)
       actionpack (>= 4.2)
       omniauth (~> 2.0)
@@ -517,7 +523,7 @@ DEPENDENCIES
   mysql2
   omniauth
   omniauth-google-oauth2
-  omniauth-keycloak
+  omniauth-keycloak!
   omniauth-rails_csrf_protection
   postmark-rails
   prophet-rb (~> 0.5.0)
