@@ -11,10 +11,7 @@ AllCops:
     - bin/**/*
     - vendor/**/*
     - node_modules/**/*
-    - lib/templates/rails/jbuilder/index.json.jbuilder
-    - lib/railgun/mailer_decorator.rb
     - config/initializers/content_security_policy.rb
-    - test/support/json_response.rb
 
 Capybara/ClickLinkOrButtonStyle:
   Enabled: false # we aren't running system tests

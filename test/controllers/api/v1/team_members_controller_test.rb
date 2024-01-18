@@ -83,7 +83,7 @@ module Api
             post :invite, params: { team_id: team.id, id: invitee_email }
             assert_response :ok
 
-            assert json_response['pending_invite']
+            assert response.parsed_body['pending_invite']
 
             user = User.find_by(email: invitee_email)
             assert_not_nil user.stored_raw_invitation_token

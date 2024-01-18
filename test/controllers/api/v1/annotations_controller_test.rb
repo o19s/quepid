@@ -40,7 +40,7 @@ module Api
 
             assert_response :ok
 
-            assert_equal data[:score][:score], json_response['score']['score']
+            assert_equal data[:score][:score], response.parsed_body['score']['score']
           end
         end
 
@@ -83,10 +83,10 @@ module Api
 
             assert_response :ok
 
-            assert_equal user.id,   json_response['user_id']
-            assert_equal 'message', json_response['message']
+            assert_equal user.id,   response.parsed_body['user_id']
+            assert_equal 'message', response.parsed_body['message']
 
-            assert_not_nil json_response['score']
+            assert_not_nil response.parsed_body['score']
           end
         end
       end
@@ -151,12 +151,12 @@ module Api
 
           assert_response :ok
 
-          assert_equal 1, json_response['annotations'].count
+          assert_equal 1, response.parsed_body['annotations'].count
 
-          ids = json_response['annotations'].map { |each| each['id'] }
+          ids = response.parsed_body['annotations'].map { |each| each['id'] }
           assert_includes ids, annotation.id
 
-          the_annotation = json_response['annotations'].first
+          the_annotation = response.parsed_body['annotations'].first
 
           assert_equal annotation.score.score,  the_annotation['score']['score']
           assert_equal annotation.score.try_id, the_annotation['score']['try_id']

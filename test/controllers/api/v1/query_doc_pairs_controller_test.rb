@@ -36,7 +36,7 @@ module Api
 
           assert_response :ok
 
-          assert_equal json_response['doc_id'], qdp.doc_id
+          assert_equal response.parsed_body['doc_id'], qdp.doc_id
           assert_equal book.query_doc_pairs.count, count + 1
         end
 

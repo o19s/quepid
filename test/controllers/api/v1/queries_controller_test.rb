@@ -21,7 +21,7 @@ module Api
 
           assert_response :bad_request
 
-          assert_includes json_response['query_text'], "can't be blank"
+          assert_includes response.parsed_body['query_text'], "can't be blank"
         end
 
         test 'to the end of the query list if no position is provided' do
@@ -30,7 +30,7 @@ module Api
 
           assert_response :ok
 
-          query_response = json_response['query']
+          query_response = response.parsed_body['query']
 
           assert_not_nil  query_response['query_id']
           assert_equal    query_response['arranged_at'], 0
@@ -48,7 +48,7 @@ module Api
 
           assert_response :ok
 
-          display_order = json_response['display_order']
+          display_order = response.parsed_body['display_order']
 
           assert_not_nil display_order
           assert_instance_of Array, display_order
@@ -61,7 +61,7 @@ module Api
 
           assert_response :ok
 
-          query_response = json_response['query']
+          query_response = response.parsed_body['query']
 
           assert_not_nil  query_response['query_id']
           assert_equal    query_response['query_text'], query_text
@@ -79,7 +79,7 @@ module Api
 
           assert_response :ok
 
-          query_response = json_response['query']
+          query_response = response.parsed_body['query']
 
           assert_not_nil  query_response['query_id']
           assert_equal    query_response['arranged_at'], 0
@@ -92,7 +92,7 @@ module Api
 
           assert_response :ok
 
-          query_response = json_response['query']
+          query_response = response.parsed_body['query']
 
           assert_not_nil  query_response['query_id']
           assert_equal    query_response['arranged_at'], 0
@@ -117,7 +117,7 @@ module Api
 
           assert_response :ok
 
-          query_response = json_response['query']
+          query_response = response.parsed_body['query']
 
           assert_not_nil  query_response['query_id']
           assert_equal    query_response['arranged_at'], 0
@@ -144,7 +144,7 @@ module Api
 
             assert_response :ok
 
-            query_response = json_response['query']
+            query_response = response.parsed_body['query']
 
             assert_equal query_response['query_text'], query_text
           end
@@ -156,7 +156,7 @@ module Api
 
             assert_response :ok
 
-            query_response = json_response(true)['query']
+            query_response = response.parsed_body['query']
 
             assert_equal query_response['query_text'], query_text
           end
@@ -168,7 +168,7 @@ module Api
 
             assert_response :ok
 
-            query_response = json_response(true)['query']
+            query_response = response.parsed_body['query']
 
             assert_equal query_response['query_text'], query_text
           end
@@ -180,7 +180,7 @@ module Api
 
             assert_response :ok
 
-            query_response = json_response(true)['query']
+            query_response = response.parsed_body['query']
 
             assert_equal query_response['query_text'], query_text
           end

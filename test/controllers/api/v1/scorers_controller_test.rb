@@ -20,7 +20,7 @@ module Api
 
           assert_response :ok
 
-          scorer = json_response
+          scorer = response.parsed_body
 
           assert_not_nil scorer['scorer_id']
           assert_nil     scorer['code']
@@ -42,7 +42,7 @@ module Api
 
           assert_response :ok
 
-          scorer = json_response
+          scorer = response.parsed_body
 
           regex = /Scorer/
           assert_match regex, scorer['name']
