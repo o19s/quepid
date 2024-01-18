@@ -103,7 +103,7 @@ GEM
     base64 (0.2.0)
     bcrypt (3.1.20)
     benchmark-ips (2.13.0)
-    bigdecimal (3.1.5)
+    bigdecimal (3.1.6)
     bindata (2.4.15)
     bindex (0.8.1)
     bootsnap (1.17.1)
@@ -184,7 +184,7 @@ GEM
       concurrent-ruby (~> 1.0)
     intercom-rails (0.4.2)
       activesupport (> 3.0)
-    io-console (0.7.1)
+    io-console (0.7.2)
     irb (1.11.1)
       rdoc
       reline (>= 0.4.2)
@@ -230,7 +230,7 @@ GEM
     memory_profiler (1.0.1)
     mini_histogram (0.3.1)
     mini_mime (1.1.5)
-    minitest (5.21.1)
+    minitest (5.21.2)
     minitest-reporters (1.6.1)
       ansi
       builder
