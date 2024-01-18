@@ -18,11 +18,11 @@ class PermissionsEvaluator
       policy_class  = "#{model_name.to_s.capitalize}Policy"
       policy        = Pundit.policy(@user, model_class.constantize)
 
-      actions.each do |action, _value|
+      actions.each_key do |action|
         user_value = permissions[model_name][action] if permissions[model_name]
 
-        if policy_class.constantize.try(:send, :method_defined?, "#{action}?".to_sym)
-          policy_value = policy.try(:send, "#{action}?".to_sym)
+        if policy_class.constantize.try(:send, :method_defined?, :"#{action}?")
+          policy_value = policy.try(:send, :"#{action}?")
         end
 
         # Not using the shorthand || because:

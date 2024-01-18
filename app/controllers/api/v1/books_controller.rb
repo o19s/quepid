@@ -47,7 +47,7 @@ module Api
               csv_headers << make_csv_safe(if rater.nil?
                                              'Unknown'
                                            else
-                                             (rater.name.presence || rater.email)
+                                             rater.name.presence || rater.email
                                            end)
             end
 
