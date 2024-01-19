@@ -5,7 +5,7 @@ require 'csv'
 module Api
   module V1
     class BooksController < Api::ApiController
-      before_action :find_book, only: [ :show, :update, :destroy ]
+      before_action :set_book, only: [ :show, :update, :destroy ]
       before_action :check_book, only: [ :show, :update, :destroy ]
 
       def_param_group :book do
@@ -118,7 +118,7 @@ module Api
                                      :show_rank)
       end
 
-      def find_book
+      def set_book
         @book = current_user.books_involved_with.where(id: params[:id]).first
         TrackBookViewedJob.perform_later @book, current_user
       end

@@ -4,7 +4,7 @@ module Api
   module V1
     module Books
       class RefreshController < Api::ApiController
-        before_action :find_book, only: [ :update ]
+        before_action :set_book, only: [ :update ]
         before_action :check_book, only: [ :update ]
         before_action :set_case, only: [ :update ]
         before_action :check_case, only: [ :update ]

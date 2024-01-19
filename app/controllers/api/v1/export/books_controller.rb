@@ -9,7 +9,7 @@ module Api
       class BooksController < Api::ApiController
         include ActionView::Helpers::NumberHelper
         api!
-        before_action :find_book
+        before_action :set_book
         before_action :check_book
 
         # rubocop:disable Layout/LineLength
@@ -40,7 +40,7 @@ module Api
 
         private
 
-        def find_book
+        def set_book
           @book = current_user.books_involved_with.where(id: params[:book_id]).includes(:query_doc_pairs).preload([ query_doc_pairs: [ :judgements ] ]).first
         end
         # rubocop:enable Layout/LineLength

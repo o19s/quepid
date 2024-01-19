@@ -2,7 +2,7 @@
 
 # rubocop:disable Metrics/ClassLength
 class BooksController < ApplicationController
-  before_action :find_book,
+  before_action :set_book,
                 only: [ :show, :edit, :update, :destroy, :combine, :assign_anonymous, :delete_ratings_by_assignee,
                         :reset_unrateable, :reset_judge_later, :delete_query_doc_pairs_below_position,
                         :eric_steered_us_wrong ]
@@ -243,8 +243,8 @@ class BooksController < ApplicationController
 
   private
 
-  # This find_book is different because we use :id, not :book_id.
-  def find_book
+  # This set_book is different because we use :id, not :book_id.
+  def set_book
     @book = current_user.books_involved_with.where(id: params[:id]).first
     TrackBookViewedJob.perform_later @book, current_user
   end

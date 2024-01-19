@@ -3,7 +3,7 @@
 module Api
   module V1
     class JudgementsController < Api::ApiController
-      before_action :find_book
+      before_action :set_book
       before_action :check_book
       before_action :set_judgement,   only: [ :show, :update, :destroy ]
       before_action :check_judgement, only: [ :show, :update, :destroy ]

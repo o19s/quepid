@@ -2,7 +2,7 @@
 
 class JudgementsController < ApplicationController
   before_action :set_judgement, only: [ :show, :edit, :update, :destroy ]
-  before_action :find_book
+  before_action :set_book
 
   def index
     bool = ActiveRecord::Type::Boolean.new

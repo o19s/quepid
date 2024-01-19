@@ -43,12 +43,9 @@ class HomeController < ApplicationController
       }
     end
 
-    @most_recent_books = []
+    @most_recent_books = recent_books(4)
     @lookup_for_books = {}
-    # we really should be looking at when judgements were made, not just book updates.
-    # a last_judged_at field
-    @current_user.books_involved_with.reorder(:updated_at).limit(4).each do |book|
-      @most_recent_books << book
+    @most_recent_books.each do |book|
       judged_by_current_user = book.judgements.where(user: @current_user).count
       if judged_by_current_user.positive? && judged_by_current_user < book.query_doc_pairs.count
         @lookup_for_books[book] = book.query_doc_pairs.count - judged_by_current_user
