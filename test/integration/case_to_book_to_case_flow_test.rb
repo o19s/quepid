@@ -41,11 +41,11 @@ class CaseToBookToCaseFlowTest < ActionDispatch::IntegrationTest
 
     assert_response :no_content
 
-    assert_enqueued_jobs 1
+    assert_enqueued_jobs 2
 
     perform_enqueued_jobs
 
-    assert_performed_jobs 1
+    assert_performed_jobs 2
 
     # the new Case that we will populate from a book...
     new_case = Case.create(case_name: 'test case', owner: user)
