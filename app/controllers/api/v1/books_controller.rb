@@ -118,14 +118,10 @@ module Api
                                      :show_rank)
       end
 
-      # rubocop:disable Layout/LineLength
-      # def find_book
-      #  @book = current_user.books_involved_with.where(id: params[:id]).includes(:query_doc_pairs).preload([ query_doc_pairs: [ :judgements ] ]).first
-      # end
       def find_book
         @book = current_user.books_involved_with.where(id: params[:id]).first
+        TrackBookViewedJob.perform_later @book, current_user
       end
-      # rubocop:enable Layout/LineLength
 
       def check_book
         render json: { message: 'Book not found!' }, status: :not_found unless @book

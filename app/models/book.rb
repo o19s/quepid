@@ -46,6 +46,10 @@ class Book < ApplicationRecord
            dependent:  :destroy,
            inverse_of: :book
 
+  has_many :metadata,
+           class_name: 'BookMetadatum',
+           dependent:  :destroy
+
   has_one_attached :import_file
   has_one_attached :export_file
   has_one_attached :populate_file

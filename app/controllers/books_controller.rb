@@ -246,6 +246,7 @@ class BooksController < ApplicationController
   # This find_book is different because we use :id, not :book_id.
   def find_book
     @book = current_user.books_involved_with.where(id: params[:id]).first
+    TrackBookViewedJob.perform_later @book, current_user
   end
 
   def find_user
