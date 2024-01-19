@@ -19,7 +19,6 @@
 #  fk_rails_...  (book_id => books.id)
 #
 class BookMetadatum < ApplicationRecord
-  # self.table_name = 'case_metadata'
   belongs_to :book
   belongs_to :user
 end

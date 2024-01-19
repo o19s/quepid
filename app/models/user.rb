@@ -107,8 +107,12 @@ class User < ApplicationRecord
   has_many :scores,
            dependent: :destroy
 
-  has_many :metadata,
-           dependent: :destroy
+  has_many :case_metadata,
+           class_name: 'CaseMetadatum',
+           dependent:  :destroy
+  has_many :book_metadata,
+           class_name: 'BookMetadatum',
+           dependent:  :destroy
 
   # Validations
 

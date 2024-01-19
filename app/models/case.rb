@@ -44,7 +44,8 @@ class Case < ApplicationRecord
              inverse_of: :case
 
   has_many   :metadata,
-             dependent: :destroy
+             class_name: 'CaseMetadatum',
+             dependent:  :destroy
 
   # rubocop:disable Rails/InverseOf
   has_many   :queries,  -> { order(arranged_at: :asc) },
