@@ -1,6 +1,6 @@
 <tr>
   <th scope="row"><%= kase.case_name %></th>
-  <td><%= kase.queries_count %></td>
+  <td><%= kase.queries.count %></td>
   <td>
     <% unless kase.last_score.blank? %>
       <%= number_with_precision(kase.last_score.score, precision: 2) %>

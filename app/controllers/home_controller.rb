@@ -1,15 +1,13 @@
 # frozen_string_literal: true
 
 class HomeController < ApplicationController
-  
   # rubocop:disable Metrics/AbcSize
   # rubocop:disable Metrics/MethodLength
   # rubocop:disable Metrics/CyclomaticComplexity
   # rubocop:disable Metrics/PerceivedComplexity
   def show
     @cases = @current_user.cases_involved_with.not_archived.with_counts
-
-    @most_recent_cases = @current_user.cases_involved_with.not_archived.recent.limit(4).with_counts.sort_by(&:case_name)
+    @most_recent_cases = recent_cases(4).sort_by { |c| c.case_name.downcase }
 
     # Run the prophet!
     @prophet_case_data = {}
@@ -61,10 +59,9 @@ class HomeController < ApplicationController
 
     # Homepage is too slow so we have to cut some stuff out ;-(
     # candidate_cases = @cases.select { |kase| kase.scores.scored.count.positive? }
-    @cases
     # @grouped_cases = candidate_cases.group_by { |kase| kase.case_name.split(':').first }
     # @grouped_cases = @grouped_cases.select { |_key, value| value.count > 1 }
-  end  
+  end
   # rubocop:enable Metrics/AbcSize
   # rubocop:enable Metrics/MethodLength
   # rubocop:enable Metrics/CyclomaticComplexity
