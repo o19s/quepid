@@ -4,7 +4,7 @@ module Api
   module V1
     module Snapshots
       class SearchController < SnapshotsController
-        before_action :find_case
+        before_action :set_case
         before_action :check_case
         before_action :set_snapshot
         before_action :check_snapshot

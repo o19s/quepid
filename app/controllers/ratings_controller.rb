@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class RatingsController < ApplicationController
-  before_action :find_case
+  before_action :set_case
 
   # GET /ratings or /ratings.json
   def index

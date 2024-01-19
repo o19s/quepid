@@ -31,11 +31,6 @@ module Authentication
               end
     end
 
-    def find_case
-      # call set case instead
-      set_case
-    end
-
     def set_recent_cases
       @recent_cases = recent_cases(3)
     end
