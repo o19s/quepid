@@ -177,17 +177,6 @@ the file `Procfile`
 
 Want to monitor if Quepid is behaving?  Just monitor `/healthcheck`, and you will get 200 status codes from a healthy Quepid, and 503 if not.  The JSON output is `{"code":200,"status":{"database":"OK","migrations":"OK"}}`.
 
-## Analytics Settings
-
-We use the [Prophet.rb](https://github.com/ankane/prophet-ruby) library to decide when interesting things happen in our case scores on the homepage.
-This library may use too much memory for your deploy, and can be disabled.
-
-You can disable this behavior by setting the follow `ENV` var:
-
-```
-QUEPID_PROPHET_ANALYTICS=false
-```
-
 ## Troubleshoot Your Deploy
 
 When errors occur, Quepid logs them and shows a generic page.  

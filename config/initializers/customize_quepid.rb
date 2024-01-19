@@ -94,8 +94,3 @@ Rails.application.config.quepid_domain = ENV.fetch('QUEPID_DOMAIN', '')
 
 # == Disable redirecting to match the TLS setting
 Rails.application.config.redirect_to_match_search_engine_tls = ENV.fetch('REDIRECT_TO_MATCH_SEARCH_ENGINE_TLS', true)
-
-# == Prophet Analytics Control
-# Prophet tells you interesting things about time series curves and is used on the homepage.
-# It may consume too much memory for your environment, and you may need to disable it.
-Rails.application.config.quepid_prophet_analytics = bool.deserialize(ENV.fetch('QUEPID_PROPHET_ANALYTICS', true))
