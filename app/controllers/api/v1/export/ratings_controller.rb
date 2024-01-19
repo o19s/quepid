@@ -7,7 +7,7 @@ module Api
     module Export
       class RatingsController < Api::ApiController
         api!
-        before_action :find_case
+        before_action :set_case
         before_action :check_case
 
         # rubocop:disable Metrics/MethodLength

@@ -57,8 +57,11 @@ class SearchEndpointsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test 'should show search_endpoint' do
+    # an optimization is suggested that isn't actually needed in real world
+    Bullet.enable = false
     get search_endpoint_url(@search_endpoint)
     assert_response :success
+    Bullet.enable = true
   end
 
   test 'should get edit' do

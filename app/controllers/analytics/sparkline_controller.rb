@@ -13,7 +13,7 @@ module Analytics
 
     def vega_data
       @scores = []
-      @current_user.cases_involved_with.not_archived.recent.limit(8).each do |kase|
+      recent_cases(8).each do |kase|
         @scores << kase.scores.sampled(kase.id, 100)
       end
       @scores.flatten!

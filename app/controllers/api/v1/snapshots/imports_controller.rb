@@ -5,7 +5,7 @@ module Api
     module Snapshots
       class ImportsController < Api::ApiController
         api!
-        before_action :find_case
+        before_action :set_case
         before_action :check_case
 
         def create

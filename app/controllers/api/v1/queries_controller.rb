@@ -3,7 +3,7 @@
 module Api
   module V1
     class QueriesController < Api::ApiController
-      before_action :find_case
+      before_action :set_case
       before_action :check_case
       before_action :set_query,   only: [ :update, :destroy ]
       before_action :check_query, only: [ :update, :destroy ]

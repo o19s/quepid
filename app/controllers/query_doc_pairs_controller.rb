@@ -2,7 +2,7 @@
 
 class QueryDocPairsController < ApplicationController
   before_action :set_query_doc_pair, only: [ :show, :edit, :update, :destroy ]
-  before_action :find_book
+  before_action :set_book
 
   def index
     @query_doc_pairs = @book.query_doc_pairs.order(:query_text )

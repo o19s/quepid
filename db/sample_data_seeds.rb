@@ -375,7 +375,10 @@ print_step "Seeding Multiple cases................"
 case_names = ["Typeahead: Dairy", "Typeahead: Meats", "Typeahead: Dessert", "Typeahead: Fruit & Veg"]
 
 case_names.each do |case_name|
-  
+  # check if we've already created the case
+  if realistic_activity_user.cases.exists?(case_name: case_name)
+    break
+  end
   kase = realistic_activity_user.cases.create case_name: case_name
   
   days_of_experimentation = rand(3..20) # somewhere between 

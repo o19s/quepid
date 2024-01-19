@@ -49,16 +49,6 @@ class SearchEndpoint < ApplicationRecord
   }
   # rubocop:enable Layout/LineLength
 
-  scope :for_user_directly_owned2, ->(user) {
-    joins('
-      LEFT OUTER JOIN `tries` ON `tries`.`search_endpoint_id` = `search_endpoints`.`id`
-      LEFT OUTER JOIN `cases` ON `cases`.`id` = `tries`.`case_id`
-      LEFT OUTER JOIN `users` ON `users`.`id` = `cases`.`owner_id`
-    ').where('
-        `users`.`id` = ?
-    ',  user.id)
-  }
-
   scope :for_user_directly_owned, ->(user) {
                                     where('
           `search_endpoints`.`owner_id` = ?
