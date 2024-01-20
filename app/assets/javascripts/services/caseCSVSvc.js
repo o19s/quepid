@@ -51,7 +51,8 @@
             'Date Last Scored',
             'Count',
             'Information Need',
-            'Notes'
+            'Notes',
+            'Options'
           ];
 
           var headerString = header.join(',');
@@ -116,7 +117,9 @@
          * @param aCase
          *
          */
-        function stringify (aCase, withHeader) {
+        function stringify (aCase, queries, withHeader) {
+          // queries is sourced from queriesSvc.queries for query info and
+          // aCase.lastScore.queries has the scoring info for the queries.
           var csvContent  = '';
 
           if (withHeader) {
@@ -134,22 +137,35 @@
             var count = data.numFound;
 
             id = parseInt(id,10); // Convert from string
+            
+            var query = null;
+            angular.forEach(queries, function (data, queryId) {
+              if (parseInt(queryId,10) === id){
+                query = data;
+                return false;
+              }
+            });
 
-            var query = aCase.queries.filter(function(q) { return q.queryId === id; })[0];
-            var notes = query ? query.notes || null : null;
-            var informationNeed = query ? query.information_need || null : null;
+            var notes = query.notes || null;
+            var informationNeed = query.informationNeed || null;
+            var options = query.options || null;
+            
+            if (Object.keys(options).length === 0){
+              options = null; // blank out boiler plate options json.
+            }
 
             infoArray = [];
 
             infoArray.push(stringifyField(aCase.teamNames()));
             infoArray.push(stringifyField(aCase.caseName));
-            infoArray.push(stringifyField(aCase.lastScore.case_id));
+            infoArray.push(stringifyField(aCase.caseNo));
             infoArray.push(stringifyField(text));
             infoArray.push(stringifyField(score));
             infoArray.push(stringifyField(aCase.lastScore.updated_at));
             infoArray.push(stringifyField(count));
             infoArray.push(stringifyField(informationNeed));
             infoArray.push(stringifyField(notes));
+            infoArray.push(stringifyField(options));
 
             dataString = infoArray.join(',');
             csvContent += dataString + EOL;
