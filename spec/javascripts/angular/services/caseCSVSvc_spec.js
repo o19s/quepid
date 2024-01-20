@@ -69,7 +69,7 @@ describe('Service: caseCSVSvc', function () {
         "options": {}
       }
     ];
-    var mockQueries2 ={
+    var mockQueriesSvcQueries ={
       "1": {
         "queryId":1,
         "query_text": "dog",
@@ -116,7 +116,7 @@ describe('Service: caseCSVSvc', function () {
     });
     
     it('returns a comma separated string of query scores with the header', function () {
-      var result = caseCSVSvc.stringify(mockCase,mockQueries2, true);
+      var result = caseCSVSvc.stringify(mockCase,mockQueriesSvcQueries, true);
 
       var expectedResult = "Team Name,Case Name,Case ID,Query Text,Score,Date Last Scored,Count,Information Need,Notes,Options\r\nTest Team,Test Case,8,dog,30,2015-07-14 16:08:55,,,This dog looks like a great dog.,\r\nTest Team,Test Case,8,cat,0,2015-07-14 16:08:55,,,Is this \"\"really\"\" a \"\"cat\"\"?,\r\nTest Team,Test Case,8,foo,,2015-07-14 16:08:55,,,chil'laxin,\r\n";
 
@@ -124,7 +124,7 @@ describe('Service: caseCSVSvc', function () {
     });
 
     it('returns a comma separated string of query scores without the header', function () {
-      var result = caseCSVSvc.stringify(mockCase, mockQueries2);
+      var result = caseCSVSvc.stringify(mockCase, mockQueriesSvcQueries);
 
       var expectedResult = "Test Team,Test Case,8,dog,30,2015-07-14 16:08:55,,,This dog looks like a great dog.,\r\nTest Team,Test Case,8,cat,0,2015-07-14 16:08:55,,,Is this \"\"really\"\" a \"\"cat\"\"?,\r\nTest Team,Test Case,8,foo,,2015-07-14 16:08:55,,,chil'laxin,\r\n";
 
@@ -135,7 +135,7 @@ describe('Service: caseCSVSvc', function () {
       var newMockCase = angular.copy(mockCase);
       newMockCase.caseName = 'Test "Case"';
 
-      var result = caseCSVSvc.stringify(newMockCase, mockQueries2);
+      var result = caseCSVSvc.stringify(newMockCase, mockQueriesSvcQueries);
 
       var expectedResult = 'Test Team,Test ""Case"",8,dog,30,2015-07-14 16:08:55,,,This dog looks like a great dog.,\r\nTest Team,Test ""Case"",8,cat,0,2015-07-14 16:08:55,,,Is this ""really"" a ""cat""?,\r\nTest Team,Test ""Case"",8,foo,,2015-07-14 16:08:55,,,chil\'laxin,\r\n';
 
@@ -146,7 +146,7 @@ describe('Service: caseCSVSvc', function () {
       var newMockCase = angular.copy(mockCase);
       newMockCase.caseName = 'Test \n Case';
 
-      var result = caseCSVSvc.stringify(newMockCase, mockQueries2);
+      var result = caseCSVSvc.stringify(newMockCase, mockQueriesSvcQueries);
 
       var expectedResult = 'Test Team,"Test \n Case",8,dog,30,2015-07-14 16:08:55,,,This dog looks like a great dog.,\r\nTest Team,"Test \n Case",8,cat,0,2015-07-14 16:08:55,,,Is this ""really"" a ""cat""?,\r\nTest Team,"Test \n Case",8,foo,,2015-07-14 16:08:55,,,chil\'laxin,\r\n';
 
@@ -157,7 +157,7 @@ describe('Service: caseCSVSvc', function () {
       var newMockCase = angular.copy(mockCase);
       newMockCase.caseName = 'Test \r Case';
 
-      var result = caseCSVSvc.stringify(newMockCase, mockQueries2);
+      var result = caseCSVSvc.stringify(newMockCase, mockQueriesSvcQueries);
 
       var expectedResult = 'Test Team,"Test \r Case",8,dog,30,2015-07-14 16:08:55,,,This dog looks like a great dog.,\r\nTest Team,"Test \r Case",8,cat,0,2015-07-14 16:08:55,,,Is this ""really"" a ""cat""?,\r\nTest Team,"Test \r Case",8,foo,,2015-07-14 16:08:55,,,chil\'laxin,\r\n';
 
@@ -168,7 +168,7 @@ describe('Service: caseCSVSvc', function () {
       var newMockCase = angular.copy(mockCase);
       newMockCase.caseName = 'Test \n\r Case';
 
-      var result = caseCSVSvc.stringify(newMockCase, mockQueries2);
+      var result = caseCSVSvc.stringify(newMockCase, mockQueriesSvcQueries);
 
       var expectedResult = 'Test Team,"Test \n\r Case",8,dog,30,2015-07-14 16:08:55,,,This dog looks like a great dog.,\r\nTest Team,"Test \n\r Case",8,cat,0,2015-07-14 16:08:55,,,Is this ""really"" a ""cat""?,\r\nTest Team,"Test \n\r Case",8,foo,,2015-07-14 16:08:55,,,chil\'laxin,\r\n';
 
@@ -179,7 +179,7 @@ describe('Service: caseCSVSvc', function () {
       var newMockCase = angular.copy(mockCase);
       newMockCase.caseName = 'Test, Case';
 
-      var result = caseCSVSvc.stringify(newMockCase, mockQueries2);
+      var result = caseCSVSvc.stringify(newMockCase, mockQueriesSvcQueries);
 
       var expectedResult = 'Test Team,"Test, Case",8,dog,30,2015-07-14 16:08:55,,,This dog looks like a great dog.,\r\nTest Team,"Test, Case",8,cat,0,2015-07-14 16:08:55,,,Is this ""really"" a ""cat""?,\r\nTest Team,"Test, Case",8,foo,,2015-07-14 16:08:55,,,chil\'laxin,\r\n';
 
@@ -190,7 +190,7 @@ describe('Service: caseCSVSvc', function () {
       var newMockCase = angular.copy(mockCase);
       newMockCase.caseName = '=Test Case';
 
-      var result = caseCSVSvc.stringify(newMockCase, mockQueries2);
+      var result = caseCSVSvc.stringify(newMockCase, mockQueriesSvcQueries);
 
       var expectedResult = 'Test Team, =Test Case,8,dog,30,2015-07-14 16:08:55,,,This dog looks like a great dog.,\r\nTest Team, =Test Case,8,cat,0,2015-07-14 16:08:55,,,Is this ""really"" a ""cat""?,\r\nTest Team, =Test Case,8,foo,,2015-07-14 16:08:55,,,chil\'laxin,\r\n';
 
@@ -201,7 +201,7 @@ describe('Service: caseCSVSvc', function () {
       var newMockCase = angular.copy(mockCase);
       newMockCase.caseName = '@Test Case';
 
-      var result = caseCSVSvc.stringify(newMockCase, mockQueries2);
+      var result = caseCSVSvc.stringify(newMockCase, mockQueriesSvcQueries);
 
       var expectedResult = 'Test Team, @Test Case,8,dog,30,2015-07-14 16:08:55,,,This dog looks like a great dog.,\r\nTest Team, @Test Case,8,cat,0,2015-07-14 16:08:55,,,Is this ""really"" a ""cat""?,\r\nTest Team, @Test Case,8,foo,,2015-07-14 16:08:55,,,chil\'laxin,\r\n';;
 
@@ -212,7 +212,7 @@ describe('Service: caseCSVSvc', function () {
       var newMockCase = angular.copy(mockCase);
       newMockCase.caseName = '+Test Case';
 
-      var result = caseCSVSvc.stringify(newMockCase, mockQueries2);
+      var result = caseCSVSvc.stringify(newMockCase, mockQueriesSvcQueries);
 
       var expectedResult = 'Test Team, +Test Case,8,dog,30,2015-07-14 16:08:55,,,This dog looks like a great dog.,\r\nTest Team, +Test Case,8,cat,0,2015-07-14 16:08:55,,,Is this ""really"" a ""cat""?,\r\nTest Team, +Test Case,8,foo,,2015-07-14 16:08:55,,,chil\'laxin,\r\n';;
 
@@ -223,7 +223,7 @@ describe('Service: caseCSVSvc', function () {
       var newMockCase = angular.copy(mockCase);
       newMockCase.caseName = '-Test Case';
 
-      var result = caseCSVSvc.stringify(newMockCase, mockQueries2);
+      var result = caseCSVSvc.stringify(newMockCase, mockQueriesSvcQueries);
 
       var expectedResult = 'Test Team, -Test Case,8,dog,30,2015-07-14 16:08:55,,,This dog looks like a great dog.,\r\nTest Team, -Test Case,8,cat,0,2015-07-14 16:08:55,,,Is this ""really"" a ""cat""?,\r\nTest Team, -Test Case,8,foo,,2015-07-14 16:08:55,,,chil\'laxin,\r\n';;
 
