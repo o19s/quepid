@@ -11,8 +11,6 @@
 #  notes            :text(65535)
 #  options          :text(65535)
 #  query_text       :string(500)
-#  threshold        :float(24)
-#  threshold_enbl   :boolean
 #  created_at       :datetime         not null
 #  updated_at       :datetime         not null
 #  case_id          :integer
