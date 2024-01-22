@@ -56,7 +56,7 @@ module Api
             assert_equal body['queries'][0]['placeholders']['$query'],  the_case.queries[0].query_text
             assert_equal body['queries'][2]['placeholders']['$query'],  the_case.queries[2].query_text
             assert_not_nil body['queries'][2]['relevant_documents']
-            
+
             # somewhat verbose RRE format for describing ratings.
             expected_relevant_docs = {
               docb: {
