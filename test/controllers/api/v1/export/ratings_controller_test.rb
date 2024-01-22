@@ -49,8 +49,6 @@ module Api
             assert_response :ok
 
             body = response.parsed_body
-            
-            puts response.body
 
             assert_equal body['id_field'],                              'id'
             assert_equal body['index'],                                 the_case.tries.latest.index_name_from_search_url
@@ -58,14 +56,17 @@ module Api
             assert_equal body['queries'][0]['placeholders']['$query'],  the_case.queries[0].query_text
             assert_equal body['queries'][2]['placeholders']['$query'],  the_case.queries[2].query_text
             assert_not_nil body['queries'][2]['relevant_documents']
-            puts body['queries'][2]['relevant_documents']
             
+            # somewhat verbose RRE format for describing ratings.
             expected_relevant_docs = {
-              "1": ["docb"],
-              "3": ["doca"]
+              docb: {
+                gain: 1,
+              },
+              doca: {
+                gain: 3,
+              },
             }
-            
-            
+
             assert_equal expected_relevant_docs, body['queries'][2]['relevant_documents'].deep_symbolize_keys
           end
         end
