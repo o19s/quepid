@@ -35,7 +35,7 @@ module Api
         end
 
         describe 'Exporting a case in RRE json format' do
-          let(:the_case) { cases(:one) }
+          let(:the_case) { cases(:queries_case) }
 
           test 'returns case info' do
             get :show, params: { case_id: the_case.id, file_format: 'rre' }
@@ -49,13 +49,24 @@ module Api
             assert_response :ok
 
             body = response.parsed_body
+            
+            puts response.body
 
             assert_equal body['id_field'],                              'id'
             assert_equal body['index'],                                 the_case.tries.latest.index_name_from_search_url
             assert_equal body['queries'].size,                          the_case.queries.size
             assert_equal body['queries'][0]['placeholders']['$query'],  the_case.queries[0].query_text
             assert_equal body['queries'][2]['placeholders']['$query'],  the_case.queries[2].query_text
-            assert_nil body['queries'][2]['relevant_documents']
+            assert_not_nil body['queries'][2]['relevant_documents']
+            puts body['queries'][2]['relevant_documents']
+            
+            expected_relevant_docs = {
+              "1": ["docb"],
+              "3": ["doca"]
+            }
+            
+            
+            assert_equal expected_relevant_docs, body['queries'][2]['relevant_documents'].deep_symbolize_keys
           end
         end
 

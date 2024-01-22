@@ -7,12 +7,13 @@ end
 grouped_ratings = {}
 
 query.ratings.fully_rated.each do |r|
+  int_rating = r.rating.to_i # rre and rankquest both are int based
   # rubocop:disable Style/IfUnlessModifier
-  unless grouped_ratings.key?(r.rating)
-    grouped_ratings[r.rating] = []
+  unless grouped_ratings.key?(int_rating)
+    grouped_ratings[int_rating] = []
   end
   # rubocop:enable Style/IfUnlessModifier
-  grouped_ratings[r.rating] << r.doc_id
+  grouped_ratings[int_rating] << r.doc_id
 end
 
 json.relevant_documents do
