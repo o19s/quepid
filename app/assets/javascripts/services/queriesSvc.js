@@ -232,9 +232,6 @@ angular.module('QuepidApp')
         self.modified = queryWithRatings.updated_at;
 
 
-        // Threshold properties
-        self.threshold        = queryWithRatings.threshold;
-        self.thresholdEnabled = queryWithRatings.threshold_enabled;
 
         // Error
         self.errorText = '';
@@ -627,29 +624,6 @@ angular.module('QuepidApp')
               return response;
             }).catch(function(response) {
               $log.debug('Failed to fetch options');
-              return response;
-            });
-        };
-
-        this.setThreshold = function(enabled, threshold) {
-          var that          = this;
-          var url           = 'api/cases/' + caseNo + '/queries/' + that.queryId + '/threshold';
-          var thresholdJson = {
-            query: {
-              threshold:      threshold,
-              threshold_enbl: enabled
-            }
-          };
-
-          return $http.put(url, thresholdJson)
-            .then(function() {
-              that.threshold        = threshold;
-              that.thresholdEnabled = enabled;
-            }, function(response) {
-              $log.debug('Failed to set threshold: ', response);
-              return response;
-            }).catch(function(response) {
-              $log.debug('Failed to set threshold');
               return response;
             });
         };

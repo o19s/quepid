@@ -30,10 +30,6 @@ angular.module('QuepidApp')
         }
       });
 
-      $scope.overThreshold = function() {
-        return $scope.query.lastScore && $scope.query.thresholdEnabled &&
-          ($scope.query.lastScore < $scope.query.threshold);
-      };
 
       $scope.displayed = new DisplayConfig();
 

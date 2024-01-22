@@ -830,49 +830,6 @@ describe('Service: queriesSvc', function () {
     expect(bestDocs[1].id).toEqual('doc1');
   });
 
-  /** Threshold Testing **/
-  describe('- Threshold Tests: ', function() {
-    var mockThresholdResponse = {
-      queryId:          1,
-      threshold:        20,
-      threshold_enabled: true
-    };
-    var testQuery;
-
-    beforeEach(function() {
-      setupQuerySvc();
-      testQuery = queriesSvc.queries['0'];
-    });
-
-    it('Setting threshold on backend', function() {
-      $httpBackend.expectPUT('api/cases/2/queries/' + testQuery.queryId + '/threshold')
-        .respond(200, mockThresholdResponse);
-      var testNewThreshold = 20;
-
-      testQuery.setThreshold(true, testNewThreshold)
-        .then(function() {
-          expect(testQuery.thresholdEnabled).toEqual(true);
-          expect(testQuery.threshold).toEqual(testNewThreshold);
-        });
-
-      $httpBackend.flush();
-    });
-
-    it('Disabling threshold on backend', function() {
-      mockThresholdResponse.threshold_enabled = false;
-
-      $httpBackend.expectPUT('api/cases/2/queries/' + testQuery.queryId + '/threshold')
-        .respond(200, mockThresholdResponse);
-
-      testQuery.setThreshold(false)
-        .then(function() {
-          expect(testQuery.thresholdEnabled).toEqual(false);
-        });
-
-      $httpBackend.flush();
-    });
-  });
-
   describe('- Max Score Tests: ', function() {
     var explain1 = {'match':true,'value':1.0,'description':'weight(text:foo)'};
     var explain2 = {'match':true,'value':2.0,'description':'weight(text:foo)'};

@@ -559,24 +559,6 @@ module Analytics
       end
 
       #
-      # Creates an event when a user updates query threshold.
-      #
-      # @param user,      User
-      # @param query,     Query
-      #
-      def user_updated_query_threshold _user, query
-        data = {
-          category: 'Queries',
-          action:   'Updated Query Threshold',
-          label:    query.query_text,
-          value:    nil,
-          bounce:   false,
-        }
-
-        create_event data
-      end
-
-      #
       # Creates an event when a user updates query scorer.
       #
       # @param user,      User
