@@ -22,7 +22,7 @@ module Api
       def index
         @snapshots = @case.snapshots
 
-        @shallow = params[:shallow] == 'true'
+        @shallow = 'true' == params[:shallow]
         @with_docs = false
 
         respond_with @snapshots
@@ -34,24 +34,26 @@ module Api
       end
 
       # rubocop:disable Metrics/MethodLength
+      # rubocop:disable Metrics/AbcSize
+      # rubocop:disable Layout/LineLength
       def create
         @snapshot = @case.snapshots.build(name: params[:snapshot][:name])
         @snapshot.scorer = @case.scorer
         @snapshot.try = @case.tries.first
 
         if @snapshot.save
-          
+
           serialized_data = Marshal.dump(snapshot_params)
 
           puts "[SnapshotController] the size of the serialized data is #{number_to_human_size(serialized_data.bytesize)}"
           compressed_data = Zlib::Deflate.deflate(serialized_data)
           puts "[SnapshotController] the size of the compressed data is #{number_to_human_size(compressed_data.bytesize)}"
           @snapshot.snapshot_file.attach(io: StringIO.new(compressed_data), filename: "snapshot_#{@snapshot.id}.bin.zip",
-                                     content_type: 'application/zip')
-          PopulateSnapshotJob.perform_later @snapshot                          
+                                         content_type: 'application/zip')
+          PopulateSnapshotJob.perform_later @snapshot
 
           Analytics::Tracker.track_snapshot_created_event current_user, @snapshot
-          
+
           @with_docs = false # don't show individual docs in the response
           respond_with @snapshot
         else
@@ -59,6 +61,8 @@ module Api
         end
       end
       # rubocop:enable Metrics/MethodLength
+      # rubocop:enable Metrics/AbcSize
+      # rubocop:enable Layout/LineLength
 
       def destroy
         @snapshot.destroy
@@ -79,7 +83,7 @@ module Api
       def check_snapshot
         render json: { error: 'Not Found!' }, status: :not_found unless @snapshot
       end
-      
+
       def snapshot_params
         # avoid StrongParameters ;-( to faciliate sending params as
         # hash to ActiveJob via ActiveStorage by directly getting parameters from request

@@ -10,7 +10,7 @@ class SessionsController < ApplicationController
 
   def new
     @user = User.new
-    
+
     if Rails.env.production? && Rails.application.config.devise.omniauth_providers.include?(:google_oauth2)
       # Google only lets us oAuth from https sites in production.
       @flag_not_on_https = false

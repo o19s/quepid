@@ -8,8 +8,10 @@ class ExperimentWithBulkInsertTest < ActionDispatch::IntegrationTest
   let(:scorer) { scorers(:quepid_default_scorer) }
   let(:selection_strategy) { selection_strategies(:multiple_raters) }
 
+  # rubocop:disable Style/ClassVars
   @@skip_tests = true
-  
+  # rubocop:enable Style/ClassVars
+
   test 'generate and export 5000 queries with traditional AR' do
     skip('Ignoring all tests in ExperimentWithBulkInsertTest') if @@skip_tests
     book = user.books.create name: '50000 Query Doc Pairs', scorer: scorer, selection_strategy: selection_strategy
