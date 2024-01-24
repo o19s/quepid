@@ -31,6 +31,8 @@ class Snapshot < ApplicationRecord
   has_many    :snapshot_queries, dependent: :destroy
   has_many   :snapshot_docs,
              through: :snapshot_queries
+  
+  has_one_attached :snapshot_file
 
   # Validations
   validates :name,
