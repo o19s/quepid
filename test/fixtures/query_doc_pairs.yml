@@ -3,7 +3,7 @@
 # Table name: query_doc_pairs
 #
 #  id               :bigint           not null, primary key
-#  document_fields  :text(65535)
+#  document_fields  :text(16777215)
 #  information_need :string(255)
 #  notes            :text(65535)
 #  options          :text(65535)
