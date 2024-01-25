@@ -30,6 +30,7 @@ module Api
 
       def show
         @shallow = params[:shallow] || false
+        @with_docs = true
         respond_with @snapshot
       end
 
@@ -41,8 +42,9 @@ module Api
         @snapshot.scorer = @case.scorer
         @snapshot.try = @case.tries.first
 
+        puts "Okay, checking snapshot queries: #{@snapshot.snapshot_queries.length}"
         if @snapshot.save
-
+          puts "Okay2, checking snapshot queries: #{@snapshot.snapshot_queries.length}"
           serialized_data = Marshal.dump(snapshot_params)
 
           puts "[SnapshotController] the size of the serialized data is #{number_to_human_size(serialized_data.bytesize)}"

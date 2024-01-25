@@ -13,17 +13,16 @@ class PopulateSnapshotJob < ApplicationJob
     serialized_data = Zlib::Inflate.inflate(compressed_data)
     params = Marshal.load(serialized_data)
 
-    puts "[PopulateSnapshotJob] I am going to populate the snapshot with #{params[:snapshot][:queries].size} queries"
-
-    service = SnapshotManager.new(snapshot)
+    service = SnapshotManagerCopy.new(snapshot)
 
     snapshot_docs = params[:snapshot][:docs]
     snapshot_queries = params[:snapshot][:queries]
 
-    service.add_docs snapshot_docs, snapshot_queries if snapshot_docs
+    service.add_docs snapshot_docs, snapshot_queries
+
+    snapshot.reload # this appears to be required or we duplicate the snapshot_queries!
 
     snapshot.snapshot_file.purge
-    snapshot.save
   end
   # rubocop:enable Security/MarshalLoad
 end
