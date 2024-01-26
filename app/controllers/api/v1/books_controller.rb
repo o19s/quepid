@@ -4,6 +4,7 @@ require 'csv'
 
 module Api
   module V1
+    # rubocop:disable Metrics/ClassLength
     class BooksController < Api::ApiController
       before_action :set_book, only: [ :show, :update, :destroy ]
       before_action :check_book, only: [ :show, :update, :destroy ]
@@ -28,6 +29,7 @@ module Api
       # rubocop:disable Metrics/AbcSize
       # rubocop:disable Metrics/CyclomaticComplexity
       # rubocop:disable Metrics/PerceivedComplexity
+      # rubocop:disable Metrics/BlockLength
       api :GET, '/api/books/:book_id',
           'Show the book with the given ID.'
       param :id, :number,
@@ -40,7 +42,11 @@ module Api
             csv_headers = %w[query docid]
 
             # Only return rateable judgements, filter out the unrateable ones.
-            unique_raters = @book.judgements.rateable.preload(:user).collect(&:user).uniq
+            # unique_raters = @book.judgements.rateable.preload(:user).collect(&:user).uniq
+            unique_raters = @book.judges.merge(Judgement.rateable)
+
+            puts 'HERE COME THE RATERS'
+            pp unique_raters
 
             # this logic about using email versus name is kind of awful.  Think about user.full_name or user.identifier?
             unique_raters.each do |rater|
@@ -72,6 +78,8 @@ module Api
       # rubocop:enable Metrics/AbcSize
       # rubocop:enable Metrics/CyclomaticComplexity
       # rubocop:enable Metrics/PerceivedComplexity
+      # rubocop:enable Metrics/BlockLength
+
       api :POST, '/api/books', 'Create a new book.'
       param_group :book
       def create
@@ -135,5 +143,6 @@ module Api
         end
       end
     end
+    # rubocop:enable Metrics/ClassLength
   end
 end

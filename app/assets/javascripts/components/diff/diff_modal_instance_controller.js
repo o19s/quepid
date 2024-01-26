@@ -18,8 +18,11 @@ angular.module('QuepidApp')
     ) {
       var ctrl = this;
 
-      // Attributes
-      ctrl.snapshots  = querySnapshotSvc.snapshots;
+      querySnapshotSvc.getSnapshots().then(function() {
+          ctrl.snapshots = querySnapshotSvc.snapshots;
+        }
+      );
+        
       ctrl.which      = 'snapshot';
       ctrl.selection  = initialSelection;
       ctrl.inProgress = false;
@@ -32,6 +35,8 @@ angular.module('QuepidApp')
       ctrl.nothingSelected = nothingSelected;
       ctrl.ok              = ok;
       ctrl.toggleDel       = toggleDel;
+      ctrl.isProcessingFile = isProcessingFile;
+      
 
       // Watches
       $scope.$watch('ctrl.selection', function(newVal, oldVal) {
@@ -71,6 +76,25 @@ angular.module('QuepidApp')
 
             flash.success = 'Snapshot deleted successfully.';
           });
+      }
+      
+      function isProcessingFile() {
+        if (ctrl.snapshots){
+          var desiredSnapshot = null;
+          angular.forEach(ctrl.snapshots, function(snapshot) {
+            if (snapshot.id === ctrl.selection) {
+              desiredSnapshot = snapshot;
+              return; // exit the loop early
+            }
+          });
+          if (desiredSnapshot){
+            return desiredSnapshot.hasSnapshotFile;
+          }
+          else {
+            return false;
+          }
+        }
+        return false;
       }
 
       function isNumber(num) {

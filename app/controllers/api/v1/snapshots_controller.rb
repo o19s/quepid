@@ -34,22 +34,18 @@ module Api
         respond_with @snapshot
       end
 
-      # rubocop:disable Metrics/MethodLength
-      # rubocop:disable Metrics/AbcSize
       # rubocop:disable Layout/LineLength
       def create
         @snapshot = @case.snapshots.build(name: params[:snapshot][:name])
         @snapshot.scorer = @case.scorer
         @snapshot.try = @case.tries.first
 
-        puts "Okay, checking snapshot queries: #{@snapshot.snapshot_queries.length}"
         if @snapshot.save
-          puts "Okay2, checking snapshot queries: #{@snapshot.snapshot_queries.length}"
           serialized_data = Marshal.dump(snapshot_params)
 
-          puts "[SnapshotController] the size of the serialized data is #{number_to_human_size(serialized_data.bytesize)}"
+          #  puts "[SnapshotController] the size of the serialized data is #{number_to_human_size(serialized_data.bytesize)}"
           compressed_data = Zlib::Deflate.deflate(serialized_data)
-          puts "[SnapshotController] the size of the compressed data is #{number_to_human_size(compressed_data.bytesize)}"
+          # puts "[SnapshotController] the size of the compressed data is #{number_to_human_size(compressed_data.bytesize)}"
           @snapshot.snapshot_file.attach(io: StringIO.new(compressed_data), filename: "snapshot_#{@snapshot.id}.bin.zip",
                                          content_type: 'application/zip')
           PopulateSnapshotJob.perform_later @snapshot
@@ -62,11 +58,14 @@ module Api
           render json: @snapshot.errors, status: :bad_request
         end
       end
-      # rubocop:enable Metrics/MethodLength
-      # rubocop:enable Metrics/AbcSize
       # rubocop:enable Layout/LineLength
 
       def destroy
+        # SnapshotDoc.joins(snapshot_query: :snapshot)
+        #   .where(snapshot_queries: { snapshot: @snapshot })
+        #  .delete_all
+        @snapshot.snapshot_docs.delete_all
+        @snapshot.snapshot_queries.delete_all
         @snapshot.destroy
         Analytics::Tracker.track_snapshot_deleted_event current_user, @snapshot
 
@@ -78,7 +77,6 @@ module Api
       def set_snapshot
         @snapshot = @case.snapshots
           .where(id: params[:id])
-          .includes([ snapshot_queries: [ :snapshot_docs ] ])
           .first
       end
 

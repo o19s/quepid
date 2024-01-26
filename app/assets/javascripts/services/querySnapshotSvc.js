@@ -64,6 +64,20 @@ angular.module('QuepidApp')
               });
           });
       };
+      
+      // Now that we process snapshots async, we 
+      // don't want to cache the data
+      this.getSnapshots = function() {       
+        this.snapshots = {};
+
+        return $http.get('api/cases/' + caseNo + '/snapshots?shallow=true')
+          .then(function(response) {
+            return addSnapshotResp(response.data.snapshots)
+              .then(function() {
+                version++;
+              });
+          });
+      };
 
       this.addSnapshot = function(name, recordDocumentFields, queries) {
         // we may want to refactor the payload structure in the future.
@@ -130,11 +144,6 @@ angular.module('QuepidApp')
           .then(function() {
               version++;
           });
-            // return addSnapshotResp([response.data])
-            //   .then(function() {
-            //     version++;
-            //   });
-            //});
       };
 
       this.deleteSnapshot = function(snapshotId) {

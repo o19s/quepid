@@ -28,7 +28,7 @@ class Snapshot < ApplicationRecord
   belongs_to  :case, optional: true # shouldn't be optional!
   belongs_to  :try, optional: true # shouldn't be optional!
   belongs_to  :scorer, optional: true # shouldn't be optional!
-  has_many    :snapshot_queries, dependent: :destroy
+  has_many    :snapshot_queries, dependent: :delete_all
   has_many   :snapshot_docs,
              through: :snapshot_queries
 

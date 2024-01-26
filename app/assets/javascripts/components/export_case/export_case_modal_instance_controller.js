@@ -12,6 +12,7 @@ angular.module('QuepidApp')
 
       ctrl.theCase = theCase;
       ctrl.supportsDetailedExport = supportsDetailedExport;
+      ctrl.isProcessingFile = isProcessingFile;
 
       // If called from the cases listing page, then we need the call back with the bootstrap,
       // otherwise on the main page the querySnapshotSvc.snapshots was bootstrapped.
@@ -47,5 +48,25 @@ angular.module('QuepidApp')
       ctrl.cancel = function () {
         $uibModalInstance.dismiss('cancel');
       };
+      
+      
+      function isProcessingFile() {
+        if (ctrl.options.snapshot){
+          var desiredSnapshot = null;
+          angular.forEach(ctrl.snapshots, function(snapshot) {
+            if (snapshot.id === ctrl.selection) {
+              desiredSnapshot = snapshot;
+              return; // exit the loop early
+            }
+          });
+          if (desiredSnapshot){
+            return desiredSnapshot.hasSnapshotFile;
+          }
+          else {
+            return false;
+          }
+        }
+        return false;
+      }
     }
   ]);

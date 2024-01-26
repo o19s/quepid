@@ -5,7 +5,7 @@
     </h5>
     
     <div class="card-body">
-      <h5 class="card-title"><%= kase.last_score.score unless kase.scores.empty? %> <%= kase.scorer.name %></h5>
+      <h5 class="card-title"><%= number_with_precision(kase.last_score.score, precision: 2) unless kase.scores.empty? %> <%= kase.scorer.name %></h5>
       <p class="card-text"><%= kase.created_at.to_date.to_fs(:short) %> - <%= kase.last_score.updated_at.to_date.to_fs(:short) unless kase.scores.empty?%>
       </p>
       <%
