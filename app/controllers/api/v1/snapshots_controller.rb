@@ -62,7 +62,7 @@ module Api
 
       def destroy
         SnapshotDoc.joins(snapshot_query: :snapshot)
-           .where(snapshot_queries: { snapshot: @snapshot })
+          .where(snapshot_queries: { snapshot: @snapshot })
           .delete_all
         @snapshot.snapshot_queries.delete_all
         @snapshot.destroy

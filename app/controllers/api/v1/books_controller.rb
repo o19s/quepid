@@ -43,11 +43,9 @@ module Api
 
             # Only return rateable judgements, filter out the unrateable ones.
             # unique_raters = @book.judgements.rateable.preload(:user).collect(&:user).uniq
-            #unique_raters = @book.judges.merge(Judgement.rateable)
+            # unique_raters = @book.judges.merge(Judgement.rateable)
             unique_judge_ids = @book.query_doc_pairs.joins(:judgements)
               .distinct.pluck(:user_id)
-            
-
 
             # this logic about using email versus name is kind of awful.  Think about user.full_name or user.identifier?
             unique_judges = []
@@ -62,7 +60,7 @@ module Api
             end
 
             @csv_array << csv_headers
-            query_doc_pairs = @book.query_doc_pairs.include(:judgements)
+            query_doc_pairs = @book.query_doc_pairs.includes(:judgements)
             query_doc_pairs.each do |qdp|
               row = [ make_csv_safe(qdp.query_text), qdp.doc_id ]
               unique_judges.each do |judge|
