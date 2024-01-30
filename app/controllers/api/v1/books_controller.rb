@@ -43,25 +43,30 @@ module Api
 
             # Only return rateable judgements, filter out the unrateable ones.
             # unique_raters = @book.judgements.rateable.preload(:user).collect(&:user).uniq
-            unique_raters = @book.judges.merge(Judgement.rateable)
+            #unique_raters = @book.judges.merge(Judgement.rateable)
+            unique_judge_ids = @book.query_doc_pairs.joins(:judgements)
+              .distinct.pluck(:user_id)
+            
 
-            puts 'HERE COME THE RATERS'
-            pp unique_raters
 
             # this logic about using email versus name is kind of awful.  Think about user.full_name or user.identifier?
-            unique_raters.each do |rater|
-              csv_headers << make_csv_safe(if rater.nil?
-                                             'Unknown'
+            unique_judges = []
+            unique_judge_ids.each do |judge_id|
+              judge = User.find(judge_id) unless judge_id.nil?
+              unique_judges << judge
+              csv_headers << make_csv_safe(if judge.nil?
+                                             'anonymous'
                                            else
-                                             rater.name.presence || rater.email
+                                             judge.name.presence || judge.email
                                            end)
             end
 
             @csv_array << csv_headers
-            @book.query_doc_pairs.each do |qdp|
+            query_doc_pairs = @book.query_doc_pairs.include(:judgements)
+            query_doc_pairs.each do |qdp|
               row = [ make_csv_safe(qdp.query_text), qdp.doc_id ]
-              unique_raters.each do |rater|
-                judgement = qdp.judgements.detect { |j| j.user == rater }
+              unique_judges.each do |judge|
+                judgement = qdp.judgements.detect { |j| j.user == judge }
                 rating = judgement.nil? ? '' : judgement.rating
 
                 row.append rating

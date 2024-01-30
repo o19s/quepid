@@ -35,10 +35,6 @@ class Book < ApplicationRecord
   belongs_to :selection_strategy
   belongs_to :scorer
   has_many :query_doc_pairs, dependent: :destroy, autosave: true
-  has_many   :ordered_judgements, -> { order('query_doc_pair_id') },
-             through:    :query_doc_pairs,
-             dependent:  :destroy,
-             class_name: 'Judgement'
 
   has_many   :judgements,
              through:   :query_doc_pairs,

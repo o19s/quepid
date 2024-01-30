@@ -61,10 +61,9 @@ module Api
       # rubocop:enable Layout/LineLength
 
       def destroy
-        # SnapshotDoc.joins(snapshot_query: :snapshot)
-        #   .where(snapshot_queries: { snapshot: @snapshot })
-        #  .delete_all
-        @snapshot.snapshot_docs.delete_all
+        SnapshotDoc.joins(snapshot_query: :snapshot)
+           .where(snapshot_queries: { snapshot: @snapshot })
+          .delete_all
         @snapshot.snapshot_queries.delete_all
         @snapshot.destroy
         Analytics::Tracker.track_snapshot_deleted_event current_user, @snapshot

@@ -149,7 +149,7 @@ describe('Service: querySnapshotSvc', function () {
     $httpBackend.verifyNoOutstandingExpectation();
   });
 
-  it('doesnt update version if same case', function() {
+  it('does not update version if same case', function() {
     var priorVersion = querySnapshotSvc.version();
     querySnapshotSvc.bootstrap(2);
     querySnapshotSvc.bootstrap(2);

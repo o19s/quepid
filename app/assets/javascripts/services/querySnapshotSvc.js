@@ -141,8 +141,11 @@ angular.module('QuepidApp')
         };
 
         return $http.post('api/cases/' + caseNo + '/snapshots', saved)
-          .then(function() {
-              version++;
+          .then(function(response) {
+            return addSnapshotResp([response.data])
+              .then(function() {
+                version++;
+              });
           });
       };
 

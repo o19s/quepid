@@ -12,7 +12,6 @@ angular.module('QuepidApp')
 
       ctrl.theCase = theCase;
       ctrl.supportsDetailedExport = supportsDetailedExport;
-      ctrl.isProcessingFile = isProcessingFile;
 
       // If called from the cases listing page, then we need the call back with the bootstrap,
       // otherwise on the main page the querySnapshotSvc.snapshots was bootstrapped.
@@ -50,7 +49,7 @@ angular.module('QuepidApp')
       };
       
       
-      function isProcessingFile() {
+      ctrl.isProcessingFile = function () {
         if (ctrl.options.snapshot){
           var desiredSnapshot = null;
           angular.forEach(ctrl.snapshots, function(snapshot) {
@@ -67,6 +66,6 @@ angular.module('QuepidApp')
           }
         }
         return false;
-      }
+      };
     }
   ]);
