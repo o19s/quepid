@@ -93,25 +93,13 @@
   </div>
 </nav>
 
-
-
-<% if @current_user.present? %>
-  <% AppAnnouncement.latest_unseen_for_user(@current_user).each do |notification| %>
-    <div class="alert alert-info" role="alert" style="z-index: 100">
-      <%= notification.text.html_safe %>
-
-      <%= link_to app_announcement_app_announcements_viewed_index_path(notification), method: :post do %>
-        <i
-          class="bi bi-x-circle"
-          aria-hidden="true"
-          title="Mark as viewed"
-        ></i>
-      <% end %>
-
+<div id='flash'>
+  <% if @announcement.present? %>
+    <div class="alert alert-light alert-dismissible fade show" role="alert">
+      <%= @announcement.text.html_safe %>      
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
   <% end %>
-<% end %>
-
-<div id='flash'>
-  <%= flash_messages_bs5 -%>
+  
+  <%= flash_messages -%>
 </div>

@@ -23,7 +23,7 @@
   <tbody>
   <% @app_announcements.each do |announcement| %>
     <tr>
-      <td><%= announcement.text %></td>
+      <td><%= announcement.text.html_safe %></td>
       <td><%= announcement.author.name %> </td>
       <td><%= announcement.created_at.strftime("%B %d %Y, %l:%M%P") %> </td>
       <td><%= announcement.app_announcement_viewed.size %> </td>

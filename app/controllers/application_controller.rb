@@ -15,6 +15,7 @@ class ApplicationController < ActionController::Base
   before_action :require_login
   before_action :check_current_user_locked!
   before_action :set_recent_cases
+  before_action :check_for_announcement
 
   # Prevent CSRF attacks by raising an exception.
   # For APIs, you may want to use :null_session instead.
@@ -24,5 +25,10 @@ class ApplicationController < ActionController::Base
 
   def signup_enabled?
     Rails.application.config.signup_enabled
+  end
+
+  def check_for_announcement
+    @announcement = AppAnnouncement.latest_unseen_for_user(@current_user).first if @current_user
+    AppAnnouncementViewed.create(user: @current_user, app_announcement: @announcement) if @announcement
   end
 end
