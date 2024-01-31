@@ -56,18 +56,30 @@ class Try < ApplicationRecord
   # rubocop:disable Metrics/MethodLength
   def args
     search_endpoint_args = {
-      'solr' => lambda { solr_args },
-      'static' => lambda { static_args },
-      'es' => lambda { es_args },
-      'os' => lambda { os_args },
-      'vectara' => lambda { vectara_args },
-      'algolia' => lambda { algolia_args },
-      'searchapi' => lambda { searchapi_args }
+      'solr'      => lambda {
+        solr_args
+      },
+      'static'    => lambda {
+        static_args
+      },
+      'es'        => lambda {
+        es_args
+      },
+      'os'        => lambda {
+        os_args
+      },
+      'vectara'   => lambda {
+        vectara_args
+      },
+      'algolia'   => lambda {
+        algolia_args
+      },
+      'searchapi' => lambda {
+        searchapi_args
+      },
     }
 
-    unless search_endpoint.nil?
-      search_endpoint_args.fetch(search_endpoint.search_engine).call()
-    end
+    search_endpoint_args.fetch(search_endpoint.search_engine).call unless search_endpoint.nil?
   end
   # rubocop:enable Metrics/MethodLength
 
