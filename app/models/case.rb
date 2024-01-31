@@ -44,7 +44,8 @@ class Case < ApplicationRecord
              inverse_of: :case
 
   has_many   :metadata,
-             dependent: :destroy
+             class_name: 'CaseMetadatum',
+             dependent:  :destroy
 
   # rubocop:disable Rails/InverseOf
   has_many   :queries,  -> { order(arranged_at: :asc) },
@@ -100,18 +101,12 @@ class Case < ApplicationRecord
     ',  user.id)
   }
 
-  scope :public_cases, -> { where(public: true) }
-
   scope :for_user, ->(user) {
     ids = for_user_via_teams(user).pluck(:id) + for_user_directly_owned(user).pluck(:id)
     where(id: ids.uniq)
   }
 
-  # return cases sorted by recently either updated or viewed by the user
-  scope :recent, -> {
-    left_outer_joins(:metadata)
-      .order(Arel.sql('`case_metadata`.`last_viewed_at` DESC, `cases`.`updated_at` DESC'))
-  }
+  scope :public_cases, -> { where(public: true) }
 
   # load up the queries count for the case, alternative to counter_cache
   scope :with_counts, -> {

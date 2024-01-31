@@ -44,7 +44,7 @@
 </div>
 <div class="modal-footer">
   <a class="btn btn-default" ng-if="ctrl.theCase.bookName" ng-click="ctrl.refreshRatingsFromBook()" ng-disabled="processingPrompt.inProgress">
-    <i class="glyphicon glyphicon-refresh"></i>
+    <i class="glyphicon glyphicon-refresh" ng-class="{'fa-spin': processingPrompt.inProgress}"></i>
     Refresh ratings from book <i>{{ctrl.theCase.bookName}}</i>
   </a>
   <button class="btn btn-primary" ng-click="ctrl.cancel()" ng-disabled="processingPrompt.inProgress">Close</button>

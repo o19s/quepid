@@ -43,7 +43,7 @@ class ApiKey < ApplicationRecord
   # the token's HMAC digest
 
   def serializable_hash options = nil
-    h = super options.merge(except: 'token_digest')
+    h = super(options.merge(except: 'token_digest'))
 
     h.merge! 'token' => token if token.present?
 

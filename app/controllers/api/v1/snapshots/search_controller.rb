@@ -4,7 +4,7 @@ module Api
   module V1
     module Snapshots
       class SearchController < SnapshotsController
-        before_action :find_case
+        before_action :set_case
         before_action :check_case
         before_action :set_snapshot
         before_action :check_snapshot
@@ -24,6 +24,7 @@ module Api
               desc: 'The query that you are looking up', required: true
         def index
           @q = search_params[:q]
+          @q = @q.gsub('\?', '?') # Since it's a GET, a ? in the query gets special escaping
           query = if '*:*' == @q
                     @snapshot.snapshot_queries.first.query
 

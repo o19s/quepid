@@ -174,7 +174,7 @@ module Api
 
             assert_response :ok
 
-            assert_equal json_response['name'], "Snapshot #{Time.zone.now.strftime('%D')}"
+            assert_equal response.parsed_body['name'], "Snapshot #{Time.zone.now.strftime('%D')}"
           end
 
           data = {
@@ -207,7 +207,7 @@ module Api
 
             assert_response :ok
 
-            assert_equal json_response(true)['name'], "Snapshot #{Time.zone.now.strftime('%D')}"
+            assert_equal response.parsed_body['name'], "Snapshot #{Time.zone.now.strftime('%D')}"
           end
         end
 

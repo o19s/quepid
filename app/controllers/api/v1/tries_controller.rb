@@ -4,7 +4,7 @@ module Api
   module V1
     # rubocop:disable Metrics/ClassLength
     class TriesController < Api::ApiController
-      before_action :find_case
+      before_action :set_case
       before_action :check_case
       before_action :set_try, only: [ :show, :update, :destroy ]
 
@@ -33,9 +33,9 @@ module Api
           search_endpoint_params_to_use = search_endpoint_params
           convert_blank_values_to_nil search_endpoint_params_to_use
 
-          search_endpoint = @current_user.search_endpoints_involved_with.find_by search_endpoint_params
+          search_endpoint = @current_user.search_endpoints_involved_with.find_by search_endpoint_params_to_use
           if search_endpoint.nil?
-            search_endpoint = SearchEndpoint.new(search_endpoint_params)
+            search_endpoint = SearchEndpoint.new search_endpoint_params_to_use
             search_endpoint.owner = @current_user
             search_endpoint.save!
           end
@@ -74,12 +74,14 @@ module Api
         search_endpoint_params_to_use = convert_blank_values_to_nil search_endpoint_params_to_use
         unless search_endpoint_params_to_use.empty?
 
-          # really hsould be a search_endpoint_id
+          # really should be a search_endpoint_id passed in versus all the properties of one!
           search_endpoint = @current_user.search_endpoints_involved_with
             .find_by search_endpoint_params_to_use.except :name
+
           if search_endpoint.nil?
-            search_endpoint = SearchEndpoint.create search_endpoint_params_to_use
+            search_endpoint = SearchEndpoint.new search_endpoint_params_to_use
             search_endpoint.owner = @current_user
+            search_endpoint.save!
           end
           @try.search_endpoint = search_endpoint
         end

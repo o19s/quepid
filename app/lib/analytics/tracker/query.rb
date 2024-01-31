@@ -15,10 +15,6 @@ module Analytics
         Analytics::GoogleAnalytics.user_moved_query user, query, acase
       end
 
-      def track_query_threshold_updated_event user, query
-        Analytics::GoogleAnalytics.user_updated_query_threshold user, query
-      end
-
       def track_query_notes_updated_event user, query
         Analytics::GoogleAnalytics.user_updated_query_notes user, query
       end

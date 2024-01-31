@@ -3,7 +3,7 @@
 module Api
   module V1
     class CaseScoresController < Api::ApiController
-      before_action :find_case
+      before_action :set_case
       before_action :check_case
 
       def index

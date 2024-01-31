@@ -134,6 +134,17 @@ module Api
               get :index, params: { case_id: acase.id, snapshot_id: snapshot.id }
             end
           end
+
+          test 'handles a ? character in the query' do
+            # the front end app converts a ? into a \? when sending the request.
+            get :index, params: { case_id: acase.id, snapshot_id: snapshot.id, q: 'can you compare tesla to ford\?' }
+
+            assert_response :ok
+
+            data = response.parsed_body
+
+            assert_equal 'can you compare tesla to ford?', data['responseHeader']['params']['q']
+          end
         end
       end
     end

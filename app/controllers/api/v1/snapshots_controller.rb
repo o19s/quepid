@@ -3,14 +3,14 @@
 module Api
   module V1
     class SnapshotsController < Api::ApiController
-      before_action :find_case
+      before_action :set_case
       before_action :check_case
       before_action :set_snapshot,    only: [ :show, :destroy ]
       before_action :check_snapshot,  only: [ :show, :destroy ]
 
       # Spiking out can we make an API public?
       def authenticate_api!
-        find_case
+        set_case
         return true if @case&.public? || current_user
 
         render json:   { reason: 'Unauthorized!' },
@@ -32,7 +32,7 @@ module Api
 
       # rubocop:disable Metrics/MethodLength
       def create
-        @snapshot = @case.snapshots.build snapshot_params
+        @snapshot = @case.snapshots.build(name: params[:snapshot][:name])
         @snapshot.scorer = @case.scorer
         @snapshot.try = @case.tries.first
 
@@ -49,7 +49,7 @@ module Api
           # Refetch snapshot because after bulk creating the docs
           # the snapshot object is then stale
           @snapshot = Snapshot.where(id: @snapshot.id)
-            .includes([ snapshot_queries: [ :snapshot_docs ] ])
+            .includes([ snapshot_queries: [ :snapshot_docs, { query: [ :ratings ] } ] ])
             .first
 
           respond_with @snapshot
@@ -67,10 +67,6 @@ module Api
       end
 
       private
-
-      def snapshot_params
-        params.require(:snapshot).permit(:name)
-      end
 
       def set_snapshot
         @snapshot = @case.snapshots

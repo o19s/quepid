@@ -7,8 +7,11 @@
         <% if Rails.application.config.devise.omniauth_providers.include?(:google_oauth2) %>
         <% email_login_only = false %>
         <p>
-          <%= button_to user_google_oauth2_omniauth_authorize_path, :class=> "btn btn-social btn-google" do %>
+          <%= button_to user_google_oauth2_omniauth_authorize_path, disabled: @flag_not_on_https, :class=> "btn btn-social btn-google" do %>
             <%= content_tag(:span, "", :class => "fab fa-google") %> Sign in with Google
+          <% end %>
+          <% if @flag_not_on_https %>
+            Please reload Quepid using HTTPS to login via Google.
           <% end %>
         </p>
         <% end %>

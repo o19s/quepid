@@ -2,7 +2,7 @@
 
 class JudgementsController < ApplicationController
   before_action :set_judgement, only: [ :show, :edit, :update, :destroy ]
-  before_action :find_book
+  before_action :set_book
 
   def index
     bool = ActiveRecord::Type::Boolean.new
@@ -13,7 +13,6 @@ class JudgementsController < ApplicationController
 
   def show
     @query_doc_pair = @judgement.query_doc_pair
-    @query = @current_user.queries.has_information_need.where(query_text: @query_doc_pair.query_text).first
   end
 
   def skip_judging
@@ -67,6 +66,7 @@ class JudgementsController < ApplicationController
     @previous_judgement = @judgement.previous_judgement_made
   end
 
+  # rubocop:disable Metrics/MethodLength
   def create
     @judgement = Judgement.new(judgement_params)
     @judgement.user = current_user
@@ -82,17 +82,28 @@ class JudgementsController < ApplicationController
     end
 
     if @judgement.save
+      UpdateCaseRatingsJob.perform_later @judgement.query_doc_pair
       redirect_to book_judge_path(@book)
     else
       @query_doc_pair = @judgement.query_doc_pair
       render action: :new
     end
   end
+  # rubocop:enable Metrics/MethodLength
 
   def unrateable
     @judgement = Judgement.find_or_initialize_by(query_doc_pair_id: params[:query_doc_pair_id], user: current_user)
 
     @judgement.mark_unrateable!
+    UpdateCaseRatingsJob.perform_later @judgement.query_doc_pair
+    redirect_to book_judge_path(@book)
+  end
+
+  def judge_later
+    @judgement = Judgement.find_or_initialize_by(query_doc_pair_id: params[:query_doc_pair_id], user: current_user)
+
+    @judgement.mark_judge_later!
+    UpdateCaseRatingsJob.perform_later @judgement.query_doc_pair
     redirect_to book_judge_path(@book)
   end
 
@@ -101,6 +112,7 @@ class JudgementsController < ApplicationController
     @judgement.user = current_user
     @judgement.unrateable = false
     if @judgement.save
+      UpdateCaseRatingsJob.perform_later @judgement.query_doc_pair
       redirect_to book_judge_path(@book)
     else
       render action: :edit
@@ -109,6 +121,7 @@ class JudgementsController < ApplicationController
 
   def destroy
     @judgement.destroy
+    UpdateCaseRatingsJob.perform_later @judgement.query_doc_pair
     respond_with(@judgement, :location => book_judgements_path)
   end
 

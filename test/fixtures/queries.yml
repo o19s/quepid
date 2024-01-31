@@ -9,8 +9,6 @@
 #  notes            :text(65535)
 #  options          :text(65535)
 #  query_text       :string(500)
-#  threshold        :float(24)
-#  threshold_enbl   :boolean
 #  created_at       :datetime         not null
 #  updated_at       :datetime         not null
 #  case_id          :integer
@@ -90,3 +88,16 @@ query_for_best_bond_ever:
   query_text:   Best Bond Ever
   information_need: I am looking for Sean Connery as the actor, as he was the best!
   arranged_at:  3
+  options:      '{"special_boost": 3.2}'
+  
+query_for_best_bond_ever2:
+  case:         :random_case_1
+  query_text:   Best Bond Ever
+  information_need: I am looking for Sean Connery as the actor, as he was the best!
+  arranged_at:  1
+
+query_for_case_with_book:
+  case:         :case_with_book
+  query_text:   star wars
+  information_need: I am looking for the movies, with them in order of release, except for the newest should be at the top
+  arranged_at:  1

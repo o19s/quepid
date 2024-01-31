@@ -10,7 +10,42 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2023_12_07_110513) do
+ActiveRecord::Schema[7.1].define(version: 2024_01_22_154641) do
+  create_table "active_storage_attachments", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
+    t.string "name", null: false
+    t.string "record_type", null: false
+    t.bigint "record_id", null: false
+    t.bigint "blob_id", null: false
+    t.datetime "created_at", null: false
+    t.index ["blob_id"], name: "index_active_storage_attachments_on_blob_id"
+    t.index ["record_type", "record_id", "name", "blob_id"], name: "index_active_storage_attachments_uniqueness", unique: true
+  end
+
+  create_table "active_storage_blobs", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
+    t.string "key", null: false
+    t.string "filename", null: false
+    t.string "content_type"
+    t.text "metadata"
+    t.string "service_name", null: false
+    t.bigint "byte_size", null: false
+    t.string "checksum"
+    t.datetime "created_at", null: false
+    t.index ["key"], name: "index_active_storage_blobs_on_key", unique: true
+  end
+
+  create_table "active_storage_db_files", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
+    t.string "ref", null: false
+    t.binary "data", size: :long, null: false
+    t.datetime "created_at", null: false
+    t.index ["ref"], name: "index_active_storage_db_files_on_ref", unique: true
+  end
+
+  create_table "active_storage_variant_records", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
+    t.bigint "blob_id", null: false
+    t.string "variation_digest", null: false
+    t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
+  end
+
   create_table "annotations", id: :integer, charset: "utf8mb3", force: :cascade do |t|
     t.text "message"
     t.string "source"
@@ -42,8 +77,16 @@ ActiveRecord::Schema[7.1].define(version: 2023_12_07_110513) do
     t.datetime "updated_at", null: false
   end
 
+  create_table "book_metadata", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
+    t.integer "user_id"
+    t.bigint "book_id", null: false
+    t.datetime "last_viewed_at"
+    t.index ["book_id"], name: "index_book_metadata_on_book_id"
+    t.index ["user_id", "book_id"], name: "index_book_metadata_on_user_id_and_book_id"
+
+  end
+
   create_table "books", charset: "utf8mb3", collation: "utf8mb3_unicode_ci", force: :cascade do |t|
-    t.integer "team_id"
     t.integer "scorer_id"
     t.bigint "selection_strategy_id", null: false
     t.string "name"
@@ -51,6 +94,7 @@ ActiveRecord::Schema[7.1].define(version: 2023_12_07_110513) do
     t.datetime "updated_at", null: false
     t.boolean "support_implicit_judgements"
     t.boolean "show_rank", default: false
+    t.integer "owner_id"
     t.index ["selection_strategy_id"], name: "index_books_on_selection_strategy_id"
   end
 
@@ -108,6 +152,7 @@ ActiveRecord::Schema[7.1].define(version: 2023_12_07_110513) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.boolean "unrateable", default: false
+    t.boolean "judge_later", default: false
     t.index ["query_doc_pair_id"], name: "index_judgements_on_query_doc_pair_id"
     t.index ["user_id", "query_doc_pair_id"], name: "index_judgements_on_user_id_and_query_doc_pair_id"
   end
@@ -126,8 +171,6 @@ ActiveRecord::Schema[7.1].define(version: 2023_12_07_110513) do
     t.bigint "arranged_at"
     t.string "query_text", limit: 500
     t.text "notes"
-    t.float "threshold"
-    t.boolean "threshold_enbl"
     t.integer "case_id"
     t.datetime "created_at", precision: nil, null: false
     t.datetime "updated_at", precision: nil, null: false
@@ -144,7 +187,11 @@ ActiveRecord::Schema[7.1].define(version: 2023_12_07_110513) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "doc_id", limit: 500
+    t.string "information_need"
+    t.text "notes"
+    t.text "options", collation: "utf8mb3_bin"
     t.index ["book_id"], name: "index_query_doc_pairs_on_book_id"
+    t.index ["query_text", "doc_id", "book_id"], name: "unique_query_doc_pair", unique: true
   end
 
   create_table "ratings", id: :integer, charset: "latin1", force: :cascade do |t|
@@ -234,6 +281,11 @@ ActiveRecord::Schema[7.1].define(version: 2023_12_07_110513) do
     t.index ["owner_id"], name: "owner_id"
   end
 
+  create_table "teams_books", id: false, charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
+    t.bigint "book_id", null: false
+    t.bigint "team_id", null: false
+  end
+
   create_table "teams_cases", primary_key: ["case_id", "team_id"], charset: "latin1", force: :cascade do |t|
     t.integer "case_id", null: false
     t.integer "team_id", null: false
@@ -265,16 +317,12 @@ ActiveRecord::Schema[7.1].define(version: 2023_12_07_110513) do
     t.string "query_params", limit: 20000
     t.integer "case_id"
     t.string "field_spec", limit: 500
-    t.string "search_url", limit: 500
     t.string "name", limit: 50
-    t.string "search_engine", limit: 50, default: "solr"
     t.boolean "escape_query", default: true
     t.integer "number_of_rows", default: 10
     t.datetime "created_at", precision: nil, null: false
     t.datetime "updated_at", precision: nil, null: false
     t.string "ancestry", limit: 3072
-    t.string "api_method"
-    t.string "custom_headers", limit: 1000
     t.bigint "search_endpoint_id"
     t.index ["case_id"], name: "case_id"
     t.index ["search_endpoint_id"], name: "index_tries_on_search_endpoint_id"
@@ -316,7 +364,10 @@ ActiveRecord::Schema[7.1].define(version: 2023_12_07_110513) do
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true, length: 191
   end
 
+  add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "annotations", "users"
+  add_foreign_key "book_metadata", "books"
   add_foreign_key "books", "selection_strategies"
   add_foreign_key "case_metadata", "cases", name: "case_metadata_ibfk_1"
   add_foreign_key "case_metadata", "users", name: "case_metadata_ibfk_2"

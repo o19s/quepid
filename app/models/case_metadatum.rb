@@ -20,8 +20,7 @@
 #  case_metadata_ibfk_2  (user_id => users.id)
 #
 
-class Metadatum < ApplicationRecord
-  self.table_name = 'case_metadata'
+class CaseMetadatum < ApplicationRecord
   belongs_to :case
   belongs_to :user
 end

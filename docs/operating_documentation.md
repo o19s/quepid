@@ -14,6 +14,8 @@ This document explains how Quepid can be operated and configured.
 - [Database Management](#database-management)
 - [Jupyterlite Notebooks](#jupyterlite-notebooks)
 - [Using Personal Access Tokens](#using-personal-access-tokens)
+- [Scripting Users Cases Ratings](#scripting-users-cases-ratings)
+
 ## Running behind a load balancer
 
 > ⚠️ _Quepid will run in TLS (`https`) or plain `http` mode depending on the
@@ -175,17 +177,6 @@ the file `Procfile`
 
 Want to monitor if Quepid is behaving?  Just monitor `/healthcheck`, and you will get 200 status codes from a healthy Quepid, and 503 if not.  The JSON output is `{"code":200,"status":{"database":"OK","migrations":"OK"}}`.
 
-## Analytics Settings
-
-We use the [Prophet.rb](https://github.com/ankane/prophet-ruby) library to decide when interesting things happen in our case scores on the homepage.
-This library may use too much memory for your deploy, and can be disabled.
-
-You can disable this behavior by setting the follow `ENV` var:
-
-```
-QUEPID_PROPHET_ANALYTICS=false
-```
-
 ## Troubleshoot Your Deploy
 
 When errors occur, Quepid logs them and shows a generic page.  
@@ -235,4 +226,56 @@ curl -X POST http://localhost:3000/api/books/2/judgements/ -H 'Authorization: Be
     "rating": 1
   }
 }'
+```
+
+## Scripting Users Cases Ratings
+
+The see available tasks:
+
+```
+docker compose run app bundle exec thor list
+```
+
+Examples include:
+
+```
+case
+----
+thor case:create NAME ...      # creates a new case
+thor case:share CASEID TEAMID  # shares case with an team
+
+ratings
+-------
+thor ratings:generate SOLRURL FILENAME  # generates random ratings into a .csv file
+thor ratings:import CASEID FILENAME     # imports ratings to a case
+
+user
+----
+thor user:create EMAIL USERNAME PASSWORD    # creates a new user
+thor user:grant_administrator EMAIL         # grant administrator privileges to user
+thor user:reset_password EMAIL NEWPASSWORD  # resets user's password
+```
+
+To see more details about any of the tasks, run `bin/docker r bundle exec thor help TASKNAME`:
+
+```
+thor help user:create
+Usage:
+  thor user:create EMAIL USERNAME PASSWORD
+
+Options:
+  -a, [--administrator], [--no-administrator]
+
+Description:
+  `user:create` creates a new user with the passed in email, name and password.
+
+  EXAMPLES:
+
+  $ thor user:create foo@example.com "Eric Pugh" mysuperstrongpassword
+
+  With -a option, will mark the user as Administrator
+
+  EXAMPLES:
+
+  $ thor user:create -a admin@example.com Administrator mysuperstrongpassword
 ```

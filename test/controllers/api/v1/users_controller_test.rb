@@ -126,8 +126,8 @@ module Api
 
             assert_response :ok
 
-            assert_instance_of  Array,  json_response['users']
-            assert_equal        [],     json_response['users']
+            assert_instance_of  Array,  response.parsed_body['users']
+            assert_equal        [],     response.parsed_body['users']
           end
         end
       end
@@ -144,10 +144,10 @@ module Api
 
             assert_response :ok
 
-            assert_instance_of  Array,  json_response['users']
-            assert_equal        1,      json_response['users'].size
+            assert_instance_of  Array,  response.parsed_body['users']
+            assert_equal        1,      response.parsed_body['users'].size
 
-            emails = json_response['users'].pluck('email')
+            emails = response.parsed_body['users'].pluck('email')
             assert_includes emails, 'matt@example.com'
           end
 
@@ -159,20 +159,20 @@ module Api
 
             assert_response :ok
 
-            assert_instance_of  Array, json_response['users']
-            assert_equal        1, json_response['users'].size
+            assert_instance_of  Array, response.parsed_body['users']
+            assert_equal        1, response.parsed_body['users'].size
 
-            emails = json_response['users'].pluck('email')
+            emails = response.parsed_body['users'].pluck('email')
             assert_includes emails, 'doug@example.com'
 
             get :index, params: { prefix: 'DOUG' }
 
             assert_response :ok
 
-            assert_instance_of  Array, json_response['users']
-            assert_equal        1, json_response['users'].size
+            assert_instance_of  Array, response.parsed_body['users']
+            assert_equal        1, response.parsed_body['users'].size
 
-            emails = json_response['users'].pluck('email')
+            emails = response.parsed_body['users'].pluck('email')
             assert_includes emails, 'doug@example.com'
           end
         end

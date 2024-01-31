@@ -50,14 +50,10 @@ class SearchEndpoint < ApplicationRecord
   # rubocop:enable Layout/LineLength
 
   scope :for_user_directly_owned, ->(user) {
-    joins('
-      LEFT OUTER JOIN `tries` ON `tries`.`search_endpoint_id` = `search_endpoints`.`id`
-      LEFT OUTER JOIN `cases` ON `cases`.`id` = `tries`.`case_id`
-      LEFT OUTER JOIN `users` ON `users`.`id` = `cases`.`owner_id`
-    ').where('
-        `users`.`id` = ?
-    ',  user.id)
-  }
+                                    where('
+          `search_endpoints`.`owner_id` = ?
+      ',  user.id)
+                                  }
 
   scope :for_user, ->(user) {
     ids = for_user_via_teams(user).distinct.pluck(:id) + for_user_directly_owned(user).distinct.pluck(:id)
@@ -74,7 +70,7 @@ class SearchEndpoint < ApplicationRecord
   #
   #
   def fullname
-    (name.presence || middle_truncate("#{search_engine.capitalize} #{endpoint_url}"))
+    name.presence || middle_truncate("#{search_engine.capitalize} #{endpoint_url}")
   end
 
   def mark_archived

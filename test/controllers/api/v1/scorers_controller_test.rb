@@ -20,7 +20,7 @@ module Api
 
           assert_response :ok
 
-          scorer = json_response
+          scorer = response.parsed_body
 
           assert_not_nil scorer['scorer_id']
           assert_nil     scorer['code']
@@ -42,7 +42,7 @@ module Api
 
           assert_response :ok
 
-          scorer = json_response
+          scorer = response.parsed_body
 
           regex = /Scorer/
           assert_match regex, scorer['name']
@@ -358,15 +358,28 @@ module Api
         describe 'when scorer is not set as default' do
           let(:owned_scorer)  { scorers(:owned_scorer) }
           let(:shared_scorer) { scorers(:shared_scorer) }
+          let(:random_scorer) { scorers(:random_scorer) }
 
-          test 'return a forbidden error if deleteing a scorer not owned by user' do
-            delete :destroy, params: { id: shared_scorer.id }
+          test 'return a forbidden error if deleteing a scorer not accesible by user' do
+            delete :destroy, params: { id: random_scorer.id }
 
-            assert_response :forbidden
+            assert_response :not_found
 
             error = response.parsed_body
 
-            assert_equal error['error'], 'Cannot delete a scorer you do not own'
+            assert_equal error['error'], 'Not Found!'
+          end
+
+          test 'allow you to delete a scorer shared but not owned by user' do
+            shared_scorer.save!
+
+            delete :destroy, params: { id: shared_scorer.id }
+
+            assert_response :no_content
+
+            user.reload
+
+            assert_not_includes user.scorers_involved_with, shared_scorer
           end
 
           test 'removes scorer successfully and disassociates it from owner' do
@@ -483,22 +496,6 @@ module Api
             assert_equal      acase.scorer, replacement_scorer
 
             assert_equal Case.where(scorer_id: default_scorer.id).count, 0
-          end
-        end
-
-        describe 'when scorer is shared with a team' do
-          let(:default_scorer)        { scorers(:random_scorer_1) }
-          let(:default_scorer_team)   { teams(:scorers_team) }
-          let(:user)                  { users(:random) }
-
-          before do
-            login_user user
-          end
-
-          test 'returns a bad request error if nothing specified' do
-            delete :destroy, params: { id: default_scorer.id }
-
-            assert_response :bad_request
           end
         end
 

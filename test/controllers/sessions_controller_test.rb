@@ -58,7 +58,7 @@ class SessionsControllerTest < ActionController::TestCase
       post :create, params: { user: { email: user.email, password: 'password' }, format: :json }
 
       assert_response :unprocessable_entity
-      assert_equal 'LOCKED', json_response['reason']
+      assert_equal 'LOCKED', response.parsed_body['reason']
     end
   end
 

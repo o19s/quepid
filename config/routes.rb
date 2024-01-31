@@ -11,6 +11,8 @@ Rails.application.routes.draw do
   get 'proxy/fetch'
   post 'proxy/fetch'
 
+  mount ActiveStorageDB::Engine => '/active_storage_db'
+
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
   Healthcheck.routes(self)
@@ -20,8 +22,12 @@ Rails.application.routes.draw do
 
   resources :api_keys, path: 'api-keys', only: [ :create, :destroy ]
 
-  resources :search_endpoints
-  get 'search_endpoints/:id/clone' => 'search_endpoints#clone', as: :clone_search_endpoint
+  resources :search_endpoints do
+    member do
+      post 'clone'
+    end
+  end
+  # post 'search_endpoints/:id/clone' => 'search_endpoints#clone', as: :clone_search_endpoint
 
   # rubocop:disable Layout/LineLength
   # let's encrypt verification (can be removed in the future)
@@ -51,14 +57,25 @@ Rails.application.routes.draw do
     resources :query_doc_pairs do
       resources :judgements
       get 'unrateable' => 'judgements#unrateable'
+      get 'judge_later' => 'judgements#judge_later'
     end
     get 'judge' => 'judgements#new'
     get 'skip_judging' => 'judgements#skip_judging'
     member do
       patch 'combine'
       patch 'assign_anonymous'
-      delete 'delete_ratings_by_assignee'
+      delete 'delete_ratings_by_assignee', action: :delete_ratings_by_assignee, as: :delete_ratings_by_assignee
+      delete 'reset_unrateable/:user_id', action: :reset_unrateable, as: :reset_unrateable
+      delete 'reset_judge_later/:user_id', action: :reset_judge_later, as: :reset_judge_later
+      delete 'delete_query_doc_pairs_below_position', action: :delete_query_doc_pairs_below_position,
+                                                      as:     :delete_query_doc_pairs_below_position
+      patch 'eric_steered_us_wrong',
+            action: :eric_steered_us_wrong, as: :eric_steered_us_wrong
     end
+  end
+
+  namespace :books do
+    resources :import, only: [ :new, :create ]
   end
 
   devise_for :users, controllers: {
@@ -135,7 +152,6 @@ Rails.application.routes.draw do
             resource  :notes,     only: [ :show, :update ]
             resource  :options,   only: [ :show, :update ]
             resource  :position,  only: [ :update ]
-            resource  :threshold, only: [ :update ]
             resource  :ratings,   only: [ :update, :destroy ] # not actually a singular resource, doc_id in json payload
           end
 
@@ -165,7 +181,7 @@ Rails.application.routes.draw do
         resources :search_endpoints, only: [ :index ]
       end
 
-      resources :books, only: [ :show, :create, :update, :destroy ] do
+      resources :books do
         put '/populate' => 'books/populate#update'
         resources :cases do
           put 'refresh' => 'books/refresh#update'

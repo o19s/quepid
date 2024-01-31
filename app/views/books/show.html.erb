@@ -3,7 +3,7 @@
   <div class="btn-toolbar mb-2 mb-md-0">
     <div class="btn-group me-2">
       <%= link_to 'New Book', new_book_path, class: "btn btn-sm btn-outline-secondary" %>
-      <button type="button" class="btn btn-sm btn-outline-secondary">Export</button>
+      <%= link_to 'Export', api_export_book_path(@book), class: "btn btn-sm btn-outline-secondary" %>
     </div>
     <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle">
       <span data-feather="calendar" class="align-text-bottom"></span>
@@ -13,23 +13,58 @@
 </div>
 
 Books organize all the query/doc pairs that are needed for evaluating your search queries.
+This book consists of <%= @book.query_doc_pairs.count %> query document pairs and <%= @book.judgements.count %> judgements.
 
 <%= render 'judgements/moar_judgements_needed', book: @book %>
 
+<% if @book.import_file.attached? %>
+<div class="alert alert-danger" role="alert">
+  This book has an upload of data that is currently being processed and is not ready for use yet.
+  <br/>
+  Import file is  <%=link_to 'available here', rails_blob_path(@book.import_file.blob, only_path: true) %>.
+  Status: <%= @book.query_doc_pairs.count %>  
+  <%= link_to book_path(@book) do %>
+    Refresh
+    <i
+      class="bi arrow-clockwise"
+      aria-hidden="true"
+    ></i>
+  <% end %>
+  
+</div>
+<% end %>
+
+<% if @book.populate_file.attached? %>
+<div class="alert alert-danger" role="alert">
+  Currently populating this book with fresh data from a case.
+  <br/>
+  Status is the book has <%= @book.query_doc_pairs.count %>  query doc pairs.
+  <%= link_to book_path(@book) do %>
+    <i
+      class="bi bi-arrow-clockwise"
+      aria-hidden="true"
+    ></i>
+  <% end %>
+  
+</div>
+<% end %>
+
 <% if @count_of_anonymous_book_judgements > 0 %>
 <div class="alert alert-warning" role="alert">
-  This book has <%= @count_of_anonymous_book_judgements %> anonymous judgements that should be mapped to a user.
+  This book has <%= @count_of_anonymous_book_judgements %> anonymous judgements that could be mapped to a user.
 </div>
 <% end %>
 <% if @count_of_anonymous_case_judgements > 0 %>
 <div class="alert alert-warning" role="alert">
-  The associated cases have <%= @count_of_anonymous_case_judgements %> anonymous ratings that should be mapped to a user.
+  The associated cases have <%= @count_of_anonymous_case_judgements %> anonymous ratings that could be mapped to a user.
 </div>
 <% end %>
 
 <p>
-  <strong>Team:</strong>
-  <%= link_to @book.team.name, teams_core_path(@book.team) %>
+  <strong>Teams:</strong>
+  <% @book.teams.each do |team| %>
+    <%= link_to team.name, teams_core_path(team) %>
+  <% end %>
 </p>
 
 <p>
@@ -60,6 +95,7 @@ Books organize all the query/doc pairs that are needed for evaluating your searc
 <%= render(partial: 'books/case', collection: @cases, as: :kase) || "There are no cases associated." %>
 </p>
 
+<p>
 <%= button_to 'Show Judgements', book_judgements_path(@book), method: :get %>
 
 <br>
@@ -73,28 +109,29 @@ Books organize all the query/doc pairs that are needed for evaluating your searc
 <br>
 
 <%= button_to 'Back to Books', books_path, method: :get %>
-
+</p>
 
 <h3>Export Data</h3>
 <p>
-  You want to export your judgements?   I hear you!  You can do so in CSV and JSON ;-)
+  Export just the <%= link_to 'judgement data', api_book_path(@book, format: :csv) %> in CSV format.
 </p>
 <p>
-Export in <%= link_to 'CSV', api_book_path(@book, format: :csv) %> or <%= link_to 'JSON', api_book_path(@book) %>
+  Export the <%= link_to 'entire book', api_export_book_path(@book, download: true) %> in JSON format.
+  <% if @book.export_file.present? %>
+    There is currently an export file made <%= time_ago_in_words @book.export_file.created_at %> ago <%=link_to 'available here', rails_blob_path(@book.export_file.blob, only_path: true) %>.
+  <% end %>
 </p>
 <p>
-To reference these judgements from a notebook or another system you can reference these Quepid API endpoints:
-<code><%= api_book_path(@book, format: :csv) %></code> or <code><%= api_book_path(@book) %></code>
+  To reference these judgements from a notebook or another system you can reference these <%= link_to 'Quepid APIs', apipie_apipie_path %> endpoints:
+  <code><%= api_book_path(@book, format: :csv) %></code> or <code><%= api_export_book_path(@book) %></code>
 </p>
-
+  
 <h3>Leaderboard</h3>
 <div class="card">
   <div class="card-body">
 
     <h5 class="card-title" href="#collapseExample">Leaderboard</h3>
     <h6 class="card-subtitle mb-2 text-body-secondary">Who is closest to having all <%= @book.query_doc_pairs.count %> query/doc pairs judged?</h6>
-    
-    
     <%=
     Vega.lite
       .data(@leaderboard_data)
@@ -105,6 +142,38 @@ To reference these judgements from a notebook or another system you can referenc
       )
     %>
   </div>
+  <div class="card-footer text-muted">
+    * Judged count includes marked as rated or to be judged later.
+  </div>
 </div>
 
 <p/>
+<h3>Judging Stats</h3>
+<table class="table">
+  <thead>
+    <tr>
+      <th scope="col">Judge</th>
+      <th scope="col">Marked Unrateable</th>
+      <th scope="col">Marked Judge Later</th>
+      <th scope="col">Total</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% @stats_data.each do | row | %>
+    <tr>
+      <th scope="row"><%=judge_name (row[:judge]) %></th>
+      <td>
+        <% if row[:judge] %>
+          <%=row[:unrateable] %> <%= link_to_if(row[:judge] && row[:unrateable] > 0, "reset", reset_unrateable_book_path(@book,row[:judge].id), method: :delete, data: { confirm: "Are you sure?" }){ '' } %>
+        <% end %>
+      </td>
+      <td>
+        <% if row[:judge] %>
+          <%=row[:judge_later] %> <%= link_to_if(row[:judge] && row[:judge_later] > 0, "reset", reset_judge_later_book_path(@book,row[:judge].id), method: :delete, data: { confirm: "Are you sure?" }){ '' } %>
+        <% end %>
+      </td>
+      <td><%=row[:judgements] %></td>
+    </tr>
+    <% end %>
+  </tbody>
+</table>

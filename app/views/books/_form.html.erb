@@ -18,15 +18,20 @@
     <div class="form-text">The book's name often reflects the goal for the judgements, like <em>Baseline Measurement</em> or a specific problem.</div>
   </div>
 
-  <div class="mb-3">
-    <%= form.label :team_id, class: 'form-label' %>
-    <%= form.collection_select(:team_id, current_user.teams, :id, :name, { prompt: true }, required: true, class: 'form-control') %>
-    <div class="form-text">Books are meant to be shared with human raters and relevance engineers, access to the book is controlled by what team you pick.</div>
+  <div class="mb-3">     
+    <%= form.label :teams, "Teams to Share this Book With", class: 'form-label' %>
+    <%= form.collection_check_boxes(:team_ids, @current_user.teams, :id, :name) do |b| %>
+      <div class="collection-check-box">
+        <%= b.check_box %>
+        <%= b.label %>
+      </div>
+    <% end %>
+    <div class="form-text">Books are meant to be shared with human raters and relevance engineers, and you do this by picking which teams can use them.</div>
   </div>
 
   <div class="mb-3">
     <%= form.label :scorer_id, class: 'form-label' %>
-    <%= form.collection_select(:scorer_id, current_user.scorers, :id, :name, { prompt: true }, required: true, class: 'form-control') %>
+    <%= form.collection_select(:scorer_id, current_user.scorers_involved_with, :id, :name, { prompt: true }, required: true, class: 'form-control') %>
     <div class="form-text">The scorer you pick drives the options for rating.  So AP@10 would give you relevant and irrelevant, whereas NDCG would give your a four point scale.</div>
   </div>
 

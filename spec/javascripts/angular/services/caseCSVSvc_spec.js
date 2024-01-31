@@ -40,6 +40,7 @@ describe('Service: caseCSVSvc', function () {
     };
     var mockCase = {
       "caseName":   'Test Case',
+      "caseNo":     8,
       "teamName":   'Test Team',
       "lastScore":  mockScores,
       "teamNames":  function() { return 'Test Team'; },
@@ -48,22 +49,50 @@ describe('Service: caseCSVSvc', function () {
       {
         "queryId":1,
         "query_text": "dog",
-        "information_need":"",
-        "notes": "This dog looks like a great dog."
+        "informationNeed":"",
+        "notes": "This dog looks like a great dog.",
+        "options": {}
+        
       },
       {
         "queryId":2,
         "query_text": "cat",
-        "information_need":"",
-        "notes": 'Is this "really" a "cat"?'
+        "informationNeed":"",
+        "notes": 'Is this "really" a "cat"?',
+        "options": {}
       },
       {
         "queryId":3,
         "query_text": "foo",
-        "information_need":"",
-        "notes": "chil'laxin"
+        "informationNeed":"",
+        "notes": "chil'laxin",
+        "options": {}
       }
     ];
+    var mockQueriesSvcQueries ={
+      "1": {
+        "queryId":1,
+        "query_text": "dog",
+        "informationNeed":"",
+        "notes": "This dog looks like a great dog.",
+        "options": {}
+        
+      },
+      "2": {
+        "queryId":2,
+        "query_text": "cat",
+        "informationNeed":"",
+        "notes": 'Is this "really" a "cat"?',
+        "options": {}
+      },
+      "3": {
+        "queryId":3,
+        "query_text": "foo",
+        "informationNeed":"",
+        "notes": "chil'laxin",
+        "options": {}
+      }
+    };  
 
     mockCase.queries = mockQueries;
 
@@ -87,17 +116,17 @@ describe('Service: caseCSVSvc', function () {
     });
     
     it('returns a comma separated string of query scores with the header', function () {
-      var result = caseCSVSvc.stringify(mockCase, true);
+      var result = caseCSVSvc.stringify(mockCase,mockQueriesSvcQueries, true);
 
-      var expectedResult = "Team Name,Case Name,Case ID,Query Text,Score,Date Last Scored,Count,Information Need,Notes\r\nTest Team,Test Case,8,dog,30,2015-07-14 16:08:55,,,This dog looks like a great dog.\r\nTest Team,Test Case,8,cat,0,2015-07-14 16:08:55,,,Is this \"\"really\"\" a \"\"cat\"\"?\r\nTest Team,Test Case,8,foo,,2015-07-14 16:08:55,,,chil'laxin\r\n";
+      var expectedResult = "Team Name,Case Name,Case ID,Query Text,Score,Date Last Scored,Count,Information Need,Notes,Options\r\nTest Team,Test Case,8,dog,30,2015-07-14 16:08:55,,,This dog looks like a great dog.,\r\nTest Team,Test Case,8,cat,0,2015-07-14 16:08:55,,,Is this \"\"really\"\" a \"\"cat\"\"?,\r\nTest Team,Test Case,8,foo,,2015-07-14 16:08:55,,,chil'laxin,\r\n";
 
       expect(result).toEqual(expectedResult);
     });
 
     it('returns a comma separated string of query scores without the header', function () {
-      var result = caseCSVSvc.stringify(mockCase);
+      var result = caseCSVSvc.stringify(mockCase, mockQueriesSvcQueries);
 
-      var expectedResult = "Test Team,Test Case,8,dog,30,2015-07-14 16:08:55,,,This dog looks like a great dog.\r\nTest Team,Test Case,8,cat,0,2015-07-14 16:08:55,,,Is this \"\"really\"\" a \"\"cat\"\"?\r\nTest Team,Test Case,8,foo,,2015-07-14 16:08:55,,,chil'laxin\r\n";
+      var expectedResult = "Test Team,Test Case,8,dog,30,2015-07-14 16:08:55,,,This dog looks like a great dog.,\r\nTest Team,Test Case,8,cat,0,2015-07-14 16:08:55,,,Is this \"\"really\"\" a \"\"cat\"\"?,\r\nTest Team,Test Case,8,foo,,2015-07-14 16:08:55,,,chil'laxin,\r\n";
 
       expect(result).toEqual(expectedResult);
     });
@@ -106,9 +135,9 @@ describe('Service: caseCSVSvc', function () {
       var newMockCase = angular.copy(mockCase);
       newMockCase.caseName = 'Test "Case"';
 
-      var result = caseCSVSvc.stringify(newMockCase);
+      var result = caseCSVSvc.stringify(newMockCase, mockQueriesSvcQueries);
 
-      var expectedResult = 'Test Team,Test ""Case"",8,dog,30,2015-07-14 16:08:55,,,This dog looks like a great dog.\r\nTest Team,Test ""Case"",8,cat,0,2015-07-14 16:08:55,,,Is this ""really"" a ""cat""?\r\nTest Team,Test ""Case"",8,foo,,2015-07-14 16:08:55,,,chil\'laxin\r\n';
+      var expectedResult = 'Test Team,Test ""Case"",8,dog,30,2015-07-14 16:08:55,,,This dog looks like a great dog.,\r\nTest Team,Test ""Case"",8,cat,0,2015-07-14 16:08:55,,,Is this ""really"" a ""cat""?,\r\nTest Team,Test ""Case"",8,foo,,2015-07-14 16:08:55,,,chil\'laxin,\r\n';
 
       expect(result).toEqual(expectedResult);
     });
@@ -117,9 +146,9 @@ describe('Service: caseCSVSvc', function () {
       var newMockCase = angular.copy(mockCase);
       newMockCase.caseName = 'Test \n Case';
 
-      var result = caseCSVSvc.stringify(newMockCase);
+      var result = caseCSVSvc.stringify(newMockCase, mockQueriesSvcQueries);
 
-      var expectedResult = 'Test Team,"Test \n Case",8,dog,30,2015-07-14 16:08:55,,,This dog looks like a great dog.\r\nTest Team,"Test \n Case",8,cat,0,2015-07-14 16:08:55,,,Is this ""really"" a ""cat""?\r\nTest Team,"Test \n Case",8,foo,,2015-07-14 16:08:55,,,chil\'laxin\r\n';
+      var expectedResult = 'Test Team,"Test \n Case",8,dog,30,2015-07-14 16:08:55,,,This dog looks like a great dog.,\r\nTest Team,"Test \n Case",8,cat,0,2015-07-14 16:08:55,,,Is this ""really"" a ""cat""?,\r\nTest Team,"Test \n Case",8,foo,,2015-07-14 16:08:55,,,chil\'laxin,\r\n';
 
       expect(result).toEqual(expectedResult);
     });
@@ -128,9 +157,9 @@ describe('Service: caseCSVSvc', function () {
       var newMockCase = angular.copy(mockCase);
       newMockCase.caseName = 'Test \r Case';
 
-      var result = caseCSVSvc.stringify(newMockCase);
+      var result = caseCSVSvc.stringify(newMockCase, mockQueriesSvcQueries);
 
-      var expectedResult = 'Test Team,"Test \r Case",8,dog,30,2015-07-14 16:08:55,,,This dog looks like a great dog.\r\nTest Team,"Test \r Case",8,cat,0,2015-07-14 16:08:55,,,Is this ""really"" a ""cat""?\r\nTest Team,"Test \r Case",8,foo,,2015-07-14 16:08:55,,,chil\'laxin\r\n';
+      var expectedResult = 'Test Team,"Test \r Case",8,dog,30,2015-07-14 16:08:55,,,This dog looks like a great dog.,\r\nTest Team,"Test \r Case",8,cat,0,2015-07-14 16:08:55,,,Is this ""really"" a ""cat""?,\r\nTest Team,"Test \r Case",8,foo,,2015-07-14 16:08:55,,,chil\'laxin,\r\n';
 
       expect(result).toEqual(expectedResult);
     });
@@ -139,9 +168,9 @@ describe('Service: caseCSVSvc', function () {
       var newMockCase = angular.copy(mockCase);
       newMockCase.caseName = 'Test \n\r Case';
 
-      var result = caseCSVSvc.stringify(newMockCase);
+      var result = caseCSVSvc.stringify(newMockCase, mockQueriesSvcQueries);
 
-      var expectedResult = 'Test Team,"Test \n\r Case",8,dog,30,2015-07-14 16:08:55,,,This dog looks like a great dog.\r\nTest Team,"Test \n\r Case",8,cat,0,2015-07-14 16:08:55,,,Is this ""really"" a ""cat""?\r\nTest Team,"Test \n\r Case",8,foo,,2015-07-14 16:08:55,,,chil\'laxin\r\n';
+      var expectedResult = 'Test Team,"Test \n\r Case",8,dog,30,2015-07-14 16:08:55,,,This dog looks like a great dog.,\r\nTest Team,"Test \n\r Case",8,cat,0,2015-07-14 16:08:55,,,Is this ""really"" a ""cat""?,\r\nTest Team,"Test \n\r Case",8,foo,,2015-07-14 16:08:55,,,chil\'laxin,\r\n';
 
       expect(result).toEqual(expectedResult);
     });
@@ -150,9 +179,9 @@ describe('Service: caseCSVSvc', function () {
       var newMockCase = angular.copy(mockCase);
       newMockCase.caseName = 'Test, Case';
 
-      var result = caseCSVSvc.stringify(newMockCase);
+      var result = caseCSVSvc.stringify(newMockCase, mockQueriesSvcQueries);
 
-      var expectedResult = 'Test Team,"Test, Case",8,dog,30,2015-07-14 16:08:55,,,This dog looks like a great dog.\r\nTest Team,"Test, Case",8,cat,0,2015-07-14 16:08:55,,,Is this ""really"" a ""cat""?\r\nTest Team,"Test, Case",8,foo,,2015-07-14 16:08:55,,,chil\'laxin\r\n';
+      var expectedResult = 'Test Team,"Test, Case",8,dog,30,2015-07-14 16:08:55,,,This dog looks like a great dog.,\r\nTest Team,"Test, Case",8,cat,0,2015-07-14 16:08:55,,,Is this ""really"" a ""cat""?,\r\nTest Team,"Test, Case",8,foo,,2015-07-14 16:08:55,,,chil\'laxin,\r\n';
 
       expect(result).toEqual(expectedResult);
     });
@@ -161,9 +190,9 @@ describe('Service: caseCSVSvc', function () {
       var newMockCase = angular.copy(mockCase);
       newMockCase.caseName = '=Test Case';
 
-      var result = caseCSVSvc.stringify(newMockCase);
+      var result = caseCSVSvc.stringify(newMockCase, mockQueriesSvcQueries);
 
-      var expectedResult = 'Test Team, =Test Case,8,dog,30,2015-07-14 16:08:55,,,This dog looks like a great dog.\r\nTest Team, =Test Case,8,cat,0,2015-07-14 16:08:55,,,Is this ""really"" a ""cat""?\r\nTest Team, =Test Case,8,foo,,2015-07-14 16:08:55,,,chil\'laxin\r\n';
+      var expectedResult = 'Test Team, =Test Case,8,dog,30,2015-07-14 16:08:55,,,This dog looks like a great dog.,\r\nTest Team, =Test Case,8,cat,0,2015-07-14 16:08:55,,,Is this ""really"" a ""cat""?,\r\nTest Team, =Test Case,8,foo,,2015-07-14 16:08:55,,,chil\'laxin,\r\n';
 
       expect(result).toEqual(expectedResult);
     });
@@ -172,9 +201,9 @@ describe('Service: caseCSVSvc', function () {
       var newMockCase = angular.copy(mockCase);
       newMockCase.caseName = '@Test Case';
 
-      var result = caseCSVSvc.stringify(newMockCase);
+      var result = caseCSVSvc.stringify(newMockCase, mockQueriesSvcQueries);
 
-      var expectedResult = 'Test Team, @Test Case,8,dog,30,2015-07-14 16:08:55,,,This dog looks like a great dog.\r\nTest Team, @Test Case,8,cat,0,2015-07-14 16:08:55,,,Is this ""really"" a ""cat""?\r\nTest Team, @Test Case,8,foo,,2015-07-14 16:08:55,,,chil\'laxin\r\n';;
+      var expectedResult = 'Test Team, @Test Case,8,dog,30,2015-07-14 16:08:55,,,This dog looks like a great dog.,\r\nTest Team, @Test Case,8,cat,0,2015-07-14 16:08:55,,,Is this ""really"" a ""cat""?,\r\nTest Team, @Test Case,8,foo,,2015-07-14 16:08:55,,,chil\'laxin,\r\n';;
 
       expect(result).toEqual(expectedResult);
     });
@@ -183,9 +212,9 @@ describe('Service: caseCSVSvc', function () {
       var newMockCase = angular.copy(mockCase);
       newMockCase.caseName = '+Test Case';
 
-      var result = caseCSVSvc.stringify(newMockCase);
+      var result = caseCSVSvc.stringify(newMockCase, mockQueriesSvcQueries);
 
-      var expectedResult = 'Test Team, +Test Case,8,dog,30,2015-07-14 16:08:55,,,This dog looks like a great dog.\r\nTest Team, +Test Case,8,cat,0,2015-07-14 16:08:55,,,Is this ""really"" a ""cat""?\r\nTest Team, +Test Case,8,foo,,2015-07-14 16:08:55,,,chil\'laxin\r\n';;
+      var expectedResult = 'Test Team, +Test Case,8,dog,30,2015-07-14 16:08:55,,,This dog looks like a great dog.,\r\nTest Team, +Test Case,8,cat,0,2015-07-14 16:08:55,,,Is this ""really"" a ""cat""?,\r\nTest Team, +Test Case,8,foo,,2015-07-14 16:08:55,,,chil\'laxin,\r\n';;
 
       expect(result).toEqual(expectedResult);
     });
@@ -194,9 +223,9 @@ describe('Service: caseCSVSvc', function () {
       var newMockCase = angular.copy(mockCase);
       newMockCase.caseName = '-Test Case';
 
-      var result = caseCSVSvc.stringify(newMockCase);
+      var result = caseCSVSvc.stringify(newMockCase, mockQueriesSvcQueries);
 
-      var expectedResult = 'Test Team, -Test Case,8,dog,30,2015-07-14 16:08:55,,,This dog looks like a great dog.\r\nTest Team, -Test Case,8,cat,0,2015-07-14 16:08:55,,,Is this ""really"" a ""cat""?\r\nTest Team, -Test Case,8,foo,,2015-07-14 16:08:55,,,chil\'laxin\r\n';;
+      var expectedResult = 'Test Team, -Test Case,8,dog,30,2015-07-14 16:08:55,,,This dog looks like a great dog.,\r\nTest Team, -Test Case,8,cat,0,2015-07-14 16:08:55,,,Is this ""really"" a ""cat""?,\r\nTest Team, -Test Case,8,foo,,2015-07-14 16:08:55,,,chil\'laxin,\r\n';;
 
       expect(result).toEqual(expectedResult);
     });

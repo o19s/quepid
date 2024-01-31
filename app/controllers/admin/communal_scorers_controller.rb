@@ -87,7 +87,7 @@ module Admin
         :name,
         :communal,
         :show_scale_labels,
-        :scale_list,  # alternate approach to the scale:[] array used in admin only
+        :scale_list, # alternate approach to the scale:[] array used in admin only
         :state,
         scale:             [],
         scale_with_labels: {}

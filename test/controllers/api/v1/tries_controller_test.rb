@@ -268,7 +268,7 @@ search_endpoint: search_endpoint_params }
 
             assert_response :ok
 
-            try_response  = json_response
+            try_response  = response.parsed_body
             created_try   = the_case.tries.where(try_number: try_response['try_number']).first
 
             assert_try_matches_response try_response,  created_try
@@ -313,9 +313,9 @@ search_endpoint: { search_engine: 'solr' } }
           assert_response :ok
 
           the_case.reload
-          created_try = the_case.tries.where(try_number: json_response['try_number']).first
+          created_try = the_case.tries.where(try_number: response.parsed_body['try_number']).first
 
-          assert_equal false, json_response['escape_query']
+          assert_equal false, response.parsed_body['escape_query']
           assert_equal false, created_try.escape_query
         end
 
@@ -327,9 +327,9 @@ search_endpoint: { search_engine: 'es', api_method: 'get' } }
           assert_response :ok
 
           the_case.reload
-          created_try = the_case.tries.where(try_number: json_response['try_number']).first
+          created_try = the_case.tries.where(try_number: response.parsed_body['try_number']).first
 
-          assert_equal 'get', json_response['api_method']
+          assert_equal 'get', response.parsed_body['api_method']
           assert_equal 'get', created_try.search_endpoint.api_method
         end
 
@@ -340,10 +340,10 @@ search_endpoint: { search_engine: 'es', api_method: 'get' } }
           assert_response :ok
 
           the_case.reload
-          created_try = the_case.tries.where(try_number: json_response['try_number']).first
+          created_try = the_case.tries.where(try_number: response.parsed_body['try_number']).first
 
           assert_equal 20, created_try.number_of_rows
-          assert_equal 20, json_response['number_of_rows']
+          assert_equal 20, response.parsed_body['number_of_rows']
         end
 
         test 'assigns default attributes' do
@@ -381,7 +381,7 @@ search_endpoint: { search_engine: 'os', search_url: 'http://my.os.url' } }
           assert_response :ok
 
           the_case.reload
-          created_try = the_case.tries.where(try_number: json_response['try_number']).first
+          created_try = the_case.tries.where(try_number: response.parsed_body['try_number']).first
 
           assert_not_equal try, created_try
           assert_equal created_try.search_endpoint.search_engine, 'os'

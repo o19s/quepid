@@ -129,7 +129,7 @@ module Api
                 post :create, params: { case_id: acase.id, csv_text: csv_text }
 
                 assert_response :unprocessable_entity
-                assert_equal "Didn't find this query for the case: boxing movie", json_response['message']
+                assert_equal "Didn't find this query for the case: boxing movie", response.parsed_body['message']
               end
             end
 

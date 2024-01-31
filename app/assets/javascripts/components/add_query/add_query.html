@@ -12,7 +12,7 @@
     id="add-query-submit"
     class="btn btn-success"
     ng-click="ctrl.submit()"
-    ng-disabled="ctrl.textInputIsEmpty()"
+    ng-disabled="!ctrl.canAddQueries || ctrl.textInputIsEmpty()"
     type="submit"
     value="{{ ctrl.text.indexOf(';') === -1 ? 'Add query' : 'Add queries' }}"
    />

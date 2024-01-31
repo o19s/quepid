@@ -10,6 +10,14 @@ class SessionsController < ApplicationController
 
   def new
     @user = User.new
+    puts 'hi'
+    puts Rails.env.production?
+    puts Rails.application.config.devise.omniauth_providers.include?(:google_oauth2)
+    if Rails.env.production? && Rails.application.config.devise.omniauth_providers.include?(:google_oauth2)
+      # Google only lets us oAuth from https sites in production.
+      @flag_not_on_https = false
+      @flag_not_on_https = true unless request.ssl? || 'https' == request.headers['X-Forwarded-Proto']
+    end
   end
 
   def create

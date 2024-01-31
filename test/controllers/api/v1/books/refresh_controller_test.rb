@@ -5,6 +5,9 @@ require 'test_helper'
 module Api
   module V1
     module Books
+      # These tests are copied over into ratings_manager_test.rb and should
+      # be simplified to focus on the interaction of the control, not what
+      # the ratings_manager does.
       class RefreshControllerTest < ActionController::TestCase
         let(:user)                  { users(:random_1) }
         let(:case_with_ratings)     { cases(:random_case) }
@@ -19,14 +22,15 @@ module Api
 
         describe 'refresh a case with no ratings' do
           it 'creates all the ratings needed' do
-            assert_difference 'case_without_ratings.queries.count', 2 do
+            assert_difference 'case_without_ratings.queries.count', 1 do
               assert_difference 'case_without_ratings.ratings.count', 3 do
-                put :update, params: { case_id: case_without_ratings.id, book_id: book.id }
+                put :update,
+                    params: { case_id: case_without_ratings.id, book_id: book.id, create_missing_queries: true }
 
                 assert_response :success
 
                 body = response.parsed_body
-                assert_equal 2, body['queries_created']
+                assert_equal 1, body['queries_created']
                 assert_equal 3, body['ratings_created']
               end
             end
@@ -55,10 +59,10 @@ module Api
         end
 
         describe 'refresh a case with existing ratings' do
-          it 'creates all the ratings needed' do
+          it 'creates all the ratings and queries needed' do
             assert_difference 'case_with_ratings.queries.count', 1 do
               assert_difference 'case_with_ratings.ratings.count', 3 do
-                put :update, params: { case_id: case_with_ratings.id, book_id: book.id }
+                put :update, params: { case_id: case_with_ratings.id, book_id: book.id, create_missing_queries: true }
 
                 assert_response :success
                 body = response.parsed_body

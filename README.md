@@ -1,3 +1,4 @@
+
 # Quepid
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
@@ -347,52 +348,10 @@ bin/docker r bin/rake test:jshint
 The see available tasks:
 
 ```
-bin/docker r thor list
+bin/docker r bundle exec thor list
 ```
 
-Examples include:
-
-```
-case
-----
-thor case:create NAME ...      # creates a new case
-thor case:share CASEID TEAMID  # shares case with an team
-
-ratings
--------
-thor ratings:generate SOLRURL FILENAME  # generates random ratings into a .csv file
-thor ratings:import CASEID FILENAME     # imports ratings to a case
-
-user
-----
-thor user:create EMAIL USERNAME PASSWORD    # creates a new user
-thor user:grant_administrator EMAIL         # grant administrator privileges to user
-thor user:reset_password EMAIL NEWPASSWORD  # resets user's password
-```
-
-To see more details about any of the tasks, run `bin/docker r thor help TASKNAME`:
-
-```
-thor help user:create
-Usage:
-  thor user:create EMAIL USERNAME PASSWORD
-
-Options:
-  -a, [--administrator], [--no-administrator]
-
-Description:
-  `user:create` creates a new user with the passed in email, name and password.
-
-  EXAMPLES:
-
-  $ thor user:create foo@example.com "Eric Pugh" mysuperstrongpassword
-
-  With -a option, will mark the user as Administrator
-
-  EXAMPLES:
-
-  $ thor user:create -a admin@example.com Administrator mysuperstrongpassword
-```
+Additional documentation is in [Operating Documentation](docs/operating_documentation.md#scripting-users-cases-ratings). 
 
 # Elasticsearch
 
@@ -619,7 +578,7 @@ Check out the [App Structure](docs/app_structure.md) file for more info on how Q
 
 Check out the [Operating Documentation](docs/operating_documentation.md) file for more informations how Quepid can be operated and configured for your company.
 
-# Thank You's
+# 🙏 Thank You's
 
 Quepid would not be possible without the contributions from many individuals and organizations.
 
@@ -627,5 +586,8 @@ Specifically we would like to thank Erik Bugge and the folks at Kobler for fundi
 
 Quepid wasn't always open source!  Check out the [credits](docs/credits.md) for a list of contributors to the project.
 
-
 If you would like to fund development of a new feature for Quepid do [get in touch](http://www.opensourceconnections.com/contact/)!
+
+## 🌟 Contributors
+
+[![quepid  contributors](https://contrib.rocks/image?repo=o19s/quepid&max=2000)](https://github.com/o19s/quepid/graphs/contributors)

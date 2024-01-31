@@ -24,7 +24,6 @@ tmdb_solr_endpoint = SearchEndpoint.find_or_create_by name:"TMDB Solr", search_e
 
 tmdb_es_endpoint = SearchEndpoint.find_or_create_by   search_engine: :es, endpoint_url:   "http://quepid-elasticsearch.dev.o19s.com:9206/tmdb/_search", api_method: 'POST'
 
-
 print_step "End of seeding search endpoints................"
 
 # Users
@@ -126,6 +125,15 @@ user_specifics = {
 user_params          = user_defaults.merge(user_specifics)
 realistic_activity_user = seed_user user_params
 print_user_info user_params
+
+# go ahead and assign the end point to this person.
+statedecoded_solr_endpoint.owner = realistic_activity_user
+tmdb_solr_endpoint.owner = realistic_activity_user
+tmdb_es_endpoint.owner = realistic_activity_user
+
+statedecoded_solr_endpoint.save
+tmdb_solr_endpoint.save
+tmdb_es_endpoint.save
 
 ######################################
 # OSC Team Owner
@@ -289,7 +297,6 @@ print_step "Seeding tries................"
 
   new_try = tens_of_queries_case.tries.build try_params
 
-
   try_number = tens_of_queries_case.last_try_number + 1
 
   new_try.try_number   = try_number
@@ -340,14 +347,17 @@ print_step "End of seeding teams................"
 # Books
 print_step "Seeding books................"
 
-book = Book.where(name: "Book of Ratings", team:osc, scorer: Scorer.system_default_scorer, selection_strategy: SelectionStrategy.find_by(name:'Multiple Raters')).first_or_create
+book = Book.where(name: "Book of Ratings", scorer: Scorer.system_default_scorer, selection_strategy: SelectionStrategy.find_by(name:'Multiple Raters')).first_or_create
+book.teams << osc
+book.save
 
 # this code copied from populate_controller.rb and should be in a service...
 # has a hacked in judgement creator...
 tens_of_queries_case.queries.each do |query|
-  query.ratings.each do |rating|
+  query.ratings.each_with_index do |rating, index|
     query_doc_pair = book.query_doc_pairs.find_or_create_by query_text: query.query_text,
-                                                           doc_id:     rating.doc_id
+                                                           doc_id:     rating.doc_id,
+                                                           position: index
     query_doc_pair.judgements << Judgement.new(rating: rating.rating, user: osc_member_user)
     query_doc_pair.save
   end
@@ -365,7 +375,10 @@ print_step "Seeding Multiple cases................"
 case_names = ["Typeahead: Dairy", "Typeahead: Meats", "Typeahead: Dessert", "Typeahead: Fruit & Veg"]
 
 case_names.each do |case_name|
-  
+  # check if we've already created the case
+  if realistic_activity_user.cases.exists?(case_name: case_name)
+    break
+  end
   kase = realistic_activity_user.cases.create case_name: case_name
   
   days_of_experimentation = rand(3..20) # somewhere between 
@@ -454,7 +467,7 @@ if ENV['SEED_LARGE_CASES']
 
   # was 200
   unless hundreds_of_queries_case.queries.count >= 400
-    generator = RatingsGenerator.new search_url, { number: 200, show_progress: true }
+    generator = RatingsGenerator.new search_url, { number: 400, show_progress: true }
     ratings   = generator.generate_ratings
 
     options    = { format: :hash, show_progress: true }
@@ -470,8 +483,8 @@ if ENV['SEED_LARGE_CASES']
   solr_try.update try_defaults
   solr_try.search_endpoint = statedecoded_solr_endpoint
 
-  unless thousands_of_queries_case.queries.count >= 2000
-    generator = RatingsGenerator.new search_url, { number: 2000, show_progress: true }
+  unless thousands_of_queries_case.queries.count >= 5000
+    generator = RatingsGenerator.new search_url, { number: 5000, show_progress: true }
     ratings   = generator.generate_ratings
 
     options    = { format: :hash, show_progress: true }

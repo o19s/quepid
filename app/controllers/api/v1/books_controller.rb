@@ -5,19 +5,34 @@ require 'csv'
 module Api
   module V1
     class BooksController < Api::ApiController
-      api!
-      before_action :find_book, only: [ :show, :update, :destroy ]
+      before_action :set_book, only: [ :show, :update, :destroy ]
       before_action :check_book, only: [ :show, :update, :destroy ]
+
+      def_param_group :book do
+        param :name, String
+        param :show_rank, [ true, false ]
+        param :support_implicit_judgements, [ true, false ]
+        param :owner_id, Integer
+        param :scorer_id, Integer
+        param :selection_strategy_id, Integer
+      end
+
+      api :GET, '/api/books',
+          'List all books to which the user has access.'
+      def index
+        @books = current_user.books_involved_with
+        respond_with @books
+      end
 
       # rubocop:disable Metrics/MethodLength
       # rubocop:disable Metrics/AbcSize
       # rubocop:disable Metrics/CyclomaticComplexity
       # rubocop:disable Metrics/PerceivedComplexity
+      api :GET, '/api/books/:book_id',
+          'Show the book with the given ID.'
+      param :id, :number,
+            desc: 'The ID of the requested book.', required: true
       def show
-        ActiveRecord::Type::Boolean.new
-        # @export  = bool.deserialize params[:export] || false
-        @export = 'true' == params[:export]
-
         respond_to do |format|
           format.json
           format.csv do
@@ -32,12 +47,12 @@ module Api
               csv_headers << make_csv_safe(if rater.nil?
                                              'Unknown'
                                            else
-                                             (rater.name.presence || rater.email)
+                                             rater.name.presence || rater.email
                                            end)
             end
 
             @csv_array << csv_headers
-            @book.query_doc_pairs.order(:query_text).each do |qdp|
+            @book.query_doc_pairs.each do |qdp|
               row = [ make_csv_safe(qdp.query_text), qdp.doc_id ]
               unique_raters.each do |rater|
                 judgement = qdp.judgements.detect { |j| j.user == rater }
@@ -57,19 +72,23 @@ module Api
       # rubocop:enable Metrics/AbcSize
       # rubocop:enable Metrics/CyclomaticComplexity
       # rubocop:enable Metrics/PerceivedComplexity
-
+      api :POST, '/api/books', 'Create a new book.'
+      param_group :book
       def create
         @book = Book.new(book_params)
-
+        team = Team.find_by(id: params[:book][:team_id])
+        @book.teams << team
         if @book.save
-          # first = 1 == current_user.cases.count
-          # Analytics::Tracker.track_case_created_event current_user, @case, first
           respond_with @book
         else
           render json: @book.errors, status: :bad_request
         end
       end
 
+      api :PUT, '/api/books/:book_id', 'Update a given book.'
+      param :id, :number,
+            desc: 'The ID of the requested book.', required: true
+      param_group :book
       def update
         update_params = book_params
         if @book.update update_params
@@ -82,6 +101,9 @@ module Api
         # render json: { error: 'Invalid id' }, status: :bad_request
       end
 
+      api :DELETE, '/api/books/:book_id', 'Delete a given book.'
+      param :id, :number,
+            desc: 'The ID of the requested book.', required: true
       def destroy
         @book.destroy
         # Analytics::Tracker.track_case_deleted_event current_user, @case
@@ -92,15 +114,14 @@ module Api
       private
 
       def book_params
-        params.require(:book).permit(:team_id, :scorer_id, :selection_strategy_id, :name, :support_implicit_judgements,
+        params.require(:book).permit(:scorer_id, :selection_strategy_id, :name, :support_implicit_judgements,
                                      :show_rank)
       end
 
-      # rubocop:disable Layout/LineLength
-      def find_book
-        @book = current_user.books_involved_with.where(id: params[:id]).includes(:query_doc_pairs).preload([ query_doc_pairs: [ :judgements ] ]).first
+      def set_book
+        @book = current_user.books_involved_with.where(id: params[:id]).first
+        TrackBookViewedJob.perform_later @book, current_user
       end
-      # rubocop:enable Layout/LineLength
 
       def check_book
         render json: { message: 'Book not found!' }, status: :not_found unless @book

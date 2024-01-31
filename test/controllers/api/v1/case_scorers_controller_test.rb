@@ -72,7 +72,7 @@ module Api
 
           assert_response :bad_request
 
-          assert_equal json_response['scorer_id'], [ 'is not valid' ]
+          assert_equal response.parsed_body['scorer_id'], [ 'is not valid' ]
 
           acase.reload
 

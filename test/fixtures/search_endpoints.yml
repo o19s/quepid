@@ -71,6 +71,7 @@ first_for_case_with_two_tries:
   endpoint_url:   http://test.com/solr/tmdb/select
   search_engine:  solr
   api_method:     JSONP
+  owner:          :joey
   
 second_for_case_with_two_tries:
   name:           Solr http://test.com/solr/tmdb/select

@@ -47,10 +47,14 @@ angular.module('QuepidApp')
 
         if ( options.which === 'general' ) {
           $log.info('Selected "general" as export option.');
-
+          
           // Go back to the API in case other users have updates that we should include.
           caseSvc.get(ctrl.theCase.caseNo, false).then(function(acase) {
-            csv  = caseCSVSvc.stringify(acase, true);
+            csv  = caseCSVSvc.stringify(
+              acase, 
+              queriesSvc.queries, 
+              true
+            );
             blob = new Blob([csv], {
               type: 'text/csv'
             });
@@ -61,10 +65,9 @@ angular.module('QuepidApp')
         } else if ( options.which === 'detailed' ) {
           $log.info('Selected "detailed" as export option.');
 
-          var queries = queriesSvc.queries;
           csv         = caseCSVSvc.stringifyQueriesDetailed(
             ctrl.theCase,
-            queries,
+            queriesSvc.queries,
             true
           );
           blob        = new Blob([csv], {

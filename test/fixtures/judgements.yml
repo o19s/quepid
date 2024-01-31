@@ -3,6 +3,7 @@
 # Table name: judgements
 #
 #  id                :bigint           not null, primary key
+#  judge_later       :boolean          default(FALSE)
 #  rating            :float(24)
 #  unrateable        :boolean          default(FALSE)
 #  created_at        :datetime         not null

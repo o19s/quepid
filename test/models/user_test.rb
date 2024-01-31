@@ -294,12 +294,19 @@ class UserTest < ActiveSupport::TestCase
       assert_includes user_with_search_endpoint.search_endpoints_involved_with, one
     end
 
-    it 'provides access to the search end points that a user has access because of using it in a try in a case' do
-      assert_includes joey.search_endpoints_involved_with, for_case_with_one_try
+    it 'does NOT provide access to the search end points for a user just because of using it in a try in a case the user has access to' do
+      assert_not_includes joey.search_endpoints_involved_with, for_case_with_one_try
     end
 
     it 'prevents access to the search endpoint because the user is not part of a team' do
       assert_not_includes user_with_search_endpoint.search_endpoints_involved_with, es_try
+    end
+
+    it 'provides access to the search end point that the user is the owner of it' do
+      search_endpoint = SearchEndpoint.new(owner: joey)
+      search_endpoint.save!
+
+      assert_includes joey.search_endpoints_involved_with, search_endpoint
     end
   end
 end

@@ -205,7 +205,7 @@ module Api
           assert_equal assigns(:shallow), false
 
           assert_equal @last_score.id, json_response['id']
-          assert_not_nil json_response['queries']
+          assert_not_nil response.parsed_body['queries']
           assert_equal @last_score.queries, json_response['queries']
         end
       end

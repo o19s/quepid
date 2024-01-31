@@ -8,9 +8,9 @@
 #  support_implicit_judgements :boolean
 #  created_at                  :datetime         not null
 #  updated_at                  :datetime         not null
+#  owner_id                    :integer
 #  scorer_id                   :integer
 #  selection_strategy_id       :bigint           not null
-#  team_id                     :integer
 #
 # Indexes
 #
@@ -22,19 +22,22 @@
 #
 
 book_of_star_wars_judgements:
-  team: :shared
   scorer: :quepid_default_scorer
   selection_strategy: :single_rater
   name: TMDB Star Wars Judgements
 
 book_of_comedy_films:
-  team: :another_shared_team
   scorer: :quepid_default_scorer
   selection_strategy: :single_rater
   name: TMDB Greatest Comedies
 
-james_bond_movies:   # this has some query doc pairs and ratings.
-  team: :shared
+james_bond_movies:
+  owner: :doug
   scorer: :quepid_default_scorer
   selection_strategy: :multiple_raters
   name: James Bond Movies
+
+empty_book:
+  scorer: :quepid_default_scorer
+  selection_strategy: :single_rater
+  name: Empty Book
