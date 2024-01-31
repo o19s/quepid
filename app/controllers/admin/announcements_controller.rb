@@ -42,6 +42,17 @@ module Admin
       redirect_to admin_announcements_path
     end
 
+    def publish
+      @announcement = Announcement.find(params[:id])
+      if @announcement.live?
+        @announcement.update(live: false)
+        redirect_to admin_announcements_path, notice: "announcement id #{@announcement.id} is hidden."
+      else
+        @announcement.make_live!
+        redirect_to admin_announcements_path, notice: "announcement id #{@announcement.id} is now live."
+      end
+    end
+
     private
 
     def announcement_params

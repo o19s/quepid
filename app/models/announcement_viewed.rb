@@ -2,7 +2,7 @@
 
 # == Schema Information
 #
-# Table name: announcement_vieweds
+# Table name: announcement_viewed
 #
 #  id              :bigint           not null, primary key
 #  created_at      :datetime         not null
@@ -11,6 +11,7 @@
 #  user_id         :integer
 #
 class AnnouncementViewed < ApplicationRecord
+  self.table_name = 'announcement_viewed'
   belongs_to :user
   belongs_to :announcement
 end
