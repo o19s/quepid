@@ -28,7 +28,7 @@ class ApplicationController < ActionController::Base
   end
 
   def check_for_announcement
-    @announcement = AppAnnouncement.latest_unseen_for_user(@current_user).first if @current_user
-    AppAnnouncementViewed.create(user: @current_user, app_announcement: @announcement) if @announcement
+    @announcement = Announcement.latest_unseen_for_user(@current_user).first if @current_user
+    AnnouncementViewed.create(user: @current_user, announcement: @announcement) if @announcement
   end
 end

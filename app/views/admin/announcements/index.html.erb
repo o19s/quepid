@@ -1,8 +1,8 @@
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-  <h1 class="h2">Quepid Announcements</h1>
+  <h1 class="h2">Quepid Announcements to Users</h1>
   <div class="btn-toolbar mb-2 mb-md-0">
     <div class="btn-group me-2">
-      <%= link_to 'New Quepid Announcement', new_admin_app_announcement_path, class: "btn btn-sm btn-outline-secondary" %>
+      <%= link_to 'New Quepid Announcement', new_admin_announcement_path, class: "btn btn-sm btn-outline-secondary" %>
     </div>
   </div>
 </div>
@@ -21,15 +21,15 @@
   </thead>
 
   <tbody>
-  <% @app_announcements.each do |announcement| %>
+  <% @announcements.each do |announcement| %>
     <tr>
       <td><%= announcement.text.html_safe %></td>
       <td><%= announcement.author.name %> </td>
       <td><%= announcement.created_at.strftime("%B %d %Y, %l:%M%P") %> </td>
-      <td><%= announcement.app_announcement_viewed.size %> </td>
+      <td><%= announcement.announcement_viewed.size %> </td>
       <td>
-        <%= link_to 'Edit', edit_admin_app_announcement_path(announcement) %>
-        <%= link_to 'Delete', admin_app_announcement_path(announcement), method: :delete, data: { confirm: 'Are you sure?' } %>
+        <%= link_to 'Edit', edit_admin_announcement_path(announcement) %>
+        <%= link_to 'Delete', admin_announcement_path(announcement), method: :delete, data: { confirm: 'Are you sure?' } %>
       </td>
     </tr>
   <% end %>

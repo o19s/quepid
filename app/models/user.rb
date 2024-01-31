@@ -114,8 +114,8 @@ class User < ApplicationRecord
            class_name: 'BookMetadatum',
            dependent:  :destroy
 
-  has_many :app_announcements, foreign_key: 'author_id', dependent: :destroy, inverse_of: :author
-  has_many :viewed_app_announcements, through: :app_announcements_viewed, source: :app_announcement
+  has_many :announcements, foreign_key: 'author_id', dependent: :destroy, inverse_of: :author
+  has_many :viewed_announcements, through: :announcements_viewed, source: :announcement
 
   # Validations
 
@@ -251,8 +251,8 @@ class User < ApplicationRecord
   end
 
   def unseen_app_notifications
-    AppAnnouncement
-      .left_outer_joins(:app_announcement_viewed)
+    Announcement
+      .left_outer_joins(:announcement_viewed)
       .where('user_id != ? OR user_id IS NULL', id)
       .order(:created_at)
   end

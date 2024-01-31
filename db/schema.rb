@@ -55,6 +55,20 @@ ActiveRecord::Schema[7.1].define(version: 2024_01_22_154641) do
     t.index ["user_id"], name: "index_annotations_on_user_id"
   end
 
+  create_table "announcement_vieweds", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
+    t.integer "announcement_id"
+    t.integer "user_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "announcements", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
+    t.string "text"
+    t.integer "author_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
   create_table "api_keys", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.integer "user_id"
     t.string "token_digest", null: false
@@ -63,27 +77,12 @@ ActiveRecord::Schema[7.1].define(version: 2024_01_22_154641) do
     t.index ["token_digest"], name: "index_api_keys_on_token_digest"
   end
 
-  create_table "app_announcement_vieweds", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
-    t.integer "app_announcement_id"
-    t.integer "user_id"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-  end
-
-  create_table "app_announcements", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
-    t.string "text"
-    t.integer "author_id"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-  end
-
   create_table "book_metadata", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.integer "user_id"
     t.bigint "book_id", null: false
     t.datetime "last_viewed_at"
     t.index ["book_id"], name: "index_book_metadata_on_book_id"
     t.index ["user_id", "book_id"], name: "index_book_metadata_on_user_id_and_book_id"
-
   end
 
   create_table "books", charset: "utf8mb3", collation: "utf8mb3_unicode_ci", force: :cascade do |t|

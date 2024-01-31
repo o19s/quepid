@@ -1,9 +1,9 @@
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-  <h1 class="h2">New Quepid Announcement</h1>
+  <h1 class="h2">Edit Quepid Announcement</h1>
 </div>
 
 
-<%= form_for [:admin, @app_announcement] do |form| %>
+<%= form_for [:admin, @announcement] do |form| %>
 
   <div class="mb-3">
     <%= form.label :text, class: 'form-label' %>
@@ -21,5 +21,5 @@
 
 
 <br>
-<%= button_to 'Back to Quepid Announcements', admin_app_announcements_path, method: :get %>
+<%= button_to 'Back to Quepid Announcements', admin_announcements_path, method: :get %>
 <br>
