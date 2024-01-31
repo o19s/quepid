@@ -67,6 +67,8 @@ class Try < ApplicationRecord
         os_args
       when 'vectara'
         vectara_args
+      when 'algolia'
+        algolia_args
       when 'searchapi'
         searchapi_args
       end
@@ -151,6 +153,11 @@ class Try < ApplicationRecord
   end
 
   def vectara_args
+    # Use the EsArgParser as currently queries are the same
+    EsArgParser.parse(query_params, curator_vars_map)
+  end
+
+  def algolia_args
     # Use the EsArgParser as currently queries are the same
     EsArgParser.parse(query_params, curator_vars_map)
   end

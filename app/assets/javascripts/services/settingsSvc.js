@@ -137,6 +137,38 @@ angular.module('QuepidApp')
           proxyRequests: false,
           basicAuthCredential: ''
         },
+        algolia: {
+          queryParams: [
+            '{',
+              '"query": "#$query##",',
+              '"clickAnalytics": true,',
+              '"getRankingInfo": true,',
+              '"restrictSearchableAttributes": ["title","description"],',
+              '"enableReRanking": true,',
+              '"attributesToHighlight": [],',
+              '"page": 0,',
+              '"hitsPerPage": 10',
+            '}'
+          ].join('\n'),
+          escapeQuery: true,
+          apiMethod: 'POST',
+          headerType: 'Custom',
+          customHeaders: [
+            '{',
+            '  "x-algolia-api-key": "YOUR_ALGOLIA_API_KEY",',
+            '  "x-algolia-application-id": "YOUR_APPLICATION_ID"',
+            '}'
+          ].join('\n'),
+          idField: 'id',
+          titleField: 'title',
+          additionalFields: [],
+          numberOfRows: 10,
+          searchEngine: 'algolia',
+          searchUrl: 'https://index.algolianet.com/1/indexes/ecommerce-index/query',
+          urlFormat: 'https://index.algolianet.com/1/indexes/<index>/query',
+          proxyRequests: true,
+          basicAuthCredential: ''
+        },
         static: {
           queryParams: [
             'q=#$query##'
@@ -329,7 +361,7 @@ angular.module('QuepidApp')
           return angular.copy(this.defaultSettings[searchEngine]);
         }
       };
-      
+
       this.getDemoSettings = function(searchEngine){
         return angular.copy(this.tmdbSettings[searchEngine]);
     };
@@ -403,7 +435,7 @@ angular.module('QuepidApp')
           settings.basicAuthCredential = tryToUse.basicAuthCredential;
           settings.mapperCode = tryToUse.mapperCode;
           settings.options = tryToUse.options;
-          
+
           // TODO: Store type in db?...
           settings.headerType = settings.customHeaders.includes('ApiKey') ? 'API Key'
             : settings.customHeaders.length > 0 ? 'Custom' : 'None';
@@ -470,7 +502,7 @@ angular.module('QuepidApp')
         payloadTry.field_spec = settingsToSave.fieldSpec;
         payloadTry.number_of_rows = settingsToSave.numberOfRows;
         payloadTry.query_params = settingsToSave.selectedTry.queryParams;
-        
+
         // Either we are changing to a different, existing search endpoint
         if (settingsToSave.searchEndpointId){
           payloadTry.search_endpoint_id = settingsToSave.searchEndpointId;
@@ -485,7 +517,7 @@ angular.module('QuepidApp')
           payloadSearchEndpoint.mapper_code = settingsToSave.mapperCode;
           payloadSearchEndpoint.proxy_requests = settingsToSave.proxyRequests;
         }
-        
+
         return $http.post('api/cases/' + currCaseNo + '/tries', payload)
           .then(function(response) {
             var tryJson = response.data;

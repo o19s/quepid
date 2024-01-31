@@ -70,13 +70,13 @@ angular.module('QuepidApp')
       // Rescore on ratings update
       $scope.$on('rating-changed', () => {
         svc.scoreAll();
-      });      
+      });
 
       function createSearcherFromSettings(passedInSettings, query, options) {
         let queryText = query.queryText;
         let args = angular.copy(passedInSettings.selectedTry.args) || {};
         options = options == null ? {} : options;
-        
+
         if (passedInSettings && passedInSettings.selectedTry) {
 
           let searcherOptions = {
@@ -88,34 +88,34 @@ angular.module('QuepidApp')
           if (passedInSettings.apiMethod !== undefined) {
             searcherOptions.apiMethod = passedInSettings.apiMethod;
           }
-          
+
           if (passedInSettings.proxyRequests === true) {
             searcherOptions.proxyUrl = caseTryNavSvc.getQuepidProxyUrl();
-          }          
-          
+          }
+
           if (passedInSettings.searchEngine === 'static'){
             // Similar to logic in Splainer-searches SettingsValidatorFactory for snapshots.
             // we need a better way of handling this.   Basically we are saying a static search engine is
-            // treated like Solr.   But if we have more generic search apis, they will need a 
+            // treated like Solr.   But if we have more generic search apis, they will need a
             // custom parser...
-            passedInSettings.searchEngine = 'solr';           
+            passedInSettings.searchEngine = 'solr';
           }
           else if (passedInSettings.searchEngine === 'searchapi'){
             /*jshint evil:true */
             eval(passedInSettings.mapperCode);
             /*jshint evil:false */
-            
-            
+
+
             if (typeof docsMapper === 'function') {
               // jshint -W117
-              searcherOptions.docsMapper = docsMapper; 
+              searcherOptions.docsMapper = docsMapper;
             }
             if (typeof numberOfResultsMapper === 'function') {
               // jshint -W117
-              searcherOptions.numberOfResultsMapper = numberOfResultsMapper;               
+              searcherOptions.numberOfResultsMapper = numberOfResultsMapper;
             }
-            
-            
+
+
           }
 
           if (passedInSettings.searchEngine === 'solr') {
@@ -144,11 +144,13 @@ angular.module('QuepidApp')
               // args['query'] = args['query'].map(function addFilter(query) {
               //  query['metadata_filter'] = query.filterToRatings(passedInSettings);
               // });
+            } else if (passedInSettings.searchEngine === 'algolia') {
+              // Not supported
             }
           }
-          
+
           // This is for Mattias!  Merge our query specific options in as "qOption"
-          // which is what splainer-search expects. 
+          // which is what splainer-search expects.
           /*jshint ignore:start */
           searcherOptions.qOption = { ...passedInSettings.options, ...query.options};
           /*jshint ignore:end */
@@ -903,7 +905,7 @@ angular.module('QuepidApp')
         $http.post(path, data)
           .then(function(response) {
             let data = response.data;
-    
+
             // Update the display order based on the new one after the query creation
             that.queries = {};
             addQueriesFromResp(data);
