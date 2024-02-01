@@ -6,7 +6,7 @@
 #
 #  id         :bigint           not null, primary key
 #  live       :boolean          default(FALSE)
-#  text       :string(255)
+#  text       :text(65535)
 #  created_at :datetime         not null
 #  updated_at :datetime         not null
 #  author_id  :integer
@@ -17,6 +17,7 @@ class Announcement < ApplicationRecord
   has_many :viewers, through: :announcement_viewed, source: :user
 
   validates :live, uniqueness: { if: :live? }
+  validates :text, presence: true, length: { maximum: 1024 }
 
   scope :latest_unseen_for_user, ->(user) {
     join_condition = "
