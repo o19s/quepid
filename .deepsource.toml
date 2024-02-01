@@ -11,6 +11,16 @@ enabled = true
   [analyzers.meta]
   plugins = ["angular"]
   
+  exclude_patterns = [
+    "public/javascripts/ace/*.js",
+  ]
+  
+  test_patterns = [
+    "tests/**",
+    "spec/**"
+  ]
+
+  
 [[analyzers]]
 name = "docker"
 enabled = true
@@ -19,13 +29,4 @@ enabled = true
   dockerfile_paths = [
     "Dockerfile.dev",
     "Dockerfile.prod"
-  ]  
-
-exclude_patterns = [
-  "public/javascripts/ace/*.js",
-]
-
-test_patterns = [
-  "tests/**",
-  "spec/**"
-]
+  ]
