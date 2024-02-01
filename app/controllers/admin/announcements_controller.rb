@@ -46,10 +46,10 @@ module Admin
       @announcement = Announcement.find(params[:id])
       if @announcement.live?
         @announcement.update(live: false)
-        redirect_to admin_announcements_path, notice: "announcement id #{@announcement.id} is hidden."
+        redirect_to admin_announcements_path, notice: "Announcement id #{@announcement.id} is hidden."
       else
         @announcement.make_live!
-        redirect_to admin_announcements_path, notice: "announcement id #{@announcement.id} is now live."
+        redirect_to admin_announcements_path, notice: "Announcement id #{@announcement.id} is now live."
       end
     end
 
