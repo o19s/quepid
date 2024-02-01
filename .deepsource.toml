@@ -10,7 +10,7 @@ enabled = true
 
   [analyzers.meta]
   plugins = ["angular"]
-
+  
 [[analyzers]]
 name = "docker"
 enabled = true
@@ -19,7 +19,7 @@ enabled = true
   dockerfile_paths = [
     "Dockerfile.dev",
     "Dockerfile.prod"
-  ]
+  ]  
 
 exclude_patterns = [
   "public/javascripts/ace/*.js",
