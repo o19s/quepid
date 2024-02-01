@@ -101,6 +101,11 @@ Rails.application.routes.draw do
       resource :pulse, only: [ :show ], module: :users
     end
     resources :communal_scorers
+    resources :announcements do
+      member do
+        post :publish
+      end
+    end
   end
 
   # preview routes for mailers
