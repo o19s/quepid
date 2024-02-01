@@ -11,6 +11,9 @@
 // about supported directives.
 //
 // The long list of requires for the main Angular 1 application has been moved to core.js.
+// 
+// We have introduced importmaps, which live in application2.js.  This should probably be migrated
+// over to that file assuming import maps works the way we are hoping!
 
 //= require bootstrap/dist/js/bootstrap.bundle
 //= require jquery
@@ -23,5 +26,3 @@
 
 //= require codemirror/lib/codemirror
 //= require codemirror/mode/javascript/javascript
-
-// SKIP#= require local-time/app/assets/javascripts/local-time
