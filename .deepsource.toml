@@ -11,6 +11,7 @@ enabled = true
   [analyzers.meta]
   plugins = ["angular"]
 
+  
 [[analyzers]]
 name = "docker"
 enabled = true
@@ -20,12 +21,11 @@ enabled = true
     "Dockerfile.dev",
     "Dockerfile.prod"
   ]
-
-exclude_patterns = [
-  "public/javascripts/ace/*.js",
-]
-
-test_patterns = [
-  "tests/**",
-  "spec/**"
-]
+  
+[exclusions]
+  paths = [
+    "node_modules/**",    # Exclude all files and directories in the node_modules folder
+    "dist/**",            # Exclude all files and directories in the dist folder
+    "**/*.spec.js",       # Exclude all JavaScript test files
+    "public/javascripts/ace/*.js"      # Exclude a specific file
+  ]
