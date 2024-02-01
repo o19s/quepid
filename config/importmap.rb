@@ -3,4 +3,4 @@
 # Pin npm packages by running ./bin/importmap
 
 pin 'application2', preload: true
-pin "local-time", to: "vendored-local-time.js"# @3.0.2
+pin 'local-time', to: 'vendored-local-time.js' # @3.0.2
