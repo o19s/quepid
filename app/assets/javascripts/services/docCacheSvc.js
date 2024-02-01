@@ -71,7 +71,7 @@ angular.module('QuepidApp')
           supportLookupById = false;
         } else if (settings && settings.searchEngine === 'algolia') {
           // Support for lookup by ID is unavailable
-          supportLookupById = false;
+          supportLookupById = true;
         }
 
 
