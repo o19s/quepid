@@ -12,12 +12,6 @@ enabled = true
   plugins = ["angular"]
 
   
-  test_patterns = [
-    "tests/**",
-    "spec/**"
-  ]
-
-  
 [[analyzers]]
 name = "docker"
 enabled = true
