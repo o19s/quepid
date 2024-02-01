@@ -192,6 +192,10 @@ GEM
       thor
     i18n (1.14.1)
       concurrent-ruby (~> 1.0)
+    importmap-rails (2.0.1)
+      actionpack (>= 6.0.0)
+      activesupport (>= 6.0.0)
+      railties (>= 6.0.0)
     intercom-rails (0.4.2)
       activesupport (> 3.0)
     io-console (0.7.2)
@@ -510,6 +514,7 @@ DEPENDENCIES
   devise_invitable (~> 2.0)
   font-awesome-sass
   gabba
+  importmap-rails (~> 2.0)
   intercom-rails
   jbuilder (~> 2.7)
   jquery-rails

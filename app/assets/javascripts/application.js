@@ -24,4 +24,4 @@
 //= require codemirror/lib/codemirror
 //= require codemirror/mode/javascript/javascript
 
-//= require local-time/app/assets/javascripts/local-time
+// SKIP#= require local-time/app/assets/javascripts/local-time
