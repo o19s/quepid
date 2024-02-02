@@ -290,6 +290,17 @@ angular.module('QuepidApp')
 
       var Settings = SettingsFactory;
       var currSettings = null;
+      
+      this.supportLookupById = function(searchEngine){
+        let supportLookupById = true;
+        if (searchEngine === 'vectara'){
+          supportLookupById = false;
+        }
+        else if (searchEngine === 'searchapi'){
+          supportLookupById = false;
+        }
+        return supportLookupById;
+      }
 
       this.demoSettingsChosen = function(searchEngine, newUrl) {
         var useTMDBDemoSettings = false;

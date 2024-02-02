@@ -5,11 +5,11 @@
 angular.module('QuepidApp')
   .service('querySnapshotSvc', [
     '$http', '$q',
-    'settingsSvc', 'docCacheSvc',
+    'settingsSvc', 'docCacheSvc', 'caseTryNavSvc',
     'SnapshotFactory',
     function querySnapshotSvc(
       $http, $q,
-      settingsSvc, docCacheSvc,
+      settingsSvc, docCacheSvc, caseTryNavSvc,
       SnapshotFactory
     ) {
       // caches normal docs for all snapshots
@@ -40,6 +40,25 @@ angular.module('QuepidApp')
             settings === null ||
             Object.keys(settings).length === 0)
         ) {
+          
+          // Some search endpoints let you look up the documents by an id
+          // however if that isnt' possible, then we require you to store the doc fields
+          // in the snapshot, and we look them up from the Snapshot.  To be clever
+          // we pretend to be a "solr'" endpoint to drive the lookup.          
+          if (settingsSvc.supportLookupById(settings.searchEngine) == false){
+            var settingsForLookup  = angular.copy(settings);
+            settingsForLookup.apiMethod = 'GET';
+            settingsForLookup.searchEngine = 'solr';
+            settingsForLookup.searchEndpointId = null;
+            settingsForLookup.customHeaders = null;
+            
+            let snapshotId = snapshots[0].id
+            settingsForLookup.searchUrl = `${caseTryNavSvc.getQuepidRootUrl()}/api/cases/${caseTryNavSvc.getCaseNo()}/snapshots/${snapshotId}/search`
+            
+            settings = settingsForLookup;
+          }
+          
+          
           return docCacheSvc.update(settings);
         } else {
           return $q(function(resolve) {
