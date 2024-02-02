@@ -1,13 +1,3 @@
-GIT
-  remote: https://github.com/mcelaney/omniauth-keycloak.git
-  revision: ec5da57ec5f01546e1bf02dc58e21cd77eec334e
-  specs:
-    omniauth-keycloak (1.5.1)
-      faraday
-      json-jwt (> 1.13.0)
-      omniauth (>= 2.0)
-      omniauth-oauth2 (>= 1.7, < 1.9)
-
 GEM
   remote: https://rubygems.org/
   specs:
@@ -116,7 +106,7 @@ GEM
     bigdecimal (3.1.6)
     bindata (2.4.15)
     bindex (0.8.1)
-    bootsnap (1.17.1)
+    bootsnap (1.18.3)
       msgpack (~> 1.2)
     builder (3.2.4)
     bullet (7.1.6)
@@ -192,6 +182,10 @@ GEM
       thor
     i18n (1.14.1)
       concurrent-ruby (~> 1.0)
+    importmap-rails (2.0.1)
+      actionpack (>= 6.0.0)
+      activesupport (>= 6.0.0)
+      railties (>= 6.0.0)
     intercom-rails (0.4.2)
       activesupport (> 3.0)
     io-console (0.7.2)
@@ -285,6 +279,11 @@ GEM
       oauth2 (~> 2.0.6)
       omniauth (~> 2.0)
       omniauth-oauth2 (~> 1.8.0)
+    omniauth-keycloak (1.5.2)
+      faraday
+      json-jwt (> 1.13.0)
+      omniauth (>= 2.0)
+      omniauth-oauth2 (>= 1.7, < 1.9)
     omniauth-oauth2 (1.8.0)
       oauth2 (>= 1.4, < 3)
       omniauth (~> 2.0)
@@ -510,6 +509,7 @@ DEPENDENCIES
   devise_invitable (~> 2.0)
   font-awesome-sass
   gabba
+  importmap-rails (~> 2.0)
   intercom-rails
   jbuilder (~> 2.7)
   jquery-rails
@@ -523,7 +523,7 @@ DEPENDENCIES
   mysql2
   omniauth
   omniauth-google-oauth2
-  omniauth-keycloak!
+  omniauth-keycloak
   omniauth-rails_csrf_protection
   postmark-rails
   prophet-rb (~> 0.5.0)
@@ -555,7 +555,7 @@ DEPENDENCIES
   webmock
 
 RUBY VERSION
-   ruby 3.2.2p53
+   ruby 3.3.0p0
 
 BUNDLED WITH
    2.4.9
