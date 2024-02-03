@@ -55,15 +55,9 @@ angular.module('QuepidApp')
           angular.forEach(ctrl.snapshots, function(snapshot) {
             if (snapshot.id === ctrl.selection) {
               desiredSnapshot = snapshot;
-              return; // exit the loop early
+              return desiredSnapshot.hasSnapshotFile; // exit the loop early
             }
-          });
-          if (desiredSnapshot){
-            return desiredSnapshot.hasSnapshotFile;
-          }
-          else {
-            return false;
-          }
+          });          
         }
         return false;
       };

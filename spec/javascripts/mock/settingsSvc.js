@@ -26,6 +26,10 @@
     this.applicableSettings = function() {
       return mockTry;
     };
+    
+    this.supportLookupById = function(searchEngine) {
+      return true;
+    };
   };
   wind.MockSettingsSvc = MockSettingsSvc;
 })(window);

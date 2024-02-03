@@ -203,3 +203,10 @@ for_case_queries_case:
   query_params:   'q=#$query##'
   try_number:     1
   search_endpoint: :for_case_queries_case
+
+for_case_snapshot_case:
+  case:           :snapshot_case
+  query_params:   'q=#$query##'
+  try_number:     1
+  field_spec:     id:id title:title body
+  search_endpoint: :one
