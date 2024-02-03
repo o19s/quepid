@@ -26,6 +26,11 @@
     this.applicableSettings = function() {
       return mockTry;
     };
+    
+    this.supportLookupById = function() {
+      return true;
+    };
+    
   };
   wind.MockSettingsSvc = MockSettingsSvc;
 })(window);
