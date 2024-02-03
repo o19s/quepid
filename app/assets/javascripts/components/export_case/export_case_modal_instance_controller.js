@@ -55,7 +55,7 @@ angular.module('QuepidApp')
           angular.forEach(ctrl.snapshots, function(snapshot) {
             if (snapshot.id === ctrl.selection) {
               desiredSnapshot = snapshot;
-              return; // exit the loop early
+              break; // exit the loop early
             }
           });
           if (desiredSnapshot){
