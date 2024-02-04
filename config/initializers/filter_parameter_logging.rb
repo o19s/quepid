@@ -11,12 +11,8 @@ Rails.application.config.filter_parameters += [
 ]
 
 Rails.application.config.filter_parameters += [
-  ->(key, _value) { 'query_doc_pair.document_fields' == key.to_s }
-]
-
-Rails.application.config.filter_parameters += [
-  ->(key, _value) { 'snapshot_doc.fields' == key.to_s }
-]
-Rails.application.config.filter_parameters += [
-  ->(key, _value) { 'snapshot_doc.explain' == key.to_s }
+  'query_doc_pair.document_fields',
+  'snapshot.docs',
+  'snapshot_doc.explain',
+  'snapshot_doc.fields'
 ]
