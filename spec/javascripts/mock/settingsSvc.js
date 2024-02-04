@@ -27,7 +27,7 @@
       return mockTry;
     };
     
-    this.supportLookupById = function() {
+    this.supportLookupById = function(searchEngine) {
       return true;
     };
     

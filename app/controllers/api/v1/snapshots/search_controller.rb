@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 
-require 'uri'
 module Api
   module V1
     module Snapshots

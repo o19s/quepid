@@ -56,7 +56,7 @@ module Api
 
             assert_response :ok
 
-            response.parsed_body
+            data = response.parsed_body
 
             assert_equal query_string, data['responseHeader']['params']['q']
             assert_equal snapshot.snapshot_docs.count, data['response']['docs'].length

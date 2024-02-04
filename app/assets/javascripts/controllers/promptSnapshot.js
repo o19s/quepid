@@ -22,7 +22,7 @@ angular.module('QuepidApp')
         $scope.snapPrompt.inProgress  = true;
         $scope.snapPrompt.error       = null;
         
-        if ($scope.supportLookupById == false){ // force recording of document fields for non supporting end points.
+        if ($scope.supportLookupById === false){ // force recording of document fields for non supporting end points.
           $scope.snapPrompt.recordDocumentFields = true; 
         }
 

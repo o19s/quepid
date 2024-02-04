@@ -45,7 +45,7 @@ angular.module('QuepidApp')
           // however if that isnt' possible, then we require you to store the doc fields
           // in the snapshot, and we look them up from the Snapshot.  To be clever
           // we pretend to be a "solr'" endpoint to drive the lookup.          
-          if (settingsSvc.supportLookupById(settings.searchEngine) == false){
+          if (settingsSvc.supportLookupById(settings.searchEngine) === false){
             var settingsForLookup  = angular.copy(settings);
             settingsForLookup.apiMethod = 'GET';
             settingsForLookup.searchEngine = 'solr';
