@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class TruncatingFormatter < ActiveSupport::Logger::SimpleFormatter
   def initialize limit: 5_000
     super()
