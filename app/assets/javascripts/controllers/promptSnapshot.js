@@ -14,10 +14,17 @@ angular.module('QuepidApp')
       $scope.snapPrompt = {name: '', recordDocumentFields: false, inProgress: false, error: null};
 
       $scope.fieldSpec = settingsSvc.applicableSettings().fieldSpec;
+      $scope.searchEngine = settingsSvc.applicableSettings().searchEngine;
+      
+      $scope.supportLookupById = settingsSvc.supportLookupById(settingsSvc.applicableSettings().searchEngine);      
 
       $scope.ok = function() {
         $scope.snapPrompt.inProgress  = true;
         $scope.snapPrompt.error       = null;
+        
+        if ($scope.supportLookupById === false){ // force recording of document fields for non supporting end points.
+          $scope.snapPrompt.recordDocumentFields = true; 
+        }
 
         querySnapshotSvc.addSnapshot($scope.snapPrompt.name, $scope.snapPrompt.recordDocumentFields, queriesSvc.queryArray())
         .then(function() {

@@ -50,6 +50,10 @@
       >
       </select>
     </label>
+    
+    <div class="alert alert-warning" role="alert" ng-if="ctrl.isProcessingFile()">
+      This snapshot is currently being processed in the background.  You should wait till it completes.
+    </div>
   </div>
   <hr/>
   <div class="form-group">

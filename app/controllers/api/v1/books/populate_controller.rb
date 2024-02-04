@@ -15,6 +15,9 @@ module Api
         # We get a messy set of params in this method, so we don't use the normal
         # approach of strong parameter validation.  We hardcode the only params
         # we care about.
+        #
+        # With 5000 queries in large case, this takes 108 seconds...
+        #
         # rubocop:disable Layout/LineLength
         def update
           puts "[PopulateController] Request Size is #{number_to_human_size(query_doc_pairs_params.to_s.bytesize)}"

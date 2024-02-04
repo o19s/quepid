@@ -28,11 +28,16 @@ class BooksController < ApplicationController
     @book.cases.each do |kase|
       @count_of_anonymous_case_judgements += kase.ratings.where(user: nil).count
     end
+
+    @moar_judgements_needed = @book.judgements.where(user: current_user).count < @book.query_doc_pairs.count
     @cases = @book.cases
     @leaderboard_data = []
     @stats_data = []
-    unique_judges = @book.judgements.preload(:user).collect(&:user).uniq
-    unique_judges.each do |judge|
+
+    unique_judge_ids = @book.query_doc_pairs.joins(:judgements)
+      .distinct.pluck(:user_id)
+    unique_judge_ids.each do |judge_id|
+      judge = User.find(judge_id) unless judge_id.nil?
       @leaderboard_data << { judge:      judge.nil? ? 'anonymous' : judge.name,
                              judgements: @book.judgements.where(user: judge).count }
       @stats_data << {

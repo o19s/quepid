@@ -1,4 +1,5 @@
-<% if SelectionStrategy.random_query_doc_based_on_strategy(book, current_user) %>  
+hi: <%= @moar_judgements_needed %>
+<% if @moar_judgements_needed %>  
   <div class="alert alert-warning" role="alert">
     <%= link_to 'More Judgements are Needed!', book_judge_path(book), class: 'btn btn-primary', role: 'button' %>
   </div>
@@ -35,7 +36,7 @@
       <% else %>
         <div class="alert alert-info" role="alert">
         Best practice is to have three independent judgements per query/doc pair, and we don't yet have that.
-        Currently <%= book.judgements.count %> out of expected <%= book.query_doc_pairs.size * 3 %>.
+        Currently <%= book.judgements.count %> out of expected <%= book.query_doc_pairs.size * 3 %> total judgements have been made.
         </div>
       <% end %>
     <% end %>

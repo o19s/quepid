@@ -8,7 +8,7 @@ class JudgementsController < ApplicationController
     bool = ActiveRecord::Type::Boolean.new
     @shallow = bool.deserialize(params[:shallow] || true )
 
-    @judgements = @book.judgements.includes([ :query_doc_pair, :user ])
+    @judgements = @book.judgements.includes([ :query_doc_pair, :user ]).order('query_doc_pair_id')
   end
 
   def show
