@@ -52,8 +52,8 @@ angular.module('QuepidApp')
             settingsForLookup.searchEndpointId = null;
             settingsForLookup.customHeaders = null;
             
-            let snapshotId = snapshots[0].id
-            settingsForLookup.searchUrl = `${caseTryNavSvc.getQuepidRootUrl()}/api/cases/${caseTryNavSvc.getCaseNo()}/snapshots/${snapshotId}/search`
+            let snapshotId = snapshots[0].id;
+            settingsForLookup.searchUrl = `${caseTryNavSvc.getQuepidRootUrl()}/api/cases/${caseTryNavSvc.getCaseNo()}/snapshots/${snapshotId}/search`;
             
             settings = settingsForLookup;
           }
