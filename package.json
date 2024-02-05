@@ -40,7 +40,7 @@
     "ngclipboard": "^2.0.0",
     "party-js": "^2.2.0",
     "popper.js": "^1.16.1",
-    "splainer-search": "2.30.7",
+    "splainer-search": "2.31.0",
     "tether-shepherd": "latest",
     "turbolinks": "^5.2.0",
     "vega": "^5.27.0"
@@ -52,7 +52,7 @@
     "karma": "^6.4.1",
     "karma-chrome-launcher": "3.2.0",
     "karma-jasmine": "5.1.0",
-    "puppeteer": "^21.3.0"
+    "puppeteer": "^22.0.0"
   },
   "resolutions": {}
 }
