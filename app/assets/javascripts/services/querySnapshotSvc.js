@@ -55,6 +55,7 @@ angular.module('QuepidApp')
             var settingsForLookup  = angular.copy(settings);
             settingsForLookup.apiMethod = 'GET';
             settingsForLookup.searchEngine = 'solr';
+            settingsForLookup.fieldSpec = settingsSvc.mapFieldSpecToSolrFormat(settingsForLookup.fieldSpec);
             settingsForLookup.searchEndpointId = null;
             settingsForLookup.customHeaders = null;
             
