@@ -26,6 +26,12 @@ angular.module('QuepidApp')
       svc.importSnapshots = importSnapshots;
       svc.importSnapshotsToSpecificCase = importSnapshotsToSpecificCase;
       svc.get             = get;
+      svc.mapFieldSpecToSolrFormat = mapFieldSpecToSolrFormat;
+      
+      function mapFieldSpecToSolrFormat(fieldSpec){
+        let convertedfieldSpec = fieldSpec.replace(/id:_([^,]+)/, "id:$1");
+        return convertedfieldSpec;
+      };
 
       var addSnapshotResp = function(snapshots) {
         angular.forEach(snapshots, function(snapshot) {

@@ -515,4 +515,13 @@ describe('Service: querySnapshotSvc', function () {
       expect(Object.keys(querySnapshotSvc.snapshots).length).toBe(2);
     });
   });
+  
+  describe('Mapping fieldSpec back to /search endpoint expectations', function() {    
+    it('handles various patterns', function() {
+      expect(querySnapshotSvc.mapFieldSpecToSolrFormat('id:id title:title body')).toBe('id:id title:title body');
+      expect(querySnapshotSvc.mapFieldSpecToSolrFormat('id:_id title:title body')).toBe('id:id title:title body');
+      expect(querySnapshotSvc.mapFieldSpecToSolrFormat('title:title id:_id body')).toBe('title:title id:id body');
+      expect(querySnapshotSvc.mapFieldSpecToSolrFormat('id title:title body')).toBe('id title:title body');
+    });    
+  });
 });
