@@ -305,7 +305,7 @@ describe('Service: querySnapshotSvc', function () {
       }
     });
 
-    it('gets saved search results in saved order', function fetchAfterResolveTest() {
+    fit('gets saved search results in saved order', function fetchAfterResolveTest() {
       var snap5 = querySnapshotSvc.snapshots['5'];
       var snap5query0Results = snap5.getSearchResults('0');
       expect(snap5query0Results[0].id).toEqual('1');
@@ -514,5 +514,14 @@ describe('Service: querySnapshotSvc', function () {
 
       expect(Object.keys(querySnapshotSvc.snapshots).length).toBe(2);
     });
+  });
+  
+  describe('Mapping fieldSpec back to /search endpoint expectations', function() {    
+    it('handles various patterns', function() {
+      expect(querySnapshotSvc.mapFieldSpecToSolrFormat('id:id title:title body')).toBe('id:id title:title body');
+      expect(querySnapshotSvc.mapFieldSpecToSolrFormat('id:_id title:title body')).toBe('id:id title:title body');
+      expect(querySnapshotSvc.mapFieldSpecToSolrFormat('title:title id:_id body')).toBe('title:title id:id body');
+      expect(querySnapshotSvc.mapFieldSpecToSolrFormat('id title:title body')).toBe('id title:title body');
+    });    
   });
 });

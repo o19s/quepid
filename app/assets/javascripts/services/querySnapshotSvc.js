@@ -5,11 +5,11 @@
 angular.module('QuepidApp')
   .service('querySnapshotSvc', [
     '$http', '$q',
-    'settingsSvc', 'docCacheSvc', 'caseTryNavSvc',
+    'settingsSvc', 'docCacheSvc', 'caseTryNavSvc', 'fieldSpecSvc',
     'SnapshotFactory',
     function querySnapshotSvc(
       $http, $q,
-      settingsSvc, docCacheSvc, caseTryNavSvc,
+      settingsSvc, docCacheSvc, caseTryNavSvc, fieldSpecSvc,
       SnapshotFactory
     ) {
       // caches normal docs for all snapshots
@@ -26,8 +26,14 @@ angular.module('QuepidApp')
       svc.importSnapshots = importSnapshots;
       svc.importSnapshotsToSpecificCase = importSnapshotsToSpecificCase;
       svc.get             = get;
+      svc.mapFieldSpecToSolrFormat = mapFieldSpecToSolrFormat;
+      
+      function mapFieldSpecToSolrFormat(fieldSpec) {
+        let convertedfieldSpec = fieldSpec.replace(/id:_([^,]+)/, 'id:$1');
+        return convertedfieldSpec;
+      }
 
-      var addSnapshotResp = function(snapshots) {
+      var addSnapshotResp = function(snapshots) {        
         angular.forEach(snapshots, function(snapshot) {
           // locally store snapshot data
           var snapObj = new SnapshotFactory(snapshot);
@@ -45,20 +51,24 @@ angular.module('QuepidApp')
           // however if that isnt' possible, then we require you to store the doc fields
           // in the snapshot, and we look them up from the Snapshot.  To be clever
           // we pretend to be a "solr'" endpoint to drive the lookup.          
-          if (settingsSvc.supportLookupById(settings.searchEngine) === false){
-            var settingsForLookup  = angular.copy(settings);
-            settingsForLookup.apiMethod = 'GET';
-            settingsForLookup.searchEngine = 'solr';
-            settingsForLookup.searchEndpointId = null;
-            settingsForLookup.customHeaders = null;
-            
-            let snapshotId = snapshots[0].id;
-            settingsForLookup.searchUrl = `${caseTryNavSvc.getQuepidRootUrl()}/api/cases/${caseTryNavSvc.getCaseNo()}/snapshots/${snapshotId}/search`;
-            
-            settings = settingsForLookup;
+          if (snapshots.length > 0 ) {
+            if (settingsSvc.supportLookupById(settings.searchEngine) === false){
+              var settingsForLookup  = angular.copy(settings);
+              settingsForLookup.apiMethod = 'GET';
+              settingsForLookup.searchEngine = 'solr';
+  
+              let solrSpecificFieldSpecStr =  svc.mapFieldSpecToSolrFormat(settingsForLookup.fieldSpec);
+              settingsForLookup.fieldSpec = fieldSpecSvc.createFieldSpec(solrSpecificFieldSpecStr);
+              settingsForLookup.searchEndpointId = null;
+              settingsForLookup.customHeaders = null;
+              
+              let snapshotId = snapshots[0].id;
+              settingsForLookup.searchUrl = `${caseTryNavSvc.getQuepidRootUrl()}/api/cases/${caseTryNavSvc.getCaseNo()}/snapshots/${snapshotId}/search`;
+              
+              settings = settingsForLookup;
+            }
           }
-          
-          
+                    
           return docCacheSvc.update(settings);
         } else {
           return $q(function(resolve) {
