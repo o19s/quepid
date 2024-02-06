@@ -42,7 +42,7 @@ angular.module('QuepidApp')
         });
         var settings = settingsSvc.editableSettings();
 
-        if ( !(angular.isUndefined(settings) ||
+        if ( snapshots.length > 0 && !(angular.isUndefined(settings) ||
             settings === null ||
             Object.keys(settings).length === 0)
         ) {
