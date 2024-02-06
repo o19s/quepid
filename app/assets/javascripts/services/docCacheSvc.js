@@ -60,9 +60,9 @@ angular.module('QuepidApp')
         }
         
         var docIds    = Object.keys(docsToFetch);                    
-        var resolver  = docResolverSvc.createResolver(docIds, settings, 15);
-              
+        
         if ( docIds.length > 0 ) {           
+          var resolver  = docResolverSvc.createResolver(docIds, settings, 15);
           return resolver.fetchDocs()
             .then(function () {
               angular.forEach(resolver.docs, function (doc) {

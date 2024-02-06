@@ -5,11 +5,11 @@
 angular.module('QuepidApp')
   .service('querySnapshotSvc', [
     '$http', '$q',
-    'settingsSvc', 'docCacheSvc', 'caseTryNavSvc',
+    'settingsSvc', 'docCacheSvc', 'caseTryNavSvc', 'fieldSpecSvc',
     'SnapshotFactory',
     function querySnapshotSvc(
       $http, $q,
-      settingsSvc, docCacheSvc, caseTryNavSvc,
+      settingsSvc, docCacheSvc, caseTryNavSvc, fieldSpecSvc,
       SnapshotFactory
     ) {
       // caches normal docs for all snapshots
@@ -28,12 +28,12 @@ angular.module('QuepidApp')
       svc.get             = get;
       svc.mapFieldSpecToSolrFormat = mapFieldSpecToSolrFormat;
       
-      function mapFieldSpecToSolrFormat(fieldSpec){
+      function mapFieldSpecToSolrFormat(fieldSpec) {
         let convertedfieldSpec = fieldSpec.replace(/id:_([^,]+)/, "id:$1");
         return convertedfieldSpec;
       };
 
-      var addSnapshotResp = function(snapshots) {
+      var addSnapshotResp = function(snapshots) {        
         angular.forEach(snapshots, function(snapshot) {
           // locally store snapshot data
           var snapObj = new SnapshotFactory(snapshot);
@@ -55,7 +55,9 @@ angular.module('QuepidApp')
             var settingsForLookup  = angular.copy(settings);
             settingsForLookup.apiMethod = 'GET';
             settingsForLookup.searchEngine = 'solr';
-            settingsForLookup.fieldSpec = settingsSvc.mapFieldSpecToSolrFormat(settingsForLookup.fieldSpec);
+
+            let solrSpecificFieldSpecStr =  svc.mapFieldSpecToSolrFormat(settingsForLookup.fieldSpec);
+            settingsForLookup.fieldSpec = fieldSpecSvc.createFieldSpec(solrSpecificFieldSpecStr)
             settingsForLookup.searchEndpointId = null;
             settingsForLookup.customHeaders = null;
             
@@ -64,8 +66,7 @@ angular.module('QuepidApp')
             
             settings = settingsForLookup;
           }
-          
-          
+                    
           return docCacheSvc.update(settings);
         } else {
           return $q(function(resolve) {
