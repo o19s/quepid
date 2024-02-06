@@ -29,9 +29,9 @@ angular.module('QuepidApp')
       svc.mapFieldSpecToSolrFormat = mapFieldSpecToSolrFormat;
       
       function mapFieldSpecToSolrFormat(fieldSpec) {
-        let convertedfieldSpec = fieldSpec.replace(/id:_([^,]+)/, "id:$1");
+        let convertedfieldSpec = fieldSpec.replace(/id:_([^,]+)/, 'id:$1');
         return convertedfieldSpec;
-      };
+      }
 
       var addSnapshotResp = function(snapshots) {        
         angular.forEach(snapshots, function(snapshot) {
@@ -57,7 +57,7 @@ angular.module('QuepidApp')
             settingsForLookup.searchEngine = 'solr';
 
             let solrSpecificFieldSpecStr =  svc.mapFieldSpecToSolrFormat(settingsForLookup.fieldSpec);
-            settingsForLookup.fieldSpec = fieldSpecSvc.createFieldSpec(solrSpecificFieldSpecStr)
+            settingsForLookup.fieldSpec = fieldSpecSvc.createFieldSpec(solrSpecificFieldSpecStr);
             settingsForLookup.searchEndpointId = null;
             settingsForLookup.customHeaders = null;
             
