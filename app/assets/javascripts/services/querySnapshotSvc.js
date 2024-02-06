@@ -42,7 +42,7 @@ angular.module('QuepidApp')
         });
         var settings = settingsSvc.editableSettings();
 
-        if ( snapshots.length > 0 && !(angular.isUndefined(settings) ||
+        if ( !(angular.isUndefined(settings) ||
             settings === null ||
             Object.keys(settings).length === 0)
         ) {
@@ -51,20 +51,22 @@ angular.module('QuepidApp')
           // however if that isnt' possible, then we require you to store the doc fields
           // in the snapshot, and we look them up from the Snapshot.  To be clever
           // we pretend to be a "solr'" endpoint to drive the lookup.          
-          if (settingsSvc.supportLookupById(settings.searchEngine) === false){
-            var settingsForLookup  = angular.copy(settings);
-            settingsForLookup.apiMethod = 'GET';
-            settingsForLookup.searchEngine = 'solr';
-
-            let solrSpecificFieldSpecStr =  svc.mapFieldSpecToSolrFormat(settingsForLookup.fieldSpec);
-            settingsForLookup.fieldSpec = fieldSpecSvc.createFieldSpec(solrSpecificFieldSpecStr);
-            settingsForLookup.searchEndpointId = null;
-            settingsForLookup.customHeaders = null;
-            
-            let snapshotId = snapshots[0].id;
-            settingsForLookup.searchUrl = `${caseTryNavSvc.getQuepidRootUrl()}/api/cases/${caseTryNavSvc.getCaseNo()}/snapshots/${snapshotId}/search`;
-            
-            settings = settingsForLookup;
+          if (snapshots.length > 0 ) {
+            if (settingsSvc.supportLookupById(settings.searchEngine) === false){
+              var settingsForLookup  = angular.copy(settings);
+              settingsForLookup.apiMethod = 'GET';
+              settingsForLookup.searchEngine = 'solr';
+  
+              let solrSpecificFieldSpecStr =  svc.mapFieldSpecToSolrFormat(settingsForLookup.fieldSpec);
+              settingsForLookup.fieldSpec = fieldSpecSvc.createFieldSpec(solrSpecificFieldSpecStr);
+              settingsForLookup.searchEndpointId = null;
+              settingsForLookup.customHeaders = null;
+              
+              let snapshotId = snapshots[0].id;
+              settingsForLookup.searchUrl = `${caseTryNavSvc.getQuepidRootUrl()}/api/cases/${caseTryNavSvc.getCaseNo()}/snapshots/${snapshotId}/search`;
+              
+              settings = settingsForLookup;
+            }
           }
                     
           return docCacheSvc.update(settings);
