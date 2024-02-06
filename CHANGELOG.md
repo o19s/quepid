@@ -1,5 +1,42 @@
 # Changelog
 
+## 7.14.0 - 2024-02-06
+
+### Features
+
+* SCALING SCALING SCALING.   Now possible, though painful still, to run 5000 queries by moving lots of activities to background processing.   Thanks to my colleagues on the Cville Slack communities #ruby channel for lots of advice and help.  https://github.com/o19s/quepid/pull/916 by @epugh.
+
+* Quepid truncates the document fields in the core display, either via using highlighting to pluck out a section, or just snippeting to 200 characters.  However some days you just want to see the entire field!  Now you can control this in your field specifciation by prepending the field name with `unabridged:` tag.   https://github.com/o19s/quepid/pull/946 by @epugh.  
+
+* Need to communicate with your users about a new Scorer or upcoming downtime?  You can now post Annoucements to your users.  https://github.com/o19s/quepid/pull/911 by @mkr and https://github.com/o19s/quepid/pull/941 by @epugh fixes https://github.com/o19s/quepid/issues/848 for @flaxsearch.
+
+### Improvements
+
+* Snapshots require you to be able to "lookup" the document by id from the search engine.  However some search engines like Vectara and the Search API don't support this.  Reworked how snapshots work to require you to save the document fields at snapshot creation time in order to power the snapshot comparison UI.  This may end up being spread to other search engines as well.  https://github.com/o19s/quepid/pull/945 and https://github.com/o19s/quepid/pull/931 by @epugh.
+
+* The logs in Quepid are being overwhelmed by the size of the documents.  https://github.com/o19s/quepid/pull/942 by @reid-rigo cleans this up.  Thank you Reid!
+
+* Stripped out Threshold based alerting on queries, the community never used them.  https://github.com/o19s/quepid/pull/927 by @epugh.
+
+* Now tracking when a Book was viewed by a user, which powers the dashboard.  https://github.com/o19s/quepid/pull/925 by @epugh.
+
+* Removed the `QUEPID_PROPHET_ANALYTICS` environment variable, as Prophet was never a performance issue.  https://github.com/o19s/quepid/pull/924 by @epugh.
+
+* Dropped old database columns in the `tries` table that had moved to `search_endpoints` table.  https://github.com/o19s/quepid/pull/930 by @epugh.
+
+
+### Bugs
+
+* Restore the thor commands for creating an admin user.  https://github.com/o19s/quepid/pull/922 by @epugh fixes https://github.com/o19s/quepid/issues/888 by @vincetrumental.
+
+* Bug fix for static search endpoint when Quepid is running in a nested host context.  https://github.com/o19s/quepid/pull/917 by @epugh.
+
+* We were not export notes and options for a query.  https://github.com/o19s/quepid/pull/926 by @epugh fixes https://github.com/o19s/quepid/issues/923 by @peterdm.
+
+Plus we updated to the latest of Ruby and Ruby gems, Mysql, various NPM packages.
+
+
+
 ## 7.13.0 - 2024-01-03
 
 Just in time for the New Year!
