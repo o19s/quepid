@@ -86,6 +86,9 @@ module Api
           end
 
           if @case.save
+            # so annoying to import a case and then have to do the wizard!
+            # If you import a case, you presumably know what you are doing.
+            @current_user.update completed_case_wizard: true
             respond_with @case
           else
             render json: @case.errors, status: :bad_request
