@@ -8,6 +8,7 @@ angular.module('QuepidApp')
         es:   'Elasticsearch',
         os:   'OpenSearch',
         vectara: 'Vectara',
+        algolia: 'Algolia',
         static: 'Static File',
         searchapi: 'Search API'
       };

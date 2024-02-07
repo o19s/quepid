@@ -58,9 +58,9 @@ angular.module('QuepidApp')
           // Pass in the Quepid specific proxy url
           settings.proxyUrl = caseTryNavSvc.getQuepidProxyUrl();
         }
-        
-        var docIds    = Object.keys(docsToFetch);                    
-        
+
+        var docIds    = Object.keys(docsToFetch);
+
         if ( docIds.length > 0 ) {           
           var resolver  = docResolverSvc.createResolver(docIds, settings, 15);
           return resolver.fetchDocs()

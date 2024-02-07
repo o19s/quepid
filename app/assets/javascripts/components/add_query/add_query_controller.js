@@ -32,8 +32,6 @@ angular.module('QuepidApp')
      
 
       var addOne = function(queryText) {
-        console.log(settingsSvc.settingsId());
-        console.log(settingsSvc);
         var q = queriesSvc.createQuery(queryText);
 
         queriesSvc.persistQuery(q)

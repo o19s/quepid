@@ -55,22 +55,31 @@ class Try < ApplicationRecord
 
   # rubocop:disable Metrics/MethodLength
   def args
-    unless search_endpoint.nil?
-      case search_endpoint.search_engine
-      when 'solr'
+    search_endpoint_args = {
+      'solr'      => lambda {
         solr_args
-      when 'static'
+      },
+      'static'    => lambda {
         static_args
-      when 'es'
+      },
+      'es'        => lambda {
         es_args
-      when 'os'
+      },
+      'os'        => lambda {
         os_args
-      when 'vectara'
+      },
+      'vectara'   => lambda {
         vectara_args
-      when 'searchapi'
+      },
+      'algolia'   => lambda {
+        algolia_args
+      },
+      'searchapi' => lambda {
         searchapi_args
-      end
-    end
+      },
+    }
+
+    search_endpoint_args.fetch(search_endpoint.search_engine).call unless search_endpoint.nil?
   end
   # rubocop:enable Metrics/MethodLength
 
@@ -151,6 +160,11 @@ class Try < ApplicationRecord
   end
 
   def vectara_args
+    # Use the EsArgParser as currently queries are the same
+    EsArgParser.parse(query_params, curator_vars_map)
+  end
+
+  def algolia_args
     # Use the EsArgParser as currently queries are the same
     EsArgParser.parse(query_params, curator_vars_map)
   end
