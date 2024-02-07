@@ -40,10 +40,7 @@
       </div>
     </div>
 
-    <div class="form-group">
-      <input type="radio" id="best" name="diffSelection" value="best" ng-model="ctrl.which">
-      <label for="best">Highest Rated</label>
-    </div>
+
 
     <div class="form-group">
       <input type="radio" id="disable" name="diffSelection" value="none" ng-model="ctrl.which">
@@ -69,6 +66,6 @@
   </button>
 
   <div ng-show="ctrl.inProgress">
-    Fetching snapshot info, this may take a moment or two depending on the number of queries to fetch...
+    Fetching snapshot info, this may take a moment or two depending on the number of queries to run...
   </div>
 </div>

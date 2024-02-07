@@ -46,9 +46,7 @@ angular.module('QuepidApp')
       });
 
       // Init
-      if (initialSelection === 'best') {
-        ctrl.which = 'best';
-      } else if (initialSelection === null) {
+      if (initialSelection === null) {
         ctrl.which = 'none';
       }
 
@@ -113,9 +111,7 @@ angular.module('QuepidApp')
       }
 
       function ok() {
-        if (ctrl.which === 'best') {
-          $uibModalInstance.close('best');
-        } else if (ctrl.which === 'none') {
+        if (ctrl.which === 'none') {
           $uibModalInstance.close(null);
         } else {
           ctrl.inProgress = true;
@@ -133,7 +129,6 @@ angular.module('QuepidApp')
       }
 
       function cancel() {
-        //$uibModalInstance.dismiss();
         $uibModalInstance.dismiss('cancel');
       }
     }

@@ -173,20 +173,4 @@ describe('Service: diffResultsSvc', function() {
     });
   });
 
-  it('fetches best docs', function() {
-    diffResultsSvc.setDiffSetting('best');
-    diffResultsSvc.createQueryDiff(fakeQuery);
-    expect(fakeQuery.diff.docs().length).toEqual(0);
-
-    fakeQuery.diff.fetch().then(function() {
-      expect(fakeQuery.diff.docs().length).toEqual(3);
-      var diffDocs = fakeQuery.diff.docs();
-      expect(diffDocs[0].id).toEqual(doc3.id);
-      expect(diffDocs[1].id).toEqual(doc2.id);
-      expect(diffDocs[2].id).toEqual(doc1.id);
-    });
-
-    $rootScope.$apply();
-  });
-
 });
