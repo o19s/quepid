@@ -32,6 +32,36 @@ module Api
             assert_equal snapshot_query.snapshot_docs.count, data['response']['docs'].length
           end
 
+          test 'handles a term lookup for docs as if Solr' do
+            query_string = 'id:('
+            snapshot.snapshot_docs.each do |doc|
+              query_string += "#{doc.doc_id} OR "
+            end
+            query_string = query_string[0...-4]
+            query_string += ')'
+            solr_query_params = {
+              q:       query_string,
+              defType: 'lucene',
+              rows:    snapshot.snapshot_docs.count,
+              fl:      snapshot.case.tries.first.field_spec,
+              wt:      'json',
+              hl:      false,
+
+            }
+
+            params = { case_id: acase.id, snapshot_id: snapshot.id }
+            params   = params.merge(solr_query_params)
+
+            get :index, params: params
+
+            assert_response :ok
+
+            data = response.parsed_body
+
+            assert_equal query_string, data['responseHeader']['params']['q']
+            assert_equal snapshot.snapshot_docs.count, data['response']['docs'].length
+          end
+
           test 'handles a *:* search' do
             get :index, params: { case_id: acase.id, snapshot_id: snapshot.id, q: '*:*' }
 

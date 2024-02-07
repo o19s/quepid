@@ -10,13 +10,11 @@ angular.module('QuepidApp')
     '$log',
     'querySnapshotSvc',
     'settingsSvc',
-    'bestFetcherSvc',
     function diffResultsSvc(
       $q,
       $log,
       querySnapshotSvc,
-      settingsSvc,
-      bestFetcherSvc
+      settingsSvc
     ) {
 
       var diffSetting = null;
@@ -129,10 +127,7 @@ angular.module('QuepidApp')
         var fetcher = nullFetcher;
 
         if (diffSetting === null) {
-          query.diff = null;
-        } else if (diffSetting === 'best') {
-          fetcher = bestFetcherSvc.createBestFetcher(query.ratingsStore);
-          query.diff = new QueryDiffResults(query, fetcher, 'best');
+          query.diff = null;          
         } else {
           var snapshot = querySnapshotSvc.snapshots[diffSetting];
 

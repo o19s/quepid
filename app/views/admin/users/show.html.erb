@@ -146,7 +146,7 @@
 
 <%= link_to 'Edit', edit_admin_user_path(@user) %> |
 <%= link_to 'Back', admin_users_path %> |
-<%= button_to (@user.locked? ? 'Unlock' : 'Lock'), admin_user_lock_path(@user), method: :patch, class: 'btn btn-danger' %> |
+<%= button_to (@user.locked? ? 'Unlock' : 'Lock'), admin_user_lock_path(@user), method: :patch, class: 'btn btn-danger btn-sm' %> |
 <%= link_to 'Destroy', admin_user_path(@user), method: :delete, data: { confirm: 'Are you sure you want to delete this user?' } %>
 
 <!-- has to be at the end to let JQuery and Heatmap work -->

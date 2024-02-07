@@ -26,6 +26,6 @@ class SnapshotQuery < ApplicationRecord
   belongs_to  :snapshot, optional: true # shouldn't be
   belongs_to  :query, optional: true # shouldn't be
   has_many    :snapshot_docs, -> { order(position: :asc) },
-              dependent:  :destroy,
+              dependent:  :delete_all,
               inverse_of: :snapshot_query
 end

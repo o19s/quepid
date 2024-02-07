@@ -15,6 +15,7 @@ This document explains how Quepid can be operated and configured.
 - [Jupyterlite Notebooks](#jupyterlite-notebooks)
 - [Using Personal Access Tokens](#using-personal-access-tokens)
 - [Scripting Users Cases Ratings](#scripting-users-cases-ratings)
+- [Posting Announcements to Users](#posting-announcements-to-users)
 
 ## Running behind a load balancer
 
@@ -279,3 +280,13 @@ Description:
 
   $ thor user:create -a admin@example.com Administrator mysuperstrongpassword
 ```
+
+## Posting Announcements to Users
+
+Sometimes you need to communicate to your users, like the fact that a scorer has been changed or a end point updated.  You can publish a new announcement to all users via the Admin's Announcements page.  You can use emojis and html in this, like this:
+
+```
+🎉 The program for <img src="https://haystackconf.com/img/logo.png" width="178" height="27"> has been launched!
+```
+
+Once they see it, they won't see it again.

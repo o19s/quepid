@@ -8,8 +8,12 @@ class ExperimentWithBulkInsertTest < ActionDispatch::IntegrationTest
   let(:scorer) { scorers(:quepid_default_scorer) }
   let(:selection_strategy) { selection_strategies(:multiple_raters) }
 
+  # rubocop:disable Style/ClassVars
+  @@skip_tests = true
+  # rubocop:enable Style/ClassVars
+
   test 'generate and export 5000 queries with traditional AR' do
-    skip('Ignoring all tests in ExperimentWithBulkInsertTest')
+    skip('Ignoring all tests in ExperimentWithBulkInsertTest') if @@skip_tests
     book = user.books.create name: '50000 Query Doc Pairs', scorer: scorer, selection_strategy: selection_strategy
     assert book.valid?
     result = Benchmark.measure do
@@ -32,7 +36,7 @@ class ExperimentWithBulkInsertTest < ActionDispatch::IntegrationTest
   end
 
   test 'generate and export 5000 queries with bulk import' do
-    skip('Ignoring all tests in ExperimentWithBulkInsertTest')
+    skip('Ignoring all tests in ExperimentWithBulkInsertTest') if @@skip_tests
     book = user.books.create name: '50000 Query Doc Pairs', scorer: scorer, selection_strategy: selection_strategy
     assert book.valid?
     result = Benchmark.measure do
@@ -56,7 +60,7 @@ class ExperimentWithBulkInsertTest < ActionDispatch::IntegrationTest
   end
 
   test 'generate and export 5000 queries with insert_all' do
-    skip('Ignoring all tests in ExperimentWithBulkInsertTest')
+    skip('Ignoring all tests in ExperimentWithBulkInsertTest') if @@skip_tests
     book = user.books.create name: '50000 Query Doc Pairs', scorer: scorer, selection_strategy: selection_strategy
     assert book.valid?
     result = Benchmark.measure do
@@ -86,7 +90,7 @@ class ExperimentWithBulkInsertTest < ActionDispatch::IntegrationTest
   end
 
   test 'generate and export 5000 queries with upsert_all' do
-    skip('Ignoring all tests in ExperimentWithBulkInsertTest')
+    skip('Ignoring all tests in ExperimentWithBulkInsertTest') if @@skip_tests
     book = user.books.create name: '50000 Query Doc Pairs', scorer: scorer, selection_strategy: selection_strategy
     assert book.valid?
     result = Benchmark.measure do
@@ -117,7 +121,7 @@ class ExperimentWithBulkInsertTest < ActionDispatch::IntegrationTest
 
   # rubocop:disable Layout/LineLength
   test 'generate and export 5000 queries with upsert_all when exists already data' do
-    skip('Ignoring all tests in ExperimentWithBulkInsertTest')
+    skip('Ignoring all tests in ExperimentWithBulkInsertTest') if @@skip_tests
     book = user.books.create name: '50000 Query Doc Pairs', scorer: scorer, selection_strategy: selection_strategy
     assert book.valid?
 

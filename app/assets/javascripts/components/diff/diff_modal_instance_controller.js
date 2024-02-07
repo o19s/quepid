@@ -18,8 +18,11 @@ angular.module('QuepidApp')
     ) {
       var ctrl = this;
 
-      // Attributes
-      ctrl.snapshots  = querySnapshotSvc.snapshots;
+      querySnapshotSvc.getSnapshots().then(function() {
+          ctrl.snapshots = querySnapshotSvc.snapshots;
+        }
+      );
+        
       ctrl.which      = 'snapshot';
       ctrl.selection  = initialSelection;
       ctrl.inProgress = false;
@@ -32,6 +35,8 @@ angular.module('QuepidApp')
       ctrl.nothingSelected = nothingSelected;
       ctrl.ok              = ok;
       ctrl.toggleDel       = toggleDel;
+      ctrl.isProcessingFile = isProcessingFile;
+      
 
       // Watches
       $scope.$watch('ctrl.selection', function(newVal, oldVal) {
@@ -41,9 +46,7 @@ angular.module('QuepidApp')
       });
 
       // Init
-      if (initialSelection === 'best') {
-        ctrl.which = 'best';
-      } else if (initialSelection === null) {
+      if (initialSelection === null) {
         ctrl.which = 'none';
       }
 
@@ -72,6 +75,25 @@ angular.module('QuepidApp')
             flash.success = 'Snapshot deleted successfully.';
           });
       }
+      
+      function isProcessingFile() {
+        if (ctrl.snapshots){
+          var desiredSnapshot = null;
+          angular.forEach(ctrl.snapshots, function(snapshot) {
+            if (snapshot.id === ctrl.selection) {
+              desiredSnapshot = snapshot;
+              return; // exit the loop early
+            }
+          });
+          if (desiredSnapshot){
+            return desiredSnapshot.hasSnapshotFile;
+          }
+          else {
+            return false;
+          }
+        }
+        return false;
+      }
 
       function isNumber(num) {
         return !isNaN(parseInt('' + num, 10));
@@ -89,9 +111,7 @@ angular.module('QuepidApp')
       }
 
       function ok() {
-        if (ctrl.which === 'best') {
-          $uibModalInstance.close('best');
-        } else if (ctrl.which === 'none') {
+        if (ctrl.which === 'none') {
           $uibModalInstance.close(null);
         } else {
           ctrl.inProgress = true;
@@ -109,7 +129,6 @@ angular.module('QuepidApp')
       }
 
       function cancel() {
-        //$uibModalInstance.dismiss();
         $uibModalInstance.dismiss('cancel');
       }
     }

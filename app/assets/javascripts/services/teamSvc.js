@@ -260,6 +260,8 @@ angular.module('QuepidApp')
             if ( !hasMember(team, member) ) {
               team.members.push(member);
             }
+            
+            return response.data.message;
           });
       };
 

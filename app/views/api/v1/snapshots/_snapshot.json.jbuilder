@@ -5,6 +5,7 @@ shallow ||= false
 json.id     snapshot.id
 json.name   snapshot.name
 json.time   snapshot.created_at
+json.has_snapshot_file snapshot.snapshot_file.present?
 
 unless shallow
   json.scorer snapshot.scorer, partial: 'api/v1/scorers/communal_scorer', as: :scorer
@@ -35,7 +36,7 @@ if with_docs
   end
 end
 
-unless shallow
+if with_docs
   json.scores do
     json.array! snapshot.snapshot_queries, partial: 'api/v1/snapshots/snapshot_query', as: :snapshot_query
   end

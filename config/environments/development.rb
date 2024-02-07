@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'active_support/core_ext/integer/time'
+require 'truncating_formatter'
 
 # rubocop:disable Metrics/BlockLength
 Rails.application.configure do
@@ -104,6 +105,8 @@ Rails.application.configure do
       protocol: 'https', # Replace with 'https' if using HTTPS  # we have relative urls so may not be sed
     }
   end
+
+  config.log_formatter = TruncatingFormatter.new
 
   # Uncomment if you wish to allow Action Cable access from any origin.
   # config.action_cable.disable_request_forgery_protection = true

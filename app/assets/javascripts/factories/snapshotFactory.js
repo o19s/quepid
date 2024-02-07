@@ -18,6 +18,7 @@
       self.id   = params.id;
       self.name = snapshotName;
       self.time = params.time;
+      self.hasSnapshotFile = params.has_snapshot_file;
       self.docs = params.docs;
       self.queries = params.queries;
 

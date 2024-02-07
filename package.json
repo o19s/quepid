@@ -34,13 +34,13 @@
     "d3-tip": "~0.9.1",
     "file-saver": "^2.0.5",
     "jquery": "~3.7.0",
-    "local-time": "^2.1.0",
+    "local-time": "^3.0.0",
     "ng-json-explorer": "http://github.com/o19s/ng-json-explorer",
     "ng-tags-input": "3.2.0",
     "ngclipboard": "^2.0.0",
     "party-js": "^2.2.0",
     "popper.js": "^1.16.1",
-    "splainer-search": "2.30.7",
+    "splainer-search": "2.32.0",
     "tether-shepherd": "latest",
     "turbolinks": "^5.2.0",
     "vega": "^5.27.0"
@@ -52,7 +52,7 @@
     "karma": "^6.4.1",
     "karma-chrome-launcher": "3.2.0",
     "karma-jasmine": "5.1.0",
-    "puppeteer": "^21.3.0"
+    "puppeteer": "^22.0.0"
   },
   "resolutions": {}
 }

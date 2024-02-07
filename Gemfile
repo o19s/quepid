@@ -2,7 +2,7 @@
 
 source 'https://rubygems.org'
 
-ruby '3.2.2'
+ruby '3.3.0'
 
 gem 'activerecord-import', '>= 1.0.7'
 gem 'active_storage_db'
@@ -31,8 +31,7 @@ gem 'listen', '~> 3.3'
 gem 'local_time'
 gem 'mysql2'
 gem 'omniauth'
-# gem 'omniauth-keycloak'  commented out as it needs updating to work with latest omniauth gem.
-gem 'omniauth-keycloak', github: 'mcelaney/omniauth-keycloak'
+gem 'omniauth-keycloak'
 gem 'omniauth-google-oauth2'
 gem 'omniauth-rails_csrf_protection'
 gem 'postmark-rails'
@@ -90,3 +89,5 @@ group :test do
   gem 'capybara'
   gem 'selenium-webdriver'
 end
+
+gem 'importmap-rails', '~> 2.0'

@@ -80,6 +80,7 @@
             <li><%= link_to 'Admin Home', admin_path, class: 'dropdown-item', target: '_self' %></li>
             <li><%= link_to 'Users', admin_users_path, class: 'dropdown-item', target: '_self' %></li>
             <li><%= link_to 'Quepid Scorers', admin_communal_scorers_path, class: 'dropdown-item', target: '_self' %></li>
+            <li><%= link_to 'Announcements', admin_announcements_path, class: 'dropdown-item', target: '_self' %></li>
             <li><%= link_to 'Job Manager', sidekiq_web_path, class: 'dropdown-item', target: '_self' %></li>
             <% end %>
 
@@ -93,5 +94,12 @@
 </nav>
 
 <div id='flash'>
-  <%= flash_messages_bs5 -%>
+  <% if @announcement.present? %>
+    <div class="alert alert-light alert-dismissible text-center fade show" role="alert">
+      <%= @announcement.text.html_safe %>      
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+  <% end %>
+  
+  <%= flash_messages -%>
 </div>
