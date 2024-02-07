@@ -30,6 +30,7 @@ module Api
         end
       end
 
+      # rubocop:disable Layout/LineLength
       def invite
         unless signup_enabled?
           render json: { error: 'Signups are disabled!' }, status: :not_found
@@ -44,11 +45,13 @@ module Api
 
         if @team.save
           Analytics::Tracker.track_member_added_to_team_event current_user, @team, @member
+          @message = @member.skip_invitation.present? ? "Please share the invite link with #{@member.email} directly so they can join." : "Invitation email was sent to #{@member.email}"
           respond_with @member
         else
           render json: @member.errors, status: :bad_request
         end
       end
+      # rubocop:enable Layout/LineLength
 
       def destroy
         member = @team.members.where('email = ? OR id = ?', params[:id].to_s.downcase, params[:id])
