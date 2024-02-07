@@ -14,7 +14,7 @@ angular.module('QuepidApp')
       $q,
       $log,
       querySnapshotSvc,
-      settingsSvc,
+      settingsSvc
     ) {
 
       var diffSetting = null;
