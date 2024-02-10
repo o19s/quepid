@@ -58,9 +58,11 @@ class CaseImporter
   # rubocop:disable Metrics/AbcSize
   def import
     params_to_use = @data_to_process
-    # passed first set of validations.
+
     @case.case_name = params_to_use[:case_name]
     @case.options = params_to_use[:options]
+    @case.public = params_to_use[:public]
+    @case.archived = params_to_use[:archived]
 
     scorer_name = params_to_use[:scorer][:name]
     @case.scorer = Scorer.find_by(name: scorer_name)

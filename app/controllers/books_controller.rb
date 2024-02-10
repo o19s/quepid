@@ -38,7 +38,7 @@ class BooksController < ApplicationController
       .distinct.pluck(:user_id)
     unique_judge_ids.each do |judge_id|
       judge = User.find(judge_id) unless judge_id.nil?
-      @leaderboard_data << { judge:      judge.nil? ? 'anonymous' : judge.name,
+      @leaderboard_data << { judge:      judge.nil? ? 'anonymous' : judge.fullname,
                              judgements: @book.judgements.where(user: judge).count }
       @stats_data << {
         judge:       judge,
