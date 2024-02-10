@@ -1,4 +1,4 @@
-
+require 'zip'
 
 def seed_user hash
   if User.where(email: hash[:email].downcase).exists?
@@ -14,6 +14,13 @@ end
 
 def print_user_info info
   print_step "Seeded user: email: #{info[:email]}, password: #{info[:password]}"
+end
+
+def unzip_file_in_memory(zip_file)
+  Zip::File.open(zip_file) do |zip|
+    entry = zip.first
+    entry.get_input_stream.read  
+  end
 end
 
 # Search Endpoints
@@ -271,7 +278,7 @@ tens_of_queries_case.queries.each do |query|
 end
 
 # Multiple Cases
-print_step "Seeding Multiple cases................"
+print_step "Seeding multiple cases................"
 case_names = ["Typeahead: Dairy", "Typeahead: Meats", "Typeahead: Dessert", "Typeahead: Fruit & Veg"]
 
 case_names.each do |case_name|
@@ -329,7 +336,31 @@ case_names.each do |case_name|
 
 end
 
-print_step "End of Multiple cases................"
+print_step "End of multiple cases................"
+
+print_step "Loading Haystack Rating Party Sample Data........."
+
+contents = unzip_file_in_memory(Rails.root.join('db', 'sample_data', 'haystack_rating_party_case.json.zip'))
+data = JSON.parse(contents)
+case_params = data.to_h.deep_symbolize_keys
+
+@case = Case.new
+options = {force_create_users: true}
+case_importer = ::CaseImporter.new @case,realistic_activity_user, case_params, options
+
+case_importer.validate
+case_importer.import
+
+contents = unzip_file_in_memory(Rails.root.join('db', 'sample_data', 'haystack_rating_party_book.json.zip'))
+data = JSON.parse(contents)
+book_params = data.to_h.deep_symbolize_keys
+
+@book = Book.new
+options = {force_create_users: true}
+book_importer = ::BookImporter.new @book,realistic_activity_user, book_params, options
+
+book_importer.validate
+book_importer.import
 
 # Big Cases
 

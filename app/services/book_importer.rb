@@ -7,15 +7,17 @@ class BookImporter
 
   attr_reader :logger, :options
 
-  def initialize book, data_to_process, opts = {}
+  def initialize book, current_user, data_to_process, opts = {}
     default_options = {
-      logger:        Rails.logger,
-      show_progress: false,
+      logger:             Rails.logger,
+      show_progress:      false,
+      force_create_users: false,
     }
 
     @options = default_options.merge(opts.deep_symbolize_keys)
 
     @book = book
+    @current_user = current_user
     @data_to_process = data_to_process
     @logger = @options[:logger]
   end
@@ -55,7 +57,11 @@ class BookImporter
       list_of_emails_of_users.uniq!
       list_of_emails_of_users.each do |email|
         unless User.exists?(email: email)
-          @book.errors.add(:base, "User with email '#{email}' needs to be migrated over first.")
+          if options[:force_create_users]
+            User.invite!({ email: email, password: '', skip_invitation: true }, @current_user)
+          else
+            @book.errors.add(:base, "User with email '#{email}' needs to be migrated over first.")
+          end
         end
       end
     end
@@ -79,6 +85,9 @@ class BookImporter
     selection_strategy_name = params_to_use[:selection_strategy][:name]
     @book.scorer = Scorer.find_by(name: scorer_name)
     @book.selection_strategy = SelectionStrategy.find_by(name: selection_strategy_name)
+
+    # Force the imported book to be owned by the user doing the importing.  Otherwise you can loose the book!
+    @book.owner = User.find_by(email: @current_user.email)
 
     params_to_use[:query_doc_pairs]&.each do |query_doc_pair|
       qdp = @book.query_doc_pairs.build(query_doc_pair.except(:judgements))
