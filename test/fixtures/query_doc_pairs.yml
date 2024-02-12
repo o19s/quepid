@@ -30,8 +30,9 @@ one:
   query_text: MyString
   position: 1
   doc_id: "MyDocA"
-  document_fields: MyText
+  document_fields: '{"title":"MyText"}'
   book: one
+  options:      '{"special_boost": 3.2}'
 
 two:
   query_text: MyString

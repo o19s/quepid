@@ -47,11 +47,14 @@ module Api
         @query_doc_pair = @book.query_doc_pairs.find_or_create_by query_text: params[:query_doc_pair][:query_text],
                                                                   doc_id:     params[:query_doc_pair][:doc_id]
 
-        @query_doc_pair.position = params[:query_doc_pair][:position] unless params[:query_doc_pair][:position].nil?
-        unless params[:query_doc_pair][:document_fields].nil?
-          @query_doc_pair.document_fields = params[:query_doc_pair][:document_fields].to_json
-        end
-        if @query_doc_pair.save
+        # @query_doc_pair.position = params[:query_doc_pair][:position] unless params[:query_doc_pair][:position].nil?
+        # unless params[:query_doc_pair][:document_fields].nil?
+        #  @query_doc_pair.document_fields = params[:query_doc_pair][:document_fields]
+        # end
+        # if @query_doc_pair.save
+
+        update_params = query_doc_pair_params
+        if @query_doc_pair.update update_params
           respond_with @query_doc_pair
         else
           render json: @query_doc_pair.errors, status: :bad_request
@@ -86,7 +89,8 @@ module Api
       private
 
       def query_doc_pair_params
-        params.require(:query_doc_pair).permit(:document_fields, :position, :query_text, :doc_id)
+        params.require(:query_doc_pair).permit(:document_fields, :position, :query_text, :doc_id, :notes,
+                                               :information_need, options: {})
       end
 
       def set_query_doc_pair

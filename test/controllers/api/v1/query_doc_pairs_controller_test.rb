@@ -32,12 +32,15 @@ module Api
                            position:        qdp.position,
                            query_text:      qdp.query_text,
                            doc_id:          qdp.doc_id,
+                           options:         qdp.options,
                          } }
 
           assert_response :ok
 
-          assert_equal response.parsed_body['doc_id'], qdp.doc_id
           assert_equal book.query_doc_pairs.count, count + 1
+
+          assert_equal response.parsed_body['doc_id'], qdp.doc_id
+          assert_equal response.parsed_body['options']['special_boost'].to_f, qdp.options['special_boost']
         end
 
         test 'requires a query text' do
