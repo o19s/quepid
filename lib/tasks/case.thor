@@ -104,8 +104,32 @@ class Case < Thor
   # rubocop:enable Style/VariableInterpolation
   # rubocop:enable Style/GlobalVars
   # rubocop:enable Metrics/ParameterLists
+  
+ def load_the_case
+   
+   realistic_activity_user = User.find_by(email: 'quepid+realisticActivity@o19s.com')
+   
+   contents = unzip_file_in_memory(Rails.root.join('db', 'sample_data', 'haystack_rating_party_case.json.zip'))
+   data = JSON.parse(contents)
+   case_params = data.to_h.deep_symbolize_keys
+   
+   @case = Case.new(id: 6789)
+   options = { force_create_users: true }
+   case_importer = ::CaseImporter.new @case,realistic_activity_user, case_params, options
+   
+   case_importer.validate
+   case_importer.import
+ end 
+  
 
   private
+  
+  def unzip_file_in_memory(zip_file)
+    Zip::File.open(zip_file) do |zip|
+      entry = zip.first
+      entry.get_input_stream.read  
+    end
+  end
 
   def load_environment
     ENV['RAILS_ENV'] ||= 'development'
