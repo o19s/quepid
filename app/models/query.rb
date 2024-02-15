@@ -40,8 +40,7 @@ class Query < ApplicationRecord
               dependent: :destroy
 
   # Validations
-  validates :query_text,
-            presence: true
+  validates :query_text, presence: true, length: { maximum: 500 }
 
   # Scopes
 

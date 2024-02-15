@@ -29,7 +29,7 @@ class BookImporter
     scorer_name = params_to_use[:scorer][:name]
     scorer = Scorer.find_by(name: scorer_name)
     if scorer.nil?
-      @book.errors.add(:scorer, "Scorer with name '#{scorer_name}' needs to be migrated over first.")
+      @book.errors.add(:scorer, "with name '#{scorer_name}' needs to be migrated over first.")
     else
       @book.scorer = scorer
     end
