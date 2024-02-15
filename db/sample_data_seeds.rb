@@ -361,64 +361,14 @@ book_params = data.to_h.deep_symbolize_keys
 options = { force_create_users: true }
 book_importer = ::BookImporter.new @book,realistic_activity_user, book_params, options
 
-#book_importer.validate
-#book_importer.import
+book_importer.validate
+book_importer.import
 
 @case.book = @book
 @case.teams << osc
 @book.teams << osc
 @case.save
 @book.save
-
-contents = unzip_file_in_memory(Rails.root.join('db', 'sample_data', 'haystack_rating_party_snapshot_no-vector.json.zip'))
-data = JSON.parse(contents)
-snapshot_params = data.to_h.deep_symbolize_keys
-
-@snapshot = Snapshot.new
-#@snapshot.id = data[:id]
-#@snapshot.name = data[:name]
-#@snapshot.case = @case
-
-#data[:queries].each do |query|
-
-
-print_step "About to import snapshot................"
-
-params = {
-  name:       snapshot_params[:name],
-  created_at: snapshot_params[:created_at],
-}
-
-snapshot = @case.snapshots.create params
-
-service = SnapshotManager.new(snapshot)
-
-snapshot_docs = snapshot_params[:docs]
-snapshot_queries = snapshot_params[:queries]
-
-service.add_docs snapshot_docs, snapshot_queries
-
-
-# service = SnapshotManager.new(snapshot)
-
-# queries = {}
-# snapshot_params[:queries].each do |q|
-#   docs = []
-#   q[:ratings].each_with_index do |r, index|
-#     docs << {id: r.key, explain: nil, position: index }
-#   end
-  
-#   queries[q[:query_text]] ||= { docs: docs }
-  
-# end
-
-
-# service.import_queries queries
-
-
-
-
-
 
 print_step "End of Haystack Rating Party sample data................"
 
