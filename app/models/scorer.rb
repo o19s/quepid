@@ -39,10 +39,11 @@ class Scorer < ApplicationRecord
 
   # Scopes
   scope :for_user, ->(user) do
-    direct = where(owner: user)
-    by_team = left_joins(teams: :members).where(teams_members: { member_id: user.id })
-    team_owner = left_joins(teams: :members).where(teams: { owner_id: user.id })
-    by_team.or(team_owner).or(direct).or(communal)
+    base_scope = left_joins(teams: [ :members, :scorers ])
+    team_member = base_scope.where(teams_members: { member_id: user.id })
+    team_owner = where(teams: { owner_id: user.id })
+    owned_by_user = where(scorers: { owner_id: user.id })
+    team_member.or(team_owner).or(owned_by_user).or(communal).distinct
   end
 
   scope :communal, -> { where(communal: true) }
