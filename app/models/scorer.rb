@@ -38,7 +38,12 @@ class Scorer < ApplicationRecord
   validates_with ScaleValidator
 
   # Scopes
-  include ForUserScope
+  scope :for_user, ->(user) do
+    direct = where(owner: user)
+    by_team = left_joins(teams: :members).where(teams_members: { member_id: user.id })
+    team_owner = left_joins(teams: :members).where(teams: { owner_id: user.id })
+    by_team.or(team_owner).or(direct).or(communal)
+  end
 
   scope :communal, -> { where(communal: true) }
 

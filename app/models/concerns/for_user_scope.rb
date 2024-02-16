@@ -10,5 +10,4 @@ module ForUserScope
       by_team.or(direct)
     end
   end
-
 end
