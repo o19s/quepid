@@ -8,5 +8,5 @@ json.notes              query.notes
 json.information_need   query.information_need
 
 json.ratings do
-  json.array! query.ratings, partial: 'rating', as: :rating
+  @case.doc_ratings_by_query[query.id]&.each { |rating| json.set! rating['doc_id'], rating['rating'] }
 end

@@ -290,4 +290,26 @@ class CaseTest < ActiveSupport::TestCase
       assert_equal 2, the_case.queries_count
     end
   end
+
+  describe 'doc_ratings_by_query' do
+    let(:the_case) { cases(:random_case) }
+
+    it 'returns an empty hash for a new case' do
+      assert_equal Case.new.doc_ratings_by_query, {}
+    end
+
+    it 'returns an empty hash when there are no queries' do
+      the_case.queries.destroy_all
+      assert_equal the_case.doc_ratings_by_query, {}
+    end
+
+    it 'returns a hash of doc ratings by query id' do
+      assert_equal the_case.doc_ratings_by_query, {
+        488_291_725 => [
+          { 'query_id' => 488_291_725, 'doc_id' => '234', 'rating' => nil },
+          { 'query_id' => 488_291_725, 'doc_id' => '123', 'rating' => 5.0 }
+        ],
+      }
+    end
+  end
 end

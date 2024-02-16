@@ -195,6 +195,15 @@ class Case < ApplicationRecord
     Rails.application.message_verifier('magic').generate(id)
   end
 
+  # Optimized method to retrieve all doc ratings a single time
+  # Returns [5424, [{"query_id"=>5424, "doc_id"=>"l_21426", "rating"=>1.0}], ...]
+  def doc_ratings_by_query
+    @doc_ratings_by_query ||= begin
+      result = connection.select_all(ratings.select(:query_id, :doc_id, :rating).to_sql)
+      result.group_by { |r| r['query_id'] }
+    end
+  end
+
   private
 
   def set_scorer
