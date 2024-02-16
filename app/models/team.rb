@@ -55,12 +55,4 @@ class Team < ApplicationRecord
             presence:   true,
             uniqueness: true
   # rubocop:enable Rails/UniqueValidationWithoutIndex
-
-  # Scopes
-  scope :for_user, ->(user) {
-    joins('
-      LEFT OUTER JOIN teams_members on teams_members.team_id = teams.id
-      LEFT OUTER JOIN users on users.id = teams_members.member_id
-    ').where('`teams_members`.`member_id` = ?', user.id)
-  }
 end

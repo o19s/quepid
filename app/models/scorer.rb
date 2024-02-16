@@ -38,20 +38,7 @@ class Scorer < ApplicationRecord
   validates_with ScaleValidator
 
   # Scopes
-  scope :for_user, ->(user) {
-    joins('
-      LEFT OUTER JOIN `teams_scorers` ON `teams_scorers`.`scorer_id` = `scorers`.`id`
-      LEFT OUTER JOIN `teams` ON `teams`.`id` = `teams_scorers`.`team_id`
-      LEFT OUTER JOIN `teams_members` ON `teams_members`.`team_id` = `teams`.`id`
-      LEFT OUTER JOIN `users` ON `users`.`id` = `teams_members`.`member_id`
-    ').where('
-      `teams`.`owner_id` = ?
-      OR `teams_members`.`member_id` = ?
-      OR `scorers`.`owner_id` = ?
-      OR `scorers`.`communal` = true
-    ', user.id, user.id, user.id)
-      .distinct
-  }
+  include ForUserScope
 
   scope :communal, -> { where(communal: true) }
 

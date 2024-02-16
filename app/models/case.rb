@@ -82,29 +82,9 @@ class Case < ApplicationRecord
   end
 
   # Scopes
+  include ForUserScope
+
   scope :not_archived, -> { where('`cases`.`archived` = false OR `cases`.`archived` IS NULL') }
-
-  scope :for_user_via_teams, ->(user) {
-    joins('
-      LEFT OUTER JOIN `teams_cases` ON `teams_cases`.`case_id` = `cases`.`id`
-      LEFT OUTER JOIN `teams` ON `teams`.`id` = `teams_cases`.`team_id`
-      LEFT OUTER JOIN `teams_members` ON `teams_members`.`team_id` = `teams`.`id`
-      LEFT OUTER JOIN `users` ON `users`.`id` = `teams_members`.`member_id`
-    ').where('
-        `teams_members`.`member_id` = ?
-    ', user.id)
-  }
-
-  scope :for_user_directly_owned, ->(user) {
-    where('
-        `cases`.`owner_id` = ?
-    ',  user.id)
-  }
-
-  scope :for_user, ->(user) {
-    ids = for_user_via_teams(user).pluck(:id) + for_user_directly_owned(user).pluck(:id)
-    where(id: ids.uniq)
-  }
 
   scope :public_cases, -> { where(public: true) }
 

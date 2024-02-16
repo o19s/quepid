@@ -290,4 +290,21 @@ class CaseTest < ActiveSupport::TestCase
       assert_equal 2, the_case.queries_count
     end
   end
+
+  describe 'for_user' do
+    it 'includes directly owned cases' do
+      cases = Case.for_user(users(:doug))
+      assert cases.include?(cases(:one))
+    end
+
+    it 'includes cases owned by teams' do
+      cases = Case.for_user(users(:doug))
+      assert cases.include?(cases(:shared_with_team))
+    end
+
+    it 'excludes other cases' do
+      cases = Case.for_user(users(:doug))
+      assert cases.exclude?(cases(:matt_case))
+    end
+  end
 end

@@ -34,31 +34,9 @@ class SearchEndpoint < ApplicationRecord
   has_many   :tries, dependent: :nullify, inverse_of: :search_endpoint
 
   # Scopes
+  include ForUserScope
+
   scope :not_archived, -> { where('`search_endpoints`.`archived` = false') }
-
-  # rubocop:disable Layout/LineLength
-  scope :for_user_via_teams, ->(user) {
-    joins('
-      LEFT OUTER JOIN `teams_search_endpoints` ON `teams_search_endpoints`.`search_endpoint_id` = `search_endpoints`.`id`
-      LEFT OUTER JOIN `teams` ON `teams`.`id` = `teams_search_endpoints`.`team_id`
-      LEFT OUTER JOIN `teams_members` ON `teams_members`.`team_id` = `teams`.`id`
-      LEFT OUTER JOIN `users` ON `users`.`id` = `teams_members`.`member_id`
-    ').where('
-        `teams_members`.`member_id` = ?
-    ', user.id)
-  }
-  # rubocop:enable Layout/LineLength
-
-  scope :for_user_directly_owned, ->(user) {
-                                    where('
-          `search_endpoints`.`owner_id` = ?
-      ',  user.id)
-                                  }
-
-  scope :for_user, ->(user) {
-    ids = for_user_via_teams(user).distinct.pluck(:id) + for_user_directly_owned(user).distinct.pluck(:id)
-    where(id: ids.uniq)
-  }
 
   after_initialize do |se|
     se.archived = false if se.archived.nil?
