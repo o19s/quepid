@@ -54,8 +54,4 @@ module HomeHelper
       "Case #{kase.case_name}"
     end
   end
-
-  def judge_name judge
-    judge.nil? ? 'anonymous' : judge.name
-  end
 end

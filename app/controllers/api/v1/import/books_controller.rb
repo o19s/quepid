@@ -5,6 +5,7 @@ module Api
     module Import
       class BooksController < Api::ApiController
         api!
+
         # rubocop:disable Metrics/MethodLength
         def create
           team_id = params.require(:team_id)
@@ -14,16 +15,16 @@ module Api
 
           @book.teams << Team.find(team_id)
           options = {}
-          service = ::BookImporter.new @book, params_to_use, options
+          book_importer = ::BookImporter.new @book, @current_user, params_to_use, options
 
-          service.validate
+          book_importer.validate
 
           unless @book.errors.empty?
             render json: @book.errors, status: :bad_request
             return
           end
 
-          if service.import
+          if book_importer.import
             respond_with @book
           else
             render json: @book.errors, status: :bad_request

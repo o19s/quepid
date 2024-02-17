@@ -1,4 +1,4 @@
-
+require 'zip'
 
 def seed_user hash
   if User.where(email: hash[:email].downcase).exists?
@@ -14,6 +14,13 @@ end
 
 def print_user_info info
   print_step "Seeded user: email: #{info[:email]}, password: #{info[:password]}"
+end
+
+def unzip_file_in_memory(zip_file)
+  Zip::File.open(zip_file) do |zip|
+    entry = zip.first
+    entry.get_input_stream.read  
+  end
 end
 
 # Search Endpoints
@@ -64,42 +71,6 @@ user_specifics = {
 }
 user_params = user_defaults.merge(user_specifics)
 admin_user  = seed_user user_params
-print_user_info user_params
-
-######################################
-# One Case User
-######################################
-
-user_specifics = {
-  name:             'One Case User',
-  email:            'quepid+1case@o19s.com',
-}
-user_params   = user_defaults.merge(user_specifics)
-one_case_user = seed_user user_params
-print_user_info user_params
-
-######################################
-# Two Case User
-######################################
-
-user_specifics = {
-  name:             'Two Case User',
-  email:            'quepid+2case@o19s.com',
-}
-user_params   = user_defaults.merge(user_specifics)
-two_case_user = seed_user user_params
-print_user_info user_params
-
-######################################
-# User with Solr Case
-######################################
-
-user_specifics = {
-  name:             'User with Solr Case',
-  email:            'quepid+solr@o19s.com',
-}
-user_params    = user_defaults.merge(user_specifics)
-solr_case_user = seed_user user_params
 print_user_info user_params
 
 ######################################
@@ -160,29 +131,6 @@ user_params     = user_defaults.merge(user_specifics)
 osc_member_user = seed_user user_params
 print_user_info user_params
 
-######################################
-# User with Custom Scorer
-######################################
-user_specifics = {
-  name:             'User with Custom Scorer',
-  email:            'quepid+CustomScorer@o19s.com',
-}
-user_params = user_defaults.merge(user_specifics)
-custom_scorer_user = seed_user user_params
-print_user_info user_params
-
-######################################
-# User with Custom Scorer as Default
-######################################
-
-user_specifics = {
-  name:             'User with Custom Scorer as Default',
-  email:            'quepid+CustomScorerDefault@o19s.com',
-}
-user_params = user_defaults.merge(user_specifics)
-custom_scorer_as_default_user = seed_user user_params
-print_user_info user_params
-
 print_step "End of seeding users................"
 
 # Cases
@@ -192,18 +140,11 @@ def print_case_info the_case
   print_step "Seeded case: name: #{the_case.case_name}, ID: #{the_case.id} for: #{the_case.owner.email}"
 end
 
-unless two_case_user.cases.count == 2
-  first_case = two_case_user.cases.create case_name: 'First Case'
-  print_case_info first_case
-  second_case = two_case_user.cases.create case_name: 'Second Case'
-  print_case_info second_case
-end
-
 ######################################
 # Solr Case
 ######################################
 
-solr_case = solr_case_user.cases.create case_name: 'SOLR CASE'
+solr_case = realistic_activity_user.cases.create case_name: 'SOLR CASE'
 solr_try = solr_case.tries.latest
 solr_params = {
   field_spec:   "id:id, title:title",
@@ -217,7 +158,7 @@ print_case_info solr_case
 # ES Case
 ######################################
 
-es_case = es_case_user.cases.create case_name: 'ES CASE'
+es_case = realistic_activity_user.cases.create case_name: 'ES CASE'
 es_try = es_case.tries.latest
 es_params = {
   field_spec:   "id:_id, title:title",
@@ -228,40 +169,6 @@ es_try.update es_params
 print_case_info es_case
 
 print_step "End of seeding cases................"
-
-# Scorers
-print_step "Seeding scorers................"
-
-######################################
-# Custom Scorers
-######################################
-
-unless custom_scorer_user.owned_scorers.count == 3
-  3.times do |i|
-    scorer_params = {
-      name:   "Custom Scorer #{i}",
-      scale:  [1, 2, 3, 4],
-      code:   'setScore(100);'
-    }
-    custom_scorer = custom_scorer_user.owned_scorers.create scorer_params
-  end
-end
-
-######################################
-# Custom Default Scorer
-######################################
-
-unless custom_scorer_as_default_user.default_scorer != Scorer.system_default_scorer
-  scorer_params = {
-    name:   "Custom Default Scorer",
-    scale:  [1, 2, 3, 4],
-    code:   'setScore(100);'
-  }
-  custom_scorer = custom_scorer_as_default_user.owned_scorers.create scorer_params
-  custom_scorer_as_default_user.update default_scorer_id: custom_scorer.id
-end
-
-print_step "End of seeding scorers................"
 
 # Ratings
 print_step "Seeding ratings................"
@@ -371,8 +278,8 @@ tens_of_queries_case.queries.each do |query|
 
 end
 
-# Mulitple Cases
-print_step "Seeding Multiple cases................"
+# Multiple Cases
+print_step "Seeding multiple cases................"
 case_names = ["Typeahead: Dairy", "Typeahead: Meats", "Typeahead: Dessert", "Typeahead: Fruit & Veg"]
 
 case_names.each do |case_name|
@@ -430,7 +337,41 @@ case_names.each do |case_name|
 
 end
 
-print_step "End of Multiple cases................"
+print_step "End of multiple cases................"
+
+print_step "Loading Haystack Rating Party sample data........."
+
+contents = unzip_file_in_memory(Rails.root.join('db', 'sample_data', 'haystack_rating_party_case.json.zip'))
+data = JSON.parse(contents)
+case_params = data.to_h.deep_symbolize_keys
+
+@case = Case.new(id: 6789)
+options = { force_create_users: true }
+case_importer = ::CaseImporter.new @case,realistic_activity_user, case_params, options
+
+case_importer.validate
+case_importer.import
+
+print_step "About to import book........"
+contents = unzip_file_in_memory(Rails.root.join('db', 'sample_data', 'haystack_rating_party_book.json.zip'))
+data = JSON.parse(contents)
+book_params = data.to_h.deep_symbolize_keys
+
+
+@book = Book.new(id: 25)
+options = { force_create_users: true }
+book_importer = ::BookImporter.new @book,realistic_activity_user, book_params, options
+
+book_importer.validate
+book_importer.import
+
+@case.book = @book
+@case.teams << osc
+@book.teams << osc
+@case.save
+@book.save
+
+print_step "End of Haystack Rating Party sample data................"
 
 # Big Cases
 

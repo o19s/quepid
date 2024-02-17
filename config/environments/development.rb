@@ -97,15 +97,6 @@ Rails.application.configure do
     Bullet.add_footer = true
   end
 
-  # it's possible that this doesn't matter since we generate relative urls
-  config.after_initialize do
-    ActiveStorage::Current.url_options = {
-      host:     ENV.fetch('QUEPID_DOMAIN', nil),
-      port:     ENV.fetch('PORT', nil),
-      protocol: 'https', # Replace with 'https' if using HTTPS  # we have relative urls so may not be sed
-    }
-  end
-
   config.log_formatter = TruncatingFormatter.new
 
   # Uncomment if you wish to allow Action Cable access from any origin.

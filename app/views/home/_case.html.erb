@@ -1,4 +1,5 @@
 <tr>
+  <th scope="row"><%= kase.id  %></th>
   <th scope="row"><%= kase.case_name %></th>
   <td><%= kase.queries.count %></td>
   <td>
@@ -13,7 +14,7 @@
   </td>
   <td>
     <% unless kase.last_score.blank? %>
-      <%= kase.last_score.user.name%>
+      <%= kase.last_score.user.name %>
     <% end %>
   </td>
  

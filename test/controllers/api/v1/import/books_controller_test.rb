@@ -110,7 +110,7 @@ module Api
             body = response.parsed_body
 
             assert_includes body['scorer'],
-                            "Scorer with name 'fake scorer' needs to be migrated over first."
+                            "with name 'fake scorer' needs to be migrated over first."
             assert_nil Book.find_by(name: 'test book')
           end
 
