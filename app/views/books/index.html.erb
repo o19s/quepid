@@ -25,6 +25,7 @@
 
   <thead>
     <tr>
+      <th>ID</th>
       <th>Name</th>
       <th>Teams</th>
       <th>Scorer</th>
@@ -36,6 +37,7 @@
   <tbody>
     <% @books.each do |book| %>
       <tr>
+        <td><%= book.id %> </td>
         <td><%= link_to book.name, book_path(book) %></td>
         <td><%= book.teams.pluck(:name).join(',') %></td>
         <td><%= book.scorer.name %> </td>

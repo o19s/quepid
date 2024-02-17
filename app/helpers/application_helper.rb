@@ -9,6 +9,10 @@ module ApplicationHelper
     end
   end
 
+  def display_judge_name judge
+    judge.nil? ? 'anonymous' : judge.fullname
+  end
+
   def make_active? options
     if options.key?(:path)
       request.fullpath.include?(options[:path])

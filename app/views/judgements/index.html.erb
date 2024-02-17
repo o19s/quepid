@@ -71,7 +71,7 @@
             <%= judgement.judge_later? ? 'X' : '' %>
           </td>
           <td>
-            <%= judgement&.user&.name %>
+            <%= display_judge_name(judgement.user) %>
           </td>
           <% unless @shallow %>
             <td>

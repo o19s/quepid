@@ -15,13 +15,11 @@ json.owner_id         acase.owner.id if acase.owner.present?
 json.book_name        acase.book.name if acase.book.present?
 json.public           acase.public.presence || false
 json.archived         acase.archived
+json.options          acase.options
 
 json.last_try_number acase.tries.latest.try_number unless no_tries || acase.tries.blank? || acase.tries.latest.blank?
 
-# not needed
-# json.options         acase.options
-
-unless no_teams
+unless no_teams || current_user.nil?
   teams = acase.teams.find_all { |t| current_user.teams.all.include?(t) }
   json.teams teams
 end

@@ -1,4 +1,3 @@
-hi: <%= @moar_judgements_needed %>
 <% if @moar_judgements_needed %>  
   <div class="alert alert-warning" role="alert">
     <%= link_to 'More Judgements are Needed!', book_judge_path(book), class: 'btn btn-primary', role: 'button' %>
