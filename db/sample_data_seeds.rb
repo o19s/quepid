@@ -92,6 +92,7 @@ print_user_info user_params
 user_specifics = {
   name:             'User with Realistic Activity in Quepid',
   email:            'quepid+realisticActivity@o19s.com',
+  administrator:    true,
 }
 user_params          = user_defaults.merge(user_specifics)
 realistic_activity_user = seed_user user_params

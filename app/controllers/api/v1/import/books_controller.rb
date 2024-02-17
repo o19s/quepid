@@ -24,6 +24,7 @@ module Api
             return
           end
 
+
           if book_importer.import
             respond_with @book
           else
@@ -31,7 +32,6 @@ module Api
           end
         end
         # rubocop:enable Metrics/MethodLength
-        #
 
         private
 
