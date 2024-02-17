@@ -24,7 +24,6 @@ module Api
             return
           end
 
-
           if book_importer.import
             respond_with @book
           else
