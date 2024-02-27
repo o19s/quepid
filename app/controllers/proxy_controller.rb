@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'faraday'
+require 'faraday/follow_redirects'
 
 # rubocop:disable Layout/LineLength
 # rubocop:disable Metrics/AbcSize
@@ -25,8 +26,10 @@ class ProxyController < ApplicationController
     uri = URI.parse(url_param)
     url_without_path = "#{uri.scheme}://#{uri.host}"
     url_without_path += ":#{uri.port}" unless uri.port.nil?
+
     connection = Faraday.new(url: url_without_path) do |faraday|
       # Configure the connection options, such as headers or middleware
+      faraday.response :follow_redirects
       faraday.response :logger, nil, { headers: proxy_debug, bodies: proxy_debug, errors: true }
       faraday.ssl.verify = false
       faraday.request :url_encoded
