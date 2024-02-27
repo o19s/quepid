@@ -6,6 +6,7 @@ WebMock.disable_net_connect!(allow_localhost: true)
 module ActiveSupport
   class TestCase
     # rubocop:disable Metrics/MethodLength
+    # rubocop:disable Metrics/AbcSize
     def setup
       mock_statedecoded_body = '
       {
