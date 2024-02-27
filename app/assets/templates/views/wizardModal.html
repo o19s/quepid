@@ -171,12 +171,12 @@ curl -k -X POST -H 'Content-type:application/json' -d '{
 
             </div>
 
-            <div ng-if="mapperInvalid" class="alert alert-danger">
+            <div ng-if="mapperInvalid" class="alert alert-warning">
 
-              Good news, we are getting results from the API, however we can't parse them...<br/>
+              Good news, we are getting results from the API, however we can't parse them into Quepid's expected format due to: <br/>
               <code>{{ mapperErrorMessage }}</code>
               <ul>
-                <li>You can use the Search API Response panel to see what you are getting back from the search engine.</li>
+                <li>You can use the Search API Response panel to see the JSON returned from your API.</li>
                 <li>Use your browser Inspector to check the console, likely your JavaScript mapper code needs tweaks.</li>
               </ul>
             </div>
@@ -190,7 +190,7 @@ curl -k -X POST -H 'Content-type:application/json' -d '{
                 <small title="Manually validates Quepid can get retrieve search results from your URL before continuing" class="pull-right"><button type="button" class="btn btn-link btn-sm" ng-click="validate(true)" ng-disabled="showTLSChangeWarning">ping it</button></small>
                 <p class="help-block">Unsure? <a href="http://quepid.com/how-quepid-works/" target="_blank">Learn More</a> about Quepid's light touch with your search engine &amp; data.
 
-                <p class="help-block tip">
+                <p ng-show="pendingWizardSettings.urlFormat" class="help-block tip">
                   Tip: Your URL should look like this {{pendingWizardSettings.urlFormat}}.
                 </p>
               </div>
@@ -292,14 +292,17 @@ star wars,1921,3, Star Wars: Return of the Jedi
                         require:      ['ace/ext/language_tools'],
                         useWrapMode:  false,
                         mode:         'json',
-                        theme:        'chrome'
+                        theme:        'chrome',
+                        showGutter: pendingWizardSettings.apiMethod == 'POST'
                       }" ng-model="pendingWizardSettings.queryParams">
                     </div>
                   </div>
                 </div>
                 <div class="col-sm-12 clearfix">
-                  <label class="control-label">Mapping {{showSearchApiJavaScriptEditor }}</label>
-                  <p class="help-block">Enter JavaScript that formats from YOUR API to the JSON structure expected by the Target Search Engine.</p>
+                  <label class="control-label">Mapping To Quepid Format</label>
+                  <p class="help-block">Enter JavaScript that maps from YOUR API to the JSON structure expected by Quepid.
+                    The JSON from your API is nested under the <code>data</code> object.
+                  </p>
                 </div>
                 <div class="btn-group btn-group-justified" role="group">
                   <div class="btn-group" role="group">
@@ -487,7 +490,7 @@ star wars,1921,3, Star Wars: Return of the Jedi
 
       <div ng-show="pendingWizardSettings.searchEngine === 'searchapi'" class="alert alert-info">
         <span>
-          You will need to modify the query template you provided to have the <code>#$query##</code> variable to run your actual queries under <i>Tune Relevance</i>
+          You will need to modify the query <code>{{ pendingWizardSettings.queryParams }}</code> you used, substituting <code>#$query##</code> variable in place of the actual query text via the <i>Tune Relevance</i> panel.
         </span>
       </div>
 

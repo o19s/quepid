@@ -74,6 +74,14 @@ class ProxyControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test 'handle a proxy error cleanly' do
+    get proxy_fetch_url params: {
+      url: 'https://localhost:9999/',
+    }
+    assert_response :internal_server_error
+    assert_not_nil response.parsed_body['proxy_error']
+  end
+
   describe 'logging of http requests by the proxy' do
     before do
       # Create a StringIO object to capture the output

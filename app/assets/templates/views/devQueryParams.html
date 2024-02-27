@@ -73,7 +73,8 @@
             require:      ['ace/ext/language_tools'],
             useWrapMode:  false,
             mode:         'json',
-            theme:        'chrome'
+            theme:        'chrome',
+            showGutter:   settings.apiMethod == 'POST'
           }" ng-model="settings.selectedTry.queryParams">
         </div>
 
