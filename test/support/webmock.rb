@@ -183,12 +183,16 @@ module ActiveSupport
         )
         .to_return(status: 200, body: mock_statedecoded_body)
 
-      redirect_url = 'https://example.com/new-location'
+      # demonstrate following redirects
       stub_request(:get, 'https://example.com/old-url')
-        .to_return(status: 302, headers: { 'Location' => redirect_url })
+        .to_return(status: 302, headers: { 'Location' => 'https://example.com/new-location' })
 
-      stub_request(:get, redirect_url)
+      stub_request(:get, 'https://example.com/new-location')
         .to_return(status: 200, body: mock_statedecoded_body)
+
+      # Demonstrate server error
+      stub_request(:get, 'https://localhost:9999/')
+        .to_raise(Faraday::ConnectionFailed.new('Failed to connect'))
     end
 
     # rubocop:enable Metrics/MethodLength
