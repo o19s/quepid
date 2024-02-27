@@ -197,6 +197,7 @@ module ActiveSupport
     end
 
     # rubocop:enable Metrics/MethodLength
+    # rubocop:enable Metrics/AbcSize
   end
   # rubocop:enable Layout/LineLength
 end
