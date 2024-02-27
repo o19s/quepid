@@ -182,6 +182,13 @@ module ActiveSupport
           }
         )
         .to_return(status: 200, body: mock_statedecoded_body)
+
+      redirect_url = 'https://example.com/new-location'
+      stub_request(:get, 'https://example.com/old-url')
+        .to_return(status: 302, headers: { 'Location' => redirect_url })
+
+      stub_request(:get, redirect_url)
+        .to_return(status: 200, body: mock_statedecoded_body)
     end
 
     # rubocop:enable Metrics/MethodLength

@@ -63,6 +63,17 @@ class ProxyControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
+  describe 'should follow 302 redirects' do
+    test 'on a get' do
+      old_url = 'https://example.com/old-url'
+
+      get proxy_fetch_url params: {
+        url: old_url,
+      }
+      assert_response :success
+    end
+  end
+
   describe 'logging of http requests by the proxy' do
     before do
       # Create a StringIO object to capture the output
