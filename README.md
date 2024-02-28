@@ -94,7 +94,7 @@ bin/setup_docker
 If you want to create some cases that have 100's and 1000's of queries, then do:
 
 ```
-bin/docker r bin/rake db:seed:large_cases
+ bin/docker r bundle exec thor sample_data:large_data
 ```
 
 This is useful for stress testing Quepid!  Especially the front end application!
@@ -229,6 +229,18 @@ bin/docker r bin/rake db:seed:large_cases
 ```
 
 You will have two users, `quepid+100sOfQueries@o19s.com` and `quepid+1000sOfQueries@o19s.com` to test with.
+
+### Notebook Testing
+
+If you want to test the Jupyterlite notebooks, or work with a "real" case and book, then run
+
+```
+bin/docker r bundle exec thor sample_data:haystack_party
+```
+
+You will have lots of user data from the Haystack rating party book and case to work with.  This data is source from the public case https://app.quepid.com/case/6789/try/12?sort=default and https://app.quepid.com/books/25
+
+
 
 ## IV. Debugging
 
@@ -542,7 +554,7 @@ heroku restart -a quepid-staging
 
 ## Seed Data
 
-The following accounts are created through the seeds. They all follow the following format:
+The following accounts are created through the `bin/setup_docker` process. They all follow the following format:
 
 ```
 email: quepid+[type]@o19s.com

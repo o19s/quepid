@@ -69,7 +69,3 @@ SelectionStrategy.where(name: 'Multiple Raters').first_or_create(
   name: 'Multiple Raters',
   description: 'Allows you to have up to three ratings for each query/doc pair.   Gives higher quality ratings, however with more work.'
 )
-
-if ENV['SEED_SAMPLE_DATA']
-  require_relative 'sample_data_seeds'
-end

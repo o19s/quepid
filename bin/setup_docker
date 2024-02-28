@@ -36,5 +36,5 @@ Dir.chdir APP_ROOT do
   system "bin/docker r bin/rake db:migrate"
 
   puts "\n== Setting up Seed Data for Development =="
-  system "bin/docker r bin/rake db:seed:sample_users"
+  system "bin/docker r bundle exec thor sample_data:sample_data"
 end
