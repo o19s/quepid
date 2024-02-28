@@ -3,10 +3,15 @@
 require 'colorize'
 require 'zip'
 
+# rubocop:disable Metrics/ClassLength
+# rubocop:disable Style/GlobalVars
 class SampleData < Thor
   # rubocop:disable Metrics/AbcSize
   # rubocop:disable Metrics/MethodLength
   # rubocop:disable Metrics/BlockLength
+  # rubocop:disable Metrics/CyclomaticComplexity
+  # rubocop:disable Metrics/PerceivedComplexity
+  # rubocop:disable Layout/LineLength
 
   desc 'sample_data', 'load the sample data'
   long_desc <<-LONGDESC
@@ -439,8 +444,6 @@ class SampleData < Thor
     @case.save
     @book.save
 
-    return
-
     @case.snapshots.each do |snapshot|
       print_step "Delete #{snapshot.id}"
       snapshot.destroy!
@@ -497,6 +500,9 @@ class SampleData < Thor
   # rubocop:enable Metrics/AbcSize
   # rubocop:enable Metrics/MethodLength
   # rubocop:enable Metrics/BlockLength
+  # rubocop:enable Metrics/CyclomaticComplexity
+  # rubocop:enable Metrics/PerceivedComplexity
+  # rubocop:enable Layout/LineLength
 
   private
 
@@ -547,7 +553,8 @@ class SampleData < Thor
 
   def try_default_params
     statedecoded_solr_endpoint = ::SearchEndpoint.find_or_create_by search_engine: :solr,
-                                                                    endpoint_url: 'http://quepid-solr.dev.o19s.com:8985/solr/statedecoded/select', api_method: 'JSONP'
+                                                                    endpoint_url:  'http://quepid-solr.dev.o19s.com:8985/solr/statedecoded/select',
+                                                                    api_method:    'JSONP'
 
     {
       try_number:         '1',
@@ -558,3 +565,5 @@ class SampleData < Thor
     }
   end
 end
+# rubocop:enable Metrics/ClassLength
+# rubocop:enable Style/GlobalVars
