@@ -301,7 +301,7 @@ star wars,1921,3, Star Wars: Return of the Jedi
                 <div class="col-sm-12 clearfix">
                   <label class="control-label">Mapping To Quepid Format</label>
                   <p class="help-block">Enter JavaScript that maps from YOUR API to the JSON structure expected by Quepid.
-                    The JSON from your API is nested under the <code>data</code> object.
+                    The JSON response is nested under the <code>data</code> object.
                   </p>
                 </div>
                 <div class="btn-group btn-group-justified" role="group">
@@ -312,9 +312,14 @@ star wars,1921,3, Star Wars: Return of the Jedi
                     <button type="button" class="btn" ng-click="showSearchApiJavaScriptEditor=false" ng-class="showSearchApiJavaScriptEditor ? 'btn-default' : 'btn-primary'">Search API Response</button>
                   </div>
                 </div>
-
+                <p/>
                 <div class="form-group clearfix" ng-show="showSearchApiJavaScriptEditor">
                   <div class="col-sm-12">
+                    <div ng-show="pendingWizardSettings.mapperCode.trim().length == 0" class="alert alert-warning">
+                      <span>
+                      You need to specify your mapper code here.
+                      </span>
+                    </div>
                     <div ui-ace="{
                       require: ['ace/ext/language_tools'],
                       advanced: {

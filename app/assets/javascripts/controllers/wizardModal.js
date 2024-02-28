@@ -301,11 +301,25 @@ angular.module('QuepidApp')
           /*jshint evil:false */
           
           /* jshint undef: false */
-          settingsForValidation.docsMapper = docsMapper; 
-          settingsForValidation.numberOfResultsMapper = numberOfResultsMapper; 
+          if (typeof numberOfResultsMapper === 'undefined') {
+            $scope.mapperInvalid = true;
+            $scope.mapperErrorMessage = 'You need to define a "numberOfResultsMapper"';
+          }
+          else {
+            settingsForValidation.numberOfResultsMapper = numberOfResultsMapper; 
+          }
+          
+          if (typeof docsMapper === 'undefined') {
+            $scope.mapperInvalid = true;
+            $scope.mapperErrorMessage = 'You need to define a "docsMapper"';
+          }
+          else {
+            settingsForValidation.docsMapper = docsMapper; 
+          }
           /* jshint undef: true */
           
-          // This is an example of what the above mapper code looks like.
+          // This is an example of what the above mapper code might look like.
+          
           //eval(kode);
           // settingsForValidation.docsMapper = function(data){    
           //   let docs = [];
@@ -330,11 +344,15 @@ angular.module('QuepidApp')
         validator.validateUrl()
         .then(function () {
           $scope.validatorLastResponse = JSON.stringify(validator.searcher.lastResponse,null,2);
-          setupDefaults(validator);
+          $scope.urlValid     = true;
           
-          if (!justValidate) {      
-            $scope.pendingWizardSettings.searchUrl = settingsForValidation.searchUrl;
-            WizardHandler.wizard().next();
+          if ( !$scope.mapperInvalid ){
+            setupDefaults(validator);
+            
+            if (!justValidate) {      
+              $scope.pendingWizardSettings.searchUrl = settingsForValidation.searchUrl;
+              WizardHandler.wizard().next();
+            }
           }
         }, function (error) {
           
