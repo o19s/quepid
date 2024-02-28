@@ -339,40 +339,6 @@ end
 
 print_step "End of multiple cases................"
 
-print_step "Loading Haystack Rating Party sample data........."
-
-contents = unzip_file_in_memory(Rails.root.join('db', 'sample_data', 'haystack_rating_party_case.json.zip'))
-data = JSON.parse(contents)
-case_params = data.to_h.deep_symbolize_keys
-
-@case = Case.new(id: 6789)
-options = { force_create_users: true }
-case_importer = ::CaseImporter.new @case,realistic_activity_user, case_params, options
-
-case_importer.validate
-case_importer.import
-
-print_step "About to import book........"
-contents = unzip_file_in_memory(Rails.root.join('db', 'sample_data', 'haystack_rating_party_book.json.zip'))
-data = JSON.parse(contents)
-book_params = data.to_h.deep_symbolize_keys
-
-
-@book = Book.new(id: 25)
-options = { force_create_users: true }
-book_importer = ::BookImporter.new @book,realistic_activity_user, book_params, options
-
-book_importer.validate
-book_importer.import
-
-@case.book = @book
-@case.teams << osc
-@book.teams << osc
-@case.save
-@book.save
-
-print_step "End of Haystack Rating Party sample data................"
-
 # Big Cases
 
 if ENV['SEED_LARGE_CASES']
