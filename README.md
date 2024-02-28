@@ -94,7 +94,7 @@ bin/setup_docker
 If you want to create some cases that have 100's and 1000's of queries, then do:
 
 ```
-bin/docker r bin/rake db:seed:large_cases
+ bin/docker r bundle exec thor sample_data:large_data
 ```
 
 This is useful for stress testing Quepid!  Especially the front end application!
@@ -554,7 +554,7 @@ heroku restart -a quepid-staging
 
 ## Seed Data
 
-The following accounts are created through the seeds. They all follow the following format:
+The following accounts are created through the `bin/setup_docker` process. They all follow the following format:
 
 ```
 email: quepid+[type]@o19s.com
