@@ -8,6 +8,7 @@ angular.module('QuepidApp')
       var ctrl          = this;
       var defaultStyle  = { 'background-color': 'hsl(0, 0%, 0%, 0.5)'};
 
+      console.log("About to set ctrlDiffscore and ctrl.Score to ?");
       ctrl.diffScore    = '?';
       ctrl.diffStyle    = {};
       ctrl.score        = '?';
@@ -26,16 +27,44 @@ angular.module('QuepidApp')
           } else {
             ctrl.style = { 'background-color': qscoreSvc.scoreToColor(ctrl.score, ctrl.maxScore)};
           }
+          
+          if (queryViewSvc.isDiffEnabled()){
+            console.log("the watch on ctrl.scorable.currentScore was called and diff enabled, so doing setDiff")
+            setDiff();  
+          }     
         }
       });
 
-      // This watch updates the diffs in the main query list and the avgQuery
-      $scope.$watchGroup(['ctrl.scorable.diff', 'ctrl.diffLabel'], () => {
-        if (queryViewSvc.isDiffEnabled()){
-          setDiff();  
-        }        
+      // This watch appears to be focused on the Diff level query level QScore
+      // This watch appears to be focused on the Diff level scoquery level QScore
+      $scope.$watch('ctrl.scorable.diff', function() {
+        console.log("This watch on 'ctrl.scorable.diff' just triggeredd...")
+        console.log("and isDiffEnabled?" + queryViewSvc.isDiffEnabled());
+          if (queryViewSvc.isDiffEnabled()){
+            setDiff();  
+          }  
       });
+      
+      // This watch is what triggers the case level Diff QScore to render.
+      $scope.$watch('ctrl.diffLabel', function() {
+        console.log("This watch on 'ctrl.diffLabel' just triggeredd...")
+        console.log(ctrl.diffLabel);
+        console.log("and isDiffEnabled?" + queryViewSvc.isDiffEnabled());
+          if (queryViewSvc.isDiffEnabled()){
+            setDiff();  
+          }  
+      });      
+      
+      // This watch updates the diffs in the main query list and the avgQuery
+      // $scope.$watchGroup(['ctrl.scorable.diff', 'ctrl.diffLabel'], () => {
+      //   console.log("This watch that I am not sure about just triggeredd...")
+      //   console.log("and isDiffEnabled?" + queryViewSvc.isDiffEnabled());
+      //   if (queryViewSvc.isDiffEnabled()){
+      //     setDiff();  
+      //   }        
+      // });
 
+      console.log("Line 39, and ctrl.diffScore is " + (ctrl.diffScore || '?'));
       ctrl.diffInfo = {
         label: ctrl.diffLabel,
         score: ctrl.diffScore || '?',
@@ -45,6 +74,7 @@ angular.module('QuepidApp')
       // Functions
       function updateDiffInfo() {
         ctrl.diffInfo.label = ctrl.diffLabel;
+        console.log("Line 48, and ctrl.diffScore is " + (ctrl.diffScore || '?'));
         ctrl.diffInfo.score = ctrl.diffScore || '?';
         ctrl.diffInfo.style = ctrl.diffStyle;
       }
