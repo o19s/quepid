@@ -39,6 +39,8 @@ angular.module('QuepidApp')
           queriesSvc.moveQuery(ctrl.query, selectedItem)
             .then(function() {
               flash.success = 'Query moved successfully!';
+              $log.info('rescoring queries after moving query');
+              queriesSvc.updateScores();
             }, function() {
               flash.error = 'Unable to move query.';
             });

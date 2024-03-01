@@ -134,6 +134,10 @@ module Api
       end
 
       def search_endpoint_params
+        # we do not REQUIRE a search_endpoint on a try
+        if params[:search_endpoint].nil?
+          return {}
+        end
         params.require(:search_endpoint).permit(
           :name,
           :api_method,
