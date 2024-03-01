@@ -8,10 +8,10 @@ angular.module('QuepidApp')
       var ctrl          = this;
       var defaultStyle  = { 'background-color': 'hsl(0, 0%, 0%, 0.5)'};
 
-      console.log("About to set ctrlDiffscore and ctrl.Score to ?");
-      ctrl.diffScore    = '?';
+      console.log("About to set ctrlDiffscore and ctrl.Score to ?4?");
+      ctrl.diffScore    = '?4?';
       ctrl.diffStyle    = {};
-      ctrl.score        = '?';
+      ctrl.score        = '?5?';
       ctrl.scoreType    = ctrl.scoreType || 'normal';
       ctrl.style        = { 'background-color': qscoreSvc.scoreToColor(ctrl.score, ctrl.maxScore) };
 
@@ -64,18 +64,23 @@ angular.module('QuepidApp')
       //   }        
       // });
 
-      console.log("Line 39, and ctrl.diffScore is " + (ctrl.diffScore || '?'));
+      console.log("Line 39, and ctrl.diffScore is " + (ctrl.diffScore || '?3?'));
       ctrl.diffInfo = {
         label: ctrl.diffLabel,
-        score: ctrl.diffScore || '?',
+        score: ctrl.diffScore || '?3?',
         style: ctrl.diffStyle,
       };
 
       // Functions
       function updateDiffInfo() {
-        ctrl.diffInfo.label = ctrl.diffLabel;
-        console.log("Line 48, and ctrl.diffScore is " + (ctrl.diffScore || '?'));
-        ctrl.diffInfo.score = ctrl.diffScore || '?';
+        console.log("in updateDiffInfo")
+        console.log(ctrl)
+        ctrl.diffInfo.label = ctrl.diffLabel;        
+        console.log("Line 48, and ctrl.diffScore is " + (ctrl.diffScore || '?2?'));
+        // it appears that i our logic below, if diffScore is 0, then we set it to '?2?'
+        // I suspect the logic was that if ctrl.diffScore was NULL then we put in ?2?        
+        //ctrl.diffInfo.score = ctrl.diffScore || '?2?';
+        ctrl.diffInfo.score = ctrl.diffScore
         ctrl.diffInfo.style = ctrl.diffStyle;
       }
 
@@ -107,7 +112,7 @@ angular.module('QuepidApp')
       }
 
       function setDefaultDiff() {
-        ctrl.diffScore  = '?';
+        ctrl.diffScore  = '?1?';
         ctrl.diffStyle  = defaultStyle;
         updateDiffInfo();
       }

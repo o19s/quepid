@@ -1017,9 +1017,18 @@ angular.module('QuepidApp')
             }
 
             if (scoreInfo.score !== null) {
-              // Treat non-rated queries as zeroes when calculating case score
-              avg += scoreInfo.score === '--' ? 0 : scoreInfo.score;
-              tot++;
+              
+              // This if means we are skipping over zsr as part of the case score
+              if (scoreInfo.score !== 'zsr'){
+                // Treat non-rated queries as zeroes when calculating case score
+                avg += scoreInfo.score === '--' ? 0 : scoreInfo.score;
+                tot++;
+              }
+              // include this else statement to have zsr count as a zero against the case score.
+              else {
+              //  avg +=  0
+              //  tot++;
+              }
               queryScores[scorable.queryId] = {
                 score:    scoreInfo.score,
                 maxScore: scoreInfo.maxScore,

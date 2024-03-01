@@ -4,6 +4,7 @@
   </div>
   <div style="vertical-align: top; display: inline-block; width: 49%">
     <h2>{{query.diff.name()}}</h2>
+    query.docPairs().length: {{query.docPairs().length}}<br/>
   </div>
   <div ng-repeat="docPair in query.docPairs()">
     <div style="vertical-align: top; display: inline-block; width: 49%">
@@ -22,6 +23,10 @@
       </search-result>
     </div>
     <div style="vertical-align: top; display: inline-block; width: 49%">
+      eric docPair.diffDoc
+      <span ng-if="docPair.diffDoc === null">
+        This query does not exist in the snapshot.  (maybe?)
+      </span>
       <search-result
         ng-if="docPair.diffDoc!=null"
         class="search-result"
