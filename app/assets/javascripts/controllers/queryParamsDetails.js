@@ -8,7 +8,7 @@ angular.module('QuepidApp')
     function(
       $scope, $uibModalInstance,
       flash,
-      aTry, settingsSvc, caseTryNavSvc,
+      aTry, settingsSvc, caseTryNavSvc
     ) {
       $scope.aTry = aTry;
 
