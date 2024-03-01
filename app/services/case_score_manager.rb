@@ -14,7 +14,7 @@ class CaseScoreManager
     return nil if empty_score? score_data
 
     last_score = @the_case.last_score
-
+    
     if same_score_source last_score, score_data
       if user_ratings_docs? last_score, score_data
         update_params = {
@@ -59,6 +59,9 @@ class CaseScoreManager
     return false if last_score.blank?
     return false if last_score.try_id.blank?
 
+    # we have an issue where the case_score.try_id table references tries.id and
+    # the try doesn't exist. So the last_score.try is nil.  Maybe related to deleting a try? 
+    return false if last_score.try.nil?
     return false if last_score.try.try_number != score_data[:try_number].to_i
     return false if last_score.user_id != score_data[:user_id].to_i
 

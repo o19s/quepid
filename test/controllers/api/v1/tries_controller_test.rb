@@ -139,8 +139,7 @@ module Api
 
         test 'renames try successfully' do
           put :update,
-              params: { case_id: the_case.id, try_number: the_try.try_number, try: { name: 'New Name' },
-search_endpoint: { search_engine: 'solr' } }
+              params: { case_id: the_case.id, try_number: the_try.try_number, try: { name: 'New Name' } }
 
           assert_response :ok
 

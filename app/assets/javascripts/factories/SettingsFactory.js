@@ -147,7 +147,7 @@
             var jsonTry = response.data;
             var theTry  = new Try(jsonTry);
 
-            self.tries.push(theTry);
+            self.tries.unshift(theTry);
             self.settingsId++;
 
             return theTry;
