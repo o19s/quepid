@@ -376,9 +376,9 @@ GEM
       ffi (~> 1.0)
     rdoc (6.6.2)
       psych (>= 4.0.0)
-    redis (5.0.8)
+    redis (5.1.0)
       redis-client (>= 0.17.0)
-    redis-client (0.19.1)
+    redis-client (0.21.0)
       connection_pool
     regexp_parser (2.9.0)
     reline (0.4.2)
@@ -537,7 +537,7 @@ DEPENDENCIES
   rails-healthcheck (~> 1.4)
   rails-html-sanitizer
   rapidjson
-  redis (~> 5.0.6)
+  redis (~> 5.1.0)
   responders
   rubocop
   rubocop-capybara
