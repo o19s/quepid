@@ -4,7 +4,6 @@ require 'colorize'
 require 'zip'
 
 # rubocop:disable Metrics/ClassLength
-# rubocop:disable Style/GlobalVars
 class SampleData < Thor
   # rubocop:disable Metrics/AbcSize
   # rubocop:disable Metrics/MethodLength
@@ -24,19 +23,6 @@ class SampleData < Thor
   def sample_data
     load_environment
 
-    # Search Endpoints
-    print_step 'Seeding search endpoints................'
-
-    statedecoded_solr_endpoint = ::SearchEndpoint.find_or_create_by search_engine: :solr,
-                                                                    endpoint_url: 'http://quepid-solr.dev.o19s.com:8985/solr/statedecoded/select', api_method: 'JSONP'
-    tmdb_solr_endpoint = ::SearchEndpoint.find_or_create_by name: 'TMDB Solr', search_engine: :solr,
-                                                            endpoint_url: 'http://quepid-solr.dev.o19s.com:8985/solr/tmdb/select', api_method: 'JSONP'
-
-    tmdb_es_endpoint = ::SearchEndpoint.find_or_create_by   search_engine: :es,
-                                                            endpoint_url: 'http://quepid-elasticsearch.dev.o19s.com:9206/tmdb/_search', api_method: 'POST'
-
-    print_step 'End of seeding search endpoints................'
-
     # Users
     print_step 'Seeding users................'
 
@@ -47,8 +33,6 @@ class SampleData < Thor
     search_url = 'http://quepid-solr.dev.o19s.com:8985/solr/statedecoded/select'
 
     user_defaults = user_default_params
-
-    try_defaults = try_default_params
 
     ######################################
     # Admin User
@@ -88,14 +72,6 @@ class SampleData < Thor
     realistic_activity_user = seed_user user_params
     print_user_info user_params
 
-    # go ahead and assign the end point to this person.
-    tmdb_solr_endpoint.owner = realistic_activity_user
-    tmdb_es_endpoint.owner = realistic_activity_user
-
-    statedecoded_solr_endpoint.save
-    tmdb_solr_endpoint.save
-    tmdb_es_endpoint.save
-
     ######################################
     # OSC Team Owner
     ######################################
@@ -122,8 +98,32 @@ class SampleData < Thor
 
     print_step 'End of seeding users................'
 
+    # Search Endpoints
+    print_step 'Seeding search endpoints................'
+
+    statedecoded_solr_endpoint = ::SearchEndpoint.find_or_create_by search_engine: :solr,
+                                                                    endpoint_url: 'http://quepid-solr.dev.o19s.com:8985/solr/statedecoded/select', api_method: 'JSONP'
+    tmdb_solr_endpoint = ::SearchEndpoint.find_or_create_by name: 'TMDB Solr', search_engine: :solr,
+                                                            endpoint_url: 'http://quepid-solr.dev.o19s.com:8985/solr/tmdb/select', api_method: 'JSONP'
+
+    tmdb_es_endpoint = ::SearchEndpoint.find_or_create_by   search_engine: :es,
+                                                            endpoint_url: 'http://quepid-elasticsearch.dev.o19s.com:9206/tmdb/_search', api_method: 'POST'
+
+    # go ahead and assign the end point to this person.
+    statedecoded_solr_endpoint.owner = realistic_activity_user
+    tmdb_solr_endpoint.owner = realistic_activity_user
+    tmdb_es_endpoint.owner = realistic_activity_user
+
+    statedecoded_solr_endpoint.save
+    tmdb_solr_endpoint.save
+    tmdb_es_endpoint.save
+
+    print_step 'End of seeding search endpoints................'
+
     # Cases
     print_step 'Seeding cases................'
+
+    try_defaults = try_default_params
 
     ######################################
     # Solr Case
@@ -180,7 +180,9 @@ class SampleData < Thor
     30.times do |counter|
       try_specifics = {
         try_number:   counter,
-        query_params: "q=#{$query}##&magicBoost=#{counter + 2}",
+        # rubocop:disable Style/StringConcatenation
+        query_params: 'q=#$query##&magicBoost=' + (counter + 2).to_s,
+        # rubocop:enable Style/StringConcatenation
       }
 
       try_params = try_defaults.merge(try_specifics)
@@ -226,7 +228,15 @@ class SampleData < Thor
     osc = ::Team.where(owner_id: osc_owner_user.id, name: 'OSC').first_or_create
     osc.members << osc_member_user unless osc.members.include?(osc_member_user)
     osc.members << realistic_activity_user unless osc.members.include?(realistic_activity_user)
+
     osc.cases << tens_of_queries_case unless osc.members.include?(tens_of_queries_case)
+    osc.cases << es_case unless osc.members.include?(es_case)
+    osc.cases << solr_case unless osc.members.include?(solr_case)
+
+    osc.search_endpoints << statedecoded_solr_endpoint
+    osc.search_endpoints << tmdb_solr_endpoint
+    osc.search_endpoints << tmdb_es_endpoint
+
     print_step 'End of seeding teams................'
 
     # Books
@@ -271,7 +281,9 @@ class SampleData < Thor
       days_of_experimentation.times do |counter|
         try_specifics = {
           try_number:   counter,
-          query_params: "q=#{$query}##&magicBoost=#{counter + 2}",
+          # rubocop:disable Style/StringConcatenation
+          query_params: 'q=#$query##&magicBoost=' + (counter + 2).to_s,
+          # rubocop:enable Style/StringConcatenation
         }
 
         try_params = try_defaults.merge(try_specifics)
@@ -566,4 +578,3 @@ class SampleData < Thor
   end
 end
 # rubocop:enable Metrics/ClassLength
-# rubocop:enable Style/GlobalVars
