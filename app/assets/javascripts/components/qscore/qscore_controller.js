@@ -8,12 +8,12 @@ angular.module('QuepidApp')
       var ctrl          = this;
       var defaultStyle  = { 'background-color': 'hsl(0, 0%, 0%, 0.5)'};
 
-      console.log("About to set ctrlDiffscore and ctrl.Score to ?4?");
-      ctrl.diffScore    = '?4?';
-      ctrl.diffStyle    = {};
-      ctrl.score        = '?5?';
-      ctrl.scoreType    = ctrl.scoreType || 'normal';
-      ctrl.style        = { 'background-color': qscoreSvc.scoreToColor(ctrl.score, ctrl.maxScore) };
+      //console.log("qscore_controller:" + ctrl.scoreType + " About to set ctrlDiffscore and ctrl.Score to ?4?");
+      //ctrl.diffScore    = '?4?';
+      //ctrl.diffStyle    = {};
+      //ctrl.score        = '?5?';
+      //ctrl.scoreType    = ctrl.scoreType || 'normal';
+      //ctrl.style        = { 'background-color': qscoreSvc.scoreToColor(ctrl.score, ctrl.maxScore) };
 
       $scope.$watch('ctrl.scorable.currentScore', function() {
         if (ctrl.scorable.currentScore) {
@@ -29,7 +29,7 @@ angular.module('QuepidApp')
           }
           
           if (queryViewSvc.isDiffEnabled()){
-            console.log("the watch on ctrl.scorable.currentScore was called and diff enabled, so doing setDiff")
+            console.log("qscore_controller:" + ctrl.scoreType + " the watch on ctrl.scorable.currentScore was called and diff enabled, so doing setDiff")
             setDiff();  
           }     
         }
@@ -38,7 +38,7 @@ angular.module('QuepidApp')
       // This watch appears to be focused on the Diff level query level QScore
       // This watch appears to be focused on the Diff level scoquery level QScore
       $scope.$watch('ctrl.scorable.diff', function() {
-        console.log("This watch on 'ctrl.scorable.diff' just triggeredd...")
+        console.log("qscore_controller:" + ctrl.scoreType + " This watch on 'ctrl.scorable.diff' just triggeredd...")
         console.log("and isDiffEnabled?" + queryViewSvc.isDiffEnabled());
           if (queryViewSvc.isDiffEnabled()){
             setDiff();  
@@ -47,48 +47,42 @@ angular.module('QuepidApp')
       
       // This watch is what triggers the case level Diff QScore to render.
       $scope.$watch('ctrl.diffLabel', function() {
-        console.log("This watch on 'ctrl.diffLabel' just triggeredd...")
-        console.log(ctrl.diffLabel);
+        console.log("qscore_controller:" + ctrl.scoreType + " This watch on 'ctrl.diffLabel' just triggeredd...")
+        console.log(ctrl);
         console.log("and isDiffEnabled?" + queryViewSvc.isDiffEnabled());
           if (queryViewSvc.isDiffEnabled()){
             setDiff();  
           }  
       });      
-      
-      // This watch updates the diffs in the main query list and the avgQuery
-      // $scope.$watchGroup(['ctrl.scorable.diff', 'ctrl.diffLabel'], () => {
-      //   console.log("This watch that I am not sure about just triggeredd...")
-      //   console.log("and isDiffEnabled?" + queryViewSvc.isDiffEnabled());
-      //   if (queryViewSvc.isDiffEnabled()){
-      //     setDiff();  
-      //   }        
-      // });
+    
 
-      console.log("Line 39, and ctrl.diffScore is " + (ctrl.diffScore || '?3?'));
-      ctrl.diffInfo = {
-        label: ctrl.diffLabel,
-        score: ctrl.diffScore || '?3?',
-        style: ctrl.diffStyle,
-      };
+      console.log("qscore_controller:" + ctrl.scoreType + " Line 39, and ctrl.score is " + ctrl.score + " and ctrl.diffScore is " + (ctrl.diffScore ));
+      //ctrl.diffInfo = {
+      //  label: ctrl.diffLabel,
+      //  score: ctrl.diffScore || '?3?',
+      //  style: ctrl.diffStyle,
+      //};
 
       // Functions
-      function updateDiffInfo() {
-        console.log("in updateDiffInfo")
-        console.log(ctrl)
-        ctrl.diffInfo.label = ctrl.diffLabel;        
-        console.log("Line 48, and ctrl.diffScore is " + (ctrl.diffScore || '?2?'));
-        // it appears that i our logic below, if diffScore is 0, then we set it to '?2?'
-        // I suspect the logic was that if ctrl.diffScore was NULL then we put in ?2?        
-        //ctrl.diffInfo.score = ctrl.diffScore || '?2?';
-        ctrl.diffInfo.score = ctrl.diffScore
-        ctrl.diffInfo.style = ctrl.diffStyle;
-      }
+      // function updateDiffInfo() {
+      //   console.log("qscore_controller:" + ctrl.scoreType + " in updateDiffInfo")
+      //   console.log(ctrl)
+      //   //ctrl.diffLabel = ctrl.diffLabel;        
+      //   console.log("Line 48, and ctrl.diffScore is " + (ctrl.diffScore || '?2?'));
+      //   // it appears that i our logic below, if diffScore is 0, then we set it to '?2?'
+      //   // I suspect the logic was that if ctrl.diffScore was NULL then we put in ?2?        
+      //   //ctrl.diffInfo.score = ctrl.diffScore || '?2?';
+      //   //ctrl.diffInfo.score = ctrl.diffScore
+      //   //ctrl.diffScore = 0.6
+      //   //ctrl.diffInfo.diffScore = 0.8
+      //   //ctrl.diffInfo.style = ctrl.diffStyle;
+      // }
 
       function setDiff() {
         if (ctrl.scorable.diff !== null) {
           ctrl.scorable.diff.score().then( (diffScore) => {
             if (diffScore.score === null) {
-              setDefaultDiff();
+              //setDefaultDiff();
               return;
             }
 
@@ -102,19 +96,21 @@ angular.module('QuepidApp')
               ctrl.diffStyle = { 'background-color': qscoreSvc.scoreToColor(diffScore.score, ctrl.maxScore)};
             }
 
-            updateDiffInfo();
+            
           });
 
 
         } else {
-          setDefaultDiff();
+          ctrl.diffScore  = '?1?';
+          ctrl.diffStyle  = defaultStyle;
+          //setDefaultDiff();
         }
+        //updateDiffInfo();
       }
 
-      function setDefaultDiff() {
-        ctrl.diffScore  = '?1?';
-        ctrl.diffStyle  = defaultStyle;
-        updateDiffInfo();
-      }
+      //function setDefaultDiff() {
+        //
+        //updateDiffInfo();
+        //}
     }
   ]);
