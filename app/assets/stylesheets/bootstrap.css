@@ -257,7 +257,6 @@ th {
 }
 @font-face {
   font-family: 'Glyphicons Halflings';
-
   src: font-url('glyphicons-halflings-regular.woff2') format('woff2');
 }
 .glyphicon {
