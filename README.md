@@ -525,6 +525,10 @@ For the various Admin pages, we actually are using Bootstrap 5! That is included
 We currently use Rails Sprockets to compile everything, but do have dreams of moving the JavaScript
 over to Webpacker.
 
+## Fonts
+
+The *aller* font face is from FontSquirrel, and the .ttf is converted into .woff2 format.  
+
 ## I'd like to develop Jupyterlite
 
 Run the `./bin/setup_jupyterlite` to update the archive file `./jupyterlite/notebooks.gz`.  This
