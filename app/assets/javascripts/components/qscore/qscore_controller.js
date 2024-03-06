@@ -13,13 +13,6 @@ angular.module('QuepidApp')
       ctrl.score        = 'b?b';
       ctrl.scoreType    = ctrl.scoreType || 'normal';
       ctrl.style        = { 'background-color': qscoreSvc.scoreToColor(ctrl.score, ctrl.maxScore) };
-
-      $scope.$watch('ctrl.fullDiffName', function(newVal, oldVal) {
-        console.log("fullDiffName")
-        if (newVal !== oldVal) {
-          ctrl.which = 'snapshot';
-        }
-      });
       
       $scope.$watch('ctrl.scorable.currentScore', function() {
         if (ctrl.scorable.currentScore) {
@@ -51,12 +44,6 @@ angular.module('QuepidApp')
         }
       });
 
-      
-      // $scope.$watchGroup(['ctrl.scorable.diff', 'ctrl.diffLabel'], () => {
-      //   if (queryViewSvc.isDiffEnabled()){
-      //     setDiff();  
-      //   }        
-      // });
       
 
       //These watches updates the diffs in the main query list and the avgQuery

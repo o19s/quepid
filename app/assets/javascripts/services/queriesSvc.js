@@ -1016,40 +1016,33 @@ angular.module('QuepidApp')
               allRated = false;
             }
             
-            //TODO: throw an exampetion casue id on't think score is ever null??'
-            console.log("Do we have a null scoreInfo.score? " +(scoreInfo.score == null) );
-            if (scoreInfo.score !== null) {
-              // Treat non-rated queries as zeroes when calculating case score
-              // This if means we are skipping over zsr as part of the case score
-              if (scoreInfo.score !== 'zsr' && scoreInfo.score !== '--'){
-             //if (scoreInfo.score !== 'zsr'){
-                // Treat non-rated queries as zeroes when calculating case score
-             //   avg += scoreInfo.score === '--' ? 0 : scoreInfo.score;
-              //  tot++;
-                avg += scoreInfo.score
-                tot++
-              }
-              // include this else statement to have zsr and non rated count as a zero against the case score.
-              //else {
-              //  avg +=  0
-              //  tot++;
-              //}
-              //TODO: make text be queryText
-              queryScores[scorable.queryId] = {
-                score:    scoreInfo.score,
-                maxScore: scoreInfo.maxScore,
-                text:     scorable.queryText,
-                numFound: scorable.numFound,
-              };
-            } else {
-              queryScores[scorable.queryId] = {
-                score:    '',
-                maxScore: scoreInfo.maxScore,
-                text:     scorable.queryText,
-                numFound: scorable.numFound,
-              };
+            if (scoreInfo.score === null) {
+              // Added 06-Mar-24.   Delete after a few months if we find out this never happens!
+              throw new Error("Null scoreInfo.score should never happen.")
             }
-
+            // Treat non-rated queries as zeroes when calculating case score
+            // This if means we are skipping over zsr as part of the case score
+            if (scoreInfo.score !== 'zsr' && scoreInfo.score !== '--'){
+            //if (scoreInfo.score !== 'zsr'){
+              // Treat non-rated queries as zeroes when calculating case score
+            //   avg += scoreInfo.score === '--' ? 0 : scoreInfo.score;
+            //  tot++;
+              avg += scoreInfo.score
+              tot++
+            }
+            // include this else statement to have zsr and non rated count as a zero against the case score.
+            //else {
+            //  avg +=  0
+            //  tot++;
+            //}
+            //TODO: make text be queryText
+            queryScores[scorable.queryId] = {
+              score:    scoreInfo.score,
+              maxScore: scoreInfo.maxScore,
+              text:     scorable.queryText,
+              numFound: scorable.numFound,
+            };
+            
             return scoreInfo;
           }));
         });
