@@ -26,9 +26,7 @@ angular.module('QuepidApp')
         });
 
         modalInstance.result
-          .then(function(response) {
-            console.log("Here is the response")
-            console.log(response)
+          .then(function(response) {        
             queryViewSvc.enableDiff(response);
             queriesSvc.setDiffSetting(response);
           },

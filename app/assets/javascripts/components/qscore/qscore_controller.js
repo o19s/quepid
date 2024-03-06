@@ -53,11 +53,11 @@ angular.module('QuepidApp')
       // Functions
       function updateDiffInfo() {
         ctrl.diffInfo.label = ctrl.diffLabel;
-        if (ctrl.diffScore == null){
+        if (ctrl.diffScore == null) {
           // 06-mar-24 this is probably able to be removed at some point.
-          throw Error("PANIC.  We have a ctrl.diffScore that is null")
+          throw Error('PANIC.  We have a ctrl.diffScore that is null');
         }
-        ctrl.diffInfo.score = ctrl.diffScore //|| 'e?e';
+        ctrl.diffInfo.score = ctrl.diffScore; //|| 'e?e';
         ctrl.diffInfo.style = ctrl.diffStyle;
       }
 

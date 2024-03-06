@@ -568,13 +568,14 @@
         bestDocs = bestDocs || [];
 
         if (bestDocs.length === 0 || docs.length === 0) {
+          let label = null;
           // Don't score if there are no ratings
           if (bestDocs.length === 0) {
-            var label = '--';
+            label = '--';
           }
           // Set to ZSR if there are no docs
           if (docs.length === 0) {
-            label = 'zsr'
+            label = 'zsr';
           }
           var d = $q.defer();
           d.resolve(label);
