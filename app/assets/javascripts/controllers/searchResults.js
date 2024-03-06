@@ -27,12 +27,7 @@ angular.module('QuepidApp')
       $rootScope.$on('rating-changed', function(e, queryId) {
         console.log("$rootScope.$on('rating-changed' called")
         if (!queriesSvc.showOnlyRated && $scope.query.queryId === queryId) {
-          //$scope.query.refreshRatedDocs();
-          console.log("searchResults.js: about to updateScores")
-          //$scope.query.refreshRatedDocs().then(function() {
-            $log.info('maybe we should be rescoring queries after refreshing rated docs??');
-            queriesSvc.updateScores();
-            //});
+          queriesSvc.updateScores();          
         }
       });
 

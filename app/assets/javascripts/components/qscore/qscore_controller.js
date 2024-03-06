@@ -8,6 +8,7 @@ angular.module('QuepidApp')
       var ctrl          = this;
       var defaultStyle  = { 'background-color': 'hsl(0, 0%, 0%, 0.5)'};
 
+      // Lots of cleanup/refactoring available
       ctrl.diffScore    = 'a?a';
       ctrl.diffStyle    = {};
       ctrl.score        = 'b?b';
@@ -16,14 +17,7 @@ angular.module('QuepidApp')
       
       $scope.$watch('ctrl.scorable.currentScore', function() {
         if (ctrl.scorable.currentScore) {
-          console.log("We have for scoreType " + ctrl.scoreType + ", a watch change on ctrl.scorable.currentScore");
-          console.log("The ctrl.scorable.currentScore is ")
-          console.log(ctrl.scorable.currentScore)
-          
-          console.log("The ctrl.scorable is ")
-          console.log(ctrl.scorable)
           var scorable = ctrl.scorable.currentScore;
-          console.log("the " + ctrl.scoreType + " scorable score is " + scorable.score);
           ctrl.score    = scorable.score;
           ctrl.maxScore = $scope.ctrl.maxScore;
 
@@ -32,43 +26,22 @@ angular.module('QuepidApp')
             ctrl.style = { 'background-color': scorable.backgroundColor };
           } else {
             ctrl.style = { 'background-color': qscoreSvc.scoreToColor(ctrl.score, ctrl.maxScore)};
-          }
-          
-          if (queryViewSvc.isDiffEnabled()){
-            //setDiff();  
-            //ctrl.scorable.diff.score().then( (diffScore) => {
-            //  console.log(ctrl.scoreType + ": Just finished running .diff.score().  Here is the diffScore")
-            //  console.log(diffScore);
-            //})
-          }
+          }          
         }
       });
-
-      
-
+    
       //These watches updates the diffs in the main query list and the avgQuery
       $scope.$watch('ctrl.scorable.diff', function() {
         if (queryViewSvc.isDiffEnabled()){
-          console.log("watch on ctrl.scorable.diff, calling setDiff")
-          console.log("The ctrl.scorable.diff is ")
-          console.log(ctrl.scorable.diff)
           setDiff();  
         }   
-        else {
-          console.log("MAYBE SHOULD RESET DIFF STUFF?")
-        }
       });
       
+      // Primarily used to pick up when you change snapshots and update the diffs
       $scope.$watch('ctrl.fullDiffName', function() {
         if (queryViewSvc.isDiffEnabled()){
-          console.log("watch on ctrl.fullDiffName, calling setDiff")
-          console.log("The ctrl.fullDiffName is ")
-          console.log(ctrl.fullDiffName)
           setDiff();  
         }   
-        else {
-          console.log("MAYBE SHOULD RESET DIFF STUFF?222")
-        }
       });      
 
       ctrl.diffInfo = {
@@ -81,7 +54,8 @@ angular.module('QuepidApp')
       function updateDiffInfo() {
         ctrl.diffInfo.label = ctrl.diffLabel;
         if (ctrl.diffScore == null){
-          console.error("PANIC.  We have a ctrl.diffScore that is null")
+          // 06-mar-24 this is probably able to be removed at some point.
+          throw Error("PANIC.  We have a ctrl.diffScore that is null")
         }
         ctrl.diffInfo.score = ctrl.diffScore //|| 'e?e';
         ctrl.diffInfo.style = ctrl.diffStyle;
@@ -89,11 +63,8 @@ angular.module('QuepidApp')
 
       function setDiff() {
         if (ctrl.scorable.diff !== null) {
-          console.log(ctrl.scoreType +": in setDiff with diff enabled, about to score diff.")
           ctrl.scorable.diff.score().then( (diffScore) => {
             
-            console.log("in setDiff")
-            console.log(diffScore)
             if (diffScore.score === null) {
               setDefaultDiff();
               return;

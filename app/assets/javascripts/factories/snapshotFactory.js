@@ -68,7 +68,7 @@
         // fetch from the backend
         var qDocs         = self.docs[queryId];
         var searchResults = [];
-        
+
         angular.forEach(qDocs, function loopBody(sDoc) {
           var doc = docCacheSvc.getDoc(sDoc.id);
 
