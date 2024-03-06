@@ -168,6 +168,7 @@ angular.module('QuepidApp')
       // a simulated "query" that the results view uses for display
       var lastVersion = -1;
       var avgQuery = {
+        caseLevelQuery: true,
         lastScore: -1,
         calcScore: function() {
           // rescore only if

@@ -57,8 +57,6 @@ angular.module('QuepidApp')
           annotation: ctrl.annotationModel,
           score: {
             all_rated:  ctrl.selectedCase.lastScore.all_rated,
-            score:      ctrl.selectedCase.lastScore.score,
-            try_id:     ctrl.selectedCase.lastScore.try_id,
             queries:    ctrl.selectedCase.lastScore.queries,
           }
         };

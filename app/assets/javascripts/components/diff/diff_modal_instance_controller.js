@@ -31,7 +31,6 @@ angular.module('QuepidApp')
       ctrl.cancel          = cancel;
       ctrl.delConfirm      = delConfirm;
       ctrl.delStarted      = delStarted;
-      ctrl.isNumber        = isNumber;
       ctrl.nothingSelected = nothingSelected;
       ctrl.ok              = ok;
       ctrl.toggleDel       = toggleDel;
@@ -93,10 +92,6 @@ angular.module('QuepidApp')
           }
         }
         return false;
-      }
-
-      function isNumber(num) {
-        return !isNaN(parseInt('' + num, 10));
       }
 
       function nothingSelected() {

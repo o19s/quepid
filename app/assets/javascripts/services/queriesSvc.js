@@ -1000,7 +1000,7 @@ angular.module('QuepidApp')
        *
        */
       this.scoreAll = function(scorables) {
-        let avg = 0;
+        let avg = null;
         let tot = 0;
         let allRated = true;
         if (scorables === undefined) {
@@ -1015,11 +1015,26 @@ angular.module('QuepidApp')
             if (!scoreInfo.allRated) {
               allRated = false;
             }
-
+            
+            //TODO: throw an exampetion casue id on't think score is ever null??'
+            console.log("Do we have a null scoreInfo.score? " +(scoreInfo.score == null) );
             if (scoreInfo.score !== null) {
               // Treat non-rated queries as zeroes when calculating case score
-              avg += scoreInfo.score === '--' ? 0 : scoreInfo.score;
-              tot++;
+              // This if means we are skipping over zsr as part of the case score
+              if (scoreInfo.score !== 'zsr' && scoreInfo.score !== '--'){
+             //if (scoreInfo.score !== 'zsr'){
+                // Treat non-rated queries as zeroes when calculating case score
+             //   avg += scoreInfo.score === '--' ? 0 : scoreInfo.score;
+              //  tot++;
+                avg += scoreInfo.score
+                tot++
+              }
+              // include this else statement to have zsr and non rated count as a zero against the case score.
+              //else {
+              //  avg +=  0
+              //  tot++;
+              //}
+              //TODO: make text be queryText
               queryScores[scorable.queryId] = {
                 score:    scoreInfo.score,
                 maxScore: scoreInfo.maxScore,
@@ -1042,6 +1057,10 @@ angular.module('QuepidApp')
         return $q.all(promises).then(function() {
           if (tot > 0) {
             avg = avg/tot;
+          }
+          else {
+            // we have no rated queries, everything is zsr or --, so mark at case level --
+            avg = '--';
           }
 
           svc.latestScoreInfo = {

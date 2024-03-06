@@ -569,8 +569,13 @@
 
         // Don't score if there are no ratings
         if (bestDocs.length === 0) {
+          var label = '--';
+          if (docs.length === 0) {
+            label = 'zsr'
+          }
           var d = $q.defer();
-          d.resolve('--');
+          //d.resolve('--');
+          d.resolve(label);
           return d.promise;
         }
 

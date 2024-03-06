@@ -17,11 +17,12 @@ angular.module('QuepidApp')
         rateElementSvc.setScale(src, $scope.ratings);
       });
 
+      // Note, as of 29-Feb-24, the Highest Rated has been removed..  So...
       // You thought the scope is tied to the directive, and the directive
       // is tied to the DOM element, so the scope would follow it wherever
       // it went?
       // HA! You were wrong, terribly wrong!
-      // If the user is viewing a comparison with the "Higest Rated" and
+      // If the user is viewing a comparison with the "Highest Rated" and
       // changes the ratings such that the order of the docs changes, well...
       // how to put it? Everything goes kaput!
       // And all of the sudden the user thinks he's rating doc i_123 when in
@@ -47,7 +48,7 @@ angular.module('QuepidApp')
 
       $scope.displayRating = function() {
         if (!$scope.doc.hasRating()) {
-          return '-';
+          return '--';
         }
         else {
           return $scope.doc.getRating();

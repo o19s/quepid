@@ -25,8 +25,14 @@ angular.module('QuepidApp')
 
       // Refresh rated-only docs if ratings have changed
       $rootScope.$on('rating-changed', function(e, queryId) {
+        console.log("$rootScope.$on('rating-changed' called")
         if (!queriesSvc.showOnlyRated && $scope.query.queryId === queryId) {
-          $scope.query.refreshRatedDocs();
+          //$scope.query.refreshRatedDocs();
+          console.log("searchResults.js: about to updateScores")
+          //$scope.query.refreshRatedDocs().then(function() {
+            $log.info('maybe we should be rescoring queries after refreshing rated docs??');
+            queriesSvc.updateScores();
+            //});
         }
       });
 
@@ -113,7 +119,7 @@ angular.module('QuepidApp')
           extra.query.touchModifiedAt();
         },
         function(extra) {
-          extra.query.rating = '-';
+          extra.query.rating = '--';
 
           var ids = [];
           var docs = queriesSvc.showOnlyRated ? extra.query.ratedDocs : extra.query.docs;
@@ -131,7 +137,7 @@ angular.module('QuepidApp')
 
       $scope.displayRating = function() {
         if (!$scope.query.rating) {
-          return '-';
+          return '--';
         }
         else {
           return $scope.query.rating;
