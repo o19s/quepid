@@ -100,6 +100,7 @@ class CaseScoreManager
     return true  if last_score.nil? && !score_data.empty?
     return false if last_score.nil? && score_data.empty?
     return false if queries_empty?(last_score.queries) && queries_empty?(score_data[:queries])
+    return false if queries_empty?(last_score.queries)
 
     last_score_queries = {}
     score_data_queries = {}

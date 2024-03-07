@@ -24,7 +24,7 @@ angular.module('QuepidApp')
       ctrl.loading    = false;
 
       // Init
-      if (  angular.isUndefined(ctrl.cases) || ctrl.cases.length === 0 ) {
+      if ( angular.isUndefined(ctrl.cases) || ctrl.cases.length === 0 ) {
         fetchCaseList();
       }
 

@@ -567,10 +567,18 @@
       function score(query, total, docs, bestDocs, options) {
         bestDocs = bestDocs || [];
 
-        // Don't score if there are no ratings
-        if (bestDocs.length === 0) {
+        if (bestDocs.length === 0 || docs.length === 0) {
+          let label = null;
+          // Don't score if there are no ratings
+          if (bestDocs.length === 0) {
+            label = '--';
+          }
+          // Set to ZSR if there are no docs
+          if (docs.length === 0) {
+            label = 'zsr';
+          }
           var d = $q.defer();
-          d.resolve('--');
+          d.resolve(label);
           return d.promise;
         }
 
