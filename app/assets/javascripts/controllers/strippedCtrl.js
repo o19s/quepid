@@ -103,24 +103,15 @@ angular.module('QuepidApp')
 
                   bootstrapped = true;
                   
-                  console.log(queriesSvc.queryArray().length)
-                  if (queriesSvc.queryArray().length <= 410) {
-                    console.log("About to call queriesSvc.searchAll")
-                    return queriesSvc.searchAll()
-                      .then(function() {
-                        flash.success = 'All queries finished successfully!';
-                      }, function(errorMsg) {
-                        var mainErrorMsg = 'Some queries failed to resolve!';
-  
-                        flash.error = mainErrorMsg;
-                        flash.to('search-error').error = errorMsg;
-                      });
-                  }
-                  else {
-                    queriesSvc.requireManualTrigger = true;
-                    flash.success = 'You have ' + queriesSvc.queryArray().length + ' queries in this case and must manually trigger running this!';
-                    return
-                  }
+                  return queriesSvc.searchAll()
+                    .then(function() {
+                      flash.success = 'All queries finished successfully!';
+                    }, function(errorMsg) {
+                      var mainErrorMsg = 'Some queries failed to resolve!';
+
+                      flash.error = mainErrorMsg;
+                      flash.to('search-error').error = errorMsg;
+                    });                  
                 }
               });
           });
@@ -140,7 +131,6 @@ angular.module('QuepidApp')
       }
       else if ( caseNo > 0 ) {
         queriesSvc.querySearchPromiseReset();
-        console.log("about to bootstrapCase")
         bootstrapCase()
           .then(function() {
             loadQueries();

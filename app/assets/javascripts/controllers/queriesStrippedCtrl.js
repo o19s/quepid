@@ -16,8 +16,6 @@ angular.module('QuepidApp')
       $scope.queriesSvc = queriesSvc;
       $scope.caseSvc = caseSvc;
 
-      console.log("HI THERE")
-
       $scope.queries                  = {};
 
       $scope.queries.queriesChanged = function() {
@@ -37,7 +35,7 @@ angular.module('QuepidApp')
       
       $scope.snapshotPayload = function() {
         if (!$scope.searching()){
-          return querySnapshotSvc.createSnapshotPayload("", true, false, queriesSvc.queryArray());
+          return querySnapshotSvc.createSnapshotPayload('', true, false, queriesSvc.queryArray());
         }
       }
 

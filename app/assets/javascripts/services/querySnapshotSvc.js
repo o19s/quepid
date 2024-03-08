@@ -179,7 +179,7 @@ angular.module('QuepidApp')
       
       this.addSnapshot = function(name, recordDocumentFields, queries) {
         
-        payload = createSnapshotPayload(name, recordDocumentFields, recordMatch, queries);
+        let payload = this.createSnapshotPayload(name, recordDocumentFields, true, queries);
 
         return $http.post('api/cases/' + caseNo + '/snapshots', payload)
           .then(function(response) {
