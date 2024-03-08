@@ -13,6 +13,7 @@ module Api
         param :judge_later, [ true, false ]
         param :unrateable, [ true, false ]
         param :user_id, String
+        param :explanation, String
       end
 
       api :GET, '/api/books/:book_id/judgements',
@@ -50,6 +51,7 @@ module Api
                                                         user_id:           params[:judgement][:user]
 
         @judgement.rating = params[:judgement][:rating] unless params[:judgement][:rating].nil?
+        @judgement.explanation = params[:judgement][explanation] unless params[:judgement][:explanation].nil?
 
         if params[:judgement][:user_id]
           user = User.find(params[:judgement][:user_id])
@@ -96,7 +98,7 @@ module Api
       private
 
       def judgement_params
-        params.require(:judgement).permit(:rating, :unrateable, :query_doc_pair_id, :user_id)
+        params.require(:judgement).permit(:rating, :unrateable, :query_doc_pair_id, :user_id, :explanation)
       end
 
       def set_judgement
