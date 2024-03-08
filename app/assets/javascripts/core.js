@@ -78,7 +78,6 @@
 //= require_tree ./services
 //= require_tree ./values
 //= require_tree ../templates
-//= require_tree ./components
 //= require footer
 //= require tether-shepherd/dist/js/tether
 //= require tether-shepherd/dist/js/shepherd

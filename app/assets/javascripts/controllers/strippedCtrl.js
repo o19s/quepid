@@ -3,20 +3,18 @@
 angular.module('QuepidApp')
   // there's a lot of dependencies here, but this guy
   // is responsible for bootstrapping everyone so...
-  .controller('MainCtrl', [
-    '$scope', '$routeParams', '$rootScope', '$log',
+  .controller('StrippedCtrl', [
+    '$scope', '$routeParams', '$log',
     'flash',
-    'caseSvc', 'settingsSvc', 'querySnapshotSvc', 'caseTryNavSvc',
-    'queryViewSvc', 'queriesSvc', 'docCacheSvc', 'diffResultsSvc', 'scorerSvc',
-    'paneSvc',
+    'caseSvc', 'settingsSvc', 'caseTryNavSvc',
+    'queryViewSvc', 'queriesSvc', 'docCacheSvc',
     function (
-      $scope, $routeParams, $rootScope, $log,
+      $scope, $routeParams, $log,
       flash,
-      caseSvc, settingsSvc, querySnapshotSvc, caseTryNavSvc,
-      queryViewSvc, queriesSvc, docCacheSvc, diffResultsSvc, scorerSvc,
-      paneSvc
+      caseSvc, settingsSvc, caseTryNavSvc,
+      queryViewSvc, queriesSvc, docCacheSvc
     ) {
-      $log.debug('NEW MAIN CTRL');
+      $log.debug('NEW MAIN CTRL STRIPPED VERSION');
 
       var caseNo  = parseInt($routeParams.caseNo, 10);
       var tryNo   = parseInt($routeParams.tryNo, 10);
@@ -88,9 +86,7 @@ angular.module('QuepidApp')
           if ( caseChanged() ) {
             queryViewSvc.reset();
             docCacheSvc.empty();
-            scorerSvc.bootstrap(caseNo);
           }
-          diffResultsSvc.setDiffSetting(null);
           docCacheSvc.invalidate();
         }
 
@@ -130,15 +126,6 @@ angular.module('QuepidApp')
           });
       };
 
-      var loadSnapshots = function() {
-        return querySnapshotSvc.bootstrap(caseNo);
-      };
-
-      var updateCaseMetadata = function() {
-        caseSvc.trackLastViewedAt(caseNo);
-        caseSvc.fetchDropdownCases();
-      };
-
       init();
 
       caseTryNavSvc.navigationCompleted({
@@ -157,9 +144,6 @@ angular.module('QuepidApp')
         bootstrapCase()
           .then(function() {
             loadQueries();
-            loadSnapshots();  // this is here just to set the caseNo in the querySnapshotSvc.
-            updateCaseMetadata();
-            paneSvc.refreshElements();
           }).catch(function(error) {            
             // brittle logic, but check if we throw the TLS error or if it's from something else.'
             var message = error.message;
@@ -177,21 +161,9 @@ angular.module('QuepidApp')
             else {
               flash.to('search-error').error = 'Could not load the case ' + caseNo + ' due to: ' + message;
             }
-            //loadSnapshots();
-            //updateCaseMetadata();
-            paneSvc.refreshElements();
           });
 
-        // Sets up the panes stuff only when needed
-        // Makes sure state is persisted even after reload.
-        // This is used when the user hits "Rerun My Searches!" and wants to
-        // continue tweaking the settings, it would keep the pane open.
-        $rootScope.devSettings = $rootScope.devSettings || false;
-
-        $scope.toggleDevSettings = function() {
-          $rootScope.devSettings = !$rootScope.devSettings;
-          $(document).trigger('toggleEast');
-        };
+    
       }
     }
   ]);

@@ -35,7 +35,7 @@ module Api
 
         if @query.save
           @query.insert_at(params[:position].to_i) if params[:position]
-          @case.save
+          # @case.save  # Having this line made inserting a new case trigger a bunch of updates which was slow.
 
           Analytics::Tracker.track_query_created_event current_user, @query
 
@@ -82,8 +82,8 @@ module Api
 
         # Make sure queries have the right `arranged_next` and `arranged_at`
         # values after the query has been removed
-        @case.rearrange_queries
-        @case.save
+        # @case.rearrange_queries  // super slow with lots of queires
+        # @case.save
 
         head :no_content
       end

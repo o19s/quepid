@@ -1,0 +1,22 @@
+<div class="results" id="query-container">
+  <div class="row">
+    <div class="col-sm-12 form-group">
+
+      <div class="pull-right p-r-10">
+        Number of Queries: {{ queriesList.length }}
+      </div>
+      
+      <div class="clearfix"></div>
+
+      <div ng-show="searching()" class="alert alert-info search-feedback" role="alert">
+        <i class="fa fa-spin fa-spinner"></i> Updating Queries: {{batchPosition}} / {{batchSize}}
+      </div>
+      <div ng-if="queriesList.length > 0 && !searching()" class="alert alert-info snapshot-payload" role="alert">
+        {{ snapshotPayload() }}
+      </div>
+
+    
+
+    </div>
+  </div>
+</div>

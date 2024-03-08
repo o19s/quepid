@@ -108,7 +108,8 @@ angular.module('QuepidApp')
           });
       };
 
-      this.addSnapshot = function(name, recordDocumentFields, queries) {
+      
+      this.createSnapshotPayload = function(name, recordDocumentFields, recordExplain, queries) {
         // we may want to refactor the payload structure in the future.
         var docs = {};
         var queriesPayload = {};
@@ -129,8 +130,12 @@ angular.module('QuepidApp')
 
           // Save all matches
           angular.forEach(query.docs, function(doc) {
-
-            var docPayload = {'id': doc.id, 'explain': doc.explain().rawStr(), 'rated_only': false};
+            let explain = null;
+            if (recordExplain) {
+              explain = doc.explain().rawStr();
+            }
+            var docPayload = {'id': doc.id, 'explain': explain, 'rated_only': false};
+            
             if (recordDocumentFields) {
               var fields = {};
               angular.forEach(Object.values(doc.subsList), function(field) {
@@ -161,15 +166,22 @@ angular.module('QuepidApp')
           });
         });
 
-        var saved = {
+        var payload = {
           'snapshot': {
             'name': name,
             'docs': docs,
             'queries': queriesPayload
           }
         };
+        
+        return payload;
+      };
+      
+      this.addSnapshot = function(name, recordDocumentFields, queries) {
+        
+        payload = createSnapshotPayload(name, recordDocumentFields, recordMatch, queries);
 
-        return $http.post('api/cases/' + caseNo + '/snapshots', saved)
+        return $http.post('api/cases/' + caseNo + '/snapshots', payload)
           .then(function(response) {
             return addSnapshotResp([response.data])
               .then(function() {

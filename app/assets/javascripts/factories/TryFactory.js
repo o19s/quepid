@@ -40,6 +40,7 @@
       self.args          = data.args;
       self.deleted       = false;
       self.escapeQuery   = data.escape_query;
+      self.backgroundQueries = data.background_queries
       self.apiMethod     = data.api_method;
       self.customHeaders = data.custom_headers;
       self.fieldSpec     = data.field_spec;

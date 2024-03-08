@@ -11,6 +11,7 @@ Rails.application.routes.draw do
   get 'proxy/fetch'
   post 'proxy/fetch'
 
+
   mount ActiveStorageDB::Engine => '/active_storage_db'
 
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
@@ -119,6 +120,9 @@ Rails.application.routes.draw do
     get 'test_exception' => 'api#test_exception'
 
     scope module: :v1, constraints: ApiConstraint.new(version: 1, default: true) do
+      
+      get '/agent_q/fetch' => 'agent_q#fetch'
+        
       resources :users,   only: [ :index, :show, :update ] do
         get '/current' => 'current_user#show', on: :collection
       end
@@ -241,6 +245,7 @@ Rails.application.routes.draw do
 
   # Routes handled by angular
   get '/case/:id(/try/:try_number)'   => 'core#index', as: :case_core
+  get '/case/:id(/query/:queryNo)'    => 'core_stripped#index'
   get '/cases/new'                    => 'core#new', as: :case_new
   get '/cases'                        => 'core#index'
   get '/case'                         => 'core#index'

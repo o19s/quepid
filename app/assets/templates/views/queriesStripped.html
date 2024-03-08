@@ -1,0 +1,28 @@
+<div id="main">
+  <div class="pane_container">
+    <div class="pane_main results-control">
+      <div id="case-header" class="row">
+        <div ng-controller="CaseCtrl" style="display:inline-block;vertical-align:top">
+          <h1 class="">
+            <small class="text-muted">STRIPPED Current case</small>
+            <br>
+              
+                {{ caseModel.selectedCase().caseName }}
+              
+            <small class="text-muted" ng-controller="CurrSettingsCtrl">
+              &mdash;
+              <span>
+                  {{ currentTry.selectedTry().formattedName() }}
+              </span>
+            </small>
+
+          </h1>
+        </div>
+      </div>
+    </div>
+  
+    <!-- see queries directive -->
+    <queries-stripped></queries-stripped>
+      
+  </div>
+</div>
