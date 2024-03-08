@@ -23,7 +23,7 @@
 #
 
 class Rating < ApplicationRecord
-  belongs_to :query
+  belongs_to :query, touch: true
   belongs_to :user, optional: true
 
   # arguably we shouldn't need this, however today you can have a rating object that doesn't have a

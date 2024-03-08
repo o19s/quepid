@@ -79,11 +79,8 @@ module Authentication
       if current_user
         @case = current_user
           .cases_involved_with
-          .where(id: params[:case_id])
-          .includes(:tries )
-          .preload([ queries: [ :ratings ], tries: [ :curator_variables, :search_endpoint ] ])
-          .order('tries.try_number DESC')
-          .first
+          .preload(:queries, tries: [ :curator_variables, :search_endpoint ])
+          .find_by(id: params[:case_id])
       end
       @case = Case.public_cases.find_by(id: params[:case_id]) if @case.nil?
     end
