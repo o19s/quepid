@@ -7,6 +7,10 @@ module Api
       before_action :set_team,          only: [ :index, :create, :destroy, :invite ]
       before_action :check_team,        only: [ :index, :create, :destroy, :invite ]
 
+      def_param_group :invite_user_params do
+        param :id, String, desc: 'Oddly enough this is the email address of the person to invite'     
+      end
+      
       def index
         @members = @team.members
         respond_with @members
@@ -31,6 +35,8 @@ module Api
       end
 
       # rubocop:disable Layout/LineLength
+      api :POST, '/api/teams/:team_id/members/invite', 'Invite someone to join a team.  Creates a shell user account and adds them to the team.'
+      param_group :invite_user_params
       def invite
         unless signup_enabled?
           render json: { error: 'Signups are disabled!' }, status: :not_found

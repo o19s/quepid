@@ -8,10 +8,12 @@ module Api
       before_action :case_with_all_the_bells_whistles, only: [ :show ]
       before_action :check_case, only: [ :show, :update, :destroy ]
 
-      def_param_group :case do
-        param :case_name, String
-        param :scorer_id, Integer
-        param :archived, [ true, false ]
+      def_param_group :case_params do
+        param :case, Hash, required: true do
+          param :case_name, String
+          param :scorer_id, Integer
+          param :archived, [ true, false ]
+        end
       end
 
       # Spiking out can we make an API public?
@@ -78,7 +80,7 @@ module Api
       # rubocop:enable Metrics/AbcSize
 
       api :POST, '/api/cases', 'Create a new case.'
-      param_group :case
+      param_group :case_params
       def create
         @case = current_user.cases.build case_params
 
@@ -95,7 +97,7 @@ module Api
       api :PUT, '/api/cases/:case_id', 'Update a given case.'
       param :id, :number,
             desc: 'The ID of the requested case.', required: true
-      param_group :case
+      param_group :case_params
       def update
         update_params = case_params
         update_params[:scorer_id] = Scorer.system_default_scorer.id if default_scorer_removed? update_params

@@ -8,12 +8,14 @@ module Api
       before_action :set_judgement,   only: [ :show, :update, :destroy ]
       before_action :check_judgement, only: [ :show, :update, :destroy ]
 
-      def_param_group :judgement do
-        param :rating, Float
-        param :judge_later, [ true, false ]
-        param :unrateable, [ true, false ]
-        param :user_id, String
-        param :explanation, String
+      def_param_group :judgement_params do
+        param :judgement, Hash, required: true do
+          param :rating, Float
+          param :judge_later, [ true, false ]
+          param :unrateable, [ true, false ]
+          param :user_id, String
+          param :explanation, String
+        end
       end
 
       api :GET, '/api/books/:book_id/judgements',
@@ -44,7 +46,7 @@ module Api
             desc: 'The ID of the requested query doc pair.', required: true
       param :book_id, :number,
             desc: 'The ID of the requested book.', required: true
-      param_group :judgement
+      param_group :judgement_params
       def create
         # @judgement = @book.judgements.build judgement_params
         @judgement = @book.judgements.find_or_create_by query_doc_pair_id: params[:judgement][:query_doc_pair_id],
@@ -73,7 +75,7 @@ module Api
             desc: 'The ID of the requested query doc pair.', required: true
       param :id, :number,
             desc: 'The ID of the requested judgement.', required: true
-      param_group :judgement
+      param_group :judgement_params
       def update
         update_params = judgement_params
         if @judgement.update update_params

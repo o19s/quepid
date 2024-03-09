@@ -8,15 +8,17 @@ module Api
       before_action :set_query_doc_pair,   only: [ :show, :update, :destroy ]
       before_action :check_query_doc_pair, only: [ :show, :update, :destroy ]
 
-      def_param_group :query_doc_pair do
-        param :query_text, String
-        param :doc_id, String
-        param :document_fields, String
-        param :information_need, String
-        param :notes, String
-        param :options, String
-        param :position, Integer
-        param :selection_strategy_id, Integer
+      def_param_group :query_doc_pair_params do
+        param :query_doc_pair, Hash, required: true do
+          param :query_text, String
+          param :doc_id, String
+          param :document_fields, String
+          param :information_need, String
+          param :notes, String
+          param :options, String
+          param :position, Integer
+          param :selection_strategy_id, Integer
+        end
       end
 
       api :GET, '/api/books/:book_id/query_doc_pairs',
@@ -42,7 +44,7 @@ module Api
       api :POST, '/api/books/:book_id/query_doc_pair', 'Create a new query document pair.'
       param :book_id, :number,
             desc: 'The ID of the requested book.', required: true
-      param_group :query_doc_pair
+      param_group :query_doc_pair_params
       def create
         @query_doc_pair = @book.query_doc_pairs.find_or_create_by query_text: params[:query_doc_pair][:query_text],
                                                                   doc_id:     params[:query_doc_pair][:doc_id]
@@ -66,7 +68,7 @@ module Api
             desc: 'The ID of the requested book.', required: true
       param :id, :number,
             desc: 'The ID of the requested query document pair.', required: true
-      param_group :query_doc_pair
+      param_group :query_doc_pair_params
       def update
         update_params = query_doc_pair_params
         if @query_doc_pair.update update_params
