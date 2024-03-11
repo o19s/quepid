@@ -32,13 +32,30 @@ module Api
       end
 
       api :GET, '/api/books/:book_id/query_doc_pair/:id',
-          'Show the book with the given ID.'
+          'Show the query document pair with the given ID.'
       param :book_id, :number,
             desc: 'The ID of the requested book.', required: true
       param :id, :number,
             desc: 'The ID of the requested query document pair.', required: true
       def show
         respond_with @query_doc_pair
+      end
+
+      api :GET, '/api/books/:book_id/query_doc_pair/to_be_judged/:judge_id',
+          'Mostly randomly selects a query doc pair that needs to be judged, or none if they have all been judged.'
+      param :book_id, :number,
+            desc: 'The ID of the requested book.', required: true
+      param :judge_id, :number,
+            desc: 'The ID of the judge that doing the evaluating.', required: true
+      def to_be_judged
+        judge = User.find(params[:judge_id])
+        @query_doc_pair = SelectionStrategy.random_query_doc_based_on_strategy(@book, judge)
+
+        if @query_doc_pair
+          respond_with @query_doc_pair
+        else
+          render json: nil, status: :no_content
+        end
       end
 
       api :POST, '/api/books/:book_id/query_doc_pair', 'Create a new query document pair.'
@@ -48,12 +65,6 @@ module Api
       def create
         @query_doc_pair = @book.query_doc_pairs.find_or_create_by query_text: params[:query_doc_pair][:query_text],
                                                                   doc_id:     params[:query_doc_pair][:doc_id]
-
-        # @query_doc_pair.position = params[:query_doc_pair][:position] unless params[:query_doc_pair][:position].nil?
-        # unless params[:query_doc_pair][:document_fields].nil?
-        #  @query_doc_pair.document_fields = params[:query_doc_pair][:document_fields]
-        # end
-        # if @query_doc_pair.save
 
         update_params = query_doc_pair_params
         if @query_doc_pair.update update_params

@@ -8,9 +8,9 @@ module Api
       before_action :check_team,        only: [ :index, :create, :destroy, :invite ]
 
       def_param_group :invite_user_params do
-        param :id, String, desc: 'Oddly enough this is the email address of the person to invite'     
+        param :id, String, desc: 'Oddly enough this is the email address of the person to invite'
       end
-      
+
       def index
         @members = @team.members
         respond_with @members

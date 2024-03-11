@@ -10,10 +10,21 @@ module Api
 
       def_param_group :judgement_params do
         param :judgement, Hash, required: true do
+          param :user_id, Integer
           param :rating, Float
           param :judge_later, [ true, false ]
           param :unrateable, [ true, false ]
-          param :user_id, String
+          param :explanation, String
+        end
+      end
+
+      def_param_group :create_judgement_params do
+        param :judgement, Hash, required: true do
+          param :query_doc_pair_id, Integer
+          param :user_id, Integer
+          param :rating, Float
+          param :judge_later, [ true, false ]
+          param :unrateable, [ true, false ]
           param :explanation, String
         end
       end
@@ -41,19 +52,17 @@ module Api
       end
 
       # rubocop:disable Metrics/AbcSize
-      api :POST, '/api/books/:book_id/query_doc_pair/:query_doc_pair_id/judgements/', 'Create a new judgement.'
-      param :query_doc_pair_id, :number,
-            desc: 'The ID of the requested query doc pair.', required: true
+      api :POST, '/api/books/:book_id/judgements/', 'Create a new judgement.'
       param :book_id, :number,
             desc: 'The ID of the requested book.', required: true
-      param_group :judgement_params
+      param_group :create_judgement_params
       def create
         # @judgement = @book.judgements.build judgement_params
         @judgement = @book.judgements.find_or_create_by query_doc_pair_id: params[:judgement][:query_doc_pair_id],
                                                         user_id:           params[:judgement][:user]
 
         @judgement.rating = params[:judgement][:rating] unless params[:judgement][:rating].nil?
-        @judgement.explanation = params[:judgement][explanation] unless params[:judgement][:explanation].nil?
+        @judgement.explanation = params[:judgement][:explanation] unless params[:judgement][:explanation].nil?
 
         if params[:judgement][:user_id]
           user = User.find(params[:judgement][:user_id])
