@@ -143,6 +143,28 @@ class TryTest < ActiveSupport::TestCase
 
         assert_equal args, expected_vars
       end
+
+      test 'handles when the search_engine is not defined' do
+        try = tries(:one)
+        try.search_endpoint.search_engine = nil
+
+        args = try.args
+
+        expected_vars = nil
+
+        assert_equal args, expected_vars
+      end
+
+      test 'handles unknown search_engine' do
+        try = tries(:one)
+        try.search_endpoint.search_engine = 'bob'
+
+        args = try.args
+
+        expected_vars = nil
+
+        assert_equal args, expected_vars
+      end
     end
   end
 

@@ -133,7 +133,7 @@ module Api
       private
 
       def case_params
-        params.require(:case).permit(:case_name, :scorer_id, :archived, :book_id)
+        params.require(:case).permit(:case_name, :scorer_id, :archived, :book_id, :last_try_number)
       end
 
       def default_scorer_removed? params = {}

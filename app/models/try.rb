@@ -54,34 +54,29 @@ class Try < ApplicationRecord
   before_create :set_defaults
 
   # rubocop:disable Metrics/MethodLength
+  # rubocop:disable Metrics/CyclomaticComplexity
   def args
-    search_endpoint_args = {
-      'solr'      => lambda {
+    unless search_endpoint.nil?
+      case search_endpoint.search_engine
+      when 'solr'
         solr_args
-      },
-      'static'    => lambda {
+      when 'static'
         static_args
-      },
-      'es'        => lambda {
+      when 'es'
         es_args
-      },
-      'os'        => lambda {
+      when 'os'
         os_args
-      },
-      'vectara'   => lambda {
+      when 'vectara'
         vectara_args
-      },
-      'algolia'   => lambda {
+      when 'algolia'
         algolia_args
-      },
-      'searchapi' => lambda {
+      when 'searchapi'
         searchapi_args
-      },
-    }
-
-    search_endpoint_args.fetch(search_endpoint.search_engine).call unless search_endpoint.nil?
+      end
+    end
   end
   # rubocop:enable Metrics/MethodLength
+  # rubocop:enable Metrics/CyclomaticComplexity
 
   # merge the search endpoint and case options together,
   # with search endpoint options taking precedence
