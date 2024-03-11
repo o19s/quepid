@@ -54,7 +54,7 @@ module Api
         if @query_doc_pair
           respond_with @query_doc_pair
         else
-          render json: nil, status: :no_content
+          head :no_content
         end
       end
 
