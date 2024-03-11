@@ -9,13 +9,15 @@ module Api
       before_action :set_book, only: [ :show, :update, :destroy ]
       before_action :check_book, only: [ :show, :update, :destroy ]
 
-      def_param_group :book do
-        param :name, String
-        param :show_rank, [ true, false ]
-        param :support_implicit_judgements, [ true, false ]
-        param :owner_id, Integer
-        param :scorer_id, Integer
-        param :selection_strategy_id, Integer
+      def_param_group :book_params do
+        param :book, Hash, required: true do
+          param :name, String
+          param :show_rank, [ true, false ]
+          param :support_implicit_judgements, [ true, false ]
+          param :owner_id, Integer
+          param :scorer_id, Integer
+          param :selection_strategy_id, Integer
+        end
       end
 
       api :GET, '/api/books',
@@ -84,7 +86,7 @@ module Api
       # rubocop:enable Metrics/BlockLength
 
       api :POST, '/api/books', 'Create a new book.'
-      param_group :book
+      param_group :book_params
       def create
         @book = Book.new(book_params)
         team = Team.find_by(id: params[:book][:team_id])
@@ -99,7 +101,7 @@ module Api
       api :PUT, '/api/books/:book_id', 'Update a given book.'
       param :id, :number,
             desc: 'The ID of the requested book.', required: true
-      param_group :book
+      param_group :book_params
       def update
         update_params = book_params
         if @book.update update_params

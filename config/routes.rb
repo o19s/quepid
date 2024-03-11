@@ -52,7 +52,8 @@ Rails.application.routes.draw do
     resources :judgements
     resources :query_doc_pairs do
       resources :judgements
-      get 'unrateable' => 'judgements#unrateable'
+      post 'unrateable' => 'judgements#unrateable'
+      patch 'unrateable' => 'judgements#unrateable'
       get 'judge_later' => 'judgements#judge_later'
     end
     get 'judge' => 'judgements#new'
@@ -186,7 +187,11 @@ Rails.application.routes.draw do
         resources :cases do
           put 'refresh' => 'books/refresh#update'
         end
-        resources :query_doc_pairs
+        resources :query_doc_pairs do
+          collection do
+            get 'to_be_judged/:judge_id' => 'query_doc_pairs#to_be_judged'
+          end
+        end
         resources :judgements
       end
 

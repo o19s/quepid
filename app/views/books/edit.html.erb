@@ -31,7 +31,7 @@
           <h5 class="mb-1">
             <%= check_box('book_ids', book.id, class: 'form-check-input me-1', disabled: book.rated_query_doc_pairs.empty?) %>
             <label for="book_ids_<%= book.id %>" class="form-check-label stretched">
-            <%= book.name %>
+            <%= book_title(book) %>
             </label>
           </h5>
           <label for="book_ids_<%= book.id %>" class="form-check-label stretched">
