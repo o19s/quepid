@@ -1,5 +1,15 @@
 # Changelog
 
+
+## 7.15.0 - 2024-03-13
+
+### Bugs
+
+* Looking up Cases for a user is returning duplicates due to missing "distinct" keyword on SQL Query.  https://github.com/o19s/quepid/pull/980 by @epugh.
+
+* The "bundle exec thor case:create" is NOW updated to handle SearchEndpoints.  https://github.com/o19s/quepid/pull/981 by @epugh.
+
+
 ## 7.15.0 - 2024-03-11
 
 ### Features
