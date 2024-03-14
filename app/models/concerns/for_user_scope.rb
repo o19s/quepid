@@ -7,8 +7,7 @@ module ForUserScope
     scope :for_user, ->(user) do
       direct = where(owner: user)
       by_team = left_joins(teams: :members).where(teams_members: { member_id: user.id })
-      ids = by_team.or(direct).pluck(:id)
-      where(id: ids.uniq)
+      by_team.or(direct)
     end
   end
 end

@@ -62,6 +62,7 @@ module Api
                      current_user.cases_involved_with.not_archived.with_counts.preload(:tries, :teams,
                                                                                        :cases_teams)
                        .left_outer_joins(:metadata)
+                       .select('cases.*, case_metadata.last_viewed_at')
                        .order(Arel.sql('`case_metadata`.`last_viewed_at` DESC, `cases`.`updated_at` DESC'))
                    end
         end
