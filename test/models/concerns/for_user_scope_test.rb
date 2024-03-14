@@ -18,5 +18,10 @@ class ForUserScopeTest < ActiveSupport::TestCase
       cases = Case.for_user(users(:doug))
       assert cases.exclude?(cases(:matt_case))
     end
+
+    it 'returns distinct cases' do
+      case_ids = Case.for_user(users(:random)).pluck(:id)
+      assert_equal case_ids, case_ids.uniq
+    end
   end
 end

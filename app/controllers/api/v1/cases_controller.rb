@@ -25,8 +25,6 @@ module Api
                status: :unauthorized
       end
 
-      # rubocop:disable Metrics/MethodLength
-      # rubocop:disable Metrics/AbcSize
       api :GET, '/api/cases',
           'List all cases to which the user has access.'
       error :code => 401, :desc => 'Unauthorized'
@@ -34,9 +32,6 @@ module Api
             :desc          => 'Whether or not to include archived cases in the response.',
             :required      => false,
             :default_value => false
-      param :sortBy, String,
-            :desc     => 'Sort the cases returned by any field on the case object, in ascending order.',
-            :required => false
       param :deep, [ true, false ],
             :desc          => '', # TODO: Unsure of what deep adds, it isn't used in the body below.
             :required      => false,
@@ -45,7 +40,6 @@ module Api
         bool = ActiveRecord::Type::Boolean.new
 
         archived  = bool.deserialize(params[:archived]) || false
-        sort_by   = params[:sortBy]
         @deep     = bool.deserialize(params[:deep]) || false
 
         if archived
@@ -53,17 +47,12 @@ module Api
           @no_teams = false
           @cases = Case.where(archived: archived, owner_id: current_user.id).all
         else
-          @cases = if 'last_viewed_at' == sort_by
-                     current_user.cases_involved_with.not_archived.includes(:metadata).references(:metadata)
-                       .order(Arel.sql('`case_metadata`.`last_viewed_at` DESC, `cases`.`id`')).limit(3)
-                   elsif sort_by
-                     current_user.cases_involved_with.not_archived.with_counts.preload( :tries).order(sort_by)
-                   else
-                     current_user.cases_involved_with.not_archived.with_counts.preload(:tries, :teams,
-                                                                                       :cases_teams)
-                       .left_outer_joins(:metadata)
-                       .order(Arel.sql('`case_metadata`.`last_viewed_at` DESC, `cases`.`updated_at` DESC'))
-                   end
+          @cases = current_user.cases_involved_with.not_archived.with_counts.preload(:tries, :teams,
+                                                                                     :cases_teams)
+            .left_outer_joins(:metadata)
+            .select('cases.*, case_metadata.last_viewed_at')
+            .order(Arel.sql('`case_metadata`.`last_viewed_at` DESC, `cases`.`updated_at` DESC'))
+
         end
 
         respond_with @cases
@@ -76,9 +65,6 @@ module Api
       def show
         respond_with @case
       end
-      # rubocop:enable Metrics/MethodLength
-      # rubocop:enable Metrics/AbcSize
-
       api :POST, '/api/cases', 'Create a new case.'
       param_group :case_params
       def create
