@@ -30,7 +30,7 @@ class ProxyController < ApplicationController
     connection = Faraday.new(url: url_without_path) do |faraday|
       # Configure the connection options, such as headers or middleware
       faraday.response :follow_redirects
-      faraday.response :logger, nil, { headers: proxy_debug, bodies: proxy_debug, errors: true }
+      faraday.response :logger, nil, { headers: proxy_debug, bodies: proxy_debug, errors: true, errors: !Rails.env.test? }
       faraday.ssl.verify = false
       faraday.request :url_encoded
 
