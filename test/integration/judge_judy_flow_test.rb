@@ -18,7 +18,7 @@ class JudgeJudyFlowTest < ActionDispatch::IntegrationTest
     assert_includes acase.teams, team
     assert_includes book.teams, team
 
-    # Link to a Case and populate it.
+    # Link to a Case and Book together and populate it.
     put api_case_url acase, params: { case_id: acase.id, case: { book_id: book.id }, format: :json }
     assert_response :ok
 
