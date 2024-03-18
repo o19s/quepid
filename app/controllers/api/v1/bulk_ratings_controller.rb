@@ -15,7 +15,7 @@ module Api
         if params[:doc_ids].present?
           params[:doc_ids].each do |doc_id|
             rating = @query.ratings.find_or_create_by doc_id: doc_id
-            rating.user = @current_user
+            # rating.user = @current_user
 
             # rating.update rating_params
             rating.rating = pluck_out_just_rating_param

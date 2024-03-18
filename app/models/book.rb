@@ -10,6 +10,7 @@
 #  support_implicit_judgements :boolean
 #  created_at                  :datetime         not null
 #  updated_at                  :datetime         not null
+#  ai_judge_id                 :integer
 #  owner_id                    :integer
 #  scorer_id                   :integer
 #  selection_strategy_id       :bigint           not null
@@ -30,6 +31,9 @@ class Book < ApplicationRecord
   # rubocop:enable Rails/HasAndBelongsToMany
 
   belongs_to :owner,
+             class_name: 'User', optional: true
+
+  belongs_to :ai_judge,
              class_name: 'User', optional: true
 
   belongs_to :selection_strategy

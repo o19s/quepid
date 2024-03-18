@@ -167,7 +167,6 @@ class BooksController < ApplicationController
   # rubocop:enable Metrics/PerceivedComplexity
   # rubocop:enable Layout/LineLength
 
-  # rubocop:disable Metrics/MethodLength
   def assign_anonymous
     # assignee = @book.team.members.find_by(id: params[:assignee_id])
     assignee = User.find_by(id: params[:assignee_id])
@@ -181,17 +180,16 @@ class BooksController < ApplicationController
         judgement.save!
       end
     end
-    @book.cases.each do |kase|
-      kase.ratings.where(user: nil).find_each do |rating|
-        rating.user = assignee
-        rating.save!
-      end
-    end
+    # @book.cases.each do |kase|
+    #  kase.ratings.where(user: nil).find_each do |rating|
+    #    rating.user = assignee
+    #    rating.save!
+    #  end
+    # end
 
     UpdateCaseJob.perform_later @book
     redirect_to book_path(@book), :notice => "Assigned #{assignee.fullname} to ratings and judgements."
   end
-  # rubocop:enable Metrics/MethodLength
 
   def delete_ratings_by_assignee
     judgements_to_delete = @book.judgements.where(user: @user)

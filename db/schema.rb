@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2024_03_08_204637) do
+ActiveRecord::Schema[7.1].define(version: 2024_03_17_233035) do
   create_table "active_storage_attachments", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.string "name", null: false
     t.string "record_type", null: false
@@ -95,6 +95,7 @@ ActiveRecord::Schema[7.1].define(version: 2024_03_08_204637) do
     t.boolean "support_implicit_judgements"
     t.boolean "show_rank", default: false
     t.integer "owner_id"
+    t.integer "ai_judge_id"
     t.index ["selection_strategy_id"], name: "index_books_on_selection_strategy_id"
   end
 
