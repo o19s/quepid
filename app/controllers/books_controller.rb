@@ -24,10 +24,7 @@ class BooksController < ApplicationController
   # rubocop:disable Metrics/MethodLength
   def show
     @count_of_anonymous_book_judgements = @book.judgements.where(user: nil).count
-    @count_of_anonymous_case_judgements = 0
-    @book.cases.each do |kase|
-      @count_of_anonymous_case_judgements += kase.ratings.where(user: nil).count
-    end
+
 
     @moar_judgements_needed = @book.judgements.where(user: current_user).count < @book.query_doc_pairs.count
     @cases = @book.cases
