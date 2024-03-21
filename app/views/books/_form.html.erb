@@ -39,6 +39,16 @@
     <%= form.label :selection_strategy_id, class: 'form-label' %>
     <%= form.collection_select(:selection_strategy_id, SelectionStrategy.all, :id, :descriptive_name, { prompt: true }, required: true, class: 'form-control') %>
   </div>
+  
+  <div class="mb-3">
+    <%= form.label :ai_judge_id, class: 'form-label' %>
+    <%
+    ai_judges = book.teams.collect{|team| team.members.ai_judges }.flatten
+    %>
+    <%= form.collection_select(:ai_judge_id, ai_judges, :id, :name, { include_blank: true, prompt: true }, required: false, class: 'form-control') %>
+    <div class="form-text">You can specify an AI powered Judge to evaluate this book.  This list is derived from Judges created for your teams, so you must associate the book with a team first!</div>
+  </div>
+  
   <div class="mb-3">
     <%= form.label :show_rank, class: 'form-check-label' %>
     <%= form.check_box :show_rank, class: 'form-check-input' %>

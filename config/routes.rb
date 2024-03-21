@@ -61,6 +61,7 @@ Rails.application.routes.draw do
     member do
       patch 'combine'
       patch 'assign_anonymous'
+      patch 'run_judge_judy'
       delete 'delete_ratings_by_assignee', action: :delete_ratings_by_assignee, as: :delete_ratings_by_assignee
       delete 'reset_unrateable/:user_id', action: :reset_unrateable, as: :reset_unrateable
       delete 'reset_judge_later/:user_id', action: :reset_judge_later, as: :reset_judge_later

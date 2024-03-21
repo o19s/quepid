@@ -17,6 +17,13 @@ This book consists of <%= @book.query_doc_pairs.count %> query document pairs an
 
 <%= render 'judgements/moar_judgements_needed', book: @book %>
 
+<% if @book.ai_judge %>
+  We have an AI Judge, <i><%= @book.ai_judge.fullname %></i> helping us.
+  <br/>
+  <%= button_to 'Run Judgment Process', run_judge_judy_book_path(@book), method: :patch %>
+  <p/>
+<% end %>
+
 <% if @book.import_file.attached? %>
 <div class="alert alert-danger" role="alert">
   This book has an upload of data that is currently being processed and is not ready for use yet.
@@ -52,11 +59,6 @@ This book consists of <%= @book.query_doc_pairs.count %> query document pairs an
 <% if @count_of_anonymous_book_judgements > 0 %>
 <div class="alert alert-warning" role="alert">
   This book has <%= @count_of_anonymous_book_judgements %> anonymous judgements that could be mapped to a user.
-</div>
-<% end %>
-<% if @count_of_anonymous_case_judgements > 0 %>
-<div class="alert alert-warning" role="alert">
-  The associated cases have <%= @count_of_anonymous_case_judgements %> anonymous ratings that could be mapped to a user.
 </div>
 <% end %>
 

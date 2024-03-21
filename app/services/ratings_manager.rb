@@ -30,7 +30,6 @@ class RatingsManager
   # rubocop:disable Metrics/AbcSize
   # rubocop:disable Metrics/MethodLength
   # rubocop:disable Metrics/PerceivedComplexity
-  # rubocop:disable Metrics/CyclomaticComplexity
   def sync_judgements_to_ratings kase, query_doc_pair
     query = Query.find_or_initialize_by(case: kase, query_text: query_doc_pair.query_text)
 
@@ -53,7 +52,9 @@ class RatingsManager
       summed_rating = query_doc_pair.judgements.rateable.sum(&:rating)
 
       rating = Rating.find_or_initialize_by(query: query, doc_id: query_doc_pair.doc_id)
-      rating.user = query_doc_pair.judgements.last.user if rating.user.nil?
+      # I think the whole rating having a user was bogus becasue we have multiple raters
+      # on the book side, which kind of messes this us.
+      # rating.user = query_doc_pair.judgements.last.user if rating.user.nil?
       rating.rating = if @book.support_implicit_judgements?
                         summed_rating / count_of_judgements
                       else
@@ -70,5 +71,4 @@ class RatingsManager
   # rubocop:enable Metrics/AbcSize
   # rubocop:enable Metrics/MethodLength
   # rubocop:enable Metrics/PerceivedComplexity
-  # rubocop:enable Metrics/CyclomaticComplexity
 end
