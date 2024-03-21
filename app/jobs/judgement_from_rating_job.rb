@@ -12,7 +12,7 @@ class JudgementFromRatingJob < ApplicationJob
       judgement = query_doc_pair.judgements.find_or_initialize_by(user: user)
       judgement.rating = rating.rating
       judgement.save!
-    
+
       RunJudgeJudyJob.perform_later book
     end
   end

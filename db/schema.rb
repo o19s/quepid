@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2024_03_17_233035) do
+ActiveRecord::Schema[7.1].define(version: 2024_03_18_135613) do
   create_table "active_storage_attachments", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.string "name", null: false
     t.string "record_type", null: false
@@ -358,6 +358,8 @@ ActiveRecord::Schema[7.1].define(version: 2024_03_17_233035) do
     t.boolean "completed_case_wizard", default: false, null: false
     t.string "stored_raw_invitation_token"
     t.string "profile_pic", limit: 4000
+    t.string "prompt", limit: 4000
+    t.string "openai_key"
     t.index ["default_scorer_id"], name: "index_users_on_default_scorer_id"
     t.index ["email"], name: "ix_user_username", unique: true
     t.index ["invitation_token"], name: "index_users_on_invitation_token", unique: true, length: 191
