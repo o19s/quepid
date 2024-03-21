@@ -25,7 +25,7 @@ angular.module('QuepidApp')
       $scope.headerScope.dropdownBooks  = [];
       $scope.headerScope.casesCount     = 0;
       $scope.headerScope.booksCount     = 0;
-      $scope.theCase = null;
+      $scope.theCase                    = null;
 
       $scope.headerScope.goToCase   = goToCase;
       $scope.headerScope.createBookLink = createBookLink;
@@ -39,6 +39,10 @@ angular.module('QuepidApp')
       $scope.$on('fetchedDropdownBooksList', function() {
         $scope.headerScope.dropdownBooks  = bookSvc.dropdownBooks;
         $scope.headerScope.booksCount     = bookSvc.booksCount;
+      });
+      
+      $scope.$on('associateBook', function() {
+        bookSvc.fetchDropdownBooks();
       });
         
 
