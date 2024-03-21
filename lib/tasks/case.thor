@@ -9,7 +9,8 @@ class Case < Thor
   # rubocop:disable Style/VariableInterpolation
   # rubocop:disable Style/GlobalVars
   # rubocop:disable Metrics/ParameterLists
-  desc 'create NAME SEARCH_ENGINE SEARCH_URL API_METHOD FIELD_SPEC QUERY_PARAMS SCORER_NAME OWNER_EMAIL',
+  # rubocop:disable Metrics/AbcSize
+  desc 'create NAME SEARCH_ENGINE ENDPOINT_URL API_METHOD FIELD_SPEC QUERY_PARAMS SCORER_NAME OWNER_EMAIL',
        'creates a new case'
   long_desc <<-LONGDESC
     `case:create` creates a new case with the passed in name, search url, field specification, query_params, scorer and owner.
@@ -19,7 +20,7 @@ class Case < Thor
     $ thor user:create "Movies Search" solr http://quepid-solr.dev.o19s.com:8985/solr/tmdb/select JSONP "id:id, title:title, overview, cast, thumb:poster_path" "q=#$query##&defType=edismax&qf=text_all&tie=1.0" nDCG@10 foo@example.com
 
   LONGDESC
-  def create name, search_engine, search_url, api_method, field_spec, query_params, scorer_name, owner_email
+  def create name, search_engine, endpoint_url, api_method, field_spec, query_params, scorer_name, owner_email
     load_environment
 
     scorer = Scorer.find_by! name: scorer_name
@@ -43,14 +44,29 @@ class Case < Thor
     }
 
     try_params = {
+      field_spec:   field_spec,
+      query_params: query_params,
+    }
+
+    search_endpoint_params = {
       search_engine: search_engine,
-      search_url:    search_url,
+      endpoint_url:  endpoint_url,
       api_method:    api_method,
-      field_spec:    field_spec,
-      query_params:  query_params,
     }
 
     acase = ::Case.new(case_params)
+
+    convert_blank_values_to_nil search_endpoint_params
+
+    search_endpoint = owner.search_endpoints_involved_with.find_by search_endpoint_params
+    if search_endpoint.nil?
+      search_endpoint = SearchEndpoint.new search_endpoint_params
+      search_endpoint.owner = owner
+      search_endpoint.save!
+    end
+
+    try_params[:search_endpoint_id] = search_endpoint.id
+
     acase.tries << Try.new(try_params)
 
     if acase.save
@@ -106,6 +122,7 @@ class Case < Thor
   # rubocop:enable Style/VariableInterpolation
   # rubocop:enable Style/GlobalVars
   # rubocop:enable Metrics/ParameterLists
+  # rubocop:enable Metrics/AbcSize
 
   # rubocop:disable Metrics/AbcSize
   # rubocop:disable Metrics/MethodLength
@@ -191,6 +208,16 @@ class Case < Thor
   def load_environment
     ENV['RAILS_ENV'] ||= 'development'
     require File.expand_path('config/environment.rb')
+  end
+
+  def convert_blank_values_to_nil hash
+    hash.each do |key, value|
+      if value.is_a?(Hash)
+        convert_blank_values_to_nil(value) # Recursively call the method for nested hashes
+      elsif value.blank?
+        hash[key] = nil
+      end
+    end
   end
 end
 # rubocop:enable Metrics/ClassLength

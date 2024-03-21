@@ -26,13 +26,18 @@ angular.module('QuepidApp')
         });
 
         modalInstance.result
-          .then(function(response) {
+          .then(function(response) {        
             queryViewSvc.enableDiff(response);
             queriesSvc.setDiffSetting(response);
           },
           function() {
             $log.info('INFO: Modal dismissed');
-          });
+          }).then(function() {
+            if (!queryViewSvc.isDiffEnabled()){
+              $log.info('rescoring queries after cancelling diff');
+              queriesSvc.updateScores();
+            }
+        });
       }
     }
   ]);

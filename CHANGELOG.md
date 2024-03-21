@@ -1,5 +1,52 @@
 # Changelog
 
+
+## 7.15.1 - 2024-03-13
+
+### Bugs
+
+* Looking up Cases for a user is returning duplicates due to missing "distinct" keyword on SQL Query.  https://github.com/o19s/quepid/pull/980 by @epugh.
+
+* The "bundle exec thor case:create" is NOW updated to handle SearchEndpoints.  https://github.com/o19s/quepid/pull/981 by @epugh.
+
+
+## 7.15.0 - 2024-03-11
+
+### Features
+
+* Now track an _Explanation_ for a judgement.  If a human clicks "I can't rate this" then they are prompted for an optional explanation why.  In the near future, LLM powered judgements will communicate a explanation as well!  https://github.com/o19s/quepid/pull/978 by @epugh.
+
+* Algolia integration!  We have a wonderful contribution from @sumitsarkar that adds Algolia as one of the supported Search engines.  https://github.com/o19s/quepid/pull/933 by @sumitsarker.
+
+### Improvements
+
+* Move to using Thor (an existing CLI tool) for loading all our sample data files, and less custom Rake code.  https://github.com/o19s/quepid/pull/966 by @epugh.
+
+* Better UX when working with custom search API's and the mapper code.  https://github.com/o19s/quepid/pull/965 and https://github.com/o19s/quepid/pull/963 by @epugh, fixing https://github.com/o19s/quepid/issues/959, https://github.com/o19s/quepid/issues/960, https://github.com/o19s/quepid/issues/961 by @wrigleyDan and https://github.com/o19s/quepid/issues/950 by @ErikHatcher. 
+
+* Proxied Search API requests should follow Redirects.  https://github.com/o19s/quepid/pull/962 by @epugh fixes https://github.com/o19s/quepid/issues/958 by @wrigleyDan.
+
+* Improved performance of checking case access permissions.  https://github.com/o19s/quepid/pull/955 by @reid-rigo.  Thanks Reid!
+
+* Updated the Jaccard, RBO, and Judge comparison notebooks that ship with Quepid. Introduced more robust testing for them. https://github.com/o19s/quepid/pull/956 by @epugh.
+
+* Improve the Books API.  https://github.com/o19s/quepid/pull/951 by @epugh.
+
+* Snapshots used to have "Best Snapshot" option, but it hasn't worked in years, so stripped it out.  https://github.com/o19s/quepid/pull/948 by @epugh.
+
+
+### Bugs
+
+* Scoring logic was all somewhat broken.  Add a query, it doesn't rescore.  Delete a query, it doesn't rescore. Have a ZSR query, it impacts scoring in a "wonky" way.  Then, when you introduce snapshot comparisons, it all gets weirder.  We've gone through at a pretty line by line debugger level and fixed the various interaction bugs.  https://github.com/o19s/quepid/pull/975 by @epugh.
+
+* Only ship Web Open Font fonts, which simplifies our CSS and set up and eliminates a warning in Firefox console.  #techdebt.  https://github.com/o19s/quepid/pull/974 by @epugh.
+
+* Fixed some bit rot in handling of Tries in the web UI, and do some polish of UX.  https://github.com/o19s/quepid/pull/967 by @epugh.
+
+* Check length of query_text. https://github.com/o19s/quepid/pull/952 by @epugh and @mkr.
+
+* No email provider?  No problem!  Fixed issue with inviting folks and no email provider setup. https://github.com/o19s/quepid/pull/949 by @epugh.
+
 ## 7.14.0 - 2024-02-06
 
 ### Features

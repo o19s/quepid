@@ -5,6 +5,12 @@ judgement.id: <%= judgement.id %>
 -->
 
 <style>
+
+    .modal-dialog-right {
+      position: fixed;
+      right: 0;
+      margin-right: auto;        
+    }
     .field { padding: 5px; }
 
     .button00 {background-color: #ff0000; box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19); color: #666 !important;}
@@ -108,6 +114,11 @@ judgement.id: <%= judgement.id %>
 
   $(document).on('keypress', function(e) {
       var tag = e.target.tagName.toLowerCase();
+      if (tag == 'textarea') {
+        return;
+      }
+      // ignore if i am in a textarea, i.e giving an explanation!
+      // very brittle!
 
       if (e.which == 97 || e.which == 65) {
           keyPressed("a");
@@ -373,11 +384,15 @@ judgement.id: <%= judgement.id %>
         </table>
       </div>
     </div>
+    
+    
 
-    <div class="float-end">
+    <div class="float-end">        
       <%= link_to 'I will Judge Later', book_query_doc_pair_judge_later_path(@book, query_doc_pair), class: 'btn btn-info m-1', role: 'button' %>
       <br/>
-      <%= link_to "I Can't Tell", book_query_doc_pair_unrateable_path(@book, query_doc_pair), class: 'btn btn-warning m-1', role: 'button' %>
+      <button type="button" class="btn btn-warning m-1" data-bs-toggle="modal" data-bs-target="#explanationModal">
+        I Can't Tell
+      </button>
     </div>
 
 
@@ -432,6 +447,11 @@ judgement.id: <%= judgement.id %>
         </tr>
       </table>
     <% end %>
+    
+    <% if !judgement.explanation.blank? %>
+    <p/>
+    <h6 class="card-subtitle">Judging Explanation: <em><%= judgement.explanation %></em></h5>
+    <% end %>
   </div>
   <% if has_thumb %>
       </div>
@@ -446,3 +466,27 @@ judgement.id: <%= judgement.id %>
   <%= form.submit class: 'hidden'%>
 
 <% end %>
+
+<!-- Modal -->
+<div class="modal fade" id="explanationModal" tabindex="-1" aria-labelledby="explanationModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-right">
+    <%= form_for(judgement, url: book_query_doc_pair_unrateable_path(@book, query_doc_pair), class: 'form-horizontal') do |f| %>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="explanationModalLabel">Record Explanation</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p>It is helpful (though optional) if you can record what makes this query/doc pair difficult to judge.</p>
+        <p>
+          <%= f.text_area :explanation, size: '44x2' %>
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <%= f.submit "Save and Skip",class: 'btn btn-primary' %>
+      </div>
+     </div>
+     <% end %>
+  </div>
+</div>

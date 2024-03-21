@@ -6,12 +6,14 @@ angular.module('QuepidApp')
   .controller('AddQueryCtrl', [
     '$rootScope',
     '$timeout',
+    '$log',
     'flash',
     'queriesSvc',
     'settingsSvc',
     function (
       $rootScope,
       $timeout,
+      $log,
       flash,
       queriesSvc,
       settingsSvc
@@ -43,6 +45,9 @@ angular.module('QuepidApp')
               }, function error(errorMsg) {
                 flash.error = 'Your new query had an error!';
                 flash.to('search-error').error = errorMsg;
+              }).then(function(){
+                $log.info('rescoring queries after adding query');
+                queriesSvc.updateScores();
               });
 
             ctrl.loading = false;
