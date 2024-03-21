@@ -15,6 +15,7 @@ class ApplicationController < ActionController::Base
   before_action :require_login
   before_action :check_current_user_locked!
   before_action :set_recent_cases
+  before_action :set_recent_books
   before_action :check_for_announcement
 
   # Prevent CSRF attacks by raising an exception.

@@ -15,6 +15,10 @@ module Authentication
       render json: { message: 'Book not found!' }, status: :not_found unless @book
     end
 
+    def set_recent_books
+      @recent_books = recent_books(3)
+    end
+
     # rubocop:disable Metrics/MethodLength
     def recent_books count
       if current_user

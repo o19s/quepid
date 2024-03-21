@@ -28,6 +28,18 @@
     <% end %>
     <div class="form-text">Books are meant to be shared with human raters and relevance engineers, and you do this by picking which teams can use them.</div>
   </div>
+  
+  <% if @origin_case %>
+    <div class="mb-3">
+      <div class="form-check form-switch">
+        <%= form.label :link_the_case, class:'form-check-label' %>
+        <%= form.check_box :link_the_case, class:'form-check-input' %>
+          <%= @origin_case.case_name %> to this book?
+      </div>
+       <%= form.hidden_field :origin_case_id, :value => @origin_case.id %>
+      <div class="form-text">A book can be used by none, one, or more Cases. </div>
+    </div>
+  <% end %>
 
   <div class="mb-3">
     <%= form.label :scorer_id, class: 'form-label' %>
