@@ -142,7 +142,7 @@ angular.module('QuepidApp')
             self.booksCount = response.data.books_count;
 
             angular.forEach(response.data.books, function(dataBook) {
-              var book = self.constructFromData(dataBook)
+              var book = self.constructFromData(dataBook);
               
               if(!contains(self.dropdownBooks, book)) {
                 self.dropdownBooks.push(book);

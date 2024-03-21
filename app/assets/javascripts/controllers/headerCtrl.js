@@ -30,19 +30,17 @@ angular.module('QuepidApp')
       $scope.headerScope.goToCase   = goToCase;
       $scope.headerScope.createBookLink = createBookLink;
 
-      angular.forEach(['fetchedDropdownCasesList'], function (eventName) {
-        $scope.$on(eventName, function() {
-          $scope.headerScope.dropdownCases  = caseSvc.dropdownCases;
-          $scope.headerScope.casesCount     = caseSvc.casesCount;
-        });
-      });
-      
-      angular.forEach(['fetchedDropdownBooksList'], function (eventName) {
-        $scope.$on(eventName, function() {
-          $scope.headerScope.dropdownBooks  = bookSvc.dropdownBooks;
-          $scope.headerScope.booksCount     = bookSvc.booksCount;
-        });
+
+      $scope.$on('fetchedDropdownCasesList', function() {
+        $scope.headerScope.dropdownCases  = caseSvc.dropdownCases;
+        $scope.headerScope.casesCount     = caseSvc.casesCount;
       });      
+
+      $scope.$on('fetchedDropdownBooksList', function() {
+        $scope.headerScope.dropdownBooks  = bookSvc.dropdownBooks;
+        $scope.headerScope.booksCount     = bookSvc.booksCount;
+      });
+        
 
       angular.forEach(['updatedCasesList', 'caseRenamed'], function (eventName) {
         $scope.$on(eventName, function() {
@@ -73,8 +71,7 @@ angular.module('QuepidApp')
           return `&team_ids[]=${team.id}`;
         });
         return `books/new?book[scorer_id]=${$scope.theCase.scorerId}${teamIds}&origin_case_id=${$scope.theCase.caseNo}`;
-        }
-        
-      };
+        }      
+      }
     }
   ]);
