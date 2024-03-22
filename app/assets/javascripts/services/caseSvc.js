@@ -461,7 +461,7 @@ angular.module('QuepidApp')
 
             theCase.bookId = bookId;
             theCase.bookName = response.book_name;
-            broadcastSvc.send('associateBook', self.dropdownBooks);
+            broadcastSvc.send('associateBook', svc.dropdownBooks);
           }, function() {
             caseTryNavSvc.notFound();
           });
