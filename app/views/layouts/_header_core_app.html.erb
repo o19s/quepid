@@ -21,7 +21,7 @@
               <strong>RECENT CASES</strong>
             </li>
 
-            <li ng-repeat="case in headerScope.dropdownCases | limitTo:5 track by $index" class="cases-nav-listing">
+            <li ng-repeat="case in headerScope.dropdownCases | limitTo:5 track by $index">
               <a href="#" class="dropdown-link" ng-click="headerScope.goToCase($event, case)"  ng-if="!isRailsGoingToAngular()">{{ case.caseName }}</a>
 
               <a ng-href="{{'/case/' + case.caseNo + '/try/' + case.lastTry}}" class="dropdown-link" ng-if="isRailsGoingToAngular()" target="_self">{{ case.caseName }}</a>
@@ -40,6 +40,42 @@
           </ul>
         </li>
         <!-- End case selector -->
+        <!-- Begin book selector -->
+        <li class="dropdown" uib-dropdown>
+          <a href class="dropdown-toggle" uib-dropdown-toggle>
+            <span class="nav-label">Books</span>
+            <i class="fa fa-chevron-down"></i>
+          </a>
+
+          <ul class="dropdown-menu dropdown-content" ng-model="headerScope.dropdownBooks" uib-dropdown-menu>
+            <li class="text-muted">
+              <strong>RECENT BOOKS</strong>
+            </li>
+
+            <li ng-repeat="book in headerScope.dropdownBooks | limitTo:5 track by $index">              
+              <a ng-href="books/{{book.id}}" target="_self" class="dropdown-link">{{ book.name }}</a>
+            </li>
+
+            <li class="actions">
+              <a href="books" class="btn btn-default btn-block" target="_self">
+                View all books
+                <small class="text-muted">
+                  ({{ headerScope.booksCount }} active)
+                </small>
+              </a>
+
+              <a
+                class="btn btn-success btn-block"
+                ng-href="{{headerScope.createBookLink()}}"
+                target="_self"
+              >
+                <i class="fa fa-plus"></i>
+                Create a book
+              </a>              
+            </li>
+          </ul>
+        </li>
+        <!-- End book selector -->        
 
         <li><a ng-attr-target="{{ isRailsGoingToAngular() ? '_self' : undefined }}" href="teams">Teams</a></li>
         <li><a ng-attr-target="{{ isRailsGoingToAngular() ? '_self' : undefined }}" href="scorers">Scorers</a></li>
