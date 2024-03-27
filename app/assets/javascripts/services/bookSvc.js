@@ -135,21 +135,20 @@ angular.module('QuepidApp')
       };
       
       this.fetchDropdownBooks = function() {
-        var self = this;
         self.dropdownBooks.length = 0;
         return $http.get('api/dropdown/books')
           .then(function(response) {
-            self.booksCount = response.data.books_count;
+            this.booksCount = response.data.books_count;
 
             angular.forEach(response.data.books, function(dataBook) {
-              var book = self.constructFromData(dataBook);
+              let book = this.constructFromData(dataBook);
               
-              if(!contains(self.dropdownBooks, book)) {
-                self.dropdownBooks.push(book);
+              if(!contains(this.dropdownBooks, book)) {
+                this.dropdownBooks.push(book);
               }
             });
 
-            broadcastSvc.send('fetchedDropdownBooksList', self.dropdownBooks);
+            broadcastSvc.send('fetchedDropdownBooksList', this.dropdownBooks);
           });
       };
     }
