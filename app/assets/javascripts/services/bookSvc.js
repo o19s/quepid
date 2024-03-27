@@ -135,7 +135,7 @@ angular.module('QuepidApp')
       };
       
       this.fetchDropdownBooks = function() {
-        self.dropdownBooks.length = 0;
+        this.dropdownBooks.length = 0;
         return $http.get('api/dropdown/books')
           .then(function(response) {
             this.booksCount = response.data.books_count;
