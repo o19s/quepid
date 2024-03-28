@@ -567,6 +567,7 @@
       function score(query, total, docs, bestDocs, options) {
         bestDocs = bestDocs || [];
 
+        /** 
         if (bestDocs.length === 0 || docs.length === 0) {
           let label = null;
           // Don't score if there are no ratings
@@ -581,6 +582,7 @@
           d.resolve(label);
           return d.promise;
         }
+        */
 
         var maxScore  = self.maxScore();
         return self.runCode(

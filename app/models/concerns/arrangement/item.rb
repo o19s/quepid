@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'arrangement/list'
+require_relative 'list'
 
 module Arrangement
   module Item

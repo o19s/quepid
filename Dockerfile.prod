@@ -30,7 +30,7 @@ RUN apt-get update -qq \
 WORKDIR /srv/app
 COPY Gemfile Gemfile.lock ./
 RUN gem install foreman
-RUN gem install bundler:2.4.9
+RUN gem install bundler:2.5.7
 
 # Clean up Bundle
 RUN bundle config set without 'development test'
