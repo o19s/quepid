@@ -100,6 +100,10 @@ angular.module('QuepidApp')
             // custom parser...
             passedInSettings.searchEngine = 'solr';
           }
+          
+          if (passedInSettings.backgroundQueries) {
+            // Similar to how 'static' works, if we have 
+          }
           else if (passedInSettings.searchEngine === 'searchapi'){
             /*jshint evil:true */
             eval(passedInSettings.mapperCode);

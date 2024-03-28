@@ -252,7 +252,35 @@
             </p>
           </div>
         </div>
-        <!-- end of Escape Queries -->
+        <!-- end of Escape Queries -->        
+        
+        <!-- Run Queries in Background -->
+        <div class="setting-div">
+          <div class="dev-header" ng-click="devSettingsBackgroundQueries.toggle = !devSettingsBackgroundQueries.toggle">
+            Run Queries in Background<span
+              ng-class="{true: 'glyphicon-plus-sign', false: 'glyphicon-minus-sign'}[!devSettingsBackgroundQueries.toggle]"
+              class="glyphicon"></span>
+          </div>
+
+          <div class="dev-body checkbox" ng-show="devSettingsBackgroundQueries.toggle">
+            <label>
+              <input type="checkbox" ng-model="settings.backgroundQueries"> Background Run Queries
+            </label>
+
+            <p class="pull-right">
+              <span class="label label-info">
+                <a href="#"
+                  uib-tooltip-html="'Process queries in the background.  Requires direct access to your Search Endpoint from the Quepid app.'"
+                  tooltip-placement="left">
+                  <span class="fa fa-question-circle" aria-hidden="true"></span>
+                </a>
+              </span>
+            </p>
+          </div>
+        </div>
+        <!-- end of Escape Queries -->        
+
+        
 
       </div> <!-- end .rerunnable-settings-tab -->
     </div> <!-- end .settings-tab (Settings) -->

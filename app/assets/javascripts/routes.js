@@ -33,6 +33,11 @@ angular.module('QuepidApp')
           controller: 'MainCtrl',
           reloadOnSearch: false
         })
+        .when('/case/:caseNo/query/:queryNo', {
+          templateUrl: 'views/queriesStripped.html',
+          controller: 'StrippedCtrl',
+          reloadOnSearch: false
+        })        
         .when('/cases', {
           templateUrl: 'views/cases/index.html',
           controller: 'CasesCtrl'
