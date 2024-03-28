@@ -2,7 +2,6 @@
 
 require 'test_helper'
 require 'ostruct'
-#require_relative 'arrangement/list'
 
 # rubocop:disable Style/StructInheritance
 class Node < Struct.new(:id, :arranged_at, :arranged_next)

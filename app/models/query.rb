@@ -24,8 +24,6 @@
 #  queries_ibfk_1  (case_id => cases.id)
 #
 
-require_relative 'concerns/arrangement/item'
-
 class Query < ApplicationRecord
   # Arrangement
   include Arrangement::Item
