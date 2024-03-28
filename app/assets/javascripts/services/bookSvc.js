@@ -9,6 +9,7 @@ angular.module('QuepidApp')
     function bookSvc($http, broadcastSvc) {
       this.books            = [];
       this.dropdownBooks    = [];
+      this.booksCount       = 0;
 
       var Book = function(id, name) {
         this.id           = id;
@@ -135,20 +136,21 @@ angular.module('QuepidApp')
       };
       
       this.fetchDropdownBooks = function() {
-        this.dropdownBooks.length = 0;
+        var self = this;
+        self.dropdownBooks.length = 0;
         return $http.get('api/dropdown/books')
           .then(function(response) {
-            this.booksCount = response.data.books_count;
+            self.booksCount = response.data.books_count;
 
             angular.forEach(response.data.books, function(dataBook) {
-              let book = this.constructFromData(dataBook);
+              let book = self.constructFromData(dataBook);
               
-              if(!contains(this.dropdownBooks, book)) {
-                this.dropdownBooks.push(book);
+              if(!contains(self.dropdownBooks, book)) {
+                self.dropdownBooks.push(book);
               }
             });
 
-            broadcastSvc.send('fetchedDropdownBooksList', this.dropdownBooks);
+            broadcastSvc.send('fetchedDropdownBooksList', self.dropdownBooks);
           });
       };
     }
