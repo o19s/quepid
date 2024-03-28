@@ -6,5 +6,8 @@
 // Note: the file in vendor/javascript/vendored-local-time.js is the one that was downloaded via
 // importmap pin.  See https://github.com/basecamp/local_time/issues/113 for others who suggested
 // remaining it
+import "@hotwired/turbo-rails"
 import LocalTime from "local-time"
 LocalTime.start()
+
+window.Turbo.setProgressBarDelay(1);
