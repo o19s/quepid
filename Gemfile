@@ -8,7 +8,7 @@ gem 'activerecord-import', '>= 1.0.7'
 gem 'active_storage_db'
 gem 'acts_as_list', '>= 1.0.1'
 gem 'ancestry'
-gem 'angular-rails-templates', '>= 1.0.0.beta'
+gem 'angular-rails-templates', '~> 1.2'
 gem 'apipie-rails', '~> 1.2'
 gem 'bcrypt', '~> 3.1.7'
 gem 'bootsnap', require: false
@@ -60,6 +60,7 @@ group :development, :test do
 end
 
 group :development do
+  gem 'bundler', '2.5.7'
   # Use console on exceptions pages [https://github.com/rails/web-console]
   gem 'web-console'
 
@@ -70,7 +71,7 @@ group :development do
   # Add speed badges [https://github.com/MiniProfiler/rack-mini-profiler]
   gem 'rack-mini-profiler'
 
-  gem 'derailed_benchmarks'
+  #gem 'derailed_benchmarks'
   gem 'letter_opener'
   gem 'rubocop', require: false
   gem 'rubocop-rails', require: false
