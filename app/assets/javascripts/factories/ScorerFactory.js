@@ -593,7 +593,7 @@
           undefined,
           options
         ).then(function(calcScore){
-          alert("query " + query.queryText + " socre:" + calcScore);
+          //window.alert('query ' + query.queryText + ' socre:' + calcScore);
           // Set to ZSR if there are no docs
           if (calcScore === null){
             if (docs.length === 0) {
