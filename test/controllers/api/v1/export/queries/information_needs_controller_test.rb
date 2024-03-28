@@ -28,12 +28,19 @@ module Api
               query = Query.new query_text: '=cmd', case_id: the_case.id
               the_case.queries << query
               the_case.save!
+              puts "HEere is the order A #{the_case.queries.map(&:query_text)}"
 
               # add a query with no docs or ratings
-              query_info_need = Query.new query_text: 'star wars', case_id: the_case.id,
+              query_with_info_need = Query.new query_text: 'star wars', case_id: the_case.id,
                                           information_need: 'Looking for the original blockbuster movie, followed by the most recent big movies.'
-              the_case.queries << query_info_need
+              the_case.queries << query_with_info_need
               the_case.save!
+              
+              puts "HEere is the order #{the_case.queries.map(&:query_text)}"
+              
+              the_case.reload
+              
+              puts "HEere is the order2 #{the_case.queries.map(&:query_text)}"
 
               get :show, params: { case_id: the_case.id, format: :csv, file_format: 'basic' }
               assert_response :ok
