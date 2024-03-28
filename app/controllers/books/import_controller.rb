@@ -30,7 +30,7 @@ module Books
 
         @book.name = params_to_use[:name]
 
-        service = ::BookImporter.new @book, params_to_use, {}
+        service = ::BookImporter.new @book, current_user, params_to_use, {}
         service.validate
       rescue JSON::ParserError => e
         @book.errors.add(:base, "Invalid JSON file format: #{e.message}")
@@ -44,7 +44,7 @@ module Books
         @book.import_file.attach(io: StringIO.new(compressed_data), filename: "book_import_#{@book.id}.bin.zip",
                                  content_type: 'application/zip')
         @book.save
-        ImportBookJob.perform_later @book
+        ImportBookJob.perform_later @book, current_user
         redirect_to @book, notice: 'Book was successfully created.'
       else
         render :new
