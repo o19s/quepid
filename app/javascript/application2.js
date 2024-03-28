@@ -9,3 +9,5 @@
 import "@hotwired/turbo-rails"
 import LocalTime from "local-time"
 LocalTime.start()
+
+window.Turbo.setProgressBarDelay(1);
