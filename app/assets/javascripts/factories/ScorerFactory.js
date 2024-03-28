@@ -567,6 +567,7 @@
       function score(query, total, docs, bestDocs, options) {
         bestDocs = bestDocs || [];
 
+        /** 
         if (bestDocs.length === 0 || docs.length === 0) {
           let label = null;
           // Don't score if there are no ratings
@@ -581,6 +582,7 @@
           d.resolve(label);
           return d.promise;
         }
+        */
 
         var maxScore  = self.maxScore();
         return self.runCode(
@@ -591,6 +593,16 @@
           undefined,
           options
         ).then(function(calcScore){
+          alert("query " + query.queryText + " socre:" + calcScore);
+          // Set to ZSR if there are no docs
+          if (calcScore === null){
+            if (docs.length === 0) {
+              return 'zsr';
+            }
+            if (bestDocs.length === 0) {
+              return '--';
+            }
+          }
           if (angular.isNumber(calcScore)) {
             if (calcScore < 0 && calcScore === maxScore) {
               return null;
