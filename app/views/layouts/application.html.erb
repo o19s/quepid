@@ -54,10 +54,10 @@
 
 
 
-  <%= stylesheet_link_tag 'application', media: 'all' %>
+  <%= stylesheet_link_tag 'application', media: 'all', 'data-turbo-track': 'reload' %>
   <%= csrf_meta_tags %>
   
-  <%= javascript_include_tag 'application' %>
+  <%= javascript_include_tag 'application', 'data-turbo-track': 'reload' %>
   <%= javascript_importmap_tags 'application2' %>
  
 

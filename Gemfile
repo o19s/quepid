@@ -50,7 +50,6 @@ gem 'sassc-rails', '~> 2.1'
 gem 'sidekiq'
 gem 'terser'
 gem 'thor'
-gem 'turbolinks', '~> 5'
 gem 'vega', '~> 0.3.0'
 
 group :development, :test do
@@ -91,3 +90,7 @@ group :test do
 end
 
 gem 'importmap-rails', '~> 2.0'
+
+gem 'turbo-rails', '~> 2.0', '>= 2.0.5'
+gem 'jsbundling-rails', '~> 1.3'
+gem 'stimulus-rails', '~> 1.3', '>= 1.3.3'
