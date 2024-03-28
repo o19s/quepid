@@ -24,7 +24,7 @@
 #  queries_ibfk_1  (case_id => cases.id)
 #
 
-require 'arrangement/item'
+require_relative 'concerns/arrangement/item'
 
 class Query < ApplicationRecord
   # Arrangement
