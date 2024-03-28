@@ -7,5 +7,5 @@ eachDoc(function(doc, i) {
     }
     total = total + 1
 }, k);
-const score = rank / total : 0.0;
+const score = count / total : 0.0;
 setScore(score);
