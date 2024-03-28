@@ -34,6 +34,7 @@ namespace :karma  do
     Rake.application['assets:clean'].reenable
     Rake.application['assets:clean'].invoke
     Rake.application['assets:clobber'].reenable
+    sleep 1
     Rake.application['assets:clobber'].invoke
 
     puts 'Finished cleaning up assets'.yellow
