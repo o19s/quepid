@@ -6,8 +6,9 @@ class HomeController < ApplicationController
   # rubocop:disable Metrics/CyclomaticComplexity
   # rubocop:disable Metrics/PerceivedComplexity
   def show
-    @cases = @current_user.cases_involved_with.not_archived.with_counts
-    @most_recent_cases = recent_cases(4).sort_by { |c| c.case_name.downcase }
+    @cases = @current_user.cases_involved_with.not_archived.with_counts.includes([ :metadata ]).order('`case_metadata`.`last_viewed_at` DESC, `cases`.`id` DESC')
+    # @most_recent_cases = recent_cases(4).sort_by { |c| c.case_name.downcase }
+    @most_recent_cases = @cases[0...4].sort_by { |c| c.case_name.downcase }
 
     # Run the prophet!
     @prophet_case_data = {}
