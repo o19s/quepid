@@ -11,6 +11,14 @@ body {
   background: image-url('blue_bg.jpg') top center repeat;
 }
 
+
+/* Dark mode */
+@media (prefers-color-scheme: dark) {
+  body {
+    background: unset;
+  }
+}
+
 .footer-bar {
   background-image: linear-gradient(to bottom, #4F8ECC 0%, #2774C0 100%);
 }

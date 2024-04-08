@@ -26,3 +26,5 @@
 
 //= require codemirror/lib/codemirror
 //= require codemirror/mode/javascript/javascript
+
+document.documentElement.setAttribute('data-bs-theme', (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'))
