@@ -1,0 +1,13 @@
+<%= turbo_stream.replace "book-import-notifications" do %>
+  <span id="book-import-notifications">
+    <% if counter > 0 %>
+      <div class="alert alert-danger" role="alert">
+      Queries Remaining: <code><%= counter %></code>. Processing query <code><%= qdp.query_text %></code>.
+      </div>
+    <% else %>
+      <div class="alert alert-info" role="alert">
+        Book has been fully imported.
+      </div>
+    <% end %>
+  </span>
+<% end %>

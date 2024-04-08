@@ -1,3 +1,5 @@
+<%= turbo_stream_from(:notifications) %>
+
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
   <h1 class="h2"><%= book_title @book %></h1>
   <div class="btn-toolbar mb-2 mb-md-0">
@@ -17,22 +19,8 @@ This book consists of <%= @book.query_doc_pairs.count %> query document pairs an
 
 <%= render 'judgements/moar_judgements_needed', book: @book %>
 
-<% if @book.import_file.attached? %>
-<div class="alert alert-danger" role="alert">
-  This book has an upload of data that is currently being processed and is not ready for use yet.
-  <br/>
-  Import file is  <%=link_to 'available here', rails_blob_path(@book.import_file.blob, only_path: true) %>.
-  Status: <%= @book.query_doc_pairs.count %>  
-  <%= link_to book_path(@book) do %>
-    Refresh
-    <i
-      class="bi arrow-clockwise"
-      aria-hidden="true"
-    ></i>
-  <% end %>
-  
-</div>
-<% end %>
+<span id="book-import-notifications">
+</span>
 
 <% if @book.populate_file.attached? %>
 <div class="alert alert-danger" role="alert">
