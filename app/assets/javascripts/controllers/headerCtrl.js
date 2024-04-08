@@ -70,12 +70,14 @@ angular.module('QuepidApp')
       });
       
       function createBookLink() {
+        let bookLink = 'books/new';
         if ($scope.theCase){
           const teamIds = $scope.theCase.teams.map(function(team) {
             return `&team_ids[]=${team.id}`;
           });
-          return `books/new?book[scorer_id]=${$scope.theCase.scorerId}${teamIds}&origin_case_id=${$scope.theCase.caseNo}`;
-        }      
+          bookLink = `${bookLink}?book[scorer_id]=${$scope.theCase.scorerId}${teamIds}&origin_case_id=${$scope.theCase.caseNo}`;
+        } 
+        return bookLink;
       }
     }
   ]);
