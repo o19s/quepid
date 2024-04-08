@@ -2,7 +2,8 @@
 
 This document explains how Quepid can be operated and configured.
 
-- [Running behind a load balancer](#loadbalancer)
+- [Installing Quepid](#installing-quepid)
+- [Running behind a load balancer](#running-behind-a-load-balancer)
 - [Setting up a Context Path](#setting-up-a-context-path)
 - [Mail](#mail)
 - [OAuth](#OAuth)
@@ -16,6 +17,10 @@ This document explains how Quepid can be operated and configured.
 - [Using Personal Access Tokens](#using-personal-access-tokens)
 - [Scripting Users Cases Ratings](#scripting-users-cases-ratings)
 - [Posting Announcements to Users](#posting-announcements-to-users)
+
+## Installing Quepid
+
+See the documentation and links for installing Quepid via Docker, Heroku, AWS, and Kubernetes at 
 
 ## Running behind a load balancer
 
