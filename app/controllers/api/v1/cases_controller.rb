@@ -98,7 +98,7 @@ module Api
         elsif @case.update update_params
           if update_params[:book_id]
             @book = Book.find(update_params[:book_id])
-            TrackBookViewedJob.perform_now @book, current_user
+            TrackBookViewedJob.perform_now current_user, @book
           end
           Analytics::Tracker.track_case_updated_event current_user, @case
           respond_with @case

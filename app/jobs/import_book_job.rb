@@ -4,7 +4,7 @@ class ImportBookJob < ApplicationJob
   queue_as :default
 
   # rubocop:disable Security/MarshalLoad
-  def perform book, user
+  def perform user, book
     options = {}
 
     compressed_data = book.import_file.download

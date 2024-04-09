@@ -22,21 +22,6 @@ This book consists of <%= @book.query_doc_pairs.count %> query document pairs an
 <span id="book-import-notifications">
 </span>
 
-<% if @book.populate_file.attached? %>
-<div class="alert alert-danger" role="alert">
-  Currently populating this book with fresh data from a case.
-  <br/>
-  Status is the book has <%= @book.query_doc_pairs.count %>  query doc pairs.
-  <%= link_to book_path(@book) do %>
-    <i
-      class="bi bi-arrow-clockwise"
-      aria-hidden="true"
-    ></i>
-  <% end %>
-  
-</div>
-<% end %>
-
 <% if @count_of_anonymous_book_judgements > 0 %>
 <div class="alert alert-warning" role="alert">
   This book has <%= @count_of_anonymous_book_judgements %> anonymous judgements that could be mapped to a user.
@@ -81,6 +66,19 @@ This book consists of <%= @book.query_doc_pairs.count %> query document pairs an
 <p>
 <strong>Related cases:</strong>
 <%= render(partial: 'books/case', collection: @cases, as: :kase) || "There are no cases associated." %>
+</p>
+
+<p>
+  <strong>Associated Files:</strong>
+  <% if @book.populate_file.attached? %>
+    <%= link_to 'Populate file', rails_blob_path(@book.populate_file.blob, only_path: true) %> made <%= time_ago_in_words @book.populate_file.created_at %> ago.
+  <% end %>
+  <% if @book.import_file.attached? %>
+    <%= link_to 'Import file', rails_blob_path(@book.import_file.blob, only_path: true) %> made <%= time_ago_in_words @book.import_file.created_at %> ago.
+  <% end %>
+  <% if @book.export_file.attached? %>
+    <%= link_to 'Export file', rails_blob_path(@book.export_file.blob, only_path: true) %> made <%= time_ago_in_words @book.export_file.created_at %> ago.
+  <% end %>
 </p>
 
 <p>

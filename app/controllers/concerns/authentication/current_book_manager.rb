@@ -8,7 +8,7 @@ module Authentication
 
     def set_book
       @book = current_user.books_involved_with.where(id: params[:book_id]).first
-      TrackBookViewedJob.perform_later @book, current_user
+      TrackBookViewedJob.perform_later current_user, @book
     end
 
     def check_book

@@ -19,7 +19,9 @@ class PopulateBookJob < ApplicationJob
 
     is_book_empty = book.query_doc_pairs.empty?
 
+    counter = params[:query_doc_pairs].size
     params[:query_doc_pairs].each do |pair|
+      counter -= 1
       query_doc_pair = book.query_doc_pairs.find_or_create_by query_text: pair[:query_text],
                                                               doc_id:     pair[:doc_id]
       query_doc_pair.position = pair[:position]
@@ -42,6 +44,13 @@ class PopulateBookJob < ApplicationJob
       end
 
       query_doc_pair.save!
+
+      Turbo::StreamsChannel.broadcast_render_to(
+        :notifications,
+        target:  'notifications',
+        partial: 'books/blah',
+        locals:  { counter: counter, qdp: query_doc_pair }
+      )
     end
     book.populate_file.purge
     book.save

@@ -14,26 +14,51 @@ module Api
           login_user doug
         end
 
-        describe 'Exporting a book in json' do
+        describe 'Exporting a book in triggers a job' do
           let(:book)        { books(:james_bond_movies) }
           let(:doug)        { users(:doug) }
 
-          test 'the AR object ids are replaced with names' do
+          test 'the book returns a message on start' do
             assert doug.books.include? book
 
             get :show, params: { book_id: book.id }
             assert_response :ok
             body = response.parsed_body
 
-            assert_nil body['book_id']
-            assert_not_nil body['name']
+            assert_equal body['message'], 'Starting export of book as file.'
+          end
 
-            assert_nil body['scorer_id']
-            assert_not_nil body['scorer']
-            assert_nil body['scorer']['scorer_id']
+          test 'duplicate calls report back in progress work' do
+            get :show, params: { book_id: book.id }
+            assert_response :ok
 
-            assert_nil body['selection_strategy_id']
-            assert_not_nil body['selection_strategy']
+            # duplicate call
+            get :show, params: { book_id: book.id }
+            assert_response :ok
+            body = response.parsed_body
+
+            assert_equal body['message'], 'Currently exporting book as file.'
+
+            get :show, params: { book_id: book.id }
+            assert_response :ok
+            body = response.parsed_body
+
+            assert_equal body['message'], 'Currently exporting book as file.'
+          end
+
+          test 'running a job and waiting gives you the resulting zip file' do
+            get :show, params: { book_id: book.id }
+            assert_response :ok
+            body = response.parsed_body
+
+            assert_equal body['message'], 'Starting export of book as file.'
+
+            perform_enqueued_jobs
+
+            get :show, params: { book_id: book.id }
+            assert_response :ok
+            body = response.parsed_body
+            assert_not_nil body['download_file_url']
           end
         end
       end

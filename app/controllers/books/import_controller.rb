@@ -44,7 +44,7 @@ module Books
         @book.import_file.attach(io: StringIO.new(compressed_data), filename: "book_import_#{@book.id}.bin.zip",
                                  content_type: 'application/zip')
         @book.save
-        ImportBookJob.perform_later @book, current_user
+        ImportBookJob.perform_later current_user, @book
         redirect_to @book, notice: 'Book was successfully created.'
       else
         render :new
