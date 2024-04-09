@@ -1,5 +1,11 @@
 # Changelog
 
+## 7.16.1 - 2024-04-09
+
+### Bugs
+
+* You can delete a user who has existing judgements, and then that messes up the main Books page because their judgements hang around.  Now you are warned about this, and you can choose to make their judgements anonymous.  (or just Lock their user account).  https://github.com/o19s/quepid/pull/999 by @epugh.
+
 ## 7.16.0 - 2024-03-28
 
 ### Features
