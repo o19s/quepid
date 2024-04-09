@@ -15,8 +15,6 @@ class PopulateBookJob < ApplicationJob
     serialized_data = Zlib::Inflate.inflate(compressed_data)
     params = Marshal.load(serialized_data)
 
-    puts "[PopulateBookJob] I am going to populate the book with #{params[:query_doc_pairs].size} Query doc pairs"
-
     is_book_empty = book.query_doc_pairs.empty?
 
     counter = params[:query_doc_pairs].size

@@ -102,7 +102,7 @@ This book consists of <%= @book.query_doc_pairs.count %> query document pairs an
   Export just the <%= link_to 'judgement data', api_book_path(@book, format: :csv) %> in CSV format.
 </p>
 <p>
-  Export the <%= link_to 'entire book', api_export_book_path(@book, download: true) %> in JSON format.
+  <%= link_to 'Export', books_export_path(@book) %> the entire book in JSON format.
   <% if @book.export_file.present? %>
     There is currently an export file made <%= time_ago_in_words @book.export_file.created_at %> ago <%=link_to 'available here', rails_blob_path(@book.export_file.blob, only_path: true) %>.
   <% end %>

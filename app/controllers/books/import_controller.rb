@@ -3,11 +3,8 @@
 require 'open-uri'
 require 'json'
 
-require 'action_view'
-
 module Books
   class ImportController < ApplicationController
-    include ActionView::Helpers::NumberHelper
     def new
       @book = Book.new
     end
@@ -38,9 +35,7 @@ module Books
 
       if @book.errors.empty? && @book.save
         serialized_data = Marshal.dump(params_to_use)
-        puts "the size of the serialized data is #{number_to_human_size(serialized_data.bytesize)}"
         compressed_data = Zlib::Deflate.deflate(serialized_data)
-        puts "the size of the compressed data is #{number_to_human_size(compressed_data.bytesize)}"
         @book.import_file.attach(io: StringIO.new(compressed_data), filename: "book_import_#{@book.id}.bin.zip",
                                  content_type: 'application/zip')
         @book.save

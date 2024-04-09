@@ -73,6 +73,7 @@ Rails.application.routes.draw do
 
   namespace :books do
     resources :import, only: [ :new, :create ]
+    resources :export, only: [ :show ], param: :book_id
   end
 
   devise_for :users, controllers: {
