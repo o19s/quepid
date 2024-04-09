@@ -1,6 +1,11 @@
 # frozen_string_literal: true
 
+# rubocop:disable Metrics/ClassLength
 class JudgementsController < ApplicationController
+  skip_before_action :set_recent_cases, except: [ :index, :destroy ]
+  skip_before_action :set_recent_books, except: [ :index, :destroy ]
+  skip_before_action :check_for_announcement, except: [ :index, :destroy ]
+  before_action :skip_header_links, except: [ :index, :destroy ]
   before_action :set_judgement, only: [ :show, :edit, :update, :destroy ]
   before_action :set_book
 
@@ -136,4 +141,9 @@ class JudgementsController < ApplicationController
   def judgement_params
     params.require(:judgement).permit(:user_id, :rating, :query_doc_pair_id, :unrateable, :explanation)
   end
+
+  def skip_header_links
+    @skip_header_links = true
+  end
 end
+# rubocop:enable Metrics/ClassLength

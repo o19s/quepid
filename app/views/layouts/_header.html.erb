@@ -7,7 +7,7 @@
 
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
       <ul class="navbar-nav me-auto">
-        <% if @current_user.present? %>
+        <% if @current_user.present? && !@skip_header_links %>
         <li class="nav-item dropdown">
 
           <a class="nav-link dropdown-toggle" href="#" id="dropdownCases" role="button" data-bs-toggle="dropdown">
