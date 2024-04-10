@@ -19,7 +19,7 @@
               RECENT CASES
             </li>
             <li><hr class="dropdown-divider"></li>
-            <% @recent_cases.each do |kase| %>
+            <% set_recent_cases.each do |kase| %>
               <li><%= link_to kase.case_name, case_core_path(kase, kase.last_try_number) %></li>
               <li><hr class="dropdown-divider"></li>
             <% end %>
@@ -43,7 +43,7 @@
               RECENT BOOKS
             </li>
             <li><hr class="dropdown-divider"></li>
-            <% @recent_books.each do |book| %>
+            <% set_recent_books.each do |book| %>
               <li><%= link_to book.name, book_path(book) %></li>
               <li><hr class="dropdown-divider"></li>
             <% end %>

@@ -4,6 +4,10 @@ module Authentication
   module CurrentBookManager
     extend ActiveSupport::Concern
 
+    included do
+      helper_method :set_recent_books
+    end
+
     private
 
     def set_book
