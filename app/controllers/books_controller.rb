@@ -37,7 +37,12 @@ class BooksController < ApplicationController
     unique_judge_ids = @book.query_doc_pairs.joins(:judgements)
       .distinct.pluck(:user_id)
     unique_judge_ids.each do |judge_id|
-      judge = User.find(judge_id) unless judge_id.nil?
+      begin
+        judge = User.find(judge_id) unless judge_id.nil?
+      rescue ActiveRecord::RecordNotFound
+        puts 'got a nil'
+        judge = nil
+      end
       @leaderboard_data << { judge:      judge.nil? ? 'anonymous' : judge.fullname,
                              judgements: @book.judgements.where(user: judge).count }
       @stats_data << {
