@@ -1,0 +1,106 @@
+<turbo-frame id="sparklines_tray">
+<div id="vis"></div>
+
+ <script type="text/javascript">
+   var yourVlSpec = {
+     "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+     "data": {
+       "url": "<%= analytics_sparkline_vega_data_path format: :csv %>",
+       "name": "dataset",
+       "format": {"type": "csv"}
+     },
+     "facet": {
+       "row": {
+         "field": "state",
+         "sort": {
+           "field": "positiveIncrease",
+           "op": "average",
+           "order": "descending"
+         }
+       }
+     },
+     "spec": {
+       "transform": [
+         {
+           "calculate": "datetime(slice(datum.date,0,4), slice(datum.date,4,6),[slice(datum.date,6,8)])",
+           "as": "__date"
+         }
+       ],
+       "height": 20,
+       "layer": [
+         {
+           "mark": {"type": "area"},
+           "encoding": {
+             "x": {
+               "field": "__date",
+               "type": "temporal",
+               "timeUnit": "monthdatehoursminutes",
+               "axis": {
+                 "title": null,
+                 "orient": "top",
+                 "domain": false,
+                 "ticks": false,
+                 "labels": false,
+                 "grid": false
+               }
+             },
+             "y": {
+               "field": "positiveIncrease",
+               "aggregate": "sum",
+               "type": "quantitative",
+               "axis": {
+                 "title": null,
+                 "domain": false,
+                 "labels": false,
+                 "ticks": false,
+                 "grid": false
+               }
+             }
+           }
+         },
+         {
+           "mark": {"type": "text", "align": "right", "dx": -120},
+           "encoding": {
+             "text": {
+               "aggregate": {"argmax": "__date"},
+               "field": "positiveIncrease",
+               "format": ",.0f",
+               "type": "quantitative"
+             }
+           }
+         },
+         {
+           "mark": {"type": "text", "align": "right", "dx": -180},
+           "encoding": {
+             "text": {
+               "aggregate": {"argmax": "__date"},
+               "field": "positive",
+               "format": ",.0f",
+               "type": "quantitative"
+             }
+           }
+         }
+       ]
+     },
+     "resolve": {"scale": {"y": "independent"}},
+     "config": {
+       "view": {"stroke": "transparent"},
+       "header": {
+         "title": null,
+         "labelAngle": 0,
+         "labelAlign": "left",
+         "labelFontSize": 12,
+         "labelFont": "Arial"
+       },
+       "text": {"font": "Arial", "fontSize": 12},
+       "facet": {"spacing": 1},
+       "area": {
+         "interpolate": "monotone",
+         "line": {"color": "red", "strokeWidth": 1, "interpolate": "monotone"},
+         "fill": "#faa"
+       }
+     }
+   };
+   vegaEmbed('#vis', yourVlSpec);
+ </script>
+</turbo-frame>

@@ -66,4 +66,8 @@ class HomeController < ApplicationController
   # rubocop:enable Metrics/MethodLength
   # rubocop:enable Metrics/CyclomaticComplexity
   # rubocop:enable Metrics/PerceivedComplexity
+
+  def sparklines
+    render layout: false
+  end
 end
