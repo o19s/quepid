@@ -2,16 +2,13 @@
 Inspired by https://dev.to/themesberg/tutorial-how-to-build-a-simple-admin-dashboard-interface-using-bootstrap-5-2734
 -->
 
-<!--
-https://getbootstrap.com/docs/5.2/examples/navbars-offcanvas/# for example of offcanvas nav
--->
 <div class="text-center">
     <p/>
     <h5 class="card-title"><%= Time.now.strftime("%A, %B %d") %></h5>
     <h2 class="card-title"><%= greeting() %>, <%= @current_user.fullname %></h2>
 </div>
 
-<div class="row my-4">
+<div class="row my-4 card_summary_container">
   <%= render partial: "case_summary", collection: @most_recent_cases, as: :kase %>
 </div>
 

@@ -1,5 +1,5 @@
 <div class="col-12 col-md-6 mb-4 mb-lg-0 col-lg-3">
-  <div class="card">
+  <div class="card h-100">
     <h5 class="card-header text-truncate">
       <%= link_to case_title(kase), case_core_path(kase, kase.last_try_number) %>
     </h5>
@@ -10,7 +10,7 @@
       </p>
       <turbo-frame id="case_prophet_frame_<%= kase.id %>" src="<%= home_case_prophet_url(kase) %>">
         <p class="card-text placeholder-glow">
-              <span class="placeholder col-10"></span>
+              <span class="placeholder col-11"></span>
         </p>
         <%= Vega.lite
           .mark(type: "line", tooltip: true, interpolate: "cardinal", point: {size: 60})
@@ -18,7 +18,7 @@
             x: {field: "x", type: "temporal", scale: {type: "utc"}, axis: {format: "%b %e"}},
             y: {field: "y", type: "quantitative"}
           )
-          .height(60)
+          .height(70)
           .config(axis: {title: nil, labelFontSize: 12}) %>        
       </turbo-frame>
                   
