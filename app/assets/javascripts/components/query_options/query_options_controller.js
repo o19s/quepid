@@ -8,11 +8,13 @@ angular.module('QuepidApp')
     '$scope',
     '$log',
     'flash',
+    'queriesSvc',
     function (
       $uibModal,
       $scope,
       $log,
-      flash
+      flash,
+      queriesSvc
     ) {
       var ctrl  = this;
       ctrl.query = $scope.query;
@@ -42,6 +44,8 @@ angular.module('QuepidApp')
             ctrl.query.saveOptions(JSON.parse(value))
               .then(function() {
                 flash.success = 'Query options saved successfully.';
+                $log.info('rescoring queries after changing query options');
+                queriesSvc.updateScores();
               }, function() {
                 flash.error = 'Unable to save query options.';
               });

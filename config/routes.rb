@@ -105,6 +105,9 @@ Rails.application.routes.draw do
     resources :users do
       resource :lock, only: [ :update ], module: :users
       resource :pulse, only: [ :show ], module: :users
+      member do
+        post :assign_judgements_to_anonymous_user
+      end
     end
     resources :communal_scorers
     resources :announcements do
