@@ -26,8 +26,8 @@
           
             <li class="actions">
               <div class="d-grid gap-2">
-              <%= link_to "View all cases", cases_path, class: "btn btn-outline-secondary" %>
-              <%= link_to 'Create a case', case_new_path, class: 'btn btn-success' %>
+              <%= link_to "View all cases", cases_path, class: "btn btn-outline-secondary", data: { turbo: false } %>
+              <%= link_to 'Create a case', case_new_path, class: 'btn btn-success', data: { turbo: false } %>
               </div>
             </li>
             
