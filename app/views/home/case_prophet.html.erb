@@ -1,0 +1,25 @@
+<turbo-frame id="case_prophet_frame_<%= @case.id %>">
+       
+ <%
+ prophet_data = @prophet_case_data
+ if prophet_data
+   if prophet_data[:change] > 0 %>
+     <% if prophet_data[:change].positive? %>
+       <p class="card-text text-success"><%= number_to_percentage(prophet_data[:change] , precision:0) %> increase since <%=time_ago_in_words(prophet_data[:last_changepoint]) %> ago</p>
+     <% else %>
+       <p class="card-text text-danger"><%= number_to_percentage(prophet_data[:change] , precision:0) %> decrease since <%=time_ago_in_words(prophet_data[:last_changepoint]) %> ago</p>
+     <% end %>
+   <% end %>
+        
+   <%= Vega.lite
+     .data(prophet_data[:vega_data])
+     .mark(type: "line", tooltip: true, interpolate: "cardinal", point: {size: 60})
+     .encoding(
+       x: {field: "x", type: "temporal", scale: {type: "utc"}, axis: {format: "%b %e"}},
+       y: {field: "y", type: "quantitative"}
+     )
+     .height(60)
+     .config(axis: {title: nil, labelFontSize: 12}) %>
+ 
+ <% end # if prophet_data %>
+</turbo-frame>

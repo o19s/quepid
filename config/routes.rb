@@ -7,7 +7,8 @@ Rails.application.routes.draw do
   apipie
   root 'home#show'
   get 'home/sparklines', to: 'home#sparklines'
-
+  get 'home/case_prophet/:case_id', to: 'home#case_prophet', as: :home_case_prophet
+  # get 'tries_visualization/:case_id' => 'tries_visualization#show', as: :tries_visualization
   get 'proxy/fetch'
   post 'proxy/fetch'
 
