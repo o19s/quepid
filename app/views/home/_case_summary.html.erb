@@ -8,9 +8,9 @@
       <h5 class="card-title"><%= number_with_precision(kase.last_score.score, precision: 2) unless kase.scores.empty? %> <%= kase.scorer.name %></h5>
       <p class="card-text"><%= kase.created_at.to_date.to_fs(:short) %> - <%= kase.last_score.updated_at.to_date.to_fs(:short) unless kase.scores.empty?%>
       </p>
-      <turbo-frame id="case_prophet_frame_<%= kase.id %>" src="<%= home_case_prophet_url(kase) %>">
+      <turbo-frame id="case_prophet_frame_<%= kase.id %>" src="<%= home_case_prophet_path(kase) %>">
         <p class="card-text placeholder-glow">
-              <span class="placeholder col-11"></span>
+          <span class="placeholder col-11"></span>
         </p>
         <%= Vega.lite
           .mark(type: "line", tooltip: true, interpolate: "cardinal", point: {size: 60})

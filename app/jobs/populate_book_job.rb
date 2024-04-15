@@ -47,7 +47,7 @@ class PopulateBookJob < ApplicationJob
         :notifications,
         target:  'notifications',
         partial: 'books/blah',
-        locals:  { counter: counter, qdp: query_doc_pair }
+        locals:  { book: book, counter: counter, qdp: query_doc_pair }
       )
     end
     book.populate_file.purge

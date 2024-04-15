@@ -98,7 +98,7 @@ class BookImporter
           :notifications,
           target:  'notifications',
           partial: 'books/blah',
-          locals:  { counter: counter, qdp: qdp }
+          locals:  { book: @book, counter: counter, qdp: qdp }
         )
         next unless query_doc_pair[:judgements]
 

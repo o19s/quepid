@@ -33,7 +33,7 @@
     <div class="mb-3">
       <div class="form-check form-switch">
         <%= form.label :link_the_case, class:'form-check-label' %>
-        <%= form.check_box :link_the_case, class:'form-check-input' %>
+        <%= form.check_box :link_the_case, class:'form-check-input', checked: true %>
           <%= @origin_case.case_name %> to this book?
       </div>
        <%= form.hidden_field :origin_case_id, :value => @origin_case.id %>
