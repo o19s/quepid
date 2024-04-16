@@ -32,10 +32,10 @@
       self.owned                  = data.owned;
       self.ownerId                = data.owner_id;
       self.ownerName              = data.owner_name;
-      
+
       self.scorerId               = data.scorer_id;
       self.communal               = data.communal;
-      
+
       self.teams                  = data.teams || [];
 
       // Functions
@@ -567,6 +567,9 @@
       function score(query, total, docs, bestDocs, options) {
         bestDocs = bestDocs || [];
 
+        /** 
+        Now allowing the scorer to be run regardless of if we have ratings or a ZSR.
+        The special logic for those situations is after running the scorer.
         if (bestDocs.length === 0 || docs.length === 0) {
           let label = null;
           // Don't score if there are no ratings
@@ -581,6 +584,7 @@
           d.resolve(label);
           return d.promise;
         }
+        **/
 
         var maxScore  = self.maxScore();
         return self.runCode(
@@ -591,6 +595,16 @@
           undefined,
           options
         ).then(function(calcScore){
+          //window.alert('query ' + query.queryText + ' socre:' + calcScore);
+          // Set to ZSR if there are no docs
+          if (calcScore === null){
+            if (docs.length === 0) {
+              return 'zsr';
+            }
+            if (bestDocs.length === 0) {
+              return '--';
+            }
+          }
           if (angular.isNumber(calcScore)) {
             if (calcScore < 0 && calcScore === maxScore) {
               return null;

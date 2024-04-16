@@ -16,6 +16,7 @@
     <%= form.label :query_text %>
     <%= form.text_field :query_text %>
   </div>
+  
 
   <div class="field">
     <%= form.label :position %>
@@ -26,11 +27,29 @@
     <%= form.label :doc_id, "Doc ID" %>
     <%= form.text_field :doc_id %>
   </div>
+  
+  <div class="field">
+    <%= form.label :information_need, "Information Need" %>
+    <%= form.text_field :information_need, size: 80 %>
+  </div>
+  
+  <div class="field">
+    <%= form.label :options %> <small>JSON</small><br/>
+    <%= form.text_area :options, size: "80x8" %>
+  </div>  
+  
+  <div class="field">
+    <%= form.label :notes %><br/>
+    <%= form.text_area :notes, size: "80x8" %>
+  </div>  
 
   <div class="field">
     <%= form.label :document_fields %> <small>Either text or JSON</small><br/>
-    <%= form.text_area :document_fields, size: "80x20" %>
+    <%= form.text_area :document_fields, size: "80x8" %>
   </div>
+
+
+
 
   <br>
 

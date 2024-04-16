@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2024_02_01_171336) do
+ActiveRecord::Schema[7.1].define(version: 2024_04_09_190305) do
   create_table "active_storage_attachments", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.string "name", null: false
     t.string "record_type", null: false
@@ -153,8 +153,9 @@ ActiveRecord::Schema[7.1].define(version: 2024_02_01_171336) do
     t.datetime "updated_at", null: false
     t.boolean "unrateable", default: false
     t.boolean "judge_later", default: false
+    t.text "explanation"
     t.index ["query_doc_pair_id"], name: "index_judgements_on_query_doc_pair_id"
-    t.index ["user_id", "query_doc_pair_id"], name: "index_judgements_on_user_id_and_query_doc_pair_id"
+    t.index ["user_id", "query_doc_pair_id"], name: "index_judgements_on_user_id_and_query_doc_pair_id", unique: true
   end
 
   create_table "permissions", id: :integer, charset: "utf8mb3", force: :cascade do |t|

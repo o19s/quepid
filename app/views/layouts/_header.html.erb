@@ -20,7 +20,7 @@
             </li>
             <li><hr class="dropdown-divider"></li>
             <% @recent_cases.each do |kase| %>
-              <li><%= link_to kase.case_name, case_core_path(kase, kase.last_try_number), class: 'cases-nav-listing' %></li>
+              <li><%= link_to kase.case_name, case_core_path(kase, kase.last_try_number) %></li>
               <li><hr class="dropdown-divider"></li>
             <% end %>
           
@@ -33,6 +33,30 @@
             
           </ul>
         </li>
+        <li class="nav-item dropdown">
+
+          <a class="nav-link dropdown-toggle" href="#" id="dropdownBooks" role="button" data-bs-toggle="dropdown">
+            <span class="nav-label">Books</span>
+          </a>
+          <ul class="dropdown-menu p-2" style="left: auto; width:250px;" aria-labelledby="navbarDropdownBooks">
+            <li class="text-muted">
+              RECENT BOOKS
+            </li>
+            <li><hr class="dropdown-divider"></li>
+            <% @recent_books.each do |book| %>
+              <li><%= link_to book.name, book_path(book) %></li>
+              <li><hr class="dropdown-divider"></li>
+            <% end %>
+          
+            <li class="actions">
+              <div class="d-grid gap-2">
+              <%= link_to "View all books", books_path, class: "btn btn-outline-secondary" %>
+              <%= link_to 'Create a book', new_book_path, class: 'btn btn-success' %>
+              </div>
+            </li>
+            
+          </ul>
+        </li>        
         <li class="nav-item">
           <%= link_to "Teams", teams_core_path, class: "nav-link" %>
         </li>

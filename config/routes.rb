@@ -53,7 +53,8 @@ Rails.application.routes.draw do
     resources :judgements
     resources :query_doc_pairs do
       resources :judgements
-      get 'unrateable' => 'judgements#unrateable'
+      post 'unrateable' => 'judgements#unrateable'
+      patch 'unrateable' => 'judgements#unrateable'
       get 'judge_later' => 'judgements#judge_later'
     end
     get 'judge' => 'judgements#new'
@@ -100,6 +101,9 @@ Rails.application.routes.draw do
     resources :users do
       resource :lock, only: [ :update ], module: :users
       resource :pulse, only: [ :show ], module: :users
+      member do
+        post :assign_judgements_to_anonymous_user
+      end
     end
     resources :communal_scorers
     resources :announcements do
@@ -129,6 +133,7 @@ Rails.application.routes.draw do
       resources :signups, only: [ :create ] if Rails.application.config.signup_enabled
 
       get '/dropdown/cases' => 'cases/dropdown#index'
+      get '/dropdown/books' => 'books/dropdown#index'
 
       # Cases routes.
       # In order to be consistent and always user :case_id as the param for the
@@ -190,7 +195,11 @@ Rails.application.routes.draw do
         resources :cases do
           put 'refresh' => 'books/refresh#update'
         end
-        resources :query_doc_pairs
+        resources :query_doc_pairs do
+          collection do
+            get 'to_be_judged/:judge_id' => 'query_doc_pairs#to_be_judged'
+          end
+        end
         resources :judgements
       end
 

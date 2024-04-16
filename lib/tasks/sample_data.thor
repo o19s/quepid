@@ -4,7 +4,7 @@ require 'colorize'
 require 'zip'
 
 # rubocop:disable Metrics/ClassLength
-# rubocop:disable Style/GlobalVars
+# rubocop:disable Style/StringConcatenation
 class SampleData < Thor
   # rubocop:disable Metrics/AbcSize
   # rubocop:disable Metrics/MethodLength
@@ -180,7 +180,7 @@ class SampleData < Thor
     30.times do |counter|
       try_specifics = {
         try_number:   counter,
-        query_params: "q=#{$query}##&magicBoost=#{counter + 2}",
+        query_params: 'q=#$query##' + "&magicBoost=#{counter + 2}",
       }
 
       try_params = try_defaults.merge(try_specifics)
@@ -271,7 +271,7 @@ class SampleData < Thor
       days_of_experimentation.times do |counter|
         try_specifics = {
           try_number:   counter,
-          query_params: "q=#{$query}##&magicBoost=#{counter + 2}",
+          query_params: 'q=#$query##' + "&magicBoost=#{counter + 2}",
         }
 
         try_params = try_defaults.merge(try_specifics)
@@ -566,4 +566,4 @@ class SampleData < Thor
   end
 end
 # rubocop:enable Metrics/ClassLength
-# rubocop:enable Style/GlobalVars
+# rubocop:enable Style/StringConcatenation

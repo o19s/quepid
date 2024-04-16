@@ -4,7 +4,7 @@
   </div>
 <% elsif book.query_doc_pairs.empty? %>
   <div class="alert alert-warning" role="alert">
-    You don't have any query/doc pairs. 
+    You don't have any query/doc pairs created yet. 
     <% if book.cases.empty? %>
       You can populate this Book with query/doc pairs for judging by <%= link_to 'picking a Case', cases_path, class: 'alert-link' %> and using the <b><i class="bi bi-book-half"></i> Judgements</b> tool to populate this book with query/doc pairs from your search engine.
     <% else %>
