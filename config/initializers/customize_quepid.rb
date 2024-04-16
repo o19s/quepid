@@ -94,3 +94,5 @@ Rails.application.config.quepid_domain = ENV.fetch('QUEPID_DOMAIN', '')
 
 # == Disable redirecting to match the TLS setting
 Rails.application.config.redirect_to_match_search_engine_tls = ENV.fetch('REDIRECT_TO_MATCH_SEARCH_ENGINE_TLS', true)
+
+Rails.application.config.action_cable.url = "#{ENV.fetch('RAILS_RELATIVE_URL_ROOT','')}/cable"
