@@ -26,6 +26,6 @@ namespace :assets do
 
   # Hook into existing assets:precompile task
   Rake::Task['assets:precompile'].enhance do
-    Rake::Task['assets:jupyterlite'].invoke if Rails.env.production?
+    # Rake::Task['assets:jupyterlite'].invoke if Rails.env.production?
   end
 end
