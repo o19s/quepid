@@ -8,7 +8,6 @@ module Api
         before_action :check_case
         def trigger
           RunCaseJob2.perform_later @current_user, @case, root_url
-
           render json: { message: 'scheduled' }, status: :ok
         end
       end
