@@ -19,6 +19,8 @@ class RunCaseJob2 < ApplicationJob
     puts "kase has #{kase.queries.size}"
     kase.queries.each do |query|
       puts "root url is #{root_url}"
+      puts 'changing to https://localhost'
+      root_url = 'https://localhost/'
       url = "#{root_url}api/cases/#{kase.id}/queries/#{query.id}/agent_q"
       puts url
       # Create a Faraday connection
@@ -27,23 +29,24 @@ class RunCaseJob2 < ApplicationJob
         faraday.headers['Authorization'] = "Bearer #{api_key.token_digest}"
         faraday.headers['Accept'] = 'application/json'
         faraday.adapter Faraday.default_adapter
+        faraday.ssl.verify = false # Disable SSL certificate validation
       end
 
       # Make the GET request
       response = connection.get
       puts 'I did a get'
-      
-      if response.status == :ok
-      # Parse the response body as JSON
+
+      if :ok == response.status
+        # Parse the response body as JSON
         data = JSON.parse(response.body)
 
         puts data
-    else
-      puts "Didn't get okay response.  #{response.status}"
-      puts "Response.body: #{response.body}"
-      
+      else
+        puts "Didn't get okay response.  #{response.status}"
+        puts "Response.body: #{response.body}"
+
+      end
     end
-  
   end
   # rubocop:enable Metrics/MethodLength
   # rubocop:enable Metrics/AbcSize
