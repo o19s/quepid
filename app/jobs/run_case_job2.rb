@@ -36,7 +36,7 @@ class RunCaseJob2 < ApplicationJob
       response = connection.get
       puts 'I did a get'
 
-      if :ok == response.status
+      if response.success?
         # Parse the response body as JSON
         data = JSON.parse(response.body)
 
