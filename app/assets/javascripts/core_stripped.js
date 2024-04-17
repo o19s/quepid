@@ -27,6 +27,7 @@
 //= require angular-rails-templates
 //= require splainer-search/splainer-search
 //= require angular-flash/dist/angular-flash
+//= require urijs/src/URI
 //= require utilitiesModule
 //= require app_stripped
 //= require routes
