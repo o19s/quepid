@@ -18,8 +18,7 @@ class RunCaseJob2 < ApplicationJob
     puts "api_key is #{api_key.token_digest}"
     puts "kase has #{kase.queries.size}"
     kase.queries.each do |query|
-      Benchmark.measure do        
-        
+      Benchmark.measure do
         puts "root url is #{root_url}"
         url = "#{root_url}api/cases/#{kase.id}/queries/#{query.id}/agent_q"
         puts url
