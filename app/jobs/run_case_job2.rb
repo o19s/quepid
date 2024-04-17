@@ -19,8 +19,8 @@ class RunCaseJob2 < ApplicationJob
     puts "kase has #{kase.queries.size}"
     kase.queries.each do |query|
       puts "root url is #{root_url}"
-      puts 'changing to https://localhost'
-      root_url = 'https://localhost/'
+      # puts 'changing to https://localhost'
+      # root_url = 'https://localhost/'
       url = "#{root_url}api/cases/#{kase.id}/queries/#{query.id}/agent_q"
       puts url
       # Create a Faraday connection
