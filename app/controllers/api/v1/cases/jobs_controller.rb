@@ -6,7 +6,7 @@ module Api
       class JobsController < Api::ApiController
         def trigger
           kase = Case.find(4)
-          RunCaseJob2.perform_later kase.owner, kase
+          RunCaseJob2.perform_later kase.owner, kase, root_url
 
           render json: { message: 'scheduled' }, status: :ok
         end

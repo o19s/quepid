@@ -6,7 +6,7 @@ class RunCaseJob2 < ApplicationJob
 
   # rubocop:disable Metrics/MethodLength
   # rubocop:disable Metrics/AbcSize
-  def perform user, kase
+  def perform user, kase, root_url
     api_key = nil
     if user.api_keys.empty?
       api_key = user.api_keys.create! token: SecureRandom.hex
@@ -16,10 +16,12 @@ class RunCaseJob2 < ApplicationJob
     end
 
     puts "api_key is #{api_key.token_digest}"
-
+    puts "kase has #{kase.queries.size}"
     kase.queries.each do |query|
-      Benchmark.measure do
-        url = "http://localhost:3000/api/cases/#{kase.id}/queries/#{query.id}/agent_q"
+      Benchmark.measure do        
+        
+        puts "root url is #{root_url}"
+        url = "#{root_url}api/cases/#{kase.id}/queries/#{query.id}/agent_q"
         puts url
         # Create a Faraday connection
         connection = Faraday.new(url: url) do |faraday|
