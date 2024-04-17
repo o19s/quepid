@@ -14,7 +14,7 @@ angular.module('QuepidApp')
       caseSvc, settingsSvc, caseTryNavSvc,
       queryViewSvc, queriesSvc, docCacheSvc
     ) {
-      $log.debug('NEW MAIN CTRL STRIPPED VERSION');
+      $log.debug('NEW STRIPPED MAIN CTRLr');
 
       var caseNo  = parseInt($routeParams.caseNo, 10);
       var tryNo   = parseInt($routeParams.tryNo, 10);
