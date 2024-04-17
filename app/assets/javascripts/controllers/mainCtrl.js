@@ -108,7 +108,7 @@ angular.module('QuepidApp')
                   bootstrapped = true;
                   
                   console.log(queriesSvc.queryArray().length);
-                  if (queriesSvc.queryArray().length <= 410) {
+                  if (queriesSvc.queryArray().length <= 29) {
                     console.log('About to call queriesSvc.searchAll');
                     return queriesSvc.searchAll()
                       .then(function() {
