@@ -18,27 +18,32 @@ class RunCaseJob2 < ApplicationJob
     puts "api_key is #{api_key.token_digest}"
     puts "kase has #{kase.queries.size}"
     kase.queries.each do |query|
-      Benchmark.measure do
-        puts "root url is #{root_url}"
-        url = "#{root_url}api/cases/#{kase.id}/queries/#{query.id}/agent_q"
-        puts url
-        # Create a Faraday connection
-        connection = Faraday.new(url: url) do |faraday|
-          # Set the request headers
-          faraday.headers['Authorization'] = "Bearer #{api_key.token_digest}"
-          faraday.headers['Accept'] = 'application/json'
-          faraday.adapter Faraday.default_adapter
-        end
+      puts "root url is #{root_url}"
+      url = "#{root_url}api/cases/#{kase.id}/queries/#{query.id}/agent_q"
+      puts url
+      # Create a Faraday connection
+      connection = Faraday.new(url: url) do |faraday|
+        # Set the request headers
+        faraday.headers['Authorization'] = "Bearer #{api_key.token_digest}"
+        faraday.headers['Accept'] = 'application/json'
+        faraday.adapter Faraday.default_adapter
+      end
 
-        # Make the GET request
-        response = connection.get
-        puts 'I did a get'
-        # Parse the response body as JSON
+      # Make the GET request
+      response = connection.get
+      puts 'I did a get'
+      
+      if response.status == :ok
+      # Parse the response body as JSON
         data = JSON.parse(response.body)
 
         puts data
-      end
+    else
+      puts "Didn't get okay response.  #{response.status}"
+      puts "Response.body: #{response.body}"
+      
     end
+  
   end
   # rubocop:enable Metrics/MethodLength
   # rubocop:enable Metrics/AbcSize
