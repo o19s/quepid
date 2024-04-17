@@ -16,6 +16,13 @@ module Api
       #skip_before_action :require_login
       skip_before_action :verify_authenticity_token, only: [ :fetch ]
       @browser = nil
+      
+      def trigger
+        kase = Case.find(4)
+        RunCaseJob.perform_later kase.owner, kase
+        
+        render json: { message: 'scheduled' }, status: :ok
+      end
 
       def fetch
         
@@ -46,30 +53,33 @@ module Api
         page = @browser.create_page
         page.headers.set({ 'Authorization' => "Bearer #{api_key.token_digest}" })
     
-        Benchmark.measure do
+        result = Benchmark.measure do
           # Perform a GET request
           page.go_to('http://localhost:3000/case/4/query/5')
           # page.network.wait_for_idle
-        end
-    
-        start_time = Time.zone.now
-    
-        counter = 30
-        # Run the loop for a maximum of 5 seconds
-        # Timeout.timeout(60) do
-        loop do
-          break unless page.at_css('.snapshot-payload').nil?
-          break if counter.zero?
-    
-          # Sleep for a short duration before checking the condition again
-    
-          counter -= 1
-          sleep 1
-        end
-    
-        puts "Condition met after #{Time.zone.now - start_time} seconds."
-    
-        node = page.at_css('.snapshot-payload')
+        
+      
+          start_time = Time.zone.now
+      
+          counter = 30
+          # Run the loop for a maximum of 5 seconds
+          # Timeout.timeout(60) do
+          loop do
+            break unless page.at_css('.snapshot-payload').nil?
+            break if counter.zero?
+      
+            # Sleep for a short duration before checking the condition again
+      
+            counter -= 1
+            sleep 1
+          end
+      
+          puts "Condition met after #{Time.zone.now - start_time} seconds."
+      
+          node = page.at_css('.snapshot-payload')
+         end
+        
+        puts result
     
         # @@browser.quit
     

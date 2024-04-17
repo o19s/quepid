@@ -126,6 +126,7 @@ Rails.application.routes.draw do
     scope module: :v1, constraints: ApiConstraint.new(version: 1, default: true) do
       
       get '/agent_q/fetch' => 'agent_q#fetch'
+      get '/agent_q/trigger' => 'agent_q#trigger'
         
       resources :users,   only: [ :index, :show, :update ] do
         get '/current' => 'current_user#show', on: :collection
