@@ -4,6 +4,8 @@ class RunCaseJob2 < ApplicationJob
   queue_as :single
   sidekiq_options retry: 0
 
+  # rubocop:disable Metrics/MethodLength
+  # rubocop:disable Metrics/AbcSize
   def perform user, kase
     api_key = nil
     if user.api_keys.empty?
@@ -37,4 +39,6 @@ class RunCaseJob2 < ApplicationJob
       end
     end
   end
+  # rubocop:enable Metrics/MethodLength
+  # rubocop:enable Metrics/AbcSize
 end

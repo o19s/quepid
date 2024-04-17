@@ -4,8 +4,12 @@ class RunCaseJob < ApplicationJob
   queue_as :single
   sidekiq_options retry: 0
 
-  @@browser = nil
+  @browser = nil
 
+  # rubocop:disable Metrics/AbcSize
+  # rubocop:disable Metrics/CyclomaticComplexity
+  # rubocop:disable Metrics/MethodLength
+  # rubocop:disable Metrics/PerceivedComplexity
   def perform user, kase
     api_key = nil
     if user.api_keys.empty?
@@ -20,24 +24,23 @@ class RunCaseJob < ApplicationJob
     retries = 3
 
     begin
-      if @@browser.nil?
+      if @browser.nil?
         puts 'creating Ferrum Browser'
         # Launch Ferrum browser
 
-        @@browser = Ferrum::Browser.new({
+        @browser = Ferrum::Browser.new({
           process_timeout: 5, headless: 'new',
           window_size: [ 1280, 800 ],
           browser_options: { 'no-sandbox': nil },
           timeout: 60,
           pending_connection_errors: false,
-          js_errors: false,
-          browser_options: { 'no-sandbox': nil }
+          js_errors: false
 
         })
       end
 
       # @browser.headers.set({ 'Authorization' => "Bearer #{api_key.token_digest}" })
-      page = @@browser.create_page
+      page = @browser.create_page
       page.headers.set({ 'Authorization' => "Bearer #{api_key.token_digest}" })
 
       kase.queries.each do |query|
@@ -92,9 +95,13 @@ class RunCaseJob < ApplicationJob
     ensure
       # @browser.close if @browser # not yet released
       puts 'about to reset browser'
-      @@browser.reset
-      # @@browser.quit
+      @browser.reset
+      # @browser.quit
       # puts "browser quit"
     end
   end
+  # rubocop:enable Metrics/AbcSize
+  # rubocop:enable Metrics/CyclomaticComplexity
+  # rubocop:enable Metrics/MethodLength
+  # rubocop:enable Metrics/PerceivedComplexity
 end

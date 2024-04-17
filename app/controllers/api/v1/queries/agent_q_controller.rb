@@ -21,6 +21,7 @@ module Api
         before_action :check_query, only: [ :fetch ]
         @browser = nil
 
+        # rubocop:disable Metrics/AbcSize
         def fetch
           api_key = nil
           if @current_user.api_keys.empty?
@@ -88,8 +89,8 @@ module Api
           else
             render json: { agentq_error: 'boom', counter: counter }, status: :internal_server_error
           end
-          # Close the browser
         end
+        # rubocop:enable Metrics/AbcSize
       end
     end
   end
