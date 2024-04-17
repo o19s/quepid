@@ -4,9 +4,10 @@ module Api
   module V1
     module Cases
       class JobsController < Api::ApiController
+        before_action :set_case
+        before_action :check_case
         def trigger
-          kase = Case.find(4)
-          RunCaseJob2.perform_later kase.owner, kase, root_url
+          RunCaseJob2.perform_later @current_user, @case, root_url
 
           render json: { message: 'scheduled' }, status: :ok
         end
