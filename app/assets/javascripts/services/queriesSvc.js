@@ -767,7 +767,10 @@ angular.module('QuepidApp')
           .then(function(response) {
             that.queries = {};
             // wrap the single result in an hash with an array.
-            let results = {display_order:[response.data.query_id], queries: [response.data]}
+            let results = {
+              display_order:[response.data.query_id], 
+              queries: [response.data]
+            };
             
             addQueriesFromResp(results);
 

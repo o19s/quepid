@@ -37,7 +37,7 @@ angular.module('QuepidApp')
         if (!$scope.searching()){
           return querySnapshotSvc.createSnapshotPayload('', true, false, queriesSvc.queryArray());
         }
-      }
+      };
 
       $scope.searching = function() {
         return queriesSvc.hasUnscoredQueries();
