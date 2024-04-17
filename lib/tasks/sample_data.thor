@@ -228,7 +228,7 @@ class SampleData < Thor
     osc.members << realistic_activity_user unless osc.members.include?(realistic_activity_user)
     osc.cases << tens_of_queries_case unless osc.members.include?(tens_of_queries_case)
     osc.search_endpoints << statedecoded_solr_endpoint unless osc.search_endpoints.include?(statedecoded_solr_endpoint)
- 
+
     print_step 'End of seeding teams................'
 
     # Books

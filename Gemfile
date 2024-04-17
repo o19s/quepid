@@ -92,4 +92,4 @@ end
 
 gem 'importmap-rails', '~> 2.0'
 
-gem "ferrum", "~> 0.15"
+gem 'ferrum', '~> 0.15'

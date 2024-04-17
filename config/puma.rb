@@ -2,7 +2,8 @@
 
 # Setup taken from https://devcenter.heroku.com/articles/deploying-rails-applications-with-the-puma-web-server#adding-puma-to-your-application
 
-#workers Integer(ENV['WEB_CONCURRENCY'] || 2)
+# With AgentQ doing a call back to ourselves, I think we need to bump this...
+workers Integer(ENV['WEB_CONCURRENCY'] || 2)
 #threads_count = Integer(ENV['RAILS_MAX_THREADS'] || 5)
 #threads threads_count, threads_count
 

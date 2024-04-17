@@ -5,7 +5,7 @@
 # and abstract that all away from the caller.  We create a HTML page that is populated
 # with the resulting query/docs.  Currently using the "snapshot" JSON format.
 # It is meant to be called by agent_q_controller.rb.
-# 
+#
 class CoreStrippedController < ApplicationController
   include ApiKeyAuthenticatable
   skip_before_action :check_for_announcement
@@ -32,5 +32,4 @@ class CoreStrippedController < ApplicationController
 
   def index
   end
-
 end

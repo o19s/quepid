@@ -18,6 +18,7 @@ angular.module('QuepidApp')
 
       var caseNo  = parseInt($routeParams.caseNo, 10);
       var tryNo   = parseInt($routeParams.tryNo, 10);
+      var queryNo   = parseInt($routeParams.queryNo, 10);
 
       var initialCaseNo = angular.copy(caseTryNavSvc.getCaseNo());
 
@@ -94,7 +95,7 @@ angular.module('QuepidApp')
           .then(function() {
             var bootstrapped = false;
 
-            return queriesSvc.changeSettings(caseNo, newSettings)
+            return queriesSvc.changeSettings2(caseNo, queryNo, newSettings)
               .then(function() {
                 if (!bootstrapped) {
                   flash.error                    = '';

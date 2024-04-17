@@ -20,13 +20,13 @@ module Api
         #
         # rubocop:disable Layout/LineLength
         def update
-          puts "[PopulateController] Request Size is #{number_to_human_size(query_doc_pairs_params.to_s.bytesize)}"
+          # puts "[PopulateController] Request Size is #{number_to_human_size(query_doc_pairs_params.to_s.bytesize)}"
 
           serialized_data = Marshal.dump(query_doc_pairs_params)
 
-          puts "[PopulateController] the size of the serialized data is #{number_to_human_size(serialized_data.bytesize)}"
+          # puts "[PopulateController] the size of the serialized data is #{number_to_human_size(serialized_data.bytesize)}"
           compressed_data = Zlib::Deflate.deflate(serialized_data)
-          puts "[PopulateController] the size of the compressed data is #{number_to_human_size(compressed_data.bytesize)}"
+          # puts "[PopulateController] the size of the compressed data is #{number_to_human_size(compressed_data.bytesize)}"
           @book.populate_file.attach(io: StringIO.new(compressed_data), filename: "book_populate_#{@book.id}.bin.zip",
                                      content_type: 'application/zip')
           PopulateBookJob.perform_later current_user, @book, @case

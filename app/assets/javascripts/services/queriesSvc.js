@@ -740,12 +740,36 @@ angular.module('QuepidApp')
       let querySearchableDeferred = $q.defer();
       function bootstrapQueries(caseNo) {
         querySearchableDeferred = $q.defer();
-        var path = 'api/cases/' + caseNo + '/queries?bootstrap=true';
+        var path = 'api/cases/' + caseNo + '/queries';
 
         $http.get(path)
           .then(function(response) {
             that.queries = {};
             addQueriesFromResp(response.data);
+
+            querySearchableDeferred.resolve();
+          }, function(response) {
+            $log.debug('Failed to bootstrap queries: ', response);
+            return response;
+          }).catch(function(response) {
+            $log.debug('Failed to bootstrap queries');
+            return response;
+          });
+
+        return querySearchableDeferred.promise;
+      }
+      
+      function bootstrapQuery(caseNo, queryNo) {
+        querySearchableDeferred = $q.defer();
+        var path = 'api/cases/' + caseNo + '/queries/' + queryNo;
+
+        $http.get(path)
+          .then(function(response) {
+            that.queries = {};
+            // wrap the single result in an hash with an array.
+            let results = {display_order:[response.data.query_id], queries: [response.data]}
+            
+            addQueriesFromResp(results);
 
             querySearchableDeferred.resolve();
           }, function(response) {
@@ -775,6 +799,26 @@ angular.module('QuepidApp')
         if (caseNo !== newCaseNo) {
           scorerSvc.bootstrap(newCaseNo);
           bootstrapQueries(newCaseNo);
+        } else {
+          angular.forEach(this.queries, function(query) {
+            // TODO update settings for diffs
+            if (query.diff !== null) {
+              query.diff.fetch();
+            }
+          });
+          querySearchableDeferred.resolve();
+        }
+
+        caseNo = newCaseNo;
+        return querySearchableDeferred.promise;
+      };
+      
+      this.changeSettings2 = function(newCaseNo, queryNo, newSettings) {
+        currSettings = newSettings;
+
+        if (caseNo !== newCaseNo) {
+          scorerSvc.bootstrap(newCaseNo);
+          bootstrapQuery(newCaseNo, queryNo);
         } else {
           angular.forEach(this.queries, function(query) {
             // TODO update settings for diffs

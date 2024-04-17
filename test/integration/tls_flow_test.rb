@@ -19,6 +19,7 @@ class TlsFlowTest < ActionDispatch::IntegrationTest
     assert try_https.search_endpoint.endpoint_url.starts_with?('https')
 
     # Navigate to a try that is http TLS protocol
+    puts "HEre is the kase id: #{kase.id}"
     get case_core_url(id: kase.id, try_number: try_http.try_number)
     assert_response :ok
 

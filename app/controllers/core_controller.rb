@@ -6,9 +6,9 @@ class CoreController < ApplicationController
   before_action :populate_from_params, except: :new
   skip_before_action :check_for_announcement
 
-  def require_login
-    @current_user = User.find(3)
-  end
+  #def require_login
+  #  @current_user = User.find(3)
+  #end
 
   # Spiking out can we make an API public?
   def authenticate_api!

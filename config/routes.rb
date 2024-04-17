@@ -11,7 +11,6 @@ Rails.application.routes.draw do
   get 'proxy/fetch'
   post 'proxy/fetch'
 
-
   mount ActiveStorageDB::Engine => '/active_storage_db'
 
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
@@ -124,10 +123,9 @@ Rails.application.routes.draw do
     get 'test_exception' => 'api#test_exception'
 
     scope module: :v1, constraints: ApiConstraint.new(version: 1, default: true) do
-      
-      get '/agent_q/fetch' => 'agent_q#fetch'
-      get '/agent_q/trigger' => 'agent_q#trigger'
-        
+      # get '/agent_q/cases/:case_id/queries/:id' => 'agent_q#fetch'
+      # get '/agent_q/trigger' => 'agent_q#trigger'
+
       resources :users,   only: [ :index, :show, :update ] do
         get '/current' => 'current_user#show', on: :collection
       end
@@ -148,6 +146,8 @@ Rails.application.routes.draw do
       # different scenarios.
       resources :cases, except: [ :new, :edit ], param: :case_id
       resources :cases, only: [] do
+        get '/jobs/trigger' => 'cases/jobs#trigger'
+
         # Case Tries
         resources :tries, param: :try_number, except: [ :new ] do
           post '/duplicate' => 'duplicate_tries#create', as: :duplicate_try
@@ -157,12 +157,13 @@ Rails.application.routes.draw do
         resources :scorers, only: [ :index, :update ], controller: :case_scorers
 
         # Case Queries
-        resources :queries, except: [ :new, :edit, :show ] do
+        resources :queries, except: [ :new, :edit ] do
           scope module: :queries do
             resource  :notes,     only: [ :show, :update ]
             resource  :options,   only: [ :show, :update ]
             resource  :position,  only: [ :update ]
             resource  :ratings,   only: [ :update, :destroy ] # not actually a singular resource, doc_id in json payload
+            get 'agent_q' => 'agent_q#fetch'
           end
 
           resource :bulk, only: [] do
