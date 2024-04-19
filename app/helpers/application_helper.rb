@@ -77,8 +77,8 @@ module ApplicationHelper
   # Forms.  Maybe should be an ENV variable?
   # caused by https on front end attempting to make http
   # call by Turbo Drive and getting mix mode errros
-  def form_for record, options = {}, &
-
+  # rubocop:disable Naming/BlockForwarding
+  def form_for record, options = {}, &block
     if options[:html].nil?
       options[:html] = { data: { turbo: false } }
     elsif options[:html][:data].nil?
@@ -86,6 +86,7 @@ module ApplicationHelper
     end
     super
   end
+  # rubocop:enable Naming/BlockForwarding
 
   def form_with(model: nil, **options, &block)
     if options[:html].nil?
