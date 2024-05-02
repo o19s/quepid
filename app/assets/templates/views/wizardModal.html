@@ -29,7 +29,6 @@
     <wz-step title="Endpoint" id="step-three">
       <h2>What Search Endpoint do you want to connect to?</h2>
       <div>
-      shouldCreateNewSearchEndpointBeOpen{{shouldCreateNewSearchEndpointBeOpen}}
         <uib-accordion>
           <div uib-accordion-group class="panel-default" heading="Create a new Search Endpoint" 
             is-open="shouldCreateNewSearchEndpointDefaultToOpen"
@@ -379,7 +378,7 @@ star wars,1921,3, Star Wars: Return of the Jedi
 
 
           </div>
-          <div uib-accordion-group class="panel-default" heading="Use an existing Search Endpoint" >
+          <div uib-accordion-group class="panel-default" heading="Use an existing Search Endpoint" is-open="shouldExistingSearchEndpointDefaultToOpen">
             <div class="row">
               <div class="alert alert-warning" role="alert" ng-if="listSearchEndpoints().length === 0">
                 You do not have any Search Endpoints created yet.
@@ -399,14 +398,27 @@ star wars,1921,3, Star Wars: Return of the Jedi
               </p>
             </div>
             <div ng-if="urlValid" class="alert alert-success">Quepid can search this! Hit 'Continue' to keep working through setup.</div>
+            <div ng-show="showTLSChangeWarning" class="alert alert-warning">
+              <span>
+              You have specified a search endpoint url that is on a different protocol ( <code>{{protocolToSwitchTo}}</code> ) than Quepid is running,
+              and this triggers your browser to prevent communciation with the search endpoint.  Option 1: Reload Quepid to run on the correct protocol
+              or Option 2: Proxy the requests THROUGH the Quepid server.
+              </span>
+            </div>
             <div class="row" style="margin-top: 50px;">
 
               <div class="pull-right">
-                <button class="btn btn-primary pull-right continue" ng-click="validate()" ng-disabled="pendingWizardSettings.searchEndpointId == null">Continue</button>
+                <button class="btn btn-primary pull-right continue" ng-show="!showTLSChangeWarning" ng-click="validate()" ng-disabled="pendingWizardSettings.searchEndpointId == null">Continue</button>
 
                 <button class="btn btn-danger" ng-show="urlInvalid && !showTLSChangeWarning" ng-click="skipValidation()" ng-disabled="validating">
                   <span ng-hide="validating">Skip Validation</span>
                 </button>
+                
+                <span ng-show="showTLSChangeWarning">
+                  <a href="{{quepidUrlToSwitchTo}}&existingSearchEndpoint=true" class="btn btn-primary form-control">
+                    <span class="glyphicon glyphicon-refresh"></span> Reload Quepid in <code>{{protocolToSwitchTo}}</code> Protocol
+                  </a>
+                </span>
               </div>
             </div>
           </div>

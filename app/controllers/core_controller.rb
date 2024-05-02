@@ -53,9 +53,10 @@ class CoreController < ApplicationController
       if params[:searchEngine].present?
 
         search_endpoint_params = {
-          search_engine: params[:searchEngine],
-          endpoint_url:  params[:searchUrl],
-          api_method:    params[:apiMethod],
+          search_engine:         params[:searchEngine],
+          endpoint_url:          params[:searchUrl],
+          api_method:            params[:apiMethod],
+          basic_auth_credential: params[:basicAuthCredential],
 
         }
         search_endpoint = SearchEndpoint.find_or_create_by search_endpoint_params

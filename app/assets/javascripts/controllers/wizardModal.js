@@ -20,6 +20,8 @@ angular.module('QuepidApp')
         $uibModalInstance.dismiss('cancel');
       };
 
+      $scope.shouldCreateNewSearchEndpointDefaultToOpen = false;   
+      $scope.shouldExistingSearchEndpointDefaultToOpen = false;
       $scope.searchEndpoints = [];
       $scope.isStaticCollapsed = true;
       $scope.addedStaticQueries = false;
@@ -115,6 +117,9 @@ angular.module('QuepidApp')
         if (angular.isDefined($location.search().apiMethod)){
           $scope.pendingWizardSettings.apiMethod = $location.search().apiMethod;
         }
+        if (angular.isDefined($location.search().basicAuthCredential)){
+          $scope.pendingWizardSettings.basicAuthCredential = $location.search().basicAuthCredential;
+        }
         $scope.reset();
       };
 
@@ -190,13 +195,18 @@ angular.module('QuepidApp')
        $scope.pendingWizardSettings.searchEndpointId = null;       
       };
 
-      // do we need to have the wizard be open?              
+      
+               
       if (angular.isDefined($location.search().searchEngine)) {
-        $scope.shouldCreateNewSearchEndpointDefaultToOpen = true;
-      }      
-      else {
-        $scope.shouldCreateNewSearchEndpointDefaultToOpen = false;
-      }
+        // Changing http(s), so we should be open.  
+        if (angular.isDefined($location.search().existingSearchEndpoint)) {
+          // We were on the Existing Search Endpoint
+          $scope.shouldExistingSearchEndpointDefaultToOpen = true;
+        }
+        else {
+          $scope.shouldCreateNewSearchEndpointDefaultToOpen = true;
+        }
+      }            
         
       
       $scope.validate       = validate;
@@ -430,7 +440,12 @@ angular.module('QuepidApp')
             $scope.quepidUrlToSwitchTo = resultsTuple[0];
             $scope.protocolToSwitchTo = resultsTuple[1];
                       
-            $scope.quepidUrlToSwitchTo = $scope.quepidUrlToSwitchTo + '?searchEngine=' + $scope.pendingWizardSettings.searchEngine + '&searchUrl=' + $scope.pendingWizardSettings.searchUrl + '&showWizard=true&caseName=' + $scope.pendingWizardSettings.caseName + '&apiMethod=' + $scope.pendingWizardSettings.apiMethod;
+            $scope.quepidUrlToSwitchTo = $scope.quepidUrlToSwitchTo + '?showWizard=true' +
+              '&searchEngine=' + $scope.pendingWizardSettings.searchEngine +
+              '&searchUrl=' + $scope.pendingWizardSettings.searchUrl +
+              '&caseName=' + $scope.pendingWizardSettings.caseName +
+              '&apiMethod=' + $scope.pendingWizardSettings.apiMethod +
+              '&basicAuthCredential=' + $scope.pendingWizardSettings.basicAuthCredential;
           }
         }
       }
