@@ -101,6 +101,9 @@ Rails.application.routes.draw do
     resources :users do
       resource :lock, only: [ :update ], module: :users
       resource :pulse, only: [ :show ], module: :users
+      member do
+        post :assign_judgements_to_anonymous_user
+      end
     end
     resources :communal_scorers
     resources :announcements do
@@ -127,6 +130,7 @@ Rails.application.routes.draw do
       resources :signups, only: [ :create ] if Rails.application.config.signup_enabled
 
       get '/dropdown/cases' => 'cases/dropdown#index'
+      get '/dropdown/books' => 'books/dropdown#index'
 
       # Cases routes.
       # In order to be consistent and always user :case_id as the param for the

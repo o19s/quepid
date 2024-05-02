@@ -110,13 +110,15 @@ this.setupTour = function() {
 
   tour.addStep('tune', {
     title:     'Tune Relevance',
-    text:      `This is where all the magic happens!<br />If you are not familiar with how this work, read the <a href="http://quepid.com/docs/#tuning" target="_blank" title="Knowledge Base">Tuning Relevance</a> section in the Knowledge Base.<br />TL;DR: always make sure this <code>#$query##</code> exists somewhere.<br />Let\s make change this up and see what happens.<br />If you are using Solr, change the query sandbox to: <code>q=#$query##&defType=edismax&qf=title overview</code><br />or to <code>{ \
+    text:      `This is where all the magic happens!<br />If you are not familiar with how this work, read the <a href="http://quepid.com/docs/#tuning" target="_blank" title="Knowledge Base">Tuning Relevance</a> section in the Knowledge Base.<br />TL;DR: always make sure this <code>#$query##</code> exists somewhere.<br />Let's change this up and see what happens.<br />If you are using Solr, change the query sandbox to: <code>q=#$query##&defType=edismax&qf=title overview</code><br />or to <code>{ \
 "query": { \
 "match": { \
 "title": "#$query##" \
 } \
 } \
-}</code> if you are using Elasticsearch<br />(adjust appropriately if you are not using the demo case).`,
+}</code> if you are using Elasticsearch,<br /> or add <code>"restrictSearchableAttributes": [ \
+    "title" \
+  ]</code> for Algolia, (adjust appropriately if you are not using the demo case).`,
     attachTo:  '.pane_east left',
     advanceOn: '#tune-relevance-link a click',
     buttons:   [{

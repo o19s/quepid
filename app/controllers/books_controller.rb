@@ -33,7 +33,12 @@ class BooksController < ApplicationController
     unique_judge_ids = @book.query_doc_pairs.joins(:judgements)
       .distinct.pluck(:user_id)
     unique_judge_ids.each do |judge_id|
-      judge = User.find(judge_id) unless judge_id.nil?
+      begin
+        judge = User.find(judge_id) unless judge_id.nil?
+      rescue ActiveRecord::RecordNotFound
+        puts 'got a nil'
+        judge = nil
+      end
       @leaderboard_data << { judge:      judge.nil? ? 'anonymous' : judge.fullname,
                              judgements: @book.judgements.where(user: judge).count }
       @stats_data << {
@@ -56,6 +61,9 @@ class BooksController < ApplicationController
             else
               Book.new
             end
+
+    @origin_case = current_user.cases_involved_with.where(id: params[:origin_case_id]).first if params[:origin_case_id]
+
     respond_with(@book)
   end
 
@@ -66,6 +74,13 @@ class BooksController < ApplicationController
     @book = Book.new(book_params)
     @book.owner = current_user
     if @book.save
+
+      if params[:book][:link_the_case]
+        @origin_case = current_user.cases_involved_with.where(id: params[:book][:origin_case_id]).first
+        @origin_case.book = @book
+        @origin_case.save
+      end
+
       redirect_to @book, notice: 'Book was successfully created.'
     else
       render :new
@@ -85,7 +100,7 @@ class BooksController < ApplicationController
 
     @book.teams.replace(teams)
 
-    @book.update(book_params.except(:team_ids))
+    @book.update(book_params.except(:team_ids, :link_the_case, :origin_case_id))
 
     respond_with(@book)
   end
@@ -259,13 +274,13 @@ class BooksController < ApplicationController
 
   def book_params
     params_to_use = params.require(:book).permit(:scorer_id, :selection_strategy_id, :name,
-                                                 :support_implicit_judgements,
+                                                 :support_implicit_judgements, :link_the_case, :origin_case_id,
                                                  :show_rank, :ai_judge_id, team_ids: [])
 
     # Crafting a book[team_ids] parameter from the AngularJS side didn't work, so using top level parameter
     params_to_use[:team_ids] = params[:team_ids] if params[:team_ids]
     params_to_use[:team_ids]&.compact_blank!
-    params_to_use
+    params_to_use.except(:link_the_case, :origin_case_id)
   end
 end
 

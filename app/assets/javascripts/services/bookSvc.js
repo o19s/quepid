@@ -7,7 +7,9 @@ angular.module('QuepidApp')
     '$http',
     'broadcastSvc',
     function bookSvc($http, broadcastSvc) {
-      this.books = [];
+      this.books            = [];
+      this.dropdownBooks    = [];
+      this.booksCount       = 0;
 
       var Book = function(id, name) {
         this.id           = id;
@@ -130,6 +132,25 @@ angular.module('QuepidApp')
         return $http.put('api/books/' + bookId + '/cases/' + caseId + '/refresh?create_missing_queries=' + createMissingQueries, payload)
           .then(function(response) {
             console.log('refreshed ratings' + response.data);
+          });
+      };
+      
+      this.fetchDropdownBooks = function() {
+        var self = this;
+        self.dropdownBooks.length = 0;
+        return $http.get('api/dropdown/books')
+          .then(function(response) {
+            self.booksCount = response.data.books_count;
+
+            angular.forEach(response.data.books, function(dataBook) {
+              let book = self.constructFromData(dataBook);
+              
+              if(!contains(self.dropdownBooks, book)) {
+                self.dropdownBooks.push(book);
+              }
+            });
+
+            broadcastSvc.send('fetchedDropdownBooksList', self.dropdownBooks);
           });
       };
     }

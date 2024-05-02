@@ -1,5 +1,32 @@
 # Changelog
 
+## 7.16.1 - 2024-04-09
+
+### Bugs
+
+* You can delete a user who has existing judgements, and then that messes up the main Books page because their judgements hang around.  Now you are warned about this, and you can choose to make their judgements anonymous.  (or just Lock their user account).  https://github.com/o19s/quepid/pull/999 by @epugh.
+
+## 7.16.0 - 2024-03-28
+
+### Features
+
+* Now have a dropdown for Books similar to Cases that leverages our existing tracking of what books you have viewed.  https://github.com/o19s/quepid/pull/986 by @epugh.
+
+* We now run scorers over queries that have no ratings and queries that are ZSR.  This lets us have smarter logic about how you want to score those situations.  https://github.com/o19s/quepid/pull/993 by @epugh.
+
+### Improvements
+
+* One less query to determine what a user has access to via being an owner or a member of a team while ensuring no duplicate cases/books show up.  https://github.com/o19s/quepid/pull/982 by @epugh with input from @reid-rigo. 
+
+* Remove extranous faraday logs when running tests.  https://github.com/o19s/quepid/pull/983 by @epugh with input form @reid-rigo fixes https://github.com/o19s/quepid/issues/964.
+
+* Nicer onboarding using TMDB dataset for Algolia users.  https://github.com/o19s/quepid/pull/987 by @chuckmeyer.
+
+### Bugs
+
+* Book Importing was broken. Plus now we have nicer formatted error message when you validate a book to import.  https://github.com/o19s/quepid/pull/989 by @epugh.
+
+
 
 ## 7.15.1 - 2024-03-13
 

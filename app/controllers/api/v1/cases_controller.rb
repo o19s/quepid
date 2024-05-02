@@ -96,6 +96,10 @@ module Api
           Analytics::Tracker.track_case_archived_event current_user, @case
           respond_with @case
         elsif @case.update update_params
+          if update_params[:book_id]
+            @book = Book.find(update_params[:book_id])
+            TrackBookViewedJob.perform_now @book, current_user
+          end
           Analytics::Tracker.track_case_updated_event current_user, @case
           respond_with @case
         else

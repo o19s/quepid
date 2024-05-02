@@ -155,16 +155,16 @@ angular.module('QuepidApp')
           headerType: 'Custom',
           customHeaders: [
             '{',
-            '  "x-algolia-application-id": "YOUR_ALGOLIA_APPLICATION_ID",',            
-            '  "x-algolia-api-key": "YOUR_ALGOLIA_API_KEY"',
+            '  "x-algolia-application-id": "OKF83BFQS4",',
+            '  "x-algolia-api-key": "2ee1381ed11d3fe70b60605b1e2cd3f4"',
             '}'
           ].join('\n'),
           idField: 'objectID',
-          titleField: 'name',
-          additionalFields: [],
+          titleField: 'title',
+          additionalFields: ['overview', 'cast', 'thumb:poster_path'],
           numberOfRows: 10,
           searchEngine: 'algolia',
-          searchUrl: 'https://78J6LMFN9N-dsn.algolia.net/1/indexes/dev_quepid/query',
+          searchUrl: 'https://OKF83BFQS4-dsn.algolia.net/1/indexes/movies_demo_quepid/query',
           urlFormat: 'https://<APPLICATION-ID>-dsn.algolia.net/1/indexes/<index>/query',
           proxyRequests: true,
           basicAuthCredential: ''

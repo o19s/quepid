@@ -248,6 +248,12 @@ class UserTest < ActiveSupport::TestCase
     end
 
     it 'prevents a user who owns a scorer shared with a team from being deleted' do
+      # need to null out the judgements first
+      random.judgements.each do |j|
+        j.user = nil
+        j.save!
+      end
+
       random.destroy
       assert_not random.destroyed?
       assert random.errors.full_messages_for(:base).include?('Please remove the scorer Scorer for sharing from the team before deleting this user.')
@@ -282,6 +288,14 @@ class UserTest < ActiveSupport::TestCase
 
     it 'prevents access to the books because the user is not part of a team' do
       assert_nil user_without_book_access.books_involved_with.where(id: book_of_comedy_films).first
+    end
+
+    it 'prevents you from deleting a user that has judgements' do
+      assert user_with_book_access.judgements.size.positive?
+
+      assert_not user_with_book_access.destroy
+      assert user_with_book_access.errors.include?(:base)
+      assert_not user_with_book_access.destroyed?
     end
   end
 

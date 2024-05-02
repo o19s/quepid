@@ -17,7 +17,7 @@
 # Indexes
 #
 #  index_judgements_on_query_doc_pair_id              (query_doc_pair_id)
-#  index_judgements_on_user_id_and_query_doc_pair_id  (user_id,query_doc_pair_id)
+#  index_judgements_on_user_id_and_query_doc_pair_id  (user_id,query_doc_pair_id) UNIQUE
 #
 # Foreign Keys
 #
@@ -27,10 +27,7 @@ class Judgement < ApplicationRecord
   belongs_to :query_doc_pair
   belongs_to :user, optional: true
 
-  # rubocop:disable Rails/UniqueValidationWithoutIndex
-  validates :user_id, :uniqueness => { :scope => :query_doc_pair_id }
-  # rubocop:enable Rails/UniqueValidationWithoutIndex
-
+  validates :user_id, :uniqueness => { :scope => :query_doc_pair_id }, unless: -> { user_id.nil? }
   validates :rating,
             presence: true, unless: :rating_not_required?
 
