@@ -1,0 +1,440 @@
+diff --git a/Gemfile b/Gemfile
+index 28b89130..3b4d97c0 100755
+--- a/Gemfile
++++ b/Gemfile
+@@ -12,10 +12,10 @@ gem 'angular-rails-templates', '>= 1.0.0.beta'
+ gem 'apipie-rails', '~> 1.2'
+ gem 'bcrypt', '~> 3.1.7'
+ gem 'bootsnap', require: false
+-gem 'cal-heatmap-rails', '~> 3.6' # provides assets for cal heatmap, that requires old d3
++#gem 'cal-heatmap-rails', '~> 3.6' # provides assets for cal heatmap, that requires old d3
+ gem 'colorize', require: false
+ gem 'cookies_eu'
+-gem 'd3-rails', '~> 3.5.5' # For cal heatmap
++#gem 'd3-rails', '~> 7.8.5' # For cal heatmap
+ gem 'devise', '>= 4.6.2'
+ gem 'devise_invitable', '~> 2.0'
+ 
+diff --git a/Gemfile.lock b/Gemfile.lock
+index a26cc807..eada7c0c 100644
+--- a/Gemfile.lock
++++ b/Gemfile.lock
+@@ -132,7 +132,7 @@ GEM
+     crack (0.4.5)
+       rexml
+     crass (1.0.6)
+-    d3-rails (3.5.17)
++    d3-rails (7.8.5)
+       railties (>= 3.1)
+     date (3.3.4)
+     dead_end (4.0.0)
+@@ -503,7 +503,7 @@ DEPENDENCIES
+   capybara
+   colorize
+   cookies_eu
+-  d3-rails (~> 3.5.5)
++  d3-rails (~> 7.8.5)
+   derailed_benchmarks
+   devise (>= 4.6.2)
+   devise_invitable (~> 2.0)
+diff --git a/app/assets/javascripts/admin.js b/app/assets/javascripts/admin.js
+index fd677d29..0cd016aa 100644
+--- a/app/assets/javascripts/admin.js
++++ b/app/assets/javascripts/admin.js
+@@ -2,8 +2,8 @@
+ //= require rails-ujs
+ //= require jquery
+ 
+-//= require d3
+-//= require cal-heatmap
++//= require d3/dist/d3
++//= require cal-heatmap/dist/cal-heatmap
+ 
+ //= require codemirror/lib/codemirror
+ //= require codemirror/mode/javascript/javascript
+diff --git a/app/assets/javascripts/admin/user_pulse.js b/app/assets/javascripts/admin/user_pulse.js
+index 42839345..9932f3d7 100644
+--- a/app/assets/javascripts/admin/user_pulse.js
++++ b/app/assets/javascripts/admin/user_pulse.js
+@@ -26,16 +26,30 @@ errors that we then ignored.
+     const now        = new Date();
+     const start_date = new Date(1900+now.getYear(), now.getMonth() - 11, 1);
+ 
+-    const cal = new CalHeatMap();
+-    return cal.init({
+-      cellSize:     20,
+-      data:         `${url}&start={{d:start}}&end={{d:end}}`,
++    const cal = new CalHeatmap();
++    // return cal.init({
++    //   cellSize:     20,
++    //   data:         `${url}&start={{d:start}}&end={{d:end}}`,
++    //   dataType:     'json',
++    //   domain:       'month',
++    //   highlight:    [ 'now', signup_date],
++    //   itemSelector: selector,
++    //   start:        start_date,
++    //   subDomain:    'day',
++    // });
++    return cal.paint({
++      data:         { source: `${url}&start={{start=YYYY-MM-DD}}&end={{end=YYYY-MM-DD}}`},
+       dataType:     'json',
+-      domain:       'month',
+-      highlight:    [ 'now', signup_date],
++      //highlight:    [ 'now', signup_date],
+       itemSelector: selector,
+-      start:        start_date,
+-      subDomain:    'day',
+-    });});
++      date: { 
++          start: start_date
++      },
++      domain: {
++        type: 'month',
++      },
++      subDomain: { type: 'day', radius: 2 }
++    });    
++  });
+ 
+ })();
+diff --git a/app/assets/stylesheets/admin_users.css.scss b/app/assets/stylesheets/admin_users.css.scss
+index 23b982de..8f1dc5d0 100644
+--- a/app/assets/stylesheets/admin_users.css.scss
++++ b/app/assets/stylesheets/admin_users.css.scss
+@@ -10,7 +10,7 @@
+ // Styling for Bootstrap 5 for Quepid
+ @import "bootstrap-add-bs5";
+ 
+-@import "cal-heatmap";
++@import "cal-heatmap/dist/cal-heatmap";
+ 
+ // This is the css for the admin pages only.
+ @import "admin2";
+diff --git a/app/controllers/admin/users/pulses_controller.rb b/app/controllers/admin/users/pulses_controller.rb
+index 2182d617..dae230f4 100644
+--- a/app/controllers/admin/users/pulses_controller.rb
++++ b/app/controllers/admin/users/pulses_controller.rb
+@@ -22,7 +22,7 @@ module Admin
+       def set_data
+         case params[:data]
+         when 'metadata'
+-          @data = Metadatum.where(user_id: @user.id)
++          @data = CaseMetadatum.where(user_id: @user.id)
+             .where('last_viewed_at >= :start AND last_viewed_at <= :end',
+                    start: params[:start],
+                    end:   params[:end])
+diff --git a/app/views/admin/users/show.html.erb b/app/views/admin/users/show.html.erb
+index 157f9e42..0cff5468 100644
+--- a/app/views/admin/users/show.html.erb
++++ b/app/views/admin/users/show.html.erb
+@@ -85,61 +85,60 @@
+ <hr />
+ 
+ <div class="clearfix">
+-  <h2>Pulse</h2>
+-  <% if @user.pending_invite? %>
+-  <div class="alert alert-info" role="alert">This user hasn't accepted the invite to join Quepid, therefore no usage data is available.</div>
+-  <% else %>
++  <div id="cal-heatmap"></div>
++  <script>
++  
++  var jsonData = [
++     { date: '2024-01-01', value: 40 },
++     { date: '2024-03-02', value: 50 },
++     // Add more data points as needed
++   ];
++  
++  const data = [
++    { date: '2024-02-01T00:00:00', value: 30 },
++    { date: '2024-08-01T00:00:00', value: 60 },
++  ];
++  
++  const data3 =  [
++    { t: 1673388319933, p: 3, v: 'Asia' },
++      { t: 1673388319934, p: 6, v: 'Europe' },
++  ]
++  
++  var cal = new CalHeatmap();
++    cal.paint({ 
++    date: { 
++        start: new Date('2024-01-01') 
++    },
++    
++    domain: {
++      type: 'month',
++    },
++    subDomain: { type: 'day', radius: 2 },
++    data: { source: jsonData, x: 'date', y: 'value' },
++    
++    });
++
++  // cal.paint({
++  //     itemSelector: '#cal-heatmap',
++  //     domain: {
++  //       type: 'month',
++  //     },
++  //     date: { start: new Date(2024, 0, 1) },
++  //     data: {source: jsonData, y: 'value' },      
++  // });
++  </script>
++  
++  
+   <h3>Cases viewed</h3>
+-  <div
+-    id="cases-viewed"
+-    data-pulse
+-    data-item-selector="#cases-viewed"
+-    data-signup-date="<%= @pulse_chart_start_date %>"
+-    data-url="<%= url_for admin_user_pulse_path @user, params: {data: 'metadata'} %>"
+-  >
+-  </div>
+-
+-  <h3>Cases scored</h3>
+-  <div
+-    id="cases-scored"
+-    data-pulse
+-    data-item-selector="#cases-scored"
+-    data-signup-date="<%= @pulse_chart_start_date %>"
+-    data-url="<%= url_for admin_user_pulse_path @user, params: {data: 'scores'} %>"
+-  >
+-  </div>
+-
+-  <h3>Cases created</h3>
+-  <div
+-    id="cases-created"
+-    data-pulse
+-    data-item-selector="#cases-created"
+-    data-signup-date="<%= @pulse_chart_start_date %>"
+-    data-url="<%= url_for admin_user_pulse_path @user, params: {data: 'cases-created'} %>"
+-  >
+-  </div>
+-
+-  <h3>Teams created</h3>
+-  <div
+-    id="teams-created"
+-    data-pulse
+-    data-item-selector="#teams-created"
+-    data-signup-date="<%= @pulse_chart_start_date %>"
+-    data-url="<%= url_for admin_user_pulse_path @user, params: {data: 'teams-created'} %>"
+-  >
+-  </div>
+-
+-  <h3>Queries created</h3>
+-  <div
+-    id="queries-created"
+-    data-pulse
+-    data-item-selector="#queries-created"
+-    data-signup-date="<%= @pulse_chart_start_date %>"
+-    data-url="<%= url_for admin_user_pulse_path @user, params: {data: 'queries-created'} %>"
+-  >
+-  </div>
++    <div
++      id="cases-viewed"
++      data-pulse
++      data-item-selector="#cases-viewed"
++      data-signup-date="<%= @pulse_chart_start_date %>"
++      data-url="<%= url_for admin_user_pulse_path @user, params: {data: 'metadata'} %>"
++    >
++    </div>
+ 
+-  <% end %>
+ </div>
+ 
+ <hr />
+diff --git a/package.json b/package.json
+index 8746f0bd..f7a9fd45 100644
+--- a/package.json
++++ b/package.json
+@@ -28,6 +28,7 @@
+     "angular-wizard": "https://github.com/softwaredoug/angular-wizard.git#0.4.2",
+     "bootstrap": "^5.3.0",
+     "bootstrap-icons": "^1.10.3",
++    "cal-heatmap": "^4.2.4",
+     "clipboard": "^2.0.11",
+     "codemirror": "5.65.15",
+     "d3": "~7.8.2",
+diff --git a/yarn.lock b/yarn.lock
+index ea32d4ee..3d892dd4 100644
+--- a/yarn.lock
++++ b/yarn.lock
+@@ -30,6 +30,15 @@
+   resolved "https://registry.yarnpkg.com/@colors/colors/-/colors-1.5.0.tgz#bb504579c1cae923e6576a4f5da43d25f97bdbd9"
+   integrity sha512-ooWCrlZP11i8GImSjTHYHLkvFDP48nS4+204nGb1RiX/WXYHmJA2III9/e2DWVabCESdW7hBAEzHRqUn9OUVvQ==
+ 
++"@observablehq/plot@^0.6.0":
++  version "0.6.14"
++  resolved "https://registry.yarnpkg.com/@observablehq/plot/-/plot-0.6.14.tgz#4644279bb938cc4d64b1f3cc4893bcf88b250202"
++  integrity sha512-A9HWSboh1WgFonKqYKC522VkxJwhkTUTye606qjxQH8iPtSVjVXUF6JRKwf7MPaYTin/MypaSSd+08ML4LA1rw==
++  dependencies:
++    d3 "^7.9.0"
++    interval-tree-1d "^1.0.0"
++    isoformat "^0.2.0"
++
+ "@popperjs/core@^2.11.6":
+   version "2.11.8"
+   resolved "https://registry.yarnpkg.com/@popperjs/core/-/core-2.11.8.tgz#6b79032e760a0899cd4204710beede972a3a185f"
+@@ -315,6 +324,11 @@ binary-extensions@^2.0.0:
+   resolved "https://registry.yarnpkg.com/binary-extensions/-/binary-extensions-2.2.0.tgz#75f502eeaf9ffde42fc98829645be4ea76bd9e2d"
+   integrity sha512-jDctJ/IVQbZoJykoeHbhXpOlNBqGNcwXJKJog42E5HDPUwQTSdjCHdihjj0DlnheQ7blbT6dHOafNAiS8ooQKA==
+ 
++binary-search-bounds@^2.0.0:
++  version "2.0.5"
++  resolved "https://registry.yarnpkg.com/binary-search-bounds/-/binary-search-bounds-2.0.5.tgz#125e5bd399882f71e6660d4bf1186384e989fba7"
++  integrity sha512-H0ea4Fd3lS1+sTEB2TgcLoK21lLhwEJzlQv3IN47pJS976Gx4zoWe0ak3q+uYh60ppQxg9F16Ri4tS1sfD4+jA==
++
+ body-parser@^1.19.0:
+   version "1.20.2"
+   resolved "https://registry.yarnpkg.com/body-parser/-/body-parser-1.20.2.tgz#6feb0e21c4724d06de7ff38da36dad4f57a747fd"
+@@ -376,6 +390,21 @@ bytes@3.1.2:
+   resolved "https://registry.yarnpkg.com/bytes/-/bytes-3.1.2.tgz#8b0beeb98605adf1b128fa4386403c009e0221a5"
+   integrity sha512-/Nf7TyzTx6S3yRJObOAV7956r8cr2+Oj8AC5dt8wSP3BQAoeX58NoHyCU8P8zGkNXStjTSi6fzO6F0pBdcYbEg==
+ 
++cal-heatmap@^4.2.4:
++  version "4.2.4"
++  resolved "https://registry.yarnpkg.com/cal-heatmap/-/cal-heatmap-4.2.4.tgz#0c35616be0dc09df64e1163a804231d8d3f9feaa"
++  integrity sha512-TTNoQTRxHXrttOEbkraKv9vy2VpfQIwVLQJTlAfcBusQK9qrBL/UBO+WloAxv2yrR+P8URA2cuXEdc5iztER9g==
++  dependencies:
++    "@observablehq/plot" "^0.6.0"
++    "@popperjs/core" "^2.11.6"
++    d3-color "^3.1.0"
++    d3-fetch "^3.0.1"
++    d3-selection "^3.0.0"
++    d3-transition "^3.0.1"
++    dayjs "^1.11.7"
++    eventemitter3 "^5.0.0"
++    lodash-es "^4.17.21"
++
+ call-bind@^1.0.0:
+   version "1.0.2"
+   resolved "https://registry.yarnpkg.com/call-bind/-/call-bind-1.0.2.tgz#b1d4e89e688119c3c9a903ad30abb2f6a919be3c"
+@@ -637,7 +666,7 @@ d3-delaunay@6, d3-delaunay@^6.0.2:
+   resolved "https://registry.yarnpkg.com/d3-ease/-/d3-ease-3.0.1.tgz#9658ac38a2140d59d346160f1f6c30fda0bd12f4"
+   integrity sha512-wR/XK3D3XcLIZwpbvQwQ5fK+8Ykds1ip7A2Txe0yxncXSdq1L9skcG7blcedkOX+ZcgxGAmLX1FrRGbADwzi0w==
+ 
+-d3-fetch@3:
++d3-fetch@3, d3-fetch@^3.0.1:
+   version "3.0.1"
+   resolved "https://registry.yarnpkg.com/d3-fetch/-/d3-fetch-3.0.1.tgz#83141bff9856a0edb5e38de89cdcfe63d0a60a22"
+   integrity sha512-kpkQIM20n3oLVBKGg6oHrUchHM3xODkTzjMoj7aWQFq5QEM+R6E4WkzT5+tojDY7yjez8KgCBRoj4aEr99Fdqw==
+@@ -725,7 +754,7 @@ d3-scale@4, d3-scale@^4.0.2:
+     d3-time "2.1.1 - 3"
+     d3-time-format "2 - 4"
+ 
+-"d3-selection@2 - 3", d3-selection@3:
++"d3-selection@2 - 3", d3-selection@3, d3-selection@^3.0.0:
+   version "3.0.0"
+   resolved "https://registry.yarnpkg.com/d3-selection/-/d3-selection-3.0.0.tgz#c25338207efa72cc5b9bd1458a1a41901f1e1b31"
+   integrity sha512-fmTRWbNMmsmWq6xJV8D19U/gw/bwrHfNXxrIN+HfZgnzqTHp9jOmKMhsTUjXOJnZOdZY9Q28y4yebKzqDKlxlQ==
+@@ -769,7 +798,7 @@ d3-tip@~0.9.1:
+     d3-collection "^1.0.4"
+     d3-selection "^1.3.0"
+ 
+-"d3-transition@2 - 3", d3-transition@3:
++"d3-transition@2 - 3", d3-transition@3, d3-transition@^3.0.1:
+   version "3.0.1"
+   resolved "https://registry.yarnpkg.com/d3-transition/-/d3-transition-3.0.1.tgz#6869fdde1448868077fdd5989200cb61b2a1645f"
+   integrity sha512-ApKvfjsSR6tg06xrL434C0WydLr7JewBB3V+/39RMHsaXTOG0zmt/OAXeng5M5LBm0ojmxJrpomQVZ1aPvBL4w==
+@@ -791,6 +820,42 @@ d3-zoom@3:
+     d3-selection "2 - 3"
+     d3-transition "2 - 3"
+ 
++d3@^7.9.0:
++  version "7.9.0"
++  resolved "https://registry.yarnpkg.com/d3/-/d3-7.9.0.tgz#579e7acb3d749caf8860bd1741ae8d371070cd5d"
++  integrity sha512-e1U46jVP+w7Iut8Jt8ri1YsPOvFpg46k+K8TpCb0P+zjCkjkPnV7WzfDJzMHy1LnA+wj5pLT1wjO901gLXeEhA==
++  dependencies:
++    d3-array "3"
++    d3-axis "3"
++    d3-brush "3"
++    d3-chord "3"
++    d3-color "3"
++    d3-contour "4"
++    d3-delaunay "6"
++    d3-dispatch "3"
++    d3-drag "3"
++    d3-dsv "3"
++    d3-ease "3"
++    d3-fetch "3"
++    d3-force "3"
++    d3-format "3"
++    d3-geo "3"
++    d3-hierarchy "3"
++    d3-interpolate "3"
++    d3-path "3"
++    d3-polygon "3"
++    d3-quadtree "3"
++    d3-random "3"
++    d3-scale "4"
++    d3-scale-chromatic "3"
++    d3-selection "3"
++    d3-shape "3"
++    d3-time "3"
++    d3-time-format "4"
++    d3-timer "3"
++    d3-transition "3"
++    d3-zoom "3"
++
+ d3@~7.8.2:
+   version "7.8.5"
+   resolved "https://registry.yarnpkg.com/d3/-/d3-7.8.5.tgz#fde4b760d4486cdb6f0cc8e2cbff318af844635c"
+@@ -842,6 +907,11 @@ date-now@^0.1.4:
+   resolved "https://registry.yarnpkg.com/date-now/-/date-now-0.1.4.tgz#eaf439fd4d4848ad74e5cc7dbef200672b9e345b"
+   integrity sha512-AsElvov3LoNB7tf5k37H2jYSB+ZZPMT5sG2QjJCcdlV5chIv6htBUBUui2IKRjgtKAKtCBN7Zbwa+MtwLjSeNw==
+ 
++dayjs@^1.11.7:
++  version "1.11.10"
++  resolved "https://registry.yarnpkg.com/dayjs/-/dayjs-1.11.10.tgz#68acea85317a6e164457d6d6947564029a6a16a0"
++  integrity sha512-vjAczensTgRcqDERK0SR2XMwsF/tSvnvlv6VcF2GIhg6Sx4yOIt/irsr1RDJsKiIyBzJDpCoXiWWq28MqH2cnQ==
++
+ debug@2.6.9:
+   version "2.6.9"
+   resolved "https://registry.yarnpkg.com/debug/-/debug-2.6.9.tgz#5d128515df134ff327e90a4c93f4e077a536341f"
+@@ -1056,6 +1126,11 @@ eventemitter3@^4.0.0:
+   resolved "https://registry.yarnpkg.com/eventemitter3/-/eventemitter3-4.0.7.tgz#2de9b68f6528d5644ef5c59526a1b4a07306169f"
+   integrity sha512-8guHBZCwKnFhYdHr2ysuRWErTwhoN2X8XELRlrRwpmfeY2jjuUN4taQMsULKUVo1K4DvZl+0pgfyoysHxvmvEw==
+ 
++eventemitter3@^5.0.0:
++  version "5.0.1"
++  resolved "https://registry.yarnpkg.com/eventemitter3/-/eventemitter3-5.0.1.tgz#53f5ffd0a492ac800721bb42c66b841de96423c4"
++  integrity sha512-GWkBvjiSZK87ELrYOSESUYeVIc9mvLLf/nXalMOS5dYrgZq9o5OVkbZAVM06CVxYsCwH9BDZFPlQTlPA1j4ahA==
++
+ exit@0.1.2, exit@0.1.x:
+   version "0.1.2"
+   resolved "https://registry.yarnpkg.com/exit/-/exit-0.1.2.tgz#0632638f8d877cc82107d30a0fff1a17cba1cd0c"
+@@ -1334,6 +1409,13 @@ inherits@2, inherits@2.0.4, inherits@~2.0.1:
+   resolved "https://registry.yarnpkg.com/internmap/-/internmap-2.0.3.tgz#6685f23755e43c524e251d29cbc97248e3061009"
+   integrity sha512-5Hh7Y1wQbvY5ooGgPbDaL5iYLAPzMTUrjMulskHLH6wnv/A+1q5rgEaiuqEjB+oxGXIVZs1FF+R/KPN3ZSQYYg==
+ 
++interval-tree-1d@^1.0.0:
++  version "1.0.4"
++  resolved "https://registry.yarnpkg.com/interval-tree-1d/-/interval-tree-1d-1.0.4.tgz#b44f657de7ddae69ea3f98e0a9ad4bb046b07d11"
++  integrity sha512-wY8QJH+6wNI0uh4pDQzMvl+478Qh7Rl4qLmqiluxALlNvl+I+o5x38Pw3/z7mDPTPS1dQalZJXsmbvxx5gclhQ==
++  dependencies:
++    binary-search-bounds "^2.0.0"
++
+ ip-address@^9.0.5:
+   version "9.0.5"
+   resolved "https://registry.yarnpkg.com/ip-address/-/ip-address-9.0.5.tgz#117a960819b08780c3bd1f14ef3c1cc1d3f3ea5a"
+@@ -1391,6 +1473,11 @@ isexe@^2.0.0:
+   resolved "https://registry.yarnpkg.com/isexe/-/isexe-2.0.0.tgz#e8fbf374dc556ff8947a10dcb0572d633f2cfa10"
+   integrity sha512-RHxMLp9lnKHGHRng9QFhRCMbYAcVpn69smSGcq3f36xjgVVWThj4qqLbTLlq7Ssj8B+fIQ1EuCEGI2lKsyQeIw==
+ 
++isoformat@^0.2.0:
++  version "0.2.1"
++  resolved "https://registry.yarnpkg.com/isoformat/-/isoformat-0.2.1.tgz#2526344a4276a101b2881848dc337d1d2ae74494"
++  integrity sha512-tFLRAygk9NqrRPhJSnNGh7g7oaVWDwR0wKh/GM2LgmPa50Eg4UfyaCO4I8k6EqJHl1/uh2RAD6g06n5ygEnrjQ==
++
+ jasmine-core@5.1.1:
+   version "5.1.1"
+   resolved "https://registry.yarnpkg.com/jasmine-core/-/jasmine-core-5.1.1.tgz#38b6ccfbe60aa2a863cf441751d9639b5a571edc"
+@@ -1518,6 +1605,11 @@ local-time@^3.0.0:
+   resolved "https://registry.yarnpkg.com/local-time/-/local-time-3.0.2.tgz#2767a1f3a9310f445efe3d75ad3bd07f634fa5f0"
+   integrity sha512-22xNlCU10UxS+ecOtT2sLq17sVo0MQf8D2TvGEagS8Mi2gOtCIrY9cMfWH2dlkPLvEUmoWBfi8kzJNRoCSPvlg==
+ 
++lodash-es@^4.17.21:
++  version "4.17.21"
++  resolved "https://registry.yarnpkg.com/lodash-es/-/lodash-es-4.17.21.tgz#43e626c46e6591b7750beb2b50117390c609e3ee"
++  integrity sha512-mKnC+QJ9pWVzv+C4/U3rRsHapFfHvQFoFB92e52xeyGMcX6/OlIl78je1u8vePzYZSkkogMPJ2yjxxsb89cxyw==
++
+ lodash@^4.17.21, lodash@~4.17.21:
+   version "4.17.21"
+   resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.21.tgz#679591c564c3bffaae8454cf0b3df370c3d6911c"

@@ -20,7 +20,7 @@ angular.module('QuepidApp')
         $uibModalInstance.dismiss('cancel');
       };
 
-      
+      $scope.searchEndpoints = [];
       $scope.isStaticCollapsed = true;
       $scope.addedStaticQueries = false;
       $scope.listOfStaticQueries = [];
@@ -39,7 +39,7 @@ angular.module('QuepidApp')
       $scope.wizardSettingsModel.settingsId = function() {
         return settingsSvc.settingsId();
       };
-      
+
       searchEndpointSvc.list()
        .then(function() {
          $scope.searchEndpoints = searchEndpointSvc.searchEndpoints; 
@@ -52,6 +52,11 @@ angular.module('QuepidApp')
        });
        
       $scope.listSearchEndpoints = function() {
+        // we only want the search endpoint dialgue to default to open
+        // if we are not reloading and have search endpoints.
+        if (!angular.isDefined($location.search().searchEngine)){
+          $scope.shouldCreateNewSearchEndpointDefaultToOpen = false;
+        }
         return $scope.searchEndpoints;
       };
 
@@ -182,9 +187,17 @@ angular.module('QuepidApp')
       
       // used when you click the accordion for new search endpoint
       $scope.switchToCreateNewSearchEndpoint = function() {
-       $scope.pendingWizardSettings.searchEndpointId = null;
-       
+       $scope.pendingWizardSettings.searchEndpointId = null;       
       };
+
+      // do we need to have the wizard be open?              
+      if (angular.isDefined($location.search().searchEngine)) {
+        $scope.shouldCreateNewSearchEndpointDefaultToOpen = true;
+      }      
+      else {
+        $scope.shouldCreateNewSearchEndpointDefaultToOpen = false;
+      }
+        
       
       $scope.validate       = validate;
       $scope.skipValidation = skipValidation;
