@@ -440,12 +440,12 @@ angular.module('QuepidApp')
             $scope.quepidUrlToSwitchTo = resultsTuple[0];
             $scope.protocolToSwitchTo = resultsTuple[1];
                       
-            $scope.quepidUrlToSwitchTo = $scope.quepidUrlToSwitchTo + '?showWizard=true' +
-              '&searchEngine=' + $scope.pendingWizardSettings.searchEngine +
-              '&searchUrl=' + $scope.pendingWizardSettings.searchUrl +
-              '&caseName=' + $scope.pendingWizardSettings.caseName +
-              '&apiMethod=' + $scope.pendingWizardSettings.apiMethod +
-              '&basicAuthCredential=' + $scope.pendingWizardSettings.basicAuthCredential;
+            $scope.quepidUrlToSwitchTo = `${$scope.quepidUrlToSwitchTo}?showWizard=true` +
+              `&searchEngine=${$scope.pendingWizardSettings.searchEngine}` +
+              `&searchUrl=${$scope.pendingWizardSettings.searchUrl}` +
+              `&caseName=${$scope.pendingWizardSettings.caseName}` +
+              `&apiMethod=${$scope.pendingWizardSettings.apiMethod}` +
+              `&basicAuthCredential=${$scope.pendingWizardSettings.basicAuthCredential}`;            
           }
         }
       }
