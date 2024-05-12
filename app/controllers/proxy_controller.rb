@@ -26,6 +26,10 @@ class ProxyController < ApplicationController
     uri = URI.parse(url_param)
     url_without_path = "#{uri.scheme}://#{uri.host}"
     url_without_path += ":#{uri.port}" unless uri.port.nil?
+    
+    
+    
+   
 
     connection = Faraday.new(url: url_without_path) do |faraday|
       # Configure the connection options, such as headers or middleware
@@ -43,6 +47,11 @@ class ProxyController < ApplicationController
       end
 
       faraday.headers['Content-Type'] = 'application/json'
+      has_credentials = !uri.userinfo.nil?
+      if has_credentials
+        username, password = uri.userinfo.split(':')
+        faraday.headers['Authorization'] = 'Basic ' + Base64.strict_encode64("#{username}:#{password}")
+      end
       faraday.adapter Faraday.default_adapter
     end
 
