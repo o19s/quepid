@@ -5,7 +5,7 @@
 # Table name: judgements
 #
 #  id                :bigint           not null, primary key
-#  explanation       :text(65535)
+#  explanation       :text(16777215)
 #  judge_later       :boolean          default(FALSE)
 #  rating            :float(24)
 #  unrateable        :boolean          default(FALSE)

@@ -10,7 +10,7 @@
 #  field_spec         :string(500)
 #  name               :string(50)
 #  number_of_rows     :integer          default(10)
-#  query_params       :string(20000)
+#  query_params       :text(4294967295)
 #  try_number         :integer
 #  created_at         :datetime         not null
 #  updated_at         :datetime         not null

@@ -3,7 +3,7 @@
 # Table name: annotations
 #
 #  id         :integer          not null, primary key
-#  message    :text(65535)
+#  message    :text(16777215)
 #  source     :string(255)
 #  created_at :datetime         not null
 #  updated_at :datetime         not null

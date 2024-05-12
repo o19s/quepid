@@ -6,8 +6,8 @@
 #  arranged_at      :bigint
 #  arranged_next    :bigint
 #  information_need :string(255)
-#  notes            :text(65535)
-#  options          :text(65535)
+#  notes            :text(16777215)
+#  options          :text(16777215)
 #  query_text       :string(500)
 #  created_at       :datetime         not null
 #  updated_at       :datetime         not null
