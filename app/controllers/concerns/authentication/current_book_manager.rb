@@ -46,9 +46,8 @@ module Authentication
 
         results = ActiveRecord::Base.connection.execute(sql)
 
-        book_ids = []
-        results.each do |row|
-          book_ids << row.first.to_i
+        book_ids = results.map do |row|
+          row.first.to_i
         end
 
         # map to objects
