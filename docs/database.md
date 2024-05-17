@@ -28,7 +28,7 @@ Both the `scorers` and `queries` tables have columns that support using emojis. 
 a different set of options when creating the tables:
 
 ```
-CHARSET=utf8mb4 COLLATE=utf8mb4_bin
+CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
 ```
 
 If your migration add/drops a table, you may need to edit `schema.rb` to restore that definition.  Your tests

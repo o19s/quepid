@@ -17,7 +17,7 @@ jobs:
           CI: true
 
       - image: cimg/mysql:8.0.28
-        command: mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_bin
+        command: mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
         environment: # environment variables for database
           MYSQL_DATABASE: quepid_test
           MYSQL_ROOT_PASSWORD: ''

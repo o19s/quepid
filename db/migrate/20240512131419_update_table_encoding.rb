@@ -15,7 +15,7 @@ class UpdateTableEncoding < ActiveRecord::Migration[7.1]
     
     @@tables_to_migrate.each do |table|
       puts "Converting table #{table}"
-      execute "ALTER TABLE #{table} CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_bin;"
+      execute "ALTER TABLE #{table} CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
     end
     
     #add_index :query_doc_pairs, [:query_text, :doc_id, :book_id], length: 255, unique: true, name: 'unique_query_doc_pair'
