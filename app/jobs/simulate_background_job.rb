@@ -4,7 +4,7 @@ class SimulateBackgroundJob < ApplicationJob
   queue_as :default
 
   def perform
-    300.downto(1) do |counter|
+    30.downto(0) do |counter|
       Turbo::StreamsChannel.broadcast_render_to(
         :notifications,
         target:  'notifications',

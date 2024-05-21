@@ -20,6 +20,6 @@ class WebsocketController < ApplicationController
 
   def simulate_background_job
     SimulateBackgroundJob.perform_later
-    redirect_to websocket_path, notice: 'SimulateBackgroundJob was queued up.'
+    redirect_to websocket_path, notice: 'Simulate Background Job was queued up.'
   end
 end
