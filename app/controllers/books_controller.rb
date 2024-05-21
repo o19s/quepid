@@ -5,11 +5,11 @@ class BooksController < ApplicationController
   before_action :set_book,
                 only: [ :show, :edit, :update, :destroy, :combine, :assign_anonymous, :delete_ratings_by_assignee,
                         :reset_unrateable, :reset_judge_later, :delete_query_doc_pairs_below_position,
-                        :eric_steered_us_wrong ]
+                        :eric_steered_us_wrong, :run_judge_judy ]
   before_action :check_book,
                 only: [ :show, :edit, :update, :destroy, :combine, :assign_anonymous, :delete_ratings_by_assignee,
                         :reset_unrateable, :reset_judge_later, :delete_query_doc_pairs_below_position,
-                        :eric_steered_us_wrong ]
+                        :eric_steered_us_wrong, :run_judge_judy ]
 
   before_action :find_user, only: [ :reset_unrateable, :reset_judge_later, :delete_ratings_by_assignee ]
 
@@ -24,10 +24,6 @@ class BooksController < ApplicationController
   # rubocop:disable Metrics/MethodLength
   def show
     @count_of_anonymous_book_judgements = @book.judgements.where(user: nil).count
-    @count_of_anonymous_case_judgements = 0
-    @book.cases.each do |kase|
-      @count_of_anonymous_case_judgements += kase.ratings.where(user: nil).count
-    end
 
     @moar_judgements_needed = @book.judgements.where(user: current_user).count < @book.query_doc_pairs.count
     @cases = @book.cases
@@ -176,13 +172,17 @@ class BooksController < ApplicationController
                   :alert => "Could not merge due to errors: #{@book.errors.full_messages.to_sentence}. #{query_doc_pair_count} query/doc pairs."
     end
   end
+
+  def run_judge_judy
+    RunJudgeJudyJob.perform_later(@book)
+    redirect_to book_path(@book), :notice => "Started #{@book.ai_judge.fullname} judging query/doc pairs."
+  end
   # rubocop:enable Metrics/AbcSize
   # rubocop:enable Metrics/MethodLength
   # rubocop:enable Metrics/CyclomaticComplexity
   # rubocop:enable Metrics/PerceivedComplexity
   # rubocop:enable Layout/LineLength
 
-  # rubocop:disable Metrics/MethodLength
   def assign_anonymous
     # assignee = @book.team.members.find_by(id: params[:assignee_id])
     assignee = User.find_by(id: params[:assignee_id])
@@ -196,17 +196,16 @@ class BooksController < ApplicationController
         judgement.save!
       end
     end
-    @book.cases.each do |kase|
-      kase.ratings.where(user: nil).find_each do |rating|
-        rating.user = assignee
-        rating.save!
-      end
-    end
+    # @book.cases.each do |kase|
+    #  kase.ratings.where(user: nil).find_each do |rating|
+    #    rating.user = assignee
+    #    rating.save!
+    #  end
+    # end
 
     UpdateCaseJob.perform_later @book
     redirect_to book_path(@book), :notice => "Assigned #{assignee.fullname} to ratings and judgements."
   end
-  # rubocop:enable Metrics/MethodLength
 
   def delete_ratings_by_assignee
     judgements_to_delete = @book.judgements.where(user: @user)
@@ -276,7 +275,7 @@ class BooksController < ApplicationController
   def book_params
     params_to_use = params.require(:book).permit(:scorer_id, :selection_strategy_id, :name,
                                                  :support_implicit_judgements, :link_the_case, :origin_case_id,
-                                                 :show_rank, team_ids: [])
+                                                 :show_rank, :ai_judge_id, team_ids: [])
 
     # Crafting a book[team_ids] parameter from the AngularJS side didn't work, so using top level parameter
     params_to_use[:team_ids] = params[:team_ids] if params[:team_ids]

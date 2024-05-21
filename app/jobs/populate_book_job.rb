@@ -37,7 +37,7 @@ class PopulateBookJob < ApplicationJob
         # we are smart and just look up the correct user id from rating.user_id via the database, no API data needed.
         judgement = query_doc_pair.judgements.find_or_create_by user_id: rating.user_id
         judgement.rating = pair[:rating]
-        judgement.user = rating.user
+        judgement.user = User.find(pair[:user_id]) # rating.user
         judgement.save!
       end
 
@@ -45,6 +45,8 @@ class PopulateBookJob < ApplicationJob
     end
     book.populate_file.purge
     book.save
+
+    RunJudgeJudyJob.perform_later book
 
     Analytics::Tracker.track_query_doc_pairs_bulk_updated_event user, book, is_book_empty
   end
