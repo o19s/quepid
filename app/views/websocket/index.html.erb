@@ -1,0 +1,14 @@
+<%= turbo_stream_from(:notifications) %>
+
+<h1>Websocket#index</h1>
+
+ <span id="notification">
+ </span>
+ 
+ <%= button_to "Simulate Background Job", websocket_simulate_background_job_path, method: :post, class: 'btn btn-sm btn-danger' %>
+ 
+
+<% @action_cable_settings.each do |source, settings| %>
+  <h2><%= source %></h2>
+  <pre><code><%= JSON.pretty_generate(settings) %></code></pre>
+<% end %>

@@ -4,6 +4,8 @@ require 'sidekiq/web'
 
 # rubocop:disable Metrics/BlockLength
 Rails.application.routes.draw do
+  get 'websocket', to: 'websocket#index'
+  post 'websocket/simulate_background_job'
   apipie
   root 'home#show'
   get 'home/sparklines', to: 'home#sparklines'
