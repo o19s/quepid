@@ -92,7 +92,7 @@ class BookImporter
     if params_to_use[:query_doc_pairs]
       counter = params_to_use[:query_doc_pairs].size
       params_to_use[:query_doc_pairs].each do |query_doc_pair|
-        sleep 12
+        sleep 2
         qdp = @book.query_doc_pairs.build(query_doc_pair.except(:judgements))
         counter -= 1
         Turbo::StreamsChannel.broadcast_render_to(
