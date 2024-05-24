@@ -105,8 +105,8 @@ class SelectionStrategyTest < ActiveSupport::TestCase
         assert_nil SelectionStrategy.random_query_doc_based_on_strategy(book, joe)
         assert_nil SelectionStrategy.random_query_doc_based_on_strategy(book, jane)
 
-        # unfortunantly, you can have a fourth person do rating as well ;-)  No limits.
-        assert_not_nil SelectionStrategy.random_query_doc_based_on_strategy(book, doug)
+        # We have rated broad and deep with three judgements per query doc pair, no moar for anyone
+        assert_nil SelectionStrategy.random_query_doc_based_on_strategy(book, doug)
       end
     end
   end

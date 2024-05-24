@@ -53,8 +53,16 @@ class SelectionStrategy < ApplicationRecord
       # wish this was one query ;-)
       already_judged_query_doc_pair_ids = book.judgements.where(user_id: user.id).pluck(:query_doc_pair_id)
 
+      already_judged_triply_query_doc_pair_ids = Judgement
+        .select(:query_doc_pair_id)
+        .group(:query_doc_pair_id)
+        .having('COUNT(query_doc_pair_id) < 3')
+        .pluck(:query_doc_pair_id)
+
+      unique_already_judged_query_doc_pair_ids = already_judged_query_doc_pair_ids | already_judged_triply_query_doc_pair_ids
+
       query_doc_pair = book.query_doc_pairs
-        .where.not(id: already_judged_query_doc_pair_ids )
+        .where.not(id: unique_already_judged_query_doc_pair_ids )
         .joins(:judgements)
         .order(Arel.sql('-LOG(1.0 - RAND()) * position'))
         .first
