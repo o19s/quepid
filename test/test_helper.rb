@@ -42,7 +42,7 @@ module ActiveSupport
         assert_equal source, target
       end
     end
-    
+
     def login_user_for_integration_test user
       # We don't actually want to load up scores...
       Bullet.enable = false
@@ -51,7 +51,7 @@ module ActiveSupport
       follow_redirect!
       assert_equal 200, status
       assert_equal '/', path
-  
+
       Bullet.enable = true
     end
   end

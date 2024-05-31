@@ -10,16 +10,15 @@ Rails.application.routes.draw do
   constraints(AdminConstraint) do
     mount Sidekiq::Web, at: 'admin/jobs'
   end
-  
+
   root 'home#show'
-  
+
   get 'home/sparklines', to: 'home#sparklines'
   get 'home/case_prophet/:case_id', to: 'home#case_prophet', as: :home_case_prophet
   # get 'tries_visualization/:case_id' => 'tries_visualization#show', as: :tries_visualization
   get 'proxy/fetch'
   post 'proxy/fetch'
 
-  
   resources :api_keys, path: 'api-keys', only: [ :create, :destroy ]
 
   resources :search_endpoints do
@@ -111,7 +110,7 @@ Rails.application.routes.draw do
         post :publish
       end
     end
-    resources :websocket_tester, only: [:index] do
+    resources :websocket_tester, only: [ :index ] do
       post 'test_background_job', on: :collection
     end
   end

@@ -19,5 +19,4 @@ class RatingsControllerTest < ActionDispatch::IntegrationTest
     get case_ratings_url(@case)
     assert_response :success
   end
-
 end

@@ -91,4 +91,4 @@ group :test do
   gem 'selenium-webdriver'
 end
 
-gem "sidekiq-limit_fetch", "~> 4.4"
+gem 'sidekiq-limit_fetch', '~> 4.4'

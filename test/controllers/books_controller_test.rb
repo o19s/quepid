@@ -108,5 +108,4 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
 
   def test_combining_same_user_same_query_doc_merges
   end
-
 end

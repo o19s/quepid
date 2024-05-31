@@ -106,5 +106,4 @@ class SearchEndpointsControllerTest < ActionDispatch::IntegrationTest
 
     assert_redirected_to search_endpoints_url
   end
-
 end
