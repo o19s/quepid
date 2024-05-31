@@ -18,7 +18,7 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
     assert_equal 302, status
     follow_redirect!
 
-    login_user
+    login_user_for_integration_test user
 
     # Bullet::Notification::UnoptimizedQueryError:
     # GET /books
@@ -57,7 +57,7 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
   # rubocop:enable Metrics/MethodLength
 
   def test_more
-    login_user
+    login_user_for_integration_test user
 
     assert_equal book.query_doc_pairs.count, 1
 
@@ -69,7 +69,7 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
   end
 
   def test_differing_scales_blows_up
-    login_user
+    login_user_for_integration_test user
 
     book_to_merge = Book.new(name: 'Book with a 1,2,3,4 scorer', teams: book.teams, scorer: communal_scorer,
                              selection_strategy: SelectionStrategy.find_by(name: 'Multiple Raters'))
@@ -85,7 +85,7 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
   let(:single_rater_book) { books(:book_of_star_wars_judgements) }
   let(:single_rater_book2) { books(:book_of_comedy_films) }
   def test_combining_single_rater_strategy_into_multiple_rater_strategy_book_works
-    login_user
+    login_user_for_integration_test user
 
     book_with_multiple_raters = Book.create(name:               'Book with a 1,2,3,4 scorer',
                                             teams:              single_rater_book.teams,
@@ -109,15 +109,4 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
   def test_combining_same_user_same_query_doc_merges
   end
 
-  def login_user
-    # We don't actually want to load up scores...
-    Bullet.enable = false
-    # post the login and follow through to the home page
-    post '/users/login', params: { user: { email: user.email, password: 'password' } }
-    follow_redirect!
-    assert_equal 200, status
-    assert_equal '/', path
-
-    Bullet.enable = true
-  end
 end
