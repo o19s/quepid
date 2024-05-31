@@ -8,7 +8,7 @@ class SimulateBackgroundJob < ApplicationJob
       Turbo::StreamsChannel.broadcast_render_to(
         :notifications,
         target:  'notifications',
-        partial: 'websocket/notification',
+        partial: 'websocket_tester/notification',
         locals:  { counter: counter }
       )
 

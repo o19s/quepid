@@ -1,0 +1,15 @@
+<%= turbo_stream_from(:notifications) %>
+
+<h1>Websocket Tester</h1>
+This tool is for testing out websocket handling in Quepid.
+
+<span id="notification">
+</span>
+
+<%= button_to "Run Test Background Job", test_background_job_websocket_tester_index_path, method: :post, class: 'btn btn-sm btn-danger' %>
+ 
+
+<% @action_cable_settings.each do |source, settings| %>
+  <h2><%= source %></h2>
+  <pre><code><%= JSON.pretty_generate(settings) %></code></pre>
+<% end %>
