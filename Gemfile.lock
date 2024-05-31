@@ -432,6 +432,8 @@ GEM
       connection_pool (>= 2.3.0)
       rack (>= 2.2.4)
       redis-client (>= 0.14.0)
+    sidekiq-limit_fetch (4.4.1)
+      sidekiq (>= 6)
     simplecov (0.22.0)
       docile (~> 1.1)
       simplecov-html (~> 0.11)
@@ -547,6 +549,7 @@ DEPENDENCIES
   sassc-rails (~> 2.1)
   selenium-webdriver
   sidekiq
+  sidekiq-limit_fetch (~> 4.4)
   simplecov
   terser
   thor
