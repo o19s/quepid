@@ -90,3 +90,5 @@ group :test do
   gem 'capybara'
   gem 'selenium-webdriver'
 end
+
+gem "sidekiq-limit_fetch", "~> 4.4"

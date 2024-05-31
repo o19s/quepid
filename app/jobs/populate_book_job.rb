@@ -1,8 +1,7 @@
 # frozen_string_literal: true
 
 class PopulateBookJob < ApplicationJob
-  queue_as :default
-  sidekiq_options log_level: :warn
+  queue_as :bulk_processing
 
   # rubocop:disable Security/MarshalLoad
   # rubocop:disable Metrics/MethodLength

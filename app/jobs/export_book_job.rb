@@ -4,7 +4,7 @@ require 'zip'
 require 'action_controller'
 
 class ExportBookJob < ApplicationJob
-  queue_as :default
+  queue_as :bulk_processing
 
   # rubocop:disable Metrics/MethodLength
   def perform book

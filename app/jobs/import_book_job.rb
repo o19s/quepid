@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class ImportBookJob < ApplicationJob
-  queue_as :default
+  queue_as :bulk_processing
 
   # rubocop:disable Security/MarshalLoad
   def perform user, book
