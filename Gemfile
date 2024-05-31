@@ -49,6 +49,7 @@ gem 'responders'
 gem 'rubyzip'
 gem 'sassc-rails', '~> 2.1'
 gem 'sidekiq'
+gem 'sidekiq-limit_fetch', '~> 4.4'
 gem 'terser'
 gem 'thor'
 gem 'turbo-rails', '~> 2.0', '>= 2.0.5'
@@ -90,5 +91,3 @@ group :test do
   gem 'capybara'
   gem 'selenium-webdriver'
 end
-
-gem 'sidekiq-limit_fetch', '~> 4.4'
