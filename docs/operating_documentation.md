@@ -20,7 +20,7 @@ This document explains how Quepid can be operated and configured.
 
 ## Installing Quepid
 
-See the documentation and links for installing Quepid via Docker, Heroku, AWS, and Kubernetes at 
+See the documentation and links for installing Quepid via Docker, Heroku, AWS, and Kubernetes at https://github.com/o19s/quepid/wiki/Installation-Guide.
 
 ## Running behind a load balancer
 

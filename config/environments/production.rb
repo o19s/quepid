@@ -2,7 +2,6 @@
 
 require 'active_support/core_ext/integer/time'
 Sprockets.register_compressor 'application/javascript', :terser, Terser::Compressor
-# rubocop:disable Metrics/BlockLength
 Rails.application.configure do
   # Settings specified here will take precedence over those in config/application.rb.
 
@@ -57,14 +56,6 @@ Rails.application.configure do
   config.action_cable.disable_request_forgery_protection = true
   config.action_cable.allowed_request_origins = '*'
 
-  # Enable detailed ActionCable logging
-  config.action_cable.log_tags = [
-    :channel,
-    :connection,
-    :transmissions,
-    :state_updates
-  ]
-
   # Force all access to the app over SSL, use Strict-Transport-Security, and use secure cookies.
   # config.force_ssl = true
 
@@ -114,4 +105,3 @@ Rails.application.configure do
 
   config.action_mailer.default_url_options = { host: ENV.fetch('QUEPID_DOMAIN', nil) }
 end
-# rubocop:enable Metrics/BlockLength
