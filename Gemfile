@@ -44,7 +44,7 @@ gem 'rails-healthcheck', '~> 1.4'
 gem 'rails-html-sanitizer'
 gem 'rack-cors', '~> 2.0'
 gem 'rapidjson'
-gem 'redis', '~> 5.1.0'
+gem 'redis'
 gem 'responders'
 gem 'rubyzip', '~> 2.3.0' # 3.0 will be breaking
 gem 'sassc-rails', '~> 2.1'
