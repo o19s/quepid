@@ -43,6 +43,11 @@ class ProxyController < ApplicationController
       end
 
       faraday.headers['Content-Type'] = 'application/json'
+      has_credentials = !uri.userinfo.nil?
+      if has_credentials
+        username, password = uri.userinfo.split(':')
+        faraday.headers['Authorization'] = "Basic #{Base64.strict_encode64("#{username}:#{password}")}"
+      end
       faraday.adapter Faraday.default_adapter
     end
 

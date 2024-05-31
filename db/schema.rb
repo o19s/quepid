@@ -183,7 +183,7 @@ ActiveRecord::Schema[7.1].define(version: 2024_04_09_185548) do
   create_table "query_doc_pairs", charset: "utf8mb3", collation: "utf8mb3_unicode_ci", force: :cascade do |t|
     t.string "query_text", limit: 500
     t.integer "position"
-    t.text "document_fields", size: :medium
+    t.text "document_fields", size: :medium, collation: "utf8mb4_0900_ai_ci"
     t.bigint "book_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
