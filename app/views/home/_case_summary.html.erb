@@ -1,5 +1,5 @@
 <div class="col-12 col-md-6 mb-4 mb-lg-0 col-lg-3">
-  <div class="card">
+  <div class="card h-100">
     <h5 class="card-header text-truncate">
       <%= link_to case_title(kase), case_core_path(kase, kase.last_try_number) %>
     </h5>
@@ -8,31 +8,19 @@
       <h5 class="card-title"><%= number_with_precision(kase.last_score.score, precision: 2) unless kase.scores.empty? %> <%= kase.scorer.name %></h5>
       <p class="card-text"><%= kase.created_at.to_date.to_fs(:short) %> - <%= kase.last_score.updated_at.to_date.to_fs(:short) unless kase.scores.empty?%>
       </p>
-      <%
-      prophet_data = @prophet_case_data[kase.id]
-      if prophet_data
-        if prophet_data[:change] > 0 %>
-          <% if prophet_data[:change].positive? %>
-            <p class="card-text text-success"><%= number_to_percentage(prophet_data[:change] , precision:0) %> increase since <%=time_ago_in_words(prophet_data[:last_changepoint]) %> ago</p>
-          <% else %>
-            <p class="card-text text-danger"><%= number_to_percentage(prophet_data[:change] , precision:0) %> decrease since <%=time_ago_in_words(prophet_data[:last_changepoint]) %> ago</p>
-          <% end %>
-        <% end %>
-        <!-- Data for Chart 
-        <%= prophet_data[:data] %>
-          -->
-        
-          
+      <turbo-frame id="case_prophet_frame_<%= kase.id %>" src="<%= home_case_prophet_path(kase) %>">
+        <p class="card-text placeholder-glow">
+          <span class="placeholder col-11"></span>
+        </p>
         <%= Vega.lite
-          .data(prophet_data[:vega_data])
           .mark(type: "line", tooltip: true, interpolate: "cardinal", point: {size: 60})
           .encoding(
             x: {field: "x", type: "temporal", scale: {type: "utc"}, axis: {format: "%b %e"}},
             y: {field: "y", type: "quantitative"}
           )
-          .height(60)
-          .config(axis: {title: nil, labelFontSize: 12}) %>
-      <% end # if prophet_data %>
+          .height(70)
+          .config(axis: {title: nil, labelFontSize: 12}) %>        
+      </turbo-frame>
                   
     </div>
   </div>

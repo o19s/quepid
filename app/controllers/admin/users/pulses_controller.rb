@@ -22,7 +22,7 @@ module Admin
       def set_data
         case params[:data]
         when 'metadata'
-          @data = Metadatum.where(user_id: @user.id)
+          @data = CaseMetadatum.where(user_id: @user.id)
             .where('last_viewed_at >= :start AND last_viewed_at <= :end',
                    start: params[:start],
                    end:   params[:end])

@@ -1,10 +1,10 @@
 # frozen_string_literal: true
 
 class ImportBookJob < ApplicationJob
-  queue_as :default
+  queue_as :bulk_processing
 
   # rubocop:disable Security/MarshalLoad
-  def perform book, user
+  def perform user, book
     options = {}
 
     compressed_data = book.import_file.download

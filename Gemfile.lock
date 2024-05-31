@@ -432,6 +432,8 @@ GEM
       connection_pool (>= 2.3.0)
       rack (>= 2.2.4)
       redis-client (>= 0.14.0)
+    sidekiq-limit_fetch (4.4.1)
+      sidekiq (>= 6)
     simplecov (0.22.0)
       docile (~> 1.1)
       simplecov-html (~> 0.11)
@@ -454,9 +456,10 @@ GEM
     thor (1.3.0)
     tilt (2.3.0)
     timeout (0.4.1)
-    turbolinks (5.2.1)
-      turbolinks-source (~> 5.2)
-    turbolinks-source (5.2.0)
+    turbo-rails (2.0.5)
+      actionpack (>= 6.0.0)
+      activejob (>= 6.0.0)
+      railties (>= 6.0.0)
     tzinfo (2.0.6)
       concurrent-ruby (~> 1.0)
     unicode-display_width (2.5.0)
@@ -546,10 +549,11 @@ DEPENDENCIES
   sassc-rails (~> 2.1)
   selenium-webdriver
   sidekiq
+  sidekiq-limit_fetch (~> 4.4)
   simplecov
   terser
   thor
-  turbolinks (~> 5)
+  turbo-rails (~> 2.0, >= 2.0.5)
   vega (~> 0.3.0)
   web-console
   webmock

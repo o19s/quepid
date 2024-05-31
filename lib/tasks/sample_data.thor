@@ -340,8 +340,9 @@ class SampleData < Thor
     ######################################
 
     user_specifics = {
-      name:  'User with 100s of Queries',
-      email: 'quepid+100sOfQueries@o19s.com',
+      name:          'User with 100s of Queries',
+      email:         'quepid+100sOfQueries@o19s.com',
+      administrator: true,
     }
     user_params = user_defaults.merge(user_specifics)
     hundreds_of_queries_user = seed_user user_params
@@ -352,8 +353,9 @@ class SampleData < Thor
     ######################################
 
     user_specifics = {
-      name:  'User with 1000s of Queries',
-      email: 'quepid+1000sOfQueries@o19s.com',
+      name:          'User with 1000s of Queries',
+      email:         'quepid+1000sOfQueries@o19s.com',
+      administrator: true,
     }
     user_params = user_defaults.merge(user_specifics)
     thousands_of_queries_user = seed_user user_params

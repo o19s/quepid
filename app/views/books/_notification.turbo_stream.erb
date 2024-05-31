@@ -1,0 +1,7 @@
+<%= turbo_stream.replace "notification-book-#{book.id}" do %>
+  <span id="notification-book-<%= book.id %>">  
+    <div class="alert alert-info" role="alert">
+      <%= message %>
+    </div>  
+  </span>
+<% end %>

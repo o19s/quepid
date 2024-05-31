@@ -1,3 +1,5 @@
+<%= turbo_stream_from(:notifications) %>
+
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
   <h1 class="h2">Books</h1>
   <div class="btn-toolbar mb-2 mb-md-0">
@@ -45,6 +47,8 @@
         <td>
           <span class="badge bg-primary rounded-pill"><%= book.query_doc_pairs.count %> query/doc pairs</span>
           <span class="badge bg-primary rounded-pill"><%= book.rated_query_doc_pairs.count %> rated query/doc pairs</span>
+          <span id="notification-book-<%= book.id %>">
+          </span>
         </td>
       </tr>
     <% end %>

@@ -2,7 +2,8 @@
 
 This document explains how Quepid can be operated and configured.
 
-- [Running behind a load balancer](#loadbalancer)
+- [Installing Quepid](#installing-quepid)
+- [Running behind a load balancer](#running-behind-a-load-balancer)
 - [Setting up a Context Path](#setting-up-a-context-path)
 - [Mail](#mail)
 - [OAuth](#OAuth)
@@ -16,6 +17,10 @@ This document explains how Quepid can be operated and configured.
 - [Using Personal Access Tokens](#using-personal-access-tokens)
 - [Scripting Users Cases Ratings](#scripting-users-cases-ratings)
 - [Posting Announcements to Users](#posting-announcements-to-users)
+
+## Installing Quepid
+
+See the documentation and links for installing Quepid via Docker, Heroku, AWS, and Kubernetes at https://github.com/o19s/quepid/wiki/Installation-Guide.
 
 ## Running behind a load balancer
 
@@ -168,10 +173,6 @@ We currently only support Google Analytics, and you enable it by setting the fol
 ```
 QUEPID_GA=XXXXXXXXXXXX  # Your Google Analytics Key
 ```
-
-You will need Redis to support sending events to GA.   In production, uncomment the Redis
-configuration in `docker-compose.yml` to set up a local Redis.  Also uncomment the `worker` in
-the file `Procfile`
 
 
 ## Healthcheck
