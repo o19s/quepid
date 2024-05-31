@@ -240,7 +240,7 @@ GEM
       builder
       minitest (>= 5.0)
       ruby-progressbar
-    mocha (2.2.0)
+    mocha (2.3.0)
       ruby2_keywords (>= 0.0.5)
     msgpack (1.7.2)
     multi_xml (0.6.0)
@@ -386,7 +386,8 @@ GEM
     responders (3.1.1)
       actionpack (>= 5.2)
       railties (>= 5.2)
-    rexml (3.2.6)
+    rexml (3.2.8)
+      strscan (>= 3.0.9)
     rover-df (0.3.4)
       numo-narray (>= 0.9.1.9)
     rubocop (1.63.4)
@@ -452,6 +453,7 @@ GEM
       activesupport (>= 5.2)
       sprockets (>= 3.0.0)
     stringio (3.1.0)
+    strscan (3.1.0)
     terser (1.1.20)
       execjs (>= 0.3.0, < 3)
     thor (1.3.1)
