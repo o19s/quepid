@@ -546,7 +546,7 @@ DEPENDENCIES
   rubocop
   rubocop-capybara
   rubocop-rails
-  rubyzip
+  rubyzip (~> 2.3.0)
   sassc-rails (~> 2.1)
   selenium-webdriver
   sidekiq
