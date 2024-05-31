@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-class SimulateBackgroundJob < ApplicationJob
-  queue_as :default
+class WebsocketTesterBackgroundJob < ApplicationJob
+  queue_as :bulk_processing
 
   def perform
     30.downto(0) do |counter|
@@ -12,7 +12,7 @@ class SimulateBackgroundJob < ApplicationJob
         locals:  { counter: counter }
       )
 
-      puts "SimulateBackgroundJob: #{counter} seconds remaining"
+      puts "WebsocketTesterBackgroundJob: #{counter} seconds remaining"
       sleep(1)
     end
   end

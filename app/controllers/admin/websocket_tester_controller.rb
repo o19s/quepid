@@ -17,8 +17,8 @@ module Admin
     end
 
     def test_background_job
-      SimulateBackgroundJob.perform_later
-      redirect_to admin_websocket_tester_index_path, notice: 'Test Background Job was queued up.'
+      WebsocketTesterBackgroundJob.perform_later
+      redirect_to admin_websocket_tester_index_path, notice: 'Websocker Tester Background Job was queued up.'
     end
   end
 end
