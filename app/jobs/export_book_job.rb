@@ -12,7 +12,7 @@ class ExportBookJob < ApplicationJob
       :notifications,
       target:  'notifications',
       partial: 'books/notification',
-      locals:  { book: book, message: "Starting to export book #{book.name}" }
+      locals:  { book: book, message: "Starting to export book #{book.name}", progress: 33 }
     )
 
     json_data = Api::V1::Export::BooksController.renderer.render template: 'api/v1/export/books/show',
@@ -24,7 +24,7 @@ class ExportBookJob < ApplicationJob
       :notifications,
       target:  'notifications',
       partial: 'books/notification',
-      locals:  { book: book, message: "JSON exported for  #{book.name}, starting to create file" }
+      locals:  { book: book, message: "JSON exported for  #{book.name}, starting to create file", progress: 66 }
     )
 
     book.export_file.attach(io: compressed_data, filename: "book_export_#{book.id}.json.zip",
@@ -35,7 +35,7 @@ class ExportBookJob < ApplicationJob
       target:  'notifications',
       partial: 'books/notification',
       locals:  { book:    book,
-                 message: "Completed exporting book #{book.name}.  Please refresh the page to get the link." }
+                 message: "Completed exporting book #{book.name}.  Please refresh this page to get the link.", progress: 100 }
     )
   end
   # rubocop:enable Metrics/MethodLength

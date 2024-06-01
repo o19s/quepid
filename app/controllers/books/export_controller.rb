@@ -43,8 +43,9 @@ module Books
       if job_queued_with_args
         message = 'Currently exporting book as file.'
       else
+        @book.export_file.purge
         ExportBookJob.perform_later @book
-        message = 'Starting export of book as file.'
+        message = 'Queued up export of book as file.'
       end
 
       redirect_to @book, notice: message
