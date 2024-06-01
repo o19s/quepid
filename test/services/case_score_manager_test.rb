@@ -61,7 +61,7 @@ class CaseScoreManagerTest < ActiveSupport::TestCase
         }
         puts "Here is the first updated at: #{the_case.updated_at}"
         assert_difference 'the_case.scores.count' do
-          assert_difference 'the_case.updated_at' do
+          assert_changes 'the_case.updated_at' do
             service.update score_data
 
             the_case.reload
