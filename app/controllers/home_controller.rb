@@ -5,9 +5,10 @@ class HomeController < ApplicationController
 
   def show
     @cases = @current_user.cases_involved_with.not_archived.with_counts
-      .includes([ :metadata ])
+      .includes([ :metadata, :queries ])
       .order('`case_metadata`.`last_viewed_at` DESC, `cases`.`id` DESC')
-    # @most_recent_cases = recent_cases(4).sort_by { |c| c.case_name.downcase }
+      .limit(10)
+
     @most_recent_cases = @cases[0...4].sort_by { |c| c.case_name.downcase }
 
     @most_recent_books = recent_books(4)
