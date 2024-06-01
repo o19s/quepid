@@ -1,5 +1,15 @@
 <turbo-frame id="case_prophet_frame_<%= @case.id %>">
-       
+  <% kase = @case %>
+  <h5 class="card-title"><%= number_with_precision(kase.last_score.score, precision: 2) unless kase.scores.empty? %> <%= kase.scorer.name %></h5>
+  <p class="card-text">
+    <% if kase.scores %>
+      
+      <%= kase.first_score.created_at.to_date.to_fs(:short) %> 
+      <% if kase.scores.count > 1 and kase.first_score.created_at.to_date.to_fs(:short) != kase.last_score.updated_at.to_date.to_fs(:short) %>
+        - <%= kase.last_score.updated_at.to_date.to_fs(:short)%>
+      <% end %>
+    <% end %>
+  </p>       
  <%
  if @prophet_case_data
    if @prophet_case_data[:change] > 0 %>
@@ -9,7 +19,7 @@
        <p class="card-text text-danger"><%= number_to_percentage(@prophet_case_data[:change] , precision:0) %> decrease since <%=time_ago_in_words(@prophet_case_data[:last_changepoint]) %> ago</p>
      <% end %>
    <% else %>
-      <p/>
+      <p class="card-text">&nbsp;</p>
    <% end %>
         
    <%= Vega.lite

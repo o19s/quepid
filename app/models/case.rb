@@ -168,7 +168,12 @@ class Case < ApplicationRecord
   end
 
   def last_score
-    scores.last_one
+    #scores.last_one
+    scores.first
+  end
+  
+  def first_score
+    scores.last
   end
 
   def public_id
