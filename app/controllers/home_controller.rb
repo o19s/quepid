@@ -4,12 +4,11 @@ class HomeController < ApplicationController
   before_action :set_case, only: [ :case_prophet ]
 
   def show
-    
     @cases = @current_user.cases_involved_with.not_archived.with_counts
-      .includes([:metadata,:queries])
+      .includes([ :metadata, :queries ])
       .order('`case_metadata`.`last_viewed_at` DESC, `cases`.`id` DESC')
       .limit(10)
-    
+
     @most_recent_cases = @cases[0...4].sort_by { |c| c.case_name.downcase }
 
     @most_recent_books = recent_books(4)
