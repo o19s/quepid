@@ -4,10 +4,12 @@ class HomeController < ApplicationController
   before_action :set_case, only: [ :case_prophet ]
 
   def show
+    # with_counts adds a `case.queries_count` field, which avoids loading 
+    # all queries and makes bullet happy.
     @cases = @current_user.cases_involved_with.not_archived.with_counts
-      .includes([ :metadata, :queries ])
+      .includes([ :metadata ])
       .order('`case_metadata`.`last_viewed_at` DESC, `cases`.`id` DESC')
-      .limit(10)
+      .limit(30)
 
     @most_recent_cases = @cases[0...4].sort_by { |c| c.case_name.downcase }
 
