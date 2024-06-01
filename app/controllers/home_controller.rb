@@ -4,7 +4,7 @@ class HomeController < ApplicationController
   before_action :set_case, only: [ :case_prophet ]
 
   def show
-    # with_counts adds a `case.queries_count` field, which avoids loading 
+    # with_counts adds a `case.queries_count` field, which avoids loading
     # all queries and makes bullet happy.
     @cases = @current_user.cases_involved_with.not_archived.with_counts
       .includes([ :metadata ])
@@ -37,37 +37,43 @@ class HomeController < ApplicationController
   # rubocop:disable Metrics/AbcSize
   # rubocop:disable Metrics/MethodLength
   def case_prophet
-    data = @case.scores.sampled(@case.id, 25).collect do |score|
-      { ds: score.created_at.to_date.to_fs(:db), y: score.score, datetime: score.created_at.to_date }
-    end.uniq
-    # warning! blunt filter below!
-    data = data.uniq { |h| h[:ds] }
-    data = data.map { |h| h.transform_keys(&:to_s) }
+    # Check if the request is fresh based on the ETag
+    if stale?(etag: @case, public: true)
 
-    do_changepoints = data.length >= 3 # need at least 3...
+      puts "we have decided we are stale for case #{@case.id} at #{@case.updated_at}"
 
-    if do_changepoints
+      data = @case.scores.sampled(@case.id, 25).collect do |score|
+        { ds: score.created_at.to_date.to_fs(:db), y: score.score, datetime: score.created_at.to_date }
+      end.uniq
+      # warning! blunt filter below!
+      data = data.uniq { |h| h[:ds] }
+      data = data.map { |h| h.transform_keys(&:to_s) }
 
-      df = Rover::DataFrame.new(data)
-      m = Prophet.new
-      m.fit(df)
+      do_changepoints = data.length >= 3 # need at least 3...
 
-      last_changepoint = DateTime.parse(m.changepoints.last.to_s)
-      initial = data.find { |h| h['datetime'].all_day.overlaps?(last_changepoint.all_day) }['y']
-      final = @case.scores.last_one.score
-      change = 100 * (final - initial) / initial
+      if do_changepoints
 
-      vega_data = data.map { |d| { x: d['ds'], y: d['y'] } }
+        df = Rover::DataFrame.new(data)
+        m = Prophet.new
+        m.fit(df)
 
-      @prophet_case_data = {
-        initial:          initial,
-        final:            final,
-        change:           change,
-        last_changepoint: last_changepoint,
-        vega_data:        vega_data,
-      }
+        last_changepoint = DateTime.parse(m.changepoints.last.to_s)
+        initial = data.find { |h| h['datetime'].all_day.overlaps?(last_changepoint.all_day) }['y']
+        final = @case.scores.last_one.score
+        change = 100 * (final - initial) / initial
+
+        vega_data = data.map { |d| { x: d['ds'], y: d['y'] } }
+
+        @prophet_case_data = {
+          initial:          initial,
+          final:            final,
+          change:           change,
+          last_changepoint: last_changepoint,
+          vega_data:        vega_data,
+        }
+      end
+      render layout: false
     end
-    render layout: false
   end
   # rubocop:enable Metrics/AbcSize
   # rubocop:enable Metrics/MethodLength
