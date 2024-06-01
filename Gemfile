@@ -2,7 +2,7 @@
 
 source 'https://rubygems.org'
 
-ruby '3.3.0'
+ruby '3.3.2'
 
 gem 'activerecord-import', '>= 1.0.7'
 gem 'active_storage_db'
@@ -44,9 +44,9 @@ gem 'rails-healthcheck', '~> 1.4'
 gem 'rails-html-sanitizer'
 gem 'rack-cors', '~> 2.0'
 gem 'rapidjson'
-gem 'redis', '~> 5.1.0'
+gem 'redis'
 gem 'responders'
-gem 'rubyzip'
+gem 'rubyzip', '~> 2.3.0' # 3.0 will be breaking
 gem 'sassc-rails', '~> 2.1'
 gem 'sidekiq'
 gem 'sidekiq-limit_fetch', '~> 4.4'

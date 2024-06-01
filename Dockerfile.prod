@@ -3,7 +3,7 @@ WORKDIR /srv/app
 COPY package.json yarn.lock ./
 RUN yarn install --production=true
 
-FROM ruby:3.3.0-bullseye
+FROM ruby:3.3.2-bullseye
 
 LABEL maintainer="quepid_admin@opensourceconnections.com"
 
@@ -30,7 +30,7 @@ RUN apt-get update -qq \
 WORKDIR /srv/app
 COPY Gemfile Gemfile.lock ./
 RUN gem install foreman
-RUN gem install bundler:2.4.9
+RUN gem install bundler:2.5.11
 
 # Clean up Bundle
 RUN bundle config set without 'development test'
