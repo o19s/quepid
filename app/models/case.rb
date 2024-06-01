@@ -168,8 +168,8 @@ class Case < ApplicationRecord
   end
 
   def last_score
-    # scores.last_one
-    scores.first
+    scores.last_one
+    # scores.first
   end
 
   def first_score
