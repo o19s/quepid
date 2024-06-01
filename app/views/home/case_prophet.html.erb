@@ -1,12 +1,11 @@
-<turbo-frame id="case_prophet_frame_<%= @case.id %>">
-  <% kase = @case %>
-  <h5 class="card-title"><%= number_with_precision(kase.last_score.score, precision: 2) unless kase.scores.empty? %> <%= kase.scorer.name %></h5>
+<turbo-frame id="case_frame_<%= @case.id %>">
+  <h5 class="card-title"><%= number_with_precision(@case.last_score.score, precision: 2) unless @case.scores.empty? %> <%= @case.scorer.name %></h5>
   <p class="card-text">
-    <% if kase.scores %>
+    <% if @case.scores %>
       
-      <%= kase.first_score.created_at.to_date.to_fs(:short) %> 
-      <% if kase.scores.count > 1 and kase.first_score.created_at.to_date.to_fs(:short) != kase.last_score.updated_at.to_date.to_fs(:short) %>
-        - <%= kase.last_score.updated_at.to_date.to_fs(:short)%>
+      <%= @case.first_score.created_at.to_date.to_fs(:short) %> 
+      <% if @case.scores.count > 1 and @case.first_score.created_at.to_date.to_fs(:short) != @case.last_score.updated_at.to_date.to_fs(:short) %>
+        - <%= @case.last_score.updated_at.to_date.to_fs(:short)%>
       <% end %>
     <% end %>
   </p>       
