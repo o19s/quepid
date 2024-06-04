@@ -1,8 +1,7 @@
 # frozen_string_literal: true
 
 class PopulateBookJob < ApplicationJob
-  queue_as :default
-  sidekiq_options log_level: :warn
+  queue_as :bulk_processing
 
   # rubocop:disable Security/MarshalLoad
   # rubocop:disable Metrics/MethodLength
@@ -15,11 +14,11 @@ class PopulateBookJob < ApplicationJob
     serialized_data = Zlib::Inflate.inflate(compressed_data)
     params = Marshal.load(serialized_data)
 
-    puts "[PopulateBookJob] I am going to populate the book with #{params[:query_doc_pairs].size} Query doc pairs"
-
     is_book_empty = book.query_doc_pairs.empty?
 
+    counter = params[:query_doc_pairs].size
     params[:query_doc_pairs].each do |pair|
+      counter -= 1
       query_doc_pair = book.query_doc_pairs.find_or_create_by query_text: pair[:query_text],
                                                               doc_id:     pair[:doc_id]
       query_doc_pair.position = pair[:position]
@@ -42,6 +41,13 @@ class PopulateBookJob < ApplicationJob
       end
 
       query_doc_pair.save!
+
+      Turbo::StreamsChannel.broadcast_render_to(
+        :notifications,
+        target:  'notifications',
+        partial: 'books/blah',
+        locals:  { book: book, counter: counter, qdp: query_doc_pair }
+      )
     end
     book.populate_file.purge
     book.save

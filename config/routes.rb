@@ -4,21 +4,20 @@ require 'sidekiq/web'
 
 # rubocop:disable Metrics/BlockLength
 Rails.application.routes.draw do
-  # get 'home/show'
   apipie
-  root 'home#show'
-
-  get 'proxy/fetch'
-  post 'proxy/fetch'
-
   mount ActiveStorageDB::Engine => '/active_storage_db'
-
-  # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
-
   Healthcheck.routes(self)
   constraints(AdminConstraint) do
     mount Sidekiq::Web, at: 'admin/jobs'
   end
+
+  root 'home#show'
+
+  get 'home/sparklines', to: 'home#sparklines'
+  get 'home/case_prophet/:case_id', to: 'home#case_prophet', as: :home_case_prophet
+  # get 'tries_visualization/:case_id' => 'tries_visualization#show', as: :tries_visualization
+  get 'proxy/fetch'
+  post 'proxy/fetch'
 
   resources :api_keys, path: 'api-keys', only: [ :create, :destroy ]
 
@@ -73,6 +72,7 @@ Rails.application.routes.draw do
 
   namespace :books do
     resources :import, only: [ :new, :create ]
+    resources :export, only: [ :show ], param: :book_id
   end
 
   devise_for :users, controllers: {
@@ -109,6 +109,9 @@ Rails.application.routes.draw do
       member do
         post :publish
       end
+    end
+    resources :websocket_tester, only: [ :index ] do
+      post 'test_background_job', on: :collection
     end
   end
 

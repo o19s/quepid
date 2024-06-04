@@ -2,7 +2,7 @@
 
 source 'https://rubygems.org'
 
-ruby '3.3.0'
+ruby '3.3.2'
 
 gem 'activerecord-import', '>= 1.0.7'
 gem 'active_storage_db'
@@ -23,6 +23,7 @@ gem 'devise_invitable', '~> 2.0'
 # Had no luck with js/svg approach ;-(
 gem 'font-awesome-sass'
 gem 'gabba'
+gem 'importmap-rails', '~> 2.0'
 gem 'intercom-rails'
 gem 'jbuilder', '~> 2.7'
 gem 'jquery-rails'
@@ -43,14 +44,15 @@ gem 'rails-healthcheck', '~> 1.4'
 gem 'rails-html-sanitizer'
 gem 'rack-cors', '~> 2.0'
 gem 'rapidjson'
-gem 'redis', '~> 5.1.0'
+gem 'redis'
 gem 'responders'
-gem 'rubyzip'
+gem 'rubyzip', '~> 2.3.0' # 3.0 will be breaking
 gem 'sassc-rails', '~> 2.1'
 gem 'sidekiq'
+gem 'sidekiq-limit_fetch', '~> 4.4'
 gem 'terser'
 gem 'thor'
-gem 'turbolinks', '~> 5'
+gem 'turbo-rails', '~> 2.0', '>= 2.0.5'
 gem 'vega', '~> 0.3.0'
 
 group :development, :test do
@@ -89,5 +91,3 @@ group :test do
   gem 'capybara'
   gem 'selenium-webdriver'
 end
-
-gem 'importmap-rails', '~> 2.0'

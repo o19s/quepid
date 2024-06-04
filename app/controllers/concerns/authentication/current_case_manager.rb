@@ -6,6 +6,7 @@ module Authentication
 
     included do
       helper_method :current_case
+      helper_method :set_recent_cases
     end
 
     private

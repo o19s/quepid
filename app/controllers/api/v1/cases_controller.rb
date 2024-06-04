@@ -45,7 +45,7 @@ module Api
         if archived
           @no_tries = true
           @no_teams = false
-          @cases = Case.where(archived: archived, owner_id: current_user.id).all
+          @cases = Case.where(archived: archived, owner_id: current_user.id).all.with_counts
         else
           @cases = current_user.cases_involved_with.not_archived.with_counts.preload(:tries, :teams,
                                                                                      :cases_teams)
@@ -98,7 +98,7 @@ module Api
         elsif @case.update update_params
           if update_params[:book_id]
             @book = Book.find(update_params[:book_id])
-            TrackBookViewedJob.perform_now @book, current_user
+            TrackBookViewedJob.perform_now current_user, @book
           end
           Analytics::Tracker.track_case_updated_event current_user, @case
           respond_with @case
