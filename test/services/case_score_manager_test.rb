@@ -39,7 +39,9 @@ class CaseScoreManagerTest < ActiveSupport::TestCase
         score_data[:queries]  = {}
 
         assert_no_difference 'Score.count' do
-          service.update score_data
+          assert_no_difference 'the_case.updated_at' do
+            service.update score_data
+          end
         end
       end
 
@@ -57,15 +59,18 @@ class CaseScoreManagerTest < ActiveSupport::TestCase
         score_data[:queries]  = {
           '174' => { score: 0, text: 'canine' },
         }
-
+        puts "Here is the first updated at: #{the_case.updated_at}"
         assert_difference 'the_case.scores.count' do
-          service.update score_data
+          assert_changes 'the_case.updated_at' do
+            service.update score_data
 
-          the_case.reload
+            the_case.reload
 
-          assert_not_nil the_case.last_score
-          assert_equal the_case.last_score.score, 0
+            assert_not_nil the_case.last_score
+            assert_equal the_case.last_score.score, 0
+          end
         end
+        puts "Here is the second updated at: #{the_case.updated_at}"
       end
     end
 
