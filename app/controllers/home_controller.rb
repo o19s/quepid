@@ -36,6 +36,8 @@ class HomeController < ApplicationController
 
   # rubocop:disable Metrics/AbcSize
   # rubocop:disable Metrics/MethodLength
+  # rubocop:disable Metrics/CyclomaticComplexity
+  # rubocop:disable Metrics/PerceivedComplexity
   def case_prophet
     # Check if the request is fresh based on the ETag
     if stale?(etag: @case, public: true)
@@ -77,4 +79,6 @@ class HomeController < ApplicationController
   end
   # rubocop:enable Metrics/AbcSize
   # rubocop:enable Metrics/MethodLength
+  # rubocop:enable Metrics/CyclomaticComplexity
+  # rubocop:enable Metrics/PerceivedComplexity
 end

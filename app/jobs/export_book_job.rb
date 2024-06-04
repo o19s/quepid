@@ -34,8 +34,9 @@ class ExportBookJob < ApplicationJob
       :notifications,
       target:  'notifications',
       partial: 'books/notification',
-      locals:  { book:    book,
-                 message: "Completed exporting book #{book.name}.  Please refresh this page to get the link.", progress: 100 }
+      locals:  { book:     book,
+                 message:  "Completed exporting book #{book.name}.  Please refresh this page to get the link.",
+                 progress: 100 }
     )
   end
   # rubocop:enable Metrics/MethodLength
