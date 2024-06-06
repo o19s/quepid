@@ -13,13 +13,15 @@
 require 'test_helper'
 
 class SelectionStrategyTest < ActiveSupport::TestCase
-  # test "the truth" do
-  #   assert true
-  # end
-
   def times_drawn name, book
     counter = 0
-    100.times { counter += 1 if SelectionStrategy.random_query_doc_pair_for_single_judge(book).doc_id == name }
+
+    ActiveRecord::Base.uncached do
+      100.times do
+        qdp = SelectionStrategy.random_query_doc_pair_for_single_judge(book)
+        counter += 1 if qdp.doc_id == name
+      end
+    end
     counter
   end
 
@@ -29,14 +31,17 @@ class SelectionStrategyTest < ActiveSupport::TestCase
       let(:book) { books(:james_bond_movies) }
 
       before do
-        book.query_doc_pairs.each { |query_doc_pair| query_doc_pair.judgements.delete_all }
+        book.query_doc_pairs.each { |query_doc_pair| query_doc_pair.judgements.destroy_all }
         assert_empty book.judgements
       end
 
       it 'draws Sean Connery way more then George Lazenby due to postion in results' do
         # there can be false positive failures due to the RAND() in mysql...
         sean_connery_picks = times_drawn('SeanConnery', book)
+        assert sean_connery_picks.positive?
+
         george_lazenby_picks = times_drawn('GeorgeLazenby', book)
+        assert george_lazenby_picks.positive?
 
         assert_operator sean_connery_picks, :>, george_lazenby_picks
       end
