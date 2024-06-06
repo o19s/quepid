@@ -75,19 +75,6 @@ module Authentication
     end
     # rubocop:enable Metrics/MethodLength
 
-    def case_with_all_the_bells_whistles
-      if current_user
-        @case = current_user
-          .cases_involved_with
-          .where(id: params[:case_id])
-          .includes(:tries )
-          .preload([ queries: [ :ratings ], tries: [ :curator_variables, :search_endpoint ] ])
-          .order('tries.try_number DESC')
-          .first
-      end
-      @case = Case.public_cases.find_by(id: params[:case_id]) if @case.nil?
-    end
-
     def check_case
       render json: { message: 'Case not found!' }, status: :not_found unless @case
     end

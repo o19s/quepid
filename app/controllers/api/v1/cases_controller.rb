@@ -5,7 +5,6 @@ module Api
     # rubocop:disable Metrics/ClassLength
     class CasesController < Api::ApiController
       before_action :set_case, only: [ :show, :update, :destroy ]
-      before_action :case_with_all_the_bells_whistles, only: [ :show ]
       before_action :check_case, only: [ :show, :update, :destroy ]
 
       def_param_group :case_params do
@@ -65,6 +64,7 @@ module Api
       def show
         respond_with @case
       end
+      
       api :POST, '/api/cases', 'Create a new case.'
       param_group :case_params
       def create
