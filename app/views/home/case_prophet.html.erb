@@ -1,7 +1,9 @@
 <turbo-frame id="case_frame_<%= @case.id %>">
   <h5 class="card-title"><%= number_with_precision(@case.last_score.score, precision: 2) unless @case.scores.empty? %> <%= @case.scorer.name %></h5>
   <p class="card-text">
-    <% if @case.scores %>
+    <% if @case.scores.empty? %>
+    <small><code>no scores</code></small>
+    <% else %>
       
       <%= @case.first_score.created_at.to_date.to_fs(:short) %> 
       <% if @case.scores.count > 1 and @case.first_score.created_at.to_date.to_fs(:short) != @case.last_score.updated_at.to_date.to_fs(:short) %>

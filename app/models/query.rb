@@ -24,14 +24,14 @@
 #  queries_ibfk_1  (case_id => cases.id)
 #
 
-require 'arrangement/item'
+require_relative 'concerns/arrangement/item'
 
 class Query < ApplicationRecord
   # Arrangement
   include Arrangement::Item
 
   # Associations
-  belongs_to  :case, autosave: true, optional: false
+  belongs_to  :case, autosave: true, optional: false, touch: true
 
   has_many    :ratings,
               dependent: :destroy

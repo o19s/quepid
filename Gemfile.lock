@@ -550,7 +550,6 @@ DEPENDENCIES
   rails-html-sanitizer
   rapidjson
   redis
-  responders
   rubocop
   rubocop-capybara
   rubocop-rails

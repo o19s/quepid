@@ -35,13 +35,15 @@ module Api
               the_case.queries << query_info_need
               the_case.save!
 
+              the_case.reload
+
               get :show, params: { case_id: the_case.id, format: :csv, file_format: 'basic' }
               assert_response :ok
 
               csv = CSV.parse(response.body, headers: true)
 
-              assert_equal csv[0]['query'], 'star wars' # notice csv injection vulnerability
-              assert_equal csv[0]['information_need'], 'Looking for the original blockbuster movie, followed by the most recent big movies.'
+              assert_equal csv[1]['query'], 'star wars' # notice csv injection vulnerability
+              assert_equal csv[1]['information_need'], 'Looking for the original blockbuster movie, followed by the most recent big movies.'
             end
             # rubocop:enable Layout/LineLength
           end

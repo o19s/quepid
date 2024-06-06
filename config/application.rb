@@ -10,12 +10,9 @@ Bundler.require(*Rails.groups)
 
 module Quepid
   class Application < Rails::Application
-    # Use the responders controller from the responders gem
-    config.app_generators.scaffold_controller :responders_controller
-
     # Initialize configuration defaults for originally generated Rails version.
-    config.load_defaults 6.1
-    config.active_support.cache_format_version = 7.0 # remove when load_defaults is 7.0
+    config.load_defaults 7.1
+    # config.active_support.cache_format_version = 7.1 # remove when load_defaults is 7.0
 
     # Configuration for the application, engines, and railties goes here.
     #
