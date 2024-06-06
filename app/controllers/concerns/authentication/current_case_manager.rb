@@ -26,9 +26,9 @@ module Authentication
       @case = if is_encrypted_case_id
                 Case.public_cases.find_by(id: decrypt_case_id(case_id))
               elsif current_user
-                current_user.cases_involved_with.where(id: case_id).first            
+                current_user.cases_involved_with.where(id: case_id).first
               end
-              
+
       if @case.nil? # We didn't find a match, so let's see if it's a public case
         @case = Case.public_cases.find_by(id: case_id)
       end

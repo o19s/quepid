@@ -64,7 +64,7 @@ module Api
       def show
         respond_with @case
       end
-      
+
       api :POST, '/api/cases', 'Create a new case.'
       param_group :case_params
       def create

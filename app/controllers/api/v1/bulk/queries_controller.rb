@@ -29,7 +29,7 @@ module Api
           non_existing_queries = unique_queries - existing_queries
           non_existing_queries.each_with_index do |query_text, index|
             query = @case.queries.build(query_text: query_text)
-            query.insert_at(index + 1)
+            #query.insert_at(index + 1)
             queries_to_import << query
           end
 

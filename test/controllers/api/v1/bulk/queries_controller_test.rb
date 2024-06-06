@@ -48,7 +48,7 @@ module Api
             assert_equal response.parsed_body['display_order'][0], first_query.id
           end
 
-          test 'doesnt allow duplicate queries to be created' do
+          test 'does not allow duplicate queries to be created' do
             data = {
               case_id: acase.id,
               queries: %w[one two three four],
