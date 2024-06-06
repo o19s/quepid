@@ -34,7 +34,7 @@ module Api
                                           information_need: 'Looking for the original blockbuster movie, followed by the most recent big movies.'
               the_case.queries << query_info_need
               the_case.save!
-              
+
               the_case.reload
 
               get :show, params: { case_id: the_case.id, format: :csv, file_format: 'basic' }

@@ -44,14 +44,14 @@ module Api
             query = Query.new query_text: '=cmd', case_id: the_case.id
             the_case.queries << query
             the_case.save!
-            
+
             the_case.reload
 
             get :show, params: { case_id: the_case.id, file_format: 'rre' }
             assert_response :ok
 
             body = response.parsed_body
-            
+
             assert_equal body['id_field'],                              'id'
             assert_equal body['index'],                                 the_case.tries.latest.index_name_from_search_url
             assert_equal body['queries'].size,                          the_case.queries.size
