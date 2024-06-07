@@ -88,7 +88,7 @@ class BookImporter
 
     # Force the imported book to be owned by the user doing the importing.  Otherwise you can loose the book!
     @book.owner = User.find_by(email: @current_user.email)
-    
+
     @book.save
 
     if params_to_use[:query_doc_pairs]
