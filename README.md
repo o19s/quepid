@@ -418,7 +418,7 @@ bin/docker r bundle update foobar
 You can remove a gem via:
 
 ```
-bin/docker r bundle remove foobar --install
+bin/docker r bundle remove foobar
 ```
 
 Then check in the updated `Gemfile` and `Gemfile.lock` files.  For good measure
