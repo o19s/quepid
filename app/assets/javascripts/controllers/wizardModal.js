@@ -71,7 +71,7 @@ angular.module('QuepidApp')
              
              // If we are reloading, then use the new one we picked, otherwise
              // we default to Solr.
-             var searchEngineToUse = null;
+             let searchEngineToUse = null;
              if (angular.isDefined($location.search().searchEngine)){
                searchEngineToUse = $location.search().searchEngine;
              }
