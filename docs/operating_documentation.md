@@ -17,6 +17,7 @@ This document explains how Quepid can be operated and configured.
 - [Using Personal Access Tokens](#using-personal-access-tokens)
 - [Scripting Users Cases Ratings](#scripting-users-cases-ratings)
 - [Posting Announcements to Users](#posting-announcements-to-users)
+- [Integrating External Eval Pipeline](#integrating-external-eval-pipeline)
 
 ## Installing Quepid
 
@@ -291,3 +292,7 @@ Sometimes you need to communicate to your users, like the fact that a scorer has
 ```
 
 Once they see it, they won't see it again.
+
+## Integrating External Eval Pipeline
+
+If you have an external evaluation pipeline, you can easily post the results of that pipeline into Quepid using the API.  See (./examples/external_eval) for a simple Python script that demonstrates storing Scores for a Case that are calculated externally.
