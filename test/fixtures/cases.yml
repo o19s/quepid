@@ -219,3 +219,9 @@ public_case:
   case_name: Public Book
   archived:  false
   public:    :true
+
+case_no_queries:
+  owner:     :random
+  case_name: Case with No Queries
+  archived:  false
+  scorer:   :case_default_scorer

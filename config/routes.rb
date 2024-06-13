@@ -27,10 +27,9 @@ Rails.application.routes.draw do
 
   resources :search_endpoints do
     member do
-      post 'clone'
+      get 'clone'
     end
   end
-  # post 'search_endpoints/:id/clone' => 'search_endpoints#clone', as: :clone_search_endpoint
 
   # rubocop:disable Layout/LineLength
   # let's encrypt verification (can be removed in the future)

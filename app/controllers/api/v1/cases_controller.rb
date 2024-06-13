@@ -11,6 +11,8 @@ module Api
         param :case, Hash, required: true do
           param :case_name, String
           param :scorer_id, Integer
+          param :book_id, Integer
+          param :last_try_number, Integer
           param :archived, [ true, false ]
         end
       end
@@ -59,7 +61,7 @@ module Api
 
       api :GET, '/api/cases/:case_id',
           'Show the case with the given ID.'
-      param :id, :number,
+      param :case_id, :number,
             desc: 'The ID of the requested case.', required: true
       def show
         respond_with @case
@@ -81,7 +83,7 @@ module Api
 
       # rubocop:disable Metrics/MethodLength
       api :PUT, '/api/cases/:case_id', 'Update a given case.'
-      param :id, :number,
+      param :case_id, :number,
             desc: 'The ID of the requested case.', required: true
       param_group :case_params
       def update
@@ -111,7 +113,7 @@ module Api
       # rubocop:enable Metrics/MethodLength
 
       api :DELETE, '/api/cases/:case_id', 'Delete a given case.'
-      param :id, :number,
+      param :case_id, :number,
             desc: 'The ID of the requested case.', required: true
       def destroy
         @case.really_destroy
