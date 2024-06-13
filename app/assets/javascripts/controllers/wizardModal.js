@@ -68,8 +68,26 @@ angular.module('QuepidApp')
         if (angular.isUndefined($scope.pendingWizardSettings)){
              // When we run the case wizard, we assume that you want to use our Solr based TMDB demo setup.
              // We then give you options to change from there.
-             $scope.pendingWizardSettings = angular.copy(settingsSvc.tmdbSettings['solr']);
+             
+             // If we are reloading, then use the new one we picked, otherwise
+             // we default to Solr.
+             var searchEngineToUse = null;
+             if (angular.isDefined($location.search().searchEngine)){
+               searchEngineToUse = $location.search().searchEngine;
+             }
+             else {
+               searchEngineToUse = 'solr'
+             }
+             $scope.pendingWizardSettings = {
+               searchEngine: searchEngineToUse
+             }
+             
+             // Helps us distingush if we are using tmdb demo setup or no
+             if (angular.isDefined($location.search().searchUrl)){
+               $scope.pendingWizardSettings.searchUrl = $location.search().searchUrl;
+             }
         }
+        
         var settings = settingsSvc.pickSettingsToUse($scope.pendingWizardSettings.searchEngine, $scope.pendingWizardSettings.searchUrl);
         $scope.pendingWizardSettings.additionalFields         = settings.additionalFields;
         $scope.pendingWizardSettings.fieldSpec                = settings.fieldSpec;
@@ -86,7 +104,6 @@ angular.module('QuepidApp')
         $scope.pendingWizardSettings.basicAuthCredential      = settings.basicAuthCredential;
         $scope.pendingWizardSettings.mapperCode               = settings.mapperCode;
 
-        //$scope.isHeaderConfigCollapsed = true;
         
         var quepidStartsWithHttps = $location.protocol() === 'https';
 
@@ -132,9 +149,12 @@ angular.module('QuepidApp')
         $scope.pendingWizardSettings.searchUrl                = searchEndpointToUse.endpointUrl; // notice remapping
         $scope.pendingWizardSettings.apiMethod                = searchEndpointToUse.apiMethod;
         $scope.pendingWizardSettings.customHeaders            = searchEndpointToUse.customHeaders;
-        
+        console.log("Here is my $scope.pendingWizardSettings")
+        console.log($scope.pendingWizardSettings)
         // Now grab default settings for the type of search endpoint you are using
         var settings = settingsSvc.pickSettingsToUse($scope.pendingWizardSettings.searchEngine, $scope.pendingWizardSettings.searchUrl);         
+        console.log("Andpicking up defaults")
+        console.log(settings)
         $scope.pendingWizardSettings.additionalFields         = settings.additionalFields;
         $scope.pendingWizardSettings.fieldSpec                = settings.fieldSpec;
         $scope.pendingWizardSettings.idField                  = settings.idField;
