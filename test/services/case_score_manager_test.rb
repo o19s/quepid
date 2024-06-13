@@ -59,9 +59,9 @@ class CaseScoreManagerTest < ActiveSupport::TestCase
         score_data[:queries]  = {
           '174' => { score: 0, text: 'canine' },
         }
-        puts "Here is the first updated at: #{the_case.updated_at}"
         assert_difference 'the_case.scores.count' do
           assert_changes 'the_case.updated_at' do
+            sleep 1 # otherwise the updated_at doesn't change'
             service.update score_data
 
             the_case.reload
@@ -70,7 +70,6 @@ class CaseScoreManagerTest < ActiveSupport::TestCase
             assert_equal the_case.last_score.score, 0
           end
         end
-        puts "Here is the second updated at: #{the_case.updated_at}"
       end
     end
 
@@ -201,6 +200,80 @@ class CaseScoreManagerTest < ActiveSupport::TestCase
 
           assert_not_nil   the_case.last_score
           assert_not_equal the_case.last_score.id, last_score.id
+        end
+      end
+    end
+
+    describe 'case with no queries, and only scores' do
+      # we may want to get rid of the no queries means no score requirement
+      let(:the_case) { cases(:case_no_queries) }
+
+      let(:score_data) do
+        {
+          all_rated:  [ false ],
+          queries:    {},
+          score:      0.79,
+          try_number: 1,
+          user_id:    user.id,
+        }
+      end
+
+      test 'creates a new score' do
+        assert_empty the_case.scores
+        assert_not_empty the_case.tries
+
+        assert_difference 'the_case.scores.count' do
+          assert_changes 'the_case.updated_at' do
+            sleep 1
+            service.update score_data
+
+            the_case.reload
+
+            assert_not_nil the_case.last_score
+            assert_instance_of Score, the_case.last_score
+
+            assert_equal the_case.last_score.score, 0.79
+          end
+        end
+
+        the_case.reload
+        last_score = the_case.last_score
+        assert_no_difference 'the_case.scores.count' do
+          service.update score_data
+
+          the_case.reload
+
+          assert_not_nil the_case.last_score
+          assert_equal the_case.last_score.id, last_score.id
+        end
+
+        # Run quick enough that we update the existing score
+        score_data[:score] = 0.99
+        assert_no_difference 'the_case.scores.count' do
+          assert_changes 'the_case.updated_at' do
+            sleep 1
+            service.update score_data
+
+            the_case.reload
+
+            assert_not_nil the_case.last_score
+            assert_equal the_case.last_score.score, 0.99
+          end
+        end
+
+        # now wait long enough to create a new score
+        the_case.scores.update_all updated_at: 2.days.ago
+        score_data[:score] = 0.91
+        assert_difference 'the_case.scores.count' do
+          assert_changes 'the_case.updated_at' do
+            sleep 1
+            service.update score_data
+
+            the_case.reload
+
+            assert_not_nil the_case.last_score
+            assert_equal the_case.last_score.score, 0.91
+          end
         end
       end
     end

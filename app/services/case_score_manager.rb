@@ -10,11 +10,11 @@ class CaseScoreManager
   # rubocop:disable Metrics/MethodLength
   def update score_data
     score_data.deep_symbolize_keys!
-
     return nil if empty_score? score_data
 
     last_score = @the_case.last_score
 
+    # puts "Do we have the same_score_source: #{same_score_source last_score, score_data}"
     if same_score_source last_score, score_data
       if user_ratings_docs? last_score, score_data
         update_params = {
@@ -29,17 +29,22 @@ class CaseScoreManager
         return last_score # ignore
       end
     end
-
     # Look up the try using the try_number if we passed that in.
     if score_data[:try_number]
       try = @the_case.tries.where(try_number: score_data[:try_number]).first
-      score_data.except!(:try_number)
+      # score_data.except!(:try_number)
       score_data[:try_id] = try.id
     end
 
-    @score = @the_case.scores.build score_data
-
-    return @score if @score.save
+    @score = @the_case.scores.build score_data.except(:try_number)
+    saved = @score.save
+    # rubocop:disable Rails/SkipsModelValidations
+    if saved
+      # for some reason the scorer isn't doing the :touch on the parent case
+      @the_case.touch
+      return @score
+    end
+    # rubocop:enable Rails/SkipsModelValidations
 
     @errors = @score.errors
     raise ActiveRecord::RecordInvalid, @score
@@ -50,7 +55,7 @@ class CaseScoreManager
 
   def empty_score? score_data
     return true if score_data[:score].blank?
-    return true if score_data[:score].to_i.zero? && score_data[:queries].blank?
+    return true if score_data[:score].to_f.zero? && score_data[:queries].blank?
 
     false
   end
@@ -70,7 +75,7 @@ class CaseScoreManager
 
   def user_ratings_docs? last_score, score_data
     return false if last_score.updated_at.blank?
-    return false if last_score.score.to_i == score_data[:score].to_i
+    return false if last_score.score == score_data[:score]
     return false if last_score.updated_at < 5.minutes.ago
 
     true

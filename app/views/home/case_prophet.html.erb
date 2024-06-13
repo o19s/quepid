@@ -5,8 +5,8 @@
     <small><code>no scores</code></small>
     <% else %>
       
-      <%= @case.first_score.created_at.to_date.to_fs(:short) %> 
-      <% if @case.scores.count > 1 and @case.first_score.created_at.to_date.to_fs(:short) != @case.last_score.updated_at.to_date.to_fs(:short) %>
+      <%= @case.first_score.updated_at.to_date.to_fs(:short) %> 
+      <% if @case.scores.count > 1 and @case.first_score.updated_at.to_date.to_fs(:short) != @case.last_score.updated_at.to_date.to_fs(:short) %>
         - <%= @case.last_score.updated_at.to_date.to_fs(:short)%>
       <% end %>
     <% end %>

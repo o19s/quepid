@@ -45,7 +45,7 @@ class HomeController < ApplicationController
       puts "we have decided we are stale for case #{@case.id} at #{@case.updated_at}"
 
       data = @case.scores.sampled(@case.id, 25).collect do |score|
-        { ds: score.created_at.to_date.to_fs(:db), y: score.score, datetime: score.created_at.to_date }
+        { ds: score.updated_at.to_date.to_fs(:db), y: score.score, datetime: score.updated_at.to_date }
       end.uniq
       # warning! blunt filter below!
       data = data.uniq { |h| h[:ds] }
