@@ -7,7 +7,17 @@ module Api
         before_action :set_case
         before_action :check_case
 
+        def_param_group :queries_params do
+          param :queries, Array, required: true do
+            param :queries, String
+          end
+        end
+
         # rubocop:disable Metrics/MethodLength
+        api :POST, '/api/bulk/cases/:case_id/queries', 'Bulk create queries.'
+        param :case_id, :number,
+              desc: 'The ID of the requested case.', required: true
+        param_group :queries_params
         def create
           # This logic is very similar to the ratings_importer.rb logic.
           queries_to_import = []
@@ -28,22 +38,23 @@ module Api
 
           non_existing_queries = unique_queries - existing_queries
           non_existing_queries.each_with_index do |query_text, _index|
-            query = @case.queries.build(query_text: query_text)
-            # query.insert_at(index + 1)
-            queries_to_import << query
+            queries_to_import << {
+              case_id:    @case.id,
+              query_text: query_text,
+              created_at: Time.current,
+              updated_at: Time.current,
+            }
           end
 
-          # Mass insert queries
-          if Query.import queries_to_import
+          # rubocop:disable Rails/SkipsModelValidations
+          Query.upsert_all(queries_to_import)
+          # rubocop:enable Rails/SkipsModelValidations
 
-            @case.reload
-            @queries        = @case.queries.includes([ :ratings ])
-            @display_order  = @queries.map(&:id)
+          @case.reload
+          @queries        = @case.queries.includes([ :ratings ])
+          @display_order  = @queries.map(&:id)
 
-            respond_with @queries, @display_order
-          else
-            render status: :bad_request
-          end
+          respond_with @queries, @display_order
         end
         # rubocop:enable Metrics/MethodLength
 

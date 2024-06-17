@@ -13,11 +13,12 @@ module Api
           param :try_number, Integer
           param :last_try_number, Integer
           param :try_id, Integer
+          # this isn't quite right as we have a hash of "query_id" and "values" here'
           param :queries, Hash, required: false do
-            param :text, String
-            param :score, Float
-            param :maxScore, Float
-            param :numFound, Integer
+            param :text, String, desc: 'The actual query text that is being scored.'
+            param :score, Float, desc: 'The score.'
+            param :maxScore, Float, desc: 'The max possible score'
+            param :numFound, Integer, desc: 'How many results matched'
           end
         end
       end

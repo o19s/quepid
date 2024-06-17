@@ -71,6 +71,29 @@ module Api
 
             assert_equal 5, acase.queries.size
           end
+
+          test 'Scales up to thousands of queries' do
+            number_of_queries = 5000
+            result = Benchmark.measure do
+              queries = []
+              number_of_queries.times do |index|
+                queries << "Query #{index + 1}"
+              end
+              data = {
+                case_id: acase.id,
+                queries: queries,
+              }
+
+              post :create, params: data
+            end
+
+            assert result.real < 1.0
+            # puts "Elapsed time: #{result.real} seconds\n"
+
+            acase.reload
+
+            assert_equal number_of_queries, acase.queries.size
+          end
         end
 
         describe 'Deletes all queries for a case.' do
