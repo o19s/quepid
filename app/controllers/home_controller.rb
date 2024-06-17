@@ -46,7 +46,10 @@ class HomeController < ApplicationController
 
       sampled_scores = @case.scores.sampled(@case.id, 25)
 
-      @for_single_day = sampled_scores.first.updated_at.all_day.overlaps?(sampled_scores.last.updated_at.all_day)
+      unless sampled_scores.empty?
+        @for_single_day = sampled_scores.first.updated_at.all_day.overlaps?(sampled_scores.last.updated_at.all_day)
+        @final = @case.scores.last_one.score
+      end
 
       data = sampled_scores.collect do |score|
         if @for_single_day
@@ -60,8 +63,6 @@ class HomeController < ApplicationController
       data = data.uniq { |h| h[:ds] }
       data = data.map { |h| h.transform_keys(&:to_s) }
 
-      final = @case.scores.last_one.score
-
       do_changepoints = data.length >= 3 # need at least 3...
       if do_changepoints
 
@@ -71,7 +72,7 @@ class HomeController < ApplicationController
 
         last_changepoint = DateTime.parse(m.changepoints.last.to_s)
         initial = data.find { |h| h['datetime'].all_day.overlaps?(last_changepoint.all_day) }['y']
-        changepoint = 100 * (final - initial) / initial
+        changepoint = 100 * (@final - initial) / initial
 
       end
 
@@ -79,7 +80,7 @@ class HomeController < ApplicationController
 
       @prophet_case_data = {
         initial:          initial,
-        final:            final,
+        final:            @final,
         changepoint:      changepoint.nil? ? 0 : changepoint,
         last_changepoint: last_changepoint,
         vega_data:        vega_data,

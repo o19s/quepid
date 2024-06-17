@@ -2,9 +2,8 @@
   <h5 class="card-title"><%= number_with_precision(@case.last_score.score, precision: 2) unless @case.scores.empty? %> <%= @case.scorer.name %></h5>
   <p class="card-text">
     <% if @case.scores.empty? %>
-    <small><code>no scores yet</code></small>
-    <% else %>
-      
+      <small><code>no scores yet</code></small>
+    <% else %>      
       <%= @case.first_score.updated_at.to_date.to_fs(:short) %> 
       <% if @case.scores.count > 1 and @case.first_score.updated_at.to_date.to_fs(:short) != @case.last_score.updated_at.to_date.to_fs(:short) %>
         - <%= @case.last_score.updated_at.to_date.to_fs(:short)%>
@@ -19,12 +18,12 @@
       <p class="card-text text-danger"><%= number_to_percentage(@prophet_case_data[:changepoint] , precision:0) %> decrease since <%=time_ago_in_words(@prophet_case_data[:last_changepoint]) %> ago</p>
     <% end %>
   <% else %>
-    <p class="card-text">&nbsp;  <%=@prophet_case_data[:changepoint]%></p>
+    <p class="card-text">&nbsp;</p>
   <% end %>
   
   <%
   if @for_single_day
-  # may not work since not sure about utc and time zones 
+    # may not work since not sure about utc and time zones 
     vega_time = {scale: {type: "time"}, "domain": {"timeUnit": "hours"}}
   else
      vega_time = {scale: {type: "utc"}, axis: {format: "%b %e"}}
