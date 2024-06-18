@@ -17,7 +17,10 @@ services:
       - .:/srv/app
       - ./log:/log
     ports:
-      - 3000:3000
+      - 127.0.0.1:3000:3000
+    extra_hosts:
+      - "outside:172.17.0.1"
+      - "host.docker.internal:host-gateway"
     links:
       - mysql
       - redis
@@ -31,15 +34,15 @@ services:
     container_name: quepid_db
     image: mysql:8.3.0
     ports:
-      - 3306:3306
+      - 127.0.0.1:3306:3306
     environment:
       - MYSQL_ROOT_PASSWORD=password
 
   redis:
     container_name: quepid_redis
-    image: redis:7.2.0-alpine
+    image: redis:7.2.0-alpine   
     ports:
-      - 6379:6379
+      - 127.0.0.1:6379:6379
 
   keycloak:
     image: chorus-keycloak
@@ -52,7 +55,7 @@ services:
     healthcheck:
       test: ["CMD", "curl", "--fail", "http://localhost:8080/health"]
     ports:
-      - 9080:9080
+      - 127.0.0.1:9080:9080
     environment:
       - KC_HTTP_ENABLED=true
       - KC_HTTP_PORT=9080
@@ -71,8 +74,8 @@ services:
     image: nginx:1.26.0-alpine-slim
     container_name: quepid_nginx
     ports:
-      - "443:8443"
-      - "80:80"
+      - "127.0.0.1:443:8443"
+      - "127.0.0.1:80:80"
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
       - ./.ssl/:/etc/nginx/certs

@@ -35,6 +35,10 @@
             ng-click="switchToCreateNewSearchEndpoint()">
           <div style="text-align: center;">
             <label style="margin-right: 25px;">
+              <input type="radio" value="a2" ng-model="pendingWizardSettings.searchEngine" ng-change="changeSearchEngine()">
+              <img ng-src="images/a2.png" alt='A2' width="100px" />
+            </label>
+            <label style="margin-right: 25px;">
               <input type="radio" value="solr" ng-model="pendingWizardSettings.searchEngine" ng-change="changeSearchEngine()">
               <img ng-src="images/solr.png" alt='Solr' width="100px" />
             </label>
@@ -241,7 +245,7 @@ star wars,1921,3, Star Wars: Return of the Jedi
             </div>
             </span>
 
-            <span ng-if="pendingWizardSettings.searchEngine === 'searchapi'">
+            <span ng-if="pendingWizardSettings.searchEngine === 'searchapi' || pendingWizardSettings.searchEngine === 'a2'">
               <div class="well well-sm">
                 <div class="form-group clearfix">
                   <label class="col-sm-3 control-label">API Method</label>

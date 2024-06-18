@@ -19,7 +19,46 @@ angular.module('QuepidApp')
       /* jshint ignore:start */
       // Used by the wizard for any search engine.
       this.defaultSettings = {
-        solr: {
+	a2: {
+          queryParams: [
+            '{',
+            '  "text": "tomats cerise allonges",',
+            '    "catalog": [',
+            '      "onecarrefour_0026-150-141"',
+            '      ]',
+            '}',
+          ].join('\n'),
+          escapeQuery: true,
+          apiMethod: 'POST',
+          headerType: 'None',
+          customHeaders: '',
+          fieldSpec: null,
+          idField: null,
+          titleField: null,
+          additionalFields: [],
+          numberOfRows: 10,
+          searchEngine: 'searchapi',
+          searchUrl: 'http://elasticsearch-data1:9200/_a2/search',
+          urlFormat: null,
+          proxyRequests: true,
+          mapperCode: [
+            'numberOfResultsMapper = function(data){',
+            '  return data.length',
+            '};',
+            '',
+            'docsMapper = function(data){',
+            '  let docs = [];',
+            '  for (let doc of data) {',
+            '    docs.push ({',
+            '      engineTimeInMilis: doc.engineTimeInMilis,',
+            '    });',
+            '  }',
+            '  return docs;',
+            '};'
+          ].join('\n'),
+          // no searchUrl or urlFormat because it's code generated!
+        },
+	solr: {
           queryParams: [
             'q=#$query##',
             '&tie=1.0',
