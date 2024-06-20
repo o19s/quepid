@@ -39,7 +39,7 @@
     "ngclipboard": "^2.0.0",
     "party-js": "^2.2.0",
     "popper.js": "^1.16.1",
-    "splainer-search": "file:../splainer-search",
+    "splainer-search": "file:./splainer-search",
     "tether-shepherd": "latest",
     "vega": "^5.27.0"
   },

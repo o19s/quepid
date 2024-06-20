@@ -121,7 +121,6 @@ angular.module('QuepidApp')
         var searchEndpointToUse = searchEndpointSvc.searchEndpoints.find(obj => obj.id === $scope.settings.searchEndpointId);
         
         $scope.selectedItem = searchEndpointToUse;
-        
         $scope.settings.selectedTry = tmp;
         $scope.validateSearchEngineUrl();
       };

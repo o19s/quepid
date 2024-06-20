@@ -100,7 +100,7 @@ angular.module('QuepidApp')
             // custom parser...
             passedInSettings.searchEngine = 'solr';
           }
-          else if (passedInSettings.searchEngine === 'searchapi'){
+          else if (passedInSettings.searchEngine === 'searchapi' || passedInSettings.searchEngine === 'a2'){
             /*jshint evil:true */
             eval(passedInSettings.mapperCode);
             /*jshint evil:false */
@@ -386,7 +386,7 @@ angular.module('QuepidApp')
 
         this.refreshRatedDocs = function(pageSize) {
           let settings = angular.copy(currSettings);
-
+            
           if (pageSize) {
             settings.numberOfRows = pageSize;
           }
@@ -789,7 +789,6 @@ angular.module('QuepidApp')
       this.searchAll = function() {
         let promises = [];
         let scorePromises = [];
-
         angular.forEach(this.queries, function(query) {
           let promise = query.search().then( () => {
             scorePromises.push(query.score());

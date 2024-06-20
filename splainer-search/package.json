@@ -1,0 +1,73 @@
+{
+  "name": "splainer-search",
+  "version": "2.33.0",
+  "main": "splainer-search.js",
+  "authors": [
+    "Doug Turnbull <dturnbull@opensourceconnections.com>",
+    "Youssef Chaker <ychaker@opensourceconnections.com>"
+  ],
+  "description": "Angular JS Solr and Elasticsearch and OpenSearch Diagnostic Search Services",
+  "homepage": "https://github.com/o19s/splainer-search",
+  "bugs": {
+    "url": "https://github.com/o19s/splainer-search/issues"
+  },
+  "keywords": [
+    "splainer-search",
+    "search",
+    "solr",
+    "elasticsearch",
+    "relevancy search"
+  ],
+  "license": "Apache-2.0",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests",
+    "coverage",
+    "factories",
+    "pages",
+    "services",
+    "values",
+    "Gruntfile.js",
+    "index.js",
+    "index.html",
+    "karma.conf.js",
+    "karma.debug.conf.js",
+    "module.js"
+  ],
+  "dependencies": {
+    "angular": "1.8.3",
+    "urijs": "^1.19.7"
+  },
+  "devDependencies": {
+    "angular-mocks": "^1.8.3",
+    "grunt": "^1.5.3",
+    "grunt-contrib-concat": "^2.1.0",
+    "grunt-contrib-jshint": "^3.2.0",
+    "grunt-contrib-uglify": "^5.2.2",
+    "grunt-karma": "^4.0.2",
+    "jasmine-core": "^5.0.0",
+    "karma": "^6.4.0",
+    "karma-chrome-launcher": "^3.1.1",
+    "karma-jasmine": "^5.1.0",
+    "puppeteer": "^22.0.0"
+  },
+  "engines": {
+    "node": ">=16"
+  },
+  "scripts": {
+    "test": "grunt karma:unit",
+    "build": "grunt",
+    "build:dev": "grunt build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/o19s/splainer-search.git"
+  },
+  "directories": {
+    "test": "test"
+  },
+  "author": ""
+}

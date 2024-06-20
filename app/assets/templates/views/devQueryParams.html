@@ -69,7 +69,7 @@
           }" ng-model="settings.selectedTry.queryParams">
         </div>
 
-        <div id='searchapi-query-params-editor' class='searchapi-query-params' ng-show="settings.searchEngine == 'searchapi'" ui-ace="{
+        <div id='searchapi-query-params-editor' class='searchapi-query-params' ng-show="settings.searchEngine == 'searchapi' || settings.searchEngine == 'a2'" ui-ace="{
             require:      ['ace/ext/language_tools'],
             useWrapMode:  false,
             mode:         'json',

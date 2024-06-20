@@ -72,6 +72,8 @@ class Try < ApplicationRecord
         algolia_args
       when 'searchapi'
         searchapi_args
+      when 'a2'
+        a2_args
       end
     end
   end
@@ -165,6 +167,16 @@ class Try < ApplicationRecord
   end
 
   def searchapi_args
+    if query_params.starts_with?('{')
+      EsArgParser.parse(query_params,
+                        curator_vars_map)
+    else
+      SolrArgParser.parse(query_params,
+                          curator_vars_map)
+    end
+  end
+
+  def a2_args
     if query_params.starts_with?('{')
       EsArgParser.parse(query_params,
                         curator_vars_map)

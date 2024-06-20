@@ -70,7 +70,7 @@ angular.module('QuepidApp')
         if ( $scope.pendingSettings.searchEngine === 'es'  || $scope.pendingSettings.searchEngine === 'os' ||  $scope.pendingSettings.searchEngine === 'vectara' || $scope.pendingSettings.searchEngine === 'algolia'){
           validateJson = true;
         }
-        else if ($scope.pendingSettings.searchEngine === 'searchapi'){
+        else if ($scope.pendingSettings.searchEngine === 'searchapi' || $scope.pendingSettings.searchEngine === 'a2'){
           validateJson = $scope.pendingSettings.selectedTry.queryParams.indexOf('{') === 0;
         }
         if ( validateJson) {

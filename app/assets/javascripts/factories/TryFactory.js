@@ -128,7 +128,7 @@
       function rename(newName) {
         var caseNo  = caseTryNavSvc.getCaseNo();
         var nameReq = {'name': newName};
-
+        
         return $http.put('api/cases/' + caseNo + '/tries/' + self.tryNo, nameReq)
           .then(function() {
             self.name = newName;

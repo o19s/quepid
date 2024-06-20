@@ -296,7 +296,7 @@ angular.module('QuepidApp')
 
       function skipValidation() {
         var validator = new SettingsValidatorFactory($scope.pendingWizardSettings);
-
+        
         setupDefaults(validator);
 
         WizardHandler.wizard().next();
@@ -332,10 +332,9 @@ angular.module('QuepidApp')
           // We pretend to be Solr for validating the URL.
           settingsForValidation.searchEngine = 'solr';
         }
-        else if ($scope.pendingWizardSettings.searchEngine === 'searchapi'){
+        else if ($scope.pendingWizardSettings.searchEngine === 'searchapi' || $scope.pendingWizardSettings.searchEngine === 'a2'){
           // this is suss
           settingsForValidation.args = $scope.pendingWizardSettings.queryParams;
-          
           /*jshint evil:true */
           eval(settingsForValidation.mapperCode);
           /*jshint evil:false */
@@ -380,7 +379,6 @@ angular.module('QuepidApp')
           settingsForValidation.proxyUrl = caseTryNavSvc.getQuepidProxyUrl();
         }
         var validator = new SettingsValidatorFactory(settingsForValidation);
-      
         validator.validateUrl()
         .then(function () {
           $scope.validatorLastResponse = JSON.stringify(validator.searcher.lastResponse,null,2);
@@ -389,13 +387,13 @@ angular.module('QuepidApp')
           if ( !$scope.mapperInvalid ){
             setupDefaults(validator);
             
-            if (!justValidate) {      
+            if (!justValidate) {   
               $scope.pendingWizardSettings.searchUrl = settingsForValidation.searchUrl;
               WizardHandler.wizard().next();
             }
           }
         }, function (error) {
-          
+          console.error("error in validate wizardmodal.js: ", error);
           $scope.validatorLastResponse = JSON.stringify(validator.searcher.lastResponse,null,2);
           
           if (error.toString().startsWith('Error: MapperError')){

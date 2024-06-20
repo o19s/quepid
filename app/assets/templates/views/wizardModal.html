@@ -36,7 +36,7 @@
           <div style="text-align: center;">
             <label style="margin-right: 25px;">
               <input type="radio" value="a2" ng-model="pendingWizardSettings.searchEngine" ng-change="changeSearchEngine()">
-              <img ng-src="images/a2.png" alt='A2' width="100px" />
+              <img ng-src="images/a2.png" alt='A2' width="170px" />
             </label>
             <label style="margin-right: 25px;">
               <input type="radio" value="solr" ng-model="pendingWizardSettings.searchEngine" ng-change="changeSearchEngine()">
@@ -513,7 +513,7 @@ star wars,1921,3, Star Wars: Return of the Jedi
       <h1>That's It!</h1>
       <p class="help-block">Go to "Tune Relevance" to iterate on your relevance and manipulate searches</p>
 
-      <div ng-show="pendingWizardSettings.searchEngine === 'searchapi'" class="alert alert-info">
+      <div ng-show="pendingWizardSettings.searchEngine === 'searchapi' && pendingWizardSettings.searchEngine === 'a2'" class="alert alert-info">
         <span>
           You will need to modify the query <code>{{ pendingWizardSettings.queryParams }}</code> you used, substituting <code>#$query##</code> variable in place of the actual query text via the <i>Tune Relevance</i> panel.
         </span>
