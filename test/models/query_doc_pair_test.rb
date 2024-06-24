@@ -10,7 +10,7 @@
 #  notes            :text(65535)
 #  options          :text(65535)
 #  position         :integer
-#  query_text       :string(500)
+#  query_text       :string(2048)     not null
 #  created_at       :datetime         not null
 #  updated_at       :datetime         not null
 #  book_id          :bigint           not null
@@ -19,7 +19,6 @@
 # Indexes
 #
 #  index_query_doc_pairs_on_book_id  (book_id)
-#  unique_query_doc_pair             (query_text,doc_id,book_id) UNIQUE
 #
 # Foreign Keys
 #
