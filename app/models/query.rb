@@ -10,7 +10,7 @@
 #  information_need :string(255)
 #  notes            :text(65535)
 #  options          :text(65535)
-#  query_text       :string(500)
+#  query_text       :string(2048)
 #  created_at       :datetime         not null
 #  updated_at       :datetime         not null
 #  case_id          :integer
@@ -40,7 +40,7 @@ class Query < ApplicationRecord
               dependent: :destroy
 
   # Validations
-  validates :query_text, presence: true, length: { maximum: 500 }
+  validates :query_text, presence: true, length: { maximum: 2048 }
 
   # Scopes
 
