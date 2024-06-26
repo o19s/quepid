@@ -29,7 +29,8 @@
       <td><%= announcement.announcement_viewed.size %> </td>
       <td>
         <%= link_to 'Edit', edit_admin_announcement_path(announcement) %>
-        <%= link_to 'Delete', admin_announcement_path(announcement), method: :delete, data: { confirm: 'Are you sure?' } %>
+        <%= button_to 'Delete', admin_announcement_path(announcement), method: :delete, class: 'btn btn-sm btn-danger'%>
+
         <%= button_to (announcement.live? ? 'Hide' : 'Make Live'), publish_admin_announcement_path(announcement), method: :post, class: 'btn btn-sm btn-danger' %>
       </td>
     </tr>
