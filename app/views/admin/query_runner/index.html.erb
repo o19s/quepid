@@ -1,0 +1,30 @@
+<%= turbo_stream_from(:notifications) %>
+
+<h1>Query Runner</h1>
+<p>
+  This tool is for testing out background query running in Quepid.
+</p>
+<p>
+  After clicking the button you should see a set of updates in a alert box.
+</p>
+
+<span id="notification">
+</span>
+
+
+<%= form_with(url: run_queries_admin_query_runner_index_path, local: true) do |form| %>
+  <div class="field">
+    <%= form.label :case_id %>
+    <%= form.text_field :case_id %>
+  </div>
+
+  <div class="field">
+    <%= form.label :try_number %>
+    <%= form.text_field :try_number %>
+  </div>
+
+  <p/>
+  <div class="actions">
+    <%= form.submit "Submit" %>
+  </div>
+<% end %>

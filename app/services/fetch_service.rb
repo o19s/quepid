@@ -1,27 +1,73 @@
 # frozen_string_literal: true
 
-require 'faraday'
-require 'faraday/follow_redirects'
+class FetchService
+  # include ProgressIndicator
 
-# rubocop:disable Layout/LineLength
-# rubocop:disable Metrics/AbcSize
-# rubocop:disable Metrics/MethodLength
-# rubocop:disable Metrics/PerceivedComplexity
-# rubocop:disable Metrics/CyclomaticComplexity
-class ProxyController < ApplicationController
-  skip_before_action :require_login
-  skip_before_action :verify_authenticity_token, only: [ :fetch ]
-  skip_before_action :check_for_announcement
-  # curl -X GET "http://localhost:3000/proxy/fetch?url=https://quepid-solr.dev.o19s.com/solr/tmdb/select&q=*:*"
-  # curl -X POST "http://localhost:3000/proxy/fetch?url=https://quepid-solr.dev.o19s.com/solr/tmdb/query" -d '{"query":"star"}'
-  # curl -X GET "http://localhost:3000/proxy/fetch?url=http://quepid-solr.dev.o19s.com:8985/solr/media/select&q=*:*" -u 'solr:SolrRocks'
-  #
+  attr_reader :logger, :options
+
+  def initialize url,proxy_debug, opts = {}
+    default_options = {
+      logger:             Rails.logger      
+    }
+
+    @options = default_options.merge(opts.deep_symbolize_keys)
+
+    @url = url
+    @proxy_debug = proxy_debug
+    @logger = @options[:logger]
+  end
+
+  # rubocop:disable Metrics/AbcSize
+  # rubocop:disable Metrics/CyclomaticComplexity
+  # rubocop:disable Metrics/MethodLength
+  # rubocop:disable Metrics/PerceivedComplexity
+  def validate
+    params_to_use = @data_to_process
+    scorer_name = params_to_use[:scorer][:name]
+    scorer = Scorer.find_by(name: scorer_name)
+    if scorer.nil?
+      @book.errors.add(:scorer, "with name '#{scorer_name}' needs to be migrated over first.")
+    else
+      @book.scorer = scorer
+    end
+
+    selection_strategy_name = params_to_use[:selection_strategy][:name]
+    selection_strategy = SelectionStrategy.find_by(name: selection_strategy_name)
+    if selection_strategy.nil?
+      @book.errors.add(:selection_strategy,
+                       "Selection strategy with name '#{selection_strategy_name}' needs to be migrated over first.")
+    else
+      @book.selection_strategy = selection_strategy
+    end
+
+    if params_to_use[:query_doc_pairs]
+      list_of_emails_of_users = []
+      params_to_use[:query_doc_pairs].each do |query_doc_pair|
+        next unless query_doc_pair[:judgements]
+
+        query_doc_pair[:judgements].each do |judgement|
+          list_of_emails_of_users << judgement[:user_email] if judgement[:user_email].present?
+        end
+      end
+      list_of_emails_of_users.uniq!
+      list_of_emails_of_users.each do |email|
+        unless User.exists?(email: email)
+          if options[:force_create_users]
+            User.invite!({ email: email, password: '', skip_invitation: true }, @current_user)
+          else
+            @book.errors.add(:base, "User with email '#{email}' needs to be migrated over first.")
+          end
+        end
+      end
+    end
+  end
+
   def fetch
     excluded_keys = [ :url, :action, :controller, :proxy_debug ]
 
-    url_param = proxy_url_params
+    url_param = @url
 
-    proxy_debug = 'true' == params[:proxy_debug]
+    proxy_debug = 'true' == @proxy_debug
 
     uri = URI.parse(url_param)
     url_without_path = "#{uri.scheme}://#{uri.host}"
@@ -108,13 +154,16 @@ class ProxyController < ApplicationController
     end
   end
 
-  def proxy_url_params
-    params.require(:url)
-  end
+  
+  private 
+  
+  def rack_header? header_name
+    predefined_rack_headers = %w[
+      HTTP_VERSION HTTP_ACCEPT HTTP_ACCEPT_CHARSET HTTP_ACCEPT_ENCODING
+      HTTP_ACCEPT_LANGUAGE HTTP_CACHE_CONTROL HTTP_CONNECTION HTTP_HOST
+      HTTP_REFERER HTTP_USER_AGENT HTTP_X_REQUEST_ID
+    ]
 
+    predefined_rack_headers.include?(header_name)
+  end
 end
-# rubocop:enable Layout/LineLength
-# rubocop:enable Metrics/AbcSize
-# rubocop:enable Metrics/MethodLength
-# rubocop:enable Metrics/PerceivedComplexity
-# rubocop:enable Metrics/CyclomaticComplexity

@@ -116,6 +116,9 @@ Rails.application.routes.draw do
     resources :websocket_tester, only: [ :index ] do
       post 'test_background_job', on: :collection
     end
+    resources :query_runner, only: [ :index ] do
+      post 'run_queries', on: :collection
+    end    
   end
 
   # preview routes for mailers
