@@ -8,6 +8,43 @@ module Api
       before_action :check_case
       before_action :set_try, only: [ :show, :update, :destroy ]
 
+      def_param_group :try_params do
+        param :try, Hash, required: false do
+          param :escape_query, [ true, false ]
+          param :field_spec, String
+          param :name, String
+          param :number_of_rows, Integer
+          param :query_params, String
+          param :parent_id, Integer
+          param :parent_try_number, Integer
+          param :search_endpoint_id, Integer
+        end
+      end
+
+      def_param_group :search_endpoint_params do
+        param :search_endpoint, Hash, required: false do
+          param :name, String
+          param :api_method, String
+          param :custom_headers, String
+          param :search_engine, String
+          param :endpoint_url, [ true, false ]
+          param :basic_auth_credential, String
+          param :api_method, String
+          param :mapper_code, String
+          param :proxy_requests, [ true, false ]
+        end
+      end
+
+      def_param_group :all_params do
+        param_group :try_params
+        param_group :search_endpoint_params
+      end
+
+      api :GET, '/api/cases/:case_id/tries',
+          'Show the tries for a case.'
+      param :case_id, :number,
+            desc: 'The ID of the requested case.', required: true
+      error :code => 401, :desc => 'Unauthorized'
       def index
         @tries = @case.tries
       end
@@ -18,6 +55,8 @@ module Api
 
       # rubocop:disable Metrics/MethodLength
       # rubocop:disable Metrics/AbcSize
+      api :POST, '/api/cases/:case_id/tries', 'Create a new try for a case.'
+      param_group :all_params
       def create
         try_parameters_to_use = try_params
 

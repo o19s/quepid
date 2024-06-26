@@ -1,5 +1,76 @@
 # Changelog
 
+## 7.17. - 2024-06-14
+
+This is a big one!   We have broken the tyranny of the web request/response lifecycle by embracing some powerful Rails technologies:
+  
+ * ActionCable: We now support two way communication from the backend server to your front end browser via Web Sockets.  This lets us notify not just the person who starts a long running process of updates, but also any OTHER user who is interested in a specific topic.   For example, if someone uploads a Book with many thousands of judgements, then everyone who is part of that team can see the progress for them selves.   
+ 
+ * ActiveJob: This let's us run background jobs.  Historically we only used it for tracking of events (like you visited a Case), however now we are using it for processing large data sets in the background.  
+ 
+ * ActiveStorage: We need to better handle LARGE datasets in Quepid.  ActiveStorage lets us build massive export files and store them in the database as a binary until you decide to download the data.  Likewise, importing large data files that take time to process is now supported by being able to store them in Quepid.
+
+ * Hotwire: HTML over the Wire lets us render HTML on the backend using our familiar Rails MVC, but magically stream the updates to the front end.  This lets us add interactivity without requiring us to build out a Single Page Javascript application.  
+ 
+ These changes are going to enable a future for Quepid that let's it scale up signficantly and be a richer environment for measuring relevance and working with search!
+ 
+ Okay, now on to our more detailed list of changes:
+ 
+### Features
+
+* You can now run your Query Evaluations OUTSIDE of Quepid, and store the scores INSIDE Quepid.  This gives you a place to share this information with folks in your team.   See the example Python scripting here: https://github.com/o19s/quepid/tree/main/docs/examples/external_eval.  We also enhanced the API documentation.  https://github.com/o19s/quepid/pull/1034 by @epugh.
+
+* HTML Over the Wire!  Now we only load HTML that has changed, which improves page percieved performance.   Added new export and import of Books as background jobs with notifications to users over Web Sockets.  You then can download the resulting file without waiting for the data processing.  Loading aspects of the home page asyncrhonsly so the page loads super fast, and then content renders in as available. https://github.com/o19s/quepid/pull/992 by @epugh.
+
+### Improvements
+
+* Update to Rails 7.1 standards.   https://github.com/o19s/quepid/pull/1033 by @epugh.
+
+* Nicer Admin Homepage visual layout.  https://github.com/o19s/quepid/pull/1031 by @epugh.
+
+* Revamped performance of the Home page to not recalculate the case summaries if you've already cached them in the browser.  Much faster page!  https://github.com/o19s/quepid/pull/1022 and https://github.com/o19s/quepid/pull/1029 by @epugh.
+
+* New Case Wizard is smarter about existing Search Endpoints pane.  https://github.com/o19s/quepid/pull/1012 by @epugh.
+
+* Lots of updates to all the dependencies!
+
+### Bugs
+
+* Swapping between HTTP and HTTPS end points would cause issues with your Search Endpoint configuration.  https://github.com/o19s/quepid/pull/1035 by @epugh fixes https://github.com/o19s/quepid/issues/1005.
+
+* We state that judging a query doc pair only requires three jdugements, but didn't actually make that work.  https://github.com/o19s/quepid/pull/1032 by @epugh and @wrigleyDan fixes https://github.com/o19s/quepid/issues/1019 by @wrigleyDan.
+
+* Fixed utf encoding in mysql for query_doc_pairs.  https://github.com/o19s/quepid/pull/1017 by @epugh fixes https://github.com/o19s/quepid/issues/1013 by @wrigleyDan.
+
+* Pass basic auth credentials through when you view a specific document or use Quepid as a proxy to your search engine.  https://github.com/o19s/quepid/pull/1015 by @epugh fixes https://github.com/o19s/quepid/issues/1014 by @david-fisher.
+
+## 7.16.1 - 2024-04-09
+
+### Bugs
+
+* You can delete a user who has existing judgements, and then that messes up the main Books page because their judgements hang around.  Now you are warned about this, and you can choose to make their judgements anonymous.  (or just Lock their user account).  https://github.com/o19s/quepid/pull/999 by @epugh.
+
+## 7.16.0 - 2024-03-28
+
+### Features
+
+* Now have a dropdown for Books similar to Cases that leverages our existing tracking of what books you have viewed.  https://github.com/o19s/quepid/pull/986 by @epugh.
+
+* We now run scorers over queries that have no ratings and queries that are ZSR.  This lets us have smarter logic about how you want to score those situations.  https://github.com/o19s/quepid/pull/993 by @epugh.
+
+### Improvements
+
+* One less query to determine what a user has access to via being an owner or a member of a team while ensuring no duplicate cases/books show up.  https://github.com/o19s/quepid/pull/982 by @epugh with input from @reid-rigo. 
+
+* Remove extranous faraday logs when running tests.  https://github.com/o19s/quepid/pull/983 by @epugh with input form @reid-rigo fixes https://github.com/o19s/quepid/issues/964.
+
+* Nicer onboarding using TMDB dataset for Algolia users.  https://github.com/o19s/quepid/pull/987 by @chuckmeyer.
+
+### Bugs
+
+* Book Importing was broken. Plus now we have nicer formatted error message when you validate a book to import.  https://github.com/o19s/quepid/pull/989 by @epugh.
+
+
 
 ## 7.15.1 - 2024-03-13
 

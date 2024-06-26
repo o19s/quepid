@@ -12,7 +12,7 @@ class TrackBookViewedJobTest < ActiveJob::TestCase
 
     assert_difference 'book.metadata.where(user: matt).count', 1 do
       perform_enqueued_jobs do
-        TrackBookViewedJob.perform_now(book, matt)
+        TrackBookViewedJob.perform_now(matt, book)
       end
     end
 
@@ -24,7 +24,7 @@ class TrackBookViewedJobTest < ActiveJob::TestCase
 
     assert_difference 'book.metadata.where(user: doug).count', 0 do
       perform_enqueued_jobs do
-        TrackBookViewedJob.perform_now(book, doug)
+        TrackBookViewedJob.perform_now(doug, book)
       end
     end
 

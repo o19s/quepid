@@ -7,6 +7,9 @@ module Api
       before_action :set_scorer, only: [ :show, :update, :destroy ]
       before_action :check_communal_scorers_only, only: [ :create, :update, :destroy ]
 
+      api :GET, '/api/scorers',
+          'List all scorers to which the user has access.'
+      error :code => 401, :desc => 'Unauthorized'
       def index
         unless Rails.application.config.communal_scorers_only
           @user_scorers = current_user.scorers_involved_with.all.reject(&:communal?)

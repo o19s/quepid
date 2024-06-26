@@ -1,14 +1,12 @@
+<%= turbo_stream_from(:notifications) %>
+
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
   <h1 class="h2"><%= book_title @book %></h1>
   <div class="btn-toolbar mb-2 mb-md-0">
     <div class="btn-group me-2">
       <%= link_to 'New Book', new_book_path, class: "btn btn-sm btn-outline-secondary" %>
-      <%= link_to 'Export', api_export_book_path(@book), class: "btn btn-sm btn-outline-secondary" %>
+      <%= link_to 'Export', books_export_path(@book), data: { turbo: false }, class: "btn btn-sm btn-outline-secondary" %>
     </div>
-    <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle">
-      <span data-feather="calendar" class="align-text-bottom"></span>
-      This week
-    </button>
   </div>
 </div>
 
@@ -17,37 +15,8 @@ This book consists of <%= @book.query_doc_pairs.count %> query document pairs an
 
 <%= render 'judgements/moar_judgements_needed', book: @book %>
 
-<% if @book.import_file.attached? %>
-<div class="alert alert-danger" role="alert">
-  This book has an upload of data that is currently being processed and is not ready for use yet.
-  <br/>
-  Import file is  <%=link_to 'available here', rails_blob_path(@book.import_file.blob, only_path: true) %>.
-  Status: <%= @book.query_doc_pairs.count %>  
-  <%= link_to book_path(@book) do %>
-    Refresh
-    <i
-      class="bi arrow-clockwise"
-      aria-hidden="true"
-    ></i>
-  <% end %>
-  
-</div>
-<% end %>
-
-<% if @book.populate_file.attached? %>
-<div class="alert alert-danger" role="alert">
-  Currently populating this book with fresh data from a case.
-  <br/>
-  Status is the book has <%= @book.query_doc_pairs.count %>  query doc pairs.
-  <%= link_to book_path(@book) do %>
-    <i
-      class="bi bi-arrow-clockwise"
-      aria-hidden="true"
-    ></i>
-  <% end %>
-  
-</div>
-<% end %>
+<span id="notification-book-<%= @book.id %>">
+</span>
 
 <% if @count_of_anonymous_book_judgements > 0 %>
 <div class="alert alert-warning" role="alert">
@@ -96,6 +65,19 @@ This book consists of <%= @book.query_doc_pairs.count %> query document pairs an
 </p>
 
 <p>
+  <strong>Associated Files:</strong>
+  <% if @book.populate_file.attached? %>
+    <%= link_to 'Populate file', rails_blob_path(@book.populate_file.blob, only_path: true) %> made <%= time_ago_in_words @book.populate_file.created_at %> ago.
+  <% end %>
+  <% if @book.import_file.attached? %>
+    <%= link_to 'Import file', rails_blob_path(@book.import_file.blob, only_path: true) %> made <%= time_ago_in_words @book.import_file.created_at %> ago.
+  <% end %>
+  <% if @book.export_file.attached? %>
+    <%= link_to 'Export file', rails_blob_path(@book.export_file.blob, only_path: true) %> made <%= time_ago_in_words @book.export_file.created_at %> ago.
+  <% end %>
+</p>
+
+<p>
 <%= button_to 'Show Judgements', book_judgements_path(@book), method: :get %>
 
 <br>
@@ -116,9 +98,9 @@ This book consists of <%= @book.query_doc_pairs.count %> query document pairs an
   Export just the <%= link_to 'judgement data', api_book_path(@book, format: :csv) %> in CSV format.
 </p>
 <p>
-  Export the <%= link_to 'entire book', api_export_book_path(@book, download: true) %> in JSON format.
+  <%= link_to 'Export', books_export_path(@book), data: { turbo: false } %> the entire book in JSON format.
   <% if @book.export_file.present? %>
-    There is currently an export file made <%= time_ago_in_words @book.export_file.created_at %> ago <%=link_to 'available here', rails_blob_path(@book.export_file.blob, only_path: true) %>.
+    There is an export file created <%= time_ago_in_words @book.export_file.created_at %> ago <%=link_to 'available here', rails_blob_path(@book.export_file.blob, only_path: true) %>.
   <% end %>
 </p>
 <p>

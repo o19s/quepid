@@ -17,7 +17,7 @@
 # Indexes
 #
 #  index_judgements_on_query_doc_pair_id              (query_doc_pair_id)
-#  index_judgements_on_user_id_and_query_doc_pair_id  (user_id,query_doc_pair_id)
+#  index_judgements_on_user_id_and_query_doc_pair_id  (user_id,query_doc_pair_id) UNIQUE
 #
 # Foreign Keys
 #
@@ -41,6 +41,15 @@ class JudgementTest < ActiveSupport::TestCase
 
       judgement2 = Judgement.create(user: user2, query_doc_pair: query_doc_pair, rating: 1.0)
       assert judgement2.save
+    end
+
+    test 'However multiple anonymous judgements is okay' do
+      judgement = Judgement.create(user: nil, query_doc_pair: query_doc_pair, rating: 4.4)
+      assert judgement.save
+
+      duplicate_judgement = Judgement.create(user: nil, query_doc_pair: query_doc_pair, rating: 1.0)
+      assert duplicate_judgement.save
+      assert_not duplicate_judgement.errors.include?(:user_id)
     end
   end
   describe 'unrateable attribute behavior' do

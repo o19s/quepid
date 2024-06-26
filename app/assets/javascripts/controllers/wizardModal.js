@@ -20,7 +20,9 @@ angular.module('QuepidApp')
         $uibModalInstance.dismiss('cancel');
       };
 
-      
+      $scope.shouldCreateNewSearchEndpointDefaultToOpen = false;   
+      $scope.shouldExistingSearchEndpointDefaultToOpen = false;
+      $scope.searchEndpoints = [];
       $scope.isStaticCollapsed = true;
       $scope.addedStaticQueries = false;
       $scope.listOfStaticQueries = [];
@@ -39,7 +41,7 @@ angular.module('QuepidApp')
       $scope.wizardSettingsModel.settingsId = function() {
         return settingsSvc.settingsId();
       };
-      
+
       searchEndpointSvc.list()
        .then(function() {
          $scope.searchEndpoints = searchEndpointSvc.searchEndpoints; 
@@ -52,6 +54,11 @@ angular.module('QuepidApp')
        });
        
       $scope.listSearchEndpoints = function() {
+        // we only want the search endpoint dialgue to default to open
+        // if we are not reloading and have search endpoints.
+        if (!angular.isDefined($location.search().searchEngine)){
+          $scope.shouldCreateNewSearchEndpointDefaultToOpen = false;
+        }
         return $scope.searchEndpoints;
       };
 
@@ -61,8 +68,26 @@ angular.module('QuepidApp')
         if (angular.isUndefined($scope.pendingWizardSettings)){
              // When we run the case wizard, we assume that you want to use our Solr based TMDB demo setup.
              // We then give you options to change from there.
-             $scope.pendingWizardSettings = angular.copy(settingsSvc.tmdbSettings['solr']);
+             
+             // If we are reloading, then use the new one we picked, otherwise
+             // we default to Solr.
+             let searchEngineToUse = null;
+             if (angular.isDefined($location.search().searchEngine)){
+               searchEngineToUse = $location.search().searchEngine;
+             }
+             else {
+               searchEngineToUse = 'solr';
+             }
+             $scope.pendingWizardSettings = {
+               searchEngine: searchEngineToUse
+             };
+             
+             // Helps us distingush if we are using tmdb demo setup or no
+             if (angular.isDefined($location.search().searchUrl)){
+               $scope.pendingWizardSettings.searchUrl = $location.search().searchUrl;
+             }
         }
+        
         var settings = settingsSvc.pickSettingsToUse($scope.pendingWizardSettings.searchEngine, $scope.pendingWizardSettings.searchUrl);
         $scope.pendingWizardSettings.additionalFields         = settings.additionalFields;
         $scope.pendingWizardSettings.fieldSpec                = settings.fieldSpec;
@@ -79,7 +104,6 @@ angular.module('QuepidApp')
         $scope.pendingWizardSettings.basicAuthCredential      = settings.basicAuthCredential;
         $scope.pendingWizardSettings.mapperCode               = settings.mapperCode;
 
-        //$scope.isHeaderConfigCollapsed = true;
         
         var quepidStartsWithHttps = $location.protocol() === 'https';
 
@@ -110,6 +134,9 @@ angular.module('QuepidApp')
         if (angular.isDefined($location.search().apiMethod)){
           $scope.pendingWizardSettings.apiMethod = $location.search().apiMethod;
         }
+        if (angular.isDefined($location.search().basicAuthCredential)){
+          $scope.pendingWizardSettings.basicAuthCredential = $location.search().basicAuthCredential;
+        }
         $scope.reset();
       };
 
@@ -122,7 +149,7 @@ angular.module('QuepidApp')
         $scope.pendingWizardSettings.searchUrl                = searchEndpointToUse.endpointUrl; // notice remapping
         $scope.pendingWizardSettings.apiMethod                = searchEndpointToUse.apiMethod;
         $scope.pendingWizardSettings.customHeaders            = searchEndpointToUse.customHeaders;
-        
+
         // Now grab default settings for the type of search endpoint you are using
         var settings = settingsSvc.pickSettingsToUse($scope.pendingWizardSettings.searchEngine, $scope.pendingWizardSettings.searchUrl);         
         $scope.pendingWizardSettings.additionalFields         = settings.additionalFields;
@@ -182,9 +209,22 @@ angular.module('QuepidApp')
       
       // used when you click the accordion for new search endpoint
       $scope.switchToCreateNewSearchEndpoint = function() {
-       $scope.pendingWizardSettings.searchEndpointId = null;
-       
+       $scope.pendingWizardSettings.searchEndpointId = null;       
       };
+
+      
+               
+      if (angular.isDefined($location.search().searchEngine)) {
+        // Changing http(s), so we should be open.  
+        if (angular.isDefined($location.search().existingSearchEndpoint)) {
+          // We were on the Existing Search Endpoint
+          $scope.shouldExistingSearchEndpointDefaultToOpen = true;
+        }
+        else {
+          $scope.shouldCreateNewSearchEndpointDefaultToOpen = true;
+        }
+      }            
+        
       
       $scope.validate       = validate;
       $scope.skipValidation = skipValidation;
@@ -417,7 +457,12 @@ angular.module('QuepidApp')
             $scope.quepidUrlToSwitchTo = resultsTuple[0];
             $scope.protocolToSwitchTo = resultsTuple[1];
                       
-            $scope.quepidUrlToSwitchTo = $scope.quepidUrlToSwitchTo + '?searchEngine=' + $scope.pendingWizardSettings.searchEngine + '&searchUrl=' + $scope.pendingWizardSettings.searchUrl + '&showWizard=true&caseName=' + $scope.pendingWizardSettings.caseName + '&apiMethod=' + $scope.pendingWizardSettings.apiMethod;
+            $scope.quepidUrlToSwitchTo = `${$scope.quepidUrlToSwitchTo}?showWizard=true` +
+              `&searchEngine=${$scope.pendingWizardSettings.searchEngine}` +
+              `&searchUrl=${$scope.pendingWizardSettings.searchUrl}` +
+              `&caseName=${$scope.pendingWizardSettings.caseName}` +
+              `&apiMethod=${$scope.pendingWizardSettings.apiMethod}` +
+              `&basicAuthCredential=${$scope.pendingWizardSettings.basicAuthCredential}`;            
           }
         }
       }

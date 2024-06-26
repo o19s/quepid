@@ -89,17 +89,27 @@ class BookImporter
     # Force the imported book to be owned by the user doing the importing.  Otherwise you can loose the book!
     @book.owner = User.find_by(email: @current_user.email)
 
-    params_to_use[:query_doc_pairs]&.each do |query_doc_pair|
-      qdp = @book.query_doc_pairs.build(query_doc_pair.except(:judgements))
-      next unless query_doc_pair[:judgements]
+    @book.save
 
-      query_doc_pair[:judgements].each do |judgement|
-        judgement[:user] = User.find_by(email: judgement[:user_email])
-        qdp.judgements.build(judgement.except(:user_email))
+    if params_to_use[:query_doc_pairs]
+      counter = params_to_use[:query_doc_pairs].size
+      params_to_use[:query_doc_pairs].each do |query_doc_pair|
+        qdp = @book.query_doc_pairs.create(query_doc_pair.except(:judgements))
+        counter -= 1
+        Turbo::StreamsChannel.broadcast_render_to(
+          :notifications,
+          target:  'notifications',
+          partial: 'books/blah',
+          locals:  { book: @book, counter: counter, qdp: qdp }
+        )
+        next unless query_doc_pair[:judgements]
+
+        query_doc_pair[:judgements].each do |judgement|
+          judgement[:user] = User.find_by(email: judgement[:user_email])
+          qdp.judgements.create(judgement.except(:user_email))
+        end
       end
     end
-
-    @book.save
   end
   # rubocop:enable Metrics/MethodLength
   # rubocop:enable Metrics/AbcSize

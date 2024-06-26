@@ -1,0 +1,15 @@
+<tr>
+  <% puts "Rendering row for book #{book.id} updated at #{book.updated_at} at #{Time.now}"%>
+  <!--<%= "Rendering row for book #{book.id} updated at #{book.updated_at}  at #{Time.now}"%>-->
+  <td><%= book.id %> </td>
+  <td><%= link_to book_title(book), book_path(book) %></td>
+  <td><%= book.teams.pluck(:name).join(',') %></td>
+  <td><%= book.scorer.name %> </td>
+  <td><%= book.selection_strategy.name %> </td>
+  <td>
+    <span class="badge bg-primary rounded-pill"><%= book.query_doc_pairs.count %> query/doc pairs</span>
+    <span class="badge bg-primary rounded-pill"><%= book.rated_query_doc_pairs.count %> rated query/doc pairs</span>
+    <span id="notification-book-<%= book.id %>">
+    </span>
+  </td>
+</tr>

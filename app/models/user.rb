@@ -107,6 +107,9 @@ class User < ApplicationRecord
   has_many :scores,
            dependent: :destroy
 
+  has_many :judgements,
+           dependent: :restrict_with_error
+
   has_many :case_metadata,
            class_name: 'CaseMetadatum',
            dependent:  :destroy
@@ -115,7 +118,6 @@ class User < ApplicationRecord
            dependent:  :destroy
 
   has_many :announcements, foreign_key: 'author_id', dependent: :destroy, inverse_of: :author
-  has_many :viewed_announcements, through: :announcements_viewed, source: :announcement
 
   # Validations
 
@@ -146,6 +148,7 @@ class User < ApplicationRecord
   before_create :set_defaults
   before_destroy :check_team_ownership_before_removing!, prepend: true
   before_destroy :check_scorer_ownership_before_removing!, prepend: true
+  before_destroy :check_judgements_before_removing!, prepend: true
 
   def check_team_ownership_before_removing!
     owned_teams.each do |team|
@@ -153,6 +156,13 @@ class User < ApplicationRecord
         errors.add(:base, "Please reassign ownership of the team #{team.name}." )
         throw(:abort)
       end
+    end
+  end
+
+  def check_judgements_before_removing!
+    if judgements.count.positive?
+      errors.add(:base, "Please reassign ownership of the #{judgements.count} judgements." )
+      throw(:abort)
     end
   end
 
