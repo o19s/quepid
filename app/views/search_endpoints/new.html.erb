@@ -8,6 +8,7 @@
 </div>
 
 <%= render "form", search_endpoint: @search_endpoint %>
-<br>
-<%= button_to 'Back to Search Endpoints', search_endpoints_path, method: :get %>
-<br>
+
+<div>
+  <%= link_to "Back to search endpoints", search_endpoints_path %>
+</div>

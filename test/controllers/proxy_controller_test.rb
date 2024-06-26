@@ -55,6 +55,13 @@ class ProxyControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
+  test 'should be able to handle a get with non ASCII characters' do
+    get proxy_fetch_url params: {
+      url: 'http://solr.quepid.com:8983/solr/statedecoded/select?q=At dusk, the café transformed into an impromptu stage', fl: 'id,text', rows: 10, start: 0
+    }
+    assert_response :success
+  end
+
   test 'should be able to handle a post' do
     json_data = { query: 'trek', key2: 'value2' }.to_json
 

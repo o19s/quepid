@@ -504,6 +504,7 @@ DEPENDENCIES
   active_storage_db
   activerecord-import (>= 1.0.7)
   acts_as_list (>= 1.0.1)
+  addressable (~> 2.8)
   ancestry
   angular-rails-templates (>= 1.0.0.beta)
   annotate
