@@ -1,6 +1,24 @@
 # Changelog
 
-## 7.17. - 2024-06-14
+## 7.17.1 - 2024-06-26
+
+### Improvements
+
+* Proxied connections can now handle non ASCII characters like `café`.  https://github.com/o19s/quepid/pull/1043 by @epugh.  Thanks @miguelmesas for opening up the ticket that tipped me off to this.
+
+* `p@10` scorer now is smarter to handle non binary judgements.  https://github.com/o19s/quepid/pull/991 by @david-fisher.  Sorry this took so long to get merged!
+
+* RAG style queries are MUCH longer.  @miguelmesas opened up which is fixed by https://github.com/o19s/quepid/pull/1042 and https://github.com/o19s/quepid/pull/1037 by @epugh.
+
+* Improve the bulk query API to support 1000's of queries.  https://github.com/o19s/quepid/pull/1037 by @epugh.
+
+* Small tweaks to the layout of the Search Endpoints to move the Destroy action away from the edit action.  Thanks @okkeklein for reporting https://github.com/o19s/quepid/issues/900. 
+
+### Bugs
+
+* Resetting skipped and can't judge query/doc pairs is fixed.  Thanks @pfries for opening https://github.com/o19s/quepid/issues/1040.   Quite a few other Turbo Drive related navigation issues fixed.
+
+## 7.17.0 - 2024-06-14
 
 This is a big one!   We have broken the tyranny of the web request/response lifecycle by embracing some powerful Rails technologies:
   
