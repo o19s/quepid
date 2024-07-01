@@ -1,23 +1,40 @@
 # frozen_string_literal: true
 
+require 'action_controller'
 require 'faraday'
 require 'faraday/follow_redirects'
 
-require 'addressable/uri'
+class QueryRunnerJob < ApplicationJob
+  queue_as :bulk_processing
+  
+  def perform acase, try
 
-# rubocop:disable Layout/LineLength
-# rubocop:disable Metrics/AbcSize
-# rubocop:disable Metrics/MethodLength
-# rubocop:disable Metrics/PerceivedComplexity
-# rubocop:disable Metrics/CyclomaticComplexity
-class ProxyController < ApplicationController
-  skip_before_action :require_login
-  skip_before_action :verify_authenticity_token, only: [ :fetch ]
-  skip_before_action :check_for_announcement
-  # curl -X GET "http://localhost:3000/proxy/fetch?url=https://quepid-solr.dev.o19s.com/solr/tmdb/select&q=*:*"
-  # curl -X POST "http://localhost:3000/proxy/fetch?url=https://quepid-solr.dev.o19s.com/solr/tmdb/query" -d '{"query":"star"}'
-  # curl -X GET "http://localhost:3000/proxy/fetch?url=http://quepid-solr.dev.o19s.com:8985/solr/media/select&q=*:*" -u 'solr:SolrRocks'
-  #
+    query_count = acase.queries.count
+    
+    acase.queries.each_with_index do |query, counter|
+      Turbo::StreamsChannel.broadcast_render_to(
+        :notifications,
+        target:  'notifications',
+        partial: 'admin/query_runner/notification',
+        locals:  { query: query, query_count: query_count, counter: counter }
+      )
+      
+      
+
+      sleep(2)
+    end
+    
+    Turbo::StreamsChannel.broadcast_render_to(
+      :notifications,
+      target:  'notifications',
+      partial: 'admin/query_runner/notification',
+      locals:  { query: nil, query_count: query_count, counter: 0 }
+    )
+
+    
+  end
+  
+  
   def fetch
     excluded_keys = [ :url, :action, :controller, :proxy_debug ]
 
@@ -25,8 +42,7 @@ class ProxyController < ApplicationController
 
     proxy_debug = 'true' == params[:proxy_debug]
 
-    # we use Addressable::URI instead of straight up URI to support non ascii characters like café
-    uri = Addressable::URI.parse(url_param)
+    uri = URI.parse(url_param)
     url_without_path = "#{uri.scheme}://#{uri.host}"
     url_without_path += ":#{uri.port}" unless uri.port.nil?
 
@@ -101,23 +117,14 @@ class ProxyController < ApplicationController
 
       begin
         data = JSON.parse(response.body)
-        render json: data, status: response.status
+        return {json: data, status: response.status}
       rescue JSON::ParserError
         # sometimes the API is returning plain old text, like a "Unauthorized" type message.
-        render plain: response.body, status: response.status
+          return {json: {response: response.body}, status: response.status}
       end
     rescue Faraday::ConnectionFailed => e
-      render json: { proxy_error: e.message }, status: :internal_server_error
+      return {json: { proxy_error: e.message }, status: :internal_server_error}
     end
   end
 
-  def proxy_url_params
-    params.require(:url)
-  end
-
 end
-# rubocop:enable Layout/LineLength
-# rubocop:enable Metrics/AbcSize
-# rubocop:enable Metrics/MethodLength
-# rubocop:enable Metrics/PerceivedComplexity
-# rubocop:enable Metrics/CyclomaticComplexity
