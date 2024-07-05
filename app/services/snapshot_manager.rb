@@ -165,8 +165,6 @@ class SnapshotManager
     query_docs
   end
 
-  private
-
   # rubocop:disable Metrics/MethodLength
   def setup_docs_for_query query, docs
     results = []
@@ -192,6 +190,8 @@ class SnapshotManager
     results
   end
   # rubocop:enable Metrics/MethodLength
+
+  private
 
   def extract_doc_info row
     case @options[:format]

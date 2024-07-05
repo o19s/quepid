@@ -6,11 +6,11 @@ require 'faraday/follow_redirects'
 
 class QueryRunnerJob < ApplicationJob
   queue_as :bulk_processing
-  
-  def perform acase, try
 
+  # rubocop:disable Metrics/MethodLength
+  def perform acase, _try
     query_count = acase.queries.count
-    
+
     acase.queries.each_with_index do |query, counter|
       Turbo::StreamsChannel.broadcast_render_to(
         :notifications,
@@ -18,23 +18,23 @@ class QueryRunnerJob < ApplicationJob
         partial: 'admin/query_runner/notification',
         locals:  { query: query, query_count: query_count, counter: counter }
       )
-      
-      
 
       sleep(2)
     end
-    
+
     Turbo::StreamsChannel.broadcast_render_to(
       :notifications,
       target:  'notifications',
       partial: 'admin/query_runner/notification',
       locals:  { query: nil, query_count: query_count, counter: 0 }
     )
-
-    
   end
-  
-  
+  # rubocop:enable Metrics/MethodLength
+
+  # rubocop:disable Metrics/AbcSize
+  # rubocop:disable Metrics/CyclomaticComplexity
+  # rubocop:disable Metrics/MethodLength
+  # rubocop:disable Metrics/PerceivedComplexity
   def fetch
     excluded_keys = [ :url, :action, :controller, :proxy_debug ]
 
@@ -103,7 +103,8 @@ class QueryRunnerJob < ApplicationJob
         response = connection.post do |req|
           req.path = uri.path
           query_params = request.query_parameters.except(*excluded_keys)
-          body_params = request.request_parameters.except(*query_params.keys) # not sure about this and the request.raw_post
+          # not sure about this and the request.raw_post
+          body_params = request.request_parameters.except(*query_params.keys)
           query_params.each do |param|
             req.params[param.first] = param.second
           end
@@ -117,14 +118,17 @@ class QueryRunnerJob < ApplicationJob
 
       begin
         data = JSON.parse(response.body)
-        return {json: data, status: response.status}
+        { json: data, status: response.status }
       rescue JSON::ParserError
         # sometimes the API is returning plain old text, like a "Unauthorized" type message.
-          return {json: {response: response.body}, status: response.status}
+        { json: { response: response.body }, status: response.status }
       end
     rescue Faraday::ConnectionFailed => e
-      return {json: { proxy_error: e.message }, status: :internal_server_error}
+      { json: { proxy_error: e.message }, status: :internal_server_error }
     end
   end
-
+  # rubocop:enable Metrics/AbcSize
+  # rubocop:enable Metrics/CyclomaticComplexity
+  # rubocop:enable Metrics/MethodLength
+  # rubocop:enable Metrics/PerceivedComplexity
 end

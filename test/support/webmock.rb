@@ -208,6 +208,35 @@ module ActiveSupport
           }
         )
         .to_return(status: 200, body: '', headers: {})
+
+      # Testing out fetch service using
+      # search_endpoint   for_case_queries_case
+      # try               for_case_queries_case
+      stub_request(:get, 'http://test.com/solr/tmdb/select?q=First%20Query')
+        .with(
+          headers: {
+            'Accept'          => '*/*',
+            'Accept-Encoding' => 'gzip;q=1.0,deflate;q=0.6,identity;q=0.3',
+            'Content-Type'    => 'application/json',
+            'User-Agent'      => 'Faraday v2.9.0',
+          }
+        )
+        .to_return(status: 200, body: mock_statedecoded_body, headers: {})
+
+      # Testing out fetch service using
+      # search_endpoint   for_case_queries_case
+      # try               es_try_with_curator_vars
+      stub_request(:post, 'http://test.com:9200/tmdb/_search')
+        .with(
+          body:    { 'query'=>{ 'multi_match'=>{ 'fields' => 'title, overview', 'query' => 'First Query', 'tie_breaker' => '1' } } },
+          headers: {
+            'Accept'          => '*/*',
+            'Accept-Encoding' => 'gzip;q=1.0,deflate;q=0.6,identity;q=0.3',
+            'Content-Type'    => 'application/json',
+            'User-Agent'      => 'Faraday v2.9.0',
+          }
+        )
+        .to_return(status: 200, body: mock_statedecoded_body, headers: {})
     end
 
     # rubocop:enable Metrics/MethodLength

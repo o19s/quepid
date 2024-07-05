@@ -115,6 +115,17 @@ class ProxyController < ApplicationController
     params.require(:url)
   end
 
+  private
+
+  def rack_header? header_name
+    predefined_rack_headers = %w[
+      HTTP_VERSION HTTP_ACCEPT HTTP_ACCEPT_CHARSET HTTP_ACCEPT_ENCODING
+      HTTP_ACCEPT_LANGUAGE HTTP_CACHE_CONTROL HTTP_CONNECTION HTTP_HOST
+      HTTP_REFERER HTTP_USER_AGENT HTTP_X_REQUEST_ID
+    ]
+
+    predefined_rack_headers.include?(header_name)
+  end
 end
 # rubocop:enable Layout/LineLength
 # rubocop:enable Metrics/AbcSize

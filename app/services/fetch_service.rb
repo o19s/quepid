@@ -5,165 +5,164 @@ class FetchService
 
   attr_reader :logger, :options
 
-  def initialize url,proxy_debug, opts = {}
+  def initialize opts = {}
     default_options = {
-      logger:             Rails.logger      
+      logger:         Rails.logger,
+      snapshot_limit: 10,
+      debug_mode:     false,
     }
 
-    @options = default_options.merge(opts.deep_symbolize_keys)
+    @options = default_options.merge(opts)
 
-    @url = url
-    @proxy_debug = proxy_debug
     @logger = @options[:logger]
   end
+
+  def begin acase, atry
+    @case = acase
+    @try = atry
+
+    @snapshot = @case.snapshots.build(name: 'Fetch [BEGUN]')
+    @snapshot.scorer = @case.scorer
+    @snapshot.try = @try
+    @snapshot.save!
+    @snapshot
+  end
+
+  def store_query_results query, docs
+    snapshot_query = @snapshot.snapshot_queries.create(query: query, number_of_results: results.count)
+
+    snapshot_manager = SnapshotManager.new(@snapshot)
+    snapshot_manager.setup_docs_for_query(snapshot_query, docs)
+    snapshot_query
+  end
+
+  def complete
+    @snapshot.name = 'Fetch [COMPLETED]'
+    @snapshot.save!
+
+    # Keep the first snapshot, and the most recents, deleting the ones out of the middle.
+    # Not the best sampling!
+    snapshot_to_delete = @case.snapshots[1..((@options[:snapshot_limit] * -1) + @case.snapshots.count)]
+    snapshot_to_delete&.each(&:destroy)
+  end
+
+  # rubocop:disable Metrics/MethodLength
+  def get_connection url, debug_mode, credentials, custom_headers
+    if @connection.nil?
+      @connection = Faraday.new(url: url) do |faraday|
+        # Configure the connection options, such as headers or middleware
+        faraday.response :follow_redirects
+        faraday.response :logger, nil, { headers: debug_mode, bodies: debug_mode, errors: !Rails.env.test? }
+        faraday.ssl.verify = false
+        # faraday.request :url_encoded
+
+        # matching_headers = request.headers.select { |name, _| name.start_with?('HTTP') && !rack_header?(name) }
+
+        # matching_headers.each do |name, value|
+        #  converted_name = name.sub('HTTP_', '')
+        #  converted_name = converted_name.tr('_', '-')
+        #  faraday.headers[converted_name] = value
+        # end
+
+        faraday.headers['Content-Type'] = 'application/json'
+        unless credentials.nil?
+          username, password = credentials.split(':')
+          faraday.headers['Authorization'] = "Basic #{Base64.strict_encode64("#{username}:#{password}")}"
+        end
+
+        unless custom_headers.nil?
+          puts JSON.parse(custom_headers).to_h
+          JSON.parse(custom_headers).to_h.each do |key, value|
+            faraday.headers[key] = value
+          end
+        end
+        faraday.adapter Faraday.default_adapter
+      end
+    end
+    @connection
+  end
+  # rubocop:enable Metrics/MethodLength
 
   # rubocop:disable Metrics/AbcSize
   # rubocop:disable Metrics/CyclomaticComplexity
   # rubocop:disable Metrics/MethodLength
   # rubocop:disable Metrics/PerceivedComplexity
-  def validate
-    params_to_use = @data_to_process
-    scorer_name = params_to_use[:scorer][:name]
-    scorer = Scorer.find_by(name: scorer_name)
-    if scorer.nil?
-      @book.errors.add(:scorer, "with name '#{scorer_name}' needs to be migrated over first.")
+  def create_request atry, query
+    search_endpoint = atry.search_endpoint
+    debug_mode = true
+    connection = get_connection search_endpoint.endpoint_url, debug_mode, search_endpoint.basic_auth_credential,
+                                search_endpoint.custom_headers
+
+    http_verb = search_endpoint.api_method # .to_sym
+
+    # TODO: Make api_method a enum
+    http_verb = :get if 'JSONP' == http_verb
+    http_verb = :get if 'GET' == http_verb
+    http_verb = :post if 'POST' == http_verb
+    http_verb = :put if 'PUT' == http_verb
+    puts "Running query with #{http_verb}"
+
+    args = atry.args
+
+    response = nil
+    # response = connection.run_request(http_verb, search_endpoint.endpoint_url) do |req|
+    case http_verb
+    when :get
+      response = connection.get do |req|
+        req.url search_endpoint.endpoint_url
+        args.each_value do |value|
+          value.map! { |val| val.gsub("\#$query##", query.query_text) }
+
+          puts "Here is the key: #{key}"
+          puts "Here is the value: #{value}"
+          # if value.is_a?(Array)
+          # very unsure how we are handling the value, it may always be a array?
+          value.each do |item|
+            req.params[key] = item
+          end
+        end
+
+        # Add any additional headers, params, or other options as needed
+      end
+    when :post
+      response = connection.post do |req|
+        req.url search_endpoint.endpoint_url
+        args = replace_values(args, query.query_text)
+        req.body = args
+        # Add any additional headers, params, or other options as needed
+      end
+    when :put
+      response = connection.put do |req|
+        req.url search_endpoint.endpoint_url
+        args = replace_values(args, query.query_text)
+        req.body = args
+        # Add any additional headers, params, or other options as needed
+      end
     else
-      @book.scorer = scorer
+      raise "Invalid HTTP verb: #{http_verb}"
     end
 
-    selection_strategy_name = params_to_use[:selection_strategy][:name]
-    selection_strategy = SelectionStrategy.find_by(name: selection_strategy_name)
-    if selection_strategy.nil?
-      @book.errors.add(:selection_strategy,
-                       "Selection strategy with name '#{selection_strategy_name}' needs to be migrated over first.")
-    else
-      @book.selection_strategy = selection_strategy
-    end
-
-    if params_to_use[:query_doc_pairs]
-      list_of_emails_of_users = []
-      params_to_use[:query_doc_pairs].each do |query_doc_pair|
-        next unless query_doc_pair[:judgements]
-
-        query_doc_pair[:judgements].each do |judgement|
-          list_of_emails_of_users << judgement[:user_email] if judgement[:user_email].present?
-        end
-      end
-      list_of_emails_of_users.uniq!
-      list_of_emails_of_users.each do |email|
-        unless User.exists?(email: email)
-          if options[:force_create_users]
-            User.invite!({ email: email, password: '', skip_invitation: true }, @current_user)
-          else
-            @book.errors.add(:base, "User with email '#{email}' needs to be migrated over first.")
-          end
-        end
-      end
-    end
+    response
   end
+  # rubocop:enable Metrics/AbcSize
+  # rubocop:enable Metrics/CyclomaticComplexity
+  # rubocop:enable Metrics/MethodLength
+  # rubocop:enable Metrics/PerceivedComplexity
 
-  def fetch
-    excluded_keys = [ :url, :action, :controller, :proxy_debug ]
-
-    url_param = @url
-
-    proxy_debug = 'true' == @proxy_debug
-
-    uri = URI.parse(url_param)
-    url_without_path = "#{uri.scheme}://#{uri.host}"
-    url_without_path += ":#{uri.port}" unless uri.port.nil?
-
-    connection = Faraday.new(url: url_without_path) do |faraday|
-      # Configure the connection options, such as headers or middleware
-      faraday.response :follow_redirects
-      faraday.response :logger, nil, { headers: proxy_debug, bodies: proxy_debug, errors: !Rails.env.test? }
-      faraday.ssl.verify = false
-      faraday.request :url_encoded
-
-      matching_headers = request.headers.select { |name, _| name.start_with?('HTTP') && !rack_header?(name) }
-
-      matching_headers.each do |name, value|
-        converted_name = name.sub('HTTP_', '')
-        converted_name = converted_name.tr('_', '-')
-        faraday.headers[converted_name] = value
-      end
-
-      faraday.headers['Content-Type'] = 'application/json'
-      has_credentials = !uri.userinfo.nil?
-      if has_credentials
-        username, password = uri.userinfo.split(':')
-        faraday.headers['Authorization'] = "Basic #{Base64.strict_encode64("#{username}:#{password}")}"
-      end
-      faraday.adapter Faraday.default_adapter
-    end
-
-    begin
-      if request.get?
-        response = connection.get do |req|
-          req.path = uri.path
-          query_params = request.query_parameters.except(*excluded_keys)
-          body_params = request.request_parameters.except(*query_params.keys)
-
-          query_params.each do |param|
-            req.params[param.first] = param.second
-          end
-
-          # the url parameter often has a format like
-          # http://myserver.com/search?query=text, and when this is passed in
-          # we get http://localhost:3000/proxy/fetch?url=http://myserver.com/search?query=text&rows=10
-          # which means the parameter "query=text" is lost because the URL is parsed and this part is dropped,
-          # so here we add this one parameter back in if we have it.
-          if url_param.include?('?')
-            # sometimes our url looks like http://myserver.com/search?q=tiger
-            # But it could also be http://myserver.com/search?q=tiger? and that needs handling via the special .split
-            extra_query_param = url_param.split('?', 2).last.split('=')
-
-            req.params[extra_query_param.first] = extra_query_param.second
-          end
-          unless body_params.empty?
-
-            json_query = body_params.first.first
-            req.body = json_query
-          end
-        end
-      elsif request.post?
-        response = connection.post do |req|
-          req.path = uri.path
-          query_params = request.query_parameters.except(*excluded_keys)
-          body_params = request.request_parameters.except(*query_params.keys) # not sure about this and the request.raw_post
-          query_params.each do |param|
-            req.params[param.first] = param.second
-          end
-          unless body_params.empty?
-            json_query = request.raw_post
-
-            req.body = json_query
-          end
+  # rubocop:disable Metrics/PerceivedComplexity
+  def replace_values data, query_text
+    if data.is_a?(Hash)
+      data.each do |key, value|
+        if "\#$query##" == value
+          data[key] = query_text
+        elsif value.is_a?(Hash) || value.is_a?(Array)
+          replace_values(value, query_text)
         end
       end
-
-      begin
-        data = JSON.parse(response.body)
-        render json: data, status: response.status
-      rescue JSON::ParserError
-        # sometimes the API is returning plain old text, like a "Unauthorized" type message.
-        render plain: response.body, status: response.status
-      end
-    rescue Faraday::ConnectionFailed => e
-      render json: { proxy_error: e.message }, status: :internal_server_error
+    elsif data.is_a?(Array)
+      data.each { |item| replace_values(item, query_text) }
     end
+    data
   end
-
-  
-  private 
-  
-  def rack_header? header_name
-    predefined_rack_headers = %w[
-      HTTP_VERSION HTTP_ACCEPT HTTP_ACCEPT_CHARSET HTTP_ACCEPT_ENCODING
-      HTTP_ACCEPT_LANGUAGE HTTP_CACHE_CONTROL HTTP_CONNECTION HTTP_HOST
-      HTTP_REFERER HTTP_USER_AGENT HTTP_X_REQUEST_ID
-    ]
-
-    predefined_rack_headers.include?(header_name)
-  end
+  # rubocop:enable Metrics/PerceivedComplexity
 end

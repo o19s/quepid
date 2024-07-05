@@ -118,7 +118,7 @@ Rails.application.routes.draw do
     end
     resources :query_runner, only: [ :index ] do
       post 'run_queries', on: :collection
-    end    
+    end
   end
 
   # preview routes for mailers
