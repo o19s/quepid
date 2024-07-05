@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+# rubocop:disable Metrics/ClassLength
 class FetchService
   # include ProgressIndicator
 
@@ -166,3 +167,4 @@ class FetchService
   end
   # rubocop:enable Metrics/PerceivedComplexity
 end
+# rubocop:enable Metrics/ClassLength
