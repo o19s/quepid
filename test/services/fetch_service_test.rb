@@ -18,7 +18,6 @@ class FetchServiceTest < ActiveSupport::TestCase
   let(:options) do
     {
       debug_mode:     true,
-      fake_call:      false,
       snapshot_limit: 3,
     }
   end
@@ -29,26 +28,34 @@ class FetchServiceTest < ActiveSupport::TestCase
     let(:es_try_with_curator_vars) { tries(:es_try_with_curator_vars) }
     let(:try_with_headers) { tries(:try_with_headers) }
     let(:first_query) { queries(:first_query) }
+    let(:blowup_query) { queries(:blowup_query) }
 
     it 'creates a GET request' do
       fetch_service = FetchService.new options
-      response = fetch_service.create_request(atry, first_query)
+      response = fetch_service.make_request(atry, first_query)
       assert_not_nil response
       assert 200 == response.status
     end
 
     it 'works with custom headers and JSONP' do
       fetch_service = FetchService.new options
-      response = fetch_service.create_request(try_with_headers, first_query)
+      response = fetch_service.make_request(try_with_headers, first_query)
       assert_not_nil response
       assert 200 == response.status
     end
 
     it 'creates a POST request' do
       fetch_service = FetchService.new options
-      response = fetch_service.create_request(es_try_with_curator_vars, first_query)
+      response = fetch_service.make_request(es_try_with_curator_vars, first_query)
       assert_not_nil response
       assert 200 == response.status
+    end
+
+    it 'handles a failed search request' do
+      fetch_service = FetchService.new options
+      response = fetch_service.make_request(atry, blowup_query)
+      assert_not_nil response
+      assert 404 == response.status
     end
   end
 
@@ -75,9 +82,13 @@ class FetchServiceTest < ActiveSupport::TestCase
         { id: 'doc2', explain: '2' }
       ]
 
+      response_status = 200
+      response_body = ''
+
       assert_difference 'first_query.snapshot_queries.count' do
-        snapshot_query = fetch_service.store_query_results first_query, docs
+        snapshot_query = fetch_service.store_query_results first_query, docs, response_status, response_body
         assert_equal docs.size, snapshot_query.snapshot_docs.size
+        assert_equal response_status, snapshot_query.response_status
       end
     end
 
@@ -102,27 +113,10 @@ class FetchServiceTest < ActiveSupport::TestCase
     end
   end
 
-  test 'think should what we have' do
-    FetchService.new options
-  end
-
-  test 'should be able to handle a get' do
-    fetch_service = FetchService.new options
-
-    # should url: be in params?  Or seperate?
-    params = {
-      url: 'http://solr.quepid.com:8983/solr/statedecoded/select', fl: 'id,text', q: 'legal', rows: 10, start: 0
-    }
-
-    fetch_service.fetch params
-    assert_response :success
-  end
-
-  test 'should track failure' do
-    assert true
-  end
-
-  test 'should track successes' do
-    assert true
+  describe 'parsing a response' do
+    it 'lets you create a resopnse' do
+      response = Faraday::Response.new(status: 200)
+      assert_equal 200, response.status
+    end
   end
 end

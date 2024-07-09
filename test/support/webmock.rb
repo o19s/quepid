@@ -237,6 +237,21 @@ module ActiveSupport
           }
         )
         .to_return(status: 200, body: mock_statedecoded_body, headers: {})
+
+      # Testing out fetch service using
+      # search_endpoint   for_case_queries_case
+      # try               es_try_with_curator_vars
+      # query             blowup_query
+      stub_request(:get, 'http://test.com/solr/tmdb/select?q=BLOWUP_QUERY')
+        .with(
+          headers: {
+            'Accept'          => '*/*',
+            'Accept-Encoding' => 'gzip;q=1.0,deflate;q=0.6,identity;q=0.3',
+            'Content-Type'    => 'application/json',
+            'User-Agent'      => 'Faraday v2.9.0',
+          }
+        )
+        .to_return(status: 404, body: '', headers: {})
     end
 
     # rubocop:enable Metrics/MethodLength

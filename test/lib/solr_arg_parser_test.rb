@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-o # frozen_string_literal: true
-
 require 'test_helper'
 
 class SolrArgParserTest < ActiveSupport::TestCase
