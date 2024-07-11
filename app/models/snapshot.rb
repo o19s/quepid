@@ -30,7 +30,9 @@ class Snapshot < ApplicationRecord
   belongs_to  :scorer, optional: true # shouldn't be optional!
 
   # see the call back delete_associated_objects for special delete logic.
-  has_many    :snapshot_queries, dependent: :delete_all
+  # rubocop:disable Rails/HasManyOrHasOneDependent
+  has_many    :snapshot_queries
+  # rubocop:enable Rails/HasManyOrHasOneDependent
   has_many :snapshot_docs,
            through: :snapshot_queries
 
