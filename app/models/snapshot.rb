@@ -33,8 +33,8 @@ class Snapshot < ApplicationRecord
   # rubocop:disable Rails/HasManyOrHasOneDependent
   has_many    :snapshot_queries
   # rubocop:enable Rails/HasManyOrHasOneDependent
-  has_many   :snapshot_docs,
-             through: :snapshot_queries
+  has_many :snapshot_docs,
+           through: :snapshot_queries
 
   has_one_attached :snapshot_file
 

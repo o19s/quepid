@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2024_06_26_181338) do
+ActiveRecord::Schema[7.1].define(version: 2024_07_09_141551) do
   create_table "active_storage_attachments", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.string "name", null: false
     t.string "record_type", null: false
@@ -256,6 +256,8 @@ ActiveRecord::Schema[7.1].define(version: 2024_06_26_181338) do
     t.float "score"
     t.boolean "all_rated"
     t.integer "number_of_results"
+    t.integer "response_status"
+    t.text "response_body"
     t.index ["query_id"], name: "query_id"
     t.index ["snapshot_id"], name: "snapshot_id"
   end
