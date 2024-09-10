@@ -48,4 +48,28 @@ class SnapshotTest < ActiveSupport::TestCase
       assert_equal name, snapshot.name
     end
   end
+  
+  describe 'deleting a snapshot' do
+    let(:asnapshot) { snapshots(:a_snapshot) }
+    let(:snapshot_query) { snapshot_queries(:first_snapshot_query) }
+
+    test 'deleting a snapshot ALSO deletes the queries' do
+      require 'pp'
+      
+      pp snapshot_query
+      
+      pp asnapshot
+      
+      assert asnapshot.destroy!
+      
+      assert_raises(ActiveRecord::RecordNotFound) do
+        SnapshotQuery.find(snapshot_query.id)
+      end
+      
+      
+      #snapshot = Snapshot.create(case: acase)
+
+      #assert_equal "Snapshot #{Time.zone.now.strftime('%D')}", snapshot.name
+    end
+  end
 end

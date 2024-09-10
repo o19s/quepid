@@ -31,10 +31,10 @@ class Snapshot < ApplicationRecord
 
   # see the call back delete_associated_objects for special delete logic.
   # rubocop:disable Rails/HasManyOrHasOneDependent
-  has_many    :snapshot_queries
+  has_many    :snapshot_queries, dependent:  :destroy
   # rubocop:enable Rails/HasManyOrHasOneDependent
   has_many :snapshot_docs,
-           through: :snapshot_queries
+           through: :snapshot_queries, dependent:  :destroy
 
   has_one_attached :snapshot_file
 
@@ -43,7 +43,7 @@ class Snapshot < ApplicationRecord
 
   # Callbacks
   before_validation :set_defaults
-  before_destroy :delete_associated_objects
+  #before_destroy :delete_associated_objects
 
   private
 
@@ -52,6 +52,7 @@ class Snapshot < ApplicationRecord
   end
 
   def delete_associated_objects
+    puts "I am about to delete associated objects"
     SnapshotDoc.joins(snapshot_query: :snapshot)
       .where(snapshot_queries: { snapshot: self })
       .delete_all
