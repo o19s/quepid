@@ -68,7 +68,7 @@ services:
 
 
   nginx:
-    image: nginx:1.26.0-alpine-slim
+    image: nginx:1.27.1-alpine-slim
     container_name: quepid_nginx
     ports:
       - "443:8443"
