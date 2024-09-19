@@ -137,5 +137,14 @@ angular.module('QuepidApp')
           return $scope.query.rating;
         }
       };
+      
+      $scope.querqyRuleTriggered = function() {
+        var triggered = false;
+        
+        if ($scope.query.searcher.parsedQueryDetails.querqy?.rewrite !== undefined){
+          triggered =  true;
+        }
+        return triggered;
+      }
     }
   ]);
