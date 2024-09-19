@@ -1,5 +1,4 @@
 'use strict';
-
 angular.module('QuepidApp')
   .controller('SearchResultsCtrl', [
     '$rootScope',
@@ -136,6 +135,15 @@ angular.module('QuepidApp')
         else {
           return $scope.query.rating;
         }
+      };
+      
+      $scope.querqyRuleTriggered = function () {
+        let triggered = false;
+
+        if ($scope.query.searcher.parsedQueryDetails.querqy?.rewrite !== undefined) { // jshint ignore:line
+          triggered = true;
+        }
+        return triggered;
       };
     }
   ]);
