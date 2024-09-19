@@ -1,7 +1,6 @@
 # Docker Compose file for running Quepid in Production mode.
 # Allows you to update your Quepid installation over time.
 
-version: '3'
 services:
   mysql:
     container_name: quepid_prod_db
