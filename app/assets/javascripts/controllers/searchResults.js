@@ -140,8 +140,7 @@ angular.module('QuepidApp')
       $scope.querqyRuleTriggered = function () {
         let triggered = false;
         let parsedQueryDetails = $scope.query.searcher.parsedQueryDetails;
-        console.log("Lets look in the wild");
-        console.log(parsedQueryDetails);
+        
         if (parsedQueryDetails.querqy?.rewrite !== undefined) { // jshint ignore:line
           triggered = true;
         }
@@ -149,7 +148,6 @@ angular.module('QuepidApp')
           triggered = true;
         }
           
-
         return triggered;
       };
     }
