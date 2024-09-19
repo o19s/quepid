@@ -139,7 +139,8 @@ angular.module('QuepidApp')
       
       $scope.querqyRuleTriggered = function () {
         let triggered = false;
-
+        console.log("Lets look in the wild");
+        console.log($scope.query.searcher.parsedQueryDetails);
         if ($scope.query.searcher.parsedQueryDetails.querqy?.rewrite !== undefined) { // jshint ignore:line
           triggered = true;
         }
