@@ -144,7 +144,7 @@ angular.module('QuepidApp')
         if (parsedQueryDetails.querqy?.rewrite !== undefined) { // jshint ignore:line
           triggered = true;
         }
-        else if ("querqy.infoLog" in parsedQueryDetails){
+        else if ('querqy.infoLog' in parsedQueryDetails){
           triggered = true;
         }
           
