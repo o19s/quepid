@@ -89,7 +89,7 @@ angular.module('QuepidApp')
             }          
             
             if (doc.hasThumb()) {              
-              if (doc.thumb_options?.prefix){
+              if (doc.thumb_options?.prefix){ // jshint ignore:line
                 fields['thumb'] = `${doc.thumb_options.prefix}${doc.thumb}`;
               }
               else {
@@ -97,7 +97,7 @@ angular.module('QuepidApp')
               }
             }
             if (doc.hasImage()){
-              if (doc.image_options?.prefix){
+              if (doc.image_options?.prefix){ // jshint ignore:line
                 fields['image'] = `${doc.image_options.prefix}${doc.image}`;
               }
               else {
