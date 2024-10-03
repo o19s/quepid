@@ -2,7 +2,7 @@
 
 source 'https://rubygems.org'
 
-ruby '3.3.2'
+ruby '3.3.5'
 
 gem 'activerecord-import', '>= 1.0.7'
 gem 'active_storage_db'
@@ -23,6 +23,7 @@ gem 'devise_invitable', '~> 2.0'
 # Using this as it wires in via Sprockets and I can't get npm version to work with the main app.
 # Had no luck with js/svg approach ;-(
 gem 'font-awesome-sass'
+gem 'foreman'
 gem 'gabba'
 gem 'importmap-rails', '~> 2.0'
 gem 'intercom-rails'
@@ -51,7 +52,6 @@ gem 'rubyzip', '~> 2.3.0' # 3.0 will be breaking
 gem 'sassc-rails', '~> 2.1'
 gem 'sidekiq'
 gem 'sidekiq-limit_fetch', '~> 4.4'
-gem 'terser'
 gem 'thor'
 gem 'turbo-rails', '~> 2.0', '>= 2.0.5'
 gem 'vega', '~> 0.3.0'
