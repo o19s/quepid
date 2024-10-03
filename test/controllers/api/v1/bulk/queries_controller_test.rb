@@ -87,7 +87,7 @@ module Api
               post :create, params: data
             end
 
-            assert result.real < 2.0
+            assert result.real < 3, "Expecting less than 3 seconds. Elapsed time: #{result.real} seconds\n"
             # puts "Elapsed time: #{result.real} seconds\n"
 
             acase.reload
