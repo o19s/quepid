@@ -41,7 +41,7 @@ gem 'postmark-rails'
 gem 'prophet-rb', '~> 0.5.0'
 gem 'puma'
 gem 'pundit'
-gem 'rails', '~> 7.1.2'
+gem 'rails', '~> 7.2.1'
 gem 'rails-healthcheck', '~> 1.4'
 gem 'rails-html-sanitizer'
 gem 'rack-cors', '~> 2.0'
@@ -57,6 +57,8 @@ gem 'turbo-rails', '~> 2.0', '>= 2.0.5'
 gem 'vega', '~> 0.3.0'
 
 group :development, :test do
+  # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
+  gem "debug", platforms: %i[ mri windows ], require: "debug/prelude"
   gem 'annotate'
   gem 'bullet'
   gem 'memory_profiler'
@@ -66,12 +68,9 @@ group :development do
   # Use console on exceptions pages [https://github.com/rails/web-console]
   gem 'web-console'
 
-  # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
-  # Add me back in when Ruby 3.2.X comes out https://github.com/ruby/debug/issues/898
-  # gem 'debug', platforms: [ :mri, :mingw, :x64_mingw ]
-
+  # this was commented out in the default build, so doing the same..
   # Add speed badges [https://github.com/MiniProfiler/rack-mini-profiler]
-  gem 'rack-mini-profiler'
+  #gem 'rack-mini-profiler'
 
   gem 'derailed_benchmarks'
   gem 'letter_opener'
