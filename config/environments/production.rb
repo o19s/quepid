@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require 'active_support/core_ext/integer/time'
-#Sprockets.register_compressor 'application/javascript', :terser, Terser::Compressor
+# Sprockets.register_compressor 'application/javascript', :terser, Terser::Compressor
 Rails.application.configure do
   # Settings specified here will take precedence over those in config/application.rb.
 
@@ -30,7 +30,7 @@ Rails.application.configure do
   config.public_file_server.enabled = ENV['RAILS_SERVE_STATIC_FILES'].present?
 
   # Compress JavaScripts and CSS.
-  #config.assets.js_compressor = :terser
+  # config.assets.js_compressor = :terser
   config.assets.css_compressor = :sass
 
   # Do not fallback to assets pipeline if a precompiled asset is missed.
