@@ -54,7 +54,7 @@ gem 'sidekiq'
 gem 'sidekiq-limit_fetch', '~> 4.4'
 gem 'thor'
 gem 'turbo-rails', '~> 2.0', '>= 2.0.5'
-gem 'vega', '~> 0.3.0'
+gem 'vega', '~> 0.3.2'
 
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
