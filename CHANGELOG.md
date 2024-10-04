@@ -18,6 +18,8 @@ There is a good path to removing the dependency on Redis, and maybe even MySQL f
 
 * When rating images that have a prefix defined, the prefix was being lost.  Thanks @clamar-VM for finding this, fixed in @https://github.com/o19s/quepid/pull/1054 by @epugh.
 
+* We got too strict with our cookies, and Quepid quit working with Keycloak.  Thanks @drieschel for https://github.com/o19s/quepid/pull/1049.
+
 ## 7.17.1 - 2024-06-26
 
 ### Improvements
