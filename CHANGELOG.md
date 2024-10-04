@@ -1,5 +1,23 @@
 # Changelog
 
+## 7.18.0 - 2024-10-04
+
+Wow!  It's been three months since the last release of Quepid, so it's about time.   
+This release brings Quepid up to Rails 7.2 standard, which gets us ready for some of the interesting things in Rails 8, specifically simplifying what you need to run Quepid.  
+There is a good path to removing the dependency on Redis, and maybe even MySQL for small setups!
+
+### Improvements
+
+* Shrink the Quepid Docker image by 1 GB.  This was accomplished by the migration to Rails 7.2 for Quepid in https://github.com/o19s/quepid/pull/1058, fixing https://github.com/o19s/quepid/issues/1004 by @epugh.
+
+* Expanded Quepid's API for working with Search Endpoints.  Thanks @clintbxtreme for opening https://github.com/o19s/quepid/issues/1056, and this was fixed in https://github.com/o19s/quepid/pull/1057 by @epugh.
+
+* Using SMUI and want to see if your rule was triggered?  Now you can, we have a Querqy icon!  Previously you would have to dig into the query parsing explanation to know.  https://github.com/o19s/quepid/issues/1050 by @clamar-VM was fixed by https://github.com/o19s/quepid/pull/1053 by @epugh.
+
+### Bugs
+
+* When rating images that have a prefix defined, the prefix was being lost.  Thanks @clamar-VM for finding this, fixed in @https://github.com/o19s/quepid/pull/1054 by @epugh.
+
 ## 7.17.1 - 2024-06-26
 
 ### Improvements
