@@ -14,7 +14,7 @@ services:
       - PUPPETEER_SKIP_DOWNLOAD=true
       - PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
     volumes:
-      - .:/srv/app
+      - .:/srv/app:cached
       - ./log:/log
     ports:
       - 3000:3000
