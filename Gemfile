@@ -71,9 +71,9 @@ group :development do
   # this was commented out in the default build, so doing the same..
   # Add speed badges [https://github.com/MiniProfiler/rack-mini-profiler]
   # gem 'rack-mini-profiler'
-  
+
   # # Highlight the fine-grained location where an error occurred [https://github.com/ruby/error_highlight]
-  gem "error_highlight", ">= 0.4.0", platforms: [:ruby]
+  gem 'error_highlight', '>= 0.4.0', platforms: [ :ruby ]
 
   gem 'derailed_benchmarks'
   gem 'letter_opener'
