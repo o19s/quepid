@@ -7,4 +7,4 @@ production:
   - default
   - bulk_processing
 :limits:
-  bulk_processing: 1
+  bulk_processing: 2

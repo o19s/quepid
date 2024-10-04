@@ -97,5 +97,5 @@
   },
   "scripts": {
   },
-  "stack": "heroku-22"
+  "stack": "heroku-24"
 }

@@ -5,12 +5,11 @@ require 'test_helper'
 # rubocop:disable Layout/LineLength
 class ProxyControllerTest < ActionDispatch::IntegrationTest
   test 'should require a url query parameter' do
-    assert_raises(ActionController::ParameterMissing) do
-      get proxy_fetch_path
-    end
-    assert_raises(ActionController::ParameterMissing) do
-      post proxy_fetch_path
-    end
+    get proxy_fetch_path
+    assert_response :bad_request
+
+    post proxy_fetch_path
+    assert_response :bad_request
   end
 
   test 'should be able to handle a get' do
