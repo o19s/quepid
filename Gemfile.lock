@@ -102,7 +102,7 @@ GEM
     bigdecimal (3.1.8)
     bindata (2.5.0)
     bindex (0.8.1)
-    bootsnap (1.18.3)
+    bootsnap (1.18.4)
       msgpack (~> 1.2)
     builder (3.3.0)
     bullet (7.2.0)
@@ -248,7 +248,7 @@ GEM
       ruby-progressbar
     mocha (2.3.0)
       ruby2_keywords (>= 0.0.5)
-    msgpack (1.7.2)
+    msgpack (1.7.3)
     multi_xml (0.7.1)
       bigdecimal (~> 3.1)
     mysql2 (0.5.6)
