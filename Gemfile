@@ -53,7 +53,7 @@ gem 'sassc-rails', '~> 2.1'
 gem 'sidekiq'
 gem 'sidekiq-limit_fetch', '~> 4.4'
 gem 'thor'
-gem 'turbo-rails', '~> 2.0', '>= 2.0.5'
+gem 'turbo-rails', '~> 2.0'
 gem 'vega', '~> 0.3.0'
 
 group :development, :test do
