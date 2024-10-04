@@ -78,8 +78,8 @@ GEM
       tzinfo (~> 2.0, >= 2.0.5)
     acts_as_list (1.1.0)
       activerecord (>= 4.2)
-    addressable (2.8.6)
-      public_suffix (>= 2.0.2, < 6.0)
+    addressable (2.8.7)
+      public_suffix (>= 2.0.2, < 7.0)
     aes_key_wrap (1.1.0)
     ancestry (4.3.3)
       activerecord (>= 5.2.6)
@@ -312,7 +312,7 @@ GEM
       rover-df
     psych (5.1.2)
       stringio
-    public_suffix (5.0.5)
+    public_suffix (6.0.1)
     puma (6.4.2)
       nio4r (~> 2.0)
     pundit (2.3.2)
