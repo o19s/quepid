@@ -84,3 +84,4 @@
 //= require tether-shepherd/dist/js/shepherd
 //= require tour
 //= require ace_config
+//= require angular-http-throttler/service/http-throttler
