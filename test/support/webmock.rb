@@ -165,7 +165,7 @@ module ActiveSupport
             'Content-Type'    => 'application/json',
             'Cookie'          => '',
             'Https'           => 'off',
-            'User-Agent'      => /Faraday.*/,
+            'User-Agent'      => /Faraday/,
           }
         )
         .to_return(status: 200, body: mock_statedecoded_body)
@@ -179,7 +179,7 @@ module ActiveSupport
             'Content-Type'    => 'application/json',
             'Cookie'          => '',
             'Https'           => 'off',
-            'User-Agent'      => /Faraday.*/,
+            'User-Agent'      => /Faraday/,
           }
         )
         .to_return(status: 200, body: mock_statedecoded_body)
@@ -204,7 +204,7 @@ module ActiveSupport
             'Content-Type'    => 'application/json',
             'Cookie'          => '',
             'Https'           => 'off',
-            'User-Agent'      => 'Faraday.*/',
+            'User-Agent'      => /Faraday/,
           }
         )
         .to_return(status: 200, body: '', headers: {})
