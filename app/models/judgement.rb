@@ -69,8 +69,6 @@ class Judgement < ApplicationRecord
   # Based on a judgement, find the previous one made by the
   # same user, but prior to that judgement, or the most recent judgement!
   def previous_judgement_made
-    query_doc_pair.book.judgements.where(judgements: { user: user }).where(
-      'judgements.updated_at < ?', updated_at.nil? ? DateTime.current : updated_at
-    ).reorder('judgements.updated_at DESC').first
+    query_doc_pair.book.judgements.where(judgements: { user: user }).where(judgements: { updated_at: ...(updated_at.nil? ? DateTime.current : updated_at) }).reorder('judgements.updated_at DESC').first
   end
 end

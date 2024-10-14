@@ -204,7 +204,7 @@ module ActiveSupport
             'Content-Type'    => 'application/json',
             'Cookie'          => '',
             'Https'           => 'off',
-            'User-Agent'      => 'Faraday v2.9.0',
+            'User-Agent'      => 'Faraday.*/',
           }
         )
         .to_return(status: 200, body: '', headers: {})

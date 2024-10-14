@@ -102,5 +102,4 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
     assert_equal book_with_multiple_raters.query_doc_pairs.count, 2
     assert_equal book_with_multiple_raters.judgements.count, 2
   end
-
 end

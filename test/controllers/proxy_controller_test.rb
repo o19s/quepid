@@ -4,6 +4,8 @@ require 'test_helper'
 
 # rubocop:disable Layout/LineLength
 class ProxyControllerTest < ActionDispatch::IntegrationTest
+  # See webmock.rb for the corresponding mocks.
+  #
   test 'should require a url query parameter' do
     get proxy_fetch_path
     assert_response :bad_request
