@@ -9,6 +9,7 @@ angular.module('QuepidApp')
   .service('queriesSvc', [
     '$rootScope',
     '$http',
+    '$timeout',
     '$q',
     '$log',
     'broadcastSvc',
@@ -23,9 +24,11 @@ angular.module('QuepidApp')
     'esExplainExtractorSvc',
     'solrExplainExtractorSvc',
     'normalDocsSvc',
+    'httpThrottler',
     function queriesSvc(
       $scope,
       $http,
+      $timeout,
       $q,
       $log,
       broadcastSvc,
@@ -39,7 +42,8 @@ angular.module('QuepidApp')
       searchErrorTranslatorSvc,
       esExplainExtractorSvc,
       solrExplainExtractorSvc,
-      normalDocsSvc
+      normalDocsSvc,
+      httpThrottler
     ) {
 
       let caseNo = -1;
@@ -786,6 +790,95 @@ angular.module('QuepidApp')
       };
 
 
+      // This version of searchAll runs linearly 1 at a time with a pause of 1 second
+      this.searchAllOneSecondSingular = function() {
+        let scorePromises = [];
+        let promises = []; // Array to hold promise functions
+
+        
+        // Use angular.forEach to create an array of promise functions
+        angular.forEach(this.queries, function(query) {
+            promises.push(() => {
+                return query.search().then(() => {
+                    scorePromises.push(query.score());
+                });
+            });
+        });
+        
+        // Function to process promises sequentially with a pause
+        const processPromisesWithPause = (promises) => {
+            return promises.reduce((promiseChain, currentPromise) => {
+                return promiseChain.then(() => {
+                    return currentPromise().then(() => {
+                        return $timeout(() => {}, 1000); // 1 second pause
+                    });
+                });
+            }, $q.resolve());
+        };
+        // Execute the promises with a pause
+        return processPromisesWithPause(promises).then(() => {
+            return $q.all(scorePromises).then(() => {
+                svc.scoreAll();
+            });
+        });
+      };
+      
+      this.searchAllMaybe = function() {
+        let promises = [];
+        let scorePromises = [];
+
+        // Use angular.forEach to create an array of promise functions
+        angular.forEach(this.queries, function(query) {
+            promises.push(() => {
+                return query.search().then(() => {
+                    scorePromises.push(query.score());
+                });
+            });
+        });
+        
+        // Function to process promises with limited concurrency
+        const processPromisesWithLimit = function(promises, limit) {
+            let index = 0; // Track the current index
+            let activePromises = []; // Array to keep track of active promises
+    
+            const enqueue = () => {
+                if (index >= promises.length) {
+                    return $q.all(activePromises); // Wait for all active promises to finish
+                }
+    
+                // Add the next promise to the active array
+                const currentPromise = promises[index++](); // Execute the promise function
+                activePromises.push(currentPromise);
+    
+                currentPromise.finally(() => {
+                    // Remove the completed promise from the active array
+                    activePromises = activePromises.filter(p => p !== currentPromise);
+                    enqueue(); // Enqueue the next promise
+                });
+    
+                // If we haven't reached the limit, enqueue more promises
+                if (activePromises.length < limit) {
+                    enqueue();
+                }
+            };
+    
+            // Start the process
+            enqueue();
+    
+            return $q.all(activePromises); // Return a promise that resolves when all are done
+        };
+        // Measure elapsed time
+        console.time("Elapsed Time");
+        // Execute the promises with a limit of 5 running in parallel
+        return processPromisesWithLimit(promises, 2).then(() => {          
+            return $q.all(scorePromises).then(() => {
+                svc.scoreAll();
+                console.timeEnd("Elapsed Time"); // End timing
+            });
+        });
+      };
+      
+      // This is the original searchAll
       this.searchAll = function() {
         let promises = [];
         let scorePromises = [];
