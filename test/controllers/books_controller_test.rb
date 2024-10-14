@@ -103,9 +103,4 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
     assert_equal book_with_multiple_raters.judgements.count, 2
   end
 
-  def test_combinining_multiple_rater_strategy_into_single_works
-  end
-
-  def test_combining_same_user_same_query_doc_merges
-  end
 end
