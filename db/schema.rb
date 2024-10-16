@@ -95,6 +95,7 @@ ActiveRecord::Schema[7.2].define(version: 2024_06_26_181338) do
     t.boolean "support_implicit_judgements"
     t.boolean "show_rank", default: false
     t.integer "owner_id"
+    t.integer "ai_judge_id"
     t.index ["selection_strategy_id"], name: "index_books_on_selection_strategy_id"
   end
 
@@ -356,6 +357,8 @@ ActiveRecord::Schema[7.2].define(version: 2024_06_26_181338) do
     t.boolean "completed_case_wizard", default: false, null: false
     t.string "stored_raw_invitation_token"
     t.string "profile_pic", limit: 4000
+    t.string "prompt", limit: 4000
+    t.string "openai_key"
     t.index ["default_scorer_id"], name: "index_users_on_default_scorer_id"
     t.index ["email"], name: "ix_user_username", unique: true
     t.index ["invitation_token"], name: "index_users_on_invitation_token", unique: true, length: 191

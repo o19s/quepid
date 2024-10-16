@@ -15,17 +15,48 @@ This book consists of <%= @book.query_doc_pairs.count %> query document pairs an
 
 <%= render 'judgements/moar_judgements_needed', book: @book %>
 
-<span id="notification-book-<%= @book.id %>">
-</span>
+<% if @book.ai_judge %>
+  We have an AI Judge, <i><%= @book.ai_judge.fullname %></i> helping us.
+  <br/>
+  <%= button_to 'Run Judgment Process', run_judge_judy_book_path(@book), method: :patch %>
+  <p/>
+<% end %>
+
+<% if @book.import_file.attached? %>
+<div class="alert alert-danger" role="alert">
+  This book has an upload of data that is currently being processed and is not ready for use yet.
+  <br/>
+  Import file is  <%=link_to 'available here', rails_blob_path(@book.import_file.blob, only_path: true) %>.
+  Status: <%= @book.query_doc_pairs.count %>
+  <%= link_to book_path(@book) do %>
+    Refresh
+    <i
+      class="bi arrow-clockwise"
+      aria-hidden="true"
+    ></i>
+  <% end %>
+
+</div>
+<% end %>
+
+<% if @book.populate_file.attached? %>
+<div class="alert alert-danger" role="alert">
+  Currently populating this book with fresh data from a case.
+  <br/>
+  Status is the book has <%= @book.query_doc_pairs.count %>  query doc pairs.
+  <%= link_to book_path(@book) do %>
+    <i
+      class="bi bi-arrow-clockwise"
+      aria-hidden="true"
+    ></i>
+  <% end %>
+
+</div>
+<% end %>
 
 <% if @count_of_anonymous_book_judgements > 0 %>
 <div class="alert alert-warning" role="alert">
   This book has <%= @count_of_anonymous_book_judgements %> anonymous judgements that could be mapped to a user.
-</div>
-<% end %>
-<% if @count_of_anonymous_case_judgements > 0 %>
-<div class="alert alert-warning" role="alert">
-  The associated cases have <%= @count_of_anonymous_case_judgements %> anonymous ratings that could be mapped to a user.
 </div>
 <% end %>
 
@@ -107,7 +138,7 @@ This book consists of <%= @book.query_doc_pairs.count %> query document pairs an
   To reference these judgements from a notebook or another system you can reference these <%= link_to 'Quepid APIs', apipie_apipie_path %> endpoints:
   <code><%= api_book_path(@book, format: :csv) %></code> or <code><%= api_export_book_path(@book) %></code>
 </p>
-  
+
 <h3>Leaderboard</h3>
 <div class="card">
   <div class="card-body">
