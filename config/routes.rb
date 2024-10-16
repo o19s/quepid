@@ -7,6 +7,15 @@ Rails.application.routes.draw do
   apipie
   mount ActiveStorageDB::Engine => '/active_storage_db'
   Healthcheck.routes(self)
+
+  # Render dynamic PWA files from app/views/pwa/*
+  get 'service-worker' => 'rails/pwa#service_worker', as: :pwa_service_worker
+  get 'manifest' => 'rails/pwa#manifest', as: :pwa_manifest
+
+  # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
+  # Can be used by load balancers and uptime monitors to verify that the app is live.
+  get 'up' => 'rails/health#show', as: :rails_health_check
+
   constraints(AdminConstraint) do
     mount Sidekiq::Web, at: 'admin/jobs'
   end
@@ -23,10 +32,9 @@ Rails.application.routes.draw do
 
   resources :search_endpoints do
     member do
-      post 'clone'
+      get 'clone'
     end
   end
-  # post 'search_endpoints/:id/clone' => 'search_endpoints#clone', as: :clone_search_endpoint
 
   # rubocop:disable Layout/LineLength
   # let's encrypt verification (can be removed in the future)
@@ -208,7 +216,7 @@ Rails.application.routes.draw do
         end
       end
 
-      resources :search_endpoints, only: [ :index, :show, :update ]
+      resources :search_endpoints
       resources :scorers, except: [ :new, :edit ]
 
       resources :teams, except: [ :new, :edit ], param: :team_id

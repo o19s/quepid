@@ -17,7 +17,6 @@
 
 //= require bootstrap/dist/js/bootstrap.bundle
 //= require jquery
-//= require rails-ujs
 
 //= require vega
 //= require vega-lite

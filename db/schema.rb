@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2024_05_12_144038) do
+ActiveRecord::Schema[7.2].define(version: 2024_06_26_181338) do
   create_table "active_storage_attachments", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.string "name", null: false
     t.string "record_type", null: false
@@ -170,7 +170,7 @@ ActiveRecord::Schema[7.1].define(version: 2024_05_12_144038) do
   create_table "queries", id: :integer, charset: "utf8mb3", force: :cascade do |t|
     t.bigint "arranged_next"
     t.bigint "arranged_at"
-    t.string "query_text", limit: 500
+    t.string "query_text", limit: 2048
     t.text "notes"
     t.integer "case_id"
     t.datetime "created_at", precision: nil, null: false
@@ -181,7 +181,7 @@ ActiveRecord::Schema[7.1].define(version: 2024_05_12_144038) do
   end
 
   create_table "query_doc_pairs", charset: "utf8mb3", collation: "utf8mb3_unicode_ci", force: :cascade do |t|
-    t.string "query_text", limit: 500
+    t.string "query_text", limit: 2048
     t.integer "position"
     t.text "document_fields", size: :medium, collation: "utf8mb4_0900_ai_ci"
     t.bigint "book_id", null: false
@@ -192,7 +192,6 @@ ActiveRecord::Schema[7.1].define(version: 2024_05_12_144038) do
     t.text "notes"
     t.text "options", collation: "utf8mb3_bin"
     t.index ["book_id"], name: "index_query_doc_pairs_on_book_id"
-    t.index ["query_text", "doc_id", "book_id"], name: "unique_query_doc_pair", unique: true
   end
 
   create_table "ratings", id: :integer, charset: "latin1", force: :cascade do |t|

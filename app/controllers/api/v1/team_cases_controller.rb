@@ -6,12 +6,20 @@ module Api
       before_action :set_team,    only: [ :index, :create, :destroy ]
       before_action :check_team,  only: [ :index, :create, :destroy ]
 
+      def_param_group :case_param do
+        param :id, Integer, desc: 'The ID of the case.', required: true
+      end
+
       def index
         @cases = @team.cases
         respond_with @cases
       end
 
       # rubocop:disable Metrics/MethodLength
+      api :POST, '/api/teams/:team_id/cases', 'Share a case with a team'
+      param :team_id, :number,
+            desc: 'The ID of the team.', required: true
+      param_group :case_param
       def create
         @case = Case.includes( tries: [ :curator_variables ] ).where(id: params[:id]).first
 

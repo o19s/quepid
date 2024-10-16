@@ -14,7 +14,7 @@ services:
       - PUPPETEER_SKIP_DOWNLOAD=true
       - PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
     volumes:
-      - .:/srv/app
+      - .:/srv/app:cached
       - ./log:/log
     ports:
       - 3000:3000
@@ -68,7 +68,7 @@ services:
 
 
   nginx:
-    image: nginx:1.25.2-alpine-slim
+    image: nginx:1.27.1-alpine-slim
     container_name: quepid_nginx
     ports:
       - "443:8443"

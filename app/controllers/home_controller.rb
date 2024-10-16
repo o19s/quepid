@@ -44,15 +44,26 @@ class HomeController < ApplicationController
 
       puts "we have decided we are stale for case #{@case.id} at #{@case.updated_at}"
 
-      data = @case.scores.sampled(@case.id, 25).collect do |score|
-        { ds: score.created_at.to_date.to_fs(:db), y: score.score, datetime: score.created_at.to_date }
+      sampled_scores = @case.scores.sampled(@case.id, 25)
+
+      unless sampled_scores.empty?
+        @for_single_day = sampled_scores.first.updated_at.all_day.overlaps?(sampled_scores.last.updated_at.all_day)
+        @final = @case.scores.last_one.score
+      end
+
+      data = sampled_scores.collect do |score|
+        if @for_single_day
+          { ds: score.updated_at.to_fs(:db), y: score.score, datetime: score.updated_at }
+        else
+          { ds: score.updated_at.to_date.to_fs(:db), y: score.score, datetime: score.updated_at.to_date }
+        end
       end.uniq
+
       # warning! blunt filter below!
       data = data.uniq { |h| h[:ds] }
       data = data.map { |h| h.transform_keys(&:to_s) }
 
       do_changepoints = data.length >= 3 # need at least 3...
-
       if do_changepoints
 
         df = Rover::DataFrame.new(data)
@@ -61,19 +72,19 @@ class HomeController < ApplicationController
 
         last_changepoint = DateTime.parse(m.changepoints.last.to_s)
         initial = data.find { |h| h['datetime'].all_day.overlaps?(last_changepoint.all_day) }['y']
-        final = @case.scores.last_one.score
-        change = 100 * (final - initial) / initial
+        changepoint = 100 * (@final - initial) / initial
 
-        vega_data = data.map { |d| { x: d['ds'], y: d['y'] } }
-
-        @prophet_case_data = {
-          initial:          initial,
-          final:            final,
-          change:           change,
-          last_changepoint: last_changepoint,
-          vega_data:        vega_data,
-        }
       end
+
+      vega_data = data.map { |d| { x: d['ds'], y: d['y'] } }
+
+      @prophet_case_data = {
+        initial:          initial,
+        final:            @final,
+        changepoint:      changepoint.nil? ? 0 : changepoint,
+        last_changepoint: last_changepoint,
+        vega_data:        vega_data,
+      }
       render layout: false
     end
   end

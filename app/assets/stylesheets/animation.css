@@ -3,10 +3,10 @@ using ngAnimate and css from the https://animate.style project
 */
 
 /* when hiding the picture */
-.froggy.ng-hide-add         { animation:2s flipOutX ease; }
+.froggy-animation.ng-hide-add         { animation:2s flipOutX ease; }
 
 /* when showing the picture */
-.froggy.ng-hide-remove      { animation:2s flipInX ease; }
+.froggy-animation.ng-hide-remove      { animation:2s flipInX ease; }
 
 /* ANIMATIONS (FROM ANIMATE.CSS) ======================== */
 

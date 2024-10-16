@@ -1,7 +1,6 @@
 # Docker Compose file for running Quepid in Production mode.
 # Allows you to update your Quepid installation over time.
 
-version: '3'
 services:
   mysql:
     container_name: quepid_prod_db
@@ -57,7 +56,7 @@ services:
       - mysql
       - redis
   nginx:
-    image: nginx:1.25.2-alpine-slim
+    image: nginx:1.27.1-alpine-slim
     container_name: quepid_nginx
     ports:
       - "443:8443"
