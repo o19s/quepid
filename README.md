@@ -117,7 +117,7 @@ bin/docker server
 It can take up to a minute for the server to respond as it compiles all the front end assets on the first call.
 
 We've created a helper script to run and manage the app through docker that wraps around the `docker-compose` command.  You will need Ruby installed.
-You can still use `docker-compose` directly, but for the basic stuff you can use the following:
+You can still use `docker compose` directly, but for the basic stuff you can use the following:
 
 * Start the app: `bin/docker server` or `bin/docker s`
 * Connect to the app container with bash: `bin/docker bash` or `bin/docker ba`
@@ -418,7 +418,7 @@ bin/docker r bundle update foobar
 You can remove a gem via:
 
 ```
-bin/docker r bundle remove foobar --install
+bin/docker r bundle remove foobar
 ```
 
 Then check in the updated `Gemfile` and `Gemfile.lock` files.  For good measure
@@ -454,17 +454,17 @@ docker tag o19s/quepid o19s/quepid:$QUEPID_VERSION
 
 - Bring up the mysql container
 ```
-docker-compose up -d mysql
+docker compose up -d mysql
 ```
 - Run the initialization scripts. This can take a few seconds
 ```
-docker-compose run --rm app bin/rake db:setup
+docker compose run --rm app bin/rake db:setup
 ```
 - Update your docker-compose.prod.yml file to use your image by updating the image version in the app ```image: o19s/quepid:10.0.0```
 
 - Start up the app either as a Daemon (-d) or as an active container
 ```
-docker-compose up [-d]
+docker compose up [-d]
 ```
 - You should be able to access the app through [http://localhost](http://localhost)
 

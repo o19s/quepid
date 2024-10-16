@@ -35,7 +35,7 @@ class Score < ApplicationRecord
   serialize :queries, coder: JSON
 
   # Associations
-  belongs_to :case
+  belongs_to :case, touch: true
   belongs_to :user
   belongs_to :try
   belongs_to :annotation, optional: true

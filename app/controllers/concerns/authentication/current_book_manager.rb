@@ -4,11 +4,15 @@ module Authentication
   module CurrentBookManager
     extend ActiveSupport::Concern
 
+    included do
+      helper_method :set_recent_books
+    end
+
     private
 
     def set_book
       @book = current_user.books_involved_with.where(id: params[:book_id]).first
-      TrackBookViewedJob.perform_later @book, current_user
+      TrackBookViewedJob.perform_later current_user, @book
     end
 
     def check_book
@@ -42,9 +46,8 @@ module Authentication
 
         results = ActiveRecord::Base.connection.execute(sql)
 
-        book_ids = []
-        results.each do |row|
-          book_ids << row.first.to_i
+        book_ids = results.map do |row|
+          row.first.to_i
         end
 
         # map to objects

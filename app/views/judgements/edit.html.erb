@@ -1,3 +1,4 @@
+<turbo-frame id="query_doc_pair_card">
 <p></p>
 <h2>Editing Judgement</h2>
 
@@ -9,10 +10,11 @@
   <%= button_to 'Go Back to Previous Query/Doc Pair', edit_book_query_doc_pair_judgement_path(@book, @previous_judgement.query_doc_pair, @previous_judgement), method: :get %>
   <br>
 <% end %>
-<%= button_to 'Exit', book_judgements_path(@book), method: :get %>
+<%= button_to 'Quit Judging', book_path(@book), method: :get, data: { turbo: false } %>
 
 <br>
 
-<%= button_to 'Unrate', book_judgement_path, method: :delete %>
+<%= button_to 'Unrate', book_judgement_path, method: :delete, data: { turbo: false } %>
 
 <br>
+</turbo-frame>

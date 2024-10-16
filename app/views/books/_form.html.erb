@@ -33,7 +33,7 @@
     <div class="mb-3">
       <div class="form-check form-switch">
         <%= form.label :link_the_case, class:'form-check-label' %>
-        <%= form.check_box :link_the_case, class:'form-check-input' %>
+        <%= form.check_box :link_the_case, class:'form-check-input', checked: true %>
           <%= @origin_case.case_name %> to this book?
       </div>
        <%= form.hidden_field :origin_case_id, :value => @origin_case.id %>
@@ -71,10 +71,31 @@
     <div class="form-check form-switch">
       <%= form.label :support_implicit_judgements, class:'form-check-label' %>
       <%= form.check_box :support_implicit_judgements, class:'form-check-input' %>
-        Supports Implicit Judgements?
     </div>
     <div class="form-text">Regular explicit judgements are on a ordinal scale, however implicit judgements are floats.  This controls how we import the judgements into the main Quepid Case screen.</div>
   </div>
+  
+  <div class="mb-3">
+    <div class="form-check">   
+      <%= form.check_box :delete_populate_file, class: 'form-check-input', checked: false, disabled: !@book.populate_file.attached? %>
+      <%= form.label :delete_populate_file, "Delete Populate File", class: 'form-check-label' %>
+      <div class="form-text">If enabled you have a associated file.  Check this to delete it.</div>
+    </div>
+  </div> 
+  <div class="mb-3">
+    <div class="form-check">
+      <%= form.check_box :delete_import_file, class: 'form-check-input', checked: false, disabled: !@book.import_file.attached? %>
+      <%= form.label :delete_import_file, "Delete Import File", class: 'form-check-label' %>
+      <div class="form-text">If enabled you have a associated file.  Check this to delete it.</div>
+    </div>
+  </div>    
+  <div class="mb-3">
+    <div class="form-check">
+      <%= form.check_box :delete_export_file, class: 'form-check-input', checked: false, disabled: !@book.export_file.attached? %>
+      <%= form.label :delete_export_file, "Delete Export File", class: 'form-check-label' %>
+      <div class="form-text">If enabled you have a associated file.  Check this to delete it.</div>
+    </div>
+  </div>  
 
   <br>
 

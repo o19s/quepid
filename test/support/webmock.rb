@@ -165,7 +165,7 @@ module ActiveSupport
             'Content-Type'    => 'application/json',
             'Cookie'          => '',
             'Https'           => 'off',
-            'User-Agent'      => /Faraday.*/,
+            'User-Agent'      => /Faraday/,
           }
         )
         .to_return(status: 200, body: mock_statedecoded_body)
@@ -179,7 +179,7 @@ module ActiveSupport
             'Content-Type'    => 'application/json',
             'Cookie'          => '',
             'Https'           => 'off',
-            'User-Agent'      => /Faraday.*/,
+            'User-Agent'      => /Faraday/,
           }
         )
         .to_return(status: 200, body: mock_statedecoded_body)
@@ -194,6 +194,20 @@ module ActiveSupport
       # Demonstrate server error
       stub_request(:get, 'https://localhost:9999/')
         .to_raise(Faraday::ConnectionFailed.new('Failed to connect'))
+
+      # Testing out handline of café as a non ascii character
+      stub_request(:get, 'http://solr.quepid.com:8983/solr/statedecoded/select?fl=id,text&q=At%20dusk,%20the%20caf%C3%A9%20transformed%20into%20an%20impromptu%20stage&rows=10&start=0')
+        .with(
+          headers: {
+            'Accept'          => '*/*',
+            'Accept-Encoding' => 'gzip;q=1.0,deflate;q=0.6,identity;q=0.3',
+            'Content-Type'    => 'application/json',
+            'Cookie'          => '',
+            'Https'           => 'off',
+            'User-Agent'      => /Faraday/,
+          }
+        )
+        .to_return(status: 200, body: '', headers: {})
     end
 
     # rubocop:enable Metrics/MethodLength

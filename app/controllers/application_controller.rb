@@ -1,21 +1,20 @@
 # frozen_string_literal: true
 
-require 'application_responder'
-require 'analytics'
+require_relative '../lib/analytics'
 
 class ApplicationController < ActionController::Base
   include Authentication::CurrentUserManager
   include Authentication::CurrentCaseManager
   include Authentication::CurrentBookManager
 
-  self.responder = ApplicationResponder
+  # Only allow modern browsers supporting webp images, web push, badges, import maps, CSS nesting, and CSS :has.
+  allow_browser versions: :modern
 
   respond_to :html, :js
+
   before_action :set_current_user
   before_action :require_login
   before_action :check_current_user_locked!
-  before_action :set_recent_cases
-  before_action :set_recent_books
   before_action :check_for_announcement
 
   # Prevent CSRF attacks by raising an exception.

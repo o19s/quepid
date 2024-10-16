@@ -3,6 +3,8 @@
 require 'faraday'
 require 'faraday/follow_redirects'
 
+require 'addressable/uri'
+
 # rubocop:disable Layout/LineLength
 # rubocop:disable Metrics/AbcSize
 # rubocop:disable Metrics/MethodLength
@@ -23,7 +25,8 @@ class ProxyController < ApplicationController
 
     proxy_debug = 'true' == params[:proxy_debug]
 
-    uri = URI.parse(url_param)
+    # we use Addressable::URI instead of straight up URI to support non ascii characters like café
+    uri = Addressable::URI.parse(url_param)
     url_without_path = "#{uri.scheme}://#{uri.host}"
     url_without_path += ":#{uri.port}" unless uri.port.nil?
 
@@ -43,6 +46,11 @@ class ProxyController < ApplicationController
       end
 
       faraday.headers['Content-Type'] = 'application/json'
+      has_credentials = !uri.userinfo.nil?
+      if has_credentials
+        username, password = uri.userinfo.split(':')
+        faraday.headers['Authorization'] = "Basic #{Base64.strict_encode64("#{username}:#{password}")}"
+      end
       faraday.adapter Faraday.default_adapter
     end
 

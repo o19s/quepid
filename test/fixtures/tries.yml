@@ -210,3 +210,8 @@ for_case_snapshot_case:
   try_number:     1
   field_spec:     id:id title:title body
   search_endpoint: :one
+
+for_case_no_queries_try_1:
+  case:           :case_no_queries
+  query_params:   'q=#$query##'
+  try_number:     1

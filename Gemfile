@@ -2,11 +2,12 @@
 
 source 'https://rubygems.org'
 
-ruby '3.3.0'
+ruby '3.3.5'
 
 gem 'activerecord-import', '>= 1.0.7'
 gem 'active_storage_db'
 gem 'acts_as_list', '>= 1.0.1'
+gem 'addressable', '~> 2.8'
 gem 'ancestry'
 gem 'angular-rails-templates', '>= 1.0.0.beta'
 gem 'apipie-rails', '~> 1.2'
@@ -22,7 +23,9 @@ gem 'devise_invitable', '~> 2.0'
 # Using this as it wires in via Sprockets and I can't get npm version to work with the main app.
 # Had no luck with js/svg approach ;-(
 gem 'font-awesome-sass'
+gem 'foreman'
 gem 'gabba'
+gem 'importmap-rails', '~> 2.0'
 gem 'intercom-rails'
 gem 'jbuilder', '~> 2.7'
 gem 'jquery-rails'
@@ -38,22 +41,24 @@ gem 'postmark-rails'
 gem 'prophet-rb', '~> 0.5.0'
 gem 'puma'
 gem 'pundit'
-gem 'rails', '~> 7.1.2'
+gem 'rails', '~> 7.2.1'
 gem 'rails-healthcheck', '~> 1.4'
 gem 'rails-html-sanitizer'
 gem 'rack-cors', '~> 2.0'
 gem 'rapidjson'
-gem 'redis', '~> 5.1.0'
+gem 'redis'
 gem 'responders'
-gem 'rubyzip'
+gem 'rubyzip', '~> 2.3.0' # 3.0 will be breaking
 gem 'sassc-rails', '~> 2.1'
 gem 'sidekiq'
-gem 'terser'
+gem 'sidekiq-limit_fetch', '~> 4.4'
 gem 'thor'
-gem 'turbolinks', '~> 5'
+gem 'turbo-rails', '~> 2.0', '>= 2.0.5'
 gem 'vega', '~> 0.3.0'
 
 group :development, :test do
+  # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
+  gem 'debug', platforms: [ :mri, :windows ], require: 'debug/prelude'
   gem 'annotate'
   gem 'bullet'
   gem 'memory_profiler'
@@ -63,12 +68,12 @@ group :development do
   # Use console on exceptions pages [https://github.com/rails/web-console]
   gem 'web-console'
 
-  # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
-  # Add me back in when Ruby 3.2.X comes out https://github.com/ruby/debug/issues/898
-  # gem 'debug', platforms: [ :mri, :mingw, :x64_mingw ]
-
+  # this was commented out in the default build, so doing the same..
   # Add speed badges [https://github.com/MiniProfiler/rack-mini-profiler]
-  gem 'rack-mini-profiler'
+  # gem 'rack-mini-profiler'
+
+  # # Highlight the fine-grained location where an error occurred [https://github.com/ruby/error_highlight]
+  gem 'error_highlight', '>= 0.4.0', platforms: [ :ruby ]
 
   gem 'derailed_benchmarks'
   gem 'letter_opener'
@@ -89,5 +94,3 @@ group :test do
   gem 'capybara'
   gem 'selenium-webdriver'
 end
-
-gem 'importmap-rails', '~> 2.0'

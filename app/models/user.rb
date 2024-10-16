@@ -120,7 +120,6 @@ class User < ApplicationRecord
            dependent:  :destroy
 
   has_many :announcements, foreign_key: 'author_id', dependent: :destroy, inverse_of: :author
-  has_many :viewed_announcements, through: :announcements_viewed, source: :announcement
 
   # Validations
 

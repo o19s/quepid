@@ -227,6 +227,7 @@ class SampleData < Thor
     osc.members << osc_member_user unless osc.members.include?(osc_member_user)
     osc.members << realistic_activity_user unless osc.members.include?(realistic_activity_user)
     osc.cases << tens_of_queries_case unless osc.members.include?(tens_of_queries_case)
+    osc.search_endpoints << statedecoded_solr_endpoint unless osc.search_endpoints.include?(statedecoded_solr_endpoint)
     print_step 'End of seeding teams................'
 
     # Books
@@ -340,8 +341,9 @@ class SampleData < Thor
     ######################################
 
     user_specifics = {
-      name:  'User with 100s of Queries',
-      email: 'quepid+100sOfQueries@o19s.com',
+      name:          'User with 100s of Queries',
+      email:         'quepid+100sOfQueries@o19s.com',
+      administrator: true,
     }
     user_params = user_defaults.merge(user_specifics)
     hundreds_of_queries_user = seed_user user_params
@@ -352,8 +354,9 @@ class SampleData < Thor
     ######################################
 
     user_specifics = {
-      name:  'User with 1000s of Queries',
-      email: 'quepid+1000sOfQueries@o19s.com',
+      name:          'User with 1000s of Queries',
+      email:         'quepid+1000sOfQueries@o19s.com',
+      administrator: true,
     }
     user_params = user_defaults.merge(user_specifics)
     thousands_of_queries_user = seed_user user_params

@@ -72,4 +72,30 @@ module ApplicationHelper
 
     document_fields
   end
+
+  # Override default form_for to disable Turbo Drive on
+  # Forms.  Maybe should be an ENV variable?
+  # caused by https on front end attempting to make http
+  # call by Turbo Drive and getting mix mode errros
+  # rubocop:disable Naming/BlockForwarding
+  def form_for record, options = {}, &block
+    if options[:html].nil?
+      options[:html] = { data: { turbo: false } }
+    elsif options[:html][:data].nil?
+      options[:html][:data] = { turbo: false }
+    end
+    super
+  end
+  # rubocop:enable Naming/BlockForwarding
+
+  def form_with(model: nil, **options, &block)
+    if options[:html].nil?
+      options[:html] = { data: { turbo: false } }
+    elsif options[:html][:data].nil?
+      options[:html][:data] = { turbo: false }
+    end
+
+    # Call the original `form_with` method with the modified options
+    super
+  end
 end
