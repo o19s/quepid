@@ -14,6 +14,8 @@ angular.module('ng-rails-csrf', [] )
         return el;
       };
 
+      $httpProvider.interceptors.push('httpThrottler');
+      
       $httpProvider.interceptors.push(function() {
         return {
          'request': function(config) {

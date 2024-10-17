@@ -22,5 +22,6 @@ angular.module('QuepidApp', [
   'ngAnimate',
   'countUp',
   'ngclipboard',
-  'ngVega'
+  'ngVega',
+  'http-throttler'
 ]);
