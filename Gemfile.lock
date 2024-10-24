@@ -483,7 +483,7 @@ GEM
     uniform_notifier (1.16.0)
     uri (0.13.1)
     useragent (0.16.10)
-    vega (0.3.2)
+    vega (0.4.0)
     version_gem (1.1.4)
     warden (1.2.9)
       rack (>= 2.0.9)
@@ -574,7 +574,7 @@ DEPENDENCIES
   simplecov
   thor
   turbo-rails (~> 2.0, >= 2.0.5)
-  vega (~> 0.3.0)
+  vega (~> 0.4.0)
   web-console
   webmock
 
