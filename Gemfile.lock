@@ -319,7 +319,7 @@ GEM
     postmark-rails (0.22.1)
       actionmailer (>= 3.0.0)
       postmark (>= 1.21.3, < 2.0)
-    prophet-rb (0.5.1)
+    prophet-rb (0.5.2)
       cmdstan (>= 0.2)
       numo-narray (>= 0.9.1.7)
       rover-df
@@ -551,7 +551,7 @@ DEPENDENCIES
   omniauth-keycloak
   omniauth-rails_csrf_protection
   postmark-rails
-  prophet-rb (~> 0.5.0)
+  prophet-rb (~> 0.5.2)
   puma
   pundit
   rack-cors (~> 2.0)
