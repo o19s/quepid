@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2024_06_26_181338) do
+ActiveRecord::Schema[7.2].define(version: 2024_10_17_005156) do
   create_table "active_storage_attachments", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.string "name", null: false
     t.string "record_type", null: false
@@ -44,6 +44,16 @@ ActiveRecord::Schema[7.2].define(version: 2024_06_26_181338) do
     t.bigint "blob_id", null: false
     t.string "variation_digest", null: false
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
+  end
+
+  create_table "ai_judges", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
+    t.bigint "book_id", null: false
+    t.bigint "user_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["book_id", "user_id"], name: "index_ai_judges_on_book_id_and_user_id", unique: true
+    t.index ["book_id"], name: "index_ai_judges_on_book_id"
+    t.index ["user_id"], name: "index_ai_judges_on_user_id"
   end
 
   create_table "annotations", id: :integer, charset: "utf8mb3", force: :cascade do |t|
@@ -95,7 +105,6 @@ ActiveRecord::Schema[7.2].define(version: 2024_06_26_181338) do
     t.boolean "support_implicit_judgements"
     t.boolean "show_rank", default: false
     t.integer "owner_id"
-    t.integer "ai_judge_id"
     t.index ["selection_strategy_id"], name: "index_books_on_selection_strategy_id"
   end
 
@@ -369,6 +378,7 @@ ActiveRecord::Schema[7.2].define(version: 2024_06_26_181338) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "ai_judges", "books"
   add_foreign_key "annotations", "users"
   add_foreign_key "book_metadata", "books"
   add_foreign_key "books", "selection_strategies"

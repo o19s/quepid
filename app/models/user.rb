@@ -102,7 +102,7 @@ class User < ApplicationRecord
   has_many :shared_scorers,
            through: :teams,
            source:  :scorers
-
+  
   has_many :permissions,
            dependent: :destroy
 
@@ -120,6 +120,9 @@ class User < ApplicationRecord
            dependent:  :destroy
 
   has_many :announcements, foreign_key: 'author_id', dependent: :destroy, inverse_of: :author
+  
+  #has_many :ai_judges, dependent: :destroy
+  #has_many :books, through: :ai_judges
 
   # Validations
 
@@ -210,7 +213,11 @@ class User < ApplicationRecord
 
   # Scopes
   # default_scope -> { includes(:permissions) }
-  scope :ai_judges, -> { where('`users`.`openai_key` IS NOT NULL') }
+  scope :only_ai_judges, -> { where('`users`.`openai_key` IS NOT NULL') }
+  
+  def ai_judge?
+    return !openai_key.nil?
+  end
 
   def num_queries
     queries.count

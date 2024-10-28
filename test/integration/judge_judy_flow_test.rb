@@ -34,7 +34,7 @@ class JudgeJudyFlowTest < ActionDispatch::IntegrationTest
     judge_judy.teams << team
     judge_judy.save!
     # Add her to the book as the judge.  Like owner_id but it's ai_judge_id
-    book.ai_judge = judge_judy
+    #book.ai_judge = judge_judy
     book.save!
 
     # Wait for her to judge

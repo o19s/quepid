@@ -10,7 +10,6 @@
 #  support_implicit_judgements :boolean
 #  created_at                  :datetime         not null
 #  updated_at                  :datetime         not null
-#  ai_judge_id                 :integer
 #  owner_id                    :integer
 #  scorer_id                   :integer
 #  selection_strategy_id       :bigint           not null
@@ -33,8 +32,14 @@ class Book < ApplicationRecord
   belongs_to :owner,
              class_name: 'User', optional: true
 
-  belongs_to :ai_judge,
-             class_name: 'User', optional: true
+  #belongs_to :ai_judge,
+  #           class_name: 'User', optional: true
+  # 
+  #has_many :users, dependent: :destroy
+  #has_many :ai_judges, through: :ai_judges
+  has_and_belongs_to_many :ai_judges,
+                          class_name:              'User',
+                          join_table: 'ai_judges'
 
   belongs_to :selection_strategy
   belongs_to :scorer

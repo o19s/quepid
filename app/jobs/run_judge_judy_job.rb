@@ -5,7 +5,8 @@ class RunJudgeJudyJob < ApplicationJob
   sidekiq_options log_level: :warn
 
   def perform book
-    judge = book.ai_judge
+    #judge = book.ai_judge
+    judge = nil
     if judge # only run the job if we have a judge defined
       loop do
         query_doc_pair = SelectionStrategy.random_query_doc_based_on_strategy(book, judge)
