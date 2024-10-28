@@ -2,6 +2,7 @@
 
 require 'open-uri'
 require 'json'
+require 'zip'
 
 module Books
   class ImportController < ApplicationController
@@ -10,8 +11,8 @@ module Books
     end
 
     # rubocop:disable Metrics/MethodLength
-    # rubocop:disable Security/Open
     # rubocop:disable Metrics/AbcSize
+    # rubocop:disable Metrics/PerceivedComplexity
     def create
       @book = Book.new
       @book.owner = current_user
@@ -20,13 +21,25 @@ module Books
       force_create_users = bool.deserialize params[:book][:force_create_users]
 
       uploaded_file = params[:book][:import_file]
-      json_file = uploaded_file.tempfile
-      json_data = URI.open(json_file) do |file|
-        JSON.parse(file.read)
-      end
+      tempfile = uploaded_file.tempfile
+      json_data = if 'application/zip' == uploaded_file.content_type || uploaded_file.path.end_with?('.zip')
+                    # Handle zip file
+                    Zip::File.open(tempfile.path) do |zip_file|
+                      # Assuming the zip contains only one JSON file
+                      json_file_entry = zip_file.entries.find { |e| e.name.end_with?('.json') }
+                      if json_file_entry
+                        json_file_entry.get_input_stream { |io| read_json(io) }
+                      else
+                        raise 'No JSON file found in the zip.'
+                      end
+                    end
+                  else
+                    # Handle normal JSON file
+                    read_json(tempfile)
+                  end
 
       begin
-        params_to_use = JSON.parse(json_data.read).deep_symbolize_keys
+        params_to_use = json_data.deep_symbolize_keys
 
         @book.name = params_to_use[:name]
 
@@ -49,7 +62,13 @@ module Books
       end
     end
     # rubocop:enable Metrics/MethodLength
-    # rubocop:enable Security/Open
     # rubocop:enable Metrics/AbcSize
+    # rubocop:enable Metrics/PerceivedComplexity
+
+    private
+
+    def read_json file
+      JSON.parse(file.read)
+    end
   end
 end
