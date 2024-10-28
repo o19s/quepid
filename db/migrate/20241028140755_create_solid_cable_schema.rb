@@ -1,6 +1,6 @@
-
 # We are using the Single Database approach for now, so bring in solid_cable_messages
 # create script as a "normal" migration.
+
 class CreateSolidCableSchema < ActiveRecord::Migration[7.2]
   def change
     create_table "solid_cable_messages", force: :cascade do |t|

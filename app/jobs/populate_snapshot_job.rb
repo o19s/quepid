@@ -2,7 +2,7 @@
 
 class PopulateSnapshotJob < ApplicationJob
   queue_as :default
-  sidekiq_options log_level: :warn
+  # sidekiq_options log_level: :warn
 
   # rubocop:disable Security/MarshalLoad
   def perform snapshot

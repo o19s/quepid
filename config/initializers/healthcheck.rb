@@ -16,10 +16,7 @@ Healthcheck.configure do |config|
   # -- Checks --
   config.add_check :database,     -> { ActiveRecord::Base.connection.execute('select 1') }
   config.add_check :migrations,   -> { ActiveRecord::Migration.check_pending! }
-  # config.add_check :redis,        -> { Redis.new().ping }
-  config.add_check :sidekiq,      -> {
-                                    raise StandardError, 'Sidekiq is down' unless Sidekiq::ProcessSet.new.size.positive?
-                                  }
+
   # config.add_check :cache,        -> { Rails.cache.read('some_key') }
   # config.add_check :environments, -> { Dotenv.require_keys('ENV_NAME', 'ANOTHER_ENV') }
 end

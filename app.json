@@ -3,8 +3,7 @@
   "description": "Give your queries some love!",
   "addons": [
     "jawsdb",
-    "logdna",
-    "heroku-redis"
+    "logdna"
   ],
   "buildpacks": [
     {

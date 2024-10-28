@@ -28,7 +28,7 @@ module Quepid
 
     config.angular_templates.ignore_prefix = %w[templates/ components/]
 
-    config.active_job.queue_adapter = :sidekiq
+    config.active_job.queue_adapter = :solid_queue
 
     # == SSL Specific Settings
     # Note, if true then this will allow Quepid to ONLY talk to HTTPS based search engines.

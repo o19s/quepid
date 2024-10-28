@@ -11,11 +11,6 @@ services:
       - MYSQL_ROOT_PASSWORD=password
     volumes:
       - ./volumes/mysql_data:/var/lib/mysql
-  redis:
-    container_name: quepid_prod_redis
-    image: redis:7.2.0-alpine
-    ports:
-      - 6379:6379
   app:
     container_name: quepid_prod_app
     image: o19s/quepid:latest
@@ -26,7 +21,6 @@ services:
       - RACK_ENV=production
       - RAILS_ENV=production
       - DATABASE_URL=mysql2://root:password@mysql:3306/quepid
-      - REDIS_URL=redis://redis:6379/1
       - FORCE_SSL=false
       - MAX_THREADS=2
       - WEB_CONCURRENCY=2
@@ -51,10 +45,8 @@ services:
       - 3000:3000
     links:
       - mysql
-      - redis
     depends_on:
       - mysql
-      - redis
   nginx:
     image: nginx:1.27.1-alpine-slim
     container_name: quepid_nginx

@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'sidekiq/web'
+# require 'sidekiq/web'
 
 # rubocop:disable Metrics/BlockLength
 Rails.application.routes.draw do
@@ -17,7 +17,7 @@ Rails.application.routes.draw do
   get 'up' => 'rails/health#show', as: :rails_health_check
 
   constraints(AdminConstraint) do
-    mount Sidekiq::Web, at: 'admin/jobs'
+    mount MissionControl::Jobs::Engine, at: 'admin/jobs'
   end
 
   root 'home#show'
