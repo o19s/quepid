@@ -22,8 +22,10 @@
 #  locked_at                   :datetime
 #  name                        :string(255)
 #  num_logins                  :integer
+#  openai_key                  :string(255)
 #  password                    :string(120)
 #  profile_pic                 :string(4000)
+#  prompt                      :string(4000)
 #  reset_password_sent_at      :datetime
 #  reset_password_token        :string(255)
 #  stored_raw_invitation_token :string(255)
@@ -100,7 +102,7 @@ class User < ApplicationRecord
   has_many :shared_scorers,
            through: :teams,
            source:  :scorers
-
+  
   has_many :permissions,
            dependent: :destroy
 
@@ -118,6 +120,9 @@ class User < ApplicationRecord
            dependent:  :destroy
 
   has_many :announcements, foreign_key: 'author_id', dependent: :destroy, inverse_of: :author
+  
+  #has_many :ai_judges, dependent: :destroy
+  #has_many :books, through: :ai_judges
 
   # Validations
 
@@ -208,6 +213,11 @@ class User < ApplicationRecord
 
   # Scopes
   # default_scope -> { includes(:permissions) }
+  scope :only_ai_judges, -> { where('`users`.`openai_key` IS NOT NULL') }
+  
+  def ai_judge?
+    return !openai_key.nil?
+  end
 
   def num_queries
     queries.count

@@ -57,8 +57,9 @@ Rails.application.routes.draw do
 
   resources :books do
     resources :judgements
+    resources :ai_judges
     resources :query_doc_pairs do
-      resources :judgements
+      resources :judgements      
       post 'unrateable' => 'judgements#unrateable'
       patch 'unrateable' => 'judgements#unrateable'
       get 'judge_later' => 'judgements#judge_later'
@@ -68,6 +69,7 @@ Rails.application.routes.draw do
     member do
       patch 'combine'
       patch 'assign_anonymous'
+      patch 'run_judge_judy'
       delete 'delete_ratings_by_assignee', action: :delete_ratings_by_assignee, as: :delete_ratings_by_assignee
       delete 'reset_unrateable/:user_id', action: :reset_unrateable, as: :reset_unrateable
       delete 'reset_judge_later/:user_id', action: :reset_judge_later, as: :reset_judge_later
