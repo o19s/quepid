@@ -12,10 +12,25 @@
       <% end %>
     </ul>
   </div>
+  
+  <div class="alert alert-warning" role="alert" >  
+    You will need to pick the file to be imported again.
+  </div>
 <% end %>
 
 <%= form_with model: @book, url: books_import_index_path do |form| %>
+  <div class="mb-3">
   <%= form.file_field :import_file %>
+  </div>
+  
+  <div class="mb-3">
+    <div class="form-check form-switch">
+      <%= form.label :force_create_users, class:'form-check-label' %>
+      <%= form.check_box :force_create_users, class:'form-check-input' %>
+    </div>
+    <div class="form-text">Create user records for any judges that don't exist in this instance of Quepid.</div>
+  </div>
+  
   <%= form.submit "Upload" %>
 <% end %>
 

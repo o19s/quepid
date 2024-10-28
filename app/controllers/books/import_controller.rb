@@ -16,6 +16,9 @@ module Books
       @book = Book.new
       @book.owner = current_user
 
+      bool = ActiveRecord::Type::Boolean.new
+      force_create_users = bool.deserialize params[:book][:force_create_users]
+
       uploaded_file = params[:book][:import_file]
       json_file = uploaded_file.tempfile
       json_data = URI.open(json_file) do |file|
@@ -27,7 +30,7 @@ module Books
 
         @book.name = params_to_use[:name]
 
-        service = ::BookImporter.new @book, current_user, params_to_use, {}
+        service = ::BookImporter.new @book, current_user, params_to_use, { force_create_users: force_create_users }
         service.validate
       rescue JSON::ParserError => e
         @book.errors.add(:base, "Invalid JSON file format: #{e.message}")

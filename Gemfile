@@ -52,6 +52,7 @@ gem 'rubyzip', '~> 2.3.0' # 3.0 will be breaking
 gem 'sassc-rails', '~> 2.1'
 gem 'sidekiq'
 gem 'sidekiq-limit_fetch', '~> 4.4'
+gem 'solid_cable', '~> 3.0'
 gem 'thor'
 gem 'turbo-rails', '~> 2.0', '>= 2.0.5'
 gem 'vega', '~> 0.3.0'

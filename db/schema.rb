@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2024_06_26_181338) do
+ActiveRecord::Schema[7.2].define(version: 2024_10_28_140755) do
   create_table "active_storage_attachments", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.string "name", null: false
     t.string "record_type", null: false
@@ -270,6 +270,16 @@ ActiveRecord::Schema[7.2].define(version: 2024_06_26_181338) do
     t.index ["case_id"], name: "case_id"
     t.index ["scorer_id"], name: "index_snapshots_on_scorer_id"
     t.index ["try_id"], name: "index_snapshots_on_try_id"
+  end
+
+  create_table "solid_cable_messages", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
+    t.binary "channel", limit: 1024, null: false
+    t.binary "payload", size: :long, null: false
+    t.datetime "created_at", null: false
+    t.bigint "channel_hash", null: false
+    t.index ["channel"], name: "index_solid_cable_messages_on_channel"
+    t.index ["channel_hash"], name: "index_solid_cable_messages_on_channel_hash"
+    t.index ["created_at"], name: "index_solid_cable_messages_on_created_at"
   end
 
   create_table "teams", id: :integer, charset: "latin1", force: :cascade do |t|

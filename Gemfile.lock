@@ -180,6 +180,7 @@ GEM
     faraday-net_http (3.3.0)
       net-http
     ffi (1.17.0-aarch64-linux-gnu)
+    ffi (1.17.0-x86_64-darwin)
     ffi (1.17.0-x86_64-linux-gnu)
     font-awesome-sass (6.5.2)
       sassc (~> 2.0)
@@ -277,6 +278,8 @@ GEM
       net-protocol
     nio4r (2.7.3)
     nokogiri (1.16.7-aarch64-linux)
+      racc (~> 1.4)
+    nokogiri (1.16.7-x86_64-darwin)
       racc (~> 1.4)
     nokogiri (1.16.7-x86_64-linux)
       racc (~> 1.4)
@@ -463,6 +466,11 @@ GEM
     snaky_hash (2.0.1)
       hashie
       version_gem (~> 1.1, >= 1.1.1)
+    solid_cable (3.0.2)
+      actioncable (>= 7.2)
+      activejob (>= 7.2)
+      activerecord (>= 7.2)
+      railties (>= 7.2)
     sprockets (4.2.1)
       concurrent-ruby (~> 1.0)
       rack (>= 2.2.4, < 4)
@@ -507,6 +515,7 @@ GEM
 
 PLATFORMS
   aarch64-linux
+  x86_64-darwin-22
   x86_64-linux
 
 DEPENDENCIES
@@ -572,6 +581,7 @@ DEPENDENCIES
   sidekiq
   sidekiq-limit_fetch (~> 4.4)
   simplecov
+  solid_cable (~> 3.0)
   thor
   turbo-rails (~> 2.0, >= 2.0.5)
   vega (~> 0.3.0)
