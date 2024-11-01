@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-# require 'sidekiq/web'
-
 # rubocop:disable Metrics/BlockLength
 Rails.application.routes.draw do
   apipie
