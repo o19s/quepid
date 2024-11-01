@@ -87,7 +87,8 @@
   "formation": {
     "worker": {
       "quantity": 1,
-      "size": "standard-1x"
+      "size": "standard-1x",
+      "command": "bundle exec rake solid_queue:start"
     },
     "web": {
       "quantity": 1,
