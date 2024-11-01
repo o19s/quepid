@@ -2,7 +2,7 @@
 
 class PopulateSnapshotJob < ApplicationJob
   queue_as :default
-  
+
   # rubocop:disable Security/MarshalLoad
   def perform snapshot
     # down the road we should be using ActiveRecord-import and first_or_initialize instead.

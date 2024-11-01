@@ -27,7 +27,7 @@ module Api
           track_book_populate_queued do
             PopulateBookJob.perform_later current_user, @book, @case
           end
-          
+
           head :no_content
         end
 
@@ -45,7 +45,7 @@ module Api
 
           # Yield to the block to perform the job
           yield if block_given?
-        end        
+        end
       end
     end
   end

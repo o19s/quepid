@@ -59,7 +59,7 @@ module Books
         @book.import_file.attach(io: StringIO.new(compressed_data), filename: "book_import_#{@book.id}.bin.zip",
                                  content_type: 'application/zip')
         @book.save
-        
+
         track_book_import_queued do
           ImportBookJob.perform_later current_user, @book
         end
@@ -77,12 +77,12 @@ module Books
     def read_json file
       JSON.parse(file.read)
     end
-    
+
     def track_book_import_queued
       @book.update(import_job: "queued at #{Time.zone.now}")
 
       # Yield to the block to perform the job
       yield if block_given?
-    end    
+    end
   end
 end
