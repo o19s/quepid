@@ -1,5 +1,11 @@
 # Changelog
 
+## 7.18.1 - 2024-11-01
+
+### Bugs 
+
+* If you don't have `P@10` defined, the migrations blow up.  Thanks @frutik for find the bug.  https://github.com/o19s/quepid/pull/1093
+
 ## 7.18.0 - 2024-10-04
 
 Wow!  It's been three months since the last release of Quepid, so it's about time.   
