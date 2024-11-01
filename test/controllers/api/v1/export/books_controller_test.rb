@@ -32,18 +32,21 @@ module Api
             get :show, params: { book_id: book.id }
             assert_response :ok
 
+            assert_enqueued_with(job: ExportBookJob, args: [ book ])
+            book.reload
+            assert book.export_job.starts_with? 'queued at'
+            # assert book.job_statuses
+
             # duplicate call
             get :show, params: { book_id: book.id }
             assert_response :ok
             body = response.parsed_body
-
-            assert_equal body['message'], 'Currently exporting book as file.'
+            assert body['message'].start_with? 'Currently exporting book as file.  Status is queued at'
 
             get :show, params: { book_id: book.id }
             assert_response :ok
             body = response.parsed_body
-
-            assert_equal body['message'], 'Currently exporting book as file.'
+            assert body['message'].start_with? 'Currently exporting book as file.  Status is queued at'
           end
 
           test 'running a job and waiting gives you the resulting zip file' do

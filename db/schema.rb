@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2024_10_28_190554) do
+ActiveRecord::Schema[7.2].define(version: 2024_10_30_230542) do
   create_table "active_storage_attachments", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.string "name", null: false
     t.string "record_type", null: false
@@ -95,6 +95,9 @@ ActiveRecord::Schema[7.2].define(version: 2024_10_28_190554) do
     t.boolean "support_implicit_judgements"
     t.boolean "show_rank", default: false
     t.integer "owner_id"
+    t.string "export_job"
+    t.string "import_job"
+    t.string "populate_job"
     t.index ["selection_strategy_id"], name: "index_books_on_selection_strategy_id"
   end
 
