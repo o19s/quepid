@@ -8,7 +8,7 @@ module Books
     before_action :set_book
     before_action :check_book
 
-    def show
+    def update
       # WARNING books/export_controller.rb and
       # api/v1/export/books_controller.rb ARE DUPLICATED
       message = nil

@@ -24,7 +24,10 @@ module Api
           compressed_data = Zlib::Deflate.deflate(serialized_data)
           @book.populate_file.attach(io: StringIO.new(compressed_data), filename: "book_populate_#{@book.id}.bin.zip",
                                      content_type: 'application/zip')
-          PopulateBookJob.perform_later current_user, @book, @case
+          track_book_populate_queued do
+            PopulateBookJob.perform_later current_user, @book, @case
+          end
+          
           head :no_content
         end
 
@@ -36,6 +39,13 @@ module Api
           # object
           request.parameters
         end
+
+        def track_book_populate_queued
+          @book.update(populate_job: "queued at #{Time.zone.now}")
+
+          # Yield to the block to perform the job
+          yield if block_given?
+        end        
       end
     end
   end

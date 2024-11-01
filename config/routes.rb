@@ -80,7 +80,7 @@ Rails.application.routes.draw do
 
   namespace :books do
     resources :import, only: [ :new, :create ]
-    resources :export, only: [ :show ], param: :book_id
+    resources :export, only: [ :update ], param: :book_id
   end
 
   devise_for :users, controllers: {
@@ -242,11 +242,11 @@ Rails.application.routes.draw do
 
       # Exports
       namespace :export do
-        resources :books, only: [ :show ], param: :book_id
-        resources :cases, only: [ :show ], param: :case_id
-        resources :ratings, only: [ :show ], param: :case_id
+        resources :books, only: [ :update ], param: :book_id
+        resources :cases, only: [ :show ], param: :case_id # should be post (:update)
+        resources :ratings, only: [ :show ], param: :case_id # should be post (:update)
         namespace :queries do
-          resources :information_needs, only: [ :show ], param: :case_id
+          resources :information_needs, only: [ :show ], param: :case_id # should be post (:update)
         end
       end
 

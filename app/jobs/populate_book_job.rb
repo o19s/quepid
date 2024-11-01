@@ -10,6 +10,7 @@ class PopulateBookJob < ApplicationJob
     # down the road we should be using ActiveRecord-import and first_or_initialize instead.
     # See how snapshots are managed.
 
+    book.update(populate_job: "populate started at #{Time.zone.now}")
     compressed_data = book.populate_file.download
     serialized_data = Zlib::Inflate.inflate(compressed_data)
     params = Marshal.load(serialized_data)
@@ -50,6 +51,7 @@ class PopulateBookJob < ApplicationJob
       )
     end
     book.populate_file.purge
+    book.populate_job = nil
     book.save
 
     Analytics::Tracker.track_query_doc_pairs_bulk_updated_event user, book, is_book_empty

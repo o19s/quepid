@@ -21,7 +21,7 @@ module Api
           test 'the book returns a message on start' do
             assert doug.books.include? book
 
-            get :show, params: { book_id: book.id }
+            post :update, params: { book_id: book.id }
             assert_response :ok
             body = response.parsed_body
 
@@ -29,7 +29,7 @@ module Api
           end
 
           test 'duplicate calls report back in progress work' do
-            get :show, params: { book_id: book.id }
+            post :update, params: { book_id: book.id }
             assert_response :ok
 
             assert_enqueued_with(job: ExportBookJob, args: [ book ])
@@ -38,19 +38,19 @@ module Api
             # assert book.job_statuses
 
             # duplicate call
-            get :show, params: { book_id: book.id }
+            post :update, params: { book_id: book.id }
             assert_response :ok
             body = response.parsed_body
             assert body['message'].start_with? 'Currently exporting book as file.  Status is queued at'
 
-            get :show, params: { book_id: book.id }
+            post :update, params: { book_id: book.id }
             assert_response :ok
             body = response.parsed_body
             assert body['message'].start_with? 'Currently exporting book as file.  Status is queued at'
           end
 
           test 'running a job and waiting gives you the resulting zip file' do
-            get :show, params: { book_id: book.id }
+            post :update, params: { book_id: book.id }
             assert_response :ok
             body = response.parsed_body
 
@@ -58,7 +58,7 @@ module Api
 
             perform_enqueued_jobs
 
-            get :show, params: { book_id: book.id }
+            post :update, params: { book_id: book.id }
             assert_response :ok
             body = response.parsed_body
             assert_not_nil body['download_file_url']

@@ -9,7 +9,7 @@ module Api
         before_action :check_book
 
         # rubocop:disable Metrics/MethodLength
-        def show
+        def update
           # WARNING books/export_controller.rb and
           # api/v1/export/books_controller.rb ARE DUPLICATED
           message = nil
