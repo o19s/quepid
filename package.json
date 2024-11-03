@@ -6,6 +6,8 @@
   },
   "license": "Apache-2.0",
   "dependencies": {
+    "@fortawesome/fontawesome-free": "^6.6.0",
+    "@fortawesome/free-regular-svg-icons": "^6.6.0",
     "@popperjs/core": "^2.11.6",
     "@rails/actioncable": "7.2.101",
     "@rails/activestorage": "7.2.101",

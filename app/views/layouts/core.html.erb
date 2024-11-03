@@ -7,8 +7,50 @@
 <meta name="description" content="Tired of irrelevant search results? Use Quepid to help improve the quality and relevancy of your search results.">
 <meta name="viewport" content="width=device-width">
 
-<%= stylesheet_link_tag 'core', media: 'all' %>
+<%= stylesheet_link_tag 'style', media: 'all' %>
 <%= stylesheet_link_tag 'ng-json-explorer/dist/angular-json-explorer', 'angular-wizard/dist/angular-wizard', 'ng-tags-input/build/ng-tags-input.min.css', 'ng-tags-input/build/ng-tags-input.bootstrap.min.css', media: 'all' %>
+<%= stylesheet_link_tag 'bootstrap-icons/font/bootstrap-icons.min', media: 'all', 'data-turbolinks-track': 'reload' %>
+
+<%= stylesheet_link_tag '@fortawesome/fontawesome-free/css/fontawesome', media: 'all', 'data-turbolinks-track': 'reload' %>
+<%= stylesheet_link_tag '@fortawesome/fontawesome-free/css/regular', media: 'all', 'data-turbolinks-track': 'reload' %>
+
+<!--
+We use Bootstrap 5 everywhere except the core app, which is stuck in Bootstrap 3.
+This loads Bootstrap 3 via the app/assets/stylesheets/bootstrap.css file.
+ -->
+<%= stylesheet_link_tag 'bootstrap', media: 'all' %>
+
+
+<!--@import "cookies_eu";-->
+<%= stylesheet_link_tag 'cookies_eu', media: 'all' %>
+
+<%= stylesheet_link_tag 'fonts', media: 'all' %>
+<%= stylesheet_link_tag 'panes', media: 'all' %>
+<%= stylesheet_link_tag 'stackedChart', media: 'all' %>
+<%= stylesheet_link_tag 'bootstrap-add', media: 'all' %>
+<%= stylesheet_link_tag 'base', media: 'all' %>
+<%= stylesheet_link_tag 'admin2', media: 'all' %>
+
+<!-- Tour/Guides -->
+<%= stylesheet_link_tag 'tether-shepherd/dist/css/shepherd-theme-arrows', media: 'all' %>
+<%= stylesheet_link_tag 'tour', media: 'all' %>
+
+<!-- Screens -->
+<%= stylesheet_link_tag 'cases', media: 'all' %>
+<%= stylesheet_link_tag 'scorers', media: 'all' %>
+<%= stylesheet_link_tag 'books', media: 'all' %>
+<%= stylesheet_link_tag 'search_endpoints', media: 'all' %>
+<%= stylesheet_link_tag 'teams', media: 'all' %>
+<%= stylesheet_link_tag 'users', media: 'all' %>
+<%= stylesheet_link_tag 'docs', media: 'all' %>
+<%= stylesheet_link_tag 'settings', media: 'all' %>
+<%= stylesheet_link_tag 'qscore', media: 'all' %>
+<%= stylesheet_link_tag 'qgraph', media: 'all' %>
+
+<!-- Other -->
+<%= stylesheet_link_tag 'misc', media: 'all' %>
+<%= stylesheet_link_tag 'animation', media: 'all' %>
+<%= stylesheet_link_tag 'froggy', media: 'all' %>
 <%= csrf_meta_tags %>
 
 <base href="<%= ENV['RAILS_RELATIVE_URL_ROOT'] %>/">
