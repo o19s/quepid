@@ -272,8 +272,8 @@ Rails.application.routes.draw do
   # get '*page' => 'pages#show'
   #
 
-  # Deal with ACE Editor really really wanting this file here
-  get '/javascripts/ace/theme-textmate.js' => 'pages#theme_textmate'
-  get '/assets/mode-json.js' => 'pages#mode_json'
+  # Deal with ACE Editor really really wanting workers to be in specific urls.
+  get '/worker-javascript.js' => 'pages#worker_javascript'
+  get '/worker-json.js' => 'pages#worker_json'
 end
 # rubocop:enable Metrics/BlockLength
