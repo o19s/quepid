@@ -20,7 +20,7 @@ Rails.application.routes.draw do
 
   root 'home#show'
 
-  get 'home/sparklines', to: 'home#sparklines'
+  get 'home/sparklines'#, to: 'home#sparklines'
   get 'home/case_prophet/:case_id', to: 'home#case_prophet', as: :home_case_prophet
   # get 'tries_visualization/:case_id' => 'tries_visualization#show', as: :tries_visualization
   get 'proxy/fetch'
@@ -187,7 +187,10 @@ Rails.application.routes.draw do
 
         # Case Metadata/Scores
         resource :metadata, only: [ :update ], controller: :case_metadata
-        resource :scores, only: [ :index, :update, :show ], controller: :case_scores
+        
+        # Weird rails 8 warning about :only and :except must include only [:show, :create, :update, :destroy, :new, :edit], but also included [:index]
+        #resource :scores, only: [ :index, :update, :show ], controller: :case_scores
+        resource :scores, controller: :case_scores
         get '/scores/all' => 'case_scores#index'
 
         resources :annotations, except: [ :show ]
@@ -269,6 +272,8 @@ Rails.application.routes.draw do
   # Static pages
   # get '*page' => 'pages#show'
   #
+  
+  get '/angularjs/*path.html' => 'pages#angularjs'
 
   # Deal with ACE Editor really really wanting this file here
   get '/javascripts/ace/theme-textmate.js' => 'pages#theme_textmate'

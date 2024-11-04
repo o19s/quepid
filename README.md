@@ -191,7 +191,9 @@ Runs tests for the Angular side. There are two modes for the karma tests:
 * Single run: `bin/docker r rails karma:run`
 * Continuous/watched run: `bin/docker r bin/rake karma:start`
 
-**Note:** The karma tests require the assets to be precompiled, which adds a significant amount of time to the test run. If you are only making changes to the test/spec files, then it is recommended you run the tests in watch mode (`bin/docker r bin/rake karma:start`). The caveat is that any time you make a change to the app files, you will have to restart the process (or use the single run mode).
+**Note:** The karma tests require the assets to be precompiled, which adds a significant amount of time to the test run.
+If you are only making changes to the test/spec files, then it is recommended you run the tests in watch mode (`bin/docker r bin/rake karma:start`).
+The caveat is that any time you make a change to the app files, you will have to restart the process (or use the single run mode).
 
 ### Rubocop
 
@@ -297,20 +299,6 @@ Also please note that the files `secure.js`, `application.js`, and `admin.js` ar
 JavaScript and CSS dependencies via the Rails Asset pipeline.   If you are debugging Bootstrap, then
 you will want individual files.  So replace `//= require sprockets` with `//= require bootstrap-sprockets`.
 
-
-### Webpacker
-To use webpacker, that will compile javascript code into packs and will load changes faster,
-you need to
-
-```bash
-bin/rails webpacker:install
-```
-
-Prior to that I had to install:
-
-```bash
-brew install mysql
-```
 
 ### Debugging Splainer and other NPM packages
 
@@ -517,10 +505,11 @@ You will see a updated `Gemfile.lock`, go ahead and check it and `Gemfile` into 
 ## How does the Frontend work?
 
 We use Angular 1 for the front end, and as part of that we use the `angular-ui-bootstrap` package
-for all our UI components.   This package is tied to Bootstrap version 3.   We import the Bootstrap 3
-CSS directly via the file `bootstrap.css`.
+for all our UI components.   This package is tied to Bootstrap version 3.  
+We import the Bootstrap 3 CSS directly via the file `bootstrap.css`.
 
-For the various Admin pages, we actually are using Bootstrap 5! That is included via the `package.json` using NPM.  See `admin.js` for the line `//= require bootstrap/dist/js/bootstrap.bundle` which is where we are including.
+For the various Admin pages, we actually are using Bootstrap 5! That is included via the `package.json` using NPM.  
+See `admin.js` for the line `//= require bootstrap/dist/js/bootstrap.bundle` which is where we are including.
 
 We currently use Rails Sprockets to compile everything, but do have dreams of moving the JavaScript
 over to Webpacker.

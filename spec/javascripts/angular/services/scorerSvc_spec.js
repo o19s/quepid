@@ -58,6 +58,7 @@ describe('Service: scorerSvc', function () {
     inject(function (_scorerSvc_, $injector) {
       scorerSvc = _scorerSvc_;
       $httpBackend = $injector.get('$httpBackend');
+      $httpBackend.whenGET('/angularjs/views/404.html').respond(200, "");
     });
   });
 
@@ -117,8 +118,9 @@ describe('Service: scorerSvc', function () {
     var url = 'api/scorers/' + mockScorer.scorerId;
     mockScorer.name = 'New Name';
     mockScorerResp.name = 'New Name';
+    
     $httpBackend.expectPUT(url).respond(200, mockScorerResp);
-
+    
     scorerSvc.edit(mockScorer).
       then(function() {
         scorerSvc.get(mockScorer.scorerId)

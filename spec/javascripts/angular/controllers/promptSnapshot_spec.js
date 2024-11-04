@@ -34,12 +34,13 @@ describe('Controller: PromptSnapshotCtrl', function () {
       docResolverSvc = new MockDocResolverSvc();
       $provide.value('docResolverSvc', docResolverSvc);
       settingsSvc = new MockSettingsSvc();
-      $provide.value('settingsSvc', settingsSvc);
+      $provide.value('settingsSvc', settingsSvc);      
     });
     /* jshint camelcase: false */
     inject(function ($controller, $rootScope, _$uibModal_, _querySnapshotSvc_, $injector) {
       scope             = $rootScope.$new();
       $httpBackend      = $injector.get('$httpBackend');
+      $httpBackend.whenGET('/angularjs/views/404.html').respond(200, "");
       querySnapshotSvc  = _querySnapshotSvc_;
 
       modalInstance = _$uibModal_.open({

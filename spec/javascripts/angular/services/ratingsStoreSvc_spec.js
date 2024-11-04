@@ -11,6 +11,7 @@ describe('Service: Ratingsstoresvc', function () {
   beforeEach(inject(function ($injector, _ratingsStoreSvc_) {
     ratingsStoreSvc = _ratingsStoreSvc_;
     $httpBackend = $injector.get('$httpBackend');
+    $httpBackend.whenGET('/angularjs/views/404.html').respond(200, "");
   }));
 
   it('should convert ratings from strings to ints', function() {
@@ -184,6 +185,7 @@ describe('Rateable Docs', function () {
   beforeEach(inject(function ($injector, _ratingsStoreSvc_) {
     ratingsStoreSvc = _ratingsStoreSvc_;
     $httpBackend = $injector.get('$httpBackend');
+    $httpBackend.whenGET('/angularjs/views/404.html').respond(200, "");
   }));
 
   it('posts on rate', function() {

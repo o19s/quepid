@@ -104,6 +104,7 @@ describe('Service: settingsSvc', function () {
       settingsSvc = _settingsSvc_;
       caseTryNavSvc = _caseTryNavSvc_;
       $httpBackend = $injector.get('$httpBackend');
+      $httpBackend.whenGET('/angularjs/views/404.html').respond(200, "");
     });
     /*jshint camelcase:true*/
   });

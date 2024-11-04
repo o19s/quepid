@@ -24,6 +24,7 @@ describe('Service: querySnapshotSvc', function () {
     /* jshint camelcase: false */
     inject(function (_$rootScope_, _$q_, _querySnapshotSvc_, _fieldSpecSvc_, _docResolverSvc_, $injector) {
       $httpBackend      = $injector.get('$httpBackend');
+      $httpBackend.whenGET('/angularjs/views/404.html').respond(200, "");
       $rootScope        = _$rootScope_;
       $q                = _$q_;
       querySnapshotSvc  = _querySnapshotSvc_;

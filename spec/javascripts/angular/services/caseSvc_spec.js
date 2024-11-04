@@ -64,6 +64,7 @@ describe('Service: caseSvc', function () {
     inject(function (_caseSvc_, $injector) {
       caseSvc = _caseSvc_;
       $httpBackend = $injector.get('$httpBackend');
+      $httpBackend.whenGET('/angularjs/views/404.html').respond(200, "");
     });
   });
 

@@ -16,7 +16,9 @@ describe('Service: docCacheSvc', function () {
   };
 
   beforeEach(function() {
-    inject(function(_$rootScope_, _$q_, _docCacheSvc_, _docResolverSvc_) {
+    inject(function(_$rootScope_, _$q_, _docCacheSvc_, _docResolverSvc_, $injector) {
+      $httpBackend      = $injector.get('$httpBackend');
+      $httpBackend.whenGET('/angularjs/views/404.html').respond(200, "");
       $rootScope      = _$rootScope_;
       $q              = _$q_;
       docCacheSvc     = _docCacheSvc_;

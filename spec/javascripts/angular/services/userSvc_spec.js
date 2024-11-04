@@ -13,6 +13,7 @@ describe('Service: userSvc', function () {
     userSvc = _userSvc_;
 
     $httpBackend = $injector.get('$httpBackend');
+    $httpBackend.whenGET('/angularjs/views/404.html').respond(200, "");
   }));
 
   afterEach(function() {

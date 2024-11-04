@@ -10,11 +10,12 @@ window.mockBackend = function(angModule) {
   .config(function($provide) {
     /*global createHttpBackendMock*/
     $provide.decorator('$httpBackend', createHttpBackendMock);
+    $httpBackend.whenGET('/angularjs/views/404.html').respond(200, "");
   });
 
   angModule
   .run(function($httpBackend, $timeout, $log) {
-
+    $httpBackend.whenGET('/angularjs/views/404.html').respond(200, "");
     var regexpUrl = function(regexp) {
       return {
         test: function(url) {
@@ -24,6 +25,16 @@ window.mockBackend = function(angModule) {
 
       };
     };
+    
+    var startsUrl = function(startWith) {
+      return {
+        test: function(url) {
+          console.log("Checking url " + url);
+          return url.startsWith(startWith);
+        }
+      };
+    };
+    
 
     var activeCases = {'allCases':
                         [{caseName: 'Grocery Store',
@@ -36,7 +47,11 @@ window.mockBackend = function(angModule) {
     $httpBackend.when('JSONP', regexpUrl(/http:\/\/.*/))
     .passThrough();
 
+    // We ignore the requests that are for template .html files
     $httpBackend.when('GET', regexpUrl(/views.*/))
+    .passThrough();    
+    // We ignore the requests that get routed to the Rails end point for looking up
+    $httpBackend.when('GET', startsUrl('/angularjs'))
     .passThrough();
 
     // *******************************************
