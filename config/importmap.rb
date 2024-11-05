@@ -13,3 +13,5 @@ pin "mode-javascript", to: "ace-builds/src-min-noconflict/mode-javascript.js"
 pin "mode-lucene", to: "ace-builds/src-min-noconflict/mode-lucene.js"
 pin "theme-chrome", to: "ace-builds/src-min-noconflict/theme-chrome.js"
 pin 'footer', preload: true
+
+# pin 'tour' // Can't figure out how to get Shepherd.js to load
