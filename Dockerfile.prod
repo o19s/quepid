@@ -65,7 +65,7 @@ ADD https://github.com/o19s/quepid-jupyterlite/releases/latest/download/jupyter-
 RUN SECRET_KEY_BASE_DUMMY=1 ./bin/rails assets:precompile
 
 
-RUN rm -rf node_modules
+#RUN rm -rf node_modules
 
 
 # Final stage for app image
