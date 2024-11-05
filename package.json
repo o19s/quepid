@@ -10,7 +10,7 @@
     "@rails/actioncable": "7.2.101",
     "@rails/activestorage": "7.2.101",
     "ace-builds": "^1.32.2",
-    "angular": "~1.8.3",
+    "angular": "^1.8.3",
     "angular-animate": "^1.8.3",
     "angular-cookies": "~1.8.3",
     "angular-countup": "^0.0.1",
@@ -52,5 +52,8 @@
     "karma-jasmine": "5.1.0",
     "puppeteer": "^23.0.0"
   },
-  "resolutions": {}
+  "resolutions": {},
+  "scripts": {
+    "build": "bun bun.config.js"
+  }
 }

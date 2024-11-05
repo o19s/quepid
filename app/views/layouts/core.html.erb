@@ -24,7 +24,8 @@
 
   <%= render 'layouts/footer_core_app' %>
 
-  <%= javascript_include_tag 'core' %>
+
+  <%= javascript_include_tag "application3", "data-turbo-track": "reload", type: "module" %>
 
   <script>
     angular.module('QuepidApp')
