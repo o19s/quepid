@@ -6,8 +6,47 @@
 // Note: the file in vendor/javascript/vendored-local-time.js is the one that was downloaded via
 // importmap pin.  See https://github.com/basecamp/local_time/issues/113 for others who suggested
 // remaining it
-import "@hotwired/turbo-rails"
-import LocalTime from "local-time"
-LocalTime.start()
+//import "@hotwired/turbo-rails"
+//import LocalTime from "local-time"
+//LocalTime.start()
 
-window.Turbo.setProgressBarDelay(1);
+//window.Turbo.setProgressBarDelay(1);
+
+import "ace"; // Import the Ace library
+import "ext-language_tools"; // Import the JavaScript mode
+import "mode-json"; // Import the Monokai theme
+import "mode-javascript";
+import "mode-lucene";
+import "theme-chrome";
+//import "worker-javascript"
+//import "ace_config"
+
+//import "tour" // Can't figure out how to get Shepherd.js to load
+import "footer"
+
+// Importing services
+import "annotationsSvc";
+import "bookSvc";
+import "bootstrapSvc";
+import "caseCSVSvc";
+import "caseSvc";
+import "caseTryNavSvc";
+import "configurationSvc";
+import "diffResultsSvc";
+import "docCacheSvc";
+import "importRatingsSvc";
+import "paneSvc";
+import "queriesSvc";
+import "querySnapshotSvc";
+import "queryViewSvc";
+import "rateBulkSvc";
+import "rateElementSvc";
+import "ratingsStoreSvc";
+import "scorerControllerActionsSvc";
+import "scorerSvc";
+import "searchEndpointSvc";
+import "searchErrorTranslatorSvc";
+import "settingsSvc";
+import "teamSvc";
+import "userSvc";
+import "varExtractorSvc";

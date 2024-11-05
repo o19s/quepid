@@ -11,6 +11,8 @@
 <%= stylesheet_link_tag 'ng-json-explorer/dist/angular-json-explorer', 'angular-wizard/dist/angular-wizard', 'ng-tags-input/build/ng-tags-input.min.css', 'ng-tags-input/build/ng-tags-input.bootstrap.min.css', media: 'all' %>
 <%= csrf_meta_tags %>
 
+<%= javascript_importmap_tags 'application2' %>
+
 <base href="<%= ENV['RAILS_RELATIVE_URL_ROOT'] %>/">
 </head>
 <body ng-app="QuepidApp">

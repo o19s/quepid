@@ -33,11 +33,7 @@
 //= require cookies_eu
 
 //= require angular/angular
-//= require ace-builds/src-min-noconflict/ace
-//= require ace-builds/src-min-noconflict/ext-language_tools
-//= require ace-builds/src-min-noconflict/mode-json
-//= require ace-builds/src-min-noconflict/mode-javascript
-//= require ace-builds/src-min-noconflict/mode-lucene
+
 
 //= require vega
 //= require vega-lite
@@ -75,12 +71,6 @@
 //= require_tree ./factories
 //= require_tree ./filters
 //= require_tree ./interceptors
-//= require_tree ./services
 //= require_tree ./values
 //= require_tree ../templates
 //= require_tree ./components
-//= require footer
-//= require tether-shepherd/dist/js/tether
-//= require tether-shepherd/dist/js/shepherd
-//= require tour
-//= require ace_config

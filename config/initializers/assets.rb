@@ -19,6 +19,32 @@ Rails.application.config.assets.precompile += %w[ core.css core.js admin.css adm
                                                   analytics.js ]
 Rails.application.config.assets.precompile += %w[ application_spec.js ]
 
+# need to precompile stuff for importmaps
+# In the past we made a giant single jS file, and then precompiled it
+# but now we list each individaul file.
+Rails.application.config.assets.precompile += %w[ footer.js ace_config.js ]
+
+# JS from AngularJS app
+Dir.glob(Rails.root.join('app', 'assets', 'javascripts', 'services', '*.js')).each do |file|
+  #relative_path = Pathname.new(file).relative_path_from(Pathname.new(Rails.root)).to_s
+  #puts "File.basename(file): #{relative_path}"
+  Rails.application.config.assets.precompile << "services/#{File.basename(file, '.js')}"
+end
+Rails.application.config.assets.precompile += %w[
+  services/annotationsSvc.js
+]
+
+# JS from node modules
+Rails.application.config.assets.precompile += %w[
+  ace-builds/src-min-noconflict/ace.js
+  ace-builds/src-min-noconflict/ext-language_tools.js
+  ace-builds/src-min-noconflict/mode-json.js
+  ace-builds/src-min-noconflict/mode-javascript.js
+  ace-builds/src-min-noconflict/mode-lucene.js
+  ace-builds/src-min-noconflict/theme-chrome.js
+  ace-builds/src-min-noconflict/worker-javascript.js
+]
+
 # CSS from node modules
 Rails.application.config.assets.precompile += %w[
   ng-json-explorer/dist/angular-json-explorer.css
@@ -26,6 +52,7 @@ Rails.application.config.assets.precompile += %w[
   ng-tags-input/build/ng-tags-input.min.css
   ng-tags-input/build/ng-tags-input.bootstrap.min.css
 ]
+
 
 # For some reason the mapping in core.css.scss isn't working, so do this.'
 Rails.application.config.assets.paths << Rails.root.join('node_modules/bootstrap-icons/font')
