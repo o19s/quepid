@@ -9,7 +9,7 @@ gem 'active_storage_db'
 gem 'acts_as_list', '>= 1.0.1'
 gem 'addressable', '~> 2.8'
 gem 'ancestry'
-#gem 'angular-rails-templates', '>= 1.0.0.beta'
+# gem 'angular-rails-templates', '>= 1.0.0.beta'
 gem 'angular-rails-templates', git: 'https://github.com/epugh/angular-rails-templates.git', branch: 'bump_rails_8'
 gem 'apipie-rails', '~> 1.2'
 gem 'bcrypt', '~> 3.1.7'
@@ -61,7 +61,7 @@ group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
   gem 'debug', platforms: [ :mri, :windows ], require: 'debug/prelude'
   gem 'annotate'
-  #gem 'bullet' not Rails 8 compatible
+  # gem 'bullet' not Rails 8 compatible
   gem 'bullet', git: 'https://github.com/adiaz04/bullet.git', branch: 'main'
   gem 'memory_profiler'
 end
