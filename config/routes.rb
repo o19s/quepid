@@ -187,7 +187,7 @@ Rails.application.routes.draw do
 
         # Case Metadata/Scores
         resource :metadata, only: [ :update ], controller: :case_metadata
-        resource :scores, only: [ :index, :update, :show ], controller: :case_scores
+        resource :scores, only: [ :update, :show ], controller: :case_scores
         get '/scores/all' => 'case_scores#index'
 
         resources :annotations, except: [ :show ]

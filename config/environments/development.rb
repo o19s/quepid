@@ -89,12 +89,12 @@ Rails.application.configure do
   config.web_console.permissions = '192.168.0.0/16'
 
   config.after_initialize do
-    Bullet.enable = true
-    Bullet.alert = false
-    Bullet.bullet_logger = true
-    Bullet.console = true
-    Bullet.rails_logger = true
-    Bullet.add_footer = true
+    # Bullet.enable = true
+    # Bullet.alert = false
+    # Bullet.bullet_logger = true
+    # Bullet.console = true
+    # Bullet.rails_logger = true
+    # Bullet.add_footer = true
   end
 
   config.log_formatter = TruncatingFormatter.new
