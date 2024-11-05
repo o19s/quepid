@@ -50,6 +50,7 @@
 //= require angular-ui-bootstrap/dist/ui-bootstrap
 //= require angular-ui-bootstrap/dist/ui-bootstrap-tpls
 //= require angular-wizard/dist/angular-wizard
+//= require angular-rails-templates
 //= require splainer-search/splainer-search
 //= require ng-json-explorer/dist/angular-json-explorer
 //= require angular-ui-ace/src/ui-ace

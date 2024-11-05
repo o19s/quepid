@@ -10,7 +10,6 @@ describe('Service: ScorerFactory', function () {
     $rootScope      = _$rootScope_;
     $timeout        = _$timeout_;
     scorerSvc = _scorerSvc_;
-    $httpBackend.whenGET('/angularjs/views/404.html').respond(200, "");
 
     var mockScorer = {
       'scorerId': 1,

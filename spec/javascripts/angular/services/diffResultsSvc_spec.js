@@ -51,7 +51,6 @@ describe('Service: diffResultsSvc', function() {
     });
     inject(function (_$rootScope_, _$q_, _diffResultsSvc_, _fieldSpecSvc_, _ratingsStoreSvc_, _docResolverSvc_, $injector) {
       $httpBackend      = $injector.get('$httpBackend');
-      $httpBackend.whenGET('/angularjs/views/404.html').respond(200, "");
       $q                = _$q_;
       $rootScope        = _$rootScope_;
       diffResultsSvc    = _diffResultsSvc_;

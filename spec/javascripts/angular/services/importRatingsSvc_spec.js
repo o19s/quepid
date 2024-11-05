@@ -12,7 +12,6 @@ describe('Service: importRatingsSvc', function () {
   beforeEach(function() {
     inject(function ($injector, _importRatingsSvc_) {
       $httpBackend = $injector.get('$httpBackend');
-      $httpBackend.whenGET('/angularjs/views/404.html').respond(200, "");
       importRatingsSvc = _importRatingsSvc_;
     });
   });

@@ -77,7 +77,6 @@ describe('Controller: WizardModalCtrl', function () {
       scope = $rootScope.$new();
       settingsSvc = _settingsSvc_;
       $httpBackend = $injector.get('$httpBackend');
-      $httpBackend.whenGET('/angularjs/views/404.html').respond(200, "");
       WizardModalCtrl = $controller('WizardModalCtrl', {
         $scope: scope
       });

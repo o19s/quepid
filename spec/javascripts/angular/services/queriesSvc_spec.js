@@ -184,7 +184,6 @@ describe('Service: queriesSvc', function () {
 
     inject(function(_$rootScope_, _$q_, $injector, _queriesSvc_, _fieldSpecSvc_) {
       $httpBackend  = $injector.get('$httpBackend');
-      $httpBackend.whenGET('/angularjs/views/404.html').respond(200, "");
       $rootScope    = _$rootScope_;
       $q            = _$q_;
       fieldSpecSvc  = _fieldSpecSvc_;

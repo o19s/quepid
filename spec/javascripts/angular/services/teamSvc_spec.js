@@ -78,7 +78,6 @@ describe('Service: teamSvc', function () {
     inject(function (_teamSvc_, $injector) {
       teamSvc = _teamSvc_;
       $httpBackend = $injector.get('$httpBackend');
-      $httpBackend.whenGET('/angularjs/views/404.html').respond(200, "");
 
       mockTeam = teamSvc.constructFromData(mockTeamData);
     });

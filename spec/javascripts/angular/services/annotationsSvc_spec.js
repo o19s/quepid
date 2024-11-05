@@ -13,7 +13,6 @@ describe('Service: annotationsSvc', function () {
     annotationsSvc = _annotationsSvc_;
 
     $httpBackend = $injector.get('$httpBackend');
-    $httpBackend.whenGET('/angularjs/views/404.html').respond(200, "");
   }));
 
   afterEach(function() {

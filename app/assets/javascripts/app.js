@@ -18,6 +18,7 @@ angular.module('QuepidApp', [
   'angular-flash.flash-alert-directive',
   'ngTagsInput',
   'ng-rails-csrf',
+  'templates',
   'ngAnimate',
   'countUp',
   'ngclipboard',
