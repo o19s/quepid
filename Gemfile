@@ -9,6 +9,7 @@ gem 'active_storage_db'
 gem 'acts_as_list', '>= 1.0.1'
 gem 'addressable', '~> 2.8'
 gem 'ancestry'
+gem 'angular-rails-templates', '>= 1.0.0.beta'
 gem 'apipie-rails', '~> 1.2'
 gem 'bcrypt', '~> 3.1.7'
 gem 'bootsnap', require: false
@@ -19,6 +20,9 @@ gem 'd3-rails', '~> 3.5.5' # For cal heatmap
 gem 'devise', '>= 4.6.2'
 gem 'devise_invitable', '~> 2.0'
 
+# Using this as it wires in via Sprockets and I can't get npm version to work with the main app.
+# Had no luck with js/svg approach ;-(
+gem 'font-awesome-sass'
 gem 'foreman'
 gem 'gabba'
 gem 'importmap-rails', '~> 2.0'
@@ -45,9 +49,9 @@ gem 'rack-cors', '~> 2.0'
 gem 'rapidjson'
 gem 'responders'
 gem 'rubyzip', '~> 2.3.0' # 3.0 will be breaking
+gem 'sassc-rails', '~> 2.1'
 gem 'solid_cable', '~> 3.0'
 gem 'solid_queue'
-
 gem 'thor'
 gem 'turbo-rails', '~> 2.0', '>= 2.0.5'
 gem 'vega', '~> 0.3.0'
@@ -90,5 +94,3 @@ group :test do
   gem 'capybara'
   gem 'selenium-webdriver'
 end
-
-gem "propshaft", "~> 1.1"
