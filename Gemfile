@@ -62,6 +62,7 @@ group :development, :test do
   gem 'debug', platforms: [ :mri, :windows ], require: 'debug/prelude'
   gem 'annotate'
   #gem 'bullet' not Rails 8 compatible
+  gem 'bullet', git: 'https://github.com/adiaz04/bullet.git', branch: 'main'
   gem 'memory_profiler'
 end
 
