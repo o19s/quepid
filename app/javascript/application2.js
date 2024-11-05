@@ -23,3 +23,30 @@ import "theme-chrome";
 
 //import "tour" // Can't figure out how to get Shepherd.js to load
 import "footer"
+
+// Importing services
+import "annotationsSvc";
+import "bookSvc";
+import "bootstrapSvc";
+import "caseCSVSvc";
+import "caseSvc";
+import "caseTryNavSvc";
+import "configurationSvc";
+import "diffResultsSvc";
+import "docCacheSvc";
+import "importRatingsSvc";
+import "paneSvc";
+import "queriesSvc";
+import "querySnapshotSvc";
+import "queryViewSvc";
+import "rateBulkSvc";
+import "rateElementSvc";
+import "ratingsStoreSvc";
+import "scorerControllerActionsSvc";
+import "scorerSvc";
+import "searchEndpointSvc";
+import "searchErrorTranslatorSvc";
+import "settingsSvc";
+import "teamSvc";
+import "userSvc";
+import "varExtractorSvc";

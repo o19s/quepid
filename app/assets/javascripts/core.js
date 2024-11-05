@@ -71,7 +71,6 @@
 //= require_tree ./factories
 //= require_tree ./filters
 //= require_tree ./interceptors
-//= require_tree ./services
 //= require_tree ./values
 //= require_tree ../templates
 //= require_tree ./components

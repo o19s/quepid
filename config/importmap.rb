@@ -14,4 +14,10 @@ pin "mode-lucene", to: "ace-builds/src-min-noconflict/mode-lucene.js"
 pin "theme-chrome", to: "ace-builds/src-min-noconflict/theme-chrome.js"
 pin 'footer', preload: true
 
+#pin 'services/annotationsSvc.js'
+# Pin each JavaScript file in the app/javascript/custom directory
+Dir.glob(Rails.root.join('app', 'assets', 'javascripts','services', '*.js')).each do |file|
+  pin File.basename(file, '.js'), to: "services/#{File.basename(file)}"
+end
+
 # pin 'tour' // Can't figure out how to get Shepherd.js to load

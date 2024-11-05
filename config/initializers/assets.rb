@@ -24,6 +24,16 @@ Rails.application.config.assets.precompile += %w[ application_spec.js ]
 # but now we list each individaul file.
 Rails.application.config.assets.precompile += %w[ footer.js ace_config.js ]
 
+# JS from AngularJS app
+Dir.glob(Rails.root.join('app', 'assets', 'javascripts', 'services', '*.js')).each do |file|
+  #relative_path = Pathname.new(file).relative_path_from(Pathname.new(Rails.root)).to_s
+  #puts "File.basename(file): #{relative_path}"
+  Rails.application.config.assets.precompile << "services/#{File.basename(file, '.js')}"
+end
+Rails.application.config.assets.precompile += %w[
+  services/annotationsSvc.js
+]
+
 # JS from node modules
 Rails.application.config.assets.precompile += %w[
   ace-builds/src-min-noconflict/ace.js
