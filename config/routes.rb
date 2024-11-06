@@ -10,7 +10,7 @@ Rails.application.routes.draw do
 
   apipie
   mount ActiveStorageDB::Engine => '/active_storage_db'
-  #Healthcheck.routes(self)
+  get "healthcheck" => "rails/health#show", as: :rails_health_check
 
   # Render dynamic PWA files from app/views/pwa/*
   #get 'service-worker' => 'rails/pwa#service_worker', as: :pwa_service_worker
