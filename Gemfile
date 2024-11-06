@@ -44,7 +44,6 @@ gem 'prophet-rb', '~> 0.5.0'
 gem 'puma'
 gem 'pundit'
 gem 'rails', '8.0.0.rc2'
-gem 'rails-html-sanitizer'
 gem 'rack-cors', '~> 2.0'
 gem 'responders'
 gem 'rubyzip', '~> 2.3.0' # 3.0 will be breaking
