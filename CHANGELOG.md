@@ -1,6 +1,6 @@
 # Changelog
 
-## 8.0.0-rc1 - 2024-10-05
+## 8.0.0-rc1 - 2024-11-05
 
 Rails 8 RC2 is out.  We're being eager early adopters with some big changes!
 
@@ -11,7 +11,13 @@ Rails 8 RC2 is out.  We're being eager early adopters with some big changes!
 * Plus the usual list of updates to all our dependencies.
 
 
-## 7.18.0 - 2024-10-01
+## 7.18.1 - 2024-11-01
+
+### Bugs 
+
+* If you don't have `P@10` defined, the migrations blow up.  Thanks @frutik for find the bug.  https://github.com/o19s/quepid/pull/1093
+
+## 7.18.0 - 2024-10-04
 
 Wow!  It's been three months since the last release of Quepid, so it's about time.   
 This release brings Quepid up to Rails 7.2 standard, which gets us ready for some of the interesting things in Rails 8, specifically simplifying what you need to run Quepid.  
