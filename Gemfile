@@ -55,7 +55,7 @@ gem 'solid_cable', '~> 3.0'
 gem 'solid_queue'
 gem 'thor'
 gem 'turbo-rails', '~> 2.0', '>= 2.0.5'
-gem 'vega', '~> 0.3.0'
+gem 'vega'
 
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
