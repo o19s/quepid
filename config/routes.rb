@@ -10,7 +10,7 @@ Rails.application.routes.draw do
 
   apipie
   mount ActiveStorageDB::Engine => '/active_storage_db'
-  Healthcheck.routes(self)
+  #Healthcheck.routes(self)
 
   # Render dynamic PWA files from app/views/pwa/*
   #get 'service-worker' => 'rails/pwa#service_worker', as: :pwa_service_worker
@@ -275,9 +275,6 @@ Rails.application.routes.draw do
   # Static pages
   # get '*page' => 'pages#show'
   #
-
-  # Deal with ACE Editor really really wanting this file here
-  get '/javascripts/ace/theme-textmate.js' => 'pages#theme_textmate'
-  get '/assets/mode-json.js' => 'pages#mode_json'
+  
 end
 # rubocop:enable Metrics/BlockLength
