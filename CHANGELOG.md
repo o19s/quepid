@@ -1,6 +1,17 @@
 # Changelog
 
-## 7.18.0 - 2024-10-04
+## 8.0.0-rc1 - 2024-10-05
+
+Rails 8 RC2 is out.  We're being eager early adopters with some big changes!
+
+* You no longer need Redis!!!!!!!!!!   Redis was used to power background jobs and websockets, and now we just use our database for that.  This makes installing Quepid much simpler.
+* To celebrate our enhance jobs framework, we now actually provide nice UX around starting jobs to prevent you from running multiple in paralel, and give user feedback when one is running.
+* Nicer import book page.  Gave it some UX love.
+* We use the built into Rails health check end point at `/healthcheck`.  Please check your setup.
+* Plus the usual list of updates to all our dependencies.
+
+
+## 7.18.0 - 2024-10-01
 
 Wow!  It's been three months since the last release of Quepid, so it's about time.   
 This release brings Quepid up to Rails 7.2 standard, which gets us ready for some of the interesting things in Rails 8, specifically simplifying what you need to run Quepid.  
