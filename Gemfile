@@ -17,7 +17,7 @@ gem 'bootsnap', require: false
 gem 'cal-heatmap-rails', '~> 3.6' # provides assets for cal heatmap, that requires old d3
 gem 'colorize', require: false
 gem 'cookies_eu'
-gem 'd3-rails', '~> 3.5.5' # For cal heatmap
+gem 'd3-rails', '~> 7.8.5' # For cal heatmap
 gem 'devise', '>= 4.6.2'
 gem 'devise_invitable', '~> 2.0'
 

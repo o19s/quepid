@@ -148,7 +148,7 @@ GEM
       rexml
     crass (1.0.6)
     csv (3.3.0)
-    d3-rails (3.5.17)
+    d3-rails (7.8.5)
       railties (>= 3.1)
     date (3.4.0)
     debug (1.9.2)
@@ -551,7 +551,7 @@ DEPENDENCIES
   capybara
   colorize
   cookies_eu
-  d3-rails (~> 3.5.5)
+  d3-rails (~> 7.8.5)
   debug
   derailed_benchmarks
   devise (>= 4.6.2)
