@@ -11,3 +11,9 @@ import LocalTime from "local-time"
 LocalTime.start()
 
 window.Turbo.setProgressBarDelay(1);
+
+import "vega"
+import "vega-lite"
+import "vega-embed"
+
+window.dispatchEvent(new Event("vega:load"))

@@ -1,5 +1,16 @@
 # Changelog
 
+## 8.0.0-rc1 - 2024-11-05
+
+Rails 8 RC2 is out.  We're being eager early adopters with some big changes!
+
+* You no longer need Redis!!!!!!!!!!   Redis was used to power background jobs and websockets, and now we just use our database for that.  This makes installing Quepid much simpler.
+* To celebrate our enhance jobs framework, we now actually provide nice UX around starting jobs to prevent you from running multiple in paralel, and give user feedback when one is running.
+* Nicer import book page.  Gave it some UX love.
+* We use the built into Rails health check end point at `/healthcheck`.  Please check your setup.
+* Plus the usual list of updates to all our dependencies.
+
+
 ## 7.18.1 - 2024-11-01
 
 ### Bugs 

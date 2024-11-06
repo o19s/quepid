@@ -3,8 +3,7 @@
   "description": "Give your queries some love!",
   "addons": [
     "jawsdb",
-    "logdna",
-    "heroku-redis"
+    "logdna"
   ],
   "buildpacks": [
     {
@@ -54,9 +53,6 @@
     "SECRET_KEY_BASE": {
       "generator": "secret"
     },
-    "SIDEKIQ_CONCURRENCY": {
-      "required": true
-    },
     "TC_URL": {
       "required": true
     },
@@ -88,7 +84,8 @@
   "formation": {
     "worker": {
       "quantity": 1,
-      "size": "standard-1x"
+      "size": "standard-1x",
+      "command": "bundle exec rake solid_queue:start"
     },
     "web": {
       "quantity": 1,

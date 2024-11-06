@@ -1,23 +1,27 @@
 # frozen_string_literal: true
 
-require 'sidekiq/web'
-
 # rubocop:disable Metrics/BlockLength
 Rails.application.routes.draw do
+  # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
+
+  # Render dynamic PWA files from app/views/pwa/* (remember to link manifest in application.html.erb)
+  # get "manifest" => "rails/pwa#manifest", as: :pwa_manifest
+  # get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
+
   apipie
   mount ActiveStorageDB::Engine => '/active_storage_db'
-  Healthcheck.routes(self)
+  get 'healthcheck' => 'rails/health#show', as: :rails_health_check
 
   # Render dynamic PWA files from app/views/pwa/*
-  get 'service-worker' => 'rails/pwa#service_worker', as: :pwa_service_worker
-  get 'manifest' => 'rails/pwa#manifest', as: :pwa_manifest
+  # get 'service-worker' => 'rails/pwa#service_worker', as: :pwa_service_worker
+  # get 'manifest' => 'rails/pwa#manifest', as: :pwa_manifest
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
   # Can be used by load balancers and uptime monitors to verify that the app is live.
-  get 'up' => 'rails/health#show', as: :rails_health_check
+  # get 'up' => 'rails/health#show', as: :rails_health_check
 
   constraints(AdminConstraint) do
-    mount Sidekiq::Web, at: 'admin/jobs'
+    mount MissionControl::Jobs::Engine, at: 'admin/jobs'
   end
 
   root 'home#show'
@@ -80,7 +84,7 @@ Rails.application.routes.draw do
 
   namespace :books do
     resources :import, only: [ :new, :create ]
-    resources :export, only: [ :show ], param: :book_id
+    resources :export, only: [ :update ], param: :book_id
   end
 
   devise_for :users, controllers: {
@@ -189,7 +193,7 @@ Rails.application.routes.draw do
 
         # Case Metadata/Scores
         resource :metadata, only: [ :update ], controller: :case_metadata
-        resource :scores, only: [ :index, :update, :show ], controller: :case_scores
+        resource :scores, only: [ :update, :show ], controller: :case_scores
         get '/scores/all' => 'case_scores#index'
 
         resources :annotations, except: [ :show ]
@@ -242,11 +246,11 @@ Rails.application.routes.draw do
 
       # Exports
       namespace :export do
-        resources :books, only: [ :show ], param: :book_id
-        resources :cases, only: [ :show ], param: :case_id
-        resources :ratings, only: [ :show ], param: :case_id
+        resources :books, only: [ :update ], param: :book_id
+        resources :cases, only: [ :show ], param: :case_id # should be post (:update)
+        resources :ratings, only: [ :show ], param: :case_id # should be post (:update)
         namespace :queries do
-          resources :information_needs, only: [ :show ], param: :case_id
+          resources :information_needs, only: [ :show ], param: :case_id # should be post (:update)
         end
       end
 
@@ -271,9 +275,5 @@ Rails.application.routes.draw do
   # Static pages
   # get '*page' => 'pages#show'
   #
-
-  # Deal with ACE Editor really really wanting this file here
-  get '/javascripts/ace/theme-textmate.js' => 'pages#theme_textmate'
-  get '/assets/mode-json.js' => 'pages#mode_json'
 end
 # rubocop:enable Metrics/BlockLength
