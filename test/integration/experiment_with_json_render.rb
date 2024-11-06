@@ -21,7 +21,7 @@ class ExperimentWithJsonRender < ActionController::TestCase
     save_big_book book
 
     # controller = DummyController.new
-    controller = Api::V1::Export::BooksController.new
+    Api::V1::Export::BooksController.new
 
     result = Benchmark.measure do
       @book = book
