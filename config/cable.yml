@@ -10,9 +10,9 @@ development:
   #connects_to:
   #  database:
   #    writing: cable
-  polling_interval: 5.seconds
+  polling_interval: <%= ENV.fetch("SOLID_CABLE_POLLING", '0.1.seconds') %>
   message_retention: 1.day
-  silence_polling: false
+  silence_polling: true
 
 test:
   adapter: test
@@ -24,6 +24,6 @@ production:
   #connects_to:
   #  database:
   #    writing: cable
-  polling_interval: 5.seconds
+  polling_interval: <%= ENV.fetch("SOLID_CABLE_POLLING", '0.1.seconds') %>
   message_retention: 1.day
-  silence_polling: false
+  silence_polling: true
