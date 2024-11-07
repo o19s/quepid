@@ -35,6 +35,15 @@ Rails.application.configure do
 
   # Store uploaded files on the local file system (see config/storage.yml for options).
   config.active_storage.service = :db # :local
+  
+  
+  # Enable detailed ActionCable logging
+    config.action_cable.log_tags = [
+      :channel,
+      :connection,
+      :transmissions,
+      :state_updates
+    ]
 
   config.action_cable.disable_request_forgery_protection = true
   config.action_cable.allowed_request_origins = '*'
