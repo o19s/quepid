@@ -10,7 +10,13 @@ import "@hotwired/turbo-rails"
 import LocalTime from "local-time"
 LocalTime.start()
 
-window.Turbo.setProgressBarDelay(1);
+//window.Turbo.setProgressBarDelay(1);
+Turbo.config.drive.progressBarDelay = 1
+
+import * as ActionCable from '@rails/actioncable'
+
+ActionCable.logger.enabled = true
+
 
 import "vega"
 import "vega-lite"
