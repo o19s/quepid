@@ -6,11 +6,11 @@ development:
   #adapter: async
   adapter: solid_cable
   
-  # We are using the primary database not a seperate databse
+  # We are using the primary database not a separate database
   #connects_to:
   #  database:
   #    writing: cable
-  polling_interval: 1.seconds
+  polling_interval: 0.1.seconds
   message_retention: 1.day
 
 test:
@@ -19,9 +19,9 @@ test:
 production:
   adapter: solid_cable
   
-  # We are using the primary database not a seperate databse
+  # We are using the primary database not a separate database
   #connects_to:
   #  database:
   #    writing: cable
-  polling_interval: 1.seconds
+  polling_interval: 0.1.seconds
   message_retention: 1.day
