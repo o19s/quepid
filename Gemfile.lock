@@ -105,9 +105,7 @@ GEM
     aes_key_wrap (1.1.0)
     ancestry (4.3.3)
       activerecord (>= 5.2.6)
-    annotate (2.6.5)
-      activerecord (>= 2.3.0)
-      rake (>= 0.8.7)
+    annotaterb (4.13.0)
     ansi (1.5.0)
     apipie-rails (1.4.2)
       actionpack (>= 5.0)
@@ -546,7 +544,7 @@ DEPENDENCIES
   addressable (~> 2.8)
   ancestry
   angular-rails-templates!
-  annotate
+  annotaterb (~> 4.13)
   apipie-rails (~> 1.2)
   bcrypt (~> 3.1.7)
   bootsnap
