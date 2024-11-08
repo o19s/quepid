@@ -1,7 +1,8 @@
 # frozen_string_literal: true
 
 require 'active_support/core_ext/integer/time'
-# Sprockets.register_compressor 'application/javascript', :terser, Terser::Compressor
+
+# rubocop:disable Metrics/BlockLength
 Rails.application.configure do
   # Settings specified here will take precedence over those in config/application.rb.
 
@@ -35,15 +36,14 @@ Rails.application.configure do
 
   # Store uploaded files on the local file system (see config/storage.yml for options).
   config.active_storage.service = :db # :local
-  
-  
+
   # Enable detailed ActionCable logging
-    config.action_cable.log_tags = [
-      :channel,
-      :connection,
-      :transmissions,
-      :state_updates
-    ]
+  config.action_cable.log_tags = [
+    :channel,
+    :connection,
+    :transmissions,
+    :state_updates
+  ]
 
   config.action_cable.disable_request_forgery_protection = true
   config.action_cable.allowed_request_origins = '*'
@@ -111,3 +111,4 @@ Rails.application.configure do
   #   authentication: :plain
   # }
 end
+# rubocop:enable Metrics/BlockLength
