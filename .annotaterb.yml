@@ -43,7 +43,7 @@
 :ignore_columns: 
 :ignore_routes: 
 :models: true
-:routes: false
+:routes: true
 :skip_on_db_migrate: false
 :target_action: :do_annotations
 :wrapper: 
