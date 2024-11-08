@@ -6,7 +6,7 @@ ENV home .
 
 # Must have packages
 RUN apt-get update -qq \
-  && apt-get install -y --no-install-recommends vim curl tmux wget netcat \
+  && apt-get install -y --no-install-recommends vim curl tmux wget netcat geoip-database \
   && rm -rf /var/lib/apt/lists/*
 
 COPY Gemfile* /srv/app/

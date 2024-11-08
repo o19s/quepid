@@ -8,6 +8,8 @@
 Rails.application.configure do
   # Settings specified here will take precedence over those in config/application.rb.
 
+  Ahoy.track_bots = Rails.env.test?
+
   # While tests run files are not watched, reloading is not necessary.
   config.enable_reloading = false
 
@@ -68,8 +70,6 @@ Rails.application.configure do
   config.active_job.queue_adapter = :test
 
   ENV['TC_URL'] = 'https://quepid.com/agreement'
-
-  ENV['QUEPID_GA'] = 'UA-FAKE-GA-CODE-FOR-TESTING'
 
   ENV['EMAIL_SENDER'] = 'quepid@o19s.com'
 end

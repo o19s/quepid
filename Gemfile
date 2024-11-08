@@ -8,6 +8,7 @@ gem 'activerecord-import', '>= 1.0.7'
 gem 'active_storage_db'
 gem 'acts_as_list', '>= 1.0.1'
 gem 'addressable', '~> 2.8'
+gem 'ahoy_matey'
 gem 'ancestry'
 # gem 'angular-rails-templates', '>= 1.0.0.beta'
 gem 'angular-rails-templates', git: 'https://github.com/epugh/angular-rails-templates.git', branch: 'bump_rails_8'
@@ -25,7 +26,6 @@ gem 'devise_invitable', '~> 2.0'
 # Had no luck with js/svg approach ;-(
 gem 'font-awesome-sass'
 gem 'foreman'
-gem 'gabba'
 gem 'importmap-rails', '~> 2.0'
 gem 'intercom-rails'
 gem 'jbuilder', '~> 2.7'
@@ -94,3 +94,7 @@ group :test do
   gem 'capybara'
   gem 'selenium-webdriver'
 end
+
+gem 'geocoder', '~> 1.8'
+
+gem 'geoip', '~> 1.6'

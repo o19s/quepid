@@ -1,0 +1,748 @@
+From 4c5f14d59095c1c484df386f67c8fc123de35343 Mon Sep 17 00:00:00 2001
+From: Eric Pugh <epugh@opensourceconnections.com>
+Date: Mon, 4 Nov 2024 06:21:16 -0500
+Subject: [PATCH] merge
+
+---
+ README.md                                     |  25 +--
+ app/assets/javascripts/app.js                 |   1 -
+ app/assets/javascripts/core.js                |   1 -
+ .../javascripts/factories/MapperFactory.js    |  14 --
+ .../javascripts/interceptors/rails-csrf.js    |  31 ++++
+ app/controllers/pages_controller.rb           |  31 +++-
+ config/environments/development.rb            |  12 +-
+ config/routes.rb                              |   9 +-
+ package.json                                  |   4 +-
+ .../controllers/promptSnapshot_spec.js        |   3 +-
+ .../angular/controllers/queryParams_spec.js   |   1 +
+ .../angular/controllers/wizardModal_spec.js   |   1 +
+ .../angular/services/annotationsSvc_spec.js   |   1 +
+ .../angular/services/caseSvc_spec.js          |   1 +
+ .../angular/services/diffResultsSvc_spec.js   |   1 +
+ .../angular/services/docCacheSvc_spec.js      |   4 +-
+ .../angular/services/importRatingsSvc_spec.js |   1 +
+ .../angular/services/mapperFactory_spec.js    | 151 ------------------
+ .../angular/services/queriesSvc_spec.js       |   1 +
+ .../angular/services/querySnapshotSvc_spec.js |   1 +
+ .../angular/services/ratingsStoreSvc_spec.js  |   2 +
+ .../angular/services/scorerFactory_spec.js    |   1 +
+ .../angular/services/scorerSvc_spec.js        |   4 +-
+ .../angular/services/settingsSvc_spec.js      |   1 +
+ .../angular/services/teamSvc_spec.js          |   1 +
+ .../angular/services/userSvc_spec.js          |   1 +
+ spec/karma/mockBackend.js                     |  17 +-
+ yarn.lock                                     |  18 +--
+ 28 files changed, 130 insertions(+), 209 deletions(-)
+ delete mode 100644 app/assets/javascripts/factories/MapperFactory.js
+ delete mode 100644 spec/javascripts/angular/services/mapperFactory_spec.js
+
+diff --git a/README.md b/README.md
+index 4ae614c7..ae22cb6d 100644
+--- a/README.md
++++ b/README.md
+@@ -191,7 +191,9 @@ Runs tests for the Angular side. There are two modes for the karma tests:
+ * Single run: `bin/docker r rails karma:run`
+ * Continuous/watched run: `bin/docker r bin/rake karma:start`
+ 
+-**Note:** The karma tests require the assets to be precompiled, which adds a significant amount of time to the test run. If you are only making changes to the test/spec files, then it is recommended you run the tests in watch mode (`bin/docker r bin/rake karma:start`). The caveat is that any time you make a change to the app files, you will have to restart the process (or use the single run mode).
++**Note:** The karma tests require the assets to be precompiled, which adds a significant amount of time to the test run.
++If you are only making changes to the test/spec files, then it is recommended you run the tests in watch mode (`bin/docker r bin/rake karma:start`).
++The caveat is that any time you make a change to the app files, you will have to restart the process (or use the single run mode).
+ 
+ ### Rubocop
+ 
+@@ -298,20 +300,6 @@ JavaScript and CSS dependencies via the Rails Asset pipeline.   If you are debug
+ you will want individual files.  So replace `//= require sprockets` with `//= require bootstrap-sprockets`.
+ 
+ 
+-### Webpacker
+-To use webpacker, that will compile javascript code into packs and will load changes faster,
+-you need to
+-
+-```bash
+-bin/rails webpacker:install
+-```
+-
+-Prior to that I had to install:
+-
+-```bash
+-brew install mysql
+-```
+-
+ ### Debugging Splainer and other NPM packages
+ 
+ `docker-compose.override.yml.example` can be copied to `docker-compose.override.yml` and use it to override environment variables or work with a local copy of the splainer-search JS library during development defined in `docker-compose.yml`. Example is included. Just update the path to `splainer-search` with your local checkout!  https://docs.docker.com/compose/extends/
+@@ -517,10 +505,11 @@ You will see a updated `Gemfile.lock`, go ahead and check it and `Gemfile` into
+ ## How does the Frontend work?
+ 
+ We use Angular 1 for the front end, and as part of that we use the `angular-ui-bootstrap` package
+-for all our UI components.   This package is tied to Bootstrap version 3.   We import the Bootstrap 3
+-CSS directly via the file `bootstrap.css`.
++for all our UI components.   This package is tied to Bootstrap version 3.  
++We import the Bootstrap 3 CSS directly via the file `bootstrap.css`.
+ 
+-For the various Admin pages, we actually are using Bootstrap 5! That is included via the `package.json` using NPM.  See `admin.js` for the line `//= require bootstrap/dist/js/bootstrap.bundle` which is where we are including.
++For the various Admin pages, we actually are using Bootstrap 5! That is included via the `package.json` using NPM.  
++See `admin.js` for the line `//= require bootstrap/dist/js/bootstrap.bundle` which is where we are including.
+ 
+ We currently use Rails Sprockets to compile everything, but do have dreams of moving the JavaScript
+ over to Webpacker.
+diff --git a/app/assets/javascripts/app.js b/app/assets/javascripts/app.js
+index 544c12ba..b7106b3c 100644
+--- a/app/assets/javascripts/app.js
++++ b/app/assets/javascripts/app.js
+@@ -18,7 +18,6 @@ angular.module('QuepidApp', [
+   'angular-flash.flash-alert-directive',
+   'ngTagsInput',
+   'ng-rails-csrf',
+-  'templates',
+   'ngAnimate',
+   'countUp',
+   'ngclipboard',
+diff --git a/app/assets/javascripts/core.js b/app/assets/javascripts/core.js
+index cc7ebb00..fed1a96d 100644
+--- a/app/assets/javascripts/core.js
++++ b/app/assets/javascripts/core.js
+@@ -50,7 +50,6 @@
+ //= require angular-ui-bootstrap/dist/ui-bootstrap
+ //= require angular-ui-bootstrap/dist/ui-bootstrap-tpls
+ //= require angular-wizard/dist/angular-wizard
+-//= require angular-rails-templates
+ //= require splainer-search/splainer-search
+ //= require ng-json-explorer/dist/angular-json-explorer
+ //= require angular-ui-ace/src/ui-ace
+diff --git a/app/assets/javascripts/factories/MapperFactory.js b/app/assets/javascripts/factories/MapperFactory.js
+deleted file mode 100644
+index 154d8e76..00000000
+--- a/app/assets/javascripts/factories/MapperFactory.js
++++ /dev/null
+@@ -1,14 +0,0 @@
+-'use strict';
+-
+-/*jslint latedef:false*/
+-
+-(function() {
+-  angular.module('QuepidApp')
+-    .factory('MapperFactory', [
+-      MapperFactory
+-    ]);
+-
+-  function MapperFactory() {
+-    
+-  }
+-})();
+diff --git a/app/assets/javascripts/interceptors/rails-csrf.js b/app/assets/javascripts/interceptors/rails-csrf.js
+index b93ddec1..21bc8cff 100644
+--- a/app/assets/javascripts/interceptors/rails-csrf.js
++++ b/app/assets/javascripts/interceptors/rails-csrf.js
+@@ -1,6 +1,37 @@
+ 'use strict';
+ 
+ angular.module('ng-rails-csrf', [] )
++  .config(['$provide', function($provide) {
++    // This method lets us modify the default behavior of $templateRequest to hit a 
++    // custom Rails controller "pages_controller" to look up templates.  Previously we 
++    // used the angular-rails-templates project to include all the templates in the app.js 
++    // file that was produced by Sprockets.  However, we don't have this with Propshaft.
++    // If we can go BACK to including the templates in the big javascript load, well, that avoids
++    // all the sha stamping of the files.
++    
++    // node_module provided files start with these paths
++    const patterns = ['angularUtils', 'uib'];
++    $provide.decorator('$templateRequest', ['$delegate', function($delegate) {
++      // Store the original handleRequestFn method
++      var originalHandleRequestFn = $delegate;
++     
++      // Override the handleRequestFn method
++      $delegate = function(tpl, ignoreRequestError) {
++        
++        var internalResource = patterns.some(pattern => tpl.startsWith(pattern));
++
++        if (!internalResource) {
++          // Route to custom Rails end point for reading in the file.
++          tpl = '/angularjs/' + tpl;
++        }
++  
++        // Call the original handleRequestFn with the modified tpl
++        return originalHandleRequestFn(tpl, ignoreRequestError);
++      };
++  
++      return $delegate;
++    }]);
++  }])
+   .config([
+     '$httpProvider',
+     function($httpProvider) {
+diff --git a/app/controllers/pages_controller.rb b/app/controllers/pages_controller.rb
+index 970907a9..51c855c1 100644
+--- a/app/controllers/pages_controller.rb
++++ b/app/controllers/pages_controller.rb
+@@ -9,9 +9,38 @@ class PagesController < ApplicationController
+   # def show
+   # render template: "pages/#{params[:page]}"
+   # end
++  
++  # This is how we handle AngularJS wanting to load assets without us moving them on disk.
++  def angularjs
++    puts "hi"
++    puts params
++    
++    path = request.path
++    # Get the full request path (with query parameters, if any)
++    full_path = request.fullpath
+ 
+-  # this is how we deal with the ACE editor wanting this specific file.
++    # For demonstration, you can log or use the path
++    puts "Request path: #{path}"
++    puts "Full request path: #{full_path}"
++    
++    #full_path = "/angularjs/new_case/new_case.html"
++    relative_path = "/" + params[:path] + ".html" #full_path.sub(/^\/angularjs\/?/, '')
++    path_components = relative_path.split('/')
++    
++    #file_path = Rails.root.join('app', 'assets', 'javascripts','components','new_case','new_case.html') # adjust the path accordingly
++    file_path_loc_a = Rails.root.join('app', 'assets', 'javascripts', 'components', *path_components)
++    file_path_loc_b = Rails.root.join('app', 'assets', 'templates', *path_components)
++
++    file_path = File.exist?(file_path_loc_a) ? file_path_loc_a : file_path_loc_b
+ 
++    if File.exist?(file_path)
++      render html: File.read(file_path).html_safe
++    else
++      render plain: "File not found", status: :not_found
++    end
++  end
++
++  # this is how we deal with the ACE editor wanting this specific file.
+   def theme_textmate
+     path = 'node_modules/ace-builds/src-min-noconflict/theme-textmate.js'
+     file_contents = File.read(path)
+diff --git a/config/environments/development.rb b/config/environments/development.rb
+index 569f7ece..76259971 100755
+--- a/config/environments/development.rb
++++ b/config/environments/development.rb
+@@ -89,12 +89,12 @@ Rails.application.configure do
+   config.web_console.permissions = '192.168.0.0/16'
+ 
+   config.after_initialize do
+-    Bullet.enable = true
+-    Bullet.alert = false
+-    Bullet.bullet_logger = true
+-    Bullet.console = true
+-    Bullet.rails_logger = true
+-    Bullet.add_footer = true
++    # Bullet.enable = true
++    # Bullet.alert = false
++    # Bullet.bullet_logger = true
++    # Bullet.console = true
++    # Bullet.rails_logger = true
++    # Bullet.add_footer = true
+   end
+ 
+   config.log_formatter = TruncatingFormatter.new
+diff --git a/config/routes.rb b/config/routes.rb
+index e4fc69c9..32f02d53 100755
+--- a/config/routes.rb
++++ b/config/routes.rb
+@@ -20,7 +20,7 @@ Rails.application.routes.draw do
+ 
+   root 'home#show'
+ 
+-  get 'home/sparklines', to: 'home#sparklines'
++  get 'home/sparklines'#, to: 'home#sparklines'
+   get 'home/case_prophet/:case_id', to: 'home#case_prophet', as: :home_case_prophet
+   # get 'tries_visualization/:case_id' => 'tries_visualization#show', as: :tries_visualization
+   get 'proxy/fetch'
+@@ -187,7 +187,10 @@ Rails.application.routes.draw do
+ 
+         # Case Metadata/Scores
+         resource :metadata, only: [ :update ], controller: :case_metadata
+-        resource :scores, only: [ :index, :update, :show ], controller: :case_scores
++        
++        # Weird rails 8 warning about :only and :except must include only [:show, :create, :update, :destroy, :new, :edit], but also included [:index]
++        #resource :scores, only: [ :index, :update, :show ], controller: :case_scores
++        resource :scores, controller: :case_scores
+         get '/scores/all' => 'case_scores#index'
+ 
+         resources :annotations, except: [ :show ]
+@@ -269,6 +272,8 @@ Rails.application.routes.draw do
+   # Static pages
+   # get '*page' => 'pages#show'
+   #
++  
++  get '/angularjs/*path.html' => 'pages#angularjs'
+ 
+   # Deal with ACE Editor really really wanting this file here
+   get '/javascripts/ace/theme-textmate.js' => 'pages#theme_textmate'
+diff --git a/package.json b/package.json
+index 41c4bc1b..47b102a4 100644
+--- a/package.json
++++ b/package.json
+@@ -9,8 +9,8 @@
+     "@fortawesome/fontawesome-free": "^6.6.0",
+     "@fortawesome/free-regular-svg-icons": "^6.6.0",
+     "@popperjs/core": "^2.11.6",
+-    "@rails/actioncable": "7.2.101",
+-    "@rails/activestorage": "7.2.101",
++    "@rails/actioncable": "8.0.0-rc2",
++    "@rails/activestorage": "8.0.0-rc2",
+     "ace-builds": "^1.32.2",
+     "angular": "~1.8.3",
+     "angular-animate": "^1.8.3",
+diff --git a/spec/javascripts/angular/controllers/promptSnapshot_spec.js b/spec/javascripts/angular/controllers/promptSnapshot_spec.js
+index a9dae919..edab7af8 100644
+--- a/spec/javascripts/angular/controllers/promptSnapshot_spec.js
++++ b/spec/javascripts/angular/controllers/promptSnapshot_spec.js
+@@ -34,12 +34,13 @@ describe('Controller: PromptSnapshotCtrl', function () {
+       docResolverSvc = new MockDocResolverSvc();
+       $provide.value('docResolverSvc', docResolverSvc);
+       settingsSvc = new MockSettingsSvc();
+-      $provide.value('settingsSvc', settingsSvc);
++      $provide.value('settingsSvc', settingsSvc);      
+     });
+     /* jshint camelcase: false */
+     inject(function ($controller, $rootScope, _$uibModal_, _querySnapshotSvc_, $injector) {
+       scope             = $rootScope.$new();
+       $httpBackend      = $injector.get('$httpBackend');
++      $httpBackend.whenGET('/angularjs/views/404.html').respond(200, "");
+       querySnapshotSvc  = _querySnapshotSvc_;
+ 
+       modalInstance = _$uibModal_.open({
+diff --git a/spec/javascripts/angular/controllers/queryParams_spec.js b/spec/javascripts/angular/controllers/queryParams_spec.js
+index 62d8f3fb..178cab19 100644
+--- a/spec/javascripts/angular/controllers/queryParams_spec.js
++++ b/spec/javascripts/angular/controllers/queryParams_spec.js
+@@ -17,6 +17,7 @@ describe('Controller: QueryparamsCtrl', function () {
+     scope = $rootScope.$new();
+     
+     $httpBackend = $injector.get('$httpBackend');
++    $httpBackend.whenGET('/angularjs/views/404.html').respond(200, "");
+ 
+     var queryParams = 'q=#$query##';
+     var curatorVars = {};
+diff --git a/spec/javascripts/angular/controllers/wizardModal_spec.js b/spec/javascripts/angular/controllers/wizardModal_spec.js
+index 90a9a3f6..2d77c42b 100644
+--- a/spec/javascripts/angular/controllers/wizardModal_spec.js
++++ b/spec/javascripts/angular/controllers/wizardModal_spec.js
+@@ -77,6 +77,7 @@ describe('Controller: WizardModalCtrl', function () {
+       scope = $rootScope.$new();
+       settingsSvc = _settingsSvc_;
+       $httpBackend = $injector.get('$httpBackend');
++      $httpBackend.whenGET('/angularjs/views/404.html').respond(200, "");
+       WizardModalCtrl = $controller('WizardModalCtrl', {
+         $scope: scope
+       });
+diff --git a/spec/javascripts/angular/services/annotationsSvc_spec.js b/spec/javascripts/angular/services/annotationsSvc_spec.js
+index 9f1a791f..e5f1e356 100644
+--- a/spec/javascripts/angular/services/annotationsSvc_spec.js
++++ b/spec/javascripts/angular/services/annotationsSvc_spec.js
+@@ -13,6 +13,7 @@ describe('Service: annotationsSvc', function () {
+     annotationsSvc = _annotationsSvc_;
+ 
+     $httpBackend = $injector.get('$httpBackend');
++    $httpBackend.whenGET('/angularjs/views/404.html').respond(200, "");
+   }));
+ 
+   afterEach(function() {
+diff --git a/spec/javascripts/angular/services/caseSvc_spec.js b/spec/javascripts/angular/services/caseSvc_spec.js
+index 69be7928..8fe686d8 100644
+--- a/spec/javascripts/angular/services/caseSvc_spec.js
++++ b/spec/javascripts/angular/services/caseSvc_spec.js
+@@ -64,6 +64,7 @@ describe('Service: caseSvc', function () {
+     inject(function (_caseSvc_, $injector) {
+       caseSvc = _caseSvc_;
+       $httpBackend = $injector.get('$httpBackend');
++      $httpBackend.whenGET('/angularjs/views/404.html').respond(200, "");
+     });
+   });
+ 
+diff --git a/spec/javascripts/angular/services/diffResultsSvc_spec.js b/spec/javascripts/angular/services/diffResultsSvc_spec.js
+index a9ca6aa6..be3d7945 100644
+--- a/spec/javascripts/angular/services/diffResultsSvc_spec.js
++++ b/spec/javascripts/angular/services/diffResultsSvc_spec.js
+@@ -51,6 +51,7 @@ describe('Service: diffResultsSvc', function() {
+     });
+     inject(function (_$rootScope_, _$q_, _diffResultsSvc_, _fieldSpecSvc_, _ratingsStoreSvc_, _docResolverSvc_, $injector) {
+       $httpBackend      = $injector.get('$httpBackend');
++      $httpBackend.whenGET('/angularjs/views/404.html').respond(200, "");
+       $q                = _$q_;
+       $rootScope        = _$rootScope_;
+       diffResultsSvc    = _diffResultsSvc_;
+diff --git a/spec/javascripts/angular/services/docCacheSvc_spec.js b/spec/javascripts/angular/services/docCacheSvc_spec.js
+index 6ff16308..82d52a97 100644
+--- a/spec/javascripts/angular/services/docCacheSvc_spec.js
++++ b/spec/javascripts/angular/services/docCacheSvc_spec.js
+@@ -16,7 +16,9 @@ describe('Service: docCacheSvc', function () {
+   };
+ 
+   beforeEach(function() {
+-    inject(function(_$rootScope_, _$q_, _docCacheSvc_, _docResolverSvc_) {
++    inject(function(_$rootScope_, _$q_, _docCacheSvc_, _docResolverSvc_, $injector) {
++      $httpBackend      = $injector.get('$httpBackend');
++      $httpBackend.whenGET('/angularjs/views/404.html').respond(200, "");
+       $rootScope      = _$rootScope_;
+       $q              = _$q_;
+       docCacheSvc     = _docCacheSvc_;
+diff --git a/spec/javascripts/angular/services/importRatingsSvc_spec.js b/spec/javascripts/angular/services/importRatingsSvc_spec.js
+index f4d19dcd..8d996586 100644
+--- a/spec/javascripts/angular/services/importRatingsSvc_spec.js
++++ b/spec/javascripts/angular/services/importRatingsSvc_spec.js
+@@ -12,6 +12,7 @@ describe('Service: importRatingsSvc', function () {
+   beforeEach(function() {
+     inject(function ($injector, _importRatingsSvc_) {
+       $httpBackend = $injector.get('$httpBackend');
++      $httpBackend.whenGET('/angularjs/views/404.html').respond(200, "");
+       importRatingsSvc = _importRatingsSvc_;
+     });
+   });
+diff --git a/spec/javascripts/angular/services/mapperFactory_spec.js b/spec/javascripts/angular/services/mapperFactory_spec.js
+deleted file mode 100644
+index bdf20d89..00000000
+--- a/spec/javascripts/angular/services/mapperFactory_spec.js
++++ /dev/null
+@@ -1,151 +0,0 @@
+-'use strict';
+-
+-describe('Service: MapperFactory', function () {
+-
+-  beforeEach(module('QuepidTest'));
+-  var $rootScope, $q, $timeout, scorerSvc, scorer;
+-
+-  beforeEach(inject(function(_$rootScope_, _$q_, _$timeout_, _scorerSvc_) {
+-    $q              = _$q_;
+-    $rootScope      = _$rootScope_;
+-    $timeout        = _$timeout_;
+-    scorerSvc = _scorerSvc_;
+-
+-
+-  }));
+-
+-  describe('Hashing A Field', function () {
+-    it('it can do a basic hash with whats built in', function () {
+-      
+-      const text =
+-        "An obscure body in the S-K System, your majesty. The inhabitants refer to it as the planet Earth.";
+-      
+-      async function digestMessage(message) {
+-        const msgUint8 = new TextEncoder().encode(message); // encode as (utf-8) Uint8Array
+-        const hashBuffer = await crypto.subtle.digest("SHA-256", msgUint8); // hash the message
+-        const hashArray = Array.from(new Uint8Array(hashBuffer)); // convert buffer to byte array
+-        const hashHex = hashArray
+-          .map((b) => b.toString(16).padStart(2, "0"))
+-          .join(""); // convert bytes to hex string
+-        return hashHex;
+-      }
+-      
+-      digestMessage(text).then((digestHex) => expect(digestHex).toEqual('6efd383745a964768989b9df420811abc6e5873f874fc22a76fe9258e020c2e1'));
+-      
+-      
+-      $rootScope.$apply();
+-
+-      expect(true).toBe(true);
+-    });
+-    
+-    
+-    function sha256(ascii) {
+-        function rightRotate(value, amount) {
+-            return (value>>>amount) | (value<<(32 - amount));
+-        };
+-        
+-        var mathPow = Math.pow;
+-        var maxWord = mathPow(2, 32);
+-        var lengthProperty = 'length'
+-        var i, j; // Used as a counter across the whole file
+-        var result = ''
+-    
+-        var words = [];
+-        var asciiBitLength = ascii[lengthProperty]*8;
+-        
+-        //* caching results is optional - remove/add slash from front of this line to toggle
+-        // Initial hash value: first 32 bits of the fractional parts of the square roots of the first 8 primes
+-        // (we actually calculate the first 64, but extra values are just ignored)
+-        var hash = sha256.h = sha256.h || [];
+-        // Round constants: first 32 bits of the fractional parts of the cube roots of the first 64 primes
+-        var k = sha256.k = sha256.k || [];
+-        var primeCounter = k[lengthProperty];
+-        /*/
+-        var hash = [], k = [];
+-        var primeCounter = 0;
+-        //*/
+-    
+-        var isComposite = {};
+-        for (var candidate = 2; primeCounter < 64; candidate++) {
+-            if (!isComposite[candidate]) {
+-                for (i = 0; i < 313; i += candidate) {
+-                    isComposite[i] = candidate;
+-                }
+-                hash[primeCounter] = (mathPow(candidate, .5)*maxWord)|0;
+-                k[primeCounter++] = (mathPow(candidate, 1/3)*maxWord)|0;
+-            }
+-        }
+-        
+-        ascii += '\x80' // Append Ƈ' bit (plus zero padding)
+-        while (ascii[lengthProperty]%64 - 56) ascii += '\x00' // More zero padding
+-        for (i = 0; i < ascii[lengthProperty]; i++) {
+-            j = ascii.charCodeAt(i);
+-            if (j>>8) return; // ASCII check: only accept characters in range 0-255
+-            words[i>>2] |= j << ((3 - i)%4)*8;
+-        }
+-        words[words[lengthProperty]] = ((asciiBitLength/maxWord)|0);
+-        words[words[lengthProperty]] = (asciiBitLength)
+-        
+-        // process each chunk
+-        for (j = 0; j < words[lengthProperty];) {
+-            var w = words.slice(j, j += 16); // The message is expanded into 64 words as part of the iteration
+-            var oldHash = hash;
+-            // This is now the undefinedworking hash", often labelled as variables a...g
+-            // (we have to truncate as well, otherwise extra entries at the end accumulate
+-            hash = hash.slice(0, 8);
+-            
+-            for (i = 0; i < 64; i++) {
+-                var i2 = i + j;
+-                // Expand the message into 64 words
+-                // Used below if 
+-                var w15 = w[i - 15], w2 = w[i - 2];
+-    
+-                // Iterate
+-                var a = hash[0], e = hash[4];
+-                var temp1 = hash[7]
+-                    + (rightRotate(e, 6) ^ rightRotate(e, 11) ^ rightRotate(e, 25)) // S1
+-                    + ((e&hash[5])^((~e)&hash[6])) // ch
+-                    + k[i]
+-                    // Expand the message schedule if needed
+-                    + (w[i] = (i < 16) ? w[i] : (
+-                            w[i - 16]
+-                            + (rightRotate(w15, 7) ^ rightRotate(w15, 18) ^ (w15>>>3)) // s0
+-                            + w[i - 7]
+-                            + (rightRotate(w2, 17) ^ rightRotate(w2, 19) ^ (w2>>>10)) // s1
+-                        )|0
+-                    );
+-                // This is only used once, so *could* be moved below, but it only saves 4 bytes and makes things unreadble
+-                var temp2 = (rightRotate(a, 2) ^ rightRotate(a, 13) ^ rightRotate(a, 22)) // S0
+-                    + ((a&hash[1])^(a&hash[2])^(hash[1]&hash[2])); // maj
+-                
+-                hash = [(temp1 + temp2)|0].concat(hash); // We don't bother trimming off the extra ones, they're harmless as long as we're truncating when we do the slice()
+-                hash[4] = (hash[4] + temp1)|0;
+-            }
+-            
+-            for (i = 0; i < 8; i++) {
+-                hash[i] = (hash[i] + oldHash[i])|0;
+-            }
+-        }
+-        
+-        for (i = 0; i < 8; i++) {
+-            for (j = 3; j + 1; j--) {
+-                var b = (hash[i]>>(j*8))&255;
+-                result += ((b < 16) ? 0 : '') + b.toString(16);
+-            }
+-        }
+-        return result;
+-    };
+-    
+-    it('it can do a basic hash with whats built in non async', function () {
+-      
+-      // https://stackoverflow.com/questions/59777670/how-can-i-hash-a-string-with-sha256-in-js
+-      
+-      const text =
+-        "An obscure body in the S-K System, your majesty. The inhabitants refer to it as the planet Earth.";
+-
+-      expect(sha256(text)).toEqual("6efd383745a964768989b9df420811abc6e5873f874fc22a76fe9258e020c2e1");
+-    });    
+-    
+-  });
+-
+-});
+diff --git a/spec/javascripts/angular/services/queriesSvc_spec.js b/spec/javascripts/angular/services/queriesSvc_spec.js
+index 2ba31b0a..6d5e5cc2 100644
+--- a/spec/javascripts/angular/services/queriesSvc_spec.js
++++ b/spec/javascripts/angular/services/queriesSvc_spec.js
+@@ -184,6 +184,7 @@ describe('Service: queriesSvc', function () {
+ 
+     inject(function(_$rootScope_, _$q_, $injector, _queriesSvc_, _fieldSpecSvc_) {
+       $httpBackend  = $injector.get('$httpBackend');
++      $httpBackend.whenGET('/angularjs/views/404.html').respond(200, "");
+       $rootScope    = _$rootScope_;
+       $q            = _$q_;
+       fieldSpecSvc  = _fieldSpecSvc_;
+diff --git a/spec/javascripts/angular/services/querySnapshotSvc_spec.js b/spec/javascripts/angular/services/querySnapshotSvc_spec.js
+index bca278cb..801f9bbc 100644
+--- a/spec/javascripts/angular/services/querySnapshotSvc_spec.js
++++ b/spec/javascripts/angular/services/querySnapshotSvc_spec.js
+@@ -24,6 +24,7 @@ describe('Service: querySnapshotSvc', function () {
+     /* jshint camelcase: false */
+     inject(function (_$rootScope_, _$q_, _querySnapshotSvc_, _fieldSpecSvc_, _docResolverSvc_, $injector) {
+       $httpBackend      = $injector.get('$httpBackend');
++      $httpBackend.whenGET('/angularjs/views/404.html').respond(200, "");
+       $rootScope        = _$rootScope_;
+       $q                = _$q_;
+       querySnapshotSvc  = _querySnapshotSvc_;
+diff --git a/spec/javascripts/angular/services/ratingsStoreSvc_spec.js b/spec/javascripts/angular/services/ratingsStoreSvc_spec.js
+index 2b273b7e..e0178cf5 100644
+--- a/spec/javascripts/angular/services/ratingsStoreSvc_spec.js
++++ b/spec/javascripts/angular/services/ratingsStoreSvc_spec.js
+@@ -11,6 +11,7 @@ describe('Service: Ratingsstoresvc', function () {
+   beforeEach(inject(function ($injector, _ratingsStoreSvc_) {
+     ratingsStoreSvc = _ratingsStoreSvc_;
+     $httpBackend = $injector.get('$httpBackend');
++    $httpBackend.whenGET('/angularjs/views/404.html').respond(200, "");
+   }));
+ 
+   it('should convert ratings from strings to ints', function() {
+@@ -184,6 +185,7 @@ describe('Rateable Docs', function () {
+   beforeEach(inject(function ($injector, _ratingsStoreSvc_) {
+     ratingsStoreSvc = _ratingsStoreSvc_;
+     $httpBackend = $injector.get('$httpBackend');
++    $httpBackend.whenGET('/angularjs/views/404.html').respond(200, "");
+   }));
+ 
+   it('posts on rate', function() {
+diff --git a/spec/javascripts/angular/services/scorerFactory_spec.js b/spec/javascripts/angular/services/scorerFactory_spec.js
+index ed126d3c..38fe9116 100644
+--- a/spec/javascripts/angular/services/scorerFactory_spec.js
++++ b/spec/javascripts/angular/services/scorerFactory_spec.js
+@@ -10,6 +10,7 @@ describe('Service: ScorerFactory', function () {
+     $rootScope      = _$rootScope_;
+     $timeout        = _$timeout_;
+     scorerSvc = _scorerSvc_;
++    $httpBackend.whenGET('/angularjs/views/404.html').respond(200, "");
+ 
+     var mockScorer = {
+       'scorerId': 1,
+diff --git a/spec/javascripts/angular/services/scorerSvc_spec.js b/spec/javascripts/angular/services/scorerSvc_spec.js
+index 8b2fb01a..c4902170 100644
+--- a/spec/javascripts/angular/services/scorerSvc_spec.js
++++ b/spec/javascripts/angular/services/scorerSvc_spec.js
+@@ -58,6 +58,7 @@ describe('Service: scorerSvc', function () {
+     inject(function (_scorerSvc_, $injector) {
+       scorerSvc = _scorerSvc_;
+       $httpBackend = $injector.get('$httpBackend');
++      $httpBackend.whenGET('/angularjs/views/404.html').respond(200, "");
+     });
+   });
+ 
+@@ -117,8 +118,9 @@ describe('Service: scorerSvc', function () {
+     var url = 'api/scorers/' + mockScorer.scorerId;
+     mockScorer.name = 'New Name';
+     mockScorerResp.name = 'New Name';
++    
+     $httpBackend.expectPUT(url).respond(200, mockScorerResp);
+-
++    
+     scorerSvc.edit(mockScorer).
+       then(function() {
+         scorerSvc.get(mockScorer.scorerId)
+diff --git a/spec/javascripts/angular/services/settingsSvc_spec.js b/spec/javascripts/angular/services/settingsSvc_spec.js
+index 707d1716..564681a7 100644
+--- a/spec/javascripts/angular/services/settingsSvc_spec.js
++++ b/spec/javascripts/angular/services/settingsSvc_spec.js
+@@ -104,6 +104,7 @@ describe('Service: settingsSvc', function () {
+       settingsSvc = _settingsSvc_;
+       caseTryNavSvc = _caseTryNavSvc_;
+       $httpBackend = $injector.get('$httpBackend');
++      $httpBackend.whenGET('/angularjs/views/404.html').respond(200, "");
+     });
+     /*jshint camelcase:true*/
+   });
+diff --git a/spec/javascripts/angular/services/teamSvc_spec.js b/spec/javascripts/angular/services/teamSvc_spec.js
+index 260c1a16..f796afb8 100644
+--- a/spec/javascripts/angular/services/teamSvc_spec.js
++++ b/spec/javascripts/angular/services/teamSvc_spec.js
+@@ -78,6 +78,7 @@ describe('Service: teamSvc', function () {
+     inject(function (_teamSvc_, $injector) {
+       teamSvc = _teamSvc_;
+       $httpBackend = $injector.get('$httpBackend');
++      $httpBackend.whenGET('/angularjs/views/404.html').respond(200, "");
+ 
+       mockTeam = teamSvc.constructFromData(mockTeamData);
+     });
+diff --git a/spec/javascripts/angular/services/userSvc_spec.js b/spec/javascripts/angular/services/userSvc_spec.js
+index eef46b84..da7599c3 100644
+--- a/spec/javascripts/angular/services/userSvc_spec.js
++++ b/spec/javascripts/angular/services/userSvc_spec.js
+@@ -13,6 +13,7 @@ describe('Service: userSvc', function () {
+     userSvc = _userSvc_;
+ 
+     $httpBackend = $injector.get('$httpBackend');
++    $httpBackend.whenGET('/angularjs/views/404.html').respond(200, "");
+   }));
+ 
+   afterEach(function() {
+diff --git a/spec/karma/mockBackend.js b/spec/karma/mockBackend.js
+index 2a67dfd2..b6b36b94 100644
+--- a/spec/karma/mockBackend.js
++++ b/spec/karma/mockBackend.js
+@@ -10,11 +10,12 @@ window.mockBackend = function(angModule) {
+   .config(function($provide) {
+     /*global createHttpBackendMock*/
+     $provide.decorator('$httpBackend', createHttpBackendMock);
++    $httpBackend.whenGET('/angularjs/views/404.html').respond(200, "");
+   });
+ 
+   angModule
+   .run(function($httpBackend, $timeout, $log) {
+-
++    $httpBackend.whenGET('/angularjs/views/404.html').respond(200, "");
+     var regexpUrl = function(regexp) {
+       return {
+         test: function(url) {
+@@ -24,6 +25,16 @@ window.mockBackend = function(angModule) {
+ 
+       };
+     };
++    
++    var startsUrl = function(startWith) {
++      return {
++        test: function(url) {
++          console.log("Checking url " + url);
++          return url.startsWith(startWith);
++        }
++      };
++    };
++    
+ 
+     var activeCases = {'allCases':
+                         [{caseName: 'Grocery Store',
+@@ -36,7 +47,11 @@ window.mockBackend = function(angModule) {
+     $httpBackend.when('JSONP', regexpUrl(/http:\/\/.*/))
+     .passThrough();
+ 
++    // We ignore the requests that are for template .html files
+     $httpBackend.when('GET', regexpUrl(/views.*/))
++    .passThrough();    
++    // We ignore the requests that get routed to the Rails end point for looking up
++    $httpBackend.when('GET', startsUrl('/angularjs'))
+     .passThrough();
+ 
+     // *******************************************
+diff --git a/yarn.lock b/yarn.lock
+index e286b26b..8953a408 100644
+--- a/yarn.lock
++++ b/yarn.lock
+@@ -66,15 +66,15 @@
+     unbzip2-stream "^1.4.3"
+     yargs "^17.7.2"
+ 
+-"@rails/actioncable@7.2.101":
+-  version "7.2.101"
+-  resolved "https://registry.yarnpkg.com/@rails/actioncable/-/actioncable-7.2.101.tgz#d0544b1bc51d420c1bb27f3281ccae54945e70f6"
+-  integrity sha512-YgFCyD+9mBhpJdfgf4QtJwk+vZbByVMXsEGREM6GrPk9A1pYXkkIpzYd3+843E+33e3S81yywhqZc3DyrZGPSg==
+-
+-"@rails/activestorage@7.2.101":
+-  version "7.2.101"
+-  resolved "https://registry.yarnpkg.com/@rails/activestorage/-/activestorage-7.2.101.tgz#fc786623431e7d5ef2b4e73b8c1cbfb890f18aac"
+-  integrity sha512-N4Lb2xW+6OFeE8f0nvOo6vigVM3VWlEYO6+wPBgc26CFstVG2zXbj4SV88JW3hZSArcCVox726hbXogwMV7hcg==
++"@rails/actioncable@8.0.0-rc2":
++  version "8.0.0-rc2"
++  resolved "https://registry.yarnpkg.com/@rails/actioncable/-/actioncable-8.0.0-rc2.tgz#496a8e47ee028936aa57db89dc2333ce1240384b"
++  integrity sha512-qmrw8iOVoPdQfsi99sIxa9C7/giSTHnUg0A4z9huyoGktdwYwW9aNC7Hs7UUJZo8VAQPr25U85ik5aJbkTQDJQ==
++
++"@rails/activestorage@8.0.0-rc2":
++  version "8.0.0-rc2"
++  resolved "https://registry.yarnpkg.com/@rails/activestorage/-/activestorage-8.0.0-rc2.tgz#e7a3b6c0ee1b15fa4da9a1ec20c32938000d8a37"
++  integrity sha512-f3Jdbjdpxace6Gnw3M2ljENXInRSlNjSnLTAjxy2vjXsuKF5UfYsKpgE1uXKhKLm5zD9obr9mi2gZYyQDmlm9g==
+   dependencies:
+     spark-md5 "^3.0.1"
+ 
+-- 
+2.45.1
+

@@ -1,0 +1,2148 @@
+From 3c8615b70dcdc9beace0833da6faee7c152415b1 Mon Sep 17 00:00:00 2001
+From: Eric Pugh <epugh@opensourceconnections.com>
+Date: Sat, 2 Nov 2024 23:07:00 -0400
+Subject: [PATCH] Migrate away from SASS
+
+Use the pages_controller, and some magic intercepting to make
+---
+ Gemfile                                       |   8 +-
+ Gemfile.lock                                  |  32 +----
+ app/assets/config/manifest.js                 |  12 ++
+ .../components/share_case/share_case.html     |   4 +-
+ app/assets/stylesheets/_books.scss            |  49 --------
+ app/assets/stylesheets/_cases.scss            |  81 ------------
+ app/assets/stylesheets/_docs.scss             |  24 ----
+ app/assets/stylesheets/_panes.scss            |  38 ------
+ app/assets/stylesheets/_qscore.scss           |  54 --------
+ app/assets/stylesheets/_scorers.scss          |  62 ----------
+ app/assets/stylesheets/_search_endpoints.scss |  49 --------
+ app/assets/stylesheets/_settings.scss         |  11 --
+ app/assets/stylesheets/_teams.scss            |  84 -------------
+ app/assets/stylesheets/_tour.scss             |  22 ----
+ app/assets/stylesheets/_users.scss            |  58 ---------
+ app/assets/stylesheets/admin.css.scss         |  20 ---
+ .../stylesheets/{_admin2.scss => admin2.css}  |   7 +-
+ app/assets/stylesheets/admin3.css             |  12 ++
+ app/assets/stylesheets/admin_users.css.scss   |  16 ---
+ app/assets/stylesheets/application.css        |   0
+ app/assets/stylesheets/application.css.scss   |  55 ---------
+ app/assets/stylesheets/application_bit.css    |  10 ++
+ .../stylesheets/{_base.scss => base.css}      |   0
+ app/assets/stylesheets/books.css              |  38 ++++++
+ app/assets/stylesheets/cases.css              |  64 ++++++++++
+ app/assets/stylesheets/core.css.scss          |  58 ---------
+ app/assets/stylesheets/docs.css               |  20 +++
+ app/assets/stylesheets/fonts.css              |  12 +-
+ .../stylesheets/{_misc.scss => misc.css}      |  74 ++++-------
+ app/assets/stylesheets/panes.css              |  34 ++++++
+ .../stylesheets/{_qgraph.scss => qgraph.css}  | 115 ++++++++----------
+ app/assets/stylesheets/qscore.css             |  46 +++++++
+ app/assets/stylesheets/scorers.css            |  49 ++++++++
+ app/assets/stylesheets/search_endpoints.css   |  38 ++++++
+ app/assets/stylesheets/settings.css           |  10 ++
+ app/assets/stylesheets/teams.css              |  64 ++++++++++
+ app/assets/stylesheets/tour.css               |  17 +++
+ app/assets/stylesheets/users.css              |  45 +++++++
+ app/views/layouts/_sidebar.html.erb           |   6 +-
+ app/views/layouts/admin.html.erb              |   7 +-
+ app/views/layouts/analytics.html.erb          |   8 +-
+ app/views/layouts/application.html.erb        |  13 +-
+ app/views/layouts/core.html.erb               |  44 ++++++-
+ config/application.rb                         |   2 +-
+ package.json                                  |   2 +
+ yarn.lock                                     |  17 +++
+ 46 files changed, 645 insertions(+), 846 deletions(-)
+ delete mode 100644 app/assets/stylesheets/_books.scss
+ delete mode 100644 app/assets/stylesheets/_cases.scss
+ delete mode 100644 app/assets/stylesheets/_docs.scss
+ delete mode 100644 app/assets/stylesheets/_panes.scss
+ delete mode 100644 app/assets/stylesheets/_qscore.scss
+ delete mode 100644 app/assets/stylesheets/_scorers.scss
+ delete mode 100644 app/assets/stylesheets/_search_endpoints.scss
+ delete mode 100644 app/assets/stylesheets/_settings.scss
+ delete mode 100644 app/assets/stylesheets/_teams.scss
+ delete mode 100644 app/assets/stylesheets/_tour.scss
+ delete mode 100644 app/assets/stylesheets/_users.scss
+ delete mode 100644 app/assets/stylesheets/admin.css.scss
+ rename app/assets/stylesheets/{_admin2.scss => admin2.css} (57%)
+ create mode 100644 app/assets/stylesheets/admin3.css
+ delete mode 100644 app/assets/stylesheets/admin_users.css.scss
+ create mode 100644 app/assets/stylesheets/application.css
+ delete mode 100755 app/assets/stylesheets/application.css.scss
+ create mode 100755 app/assets/stylesheets/application_bit.css
+ rename app/assets/stylesheets/{_base.scss => base.css} (100%)
+ create mode 100644 app/assets/stylesheets/books.css
+ create mode 100644 app/assets/stylesheets/cases.css
+ delete mode 100644 app/assets/stylesheets/core.css.scss
+ create mode 100644 app/assets/stylesheets/docs.css
+ rename app/assets/stylesheets/{_misc.scss => misc.css} (57%)
+ create mode 100644 app/assets/stylesheets/panes.css
+ rename app/assets/stylesheets/{_qgraph.scss => qgraph.css} (53%)
+ create mode 100644 app/assets/stylesheets/qscore.css
+ create mode 100644 app/assets/stylesheets/scorers.css
+ create mode 100644 app/assets/stylesheets/search_endpoints.css
+ create mode 100644 app/assets/stylesheets/settings.css
+ create mode 100644 app/assets/stylesheets/teams.css
+ create mode 100644 app/assets/stylesheets/tour.css
+ create mode 100644 app/assets/stylesheets/users.css
+
+diff --git a/Gemfile b/Gemfile
+index 4c38024e..e564db43 100755
+--- a/Gemfile
++++ b/Gemfile
+@@ -9,7 +9,6 @@ gem 'active_storage_db'
+ gem 'acts_as_list', '>= 1.0.1'
+ gem 'addressable', '~> 2.8'
+ gem 'ancestry'
+-gem 'angular-rails-templates', '>= 1.0.0.beta'
+ gem 'apipie-rails', '~> 1.2'
+ gem 'bcrypt', '~> 3.1.7'
+ gem 'bootsnap', require: false
+@@ -20,9 +19,6 @@ gem 'd3-rails', '~> 3.5.5' # For cal heatmap
+ gem 'devise', '>= 4.6.2'
+ gem 'devise_invitable', '~> 2.0'
+ 
+-# Using this as it wires in via Sprockets and I can't get npm version to work with the main app.
+-# Had no luck with js/svg approach ;-(
+-gem 'font-awesome-sass'
+ gem 'foreman'
+ gem 'gabba'
+ gem 'importmap-rails', '~> 2.0'
+@@ -49,9 +45,9 @@ gem 'rack-cors', '~> 2.0'
+ gem 'rapidjson'
+ gem 'responders'
+ gem 'rubyzip', '~> 2.3.0' # 3.0 will be breaking
+-gem 'sassc-rails', '~> 2.1'
+ gem 'solid_cable', '~> 3.0'
+ gem 'solid_queue'
++
+ gem 'thor'
+ gem 'turbo-rails', '~> 2.0', '>= 2.0.5'
+ gem 'vega', '~> 0.3.0'
+@@ -94,3 +90,5 @@ group :test do
+   gem 'capybara'
+   gem 'selenium-webdriver'
+ end
++
++gem "propshaft", "~> 1.1"
+diff --git a/Gemfile.lock b/Gemfile.lock
+index 6370c623..513f69b7 100644
+--- a/Gemfile.lock
++++ b/Gemfile.lock
+@@ -84,11 +84,6 @@ GEM
+     aes_key_wrap (1.1.0)
+     ancestry (4.3.3)
+       activerecord (>= 5.2.6)
+-    angular-rails-templates (1.2.2)
+-      railties (>= 5.0, < 7.3)
+-      sprockets (>= 3.0, < 5)
+-      sprockets-rails
+-      tilt
+     annotate (3.2.0)
+       activerecord (>= 3.2, < 8.0)
+       rake (>= 10.4, < 14.0)
+@@ -184,8 +179,6 @@ GEM
+     ffi (1.17.0-aarch64-linux-gnu)
+     ffi (1.17.0-x86_64-darwin)
+     ffi (1.17.0-x86_64-linux-gnu)
+-    font-awesome-sass (6.5.2)
+-      sassc (~> 2.0)
+     foreman (0.88.1)
+     fugit (1.11.1)
+       et-orbi (~> 1, >= 1.2.11)
+@@ -337,6 +330,11 @@ GEM
+       cmdstan (>= 0.2)
+       numo-narray (>= 0.9.1.7)
+       rover-df
++    propshaft (1.1.0)
++      actionpack (>= 7.0.0)
++      activesupport (>= 7.0.0)
++      rack
++      railties (>= 7.0.0)
+     psych (5.1.2)
+       stringio
+     public_suffix (6.0.1)
+@@ -442,14 +440,6 @@ GEM
+     ruby-statistics (4.0.1)
+     ruby2_keywords (0.0.5)
+     rubyzip (2.3.2)
+-    sassc (2.4.0)
+-      ffi (~> 1.9)
+-    sassc-rails (2.1.2)
+-      railties (>= 4.0.0)
+-      sassc (>= 2.0)
+-      sprockets (> 3.0)
+-      sprockets-rails
+-      tilt
+     securerandom (0.3.1)
+     selenium-webdriver (4.25.0)
+       base64 (~> 0.2)
+@@ -478,18 +468,10 @@ GEM
+       fugit (~> 1.11.0)
+       railties (>= 7.1)
+       thor (~> 1.3.1)
+-    sprockets (4.2.1)
+-      concurrent-ruby (~> 1.0)
+-      rack (>= 2.2.4, < 4)
+-    sprockets-rails (3.5.2)
+-      actionpack (>= 6.1)
+-      activesupport (>= 6.1)
+-      sprockets (>= 3.0.0)
+     stimulus-rails (1.3.4)
+       railties (>= 6.0.0)
+     stringio (3.1.1)
+     thor (1.3.2)
+-    tilt (2.4.0)
+     timeout (0.4.1)
+     turbo-rails (2.0.11)
+       actionpack (>= 6.0.0)
+@@ -533,7 +515,6 @@ DEPENDENCIES
+   acts_as_list (>= 1.0.1)
+   addressable (~> 2.8)
+   ancestry
+-  angular-rails-templates (>= 1.0.0.beta)
+   annotate
+   apipie-rails (~> 1.2)
+   bcrypt (~> 3.1.7)
+@@ -549,7 +530,6 @@ DEPENDENCIES
+   devise (>= 4.6.2)
+   devise_invitable (~> 2.0)
+   error_highlight (>= 0.4.0)
+-  font-awesome-sass
+   foreman
+   gabba
+   importmap-rails (~> 2.0)
+@@ -571,6 +551,7 @@ DEPENDENCIES
+   omniauth-rails_csrf_protection
+   postmark-rails
+   prophet-rb (~> 0.5.0)
++  propshaft (~> 1.1)
+   puma
+   pundit
+   rack-cors (~> 2.0)
+@@ -585,7 +566,6 @@ DEPENDENCIES
+   rubocop-capybara
+   rubocop-rails
+   rubyzip (~> 2.3.0)
+-  sassc-rails (~> 2.1)
+   selenium-webdriver
+   simplecov
+   solid_cable (~> 3.0)
+diff --git a/app/assets/config/manifest.js b/app/assets/config/manifest.js
+index e8e88698..129e6638 100644
+--- a/app/assets/config/manifest.js
++++ b/app/assets/config/manifest.js
+@@ -2,4 +2,16 @@
+ //= link application.js
+ //= link 'application.css'
+ //= link_tree ../../javascript .js
++//= link_tree ../stylesheets .css
+ //= link_tree ../../../vendor/javascript .js
++//= link_tree ../fonts
++
++//= link bootstrap/dist/css/bootstrap.min.css
++//= link bootstrap-icons/font/bootstrap-icons.min.css
++//= link codemirror/lib/codemirror.css
++//= link tether-shepherd/dist/css/shepherd-theme-arrows.css
++
++
++//= link cookies_eu.css
++//= link @fortawesome/fontawesome-free/css/fontawesome.css
++//= link @fortawesome/fontawesome-free/css/regular.css
+diff --git a/app/assets/javascripts/components/share_case/share_case.html b/app/assets/javascripts/components/share_case/share_case.html
+index d52445e4..2247197a 100644
+--- a/app/assets/javascripts/components/share_case/share_case.html
++++ b/app/assets/javascripts/components/share_case/share_case.html
+@@ -1,7 +1,7 @@
+ <span ng-if="ctrl.iconOnly">
+   <a ng-click="ctrl.prompt()" class="action-icon">
+     <i
+-      class="fa fa-share"
++      class="fa-solid fa-share"
+       aria-hidden="true"
+       title="Share Case"
+       alt="Share Case"
+@@ -11,7 +11,7 @@
+ 
+ <span ng-if="!ctrl.iconOnly">
+   <i
+-    class="fa fa-share"
++    class="fa-solid fa-share"
+     aria-hidden="true"
+     title="Share Case"
+     alt="Share Case"
+diff --git a/app/assets/stylesheets/_books.scss b/app/assets/stylesheets/_books.scss
+deleted file mode 100644
+index cdb6ab65..00000000
+--- a/app/assets/stylesheets/_books.scss
++++ /dev/null
+@@ -1,49 +0,0 @@
+-/* Books */
+-#books-filter {
+-  width: 75%;
+-}
+-
+-#books-per-page {
+-  width: 20%;
+-}
+-
+-#books-listing {
+-  margin: 30px 0;
+-
+-  .listing-header {
+-    font-weight:  bold;
+-  }
+-
+-  ul.books-list {
+-    list-style: none;
+-    padding:    0;
+-  }
+-
+-  .books-list-item {
+-    line-height:  34px;
+-    margin:       2px 0;
+-
+-    .item-box {
+-      background:     #FFF;
+-      border-radius:  6px;
+-      border:         1px solid #AAA;
+-      margin:         0px 2px;
+-      padding-top:    10px;
+-      padding-bottom: 10px;
+-    }
+-
+-    .item-actions {
+-      display: none;
+-    }
+-
+-    &:hover {
+-      .item-actions {
+-        display: inline-block;
+-      }
+-    }
+-
+-    &.col-lg-6:nth-child(2n+1) {
+-      clear: both;
+-    }
+-  }
+-}
+diff --git a/app/assets/stylesheets/_cases.scss b/app/assets/stylesheets/_cases.scss
+deleted file mode 100644
+index fb5a65ec..00000000
+--- a/app/assets/stylesheets/_cases.scss
++++ /dev/null
+@@ -1,81 +0,0 @@
+-/* Cases */
+-#cases-filter {
+-  width: 75%;
+-}
+-
+-#cases-per-page {
+-  width: 20%;
+-}
+-
+-#cases-listing {
+-  margin: 30px 0;
+-
+-  .listing-header {
+-    font-weight:  bold;
+-    text-align:   center;
+-  }
+-
+-  .cases-list-header {
+-    padding: 0;
+-  }
+-
+-  ul.cases-list {
+-    list-style: none;
+-    padding:    0;
+-  }
+-
+-  .cases-list-item {
+-    line-height:  34px;
+-    margin:       2px 0;
+-
+-    .owner {
+-      line-height: 1;
+-      margin:      10px 0;
+-      word-wrap:   break-word;
+-    }
+-
+-    .item-box {
+-      background:     #FFF;
+-      border-radius:  6px;
+-      border:         1px solid #AAA;
+-      margin:         0px 2px;
+-      padding-top:    10px;
+-      padding-bottom: 10px;
+-      text-align:     center;
+-    }
+-
+-    .case-title:hover {
+-      cursor:           pointer;
+-      text-decoration:  underline;
+-    }
+-
+-    .item-actions {
+-      display: none;
+-    }
+-
+-    &:hover {
+-      .item-actions {
+-        display: inherit;
+-      }
+-    }
+-  }
+-}
+-
+-.archived-cases {
+-  margin: 20px;
+-}
+-
+-.no-data {
+-  font-size: 0.8em;
+-}
+-
+-.loading-cases-msg {
+-  padding:      15px 0 0 15px;
+-  font-weight:  600;
+-}
+-
+-.media-embed {
+-  vertical-align: middle;
+-  max-width: 640px;
+-  max-height: 640px;
+-}
+diff --git a/app/assets/stylesheets/_docs.scss b/app/assets/stylesheets/_docs.scss
+deleted file mode 100644
+index 2c717f20..00000000
+--- a/app/assets/stylesheets/_docs.scss
++++ /dev/null
+@@ -1,24 +0,0 @@
+-.doc-detailed-explain-modal {
+-  height:   100%;
+-  z-index:  2050 !important;
+-
+-  .modal-dialog {
+-    height: calc(100% - 100px);
+-    width:  calc(100% - 100px);
+-  }
+-
+-  .modal-content {
+-    height:   100%;
+-    overflow: scroll;
+-  }
+-}
+-
+-.doc-detailed-explain {
+-  padding: 20px;
+-}
+-
+-.doc-score-explanation {
+-  max-height: 200px;
+-  overflow:   scroll;
+-  width:      100%;
+-}
+diff --git a/app/assets/stylesheets/_panes.scss b/app/assets/stylesheets/_panes.scss
+deleted file mode 100644
+index 53bb8f90..00000000
+--- a/app/assets/stylesheets/_panes.scss
++++ /dev/null
+@@ -1,38 +0,0 @@
+-.pane_container {
+-  position: relative;
+-  overflow: hidden;
+-}
+-
+-.pane_main {
+-  display:    block;
+-  float:      left;
+-  height:     calc(100% - 60px);
+-  left:       1px;
+-  overflow-y: auto;
+-  position:   fixed;
+-  width:      100%;
+-}
+-
+-.pane_east {
+-  background: #333;
+-  display:    none;
+-  height:     calc(100% - 60px);
+-  min-width:  300px;
+-  overflow-y: auto;
+-  position:   fixed;
+-}
+-
+-.east-slider {
+-  background: none repeat scroll 0% 0% rgb(221, 221, 221);
+-  border:     0px solid rgb(187, 187, 187);
+-  cursor:     col-resize;
+-  display:    none;
+-  height:     100%;
+-  position:   fixed;
+-  width:      6px;
+-  z-index:    99;
+-}
+-
+-.east-slider:hover {
+-  background: none repeat scroll 0% 0% rgb(50, 100, 20);
+-}
+diff --git a/app/assets/stylesheets/_qscore.scss b/app/assets/stylesheets/_qscore.scss
+deleted file mode 100644
+index 5382e98f..00000000
+--- a/app/assets/stylesheets/_qscore.scss
++++ /dev/null
+@@ -1,54 +0,0 @@
+-qscore {
+-  padding: 0;
+-  // margin: 0;
+-  // height: 100%;
+-
+-  &.case-score {
+-    margin: 20px 15px -10px 0px;
+-  }
+-
+-  .header-rating {
+-    border-radius:  5px;
+-    color:          #FFF;
+-    display:        inline-block;
+-    font-size:      22px;
+-    margin:         0;
+-    min-height:     80px;
+-    padding:        15px 0;
+-    text-align:     center;
+-    vertical-align: top;
+-  }
+-
+-  .overall-rating {
+-    display: block;
+-    float: left;
+-    height: 100%;
+-    width: 90px;
+-    margin: -10px 20px -10px -20px;
+-    padding: 10px 0;
+-    color: #FFF;
+-    font-family: 'allerbold_italic';
+-    font-size: 22px;
+-    text-align: center;
+-    border-top-left-radius: 5px;
+-    border-bottom-left-radius: 5px;
+-
+-    &.diff-score {
+-      border-radius: 0;
+-    }
+-  }
+-
+-  qgraph {
+-    display: inline-block;
+-    height:  80px;
+-    margin:  0px -10px 0px 0px;
+-    width:   150px;
+-
+-    svg {
+-      border: 2px solid grey;
+-      border-right-style: none;
+-      border-top-left-radius: 5px;
+-      border-bottom-left-radius: 5px;
+-    }
+-  }
+-}
+diff --git a/app/assets/stylesheets/_scorers.scss b/app/assets/stylesheets/_scorers.scss
+deleted file mode 100644
+index 249b3cd6..00000000
+--- a/app/assets/stylesheets/_scorers.scss
++++ /dev/null
+@@ -1,62 +0,0 @@
+-/* Scorers */
+-#scorers-filter {
+-  width: 75%;
+-}
+-
+-#scorers-per-page {
+-  width: 20%;
+-}
+-
+-#scorers-listing {
+-  margin: 30px 0;
+-
+-  .listing-header {
+-    font-weight:  bold;
+-  }
+-
+-  ul.scorers-list {
+-    list-style: none;
+-    padding:    0;
+-  }
+-
+-  .scorers-list-item {
+-    line-height:  34px;
+-    margin:       2px 0;
+-
+-    .item-box {
+-      background:     #FFF;
+-      border-radius:  6px;
+-      border:         1px solid #AAA;
+-      margin:         0px 2px;
+-      padding-top:    10px;
+-      padding-bottom: 10px;
+-    }
+-
+-    .item-actions {
+-      display: none;
+-    }
+-
+-    &:hover {
+-      .item-actions {
+-        display: inline-block;
+-      }
+-    }
+-
+-    &.col-lg-6:nth-child(2n+1) {
+-      clear: both;
+-    }
+-  }
+-
+-  .scorer-scale {
+-    margin-top: 20px;
+-    padding:    0;
+-
+-    li {
+-      float:      left;
+-      list-style: none;
+-      margin:     0;
+-      text-align: center;
+-      width:      10%;
+-    }
+-  }
+-}
+diff --git a/app/assets/stylesheets/_search_endpoints.scss b/app/assets/stylesheets/_search_endpoints.scss
+deleted file mode 100644
+index 462d402b..00000000
+--- a/app/assets/stylesheets/_search_endpoints.scss
++++ /dev/null
+@@ -1,49 +0,0 @@
+-/* Search Endpoints */
+-#search-endpoints-filter {
+-  width: 75%;
+-}
+-
+-#search-endpoints-per-page {
+-  width: 20%;
+-}
+-
+-#search-endpoints-listing {
+-  margin: 30px 0;
+-
+-  .listing-header {
+-    font-weight:  bold;
+-  }
+-
+-  ul.search-endpoints-list {
+-    list-style: none;
+-    padding:    0;
+-  }
+-
+-  .search-endpoints-list-item {
+-    line-height:  34px;
+-    margin:       2px 0;
+-
+-    .item-box {
+-      background:     #FFF;
+-      border-radius:  6px;
+-      border:         1px solid #AAA;
+-      margin:         0px 2px;
+-      padding-top:    10px;
+-      padding-bottom: 10px;
+-    }
+-
+-    .item-actions {
+-      display: none;
+-    }
+-
+-    &:hover {
+-      .item-actions {
+-        display: inline-block;
+-      }
+-    }
+-
+-    &.col-lg-6:nth-child(2n+1) {
+-      clear: both;
+-    }
+-  }
+-}
+diff --git a/app/assets/stylesheets/_settings.scss b/app/assets/stylesheets/_settings.scss
+deleted file mode 100644
+index 6b6003e6..00000000
+--- a/app/assets/stylesheets/_settings.scss
++++ /dev/null
+@@ -1,11 +0,0 @@
+-query-params {
+-  clear:      both;
+-  display:    block;
+-  height:     100%;
+-  min-height: 100%;
+-  overflow:   auto;
+-}
+-
+-.black-label label {
+-  color: black;
+-}
+diff --git a/app/assets/stylesheets/_teams.scss b/app/assets/stylesheets/_teams.scss
+deleted file mode 100644
+index 1ff8d3a8..00000000
+--- a/app/assets/stylesheets/_teams.scss
++++ /dev/null
+@@ -1,84 +0,0 @@
+-/* Teams */
+-#teams-filter {
+-  width: 75%;
+-}
+-
+-#teams-per-page {
+-  width: 20%;
+-}
+-
+-#teams-listing {
+-  margin: 30px 0;
+-
+-  .listing-header {
+-    font-weight:  bold;
+-  }
+-
+-  ul.teams-list {
+-    list-style: none;
+-    padding:    0;
+-  }
+-
+-  .teams-list-item {
+-    line-height:  34px;
+-    margin:       2px 0;
+-
+-    .item-box {
+-      background:     #FFF;
+-      border-radius:  6px;
+-      border:         1px solid #AAA;
+-      margin:         0px 2px;
+-      padding-top:    10px;
+-      padding-bottom: 10px;
+-    }
+-
+-    .team-title:hover {
+-      cursor:           pointer;
+-      text-decoration:  underline;
+-    }
+-
+-    .item-actions {
+-      display: none;
+-    }
+-
+-    &:hover {
+-      .item-actions {
+-        display: inherit;
+-      }
+-    }
+-
+-  }
+-}
+-
+-.team {
+-  .team-owner {
+-    border-radius:  5px;
+-    border:         1px solid #AAA;
+-    padding:        20px;
+-    width:          250px;
+-    word-wrap:      break-word;
+-
+-    img {
+-      margin:   0 0 10px;
+-      width:    100%;
+-    }
+-
+-    .label {
+-      display: inline-block;
+-    }
+-  }
+-
+-  .team-stats .vcard-stats {
+-    margin-bottom:  10px;
+-    padding:        10px 0;
+-  }
+-
+-  .add-member input {
+-    display:  inline-block;
+-    width:    80%
+-  }
+-
+-  .team-associations .filter-form {
+-    padding-right: 0;
+-  }
+-}
+diff --git a/app/assets/stylesheets/_tour.scss b/app/assets/stylesheets/_tour.scss
+deleted file mode 100644
+index d87152ea..00000000
+--- a/app/assets/stylesheets/_tour.scss
++++ /dev/null
+@@ -1,22 +0,0 @@
+-body {
+-  &.shepherd-active {
+-    pointer-events: none !important;
+-
+-    .shepherd-target.shepherd-enabled {
+-      position:        relative;
+-      box-shadow:      0 0 0 99999px rgba(0, 0, 0, 0.2);
+-      z-index:         9999;
+-      pointer-events:  auto;
+-      transition:      all 0.3s ease;
+-    }
+-
+-    .shepherd-step {
+-      pointer-events: auto;
+-      z-index:        9999;
+-
+-      footer {
+-        display: block;
+-      }
+-    }
+-  }
+-}
+diff --git a/app/assets/stylesheets/_users.scss b/app/assets/stylesheets/_users.scss
+deleted file mode 100644
+index f720eef8..00000000
+--- a/app/assets/stylesheets/_users.scss
++++ /dev/null
+@@ -1,58 +0,0 @@
+-/* Users */
+-#users-filter {
+-  width: 75%;
+-}
+-
+-#users-per-page {
+-  width: 20%;
+-}
+-
+-#users-listing {
+-  margin: 30px 0;
+-
+-  .listing-header {
+-    font-weight:  bold;
+-  }
+-
+-  ul.users-list {
+-    list-style: none;
+-    padding:    0;
+-  }
+-
+-  .users-list-item {
+-    line-height:  34px;
+-    margin:       2px 0;
+-
+-    .item-box {
+-      background:     #FFF;
+-      border-radius:  6px;
+-      border:         1px solid #AAA;
+-      margin:         0px 2px;
+-      padding-top:    10px;
+-      padding-bottom: 10px;
+-    }
+-
+-    .user-info {
+-      line-height: 24px;
+-    }
+-
+-    .user-info:hover {
+-      cursor:           pointer;
+-      text-decoration:  underline;
+-    }
+-
+-    .item-actions {
+-      display: none;
+-    }
+-
+-    &:hover {
+-      .item-actions {
+-        display: inherit;
+-      }
+-    }
+-  }
+-}
+-
+-h5.user-name {
+-  margin: 0 0 5px;
+-}
+diff --git a/app/assets/stylesheets/admin.css.scss b/app/assets/stylesheets/admin.css.scss
+deleted file mode 100644
+index abf27ade..00000000
+--- a/app/assets/stylesheets/admin.css.scss
++++ /dev/null
+@@ -1,20 +0,0 @@
+-/*
+- * This is a manifest file that'll be compiled into admin.css, which will include all the files
+- * listed below.
+- */
+-
+-// This loads the Bootstrap 5 defined in package.json and in node_modules/bootstrap
+-@import "bootstrap/scss/bootstrap";
+-
+-// We use Bootstrap Icons to have icons that work between core and the rest of the app
+-@import "bootstrap-icons/font/bootstrap-icons";
+-
+-@import "codemirror/lib/codemirror";
+-
+-@import "fonts";
+-
+-// Styling for Bootstrap 5 for Quepid
+-@import "bootstrap-add-bs5";
+-
+-// This is the css for the admin pages only.
+-@import "admin2";
+diff --git a/app/assets/stylesheets/_admin2.scss b/app/assets/stylesheets/admin2.css
+similarity index 57%
+rename from app/assets/stylesheets/_admin2.scss
+rename to app/assets/stylesheets/admin2.css
+index a3ff7be1..d2618437 100644
+--- a/app/assets/stylesheets/_admin2.scss
++++ b/app/assets/stylesheets/admin2.css
+@@ -1,7 +1,7 @@
+ 
+ // Used in the communal scorers editing screen
+ .scale-with-label-element {
+-  display: block;
++	 display: block;
+ }
+ 
+ .scale-label {
+@@ -10,8 +10,3 @@
+   margin-left: 10px;
+   width:       calc(100% - 50px);
+ }
+-
+-// push the Admin Panel down from the top a bit since it's got plenty of room
+-//main > .container {
+-//  padding: 60px 15px 0;
+-//}
+diff --git a/app/assets/stylesheets/admin3.css b/app/assets/stylesheets/admin3.css
+new file mode 100644
+index 00000000..d2618437
+--- /dev/null
++++ b/app/assets/stylesheets/admin3.css
+@@ -0,0 +1,12 @@
++
++// Used in the communal scorers editing screen
++.scale-with-label-element {
++	 display: block;
++}
++
++.scale-label {
++  display:     inline-block;
++  float:       right;
++  margin-left: 10px;
++  width:       calc(100% - 50px);
++}
+diff --git a/app/assets/stylesheets/admin_users.css.scss b/app/assets/stylesheets/admin_users.css.scss
+deleted file mode 100644
+index 23b982de..00000000
+--- a/app/assets/stylesheets/admin_users.css.scss
++++ /dev/null
+@@ -1,16 +0,0 @@
+-/*
+- * This is a manifest file that'll be compiled into admin_users.css, which will include all the files
+- * listed below.
+- */
+-// This loads the Bootstrap 5 defined in package.json and in node_modules/bootstrap
+-@import "bootstrap/scss/bootstrap";
+-
+-@import "fonts";
+-
+-// Styling for Bootstrap 5 for Quepid
+-@import "bootstrap-add-bs5";
+-
+-@import "cal-heatmap";
+-
+-// This is the css for the admin pages only.
+-@import "admin2";
+diff --git a/app/assets/stylesheets/application.css b/app/assets/stylesheets/application.css
+new file mode 100644
+index 00000000..e69de29b
+diff --git a/app/assets/stylesheets/application.css.scss b/app/assets/stylesheets/application.css.scss
+deleted file mode 100755
+index 511bb94b..00000000
+--- a/app/assets/stylesheets/application.css.scss
++++ /dev/null
+@@ -1,55 +0,0 @@
+-/*
+- * This is a manifest file that'll be compiled into application.css, which will include all the files
+- * listed below.
+- *
+- * Any CSS (and SCSS, if configured) file within this directory, lib/assets/stylesheets, or any plugin's
+- * or any plugin's vendor/assets/stylesheets directory can be referenced here using a relative path.
+- *
+- * You're free to add application-wide styles to this file and they'll appear at the bottom of the
+- * compiled file so the styles you add here take precedence over styles defined in any other CSS
+- * files in this directory. Styles in this file should be added after the last require_* statement.
+- * It is generally better to create a new file per style scope.
+- *
+- */
+-
+- // We use Bootstrap 5 everywhere except the core app, which is stuck in Bootstrap 3.
+- // This loads the Bootstrap 5 defined in package.json and in node_modules/bootstrap
+- @import "bootstrap/scss/bootstrap";
+- // Styling for Bootstrap 5 for Quepid
+- @import "bootstrap-add-bs5";
+-
+- // We use Bootstrap Icons to have icons that work between core and the rest of the app
+- @import "bootstrap-icons/font/bootstrap-icons";
+-
+- @font-face {
+-   font-family: "bootstrap-icons";
+-   src: font-url("bootstrap-icons/font/fonts/bootstrap-icons.woff2") format("woff2");
+- }
+-
+- @import "font-awesome";
+- 
+- @import "codemirror/lib/codemirror";
+-
+- @import "fonts";
+- @import "signup";
+-
+- //This guy pushes down the top of the page a bit
+- @import "admin2";
+-
+-
+-.public-share {
+-  .clipboard-icon {
+-    visibility:hidden;
+-  }
+-
+-  &:hover {
+-    .clipboard-icon {
+-      visibility:visible;
+-    }
+-  }
+-}
+-
+-.turbo-progress-bar {
+-  height: 5px;
+-  background-color: gold;
+-}
+diff --git a/app/assets/stylesheets/application_bit.css b/app/assets/stylesheets/application_bit.css
+new file mode 100755
+index 00000000..c662d584
+--- /dev/null
++++ b/app/assets/stylesheets/application_bit.css
+@@ -0,0 +1,10 @@
++.public-share .clipboard-icon {
++  visibility: hidden;
++}
++.public-share:hover .clipboard-icon {
++  visibility: visible;
++}
++.turbo-progress-bar {
++  height: 5px;
++  background-color: gold;
++}
+diff --git a/app/assets/stylesheets/_base.scss b/app/assets/stylesheets/base.css
+similarity index 100%
+rename from app/assets/stylesheets/_base.scss
+rename to app/assets/stylesheets/base.css
+diff --git a/app/assets/stylesheets/books.css b/app/assets/stylesheets/books.css
+new file mode 100644
+index 00000000..0662c568
+--- /dev/null
++++ b/app/assets/stylesheets/books.css
+@@ -0,0 +1,38 @@
++/* Books */
++#books-filter {
++  width: 75%;
++}
++#books-per-page {
++  width: 20%;
++}
++#books-listing {
++  margin: 30px 0;
++}
++#books-listing .listing-header {
++  font-weight: bold;
++}
++#books-listing ul.books-list {
++  list-style: none;
++  padding: 0;
++}
++#books-listing .books-list-item {
++  line-height: 34px;
++  margin: 2px 0;
++}
++#books-listing .books-list-item .item-box {
++  background: #FFF;
++  border-radius: 6px;
++  border: 1px solid #AAA;
++  margin: 0px 2px;
++  padding-top: 10px;
++  padding-bottom: 10px;
++}
++#books-listing .books-list-item .item-actions {
++  display: none;
++}
++#books-listing .books-list-item:hover .item-actions {
++  display: inline-block;
++}
++#books-listing .books-list-item.col-lg-6:nth-child(2n+1) {
++  clear: both;
++}
+diff --git a/app/assets/stylesheets/cases.css b/app/assets/stylesheets/cases.css
+new file mode 100644
+index 00000000..7f364853
+--- /dev/null
++++ b/app/assets/stylesheets/cases.css
+@@ -0,0 +1,64 @@
++/* Cases */
++#cases-filter {
++  width: 75%;
++}
++#cases-per-page {
++  width: 20%;
++}
++#cases-listing {
++  margin: 30px 0;
++}
++#cases-listing .listing-header {
++  font-weight: bold;
++  text-align: center;
++}
++#cases-listing .cases-list-header {
++  padding: 0;
++}
++#cases-listing ul.cases-list {
++  list-style: none;
++  padding: 0;
++}
++#cases-listing .cases-list-item {
++  line-height: 34px;
++  margin: 2px 0;
++}
++#cases-listing .cases-list-item .owner {
++  line-height: 1;
++  margin: 10px 0;
++  word-wrap: break-word;
++}
++#cases-listing .cases-list-item .item-box {
++  background: #FFF;
++  border-radius: 6px;
++  border: 1px solid #AAA;
++  margin: 0px 2px;
++  padding-top: 10px;
++  padding-bottom: 10px;
++  text-align: center;
++}
++#cases-listing .cases-list-item .case-title:hover {
++  cursor: pointer;
++  text-decoration: underline;
++}
++#cases-listing .cases-list-item .item-actions {
++  display: none;
++}
++#cases-listing .cases-list-item:hover .item-actions {
++  display: inherit;
++}
++.archived-cases {
++  margin: 20px;
++}
++.no-data {
++  font-size: 0.8em;
++}
++.loading-cases-msg {
++  padding: 15px 0 0 15px;
++  font-weight: 600;
++}
++.media-embed {
++  vertical-align: middle;
++  max-width: 640px;
++  max-height: 640px;
++}
+diff --git a/app/assets/stylesheets/core.css.scss b/app/assets/stylesheets/core.css.scss
+deleted file mode 100644
+index 405bc678..00000000
+--- a/app/assets/stylesheets/core.css.scss
++++ /dev/null
+@@ -1,58 +0,0 @@
+-/*
+- * This is a manifest file that'll be compiled into application.css, which will include all the files
+- * listed below.
+- *
+- * Any CSS and SCSS file within this directory, lib/assets/stylesheets, vendor/assets/stylesheets,
+- * or any plugin's vendor/assets/stylesheets directory can be referenced here using a relative path.
+- *
+- * You're free to add application-wide styles to this file and they'll appear at the bottom of the
+- * compiled file so the styles you add here take precedence over styles defined in any styles
+- * defined in the other CSS/SCSS files in this directory. It is generally better to create a new
+- * file per style scope.
+- */
+-
+-@import "style";
+-
+-// We use Bootstrap Icons to have icons that work between core and the rest of the app
+-@import "bootstrap-icons/font/bootstrap-icons";
+-@font-face {
+-  font-family: "bootstrap-icons";
+-  src: font-url("bootstrap-icons/font/fonts/bootstrap-icons.woff2") format("woff2");
+-}
+-
+-// We use Bootstrap 5 everywhere except the core app, which is stuck in Bootstrap 3.
+-// This loads Bootstrap 3.
+-@import "bootstrap";
+-
+-
+-@import "font-awesome";
+-
+-@import "cookies_eu";
+-
+-@import "fonts";
+-@import "panes";
+-@import "stackedChart";
+-@import "bootstrap-add";
+-@import "base";
+-@import "admin2";
+-
+-// Tour/Guides
+-@import "tether-shepherd/dist/css/shepherd-theme-arrows";
+-@import "tour";
+-
+-// Screens
+-@import "cases";
+-@import "scorers";
+-@import "books";
+-@import "search_endpoints";
+-@import "teams";
+-@import "users";
+-@import "docs";
+-@import "settings";
+-@import "qscore";
+-@import "qgraph";
+-
+-// Other
+-@import "misc";
+-@import "animation";
+-@import "froggy";
+diff --git a/app/assets/stylesheets/docs.css b/app/assets/stylesheets/docs.css
+new file mode 100644
+index 00000000..3e70bd4c
+--- /dev/null
++++ b/app/assets/stylesheets/docs.css
+@@ -0,0 +1,20 @@
++.doc-detailed-explain-modal {
++  height: 100%;
++  z-index: 2050 !important;
++}
++.doc-detailed-explain-modal .modal-dialog {
++  height: calc(100% - 100px);
++  width: calc(100% - 100px);
++}
++.doc-detailed-explain-modal .modal-content {
++  height: 100%;
++  overflow: scroll;
++}
++.doc-detailed-explain {
++  padding: 20px;
++}
++.doc-score-explanation {
++  max-height: 200px;
++  overflow: scroll;
++  width: 100%;
++}
+diff --git a/app/assets/stylesheets/fonts.css b/app/assets/stylesheets/fonts.css
+index ca8246b4..79d610c3 100644
+--- a/app/assets/stylesheets/fonts.css
++++ b/app/assets/stylesheets/fonts.css
+@@ -1,27 +1,31 @@
+ @font-face {
+     font-family: 'allerregular';
+-    src: font-url('aller_rg-webfont.woff2') format('woff2');
++    /*src: font-url('aller_rg-webfont.woff2') format('woff2');*/
++    src: url('/assets/fonts/aller_rg-webfont.woff2') format('woff2'); /* Adjusted path */
+     font-weight: normal;
+     font-style: normal;
+ }
+ 
+ @font-face {
+     font-family: 'alleritalic';
+-    src: font-url('aller_it-webfont.woff2') format('woff2');
++    /*src: font-url('aller_it-webfont.woff2') format('woff2');*display: ;*/
++    src: url('/assets/fonts/aller_it-webfont.woff2') format('woff2');
+     font-weight: normal;
+     font-style: normal;
+ }
+ 
+ @font-face {
+     font-family: 'allerbold';
+-    src: font-url('aller_bd-webfont.woff2') format('woff2');
++    /*src: font-url('aller_bd-webfont.woff2') format('woff2');*/
++    src: url('/assets/fonts/aller_bd-webfont.woff2') format('woff2');
+     font-weight: normal;
+     font-style: normal;
+ }
+ 
+ @font-face {
+     font-family: 'allerbold_italic';
+-    src: font-url('aller_bdit-webfont.woff2') format('woff2');
++    /*src: font-url('aller_bdit-webfont.woff2') format('woff2');*/
++    src: url('/assets/fonts/aller_bdit-webfont.woff2') format('woff2');
+     font-weight: normal;
+     font-style: normal;
+ }
+diff --git a/app/assets/stylesheets/_misc.scss b/app/assets/stylesheets/misc.css
+similarity index 57%
+rename from app/assets/stylesheets/_misc.scss
+rename to app/assets/stylesheets/misc.css
+index d68c5543..ced9995d 100644
+--- a/app/assets/stylesheets/_misc.scss
++++ b/app/assets/stylesheets/misc.css
+@@ -2,101 +2,79 @@
+ .vcard-stats {
+   text-align: center;
+ }
+-
+ .vcard-stat {
+-  font-size:      11px;
++  font-size: 11px;
+   text-transform: capitalize;
+ }
+-
+ .vcard-stat-count {
+-  font-size:    28px;
+-  font-weight:  bold;
+-  line-height:  1;
++  font-size: 28px;
++  font-weight: bold;
++  line-height: 1;
+ }
+-
+ .d-block {
+   display: block;
+ }
+-
+ .border-bottom {
+   border-bottom: 1px #AAA solid;
+ }
+-
+ .padded-text {
+   padding: 15px;
+ }
+-
+ a.action-icon {
+-  color:            #666;
+-  text-decoration:  none;
+-  margin:           0 2px;
+-
+-  &:hover {
+-    color: #999;
+-  }
+-
+-  sup {
+-    top:        -1em;
+-    font-size:  10px;
+-  }
+-}
+-
++  color: #666;
++  text-decoration: none;
++  margin: 0 2px;
++}
++a.action-icon:hover {
++  color: #999;
++}
++a.action-icon sup {
++  top: -1em;
++  font-size: 10px;
++}
+ .p-t-10 {
+   padding-top: 10px;
+ }
+-
+ .p-r-10 {
+   padding-right: 10px;
+ }
+-
+ .p-b-10 {
+   padding-bottom: 10px;
+ }
+-
+ .p-l-10 {
+   padding-left: 10px;
+ }
+-
+ .p-t-20 {
+   padding-top: 20px;
+ }
+-
+ .p-r-20 {
+   padding-right: 20px;
+ }
+-
+ .p-b-20 {
+   padding-bottom: 20px;
+ }
+-
+ .p-l-20 {
+   padding-left: 20px;
+ }
+-
+ .syntax-popover {
+-  color:    black;
++  color: black;
+   position: fixed;
+ }
+-
+ .syntax-popover .close {
+   line-height: 12px;
+ }
+-
+ .query-help {
+   font-size: 1.5em;
+ }
+-
+ .full-screen-modal {
+-  height:   100%;
+-  z-index:  2050 !important;
+-
+-  .modal-dialog {
+-    height: calc(100% - 100px);
+-    width:  calc(100% - 100px);
+-  }
+-
+-  .modal-content {
+-    height:   100%;
+-    overflow: scroll;
+-  }
++  height: 100%;
++  z-index: 2050 !important;
++}
++.full-screen-modal .modal-dialog {
++  height: calc(100% - 100px);
++  width: calc(100% - 100px);
++}
++.full-screen-modal .modal-content {
++  height: 100%;
++  overflow: scroll;
+ }
+diff --git a/app/assets/stylesheets/panes.css b/app/assets/stylesheets/panes.css
+new file mode 100644
+index 00000000..8135c4dc
+--- /dev/null
++++ b/app/assets/stylesheets/panes.css
+@@ -0,0 +1,34 @@
++.pane_container {
++  position: relative;
++  overflow: hidden;
++}
++.pane_main {
++  display: block;
++  float: left;
++  height: calc(100% - 60px);
++  left: 1px;
++  overflow-y: auto;
++  position: fixed;
++  width: 100%;
++}
++.pane_east {
++  background: #333;
++  display: none;
++  height: calc(100% - 60px);
++  min-width: 300px;
++  overflow-y: auto;
++  position: fixed;
++}
++.east-slider {
++  background: none repeat scroll 0% 0% #ddd;
++  border: 0px solid #bbb;
++  cursor: col-resize;
++  display: none;
++  height: 100%;
++  position: fixed;
++  width: 6px;
++  z-index: 99;
++}
++.east-slider:hover {
++  background: none repeat scroll 0% 0% #326414;
++}
+diff --git a/app/assets/stylesheets/_qgraph.scss b/app/assets/stylesheets/qgraph.css
+similarity index 53%
+rename from app/assets/stylesheets/_qgraph.scss
+rename to app/assets/stylesheets/qgraph.css
+index 9e3cf73e..2c371e91 100644
+--- a/app/assets/stylesheets/_qgraph.scss
++++ b/app/assets/stylesheets/qgraph.css
+@@ -1,68 +1,60 @@
+ // Place all the styles related to the graph controller here.
+ // They will automatically be included in application.css.
+-// You can use Sass (SCSS) here: http://sass-lang.com/
+ qgraph {
+   height: 100px;
+   display: block;
+   margin-top: 20px;
+-  svg {
+-    background-color: white;
+-  }
+-  path {
+-    stroke: #587;
+-    stroke-width: 2;
+-    fill: none;
+-    stroke-linecap: round;
+-  }
+-
+-  .axis {
+-    shape-rendering: crispEdges;
+-  }
+-
+-  .x.axis line {
+-    stroke: lightgrey;
+-  }
+-  .x.axis .minor {
+-    stroke-opacity: .5;
+-  }
+-  .x.axis path {
+-    display: none;
+-  }
+-  .y.axis line, .y.axis path {
+-    fill: none;
+-    stroke: #000;
+-  }
+-
+-  line.marker {
+-    stroke: blue;
+-    stroke-width: 4;
+-    stroke-linecap: round;
+-    stroke-opacity: 0.3;
+-  }
+-
+-  .qtip {
+-    position: absolute;
+-    width: 200px;
+-    height: auto;
+-    padding: 10px;
+-    background-color: white;
+-    border-radius: 10px;
+-    box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+-    pointer-events: none;
+-
+-    .hidden {
+-      display: none;
+-    }
+-
+-    p {
+-      margin: 0;
+-      font-family: sans-serif;
+-      font-size: 16px;
+-      line-height: 20px;
+-    }
+-  }
+-}
+-
++}
++qgraph svg {
++  background-color: white;
++}
++qgraph path {
++  stroke: #587;
++  stroke-width: 2;
++  fill: none;
++  stroke-linecap: round;
++}
++qgraph .axis {
++  shape-rendering: crispEdges;
++}
++qgraph .x.axis line {
++  stroke: lightgrey;
++}
++qgraph .x.axis .minor {
++  stroke-opacity: 0.5;
++}
++qgraph .x.axis path {
++  display: none;
++}
++qgraph .y.axis line, qgraph .y.axis path {
++  fill: none;
++  stroke: #000;
++}
++qgraph line.marker {
++  stroke: blue;
++  stroke-width: 4;
++  stroke-linecap: round;
++  stroke-opacity: 0.3;
++}
++qgraph .qtip {
++  position: absolute;
++  width: 200px;
++  height: auto;
++  padding: 10px;
++  background-color: white;
++  border-radius: 10px;
++  box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
++  pointer-events: none;
++}
++qgraph .qtip .hidden {
++  display: none;
++}
++qgraph .qtip p {
++  margin: 0;
++  font-family: sans-serif;
++  font-size: 16px;
++  line-height: 20px;
++}
+ .d3-tip {
+   line-height: 1;
+   font-weight: bold;
+@@ -72,7 +64,6 @@ qgraph {
+   border-radius: 2px;
+   pointer-events: none;
+ }
+-
+ /* Creates a small triangle extender for the tooltip */
+ .d3-tip:after {
+   box-sizing: border-box;
+@@ -84,7 +75,6 @@ qgraph {
+   position: absolute;
+   pointer-events: none;
+ }
+-
+ /* Northward tooltips */
+ .d3-tip.n:after {
+   content: "\25BC";
+@@ -93,7 +83,6 @@ qgraph {
+   left: 0;
+   text-align: center;
+ }
+-
+ /* Eastward tooltips */
+ .d3-tip.e:after {
+   content: "\25C0";
+@@ -101,7 +90,6 @@ qgraph {
+   top: 50%;
+   left: -8px;
+ }
+-
+ /* Southward tooltips */
+ .d3-tip.s:after {
+   content: "\25B2";
+@@ -110,7 +98,6 @@ qgraph {
+   left: 0;
+   text-align: center;
+ }
+-
+ /* Westward tooltips */
+ .d3-tip.w:after {
+   content: "\25B6";
+diff --git a/app/assets/stylesheets/qscore.css b/app/assets/stylesheets/qscore.css
+new file mode 100644
+index 00000000..1548d540
+--- /dev/null
++++ b/app/assets/stylesheets/qscore.css
+@@ -0,0 +1,46 @@
++qscore {
++  padding: 0;
++}
++qscore.case-score {
++  margin: 20px 15px -10px 0px;
++}
++qscore .header-rating {
++  border-radius: 5px;
++  color: #FFF;
++  display: inline-block;
++  font-size: 22px;
++  margin: 0;
++  min-height: 80px;
++  padding: 15px 0;
++  text-align: center;
++  vertical-align: top;
++}
++qscore .overall-rating {
++  display: block;
++  float: left;
++  height: 100%;
++  width: 90px;
++  margin: -10px 20px -10px -20px;
++  padding: 10px 0;
++  color: #FFF;
++  font-family: 'allerbold_italic';
++  font-size: 22px;
++  text-align: center;
++  border-top-left-radius: 5px;
++  border-bottom-left-radius: 5px;
++}
++qscore .overall-rating.diff-score {
++  border-radius: 0;
++}
++qscore qgraph {
++  display: inline-block;
++  height: 80px;
++  margin: 0px -10px 0px 0px;
++  width: 150px;
++}
++qscore qgraph svg {
++  border: 2px solid grey;
++  border-right-style: none;
++  border-top-left-radius: 5px;
++  border-bottom-left-radius: 5px;
++}
+diff --git a/app/assets/stylesheets/scorers.css b/app/assets/stylesheets/scorers.css
+new file mode 100644
+index 00000000..4e7903ea
+--- /dev/null
++++ b/app/assets/stylesheets/scorers.css
+@@ -0,0 +1,49 @@
++/* Scorers */
++#scorers-filter {
++  width: 75%;
++}
++#scorers-per-page {
++  width: 20%;
++}
++#scorers-listing {
++  margin: 30px 0;
++}
++#scorers-listing .listing-header {
++  font-weight: bold;
++}
++#scorers-listing ul.scorers-list {
++  list-style: none;
++  padding: 0;
++}
++#scorers-listing .scorers-list-item {
++  line-height: 34px;
++  margin: 2px 0;
++}
++#scorers-listing .scorers-list-item .item-box {
++  background: #FFF;
++  border-radius: 6px;
++  border: 1px solid #AAA;
++  margin: 0px 2px;
++  padding-top: 10px;
++  padding-bottom: 10px;
++}
++#scorers-listing .scorers-list-item .item-actions {
++  display: none;
++}
++#scorers-listing .scorers-list-item:hover .item-actions {
++  display: inline-block;
++}
++#scorers-listing .scorers-list-item.col-lg-6:nth-child(2n+1) {
++  clear: both;
++}
++#scorers-listing .scorer-scale {
++  margin-top: 20px;
++  padding: 0;
++}
++#scorers-listing .scorer-scale li {
++  float: left;
++  list-style: none;
++  margin: 0;
++  text-align: center;
++  width: 10%;
++}
+diff --git a/app/assets/stylesheets/search_endpoints.css b/app/assets/stylesheets/search_endpoints.css
+new file mode 100644
+index 00000000..12cca550
+--- /dev/null
++++ b/app/assets/stylesheets/search_endpoints.css
+@@ -0,0 +1,38 @@
++/* Search Endpoints */
++#search-endpoints-filter {
++  width: 75%;
++}
++#search-endpoints-per-page {
++  width: 20%;
++}
++#search-endpoints-listing {
++  margin: 30px 0;
++}
++#search-endpoints-listing .listing-header {
++  font-weight: bold;
++}
++#search-endpoints-listing ul.search-endpoints-list {
++  list-style: none;
++  padding: 0;
++}
++#search-endpoints-listing .search-endpoints-list-item {
++  line-height: 34px;
++  margin: 2px 0;
++}
++#search-endpoints-listing .search-endpoints-list-item .item-box {
++  background: #FFF;
++  border-radius: 6px;
++  border: 1px solid #AAA;
++  margin: 0px 2px;
++  padding-top: 10px;
++  padding-bottom: 10px;
++}
++#search-endpoints-listing .search-endpoints-list-item .item-actions {
++  display: none;
++}
++#search-endpoints-listing .search-endpoints-list-item:hover .item-actions {
++  display: inline-block;
++}
++#search-endpoints-listing .search-endpoints-list-item.col-lg-6:nth-child(2n+1) {
++  clear: both;
++}
+diff --git a/app/assets/stylesheets/settings.css b/app/assets/stylesheets/settings.css
+new file mode 100644
+index 00000000..ceb2f7bf
+--- /dev/null
++++ b/app/assets/stylesheets/settings.css
+@@ -0,0 +1,10 @@
++query-params {
++  clear: both;
++  display: block;
++  height: 100%;
++  min-height: 100%;
++  overflow: auto;
++}
++.black-label label {
++  color: black;
++}
+diff --git a/app/assets/stylesheets/teams.css b/app/assets/stylesheets/teams.css
+new file mode 100644
+index 00000000..85e66b67
+--- /dev/null
++++ b/app/assets/stylesheets/teams.css
+@@ -0,0 +1,64 @@
++/* Teams */
++#teams-filter {
++  width: 75%;
++}
++#teams-per-page {
++  width: 20%;
++}
++#teams-listing {
++  margin: 30px 0;
++}
++#teams-listing .listing-header {
++  font-weight: bold;
++}
++#teams-listing ul.teams-list {
++  list-style: none;
++  padding: 0;
++}
++#teams-listing .teams-list-item {
++  line-height: 34px;
++  margin: 2px 0;
++}
++#teams-listing .teams-list-item .item-box {
++  background: #FFF;
++  border-radius: 6px;
++  border: 1px solid #AAA;
++  margin: 0px 2px;
++  padding-top: 10px;
++  padding-bottom: 10px;
++}
++#teams-listing .teams-list-item .team-title:hover {
++  cursor: pointer;
++  text-decoration: underline;
++}
++#teams-listing .teams-list-item .item-actions {
++  display: none;
++}
++#teams-listing .teams-list-item:hover .item-actions {
++  display: inherit;
++}
++.team .team-owner {
++  border-radius: 5px;
++  border: 1px solid #AAA;
++  padding: 20px;
++  width: 250px;
++  word-wrap: break-word;
++}
++.team .team-owner img {
++  margin: 0 0 10px;
++  width: 100%;
++}
++.team .team-owner .label {
++  display: inline-block;
++}
++.team .team-stats .vcard-stats {
++  margin-bottom: 10px;
++  padding: 10px 0;
++}
++.team .add-member input {
++  display: inline-block;
++  width: 80%;
++}
++.team .team-associations .filter-form {
++  padding-right: 0;
++}
+diff --git a/app/assets/stylesheets/tour.css b/app/assets/stylesheets/tour.css
+new file mode 100644
+index 00000000..72453cfa
+--- /dev/null
++++ b/app/assets/stylesheets/tour.css
+@@ -0,0 +1,17 @@
++body.shepherd-active {
++  pointer-events: none !important;
++}
++body.shepherd-active .shepherd-target.shepherd-enabled {
++  position: relative;
++  box-shadow: 0 0 0 99999px rgba(0, 0, 0, 0.2);
++  z-index: 9999;
++  pointer-events: auto;
++  transition: all 0.3s ease;
++}
++body.shepherd-active .shepherd-step {
++  pointer-events: auto;
++  z-index: 9999;
++}
++body.shepherd-active .shepherd-step footer {
++  display: block;
++}
+diff --git a/app/assets/stylesheets/users.css b/app/assets/stylesheets/users.css
+new file mode 100644
+index 00000000..86c249f9
+--- /dev/null
++++ b/app/assets/stylesheets/users.css
+@@ -0,0 +1,45 @@
++/* Users */
++#users-filter {
++  width: 75%;
++}
++#users-per-page {
++  width: 20%;
++}
++#users-listing {
++  margin: 30px 0;
++}
++#users-listing .listing-header {
++  font-weight: bold;
++}
++#users-listing ul.users-list {
++  list-style: none;
++  padding: 0;
++}
++#users-listing .users-list-item {
++  line-height: 34px;
++  margin: 2px 0;
++}
++#users-listing .users-list-item .item-box {
++  background: #FFF;
++  border-radius: 6px;
++  border: 1px solid #AAA;
++  margin: 0px 2px;
++  padding-top: 10px;
++  padding-bottom: 10px;
++}
++#users-listing .users-list-item .user-info {
++  line-height: 24px;
++}
++#users-listing .users-list-item .user-info:hover {
++  cursor: pointer;
++  text-decoration: underline;
++}
++#users-listing .users-list-item .item-actions {
++  display: none;
++}
++#users-listing .users-list-item:hover .item-actions {
++  display: inherit;
++}
++h5.user-name {
++  margin: 0 0 5px;
++}
+diff --git a/app/views/layouts/_sidebar.html.erb b/app/views/layouts/_sidebar.html.erb
+index cccf7125..e810cdd5 100644
+--- a/app/views/layouts/_sidebar.html.erb
++++ b/app/views/layouts/_sidebar.html.erb
+@@ -89,7 +89,7 @@
+       <li>
+         <%= link_to cases_path, class: "nav-link #{make_active?({path: 'case'}) ? 'active' : ''} py-3 border-bottom rounded-0", 'data-bs-toggle':'tooltip', 'data-bs-placement':'right', 'aria-label':'Relevancy Cases', 'data-bs-original-title':'Relevancy Cases' do %>
+           <i
+-            class="fa fa-briefcase"
++            class="bi bi-briefcase-fill"
+             aria-hidden="true"
+             title="Relevancy Cases"
+             alt="Relevancy Cases"
+@@ -100,7 +100,7 @@
+       <li>
+         <%= link_to books_path, class: "nav-link #{make_active?({path: 'book'}) ? 'active' : ''} py-3 border-bottom rounded-0", 'data-bs-toggle':'tooltip', 'data-bs-placement':'right', 'aria-label':'Judgements', 'data-bs-original-title':'Judgements' do %>
+           <i
+-            class="fa fa-book"
++            class="bi bi-book-half"
+             aria-hidden="true"
+             title="Judgement Books"
+             alt="Judgement Books"
+@@ -133,7 +133,7 @@
+       <li>
+         <%= link_to search_endpoints_path, class: "nav-link #{make_active?({path: 'search_endpoint'}) ? 'active' : ''} py-3 border-bottom rounded-0", 'data-bs-toggle':'tooltip', 'data-bs-placement':'right', 'aria-label':'Search Endpoints', 'data-bs-original-title':'Search Endpoints' do %>
+           <i
+-            class="fa fa-paper-plane"
++            class="bi bi-send-fill"
+             aria-hidden="true"
+             title="Search Endpoints"
+             alt="Search Endpoints"
+diff --git a/app/views/layouts/admin.html.erb b/app/views/layouts/admin.html.erb
+index 328455b2..4903f571 100644
+--- a/app/views/layouts/admin.html.erb
++++ b/app/views/layouts/admin.html.erb
+@@ -7,7 +7,12 @@
+     <meta name="description" content="Tired of irrelevant search results? Use Quepid products & services to help improve the quality and relevancy of your search results.">
+     <meta name="viewport" content="width=device-width, initial-scale=1">
+ 
+-    <%= stylesheet_link_tag 'admin', media: 'all' %>
++    <%= stylesheet_link_tag 'bootstrap/dist/css/bootstrap.min', media: 'all', 'data-turbolinks-track': 'reload' %>
++    <%= stylesheet_link_tag 'bootstrap-icons/font/bootstrap-icons.min', media: 'all', 'data-turbolinks-track': 'reload' %>
++    <%= stylesheet_link_tag 'codemirror/lib/codemirror', media: 'all', 'data-turbolinks-track': 'reload' %>
++    <%= stylesheet_link_tag 'fonts', media: 'all' %>
++    <%= stylesheet_link_tag 'bootstrap-add-bs5', media: 'all' %>    
++    <%= stylesheet_link_tag 'admin3', media: 'all' %>
+     <%= csrf_meta_tags %>
+     <%= javascript_include_tag 'admin' %>
+ 
+diff --git a/app/views/layouts/analytics.html.erb b/app/views/layouts/analytics.html.erb
+index 899bc2df..a9e50dde 100644
+--- a/app/views/layouts/analytics.html.erb
++++ b/app/views/layouts/analytics.html.erb
+@@ -7,7 +7,13 @@
+     <meta name="description" content="Tired of irrelevant search results? Use Quepid products & services to help improve the quality and relevancy of your search results.">
+     <meta name="viewport" content="width=device-width">
+ 
+-    <%= stylesheet_link_tag 'application', media: 'all' %>
++    <%= stylesheet_link_tag 'bootstrap/dist/css/bootstrap.min', media: 'all', 'data-turbolinks-track': 'reload' %>
++    <%= stylesheet_link_tag 'bootstrap-icons/font/bootstrap-icons.min', media: 'all', 'data-turbolinks-track': 'reload' %>
++    <%= stylesheet_link_tag 'codemirror/lib/codemirror', media: 'all', 'data-turbolinks-track': 'reload' %>
++    <%= stylesheet_link_tag 'fonts', media: 'all' %>
++    <%= stylesheet_link_tag 'bootstrap-add-bs5', media: 'all' %>    
++    <%= stylesheet_link_tag 'admin3', media: 'all' %>
++    <%= stylesheet_link_tag 'application_bit', media: 'all' %>
+     <%= csrf_meta_tags %>
+     <%= javascript_include_tag 'analytics' %>
+   </head>
+diff --git a/app/views/layouts/application.html.erb b/app/views/layouts/application.html.erb
+index 021129ce..7bf95fc1 100755
+--- a/app/views/layouts/application.html.erb
++++ b/app/views/layouts/application.html.erb
+@@ -55,9 +55,16 @@
+   <meta name="twitter:url" value="<%=root_url%>" />
+ <% end %>
+ 
+-
+-
+-  <%= stylesheet_link_tag 'application', media: 'all', 'data-turbo-track': 'reload' %>
++  
++  <%= stylesheet_link_tag 'bootstrap/dist/css/bootstrap.min', media: 'all', 'data-turbolinks-track': 'reload' %>
++  <%= stylesheet_link_tag 'bootstrap-icons/font/bootstrap-icons.min', media: 'all', 'data-turbolinks-track': 'reload' %>
++  <%= stylesheet_link_tag 'codemirror/lib/codemirror', media: 'all', 'data-turbolinks-track': 'reload' %>
++  <%= stylesheet_link_tag 'fonts', media: 'all' %>
++  <%= stylesheet_link_tag 'signup', media: 'all' %>
++  <%= stylesheet_link_tag 'bootstrap-add-bs5', media: 'all' %>    
++  <%= stylesheet_link_tag 'admin3', media: 'all' %>
++  <%= stylesheet_link_tag 'application_bit', media: 'all' %>
++  
+   <%= csrf_meta_tags %>
+   
+   <%= javascript_include_tag 'application', 'data-turbo-track': 'reload' %>
+diff --git a/app/views/layouts/core.html.erb b/app/views/layouts/core.html.erb
+index 92386902..af77745b 100755
+--- a/app/views/layouts/core.html.erb
++++ b/app/views/layouts/core.html.erb
+@@ -7,8 +7,50 @@
+ <meta name="description" content="Tired of irrelevant search results? Use Quepid to help improve the quality and relevancy of your search results.">
+ <meta name="viewport" content="width=device-width">
+ 
+-<%= stylesheet_link_tag 'core', media: 'all' %>
++<%= stylesheet_link_tag 'style', media: 'all' %>
+ <%= stylesheet_link_tag 'ng-json-explorer/dist/angular-json-explorer', 'angular-wizard/dist/angular-wizard', 'ng-tags-input/build/ng-tags-input.min.css', 'ng-tags-input/build/ng-tags-input.bootstrap.min.css', media: 'all' %>
++<%= stylesheet_link_tag 'bootstrap-icons/font/bootstrap-icons.min', media: 'all', 'data-turbolinks-track': 'reload' %>
++
++<%= stylesheet_link_tag '@fortawesome/fontawesome-free/css/fontawesome', media: 'all', 'data-turbolinks-track': 'reload' %>
++<%= stylesheet_link_tag '@fortawesome/fontawesome-free/css/regular', media: 'all', 'data-turbolinks-track': 'reload' %>
++
++<!--
++We use Bootstrap 5 everywhere except the core app, which is stuck in Bootstrap 3.
++This loads Bootstrap 3 via the app/assets/stylesheets/bootstrap.css file.
++ -->
++<%= stylesheet_link_tag 'bootstrap', media: 'all' %>
++
++
++<!--@import "cookies_eu";-->
++<%= stylesheet_link_tag 'cookies_eu', media: 'all' %>
++
++<%= stylesheet_link_tag 'fonts', media: 'all' %>
++<%= stylesheet_link_tag 'panes', media: 'all' %>
++<%= stylesheet_link_tag 'stackedChart', media: 'all' %>
++<%= stylesheet_link_tag 'bootstrap-add', media: 'all' %>
++<%= stylesheet_link_tag 'base', media: 'all' %>
++<%= stylesheet_link_tag 'admin2', media: 'all' %>
++
++<!-- Tour/Guides -->
++<%= stylesheet_link_tag 'tether-shepherd/dist/css/shepherd-theme-arrows', media: 'all' %>
++<%= stylesheet_link_tag 'tour', media: 'all' %>
++
++<!-- Screens -->
++<%= stylesheet_link_tag 'cases', media: 'all' %>
++<%= stylesheet_link_tag 'scorers', media: 'all' %>
++<%= stylesheet_link_tag 'books', media: 'all' %>
++<%= stylesheet_link_tag 'search_endpoints', media: 'all' %>
++<%= stylesheet_link_tag 'teams', media: 'all' %>
++<%= stylesheet_link_tag 'users', media: 'all' %>
++<%= stylesheet_link_tag 'docs', media: 'all' %>
++<%= stylesheet_link_tag 'settings', media: 'all' %>
++<%= stylesheet_link_tag 'qscore', media: 'all' %>
++<%= stylesheet_link_tag 'qgraph', media: 'all' %>
++
++<!-- Other -->
++<%= stylesheet_link_tag 'misc', media: 'all' %>
++<%= stylesheet_link_tag 'animation', media: 'all' %>
++<%= stylesheet_link_tag 'froggy', media: 'all' %>
+ <%= csrf_meta_tags %>
+ 
+ <base href="<%= ENV['RAILS_RELATIVE_URL_ROOT'] %>/">
+diff --git a/config/application.rb b/config/application.rb
+index 94f8003f..1d53b5fd 100755
+--- a/config/application.rb
++++ b/config/application.rb
+@@ -26,7 +26,7 @@ module Quepid
+     # config.time_zone = "Central Time (US & Canada)"
+     # config.eager_load_paths << Rails.root.join("extras")
+ 
+-    config.angular_templates.ignore_prefix = %w[templates/ components/]
++    #config.angular_templates.ignore_prefix = %w[templates/ components/]
+ 
+     config.active_job.queue_adapter = :solid_queue
+ 
+diff --git a/package.json b/package.json
+index e059bbeb..41c4bc1b 100644
+--- a/package.json
++++ b/package.json
+@@ -6,6 +6,8 @@
+   },
+   "license": "Apache-2.0",
+   "dependencies": {
++    "@fortawesome/fontawesome-free": "^6.6.0",
++    "@fortawesome/free-regular-svg-icons": "^6.6.0",
+     "@popperjs/core": "^2.11.6",
+     "@rails/actioncable": "7.2.101",
+     "@rails/activestorage": "7.2.101",
+diff --git a/yarn.lock b/yarn.lock
+index a89a695d..e286b26b 100644
+--- a/yarn.lock
++++ b/yarn.lock
+@@ -30,6 +30,23 @@
+   resolved "https://registry.yarnpkg.com/@colors/colors/-/colors-1.5.0.tgz#bb504579c1cae923e6576a4f5da43d25f97bdbd9"
+   integrity sha512-ooWCrlZP11i8GImSjTHYHLkvFDP48nS4+204nGb1RiX/WXYHmJA2III9/e2DWVabCESdW7hBAEzHRqUn9OUVvQ==
+ 
++"@fortawesome/fontawesome-common-types@6.6.0":
++  version "6.6.0"
++  resolved "https://registry.yarnpkg.com/@fortawesome/fontawesome-common-types/-/fontawesome-common-types-6.6.0.tgz#31ab07ca6a06358c5de4d295d4711b675006163f"
++  integrity sha512-xyX0X9mc0kyz9plIyryrRbl7ngsA9jz77mCZJsUkLl+ZKs0KWObgaEBoSgQiYWAsSmjz/yjl0F++Got0Mdp4Rw==
++
++"@fortawesome/fontawesome-free@^6.6.0":
++  version "6.6.0"
++  resolved "https://registry.yarnpkg.com/@fortawesome/fontawesome-free/-/fontawesome-free-6.6.0.tgz#0e984f0f2344ee513c185d87d77defac4c0c8224"
++  integrity sha512-60G28ke/sXdtS9KZCpZSHHkCbdsOGEhIUGlwq6yhY74UpTiToIh8np7A8yphhM4BWsvNFtIvLpi4co+h9Mr9Ow==
++
++"@fortawesome/free-regular-svg-icons@^6.6.0":
++  version "6.6.0"
++  resolved "https://registry.yarnpkg.com/@fortawesome/free-regular-svg-icons/-/free-regular-svg-icons-6.6.0.tgz#fc49a947ac8dfd20403c9ea5f37f0919425bdf04"
++  integrity sha512-Yv9hDzL4aI73BEwSEh20clrY8q/uLxawaQ98lekBx6t9dQKDHcDzzV1p2YtBGTtolYtNqcWdniOnhzB+JPnQEQ==
++  dependencies:
++    "@fortawesome/fontawesome-common-types" "6.6.0"
++
+ "@popperjs/core@^2.11.6":
+   version "2.11.8"
+   resolved "https://registry.yarnpkg.com/@popperjs/core/-/core-2.11.8.tgz#6b79032e760a0899cd4204710beede972a3a185f"
+-- 
+2.45.1
+

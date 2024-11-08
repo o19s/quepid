@@ -24,6 +24,8 @@ module Api
     before_action :check_current_user_locked!
     before_action :authenticate_api!, except: [ :test_exception ]
 
+    # after_action :track_action
+
     # Call this API endpoint to test that you have the correct
     # headers set.
     # @return 200 if successful
@@ -44,6 +46,10 @@ module Api
 
     def set_default_response_format
       request.format = :json unless params[:format]
+    end
+
+    def track_action
+      ahoy.track 'ran_api', request.path_parameters
     end
   end
 end
