@@ -1,3 +1,5 @@
+# Bond actors ranked sourced from https://www.imdb.com/list/ls068945808/
+
 # == Schema Information
 #
 # Table name: query_doc_pairs
@@ -22,8 +24,6 @@
 #
 #  fk_rails_...  (book_id => books.id)
 #
-
-# Bond actors ranked sourced from https://www.imdb.com/list/ls068945808/
 
 one:
   query_text: MyString

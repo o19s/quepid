@@ -43,7 +43,7 @@ gem 'postmark-rails'
 gem 'prophet-rb', '~> 0.5.0'
 gem 'puma'
 gem 'pundit'
-gem 'rails', '8.0.0.rc2'
+gem 'rails', '8.0.0'
 gem 'rails-html-sanitizer'
 gem 'rack-cors', '~> 2.0'
 gem 'responders'
@@ -58,7 +58,6 @@ gem 'vega'
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
   gem 'debug', platforms: [ :mri, :windows ], require: 'debug/prelude'
-  gem 'annotate'
   # gem 'bullet' not Rails 8 compatible
   gem 'bullet', git: 'https://github.com/adiaz04/bullet.git', branch: 'main'
   gem 'memory_profiler'
@@ -68,6 +67,7 @@ group :development do
   # Use console on exceptions pages [https://github.com/rails/web-console]
   gem 'web-console'
 
+  gem 'annotaterb', '~> 4.13'
   # this was commented out in the default build, so doing the same..
   # Add speed badges [https://github.com/MiniProfiler/rack-mini-profiler]
   # gem 'rack-mini-profiler'
