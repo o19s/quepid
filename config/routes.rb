@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-
+# rubocop:disable Layout/LineLength
 # == Route Map
 #
 #                                           Prefix Verb     URI Pattern                                                                                       Controller#Action
@@ -685,3 +685,4 @@ Rails.application.routes.draw do
   #
 end
 # rubocop:enable Metrics/BlockLength
+# rubocop:enable Layout/LineLength
