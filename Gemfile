@@ -98,3 +98,5 @@ end
 gem 'geocoder', '~> 1.8'
 
 gem 'geoip', '~> 1.6'
+
+gem 'blazer', '~> 3.1'

@@ -1,15 +1,15 @@
 # frozen_string_literal: true
 
-# rubocop:disable Layout/LineLength:
 # == Route Map
 #
 #                                           Prefix Verb     URI Pattern                                                                                       Controller#Action
-#                                                           /cable                                                                                            #<ActionCable::Server::Base:0x00007f9d8a193ac8 @config=#<ActionCable::Server::Configuration:0x00007f9d8a1ea648 @log_tags=[:channel, :connection, :transmissions, :state_updates], @connection_class=#<Proc:0x00007f9d8a1daa90 /usr/local/bundle/gems/actioncable-8.0.0/lib/action_cable/engine.rb:55 (lambda)>, @worker_pool_size=4, @disable_request_forgery_protection=true, @allow_same_origin_as_host=true, @filter_parameters=[:passw, :email, :secret, :token, :_key, :crypt, :salt, :certificate, :otp, :ssn, :cvv, :cvc, :document_fields, "query_doc_pair.document_fields", "snapshot.docs", "snapshot_doc.explain", "snapshot_doc.fields"], @health_check_application=#<Proc:0x00007f9d8a1de3c0 /usr/local/bundle/gems/actioncable-8.0.0/lib/action_cable/engine.rb:31 (lambda)>, @logger=#<ActiveSupport::BroadcastLogger:0x00007f9d8c0067a8 @broadcasts=[#<ActiveSupport::Logger:0x00007f9d8c090610 @level=0, @progname=nil, @default_formatter=#<Logger::Formatter:0x00007f9d8bfc7508 @datetime_format=nil>, @formatter=#<TruncatingFormatter:0x00007f9d8c007130 @datetime_format=nil, @limit=5000>, @logdev=#<Logger::LogDevice:0x00007f9d8b200140 @shift_period_suffix="%Y%m%d", @shift_size=104857600, @shift_age=1, @filename="/srv/app/log/development.log", @dev=#<File:/srv/app/log/development.log>, @binmode=false, @reraise_write_errors=[], @mon_data=#<Monitor:0x00007f9d8bfc7490>, @mon_data_owner_object_id=7240>, @level_override={}>], @progname="Broadcast", @formatter=#<TruncatingFormatter:0x00007f9d8c007130 @datetime_format=nil, @limit=5000>>, @cable={"adapter"=>"solid_cable", "polling_interval"=>"0.1.seconds", "message_retention"=>"1.day", "silence_polling"=>true}, @mount_path="/cable", @precompile_assets=true, @allowed_request_origins="*", @url="/cable">, @mutex=#<Monitor:0x00007f9d8a1766a8>, @pubsub=nil, @worker_pool=nil, @event_loop=nil, @remote_connections=nil>
+#                                                           /cable                                                                                            #<ActionCable::Server::Base:0x00007f0384ffcb28 @config=#<ActionCable::Server::Configuration:0x00007f0384d3f7a0 @log_tags=[:channel, :connection, :transmissions, :state_updates], @connection_class=#<Proc:0x00007f03839ee160 /usr/local/bundle/gems/actioncable-8.0.0/lib/action_cable/engine.rb:55 (lambda)>, @worker_pool_size=4, @disable_request_forgery_protection=true, @allow_same_origin_as_host=true, @filter_parameters=[:passw, :email, :secret, :token, :_key, :crypt, :salt, :certificate, :otp, :ssn, :cvv, :cvc, :document_fields, "query_doc_pair.document_fields", "snapshot.docs", "snapshot_doc.explain", "snapshot_doc.fields"], @health_check_application=#<Proc:0x00007f03837646b0 /usr/local/bundle/gems/actioncable-8.0.0/lib/action_cable/engine.rb:31 (lambda)>, @logger=#<ActiveSupport::BroadcastLogger:0x00007f0384324608 @broadcasts=[#<ActiveSupport::Logger:0x00007f0384365388 @level=0, @progname=nil, @default_formatter=#<Logger::Formatter:0x00007f0384326980 @datetime_format=nil>, @formatter=#<TruncatingFormatter:0x00007f03843249c8 @datetime_format=nil, @limit=5000>, @logdev=#<Logger::LogDevice:0x00007f0384312ef8 @shift_period_suffix="%Y%m%d", @shift_size=104857600, @shift_age=1, @filename="/srv/app/log/development.log", @dev=#<File:/srv/app/log/development.log>, @binmode=false, @reraise_write_errors=[], @mon_data=#<Monitor:0x00007f0384326908>, @mon_data_owner_object_id=7420>, @level_override={}>], @progname="Broadcast", @formatter=#<TruncatingFormatter:0x00007f03843249c8 @datetime_format=nil, @limit=5000>>, @cable={"adapter"=>"solid_cable", "polling_interval"=>"0.1.seconds", "message_retention"=>"1.day", "silence_polling"=>true}, @mount_path="/cable", @precompile_assets=true, @allowed_request_origins="*", @url="/cable">, @mutex=#<Monitor:0x00007f0383a4a9d8>, @pubsub=nil, @worker_pool=nil, @event_loop=nil, @remote_connections=nil>
 #                           apipie_apipie_checksum GET      /apipie/apipie_checksum(.:format)                                                                 apipie/apipies#apipie_checksum {:format=>/json/}
 #                                    apipie_apipie GET      /apipie(/:version)(/:resource)(/:method)(.:format)                                                apipie/apipies#index {:version=>/[^\/]+/, :resource=>/[^\/]+/, :method=>/[^\/]+/}
 #                                active_storage_db          /active_storage_db                                                                                ActiveStorageDB::Engine
 #                               rails_health_check GET      /healthcheck(.:format)                                                                            rails/health#show
 #                             mission_control_jobs          /admin/jobs                                                                                       MissionControl::Jobs::Engine
+#                                           blazer          /admin/blazer                                                                                     Blazer::Engine
 #                                             root GET      /                                                                                                 home#show
 #                                  home_sparklines GET      /home/sparklines(.:format)                                                                        home#sparklines
 #                                home_case_prophet GET      /home/case_prophet/:case_id(.:format)                                                             home#case_prophet
@@ -373,7 +373,41 @@
 #                         job GET    /jobs/:id(.:format)                                            mission_control/jobs/jobs#show
 #                        jobs GET    /:status/jobs(.:format)                                        mission_control/jobs/jobs#index
 #                        root GET    /                                                              mission_control/jobs/queues#index
+#
+# Routes for Blazer::Engine:
+#       run_queries POST   /queries/run(.:format)            blazer/queries#run
+#    cancel_queries POST   /queries/cancel(.:format)         blazer/queries#cancel
+#     refresh_query POST   /queries/:id/refresh(.:format)    blazer/queries#refresh
+#    tables_queries GET    /queries/tables(.:format)         blazer/queries#tables
+#    schema_queries GET    /queries/schema(.:format)         blazer/queries#schema
+#      docs_queries GET    /queries/docs(.:format)           blazer/queries#docs
+#           queries GET    /queries(.:format)                blazer/queries#index
+#                   POST   /queries(.:format)                blazer/queries#create
+#         new_query GET    /queries/new(.:format)            blazer/queries#new
+#        edit_query GET    /queries/:id/edit(.:format)       blazer/queries#edit
+#             query GET    /queries/:id(.:format)            blazer/queries#show
+#                   PATCH  /queries/:id(.:format)            blazer/queries#update
+#                   PUT    /queries/:id(.:format)            blazer/queries#update
+#                   DELETE /queries/:id(.:format)            blazer/queries#destroy
+#         run_check GET    /checks/:id/run(.:format)         blazer/checks#run
+#            checks GET    /checks(.:format)                 blazer/checks#index
+#                   POST   /checks(.:format)                 blazer/checks#create
+#         new_check GET    /checks/new(.:format)             blazer/checks#new
+#        edit_check GET    /checks/:id/edit(.:format)        blazer/checks#edit
+#             check PATCH  /checks/:id(.:format)             blazer/checks#update
+#                   PUT    /checks/:id(.:format)             blazer/checks#update
+#                   DELETE /checks/:id(.:format)             blazer/checks#destroy
+# refresh_dashboard POST   /dashboards/:id/refresh(.:format) blazer/dashboards#refresh
+#        dashboards POST   /dashboards(.:format)             blazer/dashboards#create
+#     new_dashboard GET    /dashboards/new(.:format)         blazer/dashboards#new
+#    edit_dashboard GET    /dashboards/:id/edit(.:format)    blazer/dashboards#edit
+#         dashboard GET    /dashboards/:id(.:format)         blazer/dashboards#show
+#                   PATCH  /dashboards/:id(.:format)         blazer/dashboards#update
+#                   PUT    /dashboards/:id(.:format)         blazer/dashboards#update
+#                   DELETE /dashboards/:id(.:format)         blazer/dashboards#destroy
+#              root GET    /                                 blazer/queries#home
 
+# rubocop:disable Layout/LineLength:
 # rubocop:disable Metrics/BlockLength
 Rails.application.routes.draw do
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
@@ -385,7 +419,6 @@ Rails.application.routes.draw do
   mount ActionCable.server => '/cable'
   apipie
   mount ActiveStorageDB::Engine => '/active_storage_db'
-  get 'healthcheck' => 'rails/health#show', as: :rails_health_check
 
   # Render dynamic PWA files from app/views/pwa/*
   # get 'service-worker' => 'rails/pwa#service_worker', as: :pwa_service_worker
@@ -393,10 +426,11 @@ Rails.application.routes.draw do
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
   # Can be used by load balancers and uptime monitors to verify that the app is live.
-  # get 'up' => 'rails/health#show', as: :rails_health_check
+  get 'healthcheck' => 'rails/health#show', as: :rails_health_check
 
   constraints(AdminConstraint) do
     mount MissionControl::Jobs::Engine, at: 'admin/jobs'
+    mount Blazer::Engine, at: 'admin/blazer'
   end
 
   root 'home#show'
