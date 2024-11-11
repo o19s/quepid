@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 # rubocop:disable Layout/LineLength
 # == Route Map
 #
@@ -407,7 +408,7 @@
 #                   DELETE /dashboards/:id(.:format)         blazer/dashboards#destroy
 #              root GET    /                                 blazer/queries#home
 
-# rubocop:disable Layout/LineLength:
+# :
 # rubocop:disable Metrics/BlockLength
 Rails.application.routes.draw do
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
@@ -685,4 +686,3 @@ Rails.application.routes.draw do
   #
 end
 # rubocop:enable Metrics/BlockLength
-# rubocop:enable Layout/LineLength
