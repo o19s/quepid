@@ -4,10 +4,7 @@
   <div ng-show="loading.isLoading()">
     <div class="row">
       <div class="col-md-offset-4 col-md-4 text-center loading-app" style="margin-top: 200px;">
-        <span class="fa-stack fa-5x">
-          <i class="fa fa-spin fa-circle-o-notch fa-stack-2x loading-spinner"></i>
-          <span class="fa-stack-1x loading-text">Loading...</span>
-        </span>
+        <i ng-show="loadingUsers" class="big-spinner loading-text">Loading...</i>
       </div>
     </div>
   </div>

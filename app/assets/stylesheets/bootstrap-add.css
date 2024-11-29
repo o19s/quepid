@@ -1021,12 +1021,6 @@ footer {
   font-size: 14px;
 }
 
-.loading-app .fa-stack {
-  width:        4em;
-  height:       4em;
-  line-height:  4em;
-}
-
 .loading-app .loading-spinner {
   font-size: 4em !important;
 }
@@ -1091,12 +1085,6 @@ li.annotation {
 
 .annotation > div {
   margin: 5px 0;
-}
-
-.annotation .fa-circle {
-  font-size:      0.5em;
-  line-height:    0.5em;
-  vertical-align: middle;
 }
 
 .annotation .dropdown > a.dropdown-toggle:hover {

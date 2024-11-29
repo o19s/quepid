@@ -18,22 +18,6 @@ GIT
       sprockets-rails
       tilt
 
-GIT
-  remote: https://github.com/rails/mission_control-jobs.git
-  revision: 3d31bf7ff5653b084e473dc41c60b0df5d969fdb
-  branch: main
-  specs:
-    mission_control-jobs (0.6.0)
-      actioncable (>= 7.1)
-      actionpack (>= 7.1)
-      activejob (>= 7.1)
-      activerecord (>= 7.1)
-      importmap-rails (>= 1.2.1)
-      irb (~> 1.13)
-      railties (>= 7.1)
-      stimulus-rails
-      turbo-rails
-
 GEM
   remote: https://rubygems.org/
   specs:
@@ -212,8 +196,6 @@ GEM
     ffi (1.17.0-aarch64-linux-gnu)
     ffi (1.17.0-x86_64-darwin)
     ffi (1.17.0-x86_64-linux-gnu)
-    font-awesome-sass (6.5.2)
-      sassc (~> 2.0)
     foreman (0.88.1)
     fugit (1.11.1)
       et-orbi (~> 1, >= 1.2.11)
@@ -291,6 +273,16 @@ GEM
       builder
       minitest (>= 5.0)
       ruby-progressbar
+    mission_control-jobs (0.5.0)
+      actioncable (>= 7.1)
+      actionpack (>= 7.1)
+      activejob (>= 7.1)
+      activerecord (>= 7.1)
+      importmap-rails (>= 1.2.1)
+      irb (~> 1.13)
+      railties (>= 7.1)
+      stimulus-rails
+      turbo-rails
     mocha (2.6.0)
       ruby2_keywords (>= 0.0.5)
     msgpack (1.7.3)
@@ -567,7 +559,6 @@ DEPENDENCIES
   devise (>= 4.6.2)
   devise_invitable (~> 2.0)
   error_highlight (>= 0.4.0)
-  font-awesome-sass
   foreman
   gabba
   importmap-rails (~> 2.0)
@@ -580,7 +571,7 @@ DEPENDENCIES
   local_time
   memory_profiler
   minitest-reporters (>= 0.5.0)
-  mission_control-jobs!
+  mission_control-jobs (~> 0.5.0)
   mocha (~> 2.6)
   mysql2
   omniauth
