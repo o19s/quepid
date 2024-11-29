@@ -33,7 +33,8 @@ gem 'jquery-rails'
 gem 'jquery-ui-rails' # Can we narrow the widgets to load faster?
 gem 'listen', '~> 3.3'
 gem 'local_time'
-gem 'mission_control-jobs'
+gem 'mission_control-jobs', git: 'https://github.com/rails/mission_control-jobs.git', branch: 'main'
+
 gem 'mysql2'
 gem 'omniauth'
 gem 'omniauth-keycloak'
