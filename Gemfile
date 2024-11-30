@@ -48,7 +48,6 @@ gem 'rails-html-sanitizer'
 gem 'rack-cors', '~> 2.0'
 gem 'responders'
 gem 'rubyzip', '~> 2.3.0' # 3.0 will be breaking
-gem 'sassc-rails', '~> 2.1'
 gem 'solid_cable', '~> 3.0'
 gem 'solid_queue'
 gem 'thor'
@@ -94,3 +93,9 @@ group :test do
   gem 'capybara'
   gem 'selenium-webdriver'
 end
+
+gem "dartsass-rails", "~> 0.5.1"
+
+gem "sprockets-rails", "~> 3.5"
+
+gem "sassc-rails", "~> 2.1"
