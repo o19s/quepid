@@ -6,7 +6,7 @@
 
 .frog-pond::before{
   content: '';
-  background-image: image-url("frog-pond.jpg");
+  background-image: url("frog-pond.jpg");
   background-position: center;
   background-repeat: no-repeat;
   position: absolute;
@@ -31,7 +31,7 @@
     display: inline-block;
     width: 24px;  /* Adjust to match your image width */
     height: 24px; /* Adjust to match your image height */
-    background-image: image-url('querqy-icon.png');
+    background-image: url('querqy-icon.png');
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;

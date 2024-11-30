@@ -1,0 +1,64 @@
+/* Cases */
+ #cases-filter {
+	 width: 75%;
+}
+ #cases-per-page {
+	 width: 20%;
+}
+ #cases-listing {
+	 margin: 30px 0;
+}
+ #cases-listing .listing-header {
+	 font-weight: bold;
+	 text-align: center;
+}
+ #cases-listing .cases-list-header {
+	 padding: 0;
+}
+ #cases-listing ul.cases-list {
+	 list-style: none;
+	 padding: 0;
+}
+ #cases-listing .cases-list-item {
+	 line-height: 34px;
+	 margin: 2px 0;
+}
+ #cases-listing .cases-list-item .owner {
+	 line-height: 1;
+	 margin: 10px 0;
+	 word-wrap: break-word;
+}
+ #cases-listing .cases-list-item .item-box {
+	 background: #fff;
+	 border-radius: 6px;
+	 border: 1px solid #aaa;
+	 margin: 0px 2px;
+	 padding-top: 10px;
+	 padding-bottom: 10px;
+	 text-align: center;
+}
+ #cases-listing .cases-list-item .case-title:hover {
+	 cursor: pointer;
+	 text-decoration: underline;
+}
+ #cases-listing .cases-list-item .item-actions {
+	 display: none;
+}
+ #cases-listing .cases-list-item:hover .item-actions {
+	 display: inherit;
+}
+ .archived-cases {
+	 margin: 20px;
+}
+ .no-data {
+	 font-size: 0.8em;
+}
+ .loading-cases-msg {
+	 padding: 15px 0 0 15px;
+	 font-weight: 600;
+}
+ .media-embed {
+	 vertical-align: middle;
+	 max-width: 640px;
+	 max-height: 640px;
+}

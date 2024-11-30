@@ -1,0 +1,17 @@
+body.shepherd-active {
+	 pointer-events: none !important;
+}
+ body.shepherd-active .shepherd-target.shepherd-enabled {
+	 position: relative;
+	 box-shadow: 0 0 0 99999px rgba(0, 0, 0, 0.2);
+	 z-index: 9999;
+	 pointer-events: auto;
+	 transition: all 0.3s ease;
+}
+ body.shepherd-active .shepherd-step {
+	 pointer-events: auto;
+	 z-index: 9999;
+}
+ body.shepherd-active .shepherd-step footer {
+	 display: block;
+}
