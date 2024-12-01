@@ -64,3 +64,10 @@ h3 {
 .btn-openid:active,.btn-openid.active,.open>.dropdown-toggle.btn-openid{background-image:none}
 .btn-openid.disabled:hover,.btn-openid[disabled]:hover,fieldset[disabled] .btn-openid:hover,.btn-openid.disabled:focus,.btn-openid[disabled]:focus,fieldset[disabled] .btn-openid:focus,.btn-openid.disabled.focus,.btn-openid[disabled].focus,fieldset[disabled] .btn-openid.focus{background-color:#f7931e;border-color:rgba(0,0,0,0.2)}
 .btn-openid .badge{color:#f7931e;background-color:#fff}
+
+/* flip black icon to white */
+.black-to-white {
+    width: 300px; /* Set desired width */
+    height: auto; /* Maintain aspect ratio */
+    filter: brightness(0) invert(1); /* Turns black to white */
+}

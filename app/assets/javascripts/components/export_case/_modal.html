@@ -25,7 +25,7 @@
     <input type="radio" id="detailed" name="exportSelection" value="detailed" ng-model="ctrl.options.which">
     <label for="detailed" class="disabled">Detailed</label>
     <p ng-if="ctrl.options.which==='detailed' && !ctrl.supportsDetailedExport" class='bg-warning text-warning padded-text'>
-      <i class="fa fa-exclamation-triangle" aria-hidden="true"></i>
+      <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
       Detailed export is only supported from the individual Case view.
     </p>
     <span class="help-block">

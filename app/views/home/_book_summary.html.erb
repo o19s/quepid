@@ -14,7 +14,7 @@
       </span>
       <!-- Look at https://github.com/ankane/prophet-ruby -->
       <% if @lookup_for_books[book] && @lookup_for_books[book] > 0 %>
-        <p class="card-text text-danger"><i class="fa fa-frog"></i> You need to judge <%= @lookup_for_books[book] %> out <%= book.query_doc_pairs.count %> query/doc pairs.</p>      
+        <p class="card-text text-danger"><i class="bi bi-balloon"></i> You need to judge <%= @lookup_for_books[book] %> out <%= book.query_doc_pairs.count %> query/doc pairs.</p>      
       <% end %>
       <%= link_to 'Judge', book_judge_path(book), data: { turbo_prefetch: false }, class: 'btn btn-sm btn-primary', role: 'button' %>
     </div> 
