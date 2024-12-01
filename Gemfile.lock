@@ -469,6 +469,14 @@ GEM
       google-protobuf (~> 4.28)
     sass-embedded (1.81.0-x86_64-linux-gnu)
       google-protobuf (~> 4.28)
+    sassc (2.4.0)
+      ffi (~> 1.9)
+    sassc-rails (2.1.2)
+      railties (>= 4.0.0)
+      sassc (>= 2.0)
+      sprockets (> 3.0)
+      sprockets-rails
+      tilt
     securerandom (0.3.2)
     selenium-webdriver (4.27.0)
       base64 (~> 0.2)
@@ -603,6 +611,7 @@ DEPENDENCIES
   rubocop-capybara
   rubocop-rails
   rubyzip (~> 2.3.0)
+  sassc-rails (~> 2.1)
   selenium-webdriver
   simplecov
   solid_cable (~> 3.0)
