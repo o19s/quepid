@@ -1,13 +1,4 @@
 GIT
-  remote: https://github.com/adiaz04/bullet.git
-  revision: f4b09256b8151c290f6bf4cd6c7aadd829435128
-  branch: main
-  specs:
-    bullet (7.2.0)
-      activesupport (>= 3.0.0)
-      uniform_notifier (~> 1.11)
-
-GIT
   remote: https://github.com/epugh/angular-rails-templates.git
   revision: c45588bec096089e51d84ee3461736f000dff87a
   branch: bump_rails_8
@@ -121,6 +112,9 @@ GEM
     bootsnap (1.18.4)
       msgpack (~> 1.2)
     builder (3.3.0)
+    bullet (8.0.0)
+      activesupport (>= 3.0.0)
+      uniform_notifier (~> 1.11)
     cal-heatmap-rails (3.6.2)
     capybara (3.40.0)
       addressable
@@ -548,7 +542,7 @@ DEPENDENCIES
   apipie-rails (~> 1.2)
   bcrypt (~> 3.1.7)
   bootsnap
-  bullet!
+  bullet
   cal-heatmap-rails (~> 3.6)
   capybara
   colorize

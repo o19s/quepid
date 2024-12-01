@@ -58,8 +58,7 @@ gem 'vega'
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
   gem 'debug', platforms: [ :mri, :windows ], require: 'debug/prelude'
-  # gem 'bullet' not Rails 8 compatible
-  gem 'bullet', git: 'https://github.com/adiaz04/bullet.git', branch: 'main'
+  gem 'bullet'
   gem 'memory_profiler'
 end
 
