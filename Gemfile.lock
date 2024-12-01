@@ -267,13 +267,13 @@ GEM
     memory_profiler (1.1.0)
     mini_histogram (0.3.1)
     mini_mime (1.1.5)
-    minitest (5.25.1)
+    minitest (5.25.2)
     minitest-reporters (1.7.1)
       ansi
       builder
       minitest (>= 5.0)
       ruby-progressbar
-    mission_control-jobs (0.5.0)
+    mission_control-jobs (0.6.0)
       actioncable (>= 7.1)
       actionpack (>= 7.1)
       activejob (>= 7.1)
@@ -415,10 +415,10 @@ GEM
     rb-fsevent (0.11.2)
     rb-inotify (0.11.1)
       ffi (~> 1.0)
-    rdoc (6.7.0)
+    rdoc (6.8.1)
       psych (>= 4.0.0)
     regexp_parser (2.9.2)
-    reline (0.5.11)
+    reline (0.5.12)
       io-console (~> 0.5)
     responders (3.1.1)
       actionpack (>= 5.2)
@@ -571,7 +571,7 @@ DEPENDENCIES
   local_time
   memory_profiler
   minitest-reporters (>= 0.5.0)
-  mission_control-jobs (~> 0.5.0)
+  mission_control-jobs (~> 0.6.0)
   mocha (~> 2.6)
   mysql2
   omniauth
