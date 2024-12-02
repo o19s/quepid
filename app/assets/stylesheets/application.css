@@ -1,0 +1,30 @@
+/*
+ * This is a manifest file that'll be compiled into application.css, which will include all the files
+ * listed below via Sprockets.
+ *
+ *
+ * We use Bootstrap 5 everywhere except the core app, which is stuck in Bootstrap 3.
+ * This loads the Bootstrap 5 defined in package.json and in node_modules/bootstrap
+ *= require bootstrap/dist/css/bootstrap
+ *
+ * We use Bootstrap Icons to have icons that work between core and the rest of the app
+ *= require bootstrap-icons/font/bootstrap-icons
+ *
+ *= require codemirror/lib/codemirror
+ *
+ *= require fonts
+ *
+ *= require bootstrap5-add
+ *= require signup
+ */
+
+ .public-share .clipboard-icon {
+	 visibility: hidden;
+ }
+  .public-share:hover .clipboard-icon {
+	 visibility: visible;
+ }
+  .turbo-progress-bar {
+	 height: 5px;
+	 background-color: gold;
+ }

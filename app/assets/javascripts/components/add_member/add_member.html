@@ -1,5 +1,5 @@
 <div class='form-group'>
-    <form class="form input-append">
+    <form class="form input-append vertically-centered">
         <input id="user-lookup" class="form-control email" size="30" type="text" ng-model="ctrl.selected"
             placeholder="Look for users via email or display name"
             uib-typeahead="user as user.display_name for user in ctrl.getUsers($viewValue)"
@@ -15,7 +15,7 @@
             ng-click="ctrl.inviteUserToJoin()">
             Send invitation
         </a>
-        <i ng-show="loadingUsers" class="fa fa-spinner fa-spin"></i>
+        <i ng-show="loadingUsers" class="spinner"></i>
     </form>
 
     <p class='help-block'>

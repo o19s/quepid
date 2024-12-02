@@ -8,7 +8,7 @@ and updated to Bootstrap 5 standards.
 }
 
 body {
-  background: image-url('blue_bg.jpg') top center repeat;
+  background: url('blue_bg.jpg') top center repeat;
 }
 
 .footer-bar {
