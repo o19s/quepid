@@ -16,8 +16,7 @@ class ApplicationController < ActionController::Base
   before_action :require_login
   before_action :check_current_user_locked!
   before_action :check_for_announcement
-
-  # after_action :track_action
+  
 
   # Prevent CSRF attacks by raising an exception.
   # For APIs, you may want to use :null_session instead.
@@ -34,7 +33,4 @@ class ApplicationController < ActionController::Base
     AnnouncementViewed.create(user: @current_user, announcement: @announcement) if @announcement
   end
 
-  def track_action
-    ahoy.track 'ran_action', request.path_parameters
-  end
 end
