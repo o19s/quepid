@@ -1,10 +1,9 @@
 # frozen_string_literal: true
 
-# rubocop:disable Layout/LineLength
 # == Route Map
 #
 #                                           Prefix Verb     URI Pattern                                                                                       Controller#Action
-#                                                           /cable                                                                                            #<ActionCable::Server::Base:0x00007f0384ffcb28 @config=#<ActionCable::Server::Configuration:0x00007f0384d3f7a0 @log_tags=[:channel, :connection, :transmissions, :state_updates], @connection_class=#<Proc:0x00007f03839ee160 /usr/local/bundle/gems/actioncable-8.0.0/lib/action_cable/engine.rb:55 (lambda)>, @worker_pool_size=4, @disable_request_forgery_protection=true, @allow_same_origin_as_host=true, @filter_parameters=[:passw, :email, :secret, :token, :_key, :crypt, :salt, :certificate, :otp, :ssn, :cvv, :cvc, :document_fields, "query_doc_pair.document_fields", "snapshot.docs", "snapshot_doc.explain", "snapshot_doc.fields"], @health_check_application=#<Proc:0x00007f03837646b0 /usr/local/bundle/gems/actioncable-8.0.0/lib/action_cable/engine.rb:31 (lambda)>, @logger=#<ActiveSupport::BroadcastLogger:0x00007f0384324608 @broadcasts=[#<ActiveSupport::Logger:0x00007f0384365388 @level=0, @progname=nil, @default_formatter=#<Logger::Formatter:0x00007f0384326980 @datetime_format=nil>, @formatter=#<TruncatingFormatter:0x00007f03843249c8 @datetime_format=nil, @limit=5000>, @logdev=#<Logger::LogDevice:0x00007f0384312ef8 @shift_period_suffix="%Y%m%d", @shift_size=104857600, @shift_age=1, @filename="/srv/app/log/development.log", @dev=#<File:/srv/app/log/development.log>, @binmode=false, @reraise_write_errors=[], @mon_data=#<Monitor:0x00007f0384326908>, @mon_data_owner_object_id=7420>, @level_override={}>], @progname="Broadcast", @formatter=#<TruncatingFormatter:0x00007f03843249c8 @datetime_format=nil, @limit=5000>>, @cable={"adapter"=>"solid_cable", "polling_interval"=>"0.1.seconds", "message_retention"=>"1.day", "silence_polling"=>true}, @mount_path="/cable", @precompile_assets=true, @allowed_request_origins="*", @url="/cable">, @mutex=#<Monitor:0x00007f0383a4a9d8>, @pubsub=nil, @worker_pool=nil, @event_loop=nil, @remote_connections=nil>
+#                                                           /cable                                                                                            #<ActionCable::Server::Base:0x00007fbdccaa2530 @config=#<ActionCable::Server::Configuration:0x00007fbdccaaf0f0 @log_tags=[:channel, :connection, :transmissions, :state_updates], @connection_class=#<Proc:0x00007fbdccab3768 /usr/local/bundle/gems/actioncable-8.0.0/lib/action_cable/engine.rb:55 (lambda)>, @worker_pool_size=4, @disable_request_forgery_protection=true, @allow_same_origin_as_host=true, @filter_parameters=[:passw, :email, :secret, :token, :_key, :crypt, :salt, :certificate, :otp, :ssn, :cvv, :cvc, :document_fields, "query_doc_pair.document_fields", "snapshot.docs", "snapshot_doc.explain", "snapshot_doc.fields"], @health_check_application=#<Proc:0x00007fbdccab63a0 /usr/local/bundle/gems/actioncable-8.0.0/lib/action_cable/engine.rb:31 (lambda)>, @logger=#<ActiveSupport::BroadcastLogger:0x00007fbdcdc142c8 @broadcasts=[#<ActiveSupport::Logger:0x00007fbdce79fb10 @level=0, @progname=nil, @default_formatter=#<Logger::Formatter:0x00007fbdcdc16af0 @datetime_format=nil>, @formatter=#<TruncatingFormatter:0x00007fbdcdc14750 @datetime_format=nil, @limit=5000>, @logdev=#<Logger::LogDevice:0x00007fbdcda94380 @shift_period_suffix="%Y%m%d", @shift_size=104857600, @shift_age=1, @filename="/srv/app/log/development.log", @dev=#<File:/srv/app/log/development.log>, @binmode=false, @reraise_write_errors=[], @mon_data=#<Monitor:0x00007fbdcdc16a78>, @mon_data_owner_object_id=7340>, @level_override={}>], @progname="Broadcast", @formatter=#<TruncatingFormatter:0x00007fbdcdc14750 @datetime_format=nil, @limit=5000>>, @cable={"adapter"=>"solid_cable", "polling_interval"=>"0.1.seconds", "message_retention"=>"1.day", "silence_polling"=>true}, @mount_path="/cable", @precompile_assets=true, @allowed_request_origins="*", @url="/cable">, @mutex=#<Monitor:0x00007fbdcca92720>, @pubsub=nil, @worker_pool=nil, @event_loop=nil, @remote_connections=nil>
 #                           apipie_apipie_checksum GET      /apipie/apipie_checksum(.:format)                                                                 apipie/apipies#apipie_checksum {:format=>/json/}
 #                                    apipie_apipie GET      /apipie(/:version)(/:resource)(/:method)(.:format)                                                apipie/apipies#index {:version=>/[^\/]+/, :resource=>/[^\/]+/, :method=>/[^\/]+/}
 #                                active_storage_db          /active_storage_db                                                                                ActiveStorageDB::Engine
@@ -325,6 +324,7 @@
 #                 turbo_recede_historical_location GET      /recede_historical_location(.:format)                                                             turbo/native/navigation#recede
 #                 turbo_resume_historical_location GET      /resume_historical_location(.:format)                                                             turbo/native/navigation#resume
 #                turbo_refresh_historical_location GET      /refresh_historical_location(.:format)                                                            turbo/native/navigation#refresh
+#                                      ahoy_engine          /ahoy                                                                                             Ahoy::Engine
 #                    rails_postmark_inbound_emails POST     /rails/action_mailbox/postmark/inbound_emails(.:format)                                           action_mailbox/ingresses/postmark/inbound_emails#create
 #                       rails_relay_inbound_emails POST     /rails/action_mailbox/relay/inbound_emails(.:format)                                              action_mailbox/ingresses/relay/inbound_emails#create
 #                    rails_sendgrid_inbound_emails POST     /rails/action_mailbox/sendgrid/inbound_emails(.:format)                                           action_mailbox/ingresses/sendgrid/inbound_emails#create
@@ -369,6 +369,8 @@
 #          application_worker GET    /applications/:application_id/workers/:id(.:format)            mission_control/jobs/workers#show
 # application_recurring_tasks GET    /applications/:application_id/recurring_tasks(.:format)        mission_control/jobs/recurring_tasks#index
 #  application_recurring_task GET    /applications/:application_id/recurring_tasks/:id(.:format)    mission_control/jobs/recurring_tasks#show
+#                             PATCH  /applications/:application_id/recurring_tasks/:id(.:format)    mission_control/jobs/recurring_tasks#update
+#                             PUT    /applications/:application_id/recurring_tasks/:id(.:format)    mission_control/jobs/recurring_tasks#update
 #                      queues GET    /queues(.:format)                                              mission_control/jobs/queues#index
 #                       queue GET    /queues/:id(.:format)                                          mission_control/jobs/queues#show
 #                         job GET    /jobs/:id(.:format)                                            mission_control/jobs/jobs#show
@@ -407,7 +409,12 @@
 #                   PUT    /dashboards/:id(.:format)         blazer/dashboards#update
 #                   DELETE /dashboards/:id(.:format)         blazer/dashboards#destroy
 #              root GET    /                                 blazer/queries#home
+#
+# Routes for Ahoy::Engine:
+# visits POST /visits(.:format) ahoy/visits#create
+# events POST /events(.:format) ahoy/events#create
 
+# rubocop:disable Layout/LineLength
 # :
 # rubocop:disable Metrics/BlockLength
 Rails.application.routes.draw do
