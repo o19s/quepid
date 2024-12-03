@@ -6,7 +6,7 @@ class PopulateBookJob < ApplicationJob
   # rubocop:disable Security/MarshalLoad
   # rubocop:disable Metrics/MethodLength
   # rubocop:disable Metrics/AbcSize
-  def perform _user, book, kase
+  def perform book, kase
     # down the road we should be using ActiveRecord-import and first_or_initialize instead.
     # See how snapshots are managed.
 
