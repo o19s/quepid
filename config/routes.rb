@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+# rubocop:disable Layout/LineLength
+
 # == Route Map
 #
 #                                           Prefix Verb     URI Pattern                                                                                       Controller#Action
@@ -414,8 +416,6 @@
 # visits POST /visits(.:format) ahoy/visits#create
 # events POST /events(.:format) ahoy/events#create
 
-# rubocop:disable Layout/LineLength
-# :
 # rubocop:disable Metrics/BlockLength
 Rails.application.routes.draw do
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
