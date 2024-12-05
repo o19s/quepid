@@ -26,6 +26,10 @@ module Analytics
       def track_case_shared_event user, acase, team
         Analytics::Ahoy.user_shared_case user, acase, team
       end
+
+      def track_user_swapped_protocol user, acase, protocol
+        Analytics::Ahoy.user_swapped_protocol user, acase, protocol
+      end
     end
   end
 end

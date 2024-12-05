@@ -228,6 +228,26 @@ module Analytics
       end
 
       #
+      # Creates an event when a user swaps the protocol
+      # used to access a case
+      #
+      # @param user,      User
+      # @param the_case,  Case
+      # @param protocol,  String
+      #
+      def user_swapped_protocol _user, the_case, protocol
+        data = {
+          category: 'Cases',
+          action:   'Swapped to Protocol',
+          label:    the_case.case_name,
+          case_id:  the_case.id,
+          value:    protocol,
+        }
+
+        create_event data
+      end
+
+      #
       # Creates an event when a user creates an team.
       #
       # @param user,    User

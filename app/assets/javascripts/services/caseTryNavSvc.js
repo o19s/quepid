@@ -112,6 +112,7 @@ angular.module('QuepidApp')
           quepidUrlToSwitchTo = quepidUrlToSwitchTo.replace('http', 'https');
         }
         
+        quepidUrlToSwitchTo = quepidUrlToSwitchTo + "?protocolToSwitchTo=" + protocolToSwitchTo;
         return [quepidUrlToSwitchTo, protocolToSwitchTo];
       };
       

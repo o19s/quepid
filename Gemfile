@@ -14,6 +14,7 @@ gem 'ancestry'
 gem 'angular-rails-templates', git: 'https://github.com/epugh/angular-rails-templates.git', branch: 'bump_rails_8'
 gem 'apipie-rails', '~> 1.2'
 gem 'bcrypt', '~> 3.1.7'
+gem 'blazer', '~> 3.1'
 gem 'bootsnap', require: false
 gem 'cal-heatmap-rails', '~> 3.6' # provides assets for cal heatmap, that requires old d3
 gem 'colorize', require: false
@@ -93,7 +94,3 @@ group :test do
   gem 'capybara'
   gem 'selenium-webdriver'
 end
-
-
-
-gem 'blazer', '~> 3.1'
