@@ -1,6 +1,6 @@
 <% if cookies.kind_of? ActionDispatch::Cookies::CookieJar %>
   <% if cookies && cookies['cookie_eu_consented'] != 'true' %>
-    <div class="toast" id="consent_banner" role="alert" data-bs-autohide="false">
+    <div class="toast" id="consent_banner" role="alert" data-bs-autohide="true" data-bs-delay="15000">
       <div class="toast-body">
         Cookies help us deliver our services. By using our services, you agree to our use of cookies.
         <div class="mt-2 pt-2 border-top">
