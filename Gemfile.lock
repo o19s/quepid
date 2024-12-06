@@ -175,7 +175,7 @@ GEM
       devise (>= 4.6)
     docile (1.4.1)
     drb (2.2.1)
-    error_highlight (0.6.0)
+    error_highlight (0.7.0)
     erubi (1.13.0)
     et-orbi (1.2.11)
       tzinfo
