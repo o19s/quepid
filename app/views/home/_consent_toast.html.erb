@@ -1,0 +1,13 @@
+<% if cookies.kind_of? ActionDispatch::Cookies::CookieJar %>
+  <% if cookies && cookies['cookie_eu_consented'] != 'true' %>
+    <div class="toast" id="consent_banner" role="alert" data-bs-autohide="false">
+      <div class="toast-body">
+        Cookies help us deliver our services. By using our services, you agree to our use of cookies.
+        <div class="mt-2 pt-2 border-top">
+          <%= link_to 'Learn more', "/cookies", class: "btn btn-sm btn-secondary", target: "_blank" %>
+          <button type="button" class="js-cookies-eu-ok btn btn-primary btn-sm" data-bs-dismiss="toast">OK</button>      
+        </div>
+      </div>
+    </div>
+  <% end %>
+<% end %>

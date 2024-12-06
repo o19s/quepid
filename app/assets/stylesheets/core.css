@@ -19,8 +19,6 @@
  * We use Bootstrap Icons to have icons that work between core and the rest of the app
  *= require bootstrap-icons/font/bootstrap-icons
  *
- *= require cookies_eu
- *
  *= require fonts
  *= require bootstrap3-add
  *
