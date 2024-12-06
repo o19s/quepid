@@ -39,9 +39,6 @@
     "QUEPID_DOMAIN": {
       "required": true
     },
-    "QUEPID_GA": {
-      "required": true
-    },
     "RACK_ENV": {
       "required": true
     },

@@ -71,6 +71,7 @@ class SessionsController < ApplicationController
     user.num_logins  += 1
     user.save
 
+    ahoy.authenticate(user)
     user
   end
 

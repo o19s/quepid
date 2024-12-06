@@ -25,7 +25,7 @@ module Api
           @book.populate_file.attach(io: StringIO.new(compressed_data), filename: "book_populate_#{@book.id}.bin.zip",
                                      content_type: 'application/zip')
           track_book_populate_queued do
-            PopulateBookJob.perform_later current_user, @book, @case
+            PopulateBookJob.perform_later @book, @case
           end
 
           head :no_content
@@ -42,6 +42,7 @@ module Api
 
         def track_book_populate_queued
           @book.update(populate_job: "queued at #{Time.zone.now}")
+          Analytics::Tracker.track_query_doc_pairs_bulk_updated_event current_user, @book, @book.query_doc_pairs.empty?
 
           # Yield to the block to perform the job
           yield if block_given?

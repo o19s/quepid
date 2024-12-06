@@ -6,7 +6,7 @@
 #
 # rubocop:disable Metrics/ModuleLength
 module Analytics
-  module GoogleAnalytics
+  module Ahoy
     module Events
       #
       # Creates an event when a user signs up.
@@ -19,7 +19,6 @@ module Analytics
           action:   'Signed Up',
           label:    user.email,
           value:    nil,
-          bounce:   false,
         }
 
         create_event data
@@ -36,7 +35,6 @@ module Analytics
           action:   'Upgraded by Admin',
           label:    user.email,
           value:    nil,
-          bounce:   true,
         }
 
         create_event data
@@ -53,7 +51,6 @@ module Analytics
           action:   'Updated Profile',
           label:    user.email,
           value:    nil,
-          bounce:   true,
         }
 
         create_event data
@@ -70,7 +67,6 @@ module Analytics
           action:   'Updated by Admin',
           label:    user.email,
           value:    nil,
-          bounce:   true,
         }
 
         create_event data
@@ -87,7 +83,6 @@ module Analytics
           action:   'Updated Password',
           label:    user.email,
           value:    nil,
-          bounce:   true,
         }
 
         create_event data
@@ -104,7 +99,6 @@ module Analytics
           action:   'Reset Password by Admin',
           label:    user.email,
           value:    nil,
-          bounce:   true,
         }
 
         create_event data
@@ -122,7 +116,6 @@ module Analytics
           action:   'Created First Case',
           label:    user.email,
           value:    1,
-          bounce:   false,
         }
 
         create_event data
@@ -140,7 +133,6 @@ module Analytics
           action:   'Created a Case',
           label:    the_case.case_name,
           value:    user.cases.count,
-          bounce:   false,
         }
 
         create_event data
@@ -158,7 +150,6 @@ module Analytics
           action:   'Updated a Case',
           label:    the_case.case_name,
           value:    nil,
-          bounce:   false,
         }
 
         create_event data
@@ -176,7 +167,6 @@ module Analytics
           action:   'Archived a Case',
           label:    the_case.case_name,
           value:    nil,
-          bounce:   false,
         }
 
         create_event data
@@ -194,7 +184,6 @@ module Analytics
           action:   'Deleted a Case',
           label:    the_case.case_name,
           value:    nil,
-          bounce:   false,
         }
 
         create_event data
@@ -214,7 +203,6 @@ module Analytics
           action:   'Saved a Case Try',
           label:    the_case.case_name,
           value:    the_try.try_number,
-          bounce:   false,
         }
 
         create_event data
@@ -234,7 +222,26 @@ module Analytics
           action:   'Shared a Case',
           label:    the_case.case_name,
           value:    nil,
-          bounce:   false,
+        }
+
+        create_event data
+      end
+
+      #
+      # Creates an event when a user swaps the protocol
+      # used to access a case
+      #
+      # @param user,      User
+      # @param the_case,  Case
+      # @param protocol,  String
+      #
+      def user_swapped_protocol _user, the_case, protocol
+        data = {
+          category: 'Cases',
+          action:   'Swapped to Protocol',
+          label:    the_case.case_name,
+          case_id:  the_case.id,
+          value:    protocol,
         }
 
         create_event data
@@ -252,7 +259,6 @@ module Analytics
           action:   'Created an Team',
           label:    team.name,
           value:    user.owned_teams.count,
-          bounce:   false,
         }
 
         create_event data
@@ -270,7 +276,6 @@ module Analytics
           action:   'Updated an Team',
           label:    team.name,
           value:    nil,
-          bounce:   false,
         }
 
         create_event data
@@ -288,7 +293,6 @@ module Analytics
           action:   'Deleted an Team',
           label:    team.name,
           value:    nil,
-          bounce:   false,
         }
 
         create_event data
@@ -307,7 +311,6 @@ module Analytics
           action:   'Added Member to an Team',
           label:    team.name,
           value:    team.members.count,
-          bounce:   false,
         }
 
         create_event data
@@ -325,7 +328,6 @@ module Analytics
           action:   'Created a Scorer',
           label:    scorer.name,
           value:    user.owned_scorers.count,
-          bounce:   false,
         }
 
         create_event data
@@ -343,7 +345,6 @@ module Analytics
           action:   'Updated a Scorer',
           label:    scorer.name,
           value:    nil,
-          bounce:   false,
         }
 
         create_event data
@@ -361,7 +362,6 @@ module Analytics
           action:   'Deleted a Scorer',
           label:    scorer.name,
           value:    nil,
-          bounce:   false,
         }
 
         create_event data
@@ -381,7 +381,6 @@ module Analytics
           action:   'Shared a Scorer',
           label:    scorer.name,
           value:    nil,
-          bounce:   false,
         }
 
         create_event data
@@ -401,7 +400,6 @@ module Analytics
           action:   'Created a Snapshot',
           label:    snapshot.name,
           value:    the_case.snapshots.count,
-          bounce:   false,
         }
 
         create_event data
@@ -419,7 +417,6 @@ module Analytics
           action:   'Deleted a Snapshot',
           label:    snapshot.name,
           value:    nil,
-          bounce:   false,
         }
 
         create_event data
@@ -439,7 +436,6 @@ module Analytics
           action:   'Created a Query',
           label:    query.query_text,
           value:    the_case.queries.count,
-          bounce:   false,
         }
 
         create_event data
@@ -457,7 +453,6 @@ module Analytics
           action:   'Deleted a Query',
           label:    query.query_text,
           value:    nil,
-          bounce:   false,
         }
 
         create_event data
@@ -476,7 +471,6 @@ module Analytics
           action:   'Moved a Query',
           label:    query.query_text,
           value:    nil,
-          bounce:   false,
         }
 
         create_event data
@@ -496,7 +490,6 @@ module Analytics
           action:   'Rated a Query',
           label:    query.query_text,
           value:    rating.rating,
-          bounce:   false,
         }
 
         create_event data
@@ -516,7 +509,6 @@ module Analytics
           action:   'Reset a Query Rating',
           label:    query.query_text,
           value:    nil,
-          bounce:   false,
         }
 
         create_event data
@@ -534,7 +526,6 @@ module Analytics
           action:   'Bulk Updated Query Ratings',
           label:    query.query_text,
           value:    nil,
-          bounce:   false,
         }
 
         create_event data
@@ -552,7 +543,6 @@ module Analytics
           action:   'Bulk Deleted Query Ratings',
           label:    query.query_text,
           value:    nil,
-          bounce:   false,
         }
 
         create_event data
@@ -571,7 +561,6 @@ module Analytics
           action:   'Updated Query Scorer',
           label:    query.query_text,
           value:    nil,
-          bounce:   false,
         }
 
         create_event data
@@ -589,7 +578,6 @@ module Analytics
           action:   'Deleted Query Scorer',
           label:    query.query_text,
           value:    nil,
-          bounce:   false,
         }
 
         create_event data
@@ -607,7 +595,6 @@ module Analytics
           action:   'Updated Query Notes',
           label:    query.query_text,
           value:    nil,
-          bounce:   false,
         }
 
         create_event data
@@ -625,7 +612,6 @@ module Analytics
           action:   'Updated Query Options',
           label:    query.query_text,
           value:    nil,
-          bounce:   false,
         }
 
         create_event data
@@ -643,7 +629,6 @@ module Analytics
           action:   'Created a Communal Scorer',
           label:    scorer.name,
           value:    nil,
-          bounce:   false,
         }
 
         create_event data
@@ -661,7 +646,6 @@ module Analytics
           action:   'Updated a Communal Scorer',
           label:    scorer.name,
           value:    nil,
-          bounce:   false,
         }
 
         create_event data
@@ -679,7 +663,7 @@ module Analytics
           action:   'Populated empty book',
           label:    user.email,
           value:    1,
-          bounce:   false,
+          user:     user,
         }
 
         create_event data
@@ -697,34 +681,30 @@ module Analytics
           action:   'Refreshed a book',
           label:    book.name,
           value:    1,
-          bounce:   false,
         }
 
         create_event data
       end
 
       #
-      # Creates an event in GA
+      # Creates an event in Ahoy
       #
       # @param data, Hash
       #
-      # The data param includes the information for the event to register on GA.
+      # The data param includes the information for the event to register via Ahoy.
+      # Inspired by the GA version. Hence the docs below.
       # It should have the following attributes:
       #
       # category: String
       # action:   String
       # label:    String
       # value:    Integer
-      # bounce:   Boolean
-      #
-      # more info here:
-      # https://support.google.com/analytics/answer/1033068#Anatomy
-      # https://developers.google.com/analytics/devguides/collection/analyticsjs/events
       #
       def create_event data
-        return unless Analytics::GoogleAnalytics.enabled?
+        # return unless Analytics::Ahoy.enabled?
 
-        GoogleAnalyticsEventJob.perform_later data
+        name = "#{data[:category].parameterize(separator: '_')}:#{data[:action].parameterize(separator: '_')}"
+        ahoy.track name, data
       end
     end
   end

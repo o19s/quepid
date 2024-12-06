@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require_relative 'google_analytics'
+require_relative 'ahoy'
 require_relative 'tracker/case'
 require_relative 'tracker/query'
 require_relative 'tracker/rating'

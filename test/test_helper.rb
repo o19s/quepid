@@ -18,6 +18,11 @@ Minitest::Reporters.use! [ Minitest::Reporters::ProgressReporter.new, Minitest::
 
 module ActiveSupport
   class TestCase
+    # TODO: Remove when Devise fixes https://github.com/heartcombo/devise/issues/5705
+    ActiveSupport.on_load(:action_mailer) do
+      Rails.application.reload_routes_unless_loaded
+    end
+
     include ActiveJob::TestHelper
     # Run tests in parallel with specified workers
     # parallelize(workers: :number_of_processors)

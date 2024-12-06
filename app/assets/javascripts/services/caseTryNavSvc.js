@@ -112,7 +112,24 @@ angular.module('QuepidApp')
           quepidUrlToSwitchTo = quepidUrlToSwitchTo.replace('http', 'https');
         }
         
+        let separator = '?';
+        if (quepidUrlToSwitchTo.includes('?')){
+          separator = '&';
+        }
+        
+        quepidUrlToSwitchTo = quepidUrlToSwitchTo + separator + 'protocolToSwitchTo=' + protocolToSwitchTo;
+        
         return [quepidUrlToSwitchTo, protocolToSwitchTo];
+      };
+      
+      this.appendQueryParams = function (quepidUrl, params) {
+        let seperator = '?';
+        if (quepidUrl.includes('?')) {
+          seperator = '&';
+        }
+        quepidUrl = quepidUrl + seperator + params;
+        return quepidUrl;
+        
       };
       
       this.getQuepidRootUrl = function(){     
