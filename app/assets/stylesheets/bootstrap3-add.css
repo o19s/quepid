@@ -25,7 +25,7 @@ hr {
 */
 
 body {
-  background: image-url('blue_bg.jpg') top center repeat;
+  background: url('blue_bg.jpg') top center repeat;
 }
 
 button:select {
@@ -442,7 +442,7 @@ header .dropdown-content li.dropdown-header {
 
 .sub-results {
 	clear: both;
-	background: image-url('sub-results-bg.png') top center no-repeat #F7F7F7;
+	background: url('sub-results-bg.png') top center no-repeat #F7F7F7;
 	padding: 75px 15px 15px 15px;
 	position: relative;
 	min-width: 650px;
@@ -1021,12 +1021,6 @@ footer {
   font-size: 14px;
 }
 
-.loading-app .fa-stack {
-  width:        4em;
-  height:       4em;
-  line-height:  4em;
-}
-
 .loading-app .loading-spinner {
   font-size: 4em !important;
 }
@@ -1091,12 +1085,6 @@ li.annotation {
 
 .annotation > div {
   margin: 5px 0;
-}
-
-.annotation .fa-circle {
-  font-size:      0.5em;
-  line-height:    0.5em;
-  vertical-align: middle;
 }
 
 .annotation .dropdown > a.dropdown-toggle:hover {

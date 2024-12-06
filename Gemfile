@@ -23,7 +23,6 @@ gem 'devise_invitable', '~> 2.0'
 
 # Using this as it wires in via Sprockets and I can't get npm version to work with the main app.
 # Had no luck with js/svg approach ;-(
-gem 'font-awesome-sass'
 gem 'foreman'
 gem 'gabba'
 gem 'importmap-rails', '~> 2.0'
@@ -33,7 +32,7 @@ gem 'jquery-rails'
 gem 'jquery-ui-rails' # Can we narrow the widgets to load faster?
 gem 'listen', '~> 3.3'
 gem 'local_time'
-gem 'mission_control-jobs', git: 'https://github.com/rails/mission_control-jobs.git', branch: 'main'
+gem 'mission_control-jobs', '~> 0.5.0' # git: 'https://github.com/rails/mission_control-jobs.git', branch: 'main'
 
 gem 'mysql2'
 gem 'omniauth'
@@ -59,8 +58,7 @@ gem 'vega'
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
   gem 'debug', platforms: [ :mri, :windows ], require: 'debug/prelude'
-  # gem 'bullet' not Rails 8 compatible
-  gem 'bullet', git: 'https://github.com/adiaz04/bullet.git', branch: 'main'
+  gem 'bullet'
   gem 'memory_profiler'
 end
 
