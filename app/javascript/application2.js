@@ -22,9 +22,9 @@ window.dispatchEvent(new Event("vega:load"))
 // consent banner handling begin
 document.addEventListener("DOMContentLoaded", function() {
   // Show the toast when the page loads if it's been loaded
-  var toastEl = document.getElementById('consent_banner');
+  let toastEl = document.getElementById('consent_banner');
   if (toastEl){
-    var toast = new bootstrap.Toast(toastEl);
+    let toast = new bootstrap.Toast(toastEl);
     toast.show();
   }
 });
@@ -32,9 +32,9 @@ document.addEventListener("DOMContentLoaded", function() {
 
 // cookie handling begin
 // Inspired by the https://github.com/infinum/cookies_eu project
-var cookiesEu = {
+let cookiesEu = {
   init: function() {
-    var cookiesEuOKButton = document.querySelector('.js-cookies-eu-ok');
+    let cookiesEuOKButton = document.querySelector('.js-cookies-eu-ok');
 
     if (cookiesEuOKButton) {
       this.addListener(cookiesEuOKButton);
@@ -51,15 +51,14 @@ var cookiesEu = {
   },
 
   setCookie: function() {
-    var isSecure = location.protocol === 'https:';
+    const isSecure = location.protocol === 'https:';
     Cookies.set('cookie_eu_consented', true, { path: '/', expires: 365, secure: isSecure });
-    console.log("Setting consent");
   }
 };
 
 (function() {
  
-  var isCalled = false;
+  let isCalled = false;
 
   function isReady() {
     if (isCalled) {
