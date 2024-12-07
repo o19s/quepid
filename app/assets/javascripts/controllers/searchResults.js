@@ -1,5 +1,4 @@
 'use strict';
-
 angular.module('QuepidApp')
   .controller('SearchResultsCtrl', [
     '$rootScope',
@@ -136,6 +135,23 @@ angular.module('QuepidApp')
         else {
           return $scope.query.rating;
         }
+      };
+      
+      $scope.querqyRuleTriggered = function () {
+        let triggered = false;
+        
+        if ($scope.query.searcher && $scope.query.searcher.parsedQueryDetails) {
+          let parsedQueryDetails = $scope.query.searcher.parsedQueryDetails;
+          
+          if (parsedQueryDetails.querqy?.rewrite !== undefined) { // jshint ignore:line
+            triggered = true;
+          }
+          else if ('querqy.infoLog' in parsedQueryDetails){
+            triggered = true;
+          }
+        }
+          
+        return triggered;
       };
     }
   ]);

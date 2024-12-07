@@ -1,2 +1,2 @@
 web:    bundle exec puma -C config/puma.rb
-worker: bundle exec sidekiq -e production -C config/sidekiq.yml
+worker: bundle exec rake solid_queue:start

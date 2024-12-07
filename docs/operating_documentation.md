@@ -7,6 +7,7 @@ This document explains how Quepid can be operated and configured.
 - [Setting up a Context Path](#setting-up-a-context-path)
 - [Mail](#mail)
 - [OAuth](#OAuth)
+- [Managing Websocket Load](#managing-websocket-load)
 - [Legal Pages & GDPR](#legal-pages-&-gdpr)
 - [User Tracking](#user-tracking)
 - [Heathcheck Endpoint](#healthcheck)
@@ -148,6 +149,13 @@ We *assume* that the client definition in Keycloak will be named `quepid`, you c
 
 Keycloak 17+ removes the `/auth` portion of the url.  If you are using earlier versions of keycloak, you need to set `base_url:'/auth'` in devise.rb.
 
+## Managing Websocket Load
+
+Quepid uses [SolidCable]() to back the websocket messaging that drives some asynchrnous communication. The state is managed in the database.
+
+By default we issue a query every tenth of a second, which can overload your database.
+
+Set `SOLID_CABLE_POLLING` to `1.seconds` or even `5.seconds` to change how often updates are checked for.  The default is `0.1.seconds`.
 
 
 ## Legal Pages & GDPR

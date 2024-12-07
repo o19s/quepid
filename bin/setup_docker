@@ -9,7 +9,7 @@ Dir.chdir APP_ROOT do
   # Add necessary setup steps to this file:
 
   puts "\n== Teardown Existing Quepid =="
-  system "docker-compose down -v"
+  system "docker compose down -v"
 
   puts "\n== Copying sample files =="
   unless File.exist?("config/database.yml")
@@ -25,11 +25,11 @@ Dir.chdir APP_ROOT do
   if ARGV.length > 0 and ARGV[0] == "nobuild"
       build_arg = "--no-build"
       puts "\n== Pulling latest image =="
-      system "docker-compose pull app"
+      system "docker compose pull app"
   end
 
   puts "\n== Building Docker container =="
-  system "docker-compose up #{build_arg} --no-start"
+  system "docker compose up #{build_arg} --no-start"
 
   system "bin/docker r yarn"
   system "bin/docker r ./wait-for mysql:3306 --timeout=60 -- bin/rake db:setup"

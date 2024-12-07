@@ -137,16 +137,10 @@
                 class="form-control">
               </select>
               <br />OR<br />
-              <script type="text/ng-template" id="customTemplate.html">
-                <a>
-                    <img ng-src="images/{{match.model.searchEngine}}-icon.png" width="16"/>
-                    <span ng-bind-html="match.label | uibTypeaheadHighlight:query"></span>
-                </a>
-              </script>
 
               <input type="text" ng-model="selectedItem" placeholder="Select endpoint to use"
                 uib-typeahead="searchEndpoint as searchEndpoint.name for searchEndpoint in searchOptions($viewValue)"
-                typeahead-template-url="customTemplate.html" class="form-control" typeahead-show-hint="true"
+                typeahead-template-url="views/searchEndpoint_popup.html" class="form-control" typeahead-show-hint="true"
                 typeahead-min-length="0" typeahead-editable="false" typeahead-select-on-exact="false"
                 typeahead-no-results="noResults" typeahead-on-select="onSelectSearchEndpoint($item)"/>
               <div ng-if="noResults">
@@ -246,7 +240,7 @@
                 <a href="#"
                   uib-tooltip-html="'(advanced) -- If your queries use Solr|Elasticsearch|OpenSearch <br/>query syntax (like text:law) then disable this feature'"
                   tooltip-placement="left">
-                  <span class="fa fa-question-circle" aria-hidden="true"></span>
+                  <span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span>
                 </a>
               </span>
             </p>

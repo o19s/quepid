@@ -14,32 +14,24 @@ services:
       - PUPPETEER_SKIP_DOWNLOAD=true
       - PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
     volumes:
-      - .:/srv/app
+      - .:/srv/app:cached
       - ./log:/log
     ports:
       - 3000:3000
     links:
       - mysql
-      - redis
       - keycloak
     depends_on:
       - mysql
-      - redis
       - keycloak
 
   mysql:
     container_name: quepid_db
-    image: mysql:8.3.0
+    image: mysql:8.4.3
     ports:
       - 3306:3306
     environment:
       - MYSQL_ROOT_PASSWORD=password
-
-  redis:
-    container_name: quepid_redis
-    image: redis:7.2.0-alpine
-    ports:
-      - 6379:6379
 
   keycloak:
     image: chorus-keycloak
@@ -68,7 +60,7 @@ services:
 
 
   nginx:
-    image: nginx:1.26.0-alpine-slim
+    image: nginx:1.27.1-alpine-slim
     container_name: quepid_nginx
     ports:
       - "443:8443"
