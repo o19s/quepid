@@ -308,6 +308,8 @@ class SampleData < Thor
     end
 
     print_step 'End of multiple cases................'
+    print_step ''
+    print_step 'Now open http://localhost:3000 and login with quepid+realisticactivity@o19s.com / password'
   end
 
   desc 'large_data', 'load the very large sample data'
