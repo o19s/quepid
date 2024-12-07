@@ -218,7 +218,7 @@ module ActiveSupport
             'Accept'          => '*/*',
             'Accept-Encoding' => 'gzip;q=1.0,deflate;q=0.6,identity;q=0.3',
             'Content-Type'    => 'application/json',
-            'User-Agent'      => 'Faraday v2.9.0',
+            'User-Agent'      => /Faraday/,
           }
         )
         .to_return(status: 200, body: mock_statedecoded_body, headers: {})
@@ -233,7 +233,7 @@ module ActiveSupport
             'Accept'          => '*/*',
             'Accept-Encoding' => 'gzip;q=1.0,deflate;q=0.6,identity;q=0.3',
             'Content-Type'    => 'application/json',
-            'User-Agent'      => 'Faraday v2.9.0',
+            'User-Agent'      => /Faraday/,
           }
         )
         .to_return(status: 200, body: mock_statedecoded_body, headers: {})
@@ -248,7 +248,7 @@ module ActiveSupport
             'Accept'          => '*/*',
             'Accept-Encoding' => 'gzip;q=1.0,deflate;q=0.6,identity;q=0.3',
             'Content-Type'    => 'application/json',
-            'User-Agent'      => 'Faraday v2.9.0',
+            'User-Agent'      => /Faraday/,
           }
         )
         .to_return(status: 404, body: '', headers: {})
