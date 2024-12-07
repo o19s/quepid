@@ -142,7 +142,7 @@ GEM
     csv (3.3.0)
     d3-rails (3.5.17)
       railties (>= 3.1)
-    date (3.4.0)
+    date (3.4.1)
     debug (1.9.2)
       irb (~> 1.10)
       reline (>= 0.3.8)
@@ -470,7 +470,7 @@ GEM
     snaky_hash (2.0.1)
       hashie
       version_gem (~> 1.1, >= 1.1.1)
-    solid_cable (3.0.3)
+    solid_cable (3.0.4)
       actioncable (>= 7.2)
       activejob (>= 7.2)
       activerecord (>= 7.2)
