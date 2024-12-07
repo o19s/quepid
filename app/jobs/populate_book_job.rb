@@ -17,7 +17,9 @@ class PopulateBookJob < ApplicationJob
 
     is_book_empty = book.query_doc_pairs.empty?
 
-    counter = params[:query_doc_pairs].size
+    total = params[:query_doc_pairs].size
+    counter = total
+    last_percent = 0
     params[:query_doc_pairs].each do |pair|
       counter -= 1
       query_doc_pair = book.query_doc_pairs.find_or_create_by query_text: pair[:query_text],
@@ -43,11 +45,16 @@ class PopulateBookJob < ApplicationJob
 
       query_doc_pair.save!
 
+      # emit a message every percent that we cross, from 0 to 100...
+      percent = (((total - counter).to_f / total) * 100).truncate
+      next unless percent > last_percent
+
+      last_percent = percent
       Turbo::StreamsChannel.broadcast_render_to(
         :notifications,
         target:  'notifications',
         partial: 'books/blah',
-        locals:  { book: book, counter: counter, qdp: query_doc_pair }
+        locals:  { book: book, counter: counter, percent: percent, qdp: query_doc_pair }
       )
     end
     book.populate_file.purge

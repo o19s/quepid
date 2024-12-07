@@ -12,7 +12,8 @@
 </span>
 
 
-<%= form_with(url: run_queries_admin_query_runner_index_path, local: true) do |form| %>
+
+<%= form_with(url: run_queries_admin_query_runner_index_path, method: :post) do |form| %>
   <div class="field">
     <%= form.label :case_id %>
     <%= form.text_field :case_id %>

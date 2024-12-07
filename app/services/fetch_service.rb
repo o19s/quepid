@@ -51,9 +51,10 @@ class FetchService
 
     # Keep the first snapshot, and the most recents, deleting the ones out of the middle.
     # Not the best sampling!
-    snapshot_to_delete = @case.snapshots[1..((@options[:snapshot_limit] * -1) + @case.snapshots.count)]
-    # snapshot_to_delete&.each(&:destroy)
-    snapshot_to_delete.each(&:destroy!)
+    if @case.snapshots.count > @options[:snapshot_limit]
+      snapshots_to_delete = @case.snapshots[1..((@options[:snapshot_limit] * -1) + @case.snapshots.count)]
+      snapshots_to_delete.each(&:destroy!)
+    end
   end
 
   # rubocop:disable Metrics/MethodLength

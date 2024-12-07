@@ -88,7 +88,8 @@ module ApplicationHelper
   end
   # rubocop:enable Naming/BlockForwarding
 
-  def form_with(model: nil, **options, &block)
+  # not sure this as "form_with" was helping, but we'll see..
+  def form_with_disabled(model: nil, **options, &block)
     if options[:html].nil?
       options[:html] = { data: { turbo: false } }
     elsif options[:html][:data].nil?
