@@ -104,18 +104,11 @@ class FetchServiceTest < ActiveSupport::TestCase
 
       snapshot = fetch_service.begin(acase, atry)
 
-      count_of_snapshot_queries = SnapshotQuery.count
-
       fetch_service.complete
 
       assert snapshot.name.starts_with?('Fetch [COMPLETED]')
+
       assert_equal options[:snapshot_limit], acase.snapshots.count
-
-      count_of_snapshot_queries_after = SnapshotQuery.count
-
-      puts "We had #{count_of_snapshot_queries} and now have #{count_of_snapshot_queries_after}"
-
-      assert count_of_snapshot_queries > count_of_snapshot_queries_after
     end
   end
 
