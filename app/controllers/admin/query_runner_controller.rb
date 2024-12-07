@@ -12,7 +12,7 @@ module Admin
       @try = @case.tries.where(try_number: params['try_number']).first
       QueryRunnerJob.perform_later @case, @try
       redirect_to admin_query_runner_index_path,
-                  notice: "Query Runner Job was queued up for case #{@case.case_name} and try #{@try.name}."
+                  notice: "Query Runner Job was queued up for case id #{@case.id} / #{@case.case_name} and try #{@try.name}."
     end
   end
 end

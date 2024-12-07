@@ -12,9 +12,9 @@ class QueryRunnerJob < ApplicationJob
     query_count = acase.queries.count
 
     options = {
-      fake_mode:      true,
+      fake_mode:      false,
       debug_mode:     true,
-      snapshot_limit: 3,
+      snapshot_limit: 10,
     }
 
     fetch_service = FetchService.new options
@@ -42,8 +42,6 @@ class QueryRunnerJob < ApplicationJob
         partial: 'admin/query_runner/notification_case',
         locals:  { acase: acase, query: query, query_count: query_count, counter: counter }
       )
-
-      sleep(0.1)
     end
 
     Turbo::StreamsChannel.broadcast_render_to(
