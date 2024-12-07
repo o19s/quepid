@@ -1,5 +1,13 @@
 # Changelog
 
+## 7.18.1 - 2024-12-06
+
+We've been hard at work on Quepid8, however we have two items that demand a point release:
+
+* Bug fix when looking up potential Querqy rule use and we hadn't finished running the query.  https://github.com/o19s/quepid/commit/cb9e3f4b4fce07c0acfc5301d7c00fcc7b7c8d23 by @epugh.
+
+* Prevent run away querying!  A user of Quepid has a proxy between Quepid and the search engine, and we were overloading it.  https://github.com/o19s/quepid/commit/7cb1f55b7e2cf1f08c06f4d38a0ac3eb679450b4 by @mkr!
+
 ## 7.18.0 - 2024-10-04
 
 Wow!  It's been three months since the last release of Quepid, so it's about time.   
