@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2024_12_06_141551) do
+ActiveRecord::Schema[8.0].define(version: 2024_12_07_222621) do
   create_table "active_storage_attachments", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.string "name", null: false
     t.string "record_type", null: false
@@ -136,6 +136,7 @@ ActiveRecord::Schema[8.0].define(version: 2024_12_06_141551) do
     t.integer "book_id"
     t.boolean "public"
     t.json "options"
+    t.boolean "nightly"
     t.index ["owner_id"], name: "user_id"
   end
 

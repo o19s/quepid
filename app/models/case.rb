@@ -10,6 +10,7 @@
 #  archived        :boolean
 #  case_name       :string(191)
 #  last_try_number :integer
+#  nightly         :boolean
 #  options         :json
 #  public          :boolean
 #  created_at      :datetime         not null
@@ -88,6 +89,8 @@ class Case < ApplicationRecord
   scope :not_archived, -> { where('`cases`.`archived` = false OR `cases`.`archived` IS NULL') }
 
   scope :public_cases, -> { where(public: true) }
+
+  scope :nightly_run, -> { where(nightly: true) }
 
   # load up the queries count for the case, alternative to counter_cache
   scope :with_counts, -> {
@@ -233,6 +236,13 @@ class Case < ApplicationRecord
     end
 
     queries << new_query
+  end
+
+  def self.enqueue_nightly_query_runner_jobs
+    Case.all.nightly_run.each do |kase|
+      try = kase.tries.last
+      QueryRunnerJob.perform_later kase, try
+    end
   end
 end
 # rubocop:enable Metrics/ClassLength
