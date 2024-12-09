@@ -1,9 +1,7 @@
 development:
   nightly_jobs_command:
-    command: "Case.enqueue_nightly_query_runner_jobs"    
-    priority: 2
-    #schedule: at 5am every day
-    schedule: every minute
+    class: EnqueueNightlyQueryRunnerJob
+    schedule: every hour
 
   # periodic_cleanup:
   #   class: QueryRunnerJob
@@ -14,15 +12,8 @@ development:
 
 production:
   nightly_jobs_command:
-    command: "Case.enqueue_nightly_query_runner_jobs"
-    priority: 2
-    #schedule: at 5am every day
-    #schedule: every day at 8pm
-    schedule: every hour
-    
-  nightly_jobs_command2:
     class: EnqueueNightlyQueryRunnerJob
-    schedule: every minute
+    schedule: every hour
  
 
   # periodic_cleanup:
