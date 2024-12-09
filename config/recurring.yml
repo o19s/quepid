@@ -19,6 +19,12 @@ production:
     #schedule: at 5am every day
     #schedule: every day at 8pm
     schedule: every hour
+    
+  nightly_jobs_command2:
+    class: EnqueueNightlyQueryRunnerJobs
+    queue: background
+    schedule: every minute
+ 
 
   # periodic_cleanup:
   #   class: QueryRunnerJob
