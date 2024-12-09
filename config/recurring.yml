@@ -22,7 +22,6 @@ production:
     
   nightly_jobs_command2:
     class: EnqueueNightlyQueryRunnerJobs
-    queue: background
     schedule: every minute
  
 
