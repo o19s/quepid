@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class EnqueueNightlyQueryRunnerJobs < ApplicationJob
+class EnqueueNightlyQueryRunnerJob < ApplicationJob
   queue_as :default
 
   def perform

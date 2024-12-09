@@ -21,7 +21,7 @@ production:
     schedule: every hour
     
   nightly_jobs_command2:
-    class: EnqueueNightlyQueryRunnerJobs
+    class: EnqueueNightlyQueryRunnerJob
     schedule: every minute
  
 
