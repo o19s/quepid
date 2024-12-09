@@ -1,6 +1,9 @@
+# frozen_string_literal: true
+
 class EnqueueNightlyQueryRunnerJobs < ApplicationJob
-  
-  def perform book
+  queue_as :default
+
+  def perform
     Case.all.nightly_run.each do |kase|
       try = kase.tries.last
       QueryRunnerJob.perform_later kase, try
