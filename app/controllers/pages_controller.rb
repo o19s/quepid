@@ -3,11 +3,11 @@
 class PagesController < ApplicationController
   skip_before_action :require_login
   skip_before_action :check_for_announcement
-  # before_action :check_page, only: [:show]
+  before_action :check_page, only: [ :show ]
 
-  # def show
-  # render template: "pages/#{params[:page]}"
-  # end
+  def show
+    render template: "pages/#{params[:page]}"
+  end
 
   private
 
