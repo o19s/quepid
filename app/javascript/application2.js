@@ -19,65 +19,26 @@ import "vega-embed"
 
 window.dispatchEvent(new Event("vega:load"))
 
-// consent banner handling begin
-document.addEventListener("DOMContentLoaded", function() {
-  // Show the toast when the page loads if it's been loaded
+// cookies consent toast handling begin
+// Only rendered on the home page.
+document.addEventListener("turbo:load", function() {
+  // Show the toast when the page loads if it's been rendered.
+  // The logic for deciding if we need to show the banner is in the server side partial _consent_toast.html.erb.
   let toastEl = document.getElementById('consent_banner');
   if (toastEl){
     let toast = new bootstrap.Toast(toastEl);
     toast.show();
   }
+  
+  let cookiesEuOKButton = document.querySelector('.js-cookies-eu-ok');  
+  if (cookiesEuOKButton) {
+    cookiesEuOKButton.addEventListener('click', setCookie, false);
+  }
+  
 });
-// consent banner handling end
 
-// cookie handling begin
-// Inspired by the https://github.com/infinum/cookies_eu project
-let cookiesEu = {
-  init: function() {
-    let cookiesEuOKButton = document.querySelector('.js-cookies-eu-ok');
-
-    if (cookiesEuOKButton) {
-      this.addListener(cookiesEuOKButton);
-    }
-  },
-
-  addListener: function(target) {
-    // Support for IE < 9
-    if (target.attachEvent) {
-      target.attachEvent('onclick', this.setCookie);
-    } else {
-      target.addEventListener('click', this.setCookie, false);
-    }
-  },
-
-  setCookie: function() {
-    const isSecure = location.protocol === 'https:';
-    Cookies.set('cookie_eu_consented', true, { path: '/', expires: 365, secure: isSecure });
-  }
-};
-
-(function() {
- 
-  let isCalled = false;
-
-  function isReady() {
-    if (isCalled) {
-      return
-    }
-    isCalled = true;
-
-    cookiesEu.init();
-  }
-
-  if (document.addEventListener) {
-    return document.addEventListener('DOMContentLoaded', isReady, false);
-  }
-
-  // Old browsers IE < 9
-  if (window.addEventListener) {
-    window.addEventListener(eventName('load'), isReady, false);
-  } else if (window.attachEvent) {
-    window.attachEvent(eventName('onload'), isReady);
-  }
-})();
-// cookie handling end
+function setCookie(target) {
+  const isSecure = location.protocol === 'https:';
+  Cookies.set('cookie_eu_consented', true, { path: '/', expires: 365, secure: isSecure });
+}
+// cookies consent toast handling end
