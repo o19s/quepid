@@ -16,7 +16,8 @@
     <% unless kase.last_score.blank? %>
       <%= kase.last_score.user.name %>
     <% end %>
+    <%= kase.tries.first&.search_endpoint&.endpoint_url%>
   </td>
- 
-  <td><%= link_to 'View', case_core_path(kase, kase.last_try_number), data: { turbo_prefetch: false }, class: 'btn btn-sm btn-primary', role: 'button' %></td>
+  <td><%= link_to_core_case 'View', kase, kase.last_try_number, data: { turbo_prefetch: false }, class: 'btn btn-sm btn-primary', role: 'button' %>
+  </td>
 </tr>
