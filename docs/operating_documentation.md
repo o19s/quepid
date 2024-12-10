@@ -169,6 +169,8 @@ PRIVACY_URL # privacy policy
 COOKIES_URL # cookies policy
 ```
 
+Quepid ships with a default cookie policy page available via `COOKIES_URL=/cookies`.
+
 To comply with GDPR, and be a good citizen, the hosted version of Quepid asks if they are willing to receive Quepid related updates via email.  This feature isn't useful to private installs, so this controls the display.
 
 ```
