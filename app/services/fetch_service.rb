@@ -71,7 +71,7 @@ class FetchService
         faraday.headers['Authorization'] = "Basic #{Base64.strict_encode64("#{username}:#{password}")}"
       end
 
-      unless custom_headers.nil?
+      unless custom_headers.blank?        
         puts JSON.parse(custom_headers).to_h
         JSON.parse(custom_headers).to_h.each do |key, value|
           faraday.headers[key] = value
