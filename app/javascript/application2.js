@@ -24,20 +24,20 @@ window.dispatchEvent(new Event("vega:load"))
 document.addEventListener("turbo:load", function() {
   // Show the toast when the page loads if it's been rendered.
   // The logic for deciding if we need to show the banner is in the server side partial _consent_toast.html.erb.
-  let toastEl = document.getElementById('consent_banner');
+  const toastEl = document.getElementById('consent_banner');
   if (toastEl){
-    let toast = new bootstrap.Toast(toastEl);
+    const toast = new bootstrap.Toast(toastEl);
     toast.show();
   }
   
-  let cookiesEuOKButton = document.querySelector('.js-cookies-eu-ok');  
+  const cookiesEuOKButton = document.querySelector('.js-cookies-eu-ok');  
   if (cookiesEuOKButton) {
     cookiesEuOKButton.addEventListener('click', setCookie, false);
   }
   
 });
 
-function setCookie(target) {
+function setCookie() {
   const isSecure = location.protocol === 'https:';
   Cookies.set('cookie_eu_consented', true, { path: '/', expires: 365, secure: isSecure });
 }
