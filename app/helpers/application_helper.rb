@@ -98,4 +98,29 @@ module ApplicationHelper
     # Call the original `form_with` method with the modified options
     super
   end
+
+  # Match the link to the core case url with the endpoint_url
+  # if we have one.  Avoids a swap in the core application.
+  def link_to_core_case name, kase, _try, options = {}
+    endpoint_url = kase.tries.first&.search_endpoint&.endpoint_url
+    protocol = nil
+    if endpoint_url
+      protocol = get_protocol_from_url(endpoint_url)
+      port = 443 if 'https' == protocol
+    end
+    path = case_core_url(kase, kase.last_try_number, protocol: protocol, port: port)
+
+    # Call the original link_to method with the modified options
+    link_to(name, path, options)
+  end
+
+  def get_protocol_from_url url
+    parsed_url = URI.parse(url)
+    protocol = parsed_url.scheme # This gets the protocol (http, https, etc.)
+    protocol
+  rescue URI::InvalidURIError => e
+    # Handle the error (e.g., log it, return nil, or raise a custom error)
+    Rails.logger.error("Invalid URL for search endpoint: #{url} - Error: #{e.message}")
+    nil
+  end
 end
