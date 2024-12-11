@@ -3,9 +3,17 @@
 module ApplicationHelper
   def book_title book
     if book.name.downcase.starts_with?('book')
-      book.name
+      book.name.capitalize
     else
       "Book #{book.name}"
+    end
+  end
+
+  def case_title kase
+    if kase.case_name.downcase.starts_with?('case')
+      kase.case_name.capitalize
+    else
+      "Case #{kase.case_name}"
     end
   end
 
