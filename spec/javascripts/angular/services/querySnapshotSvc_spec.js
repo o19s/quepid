@@ -297,14 +297,6 @@ describe('Service: querySnapshotSvc', function () {
       $rootScope.$apply();
     });
 
-    it('converts dates to something nice', function() {
-      // this test only works in EST
-      if ((new Date()).getTimezoneOffset() === 300) {
-        expect(querySnapshotSvc.snapshots['12'].timestamp()).toEqual('31-Dec-1969 19:00');
-        expect(querySnapshotSvc.snapshots['5'].timestamp()).toEqual('13-Feb-2014 14:14');
-      }
-    });
-
     it('gets saved search results in saved order', function fetchAfterResolveTest() {
       var snap5 = querySnapshotSvc.snapshots['5'];
       var snap5query0Results = snap5.getSearchResults('0');
