@@ -40,15 +40,15 @@
     unbzip2-stream "^1.4.3"
     yargs "^17.7.2"
 
-"@rails/actioncable@8.0.0":
-  version "8.0.0"
-  resolved "https://registry.yarnpkg.com/@rails/actioncable/-/actioncable-8.0.0.tgz#b12d87d4c2bb152c4445e2c168df93b585068e7c"
-  integrity sha512-9IXyJeaBggOzlD3pF4/yWELdyUWZm/KTyKBRqxNf9laLBXPqxJt3t6fO+X4s0WajMR8cIhzkxvq1gxsXVbn3LA==
+"@rails/actioncable@8.0.1":
+  version "8.0.1"
+  resolved "https://registry.yarnpkg.com/@rails/actioncable/-/actioncable-8.0.1.tgz#2e291560e06af4dc43ae60ce0ac458726c53e588"
+  integrity sha512-gxRd3OnXm6IB4YxOJE6a6A+5ArQMzOKorceMTaIjiemCfWbJCMNZjXDKfIvgNff52x4vSLd1JQCcXtV4pVTJ1w==
 
-"@rails/activestorage@8.0.0":
-  version "8.0.0"
-  resolved "https://registry.yarnpkg.com/@rails/activestorage/-/activestorage-8.0.0.tgz#be5dd10acc141b95ffa2b3026e61790c36f1679c"
-  integrity sha512-qoA7U1gMcWXhDnImwDIyRQDXkQKzThT2lu2Xpim8CnTOCEeAgkQ5Co2kzodpAI2grF1JSDvwXSPYNWwVAswndA==
+"@rails/activestorage@8.0.1":
+  version "8.0.1"
+  resolved "https://registry.yarnpkg.com/@rails/activestorage/-/activestorage-8.0.1.tgz#ff012a997617e1bf953cff7d1c4d5cc8b4ceda77"
+  integrity sha512-LBLMOVL+nGTyiSyrLhikSCVr7lPLOmkGKELR8NxaoneIV4+QICvhe+AYVuklhJcMIN21WK7M1SzwItv9mSXX4A==
   dependencies:
     spark-md5 "^3.0.1"
 
