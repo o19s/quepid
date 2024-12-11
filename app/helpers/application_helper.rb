@@ -101,14 +101,18 @@ module ApplicationHelper
 
   # Match the link to the core case url with the endpoint_url
   # if we have one.  Avoids a swap in the core application.
-  def link_to_core_case name, kase, _try, options = {}
+  def link_to_core_case name, kase, try_number, options = {}
+    # Ensure options[:data] is set to { turbo_prefetch: false }
+    options[:data] ||= {}
+    options[:data][:turbo_prefetch] = false
+
     endpoint_url = kase.tries.first&.search_endpoint&.endpoint_url
     protocol = nil
     if endpoint_url
       protocol = get_protocol_from_url(endpoint_url)
       port = 443 if 'https' == protocol
     end
-    path = case_core_url(kase, kase.last_try_number, protocol: protocol, port: port)
+    path = case_core_url(kase, try_number, protocol: protocol, port: port)
 
     # Call the original link_to method with the modified options
     link_to(name, path, options)

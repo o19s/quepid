@@ -19,7 +19,7 @@
             </li>
             <li><hr class="dropdown-divider"></li>
             <% set_recent_cases.each do |kase| %>
-              <li><%= link_to_core_case  kase.case_name, kase, kase.last_try_number, data: { turbo_prefetch: false } %></li>
+              <li><%= link_to_core_case  kase.case_name, kase, kase.last_try_number %></li>
               <li><hr class="dropdown-divider"></li>
             <% end %>
           

@@ -18,6 +18,6 @@
     <% end %>
     <%= kase.tries.first&.search_endpoint&.endpoint_url%>
   </td>
-  <td><%= link_to_core_case 'View', kase, kase.last_try_number, data: { turbo_prefetch: false }, class: 'btn btn-sm btn-primary', role: 'button' %>
+  <td><%= link_to_core_case 'View', kase, kase.last_try_number, class: 'btn btn-sm btn-primary', role: 'button' %>
   </td>
 </tr>
