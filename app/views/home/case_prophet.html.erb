@@ -4,7 +4,7 @@
     <% if @case.scores.empty? %>
       <small><code>no scores yet</code></small>
     <% else %>      
-      <%= @case.first_score.updated_at.to_date.to_fs(:short) %> 
+      <%= @case.first_score&.updated_at.to_date.to_fs(:short) || "No score available" %> 
       <% if @case.scores.count > 1 and @case.first_score.updated_at.to_date.to_fs(:short) != @case.last_score.updated_at.to_date.to_fs(:short) %>
         - <%= @case.last_score.updated_at.to_date.to_fs(:short)%>
       <% end %>

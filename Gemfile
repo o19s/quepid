@@ -42,7 +42,7 @@ gem 'postmark-rails'
 gem 'prophet-rb', '~> 0.5.0'
 gem 'puma'
 gem 'pundit'
-gem 'rails', '8.0.0'
+gem 'rails', '8.0.0.1'
 gem 'rails-html-sanitizer'
 gem 'rack-cors', '~> 2.0'
 gem 'responders'
@@ -83,7 +83,7 @@ end
 
 group :test do
   gem 'minitest-reporters', '>= 0.5.0'
-  gem 'mocha', '~> 2.6'
+  gem 'mocha', '~> 2.7'
   gem 'simplecov', require: false
   gem 'webmock'
   gem 'rails-controller-testing' # bring back compatibility with rails 4 assigns in controller tests.
