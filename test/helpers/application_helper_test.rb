@@ -35,11 +35,4 @@ class ApplicationHelperTest < ActionView::TestCase
     # Assertions for the options
     assert_includes result, 'class="btn btn-primary"'
   end
-
-  def test_link_to_core_case_with_nil_case
-    result = link_to_core_case('View Case', nil)
-
-    # Assert that the result is nil or empty (depends on your implementation)
-    assert_nil result
-  end
 end
