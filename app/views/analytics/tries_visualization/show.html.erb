@@ -1,4 +1,4 @@
-<%= link_to 'Return to Case', case_core_path(@case) %>
+<%= link_to_core_case 'Return to Case', @case, @case.last_try_number %>
 
 <div id="tries_tree_view"></div>
 <script type="text/javascript">
