@@ -9,3 +9,4 @@ pin '@hotwired/turbo-rails', to: 'turbo.min.js'
 pin 'vega', to: 'vega.js'
 pin 'vega-lite', to: 'vega-lite.js'
 pin 'vega-embed', to: 'vega-embed.js'
+pin 'js-cookie' # @3.0.5

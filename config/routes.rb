@@ -650,7 +650,6 @@ Rails.application.routes.draw do
   get '/scorers'                      => 'core#index'
 
   # Static pages
-  # get '*page' => 'pages#show'
-  #
+  get '*page' => 'pages#show'
 end
 # rubocop:enable Metrics/BlockLength
