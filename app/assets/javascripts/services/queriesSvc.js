@@ -785,7 +785,7 @@ angular.module('QuepidApp')
         return querySearchableDeferred.promise;
       };
 
-      this.pAll = async function(queue, concurrency) {
+      this.pAll = async function (queue, concurrency) {
         let index = 0;
         const results = [];
 
@@ -804,7 +804,7 @@ angular.module('QuepidApp')
         }
         await Promise.all(workers);
         return Promise.all(results);
-      }
+      };
 
       this.searchAll = function() {
         let promises = [];
