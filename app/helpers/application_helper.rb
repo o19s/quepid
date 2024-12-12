@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+# rubocop:disable Metrics/ModuleLength
 module ApplicationHelper
   def book_title book
     if book.name.downcase.starts_with?('book')
@@ -131,8 +132,9 @@ module ApplicationHelper
     protocol = parsed_url.scheme # This gets the protocol (http, https, etc.)
     protocol
   rescue URI::InvalidURIError => e
-    # Handle the error (e.g., log it, return nil, or raise a custom error)
+    # Handle the error (e.g., log it, return nil)
     Rails.logger.error("Invalid URL for search endpoint: #{url} - Error: #{e.message}")
     nil
   end
 end
+# rubocop:enable Metrics/ModuleLength
