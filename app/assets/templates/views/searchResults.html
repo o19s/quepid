@@ -37,8 +37,8 @@
 
     <span ng-show="query.isNotAllRated()" class="pull-right" style="margin-right: 20px;" title="Hop to it!  There are unrated results!">      
       <div class="icon-container">
-        🐸
-        <div class="notification-bubble">3</div>        
+        <i class="frog-icon">🐸</i>
+        <div class="notification-bubble">{{ query.currentScore.countMissingRatings }}</div>
       </div>
     </span>
 
