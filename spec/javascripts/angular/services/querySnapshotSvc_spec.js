@@ -106,11 +106,11 @@ describe('Service: querySnapshotSvc', function () {
     expect(querySnapshotSvc.snapshots['5'].id).toBe('5');
     expect(querySnapshotSvc.snapshots['5'].docIdsPerQuery['0']).toEqual(['1', '4', '7']);
     expect(querySnapshotSvc.snapshots['5'].docIdsPerQuery['1']).toEqual(['cat', 'banana', 'doc']);
-    expect(querySnapshotSvc.snapshots['5'].name()).toEqual('Snapshot: myname');
+    expect(querySnapshotSvc.snapshots['5'].name()).toEqual('(1/17/70) myname');
     expect(querySnapshotSvc.snapshots['12'].id).toBe('12');
     expect(querySnapshotSvc.snapshots['12'].docIdsPerQuery['9']).toEqual(['lol', 'wut']);
     expect(querySnapshotSvc.snapshots['12'].docIdsPerQuery['10']).toEqual(['light', 'lamp', 'lark']);
-    expect(querySnapshotSvc.snapshots['12'].name()).toEqual('Snapshot: other');
+    expect(querySnapshotSvc.snapshots['12'].name()).toEqual('(1/1/70) other');
     $httpBackend.verifyNoOutstandingExpectation();
 
   });
@@ -209,7 +209,7 @@ describe('Service: querySnapshotSvc', function () {
       expect(querySnapshotSvc.snapshots['5'].id).toBe('5');
       expect(querySnapshotSvc.snapshots['5'].docIdsPerQuery['0']).toEqual(['1', '4', '7']);
       expect(querySnapshotSvc.snapshots['5'].docIdsPerQuery['1']).toEqual(['cat', 'banana', 'doc']);
-      expect(querySnapshotSvc.snapshots['5'].name()).toEqual('Snapshot: myname');
+      expect(querySnapshotSvc.snapshots['5'].name()).toEqual('(1/17/70) myname');
       $httpBackend.verifyNoOutstandingExpectation();
     });
 
