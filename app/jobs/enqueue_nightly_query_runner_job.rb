@@ -3,7 +3,7 @@
 class EnqueueNightlyQueryRunnerJob < ApplicationJob
   queue_as :default
 
-  def perform(*args)
+  def perform(*_args)
     Case.all.nightly_run.each do |kase|
       try = kase.tries.first # new to old ;-)
       QueryRunnerJob.perform_later kase, try
