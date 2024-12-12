@@ -113,9 +113,134 @@ class FetchServiceTest < ActiveSupport::TestCase
   end
 
   describe 'parsing a response' do
-    it 'lets you create a resopnse' do
+    it 'lets you create a response' do
       response = Faraday::Response.new(status: 200)
       assert_equal 200, response.status
+    end
+  end
+
+  describe 'Extracting snapshot_docs' do
+    let(:asnapshot) { snapshots(:a_snapshot) }
+    let(:snapshot_query) { snapshot_queries(:first_snapshot_query) }
+
+    it 'lets you extract from raw solr dump' do
+      mock_solr_response_body = <<~HEREDOC
+        {
+          "responseHeader":{
+            "zkConnected":true,
+            "status":0,
+            "QTime":0,
+            "params":{
+              "q":"milk",
+              "tie":"1.0",
+              "pf":"title"}},
+          "response":{"numFound":1,"start":0,"numFoundExact":true,"docs":[
+              {
+                "id":"10139",
+                "title":["Milk"],#{'             '}
+                "title_idioms":["Milk"],#{'              '}
+                "text_all":["Milk",
+                  "The true story of Harvey Milk, the first openly gay man ever elected to public office. In San Francisco in the late 1970s, Harvey Milk becomes an activist for gay rights and inspires others to join him in his fight for equal rights that should be available to all Americans.",
+                  "Never blend in.",
+                  "Gus Van Sant",
+                  "Sean Penn",#{'                '}
+                  "Drama"],
+                "overview":["The true story of Harvey Milk, the first openly gay man ever elected to public office. In San Francisco in the late 1970s, Harvey Milk becomes an activist for gay rights and inspires others to join him in his fight for equal rights that should be available to all Americans."],
+                "release_date":"2008-11-05T00:00:00Z",
+                "vote_average":7.3,
+                "vote_count":1345,
+                "_version_":1798800449303740416}]
+          },
+          "debug":{
+              "rawquerystring":"milk",
+              "querystring":"milk",
+              "parsedquery":"+DisjunctionMaxQuery((text_all:milk)~1.0) () FunctionQuery(float(vote_average))",
+              "parsedquery_toString":"+(text_all:milk)~1.0 () float(vote_average)",
+              "explain":{
+                "10139":{
+                  "match":true,
+                  "value":13.647848
+                }
+              }
+          }
+        }
+      HEREDOC
+
+      response_body = mock_solr_response_body
+      fetch_service = FetchService.new options
+      docs = fetch_service.extract_docs_from_response_body_for_solr response_body
+      assert_equal 1, docs.count
+
+      doc = docs.first
+      assert_equal '10139', doc[:id]
+      assert_not_nil doc[:explain]
+
+      expected_explain = { match: true, value: 13.647848 }
+      assert_equal expected_explain, doc[:explain].symbolize_keys
+
+      assert_equal 8, doc[:fields].keys.count
+      assert_equal 1345, doc[:fields]['vote_count']
+      assert_equal 6, doc[:fields]['text_all'].count
+    end
+
+    it 'handles no debug section' do
+      mock_solr_response_body = <<~HEREDOC
+        {
+          "responseHeader":{},
+          "response":{"docs":[
+              {
+                "id":"10139",
+                "title":["Milk"],#{'             '}
+                "title_idioms":["Milk"],#{'              '}
+                "text_all":["Milk",
+                  "The true story of Harvey Milk, the first openly gay man ever elected to public office. In San Francisco in the late 1970s, Harvey Milk becomes an activist for gay rights and inspires others to join him in his fight for equal rights that should be available to all Americans.",
+                  "Never blend in.",
+                  "Gus Van Sant",
+                  "Sean Penn",#{'                '}
+                  "Drama"],
+                "overview":["The true story of Harvey Milk, the first openly gay man ever elected to public office. In San Francisco in the late 1970s, Harvey Milk becomes an activist for gay rights and inspires others to join him in his fight for equal rights that should be available to all Americans."],
+                "release_date":"2008-11-05T00:00:00Z",
+                "vote_average":7.3,
+                "vote_count":1345,
+                "_version_":1798800449303740416}]
+          }#{'          '}
+        }
+      HEREDOC
+
+      response_body = mock_solr_response_body
+      fetch_service = FetchService.new options
+      docs = fetch_service.extract_docs_from_response_body_for_solr response_body
+      assert_equal 1, docs.count
+
+      doc = docs.first
+      assert_equal '10139', doc[:id]
+      assert_nil doc[:explain]
+    end
+
+    it 'converts docs to SnapshotDocs for SnapshotQuery' do
+      fetch_service = FetchService.new options
+
+      snapshot_query.snapshot_docs.destroy_all
+
+      docs = []
+      docs << {
+        id:      '123',
+        explain: { match: true, value: 13.647848 },
+        fields:  { version: 1234, title: [ 'milk' ] },
+      }
+      docs << {
+        id:      'abc',
+        explain: nil,
+        fields:  { version: 5678, title: [ 'eggs' ] },
+      }
+
+      results = fetch_service.setup_docs_for_query snapshot_query, docs
+      assert_equal 2, results.count
+
+      SnapshotDoc.import results
+
+      snapshot_query.reload
+      assert_equal 2, snapshot_query.snapshot_docs.count
     end
   end
 end

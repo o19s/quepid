@@ -32,6 +32,54 @@ class FetchService
     @snapshot
   end
 
+  # should be in some other service!
+  def extract_docs_from_response_body_for_solr response_body
+    docs = []
+    response = JSON.parse(response_body)
+
+    explain_json = response.dig('debug', 'explain') || {}
+
+    response['response']['docs'].each_with_index do |doc_json, index|
+      doc = {}
+      doc[:id] = doc_json['id']
+      doc[:explain] = explain_json[doc_json['id']]
+      doc[:position] = index + 1
+      doc[:rated_only] = nil
+      doc[:fields] = doc_json.except('id')
+
+      docs << doc
+    end
+
+    docs
+  end
+
+  # rubocop:disable Metrics/MethodLength
+  def setup_docs_for_query query, docs
+    results = []
+
+    return results if docs.blank?
+    return results if query.blank?
+
+    docs = normalize_docs_array docs
+    docs = docs.sort { |d1, d2| d1[:position].to_i <=> d2[:position].to_i }
+
+    docs.each_with_index do |doc, index|
+      doc_params = {
+        doc_id:     doc[:id],
+        explain:    doc[:explain],
+        position:   doc[:position] || (index + 1),
+        rated_only: doc[:rated_only] || false,
+        fields:     doc[:fields].blank? ? nil : doc[:fields].to_json,
+      }
+      puts "number #{query.snapshot_docs.count}"
+      results << query.snapshot_docs.build(doc_params)
+      puts "number #{query.snapshot_docs.count}"
+    end
+
+    results
+  end
+  # rubocop:enable Metrics/MethodLength
+
   def store_query_results query, docs, response_status, response_body
     snapshot_query = @snapshot.snapshot_queries.create(
       query:             query,
@@ -41,8 +89,8 @@ class FetchService
     )
 
     snapshot_manager = SnapshotManager.new(@snapshot)
-    snapshot_manager.setup_docs_for_query(snapshot_query, docs)
-    snapshot_query
+    query_docs = snapshot_manager.setup_docs_for_query(snapshot_query, docs)
+    SnapshotDoc.import query_docs
   end
 
   def complete
@@ -72,7 +120,6 @@ class FetchService
       end
 
       if custom_headers.present?
-        puts JSON.parse(custom_headers).to_h
         JSON.parse(custom_headers).to_h.each do |key, value|
           faraday.headers[key] = value
         end
@@ -118,7 +165,8 @@ class FetchService
     case http_verb
     when :get
       response = @connection.get do |req|
-        req.url search_endpoint.endpoint_url
+        # TODO: This is now Solr specific and it shouldn't be.
+        req.url "#{search_endpoint.endpoint_url}?debug=true&debug.explain.structured=true&wt=json"
         args.each do |key, value|
           value.each do |val|
             val.gsub!('#$query##', query.query_text)
@@ -217,5 +265,21 @@ class FetchService
   end
   # rubocop:enable Metrics/MethodLength
   # rubocop:enable Layout/LineLength
+
+  private
+
+  # Not sure we need this!
+  def normalize_docs_array docs
+    return [] if docs.blank?
+
+    result = docs.map do |each|
+      each = each.to_unsafe_h if each.is_a?(ActionController::Parameters)
+      each = each.to_hash     if each.is_a?(ActiveSupport::HashWithIndifferentAccess)
+
+      each.symbolize_keys! if each.present?
+    end.compact
+
+    result
+  end
 end
 # rubocop:enable Metrics/ClassLength
