@@ -17,7 +17,14 @@ angular.module('QuepidApp')
       $log.debug('Init Wizard settings ctrl');
       
       $scope.cancel = function () {
-        $uibModalInstance.dismiss('cancel');
+        let confirm = $window.confirm('Are you sure you want to abandon this case?');
+        if (confirm) {
+          caseSvc.deleteCase(caseSvc.getSelectedCase()).then(function() {
+            $uibModalInstance.dismiss('cancel');
+            $window.location = '/';
+          });
+          
+        }
       };
 
       $scope.invalidBasicAuthCredentials = false;
