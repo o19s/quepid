@@ -139,13 +139,16 @@ angular.module('QuepidApp')
       
       $scope.querqyRuleTriggered = function () {
         let triggered = false;
-        let parsedQueryDetails = $scope.query.searcher.parsedQueryDetails;
         
-        if (parsedQueryDetails.querqy?.rewrite !== undefined) { // jshint ignore:line
-          triggered = true;
-        }
-        else if ('querqy.infoLog' in parsedQueryDetails){
-          triggered = true;
+        if ($scope.query.searcher && $scope.query.searcher.parsedQueryDetails) {
+          let parsedQueryDetails = $scope.query.searcher.parsedQueryDetails;
+          
+          if (parsedQueryDetails.querqy?.rewrite !== undefined) { // jshint ignore:line
+            triggered = true;
+          }
+          else if ('querqy.infoLog' in parsedQueryDetails){
+            triggered = true;
+          }
         }
           
         return triggered;

@@ -38,6 +38,8 @@ class SearchEndpoint < ApplicationRecord
 
   scope :not_archived, -> { where('`search_endpoints`.`archived` = false') }
 
+  validate :basic_auth_credential_has_valid_characters
+
   after_initialize do |se|
     se.archived = false if se.archived.nil?
   end
@@ -68,5 +70,15 @@ class SearchEndpoint < ApplicationRecord
 
   def middle_truncate str, total: 30, lead: 15, trail: 15
     str.truncate(total, omission: "#{str.first(lead)}...#{str.last(trail)}")
+  end
+
+  def basic_auth_credential_has_valid_characters
+    return if basic_auth_credential.blank?
+
+    invalid_chars = basic_auth_credential.scan(%r{[\s<>"#%{}|\\^~\[\]`&+?=/;@]})
+    if invalid_chars.any?
+      errors.add(:basic_auth_credential,
+                 "contains invalid characters: #{invalid_chars.uniq.join(', ')}")
+    end
   end
 end

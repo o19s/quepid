@@ -13,7 +13,7 @@ namespace :test do
     Rake::Task['test:jshint'].invoke
   end
 
-  desc 'Run jshint on js files using configuration under config/jshint.yml'
+  desc 'Run jshint on js files using configuration .jshintrc'
   task jshint: :environment do
     puts '-' * 100
     puts 'Starting JSHint tests'.yellow

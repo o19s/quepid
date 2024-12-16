@@ -16,11 +16,9 @@ module Jshint
     #
     # @param config_path [String] The absolute path to a configuration YAML file
     # @return [void]
-    def initialize config_path = nil
-      @config = Configuration.new(config_path)
+    def initialize _config_path = nil
+      @config = Configuration.new
       @errors = {}
-
-      generate_jshintrc_file
     end
 
     # Runs JSHint over each file in our search path
@@ -60,10 +58,6 @@ module Jshint
       @files ||= config.files
     end
 
-    def jshintrc_options
-      @jshintrc_options ||= config.jshintrc_options
-    end
-
     def jshint_path
       Rails.root.join('node_modules/jshint/bin/jshint')
     end
@@ -85,12 +79,6 @@ module Jshint
       end
 
       js_asset_files
-    end
-
-    def generate_jshintrc_file
-      output_file = File.open(Rails.root.join('.jshintrc'), 'w+')
-      output_file.write(jshintrc_options)
-      output_file.close
     end
   end
 end

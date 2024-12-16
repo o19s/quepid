@@ -18,7 +18,6 @@ gem 'blazer', '~> 3.1'
 gem 'bootsnap', require: false
 gem 'cal-heatmap-rails', '~> 3.6' # provides assets for cal heatmap, that requires old d3
 gem 'colorize', require: false
-gem 'cookies_eu'
 gem 'd3-rails', '~> 3.5.5' # For cal heatmap
 gem 'devise', '>= 4.6.2'
 gem 'devise_invitable', '~> 2.0'
@@ -44,7 +43,7 @@ gem 'postmark-rails'
 gem 'prophet-rb', '~> 0.5.0'
 gem 'puma'
 gem 'pundit'
-gem 'rails', '8.0.0'
+gem 'rails', '8.0.1'
 gem 'rails-html-sanitizer'
 gem 'rack-cors', '~> 2.0'
 gem 'responders'
@@ -85,7 +84,7 @@ end
 
 group :test do
   gem 'minitest-reporters', '>= 0.5.0'
-  gem 'mocha', '~> 2.6'
+  gem 'mocha', '~> 2.7'
   gem 'simplecov', require: false
   gem 'webmock'
   gem 'rails-controller-testing' # bring back compatibility with rails 4 assigns in controller tests.
