@@ -5836,7 +5836,7 @@ button.close {
   -webkit-appearance: none;
   padding: 0;
   cursor: pointer;
-  background: transparent;
+  /* background: transparent; Removed when we added btn-core-close style */
   border: 0;
 }
 .modal-open {

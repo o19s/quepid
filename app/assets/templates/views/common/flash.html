@@ -1,8 +1,9 @@
 <div id="flash-messages">
   <div flash-alert active-class="in alert" class="flash fade">
-    <button type="button" class="close pull-left" ng-click="hide()">&times;</button>
+    <button type="button" class="btn-core-close pull-left" ng-click="hide()"></button>
     <span class="alert-message" ng-bind-html="flash.message"></span>
   </div>
+  
 
   <ng-include src="'views/cases/search_flash.html'"></ng-include>
 </div> <!-- end #flash-messages -->
