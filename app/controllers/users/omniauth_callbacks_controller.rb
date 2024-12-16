@@ -76,7 +76,11 @@ module Users
       # user.access_token = auth['credentials']['token']
       # user.refresh_token = auth['credentials']['refresh_token'] unless auth['credentials']['refresh_token'].nil?
       # user.expires_at = auth['credentials']['expires_at'] unless auth['credentials']['refresh_token'].nil?
-      user.save! if user.errors.empty?
+
+      if user.errors.empty?
+        user.save!
+        ahoy.authenticate(user)
+      end
       user
     end
     # rubocop:enable Metrics/AbcSize

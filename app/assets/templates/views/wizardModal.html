@@ -1,5 +1,5 @@
 <div class="modal-body" id="wizard">
-  <button type="button" class="close" ng-click="cancel()" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+  <button type="button" class="close btn-core-close" ng-click="cancel()" aria-label="Close"></button>
   <wizard on-finish="pendingWizardSettings.submit()">
     <wz-step title="Welcome" id="step-one">
       <h1>Welcome To Quepid!</h1>
@@ -88,6 +88,11 @@
             <div ng-show="invalidProxyApiMethod" class="alert alert-danger">
               <span>
                 You must change from JSONP to another API method when proxying.
+              </span>
+            </div>
+            <div ng-show="invalidBasicAuthCredentials" class="alert alert-danger">
+              <span>
+                Quepid does not support some of the special characters used in the basic auth credentials.
               </span>
             </div>
             <div ng-if="urlInvalid && !showTLSChangeWarning" class="alert alert-danger">

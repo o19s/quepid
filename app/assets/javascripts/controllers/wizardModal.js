@@ -17,9 +17,17 @@ angular.module('QuepidApp')
       $log.debug('Init Wizard settings ctrl');
       
       $scope.cancel = function () {
-        $uibModalInstance.dismiss('cancel');
+        let confirm = $window.confirm('Are you sure you want to abandon this case?');
+        if (confirm) {
+          caseSvc.deleteCase(caseSvc.getSelectedCase()).then(function() {
+            $uibModalInstance.dismiss('cancel');
+            $window.location = '/';
+          });
+          
+        }
       };
 
+      $scope.invalidBasicAuthCredentials = false;
       $scope.shouldCreateNewSearchEndpointDefaultToOpen = false;   
       $scope.shouldExistingSearchEndpointDefaultToOpen = false;
       $scope.searchEndpoints = [];
@@ -238,6 +246,8 @@ angular.module('QuepidApp')
       $scope.updateSettingsDefaults();
       $scope.validateHeaders = validateHeaders;
       $scope.validateProxyApiMethod = validateProxyApiMethod;
+      $scope.validateBasicAuthCredentials = validateBasicAuthCredentials;
+      $scope.hasInvalidURICharacters = hasInvalidURICharacters;
       $scope.changeProxySetting = changeProxySetting;
       $scope.searchFields   = [];
       $scope.createSnapshot = createSnapshot;
@@ -248,7 +258,7 @@ angular.module('QuepidApp')
 
       function reset() {
         $scope.validating = false;
-        $scope.urlValid = $scope.urlInvalid = $scope.invalidHeaders = $scope.invalidProxyApiMethod = false;
+        $scope.urlValid = $scope.urlInvalid = $scope.invalidHeaders = $scope.invalidProxyApiMethod = $scope.invalidBasicAuthCredentials = false;
         $scope.mapperInvalid = false;
         $scope.mapperErrorMessage = null;
         
@@ -269,8 +279,9 @@ angular.module('QuepidApp')
       }
       
       function resetUrlValid() {
-        $scope.urlValid =false;
-        $scope.invalidProxyApiMethod =false;
+        $scope.urlValid = false;
+        $scope.invalidProxyApiMethod = false;
+        $scope.invalidBasicAuthCredentials = false;
       }
 
       function submit() {
@@ -317,11 +328,12 @@ angular.module('QuepidApp')
         $scope.checkTLSForSearchEngineUrl();
         $scope.validateHeaders();
         $scope.validateProxyApiMethod();
+        $scope.validateBasicAuthCredentials();
         
         
         // exit early if we have the TLS issue, this really should be part of the below logic.
         // validator.validateTLS().then.validateURL().then....
-        if ($scope.showTLSChangeWarning || $scope.invalidHeaders || $scope.invalidProxyApiMethod){
+        if ($scope.showTLSChangeWarning || $scope.invalidHeaders || $scope.invalidProxyApiMethod || $scope.invalidBasicAuthCredentials){
           return;
         }
         
@@ -443,6 +455,33 @@ angular.module('QuepidApp')
           }
         }
       }
+      
+      function validateBasicAuthCredentials () {
+        $scope.invalidBasicAuthCredentials = false;
+        if (
+          $scope.pendingWizardSettings.basicAuthCredential && hasInvalidURICharacters($scope.pendingWizardSettings.basicAuthCredential)) {
+            $scope.invalidBasicAuthCredentials = true;
+            $scope.validating = false;
+        }
+      }
+      
+      function hasInvalidURICharacters(str) {
+        let invalidChars = false;
+        // This regex matches characters that are unsafe in URIs
+        const unsafeChars = /[\s<>\"#%{}|\\^~[\]`]/g;
+        if (unsafeChars.test(str)){
+          invalidChars = true;
+        }
+        
+        // Additional special characters that might cause issues
+        const specialChars = /[&+?=/;@]/g;
+        if (specialChars.test(str)){
+          invalidChars = true;
+        }
+
+        return invalidChars;
+      }
+      
 
       function checkTLSForSearchEngineUrl () {
         if ($scope.pendingWizardSettings.proxyRequests === true){
@@ -456,13 +495,14 @@ angular.module('QuepidApp')
             
             $scope.quepidUrlToSwitchTo = resultsTuple[0];
             $scope.protocolToSwitchTo = resultsTuple[1];
-                      
-            $scope.quepidUrlToSwitchTo = `${$scope.quepidUrlToSwitchTo}?showWizard=true` +
+
+            
+            $scope.quepidUrlToSwitchTo = caseTryNavSvc.appendQueryParams($scope.quepidUrlToSwitchTo, `showWizard=true` +
               `&searchEngine=${$scope.pendingWizardSettings.searchEngine}` +
               `&searchUrl=${$scope.pendingWizardSettings.searchUrl}` +
               `&caseName=${$scope.pendingWizardSettings.caseName}` +
               `&apiMethod=${$scope.pendingWizardSettings.apiMethod}` +
-              `&basicAuthCredential=${$scope.pendingWizardSettings.basicAuthCredential}`;            
+              `&basicAuthCredential=${$scope.pendingWizardSettings.basicAuthCredential}`);            
           }
         }
       }
