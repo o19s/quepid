@@ -14,6 +14,11 @@ angular.module('QuepidApp')
       $scope.caseModel.reorderEnabled = false;
       $scope.scores  = [];
       $scope.theCase = caseSvc.getSelectedCase();
+      
+      $scope.updateNightly = function (nightly) {
+        caseSvc.updateNightly($scope.theCase);
+      };
+      
       $scope.caseName = {
         name: null,
         startRename: false,

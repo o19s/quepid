@@ -15,6 +15,7 @@ json.owner_id         acase.owner.id if acase.owner.present?
 json.book_name        acase.book.name if acase.book.present?
 json.public           acase.public.presence || false
 json.archived         acase.archived
+json.nightly          acase.nightly
 json.options          acase.options
 
 json.last_try_number acase.tries.latest.try_number unless no_tries || acase.tries.blank? || acase.tries.latest.blank?

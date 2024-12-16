@@ -11,6 +11,8 @@
           ng-click="ctrl.goToCase()"
         >
           {{ ctrl.thisCase.caseName }}
+          
+          <i class="bi bi-repeat" ng-show="ctrl.thisCase.nightly"></i>
         </span>
         <br/>
         <span class="item-actions">
