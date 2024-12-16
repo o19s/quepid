@@ -17,7 +17,7 @@ angular.module('QuepidApp')
       $log.debug('Init Wizard settings ctrl');
       
       $scope.cancel = function () {
-        var confirm = $window.confirm('Are you sure you want to abandon this case?');
+        let confirm = $window.confirm('Are you sure you want to abandon this case?');
         if (confirm) {
           caseSvc.deleteCase(caseSvc.getSelectedCase()).then(function() {
             $uibModalInstance.dismiss('cancel');
