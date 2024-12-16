@@ -8,11 +8,13 @@ gem 'activerecord-import', '>= 1.0.7'
 gem 'active_storage_db'
 gem 'acts_as_list', '>= 1.0.1'
 gem 'addressable', '~> 2.8'
+gem 'ahoy_matey'
 gem 'ancestry'
 # gem 'angular-rails-templates', '>= 1.0.0.beta'
 gem 'angular-rails-templates', git: 'https://github.com/epugh/angular-rails-templates.git', branch: 'bump_rails_8'
 gem 'apipie-rails', '~> 1.2'
 gem 'bcrypt', '~> 3.1.7'
+gem 'blazer', '~> 3.1'
 gem 'bootsnap', require: false
 gem 'cal-heatmap-rails', '~> 3.6' # provides assets for cal heatmap, that requires old d3
 gem 'colorize', require: false
@@ -23,7 +25,6 @@ gem 'devise_invitable', '~> 2.0'
 # Using this as it wires in via Sprockets and I can't get npm version to work with the main app.
 # Had no luck with js/svg approach ;-(
 gem 'foreman'
-gem 'gabba'
 gem 'importmap-rails', '~> 2.0'
 gem 'intercom-rails'
 gem 'jbuilder', '~> 2.7'

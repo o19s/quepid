@@ -19,6 +19,8 @@ import "vega-embed"
 
 window.dispatchEvent(new Event("vega:load"))
 
+import "ahoy"
+
 // cookies consent toast handling begin
 // Only rendered on the home page.
 document.addEventListener("turbo:load", function() {
@@ -29,12 +31,12 @@ document.addEventListener("turbo:load", function() {
     const toast = new bootstrap.Toast(toastEl);
     toast.show();
   }
-  
-  const cookiesEuOKButton = document.querySelector('.js-cookies-eu-ok');  
+
+  const cookiesEuOKButton = document.querySelector('.js-cookies-eu-ok');
   if (cookiesEuOKButton) {
     cookiesEuOKButton.addEventListener('click', setCookie, false);
   }
-  
+
 });
 
 function setCookie() {

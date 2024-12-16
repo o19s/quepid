@@ -40,6 +40,8 @@
 //= require vega-lite
 //= require vega-embed
 
+//= require ahoy
+
 //= require angular-resource/angular-resource
 //= require angular-cookies/angular-cookies
 //= require angular-route/angular-route

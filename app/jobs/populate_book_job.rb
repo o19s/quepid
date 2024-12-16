@@ -6,7 +6,7 @@ class PopulateBookJob < ApplicationJob
   # rubocop:disable Security/MarshalLoad
   # rubocop:disable Metrics/MethodLength
   # rubocop:disable Metrics/AbcSize
-  def perform user, book, kase
+  def perform book, kase
     # down the road we should be using ActiveRecord-import and first_or_initialize instead.
     # See how snapshots are managed.
 
@@ -14,8 +14,6 @@ class PopulateBookJob < ApplicationJob
     compressed_data = book.populate_file.download
     serialized_data = Zlib::Inflate.inflate(compressed_data)
     params = Marshal.load(serialized_data)
-
-    is_book_empty = book.query_doc_pairs.empty?
 
     counter = params[:query_doc_pairs].size
     params[:query_doc_pairs].each do |pair|
@@ -53,8 +51,6 @@ class PopulateBookJob < ApplicationJob
     book.populate_file.purge
     book.populate_job = nil
     book.save
-
-    Analytics::Tracker.track_query_doc_pairs_bulk_updated_event user, book, is_book_empty
   end
   # rubocop:enable Security/MarshalLoad
   # rubocop:enable Metrics/MethodLength

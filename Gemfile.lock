@@ -1,6 +1,6 @@
 GIT
   remote: https://github.com/epugh/angular-rails-templates.git
-  revision: c45588bec096089e51d84ee3461736f000dff87a
+  revision: a5e008d7993c30e72281e6c5246f2d75b2762fee
   branch: bump_rails_8
   specs:
     angular-rails-templates (1.3.0)
@@ -94,6 +94,10 @@ GEM
     addressable (2.8.7)
       public_suffix (>= 2.0.2, < 7.0)
     aes_key_wrap (1.1.0)
+    ahoy_matey (5.2.1)
+      activesupport (>= 6.1)
+      device_detector (>= 1)
+      safely_block (>= 0.4)
     ancestry (4.3.3)
       activerecord (>= 5.2.6)
     annotaterb (4.13.0)
@@ -109,6 +113,12 @@ GEM
     bigdecimal (3.1.8)
     bindata (2.5.0)
     bindex (0.8.1)
+    blazer (3.1.0)
+      activerecord (>= 6.1)
+      chartkick (>= 5)
+      csv
+      railties (>= 7)
+      safely_block (>= 0.4)
     bootsnap (1.18.4)
       msgpack (~> 1.2)
     builder (3.3.0)
@@ -125,6 +135,7 @@ GEM
       rack-test (>= 0.6.3)
       regexp_parser (>= 1.5, < 3.0)
       xpath (~> 3.2)
+    chartkick (5.1.2)
     childprocess (5.1.0)
       logger (~> 1.5)
     choice (0.2.0)
@@ -162,6 +173,7 @@ GEM
       ruby-statistics (>= 4.0.1)
       ruby2_keywords
       thor (>= 0.19, < 2)
+    device_detector (1.1.3)
     devise (4.9.4)
       bcrypt (~> 3.0)
       orm_adapter (~> 0.1)
@@ -177,14 +189,14 @@ GEM
     erubi (1.13.0)
     et-orbi (1.2.11)
       tzinfo
-    faraday (2.12.0)
-      faraday-net_http (>= 2.0, < 3.4)
+    faraday (2.12.1)
+      faraday-net_http (>= 2.0, < 3.5)
       json
       logger
     faraday-follow_redirects (0.3.0)
       faraday (>= 1, < 3)
-    faraday-net_http (3.3.0)
-      net-http
+    faraday-net_http (3.4.0)
+      net-http (>= 0.5.0)
     ffi (1.17.0-aarch64-linux-gnu)
     ffi (1.17.0-x86_64-darwin)
     ffi (1.17.0-x86_64-linux-gnu)
@@ -192,13 +204,12 @@ GEM
     fugit (1.11.1)
       et-orbi (~> 1, >= 1.2.11)
       raabro (~> 1.4)
-    gabba (1.0.1)
     get_process_mem (1.0.0)
       bigdecimal (>= 2.0)
       ffi (~> 1.0)
     globalid (1.2.1)
       activesupport (>= 6.1)
-    hashdiff (1.1.1)
+    hashdiff (1.1.2)
     hashie (5.0.0)
     heapy (0.2.0)
       thor
@@ -275,12 +286,12 @@ GEM
       turbo-rails
     mocha (2.7.1)
       ruby2_keywords (>= 0.0.5)
-    msgpack (1.7.3)
+    msgpack (1.7.5)
     multi_xml (0.7.1)
       bigdecimal (~> 3.1)
-    mutex_m (0.2.0)
+    mutex_m (0.3.0)
     mysql2 (0.5.6)
-    net-http (0.4.1)
+    net-http (0.6.0)
       uri
     net-imap (0.5.1)
       date
@@ -327,7 +338,7 @@ GEM
       actionpack (>= 4.2)
       omniauth (~> 2.0)
     orm_adapter (0.5.0)
-    ostruct (0.6.0)
+    ostruct (0.6.1)
     parallel (1.26.3)
     parser (3.3.6.0)
       ast (~> 2.4.1)
@@ -354,8 +365,9 @@ GEM
     rack (3.1.8)
     rack-cors (2.0.2)
       rack (>= 2.0.0)
-    rack-protection (4.0.0)
+    rack-protection (4.1.1)
       base64 (>= 0.1.0)
+      logger (>= 1.6.0)
       rack (>= 3.0.0, < 4)
     rack-session (2.0.0)
       rack (>= 3.0.0)
@@ -442,6 +454,7 @@ GEM
     ruby-statistics (4.0.1)
     ruby2_keywords (0.0.5)
     rubyzip (2.3.2)
+    safely_block (0.4.1)
     sassc (2.4.0)
       ffi (~> 1.9)
     sassc-rails (2.1.2)
@@ -533,11 +546,13 @@ DEPENDENCIES
   activerecord-import (>= 1.0.7)
   acts_as_list (>= 1.0.1)
   addressable (~> 2.8)
+  ahoy_matey
   ancestry
   angular-rails-templates!
   annotaterb (~> 4.13)
   apipie-rails (~> 1.2)
   bcrypt (~> 3.1.7)
+  blazer (~> 3.1)
   bootsnap
   bullet
   cal-heatmap-rails (~> 3.6)
@@ -550,7 +565,6 @@ DEPENDENCIES
   devise_invitable (~> 2.0)
   error_highlight (>= 0.4.0)
   foreman
-  gabba
   importmap-rails (~> 2.0)
   intercom-rails
   jbuilder (~> 2.7)
