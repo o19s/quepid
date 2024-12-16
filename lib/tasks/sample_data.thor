@@ -158,7 +158,7 @@ class SampleData < Thor
     # Ratings
     print_step 'Seeding ratings................'
 
-    tens_of_queries_case = realistic_activity_user.cases.create case_name: '10s of Queries'
+    tens_of_queries_case = realistic_activity_user.cases.create case_name: '10s of Queries', nightly: true
 
     unless tens_of_queries_case.queries.count >= 20
       generator = ::RatingsGenerator.new search_url, { number: 20 }
@@ -309,7 +309,7 @@ class SampleData < Thor
 
     print_step 'End of multiple cases................'
     print_step ''
-    print_step 'Now open http://localhost:3000 and login with quepid+realisticactivity@o19s.com / password'
+    print_step 'Run `bin/docker s` and browse to http://localhost:3000. Login with quepid+realisticactivity@o19s.com / password.'
   end
 
   desc 'large_data', 'load the very large sample data'
