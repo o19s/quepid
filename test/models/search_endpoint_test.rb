@@ -22,7 +22,11 @@
 require 'test_helper'
 
 class SearchEndpointTest < ActiveSupport::TestCase
-  # test "the truth" do
-  #   assert true
-  # end
+  describe 'basic auth credentials' do
+    it 'prevents invalid characters ' do
+      endpoint = SearchEndpoint.new(basic_auth_credential: 'bob:test%123')
+      assert_not endpoint.valid?
+      assert_includes endpoint.errors[:basic_auth_credential], 'contains invalid characters: %'
+    end
+  end
 end
