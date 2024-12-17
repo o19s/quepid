@@ -87,10 +87,13 @@ class FetchService
       response_status:   response_status,
       response_body:     response_body
     )
-
     snapshot_manager = SnapshotManager.new(@snapshot)
     query_docs = snapshot_manager.setup_docs_for_query(snapshot_query, docs)
     SnapshotDoc.import query_docs
+
+    # if we don't need the snapshot_docs data, maybe we don't need the reload??
+    # snapshot_query.reload
+    snapshot_query
   end
 
   def complete

@@ -168,7 +168,6 @@ class SnapshotManager
   # rubocop:disable Metrics/MethodLength
   def setup_docs_for_query query, docs
     results = []
-
     return results if docs.blank?
     return results if query.blank?
 

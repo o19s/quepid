@@ -87,6 +87,7 @@ class FetchServiceTest < ActiveSupport::TestCase
 
       assert_difference 'first_query.snapshot_queries.count' do
         snapshot_query = fetch_service.store_query_results first_query, docs, response_status, response_body
+        snapshot_query.reload # reload in order to check the underlying data
         assert_equal docs.size, snapshot_query.snapshot_docs.size
         assert_equal response_status, snapshot_query.response_status
       end
