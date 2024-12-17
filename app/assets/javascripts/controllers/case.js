@@ -15,7 +15,7 @@ angular.module('QuepidApp')
       $scope.scores  = [];
       $scope.theCase = caseSvc.getSelectedCase();
       
-      $scope.updateNightly = function (nightly) {
+      $scope.updateNightly = function () {
         caseSvc.updateNightly($scope.theCase);
       };
       
