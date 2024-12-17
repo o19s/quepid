@@ -230,23 +230,20 @@
               class="glyphicon"></span>
           </div>
 
-            <div ng-controller="CaseCtrl as ctrl">
-              
-              <label>
-  
-                <input type="checkbox" ng-model="caseModel.selectedCase().nightly" ng-change="updateNightly()"> Evaluate Case Nightly
-              </label>
-  
-              <p class="pull-right">
-                <span class="label label-info">
-                  <a href="#"
-                    uib-tooltip-html="'Run all the queries every night and store the results<br/> and the scores as a snapshot.'"
-                    tooltip-placement="left">
-                    <span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span>
-                  </a>
-                </span>
-              </p>
-            </div>
+          <div class="dev-body checkbox" ng-show="devSettingsNightly.toggle" ng-controller="CaseCtrl as ctrl">            
+            <label>  
+              <input type="checkbox" ng-model="caseModel.selectedCase().nightly" ng-change="updateNightly()"> Evaluate Case Nightly
+            </label>
+
+            <p class="pull-right">
+              <span class="label label-info">
+                <a href="#"
+                  uib-tooltip-html="'Run all the queries every night and store the results<br/> and the scores as a snapshot.'"
+                  tooltip-placement="left">
+                  <span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span>
+                </a>
+              </span>
+            </p>
           </div>
         </div>
         <!-- end of Nightly Queries -->
