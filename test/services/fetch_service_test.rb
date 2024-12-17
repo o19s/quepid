@@ -242,6 +242,10 @@ class FetchServiceTest < ActiveSupport::TestCase
 
       snapshot_query.reload
       assert_equal 2, snapshot_query.snapshot_docs.count
+
+      snapshot_doc = snapshot_query.snapshot_docs.first
+
+      assert_nothing_raised { JSON.parse(snapshot_doc.explain) }
     end
   end
 end

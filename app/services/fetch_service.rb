@@ -54,6 +54,9 @@ class FetchService
   end
 
   # rubocop:disable Metrics/MethodLength
+  # rubocop:disable Metrics/AbcSize
+  # rubocop:disable Metrics/CyclomaticComplexity
+  # rubocop:disable Metrics/PerceivedComplexity
   def setup_docs_for_query query, docs
     results = []
 
@@ -64,6 +67,8 @@ class FetchService
     docs = docs.sort { |d1, d2| d1[:position].to_i <=> d2[:position].to_i }
 
     docs.each_with_index do |doc, index|
+      doc[:explain] = doc[:explain].to_json if doc[:explain].is_a?(Hash)
+
       doc_params = {
         doc_id:     doc[:id],
         explain:    doc[:explain],
@@ -79,6 +84,9 @@ class FetchService
     results
   end
   # rubocop:enable Metrics/MethodLength
+  # rubocop:enable Metrics/AbcSize
+  # rubocop:enable Metrics/CyclomaticComplexity
+  # rubocop:enable Metrics/PerceivedComplexity
 
   def store_query_results query, docs, response_status, response_body
     snapshot_query = @snapshot.snapshot_queries.create(
