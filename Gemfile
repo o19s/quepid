@@ -93,3 +93,5 @@ group :test do
   gem 'capybara'
   gem 'selenium-webdriver'
 end
+
+gem 'mini_racer', '~> 0.16.0'

@@ -6,12 +6,13 @@
   angular.module('QuepidApp')
     .factory('SnapshotFactory', [
       '$log',
+      '$filter',
       'docCacheSvc',
       'normalDocsSvc',
       SnapshotFactory
   ]);
 
-  function SnapshotFactory($log, docCacheSvc, normalDocsSvc) {
+  function SnapshotFactory($log, $filter, docCacheSvc, normalDocsSvc) {
     var Snapshot = function(params) {
       var self  = this;
 
@@ -24,8 +25,7 @@
 
       self.allDocIds        = allDocIds;
       self.getSearchResults = getSearchResults;
-      self.timestamp        = timestamp;
-
+      
       self.docIdsPerQuery   = {};
       
       // Map from snake_case to camelCase.
@@ -45,7 +45,7 @@
       });
 
       function snapshotName () {
-        return 'Snapshot: ' + params.name;
+        return '(' + $filter('date')(params.time, 'shortDate') + ') ' + params.name;
       }
 
       function allDocIds () {
@@ -96,24 +96,6 @@
         });
 
         return searchResults;
-      }
-
-      function timestamp () {
-        var date    = new Date(self.time * 1000);
-
-        var hour    = date.getHours();
-        var minutes = date.getMinutes();
-        var year    = date.getFullYear();
-        var day     = date.getDate();
-
-        var months  = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-        var month   = months[date.getMonth()];
-
-        if (minutes < 10) {
-          minutes = '0' + ('' + minutes);
-        }
-
-        return day + '-' + month + '-' + year + ' ' + hour + ':' + minutes;
       }
     };
 

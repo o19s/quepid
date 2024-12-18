@@ -1,6 +1,10 @@
 <tr>
   <th scope="row"><%= kase.id  %></th>
-  <th scope="row"><%= strip_case_title(kase) %></th>
+  <th scope="row"><%= strip_case_title(kase) %>
+    <% if kase.nightly? %>
+      <i class="bi bi-repeat float-end"></i>
+    <% end %>
+  </th>
   <td><%= kase.queries_count %></td>
   <td>
     <% unless kase.last_score.blank? %>
@@ -14,7 +18,7 @@
   </td>
   <td>
     <% unless kase.last_score.blank? %>
-      <%= kase.last_score.user.name %>
+      <%= kase.last_score&.user&.name %>
     <% end %>
   </td>
   <td><%= link_to_core_case 'View', kase, kase.last_try_number, class: 'btn btn-sm btn-primary', role: 'button' %>
