@@ -248,4 +248,22 @@ class FetchServiceTest < ActiveSupport::TestCase
       assert_nothing_raised { JSON.parse(snapshot_doc.explain) }
     end
   end
+
+  describe 'scoring logic' do
+    let(:acase)         { cases(:snapshot_case) }
+    let(:atry)          { tries(:for_case_snapshot_case) }
+
+    let(:asnapshot) { snapshots(:a_snapshot) }
+    let(:snapshot_query) { snapshot_queries(:first_snapshot_query) }
+
+    it 'runs a score' do
+      assert_equal 1.0, snapshot_query.score # before running P@10
+      fetch_service = FetchService.new options
+      score_data = fetch_service.score_snapshot(asnapshot, atry)
+      assert_equal 2, score_data[:queries].size
+
+      snapshot_query.reload
+      assert_equal 0.5, snapshot_query.score
+    end
+  end
 end

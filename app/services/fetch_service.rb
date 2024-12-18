@@ -104,6 +104,61 @@ class FetchService
     snapshot_query
   end
 
+  def score_run
+    @snapshot.name = 'Fetch [PREPARE_SCORE]'
+    @snapshot.save!
+    score_data = score_snapshot @snapshot, @try
+
+    case_score_manager = CaseScoreManager.new @case
+    case_score_manager.update score_data
+  end
+
+  def score_snapshot snapshot, try
+    java_script_scorer = JavaScriptScorer.new(Rails.root.join('db/scorers/scoring_logic.js'))
+
+    queries_detail = {}
+
+    snapshot.snapshot_queries.each do |snapshot_query|
+      # Prepare some items to score
+      doc_ratings = {}
+      snapshot_query.query.ratings.each do |rating|
+        doc_ratings[rating.doc_id] = rating.rating
+      end
+
+      items = snapshot_query.snapshot_docs.map do |snapshot_doc|
+        { id: snapshot_doc.doc_id, rating: doc_ratings[snapshot_doc.doc_id] }
+      end
+      puts items
+
+      # items = [
+      #  { id: 1, value: 10, rating: 3 },
+      #  { id: 2, value: 20, rating: 0 }
+      # ]
+
+      # Calculate score with options
+      begin
+        score = java_script_scorer.score(items, Rails.root.join('db/scorers/p@10.js'))
+        snapshot_query.score = score
+        snapshot_query.save!
+      rescue JavaScriptScorer::ScoreError => e
+        puts "Scoring failed: #{e.message}"
+      end
+
+      queries_detail[snapshot_query.query_id] =
+        { score: snapshot_query.score, text: snapshot_query.query.query_text }
+    end
+
+    score_data = {
+      all_rated:  [ true, false ].sample,
+      queries:    queries_detail,
+      score:      5,
+      try_number: try.try_number,
+      user_id:    nil,
+    }
+
+    score_data
+  end
+
   def complete
     @snapshot.name = 'Fetch [COMPLETED]'
     @snapshot.save!

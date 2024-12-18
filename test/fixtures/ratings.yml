@@ -54,3 +54,13 @@ second_query_rating2:
   user:  :random
   doc_id: "docb"
   rating: 1
+
+a_query_rating:
+  query: :a_query
+  doc_id: "doc_a"
+  rating: 1
+  
+b_query_rating:
+  query: :b_query
+  doc_id: "doc_b"
+  rating: 0

@@ -48,6 +48,8 @@ class QueryRunnerJob < ApplicationJob
       )
     end
 
+    fetch_service.score_run
+
     Turbo::StreamsChannel.broadcast_render_to(
       :notifications,
       target:  'notifications',
