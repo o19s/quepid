@@ -20,8 +20,9 @@ class JavaScriptScorer
     @context.eval(File.read(js_file_path))
   end
 
+  # rubocop disable Metrics/MethodLength
+  # rubocop:disable Style/DocumentDynamicEvalDefinition
   def score docs, _scorer_file_path
-    # docs = docs.to_json
     @context.eval("docs = #{docs.to_json};")
 
     result = @context.eval(<<-JS)
@@ -57,27 +58,24 @@ class JavaScriptScorer
     raise ScoreError, "JavaScript execution error: #{e.message}"
   end
 
+  # rubocop enable Metrics/MethodLength
+  # rubocop:enable Style/DocumentDynamicEvalDefinition
+  #
   def score_items items, options = {}
     # Convert Ruby objects and options to JavaScript
     js_items = items.to_json
     js_options = options.to_json
 
-    puts "js_itmes is made: #{js_items}"
-    puts "js_options is made: #{js_options}"
-
     result = @context.eval(<<-JS)
         try {
           const items = #{js_items};
           const options = #{js_options};
-          console.log("Hello World");
-          //{bob:true};
-          console.log(items)
           scoreItems(items, options);  // Your JavaScript scoring function
         } catch (error) {
           ({ error: error.message });
         }
     JS
-    puts "the result is #{result}"
+
     raise ScoreError, result['error'] if result.is_a?(Hash) && result['error']
 
     result
