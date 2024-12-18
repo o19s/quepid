@@ -57,6 +57,14 @@ class FetchServiceTest < ActiveSupport::TestCase
       assert_not_nil response
       assert 404 == response.status
     end
+
+    it 'handles a missing search_endpoint' do
+      fetch_service = FetchService.new options
+      atry.search_endpoint = nil
+      response = fetch_service.make_request(atry, blowup_query)
+      assert_not_nil response
+      assert 400 == response.status
+    end
   end
 
   describe 'Running a fetch cycle produces a snapshot' do

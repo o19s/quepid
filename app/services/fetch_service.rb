@@ -88,6 +88,7 @@ class FetchService
   # rubocop:enable Metrics/CyclomaticComplexity
   # rubocop:enable Metrics/PerceivedComplexity
 
+  # This maybe should be split out into a snapshot_query and a snapshot_docs?
   def store_query_results query, docs, response_status, response_body
     snapshot_query = @snapshot.snapshot_queries.create(
       query:             query,
@@ -113,8 +114,8 @@ class FetchService
     case_score_manager.update score_data
   end
 
-  # rubocop disable Metrics/AbcSize
-  # rubocop disable Metrics/MethodLength
+  # rubocop:disable Metrics/AbcSize
+  # rubocop:disable Metrics/MethodLength
   def score_snapshot snapshot, try
     java_script_scorer = JavaScriptScorer.new(Rails.root.join('db/scorers/scoring_logic.js'))
 
@@ -159,8 +160,8 @@ class FetchService
 
     score_data
   end
-  # rubocop enable Metrics/AbcSize
-  # rubocop enable Metrics/MethodLength
+  # rubocop:enable Metrics/AbcSize
+  # rubocop:enable Metrics/MethodLength
 
   def complete
     @snapshot.name = 'Fetch [COMPLETED]'
@@ -210,6 +211,12 @@ class FetchService
       response = Faraday::Response.new(status: 200, body: body)
       return response
     end
+
+    if atry.search_endpoint.nil?
+      response = create_error_response("No search endpoint defined for try number #{atry.try_number}" )
+      return response
+    end
+
     search_endpoint = atry.search_endpoint
     if @connection.nil?
       @connection = get_connection search_endpoint.endpoint_url,
@@ -349,6 +356,14 @@ class FetchService
     end.compact
 
     result
+  end
+
+  def create_error_response message
+    Faraday::Response.new(
+      status:           400,
+      body:             { error: message }.to_json,
+      response_headers: { 'Content-Type' => 'application/json' }
+    )
   end
 end
 # rubocop:enable Metrics/ClassLength
