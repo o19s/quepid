@@ -26,11 +26,14 @@ class QueryRunnerJob < ApplicationJob
       response_code = response.status
       response_body = response.body
       puts "Does response_code == 200?  #{response_code} is #{200 == response_code}"
+      # need to deal with errors better.
       if 200 == response_code
         puts 'WE GOT A 200'
         # this is all rough...  just to get some snapshot_docs...
         docs = fetch_service.extract_docs_from_response_body_for_solr response_body
         fetch_service.store_query_results query, docs, response_code, response_body
+      else
+        fetch_service.store_query_results query, [], response_code, response_body
       end
 
       Turbo::StreamsChannel.broadcast_render_to(

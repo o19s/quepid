@@ -22,16 +22,14 @@ class JavaScriptScorer
 
   # rubocop disable Metrics/MethodLength
   # rubocop:disable Style/DocumentDynamicEvalDefinition
+  # rubocop:disable Metrics/MethodLength
   def score docs, _scorer_file_path
     @context.eval("docs = #{docs.to_json};")
 
     result = @context.eval(<<-JS)
         try {
-
-        #{' '}
-          console.log("Starting ");
+          console.log("Starting JS scoring");
           //console.log(docs)
-          //scoreItems(items, options);  // Your JavaScript scoring function
           const k = 10; // @Rank
           // k may be > length list, so count up the total number of documents processed.
           let count = 0, total = 0;
@@ -57,10 +55,11 @@ class JavaScriptScorer
   rescue MiniRacer::Error => e
     raise ScoreError, "JavaScript execution error: #{e.message}"
   end
-
   # rubocop enable Metrics/MethodLength
   # rubocop:enable Style/DocumentDynamicEvalDefinition
-  #
+  # rubocop:enable Metrics/MethodLength
+
+  # rubocop:disable Style/DocumentDynamicEvalDefinition
   def score_items items, options = {}
     # Convert Ruby objects and options to JavaScript
     js_items = items.to_json
@@ -82,6 +81,7 @@ class JavaScriptScorer
   rescue MiniRacer::Error => e
     raise ScoreError, "JavaScript execution error: #{e.message}"
   end
+  # rubocop:enable Style/DocumentDynamicEvalDefinition
 
   private
 
