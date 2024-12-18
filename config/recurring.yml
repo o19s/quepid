@@ -13,7 +13,8 @@ development:
 production:
   nightly_jobs_command:
     class: EnqueueNightlyQueryRunnerJob
-    schedule: every day at 1 am
+    schedule: every hour
+    #schedule: every day at 1 am
  
 
   # periodic_cleanup:
