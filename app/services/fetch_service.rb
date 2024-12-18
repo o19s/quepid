@@ -113,6 +113,8 @@ class FetchService
     case_score_manager.update score_data
   end
 
+  # rubocop disable Metrics/AbcSize
+  # rubocop disable Metrics/MethodLength
   def score_snapshot snapshot, try
     java_script_scorer = JavaScriptScorer.new(Rails.root.join('db/scorers/scoring_logic.js'))
 
@@ -128,7 +130,6 @@ class FetchService
       items = snapshot_query.snapshot_docs.map do |snapshot_doc|
         { id: snapshot_doc.doc_id, rating: doc_ratings[snapshot_doc.doc_id] }
       end
-      puts items
 
       # items = [
       #  { id: 1, value: 10, rating: 3 },
@@ -158,6 +159,8 @@ class FetchService
 
     score_data
   end
+  # rubocop enable Metrics/AbcSize
+  # rubocop enable Metrics/MethodLength
 
   def complete
     @snapshot.name = 'Fetch [COMPLETED]'
