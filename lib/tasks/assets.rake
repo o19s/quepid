@@ -17,9 +17,9 @@ namespace :assets do
         system "wget --no-verbose -O #{notebooks_gz} https://github.com/o19s/quepid-jupyterlite/releases/latest/download/jupyter-lite-build.tgz"
       end
 
-      puts "Not unpacking Jupyterlite"
-      #puts "Unpacking Jupyterlite into #{destination}"
-      #ystem "tar -xzf #{notebooks_gz} --directory #{destination}"
+      #puts "Not unpacking Jupyterlite"
+      puts "Unpacking Jupyterlite into #{destination}"
+      system "tar -xzf #{notebooks_gz} --directory #{destination}"
 
       File.delete(notebooks_gz)
     end
