@@ -200,78 +200,14 @@ class FetchService
   end
   # rubocop:enable Metrics/MethodLength
 
-  # rubocop:disable Metrics/AbcSize
-  # rubocop:disable Metrics/CyclomaticComplexity
-  # rubocop:disable Metrics/MethodLength
-  # rubocop:disable Metrics/PerceivedComplexity
   def make_request atry, query
-    if @options[:fake_mode]
-      # useful in development mode when we don't have access to a search engine'
-      body = mock_response
-      response = Faraday::Response.new(status: 200, body: body)
-      return response
-    end
+    return mock_response if @options[:fake_mode]
+    return handle_missing_endpoint(atry) if atry.search_endpoint.nil?
 
-    if atry.search_endpoint.nil?
-      response = create_error_response("No search endpoint defined for try number #{atry.try_number}" )
-      return response
-    end
-
-    search_endpoint = atry.search_endpoint
-    if @connection.nil?
-      @connection = get_connection search_endpoint.endpoint_url,
-                                   @options[:debug_mode],
-                                   search_endpoint.basic_auth_credential,
-                                   search_endpoint.custom_headers
-    end
-
-    http_verb = search_endpoint.api_method
-
-    # TODO: Make api_method an enum
-    http_verb = :get if 'JSONP' == http_verb
-    http_verb = :get if 'GET' == http_verb
-    http_verb = :post if 'POST' == http_verb
-    http_verb = :put if 'PUT' == http_verb
-    puts "Running query with #{http_verb}"
-
-    args = atry.args
-
-    response = nil
-    # response = connection.run_request(http_verb, search_endpoint.endpoint_url) do |req|
-    case http_verb
-    when :get
-      response = @connection.get do |req|
-        # TODO: This is now Solr specific and it shouldn't be.
-        req.url "#{search_endpoint.endpoint_url}?debug=true&debug.explain.structured=true&wt=json"
-        args.each do |key, value|
-          value.each do |val|
-            val.gsub!('#$query##', query.query_text)
-            req.params[key] = val
-          end
-        end
-      end
-    when :post
-      response = @connection.post do |req|
-        req.url search_endpoint.endpoint_url
-        args = replace_values(args, query.query_text)
-        req.body = args.to_json
-      end
-    when :put
-      response = @connection.put do |req|
-        req.url search_endpoint.endpoint_url
-        args = replace_values(args, query.query_text)
-        req.body = args.to_json
-      end
-    else
-      raise "Invalid HTTP verb: #{http_verb}"
-    end
-
+    setup_connection(atry.search_endpoint)
+    response = execute_request(atry, query)
     response
   end
-  # rubocop:enable Metrics/AbcSize
-  # rubocop:enable Metrics/CyclomaticComplexity
-  # rubocop:enable Metrics/MethodLength
-  # rubocop:enable Metrics/PerceivedComplexity
 
   # rubocop:disable Metrics/PerceivedComplexity
   def replace_values data, query_text
@@ -292,7 +228,7 @@ class FetchService
 
   # rubocop:disable Metrics/MethodLength
   # rubocop:disable Layout/LineLength
-  def mock_response
+  def mock_response_body
     mock_statedecoded_body = '{
       "responseHeader":{
         "zkConnected":true,
@@ -364,6 +300,76 @@ class FetchService
       body:             { error: message }.to_json,
       response_headers: { 'Content-Type' => 'application/json' }
     )
+  end
+
+  def mock_response
+    body = mock_response_body
+    Faraday::Response.new(status: 200, body: body)
+  end
+
+  def handle_missing_endpoint atry
+    create_error_response("No search endpoint defined for try number #{atry.try_number}")
+  end
+
+  def setup_connection search_endpoint
+    return if @connection
+
+    @connection = get_connection(
+      search_endpoint.endpoint_url,
+      @options[:debug_mode],
+      search_endpoint.basic_auth_credential,
+      search_endpoint.custom_headers
+    )
+  end
+
+  def execute_request atry, query
+    endpoint = atry.search_endpoint
+    http_verb = normalize_http_verb(endpoint.api_method)
+
+    case http_verb
+    when :get  then execute_get_request(endpoint, atry.args, query)
+    when :post then execute_body_request(:post, endpoint, atry.args, query)
+    when :put  then execute_body_request(:put, endpoint, atry.args, query)
+    else
+      raise ArgumentError, "Invalid HTTP verb: #{http_verb}"
+    end
+  end
+
+  def normalize_http_verb verb
+    case verb.upcase
+    when 'JSONP', 'GET' then :get
+    when 'POST' then :post
+    when 'PUT'  then :put
+    else verb.downcase.to_sym
+    end
+  end
+
+  def execute_get_request endpoint, args, query
+    @connection.get do |req|
+      req.url "#{endpoint.endpoint_url}?debug=true&debug.explain.structured=true&wt=json"
+      process_get_params(req, args, query)
+    end
+  end
+
+  def process_get_params req, args, query
+    args.each do |key, values|
+      values.each do |val|
+        val.gsub!('#$query##', query.query_text)
+        req.params[key] = val
+      end
+    end
+  end
+
+  def execute_body_request method, endpoint, args, query
+    @connection.public_send(method) do |req|
+      req.url endpoint.endpoint_url
+      req.body = prepare_request_body(args, query)
+    end
+  end
+
+  def prepare_request_body args, query
+    processed_args = replace_values(args, query.query_text)
+    processed_args.to_json
   end
 end
 # rubocop:enable Metrics/ClassLength
