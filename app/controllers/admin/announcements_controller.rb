@@ -2,7 +2,6 @@
 
 module Admin
   class AnnouncementsController < Admin::AdminController
-    skip_before_action :check_for_announcement
     def index
       @announcements = Announcement.all
     end
