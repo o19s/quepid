@@ -5,7 +5,7 @@
 # Table name: api_keys
 #
 #  id           :bigint           not null, primary key
-#  token_digest :string(255)      not null
+#  token_digest :string(255)
 #  created_at   :datetime         not null
 #  updated_at   :datetime         not null
 #  user_id      :integer

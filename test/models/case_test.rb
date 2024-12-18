@@ -8,6 +8,7 @@
 #  archived        :boolean
 #  case_name       :string(191)
 #  last_try_number :integer
+#  nightly         :boolean
 #  options         :json
 #  public          :boolean
 #  created_at      :datetime         not null
@@ -18,7 +19,8 @@
 #
 # Indexes
 #
-#  user_id  (owner_id)
+#  idx_cases_owner_id  (owner_id)
+#  user_id             (owner_id)
 #
 # Foreign Keys
 #
