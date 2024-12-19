@@ -45,10 +45,6 @@ module Api
     def set_default_response_format
       request.format = :json unless params[:format]
     end
-    
-    def deserialize_bool_param param_name
-      ActiveRecord::Type::Boolean.new.deserialize(params[param_name]) || false
-    end
   end
 end
 # rubocop:enable Rails/ApplicationController

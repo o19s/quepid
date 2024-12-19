@@ -93,9 +93,8 @@ class HomeController < ApplicationController
   # rubocop:enable Metrics/MethodLength
   # rubocop:enable Metrics/CyclomaticComplexity
   # rubocop:enable Metrics/PerceivedComplexity
-
+  
   private
-
   def check_for_announcement
     @announcement = Announcement.where(live: true).latest_unseen_for_user(@current_user).first if @current_user
     AnnouncementViewed.create(user: @current_user, announcement: @announcement) if @announcement

@@ -29,7 +29,7 @@ class BooksController < ApplicationController
       @count_of_anonymous_case_judgements += kase.ratings.where(user: nil).count
     end
 
-    @moar_judgements_needed = @book.judgements.where(user: current_user).count < @book.query_doc_pairs.size
+    @moar_judgements_needed = @book.judgements.where(user: current_user).count < @book.query_doc_pairs.count
     @cases = @book.cases
     @leaderboard_data = []
     @stats_data = []
