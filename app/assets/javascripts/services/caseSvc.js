@@ -364,14 +364,9 @@ angular.module('QuepidApp')
       };
 
       /*jslint latedef:false*/
-      function getCases (deep) {
-        deep = deep || false;
+      function getCases () {       
         // http GET api/cases
         var url = 'api/cases';
-
-        if (deep) {
-          url += '?deep=' + deep;
-        }
 
         svc.allCases.length = 0;
         return $http.get(url)
