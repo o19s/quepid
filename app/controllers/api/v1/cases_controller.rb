@@ -121,10 +121,6 @@ module Api
         params[:scorer_id].present? && [ 0, '0' ].include?(params[:scorer_id])
       end
 
-      def deserialize_bool_param param
-        ActiveRecord::Type::Boolean.new.deserialize(param) || false
-      end
-
       def fetch_archived_cases
         @no_tries = true
         @no_teams = false

@@ -22,6 +22,10 @@ class ApplicationController < ActionController::Base
 
   private
 
+  def deserialize_bool_param param
+    ActiveRecord::Type::Boolean.new.deserialize(param) || false
+  end
+
   def signup_enabled?
     Rails.application.config.signup_enabled
   end
