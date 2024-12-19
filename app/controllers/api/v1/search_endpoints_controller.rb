@@ -30,8 +30,7 @@ module Api
             :required      => false,
             :default_value => false
       def index
-        bool = ActiveRecord::Type::Boolean.new
-        archived = bool.deserialize params[:archived] || false
+        archived = deserialize_bool_param(params[:archived])
 
         current_user.search_endpoints_involved_with
 
@@ -79,8 +78,7 @@ module Api
       param_group :search_endpoint_params
       def update
         update_params = search_endpoint_params
-        bool = ActiveRecord::Type::Boolean.new
-        archived = bool.deserialize(update_params[:archived]) || false
+        archived = deserialize_bool_param(params[:archived])
         if archived
           # archiving a case means current user takes it over, that should be better expressed.
           @search_endpoint.owner = current_user

@@ -2,7 +2,6 @@
 
 class PagesController < ApplicationController
   skip_before_action :require_login
-  skip_before_action :check_for_announcement
   before_action :check_page, only: [ :show ]
 
   def show

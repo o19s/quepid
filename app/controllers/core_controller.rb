@@ -4,7 +4,6 @@
 class CoreController < ApplicationController
   before_action :set_case_or_bootstrap, except: :new
   before_action :populate_from_params, except: :new
-  skip_before_action :check_for_announcement
 
   def index
     if params['protocolToSwitchTo']
