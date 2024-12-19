@@ -24,8 +24,7 @@ module Api
             require 'csv'
 
             text = params[:csv_text]
-            bool = ActiveRecord::Type::Boolean.new
-            create_queries = bool.deserialize params[:create_queries]
+            create_queries = deserialize_bool_param(:create_queries)
 
             csv_data = CSV.parse(text, liberal_parsing: true)
             headers = csv_data.shift.map(&:to_s)
