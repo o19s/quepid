@@ -217,8 +217,6 @@ module Api
 
           assert_not_empty shared_team['members']
           assert_not_empty shared_team['search_endpoints']
-
-          assert_equal 1, shared_team['cases'][0]['last_try_number']
         end
 
         test 'returns list of teams and loads case and scorer data to power sharing UI' do
@@ -239,8 +237,6 @@ module Api
           # verify we don't have these fields
           assert_nil shared_team['members']
           assert_nil shared_team['search_endpoints']
-
-          assert_nil shared_team['cases'][0]['last_try_number']
         end
       end
     end

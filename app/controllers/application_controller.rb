@@ -25,6 +25,4 @@ class ApplicationController < ActionController::Base
   def signup_enabled?
     Rails.application.config.signup_enabled
   end
-
-
 end

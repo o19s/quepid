@@ -38,23 +38,12 @@ module Api
             :required      => false,
             :default_value => false
       def index
-        bool = ActiveRecord::Type::Boolean.new
-
-        archived  = bool.deserialize(params[:archived]) || false
-        @deep     = bool.deserialize(params[:deep]) || false
-
-        if archived
-          @no_tries = true
-          @no_teams = false
-          @cases = Case.where(archived: archived, owner_id: current_user.id).all.with_counts
-        else
-          @cases = current_user.cases_involved_with.not_archived.with_counts.preload(:tries, :teams,
-                                                                                     :cases_teams)
-            .left_outer_joins(:metadata)
-            .select('cases.*, case_metadata.last_viewed_at')
-            .order(Arel.sql('`case_metadata`.`last_viewed_at` DESC, `cases`.`updated_at` DESC'))
-
-        end
+        archived = deserialize_bool_param(params[:archived])
+        @cases = if archived
+                   fetch_archived_cases
+                 else
+                   fetch_active_cases
+                 end
 
         respond_with @cases
       end
@@ -89,8 +78,7 @@ module Api
       def update
         update_params = case_params
         update_params[:scorer_id] = Scorer.system_default_scorer.id if default_scorer_removed? update_params
-        bool = ActiveRecord::Type::Boolean.new
-        archived = bool.deserialize(update_params[:archived]) || false
+        archived = deserialize_bool_param(update_params[:archived])
         if archived
           # archiving a case means current user takes it over, that should be better expressed.
           @case.owner = current_user
@@ -131,6 +119,50 @@ module Api
       def default_scorer_removed? params = {}
         # params[:scorer_id].present? or params.key?(:scorer_id) && [ 0, '0', '' ].include?(params[:scorer_id])
         params[:scorer_id].present? && [ 0, '0' ].include?(params[:scorer_id])
+      end
+
+      def deserialize_bool_param param
+        ActiveRecord::Type::Boolean.new.deserialize(param) || false
+      end
+
+      def fetch_archived_cases
+        @no_tries = true
+        @no_teams = false
+        Case.where(archived: true, owner_id: current_user.id).all.with_counts
+      end
+
+      def fetch_active_cases
+        if current_user.cases_involved_with.size > 30
+          fetch_limited_cases
+        else
+          fetch_full_cases
+        end
+      end
+
+      def fetch_limited_cases
+        @no_tries = true
+        @no_teams = true
+        @no_scores = true
+
+        base_query.includes(:owner, :book)
+      end
+
+      def fetch_full_cases
+        @no_tries = false
+        @no_teams = false
+        @no_scores = false
+
+        base_query.includes(:owner, :book).preload(:tries, :teams, :cases_teams)
+          .left_outer_joins(:metadata) # this is slow!
+          .select('cases.*, case_metadata.last_viewed_at')
+          .order(Arel.sql('`case_metadata`.`last_viewed_at` DESC, `cases`.`updated_at` DESC'))
+      end
+
+      def base_query
+        current_user.cases_involved_with
+          .not_archived
+          .with_counts
+          .order(:updated_at)
       end
     end
     # rubocop:enable Metrics/ClassLength
