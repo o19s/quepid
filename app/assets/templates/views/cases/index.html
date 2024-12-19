@@ -1,7 +1,10 @@
 <div id='cases' class='container'>
+  <span>
   <h2>
-    Relevancy Cases
+    Relevancy Cases   
   </h2>
+   <span ng-if="casesScope.allCases.length > 50"><i>Showing limited details since you have many many ({{casesScope.allCases.length}}) cases.  You may want to archive some or remove yourself from old teams.</i></span>
+  </span>
 
   <div class="row">
     <div class='col-md-4'>
