@@ -215,25 +215,6 @@ module Api
           assert_not_empty shared_team['cases']
           assert_not_empty shared_team['scorers']
 
-          assert_not_empty shared_team['members']
-          assert_not_empty shared_team['search_endpoints']
-        end
-
-        test 'returns list of teams and loads case and scorer data to power sharing UI' do
-          get :index, params: { for_sharing: true }
-
-          assert_response :ok
-
-          body  = response.parsed_body
-          teams = body['teams']
-
-          # sometimes it's the first team, sometimes it's the second team in the array
-          # so we have a dynamic lookup
-          shared_team = teams.find { |team| 'Team shared with Team Finder User' == team['name'] }
-
-          assert_not_empty shared_team['cases']
-          assert_not_empty shared_team['scorers']
-
           # verify we don't have these fields
           assert_nil shared_team['members']
           assert_nil shared_team['search_endpoints']

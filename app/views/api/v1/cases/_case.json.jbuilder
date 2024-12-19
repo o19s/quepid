@@ -4,13 +4,16 @@ shallow   ||= false
 no_tries  ||= false
 no_teams  ||= false
 no_scores ||= false
+no_queries ||= false
 
 json.case_name        acase.case_name
 json.case_id          acase.id
 json.scorer_id        acase.scorer_id
 json.book_id          acase.book_id
 json.owned            acase.owner_id == current_user.id if current_user.present?
-json.queries_count    acase.respond_to?(:queries_count) ? acase.queries_count : acase.queries.count
+unless no_queries
+  json.queries_count acase.respond_to?(:queries_count) ? acase.queries_count : acase.queries.count
+end
 json.owner_name       acase.owner.name if acase.owner.present?
 json.owner_id         acase.owner.id if acase.owner.present?
 json.book_name        acase.book.name if acase.book.present?
