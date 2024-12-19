@@ -68,7 +68,8 @@ module Api
       end
 
       def for_sharing
-        @for_sharing = deserialize_bool_param(:for_sharing)
+        bool = ActiveRecord::Type::Boolean.new
+        @for_sharing = bool.deserialize params[:for_sharing] || false
       end
     end
   end

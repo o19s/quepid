@@ -16,7 +16,8 @@ module Api
           file_format = params[:file_format]
           file_format = 'hash' unless params[:file_format]
 
-          clear_queries = deserialize_bool_param(:clear_queries)
+          bool = ActiveRecord::Type::Boolean.new
+          clear_queries = bool.deserialize params[:clear_queries]
 
           case file_format
           when 'hash'
