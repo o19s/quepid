@@ -4,7 +4,7 @@ require 'action_controller'
 require 'faraday'
 require 'faraday/follow_redirects'
 
-class QueryRunnerJob < ApplicationJob
+class RunCaseJob < ApplicationJob
   queue_as :bulk_processing
 
   # rubocop:disable Metrics/MethodLength
@@ -25,10 +25,8 @@ class QueryRunnerJob < ApplicationJob
 
       response_code = response.status
       response_body = response.body
-      puts "Does response_code == 200?  #{response_code} is #{200 == response_code}"
       # need to deal with errors better.
       if 200 == response_code
-        puts 'WE GOT A 200'
         # this is all rough...  just to get some snapshot_docs...
         docs = fetch_service.extract_docs_from_response_body_for_solr response_body
         fetch_service.store_query_results query, docs, response_code, response_body
@@ -39,14 +37,14 @@ class QueryRunnerJob < ApplicationJob
       Turbo::StreamsChannel.broadcast_render_to(
         :notifications,
         target:  'notifications',
-        partial: 'admin/query_runner/notification',
+        partial: 'admin/run_case/notification',
         locals:  { query: query, query_count: query_count, counter: counter }
       )
 
       Turbo::StreamsChannel.broadcast_render_to(
         :notifications,
         target:  "notifications-case-#{acase.id}",
-        partial: 'admin/query_runner/notification_case',
+        partial: 'admin/run_case/notification_case',
         locals:  { acase: acase, query: query, query_count: query_count, counter: counter }
       )
     end
@@ -56,14 +54,14 @@ class QueryRunnerJob < ApplicationJob
     Turbo::StreamsChannel.broadcast_render_to(
       :notifications,
       target:  'notifications',
-      partial: 'admin/query_runner/notification',
+      partial: 'admin/run_case/notification',
       locals:  { query: nil, query_count: query_count, counter: -1 }
     )
 
     Turbo::StreamsChannel.broadcast_render_to(
       :notifications,
       target:  "notifications-case-#{acase.id}",
-      partial: 'admin/query_runner/notification_case',
+      partial: 'admin/run_case/notification_case',
       locals:  { acase: acase, query: nil, query_count: query_count, counter: -1 }
     )
 

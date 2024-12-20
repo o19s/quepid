@@ -1,16 +1,19 @@
-<%= turbo_stream.replace "notification-case-#{acase.id}" do %>
-  <span id="notification-case-<%= acase.id %>">
-    <% if counter > 0 %>
+<%= turbo_stream.replace "notification" do %>
+  <span id="notification">
+
+    <% if counter > -1 %>
       <div class="alert alert-warning" role="alert" >  
         <% unless query.nil? %>
+        <div class="text-truncate">
         Query: <code><%=query.query_text%></code>
+        </div>
         <% end %>
         <br/>    
-        Queries Remaining: <code><%= query_count - counter %></code>.    
+        Iterations Remaining: <code><%= query_count - counter %></code>.           
       </div>
     <% else %>
       <div class="alert alert-info" role="alert">
-        Query Runner Job has completed.
+        Run Case Job has completed.
       </div>
     <% end %>
   </span>
