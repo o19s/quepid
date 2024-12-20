@@ -93,8 +93,11 @@ class FetchService
     snapshot_query = @snapshot.snapshot_queries.create(
       query:             query,
       number_of_results: docs.count,
-      response_status:   response_status,
-      response_body:     response_body
+      response_status:   response_status
+    )
+    snapshot_query.create_web_request(
+      response_status: response_status,
+      response:        response_body
     )
     snapshot_manager = SnapshotManager.new(@snapshot)
     query_docs = snapshot_manager.setup_docs_for_query(snapshot_query, docs)
