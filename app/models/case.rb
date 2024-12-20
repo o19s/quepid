@@ -21,8 +21,7 @@
 #
 # Indexes
 #
-#  idx_cases_owner_id  (owner_id)
-#  user_id             (owner_id)
+#  user_id  (owner_id)
 #
 # Foreign Keys
 #

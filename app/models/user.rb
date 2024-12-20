@@ -11,7 +11,7 @@
 #  agreed                      :boolean
 #  agreed_time                 :datetime
 #  company                     :string(255)
-#  completed_case_wizard       :integer          default(0), unsigned, not null
+#  completed_case_wizard       :boolean          default(FALSE), not null
 #  email                       :string(80)
 #  email_marketing             :boolean          default(FALSE), not null
 #  invitation_accepted_at      :datetime
