@@ -185,13 +185,6 @@ class Case < ApplicationRecord
     Rails.application.message_verifier('magic').generate(id)
   end
 
-  def self.enqueue_nightly_query_runner_jobs
-    Case.all.nightly_run.each do |kase|
-      try = kase.tries.last
-      QueryRunnerJob.perform_later kase, try
-    end
-  end
-
   private
 
   def set_scorer
