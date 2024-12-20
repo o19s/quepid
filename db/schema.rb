@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2024_12_07_222621) do
+ActiveRecord::Schema[8.0].define(version: 2024_12_18_173819) do
   create_table "active_storage_attachments", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.string "name", null: false
     t.string "record_type", null: false
@@ -196,6 +196,7 @@ ActiveRecord::Schema[8.0].define(version: 2024_12_07_222621) do
     t.string "export_job"
     t.string "import_job"
     t.string "populate_job"
+    t.integer "query_doc_pairs_count", default: 0, null: false
     t.index ["selection_strategy_id"], name: "index_books_on_selection_strategy_id"
   end
 

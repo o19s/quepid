@@ -18,8 +18,7 @@ module Books
       @book = Book.new
       @book.owner = current_user
 
-      bool = ActiveRecord::Type::Boolean.new
-      force_create_users = bool.deserialize params[:book][:force_create_users]
+      force_create_users = deserialize_bool_param(params[:book][:force_create_users])
 
       uploaded_file = params[:book][:import_file]
       if uploaded_file.nil?

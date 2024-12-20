@@ -2,6 +2,7 @@
 
 class HomeController < ApplicationController
   before_action :set_case, only: [ :case_prophet ]
+  before_action :check_for_announcement, only: [ :show ]
 
   def show
     # with_counts adds a `case.queries_count` field, which avoids loading
@@ -17,8 +18,8 @@ class HomeController < ApplicationController
     @lookup_for_books = {}
     @most_recent_books.each do |book|
       judged_by_current_user = book.judgements.where(user: @current_user).count
-      if judged_by_current_user.positive? && judged_by_current_user < book.query_doc_pairs.count
-        @lookup_for_books[book] = book.query_doc_pairs.count - judged_by_current_user
+      if judged_by_current_user.positive? && judged_by_current_user < book.query_doc_pairs.size
+        @lookup_for_books[book] = book.query_doc_pairs.size - judged_by_current_user
       end
     end
 
@@ -92,4 +93,11 @@ class HomeController < ApplicationController
   # rubocop:enable Metrics/MethodLength
   # rubocop:enable Metrics/CyclomaticComplexity
   # rubocop:enable Metrics/PerceivedComplexity
+
+  private
+
+  def check_for_announcement
+    @announcement = Announcement.where(live: true).latest_unseen_for_user(@current_user).first if @current_user
+    AnnouncementViewed.create(user: @current_user, announcement: @announcement) if @announcement
+  end
 end

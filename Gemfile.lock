@@ -155,6 +155,9 @@ GEM
     debug (1.9.2)
       irb (~> 1.10)
       reline (>= 0.3.8)
+    debugbar (0.3.3)
+      actioncable
+      rails
     derailed_benchmarks (2.2.1)
       base64
       benchmark-ips (~> 2)
@@ -222,7 +225,7 @@ GEM
     intercom-rails (1.0.1)
       activesupport (> 4.0)
     io-console (0.8.0)
-    irb (1.14.2)
+    irb (1.14.3)
       rdoc (>= 4.0.0)
       reline (>= 0.4.2)
     jbuilder (2.13.0)
@@ -356,7 +359,7 @@ GEM
       cmdstan (>= 0.2)
       numo-narray (>= 0.9.1.7)
       rover-df
-    psych (5.2.1)
+    psych (5.2.2)
       date
       stringio
     public_suffix (6.0.1)
@@ -422,10 +425,10 @@ GEM
     rb-fsevent (0.11.2)
     rb-inotify (0.11.1)
       ffi (~> 1.0)
-    rdoc (6.9.0)
+    rdoc (6.10.0)
       psych (>= 4.0.0)
     regexp_parser (2.9.3)
-    reline (0.5.12)
+    reline (0.6.0)
       io-console (~> 0.5)
     responders (3.1.1)
       actionpack (>= 5.2)
@@ -483,7 +486,7 @@ GEM
     snaky_hash (2.0.1)
       hashie
       version_gem (~> 1.1, >= 1.1.1)
-    solid_cable (3.0.4)
+    solid_cable (3.0.5)
       actioncable (>= 7.2)
       activejob (>= 7.2)
       activerecord (>= 7.2)
@@ -564,6 +567,7 @@ DEPENDENCIES
   colorize
   d3-rails (~> 3.5.5)
   debug
+  debugbar
   derailed_benchmarks
   devise (>= 4.6.2)
   devise_invitable (~> 2.0)

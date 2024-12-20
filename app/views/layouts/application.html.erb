@@ -68,7 +68,7 @@
   
   <%= javascript_include_tag 'application', 'data-turbo-track': 'reload' %>
   <%= javascript_importmap_tags 'application2' %>
-
+  <%= debugbar_head  if defined? Debugbar %> 
 </head>
 
 <body>
@@ -88,6 +88,6 @@
     </main>
   </div>
 </div>
-
+<%= debugbar_body if defined? Debugbar %> 
 </body>
 </html>
