@@ -370,7 +370,7 @@ class SampleData < Thor
     solr_try.search_endpoint = statedecoded_solr_endpoint
 
     # was 200
-    unless hundreds_of_queries_case.queries.count >= 400
+    unless hundreds_of_queries_case.queries.count > 400
       generator = ::RatingsGenerator.new search_url, { number: 400, show_progress: true }
       ratings   = generator.generate_ratings
 
@@ -387,7 +387,7 @@ class SampleData < Thor
     solr_try.update try_defaults
     solr_try.search_endpoint = statedecoded_solr_endpoint
 
-    unless thousands_of_queries_case.queries.count >= 5000
+    unless thousands_of_queries_case.queries.count > 5000
       generator = ::RatingsGenerator.new search_url, { number: 5000, show_progress: true }
       ratings   = generator.generate_ratings
 
