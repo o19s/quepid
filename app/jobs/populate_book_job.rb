@@ -6,6 +6,7 @@ class PopulateBookJob < ApplicationJob
   # rubocop:disable Security/MarshalLoad
   # rubocop:disable Metrics/MethodLength
   # rubocop:disable Metrics/AbcSize
+  # rubocop:disable Metrics/BlockLength
   def perform book, kase
     # down the road we should be using ActiveRecord-import and first_or_initialize instead.
     # See how snapshots are managed.
@@ -15,7 +16,11 @@ class PopulateBookJob < ApplicationJob
     serialized_data = Zlib::Inflate.inflate(compressed_data)
     params = Marshal.load(serialized_data)
 
-    counter = params[:query_doc_pairs].size
+    book.query_doc_pairs.empty?
+
+    total = params[:query_doc_pairs].size
+    counter = total
+    last_percent = 0
     params[:query_doc_pairs].each do |pair|
       counter -= 1
       query_doc_pair = book.query_doc_pairs.find_or_create_by query_text: pair[:query_text],
@@ -41,11 +46,16 @@ class PopulateBookJob < ApplicationJob
 
       query_doc_pair.save!
 
+      # emit a message every percent that we cross, from 0 to 100...
+      percent = (((total - counter).to_f / total) * 100).truncate
+      next unless percent > last_percent
+
+      last_percent = percent
       Turbo::StreamsChannel.broadcast_render_to(
         :notifications,
         target:  'notifications',
         partial: 'books/blah',
-        locals:  { book: book, counter: counter, qdp: query_doc_pair }
+        locals:  { book: book, counter: counter, percent: percent, qdp: query_doc_pair }
       )
     end
     book.populate_file.purge
@@ -55,4 +65,5 @@ class PopulateBookJob < ApplicationJob
   # rubocop:enable Security/MarshalLoad
   # rubocop:enable Metrics/MethodLength
   # rubocop:enable Metrics/AbcSize
+  # rubocop:enable Metrics/BlockLength
 end

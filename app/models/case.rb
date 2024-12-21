@@ -90,6 +90,8 @@ class Case < ApplicationRecord
 
   scope :public_cases, -> { where(public: true) }
 
+  scope :nightly_run, -> { where(nightly: true) }
+
   # load up the queries count for the case, alternative to counter_cache
   scope :with_counts, -> {
                         select <<~SQL.squish

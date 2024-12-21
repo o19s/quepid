@@ -2,6 +2,9 @@
   <div class="card h-100">
     <h5 class="card-header text-truncate">
       <%= link_to_core_case case_title(kase), kase, kase.last_try_number %>
+      <% if kase.nightly? %>
+        <i class="bi bi-repeat float-end"></i>
+      <% end %>
     </h5>
     
     <div class="card-body">
