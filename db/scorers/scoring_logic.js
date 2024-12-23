@@ -71,3 +71,12 @@ var docRating = function(posn) {
   }
   return undefined;
 };
+
+var theScore = null;
+var setScore = function (score) {
+  theScore = score;
+};
+
+var getScore = function () {
+  return theScore;
+};

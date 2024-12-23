@@ -120,7 +120,7 @@ class FetchService
   # rubocop:disable Metrics/AbcSize
   # rubocop:disable Metrics/MethodLength
   def score_snapshot snapshot, try
-    java_script_scorer = JavaScriptScorer.new(Rails.root.join('db/scorers/scoring_logic.js'))
+    javascript_scorer = JavascriptScorer.new(Rails.root.join('db/scorers/scoring_logic.js'))
 
     queries_detail = {}
 
@@ -142,10 +142,10 @@ class FetchService
 
       # Calculate score with options
       begin
-        score = java_script_scorer.score(items, Rails.root.join('db/scorers/p@10.js'))
+        score = javascript_scorer.score(items, Rails.root.join('db/scorers/p@10.js'))
         snapshot_query.score = score
         snapshot_query.save!
-      rescue JavaScriptScorer::ScoreError => e
+      rescue JavascriptScorer::ScoreError => e
         puts "Scoring failed: #{e.message}"
       end
 
