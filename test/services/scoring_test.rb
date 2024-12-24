@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require 'test_helper'
-require 'java_script_scorer'
+require 'javascript_scorer'
 
 class ScoringTest < ActiveSupport::TestCase
   describe 'Samples' do
@@ -20,7 +20,7 @@ class ScoringTest < ActiveSupport::TestCase
     end
 
     it 'reads in a ascorer' do
-      scorer = JavaScriptScorer.new(Rails.root.join('db/scorers/scoring_logic.js'))
+      scorer = JavascriptScorer.new(Rails.root.join('db/scorers/scoring_logic.js'))
 
       # Prepare some items to score
       items = [
@@ -42,7 +42,7 @@ class ScoringTest < ActiveSupport::TestCase
     end
 
     it 'handles P@10' do
-      java_script_scorer = JavaScriptScorer.new(Rails.root.join('db/scorers/scoring_logic.js'))
+      java_script_scorer = JavascriptScorer.new(Rails.root.join('db/scorers/scoring_logic.js'))
 
       # Prepare some items to score
       items = [
