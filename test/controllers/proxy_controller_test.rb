@@ -14,7 +14,7 @@ class ProxyControllerTest < ActionDispatch::IntegrationTest
     assert_response :bad_request
   end
 
-  test 'should be able to handle a get' do
+test 'should be able to handle a get' do
     get proxy_fetch_url params: {
       url: 'http://solr.quepid.com:8983/solr/statedecoded/select', fl: 'id,text', q: 'legal', rows: 10, start: 0
     }
