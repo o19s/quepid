@@ -182,12 +182,11 @@ class FetchService
   end
 
   # rubocop:disable Metrics/MethodLength
-  # rubocop:disable Metrics/AbcSize
-  def get_connection url, _debug_mode, credentials, custom_headers
+  def get_connection url, debug_mode, credentials, custom_headers
     connection = Faraday.new(url: url) do |faraday|
       # Configure the connection options, such as headers or middleware
       faraday.response :follow_redirects
-      faraday.response :logger, nil, { headers: !Rails.env.test?, bodies: !Rails.env.test?, errors: !Rails.env.test? }
+      faraday.response :logger, nil, { headers: debug_mode, bodies: debug_mode, errors: !Rails.env.test? }
       faraday.ssl.verify = false
 
       faraday.headers['Content-Type'] = 'application/json'
@@ -206,7 +205,6 @@ class FetchService
     connection
   end
   # rubocop:enable Metrics/MethodLength
-  # rubocop:enable Metrics/AbcSize
 
   def make_request atry, query
     return mock_response if @options[:fake_mode]
