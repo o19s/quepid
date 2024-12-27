@@ -55,7 +55,7 @@ class ScoringTest < ActiveSupport::TestCase
         score = java_script_scorer.score(items, Rails.root.join('db/scorers/p@10.js'))
         puts "Final score: #{score}"
         assert_equal 0.5, score
-      rescue JavaScriptScorer::ScoreError => e
+      rescue JavascriptScorer::ScoreError => e
         puts "Scoring failed: #{e.message}"
       end
     end
