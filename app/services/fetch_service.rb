@@ -54,7 +54,6 @@ class FetchService
   end
 
   # rubocop:disable Metrics/MethodLength
-  # rubocop:disable Metrics/AbcSize
   # rubocop:disable Metrics/CyclomaticComplexity
   # rubocop:disable Metrics/PerceivedComplexity
   def setup_docs_for_query query, docs
@@ -76,15 +75,12 @@ class FetchService
         rated_only: doc[:rated_only] || false,
         fields:     doc[:fields].blank? ? nil : doc[:fields].to_json,
       }
-      puts "number #{query.snapshot_docs.count}"
       results << query.snapshot_docs.build(doc_params)
-      puts "number #{query.snapshot_docs.count}"
     end
 
     results
   end
   # rubocop:enable Metrics/MethodLength
-  # rubocop:enable Metrics/AbcSize
   # rubocop:enable Metrics/CyclomaticComplexity
   # rubocop:enable Metrics/PerceivedComplexity
 

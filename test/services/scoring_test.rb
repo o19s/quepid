@@ -42,7 +42,7 @@ class ScoringTest < ActiveSupport::TestCase
     end
 
     it 'handles P@10' do
-      java_script_scorer = JavascriptScorer.new(Rails.root.join('db/scorers/scoring_logic.js'))
+      javascript_scorer = JavascriptScorer.new(Rails.root.join('db/scorers/scoring_logic.js'))
 
       # Prepare some items to score
       items = [
@@ -51,13 +51,13 @@ class ScoringTest < ActiveSupport::TestCase
       ]
 
       # Calculate score with options
-      begin
-        score = java_script_scorer.score(items, Rails.root.join('db/scorers/p@10.js'))
-        puts "Final score: #{score}"
-        assert_equal 0.5, score
-      rescue JavascriptScorer::ScoreError => e
-        puts "Scoring failed: #{e.message}"
-      end
+      # begin
+      code = File.read(Rails.root.join('db/scorers/p@10.js'))
+      score = javascript_scorer.score(items, code)
+      assert_equal 0.5, score
+      # rescue JavascriptScorer::ScoreError => e
+      # puts "Scoring failed: #{e.message}"
+      # end
     end
   end
 end
