@@ -21,8 +21,7 @@ class ProxyController < ApplicationController
     excluded_keys = [ :url, :action, :controller, :proxy_debug ]
 
     url_param = proxy_url_params
-
-    proxy_debug = 'true' == params[:proxy_debug]
+    params[:proxy_debug]
 
     # we use Addressable::URI instead of straight up URI to support non ascii characters like café
     uri = Addressable::URI.parse(url_param)
@@ -32,7 +31,7 @@ class ProxyController < ApplicationController
     connection = Faraday.new(url: url_without_path) do |faraday|
       # Configure the connection options, such as headers or middleware
       faraday.response :follow_redirects
-      faraday.response :logger, nil, { headers: proxy_debug, bodies: proxy_debug, errors: !Rails.env.test? }
+      faraday.response :logger, nil, { headers: !Rails.env.test?, bodies: !Rails.env.test?, errors: !Rails.env.test? }
       faraday.ssl.verify = false
       faraday.request :url_encoded
 
