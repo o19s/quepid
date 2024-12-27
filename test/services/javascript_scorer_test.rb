@@ -42,7 +42,6 @@ class JavascriptScorerTest < ActiveSupport::TestCase
       test 'runs simple' do
         javascript_scorer = JavascriptScorer.new(Rails.root.join('db/scorers/scoring_logic.js'))
         scorer_code = File.read('db/scorers/p@10.js')
-        scorer_code << "\ngetScore()"
         items = [
           { id: 1, rating: 3 },
           { id: 2, rating: 0 }

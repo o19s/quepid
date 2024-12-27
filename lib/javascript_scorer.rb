@@ -23,6 +23,7 @@ class JavascriptScorer
   # rubocop disable Metrics/MethodLength
   # rubocop:disable Style/DocumentDynamicEvalDefinition
   def score docs, scorer_code
+    scorer_code << "\ngetScore()" # method that returns the score in eval context
     @context.eval("docs = #{docs.to_json};")
 
     result = @context.eval(scorer_code)

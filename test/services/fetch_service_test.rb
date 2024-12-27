@@ -266,6 +266,13 @@ class FetchServiceTest < ActiveSupport::TestCase
 
     it 'runs a score' do
       assert_equal 1.0, snapshot_query.score # before running P@10
+
+      assert_not_nil asnapshot.scorer
+      assert_nil asnapshot.scorer.code
+      asnapshot.scorer.code = File.readlines('./db/scorers/p@10.js', '\n').join('\n')
+      puts 'here is the code'
+      puts asnapshot.scorer.code
+
       fetch_service = FetchService.new options
       score_data = fetch_service.score_snapshot(asnapshot, atry)
       assert_equal 2, score_data[:queries].size
