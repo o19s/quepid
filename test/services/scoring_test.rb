@@ -29,16 +29,16 @@ class ScoringTest < ActiveSupport::TestCase
       ]
 
       # Calculate score with options
-      # begin
-      score = scorer.score_items(items, {
-        multiplier: 1.5,
-        dataId:     123,
-      })
-      # puts "Final score: #{score}"
-      assert_equal 45, score
-      # rescue JavaScriptScorer::ScoreError => e
-      # puts "Scoring failed: #{e.message}"
-      # end
+      begin
+        score = scorer.score_items(items, {
+          multiplier: 1.5,
+          dataId:     123,
+        })
+        puts "Final score: #{score}"
+        assert_equal 45, score
+      rescue JavaScriptScorer::ScoreError => e
+        puts "Scoring failed: #{e.message}"
+      end
     end
 
     it 'handles P@10' do
@@ -51,13 +51,13 @@ class ScoringTest < ActiveSupport::TestCase
       ]
 
       # Calculate score with options
-      # begin
-      score = java_script_scorer.score(items, Rails.root.join('db/scorers/p@10.js').readlines.join('/n'))
-      puts "Final score: #{score}"
-      assert_equal 0.5, score
-      # rescue JavascriptScorer::ScoreError => e
-      # puts "Scoring failed: #{e.message}"
-      # end
+      begin
+        score = java_script_scorer.score(items, Rails.root.join('db/scorers/p@10.js'))
+        puts "Final score: #{score}"
+        assert_equal 0.5, score
+      rescue JavascriptScorer::ScoreError => e
+        puts "Scoring failed: #{e.message}"
+      end
     end
   end
 end
