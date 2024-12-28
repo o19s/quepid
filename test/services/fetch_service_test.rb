@@ -183,9 +183,11 @@ class FetchServiceTest < ActiveSupport::TestCase
       doc = docs.first
       assert_equal '10139', doc[:id]
       assert_not_nil doc[:explain]
+      assert_nothing_raised { JSON.parse(doc[:explain]) }
 
       expected_explain = { match: true, value: 13.647848 }
-      assert_equal expected_explain, doc[:explain].symbolize_keys
+
+      assert_equal expected_explain, JSON.parse(doc[:explain], symbolize_names: true)
 
       assert_equal 8, doc[:fields].keys.count
       assert_equal 1345, doc[:fields]['vote_count']

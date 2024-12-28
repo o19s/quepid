@@ -37,12 +37,18 @@ class FetchService
     docs = []
     response = JSON.parse(response_body)
 
-    explain_json = response.dig('debug', 'explain') || {}
+    explain_json = nil
+    if response['debug'] && response['debug']['explain']
+      explain_json = response['debug']['explain']
+    end
 
     response['response']['docs'].each_with_index do |doc_json, index|
       doc = {}
       doc[:id] = doc_json['id']
-      doc[:explain] = explain_json[doc_json['id']]
+      unless explain_json.nil?
+        explain = explain_json[doc_json['id']]
+        doc[:explain] = explain.to_json unless explain.blank?
+      end
       doc[:position] = index + 1
       doc[:rated_only] = nil
       doc[:fields] = doc_json.except('id')
