@@ -20,7 +20,7 @@ class JavascriptScorerTest < ActiveSupport::TestCase
       test 'runs even though no scores provided' do
         javascript_scorer = JavascriptScorer.new(Rails.root.join('db/scorers/scoring_logic.js'))
 
-        scorer_code = File.read('db/scorers/eric.js')
+        scorer_code = File.read('db/scorers/p@10.js')
 
         items = [
           { id: 1 },
