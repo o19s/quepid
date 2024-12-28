@@ -31,7 +31,7 @@ class JavascriptScorer
     puts "the result is #{result}"
     raise ScoreError, result['error'] if result.is_a?(Hash) && result['error']
 
-    result
+    smart_round(result)
   rescue MiniRacer::Error => e
     raise ScoreError, "JavaScript execution error: #{e.message}"
   end
@@ -75,5 +75,23 @@ class JavascriptScorer
     @context.attach('fetchData', ->(id) {
       Data.find(id).to_json
     })
+  end
+
+  def format_number number
+    format('%.2f', number.to_f).sub(/\.?0+$/, '')
+  end
+
+  def smart_round number
+    # If the number has 2 or more decimal places, round to 2
+    decimal_places = begin
+      number.to_s.split('.').last.length
+    rescue StandardError
+      0
+    end
+    if decimal_places >= 2
+      number.round(2)
+    else
+      number # Keep the number as is
+    end
   end
 end

@@ -135,6 +135,8 @@ class FetchService
         { id: rating.doc_id, rating: rating.rating }
       end
 
+      best_docs.sort_by { |doc| doc[:rating] }.reverse
+
       # docs = [
       #  { id: 1, value: 10, rating: 3 },
       #  { id: 2, value: 20, rating: 0 }

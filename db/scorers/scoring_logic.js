@@ -32,7 +32,9 @@ function scoreItems(items, options) {
 // works globally, not restricted to just search engine results, could be ratings generated via
 // the 'Missing Documents' modal UI.
 function getBestRatings(count, bestDocs) {
-  var bestDocsRatings = bestDocs.slice(0, count).map(function(x) {return x.rating;});
+  //instead of x.rating use x["rating"]
+  
+  var bestDocsRatings = bestDocs.slice(0, count).map(function(x) {return x['rating'];});
 
   return bestDocsRatings;
 }
