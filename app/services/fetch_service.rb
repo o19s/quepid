@@ -124,6 +124,7 @@ class FetchService
   # rubocop:disable Metrics/CyclomaticComplexity
   # rubocop:disable Metrics/PerceivedComplexity
   # rubocop:disable Metrics/BlockLength
+  # rubocop:disable Layout/LineLength
   def score_snapshot snapshot, try
     queries_detail = {}
 
@@ -159,9 +160,20 @@ class FetchService
         score = javascript_scorer.score(docs, best_docs, code)
         puts "the score is #{score}"
         puts "nan?  #{score.nan?}" if score.is_a? Float
+        if score.is_a?(Float) && score.nan?
+          snapshot_query.query.notes << "\n Fetch Service Snapshot #{snapshot_query.snapshot.id}"
+          snapshot_query.query.notes << "\n Fetch Service Snapshot Query #{snapshot_query.id}, #{snapshot_query.query.query_text}"
+
+          snapshot_query.query.notes << "\n Score was NaN"
+          snapshot_query.query.save!
+          score = nil
+        end
         snapshot_query.score = score
+
         unless snapshot_query.save
           snapshot_query.query.notes << "\n Fetch Service Snapshot #{snapshot_query.snapshot.id}"
+          snapshot_query.query.notes << "\n Fetch Service Snapshot Query #{snapshot_query.query.query_text}"
+
           snapshot_query.query.notes << "\n #{snapshot_query.errors.full_messages}"
           snapshot_query.query.save!
         end
@@ -187,7 +199,8 @@ class FetchService
   # rubocop:enable Metrics/MethodLength
   # rubocop:enable Metrics/CyclomaticComplexity
   # rubocop:enable Metrics/PerceivedComplexity
-  # rubocop:enable Metrics/BlockLength 
+  # rubocop:enable Metrics/BlockLength
+  # rubocop:enable Layout/LineLength
 
   def complete
     @snapshot.name = 'Fetch [COMPLETED]'
@@ -203,7 +216,6 @@ class FetchService
 
   # rubocop:disable Metrics/MethodLength
   def get_connection url, debug_mode, credentials, custom_headers
-    debug_mode = false
     connection = Faraday.new(url: url) do |faraday|
       # Configure the connection options, such as headers or middleware
       faraday.response :follow_redirects
