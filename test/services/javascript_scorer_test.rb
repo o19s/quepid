@@ -57,10 +57,10 @@ class JavascriptScorerTest < ActiveSupport::TestCase
 
   describe 'ap@10' do
     let(:the_case) { cases(:case_without_score) }
-
+    let(:scorer_code) do
+      File.read('db/scorers/ap@10.js')
+    end
     test 'runs simple' do
-      scorer_code = File.read('db/scorers/ap@10.js')
-
       # order matters!
       docs = [
         { id: 1, rating: 0 },
@@ -76,6 +76,23 @@ class JavascriptScorerTest < ActiveSupport::TestCase
 
       score = javascript_scorer.score(docs, best_docs, scorer_code)
       assert_equal 0.25, score
+    end
+
+    test 'situation produces NaN' do
+      # Need David Fisher help here.  Why am I getting NaN?
+      # Going to just make it return a 0 in FetchService
+
+      docs = [ { :id => '77383738', :rating => 0.0 },
+               { :id => '77502729', :rating => 0.0 },              
+               { :id => '77031393', :rating => 0.0 },
+               { :id => '78106266', :rating => 0.0 } ]
+
+      best_docs = [ { :id => '77193049', :rating => 0.0 },
+                    { :id => '77031393', :rating => 0.0 },
+                    { :id => '2120998', :rating => 0.0 } ]
+
+      score = javascript_scorer.score(docs, best_docs, scorer_code)
+      assert score.nan?
     end
   end
 

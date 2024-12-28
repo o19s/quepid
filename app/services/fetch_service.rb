@@ -145,7 +145,7 @@ class FetchService
         { id: rating.doc_id, rating: rating.rating }
       end
 
-      best_docs.sort_by { |doc| doc[:rating] }.reverse
+      best_docs.sort_by! { |doc| doc[:rating] }.reverse
 
       # docs = [
       #  { id: 1, value: 10, rating: 3 },
@@ -167,12 +167,14 @@ class FetchService
 
           # snapshot_query.query.notes << "\n Score was NaN"
           # snapshot_query.query.save!
-          score = nil
+          # TODO: Confirm with David Fisher this is right.
+          # Appears to happen when your docs are all rated 0 and your best docs are all 0
+          score = 0
         end
         snapshot_query.score = score
 
         unless snapshot_query.save
-          snapshot_query.query.notes ||= ""
+          snapshot_query.query.notes ||= ''
           snapshot_query.query.notes << "\n Fetch Service Snapshot #{snapshot_query.snapshot.id}"
           snapshot_query.query.notes << "\n Fetch Service Snapshot Query #{snapshot_query.query.query_text}"
 
