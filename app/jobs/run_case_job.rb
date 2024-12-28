@@ -13,7 +13,7 @@ class RunCaseJob < ApplicationJob
 
     options = {
       fake_mode:      false,
-      debug_mode:     true,
+      debug_mode:     false,
       snapshot_limit: 10,
     }
 
