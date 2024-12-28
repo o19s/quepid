@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'action_controller'
+# require 'action_controller'
 require 'faraday'
 require 'faraday/follow_redirects'
 
