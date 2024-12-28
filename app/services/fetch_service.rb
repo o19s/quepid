@@ -161,12 +161,12 @@ class FetchService
         puts "the score is #{score}"
         puts "nan?  #{score.nan?}" if score.is_a? Float
         if score.is_a?(Float) && score.nan?
-          snapshot_query.query.notes ||= ""
-          snapshot_query.query.notes << "\n Fetch Service Snapshot #{snapshot_query.snapshot.id}"
-          snapshot_query.query.notes << "\n Fetch Service Snapshot Query #{snapshot_query.id}, #{snapshot_query.query.query_text}"
+          # snapshot_query.query.notes ||= ""
+          # snapshot_query.query.notes << "\n Fetch Service Snapshot #{snapshot_query.snapshot.id}"
+          # snapshot_query.query.notes << "\n Fetch Service Snapshot Query #{snapshot_query.id}, #{snapshot_query.query.query_text}"
 
-          snapshot_query.query.notes << "\n Score was NaN"
-          snapshot_query.query.save!
+          # snapshot_query.query.notes << "\n Score was NaN"
+          # snapshot_query.query.save!
           score = nil
         end
         snapshot_query.score = score
