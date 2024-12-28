@@ -32,22 +32,21 @@ class FetchService
     @snapshot
   end
 
+  # rubocop:disable Metrics/MethodLength
   # should be in some other service!
   def extract_docs_from_response_body_for_solr response_body
     docs = []
     response = JSON.parse(response_body)
 
     explain_json = nil
-    if response['debug'] && response['debug']['explain']
-      explain_json = response['debug']['explain']
-    end
+    explain_json = response['debug']['explain'] if response['debug'] && response['debug']['explain']
 
     response['response']['docs'].each_with_index do |doc_json, index|
       doc = {}
       doc[:id] = doc_json['id']
       unless explain_json.nil?
         explain = explain_json[doc_json['id']]
-        doc[:explain] = explain.to_json unless explain.blank?
+        doc[:explain] = explain.to_json if explain.present?
       end
       doc[:position] = index + 1
       doc[:rated_only] = nil
@@ -58,6 +57,7 @@ class FetchService
 
     docs
   end
+  # rubocop:enable Metrics/MethodLength
 
   # rubocop:disable Metrics/MethodLength
   # rubocop:disable Metrics/CyclomaticComplexity
