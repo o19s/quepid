@@ -704,6 +704,6 @@ Rails.application.routes.draw do
   get '/scorers'                      => 'core#index'
 
   # Static pages
-  get '/cookies' => 'pages#show'
+  get '/cookies' => 'pages#show', defaults: { page: 'cookies' }
 end
 # rubocop:enable Metrics/BlockLength
