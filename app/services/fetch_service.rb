@@ -131,7 +131,9 @@ class FetchService
         { id: snapshot_doc.doc_id, rating: doc_ratings[snapshot_doc.doc_id] }
       end
 
-      best_docs = []
+      best_docs = snapshot_query.query.ratings.map do |rating|
+        { id: rating.doc_id, rating: rating.rating }
+      end
 
       # docs = [
       #  { id: 1, value: 10, rating: 3 },
