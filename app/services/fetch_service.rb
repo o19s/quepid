@@ -127,11 +127,13 @@ class FetchService
         doc_ratings[rating.doc_id] = rating.rating
       end
 
-      items = snapshot_query.snapshot_docs.map do |snapshot_doc|
+      docs = snapshot_query.snapshot_docs.map do |snapshot_doc|
         { id: snapshot_doc.doc_id, rating: doc_ratings[snapshot_doc.doc_id] }
       end
 
-      # items = [
+      best_docs = []
+
+      # docs = [
       #  { id: 1, value: 10, rating: 3 },
       #  { id: 2, value: 20, rating: 0 }
       # ]
@@ -141,7 +143,7 @@ class FetchService
         scorer = snapshot.scorer
         code = scorer.code
 
-        score = javascript_scorer.score(items, code)
+        score = javascript_scorer.score(docs, best_docs, code)
         snapshot_query.score = score
         snapshot_query.save!
       rescue JavascriptScorer::ScoreError => e

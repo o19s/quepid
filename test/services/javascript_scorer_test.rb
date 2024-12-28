@@ -22,12 +22,13 @@ class JavascriptScorerTest < ActiveSupport::TestCase
 
         scorer_code = File.read('db/scorers/p@10.js')
 
-        items = [
+        docs = [
           { id: 1 },
           { id: 2 }
         ]
+        best_docs = []
 
-        score = javascript_scorer.score(items, scorer_code)
+        score = javascript_scorer.score(docs, best_docs, scorer_code)
         assert_equal 0.0, score
 
         # Calculate score with options
@@ -42,13 +43,39 @@ class JavascriptScorerTest < ActiveSupport::TestCase
       test 'runs simple' do
         javascript_scorer = JavascriptScorer.new(Rails.root.join('db/scorers/scoring_logic.js'))
         scorer_code = File.read('db/scorers/p@10.js')
-        items = [
-          { id: 1, rating: 3 },
+        docs = [
+          { id: 1, rating: 1 },
           { id: 2, rating: 0 }
         ]
-        score = javascript_scorer.score(items, scorer_code)
+        best_docs = []
+        score = javascript_scorer.score(docs, best_docs, scorer_code)
         assert_equal 0.5, score
       end
+    end
+  end
+
+  describe 'ap@10' do
+    let(:the_case) { cases(:case_without_score) }
+
+    test 'runs simple' do
+      javascript_scorer = JavascriptScorer.new(Rails.root.join('db/scorers/scoring_logic.js'))
+      scorer_code = File.read('db/scorers/ap@10.js')
+
+      # order matters!
+      docs = [
+        { id: 1, rating: 0 },
+        { id: 2, rating: 1 }
+      ]
+
+      # Can be in any order
+      best_docs = [
+        { id: 2, rating: 1 },
+        { id: 1, rating: 0 },
+        { id: 3, rating: 1 }
+      ]
+
+      score = javascript_scorer.score(docs, best_docs, scorer_code)
+      assert_equal 0.25, score
     end
   end
 end
