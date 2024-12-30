@@ -402,7 +402,14 @@ class FetchService
 
   # should probably be in its own class
   def append_fl str
-    '&fl=' + str.split.map { |field| field.split(':').first }.join(',') if str.present?
+    return nil if str.blank?
+
+    fields = str.split(/[\s,]+/)
+      .map { |field| field.include?(':') ? field.split(':').second : field }
+      .compact_blank
+      .join(',')
+
+    "&fl=#{fields}"
   end
 
   def process_get_params req, args, query

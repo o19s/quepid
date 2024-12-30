@@ -39,10 +39,17 @@ class FetchServiceTest < ActiveSupport::TestCase
 
     it 'handles appending fl definition defined by try' do
       fetch_service = FetchService.new options
-      # atry.field_spec = ""
 
       url = fetch_service.send(:create_url, atry.search_endpoint, atry)
       assert_includes url, 'fl=id,title'
+    end
+
+    it 'handles appending fl definition defined by try 2' do
+      fetch_service = FetchService.new options
+      atry.field_spec = 'id:id, title:title, thumb:img_500x500, name, brand, product_type'
+
+      url = fetch_service.send(:create_url, atry.search_endpoint, atry)
+      assert_includes url, 'fl=id,title,img_500x500,name,brand,product_type'
     end
 
     it 'creates a GET request' do
