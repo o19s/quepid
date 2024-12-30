@@ -200,7 +200,7 @@ class FetchService
     end
 
     score_data = {
-      all_rated:  [ true, false ].sample,
+      all_rated:  nil,
       queries:    queries_detail,
       score:      average_score,
       try_number: try.try_number,
