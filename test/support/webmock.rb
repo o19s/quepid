@@ -212,7 +212,7 @@ module ActiveSupport
       # Testing out fetch service using
       # search_endpoint   for_case_queries_case
       # try               for_case_queries_case
-      stub_request(:get, 'http://test.com/solr/tmdb/select?debug=true&debug.explain.structured=true&q=First%20Query&wt=json')
+      stub_request(:get, 'http://test.com/solr/tmdb/select?debug=true&debug.explain.structured=true&fl=id,title&q=First%20Query&rows=10&wt=json')
         .with(
           headers: {
             'Accept'          => '*/*',
@@ -242,7 +242,7 @@ module ActiveSupport
       # search_endpoint   for_case_queries_case
       # try               es_try_with_curator_vars
       # query             blowup_query
-      stub_request(:get, 'http://test.com/solr/tmdb/select?debug=true&debug.explain.structured=true&q=BLOWUP_QUERY&wt=json')
+      stub_request(:get, 'http://test.com/solr/tmdb/select?debug=true&debug.explain.structured=true&fl=id,title&q=BLOWUP_QUERY&rows=10&wt=json')
         .with(
           headers: {
             'Accept'          => '*/*',

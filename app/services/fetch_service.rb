@@ -370,9 +370,9 @@ class FetchService
     http_verb = normalize_http_verb(endpoint.api_method)
 
     case http_verb
-    when :get  then execute_get_request(endpoint, atry.args, query)
-    when :post then execute_body_request(:post, endpoint, atry.args, query)
-    when :put  then execute_body_request(:put, endpoint, atry.args, query)
+    when :get  then execute_get_request(endpoint, atry, query)
+    when :post then execute_body_request(:post, endpoint, atry, query)
+    when :put  then execute_body_request(:put, endpoint, atry, query)
     else
       raise ArgumentError, "Invalid HTTP verb: #{http_verb}"
     end
@@ -387,14 +387,26 @@ class FetchService
     end
   end
 
-  def execute_get_request endpoint, args, query
+  def execute_get_request endpoint, atry, query
     @connection.get do |req|
-      req.url "#{endpoint.endpoint_url}?debug=true&debug.explain.structured=true&wt=json"
-      process_get_params(req, args, query)
+      req.url create_url endpoint, atry
+      process_get_params(req, atry.args, query)
     end
   end
 
+  # rubocop:disable Layout/LineLength
+  def create_url endpoint, atry
+    "#{endpoint.endpoint_url}?debug=true&debug.explain.structured=true&wt=json&rows=#{atry.number_of_rows}#{append_fl(atry.field_spec)}"
+  end
+  # rubocop:enable Layout/LineLength
+
+  # should probably be in its own class
+  def append_fl str
+    '&fl=' + str.split.map { |field| field.split(':').first }.join(',') if str.present?
+  end
+
   def process_get_params req, args, query
+    puts args
     args.each do |key, values|
       values.each do |val|
         val.gsub!('#$query##', query.query_text)
@@ -403,10 +415,11 @@ class FetchService
     end
   end
 
-  def execute_body_request method, endpoint, args, query
+  def execute_body_request method, endpoint, atry, query
+    # need to deal with number_of_rows here
     @connection.public_send(method) do |req|
       req.url endpoint.endpoint_url
-      req.body = prepare_request_body(args, query)
+      req.body = prepare_request_body(atry.args, query)
     end
   end
 

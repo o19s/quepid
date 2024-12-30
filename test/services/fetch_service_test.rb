@@ -30,6 +30,21 @@ class FetchServiceTest < ActiveSupport::TestCase
     let(:first_query) { queries(:first_query) }
     let(:blowup_query) { queries(:blowup_query) }
 
+    it 'handles appending rows count defined by try' do
+      fetch_service = FetchService.new options
+
+      url = fetch_service.send(:create_url, atry.search_endpoint, atry)
+      assert_includes url, 'rows=10'
+    end
+
+    it 'handles appending fl definition defined by try' do
+      fetch_service = FetchService.new options
+      # atry.field_spec = ""
+
+      url = fetch_service.send(:create_url, atry.search_endpoint, atry)
+      assert_includes url, 'fl=id,title'
+    end
+
     it 'creates a GET request' do
       fetch_service = FetchService.new options
       response = fetch_service.make_request(atry, first_query)

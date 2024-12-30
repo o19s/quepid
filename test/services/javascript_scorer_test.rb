@@ -83,7 +83,7 @@ class JavascriptScorerTest < ActiveSupport::TestCase
       # Going to just make it return a 0 in FetchService
 
       docs = [ { :id => '77383738', :rating => 0.0 },
-               { :id => '77502729', :rating => 0.0 },              
+               { :id => '77502729', :rating => 0.0 },
                { :id => '77031393', :rating => 0.0 },
                { :id => '78106266', :rating => 0.0 } ]
 
