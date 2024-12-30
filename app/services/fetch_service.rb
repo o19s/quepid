@@ -106,8 +106,8 @@ class FetchService
     query_docs = snapshot_manager.setup_docs_for_query(snapshot_query, docs)
     SnapshotDoc.import query_docs
 
-    # if we don't need the snapshot_docs data, maybe we don't need the reload??
-    # snapshot_query.reload
+    snapshot_query.reload # without this we get duplicate sets of snapshot_docs
+
     snapshot_query
   end
 

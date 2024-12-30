@@ -26,13 +26,13 @@ class RunCaseJob < ApplicationJob
       response_code = response.status
       response_body = response.body
       # need to deal with errors better.
+      docs = []
       if 200 == response_code
         # this is all rough...  just to get some snapshot_docs...
         docs = fetch_service.extract_docs_from_response_body_for_solr response_body
-        fetch_service.store_query_results query, docs, response_code, response_body
-      else
-        fetch_service.store_query_results query, [], response_code, response_body
       end
+
+      fetch_service.store_query_results query, docs, response_code, response_body
 
       Turbo::StreamsChannel.broadcast_render_to(
         :notifications,
