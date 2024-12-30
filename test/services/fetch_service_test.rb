@@ -298,6 +298,7 @@ class FetchServiceTest < ActiveSupport::TestCase
       fetch_service = FetchService.new options
       score_data = fetch_service.score_snapshot(asnapshot, atry)
       assert_equal 2, score_data[:queries].size
+      assert_equal 0.25, score_data[:score]
 
       snapshot_query.reload
       assert_equal 0.5, snapshot_query.score

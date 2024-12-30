@@ -29,6 +29,7 @@ class FetchService
     @snapshot.scorer = @case.scorer
     @snapshot.try = @try
     @snapshot.save!
+
     @snapshot
   end
 
@@ -158,8 +159,8 @@ class FetchService
         code = scorer.code
 
         score = javascript_scorer.score(docs, best_docs, code)
-        puts "the score is #{score}"
-        puts "nan?  #{score.nan?}" if score.is_a? Float
+        # puts "the score is #{score}"
+        # puts "nan?  #{score.nan?}" if score.is_a? Float
         if score.is_a?(Float) && score.nan?
           # snapshot_query.query.notes ||= ""
           # snapshot_query.query.notes << "\n Fetch Service Snapshot #{snapshot_query.snapshot.id}"
@@ -189,10 +190,19 @@ class FetchService
         { score: snapshot_query.score, text: snapshot_query.query.query_text }
     end
 
+    # Opportunity here to fix the averageing logic
+    # at the case level.
+    if queries_detail.any?
+      scores = queries_detail.values.map { |q| q[:score] }
+      average_score = scores.sum.to_f / scores.length
+    else
+      average_score = 0.0
+    end
+
     score_data = {
       all_rated:  [ true, false ].sample,
       queries:    queries_detail,
-      score:      5,
+      score:      average_score,
       try_number: try.try_number,
       user_id:    nil,
     }
@@ -207,7 +217,7 @@ class FetchService
   # rubocop:enable Layout/LineLength
 
   def complete
-    @snapshot.name = 'Fetch [COMPLETED]'
+    @snapshot.name = 'Fetch [CHECKING SNAPSHOTS COUNT]'
     @snapshot.save!
 
     # Keep the first snapshot, and the most recents, deleting the ones out of the middle.
@@ -216,6 +226,9 @@ class FetchService
       snapshots_to_delete = @case.snapshots[1..((@options[:snapshot_limit] * -1) + @case.snapshots.count)]
       snapshots_to_delete.each(&:destroy!)
     end
+
+    @snapshot.name = 'Fetch [COMPLETED]'
+    @snapshot.save!
   end
 
   # rubocop:disable Metrics/MethodLength
