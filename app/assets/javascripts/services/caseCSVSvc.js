@@ -276,7 +276,7 @@
               });
 
               /*global saveAs */
-              saveAs(blob, formatDownloadFileName(aCase.caseName + '_quepid.json'));
+              saveAs(blob, formatDownloadFileName(aCase.caseName + '_case.json'));
             });
         }
 
