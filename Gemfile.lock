@@ -188,7 +188,6 @@ GEM
       devise (>= 4.6)
     docile (1.4.1)
     drb (2.2.1)
-    error_highlight (0.7.0)
     erubi (1.13.1)
     et-orbi (1.2.11)
       tzinfo
@@ -569,7 +568,6 @@ DEPENDENCIES
   derailed_benchmarks
   devise (>= 4.6.2)
   devise_invitable (~> 2.0)
-  error_highlight (>= 0.4.0)
   foreman
   importmap-rails (~> 2.1)
   intercom-rails
