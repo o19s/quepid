@@ -38,8 +38,8 @@ jobs:
       # Restore bundle cache
       - restore_cache:
           keys:
-            - quepid-bundle-v2-{{ checksum "Gemfile.lock" }}
-            - quepid-bundle-v2-
+            - quepid-bundle-v3-{{ checksum "Gemfile.lock" }}
+            - quepid-bundle-v3-
 
       - run:
           name: Bundle Install
@@ -47,7 +47,7 @@ jobs:
 
       # Store bundle cache
       - save_cache:
-          key: quepid-bundle-v2-{{ checksum "Gemfile.lock" }}
+          key: quepid-bundle-v3-{{ checksum "Gemfile.lock" }}
           paths:
             - vendor/bundle
 
