@@ -1,6 +1,6 @@
 <nav class="navbar navbar-expand-lg navbar-secondary">
   <div class="container-fluid">
-    <%= link_to root_path, class: "navbar-brand" do %>
+    <%= link_to root_path, class: "navbar-brand", data: { turbo: false } do %>
       Quepid
       <span class="hover"><%= image_tag 'tagline-sm.png', title: "Give your queries some love" %></span>
     <% end %>

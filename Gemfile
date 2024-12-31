@@ -2,7 +2,7 @@
 
 source 'https://rubygems.org'
 
-ruby '3.3.5'
+ruby '3.3.6'
 
 gem 'activerecord-import', '>= 1.0.7'
 gem 'active_storage_db'
@@ -25,7 +25,7 @@ gem 'devise_invitable', '~> 2.0'
 # Using this as it wires in via Sprockets and I can't get npm version to work with the main app.
 # Had no luck with js/svg approach ;-(
 gem 'foreman'
-gem 'importmap-rails', '~> 2.0'
+gem 'importmap-rails', '~> 2.1'
 gem 'intercom-rails'
 gem 'jbuilder', '~> 2.7'
 gem 'jquery-rails'
@@ -40,7 +40,7 @@ gem 'omniauth-keycloak'
 gem 'omniauth-google-oauth2'
 gem 'omniauth-rails_csrf_protection'
 gem 'postmark-rails'
-gem 'prophet-rb', '~> 0.5.0'
+gem 'prophet-rb', '~> 0.5.3'
 gem 'puma'
 gem 'pundit'
 gem 'rails', '8.0.1'
@@ -72,7 +72,6 @@ group :development do
   # gem 'rack-mini-profiler'
 
   # # Highlight the fine-grained location where an error occurred [https://github.com/ruby/error_highlight]
-  gem 'error_highlight', '>= 0.4.0', platforms: [ :ruby ]
 
   gem 'debugbar'
   gem 'derailed_benchmarks'
