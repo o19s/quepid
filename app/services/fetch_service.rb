@@ -138,8 +138,9 @@ class FetchService
         doc_ratings[rating.doc_id] = rating.rating
       end
 
+      # Some Scorers will need access to the document data as well, so add that
       docs = snapshot_query.snapshot_docs.map do |snapshot_doc|
-        { id: snapshot_doc.doc_id, rating: doc_ratings[snapshot_doc.doc_id] }
+        { id: snapshot_doc.doc_id, rating: doc_ratings[snapshot_doc.doc_id] }.merge(JSON.parse(snapshot_doc.fields))
       end
 
       best_docs = snapshot_query.query.ratings.map do |rating|
