@@ -159,9 +159,9 @@ class CaseTest < ActiveSupport::TestCase
 
             assert_equal the_try.query_params,  cloned_try.query_params
             assert_equal the_try.field_spec,    cloned_try.field_spec
-            assert_equal 'Try 0',               cloned_try.name
+            assert_equal 'Try 1',               cloned_try.name
             assert_equal the_try.escape_query,  cloned_try.escape_query
-            assert_equal 0, cloned_case.tries.first.try_number
+            assert_equal 1, cloned_case.tries.first.try_number
             assert_equal the_try.search_endpoint, cloned_try.search_endpoint
             # don't need these asserts once we assert same end point'
             # assert_equal the_try.search_engine, cloned_try.search_engine
@@ -200,8 +200,8 @@ class CaseTest < ActiveSupport::TestCase
             assert_equal 1, cloned_case.tries.size
             assert_equal the_case.queries.size, cloned_case.queries.size
             assert_equal user.id, cloned_case.owner_id
-            assert_equal 0, cloned_case.last_try_number
-            assert_equal 0, cloned_case.tries.first.try_number
+            assert_equal 1, cloned_case.last_try_number
+            assert_equal 1, cloned_case.tries.first.try_number
           end
         end
       end
@@ -233,8 +233,8 @@ class CaseTest < ActiveSupport::TestCase
 
             assert_equal the_case.queries.count, cloned_case.queries.count
             assert_equal 1, cloned_case.tries.count
-            assert_equal 0, cloned_case.last_try_number
-            assert_equal 0, cloned_case.tries.first.try_number
+            assert_equal 1, cloned_case.last_try_number
+            assert_equal 1, cloned_case.tries.first.try_number
             assert_equal the_case.queries.count, cloned_case.queries.count
             # assert_equal the_case.ratings.count, cloned_case.ratings.count
             assert_equal user.id, cloned_case.owner_id
