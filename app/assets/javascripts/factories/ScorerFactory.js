@@ -7,6 +7,9 @@
       ScorerFactory
     ]);
 
+  // This file contains JavaScript logic that supports running the Scorers on the client side.  
+  // Many of the methods are duplicated in lib/scorer_logic.js to support running Scorers on the server side,
+  // so be aware if you make any changes.
   function ScorerFactory($q, $timeout) {
     var Scorer = function(data) {
       var self = this;
@@ -63,12 +66,12 @@
 
 
       // public functions
-      // NOT in scoring_logic.js
+      // NOT in scorer_logic.js
       function getColors() {
         return scaleToColors(self.scale);
       }
 
-      // NOT in scoring_logic.js
+      // NOT in scorer_logic.js
       function scaleToArray(string) {
         return string.replace(/^\s+|\s+$/g,'')
           .split(/\s*,\s*/)
@@ -77,7 +80,7 @@
           });
       }
 
-      // NOT in scoring_logic.js
+      // NOT in scorer_logic.js
       function scaleToColors (scale) {
         var colorMap = {};
 
@@ -113,7 +116,7 @@
         return colorMap;
       }
 
-      // NOT in scoring_logic.js
+      // NOT in scorer_logic.js
       function scaleToScaleWithLabels(scale, scaleWithLabels) {
         if ( angular.isUndefined(scaleWithLabels) || scaleWithLabels === null ) {
           scaleWithLabels = {};
@@ -132,7 +135,7 @@
         return scaleWithLabels;
       }
 
-      // NOT in scoring_logic.js
+      // NOT in scorer_logic.js
       function setDisplayName(name, communal) {
         if ( communal === true ) {
           return name + ' (Communal)';
@@ -141,7 +144,7 @@
         }
       }
 
-      // NOT in scoring_logic.js
+      // NOT in scorer_logic.js
       function showScaleLabel(value) {
         return  self.showScaleLabels === true &&
                 self.scaleWithLabels !== null &&
@@ -149,7 +152,7 @@
                 angular.isDefined(self.scaleWithLabels[value]);
       }
 
-      // NOT in scoring_logic.js
+      // NOT in scorer_logic.js
       function teamNames() {
         var teams = [];
         angular.forEach(self.teams, function(team) {
@@ -159,7 +162,7 @@
         return self.teamName || teams.join(', ');
       }
 
-      // NOT in scoring_logic.js
+      // NOT in scorer_logic.js
       function baseAvg(docs, count) {
         var sum = 0.0;
         var docsRated = 0;
@@ -185,13 +188,13 @@
         }
       }
 
-      // NOT in scoring_logic.js
+      // NOT in scorer_logic.js
       function baseAvgRounded(docs, count) {
         var avg = self.baseAvg(docs, count);
         return Math.floor(avg);
       }
 
-      // NOT in scoring_logic.js
+      // NOT in scorer_logic.js
       function avg100(docs, count) {
         var max         = self.scale[self.scale.length -1];
         var multiplier  = 100 / max;
@@ -204,7 +207,7 @@
         }
       }
 
-      // NOT in scoring_logic.js
+      // NOT in scorer_logic.js
       function editDistance(str1, str2) {
 
         var makeZeroArr = function(len) {
@@ -251,7 +254,7 @@
         return bestDocsRatings;
       }
 
-      // NOT in scoring_logic.js
+      // NOT in scorer_logic.js
       function distanceFromBest(docs, bestDocs, count) {
         if ( angular.isUndefined(count) ) {
           count = DEFAULT_NUM_DOCS;
@@ -313,7 +316,7 @@
       // We could not get this to work/test, and spent too much time on it.
       // Leaving it here until we do figure out
       // -YC
-      // NOT in scoring_logic.js
+      // NOT in scorer_logic.js
       function checkCodeExecutionTime() {
         return $q(function(resolve, reject) {
           var myWorker = new Worker('scripts/scorerEvalTest.js');
@@ -333,7 +336,7 @@
         });
       }
 
-      // NOT in scoring_logic.js
+      // NOT in scorer_logic.js
       function checkCode() {
         var deferred    = $q.defer();
         var loopPromise = hasLoop();
@@ -350,7 +353,7 @@
       }
 
       // mode may no longer be used..  maybe it was for unit test style scorers?
-      // NOT in scoring_logic.js
+      // NOT in scorer_logic.js
       function runCode(query, total, docs, bestDocs, mode, options) {
         var scale     = self.scale;
         var max       = scale[scale.length-1];
@@ -438,12 +441,12 @@
           return baseAvg(docs, count);
         };
 
-        // NOT in scoring_logic.js
+        // NOT in scorer_logic.js
         var avgRating100 = function(count) {
           return avg100(docs, count);
         };
 
-        // NOT in scoring_logic.js
+        // NOT in scorer_logic.js
         var editDistanceFromBest = function(count) {
           return distanceFromBest(docs, bestDocs, count);
         };
@@ -475,7 +478,7 @@
         };
 
         // may not be called
-        // NOT in scoring_logic.js
+        // NOT in scorer_logic.js
         var refreshRatedDocs = function(k) {
           return query.refreshRatedDocs(k);
         };
@@ -486,7 +489,7 @@
         // each doc.
         // Even those that are not in the top 10 current.
         // may not be used?
-        // NOT in scoring_logic.js
+        // NOT in scorer_logic.js
         //
         // @param score,  Int
         // @param f,      Callback
@@ -522,19 +525,19 @@
           }
         };
 
-        // NOT in scoring_logic.js
+        // NOT in scorer_logic.js
         var recordDepthOfRanking = function (k){
           query.depthOfRating = k;
           self.depthOfRating = k;
         };
 
-        // NOT in scoring_logic.js
+        // NOT in scorer_logic.js
         /*jshint unused:false */
         function pass() {
           scorerDeferred.resolve(100);
         }
 
-        // NOT in scoring_logic.js
+        // NOT in scorer_logic.js
         function fail() {
           scorerDeferred.reject(0);
         }
@@ -543,14 +546,14 @@
           scorerDeferred.resolve(score);
         }
 
-        // NOT in scoring_logic.js
+        // NOT in scorer_logic.js
         function assert(cond) {
           if (!cond) {
             fail();
           }
         }
 
-        // NOT in scoring_logic.js
+        // NOT in scorer_logic.js
         function assertOrScore(cond, score) {
           if (!cond) {
             setScore(score);

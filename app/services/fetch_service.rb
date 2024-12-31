@@ -130,7 +130,7 @@ class FetchService
     queries_detail = {}
 
     snapshot.snapshot_queries.each do |snapshot_query|
-      javascript_scorer = JavascriptScorer.new(Rails.root.join('db/scorers/scoring_logic.js'))
+      javascript_scorer = JavascriptScorer.new(Rails.root.join('lib/scorer_logic.js'))
 
       # Prepare some items to score
       doc_ratings = {}

@@ -14,7 +14,7 @@ class JavascriptScorerTest < ActiveSupport::TestCase
   end
 
   let(:javascript_scorer) do
-    JavascriptScorer.new(Rails.root.join('db/scorers/scoring_logic.js'))
+    JavascriptScorer.new(Rails.root.join('lib/scorer_logic.js'))
   end
 
   describe 'p@10' do
@@ -177,6 +177,40 @@ class JavascriptScorerTest < ActiveSupport::TestCase
 
       score = javascript_scorer.score(docs, best_docs, scorer_code)
       assert_equal 0.33, score
+    end
+  end
+
+  describe 'recency scorer' do
+    let(:the_case) { cases(:case_without_score) }
+
+    test 'runs simple and tests eachDoc w/ a function' do
+      scorer_code = <<-STRING.dup
+        const k = 10; // @Rank
+        let rank = 0;
+        let score = 0;
+        baseDate = new Date("2023-08-15").getTime();
+        eachDoc(function(doc, i) {
+          docDate = doc['publish_date'];
+          const diffTime = (baseDate - new Date(docDate).getTime());
+          const diff = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+          score = score + diff;
+          rank = rank + 1
+        }, k);
+        score = rank > 0 ? score / rank : 0.0;
+        setScore(score);
+      STRING
+
+      # order matters!
+      docs = [
+        { id: 1, rating: 0, publish_date: '2023-08-13' },
+        { id: 2, rating: 0, publish_date: '2023-08-13' },
+        { id: 3, rating: 1, publish_date: '2023-08-14' }
+      ]
+
+      best_docs = []
+
+      score = javascript_scorer.score(docs, best_docs, scorer_code)
+      assert_equal 1.67, score
     end
   end
 end

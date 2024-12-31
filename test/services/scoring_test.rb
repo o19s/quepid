@@ -20,7 +20,7 @@ class ScoringTest < ActiveSupport::TestCase
     end
 
     it 'runs some demo code' do
-      scorer = JavascriptScorer.new(Rails.root.join('db/scorers/scoring_logic.js'))
+      scorer = JavascriptScorer.new(Rails.root.join('lib/scorer_logic.js'))
 
       # Prepare some items to score
       items = [
@@ -42,7 +42,7 @@ class ScoringTest < ActiveSupport::TestCase
     end
 
     it 'handles P@10' do
-      javascript_scorer = JavascriptScorer.new(Rails.root.join('db/scorers/scoring_logic.js'))
+      javascript_scorer = JavascriptScorer.new(Rails.root.join('lib/scorer_logic.js'))
 
       # Prepare some items to score
       docs = [
