@@ -7,6 +7,9 @@ require 'faraday/follow_redirects'
 class RunCaseJob < ApplicationJob
   queue_as :bulk_processing
 
+  # No joy in limiting concurrency to 1
+  # limits_concurrency to: 1, key: :run_case_job
+
   # rubocop:disable Metrics/MethodLength
   def perform acase, atry
     query_count = acase.queries.count
