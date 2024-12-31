@@ -209,7 +209,7 @@ class Case < ApplicationRecord
 
   def clone_try the_try, preserve_history
     new_try = the_try.dup
-    new_try.try_number = preserve_history ? the_try.try_number : 0
+    new_try.try_number = preserve_history ? the_try.try_number : 1
     tries << new_try
 
     the_try.curator_variables.each do |a_curator_variable|
