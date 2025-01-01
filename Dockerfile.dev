@@ -1,4 +1,4 @@
-FROM ruby:3.3.6-bullseye
+FROM ruby:3.4.1-bullseye
 
 LABEL maintainer="quepid_admin@opensourceconnections.com"
 
