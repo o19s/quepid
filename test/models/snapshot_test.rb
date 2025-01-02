@@ -53,12 +53,13 @@ class SnapshotTest < ActiveSupport::TestCase
     let(:asnapshot) { snapshots(:a_snapshot) }
     let(:snapshot_query) { snapshot_queries(:first_snapshot_query) }
 
-    test 'deleting a snapshot ALSO deletes the queries' do
-      pp snapshot_query
+    test 'deleting a snapshot cascades down' do
+      assert 4, asnapshot.snapshot_docs.size
 
-      pp asnapshot
-
-      assert asnapshot.destroy!
+      snapshots_to_delete = []
+      snapshots_to_delete << asnapshot
+      snapshots_to_delete.each(&:destroy!)
+      # assert asnapshot.destroy!
 
       assert_raises(ActiveRecord::RecordNotFound) do
         SnapshotQuery.find(snapshot_query.id)

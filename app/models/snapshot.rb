@@ -32,7 +32,7 @@ class Snapshot < ApplicationRecord
   # see the call back delete_associated_objects for special delete logic.
   has_many    :snapshot_queries, dependent: :destroy
   has_many :snapshot_docs,
-           through: :snapshot_queries, dependent: :destroy
+           through: :snapshot_queries # , dependent: :destroy
 
   has_one_attached :snapshot_file
 
@@ -49,11 +49,11 @@ class Snapshot < ApplicationRecord
     self.name = "Snapshot #{Time.zone.now.strftime('%D')}" if name.blank?
   end
 
-  def delete_associated_objects
-    puts 'I am about to delete associated objects'
-    SnapshotDoc.joins(snapshot_query: :snapshot)
-      .where(snapshot_queries: { snapshot: self })
-      .delete_all
-    snapshot_queries.delete_all
-  end
+  # def delete_associated_objects
+  #   puts 'I am about to delete associated objects'
+  #   SnapshotDoc.joins(snapshot_query: :snapshot)
+  #     .where(snapshot_queries: { snapshot: self })
+  #     .delete_all
+  #   snapshot_queries.delete_all
+  # end
 end
