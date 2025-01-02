@@ -23,7 +23,7 @@ class CaseScoreManagerTest < ActiveSupport::TestCase
       let(:the_case) { cases(:case_without_score) }
 
       test 'raises an error if creation fails' do
-        score_data.delete(:user_id)
+        score_data.delete(:try_number)
 
         assert_raises(ActiveRecord::RecordInvalid) do
           service.update score_data

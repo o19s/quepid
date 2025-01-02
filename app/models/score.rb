@@ -36,7 +36,7 @@ class Score < ApplicationRecord
 
   # Associations
   belongs_to :case, touch: true
-  belongs_to :user
+  belongs_to :user, optional: true
   belongs_to :try
   belongs_to :annotation, optional: true
 
