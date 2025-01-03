@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'test_helper'
+
 # == Schema Information
 #
 # Table name: users
@@ -46,7 +48,6 @@
 #  fk_rails_...  (default_scorer_id => scorers.id)
 #
 
-require 'test_helper'
 # rubocop:disable Layout/LineLength
 class UserTest < ActiveSupport::TestCase
   test 'membership in team' do

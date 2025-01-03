@@ -1,19 +1,19 @@
 <li class='annotation'>
   <div class="dropdown pull-right" uib-dropdown>
     <a uib-dropdown-toggle>
-      <i class="fa fa-bars"></i>
+      <i class="glyphicon glyphicon-menu-hamburger"></i>
     </a>
 
     <ul class="dropdown-menu" uib-dropdown-menu>
       <li>
         <a ng-click='ctrl.update()'>
-          <i class='fa fa-edit'></i>
+          <i class='glyphicon glyphicon-pencil'></i>
           Edit
         </a>
       </li>
       <li>
         <a ng-click='ctrl.delete()' class='text-danger'>
-          <i class='fa fa-trash'></i>
+          <i class='glyphicon glyphicon-trash'></i>
           Delete
         </a>
       </li>
@@ -35,7 +35,7 @@
       Try No: {{ ctrl.theAnnotation.score.try_id }}
     </span>
 
-    <i class='fa fa-circle'></i>
+    <i class='bi bi-circle-fill'></i>
 
     <span class='annotation-score'>
       Score: {{ ctrl.theAnnotation.score.score }}

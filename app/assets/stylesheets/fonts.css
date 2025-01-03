@@ -1,27 +1,27 @@
 @font-face {
     font-family: 'allerregular';
-    src: font-url('aller_rg-webfont.woff2') format('woff2');
+    src: url('aller_rg-webfont.woff2') format('woff2');
     font-weight: normal;
     font-style: normal;
 }
 
 @font-face {
     font-family: 'alleritalic';
-    src: font-url('aller_it-webfont.woff2') format('woff2');
+    src: url('aller_it-webfont.woff2') format('woff2');
     font-weight: normal;
     font-style: normal;
 }
 
 @font-face {
     font-family: 'allerbold';
-    src: font-url('aller_bd-webfont.woff2') format('woff2');
+    src: url('aller_bd-webfont.woff2') format('woff2');
     font-weight: normal;
     font-style: normal;
 }
 
 @font-face {
     font-family: 'allerbold_italic';
-    src: font-url('aller_bdit-webfont.woff2') format('woff2');
+    src: url('aller_bdit-webfont.woff2') format('woff2');
     font-weight: normal;
     font-style: normal;
 }

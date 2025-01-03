@@ -10,12 +10,9 @@
 
 <%= render 'form', search_endpoint: @search_endpoint %>
 
-<br>
-
-<%= button_to 'Cancel', @search_endpoint, method: :get %>
-
-<br>
-
-<%= button_to 'Delete Search Endpoint', @search_endpoint, method: :delete, data: {turbo_method: :delete, turbo_confirm: 'Are you sure?'} %>
-
+<div>
+  <%= link_to "Cancel", @search_endpoint %> |
+  <%= link_to "Back to search endpoints", search_endpoints_path %>
+  <p/>
+  <%= button_to "Destroy this search endpoint", @search_endpoint, method: :delete, class: 'btn btn-sm btn-danger' %>
 </div>

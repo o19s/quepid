@@ -8,7 +8,7 @@
         <% email_login_only = false %>
         <p>
           <%= button_to user_google_oauth2_omniauth_authorize_path, disabled: @flag_not_on_https, data: { turbo: "false" }, :class=> "btn btn-social btn-google" do %>
-            <%= content_tag(:span, "", :class => "fab fa-google") %> Sign in with Google
+            <%= content_tag(:span, "", :class => "bi bi-google") %> Sign in with Google
           <% end %>
           <% if @flag_not_on_https %>
             Please <%= link_to "reload Quepid", new_session_url(protocol: 'https') %> using HTTPS to login via Google.
@@ -18,9 +18,11 @@
 
         <% if Rails.application.config.devise.omniauth_providers.include?(:keycloak_openid) %>
         <% email_login_only = false %>
+        <!-- <a href="https://www.flaticon.com/free-icons/digital" title="digital icons">Digital icons created by Freepik - Flaticon</a> -->
         <p>
           <%= button_to user_keycloakopenid_omniauth_authorize_path, data: { turbo: "false" }, :class=> "btn btn-social btn-openid" do %>
-            <%= content_tag(:span, "", :class => "fab fa-openid") %> Sign in with OpenId
+            <%= image_tag "openid-logo", :class => "black-to-white" %> Sign in with OpenId
+            
           <% end %>
         </p>
         <% end %>

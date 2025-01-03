@@ -18,9 +18,6 @@
 //= require bootstrap/dist/js/bootstrap.bundle
 //= require jquery
 
-//= require vega
-//= require vega-lite
-//= require vega-embed
 //= require party-js/bundle/party
 
 //= require codemirror/lib/codemirror

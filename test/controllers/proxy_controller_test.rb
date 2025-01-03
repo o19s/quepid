@@ -4,13 +4,14 @@ require 'test_helper'
 
 # rubocop:disable Layout/LineLength
 class ProxyControllerTest < ActionDispatch::IntegrationTest
+  # See webmock.rb for the corresponding mocks.
+  #
   test 'should require a url query parameter' do
-    assert_raises(ActionController::ParameterMissing) do
-      get proxy_fetch_path
-    end
-    assert_raises(ActionController::ParameterMissing) do
-      post proxy_fetch_path
-    end
+    get proxy_fetch_path
+    assert_response :bad_request
+
+    post proxy_fetch_path
+    assert_response :bad_request
   end
 
   test 'should be able to handle a get' do
@@ -51,6 +52,13 @@ class ProxyControllerTest < ActionDispatch::IntegrationTest
   test 'should be able to handle a get with spaces in the query' do
     get proxy_fetch_url params: {
       url: 'http://solr.quepid.com:8983/solr/statedecoded/select?q=can I own a tiger', fl: 'id,text', rows: 10, start: 0
+    }
+    assert_response :success
+  end
+
+  test 'should be able to handle a get with non ASCII characters' do
+    get proxy_fetch_url params: {
+      url: 'http://solr.quepid.com:8983/solr/statedecoded/select?q=At dusk, the café transformed into an impromptu stage', fl: 'id,text', rows: 10, start: 0
     }
     assert_response :success
   end

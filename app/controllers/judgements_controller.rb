@@ -124,7 +124,7 @@ class JudgementsController < ApplicationController
   def destroy
     @judgement.destroy
     UpdateCaseRatingsJob.perform_later @judgement.query_doc_pair
-    respond_with(@judgement, :location => book_judgements_path)
+    redirect_to book_judge_path(@book), notice: "Removed rating for query '#{@judgement.query_doc_pair.query_text}'."
   end
 
   private

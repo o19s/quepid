@@ -3,6 +3,8 @@
 require 'faraday'
 require 'faraday/follow_redirects'
 
+require 'addressable/uri'
+
 # rubocop:disable Layout/LineLength
 # rubocop:disable Metrics/AbcSize
 # rubocop:disable Metrics/MethodLength
@@ -11,7 +13,6 @@ require 'faraday/follow_redirects'
 class ProxyController < ApplicationController
   skip_before_action :require_login
   skip_before_action :verify_authenticity_token, only: [ :fetch ]
-  skip_before_action :check_for_announcement
   # curl -X GET "http://localhost:3000/proxy/fetch?url=https://quepid-solr.dev.o19s.com/solr/tmdb/select&q=*:*"
   # curl -X POST "http://localhost:3000/proxy/fetch?url=https://quepid-solr.dev.o19s.com/solr/tmdb/query" -d '{"query":"star"}'
   # curl -X GET "http://localhost:3000/proxy/fetch?url=http://quepid-solr.dev.o19s.com:8985/solr/media/select&q=*:*" -u 'solr:SolrRocks'
@@ -23,7 +24,8 @@ class ProxyController < ApplicationController
 
     proxy_debug = 'true' == params[:proxy_debug]
 
-    uri = URI.parse(url_param)
+    # we use Addressable::URI instead of straight up URI to support non ascii characters like café
+    uri = Addressable::URI.parse(url_param)
     url_without_path = "#{uri.scheme}://#{uri.host}"
     url_without_path += ":#{uri.port}" unless uri.port.nil?
 

@@ -305,7 +305,7 @@ describe('Service: querySnapshotSvc', function () {
       }
     });
 
-    fit('gets saved search results in saved order', function fetchAfterResolveTest() {
+    it('gets saved search results in saved order', function fetchAfterResolveTest() {
       var snap5 = querySnapshotSvc.snapshots['5'];
       var snap5query0Results = snap5.getSearchResults('0');
       expect(snap5query0Results[0].id).toEqual('1');

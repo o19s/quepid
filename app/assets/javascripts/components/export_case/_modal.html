@@ -1,5 +1,5 @@
 <div class="modal-header">
-  <button type="button" class="close" aria-label="Close" ng-click="ctrl.cancel()"><span aria-hidden="true">&times;</span></button>
+  <button type="button" class="close btn-core-close" ng-click="ctrl.cancel()" aria-label="Close"></button>
   <h3 class="modal-title">Export Case: <span class="modal-case">{{ ctrl.theCase.caseName }}</span></h3>
 </div>
 <div class="modal-body">
@@ -25,7 +25,7 @@
     <input type="radio" id="detailed" name="exportSelection" value="detailed" ng-model="ctrl.options.which">
     <label for="detailed" class="disabled">Detailed</label>
     <p ng-if="ctrl.options.which==='detailed' && !ctrl.supportsDetailedExport" class='bg-warning text-warning padded-text'>
-      <i class="fa fa-exclamation-triangle" aria-hidden="true"></i>
+      <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
       Detailed export is only supported from the individual Case view.
     </p>
     <span class="help-block">

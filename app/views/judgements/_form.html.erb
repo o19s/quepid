@@ -327,7 +327,15 @@ judgement.id: <%= judgement.id %>
 
 
   @document_fields_as_json = document_fields_parses_as_json (query_doc_pair.document_fields)
-  has_thumb = !@document_fields_as_json.nil? && @document_fields_as_json.has_key?('thumb')
+
+  image_url = nil
+  if !@document_fields_as_json.nil?
+    if @document_fields_as_json.has_key?('thumb')
+      image_url = @document_fields_as_json['thumb']
+    elsif @document_fields_as_json.has_key?('image')
+      image_url = @document_fields_as_json['image']
+    end
+  end
 
 %>
 
@@ -344,11 +352,11 @@ judgement.id: <%= judgement.id %>
     </div>
   <% end %>
 
-  <% if has_thumb %>
+  <% if image_url %>
   <div class="card mb-3" style="">
     <div class="row g-0">
       <div class="col-md-4 p-2">
-        <img src="<%= @document_fields_as_json['thumb'] %>" class="img-fluid rounded-start rounded-end" alt="Thumbnail Image">
+        <img src="<%= image_url %>" class="img-fluid rounded-start rounded-end" alt="Thumbnail Image">
       </div>
       <div class="col-md-8">
   <% else %>
@@ -450,7 +458,7 @@ judgement.id: <%= judgement.id %>
     <h6 class="card-subtitle">Judging Explanation: <em><%= judgement.explanation %></em></h5>
     <% end %>
   </div>
-  <% if has_thumb %>
+  <% if image_url %>
       </div>
     </div>
   </div>

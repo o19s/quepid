@@ -1,0 +1,105 @@
+qgraph {
+	 height: 100px;
+	 display: block;
+	 margin-top: 20px;
+}
+ qgraph svg {
+	 background-color: white;
+}
+ qgraph path {
+	 stroke: #587;
+	 stroke-width: 2;
+	 fill: none;
+	 stroke-linecap: round;
+}
+ qgraph .axis {
+	 shape-rendering: crispEdges;
+}
+ qgraph .x.axis line {
+	 stroke: lightgrey;
+}
+ qgraph .x.axis .minor {
+	 stroke-opacity: 0.5;
+}
+ qgraph .x.axis path {
+	 display: none;
+}
+ qgraph .y.axis line, qgraph .y.axis path {
+	 fill: none;
+	 stroke: #000;
+}
+ qgraph line.marker {
+	 stroke: blue;
+	 stroke-width: 4;
+	 stroke-linecap: round;
+	 stroke-opacity: 0.3;
+}
+ qgraph .qtip {
+	 position: absolute;
+	 width: 200px;
+	 height: auto;
+	 padding: 10px;
+	 background-color: white;
+	 border-radius: 10px;
+	 box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+	 pointer-events: none;
+}
+ qgraph .qtip .hidden {
+	 display: none;
+}
+ qgraph .qtip p {
+	 margin: 0;
+	 font-family: sans-serif;
+	 font-size: 16px;
+	 line-height: 20px;
+}
+ .d3-tip {
+	 line-height: 1;
+	 font-weight: bold;
+	 padding: 12px;
+	 background: rgba(0, 0, 0, 0.8);
+	 color: #fff;
+	 border-radius: 2px;
+	 pointer-events: none;
+}
+/* Creates a small triangle extender for the tooltip */
+ .d3-tip:after {
+	 box-sizing: border-box;
+	 display: inline;
+	 font-size: 10px;
+	 width: 100%;
+	 line-height: 1;
+	 color: rgba(0, 0, 0, 0.8);
+	 position: absolute;
+	 pointer-events: none;
+}
+/* Northward tooltips */
+ .d3-tip.n:after {
+	 content: "\25BC";
+	 margin: -1px 0 0 0;
+	 top: 100%;
+	 left: 0;
+	 text-align: center;
+}
+/* Eastward tooltips */
+ .d3-tip.e:after {
+	 content: "\25C0";
+	 margin: -4px 0 0 0;
+	 top: 50%;
+	 left: -8px;
+}
+/* Southward tooltips */
+ .d3-tip.s:after {
+	 content: "\25B2";
+	 margin: 0 0 1px 0;
+	 top: -8px;
+	 left: 0;
+	 text-align: center;
+}
+/* Westward tooltips */
+ .d3-tip.w:after {
+	 content: "\25B6";
+	 margin: -4px 0 0 -1px;
+	 top: 50%;
+	 left: 100%;
+}

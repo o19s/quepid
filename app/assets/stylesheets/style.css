@@ -33,11 +33,13 @@
     z-index: 100; */
 }
 
+/* Maybe not needed with new btn-core-close?
 .close {
     font-size: .7em;
     color: gray;
     padding-left: 5px;
 }
+*/
 
 .notes-box {
     width: 100%;

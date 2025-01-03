@@ -1,0 +1,38 @@
+/* Books */
+ #books-filter {
+	 width: 75%;
+}
+ #books-per-page {
+	 width: 20%;
+}
+ #books-listing {
+	 margin: 30px 0;
+}
+ #books-listing .listing-header {
+	 font-weight: bold;
+}
+ #books-listing ul.books-list {
+	 list-style: none;
+	 padding: 0;
+}
+ #books-listing .books-list-item {
+	 line-height: 34px;
+	 margin: 2px 0;
+}
+ #books-listing .books-list-item .item-box {
+	 background: #fff;
+	 border-radius: 6px;
+	 border: 1px solid #aaa;
+	 margin: 0px 2px;
+	 padding-top: 10px;
+	 padding-bottom: 10px;
+}
+ #books-listing .books-list-item .item-actions {
+	 display: none;
+}
+ #books-listing .books-list-item:hover .item-actions {
+	 display: inline-block;
+}
+ #books-listing .books-list-item.col-lg-6:nth-child(2n+1) {
+	 clear: both;
+}

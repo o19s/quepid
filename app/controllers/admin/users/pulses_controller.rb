@@ -23,30 +23,22 @@ module Admin
         case params[:data]
         when 'metadata'
           @data = CaseMetadatum.where(user_id: @user.id)
-            .where('last_viewed_at >= :start AND last_viewed_at <= :end',
-                   start: params[:start],
-                   end:   params[:end])
+            .where(last_viewed_at: (params[:start])..(params[:end]))
             .group(:last_viewed_at)
             .count
         when 'scores'
           @data = Score.where(user_id: @user.id)
-            .where('created_at >= :start AND created_at <= :end',
-                   start: params[:start],
-                   end:   params[:end])
+            .where(created_at: (params[:start])..(params[:end]))
             .group(:created_at)
             .count
         when 'cases-created'
           @data = Case.where(owner_id: @user.id)
-            .where('created_at >= :start AND created_at <= :end',
-                   start: params[:start],
-                   end:   params[:end])
+            .where(created_at: (params[:start])..(params[:end]))
             .group(:created_at)
             .count
         when 'teams-created'
           @data = Team.where(owner_id: @user.id)
-            .where('created_at >= :start AND created_at <= :end',
-                   start: params[:start],
-                   end:   params[:end])
+            .where(created_at: (params[:start])..(params[:end]))
             .group(:created_at)
             .count
         when 'queries-created'

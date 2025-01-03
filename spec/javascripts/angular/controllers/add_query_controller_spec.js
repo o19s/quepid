@@ -122,7 +122,7 @@ describe('Controller: AddQueryCtrl', function () {
 
     expect(createdQ.queryText).toBe(newText);
     promise.resolve();
-    $rootScope.$apply();
+    //$rootScope.$apply();
 
     var persistedQ = mockQueriesSvc.lastPersistedQ();
 

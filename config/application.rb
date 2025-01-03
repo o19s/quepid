@@ -11,7 +11,7 @@ Bundler.require(*Rails.groups)
 module Quepid
   class Application < Rails::Application
     # Initialize configuration defaults for originally generated Rails version.
-    config.load_defaults 7.1
+    config.load_defaults 8.0
 
     # Please, add to the `ignore` list any other `lib` subdirectories that do
     # not contain `.rb` files, or that should not be reloaded or eager loaded.
@@ -28,7 +28,7 @@ module Quepid
 
     config.angular_templates.ignore_prefix = %w[templates/ components/]
 
-    config.active_job.queue_adapter = :sidekiq
+    config.active_job.queue_adapter = :solid_queue
 
     # == SSL Specific Settings
     # Note, if true then this will allow Quepid to ONLY talk to HTTPS based search engines.

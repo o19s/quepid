@@ -58,7 +58,7 @@ angular.module('QuepidApp')
 
       function fetchCaseList () {
         ctrl.loading = true;
-        caseSvc.getCases(false)
+        caseSvc.getCases()
           .then(function() {
             ctrl.loading = false;
             broadcastSvc.send('updatedCasesList', caseSvc.allCases);

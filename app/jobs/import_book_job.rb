@@ -5,6 +5,7 @@ class ImportBookJob < ApplicationJob
 
   # rubocop:disable Security/MarshalLoad
   def perform user, book
+    book.update(import_job: "import started at #{Time.zone.now}")
     options = {}
 
     compressed_data = book.import_file.download
@@ -15,6 +16,7 @@ class ImportBookJob < ApplicationJob
 
     service.import
     book.import_file.purge
+    book.import_job = nil
     book.save
   end
   # rubocop:enable Security/MarshalLoad

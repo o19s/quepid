@@ -127,8 +127,6 @@ describe('Service: docCacheSvc', function () {
       $rootScope.$apply();
       expect(called).toBe(1);
       var mockResolver = docResolverSvc.mockResolver;
-      console.log("looking at mock reoslver")
-      console.log(mockResolver.docs)
       // We only resolved doc 4
       expect(mockResolver.docs.length).toBe(1);
     });

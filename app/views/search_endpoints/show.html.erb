@@ -17,6 +17,6 @@ Search Endpoints represents a search engine (or API!) that is receiving queries 
 <div>
   <%= link_to "Edit this search endpoint", edit_search_endpoint_path(@search_endpoint) %> |
   <%= link_to "Back to search endpoints", search_endpoints_path %>
-
-  <%= button_to "Destroy this search endpoint", @search_endpoint, method: :delete %>
+  <p/>
+  <%= button_to "Destroy this search endpoint", @search_endpoint, method: :delete, class: 'btn btn-sm btn-danger' %>
 </div>

@@ -88,11 +88,21 @@ angular.module('QuepidApp')
               fields['title_field'] = doc.doc.title;
             }          
             
-            if (doc.hasThumb()) {
-              fields['thumb'] = doc.thumb;
+            if (doc.hasThumb()) {              
+              if (doc.thumb_options?.prefix){ // jshint ignore:line
+                fields['thumb'] = `${doc.thumb_options.prefix}${doc.thumb}`;
+              }
+              else {
+                fields['thumb'] = doc.thumb;
+              }
             }
             if (doc.hasImage()){
-              fields['image'] = doc.image;
+              if (doc.image_options?.prefix){ // jshint ignore:line
+                fields['image'] = `${doc.image_options.prefix}${doc.image}`;
+              }
+              else {
+                fields['image'] = doc.image;
+              }
             }
 
             const queryDocPair = {

@@ -1,5 +1,5 @@
 <div class="modal-header">
-  <button type="button" class="close" ng-click="ctrl.cancel()" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+  <button type="button" class="close btn-core-close" ng-click="ctrl.cancel()" aria-label="Close"></button>
   <h3 class="modal-title">Share Case</h3>
 </div>
 <div class="modal-body" ng-hide="ctrl.canUpdateCase">
@@ -10,7 +10,7 @@
   <div ng-show='ctrl.share.loading'>
     <p>
       Loading your teams, this will be quick I promise!
-      <i class='fa fa-spinner fa-spin'></i>
+      <i class='glyphicon glyphicon-refresh spintime'></i>
     </p>
   </div>
 
@@ -20,7 +20,7 @@
     </p>
 
     <a class="btn btn-primary btn-lg" ng-click="ctrl.goToTeamsPage()">
-      <i class="fa fa-plus"></i>
+      <i class="bi bi-plus-lg"></i>
       Create a team
     </a>
   </div>
@@ -48,7 +48,7 @@
 </div>
 <div class="modal-footer">
   <a class="btn btn-primary pull-left" ng-show="ctrl.canCreateTeam" ng-click="ctrl.goToTeamsPage()">
-    <i class="fa fa-plus"></i>
+    <i class="bi bi-plus-lg"></i>
     Create a team
   </a>
   

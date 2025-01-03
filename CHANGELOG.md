@@ -1,6 +1,64 @@
 # Changelog
 
-## 7.17. - 2024-06-14
+## 8.0.0-rc1 - 2024-11-05
+
+Rails 8 RC2 is out.  We're being eager early adopters with some big changes!
+
+* You no longer need Redis!!!!!!!!!!   Redis was used to power background jobs and websockets, and now we just use our database for that.  This makes installing Quepid much simpler.
+* To celebrate our enhance jobs framework, we now actually provide nice UX around starting jobs to prevent you from running multiple in paralel, and give user feedback when one is running.
+* Nicer import book page.  Gave it some UX love.
+* We use the built into Rails health check end point at `/healthcheck`.  Please check your setup.
+* Plus the usual list of updates to all our dependencies.
+* If you don't have `P@10` defined, the migrations blow up.  Thanks @frutik for find the bug.  https://github.com/o19s/quepid/pull/1093
+
+
+## 7.18.1 - 2024-12-06
+
+We've been hard at work on Quepid8, however we have two items that demand a point release:
+
+* Bug fix when looking up potential Querqy rule use and we hadn't finished running the query.  https://github.com/o19s/quepid/commit/cb9e3f4b4fce07c0acfc5301d7c00fcc7b7c8d23 by @epugh.
+
+* Prevent run away querying!  A user of Quepid has a proxy between Quepid and the search engine, and we were overloading it.  https://github.com/o19s/quepid/commit/7cb1f55b7e2cf1f08c06f4d38a0ac3eb679450b4 by @mkr!
+
+## 7.18.0 - 2024-10-04
+
+Wow!  It's been three months since the last release of Quepid, so it's about time.   
+This release brings Quepid up to Rails 7.2 standard, which gets us ready for some of the interesting things in Rails 8, specifically simplifying what you need to run Quepid.  
+There is a good path to removing the dependency on Redis, and maybe even MySQL for small setups!
+
+### Improvements
+
+* Shrink the Quepid Docker image by 1 GB.  This was accomplished by the migration to Rails 7.2 for Quepid in https://github.com/o19s/quepid/pull/1058, fixing https://github.com/o19s/quepid/issues/1004 by @epugh.
+
+* Expanded Quepid's API for working with Search Endpoints.  Thanks @clintbxtreme for opening https://github.com/o19s/quepid/issues/1056, and this was fixed in https://github.com/o19s/quepid/pull/1057 by @epugh.
+
+* Using SMUI and want to see if your rule was triggered?  Now you can, we have a Querqy icon!  Previously you would have to dig into the query parsing explanation to know.  https://github.com/o19s/quepid/issues/1050 by @clamar-VM was fixed by https://github.com/o19s/quepid/pull/1053 by @epugh.
+
+### Bugs
+
+* When rating images that have a prefix defined, the prefix was being lost.  Thanks @clamar-VM for finding this, fixed in @https://github.com/o19s/quepid/pull/1054 by @epugh.
+
+* We got too strict with our cookies, and Quepid quit working with Keycloak.  Thanks @drieschel for https://github.com/o19s/quepid/pull/1049.
+
+## 7.17.1 - 2024-06-26
+
+### Improvements
+
+* Proxied connections can now handle non ASCII characters like `café`.  https://github.com/o19s/quepid/pull/1043 by @epugh.  Thanks @miguelmesas for opening up the ticket that tipped me off to this.
+
+* `p@10` scorer now is smarter to handle non binary judgements.  https://github.com/o19s/quepid/pull/991 by @david-fisher.  Sorry this took so long to get merged!
+
+* RAG style queries are MUCH longer.  @miguelmesas opened up which is fixed by https://github.com/o19s/quepid/pull/1042 and https://github.com/o19s/quepid/pull/1037 by @epugh.
+
+* Improve the bulk query API to support 1000's of queries.  https://github.com/o19s/quepid/pull/1037 by @epugh.
+
+* Small tweaks to the layout of the Search Endpoints to move the Destroy action away from the edit action.  Thanks @okkeklein for reporting https://github.com/o19s/quepid/issues/900. 
+
+### Bugs
+
+* Resetting skipped and can't judge query/doc pairs is fixed.  Thanks @pfries for opening https://github.com/o19s/quepid/issues/1040.   Quite a few other Turbo Drive related navigation issues fixed.
+
+## 7.17.0 - 2024-06-14
 
 This is a big one!   We have broken the tyranny of the web request/response lifecycle by embracing some powerful Rails technologies:
   

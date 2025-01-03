@@ -1,4 +1,4 @@
-<form class="form input-append">
+<form class="form input-append vertically-centered">
   <input
     id="add-query"
     class="form-control"
@@ -17,5 +17,5 @@
     value="{{ ctrl.text.indexOf(';') === -1 ? 'Add query' : 'Add queries' }}"
    />
 
-  <i class="fa fa-spinner fa-spin" ng-class="{'hidden': !ctrl.loading}"></i>
+  <i class="spinner" ng-class="{'hidden': !ctrl.loading}">/>
 </form>

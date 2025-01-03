@@ -3,7 +3,11 @@
 # Table name: books
 #
 #  id                          :bigint           not null, primary key
+#  export_job                  :string(255)
+#  import_job                  :string(255)
 #  name                        :string(255)
+#  populate_job                :string(255)
+#  query_doc_pairs_count       :integer          default(0), not null
 #  show_rank                   :boolean          default(FALSE)
 #  support_implicit_judgements :boolean
 #  created_at                  :datetime         not null

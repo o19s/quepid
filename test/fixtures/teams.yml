@@ -30,7 +30,7 @@ shared:
   members:  doug, shared_scorer_owner, random, not_shared_case_owner, dropdown_user, random_1
   scorers:  shared_scorer, shared_scorer1, shared_scorer2
   cases:    shared_with_team
-  search_endpoints: one, for_shared_team_case
+  search_endpoints: one, for_shared_team_case, for_case_queries_case
   books:    james_bond_movies, book_of_star_wars_judgements, empty_book
 
 case_finder_owned_team:

@@ -1,0 +1,20 @@
+<% unless Rails.application.config.cookies_url.blank? %>
+  <% if cookies.kind_of? ActionDispatch::Cookies::CookieJar %>
+    <% if cookies && cookies['cookie_eu_consented'] != 'true' %>
+      <div class="toast" id="consent_banner" role="alert" data-bs-autohide="true" data-bs-delay="15000">
+        <div class="toast-header">
+          <strong class="me-auto">Cookies</strong>
+          <!--small class="text-muted">11 mins ago</small-->
+          <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body">
+          Cookies help us deliver our services. By using our services, you agree to our use of cookies.
+          <div class="mt-2 pt-2 border-top">
+            <%= link_to 'Learn more', Rails.application.config.cookies_url, class: "btn btn-sm btn-secondary", target: "_blank" %>
+            <button type="button" class="js-cookies-eu-ok btn btn-primary btn-sm" data-bs-dismiss="toast">Accept</button>      
+          </div>
+        </div>
+      </div>
+    <% end %>
+  <% end %>
+<% end %>

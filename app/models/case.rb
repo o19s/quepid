@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+# rubocop:disable Metrics/ClassLength
+
 # == Schema Information
 #
 # Table name: cases
@@ -8,6 +10,7 @@
 #  archived        :boolean
 #  case_name       :string(191)
 #  last_try_number :integer
+#  nightly         :boolean
 #  options         :json
 #  public          :boolean
 #  created_at      :datetime         not null
@@ -25,7 +28,6 @@
 #  cases_ibfk_1  (owner_id => users.id)
 #
 
-# rubocop:disable Metrics/ClassLength
 class Case < ApplicationRecord
   # Associations
   # too late now!

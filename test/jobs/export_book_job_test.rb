@@ -7,12 +7,15 @@ class ExportBookJobTest < ActiveJob::TestCase
   let(:book) { books(:james_bond_movies) }
 
   test 'export the book works' do
+    assert_nil book.export_job
     assert_not book.export_file.attached?
 
     perform_enqueued_jobs do
       ExportBookJob.perform_now(book)
+      # assert_not_nil book.export_job
     end
 
+    assert_nil book.export_job
     assert book.export_file.attached?
 
     # Get the Active Storage attachment
