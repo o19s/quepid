@@ -19,9 +19,9 @@ function err(lst, maxG=3.0) {
     let ERR = 0.0
     let trust = 1.0
     for (i = 0; i < lst.length; i++) {
-        let rank = i + 1.0
-        let pUseful = gain(lst[i], maxG)
-        let disc = pUseful/rank
+        const rank = i + 1.0
+        const pUseful = gain(lst[i], maxG)
+        const disc = pUseful/rank
         ERR = ERR + trust * disc
         trust = trust * (1.0 - pUseful)
     }
