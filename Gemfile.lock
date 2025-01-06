@@ -1,14 +1,3 @@
-GIT
-  remote: https://github.com/epugh/angular-rails-templates.git
-  revision: a5e008d7993c30e72281e6c5246f2d75b2762fee
-  branch: bump_rails_8
-  specs:
-    angular-rails-templates (1.3.0)
-      railties (>= 5.0, < 8.1)
-      sprockets (>= 3.0, < 5)
-      sprockets-rails
-      tilt
-
 GEM
   remote: https://rubygems.org/
   specs:
@@ -100,6 +89,11 @@ GEM
       safely_block (>= 0.4)
     ancestry (4.3.3)
       activerecord (>= 5.2.6)
+    angular-rails-templates (1.3.0)
+      railties (>= 5.0, < 8.1)
+      sprockets (>= 3.0, < 5)
+      sprockets-rails
+      tilt
     annotaterb (4.13.0)
     ansi (1.5.0)
     apipie-rails (1.4.2)
@@ -552,7 +546,7 @@ DEPENDENCIES
   addressable (~> 2.8)
   ahoy_matey
   ancestry
-  angular-rails-templates!
+  angular-rails-templates (~> 1.3)
   annotaterb (~> 4.13)
   apipie-rails (~> 1.2)
   bcrypt (~> 3.1.7)
