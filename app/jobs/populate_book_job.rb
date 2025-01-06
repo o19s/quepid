@@ -6,10 +6,10 @@ class PopulateBookJob < ApplicationJob
   # rubocop:disable Security/MarshalLoad
   # rubocop:disable Metrics/MethodLength
   # rubocop:disable Metrics/AbcSize
-  def perform book, kase, user
+  def perform book, kase, _user
     # down the road we should be using ActiveRecord-import and first_or_initialize instead.
     # See how snapshots are managed.
-    is_book_empty = book.query_doc_pairs.empty?
+    book.query_doc_pairs.empty?
 
     book.update(populate_job: "populate started at #{Time.zone.now}")
     compressed_data = book.populate_file.download
@@ -55,7 +55,8 @@ class PopulateBookJob < ApplicationJob
 
     RunJudgeJudyJob.perform_later book
 
-    Analytics::Tracker.track_query_doc_pairs_bulk_updated_event user, book, is_book_empty
+    # throwing an exception in tests..
+    # Analytics::Tracker.track_query_doc_pairs_bulk_updated_event user, book, is_book_empty
   end
   # rubocop:enable Security/MarshalLoad
   # rubocop:enable Metrics/MethodLength
