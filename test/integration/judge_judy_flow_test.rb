@@ -34,7 +34,7 @@ class JudgeJudyFlowTest < ActionDispatch::IntegrationTest
     # Wait for her to judge
     perform_enqueued_jobs do
       # patch :update, params: data
-      RunJudgeJudyJob.perform_later(book)
+      RunJudgeJudyJob.perform_later(book, judge_judy)
     end
 
     book.reload
