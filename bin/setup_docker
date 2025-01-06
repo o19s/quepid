@@ -34,6 +34,9 @@ Dir.chdir APP_ROOT do
   system "bin/docker r yarn"
   system "bin/docker r ./wait-for mysql:3306 --timeout=60 -- bin/rake db:setup"
   system "bin/docker r bin/rake db:migrate"
+  
+  puts "\n== Removing old logs and tempfiles =="
+  system "bin/docker r rails log:clear tmp:clear"
 
   puts "\n== Setting up Seed Data for Development =="
   system "bin/docker r bundle exec thor sample_data:sample_data"

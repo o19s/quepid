@@ -1,20 +1,3 @@
-.fas[data-count]{
-    position:relative;
-}
-.fas[data-count]:after{
-    position: absolute;
-    right: -0.75em;
-    top: -.75em;
-    content: attr(data-count);
-    padding: .5em;
-    border-radius: 5em;
-    line-height: .9em;
-    color: white;
-    background: rgba(255,0,0,.5);
-    text-align: center;
-    min-width: 2em;
-    font: bold .25em sans-serif;
-}
 
 .frog-pond {
   height: 550px;
@@ -23,7 +6,7 @@
 
 .frog-pond::before{
   content: '';
-  background-image: image-url("frog-pond.jpg");
+  background-image: url("frog-pond.jpg");
   background-position: center;
   background-repeat: no-repeat;
   position: absolute;
@@ -48,7 +31,7 @@
     display: inline-block;
     width: 24px;  /* Adjust to match your image width */
     height: 24px; /* Adjust to match your image height */
-    background-image: image-url('querqy-icon.png');
+    background-image: url('images/querqy-icon.png');
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;

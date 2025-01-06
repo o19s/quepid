@@ -1,6 +1,6 @@
 <div id='cases' class='container'>
   <h2>
-    Relevancy Cases
+    Relevancy Cases   
   </h2>
 
   <div class="row">
@@ -56,11 +56,12 @@
   </div>
 
   <div class="clearfix loading-cases-msg" ng-if="casesScope.loadingCases">
-    <span class="fa fa-spinner fa-spin"></span>
+    <span class="glyphicon glyphicon-refresh spintime"></span>
     <span>Loading Your Cases</span>
   </div>
 
   <div id='cases-listing'>
+    <span ng-if="casesScope.allCases.length >30"><i>Showing limited details since you have many many ({{casesScope.allCases.length}}) cases.  You may want to archive some or remove yourself from old teams.</i></span>
     <div ng-if="casesScope.allCases.length !== 0">
       <div class="row listing-header">
         <div class="col-xs-12 cases-list-header">

@@ -1,0 +1,15 @@
+.scale-with-label-element {
+  display: block;
+}
+
+.scale-label {
+  display: inline-block;
+  float: right;
+  margin-left: 10px;
+  width: calc(100% - 50px);
+}
+
+/* give some space to the top of the admin page */
+main > .container {
+	 padding: 20px 15px 0;
+}

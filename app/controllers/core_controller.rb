@@ -4,9 +4,11 @@
 class CoreController < ApplicationController
   before_action :set_case_or_bootstrap, except: :new
   before_action :populate_from_params, except: :new
-  skip_before_action :check_for_announcement
 
   def index
+    if params['protocolToSwitchTo']
+      Analytics::Tracker.track_user_swapped_protocol current_user, @case, params['protocolToSwitchTo']
+    end
   end
 
   # We want to distingush between a /case url and a /teams for unfurling logic.

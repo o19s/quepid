@@ -5,7 +5,7 @@
   <div class="btn-toolbar mb-2 mb-md-0">
     <div class="btn-group me-2">
       <%= link_to 'New Book', new_book_path, class: "btn btn-sm btn-outline-secondary" %>
-      <%= link_to 'Export', books_export_path(@book), data: { turbo: false }, class: "btn btn-sm btn-outline-secondary" %>
+      <%= button_to 'Export', books_export_path(@book), method: :put, data: { turbo: false }, class: "btn btn-sm btn-outline-secondary" %>
     </div>
   </div>
 </div>
@@ -102,6 +102,9 @@ This book consists of <%= @book.query_doc_pairs.count %> query document pairs an
   <% end %>
   <% if @book.import_file.attached? %>
     <%= link_to 'Import file', rails_blob_path(@book.import_file.blob, only_path: true) %> made <%= time_ago_in_words @book.import_file.created_at %> ago.
+    <%if @book.import_job %>
+      There is currently a import job for this book.  It is <code><%=@book.import_job%></code>.
+    <% end %>
   <% end %>
   <% if @book.export_file.attached? %>
     <%= link_to 'Export file', rails_blob_path(@book.export_file.blob, only_path: true) %> made <%= time_ago_in_words @book.export_file.created_at %> ago.
@@ -124,20 +127,37 @@ This book consists of <%= @book.query_doc_pairs.count %> query document pairs an
 <%= button_to 'Back to Books', books_path, method: :get %>
 </p>
 
-<h3>Export Data</h3>
-<p>
-  Export just the <%= link_to 'judgement data', api_book_path(@book, format: :csv) %> in CSV format.
-</p>
-<p>
-  <%= link_to 'Export', books_export_path(@book), data: { turbo: false } %> the entire book in JSON format.
-  <% if @book.export_file.present? %>
-    There is an export file created <%= time_ago_in_words @book.export_file.created_at %> ago <%=link_to 'available here', rails_blob_path(@book.export_file.blob, only_path: true) %>.
-  <% end %>
-</p>
-<p>
-  To reference these judgements from a notebook or another system you can reference these <%= link_to 'Quepid APIs', apipie_apipie_path %> endpoints:
-  <code><%= api_book_path(@book, format: :csv) %></code> or <code><%= api_export_book_path(@book) %></code>
-</p>
+<div class="card" style="">
+  <div class="card-body">
+    <h5 class="card-title">Export Data</h5>
+    <p class="card-text">There are a number of ways to export the Book data.</p>
+
+    <ul class="list-group list-group-flush">
+      <li class="list-group-item">Export just the <%= link_to 'judgement data', api_book_path(@book, format: :csv) %> in CSV format.  This will take a bit but you get a CSV file in your browser.</li>
+
+      <li class="list-group-item">Export the entire Book in JSON format.
+        <% if @book.export_job %>
+          The book is currently being exported.  The status is <code><%=@book.export_job%></code>.
+        <% else %>
+          <%= button_to "#{@book.export_file.present? ? 'Re-Export' : 'Export'}", books_export_path(@book), method: :put, data: { turbo: false }, class: "#{@book.export_job.nil? ? '' : 'disabled'}" %>
+        <% end %>
+        <% if @book.export_file.present? %>
+          <p>
+          There is an export file created <%= time_ago_in_words @book.export_file.created_at %> ago <%=link_to 'available here', rails_blob_path(@book.export_file.blob, only_path: true) %>.
+        </p>
+        <% end %>
+      </li>
+      <li class="list-group-item">
+        <p>
+          Reference these judgements from a notebook or another system you can use these <%= link_to 'Quepid APIs', apipie_apipie_path %> endpoints:
+          <code><%= api_book_path(@book, format: :csv) %></code> or <code><%= api_export_book_path(@book) %></code>
+        </p>
+
+      </li>
+    </ul>
+  </div>
+</div>
+
 
 <h3>Leaderboard</h3>
 <div class="card">
@@ -175,7 +195,7 @@ This book consists of <%= @book.query_doc_pairs.count %> query document pairs an
     <% @stats_data.each do | row | %>
     <tr>
       <th scope="row">
-        <%=display_judge_name (row[:judge]) %> 
+        <%=display_judge_name (row[:judge]) %>
         <% if row[:judge] && row[:judge].ai_judge? %>
         <i class="bi bi-robot"></i>
         <% end %>

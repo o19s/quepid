@@ -1,11 +1,20 @@
 # frozen_string_literal: true
 
+# rubocop:disable Metrics/ModuleLength
 module ApplicationHelper
   def book_title book
     if book.name.downcase.starts_with?('book')
-      book.name
+      book.name.capitalize
     else
       "Book #{book.name}"
+    end
+  end
+
+  def case_title kase
+    if kase.case_name.downcase.starts_with?('case')
+      kase.case_name.capitalize
+    else
+      "Case #{kase.case_name}"
     end
   end
 
@@ -98,4 +107,34 @@ module ApplicationHelper
     # Call the original `form_with` method with the modified options
     super
   end
+
+  # Match the link to the core case url with the endpoint_url
+  # if we have one.  Avoids a swap in the core application.
+  def link_to_core_case name, kase, try_number, options = {}
+    # Ensure options[:data] is set to { turbo_prefetch: false }
+    options[:data] ||= {}
+    options[:data][:turbo_prefetch] = false
+
+    endpoint_url = kase.tries.first&.search_endpoint&.endpoint_url
+    protocol = nil
+    if endpoint_url
+      protocol = get_protocol_from_url(endpoint_url)
+      port = 443 if 'https' == protocol
+    end
+    path = case_core_url(kase, try_number, protocol: protocol, port: port)
+
+    # Call the original link_to method with the modified options
+    link_to(name, path, options)
+  end
+
+  def get_protocol_from_url url
+    parsed_url = URI.parse(url)
+    protocol = parsed_url.scheme # This gets the protocol (http, https, etc.)
+    protocol
+  rescue URI::InvalidURIError => e
+    # Handle the error (e.g., log it, return nil)
+    Rails.logger.error("Invalid URL for search endpoint: #{url} - Error: #{e.message}")
+    nil
+  end
 end
+# rubocop:enable Metrics/ModuleLength

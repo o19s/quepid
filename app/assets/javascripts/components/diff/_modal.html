@@ -1,5 +1,5 @@
 <div class="modal-header">
-  <button type="button" class="close" aria-label="Close" ng-click="ctrl.cancel()"><span aria-hidden="true">&times;</span></button>
+  <button type="button" class="close btn-core-close" ng-click="ctrl.cancel()" aria-label="Close"></button>
   <h3 class="modal-title">Compare Your Search Results</h3>
 </div>
 <div class="modal-body">
@@ -22,7 +22,7 @@
         ng-click="ctrl.toggleDel(ctrl.selection)"
         title="delete"
       >
-        <i class='fa fa-times'></i>
+        <i class='bi bi-x-lg'></i>
       </a>
 
       <div class="alert alert-warning" ng-show="ctrl.delStarted()">

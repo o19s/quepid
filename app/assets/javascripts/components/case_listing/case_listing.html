@@ -14,7 +14,7 @@
         </span>
         <br/>
         <span class="item-actions">
-          <action-icon title="'Rename'" icon-class="'fa fa-edit'" fn-call="ctrl.rename()"></action-icon>
+          <action-icon title="'Rename'" icon-class="'glyphicon glyphicon-pencil'" fn-call="ctrl.rename()"></action-icon>
 
           <delete-case this-case="ctrl.thisCase"></delete-case>
           <archive-case this-case="ctrl.thisCase"></archive-case>
@@ -50,7 +50,7 @@
     {{ ctrl.thisCase.lastScore.score }}
 
     <span ng-show="ctrl.thisCase.lastScore.all_rated === false" class='text-warning' title="Hop to it!  There are unrated results!">
-      <i class="fa fa-frog"></i>
+      <i class="frog-icon">🐸</i>
     </span>
   </div>
 

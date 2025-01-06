@@ -3,6 +3,11 @@ Inspired by https://dev.to/themesberg/tutorial-how-to-build-a-simple-admin-dashb
 -->
 <%= turbo_stream_from(:notifications) %>
 
+<div class="toast-container top-0 end-0 p-3">
+  <%= render partial: "consent_toast" %>
+  
+</div>
+
 <div class="text-center">
     <p/>
     <h5 class="card-title"><%= Time.now.strftime("%A, %B %d") %></h5>
@@ -10,11 +15,11 @@ Inspired by https://dev.to/themesberg/tutorial-how-to-build-a-simple-admin-dashb
 </div>
 
 <div class="row my-4 card_summary_container">
-  <%= render partial: "case_summary", collection: @most_recent_cases, as: :kase %>
+  <%= render partial: "case_summary", collection: @most_recent_cases, as: :kase, cached: true %>
 </div>
 
 <div class="row my-4">
-  <%= render partial: "book_summary", collection: @most_recent_books, as: :book %>
+  <%= render partial: "book_summary", collection: @most_recent_books, as: :book, cached: true %>
 </div>
 
 <% if @cases.empty? && @most_recent_books.empty?  %>
@@ -25,7 +30,7 @@ Inspired by https://dev.to/themesberg/tutorial-how-to-build-a-simple-admin-dashb
         We're so excited that you are embarking on the journey to improving search quality!   There is so much to explore in Quepid.   However a good place to start is to create your first relevancy case using our demo datasets.
       </p>
       <div class="d-inline-flex gap-2 mb-5">
-        <%= button_to "Create Your First Relevancy Case", case_new_path, method: :get, class: 'd-inline-flex align-items-center btn btn-primary btn-lg px-4 rounded-pill' %>
+        <%= button_to "Create Your First Relevancy Case", case_new_path, data: { turbo_prefetch: false }, method: :get, class: 'd-inline-flex align-items-center btn btn-primary btn-lg px-4 rounded-pill' %>
       </div>
     </div>
   </div>
@@ -53,7 +58,7 @@ Inspired by https://dev.to/themesberg/tutorial-how-to-build-a-simple-admin-dashb
                         </tbody>
                       </table>
                 </div>
-                <%= link_to 'View all cases', cases_path(), class: 'btn btn-block btn-light', role: 'button' %>                
+                <%= link_to 'View all Cases', cases_path(), class: 'btn btn-block btn-light', role: 'button' %>                
                 
             </div>
         </div>      
@@ -68,10 +73,3 @@ Inspired by https://dev.to/themesberg/tutorial-how-to-build-a-simple-admin-dashb
       </div>
   </div>
 <% end %>
-
-<hr/>
-<turbo-frame id="sparklines_tray" src="<%= home_sparklines_path %>">
-  <div class="spinner-border" role="status">
-    <span class="visually-hidden">Loading...</span>
-  </div>
-</turbo-frame>

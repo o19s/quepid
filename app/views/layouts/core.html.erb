@@ -14,8 +14,6 @@
 <base href="<%= ENV['RAILS_RELATIVE_URL_ROOT'] %>/">
 </head>
 <body ng-app="QuepidApp">
-  <%= render 'cookies_eu/consent_banner', link: '/cookies', target: '_blank' unless Rails.application.config.cookies_url.blank? %>
-
   <%= render 'layouts/header_core_app' %>
 
   <div id="main-content">
@@ -39,6 +37,5 @@
       ]);
   </script>
 
-  <%= render 'layouts/common_js' %>
 </body>
 </html>

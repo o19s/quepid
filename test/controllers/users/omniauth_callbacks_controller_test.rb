@@ -28,8 +28,11 @@ module Users
         OmniAuth.config.add_mock(:google_oauth2, { info: { 'email' => user.email } })
         @request.env['omniauth.auth'] = OmniAuth.config.mock_auth[:google_oauth2]
 
+        assert_nil @controller.ahoy.user
+
         post :google_oauth2
 
+        assert_not_nil @controller.ahoy.user
         assert_redirected_to root_path
         assert_nil flash[:alert]
       end
@@ -43,6 +46,7 @@ module Users
         @request.env['omniauth.auth'] = OmniAuth.config.mock_auth[:google_oauth2]
 
         post :google_oauth2
+        assert_not_nil @controller.ahoy.user
 
         user.reload
         assert_equal user.num_logins, original_number + 1
@@ -67,6 +71,7 @@ module Users
 
         post :google_oauth2
 
+        assert_nil @controller.ahoy.user
         assert_redirected_to root_path
         assert_equal flash[:alert], 'You can only sign in with already created users.'
         assert_nil session[:current_user_id], 'does not set a user'

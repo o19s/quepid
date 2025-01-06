@@ -1,0 +1,50 @@
+/*
+* This is a manifest file that'll be compiled into application.css, which will include all the files
+* listed below via Sprockets.
+ *
+ * Any CSS and SCSS file within this directory, lib/assets/stylesheets, vendor/assets/stylesheets,
+ * or any plugin's vendor/assets/stylesheets directory can be referenced here using a relative path.
+ *
+ * You're free to add application-wide styles to this file and they'll appear at the bottom of the
+ * compiled file so the styles you add here take precedence over styles defined in any styles
+ * defined in the other CSS/SCSS files in this directory. It is generally better to create a new
+ * file per style scope.
+ */
+ 
+ /*
+ * We use Bootstrap 5 everywhere except the core app, which is stuck in Bootstrap 3.
+ * This loads bootstrap3
+ *= require bootstrap3
+ *
+ * We use Bootstrap Icons to have icons that work between core and the rest of the app
+ *= require bootstrap-icons/font/bootstrap-icons
+ *
+ *= require fonts
+ *= require bootstrap3-add
+ *
+ *= require style
+ *= require base
+ *= require panes
+ *= require stackedChart
+ *
+ * Tour/Guides
+ *= require "tether-shepherd/dist/css/shepherd-theme-arrows"
+ *= require "tour"
+ *
+ * Screens
+ *= require "cases"
+ *= require "scorers"
+ *= require "books"
+ *= require "search_endpoints"
+ *= require "teams"
+ *= require "users"
+ *= require "docs"
+ *= require "settings"
+ *= require "qscore"
+ *= require "qgraph"
+ *
+ * Other
+ *= require "misc"
+ *= require "animation"
+ *= require "froggy"
+ */

@@ -41,11 +41,13 @@ class CaseToBookToCaseFlowTest < ActionDispatch::IntegrationTest
 
     assert_response :no_content
 
-    assert_enqueued_jobs 2
+    # print_jobs
+
+    assert_enqueued_jobs 2, except: Ahoy::GeocodeV2Job
 
     perform_enqueued_jobs
 
-    assert_performed_jobs 2
+    assert_performed_jobs 2, except: Ahoy::GeocodeV2Job
 
     # the new Case that we will populate from a book...
     new_case = Case.create(case_name: 'test case', owner: user)
@@ -63,5 +65,11 @@ class CaseToBookToCaseFlowTest < ActionDispatch::IntegrationTest
     assert_equal old_query.information_need, new_query.information_need
     assert_equal old_query.notes, new_query.notes
     assert_equal old_query.options, new_query.options
+  end
+
+  def print_jobs
+    enqueued_jobs.each do |job|
+      puts "Job: #{job[:job]}, Arguments: #{job[:args].inspect}"
+    end
   end
 end

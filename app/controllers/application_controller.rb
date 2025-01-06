@@ -8,14 +8,13 @@ class ApplicationController < ActionController::Base
   include Authentication::CurrentBookManager
 
   # Only allow modern browsers supporting webp images, web push, badges, import maps, CSS nesting, and CSS :has.
-  allow_browser versions: :modern
+  # allow_browser versions: :modern
 
   respond_to :html, :js
 
   before_action :set_current_user
   before_action :require_login
   before_action :check_current_user_locked!
-  before_action :check_for_announcement
 
   # Prevent CSRF attacks by raising an exception.
   # For APIs, you may want to use :null_session instead.
@@ -23,12 +22,11 @@ class ApplicationController < ActionController::Base
 
   private
 
-  def signup_enabled?
-    Rails.application.config.signup_enabled
+  def deserialize_bool_param param
+    ActiveRecord::Type::Boolean.new.deserialize(param) || false
   end
 
-  def check_for_announcement
-    @announcement = Announcement.where(live: true).latest_unseen_for_user(@current_user).first if @current_user
-    AnnouncementViewed.create(user: @current_user, announcement: @announcement) if @announcement
+  def signup_enabled?
+    Rails.application.config.signup_enabled
   end
 end

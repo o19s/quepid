@@ -67,7 +67,7 @@ angular.module('QuepidApp')
         }
       };
 
-      teamSvc.listForSharing()
+      teamSvc.list()
         .then(function() {
           angular.forEach(teamSvc.teams, function(team) {
             addTeamToLists(team);

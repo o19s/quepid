@@ -96,7 +96,7 @@ describe('Controller: QueryparamsCtrl', function () {
     scope.settings.searchUrl = 'https://example.com'
     scope.qp.toggleTab();
     expect(scope.showTLSChangeWarning).toBeTruthy();
-    expect(scope.quepidUrlToSwitchTo).toEqual('https://server/?searchEngine=solr&searchUrl=https://example.com&showWizard=false&apiMethod=JSONP&fieldSpec=id:id title:title')
+    expect(scope.quepidUrlToSwitchTo).toEqual('https://server/?protocolToSwitchTo=https&searchEngine=solr&searchUrl=https://example.com&showWizard=false&apiMethod=JSONP&fieldSpec=id:id title:title')
     scope.settings.searchUrl = 'http://example.com'
     scope.qp.toggleTab();
     expect(scope.showTLSChangeWarning).toBeFalsy();

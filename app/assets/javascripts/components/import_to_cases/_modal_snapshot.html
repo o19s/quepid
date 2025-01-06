@@ -1,5 +1,5 @@
 <div class="modal-header">
-  <button type="button" class="close" ng-click="ctrl.cancel()" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+  <button type="button" class="close btn-core-close" ng-click="ctrl.cancel()" aria-label="Close"></button>
   <h3 class="modal-title">Import Snapshot</h3>
 </div>
 <div class="modal-body">
@@ -52,7 +52,7 @@ Legacy Search, 210/15/18 18:05,2098,star trek,10592,5
     ng-click="ctrl.ok()"
     ng-disabled='ctrl.import.loading'
   >
-    <i ng-show='ctrl.import.loading' class='fa fa-spin fa-spinner'></i>
+    <i ng-show='ctrl.import.loading' class='glyphicon glyphicon-refresh spintime'></i>
     Import
   </button>
   <button class="btn btn-default" ng-click="ctrl.cancel()">Cancel</button>

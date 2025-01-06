@@ -19,11 +19,22 @@
     <p/>
     <div class="card" style="">
       <div class="card-body">
+        <h5 class="card-title">Analytics</h5>
+        <p class="card-text">Dig into the data being collected by users.</p>
+        
+        <ul class="list-group list-group-flush">
+          <li class="list-group-item"><%= link_to 'SQL Analytics', blazer_path %>
+        </ul>
+      </div>
+    </div>
+    <p/>
+    <div class="card" style="">
+      <div class="card-body">
         <h5 class="card-title">Background Jobs</h5>
         <p class="card-text">These tools are to help you manage the various background jobs in Quepid.</p>
         
         <ul class="list-group list-group-flush">
-          <li class="list-group-item"><%= link_to 'Job Manager', sidekiq_web_path %></li>
+          <li class="list-group-item"><%= link_to 'Job Manager', mission_control_jobs_path %></li>
           
           <li class="list-group-item"><%= link_to 'Websocket Tester', admin_websocket_tester_index_path %></li>    
         </ul>

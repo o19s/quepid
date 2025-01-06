@@ -1,5 +1,5 @@
 <div class="modal-header">
-  <button type="button" class="close" ng-click="ctrl.cancel()" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+  <button type="button" class="close btn-core-close" ng-click="ctrl.cancel()" aria-label="Close"></button>
   <h3 class="modal-title">Judgements</h3>
 </div>
 <div class="modal-body" ng-hide="ctrl.canUpdateCase">
@@ -10,7 +10,7 @@
   <div ng-show='ctrl.share.loading'>
     <p>
       Loading your teams, this will be quick I promise!
-      <i class='fa fa-spinner fa-spin'></i>
+      <i class='glyphicon glyphicon-refresh spintime'></i>
     </p>
   </div>
   <div class="alert alert-warning" role="alert" ng-if="ctrl.populateBook && ctrl.share.acase.queriesCount === 0">
@@ -36,7 +36,7 @@
  
 
     <a class="btn btn-primary btn-lg" ng-click="ctrl.goToTeamsPage()">
-      <i class="fa fa-plus"></i>
+      <i class="bi bi-plus-lg"></i>
       Create a team
     </a>
 
@@ -48,7 +48,7 @@
     </p>
 
     <a class="btn btn-primary btn-lg" ng-href="{{ctrl.createBookLink()}}" target="_self">
-      <i class="fa fa-plus"></i>
+      <i class="bi bi-plus-lg"></i>
       Create a book
     </a>
   </div>
@@ -120,7 +120,7 @@
     Make Judgements!
   </a>
   <a class="btn btn-default pull-left" ng-click="ctrl.refreshRatingsFromBook()" ng-disabled="processingPrompt.inProgress || ctrl.populateBook || !ctrl.activeBookId || ctrl.share.acase.bookId !== ctrl.activeBookId" >
-    <i class="glyphicon glyphicon-refresh" ng-class="{'fa-spin': processingPrompt.inProgress}"></i>
+    <i class="glyphicon glyphicon-refresh" ng-class="{'spintime': processingPrompt.inProgress}"></i>
     Refresh ratings from book <i>{{ctrl.activeBookName}}</i>
     <span ng-if="ctrl.createMissingQueries">and creating missing queries</span>
   </a>

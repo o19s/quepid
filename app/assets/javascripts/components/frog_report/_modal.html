@@ -1,11 +1,11 @@
 <div class="modal-header">
-  <button type="button" class="close" aria-label="Close" ng-click="ctrl.cancel()"><span aria-hidden="true">&times;</span></button>
+  <button type="button" class="close btn-core-close" ng-click="ctrl.cancel()" aria-label="Close"></button>
   <h3 class="modal-title">The Frog Pond Report: <span class="modal-case">{{ ctrl.theCase.caseName }}</span></h3>
 </div>
 <div class="modal-body frog-pond">
   <div class="frog-pond-content">
-  <p>The accuracy of the scores calculated by Quepid is directly impacted by the number of <i class="fa fa-frog" aria-hidden="true"></i>'s you have.  Chase the frogs
-    back into the pond (i.e rate your documents) so that you can have confidence in the changes you are making!</p>
+  <p>The accuracy of the scores calculated by Quepid is directly impacted by the number of 🐸's you have.  Chase the frogs into the pond
+    (i.e rate your documents) so that you can have confidence in the changes you are making!</p>
 
   <h4>Summary</h4>
 
@@ -18,7 +18,7 @@
   </ng-pluralize>
   <strong>zero</strong> results.
 
-  You need to maintain a total of {{ totalNumberOfRatingsNeeded }} ratings to eliminate all the frogs.<br/>
+  You need to maintain a total of {{ totalNumberOfRatingsNeeded }} ratings to eliminate all the 🐸.<br/>
   <span ng-if="ctrl.theCase.lastScore.all_rated">
   All the queries have been fully rated!  Congratulations!
   </span>
@@ -44,7 +44,7 @@
 </div>
 <div class="modal-footer">
   <a class="btn btn-default" ng-if="ctrl.theCase.bookName" ng-click="ctrl.refreshRatingsFromBook()" ng-disabled="processingPrompt.inProgress">
-    <i class="glyphicon glyphicon-refresh" ng-class="{'fa-spin': processingPrompt.inProgress}"></i>
+    <i class="glyphicon glyphicon-refresh" ng-class="{'spintime': processingPrompt.inProgress}"></i>
     Refresh ratings from book <i>{{ctrl.theCase.bookName}}</i>
   </a>
   <button class="btn btn-primary" ng-click="ctrl.cancel()" ng-disabled="processingPrompt.inProgress">Close</button>

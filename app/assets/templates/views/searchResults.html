@@ -35,10 +35,14 @@
 
     <span class="error-warning glyphicon glyphicon-warning-sign"></span>
 
-    <span ng-show="query.isNotAllRated()" class="froggy-animation pull-right" style="margin-right: 20px;" title="Hop to it!  There are unrated results!">
-      <i class="fas fa-frog fa-stack-2x" data-count="{{ query.currentScore.countMissingRatings }}"></i>
+    <span ng-show="query.isNotAllRated()" class="pull-right" style="margin-right: 20px;" title="Hop to it!  There are unrated results!">      
+      <div class="icon-container">
+        <i class="frog-icon">🐸</i>
+        <div class="notification-bubble">{{ query.currentScore.countMissingRatings }}</div>
+      </div>
     </span>
 
+  
     <span ng-show="querqyRuleTriggered()" class="pull-right" style="margin-right: 20px;" title="Querqy Strikes Again!">
       <i class="querqy-icon"></i>   
     </span>

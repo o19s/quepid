@@ -14,6 +14,8 @@ module Api
       let(:shared_team)           { teams(:shared_team) }
 
       before do
+        Ahoy.track_bots = true
+
         @controller = Api::V1::TeamMembersController.new
 
         login_user user

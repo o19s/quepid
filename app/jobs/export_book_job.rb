@@ -8,6 +8,7 @@ class ExportBookJob < ApplicationJob
 
   # rubocop:disable Metrics/MethodLength
   def perform book
+    book.update(export_job: "export started at #{Time.zone.now}")
     Turbo::StreamsChannel.broadcast_render_to(
       :notifications,
       target:  'notifications',
@@ -29,6 +30,7 @@ class ExportBookJob < ApplicationJob
 
     book.export_file.attach(io: compressed_data, filename: "book_export_#{book.id}.json.zip",
                             content_type: 'application/zip')
+    book.update(export_job: nil)
 
     Turbo::StreamsChannel.broadcast_render_to(
       :notifications,

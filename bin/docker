@@ -11,7 +11,7 @@ Dir.chdir APP_ROOT do
   case command
   when 'server', 's'
     system 'docker compose up --no-deps -d nginx'
-    system 'docker compose run --rm --service-ports app foreman s -f Procfile.dev'
+    system 'docker compose run --rm --service-ports app foreman s -f Procfile'
   when 'bash', 'b'
     system 'docker compose run --rm app bash'
   when 'console', 'c'
@@ -19,7 +19,7 @@ Dir.chdir APP_ROOT do
   when 'run', 'r'
     system "docker compose run --rm app #{rest.shelljoin()}"
   when 'daemon', 'q'
-    system 'docker compose run -d --service-ports app foreman s -f Procfile.dev'
+    system 'docker compose run -d --service-ports app foreman s -f Procfile'
   when 'destroy', 'd'
     system 'docker compose down'
   else

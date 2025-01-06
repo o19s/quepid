@@ -2,6 +2,9 @@
 <html>
 <head>
   <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+	<meta name="apple-mobile-web-app-capable" content="yes">
+	<meta name="mobile-web-app-capable" content="yes">
   <%= action_cable_meta_tag %>
   <base href="<%= ENV['RAILS_RELATIVE_URL_ROOT'] %>/">
   
@@ -55,6 +58,9 @@
   <meta name="twitter:url" value="<%=root_url%>" />
 <% end %>
 
+  <%# Enable PWA manifest for installable apps (make sure to enable in config/routes.rb too!) %>
+  <%#= tag.link rel: "manifest", href: pwa_manifest_path(format: :json) %>
+
 
 
   <%= stylesheet_link_tag 'application', media: 'all', 'data-turbo-track': 'reload' %>
@@ -62,8 +68,7 @@
   
   <%= javascript_include_tag 'application', 'data-turbo-track': 'reload' %>
   <%= javascript_importmap_tags 'application2' %>
- 
-
+  <%= debugbar_head  if defined? Debugbar %> 
 </head>
 
 <body>
@@ -87,7 +92,6 @@ AND: <%= Rails.application.config.action_cable %>
     </main>
   </div>
 </div>
-
-  <%= render 'layouts/common_js' %>
+<%= debugbar_body if defined? Debugbar %> 
 </body>
 </html>

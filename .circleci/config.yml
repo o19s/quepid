@@ -2,7 +2,7 @@ version: 2
 jobs:
   build:
     docker:
-      - image: cimg/ruby:3.3.5-browsers
+      - image: cimg/ruby:3.3.6-browsers
         environment: # environment variables for primary container
           BUNDLE_JOBS: 3
           BUNDLE_RETRY: 3
@@ -29,7 +29,7 @@ jobs:
 
       - run:
           name: Specify bundler!
-          command: gem install bundler:2.5.11
+          command: gem install bundler:2.6.2
 
       - run:
           name: Which bundler?
@@ -38,8 +38,8 @@ jobs:
       # Restore bundle cache
       - restore_cache:
           keys:
-            - quepid-bundle-v2-{{ checksum "Gemfile.lock" }}
-            - quepid-bundle-v2-
+            - quepid-bundle-v3-{{ checksum "Gemfile.lock" }}
+            - quepid-bundle-v3-
 
       - run:
           name: Bundle Install
@@ -47,7 +47,7 @@ jobs:
 
       # Store bundle cache
       - save_cache:
-          key: quepid-bundle-v2-{{ checksum "Gemfile.lock" }}
+          key: quepid-bundle-v3-{{ checksum "Gemfile.lock" }}
           paths:
             - vendor/bundle
 

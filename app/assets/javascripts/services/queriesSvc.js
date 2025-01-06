@@ -785,21 +785,41 @@ angular.module('QuepidApp')
         return querySearchableDeferred.promise;
       };
 
+      this.pAll = async function (queue, concurrency) {
+        let index = 0;
+        const results = [];
+
+        const worker = async () => {
+          while (index < queue.length) {
+            const curIndex = index++;
+            const promise = queue[curIndex]();
+            await promise;
+            results[curIndex] = promise;
+          }
+        };
+
+        const workers = [];
+        for (let workerIdx = 0; workerIdx < concurrency; workerIdx++) {
+          workers.push(worker());
+        }
+        await Promise.all(workers);
+        return Promise.all(results);
+      };
 
       this.searchAll = function() {
         let promises = [];
         let scorePromises = [];
 
         angular.forEach(this.queries, function(query) {
-          let promise = query.search().then( () => {
+          let searchPromiseFn = () => query.search().then(() => {
             scorePromises.push(query.score());
           });
 
-          promises.push(promise);
+          promises.push(searchPromiseFn);
         });
 
         // Holy nested promises batman
-        return $q.all(promises).then( () => {
+        return this.pAll(promises, 10).then( () => {
           $q.all(scorePromises).then( () => {
             /*
              * Why are we calling scoreAll after we called score() above?

@@ -235,8 +235,6 @@ Resources:
               Value: production
             - Name: SECRET_KEY_BASE
               Value: fake_out_devise
-            #- Name: REDIS_URL
-            #  VALUE: redis://redis:6379/1
           RepositoryCredentials:
             CredentialsParameter: !Ref DockerHubSecret
 

@@ -9,41 +9,17 @@ module Api
         before_action :check_book
 
         # rubocop:disable Metrics/MethodLength
-        # rubocop:disable Metrics/AbcSize
-        # rubocop:disable Metrics/CyclomaticComplexity
-        # rubocop:disable Metrics/PerceivedComplexity
-        # rubocop:disable Layout/LineLength
-        def show
+        def update
           # WARNING books/export_controller.rb and
           # api/v1/export/books_controller.rb ARE DUPLICATED
           message = nil
 
-          # Use ActiveJob native (right now only in tests)
-          if ExportBookJob.queue_adapter.respond_to?(:enqueued_jobs)
-            this_job_args = [ { _aj_globalid: @book.to_global_id.to_s } ]
-            job_queued_with_args = ExportBookJob.queue_adapter.enqueued_jobs.any? do |job|
-              ExportBookJob == job[:job] && job[:args].map(&:deep_symbolize_keys) == this_job_args
-            end
-          else # otherwise fall back to Sidekiq direct
-            found_jobs = []
-            queues = Sidekiq::Queue.all
-            this_job_args = [ { _aj_globalid: @book.to_global_id.to_s } ]
-            queues.each do |queue|
-              queue.each do |job|
-                job.args.each do |arg|
-                  if arg['job_class'].to_s == ExportBookJob.to_s && arg['arguments'].map(&:deep_symbolize_keys) == this_job_args
-                    found_jobs << job
-                  end
-                end
-              end
-            end
-            job_queued_with_args = !found_jobs.empty?
-          end
-
-          if job_queued_with_args
-            message = 'Currently exporting book as file.'
+          if @book.export_job
+            message = "Currently exporting book as file.  Status is #{@book.export_job}."
           else
-            ExportBookJob.perform_later @book
+            track_book_export_queued do
+              ExportBookJob.perform_later(@book)
+            end
             message = 'Starting export of book as file.'
           end
 
@@ -56,10 +32,15 @@ module Api
           end
         end
         # rubocop:enable Metrics/MethodLength
-        # rubocop:enable Metrics/AbcSize
-        # rubocop:enable Metrics/CyclomaticComplexity
-        # rubocop:enable Metrics/PerceivedComplexity
-        # rubocop:enable Layout/LineLength
+
+        private
+
+        def track_book_export_queued
+          @book.update(export_job: "queued at #{Time.zone.now}")
+
+          # Yield to the block to perform the job
+          yield if block_given?
+        end
       end
     end
   end

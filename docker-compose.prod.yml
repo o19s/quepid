@@ -4,18 +4,13 @@
 services:
   mysql:
     container_name: quepid_prod_db
-    image: mysql:8.3.0
+    image: mysql:8.4.3
     ports:
       - 3306:3306
     environment:
       - MYSQL_ROOT_PASSWORD=password
     volumes:
       - ./volumes/mysql_data:/var/lib/mysql
-  redis:
-    container_name: quepid_prod_redis
-    image: redis:7.2.0-alpine
-    ports:
-      - 6379:6379
   app:
     container_name: quepid_prod_app
     image: o19s/quepid:latest
@@ -26,7 +21,6 @@ services:
       - RACK_ENV=production
       - RAILS_ENV=production
       - DATABASE_URL=mysql2://root:password@mysql:3306/quepid
-      - REDIS_URL=redis://redis:6379/1
       - FORCE_SSL=false
       - MAX_THREADS=2
       - WEB_CONCURRENCY=2
@@ -36,7 +30,6 @@ services:
       - TC_URL=
       - PRIVACY_URL=
       - COOKIES_URL=
-      - QUEPID_GA=
       - QUEPID_DOMAIN=https://example.com
       - EMAIL_MARKETING_MODE=false
       - QUEPID_DEFAULT_SCORER=AP@10
@@ -51,10 +44,8 @@ services:
       - 3000:3000
     links:
       - mysql
-      - redis
     depends_on:
       - mysql
-      - redis
   nginx:
     image: nginx:1.27.1-alpine-slim
     container_name: quepid_nginx

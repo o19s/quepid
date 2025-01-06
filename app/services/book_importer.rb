@@ -57,7 +57,7 @@ class BookImporter
       list_of_emails_of_users.uniq!
       list_of_emails_of_users.each do |email|
         unless User.exists?(email: email)
-          if options[:force_create_users]
+          if true == options[:force_create_users]
             User.invite!({ email: email, password: '', skip_invitation: true }, @current_user)
           else
             @book.errors.add(:base, "User with email '#{email}' needs to be migrated over first.")

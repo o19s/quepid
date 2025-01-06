@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+# rubocop:disable Metrics/ClassLength
+
 # == Schema Information
 #
 # Table name: users
@@ -48,7 +50,6 @@
 #  fk_rails_...  (default_scorer_id => scorers.id)
 #
 
-# rubocop:disable Metrics/ClassLength
 class User < ApplicationRecord
   # Associations
 

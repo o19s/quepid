@@ -4,6 +4,7 @@
     <div class="btn-group me-2">
       <%= link_to 'New Book', new_book_path, class: "btn btn-sm btn-outline-secondary" %>
       <button type="button" class="btn btn-sm btn-outline-secondary">Export</button>
+      <%= button_to 'Delete Book', @book, method: :delete, class: "btn btn-sm btn-danger" %>
     </div>
     <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle">
       <span data-feather="calendar" class="align-text-bottom"></span>
