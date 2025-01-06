@@ -46,7 +46,6 @@ ActiveRecord::Schema[8.0].define(version: 2024_12_18_173819) do
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
   end
 
-
   create_table "ai_judges", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.bigint "book_id", null: false
     t.bigint "user_id", null: false
@@ -55,8 +54,6 @@ ActiveRecord::Schema[8.0].define(version: 2024_12_18_173819) do
     t.index ["book_id", "user_id"], name: "index_ai_judges_on_book_id_and_user_id", unique: true
     t.index ["book_id"], name: "index_ai_judges_on_book_id"
     t.index ["user_id"], name: "index_ai_judges_on_user_id"
-  end
-
   end
 
   create_table "annotations", id: :integer, charset: "utf8mb3", force: :cascade do |t|
