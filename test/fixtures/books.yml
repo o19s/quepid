@@ -40,6 +40,7 @@ james_bond_movies:
   scorer: :quepid_default_scorer
   selection_strategy: :multiple_raters
   name: James Bond Movies
+  query_doc_pairs_count: 7  # Counter cache column needs to be set explicitly
 
 empty_book:
   scorer: :quepid_default_scorer
