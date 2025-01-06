@@ -18,7 +18,6 @@ module Api
       end
 
       def show
-        @shallow = true
         @team = current_user.teams.where(id: params[:team_id])
           .includes([ :scorers, :members, :books, :search_endpoints ])
           .first
