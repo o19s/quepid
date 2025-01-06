@@ -18,8 +18,6 @@ This book consists of <%= @book.query_doc_pairs.count %> query document pairs an
 <% if @book.ai_judges.present?  %>
   We have some AI Judges <i class="bi bi-robot"></i>, <i><%= @book.ai_judges.map(&:name).to_sentence %></i> helping us.
   <br/>
-  <%= button_to 'Run Judgment Process', run_judge_judy_book_path(@book), method: :patch %>
-  <p/>
 <% end %>
 
 <% if @book.import_file.attached? %>
@@ -197,7 +195,11 @@ This book consists of <%= @book.query_doc_pairs.count %> query document pairs an
       <th scope="row">
         <%=display_judge_name (row[:judge]) %>
         <% if row[:judge] && row[:judge].ai_judge? %>
-        <i class="bi bi-robot"></i>
+          <i class="bi bi-robot"></i>
+          <div class="float-end d-flex gap-2">
+            <%= button_to 'Refine Prompt', run_judge_judy_book_path(@book, row[:judge]), class: 'btn btn-block btn-light', role: 'button' %> 
+            <%= button_to 'Unleash the Kraken!', run_judge_judy_book_path(@book, row[:judge].id), class: 'btn btn-block btn-light', role: 'button', method: :patch %>          
+          </div>
         <% end %>
       </th>
       <td>

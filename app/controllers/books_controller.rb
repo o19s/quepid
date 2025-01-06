@@ -25,7 +25,9 @@ class BooksController < ApplicationController
   def show
     @count_of_anonymous_book_judgements = @book.judgements.where(user: nil).count
 
-    @moar_judgements_needed = @book.judgements.where(user: current_user).count < @book.query_doc_pairs.count
+    #@moar_judgements_needed = @book.judgements.where(user: current_user).count < @book.query_doc_pairs.count
+    @moar_judgements_needed = !(SelectionStrategy.every_query_doc_pair_has_three_judgements? @book)
+    
     @cases = @book.cases
     @leaderboard_data = []
     @stats_data = []
@@ -36,7 +38,6 @@ class BooksController < ApplicationController
       begin
         judge = User.find(judge_id) unless judge_id.nil?
       rescue ActiveRecord::RecordNotFound
-        puts 'got a nil'
         judge = nil
       end
       @leaderboard_data << { judge:      judge.nil? ? 'anonymous' : judge.fullname,
@@ -194,7 +195,7 @@ class BooksController < ApplicationController
   end
 
   def run_judge_judy
-    ai_judge = @book.ai_judges.where(user_id: params[:ai_judge_id])
+    ai_judge = @book.ai_judges.where(id: params[:ai_judge_id]).first
     RunJudgeJudyJob.perform_later(@book, ai_judge)
     redirect_to book_path(@book), :notice => "Set AI Judge #{ai_judge.name} to work judging query/doc pairs."
   end
