@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2024_12_18_173819) do
+ActiveRecord::Schema[8.0].define(version: 2025_01_06_193151) do
   create_table "active_storage_attachments", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.string "name", null: false
     t.string "record_type", null: false
@@ -86,16 +86,6 @@ ActiveRecord::Schema[8.0].define(version: 2024_12_18_173819) do
     t.index ["user_id"], name: "index_ahoy_visits_on_user_id"
     t.index ["visit_token"], name: "index_ahoy_visits_on_visit_token", unique: true
     t.index ["visitor_token", "started_at"], name: "index_ahoy_visits_on_visitor_token_and_started_at"
-  end
-
-  create_table "ai_judges", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
-    t.bigint "book_id", null: false
-    t.bigint "user_id", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["book_id", "user_id"], name: "index_ai_judges_on_book_id_and_user_id", unique: true
-    t.index ["book_id"], name: "index_ai_judges_on_book_id"
-    t.index ["user_id"], name: "index_ai_judges_on_user_id"
   end
 
   create_table "annotations", id: :integer, charset: "utf8mb3", force: :cascade do |t|
@@ -208,6 +198,16 @@ ActiveRecord::Schema[8.0].define(version: 2024_12_18_173819) do
     t.string "populate_job"
     t.integer "query_doc_pairs_count", default: 0, null: false
     t.index ["selection_strategy_id"], name: "index_books_on_selection_strategy_id"
+  end
+
+  create_table "books_ai_judges", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
+    t.bigint "book_id", null: false
+    t.bigint "user_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["book_id", "user_id"], name: "index_books_ai_judges_on_book_id_and_user_id", unique: true
+    t.index ["book_id"], name: "index_books_ai_judges_on_book_id"
+    t.index ["user_id"], name: "index_books_ai_judges_on_user_id"
   end
 
   create_table "case_metadata", id: :integer, charset: "latin1", force: :cascade do |t|
@@ -614,10 +614,10 @@ ActiveRecord::Schema[8.0].define(version: 2024_12_18_173819) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
-  add_foreign_key "ai_judges", "books"
   add_foreign_key "annotations", "users"
   add_foreign_key "book_metadata", "books"
   add_foreign_key "books", "selection_strategies"
+  add_foreign_key "books_ai_judges", "books"
   add_foreign_key "case_metadata", "cases", name: "case_metadata_ibfk_1"
   add_foreign_key "case_metadata", "users", name: "case_metadata_ibfk_2"
   add_foreign_key "case_scores", "annotations"

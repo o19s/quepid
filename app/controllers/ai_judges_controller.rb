@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class AiJudgesController < ApplicationController
   def create
     @book = Book.find(params[:book_id])
@@ -14,8 +16,8 @@ class AiJudgesController < ApplicationController
 
   def destroy
     @ai_judge = User.find(params[:id])
-     @book = Book.find(params[:book_id])
-     @book.judge
+    @book = Book.find(params[:book_id])
+    @book.judge
     @ai_user.destroy
     redirect_to @ai_user.book, notice: 'AI Judge was successfully removed.'
   end

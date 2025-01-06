@@ -18,23 +18,17 @@ class JudgeJudyFlowTest < ActionDispatch::IntegrationTest
     assert_includes acase.teams, team
     assert_includes book.teams, team
 
-    # Link to a Case and Book together and populate it.
-    put api_case_url acase, params: { case_id: acase.id, case: { book_id: book.id }, format: :json }
-    assert_response :ok
-
-    acase.reload
-
-    assert_equal acase.book, book
+    assert_equal 7, book.query_doc_pairs.size
 
     # Set up Judge Judy.  Give her a prompt (and an OPENAI KEY)
-
     judge_judy = User.new name: 'judge judy', email: 'judgejudy@quepid.com', password: 'password'
 
     # Add her to the team
     judge_judy.teams << team
     judge_judy.save!
-    # Add her to the book as the judge.  Like owner_id but it's ai_judge_id
-    #book.ai_judge = judge_judy
+
+    # Add her to the book's list of ai_judges
+    book.ai_judges << judge_judy
     book.save!
 
     # Wait for her to judge
@@ -47,6 +41,14 @@ class JudgeJudyFlowTest < ActionDispatch::IntegrationTest
 
     # make sure every query_doc_pair has a rating by Judge Judy.
     assert_equal book.query_doc_pairs.size, book.judgements.where(user: judge_judy).size
+
+    # Link to a Case and Book together and populate it.
+    put api_case_url acase, params: { case_id: acase.id, case: { book_id: book.id }, format: :json }
+    assert_response :ok
+
+    acase.reload
+
+    assert_equal acase.book, book
 
     # Add a query to the case --> and then rate it to create rating.
     post api_case_queries_url acase,

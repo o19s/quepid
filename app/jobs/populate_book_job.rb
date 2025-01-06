@@ -6,9 +6,10 @@ class PopulateBookJob < ApplicationJob
   # rubocop:disable Security/MarshalLoad
   # rubocop:disable Metrics/MethodLength
   # rubocop:disable Metrics/AbcSize
-  def perform book, kase
+  def perform book, kase, user
     # down the road we should be using ActiveRecord-import and first_or_initialize instead.
     # See how snapshots are managed.
+    is_book_empty = book.query_doc_pairs.empty?
 
     book.update(populate_job: "populate started at #{Time.zone.now}")
     compressed_data = book.populate_file.download

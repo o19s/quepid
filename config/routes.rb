@@ -481,7 +481,7 @@ Rails.application.routes.draw do
     resources :judgements
     resources :ai_judges
     resources :query_doc_pairs do
-      resources :judgements      
+      resources :judgements
       post 'unrateable' => 'judgements#unrateable'
       patch 'unrateable' => 'judgements#unrateable'
       get 'judge_later' => 'judgements#judge_later'

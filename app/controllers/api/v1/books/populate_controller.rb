@@ -25,7 +25,7 @@ module Api
           @book.populate_file.attach(io: StringIO.new(compressed_data), filename: "book_populate_#{@book.id}.bin.zip",
                                      content_type: 'application/zip')
           track_book_populate_queued do
-            PopulateBookJob.perform_later @book, @case
+            PopulateBookJob.perform_later @book, @case, @current_user
           end
 
           head :no_content
