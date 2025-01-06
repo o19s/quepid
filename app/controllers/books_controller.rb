@@ -68,6 +68,7 @@ class BooksController < ApplicationController
   end
 
   def edit
+    @ai_judges = User.only_ai_judges.left_joins(teams: :books).where(teams_books: { book_id: @book.id })
   end
 
   def create
@@ -102,8 +103,14 @@ class BooksController < ApplicationController
 
     @book.teams.replace(teams)
 
+    # checkboxes suck
+    @book.ai_judges.clear
+    book_params[:ai_judge_ids].each do |ai_judge_id|
+      @book.ai_judges << User.find(ai_judge_id)
+    end
+
     @book.update(book_params.except(
-                   :team_ids, :link_the_case, :origin_case_id,
+                   :team_ids, :ai_judges, :link_the_case, :origin_case_id,
                    :delete_export_file, :delete_populate_file, :delete_import_file
                  ))
 
@@ -187,8 +194,9 @@ class BooksController < ApplicationController
   end
 
   def run_judge_judy
-    RunJudgeJudyJob.perform_later(@book)
-    redirect_to book_path(@book), :notice => "Started #{@book.ai_judge.fullname} judging query/doc pairs."
+    ai_judge = @book.ai_judges.where(user_id: params[:ai_judge_id])
+    RunJudgeJudyJob.perform_later(@book, ai_judge)
+    redirect_to book_path(@book), :notice => "Set AI Judge #{ai_judge.name} to work judging query/doc pairs."
   end
   # rubocop:enable Metrics/AbcSize
   # rubocop:enable Metrics/MethodLength
@@ -289,11 +297,15 @@ class BooksController < ApplicationController
     params_to_use = params.require(:book).permit(:scorer_id, :selection_strategy_id, :name,
                                                  :support_implicit_judgements, :link_the_case, :origin_case_id,
                                                  :delete_export_file, :delete_populate_file, :delete_import_file,
-                                                 :show_rank, team_ids: [])
+                                                 :show_rank, team_ids: [], ai_judge_ids: [])
 
     # Crafting a book[team_ids] parameter from the AngularJS side didn't work, so using top level parameter
     params_to_use[:team_ids] = params[:team_ids] if params[:team_ids]
     params_to_use[:team_ids]&.compact_blank!
+
+    params_to_use[:ai_judge_ids] = params[:ai_judge_ids] if params[:ai_judge_ids]
+    params_to_use[:ai_judge_ids]&.compact_blank!
+
     params_to_use.except(:link_the_case, :origin_case_id)
   end
 end

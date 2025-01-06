@@ -15,8 +15,8 @@ This book consists of <%= @book.query_doc_pairs.count %> query document pairs an
 
 <%= render 'judgements/moar_judgements_needed', book: @book %>
 
-<% if !@book.ai_judges.empty?  %>
-  We have some AI Judges, <i><%= @book.ai_judges.map(&:name).to_sentence %></i> helping us.
+<% if @book.ai_judges.present?  %>
+  We have some AI Judges <i class="bi bi-robot"></i>, <i><%= @book.ai_judges.map(&:name).to_sentence %></i> helping us.
   <br/>
   <%= button_to 'Run Judgment Process', run_judge_judy_book_path(@book), method: :patch %>
   <p/>
