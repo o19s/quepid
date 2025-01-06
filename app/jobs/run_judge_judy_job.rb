@@ -2,7 +2,6 @@
 
 class RunJudgeJudyJob < ApplicationJob
   queue_as :default
-  sidekiq_options log_level: :warn
 
   def perform book
     #judge = book.ai_judge
@@ -15,10 +14,10 @@ class RunJudgeJudyJob < ApplicationJob
         judgement = Judgement.new(query_doc_pair: query_doc_pair, user: judge, updated_at: Time.zone.now)
         judgement.rating = 4
         judgement.explanation = "Eric writing code.  Judge is #{judge.email}"
-        judgement.save!
-
-        UpdateCaseJob.perform_later book
+        judgement.save!        
       end
+    
+      UpdateCaseJob.perform_later book
     end
   end
 end
