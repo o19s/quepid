@@ -457,7 +457,7 @@ GEM
     ruby-progressbar (1.13.0)
     ruby-statistics (4.0.1)
     ruby2_keywords (0.0.5)
-    rubyzip (2.3.2)
+    rubyzip (2.4.1)
     safely_block (0.4.1)
     sassc (2.4.0)
       ffi (~> 1.9)
@@ -599,7 +599,7 @@ DEPENDENCIES
   rubocop
   rubocop-capybara
   rubocop-rails
-  rubyzip (~> 2.3.0)
+  rubyzip (~> 2.4.1)
   sassc-rails (~> 2.1)
   selenium-webdriver
   simplecov
