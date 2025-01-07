@@ -61,7 +61,7 @@ Scorer.where(name: 'RR@10').first_or_create(
 )
 
 Scorer.where(name: 'ERR@10').first_or_create(
-  scale:              (0..1).to_a,
+  scale:              (0..3).to_a,
   scale_with_labels:  {"0":"Poor","1":"Fair","2":"Good","3":"Perfect"},
   show_scale_labels:  true,
   code:               File.readlines('./db/scorers/err@10.js','\n').join('\n'),
