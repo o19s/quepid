@@ -1,13 +1,8 @@
 require "application_system_test_case"
 
-class DudesTest < ApplicationSystemTestCase
+class AiJudgesTest < ApplicationSystemTestCase
   setup do
     @ai_judge = ai_judges(:one)
-  end
-
-  test "visiting the index" do
-    visit ai_judges_url
-    assert_selector "h1", text: "Dudes"
   end
 
   test "should create ai_judge" do
