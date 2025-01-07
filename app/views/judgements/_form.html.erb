@@ -58,17 +58,17 @@ judgement.id: <%= judgement.id %>
 </style>
 
 <script>
+  var $j = jQuery.noConflict();
 
   function rate(rating, key_name) {
       keyDown(key_name);
       resetStylesExcept(key_name);
       document.getElementById("judgement_rating").value = rating;
-      //party.confetti(document.getElementById("judgement_rating"));
       delay(100).then(() => (document.getElementsByName("commit")[0].click()));
   }
 
-  $(document).ready(function() {
-      $("#keyPressed_count").text("0");
+  $j(document).ready(function() {
+      $j("#keyPressed_count").text("0");
   });
 
   var count = 0;
@@ -77,8 +77,8 @@ judgement.id: <%= judgement.id %>
   function resetStyles() {
       let keyboard_shortcuts_suffixes = ["a", "s", "d", "f", "g", "h", "j", "k", "l", "sc"];
       keyboard_shortcuts_suffixes.forEach(suffix => {
-              $("#span-for-" + suffix).css("color", "gray").css("font-weight", "normal");
-              $("#button-for-" + suffix).removeClass("btn-preselected");
+              $j("#span-for-" + suffix).css("color", "gray").css("font-weight", "normal");
+              $j("#button-for-" + suffix).removeClass("btn-preselected");
           }
       );
   }
@@ -87,8 +87,8 @@ judgement.id: <%= judgement.id %>
       let keyboard_shortcuts_suffixes = ["a", "s", "d", "f", "g", "h", "j", "k", "l", "sc"];
       keyboard_shortcuts_suffixes.forEach(suffix => {
               if (suffix !== except_suffix) {
-                  $("#span-for-" + suffix).css("color", "gray").css("font-weight", "normal");
-                  $("#button-for-" + suffix).removeClass("btn-preselected");
+                  $j("#span-for-" + suffix).css("color", "gray").css("font-weight", "normal");
+                  $j("#button-for-" + suffix).removeClass("btn-preselected");
               }
           }
       );
@@ -96,8 +96,8 @@ judgement.id: <%= judgement.id %>
 
   function keyDown(suffix) {
       resetStyles();
-      $("#span-for-" + suffix).css("color", "black").css("font-weight", "bold");
-      $("#button-for-" + suffix).addClass("btn-preselected");
+      $j("#span-for-" + suffix).css("color", "black").css("font-weight", "bold");
+      $j("#button-for-" + suffix).addClass("btn-preselected");
   }
 
   function delay(time) {
@@ -105,10 +105,10 @@ judgement.id: <%= judgement.id %>
   }
 
   function keyPressed(suffix) {
-      delay(500).then(() => ($("#button-for-" + suffix).click()));
+      delay(500).then(() => ($j("#button-for-" + suffix).click()));
   }
 
-  $(document).on('keypress', function(e) {
+  $j(document).on('keypress', function(e) {
       var tag = e.target.tagName.toLowerCase();
       if (tag == 'textarea') {
         return;
@@ -139,7 +139,7 @@ judgement.id: <%= judgement.id %>
       }
   });
 
-  $(document).on('keydown', function(e) {
+  $j(document).on('keydown', function(e) {
       var tag = e.target.tagName.toLowerCase();
 
       if (e.which == 97 || e.which == 65) {
