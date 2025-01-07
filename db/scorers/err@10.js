@@ -12,15 +12,16 @@ for (i = 0; i < k; i++) {
   }
 }
 
-function gain(grade, maxGrade=3.0) {
+function gain(grade, maxGrade) {
     return (Math.pow(2,grade) - 1.0)/Math.pow(2,maxGrade)
 }
-function err(lst, maxG=3.0) {
+function err(lst) {
     let ERR = 0.0
     let trust = 1.0
     for (i = 0; i < lst.length; i++) {
         const rank = i + 1.0
-        const pUseful = gain(lst[i], maxG)
+	// max is the maximum possible rating for the scorer.
+        const pUseful = gain(lst[i], max)
         const disc = pUseful/rank
         ERR = ERR + trust * disc
         trust = trust * (1.0 - pUseful)
