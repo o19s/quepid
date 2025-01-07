@@ -58,6 +58,8 @@ judgement.id: <%= judgement.id %>
 </style>
 
 <script>
+  // debugbar in dev loads a different version of jquery and means we have to
+  // use this $j instead of $ workaround.  See https://github.com/julienbourdeau/debugbar/issues/39.
   var $j = jQuery.noConflict();
 
   function rate(rating, key_name) {

@@ -272,9 +272,9 @@ bin/docker r bundle exec derailed bundle:mem
 
 ### Debugging JS
 
-While running the application, you can debug the javascript using your favorite tool, the way you've always done it.
+While running the application, you can debug the JavaScript using your favorite tool, the way you've always done it.
 
-The javascript files will be concatenated into one file, using the rails asset pipeline.
+The JavaScript files will be concatenated into one file, using the rails asset pipeline.
 
 You can turn that off by toggling the following flag in `config/environments/development.rb`:
 

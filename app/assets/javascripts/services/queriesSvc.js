@@ -114,8 +114,6 @@ angular.module('QuepidApp')
               // jshint -W117
               searcherOptions.numberOfResultsMapper = numberOfResultsMapper;
             }
-
-
           }
 
           if (passedInSettings.searchEngine === 'solr') {

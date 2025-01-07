@@ -674,10 +674,14 @@ angular.module('QuepidApp')
         $scope.pendingWizardSettings.submit = function() {
           $log.debug('Submitting settings (from wizard modal)');
 
-          // if we aren't using a demo, then lets finalize our queryParams with our title field.
+          // if we aren't using a demo, then lets finalize our queryParams with our best guess
          if (!settingsSvc.demoSettingsChosen($scope.pendingWizardSettings.searchEngine, $scope.pendingWizardSettings.searchUrl)){
            if ($scope.pendingWizardSettings.searchEngine === 'os' || $scope.pendingWizardSettings.searchEngine === 'es'){
              $scope.pendingWizardSettings.queryParams = $scope.pendingWizardSettings.queryParams.replace('REPLACE_ME', $scope.pendingWizardSettings.titleField);
+           }
+           
+           if ($scope.pendingWizardSettings.searchEngine === 'solr'){
+             $scope.pendingWizardSettings.queryParams = settingsSvc.defaultSettings['solr'].queryParams;             
            }
          }
 
