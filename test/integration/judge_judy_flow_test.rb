@@ -18,7 +18,7 @@ class JudgeJudyFlowTest < ActionDispatch::IntegrationTest
     assert_includes acase.teams, team
     assert_includes book.teams, team
 
-    assert_equal 8, book.query_doc_pairs.size
+    assert_equal 7, book.query_doc_pairs.size
 
     # Set up Judge Judy.  Give her a prompt (and an OPENAI KEY)
     judge_judy = User.new name: 'judge judy', email: 'judgejudy@quepid.com', password: 'password'
