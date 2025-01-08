@@ -7,11 +7,11 @@ class HomeController < ApplicationController
   def show
     # with_counts adds a `case.queries_count` field, which avoids loading
     # all queries and makes bullet happy.
-    #@cases = recent_cases(30)
-     @cases = @current_user.cases_involved_with.not_archived.with_counts
-       .includes([ :metadata ])
-       .order('`case_metadata`.`last_viewed_at` DESC, `cases`.`id` DESC')
-       .limit(30)
+    # @cases = recent_cases(30)
+    @cases = @current_user.cases_involved_with.not_archived.with_counts
+      .includes([ :metadata ])
+      .order('`case_metadata`.`last_viewed_at` DESC, `cases`.`id` DESC')
+      .limit(30)
 
     @most_recent_cases = @cases[0...4].sort_by { |c| c.case_name.downcase }
 
@@ -24,7 +24,7 @@ class HomeController < ApplicationController
       end
     end
 
-    #@most_recent_books.sort_by!(&:name)
+    # @most_recent_books.sort_by!(&:name)
     @most_recent_books = @most_recent_books.sort_by { |b| b.name.downcase }
 
     # Homepage is too slow so we have to cut some stuff out ;-(

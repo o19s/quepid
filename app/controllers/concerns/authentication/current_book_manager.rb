@@ -23,9 +23,8 @@ module Authentication
       @recent_books = recent_books(3)
     end
 
-    # rubocop:disable Metrics/MethodLength
     def recent_books count
-      if current_user     
+      if current_user
         book_ids = current_user.book_metadata.order(last_viewed_at: :desc).limit(count).pluck(:book_id)
 
         # map to objects
@@ -36,6 +35,5 @@ module Authentication
       end
       books
     end
-    # rubocop:enable Metrics/MethodLength
   end
 end

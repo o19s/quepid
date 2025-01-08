@@ -64,7 +64,7 @@ class Book < ApplicationRecord
 
   # Scopes
   include ForUserScope
-  
+
   scope :with_counts, -> {
                         select <<~SQL.squish
                           books.*,

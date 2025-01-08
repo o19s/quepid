@@ -38,7 +38,6 @@ module Authentication
       @recent_cases = recent_cases(3)
     end
 
-    # rubocop:disable Metrics/MethodLength
     def recent_cases count
       if current_user
         case_ids = current_user.case_metadata.order(last_viewed_at: :desc).limit(count).pluck(:case_id)
@@ -50,7 +49,6 @@ module Authentication
       end
       cases
     end
-    # rubocop:enable Metrics/MethodLength
 
     def check_case
       render json: { message: 'Case not found!' }, status: :not_found unless @case
