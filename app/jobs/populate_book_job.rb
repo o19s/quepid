@@ -54,7 +54,7 @@ class PopulateBookJob < ApplicationJob
     book.save
 
     # Lets not do this yet till we are more comfortable.
-    #RunJudgeJudyJob.perform_later book
+    # RunJudgeJudyJob.perform_later book
 
     # throwing an exception in tests..
     # Analytics::Tracker.track_query_doc_pairs_bulk_updated_event user, book, is_book_empty

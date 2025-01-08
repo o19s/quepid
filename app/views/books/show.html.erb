@@ -1,5 +1,12 @@
 <%= turbo_stream_from(:notifications) %>
 
+
+
+<%= turbo_frame_tag "modal" %>
+
+
+
+
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
   <h1 class="h2"><%= book_title @book %></h1>
   <div class="btn-toolbar mb-2 mb-md-0">
@@ -14,6 +21,8 @@ Books organize all the query/doc pairs that are needed for evaluating your searc
 This book consists of <%= @book.query_doc_pairs.count %> query document pairs and <%= @book.judgements.count %> judgements.
 
 <%= render 'judgements/moar_judgements_needed', book: @book %>
+
+<%= render 'kraken_unleashed', book: @book if @kraken_unleashed %>
 
 <% if @book.ai_judges.present?  %>
   We have some AI Judges <i class="bi bi-robot"></i>, <i><%= @book.ai_judges.map(&:name).to_sentence %></i> helping us.
@@ -197,8 +206,8 @@ This book consists of <%= @book.query_doc_pairs.count %> query document pairs an
         <% if row[:judge] && row[:judge].ai_judge? %>
           <i class="bi bi-robot"></i>
           <div class="float-end d-flex gap-2">
-            <%= button_to 'Refine Prompt', run_judge_judy_book_path(@book, row[:judge]), class: 'btn btn-block btn-light', role: 'button' %> 
-            <%= button_to 'Unleash the Kraken!', run_judge_judy_book_path(@book, row[:judge].id), class: 'btn btn-block btn-light', role: 'button', method: :patch %>          
+            <%= button_to 'Refine Prompt', edit_ai_judge_prompt_path(row[:judge]), params: { book_id: @book.id }, class: 'btn btn-block btn-light', role: 'button', method: :get %> 
+            <%= button_to 'Unleash the Kraken!', run_judge_judy_book_path(@book, row[:judge].id), class: 'btn btn-block btn-light', disabled: !(row[:can_judge_more] && @moar_judgements_needed ), role: 'button', method: :patch %>          
           </div>
         <% end %>
       </th>

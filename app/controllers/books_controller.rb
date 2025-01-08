@@ -23,18 +23,25 @@ class BooksController < ApplicationController
   # rubocop:disable Metrics/AbcSize
   # rubocop:disable Metrics/MethodLength
   def show
+    @kraken_unleashed = flash[:kraken_unleashed]
+
     @count_of_anonymous_book_judgements = @book.judgements.where(user: nil).count
 
-    #@moar_judgements_needed = @book.judgements.where(user: current_user).count < @book.query_doc_pairs.count
+    # @moar_judgements_needed = @book.judgements.where(user: current_user).count < @book.query_doc_pairs.count
     @moar_judgements_needed = !(SelectionStrategy.every_query_doc_pair_has_three_judgements? @book)
-    
+
     @cases = @book.cases
     @leaderboard_data = []
     @stats_data = []
 
     unique_judge_ids = @book.query_doc_pairs.joins(:judgements)
       .distinct.pluck(:user_id)
-    unique_judge_ids.each do |judge_id|
+
+    assigned_ai_judges = @book.ai_judges.pluck(:user_id)
+
+    stats_judges = (unique_judge_ids + assigned_ai_judges).uniq
+
+    stats_judges.each do |judge_id|
       begin
         judge = User.find(judge_id) unless judge_id.nil?
       rescue ActiveRecord::RecordNotFound
@@ -43,10 +50,11 @@ class BooksController < ApplicationController
       @leaderboard_data << { judge:      judge.nil? ? 'anonymous' : judge.fullname,
                              judgements: @book.judgements.where(user: judge).count }
       @stats_data << {
-        judge:       judge,
-        judgements:  @book.judgements.where(user: judge).count,
-        unrateable:  @book.judgements.where(user: judge).where(unrateable: true).count,
-        judge_later: @book.judgements.where(user: judge).where(judge_later: true).count,
+        judge:          judge,
+        judgements:     @book.judgements.where(user: judge).count,
+        unrateable:     @book.judgements.where(user: judge).where(unrateable: true).count,
+        judge_later:    @book.judgements.where(user: judge).where(judge_later: true).count,
+        can_judge_more: @book.judgements.where(user: judge).count < @book.query_doc_pairs.count,
       }
     end
 
@@ -62,6 +70,8 @@ class BooksController < ApplicationController
             else
               Book.new
             end
+
+    @ai_judges = []
 
     @origin_case = current_user.cases_involved_with.where(id: params[:origin_case_id]).first if params[:origin_case_id]
 
@@ -197,7 +207,7 @@ class BooksController < ApplicationController
   def run_judge_judy
     ai_judge = @book.ai_judges.where(id: params[:ai_judge_id]).first
     RunJudgeJudyJob.perform_later(@book, ai_judge)
-    redirect_to book_path(@book), :notice => "Set AI Judge #{ai_judge.name} to work judging query/doc pairs."
+    redirect_to book_path(@book), flash: { kraken_unleashed: true }, :notice => "Set AI Judge #{ai_judge.name} to work judging query/doc pairs."
   end
   # rubocop:enable Metrics/AbcSize
   # rubocop:enable Metrics/MethodLength

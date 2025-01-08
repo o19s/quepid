@@ -472,6 +472,14 @@ Rails.application.routes.draw do
   resource :account, only: [ :update, :destroy ]
   resource :profile, only: [ :show, :update ]
 
+  resources :teams, only: [] do
+    resources :ai_judges, only: [ :new, :create, :destroy ], controller: :ai_judges
+  end
+
+  resources :ai_judges, only: [] do
+    resource :prompt, only: [ :edit, :update ], module: :ai_judges
+  end
+
   resources :cases, only: [] do
     resource :book
     resources :ratings, only: [ :index ]

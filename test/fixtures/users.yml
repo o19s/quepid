@@ -215,3 +215,9 @@ admin:
   email:          admin@example.com
   default_scorer: :valid
   administrator:  true
+  
+judge_judy:
+  password:       $2a$12$Yf6zIiRvsHWDrhBxN0trXe/b/TTTSE3nK736Qbz2bGsowrjn3n2xC
+  email:          judgejudy@o19s.com
+  openai_key:     1234asdf5678
+  prompt:         You are a grocery store shopper.  You like cheese.  Is this a cheese?

@@ -37,7 +37,7 @@ class SelectionStrategy < ApplicationRecord
       .order(Arel.sql('-LOG(1.0 - RAND()) * (position + 1)'))
       .first
   end
-  
+
   # Do we want to only require three judgements total?  or let more?
   def self.every_query_doc_pair_has_three_judgements? book
     already_has_three_judgements_query_doc_pair_ids = book.query_doc_pairs.joins(:judgements)
@@ -46,7 +46,7 @@ class SelectionStrategy < ApplicationRecord
       .pluck(:query_doc_pair_id)
     query_doc_pair = book.query_doc_pairs
       .where.not(id: already_has_three_judgements_query_doc_pair_ids ).first
-    return query_doc_pair.nil? # if we didn't find a match, then return true
+    query_doc_pair.nil? # if we didn't find a match, then return true
   end
 
   # We are randomly with position bias picking query_doc_pairs, up to a limit of 3
