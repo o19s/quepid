@@ -104,15 +104,15 @@ class JudgeJudyFlowTest < ActionDispatch::IntegrationTest
       end
     end
     book.reload
-    
-    puts "We need to fix counter cache"
+
+    puts 'We need to fix counter cache'
     # assert_equal book.query_doc_pairs.size, book.judgements.where(user: judge_judy).size
 
     query_doc_pairs = book.query_doc_pairs.where(query_text: query.query_text, doc_id: rating.doc_id)
     assert_equal query_doc_pairs.count, 1
 
-    judgements = query_doc_pairs.first.judgements
-    puts "Please fix me"
+    query_doc_pairs.first.judgements
+    puts 'Please fix me'
     # assert_equal 2, judgements.count
 
     # rating.reload
