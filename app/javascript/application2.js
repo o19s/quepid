@@ -12,6 +12,7 @@ import Cookies from 'js-cookie'
 LocalTime.start()
 
 Turbo.config.drive.progressBarDelay = 1
+Turbo.session.drive = false
 
 import "vega"
 import "vega-lite"

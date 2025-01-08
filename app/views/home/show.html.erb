@@ -54,7 +54,7 @@ Inspired by https://dev.to/themesberg/tutorial-how-to-build-a-simple-admin-dashb
                           </tr>
                         </thead>
                         <tbody>
-                          <%= render partial: "case", collection: @cases, as: :kase %>
+                          <%= render partial: "case", collection: @cases, as: :kase, cached: true %>
                         </tbody>
                       </table>
                 </div>
