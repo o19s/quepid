@@ -35,7 +35,7 @@ module Authentication
     end
 
     def set_recent_cases
-      @recent_cases = recent_cases(3)
+      @recent_cases = recent_cases(4)
     end
 
     def recent_cases count
@@ -43,7 +43,10 @@ module Authentication
         case_ids = current_user.case_metadata.order(last_viewed_at: :desc).limit(count).pluck(:case_id)
 
         # map to objects
-        cases = current_user.cases_involved_with.where(id: case_ids)
+        cases = current_user.cases_involved_with.where(id: case_ids).not_archived
+
+        # the WHERE IN clause doesn't guarantee returning in order, so this sorts the cases in order of last viewing.
+        cases = cases.sort_by { |x| case_ids.index x.id }
       else
         cases = []
       end

@@ -20,7 +20,7 @@ module Authentication
     end
 
     def set_recent_books
-      @recent_books = recent_books(3)
+      @recent_books = recent_books(4)
     end
 
     def recent_books count
@@ -29,6 +29,9 @@ module Authentication
 
         # map to objects
         books = current_user.books_involved_with.where(id: book_ids)
+
+        # the WHERE IN clause doesn't guarantee returning in order, so this sorts the cases in order of last viewing.
+        books = books.sort_by { |x| book_ids.index x.id }
 
       else
         books = []
