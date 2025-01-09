@@ -16,13 +16,16 @@ class HomeController < ApplicationController
     @most_recent_cases = @cases[0...4].sort_by { |c| c.case_name.downcase }
 
     @most_recent_books = recent_books(4)
-    @lookup_for_books = {}
-    @most_recent_books.each do |book|
-      judged_by_current_user = book.judgements.where(user: @current_user).count
-      if judged_by_current_user.positive? && judged_by_current_user < book.query_doc_pairs.size
-        @lookup_for_books[book] = book.query_doc_pairs.size - judged_by_current_user
-      end
-    end
+    
+    
+    
+    # @lookup_for_books = {}
+    # @most_recent_books.each do |book|
+    #  judged_by_current_user = book.judgements.where(user: @current_user).count
+    #  if judged_by_current_user.positive? && judged_by_current_user < book.query_doc_pairs.size
+    #    @lookup_for_books[book] = book.query_doc_pairs.size - judged_by_current_user
+    #  end
+    # end
 
     @most_recent_books = @most_recent_books.sort_by { |b| b.name.downcase }
 
