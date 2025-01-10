@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_01_10_161959) do
+ActiveRecord::Schema[8.0].define(version: 2025_01_10_165245) do
   create_table "active_storage_attachments", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.string "name", null: false
     t.string "record_type", null: false
@@ -218,6 +218,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_01_10_161959) do
     t.integer "case_id", null: false
     t.datetime "last_viewed_at", precision: nil
     t.index ["case_id"], name: "case_metadata_ibfk_1"
+    t.index ["last_viewed_at", "case_id"], name: "idx_last_viewed_case"
     t.index ["user_id", "case_id"], name: "case_metadata_user_id_case_id_index"
   end
 
@@ -250,6 +251,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_01_10_161959) do
     t.json "options"
     t.boolean "nightly"
     t.index ["book_id"], name: "index_cases_book_id"
+    t.index ["owner_id", "archived"], name: "idx_owner_archived"
     t.index ["owner_id"], name: "user_id"
   end
 
@@ -548,6 +550,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_01_10_161959) do
   create_table "teams_members", primary_key: ["member_id", "team_id"], charset: "latin1", force: :cascade do |t|
     t.integer "member_id", null: false
     t.integer "team_id", null: false
+    t.index ["member_id", "team_id"], name: "idx_member_team"
     t.index ["member_id"], name: "index_teams_members_on_member_id"
     t.index ["team_id"], name: "index_teams_members_on_team_id"
   end
