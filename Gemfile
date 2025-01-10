@@ -70,8 +70,7 @@ group :development do
   # Add speed badges [https://github.com/MiniProfiler/rack-mini-profiler]
   # gem 'rack-mini-profiler'
 
-  # # Highlight the fine-grained location where an error occurred [https://github.com/ruby/error_highlight]
-
+  gem 'database_consistency', '~> 2.0', require: false
   gem 'debugbar'
   gem 'derailed_benchmarks'
   gem 'letter_opener'

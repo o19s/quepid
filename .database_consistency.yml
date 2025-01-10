@@ -1,0 +1,13 @@
+# Ignore false positive from Rails' ActionText and ActiveStorage
+ActionText::RichText:
+  enabled: false
+ActiveStorage::Attachment:
+  enabled: false
+ActiveStorage::Blob:
+  enabled: false
+ActiveStorage::VariantRecord:
+  enabled: false
+Ahoy::Event:
+  enabled: false
+Ahoy::Visit:
+  enabled: false

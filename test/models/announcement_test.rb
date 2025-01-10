@@ -11,6 +11,10 @@
 #  updated_at :datetime         not null
 #  author_id  :integer
 #
+# Indexes
+#
+#  index_announcements_author_id  (author_id)
+#
 require 'test_helper'
 
 class AnnouncementTest < ActiveSupport::TestCase
