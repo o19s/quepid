@@ -71,7 +71,7 @@ group :development do
   # Add speed badges [https://github.com/MiniProfiler/rack-mini-profiler]
   # gem 'rack-mini-profiler'
 
-  gem "database_consistency", "~> 2.0", require: false
+  gem 'database_consistency', '~> 2.0', require: false
   gem 'debugbar'
   gem 'derailed_benchmarks'
   gem 'letter_opener'
