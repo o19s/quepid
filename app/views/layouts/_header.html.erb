@@ -18,10 +18,7 @@
               RECENT CASES
             </li>
             <li><hr class="dropdown-divider"></li>
-            <% set_recent_cases.each do |kase| %>
-              <li><%= link_to_core_case  kase.case_name, kase, kase.last_try_number %></li>
-              <li><hr class="dropdown-divider"></li>
-            <% end %>
+            <%= render partial: 'layouts/dropdown_case', collection: set_recent_cases, as: :kase, cached: true %>
           
             <li class="actions">
               <div class="d-grid gap-2">
