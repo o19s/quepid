@@ -1,0 +1,526 @@
+---
+Ahoy::Event:
+  name:
+    LengthConstraintChecker:
+      enabled: false
+  user:
+    ForeignKeyChecker:
+      enabled: false
+  visit:
+    ColumnPresenceChecker:
+      enabled: false
+    ForeignKeyChecker:
+      enabled: false
+Ahoy::Visit:
+  app_version:
+    LengthConstraintChecker:
+      enabled: false
+  browser:
+    LengthConstraintChecker:
+      enabled: false
+  city:
+    LengthConstraintChecker:
+      enabled: false
+  country:
+    LengthConstraintChecker:
+      enabled: false
+  device_type:
+    LengthConstraintChecker:
+      enabled: false
+  index_ahoy_visits_on_visit_token:
+    UniqueIndexChecker:
+      enabled: false
+  ip:
+    LengthConstraintChecker:
+      enabled: false
+  landing_page:
+    LengthConstraintChecker:
+      enabled: false
+  os:
+    LengthConstraintChecker:
+      enabled: false
+  os_version:
+    LengthConstraintChecker:
+      enabled: false
+  platform:
+    LengthConstraintChecker:
+      enabled: false
+  referrer:
+    LengthConstraintChecker:
+      enabled: false
+  referring_domain:
+    LengthConstraintChecker:
+      enabled: false
+  region:
+    LengthConstraintChecker:
+      enabled: false
+  user:
+    ForeignKeyChecker:
+      enabled: false
+  user_agent:
+    LengthConstraintChecker:
+      enabled: false
+  utm_campaign:
+    LengthConstraintChecker:
+      enabled: false
+  utm_content:
+    LengthConstraintChecker:
+      enabled: false
+  utm_medium:
+    LengthConstraintChecker:
+      enabled: false
+  utm_source:
+    LengthConstraintChecker:
+      enabled: false
+  utm_term:
+    LengthConstraintChecker:
+      enabled: false
+  visit_token:
+    LengthConstraintChecker:
+      enabled: false
+  visitor_token:
+    LengthConstraintChecker:
+      enabled: false
+Annotation:
+  id:
+    PrimaryKeyTypeChecker:
+      enabled: false
+  message:
+    LengthConstraintChecker:
+      enabled: false
+  score:
+    MissingIndexChecker:
+      enabled: false
+  source:
+    LengthConstraintChecker:
+      enabled: false
+  user:
+    ColumnPresenceChecker:
+      enabled: false
+Announcement:
+  announcement_viewed:
+    MissingIndexChecker:
+      enabled: true
+  author:
+    ColumnPresenceChecker:
+      enabled: false
+    ForeignKeyChecker:
+      enabled: false
+  live:
+    MissingUniqueIndexChecker:
+      enabled: false
+    ThreeStateBooleanChecker:
+      enabled: false
+  text:
+    ColumnPresenceChecker:
+      enabled: false
+AnnouncementViewed:
+  announcement:
+    ColumnPresenceChecker:
+      enabled: false
+    ForeignKeyChecker:
+      enabled: false
+  user:
+    ColumnPresenceChecker:
+      enabled: false
+    ForeignKeyChecker:
+      enabled: false
+ApiKey:
+  token_digest:
+    LengthConstraintChecker:
+      enabled: false
+    NullConstraintChecker:
+      enabled: false
+  user:
+    ColumnPresenceChecker:
+      enabled: false
+    ForeignKeyChecker:
+      enabled: false
+Book:
+  cases:
+    MissingIndexChecker:
+      enabled: true
+  export_job:
+    LengthConstraintChecker:
+      enabled: false
+  import_job:
+    LengthConstraintChecker:
+      enabled: false
+  name:
+    LengthConstraintChecker:
+      enabled: false
+  owner:
+    ForeignKeyChecker:
+      enabled: false
+  populate_job:
+    LengthConstraintChecker:
+      enabled: false
+  scorer:
+    ColumnPresenceChecker:
+      enabled: false
+    ForeignKeyChecker:
+      enabled: false
+  show_rank:
+    ThreeStateBooleanChecker:
+      enabled: false
+  support_implicit_judgements:
+    ThreeStateBooleanChecker:
+      enabled: false
+BookMetadatum:
+  user:
+    ColumnPresenceChecker:
+      enabled: false
+    ForeignKeyChecker:
+      enabled: false
+Case:
+  archived:
+    ThreeStateBooleanChecker:
+      enabled: false
+  book:
+    ForeignKeyChecker:
+      enabled: false
+  case_name:
+    ColumnPresenceChecker:
+      enabled: false
+    LengthConstraintChecker:
+      enabled: false
+  id:
+    PrimaryKeyTypeChecker:
+      enabled: false
+  nightly:
+    ThreeStateBooleanChecker:
+      enabled: false
+  public:
+    ThreeStateBooleanChecker:
+      enabled: false
+  scorer:
+    ForeignKeyChecker:
+      enabled: false
+CaseMetadatum:
+  id:
+    PrimaryKeyTypeChecker:
+      enabled: false
+CuratorVariable:
+  id:
+    PrimaryKeyTypeChecker:
+      enabled: false
+  name:
+    ColumnPresenceChecker:
+      enabled: false
+    LengthConstraintChecker:
+      enabled: false
+  try:
+    ColumnPresenceChecker:
+      enabled: false
+    ForeignKeyChecker:
+      enabled: false
+  value:
+    ColumnPresenceChecker:
+      enabled: false
+Judgement:
+  explanation:
+    LengthConstraintChecker:
+      enabled: false
+  judge_later:
+    ThreeStateBooleanChecker:
+      enabled: false
+  unrateable:
+    ThreeStateBooleanChecker:
+      enabled: false
+  user:
+    ForeignKeyChecker:
+      enabled: false
+Permission:
+  action:
+    LengthConstraintChecker:
+      enabled: false
+  id:
+    PrimaryKeyTypeChecker:
+      enabled: false
+  model_type:
+    LengthConstraintChecker:
+      enabled: false
+  'on':
+    ThreeStateBooleanChecker:
+      enabled: false
+  user:
+    ColumnPresenceChecker:
+      enabled: false
+    ForeignKeyChecker:
+      enabled: false
+Query:
+  case:
+    ColumnPresenceChecker:
+      enabled: false
+  id:
+    PrimaryKeyTypeChecker:
+      enabled: false
+  information_need:
+    LengthConstraintChecker:
+      enabled: false
+  notes:
+    LengthConstraintChecker:
+      enabled: false
+  options:
+    LengthConstraintChecker:
+      enabled: false
+  query_text:
+    ColumnPresenceChecker:
+      enabled: false
+QueryDocPair:
+  doc_id:
+    ColumnPresenceChecker:
+      enabled: false
+    LengthConstraintChecker:
+      enabled: false
+  document_fields:
+    LengthConstraintChecker:
+      enabled: false
+  information_need:
+    LengthConstraintChecker:
+      enabled: false
+  notes:
+    LengthConstraintChecker:
+      enabled: false
+  options:
+    LengthConstraintChecker:
+      enabled: false
+  query_text:
+    ColumnPresenceChecker:
+      enabled: false
+Rating:
+  doc_id:
+    LengthConstraintChecker:
+      enabled: false
+  id:
+    PrimaryKeyTypeChecker:
+      enabled: false
+  query:
+    ColumnPresenceChecker:
+      enabled: false
+  user:
+    ForeignKeyChecker:
+      enabled: false
+Score:
+  all_rated:
+    ThreeStateBooleanChecker:
+      enabled: false
+  case:
+    ColumnPresenceChecker:
+      enabled: false
+  id:
+    PrimaryKeyTypeChecker:
+      enabled: false
+  try:
+    ColumnPresenceChecker:
+      enabled: false
+    ForeignKeyChecker:
+      enabled: false
+  user:
+    ColumnPresenceChecker:
+      enabled: false
+Scorer:
+  code:
+    LengthConstraintChecker:
+      enabled: false
+  communal:
+    ThreeStateBooleanChecker:
+      enabled: false
+  id:
+    PrimaryKeyTypeChecker:
+      enabled: false
+  name:
+    LengthConstraintChecker:
+      enabled: false
+  owner:
+    ForeignKeyChecker:
+      enabled: false
+  scale:
+    LengthConstraintChecker:
+      enabled: false
+  scale_with_labels:
+    LengthConstraintChecker:
+      enabled: false
+  show_scale_labels:
+    ThreeStateBooleanChecker:
+      enabled: false
+SearchEndpoint:
+  api_method:
+    LengthConstraintChecker:
+      enabled: false
+  archived:
+    ThreeStateBooleanChecker:
+      enabled: false
+  basic_auth_credential:
+    LengthConstraintChecker:
+      enabled: false
+  custom_headers:
+    LengthConstraintChecker:
+      enabled: false
+  endpoint_url:
+    LengthConstraintChecker:
+      enabled: false
+  mapper_code:
+    LengthConstraintChecker:
+      enabled: false
+  name:
+    LengthConstraintChecker:
+      enabled: false
+  owner:
+    ForeignKeyChecker:
+      enabled: false
+  proxy_requests:
+    ThreeStateBooleanChecker:
+      enabled: false
+  search_engine:
+    LengthConstraintChecker:
+      enabled: false
+SelectionStrategy:
+  description:
+    LengthConstraintChecker:
+      enabled: false
+  name:
+    LengthConstraintChecker:
+      enabled: false
+Snapshot:
+  id:
+    PrimaryKeyTypeChecker:
+      enabled: false
+  name:
+    ColumnPresenceChecker:
+      enabled: false
+    LengthConstraintChecker:
+      enabled: false
+  scorer:
+    ForeignKeyChecker:
+      enabled: false
+  try:
+    ForeignKeyChecker:
+      enabled: false
+SnapshotDoc:
+  doc_id:
+    LengthConstraintChecker:
+      enabled: false
+  explain:
+    LengthConstraintChecker:
+      enabled: false
+  fields:
+    LengthConstraintChecker:
+      enabled: false
+  id:
+    PrimaryKeyTypeChecker:
+      enabled: false
+  rated_only:
+    ThreeStateBooleanChecker:
+      enabled: false
+SnapshotQuery:
+  all_rated:
+    ThreeStateBooleanChecker:
+      enabled: false
+  id:
+    PrimaryKeyTypeChecker:
+      enabled: false
+  snapshot_docs:
+    ForeignKeyCascadeChecker:
+      enabled: false
+Team:
+  id:
+    PrimaryKeyTypeChecker:
+      enabled: false
+  name:
+    ColumnPresenceChecker:
+      enabled: false
+    LengthConstraintChecker:
+      enabled: false
+    MissingUniqueIndexChecker:
+      enabled: false
+Try:
+  ancestry:
+    LengthConstraintChecker:
+      enabled: false
+  escape_query:
+    ThreeStateBooleanChecker:
+      enabled: false
+  field_spec:
+    LengthConstraintChecker:
+      enabled: false
+  id:
+    PrimaryKeyTypeChecker:
+      enabled: false
+  name:
+    LengthConstraintChecker:
+      enabled: false
+  query_params:
+    LengthConstraintChecker:
+      enabled: false
+  search_endpoint:
+    ForeignKeyChecker:
+      enabled: false
+User:
+  administrator:
+    ThreeStateBooleanChecker:
+      enabled: false
+  agreed:
+    ThreeStateBooleanChecker:
+      enabled: false
+  announcements:
+    MissingIndexChecker:
+      enabled: true
+  api_keys:
+    MissingIndexChecker:
+      enabled: true
+  books:
+    MissingIndexChecker:
+      enabled: true
+  cases:
+    ForeignKeyCascadeChecker:
+      enabled: false
+  company:
+    LengthConstraintChecker:
+      enabled: false
+  email:
+    ColumnPresenceChecker:
+      enabled: false
+    LengthConstraintChecker:
+      enabled: false
+  id:
+    PrimaryKeyTypeChecker:
+      enabled: false
+  index_users_on_invitation_token:
+    UniqueIndexChecker:
+      enabled: false
+  index_users_on_reset_password_token:
+    UniqueIndexChecker:
+      enabled: false
+  invitation_token:
+    LengthConstraintChecker:
+      enabled: false
+  invited_by:
+    ForeignKeyChecker:
+      enabled: false
+  locked:
+    ThreeStateBooleanChecker:
+      enabled: false
+  name:
+    LengthConstraintChecker:
+      enabled: false
+  owned_scorers:
+    MissingIndexChecker:
+      enabled: true
+  password:
+    ColumnPresenceChecker:
+      enabled: false
+    LengthConstraintChecker:
+      enabled: false
+  permissions:
+    MissingIndexChecker:
+      enabled: true
+  profile_pic:
+    LengthConstraintChecker:
+      enabled: false
+  reset_password_token:
+    LengthConstraintChecker:
+      enabled: false
+  stored_raw_invitation_token:
+    LengthConstraintChecker:
+      enabled: false
