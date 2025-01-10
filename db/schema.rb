@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_01_10_161959) do
+ActiveRecord::Schema[8.0].define(version: 2025_01_10_192350) do
   create_table "active_storage_attachments", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.string "name", null: false
     t.string "record_type", null: false
@@ -340,6 +340,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_01_10_161959) do
     t.text "mapper_code"
     t.boolean "proxy_requests", default: false
     t.json "options"
+    t.index ["owner_id", "id"], name: "index_search_endpoints_on_owner_id_and_id"
   end
 
   create_table "selection_strategies", charset: "utf8mb3", collation: "utf8mb3_unicode_ci", force: :cascade do |t|
@@ -538,6 +539,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_01_10_161959) do
   create_table "teams_members", primary_key: ["member_id", "team_id"], charset: "latin1", force: :cascade do |t|
     t.integer "member_id", null: false
     t.integer "team_id", null: false
+    t.index ["member_id", "team_id"], name: "index_teams_members_on_member_id_and_team_id"
     t.index ["member_id"], name: "index_teams_members_on_member_id"
     t.index ["team_id"], name: "index_teams_members_on_team_id"
   end
@@ -552,6 +554,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_01_10_161959) do
   create_table "teams_search_endpoints", id: false, charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.bigint "search_endpoint_id", null: false
     t.bigint "team_id", null: false
+    t.index ["search_endpoint_id", "team_id"], name: "index_teams_search_endpoints_on_search_endpoint_id_and_team_id"
   end
 
   create_table "tries", id: :integer, charset: "latin1", force: :cascade do |t|
