@@ -47,7 +47,7 @@ gem 'rails', '8.0.1'
 gem 'rails-html-sanitizer'
 gem 'rack-cors', '~> 2.0'
 gem 'responders'
-gem 'rubyzip', '~> 2.3.0' # 3.0 will be breaking
+gem 'rubyzip', '~> 2.4.1' # 3.0 will be breaking
 gem 'sassc-rails', '~> 2.1'
 gem 'solid_cable', '~> 3.0'
 gem 'solid_queue'
