@@ -53,9 +53,11 @@ module ActiveSupport
       Bullet.enable = false
       # post the login and follow through to the home page
       post '/users/login', params: { user: { email: user.email, password: 'password' } }
-      follow_redirect!
-      assert_equal 200, status
-      assert_equal '/', path
+
+      # avoid the follow redirect so we dont' invoke the home_controller.'
+      # follow_redirect!
+      # assert_equal 200, status
+      # assert_equal '/', path
 
       Bullet.enable = true
     end

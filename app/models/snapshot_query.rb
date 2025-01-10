@@ -7,7 +7,6 @@
 #  id                :integer          not null, primary key
 #  all_rated         :boolean
 #  number_of_results :integer
-#  response_body     :binary(429496729
 #  response_status   :integer
 #  score             :float(24)
 #  query_id          :integer

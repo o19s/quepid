@@ -17,27 +17,14 @@
 
   </div>
 <% else %>
-
-    <% if book.selection_strategy.single_rater? %>
-        <div class="alert alert-success" role="alert">
-        Congratulations! All the query/doc pairs have been judged.
-        </div>
-    <% else %>
-      <% if SelectionStrategy.random_query_doc_based_on_strategy(book, current_user).nil? %>
-        <div class="alert alert-success" role="alert">
-        Congratulations, all query/doc pairs you can judge have been judged.
-        </div>
-      <% end %>
-      <% if book.judgements.count == book.query_doc_pairs.size * 3 %>
-        <div class="alert alert-success" role="alert">
-        Congratulations, all query/doc pairs have been judged by three seperate judges.
-        </div>
-      <% else %>
-        <div class="alert alert-info" role="alert">
-        Best practice is to have three independent judgements per query/doc pair, and we don't yet have that.
-        Currently <%= book.judgements.count %> out of expected <%= book.query_doc_pairs.size * 3 %> total judgements have been made.
-        </div>
-      <% end %>
-    <% end %>
+  <% if book.selection_strategy.single_rater? %>
+    <div class="alert alert-success" role="alert">
+    Congratulations! All the query/doc pairs have been judged.
+    </div>
+  <% else %>
+    <div class="alert alert-success" role="alert">
+    Congratulations, all query/doc pairs have been judged by three seperate judges.
+    </div>      
+  <% end %>
 <% end %>
 <p/>

@@ -11,7 +11,7 @@ require 'test_helper'
 #  agreed                      :boolean
 #  agreed_time                 :datetime
 #  company                     :string(255)
-#  completed_case_wizard       :boolean          default(FALSE), not null
+#  completed_case_wizard       :integer          default(0), unsigned, not null
 #  email                       :string(80)
 #  email_marketing             :boolean          default(FALSE), not null
 #  invitation_accepted_at      :datetime
@@ -24,8 +24,10 @@ require 'test_helper'
 #  locked_at                   :datetime
 #  name                        :string(255)
 #  num_logins                  :integer
+#  openai_key                  :string(255)
 #  password                    :string(120)
 #  profile_pic                 :string(4000)
+#  prompt                      :string(4000)
 #  reset_password_sent_at      :datetime
 #  reset_password_token        :string(255)
 #  stored_raw_invitation_token :string(255)

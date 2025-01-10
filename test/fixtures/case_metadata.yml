@@ -17,6 +17,7 @@
 #
 #  case_metadata_ibfk_1                 (case_id)
 #  case_metadata_user_id_case_id_index  (user_id,case_id)
+#  idx_last_viewed_case                 (last_viewed_at,case_id)
 #
 # Foreign Keys
 #

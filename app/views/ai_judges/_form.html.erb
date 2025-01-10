@@ -1,0 +1,38 @@
+
+<%= form_with url: team_ai_judges_path(@team), model: ai_judge do |form| %>
+  <% if ai_judge.errors.any? %>
+    <div style="color: red">
+      <h2><%= pluralize(ai_judge.errors.count, "error") %> prohibited this ai_judge from being saved:</h2>
+
+      <ul>
+        <% ai_judge.errors.each do |error| %>
+          <li><%= error.full_message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div>
+    <%= form.label :email, style: "display: block" %>
+    <%= form.text_field :email %>
+  </div>
+
+  <div>
+    <%= form.label :name, style: "display: block" %>
+    <%= form.text_field :name %>
+  </div>
+
+  <div>
+    <%= form.label :openai_key, style: "display: block" %>
+    <%= form.text_field :openai_key %>
+  </div>
+
+  <div>
+    <%= form.label :prompt, style: "display: block" %>
+    <%= form.textarea :prompt %>
+  </div>
+
+  <div>
+    <%= form.submit 'Create AI Judge' %>
+  </div>
+<% end %>
