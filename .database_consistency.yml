@@ -7,3 +7,7 @@ ActiveStorage::Blob:
   enabled: false
 ActiveStorage::VariantRecord:
   enabled: false
+Ahoy::Event:
+  enabled: false
+Ahoy::Visit:
+  enabled: false
