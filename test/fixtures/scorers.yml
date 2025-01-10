@@ -20,6 +20,10 @@
 #  updated_at        :datetime         not null
 #  owner_id          :integer
 #
+# Indexes
+#
+#  index_scorers_owner_id  (owner_id)
+#
 
 quepid_default_scorer:
   code: pass();

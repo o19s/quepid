@@ -18,6 +18,7 @@
 # Indexes
 #
 #  index_books_on_selection_strategy_id  (selection_strategy_id)
+#  index_books_owner_id                  (owner_id)
 #
 # Foreign Keys
 #
