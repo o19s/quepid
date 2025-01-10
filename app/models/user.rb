@@ -230,7 +230,7 @@ class User < ApplicationRecord
     Book.for_user(self)
   end
 
-  # This method rpeturns all the search_endpoints that the user has access as owner or via a team.
+  # This method returns all the search_endpoints that the user has access as owner or via a team.
   def search_endpoints_involved_with
     SearchEndpoint.for_user(self)
   end
