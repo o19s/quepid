@@ -19,6 +19,10 @@
 #  updated_at            :datetime         not null
 #  owner_id              :integer
 #
+# Indexes
+#
+#  index_search_endpoints_on_owner_id_and_id  (owner_id,id)
+#
 
 class SearchEndpoint < ApplicationRecord
   # Associations
