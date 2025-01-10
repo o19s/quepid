@@ -90,7 +90,7 @@ Annotation:
       enabled: false
   score:
     MissingIndexChecker:
-      enabled: false
+      enabled: true
   source:
     LengthConstraintChecker:
       enabled: false

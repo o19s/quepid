@@ -16,6 +16,7 @@
 # Indexes
 #
 #  case_id                             (case_id)
+#  index_case_scores_annotation_id     (annotation_id) UNIQUE
 #  index_case_scores_on_annotation_id  (annotation_id)
 #  support_last_score                  (updated_at,created_at,id)
 #  user_id                             (user_id)

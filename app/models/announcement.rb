@@ -11,6 +11,10 @@
 #  updated_at :datetime         not null
 #  author_id  :integer
 #
+# Indexes
+#
+#  index_announcements_author_id  (author_id)
+#
 class Announcement < ApplicationRecord
   belongs_to :author, class_name: 'User'
   has_many :announcement_viewed, dependent: :destroy

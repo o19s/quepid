@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_01_08_171851) do
+ActiveRecord::Schema[8.0].define(version: 2025_01_10_143216) do
   create_table "active_storage_attachments", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.string "name", null: false
     t.string "record_type", null: false
@@ -102,6 +102,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_01_08_171851) do
     t.integer "user_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["announcement_id"], name: "index_announcement_viewed_announcement_id"
   end
 
   create_table "announcements", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
@@ -110,6 +111,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_01_08_171851) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.boolean "live", default: false
+    t.index ["author_id"], name: "index_announcements_author_id"
   end
 
   create_table "api_keys", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
@@ -118,6 +120,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_01_08_171851) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["token_digest"], name: "index_api_keys_on_token_digest"
+    t.index ["user_id"], name: "index_api_keys_user_id"
   end
 
   create_table "blazer_audits", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
@@ -196,6 +199,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_01_08_171851) do
     t.string "export_job"
     t.string "import_job"
     t.string "populate_job"
+    t.index ["owner_id"], name: "index_books_owner_id"
     t.index ["selection_strategy_id"], name: "index_books_on_selection_strategy_id"
   end
 
@@ -217,6 +221,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_01_08_171851) do
     t.binary "queries", size: :medium
     t.integer "annotation_id"
     t.datetime "updated_at", precision: nil
+    t.index ["annotation_id"], name: "index_case_scores_annotation_id", unique: true
     t.index ["annotation_id"], name: "index_case_scores_on_annotation_id"
     t.index ["case_id"], name: "case_id"
     t.index ["updated_at", "created_at", "id"], name: "support_last_score"
@@ -235,6 +240,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_01_08_171851) do
     t.boolean "public"
     t.json "options"
     t.boolean "nightly"
+    t.index ["book_id"], name: "index_cases_book_id"
     t.index ["owner_id"], name: "user_id"
   end
 
@@ -267,6 +273,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_01_08_171851) do
     t.boolean "on", default: false
     t.datetime "created_at", precision: nil, null: false
     t.datetime "updated_at", precision: nil, null: false
+    t.index ["user_id"], name: "index_permissions_user_id"
   end
 
   create_table "queries", id: :integer, charset: "utf8mb3", force: :cascade do |t|
@@ -317,6 +324,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_01_08_171851) do
     t.datetime "created_at", precision: nil, null: false
     t.datetime "updated_at", precision: nil, null: false
     t.boolean "communal", default: false
+    t.index ["owner_id"], name: "index_scorers_owner_id"
   end
 
   create_table "search_endpoints", charset: "utf8mb3", force: :cascade do |t|

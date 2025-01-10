@@ -9,6 +9,10 @@
 #  updated_at :datetime         not null
 #  author_id  :integer
 #
+# Indexes
+#
+#  index_announcements_author_id  (author_id)
+#
 
 live_announcement:
   text:  We have a new Scorer! 🥳

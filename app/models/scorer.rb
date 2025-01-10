@@ -15,6 +15,10 @@
 #  updated_at        :datetime         not null
 #  owner_id          :integer
 #
+# Indexes
+#
+#  index_scorers_owner_id  (owner_id)
+#
 
 require 'scale_serializer'
 

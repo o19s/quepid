@@ -10,6 +10,10 @@
 #  announcement_id :integer
 #  user_id         :integer
 #
+# Indexes
+#
+#  index_announcement_viewed_announcement_id  (announcement_id)
+#
 class AnnouncementViewed < ApplicationRecord
   self.table_name = 'announcement_viewed'
   belongs_to :user
