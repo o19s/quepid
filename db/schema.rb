@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_01_10_143216) do
+ActiveRecord::Schema[8.0].define(version: 2025_01_10_161959) do
   create_table "active_storage_attachments", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.string "name", null: false
     t.string "record_type", null: false
@@ -222,7 +222,6 @@ ActiveRecord::Schema[8.0].define(version: 2025_01_10_143216) do
     t.integer "annotation_id"
     t.datetime "updated_at", precision: nil
     t.index ["annotation_id"], name: "index_case_scores_annotation_id", unique: true
-    t.index ["annotation_id"], name: "index_case_scores_on_annotation_id"
     t.index ["case_id"], name: "case_id"
     t.index ["updated_at", "created_at", "id"], name: "support_last_score"
     t.index ["user_id"], name: "user_id"
