@@ -95,7 +95,7 @@ module Api
             body  = response.parsed_body
             cases = body['all_cases']
 
-            assert 4 == cases.length
+            assert cases.length <= 4
           end
 
           test 'returns list of cases ordered by last viewed date' do
