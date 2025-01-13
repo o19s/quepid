@@ -27,19 +27,16 @@
 
   <div class="text-center" ng-show="ctrl.share.teams.length === 0 && !ctrl.share.loading">
     <p>
-      Judgements are meant to be shared with a team, so either create a new team or  
+      Judgements are meant to be shared with a team, so either
+      <a
+        ng-click="ctrl.goToTeamsPage()"
+      >create a new team</a>
+      or
       <share-case
         acase="ctrl.share.acase" ng-click="ctrl.cancel()"
       ></share-case> first.
     </p>
-    
  
-
-    <a class="btn btn-primary btn-lg" ng-click="ctrl.goToTeamsPage()">
-      <i class="bi bi-plus-lg"></i>
-      Create a team
-    </a>
-
   </div>
 
   <div class="text-center" ng-show="ctrl.share.teams.length > 0 &&  ctrl.share.books.length === 0 && !ctrl.share.loading">
