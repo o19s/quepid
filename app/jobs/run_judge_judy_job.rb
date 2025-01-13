@@ -17,17 +17,16 @@ class RunJudgeJudyJob < ApplicationJob
   def perform book, judge, number_of_pairs
     counter = 0
     loop do
+      break if number_of_pairs && counter >= (number_of_pairs.to_i)
+
       query_doc_pair = SelectionStrategy.random_query_doc_based_on_strategy(book, judge)
       break if query_doc_pair.nil?
-      if number_of_pairs
-        break if counter == number_of_pairs
-      end
 
       judgement = Judgement.new(query_doc_pair: query_doc_pair, user: judge, updated_at: Time.zone.now)
       judgement.rating = 4
       judgement.explanation = "Eric writing code.  Judge is #{judge.email}"
       judgement.save!
-      counter = counter + 1
+      counter += 1
     end
     UpdateCaseJob.perform_later book
   end

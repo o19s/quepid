@@ -131,7 +131,8 @@ class User < ApplicationRecord
   validates :email,
             presence:   true,
             uniqueness: true,
-            format:     { with: URI::MailTo::EMAIL_REGEXP }
+            format:     { with: URI::MailTo::EMAIL_REGEXP },
+            unless:     :ai_judge?
 
   validates :password,
             presence: true

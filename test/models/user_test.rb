@@ -326,6 +326,16 @@ class UserTest < ActiveSupport::TestCase
       assert_includes joey.search_endpoints_involved_with, search_endpoint
     end
   end
+
+  describe 'User is AI Judge' do
+    it 'does not require an email address to be valid when is a judge' do
+      user = User.new(openai_key: '1234')
+      assert user.ai_judge?
+
+      user.password = 'fakeme'
+      assert user.valid?
+    end
+  end
 end
 
 # rubocop:enable Layout/LineLength
