@@ -4,6 +4,15 @@ class AiJudgesController < ApplicationController
   before_action :set_team
   def new
     @ai_judge = User.new
+    
+    prompt = <<~TEXT
+      This judgement was made by AI Judge.
+      Confidence level: High
+      Based on criteria: relevance, accuracy
+      Judge: bob
+    TEXT
+    
+    @ai_judge.prompt = prompt
   end
 
   def edit

@@ -37,7 +37,8 @@ class BooksController < ApplicationController
     unique_judge_ids = @book.query_doc_pairs.joins(:judgements)
       .distinct.pluck(:user_id)
 
-    assigned_ai_judges = @book.ai_judges.pluck(:user_id)
+    @ai_judges = @book.ai_judges
+    assigned_ai_judges = @ai_judges.pluck(:user_id)
 
     stats_judges = (unique_judge_ids + assigned_ai_judges).uniq
 
@@ -206,7 +207,8 @@ class BooksController < ApplicationController
 
   def run_judge_judy
     ai_judge = @book.ai_judges.where(id: params[:ai_judge_id]).first
-    RunJudgeJudyJob.perform_later(@book, ai_judge)
+    number_of_pairs = params[:number_of_pairs]
+    RunJudgeJudyJob.perform_later(@book, ai_judge, number_of_pairs)
     redirect_to book_path(@book), flash: { kraken_unleashed: true }, :notice => "Set AI Judge #{ai_judge.name} to work judging query/doc pairs."
   end
   # rubocop:enable Metrics/AbcSize

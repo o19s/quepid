@@ -35,7 +35,7 @@ class JudgeJudyFlowTest < ActionDispatch::IntegrationTest
     # Wait for her to judge
     perform_enqueued_jobs do
       # patch :update, params: data
-      RunJudgeJudyJob.perform_later(book, judge_judy)
+      RunJudgeJudyJob.perform_later(book, judge_judy, nil)
     end
 
     book.reload
@@ -105,21 +105,19 @@ class JudgeJudyFlowTest < ActionDispatch::IntegrationTest
     end
     book.reload
 
-    puts 'We need to fix counter cache'
-    # assert_equal book.query_doc_pairs.size, book.judgements.where(user: judge_judy).size
+    assert_equal book.query_doc_pairs.size, book.judgements.where(user: judge_judy).size
 
     query_doc_pairs = book.query_doc_pairs.where(query_text: query.query_text, doc_id: rating.doc_id)
     assert_equal query_doc_pairs.count, 1
 
     query_doc_pairs.first.judgements
-    puts 'Please fix me'
-    # assert_equal 2, judgements.count
+    assert_equal 2, judgements.count
 
-    # rating.reload
+    rating.reload
 
     # See that the original case rating has changed to be the average of
     # Judge Judy with a 4 and User with 1.   (1+4)/2 = 2.5 rounded to 3.0
-    # assert_equal rating.rating, 3.0
-    # assert_nil rating.user # I think that having a "last user who rated" wasn't good idea.'
+    assert_equal rating.rating, 3.0
+    assert_nil rating.user # I think that having a "last user who rated" wasn't good idea.'
   end
 end
