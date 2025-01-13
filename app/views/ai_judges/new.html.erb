@@ -1,7 +1,7 @@
-<% content_for :title, "New AI Judge" %>
-
-<h1>New AI Judge</h1>
-
-Create and add a NEW AI Judge to the <%= @team.name %> Team.
-
-<%= render "form", ai_judge: @ai_judge %>
+<div class="container centered-form">
+  <div class="row mb-3">
+    <%= form_with url: team_ai_judges_path(@team), model: ai_judge do |form| %>
+      <%= render "form", ai_judge: @ai_judge %>
+    <% end %>
+  </div>
+</div>

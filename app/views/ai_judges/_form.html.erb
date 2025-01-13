@@ -1,38 +1,48 @@
-
-<%= form_with url: team_ai_judges_path(@team), model: ai_judge do |form| %>
-  <% if ai_judge.errors.any? %>
-    <div style="color: red">
-      <h2><%= pluralize(ai_judge.errors.count, "error") %> prohibited this ai_judge from being saved:</h2>
-
-      <ul>
-        <% ai_judge.errors.each do |error| %>
-          <li><%= error.full_message %></li>
-        <% end %>
-      </ul>
+<div class="card">
+  <div class="card-header">    
+    <h5 class="card-title"><i class="bi bi-robot"></i> AI Judge</h5>
+  </div>
+  <div class="card-body">
+    <% if ai_judge.errors.any? %>
+      <div style="color: red">
+        <h2><%= pluralize(ai_judge.errors.count, "error") %> prohibited this ai_judge from being saved:</h2>
+  
+        <ul>
+          <% ai_judge.errors.each do |error| %>
+            <li><%= error.full_message %></li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+    <p class="card-text">Configure AI Judge with information Quepid needs to run the AI Judge.</p>
+    <div class="row mb-3">
+      <%= form.label :email, class: 'col-sm-2 col-form-label' %>
+      <div class="col-sm-4">
+        <%= form.text_field :email, class: "form-control" %>
+      </div>
     </div>
-  <% end %>
-
-  <div>
-    <%= form.label :email, style: "display: block" %>
-    <%= form.text_field :email %>
+  
+    <div class="row mb-3">
+      <%= form.label :name, class: 'col-sm-2 col-form-label' %>
+      <div class="col-sm-4">
+        <%= form.text_field :name, class: "form-control" %>
+      </div>
+    </div>
+  
+    <div class="row mb-3">
+      <%= form.label :openai_key, class: 'col-sm-2 col-form-label' %>
+      <div class="col-sm-4">
+        <%= form.text_field :openai_key %>
+      </div>
+    </div>
+  
+    <div class="row mb-3">
+      <%= form.label :prompt, class: 'col-sm-2 col-form-label' %>
+      <%= form.textarea :prompt, class: "form-control", rows: 6 %>        
+    </div>
   </div>
-
-  <div>
-    <%= form.label :name, style: "display: block" %>
-    <%= form.text_field :name %>
-  </div>
-
-  <div>
-    <%= form.label :openai_key, style: "display: block" %>
-    <%= form.text_field :openai_key %>
-  </div>
-
-  <div>
-    <%= form.label :prompt, style: "display: block" %>
-    <%= form.textarea :prompt %>
-  </div>
-
-  <div>
-    <%= form.submit 'Create AI Judge' %>
-  </div>
-<% end %>
+  
+  <div class="card-footer">    
+    <%= form.submit 'Save', class: 'btn btn-primary' %>
+  </div>  
+</div>

@@ -473,7 +473,7 @@ Rails.application.routes.draw do
   resource :profile, only: [ :show, :update ]
 
   resources :teams, only: [] do
-    resources :ai_judges, only: [ :new, :create, :destroy ], controller: :ai_judges
+    resources :ai_judges, controller: :ai_judges
   end
 
   resources :ai_judges, only: [] do

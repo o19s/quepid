@@ -28,3 +28,8 @@
 	 height: 5px;
 	 background-color: gold;
  }
+ 
+ /* give some space to the top of pages that have bootstrap 5 container */
+ main > .container {
+	 padding: 20px 15px 0;
+ }
