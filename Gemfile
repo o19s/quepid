@@ -2,7 +2,7 @@
 
 source 'https://rubygems.org'
 
-ruby '3.3.6'
+ruby '3.4.1'
 
 gem 'activerecord-import', '>= 1.0.7'
 gem 'active_storage_db'
