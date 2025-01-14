@@ -3,7 +3,7 @@
 class AiJudgesController < ApplicationController
   before_action :set_team
 
-  DEFAULT_PROMPT = <<~TEXT
+  DEFAULT_SYSTEM_PROMPT = <<~TEXT
     You are evaluating the results from a search engine. For each query, you will be provided with multiple documents. Your task is to evaluate each document and assign a judgment on a scale of 0 to 2, where:
     - 0 indicates the document is irrelevant to the query.
     - 1 indicates the document is somewhat relevant to the query.
@@ -60,7 +60,7 @@ class AiJudgesController < ApplicationController
 
   def new
     @ai_judge = User.new
-    @ai_judge.prompt = DEFAULT_PROMPT
+    @ai_judge.prompt = DEFAULT_SYSTEM_PROMPT
   end
 
   def edit

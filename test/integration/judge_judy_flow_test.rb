@@ -121,8 +121,8 @@ class JudgeJudyFlowTest < ActionDispatch::IntegrationTest
     rating.reload
 
     # See that the original case rating has changed to be the average of
-    # Judge Judy with a 4 and User with 1.   (1+4)/2 = 2.5 rounded to 3.0
-    assert_equal rating.rating, 3.0
+    # Judge Judy with a 0 and User with 1.   (0+1)/2 = 0.5 rounded to 1.0
+    assert_equal rating.rating, 1
     assert_nil rating.user # I think that having a "last user who rated" wasn't good idea.'
   end
 end

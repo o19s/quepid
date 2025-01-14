@@ -209,7 +209,7 @@ class BooksController < ApplicationController
     ai_judge = @book.ai_judges.where(id: params[:ai_judge_id]).first
 
     judge_all = deserialize_bool_param(params[:judge_all])
-    number_of_pairs = params[:number_of_pairs]
+    number_of_pairs = params[:number_of_pairs].to_i
     number_of_pairs = nil if judge_all
 
     RunJudgeJudyJob.perform_later(@book, ai_judge, number_of_pairs)

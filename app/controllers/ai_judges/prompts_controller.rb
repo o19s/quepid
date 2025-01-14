@@ -24,16 +24,11 @@ module AiJudges
       @ai_judge = User.find(params[:ai_judge_id])
       @ai_judge.update(ai_judge_params)
 
-      # Hey scott, here we make a call!
-      llm_service = LlmService.new(@ai_judge.openai_key)
-      result = llm_service.make_judgement @ai_judge.prompt, 'user prompt'
-      pp result
-
       @query_doc_pair = QueryDocPair.new(query_doc_pair_params)
 
-      @judgement = Judgement.new
-      @judgement.rating = result[:rating]
-      @judgement.explanation = result[:explanation]
+      llm_service = LlmService.new(@ai_judge.openai_key)
+      @judgement = llm_service.make_judgement @ai_judge, @query_doc_pair
+      pp @judgement
 
       render :edit
     end

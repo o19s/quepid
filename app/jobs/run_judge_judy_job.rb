@@ -14,23 +14,42 @@ class RunJudgeJudyJob < ApplicationJob
   #
   # @example Judge all pairs
   #   RunJudgeJudyJob.perform_later(book, ai_judge, nil)
+  # rubocop:disable Metrics/MethodLength
   def perform book, judge, number_of_pairs
     counter = 0
+    puts "the key is #{judge.openai_key}"
+    llm_service = LlmService.new judge.openai_key, {}
     loop do
-      break if number_of_pairs && counter >= (number_of_pairs.to_i)
+      break if number_of_pairs && counter >= number_of_pairs
 
       query_doc_pair = SelectionStrategy.random_query_doc_based_on_strategy(book, judge)
       break if query_doc_pair.nil?
 
-      judgement = Judgement.new(query_doc_pair: query_doc_pair, user: judge, updated_at: Time.zone.now)
-      judgement.rating = 4
-      judgement.explanation = "Eric writing code.  Judge is #{judge.email}"
+      begin
+        judgement = llm_service.make_judgement(judge, query_doc_pair)
+      rescue RuntimeError => e
+        case e.message
+        when /401/
+          raise # we can't do anything about this, so pass it up
+        else
+          judgement.explanation = e.full_message
+          judgement.unrateable = true
+        end
+      end
+
       judgement.save!
-      sleep 1
-      broadcast_update(book, counter += 1, query_doc_pair, judge)
+      counter += 1
+
+      if number_of_pairs.nil?
+        broadcast_update_kraken_mode(book, counter, query_doc_pair, judge)
+      else
+        broadcast_update(book, number_of_pairs - counter, query_doc_pair, judge)
+      end
     end
+    broadcast_complete(book, judge)
     UpdateCaseJob.perform_later book
   end
+  # rubocop:enable Metrics/MethodLength
 
   private
 
@@ -40,6 +59,24 @@ class RunJudgeJudyJob < ApplicationJob
       target:  'notifications',
       partial: 'books/blah',
       locals:  { book: book, counter: counter, qdp: query_doc_pair, judge: judge }
+    )
+  end
+
+  def broadcast_update_kraken_mode book, counter, query_doc_pair, judge
+    Turbo::StreamsChannel.broadcast_render_to(
+      :notifications,
+      target:  'notifications',
+      partial: 'books/update_kraken_mode',
+      locals:  { book: book, counter: counter, qdp: query_doc_pair, judge: judge }
+    )
+  end
+
+  def broadcast_complete book, judge
+    Turbo::StreamsChannel.broadcast_render_to(
+      :notifications,
+      target:  'notifications',
+      partial: 'books/complete',
+      locals:  { book: book, judge: judge }
     )
   end
 end

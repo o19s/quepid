@@ -117,7 +117,7 @@
 
   <a class="btn btn-default pull-left" href="books/{{ctrl.activeBookId}}/judge" target="_self" ng-show="ctrl.canUpdateCase && ctrl.activeBookId">
     <i class="glyphicon glyphicon-book"></i>
-    Make Judgements!
+    Judge Documents!
   </a>
   <a class="btn btn-default pull-left" ng-click="ctrl.refreshRatingsFromBook()" ng-disabled="processingPrompt.inProgress || ctrl.populateBook || !ctrl.activeBookId || ctrl.share.acase.bookId !== ctrl.activeBookId" >
     <i class="glyphicon glyphicon-refresh" ng-class="{'spintime': processingPrompt.inProgress}"></i>
