@@ -26,7 +26,14 @@ class RunJudgeJudyJob < ApplicationJob
       judgement.rating = 4
       judgement.explanation = "Eric writing code.  Judge is #{judge.email}"
       judgement.save!
+      sleep 1
       counter += 1
+      Turbo::StreamsChannel.broadcast_render_to(
+        :notifications,
+        target:  'notifications',
+        partial: 'books/blah',
+        locals:  { book: book, counter: counter, qdp: query_doc_pair, judge: judge }
+      )
     end
     UpdateCaseJob.perform_later book
   end

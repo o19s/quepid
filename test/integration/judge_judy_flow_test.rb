@@ -66,7 +66,7 @@ class JudgeJudyFlowTest < ActionDispatch::IntegrationTest
 
     put api_case_query_ratings_url acase, query, params: { case_id: acase.id, query_id: query.id, rating: rating }
     assert_response :ok
-    puts response.parsed_body
+
     rating = Rating.find(response.parsed_body['id'])
 
     # make sure Judge Judy didn't get involved'
@@ -103,14 +103,19 @@ class JudgeJudyFlowTest < ActionDispatch::IntegrationTest
         assert_response :no_content
       end
     end
-    book.reload
 
+    perform_enqueued_jobs do
+      patch run_judge_judy_book_url book, judge_judy, params: { judge_all: 1 }
+    end
+
+    book.reload
     assert_equal book.query_doc_pairs.size, book.judgements.where(user: judge_judy).size
 
     query_doc_pairs = book.query_doc_pairs.where(query_text: query.query_text, doc_id: rating.doc_id)
     assert_equal query_doc_pairs.count, 1
 
-    query_doc_pairs.first.judgements
+    judgements = query_doc_pairs.first.judgements
+
     assert_equal 2, judgements.count
 
     rating.reload

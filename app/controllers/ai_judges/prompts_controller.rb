@@ -9,10 +9,12 @@ module AiJudges
         @book = Book.find(params[:book_id])
         @query_doc_pair = @book.query_doc_pairs.sample
       else
-        @query_doc_pair = @ai_judge.teams
-          .flat_map(&:books)
-          .flat_map(&:query_doc_pairs)
-          .sample
+        # grab any query_doc_pair that the judge has access to
+        @query_doc_pair = QueryDocPair
+          .joins(book: { teams: :members })
+          .where(teams: { members: { id: @ai_judge.id } })
+          .order('RAND()')
+          .first
       end
 
       @query_doc_pair = QueryDocPair.new if @query_doc_pair.nil?

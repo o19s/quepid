@@ -2,7 +2,24 @@
 
 
 
+
+<script>
+function updateModalTitle(judgeId) {
+  console.log("HI there, updateModalTitle")
+  const checkbox = document.getElementById(`judge_all_${judgeId}`);
+  const button = document.getElementById(`submit_${judgeId}`);
+  
+  if (checkbox.checked) {
+    button.value = "Unleash the Kraken!!";
+  } else {
+    button.value = "Judge Documents";
+  }
+}
+</script>
+
+
 <%= turbo_frame_tag "modal" %>
+
 
 
 
@@ -21,6 +38,8 @@ Books organize all the query/doc pairs that are needed for evaluating your searc
 This book consists of <%= @book.query_doc_pairs.count %> query document pairs and <%= @book.judgements.count %> judgements.
 
 <%= render 'judgements/moar_judgements_needed', book: @book %>
+
+<span id="notification-book-<%= @book.id %>"></span>
 
 <%= render 'kraken_unleashed', book: @book if @kraken_unleashed %>
 
@@ -208,9 +227,7 @@ This book consists of <%= @book.query_doc_pairs.count %> query document pairs an
         <% if row[:judge] && row[:judge].ai_judge? %>
           <i class="bi bi-robot"></i>
           <div class="float-end d-flex gap-2">
-            <%= button_to 'Refine Prompt', edit_ai_judge_prompt_path(row[:judge]), params: { book_id: @book.id }, class: 'btn btn-block btn-light', role: 'button', method: :get %> 
-            <%= button_to 'Unleash the Kraken!', run_judge_judy_book_path(@book, row[:judge].id), class: 'btn btn-block btn-light', disabled: !(row[:can_judge_more] && @moar_judgements_needed ), role: 'button', method: :patch %>    
-        
+            <%= button_to 'Refine Prompt', edit_ai_judge_prompt_path(row[:judge]), params: { book_id: @book.id }, class: 'btn btn-block btn-light', role: 'button', method: :get %>           
             <button type="button" class="btn btn-block btn-light" <%= (row[:can_judge_more] && @moar_judgements_needed )? '' : 'disabled' %> data-bs-toggle="modal" data-bs-target="#unleash_modal_<%= row[:judge].id %>">
               Prepare to Judge!
             </button>      

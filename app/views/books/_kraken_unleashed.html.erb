@@ -1,6 +1,6 @@
 <div id="successModal" class="modal">
   <div class="modal-content">
-    <%= image_tag "kraken.png", class: "img-fluid" %>
+    <%= image_tag "kraken.png", id: 'kraken', class: "img-fluid fade-out" %>
     <button onclick="closeModal()">Close</button>
   </div>
 </div>
@@ -13,5 +13,9 @@
   
   document.addEventListener('click', function(event) {
     document.getElementById('successModal').style.display = 'none';
+  });
+  
+  document.getElementById('kraken').addEventListener('animationend', function() {
+    this.remove();
   });
 </script>
