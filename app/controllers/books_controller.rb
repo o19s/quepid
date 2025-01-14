@@ -213,7 +213,7 @@ class BooksController < ApplicationController
     number_of_pairs = nil if judge_all
 
     RunJudgeJudyJob.perform_later(@book, ai_judge, number_of_pairs)
-    redirect_to book_path(@book), flash: { kraken_unleashed: true }, :notice => "Set AI Judge #{ai_judge.name} to work judging query/doc pairs."
+    redirect_to book_path(@book), flash: { kraken_unleashed: judge_all }, :notice => "Set AI Judge #{ai_judge.name} to work judging query/doc pairs."
   end
   # rubocop:enable Metrics/AbcSize
   # rubocop:enable Metrics/MethodLength
@@ -246,12 +246,10 @@ class BooksController < ApplicationController
   end
 
   def delete_ratings_by_assignee
-    judgements_to_delete = @book.judgements.where(user: @user)
-    judgements_count = judgements_to_delete.count
-    judgements_to_delete.destroy_all
+    deleted_count = @book.judgements.where(user: @user).delete_all
 
     UpdateCaseJob.perform_later @book
-    redirect_to book_path(@book), :notice => "Deleted #{judgements_count} judgements belonging to #{@user.fullname}."
+    redirect_to book_path(@book), :notice => "Deleted #{deleted_count} judgements belonging to #{@user.fullname}."
   end
 
   def reset_unrateable
