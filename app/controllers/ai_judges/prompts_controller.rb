@@ -12,7 +12,7 @@ module AiJudges
         # grab any query_doc_pair that the judge has access to
         @query_doc_pair = QueryDocPair
           .joins(book: { teams: :members })
-          .where(teams: { members: { id: @ai_judge.id } })
+          .where(teams: { teams_members: { member_id: @ai_judge.id } })
           .order('RAND()')
           .first
       end
