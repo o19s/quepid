@@ -4,32 +4,57 @@ class AiJudgesController < ApplicationController
   before_action :set_team
 
   DEFAULT_PROMPT = <<~TEXT
-    You are evaluating the results from a search engine. You will be shown a query followed by several documents. Give each document a judgment on a scale between 0 and 2 where 0 is irrelevant and 2 is perfectly relevant.
-    Example:
+    You are evaluating the results from a search engine. For each query, you will be provided with multiple documents. Your task is to evaluate each document and assign a judgment on a scale of 0 to 2, where:
+    - 0 indicates the document is irrelevant to the query.
+    - 1 indicates the document is somewhat relevant to the query.
+    - 2 indicates the document is perfectly relevant to the query.
+
+    For each document, provide:
+    1. An explanation of the judgment.
+    2. The judgment value.
+
+    The response should be in the following JSON format:
+    {
+      "explanation": "Your detailed reasoning behind the judgment",
+      "judgment": <numeric value>
+    }
+
+    Here is an example:
     User:
     Query: Farm animals
+
     doc1:
-     	title: All about farm animals
-     	abstract: This document is all about farm animals
-          Assistant:
-     	explanation: This document appears to perfectly respond to the user's query
-     	judgment: 2
-          User:
-          Query: Farm animals
+      title: All about farm animals
+      abstract: This document is all about farm animals
+    Assistant:
+    {
+      "explanation": "This document appears to perfectly respond to the user's query",
+      "judgment": 2
+    }
+
+    User:
+    Query: Farm animals
+
     doc2:
-     	title: Somewhat about farm animals
-     	abstract: This document somewhat talks about farm animals
-          Assistant:
-     	explanation: This document is somewhat relevant to the user's query
-     	judgment: 1
-          User:
-          Query: Farm animals
+      title: Somewhat about farm animals
+      abstract: This document somewhat talks about farm animals
+    Assistant:
+    {
+      "explanation": "This document is somewhat relevant to the user's query",
+      "judgment": 1
+    }
+
+    User:
+    Query: Farm animals
+
     doc3:
-     	title: This document has nothing to do with farm animals
-     	abstract: We will talk about everything except for farm animals.
-          Assistant:
-     	explanation: This document is not relevant at all to the user's query
-     	judgment: 0
+      title: This document has nothing to do with farm animals
+      abstract: We will talk about everything except for farm animals.
+    Assistant:
+    {
+      "explanation": "This document is not relevant at all to the user's query",
+      "judgment": 0
+    }
   TEXT
 
   def new
