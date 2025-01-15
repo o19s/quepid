@@ -7,6 +7,7 @@ class JudgeJudyFlowTest < ActionDispatch::IntegrationTest
   let(:acase) { cases(:shared_with_team) }
   let(:team) { teams(:shared) }
   let(:user) { users(:random) }
+  let(:judge_judy) { users(:judge_judy) }
 
   test 'Demonstrate how to work with Judge Judy' do
     post users_login_url params: { user: { email: user.email, password: 'password' }, format: :json }
@@ -18,23 +19,11 @@ class JudgeJudyFlowTest < ActionDispatch::IntegrationTest
     assert_includes acase.teams, team
     assert_includes book.teams, team
 
-    # this is causing issues due to counter cache settings.
-    # assert_equal 7, book.query_doc_pairs.size
-
-    # Set up Judge Judy.  Give her a prompt (and an OPENAI KEY)
-    judge_judy = User.new name: 'judge judy', email: 'judgejudy@quepid.com', password: 'password'
-
-    # Add her to the team
-    judge_judy.teams << team
-    judge_judy.save!
-
-    # Add her to the book's list of ai_judges
-    book.ai_judges << judge_judy
-    book.save!
+    assert_includes judge_judy.teams, team
+    assert_includes book.ai_judges, judge_judy
 
     # Wait for her to judge
     perform_enqueued_jobs do
-      # patch :update, params: data
       RunJudgeJudyJob.perform_later(book, judge_judy, nil)
     end
 
