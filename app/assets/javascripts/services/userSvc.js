@@ -15,6 +15,7 @@ angular.module('UtilitiesModule')
         self.id              = userObj.id;
         self.permissions     = userObj.permissions;
         self.email           = userObj.email;
+        self.ai_judge        = userObj.ai_judge;
         self.casesInvolvedWithCount   = userObj.cases_involved_with_count;
         self.teamsInvolvedWithCount   = userObj.teams_involved_with_count;
 

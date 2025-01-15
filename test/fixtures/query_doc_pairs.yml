@@ -93,7 +93,7 @@ starwars_qdp1:
   query_text: Han
   position: 1
   doc_id: Han Solo-A Star Wars Story
-  document_fields: '{"title":"Han Solo-A Star Wars Story"}'
+  document_fields: '{"title":"Han Solo-A Star Wars Story", "description": "The film tells the origin story of Han Solo and Chewbacca, who join a heist within the criminal underworld ten years prior to the events of A New Hope."}'
   book: :book_of_star_wars_judgements
   
 starwars_qdp2:

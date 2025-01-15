@@ -1,0 +1,13 @@
+<%= turbo_stream.replace "notification-book-#{book.id}" do %>
+  <span id="notification-book-<%= book.id %>">
+    
+    <div class="alert alert-warning" role="alert" >  
+      <%= image_tag "kraken.png", size:"60x60" %>    
+      Query/Doc Pairs So Far: <code><%= counter %></code>. 
+      <br/>
+      <p class="text-truncate">
+        Processing query <code><%= qdp.query_text %></code>.
+      </p>
+    </div>
+  </span>
+<% end %>

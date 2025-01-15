@@ -51,6 +51,19 @@
     <%= form.label :selection_strategy_id, class: 'form-label' %>
     <%= form.collection_select(:selection_strategy_id, SelectionStrategy.all, :id, :descriptive_name, { prompt: true }, required: true, class: 'form-control') %>
   </div>
+  
+  <div class="mb-3">     
+    <%= form.label :teams, "AI Judges Assigned to this Book", class: 'form-label' %>
+    <%= form.collection_check_boxes(:ai_judge_ids, @ai_judges, :id, :name) do |b| %>
+      <div class="collection-check-box">
+        <%= b.check_box %>
+        <%= b.label %>
+      </div>
+    <% end %>
+    <div class="form-text">You can have multiple AI judges creating ratings.  You must add an AI judge to the team using their email address.</div>
+  </div>
+  
+  
   <div class="mb-3">
     <%= form.label :show_rank, class: 'form-check-label' %>
     <%= form.check_box :show_rank, class: 'form-check-input' %>

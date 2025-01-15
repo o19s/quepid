@@ -1,0 +1,5 @@
+<% content_for :title, "Editing AI Judge Prompt" %>
+
+<h1>Refine <i class="bi bi-robot"></i> <%=@ai_judge.name %>'s Prompt</h1>
+
+<%= render "form", ai_judge: @ai_judge, query_doc_pair: @query_doc_pair %>

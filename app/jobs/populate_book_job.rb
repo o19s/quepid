@@ -6,9 +6,10 @@ class PopulateBookJob < ApplicationJob
   # rubocop:disable Security/MarshalLoad
   # rubocop:disable Metrics/MethodLength
   # rubocop:disable Metrics/AbcSize
-  def perform book, kase
+  def perform book, kase, _user
     # down the road we should be using ActiveRecord-import and first_or_initialize instead.
     # See how snapshots are managed.
+    book.query_doc_pairs.empty?
 
     book.update(populate_job: "populate started at #{Time.zone.now}")
     compressed_data = book.populate_file.download
@@ -35,7 +36,7 @@ class PopulateBookJob < ApplicationJob
         # we are smart and just look up the correct user id from rating.user_id via the database, no API data needed.
         judgement = query_doc_pair.judgements.find_or_create_by user_id: rating.user_id
         judgement.rating = pair[:rating]
-        judgement.user = rating.user
+        judgement.user = User.find(pair[:user_id]) # rating.user
         judgement.save!
       end
 
@@ -51,6 +52,9 @@ class PopulateBookJob < ApplicationJob
     book.populate_file.purge
     book.populate_job = nil
     book.save
+
+    # throwing an exception in tests..
+    # Analytics::Tracker.track_query_doc_pairs_bulk_updated_event user, book, is_book_empty
   end
   # rubocop:enable Security/MarshalLoad
   # rubocop:enable Metrics/MethodLength

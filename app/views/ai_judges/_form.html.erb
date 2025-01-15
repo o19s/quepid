@@ -1,0 +1,42 @@
+<div class="card">
+  <div class="card-header">    
+    <h5 class="card-title"><i class="bi bi-robot"></i> AI Judge</h5>
+  </div>
+  <div class="card-body">
+    <% if ai_judge.errors.any? %>
+      <div style="color: red">
+        <h2><%= pluralize(ai_judge.errors.count, "error") %> prohibited this ai_judge from being saved:</h2>
+  
+        <ul>
+          <% ai_judge.errors.each do |error| %>
+            <li><%= error.full_message %></li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+    <p class="card-text">Configure the AI Judge with information Quepid needs to run the judge.</p>
+  
+    <div class="row mb-3">
+      <%= form.label :name, class: 'col-sm-2 col-form-label' %>
+      <div class="col-sm-4">
+        <%= form.text_field :name, class: "form-control" %>
+      </div>
+    </div>
+  
+    <div class="row mb-3">
+      <%= form.label :openai_key, class: 'col-sm-2 col-form-label' %>
+      <div class="col-sm-4">
+        <%= form.text_field :openai_key %>
+      </div>
+    </div>
+  
+    <div class="row mb-3">
+      <%= form.label :system_prompt, class: 'col-sm-2 col-form-label' %>
+      <%= form.textarea :system_prompt, class: "form-control", rows: 6 %>        
+    </div>
+  </div>
+  
+  <div class="card-footer">    
+    <%= form.submit 'Save', class: 'btn btn-primary' %>
+  </div>  
+</div>

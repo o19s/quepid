@@ -35,13 +35,11 @@ class BookTest < ActiveSupport::TestCase
     let(:book1)                 { books(:james_bond_movies) }
     let(:book2)                 { books(:empty_book) }
 
-    # not sure this is actually important?  Why would we care at this level?
-    # it 'returns books by alphabetical name of book for a team' do
-    #  puts team.books.first.name
-    #  puts team.books.second.name
-    #  assert_equal book2, team.books.first
-    #  assert_equal book1, team.books.second
-    # end
+    # think about the impact of counter cache on query doc pairs
+    it 'has some query_doc_pairs' do
+      assert_equal 7, book1.query_doc_pairs.size
+      assert_equal 'GeorgeLazenby', book1.query_doc_pairs.first.doc_id
+    end
   end
 
   describe 'sampling random query doc pairs' do

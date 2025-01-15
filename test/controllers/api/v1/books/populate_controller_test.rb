@@ -143,9 +143,9 @@ module Api
               ],
             }
 
-            put :update, params: data
-
-            perform_enqueued_jobs
+            perform_enqueued_jobs do
+              put :update, params: data
+            end
 
             query_doc_pair = {
               query_text:      'star wars',

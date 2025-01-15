@@ -344,7 +344,7 @@ angular.module('QuepidApp')
             if (newUrl === null || angular.isUndefined(newUrl)) {
               useTMDBDemoSettings = true;
             }
-            // We actually have seperate demos for Solr based on http and https urls.
+            // We actually have separate demos for Solr based on http and https urls.
             else if (newUrl === this.tmdbSettings['solr'].insecureSearchUrl || newUrl === this.tmdbSettings['solr'].secureSearchUrl) {
               useTMDBDemoSettings = true;
             }
