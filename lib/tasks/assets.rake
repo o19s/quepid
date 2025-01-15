@@ -21,7 +21,7 @@ namespace :assets do
     # puts "Unpacking Jupyterlite into #{destination}"
     # system "tar -xzf #{notebooks_gz} --directory #{destination}"
 
-    # File.delete(notebooks_gz)
+    File.delete(notebooks_gz)
   end
 
   # Hook into existing assets:precompile task
