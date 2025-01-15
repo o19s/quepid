@@ -11,7 +11,7 @@
 #  agreed                      :boolean
 #  agreed_time                 :datetime
 #  company                     :string(255)
-#  completed_case_wizard       :integer          default(0), unsigned, not null
+#  completed_case_wizard       :boolean          default(FALSE), not null
 #  email                       :string(80)
 #  email_marketing             :boolean          default(FALSE), not null
 #  invitation_accepted_at      :datetime
@@ -27,10 +27,10 @@
 #  openai_key                  :string(255)
 #  password                    :string(120)
 #  profile_pic                 :string(4000)
-#  prompt                      :string(4000)
 #  reset_password_sent_at      :datetime
 #  reset_password_token        :string(255)
 #  stored_raw_invitation_token :string(255)
+#  system_prompt               :string(4000)
 #  created_at                  :datetime         not null
 #  updated_at                  :datetime         not null
 #  default_scorer_id           :integer

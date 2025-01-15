@@ -60,7 +60,7 @@ class AiJudgesController < ApplicationController
 
   def new
     @ai_judge = User.new
-    @ai_judge.prompt = DEFAULT_SYSTEM_PROMPT
+    @ai_judge.system_prompt = DEFAULT_SYSTEM_PROMPT
   end
 
   def edit
@@ -103,6 +103,6 @@ class AiJudgesController < ApplicationController
 
   # Only allow a list of trusted parameters through.
   def ai_judge_params
-    params.expect(user: [ :name, :openai_key, :prompt ])
+    params.expect(user: [ :name, :openai_key, :system_prompt ])
   end
 end

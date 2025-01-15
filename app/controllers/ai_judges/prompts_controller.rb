@@ -37,7 +37,7 @@ module AiJudges
 
     # Only allow a list of trusted parameters through.
     def ai_judge_params
-      params.expect(user: [ :openai_key, :prompt ])
+      params.expect(user: [ :openai_key, :system_prompt ])
     end
 
     def query_doc_pair_params

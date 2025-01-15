@@ -10,7 +10,7 @@ class LlmService
 
   def make_judgement judge, query_doc_pair
     user_prompt = make_user_prompt query_doc_pair
-    results = get_llm_response user_prompt, judge.prompt
+    results = get_llm_response user_prompt, judge.system_prompt
     puts 'Here are the results'
     puts results
     judgement = Judgement.new(query_doc_pair: query_doc_pair, user: judge)

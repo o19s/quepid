@@ -21,7 +21,6 @@
 #
 # Indexes
 #
-#  idx_cases_owner_id   (owner_id)
 #  idx_owner_archived   (owner_id,archived)
 #  index_cases_book_id  (book_id)
 #  user_id              (owner_id)
