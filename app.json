@@ -83,7 +83,7 @@
     "worker": {
       "quantity": 1,
       "size": "standard-1x",
-      "command": "bundle exec rake solid_queue:start"
+      "command": "bundle exec bin/jobs"
     },
     "web": {
       "quantity": 1,
