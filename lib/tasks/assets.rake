@@ -17,10 +17,15 @@ namespace :assets do
         system "wget --no-verbose -O #{notebooks_gz} https://github.com/o19s/quepid-jupyterlite/releases/latest/download/jupyter-lite-build.tgz"
       end
 
-      #puts "Unpacking Jupyterlite into #{destination}"
-      #system "tar -xzf #{notebooks_gz} --directory #{destination}"
+      # Heroku limits us to 500 MB slugs which we exceed, so
+      # only unpack the gzip file if we aren't in Heroku.
+      # On Heroku we unpack as part of start up.  See heroku.rb.
+      if ENV['HEROKU_APP_NAME'].blank?
+        puts "Unpacking Jupyterlite into #{destination}"
+        system "tar -xzf #{notebooks_gz} --directory #{destination}"
 
-      #File.delete(notebooks_gz)
+        File.delete(notebooks_gz)
+      end
     end
   end
 
