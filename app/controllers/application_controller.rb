@@ -16,6 +16,12 @@ class ApplicationController < ActionController::Base
   before_action :require_login
   before_action :check_current_user_locked!
 
+  before_action :turbo_frame_request_variant
+
+  def turbo_frame_request_variant
+    request.variant = :turbo_frame if turbo_frame_request?
+  end
+
   # Prevent CSRF attacks by raising an exception.
   # For APIs, you may want to use :null_session instead.
   protect_from_forgery with: :exception
