@@ -25,7 +25,7 @@
 #  fk_rails_...  (book_id => books.id)
 #
 class QueryDocPair < ApplicationRecord
-  belongs_to :book, counter_cache: true
+  belongs_to :book
   has_many :judgements, dependent: :destroy, autosave: true
 
   validates :query_text, presence: true, length: { maximum: 2048 }

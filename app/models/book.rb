@@ -9,7 +9,6 @@
 #  import_job                  :string(255)
 #  name                        :string(255)
 #  populate_job                :string(255)
-#  query_doc_pairs_count       :integer          default(0), not null
 #  show_rank                   :boolean          default(FALSE)
 #  support_implicit_judgements :boolean
 #  created_at                  :datetime         not null
@@ -21,6 +20,7 @@
 # Indexes
 #
 #  index_books_on_selection_strategy_id  (selection_strategy_id)
+#  index_books_owner_id                  (owner_id)
 #
 # Foreign Keys
 #
@@ -35,6 +35,18 @@ class Book < ApplicationRecord
 
   belongs_to :owner,
              class_name: 'User', optional: true
+
+  # belongs_to :ai_judge,
+  #           class_name: 'User', optional: true
+  #
+  # has_many :users, dependent: :destroy
+  # has_many :ai_judges, through: :ai_judges
+
+  # rubocop:disable Rails/HasAndBelongsToMany
+  has_and_belongs_to_many :ai_judges,
+                          class_name: 'User',
+                          join_table: 'books_ai_judges'
+  # rubocop:enable Rails/HasAndBelongsToMany
 
   belongs_to :selection_strategy
   belongs_to :scorer
@@ -65,6 +77,16 @@ class Book < ApplicationRecord
 
   # Scopes
   include ForUserScope
+
+  scope :with_counts, -> {
+                        select <<~SQL.squish
+                          books.*,
+                          (
+                            SELECT COUNT(query_doc_pairs.id) FROM query_doc_pairs
+                            WHERE book_id = books.id
+                          ) AS query_doc_pairs_count
+                        SQL
+                      }
 
   private
 

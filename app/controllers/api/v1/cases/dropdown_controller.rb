@@ -5,7 +5,7 @@ module Api
     module Cases
       class DropdownController < Api::ApiController
         def index
-          @cases = recent_cases 3
+          @cases = recent_cases 4
 
           respond_with @cases
         end

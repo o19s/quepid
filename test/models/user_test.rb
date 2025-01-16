@@ -24,11 +24,13 @@ require 'test_helper'
 #  locked_at                   :datetime
 #  name                        :string(255)
 #  num_logins                  :integer
+#  openai_key                  :string(255)
 #  password                    :string(120)
 #  profile_pic                 :string(4000)
 #  reset_password_sent_at      :datetime
 #  reset_password_token        :string(255)
 #  stored_raw_invitation_token :string(255)
+#  system_prompt               :string(4000)
 #  created_at                  :datetime         not null
 #  updated_at                  :datetime         not null
 #  default_scorer_id           :integer
@@ -322,6 +324,16 @@ class UserTest < ActiveSupport::TestCase
       search_endpoint.save!
 
       assert_includes joey.search_endpoints_involved_with, search_endpoint
+    end
+  end
+
+  describe 'User is AI Judge' do
+    it 'does not require an email address to be valid when is a judge' do
+      user = User.new(openai_key: '1234')
+      assert user.ai_judge?
+
+      user.password = 'fakeme'
+      assert user.valid?
     end
   end
 end

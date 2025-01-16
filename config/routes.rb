@@ -482,6 +482,14 @@ Rails.application.routes.draw do
   resource :account, only: [ :update, :destroy ]
   resource :profile, only: [ :show, :update ]
 
+  resources :teams, only: [] do
+    resources :ai_judges, controller: :ai_judges
+  end
+
+  resources :ai_judges, only: [] do
+    resource :prompt, only: [ :edit, :update ], module: :ai_judges
+  end
+
   resources :cases, only: [] do
     resource :book
     resources :ratings, only: [ :index ]
@@ -489,6 +497,7 @@ Rails.application.routes.draw do
 
   resources :books do
     resources :judgements
+    resources :ai_judges
     resources :query_doc_pairs do
       resources :judgements
       post 'unrateable' => 'judgements#unrateable'
@@ -500,6 +509,7 @@ Rails.application.routes.draw do
     member do
       patch 'combine'
       patch 'assign_anonymous'
+      patch 'run_judge_judy/:ai_judge_id', action: :run_judge_judy, as: :run_judge_judy
       delete 'delete_ratings_by_assignee', action: :delete_ratings_by_assignee, as: :delete_ratings_by_assignee
       delete 'reset_unrateable/:user_id', action: :reset_unrateable, as: :reset_unrateable
       delete 'reset_judge_later/:user_id', action: :reset_judge_later, as: :reset_judge_later

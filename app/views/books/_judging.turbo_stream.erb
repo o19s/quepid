@@ -1,0 +1,17 @@
+<%= turbo_stream.replace "notification-book-#{book.id}" do %>
+  <span id="notification-book-<%= book.id %>">
+    <% if counter > 0 %>
+      <div class="alert alert-warning" role="alert" >      
+        Query/Doc Pairs Remaining: <code><%= counter %></code>. 
+      <br/>
+      <p class="text-truncate">
+        <i class="bi bi-robot"></i> <% judge.name %> judging docs for query <code><%= qdp.query_text %></code>.
+      </p>
+      </div>
+    <% else %>
+      <div class="alert alert-info" role="alert">
+        Judging by <i class="bi bi-robot"></i> <% judge.name %> completed.  Please reload page.
+      </div>
+    <% end %>
+  </span>
+<% end %>

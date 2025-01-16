@@ -1,6 +1,9 @@
 <div class="item-box row">
   <div class="col-xs-3 col-md-1">
+    
+    <i ng-show="ctrl.user.ai_judge" class='bi bi-robot' style="font-size: 48px;"></i>
     <img
+      ng-show="!ctrl.user.ai_judge"
       ng-src="{{ ctrl.user.avatar_url }}"
       class="img-responsive img-rounded"
       alt="{{ ctrl.user.display_name }}"
@@ -29,6 +32,14 @@
 
     <span class="item-actions">
       <remove-member this-member="ctrl.user" this-team="ctrl.team"></remove-member>
+      <a ng-show="ctrl.user.ai_judge" ng-href="teams/{{ctrl.team.id}}/ai_judges/{{ctrl.user.id}}/edit" target="_self" class="action-icon">     
+        <i
+          class="glyphicon glyphicon-pencil"
+          aria-hidden="true"
+          title="Edit Judge"
+          alt="Edit Judge"
+        ></i>
+      </a>
     </span>
   </div>
 </div>

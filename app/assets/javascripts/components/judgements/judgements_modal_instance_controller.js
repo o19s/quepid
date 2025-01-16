@@ -115,7 +115,7 @@ angular.module('QuepidApp')
 
         if (ctrl.populateBook){
           if (!ctrl.updateAssociatedBook){
-            label = 'Refresh Query/Doc Pairs for Book';
+            label = 'Update Query/Doc Pairs for Book';
           }
           else {
             label = `${label} and Populate`;

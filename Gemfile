@@ -10,8 +10,7 @@ gem 'acts_as_list', '>= 1.0.1'
 gem 'addressable', '~> 2.8'
 gem 'ahoy_matey'
 gem 'ancestry'
-# gem 'angular-rails-templates', '>= 1.0.0.beta'
-gem 'angular-rails-templates', git: 'https://github.com/epugh/angular-rails-templates.git', branch: 'bump_rails_8'
+gem 'angular-rails-templates', '~> 1.3'
 gem 'apipie-rails', '~> 1.2'
 gem 'bcrypt', '~> 3.1.7'
 gem 'blazer', '~> 3.1'
@@ -47,7 +46,7 @@ gem 'rails', '8.0.1'
 gem 'rails-html-sanitizer'
 gem 'rack-cors', '~> 2.0'
 gem 'responders'
-gem 'rubyzip', '~> 2.3.0' # 3.0 will be breaking
+gem 'rubyzip', '~> 2.4.1' # 3.0 will be breaking
 gem 'sassc-rails', '~> 2.1'
 gem 'solid_cable', '~> 3.0'
 gem 'solid_queue'
@@ -71,8 +70,7 @@ group :development do
   # Add speed badges [https://github.com/MiniProfiler/rack-mini-profiler]
   # gem 'rack-mini-profiler'
 
-  # # Highlight the fine-grained location where an error occurred [https://github.com/ruby/error_highlight]
-
+  gem 'database_consistency', '~> 2.0', require: false
   gem 'debugbar'
   gem 'derailed_benchmarks'
   gem 'letter_opener'

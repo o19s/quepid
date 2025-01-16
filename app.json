@@ -80,14 +80,13 @@
     }
   },
   "formation": {
-    "worker": {
-      "quantity": 1,
-      "size": "standard-1x",
-      "command": "bundle exec bin/jobs"
-    },
     "web": {
       "quantity": 1,
-      "size": "standard-1x"
+      "size": "standard-2x"
+    },
+    "worker": {
+      "quantity": 1,
+      "size": "standard-2x"
     }
   },
   "scripts": {

@@ -8,12 +8,6 @@ default: &default
       threads: 3
       processes: <%= ENV.fetch("JOB_CONCURRENCY", 1) %>
       polling_interval: 0.1
-    
-    # No joy with limiting number of jobs in bulk_processing queue to 1 at a time
-    # - queues: [ bulk_processing ]
-    #   threads: 1
-    #   polling_interval: 2
-    #   processes: 1    
 
 development:
   <<: *default

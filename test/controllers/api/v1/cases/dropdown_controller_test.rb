@@ -87,7 +87,7 @@ module Api
             assert_not_includes ids, archived.id
           end
 
-          test 'limits list to 3 cases' do
+          test 'limits list to 4 cases' do
             get :index
 
             assert_response :ok
@@ -95,7 +95,7 @@ module Api
             body  = response.parsed_body
             cases = body['all_cases']
 
-            assert cases.length <= 3
+            assert cases.length <= 4
           end
 
           test 'returns list of cases ordered by last viewed date' do

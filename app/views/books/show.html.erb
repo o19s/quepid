@@ -1,5 +1,29 @@
 <%= turbo_stream_from(:notifications) %>
 
+
+
+
+<script>
+function updateModalTitle(judgeId) {
+  console.log("HI there, updateModalTitle")
+  const checkbox = document.getElementById(`judge_all_${judgeId}`);
+  const button = document.getElementById(`submit_${judgeId}`);
+  
+  if (checkbox.checked) {
+    button.value = "Unleash the Kraken!!";
+  } else {
+    button.value = "Judge Documents";
+  }
+}
+</script>
+
+
+<%= turbo_frame_tag "modal" %>
+
+
+
+
+
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
   <h1 class="h2"><%= book_title @book %></h1>
   <div class="btn-toolbar mb-2 mb-md-0">
@@ -15,17 +39,50 @@ This book consists of <%= @book.query_doc_pairs.count %> query document pairs an
 
 <%= render 'judgements/moar_judgements_needed', book: @book %>
 
-<span id="notification-book-<%= @book.id %>">
-</span>
+<span id="notification-book-<%= @book.id %>"></span>
+
+<%= render 'kraken_unleashed', book: @book if @kraken_unleashed %>
+
+<% if @book.ai_judges.present?  %>
+  We have some AI Judges <i class="bi bi-robot"></i>, <i><%= @book.ai_judges.map(&:name).to_sentence %></i> helping us.
+  <br/>
+<% end %>
+
+<% if @book.import_file.attached? %>
+<div class="alert alert-danger" role="alert">
+  This book has an upload of data that is currently being processed and is not ready for use yet.
+  <br/>
+  Import file is  <%=link_to 'available here', rails_blob_path(@book.import_file.blob, only_path: true) %>.
+  Status: <%= @book.query_doc_pairs.count %>
+  <%= link_to book_path(@book) do %>
+    Refresh
+    <i
+      class="bi arrow-clockwise"
+      aria-hidden="true"
+    ></i>
+  <% end %>
+
+</div>
+<% end %>
+
+<% if @book.populate_file.attached? %>
+<div class="alert alert-danger" role="alert">
+  Currently populating this book with fresh data from a case.
+  <br/>
+  Status is the book has <%= @book.query_doc_pairs.count %>  query doc pairs.
+  <%= link_to book_path(@book) do %>
+    <i
+      class="bi bi-arrow-clockwise"
+      aria-hidden="true"
+    ></i>
+  <% end %>
+
+</div>
+<% end %>
 
 <% if @count_of_anonymous_book_judgements > 0 %>
 <div class="alert alert-warning" role="alert">
   This book has <%= @count_of_anonymous_book_judgements %> anonymous judgements that could be mapped to a user.
-</div>
-<% end %>
-<% if @count_of_anonymous_case_judgements > 0 %>
-<div class="alert alert-warning" role="alert">
-  The associated cases have <%= @count_of_anonymous_case_judgements %> anonymous ratings that could be mapped to a user.
 </div>
 <% end %>
 
@@ -106,10 +163,10 @@ This book consists of <%= @book.query_doc_pairs.count %> query document pairs an
   <div class="card-body">
     <h5 class="card-title">Export Data</h5>
     <p class="card-text">There are a number of ways to export the Book data.</p>
-    
+
     <ul class="list-group list-group-flush">
       <li class="list-group-item">Export just the <%= link_to 'judgement data', api_book_path(@book, format: :csv) %> in CSV format.  This will take a bit but you get a CSV file in your browser.</li>
-      
+
       <li class="list-group-item">Export the entire Book in JSON format.
         <% if @book.export_job %>
           The book is currently being exported.  The status is <code><%=@book.export_job%></code>.
@@ -121,7 +178,7 @@ This book consists of <%= @book.query_doc_pairs.count %> query document pairs an
           There is an export file created <%= time_ago_in_words @book.export_file.created_at %> ago <%=link_to 'available here', rails_blob_path(@book.export_file.blob, only_path: true) %>.
         </p>
         <% end %>
-      </li>    
+      </li>
       <li class="list-group-item">
         <p>
           Reference these judgements from a notebook or another system you can use these <%= link_to 'Quepid APIs', apipie_apipie_path %> endpoints:
@@ -133,7 +190,7 @@ This book consists of <%= @book.query_doc_pairs.count %> query document pairs an
   </div>
 </div>
 
-  
+
 <h3>Leaderboard</h3>
 <div class="card">
   <div class="card-body">
@@ -155,6 +212,8 @@ This book consists of <%= @book.query_doc_pairs.count %> query document pairs an
   </div>
 </div>
 
+<%= render partial: 'unleash_modal', collection: @ai_judges, as: :ai_judge%>
+
 <p/>
 <h3>Judging Stats</h3>
 <table class="table">
@@ -169,7 +228,18 @@ This book consists of <%= @book.query_doc_pairs.count %> query document pairs an
   <tbody>
     <% @stats_data.each do | row | %>
     <tr>
-      <th scope="row"><%=display_judge_name (row[:judge]) %></th>
+      <th scope="row">
+        <%=display_judge_name (row[:judge]) %>
+        <% if row[:judge] && row[:judge].ai_judge? %>
+          <i class="bi bi-robot"></i>
+          <div class="float-end d-flex gap-2">
+            <%= button_to 'Refine Prompt', edit_ai_judge_prompt_path(row[:judge]), params: { book_id: @book.id }, class: 'btn btn-block btn-light', role: 'button', method: :get %>           
+            <button type="button" class="btn btn-block btn-light" <%= (row[:can_judge_more] && @moar_judgements_needed )? '' : 'disabled' %> data-bs-toggle="modal" data-bs-target="#unleash_modal_<%= row[:judge].id %>">
+              Prepare to Judge!
+            </button>      
+          </div>         
+        <% end %>
+      </th>
       <td>
         <% if row[:judge] %>
           <%=row[:unrateable] %> <%= link_to_if(row[:judge] && row[:unrateable] > 0, "reset", reset_unrateable_book_path(@book,row[:judge].id), data: { turbo_method: :delete, turbo_confirm: "Are you sure?" }){ '' } %>

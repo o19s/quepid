@@ -1,0 +1,7 @@
+<div class="container centered-form">
+  <div class="row mb-3">
+    <%= form_with url: team_ai_judge_path(@team), model: @ai_judge do |form| %>
+      <%= render "form", ai_judge: @ai_judge, form: form %>
+    <% end %>
+  </div>
+</div>

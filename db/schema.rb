@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2024_12_20_173642) do
+ActiveRecord::Schema[8.0].define(version: 2025_01_15_111655) do
   create_table "active_storage_attachments", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.string "name", null: false
     t.string "record_type", null: false
@@ -102,6 +102,7 @@ ActiveRecord::Schema[8.0].define(version: 2024_12_20_173642) do
     t.integer "user_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["announcement_id"], name: "index_announcement_viewed_announcement_id"
   end
 
   create_table "announcements", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
@@ -110,6 +111,7 @@ ActiveRecord::Schema[8.0].define(version: 2024_12_20_173642) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.boolean "live", default: false
+    t.index ["author_id"], name: "index_announcements_author_id"
   end
 
   create_table "api_keys", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
@@ -118,6 +120,7 @@ ActiveRecord::Schema[8.0].define(version: 2024_12_20_173642) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["token_digest"], name: "index_api_keys_on_token_digest"
+    t.index ["user_id"], name: "index_api_keys_user_id"
   end
 
   create_table "blazer_audits", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
@@ -196,8 +199,18 @@ ActiveRecord::Schema[8.0].define(version: 2024_12_20_173642) do
     t.string "export_job"
     t.string "import_job"
     t.string "populate_job"
-    t.integer "query_doc_pairs_count", default: 0, null: false
+    t.index ["owner_id"], name: "index_books_owner_id"
     t.index ["selection_strategy_id"], name: "index_books_on_selection_strategy_id"
+  end
+
+  create_table "books_ai_judges", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
+    t.bigint "book_id", null: false
+    t.bigint "user_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["book_id", "user_id"], name: "index_books_ai_judges_on_book_id_and_user_id", unique: true
+    t.index ["book_id"], name: "index_books_ai_judges_on_book_id"
+    t.index ["user_id"], name: "index_books_ai_judges_on_user_id"
   end
 
   create_table "case_metadata", id: :integer, charset: "latin1", force: :cascade do |t|
@@ -205,6 +218,7 @@ ActiveRecord::Schema[8.0].define(version: 2024_12_20_173642) do
     t.integer "case_id", null: false
     t.datetime "last_viewed_at", precision: nil
     t.index ["case_id"], name: "case_metadata_ibfk_1"
+    t.index ["last_viewed_at", "case_id"], name: "idx_last_viewed_case"
     t.index ["user_id", "case_id"], name: "case_metadata_user_id_case_id_index"
   end
 
@@ -218,7 +232,7 @@ ActiveRecord::Schema[8.0].define(version: 2024_12_20_173642) do
     t.binary "queries", size: :medium
     t.integer "annotation_id"
     t.datetime "updated_at", precision: nil
-    t.index ["annotation_id"], name: "index_case_scores_on_annotation_id"
+    t.index ["annotation_id"], name: "index_case_scores_annotation_id", unique: true
     t.index ["case_id"], name: "case_id"
     t.index ["updated_at", "created_at", "id"], name: "support_last_score"
     t.index ["user_id"], name: "user_id"
@@ -236,6 +250,8 @@ ActiveRecord::Schema[8.0].define(version: 2024_12_20_173642) do
     t.boolean "public"
     t.json "options"
     t.boolean "nightly"
+    t.index ["book_id"], name: "index_cases_book_id"
+    t.index ["owner_id", "archived"], name: "idx_owner_archived"
     t.index ["owner_id"], name: "user_id"
   end
 
@@ -268,6 +284,7 @@ ActiveRecord::Schema[8.0].define(version: 2024_12_20_173642) do
     t.boolean "on", default: false
     t.datetime "created_at", precision: nil, null: false
     t.datetime "updated_at", precision: nil, null: false
+    t.index ["user_id"], name: "index_permissions_user_id"
   end
 
   create_table "queries", id: :integer, charset: "utf8mb3", force: :cascade do |t|
@@ -318,6 +335,7 @@ ActiveRecord::Schema[8.0].define(version: 2024_12_20_173642) do
     t.datetime "created_at", precision: nil, null: false
     t.datetime "updated_at", precision: nil, null: false
     t.boolean "communal", default: false
+    t.index ["owner_id"], name: "index_scorers_owner_id"
   end
 
   create_table "search_endpoints", charset: "utf8mb3", force: :cascade do |t|
@@ -334,6 +352,7 @@ ActiveRecord::Schema[8.0].define(version: 2024_12_20_173642) do
     t.text "mapper_code"
     t.boolean "proxy_requests", default: false
     t.json "options"
+    t.index ["owner_id", "id"], name: "index_search_endpoints_on_owner_id_and_id"
   end
 
   create_table "selection_strategies", charset: "utf8mb3", collation: "utf8mb3_unicode_ci", force: :cascade do |t|
@@ -531,6 +550,7 @@ ActiveRecord::Schema[8.0].define(version: 2024_12_20_173642) do
   create_table "teams_members", primary_key: ["member_id", "team_id"], charset: "latin1", force: :cascade do |t|
     t.integer "member_id", null: false
     t.integer "team_id", null: false
+    t.index ["member_id", "team_id"], name: "index_teams_members_on_member_id_and_team_id"
     t.index ["member_id"], name: "index_teams_members_on_member_id"
     t.index ["team_id"], name: "index_teams_members_on_team_id"
   end
@@ -545,6 +565,7 @@ ActiveRecord::Schema[8.0].define(version: 2024_12_20_173642) do
   create_table "teams_search_endpoints", id: false, charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.bigint "search_endpoint_id", null: false
     t.bigint "team_id", null: false
+    t.index ["search_endpoint_id", "team_id"], name: "index_teams_search_endpoints_on_search_endpoint_id_and_team_id"
   end
 
   create_table "tries", id: :integer, charset: "latin1", force: :cascade do |t|
@@ -591,6 +612,8 @@ ActiveRecord::Schema[8.0].define(version: 2024_12_20_173642) do
     t.boolean "completed_case_wizard", default: false, null: false
     t.string "stored_raw_invitation_token"
     t.string "profile_pic", limit: 4000
+    t.string "system_prompt", limit: 4000
+    t.string "openai_key"
     t.index ["default_scorer_id"], name: "index_users_on_default_scorer_id"
     t.index ["email"], name: "ix_user_username", unique: true
     t.index ["invitation_token"], name: "index_users_on_invitation_token", unique: true, length: 191
@@ -614,6 +637,7 @@ ActiveRecord::Schema[8.0].define(version: 2024_12_20_173642) do
   add_foreign_key "annotations", "users"
   add_foreign_key "book_metadata", "books"
   add_foreign_key "books", "selection_strategies"
+  add_foreign_key "books_ai_judges", "books"
   add_foreign_key "case_metadata", "cases", name: "case_metadata_ibfk_1"
   add_foreign_key "case_metadata", "users", name: "case_metadata_ibfk_2"
   add_foreign_key "case_scores", "annotations"
