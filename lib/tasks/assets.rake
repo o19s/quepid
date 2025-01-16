@@ -7,9 +7,7 @@ namespace :assets do
   desc 'Unpack Jupyterlite assets'
   task jupyterlite: :environment do
     notebooks_gz = Rails.root.join('notebooks.gz')
-    # rubocop:disable Lint/UselessAssignment
     destination = Rails.public_path
-    # rubocop:enable Lint/UselessAssignment
     notebooks_dir = Rails.public_path.join('notebooks')
 
     # Only deal with the compressed notebooks if we don't have the directory already.
