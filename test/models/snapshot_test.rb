@@ -55,7 +55,7 @@ class SnapshotTest < ActiveSupport::TestCase
 
     test 'deleting a snapshot cascades down' do
       assert 4, asnapshot.snapshot_docs.size
-      
+
       sq = asnapshot.snapshot_queries.first
       sq.web_request = WebRequest.create
       sq.save!
