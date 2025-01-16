@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_01_15_111655) do
+ActiveRecord::Schema[8.0].define(version: 2025_01_16_152259) do
   create_table "active_storage_attachments", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.string "name", null: false
     t.string "record_type", null: false
@@ -528,11 +528,9 @@ ActiveRecord::Schema[8.0].define(version: 2025_01_15_111655) do
 
   create_table "teams", id: :integer, charset: "latin1", force: :cascade do |t|
     t.string "name", collation: "utf8mb3_bin"
-    t.integer "owner_id", null: false
     t.datetime "created_at", precision: nil, null: false
     t.datetime "updated_at", precision: nil, null: false
     t.index ["name"], name: "index_teams_on_name", length: 191
-    t.index ["owner_id"], name: "owner_id"
   end
 
   create_table "teams_books", id: false, charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
@@ -647,7 +645,6 @@ ActiveRecord::Schema[8.0].define(version: 2025_01_15_111655) do
   add_foreign_key "solid_queue_ready_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
   add_foreign_key "solid_queue_recurring_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
   add_foreign_key "solid_queue_scheduled_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
-  add_foreign_key "teams", "users", column: "owner_id", name: "teams_ibfk_1"
   add_foreign_key "teams_cases", "cases"
   add_foreign_key "teams_cases", "teams"
   add_foreign_key "teams_members", "teams"
