@@ -55,6 +55,11 @@ class SnapshotTest < ActiveSupport::TestCase
 
     test 'deleting a snapshot cascades down' do
       assert 4, asnapshot.snapshot_docs.size
+      
+      sq = asnapshot.snapshot_queries.first
+      sq.web_request = WebRequest.create
+      sq.save!
+      assert sq.web_request.persisted?
 
       snapshots_to_delete = []
       snapshots_to_delete << asnapshot
@@ -65,6 +70,9 @@ class SnapshotTest < ActiveSupport::TestCase
         SnapshotQuery.find(snapshot_query.id)
       end
 
+      assert_raises(ActiveRecord::RecordNotFound) do
+        WebRequest.find(sq.id)
+      end
       # snapshot = Snapshot.create(case: acase)
 
       # assert_equal "Snapshot #{Time.zone.now.strftime('%D')}", snapshot.name
