@@ -141,6 +141,43 @@ class FetchServiceTest < ActiveSupport::TestCase
 
       assert_equal options[:snapshot_limit], acase.snapshots.count
     end
+
+    it 'filters out special Haystack Rating Party snapshots used by Jupyterlite notebooks' do
+      fetch_service = FetchService.new options
+
+      kase = Case.create(id: FetchService::HAYSTACK_PUBLIC_CASE, case_name: 'Haystack Case')
+      kase.save!
+
+      assert_difference 'kase.snapshots.count', 2 do
+        FetchService::SPECIAL_SNAPSHOTS_TO_PRESERVE.each do |snapshot_id|
+          kase.snapshots.create(id: snapshot_id)
+        end
+      end
+
+      kase.snapshots.create
+
+      filtered_snapshots = fetch_service.filter_haystack_special_snapshot(kase.snapshots)
+      filtered_snapshot_ids = filtered_snapshots.map(&:id)
+      FetchService::SPECIAL_SNAPSHOTS_TO_PRESERVE.each do |snapshot_id|
+        assert_not_includes filtered_snapshot_ids, snapshot_id
+      end
+    end
+
+    it 'preserves web_requests for only the most recent snapshot' do
+      fetch_service = FetchService.new options
+
+      2.times do
+        snapshot = fetch_service.begin(acase, atry)
+        sq = snapshot.snapshot_queries.create
+        sq.web_request = WebRequest.create
+        sq.save!
+        assert sq.web_request.persisted?
+      end
+
+      fetch_service.delete_extra_web_requests acase
+      assert_not_nil acase.snapshots.first.snapshot_queries.first.web_request
+      assert_nil acase.snapshots.second.snapshot_queries.first.web_request
+    end
   end
 
   describe 'parsing a response' do

@@ -9,11 +9,18 @@ class FetchService
 
   attr_reader :logger, :options
 
+  # These are two snapshots related to book 25 and case 6789
+  # that represent Haystack Conference and are used in the sample
+  # Jupyterlite notebooks.  Don't nuke them if they belong to a case 6789.
+  HAYSTACK_PUBLIC_CASE = 6789
+  SPECIAL_SNAPSHOTS_TO_PRESERVE = [ 2471, 2473 ].freeze
+
   def initialize opts = {}
     default_options = {
-      logger:         Rails.logger,
-      snapshot_limit: 10,
-      debug_mode:     false,
+      logger:                     Rails.logger,
+      snapshot_limit:             10,
+      snapshot_webrequests_limit: 1,
+      debug_mode:                 false,
     }
 
     @options = default_options.merge(opts)
@@ -221,15 +228,40 @@ class FetchService
     @snapshot.name = 'Fetch [CHECKING SNAPSHOTS COUNT]'
     @snapshot.save!
 
-    # Keep the first snapshot, and the most recents, deleting the ones out of the middle.
-    # Not the best sampling!
-    if @case.snapshots.count > @options[:snapshot_limit]
-      snapshots_to_delete = @case.snapshots[1..((@options[:snapshot_limit] * -1) + @case.snapshots.count)]
-      snapshots_to_delete.each(&:destroy!)
-    end
+    delete_extra_snapshots @case
+
+    @snapshot.name = 'Fetch [CHECKING WEBREQUESTS COUNT]'
+    @snapshot.save!
+
+    delete_extra_web_requests @case
 
     @snapshot.name = 'Fetch [COMPLETED]'
     @snapshot.save!
+  end
+
+  def delete_extra_snapshots kase
+    # Keep the first snapshot, and the most recents, deleting the ones out of the middle.
+    # Not the best sampling!
+    if kase.snapshots.count > @options[:snapshot_limit]
+
+      snapshots_to_delete = kase.snapshots[1..((@options[:snapshot_limit] * -1) + kase.snapshots.count)]
+      snapshots_to_delete = filter_haystack_special_snapshot(snapshots_to_delete)
+      snapshots_to_delete.each(&:destroy!)
+    end
+  end
+
+  def delete_extra_web_requests kase
+    snapshots_with_web_requests = kase.snapshots
+      .joins(snapshot_queries: :web_request)
+      .distinct
+      .order(created_at: :desc)
+      .offset(@options[:snapshot_webrequests_limit])
+
+    snapshots_with_web_requests.each do |snapshot|
+      WebRequest.joins(snapshot_query: :snapshot)
+        .where(snapshots: { id: snapshot.id })
+        .delete_all
+    end
   end
 
   # rubocop:disable Metrics/MethodLength
@@ -333,6 +365,14 @@ class FetchService
     mock_statedecoded_body
   end
   # rubocop:enable Metrics/MethodLength
+  # rubocop:enable Layout/LineLength
+
+  # rubocop:disable Layout/LineLength
+  def filter_haystack_special_snapshot snapshots_to_delete
+    snapshots_to_delete = snapshots_to_delete
+      .reject { |snapshot| SPECIAL_SNAPSHOTS_TO_PRESERVE.include?(snapshot.id) && HAYSTACK_PUBLIC_CASE == snapshot.case.id }
+    snapshots_to_delete
+  end
   # rubocop:enable Layout/LineLength
 
   private
