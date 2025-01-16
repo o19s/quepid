@@ -98,7 +98,16 @@ q4: searchEndpoints
       <h3>Members</h3>
 
       <div class="row">
-        <div class="col-md-offset-8 col-md-4 filter-form">
+        <div class='col-md-4'>
+          <span class="bi bi-robot"></span>
+          <a type="button" ng-href="/teams/{{currentTeam.id}}/ai_judges/new" target="_self" >
+            Create AI Judge
+          </a>
+        </div>
+        <div class='col-md-4'>
+
+        </div>
+        <div class="col-md-4 filter-form">         
           <input type="search" ng-model="q" placeholder="Filter members" aria-label="filter members" class="form-control" id='team-members-filter' />
         </div>
       </div>

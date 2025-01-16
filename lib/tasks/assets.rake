@@ -7,21 +7,21 @@ namespace :assets do
   desc 'Unpack Jupyterlite assets'
   task jupyterlite: :environment do
     notebooks_gz = Rails.root.join('notebooks.gz')
+    # rubocop:disable Lint/UselessAssignment
     destination = Rails.public_path
+    # rubocop:enable Lint/UselessAssignment
     notebooks_dir = Rails.public_path.join('notebooks')
 
     # Only deal with the compressed notebooks if we don't have the directory already.
-    unless File.exist?(notebooks_dir)
-      unless File.exist?(notebooks_gz)
-        puts 'Downloading latest Quepid Notebooks from https://github.com/o19s/quepid-jupyterlite'
-        system "wget --no-verbose -O #{notebooks_gz} https://github.com/o19s/quepid-jupyterlite/releases/latest/download/jupyter-lite-build.tgz"
-      end
-
-      puts "Unpacking Jupyterlite into #{destination}"
-      system "tar -xzf #{notebooks_gz} --directory #{destination}"
-
-      File.delete(notebooks_gz)
+    if !File.exist?(notebooks_dir) && !File.exist?(notebooks_gz)
+      puts 'Downloading latest Quepid Notebooks from https://github.com/o19s/quepid-jupyterlite'
+      system "wget --no-verbose -O #{notebooks_gz} https://github.com/o19s/quepid-jupyterlite/releases/download/0.3.2-rc1/jupyter-lite-build.tgz"
     end
+
+    puts "Unpacking Jupyterlite into #{destination}"
+    system "tar -xzf #{notebooks_gz} --directory #{destination}"
+
+    File.delete(notebooks_gz)
   end
 
   # Hook into existing assets:precompile task

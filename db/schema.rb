@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_01_10_192350) do
+ActiveRecord::Schema[8.0].define(version: 2025_01_15_111655) do
   create_table "active_storage_attachments", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.string "name", null: false
     t.string "record_type", null: false
@@ -203,11 +203,22 @@ ActiveRecord::Schema[8.0].define(version: 2025_01_10_192350) do
     t.index ["selection_strategy_id"], name: "index_books_on_selection_strategy_id"
   end
 
+  create_table "books_ai_judges", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
+    t.bigint "book_id", null: false
+    t.bigint "user_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["book_id", "user_id"], name: "index_books_ai_judges_on_book_id_and_user_id", unique: true
+    t.index ["book_id"], name: "index_books_ai_judges_on_book_id"
+    t.index ["user_id"], name: "index_books_ai_judges_on_user_id"
+  end
+
   create_table "case_metadata", id: :integer, charset: "latin1", force: :cascade do |t|
     t.integer "user_id", null: false
     t.integer "case_id", null: false
     t.datetime "last_viewed_at", precision: nil
     t.index ["case_id"], name: "case_metadata_ibfk_1"
+    t.index ["last_viewed_at", "case_id"], name: "idx_last_viewed_case"
     t.index ["user_id", "case_id"], name: "case_metadata_user_id_case_id_index"
   end
 
@@ -240,6 +251,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_01_10_192350) do
     t.json "options"
     t.boolean "nightly"
     t.index ["book_id"], name: "index_cases_book_id"
+    t.index ["owner_id", "archived"], name: "idx_owner_archived"
     t.index ["owner_id"], name: "user_id"
   end
 
@@ -601,6 +613,8 @@ ActiveRecord::Schema[8.0].define(version: 2025_01_10_192350) do
     t.boolean "completed_case_wizard", default: false, null: false
     t.string "stored_raw_invitation_token"
     t.string "profile_pic", limit: 4000
+    t.string "system_prompt", limit: 4000
+    t.string "openai_key"
     t.index ["default_scorer_id"], name: "index_users_on_default_scorer_id"
     t.index ["email"], name: "ix_user_username", unique: true
     t.index ["invitation_token"], name: "index_users_on_invitation_token", unique: true, length: 191
@@ -614,6 +628,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_01_10_192350) do
   add_foreign_key "annotations", "users"
   add_foreign_key "book_metadata", "books"
   add_foreign_key "books", "selection_strategies"
+  add_foreign_key "books_ai_judges", "books"
   add_foreign_key "case_metadata", "cases", name: "case_metadata_ibfk_1"
   add_foreign_key "case_metadata", "users", name: "case_metadata_ibfk_2"
   add_foreign_key "case_scores", "annotations"
