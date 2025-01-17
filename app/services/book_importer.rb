@@ -92,16 +92,23 @@ class BookImporter
     @book.save
 
     if params_to_use[:query_doc_pairs]
-      counter = params_to_use[:query_doc_pairs].size
+      total = params_to_use[:query_doc_pairs].size
+      counter = total
+      last_percent = 0
       params_to_use[:query_doc_pairs].each do |query_doc_pair|
         qdp = @book.query_doc_pairs.create(query_doc_pair.except(:judgements))
         counter -= 1
-        Turbo::StreamsChannel.broadcast_render_to(
-          :notifications,
-          target:  'notifications',
-          partial: 'books/blah',
-          locals:  { book: @book, counter: counter, qdp: qdp }
-        )
+        # emit a message every percent that we cross, from 0 to 100...
+        percent = (((total - counter).to_f / total) * 100).truncate
+        if percent > last_percent
+          last_percent = percent
+          Turbo::StreamsChannel.broadcast_render_to(
+            :notifications,
+            target:  'notifications',
+            partial: 'books/blah',
+            locals:  { book: @book, counter: counter, percent: percent, qdp: qdp }
+          )
+        end
         next unless query_doc_pair[:judgements]
 
         query_doc_pair[:judgements].each do |judgement|

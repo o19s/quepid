@@ -379,7 +379,6 @@ ActiveRecord::Schema[8.0].define(version: 2025_01_15_111655) do
     t.boolean "all_rated"
     t.integer "number_of_results"
     t.integer "response_status"
-    t.binary "response_body", size: :long
     t.index ["query_id"], name: "query_id"
     t.index ["snapshot_id"], name: "snapshot_id"
   end
@@ -621,6 +620,16 @@ ActiveRecord::Schema[8.0].define(version: 2025_01_15_111655) do
     t.index ["invited_by_id"], name: "index_users_on_invited_by_id"
     t.index ["name"], name: "index_users_on_name"
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true, length: 191
+  end
+
+  create_table "web_requests", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
+    t.integer "snapshot_query_id"
+    t.binary "request"
+    t.integer "response_status"
+    t.integer "integer"
+    t.binary "response", size: :long
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"

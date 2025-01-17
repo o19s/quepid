@@ -125,14 +125,20 @@ This book consists of <%= @book.query_doc_pairs.count %> query document pairs an
   <strong>Associated Files:</strong>
   <% if @book.populate_file.attached? %>
     <%= link_to 'Populate file', rails_blob_path(@book.populate_file.blob, only_path: true) %> made <%= time_ago_in_words @book.populate_file.created_at %> ago.
+    <%if @book.populate_job %>
+      There is currently a populate job for this book set up.  It is <code><%= @book.populate_job %></code>.
+    <% end %>
   <% end %>
   <% if @book.import_file.attached? %>
     <%= link_to 'Import file', rails_blob_path(@book.import_file.blob, only_path: true) %> made <%= time_ago_in_words @book.import_file.created_at %> ago.
     <%if @book.import_job %>
-      There is currently a import job for this book.  It is <code><%=@book.import_job%></code>.
+      There is currently a import job for this book set up.  It is <code><%= @book.import_job %></code>.
     <% end %>
   <% end %>
   <% if @book.export_file.attached? %>
+    <%if @book.export_job %>
+      There is currently a export job for this book set up.  It is <code><%= @book.export_job %></code>.
+    <% end %>
     <%= link_to 'Export file', rails_blob_path(@book.export_file.blob, only_path: true) %> made <%= time_ago_in_words @book.export_file.created_at %> ago.
   <% end %>
 </p>

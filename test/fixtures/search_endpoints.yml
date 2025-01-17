@@ -138,8 +138,6 @@ try_with_headers:
   api_method:     JSONP
   custom_headers: '{"Authorization": "ApiKey TEF5QkFJUUJVUnRsNG1fekNCR3E6WmRYUFJRRVdTMHlBVWotWFdqQWxuUQ=="}'
   
-  
-  
 bootstrap_try_1:
   name:           Solr https://test.com
   endpoint_url:   https://test.com

@@ -1,6 +1,10 @@
 <tr>
   <th scope="row"><%= kase.id  %></th>
-  <th scope="row"><%= strip_case_title(kase) %></th>
+  <th scope="row"><%= strip_case_title(kase) %>
+    <% if kase.nightly? %>
+      <i class="bi bi-repeat float-end"></i>
+    <% end %>
+  </th>
   <td><%= kase.queries_count %></td>
   <td>
     <% unless kase.last_score.blank? %>
