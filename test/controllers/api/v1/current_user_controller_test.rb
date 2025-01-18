@@ -56,42 +56,6 @@ module Api
           end
         end
       end
-
-      describe 'user with edit permissions on scorer' do
-        describe 'when user is an administrator' do
-          let(:user) { users(:doug) }
-
-          before do
-            login_user user
-          end
-
-          test 'has update communal scorer permissions' do
-            get :show
-            assert_response :ok
-
-            body = response.parsed_body
-
-            assert_equal body['permissions']['scorer']['update_communal'], true
-          end
-        end
-
-        describe 'when user is NOT an administrator' do
-          let(:user) { users(:jane) }
-
-          before do
-            login_user user
-          end
-
-          test 'doesnt have update communal scorer permissions' do
-            get :show
-            assert_response :ok
-
-            body = response.parsed_body
-
-            assert_equal body['permissions']['scorer']['update_communal'], false
-          end
-        end
-      end
     end
   end
 end

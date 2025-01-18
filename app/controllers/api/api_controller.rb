@@ -5,7 +5,6 @@ require_relative '../../lib/analytics'
 # rubocop:disable Rails/ApplicationController
 module Api
   class ApiController < ActionController::Base
-    include Pundit::Authorization
     include Authentication::CurrentUserManager
     include Authentication::CurrentCaseManager
     include Authentication::CurrentQueryManager
