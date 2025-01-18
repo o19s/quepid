@@ -12,7 +12,7 @@ namespace :assets do
 
     # Only deal with the compressed notebooks if we don't have the directory already.
     if !File.exist?(notebooks_dir) && !File.exist?(notebooks_gz)
-      url = 'https://github.com/o19s/quepid-jupyterlite/releases/download/0.3.2-rc1/jupyter-lite-build.tgz'
+      url = 'https://github.com/o19s/quepid-jupyterlite/releases/download/0.3.2-rc2/jupyter-lite-build.tgz'
       puts "Downloading latest Quepid Notebooks from #{url}"
       system "wget --no-verbose -O #{notebooks_gz} #{url}"
     end
