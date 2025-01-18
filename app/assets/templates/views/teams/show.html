@@ -29,10 +29,6 @@ q4: searchEndpoints
 
       <h4>
         {{ currentTeam.owner.display_name }}
-        &nbsp;
-        <span class="label label-info">
-          owner
-        </span>
       </h4>
 
       {{ currentTeam.owner.email }}
@@ -72,21 +68,6 @@ q4: searchEndpoints
         </h4>
 
         <add-member team='currentTeam'></add-member>
-      </div>
-
-      <div class="change-owner border-bottom row">
-        <h4>
-          Change Owner
-        </h4>
-
-        <change-team-owner
-          team='currentTeam'
-          ng-if="currentUser.id == currentTeam.owner.id"
-        ></change-team-owner>
-
-        <p ng-if="currentUser.id !== currentTeam.owner.id">
-          Only the owner, {{ currentTeam.owner.display_name }}, can change the ownership of the team.
-        </p>
       </div>
     </div>
   </div>

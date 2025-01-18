@@ -86,15 +86,15 @@ class User < ApplicationRecord
                           foreign_key: 'member_id'
   # rubocop:enable Rails/HasAndBelongsToMany
 
-  has_many :owned_teams,
-           class_name:  'Team',
-           foreign_key: :owner_id,
-           inverse_of:  :owner,
-           dependent:   :destroy
+  #has_many :owned_teams,
+  #         class_name:  'Team',
+  #         foreign_key: :owner_id,
+  #         inverse_of:  :owner,
+  #         dependent:   :destroy
 
-  has_many :owned_team_cases,
-           through: :owned_teams,
-           source:  :cases
+  #has_many :owned_team_cases,
+  #         through: :owned_teams,
+  #         source:  :cases
 
   has_many :shared_team_cases,
            through: :teams,
@@ -153,18 +153,8 @@ class User < ApplicationRecord
   before_save :encrypt_password
   before_save :check_agreed_time
   before_create :set_defaults
-  before_destroy :check_team_ownership_before_removing!, prepend: true
   before_destroy :check_scorer_ownership_before_removing!, prepend: true
   before_destroy :check_judgements_before_removing!, prepend: true
-
-  def check_team_ownership_before_removing!
-    owned_teams.each do |team|
-      if team.members.count > 1
-        errors.add(:base, "Please reassign ownership of the team #{team.name}." )
-        throw(:abort)
-      end
-    end
-  end
 
   def check_judgements_before_removing!
     if judgements.count.positive?
