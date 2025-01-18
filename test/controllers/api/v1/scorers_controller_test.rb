@@ -225,7 +225,7 @@ module Api
         let(:shared_scorer)   { scorers(:shared_scorer) }
         let(:communal_scorer) { scorers(:communal_scorer) }
         let(:jane)            { users(:jane) }
-        let(:admin)            { users(:doug) }
+        let(:admin) { users(:doug) }
 
         test 'return a forbidden error if updating a scorer not owned by user' do
           put :update, params: { id: shared_scorer.id, scorer: { name: 'new name' } }
@@ -251,16 +251,17 @@ module Api
 
         test 'lets a administrator update a communal scorer' do
           login_user admin
+          name = 'Custom Name'
 
-          put :update, params: { id: communal_scorer.id, scorer: { name: 'new name' } }
+          put :update, params: { id: communal_scorer.id, scorer: { name: name } }
 
           assert_response :ok
 
           scorer = response.parsed_body
-          owned_scorer.reload
+          communal_scorer.reload
 
           assert_equal name, scorer['name']
-          assert_equal name, owned_scorer.name
+          assert_equal name, communal_scorer.name
         end
 
         test 'respects communal_Scorers_only environment setting' do
