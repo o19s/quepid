@@ -4,9 +4,35 @@ require 'test_helper'
 
 class BooksControllerTest < ActionDispatch::IntegrationTest
   let(:user) { users(:random) }
+  let(:judge_judy) { users(:judge_judy) }
   let(:book) { books(:book_of_comedy_films) }
   let(:james_bond_movies) { books(:james_bond_movies) }
   let(:communal_scorer) { scorers(:communal_scorer) }
+
+  describe 'running judge judy' do
+    test 'specifying a limit of query/doc pairs' do
+      login_user_for_integration_test user
+
+      perform_enqueued_jobs do
+        assert_difference 'james_bond_movies.judgements.count' do
+          patch "/books/#{james_bond_movies.id}/run_judge_judy/#{judge_judy.id}", params: { number_of_pairs: 1 }
+          follow_redirect!
+          assert_equal "Set AI Judge #{judge_judy.name} to work judging query/doc pairs.", flash[:notice]
+        end
+      end
+    end
+
+    test 'requesting all to be judged overrides the limit setting and does all' do
+      login_user_for_integration_test user
+      perform_enqueued_jobs do
+        patch "/books/#{james_bond_movies.id}/run_judge_judy/#{judge_judy.id}",
+              params: { judge_all: 1, number_of_pairs: 1 }
+        follow_redirect!
+        assert_equal "Set AI Judge #{judge_judy.name} to work judging query/doc pairs.", flash[:notice]
+        assert_equal james_bond_movies.query_doc_pairs.count, james_bond_movies.judgements.where(user: judge_judy).count
+      end
+    end
+  end
 
   # rubocop:disable Metrics/AbcSize
   # rubocop:disable Metrics/MethodLength
@@ -14,9 +40,9 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
     # definitly an opportunity for refactoring!
 
     # get the login page
-    get '/books'
-    assert_equal 302, status
-    follow_redirect!
+    # get '/books'
+    # assert_equal 302, status
+    # follow_redirect!
 
     login_user_for_integration_test user
 

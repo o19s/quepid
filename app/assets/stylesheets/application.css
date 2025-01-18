@@ -28,3 +28,19 @@
 	 height: 5px;
 	 background-color: gold;
  }
+ 
+ /* give some space to the top of pages that have bootstrap 5 container */
+ main > .container {
+	 padding: 20px 15px 0;
+ }
+ 
+ /* For the kraken image */
+.fade-out {
+  animation: fadeOut 4s;
+  animation-fill-mode: forwards;
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}

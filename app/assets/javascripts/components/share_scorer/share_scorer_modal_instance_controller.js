@@ -18,16 +18,6 @@ angular.module('QuepidApp')
     ) {
       var ctrl = this;
 
-      ctrl.canUpdateScorer = false;
-      ctrl.canCreateTeam = false;
-
-      $rootScope.$watch('currentUser', function() {
-        if ( $rootScope.currentUser ) {
-          ctrl.canUpdateScorer = $rootScope.currentUser.permissions.scorer.update;
-          ctrl.canCreateTeam = $rootScope.currentUser.permissions.team.create;
-        }
-      });
-
       ctrl.share = {
         scorer:           scorer,
         selectedTeam:     null,

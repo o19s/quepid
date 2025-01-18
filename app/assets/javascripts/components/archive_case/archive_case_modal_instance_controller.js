@@ -8,18 +8,7 @@ angular.module('QuepidApp')
     function ($rootScope, $uibModalInstance, theCase) {
       var ctrl = this;
 
-      ctrl.theCase = theCase;
-      ctrl.canDelete = false;
-
-      $rootScope.$watch('currentUser', function() {
-        if ( $rootScope.currentUser ) {
-          ctrl.canDelete = $rootScope.currentUser.permissions.case.delete;
-        }
-      });
-
-      ctrl.isOwnerOfCase = function() {
-        return ($rootScope.currentUser.id === ctrl.theCase.ownerId);
-      };
+      ctrl.theCase = theCase;      
 
       ctrl.ok = function () {
         $uibModalInstance.close(true);

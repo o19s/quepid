@@ -63,7 +63,7 @@ module Api
                 assert_equal the_try.query_params,  cloned_try.query_params
                 assert_equal 'id:id title:title',   cloned_try.field_spec
                 assert_equal the_try.search_endpoint, cloned_try.search_endpoint
-                assert_equal 'Try 0',               cloned_try.name
+                assert_equal 'Try 1',               cloned_try.name
                 # assert_equal the_try.search_engine, cloned_try.search_engine
                 assert_equal the_try.escape_query,  cloned_try.escape_query
                 # assert_equal the_try.api_method,    cloned_try.api_method

@@ -79,6 +79,7 @@
             'Case ID',
             'Query Text',
             'Doc ID',
+            'Doc Position',
             'Title',
             'Rating',
           ];
@@ -275,7 +276,7 @@
               });
 
               /*global saveAs */
-              saveAs(blob, formatDownloadFileName(aCase.caseName + '_quepid.json'));
+              saveAs(blob, formatDownloadFileName(aCase.caseName + '_case.json'));
             });
         }
 
@@ -353,7 +354,7 @@
               csvContent += dataString + EOL;
             }
             else {
-              angular.forEach(docs, function (doc) {
+              angular.forEach(docs, function (doc, index) {
                 var dataString;
                 var infoArray = [];
 
@@ -362,6 +363,7 @@
                 infoArray.push(stringifyField(aCase.lastScore.case_id));
                 infoArray.push(stringifyField(query.queryText));
                 infoArray.push(stringifyField(doc.id));
+                infoArray.push(stringifyField(index+1));
                 infoArray.push(stringifyField(doc.title));
                 infoArray.push(stringifyField(doc.getRating()));
 

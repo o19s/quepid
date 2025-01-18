@@ -28,3 +28,4 @@ empty_snapshot:
 a_snapshot:
   case: :snapshot_case
   name: A Snapshot
+  scorer: :p@10

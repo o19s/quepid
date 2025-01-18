@@ -1,5 +1,8 @@
 <turbo-frame id="case_frame_<%= @case.id %>">
-  <h5 class="card-title"><%= number_with_precision(@case.last_score.score, precision: 2) unless @case.scores.empty? %> <%= @case.scorer.name %></h5>
+  <h5 class="card-title">
+    <%= number_with_precision(@case.last_score.score, precision: 2) unless @case.scores.empty? %> 
+    <%= @case.scorer.name %>
+  </h5>
   <p class="card-text">
     <% if @case.scores.empty? %>
       <small><code>no scores yet</code></small>
@@ -40,5 +43,6 @@
     .height(60)
     .config(axis: {title: nil, labelFontSize: 12}) %>
 
-
+  <span id="notification-case-<%= @case.id %>">
+  </span>
 </turbo-frame>

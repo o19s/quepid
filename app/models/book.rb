@@ -36,6 +36,18 @@ class Book < ApplicationRecord
   belongs_to :owner,
              class_name: 'User', optional: true
 
+  # belongs_to :ai_judge,
+  #           class_name: 'User', optional: true
+  #
+  # has_many :users, dependent: :destroy
+  # has_many :ai_judges, through: :ai_judges
+
+  # rubocop:disable Rails/HasAndBelongsToMany
+  has_and_belongs_to_many :ai_judges,
+                          class_name: 'User',
+                          join_table: 'books_ai_judges'
+  # rubocop:enable Rails/HasAndBelongsToMany
+
   belongs_to :selection_strategy
   belongs_to :scorer
   has_many :query_doc_pairs, dependent: :destroy, autosave: true

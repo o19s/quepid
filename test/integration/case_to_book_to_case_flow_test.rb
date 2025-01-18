@@ -54,8 +54,6 @@ class CaseToBookToCaseFlowTest < ActionDispatch::IntegrationTest
 
     put api_book_case_refresh_url book, new_case, params: { create_missing_queries: true }
 
-    response.parsed_body
-
     new_case.reload
     assert_not_empty new_case.queries
 
