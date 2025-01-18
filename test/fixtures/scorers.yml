@@ -25,6 +25,11 @@
 #  index_scorers_owner_id  (owner_id)
 #
 
+p@10:
+  name: P@10
+  scale: 0, 1
+  communal: true
+  
 quepid_default_scorer:
   code: pass();
   name: AP@10

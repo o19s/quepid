@@ -5,11 +5,11 @@ class BooksController < ApplicationController
   before_action :set_book,
                 only: [ :show, :edit, :update, :destroy, :combine, :assign_anonymous, :delete_ratings_by_assignee,
                         :reset_unrateable, :reset_judge_later, :delete_query_doc_pairs_below_position,
-                        :eric_steered_us_wrong ]
+                        :eric_steered_us_wrong, :run_judge_judy ]
   before_action :check_book,
                 only: [ :show, :edit, :update, :destroy, :combine, :assign_anonymous, :delete_ratings_by_assignee,
                         :reset_unrateable, :reset_judge_later, :delete_query_doc_pairs_below_position,
-                        :eric_steered_us_wrong ]
+                        :eric_steered_us_wrong, :run_judge_judy ]
 
   before_action :find_user, only: [ :reset_unrateable, :reset_judge_later, :delete_ratings_by_assignee ]
 
@@ -23,33 +23,39 @@ class BooksController < ApplicationController
   # rubocop:disable Metrics/AbcSize
   # rubocop:disable Metrics/MethodLength
   def show
-    @count_of_anonymous_book_judgements = @book.judgements.where(user: nil).count
-    @count_of_anonymous_case_judgements = 0
-    @book.cases.each do |kase|
-      @count_of_anonymous_case_judgements += kase.ratings.where(user: nil).count
-    end
+    @kraken_unleashed = flash[:kraken_unleashed]
 
-    @moar_judgements_needed = @book.judgements.where(user: current_user).count < @book.query_doc_pairs.count
+    @count_of_anonymous_book_judgements = @book.judgements.where(user: nil).count
+
+    # @moar_judgements_needed = @book.judgements.where(user: current_user).count < @book.query_doc_pairs.count
+    @moar_judgements_needed = !(SelectionStrategy.every_query_doc_pair_has_three_judgements? @book)
+
     @cases = @book.cases
     @leaderboard_data = []
     @stats_data = []
 
     unique_judge_ids = @book.query_doc_pairs.joins(:judgements)
       .distinct.pluck(:user_id)
-    unique_judge_ids.each do |judge_id|
+
+    @ai_judges = @book.ai_judges
+    assigned_ai_judges = @ai_judges.pluck(:user_id)
+
+    stats_judges = (unique_judge_ids + assigned_ai_judges).uniq
+
+    stats_judges.each do |judge_id|
       begin
         judge = User.find(judge_id) unless judge_id.nil?
       rescue ActiveRecord::RecordNotFound
-        puts 'got a nil'
         judge = nil
       end
       @leaderboard_data << { judge:      judge.nil? ? 'anonymous' : judge.fullname,
                              judgements: @book.judgements.where(user: judge).count }
       @stats_data << {
-        judge:       judge,
-        judgements:  @book.judgements.where(user: judge).count,
-        unrateable:  @book.judgements.where(user: judge).where(unrateable: true).count,
-        judge_later: @book.judgements.where(user: judge).where(judge_later: true).count,
+        judge:          judge,
+        judgements:     @book.judgements.where(user: judge).count,
+        unrateable:     @book.judgements.where(user: judge).where(unrateable: true).count,
+        judge_later:    @book.judgements.where(user: judge).where(judge_later: true).count,
+        can_judge_more: @book.judgements.where(user: judge).count < @book.query_doc_pairs.count,
       }
     end
 
@@ -66,12 +72,15 @@ class BooksController < ApplicationController
               Book.new
             end
 
+    @ai_judges = []
+
     @origin_case = current_user.cases_involved_with.where(id: params[:origin_case_id]).first if params[:origin_case_id]
 
     respond_with(@book)
   end
 
   def edit
+    @ai_judges = User.only_ai_judges.left_joins(teams: :books).where(teams_books: { book_id: @book.id })
   end
 
   def create
@@ -106,8 +115,14 @@ class BooksController < ApplicationController
 
     @book.teams.replace(teams)
 
+    # checkboxes suck
+    @book.ai_judges.clear
+    book_params[:ai_judge_ids].each do |ai_judge_id|
+      @book.ai_judges << User.find(ai_judge_id)
+    end
+
     @book.update(book_params.except(
-                   :team_ids, :link_the_case, :origin_case_id,
+                   :team_ids, :ai_judges, :link_the_case, :origin_case_id,
                    :delete_export_file, :delete_populate_file, :delete_import_file
                  ))
 
@@ -189,13 +204,23 @@ class BooksController < ApplicationController
                   :alert => "Could not merge due to errors: #{@book.errors.full_messages.to_sentence}. #{query_doc_pair_count} query/doc pairs."
     end
   end
+
+  def run_judge_judy
+    ai_judge = @book.ai_judges.where(id: params[:ai_judge_id]).first
+
+    judge_all = deserialize_bool_param(params[:judge_all])
+    number_of_pairs = params[:number_of_pairs].to_i
+    number_of_pairs = nil if judge_all
+
+    RunJudgeJudyJob.perform_later(@book, ai_judge, number_of_pairs)
+    redirect_to book_path(@book), flash: { kraken_unleashed: judge_all }, :notice => "Set AI Judge #{ai_judge.name} to work judging query/doc pairs."
+  end
   # rubocop:enable Metrics/AbcSize
   # rubocop:enable Metrics/MethodLength
   # rubocop:enable Metrics/CyclomaticComplexity
   # rubocop:enable Metrics/PerceivedComplexity
   # rubocop:enable Layout/LineLength
 
-  # rubocop:disable Metrics/MethodLength
   def assign_anonymous
     # assignee = @book.team.members.find_by(id: params[:assignee_id])
     assignee = User.find_by(id: params[:assignee_id])
@@ -209,25 +234,22 @@ class BooksController < ApplicationController
         judgement.save!
       end
     end
-    @book.cases.each do |kase|
-      kase.ratings.where(user: nil).find_each do |rating|
-        rating.user = assignee
-        rating.save!
-      end
-    end
+    # @book.cases.each do |kase|
+    #  kase.ratings.where(user: nil).find_each do |rating|
+    #    rating.user = assignee
+    #    rating.save!
+    #  end
+    # end
 
     UpdateCaseJob.perform_later @book
     redirect_to book_path(@book), :notice => "Assigned #{assignee.fullname} to ratings and judgements."
   end
-  # rubocop:enable Metrics/MethodLength
 
   def delete_ratings_by_assignee
-    judgements_to_delete = @book.judgements.where(user: @user)
-    judgements_count = judgements_to_delete.count
-    judgements_to_delete.destroy_all
+    deleted_count = @book.judgements.where(user: @user).delete_all
 
     UpdateCaseJob.perform_later @book
-    redirect_to book_path(@book), :notice => "Deleted #{judgements_count} judgements belonging to #{@user.fullname}."
+    redirect_to book_path(@book), :notice => "Deleted #{deleted_count} judgements belonging to #{@user.fullname}."
   end
 
   def reset_unrateable
@@ -290,11 +312,15 @@ class BooksController < ApplicationController
     params_to_use = params.require(:book).permit(:scorer_id, :selection_strategy_id, :name,
                                                  :support_implicit_judgements, :link_the_case, :origin_case_id,
                                                  :delete_export_file, :delete_populate_file, :delete_import_file,
-                                                 :show_rank, team_ids: [])
+                                                 :show_rank, team_ids: [], ai_judge_ids: [])
 
     # Crafting a book[team_ids] parameter from the AngularJS side didn't work, so using top level parameter
     params_to_use[:team_ids] = params[:team_ids] if params[:team_ids]
     params_to_use[:team_ids]&.compact_blank!
+
+    params_to_use[:ai_judge_ids] = params[:ai_judge_ids] if params[:ai_judge_ids]
+    params_to_use[:ai_judge_ids]&.compact_blank!
+
     params_to_use.except(:link_the_case, :origin_case_id)
   end
 end

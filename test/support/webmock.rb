@@ -208,6 +208,97 @@ module ActiveSupport
           }
         )
         .to_return(status: 200, body: '', headers: {})
+
+      # Testing out fetch service using
+      # search_endpoint   for_case_queries_case
+      # try               for_case_queries_case
+      stub_request(:get, 'http://test.com/solr/tmdb/select?debug=true&debug.explain.structured=true&fl=id,title&q=First%20Query&rows=10&wt=json')
+        .with(
+          headers: {
+            'Accept'          => '*/*',
+            'Accept-Encoding' => 'gzip;q=1.0,deflate;q=0.6,identity;q=0.3',
+            'Content-Type'    => 'application/json',
+            'User-Agent'      => /Faraday/,
+          }
+        )
+        .to_return(status: 200, body: mock_statedecoded_body, headers: {})
+
+      # Testing out fetch service using
+      # search_endpoint   for_case_queries_case
+      # try               es_try_with_curator_vars
+      stub_request(:post, 'http://test.com:9200/tmdb/_search')
+        .with(
+          body:    { 'query'=>{ 'multi_match'=>{ 'fields' => 'title, overview', 'query' => 'First Query', 'tie_breaker' => '1' } } },
+          headers: {
+            'Accept'          => '*/*',
+            'Accept-Encoding' => 'gzip;q=1.0,deflate;q=0.6,identity;q=0.3',
+            'Content-Type'    => 'application/json',
+            'User-Agent'      => /Faraday/,
+          }
+        )
+        .to_return(status: 200, body: mock_statedecoded_body, headers: {})
+
+      # Testing out fetch service using
+      # search_endpoint   for_case_queries_case
+      # try               es_try_with_curator_vars
+      # query             blowup_query
+      stub_request(:get, 'http://test.com/solr/tmdb/select?debug=true&debug.explain.structured=true&fl=id,title&q=BLOWUP_QUERY&rows=10&wt=json')
+        .with(
+          headers: {
+            'Accept'          => '*/*',
+            'Accept-Encoding' => 'gzip;q=1.0,deflate;q=0.6,identity;q=0.3',
+            'Content-Type'    => 'application/json',
+            'User-Agent'      => /Faraday/,
+          }
+        )
+        .to_return(status: 404, body: '', headers: {})
+
+      # Test out calls to OpenAI for judging
+      # beware that the content: attribute has nested text that is itself more JSON and you need to strip any new lines.
+      chat_completion_body = <<~TEXT
+        {"id": "chatcmpl-Apgkot75TcZxjtOudaRkqzVmpCSBS",
+          "object": "chat.completion",
+          "created": 1736882438,
+          "model": "gpt-4-0613",
+          "choices": [
+            {
+              "index": 0,
+              "message": {
+                "role": "assistant",
+                "content": "{\\"explanation\\": \\"This document explicitly states that it has nothing to do with farm animals and will not discuss them at all, making it irrelevant to the user's query concerning farm animals.\\",  \\"judgment\\": 0}",
+                "refusal": null
+              },
+              "logprobs": null,
+              "finish_reason": "stop"
+            }
+          ],
+          "usage": {
+            "prompt_tokens": 372,
+            "completion_tokens": 50,
+            "total_tokens": 422,
+            "prompt_tokens_details": {
+              "cached_tokens": 0,
+              "audio_tokens": 0
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 0,
+              "audio_tokens": 0,
+              "accepted_prediction_tokens": 0,
+              "rejected_prediction_tokens": 0
+            }
+          },
+          "service_tier": "default",
+          "system_fingerprint": null
+        }
+      TEXT
+
+      stub_request(:post, 'https://api.openai.com/v1/chat/completions')
+        .with(headers: { 'Authorization' => 'Bearer 1234asdf5678' })
+        .to_return(status: 200, body: chat_completion_body, headers: {})
+
+      stub_request(:post, 'https://api.openai.com/v1/chat/completions')
+        .with(headers: { 'Authorization' => 'Bearer BAD_OPENAI_KEY' })
+        .to_return(status: 401)
     end
 
     # rubocop:enable Metrics/MethodLength

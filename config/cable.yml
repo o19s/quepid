@@ -11,7 +11,7 @@ development:
   #  database:
   #    writing: cable
   polling_interval: <%= ENV.fetch("SOLID_CABLE_POLLING", '0.1.seconds') %>
-  message_retention: 1.day
+  message_retention: 1.hour
   silence_polling: true
 
 test:
@@ -25,5 +25,5 @@ production:
   #  database:
   #    writing: cable
   polling_interval: <%= ENV.fetch("SOLID_CABLE_POLLING", '0.1.seconds') %>
-  message_retention: 1.day
+  message_retention: 1.hour
   silence_polling: true

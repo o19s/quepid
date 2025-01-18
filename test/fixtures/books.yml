@@ -40,6 +40,7 @@ james_bond_movies:
   scorer: :quepid_default_scorer
   selection_strategy: :multiple_raters
   name: James Bond Movies
+  ai_judges: judge_judy
 
 empty_book:
   scorer: :quepid_default_scorer

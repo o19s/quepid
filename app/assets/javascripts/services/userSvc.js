@@ -13,8 +13,9 @@ angular.module('UtilitiesModule')
         self.defaultScorerId = userObj.default_scorer_id;
         self.completedCaseWizard      = userObj.completed_case_wizard;
         self.id              = userObj.id;
-        self.permissions     = userObj.permissions;
+        self.administrator   = userObj.administrator;
         self.email           = userObj.email;
+        self.ai_judge        = userObj.ai_judge;
         self.casesInvolvedWithCount   = userObj.cases_involved_with_count;
         self.teamsInvolvedWithCount   = userObj.teams_involved_with_count;
 

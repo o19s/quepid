@@ -21,6 +21,7 @@
 #
 # Indexes
 #
+#  idx_owner_archived   (owner_id,archived)
 #  index_cases_book_id  (book_id)
 #  user_id              (owner_id)
 #
@@ -90,6 +91,8 @@ class Case < ApplicationRecord
   scope :not_archived, -> { where('`cases`.`archived` = false OR `cases`.`archived` IS NULL') }
 
   scope :public_cases, -> { where(public: true) }
+
+  scope :nightly_run, -> { where(nightly: true) }
 
   # load up the queries count for the case, alternative to counter_cache
   scope :with_counts, -> {
@@ -208,7 +211,7 @@ class Case < ApplicationRecord
 
   def clone_try the_try, preserve_history
     new_try = the_try.dup
-    new_try.try_number = preserve_history ? the_try.try_number : 0
+    new_try.try_number = preserve_history ? the_try.try_number : 1
     tries << new_try
 
     the_try.curator_variables.each do |a_curator_variable|

@@ -26,19 +26,10 @@ angular.module('QuepidApp')
      ) {
       var ctrl = this;
 
-      ctrl.canUpdateCase = false;
-      ctrl.canCreateTeam = false;
       ctrl.refreshOnly = false;
       ctrl.updateAssociatedBook = false;
       ctrl.populateJudgements = false;
       ctrl.createMissingQueries = false;
-
-      $rootScope.$watch('currentUser', function() {
-        if ( $rootScope.currentUser ) {
-          ctrl.canUpdateCase = $rootScope.currentUser.permissions.case.update;
-          ctrl.canCreateTeam = $rootScope.currentUser.permissions.team.create;
-        }
-      });
 
       // why do we do this pattern?
       ctrl.share = {
@@ -115,7 +106,7 @@ angular.module('QuepidApp')
 
         if (ctrl.populateBook){
           if (!ctrl.updateAssociatedBook){
-            label = 'Refresh Query/Doc Pairs for Book';
+            label = 'Update Query/Doc Pairs for Book';
           }
           else {
             label = `${label} and Populate`;

@@ -24,11 +24,13 @@
 #  locked_at                   :datetime
 #  name                        :string(255)
 #  num_logins                  :integer
+#  openai_key                  :string(255)
 #  password                    :string(120)
 #  profile_pic                 :string(4000)
 #  reset_password_sent_at      :datetime
 #  reset_password_token        :string(255)
 #  stored_raw_invitation_token :string(255)
+#  system_prompt               :string(4000)
 #  created_at                  :datetime         not null
 #  updated_at                  :datetime         not null
 #  default_scorer_id           :integer
@@ -102,9 +104,6 @@ class User < ApplicationRecord
            through: :teams,
            source:  :scorers
 
-  has_many :permissions,
-           dependent: :destroy
-
   has_many :scores,
            dependent: :destroy
 
@@ -120,13 +119,17 @@ class User < ApplicationRecord
 
   has_many :announcements, foreign_key: 'author_id', dependent: :destroy, inverse_of: :author
 
+  # has_many :ai_judges, dependent: :destroy
+  # has_many :books, through: :ai_judges
+
   # Validations
 
   # https://davidcel.is/posts/stop-validating-email-addresses-with-regex/
   validates :email,
             presence:   true,
             uniqueness: true,
-            format:     { with: URI::MailTo::EMAIL_REGEXP }
+            format:     { with: URI::MailTo::EMAIL_REGEXP },
+            unless:     :ai_judge?
 
   validates :password,
             presence: true
@@ -204,11 +207,15 @@ class User < ApplicationRecord
   # END devise hacks
 
   # Concerns
-  include Permissible
   include Profile
 
   # Scopes
   # default_scope -> { includes(:permissions) }
+  scope :only_ai_judges, -> { where('`users`.`openai_key` IS NOT NULL') }
+
+  def ai_judge?
+    !openai_key.nil?
+  end
 
   def num_queries
     queries.count
@@ -230,7 +237,7 @@ class User < ApplicationRecord
     Book.for_user(self)
   end
 
-  # This method rpeturns all the search_endpoints that the user has access as owner or via a team.
+  # This method returns all the search_endpoints that the user has access as owner or via a team.
   def search_endpoints_involved_with
     SearchEndpoint.for_user(self)
   end

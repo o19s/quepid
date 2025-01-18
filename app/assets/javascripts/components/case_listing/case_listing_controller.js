@@ -7,14 +7,12 @@ angular.module('QuepidApp')
     '$rootScope',
     '$scope',
     '$location',
-    'flash',
     'caseTryNavSvc',
     'caseSvc',
     function (
       $rootScope,
       $scope,
       $location,
-      flash,
       caseTryNavSvc,
       caseSvc
     ) {
@@ -25,7 +23,6 @@ angular.module('QuepidApp')
       ctrl.clickToEdit.oldVal   = ctrl.thisCase.caseName.slice(0);
       ctrl.clickToEdit.currVal  = ctrl.thisCase.caseName.slice(0);
       ctrl.clickToEdit.clicked  = false;
-      ctrl.canUpdate = false;
 
       // Functions
       ctrl.cancel     = cancel;
@@ -39,19 +36,8 @@ angular.module('QuepidApp')
         $location.path(path);
       }
 
-      $rootScope.$watch('currentUser', function() {
-        if ( $rootScope.currentUser ) {
-          ctrl.canUpdate = $rootScope.currentUser.permissions.case.update;
-        }
-      });
-
-      function rename() {
-        if (ctrl.canUpdate) {
-          ctrl.clickToEdit.clicked = true;
-        }
-        else {
-          flash.error = 'You do not have update permissions for cases.';
-        }
+      function rename() {      
+        ctrl.clickToEdit.clicked = true;      
       }
 
       function cancel() {
