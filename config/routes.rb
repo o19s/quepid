@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+# rubocop:disable Layout/LineLength
 # == Route Map
 #
 #                                           Prefix Verb     URI Pattern                                                                                       Controller#Action
@@ -382,6 +383,8 @@
 # Routes for Ahoy::Engine:
 # visits POST /visits(.:format) ahoy/visits#create
 # events POST /events(.:format) ahoy/events#create
+
+# rubocop:enable Layout/LineLength
 
 # rubocop:disable Layout/LineLength
 # rubocop:disable Metrics/BlockLength
