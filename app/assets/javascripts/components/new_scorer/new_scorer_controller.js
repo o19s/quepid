@@ -23,14 +23,6 @@ angular.module('QuepidApp')
       var ctrl = this;
       ctrl.buttonText = $scope.buttonText;
 
-      ctrl.cannotCreate = true;
-
-      $rootScope.$watch('currentUser', function() {
-        if ( $rootScope.currentUser ) {
-          ctrl.cannotCreate = !$rootScope.currentUser.permissions.team.create;
-        }
-      });
-
       // Functions
       ctrl.newScorer = newScorer;
 

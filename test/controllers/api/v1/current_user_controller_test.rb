@@ -24,6 +24,7 @@ module Api
             body = response.parsed_body
 
             assert body['email'] == matt.email
+            assert body['administrator'] == matt.administrator?
           end
         end
 

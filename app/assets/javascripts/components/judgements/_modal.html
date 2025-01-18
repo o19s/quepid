@@ -2,11 +2,8 @@
   <button type="button" class="close btn-core-close" ng-click="ctrl.cancel()" aria-label="Close"></button>
   <h3 class="modal-title">Judgements</h3>
 </div>
-<div class="modal-body" ng-hide="ctrl.canUpdateCase">
-  <p>You do not have edit permissions for cases.</p>
-</div>
 
-<div class="modal-body" ng-show="ctrl.canUpdateCase">
+<div class="modal-body">
   <div ng-show='ctrl.share.loading'>
     <p>
       Loading your teams, this will be quick I promise!

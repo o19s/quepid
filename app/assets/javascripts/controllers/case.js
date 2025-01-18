@@ -72,28 +72,16 @@ angular.module('QuepidApp')
 
       $scope.caseModel.unarchive = function(currentTeam) {
         $scope.currentTeam = currentTeam; // this can be null if we don't have a currentTeam
-        if ( !$scope.currentUser.permissions.case.create ) {
-          var modalInstance = $uibModal.open({
-            templateUrl:  'new_case/_denied_modal.html',
-            controller:   'DeniedNewCaseModalInstanceCtrl',
-            controllerAs: 'ctrl'
-          });
-
-          modalInstance.result.then(
-            function() { },
-            function() { }
-          );
-        } else {
-          $uibModal.open({
-            templateUrl: 'views/unarchiveCaseModal.html',
-            controller: 'UnarchiveCaseCtrl',
-            resolve : {
-              currentTeam: function() {
-                return $scope.currentTeam;
-              }
+        
+        $uibModal.open({
+          templateUrl: 'views/unarchiveCaseModal.html',
+          controller: 'UnarchiveCaseCtrl',
+          resolve : {
+            currentTeam: function() {
+              return $scope.currentTeam;
             }
-          });
-        }
+          }
+        });
       };
     }
   ]);
