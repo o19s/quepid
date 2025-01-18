@@ -2,10 +2,8 @@
   <button type="button" class="close btn-core-close" ng-click="ctrl.cancel()" aria-label="Close"></button>
   <h3 class="modal-title">Share Scorer</h3>
 </div>
-<div class="modal-body" ng-hide="ctrl.canUpdateScorer">
-  <p>You do not have edit permissions for cases.</p>
-</div>
-<div class="modal-body" ng-show="ctrl.canUpdateScorer">
+
+<div class="modal-body">
   <div ng-show='ctrl.share.loading'>
     <p>
       Loading your teams, this will be quick I promise!
@@ -46,21 +44,21 @@
   </div>
 </div>
 <div class="modal-footer">
-  <a class="btn btn-primary pull-left" ng-show="ctrl.canCreateTeam" ng-click="ctrl.goToTeamsPage()">
+  <a class="btn btn-primary pull-left" ng-click="ctrl.goToTeamsPage()">
     <i class="bi bi-plus-lg"></i>
     Create a team
   </a>
   
   <button
     class="btn btn-success"
-    ng-show="ctrl.canUpdateScorer && ctrl.share.selectedTeam && ctrl.share.action ==='select'"
+    ng-show="ctrl.share.selectedTeam && ctrl.share.action ==='select'"
     ng-click="ctrl.ok()"
   >
     Share with {{ ctrl.share.selectedTeam.name }}
   </button>
   <button
     class="btn btn-success"
-    ng-show="ctrl.canUpdateScorer && ctrl.share.unselectedTeam && ctrl.share.action ==='unselect'"
+    ng-show="ctrl.share.unselectedTeam && ctrl.share.action ==='unselect'"
     ng-click="ctrl.ok()"
   >
     Unshare from {{ ctrl.share.unselectedTeam.name }}

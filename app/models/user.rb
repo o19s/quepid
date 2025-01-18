@@ -104,9 +104,6 @@ class User < ApplicationRecord
            through: :teams,
            source:  :scorers
 
-  has_many :permissions,
-           dependent: :destroy
-
   has_many :scores,
            dependent: :destroy
 
@@ -210,7 +207,6 @@ class User < ApplicationRecord
   # END devise hacks
 
   # Concerns
-  include Permissible
   include Profile
 
   # Scopes
