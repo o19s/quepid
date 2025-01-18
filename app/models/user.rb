@@ -257,7 +257,11 @@ class User < ApplicationRecord
   end
 
   def fullname
-    name.blank? ? email : name.titleize
+    if name.blank?
+      email.presence || 'Anonymous'
+    else
+      name.titleize
+    end
   end
 
   def after_database_authentication

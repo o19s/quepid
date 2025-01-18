@@ -165,7 +165,7 @@ This book consists of <%= @book.query_doc_pairs.count %> query document pairs an
     <p class="card-text">There are a number of ways to export the Book data.</p>
 
     <ul class="list-group list-group-flush">
-      <li class="list-group-item">Export just the <%= link_to 'judgement data', api_book_path(@book, format: :csv) %> in CSV format.  This will take a bit but you get a CSV file in your browser.</li>
+      <li class="list-group-item">Export just the <%= link_to 'judgement data', api_book_judgements_path(@book, format: :csv) %> in CSV format.  This will take a bit but you will download a CSV file, useful for your own analysis.</li>
 
       <li class="list-group-item">Export the entire Book in JSON format.
         <% if @book.export_job %>
@@ -182,7 +182,7 @@ This book consists of <%= @book.query_doc_pairs.count %> query document pairs an
       <li class="list-group-item">
         <p>
           Reference these judgements from a notebook or another system you can use these <%= link_to 'Quepid APIs', apipie_apipie_path %> endpoints:
-          <code><%= api_book_path(@book, format: :csv) %></code> or <code><%= api_export_book_path(@book) %></code>
+          <code><%= api_book_judgements_path(@book, format: :csv) %></code> or <code><%= api_export_book_path(@book) %></code>
         </p>
 
       </li>
