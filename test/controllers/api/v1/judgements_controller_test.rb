@@ -48,9 +48,10 @@ module Api
 
           assert_response :ok
           csv = CSV.parse(response.body, headers: true)
-          assert_equal 'Best Bond Ever', csv[0]['query']
-          assert_equal 'GeorgeLazenby', csv[0]['docid']
-          assert_equal '3.0', csv[3]['Doug Turnbull']
+          assert_equal 'Action Movies', csv[0]['query']
+          assert_equal 'Moonraker', csv[0]['docid']
+
+          assert_nil csv[3]['Doug Turnbull']
 
           assert_not_includes csv.headers, 'Unknown'
         end
