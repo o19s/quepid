@@ -48,6 +48,7 @@ require 'test_helper'
 # Foreign Keys
 #
 #  fk_rails_...  (default_scorer_id => scorers.id)
+#  fk_rails_...  (invited_by_id => users.id)
 #
 
 # rubocop:disable Layout/LineLength
@@ -63,7 +64,7 @@ class UserTest < ActiveSupport::TestCase
   describe 'Defaults' do
     test 'are set when user is created' do
       user = User.create(email: 'defaults@email.com', password: 'password')
-
+      
       assert_not_nil user.completed_case_wizard
       assert_not_nil user.num_logins
 

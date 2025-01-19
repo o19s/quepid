@@ -114,6 +114,9 @@ Case:
   scorer:
     ForeignKeyChecker:
       enabled: false
+  user_id:
+    RedundantIndexChecker:
+      enabled: false      
 CaseMetadatum:
   id:
     PrimaryKeyTypeChecker:
@@ -237,6 +240,9 @@ Score:
   user:
     ColumnPresenceChecker:
       enabled: false
+  index_case_scores_annotation_id:
+    UniqueIndexChecker:
+      enabled: false      
 Scorer:
   code:
     LengthConstraintChecker:
@@ -395,12 +401,12 @@ User:
       enabled: false
   company:
     LengthConstraintChecker:
-      enabled: false
+      enabled: true
   email:
     ColumnPresenceChecker:
       enabled: false
     LengthConstraintChecker:
-      enabled: false
+      enabled: true
   id:
     PrimaryKeyTypeChecker:
       enabled: false
@@ -412,16 +418,18 @@ User:
       enabled: false
   invitation_token:
     LengthConstraintChecker:
-      enabled: false
+      enabled: true
   invited_by:
     ForeignKeyChecker:
-      enabled: false
+      enabled: true
   locked:
     ThreeStateBooleanChecker:
       enabled: false
   name:
     LengthConstraintChecker:
-      enabled: false
+      enabled: true
+    ColumnPresenceChecker:
+      enabled: false        
   owned_scorers:
     MissingIndexChecker:
       enabled: true
@@ -429,16 +437,21 @@ User:
     ColumnPresenceChecker:
       enabled: false
     LengthConstraintChecker:
-      enabled: false
+      enabled: true
   permissions:
     MissingIndexChecker:
       enabled: true
   profile_pic:
     LengthConstraintChecker:
-      enabled: false
+      enabled: true
   reset_password_token:
     LengthConstraintChecker:
-      enabled: false
+      enabled: true
   stored_raw_invitation_token:
     LengthConstraintChecker:
+      enabled: true
+    
+WebRequest:
+  index_web_requests_on_snapshot_query_id:
+    UniqueIndexChecker:
       enabled: false
