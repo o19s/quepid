@@ -48,6 +48,7 @@ require 'test_helper'
 # Foreign Keys
 #
 #  fk_rails_...  (default_scorer_id => scorers.id)
+#  fk_rails_...  (invited_by_id => users.id)
 #
 
 # rubocop:disable Layout/LineLength

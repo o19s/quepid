@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_01_18_162642) do
+ActiveRecord::Schema[8.0].define(version: 2025_01_19_130032) do
   create_table "active_storage_attachments", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.string "name", null: false
     t.string "record_type", null: false
@@ -112,6 +112,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_01_18_162642) do
     t.datetime "updated_at", null: false
     t.boolean "live", default: false
     t.index ["author_id"], name: "index_announcements_author_id"
+    t.index ["live"], name: "index_announcements_live", unique: true
   end
 
   create_table "api_keys", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
@@ -620,6 +621,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_01_18_162642) do
     t.binary "response", size: :long
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["snapshot_query_id"], name: "index_web_requests_on_snapshot_query_id", unique: true
   end
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
@@ -657,4 +659,6 @@ ActiveRecord::Schema[8.0].define(version: 2025_01_18_162642) do
   add_foreign_key "teams_scorers", "teams"
   add_foreign_key "tries", "cases", name: "tries_ibfk_1"
   add_foreign_key "users", "scorers", column: "default_scorer_id"
+  add_foreign_key "users", "users", column: "invited_by_id"
+  add_foreign_key "web_requests", "snapshot_queries"
 end
