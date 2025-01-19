@@ -52,7 +52,6 @@
 #
 
 class User < ApplicationRecord
-  
   # Associations
   has_many :api_keys, dependent: :destroy
 
@@ -120,8 +119,8 @@ class User < ApplicationRecord
 
   # Validations
   validates :name,
-            length:   { maximum: 255 }
-  
+            length: { maximum: 255 }
+
   # https://davidcel.is/posts/stop-validating-email-addresses-with-regex/
   validates :email,
             presence:   true,
