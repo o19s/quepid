@@ -26,7 +26,7 @@ Announcement:
       enabled: false
   live:
     MissingUniqueIndexChecker:
-      enabled: false
+      enabled: true
     ThreeStateBooleanChecker:
       enabled: false
   text:

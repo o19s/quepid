@@ -14,6 +14,7 @@
 # Indexes
 #
 #  index_announcements_author_id  (author_id)
+#  index_announcements_live       (live) UNIQUE
 #
 require 'test_helper'
 
