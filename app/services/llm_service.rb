@@ -8,10 +8,10 @@ class LlmService
     @openai_key = openai_key
   end
 
-  def make_judgement judge, query_doc_pair
-    user_prompt = make_user_prompt query_doc_pair
-    results = get_llm_response user_prompt, judge.system_prompt
-    judgement = Judgement.new(query_doc_pair: query_doc_pair, user: judge)
+  def perform_judgement judgement
+    user_prompt = make_user_prompt judgement.query_doc_pair
+    results = get_llm_response user_prompt, judgement.user.system_prompt
+
     judgement.rating = results[:judgment]
     judgement.explanation = results[:explanation]
 

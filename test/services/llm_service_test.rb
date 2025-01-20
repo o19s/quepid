@@ -42,7 +42,8 @@ class LlmServiceTest < ActiveSupport::TestCase
     end
 
     test 'creating a judgement' do
-      judgement = service.make_judgement judge, query_doc_pair
+      judgement = Judgement.new(query_doc_pair: query_doc_pair, user: judge)
+      judgement = service.perform_judgement judgement
 
       assert_instance_of Float, judgement.rating
       assert_not_nil judgement.explanation

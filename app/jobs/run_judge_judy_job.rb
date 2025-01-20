@@ -24,14 +24,15 @@ class RunJudgeJudyJob < ApplicationJob
       query_doc_pair = SelectionStrategy.random_query_doc_based_on_strategy(book, judge)
       break if query_doc_pair.nil?
 
+      judgement = Judgement.new(query_doc_pair: query_doc_pair, user: judge)
       begin
-        judgement = llm_service.make_judgement(judge, query_doc_pair)
+        judgement = llm_service.perform_judgement(judgement)
       rescue RuntimeError => e
         case e.message
         when /401/
           raise # we can't do anything about this, so pass it up
         else
-          judgement.explanation = "BOOM: #{e}" 
+          judgement.explanation = "BOOM: #{e}"
           judgement.unrateable = true
         end
       end
