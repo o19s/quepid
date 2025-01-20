@@ -47,12 +47,12 @@ module Api
         end
 
         def try_params
-          params.require(:try).permit(
-            :name,
-            :field_spec,
-            :query_params,
-            :escape_query,
-            :number_of_rows
+          params.expect(
+            try: [ :name,
+                   :field_spec,
+                   :query_params,
+                   :escape_query,
+                   :number_of_rows ]
           )
         end
       end

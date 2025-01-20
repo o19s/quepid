@@ -503,7 +503,7 @@ angular.module('QuepidApp')
         var payloadSearchEndpoint = {};
         payload.try = payloadTry;
         payload.search_endpoint = payloadSearchEndpoint;
-        payload.parent_try_number = settingsToSave.selectedTry.tryNo;
+        payload.parent_try_number = settingsToSave.selectedTry.tryNo; // track the parent try for ancestry
         payload.curator_vars = settingsToSave.selectedTry.curatorVarsDict();
 
         // We create the default name on the server side

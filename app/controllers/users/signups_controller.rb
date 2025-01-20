@@ -33,13 +33,13 @@ module Users
     private
 
     def user_params
-      params.require(:user).permit(
-        :name,
-        :email,
-        :password,
-        :password_confirmation,
-        :agreed,
-        :email_marketing
+      params.expect(
+        user: [ :name,
+                :email,
+                :password,
+                :password_confirmation,
+                :agreed,
+                :email_marketing ]
       )
     end
   end

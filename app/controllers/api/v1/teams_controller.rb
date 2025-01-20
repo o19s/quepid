@@ -57,7 +57,7 @@ module Api
       private
 
       def team_params
-        params.require(:team).permit(:name)
+        params.expect(team: [ :name ])
       end
     end
   end

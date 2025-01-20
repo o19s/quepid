@@ -19,6 +19,6 @@ class ProfilesController < ApplicationController
   private
 
   def user_params
-    params.require(:user).permit(:name, :email, :company, :email_marketing)
+    params.expect(user: [ :name, :email, :company, :email_marketing ])
   end
 end

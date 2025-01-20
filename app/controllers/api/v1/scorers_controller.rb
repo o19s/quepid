@@ -151,13 +151,13 @@ module Api
       def scorer_params
         return unless params[:scorer]
 
-        params.require(:scorer).permit(
-          :code,
-          :name,
-          :show_scale_labels,
-          :communal,
-          scale:             [],
-          scale_with_labels: {}
+        params.expect(
+          scorer: [ :code,
+                    :name,
+                    :show_scale_labels,
+                    :communal,
+                    { scale:             [],
+                      scale_with_labels: {} } ]
         )
       end
 
