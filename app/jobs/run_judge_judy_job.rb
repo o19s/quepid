@@ -31,7 +31,7 @@ class RunJudgeJudyJob < ApplicationJob
         when /401/
           raise # we can't do anything about this, so pass it up
         else
-          judgement.explanation = e.full_message
+          judgement.explanation = "BOOM: #{e}" 
           judgement.unrateable = true
         end
       end
