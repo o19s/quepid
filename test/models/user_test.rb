@@ -337,6 +337,23 @@ class UserTest < ActiveSupport::TestCase
       assert user.valid?
     end
   end
+
+  describe 'The full name of the user' do
+    it 'uses the name if possible' do
+      user = User.new(name: 'bob')
+      assert 'bob', user.fullname
+    end
+
+    it 'uses the email if no name' do
+      user = User.new(email: 'bob@bob.com')
+      assert 'bob@bob.com', user.fullname
+    end
+
+    it 'handles it when we got nothing!' do
+      user = User.new
+      assert 'Anonymous', user.fullname
+    end
+  end
 end
 
 # rubocop:enable Layout/LineLength
