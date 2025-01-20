@@ -17,10 +17,10 @@
 #
 # Indexes
 #
-#  case_id                             (case_id)
-#  index_case_scores_on_annotation_id  (annotation_id)
-#  support_last_score                  (updated_at,created_at,id)
-#  user_id                             (user_id)
+#  case_id                          (case_id)
+#  index_case_scores_annotation_id  (annotation_id) UNIQUE
+#  support_last_score               (updated_at,created_at,id)
+#  user_id                          (user_id)
 #
 # Foreign Keys
 #
@@ -35,8 +35,8 @@ class Score < ApplicationRecord
   serialize :queries, coder: JSON
 
   # Associations
-  belongs_to :case
-  belongs_to :user
+  belongs_to :case, touch: true
+  belongs_to :user, optional: true
   belongs_to :try
   belongs_to :annotation, optional: true
 

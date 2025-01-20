@@ -45,6 +45,8 @@ module Api
             the_case.queries << query
             the_case.save!
 
+            the_case.reload
+
             get :show, params: { case_id: the_case.id, file_format: 'rre' }
             assert_response :ok
 
@@ -53,7 +55,7 @@ module Api
             assert_equal body['id_field'],                              'id'
             assert_equal body['index'],                                 the_case.tries.latest.index_name_from_search_url
             assert_equal body['queries'].size,                          the_case.queries.size
-            assert_equal body['queries'][0]['placeholders']['$query'],  the_case.queries[0].query_text
+            assert_equal body['queries'][1]['placeholders']['$query'],  the_case.queries[1].query_text
             assert_equal body['queries'][2]['placeholders']['$query'],  the_case.queries[2].query_text
             assert_not_nil body['queries'][2]['relevant_documents']
 

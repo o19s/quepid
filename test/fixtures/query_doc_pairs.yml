@@ -1,14 +1,16 @@
+# Bond actors ranked sourced from https://www.imdb.com/list/ls068945808/
+
 # == Schema Information
 #
 # Table name: query_doc_pairs
 #
 #  id               :bigint           not null, primary key
-#  document_fields  :text(65535)
+#  document_fields  :text(16777215)
 #  information_need :string(255)
 #  notes            :text(65535)
 #  options          :text(65535)
 #  position         :integer
-#  query_text       :string(500)
+#  query_text       :string(2048)
 #  created_at       :datetime         not null
 #  updated_at       :datetime         not null
 #  book_id          :bigint           not null
@@ -17,69 +19,67 @@
 # Indexes
 #
 #  index_query_doc_pairs_on_book_id  (book_id)
-#  unique_query_doc_pair             (query_text,doc_id,book_id) UNIQUE
 #
 # Foreign Keys
 #
 #  fk_rails_...  (book_id => books.id)
 #
 
-# Bond actors ranked sourced from https://www.imdb.com/list/ls068945808/
-
 one:
   query_text: MyString
   position: 1
   doc_id: "MyDocA"
-  document_fields: MyText
+  document_fields: '{"title":"MyText"}'
   book: one
+  options:      '{"special_boost": 3.2}'
 
 two:
   query_text: MyString
   position: 2
   doc_id: "MyDocB"
-  document_fields: MyText
+  document_fields: '{"title":"MyText"}'
   book: two
 
 jbm_qdp1:
   query_text: Best Bond Ever
   position: 1
   doc_id: SeanConnery
-  document_fields: MyTex
+  document_fields: '{"title":"MyText"}'
   book: :james_bond_movies
 
 jbm_qdp2:
   query_text: Best Bond Ever
   position: 2
   doc_id: DanielCraig
-  document_fields: MyTex
+  document_fields: '{"title":"MyText"}'
   book: :james_bond_movies
 
 jbm_qdp3:
   query_text: Best Bond Ever
   position: 3
   doc_id: TimothyDalton
-  document_fields: MyTex
+  document_fields: '{"title":"MyText"}'
   book: :james_bond_movies
 
 jbm_qdp4:
   query_text: Best Bond Ever
   position: 4
   doc_id: RogerMoore
-  document_fields: MyTex
+  document_fields: '{"title":"MyText"}'
   book: :james_bond_movies
 
 jbm_qdp5:
   query_text: Best Bond Ever
   position: 5
   doc_id: PierceBrosnan
-  document_fields: MyTex
+  document_fields: '{"title":"MyText"}'
   book: :james_bond_movies
 
 jbm_qdp6:
   query_text: Best Bond Ever
   position: 6
   doc_id: GeorgeLazenby
-  document_fields: MyTex
+  document_fields: '{"title":"MyText"}'
   book: :james_bond_movies
 
 jbm_qdp10:
@@ -93,14 +93,14 @@ starwars_qdp1:
   query_text: Han
   position: 1
   doc_id: Han Solo-A Star Wars Story
-  document_fields: MyTex
+  document_fields: '{"title":"Han Solo-A Star Wars Story", "description": "The film tells the origin story of Han Solo and Chewbacca, who join a heist within the criminal underworld ten years prior to the events of A New Hope."}'
   book: :book_of_star_wars_judgements
   
 starwars_qdp2:
   query_text: Han
   position: 2
   doc_id: Star Wars The Movie
-  document_fields: MyTex
+  document_fields: '{"title":"Star Wars The Movie"}'
   book: :book_of_star_wars_judgements
   
 # This query doc pair overlaps with starwars_qdp2, to test merging books.
@@ -108,5 +108,5 @@ book_of_comedy_qdp1:
   query_text: Han
   position: 1
   doc_id: Star Wars The Movie
-  document_fields: MyTex
+  document_fields: '{"title":"Star Wars The Movie"}'
   book: :book_of_comedy_films

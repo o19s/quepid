@@ -1,5 +1,5 @@
 <div class="modal-header">
-  <button type="button" class="close" ng-click="ctrl.cancel()" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+  <button type="button" class="close btn-core-close" ng-click="ctrl.cancel()" aria-label="Close"></button>
   <h3 class="modal-title">Import Snapshot</h3>
 </div>
 <div class="modal-body">
@@ -9,7 +9,7 @@
   </p>
   <p>
     The CSV file should have the headers: <code>Snapshot Name,Snapshot Time,Case ID,Query Text,Doc ID,Doc Position</code>.
-    The <code>Case ID</code> must already exist in Quepid.  You can have multiple snapshots in a single file, seperated by the <code>Snapshot Name</code> field.
+    The <code>Case ID</code> must already exist in Quepid.  You can have multiple snapshots in a single file, separated by the <code>Snapshot Name</code> field.
     The file should look similar to:
     <pre>
 Snapshot Name,Snapshot Time,Case ID,Query Text,Doc ID,Doc Position
@@ -52,7 +52,7 @@ Legacy Search, 210/15/18 18:05,2098,star trek,10592,5
     ng-click="ctrl.ok()"
     ng-disabled='ctrl.import.loading'
   >
-    <i ng-show='ctrl.import.loading' class='fa fa-spin fa-spinner'></i>
+    <i ng-show='ctrl.import.loading' class='glyphicon glyphicon-refresh spintime'></i>
     Import
   </button>
   <button class="btn btn-default" ng-click="ctrl.cancel()">Cancel</button>

@@ -177,19 +177,10 @@ angular.module('QuepidApp')
             return team;
           });
       };
-
-      // We return less data if it's to power the sharing interface.
-      this.listForSharing = function() {
-        return this.list(true);
-      };
       
-      this.list = function(forSharing) {
+      this.list = function() {
         var url   = 'api/teams';
         var self  = this;
-
-        if ( forSharing ) {
-          url += '?for_sharing=true';
-        }
 
         // Clear the list just in case the data on the server changed,
         // we want to have the latest list.
@@ -260,6 +251,8 @@ angular.module('QuepidApp')
             if ( !hasMember(team, member) ) {
               team.members.push(member);
             }
+            
+            return response.data.message;
           });
       };
 

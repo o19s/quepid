@@ -20,25 +20,29 @@
 #
 
 a_doc:
-  doc_id:         "doc a"
+  doc_id:         "doc_a"
   position:       1
   snapshot_query: :first_snapshot_query
   explain:        '{"message": "Explain Me"}'
+  fields:         '{"id":"doc_a", "title": "title", "body":"body"}'
 
 b_doc:
-  doc_id:         "doc b"
+  doc_id:         "doc_b"
   position:       1
   snapshot_query: :first_snapshot_query
   explain:        '{"message": "Explain Me"}'
+  fields:         '{"id":"doc_b", "title": "title", "body":"body"}'
 
 c_doc:
-  doc_id:         "doc c"
+  doc_id:         "doc_c"
   position:       1
   snapshot_query: :second_snapshot_query
   explain:        '{"message": "Explain Me"}'
+  fields:         '{"id":"doc_c", "title": "title", "body":"body"}'
 
 d_doc:
-  doc_id:         "doc d"
+  doc_id:         "doc_d"
   position:       1
   snapshot_query: :second_snapshot_query
   explain:        '{"message": "Explain Me"}'
+  fields:         '{"id":"doc_d", "title": "title", "body":"body"}'

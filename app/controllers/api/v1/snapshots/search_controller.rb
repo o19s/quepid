@@ -14,8 +14,8 @@ module Api
         # rubocop:disable Metrics/CyclomaticComplexity
         # rubocop:disable Metrics/PerceivedComplexity
         # rubocop:disable Layout/LineLength
-        api :GET, '/api/cases/:case_id/snapshots/:snapshot_id/search?q=:q',
-            'Mimic a Solr query by looking up query/doc data from a specific snapshot, using the q parameter as the query'
+        api :GET, '/api/cases/:case_id/snapshots/:snapshot_id/search?somesolrparams=here',
+            'Mimic a Solr query by looking up query/doc data from a specific snapshot, supports a query or a lookup by id query'
         param :case_id, :number,
               desc: 'The ID of the requested case.', required: true
         param :snapshot_id, :number,
@@ -24,22 +24,30 @@ module Api
               desc: 'The query that you are looking up', required: true
         def index
           @q = search_params[:q]
+          @snapshot_docs = nil
+
           @q = @q.gsub('\?', '?') # Since it's a GET, a ? in the query gets special escaping
           query = if '*:*' == @q
+                    # we have a match all query.
                     @snapshot.snapshot_queries.first.query
+
+                  elsif @q.ends_with?(')') && @q.include?(':(') && ('lucene' == search_params[:defType])
+                    # We have a lookup docs by id query
+                    doc_ids = @q[@q.index(':(') + 2...@q.index(')')].split(' OR ')
+                    @snapshot_docs = @snapshot.snapshot_docs.where(doc_id: doc_ids)
 
                   else
                     @snapshot.case.queries.find_by(query_text: @q)
                   end
 
-          if query
+          if query && @snapshot_docs.nil?
             snapshot_query = @snapshot.snapshot_queries.find_by(query: query)
 
             @snapshot_docs = snapshot_query.nil? ? [] : snapshot_query.snapshot_docs
-          elsif @q.starts_with?('id')
+          elsif @q.starts_with?('id:') && !@q.starts_with?('id:(')
             doc_id = @q.split(':')[1]
             @snapshot_docs = @snapshot.snapshot_docs.where(doc_id: doc_id)
-          else
+          elsif @snapshot_docs.nil?
             @snapshot_docs = []
           end
 

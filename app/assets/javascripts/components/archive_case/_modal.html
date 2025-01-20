@@ -1,16 +1,11 @@
 <div class="modal-header">
-  <button type="button" class="close" ng-click="ctrl.cancel()" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+  <button type="button" class="close btn-core-close" ng-click="ctrl.cancel()" aria-label="Close"></button>
   <h3 class="modal-title">Archive This Case for Later?</h3>
 </div>
 <div class="modal-body">
-  <p ng-show="ctrl.canDelete">You're about to put this case into deep freeze. You'll be able to unarchive it later through the "Archived Cases" filter in the Case Listings.</p>
-  <p ng-hide="ctrl.canDelete">You do not have delete (and archive) permissions for cases.</p>
-  <p ng-show="ctrl.canDelete && ctrl.notOwner()">
-  <div class="alert alert-warning" role="alert" ng-if="ctrl.canDelete && !ctrl.isOwnerOfCase()">
-    Only the owner of a case can restore it. You will take over ownership of this case from <i>{{ ctrl.theCase.ownerName}}</i> by archiving it.
-  </div>
+  <p>You're about to put this case into deep freeze. You'll be able to unarchive it later through the "Archived Cases" filter in the Case Listings.</p>  
 </div>
 <div class="modal-footer">
-  <button class="btn btn-danger" ng-show="ctrl.canDelete" ng-click="ctrl.ok()">Archive</button>
+  <button class="btn btn-danger"  ng-click="ctrl.ok()">Archive</button>
   <button class="btn btn-default" ng-click="ctrl.cancel()">Cancel</button>
 </div>

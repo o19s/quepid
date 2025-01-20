@@ -11,7 +11,8 @@ class ExperimentWithJsonRender < ActionController::TestCase
   let(:selection_strategy) { selection_strategies(:multiple_raters) }
 
   # Use this test to understand how long it takes to generate a JSON response.
-  # For example, look at enabling/disabling rapidjson via config/initializers/rapidjson.rb
+  # Used it to decide if rapidjson gem was helpful, and decided it wasn't.
+  # It takes a VERY long time, so moved this logic to BookExporter job for production use.
   test 'generate 50000 query doc pairs as json' do
     skip('Ignoring all tests in ExperimentWithJsonRender')
     book = user.books.create name: '50000 Query Doc Pairs', scorer: scorer, selection_strategy: selection_strategy
@@ -20,12 +21,12 @@ class ExperimentWithJsonRender < ActionController::TestCase
     save_big_book book
 
     # controller = DummyController.new
-    controller = Api::V1::Export::BooksController.new
+    Api::V1::Export::BooksController.new
 
     result = Benchmark.measure do
       @book = book
-      json_data = controller.render_to_string(template: 'api/v1/export/books/show', assigns: { book: @book })
-      # puts json_data
+      json_data = Api::V1::Export::BooksController.renderer.render template: 'api/v1/export/books/show',
+                                                                   assigns:  { book: book }
       puts "Traditional. Sample data generated successfully. #{number_to_human_size(json_data.bytesize)}"
     end
 

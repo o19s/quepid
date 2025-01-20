@@ -104,7 +104,31 @@ describe('Service: docCacheSvc', function () {
       $rootScope.$apply();
       expect(called).toBe(1);
       var mockResolver = docResolverSvc.mockResolver;
-      expect(mockResolver.docs.length).toBe(0);
+      // We only resolve if there are docs to be resolved.  In this test
+      // we have one new doc to be resolved so one match.
+      expect(mockResolver.docs.length).toBe(3);
+    });
+    
+    it('resolves partially ignoringredundant ids', function() {
+      checkSetupFromScratch();
+
+      docCacheSvc.addIds(['1', '2', '3', '4']);
+
+      var called = 0;
+      docCacheSvc.update(ignoredSettings)
+        .then(function() {
+          expect(docCacheSvc.getDoc('1').id).toBe('1');
+          expect(docCacheSvc.getDoc('2').id).toBe('2');
+          expect(docCacheSvc.getDoc('3').id).toBe('3');
+          expect(docCacheSvc.getDoc('4').id).toBe('4');
+          called++;
+        });
+
+      $rootScope.$apply();
+      expect(called).toBe(1);
+      var mockResolver = docResolverSvc.mockResolver;
+      // We only resolved doc 4
+      expect(mockResolver.docs.length).toBe(1);
     });
   });
 

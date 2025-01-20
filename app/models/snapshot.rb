@@ -28,20 +28,32 @@ class Snapshot < ApplicationRecord
   belongs_to  :case, optional: true # shouldn't be optional!
   belongs_to  :try, optional: true # shouldn't be optional!
   belongs_to  :scorer, optional: true # shouldn't be optional!
+
+  # see the call back delete_associated_objects for special delete logic.
   has_many    :snapshot_queries, dependent: :destroy
-  has_many   :snapshot_docs,
-             through: :snapshot_queries
+  has_many :snapshot_docs,
+           through: :snapshot_queries # , dependent: :destroy
+
+  has_one_attached :snapshot_file
 
   # Validations
-  validates :name,
-            presence: true
+  validates :name, presence: true
 
   # Callbacks
   before_validation :set_defaults
+  # before_destroy :delete_associated_objects
 
   private
 
   def set_defaults
     self.name = "Snapshot #{Time.zone.now.strftime('%D')}" if name.blank?
   end
+
+  # def delete_associated_objects
+  #   puts 'I am about to delete associated objects'
+  #   SnapshotDoc.joins(snapshot_query: :snapshot)
+  #     .where(snapshot_queries: { snapshot: self })
+  #     .delete_all
+  #   snapshot_queries.delete_all
+  # end
 end

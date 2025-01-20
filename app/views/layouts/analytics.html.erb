@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8">
     <title>Quepid -- Relevant Search Solved</title>
@@ -26,7 +26,7 @@
           <a id='public-url' href="#" data-clipboard-text="<%= analytics_tries_visualization_path(@case.public_id) %>">
             <span class="badge bg-success">Public</span>
             <i
-              class="clipboard-icon fa fa-clipboard"
+              class="clipboard-icon bi bi-clipboard"
               aria-hidden="true"
               title="Copy public url to your clipboard"
               alt="Copy public url to your clipboard"
@@ -36,7 +36,7 @@
       <% end %>
       <p>
         <% if @current_user %>
-          <%= button_to (@case.public? ? 'Make Private' : 'Make public'), analytics_case_visibility_path(@case), method: :patch, class: 'btn btn-danger' %>
+          <%= button_to (@case.public? ? 'Make Private' : 'Make public'), analytics_case_visibility_path(@case), method: :patch, class: 'btn btn-danger btn-sm' %>
         <% end %>
       </p>
     </header>
@@ -49,8 +49,6 @@
     </main>
 
     <%= render 'layouts/footer' %>
-
-    <%= render 'layouts/common_js' %>
 
   </body>
 </html>

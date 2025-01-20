@@ -20,11 +20,13 @@
 #  locked_at                   :datetime
 #  name                        :string(255)
 #  num_logins                  :integer
+#  openai_key                  :string(255)
 #  password                    :string(120)
 #  profile_pic                 :string(4000)
 #  reset_password_sent_at      :datetime
 #  reset_password_token        :string(255)
 #  stored_raw_invitation_token :string(255)
+#  system_prompt               :string(4000)
 #  created_at                  :datetime         not null
 #  updated_at                  :datetime         not null
 #  default_scorer_id           :integer
@@ -42,6 +44,7 @@
 # Foreign Keys
 #
 #  fk_rails_...  (default_scorer_id => scorers.id)
+#  fk_rails_...  (invited_by_id => users.id)
 #
 
 default: &default
@@ -213,3 +216,8 @@ admin:
   email:          admin@example.com
   default_scorer: :valid
   administrator:  true
+  
+judge_judy:
+  password:       $2a$12$Yf6zIiRvsHWDrhBxN0trXe/b/TTTSE3nK736Qbz2bGsowrjn3n2xC
+  openai_key:     1234asdf5678
+  system_prompt:  You are a grocery store shopper.  You like cheese.  Is this a cheese?

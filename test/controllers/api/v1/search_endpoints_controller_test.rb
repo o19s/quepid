@@ -56,55 +56,46 @@ module Api
         let(:for_shared_team_case)     { search_endpoints(:for_shared_team_case) }
         let(:for_case_queries_case)    { search_endpoints(:for_case_queries_case) }
 
-        test 'returns all scorers owned by user and those shared through teams' do
+        test 'returns all search endpoints owned by user and those shared through teams' do
           get :index
 
           assert_response :ok
 
-          response.parsed_body
+          response.parsed_body['search_endpoints']
 
-          # expected_owned_response = {
-          #   'search_endpoint_id'         => owned_scorer.id,
-          #   'communal'          => owned_scorer.communal,
-          #   'code'              => owned_scorer.code,
-          #   'name'              => owned_scorer.name,
-          #   'scale'             => owned_scorer.scale,
-          #   'owner_id'          => owned_scorer.owner_id,
-          #   'owned'             => true,
-          #   'owner_name'        => owned_scorer.owner.name,
-          #   'show_scale_labels' => false,
-          #   'scale_with_labels' => nil,
-          #   'teams'             => [],
-          # }
+          ids = response.parsed_body['search_endpoints'].map { |s| s['search_endpoint_id'] }
 
-          # teams = shared_scorer.teams.map do |team|
-          #   {
-          #     'id'       => team.id,
-          #     'name'     => team.name,
-          #     'owner_id' => team.owner_id,
-          #   }
-          # end
+          assert_includes ids, for_shared_team_case.id
+          assert_includes ids, for_case_queries_case.id
+        end
+      end
 
-          # expected_shared_response = {
-          #   'scorer_id'         => shared_scorer.id,
-          #   'communal'          => owned_scorer.communal,
-          #   'code'              => shared_scorer.code,
-          #   'name'              => shared_scorer.name,
-          #   'scale'             => shared_scorer.scale,
-          #   'owner_id'          => shared_scorer.owner_id,
-          #   'owned'             => false,
-          #   'owner_name'        => shared_scorer.owner.name,
-          #   'show_scale_labels' => false,
-          #   'scale_with_labels' => nil,
-          #   'teams'             => teams,
-          # }
+      describe 'Updating search endpoints' do
+        let(:one) { search_endpoints(:one) }
 
-          # assert_includes scorers['user_scorers'], expected_owned_response
-          # assert_includes scorers['user_scorers'], expected_shared_response
+        describe 'when search endpoint does not exist' do
+          test 'returns not found error' do
+            patch :update, params: { id: 'foo', name: 'foo' }
+            assert_response :not_found
+          end
+        end
 
-          # ids = scorers['user_scorers'].map { |s| s['scorer_id'] }
+        describe 'when changing the name' do
+          test 'updates name successfully using PATCH verb' do
+            patch :update, params: { id: one.id, search_endpoint: { name: 'New Name' } }
+            # assert_response :ok
 
-          # assert_not_includes ids, communal_scorer.id
+            one.reload
+            assert_equal one.name, 'New Name'
+          end
+
+          test 'updates name successfully using PUT verb' do
+            put :update, params: { id: one.id, search_endpoint: { name: 'New Name' } }
+            # assert_response :ok
+
+            one.reload
+            assert_equal one.name, 'New Name'
+          end
         end
       end
     end

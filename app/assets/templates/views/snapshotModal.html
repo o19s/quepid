@@ -1,5 +1,5 @@
 <div class="modal-header">
-  <button type="button" class="close" aria-label="Close" ng-click="cancel()"><span aria-hidden="true">&times;</span></button>
+  <button type="button" class="close btn-core-close" ng-click="ctrl.cancel()" aria-label="Close"></button>
   <h3 class="modal-title">Take a Snapshot of all your queries?</h3>
 </div>
 <div class="modal-body">
@@ -12,8 +12,9 @@
   <br/>
 
   <label>Include Document Fields</label>
+  <span ng-show="supportLookupById">
   <p>
-  To facilitate additional analysis, you may need to record as part of the snapshot all the displayed fields for each document returned.
+  To facilitate additional analysis, you may want to record as part of the snapshot all the displayed fields for each document returned.
   This will be the <code>{{ fieldSpec }}</code> fields.
   </p>
 
@@ -22,6 +23,13 @@
       <input id="include-document-fields" type="checkbox" ng-model='snapPrompt.recordDocumentFields'> Record Document Fields?</input>
     </label>
   </div>
+  </span>
+  
+  <span ng-hide="supportLookupById">
+  <p>
+  To power comparisons when using {{ searchEngine | searchEngineName }} the fields of your documents will be stored in Quepid.
+  </p>
+  </span>
 
   <div class='text-danger' ng-show="snapPrompt.error">
     An error ({{snapPrompt.error}}) occurred, please try again.<br />

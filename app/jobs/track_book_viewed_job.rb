@@ -3,7 +3,7 @@
 class TrackBookViewedJob < ApplicationJob
   queue_as :default
 
-  def perform book, user
+  def perform user, book
     return if book.nil?
 
     metadatum = book.metadata.find_or_create_by user: user

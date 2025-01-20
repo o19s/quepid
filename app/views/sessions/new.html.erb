@@ -7,17 +7,22 @@
         <% if Rails.application.config.devise.omniauth_providers.include?(:google_oauth2) %>
         <% email_login_only = false %>
         <p>
-          <%= button_to user_google_oauth2_omniauth_authorize_path, :class=> "btn btn-social btn-google" do %>
-            <%= content_tag(:span, "", :class => "fab fa-google") %> Sign in with Google
+          <%= button_to user_google_oauth2_omniauth_authorize_path, disabled: @flag_not_on_https, data: { turbo: "false" }, :class=> "btn btn-social btn-google" do %>
+            <%= content_tag(:span, "", :class => "bi bi-google") %> Sign in with Google
+          <% end %>
+          <% if @flag_not_on_https %>
+            Please <%= link_to "reload Quepid", new_session_url(protocol: 'https') %> using HTTPS to login via Google.
           <% end %>
         </p>
         <% end %>
 
         <% if Rails.application.config.devise.omniauth_providers.include?(:keycloak_openid) %>
         <% email_login_only = false %>
+        <!-- <a href="https://www.flaticon.com/free-icons/digital" title="digital icons">Digital icons created by Freepik - Flaticon</a> -->
         <p>
-          <%= button_to user_keycloakopenid_omniauth_authorize_path, :class=> "btn btn-social btn-openid" do %>
-            <%= content_tag(:span, "", :class => "fab fa-openid") %> Sign in with OpenId
+          <%= button_to user_keycloakopenid_omniauth_authorize_path, data: { turbo: "false" }, :class=> "btn btn-social btn-openid" do %>
+            <%= image_tag "openid-logo.png", :class => "black-to-white" %> Sign in with OpenId
+            
           <% end %>
         </p>
         <% end %>
@@ -30,7 +35,7 @@
         <% unless email_login_only %>
         <h4>Sign in via email:</h4>
         <% end %>
-        <%= form_with model: @user, url: users_login_path, id: 'login', html: { method: :post } do |f| %>
+        <%= form_with model: @user, url: users_login_path, id: 'login', html: { method: :post,  data: {turbo: false} } do |f| %>
           <% if controller.class.to_s.include?("SessionsController") && @user.errors.any? %>
             <div id="error_explanation">
               <div class="alert alert-danger">
@@ -63,7 +68,7 @@
   <div class="col-md-6">
     <div class="h-100 p-5 bg-light border rounded-3">
       <div>
-        <%= form_for(@user, url: users_signup_path, id: 'signup', html: { method: :post }) do |f| %>
+        <%= form_for(@user, url: users_signup_path, id: 'signup', html: { method: :post, data: {turbo: false} }) do |f| %>
 
           <h2>Sign up to get started!</h2>
           <% if controller.class.to_s.include?("SignupsController") && @user.errors.any? %>

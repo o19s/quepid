@@ -4,7 +4,7 @@ require 'csv'
 
 module Admin
   class UsersController < Admin::AdminController
-    before_action :set_user, only: [ :show, :edit, :update, :destroy ]
+    before_action :set_user, only: [ :show, :edit, :update, :destroy, :assign_judgements_to_anonymous_user ]
 
     # GET /admin/users
     # GET /admin/users.json
@@ -101,11 +101,26 @@ module Admin
     # DELETE /admin/users/1
     # DELETE /admin/users/1.json
     def destroy
-      @user.destroy
-      respond_to do |format|
-        format.html { redirect_to admin_users_url, notice: 'User account was successfully deleted.' }
-        format.json { head :no_content }
+      if @user.destroy
+        respond_to do |format|
+          format.html { redirect_to admin_users_url, notice: 'User account was successfully deleted.' }
+          format.json { head :no_content }
+        end
+      else
+        respond_to do |format|
+          format.html { render :edit }
+          format.json { render json: @user.errors, status: :unprocessable_entity }
+        end
       end
+    end
+
+    def assign_judgements_to_anonymous_user
+      @user.judgements.each do |j|
+        j.user = nil
+        j.save!
+      end
+
+      redirect_to admin_user_path @user, notice: 'All judgements assigned to anonymous user.'
     end
 
     private
@@ -117,13 +132,13 @@ module Admin
 
     # Never trust parameters from the scary internet, only allow the permitted list through.
     def user_params
-      params.require(:user).permit(
-        :administrator,
-        :email,
-        :name,
-        :company,
-        :password,
-        :password_confirmation
+      params.expect(
+        user: [ :administrator,
+                :email,
+                :name,
+                :company,
+                :password,
+                :password_confirmation ]
       )
     end
   end

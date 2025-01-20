@@ -1,3 +1,4 @@
+
 # Quepid
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
@@ -43,7 +44,6 @@ Below is information related to developing the Quepid open source project, prima
   - [IV. Debugging](#iv-debugging)
     - [Debugging Ruby](#debugging-ruby)
     - [Debugging JS](#debugging-js)
-    - [Webpacker](#webpacker)
   - [Convenience Scripts](#convenience-scripts)
     - [Rake](#rake)
     - [Thor](#thor)
@@ -93,7 +93,7 @@ bin/setup_docker
 If you want to create some cases that have 100's and 1000's of queries, then do:
 
 ```
-bin/docker r bin/rake db:seed:large_cases
+ bin/docker r bundle exec thor sample_data:large_data
 ```
 
 This is useful for stress testing Quepid!  Especially the front end application!
@@ -116,7 +116,7 @@ bin/docker server
 It can take up to a minute for the server to respond as it compiles all the front end assets on the first call.
 
 We've created a helper script to run and manage the app through docker that wraps around the `docker-compose` command.  You will need Ruby installed.
-You can still use `docker-compose` directly, but for the basic stuff you can use the following:
+You can still use `docker compose` directly, but for the basic stuff you can use the following:
 
 * Start the app: `bin/docker server` or `bin/docker s`
 * Connect to the app container with bash: `bin/docker bash` or `bin/docker ba`
@@ -190,7 +190,9 @@ Runs tests for the Angular side. There are two modes for the karma tests:
 * Single run: `bin/docker r rails karma:run`
 * Continuous/watched run: `bin/docker r bin/rake karma:start`
 
-**Note:** The karma tests require the assets to be precompiled, which adds a significant amount of time to the test run. If you are only making changes to the test/spec files, then it is recommended you run the tests in watch mode (`bin/docker r bin/rake karma:start`). The caveat is that any time you make a change to the app files, you will have to restart the process (or use the single run mode).
+**Note:** The karma tests require the assets to be precompiled, which adds a significant amount of time to the test run.
+If you are only making changes to the test/spec files, then it is recommended you run the tests in watch mode (`bin/docker r bin/rake karma:start`).
+The caveat is that any time you make a change to the app files, you will have to restart the process (or use the single run mode).
 
 ### Rubocop
 
@@ -229,6 +231,18 @@ bin/docker r bin/rake db:seed:large_cases
 
 You will have two users, `quepid+100sOfQueries@o19s.com` and `quepid+1000sOfQueries@o19s.com` to test with.
 
+### Notebook Testing
+
+If you want to test the Jupyterlite notebooks, or work with a "real" case and book, then run
+
+```
+bin/docker r bundle exec thor sample_data:haystack_party
+```
+
+You will have lots of user data from the Haystack rating party book and case to work with.  This data is source from the public case https://app.quepid.com/case/6789/try/12?sort=default and https://app.quepid.com/books/25
+
+
+
 ## IV. Debugging
 
 ### Debugging Ruby
@@ -258,9 +272,9 @@ bin/docker r bundle exec derailed bundle:mem
 
 ### Debugging JS
 
-While running the application, you can debug the javascript using your favorite tool, the way you've always done it.
+While running the application, you can debug the JavaScript using your favorite tool, the way you've always done it.
 
-The javascript files will be concatenated into one file, using the rails asset pipeline.
+The JavaScript files will be concatenated into one file, using the rails asset pipeline.
 
 You can turn that off by toggling the following flag in `config/environments/development.rb`:
 
@@ -284,20 +298,6 @@ Also please note that the files `secure.js`, `application.js`, and `admin.js` ar
 JavaScript and CSS dependencies via the Rails Asset pipeline.   If you are debugging Bootstrap, then
 you will want individual files.  So replace `//= require sprockets` with `//= require bootstrap-sprockets`.
 
-
-### Webpacker
-To use webpacker, that will compile javascript code into packs and will load changes faster,
-you need to
-
-```bash
-bin/rails webpacker:install
-```
-
-Prior to that I had to install:
-
-```bash
-brew install mysql
-```
 
 ### Debugging Splainer and other NPM packages
 
@@ -405,7 +405,7 @@ bin/docker r bundle update foobar
 You can remove a gem via:
 
 ```
-bin/docker r bundle remove foobar --install
+bin/docker r bundle remove foobar
 ```
 
 Then check in the updated `Gemfile` and `Gemfile.lock` files.  For good measure
@@ -441,17 +441,17 @@ docker tag o19s/quepid o19s/quepid:$QUEPID_VERSION
 
 - Bring up the mysql container
 ```
-docker-compose up -d mysql
+docker compose up -d mysql
 ```
 - Run the initialization scripts. This can take a few seconds
 ```
-docker-compose run --rm app bin/rake db:setup
+docker compose run --rm app bin/rake db:setup
 ```
 - Update your docker-compose.prod.yml file to use your image by updating the image version in the app ```image: o19s/quepid:10.0.0```
 
 - Start up the app either as a Daemon (-d) or as an active container
 ```
-docker-compose up [-d]
+docker compose up [-d]
 ```
 - You should be able to access the app through [http://localhost](http://localhost)
 
@@ -503,14 +503,17 @@ You will see a updated `Gemfile.lock`, go ahead and check it and `Gemfile` into 
 
 ## How does the Frontend work?
 
-We use Angular 1 for the front end, and as part of that we use the `angular-ui-bootstrap` package
-for all our UI components.   This package is tied to Bootstrap version 3.   We import the Bootstrap 3
-CSS directly via the file `bootstrap.css`.
+We use Angular 1 for the core interactive application, and as part of that we use the `angular-ui-bootstrap` package for all our UI components.
+This package is tied to Bootstrap version 3.  
+We import the Bootstrap 3 CSS directly via the file `bootstrap3.css`.
 
-For the various Admin pages, we actually are using Bootstrap 5! That is included via the `package.json` using NPM.  See `admin.js` for the line `//= require bootstrap/dist/js/bootstrap.bundle` which is where we are including.
+For the rest of Quepid, we use Bootstrap 5! That is included via the `package.json` using NPM.  See `admin.js` for the line `//= require bootstrap/dist/js/bootstrap.bundle`.
 
-We currently use Rails Sprockets to compile everything, but do have dreams of moving the JavaScript
-over to Webpacker.
+We currently use Rails Sprockets to compile everything, but do have dreams of moving to Propshaft, and maybe js-bundling.
+
+## Fonts
+
+The *aller* font face is from FontSquirrel, and the .ttf is converted into .woff2 format.  
 
 ## I'd like to develop Jupyterlite
 
@@ -541,7 +544,7 @@ heroku restart -a quepid-staging
 
 ## Seed Data
 
-The following accounts are created through the seeds. They all follow the following format:
+The following accounts are created through the `bin/setup_docker` process. They all follow the following format:
 
 ```
 email: quepid+[type]@o19s.com
@@ -551,17 +554,11 @@ password: password
 where type is one of the following:
 
 * `admin`: An admin account
-* `1case`: A user with 1 case
-* `2case`: A user with 2 cases
-* `solr`: A user with a Solr case
-* `es`: A user with a ES case
-* `realisticActivity`: A user with a Solr case that has 10s of queries and 30 tries
+* `realisticActivity`: A user with a various cases that demonstrate Quepid, including the Haystack Rating Party demo case and book and is a member of the 'OSC' team.
 * `100sOfQueries`: A user with a Solr case that has 100s of queries (usually disabled)
 * `1000sOfQueries`: A user with a Solr case that has 1000s of queries (usually disabled)
 * `oscOwner`: A user who owns the team 'OSC'
 * `oscMember`: A user who is a member of the team 'OSC'
-* `CustomScorer`: A user who has a custom scorer
-* `CustomScorerDefault`: A user who has a custom scorer that is set as their default
 
 # Data Map
 

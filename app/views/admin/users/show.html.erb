@@ -1,11 +1,9 @@
-<%= stylesheet_link_tag 'admin_users', media: 'all' %>
-
 <div class="clearfix">
 
   <h1><%= @user.display_name %></h1>
 
   <p id="notice"><%= notice %></p>
-  <%= image_tag @user.avatar_url(:big), size:'96x96', class:'img-rounded' %>
+  <%= image_tag @user.avatar_url(:big), size:'96x96', class:'img-rounded', title: 'Avatar image' %>
 
   <div class="form-group">
     <label class="col-sm-2 control-label">Email</label>
@@ -146,8 +144,8 @@
 
 <%= link_to 'Edit', edit_admin_user_path(@user) %> |
 <%= link_to 'Back', admin_users_path %> |
-<%= button_to (@user.locked? ? 'Unlock' : 'Lock'), admin_user_lock_path(@user), method: :patch, class: 'btn btn-danger' %> |
-<%= link_to 'Destroy', admin_user_path(@user), method: :delete, data: { confirm: 'Are you sure you want to delete this user?' } %>
+<%= button_to (@user.locked? ? 'Unlock' : 'Lock'), admin_user_lock_path(@user), method: :patch, class: 'btn btn-danger btn-sm' %> |
+<%= button_to 'Destroy', admin_user_path(@user), method: :delete, class: 'btn btn-danger btn-sm' %>
 
 <!-- has to be at the end to let JQuery and Heatmap work -->
 <%= javascript_include_tag 'admin_users' %>

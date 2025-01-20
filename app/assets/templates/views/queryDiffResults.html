@@ -22,12 +22,15 @@
       </search-result>
     </div>
     <div style="vertical-align: top; display: inline-block; width: 49%">
+      <div ng-if="$first && docPair.diffDoc === null" class="alert alert-warning" role="alert">
+        This query is not present in the snapshot so it is treated as ZSR.
+      </div>
       <search-result
         ng-if="docPair.diffDoc!=null"
         class="search-result"
-        max-doc-score="query.maxDiffDocScore"
         explain-viewport="'#query-container'"
         explain-view="query.diff.type() === 'snapshot' ? 'full': 'hidden'"
+        max-doc-score="query.maxDiffDocScore"        
         doc="docPair.diffDoc"
         field-spec="query.fieldSpec"
         rank="{{$index + 1}}"

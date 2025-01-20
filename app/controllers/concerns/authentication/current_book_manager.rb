@@ -4,54 +4,39 @@ module Authentication
   module CurrentBookManager
     extend ActiveSupport::Concern
 
+    included do
+      helper_method :set_recent_books
+    end
+
     private
 
     def set_book
       @book = current_user.books_involved_with.where(id: params[:book_id]).first
-      TrackBookViewedJob.perform_later @book, current_user
+      TrackBookViewedJob.perform_later current_user, @book
     end
 
     def check_book
       render json: { message: 'Book not found!' }, status: :not_found unless @book
     end
 
-    # rubocop:disable Metrics/MethodLength
+    def set_recent_books
+      @recent_books = recent_books(4)
+    end
+
     def recent_books count
       if current_user
-        # Using joins/includes will not return the proper list in the
-        # correct order because rails refuses to include the
-        # `book_metadata`.`last_viewed_at` column in the SELECT statement
-        # which will then cause the ordering not to work properly.
-        # So instead, we have this beauty!
-        sql = "
-          SELECT  DISTINCT `books`.`id`, `book_metadata`.`last_viewed_at`
-          FROM `books`
-          LEFT OUTER JOIN `book_metadata` ON `book_metadata`.`book_id` = `books`.`id`
-          LEFT OUTER JOIN `teams_books` ON `teams_books`.`book_id` = `books`.`id`
-          LEFT OUTER JOIN `teams` ON `teams`.`id` = `teams_books`.`team_id`
-          LEFT OUTER JOIN `teams_members` ON `teams_members`.`team_id` = `teams`.`id`
-          LEFT OUTER JOIN `users` ON `users`.`id` = `teams_members`.`member_id`
-          WHERE (`teams_members`.`member_id` = #{current_user.id} OR `books`.`owner_id` = #{current_user.id})
-          ORDER BY `book_metadata`.`last_viewed_at` DESC, `books`.`id` DESC
-          LIMIT #{count}
-        "
-
-        results = ActiveRecord::Base.connection.execute(sql)
-
-        book_ids = []
-        results.each do |row|
-          book_ids << row.first.to_i
-        end
+        book_ids = current_user.book_metadata.order(last_viewed_at: :desc).limit(count).pluck(:book_id)
 
         # map to objects
-        # cases = Case.includes(:tries).where(id: [ case_ids ])
-        books = Book.where(id: [ book_ids ])
+        books = current_user.books_involved_with.where(id: book_ids)
+
+        # the WHERE IN clause doesn't guarantee returning in order, so this sorts the cases in order of last viewing.
         books = books.sort_by { |x| book_ids.index x.id }
+
       else
         books = []
       end
       books
     end
-    # rubocop:enable Metrics/MethodLength
   end
 end

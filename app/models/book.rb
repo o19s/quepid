@@ -5,7 +5,10 @@
 # Table name: books
 #
 #  id                          :bigint           not null, primary key
+#  export_job                  :string(255)
+#  import_job                  :string(255)
 #  name                        :string(255)
+#  populate_job                :string(255)
 #  show_rank                   :boolean          default(FALSE)
 #  support_implicit_judgements :boolean
 #  created_at                  :datetime         not null
@@ -17,6 +20,7 @@
 # Indexes
 #
 #  index_books_on_selection_strategy_id  (selection_strategy_id)
+#  index_books_owner_id                  (owner_id)
 #
 # Foreign Keys
 #
@@ -32,12 +36,27 @@ class Book < ApplicationRecord
   belongs_to :owner,
              class_name: 'User', optional: true
 
+  # belongs_to :ai_judge,
+  #           class_name: 'User', optional: true
+  #
+  # has_many :users, dependent: :destroy
+  # has_many :ai_judges, through: :ai_judges
+
+  # rubocop:disable Rails/HasAndBelongsToMany
+  has_and_belongs_to_many :ai_judges,
+                          class_name: 'User',
+                          join_table: 'books_ai_judges'
+  # rubocop:enable Rails/HasAndBelongsToMany
+
   belongs_to :selection_strategy
   belongs_to :scorer
   has_many :query_doc_pairs, dependent: :destroy, autosave: true
-  has_many   :judgements, -> { order('query_doc_pair_id') },
+
+  has_many   :judgements,
              through:   :query_doc_pairs,
              dependent: :destroy
+
+  # has_many :judges, -> { distinct }, through: :judgements, class_name: 'User', source: :user
 
   has_many :cases, dependent: :nullify
 
@@ -57,28 +76,17 @@ class Book < ApplicationRecord
   after_destroy :delete_attachments
 
   # Scopes
-  scope :for_user_via_teams, ->(user) {
-    joins('
-      LEFT OUTER JOIN `teams_books` ON `teams_books`.`book_id` = `books`.`id`
-      LEFT OUTER JOIN `teams` ON `teams`.`id` = `teams_books`.`team_id`
-      LEFT OUTER JOIN `teams_members` ON `teams_members`.`team_id` = `teams`.`id`
-      LEFT OUTER JOIN `users` ON `users`.`id` = `teams_members`.`member_id`
-    ').where('
-        `teams_members`.`member_id` = ?
-    ', user.id)
-      .order(name: :desc)
-  }
+  include ForUserScope
 
-  scope :for_user_directly_owned, ->(user) {
-    where('
-        `books`.`owner_id` = ?
-    ',  user.id)
-  }
-
-  scope :for_user, ->(user) {
-    ids = for_user_via_teams(user).pluck(:id) + for_user_directly_owned(user).pluck(:id)
-    where(id: ids.uniq)
-  }
+  scope :with_counts, -> {
+                        select <<~SQL.squish
+                          books.*,
+                          (
+                            SELECT COUNT(query_doc_pairs.id) FROM query_doc_pairs
+                            WHERE book_id = books.id
+                          ) AS query_doc_pairs_count
+                        SQL
+                      }
 
   private
 

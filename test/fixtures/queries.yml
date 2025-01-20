@@ -8,9 +8,7 @@
 #  information_need :string(255)
 #  notes            :text(65535)
 #  options          :text(65535)
-#  query_text       :string(500)
-#  threshold        :float(24)
-#  threshold_enbl   :boolean
+#  query_text       :string(2048)
 #  created_at       :datetime         not null
 #  updated_at       :datetime         not null
 #  case_id          :integer
@@ -53,6 +51,11 @@ fourth_query:
   case:         :queries_case
   query_text:   Fourth Query
   arranged_at:  4
+  
+blowup_query:
+  case:         :queries_case
+  query_text:   BLOWUP_QUERY
+  arranged_at:  5
 
 a_query:
   case:         :snapshot_case

@@ -1,6 +1,6 @@
 <p></p>
 
-<h2>Query Doc Pairs in book <%= @book.name %></h2>
+<h2>Query Doc Pairs in <%= book_title(@book) %></h2>
 
 
 <table class="table table-striped table-hover table-sm">
@@ -32,6 +32,6 @@
 <br>
 <%= button_to 'New Query Doc Pair', new_book_query_doc_pair_path, method: :get %>
 <br>
-<%= button_to "Back to Book #{@book.name}", @book, method: :get %>
+<%= button_to "Back to #{book_title(@book)}", @book, method: :get %>
 
 <br>

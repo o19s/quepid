@@ -7,15 +7,17 @@ class BookImporter
 
   attr_reader :logger, :options
 
-  def initialize book, data_to_process, opts = {}
+  def initialize book, current_user, data_to_process, opts = {}
     default_options = {
-      logger:        Rails.logger,
-      show_progress: false,
+      logger:             Rails.logger,
+      show_progress:      false,
+      force_create_users: false,
     }
 
     @options = default_options.merge(opts.deep_symbolize_keys)
 
     @book = book
+    @current_user = current_user
     @data_to_process = data_to_process
     @logger = @options[:logger]
   end
@@ -29,7 +31,7 @@ class BookImporter
     scorer_name = params_to_use[:scorer][:name]
     scorer = Scorer.find_by(name: scorer_name)
     if scorer.nil?
-      @book.errors.add(:scorer, "Scorer with name '#{scorer_name}' needs to be migrated over first.")
+      @book.errors.add(:scorer, "with name '#{scorer_name}' needs to be migrated over first.")
     else
       @book.scorer = scorer
     end
@@ -55,7 +57,11 @@ class BookImporter
       list_of_emails_of_users.uniq!
       list_of_emails_of_users.each do |email|
         unless User.exists?(email: email)
-          @book.errors.add(:base, "User with email '#{email}' needs to be migrated over first.")
+          if true == options[:force_create_users]
+            User.invite!({ email: email, password: '', skip_invitation: true }, @current_user)
+          else
+            @book.errors.add(:base, "User with email '#{email}' needs to be migrated over first.")
+          end
         end
       end
     end
@@ -80,17 +86,37 @@ class BookImporter
     @book.scorer = Scorer.find_by(name: scorer_name)
     @book.selection_strategy = SelectionStrategy.find_by(name: selection_strategy_name)
 
-    params_to_use[:query_doc_pairs]&.each do |query_doc_pair|
-      qdp = @book.query_doc_pairs.build(query_doc_pair.except(:judgements))
-      next unless query_doc_pair[:judgements]
-
-      query_doc_pair[:judgements].each do |judgement|
-        judgement[:user] = User.find_by(email: judgement[:user_email])
-        qdp.judgements.build(judgement.except(:user_email))
-      end
-    end
+    # Force the imported book to be owned by the user doing the importing.  Otherwise you can loose the book!
+    @book.owner = User.find_by(email: @current_user.email)
 
     @book.save
+
+    if params_to_use[:query_doc_pairs]
+      total = params_to_use[:query_doc_pairs].size
+      counter = total
+      last_percent = 0
+      params_to_use[:query_doc_pairs].each do |query_doc_pair|
+        qdp = @book.query_doc_pairs.create(query_doc_pair.except(:judgements))
+        counter -= 1
+        # emit a message every percent that we cross, from 0 to 100...
+        percent = (((total - counter).to_f / total) * 100).truncate
+        if percent > last_percent
+          last_percent = percent
+          Turbo::StreamsChannel.broadcast_render_to(
+            :notifications,
+            target:  'notifications',
+            partial: 'books/blah',
+            locals:  { book: @book, counter: counter, percent: percent, qdp: qdp }
+          )
+        end
+        next unless query_doc_pair[:judgements]
+
+        query_doc_pair[:judgements].each do |judgement|
+          judgement[:user] = User.find_by(email: judgement[:user_email])
+          qdp.judgements.create(judgement.except(:user_email))
+        end
+      end
+    end
   end
   # rubocop:enable Metrics/MethodLength
   # rubocop:enable Metrics/AbcSize

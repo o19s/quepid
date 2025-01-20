@@ -3,19 +3,43 @@
     <h2>
       Admin Panel
     </h2>
-  <ul>
-  <li><%= link_to 'Users', admin_users_path %>
-  <li><%= link_to 'Quepid Communal Scorers', admin_communal_scorers_path %></li>
-
-  <li><%= link_to 'Job Manager', sidekiq_web_path %>
-    <em>
-  <% if Rails.application.config.google_analytics_enabled %>
-    Google Analytics enabled, so Redis is setup.
-  <% else %>
-    Google Analytics disabled, so Redis not required.
-  <% end %></em>
-
-  </li>
-  </ul>
+    
+    <div class="card" style="">
+      <div class="card-body">
+        <h5 class="card-title">Managing Quepid</h5>
+        <p class="card-text">Configure Quepid to work for your users.</p>
+        
+        <ul class="list-group list-group-flush">
+          <li class="list-group-item"><%= link_to 'Users', admin_users_path %>
+          <li class="list-group-item"><%= link_to 'Quepid Communal Scorers', admin_communal_scorers_path %></li>
+          <li class="list-group-item"><%= link_to 'Announcements', admin_announcements_path %>
+        </ul>
+      </div>
+    </div>
+    <p/>
+    <div class="card" style="">
+      <div class="card-body">
+        <h5 class="card-title">Analytics</h5>
+        <p class="card-text">Dig into the data being collected by users.</p>
+        
+        <ul class="list-group list-group-flush">
+          <li class="list-group-item"><%= link_to 'SQL Analytics', blazer_path %>
+        </ul>
+      </div>
+    </div>
+    <p/>
+    <div class="card" style="">
+      <div class="card-body">
+        <h5 class="card-title">Background Jobs</h5>
+        <p class="card-text">These tools are to help you manage the various background jobs in Quepid.</p>
+        
+        <ul class="list-group list-group-flush">
+          <li class="list-group-item"><%= link_to 'Job Manager', mission_control_jobs_path %></li>
+          
+          <li class="list-group-item"><%= link_to 'Run Case', admin_run_case_index_path %></li> 
+          <li class="list-group-item"><%= link_to 'Websocket Tester', admin_websocket_tester_index_path %></li>    
+        </ul>
+      </div>
+    </div>
   </div>
 </div>

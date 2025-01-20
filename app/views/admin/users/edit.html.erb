@@ -8,6 +8,16 @@
 
 <div class="clearfix">
 <%= render partial: 'form', locals: {passed_in_action: 'update'} %>
+
+<hr/>
+
+<h3>Assign Judgements to Anonymous User</h3>
+<p class="form-text">
+  If you need to delete a user then you need to assign their judgements over to the anonymous user.  This user has <%=@user.judgements.count %> judgements total. 
+</p>
+<%= button_to 'Assign Judgements to Anonymous User', assign_judgements_to_anonymous_user_admin_user_path(id: @user.id), method: :post, class: 'btn btn-sm btn-danger' %>
+
+<p/>
 </div>
 
 <%= link_to 'Show', admin_user_path(@user) %> |

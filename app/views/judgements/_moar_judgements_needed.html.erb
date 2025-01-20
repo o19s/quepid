@@ -1,43 +1,30 @@
-<% if SelectionStrategy.random_query_doc_based_on_strategy(book, current_user) %>  
+<% if @moar_judgements_needed %>  
   <div class="alert alert-warning" role="alert">
     <%= link_to 'More Judgements are Needed!', book_judge_path(book), class: 'btn btn-primary', role: 'button' %>
   </div>
 <% elsif book.query_doc_pairs.empty? %>
   <div class="alert alert-warning" role="alert">
-    You don't have any query/doc pairs. 
+    You don't have any query/doc pairs created yet. 
     <% if book.cases.empty? %>
       You can populate this Book with query/doc pairs for judging by <%= link_to 'picking a Case', cases_path, class: 'alert-link' %> and using the <b><i class="bi bi-book-half"></i> Judgements</b> tool to populate this book with query/doc pairs from your search engine.
     <% else %>
       Return to the linked Case
       <% book.cases.each do |kase| %>
-        <%= link_to kase.case_name, case_core_path(kase, kase.last_try_number), class: 'alert-link' %> 
+        <%= link_to_core_case case_title(kase), kase, kase.last_try_number, class: 'alert-link' %>
       <% end %>
       and using the <b><i class="bi bi-book-half"></i> Judgements</b> to populate this Book with query/doc pairs for judging.
     <% end %>
 
   </div>
 <% else %>
-
-    <% if book.selection_strategy.single_rater? %>
-        <div class="alert alert-success" role="alert">
-        Congratulations! All the query/doc pairs have been judged.
-        </div>
-    <% else %>
-      <% if SelectionStrategy.random_query_doc_based_on_strategy(book, current_user).nil? %>
-        <div class="alert alert-success" role="alert">
-        Congratulations, all query/doc pairs you can judge have been judged.
-        </div>
-      <% end %>
-      <% if book.judgements.count == book.query_doc_pairs.size * 3 %>
-        <div class="alert alert-success" role="alert">
-        Congratulations, all query/doc pairs have been judged by three seperate judges.
-        </div>
-      <% else %>
-        <div class="alert alert-info" role="alert">
-        Best practice is to have three independent judgements per query/doc pair, and we don't yet have that.
-        Currently <%= book.judgements.count %> out of expected <%= book.query_doc_pairs.size * 3 %>.
-        </div>
-      <% end %>
-    <% end %>
+  <% if book.selection_strategy.single_rater? %>
+    <div class="alert alert-success" role="alert">
+    Congratulations! All the query/doc pairs have been judged.
+    </div>
+  <% else %>
+    <div class="alert alert-success" role="alert">
+    Congratulations, all query/doc pairs have been judged by three separate judges.
+    </div>      
+  <% end %>
 <% end %>
 <p/>

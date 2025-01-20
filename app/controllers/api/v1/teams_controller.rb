@@ -7,12 +7,6 @@ module Api
       before_action :check_team,        only: [ :show, :update, :destroy ]
       before_action :check_team_owner,  only: [ :update, :destroy ]
 
-      # We have a custom :for_sharing that checks the parameter "for_sharing".
-      # If for_sharing is true, then we just need the minimal data to power the
-      # sharing dialogue boxes.   If it isn't for sharing something with a team, then we want the much
-      # deeper data set
-      before_action :for_sharing, only: [ :index, :show ]
-
       def index
         # @teams = current_user.teams_im_in
         # @teams = @teams.preload(:scorers, :members, :cases, :owner).all
@@ -24,7 +18,6 @@ module Api
       end
 
       def show
-        @shallow = true
         @team = current_user.teams.where(id: params[:team_id])
           .includes([ :scorers, :members, :books, :search_endpoints ])
           .first
@@ -64,12 +57,7 @@ module Api
       private
 
       def team_params
-        params.require(:team).permit(:name)
-      end
-
-      def for_sharing
-        bool = ActiveRecord::Type::Boolean.new
-        @for_sharing = bool.deserialize params[:for_sharing] || false
+        params.expect(team: [ :name ])
       end
     end
   end

@@ -1,3 +1,5 @@
+<%= turbo_stream_from(:notifications) %>
+
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
   <h1 class="h2">Books</h1>
   <div class="btn-toolbar mb-2 mb-md-0">
@@ -5,10 +7,6 @@
       <%= link_to 'New Book', new_book_path, class: "btn btn-sm btn-outline-secondary" %>
       <%= link_to 'Import Book', new_books_import_path, class: "btn btn-sm btn-outline-secondary" %>
     </div>
-    <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle">
-      <span data-feather="calendar" class="align-text-bottom"></span>
-      This week
-    </button>
   </div>
 </div>
 
@@ -25,6 +23,7 @@
 
   <thead>
     <tr>
+      <th>ID</th>
       <th>Name</th>
       <th>Teams</th>
       <th>Scorer</th>
@@ -34,17 +33,6 @@
   </thead>
 
   <tbody>
-    <% @books.each do |book| %>
-      <tr>
-        <td><%= link_to book.name, book_path(book) %></td>
-        <td><%= book.teams.pluck(:name).join(',') %></td>
-        <td><%= book.scorer.name %> </td>
-        <td><%= book.selection_strategy.name %> </td>
-        <td>
-          <span class="badge bg-primary rounded-pill"><%= book.query_doc_pairs.count %> query/doc pairs</span>
-          <span class="badge bg-primary rounded-pill"><%= book.rated_query_doc_pairs.count %> rated query/doc pairs</span>
-        </td>
-      </tr>
-    <% end %>
+    <%= render partial: "book", collection: @books, as: :book %>    
   </tbody>
 </table>

@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+# rubocop:disable Metrics/ClassLength
+
 # == Schema Information
 #
 # Table name: users
@@ -22,11 +24,13 @@
 #  locked_at                   :datetime
 #  name                        :string(255)
 #  num_logins                  :integer
+#  openai_key                  :string(255)
 #  password                    :string(120)
 #  profile_pic                 :string(4000)
 #  reset_password_sent_at      :datetime
 #  reset_password_token        :string(255)
 #  stored_raw_invitation_token :string(255)
+#  system_prompt               :string(4000)
 #  created_at                  :datetime         not null
 #  updated_at                  :datetime         not null
 #  default_scorer_id           :integer
@@ -44,18 +48,15 @@
 # Foreign Keys
 #
 #  fk_rails_...  (default_scorer_id => scorers.id)
+#  fk_rails_...  (invited_by_id => users.id)
 #
 
-# rubocop:disable Metrics/ClassLength
 class User < ApplicationRecord
   # Associations
-
   has_many :api_keys, dependent: :destroy
 
   belongs_to :default_scorer, class_name: 'Scorer', optional: true # for communal scorers there isn't a owner
 
-  # has_many :cases,
-  #         dependent:   :nullify # sometimes a case belongs to a team, so don't just delete it.
   has_many :cases,
            class_name:  'Case',
            foreign_key: :owner_id,
@@ -101,11 +102,11 @@ class User < ApplicationRecord
            through: :teams,
            source:  :scorers
 
-  has_many :permissions,
-           dependent: :destroy
-
   has_many :scores,
            dependent: :destroy
+
+  has_many :judgements,
+           dependent: :restrict_with_error
 
   has_many :case_metadata,
            class_name: 'CaseMetadatum',
@@ -114,24 +115,46 @@ class User < ApplicationRecord
            class_name: 'BookMetadatum',
            dependent:  :destroy
 
+  has_many :announcements, foreign_key: 'author_id', dependent: :destroy, inverse_of: :author
+
   # Validations
+  validates :name,
+            length: { maximum: 255 }
 
   # https://davidcel.is/posts/stop-validating-email-addresses-with-regex/
   validates :email,
             presence:   true,
             uniqueness: true,
-            format:     { with: URI::MailTo::EMAIL_REGEXP }
+            format:     { with: URI::MailTo::EMAIL_REGEXP },
+            length:     { maximum: 80 },
+            unless:     :ai_judge?
 
   validates :password,
-            presence: true
+            presence: true,
+            length:   { maximum: 80 }
 
   validates :password, confirmation: { message: 'should match confirmation' }
+
+  validates :reset_password_token,
+            length: { maximum: 255 }
+  validates :invitation_token,
+            length: { maximum: 255 }
+  validates :stored_raw_invitation_token,
+            length: { maximum: 255 }
+
+  validates :company,
+            length: { maximum: 255 }
+  validates :profile_pic,
+            length: { maximum: 4000 }
 
   validates_with ::DefaultScorerExistsValidator
 
   validates :agreed,
             acceptance: { message: 'checkbox must be clicked to signify you agree to the terms and conditions.' },
             if:         :terms_and_conditions?
+
+  validates :openai_key, length: { maximum: 255 }, allow_nil: true
+  validates :system_prompt, length: { maximum: 4000 }, allow_nil: true
 
   def terms_and_conditions?
     Rails.application.config.terms_and_conditions_url.present?
@@ -143,6 +166,7 @@ class User < ApplicationRecord
   before_create :set_defaults
   before_destroy :check_team_ownership_before_removing!, prepend: true
   before_destroy :check_scorer_ownership_before_removing!, prepend: true
+  before_destroy :check_judgements_before_removing!, prepend: true
 
   def check_team_ownership_before_removing!
     owned_teams.each do |team|
@@ -150,6 +174,13 @@ class User < ApplicationRecord
         errors.add(:base, "Please reassign ownership of the team #{team.name}." )
         throw(:abort)
       end
+    end
+  end
+
+  def check_judgements_before_removing!
+    if judgements.count.positive?
+      errors.add(:base, "Please reassign ownership of the #{judgements.count} judgements." )
+      throw(:abort)
     end
   end
 
@@ -190,11 +221,15 @@ class User < ApplicationRecord
   # END devise hacks
 
   # Concerns
-  include Permissible
   include Profile
 
   # Scopes
   # default_scope -> { includes(:permissions) }
+  scope :only_ai_judges, -> { where('`users`.`openai_key` IS NOT NULL') }
+
+  def ai_judge?
+    !openai_key.nil?
+  end
 
   def num_queries
     queries.count
@@ -216,7 +251,7 @@ class User < ApplicationRecord
     Book.for_user(self)
   end
 
-  # This method rpeturns all the search_endpoints that the user has access as owner or via a team.
+  # This method returns all the search_endpoints that the user has access as owner or via a team.
   def search_endpoints_involved_with
     SearchEndpoint.for_user(self)
   end
@@ -245,6 +280,13 @@ class User < ApplicationRecord
 
   def pending_invite?
     created_by_invite? && !invitation_accepted? && password.blank?
+  end
+
+  def unseen_app_notifications
+    Announcement
+      .left_outer_joins(:announcement_viewed)
+      .where('user_id != ? OR user_id IS NULL', id)
+      .order(:created_at)
   end
 
   private

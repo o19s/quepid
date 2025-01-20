@@ -14,14 +14,6 @@ angular.module('QuepidApp')
     ) {
       var ctrl = this;
 
-      ctrl.canUpdateTeam = false;
-
-      $rootScope.$watch('currentUser', function() {
-        if ( $rootScope.currentUser ) {
-          ctrl.canUpdateTeam = $rootScope.currentUser.permissions.team.update;
-        }
-      });
-
       this.thisMember = thisMember;
       this.thisTeam = thisTeam;
 

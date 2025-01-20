@@ -12,7 +12,7 @@ q4: searchEndpoints
 
   <div class="pull-right">
     <a ng-href='/teams'>
-      <i class="fa fa-hand-o-left" aria-hidden="true"></i>
+      <i class="bi bi-arrow-left" aria-hidden="true"></i>
       Back to list
     </a>
   </div>
@@ -24,6 +24,7 @@ q4: searchEndpoints
         class="img-responsive img-rounded"
         alt="{{ currentTeam.owner.display_name }}"
         width="96" height="96"
+        title="Avatar image"
       />
 
       <h4>
@@ -97,7 +98,16 @@ q4: searchEndpoints
       <h3>Members</h3>
 
       <div class="row">
-        <div class="col-md-offset-8 col-md-4 filter-form">
+        <div class='col-md-4'>
+          <span class="bi bi-robot"></span>
+          <a type="button" ng-href="/teams/{{currentTeam.id}}/ai_judges/new" target="_self" >
+            Create AI Judge
+          </a>
+        </div>
+        <div class='col-md-4'>
+
+        </div>
+        <div class="col-md-4 filter-form">         
           <input type="search" ng-model="q" placeholder="Filter members" aria-label="filter members" class="form-control" id='team-members-filter' />
         </div>
       </div>
@@ -202,7 +212,8 @@ q4: searchEndpoints
 
       <div id='books-listing' ng-if="currentTeam.books.length !== 0">
         <div class="row listing-header">
-          <span class="col-md-4">Name</span>
+          <span class="col-md-1">ID</span>
+          <span class="col-md-3">Name</span>
           <span class="col-md-4">Selection Strategy</span>
           <span class="col-md-4">Number of Query/Doc Pairs</span>
         </div>

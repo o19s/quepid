@@ -5,6 +5,12 @@ module Api
     class UsersController < Api::ApiController
       before_action :set_user, except: [ :index ]
 
+      api :GET, '/api/users',
+          'List the users.'
+      error :code => 401, :desc => 'Unauthorized'
+      param :prefix, String,
+            :desc     => 'Filters down the list to users whose email addresses or name start with the prefix.',
+            :required => false
       def index
         @users = []
         if params[:prefix]
@@ -15,6 +21,10 @@ module Api
         respond_with @users
       end
 
+      api :GET, '/api/users/:id',
+          'Show the user with the given ID.'
+      param :id, :number,
+            desc: 'The ID of the requested user.', required: true
       def show
         respond_with @user
       end
@@ -39,10 +49,10 @@ module Api
       end
 
       def user_params
-        params.require(:user).permit(
-          :completed_case_wizard,
-          :company,
-          :default_scorer_id
+        params.expect(
+          user: [ :completed_case_wizard,
+                  :company,
+                  :default_scorer_id ]
         )
       end
 

@@ -61,7 +61,7 @@ module Api
             test 'posts event' do
               expects_any_ga_event_call
 
-              options = "{ foo: 'bar' }"
+              options = JSON.parse('{ "foo": "bar" }')
 
               perform_enqueued_jobs do
                 put :update, params: { case_id: acase.id, query_id: query.id, query: { options: options } }

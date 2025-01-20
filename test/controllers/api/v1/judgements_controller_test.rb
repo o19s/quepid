@@ -29,6 +29,7 @@ module Api
               judgement: {
                 rating:            1,
                 query_doc_pair_id: qdp.id,
+                explanation:       'I think simple things are best and this is simple',
               },
             }
             assert_response :ok

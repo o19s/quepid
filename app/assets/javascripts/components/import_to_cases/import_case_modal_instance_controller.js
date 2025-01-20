@@ -13,7 +13,6 @@ angular.module('QuepidApp')
       var ctrl = this;
 
       ctrl.import = { loading: false };
-
   
       ctrl.ok = function () {
         var file = document.getElementById('caseJson').files[0];
@@ -40,7 +39,6 @@ angular.module('QuepidApp')
               let errorMessage = 'Unable to import Case: ';
               errorMessage += response.status;
               errorMessage += ' - ' + response.statusText;
-              //errorMessage +=  ' - ' + JSON.stringify(response.data);             
               // Convert JSON to nice error messages
               const errorMessages = Object.entries(response.data).map(([field, errors]) => {
                 const formattedField = field.charAt(0).toUpperCase() + field.slice(1);

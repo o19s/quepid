@@ -1,0 +1,25 @@
+development:
+  nightly_run_cases_command:
+    class: EnqueueRunNightlyCasesJob
+    #schedule: every hour
+    schedule: every day at 1 am
+
+  # periodic_cleanup:
+  #   class: QueryRunnerJob
+  #   queue: bulk_processing
+  #   args: [ 'gid://quepid/Case/10', 'gid://quepid/Try/87'  ]
+  #   schedule: every minute
+
+
+production:
+  nightly_run_cases_command:
+    class: EnqueueRunNightlyCasesJob
+    #schedule: every hour
+    schedule: every day at 1 am
+ 
+
+  # periodic_cleanup:
+  #   class: QueryRunnerJob
+  #   queue: bulk_processing
+  #   args: [ 'gid://quepid/Case/10', 'gid://quepid/Try/87'  ]
+  #   schedule: every minute

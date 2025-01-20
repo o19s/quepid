@@ -1,12 +1,10 @@
 # frozen_string_literal: true
 
-require 'application_responder'
-require 'analytics'
+require_relative '../../lib/analytics'
 
 # rubocop:disable Rails/ApplicationController
 module Api
   class ApiController < ActionController::Base
-    include Pundit::Authorization
     include Authentication::CurrentUserManager
     include Authentication::CurrentCaseManager
     include Authentication::CurrentQueryManager
@@ -42,6 +40,10 @@ module Api
     end
 
     protected
+
+    def deserialize_bool_param param
+      ActiveRecord::Type::Boolean.new.deserialize(param) || false
+    end
 
     def set_default_response_format
       request.format = :json unless params[:format]

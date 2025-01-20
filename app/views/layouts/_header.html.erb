@@ -1,8 +1,8 @@
 <nav class="navbar navbar-expand-lg navbar-secondary">
   <div class="container-fluid">
-    <%= link_to root_path, class: "navbar-brand" do %>
+    <%= link_to root_path, class: "navbar-brand", data: { turbo: false } do %>
       Quepid
-      <span class="hover"><%= image_tag 'tagline-sm.png' %></span>
+      <span class="hover"><%= image_tag 'tagline-sm.png', title: "Give your queries some love" %></span>
     <% end %>
 
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
@@ -12,27 +12,47 @@
 
           <a class="nav-link dropdown-toggle" href="#" id="dropdownCases" role="button" data-bs-toggle="dropdown">
             <span class="nav-label">Relevancy Cases</span>
-            <!--i class="fa fa-chevron-down"></i-->
           </a>
           <ul class="dropdown-menu p-2" style="left: auto; width:250px;" aria-labelledby="navbarDropdown">
             <li class="text-muted">
               RECENT CASES
             </li>
             <li><hr class="dropdown-divider"></li>
-            <% @recent_cases.each do |kase| %>
-              <li><%= link_to kase.case_name, case_core_path(kase, kase.last_try_number), class: 'cases-nav-listing' %></li>
-              <li><hr class="dropdown-divider"></li>
-            <% end %>
+            <%= render partial: 'layouts/dropdown_case', collection: set_recent_cases, as: :kase, cached: true %>
           
             <li class="actions">
               <div class="d-grid gap-2">
-              <%= link_to "View all cases", cases_path, class: "btn btn-outline-secondary" %>
-              <%= link_to 'Create a case', case_new_path, class: 'btn btn-success' %>
+              <%= link_to "View all cases", cases_path, class: "btn btn-outline-secondary", data: { turbo: false } %>
+              <%= link_to 'Create a case', case_new_path, class: 'btn btn-success', data: { turbo: false } %>
               </div>
             </li>
             
           </ul>
         </li>
+        <li class="nav-item dropdown">
+
+          <a class="nav-link dropdown-toggle" href="#" id="dropdownBooks" role="button" data-bs-toggle="dropdown">
+            <span class="nav-label">Books</span>
+          </a>
+          <ul class="dropdown-menu p-2" style="left: auto; width:250px;" aria-labelledby="navbarDropdownBooks">
+            <li class="text-muted">
+              RECENT BOOKS
+            </li>
+            <li><hr class="dropdown-divider"></li>
+            <% set_recent_books.each do |book| %>
+              <li><%= link_to book.name, book_path(book) %></li>
+              <li><hr class="dropdown-divider"></li>
+            <% end %>
+          
+            <li class="actions">
+              <div class="d-grid gap-2">
+              <%= link_to "View all books", books_path, class: "btn btn-outline-secondary" %>
+              <%= link_to 'Create a book', new_book_path, class: 'btn btn-success' %>
+              </div>
+            </li>
+            
+          </ul>
+        </li>        
         <li class="nav-item">
           <%= link_to "Teams", teams_core_path, class: "nav-link" %>
         </li>
@@ -66,21 +86,22 @@
 
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
-            <%= image_tag current_user.avatar_url, size: '24x24', class: 'img-rounded' %>
+            <%= image_tag current_user.avatar_url, size: '24x24', class: 'img-rounded', title: 'Avatar image' %>
             <span data-display-name><%= current_user.display_name %> </span>
-            <!--i class="fa fa-chevron-down"></i-->
           </a>
           <ul class="dropdown-menu navbar-right" style="right: 0; left: auto;" aria-labelledby="navbarDropdown">
             <li><%= link_to 'My profile', profile_path, class: 'dropdown-item', target: '_self' %></li>
             <li><%= link_to 'Log out', logout_path, class: 'dropdown-item', target: '_self' %></li>
             <li><hr class="dropdown-divider"></li>
             <li><%= link_to 'Judgements', books_path, class: 'dropdown-item', target: '_self' %></li>
+            <li><%#= link_to 'API Docs', apipie_apipie_path, class: 'dropdown-item', target: '_self' %></li>
             <% if current_user.administrator? %>
             <li><hr class="dropdown-divider"></li>
             <li><%= link_to 'Admin Home', admin_path, class: 'dropdown-item', target: '_self' %></li>
             <li><%= link_to 'Users', admin_users_path, class: 'dropdown-item', target: '_self' %></li>
             <li><%= link_to 'Quepid Scorers', admin_communal_scorers_path, class: 'dropdown-item', target: '_self' %></li>
-            <li><%= link_to 'Job Manager', sidekiq_web_path, class: 'dropdown-item', target: '_self' %></li>
+            <li><%= link_to 'Announcements', admin_announcements_path, class: 'dropdown-item', target: '_self' %></li>
+            <li><%= link_to 'Job Manager', mission_control_jobs_path, class: 'dropdown-item', target: '_self' %></li>
             <% end %>
 
           </ul>
@@ -93,5 +114,12 @@
 </nav>
 
 <div id='flash'>
-  <%= flash_messages_bs5 -%>
+  <% if @announcement.present? %>
+    <div class="alert alert-light alert-dismissible text-center fade show" role="alert">
+      <%= @announcement.text.html_safe %>      
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+  <% end %>
+  
+  <%= flash_messages -%>
 </div>

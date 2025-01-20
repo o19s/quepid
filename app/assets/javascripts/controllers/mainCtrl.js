@@ -147,7 +147,7 @@ angular.module('QuepidApp')
         bootstrapCase()
           .then(function() {
             loadQueries();
-            loadSnapshots();
+            loadSnapshots();  // this is here just to set the caseNo in the querySnapshotSvc.
             updateCaseMetadata();
             paneSvc.refreshElements();
           }).catch(function(error) {            

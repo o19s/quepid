@@ -15,20 +15,8 @@ class RatingsControllerTest < ActionDispatch::IntegrationTest
     assert_equal 302, status
     follow_redirect!
 
-    login_user
+    login_user_for_integration_test user
     get case_ratings_url(@case)
     assert_response :success
-  end
-
-  def login_user
-    # We don't actually want to load up scores...
-    Bullet.enable = false
-    # post the login and follow through to the home page
-    post '/users/login', params: { user: { email: user.email, password: 'password' } }
-    follow_redirect!
-    assert_equal 200, status
-    assert_equal '/', path
-
-    Bullet.enable = true
   end
 end

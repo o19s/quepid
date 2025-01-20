@@ -1,4 +1,4 @@
-FROM ruby:3.2.2-bullseye
+FROM ruby:3.4.1-bullseye
 
 LABEL maintainer="quepid_admin@opensourceconnections.com"
 
@@ -12,7 +12,7 @@ RUN apt-get update -qq \
 COPY Gemfile* /srv/app/
 WORKDIR /srv/app
 RUN gem install foreman
-RUN gem install bundler:2.4.9
+RUN gem install bundler:2.6.2
 RUN bundle install
 
 # Dependency for generating the ERD: 'graphviz'

@@ -1,7 +1,0 @@
-development:
-  :concurrency: <%= ENV.fetch("SIDEKIQ_CONCURRENCY") { 5 } %>
-  :logfile:     ./log/sidekiq.log
-production:
-  :concurrency: <%= ENV.fetch("SIDEKIQ_CONCURRENCY") { 20 } %>
-:queues:
-  - default

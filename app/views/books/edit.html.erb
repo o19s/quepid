@@ -4,6 +4,7 @@
     <div class="btn-group me-2">
       <%= link_to 'New Book', new_book_path, class: "btn btn-sm btn-outline-secondary" %>
       <button type="button" class="btn btn-sm btn-outline-secondary">Export</button>
+      <%= button_to 'Delete Book', @book, method: :delete, class: "btn btn-sm btn-danger" %>
     </div>
     <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle">
       <span data-feather="calendar" class="align-text-bottom"></span>
@@ -31,7 +32,7 @@
           <h5 class="mb-1">
             <%= check_box('book_ids', book.id, class: 'form-check-input me-1', disabled: book.rated_query_doc_pairs.empty?) %>
             <label for="book_ids_<%= book.id %>" class="form-check-label stretched">
-            <%= book.name %>
+            <%= book_title(book) %>
             </label>
           </h5>
           <label for="book_ids_<%= book.id %>" class="form-check-label stretched">
@@ -98,15 +99,15 @@
 </p>
 <% end %>
 
-<h3>Delete Query Doc Pairs Below a Threshold</h3>
+<h3>Delete Query Doc Pairs Below a Rank</h3>
 
 <p class="form-text">
-  Did you populate your book too deeply?  Discover you'll never finish rating them?   Here you can delete query doc pairs below a certain position (rank).
+  Did you populate your book too deeply?  Discover you'll never finish rating them?   Here you can delete query doc pairs below a certain rank (position).
 </p>
 <%= form_for(@book, url: delete_query_doc_pairs_below_position_book_path(@book), method: :delete, data: { confirm: "Are you sure?" }) do |form| %>
 <div class="mb-3">
   <%= form.label :position, class: 'form-label' %>
-  <%= select_tag "position", options_for_select(@book.query_doc_pairs.distinct.pluck(:position).sort), required: true, prompt: "Please select threshold to delete below", class: 'form-control' %>
+  <%= select_tag "position", options_for_select(@book.query_doc_pairs.distinct.pluck(:position).sort), required: true, prompt: "Please select rank to delete below", class: 'form-control' %>
 </div>
 <p>
 <div class="actions">

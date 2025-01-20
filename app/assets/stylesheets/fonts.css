@@ -1,43 +1,27 @@
 @font-face {
     font-family: 'allerregular';
-    src: font-url('aller_rg-webfont.eot');
-    src: font-url('aller_rg-webfont.eot?#iefix') format('embedded-opentype'),
-         font-url('aller_rg-webfont.woff') format('woff'),
-         font-url('aller_rg-webfont.ttf') format('truetype'),
-         font-url('aller_rg-webfont.svg#allerregular') format('svg');
+    src: url('aller_rg-webfont.woff2') format('woff2');
     font-weight: normal;
     font-style: normal;
 }
 
 @font-face {
     font-family: 'alleritalic';
-    src: font-url('aller_it-webfont.eot');
-    src: font-url('aller_it-webfont.eot?#iefix') format('embedded-opentype'),
-         font-url('aller_it-webfont.woff') format('woff'),
-         font-url('aller_it-webfont.ttf') format('truetype'),
-         font-url('aller_it-webfont.svg#alleritalic') format('svg');
+    src: url('aller_it-webfont.woff2') format('woff2');
     font-weight: normal;
     font-style: normal;
 }
 
 @font-face {
     font-family: 'allerbold';
-    src: font-url('aller_bd-webfont.eot');
-    src: font-url('aller_bd-webfont.eot?#iefix') format('embedded-opentype'),
-         font-url('aller_bd-webfont.woff') format('woff'),
-         font-url('aller_bd-webfont.ttf') format('truetype'),
-         font-url('aller_bd-webfont.svg#allerbold') format('svg');
+    src: url('aller_bd-webfont.woff2') format('woff2');
     font-weight: normal;
     font-style: normal;
 }
 
 @font-face {
     font-family: 'allerbold_italic';
-    src: font-url('aller_bdit-webfont.eot');
-    src: font-url('aller_bdit-webfont.eot?#iefix') format('embedded-opentype'),
-         font-url('aller_bdit-webfont.woff') format('woff'),
-         font-url('aller_bdit-webfont.ttf') format('truetype'),
-         font-url('aller_bdit-webfont.svg#allerbold_italic') format('svg');
+    src: url('aller_bdit-webfont.woff2') format('woff2');
     font-weight: normal;
     font-style: normal;
 }

@@ -54,6 +54,15 @@
             </span>
             <span><a href="https://translate.google.com/?sl=auto&tl=en&text={{fieldValue}}" target="_blank"><img ng-src="images/google-translate.png" width="16" height="16"/></a></span>
           </li>
+          
+          <!-- Unabridgeds -->
+          <li ng-repeat="(fieldName, fieldValue) in doc.unabridgeds">
+            <span class="subLabel">{{fieldName}}:</span>
+            <span
+              ng-bind-html="fieldValue"
+            >
+            </span>
+          </li>          
 
           <!-- Other fields -->
           <li ng-repeat="(fieldName, fieldValue) in snippets">

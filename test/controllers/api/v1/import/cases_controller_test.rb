@@ -24,26 +24,22 @@ module Api
               try:       acase.tries.last.as_json,
               queries:   [
                 {
-                  arranged_at:       1,
-                  arranged_next:     nil,
-                  query_text:        'First Query',
-                  threshold:         nil,
-                  threshold_enabled: nil,
-                  options:           nil,
-                  notes:             nil,
-                  information_need:  'I am the first query',
-                  ratings:           [],
+                  arranged_at:      1,
+                  arranged_next:    nil,
+                  query_text:       'First Query',
+                  options:          nil,
+                  notes:            nil,
+                  information_need: 'I am the first query',
+                  ratings:          [],
                 },
                 {
-                  arranged_at:       2,
-                  arranged_next:     nil,
-                  query_text:        'Second Query',
-                  threshold:         nil,
-                  threshold_enabled: nil,
-                  options:           nil,
-                  notes:             nil,
-                  information_need:  'I am the second query',
-                  ratings:           [
+                  arranged_at:      2,
+                  arranged_next:    nil,
+                  query_text:       'Second Query',
+                  options:          nil,
+                  notes:            nil,
+                  information_need: 'I am the second query',
+                  ratings:          [
                     {
                       doc_id:     'docb',
                       rating:     1.0,
@@ -108,7 +104,7 @@ module Api
             kase.owner = user
           end
 
-          test 'creates a new book' do
+          test 'creates a new case' do
             data = {
               case_name:   'test case',
               owner_email: user.email,
@@ -126,8 +122,6 @@ module Api
                   arranged_at:      1,
                   arranged_next:    nil,
                   query_text:       'First Query',
-                  threshold:        nil,
-                  threshold_enbl:   nil,
                   options:          nil,
                   notes:            nil,
                   information_need: 'I am the first query',
@@ -137,8 +131,6 @@ module Api
                   arranged_at:      2,
                   arranged_next:    nil,
                   query_text:       'Second Query',
-                  threshold:        nil,
-                  threshold_enbl:   nil,
                   options:          nil,
                   notes:            nil,
                   information_need: 'I am the second query',

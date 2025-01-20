@@ -1,20 +1,19 @@
 <div class="col-12 col-md-6 mb-4 mb-lg-0 col-lg-3">
-  <div class="card">
+  <div class="card h-100">
     <h5 class="card-header">
-      <%= link_to book_title(book), book_path(book) %>
+      <%= link_to book_title(book), book_path(book), data: { turbo_prefetch: false } %>
     </h5>
     
     <div class="card-body">
       <h5 class="card-title">
-        <%= book.query_doc_pairs.count %> Query/Doc Pairs
+        <%= book.query_doc_pairs.size %> Query/Doc Pairs
       </h5>
-      <p class="card-text"><%= book.judgements.count %> Judgements
+      <p class="card-text"><%= book.judgements.size %> Judgements
       </p>
-      <!-- Look at https://github.com/ankane/prophet-ruby -->
-      <% if @lookup_for_books[book] && @lookup_for_books[book] > 0 %>
-        <p class="card-text text-danger"><i class="fa fa-frog"></i> You need to judge <%= @lookup_for_books[book] %> out <%= book.query_doc_pairs.count %> query/doc pairs.</p>      
-      <% end %>
-      <%= link_to 'Judge', book_judge_path(book), class: 'btn btn-sm btn-primary', role: 'button' %>
+      <span id="notification-book-<%= book.id %>">
+      </span>
+      
+      <%= link_to 'Judge', book_judge_path(book), data: { turbo_prefetch: false }, class: 'btn btn-sm btn-primary', role: 'button' %>
     </div> 
   </div>
 </div>

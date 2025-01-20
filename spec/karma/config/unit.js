@@ -19,7 +19,7 @@ module.exports = function(config) {
     // to run a single one
     files: [
       'tmp/assets/core*.js',
-      'tmp/assets/application*.js',
+      'tmp/assets/application.js',
       'tmp/assets/application_spec*.js',
       'spec/javascripts/mock/*.js',
       'spec/javascripts/**/*_spec.js',
@@ -28,7 +28,7 @@ module.exports = function(config) {
 
     // list of files to exclude
     exclude: [
-
+      '**/application2.js', // ignore this importmap related file when running core JS app tests
     ],
 
 

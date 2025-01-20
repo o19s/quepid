@@ -7,6 +7,9 @@ module Api
       before_action :set_scorer, only: [ :show, :update, :destroy ]
       before_action :check_communal_scorers_only, only: [ :create, :update, :destroy ]
 
+      api :GET, '/api/scorers',
+          'List all scorers to which the user has access.'
+      error :code => 401, :desc => 'Unauthorized'
       def index
         unless Rails.application.config.communal_scorers_only
           @user_scorers = current_user.scorers_involved_with.all.reject(&:communal?)
@@ -47,12 +50,7 @@ module Api
 
       # rubocop:disable Metrics/MethodLength
       def update
-        # this method could be used instead of the below @scorer.owner == current_user logic
-        # authorize @scorer, :update_communal?
-
-        # the policy() call is provided by Pundit and leverages the Permissions data structures.
-        # using this check instead of the authorize because it raises an exception.
-        unless @scorer.owner == current_user || (@scorer.communal && policy(@scorer).update_communal?)
+        unless @scorer.owner == current_user || (@scorer.communal && current_user.administrator?)
           render(
             json:   {
               error: 'Cannot edit a scorer you do not own',
@@ -100,8 +98,7 @@ module Api
       # you update other objects with either the system default scorer, or, if
       # you pass in the replacement_scorer_id then that scorer.
       def destroy
-        bool = ActiveRecord::Type::Boolean.new
-        force  = bool.deserialize params[:force]
+        force = deserialize_bool_param(params[:force])
         if force
           replacement_scorer = params[:replacement_scorer_id].present? ? Scorer.find_by(id: params[:replacement_scorer_id]) : Scorer.system_default_scorer
         end
@@ -154,13 +151,13 @@ module Api
       def scorer_params
         return unless params[:scorer]
 
-        params.require(:scorer).permit(
-          :code,
-          :name,
-          :show_scale_labels,
-          :communal,
-          scale:             [],
-          scale_with_labels: {}
+        params.expect(
+          scorer: [ :code,
+                    :name,
+                    :show_scale_labels,
+                    :communal,
+                    { scale:             [],
+                      scale_with_labels: {} } ]
         )
       end
 

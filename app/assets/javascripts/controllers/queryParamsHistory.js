@@ -55,8 +55,8 @@ angular.module('QuepidApp')
         modalInstance.result.then(function (data) {
           if (data && data.action === 'clone') {
             $scope.settings.duplicateTry(data.aTry.tryNo)
-              .then(function() {
-                flash.success = 'Try duplicated successfully.';
+              .then(function(newTry) {
+                flash.success = 'Try ' + data.aTry.name + ' duplicated successfully as ' + newTry.name + '.';
               }, function() {
                 flash.error = 'Unable to duplicate try.';
               });

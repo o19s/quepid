@@ -2,7 +2,7 @@
 <h2>Query Doc Pair</h2>
 
 <p>
-  from Book "<%= @book.name %>"
+  from <%= book_title(@book) %>
 </p>
 
 <p>
@@ -16,8 +16,18 @@
 </p>
 
 <p>
+  <strong>Document Fields:</strong>
+  <%= @query_doc_pair.document_fields %>
+</p>
+
+<p>
   <strong>Notes:</strong>
   <%= @query_doc_pair.notes %>
+</p>
+
+<p>
+  <strong>Options:</strong>
+  <%= @query_doc_pair.options %>
 </p>
 
 

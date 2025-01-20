@@ -3,7 +3,7 @@
     <div class="navbar-header">
       <%= link_to root_path, class: "navbar-brand", target: "_self" do %>
         Quepid
-        <span class="hover"><%= image_tag 'tagline-sm.png' %></span>
+        <span class="hover"><%= image_tag 'tagline-sm.png', title: "Give your queries some love" %></span>
       <% end %>
     </div>
 
@@ -13,7 +13,7 @@
         <li class="dropdown" uib-dropdown>
           <a href class="dropdown-toggle" uib-dropdown-toggle>
             <span class="nav-label">Relevancy Cases</span>
-            <i class="fa fa-chevron-down"></i>
+            <i class="bi bi-chevron-down"></i>
           </a>
 
           <ul class="dropdown-menu dropdown-content" ng-model="headerScope.dropdownCases" uib-dropdown-menu>
@@ -21,7 +21,7 @@
               <strong>RECENT CASES</strong>
             </li>
 
-            <li ng-repeat="case in headerScope.dropdownCases | limitTo:5 track by $index" class="cases-nav-listing">
+            <li ng-repeat="case in headerScope.dropdownCases | limitTo:5 track by $index">
               <a href="#" class="dropdown-link" ng-click="headerScope.goToCase($event, case)"  ng-if="!isRailsGoingToAngular()">{{ case.caseName }}</a>
 
               <a ng-href="{{'/case/' + case.caseNo + '/try/' + case.lastTry}}" class="dropdown-link" ng-if="isRailsGoingToAngular()" target="_self">{{ case.caseName }}</a>
@@ -40,6 +40,42 @@
           </ul>
         </li>
         <!-- End case selector -->
+        <!-- Begin book selector -->
+        <li class="dropdown" uib-dropdown>
+          <a href class="dropdown-toggle" uib-dropdown-toggle>
+            <span class="nav-label">Books</span>
+            <i class="bi bi-chevron-down"></i>
+          </a>
+
+          <ul class="dropdown-menu dropdown-content" ng-model="headerScope.dropdownBooks" uib-dropdown-menu>
+            <li class="text-muted">
+              <strong>RECENT BOOKS</strong>
+            </li>
+
+            <li ng-repeat="book in headerScope.dropdownBooks | limitTo:5 track by $index">              
+              <a ng-href="books/{{book.id}}" target="_self" class="dropdown-link">{{ book.name }}</a>
+            </li>
+
+            <li class="actions">
+              <a href="books" class="btn btn-default btn-block" target="_self">
+                View all books
+                <small class="text-muted">
+                  ({{ headerScope.booksCount }} active)
+                </small>
+              </a>
+
+              <a
+                class="btn btn-success btn-block"
+                ng-href="{{headerScope.createBookLink()}}"
+                target="_self"
+              >
+                <i class="bi bi-plus-lg"></i>
+                Create a book
+              </a>              
+            </li>
+          </ul>
+        </li>
+        <!-- End book selector -->        
 
         <li><a ng-attr-target="{{ isRailsGoingToAngular() ? '_self' : undefined }}" href="teams">Teams</a></li>
         <li><a ng-attr-target="{{ isRailsGoingToAngular() ? '_self' : undefined }}" href="scorers">Scorers</a></li>
@@ -50,9 +86,9 @@
         <!-- Begin account management dropdown -->
         <li class="dropdown" uib-dropdown>
           <a href class="dropdown-toggle" uib-dropdown-toggle data-toggle="dropdown">
-            <%= image_tag current_user.avatar_url, size: '24x24', class: 'img-rounded' %>
+            <%= image_tag current_user.avatar_url, size: '24x24', class: 'img-rounded', title: 'Avatar image' %>
             <span data-display-name><%= current_user.display_name %> </span>
-            <i class="fa fa-chevron-down"></i>
+            <i class="bi bi-chevron-down"></i>
           </a>
 
           <ul class="dropdown-menu dropdown-content" uib-dropdown-menu>
@@ -60,12 +96,14 @@
             <li><%= link_to 'Log out', logout_path, class: 'dropdown-link', target: '_self' %></li>
             <li role="separator" class=""></li>
             <li><%= link_to 'Judgements', books_path, class: 'dropdown-link', target: '_self' %></li>
+            <li><%= link_to 'API Docs', apipie_apipie_path, class: 'dropdown-item', target: '_self' %></li>
             <% if current_user.administrator? %>
             <li role="separator" class=""></li>
             <li><%= link_to 'Admin Home', admin_path, class: 'dropdown-link', target: '_self' %></li>
             <li><%= link_to 'Users', admin_users_path, class: 'dropdown-link', target: '_self' %></li>
             <li><%= link_to 'Quepid Scorers', admin_communal_scorers_path, class: 'dropdown-link', target: '_self' %></li>
-            <li><%= link_to 'Job Manager', sidekiq_web_path, class: 'dropdown-link', target: '_self' %></li>
+            <li><%= link_to 'Announcements', admin_announcements_path, class: 'dropdown-item', target: '_self' %></li>
+            <li><%= link_to 'Job Manager', mission_control_jobs_path, class: 'dropdown-link', target: '_self' %></li>
             <% end %>
           </ul>
         </li> <!-- End account management -->
@@ -91,7 +129,3 @@
     <% end %>
   </div>
 </header>
-
-<div id='flash'>
-  <%= flash_messages -%>
-</div>

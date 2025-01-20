@@ -9,7 +9,7 @@ class SearchEndpointsControllerTest < ActionDispatch::IntegrationTest
   setup do
     @search_endpoint = search_endpoints(:first_for_case_with_two_tries)
 
-    login_user
+    login_user_for_integration_test user
   end
 
   test 'should get index' do
@@ -105,17 +105,5 @@ class SearchEndpointsControllerTest < ActionDispatch::IntegrationTest
     end
 
     assert_redirected_to search_endpoints_url
-  end
-
-  def login_user
-    # We don't actually want to load up scores during login, yet we get an error...
-    Bullet.enable = false
-    # post the login and follow through to the home page
-    post '/users/login', params: { user: { email: user.email, password: 'password' } }
-    follow_redirect!
-    assert_equal 200, status
-    assert_equal '/', path
-
-    Bullet.enable = true
   end
 end

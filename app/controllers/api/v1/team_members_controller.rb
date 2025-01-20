@@ -7,6 +7,10 @@ module Api
       before_action :set_team,          only: [ :index, :create, :destroy, :invite ]
       before_action :check_team,        only: [ :index, :create, :destroy, :invite ]
 
+      def_param_group :invite_user_params do
+        param :id, String, desc: 'Oddly enough this is the email address of the person to invite'
+      end
+
       def index
         @members = @team.members
         respond_with @members
@@ -30,6 +34,9 @@ module Api
         end
       end
 
+      # rubocop:disable Layout/LineLength
+      api :POST, '/api/teams/:team_id/members/invite', 'Invite someone to join a team.  Creates a shell user account and adds them to the team.'
+      param_group :invite_user_params
       def invite
         unless signup_enabled?
           render json: { error: 'Signups are disabled!' }, status: :not_found
@@ -44,11 +51,13 @@ module Api
 
         if @team.save
           Analytics::Tracker.track_member_added_to_team_event current_user, @team, @member
+          @message = @member.skip_invitation.present? ? "Please share the invite link with #{@member.email} directly so they can join." : "Invitation email was sent to #{@member.email}"
           respond_with @member
         else
           render json: @member.errors, status: :bad_request
         end
       end
+      # rubocop:enable Layout/LineLength
 
       def destroy
         member = @team.members.where('email = ? OR id = ?', params[:id].to_s.downcase, params[:id])

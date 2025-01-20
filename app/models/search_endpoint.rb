@@ -19,6 +19,10 @@
 #  updated_at            :datetime         not null
 #  owner_id              :integer
 #
+# Indexes
+#
+#  index_search_endpoints_on_owner_id_and_id  (owner_id,id)
+#
 
 class SearchEndpoint < ApplicationRecord
   # Associations
@@ -34,31 +38,11 @@ class SearchEndpoint < ApplicationRecord
   has_many   :tries, dependent: :nullify, inverse_of: :search_endpoint
 
   # Scopes
+  include ForUserScope
+
   scope :not_archived, -> { where('`search_endpoints`.`archived` = false') }
 
-  # rubocop:disable Layout/LineLength
-  scope :for_user_via_teams, ->(user) {
-    joins('
-      LEFT OUTER JOIN `teams_search_endpoints` ON `teams_search_endpoints`.`search_endpoint_id` = `search_endpoints`.`id`
-      LEFT OUTER JOIN `teams` ON `teams`.`id` = `teams_search_endpoints`.`team_id`
-      LEFT OUTER JOIN `teams_members` ON `teams_members`.`team_id` = `teams`.`id`
-      LEFT OUTER JOIN `users` ON `users`.`id` = `teams_members`.`member_id`
-    ').where('
-        `teams_members`.`member_id` = ?
-    ', user.id)
-  }
-  # rubocop:enable Layout/LineLength
-
-  scope :for_user_directly_owned, ->(user) {
-                                    where('
-          `search_endpoints`.`owner_id` = ?
-      ',  user.id)
-                                  }
-
-  scope :for_user, ->(user) {
-    ids = for_user_via_teams(user).distinct.pluck(:id) + for_user_directly_owned(user).distinct.pluck(:id)
-    where(id: ids.uniq)
-  }
+  validate :basic_auth_credential_has_valid_characters
 
   after_initialize do |se|
     se.archived = false if se.archived.nil?
@@ -90,5 +74,15 @@ class SearchEndpoint < ApplicationRecord
 
   def middle_truncate str, total: 30, lead: 15, trail: 15
     str.truncate(total, omission: "#{str.first(lead)}...#{str.last(trail)}")
+  end
+
+  def basic_auth_credential_has_valid_characters
+    return if basic_auth_credential.blank?
+
+    invalid_chars = basic_auth_credential.scan(%r{[\s<>"#%{}|\\^~\[\]`&+?=/;@]})
+    if invalid_chars.any?
+      errors.add(:basic_auth_credential,
+                 "contains invalid characters: #{invalid_chars.uniq.join(', ')}")
+    end
   end
 end

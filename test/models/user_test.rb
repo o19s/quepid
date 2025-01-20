@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'test_helper'
+
 # == Schema Information
 #
 # Table name: users
@@ -22,11 +24,13 @@
 #  locked_at                   :datetime
 #  name                        :string(255)
 #  num_logins                  :integer
+#  openai_key                  :string(255)
 #  password                    :string(120)
 #  profile_pic                 :string(4000)
 #  reset_password_sent_at      :datetime
 #  reset_password_token        :string(255)
 #  stored_raw_invitation_token :string(255)
+#  system_prompt               :string(4000)
 #  created_at                  :datetime         not null
 #  updated_at                  :datetime         not null
 #  default_scorer_id           :integer
@@ -44,9 +48,9 @@
 # Foreign Keys
 #
 #  fk_rails_...  (default_scorer_id => scorers.id)
+#  fk_rails_...  (invited_by_id => users.id)
 #
 
-require 'test_helper'
 # rubocop:disable Layout/LineLength
 class UserTest < ActiveSupport::TestCase
   test 'membership in team' do
@@ -246,6 +250,12 @@ class UserTest < ActiveSupport::TestCase
     end
 
     it 'prevents a user who owns a scorer shared with a team from being deleted' do
+      # need to null out the judgements first
+      random.judgements.each do |j|
+        j.user = nil
+        j.save!
+      end
+
       random.destroy
       assert_not random.destroyed?
       assert random.errors.full_messages_for(:base).include?('Please remove the scorer Scorer for sharing from the team before deleting this user.')
@@ -281,6 +291,14 @@ class UserTest < ActiveSupport::TestCase
     it 'prevents access to the books because the user is not part of a team' do
       assert_nil user_without_book_access.books_involved_with.where(id: book_of_comedy_films).first
     end
+
+    it 'prevents you from deleting a user that has judgements' do
+      assert user_with_book_access.judgements.size.positive?
+
+      assert_not user_with_book_access.destroy
+      assert user_with_book_access.errors.include?(:base)
+      assert_not user_with_book_access.destroyed?
+    end
   end
 
   describe 'User accessing Search Endpoints' do
@@ -307,6 +325,16 @@ class UserTest < ActiveSupport::TestCase
       search_endpoint.save!
 
       assert_includes joey.search_endpoints_involved_with, search_endpoint
+    end
+  end
+
+  describe 'User is AI Judge' do
+    it 'does not require an email address to be valid when is a judge' do
+      user = User.new(openai_key: '1234')
+      assert user.ai_judge?
+
+      user.password = 'fakeme'
+      assert user.valid?
     end
   end
 end

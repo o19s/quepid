@@ -8,10 +8,11 @@ module Api
 
         def update
           @rating = @query.ratings.find_or_create_by doc_id: @doc_id
-          @rating.user = @current_user
+          # @rating.user = @current_user
 
           if @rating.update rating_params
             Analytics::Tracker.track_rating_created_event current_user, @rating
+            JudgementFromRatingJob.perform_later current_user, @rating
             respond_with @rating
           else
             render json: @rating.errors, status: :bad_request
@@ -29,7 +30,7 @@ module Api
         private
 
         def rating_params
-          params.require(:rating).permit(:rating, :doc_id)
+          params.expect(rating: [ :rating, :doc_id ])
         end
 
         def set_doc_id

@@ -1,5 +1,5 @@
 <div class="modal-header">
-  <button type="button" class="close" aria-label="Close" ng-click="ctrl.cancel()"><span aria-hidden="true">&times;</span></button>
+  <button type="button" class="close btn-core-close" ng-click="ctrl.cancel()" aria-label="Close"></button>
   <h3 class="modal-title">Export Case: <span class="modal-case">{{ ctrl.theCase.caseName }}</span></h3>
 </div>
 <div class="modal-body">
@@ -25,11 +25,11 @@
     <input type="radio" id="detailed" name="exportSelection" value="detailed" ng-model="ctrl.options.which">
     <label for="detailed" class="disabled">Detailed</label>
     <p ng-if="ctrl.options.which==='detailed' && !ctrl.supportsDetailedExport" class='bg-warning text-warning padded-text'>
-      <i class="fa fa-exclamation-triangle" aria-hidden="true"></i>
+      <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
       Detailed export is only supported from the individual Case view.
     </p>
     <span class="help-block">
-      CSV file with <code>Team Name,Case Name,Case ID,Query Text,Doc ID,Title,Rating,Field1,...,FieldN</code> where <code>Field1,...,FieldN</code> are specified under <strong>Settings</strong> in the <strong>Displayed Fields</strong> field.
+      CSV file with <code>Team Name,Case Name,Case ID,Query Text,Doc ID,Position,Title,Rating,Field1,...,FieldN</code> where <code>Field1,...,FieldN</code> are specified under <strong>Settings</strong> in the <strong>Displayed Fields</strong> field.
     </span>
   </div>
 
@@ -50,6 +50,10 @@
       >
       </select>
     </label>
+    
+    <div class="alert alert-warning" role="alert" ng-if="ctrl.isProcessingFile()">
+      This snapshot is currently being processed in the background.  You should wait till it completes.
+    </div>
   </div>
   <hr/>
   <div class="form-group">
@@ -121,7 +125,7 @@
     <span class="help-block">
       Need to move a Case between different Quepids?  This format lets you dump the complete Case.
       You can also create a new Case outside Quepid and import using this format.
-      Use the Import Case function on the Cases Listing page to import it back in as a new Case.
+      Use the Import Case function on the Cases Listing page to import it back in as a brand new Case.
     </span>
     Peek at <a ng-href="api/export/cases/{{ctrl.theCase.caseNo}}.json" target="_blank">the JSON format</a>.
   </div>  

@@ -14,10 +14,16 @@ angular.module('QuepidApp')
       
       $scope.linkToDoc = function() {
         let url = $scope.doc._url();
+        let credentials = settingsSvc.applicableSettings().basicAuthCredential;
+        
+        if (credentials){                    
+          url = url.replace('://', `://${credentials}@`);
+        }
+        
         if (settingsSvc.applicableSettings().proxyRequests  === true) {
           url = caseTryNavSvc.getQuepidProxyUrl() + url;
         }
-        
+                
         return url;
       };
       

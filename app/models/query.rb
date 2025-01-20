@@ -10,9 +10,7 @@
 #  information_need :string(255)
 #  notes            :text(65535)
 #  options          :text(65535)
-#  query_text       :string(500)
-#  threshold        :float(24)
-#  threshold_enbl   :boolean
+#  query_text       :string(2048)
 #  created_at       :datetime         not null
 #  updated_at       :datetime         not null
 #  case_id          :integer
@@ -26,14 +24,14 @@
 #  queries_ibfk_1  (case_id => cases.id)
 #
 
-require 'arrangement/item'
+require_relative 'concerns/arrangement/item'
 
 class Query < ApplicationRecord
   # Arrangement
   include Arrangement::Item
 
   # Associations
-  belongs_to  :case, autosave: true, optional: false
+  belongs_to  :case, autosave: true, optional: false, touch: true
 
   has_many    :ratings,
               dependent: :destroy
@@ -42,8 +40,7 @@ class Query < ApplicationRecord
               dependent: :destroy
 
   # Validations
-  validates :query_text,
-            presence: true
+  validates :query_text, presence: true, length: { maximum: 2048 }
 
   # Scopes
 

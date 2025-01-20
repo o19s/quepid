@@ -1,0 +1,25 @@
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+  <h1 class="h2">New Quepid Announcement</h1>
+</div>
+
+
+<%= form_for [:admin, @announcement] do |form| %>
+
+  <div class="mb-3">
+    <%= form.label :text, class: 'form-label' %>
+    <%= form.text_field :text, required: true, class: 'form-control' %>
+    <div class="form-text">The announcement.  You can use HTML and emojis.</div>
+  </div>
+
+  <br>
+
+  <div class="actions">
+    <%= form.submit %>
+  </div>
+
+<% end %>
+
+
+<br>
+<%= button_to 'Back to Quepid Announcements', admin_announcements_path, method: :get %>
+<br>

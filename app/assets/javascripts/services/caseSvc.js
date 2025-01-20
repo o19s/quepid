@@ -34,6 +34,7 @@ angular.module('QuepidApp')
       svc.refetchCaseLists  = refetchCaseLists;
       svc.saveDefaultScorer = saveDefaultScorer;
       svc.renameCase        = renameCase;
+      svc.updateNightly     = updateNightly;
       svc.associateBook     = associateBook;
 
       // an individual case, ie
@@ -54,6 +55,7 @@ angular.module('QuepidApp')
         theCase.queriesCount      = data.queries_count;
         theCase.public            = data.public;
         theCase.archived          = data.archived;
+        theCase.nightly           = data.nightly;
         theCase.teams             = data.teams || [];
         theCase.tries             = data.tries || [];
         theCase.scores            = data.scores || [];
@@ -364,14 +366,9 @@ angular.module('QuepidApp')
       };
 
       /*jslint latedef:false*/
-      function getCases (deep) {
-        deep = deep || false;
+      function getCases () {       
         // http GET api/cases
         var url = 'api/cases';
-
-        if (deep) {
-          url += '?deep=' + deep;
-        }
 
         svc.allCases.length = 0;
         return $http.get(url)
@@ -443,6 +440,27 @@ angular.module('QuepidApp')
             });
         }
       }
+      
+      /*
+       * update the recurrent status of the case.  This could be refactored into a more
+       * general "update" method.
+       */
+      function updateNightly(theCase) {
+      
+        // http PUT api/cases/<int:caseId>
+        var url  = 'api/cases/' + theCase.caseNo;
+        var data = {
+          nightly: theCase.nightly
+        };
+
+        return $http.put(url, data)
+          .then(function() {
+            broadcastSvc.send('caseUpdate', theCase);
+          }, function() {
+            caseTryNavSvc.notFound();
+          });
+      
+      }      
 
       /*
        * update which book the case is tied to.  This could be refactored into a more
@@ -461,6 +479,7 @@ angular.module('QuepidApp')
 
             theCase.bookId = bookId;
             theCase.bookName = response.book_name;
+            broadcastSvc.send('associateBook', svc.dropdownBooks);
           }, function() {
             caseTryNavSvc.notFound();
           });

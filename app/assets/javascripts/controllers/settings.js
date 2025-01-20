@@ -7,8 +7,8 @@ angular.module('QuepidApp')
     'flash',
     'settingsSvc',
     function (
-      $scope, $location, 
-      flash, 
+      $scope, $location,
+      flash,
       settingsSvc
     ) {
       $scope.settingsModel = {};
@@ -18,7 +18,7 @@ angular.module('QuepidApp')
         titleField:   '',
         searchEndpointId: ''
       };
-                 
+
       $scope.settingsModel.settingsId = function() {
         return settingsSvc.settingsId();
       };
@@ -46,7 +46,7 @@ angular.module('QuepidApp')
         else {
           this.searchUrl = currSettings.searchUrl;
         }
-        
+
         this.fieldSpec                = currSettings.fieldSpec;
         this.selectedTry.queryParams  = currSettings.queryParams;
         this.urlFormat                = currSettings.urlFormat;
@@ -60,14 +60,14 @@ angular.module('QuepidApp')
          // Reinit our pending settings from the service
          $scope.pendingSettings = settingsSvc.editableSettings();
          $scope.pendingSettings.reset = reset;
-         
+
          // pass pending settings onward to be saved
          $scope.pendingSettings.submit = submit;
       });
 
       function submit () {
         let validateJson = false;
-        if ( $scope.pendingSettings.searchEngine === 'es'  || $scope.pendingSettings.searchEngine === 'os' ||  $scope.pendingSettings.searchEngine === 'vectara'){
+        if ( $scope.pendingSettings.searchEngine === 'es'  || $scope.pendingSettings.searchEngine === 'os' ||  $scope.pendingSettings.searchEngine === 'vectara' || $scope.pendingSettings.searchEngine === 'algolia'){
           validateJson = true;
         }
         else if ($scope.pendingSettings.searchEngine === 'searchapi'){
@@ -78,7 +78,7 @@ angular.module('QuepidApp')
           try {
             var jsonObject = JSON.parse($scope.pendingSettings.selectedTry.queryParams);
             $scope.pendingSettings.selectedTry.queryParams = JSON.stringify(jsonObject, null, 2);
-            
+
           } catch (e) {
             flash.error = 'Please provide a valid formatted JSON object for the query DSL.';
             return;

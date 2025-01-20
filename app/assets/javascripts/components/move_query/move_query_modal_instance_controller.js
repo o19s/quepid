@@ -24,7 +24,7 @@ angular.module('QuepidApp')
       ctrl.loading    = false;
 
       // Init
-      if (  angular.isUndefined(ctrl.cases) || ctrl.cases.length === 0 ) {
+      if ( angular.isUndefined(ctrl.cases) || ctrl.cases.length === 0 ) {
         fetchCaseList();
       }
 
@@ -58,7 +58,7 @@ angular.module('QuepidApp')
 
       function fetchCaseList () {
         ctrl.loading = true;
-        caseSvc.getCases(false)
+        caseSvc.getCases()
           .then(function() {
             ctrl.loading = false;
             broadcastSvc.send('updatedCasesList', caseSvc.allCases);

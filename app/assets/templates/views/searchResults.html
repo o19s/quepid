@@ -35,26 +35,20 @@
 
     <span class="error-warning glyphicon glyphicon-warning-sign"></span>
 
-    <span ng-show="overThreshold()" class="fa-stack fa-lg" title="Threshold of {{query.threshold}} not met.">
-      <i class="fa fa-circle fa-stack-2x"></i>
-      <strong class="fa-stack-1x text-danger">
-          {{query.threshold}}
-      </strong>
+    <span ng-show="query.isNotAllRated()" class="pull-right" style="margin-right: 20px;" title="Hop to it!  There are unrated results!">      
+      <div class="icon-container">
+        <i class="frog-icon">🐸</i>
+        <div class="notification-bubble">{{ query.currentScore.countMissingRatings }}</div>
+      </div>
     </span>
 
-    <span ng-show="query.isNotAllRated()" class="froggy pull-right fa-lg" style="margin-right: 20px;" title="Hop to it!  There are unrated results!">
-      <i class="fas fa-frog fa-stack-2x" data-count="{{ query.currentScore.countMissingRatings }}"></i>
+  
+    <span ng-show="querqyRuleTriggered()" class="pull-right" style="margin-right: 20px;" title="Querqy Strikes Again!">
+      <i class="querqy-icon"></i>   
     </span>
-
-
-
-
+    
     <span class="toggleSign glyphicon {{query.isToggled() | plusOrMinus}}" ng-hide="isSortingEnabled()" ng-click="query.toggle()"></span>
   </div>
-
-
-
-  <!-- <span ng-click="removeQuery(query.queryId)" class="btn btn-default delete-query glyphicon glyphicon-remove"></span> -->
 
   <div ng-if="query.isToggled()" class="sub-results container clearfix">
     <div class="col-ratings query-rating">
@@ -90,8 +84,6 @@
 
       <div class="btn-group">
         <query-options query="query"></query-options>
-        <button type="button" class="btn btn-default btn-sm" ng-controller="TakeThresholdCtrl" ng-click="snapshot.prompt()">Set Threshold
-        </button>
       </div>
 
       <div class="btn-group">

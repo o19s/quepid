@@ -2,7 +2,7 @@
 
 require 'csv'
 module Analytics
-  class SparklineController < ApplicationController
+  class SparklineController < Api::ApiController
     layout 'analytics'
 
     def show

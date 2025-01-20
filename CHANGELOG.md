@@ -1,5 +1,218 @@
 # Changelog
 
+## 8.0.0-rc1 - 2024-11-05
+
+Rails 8 RC2 is out.  We're being eager early adopters with some big changes!
+
+* You no longer need Redis!!!!!!!!!!   Redis was used to power background jobs and websockets, and now we just use our database for that.  This makes installing Quepid much simpler.
+* To celebrate our enhance jobs framework, we now actually provide nice UX around starting jobs to prevent you from running multiple in paralel, and give user feedback when one is running.
+* Nicer import book page.  Gave it some UX love.
+* We use the built into Rails health check end point at `/healthcheck`.  Please check your setup.
+* Plus the usual list of updates to all our dependencies.
+* If you don't have `P@10` defined, the migrations blow up.  Thanks @frutik for find the bug.  https://github.com/o19s/quepid/pull/1093
+
+
+## 7.18.1 - 2024-12-06
+
+We've been hard at work on Quepid8, however we have two items that demand a point release:
+
+* Bug fix when looking up potential Querqy rule use and we hadn't finished running the query.  https://github.com/o19s/quepid/commit/cb9e3f4b4fce07c0acfc5301d7c00fcc7b7c8d23 by @epugh.
+
+* Prevent run away querying!  A user of Quepid has a proxy between Quepid and the search engine, and we were overloading it.  https://github.com/o19s/quepid/commit/7cb1f55b7e2cf1f08c06f4d38a0ac3eb679450b4 by @mkr!
+
+## 7.18.0 - 2024-10-04
+
+Wow!  It's been three months since the last release of Quepid, so it's about time.   
+This release brings Quepid up to Rails 7.2 standard, which gets us ready for some of the interesting things in Rails 8, specifically simplifying what you need to run Quepid.  
+There is a good path to removing the dependency on Redis, and maybe even MySQL for small setups!
+
+### Improvements
+
+* Shrink the Quepid Docker image by 1 GB.  This was accomplished by the migration to Rails 7.2 for Quepid in https://github.com/o19s/quepid/pull/1058, fixing https://github.com/o19s/quepid/issues/1004 by @epugh.
+
+* Expanded Quepid's API for working with Search Endpoints.  Thanks @clintbxtreme for opening https://github.com/o19s/quepid/issues/1056, and this was fixed in https://github.com/o19s/quepid/pull/1057 by @epugh.
+
+* Using SMUI and want to see if your rule was triggered?  Now you can, we have a Querqy icon!  Previously you would have to dig into the query parsing explanation to know.  https://github.com/o19s/quepid/issues/1050 by @clamar-VM was fixed by https://github.com/o19s/quepid/pull/1053 by @epugh.
+
+### Bugs
+
+* When rating images that have a prefix defined, the prefix was being lost.  Thanks @clamar-VM for finding this, fixed in @https://github.com/o19s/quepid/pull/1054 by @epugh.
+
+* We got too strict with our cookies, and Quepid quit working with Keycloak.  Thanks @drieschel for https://github.com/o19s/quepid/pull/1049.
+
+## 7.17.1 - 2024-06-26
+
+### Improvements
+
+* Proxied connections can now handle non ASCII characters like `café`.  https://github.com/o19s/quepid/pull/1043 by @epugh.  Thanks @miguelmesas for opening up the ticket that tipped me off to this.
+
+* `p@10` scorer now is smarter to handle non binary judgements.  https://github.com/o19s/quepid/pull/991 by @david-fisher.  Sorry this took so long to get merged!
+
+* RAG style queries are MUCH longer.  @miguelmesas opened up which is fixed by https://github.com/o19s/quepid/pull/1042 and https://github.com/o19s/quepid/pull/1037 by @epugh.
+
+* Improve the bulk query API to support 1000's of queries.  https://github.com/o19s/quepid/pull/1037 by @epugh.
+
+* Small tweaks to the layout of the Search Endpoints to move the Destroy action away from the edit action.  Thanks @okkeklein for reporting https://github.com/o19s/quepid/issues/900. 
+
+### Bugs
+
+* Resetting skipped and can't judge query/doc pairs is fixed.  Thanks @pfries for opening https://github.com/o19s/quepid/issues/1040.   Quite a few other Turbo Drive related navigation issues fixed.
+
+## 7.17.0 - 2024-06-14
+
+This is a big one!   We have broken the tyranny of the web request/response lifecycle by embracing some powerful Rails technologies:
+  
+ * ActionCable: We now support two way communication from the backend server to your front end browser via Web Sockets.  This lets us notify not just the person who starts a long running process of updates, but also any OTHER user who is interested in a specific topic.   For example, if someone uploads a Book with many thousands of judgements, then everyone who is part of that team can see the progress for them selves.   
+ 
+ * ActiveJob: This let's us run background jobs.  Historically we only used it for tracking of events (like you visited a Case), however now we are using it for processing large data sets in the background.  
+ 
+ * ActiveStorage: We need to better handle LARGE datasets in Quepid.  ActiveStorage lets us build massive export files and store them in the database as a binary until you decide to download the data.  Likewise, importing large data files that take time to process is now supported by being able to store them in Quepid.
+
+ * Hotwire: HTML over the Wire lets us render HTML on the backend using our familiar Rails MVC, but magically stream the updates to the front end.  This lets us add interactivity without requiring us to build out a Single Page Javascript application.  
+ 
+ These changes are going to enable a future for Quepid that let's it scale up signficantly and be a richer environment for measuring relevance and working with search!
+ 
+ Okay, now on to our more detailed list of changes:
+ 
+### Features
+
+* You can now run your Query Evaluations OUTSIDE of Quepid, and store the scores INSIDE Quepid.  This gives you a place to share this information with folks in your team.   See the example Python scripting here: https://github.com/o19s/quepid/tree/main/docs/examples/external_eval.  We also enhanced the API documentation.  https://github.com/o19s/quepid/pull/1034 by @epugh.
+
+* HTML Over the Wire!  Now we only load HTML that has changed, which improves page percieved performance.   Added new export and import of Books as background jobs with notifications to users over Web Sockets.  You then can download the resulting file without waiting for the data processing.  Loading aspects of the home page asyncrhonsly so the page loads super fast, and then content renders in as available. https://github.com/o19s/quepid/pull/992 by @epugh.
+
+### Improvements
+
+* Update to Rails 7.1 standards.   https://github.com/o19s/quepid/pull/1033 by @epugh.
+
+* Nicer Admin Homepage visual layout.  https://github.com/o19s/quepid/pull/1031 by @epugh.
+
+* Revamped performance of the Home page to not recalculate the case summaries if you've already cached them in the browser.  Much faster page!  https://github.com/o19s/quepid/pull/1022 and https://github.com/o19s/quepid/pull/1029 by @epugh.
+
+* New Case Wizard is smarter about existing Search Endpoints pane.  https://github.com/o19s/quepid/pull/1012 by @epugh.
+
+* Lots of updates to all the dependencies!
+
+### Bugs
+
+* Swapping between HTTP and HTTPS end points would cause issues with your Search Endpoint configuration.  https://github.com/o19s/quepid/pull/1035 by @epugh fixes https://github.com/o19s/quepid/issues/1005.
+
+* We state that judging a query doc pair only requires three jdugements, but didn't actually make that work.  https://github.com/o19s/quepid/pull/1032 by @epugh and @wrigleyDan fixes https://github.com/o19s/quepid/issues/1019 by @wrigleyDan.
+
+* Fixed utf encoding in mysql for query_doc_pairs.  https://github.com/o19s/quepid/pull/1017 by @epugh fixes https://github.com/o19s/quepid/issues/1013 by @wrigleyDan.
+
+* Pass basic auth credentials through when you view a specific document or use Quepid as a proxy to your search engine.  https://github.com/o19s/quepid/pull/1015 by @epugh fixes https://github.com/o19s/quepid/issues/1014 by @david-fisher.
+
+## 7.16.1 - 2024-04-09
+
+### Bugs
+
+* You can delete a user who has existing judgements, and then that messes up the main Books page because their judgements hang around.  Now you are warned about this, and you can choose to make their judgements anonymous.  (or just Lock their user account).  https://github.com/o19s/quepid/pull/999 by @epugh.
+
+## 7.16.0 - 2024-03-28
+
+### Features
+
+* Now have a dropdown for Books similar to Cases that leverages our existing tracking of what books you have viewed.  https://github.com/o19s/quepid/pull/986 by @epugh.
+
+* We now run scorers over queries that have no ratings and queries that are ZSR.  This lets us have smarter logic about how you want to score those situations.  https://github.com/o19s/quepid/pull/993 by @epugh.
+
+### Improvements
+
+* One less query to determine what a user has access to via being an owner or a member of a team while ensuring no duplicate cases/books show up.  https://github.com/o19s/quepid/pull/982 by @epugh with input from @reid-rigo. 
+
+* Remove extranous faraday logs when running tests.  https://github.com/o19s/quepid/pull/983 by @epugh with input form @reid-rigo fixes https://github.com/o19s/quepid/issues/964.
+
+* Nicer onboarding using TMDB dataset for Algolia users.  https://github.com/o19s/quepid/pull/987 by @chuckmeyer.
+
+### Bugs
+
+* Book Importing was broken. Plus now we have nicer formatted error message when you validate a book to import.  https://github.com/o19s/quepid/pull/989 by @epugh.
+
+
+
+## 7.15.1 - 2024-03-13
+
+### Bugs
+
+* Looking up Cases for a user is returning duplicates due to missing "distinct" keyword on SQL Query.  https://github.com/o19s/quepid/pull/980 by @epugh.
+
+* The "bundle exec thor case:create" is NOW updated to handle SearchEndpoints.  https://github.com/o19s/quepid/pull/981 by @epugh.
+
+
+## 7.15.0 - 2024-03-11
+
+### Features
+
+* Now track an _Explanation_ for a judgement.  If a human clicks "I can't rate this" then they are prompted for an optional explanation why.  In the near future, LLM powered judgements will communicate a explanation as well!  https://github.com/o19s/quepid/pull/978 by @epugh.
+
+* Algolia integration!  We have a wonderful contribution from @sumitsarkar that adds Algolia as one of the supported Search engines.  https://github.com/o19s/quepid/pull/933 by @sumitsarker.
+
+### Improvements
+
+* Move to using Thor (an existing CLI tool) for loading all our sample data files, and less custom Rake code.  https://github.com/o19s/quepid/pull/966 by @epugh.
+
+* Better UX when working with custom search API's and the mapper code.  https://github.com/o19s/quepid/pull/965 and https://github.com/o19s/quepid/pull/963 by @epugh, fixing https://github.com/o19s/quepid/issues/959, https://github.com/o19s/quepid/issues/960, https://github.com/o19s/quepid/issues/961 by @wrigleyDan and https://github.com/o19s/quepid/issues/950 by @ErikHatcher. 
+
+* Proxied Search API requests should follow Redirects.  https://github.com/o19s/quepid/pull/962 by @epugh fixes https://github.com/o19s/quepid/issues/958 by @wrigleyDan.
+
+* Improved performance of checking case access permissions.  https://github.com/o19s/quepid/pull/955 by @reid-rigo.  Thanks Reid!
+
+* Updated the Jaccard, RBO, and Judge comparison notebooks that ship with Quepid. Introduced more robust testing for them. https://github.com/o19s/quepid/pull/956 by @epugh.
+
+* Improve the Books API.  https://github.com/o19s/quepid/pull/951 by @epugh.
+
+* Snapshots used to have "Best Snapshot" option, but it hasn't worked in years, so stripped it out.  https://github.com/o19s/quepid/pull/948 by @epugh.
+
+
+### Bugs
+
+* Scoring logic was all somewhat broken.  Add a query, it doesn't rescore.  Delete a query, it doesn't rescore. Have a ZSR query, it impacts scoring in a "wonky" way.  Then, when you introduce snapshot comparisons, it all gets weirder.  We've gone through at a pretty line by line debugger level and fixed the various interaction bugs.  https://github.com/o19s/quepid/pull/975 by @epugh.
+
+* Only ship Web Open Font fonts, which simplifies our CSS and set up and eliminates a warning in Firefox console.  #techdebt.  https://github.com/o19s/quepid/pull/974 by @epugh.
+
+* Fixed some bit rot in handling of Tries in the web UI, and do some polish of UX.  https://github.com/o19s/quepid/pull/967 by @epugh.
+
+* Check length of query_text. https://github.com/o19s/quepid/pull/952 by @epugh and @mkr.
+
+* No email provider?  No problem!  Fixed issue with inviting folks and no email provider setup. https://github.com/o19s/quepid/pull/949 by @epugh.
+
+## 7.14.0 - 2024-02-06
+
+### Features
+
+* SCALING SCALING SCALING.   Now possible, though painful still, to run 5000 queries by moving lots of activities to background processing.   Thanks to my colleagues on the Cville Slack communities #ruby channel for lots of advice and help.  https://github.com/o19s/quepid/pull/916 by @epugh.
+
+* Quepid truncates the document fields in the core display, either via using highlighting to pluck out a section, or just snippeting to 200 characters.  However some days you just want to see the entire field!  Now you can control this in your field specifciation by prepending the field name with `unabridged:` tag.   https://github.com/o19s/quepid/pull/946 by @epugh.  
+
+* Need to communicate with your users about a new Scorer or upcoming downtime?  You can now post Annoucements to your users.  https://github.com/o19s/quepid/pull/911 by @mkr and https://github.com/o19s/quepid/pull/941 by @epugh fixes https://github.com/o19s/quepid/issues/848 for @flaxsearch.
+
+### Improvements
+
+* Snapshots require you to be able to "lookup" the document by id from the search engine.  However some search engines like Vectara and the Search API don't support this.  Reworked how snapshots work to require you to save the document fields at snapshot creation time in order to power the snapshot comparison UI.  This may end up being spread to other search engines as well.  https://github.com/o19s/quepid/pull/945 and https://github.com/o19s/quepid/pull/931 by @epugh.
+
+* The logs in Quepid are being overwhelmed by the size of the documents.  https://github.com/o19s/quepid/pull/942 by @reid-rigo cleans this up.  Thank you Reid!
+
+* Stripped out Threshold based alerting on queries, the community never used them.  https://github.com/o19s/quepid/pull/927 by @epugh.
+
+* Now tracking when a Book was viewed by a user, which powers the dashboard.  https://github.com/o19s/quepid/pull/925 by @epugh.
+
+* Removed the `QUEPID_PROPHET_ANALYTICS` environment variable, as Prophet was never a performance issue.  https://github.com/o19s/quepid/pull/924 by @epugh.
+
+* Dropped old database columns in the `tries` table that had moved to `search_endpoints` table.  https://github.com/o19s/quepid/pull/930 by @epugh.
+
+
+### Bugs
+
+* Restore the thor commands for creating an admin user.  https://github.com/o19s/quepid/pull/922 by @epugh fixes https://github.com/o19s/quepid/issues/888 by @vincetrumental.
+
+* Bug fix for static search endpoint when Quepid is running in a nested host context.  https://github.com/o19s/quepid/pull/917 by @epugh.
+
+* We were not export notes and options for a query.  https://github.com/o19s/quepid/pull/926 by @epugh fixes https://github.com/o19s/quepid/issues/923 by @peterdm.
+
+Plus we updated to the latest of Ruby and Ruby gems, Mysql, various NPM packages.
+
+
+
 ## 7.13.0 - 2024-01-03
 
 Just in time for the New Year!

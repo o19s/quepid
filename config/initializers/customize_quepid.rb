@@ -82,11 +82,6 @@ Rails.application.config.google_client_secret = ENV.fetch('GOOGLE_CLIENT_SECRET'
 Rails.application.config.keycloak_realm = ENV.fetch('KEYCLOAK_REALM', '')
 Rails.application.config.keycloak_site = ENV.fetch('KEYCLOAK_SITE', '')
 
-# == Google Analytics
-# To enable Google Analytics, set this environment variable.
-Rails.application.config.google_analytics = ENV.fetch('QUEPID_GA', '')
-Rails.application.config.google_analytics_enabled = Rails.application.config.google_analytics.present?
-
 # == Domain Quepid is Running Under
 # Certain features, like sending emails and Google Analytics require you to set the domain that Quepid
 # is set up under.
@@ -94,3 +89,6 @@ Rails.application.config.quepid_domain = ENV.fetch('QUEPID_DOMAIN', '')
 
 # == Disable redirecting to match the TLS setting
 Rails.application.config.redirect_to_match_search_engine_tls = ENV.fetch('REDIRECT_TO_MATCH_SEARCH_ENGINE_TLS', true)
+
+# == If we have nested Quepid under a context, like tools.bigcorp.com/quepid then this deal with that situation.
+Rails.application.config.action_cable.url = "#{ENV.fetch('RAILS_RELATIVE_URL_ROOT', '')}/cable"

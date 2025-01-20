@@ -7,7 +7,9 @@ angular.module('QuepidApp')
     '$http',
     'broadcastSvc',
     function bookSvc($http, broadcastSvc) {
-      this.books = [];
+      this.books            = [];
+      this.dropdownBooks    = [];
+      this.booksCount       = 0;
 
       var Book = function(id, name) {
         this.id           = id;
@@ -86,11 +88,21 @@ angular.module('QuepidApp')
               fields['title_field'] = doc.doc.title;
             }          
             
-            if (doc.hasThumb()) {
-              fields['thumb'] = doc.thumb;
+            if (doc.hasThumb()) {              
+              if (doc.thumb_options?.prefix){ // jshint ignore:line
+                fields['thumb'] = `${doc.thumb_options.prefix}${doc.thumb}`;
+              }
+              else {
+                fields['thumb'] = doc.thumb;
+              }
             }
             if (doc.hasImage()){
-              fields['image'] = doc.image;
+              if (doc.image_options?.prefix){ // jshint ignore:line
+                fields['image'] = `${doc.image_options.prefix}${doc.image}`;
+              }
+              else {
+                fields['image'] = doc.image;
+              }
             }
 
             const queryDocPair = {
@@ -130,6 +142,25 @@ angular.module('QuepidApp')
         return $http.put('api/books/' + bookId + '/cases/' + caseId + '/refresh?create_missing_queries=' + createMissingQueries, payload)
           .then(function(response) {
             console.log('refreshed ratings' + response.data);
+          });
+      };
+      
+      this.fetchDropdownBooks = function() {
+        var self = this;
+        self.dropdownBooks.length = 0;
+        return $http.get('api/dropdown/books')
+          .then(function(response) {
+            self.booksCount = response.data.books_count;
+
+            angular.forEach(response.data.books, function(dataBook) {
+              let book = self.constructFromData(dataBook);
+              
+              if(!contains(self.dropdownBooks, book)) {
+                self.dropdownBooks.push(book);
+              }
+            });
+
+            broadcastSvc.send('fetchedDropdownBooksList', self.dropdownBooks);
           });
       };
     }

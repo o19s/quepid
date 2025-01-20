@@ -17,10 +17,20 @@ angular.module('QuepidApp')
       $log.debug('Init Wizard settings ctrl');
       
       $scope.cancel = function () {
-        $uibModalInstance.dismiss('cancel');
+        let confirm = $window.confirm('Are you sure you want to abandon this case?');
+        if (confirm) {
+          caseSvc.deleteCase(caseSvc.getSelectedCase()).then(function() {
+            $uibModalInstance.dismiss('cancel');
+            $window.location = '/';
+          });
+          
+        }
       };
 
-      
+      $scope.invalidBasicAuthCredentials = false;
+      $scope.shouldCreateNewSearchEndpointDefaultToOpen = false;   
+      $scope.shouldExistingSearchEndpointDefaultToOpen = false;
+      $scope.searchEndpoints = [];
       $scope.isStaticCollapsed = true;
       $scope.addedStaticQueries = false;
       $scope.listOfStaticQueries = [];
@@ -39,7 +49,7 @@ angular.module('QuepidApp')
       $scope.wizardSettingsModel.settingsId = function() {
         return settingsSvc.settingsId();
       };
-      
+
       searchEndpointSvc.list()
        .then(function() {
          $scope.searchEndpoints = searchEndpointSvc.searchEndpoints; 
@@ -52,6 +62,11 @@ angular.module('QuepidApp')
        });
        
       $scope.listSearchEndpoints = function() {
+        // we only want the search endpoint dialgue to default to open
+        // if we are not reloading and have search endpoints.
+        if (!angular.isDefined($location.search().searchEngine)){
+          $scope.shouldCreateNewSearchEndpointDefaultToOpen = false;
+        }
         return $scope.searchEndpoints;
       };
 
@@ -61,8 +76,26 @@ angular.module('QuepidApp')
         if (angular.isUndefined($scope.pendingWizardSettings)){
              // When we run the case wizard, we assume that you want to use our Solr based TMDB demo setup.
              // We then give you options to change from there.
-             $scope.pendingWizardSettings = angular.copy(settingsSvc.tmdbSettings['solr']);
+             
+             // If we are reloading, then use the new one we picked, otherwise
+             // we default to Solr.
+             let searchEngineToUse = null;
+             if (angular.isDefined($location.search().searchEngine)){
+               searchEngineToUse = $location.search().searchEngine;
+             }
+             else {
+               searchEngineToUse = 'solr';
+             }
+             $scope.pendingWizardSettings = {
+               searchEngine: searchEngineToUse
+             };
+             
+             // Helps us distingush if we are using tmdb demo setup or no
+             if (angular.isDefined($location.search().searchUrl)){
+               $scope.pendingWizardSettings.searchUrl = $location.search().searchUrl;
+             }
         }
+        
         var settings = settingsSvc.pickSettingsToUse($scope.pendingWizardSettings.searchEngine, $scope.pendingWizardSettings.searchUrl);
         $scope.pendingWizardSettings.additionalFields         = settings.additionalFields;
         $scope.pendingWizardSettings.fieldSpec                = settings.fieldSpec;
@@ -79,7 +112,6 @@ angular.module('QuepidApp')
         $scope.pendingWizardSettings.basicAuthCredential      = settings.basicAuthCredential;
         $scope.pendingWizardSettings.mapperCode               = settings.mapperCode;
 
-        //$scope.isHeaderConfigCollapsed = true;
         
         var quepidStartsWithHttps = $location.protocol() === 'https';
 
@@ -110,6 +142,9 @@ angular.module('QuepidApp')
         if (angular.isDefined($location.search().apiMethod)){
           $scope.pendingWizardSettings.apiMethod = $location.search().apiMethod;
         }
+        if (angular.isDefined($location.search().basicAuthCredential)){
+          $scope.pendingWizardSettings.basicAuthCredential = $location.search().basicAuthCredential;
+        }
         $scope.reset();
       };
 
@@ -122,7 +157,7 @@ angular.module('QuepidApp')
         $scope.pendingWizardSettings.searchUrl                = searchEndpointToUse.endpointUrl; // notice remapping
         $scope.pendingWizardSettings.apiMethod                = searchEndpointToUse.apiMethod;
         $scope.pendingWizardSettings.customHeaders            = searchEndpointToUse.customHeaders;
-        
+
         // Now grab default settings for the type of search endpoint you are using
         var settings = settingsSvc.pickSettingsToUse($scope.pendingWizardSettings.searchEngine, $scope.pendingWizardSettings.searchUrl);         
         $scope.pendingWizardSettings.additionalFields         = settings.additionalFields;
@@ -182,9 +217,22 @@ angular.module('QuepidApp')
       
       // used when you click the accordion for new search endpoint
       $scope.switchToCreateNewSearchEndpoint = function() {
-       $scope.pendingWizardSettings.searchEndpointId = null;
-       
+       $scope.pendingWizardSettings.searchEndpointId = null;       
       };
+
+      
+               
+      if (angular.isDefined($location.search().searchEngine)) {
+        // Changing http(s), so we should be open.  
+        if (angular.isDefined($location.search().existingSearchEndpoint)) {
+          // We were on the Existing Search Endpoint
+          $scope.shouldExistingSearchEndpointDefaultToOpen = true;
+        }
+        else {
+          $scope.shouldCreateNewSearchEndpointDefaultToOpen = true;
+        }
+      }            
+        
       
       $scope.validate       = validate;
       $scope.skipValidation = skipValidation;
@@ -198,6 +246,8 @@ angular.module('QuepidApp')
       $scope.updateSettingsDefaults();
       $scope.validateHeaders = validateHeaders;
       $scope.validateProxyApiMethod = validateProxyApiMethod;
+      $scope.validateBasicAuthCredentials = validateBasicAuthCredentials;
+      $scope.hasInvalidURICharacters = hasInvalidURICharacters;
       $scope.changeProxySetting = changeProxySetting;
       $scope.searchFields   = [];
       $scope.createSnapshot = createSnapshot;
@@ -208,7 +258,7 @@ angular.module('QuepidApp')
 
       function reset() {
         $scope.validating = false;
-        $scope.urlValid = $scope.urlInvalid = $scope.invalidHeaders = $scope.invalidProxyApiMethod = false;
+        $scope.urlValid = $scope.urlInvalid = $scope.invalidHeaders = $scope.invalidProxyApiMethod = $scope.invalidBasicAuthCredentials = false;
         $scope.mapperInvalid = false;
         $scope.mapperErrorMessage = null;
         
@@ -229,8 +279,9 @@ angular.module('QuepidApp')
       }
       
       function resetUrlValid() {
-        $scope.urlValid =false;
-        $scope.invalidProxyApiMethod =false;
+        $scope.urlValid = false;
+        $scope.invalidProxyApiMethod = false;
+        $scope.invalidBasicAuthCredentials = false;
       }
 
       function submit() {
@@ -277,11 +328,12 @@ angular.module('QuepidApp')
         $scope.checkTLSForSearchEngineUrl();
         $scope.validateHeaders();
         $scope.validateProxyApiMethod();
+        $scope.validateBasicAuthCredentials();
         
         
         // exit early if we have the TLS issue, this really should be part of the below logic.
         // validator.validateTLS().then.validateURL().then....
-        if ($scope.showTLSChangeWarning || $scope.invalidHeaders || $scope.invalidProxyApiMethod){
+        if ($scope.showTLSChangeWarning || $scope.invalidHeaders || $scope.invalidProxyApiMethod || $scope.invalidBasicAuthCredentials){
           return;
         }
         
@@ -301,11 +353,25 @@ angular.module('QuepidApp')
           /*jshint evil:false */
           
           /* jshint undef: false */
-          settingsForValidation.docsMapper = docsMapper; 
-          settingsForValidation.numberOfResultsMapper = numberOfResultsMapper; 
+          if (typeof numberOfResultsMapper === 'undefined') {
+            $scope.mapperInvalid = true;
+            $scope.mapperErrorMessage = 'You need to define a "numberOfResultsMapper"';
+          }
+          else {
+            settingsForValidation.numberOfResultsMapper = numberOfResultsMapper; 
+          }
+          
+          if (typeof docsMapper === 'undefined') {
+            $scope.mapperInvalid = true;
+            $scope.mapperErrorMessage = 'You need to define a "docsMapper"';
+          }
+          else {
+            settingsForValidation.docsMapper = docsMapper; 
+          }
           /* jshint undef: true */
           
-          // This is an example of what the above mapper code looks like.
+          // This is an example of what the above mapper code might look like.
+          
           //eval(kode);
           // settingsForValidation.docsMapper = function(data){    
           //   let docs = [];
@@ -330,11 +396,15 @@ angular.module('QuepidApp')
         validator.validateUrl()
         .then(function () {
           $scope.validatorLastResponse = JSON.stringify(validator.searcher.lastResponse,null,2);
-          setupDefaults(validator);
+          $scope.urlValid     = true;
           
-          if (!justValidate) {      
-            $scope.pendingWizardSettings.searchUrl = settingsForValidation.searchUrl;
-            WizardHandler.wizard().next();
+          if ( !$scope.mapperInvalid ){
+            setupDefaults(validator);
+            
+            if (!justValidate) {      
+              $scope.pendingWizardSettings.searchUrl = settingsForValidation.searchUrl;
+              WizardHandler.wizard().next();
+            }
           }
         }, function (error) {
           
@@ -385,6 +455,33 @@ angular.module('QuepidApp')
           }
         }
       }
+      
+      function validateBasicAuthCredentials () {
+        $scope.invalidBasicAuthCredentials = false;
+        if (
+          $scope.pendingWizardSettings.basicAuthCredential && hasInvalidURICharacters($scope.pendingWizardSettings.basicAuthCredential)) {
+            $scope.invalidBasicAuthCredentials = true;
+            $scope.validating = false;
+        }
+      }
+      
+      function hasInvalidURICharacters(str) {
+        let invalidChars = false;
+        // This regex matches characters that are unsafe in URIs
+        const unsafeChars = /[\s<>\"#%{}|\\^~[\]`]/g;
+        if (unsafeChars.test(str)){
+          invalidChars = true;
+        }
+        
+        // Additional special characters that might cause issues
+        const specialChars = /[&+?=/;@]/g;
+        if (specialChars.test(str)){
+          invalidChars = true;
+        }
+
+        return invalidChars;
+      }
+      
 
       function checkTLSForSearchEngineUrl () {
         if ($scope.pendingWizardSettings.proxyRequests === true){
@@ -398,8 +495,14 @@ angular.module('QuepidApp')
             
             $scope.quepidUrlToSwitchTo = resultsTuple[0];
             $scope.protocolToSwitchTo = resultsTuple[1];
-                      
-            $scope.quepidUrlToSwitchTo = $scope.quepidUrlToSwitchTo + '?searchEngine=' + $scope.pendingWizardSettings.searchEngine + '&searchUrl=' + $scope.pendingWizardSettings.searchUrl + '&showWizard=true&caseName=' + $scope.pendingWizardSettings.caseName + '&apiMethod=' + $scope.pendingWizardSettings.apiMethod;
+
+            
+            $scope.quepidUrlToSwitchTo = caseTryNavSvc.appendQueryParams($scope.quepidUrlToSwitchTo, `showWizard=true` +
+              `&searchEngine=${$scope.pendingWizardSettings.searchEngine}` +
+              `&searchUrl=${$scope.pendingWizardSettings.searchUrl}` +
+              `&caseName=${$scope.pendingWizardSettings.caseName}` +
+              `&apiMethod=${$scope.pendingWizardSettings.apiMethod}` +
+              `&basicAuthCredential=${$scope.pendingWizardSettings.basicAuthCredential}`);            
           }
         }
       }
@@ -424,7 +527,7 @@ angular.module('QuepidApp')
         $scope.pendingWizardSettings.idField          = settingsToUse.idField;
         $scope.pendingWizardSettings.titleField       = settingsToUse.titleField;
         $scope.pendingWizardSettings.additionalFields = settingsToUse.additionalFields;
-        $scope.pendingWizardSettings.queryParams      = settingsToUse.queryParams;
+        
       }
 
       $scope.validateFieldSpec = validateFieldSpec;
@@ -571,10 +674,14 @@ angular.module('QuepidApp')
         $scope.pendingWizardSettings.submit = function() {
           $log.debug('Submitting settings (from wizard modal)');
 
-          // if we aren't using a demo, then lets finalize our queryParams with our title field.
+          // if we aren't using a demo, then lets finalize our queryParams with our best guess
          if (!settingsSvc.demoSettingsChosen($scope.pendingWizardSettings.searchEngine, $scope.pendingWizardSettings.searchUrl)){
            if ($scope.pendingWizardSettings.searchEngine === 'os' || $scope.pendingWizardSettings.searchEngine === 'es'){
              $scope.pendingWizardSettings.queryParams = $scope.pendingWizardSettings.queryParams.replace('REPLACE_ME', $scope.pendingWizardSettings.titleField);
+           }
+           
+           if ($scope.pendingWizardSettings.searchEngine === 'solr'){
+             $scope.pendingWizardSettings.queryParams = settingsSvc.defaultSettings['solr'].queryParams;             
            }
          }
 

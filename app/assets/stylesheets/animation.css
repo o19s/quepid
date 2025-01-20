@@ -3,10 +3,10 @@ using ngAnimate and css from the https://animate.style project
 */
 
 /* when hiding the picture */
-.froggy.ng-hide-add         { animation:2s flipOutX ease; }
+.froggy-animation.ng-hide-add         { animation:2s flipOutX ease; }
 
 /* when showing the picture */
-.froggy.ng-hide-remove      { animation:2s flipInX ease; }
+.froggy-animation.ng-hide-remove      { animation:2s flipInX ease; }
 
 /* ANIMATIONS (FROM ANIMATE.CSS) ======================== */
 
@@ -77,4 +77,76 @@ using ngAnimate and css from the https://animate.style project
 .rotateOut {
   animation-name: rotateOut;
   transform-origin: center;
+}
+
+
+
+/* begin alert icon for missing ratings */
+.icon-container {
+    position: relative;
+    display: inline-block;
+}
+
+.notification-bubble {
+    position: absolute;
+    top: -10px; /* Adjust as needed */
+    right: -12px; /* Adjust as needed */
+    background-color: rgba(255, 0, 0, 0.7); /* Red with 50% opacity */
+    color: white;
+    border-radius: 50%;
+    width: 20px; /* Set width */
+    height: 20px; /* Set height equal to width */
+    display: flex; /* Center content */
+    justify-content: center; /* Center content horizontally */
+    align-items: center; /* Center content vertically */
+    font-size: 12px;
+}
+
+.frog-icon {
+    color: grey; 
+    filter: grayscale(100%); 
+}
+/* end alert icon for missing ratings */
+
+.spinner {
+    display: inline-block; /* Inline to work with <i> */
+    width: 16px;
+    height: 16px;
+    border: 5px solid lightgray; /* Background color */
+    border-top: 5px solid #007bff; /* Spinner color */
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 8px auto; /* Center the spinner */
+}
+
+.big-spinner {
+    display: inline-block; /* Inline to work with <i> */
+    width: 80px;
+    height: 80px;
+    border: 5px solid lightgray; /* Background color */
+    border-top: 5px solid #007bff; /* Spinner color */
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 40px auto; /* Center the spinner */
+}
+
+
+
+/* Get the spinner to align nicer */
+.vertically-centered {
+    display: flex;
+    align-items: center; /* Center vertically */
+    margin: 2px;
+}
+
+/* Spin an icon, typically glyphicon-refresh */
+.spintime {
+    display: inline-block; /* Allow transform */
+    animation: spin 1s linear infinite; /* Spin animation */
+}
+
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
 }

@@ -7,7 +7,7 @@
           <div class="card-body p-4">
             <div class="d-flex text-black">
               <div class="flex-shrink-0">
-                <%= image_tag current_user.avatar_url(:big), id: 'user-avatar', class:'img-fluid img-rounded', style:"width: 180px;" %>
+                <%= image_tag current_user.avatar_url(:big), id: 'user-avatar', class:'img-fluid img-rounded', style:"width: 180px;", title: 'Avatar image' %>
               </div>
               <div class="flex-grow-1 ms-3">
                 <h5 class="mb-1"><%= current_user.display_name %></h5>
@@ -40,7 +40,7 @@
                     <p class="small text-muted mb-1">
                       Ratings
                     </p>
-                    <p class="mb-0">n/a</p>
+                    <p class="mb-0"><%= current_user.judgements.count %></p>
                   </div>
                 </div>
                 <div class="d-flex pt-1">
@@ -160,7 +160,7 @@
     <p class="form-text">
       These allow you to access Quepid's <%= link_to 'APIs', apipie_apipie_path %>. Treat these like you would your password!
       <br/>
-      For example: <code>curl -H "Authorization: Bearer <%= current_user.api_keys.empty? ? "YOUR_TOKEN" : current_user.api_keys.first.token_digest %>" <%= api_user_url(current_user) %></code> to look at your own details.
+      For example: <code>curl -H "Authorization: Bearer <%= current_user.api_keys.empty? ? "YOUR_TOKEN" : current_user.api_keys.first.token_digest %>" <%= link_to api_user_url(current_user), api_user_url(current_user) %></code> to look at your own details.
     </p>   
     <p>
       <table class="table table-hover table-sm">

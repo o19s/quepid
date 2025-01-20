@@ -11,7 +11,16 @@ module NotificationsManager
 
   def check_email
     unless email_notifications_enabled?
-      redirect_to sessions_path, alert: "Email delivery hasn't been set up, so can't send reset password email."
+      admins = User.where(administrator: true).limit(3)
+      alert = "Email delivery hasn't been set up, so can't send reset password email."
+      if admins.present?
+        alert += ' Please contact the following administrators for help: '
+        admins_info = admins.pluck(:name, :email).map do |admin|
+          "#{admin[0]} (#{admin[1]})"
+        end
+        alert += admins_info.to_sentence
+      end
+      redirect_to sessions_path, alert: alert
     end
   end
 end

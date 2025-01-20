@@ -1,8 +1,10 @@
 # frozen_string_literal: true
 
+require 'action_view'
 module Api
   module V1
     class SnapshotsController < Api::ApiController
+      include ActionView::Helpers::NumberHelper
       before_action :set_case
       before_action :check_case
       before_action :set_snapshot,    only: [ :show, :destroy ]
@@ -20,44 +22,43 @@ module Api
       def index
         @snapshots = @case.snapshots
 
-        @shallow = params[:shallow] || false
+        @shallow = 'true' == params[:shallow]
+        @with_docs = false
 
         respond_with @snapshots
       end
 
       def show
         @shallow = params[:shallow] || false
+        @with_docs = true
         respond_with @snapshot
       end
 
-      # rubocop:disable Metrics/MethodLength
+      # rubocop:disable Layout/LineLength
       def create
         @snapshot = @case.snapshots.build(name: params[:snapshot][:name])
         @snapshot.scorer = @case.scorer
         @snapshot.try = @case.tries.first
 
         if @snapshot.save
-          service = SnapshotManager.new(@snapshot)
+          serialized_data = Marshal.dump(snapshot_params)
 
-          snapshot_docs = params[:snapshot][:docs]
-          snapshot_queries = params[:snapshot][:queries]
-
-          service.add_docs snapshot_docs, snapshot_queries if snapshot_docs
+          #  puts "[SnapshotController] the size of the serialized data is #{number_to_human_size(serialized_data.bytesize)}"
+          compressed_data = Zlib::Deflate.deflate(serialized_data)
+          # puts "[SnapshotController] the size of the compressed data is #{number_to_human_size(compressed_data.bytesize)}"
+          @snapshot.snapshot_file.attach(io: StringIO.new(compressed_data), filename: "snapshot_#{@snapshot.id}.bin.zip",
+                                         content_type: 'application/zip')
+          PopulateSnapshotJob.perform_later @snapshot
 
           Analytics::Tracker.track_snapshot_created_event current_user, @snapshot
 
-          # Refetch snapshot because after bulk creating the docs
-          # the snapshot object is then stale
-          @snapshot = Snapshot.where(id: @snapshot.id)
-            .includes([ snapshot_queries: [ :snapshot_docs, { query: [ :ratings ] } ] ])
-            .first
-
+          @with_docs = false # don't show individual docs in the response
           respond_with @snapshot
         else
           render json: @snapshot.errors, status: :bad_request
         end
       end
-      # rubocop:enable Metrics/MethodLength
+      # rubocop:enable Layout/LineLength
 
       def destroy
         @snapshot.destroy
@@ -71,12 +72,18 @@ module Api
       def set_snapshot
         @snapshot = @case.snapshots
           .where(id: params[:id])
-          .includes([ snapshot_queries: [ :snapshot_docs ] ])
           .first
       end
 
       def check_snapshot
         render json: { error: 'Not Found!' }, status: :not_found unless @snapshot
+      end
+
+      def snapshot_params
+        # avoid StrongParameters ;-( to faciliate sending params as
+        # hash to ActiveJob via ActiveStorage by directly getting parameters from request
+        # object
+        request.parameters
       end
     end
   end

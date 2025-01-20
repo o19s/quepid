@@ -6,12 +6,18 @@ angular.module('QuepidApp')
       var defaultStyle  = { 'background-color': 'hsl(0, 0%, 0%, 0.5)'};
 
       this.scoreToColor = function(score, maxScore) {
-        if ( score === '?' || score === null) {
+        // obviously debugging!
+        if ( score === '?' || score === null || score === 'a?a'|| score === 'b?b'|| score === 'c?c'|| score === 'd?d'|| score === 'e?e') {
           return defaultStyle;
         }
 
         // Gray for queries with pending ratings
         if ( score === '--') {
+          return 'hsl(0, 0%, 91%)';
+        }
+        
+        // Gray for zsr with pending ratings
+        if ( score === 'zsr') {
           return 'hsl(0, 0%, 91%)';
         }
 

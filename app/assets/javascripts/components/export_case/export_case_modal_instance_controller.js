@@ -47,5 +47,18 @@ angular.module('QuepidApp')
       ctrl.cancel = function () {
         $uibModalInstance.dismiss('cancel');
       };
+      
+      
+      ctrl.isProcessingFile = function () {
+        if (ctrl.options.snapshot){
+          var desiredSnapshot = null;
+          angular.forEach(ctrl.snapshots, function(snapshot) {
+            if (snapshot.id === ctrl.selection) {
+              return desiredSnapshot.hasSnapshotFile; // exit the loop early
+            }
+          });
+        }
+        return false;
+      };
     }
   ]);

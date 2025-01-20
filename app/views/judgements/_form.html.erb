@@ -1,7 +1,9 @@
 <!--
+<pre>
 DEBUGGING INFORMATION
 query_doc_pair.id: <%= query_doc_pair.id %>
 judgement.id: <%= judgement.id %>
+</pre>
 -->
 
 <style>
@@ -56,17 +58,19 @@ judgement.id: <%= judgement.id %>
 </style>
 
 <script>
+  // debugbar in dev loads a different version of jquery and means we have to
+  // use this $j instead of $ workaround.  See https://github.com/julienbourdeau/debugbar/issues/39.
+  var $j = jQuery.noConflict();
 
   function rate(rating, key_name) {
       keyDown(key_name);
       resetStylesExcept(key_name);
       document.getElementById("judgement_rating").value = rating;
-      //party.confetti(document.getElementById("judgement_rating"));
       delay(100).then(() => (document.getElementsByName("commit")[0].click()));
   }
 
-  $(document).ready(function() {
-      $("#keyPressed_count").text("0");
+  $j(document).ready(function() {
+      $j("#keyPressed_count").text("0");
   });
 
   var count = 0;
@@ -75,8 +79,8 @@ judgement.id: <%= judgement.id %>
   function resetStyles() {
       let keyboard_shortcuts_suffixes = ["a", "s", "d", "f", "g", "h", "j", "k", "l", "sc"];
       keyboard_shortcuts_suffixes.forEach(suffix => {
-              $("#span-for-" + suffix).css("color", "gray").css("font-weight", "normal");
-              $("#button-for-" + suffix).removeClass("btn-preselected");
+              $j("#span-for-" + suffix).css("color", "gray").css("font-weight", "normal");
+              $j("#button-for-" + suffix).removeClass("btn-preselected");
           }
       );
   }
@@ -85,8 +89,8 @@ judgement.id: <%= judgement.id %>
       let keyboard_shortcuts_suffixes = ["a", "s", "d", "f", "g", "h", "j", "k", "l", "sc"];
       keyboard_shortcuts_suffixes.forEach(suffix => {
               if (suffix !== except_suffix) {
-                  $("#span-for-" + suffix).css("color", "gray").css("font-weight", "normal");
-                  $("#button-for-" + suffix).removeClass("btn-preselected");
+                  $j("#span-for-" + suffix).css("color", "gray").css("font-weight", "normal");
+                  $j("#button-for-" + suffix).removeClass("btn-preselected");
               }
           }
       );
@@ -94,8 +98,8 @@ judgement.id: <%= judgement.id %>
 
   function keyDown(suffix) {
       resetStyles();
-      $("#span-for-" + suffix).css("color", "black").css("font-weight", "bold");
-      $("#button-for-" + suffix).addClass("btn-preselected");
+      $j("#span-for-" + suffix).css("color", "black").css("font-weight", "bold");
+      $j("#button-for-" + suffix).addClass("btn-preselected");
   }
 
   function delay(time) {
@@ -103,11 +107,16 @@ judgement.id: <%= judgement.id %>
   }
 
   function keyPressed(suffix) {
-      delay(500).then(() => ($("#button-for-" + suffix).click()));
+      delay(500).then(() => ($j("#button-for-" + suffix).click()));
   }
 
-  $(document).on('keypress', function(e) {
+  $j(document).on('keypress', function(e) {
       var tag = e.target.tagName.toLowerCase();
+      if (tag == 'textarea') {
+        return;
+      }
+      // ignore if i am in a textarea, i.e giving an explanation!
+      // very brittle!
 
       if (e.which == 97 || e.which == 65) {
           keyPressed("a");
@@ -132,7 +141,7 @@ judgement.id: <%= judgement.id %>
       }
   });
 
-  $(document).on('keydown', function(e) {
+  $j(document).on('keydown', function(e) {
       var tag = e.target.tagName.toLowerCase();
 
       if (e.which == 97 || e.which == 65) {
@@ -159,6 +168,7 @@ judgement.id: <%= judgement.id %>
 
   });
 </script>
+
 
 <%
 
@@ -319,7 +329,15 @@ judgement.id: <%= judgement.id %>
 
 
   @document_fields_as_json = document_fields_parses_as_json (query_doc_pair.document_fields)
-  has_thumb = !@document_fields_as_json.nil? && @document_fields_as_json.has_key?('thumb')
+
+  image_url = nil
+  if !@document_fields_as_json.nil?
+    if @document_fields_as_json.has_key?('thumb')
+      image_url = @document_fields_as_json['thumb']
+    elsif @document_fields_as_json.has_key?('image')
+      image_url = @document_fields_as_json['image']
+    end
+  end
 
 %>
 
@@ -336,11 +354,11 @@ judgement.id: <%= judgement.id %>
     </div>
   <% end %>
 
-  <% if has_thumb %>
+  <% if image_url %>
   <div class="card mb-3" style="">
     <div class="row g-0">
       <div class="col-md-4 p-2">
-        <img src="<%= @document_fields_as_json['thumb'] %>" class="img-fluid rounded-start rounded-end" alt="Thumbnail Image">
+        <img src="<%= image_url %>" class="img-fluid rounded-start rounded-end" alt="Thumbnail Image">
       </div>
       <div class="col-md-8">
   <% else %>
@@ -373,11 +391,15 @@ judgement.id: <%= judgement.id %>
         </table>
       </div>
     </div>
+    
+    
 
-    <div class="float-end">
+    <div class="float-end">        
       <%= link_to 'I will Judge Later', book_query_doc_pair_judge_later_path(@book, query_doc_pair), class: 'btn btn-info m-1', role: 'button' %>
       <br/>
-      <%= link_to "I Can't Tell", book_query_doc_pair_unrateable_path(@book, query_doc_pair), class: 'btn btn-warning m-1', role: 'button' %>
+      <button type="button" class="btn btn-warning m-1" data-bs-toggle="modal" data-bs-target="#explanationModal">
+        I Can't Tell
+      </button>
     </div>
 
 
@@ -432,8 +454,13 @@ judgement.id: <%= judgement.id %>
         </tr>
       </table>
     <% end %>
+    
+    <% if !judgement.explanation.blank? %>
+    <p/>
+    <h6 class="card-subtitle">Judging Explanation: <em><%= judgement.explanation %></em></h5>
+    <% end %>
   </div>
-  <% if has_thumb %>
+  <% if image_url %>
       </div>
     </div>
   </div>
@@ -446,3 +473,27 @@ judgement.id: <%= judgement.id %>
   <%= form.submit class: 'hidden'%>
 
 <% end %>
+
+<!-- Modal -->
+<div class="modal fade" id="explanationModal" tabindex="-1" aria-labelledby="explanationModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-right">
+    <%= form_for(judgement, url: book_query_doc_pair_unrateable_path(@book, query_doc_pair), class: 'form-horizontal', data: { turbo: false }) do |f| %>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="explanationModalLabel">Record Explanation</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p>It is helpful (though optional) if you can record what makes this query/doc pair difficult to judge.</p>
+        <p>
+          <%= f.text_area :explanation, size: '44x2' %>
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <%= f.submit "Skip Judging",class: 'btn btn-primary' %>
+      </div>
+     </div>
+     <% end %>
+  </div>
+</div>

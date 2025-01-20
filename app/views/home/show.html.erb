@@ -1,177 +1,75 @@
 <!--
 Inspired by https://dev.to/themesberg/tutorial-how-to-build-a-simple-admin-dashboard-interface-using-bootstrap-5-2734
 -->
+<%= turbo_stream_from(:notifications) %>
 
-<!--
-https://getbootstrap.com/docs/5.2/examples/navbars-offcanvas/# for example of offcanvas nav
--->
+<div class="toast-container top-0 end-0 p-3">
+  <%= render partial: "consent_toast" %>
+  
+</div>
+
 <div class="text-center">
     <p/>
     <h5 class="card-title"><%= Time.now.strftime("%A, %B %d") %></h5>
     <h2 class="card-title"><%= greeting() %>, <%= @current_user.fullname %></h2>
 </div>
 
-<div class="row my-4">
-  <%= render partial: "case_summary", collection: @most_recent_cases, as: :kase %>
+<div class="row my-4 card_summary_container">
+  <%= render partial: "case_summary", collection: @most_recent_cases, as: :kase, cached: true %>
 </div>
 
 <div class="row my-4">
-  <%= render partial: "book_summary", collection: @most_recent_books, as: :book %>
+  <%= render partial: "book_summary", collection: @most_recent_books, as: :book, cached: true %>
 </div>
 
 <% if @cases.empty? && @most_recent_books.empty?  %>
-<div class="container my-5">
-  <div class="p-5 text-center bg-body-tertiary rounded-3">
-    <h1 class="text-body-emphasis">Welcome to Quepid!</h1>
-    <p class="col-lg-8 mx-auto fs-5 text-muted">
-      We're so excited that you are embarking on the journey to improving search quality!   There is so much to explore in Quepid.   However a good place to start is to create your first relevancy case using our demo datasets.
-    </p>
-    <div class="d-inline-flex gap-2 mb-5">
-      <%= button_to "Create Your First Relevancy Case", case_new_path, method: :get, class: 'd-inline-flex align-items-center btn btn-primary btn-lg px-4 rounded-pill' %>
+  <div class="container my-5">
+    <div class="p-5 text-center bg-body-tertiary rounded-3">
+      <h1 class="text-body-emphasis">Welcome to Quepid!</h1>
+      <p class="col-lg-8 mx-auto fs-5 text-muted">
+        We're so excited that you are embarking on the journey to improving search quality!   There is so much to explore in Quepid.   However a good place to start is to create your first relevancy case using our demo datasets.
+      </p>
+      <div class="d-inline-flex gap-2 mb-5">
+        <%= button_to "Create Your First Relevancy Case", case_new_path, data: { turbo_prefetch: false }, method: :get, class: 'd-inline-flex align-items-center btn btn-primary btn-lg px-4 rounded-pill' %>
+      </div>
     </div>
   </div>
-</div>
 <% else %>
-<div class="row">
-    <div class="col-12 col-xl-8 mb-4 mb-lg-0">
-      <div class="card">
-          <h5 class="card-header">Cases</h5>
-          <div class="card-body">
-              <div class="table-responsive">
-                  <table class="table">
-                      <thead>
-                        <tr>
-                          <th scope="col">Case Title</th>
-                          <th scope="col"># of Queries</th>
-                          <th scope="col">Last Score</th>
-                          <th scope="col">Last Run</th>
-                          <th scope="col">Last Run By</th>
-                          <th scope="col"></th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <%= render partial: "case", collection: @cases, as: :kase %>
-                      </tbody>
-                    </table>
-              </div>
-              <%= link_to 'View all', cases_path(), class: 'btn btn-block btn-light', role: 'button' %>
-              
-          </div>
-      </div>      
-    </div>
-    <div class="col-12 col-xl-4">
-      <% if true == false # disable%>
-      <% @grouped_cases.keys[0..2].each do |key| %>
-      <%= render partial: "grouped_cases", locals: {grouped_cases_name: key, grouped_cases: @grouped_cases[key]}%>
-      <% end %>
-      <% end %>
-                    
-    </div>
-</div>
+  <div class="row">
+      <div class="col-12 col-xl-8 mb-4 mb-lg-0">
+        <div class="card">
+            <h5 class="card-header">Cases</h5>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                          <tr>
+                            <th scope="col">ID</th>
+                            <th scope="col">Name</th>
+                            <th scope="col"># of Queries</th>
+                            <th scope="col">Last Score</th>
+                            <th scope="col">Last Run</th>
+                            <th scope="col">Last Run By</th>
+                            <th scope="col"></th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <%= render partial: "case", collection: @cases, as: :kase, cached: true %>
+                        </tbody>
+                      </table>
+                </div>
+                <%= link_to 'View all Cases', cases_path(), class: 'btn btn-block btn-light', role: 'button' %>                
+                
+            </div>
+        </div>      
+      </div>
+      <div class="col-12 col-xl-4">
+        <% if true == false # disable%>
+        <% @grouped_cases.keys[0..2].each do |key| %>
+        <%= render partial: "grouped_cases", locals: {grouped_cases_name: key, grouped_cases: @grouped_cases[key]}%>
+        <% end %>
+        <% end %>
+                      
+      </div>
+  </div>
 <% end %>
-
-<hr/>
-<div id="vis"></div>
-
- <script type="text/javascript">
-   var yourVlSpec = {
-     "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-     "data": {
-       "url": "<%= analytics_sparkline_vega_data_path format: :csv %>",
-       "name": "dataset",
-       "format": {"type": "csv"}
-     },
-     "facet": {
-       "row": {
-         "field": "state",
-         "sort": {
-           "field": "positiveIncrease",
-           "op": "average",
-           "order": "descending"
-         }
-       }
-     },
-     "spec": {
-       "transform": [
-         {
-           "calculate": "datetime(slice(datum.date,0,4), slice(datum.date,4,6),[slice(datum.date,6,8)])",
-           "as": "__date"
-         }
-       ],
-       "height": 20,
-       "layer": [
-         {
-           "mark": {"type": "area"},
-           "encoding": {
-             "x": {
-               "field": "__date",
-               "type": "temporal",
-               "timeUnit": "monthdatehoursminutes",
-               "axis": {
-                 "title": null,
-                 "orient": "top",
-                 "domain": false,
-                 "ticks": false,
-                 "labels": false,
-                 "grid": false
-               }
-             },
-             "y": {
-               "field": "positiveIncrease",
-               "aggregate": "sum",
-               "type": "quantitative",
-               "axis": {
-                 "title": null,
-                 "domain": false,
-                 "labels": false,
-                 "ticks": false,
-                 "grid": false
-               }
-             }
-           }
-         },
-         {
-           "mark": {"type": "text", "align": "right", "dx": -120},
-           "encoding": {
-             "text": {
-               "aggregate": {"argmax": "__date"},
-               "field": "positiveIncrease",
-               "format": ",.0f",
-               "type": "quantitative"
-             }
-           }
-         },
-         {
-           "mark": {"type": "text", "align": "right", "dx": -180},
-           "encoding": {
-             "text": {
-               "aggregate": {"argmax": "__date"},
-               "field": "positive",
-               "format": ",.0f",
-               "type": "quantitative"
-             }
-           }
-         }
-       ]
-     },
-     "resolve": {"scale": {"y": "independent"}},
-     "config": {
-       "view": {"stroke": "transparent"},
-       "header": {
-         "title": null,
-         "labelAngle": 0,
-         "labelAlign": "left",
-         "labelFontSize": 12,
-         "labelFont": "Arial"
-       },
-       "text": {"font": "Arial", "fontSize": 12},
-       "facet": {"spacing": 1},
-       "area": {
-         "interpolate": "monotone",
-         "line": {"color": "red", "strokeWidth": 1, "interpolate": "monotone"},
-         "fill": "#faa"
-       }
-     }
-   };
-   vegaEmbed('#vis', yourVlSpec);
- </script>

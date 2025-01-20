@@ -6,15 +6,11 @@
 #
 #  id                 :integer          not null, primary key
 #  ancestry           :string(3072)
-#  api_method         :string(255)
-#  custom_headers     :string(1000)
 #  escape_query       :boolean          default(TRUE)
 #  field_spec         :string(500)
 #  name               :string(50)
 #  number_of_rows     :integer          default(10)
 #  query_params       :string(20000)
-#  search_engine      :string(50)       default("solr")
-#  search_url         :string(500)
 #  try_number         :integer
 #  created_at         :datetime         not null
 #  updated_at         :datetime         not null
@@ -58,6 +54,7 @@ class Try < ApplicationRecord
   before_create :set_defaults
 
   # rubocop:disable Metrics/MethodLength
+  # rubocop:disable Metrics/CyclomaticComplexity
   def args
     unless search_endpoint.nil?
       case search_endpoint.search_engine
@@ -71,12 +68,15 @@ class Try < ApplicationRecord
         os_args
       when 'vectara'
         vectara_args
+      when 'algolia'
+        algolia_args
       when 'searchapi'
         searchapi_args
       end
     end
   end
   # rubocop:enable Metrics/MethodLength
+  # rubocop:enable Metrics/CyclomaticComplexity
 
   # merge the search endpoint and case options together,
   # with search endpoint options taking precedence
@@ -155,6 +155,11 @@ class Try < ApplicationRecord
   end
 
   def vectara_args
+    # Use the EsArgParser as currently queries are the same
+    EsArgParser.parse(query_params, curator_vars_map)
+  end
+
+  def algolia_args
     # Use the EsArgParser as currently queries are the same
     EsArgParser.parse(query_params, curator_vars_map)
   end

@@ -76,8 +76,7 @@ angular.module('QuepidApp')
             '  "query": {',
             '    "multi_match": {',
             '      "query": "#$query##",',
-            '      "type": "best_fields",',
-            '      "fields": ["REPLACE_ME"]',
+            '      "fields": ["*"]',
             '    }',
             '  }',
             '}',
@@ -137,6 +136,38 @@ angular.module('QuepidApp')
           proxyRequests: false,
           basicAuthCredential: ''
         },
+        algolia: {
+          queryParams: [
+            '{',
+              '"query": "#$query##",',
+              '"clickAnalytics": true,',
+              '"getRankingInfo": true,',
+              '"restrictSearchableAttributes": [],',
+              '"enableReRanking": true,',
+              '"attributesToHighlight": [],',
+              '"page": 0,',
+              '"hitsPerPage": 10',
+            '}'
+          ].join('\n'),
+          escapeQuery: true,
+          apiMethod: 'POST',
+          headerType: 'Custom',
+          customHeaders: [
+            '{',
+            '  "x-algolia-application-id": "OKF83BFQS4",',
+            '  "x-algolia-api-key": "2ee1381ed11d3fe70b60605b1e2cd3f4"',
+            '}'
+          ].join('\n'),
+          idField: 'objectID',
+          titleField: 'title',
+          additionalFields: ['overview', 'cast', 'thumb:poster_path'],
+          numberOfRows: 10,
+          searchEngine: 'algolia',
+          searchUrl: 'https://OKF83BFQS4-dsn.algolia.net/1/indexes/movies_demo_quepid/query',
+          urlFormat: 'https://<APPLICATION-ID>-dsn.algolia.net/1/indexes/<index>/query',
+          proxyRequests: true,
+          basicAuthCredential: ''
+        },
         static: {
           queryParams: [
             'q=#$query##'
@@ -164,13 +195,14 @@ angular.module('QuepidApp')
           apiMethod: 'POST',
           headerType: 'None',
           customHeaders: '',
-          fieldSpec: 'id:id',
-          idField: 'id',
-          titleField: 'title',
+          fieldSpec: null,
+          idField: null,
+          titleField: null,
           additionalFields: [],
-          numberOfRows: 1,
+          numberOfRows: 10,
           searchEngine: 'searchapi',
-          urlFormat: 'http(s?)://yourdomain.com:9200/<path>/<etc>',
+          searchUrl: 'https://example.com/api/search',
+          urlFormat: null,
           proxyRequests: true,
           mapperCode: [
             'numberOfResultsMapper = function(data){',
@@ -290,6 +322,17 @@ angular.module('QuepidApp')
 
       var Settings = SettingsFactory;
       var currSettings = null;
+      
+      this.supportLookupById = function(searchEngine) {
+        let supportLookupById = true;
+        if (searchEngine === 'vectara'){
+          supportLookupById = false;
+        }
+        else if (searchEngine === 'searchapi'){
+          supportLookupById = false;
+        }
+        return supportLookupById;
+      };
 
       this.demoSettingsChosen = function(searchEngine, newUrl) {
         var useTMDBDemoSettings = false;
@@ -301,7 +344,7 @@ angular.module('QuepidApp')
             if (newUrl === null || angular.isUndefined(newUrl)) {
               useTMDBDemoSettings = true;
             }
-            // We actually have seperate demos for Solr based on http and https urls.
+            // We actually have separate demos for Solr based on http and https urls.
             else if (newUrl === this.tmdbSettings['solr'].insecureSearchUrl || newUrl === this.tmdbSettings['solr'].secureSearchUrl) {
               useTMDBDemoSettings = true;
             }
@@ -329,7 +372,7 @@ angular.module('QuepidApp')
           return angular.copy(this.defaultSettings[searchEngine]);
         }
       };
-      
+
       this.getDemoSettings = function(searchEngine){
         return angular.copy(this.tmdbSettings[searchEngine]);
     };
@@ -403,7 +446,7 @@ angular.module('QuepidApp')
           settings.basicAuthCredential = tryToUse.basicAuthCredential;
           settings.mapperCode = tryToUse.mapperCode;
           settings.options = tryToUse.options;
-          
+
           // TODO: Store type in db?...
           settings.headerType = settings.customHeaders.includes('ApiKey') ? 'API Key'
             : settings.customHeaders.length > 0 ? 'Custom' : 'None';
@@ -460,7 +503,7 @@ angular.module('QuepidApp')
         var payloadSearchEndpoint = {};
         payload.try = payloadTry;
         payload.search_endpoint = payloadSearchEndpoint;
-        payload.parent_try_number = settingsToSave.selectedTry.tryNo;
+        payload.parent_try_number = settingsToSave.selectedTry.tryNo; // track the parent try for ancestry
         payload.curator_vars = settingsToSave.selectedTry.curatorVarsDict();
 
         // We create the default name on the server side
@@ -470,7 +513,7 @@ angular.module('QuepidApp')
         payloadTry.field_spec = settingsToSave.fieldSpec;
         payloadTry.number_of_rows = settingsToSave.numberOfRows;
         payloadTry.query_params = settingsToSave.selectedTry.queryParams;
-        
+
         // Either we are changing to a different, existing search endpoint
         if (settingsToSave.searchEndpointId){
           payloadTry.search_endpoint_id = settingsToSave.searchEndpointId;
@@ -485,7 +528,7 @@ angular.module('QuepidApp')
           payloadSearchEndpoint.mapper_code = settingsToSave.mapperCode;
           payloadSearchEndpoint.proxy_requests = settingsToSave.proxyRequests;
         }
-        
+
         return $http.post('api/cases/' + currCaseNo + '/tries', payload)
           .then(function(response) {
             var tryJson = response.data;

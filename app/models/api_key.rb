@@ -13,6 +13,7 @@
 # Indexes
 #
 #  index_api_keys_on_token_digest  (token_digest)
+#  index_api_keys_user_id          (user_id)
 #
 class ApiKey < ApplicationRecord
   HMAC_SECRET_KEY = Rails.application.secret_key_base

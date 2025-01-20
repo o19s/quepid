@@ -29,7 +29,7 @@ angular.module('QuepidApp')
       var fetchDeepCaseList = function() {
         $scope.casesScope.loadingCases = true;
 
-        caseSvc.getCases(false)
+        caseSvc.getCases()
           .then(function() {
             broadcastSvc.send('updatedCasesList', caseSvc.allCases);
             $scope.casesScope.loadingCases = false;

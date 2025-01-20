@@ -1,5 +1,4 @@
 //= require bootstrap/dist/js/bootstrap.bundle
-//= require rails-ujs
 //= require jquery
 
 //= require d3

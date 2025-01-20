@@ -1,0 +1,14 @@
+<%= turbo_stream.replace "notification" do %>
+  <span id="notification">
+    <% if counter > 0 %>
+      <div class="alert alert-warning" role="alert" >      
+        Iterations Remaining: <code><%= counter %></code>. 
+      <br/>     
+      </div>
+    <% else %>
+      <div class="alert alert-info" role="alert">
+        Websocket Tester Background Job has completed.
+      </div>
+    <% end %>
+  </span>
+<% end %>

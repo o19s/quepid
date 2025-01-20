@@ -60,18 +60,18 @@ module Api
       end
 
       def annotation_params
-        params.require(:annotation).permit(
-          :message,
-          :source
+        params.expect(
+          annotation: [ :message,
+                        :source ]
         )
       end
 
       def score_params
-        params.require(:score).permit(
-          :all_rated,
-          :score,
-          :try_id,
-          queries: []
+        params.expect(
+          score: [ :all_rated,
+                   :score,
+                   :try_id,
+                   { queries: [] } ]
         )
       end
     end

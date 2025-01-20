@@ -1,10 +1,10 @@
 {
   "name": "quepid",
   "description": "Give your queries some love!",
+  "stack": "heroku-24",
   "addons": [
     "jawsdb",
-    "logdna",
-    "heroku-redis"
+    "logdna"
   ],
   "buildpacks": [
     {
@@ -39,9 +39,6 @@
     "QUEPID_DOMAIN": {
       "required": true
     },
-    "QUEPID_GA": {
-      "required": true
-    },
     "RACK_ENV": {
       "required": true
     },
@@ -53,9 +50,6 @@
     },
     "SECRET_KEY_BASE": {
       "generator": "secret"
-    },
-    "SIDEKIQ_CONCURRENCY": {
-      "required": true
     },
     "TC_URL": {
       "required": true
@@ -86,16 +80,16 @@
     }
   },
   "formation": {
-    "worker": {
-      "quantity": 1,
-      "size": "standard-1x"
-    },
     "web": {
       "quantity": 1,
-      "size": "standard-1x"
+      "size": "standard-2x"
+    },
+    "worker": {
+      "quantity": 1,
+      "size": "standard-2x"
     }
   },
   "scripts": {
-  },
-  "stack": "heroku-22"
+    "postdeploy": "bundle exec rake db:migrate"
+  }
 }

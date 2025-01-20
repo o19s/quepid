@@ -47,15 +47,7 @@ module HomeHelper
   # rubocop:enable Metrics/AbcSize
   # rubocop:enable Metrics/MethodLength
 
-  def case_title kase
-    if kase.case_name.downcase.starts_with?('case')
-      kase.case_name
-    else
-      "Case #{kase.case_name}"
-    end
-  end
-
-  def judge_name judge
-    judge.nil? ? 'anonymous' : judge.name
+  def strip_case_title kase
+    kase.case_name.sub(/^case\s+/i, '').capitalize
   end
 end

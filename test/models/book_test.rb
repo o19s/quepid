@@ -5,7 +5,10 @@
 # Table name: books
 #
 #  id                          :bigint           not null, primary key
+#  export_job                  :string(255)
+#  import_job                  :string(255)
 #  name                        :string(255)
+#  populate_job                :string(255)
 #  show_rank                   :boolean          default(FALSE)
 #  support_implicit_judgements :boolean
 #  created_at                  :datetime         not null
@@ -17,6 +20,7 @@
 # Indexes
 #
 #  index_books_on_selection_strategy_id  (selection_strategy_id)
+#  index_books_owner_id                  (owner_id)
 #
 # Foreign Keys
 #
@@ -31,13 +35,11 @@ class BookTest < ActiveSupport::TestCase
     let(:book1)                 { books(:james_bond_movies) }
     let(:book2)                 { books(:empty_book) }
 
-    # not sure this is actually important?  Why would we care at this level?
-    # it 'returns books by alphabetical name of book for a team' do
-    #  puts team.books.first.name
-    #  puts team.books.second.name
-    #  assert_equal book2, team.books.first
-    #  assert_equal book1, team.books.second
-    # end
+    # think about the impact of counter cache on query doc pairs
+    it 'has some query_doc_pairs' do
+      assert_equal 7, book1.query_doc_pairs.size
+      assert_equal 'GeorgeLazenby', book1.query_doc_pairs.first.doc_id
+    end
   end
 
   describe 'sampling random query doc pairs' do

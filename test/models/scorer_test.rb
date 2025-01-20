@@ -15,6 +15,10 @@
 #  updated_at        :datetime         not null
 #  owner_id          :integer
 #
+# Indexes
+#
+#  index_scorers_owner_id  (owner_id)
+#
 
 require 'test_helper'
 
@@ -54,6 +58,33 @@ class ScorerTest < ActiveSupport::TestCase
       scorer = Scorer.create scale_with_labels: { '1' => '👍' }
 
       assert_equal scorer.scale_with_labels, '1' => '👍'
+    end
+  end
+
+  describe 'for_user' do
+    it 'includes scorers where user is team owner' do
+      scorers = Scorer.for_user(users(:random))
+      assert scorers.include?(scorers(:shared_scorer))
+    end
+
+    it 'includes scorers connected to teams' do
+      scorers = Scorer.for_user(users(:shared_team_member))
+      assert scorers.include?(scorers(:random_scorer))
+    end
+
+    it 'includes scorers owned by user' do
+      scorers = Scorer.for_user(users(:random))
+      assert scorers.include?(scorers(:shared_scorer))
+    end
+
+    it 'includes communal scorers' do
+      scorers = Scorer.for_user(users(:doug))
+      assert scorers.include?(scorers(:communal_scorer))
+    end
+
+    it 'excludes other scorers' do
+      scorers = Scorer.for_user(users(:doug))
+      assert scorers.exclude?(scorers(:random_scorer))
     end
   end
 end

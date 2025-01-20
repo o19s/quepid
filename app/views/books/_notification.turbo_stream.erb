@@ -1,0 +1,10 @@
+<%= turbo_stream.replace "notification-book-#{book.id}" do %>
+  <span id="notification-book-<%= book.id %>">  
+    <div class="alert alert-info" role="alert">
+      <%= message %>
+      <div class="progress" role="progressbar" aria-label="Book Export Progress" aria-valuenow="<%= progress %>" aria-valuemin="0" aria-valuemax="100">
+        <div class="progress-bar" style="width: <%= progress %>%"></div>
+      </div>
+    </div>  
+  </span>
+<% end %>

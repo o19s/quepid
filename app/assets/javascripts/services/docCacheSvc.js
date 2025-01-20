@@ -58,21 +58,11 @@ angular.module('QuepidApp')
           // Pass in the Quepid specific proxy url
           settings.proxyUrl = caseTryNavSvc.getQuepidProxyUrl();
         }
-        
+
         var docIds    = Object.keys(docsToFetch);
-        var resolver  = docResolverSvc.createResolver(docIds, settings, 15);
-        
-        // 'vectara' does not support doc lookup by ID.
-        let supportLookupById = true;
-        if (settings && settings.searchEngine === 'vectara'){
-          supportLookupById = false;
-        }
-        else if (settings && settings.searchEngine === 'searchapi'){
-          supportLookupById = false;
-        }
-      
-        
-        if ( supportLookupById && docIds.length > 0 ) {           
+
+        if ( docIds.length > 0 ) {           
+          var resolver  = docResolverSvc.createResolver(docIds, settings, 15);
           return resolver.fetchDocs()
             .then(function () {
               angular.forEach(resolver.docs, function (doc) {

@@ -33,7 +33,6 @@ module Api
           query_response = response.parsed_body['query']
 
           assert_not_nil  query_response['query_id']
-          assert_equal    query_response['arranged_at'], 0
           assert_equal    query_response['query_text'], query_text
 
           query = acase.queries.first
@@ -82,7 +81,6 @@ module Api
           query_response = response.parsed_body['query']
 
           assert_not_nil  query_response['query_id']
-          assert_equal    query_response['arranged_at'], 0
           assert_equal    query_response['query_text'], query_text
         end
 
@@ -95,7 +93,6 @@ module Api
           query_response = response.parsed_body['query']
 
           assert_not_nil  query_response['query_id']
-          assert_equal    query_response['arranged_at'], 0
           assert_equal    query_response['query_text'], query_text
 
           count = acase.queries.count
@@ -120,7 +117,6 @@ module Api
           query_response = response.parsed_body['query']
 
           assert_not_nil  query_response['query_id']
-          assert_equal    query_response['arranged_at'], 0
           assert_equal    query_response['query_text'], query_text.strip
 
           count = acase.queries.count

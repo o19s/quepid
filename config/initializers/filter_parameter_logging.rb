@@ -3,20 +3,17 @@
 # require 'active_support'
 # Be sure to restart your server when you modify this file.
 
-# Configure parameters to be filtered from the log file. Use this to limit dissemination of
-# sensitive information. See the ActiveSupport::ParameterFilter documentation for supported
-# notations and behaviors.
+# Configure parameters to be partially matched (e.g. passw matches password) and filtered from the log file.
+# Use this to limit dissemination of sensitive information.
+# See the ActiveSupport::ParameterFilter documentation for supported notations and behaviors.
 Rails.application.config.filter_parameters += [
-  :passw, :secret, :token, :_key, :crypt, :salt, :certificate, :otp, :ssn, :document_fields
+  :passw, :email, :secret, :token, :_key, :crypt, :salt, :certificate, :otp, :ssn, :cvv, :cvc,
+  :document_fields
 ]
 
 Rails.application.config.filter_parameters += [
-  ->(key, _value) { 'query_doc_pair.document_fields' == key.to_s }
-]
-
-Rails.application.config.filter_parameters += [
-  ->(key, _value) { 'snapshot_doc.fields' == key.to_s }
-]
-Rails.application.config.filter_parameters += [
-  ->(key, _value) { 'snapshot_doc.explain' == key.to_s }
+  'query_doc_pair.document_fields',
+  'snapshot.docs',
+  'snapshot_doc.explain',
+  'snapshot_doc.fields'
 ]

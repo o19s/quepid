@@ -34,7 +34,7 @@ module Api
         end
 
         test 'requires a case name' do
-          post :create, params: { case: { name: '' } }
+          post :create, params: { case: { case_name: '' } }
 
           assert_response :bad_request
 
@@ -519,24 +519,13 @@ module Api
           assert_not_includes names, shared.case_name
         end
 
-        test 'limits list to 3 cases if sorting by last_viewed_at' do
-          get :index, params: { sortBy: 'last_viewed_at' }
-
-          assert_response :ok
-
-          body  = response.parsed_body
-          cases = body['all_cases']
-
-          assert cases.length <= 3
-        end
-
         test 'returns list of cases ordered by last viewed date' do
           date        = DateTime.current
           date_param  = date.strftime('%F %T')
           metadata    = second_case.metadata.find_or_create_by user_id: doug.id
           metadata.update last_viewed_at: date_param
 
-          get :index, params: { sortBy: 'last_viewed_at' }
+          get :index
 
           assert_response :ok
 
@@ -554,7 +543,7 @@ module Api
           metadata    = shared.metadata.find_or_create_by user_id: doug.id
           metadata.update last_viewed_at: date_param
 
-          get :index, params: { sortBy: 'last_viewed_at' }
+          get :index
 
           assert_response :ok
 

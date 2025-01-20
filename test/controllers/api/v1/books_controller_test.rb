@@ -121,7 +121,7 @@ module Api
 
           assert_response :ok
           csv = CSV.parse(response.body, headers: true)
-          assert_includes csv.headers, 'Unknown'
+          assert_includes csv.headers, 'anonymous'
         end
       end
     end

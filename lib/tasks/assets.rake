@@ -11,17 +11,16 @@ namespace :assets do
     notebooks_dir = Rails.public_path.join('notebooks')
 
     # Only deal with the compressed notebooks if we don't have the directory already.
-    unless File.exist?(notebooks_dir)
-      unless File.exist?(notebooks_gz)
-        puts 'Downloading latest Quepid Notebooks from https://github.com/o19s/quepid-jupyterlite'
-        system "wget --no-verbose -O #{notebooks_gz} https://github.com/o19s/quepid-jupyterlite/releases/latest/download/jupyter-lite-build.tgz"
-      end
-
-      puts "Unpacking Jupyterlite into #{destination}"
-      system "tar -xzf #{notebooks_gz} --directory #{destination}"
-
-      File.delete(notebooks_gz)
+    if !File.exist?(notebooks_dir) && !File.exist?(notebooks_gz)
+      url = 'https://github.com/o19s/quepid-jupyterlite/releases/download/0.3.2-rc2/jupyter-lite-build.tgz'
+      puts "Downloading latest Quepid Notebooks from #{url}"
+      system "wget --no-verbose -O #{notebooks_gz} #{url}"
     end
+
+    puts "Unpacking Jupyterlite into #{destination}"
+    system "tar -xzf #{notebooks_gz} --directory #{destination}"
+
+    File.delete(notebooks_gz)
   end
 
   # Hook into existing assets:precompile task

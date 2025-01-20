@@ -7,6 +7,7 @@
 #  id                :integer          not null, primary key
 #  all_rated         :boolean
 #  number_of_results :integer
+#  response_status   :integer
 #  score             :float(24)
 #  query_id          :integer
 #  snapshot_id       :integer
@@ -25,7 +26,8 @@
 class SnapshotQuery < ApplicationRecord
   belongs_to  :snapshot, optional: true # shouldn't be
   belongs_to  :query, optional: true # shouldn't be
+  has_one     :web_request, dependent: :destroy
   has_many    :snapshot_docs, -> { order(position: :asc) },
-              dependent:  :destroy,
+              dependent:  :delete_all,
               inverse_of: :snapshot_query
 end

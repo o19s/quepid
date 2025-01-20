@@ -8,11 +8,25 @@ module Api
       before_action :set_judgement,   only: [ :show, :update, :destroy ]
       before_action :check_judgement, only: [ :show, :update, :destroy ]
 
-      def_param_group :judgement do
-        param :rating, Float
-        param :judge_later, [ true, false ]
-        param :unrateable, [ true, false ]
-        param :user_id, String
+      def_param_group :judgement_params do
+        param :judgement, Hash, required: true do
+          param :user_id, Integer
+          param :rating, Float
+          param :judge_later, [ true, false ]
+          param :unrateable, [ true, false ]
+          param :explanation, String
+        end
+      end
+
+      def_param_group :create_judgement_params do
+        param :judgement, Hash, required: true do
+          param :query_doc_pair_id, Integer
+          param :user_id, Integer
+          param :rating, Float
+          param :judge_later, [ true, false ]
+          param :unrateable, [ true, false ]
+          param :explanation, String
+        end
       end
 
       api :GET, '/api/books/:book_id/judgements',
@@ -38,18 +52,17 @@ module Api
       end
 
       # rubocop:disable Metrics/AbcSize
-      api :POST, '/api/books/:book_id/query_doc_pair/:query_doc_pair_id/judgements/', 'Create a new judgement.'
-      param :query_doc_pair_id, :number,
-            desc: 'The ID of the requested query doc pair.', required: true
+      api :POST, '/api/books/:book_id/judgements/', 'Create a new judgement.'
       param :book_id, :number,
             desc: 'The ID of the requested book.', required: true
-      param_group :judgement
+      param_group :create_judgement_params
       def create
         # @judgement = @book.judgements.build judgement_params
         @judgement = @book.judgements.find_or_create_by query_doc_pair_id: params[:judgement][:query_doc_pair_id],
                                                         user_id:           params[:judgement][:user]
 
         @judgement.rating = params[:judgement][:rating] unless params[:judgement][:rating].nil?
+        @judgement.explanation = params[:judgement][:explanation] unless params[:judgement][:explanation].nil?
 
         if params[:judgement][:user_id]
           user = User.find(params[:judgement][:user_id])
@@ -71,7 +84,7 @@ module Api
             desc: 'The ID of the requested query doc pair.', required: true
       param :id, :number,
             desc: 'The ID of the requested judgement.', required: true
-      param_group :judgement
+      param_group :judgement_params
       def update
         update_params = judgement_params
         if @judgement.update update_params
@@ -96,7 +109,7 @@ module Api
       private
 
       def judgement_params
-        params.require(:judgement).permit(:rating, :unrateable, :query_doc_pair_id, :user_id)
+        params.expect(judgement: [ :rating, :unrateable, :query_doc_pair_id, :user_id, :explanation ])
       end
 
       def set_judgement

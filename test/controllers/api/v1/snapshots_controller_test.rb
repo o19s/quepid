@@ -24,12 +24,12 @@ module Api
               name:    'New Snapshot',
               docs:    {
                 first_query.id  => [
-                  { id: 'doc1', explain: 1 },
-                  { id: 'doc2', explain: 2 }
+                  { id: 'doc1', explain: '1' },
+                  { id: 'doc2', explain: '2' }
                 ],
                 second_query.id => [
-                  { id: 'doc3', explain: 3 },
-                  { id: 'doc4', explain: 4 }
+                  { id: 'doc3', explain: '3' },
+                  { id: 'doc4', explain: '4' }
                 ],
               },
               queries: {
@@ -49,27 +49,37 @@ module Api
             post :create, params: data.merge(case_id: acase.id)
 
             assert_response :ok
-            snapshot = response.parsed_body
+            snapshot_response = response.parsed_body
 
-            assert_not_nil snapshot['time']
+            assert_not_nil snapshot_response['scorer']
+            assert_not_nil snapshot_response['try']
+            assert_not_nil snapshot_response['time']
+            assert_not_nil snapshot_response['id']
+            assert_equal snapshot_response['name'], data[:snapshot][:name]
 
-            assert_equal snapshot['name'],        data[:snapshot][:name]
-            assert_equal snapshot['docs'].length, data[:snapshot][:docs].length
+            perform_enqueued_jobs
 
-            data_doc      = data[:snapshot][:docs][first_query.id][0]
-            response_doc  = snapshot['docs'][first_query.id.to_s][0]
+            snapshot = Snapshot.find(snapshot_response['id'])
 
-            assert_equal data_doc[:id],       response_doc['id']
-            assert_equal data_doc[:explain],  response_doc['explain']
+            assert_equal snapshot.snapshot_docs.length, data[:snapshot][:docs].values.flatten.count
 
+            data_doc = data[:snapshot][:docs][first_query.id][0]
+            snapshot_query = snapshot.snapshot_queries.where(query_id: first_query.id).first
+
+            response_doc = snapshot_query.snapshot_docs[0]
+
+            assert_equal data_doc[:id],       response_doc.doc_id
+            assert_equal data_doc[:explain],  response_doc.explain
+
+            snapshot_query = snapshot.snapshot_queries.where(query: second_query).first
             data_doc      = data[:snapshot][:docs][second_query.id][0]
-            response_doc  = snapshot['docs'][second_query.id.to_s][0]
+            response_doc  = snapshot_query.snapshot_docs[0]
 
-            assert_equal data_doc[:id],       response_doc['id']
-            assert_equal data_doc[:explain],  response_doc['explain']
+            assert_equal data_doc[:id],       response_doc.doc_id
+            assert_equal data_doc[:explain],  response_doc.explain
 
-            assert_not_nil snapshot['scorer']
-            assert_not_nil snapshot['try']
+            assert_not_nil snapshot.scorer
+            assert_not_nil snapshot.try
           end
         end
 
@@ -79,8 +89,8 @@ module Api
               name:    'New Snapshot',
               docs:    {
                 first_query.id  => [
-                  { id: 'doc1', explain: 1 },
-                  { id: 'doc2', explain: 2 }
+                  { id: 'doc1', explain: '1' },
+                  { id: 'doc2', explain: '2' }
                 ],
                 # in Rails 4, we could do second_query.id => [] and getting the second_query in,
                 # but in Rails 5, the second_query doesn't show up because the array that is empty
@@ -105,20 +115,39 @@ module Api
 
             assert_response :ok
 
-            snapshot = response.parsed_body
+            snapshot_response = response.parsed_body
 
-            assert_equal data[:snapshot][:name],        snapshot['name']
-            assert_equal data[:snapshot][:docs].length, snapshot['docs'].length
+            assert_equal data[:snapshot][:name], snapshot_response['name']
+            assert_not_nil snapshot_response['id']
 
-            data_doc      = data[:snapshot][:docs][first_query.id][0]
-            response_doc  = snapshot['docs'][first_query.id.to_s][0]
+            snapshot = Snapshot.find(snapshot_response['id'])
+            assert snapshot.snapshot_file.present?
+            assert_equal snapshot.snapshot_queries.length, 0
 
-            assert_equal data_doc[:id],       response_doc['id']
-            assert_equal data_doc[:explain],  response_doc['explain']
+            perform_enqueued_jobs
 
-            response_docs = snapshot['docs'][second_query.id.to_s]
+            snapshot = Snapshot.find(snapshot_response['id'])
+            assert_not snapshot.snapshot_file.present?
+            assert_equal snapshot.snapshot_queries.length, 2
+            assert_equal data[:snapshot][:docs].length, snapshot.snapshot_docs.length
+
+            data_doc = data[:snapshot][:docs][first_query.id][0]
+
+            snapshot_query = snapshot.snapshot_queries.where(query_id: first_query.id).first
+
+            response_doc = snapshot_query.snapshot_docs[0]
+
+            assert_equal data_doc[:id],       response_doc.doc_id
+            assert_equal data_doc[:explain],  response_doc.explain
+
+            snapshot_query = snapshot.snapshot_queries.where(query_id: second_query.id).first
+            response_docs = snapshot_query.snapshot_docs
 
             assert_empty response_docs
+
+            perform_enqueued_jobs
+
+            assert_equal snapshot.snapshot_queries.length, 2
           end
         end
 
@@ -216,8 +245,9 @@ module Api
           let(:data)  do
             {
               snapshot: {
-                name: 'New Snapshot',
-                docs: {},
+                name:    'New Snapshot',
+                docs:    {},
+                queries: {},
               },
             }
           end

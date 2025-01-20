@@ -8,7 +8,7 @@ class JudgementsController < ApplicationController
     bool = ActiveRecord::Type::Boolean.new
     @shallow = bool.deserialize(params[:shallow] || true )
 
-    @judgements = @book.judgements.includes([ :query_doc_pair, :user ])
+    @judgements = @book.judgements.includes([ :query_doc_pair, :user ]).order('query_doc_pair_id')
   end
 
   def show
@@ -36,9 +36,10 @@ class JudgementsController < ApplicationController
     if @query_doc_pair.nil? # no more query doc pairs to be judged!
       redirect_to book_path(@book)
     else
-      if @query_doc_pair
-        @query = Query.joins(:case).where(case: { book_id: @query_doc_pair.book.id }).has_information_need.where(query_text: @query_doc_pair.query_text).first
-      end
+      # NO LONGER USED
+      # if @query_doc_pair
+      #   @query = Query.joins(:case).where(case: { book_id: @query_doc_pair.book.id }).has_information_need.where(query_text: @query_doc_pair.query_text).first
+      # end
       @judgement = Judgement.new(query_doc_pair: @query_doc_pair, user: @current_user, updated_at: Time.zone.now)
       @previous_judgement = @judgement.previous_judgement_made # unless @judgement.new_record?
       if (track_judging[:counter] % 50).zero? # It's party time!
@@ -93,6 +94,7 @@ class JudgementsController < ApplicationController
 
   def unrateable
     @judgement = Judgement.find_or_initialize_by(query_doc_pair_id: params[:query_doc_pair_id], user: current_user)
+    @judgement.update(judgement_params)
 
     @judgement.mark_unrateable!
     UpdateCaseRatingsJob.perform_later @judgement.query_doc_pair
@@ -122,7 +124,7 @@ class JudgementsController < ApplicationController
   def destroy
     @judgement.destroy
     UpdateCaseRatingsJob.perform_later @judgement.query_doc_pair
-    respond_with(@judgement, :location => book_judgements_path)
+    redirect_to book_judge_path(@book), notice: "Removed rating for query '#{@judgement.query_doc_pair.query_text}'."
   end
 
   private
@@ -132,6 +134,6 @@ class JudgementsController < ApplicationController
   end
 
   def judgement_params
-    params.require(:judgement).permit(:user_id, :rating, :query_doc_pair_id, :unrateable)
+    params.expect(judgement: [ :user_id, :rating, :query_doc_pair_id, :unrateable, :explanation ])
   end
 end

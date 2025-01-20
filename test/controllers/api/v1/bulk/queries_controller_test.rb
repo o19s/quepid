@@ -48,7 +48,7 @@ module Api
             assert_equal response.parsed_body['display_order'][0], first_query.id
           end
 
-          test 'doesnt allow duplicate queries to be created' do
+          test 'does not allow duplicate queries to be created' do
             data = {
               case_id: acase.id,
               queries: %w[one two three four],
@@ -70,6 +70,29 @@ module Api
             acase.reload
 
             assert_equal 5, acase.queries.size
+          end
+
+          test 'Scales up to thousands of queries' do
+            number_of_queries = 5000
+            result = Benchmark.measure do
+              queries = []
+              number_of_queries.times do |index|
+                queries << "Query #{index + 1}"
+              end
+              data = {
+                case_id: acase.id,
+                queries: queries,
+              }
+
+              post :create, params: data
+            end
+
+            assert result.real < 8, "Expecting less than 8 seconds. Elapsed time: #{result.real} seconds\n"
+            # puts "Elapsed time: #{result.real} seconds\n"
+
+            acase.reload
+
+            assert_equal number_of_queries, acase.queries.size
           end
         end
 

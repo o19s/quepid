@@ -198,4 +198,37 @@ describe('Controller: WizardModalCtrl', function () {
       $httpBackend.flush();
     });
   });
+  
+  describe('parse url', function() {
+    it('blows up on %', function() {
+      var url = "http://username:pass%@quepid-solr.dev.o19s.com:8985/solr/tmdb/select?q=*:*&fl=*&wt=json";
+      expect(function() {
+        new URI(url);
+      }).toThrowError('URI malformed');
+    });
+    
+    it('Works with %25', function() {
+      var url = "http://username:pass%25@quepid-solr.dev.o19s.com:8985/solr/tmdb/select?q=*:*&fl=*&wt=json";
+      
+      var a = new URI(url);
+      expect(a.password()).toBe('pass%');
+      expect(a.username()).toBe('username');
+    });
+    
+    it('Works with %25 nested', function() {
+      var url = "http://username:pass%25word@quepid-solr.dev.o19s.com:8985/solr/tmdb/select?q=*:*&fl=*&wt=json";
+      
+      var a = new URI(url);
+      expect(a.password()).toBe('pass%word');
+      expect(a.username()).toBe('username');
+    });    
+    
+    it('validates the basic auth credentials', function() {
+      expect(scope.invalidBasicAuthCredentials).toBe(false);
+      scope.pendingWizardSettings.basicAuthCredential = "username:pass%";
+      scope.validateBasicAuthCredentials();
+      expect(scope.invalidBasicAuthCredentials).toBe(true);
+    });   
+    
+  });
 });

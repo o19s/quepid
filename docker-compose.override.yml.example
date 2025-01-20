@@ -7,3 +7,4 @@ services:
     volumes:
       - /Users/epugh/Documents/projects/splainer-search/package.json:/srv/app/node_modules/splainer-search/package.json
       - /Users/epugh/Documents/projects/splainer-search/splainer-search.js:/srv/app/node_modules/splainer-search/splainer-search.js
+      - /Users/epugh/Documents/projects/quepid-jupyterlite/notebooks:/srv/app/public/notebooks

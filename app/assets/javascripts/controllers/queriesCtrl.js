@@ -168,6 +168,7 @@ angular.module('QuepidApp')
       // a simulated "query" that the results view uses for display
       var lastVersion = -1;
       var avgQuery = {
+        caseLevelQuery: true,
         lastScore: -1,
         calcScore: function() {
           // rescore only if
@@ -226,7 +227,11 @@ angular.module('QuepidApp')
           fullDiffName = 'Highest ratest results for each query';
         } else {
           var snapshot = querySnapshotSvc.snapshots[queryViewSvc.diffSetting];
-          fullDiffName = snapshot.name();
+          // When reopening the snapshot selection UI we clear out the querySnapshotSvc.snapshots
+          // while reloading the data.
+          if (snapshot) { 
+            fullDiffName = snapshot.name();
+          }
         }
         return fullDiffName;
       };

@@ -1,5 +1,4 @@
 'use strict';
-
 angular.module('QuepidApp')
   .controller('SearchResultsCtrl', [
     '$rootScope',
@@ -26,14 +25,10 @@ angular.module('QuepidApp')
       // Refresh rated-only docs if ratings have changed
       $rootScope.$on('rating-changed', function(e, queryId) {
         if (!queriesSvc.showOnlyRated && $scope.query.queryId === queryId) {
-          $scope.query.refreshRatedDocs();
+          queriesSvc.updateScores();          
         }
       });
 
-      $scope.overThreshold = function() {
-        return $scope.query.lastScore && $scope.query.thresholdEnabled &&
-          ($scope.query.lastScore < $scope.query.threshold);
-      };
 
       $scope.displayed = new DisplayConfig();
 
@@ -64,7 +59,11 @@ angular.module('QuepidApp')
         var confirm = $window.confirm('Are you absolutely sure you want to delete?');
 
         if (confirm) {
-          queriesSvc.deleteQuery(queryId);
+          queriesSvc.deleteQuery(queryId).then(function() {
+            $log.info('rescoring queries after removing query');
+            queriesSvc.updateScores();
+          });
+          
         }
       };
 
@@ -113,7 +112,7 @@ angular.module('QuepidApp')
           extra.query.touchModifiedAt();
         },
         function(extra) {
-          extra.query.rating = '-';
+          extra.query.rating = '--';
 
           var ids = [];
           var docs = queriesSvc.showOnlyRated ? extra.query.ratedDocs : extra.query.docs;
@@ -131,11 +130,28 @@ angular.module('QuepidApp')
 
       $scope.displayRating = function() {
         if (!$scope.query.rating) {
-          return '-';
+          return '--';
         }
         else {
           return $scope.query.rating;
         }
+      };
+      
+      $scope.querqyRuleTriggered = function () {
+        let triggered = false;
+        
+        if ($scope.query.searcher && $scope.query.searcher.parsedQueryDetails) {
+          let parsedQueryDetails = $scope.query.searcher.parsedQueryDetails;
+          
+          if (parsedQueryDetails.querqy?.rewrite !== undefined) { // jshint ignore:line
+            triggered = true;
+          }
+          else if ('querqy.infoLog' in parsedQueryDetails){
+            triggered = true;
+          }
+        }
+          
+        return triggered;
       };
     }
   ]);

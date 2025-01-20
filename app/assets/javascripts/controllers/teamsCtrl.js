@@ -18,7 +18,7 @@ angular.module('QuepidApp')
       };
 
       $scope.loading = true;
-      teamSvc.listForSharing()
+      teamSvc.list()
         .then(function() {
           $scope.teamsScope.teams = teamSvc.teams;
           $scope.loading = false;

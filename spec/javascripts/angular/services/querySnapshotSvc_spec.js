@@ -106,11 +106,11 @@ describe('Service: querySnapshotSvc', function () {
     expect(querySnapshotSvc.snapshots['5'].id).toBe('5');
     expect(querySnapshotSvc.snapshots['5'].docIdsPerQuery['0']).toEqual(['1', '4', '7']);
     expect(querySnapshotSvc.snapshots['5'].docIdsPerQuery['1']).toEqual(['cat', 'banana', 'doc']);
-    expect(querySnapshotSvc.snapshots['5'].name()).toEqual('Snapshot: myname');
+    expect(querySnapshotSvc.snapshots['5'].name()).toEqual('(1/17/70) myname');
     expect(querySnapshotSvc.snapshots['12'].id).toBe('12');
     expect(querySnapshotSvc.snapshots['12'].docIdsPerQuery['9']).toEqual(['lol', 'wut']);
     expect(querySnapshotSvc.snapshots['12'].docIdsPerQuery['10']).toEqual(['light', 'lamp', 'lark']);
-    expect(querySnapshotSvc.snapshots['12'].name()).toEqual('Snapshot: other');
+    expect(querySnapshotSvc.snapshots['12'].name()).toEqual('(1/1/70) other');
     $httpBackend.verifyNoOutstandingExpectation();
 
   });
@@ -149,7 +149,7 @@ describe('Service: querySnapshotSvc', function () {
     $httpBackend.verifyNoOutstandingExpectation();
   });
 
-  it('doesnt update version if same case', function() {
+  it('does not update version if same case', function() {
     var priorVersion = querySnapshotSvc.version();
     querySnapshotSvc.bootstrap(2);
     querySnapshotSvc.bootstrap(2);
@@ -209,7 +209,7 @@ describe('Service: querySnapshotSvc', function () {
       expect(querySnapshotSvc.snapshots['5'].id).toBe('5');
       expect(querySnapshotSvc.snapshots['5'].docIdsPerQuery['0']).toEqual(['1', '4', '7']);
       expect(querySnapshotSvc.snapshots['5'].docIdsPerQuery['1']).toEqual(['cat', 'banana', 'doc']);
-      expect(querySnapshotSvc.snapshots['5'].name()).toEqual('Snapshot: myname');
+      expect(querySnapshotSvc.snapshots['5'].name()).toEqual('(1/17/70) myname');
       $httpBackend.verifyNoOutstandingExpectation();
     });
 
@@ -295,14 +295,6 @@ describe('Service: querySnapshotSvc', function () {
 
       var mockResolver = docResolverSvc.mockResolver;
       $rootScope.$apply();
-    });
-
-    it('converts dates to something nice', function() {
-      // this test only works in EST
-      if ((new Date()).getTimezoneOffset() === 300) {
-        expect(querySnapshotSvc.snapshots['12'].timestamp()).toEqual('31-Dec-1969 19:00');
-        expect(querySnapshotSvc.snapshots['5'].timestamp()).toEqual('13-Feb-2014 14:14');
-      }
     });
 
     it('gets saved search results in saved order', function fetchAfterResolveTest() {
@@ -514,5 +506,14 @@ describe('Service: querySnapshotSvc', function () {
 
       expect(Object.keys(querySnapshotSvc.snapshots).length).toBe(2);
     });
+  });
+  
+  describe('Mapping fieldSpec back to /search endpoint expectations', function() {    
+    it('handles various patterns', function() {
+      expect(querySnapshotSvc.mapFieldSpecToSolrFormat('id:id title:title body')).toBe('id:id title:title body');
+      expect(querySnapshotSvc.mapFieldSpecToSolrFormat('id:_id title:title body')).toBe('id:id title:title body');
+      expect(querySnapshotSvc.mapFieldSpecToSolrFormat('title:title id:_id body')).toBe('title:title id:id body');
+      expect(querySnapshotSvc.mapFieldSpecToSolrFormat('id title:title body')).toBe('id title:title body');
+    });    
   });
 });

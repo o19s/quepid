@@ -139,8 +139,7 @@ module Api
 
         test 'renames try successfully' do
           put :update,
-              params: { case_id: the_case.id, try_number: the_try.try_number, try: { name: 'New Name' },
-search_endpoint: { search_engine: 'solr' } }
+              params: { case_id: the_case.id, try_number: the_try.try_number, try: { name: 'New Name' } }
 
           assert_response :ok
 
@@ -375,7 +374,7 @@ search_endpoint: { search_engine: 'es', api_method: 'get' } }
         test 'updates search endpoint' do
           try = the_case.tries.first
           post :create,
-               params: { case_id: the_case.id, try: { try_number: try.try_number },
+               params: { case_id: the_case.id, try: { parent_try_number: try.try_number },
 search_endpoint: { search_engine: 'os', search_url: 'http://my.os.url' } }
 
           assert_response :ok

@@ -58,8 +58,8 @@ angular.module('QuepidApp')
 
       function inviteUserToJoin() {
         teamSvc.inviteUserToJoin(ctrl.team, ctrl.selected)
-          .then(function() {
-            flash.success = 'Invitation sent to ' + ctrl.selected;
+          .then(function(message) {
+            flash.success = message;
             ctrl.selected = '';
           }, function(response) {
             flash.error = response.data.error;

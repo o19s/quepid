@@ -3,6 +3,8 @@
 json.case_name        acase.case_name
 json.owned            acase.owner_id == current_user.id if current_user.present?
 json.owner_email      acase.owner.email if acase.owner.present?
+json.public           acase.public
+json.archived         acase.archived
 json.options          acase.options
 
 if acase.scorer.present?

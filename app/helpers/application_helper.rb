@@ -1,12 +1,25 @@
 # frozen_string_literal: true
 
+# rubocop:disable Metrics/ModuleLength
 module ApplicationHelper
   def book_title book
     if book.name.downcase.starts_with?('book')
-      book.name
+      book.name.capitalize
     else
       "Book #{book.name}"
     end
+  end
+
+  def case_title kase
+    if kase.case_name.downcase.starts_with?('case')
+      kase.case_name.capitalize
+    else
+      "Case #{kase.case_name}"
+    end
+  end
+
+  def display_judge_name judge
+    judge.nil? ? 'anonymous' : judge.fullname
   end
 
   def make_active? options
@@ -28,7 +41,7 @@ module ApplicationHelper
 
   # rubocop:disable Metrics/MethodLength
   # rubocop:disable Lint/EmptyBlock
-  def flash_messages_bs5 _opts = {}
+  def flash_messages _opts = {}
     flash.each do |msg_type, message|
       next if 'unfurl' == msg_type # we don't show unfurl's in the flash notice UI.
 
@@ -57,39 +70,6 @@ module ApplicationHelper
   # rubocop:enable Lint/EmptyBlock
   # rubocop:enable Metrics/MethodLength
 
-  # rubocop:disable Metrics/MethodLength
-  def flash_messages _opts = {}
-    flash.each do |msg_type, message|
-      next if 'unfurl' == msg_type # we don't show unfurl's in the flash notice UI.
-
-      concat(
-        content_tag(
-          :div,
-          message,
-          class: "alert #{bootstrap_class_for(msg_type)} alert-dismissible",
-          role:  'alert'
-        ) do
-          concat(
-            content_tag(
-              :button,
-              class: 'close',
-              data:  { dismiss: 'alert' }
-            ) do
-              concat(
-                content_tag(:span, '&times;'.html_safe, 'aria-hidden' => true)
-              )
-              concat content_tag(:span, 'Close', class: 'sr-only')
-            end
-          )
-          concat message
-        end
-      )
-    end
-
-    nil
-  end
-
-  # rubocop:enable Metrics/MethodLength
   def document_fields_parses_as_json document_fields
     begin
       document_fields = JSON.parse document_fields
@@ -101,4 +81,60 @@ module ApplicationHelper
 
     document_fields
   end
+
+  # Override default form_for to disable Turbo Drive on
+  # Forms.  Maybe should be an ENV variable?
+  # caused by https on front end attempting to make http
+  # call by Turbo Drive and getting mix mode errros
+  # rubocop:disable Naming/BlockForwarding
+  def form_for record, options = {}, &block
+    if options[:html].nil?
+      options[:html] = { data: { turbo: false } }
+    elsif options[:html][:data].nil?
+      options[:html][:data] = { turbo: false }
+    end
+    super
+  end
+  # rubocop:enable Naming/BlockForwarding
+
+  def form_with_disabled( **options, &)
+    if options[:html].nil?
+      options[:html] = { data: { turbo: false } }
+    elsif options[:html][:data].nil?
+      options[:html][:data] = { turbo: false }
+    end
+
+    # Call the original `form_with` method with the modified options
+    super
+  end
+
+  # Match the link to the core case url with the endpoint_url
+  # if we have one.  Avoids a swap in the core application.
+  def link_to_core_case name, kase, try_number, options = {}
+    # Ensure options[:data] is set to { turbo_prefetch: false }
+    options[:data] ||= {}
+    options[:data][:turbo_prefetch] = false
+
+    endpoint_url = kase.tries.first&.search_endpoint&.endpoint_url
+    protocol = nil
+    if endpoint_url
+      protocol = get_protocol_from_url(endpoint_url)
+      port = 443 if 'https' == protocol
+    end
+    path = case_core_url(kase, try_number, protocol: protocol, port: port)
+
+    # Call the original link_to method with the modified options
+    link_to(name, path, options)
+  end
+
+  def get_protocol_from_url url
+    parsed_url = URI.parse(url)
+    protocol = parsed_url.scheme # This gets the protocol (http, https, etc.)
+    protocol
+  rescue URI::InvalidURIError => e
+    # Handle the error (e.g., log it, return nil)
+    Rails.logger.error("Invalid URL for search endpoint: #{url} - Error: #{e.message}")
+    nil
+  end
 end
+# rubocop:enable Metrics/ModuleLength

@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+# rubocop:disable Metrics/ClassLength
+
 # == Schema Information
 #
 # Table name: cases
@@ -8,6 +10,7 @@
 #  archived        :boolean
 #  case_name       :string(191)
 #  last_try_number :integer
+#  nightly         :boolean
 #  options         :json
 #  public          :boolean
 #  created_at      :datetime         not null
@@ -18,14 +21,15 @@
 #
 # Indexes
 #
-#  user_id  (owner_id)
+#  idx_owner_archived   (owner_id,archived)
+#  index_cases_book_id  (book_id)
+#  user_id              (owner_id)
 #
 # Foreign Keys
 #
 #  cases_ibfk_1  (owner_id => users.id)
 #
 
-# rubocop:disable Metrics/ClassLength
 class Case < ApplicationRecord
   # Associations
   # too late now!
@@ -82,31 +86,13 @@ class Case < ApplicationRecord
   end
 
   # Scopes
+  include ForUserScope
+
   scope :not_archived, -> { where('`cases`.`archived` = false OR `cases`.`archived` IS NULL') }
 
-  scope :for_user_via_teams, ->(user) {
-    joins('
-      LEFT OUTER JOIN `teams_cases` ON `teams_cases`.`case_id` = `cases`.`id`
-      LEFT OUTER JOIN `teams` ON `teams`.`id` = `teams_cases`.`team_id`
-      LEFT OUTER JOIN `teams_members` ON `teams_members`.`team_id` = `teams`.`id`
-      LEFT OUTER JOIN `users` ON `users`.`id` = `teams_members`.`member_id`
-    ').where('
-        `teams_members`.`member_id` = ?
-    ', user.id)
-  }
-
-  scope :for_user_directly_owned, ->(user) {
-    where('
-        `cases`.`owner_id` = ?
-    ',  user.id)
-  }
-
-  scope :for_user, ->(user) {
-    ids = for_user_via_teams(user).pluck(:id) + for_user_directly_owned(user).pluck(:id)
-    where(id: ids.uniq)
-  }
-
   scope :public_cases, -> { where(public: true) }
+
+  scope :nightly_run, -> { where(nightly: true) }
 
   # load up the queries count for the case, alternative to counter_cache
   scope :with_counts, -> {
@@ -189,6 +175,12 @@ class Case < ApplicationRecord
 
   def last_score
     scores.last_one
+    # scores.last
+    # scores.first
+  end
+
+  def first_score
+    scores.last
   end
 
   def public_id
@@ -219,7 +211,7 @@ class Case < ApplicationRecord
 
   def clone_try the_try, preserve_history
     new_try = the_try.dup
-    new_try.try_number = preserve_history ? the_try.try_number : 0
+    new_try.try_number = preserve_history ? the_try.try_number : 1
     tries << new_try
 
     the_try.curator_variables.each do |a_curator_variable|

@@ -2,10 +2,12 @@
 
 This document explains how Quepid can be operated and configured.
 
-- [Running behind a load balancer](#loadbalancer)
+- [Installing Quepid](#installing-quepid)
+- [Running behind a load balancer](#running-behind-a-load-balancer)
 - [Setting up a Context Path](#setting-up-a-context-path)
 - [Mail](#mail)
 - [OAuth](#OAuth)
+- [Managing Websocket Load](#managing-websocket-load)
 - [Legal Pages & GDPR](#legal-pages-&-gdpr)
 - [User Tracking](#user-tracking)
 - [Heathcheck Endpoint](#healthcheck)
@@ -15,6 +17,12 @@ This document explains how Quepid can be operated and configured.
 - [Jupyterlite Notebooks](#jupyterlite-notebooks)
 - [Using Personal Access Tokens](#using-personal-access-tokens)
 - [Scripting Users Cases Ratings](#scripting-users-cases-ratings)
+- [Posting Announcements to Users](#posting-announcements-to-users)
+- [Integrating External Eval Pipeline](#integrating-external-eval-pipeline)
+
+## Installing Quepid
+
+See the documentation and links for installing Quepid via Docker, Heroku, AWS, and Kubernetes at https://github.com/o19s/quepid/wiki/Installation-Guide.
 
 ## Running behind a load balancer
 
@@ -141,6 +149,13 @@ We *assume* that the client definition in Keycloak will be named `quepid`, you c
 
 Keycloak 17+ removes the `/auth` portion of the url.  If you are using earlier versions of keycloak, you need to set `base_url:'/auth'` in devise.rb.
 
+## Managing Websocket Load
+
+Quepid uses [SolidCable]() to back the websocket messaging that drives some asynchrnous communication. The state is managed in the database.
+
+By default we issue a query every tenth of a second, which can overload your database.
+
+Set `SOLID_CABLE_POLLING` to `1.seconds` or even `5.seconds` to change how often updates are checked for.  The default is `0.1.seconds`.
 
 
 ## Legal Pages & GDPR
@@ -153,6 +168,8 @@ TC_URL      # terms and condition
 PRIVACY_URL # privacy policy
 COOKIES_URL # cookies policy
 ```
+
+Quepid ships with a default cookie policy page available via `COOKIES_URL=/cookies`.
 
 To comply with GDPR, and be a good citizen, the hosted version of Quepid asks if they are willing to receive Quepid related updates via email.  This feature isn't useful to private installs, so this controls the display.
 
@@ -167,10 +184,6 @@ We currently only support Google Analytics, and you enable it by setting the fol
 ```
 QUEPID_GA=XXXXXXXXXXXX  # Your Google Analytics Key
 ```
-
-You will need Redis to support sending events to GA.   In production, uncomment the Redis
-configuration in `docker-compose.yml` to set up a local Redis.  Also uncomment the `worker` in
-the file `Procfile`
 
 
 ## Healthcheck
@@ -279,3 +292,17 @@ Description:
 
   $ thor user:create -a admin@example.com Administrator mysuperstrongpassword
 ```
+
+## Posting Announcements to Users
+
+Sometimes you need to communicate to your users, like the fact that a scorer has been changed or a end point updated.  You can publish a new announcement to all users via the Admin's Announcements page.  You can use emojis and html in this, like this:
+
+```
+🎉 The program for <img src="https://haystackconf.com/img/logo.png" width="178" height="27"> has been launched!
+```
+
+Once they see it, they won't see it again.
+
+## Integrating External Eval Pipeline
+
+If you have an external evaluation pipeline, you can easily post the results of that pipeline into Quepid using the API.  See (./examples/external_eval) for a simple Python script that demonstrates storing Scores for a Case that are calculated externally.

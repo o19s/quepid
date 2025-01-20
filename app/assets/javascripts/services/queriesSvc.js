@@ -70,13 +70,13 @@ angular.module('QuepidApp')
       // Rescore on ratings update
       $scope.$on('rating-changed', () => {
         svc.scoreAll();
-      });      
+      });
 
       function createSearcherFromSettings(passedInSettings, query, options) {
         let queryText = query.queryText;
         let args = angular.copy(passedInSettings.selectedTry.args) || {};
         options = options == null ? {} : options;
-        
+
         if (passedInSettings && passedInSettings.selectedTry) {
 
           let searcherOptions = {
@@ -88,34 +88,32 @@ angular.module('QuepidApp')
           if (passedInSettings.apiMethod !== undefined) {
             searcherOptions.apiMethod = passedInSettings.apiMethod;
           }
-          
+
           if (passedInSettings.proxyRequests === true) {
             searcherOptions.proxyUrl = caseTryNavSvc.getQuepidProxyUrl();
-          }          
-          
+          }
+
           if (passedInSettings.searchEngine === 'static'){
             // Similar to logic in Splainer-searches SettingsValidatorFactory for snapshots.
             // we need a better way of handling this.   Basically we are saying a static search engine is
-            // treated like Solr.   But if we have more generic search apis, they will need a 
+            // treated like Solr.   But if we have more generic search apis, they will need a
             // custom parser...
-            passedInSettings.searchEngine = 'solr';           
+            passedInSettings.searchEngine = 'solr';
           }
           else if (passedInSettings.searchEngine === 'searchapi'){
             /*jshint evil:true */
             eval(passedInSettings.mapperCode);
             /*jshint evil:false */
-            
-            
+
+
             if (typeof docsMapper === 'function') {
               // jshint -W117
-              searcherOptions.docsMapper = docsMapper; 
+              searcherOptions.docsMapper = docsMapper;
             }
             if (typeof numberOfResultsMapper === 'function') {
               // jshint -W117
-              searcherOptions.numberOfResultsMapper = numberOfResultsMapper;               
+              searcherOptions.numberOfResultsMapper = numberOfResultsMapper;
             }
-            
-            
           }
 
           if (passedInSettings.searchEngine === 'solr') {
@@ -144,11 +142,13 @@ angular.module('QuepidApp')
               // args['query'] = args['query'].map(function addFilter(query) {
               //  query['metadata_filter'] = query.filterToRatings(passedInSettings);
               // });
+            } else if (passedInSettings.searchEngine === 'algolia') {
+              // Not supported
             }
           }
-          
+
           // This is for Mattias!  Merge our query specific options in as "qOption"
-          // which is what splainer-search expects. 
+          // which is what splainer-search expects.
           /*jshint ignore:start */
           searcherOptions.qOption = { ...passedInSettings.options, ...query.options};
           /*jshint ignore:end */
@@ -232,9 +232,6 @@ angular.module('QuepidApp')
         self.modified = queryWithRatings.updated_at;
 
 
-        // Threshold properties
-        self.threshold        = queryWithRatings.threshold;
-        self.thresholdEnabled = queryWithRatings.threshold_enabled;
 
         // Error
         self.errorText = '';
@@ -631,29 +628,6 @@ angular.module('QuepidApp')
             });
         };
 
-        this.setThreshold = function(enabled, threshold) {
-          var that          = this;
-          var url           = 'api/cases/' + caseNo + '/queries/' + that.queryId + '/threshold';
-          var thresholdJson = {
-            query: {
-              threshold:      threshold,
-              threshold_enbl: enabled
-            }
-          };
-
-          return $http.put(url, thresholdJson)
-            .then(function() {
-              that.threshold        = threshold;
-              that.thresholdEnabled = enabled;
-            }, function(response) {
-              $log.debug('Failed to set threshold: ', response);
-              return response;
-            }).catch(function(response) {
-              $log.debug('Failed to set threshold');
-              return response;
-            });
-        };
-
         this.reset = function() {
           this.errorText = '';
           resultsReturned = false;
@@ -809,21 +783,41 @@ angular.module('QuepidApp')
         return querySearchableDeferred.promise;
       };
 
+      this.pAll = async function (queue, concurrency) {
+        let index = 0;
+        const results = [];
+
+        const worker = async () => {
+          while (index < queue.length) {
+            const curIndex = index++;
+            const promise = queue[curIndex]();
+            await promise;
+            results[curIndex] = promise;
+          }
+        };
+
+        const workers = [];
+        for (let workerIdx = 0; workerIdx < concurrency; workerIdx++) {
+          workers.push(worker());
+        }
+        await Promise.all(workers);
+        return Promise.all(results);
+      };
 
       this.searchAll = function() {
         let promises = [];
         let scorePromises = [];
 
         angular.forEach(this.queries, function(query) {
-          let promise = query.search().then( () => {
+          let searchPromiseFn = () => query.search().then(() => {
             scorePromises.push(query.score());
           });
 
-          promises.push(promise);
+          promises.push(searchPromiseFn);
         });
 
         // Holy nested promises batman
-        return $q.all(promises).then( () => {
+        return this.pAll(promises, 10).then( () => {
           $q.all(scorePromises).then( () => {
             /*
              * Why are we calling scoreAll after we called score() above?
@@ -929,7 +923,7 @@ angular.module('QuepidApp')
         $http.post(path, data)
           .then(function(response) {
             let data = response.data;
-    
+
             // Update the display order based on the new one after the query creation
             that.queries = {};
             addQueriesFromResp(data);
@@ -1024,7 +1018,7 @@ angular.module('QuepidApp')
        *
        */
       this.scoreAll = function(scorables) {
-        let avg = 0;
+        let avg = null;
         let tot = 0;
         let allRated = true;
         if (scorables === undefined) {
@@ -1039,26 +1033,34 @@ angular.module('QuepidApp')
             if (!scoreInfo.allRated) {
               allRated = false;
             }
-
-            if (scoreInfo.score !== null) {
-              // Treat non-rated queries as zeroes when calculating case score
-              avg += scoreInfo.score === '--' ? 0 : scoreInfo.score;
-              tot++;
-              queryScores[scorable.queryId] = {
-                score:    scoreInfo.score,
-                maxScore: scoreInfo.maxScore,
-                text:     scorable.queryText,
-                numFound: scorable.numFound,
-              };
-            } else {
-              queryScores[scorable.queryId] = {
-                score:    '',
-                maxScore: scoreInfo.maxScore,
-                text:     scorable.queryText,
-                numFound: scorable.numFound,
-              };
+            
+            if (scoreInfo.score === null) {
+              // Added 06-Mar-24.   Delete after a few months if we find out this never happens!
+              throw new Error('Null scoreInfo.score should never happen.');
             }
-
+            // Treat non-rated queries as zeroes when calculating case score
+            // This if means we are skipping over zsr as part of the case score
+            if (scoreInfo.score !== 'zsr' && scoreInfo.score !== '--'){
+            //if (scoreInfo.score !== 'zsr'){
+              // Treat non-rated queries as zeroes when calculating case score
+            //   avg += scoreInfo.score === '--' ? 0 : scoreInfo.score;
+            //  tot++;
+              avg += scoreInfo.score;
+              tot++;
+            }
+            // include this else statement to have zsr and non rated count as a zero against the case score.
+            //else {
+            //  avg +=  0
+            //  tot++;
+            //}
+            //TODO: make text be queryText
+            queryScores[scorable.queryId] = {
+              score:    scoreInfo.score,
+              maxScore: scoreInfo.maxScore,
+              text:     scorable.queryText,
+              numFound: scorable.numFound,
+            };
+            
             return scoreInfo;
           }));
         });
@@ -1066,6 +1068,10 @@ angular.module('QuepidApp')
         return $q.all(promises).then(function() {
           if (tot > 0) {
             avg = avg/tot;
+          }
+          else {
+            // we have no rated queries, everything is zsr or --, so mark at case level --
+            avg = '--';
           }
 
           svc.latestScoreInfo = {

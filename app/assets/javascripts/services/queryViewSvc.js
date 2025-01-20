@@ -5,8 +5,8 @@
 angular.module('QuepidApp')
   .service('queryViewSvc', [
     function() {
-      this.enableDiff = function(idOrBest) {
-        this.diffSetting = idOrBest;
+      this.enableDiff = function(snapshotId) {
+        this.diffSetting = snapshotId;
       };
 
       this.isDiffEnabled = function() {

@@ -1,17 +1,13 @@
 <div class="modal-header">
-  <button type="button" class="close" ng-click="ctrl.cancel()" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+  <button type="button" class="close btn-core-close" ng-click="ctrl.cancel()" aria-label="Close"></button>
   <h3 class="modal-title">Remove this Scorer?</h3>
 </div>
 
-<div class="modal-body" ng-hide="ctrl.canUpdateTeam">
-  <p>You do not have edit permissions for teams.</p>
-</div>
-
-<div class="modal-body" ng-show="ctrl.canUpdateTeam">
+<div class="modal-body">
   <p>You're about to remove {{ ctrl.thisScorer.name }} from the team {{ ctrl.thisTeam.name }}.   This does NOT delete the scorer.</p>
 
 </div>
 <div class="modal-footer">
-  <button class="btn btn-danger" ng-show="ctrl.canUpdateTeam" ng-click="ctrl.ok()">Remove</button>
+  <button class="btn btn-danger" ng-click="ctrl.ok()">Remove</button>
   <button class="btn btn-default" ng-click="ctrl.cancel()">Cancel</button>
 </div>

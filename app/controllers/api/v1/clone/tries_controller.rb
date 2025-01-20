@@ -47,17 +47,12 @@ module Api
         end
 
         def try_params
-          # Eric: I think we don't need to have all of these unless cloning a try chagnes the search end point..'
-          params.require(:try).permit(
-            :name,
-            # :search_url,
-            :field_spec,
-            :query_params,
-            # :search_engine,
-            :escape_query,
-            # :api_method,
-            # :custom_headers,
-            :number_of_rows
+          params.expect(
+            try: [ :name,
+                   :field_spec,
+                   :query_params,
+                   :escape_query,
+                   :number_of_rows ]
           )
         end
       end

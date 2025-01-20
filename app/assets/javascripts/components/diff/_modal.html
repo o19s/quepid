@@ -1,5 +1,5 @@
 <div class="modal-header">
-  <button type="button" class="close" aria-label="Close" ng-click="ctrl.cancel()"><span aria-hidden="true">&times;</span></button>
+  <button type="button" class="close btn-core-close" ng-click="ctrl.cancel()" aria-label="Close"></button>
   <h3 class="modal-title">Compare Your Search Results</h3>
 </div>
 <div class="modal-body">
@@ -18,11 +18,11 @@
 
       <a
         class="btn btn-xs btn-danger"
-        ng-show="ctrl.which === 'snapshot' && ctrl.isNumber(ctrl.selection)"
+        ng-show="ctrl.which === 'snapshot'"
         ng-click="ctrl.toggleDel(ctrl.selection)"
         title="delete"
       >
-        <i class='fa fa-times'></i>
+        <i class='bi bi-x-lg'></i>
       </a>
 
       <div class="alert alert-warning" ng-show="ctrl.delStarted()">
@@ -34,12 +34,13 @@
       <span ng-if="ctrl.selection">
         Snapshot has the id {{ ctrl.selection }}
       </span>
+      
+      <div class="alert alert-warning" role="alert" ng-if="ctrl.isProcessingFile()">
+        This snapshot is currently being processed in the background.  You should wait till it completes.
+      </div>
     </div>
 
-    <div class="form-group">
-      <input type="radio" id="best" name="diffSelection" value="best" ng-model="ctrl.which">
-      <label for="best">Highest Rated</label>
-    </div>
+
 
     <div class="form-group">
       <input type="radio" id="disable" name="diffSelection" value="none" ng-model="ctrl.which">
@@ -65,6 +66,6 @@
   </button>
 
   <div ng-show="ctrl.inProgress">
-    Fetching snapshot info, this may take a moment or two depending on the number of queries to fetch...
+    Fetching snapshot info, this may take a moment or two depending on the number of queries to run...
   </div>
 </div>

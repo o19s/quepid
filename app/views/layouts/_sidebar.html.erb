@@ -87,9 +87,9 @@
         <% end %>
       </li>
       <li>
-        <%= link_to cases_path, class: "nav-link #{make_active?({path: 'case'}) ? 'active' : ''} py-3 border-bottom rounded-0", 'data-bs-toggle':'tooltip', 'data-bs-placement':'right', 'aria-label':'Relevancy Cases', 'data-bs-original-title':'Relevancy Cases' do %>
+        <%= link_to cases_path, data: { turbo_prefetch: false }, class: "nav-link #{make_active?({path: 'case'}) ? 'active' : ''} py-3 border-bottom rounded-0", 'data-bs-toggle':'tooltip', 'data-bs-placement':'right', 'aria-label':'Relevancy Cases', 'data-bs-original-title':'Relevancy Cases' do %>
           <i
-            class="fa fa-briefcase"
+            class="bi bi-briefcase"
             aria-hidden="true"
             title="Relevancy Cases"
             alt="Relevancy Cases"
@@ -100,7 +100,7 @@
       <li>
         <%= link_to books_path, class: "nav-link #{make_active?({path: 'book'}) ? 'active' : ''} py-3 border-bottom rounded-0", 'data-bs-toggle':'tooltip', 'data-bs-placement':'right', 'aria-label':'Judgements', 'data-bs-original-title':'Judgements' do %>
           <i
-            class="fa fa-book"
+            class="bi bi-book"
             aria-hidden="true"
             title="Judgement Books"
             alt="Judgement Books"
@@ -109,7 +109,7 @@
         <% end %>
       </li>
       <li>
-        <%= link_to scorers_path, class: "nav-link #{make_active?({path: 'scorers'}) ? 'active' : ''} py-3 border-bottom rounded-0", 'data-bs-toggle':'tooltip', 'data-bs-placement':'right', 'aria-label':'Scorers', 'data-bs-original-title':'Scorers' do %>
+        <%= link_to scorers_path, data: { turbo_prefetch: false }, class: "nav-link #{make_active?({path: 'scorers'}) ? 'active' : ''} py-3 border-bottom rounded-0", 'data-bs-toggle':'tooltip', 'data-bs-placement':'right', 'aria-label':'Scorers', 'data-bs-original-title':'Scorers' do %>
           <i
             class="bi bi-list-task"
             aria-hidden="true"
@@ -133,7 +133,7 @@
       <li>
         <%= link_to search_endpoints_path, class: "nav-link #{make_active?({path: 'search_endpoint'}) ? 'active' : ''} py-3 border-bottom rounded-0", 'data-bs-toggle':'tooltip', 'data-bs-placement':'right', 'aria-label':'Search Endpoints', 'data-bs-original-title':'Search Endpoints' do %>
           <i
-            class="fa fa-paper-plane"
+            class="bi bi-send-fill"
             aria-hidden="true"
             title="Search Endpoints"
             alt="Search Endpoints"
@@ -142,7 +142,7 @@
         <% end %>
       </li>
       <li>
-        <%= link_to teams_core_path, class: "nav-link #{make_active?({path: 'teams'}) ? 'active' : ''} py-3 border-bottom rounded-0", 'data-bs-toggle':'tooltip', 'data-bs-placement':'right', 'aria-label':'Search Endpoints', 'data-bs-original-title':'Search Endpoints' do %>
+        <%= link_to teams_core_path, data: { turbo_prefetch: false }, class: "nav-link #{make_active?({path: 'teams'}) ? 'active' : ''} py-3 border-bottom rounded-0", 'data-bs-toggle':'tooltip', 'data-bs-placement':'right', 'aria-label':'Search Endpoints', 'data-bs-original-title':'Search Endpoints' do %>
           <i
             class="bi bi-people-fill"
             aria-hidden="true"
@@ -158,7 +158,7 @@
         <%= image_tag current_user.avatar_url, size: '24x24', class: 'rounded-circle' %>
       </a>
       <ul class="dropdown-menu text-small shadow">
-        <li><%= link_to "Create case...", case_new_path, class:'dropdown-item' %></li>
+        <li><%= link_to "Create case...", case_new_path, class:'dropdown-item', data: { turbo: false } %></li>
         <li><%= link_to "Profile", profile_path, class:'dropdown-item' %></li>
         <li><hr class="dropdown-divider"></li>
         <li><%= link_to "Log out", logout_path, class:'dropdown-item' %></li>

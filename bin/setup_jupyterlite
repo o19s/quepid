@@ -11,3 +11,6 @@ Dir.chdir APP_ROOT do
   puts "\n== Downloading and extracting Jupyter Lite Build =="
   system "bin/docker r bash -c 'rm -rf /srv/app/public/notebooks && wget -qO- #{JUPYTER_BUILD_DOWNLOAD_URL} | tar -C /srv/app/public -zxf -'"
 end
+
+puts "\n== Setting up Sample Data for Notebook Development =="
+system "bin/docker r bundle exec thor sample_data:haystack_party"
