@@ -329,6 +329,14 @@ class UserTest < ActiveSupport::TestCase
   end
 
   describe 'User is AI Judge' do
+    it 'uses the existence of the key to decide ai_judge' do
+      user = User.new
+      assert_not user.ai_judge?
+      user.openai_key = ''
+      assert user.ai_judge?
+      assert_not user.valid?
+    end
+
     it 'does not require an email address to be valid when is a judge' do
       user = User.new(openai_key: '1234')
       assert user.ai_judge?

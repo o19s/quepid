@@ -36,3 +36,7 @@ en:
           attributes:
             default_scorer_id:
               existence: 'Does not exist'
+              
+    attributes:
+      user:
+        openai_key: "OpenAI Key"
