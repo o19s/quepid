@@ -39,16 +39,6 @@ class SelectionStrategy < ApplicationRecord
   end
 
   # Do we want to only require three judgements total?  or let more?
-  def self.every_query_doc_pair_has_three_judgements_old? book
-    already_has_three_judgements_query_doc_pair_ids = book.query_doc_pairs.joins(:judgements)
-      .group('`query_doc_pairs`.`id`')
-      .having('count(*) = ? ', 3)
-      .pluck(:query_doc_pair_id)
-    query_doc_pair = book.query_doc_pairs
-      .where.not(id: already_has_three_judgements_query_doc_pair_ids ).first
-    query_doc_pair.nil? # if we didn't find a match, then return true
-  end
-
   def self.every_query_doc_pair_has_three_judgements? book
     query_doc_pair = book.query_doc_pairs
       .left_joins(:judgements)
