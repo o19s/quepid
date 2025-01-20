@@ -19,6 +19,6 @@ unless export
   json.teams teams do |team|
     json.id         team.id
     json.name       team.name
-    json.owner_id   team.owner_id
+#    json.owner_id   team.owner_id
   end
 end
