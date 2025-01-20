@@ -61,12 +61,12 @@ module Api
       private
 
       def score_params
-        params.require(:case_score).permit(
-          :score,
-          :all_rated,
-          :try_number,
-          :try_id,
-          queries: [ :text, :score, :maxScore, :numFound ]
+        params.expect(
+          case_score: [ :score,
+                        :all_rated,
+                        :try_number,
+                        :try_id,
+                        { queries: [ :text, :score, :maxScore, :numFound ] } ]
         )
       end
     end

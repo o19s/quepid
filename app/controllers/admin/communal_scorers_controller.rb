@@ -82,15 +82,15 @@ module Admin
     def scorer_params
       return unless params[:scorer]
 
-      params.require(:scorer).permit(
-        :code,
-        :name,
-        :communal,
-        :show_scale_labels,
-        :scale_list, # alternate approach to the scale:[] array used in admin only
-        :state,
-        scale:             [],
-        scale_with_labels: {}
+      params.expect(
+        scorer: [ :code,
+                  :name,
+                  :communal,
+                  :show_scale_labels,
+                  :scale_list, # alternate approach to the scale:[] array used in admin only
+                  :state,
+                  { scale:             [],
+                    scale_with_labels: {} } ]
       )
     end
 

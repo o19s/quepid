@@ -33,14 +33,14 @@ module Users
     private
 
     def update_resource_params
-      params.require(:user).permit(
-        :name,
-        :email,
-        :invitation_token,
-        :password,
-        :password_confirmation,
-        :agreed,
-        :email_marketing
+      params.expect(
+        user: [ :name,
+                :email,
+                :invitation_token,
+                :password,
+                :password_confirmation,
+                :agreed,
+                :email_marketing ]
       )
     end
   end

@@ -160,15 +160,17 @@ module Api
       end
 
       def try_params
-        params.require(:try).permit(
-          :escape_query,
-          :field_spec,
-          :name,
-          :number_of_rows,
-          :query_params,
-          :parent_id,
-          :parent_try_number,
-          :search_endpoint_id
+        puts params
+        
+        params.expect(
+          try: [ :escape_query,
+                 :field_spec,
+                 :name,
+                 :number_of_rows,
+                 :query_params,
+                 :parent_id,
+                 :parent_try_number,
+                 :search_endpoint_id ]
         )
       end
 
@@ -176,15 +178,15 @@ module Api
         # we do not REQUIRE a search_endpoint on a try
         return {} if params[:search_endpoint].nil?
 
-        params.require(:search_endpoint).permit(
-          :name,
-          :api_method,
-          :custom_headers,
-          :search_engine,
-          :endpoint_url,
-          :basic_auth_credential,
-          :mapper_code,
-          :proxy_requests
+        params.expect(
+          search_endpoint: [ :name,
+                             :api_method,
+                             :custom_headers,
+                             :search_engine,
+                             :endpoint_url,
+                             :basic_auth_credential,
+                             :mapper_code,
+                             :proxy_requests ]
         )
       end
     end

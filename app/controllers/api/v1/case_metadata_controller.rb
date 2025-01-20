@@ -19,7 +19,7 @@ module Api
       private
 
       def metadata_params
-        params.require(:metadata).permit(:last_viewed_at)
+        params.expect(metadata: [ :last_viewed_at ])
       end
     end
   end

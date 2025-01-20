@@ -36,12 +36,12 @@ module Api
       private
 
       def user_params
-        params.require(:user).permit(
-          :name,
-          :email,
-          :password,
-          :agreed,
-          :email_marketing
+        params.expect(
+          user: [ :name,
+                  :email,
+                  :password,
+                  :agreed,
+                  :email_marketing ]
         )
       end
     end

@@ -309,10 +309,10 @@ class BooksController < ApplicationController
   end
 
   def book_params
-    params_to_use = params.require(:book).permit(:scorer_id, :selection_strategy_id, :name,
-                                                 :support_implicit_judgements, :link_the_case, :origin_case_id,
-                                                 :delete_export_file, :delete_populate_file, :delete_import_file,
-                                                 :show_rank, team_ids: [], ai_judge_ids: [])
+    params_to_use = params.expect(book: [ :scorer_id, :selection_strategy_id, :name,
+                                          :support_implicit_judgements, :link_the_case, :origin_case_id,
+                                          :delete_export_file, :delete_populate_file, :delete_import_file,
+                                          :show_rank, { team_ids: [], ai_judge_ids: [] } ])
 
     # Crafting a book[team_ids] parameter from the AngularJS side didn't work, so using top level parameter
     params_to_use[:team_ids] = params[:team_ids] if params[:team_ids]
