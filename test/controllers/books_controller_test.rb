@@ -17,7 +17,7 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
         assert_difference 'james_bond_movies.judgements.count' do
           patch "/books/#{james_bond_movies.id}/run_judge_judy/#{judge_judy.id}", params: { number_of_pairs: 1 }
           follow_redirect!
-          assert_equal "Set AI Judge #{judge_judy.name} to work judging query/doc pairs.", flash[:notice]
+          assert_equal "AI Judge #{judge_judy.name} will start evaluating query/doc pairs.", flash[:notice]
         end
       end
     end
@@ -28,7 +28,7 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
         patch "/books/#{james_bond_movies.id}/run_judge_judy/#{judge_judy.id}",
               params: { judge_all: 1, number_of_pairs: 1 }
         follow_redirect!
-        assert_equal "Set AI Judge #{judge_judy.name} to work judging query/doc pairs.", flash[:notice]
+        assert_equal "AI Judge #{judge_judy.name} will start evaluating query/doc pairs.", flash[:notice]
         assert_equal james_bond_movies.query_doc_pairs.count, james_bond_movies.judgements.where(user: judge_judy).count
       end
     end
