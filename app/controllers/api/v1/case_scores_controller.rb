@@ -60,15 +60,18 @@ module Api
 
       private
 
+      # rubocop:disable Rails/StrongParametersExpect
+      # tried to migrate and had no love.
       def score_params
-        params.expect(
-          case_score: [ :score,
-                        :all_rated,
-                        :try_number,
-                        :try_id,
-                        { queries: [ :text, :score, :maxScore, :numFound ] } ]
+        params.require(:case_score).permit(
+          :score,
+          :all_rated,
+          :try_number,
+          :try_id,
+          queries: [ :text, :score, :maxScore, :numFound ]
         )
       end
+      # rubocop:enable Rails/StrongParametersExpect
     end
   end
 end

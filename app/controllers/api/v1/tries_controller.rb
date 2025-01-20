@@ -60,11 +60,12 @@ module Api
       def create
         try_parameters_to_use = try_params
 
-        if params[:parent_try_number] # We need special translation from try_number to the try.id
+        if params[:parent_try_number]
+          # Look up the parent try to maintain the chain of ancestry.
           try_parameters_to_use[:parent_id] = @case.tries.where(try_number: params[:parent_try_number]).first.id
         end
 
-        @try = @case.tries.build try_parameters_to_use
+        @try = @case.tries.build try_parameters_to_use.except(:parent_try_number)
 
         # if we are creating a new try with an existing search_endpoint_id,
         # then the params[:search_endpoint] will be empty
@@ -160,8 +161,6 @@ module Api
       end
 
       def try_params
-        puts params
-        
         params.expect(
           try: [ :escape_query,
                  :field_spec,
