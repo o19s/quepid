@@ -202,6 +202,7 @@ for_case_queries_case:
   case:           :queries_case
   query_params:   'q=#$query##'
   try_number:     1
+  field_spec:     id:id title:title
   search_endpoint: :for_case_queries_case
   number_of_rows: 10
   field_spec: id:id title:title
