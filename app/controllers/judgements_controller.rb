@@ -134,6 +134,6 @@ class JudgementsController < ApplicationController
   end
 
   def judgement_params
-    params.require(:judgement).permit(:user_id, :rating, :query_doc_pair_id, :unrateable, :explanation)
+    params.expect(judgement: [ :user_id, :rating, :query_doc_pair_id, :unrateable, :explanation ])
   end
 end

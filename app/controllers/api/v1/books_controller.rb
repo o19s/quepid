@@ -127,8 +127,8 @@ module Api
       private
 
       def book_params
-        params.require(:book).permit(:scorer_id, :selection_strategy_id, :name, :support_implicit_judgements,
-                                     :show_rank)
+        params.expect(book: [ :scorer_id, :selection_strategy_id, :name, :support_implicit_judgements,
+                              :show_rank ])
       end
 
       def set_book

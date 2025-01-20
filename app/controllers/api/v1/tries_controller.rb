@@ -60,11 +60,12 @@ module Api
       def create
         try_parameters_to_use = try_params
 
-        if params[:parent_try_number] # We need special translation from try_number to the try.id
+        if params[:parent_try_number]
+          # Look up the parent try to maintain the chain of ancestry.
           try_parameters_to_use[:parent_id] = @case.tries.where(try_number: params[:parent_try_number]).first.id
         end
 
-        @try = @case.tries.build try_parameters_to_use
+        @try = @case.tries.build try_parameters_to_use.except(:parent_try_number)
 
         # if we are creating a new try with an existing search_endpoint_id,
         # then the params[:search_endpoint] will be empty
@@ -160,15 +161,15 @@ module Api
       end
 
       def try_params
-        params.require(:try).permit(
-          :escape_query,
-          :field_spec,
-          :name,
-          :number_of_rows,
-          :query_params,
-          :parent_id,
-          :parent_try_number,
-          :search_endpoint_id
+        params.expect(
+          try: [ :escape_query,
+                 :field_spec,
+                 :name,
+                 :number_of_rows,
+                 :query_params,
+                 :parent_id,
+                 :parent_try_number,
+                 :search_endpoint_id ]
         )
       end
 
@@ -176,15 +177,15 @@ module Api
         # we do not REQUIRE a search_endpoint on a try
         return {} if params[:search_endpoint].nil?
 
-        params.require(:search_endpoint).permit(
-          :name,
-          :api_method,
-          :custom_headers,
-          :search_engine,
-          :endpoint_url,
-          :basic_auth_credential,
-          :mapper_code,
-          :proxy_requests
+        params.expect(
+          search_endpoint: [ :name,
+                             :api_method,
+                             :custom_headers,
+                             :search_engine,
+                             :endpoint_url,
+                             :basic_auth_credential,
+                             :mapper_code,
+                             :proxy_requests ]
         )
       end
     end

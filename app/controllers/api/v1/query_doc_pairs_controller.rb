@@ -102,8 +102,8 @@ module Api
       private
 
       def query_doc_pair_params
-        params.require(:query_doc_pair).permit(:document_fields, :position, :query_text, :doc_id, :notes,
-                                               :information_need, options: {})
+        params.expect(query_doc_pair: [ :document_fields, :position, :query_text, :doc_id, :notes,
+                                        :information_need, { options: {} } ])
       end
 
       def set_query_doc_pair

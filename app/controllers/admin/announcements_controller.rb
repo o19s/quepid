@@ -55,7 +55,7 @@ module Admin
     private
 
     def announcement_params
-      params.require(:announcement).permit(:text, :author_id)
+      params.expect(announcement: [ :text, :author_id ])
     end
   end
 end

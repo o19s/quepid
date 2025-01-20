@@ -132,13 +132,13 @@ module Admin
 
     # Never trust parameters from the scary internet, only allow the permitted list through.
     def user_params
-      params.require(:user).permit(
-        :administrator,
-        :email,
-        :name,
-        :company,
-        :password,
-        :password_confirmation
+      params.expect(
+        user: [ :administrator,
+                :email,
+                :name,
+                :company,
+                :password,
+                :password_confirmation ]
       )
     end
   end

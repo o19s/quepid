@@ -109,7 +109,7 @@ module Api
       private
 
       def judgement_params
-        params.require(:judgement).permit(:rating, :unrateable, :query_doc_pair_id, :user_id, :explanation)
+        params.expect(judgement: [ :rating, :unrateable, :query_doc_pair_id, :user_id, :explanation ])
       end
 
       def set_judgement
