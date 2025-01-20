@@ -386,7 +386,6 @@
 
 # rubocop:enable Layout/LineLength
 
-# rubocop:disable Layout/LineLength
 # rubocop:disable Metrics/BlockLength
 Rails.application.routes.draw do
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
