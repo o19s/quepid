@@ -213,7 +213,7 @@ class BooksController < ApplicationController
     number_of_pairs = nil if judge_all
 
     RunJudgeJudyJob.perform_later(@book, ai_judge, number_of_pairs)
-    redirect_to book_path(@book), flash: { kraken_unleashed: judge_all }, :notice => "Set AI Judge #{ai_judge.name} to work judging query/doc pairs."
+    redirect_to book_path(@book), flash: { kraken_unleashed: judge_all }, :notice => "AI Judge #{ai_judge.name} will start evaluating query/doc pairs."
   end
   # rubocop:enable Metrics/AbcSize
   # rubocop:enable Metrics/MethodLength

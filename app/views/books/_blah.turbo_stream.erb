@@ -2,9 +2,11 @@
   <span id="notification-book-<%= book.id %>">
     <% if counter > 0 %>      
       <div class="alert alert-warning" role="alert" >      
-        <div class="progress" role="progressbar" aria-label="Example with label" aria-valuenow="<%= percent %>" aria-valuemin="0" aria-valuemax="100">
+        <% if percent %>
+        <div class="progress" role="progressbar" aria-label="Job Progress" aria-valuenow="<%= percent %>" aria-valuemin="0" aria-valuemax="100">
           <div class="progress-bar progress-bar-striped progress-bar-animated" style="width: <%= number_to_percentage(percent, precision: 0) %>"><%= number_to_percentage(percent, precision: 0) %></div>
         </div>
+        <% end %>
         Query/Doc Pairs Remaining: <code><%= counter %></code>. 
         <br/>
         <p class="text-truncate">

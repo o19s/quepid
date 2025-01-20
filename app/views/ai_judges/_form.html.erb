@@ -14,7 +14,7 @@
         </ul>
       </div>
     <% end %>
-    <p class="card-text">Configure the AI Judge with information Quepid needs to run the judge.</p>
+    <p class="card-text">Configure the AI Judge with the information Quepid needs to run the judge.</p>
   
     <div class="row mb-3">
       <%= form.label :name, class: 'col-sm-2 col-form-label' %>
@@ -24,7 +24,7 @@
     </div>
   
     <div class="row mb-3">
-      <%= form.label :openai_key, class: 'col-sm-2 col-form-label' %>
+      <%= form.label :openai_key, "OpenAI Key", class: 'col-sm-2 col-form-label' %>
       <div class="col-sm-4">
         <%= form.text_field :openai_key %>
       </div>
