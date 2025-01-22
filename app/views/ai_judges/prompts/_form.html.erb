@@ -11,7 +11,7 @@
     </div>
   <% end %>
   
-  <%= form.hidden_field :book_id, value: @book.id if @book %>
+  <%= hidden_field_tag :book_id, @book.id if @book%>
   
   <div class="row gx-5">
     <div class="col-md-6">
@@ -28,7 +28,9 @@
         </div>
       
         <div>
-          <%= form.submit 'Refine Prompt' %>
+          <%= form.submit 'Refine Prompt', class: 'btn btn-default btn-primary' %>
+          
+          <%= link_to 'Back to Book', book_path(@book), method: :get, class: 'btn btn-block btn-light' if @book %>
         </div>
       </div>
       <% if @judgement %>

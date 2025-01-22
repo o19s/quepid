@@ -25,17 +25,8 @@ class RunJudgeJudyJob < ApplicationJob
       break if query_doc_pair.nil?
 
       judgement = Judgement.new(query_doc_pair: query_doc_pair, user: judge)
-      begin
-        judgement = llm_service.perform_judgement(judgement)
-      rescue RuntimeError => e
-        case e.message
-        when /401/
-          raise # we can't do anything about this, so pass it up
-        else
-          judgement.explanation = "BOOM: #{e}"
-          judgement.unrateable = true
-        end
-      end
+
+      llm_service.perform_safe_judgement(judgement)
 
       judgement.save!
       counter += 1
