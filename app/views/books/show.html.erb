@@ -5,7 +5,6 @@
 
 <script>
 function updateModalTitle(judgeId) {
-  console.log("HI there, updateModalTitle")
   const checkbox = document.getElementById(`judge_all_${judgeId}`);
   const button = document.getElementById(`submit_${judgeId}`);
   
@@ -33,6 +32,53 @@ function updateModalTitle(judgeId) {
     </div>
   </div>
 </div>
+
+<ul class="nav nav-underline">
+  <li class="nav-item">
+    <a class="nav-link active" aria-current="page" href="#">Overview</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link d-flex align-items-center" href="#">
+      <i class="bi bi-bar-chart-fill me-1 text-body"></i>
+      Judgement Stats
+    </a>
+  </li> 
+  <li class="nav-item">
+    <a class="nav-link d-flex align-items-center" href="#">
+      <i class="bi bi-book-half me-1 text-body"></i>
+      Judgements
+    </a>
+  </li> 
+
+  <li class="nav-item">
+    <a class="nav-link" href="#">
+      <i class="bi bi-file-earmark-arrow-down text-body"></i> Import
+    </a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="#">
+      <i class="bi bi-share-fill text-body"></i> Share book
+    </a>
+  </li>
+  <li class="nav-item">
+    <%= button_to books_export_path(@book), class: "nav-link", method: :put, data: { turbo: false } do %>
+      <i class="bi bi-file-earmark-arrow-up text-body"></i> Export
+    <% end %>    
+  </li>
+  <li class="nav-item">
+    <%= link_to edit_book_path(@book), class: "nav-link", method: :get do %>
+      <i class="bi bi-gear-wide-connected text-body"></i> Settings
+    <% end %>   
+  </li>
+</ul>
+
+Books organize all the query/doc pairs that are needed for evaluating your search queries.
+This book consists of <%= @book.query_doc_pairs.count %> query document pairs and <%= @book.judgements.count %> judgements.
+? "consists of X queries and Y documents"?
+
+<p/>&nbsp;<p/>&nbsp<p/>
+<hr/>
+OLD BELOW HERE
 
 Books organize all the query/doc pairs that are needed for evaluating your search queries.
 This book consists of <%= @book.query_doc_pairs.count %> query document pairs and <%= @book.judgements.count %> judgements.
