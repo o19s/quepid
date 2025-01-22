@@ -220,8 +220,8 @@ This book consists of <%= @book.query_doc_pairs.count %> query document pairs an
   <thead>
     <tr>
       <th scope="col">Judge</th>
-      <th scope="col">Marked Unrateable</th>
-      <th scope="col">Marked Judge Later</th>
+      <th scope="col" colspan="2">Marked Unrateable</th>
+      <th scope="col" colspan="2">Marked Judge Later</th>
       <th scope="col">Total</th>
     </tr>
   </thead>
@@ -242,12 +242,22 @@ This book consists of <%= @book.query_doc_pairs.count %> query document pairs an
       </th>
       <td>
         <% if row[:judge] %>
-          <%=row[:unrateable] %> <%= link_to_if(row[:judge] && row[:unrateable] > 0, "reset", reset_unrateable_book_path(@book,row[:judge].id), data: { turbo_method: :delete, turbo_confirm: "Are you sure?" }){ '' } %>
+          <%=row[:unrateable] %>
         <% end %>
       </td>
       <td>
         <% if row[:judge] %>
-          <%=row[:judge_later] %> <%= link_to_if(row[:judge] && row[:judge_later] > 0, "reset", reset_judge_later_book_path(@book,row[:judge].id), data: { turbo_method: :delete, turbo_confirm: "Are you sure?" }){ '' } %>
+          <%= button_to_if row[:judge] && row[:unrateable] > 0, 'reset', reset_unrateable_book_path(@book,row[:judge].id), method: :delete, class: 'btn btn-sm btn-light' %>
+        <% end %>
+      </td>
+      <td>
+        <% if row[:judge] %>
+          <%=row[:judge_later] %>
+        <% end %>
+      </td>
+      <td>
+        <% if row[:judge] %>
+          <%= button_to_if row[:judge] && row[:judge_later] > 0, "reset", reset_judge_later_book_path(@book,row[:judge].id), method: :delete, class: 'btn btn-sm btn-light' %>
         <% end %>
       </td>
       <td><%=row[:judgements] %></td>
