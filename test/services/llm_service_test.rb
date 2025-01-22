@@ -43,7 +43,7 @@ class LlmServiceTest < ActiveSupport::TestCase
 
     test 'creating a judgement' do
       judgement = Judgement.new(query_doc_pair: query_doc_pair, user: judge)
-      judgement = service.perform_judgement judgement
+      service.perform_judgement judgement
 
       assert_instance_of Float, judgement.rating
       assert_not_nil judgement.explanation
@@ -52,20 +52,26 @@ class LlmServiceTest < ActiveSupport::TestCase
 
   describe 'error conditions' do
     test 'using a bad API key' do
-      # WebMock.disable!
       service = LlmService.new 'BAD_OPENAI_KEY'
       user_prompt = DEFAULT_USER_PROMPT
       system_prompt = AiJudgesController::DEFAULT_SYSTEM_PROMPT
 
-      assert_raises(RuntimeError, '401 - Unauthorized') do
+      error = assert_raises(RuntimeError) do
         service.get_llm_response(user_prompt, system_prompt)
       end
-
-      # WebMock.enable!
+      assert_equal 'Error: 401 - Unauthorized', error.message
     end
 
-    test 'it all blows up' do
-      assert true
+    test 'handle and back off a 429 error' do
+      # the Faraday Retry may mean we don't need this
+      service = LlmService.new 'OPENAI_429_ERROR'
+      user_prompt = DEFAULT_USER_PROMPT
+      system_prompt = AiJudgesController::DEFAULT_SYSTEM_PROMPT
+
+      error = assert_raises(RuntimeError) do
+        service.get_llm_response(user_prompt, system_prompt)
+      end
+      assert_equal 'Error: 429 - Too Many Requests', error.message
     end
   end
 end

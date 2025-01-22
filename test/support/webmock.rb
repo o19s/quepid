@@ -298,7 +298,10 @@ module ActiveSupport
 
       stub_request(:post, 'https://api.openai.com/v1/chat/completions')
         .with(headers: { 'Authorization' => 'Bearer BAD_OPENAI_KEY' })
-        .to_return(status: 401)
+        .to_return(status: 401, body: 'Unauthorized')
+      stub_request(:post, 'https://api.openai.com/v1/chat/completions')
+        .with(headers: { 'Authorization' => 'Bearer OPENAI_429_ERROR' })
+        .to_return(status: 429, body: 'Too Many Requests')
     end
 
     # rubocop:enable Metrics/MethodLength
