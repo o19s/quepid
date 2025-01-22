@@ -33,12 +33,12 @@ class LlmService
 
   # rubocop:disable Metrics/MethodLength
   def get_llm_response user_prompt, system_prompt
-    uri = URI('https://api.openai.com/v1/chat/completions')
+    conn = Faraday.new(url: 'https://api.openai.com') do |f|
+      f.request :json # encode request bodies as JSON
+      f.response :json # decode response bodies as JSON
+      f.adapter Faraday.default_adapter
+    end
 
-    headers = {
-      'Content-Type'  => 'application/json',
-      'Authorization' => "Bearer #{@openai_key}",
-    }
     body = {
       model:    'gpt-4',
       messages: [
@@ -46,14 +46,17 @@ class LlmService
         { role: 'user', content: user_prompt }
       ],
     }
-    response = Net::HTTP.start(uri.host, uri.port, use_ssl: true) do |http|
-      request = Net::HTTP::Post.new(uri, headers)
-      request.body = body.to_json
-      http.request(request)
+
+    response = conn.post('/v1/chat/completions') do |req|
+      req.headers['Authorization'] = "Bearer #{@openai_key}"
+      req.headers['Content-Type'] = 'application/json'
+      req.body = body
     end
-    if response.is_a?(Net::HTTPSuccess)
+
+    if response.success?
       json_response = JSON.parse(response.body)
       content = json_response['choices']&.first&.dig('message', 'content')
+      # content = response.body.dig('choices', 0, 'message', 'content')
       parsed_content = begin
         JSON.parse(content)
       rescue StandardError
@@ -61,15 +64,15 @@ class LlmService
       end
 
       parsed_content = parsed_content['response'] if parsed_content['response']
-      # puts "here is parsed"
-      # puts parsed_content
+
       {
         explanation: parsed_content['explanation'],
         judgment:    parsed_content['judgment'],
       }
     else
-      raise "Error: #{response.code} - #{response.message}"
+      raise "Error: #{response.status} - #{response.body}"
     end
   end
+
   # rubocop:enable Metrics/MethodLength
 end
