@@ -1,11 +1,24 @@
 # frozen_string_literal: true
 
-require 'net/http'
+require 'faraday'
+require 'faraday/retry'
 require 'json'
 
 class LlmService
   def initialize openai_key, _opts = {}
     @openai_key = openai_key
+  end
+
+  def perform_safe_judgement judgement
+    perform_judgement(judgement)
+  rescue RuntimeError => e
+    case e.message
+    when /401/
+      raise # we can't do anything about this, so pass it up
+    else
+      judgement.explanation = "BOOM: #{e}"
+      judgement.unrateable = true
+    end
   end
 
   def perform_judgement judgement
@@ -19,7 +32,8 @@ class LlmService
   end
 
   def make_user_prompt query_doc_pair
-    fields = JSON.parse(query_doc_pair.document_fields).to_yaml
+    document_fields = query_doc_pair.document_fields
+    fields = document_fields.blank? ? '' : JSON.parse(document_fields).to_yaml
 
     user_prompt = <<~TEXT
       Query: #{query_doc_pair.query_text}
@@ -32,13 +46,27 @@ class LlmService
   end
 
   # rubocop:disable Metrics/MethodLength
+  # rubocop:disable Metrics/AbcSize
   def get_llm_response user_prompt, system_prompt
-    uri = URI('https://api.openai.com/v1/chat/completions')
+    conn = Faraday.new(url: 'https://api.openai.com') do |f|
+      f.request :json
+      f.response :json
+      f.adapter Faraday.default_adapter
+      f.request :retry, {
+        max:                 3,
+        interval:            2,
+        interval_randomness: 0.5,
+        backoff_factor:      2,
+        # exceptions: [
+        #  Faraday::ConnectionFailed,
+        ##  Faraday::TimeoutError,
+        #  'Timeout::Error',
+        #  'Error::TooManyRequests'
+        # ],
+        retry_statuses:      [ 429 ],
+      }
+    end
 
-    headers = {
-      'Content-Type'  => 'application/json',
-      'Authorization' => "Bearer #{@openai_key}",
-    }
     body = {
       model:    'gpt-4',
       messages: [
@@ -46,30 +74,31 @@ class LlmService
         { role: 'user', content: user_prompt }
       ],
     }
-    response = Net::HTTP.start(uri.host, uri.port, use_ssl: true) do |http|
-      request = Net::HTTP::Post.new(uri, headers)
-      request.body = body.to_json
-      http.request(request)
-    end
-    if response.is_a?(Net::HTTPSuccess)
-      json_response = JSON.parse(response.body)
-      content = json_response['choices']&.first&.dig('message', 'content')
-      parsed_content = begin
-        JSON.parse(content)
-      rescue StandardError
-        {}
-      end
 
-      parsed_content = parsed_content['response'] if parsed_content['response']
-      # puts "here is parsed"
-      # puts parsed_content
-      {
-        explanation: parsed_content['explanation'],
-        judgment:    parsed_content['judgment'],
-      }
+    response = conn.post('/v1/chat/completions') do |req|
+      req.headers['Authorization'] = "Bearer #{@openai_key}"
+      req.headers['Content-Type'] = 'application/json'
+      req.body = body
+    end
+
+    if response.success?
+      begin
+        json_response = JSON.parse(response.env.response_body)
+        content = json_response['choices']&.first&.dig('message', 'content')
+
+        parsed_content = JSON.parse(content)
+        {
+          explanation: parsed_content['explanation'],
+          judgment:    parsed_content['judgment'],
+        }
+      rescue RuntimeError => e
+        puts e
+        raise "Error: Could not parse response from OpenAI: #{e} - #{response.env.response_body}"
+      end
     else
-      raise "Error: #{response.code} - #{response.message}"
+      raise "Error: #{response.status} - #{response.body}"
     end
   end
+  # rubocop:enable Metrics/AbcSize
   # rubocop:enable Metrics/MethodLength
 end

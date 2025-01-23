@@ -39,6 +39,10 @@ module ApplicationHelper
     }[flash_type.to_sym] || flash_type.to_s
   end
 
+  def button_to_if condition, name, options = {}, html_options = {}
+    button_to(name, options, html_options) if condition
+  end
+
   # rubocop:disable Metrics/MethodLength
   # rubocop:disable Lint/EmptyBlock
   def flash_messages _opts = {}

@@ -50,17 +50,11 @@ class SelectionStrategy < ApplicationRecord
 
   # We are randomly with position bias picking query_doc_pairs, up to a limit of 3
   def self.random_query_doc_pair_for_multiple_judges book, user
-    # wish this was one query ;-)
-    already_judged_query_doc_pair_ids = book.judgements.where(user_id: user.id).pluck(:query_doc_pair_id)
-    already_has_three_judgements_query_doc_pair_ids = book.query_doc_pairs.joins(:judgements)
-      .group('`query_doc_pairs`.`id`')
-      .having('count(*) = ? ', 3)
-      .pluck(:query_doc_pair_id)
-
-    ids_to_filter = (already_judged_query_doc_pair_ids + already_has_three_judgements_query_doc_pair_ids).flatten
-
     query_doc_pair = book.query_doc_pairs
-      .where.not(id: ids_to_filter )
+      .left_joins(:judgements)
+      .group('query_doc_pairs.id')
+      .having('COUNT(CASE WHEN judgements.user_id = ? THEN 1 END) = 0', user.id)
+      .having('COUNT(judgements.id) < 3')
       .order(Arel.sql('-LOG(1.0 - RAND()) * (position + 1)'))
       .first
 
