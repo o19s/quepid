@@ -27,6 +27,8 @@ module ApplicationHelper
       request.fullpath.include?(options[:path])
     elsif options.key?(:controller)
       controller_name == options[:controller]
+    elsif options.key?(:action)
+      action_name == options[:action]
     end
   end
 

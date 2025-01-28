@@ -1,8 +1,5 @@
 <%= turbo_stream_from(:notifications) %>
 
-
-
-
 <script>
 function updateModalTitle(judgeId) {
   const checkbox = document.getElementById(`judge_all_${judgeId}`);
@@ -16,72 +13,21 @@ function updateModalTitle(judgeId) {
 }
 </script>
 
-
 <%= turbo_frame_tag "modal" %>
 
-
-
-
-
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-  <h1 class="h2"><%= book_title @book %></h1>
+  <h1 class="h2"><i class="bi bi-book"></i> <%= book_title @book %></h1>
   <div class="btn-toolbar mb-2 mb-md-0">
     <div class="btn-group me-2">
       <%= link_to 'New Book', new_book_path, class: "btn btn-sm btn-outline-secondary" %>
-      <%= button_to 'Export', books_export_path(@book), method: :put, data: { turbo: false }, class: "btn btn-sm btn-outline-secondary" %>
     </div>
   </div>
 </div>
 
-<ul class="nav nav-underline">
-  <li class="nav-item">
-    <a class="nav-link active" aria-current="page" href="#">Overview</a>
-  </li>
-  <li class="nav-item">
-    <a class="nav-link d-flex align-items-center" href="#">
-      <i class="bi bi-bar-chart-fill me-1 text-body"></i>
-      Judgement Stats
-    </a>
-  </li> 
-  <li class="nav-item">
-    <a class="nav-link d-flex align-items-center" href="#">
-      <i class="bi bi-book-half me-1 text-body"></i>
-      Judgements
-    </a>
-  </li> 
+<%= render 'tabs', book: @book %>
 
-  <li class="nav-item">
-    <a class="nav-link" href="#">
-      <i class="bi bi-file-earmark-arrow-down text-body"></i> Import
-    </a>
-  </li>
-  <li class="nav-item">
-    <a class="nav-link" href="#">
-      <i class="bi bi-share-fill text-body"></i> Share book
-    </a>
-  </li>
-  <li class="nav-item">
-    <%= button_to books_export_path(@book), class: "nav-link", method: :put, data: { turbo: false } do %>
-      <i class="bi bi-file-earmark-arrow-up text-body"></i> Export
-    <% end %>    
-  </li>
-  <li class="nav-item">
-    <%= link_to edit_book_path(@book), class: "nav-link", method: :get do %>
-      <i class="bi bi-gear-wide-connected text-body"></i> Settings
-    <% end %>   
-  </li>
-</ul>
-
-Books organize all the query/doc pairs that are needed for evaluating your search queries.
-This book consists of <%= @book.query_doc_pairs.count %> query document pairs and <%= @book.judgements.count %> judgements.
-? "consists of X queries and Y documents"?
-
-<p/>&nbsp;<p/>&nbsp<p/>
-<hr/>
-OLD BELOW HERE
-
-Books organize all the query/doc pairs that are needed for evaluating your search queries.
-This book consists of <%= @book.query_doc_pairs.count %> query document pairs and <%= @book.judgements.count %> judgements.
+Books organize the query/doc pairs that are needed for evaluating your search queries.
+This book consists of <%= @book.query_doc_pairs.select(:query_text).distinct.count %> queries.
 
 <%= render 'judgements/moar_judgements_needed', book: @book %>
 
@@ -195,14 +141,6 @@ This book consists of <%= @book.query_doc_pairs.count %> query document pairs an
 <br>
 
 <%= button_to 'Show Query Doc Pairs', book_query_doc_pairs_path(@book), method: :get %>
-
-<br>
-
-<%= button_to "Edit Book", edit_book_path(@book), method: :get %>
-
-<br>
-
-<%= button_to 'Back to Books', books_path, method: :get %>
 </p>
 
 <div class="card" style="">
@@ -235,79 +173,3 @@ This book consists of <%= @book.query_doc_pairs.count %> query document pairs an
     </ul>
   </div>
 </div>
-
-
-<h3>Leaderboard</h3>
-<div class="card">
-  <div class="card-body">
-
-    <h5 class="card-title" href="#collapseExample">Leaderboard</h3>
-    <h6 class="card-subtitle mb-2 text-body-secondary">Who is closest to having all <%= @book.query_doc_pairs.count %> query/doc pairs judged?</h6>
-    <%=
-    Vega.lite
-      .data(@leaderboard_data)
-      .mark(type: "bar", tooltip: true)
-      .encoding(
-        x: {field: "judge", type: "nominal", "axis": {"labelAngle": 0}},
-        y: {field: "judgements", type: "quantitative"}
-      )
-    %>
-  </div>
-  <div class="card-footer text-muted">
-    * Judged count includes marked as rated or to be judged later.
-  </div>
-</div>
-
-<%= render partial: 'unleash_modal', collection: @ai_judges, as: :ai_judge%>
-
-<p/>
-<h3>Judging Stats</h3>
-<table class="table">
-  <thead>
-    <tr>
-      <th scope="col">Judge</th>
-      <th scope="col" colspan="2">Marked Unrateable</th>
-      <th scope="col" colspan="2">Marked Judge Later</th>
-      <th scope="col">Total</th>
-    </tr>
-  </thead>
-  <tbody>
-    <% @stats_data.each do | row | %>
-    <tr>
-      <th scope="row">
-        <%=display_judge_name (row[:judge]) %>
-        <% if row[:judge] && row[:judge].ai_judge? %>
-          <i class="bi bi-robot"></i>
-          <div class="float-end d-flex gap-2">
-            <%= button_to 'Refine Prompt', edit_ai_judge_prompt_path(row[:judge]), params: { book_id: @book.id }, class: 'btn btn-block btn-light', role: 'button', method: :get %>           
-            <button type="button" class="btn btn-block btn-light" <%= (row[:can_judge_more] && @moar_judgements_needed )? '' : 'disabled' %> data-bs-toggle="modal" data-bs-target="#unleash_modal_<%= row[:judge].id %>">
-              Prepare to Judge!
-            </button>      
-          </div>         
-        <% end %>
-      </th>
-      <td>
-        <% if row[:judge] %>
-          <%=row[:unrateable] %>
-        <% end %>
-      </td>
-      <td>
-        <% if row[:judge] %>
-          <%= button_to_if row[:judge] && row[:unrateable] > 0, 'reset', reset_unrateable_book_path(@book,row[:judge].id), method: :delete, class: 'btn btn-sm btn-light' %>
-        <% end %>
-      </td>
-      <td>
-        <% if row[:judge] %>
-          <%=row[:judge_later] %>
-        <% end %>
-      </td>
-      <td>
-        <% if row[:judge] %>
-          <%= button_to_if row[:judge] && row[:judge_later] > 0, "reset", reset_judge_later_book_path(@book,row[:judge].id), method: :delete, class: 'btn btn-sm btn-light' %>
-        <% end %>
-      </td>
-      <td><%=row[:judgements] %></td>
-    </tr>
-    <% end %>
-  </tbody>
-</table>

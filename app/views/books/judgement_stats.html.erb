@@ -1,0 +1,87 @@
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+  <h1 class="h2">Judgement Statistics for <%= book_title @book %></h1>
+  <div class="btn-toolbar mb-2 mb-md-0">
+    <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle">
+      <span data-feather="calendar" class="align-text-bottom"></span>
+      This week
+    </button>
+  </div>
+</div>
+
+<%= render 'tabs', book: @book %>
+<p/>
+
+<h3>Leaderboard</h3>
+<div class="card">
+  <div class="card-body">
+
+    <h5 class="card-title" href="#collapseExample">Leaderboard</h3>
+    <h6 class="card-subtitle mb-2 text-body-secondary">Who is closest to having all <%= @book.query_doc_pairs.count %> query/doc pairs judged?</h6>
+    <%=
+    Vega.lite
+      .data(@leaderboard_data)
+      .mark(type: "bar", tooltip: true)
+      .encoding(
+        x: {field: "judge", type: "nominal", "axis": {"labelAngle": 0}},
+        y: {field: "judgements", type: "quantitative"}
+      )
+    %>
+  </div>
+  <div class="card-footer text-muted">
+    * Judged count includes marked as rated or to be judged later.
+  </div>
+</div>
+
+<%= render partial: 'unleash_modal', collection: @ai_judges, as: :ai_judge%>
+
+<p/>
+<h3>Judging Stats</h3>
+<table class="table">
+  <thead>
+    <tr>
+      <th scope="col">Judge</th>
+      <th scope="col" colspan="2">Marked Unrateable</th>
+      <th scope="col" colspan="2">Marked Judge Later</th>
+      <th scope="col">Total</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% @stats_data.each do | row | %>
+    <tr>
+      <th scope="row">
+        <%=display_judge_name (row[:judge]) %>
+        <% if row[:judge] && row[:judge].ai_judge? %>
+          <i class="bi bi-robot"></i>
+          <div class="float-end d-flex gap-2">
+            <%= button_to 'Refine Prompt', edit_ai_judge_prompt_path(row[:judge]), params: { book_id: @book.id }, class: 'btn btn-block btn-light', role: 'button', method: :get %>           
+            <button type="button" class="btn btn-block btn-light" <%= (row[:can_judge_more] && @moar_judgements_needed )? '' : 'disabled' %> data-bs-toggle="modal" data-bs-target="#unleash_modal_<%= row[:judge].id %>">
+              Prepare to Judge!
+            </button>      
+          </div>         
+        <% end %>
+      </th>
+      <td>
+        <% if row[:judge] %>
+          <%=row[:unrateable] %>
+        <% end %>
+      </td>
+      <td>
+        <% if row[:judge] %>
+          <%= button_to_if row[:judge] && row[:unrateable] > 0, 'reset', reset_unrateable_book_path(@book,row[:judge].id), method: :delete, class: 'btn btn-sm btn-light' %>
+        <% end %>
+      </td>
+      <td>
+        <% if row[:judge] %>
+          <%=row[:judge_later] %>
+        <% end %>
+      </td>
+      <td>
+        <% if row[:judge] %>
+          <%= button_to_if row[:judge] && row[:judge_later] > 0, "reset", reset_judge_later_book_path(@book,row[:judge].id), method: :delete, class: 'btn btn-sm btn-light' %>
+        <% end %>
+      </td>
+      <td><%=row[:judgements] %></td>
+    </tr>
+    <% end %>
+  </tbody>
+</table>
