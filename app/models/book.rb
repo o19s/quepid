@@ -88,6 +88,10 @@ class Book < ApplicationRecord
                         SQL
                       }
 
+  def queries_count
+    query_doc_pairs.select(:query_text).distinct.count
+  end
+
   private
 
   def delete_attachments

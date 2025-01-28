@@ -417,7 +417,8 @@ Rails.application.routes.draw do
 
   get 'home/sparklines', to: 'home#sparklines'
   get 'home/case_prophet/:case_id', to: 'home#case_prophet', as: :home_case_prophet
-  # get 'tries_visualization/:case_id' => 'tries_visualization#show', as: :tries_visualization
+  get 'home/book_summary_detail/:book_id', to: 'home#book_summary_detail', as: :home_book_summary_detail
+
   get 'proxy/fetch'
   post 'proxy/fetch'
 

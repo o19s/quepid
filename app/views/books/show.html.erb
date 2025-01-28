@@ -27,7 +27,7 @@ function updateModalTitle(judgeId) {
 <%= render 'tabs', book: @book %>
 
 Books organize the query/doc pairs that are needed for evaluating your search queries.
-This book consists of <%= @book.query_doc_pairs.select(:query_text).distinct.count %> queries.
+This book consists of <%= @book.queries_count %> queries.
 
 <%= render 'judgements/moar_judgements_needed', book: @book %>
 
