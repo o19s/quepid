@@ -17,7 +17,9 @@
                 RECENT CASES
               </li>
               <li><hr class="dropdown-divider"></li>
-              <%= render partial: 'layouts/dropdown_case', collection: set_recent_cases, as: :kase, cached: true %>
+              
+              <turbo-frame id="dropdown_cases" src="<%= dropdown_cases_path() %>" loading="lazy">
+              </turbo-frame>
             
               <li class="actions">
                 <div class="d-grid gap-2">
@@ -36,10 +38,10 @@
                 RECENT BOOKS
               </li>
               <li><hr class="dropdown-divider"></li>
-              <% set_recent_books.each do |book| %>
-                <li><%= link_to book.name, book_path(book) %></li>
-                <li><hr class="dropdown-divider"></li>
-              <% end %>            
+       
+              <turbo-frame id="dropdown_books" src="<%= dropdown_books_path() %>" loading="lazy">
+              </turbo-frame>
+              
               <li class="actions">
                 <div class="d-grid gap-2">
                 <%= link_to "View all books", books_path, class: "btn btn-outline-secondary" %>

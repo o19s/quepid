@@ -4,10 +4,6 @@ module Authentication
   module CurrentBookManager
     extend ActiveSupport::Concern
 
-    included do
-      helper_method :set_recent_books
-    end
-
     private
 
     def set_book
@@ -17,10 +13,6 @@ module Authentication
 
     def check_book
       render json: { message: 'Book not found!' }, status: :not_found unless @book
-    end
-
-    def set_recent_books
-      @recent_books = recent_books(4)
     end
 
     def recent_books count

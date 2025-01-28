@@ -442,6 +442,9 @@ Rails.application.routes.draw do
   resource :account, only: [ :update, :destroy ]
   resource :profile, only: [ :show, :update ]
 
+  get '/dropdown/cases' => 'dropdown#cases'
+  get '/dropdown/books' => 'dropdown#books'
+
   resources :teams, only: [] do
     resources :ai_judges, controller: :ai_judges
   end
