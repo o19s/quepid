@@ -56,7 +56,7 @@ class Book < ApplicationRecord
              through:   :query_doc_pairs,
              dependent: :destroy
 
-  # has_many :judges, -> { distinct }, through: :judgements, class_name: 'User', source: :user
+  has_many :judges, -> { distinct }, through: :judgements, class_name: 'User', source: :user
 
   has_many :cases, dependent: :nullify
 
