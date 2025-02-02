@@ -16,7 +16,7 @@ function updateModalTitle(judgeId) {
 <%= turbo_frame_tag "modal" %>
 
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-  <h1 class="h2"><i class="bi bi-book"></i> <%= book_title @book %></h1>
+  <h1><i class="bi bi-book"></i> <%= book_title @book %></h1>
   <div class="btn-toolbar mb-2 mb-md-0">
     <div class="btn-group me-2">
       <%= link_to 'New Book', new_book_path, class: "btn btn-sm btn-outline-secondary" %>
@@ -45,7 +45,7 @@ This book consists of <%= @book.queries_count %> queries.
   This book has an upload of data that is currently being processed and is not ready for use yet.
   <br/>
   Import file is  <%=link_to 'available here', rails_blob_path(@book.import_file.blob, only_path: true) %>.
-  Status: <%= @book.query_doc_pairs.count %>
+  Query Doc Pairs Loaded: <%= @book.query_doc_pairs.count %>
   <%= link_to book_path(@book) do %>
     Refresh
     <i
@@ -136,40 +136,5 @@ This book consists of <%= @book.queries_count %> queries.
 </p>
 
 <p>
-<%= button_to 'Show Judgements', book_judgements_path(@book), method: :get %>
-
-<br>
-
-<%= button_to 'Show Query Doc Pairs', book_query_doc_pairs_path(@book), method: :get %>
+<%= button_to 'Show Query Doc Pairs', book_query_doc_pairs_path(@book), method: :get, class: 'btn btn-sm btn-outline-secondary' %>
 </p>
-
-<div class="card" style="">
-  <div class="card-body">
-    <h5 class="card-title">Export Data</h5>
-    <p class="card-text">There are a number of ways to export the Book data.</p>
-
-    <ul class="list-group list-group-flush">
-      <li class="list-group-item">Export just the <%= link_to 'judgement data', api_book_judgements_path(@book, format: :csv) %> in CSV format.  This will take a bit but you will download a CSV file, useful for your own analysis.</li>
-
-      <li class="list-group-item">Export the entire Book in JSON format.
-        <% if @book.export_job %>
-          The book is currently being exported.  The status is <code><%=@book.export_job%></code>.
-        <% else %>
-          <%= button_to "#{@book.export_file.present? ? 'Re-Export' : 'Export'}", books_export_path(@book), method: :put, data: { turbo: false }, class: "#{@book.export_job.nil? ? '' : 'disabled'}" %>
-        <% end %>
-        <% if @book.export_file.present? %>
-          <p>
-          There is an export file created <%= time_ago_in_words @book.export_file.created_at %> ago <%=link_to 'available here', rails_blob_path(@book.export_file.blob, only_path: true) %>.
-        </p>
-        <% end %>
-      </li>
-      <li class="list-group-item">
-        <p>
-          Reference these judgements from a notebook or another system you can use these <%= link_to 'Quepid APIs', apipie_apipie_path %> endpoints:
-          <code><%= api_book_judgements_path(@book, format: :csv) %></code> or <code><%= api_export_book_path(@book) %></code>
-        </p>
-
-      </li>
-    </ul>
-  </div>
-</div>

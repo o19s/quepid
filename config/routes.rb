@@ -472,6 +472,7 @@ Rails.application.routes.draw do
     get 'skip_judging' => 'judgements#skip_judging'
     member do
       get 'judgement_stats'
+      get 'export'
       patch 'combine'
       patch 'assign_anonymous'
       patch 'run_judge_judy/:ai_judge_id', action: :run_judge_judy, as: :run_judge_judy

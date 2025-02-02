@@ -6,19 +6,19 @@
   </li>
   <li class="nav-item">
     <%= link_to judgement_stats_book_path(book), class: "nav-link #{make_active?({action: 'judgement_stats'}) ? 'active' : ''}", method: :get do %>
-      <i class="bi bi-bar-chart-fill me-1 text-body"></i> Judgement Stats
+      <i class="bi bi-bar-chart-fill text-body"></i> Judgement Stats
     <% end %>      
   </li>
   <li class="nav-item">
     <%= link_to book_judgements_path(book), class: "nav-link #{make_active?({controller: 'judgements'}) ? 'active' : ''}", method: :get do %>
-      <i class="bi bi-book-half me-1 text-body"></i> Judgements
+      <i class="bi bi-book-half text-body"></i> Judgements
     <% end %>  
   </li> 
 
   <li class="nav-item">
-    <a class="nav-link" href="#">
+    <%= link_to new_books_import_path, class: "nav-link #{make_active?({controller: 'import'}) ? 'active' : ''}", method: :get do %>
       <i class="bi bi-file-earmark-arrow-down text-body"></i> Import
-    </a>
+    <% end %> 
   </li>
   <li class="nav-item">
     <a class="nav-link" href="#">
@@ -26,12 +26,12 @@
     </a>
   </li>
   <li class="nav-item">
-    <%= button_to books_export_path(book), class: "nav-link", method: :put, data: { turbo: false } do %>
+    <%= link_to export_book_path(book), class: "nav-link #{make_active?({action: 'export'}) ? 'active' : ''}" do %>
       <i class="bi bi-file-earmark-arrow-up text-body"></i> Export
     <% end %>    
   </li>
   <li class="nav-item">
-    <%= link_to edit_book_path(book), class: "nav-link #{make_active?({action: 'edit'}) ? 'active' : ''}", method: :get do %>
+    <%= link_to edit_book_path(book), class: "nav-link #{make_active?({action: 'edit'}) ? 'active' : ''}" do %>
       <i class="bi bi-gear-wide-connected text-body"></i> Settings
     <% end %>   
   </li>

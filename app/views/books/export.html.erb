@@ -1,0 +1,47 @@
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+  <h1><i class="bi bi-book"></i> <%= book_title @book %></h1>
+  <div class="btn-toolbar mb-2 mb-md-0">
+    <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle">
+      <span data-feather="calendar" class="align-text-bottom"></span>
+      This week
+    </button>
+  </div>
+</div>
+
+<%= render 'tabs', book: @book %>
+<p/>
+
+<div class="card" style="">
+  <div class="card-body">
+    <h5 class="card-title">Export Data</h5>
+    <p class="card-text">There are a number of ways to export the Book data.</p>
+
+    <ul class="list-group list-group-flush">
+      <li class="list-group-item">Export just the <%= link_to 'judgement data', api_book_judgements_path(@book, format: :csv) %> in CSV format.  This will take a bit but you will download a CSV file, useful for your own analysis.</li>
+
+      <li class="list-group-item">Export the entire Book in JSON format.
+        <% if @book.export_job %>
+          The book is currently being exported.  The status is <code><%=@book.export_job%></code>.
+        <% else %>
+          <%= button_to "#{@book.export_file.present? ? 'Re-Export' : 'Export'}", books_export_path(@book), method: :put, data: { turbo: false }, class: "btn btn-outline-primary btn-sm #{@book.export_job.nil? ? '' : 'disabled'}" %>
+        <% end %>
+        <% if @book.export_file.present? %>
+          <p>
+          There is an export file created <%= time_ago_in_words @book.export_file.created_at %> ago 
+          
+            <%=link_to rails_blob_path(@book.export_file.blob, only_path: true) do %>
+              available to download <i class="bi bi-file-earmark-arrow-down-fill"></i>
+            <% end %>.
+        </p>
+        <% end %>
+      </li>
+      <li class="list-group-item">
+        <p>
+          Reference these judgements from a notebook or another system you can use these <%= link_to 'Quepid APIs', apipie_apipie_path %> endpoints:
+          <code><%= api_book_judgements_path(@book, format: :csv) %></code> or <code><%= api_export_book_path(@book) %></code>
+        </p>
+
+      </li>
+    </ul>
+  </div>
+</div>
