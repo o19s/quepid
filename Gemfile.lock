@@ -342,6 +342,7 @@ GEM
       omniauth (~> 2.0)
     orm_adapter (0.5.0)
     ostruct (0.6.1)
+    pagy (9.3.3)
     parallel (1.26.3)
     parser (3.3.7.0)
       ast (~> 2.4.1)
@@ -591,6 +592,7 @@ DEPENDENCIES
   omniauth-google-oauth2
   omniauth-keycloak
   omniauth-rails_csrf_protection
+  pagy
   postmark-rails
   prophet-rb (~> 0.5.3)
   puma

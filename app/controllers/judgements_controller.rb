@@ -2,6 +2,7 @@
 
 # rubocop:disable Metrics/ClassLength
 class JudgementsController < ApplicationController
+  include Pagy::Backend
   before_action :set_judgement, only: [ :show, :edit, :update, :destroy ]
   before_action :set_book
 
@@ -22,7 +23,7 @@ class JudgementsController < ApplicationController
                           "%#{params[:q]}%", "%#{params[:q]}%", "%#{params[:q]}%", "%#{params[:q]}%")
     end
 
-    @judgements = query.order('query_doc_pair_id').limit(25)
+    @pagy, @judgements = pagy(query.order('query_doc_pair_id'))
   end
   # rubocop:enable Metrics/AbcSize
   # rubocop:enable Layout/LineLength
