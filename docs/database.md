@@ -34,7 +34,7 @@ curl -X PATCH \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $YOUR_DO_PERSONAL_ACCESS_TOKEN" \
   -d '{"config": {"sql_require_primary_key": false}}' \
-  "https://api.digitalocean.com/v2/databases/1cc1ee20-562c-4790-8c05-20ce3f72abdf/config"
+  "https://api.digitalocean.com/v2/databases/$YOUR_DB_ID_HERE/config"
 ```
 
 ## Emoji Support

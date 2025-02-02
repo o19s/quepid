@@ -50,7 +50,7 @@
     "karma": "^6.4.1",
     "karma-chrome-launcher": "3.2.0",
     "karma-jasmine": "5.1.0",
-    "puppeteer": "^23.0.0"
+    "puppeteer": "^24.0.0"
   },
   "resolutions": {}
 }
