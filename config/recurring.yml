@@ -3,6 +3,11 @@ development:
     class: EnqueueRunNightlyCasesJob
     #schedule: every hour
     schedule: every day at 1 am
+    
+  nightly_run_blazer_checks_command:
+    class: RunBlazerChecksJob
+    #schedule: every hour
+    schedule: every five minutes
 
   # periodic_cleanup:
   #   class: QueryRunnerJob
@@ -16,6 +21,11 @@ production:
     class: EnqueueRunNightlyCasesJob
     #schedule: every hour
     schedule: every day at 1 am
+    
+  nightly_run_blazer_checks_command:
+    class: RunBlazerChecksJob
+    schedule: every hour
+    #schedule: every day at 6 am    
  
 
   # periodic_cleanup:
