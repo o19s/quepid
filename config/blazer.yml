@@ -45,13 +45,13 @@ audit: true
 # user_method: current_user
 
 # method name for the display name
-# user_name: name
+user_name: fullname
 
 # custom before_action to use for auth
 # before_action_method: require_admin
 
 # email to send checks from
-# from_email: blazer@example.org
+from_email: quepid@o19s.com
 
 # webhook for Slack
 # slack_webhook_url: <%= ENV["BLAZER_SLACK_WEBHOOK_URL"] %>
