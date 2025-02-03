@@ -50,11 +50,10 @@ class Book < ApplicationRecord
 
   belongs_to :selection_strategy
   belongs_to :scorer
-  has_many :query_doc_pairs, dependent: :destroy, autosave: true
+  has_many :query_doc_pairs, dependent: :delete_all, autosave: true
 
   has_many   :judgements,
-             through:   :query_doc_pairs,
-             dependent: :destroy
+             through: :query_doc_pairs
 
   has_many :judges, -> { distinct }, through: :judgements, class_name: 'User', source: :user
 
@@ -90,6 +89,16 @@ class Book < ApplicationRecord
 
   def queries_count
     query_doc_pairs.select(:query_text).distinct.count
+  end
+
+  # Not proud of this method, but it's the only way I can get the dependent
+  # objects of a Book to actually delete!
+  def really_destroy
+    Judgement.joins(:query_doc_pair)
+      .where(query_doc_pairs: { book_id: id })
+      .delete_all
+    query_doc_pairs.delete_all
+    destroy
   end
 
   private

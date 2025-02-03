@@ -34,10 +34,9 @@ class BooksController < ApplicationController
 
     respond_with(@book)
   end
-  
+
   # if this becomes richer, then move to it's own controller
   def export
-    
   end
 
   def judgement_stats
@@ -149,8 +148,8 @@ class BooksController < ApplicationController
   # rubocop:enable Metrics/MethodLength
 
   def destroy
-    @book.destroy
-    respond_with(@book)
+    @book.really_destroy
+    redirect_to books_path, notice: 'Book is deleted'
   end
 
   # rubocop:disable Metrics/AbcSize

@@ -12,10 +12,10 @@
 
 
 <p id="notice"><%= notice %></p>
-
-<% if @books.size == 0 %>
-  Create your first book by clicking on the New Book button above.
-  <br>
+<% if @books.empty? %>
+  <div class="alert alert-primary" role="alert">
+    Create your first book by clicking on the New Book button above.
+  </div>
 <% end %>
 
 

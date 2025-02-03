@@ -44,7 +44,7 @@ This book consists of <%= @book.queries_count %> queries.
 <div class="alert alert-danger" role="alert">
   This book has an upload of data that is currently being processed and is not ready for use yet.
   <br/>
-  Import file is  <%=link_to 'available here', rails_blob_path(@book.import_file.blob, only_path: true) %>.
+  
   Query Doc Pairs Loaded: <%= @book.query_doc_pairs.count %>
   <%= link_to book_path(@book) do %>
     Refresh
