@@ -24,7 +24,6 @@ gem 'devise_invitable', '~> 2.0'
 gem 'faraday-retry'
 gem 'foreman'
 gem 'importmap-rails', '~> 2.1'
-gem 'intercom-rails'
 gem 'jbuilder', '~> 2.7'
 gem 'jquery-rails'
 gem 'jquery-ui-rails' # Can we narrow the widgets to load faster?
