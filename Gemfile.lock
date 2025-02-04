@@ -218,9 +218,6 @@ GEM
       actionpack (>= 6.0.0)
       activesupport (>= 6.0.0)
       railties (>= 6.0.0)
-    intercom-rails (1.0.5)
-      activesupport (> 4.0)
-      jwt (~> 2.0)
     io-console (0.8.0)
     irb (1.15.1)
       pp (>= 0.6.0)
@@ -574,7 +571,6 @@ DEPENDENCIES
   faraday-retry
   foreman
   importmap-rails (~> 2.1)
-  intercom-rails
   jbuilder (~> 2.7)
   jquery-rails
   jquery-ui-rails
