@@ -2,17 +2,11 @@
   <h1 class="h2">Edit Search Endpoint <%= @search_endpoint.fullname %></h1>
   <div class="btn-toolbar mb-2 mb-md-0">
     <div class="btn-group me-2">
-      <%= link_to 'New Search Endpoint', new_search_endpoint_path, class: "btn btn-sm btn-outline-secondary" %>
+      <%= button_to "Delete this Search Endpoint", @search_endpoint, method: :delete, class: 'btn btn-sm btn-danger', onclick: "return confirm('Are you sure you want to delete this Search Endpoint?');" %>
+      <%= link_to "Back to Search Endpoints", search_endpoints_path, class: "btn btn-sm btn-outline-secondary" %>
     </div>
 
   </div>
 </div>
 
 <%= render 'form', search_endpoint: @search_endpoint %>
-
-<div>
-  <%= link_to "Cancel", @search_endpoint %> |
-  <%= link_to "Back to search endpoints", search_endpoints_path %>
-  <p/>
-  <%= button_to "Destroy this search endpoint", @search_endpoint, method: :delete, class: 'btn btn-sm btn-danger' %>
-</div>
