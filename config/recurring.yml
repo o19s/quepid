@@ -2,10 +2,13 @@ development:
   nightly_run_cases_command:
     class: EnqueueRunNightlyCasesJob
     schedule: every day at 1 am
-    
-  nightly_run_blazer_checks_command:
-    class: RunBlazerChecksJob
-    schedule: every hour
+
+  blazer_run_checks_daily:
+    command: "Blazer.run_checks(schedule: 'hourly')"
+    schedule: every hour    
+  #nightly_run_blazer_checks_command:
+  #  class: RunBlazerChecksJob
+  #  schedule: every hour
 
 
 production:
@@ -13,6 +16,10 @@ production:
     class: EnqueueRunNightlyCasesJob
     schedule: every day at 1 am
     
-  nightly_run_blazer_checks_command:
-    class: RunBlazerChecksJob
-    schedule: every day at 7 am
+  blazer_run_checks_daily:
+    command: "Blazer.run_checks(schedule: 'daily')"
+    schedule: every day at 7am
+    
+  #nightly_run_blazer_checks_command:
+  #  class: RunBlazerChecksJob
+  #  schedule: every day at 7 am
