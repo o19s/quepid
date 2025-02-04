@@ -12,6 +12,7 @@
 #  updated_at    :datetime
 #  annotation_id :integer
 #  case_id       :integer
+#  scorer_id     :bigint
 #  try_id        :integer
 #  user_id       :integer
 #
@@ -19,6 +20,7 @@
 #
 #  case_id                          (case_id)
 #  index_case_scores_annotation_id  (annotation_id) UNIQUE
+#  index_case_scores_on_scorer_id   (scorer_id)
 #  support_last_score               (updated_at,created_at,id)
 #  user_id                          (user_id)
 #
@@ -39,6 +41,7 @@ class Score < ApplicationRecord
   belongs_to :user, optional: true
   belongs_to :try
   belongs_to :annotation, optional: true
+  belongs_to :scorer, optional: true # optional for legacy reasons, we have old data.
 
   # Validations
 
