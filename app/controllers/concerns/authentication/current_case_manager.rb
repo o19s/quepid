@@ -6,7 +6,6 @@ module Authentication
 
     included do
       helper_method :current_case
-      helper_method :set_recent_cases
     end
 
     private
@@ -34,19 +33,19 @@ module Authentication
       end
     end
 
-    def set_recent_cases
-      @recent_cases = recent_cases(4)
-    end
-
     def recent_cases count
       if current_user
-        case_ids = current_user.case_metadata.order(last_viewed_at: :desc).limit(count).pluck(:case_id)
+        # case_ids = current_user.case_metadata.order(last_viewed_at: :desc).limit(count).pluck(:case_id)
 
         # map to objects
-        cases = current_user.cases_involved_with.where(id: case_ids).not_archived
+        # cases = current_user.cases_involved_with.where(id: case_ids).not_archived
 
         # the WHERE IN clause doesn't guarantee returning in order, so this sorts the cases in order of last viewing.
-        cases = cases.sort_by { |x| case_ids.index x.id }
+        # cases = cases.sort_by { |x| case_ids.index x.id }
+        cases = current_user.cases_involved_with.not_archived.with_counts
+          .includes([ :metadata ])
+          .order('`case_metadata`.`last_viewed_at` DESC, `cases`.`id` DESC')
+          .limit(count)
       else
         cases = []
       end

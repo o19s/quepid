@@ -5,11 +5,11 @@ class BooksController < ApplicationController
   before_action :set_book,
                 only: [ :show, :edit, :update, :destroy, :combine, :assign_anonymous, :delete_ratings_by_assignee,
                         :reset_unrateable, :reset_judge_later, :delete_query_doc_pairs_below_position,
-                        :eric_steered_us_wrong, :run_judge_judy ]
+                        :eric_steered_us_wrong, :run_judge_judy, :judgement_stats, :export ]
   before_action :check_book,
                 only: [ :show, :edit, :update, :destroy, :combine, :assign_anonymous, :delete_ratings_by_assignee,
                         :reset_unrateable, :reset_judge_later, :delete_query_doc_pairs_below_position,
-                        :eric_steered_us_wrong, :run_judge_judy ]
+                        :eric_steered_us_wrong, :run_judge_judy, :judgement_stats, :export ]
 
   before_action :find_user, only: [ :reset_unrateable, :reset_judge_later, :delete_ratings_by_assignee ]
 
@@ -31,6 +31,15 @@ class BooksController < ApplicationController
     @moar_judgements_needed = !(SelectionStrategy.every_query_doc_pair_has_three_judgements? @book)
 
     @cases = @book.cases
+
+    respond_with(@book)
+  end
+
+  # if this becomes richer, then move to it's own controller
+  def export
+  end
+
+  def judgement_stats
     @leaderboard_data = []
     @stats_data = []
 
@@ -61,6 +70,7 @@ class BooksController < ApplicationController
 
     respond_with(@book)
   end
+
   # rubocop:enable Metrics/AbcSize
   # rubocop:enable Metrics/MethodLength
 
@@ -138,8 +148,8 @@ class BooksController < ApplicationController
   # rubocop:enable Metrics/MethodLength
 
   def destroy
-    @book.destroy
-    respond_with(@book)
+    @book.really_destroy
+    redirect_to books_path, notice: 'Book is deleted'
   end
 
   # rubocop:disable Metrics/AbcSize

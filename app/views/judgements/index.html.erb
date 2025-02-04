@@ -1,93 +1,149 @@
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-  <h1 class="h2">Judgements for <%= book_title(@book) %></h1>
+  <h1><i class="bi bi-book"></i> <%= book_title @book %></h1>
   <div class="btn-toolbar mb-2 mb-md-0">
     <div class="btn-group me-2">
-      <%= link_to "Back to #{book_title(@book)}", book_path(@book), class: "btn btn-sm btn-outline-secondary" %>      
       <%= link_to (@shallow ? 'Extended Details' : 'Compact Details'), book_judgements_path(@book, shallow: !@shallow), class: "btn btn-sm btn-outline-secondary" %>
     </div>
   </div>
 </div>
 
-<table class="table table-hover table-sm">
-  <thead>
-    <tr>
-      
-      <th>Query Doc ID</th>   
-      <th>Query</th>
-      <th>Doc ID</th>
-      <th>ID</th>
-      <% unless @shallow %>
-        <th>Document fields</th>
-      <% end %>
-      <th>Rating</th>
-      <th>Unrateable</th>
-      <th>Judge Later</th>
-      <th>Rater</th>
-      <% unless @shallow %>
-        <th>Explanation</th>
-        <th>Created At</th>
-        <th>Updated At</th>      
-      <% end %>
+<%= render 'books/tabs', book: @book %>
 
-    </tr>
-    </thead>
-
-    <tbody>
-    <%
-    last_query_doc_pair_id = nil
-    table_row_style = nil #cycle('', 'table-primary')
-    %>
-    <% @judgements.each do |judgement| %>
-        <% 
-        if last_query_doc_pair_id != judgement.query_doc_pair_id
-          table_row_style = cycle('table-active', '')
-          last_query_doc_pair_id = judgement.query_doc_pair_id
-        end
-        %>
-        <tr class="<%= table_row_style %>">
-          <td>
-            <%= judgement.query_doc_pair.id %> 
-          </td>
-          <td>
-            <%= judgement.query_doc_pair.query_text %>
-          </td>
-          <td>
-            <%= judgement.query_doc_pair.doc_id %>
-          </td>
-          <td>
-            <%= link_to judgement.id, edit_book_query_doc_pair_judgement_path(@book, judgement.query_doc_pair, judgement) %>
-          </td>
-          <% unless @shallow %>
-          <td>            
-            <%= truncate(judgement.query_doc_pair.document_fields, length: 150) %>
-          </td>
-          <% end %> 
-          <td>
-            <%= judgement.rating %>
-          </td>
-          <td>
-            <%= judgement.unrateable? ? 'X' : '' %>
-          </td>
-          <td>
-            <%= judgement.judge_later? ? 'X' : '' %>
-          </td>
-          <td>
-            <%= display_judge_name(judgement.user) %>
-          </td>
-          <% unless @shallow %>
-            <td>
-              <%= judgement.explanation %>
-            </td>
-            <td>
-              <%= judgement.created_at %>
-            </td>
-            <td>
-              <%= judgement.updated_at %>
-            </td>  
+<div class="card h-100">
+  <div class="card-header">   
+    <%= form_tag(book_judgements_path(@book), { method: :get }) do %> 
+      <div class="mb-0 d-flex fs-6 justify-content-center">
+        <%= hidden_field_tag :shallow, @shallow %>
+          
+        <div class="input-group">
+          <%= text_field_tag :q, params[:q], 
+              class: 'form-control form-control-sm', 
+              placeholder: 'Filter by query, doc id, info need, or explanation',
+              id: 'q' 
+          %>
+          <%= button_tag type: 'submit', class: 'btn btn-sm btn-outline-secondary', id: 'button-addon2' do %>
+            <i class="bi bi-search-heart"></i>
           <% end %>
-        </tr>
-
+        </div>
+        
+        <div class="d-flex justify-content-between">
+          <%= select_tag :user_id, 
+              options_for_select(
+                [['Judge', '']] + @book.judges.map { |j| [j.fullname, j.id] },
+                params[:user_id]
+              ),
+              class: 'form-select form-select-sm ms-4',
+              id: 'user_id',
+              onchange: 'this.form.submit()'
+          %>
+        </div>
+        
+        <div class="d-flex flex-row justify-content-between">
+          <label class="ms-2">Unrateable</label>
+          <%= check_box_tag :unrateable, 
+              true, 
+              params[:unrateable].present?,
+              class: 'ms-2 form-check-input form-check-input-sm',
+              onchange: 'this.form.submit()'
+          %>
+        </div>
+        <div class="d-flex flex-row justify-content-between">
+          <label class="ms-2">Later</label>
+          <%= check_box_tag :judge_later, 
+              true, 
+              params[:judge_later].present?,
+              class: 'ms-2 form-check-input form-check-input-sm',
+              onchange: 'this.form.submit()'
+          %>
+        </div>        
+      </div>
     <% end %>
-    </tbody>
-  </table>
-  <br>
+  </div>
+  
+  <div class="card-body">
+    <table class="table table-hover table-sm">
+      <thead>
+        <tr>
+          
+          <th>Query Doc ID</th>   
+          <th>Query</th>
+          <th>Doc ID</th>
+          <th>ID</th>
+          <% unless @shallow %>
+            <th>Document fields</th>
+          <% end %>
+          <th>Rating</th>
+          <th>Unrateable</th>
+          <th>Judge Later</th>
+          <th>Rater</th>
+          <% unless @shallow %>
+            <th>Explanation</th>
+            <th>Created At</th>
+            <th>Updated At</th>      
+          <% end %>
+    
+        </tr>
+      </thead>
+  
+      <tbody>
+      <%
+      last_query_doc_pair_id = nil
+      table_row_style = nil #cycle('', 'table-primary')
+      %>
+      <% @judgements.each do |judgement| %>
+          <% 
+          if last_query_doc_pair_id != judgement.query_doc_pair_id
+            table_row_style = cycle('table-active', '')
+            last_query_doc_pair_id = judgement.query_doc_pair_id
+          end
+          %>
+          <tr class="<%= table_row_style %>">
+            <td>
+              <%= judgement.query_doc_pair.id %> 
+            </td>
+            <td>
+              <%= judgement.query_doc_pair.query_text %>
+            </td>
+            <td>
+              <%= judgement.query_doc_pair.doc_id %>
+            </td>
+            <td>
+              <%= link_to judgement.id, edit_book_query_doc_pair_judgement_path(@book, judgement.query_doc_pair, judgement) %>
+            </td>
+            <% unless @shallow %>
+            <td>            
+              <%= truncate(judgement.query_doc_pair.document_fields, length: 150) %>
+            </td>
+            <% end %> 
+            <td>
+              <%= judgement.rating %>
+            </td>
+            <td>
+              <%= judgement.unrateable? ? 'X' : '' %>
+            </td>
+            <td>
+              <%= judgement.judge_later? ? 'X' : '' %>
+            </td>
+            <td>
+              <%= display_judge_name(judgement.user) %>
+            </td>
+            <% unless @shallow %>
+              <td>
+                <%= judgement.explanation %>
+              </td>
+              <td>
+                <%= judgement.created_at %>
+              </td>
+              <td>
+                <%= judgement.updated_at %>
+              </td>  
+            <% end %>
+          </tr>
+      <% end %>
+      </tbody>
+    </table>
+  </div>
+  <div class="card-footer d-flex justify-content-center">
+    <%== pagy_bootstrap_nav(@pagy) %>
+  </div>
+</div>

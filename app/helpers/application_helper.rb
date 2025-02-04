@@ -4,17 +4,17 @@
 module ApplicationHelper
   def book_title book
     if book.name.downcase.starts_with?('book')
-      book.name.capitalize
+      book.name.titleize
     else
-      "Book #{book.name}"
+      "Book #{book.name.titleize}"
     end
   end
 
   def case_title kase
     if kase.case_name.downcase.starts_with?('case')
-      kase.case_name.capitalize
+      kase.case_name.titleize
     else
-      "Case #{kase.case_name}"
+      "Case #{kase.case_name.titleize}"
     end
   end
 
@@ -27,6 +27,8 @@ module ApplicationHelper
       request.fullpath.include?(options[:path])
     elsif options.key?(:controller)
       controller_name == options[:controller]
+    elsif options.key?(:action)
+      action_name == options[:action]
     end
   end
 

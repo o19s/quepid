@@ -1,15 +1,32 @@
 # frozen_string_literal: true
 
+# rubocop:disable Metrics/ClassLength
 class JudgementsController < ApplicationController
+  include Pagy::Backend
   before_action :set_judgement, only: [ :show, :edit, :update, :destroy ]
   before_action :set_book
 
+  # rubocop:disable Metrics/AbcSize
+  # rubocop:disable Layout/LineLength
   def index
     bool = ActiveRecord::Type::Boolean.new
     @shallow = bool.deserialize(params[:shallow] || true )
 
-    @judgements = @book.judgements.includes([ :query_doc_pair, :user ]).order('query_doc_pair_id')
+    query = @book.judgements.includes([ :query_doc_pair, :user ])
+
+    query = query.where(user_id: params[:user_id]) if params[:user_id].present?
+    query = query.where(unrateable: true) if params[:unrateable].present?
+    query = query.where(judge_later: true) if params[:judge_later].present?
+
+    if params[:q].present?
+      query = query.where('doc_id LIKE ? OR query_text LIKE ? OR information_need LIKE ? OR judgements.explanation LIKE ?',
+                          "%#{params[:q]}%", "%#{params[:q]}%", "%#{params[:q]}%", "%#{params[:q]}%")
+    end
+
+    @pagy, @judgements = pagy(query.order('query_doc_pair_id'))
   end
+  # rubocop:enable Metrics/AbcSize
+  # rubocop:enable Layout/LineLength
 
   def show
     @query_doc_pair = @judgement.query_doc_pair
@@ -137,3 +154,4 @@ class JudgementsController < ApplicationController
     params.expect(judgement: [ :user_id, :rating, :query_doc_pair_id, :unrateable, :explanation ])
   end
 end
+# rubocop:enable Metrics/ClassLength

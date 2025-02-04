@@ -4,10 +4,6 @@ module Authentication
   module CurrentBookManager
     extend ActiveSupport::Concern
 
-    included do
-      helper_method :set_recent_books
-    end
-
     private
 
     def set_book
@@ -15,12 +11,12 @@ module Authentication
       TrackBookViewedJob.perform_later current_user, @book
     end
 
-    def check_book
-      render json: { message: 'Book not found!' }, status: :not_found unless @book
+    def set_book_no_track
+      @book = current_user.books_involved_with.where(id: params[:book_id]).first
     end
 
-    def set_recent_books
-      @recent_books = recent_books(4)
+    def check_book
+      render json: { message: 'Book not found!' }, status: :not_found unless @book
     end
 
     def recent_books count

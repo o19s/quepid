@@ -417,7 +417,8 @@ Rails.application.routes.draw do
 
   get 'home/sparklines', to: 'home#sparklines'
   get 'home/case_prophet/:case_id', to: 'home#case_prophet', as: :home_case_prophet
-  # get 'tries_visualization/:case_id' => 'tries_visualization#show', as: :tries_visualization
+  get 'home/book_summary_detail/:book_id', to: 'home#book_summary_detail', as: :home_book_summary_detail
+
   get 'proxy/fetch'
   post 'proxy/fetch'
 
@@ -441,6 +442,9 @@ Rails.application.routes.draw do
   resources :sessions
   resource :account, only: [ :update, :destroy ]
   resource :profile, only: [ :show, :update ]
+
+  get '/dropdown/cases' => 'dropdown#cases'
+  get '/dropdown/books' => 'dropdown#books'
 
   resources :teams, only: [] do
     resources :ai_judges, controller: :ai_judges
@@ -467,6 +471,8 @@ Rails.application.routes.draw do
     get 'judge' => 'judgements#new'
     get 'skip_judging' => 'judgements#skip_judging'
     member do
+      get 'judgement_stats'
+      get 'export'
       patch 'combine'
       patch 'assign_anonymous'
       patch 'run_judge_judy/:ai_judge_id', action: :run_judge_judy, as: :run_judge_judy

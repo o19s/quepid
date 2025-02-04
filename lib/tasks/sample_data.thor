@@ -309,7 +309,7 @@ class SampleData < Thor
 
     print_step 'End of multiple cases................'
     print_step ''
-    print_step 'Run `bin/docker s` and browse to http://localhost:3000. Login with quepid+realisticactivity@o19s.com / password.'
+    print_step 'Run `bin/docker s` and browse to http://localhost:3000. Log in with quepid+realisticactivity@o19s.com / password.'
   end
 
   desc 'large_data', 'load the very large sample data'

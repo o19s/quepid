@@ -24,7 +24,7 @@
     </div>
   
     <div class="row mb-3">
-      <%= form.label :openai_key, "OpenAI Key", class: 'col-sm-2 col-form-label' %>
+      <%= form.label :openai_key, class: 'col-sm-2 col-form-label' %>
       <div class="col-sm-4">
         <%= form.text_field :openai_key %>
       </div>
@@ -37,6 +37,7 @@
   </div>
   
   <div class="card-footer">    
-    <%= form.submit 'Save', class: 'btn btn-primary' %>
+    <%= form.submit 'Save', class: 'btn btn-primary float-start' %>
+    <%= link_to 'Back to Team', teams_core_path(@team), class: "btn btn-outline-secondary float-end" %>
   </div>  
 </div>

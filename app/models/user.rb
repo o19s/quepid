@@ -153,8 +153,8 @@ class User < ApplicationRecord
             acceptance: { message: 'checkbox must be clicked to signify you agree to the terms and conditions.' },
             if:         :terms_and_conditions?
 
-  validates :openai_key, length: { maximum: 255 }, allow_nil: true
-  validates :system_prompt, length: { maximum: 4000 }, allow_nil: true
+  validates :openai_key, length: { maximum: 255 }, allow_nil: true, presence: true, if: :ai_judge?
+  validates :system_prompt, length: { maximum: 4000 }, allow_nil: true, presence: true, if: :ai_judge?
 
   def terms_and_conditions?
     Rails.application.config.terms_and_conditions_url.present?

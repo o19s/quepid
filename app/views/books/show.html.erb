@@ -1,11 +1,7 @@
 <%= turbo_stream_from(:notifications) %>
 
-
-
-
 <script>
 function updateModalTitle(judgeId) {
-  console.log("HI there, updateModalTitle")
   const checkbox = document.getElementById(`judge_all_${judgeId}`);
   const button = document.getElementById(`submit_${judgeId}`);
   
@@ -17,25 +13,21 @@ function updateModalTitle(judgeId) {
 }
 </script>
 
-
 <%= turbo_frame_tag "modal" %>
 
-
-
-
-
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-  <h1 class="h2"><%= book_title @book %></h1>
+  <h1><i class="bi bi-book"></i> <%= book_title @book %></h1>
   <div class="btn-toolbar mb-2 mb-md-0">
     <div class="btn-group me-2">
-      <%= link_to 'New Book', new_book_path, class: "btn btn-sm btn-outline-secondary" %>
-      <%= button_to 'Export', books_export_path(@book), method: :put, data: { turbo: false }, class: "btn btn-sm btn-outline-secondary" %>
+      <%= button_to 'Show Query Doc Pairs', book_query_doc_pairs_path(@book), method: :get, class: 'btn btn-sm btn-outline-secondary' %>
     </div>
   </div>
 </div>
 
-Books organize all the query/doc pairs that are needed for evaluating your search queries.
-This book consists of <%= @book.query_doc_pairs.count %> query document pairs and <%= @book.judgements.count %> judgements.
+<%= render 'tabs', book: @book %>
+
+Books organize the query/doc pairs that are needed for evaluating your search queries.
+This book consists of <%= @book.queries_count %> queries.
 
 <%= render 'judgements/moar_judgements_needed', book: @book %>
 
@@ -52,8 +44,8 @@ This book consists of <%= @book.query_doc_pairs.count %> query document pairs an
 <div class="alert alert-danger" role="alert">
   This book has an upload of data that is currently being processed and is not ready for use yet.
   <br/>
-  Import file is  <%=link_to 'available here', rails_blob_path(@book.import_file.blob, only_path: true) %>.
-  Status: <%= @book.query_doc_pairs.count %>
+  
+  Query Doc Pairs Loaded: <%= @book.query_doc_pairs.count %>
   <%= link_to book_path(@book) do %>
     Refresh
     <i
@@ -142,126 +134,3 @@ This book consists of <%= @book.query_doc_pairs.count %> query document pairs an
     <%= link_to 'Export file', rails_blob_path(@book.export_file.blob, only_path: true) %> made <%= time_ago_in_words @book.export_file.created_at %> ago.
   <% end %>
 </p>
-
-<p>
-<%= button_to 'Show Judgements', book_judgements_path(@book), method: :get %>
-
-<br>
-
-<%= button_to 'Show Query Doc Pairs', book_query_doc_pairs_path(@book), method: :get %>
-
-<br>
-
-<%= button_to "Edit Book", edit_book_path(@book), method: :get %>
-
-<br>
-
-<%= button_to 'Back to Books', books_path, method: :get %>
-</p>
-
-<div class="card" style="">
-  <div class="card-body">
-    <h5 class="card-title">Export Data</h5>
-    <p class="card-text">There are a number of ways to export the Book data.</p>
-
-    <ul class="list-group list-group-flush">
-      <li class="list-group-item">Export just the <%= link_to 'judgement data', api_book_judgements_path(@book, format: :csv) %> in CSV format.  This will take a bit but you will download a CSV file, useful for your own analysis.</li>
-
-      <li class="list-group-item">Export the entire Book in JSON format.
-        <% if @book.export_job %>
-          The book is currently being exported.  The status is <code><%=@book.export_job%></code>.
-        <% else %>
-          <%= button_to "#{@book.export_file.present? ? 'Re-Export' : 'Export'}", books_export_path(@book), method: :put, data: { turbo: false }, class: "#{@book.export_job.nil? ? '' : 'disabled'}" %>
-        <% end %>
-        <% if @book.export_file.present? %>
-          <p>
-          There is an export file created <%= time_ago_in_words @book.export_file.created_at %> ago <%=link_to 'available here', rails_blob_path(@book.export_file.blob, only_path: true) %>.
-        </p>
-        <% end %>
-      </li>
-      <li class="list-group-item">
-        <p>
-          Reference these judgements from a notebook or another system you can use these <%= link_to 'Quepid APIs', apipie_apipie_path %> endpoints:
-          <code><%= api_book_judgements_path(@book, format: :csv) %></code> or <code><%= api_export_book_path(@book) %></code>
-        </p>
-
-      </li>
-    </ul>
-  </div>
-</div>
-
-
-<h3>Leaderboard</h3>
-<div class="card">
-  <div class="card-body">
-
-    <h5 class="card-title" href="#collapseExample">Leaderboard</h3>
-    <h6 class="card-subtitle mb-2 text-body-secondary">Who is closest to having all <%= @book.query_doc_pairs.count %> query/doc pairs judged?</h6>
-    <%=
-    Vega.lite
-      .data(@leaderboard_data)
-      .mark(type: "bar", tooltip: true)
-      .encoding(
-        x: {field: "judge", type: "nominal", "axis": {"labelAngle": 0}},
-        y: {field: "judgements", type: "quantitative"}
-      )
-    %>
-  </div>
-  <div class="card-footer text-muted">
-    * Judged count includes marked as rated or to be judged later.
-  </div>
-</div>
-
-<%= render partial: 'unleash_modal', collection: @ai_judges, as: :ai_judge%>
-
-<p/>
-<h3>Judging Stats</h3>
-<table class="table">
-  <thead>
-    <tr>
-      <th scope="col">Judge</th>
-      <th scope="col" colspan="2">Marked Unrateable</th>
-      <th scope="col" colspan="2">Marked Judge Later</th>
-      <th scope="col">Total</th>
-    </tr>
-  </thead>
-  <tbody>
-    <% @stats_data.each do | row | %>
-    <tr>
-      <th scope="row">
-        <%=display_judge_name (row[:judge]) %>
-        <% if row[:judge] && row[:judge].ai_judge? %>
-          <i class="bi bi-robot"></i>
-          <div class="float-end d-flex gap-2">
-            <%= button_to 'Refine Prompt', edit_ai_judge_prompt_path(row[:judge]), params: { book_id: @book.id }, class: 'btn btn-block btn-light', role: 'button', method: :get %>           
-            <button type="button" class="btn btn-block btn-light" <%= (row[:can_judge_more] && @moar_judgements_needed )? '' : 'disabled' %> data-bs-toggle="modal" data-bs-target="#unleash_modal_<%= row[:judge].id %>">
-              Prepare to Judge!
-            </button>      
-          </div>         
-        <% end %>
-      </th>
-      <td>
-        <% if row[:judge] %>
-          <%=row[:unrateable] %>
-        <% end %>
-      </td>
-      <td>
-        <% if row[:judge] %>
-          <%= button_to_if row[:judge] && row[:unrateable] > 0, 'reset', reset_unrateable_book_path(@book,row[:judge].id), method: :delete, class: 'btn btn-sm btn-light' %>
-        <% end %>
-      </td>
-      <td>
-        <% if row[:judge] %>
-          <%=row[:judge_later] %>
-        <% end %>
-      </td>
-      <td>
-        <% if row[:judge] %>
-          <%= button_to_if row[:judge] && row[:judge_later] > 0, "reset", reset_judge_later_book_path(@book,row[:judge].id), method: :delete, class: 'btn btn-sm btn-light' %>
-        <% end %>
-      </td>
-      <td><%=row[:judgements] %></td>
-    </tr>
-    <% end %>
-  </tbody>
-</table>

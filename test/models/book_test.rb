@@ -93,7 +93,7 @@ class BookTest < ActiveSupport::TestCase
 
       import_file = book.import_file
 
-      book.destroy
+      book.really_destroy
 
       assert_nil import_file.download
 

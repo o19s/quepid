@@ -109,7 +109,7 @@
     Create a book
   </a>
 
-  <a class="btn btn-default pull-left" href="books/{{ctrl.activeBookId}}/judge" target="_self" ng-show="ctrl.canUpdateCase && ctrl.activeBookId">
+  <a class="btn btn-default pull-left" href="books/{{ctrl.activeBookId}}/judge" target="_self" ng-show="ctrl.activeBookId">
     <i class="glyphicon glyphicon-book"></i>
     Judge Documents!
   </a>
@@ -121,7 +121,7 @@
 
   <button
     class="btn btn-success"
-    ng-show="ctrl.canUpdateCase && ctrl.activeBookId && ctrl.specificActionLabel()"
+    ng-show="ctrl.activeBookId && ctrl.specificActionLabel()"
     ng-click="ctrl.ok()"
     ng-disabled="processingPrompt.inProgress"
   >

@@ -48,6 +48,6 @@ module HomeHelper
   # rubocop:enable Metrics/MethodLength
 
   def strip_case_title kase
-    kase.case_name.sub(/^case\s+/i, '').capitalize
+    kase.case_name.sub(/^case\s+/i, '').titleize
   end
 end
