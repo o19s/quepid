@@ -45,21 +45,21 @@ audit: true
 # user_method: current_user
 
 # method name for the display name
-# user_name: name
+user_name: fullname
 
 # custom before_action to use for auth
 # before_action_method: require_admin
 
 # email to send checks from
-# from_email: blazer@example.org
+from_email: <%= ENV["EMAIL_SENDER"] %>
 
 # webhook for Slack
 # slack_webhook_url: <%= ENV["BLAZER_SLACK_WEBHOOK_URL"] %>
 
 check_schedules:
   - "1 day"
-  - "1 hour"
-  - "5 minutes"
+#  - "1 hour"
+#  - "5 minutes"
 
 # enable anomaly detection
 # note: with trend, time series are sent to https://trendapi.org

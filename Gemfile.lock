@@ -83,8 +83,8 @@ GEM
     addressable (2.8.7)
       public_suffix (>= 2.0.2, < 7.0)
     aes_key_wrap (1.1.0)
-    ahoy_matey (5.2.1)
-      activesupport (>= 6.1)
+    ahoy_matey (5.3.0)
+      activesupport (>= 7)
       device_detector (>= 1)
       safely_block (>= 0.4)
     ancestry (4.3.3)
@@ -218,9 +218,6 @@ GEM
       actionpack (>= 6.0.0)
       activesupport (>= 6.0.0)
       railties (>= 6.0.0)
-    intercom-rails (1.0.5)
-      activesupport (> 4.0)
-      jwt (~> 2.0)
     io-console (0.8.0)
     irb (1.15.1)
       pp (>= 0.6.0)
@@ -436,7 +433,7 @@ GEM
     rexml (3.4.0)
     rover-df (0.4.1)
       numo-narray (>= 0.9.1.9)
-    rubocop (1.71.1)
+    rubocop (1.71.2)
       json (~> 2.3)
       language_server-protocol (>= 3.17.0)
       parallel (~> 1.10)
@@ -575,7 +572,6 @@ DEPENDENCIES
   faraday-retry
   foreman
   importmap-rails (~> 2.1)
-  intercom-rails
   jbuilder (~> 2.7)
   jquery-rails
   jquery-ui-rails

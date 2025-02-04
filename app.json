@@ -21,12 +21,6 @@
     "FORCE_SSL": {
       "required": true
     },
-    "INTERCOM_API_KEY": {
-      "required": true
-    },
-    "INTERCOM_APP_ID": {
-      "required": true
-    },
     "LANG": {
       "required": true
     },
