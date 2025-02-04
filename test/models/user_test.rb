@@ -321,7 +321,8 @@ class UserTest < ActiveSupport::TestCase
     end
 
     it 'provides access to the search end point that the user is the owner of it' do
-      search_endpoint = SearchEndpoint.new(owner: joey)
+      search_endpoint = one
+      search_endpoint.owner = joey
       search_endpoint.save!
 
       assert_includes joey.search_endpoints_involved_with, search_endpoint

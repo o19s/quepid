@@ -42,17 +42,16 @@ class SearchEndpoint < ApplicationRecord
 
   scope :not_archived, -> { where('`search_endpoints`.`archived` = false') }
 
-  validate :basic_auth_credential_has_valid_characters
-
   after_initialize do |se|
     se.archived = false if se.archived.nil?
   end
 
   # Validations
-  # validates :case_name, presence: true
-  # validates_with ScorerExistsValidator
-  #
-  #
+  validates :search_engine, presence: true
+  validates :endpoint_url, presence: true
+  validates :api_method, presence: true
+  validate :basic_auth_credential_has_valid_characters
+
   def fullname
     name.presence || middle_truncate("#{search_engine.capitalize} #{endpoint_url}")
   end
