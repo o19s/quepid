@@ -21,9 +21,9 @@
     <% end %> 
   </li>
   <li class="nav-item">
-    <a class="nav-link" href="#">
+    <%= link_to edit_book_path(book), class: "nav-link #{make_active?({action: 'edit'}) ? 'active' : ''}" do %>
       <i class="bi bi-share-fill text-body"></i> Share book
-    </a>
+    <% end %> 
   </li>
   <li class="nav-item">
     <%= link_to export_book_path(book), class: "nav-link #{make_active?({action: 'export'}) ? 'active' : ''}" do %>

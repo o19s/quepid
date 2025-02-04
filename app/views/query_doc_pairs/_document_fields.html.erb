@@ -17,7 +17,7 @@ else
   @document_fields_as_json.except('title').except('thumb').map do |field, value|
     %>
     <p>
-      <span class="h6"><%= field.capitalize.humanize %>:</span>
+      <span class="h6"><%= field.humanize.titleize %>:</span>
     <% if value.is_a? String %>
       <% if value.starts_with?('http') %>
         <%= link_to value, value, target: "_blank" %>

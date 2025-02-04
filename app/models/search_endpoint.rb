@@ -54,7 +54,7 @@ class SearchEndpoint < ApplicationRecord
   #
   #
   def fullname
-    name.presence || middle_truncate("#{search_engine.capitalize} #{endpoint_url}")
+    name.presence || middle_truncate("#{search_engine.titleize} #{endpoint_url}")
   end
 
   def mark_archived

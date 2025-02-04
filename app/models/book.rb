@@ -93,6 +93,8 @@ class Book < ApplicationRecord
 
   # Not proud of this method, but it's the only way I can get the dependent
   # objects of a Book to actually delete!
+  # Otherwise our foreign key on judgements to query_doc_pairs gets violated with
+  # a book.destroy method.
   def really_destroy
     Judgement.joins(:query_doc_pair)
       .where(query_doc_pairs: { book_id: id })

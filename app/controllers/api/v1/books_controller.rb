@@ -67,8 +67,7 @@ module Api
       param :id, :number,
             desc: 'The ID of the requested book.', required: true
       def destroy
-        @book.destroy
-        # Analytics::Tracker.track_case_deleted_event current_user, @case
+        @book.really_destroy
 
         head :no_content
       end
