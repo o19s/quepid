@@ -5,14 +5,6 @@ class ScoresController < ApplicationController
   before_action :set_case
   before_action :set_score, only: [ :destroy ]
   def index
-    # I think the reason we had duplicates was changing between scorers?
-    # @duplicate_score_patterns = Score.select([ 'count(*) as count', :try_id, :score, 'DATE(updated_at) AS day' ])
-    #   .where(case_id: @case.id)
-    #   .scored.group(
-    #     :try_id, :score, 'day'
-    #   ).having('COUNT(*) > 0')
-    #   .order('day DESC')
-
     query = @case.scores
 
     query = query.where(scorer_id: params[:scorer_id]) if params[:scorer_id].present?

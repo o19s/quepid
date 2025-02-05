@@ -455,7 +455,7 @@ Rails.application.routes.draw do
   resources :cases, only: [] do
     resource :book
     resources :ratings, only: [ :index ]
-    resources :scores, only: [:index, :destroy]
+    resources :scores, only: [ :index, :destroy ]
   end
 
   resources :books do
