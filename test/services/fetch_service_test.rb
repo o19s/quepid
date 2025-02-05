@@ -333,9 +333,12 @@ class FetchServiceTest < ActiveSupport::TestCase
       asnapshot.scorer.code = File.readlines('./db/scorers/p@10.js', '\n').join('\n')
 
       fetch_service = FetchService.new options
+      fetch_service.begin acase, atry
       score_data = fetch_service.score_snapshot(asnapshot, atry)
       assert_equal 2, score_data[:queries].size
       assert_equal 0.25, score_data[:score]
+      assert_not_nil asnapshot.case.scorer
+      assert_equal acase.scorer.id, score_data[:scorer_id]
 
       snapshot_query.reload
       assert_equal 0.5, snapshot_query.score

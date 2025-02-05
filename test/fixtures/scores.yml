@@ -83,6 +83,7 @@ score_for_try_1:
   try:        :for_case_with_score_try_1
   score:      65
   all_rated:  false
+  scorer:     :case_default_scorer
 
 score_for_try_2:
   case:       :case_with_score
@@ -90,3 +91,4 @@ score_for_try_2:
   try:        :for_case_with_score_try_2
   score:      75
   all_rated:  false
+  scorer:     :case_default_scorer

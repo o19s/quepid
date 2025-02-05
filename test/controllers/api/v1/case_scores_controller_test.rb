@@ -78,12 +78,13 @@ module Api
         end
 
         test 'updates existing score and does not create a new one if score is super recent' do
-          old_score = acase.scores.create(user_id: user.id, try_id: first_try.id, score: 80)
+          old_score = acase.scores.create(user_id: user.id, try_id: first_try.id, score: 80, scorer_id: acase.scorer.id)
 
           data = {
             score:      (1..100).to_a.sample,
             all_rated:  [ true, false ].sample,
             try_number: first_try.try_number,
+            scorer_id:  acase.scorer.id,
           }
 
           assert_no_difference 'acase.scores.count' do
@@ -145,8 +146,10 @@ module Api
 
         test 'returns an array of all the case scores' do
           now = DateTime.current
-          acase.scores.create(try_id: first_try.id,   user_id: user.id, created_at: now, score: 80)
-          acase.scores.create(try_id: second_try.id,  user_id: user.id, created_at: now, score: 80)
+          acase.scores.create(try_id: first_try.id,   user_id: user.id, created_at: now, score: 80,
+                              scorer_id: acase.scorer.id)
+          acase.scores.create(try_id: second_try.id,  user_id: user.id, created_at: now, score: 80,
+                              scorer_id: acase.scorer.id)
 
           get :index, params: { case_id: acase.id }
 

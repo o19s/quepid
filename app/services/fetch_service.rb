@@ -198,7 +198,7 @@ class FetchService
         { score: snapshot_query.score, text: snapshot_query.query.query_text }
     end
 
-    # Opportunity here to fix the averageing logic
+    # Opportunity here to fix the averaging logic
     # at the case level.
     if queries_detail.any?
       scores = queries_detail.values.map { |q| q[:score] }
@@ -211,6 +211,7 @@ class FetchService
       all_rated:  nil,
       queries:    queries_detail,
       score:      average_score,
+      scorer_id:  @case.scorer.id,
       try_number: try.try_number,
       user_id:    nil,
     }
