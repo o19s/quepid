@@ -1,9 +1,62 @@
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+  <h1><%= case_title @case %></h1>
+  <div class="btn-toolbar mb-2 mb-md-0">
+    <div class="btn-group me-2">
+      
+      <%= link_to "Back to Scores", case_scores_path(@case), class: "btn btn-sm btn-outline-secondary"  %>
+      <%= link_to "Back to Case", case_core_path(@case), class: "btn btn-sm btn-outline-secondary"  %>
+    </div>
+  </div>
+</div>
+
 <p>
-  List out duplicate scores for a specific day and try.  Count 1 is okay!
+  List out scores for a specific day and try, grouping by duplicate.  Count of 1 is okay!
 </p>
 
-<pre>
-  <% @duplicate_score_patterns.each do |dsp| %>
-    Count: <%= dsp.count %> | try_id: <%= dsp.try_id %>  day: <%= dsp.day %> score: <%= dsp.score %>
-  <% end %>
-</pre>
+<div class="card h-100">
+  <div class="card-header">   
+    <%= form_tag(analytics_case_duplicate_scores_path(@case), { method: :get }) do %> 
+      <div class="mb-0 d-flex fs-6 justify-content-center">
+          
+
+        
+             
+      </div>
+    <% end %>
+  </div>
+  
+  <div class="card-body">
+    <table class="table table-hover table-sm">
+      <thead>
+        <tr>          
+          <th>Count</th>
+          <th>Try ID</th>
+          <th>Day</th>
+          <th>Score</th>
+        </tr>
+      </thead>
+  
+      <tbody>
+      <% @duplicate_score_patterns.each do |dsp| %>
+          <tr>
+            <td>
+              <%= dsp.count %>
+            </td>
+            <td>
+              <%= dsp.try_id %>
+            </td>
+            <td>
+              <%= dsp.day %>
+            </td>
+            <td>
+              <%= dsp.score %>
+            </td>
+          </tr>
+      <% end %>
+      </tbody>
+    </table>
+  </div>
+  <div class="card-footer d-flex justify-content-center">
+    
+  </div>
+</div>

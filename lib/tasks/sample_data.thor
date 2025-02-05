@@ -268,6 +268,8 @@ class SampleData < Thor
 
       kase = realistic_activity_user.cases.create case_name: case_name
 
+      kase.queries.create(query_text: case_name.split(':').last.strip.downcase)
+
       days_of_experimentation = rand(3..20) # somewhere between
 
       days_of_experimentation.times do |counter|
