@@ -46,7 +46,6 @@ class LlmService
   end
 
   # rubocop:disable Metrics/MethodLength
-  # rubocop:disable Metrics/AbcSize
   def get_llm_response user_prompt, system_prompt
     conn = Faraday.new(url: 'https://api.openai.com') do |f|
       f.request :json
@@ -68,8 +67,9 @@ class LlmService
     end
 
     body = {
-      model:    'gpt-4',
-      messages: [
+      model:           'gpt-4o',
+      response_format: { type: 'json_object' },
+      messages:        [
         { role: 'system', content: system_prompt },
         { role: 'user', content: user_prompt }
       ],
@@ -83,8 +83,8 @@ class LlmService
 
     if response.success?
       begin
-        json_response = JSON.parse(response.env.response_body)
-        content = json_response['choices']&.first&.dig('message', 'content')
+        chat_response = response.body
+        content = chat_response['choices']&.first&.dig('message', 'content')
 
         parsed_content = JSON.parse(content)
         {
@@ -99,6 +99,5 @@ class LlmService
       raise "Error: #{response.status} - #{response.body}"
     end
   end
-  # rubocop:enable Metrics/AbcSize
   # rubocop:enable Metrics/MethodLength
 end
