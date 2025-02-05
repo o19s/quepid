@@ -17,7 +17,7 @@ Dir.chdir APP_ROOT do
   when 'console', 'c'
     system 'docker compose run --rm app rails console '  # add -e test for test environment
   when 'run', 'r'
-    system "docker compose run --rm app #{rest.shelljoin()}"
+    system "docker compose --progress=quiet run --rm app #{rest.shelljoin()}"
   when 'daemon', 'q'
     system 'docker compose run -d --service-ports app foreman s -f Procfile'
   when 'destroy', 'd'

@@ -130,6 +130,7 @@ score_case:
   owner:     :random
   case_name: Score Case
   archived:  false
+  scorer:   :case_default_scorer
 
 other_score_case:
   owner:     :random
@@ -205,6 +206,7 @@ case_with_score:
   owner:     :random
   case_name: case_with_score
   archived:  false
+  scorer:    case_default_scorer
 
 case_owned_by_team_owner:
   owner:     :team_owner

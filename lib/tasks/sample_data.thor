@@ -198,6 +198,7 @@ class SampleData < Thor
         user:       realistic_activity_user,
         try:        new_try,
         score:      (0.01 * counter),
+        scorer:     tens_of_queries_case.scorer,
         created_at: DateTime.now - (30 - counter).days,
         updated_at: DateTime.now - (30 - counter).days,
       }
@@ -290,6 +291,7 @@ class SampleData < Thor
           user:       realistic_activity_user,
           try:        new_try,
           score:      (0.01 * counter),
+          scorer:     kase.scorer,
           created_at: DateTime.now - (days_of_experimentation - counter).days,
           updated_at: DateTime.now - (days_of_experimentation - counter).days,
         }

@@ -24,7 +24,7 @@ module Api
       end
 
       def index
-        @scores = @case.scores.includes(:annotation, :user).limit(10)
+        @scores = @case.scores.where(scorer: @case.scorer).includes(:annotation, :user).limit(10)
 
         respond_with @scores
       end
@@ -44,7 +44,8 @@ module Api
         service = CaseScoreManager.new @case
 
         begin
-          score_data  = { user_id: current_user.id }.merge(score_params)
+          scorer_id = @case.scorer.present? ? @case.scorer.id : nil
+          score_data  = { user_id: current_user.id, scorer_id: scorer_id }.merge(score_params)
           @score      = service.update score_data
 
           unless @score
