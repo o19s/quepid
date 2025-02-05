@@ -25,9 +25,10 @@ function updateModalTitle(judgeId) {
 </div>
 
 <%= render 'tabs', book: @book %>
-
+<p>
 Books organize the query/doc pairs that are needed for evaluating your search queries.
 This book consists of <%= @book.queries_count %> queries.
+</p>
 
 <%= render 'judgements/moar_judgements_needed', book: @book %>
 
