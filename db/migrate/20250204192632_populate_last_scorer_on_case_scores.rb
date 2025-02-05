@@ -3,7 +3,7 @@ class PopulateLastScorerOnCaseScores < ActiveRecord::Migration[8.0]
   def up
     Case.find_each do |kase|      
       if kase.scorer.present?
-        kase.scores.update_all(:scorer_id, kase.scorer.id)   
+        kase.scores.update_all(scorer_id: kase.scorer.id)   
       end
     end
   end
