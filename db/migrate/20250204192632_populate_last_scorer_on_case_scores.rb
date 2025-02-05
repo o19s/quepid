@@ -4,8 +4,7 @@ class PopulateLastScorerOnCaseScores < ActiveRecord::Migration[8.0]
     Case.find_each do |kase|
       unless kase.last_score.blank?       
         score = kase.last_score
-        score.scorer = kase.scorer
-        score.save!     
+        score.update_column(:scorer_id, kase.scorer.id)   
       end
     end
   end
