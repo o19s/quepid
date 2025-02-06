@@ -1,3 +1,35 @@
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const checkAll = document.getElementById('check_all');
+  const checkboxes = document.querySelectorAll('input[name="score_ids[]"]');
+  const button = document.getElementById('delete_button');
+  
+  button.disabled = true; // default
+  
+  // Handle "Check All" checkbox
+  checkAll.addEventListener('change', function() {
+    checkboxes.forEach(checkbox => {
+        checkbox.checked = this.checked;
+        button.disabled = !this.checked;
+    });
+  });
+  
+  checkboxes.forEach(checkbox => {
+    checkbox.addEventListener('change', () => {
+      // If any checkbox is unchecked, uncheck the "Check All"
+      if (!this.checked) {
+          checkAll.checked = false;
+      }
+      
+      // If all checkboxes are checked, check the "Check All"
+      const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+      checkAll.checked = allChecked;
+      button.disabled = !checkbox.checked;
+    });
+  });
+});
+</script>
+
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
   <h1>Scores for <%= case_title @case %></h1>
   <div class="btn-toolbar mb-2 mb-md-0">
@@ -14,41 +46,56 @@
 
 <div class="card h-100">
   <div class="card-header">   
-    <%= form_tag(case_scores_path(@case), { method: :get }) do %> 
-      <div class="mb-0 d-flex fs-6 justify-content-center">
-          
-        <div class="d-flex justify-content-between">
-          <%= select_tag 'scorer_id', 
-            options_for_select(
-              [['Scorer', '']] + @case.scores.map(&:scorer).uniq.map { |s| [s.name, s.id] },
-              params[:scorer_id]
-            ),
-            id: 'scorer_id',
-              class: 'form-select form-select-sm ms-4',
-              onchange: 'this.form.submit()'
-          %>
+      <div class="mb-0 d-flex fs-6">
+        <div class="d-flex d-flex align-items-centerween">
+          <input type="checkbox" class="ms-2 form-check-input form-check-input-sm" name="check_all" id="check_all"/>
         </div>
         
-             
+        <!-- form to handle filters -->
+        <%= form_tag(case_scores_path(@case), { method: :get } ) do %>         
+          <div class="d-flex mx-2">
+            <%= select_tag 'scorer_id', 
+              options_for_select(
+                [['Scorer', '']] + @case.scores.map(&:scorer).uniq.map { |s| [s.name, s.id] },
+                params[:scorer_id]
+              ),
+              id: 'scorer_id',
+                class: 'form-select form-select-sm ms-4',
+                onchange: 'this.form.submit()'
+            %>
+          </div>
+        <% end %>
+        
+        <!-- form to handle deletes -->
+        <%= form_tag(destroy_multiple_case_scores_path(@case), method: :delete ) do %>
+        <%= hidden_field_tag :scorer_id, params[:scorer_id] %>
+        <div class="d-flex align-items-center">
+          <%= submit_tag 'Delete', class: "btn btn-sm btn-outline-danger", id:"delete_button", disabled: true, onclick: "return confirm('Are you sure you want to delete this scores?');" %>
+        </div>
       </div>
-    <% end %>
   </div>
   
   <div class="card-body">
     <table class="table table-hover table-sm">
       <thead>
-        <tr>          
+        <tr>  
+          <th/>        
           <th>Scorer</th>
           <th>Try ID</th>
           <th>Score</th>          
           <th>Day</th>
-          <th>Action</th>
         </tr>
       </thead>
   
       <tbody>
       <% @scores.each do |score| %>
           <tr>
+            <td>
+              <%= check_box_tag "score_ids[]", 
+                  score.id, 
+                  class: "form-check-input form-check-input-sm" 
+              %>
+            </td>
             <td>
               <%= score.scorer.name %>
             </td>
@@ -60,12 +107,10 @@
             </td>            
             <td>
               <%= score.updated_at %>
-            </td>
-
-            <td>
-              <%= button_to 'Delete', case_score_path(@case, score), method: :delete, class: "btn btn-sm btn-outline-danger", onclick: "return confirm('Are you sure you want to delete this score?');" %>
-            </td>
+            </td>      
           </tr>
+      <% end %>
+      <!-- end form to handle deletes -->
       <% end %>
       </tbody>
     </table>

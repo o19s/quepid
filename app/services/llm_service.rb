@@ -46,6 +46,7 @@ class LlmService
   end
 
   # rubocop:disable Metrics/MethodLength
+  # rubocop:disable Metrics/AbcSize
   def get_llm_response user_prompt, system_prompt
     conn = Faraday.new(url: 'https://api.openai.com') do |f|
       f.request :json
@@ -56,12 +57,6 @@ class LlmService
         interval:            2,
         interval_randomness: 0.5,
         backoff_factor:      2,
-        # exceptions: [
-        #  Faraday::ConnectionFailed,
-        ##  Faraday::TimeoutError,
-        #  'Timeout::Error',
-        #  'Error::TooManyRequests'
-        # ],
         retry_statuses:      [ 429 ],
       }
     end
@@ -84,6 +79,11 @@ class LlmService
     if response.success?
       begin
         chat_response = response.body
+        if chat_response.is_a?(String)
+          # in our tests the body is a String, but in real use it's already formatted as Json by Faraday
+          chat_response = JSON.parse(chat_response)
+        end
+
         content = chat_response['choices']&.first&.dig('message', 'content')
 
         parsed_content = JSON.parse(content)
@@ -100,4 +100,5 @@ class LlmService
     end
   end
   # rubocop:enable Metrics/MethodLength
+  # rubocop:enable Metrics/AbcSize
 end
