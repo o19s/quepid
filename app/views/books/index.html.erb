@@ -18,21 +18,57 @@
   </div>
 <% end %>
 
-
-<table class="table table-striped table-hover">
-
-  <thead>
-    <tr>
-      <th>ID</th>
-      <th>Name</th>
-      <th>Teams</th>
-      <th>Scorer</th>
-      <th>Selection strategy</th>
-      <th></th>
-    </tr>
-  </thead>
-
-  <tbody>
-    <%= render partial: "book", collection: @books, as: :book %>    
-  </tbody>
-</table>
+<div class="card h-100">
+  <div class="card-header">   
+    <%= form_tag(books_path, { method: :get }) do %> 
+      <div class="mb-0 d-flex fs-6 ">
+          
+        <div class="input-group">
+          <%= text_field_tag :q, params[:q], 
+              class: 'form-control form-control-sm', 
+              placeholder: 'Filter by book name or team name',
+              id: 'q' 
+          %>
+          <%= button_tag type: 'submit', class: 'btn btn-sm btn-outline-secondary', id: 'button-addon2' do %>
+            <i class="bi bi-search-heart"></i>
+          <% end %>
+        </div>
+        
+        <div class="d-flex">
+          <%= select_tag :team_id, 
+              options_for_select(
+                [['Team', '']] + @current_user.teams.map { |j| [j.name, j.id] },
+                params[:team_id]
+              ),
+              class: 'form-select form-select-sm ms-4',
+              id: 'team_id',
+              onchange: 'this.form.submit()'
+          %>
+        </div>
+        
+      </div>
+    <% end %>
+  </div>
+  
+  <div class="card-body">
+    <table class="table table-hover table-sm">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Name</th>
+          <th>Teams</th>
+          <th>Scorer</th>
+          <th>Selection strategy</th>
+          <th></th>
+        </tr>
+      </thead>
+  
+      <tbody>      
+        <%= render partial: "book", collection: @books, as: :book %> 
+      </tbody>
+    </table>
+  </div>
+  <div class="card-footer d-flex justify-content-center">
+    <%== pagy_bootstrap_nav(@pagy) %>
+  </div>
+</div>

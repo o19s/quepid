@@ -2,6 +2,7 @@
 
 # rubocop:disable Metrics/ClassLength
 class BooksController < ApplicationController
+  include Pagy::Backend
   before_action :set_book,
                 only: [ :show, :edit, :update, :destroy, :combine, :assign_anonymous, :delete_ratings_by_assignee,
                         :reset_unrateable, :reset_judge_later, :delete_query_doc_pairs_below_position,
@@ -16,8 +17,16 @@ class BooksController < ApplicationController
   respond_to :html
 
   def index
-    @books = current_user.books_involved_with.includes([ :teams, :scorer, :selection_strategy ])
-    respond_with(@books)
+    query = current_user.books_involved_with.includes([ :teams, :scorer, :selection_strategy ])
+
+    query = query.where(teams: { id: params[:team_id] }) if params[:team_id].present?
+
+    if params[:q].present?
+      query = query.where('books.name LIKE ? OR teams.name LIKE ?',
+                          "%#{params[:q]}%", "%#{params[:q]}%")
+    end
+
+    @pagy, @books = pagy(query)
   end
 
   # rubocop:disable Metrics/AbcSize
