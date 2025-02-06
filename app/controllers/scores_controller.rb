@@ -3,7 +3,6 @@
 class ScoresController < ApplicationController
   include Pagy::Backend
   before_action :set_case
-  before_action :set_score, only: [ :destroy ]
   def index
     query = @case.scores
 
@@ -11,13 +10,14 @@ class ScoresController < ApplicationController
 
     @pagy, @scores = pagy(query.order('updated_at'))
 
-    scorers = @case.scores.map(&:scorer).uniq
+    scorers = @case.scores.includes([ :scorer ]).map(&:scorer).uniq
     @scorer_options = scorers.map { |scorer| [ scorer.name, scorer.id ] }
   end
 
-  def destroy
-    @score.destroy
-    redirect_to case_scores_path(@case)
+  def destroy_multiple
+    @case.scores.where(id: params[:score_ids]).destroy_all
+    redirect_to case_scores_path(@case, scorer_id: params[:scorer_id]),
+                notice: 'Selected scores were successfully deleted.'
   end
 
   def set_score

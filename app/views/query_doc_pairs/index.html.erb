@@ -1,37 +1,67 @@
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-  <h1>Query Doc Pairs in <i class="bi bi-book"></i><%= book_title(@book) %></h1>
+  <h1>Query Doc Pairs for <i class="bi bi-book"></i><%= book_title(@book) %></h1>
   <div class="btn-toolbar mb-2 mb-md-0">
     <div class="btn-group me-2">
       <%= link_to 'New Query Doc Pair', new_book_query_doc_pair_path, class: 'btn btn-sm btn-outline-secondary' %>
-      <%= link_to "Back to #{book_title(@book)}", @book, class: 'btn btn-sm btn-outline-secondary' %>    
+      <%= link_to "Back to Book", @book, class: 'btn btn-sm btn-outline-secondary' %>    
     </div>
   </div>
 </div>
 
+<p>
+  List out all the query doc pairs collected for a Book.
+</p>
 
-<table class="table table-striped table-hover table-sm">
-<thead>
-  <tr>
-    <th>ID</th>
-    <th>Query text</th>
-    <th>Position</th>
-    <th>Doc ID</th>
-    <th>Document fields</th>
-  </tr>
-  </thead>
-
-  <tbody>
-  <% @query_doc_pairs.each do |query_doc_pair| %>
-    <tr>
-      <td>
-        <%= link_to query_doc_pair.id, book_query_doc_pair_path(@book, query_doc_pair) %>
-      </td>
-
-      <td><%= query_doc_pair.query_text %></td>
-      <td><%= query_doc_pair.position %></td>
-      <td><%= query_doc_pair.doc_id %></td>
-      <td><%= truncate(query_doc_pair.document_fields, length:100) %></td>
-    </tr>
-  <% end %>
-  </tbody>
-</table>
+<div class="card h-100">
+  <div class="card-header">   
+    <%= form_tag(book_query_doc_pairs_path(@book), { method: :get }) do %> 
+      <div class="mb-0 d-flex fs-6 justify-content-center">
+          
+        <div class="input-group">
+          <%= text_field_tag :q, params[:q], 
+              class: 'form-control form-control-sm', 
+              placeholder: 'Filter by query, doc id, or document field contents',
+              id: 'q' 
+          %>
+          <%= button_tag type: 'submit', class: 'btn btn-sm btn-outline-secondary', id: 'button-addon2' do %>
+            <i class="bi bi-search-heart"></i>
+          <% end %>
+        </div>
+        
+                
+      </div>
+    <% end %>
+  </div>
+  
+  <div class="card-body">
+    <table class="table table-hover table-sm">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Query text</th>
+          <th>Position</th>
+          <th>Doc ID</th>
+          <th>Document fields</th>          
+        </tr>
+      </thead>
+  
+      <tbody>      
+        <% @query_doc_pairs.each do |query_doc_pair| %>
+          <tr>
+            <td>
+              <%= link_to query_doc_pair.id, book_query_doc_pair_path(@book, query_doc_pair) %>
+            </td>
+      
+            <td><%= query_doc_pair.query_text %></td>
+            <td><%= query_doc_pair.position %></td>
+            <td><%= query_doc_pair.doc_id %></td>
+            <td><%= truncate(query_doc_pair.document_fields, length:100) %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+  <div class="card-footer d-flex justify-content-center">
+    <%== pagy_bootstrap_nav(@pagy) %> 
+  </div>
+</div>

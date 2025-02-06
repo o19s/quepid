@@ -1,11 +1,19 @@
 # frozen_string_literal: true
 
 class QueryDocPairsController < ApplicationController
+  include Pagy::Backend
   before_action :set_query_doc_pair, only: [ :show, :edit, :update, :destroy ]
   before_action :set_book
 
   def index
-    @query_doc_pairs = @book.query_doc_pairs.order(:query_text )
+    query = @book.query_doc_pairs
+
+    if params[:q].present?
+      query = query.where('query_text LIKE ? OR doc_id LIKE ? OR document_fields LIKE ?',
+                          "%#{params[:q]}%", "%#{params[:q]}%", "%#{params[:q]}%")
+    end
+
+    @pagy, @query_doc_pairs = pagy(query.order(:query_text))
   end
 
   def show; end
@@ -47,6 +55,7 @@ class QueryDocPairsController < ApplicationController
   end
 
   def query_doc_pair_params
-    params.expect(query_doc_pair: [ :query_text, :position, :document_fields, :doc_id ])
+    params.expect(query_doc_pair: [ :query_text, :position, :document_fields, :doc_id, :options, :information_need,
+                                    :notes ])
   end
 end
