@@ -96,7 +96,7 @@ module Api
 
           assert_equal body['name'],   shared_team.name
           assert_equal body['id'],     shared_team.id
-          #assert_equal body['owned'],  false
+          # assert_equal body['owned'],  false
         end
       end
 

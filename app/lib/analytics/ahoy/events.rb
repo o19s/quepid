@@ -253,12 +253,12 @@ module Analytics
       # @param user,    User
       # @param team,    Team
       #
-      def user_created_team user, team
+      def user_created_team _user, team
         data = {
           category: 'Teams',
           action:   'Created an Team',
           label:    team.name,
-          value:    user.owned_teams.count,
+          value:    1,
         }
 
         create_event data

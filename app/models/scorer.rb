@@ -47,9 +47,9 @@ class Scorer < ApplicationRecord
   scope :for_user, ->(user) do
     base_scope = left_joins(teams: [ :members, :scorers ])
     team_member = base_scope.where(teams_members: { member_id: user.id })
-    #team_owner = where(teams: { owner_id: user.id })
+    # team_owner = where(teams: { owner_id: user.id })
     owned_by_user = where(scorers: { owner_id: user.id })
-    #team_member.or(team_owner).or(owned_by_user).or(communal).distinct
+    # team_member.or(team_owner).or(owned_by_user).or(communal).distinct
     team_member.or(owned_by_user).or(communal).distinct
   end
 

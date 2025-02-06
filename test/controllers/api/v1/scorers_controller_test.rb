@@ -568,8 +568,8 @@ module Api
             'owner_name'        => shared_scorer.owner.name,
             'show_scale_labels' => false,
             'scale_with_labels' => nil,
-            #'teams'             => [ { 'id' => shared_team.id, 'name' => shared_team.name,
-#'owner_id' => shared_team.owner_id } ],
+            # 'teams'             => [ { 'id' => shared_team.id, 'name' => shared_team.name,
+            # 'owner_id' => shared_team.owner_id } ],
             'teams'             => [ { 'id' => shared_team.id, 'name' => shared_team.name } ],
           }
 

@@ -192,7 +192,7 @@ module Api
 
           test 'let team_member_1 archive team_owner case even though he is not the owner' do
             # Make sure the team member doesn't own the case.
-            #assert_not_includes team_member_1.owned_team_cases, shared_team_case
+            # assert_not_includes team_member_1.owned_team_cases, shared_team_case
             assert_not_equal shared_team_case, shared_team_case.owner
             # make sure the team member IS involved with case via team membership however.
             assert_includes team_member_1.cases_involved_with, shared_team_case

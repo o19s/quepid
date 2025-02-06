@@ -214,4 +214,3 @@ class UserScorerFinderTest < ActiveSupport::TestCase
     end
   end
 end
-
