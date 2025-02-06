@@ -1,41 +1,71 @@
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-  <h1 class="h2">Ratings for <%= case_title(@case) %></h1>
+  <h1>Scores for <%= case_title @case %></h1>
   <div class="btn-toolbar mb-2 mb-md-0">
     <div class="btn-group me-2">
-      <%= link_to_core_case "Back to #{case_title(@case)}", @case, @case.last_try_number, class: 'btn btn-sm btn-outline-secondary' %>
+      <%= link_to "Back to Case", case_core_path(@case), class: "btn btn-sm btn-outline-secondary"  %>
     </div>
   </div>
 </div>
-Shows up to 5000 ratings...
-<table class="table table-hover table-sm">
-  <thead>
-    <tr>
-      <th>Rating ID</th>     
-      <th>Query</th>
-      <th>Doc ID</th>
-      <th>Rating</th>         
-      <th>User</th>
-      <th>Created At</th>
-      <th>Updated At</th>   
-      
-    </tr>
-  </thead>
 
-  <tbody>
-    <% @ratings.each do |rating| %>
-      <tr>
-        <td><%= rating.id %></td>
-        <td><%= rating.query.query_text %></td>
-        <td><%= rating.doc_id %></td>
-        <td><%= rating.rating %></td>
-        <td><%= rating&.user&.fullname %></td>
-        <td>
-          <%= rating.created_at %>
-        </td>
-        <td>
-          <%= rating.updated_at %>
-        </td>  
-      </tr>
+<p>
+  List out all the ratings collected for a Case.
+</p>
+
+<div class="card h-100">
+  <div class="card-header">   
+    <%= form_tag(case_ratings_path(@case), { method: :get }) do %> 
+      <div class="mb-0 d-flex fs-6 justify-content-center">
+          
+        <div class="input-group">
+          <%= text_field_tag :q, params[:q], 
+              class: 'form-control form-control-sm', 
+              placeholder: 'Filter by query, doc id, or rating',
+              id: 'q' 
+          %>
+          <%= button_tag type: 'submit', class: 'btn btn-sm btn-outline-secondary', id: 'button-addon2' do %>
+            <i class="bi bi-search-heart"></i>
+          <% end %>
+        </div>
+        
+                
+      </div>
     <% end %>
-  </tbody>
-</table>
+  </div>
+  
+  <div class="card-body">
+    <table class="table table-hover table-sm">
+      <thead>
+        <tr>
+          <th>Rating ID</th>     
+          <th>Query</th>
+          <th>Doc ID</th>
+          <th>Rating</th>         
+          <th>User</th>
+          <th>Created At</th>
+          <th>Updated At</th>             
+        </tr>
+      </thead>
+  
+      <tbody>      
+        <% @ratings.each do |rating| %>
+          <tr>
+            <td><%= rating.id %></td>
+            <td><%= rating.query.query_text %></td>
+            <td><%= rating.doc_id %></td>
+            <td><%= rating.rating %></td>
+            <td><%= rating&.user&.fullname %></td>
+            <td>
+              <%= rating.created_at %>
+            </td>
+            <td>
+              <%= rating.updated_at %>
+            </td>  
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+  <div class="card-footer d-flex justify-content-center">
+    <%== pagy_bootstrap_nav(@pagy) %> 
+  </div>
+</div>
