@@ -222,6 +222,32 @@
         </div>
         <!-- end of Number of Rows -->
 
+        <!-- Nightly Queries -->
+        <div class="setting-div">
+          <div class="dev-header" ng-click="devSettingsNightly.toggle = !devSettingsNightly.toggle">
+            Evaluate Nightly? <span
+              ng-class="{true: 'glyphicon-plus-sign', false: 'glyphicon-minus-sign'}[!devSettingsNightly.toggle]"
+              class="glyphicon"></span>
+          </div>
+
+          <div class="dev-body checkbox" ng-show="devSettingsNightly.toggle" ng-controller="CaseCtrl as ctrl">            
+            <label>
+            <input type="checkbox" ng-model="caseModel.selectedCase().nightly" ng-change="updateNightly()"/> Evaluate Case Nightly <i class="bi bi-repeat"></i>
+            </label>
+
+            <p class="pull-right">
+              <span class="label label-info">
+                <a href="#"
+                  uib-tooltip-html="'Run all the queries every night and store the results<br/> and the scores as a snapshot.'"
+                  tooltip-placement="left">
+                  <span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span>
+                </a>
+              </span>
+            </p>
+          </div>
+        </div>
+        <!-- end of Nightly Queries -->
+        
         <!-- Escape Queries -->
         <div class="setting-div">
           <div class="dev-header" ng-click="devSettingsEscapeQueries.toggle = !devSettingsEscapeQueries.toggle">
@@ -256,7 +282,7 @@
       <div class="container">
         <p>
           <a ng-href="analytics/tries_visualization/{{ caseNo }}" target="_self">Visualize your tries</a> |
-          <a ng-href="analytics/cases/{{ caseNo }}/duplicate_scores" target="_self">Check Scores</a> |
+          <a ng-href="cases/{{ caseNo }}/scores" target="_self">Check Scores</a> |
           <a ng-href="cases/{{ caseNo }}/ratings" target="_self">Check Ratings</a>
         </p>
         <p>

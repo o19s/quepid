@@ -41,7 +41,7 @@
 :hide_default_column_types: ''
 :hide_limit_column_types: ''
 :ignore_columns: 
-:ignore_routes: 
+:ignore_routes: '(cable|debugbar|mission_control|blazer)'
 :models: true
 :routes: true
 :skip_on_db_migrate: false

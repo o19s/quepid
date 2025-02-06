@@ -14,7 +14,8 @@
 
 valid:
   name:     valid team
-  cases:    shared_through_owned_team
+  owner:    :doug
+  cases:    shared_through_owned_team, queries_case
   members:  doug
 
 shared:

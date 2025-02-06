@@ -1,17 +1,13 @@
 # frozen_string_literal: true
 
 # rubocop:disable Layout/LineLength
-
 # == Route Map
 #
 #                                           Prefix Verb     URI Pattern                                                                                       Controller#Action
-#                                                           /cable                                                                                            #<ActionCable::Server::Base:0x00007fbdccaa2530 @config=#<ActionCable::Server::Configuration:0x00007fbdccaaf0f0 @log_tags=[:channel, :connection, :transmissions, :state_updates], @connection_class=#<Proc:0x00007fbdccab3768 /usr/local/bundle/gems/actioncable-8.0.0/lib/action_cable/engine.rb:55 (lambda)>, @worker_pool_size=4, @disable_request_forgery_protection=true, @allow_same_origin_as_host=true, @filter_parameters=[:passw, :email, :secret, :token, :_key, :crypt, :salt, :certificate, :otp, :ssn, :cvv, :cvc, :document_fields, "query_doc_pair.document_fields", "snapshot.docs", "snapshot_doc.explain", "snapshot_doc.fields"], @health_check_application=#<Proc:0x00007fbdccab63a0 /usr/local/bundle/gems/actioncable-8.0.0/lib/action_cable/engine.rb:31 (lambda)>, @logger=#<ActiveSupport::BroadcastLogger:0x00007fbdcdc142c8 @broadcasts=[#<ActiveSupport::Logger:0x00007fbdce79fb10 @level=0, @progname=nil, @default_formatter=#<Logger::Formatter:0x00007fbdcdc16af0 @datetime_format=nil>, @formatter=#<TruncatingFormatter:0x00007fbdcdc14750 @datetime_format=nil, @limit=5000>, @logdev=#<Logger::LogDevice:0x00007fbdcda94380 @shift_period_suffix="%Y%m%d", @shift_size=104857600, @shift_age=1, @filename="/srv/app/log/development.log", @dev=#<File:/srv/app/log/development.log>, @binmode=false, @reraise_write_errors=[], @mon_data=#<Monitor:0x00007fbdcdc16a78>, @mon_data_owner_object_id=7340>, @level_override={}>], @progname="Broadcast", @formatter=#<TruncatingFormatter:0x00007fbdcdc14750 @datetime_format=nil, @limit=5000>>, @cable={"adapter"=>"solid_cable", "polling_interval"=>"0.1.seconds", "message_retention"=>"1.day", "silence_polling"=>true}, @mount_path="/cable", @precompile_assets=true, @allowed_request_origins="*", @url="/cable">, @mutex=#<Monitor:0x00007fbdcca92720>, @pubsub=nil, @worker_pool=nil, @event_loop=nil, @remote_connections=nil>
-#                           apipie_apipie_checksum GET      /apipie/apipie_checksum(.:format)                                                                 apipie/apipies#apipie_checksum {:format=>/json/}
-#                                    apipie_apipie GET      /apipie(/:version)(/:resource)(/:method)(.:format)                                                apipie/apipies#index {:version=>/[^\/]+/, :resource=>/[^\/]+/, :method=>/[^\/]+/}
+#                           apipie_apipie_checksum GET      /apipie/apipie_checksum(.:format)                                                                 apipie/apipies#apipie_checksum {format: /json/}
+#                                    apipie_apipie GET      /apipie(/:version)(/:resource)(/:method)(.:format)                                                apipie/apipies#index {version: /[^\/]+/, resource: /[^\/]+/, method: /[^\/]+/}
 #                                active_storage_db          /active_storage_db                                                                                ActiveStorageDB::Engine
 #                               rails_health_check GET      /healthcheck(.:format)                                                                            rails/health#show
-#                             mission_control_jobs          /admin/jobs                                                                                       MissionControl::Jobs::Engine
-#                                           blazer          /admin/blazer                                                                                     Blazer::Engine
 #                                             root GET      /                                                                                                 home#show
 #                                  home_sparklines GET      /home/sparklines(.:format)                                                                        home#sparklines
 #                                home_case_prophet GET      /home/case_prophet/:case_id(.:format)                                                             home#case_prophet
@@ -46,6 +42,17 @@
 #                                          profile GET      /profile(.:format)                                                                                profiles#show
 #                                                  PATCH    /profile(.:format)                                                                                profiles#update
 #                                                  PUT      /profile(.:format)                                                                                profiles#update
+#                                   team_ai_judges GET      /teams/:team_id/ai_judges(.:format)                                                               ai_judges#index
+#                                                  POST     /teams/:team_id/ai_judges(.:format)                                                               ai_judges#create
+#                                new_team_ai_judge GET      /teams/:team_id/ai_judges/new(.:format)                                                           ai_judges#new
+#                               edit_team_ai_judge GET      /teams/:team_id/ai_judges/:id/edit(.:format)                                                      ai_judges#edit
+#                                    team_ai_judge GET      /teams/:team_id/ai_judges/:id(.:format)                                                           ai_judges#show
+#                                                  PATCH    /teams/:team_id/ai_judges/:id(.:format)                                                           ai_judges#update
+#                                                  PUT      /teams/:team_id/ai_judges/:id(.:format)                                                           ai_judges#update
+#                                                  DELETE   /teams/:team_id/ai_judges/:id(.:format)                                                           ai_judges#destroy
+#                             edit_ai_judge_prompt GET      /ai_judges/:ai_judge_id/prompt/edit(.:format)                                                     ai_judges/prompts#edit
+#                                  ai_judge_prompt PATCH    /ai_judges/:ai_judge_id/prompt(.:format)                                                          ai_judges/prompts#update
+#                                                  PUT      /ai_judges/:ai_judge_id/prompt(.:format)                                                          ai_judges/prompts#update
 #                                    new_case_book GET      /cases/:case_id/book/new(.:format)                                                                books#new
 #                                   edit_case_book GET      /cases/:case_id/book/edit(.:format)                                                               books#edit
 #                                        case_book GET      /cases/:case_id/book(.:format)                                                                    books#show
@@ -62,6 +69,14 @@
 #                                                  PATCH    /books/:book_id/judgements/:id(.:format)                                                          judgements#update
 #                                                  PUT      /books/:book_id/judgements/:id(.:format)                                                          judgements#update
 #                                                  DELETE   /books/:book_id/judgements/:id(.:format)                                                          judgements#destroy
+#                                   book_ai_judges GET      /books/:book_id/ai_judges(.:format)                                                               ai_judges#index
+#                                                  POST     /books/:book_id/ai_judges(.:format)                                                               ai_judges#create
+#                                new_book_ai_judge GET      /books/:book_id/ai_judges/new(.:format)                                                           ai_judges#new
+#                               edit_book_ai_judge GET      /books/:book_id/ai_judges/:id/edit(.:format)                                                      ai_judges#edit
+#                                    book_ai_judge GET      /books/:book_id/ai_judges/:id(.:format)                                                           ai_judges#show
+#                                                  PATCH    /books/:book_id/ai_judges/:id(.:format)                                                           ai_judges#update
+#                                                  PUT      /books/:book_id/ai_judges/:id(.:format)                                                           ai_judges#update
+#                                                  DELETE   /books/:book_id/ai_judges/:id(.:format)                                                           ai_judges#destroy
 #                   book_query_doc_pair_judgements GET      /books/:book_id/query_doc_pairs/:query_doc_pair_id/judgements(.:format)                           judgements#index
 #                                                  POST     /books/:book_id/query_doc_pairs/:query_doc_pair_id/judgements(.:format)                           judgements#create
 #                new_book_query_doc_pair_judgement GET      /books/:book_id/query_doc_pairs/:query_doc_pair_id/judgements/new(.:format)                       judgements#new
@@ -85,6 +100,7 @@
 #                                book_skip_judging GET      /books/:book_id/skip_judging(.:format)                                                            judgements#skip_judging
 #                                     combine_book PATCH    /books/:id/combine(.:format)                                                                      books#combine
 #                            assign_anonymous_book PATCH    /books/:id/assign_anonymous(.:format)                                                             books#assign_anonymous
+#                              run_judge_judy_book PATCH    /books/:id/run_judge_judy/:ai_judge_id(.:format)                                                  books#run_judge_judy
 #                  delete_ratings_by_assignee_book DELETE   /books/:id/delete_ratings_by_assignee(.:format)                                                   books#delete_ratings_by_assignee
 #                            reset_unrateable_book DELETE   /books/:id/reset_unrateable/:user_id(.:format)                                                    books#reset_unrateable
 #                           reset_judge_later_book DELETE   /books/:id/reset_judge_later/:user_id(.:format)                                                   books#reset_judge_later
@@ -165,157 +181,159 @@
 #                                                  DELETE   /admin/announcements/:id(.:format)                                                                admin/announcements#destroy
 # test_background_job_admin_websocket_tester_index POST     /admin/websocket_tester/test_background_job(.:format)                                             admin/websocket_tester#test_background_job
 #                     admin_websocket_tester_index GET      /admin/websocket_tester(.:format)                                                                 admin/websocket_tester#index
+#                    run_case_admin_run_case_index POST     /admin/run_case/run_case(.:format)                                                                admin/run_case#run_case
+#                             admin_run_case_index GET      /admin/run_case(.:format)                                                                         admin/run_case#index
 #                                                  GET      /rails/mailers(.:format)                                                                          rails/mailers#index
 #                                                  GET      /rails/mailers/*path(.:format)                                                                    rails/mailers#preview
-#                                         api_test GET      /api/test(.:format)                                                                               api/api#test {:format=>:json}
-#                               api_test_exception GET      /api/test_exception(.:format)                                                                     api/api#test_exception {:format=>:json}
-#                                current_api_users GET      /api/users/current(.:format)                                                                      api/v1/current_user#show {:format=>:json}
-#                                        api_users GET      /api/users(.:format)                                                                              api/v1/users#index {:format=>:json}
-#                                         api_user GET      /api/users/:id(.:format)                                                                          api/v1/users#show {:format=>:json}
-#                                                  PATCH    /api/users/:id(.:format)                                                                          api/v1/users#update {:format=>:json}
-#                                                  PUT      /api/users/:id(.:format)                                                                          api/v1/users#update {:format=>:json}
-#                                      api_signups POST     /api/signups(.:format)                                                                            api/v1/signups#create {:format=>:json}
-#                               api_dropdown_cases GET      /api/dropdown/cases(.:format)                                                                     api/v1/cases/dropdown#index {:format=>:json}
-#                               api_dropdown_books GET      /api/dropdown/books(.:format)                                                                     api/v1/books/dropdown#index {:format=>:json}
-#                                        api_cases GET      /api/cases(.:format)                                                                              api/v1/cases#index {:format=>:json}
-#                                                  POST     /api/cases(.:format)                                                                              api/v1/cases#create {:format=>:json}
-#                                         api_case GET      /api/cases/:case_id(.:format)                                                                     api/v1/cases#show {:format=>:json}
-#                                                  PATCH    /api/cases/:case_id(.:format)                                                                     api/v1/cases#update {:format=>:json}
-#                                                  PUT      /api/cases/:case_id(.:format)                                                                     api/v1/cases#update {:format=>:json}
-#                                                  DELETE   /api/cases/:case_id(.:format)                                                                     api/v1/cases#destroy {:format=>:json}
-#                       api_case_try_duplicate_try POST     /api/cases/:case_id/tries/:try_try_number/duplicate(.:format)                                     api/v1/duplicate_tries#create {:format=>:json}
-#                                   api_case_tries GET      /api/cases/:case_id/tries(.:format)                                                               api/v1/tries#index {:format=>:json}
-#                                                  POST     /api/cases/:case_id/tries(.:format)                                                               api/v1/tries#create {:format=>:json}
-#                                edit_api_case_try GET      /api/cases/:case_id/tries/:try_number/edit(.:format)                                              api/v1/tries#edit {:format=>:json}
-#                                     api_case_try GET      /api/cases/:case_id/tries/:try_number(.:format)                                                   api/v1/tries#show {:format=>:json}
-#                                                  PATCH    /api/cases/:case_id/tries/:try_number(.:format)                                                   api/v1/tries#update {:format=>:json}
-#                                                  PUT      /api/cases/:case_id/tries/:try_number(.:format)                                                   api/v1/tries#update {:format=>:json}
-#                                                  DELETE   /api/cases/:case_id/tries/:try_number(.:format)                                                   api/v1/tries#destroy {:format=>:json}
-#                                 api_case_scorers GET      /api/cases/:case_id/scorers(.:format)                                                             api/v1/case_scorers#index {:format=>:json}
-#                                  api_case_scorer PATCH    /api/cases/:case_id/scorers/:id(.:format)                                                         api/v1/case_scorers#update {:format=>:json}
-#                                                  PUT      /api/cases/:case_id/scorers/:id(.:format)                                                         api/v1/case_scorers#update {:format=>:json}
-#                             api_case_query_notes GET      /api/cases/:case_id/queries/:query_id/notes(.:format)                                             api/v1/queries/notes#show {:format=>:json}
-#                                                  PATCH    /api/cases/:case_id/queries/:query_id/notes(.:format)                                             api/v1/queries/notes#update {:format=>:json}
-#                                                  PUT      /api/cases/:case_id/queries/:query_id/notes(.:format)                                             api/v1/queries/notes#update {:format=>:json}
-#                           api_case_query_options GET      /api/cases/:case_id/queries/:query_id/options(.:format)                                           api/v1/queries/options#show {:format=>:json}
-#                                                  PATCH    /api/cases/:case_id/queries/:query_id/options(.:format)                                           api/v1/queries/options#update {:format=>:json}
-#                                                  PUT      /api/cases/:case_id/queries/:query_id/options(.:format)                                           api/v1/queries/options#update {:format=>:json}
-#                          api_case_query_position PATCH    /api/cases/:case_id/queries/:query_id/position(.:format)                                          api/v1/queries/positions#update {:format=>:json}
-#                                                  PUT      /api/cases/:case_id/queries/:query_id/position(.:format)                                          api/v1/queries/positions#update {:format=>:json}
-#                           api_case_query_ratings PATCH    /api/cases/:case_id/queries/:query_id/ratings(.:format)                                           api/v1/queries/ratings#update {:format=>:json}
-#                                                  PUT      /api/cases/:case_id/queries/:query_id/ratings(.:format)                                           api/v1/queries/ratings#update {:format=>:json}
-#                                                  DELETE   /api/cases/:case_id/queries/:query_id/ratings(.:format)                                           api/v1/queries/ratings#destroy {:format=>:json}
-#                      api_case_query_bulk_ratings PATCH    /api/cases/:case_id/queries/:query_id/bulk/ratings(.:format)                                      api/v1/bulk_ratings#update {:format=>:json}
-#                                                  PUT      /api/cases/:case_id/queries/:query_id/bulk/ratings(.:format)                                      api/v1/bulk_ratings#update {:format=>:json}
-#                                                  DELETE   /api/cases/:case_id/queries/:query_id/bulk/ratings(.:format)                                      api/v1/bulk_ratings#destroy {:format=>:json}
-#               ratings_delete_api_case_query_bulk POST     /api/cases/:case_id/queries/:query_id/bulk/ratings/delete(.:format)                               api/v1/bulk_ratings#destroy {:format=>:json}
-#                                 api_case_queries GET      /api/cases/:case_id/queries(.:format)                                                             api/v1/queries#index {:format=>:json}
-#                                                  POST     /api/cases/:case_id/queries(.:format)                                                             api/v1/queries#create {:format=>:json}
-#                                   api_case_query PATCH    /api/cases/:case_id/queries/:id(.:format)                                                         api/v1/queries#update {:format=>:json}
-#                                                  PUT      /api/cases/:case_id/queries/:id(.:format)                                                         api/v1/queries#update {:format=>:json}
-#                                                  DELETE   /api/cases/:case_id/queries/:id(.:format)                                                         api/v1/queries#destroy {:format=>:json}
-#                   api_case_snapshot_search_index GET      /api/cases/:case_id/snapshots/:snapshot_id/search(.:format)                                       api/v1/snapshots/search#index {:format=>:json}
-#                               api_case_snapshots GET      /api/cases/:case_id/snapshots(.:format)                                                           api/v1/snapshots#index {:format=>:json}
-#                                                  POST     /api/cases/:case_id/snapshots(.:format)                                                           api/v1/snapshots#create {:format=>:json}
-#                                api_case_snapshot GET      /api/cases/:case_id/snapshots/:id(.:format)                                                       api/v1/snapshots#show {:format=>:json}
-#                                                  DELETE   /api/cases/:case_id/snapshots/:id(.:format)                                                       api/v1/snapshots#destroy {:format=>:json}
-#                       api_case_snapshots_imports POST     /api/cases/:case_id/snapshots/imports(.:format)                                                   api/v1/snapshots/imports#create {:format=>:json}
-#                                api_case_metadata PATCH    /api/cases/:case_id/metadata(.:format)                                                            api/v1/case_metadata#update {:format=>:json}
-#                                                  PUT      /api/cases/:case_id/metadata(.:format)                                                            api/v1/case_metadata#update {:format=>:json}
-#                                  api_case_scores GET      /api/cases/:case_id/scores(.:format)                                                              api/v1/case_scores#show {:format=>:json}
-#                                                  PATCH    /api/cases/:case_id/scores(.:format)                                                              api/v1/case_scores#update {:format=>:json}
-#                                                  PUT      /api/cases/:case_id/scores(.:format)                                                              api/v1/case_scores#update {:format=>:json}
-#                              api_case_scores_all GET      /api/cases/:case_id/scores/all(.:format)                                                          api/v1/case_scores#index {:format=>:json}
-#                             api_case_annotations GET      /api/cases/:case_id/annotations(.:format)                                                         api/v1/annotations#index {:format=>:json}
-#                                                  POST     /api/cases/:case_id/annotations(.:format)                                                         api/v1/annotations#create {:format=>:json}
-#                          new_api_case_annotation GET      /api/cases/:case_id/annotations/new(.:format)                                                     api/v1/annotations#new {:format=>:json}
-#                         edit_api_case_annotation GET      /api/cases/:case_id/annotations/:id/edit(.:format)                                                api/v1/annotations#edit {:format=>:json}
-#                              api_case_annotation PATCH    /api/cases/:case_id/annotations/:id(.:format)                                                     api/v1/annotations#update {:format=>:json}
-#                                                  PUT      /api/cases/:case_id/annotations/:id(.:format)                                                     api/v1/annotations#update {:format=>:json}
-#                                                  DELETE   /api/cases/:case_id/annotations/:id(.:format)                                                     api/v1/annotations#destroy {:format=>:json}
-#                        api_case_search_endpoints GET      /api/cases/:case_id/search_endpoints(.:format)                                                    api/v1/search_endpoints#index {:format=>:json}
-#                                api_book_populate PUT      /api/books/:book_id/populate(.:format)                                                            api/v1/books/populate#update {:format=>:json}
-#                            api_book_case_refresh PUT      /api/books/:book_id/cases/:case_id/refresh(.:format)                                              api/v1/books/refresh#update {:format=>:json}
-#                                   api_book_cases GET      /api/books/:book_id/cases(.:format)                                                               api/v1/cases#index {:format=>:json}
-#                                                  POST     /api/books/:book_id/cases(.:format)                                                               api/v1/cases#create {:format=>:json}
-#                                new_api_book_case GET      /api/books/:book_id/cases/new(.:format)                                                           api/v1/cases#new {:format=>:json}
-#                               edit_api_book_case GET      /api/books/:book_id/cases/:id/edit(.:format)                                                      api/v1/cases#edit {:format=>:json}
-#                                    api_book_case GET      /api/books/:book_id/cases/:id(.:format)                                                           api/v1/cases#show {:format=>:json}
-#                                                  PATCH    /api/books/:book_id/cases/:id(.:format)                                                           api/v1/cases#update {:format=>:json}
-#                                                  PUT      /api/books/:book_id/cases/:id(.:format)                                                           api/v1/cases#update {:format=>:json}
-#                                                  DELETE   /api/books/:book_id/cases/:id(.:format)                                                           api/v1/cases#destroy {:format=>:json}
-#                                                  GET      /api/books/:book_id/query_doc_pairs/to_be_judged/:judge_id(.:format)                              api/v1/query_doc_pairs#to_be_judged {:format=>:json}
-#                         api_book_query_doc_pairs GET      /api/books/:book_id/query_doc_pairs(.:format)                                                     api/v1/query_doc_pairs#index {:format=>:json}
-#                                                  POST     /api/books/:book_id/query_doc_pairs(.:format)                                                     api/v1/query_doc_pairs#create {:format=>:json}
-#                      new_api_book_query_doc_pair GET      /api/books/:book_id/query_doc_pairs/new(.:format)                                                 api/v1/query_doc_pairs#new {:format=>:json}
-#                     edit_api_book_query_doc_pair GET      /api/books/:book_id/query_doc_pairs/:id/edit(.:format)                                            api/v1/query_doc_pairs#edit {:format=>:json}
-#                          api_book_query_doc_pair GET      /api/books/:book_id/query_doc_pairs/:id(.:format)                                                 api/v1/query_doc_pairs#show {:format=>:json}
-#                                                  PATCH    /api/books/:book_id/query_doc_pairs/:id(.:format)                                                 api/v1/query_doc_pairs#update {:format=>:json}
-#                                                  PUT      /api/books/:book_id/query_doc_pairs/:id(.:format)                                                 api/v1/query_doc_pairs#update {:format=>:json}
-#                                                  DELETE   /api/books/:book_id/query_doc_pairs/:id(.:format)                                                 api/v1/query_doc_pairs#destroy {:format=>:json}
-#                              api_book_judgements GET      /api/books/:book_id/judgements(.:format)                                                          api/v1/judgements#index {:format=>:json}
-#                                                  POST     /api/books/:book_id/judgements(.:format)                                                          api/v1/judgements#create {:format=>:json}
-#                           new_api_book_judgement GET      /api/books/:book_id/judgements/new(.:format)                                                      api/v1/judgements#new {:format=>:json}
-#                          edit_api_book_judgement GET      /api/books/:book_id/judgements/:id/edit(.:format)                                                 api/v1/judgements#edit {:format=>:json}
-#                               api_book_judgement GET      /api/books/:book_id/judgements/:id(.:format)                                                      api/v1/judgements#show {:format=>:json}
-#                                                  PATCH    /api/books/:book_id/judgements/:id(.:format)                                                      api/v1/judgements#update {:format=>:json}
-#                                                  PUT      /api/books/:book_id/judgements/:id(.:format)                                                      api/v1/judgements#update {:format=>:json}
-#                                                  DELETE   /api/books/:book_id/judgements/:id(.:format)                                                      api/v1/judgements#destroy {:format=>:json}
-#                                        api_books GET      /api/books(.:format)                                                                              api/v1/books#index {:format=>:json}
-#                                                  POST     /api/books(.:format)                                                                              api/v1/books#create {:format=>:json}
-#                                     new_api_book GET      /api/books/new(.:format)                                                                          api/v1/books#new {:format=>:json}
-#                                    edit_api_book GET      /api/books/:id/edit(.:format)                                                                     api/v1/books#edit {:format=>:json}
-#                                         api_book GET      /api/books/:id(.:format)                                                                          api/v1/books#show {:format=>:json}
-#                                                  PATCH    /api/books/:id(.:format)                                                                          api/v1/books#update {:format=>:json}
-#                                                  PUT      /api/books/:id(.:format)                                                                          api/v1/books#update {:format=>:json}
-#                                                  DELETE   /api/books/:id(.:format)                                                                          api/v1/books#destroy {:format=>:json}
-#                               api_clone_case_try POST     /api/clone/cases/:case_id/tries/:try_number(.:format)                                             api/v1/clone/tries#create {:format=>:json}
-#                                  api_clone_cases POST     /api/clone/cases(.:format)                                                                        api/v1/clone/cases#create {:format=>:json}
-#                             api_search_endpoints GET      /api/search_endpoints(.:format)                                                                   api/v1/search_endpoints#index {:format=>:json}
-#                                                  POST     /api/search_endpoints(.:format)                                                                   api/v1/search_endpoints#create {:format=>:json}
-#                          new_api_search_endpoint GET      /api/search_endpoints/new(.:format)                                                               api/v1/search_endpoints#new {:format=>:json}
-#                         edit_api_search_endpoint GET      /api/search_endpoints/:id/edit(.:format)                                                          api/v1/search_endpoints#edit {:format=>:json}
-#                              api_search_endpoint GET      /api/search_endpoints/:id(.:format)                                                               api/v1/search_endpoints#show {:format=>:json}
-#                                                  PATCH    /api/search_endpoints/:id(.:format)                                                               api/v1/search_endpoints#update {:format=>:json}
-#                                                  PUT      /api/search_endpoints/:id(.:format)                                                               api/v1/search_endpoints#update {:format=>:json}
-#                                                  DELETE   /api/search_endpoints/:id(.:format)                                                               api/v1/search_endpoints#destroy {:format=>:json}
-#                                      api_scorers GET      /api/scorers(.:format)                                                                            api/v1/scorers#index {:format=>:json}
-#                                                  POST     /api/scorers(.:format)                                                                            api/v1/scorers#create {:format=>:json}
-#                                       api_scorer GET      /api/scorers/:id(.:format)                                                                        api/v1/scorers#show {:format=>:json}
-#                                                  PATCH    /api/scorers/:id(.:format)                                                                        api/v1/scorers#update {:format=>:json}
-#                                                  PUT      /api/scorers/:id(.:format)                                                                        api/v1/scorers#update {:format=>:json}
-#                                                  DELETE   /api/scorers/:id(.:format)                                                                        api/v1/scorers#destroy {:format=>:json}
-#                                        api_teams GET      /api/teams(.:format)                                                                              api/v1/teams#index {:format=>:json}
-#                                                  POST     /api/teams(.:format)                                                                              api/v1/teams#create {:format=>:json}
-#                                         api_team GET      /api/teams/:team_id(.:format)                                                                     api/v1/teams#show {:format=>:json}
-#                                                  PATCH    /api/teams/:team_id(.:format)                                                                     api/v1/teams#update {:format=>:json}
-#                                                  PUT      /api/teams/:team_id(.:format)                                                                     api/v1/teams#update {:format=>:json}
-#                                                  DELETE   /api/teams/:team_id(.:format)                                                                     api/v1/teams#destroy {:format=>:json}
-#                                 api_team_members GET      /api/teams/:team_id/members(.:format)                                                             api/v1/team_members#index {:format=>:json}
-#                                                  POST     /api/teams/:team_id/members(.:format)                                                             api/v1/team_members#create {:format=>:json}
-#                                  api_team_member DELETE   /api/teams/:team_id/members/:id(.:format)                                                         api/v1/team_members#destroy {:format=>:json}
-#                          api_team_members_invite POST     /api/teams/:team_id/members/invite(.:format)                                                      api/v1/team_members#invite {:format=>:json}
-#                                 api_team_scorers GET      /api/teams/:team_id/scorers(.:format)                                                             api/v1/team_scorers#index {:format=>:json}
-#                                                  POST     /api/teams/:team_id/scorers(.:format)                                                             api/v1/team_scorers#create {:format=>:json}
-#                                  api_team_scorer DELETE   /api/teams/:team_id/scorers/:id(.:format)                                                         api/v1/team_scorers#destroy {:format=>:json}
-#                                   api_team_cases GET      /api/teams/:team_id/cases(.:format)                                                               api/v1/team_cases#index {:format=>:json}
-#                                                  POST     /api/teams/:team_id/cases(.:format)                                                               api/v1/team_cases#create {:format=>:json}
-#                                    api_team_case DELETE   /api/teams/:team_id/cases/:id(.:format)                                                           api/v1/team_cases#destroy {:format=>:json}
-#                                   api_team_owner PATCH    /api/teams/:team_id/owners/:id(.:format)                                                          api/v1/team_owners#update {:format=>:json}
-#                                                  PUT      /api/teams/:team_id/owners/:id(.:format)                                                          api/v1/team_owners#update {:format=>:json}
-#                                   api_team_books GET      /api/teams/:team_id/books(.:format)                                                               api/v1/team_books#index {:format=>:json}
-#                        api_team_search_endpoints GET      /api/teams/:team_id/search_endpoints(.:format)                                                    api/v1/search_endpoints#index {:format=>:json}
-#                                 api_import_books POST     /api/import/books(.:format)                                                                       api/v1/import/books#create {:format=>:json}
-#                                 api_import_cases POST     /api/import/cases(.:format)                                                                       api/v1/import/cases#create {:format=>:json}
-#                               api_import_ratings POST     /api/import/ratings(.:format)                                                                     api/v1/import/ratings#create {:format=>:json}
-#             api_import_queries_information_needs POST     /api/import/queries/information_needs(.:format)                                                   api/v1/import/queries/information_needs#create {:format=>:json}
-#                                  api_export_book PATCH    /api/export/books/:book_id(.:format)                                                              api/v1/export/books#update {:format=>:json}
-#                                                  PUT      /api/export/books/:book_id(.:format)                                                              api/v1/export/books#update {:format=>:json}
-#                                  api_export_case GET      /api/export/cases/:case_id(.:format)                                                              api/v1/export/cases#show {:format=>:json}
-#                                api_export_rating GET      /api/export/ratings/:case_id(.:format)                                                            api/v1/export/ratings#show {:format=>:json}
-#              api_export_queries_information_need GET      /api/export/queries/information_needs/:case_id(.:format)                                          api/v1/export/queries/information_needs#show {:format=>:json}
-#                            api_bulk_case_queries POST     /api/bulk/cases/:case_id/queries(.:format)                                                        api/v1/bulk/queries#create {:format=>:json}
-#                     api_bulk_case_queries_delete DELETE   /api/bulk/cases/:case_id/queries/delete(.:format)                                                 api/v1/bulk/queries#destroy {:format=>:json}
+#                                         api_test GET      /api/test(.:format)                                                                               api/api#test {format: :json}
+#                               api_test_exception GET      /api/test_exception(.:format)                                                                     api/api#test_exception {format: :json}
+#                                current_api_users GET      /api/users/current(.:format)                                                                      api/v1/current_user#show {format: :json}
+#                                        api_users GET      /api/users(.:format)                                                                              api/v1/users#index {format: :json}
+#                                         api_user GET      /api/users/:id(.:format)                                                                          api/v1/users#show {format: :json}
+#                                                  PATCH    /api/users/:id(.:format)                                                                          api/v1/users#update {format: :json}
+#                                                  PUT      /api/users/:id(.:format)                                                                          api/v1/users#update {format: :json}
+#                                      api_signups POST     /api/signups(.:format)                                                                            api/v1/signups#create {format: :json}
+#                               api_dropdown_cases GET      /api/dropdown/cases(.:format)                                                                     api/v1/cases/dropdown#index {format: :json}
+#                               api_dropdown_books GET      /api/dropdown/books(.:format)                                                                     api/v1/books/dropdown#index {format: :json}
+#                                        api_cases GET      /api/cases(.:format)                                                                              api/v1/cases#index {format: :json}
+#                                                  POST     /api/cases(.:format)                                                                              api/v1/cases#create {format: :json}
+#                                         api_case GET      /api/cases/:case_id(.:format)                                                                     api/v1/cases#show {format: :json}
+#                                                  PATCH    /api/cases/:case_id(.:format)                                                                     api/v1/cases#update {format: :json}
+#                                                  PUT      /api/cases/:case_id(.:format)                                                                     api/v1/cases#update {format: :json}
+#                                                  DELETE   /api/cases/:case_id(.:format)                                                                     api/v1/cases#destroy {format: :json}
+#                       api_case_try_duplicate_try POST     /api/cases/:case_id/tries/:try_try_number/duplicate(.:format)                                     api/v1/duplicate_tries#create {format: :json}
+#                                   api_case_tries GET      /api/cases/:case_id/tries(.:format)                                                               api/v1/tries#index {format: :json}
+#                                                  POST     /api/cases/:case_id/tries(.:format)                                                               api/v1/tries#create {format: :json}
+#                                edit_api_case_try GET      /api/cases/:case_id/tries/:try_number/edit(.:format)                                              api/v1/tries#edit {format: :json}
+#                                     api_case_try GET      /api/cases/:case_id/tries/:try_number(.:format)                                                   api/v1/tries#show {format: :json}
+#                                                  PATCH    /api/cases/:case_id/tries/:try_number(.:format)                                                   api/v1/tries#update {format: :json}
+#                                                  PUT      /api/cases/:case_id/tries/:try_number(.:format)                                                   api/v1/tries#update {format: :json}
+#                                                  DELETE   /api/cases/:case_id/tries/:try_number(.:format)                                                   api/v1/tries#destroy {format: :json}
+#                                 api_case_scorers GET      /api/cases/:case_id/scorers(.:format)                                                             api/v1/case_scorers#index {format: :json}
+#                                  api_case_scorer PATCH    /api/cases/:case_id/scorers/:id(.:format)                                                         api/v1/case_scorers#update {format: :json}
+#                                                  PUT      /api/cases/:case_id/scorers/:id(.:format)                                                         api/v1/case_scorers#update {format: :json}
+#                             api_case_query_notes GET      /api/cases/:case_id/queries/:query_id/notes(.:format)                                             api/v1/queries/notes#show {format: :json}
+#                                                  PATCH    /api/cases/:case_id/queries/:query_id/notes(.:format)                                             api/v1/queries/notes#update {format: :json}
+#                                                  PUT      /api/cases/:case_id/queries/:query_id/notes(.:format)                                             api/v1/queries/notes#update {format: :json}
+#                           api_case_query_options GET      /api/cases/:case_id/queries/:query_id/options(.:format)                                           api/v1/queries/options#show {format: :json}
+#                                                  PATCH    /api/cases/:case_id/queries/:query_id/options(.:format)                                           api/v1/queries/options#update {format: :json}
+#                                                  PUT      /api/cases/:case_id/queries/:query_id/options(.:format)                                           api/v1/queries/options#update {format: :json}
+#                          api_case_query_position PATCH    /api/cases/:case_id/queries/:query_id/position(.:format)                                          api/v1/queries/positions#update {format: :json}
+#                                                  PUT      /api/cases/:case_id/queries/:query_id/position(.:format)                                          api/v1/queries/positions#update {format: :json}
+#                           api_case_query_ratings PATCH    /api/cases/:case_id/queries/:query_id/ratings(.:format)                                           api/v1/queries/ratings#update {format: :json}
+#                                                  PUT      /api/cases/:case_id/queries/:query_id/ratings(.:format)                                           api/v1/queries/ratings#update {format: :json}
+#                                                  DELETE   /api/cases/:case_id/queries/:query_id/ratings(.:format)                                           api/v1/queries/ratings#destroy {format: :json}
+#                      api_case_query_bulk_ratings PATCH    /api/cases/:case_id/queries/:query_id/bulk/ratings(.:format)                                      api/v1/bulk_ratings#update {format: :json}
+#                                                  PUT      /api/cases/:case_id/queries/:query_id/bulk/ratings(.:format)                                      api/v1/bulk_ratings#update {format: :json}
+#                                                  DELETE   /api/cases/:case_id/queries/:query_id/bulk/ratings(.:format)                                      api/v1/bulk_ratings#destroy {format: :json}
+#               ratings_delete_api_case_query_bulk POST     /api/cases/:case_id/queries/:query_id/bulk/ratings/delete(.:format)                               api/v1/bulk_ratings#destroy {format: :json}
+#                                 api_case_queries GET      /api/cases/:case_id/queries(.:format)                                                             api/v1/queries#index {format: :json}
+#                                                  POST     /api/cases/:case_id/queries(.:format)                                                             api/v1/queries#create {format: :json}
+#                                   api_case_query PATCH    /api/cases/:case_id/queries/:id(.:format)                                                         api/v1/queries#update {format: :json}
+#                                                  PUT      /api/cases/:case_id/queries/:id(.:format)                                                         api/v1/queries#update {format: :json}
+#                                                  DELETE   /api/cases/:case_id/queries/:id(.:format)                                                         api/v1/queries#destroy {format: :json}
+#                   api_case_snapshot_search_index GET      /api/cases/:case_id/snapshots/:snapshot_id/search(.:format)                                       api/v1/snapshots/search#index {format: :json}
+#                               api_case_snapshots GET      /api/cases/:case_id/snapshots(.:format)                                                           api/v1/snapshots#index {format: :json}
+#                                                  POST     /api/cases/:case_id/snapshots(.:format)                                                           api/v1/snapshots#create {format: :json}
+#                                api_case_snapshot GET      /api/cases/:case_id/snapshots/:id(.:format)                                                       api/v1/snapshots#show {format: :json}
+#                                                  DELETE   /api/cases/:case_id/snapshots/:id(.:format)                                                       api/v1/snapshots#destroy {format: :json}
+#                       api_case_snapshots_imports POST     /api/cases/:case_id/snapshots/imports(.:format)                                                   api/v1/snapshots/imports#create {format: :json}
+#                                api_case_metadata PATCH    /api/cases/:case_id/metadata(.:format)                                                            api/v1/case_metadata#update {format: :json}
+#                                                  PUT      /api/cases/:case_id/metadata(.:format)                                                            api/v1/case_metadata#update {format: :json}
+#                                  api_case_scores GET      /api/cases/:case_id/scores(.:format)                                                              api/v1/case_scores#show {format: :json}
+#                                                  PATCH    /api/cases/:case_id/scores(.:format)                                                              api/v1/case_scores#update {format: :json}
+#                                                  PUT      /api/cases/:case_id/scores(.:format)                                                              api/v1/case_scores#update {format: :json}
+#                              api_case_scores_all GET      /api/cases/:case_id/scores/all(.:format)                                                          api/v1/case_scores#index {format: :json}
+#                             api_case_annotations GET      /api/cases/:case_id/annotations(.:format)                                                         api/v1/annotations#index {format: :json}
+#                                                  POST     /api/cases/:case_id/annotations(.:format)                                                         api/v1/annotations#create {format: :json}
+#                          new_api_case_annotation GET      /api/cases/:case_id/annotations/new(.:format)                                                     api/v1/annotations#new {format: :json}
+#                         edit_api_case_annotation GET      /api/cases/:case_id/annotations/:id/edit(.:format)                                                api/v1/annotations#edit {format: :json}
+#                              api_case_annotation PATCH    /api/cases/:case_id/annotations/:id(.:format)                                                     api/v1/annotations#update {format: :json}
+#                                                  PUT      /api/cases/:case_id/annotations/:id(.:format)                                                     api/v1/annotations#update {format: :json}
+#                                                  DELETE   /api/cases/:case_id/annotations/:id(.:format)                                                     api/v1/annotations#destroy {format: :json}
+#                        api_case_search_endpoints GET      /api/cases/:case_id/search_endpoints(.:format)                                                    api/v1/search_endpoints#index {format: :json}
+#                                api_book_populate PUT      /api/books/:book_id/populate(.:format)                                                            api/v1/books/populate#update {format: :json}
+#                            api_book_case_refresh PUT      /api/books/:book_id/cases/:case_id/refresh(.:format)                                              api/v1/books/refresh#update {format: :json}
+#                                   api_book_cases GET      /api/books/:book_id/cases(.:format)                                                               api/v1/cases#index {format: :json}
+#                                                  POST     /api/books/:book_id/cases(.:format)                                                               api/v1/cases#create {format: :json}
+#                                new_api_book_case GET      /api/books/:book_id/cases/new(.:format)                                                           api/v1/cases#new {format: :json}
+#                               edit_api_book_case GET      /api/books/:book_id/cases/:id/edit(.:format)                                                      api/v1/cases#edit {format: :json}
+#                                    api_book_case GET      /api/books/:book_id/cases/:id(.:format)                                                           api/v1/cases#show {format: :json}
+#                                                  PATCH    /api/books/:book_id/cases/:id(.:format)                                                           api/v1/cases#update {format: :json}
+#                                                  PUT      /api/books/:book_id/cases/:id(.:format)                                                           api/v1/cases#update {format: :json}
+#                                                  DELETE   /api/books/:book_id/cases/:id(.:format)                                                           api/v1/cases#destroy {format: :json}
+#                                                  GET      /api/books/:book_id/query_doc_pairs/to_be_judged/:judge_id(.:format)                              api/v1/query_doc_pairs#to_be_judged {format: :json}
+#                         api_book_query_doc_pairs GET      /api/books/:book_id/query_doc_pairs(.:format)                                                     api/v1/query_doc_pairs#index {format: :json}
+#                                                  POST     /api/books/:book_id/query_doc_pairs(.:format)                                                     api/v1/query_doc_pairs#create {format: :json}
+#                      new_api_book_query_doc_pair GET      /api/books/:book_id/query_doc_pairs/new(.:format)                                                 api/v1/query_doc_pairs#new {format: :json}
+#                     edit_api_book_query_doc_pair GET      /api/books/:book_id/query_doc_pairs/:id/edit(.:format)                                            api/v1/query_doc_pairs#edit {format: :json}
+#                          api_book_query_doc_pair GET      /api/books/:book_id/query_doc_pairs/:id(.:format)                                                 api/v1/query_doc_pairs#show {format: :json}
+#                                                  PATCH    /api/books/:book_id/query_doc_pairs/:id(.:format)                                                 api/v1/query_doc_pairs#update {format: :json}
+#                                                  PUT      /api/books/:book_id/query_doc_pairs/:id(.:format)                                                 api/v1/query_doc_pairs#update {format: :json}
+#                                                  DELETE   /api/books/:book_id/query_doc_pairs/:id(.:format)                                                 api/v1/query_doc_pairs#destroy {format: :json}
+#                              api_book_judgements GET      /api/books/:book_id/judgements(.:format)                                                          api/v1/judgements#index {format: :json}
+#                                                  POST     /api/books/:book_id/judgements(.:format)                                                          api/v1/judgements#create {format: :json}
+#                           new_api_book_judgement GET      /api/books/:book_id/judgements/new(.:format)                                                      api/v1/judgements#new {format: :json}
+#                          edit_api_book_judgement GET      /api/books/:book_id/judgements/:id/edit(.:format)                                                 api/v1/judgements#edit {format: :json}
+#                               api_book_judgement GET      /api/books/:book_id/judgements/:id(.:format)                                                      api/v1/judgements#show {format: :json}
+#                                                  PATCH    /api/books/:book_id/judgements/:id(.:format)                                                      api/v1/judgements#update {format: :json}
+#                                                  PUT      /api/books/:book_id/judgements/:id(.:format)                                                      api/v1/judgements#update {format: :json}
+#                                                  DELETE   /api/books/:book_id/judgements/:id(.:format)                                                      api/v1/judgements#destroy {format: :json}
+#                                        api_books GET      /api/books(.:format)                                                                              api/v1/books#index {format: :json}
+#                                                  POST     /api/books(.:format)                                                                              api/v1/books#create {format: :json}
+#                                     new_api_book GET      /api/books/new(.:format)                                                                          api/v1/books#new {format: :json}
+#                                    edit_api_book GET      /api/books/:id/edit(.:format)                                                                     api/v1/books#edit {format: :json}
+#                                         api_book GET      /api/books/:id(.:format)                                                                          api/v1/books#show {format: :json}
+#                                                  PATCH    /api/books/:id(.:format)                                                                          api/v1/books#update {format: :json}
+#                                                  PUT      /api/books/:id(.:format)                                                                          api/v1/books#update {format: :json}
+#                                                  DELETE   /api/books/:id(.:format)                                                                          api/v1/books#destroy {format: :json}
+#                               api_clone_case_try POST     /api/clone/cases/:case_id/tries/:try_number(.:format)                                             api/v1/clone/tries#create {format: :json}
+#                                  api_clone_cases POST     /api/clone/cases(.:format)                                                                        api/v1/clone/cases#create {format: :json}
+#                             api_search_endpoints GET      /api/search_endpoints(.:format)                                                                   api/v1/search_endpoints#index {format: :json}
+#                                                  POST     /api/search_endpoints(.:format)                                                                   api/v1/search_endpoints#create {format: :json}
+#                          new_api_search_endpoint GET      /api/search_endpoints/new(.:format)                                                               api/v1/search_endpoints#new {format: :json}
+#                         edit_api_search_endpoint GET      /api/search_endpoints/:id/edit(.:format)                                                          api/v1/search_endpoints#edit {format: :json}
+#                              api_search_endpoint GET      /api/search_endpoints/:id(.:format)                                                               api/v1/search_endpoints#show {format: :json}
+#                                                  PATCH    /api/search_endpoints/:id(.:format)                                                               api/v1/search_endpoints#update {format: :json}
+#                                                  PUT      /api/search_endpoints/:id(.:format)                                                               api/v1/search_endpoints#update {format: :json}
+#                                                  DELETE   /api/search_endpoints/:id(.:format)                                                               api/v1/search_endpoints#destroy {format: :json}
+#                                      api_scorers GET      /api/scorers(.:format)                                                                            api/v1/scorers#index {format: :json}
+#                                                  POST     /api/scorers(.:format)                                                                            api/v1/scorers#create {format: :json}
+#                                       api_scorer GET      /api/scorers/:id(.:format)                                                                        api/v1/scorers#show {format: :json}
+#                                                  PATCH    /api/scorers/:id(.:format)                                                                        api/v1/scorers#update {format: :json}
+#                                                  PUT      /api/scorers/:id(.:format)                                                                        api/v1/scorers#update {format: :json}
+#                                                  DELETE   /api/scorers/:id(.:format)                                                                        api/v1/scorers#destroy {format: :json}
+#                                        api_teams GET      /api/teams(.:format)                                                                              api/v1/teams#index {format: :json}
+#                                                  POST     /api/teams(.:format)                                                                              api/v1/teams#create {format: :json}
+#                                         api_team GET      /api/teams/:team_id(.:format)                                                                     api/v1/teams#show {format: :json}
+#                                                  PATCH    /api/teams/:team_id(.:format)                                                                     api/v1/teams#update {format: :json}
+#                                                  PUT      /api/teams/:team_id(.:format)                                                                     api/v1/teams#update {format: :json}
+#                                                  DELETE   /api/teams/:team_id(.:format)                                                                     api/v1/teams#destroy {format: :json}
+#                                 api_team_members GET      /api/teams/:team_id/members(.:format)                                                             api/v1/team_members#index {format: :json}
+#                                                  POST     /api/teams/:team_id/members(.:format)                                                             api/v1/team_members#create {format: :json}
+#                                  api_team_member DELETE   /api/teams/:team_id/members/:id(.:format)                                                         api/v1/team_members#destroy {format: :json}
+#                          api_team_members_invite POST     /api/teams/:team_id/members/invite(.:format)                                                      api/v1/team_members#invite {format: :json}
+#                                 api_team_scorers GET      /api/teams/:team_id/scorers(.:format)                                                             api/v1/team_scorers#index {format: :json}
+#                                                  POST     /api/teams/:team_id/scorers(.:format)                                                             api/v1/team_scorers#create {format: :json}
+#                                  api_team_scorer DELETE   /api/teams/:team_id/scorers/:id(.:format)                                                         api/v1/team_scorers#destroy {format: :json}
+#                                   api_team_cases GET      /api/teams/:team_id/cases(.:format)                                                               api/v1/team_cases#index {format: :json}
+#                                                  POST     /api/teams/:team_id/cases(.:format)                                                               api/v1/team_cases#create {format: :json}
+#                                    api_team_case DELETE   /api/teams/:team_id/cases/:id(.:format)                                                           api/v1/team_cases#destroy {format: :json}
+#                                   api_team_owner PATCH    /api/teams/:team_id/owners/:id(.:format)                                                          api/v1/team_owners#update {format: :json}
+#                                                  PUT      /api/teams/:team_id/owners/:id(.:format)                                                          api/v1/team_owners#update {format: :json}
+#                                   api_team_books GET      /api/teams/:team_id/books(.:format)                                                               api/v1/team_books#index {format: :json}
+#                        api_team_search_endpoints GET      /api/teams/:team_id/search_endpoints(.:format)                                                    api/v1/search_endpoints#index {format: :json}
+#                                 api_import_books POST     /api/import/books(.:format)                                                                       api/v1/import/books#create {format: :json}
+#                                 api_import_cases POST     /api/import/cases(.:format)                                                                       api/v1/import/cases#create {format: :json}
+#                               api_import_ratings POST     /api/import/ratings(.:format)                                                                     api/v1/import/ratings#create {format: :json}
+#             api_import_queries_information_needs POST     /api/import/queries/information_needs(.:format)                                                   api/v1/import/queries/information_needs#create {format: :json}
+#                                  api_export_book PATCH    /api/export/books/:book_id(.:format)                                                              api/v1/export/books#update {format: :json}
+#                                                  PUT      /api/export/books/:book_id(.:format)                                                              api/v1/export/books#update {format: :json}
+#                                  api_export_case GET      /api/export/cases/:case_id(.:format)                                                              api/v1/export/cases#show {format: :json}
+#                                api_export_rating GET      /api/export/ratings/:case_id(.:format)                                                            api/v1/export/ratings#show {format: :json}
+#              api_export_queries_information_need GET      /api/export/queries/information_needs/:case_id(.:format)                                          api/v1/export/queries/information_needs#show {format: :json}
+#                            api_bulk_case_queries POST     /api/bulk/cases/:case_id/queries(.:format)                                                        api/v1/bulk/queries#create {format: :json}
+#                     api_bulk_case_queries_delete DELETE   /api/bulk/cases/:case_id/queries/delete(.:format)                                                 api/v1/bulk/queries#destroy {format: :json}
 #                                        case_core GET      /case/:id(/try/:try_number)(.:format)                                                             core#index
 #                                         case_new GET      /cases/new(.:format)                                                                              core#new
 #                                            cases GET      /cases(.:format)                                                                                  core#index
@@ -323,6 +341,7 @@
 #                                     cases_import GET      /cases/import(.:format)                                                                           core#index
 #                                       teams_core GET      /teams(/:id)(.:format)                                                                            core#teams
 #                                          scorers GET      /scorers(.:format)                                                                                core#index
+#                                          cookies GET      /cookies(.:format)                                                                                pages#show {page: "cookies"}
 #                 turbo_recede_historical_location GET      /recede_historical_location(.:format)                                                             turbo/native/navigation#recede
 #                 turbo_resume_historical_location GET      /resume_historical_location(.:format)                                                             turbo/native/navigation#resume
 #                turbo_refresh_historical_location GET      /refresh_historical_location(.:format)                                                            turbo/native/navigation#refresh
@@ -351,70 +370,21 @@
 #                        update_rails_disk_service PUT      /rails/active_storage/disk/:encoded_token(.:format)                                               active_storage/disk#update
 #                             rails_direct_uploads POST     /rails/active_storage/direct_uploads(.:format)                                                    active_storage/direct_uploads#create
 #
+# Routes for Debugbar::Engine:
+#
 # Routes for ActiveStorageDB::Engine:
 #        service GET  /files/:encoded_key/*filename(.:format) active_storage_db/files#show
 # update_service PUT  /files/:encoded_token(.:format)         active_storage_db/files#update
 #
 # Routes for MissionControl::Jobs::Engine:
-#     application_queue_pause DELETE /applications/:application_id/queues/:queue_id/pause(.:format) mission_control/jobs/queues/pauses#destroy
-#                             POST   /applications/:application_id/queues/:queue_id/pause(.:format) mission_control/jobs/queues/pauses#create
-#          application_queues GET    /applications/:application_id/queues(.:format)                 mission_control/jobs/queues#index
-#           application_queue GET    /applications/:application_id/queues/:id(.:format)             mission_control/jobs/queues#show
-#       application_job_retry POST   /applications/:application_id/jobs/:job_id/retry(.:format)     mission_control/jobs/retries#create
-#     application_job_discard POST   /applications/:application_id/jobs/:job_id/discard(.:format)   mission_control/jobs/discards#create
-#    application_job_dispatch POST   /applications/:application_id/jobs/:job_id/dispatch(.:format)  mission_control/jobs/dispatches#create
-#    application_bulk_retries POST   /applications/:application_id/jobs/bulk_retries(.:format)      mission_control/jobs/bulk_retries#create
-#   application_bulk_discards POST   /applications/:application_id/jobs/bulk_discards(.:format)     mission_control/jobs/bulk_discards#create
-#             application_job GET    /applications/:application_id/jobs/:id(.:format)               mission_control/jobs/jobs#show
-#            application_jobs GET    /applications/:application_id/:status/jobs(.:format)           mission_control/jobs/jobs#index
-#         application_workers GET    /applications/:application_id/workers(.:format)                mission_control/jobs/workers#index
-#          application_worker GET    /applications/:application_id/workers/:id(.:format)            mission_control/jobs/workers#show
-# application_recurring_tasks GET    /applications/:application_id/recurring_tasks(.:format)        mission_control/jobs/recurring_tasks#index
-#  application_recurring_task GET    /applications/:application_id/recurring_tasks/:id(.:format)    mission_control/jobs/recurring_tasks#show
-#                             PATCH  /applications/:application_id/recurring_tasks/:id(.:format)    mission_control/jobs/recurring_tasks#update
-#                             PUT    /applications/:application_id/recurring_tasks/:id(.:format)    mission_control/jobs/recurring_tasks#update
-#                      queues GET    /queues(.:format)                                              mission_control/jobs/queues#index
-#                       queue GET    /queues/:id(.:format)                                          mission_control/jobs/queues#show
-#                         job GET    /jobs/:id(.:format)                                            mission_control/jobs/jobs#show
-#                        jobs GET    /:status/jobs(.:format)                                        mission_control/jobs/jobs#index
-#                        root GET    /                                                              mission_control/jobs/queues#index
 #
 # Routes for Blazer::Engine:
-#       run_queries POST   /queries/run(.:format)            blazer/queries#run
-#    cancel_queries POST   /queries/cancel(.:format)         blazer/queries#cancel
-#     refresh_query POST   /queries/:id/refresh(.:format)    blazer/queries#refresh
-#    tables_queries GET    /queries/tables(.:format)         blazer/queries#tables
-#    schema_queries GET    /queries/schema(.:format)         blazer/queries#schema
-#      docs_queries GET    /queries/docs(.:format)           blazer/queries#docs
-#           queries GET    /queries(.:format)                blazer/queries#index
-#                   POST   /queries(.:format)                blazer/queries#create
-#         new_query GET    /queries/new(.:format)            blazer/queries#new
-#        edit_query GET    /queries/:id/edit(.:format)       blazer/queries#edit
-#             query GET    /queries/:id(.:format)            blazer/queries#show
-#                   PATCH  /queries/:id(.:format)            blazer/queries#update
-#                   PUT    /queries/:id(.:format)            blazer/queries#update
-#                   DELETE /queries/:id(.:format)            blazer/queries#destroy
-#         run_check GET    /checks/:id/run(.:format)         blazer/checks#run
-#            checks GET    /checks(.:format)                 blazer/checks#index
-#                   POST   /checks(.:format)                 blazer/checks#create
-#         new_check GET    /checks/new(.:format)             blazer/checks#new
-#        edit_check GET    /checks/:id/edit(.:format)        blazer/checks#edit
-#             check PATCH  /checks/:id(.:format)             blazer/checks#update
-#                   PUT    /checks/:id(.:format)             blazer/checks#update
-#                   DELETE /checks/:id(.:format)             blazer/checks#destroy
-# refresh_dashboard POST   /dashboards/:id/refresh(.:format) blazer/dashboards#refresh
-#        dashboards POST   /dashboards(.:format)             blazer/dashboards#create
-#     new_dashboard GET    /dashboards/new(.:format)         blazer/dashboards#new
-#    edit_dashboard GET    /dashboards/:id/edit(.:format)    blazer/dashboards#edit
-#         dashboard GET    /dashboards/:id(.:format)         blazer/dashboards#show
-#                   PATCH  /dashboards/:id(.:format)         blazer/dashboards#update
-#                   PUT    /dashboards/:id(.:format)         blazer/dashboards#update
-#                   DELETE /dashboards/:id(.:format)         blazer/dashboards#destroy
-#              root GET    /                                 blazer/queries#home
 #
 # Routes for Ahoy::Engine:
 # visits POST /visits(.:format) ahoy/visits#create
 # events POST /events(.:format) ahoy/events#create
+
+# rubocop:enable Layout/LineLength
 
 # rubocop:disable Metrics/BlockLength
 Rails.application.routes.draw do
@@ -423,8 +393,6 @@ Rails.application.routes.draw do
   # Render dynamic PWA files from app/views/pwa/* (remember to link manifest in application.html.erb)
   # get "manifest" => "rails/pwa#manifest", as: :pwa_manifest
   # get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
-
-  mount Debugbar::Engine => Debugbar.config.prefix if defined? Debugbar
 
   mount ActionCable.server => '/cable'
   apipie
@@ -447,7 +415,8 @@ Rails.application.routes.draw do
 
   get 'home/sparklines', to: 'home#sparklines'
   get 'home/case_prophet/:case_id', to: 'home#case_prophet', as: :home_case_prophet
-  # get 'tries_visualization/:case_id' => 'tries_visualization#show', as: :tries_visualization
+  get 'home/book_summary_detail/:book_id', to: 'home#book_summary_detail', as: :home_book_summary_detail
+
   get 'proxy/fetch'
   post 'proxy/fetch'
 
@@ -460,9 +429,9 @@ Rails.application.routes.draw do
   end
 
   # let's encrypt verification (can be removed in the future)
-  get '.well-known/acme-challenge/9IWOgATbRmEtWKsOOJQ-E4-lrIT9tHsHv_9bl5Zt6fI', to: proc { [ 200, {}, [ '9IWOgATbRmEtWKsOOJQ-E4-lrIT9tHsHv_9bl5Zt6fI.fDzklrX7i2PRMRsPtxEvo2yRZDSfy2LO3t--NfWfgaA' ] ] }
-  # rubocop:enable Layout/LineLength
-
+  get '.well-known/acme-challenge/9IWOgATbRmEtWKsOOJQ-E4-lrIT9tHsHv_9bl5Zt6fI', to: proc {
+    [ 200, {}, [ '9IWOgATbRmEtWKsOOJQ-E4-lrIT9tHsHv_9bl5Zt6fI.fDzklrX7i2PRMRsPtxEvo2yRZDSfy2LO3t--NfWfgaA' ] ]
+  }
   post 'users/login' => 'sessions#create' # , #defaults: { format: :json
   post 'users/signup' => 'users/signups#create'
 
@@ -471,6 +440,9 @@ Rails.application.routes.draw do
   resources :sessions
   resource :account, only: [ :update, :destroy ]
   resource :profile, only: [ :show, :update ]
+
+  get '/dropdown/cases' => 'dropdown#cases'
+  get '/dropdown/books' => 'dropdown#books'
 
   resources :teams, only: [] do
     resources :ai_judges, controller: :ai_judges
@@ -483,6 +455,7 @@ Rails.application.routes.draw do
   resources :cases, only: [] do
     resource :book
     resources :ratings, only: [ :index ]
+    resources :scores, only: [ :index, :destroy ]
   end
 
   resources :books do
@@ -497,6 +470,8 @@ Rails.application.routes.draw do
     get 'judge' => 'judgements#new'
     get 'skip_judging' => 'judgements#skip_judging'
     member do
+      get 'judgement_stats'
+      get 'export'
       patch 'combine'
       patch 'assign_anonymous'
       patch 'run_judge_judy/:ai_judge_id', action: :run_judge_judy, as: :run_judge_judy
@@ -552,6 +527,9 @@ Rails.application.routes.draw do
     end
     resources :websocket_tester, only: [ :index ] do
       post 'test_background_job', on: :collection
+    end
+    resources :run_case, only: [ :index ] do
+      post 'run_case', on: :collection
     end
   end
 
@@ -701,6 +679,6 @@ Rails.application.routes.draw do
   get '/scorers'                      => 'core#index'
 
   # Static pages
-  get '*page' => 'pages#show'
+  get '/cookies' => 'pages#show', defaults: { page: 'cookies' }
 end
 # rubocop:enable Metrics/BlockLength

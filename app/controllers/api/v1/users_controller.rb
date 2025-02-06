@@ -49,10 +49,10 @@ module Api
       end
 
       def user_params
-        params.require(:user).permit(
-          :completed_case_wizard,
-          :company,
-          :default_scorer_id
+        params.expect(
+          user: [ :completed_case_wizard,
+                  :company,
+                  :default_scorer_id ]
         )
       end
 

@@ -48,17 +48,15 @@
 # Foreign Keys
 #
 #  fk_rails_...  (default_scorer_id => scorers.id)
+#  fk_rails_...  (invited_by_id => users.id)
 #
 
 class User < ApplicationRecord
   # Associations
-
   has_many :api_keys, dependent: :destroy
 
   belongs_to :default_scorer, class_name: 'Scorer', optional: true # for communal scorers there isn't a owner
 
-  # has_many :cases,
-  #         dependent:   :nullify # sometimes a case belongs to a team, so don't just delete it.
   has_many :cases,
            class_name:  'Case',
            foreign_key: :owner_id,
@@ -104,9 +102,6 @@ class User < ApplicationRecord
            through: :teams,
            source:  :scorers
 
-  has_many :permissions,
-           dependent: :destroy
-
   has_many :scores,
            dependent: :destroy
 
@@ -122,28 +117,44 @@ class User < ApplicationRecord
 
   has_many :announcements, foreign_key: 'author_id', dependent: :destroy, inverse_of: :author
 
-  # has_many :ai_judges, dependent: :destroy
-  # has_many :books, through: :ai_judges
-
   # Validations
+  validates :name,
+            length: { maximum: 255 }
 
   # https://davidcel.is/posts/stop-validating-email-addresses-with-regex/
   validates :email,
             presence:   true,
             uniqueness: true,
             format:     { with: URI::MailTo::EMAIL_REGEXP },
+            length:     { maximum: 80 },
             unless:     :ai_judge?
 
   validates :password,
-            presence: true
+            presence: true,
+            length:   { maximum: 80 }
 
   validates :password, confirmation: { message: 'should match confirmation' }
+
+  validates :reset_password_token,
+            length: { maximum: 255 }
+  validates :invitation_token,
+            length: { maximum: 255 }
+  validates :stored_raw_invitation_token,
+            length: { maximum: 255 }
+
+  validates :company,
+            length: { maximum: 255 }
+  validates :profile_pic,
+            length: { maximum: 4000 }
 
   validates_with ::DefaultScorerExistsValidator
 
   validates :agreed,
             acceptance: { message: 'checkbox must be clicked to signify you agree to the terms and conditions.' },
             if:         :terms_and_conditions?
+
+  validates :openai_key, length: { maximum: 255 }, allow_nil: true, presence: true, if: :ai_judge?
+  validates :system_prompt, length: { maximum: 4000 }, allow_nil: true, presence: true, if: :ai_judge?
 
   def terms_and_conditions?
     Rails.application.config.terms_and_conditions_url.present?
@@ -200,7 +211,6 @@ class User < ApplicationRecord
   # END devise hacks
 
   # Concerns
-  include Permissible
   include Profile
 
   # Scopes
@@ -231,7 +241,7 @@ class User < ApplicationRecord
     Book.for_user(self)
   end
 
-  # This method rpeturns all the search_endpoints that the user has access as owner or via a team.
+  # This method returns all the search_endpoints that the user has access as owner or via a team.
   def search_endpoints_involved_with
     SearchEndpoint.for_user(self)
   end
@@ -251,7 +261,11 @@ class User < ApplicationRecord
   end
 
   def fullname
-    name.blank? ? email : name.titleize
+    if name.blank?
+      email.presence || 'Anonymous'
+    else
+      name.titleize
+    end
   end
 
   def after_database_authentication

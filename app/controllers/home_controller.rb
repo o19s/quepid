@@ -2,6 +2,7 @@
 
 class HomeController < ApplicationController
   before_action :set_case, only: [ :case_prophet ]
+  before_action :set_book_no_track, only: [ :book_summary_detail ]
   before_action :check_for_announcement, only: [ :show ]
 
   def show
@@ -47,14 +48,14 @@ class HomeController < ApplicationController
 
       puts "we have decided we are stale for case #{@case.id} at #{@case.updated_at}"
 
-      sampled_scores = @case.scores.sampled(@case.id, 25)
+      scores = @case.scores.where(scorer: @case.scorer)
 
-      unless sampled_scores.empty?
-        @for_single_day = sampled_scores.first.updated_at.all_day.overlaps?(sampled_scores.last.updated_at.all_day)
+      unless scores.empty?
+        @for_single_day = scores.first.updated_at.all_day.overlaps?(scores.last.updated_at.all_day)
         @final = @case.scores.last_one.score
       end
 
-      data = sampled_scores.collect do |score|
+      data = scores.collect do |score|
         if @for_single_day
           { ds: score.updated_at.to_fs(:db), y: score.score, datetime: score.updated_at }
         else
@@ -95,6 +96,14 @@ class HomeController < ApplicationController
   # rubocop:enable Metrics/MethodLength
   # rubocop:enable Metrics/CyclomaticComplexity
   # rubocop:enable Metrics/PerceivedComplexity
+
+  def book_summary_detail
+    if stale?(etag: @book, public: true)
+
+      puts "we have decided we are stale for book #{@book.id} at #{@book.updated_at}"
+      render layout: false
+    end
+  end
 
   private
 

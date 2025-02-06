@@ -10,6 +10,7 @@
 #  updated_at    :datetime
 #  annotation_id :integer
 #  case_id       :integer
+#  scorer_id     :bigint
 #  try_id        :integer
 #  user_id       :integer
 #
@@ -17,6 +18,7 @@
 #
 #  case_id                          (case_id)
 #  index_case_scores_annotation_id  (annotation_id) UNIQUE
+#  index_case_scores_on_scorer_id   (scorer_id)
 #  support_last_score               (updated_at,created_at,id)
 #  user_id                          (user_id)
 #
@@ -81,6 +83,7 @@ score_for_try_1:
   try:        :for_case_with_score_try_1
   score:      65
   all_rated:  false
+  scorer:     :case_default_scorer
 
 score_for_try_2:
   case:       :case_with_score
@@ -88,3 +91,4 @@ score_for_try_2:
   try:        :for_case_with_score_try_2
   score:      75
   all_rated:  false
+  scorer:     :case_default_scorer

@@ -22,6 +22,21 @@ Or if you have a Zip file:
 unzip -p quepid_prod_2021_03_02.sql.zip | /usr/local/mysql/bin/mysql --host=127.0.0.1 --port=3306 -u root -p quepid_development
 ```
 
+## DigitalOcean Notes
+
+DigitalOcean has the setting `sql_require_primary_key` set to true, which conflicts with ActiveRecords `schema_migrations` table.
+To get around this, you need to use the API to make it false when loading the data. 
+
+https://www.digitalocean.com/community/questions/how-do-i-disable-the-require-primary-key-when-creating-a-table
+
+```
+curl -X PATCH \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $YOUR_DO_PERSONAL_ACCESS_TOKEN" \
+  -d '{"config": {"sql_require_primary_key": false}}' \
+  "https://api.digitalocean.com/v2/databases/$YOUR_DB_ID_HERE/config"
+```
+
 ## Emoji Support
 
 Both the `scorers` and `queries` tables have columns that support using emojis.   To do this, they need

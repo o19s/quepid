@@ -20,9 +20,10 @@
 
           <div ng-controller="CaseCtrl" style="display:inline-block;vertical-align:top">
             <h1 class="">
-              <small class="text-muted">Current case</small>
+              <small class="text-muted">Current case <i class="bi bi-repeat" ng-show="caseModel.selectedCase().nightly" uib-tooltip="Queries are run on a nightly basis." tooltip-popup-delay="1000" tooltip-placement="right"></i></small>
               <span ng-show="caseModel.selectedCase().public">PUBLIC</span>
               <span ng-show="caseModel.selectedCase().archived">ARCHIVED</span>
+              
               <br>
               <span ng-dblclick="caseNameEditModeToggle()">
                 <span ng-hide="caseName.startRename">
@@ -125,8 +126,6 @@
       <!-- see queries directive -->
       <queries></queries>
 
-      <a href="#" onclick="ahoy.track('My second event', {language: 'JavaScript'})">bob</a>
-      
       <div ng-controller="WizardCtrl"></div>
     </div>
 

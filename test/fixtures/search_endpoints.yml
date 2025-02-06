@@ -17,6 +17,10 @@
 #  updated_at            :datetime         not null
 #  owner_id              :integer
 #
+# Indexes
+#
+#  index_search_endpoints_on_owner_id_and_id  (owner_id,id)
+#
 
 one:
   name:           One
@@ -133,8 +137,6 @@ try_with_headers:
   search_engine:  solr
   api_method:     JSONP
   custom_headers: '{"Authorization": "ApiKey TEF5QkFJUUJVUnRsNG1fekNCR3E6WmRYUFJRRVdTMHlBVWotWFdqQWxuUQ=="}'
-  
-  
   
 bootstrap_try_1:
   name:           Solr https://test.com

@@ -2,20 +2,20 @@
 
 module AiJudges
   class PromptsController < ApplicationController
+    before_action :set_book
     def edit
       @ai_judge = User.find(params[:ai_judge_id])
 
-      if params[:book_id]
-        @book = Book.find(params[:book_id])
-        @query_doc_pair = @book.query_doc_pairs.sample
-      else
-        # grab any query_doc_pair that the judge has access to
-        @query_doc_pair = QueryDocPair
-          .joins(book: { teams: :members })
-          .where(teams: { teams_members: { member_id: @ai_judge.id } })
-          .order('RAND()')
-          .first
-      end
+      @query_doc_pair = if @book
+                          @book.query_doc_pairs.sample
+                        else
+                          # grab any query_doc_pair that the judge has access to
+                          QueryDocPair
+                            .joins(book: { teams: :members })
+                            .where(teams: { teams_members: { member_id: @ai_judge.id } })
+                            .order('RAND()')
+                            .first
+                        end
 
       @query_doc_pair = QueryDocPair.new if @query_doc_pair.nil?
     end
@@ -27,13 +27,17 @@ module AiJudges
       @query_doc_pair = QueryDocPair.new(query_doc_pair_params)
 
       llm_service = LlmService.new(@ai_judge.openai_key)
-      @judgement = llm_service.make_judgement @ai_judge, @query_doc_pair
-      pp @judgement
+      @judgement = Judgement.new(query_doc_pair: @query_doc_pair, user: @ai_judge)
+      llm_service.perform_safe_judgement @judgement
 
       render :edit
     end
 
     private
+
+    def set_book
+      @book = current_user.books_involved_with.where(id: params[:book_id]).first
+    end
 
     # Only allow a list of trusted parameters through.
     def ai_judge_params
@@ -41,8 +45,8 @@ module AiJudges
     end
 
     def query_doc_pair_params
-      params.require(:query_doc_pair).permit(:document_fields, :position, :query_text, :doc_id, :notes,
-                                             :information_need, options: {})
+      params.expect(query_doc_pair: [ :document_fields, :position, :query_text, :doc_id, :notes,
+                                      :information_need, { options: {} } ])
     end
   end
 end

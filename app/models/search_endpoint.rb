@@ -19,6 +19,10 @@
 #  updated_at            :datetime         not null
 #  owner_id              :integer
 #
+# Indexes
+#
+#  index_search_endpoints_on_owner_id_and_id  (owner_id,id)
+#
 
 class SearchEndpoint < ApplicationRecord
   # Associations
@@ -38,19 +42,18 @@ class SearchEndpoint < ApplicationRecord
 
   scope :not_archived, -> { where('`search_endpoints`.`archived` = false') }
 
-  validate :basic_auth_credential_has_valid_characters
-
   after_initialize do |se|
     se.archived = false if se.archived.nil?
   end
 
   # Validations
-  # validates :case_name, presence: true
-  # validates_with ScorerExistsValidator
-  #
-  #
+  validates :search_engine, presence: true
+  validates :endpoint_url, presence: true
+  validates :api_method, presence: true
+  validate :basic_auth_credential_has_valid_characters
+
   def fullname
-    name.presence || middle_truncate("#{search_engine.capitalize} #{endpoint_url}")
+    name.presence || middle_truncate("#{search_engine.titleize} #{endpoint_url}")
   end
 
   def mark_archived

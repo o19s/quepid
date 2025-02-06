@@ -51,6 +51,11 @@ fourth_query:
   case:         :queries_case
   query_text:   Fourth Query
   arranged_at:  4
+  
+blowup_query:
+  case:         :queries_case
+  query_text:   BLOWUP_QUERY
+  arranged_at:  5
 
 a_query:
   case:         :snapshot_case

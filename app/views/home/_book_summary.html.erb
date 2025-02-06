@@ -5,11 +5,13 @@
     </h5>
     
     <div class="card-body">
-      <h5 class="card-title">
-        <%= book.query_doc_pairs.size %> Query/Doc Pairs
-      </h5>
-      <p class="card-text"><%= book.judgements.size %> Judgements
-      </p>
+      <turbo-frame id="book_frame_<%= book.id %>" src="<%= home_book_summary_detail_path(book) %>">          
+        <h5 class="card-title placeholder-glow"><span class="placeholder col-11"></h5>
+        <p class="card-text placeholder-glow">
+          <span class="placeholder col-11"></span>
+        </p>
+      </turbo-frame>          
+      
       <span id="notification-book-<%= book.id %>">
       </span>
       

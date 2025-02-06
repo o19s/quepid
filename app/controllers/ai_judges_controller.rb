@@ -58,6 +58,11 @@ class AiJudgesController < ApplicationController
     }
   TEXT
 
+  def show
+    @ai_judge = User.find(params[:id])
+    render 'edit'
+  end
+
   def new
     @ai_judge = User.new
     @ai_judge.system_prompt = DEFAULT_SYSTEM_PROMPT

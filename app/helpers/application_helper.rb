@@ -4,17 +4,17 @@
 module ApplicationHelper
   def book_title book
     if book.name.downcase.starts_with?('book')
-      book.name.capitalize
+      book.name.titleize
     else
-      "Book #{book.name}"
+      "Book #{book.name.titleize}"
     end
   end
 
   def case_title kase
     if kase.case_name.downcase.starts_with?('case')
-      kase.case_name.capitalize
+      kase.case_name.titleize
     else
-      "Case #{kase.case_name}"
+      "Case #{kase.case_name.titleize}"
     end
   end
 
@@ -27,6 +27,8 @@ module ApplicationHelper
       request.fullpath.include?(options[:path])
     elsif options.key?(:controller)
       controller_name == options[:controller]
+    elsif options.key?(:action)
+      action_name == options[:action]
     end
   end
 
@@ -37,6 +39,10 @@ module ApplicationHelper
       alert:   'alert-warning',
       notice:  'alert-info',
     }[flash_type.to_sym] || flash_type.to_s
+  end
+
+  def button_to_if condition, name, options = {}, html_options = {}
+    button_to(name, options, html_options) if condition
   end
 
   # rubocop:disable Metrics/MethodLength
@@ -97,7 +103,7 @@ module ApplicationHelper
   end
   # rubocop:enable Naming/BlockForwarding
 
-  def form_withdd( **options, &)
+  def form_with_disabled( **options, &)
     if options[:html].nil?
       options[:html] = { data: { turbo: false } }
     elsif options[:html][:data].nil?

@@ -76,6 +76,6 @@ class SessionsController < ApplicationController
   end
 
   def user_params
-    params.require(:user).permit(:email, :password)
+    params.expect(user: [ :email, :password ])
   end
 end

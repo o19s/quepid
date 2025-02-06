@@ -48,6 +48,7 @@ require 'test_helper'
 # Foreign Keys
 #
 #  fk_rails_...  (default_scorer_id => scorers.id)
+#  fk_rails_...  (invited_by_id => users.id)
 #
 
 # rubocop:disable Layout/LineLength
@@ -316,7 +317,8 @@ class UserTest < ActiveSupport::TestCase
     end
 
     it 'provides access to the search end point that the user is the owner of it' do
-      search_endpoint = SearchEndpoint.new(owner: joey)
+      search_endpoint = one
+      search_endpoint.owner = joey
       search_endpoint.save!
 
       assert_includes joey.search_endpoints_involved_with, search_endpoint
@@ -324,12 +326,37 @@ class UserTest < ActiveSupport::TestCase
   end
 
   describe 'User is AI Judge' do
+    it 'uses the existence of the key to decide ai_judge' do
+      user = User.new
+      assert_not user.ai_judge?
+      user.openai_key = ''
+      assert user.ai_judge?
+      assert_not user.valid?
+    end
+
     it 'does not require an email address to be valid when is a judge' do
       user = User.new(openai_key: '1234')
       assert user.ai_judge?
 
       user.password = 'fakeme'
       assert user.valid?
+    end
+  end
+
+  describe 'The full name of the user' do
+    it 'uses the name if possible' do
+      user = User.new(name: 'bob')
+      assert 'bob', user.fullname
+    end
+
+    it 'uses the email if no name' do
+      user = User.new(email: 'bob@bob.com')
+      assert 'bob@bob.com', user.fullname
+    end
+
+    it 'handles it when we got nothing!' do
+      user = User.new
+      assert 'Anonymous', user.fullname
     end
   end
 end

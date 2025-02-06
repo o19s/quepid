@@ -1,0 +1,76 @@
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+  <h1>Scores for <%= case_title @case %></h1>
+  <div class="btn-toolbar mb-2 mb-md-0">
+    <div class="btn-group me-2">
+      <%= link_to "Back to Case", case_core_path(@case), class: "btn btn-sm btn-outline-secondary"  %>
+      <%= link_to "Understand Score Duplication", analytics_case_duplicate_scores_path(@case), class: "btn btn-sm btn-outline-secondary"  %>
+    </div>
+  </div>
+</div>
+
+<p>
+  List out all the scores collected for a Case.
+</p>
+
+<div class="card h-100">
+  <div class="card-header">   
+    <%= form_tag(case_scores_path(@case), { method: :get }) do %> 
+      <div class="mb-0 d-flex fs-6 justify-content-center">
+          
+        <div class="d-flex justify-content-between">
+          <%= select_tag 'scorer_id', 
+            options_for_select(
+              [['Scorer', '']] + @case.scores.map(&:scorer).uniq.map { |s| [s.name, s.id] },
+              params[:scorer_id]
+            ),
+            id: 'scorer_id',
+              class: 'form-select form-select-sm ms-4',
+              onchange: 'this.form.submit()'
+          %>
+        </div>
+        
+             
+      </div>
+    <% end %>
+  </div>
+  
+  <div class="card-body">
+    <table class="table table-hover table-sm">
+      <thead>
+        <tr>          
+          <th>Scorer</th>
+          <th>Try ID</th>
+          <th>Score</th>          
+          <th>Day</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+  
+      <tbody>
+      <% @scores.each do |score| %>
+          <tr>
+            <td>
+              <%= score.scorer.name %>
+            </td>
+            <td>
+              <%= score.try_id %>
+            </td>
+            <td>
+              <%= score.score %>
+            </td>            
+            <td>
+              <%= score.updated_at %>
+            </td>
+
+            <td>
+              <%= button_to 'Delete', case_score_path(@case, score), method: :delete, class: "btn btn-sm btn-outline-danger", onclick: "return confirm('Are you sure you want to delete this score?');" %>
+            </td>
+          </tr>
+      <% end %>
+      </tbody>
+    </table>
+  </div>
+  <div class="card-footer d-flex justify-content-center">
+    <%== pagy_bootstrap_nav(@pagy) %>    
+  </div>
+</div>

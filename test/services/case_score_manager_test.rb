@@ -23,7 +23,7 @@ class CaseScoreManagerTest < ActiveSupport::TestCase
       let(:the_case) { cases(:case_without_score) }
 
       test 'raises an error if creation fails' do
-        score_data.delete(:user_id)
+        score_data.delete(:try_number)
 
         assert_raises(ActiveRecord::RecordInvalid) do
           service.update score_data
@@ -123,7 +123,9 @@ class CaseScoreManagerTest < ActiveSupport::TestCase
       let(:the_case) { cases(:case_with_score) }
 
       test 'updates existing score if last score was last updated less than 5 min ago' do
-        the_case.scores.update_all user_id: user.id, try_id: the_try.id, updated_at: 1.minute.ago
+        the_case.scores.update_all user_id: user.id, try_id: the_try.id, scorer_id: the_case.scorer.id,
+                                   updated_at: 1.minute.ago
+        score_data[:scorer_id] = the_case.scorer.id
 
         last_score = the_case.last_score
 
@@ -153,6 +155,8 @@ class CaseScoreManagerTest < ActiveSupport::TestCase
 
       test 'updates existing score if same score and last score was last updated less than 1 day ago' do
         last_score = the_case.last_score
+
+        score_data[:scorer_id] = the_case.scorer.id
         score_data[:score] = last_score.score
 
         assert_equal the_case.last_score.score, score_data[:score]
@@ -221,6 +225,8 @@ class CaseScoreManagerTest < ActiveSupport::TestCase
       test 'creates a new score' do
         assert_empty the_case.scores
         assert_not_empty the_case.tries
+
+        score_data[:scorer_id] = the_case.scorer.id
 
         assert_difference 'the_case.scores.count' do
           assert_changes 'the_case.updated_at' do

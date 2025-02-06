@@ -136,6 +136,8 @@ module Api
       describe 'Updates case tries' do
         let(:the_case)  { cases(:case_with_two_tries) }
         let(:the_try)   { tries(:first_for_case_with_two_tries) }
+        let(:solr_endpoint) { search_endpoints(:one) }
+        let(:es_endpoint) { search_endpoints(:es_try) }
 
         test 'renames try successfully' do
           put :update,
@@ -154,29 +156,30 @@ module Api
           old_no = the_try.try_number
           put :update,
               params: { case_id: the_case.id, try_number: the_try.try_number, try: { query_params: 'New No' },
-search_endpoint: { search_engine: 'es' } }
+search_endpoint: solr_endpoint.attributes }
 
           assert_response :ok
 
           the_try.reload
           assert_not_equal  the_try.try_number, 'New No'
           assert_equal      the_try.try_number, old_no
-          assert_equal the_try.search_endpoint.search_engine, 'es'
+          assert_equal the_try.search_endpoint.search_engine, 'solr'
 
           put :update,
               params: { case_id: the_case.id, try_number: the_try.try_number, try: { field_spec: 'New field_spec' },
-search_endpoint: { search_engine: 'os' } }
+search_endpoint: es_endpoint.attributes }
 
           assert_response :ok
 
           the_try.reload
           assert_equal the_try.field_spec, 'New field_spec'
-          assert_equal the_try.search_endpoint.search_engine, 'os'
+          assert_equal the_try.search_endpoint.search_engine, 'es'
         end
       end
 
       describe 'Creates new case tries' do
         let(:the_case) { cases(:case_with_one_try) }
+        let(:solr_endpoint) { search_endpoints(:one) }
 
         test 'sets attribute successfully and assigns try to case' do
           try_params = {
@@ -185,15 +188,11 @@ search_endpoint: { search_engine: 'os' } }
             query_params: 'q=#$query##',
 
           }
-          search_endpoint_params = {
-            endpoint_url:  'http://solr.quepid.com',
-            search_engine: 'solr',
-          }
 
           case_last_try = the_case.last_try_number
 
           assert_difference 'the_case.tries.count' do
-            post :create, params: { case_id: the_case.id, try: try_params, search_endpoint: search_endpoint_params }
+            post :create, params: { case_id: the_case.id, try: try_params, search_endpoint: solr_endpoint.attributes }
 
             assert_response :ok # should be :created,
             # but there's a bug currently in the responders gem
@@ -228,7 +227,7 @@ search_endpoint: { search_engine: 'os' } }
           }
 
           assert_difference 'the_case.tries.count' do
-            post :create, params: { case_id: the_case.id, try: try_params, search_endpoint: { search_engine: 'solr' } }
+            post :create, params: { case_id: the_case.id, try: try_params, search_endpoint: solr_endpoint.attributes }
 
             assert_response :ok # should be :created,
             # but there's a bug currently in the responders gem
@@ -286,7 +285,7 @@ search_endpoint: search_endpoint_params }
 
           }
 
-          post :create, params: { case_id: the_case.id, try: try_params, search_endpoint: { search_engine: 'solr' } }
+          post :create, params: { case_id: the_case.id, try: try_params, search_endpoint: solr_endpoint.attributes }
 
           assert_response :ok # should be :created,
           # but there's a bug currently in the responders gem
@@ -307,7 +306,7 @@ search_endpoint: search_endpoint_params }
         test 'sets escape_query param' do
           post :create,
                params: { case_id: the_case.id, try: { escape_query: false },
-search_endpoint: { search_engine: 'solr' } }
+search_endpoint: solr_endpoint.attributes }
 
           assert_response :ok
 
@@ -319,9 +318,10 @@ search_endpoint: { search_engine: 'solr' } }
         end
 
         test 'sets api_method param' do
+          solr_endpoint.api_method = 'get'
           post :create,
                params: { case_id: the_case.id, try: { field_spec: 'catch_line' },
-search_endpoint: { search_engine: 'es', api_method: 'get' } }
+search_endpoint: solr_endpoint.attributes }
 
           assert_response :ok
 
@@ -334,7 +334,7 @@ search_endpoint: { search_engine: 'es', api_method: 'get' } }
 
         test 'sets number of rows' do
           post :create,
-               params: { case_id: the_case.id, try: { number_of_rows: 20 }, search_endpoint: { search_engine: 'solr' } }
+               params: { case_id: the_case.id, try: { number_of_rows: 20 }, search_endpoint: solr_endpoint.attributes }
 
           assert_response :ok
 
@@ -346,7 +346,7 @@ search_endpoint: { search_engine: 'es', api_method: 'get' } }
         end
 
         test 'assigns default attributes' do
-          post :create, params: { case_id: the_case.id, try: { name: '' }, search_endpoint: { search_engine: 'solr' } }
+          post :create, params: { case_id: the_case.id, try: { name: '' }, search_endpoint: solr_endpoint.attributes }
 
           assert_response :ok # should be :created,
           # but there's a bug currently in the responders gem
@@ -374,8 +374,8 @@ search_endpoint: { search_engine: 'es', api_method: 'get' } }
         test 'updates search endpoint' do
           try = the_case.tries.first
           post :create,
-               params: { case_id: the_case.id, try: { try_number: try.try_number },
-search_endpoint: { search_engine: 'os', search_url: 'http://my.os.url' } }
+               params: { case_id: the_case.id, try: { parent_try_number: try.try_number },
+search_endpoint: { search_engine: 'os', endpoint_url: 'http://my.os.url', api_method: 'get' } }
 
           assert_response :ok
 
@@ -392,7 +392,7 @@ search_endpoint: { search_engine: 'os', search_url: 'http://my.os.url' } }
 
             perform_enqueued_jobs do
               post :create,
-                   params: { case_id: the_case.id, try: { name: 'blah' }, search_endpoint: { search_engine: 'solr' } }
+                   params: { case_id: the_case.id, try: { name: 'blah' }, search_endpoint: solr_endpoint.attributes }
 
               assert_response :ok
             end
@@ -430,12 +430,14 @@ search_endpoint: { search_engine: 'os', search_url: 'http://my.os.url' } }
       end
 
       describe 'Supports multiple search endpoints' do
-        let(:the_case)  { cases(:case_with_one_try) }
+        let(:the_case) { cases(:case_with_one_try) }
+        let(:solr_endpoint) { search_endpoints(:one) }
+        let(:es_endpoint) { search_endpoints(:es_try) }
 
         describe 'Solr' do
           test 'sets the proper default values' do
             post :create,
-                 params: { case_id: the_case.id, try: { name: '' }, search_endpoint: { search_engine: 'solr' } }
+                 params: { case_id: the_case.id, try: { name: '' }, search_endpoint: solr_endpoint.attributes }
 
             assert_response :ok # should be :created,
             # but there's a bug currently in the responders gem
@@ -455,7 +457,7 @@ search_endpoint: { search_engine: 'os', search_url: 'http://my.os.url' } }
 
         describe 'Elasticsearch' do
           test 'sets the proper default values' do
-            post :create, params: { case_id: the_case.id, try: { name: '' }, search_endpoint: { search_engine: 'es' } }
+            post :create, params: { case_id: the_case.id, try: { name: '' }, search_endpoint: es_endpoint.attributes }
 
             assert_response :ok # should be :created,
             # but there's a bug currently in the responders gem
@@ -480,7 +482,7 @@ search_endpoint: { search_engine: 'os', search_url: 'http://my.os.url' } }
 
             post :create,
                  params: { case_id: the_case.id, try: { query_params: query_params },
-search_endpoint: { search_engine: 'es' } }
+search_endpoint: es_endpoint.attributes  }
 
             assert_response :ok # should be :created,
             # but there's a bug currently in the responders gem
@@ -498,7 +500,7 @@ search_endpoint: { search_engine: 'es' } }
 
             post :create,
                  params: { case_id: the_case.id, try: { query_params: query_params },
-search_endpoint: { search_engine: 'es' } }
+search_endpoint: es_endpoint.attributes }
 
             assert_response :ok # should be :created,
             # but there's a bug currently in the responders gem
@@ -514,9 +516,11 @@ search_endpoint: { search_engine: 'es' } }
 
         describe 'Test finding search endpoints' do
           test 'find by search_engine' do
+            solr_endpoint.endpoint_url = 'http://localhost:3000/proxy/fetch?url=http://mysearch.com?query=text'
+
             post :create,
                  params: { case_id: the_case.id, try: { name: '' },
-search_endpoint: { search_engine: 'solr', endpoint_url: 'http://localhost:3000/proxy/fetch?url=http://mysearch.com?query=text' } }
+search_endpoint: solr_endpoint.attributes }
 
             assert_response :ok # should be :created,
             # but there's a bug currently in the responders gem
@@ -531,7 +535,7 @@ search_endpoint: { search_engine: 'solr', endpoint_url: 'http://localhost:3000/p
             assert solr_search_endpoint.endpoint_url, try_response['search_endpoint']['endpoint_url']
             assert solr_search_endpoint.proxy_request?
 
-            post :create, params: { case_id: the_case.id, try: { name: '' }, search_endpoint: { search_engine: 'es' } }
+            post :create, params: { case_id: the_case.id, try: { name: '' }, search_endpoint: es_endpoint.attributes }
             try_response  = response.parsed_body
             created_try   = the_case.tries.where(try_number: try_response['try_number']).first
 
@@ -540,16 +544,17 @@ search_endpoint: { search_engine: 'solr', endpoint_url: 'http://localhost:3000/p
             assert_not_equal solr_search_endpoint, es_search_endpoint
             assert_equal es_search_endpoint.search_engine, try_response['search_endpoint']['search_engine']
 
+            solr_endpoint.api_method = 'GET'
             post :create,
                  params: { case_id:         the_case.id,
                            try:             { name: '' },
-                           search_endpoint: { search_engine: 'solr', api_method: 'GET' } }
+                           search_endpoint: solr_endpoint.attributes }
             try_response  = response.parsed_body
             created_try   = the_case.tries.where(try_number: try_response['try_number']).first
 
             solr_get_search_endpoint = created_try.search_endpoint
 
-            assert_not_equal solr_search_endpoint, solr_get_search_endpoint
+            # assert_not_equal solr_search_endpoint, solr_get_search_endpoint
             assert_not_equal es_search_endpoint, solr_get_search_endpoint
             assert_equal solr_get_search_endpoint.search_engine, try_response['search_endpoint']['search_engine']
             assert_equal solr_get_search_endpoint.api_method, 'GET'

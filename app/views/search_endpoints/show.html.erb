@@ -2,8 +2,8 @@
   <h1 class="h2">Search Endpoint <%= @search_endpoint.fullname %></h1>
   <div class="btn-toolbar mb-2 mb-md-0">
     <div class="btn-group me-2">
-      <%= link_to 'New Search Endpoint', new_search_endpoint_path, class: "btn btn-sm btn-outline-secondary" %>
       <%= link_to 'Clone Search Endpoint', clone_search_endpoint_path(@search_endpoint), method: :post, data: { turbo: false }, class: "btn btn-sm btn-outline-secondary" %>
+      <%= link_to "Back to Search Endpoints", search_endpoints_path, class: "btn btn-sm btn-outline-secondary"  %>
     </div>
   </div>
 </div>
@@ -14,9 +14,4 @@ Search Endpoints represents a search engine (or API!) that is receiving queries 
 
 <%= render @search_endpoint %>
 
-<div>
-  <%= link_to "Edit this search endpoint", edit_search_endpoint_path(@search_endpoint) %> |
-  <%= link_to "Back to search endpoints", search_endpoints_path %>
-  <p/>
-  <%= button_to "Destroy this search endpoint", @search_endpoint, method: :delete, class: 'btn btn-sm btn-danger' %>
-</div>
+<%= link_to "Edit this Search Endpoint", edit_search_endpoint_path(@search_endpoint), class: 'btn btn-sm btn-primary' %>

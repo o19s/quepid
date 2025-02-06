@@ -50,12 +50,7 @@ module Api
 
       # rubocop:disable Metrics/MethodLength
       def update
-        # this method could be used instead of the below @scorer.owner == current_user logic
-        # authorize @scorer, :update_communal?
-
-        # the policy() call is provided by Pundit and leverages the Permissions data structures.
-        # using this check instead of the authorize because it raises an exception.
-        unless @scorer.owner == current_user || (@scorer.communal && policy(@scorer).update_communal?)
+        unless @scorer.owner == current_user || (@scorer.communal && current_user.administrator?)
           render(
             json:   {
               error: 'Cannot edit a scorer you do not own',
@@ -156,13 +151,13 @@ module Api
       def scorer_params
         return unless params[:scorer]
 
-        params.require(:scorer).permit(
-          :code,
-          :name,
-          :show_scale_labels,
-          :communal,
-          scale:             [],
-          scale_with_labels: {}
+        params.expect(
+          scorer: [ :code,
+                    :name,
+                    :show_scale_labels,
+                    :communal,
+                    { scale:             [],
+                      scale_with_labels: {} } ]
         )
       end
 

@@ -14,7 +14,7 @@
         </ul>
       </div>
     <% end %>
-    <p class="card-text">Configure the AI Judge with information Quepid needs to run the judge.</p>
+    <p class="card-text">Configure the AI Judge with the information Quepid needs to run the judge.</p>
   
     <div class="row mb-3">
       <%= form.label :name, class: 'col-sm-2 col-form-label' %>
@@ -37,6 +37,7 @@
   </div>
   
   <div class="card-footer">    
-    <%= form.submit 'Save', class: 'btn btn-primary' %>
+    <%= form.submit 'Save', class: 'btn btn-primary float-start' %>
+    <%= link_to 'Back to Team', teams_core_path(@team), class: "btn btn-outline-secondary float-end" %>
   </div>  
 </div>

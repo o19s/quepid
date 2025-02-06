@@ -34,7 +34,7 @@ module Api
         end
 
         test 'requires a case name' do
-          post :create, params: { case: { name: '' } }
+          post :create, params: { case: { case_name: '' } }
 
           assert_response :bad_request
 

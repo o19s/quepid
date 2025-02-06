@@ -1,0 +1,7 @@
+<turbo-frame id="book_frame_<%= @book.id %>">  
+  <h5 class="card-title">
+    <%= @book.queries_count %> Queries
+  </h5>
+  <p class="card-text"><%= @book.judgements.size %> Judgements across <%= @book.query_doc_pairs.size %> pairs
+  </p>
+</turbo-frame>

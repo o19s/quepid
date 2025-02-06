@@ -3,8 +3,7 @@
   <h3 class="modal-title">Delete This Case</h3>
 </div>
 <div class="modal-body">
-  <p ng-show="ctrl.canDelete">You're about to delete this case forever!  If you think you might want it later, use the Archive function instead.</p>
-  <p ng-hide="ctrl.canDelete">You do not have delete permissions for cases.</p>
+  <p>You're about to delete this case forever!  If you think you might want it later, use the Archive function instead.</p>
 </div>
 <div class="modal-footer">
   <button class="btn btn-danger" ng-show="ctrl.canDelete" ng-click="ctrl.ok()">Delete</button>

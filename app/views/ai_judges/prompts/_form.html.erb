@@ -11,7 +11,7 @@
     </div>
   <% end %>
   
-  <%= form.hidden_field :book_id, value: @book.id if @book %>
+  <%= hidden_field_tag :book_id, @book.id if @book%>
   
   <div class="row gx-5">
     <div class="col-md-6">
@@ -28,7 +28,9 @@
         </div>
       
         <div>
-          <%= form.submit 'Refine Prompt' %>
+          <%= form.submit 'Refine Prompt', class: 'btn btn-default btn-primary' %>
+          
+          <%= link_to 'Back to Book', book_path(@book), method: :get, class: 'btn btn-block btn-light' if @book %>
         </div>
       </div>
       <% if @judgement %>
@@ -64,7 +66,7 @@
           </div>
           
           <div class="field">
-            <%= query_doc_pair_fields.label :document_fields %> <small>Either text or JSON</small><br/>
+            <%= query_doc_pair_fields.label :document_fields %> <small>JSON formatted</small><br/>
             <%= query_doc_pair_fields.text_area :document_fields, size: "80x8" %>
           </div>          
           

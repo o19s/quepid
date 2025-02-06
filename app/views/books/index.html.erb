@@ -1,10 +1,10 @@
 <%= turbo_stream_from(:notifications) %>
 
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-  <h1 class="h2">Books</h1>
+  <h1><i class="bi bi-book"></i> Books</h1>
   <div class="btn-toolbar mb-2 mb-md-0">
     <div class="btn-group me-2">
-      <%= link_to 'New Book', new_book_path, class: "btn btn-sm btn-outline-secondary" %>
+      <%= link_to 'New Book', new_book_path, class: "btn btn-sm btn-outline-primary" %>
       <%= link_to 'Import Book', new_books_import_path, class: "btn btn-sm btn-outline-secondary" %>
     </div>
   </div>
@@ -12,10 +12,10 @@
 
 
 <p id="notice"><%= notice %></p>
-
-<% if @books.size == 0 %>
-  Create your first book by clicking on the New Book button above.
-  <br>
+<% if @books.empty? %>
+  <div class="alert alert-primary" role="alert">
+    Create your first book by clicking on the New Book button above.
+  </div>
 <% end %>
 
 

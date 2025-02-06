@@ -10,7 +10,11 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
+<<<<<<< HEAD
 ActiveRecord::Schema[8.0].define(version: 2025_01_16_152259) do
+=======
+ActiveRecord::Schema[8.0].define(version: 2025_02_04_192632) do
+>>>>>>> main
   create_table "active_storage_attachments", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.string "name", null: false
     t.string "record_type", null: false
@@ -106,12 +110,13 @@ ActiveRecord::Schema[8.0].define(version: 2025_01_16_152259) do
   end
 
   create_table "announcements", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
-    t.text "text"
+    t.text "text", collation: "utf8mb4_unicode_ci"
     t.integer "author_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.boolean "live", default: false
     t.index ["author_id"], name: "index_announcements_author_id"
+    t.index ["live"], name: "index_announcements_live", unique: true
   end
 
   create_table "api_keys", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
@@ -232,8 +237,10 @@ ActiveRecord::Schema[8.0].define(version: 2025_01_16_152259) do
     t.binary "queries", size: :medium
     t.integer "annotation_id"
     t.datetime "updated_at", precision: nil
+    t.bigint "scorer_id"
     t.index ["annotation_id"], name: "index_case_scores_annotation_id", unique: true
     t.index ["case_id"], name: "case_id"
+    t.index ["scorer_id"], name: "index_case_scores_on_scorer_id"
     t.index ["updated_at", "created_at", "id"], name: "support_last_score"
     t.index ["user_id"], name: "user_id"
   end
@@ -275,16 +282,6 @@ ActiveRecord::Schema[8.0].define(version: 2025_01_16_152259) do
     t.text "explanation"
     t.index ["query_doc_pair_id"], name: "index_judgements_on_query_doc_pair_id"
     t.index ["user_id", "query_doc_pair_id"], name: "index_judgements_on_user_id_and_query_doc_pair_id", unique: true
-  end
-
-  create_table "permissions", id: :integer, charset: "utf8mb3", force: :cascade do |t|
-    t.integer "user_id"
-    t.string "model_type", null: false
-    t.string "action", null: false
-    t.boolean "on", default: false
-    t.datetime "created_at", precision: nil, null: false
-    t.datetime "updated_at", precision: nil, null: false
-    t.index ["user_id"], name: "index_permissions_user_id"
   end
 
   create_table "queries", id: :integer, charset: "utf8mb3", force: :cascade do |t|
@@ -352,6 +349,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_01_16_152259) do
     t.text "mapper_code"
     t.boolean "proxy_requests", default: false
     t.json "options"
+    t.index ["owner_id", "id"], name: "index_search_endpoints_on_owner_id_and_id"
   end
 
   create_table "selection_strategies", charset: "utf8mb3", collation: "utf8mb3_unicode_ci", force: :cascade do |t|
@@ -378,7 +376,6 @@ ActiveRecord::Schema[8.0].define(version: 2025_01_16_152259) do
     t.boolean "all_rated"
     t.integer "number_of_results"
     t.integer "response_status"
-    t.binary "response_body", size: :long
     t.index ["query_id"], name: "query_id"
     t.index ["snapshot_id"], name: "snapshot_id"
   end
@@ -548,7 +545,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_01_16_152259) do
   create_table "teams_members", primary_key: ["member_id", "team_id"], charset: "latin1", force: :cascade do |t|
     t.integer "member_id", null: false
     t.integer "team_id", null: false
-    t.index ["member_id", "team_id"], name: "idx_member_team"
+    t.index ["member_id", "team_id"], name: "index_teams_members_on_member_id_and_team_id"
     t.index ["member_id"], name: "index_teams_members_on_member_id"
     t.index ["team_id"], name: "index_teams_members_on_team_id"
   end
@@ -563,6 +560,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_01_16_152259) do
   create_table "teams_search_endpoints", id: false, charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.bigint "search_endpoint_id", null: false
     t.bigint "team_id", null: false
+    t.index ["search_endpoint_id", "team_id"], name: "index_teams_search_endpoints_on_search_endpoint_id_and_team_id"
   end
 
   create_table "tries", id: :integer, charset: "latin1", force: :cascade do |t|
@@ -619,6 +617,17 @@ ActiveRecord::Schema[8.0].define(version: 2025_01_16_152259) do
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true, length: 191
   end
 
+  create_table "web_requests", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
+    t.integer "snapshot_query_id"
+    t.binary "request"
+    t.integer "response_status"
+    t.integer "integer"
+    t.binary "response", size: :long
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["snapshot_query_id"], name: "index_web_requests_on_snapshot_query_id", unique: true
+  end
+
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "annotations", "users"
@@ -653,4 +662,6 @@ ActiveRecord::Schema[8.0].define(version: 2025_01_16_152259) do
   add_foreign_key "teams_scorers", "teams"
   add_foreign_key "tries", "cases", name: "tries_ibfk_1"
   add_foreign_key "users", "scorers", column: "default_scorer_id"
+  add_foreign_key "users", "users", column: "invited_by_id"
+  add_foreign_key "web_requests", "snapshot_queries"
 end
