@@ -38,11 +38,6 @@ class Team < ApplicationRecord
 
   # rubocop:enable Rails/HasAndBelongsToMany
 
-  # Every owner is also a member of the team.  So when we care about access to a team,
-  # we only need to check the team.members or the case.team.members.
-  # belongs_to :owner,
-  #           class_name: 'User'
-
   # Validations
   # rubocop:disable Rails/UniqueValidationWithoutIndex
   validates :name,

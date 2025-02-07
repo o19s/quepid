@@ -127,36 +127,5 @@ class AccountsControllerTest < ActionController::TestCase
         assert_redirected_to sessions_path
       end
     end
-
-    # describe 'when a user owns a team' do
-    #   let(:user)          { users(:team_owner) }
-    #   let(:team_member_1) { users(:team_member_1) }
-    #   let(:shared_team_case) { cases(:shared_team_case) }
-    #   before do
-    #     login_user user
-    #   end
-
-    #   test 'user who owns a team and can not delete it gets error' do
-    #     delete :destroy, params: { id: user.id }
-
-    #     assert_template 'profiles/show'
-    #   end
-
-    #   test 'user reassigns their team first' do
-    #     team = user.teams.first
-    #     team.owner = team_member_1
-    #     team.save
-
-    #     assert_not shared_team_case.destroyed?
-
-    #     assert_difference('User.count', -1) do
-    #       delete :destroy, params: { id: user.id }
-    #       assert_redirected_to sessions_path
-    #     end
-
-    #     shared_team_case.reload
-    #     assert_not shared_team_case.destroyed?
-    #   end
-    # end
   end
 end

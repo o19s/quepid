@@ -4,8 +4,6 @@ shallow ||= false
 
 json.id             team.id
 json.name           team.name
-# json.owner_id       team.owner_id
-# json.owned          team.owner_id == current_user.id
 json.cases_count    team.cases.not_archived.size
 json.members_count  team.members.size
 
@@ -35,11 +33,4 @@ unless shallow
     json.array! team.search_endpoints.not_archived, partial: 'api/v1/search_endpoints/search_endpoint',
                                                     as:      :search_endpoint
   end
-  # json.owner do
-  #  json.id             team.owner.id
-  #  json.display_name   team.owner.display_name
-  #  json.email          team.owner.email
-  #  json.avatar_url     team.owner.avatar_url(:big)
-  # end
-
 end

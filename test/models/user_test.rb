@@ -258,7 +258,6 @@ class UserTest < ActiveSupport::TestCase
 
     it 'deletes a user and their team if no one else is in the team' do
       team = team_owner.teams.first
-      # team.owner = team_member_1
       team.save
 
       assert_not shared_team_case.destroyed?
@@ -266,7 +265,6 @@ class UserTest < ActiveSupport::TestCase
       assert_difference('User.count', -1) do
         team_owner.destroy
         assert team_owner.destroyed?
-        #        assert team.destroyed?
       end
 
       shared_team_case.reload

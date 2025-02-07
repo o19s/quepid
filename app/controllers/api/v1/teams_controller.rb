@@ -5,7 +5,6 @@ module Api
     class TeamsController < Api::ApiController
       before_action :set_team,          only: [ :show, :update, :destroy ]
       before_action :check_team,        only: [ :show, :update, :destroy ]
-      # before_action :check_team_owner,  only: [ :update, :destroy ]
 
       def index
         # @teams = current_user.teams_im_in
@@ -25,7 +24,6 @@ module Api
       end
 
       def create
-        # @team = current_user.owned_teams.build team_params
         @team = Team.new(team_params)
         @team.members << current_user
 

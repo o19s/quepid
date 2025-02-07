@@ -84,16 +84,6 @@ class User < ApplicationRecord
                           foreign_key: 'member_id'
   # rubocop:enable Rails/HasAndBelongsToMany
 
-  # has_many :owned_teams,
-  #         class_name:  'Team',
-  #         foreign_key: :owner_id,
-  #         inverse_of:  :owner,
-  #         dependent:   :destroy
-
-  # has_many :owned_team_cases,
-  #         through: :owned_teams,
-  #         source:  :cases
-
   has_many :shared_team_cases,
            through: :teams,
            source:  :cases
