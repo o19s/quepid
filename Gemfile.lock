@@ -145,7 +145,7 @@ GEM
     csv (3.3.2)
     d3-rails (3.5.17)
       railties (>= 3.1)
-    database_consistency (2.0.3)
+    database_consistency (2.0.4)
       activerecord (>= 3.2)
     date (3.4.1)
     debug (1.10.0)
