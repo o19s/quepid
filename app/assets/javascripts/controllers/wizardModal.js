@@ -697,16 +697,19 @@ angular.module('QuepidApp')
               caseSvc.renameCase(caseSvc.getSelectedCase(), $scope.pendingWizardSettings.caseName);
             }
             var length = $scope.pendingWizardSettings.newQueries.length;
-            var query = null;
             
+            var queries = [];
             for(var queryIndex = 0; queryIndex < length; queryIndex++){
-              query = $scope.pendingWizardSettings.newQueries[queryIndex];
+              var query  = $scope.pendingWizardSettings.newQueries[queryIndex];
 
               if( typeof(query.queryString) !== 'undefined' && query.queryString !== '' ) {
-                var q = queriesSvc.createQuery(query.queryString);
-                queriesSvc.persistQuery(q);
+                //var q = queriesSvc.createQuery(query.queryString);
+                //queriesSvc.persistQuery(q);
+                queries.push(queriesSvc.createQuery(query.queryString));
               }
             }
+            
+            queriesSvc.persistQueries(queries)
 
             $rootScope.currentUser.shownIntroWizard();
 
