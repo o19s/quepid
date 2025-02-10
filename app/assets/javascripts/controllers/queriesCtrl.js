@@ -31,13 +31,25 @@ angular.module('QuepidApp')
       scorerSvc,
       configurationSvc
     ) {
+      console.log('QueriesCtrl instantiated');  
       $scope.queriesSvc = queriesSvc;
       $scope.caseSvc = caseSvc;
       $scope.queryListSortable = configurationSvc.isQueryListSortable();
 
-      $rootScope.$on('scoring-complete', () => {
+      // The scoringCompleteListener is a workaround for the fact that
+      // we create multiple instances of this controller when we reselect the
+      // same Case in the core app.  Which leads to multiple calls to the backend for the same scoring complete calculation
+      // performed by .calcScore() call.
+      const scoringCompleteListener = $rootScope.$on('scoring-complete', () => {
         $scope.queries.avgQuery.calcScore();
       });
+      
+      $scope.$on('$destroy', () => {
+        scoringCompleteListener(); // Deregister the listener
+      });
+      // $rootScope.$on('scoring-complete', () => {
+      //   $scope.queries.avgQuery.calcScore();
+      // });
 
       // Options for ui-sortable at http://api.jqueryui.com/sortable/
       var sortableOptions = {
@@ -104,7 +116,11 @@ angular.module('QuepidApp')
       $scope.sortBy($location.search().sort || 'default', !$scope.reverse);
 
 
+      // We continue to get multiple of these events, once each time the controller gets
+      // created by picking the case in the drop down.  
       $scope.$on('updatedCaseScore', function(event, theCase) {
+        console.log('updatedCaseScore event received');  // Add this line
+        //event.stopPropagation(); // we are somehow duplicating this event.
         if (theCase.caseNo === caseSvc.getSelectedCase().caseNo) {
           caseSvc.getSelectedCase()
             .fetchCaseScores()
