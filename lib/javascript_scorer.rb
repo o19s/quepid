@@ -28,7 +28,7 @@ class JavascriptScorer
     @context.eval("bestDocs = #{best_docs.to_json};")
 
     result = @context.eval(scorer_code)
-    puts "the result is #{result}"
+    # puts "the result is #{result}"
     raise ScoreError, result['error'] if result.is_a?(Hash) && result['error']
 
     smart_round(result)
