@@ -18,7 +18,6 @@ angular.module('QuepidApp')
       bookSvc,
       caseTryNavSvc
     ) {
-      $rootScope.isRailsGoingToAngular = isRailsGoingToAngular;
 
       $scope.headerScope                = {};
       $scope.headerScope.dropdownCases  = [];
@@ -28,6 +27,7 @@ angular.module('QuepidApp')
       $scope.theCase                    = null;
 
       $scope.headerScope.goToCase   = goToCase;
+      $scope.headerScope.createNewBookLink = createNewBookLink;
       $scope.headerScope.createBookLink = createBookLink;
 
 
@@ -60,23 +60,25 @@ angular.module('QuepidApp')
         $event.preventDefault();
         caseTryNavSvc.navigateTo({'caseNo': aCase.caseNo, 'tryNo': aCase.lastTry});
       }      
-
-      function isRailsGoingToAngular() {
-        return !( angular.isDefined($route.current) && angular.isDefined($route.current.$$route) );
-      }
       
       $scope.$on('caseSelected', function() {
         $scope.theCase = caseSvc.getSelectedCase();
       });
-      
-      function createBookLink() {
-        let bookLink = 'books/new';
+    
+      function createBookLink(book) {
+        let bookLink = caseTryNavSvc.getQuepidRootUrl() + '/books/' + book.id;
+        bookLink = caseTryNavSvc.createMainApplicationLink(bookLink);
+        return bookLink;
+      }
+      function createNewBookLink() {
+        let bookLink = caseTryNavSvc.getQuepidRootUrl() + '/books/new';
         if ($scope.theCase){
           const teamIds = $scope.theCase.teams.map(function(team) {
             return `&team_ids[]=${team.id}`;
           });
           bookLink = `${bookLink}?book[scorer_id]=${$scope.theCase.scorerId}${teamIds}&origin_case_id=${$scope.theCase.caseNo}`;
         } 
+        bookLink = caseTryNavSvc.createMainApplicationLink(bookLink);
         return bookLink;
       }
     }

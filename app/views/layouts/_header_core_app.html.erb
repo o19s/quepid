@@ -1,7 +1,7 @@
 <header id="header" class="navbar-inverse navbar-secondary clearfix">
   <div class="container container-home">
     <div class="navbar-header">
-      <%= link_to root_path, class: "navbar-brand", target: "_self" do %>
+      <%= link_to root_url(protocol: determine_prefer_ssl), class: "navbar-brand", target: "_self" do %>
         Quepid
         <span class="hover"><%= image_tag 'tagline-sm.png', title: "Give your queries some love" %></span>
       <% end %>
@@ -22,13 +22,11 @@
             </li>
 
             <li ng-repeat="case in headerScope.dropdownCases | limitTo:5 track by $index">
-              <a href="#" class="dropdown-link" ng-click="headerScope.goToCase($event, case)"  ng-if="!isRailsGoingToAngular()">{{ case.caseName }}</a>
-
-              <a ng-href="{{'/case/' + case.caseNo + '/try/' + case.lastTry}}" class="dropdown-link" ng-if="isRailsGoingToAngular()" target="_self">{{ case.caseName }}</a>
+              <a href="#" class="dropdown-link" ng-click="headerScope.goToCase($event, case)">{{ case.caseName }}</a>
             </li>
-
+            
             <li class="actions">
-              <a href="cases" class="btn btn-default btn-block" ng-attr-target="{{ isRailsGoingToAngular() ? '_self' : undefined }}">
+              <a href="cases" class="btn btn-default btn-block">
                 View all cases
                 <small class="text-muted">
                   ({{ headerScope.casesCount }} active)
@@ -53,7 +51,7 @@
             </li>
 
             <li ng-repeat="book in headerScope.dropdownBooks | limitTo:5 track by $index">              
-              <a ng-href="books/{{book.id}}" target="_self" class="dropdown-link">{{ book.name }}</a>
+              <a ng-href="{{headerScope.createBookLink(book)}}" target="_self" class="dropdown-link">{{ book.name }}</a>              
             </li>
 
             <li class="actions">
@@ -66,7 +64,7 @@
 
               <a
                 class="btn btn-success btn-block"
-                ng-href="{{headerScope.createBookLink()}}"
+                ng-href="{{headerScope.createNewBookLink()}}"
                 target="_self"
               >
                 <i class="bi bi-plus-lg"></i>
@@ -77,8 +75,8 @@
         </li>
         <!-- End book selector -->        
 
-        <li><a ng-attr-target="{{ isRailsGoingToAngular() ? '_self' : undefined }}" href="teams">Teams</a></li>
-        <li><a ng-attr-target="{{ isRailsGoingToAngular() ? '_self' : undefined }}" href="scorers">Scorers</a></li>
+        <li><a href="teams">Teams</a></li>
+        <li><a href="scorers">Scorers</a></li>
         <li><a ng-attr-target="_blank" href="notebooks/lab/index.html">Notebooks</a></li>
       </ul>
     
@@ -92,18 +90,18 @@
           </a>
 
           <ul class="dropdown-menu dropdown-content" uib-dropdown-menu>
-            <li><%= link_to 'My profile', profile_path, class: 'dropdown-link', target: '_self' %></li>
-            <li><%= link_to 'Log out', logout_path, class: 'dropdown-link', target: '_self' %></li>
+            <li><%= link_to 'My profile', profile_url(protocol: determine_prefer_ssl), class: 'dropdown-link', target: '_self' %></li>
+            <li><%= link_to 'Log out', logout_url(protocol: determine_prefer_ssl), class: 'dropdown-link', target: '_self' %></li>
             <li role="separator" class=""></li>
-            <li><%= link_to 'Judgements', books_path, class: 'dropdown-link', target: '_self' %></li>
-            <li><%= link_to 'API Docs', apipie_apipie_path, class: 'dropdown-item', target: '_self' %></li>
+            <li><%= link_to 'Judgements', books_url(protocol: determine_prefer_ssl), class: 'dropdown-link', target: '_self' %></li>
+            <li><%= link_to 'API Docs', apipie_apipie_url(protocol: determine_prefer_ssl), class: 'dropdown-item', target: '_self' %></li>
             <% if current_user.administrator? %>
             <li role="separator" class=""></li>
-            <li><%= link_to 'Admin Home', admin_path, class: 'dropdown-link', target: '_self' %></li>
-            <li><%= link_to 'Users', admin_users_path, class: 'dropdown-link', target: '_self' %></li>
-            <li><%= link_to 'Quepid Scorers', admin_communal_scorers_path, class: 'dropdown-link', target: '_self' %></li>
-            <li><%= link_to 'Announcements', admin_announcements_path, class: 'dropdown-item', target: '_self' %></li>
-            <li><%= link_to 'Job Manager', mission_control_jobs_path, class: 'dropdown-link', target: '_self' %></li>
+            <li><%= link_to 'Admin Home', admin_url(protocol: determine_prefer_ssl), class: 'dropdown-link', target: '_self' %></li>
+            <li><%= link_to 'Users', admin_users_url(protocol: determine_prefer_ssl), class: 'dropdown-link', target: '_self' %></li>
+            <li><%= link_to 'Quepid Scorers', admin_communal_scorers_url(protocol: determine_prefer_ssl), class: 'dropdown-link', target: '_self' %></li>
+            <li><%= link_to 'Announcements', admin_announcements_url(protocol: determine_prefer_ssl), class: 'dropdown-item', target: '_self' %></li>
+            <li><%= link_to 'Job Manager', mission_control_jobs_url(protocol: determine_prefer_ssl), class: 'dropdown-link', target: '_self' %></li>
             <% end %>
           </ul>
         </li> <!-- End account management -->

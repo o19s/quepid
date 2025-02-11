@@ -12,6 +12,13 @@ bool = ActiveRecord::Type::Boolean.new
 #
 Rails.application.config.quepid_version = ENV.fetch('QUEPID_VERSION', 'UNKNOWN')
 
+# == Prefer HTTPS Connection
+# If you need to access a search endpoint using http instead of https, then Quepid needs to flip
+# back and forth between those protocols.  However, the rest of the app can run in https mode, and
+# this is what controls creating those connections in https.
+#
+Rails.application.config.prefer_ssl = bool.deserialize(ENV.fetch('PREFER_SSL', false))
+
 # == Quepid Default Scorer
 # New users to Quepid need to have a recommended scorer to use, which they can then
 # override to their own preferred scorer, either one of the defaults shipped with Quepid
