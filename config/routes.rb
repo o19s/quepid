@@ -253,7 +253,6 @@ Rails.application.routes.draw do
         post '/members/invite' => 'team_members#invite'
         resources :scorers, only: [ :index, :create, :destroy ], controller: :team_scorers
         resources :cases,   only: [ :index, :create, :destroy ], controller: :team_cases
-        resources :owners,  only: [ :update ], controller: :team_owners
         resources :books,   only: [ :index ], controller: :team_books
         resources :search_endpoints, only: [ :index ]
       end

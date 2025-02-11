@@ -11,11 +11,8 @@
         </span>
 
         <span class="item-actions">
-          <span ng-if="ctrl.team.owned">
-            <action-icon title="'Rename'" icon-class="'glyphicon glyphicon-pencil'" fn-call="ctrl.rename()"></action-icon>
-
-            <action-icon title="'Delete'" icon-class="'glyphicon glyphicon-trash'" fn-call="ctrl.deleteTeam()"></action-icon>
-          </span>
+          <action-icon title="'Rename'" icon-class="'glyphicon glyphicon-pencil'" fn-call="ctrl.rename()"></action-icon>
+          <action-icon title="'Delete'" icon-class="'glyphicon glyphicon-trash'" fn-call="ctrl.deleteTeam()"></action-icon>
         </span>
       </span>
 
@@ -35,13 +32,4 @@
     {{ ctrl.team.casesCount }}
   </div>
 
-  <div class="col-xs-3">
-    <span ng-if="ctrl.team.owned">
-      Me
-    </span>
-
-    <span ng-if="!ctrl.team.owned">
-      {{ ctrl.team.owner.email }}
-    </span>
-  </div>
 </div>

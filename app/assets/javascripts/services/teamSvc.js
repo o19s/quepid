@@ -9,17 +9,14 @@ angular.module('QuepidApp')
     function teamSvc($http, broadcastSvc) {
       this.teams = [];
 
-      var Team = function(id, name, ownerId, owner, cases, cases_count, members_count, members, scorers, owned, books, search_endpoints) {
+      var Team = function(id, name, cases, cases_count, members_count, members, scorers, books, search_endpoints) {
         this.id           = id;
         this.name         = name;
-        this.ownerId      = ownerId;
-        this.owner        = owner;
         this.cases        = cases;
         this.casesCount   = cases_count;
         this.membersCount = members_count;
         this.members      = members;
         this.scorers      = scorers;
-        this.owned        = owned;
         this.books        = books;
         this.searchEndpoints  = search_endpoints;  // camel case mapping
 
@@ -87,14 +84,11 @@ angular.module('QuepidApp')
         return new Team(
           data.id,
           data.name,
-          data.owner_id,
-          data.owner,
           data.cases,
           data.cases_count,
           data.members_count,
           data.members,
           data.scorers,
-          data.owned,
           data.books,
           data.search_endpoints
         );
@@ -133,22 +127,6 @@ angular.module('QuepidApp')
         return $http.put(url, data)
           .then(function(response) {
             var team = self.constructFromData(response.data);
-
-            return team;
-          });
-      };
-
-      this.changeOwner = function(team, newOwnerId) {
-        // http PUT /teams/<int:teamId>/owners/<int:id>
-        var url   = 'api/teams/' + team.id + '/owners/' + newOwnerId;
-        var data  = {};
-        var self  = this;
-
-        return $http.put(url, data)
-          .then(function(response) {
-            var team = self.constructFromData(response.data);
-
-            broadcastSvc.send('teamUpdated', team);
 
             return team;
           });
