@@ -190,7 +190,7 @@ describe('Controller: WizardModalCtrl', function () {
         var newQueryRespIth = angular.copy(newQueryResp);
         newQueryRespIth.query['query_text'] = testQuery;
 
-        $httpBackend.whenPOST('api/cases/0/queries').respond(200, newQueryRespIth);
+        $httpBackend.whenPOST('api/bulk/cases/0/queries').respond(200, newQueryRespIth);
         $httpBackend.whenJSONP(expectedSolrUrl(mockTry.search_url)).respond(200, {});
       }
 

@@ -709,7 +709,7 @@ angular.module('QuepidApp')
               }
             }
             
-            queriesSvc.persistQueries(queries)
+            queriesSvc.persistQueries(queries);
 
             $rootScope.currentUser.shownIntroWizard();
 
