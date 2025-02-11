@@ -6,27 +6,19 @@
 #  name       :string(255)
 #  created_at :datetime         not null
 #  updated_at :datetime         not null
-#  owner_id   :integer          not null
 #
 # Indexes
 #
 #  index_teams_on_name  (name)
-#  owner_id             (owner_id)
-#
-# Foreign Keys
-#
-#  teams_ibfk_1  (owner_id => users.id)
 #
 
 valid:
   name:     valid team
-  owner:    :doug
   cases:    shared_through_owned_team, queries_case
   members:  doug
 
 shared:
   name:     a shared team
-  owner:    :random
   members:  doug, shared_scorer_owner, random, not_shared_case_owner, dropdown_user, random_1, judge_judy
   scorers:  shared_scorer, shared_scorer1, shared_scorer2
   cases:    shared_with_team
@@ -35,24 +27,20 @@ shared:
 
 case_finder_owned_team:
   name:     An team owned by the Case Finder User
-  owner:    :case_finder_user
   members:  random, case_finder_user
   cases:    owned_team_case
 
 case_finder_shared_team:
   name:     An team shared with the Case Finder User
-  owner:    :random
   members:  case_finder_user, joey, random
   cases:    shared_team_case
 
 owned_team:
   name:   Team owned by Team Finder User
-  owner:  :team_finder_user
   members: team_finder_user
 
 shared_team:
   name:     Team shared with Team Finder User
-  owner:    :random
   members:  team_finder_user, team_owner, shared_team_member, random
   cases:    shared_team_case
   search_endpoints: for_shared_team_case
@@ -61,31 +49,26 @@ shared_team:
 
 team_owner_team:
   name:     Team owned by Team Owner User
-  owner:    :team_owner
   members:  team_member_1, team_member_2, team_owner
   cases:    shared_team_case
 
 scorers_team:
   name:     Team to test sharing scorers
-  owner:    :random
   scorers:  random_scorer_1, random_scorer_2
   members:   random
 
 cases_team:
   name:     Team to test sharing cases
-  owner:    :random_1
   cases:    random_case_1, random_case_2
   members:  random_1
 
 another_shared_team:
   name:     Another shared team
-  owner:    :random_2
   members:  random_1, random, random_2
   cases:    shared_case
   books:    book_of_comedy_films
 
 team_for_case_shared_with_owner:
   name:     Team for case shared with owner
-  owner:    :doug
   members:  random_1, random, doug
   cases:    shared_with_owner

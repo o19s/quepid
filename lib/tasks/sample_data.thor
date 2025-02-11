@@ -224,7 +224,8 @@ class SampleData < Thor
     # OSC Team
     ######################################
 
-    osc = ::Team.where(owner_id: osc_owner_user.id, name: 'OSC').first_or_create
+    osc = ::Team.where(name: 'OSC').first_or_create
+    osc.members << osc_owner_user
     osc.members << osc_member_user unless osc.members.include?(osc_member_user)
     osc.members << realistic_activity_user unless osc.members.include?(realistic_activity_user)
     osc.cases << tens_of_queries_case unless osc.members.include?(tens_of_queries_case)

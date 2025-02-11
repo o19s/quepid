@@ -57,10 +57,6 @@ class UserTest < ActiveSupport::TestCase
     assert_includes users(:doug).teams, teams(:shared)
   end
 
-  test 'ownership of team' do
-    assert_includes users(:doug).owned_teams, teams(:valid)
-  end
-
   describe 'Defaults' do
     test 'are set when user is created' do
       user = User.create(email: 'defaults@email.com', password: 'password')
@@ -242,11 +238,10 @@ class UserTest < ActiveSupport::TestCase
     let(:team_member_1) { users(:team_member_1) }
     let(:shared_team_case) { cases(:shared_team_case) }
 
-    it 'prevents a user who owns a team that other people are in from being deleted' do
+    it 'ensures a user who is a member of a team that is deleted keeps the team' do
       user.destroy
-      assert_not user.destroyed?
-
-      assert user.errors.full_messages_for(:base).include?('Please reassign ownership of the team Team owned by Team Owner User.')
+      assert_not team.destroyed?
+      assert user.destroyed?
     end
 
     it 'prevents a user who owns a scorer shared with a team from being deleted' do
@@ -263,7 +258,6 @@ class UserTest < ActiveSupport::TestCase
 
     it 'deletes a user and their team if no one else is in the team' do
       team = team_owner.teams.first
-      team.owner = team_member_1
       team.save
 
       assert_not shared_team_case.destroyed?

@@ -9,22 +9,6 @@
       </div>
     </div>
 
-    <div class='col-md-4'>
-      View
-      &nbsp;&nbsp;&nbsp;
-      <div class="btn-group">
-        <label class="btn btn-default" ng-model="teamsScope.typeFilter" uib-btn-radio="'all'">
-          All
-        </label>
-        <label class="btn btn-default" ng-model="teamsScope.typeFilter" uib-btn-radio="'owned'">
-          Teams I am Owner of
-        </label>
-        <label class="btn btn-default" ng-model="teamsScope.typeFilter" uib-btn-radio="'member'">
-          Teams I am a Member in
-        </label>
-      </div>
-    </div>
-
     <div class="col-md-4 form-inline">
       <input type="search" ng-model="q" placeholder="Filter teams" aria-label="filter teams" class="form-control" id='teams-filter' />
 
@@ -44,7 +28,6 @@
               <span class="col-xs-5">Name</span>
               <span class="col-xs-2">Members</span>
               <span class="col-xs-1">Cases</span>
-              <span class="col-xs-3">Owner</span>
             </div>
           </div>
         </div>
