@@ -61,8 +61,8 @@ class CaseScoreManager
   end
 
   def same_score_source last_score, score_data
-    return false if last_score&.blank?
-    #return false if last_score.try_id.blank?
+    return false if last_score.blank?
+    # return false if last_score.try_id.blank?
 
     # we have an issue where the case_score.try_id table references tries.id and
     # the try doesn't exist. So the last_score.try is nil.  Maybe related to deleting a try?
