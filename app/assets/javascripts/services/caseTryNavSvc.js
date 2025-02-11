@@ -7,8 +7,8 @@
 // What did I do here, like implement a router on top of my router!?!?
 angular.module('QuepidApp')
   .service('caseTryNavSvc', [
-    '$location', '$timeout',
-    function caseTryNavSvc($location, $timeout) {
+    'configurationSvc','$location', '$timeout',
+    function caseTryNavSvc(configurationSvc, $location, $timeout) {
       var caseNo = 0;
       var tryNo = 0;
 
@@ -76,6 +76,14 @@ angular.module('QuepidApp')
         return tryNo;
       };
       
+      this.createMainApplicationLink = function (url) {
+        if (configurationSvc.preferSSL() && !url.startsWith('https')) {
+          url = url.replace(':3000', '');
+          url = url.replace('http', 'https');
+        }
+        return url;
+      };
+      
       // If Quepid is running on HTTPS, like on Heroku, then it needs to switch
       // to HTTP in order to make calls to a Solr that is running in HTTP as well, otherwise
       // you get this "Mixed Content", which browsers block as a security issue.
@@ -121,6 +129,8 @@ angular.module('QuepidApp')
         
         return [quepidUrlToSwitchTo, protocolToSwitchTo];
       };
+      
+      
       
       this.appendQueryParams = function (quepidUrl, params) {
         let seperator = '?';

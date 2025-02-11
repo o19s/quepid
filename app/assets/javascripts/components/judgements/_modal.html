@@ -41,7 +41,7 @@
       You have not created any Books of Judgements yet, so go ahead and create a new Book!
     </p>
 
-    <a class="btn btn-primary btn-lg" ng-href="{{ctrl.createBookLink()}}" target="_self">
+    <a class="btn btn-primary btn-lg" ng-href="{{ctrl.createNewBookLink()}}" target="_self">
       <i class="bi bi-plus-lg"></i>
       Create a book
     </a>
@@ -104,7 +104,7 @@
 </div>
 
 <div class="modal-footer">
-  <a class="btn btn-primary pull-left" ng-href="{{ctrl.createBookLink()}}" target="_self" ng-disabled="processingPrompt.inProgress">
+  <a class="btn btn-primary pull-left" ng-href="{{ctrl.createNewBookLink()}}" target="_self" ng-disabled="processingPrompt.inProgress">
     <i class="glyphicon glyphicon-plus" style="color: #FFF"></i>
     Create a book
   </a>

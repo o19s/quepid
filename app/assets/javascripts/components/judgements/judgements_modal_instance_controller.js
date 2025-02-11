@@ -169,7 +169,7 @@ angular.module('QuepidApp')
         $location.path('/teams');
       };
       
-      ctrl.createBookLink = function() {
+      ctrl.createNewBookLink = function() {
         const teamIds = ctrl.share.acase.teams.map(function(team) {
           return `&team_ids[]=${team.id}`;
         });

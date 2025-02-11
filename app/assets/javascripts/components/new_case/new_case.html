@@ -1,19 +1,8 @@
 <button
   type="button"
   class="btn btn-success btn-block"
-  ng-click="ctrl.newCase()"
-  ng-if="!isRailsGoingToAngular()"
+  ng-click="ctrl.newCase()"  
 >
   <i class="bi bi-plus-lg"></i>
   {{ ctrl.buttonText }}
 </button>
-
-<a
-  class="btn btn-success btn-block"
-  href="/cases?new=true"
-  ng-if="isRailsGoingToAngular()"
-  target="_self"
->
-  <i class="bi bi-plus-lg"></i>
-  {{ ctrl.buttonText }}
-</a>
