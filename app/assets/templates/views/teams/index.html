@@ -33,7 +33,7 @@
         </div>
 
         <ul ng-model="teamsScope.teams" class="teams-list row">
-          <li dir-paginate="team in teamsScope.teams | teamType:teamsScope.typeFilter | filter:q | itemsPerPage: pagination.teams.pageSize : 'teams' track by team.id" current-page="pagination.teams.currentPage" pagination-id="teams" class="teams-list-item">
+          <li dir-paginate="team in teamsScope.teams | filter:q | itemsPerPage: pagination.teams.pageSize : 'teams' track by team.id" current-page="pagination.teams.currentPage" pagination-id="teams" class="teams-list-item">
             <team-listing team="team"></team-listing>
           </li>
         </ul>
