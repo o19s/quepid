@@ -38,13 +38,16 @@ class PopulateBookJob < ApplicationJob
         rating = query.ratings.find_by(doc_id: query_doc_pair.doc_id)
 
         # we are smart and just look up the correct user id from rating.user_id via the database, no API data needed.
-        judgement = query_doc_pair.judgements.find_or_create_by user_id: rating.user_id
-        judgement.rating = pair[:rating]
-        judgement.user = User.find(pair[:user_id]) # rating.user
-        judgement.save!
+        if rating.user_id
+          judgement = query_doc_pair.judgements.find_or_create_by user_id: rating.user_id
+          judgement.rating = pair[:rating]
+          # judgement.user = User.find(pair[:user_id]) # rating.user
+          judgement.save!
+        end
       end
 
-      query_doc_pair.save!
+      # don't overload the database with updates when nothing changed
+      query_doc_pair.save! if query_doc_pair.changed?
 
       # emit a message every percent that we cross, from 0 to 100...
       percent = (((total - counter).to_f / total) * 100).truncate
