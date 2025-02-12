@@ -84,6 +84,18 @@ module Api
           assert_equal    query_response['query_text'], query_text
         end
 
+        test 'with emoji' do
+          query_text = 'kfc 🍟➕🍔➕🍗'
+          post :create, params: { case_id: acase.id, query: { query_text: query_text } }
+
+          assert_response :ok
+
+          query_response = response.parsed_body['query']
+
+          assert_not_nil  query_response['query_id']
+          assert_equal    query_response['query_text'], query_text
+        end
+
         test 'handles when query already exists' do
           query_text = 'New Query'
           post :create, params: { case_id: acase.id, query: { query_text: query_text } }

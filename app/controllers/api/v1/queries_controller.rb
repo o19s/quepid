@@ -20,12 +20,11 @@ module Api
       # rubocop:disable Metrics/AbcSize
       def create
         q_params              = query_params
-        q_params[:query_text] = q_params[:query_text].strip if q_params[:query_text]
+        q_params[:query_text] = q_params[:query_text].strip # if q_params[:query_text]
 
-        query = 'BINARY query_text = ?'
-        if @case.queries.exists?([ query, q_params[:query_text] ])
+        if @case.queries.exists?(query_text: q_params[:query_text])
           # sometimes the query is already created even though we are hitting this..
-          @query = @case.queries.find_by([ query, q_params[:query_text] ])
+          @query = @case.queries.find_by(query_text: q_params[:query_text])
           @display_order = @case.queries.map(&:id)
           respond_with @query, @display_order
           return

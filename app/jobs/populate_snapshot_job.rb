@@ -12,7 +12,7 @@ class PopulateSnapshotJob < ApplicationJob
     serialized_data = Zlib::Inflate.inflate(compressed_data)
     params = Marshal.load(serialized_data)
 
-    service = SnapshotManagerCopy.new(snapshot)
+    service = SnapshotManager.new(snapshot)
 
     snapshot_docs = params[:snapshot][:docs]
     snapshot_queries = params[:snapshot][:queries]
