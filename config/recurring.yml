@@ -6,9 +6,9 @@ development:
   #blazer_run_checks_daily:
   #  command: "Blazer.run_checks(schedule: 'hourly')"
   #  schedule: every hour    
-  #blazer_run_checks_daily:
-  class: RunBlazerChecksJob
-  schedule: every hour
+  blazer_run_checks_daily:
+    class: RunBlazerChecksJob
+    schedule: every hour
 
 
 production:
