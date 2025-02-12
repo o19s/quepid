@@ -1,7 +1,7 @@
 <header id="header" class="navbar-inverse navbar-secondary clearfix">
   <div class="container container-home">
     <div class="navbar-header">
-      <%= link_to root_url(protocol: determine_prefer_ssl), class: "navbar-brand", target: "_self" do %>
+      <%= link_to root_url(determine_prefer_ssl_options()), class: "navbar-brand", target: "_self" do %>
         Quepid
         <span class="hover"><%= image_tag 'tagline-sm.png', title: "Give your queries some love" %></span>
       <% end %>
@@ -90,18 +90,18 @@
           </a>
 
           <ul class="dropdown-menu dropdown-content" uib-dropdown-menu>
-            <li><%= link_to 'My profile', profile_url(protocol: determine_prefer_ssl), class: 'dropdown-link', target: '_self' %></li>
-            <li><%= link_to 'Log out', logout_url(protocol: determine_prefer_ssl), class: 'dropdown-link', target: '_self' %></li>
+            <li><%= link_to 'My profile', profile_url(determine_prefer_ssl_options()), class: 'dropdown-link', target: '_self' %></li>
+            <li><%= link_to 'Log out', logout_url(determine_prefer_ssl_options()), class: 'dropdown-link', target: '_self' %></li>
             <li role="separator" class=""></li>
-            <li><%= link_to 'Judgements', books_url(protocol: determine_prefer_ssl), class: 'dropdown-link', target: '_self' %></li>
-            <li><%= link_to 'API Docs', apipie_apipie_url(protocol: determine_prefer_ssl), class: 'dropdown-item', target: '_self' %></li>
+            <li><%= link_to 'Judgements', books_url(determine_prefer_ssl_options()), class: 'dropdown-link', target: '_self' %></li>
+            <li><%= link_to 'API Docs', apipie_apipie_url(determine_prefer_ssl_options()), class: 'dropdown-item', target: '_self' %></li>
             <% if current_user.administrator? %>
             <li role="separator" class=""></li>
-            <li><%= link_to 'Admin Home', admin_url(protocol: determine_prefer_ssl), class: 'dropdown-link', target: '_self' %></li>
-            <li><%= link_to 'Users', admin_users_url(protocol: determine_prefer_ssl), class: 'dropdown-link', target: '_self' %></li>
-            <li><%= link_to 'Quepid Scorers', admin_communal_scorers_url(protocol: determine_prefer_ssl), class: 'dropdown-link', target: '_self' %></li>
-            <li><%= link_to 'Announcements', admin_announcements_url(protocol: determine_prefer_ssl), class: 'dropdown-item', target: '_self' %></li>
-            <li><%= link_to 'Job Manager', mission_control_jobs_url(protocol: determine_prefer_ssl), class: 'dropdown-link', target: '_self' %></li>
+            <li><%= link_to 'Admin Home', admin_url(determine_prefer_ssl_options()), class: 'dropdown-link', target: '_self' %></li>
+            <li><%= link_to 'Users', admin_users_url(determine_prefer_ssl_options()), class: 'dropdown-link', target: '_self' %></li>
+            <li><%= link_to 'Quepid Scorers', admin_communal_scorers_url(determine_prefer_ssl_options()), class: 'dropdown-link', target: '_self' %></li>
+            <li><%= link_to 'Announcements', admin_announcements_url(determine_prefer_ssl_options()), class: 'dropdown-item', target: '_self' %></li>
+            <li><%= link_to 'Job Manager', mission_control_jobs_url(determine_prefer_ssl_options()), class: 'dropdown-link', target: '_self' %></li>
             <% end %>
           </ul>
         </li> <!-- End account management -->

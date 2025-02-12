@@ -143,8 +143,12 @@ module ApplicationHelper
     nil
   end
 
-  def determine_prefer_ssl
-    Rails.configuration.prefer_ssl ? 'https' : 'http'
+  def determine_prefer_ssl_options
+    if Rails.configuration.prefer_ssl
+      { protocol: 'https', port: 443 }
+    else
+      { protocol: 'http', port: 80 }
+    end
   end
 end
 # rubocop:enable Metrics/ModuleLength
