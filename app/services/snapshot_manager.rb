@@ -1,11 +1,7 @@
 # frozen_string_literal: true
 
-require 'progress_indicator'
-
 # rubocop:disable Metrics/ClassLength
 class SnapshotManager
-  include ProgressIndicator
-
   attr_reader :logger, :options
 
   def initialize snapshot, opts = {}
@@ -49,12 +45,13 @@ class SnapshotManager
   #
   def add_docs docs, queries
     queries_to_import = []
-    keys              = docs.keys
+
+    keys = docs.nil? ? [] : docs.keys
 
     # Start by adding queries to snapshot.
     # First, setup all queries to be added in an array.
-    print_step 'Importing queries'
-    block_with_progress_bar(keys.length) do |i|
+    # block_with_progress_bar(keys.length) do |i|
+    keys.length.times.each do |i|
       query_id = keys[i]
 
       snapshot_query = @snapshot.snapshot_queries.where(query_id: query_id).first_or_initialize
@@ -124,8 +121,9 @@ class SnapshotManager
 
     # Start by adding queries to snapshot.
     # First, setup all queries to be added in an array.
-    print_step 'Importing queries'
-    block_with_progress_bar(keys.length) do |i|
+    # print_step 'Importing queries'
+    # block_with_progress_bar(keys.length) do |i|
+    keys.length.times.each do |i|
       query_text  = keys[i]
       query       = fetch_or_create_query indexed_queries, query_text
 
@@ -153,10 +151,11 @@ class SnapshotManager
   # rubocop:enable Metrics/MethodLength
 
   def csv_to_queries_hash docs
-    print_step 'Transforming csv into a queries hash'
+    # print_step 'Transforming csv into a queries hash'
 
     query_docs = {}
-    block_with_progress_bar(docs.length) do |i|
+    # block_with_progress_bar(docs.length) do |i|
+    docs.length.times.each do |i|
       row = extract_doc_info docs[i]
       query_docs[row[:query_text]] ||= { docs: [] }
       query_docs[row[:query_text]][:docs] << row
@@ -168,6 +167,7 @@ class SnapshotManager
   # rubocop:disable Metrics/MethodLength
   def setup_docs_for_query query, docs
     results = []
+
     return results if docs.blank?
     return results if query.blank?
 
@@ -189,8 +189,6 @@ class SnapshotManager
     results
   end
   # rubocop:enable Metrics/MethodLength
-
-  private
 
   def extract_doc_info row
     case @options[:format]
@@ -228,8 +226,9 @@ class SnapshotManager
       .all
       .index_by { |q| q.query_id.to_s }
 
-    print_step 'Importing docs'
-    block_with_progress_bar(keys.length) do |i|
+    # print_step 'Importing docs'
+    # block_with_progress_bar(keys.length) do |i|
+    keys.length.times.each do |i|
       query_id  = keys[i]
       docs      = data[keys[i]]
 

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_02_04_192632) do
+ActiveRecord::Schema[8.0].define(version: 2025_02_12_153702) do
   create_table "active_storage_attachments", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.string "name", null: false
     t.string "record_type", null: false
@@ -283,7 +283,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_02_04_192632) do
   create_table "queries", id: :integer, charset: "utf8mb3", force: :cascade do |t|
     t.bigint "arranged_next"
     t.bigint "arranged_at"
-    t.string "query_text", limit: 2048
+    t.string "query_text", limit: 2048, collation: "utf8mb4_bin"
     t.text "notes"
     t.integer "case_id"
     t.datetime "created_at", precision: nil, null: false

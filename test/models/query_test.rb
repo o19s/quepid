@@ -240,4 +240,33 @@ class QueryTest < ActiveSupport::TestCase
       assert_equal query.query_text, matching_query.query_text
     end
   end
+
+  describe 'emoji support' do
+    let(:queries_case) { cases(:queries_case) }
+
+    test 'handles emoji in query_text' do
+      query = Query.create query_text: '👍 👎 💩'
+
+      assert_equal query.query_text, '👍 👎 💩'
+    end
+
+    test 'index_by with emoji' do
+      query1 = Query.create! query_text: '👍 👎 💩', case_id: queries_case.id
+      query2 = Query.create! query_text: 'kfc 🍟➕🍔➕🍗', case_id: queries_case.id
+
+      keys = [ query1.query_text, query2.query_text ]
+
+      queries_params = {
+        query_text: keys,
+        case_id:    queries_case.id,
+      }
+
+      indexed_queries = Query.where(queries_params)
+        .all
+        .index_by(&:query_text)
+
+      assert_includes indexed_queries.keys, query1.query_text
+      assert_includes indexed_queries.keys, query2.query_text
+    end
+  end
 end
