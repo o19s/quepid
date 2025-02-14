@@ -18,6 +18,5 @@ production:
     schedule: every day at 1 am
     
   blazer_run_checks_daily:
-    #class: RunBlazerChecksJob
     command: "Blazer.send_failing_checks"
     schedule: every day at 7 am
