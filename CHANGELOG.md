@@ -1,16 +1,88 @@
 # Changelog
 
-## 8.0.0-rc1 - 2024-11-05
+## 8.0.0 -- 2024-02-14
 
-Rails 8 RC2 is out.  We're being eager early adopters with some big changes!
+It's Valentine's Day 💘, so it seems appropriate to release the next major version of Quepid, the tool to give your queries some ❤️.
 
-* You no longer need Redis!!!!!!!!!!   Redis was used to power background jobs and websockets, and now we just use our database for that.  This makes installing Quepid much simpler.
-* To celebrate our enhance jobs framework, we now actually provide nice UX around starting jobs to prevent you from running multiple in paralel, and give user feedback when one is running.
-* Nicer import book page.  Gave it some UX love.
-* We use the built into Rails health check end point at `/healthcheck`.  Please check your setup.
-* Plus the usual list of updates to all our dependencies.
-* If you don't have `P@10` defined, the migrations blow up.  Thanks @frutik for find the bug.  https://github.com/o19s/quepid/pull/1093
+## Exciting News
 
+**Judge Judy is now appearing on the Quepid channel**.  It is now possible to create one or more LLM-based AI judges in Quepid! Set your OpenAI key, add your examples or customizations to the judgement prompt, push the big button, and let the magic box do the rest.
+
+**[Continuous Experimentation](https://opensourceconnections.com/blog/2023/10/18/continuous-experimentation-for-search-improvement/)** is now a reality in Quepid. You can now schedule automatic evaluation runs on a case on a daily basis. It is now possible to see the most up to date performance results, and track changes over time without loading up Quepid!  You can even configure alerts to be emailed to you if your Case score drops!
+
+**Scaling Up**. Quepid now supports many thousands of Queries in a single Case! Our target is 5000 queries in a single Case, and by adopting background processing and async feedback in the user interface, we can now scale up to handle this.  Oh, and query performance has been drastically improved.  One long time user with 1000 queries reports that loading the case has dropped from 20 minutes to three minutes ;-).  Cases with a large number of queries can have problems completing, due to timeouts or 429 (too busy, try again) errors. Thanks to @mkr the concurrency control for handling query execution has been updated to prevent Quepid hanging up forever waiting for a query to complete.
+
+**[Expected Reciprocal Rank](https://citeseerx.ist.psu.edu/document?repid=rep1&type=pdf&doi=7e3cf6492128f915112ca01dcb77c766129e65cb) (ERR)** is now available as a community scorer. This scorer is appropriate for multi-valued judgment ranges when evaluating search journeys like known item search.
+
+**New [User Manual](https://quepid-docs.dev.o19s.com/2/quepid)**.  We've embraced the [Diátaxis](https://diataxis.fr/) framework for writing documentation, and consolidated into a single platform the mix of documentation that has been published in various locations.  
+
+## Bugs Addressed
+If you don't have P@10 defined, the migrations blow up. Thanks @frutik for finding the bug. https://github.com/o19s/quepid/pull/1093
+
+Basic auth that includes '%' in username or password breaks reloading from http to https. Thanks @brucks24 for  https://github.com/o19s/quepid/issues/1139
+
+Emoji filled queries like `kfc 🍟➕🍔➕🍗` now can be stored in Quepid!  Thanks @shuttie for reporting this bug.  https://github.com/o19s/quepid/issues/1046
+
+## Other Changes
+
+* Simpler Deployment. We've updated to Rails 8, and no longer need Redis.  We're back to just a server and a MySQL Database ;-).  
+* Nicer import book page. Gave it some UX love. Kudos to @wrigleyDan 
+* We use the built into Rails health check end point at /healthcheck. Please check your setup.
+* Change tracking of scores to record which scorer produced the score. This is a **breaking change**, as previous versions don't know what scorer generated a score. For historical scores, the current case scorer is assumed to be the only scorer used on that case.  Soon you will be able to run multiple scores and pick one as your "North Star" metric.
+* We thought having really fine grained permissions would be important to Quepid, but what we've seen is that it doesn't matter. Indeed, if anything, the permissions structure is confusing to users. Additionally, we've mostly cared "are you an Admin?" to decide if certain things can be done or not. So it's gone.
+* We care about privacy.  We've dropped Google Analytics in favour of our own first party analytics.   We've also dropped the Intercom integration.
+
+## What's Changed
+* undo the "fit" that made us only run a single test by @epugh in https://github.com/o19s/quepid/pull/1076
+* Updates oct 2024 by @epugh in https://github.com/o19s/quepid/pull/1071
+* Add check for the existence of scorer before updating. by @epugh in https://github.com/o19s/quepid/pull/1093
+* Migration to Rails 8 by @epugh in https://github.com/o19s/quepid/pull/1084
+* Rails 8 is out, and we drag along a swap from annotate to annotaterb by @epugh in https://github.com/o19s/quepid/pull/1098
+* Strip out SASS by @epugh in https://github.com/o19s/quepid/pull/1113
+* swap to released version of Bullet by @epugh in https://github.com/o19s/quepid/pull/1102
+* Tweaks to text. by @epugh in https://github.com/o19s/quepid/pull/1119
+* Hard-limit search concurrency to 10 by @mkr in https://github.com/o19s/quepid/pull/1103
+* Restore proper support for notifying users about Cookies being required policy by @epugh in https://github.com/o19s/quepid/pull/1127
+* Update jshint structure  by @epugh in https://github.com/o19s/quepid/pull/1135
+* Be smart about if we have no score yet, and share that info. by @epugh in https://github.com/o19s/quepid/pull/1132
+* ship a first cut of being smarter by @epugh in https://github.com/o19s/quepid/pull/1133
+* Frogs forever by @epugh in https://github.com/o19s/quepid/pull/1136
+* Change the close icon to something that renders larger and more visible by @epugh in https://github.com/o19s/quepid/pull/1140
+* Warn on incompatible characters in basicauth password by @epugh in https://github.com/o19s/quepid/pull/1143
+* Wire in deleting the case when you abandon it.   by @epugh in https://github.com/o19s/quepid/pull/1144
+* First party analytics by @epugh in https://github.com/o19s/quepid/pull/1100
+* Fix up the routing logic to keep you in the rating experience. by @epugh in https://github.com/o19s/quepid/pull/1145
+* Perf optimizations. (again!) by @epugh in https://github.com/o19s/quepid/pull/1148
+* On to 3.3.6 of Ruby by @epugh in https://github.com/o19s/quepid/pull/1157
+* Add err scorer by @david-fisher in https://github.com/o19s/quepid/pull/1162
+* Backout counter_cache by @epugh in https://github.com/o19s/quepid/pull/1165
+* Review database structures by @epugh in https://github.com/o19s/quepid/pull/1167
+* Improve links/buttons when creating a Book by @wrigleyDan in https://github.com/o19s/quepid/pull/1175
+* Meet Judge Judy, she is your AI powered SME by @epugh in https://github.com/o19s/quepid/pull/985
+* Missing indexes on Search Endpoints by @epugh in https://github.com/o19s/quepid/pull/1173
+* Spike 5000 queries round deux by @epugh in https://github.com/o19s/quepid/pull/1039
+* Remove permissions architecture in favour of roles by @epugh in https://github.com/o19s/quepid/pull/1185
+* Restore the proper encoding, lost somewhere by @epugh in https://github.com/o19s/quepid/pull/1188
+* Look at database consistency issues by @epugh in https://github.com/o19s/quepid/pull/1189
+* Testing the flow of everything.... by @epugh in https://github.com/o19s/quepid/pull/1192
+* fix RRE export format by @epugh in https://github.com/o19s/quepid/pull/929
+* Properly nest returning judgements for a book under the book route by @epugh in https://github.com/o19s/quepid/pull/1187
+* OpenAPI query limits being hit  by @epugh in https://github.com/o19s/quepid/pull/1194
+* Can we use Blazer to monitor users? by @epugh in https://github.com/o19s/quepid/pull/1205
+* FInally remove intercom by @epugh in https://github.com/o19s/quepid/pull/1206
+* Validate search endpoints by @epugh in https://github.com/o19s/quepid/pull/1209
+* Simplify book ux by @epugh in https://github.com/o19s/quepid/pull/1200
+* Need to track which scorer provided the score! by @epugh in https://github.com/o19s/quepid/pull/1210
+* Manage all Case scores, and let you delete the werid scores. by @epugh in https://github.com/o19s/quepid/pull/1213
+* Fancier handling of scores and ratings and judgements and fix search endpionts and all the other things that make it hard for @david-fisher to write changelog notes. by @epugh in https://github.com/o19s/quepid/pull/1215
+* nicer filtering makes loading books faster... by @epugh in https://github.com/o19s/quepid/pull/1216
+* Document why updating a rating doesn't update the specifics in a query_doc_pair by @epugh in https://github.com/o19s/quepid/pull/1219
+* Remove owner concept by @wrigleyDan in https://github.com/o19s/quepid/pull/1181
+* Strip out remaining references to team ownership. by @epugh in https://github.com/o19s/quepid/pull/1221
+* Testing of Quepid8 Functions by @epugh in https://github.com/o19s/quepid/pull/1222
+* Revamp Query.query_text to handle emoji better by @epugh in https://github.com/o19s/quepid/pull/1223
+
+**Full Changelog**: https://github.com/o19s/quepid/compare/v7.18.0...v8.0.0
 
 ## 7.18.1 - 2024-12-06
 
