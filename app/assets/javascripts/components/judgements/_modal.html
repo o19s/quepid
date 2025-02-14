@@ -69,10 +69,7 @@
   <label>
     <input id="populate-book" type="checkbox" ng-model='ctrl.populateBook' ng-disabled="ctrl.share.books.length === 0 || ctrl.share.teams.length === 0"> Populate Book
       <span class="glyphicon glyphicon-question-sign" aria-hidden="true" popover-trigger="'mouseenter'" popover-placement="right" uib-popover="Update the list of query / doc pairs to be judged using the current search results."></span>
-    </input>
-    
-    &nbsp;&nbsp;<button ng-show="ctrl.populateBook" type="button" class="btn btn-sm btn-default" ng-click="isAdvancedPopulateConfigCollapsed = !isAdvancedPopulateConfigCollapsed">Advanced</button>
-    
+    </input>      
   </label>
   <br/>
   <label>
@@ -81,21 +78,6 @@
     </input>  
   </label>
   
-  <span ng-show="ctrl.populateBook">
-    <div uib-collapse="!isAdvancedPopulateConfigCollapsed">
-      <div class="well well-sm">
-        
-        <div class="form-group clearfix">
-          <label class="col-sm-3 control-label">Populate Judgements?</label>
-          <div class="col-sm-9">
-            <input id="populate-judgements" type="checkbox" ng-model='ctrl.populateJudgements'/>
-            <p class="help-block">Take the ratings currently made in the Case and use them as Judgements when populating the Book.</p>
-          </div>
-        </div>
-      </div>
-    </div>  
-  </span>
-
   <div class='text-danger' ng-show="processingPrompt.error">
     An error ({{processingPrompt.error}}) occurred, please try again.<br />
     If the error persist, contact adminstrator for further assistance.

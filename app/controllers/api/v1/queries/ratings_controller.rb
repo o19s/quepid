@@ -8,7 +8,6 @@ module Api
 
         def update
           @rating = @query.ratings.find_or_create_by doc_id: @doc_id
-          # @rating.user = @current_user
 
           if @rating.update rating_params
             Analytics::Tracker.track_rating_created_event current_user, @rating

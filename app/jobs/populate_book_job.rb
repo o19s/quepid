@@ -6,7 +6,6 @@ class PopulateBookJob < ApplicationJob
   # rubocop:disable Security/MarshalLoad
   # rubocop:disable Metrics/MethodLength
   # rubocop:disable Metrics/AbcSize
-  # rubocop:disable Metrics/BlockLength
   def perform book, kase
     # down the road we should be using ActiveRecord-import and first_or_initialize instead.
     # See how snapshots are managed.
@@ -34,17 +33,21 @@ class PopulateBookJob < ApplicationJob
       query_doc_pair.notes = query.notes
       query_doc_pair.options = query.options
 
-      if pair[:rating]
-        rating = query.ratings.find_by(doc_id: query_doc_pair.doc_id)
+      # At one time we copied ratings over to the judgements based on your user_id
+      # however what do you do when you change the rating as a individual and then do it.
+      # We also have a JudgementFromRatingJob that does it as it happens when you call the ratings_controller.rb
 
-        # we are smart and just look up the correct user id from rating.user_id via the database, no API data needed.
-        if rating.user_id
-          judgement = query_doc_pair.judgements.find_or_create_by user_id: rating.user_id
-          judgement.rating = pair[:rating]
-          # judgement.user = User.find(pair[:user_id]) # rating.user
-          judgement.save!
-        end
-      end
+      # if pair[:rating]
+      #   rating = query.ratings.find_by(doc_id: query_doc_pair.doc_id)
+
+      #   # we are smart and just look up the correct user id from rating.user_id via the database, no API data needed.
+      #   if rating.user_id
+      #     judgement = query_doc_pair.judgements.find_or_create_by user_id: rating.user_id
+      #     judgement.rating = pair[:rating]
+      #     # judgement.user = User.find(pair[:user_id]) # rating.user
+      #     judgement.save!
+      #   end
+      # end
 
       # don't overload the database with updates when nothing changed
       query_doc_pair.save! if query_doc_pair.changed?
@@ -68,5 +71,4 @@ class PopulateBookJob < ApplicationJob
   # rubocop:enable Security/MarshalLoad
   # rubocop:enable Metrics/MethodLength
   # rubocop:enable Metrics/AbcSize
-  # rubocop:enable Metrics/BlockLength
 end

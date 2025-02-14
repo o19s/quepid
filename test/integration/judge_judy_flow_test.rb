@@ -53,16 +53,28 @@ class JudgeJudyFlowTest < ActionDispatch::IntegrationTest
       rating: 1,
     }
 
-    put api_case_query_ratings_url acase, query, params: { case_id: acase.id, query_id: query.id, rating: rating }
-    assert_response :ok
+    # rate a query, which runs JudgementFromRatingJob and populates the book
+    perform_enqueued_jobs do
+      assert_difference 'book.judgements.count' do
+        put api_case_query_ratings_url acase, query, params: { case_id: acase.id, query_id: query.id, rating: rating }
+        assert_response :ok
+      end
+    end
 
     rating = Rating.find(response.parsed_body['id'])
 
-    # make sure Judge Judy didn't get involved'
+    # make sure Judge Judy didn't get involved
     # we don' want users tracked at the case rating level
     assert_nil rating.user
     # assert_equal rating.user, user
     assert_equal rating.rating, 1
+
+    # make sure we did create a query_doc_pair and a judgmenet.
+    query_doc_pair = book.query_doc_pairs.find_by(query_text: query.query_text, doc_id: rating.doc_id)
+    assert_nil query_doc_pair.document_fields
+    assert_nil query_doc_pair.position
+    assert_equal 1, query_doc_pair.judgements.count
+    assert_equal query_doc_pair.judgements.first.rating, rating.rating
 
     # Here is the big question, if I rate something in the main UI, how is that handled?
     # I worry that if a case rating creates/updates a book judgement, and that triggers a
@@ -75,8 +87,6 @@ class JudgeJudyFlowTest < ActionDispatch::IntegrationTest
         {
           query_text:      query.query_text,
           doc_id:          rating.doc_id,
-          rating:          rating.rating,
-          user_id:         user.id,
           position:        0,
           document_fields: {
             title: 'Monty Python Quest for Holy Grail',
@@ -87,25 +97,27 @@ class JudgeJudyFlowTest < ActionDispatch::IntegrationTest
     }
 
     perform_enqueued_jobs do
-      assert_difference 'book.query_doc_pairs.count' do
+      assert_difference 'book.query_doc_pairs.count', 0 do
         put api_book_populate_url book, params: data
         assert_response :no_content
       end
     end
 
+    book.reload
+    query_doc_pair = book.query_doc_pairs.find_by(query_text: query.query_text, doc_id: rating.doc_id)
+    assert_not_nil query_doc_pair
+    assert_equal 1, query_doc_pair.judgements.count
+
     perform_enqueued_jobs do
-      patch run_judge_judy_book_url book, judge_judy, params: { judge_all: 1 }
+      assert_difference 'book.judgements.count' do
+        patch run_judge_judy_book_url book, judge_judy, params: { judge_all: 1 }
+      end
     end
 
     book.reload
     assert_equal book.query_doc_pairs.size, book.judgements.where(user: judge_judy).size
 
-    query_doc_pairs = book.query_doc_pairs.where(query_text: query.query_text, doc_id: rating.doc_id)
-    assert_equal query_doc_pairs.count, 1
-
-    judgements = query_doc_pairs.first.judgements
-
-    assert_equal 2, judgements.count
+    query_doc_pair.reload
 
     rating.reload
 
