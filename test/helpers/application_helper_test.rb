@@ -35,4 +35,21 @@ class ApplicationHelperTest < ActionView::TestCase
     # Assertions for the options
     assert_includes result, 'class="btn btn-primary"'
   end
+
+  let(:https_search_endpoint) { search_endpoints(:bootstrap_try_1) }
+  def test_link_with_https_search_endpoint
+    assert https_search_endpoint.endpoint_url.starts_with? 'https://'
+    try_to_update = random_case.tries.first
+
+    try_to_update.search_endpoint = https_search_endpoint
+    try_to_update.save!
+
+    try_number = random_case.tries.first.try_number
+    options = {}
+
+    # Call the helper method
+    result = link_to_core_case('View Case', random_case, try_number, options)
+
+    assert_includes result, 'https://'
+  end
 end

@@ -121,14 +121,19 @@ module ApplicationHelper
     options[:data] ||= {}
     options[:data][:turbo_prefetch] = false
 
+    path_params = {}
+
     endpoint_url = kase.tries.first&.search_endpoint&.endpoint_url
-    protocol = nil
+
     if endpoint_url
       protocol = get_protocol_from_url(endpoint_url)
-      port = 443 if 'https' == protocol
+      path_params = {
+        protocol: protocol,
+        port:     'https' == protocol ? 443 : nil,
+      }.compact
     end
-    path = case_core_url(kase, try_number, protocol: protocol, port: port)
 
+    path = case_core_url(kase, try_number, **path_params)
     # Call the original link_to method with the modified options
     link_to(name, path, options)
   end
@@ -147,7 +152,7 @@ module ApplicationHelper
     if Rails.configuration.prefer_ssl
       { protocol: 'https', port: 443 }
     else
-      { protocol: 'http', port: 80 }
+      { protocol: 'http' }
     end
   end
 end
