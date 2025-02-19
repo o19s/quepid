@@ -51,7 +51,7 @@ Rails.application.routes.draw do
 
   get  'logout' => 'sessions#destroy'
 
-  resources :sessions
+  resources :sessions, except: [ :edit, :show, :update ]
   resource :account, only: [ :update, :destroy ]
   resource :profile, only: [ :show, :update ]
 
@@ -59,7 +59,7 @@ Rails.application.routes.draw do
   get '/dropdown/books' => 'dropdown#books'
 
   resources :teams, only: [] do
-    resources :ai_judges, controller: :ai_judges
+    resources :ai_judges, controller: :ai_judges, except: [ :index ]
   end
 
   resources :ai_judges, only: [] do
@@ -78,7 +78,7 @@ Rails.application.routes.draw do
 
   resources :books do
     resources :judgements
-    resources :ai_judges
+    resources :ai_judges, except: [ :index ]
     resources :query_doc_pairs do
       resources :judgements
       post 'unrateable' => 'judgements#unrateable'
@@ -114,12 +114,13 @@ Rails.application.routes.draw do
     omniauth_callbacks: 'users/omniauth_callbacks',
   }
 
+  # not sure we actually need this name space...
   namespace :analytics do
     get 'tries_visualization/:case_id' => 'tries_visualization#show', as: :tries_visualization
     get 'tries_visualization/:case_id/vega_specification' => 'tries_visualization#vega_specification',
         as: :tries_visualization_vega_specification
     get 'tries_visualization/:case_id/vega_data' => 'tries_visualization#vega_data', as: :tries_visualization_vega_data
-    resources :cases do
+    resources :cases, only: [] do
       resource :visibility, only: [ :update ], module: :cases
       resource :duplicate_scores, only: [ :show ], module: :cases
     end
@@ -138,7 +139,7 @@ Rails.application.routes.draw do
       end
     end
     resources :communal_scorers
-    resources :announcements do
+    resources :announcements, except: [ :show ] do
       member do
         post :publish
       end
@@ -183,9 +184,7 @@ Rails.application.routes.draw do
       resources :cases, except: [ :new, :edit ], param: :case_id
       resources :cases, only: [] do
         # Case Tries
-        resources :tries, param: :try_number, except: [ :new ] do
-          post '/duplicate' => 'duplicate_tries#create', as: :duplicate_try
-        end
+        resources :tries, param: :try_number, except: [ :new, :edit ]
 
         # Case Scorers
         resources :scorers, only: [ :index, :update ], controller: :case_scorers
@@ -220,22 +219,22 @@ Rails.application.routes.draw do
         resource :scores, only: [ :update, :show ], controller: :case_scores
         get '/scores/all' => 'case_scores#index'
 
-        resources :annotations, except: [ :show ]
+        resources :annotations, except: [ :show, :new, :edit ]
 
         resources :search_endpoints, only: [ :index ]
       end
 
-      resources :books do
+      resources :books, except: [ :new, :edit ] do
         put '/populate' => 'books/populate#update'
-        resources :cases do
+        resources :cases, except: [ :new, :edit ] do
           put 'refresh' => 'books/refresh#update'
         end
-        resources :query_doc_pairs do
+        resources :query_doc_pairs, except: [ :new, :edit ] do
           collection do
             get 'to_be_judged/:judge_id' => 'query_doc_pairs#to_be_judged'
           end
         end
-        resources :judgements
+        resources :judgements, except: [ :new, :edit ]
       end
 
       namespace :clone do
@@ -244,7 +243,7 @@ Rails.application.routes.draw do
         end
       end
 
-      resources :search_endpoints
+      resources :search_endpoints, except: [ :new, :edit ]
       resources :scorers, except: [ :new, :edit ]
 
       resources :teams, except: [ :new, :edit ], param: :team_id
