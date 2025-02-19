@@ -1,5 +1,11 @@
 # Changelog
 
+## 8.0.1 -- 2024-02-19
+
+Whelp, that didn't take long!  
+
+We broke support for running Quepid on non standard ports like :3000.  https://github.com/o19s/quepid/pull/1229 by @epugh fixes this.
+
 ## 8.0.0 -- 2024-02-14
 
 It's Valentine's Day 💘, so it seems appropriate to release the next major version of Quepid, the tool to give your queries some ❤️.
