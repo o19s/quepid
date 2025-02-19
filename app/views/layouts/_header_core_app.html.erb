@@ -93,7 +93,6 @@
             <li><%= link_to 'My profile', profile_url(determine_prefer_ssl_options()), class: 'dropdown-link', target: '_self' %></li>
             <li><%= link_to 'Log out', logout_url(determine_prefer_ssl_options()), class: 'dropdown-link', target: '_self' %></li>
             <li role="separator" class=""></li>
-            <li><%= link_to 'Judgements', books_url(determine_prefer_ssl_options()), class: 'dropdown-link', target: '_self' %></li>
             <li><%= link_to 'API Docs', apipie_apipie_url(determine_prefer_ssl_options()), class: 'dropdown-item', target: '_self' %></li>
             <% if current_user.administrator? %>
             <li role="separator" class=""></li>
