@@ -106,3 +106,8 @@ query_for_case_with_book:
   query_text:   star wars
   information_need: I am looking for the movies, with them in order of release, except for the newest should be at the top
   arranged_at:  1
+
+query2_for_case_with_book:
+  case:         :case_with_book
+  query_text:   Han
+  arranged_at:  2

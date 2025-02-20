@@ -167,6 +167,41 @@ module Api
               assert_response :no_content
             end
           end
+
+          test 'clear position for qdp pushed out of the rating window by new qdp entries' do
+            qdps = book.query_doc_pairs.where(query_text: 'Han')
+            bottom_qdp = qdps.max_by(&:position)
+
+            data = {
+              book_id:         book.id,
+              case_id:         acase.id,
+              query_doc_pairs: [
+                {
+                  query_text:      'Han',
+                  doc_id:          'https://www.themoviedb.org/movie/1892-return-of-the-jedi',
+                  position:        bottom_qdp.position,
+                  document_fields: {
+                    title: 'Return of the Jedi',
+                    year:  '1982',
+                  },
+                }
+              ],
+            }
+
+            assert_difference 'book.query_doc_pairs.count', 1 do
+              put :update, params: data
+
+              perform_enqueued_jobs
+
+              assert_response :no_content
+            end
+
+            bottom_qdp.reload
+
+            assert_nil bottom_qdp.position # make sure position was cleared
+            assert_equal 1,
+                         book.query_doc_pairs.where(query_text: 'Han', position: bottom_qdp.position).count
+          end
         end
       end
     end

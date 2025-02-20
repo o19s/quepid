@@ -64,6 +64,9 @@ class PopulateBookJob < ApplicationJob
         locals:  { book: book, counter: counter, percent: percent, qdp: query_doc_pair }
       )
     end
+
+    fix_duplicate_positions book
+
     book.populate_file.purge
     book.populate_job = nil
     book.save
@@ -71,4 +74,21 @@ class PopulateBookJob < ApplicationJob
   # rubocop:enable Security/MarshalLoad
   # rubocop:enable Metrics/MethodLength
   # rubocop:enable Metrics/AbcSize
+
+  # rubocop:disable Rails/SkipsModelValidations
+  def fix_duplicate_positions book
+    duplicates = book.query_doc_pairs.group(:query_text, :position)
+      .having('COUNT(*) > 1')
+      .select(:query_text, :position)
+
+    duplicates.each do |duplicate|
+      pairs = book.query_doc_pairs.where(query_text: duplicate.query_text,
+                                         position:   duplicate.position)
+        .order(updated_at: :desc)
+
+      # Skip the first (newest) one and clear position field for the rest
+      pairs.offset(1).update_all(position: nil)
+    end
+  end
+  # rubocop:enable Rails/SkipsModelValidations
 end
