@@ -6,6 +6,17 @@ Whelp, that didn't take long!
 
 We broke support for running Quepid on non standard ports like :3000.  https://github.com/o19s/quepid/pull/1229 by @epugh fixes this.
 
+## What's Changed
+* Bump rubocop from 1.71.2 to 1.72.2 by @dependabot in https://github.com/o19s/quepid/pull/1227
+* Bump annotaterb from 4.13.0 to 4.14.0 by @dependabot in https://github.com/o19s/quepid/pull/1224
+* Bump rubocop-rails from 2.29.1 to 2.30.1 by @dependabot in https://github.com/o19s/quepid/pull/1226
+* Remove unused route declarations. by @epugh in https://github.com/o19s/quepid/pull/1228
+* Bump activerecord-import from 2.0.0 to 2.1.0 by @dependabot in https://github.com/o19s/quepid/pull/1207
+* Fix prefer ssl logic to not blindly force port 80 by @epugh in https://github.com/o19s/quepid/pull/1229
+
+
+**Full Changelog**: https://github.com/o19s/quepid/compare/v8.0.0...v8.0.1
+
 ## 8.0.0 -- 2024-02-14
 
 It's Valentine's Day 💘, so it seems appropriate to release the next major version of Quepid, the tool to give your queries some ❤️.
