@@ -657,13 +657,12 @@ module Analytics
       # @param user,      User
       # @param the_case,  Case
       #
-      def user_populated_book user, _book
+      def user_populated_book _user, book
         data = {
           category: 'Books',
           action:   'Populated empty book',
-          label:    user.email,
-          value:    1,
-          user:     user,
+          label:    book.name,
+          value:    book.id,
         }
 
         create_event data
@@ -680,7 +679,7 @@ module Analytics
           category: 'Books',
           action:   'Refreshed a book',
           label:    book.name,
-          value:    1,
+          value:    book.id,
         }
 
         create_event data
