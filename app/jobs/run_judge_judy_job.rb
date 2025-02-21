@@ -28,6 +28,9 @@ class RunJudgeJudyJob < ApplicationJob
 
       llm_service.perform_safe_judgement(judgement)
 
+      # if we don't have a rating, let's assume it's not rateable and mark it so.
+      judgement.mark_unrateable if judgement.rating.blank?
+
       judgement.save!
       counter += 1
 

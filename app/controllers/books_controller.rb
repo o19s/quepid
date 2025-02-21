@@ -49,6 +49,8 @@ class BooksController < ApplicationController
   end
 
   def judgement_stats
+    @moar_judgements_needed = !(SelectionStrategy.every_query_doc_pair_has_three_judgements? @book)
+
     @leaderboard_data = []
     @stats_data = []
 
