@@ -16,21 +16,17 @@
   <div class="row gx-5">
     <div class="col-md-6">
       <h2>Prompt Settings</h2>
-      <div>
+      <div>      
         <div>
-          <%= form.label :openai_key, style: "display: block" %>
-          <%= form.text_field :openai_key %>
+          <%= form.textarea :system_prompt, class: "form-control", rows: 20  %>
         </div>
-      
         <div>
-          <%= form.label :system_prompt, style: "display: block" %>
-          <%= form.textarea :system_prompt, class: "form-control", rows: 10  %>
+          <p/>
         </div>
-      
         <div>
           <%= form.submit 'Refine Prompt', class: 'btn btn-default btn-primary' %>
           
-          <%= link_to 'Back to Book', book_path(@book), method: :get, class: 'btn btn-block btn-light' if @book %>
+          <%= link_to 'Back', judgement_stats_book_path(@book), method: :get, class: 'btn btn-block btn-light float-end' if @book %>
         </div>
       </div>
       <% if @judgement %>
@@ -46,7 +42,7 @@
       <% end %>
     </div>
     <div class="col-md-6">
-      <h2>Query Doc Pair</h2>
+      <h2>Query Doc Pair to Evaluate</h2>
       <div>        
         <%= fields_for :query_doc_pair, query_doc_pair do |query_doc_pair_fields| %>
             

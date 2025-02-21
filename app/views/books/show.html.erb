@@ -37,7 +37,8 @@ This book consists of <%= @book.queries_count %> queries.
 <%= render 'kraken_unleashed', book: @book if @kraken_unleashed %>
 
 <% if @book.ai_judges.present?  %>
-  We have some AI Judges <i class="bi bi-robot"></i>, <i><%= @book.ai_judges.map(&:name).to_sentence %></i> helping us.
+  We have <%= "#{@book.ai_judges.count == 1 ? 'an' : 'some'} AI #{@book.ai_judges.count == 1 ? 'Judge' : 'Judges'}" %>
+  <i class="bi bi-robot"></i>, <i><%= @book.ai_judges.map(&:name).to_sentence %></i> helping us rate documents.
   <br/>
 <% end %>
 
