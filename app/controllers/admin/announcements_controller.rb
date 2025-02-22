@@ -2,8 +2,15 @@
 
 module Admin
   class AnnouncementsController < Admin::AdminController
+    include Pagy::Backend
     def index
-      @announcements = Announcement.all
+      query = Announcement.order(updated_at: :desc)
+      if params[:q].present?
+        query = query.where('text LIKE ?',
+                            "%#{params[:q]}%")
+      end
+
+      @pagy, @announcements = pagy(query)
     end
 
     def new
