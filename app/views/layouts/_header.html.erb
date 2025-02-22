@@ -100,7 +100,7 @@
 </nav>
 
 <div id='flash'>
-  <% if @announcement.present? %>
+  <% if @announcement&.persisted? %>
     <div class="alert alert-light alert-dismissible text-center fade show" role="alert">
       <%= @announcement.text.html_safe %>      
       <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>

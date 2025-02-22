@@ -36,7 +36,7 @@
       <% end %>
       <p>
         <% if @current_user %>
-          <%= button_to (@case.public? ? 'Make Private' : 'Make public'), analytics_case_visibility_path(@case), method: :patch, class: 'btn btn-danger btn-sm' %>
+          <%= button_to (@case.public? ? 'Make Private' : 'Make public'), analytics_case_visibility_path(@case), method: :patch, class: 'btn btn-outline-warning btn-sm' %>
         <% end %>
       </p>
     </header>

@@ -56,10 +56,12 @@
             <td><%= announcement.created_at.strftime("%B %d %Y, %l:%M%P") %> </td>
             <td><%= announcement.announcement_viewed.size %> </td>
             <td class="d-flex gap-2">
-              <%= link_to 'Edit', edit_admin_announcement_path(announcement) %>
-              <%= button_to 'Delete', admin_announcement_path(announcement), method: :delete, class: 'btn btn-sm btn-danger'%>
-      
-              <%= button_to (announcement.live? ? 'Turn Off' : 'Make Live'), publish_admin_announcement_path(announcement), method: :post, class: 'btn btn-sm btn-primary' %>
+              <%= link_to 'Edit', edit_admin_announcement_path(announcement) %>              
+              <% if announcement.live? %>
+                <%= button_to 'Turn Off', publish_admin_announcement_path(announcement), method: :post, class: 'btn btn-sm btn-primary' %>
+              <% else %>
+                <%= button_to 'Make Live', publish_admin_announcement_path(announcement), method: :post, class: 'btn btn-sm btn-outline-primary' %>
+              <% end %>              
             </td>
           </tr>
         <% end %>

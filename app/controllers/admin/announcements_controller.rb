@@ -27,7 +27,7 @@ module Admin
       @announcement.author = current_user
 
       if @announcement.save
-        redirect_to admin_announcements_path
+        redirect_to edit_admin_announcement_path(@announcement)
       else
         render 'new'
       end
@@ -35,11 +35,7 @@ module Admin
 
     def update
       @announcement = Announcement.find(params[:id])
-      if @announcement.update(announcement_params)
-        redirect_to admin_announcements_path
-      else
-        render 'edit'
-      end
+      render 'edit'
     end
 
     def destroy

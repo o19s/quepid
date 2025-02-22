@@ -1,6 +1,12 @@
-<h1>Edit Scorer</h1>
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+  <h1>Edit Communal Scorer</h1>
+  <div class="btn-toolbar mb-2 mb-md-0">
+    <div class="btn-group me-2">
+      <%= button_to "Delete this Communal Scorer", admin_communal_scorers_path(@scorer), method: :delete, class: 'btn btn-sm btn-outline-danger', onclick: "return confirm('Are you sure you want to delete this Communal Scorer?');" %>      
+      <%= link_to "Back", admin_communal_scorers_path, class: "btn btn-sm btn-outline-secondary" %>
+    </div>
+  </div>
+</div>
+
 
 <%= render partial: 'form', locals: {passed_in_action: 'update'} %>
-
-<%= link_to 'View', admin_communal_scorer_path(@scorer) %> |
-<%= link_to 'Back', admin_communal_scorers_path %>

@@ -1,5 +1,5 @@
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-  <h1 class="h2">Search Endpoint <%= @search_endpoint.fullname %></h1>
+  <h1>Search Endpoint <%= @search_endpoint.fullname %></h1>
   <div class="btn-toolbar mb-2 mb-md-0">
     <div class="btn-group me-2">
       <%= link_to 'Edit', edit_search_endpoint_path(@search_endpoint), class: "btn btn-sm btn-outline-primary " %>      
@@ -8,8 +8,6 @@
     </div>
   </div>
 </div>
-
-Search Endpoints represents a search engine (or API!) that is receiving queries and responding with documents.
 
 <p style="color: green"><%= notice %></p>
 

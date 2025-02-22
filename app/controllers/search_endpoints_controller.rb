@@ -1,13 +1,22 @@
 # frozen_string_literal: true
 
 class SearchEndpointsController < ApplicationController
+  include Pagy::Backend
   before_action :set_search_endpoint, only: [ :show, :edit, :update, :destroy, :clone ]
 
   respond_to :html
 
   def index
-    @search_endpoints = @current_user.search_endpoints_involved_with
-    respond_with(@search_endpoints)
+    query = @current_user.search_endpoints_involved_with
+
+    query = query.where(teams: { id: params[:team_id] }) if params[:team_id].present?
+
+    if params[:q].present?
+      query = query.where('search_endpoints.name LIKE ? OR endpoint_url LIKE ?',
+                          "%#{params[:q]}%", "%#{params[:q]}%")
+    end
+
+    @pagy, @search_endpoints = pagy(query)
   end
 
   def show
@@ -21,7 +30,7 @@ class SearchEndpointsController < ApplicationController
 
   def clone
     @search_endpoint = @search_endpoint.dup
-    @search_endpoint.name = "Clone #{@search_endpoint.name}"
+    @search_endpoint.name = "Clone of #{@search_endpoint.name}"
     respond_with(@search_endpoint)
   end
 
