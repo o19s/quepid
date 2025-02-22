@@ -14,7 +14,7 @@
 # Indexes
 #
 #  index_announcements_author_id  (author_id)
-#  index_announcements_live       (live) UNIQUE
+#  index_announcements_on_live    (live)
 #
 class Announcement < ApplicationRecord
   belongs_to :author, class_name: 'User'
