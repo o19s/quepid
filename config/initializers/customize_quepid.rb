@@ -58,6 +58,10 @@ Rails.application.config.terms_and_conditions_url = ENV.fetch('TC_URL', nil)
 # This parameter controls whether or not signing up via the UI is enabled.
 Rails.application.config.signup_enabled = bool.deserialize(ENV.fetch('SIGNUP_ENABLED', true))
 
+# == Enable email/password based login
+# This parameter controls whether or not signing in using email/password is supported
+Rails.application.config.email_login_enabled = bool.deserialize(ENV.fetch('EMAIL_LOGIN_ENABLED', true))
+
 # == Communal Scorers Only
 # Users can normally create custom scorers which run embedded javascript, this is a potential
 # security flaw as malicious javascript could be entered. This setting restricts users to
