@@ -1,60 +1,67 @@
 <!-- has to be at the end to let JQuery and Heatmap work -->
 <%= javascript_include_tag 'admin_users' %>
 <%= form_for(@scorer, url: {action: passed_in_action}, class: 'form-horizontal') do |f| %>
-  <% if @scorer.errors.any? %>
-    <div id="error_explanation">
-      <h2><%= pluralize(@scorer.errors.count, "error") %> prohibited this scorer from being saved:</h2>
-
-      <ul>
-      <% @scorer.errors.full_messages.each do |message| %>
-        <li><%= message %></li>
+<div class="card">
+  <div class="card-body">
+      <% if @scorer.errors.any? %>
+        <div id="error_explanation">
+          <h2><%= pluralize(@scorer.errors.count, "error") %> prohibited this scorer from being saved:</h2>
+    
+          <ul>
+          <% @scorer.errors.full_messages.each do |message| %>
+            <li><%= message %></li>
+          <% end %>
+          </ul>
+        </div>
       <% end %>
-      </ul>
-    </div>
-  <% end %>
-
-  <div class="mb-3">
-    <%= f.label :name, class: 'form-label' %>
-    <%= f.text_field :name, class: 'form-control' %>
-    <div class="form-text">The scorer name typically includes the depth of scoring as part of the name, i.e @10</div>
+      
+      <div class="row mb-3">
+        <%= f.label :name, class: 'col-sm-2 col-form-label' %>
+        <div class="col-sm-4">
+          <%= f.text_field :name, class: 'form-control' %>
+          <div class="form-text">The scorer name typically includes the depth of scoring as part of the name, i.e @10</div>
+        </div>
+      </div>
+    
+      <div class="mb-3">
+        <%= f.label :code, class: 'form-label' %>
+        <div class="form-text">This Javascript is run in the browser to calculate the scores.</div>
+        <%= f.text_area :code %>
+      </div>
+    
+      <div class="row mb-3">
+        <%= f.label :scale_list, class: 'col-sm-2 col-form-label' %>
+        <div class="col-sm-4">
+          <%= f.text_field :scale_list, class: 'form-control', data: { 'live-update': 'scorer_scale_with_labels' }%>
+          <div class="form-text">Use a comma delimited list.  This will update below the list of labels for each grade.</div>
+        </div>
+      </div>
+    
+      <div class="mb-3 form-check">
+        <%= f.check_box :show_scale_labels, class: 'form-check-input' %>
+        <%= f.label :show_scale_labels, 'Show scale labels?' %>
+      </div>
+    
+      <div class="mb-3">
+        <%= f.label :scale_with_labels, class: 'col-sm-2 control-label' %>
+        <div class="col-sm-10" id="scorer_scale_with_labels">
+          <% @scorer.scale.each do |value| -%>
+            <label class='scale-with-label-element clearfix'>
+              <%= value %>:
+              <input
+                class="form-control scale-label clearfix"
+                type="text"
+                name="scorer[scale_with_labels][<%= value %>]"
+                value="<%= @scorer.scale_with_labels[value.to_s] unless @scorer.scale_with_labels.blank? %>"
+              />
+            </label>
+          <% end -%>
+        </div>
+      </div>
+    
+      <%= f.submit class: 'btn btn-primary' %>
   </div>
-
-  <div class="mb-3">
-    <%= f.label :code, class: 'form-label' %>
-    <div class="form-text">This Javascript is run in the browser to calculate the scores.</div>
-    <%= f.text_area :code %>
-  </div>
-
-  <div class="mb-3">
-    <%= f.label :scale_list, class: 'form-label' %>
-    <%= f.text_field :scale_list, class: 'form-control', data: { 'live-update': 'scorer_scale_with_labels' }%>
-    <div class="form-text">Use a comma delimited list.  This will update below the list of labels for each grade.</div>
-  </div>
-
-  <div class="mb-3 form-check">
-    <%= f.check_box :show_scale_labels, class: 'form-check-input' %>
-    <%= f.label :show_scale_labels, 'Show scale labels?' %>
-  </div>
-
-  <div class="mb-3">
-    <%= f.label :scale_with_labels, class: 'col-sm-2 control-label' %>
-    <div class="col-sm-10" id="scorer_scale_with_labels">
-      <% @scorer.scale.each do |value| -%>
-        <label class='scale-with-label-element clearfix'>
-          <%= value %>:
-          <input
-            class="form-control scale-label clearfix"
-            type="text"
-            name="scorer[scale_with_labels][<%= value %>]"
-            value="<%= @scorer.scale_with_labels[value.to_s] unless @scorer.scale_with_labels.blank? %>"
-           />
-        </label>
-      <% end -%>
-    </div>
-  </div>
-
-  <%= f.submit class: 'btn btn-primary' %>
-
+</div>
 <% end %>
 
 

@@ -8,45 +8,49 @@
   </div>
 </div>
 
-<p>
-  from <%= book_title(@book) %>
-</p>
-
-<p>
-  <strong>Query text:</strong>
-  <em><%= @query_doc_pair.query_text %></em>
-</p>
-
-<p>
-  <strong>Information Need:</strong>
-  <%= @query_doc_pair.information_need %>
-</p>
-
-<p>
-  <strong>Document Fields:</strong>
-  <%= @query_doc_pair.document_fields %>
-</p>
-
-<p>
-  <strong>Notes:</strong>
-  <%= @query_doc_pair.notes %>
-</p>
-
-<p>
-  <strong>Options:</strong>
-  <%= @query_doc_pair.options %>
-</p>
-
-
-<p>
-  <strong>Position:</strong>
-  <%= @query_doc_pair.position %>
-</p>
-
-<p>
-  <strong>Doc ID:</strong>
-  <%= @query_doc_pair.doc_id %>
-</p>
-
-<% @document_fields_as_json = document_fields_parses_as_json (@query_doc_pair.document_fields) %>
-<%= render 'query_doc_pairs/document_fields', document_fields_as_json: @document_fields_as_json %>
+<div class="card">
+  <div class="card-body"> 
+  <p>
+    from <%= book_title(@book) %>
+  </p>
+  
+  <p>
+    <strong>Query text:</strong>
+    <em><%= @query_doc_pair.query_text %></em>
+  </p>
+  
+  <p>
+    <strong>Information Need:</strong>
+    <%= @query_doc_pair.information_need %>
+  </p>
+  
+  <p>
+    <strong>Document Fields:</strong>
+    <%= @query_doc_pair.document_fields %>
+  </p>
+  
+  <p>
+    <strong>Notes:</strong>
+    <%= @query_doc_pair.notes %>
+  </p>
+  
+  <p>
+    <strong>Options:</strong>
+    <%= @query_doc_pair.options %>
+  </p>
+  
+  
+  <p>
+    <strong>Position:</strong>
+    <%= @query_doc_pair.position %>
+  </p>
+  
+  <p>
+    <strong>Doc ID:</strong>
+    <%= @query_doc_pair.doc_id %>
+  </p>
+  
+  <% @document_fields_as_json = document_fields_parses_as_json (@query_doc_pair.document_fields) %>
+  <%= render 'query_doc_pairs/document_fields', document_fields_as_json: @document_fields_as_json %>
+  </div>
+</div>
