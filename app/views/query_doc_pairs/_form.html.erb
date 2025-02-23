@@ -1,59 +1,64 @@
 
 <%= form_for([@book, query_doc_pair]) do |form| %>
-  <% if query_doc_pair.errors.any? %>
-    <div id="error_explanation">
-      <h2><%= pluralize(query_doc_pair.errors.count, "error") %> prohibited this query_doc_pair from being saved:</h2>
-
-      <ul>
-        <% query_doc_pair.errors.each do |error| %>
-          <li><%= error.full_message %></li>
-        <% end %>
-      </ul>
+  <div class="card">
+    <div class="card-body"> 
+      <% if query_doc_pair.errors.any? %>
+        <div id="error_explanation">
+          <h2><%= pluralize(query_doc_pair.errors.count, "error") %> prohibited this query_doc_pair from being saved:</h2>
+    
+          <ul>
+            <% query_doc_pair.errors.each do |error| %>
+              <li><%= error.full_message %></li>
+            <% end %>
+          </ul>
+        </div>
+      <% end %>
+    
+    
+      <div class="mb-3">
+        <%= form.label :query_text, class: 'form-label' %>
+        <%= form.text_field :query_text %>
+      </div>
+      
+    
+      <div class="mb-3">
+        <%= form.label :position, class: 'form-label'  %>
+        <%= form.text_field :position %>
+      </div>
+    
+      <div class="mb-3">
+        <%= form.label :doc_id, "Doc ID", class: 'form-label'  %>
+        <%= form.text_field :doc_id %>
+      </div>
+      
+      <div class="mb-3">
+        <%= form.label :information_need, "Information Need", class: 'form-label'  %>
+        <%= form.text_field :information_need, size: 80 %>
+      </div>
+      
+      <div class="mb-3">
+        <%= form.label :options, class: 'form-label'  %> <small>JSON</small><br/>
+        <%= form.text_area :options, size: "80x8" %>
+      </div>  
+      
+      <div class="mb-3">
+        <%= form.label :notes, class: 'form-label'  %><br/>
+        <%= form.text_area :notes, size: "80x8" %>
+      </div>  
+    
+      <div class="mb-3">
+        <%= form.label :document_fields, class: 'form-label'  %> <small>JSON</small><br/>
+        <%= form.text_area :document_fields, size: "80x8" %>
+      </div>
+    
+    
+    
+    
+      <br>
+    
+      <div class="actions">
+        <%= form.submit class: "btn btn-primary"%>
+      </div>
     </div>
-  <% end %>
-
-  <div class="field">
-    <%= form.label :query_text %>
-    <%= form.text_field :query_text %>
-  </div>
-  
-
-  <div class="field">
-    <%= form.label :position %>
-    <%= form.text_field :position %>
-  </div>
-
-  <div class="field">
-    <%= form.label :doc_id, "Doc ID" %>
-    <%= form.text_field :doc_id %>
-  </div>
-  
-  <div class="field">
-    <%= form.label :information_need, "Information Need" %>
-    <%= form.text_field :information_need, size: 80 %>
-  </div>
-  
-  <div class="field">
-    <%= form.label :options %> <small>JSON</small><br/>
-    <%= form.text_area :options, size: "80x8" %>
-  </div>  
-  
-  <div class="field">
-    <%= form.label :notes %><br/>
-    <%= form.text_area :notes, size: "80x8" %>
-  </div>  
-
-  <div class="field">
-    <%= form.label :document_fields %> <small>JSON</small><br/>
-    <%= form.text_area :document_fields, size: "80x8" %>
-  </div>
-
-
-
-
-  <br>
-
-  <div class="actions">
-    <%= form.submit %>
   </div>
 <% end %>

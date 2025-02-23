@@ -7,14 +7,14 @@
 <br>
 
 <% if @previous_judgement %>
-  <%= button_to 'Go Back to Previous Query/Doc Pair', edit_book_query_doc_pair_judgement_path(@book, @previous_judgement.query_doc_pair, @previous_judgement), method: :get %>
+  <%= button_to 'Go Back to Previous Query/Doc Pair', edit_book_query_doc_pair_judgement_path(@book, @previous_judgement.query_doc_pair, @previous_judgement), method: :get, class: 'btn btn-sm btn-outline-secondary' %>
   <br>
 <% end %>
-<%= button_to 'Quit Judging', book_path(@book), method: :get, data: { turbo: false } %>
+<%= button_to 'Quit Judging', book_path(@book), method: :get, data: { turbo: false }, class: 'btn btn-sm btn-outline-secondary' %>
 
 <br>
 
-<%= button_to 'Unrate', book_judgement_path, method: :delete, data: { turbo: false } %>
+<%= button_to 'Unrate', book_judgement_path, method: :delete, data: { turbo: false }, class: 'btn btn-sm btn-outline-danger' %>
 
 <br>
 </turbo-frame>

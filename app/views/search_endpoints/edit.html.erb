@@ -1,8 +1,8 @@
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-  <h1 class="h2">Edit Search Endpoint <%= @search_endpoint.fullname %></h1>
+  <h1>Edit Search Endpoint <%= @search_endpoint.fullname %></h1>
   <div class="btn-toolbar mb-2 mb-md-0">
     <div class="btn-group me-2">
-      <%= button_to "Delete this Search Endpoint", @search_endpoint, method: :delete, class: 'btn btn-sm btn-danger', onclick: "return confirm('Are you sure you want to delete this Search Endpoint?');" %>
+      <%= button_to "Delete this Search Endpoint", @search_endpoint, method: :delete, class: 'btn btn-sm btn-outline-danger', onclick: "return confirm('Are you sure you want to delete this Search Endpoint?');" %>
       <%= link_to "Back to Search Endpoints", search_endpoints_path, class: "btn btn-sm btn-outline-secondary" %>
     </div>
 

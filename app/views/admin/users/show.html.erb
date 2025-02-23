@@ -1,151 +1,163 @@
-<div class="clearfix">
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+  <h1>
+    <%= image_tag @user.avatar_url(:big), size:'96x96', class:'img-rounded', title: 'Avatar image' %>
+    <%= @user.display_name%>    
+  </h1>
+  <div class="btn-toolbar mb-2 mb-md-0">
+    <div class="btn-group me-2">
+      <%= link_to 'Edit', edit_admin_user_path(@user), class: "btn btn-sm btn-outline-primary " %>      
+      <%= link_to "Back", admin_users_path, class: "btn btn-sm btn-outline-secondary"  %>
+      <%= button_to (@user.locked? ? 'Unlock' : 'Lock'), admin_user_lock_path(@user), method: :patch, class: 'btn btn-outline-warning btn-sm' %>
 
-  <h1><%= @user.display_name %></h1>
-
-  <p id="notice"><%= notice %></p>
-  <%= image_tag @user.avatar_url(:big), size:'96x96', class:'img-rounded', title: 'Avatar image' %>
-
-  <div class="form-group">
-    <label class="col-sm-2 control-label">Email</label>
-    <div class="col-sm-10">
-      <p class="form-control-static"><%= @user.email %></p>
     </div>
   </div>
+</div>
 
-  <div class="form-group">
-    <label class="col-sm-2 control-label">Name</label>
-    <div class="col-sm-10">
-      <p class="form-control-static"><%= @user.name || 'N/A' %></p>
-    </div>
-  </div>
-
-  <div class="form-group">
-    <label class="col-sm-2 control-label">Company</label>
-    <div class="col-sm-10">
-      <p class="form-control-static"><%= @user.company %></p>
-    </div>
-  </div>
+<div class="card">
+  <div class="card-body">
+    <p id="notice"><%= notice %></p>
+    
   
-  <div class="form-group">
-    <label class="col-sm-2 control-label">Signed Up</label>
-    <div class="col-sm-10">
-      <p class="form-control-static">
-        <%= @user.agreed_time %>
-        <% if @user.agreed_time %>
-          (<%= time_ago_in_words @user.agreed_time %> ago)
-        <% end %>
-      </p>
+    <div class="form-group">
+      <label class="col-sm-2 control-label">Email</label>
+      <div class="col-sm-10">
+        <p class="form-control-static"><%= @user.email %></p>
+      </div>
     </div>
-  </div>
-  <div class="form-group">
-    <label class="col-sm-2 control-label">Created by Invite?</label>
-    <div class="col-sm-10">
-      <p class="form-control-static"><%= @user.created_by_invite? %></p>
-    </div>
-  </div>
-
-  <div class="form-group">
-    <label class="col-sm-2 control-label">Email Marketing</label>
-    <div class="col-sm-10">
-      <p class="form-control-static"><%= @user.email_marketing %></p>
-    </div>
-  </div>
-
-  <div class="form-group">
-    <label class="col-sm-2 control-label">Number of Logins</label>
-    <div class="col-sm-10">
-      <p class="form-control-static"><%= @user.num_logins %></p>
-    </div>
-  </div>
-
-  <div class="form-group">
-    <label class="col-sm-2 control-label">Is Administrator?</label>
-    <div class="col-sm-10">
-      <p class="form-control-static"><%= @user.administrator %></p>
-    </div>
-  </div>
-
-  <div class="form-group">
-    <label class="col-sm-2 control-label">Locked?</label>
-    <div class="col-sm-10">
-      <p class="form-control-static"><%= @user.locked? %></p>
-    </div>
-  </div>
   
-  <div class="form-group">
-    <label class="col-sm-2 control-label">Encrypted Password</label>
-    <div class="col-sm-10">
-      <p class="form-control-static"><%= @user.password %></p>
+    <div class="form-group">
+      <label class="col-sm-2 control-label">Name</label>
+      <div class="col-sm-10">
+        <p class="form-control-static"><%= @user.name || 'N/A' %></p>
+      </div>
+    </div>
+  
+    <div class="form-group">
+      <label class="col-sm-2 control-label">Company</label>
+      <div class="col-sm-10">
+        <p class="form-control-static"><%= @user.company %></p>
+      </div>
+    </div>
+    
+    <div class="form-group">
+      <label class="col-sm-2 control-label">Signed Up</label>
+      <div class="col-sm-10">
+        <p class="form-control-static">
+          <%= @user.agreed_time %>
+          <% if @user.agreed_time %>
+            (<%= time_ago_in_words @user.agreed_time %> ago)
+          <% end %>
+        </p>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="col-sm-2 control-label">Created by Invite?</label>
+      <div class="col-sm-10">
+        <p class="form-control-static"><%= @user.created_by_invite? %></p>
+      </div>
+    </div>
+  
+    <div class="form-group">
+      <label class="col-sm-2 control-label">Email Marketing</label>
+      <div class="col-sm-10">
+        <p class="form-control-static"><%= @user.email_marketing %></p>
+      </div>
+    </div>
+  
+    <div class="form-group">
+      <label class="col-sm-2 control-label">Number of Logins</label>
+      <div class="col-sm-10">
+        <p class="form-control-static"><%= @user.num_logins %></p>
+      </div>
+    </div>
+  
+    <div class="form-group">
+      <label class="col-sm-2 control-label">Is Administrator?</label>
+      <div class="col-sm-10">
+        <p class="form-control-static"><%= @user.administrator %></p>
+      </div>
+    </div>
+  
+    <div class="form-group">
+      <label class="col-sm-2 control-label">Locked?</label>
+      <div class="col-sm-10">
+        <p class="form-control-static"><%= @user.locked? %></p>
+      </div>
+    </div>
+    
+    <div class="form-group">
+      <label class="col-sm-2 control-label">Encrypted Password</label>
+      <div class="col-sm-10">
+        <p class="form-control-static"><%= @user.password %></p>
+      </div>
     </div>
   </div>
 </div>
 
 <hr />
 
-<div class="clearfix">
-  <h2>Pulse</h2>
-  <% if @user.pending_invite? %>
-  <div class="alert alert-info" role="alert">This user hasn't accepted the invite to join Quepid, therefore no usage data is available.</div>
-  <% else %>
-  <h3>Cases viewed</h3>
-  <div
-    id="cases-viewed"
-    data-pulse
-    data-item-selector="#cases-viewed"
-    data-signup-date="<%= @pulse_chart_start_date %>"
-    data-url="<%= url_for admin_user_pulse_path @user, params: {data: 'metadata'} %>"
-  >
+
+<div class="card">
+  <div class="card-header">
+    <h2>Pulse</h2>
   </div>
 
-  <h3>Cases scored</h3>
-  <div
-    id="cases-scored"
-    data-pulse
-    data-item-selector="#cases-scored"
-    data-signup-date="<%= @pulse_chart_start_date %>"
-    data-url="<%= url_for admin_user_pulse_path @user, params: {data: 'scores'} %>"
-  >
-  </div>
-
-  <h3>Cases created</h3>
-  <div
-    id="cases-created"
-    data-pulse
-    data-item-selector="#cases-created"
-    data-signup-date="<%= @pulse_chart_start_date %>"
-    data-url="<%= url_for admin_user_pulse_path @user, params: {data: 'cases-created'} %>"
-  >
-  </div>
-
-  <h3>Teams created</h3>
-  <div
-    id="teams-created"
-    data-pulse
-    data-item-selector="#teams-created"
-    data-signup-date="<%= @pulse_chart_start_date %>"
-    data-url="<%= url_for admin_user_pulse_path @user, params: {data: 'teams-created'} %>"
-  >
-  </div>
-
-  <h3>Queries created</h3>
-  <div
-    id="queries-created"
-    data-pulse
-    data-item-selector="#queries-created"
-    data-signup-date="<%= @pulse_chart_start_date %>"
-    data-url="<%= url_for admin_user_pulse_path @user, params: {data: 'queries-created'} %>"
-  >
-  </div>
-
+  <div class="card-body">
+    <% if @user.pending_invite? %>
+      <div class="alert alert-info" role="alert">This user hasn't accepted the invite to join Quepid, therefore no usage data is available.</div>
+    <% else %>
+      <h3>Cases viewed</h3>
+      <div
+        id="cases-viewed"
+        data-pulse
+        data-item-selector="#cases-viewed"
+        data-signup-date="<%= @pulse_chart_start_date %>"
+        data-url="<%= url_for admin_user_pulse_path @user, params: {data: 'metadata'} %>"
+      >
+      </div>
+    
+      <h3>Cases scored</h3>
+      <div
+        id="cases-scored"
+        data-pulse
+        data-item-selector="#cases-scored"
+        data-signup-date="<%= @pulse_chart_start_date %>"
+        data-url="<%= url_for admin_user_pulse_path @user, params: {data: 'scores'} %>"
+      >
+      </div>
+    
+      <h3>Cases created</h3>
+      <div
+        id="cases-created"
+        data-pulse
+        data-item-selector="#cases-created"
+        data-signup-date="<%= @pulse_chart_start_date %>"
+        data-url="<%= url_for admin_user_pulse_path @user, params: {data: 'cases-created'} %>"
+      >
+      </div>
+    
+      <h3>Teams created</h3>
+      <div
+        id="teams-created"
+        data-pulse
+        data-item-selector="#teams-created"
+        data-signup-date="<%= @pulse_chart_start_date %>"
+        data-url="<%= url_for admin_user_pulse_path @user, params: {data: 'teams-created'} %>"
+      >
+      </div>
+    
+      <h3>Queries created</h3>
+      <div
+        id="queries-created"
+        data-pulse
+        data-item-selector="#queries-created"
+        data-signup-date="<%= @pulse_chart_start_date %>"
+        data-url="<%= url_for admin_user_pulse_path @user, params: {data: 'queries-created'} %>"
+      >
+      </div>
+    </div>
   <% end %>
 </div>
-
-<hr />
-
-<%= link_to 'Edit', edit_admin_user_path(@user) %> |
-<%= link_to 'Back', admin_users_path %> |
-<%= button_to (@user.locked? ? 'Unlock' : 'Lock'), admin_user_lock_path(@user), method: :patch, class: 'btn btn-danger btn-sm' %> |
-<%= button_to 'Destroy', admin_user_path(@user), method: :delete, class: 'btn btn-danger btn-sm' %>
 
 <!-- has to be at the end to let JQuery and Heatmap work -->
 <%= javascript_include_tag 'admin_users' %>

@@ -1,52 +1,56 @@
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+  <h1>Query Doc Pair</h1>
+  <div class="btn-toolbar mb-2 mb-md-0">
+    <div class="btn-group me-2">
+      <%= link_to 'Edit', edit_book_query_doc_pair_path(@query_doc_pair.book, @query_doc_pair), class: "btn btn-sm btn-outline-primary " %>      
+      <%= link_to "Back", book_query_doc_pairs_path(book: @query_doc_pair.book, query_doc_pair: @query_doc_pair), class: "btn btn-sm btn-outline-secondary"  %>
+    </div>
+  </div>
+</div>
 
-<h2>Query Doc Pair</h2>
-
-<p>
-  from <%= book_title(@book) %>
-</p>
-
-<p>
-  <strong>Query text:</strong>
-  <em><%= @query_doc_pair.query_text %></em>
-</p>
-
-<p>
-  <strong>Information Need:</strong>
-  <%= @query_doc_pair.information_need %>
-</p>
-
-<p>
-  <strong>Document Fields:</strong>
-  <%= @query_doc_pair.document_fields %>
-</p>
-
-<p>
-  <strong>Notes:</strong>
-  <%= @query_doc_pair.notes %>
-</p>
-
-<p>
-  <strong>Options:</strong>
-  <%= @query_doc_pair.options %>
-</p>
-
-
-<p>
-  <strong>Position:</strong>
-  <%= @query_doc_pair.position %>
-</p>
-
-<p>
-  <strong>Doc ID:</strong>
-  <%= @query_doc_pair.doc_id %>
-</p>
-
-<% @document_fields_as_json = document_fields_parses_as_json (@query_doc_pair.document_fields) %>
-<%= render 'query_doc_pairs/document_fields', document_fields_as_json: @document_fields_as_json %>
-
-
-<p></p>
-
-<%= button_to 'Edit Query Doc Pair', edit_book_query_doc_pair_path(@query_doc_pair.book, @query_doc_pair), method: :get %> <br>
-
-<%= button_to 'Back', book_query_doc_pairs_path(book: @query_doc_pair.book, query_doc_pair: @query_doc_pair), method: :get %><br>
+<div class="card">
+  <div class="card-body"> 
+  <p>
+    from <%= book_title(@book) %>
+  </p>
+  
+  <p>
+    <strong>Query text:</strong>
+    <em><%= @query_doc_pair.query_text %></em>
+  </p>
+  
+  <p>
+    <strong>Information Need:</strong>
+    <%= @query_doc_pair.information_need %>
+  </p>
+  
+  <p>
+    <strong>Document Fields:</strong>
+    <%= @query_doc_pair.document_fields %>
+  </p>
+  
+  <p>
+    <strong>Notes:</strong>
+    <%= @query_doc_pair.notes %>
+  </p>
+  
+  <p>
+    <strong>Options:</strong>
+    <%= @query_doc_pair.options %>
+  </p>
+  
+  
+  <p>
+    <strong>Position:</strong>
+    <%= @query_doc_pair.position %>
+  </p>
+  
+  <p>
+    <strong>Doc ID:</strong>
+    <%= @query_doc_pair.doc_id %>
+  </p>
+  
+  <% @document_fields_as_json = document_fields_parses_as_json (@query_doc_pair.document_fields) %>
+  <%= render 'query_doc_pairs/document_fields', document_fields_as_json: @document_fields_as_json %>
+  </div>
+</div>

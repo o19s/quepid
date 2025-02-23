@@ -1,25 +1,27 @@
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-  <h1 class="h2">New Quepid Announcement</h1>
+  <h1>New Quepid Announcement</h1>
+  <div class="btn-toolbar mb-2 mb-md-0">
+    <div class="btn-group me-2">
+      <%= link_to 'Back to Quepid Announcements', admin_announcements_path, method: :get, class:'btn btn-sm btn-outline-secondary' %>
+    </div>
+  </div>
 </div>
 
 
 <%= form_for [:admin, @announcement] do |form| %>
-
-  <div class="mb-3">
-    <%= form.label :text, class: 'form-label' %>
-    <%= form.text_area :text, required: true, rows: 5, class: 'form-control' %>
-    <div class="form-text">The announcement.  You can use HTML and emojis.</div>
+  <div class="card">
+    <div class="card-body">
+      <div class="mb-3">
+        <%= form.label :text, class: 'form-label' %>
+        <%= form.text_area :text, required: true, rows: 5, class: 'form-control' %>
+        <div class="form-text">The announcement.  You can use HTML and emojis.</div>
+      </div>
+    
+      <br>
+    
+      <div class="actions">
+        <%= form.submit "Create", class: 'btn btn-sm btn-primary'  %>
+      </div>
+    </div>
   </div>
-
-  <br>
-
-  <div class="actions">
-    <%= form.submit %>
-  </div>
-
 <% end %>
-
-
-<br>
-<%= button_to 'Back to Quepid Announcements', admin_announcements_path, method: :get %>
-<br>

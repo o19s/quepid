@@ -1,7 +1,7 @@
 <%= form_with(model: book) do |form| %>
   <div class="card">
     <div class="card-body">
-      <h5 class="card-title">Book Settings</h5>    
+      <h5 class="card-title">Settings</h5>    
       <% if book.errors.any? %>
         <div id="error_explanation">
           <h2><%= pluralize(book.errors.count, "error") %> prohibited this book from being saved:</h2>

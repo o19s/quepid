@@ -3,7 +3,9 @@
 require 'csv'
 
 module Admin
+  # rubocop:disable Metrics/ClassLength
   class UsersController < Admin::AdminController
+    include Pagy::Backend
     before_action :set_user, only: [ :show, :edit, :update, :destroy, :assign_judgements_to_anonymous_user ]
 
     # GET /admin/users
@@ -12,7 +14,14 @@ module Admin
     def index
       @shallow = 'true' == params[:shallow]
 
-      @users = User.all
+      query = User.order(created_at: :desc)
+
+      if params[:q].present?
+        query = query.where('users.name LIKE ? OR users.email LIKE ?',
+                            "%#{params[:q]}%", "%#{params[:q]}%")
+      end
+
+      @pagy, @users = pagy(query)
 
       respond_to do |format|
         format.json
@@ -142,4 +151,5 @@ module Admin
       )
     end
   end
+  # rubocop:enable Metrics/ClassLength
 end
