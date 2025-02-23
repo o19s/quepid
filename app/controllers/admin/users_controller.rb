@@ -3,6 +3,7 @@
 require 'csv'
 
 module Admin
+  # rubocop:disable Metrics/ClassLength
   class UsersController < Admin::AdminController
     include Pagy::Backend
     before_action :set_user, only: [ :show, :edit, :update, :destroy, :assign_judgements_to_anonymous_user ]
@@ -150,4 +151,5 @@ module Admin
       )
     end
   end
+  # rubocop:enable Metrics/ClassLength
 end
