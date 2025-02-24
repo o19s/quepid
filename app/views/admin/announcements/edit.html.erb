@@ -2,7 +2,7 @@
   <h1>Edit Quepid Announcement</h1>
   <div class="btn-toolbar mb-2 mb-md-0">
     <div class="btn-group me-2">
-      <%= link_to 'Delete', admin_announcement_path(@announcement), method: :delete, class: 'btn btn-sm btn-outline-danger' %>
+      <%= button_to "Delete", admin_announcement_path(@announcement), method: :delete, class: 'btn btn-sm btn-outline-danger', onclick: "return confirm('Are you sure you want to delete this Annoucement?');" %>      
       <%= link_to 'Back to Quepid Announcements', admin_announcements_path, method: :get, class:'btn btn-sm btn-outline-secondary' %>
     </div>
   </div>
