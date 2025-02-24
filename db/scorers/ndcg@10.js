@@ -1,12 +1,12 @@
-let k = 10 // @Rank
-let missing_rating = 0; // pessimistic assumption
+const k = 10 // @Rank                                                             
+const missing_rating = 0; // pessimistic assumption                               
 let scores = Array(k);
 let ideal = []
 eachDocWithRating(function(doc) {
-    ideal.push(doc.rating) 
+    ideal.push(doc.rating)
 })
 ideal.sort(function(a,b) { return b - a; });
-//console.log(ideal)
+//console.log(ideal)                                                            
 for (var i = 0; i < k; i++) {
   if (!ideal[i]) {
     ideal[i] = missing_rating;
@@ -19,18 +19,18 @@ for (var i = 0; i < k; i++) {
 }
 
 function DCG(vals, k) {
-  var dcg = 0;
+  let dcg = 0;
   for (var j = 0; j < k; j++) {
-    var d = Math.log2(j + 2);
-    var n = Math.pow(2, vals[j]) - 1;
+    const d = Math.log2(j + 2);
+    const n = Math.pow(2, vals[j]) - 1;
     dcg += d ? (n / d) : 0;
   }
   return dcg;
 }
 
 function nDCG(vals, ideal, k) {
-  var n = DCG(vals, k);
-  var d = DCG(ideal, ideal.length);
+  const n = DCG(vals, k);
+  const d = DCG(ideal, ideal.length);
   return d ? (n / d) : 0;
 }
 
