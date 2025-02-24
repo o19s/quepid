@@ -1,9 +1,9 @@
-var k = 10 // @Rank
-var missing_rating = 0; // pessimistic assumption
-var scores = Array(k);
-var ideal = []
+let k = 10 // @Rank
+let missing_rating = 0; // pessimistic assumption
+let scores = Array(k);
+let ideal = []
 eachDocWithRating(function(doc) {
-    ideal.push(doc['rating']) 
+    ideal.push(doc.rating) 
 })
 ideal.sort(function(a,b) { return b - a; });
 //console.log(ideal)
@@ -20,9 +20,9 @@ for (var i = 0; i < k; i++) {
 
 function DCG(vals, k) {
   var dcg = 0;
-  for (var i = 0; i < k; i++) {
-    var d = Math.log2(i + 2);
-    var n = Math.pow(2, vals[i]) - 1;
+  for (var j = 0; j < k; j++) {
+    var d = Math.log2(j + 2);
+    var n = Math.pow(2, vals[j]) - 1;
     dcg += d ? (n / d) : 0;
   }
   return dcg;
