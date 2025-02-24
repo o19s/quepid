@@ -21,7 +21,7 @@ module Users
       else
         Rails.logger.warn('user not persisted, what do we need to do?')
         session['devise.keycloakopenid_data'] = request.env['omniauth.auth']
-        redirect_to new_user_registration_url
+        redirect_to new_session # new_user_registration_url
       end
     end
 

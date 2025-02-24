@@ -28,40 +28,44 @@
         <% end %>
 
       </div>
-      <% unless email_login_only %>
-      <hr/>
+      <% if Rails.application.config.email_login_enabled or email_login_only %>
+        <hr/>
       <% end %>
       <div>
-        <% unless email_login_only %>
+
+        <% if Rails.application.config.email_login_enabled or email_login_only  %>
         <h4>Sign in via email:</h4>
         <% end %>
-        <%= form_with model: @user, url: users_login_path, id: 'login', html: { method: :post,  data: {turbo: false} } do |f| %>
-          <% if controller.class.to_s.include?("SessionsController") && @user.errors.any? %>
-            <div id="error_explanation">
-              <div class="alert alert-danger">
-                Unknown email/password combo. Double check you have the correct email address and password, or sign up for a new account.
+        
+        <% if Rails.application.config.email_login_enabled %>
+          <%= form_with model: @user, url: users_login_path, id: 'login', html: { method: :post,  data: {turbo: false} } do |f| %>
+            <% if controller.class.to_s.include?("SessionsController") && @user.errors.any? %>
+              <div id="error_explanation">
+                <div class="alert alert-danger">
+                  Unknown email/password combo. Double check you have the correct email address and password, or sign up for a new account.
+                </div>
               </div>
+            <% end %>
+            <div class="mb-3">
+              <%= f.text_field :email, class: 'form-control email', placeholder: 'Email Address' %>
             </div>
+  
+            <div class="mb-3">
+              <%= f.password_field :password, class: 'form-control password', placeholder: 'Password' %>
+            </div>
+            <div>
+              <%= link_to 'Forgot Password?', new_user_password_path %>
+            </div>
+            <br/>
+            <%= f.submit 'Sign in', class: 'btn btn-primary login' %>
+            <br/>
+  
           <% end %>
-          <div class="mb-3">
-            <%= f.text_field :email, class: 'form-control email', placeholder: 'Email Address' %>
-          </div>
-
-          <div class="mb-3">
-             <%= f.password_field :password, class: 'form-control password', placeholder: 'Password' %>
-          </div>
-          <div>
-            <%= link_to 'Forgot Password?', new_user_password_path %>
-          </div>
-          <br/>
-          <%= f.submit 'Sign in', class: 'btn btn-primary login' %>
-          <br/>
-
         <% end %>
       </div>
     </div>
   </div>
-  <% if Rails.application.config.signup_enabled %>
+  <% if Rails.application.config.email_login_enabled and Rails.application.config.signup_enabled %>
   <div class="col-md-1 or-block col-sm-2">
     <h2>OR</h2>
   </div>
