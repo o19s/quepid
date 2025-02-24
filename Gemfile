@@ -13,7 +13,7 @@ gem 'ancestry'
 gem 'angular-rails-templates', '~> 1.3'
 gem 'apipie-rails', '~> 1.2'
 gem 'bcrypt', '~> 3.1.7'
-gem 'blazer', '~> 3.1'
+gem 'blazer', '~> 3.2'
 gem 'bootsnap', require: false
 gem 'cal-heatmap-rails', '~> 3.6' # provides assets for cal heatmap, that requires old d3
 gem 'colorize', require: false
