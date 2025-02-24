@@ -35,7 +35,10 @@ module Admin
 
     def update
       @announcement = Announcement.find(params[:id])
-      render 'edit'
+
+      @announcement.update(announcement_params)
+
+      render 'edit' # we stay on the edit page because that is where you can preview the rendered changes
     end
 
     def destroy
