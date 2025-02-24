@@ -1,8 +1,12 @@
 var k = 10 // @Rank
 var missing_rating = 0; // pessimistic assumption
-
-var ideal = topRatings(k) // could return less than k if less than k docs have ratings
 var scores = Array(k);
+var ideal = []
+eachDocWithRating(function(doc) {
+    ideal.push(doc['rating']) 
+})
+ideal.sort(function(a,b) { return b - a; });
+//console.log(ideal)
 for (var i = 0; i < k; i++) {
   if (!ideal[i]) {
     ideal[i] = missing_rating;
@@ -26,9 +30,8 @@ function DCG(vals, k) {
 
 function nDCG(vals, ideal, k) {
   var n = DCG(vals, k);
-  var d = DCG(ideal, k);
+  var d = DCG(ideal, ideal.length);
   return d ? (n / d) : 0;
 }
 
 setScore(nDCG(scores, ideal, k));
-
