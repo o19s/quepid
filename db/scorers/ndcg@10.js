@@ -1,5 +1,5 @@
 const topK = 10 // @Rank
-const missing_rating = 0; // pessimistic assumption
+const missing_rating = 0;
 const scores = Array(topK);
 const idealScores = []
 eachDocWithRating(function(doc) {
