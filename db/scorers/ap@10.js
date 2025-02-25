@@ -17,7 +17,7 @@ eachDocWithRating(function(doc) {
     if (doc.rating > 0) {
         totalRel++;
     }
-}, bestDocs.length);
+});
 	     
 // AP is the sum of the precision points divided by the total
 // number of relevant documents
