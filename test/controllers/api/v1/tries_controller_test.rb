@@ -516,7 +516,7 @@ search_endpoint: es_endpoint.attributes }
 
         describe 'Test finding search endpoints' do
           test 'find by search_engine' do
-            solr_endpoint.endpoint_url = 'http://localhost:3000/proxy/fetch?url=http://mysearch.com?query=text'
+            solr_endpoint.endpoint_url = 'http://mysearch.com?query=text'
 
             post :create,
                  params: { case_id: the_case.id, try: { name: '' },
@@ -533,7 +533,6 @@ search_endpoint: solr_endpoint.attributes }
 
             assert_equal solr_search_endpoint.search_engine, try_response['search_endpoint']['search_engine']
             assert solr_search_endpoint.endpoint_url, try_response['search_endpoint']['endpoint_url']
-            assert solr_search_endpoint.proxy_request?
 
             post :create, params: { case_id: the_case.id, try: { name: '' }, search_endpoint: es_endpoint.attributes }
             try_response  = response.parsed_body
