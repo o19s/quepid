@@ -36,20 +36,39 @@ class ApplicationHelperTest < ActionView::TestCase
     assert_includes result, 'class="btn btn-primary"'
   end
 
-  let(:https_search_endpoint) { search_endpoints(:bootstrap_try_1) }
-  def test_link_with_https_search_endpoint
-    assert https_search_endpoint.endpoint_url.starts_with? 'https://'
-    try_to_update = random_case.tries.first
+  describe 'Smart handling of links to HTTPS search end points' do
+    let(:https_search_endpoint) { search_endpoints(:bootstrap_try_1) }
 
-    try_to_update.search_endpoint = https_search_endpoint
-    try_to_update.save!
+    test 'link with https search_endpoint' do
+      try_to_update = random_case.tries.first
 
-    try_number = random_case.tries.first.try_number
-    options = {}
+      try_to_update.search_endpoint = https_search_endpoint
+      try_to_update.save!
 
-    # Call the helper method
-    result = link_to_core_case('View Case', random_case, try_number, options)
+      try_number = random_case.tries.first.try_number
+      options = {}
 
-    assert_includes result, 'https://'
+      # Call the helper method
+      result = link_to_core_case('View Case', random_case, try_number, options)
+
+      assert_includes result, 'https://'
+    end
+
+    test 'Proxied https endpoints do not change' do
+      https_search_endpoint.update(proxy_requests: true)
+
+      try_to_update = random_case.tries.first
+
+      try_to_update.search_endpoint = https_search_endpoint
+      try_to_update.save!
+
+      try_number = random_case.tries.first.try_number
+      options = { class: 'btn btn-primary' }
+
+      # Call the helper method
+      result = link_to_core_case('View Case', random_case, try_number, options)
+
+      assert_includes result, 'http://'
+    end
   end
 end
