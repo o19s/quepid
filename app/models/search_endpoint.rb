@@ -65,10 +65,6 @@ class SearchEndpoint < ApplicationRecord
     save
   end
 
-  def proxy_request?
-    endpoint_url.include?('/proxy/fetch')
-  end
-
   private
 
   def middle_truncate str, total: 30, lead: 15, trail: 15

@@ -123,10 +123,10 @@ module ApplicationHelper
 
     path_params = {}
 
-    endpoint_url = kase.tries.first&.search_endpoint&.endpoint_url
+    search_endpoint = kase.tries.first&.search_endpoint
 
-    if endpoint_url
-      protocol = get_protocol_from_url(endpoint_url)
+    if search_endpoint && (!search_endpoint.proxy_requests? && search_endpoint.endpoint_url)
+      protocol = get_protocol_from_url(search_endpoint.endpoint_url)
       path_params = {
         protocol: protocol,
         port:     'https' == protocol ? 443 : nil,
