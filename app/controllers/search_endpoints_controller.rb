@@ -7,8 +7,9 @@ class SearchEndpointsController < ApplicationController
   respond_to :html
 
   def index
-    query = @current_user.search_endpoints_involved_with
+    query = @current_user.search_endpoints_involved_with.order(updated_at: :desc)
 
+    query = query.where(owner_id: current_user.id) if params[:owned].present?
     query = query.where(teams: { id: params[:team_id] }) if params[:team_id].present?
 
     if params[:q].present?

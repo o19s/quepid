@@ -32,7 +32,15 @@ Search Endpoints represents a search engine (or API!) that is receiving queries 
               <i class="bi bi-search-heart"></i>
             <% end %>
           </div>
-          
+          <div class="d-flex flex-row justify-content-between">
+            <label class="ms-2">Mine</label>
+            <%= check_box_tag :owned, 
+                true, 
+                params[:owned].present?,
+                class: 'ms-2 form-check-input form-check-input-sm',
+                onchange: 'this.form.submit()'
+            %>
+          </div>
           <div class="d-flex">
             <%= select_tag :team_id, 
                 options_for_select(
@@ -44,6 +52,8 @@ Search Endpoints represents a search engine (or API!) that is receiving queries 
                 onchange: 'this.form.submit()'
             %>
           </div>
+          
+          
           
         </div>
       <% end %>
