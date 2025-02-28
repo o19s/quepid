@@ -26,7 +26,6 @@
 require 'test_helper'
 
 class SearchEndpointTest < ActiveSupport::TestCase
-
   describe 'full name' do
     it 'requires a search_engine to be defined' do
       endpoint = SearchEndpoint.new endpoint_url: 'http://something'

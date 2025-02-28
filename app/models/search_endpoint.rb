@@ -70,5 +70,4 @@ class SearchEndpoint < ApplicationRecord
   def middle_truncate str, total: 30, lead: 15, trail: 15
     str.truncate(total, omission: "#{str.first(lead)}...#{str.last(trail)}")
   end
-
 end
