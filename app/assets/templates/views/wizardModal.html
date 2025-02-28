@@ -90,11 +90,6 @@
                 You must change from JSONP to another API method when proxying.
               </span>
             </div>
-            <div ng-show="invalidBasicAuthCredentials" class="alert alert-danger">
-              <span>
-                Quepid does not support some of the special characters used in the basic auth credentials.
-              </span>
-            </div>
             <div ng-if="urlInvalid && !showTLSChangeWarning" class="alert alert-danger">
               Sorry, we're not getting any search results from your {{ pendingWizardSettings.searchEngine | searchEngineName }}.
 

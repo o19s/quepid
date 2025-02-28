@@ -222,13 +222,6 @@ describe('Controller: WizardModalCtrl', function () {
       expect(a.password()).toBe('pass%word');
       expect(a.username()).toBe('username');
     });    
-    
-    it('validates the basic auth credentials', function() {
-      expect(scope.invalidBasicAuthCredentials).toBe(false);
-      scope.pendingWizardSettings.basicAuthCredential = "username:pass%";
-      scope.validateBasicAuthCredentials();
-      expect(scope.invalidBasicAuthCredentials).toBe(true);
-    });   
-    
+
   });
 });

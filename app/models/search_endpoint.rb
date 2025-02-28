@@ -23,6 +23,7 @@
 #
 #  index_search_endpoints_on_owner_id_and_id  (owner_id,id)
 #
+require 'base64'
 
 class SearchEndpoint < ApplicationRecord
   # Associations
@@ -50,7 +51,6 @@ class SearchEndpoint < ApplicationRecord
   validates :search_engine, presence: true
   validates :endpoint_url, presence: true
   validates :api_method, presence: true
-  validate :basic_auth_credential_has_valid_characters
 
   def fullname
     name.presence || middle_truncate("#{search_engine.titleize} #{endpoint_url}")
@@ -71,13 +71,4 @@ class SearchEndpoint < ApplicationRecord
     str.truncate(total, omission: "#{str.first(lead)}...#{str.last(trail)}")
   end
 
-  def basic_auth_credential_has_valid_characters
-    return if basic_auth_credential.blank?
-
-    invalid_chars = basic_auth_credential.scan(%r{[\s<>"#%{}|\\^~\[\]`&+?=/;@]})
-    if invalid_chars.any?
-      errors.add(:basic_auth_credential,
-                 "contains invalid characters: #{invalid_chars.uniq.join(', ')}")
-    end
-  end
 end
