@@ -245,7 +245,6 @@ angular.module('QuepidApp')
       $scope.updateSettingsDefaults();
       $scope.validateHeaders = validateHeaders;
       $scope.validateProxyApiMethod = validateProxyApiMethod;
-      $scope.hasInvalidURICharacters = hasInvalidURICharacters;
       $scope.changeProxySetting = changeProxySetting;
       $scope.searchFields   = [];
       $scope.createSnapshot = createSnapshot;
