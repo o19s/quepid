@@ -48,4 +48,11 @@ class SearchEndpointTest < ActiveSupport::TestCase
       assert_equal 'Solr http://something', endpoint.fullname
     end
   end
+
+  describe 'proxy' do
+    let(:jsonp_endpoint) { search_endpoints(:for_shared_team_case) }
+    it 'prevents JSONP being used' do
+      assert_not jsonp_endpoint.update(proxy_requests: true)
+    end
+  end
 end
