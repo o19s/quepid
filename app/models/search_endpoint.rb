@@ -51,6 +51,7 @@ class SearchEndpoint < ApplicationRecord
   validates :search_engine, presence: true
   validates :endpoint_url, presence: true
   validates :api_method, presence: true
+  validate :validate_proxy_requests_api_method
 
   def fullname
     name.presence || middle_truncate("#{search_engine.titleize} #{endpoint_url}")
@@ -69,5 +70,9 @@ class SearchEndpoint < ApplicationRecord
 
   def middle_truncate str, total: 30, lead: 15, trail: 15
     str.truncate(total, omission: "#{str.first(lead)}...#{str.last(trail)}")
+  end
+
+  def validate_proxy_requests_api_method
+    errors.add(:api_method, 'cannot be JSONP when proxy_request is enabled') if proxy_requests? && 'JSONP' == api_method
   end
 end
