@@ -50,6 +50,7 @@ class SearchEndpoint < ApplicationRecord
   validates :search_engine, presence: true
   validates :endpoint_url, presence: true
   validates :api_method, presence: true
+  validate :validate_proxy_requests_api_method
   validate :basic_auth_credential_has_valid_characters
 
   def fullname
@@ -79,5 +80,9 @@ class SearchEndpoint < ApplicationRecord
       errors.add(:basic_auth_credential,
                  "contains invalid characters: #{invalid_chars.uniq.join(', ')}")
     end
+  end
+
+  def validate_proxy_requests_api_method
+    errors.add(:api_method, 'cannot be JSONP when proxy_request is enabled') if proxy_requests? && 'JSONP' == api_method
   end
 end
