@@ -119,23 +119,26 @@
 
               <ul ng-if="pendingWizardSettings.searchEngine === 'solr'">
                 <li>Do you see any errors when you visit your <a target="_blank" ng-href="{{linkToSearchEndpointUrl()}}">Solr URL directly?</a></li>
+                <li>Use the Proxy option under <i>Advanced</i>!</li>
                 <li>
-                  If you are using a version of Solr between 8.4 and 9.0, you may need to tweak the content-type being set by <code>wt=json</code>.
+                  You may need to configure the JSON <code>wt=json</code> to be <code>application/javascript</code> to work with Quepid.
                   You can do this via the below curl command:
 <pre>
-curl -k -X POST -H 'Content-type:application/json' -d '{
-  "update-queryresponsewriter": {
+curl {{pendingWizardSettings.basicAuthCredential ? '-u ' + pendingWizardSettings.basicAuthCredential : ''}} -k -X POST -H 'Content-type:application/json' -d '{
+  "create-queryresponsewriter": {
     "name": "json",
     "class": "solr.JSONResponseWriter",
     "content-type": "application/javascript; charset=UTF-8"
   }
 }' {{ extractSolrConfigApiUrl(pendingWizardSettings.searchUrl) }}
 </pre>
-                  If you get a error message back, change <code>update-queryresponsewriter</code> to <code>create-queryresponsewriter</code> and re-run.
+                  If you get a error message back, change <code>create-queryresponsewriter</code> to <code>update-queryresponsewriter</code> and re-run.
 
                 </li>
                 <li>If Solr responds, check if you have an ad blocker blocking your queries.</li>
-                <li>Chrome does not accept self signed certificates on Solr, try Firefox.</li>
+                
+                <li ng-if="isChrome">Chrome does not accept self signed certificates on Solr, try Firefox.</li>
+                <li ng-if="isChrome">Chrome does not allow basic auth to Solr, try Firefox.</li>
                 <li>Use the browser <i>Network Inspector</i> to see the actual request.</li>
                 <li>See the <a target="_blank" href="https://github.com/o19s/quepid/wiki/Troubleshooting-Solr-and-Quepid">Troubleshooting Solr and Quepid</a> wiki page for more help!</li>
               </ul>

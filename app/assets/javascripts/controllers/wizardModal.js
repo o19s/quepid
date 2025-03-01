@@ -27,6 +27,7 @@ angular.module('QuepidApp')
         }
       };
 
+      $scope.isChrome = /Chrome/.test($window.navigator.userAgent);
       $scope.shouldCreateNewSearchEndpointDefaultToOpen = false;
       $scope.shouldExistingSearchEndpointDefaultToOpen = false;
       $scope.searchEndpoints = [];
