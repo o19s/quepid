@@ -21,12 +21,15 @@ module Admin
                             "%#{params[:q]}%", "%#{params[:q]}%")
       end
 
-      @pagy, @users = pagy(query)
-
       respond_to do |format|
-        format.json
-        format.html
+        format.html do
+          @pagy, @users = pagy(query)
+        end
+        format.json do
+          @users = query.all
+        end
         format.csv do
+          @users = query.all
           headers['Content-Disposition'] = 'attachment; filename=\"quepid_users.csv\"'
           headers['Content-Type'] ||= 'text/csv'
         end
