@@ -1,7 +1,6 @@
 # Demonstrate how to load your own local copy of a node package into Quepid.
 # Commonly used when you are developing against an unreleased package.
 
-version: '3'
 services:
   app:
     volumes:
