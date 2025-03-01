@@ -22,12 +22,8 @@ module Admin
       end
 
       respond_to do |format|
-        format.html do
-          @pagy, @users = pagy(query)
-        end
-        format.json do
-          @users = query.all
-        end
+        format.html { @pagy, @users = pagy(query) }
+        format.json { @users = query.all }
         format.csv do
           @users = query.all
           headers['Content-Disposition'] = 'attachment; filename=\"quepid_users.csv\"'
