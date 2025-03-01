@@ -23,7 +23,6 @@
 #
 #  index_search_endpoints_on_owner_id_and_id  (owner_id,id)
 #
-require 'base64'
 
 class SearchEndpoint < ApplicationRecord
   # Associations
