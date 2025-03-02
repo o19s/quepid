@@ -1,12 +1,30 @@
 # Changelog
 
+## 8.1.0 -- 2024-02-28
+
+We've had lots of folks trying new features of Quepid, and that led to some nice polish.  
+This is the release for people who don't want the bleeding edge version ;-).
+
+### What's Changed
+
+* Special characters like `$` and `@` in Basic Auth passwords are now supported.  Thanks to @atarora for opening https://github.com/o19s/quepid/issues/1245 and the debugging work from @david-fisher.  
+* UX Work.  
+ * We have added filtering and pagination to all of the various screens like Seach Endpoints, Communal Scorers, Users, Judgements etc.   This makes these pages load MUCH faster and you can search for the data you need.
+ * Consistency across web pages.  Outside of the core AngularJS app, we had a mish mash of UI's.   Now they all have the same style header, footer, and UX treatment using card layouts.
+* Fixed the nDCG calculation to look at ALL ratings, not just the top k when doing calculation.  
+* Fixed a goof where the new ERR scorer wasn't added as a communal scorer for everyone.
+* LLM as a Judge is better.  Cleaned up the refine UI for prompt development.
+* Fix a bug where the Judge couldn't be launched from the UI.
+
+
+
 ## 8.0.1 -- 2024-02-19
 
 Whelp, that didn't take long!  
 
 We broke support for running Quepid on non standard ports like :3000.  https://github.com/o19s/quepid/pull/1229 by @epugh fixes this.
 
-## What's Changed
+### What's Changed
 * Bump rubocop from 1.71.2 to 1.72.2 by @dependabot in https://github.com/o19s/quepid/pull/1227
 * Bump annotaterb from 4.13.0 to 4.14.0 by @dependabot in https://github.com/o19s/quepid/pull/1224
 * Bump rubocop-rails from 2.29.1 to 2.30.1 by @dependabot in https://github.com/o19s/quepid/pull/1226
@@ -21,7 +39,7 @@ We broke support for running Quepid on non standard ports like :3000.  https://g
 
 It's Valentine's Day 💘, so it seems appropriate to release the next major version of Quepid, the tool to give your queries some ❤️.
 
-## Exciting News
+### Exciting News
 
 **Judge Judy is now appearing on the Quepid channel**.  It is now possible to create one or more LLM-based AI judges in Quepid! Set your OpenAI key, add your examples or customizations to the judgement prompt, push the big button, and let the magic box do the rest.
 
@@ -33,14 +51,14 @@ It's Valentine's Day 💘, so it seems appropriate to release the next major ver
 
 **New [User Manual](https://quepid-docs.dev.o19s.com/2/quepid)**.  We've embraced the [Diátaxis](https://diataxis.fr/) framework for writing documentation, and consolidated into a single platform the mix of documentation that has been published in various locations.  
 
-## Bugs Addressed
+### Bugs Addressed
 If you don't have P@10 defined, the migrations blow up. Thanks @frutik for finding the bug. https://github.com/o19s/quepid/pull/1093
 
 Basic auth that includes '%' in username or password breaks reloading from http to https. Thanks @brucks24 for  https://github.com/o19s/quepid/issues/1139
 
 Emoji filled queries like `kfc 🍟➕🍔➕🍗` now can be stored in Quepid!  Thanks @shuttie for reporting this bug.  https://github.com/o19s/quepid/issues/1046
 
-## Other Changes
+### Other Changes
 
 * Simpler Deployment. We've updated to Rails 8, and no longer need Redis.  We're back to just a server and a MySQL Database ;-).  
 * Nicer import book page. Gave it some UX love. Kudos to @wrigleyDan 
@@ -49,7 +67,7 @@ Emoji filled queries like `kfc 🍟➕🍔➕🍗` now can be stored in Quepid! 
 * We thought having really fine grained permissions would be important to Quepid, but what we've seen is that it doesn't matter. Indeed, if anything, the permissions structure is confusing to users. Additionally, we've mostly cared "are you an Admin?" to decide if certain things can be done or not. So it's gone.
 * We care about privacy.  We've dropped Google Analytics in favour of our own first party analytics.   We've also dropped the Intercom integration.
 
-## What's Changed
+### What's Changed
 * undo the "fit" that made us only run a single test by @epugh in https://github.com/o19s/quepid/pull/1076
 * Updates oct 2024 by @epugh in https://github.com/o19s/quepid/pull/1071
 * Add check for the existence of scorer before updating. by @epugh in https://github.com/o19s/quepid/pull/1093
