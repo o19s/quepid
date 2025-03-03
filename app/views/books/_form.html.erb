@@ -18,6 +18,19 @@
         <%= form.label :name, class: 'form-label' %>
         <%= form.text_field :name, required: true, class: 'form-control' %>
         <div class="form-text">The book's name often reflects the goal for the judgements, like <em>Baseline Measurement</em> or a specific problem.</div>
+        
+        <%= turbo_frame_tag "labels_frame", src: generate_labels_case_path(@origin_case) do %>
+          <div>✨ Generating potential names...</div>
+        <% end %>
+        
+        <div id="my_data" data-turbo-stream:mode="update">
+          <!-- Your original data will be rendered here -->
+        </div>
+        
+        <div id="labels_container" 
+          data-turbo-cable-subscribe="case_<%= @origin_case.id %>_labels">
+        </div>
+
       </div>
     
       <div class="mb-3">     
