@@ -48,7 +48,16 @@ class LlmService
   # rubocop:disable Metrics/MethodLength
   # rubocop:disable Metrics/AbcSize
   def get_llm_response user_prompt, system_prompt
-    conn = Faraday.new(url: 'https://api.openai.com') do |f|
+    llm_service_url = ENV['LLM_SERVICE_URL'] || 'https://api.openai.com'
+    llm_model = ENV['LLM_MODEL'] || 'gpt-4o'
+    llm_key = ENV['LLM_KEY'] || @openai_key
+    llm_timeout = ENV['LLM_TIMEOUT'] || 30
+    conn = Faraday.new(
+      url: llm_service_url,
+      request: {
+        timeout: llm_timeout,
+        open_timeout: llm_timeout
+    }   ) do |f|
       f.request :json
       f.response :json
       f.adapter Faraday.default_adapter
@@ -62,7 +71,7 @@ class LlmService
     end
 
     body = {
-      model:           'gpt-4o',
+      model:           llm_model,
       response_format: { type: 'json_object' },
       messages:        [
         { role: 'system', content: system_prompt },
@@ -71,7 +80,7 @@ class LlmService
     }
 
     response = conn.post('/v1/chat/completions') do |req|
-      req.headers['Authorization'] = "Bearer #{@openai_key}"
+      req.headers['Authorization'] = "Bearer #{llm_key}"
       req.headers['Content-Type'] = 'application/json'
       req.body = body
     end
