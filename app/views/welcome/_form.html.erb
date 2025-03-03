@@ -1,0 +1,10 @@
+<%= form_with url: chats_path, html: { id: "chat_form", class: "mt-3" } do |f| %>
+  <div class="row">
+    <div class="col-11">
+      <%= f.text_area :message, class: "form-control w-100", placeholder: "Your message", autofocus: true %>
+    </div>
+    <div class="col-1">
+      <%= f.submit "Send", class: "btn btn-primary w-100" %>
+    </div>
+  </div>
+<% end %>

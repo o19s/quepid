@@ -11,7 +11,10 @@ Rails.application.routes.draw do
   mount ActionCable.server => '/cable'
   apipie
   mount ActiveStorageDB::Engine => '/active_storage_db'
-
+#root to: 'welcome#index'
+    get 'welcome/index'
+    resources :chats, only: :create
+    
   # Render dynamic PWA files from app/views/pwa/*
   # get 'service-worker' => 'rails/pwa#service_worker', as: :pwa_service_worker
   # get 'manifest' => 'rails/pwa#manifest', as: :pwa_manifest
@@ -73,6 +76,9 @@ Rails.application.routes.draw do
       collection do
         delete :destroy_multiple
       end
+    end
+    member do
+      get 'generate_labels' => 'labels#generate'
     end
   end
 
