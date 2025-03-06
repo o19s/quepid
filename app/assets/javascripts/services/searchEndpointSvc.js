@@ -168,7 +168,6 @@ angular.module('QuepidApp')
       };
       
       this.deleteSearchEndpoint = function(searchEndpointToDelete) {
-        var that        = this;
         var self  = this;
 
         return $http.delete('api/search_endpoints/' + searchEndpointToDelete.id)
