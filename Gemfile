@@ -49,7 +49,7 @@ gem 'sassc-rails', '~> 2.1'
 gem 'solid_cable', '~> 3.0'
 gem 'solid_queue'
 gem 'thor'
-gem 'turbo-rails', '~> 2.0', '>= 2.0.5'
+gem 'turbo-rails', '~> 2.0'
 gem 'vega'
 
 group :development, :test do
@@ -90,4 +90,4 @@ group :test do
   gem 'selenium-webdriver'
 end
 
-gem 'mini_racer', '~> 0.16.0'
+gem 'mini_racer', '~> 0.18.0'

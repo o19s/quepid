@@ -1,7 +1,7 @@
 <turbo-frame id="case_frame_<%= @case.id %>">
   <h5 class="card-title">
     <%= number_with_precision(@case.last_score.score, precision: 2) unless @case.scores.empty? %> 
-    <%= @case.scorer.name %>
+    <%= @case.scorer&.name %>
   </h5>
   <p class="card-text">
     <% if @case.scores.empty? %>

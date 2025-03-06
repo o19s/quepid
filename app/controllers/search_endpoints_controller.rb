@@ -2,12 +2,16 @@
 
 class SearchEndpointsController < ApplicationController
   include Pagy::Backend
-  before_action :set_search_endpoint, only: [ :show, :edit, :update, :destroy, :clone ]
+  before_action :set_search_endpoint, only: [ :show, :edit, :update, :destroy, :clone, :archive ]
 
   respond_to :html
 
   def index
+    bool = ActiveRecord::Type::Boolean.new
+    @archived = bool.deserialize(params[:archived] || false )
+
     query = @current_user.search_endpoints_involved_with.order(updated_at: :desc)
+    query = query.where(archived: @archived)
 
     query = query.where(owner_id: current_user.id) if params[:owned].present?
     query = query.where(teams: { id: params[:team_id] }) if params[:team_id].present?
@@ -33,6 +37,11 @@ class SearchEndpointsController < ApplicationController
     @search_endpoint = @search_endpoint.dup
     @search_endpoint.name = "Clone of #{@search_endpoint.name}"
     respond_with(@search_endpoint)
+  end
+
+  def archive
+    @search_endpoint.mark_archived!
+    redirect_to search_endpoints_path, notice: 'Search Endpoint was archived.'
   end
 
   def edit
@@ -69,7 +78,7 @@ class SearchEndpointsController < ApplicationController
 
   def destroy
     @search_endpoint.destroy
-    respond_with(@search_endpoint)
+    redirect_to search_endpoints_path, notice: 'Search Endpoint was deleted.'
   end
 
   private

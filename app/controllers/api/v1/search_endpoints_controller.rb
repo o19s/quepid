@@ -3,7 +3,7 @@
 module Api
   module V1
     class SearchEndpointsController < Api::ApiController
-      before_action :set_search_endpoint, only: [ :show, :update ]
+      before_action :set_search_endpoint, only: [ :show, :update, :destroy ]
 
       def_param_group :search_endpoint_params do
         param :search_endpoint, Hash, required: true do
