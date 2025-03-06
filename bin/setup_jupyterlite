@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 require 'pathname'
 
-# Update our Jupyterlite setup from the latest.
+# Update our Jupyterlite setup using the latest release.
 JUPYTER_BUILD_DOWNLOAD_URL = "https://github.com/o19s/quepid-jupyterlite/releases/latest/download/jupyter-lite-build.tgz"
 
 # path to your application root.
