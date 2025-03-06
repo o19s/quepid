@@ -20,7 +20,7 @@ Search Endpoints represents a search engine (or API!) that is receiving queries 
   <div class="card h-100">
     <div class="card-header">   
       <%= form_tag(search_endpoints_path, { method: :get }) do %> 
-        <div class="mb-0 d-flex fs-6 ">
+        <div class="mb-0 d-flex fs-6 justify-content-center">
             
           <div class="input-group">
             <%= text_field_tag :q, params[:q], 
@@ -32,7 +32,8 @@ Search Endpoints represents a search engine (or API!) that is receiving queries 
               <i class="bi bi-search-heart"></i>
             <% end %>
           </div>
-          <div class="d-flex flex-row justify-content-between">
+          
+          <div class="d-flex justify-content-between">
             <label class="ms-2">Mine</label>
             <%= check_box_tag :owned, 
                 true, 
@@ -41,7 +42,16 @@ Search Endpoints represents a search engine (or API!) that is receiving queries 
                 onchange: 'this.form.submit()'
             %>
           </div>
-          <div class="d-flex">
+          <div class="d-flex flex-row justify-content-between">
+            <label class="ms-2">Archived?</label>
+            <%= check_box_tag :archived, 
+                true, 
+                params[:archived].present?,
+                class: 'ms-2 form-check-input form-check-input-sm',
+                onchange: 'this.form.submit()'
+            %>
+          </div>          
+          <div class="d-flex justify-content-between">
             <%= select_tag :team_id, 
                 options_for_select(
                   [['Team', '']] + @current_user.teams.map { |j| [j.name, j.id] },

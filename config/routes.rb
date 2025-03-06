@@ -39,6 +39,7 @@ Rails.application.routes.draw do
   resources :search_endpoints do
     member do
       get 'clone'
+      post 'archive'
     end
   end
 

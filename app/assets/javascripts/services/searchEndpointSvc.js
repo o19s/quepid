@@ -167,5 +167,21 @@ angular.module('QuepidApp')
           });
       };
       
+      this.deleteSearchEndpoint = function(searchEndpointToDelete) {
+        var self  = this;
+
+        return $http.delete('api/search_endpoints/' + searchEndpointToDelete.id)
+          .then(function() {
+            //that.refetchCaseLists();
+            var indexOfSearchEndpoint = self.searchEndpoints.indexOf( self.searchEndpoints.filter( function (item) {
+              return item.id === searchEndpointToDelete.id;
+            })[0] );
+            self.searchEndpoints.splice(indexOfSearchEndpoint, 1);            
+                      
+            broadcastSvc.send('updatedSearchEndpointsList', self.searchEndpoints);
+           
+          });
+      };
+      
     }
   ]);
