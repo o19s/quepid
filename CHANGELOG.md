@@ -2,7 +2,7 @@
 
 ## 8.1.0 -- 2024-02-28
 
-We've had lots of folks trying new features of Quepid, and that led to some nice polish.  
+We've had lots of folks trying new features of Quepid, and that has led to some nice polish.  
 This is the release for people who don't want the bleeding edge version ;-).
 
 ### What's Changed
@@ -15,7 +15,6 @@ This is the release for people who don't want the bleeding edge version ;-).
 * Fixed a goof where the new ERR scorer wasn't added as a communal scorer for everyone.
 * LLM as a Judge is better.  Cleaned up the refine UI for prompt development.
 * Fix a bug where the Judge couldn't be launched from the UI.
-
 
 
 ## 8.0.1 -- 2024-02-19
