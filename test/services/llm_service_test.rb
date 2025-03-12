@@ -74,4 +74,22 @@ class LlmServiceTest < ActiveSupport::TestCase
       assert_equal 'Error: 429 - Too Many Requests', error.message
     end
   end
+
+  describe 'using ollama' do
+    test 'we can override settings' do
+      WebMock.allow_net_connect!
+      opts = {
+        llm_service_url: 'http://ollama:11434/v1',
+        llm_model:       'deepseek-r1:1.5b',
+        llm_timeout:     90,
+      }
+      service = LlmService.new 'ollama', opts
+
+      user_prompt = DEFAULT_USER_PROMPT
+      system_prompt = AiJudgesController::DEFAULT_SYSTEM_PROMPT
+      result = service.get_llm_response(user_prompt, system_prompt)
+      puts result
+      # WebMock.allow_net_connect!
+    end
+  end
 end

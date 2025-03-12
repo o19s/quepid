@@ -66,6 +66,9 @@ docker-compose.override.yml
 public/notebooks
 notebooks.gz
 
+# Ollama Modes
+data/
+
 # Test Reports
 test/reports
 

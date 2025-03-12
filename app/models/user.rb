@@ -25,6 +25,7 @@
 #  name                        :string(255)
 #  num_logins                  :integer
 #  openai_key                  :string(255)
+#  options                     :json
 #  password                    :string(120)
 #  profile_pic                 :string(4000)
 #  reset_password_sent_at      :datetime
@@ -145,6 +146,8 @@ class User < ApplicationRecord
 
   validates :openai_key, length: { maximum: 255 }, allow_nil: true, presence: true, if: :ai_judge?
   validates :system_prompt, length: { maximum: 4000 }, allow_nil: true, presence: true, if: :ai_judge?
+
+  # serialize :options, coder: JSON
 
   def terms_and_conditions?
     Rails.application.config.terms_and_conditions_url.present?
