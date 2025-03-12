@@ -25,6 +25,7 @@ require 'test_helper'
 #  name                        :string(255)
 #  num_logins                  :integer
 #  openai_key                  :string(255)
+#  options                     :json
 #  password                    :string(120)
 #  profile_pic                 :string(4000)
 #  reset_password_sent_at      :datetime

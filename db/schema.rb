@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_02_25_162317) do
+ActiveRecord::Schema[8.0].define(version: 2025_03_10_172421) do
   create_table "active_storage_attachments", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.string "name", null: false
     t.string "record_type", null: false
@@ -605,6 +605,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_02_25_162317) do
     t.string "profile_pic", limit: 4000
     t.string "system_prompt", limit: 4000
     t.string "openai_key"
+    t.json "options"
     t.index ["default_scorer_id"], name: "index_users_on_default_scorer_id"
     t.index ["email"], name: "ix_user_username", unique: true
     t.index ["invitation_token"], name: "index_users_on_invitation_token", unique: true, length: 191
