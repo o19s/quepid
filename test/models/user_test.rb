@@ -325,6 +325,7 @@ class UserTest < ActiveSupport::TestCase
   end
 
   describe 'User is AI Judge' do
+    let(:joey) { users(:joey) }
     it 'uses the existence of the key to decide ai_judge' do
       user = User.new
       assert_not user.ai_judge?
@@ -333,12 +334,49 @@ class UserTest < ActiveSupport::TestCase
       assert_not user.valid?
     end
 
-    it 'does not require an email address to be valid when is a judge' do
+    it 'does not require an email or password address to be valid when is a judge' do
       user = User.new(openai_key: '1234')
       assert user.ai_judge?
-
-      user.password = 'fakeme'
       assert user.valid?
+    end
+
+    describe 'options to configure the llm server' do
+      it 'provides an empty hash' do
+        user = User.new(openai_key: '1234')
+        opts_hash = user.judge_options
+        assert_equal({}, opts_hash)
+      end
+
+      it 'lets you update the options hash' do
+        user = User.new(openai_key: '1234')
+        opts_hash = user.judge_options
+
+        opts_hash[:model] = 'gpt-3.5-turbo'
+        assert_equal('gpt-3.5-turbo', opts_hash[:model])
+        user.save!
+        user.reload
+        assert_equal('gpt-3.5-turbo', user.judge_options[:model])
+      end
+
+      it 'works with other prexisting options' do
+        joey.options = { special_options: { key1: 'opt1', key2: 2, key3: true } }
+        assert joey.save
+        # joey.judge_options[:model] = 'gpt-3.5-turbo'
+        # Do not do this, it won't work.  You need to work with the full hash
+        # joey.judge_options = 'gpt-3.5-turbo'
+        judge_options = joey.judge_options
+        judge_options[:model] = 'gpt-3.5-turbo'
+        joey.judge_options = judge_options
+        assert joey.save!
+        joey.reload
+
+        puts 'optons'
+        puts joey.options
+
+        judge_options = joey.judge_options
+        pp judge_options
+        assert_equal('gpt-3.5-turbo', judge_options[:model])
+      end
     end
   end
 

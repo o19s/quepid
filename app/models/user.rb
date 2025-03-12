@@ -122,9 +122,10 @@ class User < ApplicationRecord
 
   validates :password,
             presence: true,
-            length:   { maximum: 80 }
+            length:   { maximum: 80 },
+            unless:   :ai_judge?
 
-  validates :password, confirmation: { message: 'should match confirmation' }
+  validates :password, confirmation: { message: 'should match confirmation' }, unless: :ai_judge?
 
   validates :reset_password_token,
             length: { maximum: 255 }
@@ -146,8 +147,6 @@ class User < ApplicationRecord
 
   validates :openai_key, length: { maximum: 255 }, allow_nil: true, presence: true, if: :ai_judge?
   validates :system_prompt, length: { maximum: 4000 }, allow_nil: true, presence: true, if: :ai_judge?
-
-  # serialize :options, coder: JSON
 
   def terms_and_conditions?
     Rails.application.config.terms_and_conditions_url.present?
@@ -274,6 +273,21 @@ class User < ApplicationRecord
       .left_outer_joins(:announcement_viewed)
       .where('user_id != ? OR user_id IS NULL', id)
       .order(:created_at)
+  end
+
+  def judge_options
+    # ugh, why isn't this :judge_options?
+    opts = options&.dig('judge_options') || {}
+    opts.deep_symbolize_keys
+  end
+
+  def judge_options= value
+    # Initialize options as empty hash if nil
+    self.options ||= {}
+
+    # Set the judge_options within options
+    self.options = options.merge(judge_options: value)
+    pp self.options
   end
 
   private
