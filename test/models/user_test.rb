@@ -54,6 +54,7 @@ require 'test_helper'
 
 # rubocop:disable Layout/LineLength
 class UserTest < ActiveSupport::TestCase
+  # Could reorganize this test around AI Judges and Regular Users
   test 'membership in team' do
     assert_includes users(:doug).teams, teams(:shared)
   end
@@ -184,6 +185,16 @@ class UserTest < ActiveSupport::TestCase
 
       new_user = User.create(email: 'DeFaultS@emaiL.COM', password: 'password')
       assert_includes new_user.errors.messages[:email], 'has already been taken'
+    end
+  end
+
+  describe 'Name' do
+    test 'does not require name to be present' do
+      user = User.create(email: 'foo@example.com', password: 'password')
+      assert_not user.ai_judge?
+      assert user.valid?
+      user.name = 'User Bob'
+      assert user.valid?
     end
   end
 
@@ -335,8 +346,16 @@ class UserTest < ActiveSupport::TestCase
     end
 
     it 'does not require an email or password address to be valid when is a judge' do
+      user = User.new(openai_key: '1234', name: 'Judge Judy')
+      assert user.ai_judge?
+      assert user.valid?
+    end
+
+    it 'does require name to be valid when is a judge' do
       user = User.new(openai_key: '1234')
       assert user.ai_judge?
+      assert_not user.valid?
+      user.name = 'Judge Judy'
       assert user.valid?
     end
 

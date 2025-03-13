@@ -29,7 +29,42 @@
         <%= form.text_field :openai_key %>
       </div>
     </div>
-  
+    
+    <ul class="nav nav-underline mb-3" id="pills-tab" role="tablist">
+      <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="pills-structured-fields-tab" data-bs-toggle="pill" data-bs-target="#pills-structured-fields" type="button" role="tab" aria-controls="pills-structured-fields" aria-selected="true">Structured Fields</button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="pills-json-tab" data-bs-toggle="pill" data-bs-target="#pills-json" type="button" role="tab" aria-controls="pills-json" aria-selected="false">JSON</button>
+      </li>
+    </ul>
+    <div class="tab-content" id="pills-tabContent">
+      <div class="tab-pane fade show active" id="pills-structured-fields" role="tabpanel" aria-labelledby="pills-structured-fields-tab" tabindex="0">
+        <% @ai_judge.judge_options.each do |key, value| %>
+          <div class="row mb-3">
+            <%= label_tag "judge_options[#{key}]", key.to_s.humanize.titleize, class: 'col-sm-2 col-form-label' %>
+            <div class="col-sm-4">
+              <%= text_field_tag "user[judge_options][#{key}]", value, 
+                id: "judge_options_#{key}",
+                class: 'form-control form-control-sm structured-field'
+              %>
+            </div>
+          </div>
+        <% end %>
+      </div>
+      <div class="tab-pane fade" id="pills-json" role="tabpanel" aria-labelledby="pills-json-tab" tabindex="0">
+        <div class="row mb-3">
+          <div class="form-text">
+            This the raw JSON stored as <code>options</code> for the Judge.
+            Make sure you are editing under the <code>judge_options</code> key.
+          </div>
+          <%= form.text_area :options, value: JSON.pretty_generate(@ai_judge.options.as_json),
+            class: 'form-control json-field', rows: 10, disabled: true %>
+        </div>
+      </div>
+    </div>
+
+    
     <div class="row mb-3">
       <%= form.label :system_prompt, class: 'col-sm-2 col-form-label' %>
       <%= form.textarea :system_prompt, class: "form-control", rows: 6 %>        
@@ -41,3 +76,55 @@
     <%= link_to 'Back to Team', teams_core_path(@team), class: "btn btn-outline-secondary float-end" %>
   </div>  
 </div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Get tab elements
+    const structuredTab = document.getElementById('pills-structured-fields-tab');
+    const jsonTab = document.getElementById('pills-json-tab');
+    
+    // Get field elements
+    const structuredFields = document.querySelectorAll('.structured-field');
+    const jsonField = document.querySelector('.json-field');
+    
+    // Initialize - Structured tab is active by default
+    jsonField.disabled = true;
+    structuredFields.forEach(field => {
+      field.disabled = false;
+    });
+    
+    // Handle tab changes
+    structuredTab.addEventListener('click', function() {
+      // Enable structured fields
+      structuredFields.forEach(field => {
+        field.disabled = false;
+      });
+      
+      // Disable JSON field
+      jsonField.disabled = true;
+    });
+    
+    jsonTab.addEventListener('click', function() {
+      // Enable JSON field
+      jsonField.disabled = false;
+      
+      // Disable structured fields
+      structuredFields.forEach(field => {
+        field.disabled = true;
+      });
+    });
+  });
+</script>
+
+<style>
+.lint-marker {
+  width: 16px;
+  height: 16px;
+  background-color: red;
+  border-radius: 50%;
+}
+
+.lint-marker.error {
+  background-color: red;
+}
+</style>

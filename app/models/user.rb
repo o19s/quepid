@@ -112,6 +112,9 @@ class User < ApplicationRecord
   validates :name,
             length: { maximum: 255 }
 
+  validates :name,
+            presence: true, if: :ai_judge?
+
   # https://davidcel.is/posts/stop-validating-email-addresses-with-regex/
   validates :email,
             presence:   true,
