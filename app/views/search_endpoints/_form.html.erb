@@ -70,7 +70,7 @@
       <div class="mb-3">
         <%= form.label :options, class: 'form-label' %>
         <div class="form-text">This JSON is for passing in settings to the Query Sandbox as a <code>qOption</code>.</div>
-        <%= form.text_area :options %>
+        <%= form.text_area :options, value: JSON.pretty_generate(search_endpoint.options.as_json) %>
       </div>
     
       <div class="mb-3">
