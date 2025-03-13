@@ -120,18 +120,17 @@ class SampleData < Thor
     osc_member_user = seed_user user_params
     print_user_info user_params
 
-    
     ######################################
     # OSC AI Judge
     ######################################
 
     user_specifics = {
-      name:  'OSC AI Judge',
-      email: nil,
-      openai_key: 'key123456',
-      system_prompt: AiJudgesController::DEFAULT_SYSTEM_PROMPT
+      name:          'OSC AI Judge',
+      email:         nil,
+      openai_key:    'key123456',
+      system_prompt: AiJudgesController::DEFAULT_SYSTEM_PROMPT,
     }
-    user_params     = user_defaults.merge(user_specifics)
+    user_params = user_defaults.merge(user_specifics)
     osc_ai_judge = seed_user user_params
     print_user_info user_params
 

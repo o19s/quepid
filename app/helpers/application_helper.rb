@@ -9,7 +9,7 @@ module ApplicationHelper
       "Book #{book.name.titleize}"
     end
   end
-  
+
   def strip_book_title book
     book.name.sub(/^book\s+/i, '').titleize
   end
