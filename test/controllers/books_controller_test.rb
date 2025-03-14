@@ -130,6 +130,7 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
   end
 
   describe 'dealing with judgements with no judge_id' do
+    @controller = BooksController.new
     it 'should handle compacting with no nils' do
       array = [ 1, 2, 3, 4 ]
       result = @controller.send(:compact_keep_one_nil, array)
