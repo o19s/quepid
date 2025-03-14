@@ -90,7 +90,8 @@ class LlmService
     if response.success?
       response_body = response.body
       if response_body.is_a?(String)
-        # in our unit tests backed by webmock.rb the body is a String, but in real use it's already formatted as JSON by Faraday
+        # in our unit tests backed by webmock.rb the body is a String,
+        # but in real use it's already formatted as JSON by Faraday
         response_body = JSON.parse(response_body)
       end
       content = response_body.dig('choices', 0, 'message', 'content')
