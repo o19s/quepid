@@ -21,9 +21,11 @@ services:
     links:
       - mysql
       - keycloak
+      - ollama
     depends_on:
       - mysql
       - keycloak
+      - ollama
 
   mysql:
     container_name: quepid_db
@@ -58,7 +60,16 @@ services:
     volumes:
       - ./keycloak/realm-config/quepid-realm.json:/opt/keycloak/data/import/quepid-realm.json:ro    
 
-
+  ollama:
+    image: ollama/ollama
+    container_name: ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ./volumes/ollama/data:/tmp/data
+    environment:
+      OLLAMA_MODELS: "/tmp/data/.ollama/models"
+      
   nginx:
     image: nginx:1.27.1-alpine-slim
     container_name: quepid_nginx

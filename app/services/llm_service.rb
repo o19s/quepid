@@ -5,8 +5,15 @@ require 'faraday/retry'
 require 'json'
 
 class LlmService
-  def initialize openai_key, _opts = {}
+  def initialize openai_key, opts = {}
+    default_options = {
+      llm_service_url: 'https://api.openai.com',
+      llm_model:       'gpt-4',
+      llm_timeout:     30,
+    }
+
     @openai_key = openai_key
+    @options    = default_options.merge(opts.deep_symbolize_keys)
   end
 
   def perform_safe_judgement judgement
@@ -19,6 +26,10 @@ class LlmService
       judgement.explanation = "BOOM: #{e}"
       judgement.unrateable = true
     end
+  rescue Faraday::Error => e
+    # This will catch all Faraday errors including TimeoutError, ConnectionFailed, etc.
+    judgement.explanation = "BOOM: API request failed: #{e.message}"
+    judgement.unrateable = true
   end
 
   def perform_judgement judgement
@@ -46,9 +57,8 @@ class LlmService
   end
 
   # rubocop:disable Metrics/MethodLength
-  # rubocop:disable Metrics/AbcSize
   def get_llm_response user_prompt, system_prompt
-    conn = Faraday.new(url: 'https://api.openai.com') do |f|
+    conn = Faraday.new(url: @options[:llm_service_url]) do |f|
       f.request :json
       f.response :json
       f.adapter Faraday.default_adapter
@@ -62,7 +72,8 @@ class LlmService
     end
 
     body = {
-      model:           'gpt-4o',
+      temperature:     0.7,
+      model:           @options[:llm_model],
       response_format: { type: 'json_object' },
       messages:        [
         { role: 'system', content: system_prompt },
@@ -72,33 +83,27 @@ class LlmService
 
     response = conn.post('/v1/chat/completions') do |req|
       req.headers['Authorization'] = "Bearer #{@openai_key}"
-      req.headers['Content-Type'] = 'application/json'
+      req.options.timeout = @options[:llm_timeout].to_i # Set request timeout
       req.body = body
     end
 
     if response.success?
-      begin
-        chat_response = response.body
-        if chat_response.is_a?(String)
-          # in our tests the body is a String, but in real use it's already formatted as Json by Faraday
-          chat_response = JSON.parse(chat_response)
-        end
-
-        content = chat_response['choices']&.first&.dig('message', 'content')
-
-        parsed_content = JSON.parse(content)
-        {
-          explanation: parsed_content['explanation'],
-          judgment:    parsed_content['judgment'],
-        }
-      rescue RuntimeError => e
-        puts e
-        raise "Error: Could not parse response from OpenAI: #{e} - #{response.env.response_body}"
+      response_body = response.body
+      if response_body.is_a?(String)
+        # in our unit tests backed by webmock.rb the body is a String,
+        # but in real use it's already formatted as JSON by Faraday
+        response_body = JSON.parse(response_body)
       end
+      content = response_body.dig('choices', 0, 'message', 'content')
+
+      parsed_content = JSON.parse(content)
+      {
+        explanation: parsed_content['explanation'],
+        judgment:    parsed_content['judgment'],
+      }
     else
-      raise "Error: #{response.status} - #{response.body}"
+      raise "LLM API Error: #{response.status} - #{response.body}"
     end
   end
   # rubocop:enable Metrics/MethodLength
-  # rubocop:enable Metrics/AbcSize
 end

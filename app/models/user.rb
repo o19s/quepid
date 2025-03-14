@@ -25,6 +25,7 @@
 #  name                        :string(255)
 #  num_logins                  :integer
 #  openai_key                  :string(255)
+#  options                     :json
 #  password                    :string(120)
 #  profile_pic                 :string(4000)
 #  reset_password_sent_at      :datetime
@@ -111,6 +112,9 @@ class User < ApplicationRecord
   validates :name,
             length: { maximum: 255 }
 
+  validates :name,
+            presence: true, if: :ai_judge?
+
   # https://davidcel.is/posts/stop-validating-email-addresses-with-regex/
   validates :email,
             presence:   true,
@@ -121,9 +125,10 @@ class User < ApplicationRecord
 
   validates :password,
             presence: true,
-            length:   { maximum: 80 }
+            length:   { maximum: 80 },
+            unless:   :ai_judge?
 
-  validates :password, confirmation: { message: 'should match confirmation' }
+  validates :password, confirmation: { message: 'should match confirmation' }, unless: :ai_judge?
 
   validates :reset_password_token,
             length: { maximum: 255 }
@@ -143,7 +148,7 @@ class User < ApplicationRecord
             acceptance: { message: 'checkbox must be clicked to signify you agree to the terms and conditions.' },
             if:         :terms_and_conditions?
 
-  validates :openai_key, length: { maximum: 255 }, allow_nil: true, presence: true, if: :ai_judge?
+  validates :openai_key, length: { maximum: 255 }, allow_nil: true, if: :ai_judge?
   validates :system_prompt, length: { maximum: 4000 }, allow_nil: true, presence: true, if: :ai_judge?
 
   def terms_and_conditions?
@@ -271,6 +276,21 @@ class User < ApplicationRecord
       .left_outer_joins(:announcement_viewed)
       .where('user_id != ? OR user_id IS NULL', id)
       .order(:created_at)
+  end
+
+  def judge_options
+    # ugh, why isn't this :judge_options?
+    opts = options&.dig('judge_options') || {}
+    opts.deep_symbolize_keys
+  end
+
+  def judge_options= value
+    # Initialize options as empty hash if nil
+    self.options ||= {}
+
+    # Set the judge_options within options
+    self.options = options.merge(judge_options: value)
+    pp self.options
   end
 
   private

@@ -2,7 +2,7 @@
   <% puts "Rendering row for book #{book.id} updated at #{book.updated_at} at #{Time.now}"%>
   <!--<%= "Rendering row for book #{book.id} updated at #{book.updated_at}  at #{Time.now}"%>-->
   <td><%= book.id %> </td>
-  <td><%= link_to book_title(book), book_path(book) %></td>
+  <td><%= link_to strip_book_title(book), book_path(book) %></td>
   <td><%= book.teams.pluck(:name).join(',') %></td>
   <td><%= book.scorer.name %> </td>
   <td><%= book.selection_strategy.name %> </td>

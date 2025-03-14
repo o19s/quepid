@@ -64,7 +64,7 @@ Rails.application.routes.draw do
   end
 
   resources :ai_judges, only: [] do
-    resource :prompt, only: [ :edit, :update ], module: :ai_judges
+    resource :prompt, only: [ :show, :edit, :update ], module: :ai_judges
   end
 
   resources :cases, only: [] do

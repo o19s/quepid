@@ -3,6 +3,11 @@
 module AiJudges
   class PromptsController < ApplicationController
     before_action :set_book
+
+    def show
+      redirect_to edit_ai_judge_prompt_path(params[:ai_judge_id], @book)
+    end
+
     def edit
       @ai_judge = User.find(params[:ai_judge_id])
 
@@ -26,7 +31,7 @@ module AiJudges
 
       @query_doc_pair = QueryDocPair.new(query_doc_pair_params)
 
-      llm_service = LlmService.new(@ai_judge.openai_key)
+      llm_service = LlmService.new(@ai_judge.openai_key, @ai_judge.judge_options)
       @judgement = Judgement.new(query_doc_pair: @query_doc_pair, user: @ai_judge)
       llm_service.perform_safe_judgement @judgement
 

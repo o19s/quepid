@@ -10,6 +10,10 @@ module ApplicationHelper
     end
   end
 
+  def strip_book_title book
+    book.name.sub(/^book\s+/i, '').titleize
+  end
+
   def case_title kase
     if kase.case_name.downcase.starts_with?('case')
       kase.case_name.titleize

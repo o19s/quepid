@@ -31,6 +31,7 @@
                     onchange: "updateModalTitle(#{ai_judge.id})",
                     class: 'form-check-input' %>
                 <%= form.label :judge_all, "Judge All Pairs",
+                    for: "judge_all_#{ai_judge.id}",
                     checked: false,
                     class: 'form-check-label' %>
               </div>

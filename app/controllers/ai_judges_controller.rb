@@ -66,6 +66,11 @@ class AiJudgesController < ApplicationController
   def new
     @ai_judge = User.new
     @ai_judge.system_prompt = DEFAULT_SYSTEM_PROMPT
+    @ai_judge.judge_options = {
+      llm_service_url: 'https://api.openai.com',
+      llm_model:       'gpt-4',
+      llm_timeout:     30,
+    }
   end
 
   def edit
@@ -74,7 +79,6 @@ class AiJudgesController < ApplicationController
 
   def create
     @ai_judge = User.new(ai_judge_params)
-    @ai_judge.password = SecureRandom.hex(8)
 
     if @ai_judge.save
       @team.members << @ai_judge
@@ -106,8 +110,10 @@ class AiJudgesController < ApplicationController
     @team = Team.find(params.expect(:team_id))
   end
 
-  # Only allow a list of trusted parameters through.
   def ai_judge_params
-    params.expect(user: [ :name, :openai_key, :system_prompt ])
+    params_to_return = params.expect(user: [ :name, :openai_key, :system_prompt, :options, { judge_options: {} } ])
+    params_to_return[:options] = JSON.parse(params_to_return[:options]) if params_to_return[:options]
+
+    params_to_return
   end
 end

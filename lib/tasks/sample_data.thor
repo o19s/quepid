@@ -120,6 +120,24 @@ class SampleData < Thor
     osc_member_user = seed_user user_params
     print_user_info user_params
 
+    ######################################
+    # OSC AI Judge
+    ######################################
+
+    user_specifics = {
+      name:          'OSC AI Judge',
+      openai_key:    'key123456',
+      system_prompt: AiJudgesController::DEFAULT_SYSTEM_PROMPT,
+    }
+    user_params = user_specifics # user_defaults.merge(user_specifics)
+    osc_ai_judge = seed_user user_params
+    osc_ai_judge.judge_options = {
+      llm_service_url: 'https://api.openai.com',
+      llm_model:       'gpt-4',
+      llm_timeout:     30,
+    }
+    print_user_info user_params
+
     print_step 'End of seeding users................'
 
     # Cases
@@ -228,6 +246,7 @@ class SampleData < Thor
     osc.members << osc_owner_user
     osc.members << osc_member_user unless osc.members.include?(osc_member_user)
     osc.members << realistic_activity_user unless osc.members.include?(realistic_activity_user)
+    osc.members << osc_ai_judge unless osc.members.include?(osc_ai_judge)
     osc.cases << tens_of_queries_case unless osc.members.include?(tens_of_queries_case)
     osc.search_endpoints << statedecoded_solr_endpoint unless osc.search_endpoints.include?(statedecoded_solr_endpoint)
     print_step 'End of seeding teams................'
@@ -517,8 +536,10 @@ class SampleData < Thor
   private
 
   def seed_user hash
-    if ::User.exists?(email: hash[:email].downcase)
+    if hash[:email] && ::User.exists?(email: hash[:email].downcase)
       ::User.where(email: hash[:email].downcase).first
+    elsif hash[:name] && ::User.exists?(name: hash[:name])
+      ::User.where(name: hash[:name]).first
     else
       ::User.create hash
     end
