@@ -128,24 +128,4 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
     assert_equal book_with_multiple_raters.query_doc_pairs.count, 2
     assert_equal book_with_multiple_raters.judgements.count, 2
   end
-
-  describe 'dealing with judgements with no judge_id' do
-    @controller = BooksController.new
-    it 'should handle compacting with no nils' do
-      array = [ 1, 2, 3, 4 ]
-      result = @controller.send(:compact_keep_one_nil, array)
-      assert_equals [ 1, 2, 3, 4 ], result
-    end
-    it 'should handle compacting with single nils and keep one' do
-      array = [ 1, 2, 3, nil, 4 ]
-      result = @controller.send(:compact_keep_one_nil, array)
-      assert_equals [ 1, 2, 3, 4, nil ], result
-    end
-
-    it 'should handle compacting with multiple nils and keep one' do
-      array = [ 1, nil, nil, 3, nil, 4 ]
-      result = @controller.send(:compact_keep_one_nil, array)
-      assert_equals [ 1, 2, 3, 4, nil ], result
-    end
-  end
 end
