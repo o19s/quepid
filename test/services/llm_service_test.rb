@@ -25,7 +25,6 @@ class LlmServiceTest < ActiveSupport::TestCase
 
   describe 'Hacking with Scott' do
     test 'can we make it run' do
-      # WebMock.allow_net_connect!
       user_prompt = DEFAULT_USER_PROMPT
       system_prompt = AiJudgesController::DEFAULT_SYSTEM_PROMPT
       result = service.get_llm_response(user_prompt, system_prompt)
@@ -33,8 +32,6 @@ class LlmServiceTest < ActiveSupport::TestCase
 
       assert_kind_of Numeric, result[:judgment]
       assert_not_nil result[:explanation]
-
-      # WebMock.disable_net_connect!
     end
     test 'making a user prompt' do
       user_prompt = service.make_user_prompt query_doc_pair
@@ -59,7 +56,7 @@ class LlmServiceTest < ActiveSupport::TestCase
       error = assert_raises(RuntimeError) do
         service.get_llm_response(user_prompt, system_prompt)
       end
-      assert_equal 'Error: 401 - Unauthorized', error.message
+      assert_equal 'LLM API Error: 401 - Unauthorized', error.message
     end
 
     test 'handle and back off a 429 error' do
@@ -71,16 +68,17 @@ class LlmServiceTest < ActiveSupport::TestCase
       error = assert_raises(RuntimeError) do
         service.get_llm_response(user_prompt, system_prompt)
       end
-      assert_equal 'Error: 429 - Too Many Requests', error.message
+      assert_equal 'LLM API Error: 429 - Too Many Requests', error.message
     end
   end
 
   describe 'using ollama' do
-    test 'we can override settings' do
+    test 'we can override settings and use Qwen' do
+      skip "Skipping this test as we do not know if we are running Ollama locally"
       WebMock.allow_net_connect!
       opts = {
-        llm_service_url: 'http://ollama:11434/v1',
-        llm_model:       'deepseek-r1:1.5b',
+        llm_service_url: 'http://ollama:11434',
+        llm_model:       'qwen2.5:0.5b',
         llm_timeout:     90,
       }
       service = LlmService.new 'ollama', opts
@@ -89,7 +87,7 @@ class LlmServiceTest < ActiveSupport::TestCase
       system_prompt = AiJudgesController::DEFAULT_SYSTEM_PROMPT
       result = service.get_llm_response(user_prompt, system_prompt)
       puts result
-      # WebMock.allow_net_connect!
+      WebMock.disable_net_connect!
     end
   end
 end

@@ -17,7 +17,7 @@ class RunJudgeJudyJob < ApplicationJob
   # rubocop:disable Metrics/MethodLength
   def perform book, judge, number_of_pairs
     counter = 0
-    llm_service = LlmService.new judge.openai_key, {}
+    llm_service = LlmService.new judge.openai_key, judge.judge_options
     loop do
       break if number_of_pairs && counter >= number_of_pairs
 

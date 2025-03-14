@@ -126,12 +126,16 @@ class SampleData < Thor
 
     user_specifics = {
       name:          'OSC AI Judge',
-      email:         nil,
       openai_key:    'key123456',
       system_prompt: AiJudgesController::DEFAULT_SYSTEM_PROMPT,
     }
-    user_params = user_defaults.merge(user_specifics)
+    user_params = user_specifics # user_defaults.merge(user_specifics)
     osc_ai_judge = seed_user user_params
+    osc_ai_judge.judge_options = {
+      llm_service_url: 'https://api.openai.com',
+      llm_model:       'gpt-4',
+      llm_timeout:     30,
+    }
     print_user_info user_params
 
     print_step 'End of seeding users................'
@@ -532,8 +536,10 @@ class SampleData < Thor
   private
 
   def seed_user hash
-    if ::User.exists?(email: hash[:email].downcase)
+    if hash[:email] && ::User.exists?(email: hash[:email].downcase)
       ::User.where(email: hash[:email].downcase).first
+    elsif hash[:name] && ::User.exists?(name: hash[:name])
+      ::User.where(name: hash[:name]).first
     else
       ::User.create hash
     end
