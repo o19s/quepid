@@ -361,13 +361,13 @@ class UserTest < ActiveSupport::TestCase
 
     describe 'options to configure the llm server' do
       it 'provides an empty hash' do
-        user = User.new(openai_key: '1234')
+        user = User.new(openai_key: '1234', name: 'Judge Judy')
         opts_hash = user.judge_options
         assert_equal({}, opts_hash)
       end
 
       it 'lets you update the options hash' do
-        user = User.new(openai_key: '1234')
+        user = User.new(openai_key: '1234', name: 'Judge Judy')
         opts_hash = user.judge_options
 
         opts_hash[:model] = 'gpt-3.5-turbo'
