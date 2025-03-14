@@ -219,7 +219,7 @@ admin:
   administrator:  true
   
 judge_judy:
-  password:       $2a$12$Yf6zIiRvsHWDrhBxN0trXe/b/TTTSE3nK736Qbz2bGsowrjn3n2xC
+  name:           Judge Judy
   openai_key:     1234asdf5678
   system_prompt:  You are a grocery store shopper.  You like cheese.  Is this a cheese?
   options:      '{"judge_options":{"llm_model":"gpt-4","llm_timeout":"3000","llm_service_url":"https://api.openai.com"}}'
