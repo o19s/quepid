@@ -39,4 +39,4 @@ en:
               
     attributes:
       user:
-        openai_key: "OpenAI Key"
+        llm_key: "LLM Key"

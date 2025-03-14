@@ -31,7 +31,7 @@ module AiJudges
 
       @query_doc_pair = QueryDocPair.new(query_doc_pair_params)
 
-      llm_service = LlmService.new(@ai_judge.openai_key, @ai_judge.judge_options)
+      llm_service = LlmService.new(@ai_judge.llm_key, @ai_judge.judge_options)
       @judgement = Judgement.new(query_doc_pair: @query_doc_pair, user: @ai_judge)
       llm_service.perform_safe_judgement @judgement
 
@@ -46,7 +46,7 @@ module AiJudges
 
     # Only allow a list of trusted parameters through.
     def ai_judge_params
-      params.expect(user: [ :openai_key, :system_prompt ])
+      params.expect(user: [ :llm_key, :system_prompt ])
     end
 
     def query_doc_pair_params

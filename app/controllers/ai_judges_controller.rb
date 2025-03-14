@@ -111,7 +111,7 @@ class AiJudgesController < ApplicationController
   end
 
   def ai_judge_params
-    params_to_return = params.expect(user: [ :name, :openai_key, :system_prompt, :options, { judge_options: {} } ])
+    params_to_return = params.expect(user: [ :name, :llm_key, :system_prompt, :options, { judge_options: {} } ])
     params_to_return[:options] = JSON.parse(params_to_return[:options]) if params_to_return[:options]
 
     params_to_return

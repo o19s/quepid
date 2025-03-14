@@ -20,11 +20,11 @@ require 'test_helper'
 #  invitation_sent_at          :datetime
 #  invitation_token            :string(255)
 #  invitations_count           :integer          default(0)
+#  llm_key                     :string(255)
 #  locked                      :boolean
 #  locked_at                   :datetime
 #  name                        :string(255)
 #  num_logins                  :integer
-#  openai_key                  :string(255)
 #  options                     :json
 #  password                    :string(120)
 #  profile_pic                 :string(4000)
@@ -32,6 +32,7 @@ require 'test_helper'
 #  reset_password_token        :string(255)
 #  stored_raw_invitation_token :string(255)
 #  system_prompt               :string(4000)
+#  type                        :string(255)
 #  created_at                  :datetime         not null
 #  updated_at                  :datetime         not null
 #  default_scorer_id           :integer
@@ -340,19 +341,19 @@ class UserTest < ActiveSupport::TestCase
     it 'uses the existence of the key to decide ai_judge' do
       user = User.new
       assert_not user.ai_judge?
-      user.openai_key = ''
+      user.llm_key = ''
       assert user.ai_judge?
       assert_not user.valid?
     end
 
     it 'does not require an email or password address to be valid when is a judge' do
-      user = User.new(openai_key: '1234', name: 'Judge Judy')
+      user = User.new(llm_key: '1234', name: 'Judge Judy')
       assert user.ai_judge?
       assert user.valid?
     end
 
     it 'does require name to be valid when is a judge' do
-      user = User.new(openai_key: '1234')
+      user = User.new(llm_key: '1234')
       assert user.ai_judge?
       assert_not user.valid?
       user.name = 'Judge Judy'
@@ -361,13 +362,13 @@ class UserTest < ActiveSupport::TestCase
 
     describe 'options to configure the llm server' do
       it 'provides an empty hash' do
-        user = User.new(openai_key: '1234')
+        user = User.new(llm_key: '1234')
         opts_hash = user.judge_options
         assert_equal({}, opts_hash)
       end
 
       it 'lets you update the options hash' do
-        user = User.new(openai_key: '1234')
+        user = User.new(llm_key: '1234')
         opts_hash = user.judge_options
 
         opts_hash[:model] = 'gpt-3.5-turbo'

@@ -5,15 +5,15 @@ require 'faraday/retry'
 require 'json'
 
 class LlmService
-  def initialize openai_key, opts = {}
+  def initialize llm_key, opts = {}
     default_options = {
       llm_service_url: 'https://api.openai.com',
       llm_model:       'gpt-4',
       llm_timeout:     30,
     }
 
-    @openai_key = openai_key
-    @options    = default_options.merge(opts.deep_symbolize_keys)
+    @llm_key = llm_key
+    @options = default_options.merge(opts.deep_symbolize_keys)
   end
 
   def perform_safe_judgement judgement
@@ -57,6 +57,7 @@ class LlmService
   end
 
   # rubocop:disable Metrics/MethodLength
+  # rubocop:disable Metrics/AbcSize
   def get_llm_response user_prompt, system_prompt
     conn = Faraday.new(url: @options[:llm_service_url]) do |f|
       f.request :json
@@ -82,7 +83,7 @@ class LlmService
     }
 
     response = conn.post('/v1/chat/completions') do |req|
-      req.headers['Authorization'] = "Bearer #{@openai_key}"
+      req.headers['Authorization'] = "Bearer #{@llm_key}" if @llm_key.present?
       req.options.timeout = @options[:llm_timeout].to_i # Set request timeout
       req.body = body
     end
@@ -106,4 +107,5 @@ class LlmService
     end
   end
   # rubocop:enable Metrics/MethodLength
+  # rubocop:enable Metrics/AbcSize
 end
