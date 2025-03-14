@@ -24,6 +24,7 @@ class JudgeJudyFlowTest < ActionDispatch::IntegrationTest
 
     # Wait for her to judge
     perform_enqueued_jobs do
+      judge_judy.options = nil # no idea why
       RunJudgeJudyJob.perform_later(book, judge_judy, nil)
     end
 
