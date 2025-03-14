@@ -60,14 +60,22 @@ class BooksController < ApplicationController
     @ai_judges = @book.ai_judges
     assigned_ai_judges = @ai_judges.pluck(:user_id)
 
-    stats_judges = (unique_judge_ids + assigned_ai_judges).uniq
+    stats_judges_ids = (unique_judge_ids + assigned_ai_judges).uniq
 
-    stats_judges.each do |judge_id|
+    stats_judges = []
+    stats_judges_ids.each do |judge_id|
       begin
         judge = User.find(judge_id) unless judge_id.nil?
       rescue ActiveRecord::RecordNotFound
         judge = nil
       end
+      stats_judges << judge
+    end
+
+    stats_judges = compact_keep_one_nil(stats_judges)
+    stats_judges = stats_judges.sort_by(&:fullname)
+
+    stats_judges.each do |judge|
       @leaderboard_data << { judge:      judge.nil? ? 'anonymous' : judge.fullname,
                              judgements: @book.judgements.where(user: judge).count }
       @stats_data << {
@@ -327,6 +335,13 @@ class BooksController < ApplicationController
 
   def find_user
     @user = User.find(params[:user_id])
+  end
+
+  def compact_keep_one_nil array
+    has_nil = array.count(nil).positive?
+    array.compact!
+    array << nil if has_nil
+    array
   end
 
   def book_params
