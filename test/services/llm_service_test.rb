@@ -74,7 +74,7 @@ class LlmServiceTest < ActiveSupport::TestCase
 
   describe 'using ollama' do
     test 'we can override settings and use Qwen' do
-      skip "Skipping this test as we do not know if we are running Ollama locally"
+      skip 'Skipping this test as we do not know if we are running Ollama locally'
       WebMock.allow_net_connect!
       opts = {
         llm_service_url: 'http://ollama:11434',
