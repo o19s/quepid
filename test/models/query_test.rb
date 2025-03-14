@@ -9,7 +9,7 @@
 #  arranged_next    :bigint
 #  information_need :string(255)
 #  notes            :text(65535)
-#  options          :text(65535)
+#  options          :json
 #  query_text       :string(2048)
 #  created_at       :datetime         not null
 #  updated_at       :datetime         not null
