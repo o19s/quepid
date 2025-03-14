@@ -46,7 +46,8 @@
 /.dockerignore
 /Dockerfile*
 
-
+# Ignore any Docker container volumes
+/volumes/*
 
 # Quepid docs
 docs/
