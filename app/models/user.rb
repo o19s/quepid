@@ -149,7 +149,7 @@ class User < ApplicationRecord
             acceptance: { message: 'checkbox must be clicked to signify you agree to the terms and conditions.' },
             if:         :terms_and_conditions?
 
-  validates :llm_key, length: { maximum: 255 }, allow_nil: true, if: :ai_judge?
+  validates :llm_key, length: { maximum: 255 }, allow_nil: false, presence: true, if: :ai_judge? # Lets get STI in and not have this.
   validates :system_prompt, length: { maximum: 4000 }, allow_nil: true, presence: true, if: :ai_judge?
 
   def terms_and_conditions?
