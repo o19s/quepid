@@ -72,6 +72,7 @@ class LlmService
     end
 
     body = {
+      temperature:     0.7,
       model:           @options[:llm_model],
       response_format: { type: 'json_object' },
       messages:        [
