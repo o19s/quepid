@@ -109,7 +109,9 @@ queries_case:
   case_name:    A case to test queries positions
   archived:     false
   scorer:       :random_scorer
-  options:      '{"corpusId":987, "boostfactor":1.2}'
+  options:      
+    corpusId: 987
+    boostfactor: 1.2
 
 move_query_to_me:
   owner:     :random

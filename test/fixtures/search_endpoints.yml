@@ -191,4 +191,5 @@ for_case_queries_case:
   endpoint_url:   http://test.com/solr/tmdb/select
   search_engine:  solr
   api_method:     JSONP
-  options:        '{"corpusId":12345}'
+  options:        
+    corpusId: 12345
