@@ -362,18 +362,20 @@ class UserTest < ActiveSupport::TestCase
 
     describe 'options to configure the llm server' do
       it 'provides an empty hash' do
-        user = User.new(llm_key: '1234')
+        user = User.new(openai_key: '1234', name: 'Judge Judy')
         opts_hash = user.judge_options
         assert_equal({}, opts_hash)
       end
 
-      it 'lets you update the options hash' do
-        user = User.new(llm_key: '1234')
+      it 'lets you update the options hash via passing in a hash with new values' do
+        user = User.new(openai_key: '1234', name: 'Judge Judy')
         opts_hash = user.judge_options
 
         opts_hash[:model] = 'gpt-3.5-turbo'
         assert_equal('gpt-3.5-turbo', opts_hash[:model])
+        user.judge_options = opts_hash
         user.save!
+
         user.reload
         assert_equal('gpt-3.5-turbo', user.judge_options[:model])
       end
@@ -381,20 +383,14 @@ class UserTest < ActiveSupport::TestCase
       it 'works with other prexisting options' do
         joey.options = { special_options: { key1: 'opt1', key2: 2, key3: true } }
         assert joey.save
-        # joey.judge_options[:model] = 'gpt-3.5-turbo'
-        # Do not do this, it won't work.  You need to work with the full hash
-        # joey.judge_options = 'gpt-3.5-turbo'
+
         judge_options = joey.judge_options
         judge_options[:model] = 'gpt-3.5-turbo'
         joey.judge_options = judge_options
         assert joey.save!
         joey.reload
 
-        puts 'optons'
-        puts joey.options
-
         judge_options = joey.judge_options
-        pp judge_options
         assert_equal('gpt-3.5-turbo', judge_options[:model])
       end
     end

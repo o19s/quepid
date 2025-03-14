@@ -47,4 +47,11 @@ class SearchEndpointTest < ActiveSupport::TestCase
       assert_not jsonp_endpoint.update(proxy_requests: true)
     end
   end
+
+  describe 'options' do
+    let(:search_endpoint) { search_endpoints(:for_case_queries_case) }
+    it 'handles options from fixture file' do
+      assert_equal({ 'corpusId'=> 12_345 }, search_endpoint.options)
+    end
+  end
 end

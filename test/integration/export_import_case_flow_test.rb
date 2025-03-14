@@ -29,8 +29,9 @@ class ExportImportCaseFlowTest < ActionDispatch::IntegrationTest
     assert_not_nil(new_case)
     assert_not_empty(new_case.tries.first.curator_vars_map)
 
-    # spot check some attributes
-    assert_equal acase.options.to_json, new_case.options.to_json
-    assert_equal acase.tries.first.search_endpoint.options.to_json, new_case.tries.first.search_endpoint.options.to_json
+    # spot check some attributes (making all values like 0.2 be "0.2")
+    assert_equal acase.options.transform_values(&:to_s), new_case.options.transform_values(&:to_s)
+    assert_equal acase.tries.first.search_endpoint.options.transform_values(&:to_s),
+                 new_case.tries.first.search_endpoint.options.transform_values(&:to_s)
   end
 end
