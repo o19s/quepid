@@ -16,11 +16,11 @@
 #  invitation_sent_at          :datetime
 #  invitation_token            :string(255)
 #  invitations_count           :integer          default(0)
+#  llm_key                     :string(255)
 #  locked                      :boolean
 #  locked_at                   :datetime
 #  name                        :string(255)
 #  num_logins                  :integer
-#  openai_key                  :string(255)
 #  options                     :json
 #  password                    :string(120)
 #  profile_pic                 :string(4000)
@@ -220,7 +220,7 @@ admin:
   
 judge_judy:
   name:           Judge Judy
-  openai_key:     1234asdf5678
+  llm_key:        1234asdf5678
   system_prompt:  You are a grocery store shopper.  You like cheese.  Is this a cheese?
   options:
     judge_options: 

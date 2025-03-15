@@ -126,7 +126,7 @@ class SampleData < Thor
 
     user_specifics = {
       name:          'OSC AI Judge',
-      openai_key:    'key123456',
+      llm_key:       'key123456',
       system_prompt: AiJudgesController::DEFAULT_SYSTEM_PROMPT,
     }
     user_params = user_specifics # user_defaults.merge(user_specifics)

@@ -20,11 +20,11 @@
 #  invitation_sent_at          :datetime
 #  invitation_token            :string(255)
 #  invitations_count           :integer          default(0)
+#  llm_key                     :string(255)
 #  locked                      :boolean
 #  locked_at                   :datetime
 #  name                        :string(255)
 #  num_logins                  :integer
-#  openai_key                  :string(255)
 #  options                     :json
 #  password                    :string(120)
 #  profile_pic                 :string(4000)
@@ -51,7 +51,6 @@
 #  fk_rails_...  (default_scorer_id => scorers.id)
 #  fk_rails_...  (invited_by_id => users.id)
 #
-
 class User < ApplicationRecord
   # Associations
   has_many :api_keys, dependent: :destroy
@@ -148,7 +147,7 @@ class User < ApplicationRecord
             acceptance: { message: 'checkbox must be clicked to signify you agree to the terms and conditions.' },
             if:         :terms_and_conditions?
 
-  validates :openai_key, length: { maximum: 255 }, allow_nil: true, if: :ai_judge?
+  validates :llm_key, length: { maximum: 255 }, allow_nil: false, presence: true, if: :ai_judge?
   validates :system_prompt, length: { maximum: 4000 }, allow_nil: true, presence: true, if: :ai_judge?
 
   def terms_and_conditions?
@@ -210,10 +209,11 @@ class User < ApplicationRecord
 
   # Scopes
   # default_scope -> { includes(:permissions) }
-  scope :only_ai_judges, -> { where('`users`.`openai_key` IS NOT NULL') }
+  scope :only_ai_judges, -> { where('`users`.`llm_key` IS NOT NULL') }
 
+  # Lets get STI in and have actual AiJudge and User objects!
   def ai_judge?
-    !openai_key.nil?
+    !llm_key.nil?
   end
 
   def num_queries
@@ -290,7 +290,6 @@ class User < ApplicationRecord
 
     # Set the judge_options within options
     self.options = options.merge(judge_options: value)
-    pp self.options
   end
 
   private

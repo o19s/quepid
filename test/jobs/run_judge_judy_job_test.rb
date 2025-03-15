@@ -9,7 +9,7 @@ class RunJudgeJudyJobTest < ActiveJob::TestCase
   describe 'failure scenarios' do
     test 'not authorized to access OpenAI' do
       # Tell webmock to return a 401 by matching the below key.
-      judge_judy.openai_key = 'BAD_OPENAI_KEY'
+      judge_judy.llm_key = 'BAD_OPENAI_KEY'
       judge_judy.options = nil # no idea why
       judge_judy.save!
 

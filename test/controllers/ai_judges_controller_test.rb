@@ -20,7 +20,7 @@ class AiJudgesControllerTest < ActionDispatch::IntegrationTest
     assert_difference('User.count') do
       post team_ai_judges_url(team_id: team.id),
            params: { user: {
-             name: ai_judge.name, openai_key: ai_judge.openai_key, system_prompt: ai_judge.system_prompt
+             name: ai_judge.name, llm_key: ai_judge.llm_key, system_prompt: ai_judge.system_prompt
            } }
     end
     assert_redirected_to teams_core_url(id: team.id)
