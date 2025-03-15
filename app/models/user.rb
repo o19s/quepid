@@ -149,7 +149,7 @@ class User < ApplicationRecord
             acceptance: { message: 'checkbox must be clicked to signify you agree to the terms and conditions.' },
             if:         :terms_and_conditions?
 
-  validates :llm_key, length: { maximum: 255 }, allow_nil: false, presence: true, if: :ai_judge? # Lets get STI in and not have this.
+  validates :llm_key, length: { maximum: 255 }, allow_nil: false, presence: true, if: :ai_judge?
   validates :system_prompt, length: { maximum: 4000 }, allow_nil: true, presence: true, if: :ai_judge?
 
   def terms_and_conditions?
@@ -213,6 +213,7 @@ class User < ApplicationRecord
   # default_scope -> { includes(:permissions) }
   scope :only_ai_judges, -> { where('`users`.`llm_key` IS NOT NULL') }
 
+  # Lets get STI in and have actual AiJudge and User objects!
   def ai_judge?
     !llm_key.nil?
   end
@@ -291,7 +292,6 @@ class User < ApplicationRecord
 
     # Set the judge_options within options
     self.options = options.merge(judge_options: value)
-    pp self.options
   end
 
   private
