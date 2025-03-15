@@ -7,7 +7,7 @@
 #  arranged_next    :bigint
 #  information_need :string(255)
 #  notes            :text(65535)
-#  options          :text(65535)
+#  options          :json
 #  query_text       :string(2048)
 #  created_at       :datetime         not null
 #  updated_at       :datetime         not null
@@ -93,7 +93,8 @@ query_for_best_bond_ever:
   query_text:   Best Bond Ever
   information_need: I am looking for Sean Connery as the actor, as he was the best!
   arranged_at:  3
-  options:      '{"special_boost": 3.2}'
+  options:      
+    special_boost: 3.2
   
 query_for_best_bond_ever2:
   case:         :random_case_1

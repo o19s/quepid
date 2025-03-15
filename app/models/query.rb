@@ -9,7 +9,7 @@
 #  arranged_next    :bigint
 #  information_need :string(255)
 #  notes            :text(65535)
-#  options          :text(65535)
+#  options          :json
 #  query_text       :string(2048)
 #  created_at       :datetime         not null
 #  updated_at       :datetime         not null
@@ -45,8 +45,6 @@ class Query < ApplicationRecord
   # Scopes
 
   scope :has_information_need, -> { where.not(information_need: [ nil, '' ]) }
-
-  serialize :options, coder: JSON
 
   def parent_list
     self.case.queries

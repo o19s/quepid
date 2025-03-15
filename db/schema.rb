@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_03_14_172243) do
+ActiveRecord::Schema[8.0].define(version: 2025_03_14_214403) do
   create_table "active_storage_attachments", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.string "name", null: false
     t.string "record_type", null: false
@@ -288,8 +288,8 @@ ActiveRecord::Schema[8.0].define(version: 2025_03_14_172243) do
     t.integer "case_id"
     t.datetime "created_at", precision: nil, null: false
     t.datetime "updated_at", precision: nil, null: false
-    t.text "options", collation: "utf8mb3_bin"
     t.string "information_need"
+    t.json "options"
     t.index ["case_id"], name: "case_id"
   end
 
@@ -303,7 +303,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_03_14_172243) do
     t.string "doc_id", limit: 500
     t.string "information_need"
     t.text "notes"
-    t.text "options", collation: "utf8mb3_bin"
+    t.json "options"
     t.index ["book_id"], name: "index_query_doc_pairs_on_book_id"
   end
 
