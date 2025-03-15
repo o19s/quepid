@@ -8,7 +8,7 @@
 #  document_fields  :text(16777215)
 #  information_need :string(255)
 #  notes            :text(65535)
-#  options          :text(65535)
+#  options          :json
 #  position         :integer
 #  query_text       :string(2048)
 #  created_at       :datetime         not null
@@ -35,6 +35,4 @@ class QueryDocPair < ApplicationRecord
   validates :options, json: true
 
   scope :has_judgements, -> { joins(:judgements) }
-
-  serialize :options, coder: JSON
 end
