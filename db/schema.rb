@@ -606,7 +606,6 @@ ActiveRecord::Schema[8.0].define(version: 2025_03_14_172243) do
     t.string "system_prompt", limit: 4000
     t.string "llm_key"
     t.json "options"
-    t.string "type"
     t.index ["default_scorer_id"], name: "index_users_on_default_scorer_id"
     t.index ["email"], name: "ix_user_username", unique: true
     t.index ["invitation_token"], name: "index_users_on_invitation_token", unique: true, length: 191

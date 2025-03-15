@@ -32,7 +32,6 @@ require 'test_helper'
 #  reset_password_token        :string(255)
 #  stored_raw_invitation_token :string(255)
 #  system_prompt               :string(4000)
-#  type                        :string(255)
 #  created_at                  :datetime         not null
 #  updated_at                  :datetime         not null
 #  default_scorer_id           :integer

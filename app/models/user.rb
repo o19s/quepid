@@ -32,7 +32,6 @@
 #  reset_password_token        :string(255)
 #  stored_raw_invitation_token :string(255)
 #  system_prompt               :string(4000)
-#  type                        :string(255)
 #  created_at                  :datetime         not null
 #  updated_at                  :datetime         not null
 #  default_scorer_id           :integer
@@ -52,7 +51,6 @@
 #  fk_rails_...  (default_scorer_id => scorers.id)
 #  fk_rails_...  (invited_by_id => users.id)
 #
-require 'json'
 class User < ApplicationRecord
   # Associations
   has_many :api_keys, dependent: :destroy
