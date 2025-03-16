@@ -60,6 +60,7 @@ services:
     volumes:
       - ./keycloak/realm-config/quepid-realm.json:/opt/keycloak/data/import/quepid-realm.json:ro    
 
+  # You can remove Ollama (and the links to it from app) if you don't want to use it to power AI judges
   ollama:
     image: ollama/ollama
     container_name: ollama

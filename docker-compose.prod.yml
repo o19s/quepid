@@ -44,8 +44,10 @@ services:
       - 3000:3000
     links:
       - mysql
+      - ollama
     depends_on:
       - mysql
+      - ollama
   nginx:
     image: nginx:1.27.1-alpine-slim
     container_name: quepid_nginx
@@ -57,3 +59,14 @@ services:
       - ./.ssl/:/etc/nginx/certs
     links:
       - app
+  
+  # You can remove Ollama (and the links to it from app) if you don't want to use it to power AI judges
+  ollama:
+    image: ollama/ollama
+    container_name: ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ./volumes/ollama/data:/tmp/data
+    environment:
+      OLLAMA_MODELS: "/tmp/data/.ollama/models"
