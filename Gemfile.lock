@@ -279,7 +279,7 @@ GEM
       builder
       minitest (>= 5.0)
       ruby-progressbar
-    mission_control-jobs (0.5.0)
+    mission_control-jobs (1.0.2)
       actioncable (>= 7.1)
       actionpack (>= 7.1)
       activejob (>= 7.1)
@@ -590,7 +590,7 @@ DEPENDENCIES
   memory_profiler
   mini_racer (~> 0.16.0)
   minitest-reporters (>= 0.5.0)
-  mission_control-jobs (~> 0.5.0)
+  mission_control-jobs (~> 1.0.2)
   mocha (~> 2.7)
   mysql2
   omniauth

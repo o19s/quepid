@@ -92,6 +92,9 @@ Rails.application.configure do
     config.logger    = ActiveSupport::TaggedLogging.new(logger)
   end
 
+  
+  config.mission_control.jobs.http_basic_auth_enabled = false
+  
   # Do not dump schema after migrations.
   config.active_record.dump_schema_after_migration = false
 
