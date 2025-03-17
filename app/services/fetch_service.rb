@@ -10,7 +10,7 @@ class FetchService
   attr_reader :logger, :options
 
   # These are two snapshots related to book 25 and case 6789
-  # that represent Haystack Conference and are used in the sample
+  # that represent work done during a Haystack Conference and are used in the sample
   # Jupyterlite notebooks.  Don't nuke them if they belong to a case 6789.
   HAYSTACK_PUBLIC_CASE = 6789
   SPECIAL_SNAPSHOTS_TO_PRESERVE = [ 2471, 2473 ].freeze

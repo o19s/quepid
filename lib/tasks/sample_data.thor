@@ -34,6 +34,12 @@ class SampleData < Thor
 
     tmdb_es_endpoint = ::SearchEndpoint.find_or_create_by   search_engine: :es,
                                                             endpoint_url: 'http://quepid-elasticsearch.dev.o19s.com:9206/tmdb/_search', api_method: 'POST'
+    
+    osc_blog_search_api_endpoint = ::SearchEndpoint.find_or_create_by search_engine: :search_api,
+                                                                    endpoint_url: 'https://opensourceconnections.com/?s=eric', 
+                                                                    api_method: 'GET',
+                                                                    proxy_requests: true
+    
 
     print_step 'End of seeding search endpoints................'
 
@@ -280,7 +286,7 @@ class SampleData < Thor
 
     # Multiple Cases
     print_step 'Seeding multiple cases................'
-    case_names = [ 'Typeahead: Dairy', 'Typeahead: Meats', 'Typeahead: Dessert', 'Typeahead: Fruit & Veg' ]
+    case_names = [ 'Typeahead: Dairy', 'Typeahead: Meats', 'Typeahead: Dessert' ]
 
     case_names.each do |case_name|
       # check if we've already created the case

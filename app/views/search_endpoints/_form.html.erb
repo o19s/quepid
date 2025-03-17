@@ -38,9 +38,6 @@
       <div class="mb-3 col-12">
         <%= form.label :endpoint_url, class: 'form-label' %>
         <%= form.text_field :endpoint_url, size: 100 %>
-    
-        <div class="form-text">TIP: Want to avoid CORS by proxying requests through Quepid server?  You can do this via the Case configuration or you just prepend the url with <code><%= "#{proxy_fetch_url}?url="  %></code></div>
-    
       </div>
     
       <div class="mb-3">
@@ -59,7 +56,10 @@
           <%= form.label :proxy_requests, class:'form-check-label' %>
           <%= form.check_box :proxy_requests, class:'form-check-input' %>
         </div>
-        <div class="form-text">Proxied requests avoid browser security issues however Quepid must be able to reach your Search Endpoint.</div>
+        <div class="form-text">
+          Proxied requests avoids CORS and other browser security issues, however Quepid must be able to reach your Search Endpoint.
+          Requests will come from Quepid in the form of <code><%= "#{proxy_fetch_url}?url=[ENDPOINT_URL]" %></code>.
+        </div>
       </div>
     
       <div class="mb-3">
@@ -69,8 +69,8 @@
     
       <div class="mb-3">
         <%= form.label :options, class: 'form-label' %>
-        <div class="form-text">This JSON is for passing in settings to the Query Sandbox as a <code>qOption</code>.</div>
-        <%= form.text_area :options, value: JSON.pretty_generate(search_endpoint.options.as_json) %>
+        <div class="form-text"> JSON keys can be accessed in the Query Sandbox as a <code>qOption</code>.</div>
+        <%= form.text_area :options %>
       </div>
     
       <div class="mb-3">
