@@ -45,6 +45,7 @@
     <div class="col-md-6">
       <h2>Query Doc Pair to Evaluate</h2>
       <div>        
+        <%= link_to 'Change Query Doc Pair', edit_ai_judge_prompt_path(@ai_judge, book_id: @book.id), class: 'btn btn-block btn-light float-end', role: 'button', method: :get if @book%>
         <%= fields_for :query_doc_pair, query_doc_pair do |query_doc_pair_fields| %>
             
           <div class="field">

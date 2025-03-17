@@ -133,7 +133,7 @@ class SampleData < Thor
     osc_ai_judge = seed_user user_params
     osc_ai_judge.judge_options = {
       llm_service_url: 'https://api.openai.com',
-      llm_model:       'gpt-4',
+      llm_model:       'gpt-4o',
       llm_timeout:     30,
     }
     print_user_info user_params
