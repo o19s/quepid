@@ -15,9 +15,9 @@
 // Use the bootstrap-sprockets instead of bootstrap when you need individual boostrap files for
 // debugging.  Otherwise the bootstrap version loads all the files as a single minified file.
 //
-// jquery-ui brings in a ton of files that make loading in dev slow.  The below is the minimum required
-// to enable the drag and drop of queries in a case.  There may be others that are used by Quepid that
-// we don't know about.
+// jquery is version 1 of JQuery, which works with jquery-ui and Angular1.
+// jquery-ui brings in a ton of files. Below is the minimum required
+// to enable the drag and drop of queries in a case.
 //
 //= require jquery
 

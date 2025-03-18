@@ -68,7 +68,7 @@ Rails.application.configure do
   config.action_controller.raise_on_missing_callback_actions = true
 
   config.active_job.queue_adapter = :test
-  
+
   config.mission_control.jobs.http_basic_auth_enabled = false
 
   ENV['TC_URL'] = 'https://quepid.com/agreement'
