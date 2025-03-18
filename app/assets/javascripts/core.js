@@ -16,8 +16,7 @@
 // debugging.  Otherwise the bootstrap version loads all the files as a single minified file.
 //
 // jquery-ui brings in a ton of files that make loading in dev slow.  The below is the minimum required
-// to enable the drag and drop of queries in a case.  There may be others that are used by Quepid that
-// we don't know about.
+// to enable the drag and drop of queries in a case.
 //
 //= require jquery
 
