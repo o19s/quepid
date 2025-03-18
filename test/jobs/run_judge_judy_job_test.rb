@@ -14,12 +14,12 @@ class RunJudgeJudyJobTest < ActiveJob::TestCase
       judge_judy.save!
 
       assert_difference 'book.judgements.count', 1 do
-        assert_difference 'book.judgements.where(unrateable: true).count', 1 do        
+        assert_difference 'book.judgements.where(unrateable: true).count', 1 do
           perform_enqueued_jobs do
-              RunJudgeJudyJob.perform_later(book, judge_judy, 1)          
+            RunJudgeJudyJob.perform_later(book, judge_judy, 1)
           end
         end
-      end      
+      end
     end
   end
 end
