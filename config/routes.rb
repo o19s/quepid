@@ -30,6 +30,7 @@ Rails.application.routes.draw do
   get 'home/sparklines', to: 'home#sparklines'
   get 'home/case_prophet/:case_id', to: 'home#case_prophet', as: :home_case_prophet
   get 'home/book_summary_detail/:book_id', to: 'home#book_summary_detail', as: :home_book_summary_detail
+  get 'home/run_case_evaluation_job/:case_id', to: 'home#run_case_evaluation_job', as: :run_case_evaluation_job
 
   get 'proxy/fetch'
   post 'proxy/fetch'
