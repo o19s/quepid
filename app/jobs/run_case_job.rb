@@ -8,7 +8,7 @@ class RunCaseJob < ApplicationJob
   queue_as :bulk_processing
 
   # rubocop:disable Metrics/MethodLength
-  def perform acase, atry
+  def perform acase, atry, auser: nil
     query_count = acase.queries.count
 
     options = {
@@ -28,8 +28,17 @@ class RunCaseJob < ApplicationJob
       # need to deal with errors better.
       docs = []
       if 200 == response_code
-        # this is all rough...  just to get some snapshot_docs...
-        docs = fetch_service.extract_docs_from_response_body_for_solr response_body
+        search_endpoint = atry.search_endpoint
+        case search_endpoint.search_engine.to_sym
+        when :solr
+          docs = fetch_service.extract_docs_from_response_body_for_solr response_body
+        when :searchapi
+          docs = fetch_service.extract_docs_from_response_body_for_searchapi search_endpoint.mapper_code,
+                                                                             response_body
+        else
+          # Handle when none of the above or nil
+          raise "Search engine #{search_endpoint.search_engine} is not supported."
+        end
       end
 
       fetch_service.store_query_results query, docs, response_code, response_body
@@ -49,7 +58,7 @@ class RunCaseJob < ApplicationJob
       )
     end
 
-    fetch_service.score_run
+    fetch_service.score_run auser
 
     Turbo::StreamsChannel.broadcast_render_to(
       :notifications,

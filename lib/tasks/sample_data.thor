@@ -35,6 +35,11 @@ class SampleData < Thor
     tmdb_es_endpoint = ::SearchEndpoint.find_or_create_by   search_engine: :es,
                                                             endpoint_url: 'http://quepid-elasticsearch.dev.o19s.com:9206/tmdb/_search', api_method: 'POST'
 
+    search_api_endpoint = ::SearchEndpoint.find_or_create_by search_engine: :searchapi,
+                                                             endpoint_url: 'https://www.lse.ac.uk/Search-Results', api_method: 'GET',
+                                                             proxy_requests: true,
+                                                             mapper_code: File.read(Rails.root.join('test/fixtures/files/searchapi_mapper_code.js'))
+
     print_step 'End of seeding search endpoints................'
 
     # Users
@@ -91,10 +96,12 @@ class SampleData < Thor
     # go ahead and assign the end point to this person.
     tmdb_solr_endpoint.owner = realistic_activity_user
     tmdb_es_endpoint.owner = realistic_activity_user
+    search_api_endpoint.owner = realistic_activity_user
 
     statedecoded_solr_endpoint.save
     tmdb_solr_endpoint.save
     tmdb_es_endpoint.save
+    search_api_endpoint.save
 
     ######################################
     # OSC Team Owner
@@ -170,6 +177,22 @@ class SampleData < Thor
     es_try.search_endpoint = tmdb_es_endpoint
     es_try.update es_params
     print_case_info es_case
+
+    ######################################
+    # Search API Case
+    ######################################
+
+    searchapi_case = realistic_activity_user.cases.create case_name: 'SEARCHAPI CASE'
+    searchapi_try = searchapi_case.tries.latest
+    searchapi_params = {
+      field_spec:   'id:id, title:title, summary, url',
+      query_params: 'term=#$query##',
+    }
+    searchapi_try.search_endpoint = search_api_endpoint
+    searchapi_try.update searchapi_params
+
+    searchapi_case.queries.create(query_text: 'student accomodation')
+    print_case_info searchapi_case
 
     print_step 'End of seeding cases................'
 
@@ -257,6 +280,7 @@ class SampleData < Thor
     book = ::Book.where(name: 'Book of Ratings', scorer: Scorer.system_default_scorer,
                         selection_strategy: SelectionStrategy.find_by(name: 'Multiple Raters')).first_or_create
     book.teams << osc
+    book.ai_judges << osc_ai_judge
     book.save
 
     # this code copied from populate_controller.rb and should be in a service...

@@ -26,6 +26,8 @@ class FetchService
     @options = default_options.merge(opts)
 
     @logger = @options[:logger]
+
+    @javascript_mapper_code = JavascriptMapperCode.new(Rails.root.join('lib/mapper_code_logic.js'))
   end
 
   def begin acase, atry
@@ -66,6 +68,12 @@ class FetchService
     docs
   end
   # rubocop:enable Metrics/MethodLength
+
+  # should be in some other service??
+  def extract_docs_from_response_body_for_searchapi mapper_code, response_body
+    docs = @javascript_mapper_code.extract_docs mapper_code, response_body
+    docs
+  end
 
   # rubocop:disable Metrics/MethodLength
   # rubocop:disable Metrics/CyclomaticComplexity
@@ -118,10 +126,15 @@ class FetchService
     snapshot_query
   end
 
-  def score_run
+  # Scores phase
+  #
+  # user - An optional user who ran the scoring process and is associated with that score.
+  #
+  # Returns nothing
+  def score_run user
     @snapshot.name = 'Fetch [PREPARE_SCORE]'
     @snapshot.save!
-    score_data = score_snapshot @snapshot, @try
+    score_data = score_snapshot @snapshot, @try, user
 
     case_score_manager = CaseScoreManager.new @case
     case_score_manager.update score_data
@@ -133,7 +146,14 @@ class FetchService
   # rubocop:disable Metrics/PerceivedComplexity
   # rubocop:disable Metrics/BlockLength
   # rubocop:disable Layout/LineLength
-  def score_snapshot snapshot, try
+  # Scores the snapshot.
+  #
+  # snapshot - The snapshot we are using to run the scoring process.
+  # try - The try that defines this specific scoring process.
+  # user - An optional user who ran the scoring process and is associated with that score.
+  #
+  # Returns the created User
+  def score_snapshot snapshot, try, user
     queries_detail = {}
 
     snapshot.snapshot_queries.each do |snapshot_query|
@@ -147,7 +167,13 @@ class FetchService
 
       # Some Scorers will need access to the document data as well, so add that
       docs = snapshot_query.snapshot_docs.map do |snapshot_doc|
-        { id: snapshot_doc.doc_id, rating: doc_ratings[snapshot_doc.doc_id] }.merge(JSON.parse(snapshot_doc.fields))
+        puts "snapshot_doc.doc_id: #{snapshot_doc.doc_id}"
+        puts "doc_ratings[snapshot_doc.doc_id]: #{doc_ratings[snapshot_doc.doc_id]}"
+        puts "snapshot_doc.fields: #{snapshot_doc.fields}"
+
+        doc = { id: snapshot_doc.doc_id, rating: doc_ratings[snapshot_doc.doc_id] }
+        doc.merge(JSON.parse(snapshot_doc.fields)) if snapshot_doc.fields.present?
+        doc
       end
 
       best_docs = snapshot_query.query.ratings.map do |rating|
@@ -213,7 +239,7 @@ class FetchService
       score:      average_score,
       scorer_id:  @case.scorer.id,
       try_number: try.try_number,
-      user_id:    nil,
+      user_id:    user.present? ? user.id : nil,
     }
 
     score_data
