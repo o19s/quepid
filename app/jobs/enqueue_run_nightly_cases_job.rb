@@ -6,7 +6,7 @@ class EnqueueRunNightlyCasesJob < ApplicationJob
   def perform(*_args)
     Case.all.nightly_run.each do |kase|
       try = kase.tries.first # new to old ;-)
-      RunCaseEvaluationJob.perform_later kase, try, nil
+      RunCaseEvaluationJob.perform_later kase, try
     end
   end
 end

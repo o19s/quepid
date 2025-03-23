@@ -5,18 +5,19 @@ require 'faraday/follow_redirects'
 
 class RunCaseEvaluationJob < ApplicationJob
   queue_as :bulk_processing
+  limits_concurrency to: 2, key: self.class.name # for now let's be very limited.
 
-  def perform acase, atry, auser: nil
-    fetch_service = initialize_fetch_service
-    fetch_service.begin(acase, atry)
+  def perform acase, atry, user: nil
+    @fetch_service = initialize_fetch_service
+    @fetch_service.begin(acase, atry)
 
-    process_case_queries(acase, atry, fetch_service)
+    process_case_queries(acase, atry)
 
-    fetch_service.score_run(auser)
+    @fetch_service.score_run(user)
 
     broadcast_completion_notifications(acase, acase.queries.count)
 
-    fetch_service.complete
+    @fetch_service.complete
   end
 
   private
@@ -31,23 +32,23 @@ class RunCaseEvaluationJob < ApplicationJob
     FetchService.new(options)
   end
 
-  def process_case_queries acase, atry, fetch_service
+  def process_case_queries acase, atry
     query_count = acase.queries.count
 
     acase.queries.each_with_index do |query, counter|
-      process_single_query(query, atry, fetch_service)
+      process_single_query(query, atry)
       broadcast_progress_notifications(acase, query, query_count, counter)
     end
   end
 
-  def process_single_query query, atry, fetch_service
-    response = fetch_service.make_request(atry, query)
+  def process_single_query query, atry
+    response = @fetch_service.make_request(atry, query)
     response_code = response.status
     response_body = response.body
 
     docs = extract_docs_if_successful(response_code, response_body, atry)
 
-    fetch_service.store_query_results(query, docs, response_code, response_body)
+    @fetch_service.store_query_results(query, docs, response_code, response_body)
   end
 
   def extract_docs_if_successful response_code, response_body, atry
@@ -60,9 +61,9 @@ class RunCaseEvaluationJob < ApplicationJob
   def extract_docs_based_on_engine search_endpoint, response_body
     case search_endpoint.search_engine.to_sym
     when :solr
-      fetch_service.extract_docs_from_response_body_for_solr(response_body)
+      @fetch_service.extract_docs_from_response_body_for_solr(response_body)
     when :searchapi
-      fetch_service.extract_docs_from_response_body_for_searchapi(
+      @fetch_service.extract_docs_from_response_body_for_searchapi(
         search_endpoint.mapper_code,
         response_body
       )

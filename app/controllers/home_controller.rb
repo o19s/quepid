@@ -113,7 +113,7 @@ class HomeController < ApplicationController
                       end
     puts "last_try_number: #{last_try_number}"
     @try = @case.tries.where(try_number: last_try_number).first
-    RunCaseEvaluationJob.perform_later @case, @try, @current_user
+    RunCaseEvaluationJob.perform_later @case, @try, user: @current_user
     redirect_to root_path,
                 notice: "Starting evaluation of queries for case #{@case.case_name} using try #{@try.name} now."
   end

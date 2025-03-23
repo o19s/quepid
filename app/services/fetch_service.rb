@@ -167,10 +167,6 @@ class FetchService
 
       # Some Scorers will need access to the document data as well, so add that
       docs = snapshot_query.snapshot_docs.map do |snapshot_doc|
-        puts "snapshot_doc.doc_id: #{snapshot_doc.doc_id}"
-        puts "doc_ratings[snapshot_doc.doc_id]: #{doc_ratings[snapshot_doc.doc_id]}"
-        puts "snapshot_doc.fields: #{snapshot_doc.fields}"
-
         doc = { id: snapshot_doc.doc_id, rating: doc_ratings[snapshot_doc.doc_id] }
         doc.merge(JSON.parse(snapshot_doc.fields)) if snapshot_doc.fields.present?
         doc
