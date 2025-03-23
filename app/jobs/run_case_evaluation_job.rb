@@ -5,7 +5,9 @@ require 'faraday/follow_redirects'
 
 class RunCaseEvaluationJob < ApplicationJob
   queue_as :bulk_processing
-  limits_concurrency to: 2, key: self.class.name # for now let's be very limited.
+
+  # for now let's minimize simultaneous jobs, but we can wait a long time before running them.
+  limits_concurrency to: 2, key: self.class.name, duration: 12.hours
 
   def perform acase, atry, user: nil
     @fetch_service = initialize_fetch_service
