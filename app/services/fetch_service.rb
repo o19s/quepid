@@ -69,6 +69,37 @@ class FetchService
   end
   # rubocop:enable Metrics/MethodLength
 
+  # rubocop:disable Metrics/MethodLength
+  # should be in some other service!
+  def extract_docs_from_response_body_for_es response_body
+    docs = []
+    response = JSON.parse(response_body)
+
+    explain_json = nil
+    # explain_json = response['debug']['explain'] if response['debug'] && response['debug']['explain']
+
+    response['hits']['hits'].each_with_index do |doc_json, index|
+      doc = {}
+      doc[:_id] = doc_json['_id']
+      unless explain_json.nil?
+        explain = explain_json[doc_json['id']]
+        doc[:explain] = explain.to_json if explain.present?
+      end
+      doc[:position] = index + 1
+      doc[:rated_only] = nil
+      doc[:fields] = doc_json['_source']
+
+      docs << doc
+    end
+
+    docs
+  end
+  # rubocop:enable Metrics/MethodLength
+
+  def extract_docs_from_response_body_for_os response_body
+    extract_docs_from_response_body_for_es response_body
+  end
+
   # should be in some other service??
   def extract_docs_from_response_body_for_searchapi mapper_code, response_body
     docs = @javascript_mapper_code.extract_docs mapper_code, response_body
