@@ -101,10 +101,6 @@ Rails.application.configure do
 
   # Set host to be used by links generated in mailer templates.
   config.action_mailer.default_url_options = { host: ENV.fetch('QUEPID_DOMAIN', nil) }
-  
-  if config.prefer_ssl 
-    config.action_mailer.default_url_options = { protocol: 'https' }
-  end
 
   # Specify outgoing SMTP server. Remember to add smtp/* credentials via rails credentials:edit.
   # config.action_mailer.smtp_settings = {
