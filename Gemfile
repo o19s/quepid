@@ -20,17 +20,17 @@ gem 'colorize', require: false
 gem 'd3-rails', '~> 3.5.5' # For cal heatmap
 gem 'devise', '>= 4.6.2'
 gem 'devise_invitable', '~> 2.0'
-
 gem 'faraday-retry'
 gem 'foreman'
 gem 'importmap-rails', '~> 2.1'
 gem 'jbuilder', '~> 2.7'
-gem 'jquery-rails'
-gem 'jquery-ui-rails' # Can we narrow the widgets to load faster?
+
+gem 'jquery-rails' # We use JQuery version 1 in the Angular 1 app.
+gem 'jquery-ui-rails' # This brings in the JQuery UI components we need for the Angular 1 app.
+
 gem 'listen', '~> 3.3'
 gem 'local_time'
-gem 'mission_control-jobs', '~> 0.5.0' # git: 'https://github.com/rails/mission_control-jobs.git', branch: 'main'
-
+gem 'mission_control-jobs', '~> 1.0.2' # git: 'https://github.com/rails/mission_control-jobs.git', branch: 'main'
 gem 'mysql2'
 gem 'omniauth'
 gem 'omniauth-keycloak'
@@ -40,7 +40,7 @@ gem 'pagy'
 gem 'postmark-rails'
 gem 'prophet-rb', '~> 0.5.3'
 gem 'puma'
-gem 'rails', '8.0.1'
+gem 'rails', '8.0.2'
 gem 'rails-html-sanitizer'
 gem 'rack-cors', '~> 2.0'
 gem 'responders'

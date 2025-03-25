@@ -110,5 +110,7 @@ Rails.application.configure do
   #   port: 587,
   #   authentication: :plain
   # }
+
+  config.mission_control.jobs.http_basic_auth_enabled = false
 end
 # rubocop:enable Metrics/BlockLength

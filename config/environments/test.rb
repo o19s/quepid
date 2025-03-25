@@ -69,6 +69,8 @@ Rails.application.configure do
 
   config.active_job.queue_adapter = :test
 
+  config.mission_control.jobs.http_basic_auth_enabled = false
+
   ENV['TC_URL'] = 'https://quepid.com/agreement'
 
   ENV['EMAIL_SENDER'] = 'quepid@o19s.com'

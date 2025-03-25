@@ -193,3 +193,9 @@ for_case_queries_case:
   api_method:     JSONP
   options:        
     corpusId: 12345
+    
+searchapi:
+  name:           Custom Search API
+  endpoint_url:   https://www.lse.ac.uk/Search-Results
+  search_engine:  searchapi
+  api_method:     GET

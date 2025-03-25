@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class HomeController < ApplicationController
-  before_action :set_case, only: [ :case_prophet ]
+  before_action :set_case, only: [ :case_prophet, :run_case_evaluation_job ]
   before_action :set_book_no_track, only: [ :book_summary_detail ]
   before_action :check_for_announcement, only: [ :show ]
 
@@ -103,6 +103,19 @@ class HomeController < ApplicationController
       puts "we have decided we are stale for book #{@book.id} at #{@book.updated_at}"
       render layout: false
     end
+  end
+
+  def run_case_evaluation_job
+    last_try_number = if params[:try_number].present?
+                        params[:try_number].to_i
+                      else
+                        @case.last_try_number
+                      end
+    puts "last_try_number: #{last_try_number}"
+    @try = @case.tries.where(try_number: last_try_number).first
+    RunCaseEvaluationJob.perform_later @case, @try, user: @current_user
+    redirect_to root_path,
+                notice: "Starting evaluation of queries for case #{@case.case_name} using try #{@try.name} now."
   end
 
   private

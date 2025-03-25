@@ -18,7 +18,11 @@
   </td>
   <td>
     <% unless kase.last_score.blank? %>
-      <%= kase.last_score.user&.name %>
+      <% if kase.last_score.user&.name.present? %>
+        <%= kase.last_score.user&.name %>
+      <% else %>
+        Nightly
+      <% end %>
     <% end %>
   </td>
   <td><%= link_to_core_case 'View', kase, kase.last_try_number, class: 'btn btn-sm btn-primary', role: 'button' %>

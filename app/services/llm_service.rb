@@ -8,7 +8,7 @@ class LlmService
   def initialize llm_key, opts = {}
     default_options = {
       llm_service_url: 'https://api.openai.com',
-      llm_model:       'gpt-4',
+      llm_model:       'gpt-4o',
       llm_timeout:     30,
     }
 
@@ -19,13 +19,8 @@ class LlmService
   def perform_safe_judgement judgement
     perform_judgement(judgement)
   rescue RuntimeError => e
-    case e.message
-    when /401/
-      raise # we can't do anything about this, so pass it up
-    else
-      judgement.explanation = "BOOM: #{e}"
-      judgement.unrateable = true
-    end
+    judgement.explanation = "BOOM: Runtime Error: #{e.message}"
+    judgement.unrateable = true
   rescue Faraday::Error => e
     # This will catch all Faraday errors including TimeoutError, ConnectionFailed, etc.
     judgement.explanation = "BOOM: API request failed: #{e.message}"

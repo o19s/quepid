@@ -7,8 +7,8 @@
   "license": "Apache-2.0",
   "dependencies": {
     "@popperjs/core": "^2.11.6",
-    "@rails/actioncable": "8.0.1",
-    "@rails/activestorage": "8.0.1",
+    "@rails/actioncable": "8.0.200",
+    "@rails/activestorage": "8.0.200",
     "ace-builds": "^1.32.2",
     "angular": "~1.8.3",
     "angular-animate": "^1.8.3",
@@ -32,7 +32,6 @@
     "d3": "~7.9.0",
     "d3-tip": "~0.9.1",
     "file-saver": "^2.0.5",
-    "jquery": "~3.7.0",
     "local-time": "^3.0.0",
     "ng-json-explorer": "http://github.com/o19s/ng-json-explorer",
     "ng-tags-input": "3.2.0",

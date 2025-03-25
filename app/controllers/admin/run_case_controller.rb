@@ -11,7 +11,7 @@ module Admin
     def run_case
       @case = Case.find(params['case_id']) # any case is accessible!
       @try = @case.tries.where(try_number: params['try_number']).first
-      RunCaseJob.perform_later @case, @try
+      RunCaseEvaluationJob.perform_later @case, @try, user: @current_user
       redirect_to admin_run_case_index_path,
                   notice: "Run Case Job was queued up for case id #{@case.id} / #{@case.case_name} and try #{@try.name}."
     end

@@ -1,10 +1,10 @@
 <%= form_with(model: search_endpoint) do |form| %>
   <div class="card">
-    <div class="card-body"> 
+    <div class="card-body">
       <% if search_endpoint.errors.any? %>
         <div id="error_explanation">
           <h2><%= pluralize(search_endpoint.errors.count, "error") %> prohibited this Search Endpoint from being saved:</h2>
-    
+
           <ul>
             <% search_endpoint.errors.each do |error| %>
               <li><%= error.full_message %></li>
@@ -12,45 +12,45 @@
           </ul>
         </div>
       <% end %>
-    
+
       <% if @current_user.teams.empty? %>
         <div class="alert alert-warning" role="alert">
           Search Endpoints are meant to be shared with Teams, and you have not created any yet.
           <%= link_to 'Create a Team', teams_core_path, method: :get, class:'btn btn-primary' %>
         </div>
       <% end %>
-    
+
       <div class="mb-3">
         <%= form.label :name, class: 'form-label' %>
         <%= form.text_field :name %>
         <div class="form-text">Use a name to distingush the end point, like Dev or Stage or Prod.</div>
       </div>
-    
+
       <div class="mb-3">
         <%= form.label :search_engine, class: 'form-label' %>
         <%
         options = [['Solr', 'solr'], ['Elasticsearch', 'es'], ['OpenSearch', 'os'], ['Vectara', 'vectara'], ['Algolia', 'algolia'], ['Static File', 'static'], ['Search API', 'searchapi']]
         %>
         <%= form.collection_select :search_engine, options, :last, :first, required: true, prompt:true,  class: 'form-control' %>
-    
+
       </div>
-    
+
       <div class="mb-3 col-12">
         <%= form.label :endpoint_url, class: 'form-label' %>
         <%= form.text_field :endpoint_url, size: 100 %>
       </div>
-    
+
       <div class="mb-3">
         <%= form.label :custom_headers, class: 'form-label' %>
         <%= form.text_field :custom_headers %>
       </div>
-    
+
       <div class="mb-3">
         <%= form.label :api_method, class: 'form-label' %>
         <%= form.collection_select :api_method, [['GET', 'GET'], ['POST', 'POST'], ['JSONP', 'JSONP'], ['PUT', 'PUT']], :last, :first, required: true, prompt:true,  class: 'form-control' %>
         <div class="form-text">Typically this is a POST for JSON apis, and GET for passing parameters via the URL</div>
       </div>
-    
+
       <div class="mb-3">
         <div class="form-check form-switch">
           <%= form.label :proxy_requests, class:'form-check-label' %>
@@ -61,24 +61,24 @@
           Requests will come from Quepid in the form of <code><%= "#{proxy_fetch_url}?url=[ENDPOINT_URL]" %></code>.
         </div>
       </div>
-    
+
       <div class="mb-3">
         <%= form.label :basic_auth_credential, class: 'form-label' %>
         <%= form.text_field :basic_auth_credential %>
       </div>
-    
+
       <div class="mb-3">
         <%= form.label :options, class: 'form-label' %>
         <div class="form-text"> JSON keys can be accessed in the Query Sandbox as a <code>qOption</code>.</div>
         <%= form.text_area :options %>
       </div>
-    
+
       <div class="mb-3">
         <%= form.label :mapper_code, class: 'form-label' %>
         <div class="form-text">This Javascript is run in the browser to map custom search api responses to what Quepid understands.</div>
         <%= form.text_area :mapper_code %>
       </div>
-    
+
       <div class="mb-3">
         <div class="form-check form-switch">
           <%= form.label :archived, class:'form-check-label' %>
@@ -86,7 +86,7 @@
         </div>
         <div class="form-text">Archived search endpoints can't be selected for use.</div>
       </div>
-    
+
       <div class="mb-3">
         <%= form.label :teams, "Teams to Share this Endpoint With", class: 'form-label' %>
         <%= form.collection_check_boxes(:team_ids, @current_user.teams, :id, :name) do |b| %>
@@ -97,8 +97,8 @@
         <% end %>
         <div class="form-text">Search endpoints are meant to be shared, and you do this by picking which teams can use them.</div>
       </div>
-    
-    
+
+
       <div class="actions">
         <%= form.submit class: "btn btn-primary" %>
       </div>
