@@ -19,6 +19,8 @@ Rails.application.config.quepid_version = ENV.fetch('QUEPID_VERSION', 'UNKNOWN')
 #
 Rails.application.config.prefer_ssl = bool.deserialize(ENV.fetch('PREFER_SSL', false))
 
+Rails.application.config.action_mailer.default_url_options[:protocol] = 'https' if Rails.application.config.prefer_ssl
+
 # == Quepid Default Scorer
 # New users to Quepid need to have a recommended scorer to use, which they can then
 # override to their own preferred scorer, either one of the defaults shipped with Quepid
