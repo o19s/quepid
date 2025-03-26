@@ -205,13 +205,13 @@ class FetchServiceTest < ActiveSupport::TestCase
           "response":{"numFound":1,"start":0,"numFoundExact":true,"docs":[
               {
                 "id":"10139",
-                "title":["Milk"],#{'             '}
-                "title_idioms":["Milk"],#{'              '}
+                "title":["Milk"],
+                "title_idioms":["Milk"],
                 "text_all":["Milk",
                   "The true story of Harvey Milk, the first openly gay man ever elected to public office. In San Francisco in the late 1970s, Harvey Milk becomes an activist for gay rights and inspires others to join him in his fight for equal rights that should be available to all Americans.",
                   "Never blend in.",
                   "Gus Van Sant",
-                  "Sean Penn",#{'                '}
+                  "Sean Penn",
                   "Drama"],
                 "overview":["The true story of Harvey Milk, the first openly gay man ever elected to public office. In San Francisco in the late 1970s, Harvey Milk becomes an activist for gay rights and inspires others to join him in his fight for equal rights that should be available to all Americans."],
                 "release_date":"2008-11-05T00:00:00Z",
