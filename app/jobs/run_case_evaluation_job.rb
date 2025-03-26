@@ -64,6 +64,11 @@ class RunCaseEvaluationJob < ApplicationJob
     case search_endpoint.search_engine.to_sym
     when :solr
       @fetch_service.extract_docs_from_response_body_for_solr(response_body)
+    when :es
+      @fetch_service.extract_docs_from_response_body_for_es(response_body)
+    when :os
+      @fetch_service.extract_docs_from_response_body_for_os(response_body)
+
     when :searchapi
       @fetch_service.extract_docs_from_response_body_for_searchapi(
         search_endpoint.mapper_code,

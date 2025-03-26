@@ -205,13 +205,13 @@ class FetchServiceTest < ActiveSupport::TestCase
           "response":{"numFound":1,"start":0,"numFoundExact":true,"docs":[
               {
                 "id":"10139",
-                "title":["Milk"],#{'             '}
-                "title_idioms":["Milk"],#{'              '}
+                "title":["Milk"],
+                "title_idioms":["Milk"],
                 "text_all":["Milk",
                   "The true story of Harvey Milk, the first openly gay man ever elected to public office. In San Francisco in the late 1970s, Harvey Milk becomes an activist for gay rights and inspires others to join him in his fight for equal rights that should be available to all Americans.",
                   "Never blend in.",
                   "Gus Van Sant",
-                  "Sean Penn",#{'                '}
+                  "Sean Penn",
                   "Drama"],
                 "overview":["The true story of Harvey Milk, the first openly gay man ever elected to public office. In San Francisco in the late 1970s, Harvey Milk becomes an activist for gay rights and inspires others to join him in his fight for equal rights that should be available to all Americans."],
                 "release_date":"2008-11-05T00:00:00Z",
@@ -315,6 +315,60 @@ class FetchServiceTest < ActiveSupport::TestCase
       snapshot_doc = snapshot_query.snapshot_docs.first
 
       assert_nothing_raised { JSON.parse(snapshot_doc.explain) }
+    end
+
+    it 'lets you extract from raw elasticsearch dump' do
+      mock_elasticsearch_response_body = <<~HEREDOC
+        {
+          "hits": {
+            "total" : {
+                  "value": 2,
+                  "relation": "eq"
+              },
+            "max_score": 1.0,
+            "hits": [
+              {
+                "_index": "statedecoded",
+                "_type":  "law",
+                "_id":    "l_1",
+                "_score": 5.0,
+                "_source": {
+                  "field":  ["1--field value"],
+                  "field1": ["1--field1 value"]
+                }
+              },
+              {
+                "_index": "statedecoded",
+                "_type":  "law",
+                "_id":    "l_2",
+                "_score": 3.0,
+                "_source": {
+                  "field":  ["2--field value"],
+                  "field1": ["2--field1 value"]
+                }
+              }
+            ]
+          }
+        }
+      HEREDOC
+
+      response_body = mock_elasticsearch_response_body
+      fetch_service = FetchService.new options
+      docs = fetch_service.extract_docs_from_response_body_for_es response_body
+      assert_equal 2, docs.count
+
+      doc = docs.first
+      assert_equal 'l_1', doc[:_id]
+      assert_nil doc[:explain]
+      # assert_nothing_raised { JSON.parse(doc[:explain]) }
+
+      # expected_explain = { match: true, value: 13.647848 }
+
+      # assert_equal expected_explain, JSON.parse(doc[:explain], symbolize_names: true)
+
+      assert_equal 2, doc[:fields].keys.count
+      assert_equal [ '1--field value' ], doc[:fields]['field']
+      assert_equal [ '1--field1 value' ], doc[:fields]['field1']
     end
   end
 
