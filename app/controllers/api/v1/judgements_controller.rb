@@ -99,12 +99,6 @@ module Api
       # rubocop:enable Metrics/PerceivedComplexity
       # rubocop:enable Metrics/BlockLength
 
-      def indexold
-        @judgements = @book.judgements
-
-        respond_with @judgements
-      end
-
       api :GET, '/api/books/:book_id/query_doc_pairs/:query_doc_pair_id/judgements/:id',
           'Show the judgement with the given ID.'
       param :book_id, :number,
