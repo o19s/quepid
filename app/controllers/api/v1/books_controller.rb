@@ -30,7 +30,7 @@ module Api
           'Show the book with the given ID.'
       param :id, :number,
             desc: 'The ID of the requested book.', required: true
-      def show        
+      def show
         respond_with @book
       end
 
