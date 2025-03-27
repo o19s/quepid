@@ -31,7 +31,7 @@ module Api
       param :id, :number,
             desc: 'The ID of the requested book.', required: true
       def show
-        respond_with @judgement
+        respond_with @book
       end
 
       api :POST, '/api/books', 'Create a new book.'
