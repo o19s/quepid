@@ -5,6 +5,11 @@ class HomeController < ApplicationController
   before_action :set_book_no_track, only: [ :book_summary_detail ]
   before_action :check_for_announcement, only: [ :show ]
 
+  # @summary Returns a homepage.
+  #
+  # @parameter offset(query) [Integer]  Used for pagination of response data (default: 25 items per response). Specifies the offset of the next block of data to receive.
+  # @parameter status(query) [Array<String>]   Filter by status. (e.g. status[]=inactive&status[]=deleted).
+  # @parameter X-front(header) [String] Header for identify the front.
   def show
     # with_counts adds a `case.queries_count` field, which avoids loading
     # all queries and makes bullet happy.

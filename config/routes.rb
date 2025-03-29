@@ -11,6 +11,7 @@ Rails.application.routes.draw do
   mount ActionCable.server => '/cable'
   apipie
   mount ActiveStorageDB::Engine => '/active_storage_db'
+  mount OasRails::Engine => '/docs'
 
   # Render dynamic PWA files from app/views/pwa/*
   # get 'service-worker' => 'rails/pwa#service_worker', as: :pwa_service_worker
