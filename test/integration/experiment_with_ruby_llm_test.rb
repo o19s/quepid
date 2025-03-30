@@ -2,6 +2,7 @@
 
 require 'test_helper'
 require 'benchmark'
+require 'nokogiri'
 
 require 'tzinfo'
 
@@ -43,8 +44,45 @@ class DownloadPage < RubyLLM::Tool
     response = Faraday.get(url)
     #data = JSON.parse(response.body)
     data = response.body
+    # assuming it's html not json
+    clean_html = strip_css_styling(data)
+    #puts clean_html
+    clean_html
+    
   rescue => e
     { error: e.message }
+  end
+  
+  def strip_css_styling(html)
+    doc = Nokogiri::HTML(html)
+    
+    # Remove all style tags
+    doc.css('style').remove
+    
+    # Remove all link tags that reference stylesheets
+    doc.css('link[rel="stylesheet"]').remove
+    
+    # Remove inline style attributes from all elements
+    doc.css('[style]').each do |element|
+      element.remove_attribute('style')
+    end
+    
+    # Remove class attributes (optional, but often used for styling)
+    doc.css('[class]').each do |element|
+      element.remove_attribute('class')
+    end
+    
+    # Remove JavaScript
+    doc.css('script').remove                     # Remove script tags
+    doc.xpath('//@*[starts-with(name(), "on")]').each do |attr|
+      attr.remove                                # Remove all event handlers (onclick, onload, etc.)
+    end
+    doc.css('[href^="javascript:"]').each do |el|
+      el.remove_attribute('href')                # Remove javascript: URLs
+    end    
+  
+    # Return the cleaned HTML
+    doc.to_html
   end
 end
 
@@ -137,6 +175,51 @@ class ExperimentWithRubyLlmTest < ActionDispatch::IntegrationTest
       # Each chunk contains a portion of the response
       print chunk.content
     end
+    
+  end
+  
+  test 'Make Prompt for Google Scholar' do
+    skip('Ignoring all tests in ExperimentWithBulkInsertTest') if @@skip_tests
+    WebMock.allow_net_connect!
+  
+    RubyLLM.configure do |config|
+      config.openai_api_key = ENV['OPENAI_API_KEY']
+    end
+    
+    # Start a chat with the default model (GPT-4o-mini)
+    chat = RubyLLM.chat
+    chat.with_tools(DownloadPage)
+    
+    chat.ask "What is the title of the web page https://www.nike.com/w?q=shirts%20without%20stripes" do |chunk|
+      # Each chunk contains a portion of the response
+      print chunk.content
+    end
+    
+    chat.ask "Can you print out the search query that was used to fetch the page?" do |chunk|
+      # Each chunk contains a portion of the response
+      print chunk.content
+    end
+    
+    chat.ask "Can you print out how many total results were found?" do |chunk|
+      # Each chunk contains a portion of the response
+      print chunk.content
+    end
+    
+    chat.ask "Can you print out how many individual results were returned in the current page?" do |chunk|
+      # Each chunk contains a portion of the response
+      print chunk.content
+    end
+    puts "BREAK"
+    chat.ask "For each individual result, can you print out the result in JSON format?  Please include the date, description, any url" do |chunk|
+      # Each chunk contains a portion of the response
+      print chunk.content
+    end
+    
+    puts "AWESOME"
+    chat.ask "Can you generate the JavaScript required to take the raw HTML and convert it to the JSON format you previously used?" do |chunk|
+      # Each chunk contains a portion of the response
+      print chunk.content
+    end    
     
   end
 
