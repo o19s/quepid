@@ -26,6 +26,7 @@ services:
       - mysql
       - keycloak
       - ollama
+      - webui
 
   mysql:
     container_name: quepid_db
@@ -64,12 +65,25 @@ services:
   ollama:
     image: ollama/ollama
     container_name: ollama
+    healthcheck:
+      test: ollama --version || exit 1
     ports:
       - "11434:11434"
     volumes:
       - ./volumes/ollama/data:/tmp/data
     environment:
       OLLAMA_MODELS: "/tmp/data/.ollama/models"
+      
+  webui:
+    image: ghcr.io/open-webui/open-webui:main
+    ports:
+      - 9999:8080/tcp
+    volumes:
+      - ./volumes/open-webui:/app/backend/data
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      - ollama      
       
   nginx:
     image: nginx:1.27.1-alpine-slim
