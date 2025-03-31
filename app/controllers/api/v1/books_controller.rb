@@ -37,7 +37,6 @@ module Api
       # @summary Create a Book
       #
       # @request_body The book to be created. At least include an `name`. [!Book]
-      # @request_body_example basic book [Hash] {book: {name: "My book"}}  
       def create
         @book = Book.new(book_params)
         team = Team.find_by(id: params[:book][:team_id])
@@ -49,10 +48,12 @@ module Api
         end
       end
 
-      api :PUT, '/api/books/:book_id', 'Update a given book.'
-      param :id, :number,
-            desc: 'The ID of the requested book.', required: true
-      param_group :book_params
+      # @summary A Book can be updated with this method
+      #  - There is no option
+      #  - It must work
+      # @tags users, update
+      # @request_body Book to be created [!Hash{book: { name: String, show_rank: Boolean, support_implicit_judgements: Boolean, owner_id: !Integer, scorer_id: !Integer, selection_strategy_id: !Integer}}]
+        
       def update
         update_params = book_params
         if @book.update update_params
@@ -65,9 +66,8 @@ module Api
         # render json: { error: 'Invalid id' }, status: :bad_request
       end
 
-      api :DELETE, '/api/books/:book_id', 'Delete a given book.'
-      param :id, :number,
-            desc: 'The ID of the requested book.', required: true
+      # @summary Delete a Book
+      # Delete a book and its associated data like Query/Doc Pairs and Judgements.
       def destroy
         @book.really_destroy
 
