@@ -94,7 +94,7 @@ OasRails.configure do |config|
   # The default responses errors are setted only if the action allow it.
   # Example, if you add forbidden then it will be added only if the endpoint requires authentication.
   # Example: not_found will be setted to the endpoint only if the operation is a show/update/destroy action.
-  # config.set_default_responses = true
+  config.set_default_responses = false
   # config.possible_default_responses = [:not_found, :unauthorized, :forbidden]
   # config.response_body_of_default = { message: String }
 end
