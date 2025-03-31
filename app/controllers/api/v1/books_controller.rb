@@ -36,7 +36,7 @@ module Api
 
       # @summary Create a Book
       #
-      # @request_body The book to be created. At least include an `name`. [!Book]
+      # @request_body The book to be created. [Book]
       def create
         @book = Book.new(book_params)
         team = Team.find_by(id: params[:book][:team_id])
@@ -49,11 +49,21 @@ module Api
       end
 
       # @summary A Book can be updated with this method
-      #  - There is no option
-      #  - It must work
+      #   - There is no option
+      #   - It must work
       # @tags users, update
-      # @request_body Book to be created [!Hash{book: { name: String, show_rank: Boolean, support_implicit_judgements: Boolean, owner_id: !Integer, scorer_id: !Integer, selection_strategy_id: !Integer}}]
-        
+      # @request_body Book to be created [!Hash{book: { name: String, show_rank: Boolean, support_implicit_judgements: Boolean, owner_id: !Integer, scorer_id: !Integer, selection_strategy_id: !Integer}}        
+      # @request_body_example basic book [Hash]
+      #   {
+      #     book: {
+      #       name: "Oas",
+      #       show_rank: false,
+      #       support_implicit_judgements: false,
+      #       owner_id: 1,
+      #       scorer_id: 1,
+      #       selection_strategy_id: 1
+      #     }
+      #   }
       def update
         update_params = book_params
         if @book.update update_params
@@ -62,8 +72,6 @@ module Api
         else
           render json: @book.errors, status: :bad_request
         end
-        # rescue ActiveRecord::InvalidForeignKey
-        # render json: { error: 'Invalid id' }, status: :bad_request
       end
 
       # @summary Delete a Book
