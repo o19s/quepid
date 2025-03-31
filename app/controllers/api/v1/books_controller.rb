@@ -19,23 +19,25 @@ module Api
         end
       end
 
-      api :GET, '/api/books',
-          'List all books to which the user has access.'
+      # @summary List all books to which the user has access.
+      #
       def index
         @books = current_user.books_involved_with
         respond_with @books
       end
 
-      api :GET, '/api/books/:book_id',
-          'Show the book with the given ID.'
-      param :id, :number,
-            desc: 'The ID of the requested book.', required: true
+      # @summary Get a book by id.
+      #
       def show
         respond_with @book
       end
 
-      api :POST, '/api/books', 'Create a new book.'
-      param_group :book_params
+
+
+      # @summary Create a Book
+      #
+      # @request_body The book to be created. At least include an `name`. [!Book]
+      # @request_body_example basic book [Hash] {book: {name: "My book"}}  
       def create
         @book = Book.new(book_params)
         team = Team.find_by(id: params[:book][:team_id])
