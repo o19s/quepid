@@ -1,45 +1,35 @@
 # config/initializers/oas_rails.rb
 OasRails.configure do |config|
   # Basic Information about the API
-  config.info.title = 'OasRails'
-  config.info.version = '1.0.0'
-  config.info.summary = 'OasRails: Automatic Interactive API Documentation for Rails'
+  config.info.title = 'Quepid'
+  config.info.version = Rails.application.config.quepid_version
+  config.info.summary = 'The API for interacting with Quepid'
   config.info.description = <<~HEREDOC
-    # Welcome to OasRails
+    # Welcome to Quepid
 
-    OasRails automatically generates interactive documentation for your Rails APIs using the OpenAPI Specification 3.1 (OAS 3.1) and displays it with a nice UI.
-
+    
     ## Getting Started
 
-    You've successfully mounted the OasRails engine. This default documentation is based on your routes and automatically gathered information.
+    You've successfully completed the first step, looking up the API Documentation.
+    
+    ## Using the APIs
+    
+    Read the [How to Create a Personal Access Token for API Access](https://quepid-docs.dev.o19s.com/2/quepid/28/how-to-create-a-personal-access-token-for-api-access) documentation first.
+    
+    Then come back here with your token and click `HTTP Bearer` to set up your token.  This will also make the `curl` examples work for you.
 
-    ## Enhancing Your Documentation
+    ## I Want to Help Quepid
 
-    To customize and enrich your API documentation:
+    We need more detailed/richer documentation for Quepid's APIs, and that is a great place to contribute.  
 
-    1. Generate an initializer file:
-
-      ```
-      rails generate oas_rails:config
-      ```
-    2. Edit the created `config/initializers/oas_rails.rb` file to override default settings and add project-specific information.
-
-    3. Use Yard tags in your controller methods to provide detailed API endpoint descriptions.
-
-    ## Features
-
-    - Automatic OAS 3.1 document generation
-    - [RapiDoc](https://github.com/rapi-doc/RapiDoc) integration for interactive exploration
-    - Minimal setup required for basic documentation
-    - Extensible through configuration and Yard tags
-
-    Explore your API documentation and enjoy the power of OasRails!
-
-    For more information and advanced usage, visit the [OasRails GitHub repository](https://github.com/a-chacon/oas_rails).
+    Visit the [Quepid GitHub repository](https://github.com/o19s/quepid) to create PR's to enhance these docs.
   HEREDOC
-  config.info.contact.name = 'a-chacon'
-  config.info.contact.email = 'andres.ch@proton.me'
-  config.info.contact.url = 'https://a-chacon.com'
+  config.info.contact.name = 'Eric Pugh'
+  config.info.contact.email = 'epugh@opensourceconnections.com'
+  config.info.contact.url = 'https://opensourceconnections.com'
+  
+  config.info.license.name = 'Apache 2.0'
+  config.info.license.url = 'https://opensource.org/licenses/Apache-2.0'
 
   # Servers Information. For more details follow: https://spec.openapis.org/oas/latest.html#server-object
   config.servers = [{ url: 'http://localhost:3000', description: 'Local' }]
@@ -70,7 +60,7 @@ OasRails.configure do |config|
 
   # Excluding custom controlers or controlers#action
   # Example: ["projects", "users#new"]
-  # config.ignored_actions = []
+  config.ignored_actions = ["home", "admin/home"]
 
   # #######################
   # Authentication Settings
@@ -83,7 +73,7 @@ OasRails.configure do |config|
   # Default security schema used for authentication
   # Choose a predefined security schema
   # [:api_key_cookie, :api_key_header, :api_key_query, :basic, :bearer, :bearer_jwt, :mutual_tls]
-  # config.security_schema = :bearer
+  config.security_schema = :bearer
 
   # Custom security schemas
   # You can uncomment and modify to use custom security schemas
