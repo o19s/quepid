@@ -90,4 +90,4 @@ group :test do
   gem 'selenium-webdriver'
 end
 
-gem 'mini_racer', '~> 0.16.0'
+gem 'mini_racer', '~> 0.18.0'
