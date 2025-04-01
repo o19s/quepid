@@ -36,7 +36,7 @@ module Api
 
       # @summary Create a Book
       #
-      # @request_body The book to be created. [Book]
+      # @request_body The book to be created. At least include an `name`. [!Book]
       def create
         @book = Book.new(book_params)
         team = Team.find_by(id: params[:book][:team_id])
@@ -49,10 +49,8 @@ module Api
       end
 
       # @summary A Book can be updated with this method
-      #   - There is no option
-      #   - It must work
-      # @tags users, update
-      # @request_body Book to be created [!Hash{book: { name: String, show_rank: Boolean, support_implicit_judgements: Boolean, owner_id: !Integer, scorer_id: !Integer, selection_strategy_id: !Integer}}        
+      # @tags books, update
+      # @request_body Book to be created [Hash{book: { name: String, show_rank: Boolean, support_implicit_judgements: Boolean, owner_id: !Integer, scorer_id: !Integer, selection_strategy_id: !Integer}}]        
       # @request_body_example basic book [Hash]
       #   {
       #     book: {
