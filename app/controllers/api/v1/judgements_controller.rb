@@ -35,6 +35,8 @@ module Api
       # rubocop:disable Metrics/CyclomaticComplexity
       # rubocop:disable Metrics/PerceivedComplexity
       # rubocop:disable Metrics/BlockLength
+      # @summary List all judgements for a book
+      # @tags judgements
       api :GET, '/api/books/:book_id/judgements',
           'List all judgements for the book.  When you request the .csv version we only return valid rated judgements.'
       param :book_id, :number,
@@ -99,7 +101,7 @@ module Api
       # rubocop:enable Metrics/PerceivedComplexity
       # rubocop:enable Metrics/BlockLength
 
-      api :GET, '/api/books/:book_id/query_doc_pairs/:query_doc_pair_id/judgements/:id',
+      api :GET, '/api/books/:book_id/judgements/:id',
           'Show the judgement with the given ID.'
       param :book_id, :number,
             desc: 'The ID of the requested book.', required: true
@@ -107,6 +109,8 @@ module Api
             desc: 'The ID of the requested query doc pair.', required: true
       param :id, :number,
             desc: 'The ID of the requested judgement.', required: true
+      # @summary Show the judgement with the given ID
+      # @tags judgements
       def show
         respond_with @judgement
       end
@@ -116,6 +120,8 @@ module Api
       param :book_id, :number,
             desc: 'The ID of the requested book.', required: true
       param_group :create_judgement_params
+      # @summary Create a new Judgement
+      # @tags judgements
       def create
         # @judgement = @book.judgements.build judgement_params
         @judgement = @book.judgements.find_or_create_by query_doc_pair_id: params[:judgement][:query_doc_pair_id],
@@ -145,6 +151,7 @@ module Api
       param :id, :number,
             desc: 'The ID of the requested judgement.', required: true
       param_group :judgement_params
+      # @tags judgements
       def update
         update_params = judgement_params
         if @judgement.update update_params
@@ -161,6 +168,7 @@ module Api
             desc: 'The ID of the requested query doc pair.', required: true
       param :id, :number,
             desc: 'The ID of the judgement.', required: true
+      # @tags judgements
       def destroy
         @judgement.destroy
         head :no_content

@@ -20,14 +20,14 @@ module Api
       end
 
       # @summary List all books to which the user has access.
-      #
+      # @tags books
       def index
         @books = current_user.books_involved_with
         respond_with @books
       end
 
       # @summary Get a book by id.
-      #
+      # @tags books
       def show
         respond_with @book
       end
@@ -35,7 +35,7 @@ module Api
 
 
       # @summary Create a Book
-      #
+      # @tags books
       # @request_body The book to be created. At least include an `name`. [!Book]
       def create
         @book = Book.new(book_params)
@@ -49,7 +49,7 @@ module Api
       end
 
       # @summary A Book can be updated with this method
-      # @tags books, update
+      # @tags books
       # @request_body Book to be created [Hash{book: { name: String, show_rank: Boolean, support_implicit_judgements: Boolean, owner_id: !Integer, scorer_id: !Integer, selection_strategy_id: !Integer}}]        
       # @request_body_example basic book [Hash]
       #   {
@@ -73,6 +73,7 @@ module Api
       end
 
       # @summary Delete a Book
+      # @tags books
       # Delete a book and its associated data like Query/Doc Pairs and Judgements.
       def destroy
         @book.really_destroy
