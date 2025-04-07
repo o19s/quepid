@@ -51,7 +51,7 @@ OasRails.configure do |config|
   # config.autodiscover_responses = false
 
   # API path configuration if your API is under a different namespace
-  # config.api_path = "/"
+  config.api_path = "/api"
 
   # Apply your custom layout. Should be the name of your layout file
   # Example: "application" if file named application.html.erb
@@ -60,7 +60,7 @@ OasRails.configure do |config|
 
   # Excluding custom controlers or controlers#action
   # Example: ["projects", "users#new"]
-  config.ignored_actions = ["home", "admin/home"]
+  config.ignored_actions = ["home", "admin/home", "api_keys", "apipie/apipies"]
 
   # #######################
   # Authentication Settings
