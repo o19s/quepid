@@ -92,4 +92,4 @@ end
 
 gem 'mini_racer', '~> 0.16.0'
 
-gem "oas_rails", "~> 0.10.0"
+gem "oas_rails", "~> 0.11.0"
