@@ -35,12 +35,13 @@ OasRails.configure do |config|
   config.servers = [{ url: 'http://localhost:3000', description: 'Local' }]
 
   # Tag Information. For more details follow: https://spec.openapis.org/oas/latest.html#tag-object
-  config.tags = [{ name: "Users", description: "Manage the `amazing` Users table." }]
+  config.tags = [{ name: "Users", description: "Manage the `amazing` Users table." }, { name: "books", description: "Manage the `amazing` Books table." }]
 
   # Optional Settings (Uncomment to use)
 
   # Extract default tags of operations from namespace or controller. Can be set to :namespace or :controller
-  # config.default_tags_from = :namespace
+  config.default_tags_from = :controller
+  
 
   # Automatically detect request bodies for create/update methods
   # Default: true
