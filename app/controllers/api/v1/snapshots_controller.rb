@@ -70,9 +70,13 @@ module Api
       private
 
       def set_snapshot
-        @snapshot = @case.snapshots
-          .where(id: params[:id])
-          .first
+        if params[:id] == 'latest'
+          @snapshot = @case.snapshots.order(created_at: :desc).first
+        else
+          @snapshot = @case.snapshots
+            .where(id: params[:id])
+            .first
+        end
       end
 
       def check_snapshot

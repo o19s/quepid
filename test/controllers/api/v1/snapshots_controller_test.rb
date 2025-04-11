@@ -294,6 +294,16 @@ module Api
           assert_equal data['docs'].length,    snapshot.snapshot_queries.length
           assert_equal data['queries'].length, (query_count - 1)
         end
+        
+        test 'returns the latest snapshot' do
+          get :show, params: { case_id: acase.id, id: 'latest' }
+          
+          assert_response :ok
+
+          data = response.parsed_body
+
+          assert_equal data['name'],           acase.snapshots.order(created_at: :desc).first.name
+        end
       end
 
       describe 'Deletes a snapshot' do
