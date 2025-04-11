@@ -1,3 +1,4 @@
+<!-- queryParams.js is the controller -->
 <div id="queryParamsArea">
   <ul class="nav nav-tabs">
     <li ng-class="{tabBoxSelected: qp.curTab == 'developer'}" id="developerTab" ng-click="qp.toggleTab('developer')">
@@ -244,7 +245,7 @@
                 </a>
               </span>
             </p>
-            <a ng-href="home/run_case_evaluation_job/{{ caseNo }}?try_number=1" target="_self" class="btn btn-primary form-control">
+            <a ng-href="{{createRunCaseInBackgroundLink(caseNo, settings.selectedTry.tryNo)}}" target="_self" class="btn btn-primary form-control">
                 Rerun My Searches Now in the Background!
             </a>
            <!--  -->
