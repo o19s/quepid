@@ -172,7 +172,7 @@
               {{settings.searchUrl}}
             </p>
             <p>
-              <a ng-href="search_endpoints/{{ settings.selectedTry.searchEndpointId }}" target="_self">More</a>
+              <a ng-href="{{createSearchEndpointLink(settings.selectedTry.searchEndpointId)}}" target="_self">More</a>
             </p>
             <p>
               <span ng-show="showTLSChangeWarning">

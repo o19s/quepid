@@ -36,6 +36,12 @@ angular.module('QuepidApp')
         return link;
       };
       
+      $scope.createSearchEndpointLink = function(searchEndpointId) {
+        let link = caseTryNavSvc.getQuepidRootUrl() + '/search_endpoints/' + searchEndpointId;
+        link = caseTryNavSvc.createMainApplicationLink(link);
+        return link;
+      };
+      
 
       $scope.validateSearchEngineUrl  = function() {
         if (!angular.isUndefined($scope.settings.searchUrl)){
