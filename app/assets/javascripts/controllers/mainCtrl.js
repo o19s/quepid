@@ -109,6 +109,14 @@ angular.module('QuepidApp')
                   return queriesSvc.searchAll()
                     .then(function() {
                       flash.success = 'All queries finished successfully!';
+                      
+                      querySnapshotSvc.addSnapshot('eric', true, queriesSvc.queryArray())
+                      .then(function() {
+                                                
+                      }, function() {
+                        console.log('Snapshot recording failed');
+                      });
+                      
                     }, function(errorMsg) {
                       var mainErrorMsg = 'Some queries failed to resolve!';
 
