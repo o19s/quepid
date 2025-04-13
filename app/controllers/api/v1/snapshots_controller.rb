@@ -19,6 +19,10 @@ module Api
                status: :unauthorized
       end
 
+      api :GET, '/api/cases/:case_id/snapshots',
+          'List all snapshots for a case.'
+      param :case_id, :number,
+            desc: 'The ID of the requested case.', required: true
       def index
         @snapshots = @case.snapshots
 
@@ -28,6 +32,15 @@ module Api
         respond_with @snapshots
       end
 
+      api :GET, '/api/cases/:case_id/snapshots/:id',
+          'Show the snapshot with the given ID.'
+      param :case_id, :number,
+            desc: 'The ID of the requested case.', required: true
+      param :id, String,
+            desc:     'The ID of the requested snapshots.  Use `latest` to get the most recent snapshot for the case.',
+            required: true
+      param :shallow, [ true, false ],
+            desc: 'Show detailed snapshot data.', required: false, default_value: false
       def show
         @shallow = params[:shallow] || false
         @with_docs = true
@@ -70,9 +83,13 @@ module Api
       private
 
       def set_snapshot
-        @snapshot = @case.snapshots
-          .where(id: params[:id])
-          .first
+        @snapshot = if 'latest' == params[:id]
+                      @case.snapshots.order(created_at: :desc).first
+                    else
+                      @case.snapshots
+                        .where(id: params[:id])
+                        .first
+                    end
       end
 
       def check_snapshot
