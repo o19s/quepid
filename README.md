@@ -9,6 +9,8 @@
 
 <img src="https://quepid.com/images/logo.png" alt="Quepid logo" title="Quepid" align="right" />
 
+**Due to DNS woes, to access Quepid use https://quepid.herokuapp.com/ till we get this fixed ;-(**
+
 Quepid makes improving your app's search results a repeatable, reliable engineering process that the whole team can understand. It deals with three issues:
 
 1. **Our collaboration stinks** Making holistic progress on search requires deep, cross-functional collaboration. Shooting emails or tracking search requirements in spreadsheets won't cut it.
