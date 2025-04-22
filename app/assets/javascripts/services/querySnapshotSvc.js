@@ -273,7 +273,7 @@ angular.module('QuepidApp')
       }
 
       function get(snapshotId) {
-        var url     = 'api/cases/' + caseNo + '/snapshots/' + snapshotId+ '?shallow=true';
+        var url     = 'api/cases/' + caseNo + '/snapshots/' + snapshotId;
 
         return $http.get(url)
           .then(function(response) {
