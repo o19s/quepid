@@ -52,6 +52,18 @@ angular.module('QuepidApp')
           query.reset();
         });
       };
+      
+      // Function to handle the search and its outcomes
+      var performSearch = function() {
+        return queriesSvc.searchAll()
+          .then(function() {
+            flash.success = 'All queries finished successfully!';
+          }, function(errorMsg) {
+            var mainErrorMsg = 'Some queries failed to resolve!';
+            flash.error = mainErrorMsg;
+            flash.to('search-error').error = errorMsg;
+          });
+      }
 
       var bootstrapCase = function() {
         return caseSvc.get(caseNo)
@@ -106,15 +118,18 @@ angular.module('QuepidApp')
                   flash.to('search-error').error = '';
 
                   bootstrapped = true;
-                  return queriesSvc.searchAll()
-                    .then(function() {
-                      flash.success = 'All queries finished successfully!';
-                    }, function(errorMsg) {
-                      var mainErrorMsg = 'Some queries failed to resolve!';
-
-                      flash.error = mainErrorMsg;
-                      flash.to('search-error').error = errorMsg;
-                    });
+                  
+                  if (Object.keys(querySnapshotSvc.snapshots).length > 0){
+                    
+                    let mostRecentSnapshotId = Object.keys(querySnapshotSvc.snapshots)[0];
+                    queriesSvc.snapshotId = mostRecentSnapshotId;
+                    querySnapshotSvc.get(mostRecentSnapshotId).then(function () {
+                      return performSearch();                      
+                    });                  
+                  }
+                  else {
+                    return performSearch();
+                  }
                 }
               });
           });
@@ -146,8 +161,8 @@ angular.module('QuepidApp')
 
         bootstrapCase()
           .then(function() {
+            loadSnapshots();  // this is here just to set the caseNo in the querySnapshotSvc.            
             loadQueries();
-            loadSnapshots();  // this is here just to set the caseNo in the querySnapshotSvc.
             updateCaseMetadata();
             paneSvc.refreshElements();
           }).catch(function(error) {            

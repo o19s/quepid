@@ -23,6 +23,7 @@ angular.module('QuepidApp')
     'esExplainExtractorSvc',
     'solrExplainExtractorSvc',
     'normalDocsSvc',
+    'SnapshotSearcherFactory',
     function queriesSvc(
       $scope,
       $http,
@@ -39,7 +40,8 @@ angular.module('QuepidApp')
       searchErrorTranslatorSvc,
       esExplainExtractorSvc,
       solrExplainExtractorSvc,
-      normalDocsSvc
+      normalDocsSvc,
+      SnapshotSearcherFactory
     ) {
 
       let caseNo = -1;
@@ -51,6 +53,8 @@ angular.module('QuepidApp')
       this.displayOrder = [];
       this.queries = {};
       this.linkUrl = '';
+      
+      svc.snapshotId = '';
 
       svc.reset = reset;
       function reset() {
@@ -153,6 +157,19 @@ angular.module('QuepidApp')
           searcherOptions.qOption = { ...passedInSettings.options, ...query.options};
           /*jshint ignore:end */
 
+          // If we are loading from a snapshot, then shortcut everything.
+          if (this.snapshotId){
+            // make our custom things
+            var snapshotSearcher = this.createSnapshotSearcher(
+              passedInSettings.createFieldSpec(),
+              passedInSettings.selectedTry.searchUrl,
+              args,
+              queryText,
+              searcherOptions,
+              passedInSettings.searchEngine
+            );
+            return snapshotSearcher; 
+          }
 
           return searchSvc.createSearcher(
             passedInSettings.createFieldSpec(),
@@ -1118,5 +1135,23 @@ angular.module('QuepidApp')
       function getCaseNo(){
         return caseNo;
       }
+      
+      // may not need this or move it?
+      this.createSnapshotSearcher = function (fieldSpec, url, args, queryText, config, searchEngine) {
+
+        var options = {
+          fieldList:      fieldSpec.fieldList(),
+          hlFieldList:    fieldSpec.highlightFieldList(),
+          url:            url,
+          args:           args,
+          queryText:      queryText,
+          config:         config,
+          type:           searchEngine
+        };
+        
+        var searcher = new SnapshotSearcherFactory(options);
+        
+        return searcher;
+      };
     }
   ]);
