@@ -8,6 +8,7 @@ module Api
       before_action :set_query,   only: [ :update, :destroy ]
       before_action :check_query, only: [ :update, :destroy ]
 
+      # @tags queries
       def index
         @queries = @case.queries.includes([ :ratings ])
 
@@ -18,6 +19,7 @@ module Api
 
       # rubocop:disable Metrics/MethodLength
       # rubocop:disable Metrics/AbcSize
+      # @tags queries
       def create
         q_params              = query_params
         q_params[:query_text] = q_params[:query_text].strip # if q_params[:query_text]
@@ -48,6 +50,7 @@ module Api
       # rubocop:enable Metrics/MethodLength
       # rubocop:enable Metrics/AbcSize
 
+      # @tags queries
       def update
         @other_case = Case.where(id: params[:other_case_id]).first
 
@@ -74,6 +77,7 @@ module Api
         respond_with @query
       end
 
+      # @tags queries
       def destroy
         @query.remove_from_list
         @query.destroy

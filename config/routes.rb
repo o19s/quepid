@@ -11,6 +11,7 @@ Rails.application.routes.draw do
   mount ActionCable.server => '/cable'
   apipie
   mount ActiveStorageDB::Engine => '/active_storage_db'
+  mount OasRails::Engine => '/docs'
 
   # Render dynamic PWA files from app/views/pwa/*
   # get 'service-worker' => 'rails/pwa#service_worker', as: :pwa_service_worker
@@ -228,9 +229,7 @@ Rails.application.routes.draw do
 
       resources :books, except: [ :new, :edit ] do
         put '/populate' => 'books/populate#update'
-        resources :cases, except: [ :new, :edit ] do
-          put 'refresh' => 'books/refresh#update'
-        end
+        put '/cases/:case_id/refresh' => 'books/refresh#update'
         resources :query_doc_pairs, except: [ :new, :edit ] do
           collection do
             get 'to_be_judged/:judge_id' => 'query_doc_pairs#to_be_judged'
