@@ -13,7 +13,7 @@
     <p class="card-text">
       Importing a Quepid Book is useful when you are migrating between Quepid installs or if you want to create your Book outside of Quepid.
       
-      Your best option for understanding the format is to just export a book. When you import it, it will create a new Book and then load the data as a background job. Before the Book is created, Quepid will validate your Book data structure.    
+      Your best option for understanding the format is to just export a book and use that as template. Importing will create a brand new Book and then start loading the data as a background job. Before the Book is created, Quepid will validate your Book data structure.    
     </p>
   
     <% if @book.errors.any? %>
@@ -44,7 +44,7 @@
           <%= form.label :force_create_users, class:'form-check-label' %>
           <%= form.check_box :force_create_users, class:'form-check-input' %>
         </div>
-        <div class="form-text">Create user records for any judges that don't exist in this instance of Quepid.</div>
+        <div class="form-text">Create user records for any judges that don't already exist in this instance of Quepid.</div>
       </div>
       
       <%= form.submit "Upload", class: 'btn btn-primary' %>
