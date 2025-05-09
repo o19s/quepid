@@ -9,11 +9,11 @@
 
 <div class="card" style="">
   <div class="card-body">
-    <h5 class="card-title">Import Data</h5>
+    <h5 class="card-title">Import Book</h5>
     <p class="card-text">
       Importing a Quepid Book is useful when you are migrating between Quepid installs or if you want to create your Book outside of Quepid.
       
-      Your best option for understanding the format is to just export a book and use that as template. Importing will create a brand new Book and then start loading the data as a background job. Before the Book is created, Quepid will validate your Book data structure.    
+      Your best option for understanding the format is to just export a existing Book and use that as template. Importing will create a brand new Book and then start loading the data as a background job. Before the Book is created, Quepid will validate your Book data structure to ensure you have formatted it properly.    
     </p>
   
     <% if @book.errors.any? %>
