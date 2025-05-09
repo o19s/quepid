@@ -53,7 +53,7 @@ module Books
     end
 
     test 'should handle incorrectly formatted JSON file without blowing up' do
-      wrong_json_format = <<~EOF
+      wrong_json_format = <<~FILE_CONTENT
         [
          {
            "search_term": "abzorb powder",
@@ -64,7 +64,7 @@ module Books
            "score_range": 10
          }
         ]
-      EOF
+      FILE_CONTENT
 
       json_string = StringIO.new(wrong_json_format)
       json_upload = Rack::Test::UploadedFile.new(json_string, 'application/json', original_filename: 'test.json')
@@ -76,13 +76,13 @@ module Books
     end
 
     test 'should handle non JSON file upload' do
-      not_json_format = <<~EOF
+      not_json_format = <<~FILE_CONTENT
         [
          {
            "search_term": abzorb powder,#{'         '}
          }}}}}}}}}}}}}}}}}}}}}}}
         ]
-      EOF
+      FILE_CONTENT
 
       json_string = StringIO.new(not_json_format)
       json_upload = Rack::Test::UploadedFile.new(json_string, 'application/json', original_filename: 'test.json')
