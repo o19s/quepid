@@ -118,9 +118,7 @@ Rails.application.configure do
   # config.generators.apply_rubocop_autocorrect_after_generate!
 end
 # rubocop:enable Metrics/BlockLength
- 
+
 Debugbar.configure do |config|
-
   config.enabled = false
-
 end
