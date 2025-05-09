@@ -38,7 +38,12 @@ module Books
                       end
                     else
                       # Handle normal JSON file
-                      read_json(tempfile)
+                      begin
+                        read_json(tempfile)
+                      rescue JSON::ParserError => e
+                        @book.errors.add(:base,
+                                         "Invalid JSON file format: Unable to parse the provided data structure. #{e.message}")
+                      end
                     end
       end
       if @book.errors.empty?
@@ -49,8 +54,8 @@ module Books
 
           service = ::BookImporter.new @book, current_user, params_to_use, { force_create_users: force_create_users }
           service.validate
-        rescue JSON::ParserError => e
-          @book.errors.add(:base, "Invalid JSON file format: #{e.message}")
+        rescue StandardError => e
+          @book.errors.add(:base, "Invalid JSON file: Unable to process the provided data structure. #{e.message}")
         end
       end
       if @book.errors.empty? && @book.save

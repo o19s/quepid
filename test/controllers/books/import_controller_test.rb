@@ -51,5 +51,46 @@ module Books
       assert_response :redirect
       assert_redirected_to book_path(Book.last)
     end
+
+    test 'should handle incorrectly formatted JSON file without blowing up' do
+      wrong_json_format = <<~EOF
+        [
+         {
+           "search_term": "abzorb powder",
+           "search_term_type": "otc_searches",
+           "sku_id": 964063,
+           "sku_name": "Abzorb Anti Fungal Dusting Powder | Absorbs Excess Sweat | Controls Itching | Derma Care | Manages Fungal Infections",
+           "score_check": 143847.81,
+           "score_range": 10
+         }
+        ]
+      EOF
+
+      json_string = StringIO.new(wrong_json_format)
+      json_upload = Rack::Test::UploadedFile.new(json_string, 'application/json', original_filename: 'test.json')
+
+      post books_import_index_url, params: { book: { import_file: json_upload } }
+
+      assert_response :ok
+      assert_match(/Invalid JSON file/, response.body)
+    end
+
+    test 'should uploading non json file is handled' do
+      not_json_format = <<~EOF
+        [
+         {
+           "search_term": abzorb powder,#{'         '}
+         }}}}}}}}}}}}}}}}}}}}}}}
+        ]
+      EOF
+
+      json_string = StringIO.new(not_json_format)
+      json_upload = Rack::Test::UploadedFile.new(json_string, 'application/json', original_filename: 'test.json')
+
+      post books_import_index_url, params: { book: { import_file: json_upload } }
+
+      assert_response :ok
+      assert_match(/Invalid JSON file/, response.body)
+    end
   end
 end
