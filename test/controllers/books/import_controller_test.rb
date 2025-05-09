@@ -75,7 +75,7 @@ module Books
       assert_match(/Invalid JSON file/, response.body)
     end
 
-    test 'should uploading non json file is handled' do
+    test 'should handle non JSON file upload' do
       not_json_format = <<~EOF
         [
          {
