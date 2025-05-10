@@ -6,6 +6,9 @@ require 'zip'
 
 module Books
   class ImportController < ApplicationController
+    before_action :set_book,
+                  only: [ :edit ]
+
     def new
       @book = Book.new
     end
@@ -80,7 +83,15 @@ module Books
     # rubocop:enable Metrics/CyclomaticComplexity
     # rubocop:enable Layout/LineLength
 
+    def create
+    end
+
     private
+
+    def set_book
+      @book = current_user.books_involved_with.where(id: params[:id]).first
+      TrackBookViewedJob.perform_later current_user, @book
+    end
 
     def read_json file
       JSON.parse(file.read)
