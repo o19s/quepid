@@ -113,9 +113,9 @@ accepts@~1.3.4:
     negotiator "0.6.3"
 
 ace-builds@^1.32.2:
-  version "1.39.0"
-  resolved "https://registry.yarnpkg.com/ace-builds/-/ace-builds-1.39.0.tgz#c191ce9168ba60e51a0de3c51950066809e3c7ce"
-  integrity sha512-MqoZojv4gpc5QyTMor/dS6kmruDV9db9LVZbCiT4qYz6WsDiv4qyG5f7ZPc+wjUl6oLMqgCAsBjo1whdSVyMlQ==
+  version "1.41.0"
+  resolved "https://registry.yarnpkg.com/ace-builds/-/ace-builds-1.41.0.tgz#682db7c31624bd42d69be4e975075fb60751ca75"
+  integrity sha512-tiEUfw7V/FpHuI4tG7KS+muOTMIuPh6zReBAD2Uqhe9t00tLeyVGxjXu0tSqz5OIPWy7/wvuJBVXAsNWx0rYvQ==
 
 agent-base@^7.1.0, agent-base@^7.1.2:
   version "7.1.3"
