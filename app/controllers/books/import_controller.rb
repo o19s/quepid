@@ -83,7 +83,7 @@ module Books
     # rubocop:enable Metrics/CyclomaticComplexity
     # rubocop:enable Layout/LineLength
 
-    def create
+    def edit
     end
 
     private
