@@ -344,4 +344,3 @@ Rails.application.config.to_prepare do
 end
 
 # rubocop:enable Metrics/BlockLength
-# rubocop:enable Layout/LineLength

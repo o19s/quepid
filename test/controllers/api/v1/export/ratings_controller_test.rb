@@ -194,7 +194,6 @@ file_format: 'basic_snapshot' }
             # assert response.body.include?("<%=rating.rating%>    qid:<%=query.id%> #    <%=rating.doc_id %> <%=query.query_text%>")
 
             # rubocop:enable  Lint/UselessAssignment
-            # rubocop:enable  Layout/LineLength
 
             assert_equal response.content_type, 'text/plain; charset=utf-8'
           end

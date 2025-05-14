@@ -141,7 +141,6 @@ module Api
       # rubocop:enable Metrics/CyclomaticComplexity
       # rubocop:enable Metrics/PerceivedComplexity
       # rubocop:enable Metrics/MethodLength
-      # rubocop:enable Layout/LineLength
 
       private
 

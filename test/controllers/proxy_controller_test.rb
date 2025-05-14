@@ -120,4 +120,3 @@ class ProxyControllerTest < ActionDispatch::IntegrationTest
     end
   end
 end
-# rubocop:enable Layout/LineLength

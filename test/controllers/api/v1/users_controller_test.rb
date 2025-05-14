@@ -90,7 +90,6 @@ module Api
 
           assert body['default_scorer_id'].include? 'Does not exist'
           # assert body['default_scorer_id'].include? I18n.t('activerecord.errors.models.user.attributes.default_scorer_id.existence')
-          # rubocop:enable Layout/LineLength
 
           matt.reload
           assert_equal matt.default_scorer, scorer

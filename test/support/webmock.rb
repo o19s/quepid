@@ -306,7 +306,6 @@ module ActiveSupport
     # rubocop:enable Metrics/MethodLength
     # rubocop:enable Metrics/AbcSize
   end
-  # rubocop:enable Layout/LineLength
 end
 
 # rubocop:enable Style/FrozenStringLiteralComment

@@ -167,7 +167,6 @@ module Api
               end
             end
           end
-          # rubocop:enable Layout/LineLength
         end
       end
     end

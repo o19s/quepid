@@ -10,4 +10,3 @@ Apipie.configure do |config|
   config.namespaced_resources    = true
   config.app_info                = "Give your queries some ❤️.  This documentation is a work in progress, we're looking for folks to contribute more annotation of the APIs!"
 end
-# rubocop:enable Layout/LineLength

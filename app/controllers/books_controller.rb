@@ -247,7 +247,6 @@ class BooksController < ApplicationController
   # rubocop:enable Metrics/MethodLength
   # rubocop:enable Metrics/CyclomaticComplexity
   # rubocop:enable Metrics/PerceivedComplexity
-  # rubocop:enable Layout/LineLength
 
   def assign_anonymous
     # assignee = @book.team.members.find_by(id: params[:assignee_id])

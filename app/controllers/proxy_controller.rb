@@ -125,7 +125,6 @@ class ProxyController < ApplicationController
     predefined_rack_headers.include?(header_name)
   end
 end
-# rubocop:enable Layout/LineLength
 # rubocop:enable Metrics/AbcSize
 # rubocop:enable Metrics/MethodLength
 # rubocop:enable Metrics/PerceivedComplexity

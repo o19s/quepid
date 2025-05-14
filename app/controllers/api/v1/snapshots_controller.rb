@@ -57,7 +57,6 @@ module Api
           render json: @snapshot.errors, status: :bad_request
         end
       end
-      # rubocop:enable Layout/LineLength
 
       def destroy
         @snapshot.destroy

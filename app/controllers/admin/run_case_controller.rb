@@ -14,6 +14,5 @@ module Admin
       redirect_to admin_run_case_index_path,
                   notice: "Run Case Job was queued up for case id #{@case.id} / #{@case.case_name} and try #{@try.name}."
     end
-    # rubocop:enable Layout/LineLength
   end
 end

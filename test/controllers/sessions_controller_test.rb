@@ -23,7 +23,6 @@ class SessionsControllerTest < ActionController::TestCase
     assert_template 'sessions/new'
 
     alert_message_template = 'Unknown email/password combo. Double check you have the correct email address and password, or sign up for a new account.'
-    # rubocop:enable Layout/LineLength
     alert_message = css_select('#error_explanation .alert').text.strip
     assert_equal alert_message_template, alert_message
     assert_nil session[:current_user_id], 'does not set a user'

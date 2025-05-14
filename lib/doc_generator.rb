@@ -20,7 +20,6 @@ class QueriesEmpty < StandardError
     super
   end
 end
-# rubocop:enable Layout/LineLength
 
 class DocGenerator
   include ProgressIndicator

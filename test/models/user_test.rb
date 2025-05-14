@@ -411,5 +411,3 @@ class UserTest < ActiveSupport::TestCase
     end
   end
 end
-
-# rubocop:enable Layout/LineLength

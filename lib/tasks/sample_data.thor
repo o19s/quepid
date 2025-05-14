@@ -554,7 +554,6 @@ class SampleData < Thor
   # rubocop:enable Metrics/BlockLength
   # rubocop:enable Metrics/CyclomaticComplexity
   # rubocop:enable Metrics/PerceivedComplexity
-  # rubocop:enable Layout/LineLength
 
   private
 

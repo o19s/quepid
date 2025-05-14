@@ -71,5 +71,4 @@ class Judgement < ApplicationRecord
   def previous_judgement_made
     query_doc_pair.book.judgements.where(judgements: { user: user }).where(judgements: { updated_at: ...(updated_at.nil? ? DateTime.current : updated_at) }).reorder('judgements.updated_at DESC').first
   end
-  # rubocop:enable Layout/LineLength
 end

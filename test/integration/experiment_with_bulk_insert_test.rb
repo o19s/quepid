@@ -154,7 +154,6 @@ class ExperimentWithBulkInsertTest < ActionDispatch::IntegrationTest
     # Print the elapsed time
     puts "Elapsed time: #{result.real} seconds\n"
   end
-  # rubocop:enable Layout/LineLength
 
   def generate_random_string length: 10
     charset = Array('A'..'Z') + Array('a'..'z')

@@ -56,7 +56,6 @@ module Api
           render json: @member.errors, status: :bad_request
         end
       end
-      # rubocop:enable Layout/LineLength
 
       def destroy
         member = @team.members.where('email = ? OR id = ?', params[:id].to_s.downcase, params[:id])
