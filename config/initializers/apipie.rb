@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 
-# rubocop:disable Layout/LineLength
 Apipie.configure do |config|
   config.app_name                = 'Quepid'
   config.api_base_url            = ''

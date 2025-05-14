@@ -88,7 +88,6 @@ module Api
 
           body = response.parsed_body
 
-          # rubocop:disable Layout/LineLength
           assert body['default_scorer_id'].include? 'Does not exist'
           # assert body['default_scorer_id'].include? I18n.t('activerecord.errors.models.user.attributes.default_scorer_id.existence')
           # rubocop:enable Layout/LineLength

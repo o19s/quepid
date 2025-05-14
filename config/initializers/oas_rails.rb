@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # config/initializers/oas_rails.rb
 OasRails.configure do |config|
   # Basic Information about the API
@@ -7,41 +9,41 @@ OasRails.configure do |config|
   config.info.description = <<~HEREDOC
     # Welcome to Quepid
 
-    
+
     ## Getting Started
 
     You've successfully completed the first step, looking up the API Documentation.
-    
+
     ## Using the APIs
-    
+
     Read the [How to Create a Personal Access Token for API Access](https://quepid-docs.dev.o19s.com/2/quepid/28/how-to-create-a-personal-access-token-for-api-access) documentation first.
-    
+
     Then come back here with your token and click `HTTP Bearer` to set up your token.  This will also make the `curl` examples work for you.
 
     ## I Want to Help Quepid
 
-    We need more detailed/richer documentation for Quepid's APIs, and that is a great place to contribute.  
+    We need more detailed/richer documentation for Quepid's APIs, and that is a great place to contribute.#{'  '}
 
     Visit the [Quepid GitHub repository](https://github.com/o19s/quepid) to create PR's to enhance these docs.
   HEREDOC
   config.info.contact.name = 'Eric Pugh'
   config.info.contact.email = 'epugh@opensourceconnections.com'
   config.info.contact.url = 'https://opensourceconnections.com'
-  
+
   config.info.license.name = 'Apache 2.0'
   config.info.license.url = 'https://opensource.org/licenses/Apache-2.0'
 
   # Servers Information. For more details follow: https://spec.openapis.org/oas/latest.html#server-object
-  config.servers = [{ url: 'http://localhost:3000', description: 'Local' }]
+  config.servers = [ { url: 'http://localhost:3000', description: 'Local' } ]
 
   # Tag Information. For more details follow: https://spec.openapis.org/oas/latest.html#tag-object
-  config.tags = [{ name: "Users", description: "Manage the `amazing` Users table." }, { name: "books", description: "Manage the `amazing` Books table." }]
+  config.tags = [ { name: 'Users', description: 'Manage the `amazing` Users table.' },
+                  { name: 'books', description: 'Manage the `amazing` Books table.' } ]
 
   # Optional Settings (Uncomment to use)
 
   # Extract default tags of operations from namespace or controller. Can be set to :namespace or :controller
   config.default_tags_from = :controller
-  
 
   # Automatically detect request bodies for create/update methods
   # Default: true
@@ -52,7 +54,7 @@ OasRails.configure do |config|
   # config.autodiscover_responses = false
 
   # API path configuration if your API is under a different namespace
-  config.api_path = "/api"
+  config.api_path = '/api'
 
   # Apply your custom layout. Should be the name of your layout file
   # Example: "application" if file named application.html.erb
@@ -61,7 +63,7 @@ OasRails.configure do |config|
 
   # Excluding custom controlers or controlers#action
   # Example: ["projects", "users#new"]
-  config.ignored_actions = ["home", "admin/home", "api_keys", "apipie/apipies"]
+  config.ignored_actions = [ 'home', 'admin/home', 'api_keys', 'apipie/apipies' ]
 
   # #######################
   # Authentication Settings
@@ -98,4 +100,7 @@ OasRails.configure do |config|
   config.set_default_responses = false
   # config.possible_default_responses = [:not_found, :unauthorized, :forbidden]
   # config.response_body_of_default = { message: String }
+  #
+
+  config.include_mode = :with_tags
 end

@@ -28,27 +28,25 @@ module Authentication
                 current_user.cases_involved_with.where(id: case_id).first
               end
 
-      if @case.nil? # We didn't find a match, so let's see if it's a public case
-        @case = Case.public_cases.find_by(id: case_id)
-      end
+      @case = Case.public_cases.find_by(id: case_id) if @case.nil? # We didn't find a match, so let's see if it's a public case
     end
 
     def recent_cases count
-      if current_user
-        # case_ids = current_user.case_metadata.order(last_viewed_at: :desc).limit(count).pluck(:case_id)
+      cases = if current_user
+                # case_ids = current_user.case_metadata.order(last_viewed_at: :desc).limit(count).pluck(:case_id)
 
-        # map to objects
-        # cases = current_user.cases_involved_with.where(id: case_ids).not_archived
+                # map to objects
+                # cases = current_user.cases_involved_with.where(id: case_ids).not_archived
 
-        # the WHERE IN clause doesn't guarantee returning in order, so this sorts the cases in order of last viewing.
-        # cases = cases.sort_by { |x| case_ids.index x.id }
-        cases = current_user.cases_involved_with.not_archived.with_counts
-          .includes([ :metadata ])
-          .order('`case_metadata`.`last_viewed_at` DESC, `cases`.`id` DESC')
-          .limit(count)
-      else
-        cases = []
-      end
+                # the WHERE IN clause doesn't guarantee returning in order, so this sorts the cases in order of last viewing.
+                # cases = cases.sort_by { |x| case_ids.index x.id }
+                current_user.cases_involved_with.not_archived.with_counts
+                  .includes([ :metadata ])
+                  .order('`case_metadata`.`last_viewed_at` DESC, `cases`.`id` DESC')
+                  .limit(count)
+              else
+                []
+              end
       cases
     end
 

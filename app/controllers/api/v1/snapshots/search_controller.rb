@@ -13,7 +13,6 @@ module Api
         # rubocop:disable Metrics/AbcSize
         # rubocop:disable Metrics/CyclomaticComplexity
         # rubocop:disable Metrics/PerceivedComplexity
-        # rubocop:disable Layout/LineLength
         api :GET, '/api/cases/:case_id/snapshots/:snapshot_id/search?somesolrparams=here',
             'Mimic a Solr query by looking up query/doc data from a specific snapshot, supports a query or a lookup by id query'
         param :case_id, :number,

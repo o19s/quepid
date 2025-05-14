@@ -34,7 +34,6 @@ module Api
         respond_with @snapshot
       end
 
-      # rubocop:disable Layout/LineLength
       def create
         @snapshot = @case.snapshots.build(name: params[:snapshot][:name])
         @snapshot.scorer = @case.scorer

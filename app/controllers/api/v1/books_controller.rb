@@ -32,8 +32,6 @@ module Api
         respond_with @book
       end
 
-
-
       # @summary Create a Book
       # @tags books
       # @request_body The book to be created. At least include an `name`. [!Book]
@@ -50,7 +48,7 @@ module Api
 
       # @summary A Book can be updated with this method
       # @tags books
-      # @request_body Book to be created [Hash{book: { name: String, show_rank: Boolean, support_implicit_judgements: Boolean, owner_id: !Integer, scorer_id: !Integer, selection_strategy_id: !Integer}}]        
+      # @request_body Book to be created [Hash{book: { name: String, show_rank: Boolean, support_implicit_judgements: Boolean, owner_id: !Integer, scorer_id: !Integer, selection_strategy_id: !Integer}}]
       # @request_body_example basic book [Hash]
       #   {
       #     book: {

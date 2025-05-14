@@ -7,7 +7,6 @@ class JudgementsController < ApplicationController
   before_action :set_book
 
   # rubocop:disable Metrics/AbcSize
-  # rubocop:disable Layout/LineLength
   def index
     bool = ActiveRecord::Type::Boolean.new
     @shallow = bool.deserialize(params[:shallow] || true )

@@ -34,7 +34,6 @@ module Api
         end
       end
 
-      # rubocop:disable Layout/LineLength
       api :POST, '/api/teams/:team_id/members/invite', 'Invite someone to join a team.  Creates a shell user account and adds them to the team.'
       param_group :invite_user_params
       def invite

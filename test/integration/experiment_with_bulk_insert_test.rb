@@ -119,7 +119,6 @@ class ExperimentWithBulkInsertTest < ActionDispatch::IntegrationTest
     puts "Elapsed time: #{result.real} seconds\n"
   end
 
-  # rubocop:disable Layout/LineLength
   test 'generate and export query/doc pairs with upsert_all when exists already data' do
     skip('Ignoring all tests in ExperimentWithBulkInsertTest') if @@skip_tests
     book = user.books.create name: '50000 Query Doc Pairs', scorer: scorer, selection_strategy: selection_strategy

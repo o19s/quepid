@@ -185,7 +185,6 @@ file_format: 'basic_snapshot' }
             assert_response :ok
 
             # rubocop:disable  Lint/UselessAssignment
-            # rubocop:disable  Layout/LineLength
             query  = the_case.queries.first
             rating = query.ratings.first
 

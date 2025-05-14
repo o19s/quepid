@@ -7,7 +7,6 @@ module Admin
     def index
     end
 
-    # rubocop:disable Layout/LineLength
     def run_case
       @case = Case.find(params['case_id']) # any case is accessible!
       @try = @case.tries.where(try_number: params['try_number']).first

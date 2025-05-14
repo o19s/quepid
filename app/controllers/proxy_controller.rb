@@ -5,7 +5,6 @@ require 'faraday/follow_redirects'
 
 require 'addressable/uri'
 
-# rubocop:disable Layout/LineLength
 # rubocop:disable Metrics/AbcSize
 # rubocop:disable Metrics/MethodLength
 # rubocop:disable Metrics/PerceivedComplexity

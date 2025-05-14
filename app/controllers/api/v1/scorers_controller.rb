@@ -11,9 +11,7 @@ module Api
           'List all scorers to which the user has access.'
       error :code => 401, :desc => 'Unauthorized'
       def index
-        unless Rails.application.config.communal_scorers_only
-          @user_scorers = current_user.scorers_involved_with.all.reject(&:communal?)
-        end
+        @user_scorers = current_user.scorers_involved_with.all.reject(&:communal?) unless Rails.application.config.communal_scorers_only
         @communal_scorers = Scorer.communal
 
         respond_with @user_scorers, @communal_scorers
@@ -92,7 +90,6 @@ module Api
       # rubocop:disable Metrics/PerceivedComplexity
       # rubocop:disable Metrics/CyclomaticComplexity
       # rubocop:disable Metrics/AbcSize
-      # rubocop:disable Layout/LineLength
 
       # This method lets you delete a scorer, and if you pass in force=true then
       # you update other objects with either the system default scorer, or, if
@@ -165,9 +162,7 @@ module Api
         # This block of logic should all be in user_scorer_finder.rb
         @scorer = current_user.scorers_involved_with.where(id: params[:id]).first
 
-        if @scorer.nil? # Check if communal scorers has the scorer.  This logic should be in the .scorers. method!
-          @scorer = Scorer.communal.where(id: params[:id]).first
-        end
+        @scorer = Scorer.communal.where(id: params[:id]).first if @scorer.nil? # Check if communal scorers has the scorer.  This logic should be in the .scorers. method!
 
         render json: { error: 'Not Found!' }, status: :not_found unless @scorer
       end

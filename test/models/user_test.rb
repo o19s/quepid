@@ -52,7 +52,6 @@ require 'test_helper'
 #  fk_rails_...  (invited_by_id => users.id)
 #
 
-# rubocop:disable Layout/LineLength
 class UserTest < ActiveSupport::TestCase
   # Could reorganize this test around AI Judges and Regular Users
   test 'membership in team' do

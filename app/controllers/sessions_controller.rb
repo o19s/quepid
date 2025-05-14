@@ -29,7 +29,6 @@ class SessionsController < ApplicationController
       else
         @user = User.new(email: login_params[:email])
 
-        # rubocop:disable Layout/LineLength
         @user.errors.add(:base,
                          'Unknown email/password combo. Double check you have the correct email address and password, or sign up for a new account.' )
         # rubocop:enable Layout/LineLength

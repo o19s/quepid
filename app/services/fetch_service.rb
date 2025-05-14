@@ -145,7 +145,6 @@ class FetchService
   # rubocop:disable Metrics/CyclomaticComplexity
   # rubocop:disable Metrics/PerceivedComplexity
   # rubocop:disable Metrics/BlockLength
-  # rubocop:disable Layout/LineLength
   # Scores the snapshot.
   #
   # snapshot - The snapshot we are using to run the scoring process.

@@ -15,7 +15,6 @@ module Api
             login_user doug
           end
 
-          # rubocop:disable Layout/LineLength
           describe 'Exporting a case in basic csv format1' do
             let(:the_case) { cases(:one) }
 
