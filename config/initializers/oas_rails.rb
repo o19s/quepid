@@ -34,7 +34,10 @@ OasRails.configure do |config|
   config.info.license.url = 'https://opensource.org/licenses/Apache-2.0'
 
   # Servers Information. For more details follow: https://spec.openapis.org/oas/latest.html#server-object
-  config.servers = [ { url: 'http://localhost:3000', description: 'Local' } ]
+  config.servers = [
+    { url: 'http://localhost:3000', description: 'Local' },
+    { url: 'https://quepid-pr-1295.herokuapp.com', description: 'Feature' }
+  ]
 
   # Tag Information. For more details follow: https://spec.openapis.org/oas/latest.html#tag-object
   config.tags = [ { name: 'Users', description: 'Manage the `amazing` Users table.' },
