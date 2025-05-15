@@ -5,7 +5,7 @@ module Api
     module Import
       class BooksController < Api::ApiController
         # rubocop:disable Metrics/MethodLength
-        # @summary Import a book from a JSON file
+        # @summary Import a complete book
         # @tags books > import
         # @request_body Book to be imported
         #   [
@@ -33,7 +33,6 @@ module Api
         #     team_id: 1,
         #     book: {
         #       name: "bob",
-        #
         #       scorer: {
         #         name: "nDCG@10"
         #       },
@@ -58,7 +57,7 @@ module Api
         #               rating: 2.0,
         #               user_email: "judge_judy@opensourceconnections.com"
         #             }
-        #          ]
+        #           ]
         #         }
         #       ]
         #     }
