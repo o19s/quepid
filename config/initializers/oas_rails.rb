@@ -43,11 +43,11 @@ OasRails.configure do |config|
   # Optional Settings (Uncomment to use)
 
   # Extract default tags of operations from namespace or controller. Can be set to :namespace or :controller
-  config.default_tags_from = :controller
+  config.default_tags_from = :namespace
 
   # Automatically detect request bodies for create/update methods
   # Default: true
-  # config.autodiscover_request_body = false
+  config.autodiscover_request_body = false
 
   # Automatically detect responses from controller renders
   # Default: true
