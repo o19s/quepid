@@ -67,7 +67,7 @@ OasRails.configure do |config|
 
   # Excluding custom controlers or controlers#action
   # Example: ["projects", "users#new"]
-  config.ignored_actions = [ 'home', 'admin/home', 'api_keys', 'apipie/apipies' ]
+  # config.ignored_actions = [ 'home', 'admin/home', 'api_keys', 'apipie/apipies' ]
 
   # #######################
   # Authentication Settings
