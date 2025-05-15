@@ -8,7 +8,7 @@ module Api
       before_action :set_query,   only: [ :update, :destroy ]
       before_action :check_query, only: [ :update, :destroy ]
 
-      # @tags queries
+      # @tags cases > queries
       def index
         @queries = @case.queries.includes([ :ratings ])
 
@@ -19,7 +19,34 @@ module Api
 
       # rubocop:disable Metrics/MethodLength
       # rubocop:disable Metrics/AbcSize
-      # @tags queries
+
+      # @tags cases > queries
+      # @request_body Query to be created
+      #   [
+      #     !Hash{
+      #       query: Hash{
+      #         query_text: String,
+      #         information_need: String,
+      #         notes: String,
+      #         options: Hash{}
+      #       }
+      #     }
+      #   ]
+      # @request_body_example basic query [Hash]
+      #   {
+      #     query: {
+      #       query_text: "star wars"
+      #     }
+      #   }
+      # @request_body_example complete query [Hash]
+      #   {
+      #     query: {
+      #       query_text: "star wars",
+      #       information_need: "classic science fiction movie",
+      #       notes: "This is an important query",
+      #       options: {"key":"value"}
+      #     }
+      #   }
       def create
         q_params              = query_params
         q_params[:query_text] = q_params[:query_text].strip # if q_params[:query_text]
@@ -50,7 +77,18 @@ module Api
       # rubocop:enable Metrics/MethodLength
       # rubocop:enable Metrics/AbcSize
 
-      # @tags queries
+      # @tags cases > queries
+      # > This method is used to MOVE a query to a different Case ONLY
+      # @request_body Move query
+      #   [
+      #     !Hash{
+      #       other_case_id: Integer
+      #     }
+      #   ]
+      # @request_body_example basic query [Hash]
+      #   {
+      #     other_case_id: 2
+      #   }
       def update
         @other_case = Case.where(id: params[:other_case_id]).first
 
@@ -77,7 +115,7 @@ module Api
         respond_with @query
       end
 
-      # @tags queries
+      # @tags cases > queries
       def destroy
         @query.remove_from_list
         @query.destroy

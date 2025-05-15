@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 # config/initializers/oas_rails.rb
+# rubocop:disable Metrics/BlockLength
 OasRails.configure do |config|
   # Basic Information about the API
   config.info.title = 'Quepid'
@@ -107,3 +108,4 @@ OasRails.configure do |config|
 
   config.include_mode = :with_tags
 end
+# rubocop:enable Metrics/BlockLength
