@@ -28,7 +28,7 @@ module Api
       #         query_text: String,
       #         information_need: String,
       #         notes: String,
-      #         options: Hash{}
+      #         options: Hash
       #       }
       #     }
       #   ]
