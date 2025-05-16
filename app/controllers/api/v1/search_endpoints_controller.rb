@@ -21,14 +21,8 @@ module Api
       end
 
       # rubocop:disable Metrics/MethodLength
-      api :GET, '/api/search_endpoints',
-          'List all search endpoints to which the user has access.'
-      returns :array_of => :search_endpoint_params, :code => 200, :desc => 'All search endpoints'
-      error :code => 401, :desc => 'Unauthorized'
-      param :archived, [ true, false ],
-            :desc          => 'Whether or not to include archived cases in the response.',
-            :required      => false,
-            :default_value => false
+      # @tags search endpoints
+      # @parameter archived(query) [Boolean] Whether or not to include archived search endpoints.
       def index
         archived = deserialize_bool_param(params[:archived])
 
@@ -52,18 +46,55 @@ module Api
       end
       # rubocop:enable Metrics/MethodLength
 
-      api :GET, '/api/search_endpoints/:search_endpoint_id',
-          'Show the search endpoint with the given ID.'
-      param :search_endpoint_id, :number,
-            desc: 'The ID of the requested search endpoint.', required: true
+      # @tags search endpoints
       def show
         respond_with @search_endpoint
       end
 
-      api :POST, '/api/search_endpoints', 'Create a search endpoint.'
-      param_group :search_endpoint_params
+      # @tags search endpoints
+      # @request_body Search endpoint to be created
+      #   [
+      #     !Hash{
+      #       search_endpoint: Hash{
+      #         name: String,
+      #         search_engine: String,
+      #         endpoint_ur: String,
+      #         api_method: String,
+      #         archived: Boolean,
+      #         basic_auth_credential: String,
+      #         custom_headers: String,
+      #         mapper_code: String,
+      #         options: Hash,
+      #         proxy_requests: Boolean
+      #       }
+      #     }
+      #   ]
+      # @request_body_example basic Solr Search endpoint [Hash]
+      #   {
+      #     search_endpoint: {
+      #       name: "TMDB",
+      #       endpoint_url: "https://quepid-solr.dev.o19s.com/solr/tmdb/select",
+      #       search_engine: "solr",
+      #       api_method: "JSONP"
+      #     }
+      #   }
+      # @request_body_example complete Search endpoint [Hash]
+      #   {
+      #     search_endpoint: {
+      #       name: "LSE",
+      #       endpoint_url: "https://www.lse.ac.uk/Search-Results?term=",
+      #       search_engine: "searchapi",
+      #       api_method: "GET",
+      #       basic_auth_credential: "Bob:pass",
+      #       custom_headers: "{}",
+      #       mapper_code: "console.log('custom javascriptcode');",
+      #       options: {},
+      #       proxy_requests: true
+      #     }
+      #   }
       def create
-        @search_endpoint = current_user.search_endpoints.build search_endpoint_params
+        @search_endpoint = SearchEndpoint.new(search_endpoint_params)
+        @search_endpoint.owner = current_user
 
         if @search_endpoint.save
           respond_with @search_endpoint
@@ -72,10 +103,30 @@ module Api
         end
       end
 
-      api :PUT, '/api/search_endpoints/:search_endpoint_id', 'Update a given search endpoint.'
-      param :search_endpoint_id, :number,
-            desc: 'The ID of the requested search endpoint.', required: true
-      param_group :search_endpoint_params
+      # @tags search endpoints
+      # @request_body Search endpoint to be created
+      #   [
+      #     !Hash{
+      #       search_endpoint: Hash{
+      #         name: String,
+      #         search_engine: String,
+      #         endpoint_ur: String,
+      #         api_method: String,
+      #         archived: Boolean,
+      #         basic_auth_credential: String,
+      #         custom_headers: String,
+      #         mapper_code: String,
+      #         options: Hash,
+      #         proxy_requests: Boolean
+      #       }
+      #     }
+      #   ]
+      # @request_body_example basic Search endpoint [Hash]
+      #   {
+      #     search_endpoint: {
+      #       api_method: "GET"
+      #     }
+      #   }
       def update
         update_params = search_endpoint_params
         archived = deserialize_bool_param(params[:archived])
@@ -91,9 +142,7 @@ module Api
         end
       end
 
-      api :DELETE, '/api/search_endpoint/:search_endpoint_id', 'Delete a given search endpoint.'
-      param :search_endpoint_id, :number,
-            desc: 'The ID of the requested search endpoint.', required: true
+      # @tags search endpoints
       def destroy
         @search_endpoint.destroy
 
