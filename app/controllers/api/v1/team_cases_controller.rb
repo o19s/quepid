@@ -6,19 +6,15 @@ module Api
       before_action :set_team,    only: [ :index, :create, :destroy ]
       before_action :check_team,  only: [ :index, :create, :destroy ]
 
-      def_param_group :case_param do
-        param :id, Integer, desc: 'The ID of the case.', required: true
-      end
-
+      # @tags teams > cases
       def index
         @cases = @team.cases
         respond_with @cases
       end
 
-      api :POST, '/api/teams/:team_id/cases', 'Share a case with a team'
-      param :team_id, :number,
-            desc: 'The ID of the team.', required: true
-      param_group :case_param
+      # @summary Share case with a team
+      # @tags teams > cases
+      # @parameter id(query) [!Integer] The id of the case to be shared with the team.
       def create
         @case = Case.includes( tries: [ :curator_variables ] ).where(id: params[:id]).first
 
@@ -41,6 +37,9 @@ module Api
         end
       end
 
+      # @summary Remove case from team
+      # @tags teams > cases
+      # @parameter id(query) [!Integer] The id of the case to be removed from the team.
       def destroy
         acase = @team.cases.where(id: params[:id]).all
         @team.cases.delete(acase) if acase

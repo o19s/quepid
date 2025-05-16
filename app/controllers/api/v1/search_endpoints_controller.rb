@@ -5,21 +5,6 @@ module Api
     class SearchEndpointsController < Api::ApiController
       before_action :set_search_endpoint, only: [ :show, :update, :destroy ]
 
-      def_param_group :search_endpoint_params do
-        param :search_endpoint, Hash, required: true do
-          param :api_method, String
-          param :archived, [ true, false ]
-          param :basic_auth_credential, String
-          param :custom_headers, String
-          param :endpoint_url, String
-          param :mapper_code, String
-          param :name, String
-          param :options, Hash, :desc => 'Additional options accessible by queries through this search endpoint.'
-          param :proxy_requests, [ true, false ]
-          param :search_engine, String
-        end
-      end
-
       # rubocop:disable Metrics/MethodLength
       # @tags search endpoints
       # @parameter archived(query) [Boolean] Whether or not to include archived search endpoints.
