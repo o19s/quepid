@@ -36,8 +36,7 @@ class BooksController < ApplicationController
 
     @count_of_anonymous_book_judgements = @book.judgements.where(user: nil).count
 
-    # @moar_judgements_needed = @book.judgements.where(user: current_user).count < @book.query_doc_pairs.count
-    @moar_judgements_needed = !(SelectionStrategy.every_query_doc_pair_has_three_judgements? @book)
+    @moar_judgements_needed = SelectionStrategy.moar_judgements_needed? @book
 
     @cases = @book.cases
 
@@ -49,7 +48,7 @@ class BooksController < ApplicationController
   end
 
   def judgement_stats
-    @moar_judgements_needed = !(SelectionStrategy.every_query_doc_pair_has_three_judgements? @book)
+    @moar_judgements_needed = SelectionStrategy.moar_judgements_needed? @book
 
     @leaderboard_data = []
     @stats_data = []
