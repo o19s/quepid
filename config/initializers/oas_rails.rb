@@ -36,8 +36,8 @@ OasRails.configure do |config|
 
   # Servers Information. For more details follow: https://spec.openapis.org/oas/latest.html#server-object
   config.servers = [
-    { url: 'http://localhost:3000', description: 'Local' },
-    { url: 'https://quepid-pr-1295.herokuapp.com', description: 'Feature' },
+    # { url: 'http://localhost:3000', description: 'Local' },
+    # { url: 'https://quepid-pr-1295.herokuapp.com', description: 'Feature' },
     { url: '/', description: 'Relative' }
   ]
 
