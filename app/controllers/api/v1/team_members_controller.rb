@@ -7,7 +7,6 @@ module Api
       before_action :set_team,          only: [ :index, :create, :destroy, :invite ]
       before_action :check_team,        only: [ :index, :create, :destroy, :invite ]
 
-
       # @tags teams > members
       def index
         @members = @team.members
@@ -34,7 +33,7 @@ module Api
           render json: @member.errors, status: :bad_request
         end
       end
-      
+
       # @tags teams > members
       # @summary Invite user
       # > Invite someone to join a team.  Creates a shell user account and adds them to the team.
@@ -69,7 +68,7 @@ module Api
           render json: @member.errors, status: :bad_request
         end
       end
-      
+
       # @summary Remove user from team
       # @tags teams > members
       # @parameter id(query) [!Integer] The id of the user to be removed from the team.
