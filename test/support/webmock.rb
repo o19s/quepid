@@ -2,7 +2,6 @@
 
 WebMock.disable_net_connect!(allow_localhost: true)
 
-# rubocop:disable Layout/LineLength
 module ActiveSupport
   class TestCase
     # rubocop:disable Metrics/MethodLength
@@ -307,7 +306,6 @@ module ActiveSupport
     # rubocop:enable Metrics/MethodLength
     # rubocop:enable Metrics/AbcSize
   end
-  # rubocop:enable Layout/LineLength
 end
 
 # rubocop:enable Style/FrozenStringLiteralComment

@@ -26,9 +26,7 @@ class CaseImporter
     params_to_use = @data_to_process
 
     scorer_name = params_to_use[:scorer][:name]
-    unless Scorer.exists?(name: scorer_name)
-      @case.errors.add(:scorer, "Scorer with name '#{scorer_name}' needs to be migrated over first.")
-    end
+    @case.errors.add(:scorer, "Scorer with name '#{scorer_name}' needs to be migrated over first.") unless Scorer.exists?(name: scorer_name)
 
     params_to_use[:queries]&.each do |query|
       next unless query[:ratings]

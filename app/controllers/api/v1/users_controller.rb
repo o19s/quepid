@@ -5,12 +5,8 @@ module Api
     class UsersController < Api::ApiController
       before_action :set_user, except: [ :index ]
 
-      api :GET, '/api/users',
-          'List the users.'
-      error :code => 401, :desc => 'Unauthorized'
-      param :prefix, String,
-            :desc     => 'Filters down the list to users whose email addresses or name start with the prefix.',
-            :required => false
+      # @tags users
+      # @parameter prefix(query) [String] Filters down the list to users whose email addresses or name start with the prefix.
       def index
         @users = []
         if params[:prefix]
@@ -21,14 +17,12 @@ module Api
         respond_with @users
       end
 
-      api :GET, '/api/users/:id',
-          'Show the user with the given ID.'
-      param :id, :number,
-            desc: 'The ID of the requested user.', required: true
+      # @tags users
       def show
         respond_with @user
       end
 
+      # @tags users
       def update
         update_params = user_params
 

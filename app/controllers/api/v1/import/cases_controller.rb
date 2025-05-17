@@ -4,7 +4,6 @@ module Api
   module V1
     module Import
       class CasesController < Api::ApiController
-        api!
         def create
           params_to_use = case_params.to_h.deep_symbolize_keys
 

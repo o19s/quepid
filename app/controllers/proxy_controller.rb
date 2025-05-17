@@ -5,7 +5,6 @@ require 'faraday/follow_redirects'
 
 require 'addressable/uri'
 
-# rubocop:disable Layout/LineLength
 # rubocop:disable Metrics/AbcSize
 # rubocop:disable Metrics/MethodLength
 # rubocop:disable Metrics/PerceivedComplexity
@@ -126,7 +125,6 @@ class ProxyController < ApplicationController
     predefined_rack_headers.include?(header_name)
   end
 end
-# rubocop:enable Layout/LineLength
 # rubocop:enable Metrics/AbcSize
 # rubocop:enable Metrics/MethodLength
 # rubocop:enable Metrics/PerceivedComplexity

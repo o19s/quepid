@@ -15,7 +15,6 @@ module Api
             login_user doug
           end
 
-          # rubocop:disable Layout/LineLength
           describe 'Exporting a case in basic csv format1' do
             let(:the_case) { cases(:one) }
 
@@ -45,7 +44,6 @@ module Api
               assert_equal csv[1]['query'], 'star wars' # notice csv injection vulnerability
               assert_equal csv[1]['information_need'], 'Looking for the original blockbuster movie, followed by the most recent big movies.'
             end
-            # rubocop:enable Layout/LineLength
           end
         end
       end
