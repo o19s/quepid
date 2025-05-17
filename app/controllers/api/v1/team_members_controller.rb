@@ -3,7 +3,6 @@
 module Api
   module V1
     class TeamMembersController < Api::ApiController
-      api!
       before_action :set_team,          only: [ :index, :create, :destroy, :invite ]
       before_action :check_team,        only: [ :index, :create, :destroy, :invite ]
 

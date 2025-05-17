@@ -13,14 +13,6 @@ module Api
         # rubocop:disable Metrics/AbcSize
         # rubocop:disable Metrics/CyclomaticComplexity
         # rubocop:disable Metrics/PerceivedComplexity
-        api :GET, '/api/cases/:case_id/snapshots/:snapshot_id/search?somesolrparams=here',
-            'Mimic a Solr query by looking up query/doc data from a specific snapshot, supports a query or a lookup by id query'
-        param :case_id, :number,
-              desc: 'The ID of the requested case.', required: true
-        param :snapshot_id, :number,
-              desc: 'The ID of the snapshot for the case.', required: true
-        param :q, String,
-              desc: 'The query that you are looking up', required: true
         def index
           @q = search_params[:q]
           @snapshot_docs = nil

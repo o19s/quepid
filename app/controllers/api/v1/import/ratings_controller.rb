@@ -4,7 +4,6 @@ module Api
   module V1
     module Import
       class RatingsController < Api::ApiController
-        api!
         before_action :set_case
         before_action :check_case
 
