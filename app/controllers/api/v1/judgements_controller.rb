@@ -2,6 +2,7 @@
 
 module Api
   module V1
+    # @tags books > judgements
     class JudgementsController < Api::ApiController
       before_action :set_book
       before_action :check_book
@@ -14,7 +15,6 @@ module Api
       # rubocop:disable Metrics/PerceivedComplexity
       # rubocop:disable Metrics/BlockLength
 
-      # @tags books > judgements
       def index
         respond_to do |format|
           format.json do
@@ -75,12 +75,10 @@ module Api
       # rubocop:enable Metrics/PerceivedComplexity
       # rubocop:enable Metrics/BlockLength
 
-      # @tags books > judgements
       def show
         respond_with @judgement
       end
 
-      # @tags books > judgements
       # @request_body Judgement to be created
       #   [
       #     !Hash{
@@ -105,7 +103,6 @@ module Api
       #       unrateable: false
       #     }
       #   }
-
       def create
         judgement_params = extract_judgement_params
         @judgement = @book.judgements.find_or_create_by(
@@ -126,7 +123,6 @@ module Api
         end
       end
 
-      # @tags books > judgements
       # @request_body Judgement to be updated
       #   [
       #     !Hash{
@@ -160,7 +156,6 @@ module Api
         end
       end
 
-      # @tags books > judgements
       def destroy
         @judgement.destroy
         head :no_content

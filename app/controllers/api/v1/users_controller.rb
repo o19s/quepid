@@ -2,10 +2,10 @@
 
 module Api
   module V1
+    # @tags users
     class UsersController < Api::ApiController
       before_action :set_user, except: [ :index ]
 
-      # @tags users
       # @parameter prefix(query) [String] Filters down the list to users whose email addresses or name start with the prefix.
       def index
         @users = []
@@ -17,12 +17,10 @@ module Api
         respond_with @users
       end
 
-      # @tags users
       def show
         respond_with @user
       end
 
-      # @tags users
       def update
         update_params = user_params
 

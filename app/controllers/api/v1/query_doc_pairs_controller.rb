@@ -2,24 +2,22 @@
 
 module Api
   module V1
+    # @tags books > query doc pairs
     class QueryDocPairsController < Api::ApiController
       before_action :set_book
       before_action :check_book
       before_action :set_query_doc_pair,   only: [ :show, :update, :destroy ]
       before_action :check_query_doc_pair, only: [ :show, :update, :destroy ]
 
-      # @tags books > query doc pairs
       def index
         @query_doc_pairs = @book.query_doc_pairs
         respond_with @query_doc_pairs
       end
 
-      # @tags books > query doc pairs
       def show
         respond_with @query_doc_pair
       end
 
-      # @tags books > query doc pairs
       # @summary Pick query doc pair to be judged
       # > Mostly randomly selects a query doc pair that needs to be judged, or none if they have all been judged.
       def to_be_judged
@@ -33,7 +31,6 @@ module Api
         end
       end
 
-      # @tags books > query doc pairs
       # @request_body Query Doc Pair to be created
       #   [
       #     !Hash{
@@ -80,7 +77,6 @@ module Api
         end
       end
 
-      # @tags books > query doc pairs
       # @request_body Query Doc Pair to be updated
       #   [
       #     !Hash{
@@ -110,7 +106,6 @@ module Api
         end
       end
 
-      # @tags books > query doc pairs
       def destroy
         @query_doc_pair.destroy
         head :no_content

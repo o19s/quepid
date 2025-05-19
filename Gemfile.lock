@@ -317,7 +317,7 @@ GEM
     nokogiri (1.18.5-x86_64-linux-gnu)
       racc (~> 1.4)
     numo-narray (0.9.2.1)
-    oas_rails (0.13.0)
+    oas_rails (0.14.0)
       easy_talk_two (~> 1.1.2)
       method_source (~> 1.0)
       yard (~> 0.9)
@@ -600,7 +600,7 @@ DEPENDENCIES
   mission_control-jobs (~> 1.0.2)
   mocha (~> 2.7)
   mysql2
-  oas_rails (~> 0.13.0)
+  oas_rails (~> 0.14.0)
   omniauth
   omniauth-google-oauth2
   omniauth-keycloak

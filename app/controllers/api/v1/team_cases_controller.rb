@@ -2,18 +2,17 @@
 
 module Api
   module V1
+    # @tags teams > cases
     class TeamCasesController < Api::ApiController
       before_action :set_team,    only: [ :index, :create, :destroy ]
       before_action :check_team,  only: [ :index, :create, :destroy ]
 
-      # @tags teams > cases
       def index
         @cases = @team.cases
         respond_with @cases
       end
 
       # @summary Share case with a team
-      # @tags teams > cases
       # @parameter id(query) [!Integer] The id of the case to be shared with the team.
       def create
         @case = Case.includes( tries: [ :curator_variables ] ).where(id: params[:id]).first
@@ -38,7 +37,6 @@ module Api
       end
 
       # @summary Remove case from team
-      # @tags teams > cases
       # @parameter id(query) [!Integer] The id of the case to be removed from the team.
       def destroy
         acase = @team.cases.where(id: params[:id]).all

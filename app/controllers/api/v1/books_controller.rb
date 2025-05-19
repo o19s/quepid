@@ -4,22 +4,20 @@ require 'csv'
 
 module Api
   module V1
+    # @tags books
     class BooksController < Api::ApiController
       before_action :set_book, only: [ :show, :update, :destroy ]
       before_action :check_book, only: [ :show, :update, :destroy ]
 
-      # @tags books
       def index
         @books = current_user.books_involved_with
         respond_with @books
       end
 
-      # @tags books
       def show
         respond_with @book
       end
 
-      # @tags books
       # @request_body
       #   [
       #     !Hash{
@@ -57,7 +55,6 @@ module Api
         end
       end
 
-      # @tags books
       # @request_body
       #   [
       #     !Hash{
@@ -92,7 +89,6 @@ module Api
         end
       end
 
-      # @tags books
       # Delete a book and its child data including Query/Doc Pairs and Judgements.
       def destroy
         @book.really_destroy

@@ -2,18 +2,17 @@
 
 module Api
   module V1
+    # @tags teams > members
     class TeamMembersController < Api::ApiController
       before_action :set_team,          only: [ :index, :create, :destroy, :invite ]
       before_action :check_team,        only: [ :index, :create, :destroy, :invite ]
 
-      # @tags teams > members
       def index
         @members = @team.members
         respond_with @members
       end
 
       # @summary Add user to team
-      # @tags teams > members
       # @parameter id(query) [!Integer] The id of the user to be added to the team.
       def create
         @member = User.where('email = ? OR id = ?', params[:id].to_s.downcase, params[:id] ).first
@@ -33,7 +32,6 @@ module Api
         end
       end
 
-      # @tags teams > members
       # @summary Invite user
       # > Invite someone to join a team.  Creates a shell user account and adds them to the team.
       # @request_body Id is the email address
@@ -69,7 +67,6 @@ module Api
       end
 
       # @summary Remove user from team
-      # @tags teams > members
       # @parameter id(query) [!Integer] The id of the user to be removed from the team.
       def destroy
         member = @team.members.where('email = ? OR id = ?', params[:id].to_s.downcase, params[:id])

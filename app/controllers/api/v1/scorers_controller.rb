@@ -3,11 +3,11 @@
 # rubocop:disable Metrics/ClassLength
 module Api
   module V1
+    # @tags scorers
     class ScorersController < Api::ApiController
       before_action :set_scorer, only: [ :show, :update, :destroy ]
       before_action :check_communal_scorers_only, only: [ :create, :update, :destroy ]
 
-      # @tags scorers
       def index
         @user_scorers = current_user.scorers_involved_with.all.reject(&:communal?) unless Rails.application.config.communal_scorers_only
         @communal_scorers = Scorer.communal
@@ -15,12 +15,10 @@ module Api
         respond_with @user_scorers, @communal_scorers
       end
 
-      # @tags scorers
       def show
         respond_with @scorer
       end
 
-      # @tags scorers
       def create
         @scorer = current_user.owned_scorers.build scorer_params
 
@@ -47,7 +45,6 @@ module Api
       end
 
       # rubocop:disable Metrics/MethodLength
-      # @tags scorers
       def update
         unless @scorer.owner == current_user || (@scorer.communal && current_user.administrator?)
           render(
@@ -95,7 +92,6 @@ module Api
       # This method lets you delete a scorer, and if you pass in force=true then
       # you update other objects with either the system default scorer, or, if
       # you pass in the replacement_scorer_id then that scorer.
-      # @tags scorers
       # @parameter force(query) [Boolean] Update cases to either the replacement_scorer_id if provided or the system default.
       # @parameter replacement_scorer_id(query) [Integer] Scorer to update Cases to use.
       def destroy

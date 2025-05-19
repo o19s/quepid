@@ -2,11 +2,11 @@
 
 module Api
   module V1
+    # @tags search endpoints
     class SearchEndpointsController < Api::ApiController
       before_action :set_search_endpoint, only: [ :show, :update, :destroy ]
 
       # rubocop:disable Metrics/MethodLength
-      # @tags search endpoints
       # @parameter archived(query) [Boolean] Whether or not to include archived search endpoints.
       def index
         archived = deserialize_bool_param(params[:archived])
@@ -31,12 +31,10 @@ module Api
       end
       # rubocop:enable Metrics/MethodLength
 
-      # @tags search endpoints
       def show
         respond_with @search_endpoint
       end
 
-      # @tags search endpoints
       # @request_body Search endpoint to be created
       #   [
       #     !Hash{
@@ -88,7 +86,6 @@ module Api
         end
       end
 
-      # @tags search endpoints
       # @request_body Search endpoint to be created
       #   [
       #     !Hash{
@@ -127,7 +124,6 @@ module Api
         end
       end
 
-      # @tags search endpoints
       def destroy
         @search_endpoint.destroy
 

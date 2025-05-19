@@ -2,6 +2,7 @@
 
 module Api
   module V1
+    # @tags cases
     class CasesController < Api::ApiController
       before_action :set_case, only: [ :show, :update, :destroy ]
       before_action :check_case, only: [ :show, :update, :destroy ]
@@ -15,7 +16,6 @@ module Api
                status: :unauthorized
       end
 
-      # @tags cases
       # @parameter archived(query) [Boolean] Whether or not to return only archived cases in the response.
       def index
         archived = deserialize_bool_param(params[:archived])
@@ -28,12 +28,10 @@ module Api
         respond_with @cases
       end
 
-      # @tags cases
       def show
         respond_with @case
       end
 
-      # @tags cases
       # @request_body Case to be created
       #   [
       #     !Hash{
@@ -76,7 +74,6 @@ module Api
       end
 
       # rubocop:disable Metrics/MethodLength
-      # @tags cases
       # @request_body Case to be created
       #   [
       #     !Hash{
@@ -121,7 +118,6 @@ module Api
       end
       # rubocop:enable Metrics/MethodLength
 
-      # @tags cases
       def destroy
         @case.really_destroy
         Analytics::Tracker.track_case_deleted_event current_user, @case

@@ -2,18 +2,17 @@
 
 module Api
   module V1
+    # @tags cases > scores
     class CaseScoresController < Api::ApiController
       before_action :set_case
       before_action :check_case
 
-      # @tags cases > scores
       def index
         @scores = @case.scores.where(scorer: @case.scorer).includes(:annotation, :user).limit(10)
         respond_with @scores
       end
 
       # @summary Most recent case score
-      # @tags cases > scores
       # > Returns the most recent score for the case.
       def show
         @score    = @case.scores.first
@@ -27,7 +26,6 @@ module Api
         respond_with @score
       end
 
-      # @tags cases > scores
       # @request_body Score to be created
       #   [
       #     !Hash{

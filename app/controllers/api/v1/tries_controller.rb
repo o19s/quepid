@@ -3,24 +3,23 @@
 module Api
   module V1
     # rubocop:disable Metrics/ClassLength
+    # @tags cases > tries
+
     class TriesController < Api::ApiController
       before_action :set_case
       before_action :check_case
       before_action :set_try, only: [ :show, :update, :destroy ]
 
-      # @tags cases > tries
       def index
         @tries = @case.tries
       end
 
-      # @tags cases > tries
       def show
         respond_with @try
       end
 
       # rubocop:disable Metrics/MethodLength
       # rubocop:disable Metrics/AbcSize
-      # @tags cases > tries
       # @request_body Try to be created
       #   [
       #     !Hash{
@@ -133,7 +132,6 @@ module Api
       # rubocop:enable Metrics/AbcSize
 
       # rubocop:disable Metrics/MethodLength
-      # @tags cases > tries
       # @request_body Try to be updated
       #   [
       #     !Hash{
@@ -197,7 +195,6 @@ module Api
       end
       # rubocop:enable Metrics/MethodLength
 
-      # @tags cases > tries
       def destroy
         @try.destroy
 
