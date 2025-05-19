@@ -228,7 +228,7 @@ Rails.application.routes.draw do
 
       resources :books, except: [ :new, :edit ] do
         put '/populate' => 'books/populate#update'
-        put '/cases/:case_id/refresh' => 'books/refresh#update'
+        put '/cases/:case_id/refresh' => 'books/refresh#update', as: :refresh
         resources :query_doc_pairs, except: [ :new, :edit ] do
           collection do
             get 'to_be_judged/:judge_id' => 'query_doc_pairs#to_be_judged'
