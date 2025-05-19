@@ -3,6 +3,7 @@
 DEBUGGING INFORMATION
 query_doc_pair.id: <%= query_doc_pair.id %>
 judgement.id: <%= judgement.id %>
+user.id: <%= judgement.user_id %>
 </pre>
 -->
 
@@ -354,6 +355,11 @@ judgement.id: <%= judgement.id %>
     </div>
   <% end %>
 
+  <% if judgement.user_id != @current_user.id %>
+    <div class="alert alert-warning" role="alert">
+      This judgement was made by <%= judgement.user.fullname %>!
+    </div>
+  <% end %>
   <% if image_url %>
   <div class="card mb-3" style="">
     <div class="row g-0">

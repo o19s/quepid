@@ -11,7 +11,6 @@ gem 'addressable', '~> 2.8'
 gem 'ahoy_matey'
 gem 'ancestry'
 gem 'angular-rails-templates', '~> 1.3'
-gem 'apipie-rails', '~> 1.2'
 gem 'bcrypt', '~> 3.1.7'
 gem 'blazer', '~> 3.2'
 gem 'bootsnap', require: false
@@ -91,3 +90,5 @@ group :test do
 end
 
 gem 'mini_racer', '~> 0.16.0'
+
+gem 'oas_rails', '~> 0.14.0'

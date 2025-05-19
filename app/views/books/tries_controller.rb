@@ -21,9 +21,7 @@ module Api
       def create
         try_parameters_to_use = try_params
 
-        if params[:parent_try_number] # We need special translation from try_number to the try.id
-          try_parameters_to_use[:parent_id] = @case.tries.where(try_number: params[:parent_try_number]).first.id
-        end
+        try_parameters_to_use[:parent_id] = @case.tries.where(try_number: params[:parent_try_number]).first.id if params[:parent_try_number] # We need special translation from try_number to the try.id
 
         @try = @case.tries.build try_parameters_to_use
 

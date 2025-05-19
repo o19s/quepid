@@ -82,7 +82,7 @@
               <li><%= link_to 'My profile', profile_path, class: 'dropdown-item', target: '_self' %></li>
               <li><%= link_to 'Log out', logout_path, class: 'dropdown-item', target: '_self' %></li>
               <li><hr class="dropdown-divider"></li>
-              <li><%= link_to 'API Docs', apipie_apipie_path, class: 'dropdown-item', target: '_self' %></li>
+              <li><%= link_to 'API Docs', oas_rails_path, class: 'dropdown-item', target: '_self' %></li>
               <% if current_user.administrator? %>
               <li><hr class="dropdown-divider"></li>
               <li><%= link_to 'Admin Home', admin_path, class: 'dropdown-item', target: '_self' %></li>

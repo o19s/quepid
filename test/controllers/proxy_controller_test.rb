@@ -2,7 +2,6 @@
 
 require 'test_helper'
 
-# rubocop:disable Layout/LineLength
 class ProxyControllerTest < ActionDispatch::IntegrationTest
   # See webmock.rb for the corresponding mocks.
   #
@@ -121,4 +120,3 @@ class ProxyControllerTest < ActionDispatch::IntegrationTest
     end
   end
 end
-# rubocop:enable Layout/LineLength
