@@ -2,20 +2,18 @@
 
 module Api
   module V1
+    # @tags teams > members
     class TeamMembersController < Api::ApiController
-      api!
       before_action :set_team,          only: [ :index, :create, :destroy, :invite ]
       before_action :check_team,        only: [ :index, :create, :destroy, :invite ]
-
-      def_param_group :invite_user_params do
-        param :id, String, desc: 'Oddly enough this is the email address of the person to invite'
-      end
 
       def index
         @members = @team.members
         respond_with @members
       end
 
+      # @summary Add user to team
+      # @parameter id(query) [!Integer] The id of the user to be added to the team.
       def create
         @member = User.where('email = ? OR id = ?', params[:id].to_s.downcase, params[:id] ).first
 
@@ -34,9 +32,19 @@ module Api
         end
       end
 
-      # rubocop:disable Layout/LineLength
-      api :POST, '/api/teams/:team_id/members/invite', 'Invite someone to join a team.  Creates a shell user account and adds them to the team.'
-      param_group :invite_user_params
+      # @summary Invite user
+      # > Invite someone to join a team.  Creates a shell user account and adds them to the team.
+      # @request_body Id is the email address
+      #   [
+      #     !Hash{
+      #       id: !String
+      #     }
+      #   ]
+      # @request_body_example invite [Hash]
+      #   {
+      #     id: "john@doe.com"
+      #   }
+
       def invite
         unless signup_enabled?
           render json: { error: 'Signups are disabled!' }, status: :not_found
@@ -57,8 +65,9 @@ module Api
           render json: @member.errors, status: :bad_request
         end
       end
-      # rubocop:enable Layout/LineLength
 
+      # @summary Remove user from team
+      # @parameter id(query) [!Integer] The id of the user to be removed from the team.
       def destroy
         member = @team.members.where('email = ? OR id = ?', params[:id].to_s.downcase, params[:id])
 

@@ -29,9 +29,9 @@ class JavascriptMapperCode
 
     @context.eval('validateMappersExist()')
 
-    puts "response_body: #{response_body.is_a?(Array)}"
+    # puts "response_body: #{response_body.is_a?(Array)}"
     response_body = response_body.join("\n") if response_body.is_a?(Array)
-    puts "and the boy is: #{response_body}"
+    # puts "and the body is: #{response_body}"
 
     @context.eval("var responseBody = #{response_body.to_json};")
 
