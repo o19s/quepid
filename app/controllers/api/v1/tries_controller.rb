@@ -25,7 +25,7 @@ module Api
       #     !Hash{
       #       parent_try_number: !Integer,
       #       try: !Hash{
-      #         name: String,
+      #         name: !String,
       #         parent_id: Integer,
       #         search_endpoint_id: Integer,
       #         query_params: String
@@ -34,7 +34,7 @@ module Api
       #         number_of_rows: Integer
       #       },
       #       search_endpoint: Hash{
-      #         name: String,
+      #         name: !String,
       #         search_engine: String,
       #         endpoint_ur: String,
       #         api_method: String,
