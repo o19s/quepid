@@ -37,19 +37,35 @@ class LlmService
     judgement
   end
 
+  # rubocop:disable Metrics/MethodLength
   def make_user_prompt query_doc_pair
     document_fields = query_doc_pair.document_fields
-    fields = document_fields.blank? ? '' : JSON.parse(document_fields).to_yaml
 
-    user_prompt = <<~TEXT
+    fields = if document_fields.blank?
+               {}
+             else
+               JSON.parse(document_fields)
+             end
+
+    text_prompt = <<~TEXT
       Query: #{query_doc_pair.query_text}
 
       doc1:
-        #{fields}
+        #{fields.to_yaml}
     TEXT
 
-    user_prompt
+    prompt = [
+      { type: 'text', text: text_prompt }
+    ]
+
+    if '' != fields['image'].to_s.strip
+      image_url = fields['image']
+      prompt << { type: 'image_url', image_url: { url: image_url } }
+    end
+
+    prompt
   end
+  # rubocop:enable Metrics/MethodLength
 
   # rubocop:disable Metrics/MethodLength
   # rubocop:disable Metrics/AbcSize
