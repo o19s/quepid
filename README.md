@@ -73,6 +73,8 @@ Provisioning from an already built machine takes approximately 3 - 4 minutes. Pr
 
 #### 1. Prerequisites
 
+Make sure you have installed Ruby.
+
 Make sure you have installed Docker. Go here https://www.docker.com/community-edition#/download for installation instructions. And the Docker app is launched.
 
 To install using brew follow these steps:
