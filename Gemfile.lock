@@ -250,9 +250,9 @@ GEM
       childprocess (~> 5.0)
     letter_opener (1.10.0)
       launchy (>= 2.2, < 4)
-    libv8-node (18.19.0.0-aarch64-linux)
-    libv8-node (18.19.0.0-x86_64-darwin)
-    libv8-node (18.19.0.0-x86_64-linux)
+    libv8-node (23.6.1.0-aarch64-linux)
+    libv8-node (23.6.1.0-x86_64-darwin)
+    libv8-node (23.6.1.0-x86_64-linux)
     lint_roller (1.1.0)
     listen (3.9.0)
       rb-fsevent (~> 0.10, >= 0.10.3)
@@ -273,8 +273,8 @@ GEM
     method_source (1.1.0)
     mini_histogram (0.3.1)
     mini_mime (1.1.5)
-    mini_racer (0.16.0)
-      libv8-node (~> 18.19.0.0)
+    mini_racer (0.18.1)
+      libv8-node (~> 23.6.1.0)
     minitest (5.25.5)
     minitest-reporters (1.7.1)
       ansi
@@ -595,7 +595,7 @@ DEPENDENCIES
   listen (~> 3.3)
   local_time
   memory_profiler
-  mini_racer (~> 0.16.0)
+  mini_racer (~> 0.18.0)
   minitest-reporters (>= 0.5.0)
   mission_control-jobs (~> 1.0.2)
   mocha (~> 2.7)
