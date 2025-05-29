@@ -24,9 +24,6 @@ gem 'foreman'
 gem 'importmap-rails', '~> 2.1'
 gem 'jbuilder', '~> 2.7'
 
-gem 'jquery-rails' # We use JQuery version 1 in the Angular 1 app.
-gem 'jquery-ui-rails' # This brings in the JQuery UI components we need for the Angular 1 app.
-
 gem 'listen', '~> 3.3'
 gem 'local_time'
 gem 'mission_control-jobs', '~> 1.0.2' # git: 'https://github.com/rails/mission_control-jobs.git', branch: 'main'
