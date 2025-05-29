@@ -129,7 +129,7 @@ module ApplicationHelper
 
     search_endpoint = kase.tries.first&.search_endpoint
 
-    if search_endpoint && (!search_endpoint.proxy_requests? && search_endpoint.endpoint_url)
+    if search_endpoint && !search_endpoint.proxy_requests? && search_endpoint.endpoint_url
       protocol = get_protocol_from_url(search_endpoint.endpoint_url)
       path_params = {
         protocol: protocol,
