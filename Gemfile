@@ -25,7 +25,7 @@ gem 'importmap-rails', '~> 2.1'
 gem 'jbuilder', '~> 2.7'
 
 gem 'jquery-rails' # We use JQuery version 1 in the Angular 1 app.
-gem 'jquery-ui-rails' # This brings in the JQuery UI components we need for the Angular 1 app.
+#gem 'jquery-ui-rails' # This brings in the JQuery UI components we need for the Angular 1 app.
 
 gem 'listen', '~> 3.3'
 gem 'local_time'
