@@ -363,7 +363,7 @@ GEM
     pp (0.6.2)
       prettyprint
     prettyprint (0.2.0)
-    prophet-rb (0.5.3)
+    prophet-rb (0.6.0)
       cmdstan (>= 0.2)
       logger
       numo-narray (>= 0.9.1.7)
@@ -607,7 +607,7 @@ DEPENDENCIES
   omniauth-rails_csrf_protection
   pagy
   postmark-rails
-  prophet-rb (~> 0.5.3)
+  prophet-rb (~> 0.6.0)
   puma
   rack-cors (~> 2.0)
   rails (= 8.0.2)
