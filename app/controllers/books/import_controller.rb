@@ -14,7 +14,6 @@ module Books
     # rubocop:disable Metrics/AbcSize
     # rubocop:disable Metrics/PerceivedComplexity
     # rubocop:disable Metrics/CyclomaticComplexity
-    # rubocop:disable Layout/LineLength
     def create
       @book = Book.new
       @book.owner = current_user

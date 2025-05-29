@@ -15,7 +15,9 @@ class LlmServiceTest < ActiveSupport::TestCase
   # run real tests, otherwise it still captures everything.
   # This has been VERY futzy to get a test that captures the real server interaction and the webmock version.
 
-  DEFAULT_USER_PROMPT = <<~TEXT
+  USER_PROMPT_IMAGE_URL = 'https://example.com/image.png'
+
+  USER_PROMPT_TEXT = <<~TEXT
     Query: Farm animals
 
     doc3:
@@ -23,9 +25,14 @@ class LlmServiceTest < ActiveSupport::TestCase
       abstract: We will talk about everything except for farm animals.
   TEXT
 
+  USER_PROMPT_COMPOSED = [
+    { type: 'text', text: USER_PROMPT_TEXT },
+    { type: 'image_url', image_url: { url: USER_PROMPT_IMAGE_URL } }
+  ].freeze
+
   describe 'Hacking with Scott' do
     test 'can we make it run' do
-      user_prompt = DEFAULT_USER_PROMPT
+      user_prompt = USER_PROMPT_COMPOSED
       system_prompt = AiJudgesController::DEFAULT_SYSTEM_PROMPT
       result = service.get_llm_response(user_prompt, system_prompt)
       puts result
@@ -33,9 +40,15 @@ class LlmServiceTest < ActiveSupport::TestCase
       assert_kind_of Numeric, result[:judgment]
       assert_not_nil result[:explanation]
     end
-    test 'making a user prompt' do
+
+    test 'making a user prompt with text and image content' do
       user_prompt = service.make_user_prompt query_doc_pair
-      assert_includes user_prompt, query_doc_pair.query_text
+
+      assert_equal user_prompt[0][:type], 'text'
+      assert_includes user_prompt[0][:text], query_doc_pair.query_text
+
+      assert_equal user_prompt[1][:type], 'image_url'
+      assert_equal user_prompt[1][:image_url][:url], USER_PROMPT_IMAGE_URL
     end
 
     test 'creating a judgement' do
@@ -50,7 +63,7 @@ class LlmServiceTest < ActiveSupport::TestCase
   describe 'error conditions' do
     test 'using a bad API key' do
       service = LlmService.new 'BAD_OPENAI_KEY'
-      user_prompt = DEFAULT_USER_PROMPT
+      user_prompt = USER_PROMPT_COMPOSED
       system_prompt = AiJudgesController::DEFAULT_SYSTEM_PROMPT
 
       error = assert_raises(RuntimeError) do
@@ -62,7 +75,7 @@ class LlmServiceTest < ActiveSupport::TestCase
     test 'handle and back off a 429 error' do
       # the Faraday Retry may mean we don't need this
       service = LlmService.new 'OPENAI_429_ERROR'
-      user_prompt = DEFAULT_USER_PROMPT
+      user_prompt = USER_PROMPT_COMPOSED
       system_prompt = AiJudgesController::DEFAULT_SYSTEM_PROMPT
 
       error = assert_raises(RuntimeError) do
@@ -83,7 +96,7 @@ class LlmServiceTest < ActiveSupport::TestCase
       }
       service = LlmService.new 'ollama', opts
 
-      user_prompt = DEFAULT_USER_PROMPT
+      user_prompt = USER_PROMPT_COMPOSED
       system_prompt = AiJudgesController::DEFAULT_SYSTEM_PROMPT
       result = service.get_llm_response(user_prompt, system_prompt)
       puts result
