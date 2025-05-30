@@ -38,7 +38,7 @@ gem 'prophet-rb', '~> 0.6.0'
 gem 'puma'
 gem 'rails', '8.0.2'
 gem 'rails-html-sanitizer'
-gem 'rack-cors', '~> 2.0'
+gem 'rack-cors', '~> 3.0'
 gem 'responders'
 gem 'rubyzip', '~> 2.4.1' # 3.0 will be breaking
 gem 'sassc-rails', '~> 2.1'
