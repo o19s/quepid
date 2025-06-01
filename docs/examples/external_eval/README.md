@@ -11,7 +11,7 @@ You need to have a Personal Access Token created in the target Quepid, you do th
 When you create it, you will get an example call you can use to test your setup:
 
 ```
-curl -H "Authorization: Bearer 0d078b465f73c8f5f34dd57c50e317053b4bd69b22f0f6a25479c00775f47589" http://app.quepid.com/api/users/3
+curl -H "Authorization: Bearer 0d078b465f73c8f5f34dd57c50e317053b4bd69b22f0f6a25479c00775f47589" http://go.quepidapp.com/api/users/3
 ```
 
 The docs below reference access token, replace with you own.  
@@ -30,7 +30,7 @@ The script assumes you have a Team set up that you want the Case to be shared wi
 The Case is created if it doesn't exist when the script is run.
 
 ```
-python3 store_score_for_case.py --root_url=https://app.quepid.com --access_token=${QUEPID_TOKEN} --case_name=NIGHTLY_CASE --team_name=MyTeam --scorer_name=nDCG@10 --score=.78
+python3 store_score_for_case.py --root_url=https://go.quepidapp.com --access_token=${QUEPID_TOKEN} --case_name=NIGHTLY_CASE --team_name=MyTeam --scorer_name=nDCG@10 --score=.78
 ```
 
 Then don't forget to add folks who want to see the scores to the Team!

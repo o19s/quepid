@@ -161,7 +161,7 @@ Set `SOLID_CABLE_POLLING` to `1.seconds` or even `5.seconds` to change how often
 
 ## Legal Pages & GDPR
 
-If you would like to have legal pages linked in the footer of the app, similar to behavior on http://app.quepid.com,
+If you would like to have legal pages linked in the footer of the app, similar to behavior on http://go.quepidapp.com,
 add the following `ENV` vars:
 
 ```
