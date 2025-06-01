@@ -22,7 +22,7 @@ Quepid makes improving your app's search results a repeatable, reliable engineer
 
 **To learn more, please check out the [Quepid website](http://www.quepid.com) and the [Quepid wiki](http://github.com/o19s/quepid/wiki).**
 
-**If you are ready to dive right in, you can use the [Hosted Quepid](http://app.quepid.com) service right now or follow the [installation steps](https://github.com/o19s/quepid/wiki/Installation-Guide) to set up your own instance of Quepid.**
+**If you are ready to dive right in, you can use the [Hosted Quepid](http://go.quepidapp.com) service right now or follow the [installation steps](https://github.com/o19s/quepid/wiki/Installation-Guide) to set up your own instance of Quepid.**
 
 # Table of Contents
 Below is information related to developing the Quepid open source project, primarily for people interested in extending what Quepid can do!
@@ -243,7 +243,7 @@ If you want to test the Jupyterlite notebooks, or work with a "real" case and bo
 bin/docker r bundle exec thor sample_data:haystack_party
 ```
 
-You will have lots of user data from the Haystack rating party book and case to work with.  This data is source from the public case https://app.quepid.com/case/6789/try/12?sort=default and https://app.quepid.com/books/25
+You will have lots of user data from the Haystack rating party book and case to work with.  This data is source from the public case https://go.quepidapp.com/case/6789/try/12?sort=default and https://go.quepidapp.com/books/25
 
 
 
