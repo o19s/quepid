@@ -1378,10 +1378,10 @@ isexe@^2.0.0:
   resolved "https://registry.yarnpkg.com/isexe/-/isexe-2.0.0.tgz#e8fbf374dc556ff8947a10dcb0572d633f2cfa10"
   integrity sha512-RHxMLp9lnKHGHRng9QFhRCMbYAcVpn69smSGcq3f36xjgVVWThj4qqLbTLlq7Ssj8B+fIQ1EuCEGI2lKsyQeIw==
 
-jasmine-core@5.6.0:
-  version "5.6.0"
-  resolved "https://registry.yarnpkg.com/jasmine-core/-/jasmine-core-5.6.0.tgz#4b979c254e7d9b1fe8e767ab00c5d2901c00bd4f"
-  integrity sha512-niVlkeYVRwKFpmfWg6suo6H9CrNnydfBLEqefM5UjibYS+UoTjZdmvPJSiuyrRLGnFj1eYRhFd/ch+5hSlsFVA==
+jasmine-core@5.7.1:
+  version "5.7.1"
+  resolved "https://registry.yarnpkg.com/jasmine-core/-/jasmine-core-5.7.1.tgz#c347ede2dbf1b6b3b3c3362a5b6651414ada4745"
+  integrity sha512-QnurrtpKsPoixxG2R3d1xP0St/2kcX5oTZyDyQJMY+Vzi/HUlu1kGm+2V8Tz+9lV991leB1l0xcsyz40s9xOOw==
 
 jasmine-core@^4.1.0:
   version "4.6.0"
