@@ -4,7 +4,7 @@
 services:
   mysql:
     container_name: quepid_prod_db
-    image: mysql:8.4.3
+    image: mysql:9.2.0
     ports:
       - 3306:3306
     environment:
