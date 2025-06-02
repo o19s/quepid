@@ -5,7 +5,11 @@ class SyncCommunalScorerCode < ActiveRecord::Migration[8.0]
       if file_name =="v1 (legacy).js"
         file_name = "v1.js"
       end
-      scorer.update( code:               File.readlines("./db/scorers/#{file_name}",'\n').join('\n'))
+      
+      scorer_file = "./db/scorers/#{file_name}"
+      if File.exist?(scorer_file)
+        scorer.update( code: File.readlines(scorer_file, '\n').join('\n'))
+      end
     end
   end
 end

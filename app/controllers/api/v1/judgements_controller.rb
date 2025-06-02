@@ -2,43 +2,19 @@
 
 module Api
   module V1
-    # rubocop:disable Metrics/ClassLength
+    # @tags books > judgements
     class JudgementsController < Api::ApiController
       before_action :set_book
       before_action :check_book
       before_action :set_judgement,   only: [ :show, :update, :destroy ]
       before_action :check_judgement, only: [ :show, :update, :destroy ]
 
-      def_param_group :judgement_params do
-        param :judgement, Hash, required: true do
-          param :user_id, Integer
-          param :rating, Float
-          param :judge_later, [ true, false ]
-          param :unrateable, [ true, false ]
-          param :explanation, String
-        end
-      end
-
-      def_param_group :create_judgement_params do
-        param :judgement, Hash, required: true do
-          param :query_doc_pair_id, Integer
-          param :user_id, Integer
-          param :rating, Float
-          param :judge_later, [ true, false ]
-          param :unrateable, [ true, false ]
-          param :explanation, String
-        end
-      end
-
       # rubocop:disable Metrics/MethodLength
       # rubocop:disable Metrics/AbcSize
       # rubocop:disable Metrics/CyclomaticComplexity
       # rubocop:disable Metrics/PerceivedComplexity
       # rubocop:disable Metrics/BlockLength
-      api :GET, '/api/books/:book_id/judgements',
-          'List all judgements for the book.  When you request the .csv version we only return valid rated judgements.'
-      param :book_id, :number,
-            desc: 'The ID of the requested book.', required: true
+
       def index
         respond_to do |format|
           format.json do
@@ -99,36 +75,47 @@ module Api
       # rubocop:enable Metrics/PerceivedComplexity
       # rubocop:enable Metrics/BlockLength
 
-      api :GET, '/api/books/:book_id/query_doc_pairs/:query_doc_pair_id/judgements/:id',
-          'Show the judgement with the given ID.'
-      param :book_id, :number,
-            desc: 'The ID of the requested book.', required: true
-      param :query_doc_pair_id, :number,
-            desc: 'The ID of the requested query doc pair.', required: true
-      param :id, :number,
-            desc: 'The ID of the requested judgement.', required: true
       def show
         respond_with @judgement
       end
 
-      # rubocop:disable Metrics/AbcSize
-      api :POST, '/api/books/:book_id/judgements/', 'Create a new judgement.'
-      param :book_id, :number,
-            desc: 'The ID of the requested book.', required: true
-      param_group :create_judgement_params
+      # @request_body Judgement to be created
+      #   [
+      #     !Hash{
+      #       judgement: Hash{
+      #         query_doc_pair_id: Integer,
+      #         user_id: Integer,
+      #         rating: Float,
+      #         explanation: String,
+      #         judge_later: Boolean,
+      #         unrateable: Boolean
+      #       }
+      #     }
+      #   ]
+      # @request_body_example basic judgement [Hash]
+      #   {
+      #     judgement: {
+      #       query_doc_pair_id: 1,
+      #       user_id: 1,
+      #       rating: 1.0,
+      #       explanation: "This is how I rated this",
+      #       judge_later: false,
+      #       unrateable: false
+      #     }
+      #   }
       def create
-        # @judgement = @book.judgements.build judgement_params
-        @judgement = @book.judgements.find_or_create_by query_doc_pair_id: params[:judgement][:query_doc_pair_id],
-                                                        user_id:           params[:judgement][:user]
+        judgement_params = extract_judgement_params
+        @judgement = @book.judgements.find_or_create_by(
+          query_doc_pair_id: judgement_params[:query_doc_pair_id],
+          user_id:           judgement_params[:user]
+        )
+        @judgement.rating = judgement_params[:rating] if judgement_params[:rating].present?
+        @judgement.explanation = judgement_params[:explanation] if judgement_params[:explanation].present?
 
-        @judgement.rating = params[:judgement][:rating] unless params[:judgement][:rating].nil?
-        @judgement.explanation = params[:judgement][:explanation] unless params[:judgement][:explanation].nil?
+        @judgement.user = User.find(judgement_params[:user_id]) if judgement_params[:user_id].present?
 
-        if params[:judgement][:user_id]
-          user = User.find(params[:judgement][:user_id])
-          @judgement.user = user
-        end
-        @judgement.mark_unrateable if params[:judgement][:unrateable] && (true == params[:judgement][:unrateable])
+        @judgement.mark_unrateable if judgement_params[:unrateable]
+
         if @judgement.save
           respond_with @judgement
         else
@@ -136,17 +123,32 @@ module Api
         end
       end
 
-      # rubocop:enable Metrics/AbcSize
-      api :PUT, '/api/books/:book_id/query_doc_pair/:query_doc_pair_id/judgements/:id', 'Update a given judgement.'
-      param :book_id, :number,
-            desc: 'The ID of the requested book.', required: true
-      param :query_doc_pair_id, :number,
-            desc: 'The ID of the requested query doc pair.', required: true
-      param :id, :number,
-            desc: 'The ID of the requested judgement.', required: true
-      param_group :judgement_params
+      # @request_body Judgement to be updated
+      #   [
+      #     !Hash{
+      #       judgement: Hash{
+      #         query_doc_pair_id: Integer,
+      #         user_id: Integer,
+      #         rating: Float,
+      #         explanation: String,
+      #         judge_later: Boolean,
+      #         unrateable: Boolean
+      #       }
+      #     }
+      #   ]
+      # @request_body_example basic judgement [Hash]
+      #   {
+      #     judgement: {
+      #       query_doc_pair_id: 1,
+      #       user_id: 1,
+      #       rating: 1.0,
+      #       explanation: "This is how I rated this",
+      #       judge_later: false,
+      #       unrateable: false
+      #     }
+      #   }
       def update
-        update_params = judgement_params
+        update_params = extract_judgement_params
         if @judgement.update update_params
           respond_with @judgement
         else
@@ -154,13 +156,6 @@ module Api
         end
       end
 
-      api :DELETE, '/api/books/:book_id/query_doc_pair/:query_doc_pair_id/judgements/:id', 'Delete a given judgement.'
-      param :book_id, :number,
-            desc: 'The ID of the requested book.', required: true
-      param :query_doc_pair_id, :number,
-            desc: 'The ID of the requested query doc pair.', required: true
-      param :id, :number,
-            desc: 'The ID of the judgement.', required: true
       def destroy
         @judgement.destroy
         head :no_content
@@ -176,8 +171,8 @@ module Api
         end
       end
 
-      def judgement_params
-        params.expect(judgement: [ :rating, :unrateable, :query_doc_pair_id, :user_id, :explanation ])
+      def extract_judgement_params
+        params.expect(judgement: [ :rating, :unrateable, :judge_later, :query_doc_pair_id, :user_id, :explanation ])
       end
 
       def set_judgement
@@ -188,6 +183,5 @@ module Api
         render json: { message: 'Query Doc Pair not found!' }, status: :not_found unless @judgement
       end
     end
-    # rubocop:enable Metrics/ClassLength
   end
 end

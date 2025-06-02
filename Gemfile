@@ -2,7 +2,7 @@
 
 source 'https://rubygems.org'
 
-ruby '3.4.2'
+ruby '3.4.4'
 
 gem 'activerecord-import', '>= 1.0.7'
 gem 'active_storage_db'
@@ -11,9 +11,8 @@ gem 'addressable', '~> 2.8'
 gem 'ahoy_matey'
 gem 'ancestry'
 gem 'angular-rails-templates', '~> 1.3'
-gem 'apipie-rails', '~> 1.2'
 gem 'bcrypt', '~> 3.1.7'
-gem 'blazer', '~> 3.2'
+gem 'blazer', '~> 3.3'
 gem 'bootsnap', require: false
 gem 'cal-heatmap-rails', '~> 3.6' # provides assets for cal heatmap, that requires old d3
 gem 'colorize', require: false
@@ -25,9 +24,6 @@ gem 'foreman'
 gem 'importmap-rails', '~> 2.1'
 gem 'jbuilder', '~> 2.7'
 
-gem 'jquery-rails' # We use JQuery version 1 in the Angular 1 app.
-gem 'jquery-ui-rails' # This brings in the JQuery UI components we need for the Angular 1 app.
-
 gem 'listen', '~> 3.3'
 gem 'local_time'
 gem 'mission_control-jobs', '~> 1.0.2' # git: 'https://github.com/rails/mission_control-jobs.git', branch: 'main'
@@ -38,11 +34,11 @@ gem 'omniauth-google-oauth2'
 gem 'omniauth-rails_csrf_protection'
 gem 'pagy'
 gem 'postmark-rails'
-gem 'prophet-rb', '~> 0.5.3'
+gem 'prophet-rb', '~> 0.6.0'
 gem 'puma'
 gem 'rails', '8.0.2'
 gem 'rails-html-sanitizer'
-gem 'rack-cors', '~> 2.0'
+gem 'rack-cors', '~> 3.0'
 gem 'responders'
 gem 'rubyzip', '~> 2.4.1' # 3.0 will be breaking
 gem 'sassc-rails', '~> 2.1'
@@ -91,3 +87,5 @@ group :test do
 end
 
 gem 'mini_racer', '~> 0.16.0'
+
+gem 'oas_rails', '~> 0.15.0'

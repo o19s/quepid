@@ -28,6 +28,19 @@ class SelectionStrategy < ApplicationRecord
     end
   end
 
+  # Because of the way the logic looks up existing judgements, if you a judgement
+  # that is either unrateable or judge_later, then it won't be selected.
+  def self.moar_judgements_needed? book
+    case book.selection_strategy.name
+    when 'Single Rater'
+      !every_query_doc_pair_has_a_judgement? book
+    when 'Multiple Raters'
+      !every_query_doc_pair_has_three_judgements? book
+    else
+      raise "#{book.selection_strategy.name} is unknown!"
+    end
+  end
+
   # Randomly select a query doc where we don't have any judgements, and weight it by the position,
   # so that position of 1 should be returned more often than a position of 5 or 10.
   # 0 based positions fail the random function, so we add 1
@@ -44,6 +57,15 @@ class SelectionStrategy < ApplicationRecord
       .left_joins(:judgements)
       .group('query_doc_pairs.id')
       .having('COUNT(judgements.id) < 3')
+      .first
+    query_doc_pair.nil? # if we didn't find a match, then return true
+  end
+
+  def self.every_query_doc_pair_has_a_judgement? book
+    query_doc_pair = book.query_doc_pairs
+      .left_joins(:judgements)
+      .group('query_doc_pairs.id')
+      .having('COUNT(judgements.id) < 1')
       .first
     query_doc_pair.nil? # if we didn't find a match, then return true
   end

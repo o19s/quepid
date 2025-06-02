@@ -31,7 +31,7 @@ one:
   doc_id: "MyDocA"
   document_fields: '{"title":"MyText"}'
   book: one
-  options:      
+  options:
     special_boost: 3.1
 
 two:
@@ -89,21 +89,21 @@ jbm_qdp10:
   doc_id: Moonraker
   document_fields: '{"title":"Moonraker", "year":2023}'
   book: :james_bond_movies
-  
+
 starwars_qdp1:
   query_text: Han
   position: 1
   doc_id: Han Solo-A Star Wars Story
-  document_fields: '{"title":"Han Solo-A Star Wars Story", "description": "The film tells the origin story of Han Solo and Chewbacca, who join a heist within the criminal underworld ten years prior to the events of A New Hope."}'
+  document_fields: '{"title":"Han Solo-A Star Wars Story", "description": "The film tells the origin story of Han Solo and Chewbacca, who join a heist within the criminal underworld ten years prior to the events of A New Hope.", "image":"https://example.com/image.png"}'
   book: :book_of_star_wars_judgements
-  
+
 starwars_qdp2:
   query_text: Han
   position: 2
   doc_id: Star Wars The Movie
   document_fields: '{"title":"Star Wars The Movie"}'
   book: :book_of_star_wars_judgements
-  
+
 # This query doc pair overlaps with starwars_qdp2, to test merging books.
 book_of_comedy_qdp1:
   query_text: Han

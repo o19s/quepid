@@ -371,10 +371,10 @@ search_endpoint: solr_endpoint.attributes }
           assert_equal created_try.number_of_rows, 10
         end
 
-        test 'updates search endpoint' do
+        test 'updates a search endpoint while creating a try' do
           try = the_case.tries.first
           post :create,
-               params: { case_id: the_case.id, try: { parent_try_number: try.try_number },
+               params: { case_id: the_case.id, parent_try_number: try.try_number, try: { name: '' },
 search_endpoint: { search_engine: 'os', endpoint_url: 'http://my.os.url', api_method: 'get' } }
 
           assert_response :ok
