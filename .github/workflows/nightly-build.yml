@@ -23,8 +23,8 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/quepid:nightly -f Dockerfile.prod .
+          docker build -t o19s/quepid:nightly -f Dockerfile.prod .
 
       - name: Push Docker image to Docker Hub
         run: |
-          docker push ${{ secrets.DOCKER_USERNAME }}/quepid:nightly
+          docker push o19s/quepid:nightly
