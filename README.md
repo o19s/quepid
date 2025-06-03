@@ -481,6 +481,9 @@ Add dev docs here!
 
 The developer deploy of Keycloak Admin console credentials are `admin` and `password`.
 
+## I'd like to use the latest unreleased version via Docker
+
+There is a nightly build of the latest Quepid pushed to DockerHub, just use the tag `quepid:nightly`.
 
 ## Modifying the database
 
