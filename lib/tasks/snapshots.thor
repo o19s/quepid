@@ -143,7 +143,7 @@ class Snapshots < Thor
     generator = SnapshotGenerator.new solr_url, opts
     data      = generator.generate_snapshot
 
-    puts 'Success!'.green if write_to_file data, filepath
+    puts 'Success!'.green if write_to_file? data, filepath
   end
 
   private
@@ -153,7 +153,7 @@ class Snapshots < Thor
     require File.expand_path('config/environment.rb')
   end
 
-  def write_to_file data, filepath
+  def write_to_file? data, filepath
     puts 'Generating CSV file'.yellow
 
     begin

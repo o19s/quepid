@@ -14,8 +14,7 @@ class CaseScoreManager
 
     last_score = @the_case.last_score
 
-    # puts "Do we have the same_score_source: #{same_score_source last_score, score_data}"
-    if same_score_source last_score, score_data
+    if same_score_source? last_score, score_data
       if user_ratings_docs? last_score, score_data
         update_params = {
           all_rated: score_data[:all_rated],
@@ -60,7 +59,7 @@ class CaseScoreManager
     false
   end
 
-  def same_score_source last_score, score_data
+  def same_score_source? last_score, score_data
     return false if last_score.blank?
     # return false if last_score.try_id.blank?
 
