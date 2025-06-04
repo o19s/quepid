@@ -151,7 +151,7 @@ class Ratings < Thor
     generator = RatingsGenerator.new solr_url, options.merge(show_progress: true)
     ratings   = generator.generate_ratings
 
-    puts 'Success!'.green if write_ratings_to_files ratings, filepath
+    puts 'Success!'.green if write_ratings_to_files? ratings, filepath
   end
 
   private
@@ -161,7 +161,7 @@ class Ratings < Thor
     require File.expand_path('config/environment.rb')
   end
 
-  def write_ratings_to_files ratings, filepath
+  def write_ratings_to_files? ratings, filepath
     puts 'Generating CSV file'.yellow
 
     begin
