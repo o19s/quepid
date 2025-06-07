@@ -101,7 +101,7 @@ GEM
     bcrypt (3.1.20)
     benchmark (0.4.1)
     benchmark-ips (2.14.0)
-    bigdecimal (3.2.0)
+    bigdecimal (3.2.1)
     bindata (2.5.1)
     bindex (0.8.1)
     blazer (3.3.0)
@@ -140,7 +140,7 @@ GEM
       rexml
     crass (1.0.6)
     csv (3.3.4)
-    d3-rails (3.5.17)
+    d3-rails (7.8.5)
       railties (>= 3.1)
     database_consistency (2.0.4)
       activerecord (>= 3.2)
@@ -577,7 +577,7 @@ DEPENDENCIES
   cal-heatmap-rails (~> 3.6)
   capybara
   colorize
-  d3-rails (~> 3.5.5)
+  d3-rails (~> 7.8.0)
   database_consistency (~> 2.0)
   debug
   debugbar
