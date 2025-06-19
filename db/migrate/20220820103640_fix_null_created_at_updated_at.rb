@@ -1,5 +1,5 @@
 class FixNullCreatedAtUpdatedAt < ActiveRecord::Migration[6.1]
-  # This migration is really just meant for the production app.quepid.com database.
+  # This migration is really just meant for the production go.quepidapp.com database.
   # we built this app in Flask a million years ago, and when we moved to Rails, we
   # added the updated_at/created_at fields, but never went back and cleaned up the data.
   # looking at the ratings table,

@@ -6,7 +6,7 @@ class AccountsController < ApplicationController
     @user = current_user
     error = false
 
-    if !verify_password(@user, params[:current_password])
+    if !verify_password?(@user, params[:current_password])
       flash.now[:error] = 'The original password is incorrect.'
       error = true
     elsif @user.update password: params[:password], password_confirmation: params[:password_confirmation]
@@ -50,7 +50,7 @@ class AccountsController < ApplicationController
 
   private
 
-  def verify_password user, password
+  def verify_password? user, password
     # NOTE: this might not be obvious at first but what's going on here is
     # that BCrypt::Password.new creates an object can be compared to a clear
     # text string, but when you inspect it the output, it will actually print

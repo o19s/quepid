@@ -81,7 +81,7 @@ document.addEventListener('DOMContentLoaded', () => {
         <tr>  
           <th/>        
           <th>Scorer</th>
-          <th>Try ID</th>
+          <th>Try Number</th>
           <th>Score</th>          
           <th>Day</th>
         </tr>
@@ -100,7 +100,7 @@ document.addEventListener('DOMContentLoaded', () => {
               <%= score.scorer.name %>
             </td>
             <td>
-              <%= score.try_id %>
+              <%= score.try&.try_number %>
             </td>
             <td>
               <%= score.score %>

@@ -46,9 +46,7 @@ module Authentication
       unless @current_user
         # check if we are redirected from the case page, and if so support unfurling
         # by populating the flash so it renders in the start.html.erb layout.
-        if 'core' == params[:controller] && 'index' == params[:action] && params[:id]
-          flash[:unfurl] = Case.find_by(id: params[:id])
-        end
+        flash[:unfurl] = Case.find_by(id: params[:id]) if 'core' == params[:controller] && 'index' == params[:action] && params[:id]
         redirect_to new_session_path
       end
     end

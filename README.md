@@ -9,6 +9,8 @@
 
 <img src="https://quepid.com/images/logo.png" alt="Quepid logo" title="Quepid" align="right" />
 
+**Due to DNS woes, to access Quepid use https://quepid.herokuapp.com/ till we get this fixed ;-(**
+
 Quepid makes improving your app's search results a repeatable, reliable engineering process that the whole team can understand. It deals with three issues:
 
 1. **Our collaboration stinks** Making holistic progress on search requires deep, cross-functional collaboration. Shooting emails or tracking search requirements in spreadsheets won't cut it.
@@ -20,7 +22,7 @@ Quepid makes improving your app's search results a repeatable, reliable engineer
 
 **To learn more, please check out the [Quepid website](http://www.quepid.com) and the [Quepid wiki](http://github.com/o19s/quepid/wiki).**
 
-**If you are ready to dive right in, you can use the [Hosted Quepid](http://app.quepid.com) service right now or follow the [installation steps](https://github.com/o19s/quepid/wiki/Installation-Guide) to set up your own instance of Quepid.**
+**If you are ready to dive right in, you can use the [Hosted Quepid](http://go.quepidapp.com) service right now or follow the [installation steps](https://github.com/o19s/quepid/wiki/Installation-Guide) to set up your own instance of Quepid.**
 
 # Table of Contents
 Below is information related to developing the Quepid open source project, primarily for people interested in extending what Quepid can do!
@@ -70,6 +72,8 @@ Below is information related to developing the Quepid open source project, prima
 Provisioning from an already built machine takes approximately 3 - 4 minutes. Provisioning from scratch takes approximately 20 minutes.
 
 #### 1. Prerequisites
+
+Make sure you have installed Ruby.
 
 Make sure you have installed Docker. Go here https://www.docker.com/community-edition#/download for installation instructions. And the Docker app is launched.
 
@@ -239,7 +243,7 @@ If you want to test the Jupyterlite notebooks, or work with a "real" case and bo
 bin/docker r bundle exec thor sample_data:haystack_party
 ```
 
-You will have lots of user data from the Haystack rating party book and case to work with.  This data is source from the public case https://app.quepid.com/case/6789/try/12?sort=default and https://app.quepid.com/books/25
+You will have lots of user data from the Haystack rating party book and case to work with.  This data is source from the public case https://go.quepidapp.com/case/6789/try/12?sort=default and https://go.quepidapp.com/books/25
 
 
 
@@ -477,6 +481,9 @@ Add dev docs here!
 
 The developer deploy of Keycloak Admin console credentials are `admin` and `password`.
 
+## I'd like to use the latest unreleased version via Docker
+
+There is a nightly build of the latest Quepid pushed to DockerHub, just use the tag `quepid:nightly`.
 
 ## Modifying the database
 

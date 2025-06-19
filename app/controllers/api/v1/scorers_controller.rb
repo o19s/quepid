@@ -3,17 +3,13 @@
 # rubocop:disable Metrics/ClassLength
 module Api
   module V1
+    # @tags scorers
     class ScorersController < Api::ApiController
       before_action :set_scorer, only: [ :show, :update, :destroy ]
       before_action :check_communal_scorers_only, only: [ :create, :update, :destroy ]
 
-      api :GET, '/api/scorers',
-          'List all scorers to which the user has access.'
-      error :code => 401, :desc => 'Unauthorized'
       def index
-        unless Rails.application.config.communal_scorers_only
-          @user_scorers = current_user.scorers_involved_with.all.reject(&:communal?)
-        end
+        @user_scorers = current_user.scorers_involved_with.all.reject(&:communal?) unless Rails.application.config.communal_scorers_only
         @communal_scorers = Scorer.communal
 
         respond_with @user_scorers, @communal_scorers
@@ -92,11 +88,12 @@ module Api
       # rubocop:disable Metrics/PerceivedComplexity
       # rubocop:disable Metrics/CyclomaticComplexity
       # rubocop:disable Metrics/AbcSize
-      # rubocop:disable Layout/LineLength
 
       # This method lets you delete a scorer, and if you pass in force=true then
       # you update other objects with either the system default scorer, or, if
       # you pass in the replacement_scorer_id then that scorer.
+      # @parameter force(query) [Boolean] Update cases to either the replacement_scorer_id if provided or the system default.
+      # @parameter replacement_scorer_id(query) [Integer] Scorer to update Cases to use.
       def destroy
         force = deserialize_bool_param(params[:force])
         if force
@@ -144,7 +141,6 @@ module Api
       # rubocop:enable Metrics/CyclomaticComplexity
       # rubocop:enable Metrics/PerceivedComplexity
       # rubocop:enable Metrics/MethodLength
-      # rubocop:enable Layout/LineLength
 
       private
 
@@ -165,9 +161,7 @@ module Api
         # This block of logic should all be in user_scorer_finder.rb
         @scorer = current_user.scorers_involved_with.where(id: params[:id]).first
 
-        if @scorer.nil? # Check if communal scorers has the scorer.  This logic should be in the .scorers. method!
-          @scorer = Scorer.communal.where(id: params[:id]).first
-        end
+        @scorer = Scorer.communal.where(id: params[:id]).first if @scorer.nil? # Check if communal scorers has the scorer.  This logic should be in the .scorers. method!
 
         render json: { error: 'Not Found!' }, status: :not_found unless @scorer
       end

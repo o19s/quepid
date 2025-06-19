@@ -19,9 +19,7 @@ Rails.application.config.quepid_version = ENV.fetch('QUEPID_VERSION', 'UNKNOWN')
 #
 Rails.application.config.prefer_ssl = bool.deserialize(ENV.fetch('PREFER_SSL', false))
 
-if Rails.application.config.prefer_ssl 
-  Rails.application.config.action_mailer.default_url_options[:protocol] = 'https' 
-end
+Rails.application.config.action_mailer.default_url_options[:protocol] = 'https' if Rails.application.config.prefer_ssl
 
 # == Quepid Default Scorer
 # New users to Quepid need to have a recommended scorer to use, which they can then
@@ -51,8 +49,8 @@ Rails.application.config.cookies_url = ENV.fetch('COOKIES_URL', nil)
 #
 Rails.application.config.privacy_url = ENV.fetch('PRIVACY_URL', nil)
 
-# == Hosted App.quepid.com T&C's
-# Users of the free hosted app.quepid.com are asked to agree to certain terms &
+# == Hosted Go.quepidapp.com T&C's
+# Users of the free hosted go.quepidapp.com are asked to agree to certain terms &
 # conditions. This feature isn't useful to private installs, so this
 # controls the display.
 #

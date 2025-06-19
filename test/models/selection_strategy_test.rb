@@ -29,10 +29,16 @@ class SelectionStrategyTest < ActiveSupport::TestCase
   describe 'single rater per query doc pair strategy' do
     describe 'return a weighted random based on position' do
       let(:book) { books(:james_bond_movies) }
+      let(:selection_strategy)  { selection_strategies(:single_rater) }
+      let(:matt)                { users(:matt) }
+      let(:joe)                 { users(:joe) }
+      let(:jane)                { users(:jane) }
 
       before do
         book.query_doc_pairs.each { |query_doc_pair| query_doc_pair.judgements.destroy_all }
         assert_empty book.judgements
+        book.selection_strategy = selection_strategy
+        book.save!
       end
 
       it 'draws Sean Connery way more then George Lazenby due to postion in results' do
@@ -44,6 +50,19 @@ class SelectionStrategyTest < ActiveSupport::TestCase
         assert george_lazenby_picks.positive?
 
         assert_operator sean_connery_picks, :>, george_lazenby_picks
+      end
+
+      it 'decides when all judgements have been completed' do
+        assert_not(SelectionStrategy.every_query_doc_pair_has_a_judgement?(book))
+        assert(SelectionStrategy.moar_judgements_needed?(book))
+
+        # have random one of three judges rate everything
+        while (query_doc_pair = SelectionStrategy.random_query_doc_pair_for_single_judge(book))
+          query_doc_pair.judgements.create rating: 3.0, user: [ matt, joe, jane ].sample
+        end
+
+        assert(SelectionStrategy.every_query_doc_pair_has_a_judgement?(book))
+        assert_not(SelectionStrategy.moar_judgements_needed?(book))
       end
     end
   end
@@ -112,6 +131,21 @@ class SelectionStrategyTest < ActiveSupport::TestCase
 
         # We have rated broad and deep with three judgements per query doc pair, no moar for anyone
         assert_nil SelectionStrategy.random_query_doc_based_on_strategy(book, doug)
+      end
+
+      it 'decides when all query doc pairs have sufficient judgements' do
+        assert_not(SelectionStrategy.every_query_doc_pair_has_three_judgements?(book))
+        assert(SelectionStrategy.moar_judgements_needed?(book))
+
+        # have three judges rate everything
+        [ matt, joe, jane ].each do |user|
+          while (query_doc_pair = SelectionStrategy.random_query_doc_based_on_strategy(book, user))
+            query_doc_pair.judgements.create rating: 3.0, user: user
+          end
+        end
+
+        assert(SelectionStrategy.every_query_doc_pair_has_three_judgements?(book))
+        assert_not(SelectionStrategy.moar_judgements_needed?(book))
       end
     end
   end

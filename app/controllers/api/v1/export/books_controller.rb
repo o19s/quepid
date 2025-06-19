@@ -4,7 +4,6 @@ module Api
   module V1
     module Export
       class BooksController < Api::ApiController
-        api!
         before_action :set_book
         before_action :check_book
 

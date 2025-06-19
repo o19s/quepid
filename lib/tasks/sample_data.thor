@@ -11,7 +11,6 @@ class SampleData < Thor
   # rubocop:disable Metrics/BlockLength
   # rubocop:disable Metrics/CyclomaticComplexity
   # rubocop:disable Metrics/PerceivedComplexity
-  # rubocop:disable Layout/LineLength
 
   desc 'sample_data', 'load the sample data'
   long_desc <<-LONGDESC
@@ -561,7 +560,6 @@ class SampleData < Thor
   # rubocop:enable Metrics/BlockLength
   # rubocop:enable Metrics/CyclomaticComplexity
   # rubocop:enable Metrics/PerceivedComplexity
-  # rubocop:enable Layout/LineLength
 
   private
 

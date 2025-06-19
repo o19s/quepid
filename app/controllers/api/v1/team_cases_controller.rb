@@ -2,24 +2,18 @@
 
 module Api
   module V1
+    # @tags teams > cases
     class TeamCasesController < Api::ApiController
       before_action :set_team,    only: [ :index, :create, :destroy ]
       before_action :check_team,  only: [ :index, :create, :destroy ]
-
-      def_param_group :case_param do
-        param :id, Integer, desc: 'The ID of the case.', required: true
-      end
 
       def index
         @cases = @team.cases
         respond_with @cases
       end
 
-      # rubocop:disable Metrics/MethodLength
-      api :POST, '/api/teams/:team_id/cases', 'Share a case with a team'
-      param :team_id, :number,
-            desc: 'The ID of the team.', required: true
-      param_group :case_param
+      # @summary Share case with a team
+      # @parameter id(query) [!Integer] The id of the case to be shared with the team.
       def create
         @case = Case.includes( tries: [ :curator_variables ] ).where(id: params[:id]).first
 
@@ -31,9 +25,7 @@ module Api
         @team.cases << @case unless @team.cases.exists?(@case.id)
         # if you share a case with a team, you also share it's search endpoint
         search_endpoint = @case.tries.first&.search_endpoint
-        if search_endpoint && !@team.search_endpoints.exists?(search_endpoint.id)
-          @team.search_endpoints << search_endpoint
-        end
+        @team.search_endpoints << search_endpoint if search_endpoint && !@team.search_endpoints.exists?(search_endpoint.id)
 
         if @team.save
           Analytics::Tracker.track_case_shared_event current_user, @case, @team
@@ -43,8 +35,9 @@ module Api
           render json: @case.errors, status: :bad_request
         end
       end
-      # rubocop:enable Metrics/MethodLength
 
+      # @summary Remove case from team
+      # @parameter id(query) [!Integer] The id of the case to be removed from the team.
       def destroy
         acase = @team.cases.where(id: params[:id]).all
         @team.cases.delete(acase) if acase

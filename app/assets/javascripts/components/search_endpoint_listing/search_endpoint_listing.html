@@ -1,14 +1,14 @@
 <div class="item-box row">
   <div class="col-xs-4">
     <span class="search-endpoints-title">
-      <a ng-href="search_endpoints/{{ctrl.searchEndpoint.id}}" target="_self" class="action-icon">
+      <a ng-href="{{createSearchEndpointLink(ctrl.searchEndpoint.id)}}" target="_self" class="action-icon">
       {{ ctrl.searchEndpoint.name }}
       </a>
     </span>
 
     <span class="item-actions">
 
-      <a ng-href="search_endpoints/{{ctrl.searchEndpoint.id}}/edit" target="_self" class="action-icon">
+      <a ng-href="{{createSearchEndpointLink(ctrl.searchEndpoint.id)}}/edit" target="_self" class="action-icon">
         <i
           class="glyphicon glyphicon-pencil"
           aria-hidden="true"

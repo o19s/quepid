@@ -30,6 +30,18 @@ angular.module('QuepidApp')
         return $scope.searchEndpoints;
       };
       
+      $scope.createRunCaseInBackgroundLink = function(caseNo, tryNo) {
+        let link = caseTryNavSvc.getQuepidRootUrl() + '/home/run_case_evaluation_job/' + caseNo + '?try_number=' + tryNo;
+        link = caseTryNavSvc.createMainApplicationLink(link);
+        return link;
+      };
+      
+      $scope.createSearchEndpointLink = function(searchEndpointId) {
+        let link = caseTryNavSvc.getQuepidRootUrl() + '/search_endpoints/' + searchEndpointId;
+        link = caseTryNavSvc.createMainApplicationLink(link);
+        return link;
+      };
+      
 
       $scope.validateSearchEngineUrl  = function() {
         if (!angular.isUndefined($scope.settings.searchUrl)){

@@ -7,7 +7,6 @@ class JudgementsController < ApplicationController
   before_action :set_book
 
   # rubocop:disable Metrics/AbcSize
-  # rubocop:disable Layout/LineLength
   def index
     bool = ActiveRecord::Type::Boolean.new
     @shallow = bool.deserialize(params[:shallow] || true )
@@ -26,7 +25,6 @@ class JudgementsController < ApplicationController
     @pagy, @judgements = pagy(query.order('query_doc_pair_id'))
   end
   # rubocop:enable Metrics/AbcSize
-  # rubocop:enable Layout/LineLength
 
   def show
     @query_doc_pair = @judgement.query_doc_pair
@@ -36,7 +34,6 @@ class JudgementsController < ApplicationController
     redirect_to book_judge_path(@book)
   end
 
-  # rubocop:disable Layout/LineLength
   # rubocop:disable Metrics/AbcSize
   # rubocop:disable Metrics/CyclomaticComplexity
   # rubocop:disable Metrics/MethodLength
@@ -73,7 +70,6 @@ class JudgementsController < ApplicationController
       end
     end
   end
-  # rubocop:enable Layout/LineLength
   # rubocop:enable Metrics/AbcSize
   # rubocop:enable Metrics/CyclomaticComplexity
   # rubocop:enable Metrics/MethodLength

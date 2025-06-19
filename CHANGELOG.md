@@ -415,7 +415,7 @@ You can now export and import Case's and Book's cleanly from one Quepid to anoth
 Get a dump file named `case_25.json` via:
 
 ```
-python case_export.py --case_id=25 --root_url=https://app.quepid.com --access_token=YOUR_ACCESS_TOKEN
+python case_export.py --case_id=25 --root_url=https://go.quepidapp.com --access_token=YOUR_ACCESS_TOKEN
 ```
 
 And bring it back in via:
@@ -1306,10 +1306,10 @@ Follow the steps outlined at https://github.com/o19s/quepid/wiki/Installation-Gu
 
 You will need to run some database migrations to update the database and insert the new classical scorers (NDCG, AP, etc).
 
-There is a sql migration script in `./db/release_6_2_0_merge_default_scorer_into_scorer.sql` that you might want to look if you have been using Quepid locally for a while.  This script is primarily meant to support updating http://app.quepid.com database for the 6.2.0 schema.
+There is a sql migration script in `./db/release_6_2_0_merge_default_scorer_into_scorer.sql` that you might want to look if you have been using Quepid locally for a while.  This script is primarily meant to support updating http://go.quepidapp.com database for the 6.2.0 schema.
 
 QUEPID_DEFAULT_SCORER is a new environment variable specifying the name of the default scorer
-for users when they create a new case. QUEPID_DEFAULT_SCORER=AP@10 is what app.quepid.com uses.
+for users when they create a new case. QUEPID_DEFAULT_SCORER=AP@10 is what go.quepidapp.com uses.
 
 ### Features
 
@@ -1357,7 +1357,7 @@ for users when they create a new case. QUEPID_DEFAULT_SCORER=AP@10 is what app.q
 * Add .dockerignore file to prevent unrelated changes from breaking Docker layer cache fixes by @TheSench https://github.com/o19s/quepid/issues/80
 * Fix issue where you couldn't clone a case without including the full history. https://github.com/o19s/quepid/pull/89 by @worleydl fixes https://github.com/o19s/quepid/issues/37 Thanks @janhoy for submitting this bug.
 * Fixed display of notes for query disappearing after collapse and then expand of query window. https://github.com/o19s/quepid/pull/88 by @dworley fixes https://github.com/o19s/quepid/issues/87
-* NDCG@10 doesn't include documents that are rated via Explain Other, it only looks at the documents returned by the search engine.  We want to be able to have NDCG look globally at all rated documents.  https://github.com/o19s/quepid/pull/90 by @nathancday and @worleydl fixes https://github.com/o19s/quepid/issues/78.  Note: We currently have the NDCG@10 scorer in app.quepid.com, however it hasn't been backported to the Docker image or the dev setup in Quepid.  See https://github.com/o19s/quepid/issues/91.
+* NDCG@10 doesn't include documents that are rated via Explain Other, it only looks at the documents returned by the search engine.  We want to be able to have NDCG look globally at all rated documents.  https://github.com/o19s/quepid/pull/90 by @nathancday and @worleydl fixes https://github.com/o19s/quepid/issues/78.  Note: We currently have the NDCG@10 scorer in go.quepidapp.com, however it hasn't been backported to the Docker image or the dev setup in Quepid.  See https://github.com/o19s/quepid/issues/91.
 
 ## 6.1.0 - 2020-02-01
 This release changes the database schema, so you will need to run `docker-compose run --rm app bin/rake db:migrate` if you have an existing Quepid.
@@ -1377,7 +1377,7 @@ This release changes the database schema, so you will need to run `docker-compos
 * Support for embeds of audio/image/video via `media:`. https://github.com/o19s/quepid/pull/62 by @worleydl fixes https://github.com/o19s/quepid/issues/56 by @flaxsearch
 * Autocomplete in Case Setup Wizard properly handles `media:` and `thumb:` prefixes.  Nice refactoring for more prefixes.   https://github.com/o19s/quepid/pull/46 by @moshebla with refactor by @worleydl.
 * Post the onboarding wizard you would often see your queries being stalled in loading.  Only workaround was to reload the Javascript app.  https://github.com/o19s/quepid/pull/69 by @worleydl fixes https://github.com/o19s/quepid/issues/66
-* app.quepid.com needs to get explicit consent from users to receive emails related to Quepid and related features.   Introducing a new `customize_quepid.rb` file in initializers to start supporting more customizations of Quepid.  https://github.com/o19s/quepid/pull/68 by @worleydl.
+* go.quepidapp.com needs to get explicit consent from users to receive emails related to Quepid and related features.   Introducing a new `customize_quepid.rb` file in initializers to start supporting more customizations of Quepid.  https://github.com/o19s/quepid/pull/68 by @worleydl.
 * Only show cookie acceptance popup if COOKIES_URL is set.  https://github.com/o19s/quepid/pull/71 by @epugh fixes https://github.com/o19s/quepid/issues/70 by @epugh.
 
 ## 6.0.2 - 2019-11-29
