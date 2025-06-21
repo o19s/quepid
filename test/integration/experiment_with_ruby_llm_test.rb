@@ -221,6 +221,7 @@ class ExperimentWithRubyLlmTest < ActionDispatch::IntegrationTest
       print chunk.content
     end    
     
+    
   end
 
 end
