@@ -66,7 +66,7 @@ class ProxyControllerTest < ActionDispatch::IntegrationTest
     json_data = { query: 'trek', key2: 'value2' }.to_json
 
     post '/proxy/fetch?url=http://solr.quepidapp.com:8983/solr/statedecoded/select', params:  json_data,
-                                                                                  headers: { 'Content-Type' => 'application/json' }
+                                                                                     headers: { 'Content-Type' => 'application/json' }
     assert_response :success
   end
 
