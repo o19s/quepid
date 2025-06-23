@@ -22,6 +22,23 @@ window.dispatchEvent(new Event("vega:load"))
 
 import "ahoy"
 
+// Import the new CodeMirror module
+import { setupGlobalCodeMirror } from "modules/editor"
+
+// Initialize CodeMirror global instance
+setupGlobalCodeMirror();
+
+// Update textareas with editor content before form submission
+// document.addEventListener('submit', () => {
+//   document.querySelectorAll('form').forEach(form => {
+//     form.querySelectorAll('textarea').forEach(textarea => {
+//       if (textarea.style.display === 'none' && textarea.editor) {
+//         textarea.value = textarea.editor.getValue();
+//       }
+//     });
+//   });
+// });
+
 // cookies consent toast handling begin
 // Only rendered on the home page.
 document.addEventListener("turbo:load", function() {
