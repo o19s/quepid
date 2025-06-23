@@ -3,6 +3,7 @@ import { EditorState } from "@codemirror/state";
 import { EditorView, lineNumbers } from "@codemirror/view";
 import { javascript } from "@codemirror/lang-javascript";
 import { json } from "@codemirror/lang-json";
+import { linter, lintGutter } from "@codemirror/lint";
 
 // Basic styles for the editor
 const basicStyles = EditorView.theme({
@@ -16,7 +17,111 @@ const basicStyles = EditorView.theme({
   ".cm-gutters": {
     borderRight: "1px solid #ddd",
     backgroundColor: "#f7f7f7"
+  },
+  ".cm-lint-marker": {
+    width: "16px",
+    height: "16px"
+  },
+  ".cm-lint-marker-error": {
+    content: "🔴"
+  },
+  ".cm-lint-marker-warning": {
+    content: "⚠️"
   }
+});
+
+// JavaScript linter function
+const javascriptLinter = linter(view => {
+  const diagnostics = [];
+  const code = view.state.doc.toString();
+  
+  try {
+    // Basic syntax check using Function constructor
+    new Function(code);
+  } catch (error) {
+    // Parse error location from error message
+    const match = error.message.match(/line (\d+)/i);
+    const line = match ? parseInt(match[1]) - 1 : 0;
+    const pos = view.state.doc.line(Math.min(line + 1, view.state.doc.lines)).from;
+    
+    diagnostics.push({
+      from: pos,
+      to: pos + 1,
+      severity: "error",
+      message: error.message,
+      source: "javascript"
+    });
+  }
+  
+  // Basic lint checks
+  const lines = code.split('\n');
+  lines.forEach((line, index) => {
+    const pos = view.state.doc.line(index + 1).from;
+    
+    // Check for console.log (warning)
+    if (line.includes('console.log')) {
+      const start = pos + line.indexOf('console.log');
+      diagnostics.push({
+        from: start,
+        to: start + 11,
+        severity: "warning",
+        message: "Consider removing console.log before production",
+        source: "javascript"
+      });
+    }
+    
+    // Check for missing semicolons (warning)
+    const trimmed = line.trim();
+    if (trimmed && 
+        !trimmed.endsWith(';') && 
+        !trimmed.endsWith('{') && 
+        !trimmed.endsWith('}') &&
+        !trimmed.startsWith('//') &&
+        !trimmed.startsWith('*') &&
+        !trimmed.includes('if (') &&
+        !trimmed.includes('for (') &&
+        !trimmed.includes('while (') &&
+        !trimmed.includes('function ')) {
+      diagnostics.push({
+        from: pos + line.length - 1,
+        to: pos + line.length,
+        severity: "warning",
+        message: "Missing semicolon",
+        source: "javascript"
+      });
+    }
+  });
+  
+  return diagnostics;
+});
+
+// JSON linter function
+const jsonLinter = linter(view => {
+  const diagnostics = [];
+  const code = view.state.doc.toString().trim();
+  
+  if (!code) return diagnostics;
+  
+  try {
+    JSON.parse(code);
+  } catch (error) {
+    // Try to extract position from error message
+    let pos = 0;
+    const match = error.message.match(/position (\d+)/i);
+    if (match) {
+      pos = parseInt(match[1]);
+    }
+    
+    diagnostics.push({
+      from: Math.min(pos, view.state.doc.length),
+      to: Math.min(pos + 1, view.state.doc.length),
+      severity: "error",
+      message: error.message,
+      source: "json"
+    });
+  }
+  
+  return diagnostics;
 });
 
 /**
@@ -40,13 +145,25 @@ export function fromTextArea(textarea, options = {}) {
     languageExtension = javascript();
   }
   
-  // Create editor with minimal extensions
+  // Choose appropriate linter
+  let linterExtension;
+  if (options.mode === 'javascript') {
+    linterExtension = javascriptLinter;
+  } else if (options.mode === 'application/json' || options.mode === 'json') {
+    linterExtension = jsonLinter;
+  } else {
+    linterExtension = javascriptLinter; // Default to JavaScript linter
+  }
+  
+  // Create editor with minimal extensions including linting
   const view = new EditorView({
     state: EditorState.create({
       doc: textarea.value,
       extensions: [
         lineNumbers(),
+        lintGutter(),
         languageExtension,
+        linterExtension,
         basicStyles
       ]
     }),
