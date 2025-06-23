@@ -219,7 +219,7 @@ search_endpoint: es_endpoint.attributes }
           the_try = the_case.tries.latest
 
           try_params = {
-            search_url:    'http://solr.quepid.com',
+            search_url:    'http://solr.quepidapp.com',
             field_spec:    'catch_line',
             query_params:  'q=#$query##',
             search_engine: 'solr',
@@ -250,7 +250,7 @@ search_endpoint: es_endpoint.attributes }
           }
 
           search_endpoint_params = {
-            search_url:    'http://solr.quepid.com',
+            search_url:    'http://solr.quepidapp.com',
             search_engine: 'solr',
           }
 

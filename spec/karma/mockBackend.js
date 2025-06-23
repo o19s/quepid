@@ -71,7 +71,7 @@ window.mockBackend = function(angModule) {
     // Settings API
 
     var settings = [{
-        searchUrl: 'http://solr.quepid.com/solr/collection1/select',
+        searchUrl: 'http://solr.quepidapp.com/solr/collection1/select',
         fieldSpec: 'name thumb:firstImageUrl optionPrices',
         //fieldSpec: 'name optionPrices',
         queryParamsHistory: [
@@ -83,7 +83,7 @@ window.mockBackend = function(angModule) {
            curatorVars: {var1: 5}},
         ]
       }, {
-        searchUrl: 'http://solr.quepid.com/solr/statedecoded/select',
+        searchUrl: 'http://solr.quepidapp.com/solr/statedecoded/select',
         fieldSpec: 'catch_line score text',
         //fieldSpec: 'name optionPrices',
         queryParamsHistory: [
