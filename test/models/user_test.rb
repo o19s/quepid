@@ -261,6 +261,7 @@ class UserTest < ActiveSupport::TestCase
         j.user = nil
         j.save!
       end
+      random.reload
 
       random.destroy
       assert_not random.destroyed?

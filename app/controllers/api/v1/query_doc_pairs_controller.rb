@@ -45,26 +45,26 @@ module Api
       #       }
       #     }
       #   ]
-      # @request_body_example basic query doc pair [Hash]
-      #   {
-      #     query_doc_pair: {
-      #       query_text: "star wars",
-      #       doc_id: "empire_strikes_back",
-      #       position: 1
+      # @request_body_example basic query doc pair
+      #   [JSON{
+      #     "query_doc_pair": {
+      #       "query_text": "star wars",
+      #       "doc_id": "empire_strikes_back",
+      #       "position": 1
       #     }
-      #   }
-      # @request_body_example complete query doc pair [Hash]
-      #   {
-      #     query_doc_pair: {
-      #       query_text: "star wars",
-      #       doc_id: "return_of_the_jedi",
-      #       position: 2,
-      #       document_fields: "{\"overview\":\"A galaxy far far away...\",\"cast\":\"Mark Hamill\"",
-      #       information_need: "classic science fiction movie",
-      #       notes: "This is an important query",
-      #       options: {"key":"value"}
+      #   }]
+      # @request_body_example complete query doc pair
+      #   [JSON{
+      #     "query_doc_pair": {
+      #       "query_text": "star wars",
+      #       "doc_id": "return_of_the_jedi",
+      #       "position": 2,
+      #       "document_fields": "{\"overview\":\"A galaxy far far away...\",\"cast\":\"Mark Hamill\"",
+      #       "information_need": "classic science fiction movie",
+      #       "notes": "This is an important query",
+      #       "options": {"key":"value"}
       #     }
-      #   }
+      #   }]
       def create
         @query_doc_pair = @book.query_doc_pairs.find_or_create_by query_text: params[:query_doc_pair][:query_text],
                                                                   doc_id:     params[:query_doc_pair][:doc_id]
@@ -91,12 +91,12 @@ module Api
       #       }
       #     }
       #   ]
-      # @request_body_example basic query doc pair [Hash]
-      #   {
-      #     query_doc_pair: {
-      #       position: 3
+      # @request_body_example basic query doc pair
+      #   [JSON{
+      #     "query_doc_pair": {
+      #       "position": 3
       #     }
-      #   }
+      #   }]
       def update
         update_params = query_doc_pair_params
         if @query_doc_pair.update update_params

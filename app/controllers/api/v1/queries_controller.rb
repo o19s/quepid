@@ -32,21 +32,21 @@ module Api
       #       }
       #     }
       #   ]
-      # @request_body_example basic query [Hash]
-      #   {
-      #     query: {
-      #       query_text: "star wars"
+      # @request_body_example basic query
+      #   [JSON{
+      #     "query": {
+      #       "query_text": "star wars"
       #     }
-      #   }
-      # @request_body_example complete query [Hash]
-      #   {
-      #     query: {
-      #       query_text: "star wars",
-      #       information_need: "classic science fiction movie",
-      #       notes: "This is an important query",
-      #       options: {"key":"value"}
+      #   }]
+      # @request_body_example complete query
+      #   [JSON{
+      #     "query": {
+      #       "query_text": "star wars",
+      #       "information_need": "classic science fiction movie",
+      #       "notes": "This is an important query",
+      #       "options": {"key":"value"}
       #     }
-      #   }
+      #   }]
       def create
         q_params              = query_params
         q_params[:query_text] = q_params[:query_text].strip # if q_params[:query_text]
@@ -85,10 +85,10 @@ module Api
       #       other_case_id: Integer
       #     }
       #   ]
-      # @request_body_example basic query [Hash]
-      #   {
-      #     other_case_id: 2
-      #   }
+      # @request_body_example basic query
+      #   [JSON{
+      #     "other_case_id": 2
+      #   }]
       def update
         @other_case = Case.where(id: params[:other_case_id]).first
 
