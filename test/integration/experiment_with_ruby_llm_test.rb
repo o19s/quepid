@@ -171,7 +171,7 @@ class ExperimentWithRubyLlmTest < ActionDispatch::IntegrationTest
     end
     
     puts "AWESOME"
-    chat.ask "Can you generate the JavaScript required to take the raw HTML and convert it to the JSON format you previously used?" do |chunk|
+    chat.ask "Can you generate the JavaScript required to take the raw HTML and convert it to the JSON format you previously used? Please do it not using a DOMParser but just by parsing the raw HTML strings." do |chunk|
       # Each chunk contains a portion of the response
       print chunk.content
     end
