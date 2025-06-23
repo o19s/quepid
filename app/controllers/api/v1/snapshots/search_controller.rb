@@ -24,7 +24,7 @@ module Api
 
                   elsif @q.ends_with?(')') && @q.include?(':(') && ('lucene' == search_params[:defType])
                     # We have a lookup docs by id query
-                    doc_ids = @q[@q.index(':(') + 2...@q.index(')')].split(' OR ')
+                    doc_ids = @q[(@q.index(':(') + 2)...@q.index(')')].split(' OR ')
                     @snapshot_docs = @snapshot.snapshot_docs.where(doc_id: doc_ids)
 
                   else

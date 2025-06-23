@@ -40,10 +40,10 @@ module Api
       #       id: !String
       #     }
       #   ]
-      # @request_body_example invite [Hash]
-      #   {
-      #     id: "john@doe.com"
-      #   }
+      # @request_body_example invite
+      #   [JSON{
+      #     "id": "john@doe.com"
+      #   }]
 
       def invite
         unless signup_enabled?

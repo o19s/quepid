@@ -3,6 +3,7 @@
 # config/initializers/oas_rails.rb
 # rubocop:disable Metrics/BlockLength
 OasRails.configure do |config|
+  config.source_oas_path = 'lib/assets/source_oas.json'
   # Basic Information about the API
   config.info.title = 'Quepid'
   config.info.version = Rails.application.config.quepid_version

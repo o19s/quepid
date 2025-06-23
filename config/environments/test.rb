@@ -71,7 +71,7 @@ Rails.application.configure do
 
   config.mission_control.jobs.http_basic_auth_enabled = false
 
-  ENV['TC_URL'] = 'https://quepid.com/agreement'
+  ENV['TC_URL'] = 'https://quepidapp.com/agreement'
 
   ENV['EMAIL_SENDER'] = 'quepid@o19s.com'
 end
