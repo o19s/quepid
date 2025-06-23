@@ -118,20 +118,18 @@
       }
       
       // Initialize JavaScript editor
-      const jsEditorElement = document.getElementById('search_endpoint_mapper_code');
-      const codemirrorJsEditor = CodeMirror.fromTextArea(jsEditorElement, {
+      const codemirrorMapperCode = CodeMirror.fromTextArea(document.getElementById('search_endpoint_mapper_code'), {
         mode: "javascript",
         lineNumbers: true
       });
-      codemirrorJsEditor.setSize(null, 400);
+      codemirrorMapperCode.setSize(null, 400);
     
       // Initialize JSON editor
-      const jsonEditorElement = document.getElementById('search_endpoint_options');
-      const codemirrorJsonEditor = CodeMirror.fromTextArea(jsonEditorElement, {
+      const codemirrorOptions = CodeMirror.fromTextArea(document.getElementById('search_endpoint_options'), {
         mode: "application/json",
         lineNumbers: true
       });
-      codemirrorJsonEditor.setSize(null, 100);
+      codemirrorOptions.setSize(null, 100);
     
     }
     
