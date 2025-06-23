@@ -23,7 +23,7 @@ window.dispatchEvent(new Event("vega:load"))
 import "ahoy"
 
 // Import the new CodeMirror module
-import { setupGlobalCodeMirror, whenReady } from "modules/editor"
+import { setupGlobalCodeMirror } from "modules/editor"
 
 // Initialize CodeMirror global instance
 setupGlobalCodeMirror();
@@ -35,10 +35,8 @@ document.addEventListener('DOMContentLoaded', function() {
   
   // Look for textareas with data-codemirror-mode attribute
   const textareas = document.querySelectorAll('textarea[data-codemirror-mode]');
-  console.log('Found textareas with data-codemirror-mode:', textareas.length);
   
   textareas.forEach(textarea => {
-    console.log('Initializing textarea:', textarea.id);
     
     // Build options from data attributes
     const options = {};
@@ -63,7 +61,6 @@ document.addEventListener('DOMContentLoaded', function() {
       options.readOnly = textarea.dataset.codemirrorReadonly === 'true';
     }
     
-    console.log('Options:', options);
     CodeMirror.fromTextArea(textarea, options);
   });
 });
