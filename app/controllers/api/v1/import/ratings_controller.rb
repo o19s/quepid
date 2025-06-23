@@ -95,7 +95,7 @@ module Api
 
           ltr_line = ltr_line[first_chunk..].strip
           second_chunk_begin = ltr_line.index('#')
-          ltr_line = ltr_line[second_chunk_begin + 1..].strip
+          ltr_line = ltr_line[(second_chunk_begin + 1)..].strip
           second_chunk_end = ltr_line.index(' ')
           doc_id = ltr_line[0..second_chunk_end].strip
 
