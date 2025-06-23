@@ -46,24 +46,24 @@ module Api
       #       }
       #     }
       #   ]
-      # @request_body_example basic score [Hash]
-      #   {
-      #     case_score: {
-      #       score: 0.4
+      # @request_body_example basic score
+      #   [JSON{
+      #     "case_score": {
+      #       "score": 0.4
       #     }
-      #   }
-      # @request_body_example complete score [Hash]
-      #   {
-      #     case_score: {
-      #       score: 0.98,
-      #       all_rated: false,
-      #       try_number: 42,
-      #       queries: {
-      #         "1":{text:"first query", score: 1},
-      #         "2":{text:"second query", score: 0.96}
+      #   }]
+      # @request_body_example complete score
+      #   [JSON{
+      #     "case_score": {
+      #       "score": 0.98,
+      #       "all_rated": false,
+      #       "try_number": 42,
+      #       "queries": {
+      #         "1":{"text":"first query", "score": 1},
+      #         "2":{"text":"second query", "score": 0.96}
       #       }
       #     }
-      #   }
+      #   }]
       def update
         service = CaseScoreManager.new @case
 

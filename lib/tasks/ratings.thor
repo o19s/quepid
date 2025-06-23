@@ -81,7 +81,7 @@ class Ratings < Thor
 
     EXAMPLES:
 
-    $ thor ratings:generate http://solr.quepid.com import.csv
+    $ thor ratings:generate http://solr.quepidapp.com import.csv
 
     ---------------
 
@@ -90,7 +90,7 @@ class Ratings < Thor
 
     EXAMPLES:
 
-    $ thor ratings:generate http://solr.quepid.com import.csv -q "text:foo"
+    $ thor ratings:generate http://solr.quepidapp.com import.csv -q "text:foo"
 
     ---------------
 
@@ -99,7 +99,7 @@ class Ratings < Thor
 
     EXAMPLES:
 
-    $ thor ratings:generate http://solr.quepid.com import.csv -r 20
+    $ thor ratings:generate http://solr.quepidapp.com import.csv -r 20
 
     ---------------
 
@@ -108,7 +108,7 @@ class Ratings < Thor
 
     EXAMPLES:
 
-    $ thor ratings:generate http://solr.quepid.com import.csv -s 0 1
+    $ thor ratings:generate http://solr.quepidapp.com import.csv -s 0 1
 
     ---------------
 
@@ -117,7 +117,7 @@ class Ratings < Thor
 
     EXAMPLES:
 
-    $ thor ratings:generate http://solr.quepid.com import.csv -n 1000
+    $ thor ratings:generate http://solr.quepidapp.com import.csv -n 1000
 
     ---------------
 
@@ -126,7 +126,7 @@ class Ratings < Thor
 
     EXAMPLES:
 
-    $ thor ratings:generate http://solr.quepid.com import.csv -f title
+    $ thor ratings:generate http://solr.quepidapp.com import.csv -f title
 
     ---------------
 
@@ -135,7 +135,7 @@ class Ratings < Thor
 
     EXAMPLES:
 
-    $ thor ratings:generate http://solr.quepid.com import.csv -i uid
+    $ thor ratings:generate http://solr.quepidapp.com import.csv -i uid
   LONGDESC
   option :query,  type: :string,  aliases: '-q', default: '*:*'
   option :rows,   type: :numeric, aliases: '-r', default: 10
@@ -151,7 +151,7 @@ class Ratings < Thor
     generator = RatingsGenerator.new solr_url, options.merge(show_progress: true)
     ratings   = generator.generate_ratings
 
-    puts 'Success!'.green if write_ratings_to_files ratings, filepath
+    puts 'Success!'.green if write_ratings_to_files? ratings, filepath
   end
 
   private
@@ -161,7 +161,7 @@ class Ratings < Thor
     require File.expand_path('config/environment.rb')
   end
 
-  def write_ratings_to_files ratings, filepath
+  def write_ratings_to_files? ratings, filepath
     puts 'Generating CSV file'.yellow
 
     begin
