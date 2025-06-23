@@ -246,10 +246,12 @@ export function fromTextArea(textarea, options = {}) {
   
   // Choose language extension based on mode
   let languageExtension;
+  let isJsonMode = false;
   if (options.mode === 'javascript') {
     languageExtension = javascript();
   } else if (options.mode === 'application/json' || options.mode === 'json') {
     languageExtension = json();
+    isJsonMode = true;
   } else {
     // Default to JavaScript
     languageExtension = javascript();
@@ -324,6 +326,32 @@ export function fromTextArea(textarea, options = {}) {
       if (width) {
         view.dom.style.width = typeof width === 'number' ? `${width}px` : width;
       }
+    },
+    formatJSON: () => {
+      const currentValue = view.state.doc.toString();
+      try {
+        // Skip empty content
+        if (!currentValue.trim()) return true;
+        
+        // Parse and stringify with pretty formatting (2 space indentation)
+        const formatted = JSON.stringify(JSON.parse(currentValue), null, 2);
+        
+        // Only update if the formatted content is different
+        if (formatted !== currentValue) {
+          // Update editor content
+          view.dispatch({
+            changes: {
+              from: 0,
+              to: view.state.doc.length,
+              insert: formatted
+            }
+          });
+        }
+        return true;
+      } catch (e) {
+        console.error("JSON formatting failed:", e);
+        return false;
+      }
     }
   };
   
@@ -337,7 +365,18 @@ export function fromTextArea(textarea, options = {}) {
     });
   }
   
-
+  // Automatically format JSON content if in JSON mode
+  if (isJsonMode && textarea.value.trim()) {
+    try {
+      // Only format if it's valid JSON
+      JSON.parse(textarea.value);
+      // Format after a small delay to ensure editor is fully initialized
+      setTimeout(() => editor.formatJSON(), 0);
+    } catch (e) {
+      // If invalid JSON, don't attempt to format
+      console.log("Initial JSON content is invalid, skipping auto-formatting");
+    }
+  }
   
   return editor;
 }
@@ -360,12 +399,26 @@ export function whenReady(callback) {
   checkReady();
 }
 
+// Helper function to format JSON string (internal use)
+function formatJSON(json) {
+  try {
+    // Skip empty content
+    if (!json || !json.trim()) return json;
+    
+    return JSON.stringify(JSON.parse(json), null, 2);
+  } catch (e) {
+    console.error("JSON formatting failed:", e);
+    return json;
+  }
+}
+
 // Setup global CodeMirror object for compatibility
 export function setupGlobalCodeMirror() {
   console.log('Setting up global CodeMirror object');
   window.CodeMirror = {
     fromTextArea,
-    whenReady
+    whenReady,
+    formatJSON
   };
   console.log('CodeMirror setup complete:', typeof window.CodeMirror);
 }
