@@ -437,7 +437,7 @@ module Api
           the_case = cases.select { |c| c['case_id'] == shared_with_owner.id }.first
 
           assert_not_nil the_case['teams']
-          assert the_case['teams'].count.positive?
+          assert the_case['teams'].any?
         end
 
         test 'does not return cases not shared with the user even if owner is in the same team' do
