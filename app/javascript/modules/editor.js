@@ -127,6 +127,17 @@ const basicStyles = EditorView.theme({
   "&.cm-focused": {
     outline: "2px solid #007bff",
     outlineOffset: "-2px"
+  },
+  // Read-only editor styling
+  "&.cm-readonly": {
+    backgroundColor: "#f8f9fa",
+    cursor: "default"
+  },
+  "&.cm-readonly .cm-content": {
+    backgroundColor: "#f8f9fa"
+  },
+  "&.cm-readonly .cm-gutters": {
+    backgroundColor: "#e9ecef"
   }
 });
 
@@ -255,20 +266,27 @@ export function fromTextArea(textarea, options = {}) {
   }
   
   // Create editor with minimal extensions including linting
+  const extensions = [
+    lineNumbers(),
+    lintGutter(),
+    languageExtension,
+    linterExtension,
+    syntaxHighlighting(highlightStyle),
+    basicStyles,
+    // Additional enhancements
+    EditorView.lineWrapping,
+    EditorState.tabSize.of(2)
+  ];
+  
+  // Add readOnly extension if specified
+  if (options.readOnly) {
+    extensions.push(EditorView.editable.of(false));
+  }
+  
   const view = new EditorView({
     state: EditorState.create({
       doc: textarea.value,
-      extensions: [
-        lineNumbers(),
-        lintGutter(),
-        languageExtension,
-        linterExtension,
-        syntaxHighlighting(highlightStyle),
-        basicStyles,
-        // Additional enhancements
-        EditorView.lineWrapping,
-        EditorState.tabSize.of(2)
-      ]
+      extensions: extensions
     }),
     parent: wrapper
   });
@@ -279,6 +297,11 @@ export function fromTextArea(textarea, options = {}) {
   }
   if (options.width) {
     view.dom.style.width = typeof options.width === 'number' ? `${options.width}px` : options.width;
+  }
+  
+  // Apply readOnly option if provided
+  if (options.readOnly) {
+    view.dom.classList.add('cm-readonly');
   }
   
   // Simple API matching what's used in the form

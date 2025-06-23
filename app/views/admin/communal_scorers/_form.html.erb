@@ -66,25 +66,23 @@
 
 
 <script>
-  // Initialize CodeMirror editors when the DOM is ready
-  document.addEventListener('DOMContentLoaded', function() {
-    // Simple function to initialize editors when CodeMirror is available
-    function initializeEditors() {
-      if (typeof CodeMirror === 'undefined') {
-        // Wait for CodeMirror to be defined
-        setTimeout(initializeEditors, 100);
-        return;
-      }
-      
-      // Initialize JavaScript editor for scorer code
-      const codemirrorEditor = CodeMirror.fromTextArea(document.getElementById('scorer_code'), {
-        mode: "javascript",
-        lineNumbers: true,
-        height: 800
-      });
+  // Simple function to initialize editors when CodeMirror is available
+  function initializeEditors() {
+    if (typeof CodeMirror === 'undefined') {
+      // Wait for CodeMirror to be defined
+      setTimeout(initializeEditors, 100);
+      return;
     }
     
-    // Start initialization
-    initializeEditors();
-  });
+    // Initialize JavaScript editor for scorer code
+    const codemirrorEditor = CodeMirror.fromTextArea(document.getElementById('scorer_code'), {
+      mode: "javascript",
+      lineNumbers: true,
+      height: 800
+    });
+  }
+  
+  // Start initialization
+  initializeEditors();
+
 </script>
