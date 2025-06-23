@@ -273,6 +273,14 @@ export function fromTextArea(textarea, options = {}) {
     parent: wrapper
   });
   
+  // Apply size options if provided
+  if (options.height) {
+    view.dom.style.height = typeof options.height === 'number' ? `${options.height}px` : options.height;
+  }
+  if (options.width) {
+    view.dom.style.width = typeof options.width === 'number' ? `${options.width}px` : options.width;
+  }
+  
   // Simple API matching what's used in the form
   const editor = {
     view,

@@ -65,68 +65,26 @@
 <% end %>
 
 
-<script language="javascript">
-  const codemirrorEditor = CodeMirror.fromTextArea(document.getElementById('scorer_code'), {
-    mode: "javascript",
-    lineNumbers: true,
-    gutters: ["CodeMirror-lint-markers"],
-    lint: true
-  });
-  codemirrorEditor.setSize(null, 800);
-  
-  
-  // Function to validate JavaScript syntax
-  function validateSyntax(code) {
-    try {
-      // We can NOT validate this until we have working functions.
-      // like setScore etc defined in this space.
-      // Use the built-in `eval` function to check the syntax
-      //eval(code);
-      return true;
-    } catch (error) {
-      return false;
+<script>
+  // Initialize CodeMirror editors when the DOM is ready
+  document.addEventListener('DOMContentLoaded', function() {
+    // Simple function to initialize editors when CodeMirror is available
+    function initializeEditors() {
+      if (typeof CodeMirror === 'undefined') {
+        // Wait for CodeMirror to be defined
+        setTimeout(initializeEditors, 100);
+        return;
+      }
+      
+      // Initialize JavaScript editor for scorer code
+      const codemirrorEditor = CodeMirror.fromTextArea(document.getElementById('scorer_code'), {
+        mode: "javascript",
+        lineNumbers: true,
+        height: 800
+      });
     }
-  }
-  
-  // Validate syntax on code change
-  codemirrorEditor.on("change", function() {
-    var code = codemirrorEditor.getValue();
-    var isValidSyntax = validateSyntax(code);
-    var errorAnnotation = isValidSyntax ? [] : [{
-      from: CodeMirror.Pos(0, 0),
-      to: CodeMirror.Pos(0, 0),
-      message: "Syntax Error",
-      severity: "error"
-    }];
-    CodeMirror.signal(codemirrorEditor, "lint", codemirrorEditor, errorAnnotation);
+    
+    // Start initialization
+    initializeEditors();
   });
-  
-  // Add linting annotations to show syntax errors
-  codemirrorEditor.on("lint", function(_, annotations) {
-    codemirrorEditor.clearGutter("CodeMirror-lint-markers");
-    annotations.forEach(function(annotation) {
-      codemirrorEditor.setGutterMarker(annotation.from.line, "CodeMirror-lint-markers", createMarker(annotation));
-    });
-  });
-  
-  // Helper function to create gutter marker
-  function createMarker(annotation) {
-    var marker = document.createElement("div");
-    marker.className = "lint-marker " + annotation.severity;
-    marker.title = annotation.message;
-    return marker;
-  }  
 </script>
-
-<style>
-.lint-marker {
-  width: 16px;
-  height: 16px;
-  background-color: red;
-  border-radius: 50%;
-}
-
-.lint-marker.error {
-  background-color: red;
-}
-</style>

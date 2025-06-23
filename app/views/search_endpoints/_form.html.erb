@@ -107,35 +107,32 @@
 <% end %>
 
 <script>
-  // Initialize CodeMirror editors when the DOM is ready
-  document.addEventListener('DOMContentLoaded', function() {
-    // Simple function to initialize editors when CodeMirror is available
-    function initializeEditors() {
-      if (typeof CodeMirror === 'undefined') {
-        // Wait for CodeMirror to be defined
-        setTimeout(initializeEditors, 100);
-        return;
-      }
-      
-      // Initialize JavaScript editor
-      const codemirrorMapperCode = CodeMirror.fromTextArea(document.getElementById('search_endpoint_mapper_code'), {
-        mode: "javascript",
-        lineNumbers: true
-      });
-      codemirrorMapperCode.setSize(null, 400);
-    
-      // Initialize JSON editor
-      const codemirrorOptions = CodeMirror.fromTextArea(document.getElementById('search_endpoint_options'), {
-        mode: "application/json",
-        lineNumbers: true
-      });
-      codemirrorOptions.setSize(null, 100);
-    
+  // Simple function to initialize editors when CodeMirror is available
+  function initializeEditors() {
+    if (typeof CodeMirror === 'undefined') {
+      // Wait for CodeMirror to be defined
+      setTimeout(initializeEditors, 100);
+      return;
     }
     
-    // Start initialization
-    initializeEditors();
-  });
+    // Initialize JavaScript editor
+    const codemirrorMapperCode = CodeMirror.fromTextArea(document.getElementById('search_endpoint_mapper_code'), {
+      mode: "javascript",
+      lineNumbers: true,
+      height: 600
+    });
+  
+    // Initialize JSON editor
+    const codemirrorOptions = CodeMirror.fromTextArea(document.getElementById('search_endpoint_options'), {
+      mode: "application/json",
+      lineNumbers: true,
+      height: 100
+    });
+  
+  }
+  
+  // Start initialization
+  initializeEditors();
 </script>
 
 
