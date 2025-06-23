@@ -26,7 +26,7 @@
       <div class="mb-3">
         <%= f.label :code, class: 'form-label' %>
         <div class="form-text">This Javascript is run in the browser to calculate the scores.</div>
-        <%= f.text_area :code %>
+        <%= f.text_area :code, data: { codemirror_mode: "javascript", codemirror_height: 800  } %>
       </div>
     
       <div class="row mb-3">
@@ -63,26 +63,3 @@
   </div>
 </div>
 <% end %>
-
-
-<script>
-  // Simple function to initialize editors when CodeMirror is available
-  function initializeEditors() {
-    if (typeof CodeMirror === 'undefined') {
-      // Wait for CodeMirror to be defined
-      setTimeout(initializeEditors, 100);
-      return;
-    }
-    
-    // Initialize JavaScript editor for scorer code
-    const codemirrorEditor = CodeMirror.fromTextArea(document.getElementById('scorer_code'), {
-      mode: "javascript",
-      lineNumbers: true,
-      height: 800
-    });
-  }
-  
-  // Start initialization
-  initializeEditors();
-
-</script>

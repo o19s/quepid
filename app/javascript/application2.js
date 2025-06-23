@@ -23,10 +23,50 @@ window.dispatchEvent(new Event("vega:load"))
 import "ahoy"
 
 // Import the new CodeMirror module
-import { setupGlobalCodeMirror } from "modules/editor"
+import { setupGlobalCodeMirror, whenReady } from "modules/editor"
 
 // Initialize CodeMirror global instance
 setupGlobalCodeMirror();
+
+// Auto-initialize CodeMirror editors when DOM is ready
+document.addEventListener('DOMContentLoaded', function() {
+  console.log('DOM ready, looking for CodeMirror textareas...');
+  console.log('CodeMirror available:', typeof window.CodeMirror);
+  
+  // Look for textareas with data-codemirror-mode attribute
+  const textareas = document.querySelectorAll('textarea[data-codemirror-mode]');
+  console.log('Found textareas with data-codemirror-mode:', textareas.length);
+  
+  textareas.forEach(textarea => {
+    console.log('Initializing textarea:', textarea.id);
+    
+    // Build options from data attributes
+    const options = {};
+    
+    if (textarea.dataset.codemirrorMode) {
+      options.mode = textarea.dataset.codemirrorMode;
+    }
+    
+    if (textarea.dataset.codemirrorLineNumbers) {
+      options.lineNumbers = textarea.dataset.codemirrorLineNumbers === 'true';
+    }
+    
+    if (textarea.dataset.codemirrorHeight) {
+      options.height = parseInt(textarea.dataset.codemirrorHeight);
+    }
+    
+    if (textarea.dataset.codemirrorWidth) {
+      options.width = parseInt(textarea.dataset.codemirrorWidth);
+    }
+    
+    if (textarea.dataset.codemirrorReadonly) {
+      options.readOnly = textarea.dataset.codemirrorReadonly === 'true';
+    }
+    
+    console.log('Options:', options);
+    CodeMirror.fromTextArea(textarea, options);
+  });
+});
 
 
 // cookies consent toast handling begin

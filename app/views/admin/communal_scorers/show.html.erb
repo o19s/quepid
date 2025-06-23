@@ -28,7 +28,7 @@
       </strong>
   
       <div class="col-sm-10 code">
-        <textarea id="codearea"><%= @scorer.code %></textarea>
+        <%= text_area_tag 'codearea', @scorer.code, data: { codemirror_mode: "javascript", codemirror_height: 600, codemirror_readonly: true } %>
       </div>
     </div>
   
@@ -73,25 +73,3 @@
     </div>
   </div>
 </div>
-
-<script>
-  // Simple function to initialize editors when CodeMirror is available
-  function initializeEditors() {
-    if (typeof CodeMirror === 'undefined') {
-      // Wait for CodeMirror to be defined
-      setTimeout(initializeEditors, 100);
-      return;
-    }
-    
-    // Initialize JavaScript editor for scorer code
-    const codemirrorEditor = CodeMirror.fromTextArea(document.getElementById('codearea'), {
-      mode: "javascript",
-      lineNumbers: true,
-      height: 400,
-      readOnly: true
-    });
-  }
-  
-  // Start initialization
-  initializeEditors();
-</script>

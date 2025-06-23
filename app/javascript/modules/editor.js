@@ -342,9 +342,30 @@ export function fromTextArea(textarea, options = {}) {
   return editor;
 }
 
+// Helper function to simplify initialization
+export function whenReady(callback) {
+  function checkReady() {
+    if (typeof CodeMirror === 'undefined') {
+      setTimeout(checkReady, 100);
+      return;
+    }
+    
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', callback);
+    } else {
+      callback();
+    }
+  }
+  
+  checkReady();
+}
+
 // Setup global CodeMirror object for compatibility
 export function setupGlobalCodeMirror() {
+  console.log('Setting up global CodeMirror object');
   window.CodeMirror = {
-    fromTextArea
+    fromTextArea,
+    whenReady
   };
+  console.log('CodeMirror setup complete:', typeof window.CodeMirror);
 }
