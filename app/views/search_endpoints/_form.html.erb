@@ -119,36 +119,26 @@
       
       // Initialize JavaScript editor
       const jsEditorElement = document.getElementById('search_endpoint_mapper_code');
-      if (jsEditorElement) {
-        const codemirrorEditor = CodeMirror.fromTextArea(jsEditorElement, {
-          mode: "javascript",
-          lineNumbers: true
-        });
-        codemirrorEditor.setSize(null, 400);
-      }
-      
+      const codemirrorJsEditor = CodeMirror.fromTextArea(jsEditorElement, {
+        mode: "javascript",
+        lineNumbers: true
+      });
+      codemirrorJsEditor.setSize(null, 400);
+    
       // Initialize JSON editor
       const jsonEditorElement = document.getElementById('search_endpoint_options');
-      if (jsonEditorElement) {
-        const codemirrorEditor2 = CodeMirror.fromTextArea(jsonEditorElement, {
-          mode: "application/json",
-          lineNumbers: true
-        });
-        codemirrorEditor2.setSize(null, 100);
-      }
+      const codemirrorJsonEditor = CodeMirror.fromTextArea(jsonEditorElement, {
+        mode: "application/json",
+        lineNumbers: true
+      });
+      codemirrorJsonEditor.setSize(null, 100);
+    
     }
     
     // Start initialization
     initializeEditors();
   });
 </script>
-
-<style>
-  .cm-editor {
-    border: 1px solid #ddd;
-    height: auto;
-  }
-</style>
 
 
 <p/>
