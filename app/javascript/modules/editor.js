@@ -293,11 +293,7 @@ export function fromTextArea(textarea, options = {}) {
       if (width) {
         view.dom.style.width = typeof width === 'number' ? `${width}px` : width;
       }
-    },
-    // Mock methods for compatibility with the form script
-    on: () => {},
-    clearGutter: () => {},
-    setGutterMarker: () => {}
+    }
   };
   
   // Store editor reference on textarea
