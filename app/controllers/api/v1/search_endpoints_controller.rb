@@ -52,29 +52,29 @@ module Api
       #       }
       #     }
       #   ]
-      # @request_body_example basic Solr Search endpoint [Hash]
-      #   {
-      #     search_endpoint: {
-      #       name: "TMDB",
-      #       endpoint_url: "https://quepid-solr.dev.o19s.com/solr/tmdb/select",
-      #       search_engine: "solr",
-      #       api_method: "JSONP"
+      # @request_body_example basic Solr Search endpoint
+      #   [JSON{
+      #       "search_endpoint": {
+      #         "name": "TMDB",
+      #         "endpoint_url": "https://quepid-solr.dev.o19s.com/solr/tmdb/select",
+      #         "search_engine": "solr",
+      #         "api_method": "JSONP"
+      #       }
+      #   }]
+      # @request_body_example complete Search endpoint
+      #   [JSON{
+      #     "search_endpoint": {
+      #       "name": "LSE",
+      #       "endpoint_url": "https://www.lse.ac.uk/Search-Results?term=",
+      #       "search_engine": "searchapi",
+      #       "api_method": "GET",
+      #       "basic_auth_credential": "Bob:pass",
+      #       "custom_headers": {},
+      #       "mapper_code": "console.log(custom javascriptcode)",
+      #       "options": {},
+      #       "proxy_requests": true
       #     }
-      #   }
-      # @request_body_example complete Search endpoint [Hash]
-      #   {
-      #     search_endpoint: {
-      #       name: "LSE",
-      #       endpoint_url: "https://www.lse.ac.uk/Search-Results?term=",
-      #       search_engine: "searchapi",
-      #       api_method: "GET",
-      #       basic_auth_credential: "Bob:pass",
-      #       custom_headers: "{}",
-      #       mapper_code: "console.log('custom javascriptcode');",
-      #       options: {},
-      #       proxy_requests: true
-      #     }
-      #   }
+      #   }]
       def create
         @search_endpoint = SearchEndpoint.new(search_endpoint_params)
         @search_endpoint.owner = current_user
@@ -103,12 +103,7 @@ module Api
       #       }
       #     }
       #   ]
-      # @request_body_example basic Search endpoint [Hash]
-      #   {
-      #     search_endpoint: {
-      #       api_method: "GET"
-      #     }
-      #   }
+      # @request_body_example basic Search endpoint [JSON{ "search_endpoint": { "api_method": "GET" }}]
       def update
         update_params = search_endpoint_params
         archived = deserialize_bool_param(params[:archived])
