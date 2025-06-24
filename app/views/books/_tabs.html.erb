@@ -16,7 +16,7 @@
   </li> 
 
   <li class="nav-item">
-    <%= link_to edit_books_import_path, class: "nav-link #{make_active?({controller: 'import'}) ? 'active' : ''}", method: :get do %>
+    <%= link_to edit_books_import_path(book), class: "nav-link #{make_active?({controller: 'import'}) ? 'active' : ''}", method: :get do %>
       <i class="bi bi-file-earmark-arrow-down text-body"></i> Import
     <% end %> 
   </li>
