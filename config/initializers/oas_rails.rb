@@ -37,8 +37,6 @@ OasRails.configure do |config|
 
   # Servers Information. For more details follow: https://spec.openapis.org/oas/latest.html#server-object
   config.servers = [
-    # { url: 'http://localhost:3000', description: 'Local' },
-    # { url: 'https://quepid-pr-1295.herokuapp.com', description: 'Feature' },
     { url: '/', description: 'Relative' }
   ]
 
@@ -60,7 +58,7 @@ OasRails.configure do |config|
   # config.autodiscover_responses = false
 
   # API path configuration if your API is under a different namespace
-  config.api_path = '/api'
+  # config.api_path = '/api'
 
   # Apply your custom layout. Should be the name of your layout file
   # Example: "application" if file named application.html.erb
