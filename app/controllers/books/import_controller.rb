@@ -13,10 +13,25 @@ module Books
       @book = Book.new
     end
 
+    def edit
+    end
+
     # rubocop:disable Metrics/MethodLength
     # rubocop:disable Metrics/AbcSize
     # rubocop:disable Metrics/PerceivedComplexity
     # rubocop:disable Metrics/CyclomaticComplexity
+    # @summary Import a complete book as File
+    # @tags books > import/export
+    # @request_body Upload a file(multipart/form-data)
+    #   [
+    #     !Hash{
+    #       book: Hash{
+    #         force_create_users: Boolean,
+    #         import_file: File
+    #       }
+    #     }
+    #   ]
+    # > Note: This is not currently rendering in these API docs properly!
     def create
       @book = Book.new
       @book.owner = current_user
@@ -45,7 +60,7 @@ module Books
                         read_json(tempfile)
                       rescue JSON::ParserError => e
                         @book.errors.add(:base,
-                                         "Invalid JSON file format: Unable to parse the provided data structure. #{e.message}")
+                                         "Invalid JSON file format. Unable to parse the provided data structure. #{e.message}")
                       end
                     end
       end
@@ -81,9 +96,6 @@ module Books
     # rubocop:enable Metrics/PerceivedComplexity
     # rubocop:enable Metrics/CyclomaticComplexity
     # rubocop:enable Layout/LineLength
-
-    def edit
-    end
 
     private
 

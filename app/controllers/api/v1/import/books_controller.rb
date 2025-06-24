@@ -5,8 +5,8 @@ module Api
     module Import
       class BooksController < Api::ApiController
         # rubocop:disable Metrics/MethodLength
-        # @summary Import a complete book
-        # @tags books > import
+        # @summary Import a complete book as JSON
+        # @tags books > import/export
         # @request_body Book to be imported
         #   [
         #     !Hash{
