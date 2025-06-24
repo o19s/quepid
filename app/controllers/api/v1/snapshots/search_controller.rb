@@ -13,15 +13,6 @@ module Api
         # rubocop:disable Metrics/AbcSize
         # rubocop:disable Metrics/CyclomaticComplexity
         # rubocop:disable Metrics/PerceivedComplexity
-        # rubocop:disable Layout/LineLength
-        api :GET, '/api/cases/:case_id/snapshots/:snapshot_id/search?somesolrparams=here',
-            'Mimic a Solr query by looking up query/doc data from a specific snapshot, supports a query or a lookup by id query'
-        param :case_id, :number,
-              desc: 'The ID of the requested case.', required: true
-        param :snapshot_id, :number,
-              desc: 'The ID of the snapshot for the case.', required: true
-        param :q, String,
-              desc: 'The query that you are looking up', required: true
         def index
           @q = search_params[:q]
           @snapshot_docs = nil
@@ -33,7 +24,7 @@ module Api
 
                   elsif @q.ends_with?(')') && @q.include?(':(') && ('lucene' == search_params[:defType])
                     # We have a lookup docs by id query
-                    doc_ids = @q[@q.index(':(') + 2...@q.index(')')].split(' OR ')
+                    doc_ids = @q[(@q.index(':(') + 2)...@q.index(')')].split(' OR ')
                     @snapshot_docs = @snapshot.snapshot_docs.where(doc_id: doc_ids)
 
                   else
@@ -75,7 +66,6 @@ module Api
         # rubocop:enable Metrics/AbcSize
         # rubocop:enable Metrics/CyclomaticComplexity
         # rubocop:enable Metrics/PerceivedComplexity
-        # rubocop:enable Layout/LineLength
 
         private
 

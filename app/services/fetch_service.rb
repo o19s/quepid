@@ -176,7 +176,6 @@ class FetchService
   # rubocop:disable Metrics/CyclomaticComplexity
   # rubocop:disable Metrics/PerceivedComplexity
   # rubocop:disable Metrics/BlockLength
-  # rubocop:disable Layout/LineLength
   # Scores the snapshot.
   #
   # snapshot - The snapshot we are using to run the scoring process.
@@ -276,7 +275,6 @@ class FetchService
   # rubocop:enable Metrics/CyclomaticComplexity
   # rubocop:enable Metrics/PerceivedComplexity
   # rubocop:enable Metrics/BlockLength
-  # rubocop:enable Layout/LineLength
 
   def complete
     @snapshot.name = 'Fetch [CHECKING SNAPSHOTS COUNT]'
@@ -370,7 +368,6 @@ class FetchService
   # rubocop:enable Metrics/PerceivedComplexity
 
   # rubocop:disable Metrics/MethodLength
-  # rubocop:disable Layout/LineLength
   def mock_response_body
     mock_statedecoded_body = '{
       "responseHeader":{
@@ -418,16 +415,13 @@ class FetchService
 
     mock_statedecoded_body
   end
-  # rubocop:enable Metrics/MethodLength
-  # rubocop:enable Layout/LineLength
 
-  # rubocop:disable Layout/LineLength
+  # rubocop:enable Metrics/MethodLength
   def filter_haystack_special_snapshot snapshots_to_delete
     snapshots_to_delete = snapshots_to_delete
       .reject { |snapshot| SPECIAL_SNAPSHOTS_TO_PRESERVE.include?(snapshot.id) && HAYSTACK_PUBLIC_CASE == snapshot.case.id }
     snapshots_to_delete
   end
-  # rubocop:enable Layout/LineLength
 
   private
 
@@ -502,11 +496,9 @@ class FetchService
     end
   end
 
-  # rubocop:disable Layout/LineLength
   def create_url endpoint, atry
     "#{endpoint.endpoint_url}?debug=true&debug.explain.structured=true&wt=json&rows=#{atry.number_of_rows}#{append_fl(atry.field_spec)}"
   end
-  # rubocop:enable Layout/LineLength
 
   # should probably be in its own class
   def append_fl str

@@ -5,7 +5,6 @@ module Api
     module Import
       module Queries
         class InformationNeedsController < Api::ApiController
-          api!
           before_action :set_case
           before_action :check_case
 
@@ -13,7 +12,6 @@ module Api
           # rubocop:disable Metrics/CyclomaticComplexity
           # rubocop:disable Metrics/MethodLength
           # rubocop:disable Metrics/PerceivedComplexity
-          # rubocop:disable Layout/LineLength
           def create
             # https://github.com/usahg/csv_upload_rails/blob/master/app/controllers/location_controller.rb#L17
             # why importing csv within upload method and not in controller class?
@@ -62,7 +60,6 @@ module Api
           # rubocop:enable Metrics/CyclomaticComplexity
           # rubocop:enable Metrics/MethodLength
           # rubocop:enable Metrics/PerceivedComplexity
-          # rubocop:enable Layout/LineLength
         end
       end
     end

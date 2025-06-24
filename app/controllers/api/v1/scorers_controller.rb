@@ -3,17 +3,13 @@
 # rubocop:disable Metrics/ClassLength
 module Api
   module V1
+    # @tags scorers
     class ScorersController < Api::ApiController
       before_action :set_scorer, only: [ :show, :update, :destroy ]
       before_action :check_communal_scorers_only, only: [ :create, :update, :destroy ]
 
-      api :GET, '/api/scorers',
-          'List all scorers to which the user has access.'
-      error :code => 401, :desc => 'Unauthorized'
       def index
-        unless Rails.application.config.communal_scorers_only
-          @user_scorers = current_user.scorers_involved_with.all.reject(&:communal?)
-        end
+        @user_scorers = current_user.scorers_involved_with.all.reject(&:communal?) unless Rails.application.config.communal_scorers_only
         @communal_scorers = Scorer.communal
 
         respond_with @user_scorers, @communal_scorers
@@ -92,11 +88,12 @@ module Api
       # rubocop:disable Metrics/PerceivedComplexity
       # rubocop:disable Metrics/CyclomaticComplexity
       # rubocop:disable Metrics/AbcSize
-      # rubocop:disable Layout/LineLength
 
       # This method lets you delete a scorer, and if you pass in force=true then
       # you update other objects with either the system default scorer, or, if
       # you pass in the replacement_scorer_id then that scorer.
+      # @parameter force(query) [Boolean] Update cases to either the replacement_scorer_id if provided or the system default.
+      # @parameter replacement_scorer_id(query) [Integer] Scorer to update Cases to use.
       def destroy
         force = deserialize_bool_param(params[:force])
         if force
@@ -104,11 +101,11 @@ module Api
         end
 
         @users = User.where(default_scorer_id: @scorer.id)
-        if @users.count.positive? && force
+        if @users.any? && force
           # rubocop:disable Rails/SkipsModelValidations
           @users.update_all(default_scorer_id: replacement_scorer.id)
           # rubocop:enable Rails/SkipsModelValidations
-        elsif @users.count.positive?
+        elsif @users.any?
           render(
             json:   {
               error: "Cannot delete the scorer because it is the default for #{@users.count} #{'user'.pluralize(@users.count)}: [#{@users.take(3).map(&:email).to_sentence}]",
@@ -120,11 +117,11 @@ module Api
         end
 
         @cases = Case.where(scorer_id: @scorer.id)
-        if @cases.count.positive? && force
+        if @cases.any? && force
           # We can't have a nil scorer on a case, so setting all to the default.  See comment above about how
           # we should really pass in a replacement scorer id!
           @cases.update_all(scorer_id: replacement_scorer.id) # rubocop:disable Rails/SkipsModelValidations
-        elsif @cases.count.positive?
+        elsif @cases.any?
           render(
             json:   {
               error: "Cannot delete the scorer because it is the default for #{@cases.count} #{'case'.pluralize(@cases.count)}: #{@cases.take(3).map(&:case_name).to_sentence}",
@@ -144,7 +141,6 @@ module Api
       # rubocop:enable Metrics/CyclomaticComplexity
       # rubocop:enable Metrics/PerceivedComplexity
       # rubocop:enable Metrics/MethodLength
-      # rubocop:enable Layout/LineLength
 
       private
 
@@ -165,9 +161,7 @@ module Api
         # This block of logic should all be in user_scorer_finder.rb
         @scorer = current_user.scorers_involved_with.where(id: params[:id]).first
 
-        if @scorer.nil? # Check if communal scorers has the scorer.  This logic should be in the .scorers. method!
-          @scorer = Scorer.communal.where(id: params[:id]).first
-        end
+        @scorer = Scorer.communal.where(id: params[:id]).first if @scorer.nil? # Check if communal scorers has the scorer.  This logic should be in the .scorers. method!
 
         render json: { error: 'Not Found!' }, status: :not_found unless @scorer
       end

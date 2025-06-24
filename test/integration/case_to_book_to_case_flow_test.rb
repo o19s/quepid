@@ -52,7 +52,7 @@ class CaseToBookToCaseFlowTest < ActionDispatch::IntegrationTest
     # the new Case that we will populate from a book...
     new_case = Case.create(case_name: 'test case', owner: user)
 
-    put api_book_case_refresh_url book, new_case, params: { create_missing_queries: true }
+    put api_book_refresh_url book, new_case, params: { create_missing_queries: true }
 
     new_case.reload
     assert_not_empty new_case.queries

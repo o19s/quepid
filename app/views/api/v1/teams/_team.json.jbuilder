@@ -9,9 +9,7 @@ json.members_count  team.members.size
 
 # Listing of individual cases and scorers is required to support the sharing of cases and scores in the core app
 json.cases do
-  # rubocop:disable Layout/LineLength
   json.array! team.cases.not_archived, partial: 'api/v1/cases/case', as: :acase, locals: { shallow: shallow, no_queries: true, no_scores: true, no_teams: true, no_tries: true }
-  # rubocop:enable Layout/LineLength
 end
 
 json.scorers do

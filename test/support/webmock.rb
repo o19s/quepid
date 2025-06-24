@@ -2,7 +2,6 @@
 
 WebMock.disable_net_connect!(allow_localhost: true)
 
-# rubocop:disable Layout/LineLength
 module ActiveSupport
   class TestCase
     # rubocop:disable Metrics/MethodLength
@@ -62,19 +61,19 @@ module ActiveSupport
 
       stub_request(
         :get,
-        'http://solr.quepid.com:8983/solr/statedecoded/select?fl=id,text&q=*:*&rows=10&start=0'
+        'http://solr.quepidapp.com:8983/solr/statedecoded/select?fl=id,text&q=*:*&rows=10&start=0'
       )
         .with(
           headers: {
             'Accept'          => '*/*',
             'Accept-Encoding' => 'gzip;q=1.0,deflate;q=0.6,identity;q=0.3',
-            'Host'            => 'solr.quepid.com:8983',
+            'Host'            => 'solr.quepidapp.com:8983',
             'User-Agent'      => 'Ruby',
           }
         )
         .to_return(status: 200, body: mock_statedecoded_body)
 
-      stub_request(:get, 'http://solr.quepid.com:8983/solr/statedecoded/select?fl=id,text&q=tiger?&rows=10&start=0')
+      stub_request(:get, 'http://solr.quepidapp.com:8983/solr/statedecoded/select?fl=id,text&q=tiger?&rows=10&start=0')
         .with(
           headers: {
             'Accept'          => '*/*',
@@ -87,7 +86,7 @@ module ActiveSupport
         )
         .to_return(status: 200, body: mock_statedecoded_body, headers: {})
 
-      stub_request(:get, 'http://solr.quepid.com:8983/solr/statedecoded/select?fl=id,text&q=can%20I%20own%20a%20tiger&rows=10&start=0')
+      stub_request(:get, 'http://solr.quepidapp.com:8983/solr/statedecoded/select?fl=id,text&q=can%20I%20own%20a%20tiger&rows=10&start=0')
         .with(
           headers: {
             'Accept'          => '*/*',
@@ -100,7 +99,7 @@ module ActiveSupport
         )
         .to_return(status: 200, body: mock_statedecoded_body, headers: {})
 
-      stub_request(:get, 'http://solr.quepid.com:8983/solr/statedecoded/select?fl=id,text&q=I%20like%20?%20marks,%20do%20you%20like%20?%20marks?&rows=10&start=0')
+      stub_request(:get, 'http://solr.quepidapp.com:8983/solr/statedecoded/select?fl=id,text&q=I%20like%20?%20marks,%20do%20you%20like%20?%20marks?&rows=10&start=0')
         .with(
           headers: {
             'Accept'          => '*/*',
@@ -115,13 +114,13 @@ module ActiveSupport
 
       stub_request(
         :get,
-        'http://solr.quepid.com:8983/solr/statedecoded/select?fl=id,text&q=*:*&rows=10&start=0'
+        'http://solr.quepidapp.com:8983/solr/statedecoded/select?fl=id,text&q=*:*&rows=10&start=0'
       )
         .with(
           headers: {
             'Accept'          => '*/*',
             'Accept-Encoding' => 'gzip;q=1.0,deflate;q=0.6,identity;q=0.3',
-            'Host'            => 'solr.quepid.com:8983',
+            'Host'            => 'solr.quepidapp.com:8983',
             'User-Agent'      => 'Ruby',
           }
         )
@@ -129,13 +128,13 @@ module ActiveSupport
 
       stub_request(
         :get,
-        'http://solr.quepid.com:8983/solr/statedecoded/select?fl=id&q=served&rows=1&start=0'
+        'http://solr.quepidapp.com:8983/solr/statedecoded/select?fl=id&q=served&rows=1&start=0'
       )
         .with(
           headers: {
             'Accept'          => '*/*',
             'Accept-Encoding' => 'gzip;q=1.0,deflate;q=0.6,identity;q=0.3',
-            'Host'            => 'solr.quepid.com:8983',
+            'Host'            => 'solr.quepidapp.com:8983',
             'User-Agent'      => 'Ruby',
           }
         )
@@ -157,7 +156,7 @@ module ActiveSupport
 
       ')
 
-      stub_request(:get, 'http://solr.quepid.com:8983/solr/statedecoded/select?fl=id,text&q=legal&rows=10&start=0')
+      stub_request(:get, 'http://solr.quepidapp.com:8983/solr/statedecoded/select?fl=id,text&q=legal&rows=10&start=0')
         .with(
           headers: {
             'Accept'          => '*/*',
@@ -170,7 +169,7 @@ module ActiveSupport
         )
         .to_return(status: 200, body: mock_statedecoded_body)
 
-      stub_request(:post, 'http://solr.quepid.com:8983/solr/statedecoded/select')
+      stub_request(:post, 'http://solr.quepidapp.com:8983/solr/statedecoded/select')
         .with(
           body:    '{"query":"trek","key2":"value2"}',
           headers: {
@@ -196,7 +195,7 @@ module ActiveSupport
         .to_raise(Faraday::ConnectionFailed.new('Failed to connect'))
 
       # Testing out handline of café as a non ascii character
-      stub_request(:get, 'http://solr.quepid.com:8983/solr/statedecoded/select?fl=id,text&q=At%20dusk,%20the%20caf%C3%A9%20transformed%20into%20an%20impromptu%20stage&rows=10&start=0')
+      stub_request(:get, 'http://solr.quepidapp.com:8983/solr/statedecoded/select?fl=id,text&q=At%20dusk,%20the%20caf%C3%A9%20transformed%20into%20an%20impromptu%20stage&rows=10&start=0')
         .with(
           headers: {
             'Accept'          => '*/*',
@@ -307,7 +306,6 @@ module ActiveSupport
     # rubocop:enable Metrics/MethodLength
     # rubocop:enable Metrics/AbcSize
   end
-  # rubocop:enable Layout/LineLength
 end
 
 # rubocop:enable Style/FrozenStringLiteralComment

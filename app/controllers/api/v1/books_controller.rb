@@ -4,42 +4,28 @@ require 'csv'
 
 module Api
   module V1
+    # @tags books
     class BooksController < Api::ApiController
       before_action :set_book, only: [ :show, :update, :destroy ]
       before_action :check_book, only: [ :show, :update, :destroy ]
 
-      def_param_group :book_params do
-        param :book, Hash, required: true do
-          param :name, String
-          param :show_rank, [ true, false ]
-          param :support_implicit_judgements, [ true, false ]
-          param :owner_id, Integer
-          param :scorer_id, Integer
-          param :selection_strategy_id, Integer
-        end
-      end
-
-      api :GET, '/api/books',
-          'List all books to which the user has access.'
       def index
         @books = current_user.books_involved_with
         respond_with @books
       end
 
-      api :GET, '/api/books/:book_id',
-          'Show the book with the given ID.'
-      param :id, :number,
-            desc: 'The ID of the requested book.', required: true
       def show
         respond_with @book
       end
 
-      api :POST, '/api/books', 'Create a new book.'
-      param_group :book_params
+      # @request_body [Reference:#/components/schemas/Book]
+      # @request_body_example basic book [Reference:#/components/examples/BasicBook]
       def create
         @book = Book.new(book_params)
-        team = Team.find_by(id: params[:book][:team_id])
-        @book.teams << team
+        if params[:book][:team_id]
+          team = Team.find_by(id: params[:book][:team_id])
+          @book.teams << team
+        end
         if @book.save
           respond_with @book
         else
@@ -47,10 +33,8 @@ module Api
         end
       end
 
-      api :PUT, '/api/books/:book_id', 'Update a given book.'
-      param :id, :number,
-            desc: 'The ID of the requested book.', required: true
-      param_group :book_params
+      # @request_body [Reference:#/components/schemas/Book]
+      # @request_body_example basic book [Reference:#/components/examples/BasicBook]
       def update
         update_params = book_params
         if @book.update update_params
@@ -59,13 +43,9 @@ module Api
         else
           render json: @book.errors, status: :bad_request
         end
-        # rescue ActiveRecord::InvalidForeignKey
-        # render json: { error: 'Invalid id' }, status: :bad_request
       end
 
-      api :DELETE, '/api/books/:book_id', 'Delete a given book.'
-      param :id, :number,
-            desc: 'The ID of the requested book.', required: true
+      # Delete a book and its child data including Query/Doc Pairs and Judgements.
       def destroy
         @book.really_destroy
 

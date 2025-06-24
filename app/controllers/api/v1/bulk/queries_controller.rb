@@ -3,21 +3,23 @@
 module Api
   module V1
     module Bulk
+      # @tags cases > queries
       class QueriesController < Api::ApiController
         before_action :set_case
         before_action :check_case
 
-        def_param_group :queries_params do
-          param :queries, Array, required: true do
-            param :queries, String
-          end
-        end
-
         # rubocop:disable Metrics/MethodLength
-        api :POST, '/api/bulk/cases/:case_id/queries', 'Bulk create queries.'
-        param :case_id, :number,
-              desc: 'The ID of the requested case.', required: true
-        param_group :queries_params
+        # @summary Bulk create queries
+        # @request_body Query to be created
+        #   [
+        #     !Hash{
+        #       queries: Array<String>
+        #     }
+        #   ]
+        # @request_body_example bulk queries
+        #   [JSON{
+        #     "queries": ["star wars", "star trek"]
+        #   }]
         def create
           # This logic is very similar to the ratings_importer.rb logic.
           queries_to_import = []
@@ -58,6 +60,8 @@ module Api
         end
         # rubocop:enable Metrics/MethodLength
 
+        # @summary Delete all queries
+        # @tags cases > queries
         def destroy
           @case.queries.destroy_all
           head :no_content

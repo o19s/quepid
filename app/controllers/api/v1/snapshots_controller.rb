@@ -3,6 +3,7 @@
 require 'action_view'
 module Api
   module V1
+    # @tags cases > snapshots
     class SnapshotsController < Api::ApiController
       include ActionView::Helpers::NumberHelper
       before_action :set_case
@@ -19,10 +20,6 @@ module Api
                status: :unauthorized
       end
 
-      api :GET, '/api/cases/:case_id/snapshots',
-          'List all snapshots for a case.'
-      param :case_id, :number,
-            desc: 'The ID of the requested case.', required: true
       def index
         @snapshots = @case.snapshots
 
@@ -32,22 +29,14 @@ module Api
         respond_with @snapshots
       end
 
-      api :GET, '/api/cases/:case_id/snapshots/:id',
-          'Show the snapshot with the given ID.'
-      param :case_id, :number,
-            desc: 'The ID of the requested case.', required: true
-      param :id, String,
-            desc:     'The ID of the requested snapshots.  Use `latest` to get the most recent snapshot for the case.',
-            required: true
-      param :shallow, [ true, false ],
-            desc: 'Show detailed snapshot data.', required: false, default_value: false
+      # @parameter id(path) [Integer] The ID of the requested snapshots.  Use `latest` to get the most recent snapshot for the case.
+      # @parameter shallow(query) [Boolean] Show detailed snapshot data, defaults to false.
       def show
         @shallow = params[:shallow] || false
         @with_docs = true
         respond_with @snapshot
       end
 
-      # rubocop:disable Layout/LineLength
       def create
         @snapshot = @case.snapshots.build(name: params[:snapshot][:name])
         @snapshot.scorer = @case.scorer
@@ -71,7 +60,6 @@ module Api
           render json: @snapshot.errors, status: :bad_request
         end
       end
-      # rubocop:enable Layout/LineLength
 
       def destroy
         @snapshot.destroy

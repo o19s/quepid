@@ -3,48 +3,13 @@
 module Api
   module V1
     # rubocop:disable Metrics/ClassLength
+    # @tags cases > tries
+
     class TriesController < Api::ApiController
       before_action :set_case
       before_action :check_case
       before_action :set_try, only: [ :show, :update, :destroy ]
 
-      def_param_group :try_params do
-        param :try, Hash, required: false do
-          param :escape_query, [ true, false ]
-          param :field_spec, String
-          param :name, String
-          param :number_of_rows, Integer
-          param :query_params, String
-          param :parent_id, Integer
-          param :parent_try_number, Integer
-          param :search_endpoint_id, Integer
-        end
-      end
-
-      def_param_group :search_endpoint_params do
-        param :search_endpoint, Hash, required: false do
-          param :name, String
-          param :api_method, String
-          param :custom_headers, String
-          param :search_engine, String
-          param :endpoint_url, [ true, false ]
-          param :basic_auth_credential, String
-          param :api_method, String
-          param :mapper_code, String
-          param :proxy_requests, [ true, false ]
-        end
-      end
-
-      def_param_group :all_params do
-        param_group :try_params
-        param_group :search_endpoint_params
-      end
-
-      api :GET, '/api/cases/:case_id/tries',
-          'Show the tries for a case.'
-      param :case_id, :number,
-            desc: 'The ID of the requested case.', required: true
-      error :code => 401, :desc => 'Unauthorized'
       def index
         @tries = @case.tries
       end
@@ -55,8 +20,9 @@ module Api
 
       # rubocop:disable Metrics/MethodLength
       # rubocop:disable Metrics/AbcSize
-      api :POST, '/api/cases/:case_id/tries', 'Create a new try for a case.'
-      param_group :all_params
+      # @request_body Try to be created [Reference:#/components/schemas/Try]
+      # @request_body_example try with existing search endpoint [Reference:#/components/examples/TryWithExistingSearchEndpoint]
+      # @request_body_example try creating a new search endpoint [Reference:#/components/examples/TryCreatingNewSearchEndpoint]
       def create
         try_parameters_to_use = try_params
 
@@ -65,11 +31,11 @@ module Api
           try_parameters_to_use[:parent_id] = @case.tries.where(try_number: params[:parent_try_number]).first.id
         end
 
-        @try = @case.tries.build try_parameters_to_use.except(:parent_try_number)
+        @try = @case.tries.build try_parameters_to_use # .except(:parent_try_number)
 
         # if we are creating a new try with an existing search_endpoint_id,
-        # then the params[:search_endpoint] will be empty
-        unless params[:search_endpoint].empty?
+        # then the params[:search_endpoint] will be empty or won't be passed in
+        unless params[:search_endpoint] && params[:search_endpoint].empty?
           search_endpoint_params_to_use = search_endpoint_params
           convert_blank_values_to_nil search_endpoint_params_to_use
 
@@ -109,6 +75,16 @@ module Api
       # rubocop:enable Metrics/AbcSize
 
       # rubocop:disable Metrics/MethodLength
+      # @request_body Try to be updated [Reference:#/components/schemas/Try]
+      # @request_body_example updating a try
+      #   [JSON{
+      #     "try": {
+      #       "name": "New Name",
+      #       "number_of_rows": 3
+      #     },
+      #     "curator_vars": {},
+      #     "search_endpoint": {}
+      #   }]
       def update
         search_endpoint_params_to_use = search_endpoint_params
         search_endpoint_params_to_use = convert_blank_values_to_nil search_endpoint_params_to_use
@@ -168,7 +144,6 @@ module Api
                  :number_of_rows,
                  :query_params,
                  :parent_id,
-                 :parent_try_number,
                  :search_endpoint_id ]
         )
       end

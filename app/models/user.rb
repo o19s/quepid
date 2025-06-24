@@ -162,7 +162,7 @@ class User < ApplicationRecord
   before_destroy :check_judgements_before_removing!, prepend: true
 
   def check_judgements_before_removing!
-    if judgements.count.positive?
+    if judgements.any?
       errors.add(:base, "Please reassign ownership of the #{judgements.count} judgements." )
       throw(:abort)
     end
