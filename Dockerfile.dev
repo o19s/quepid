@@ -1,4 +1,4 @@
-FROM ruby:3.4.4-bullseye
+FROM ruby:3.4.4-bookworm
 
 LABEL maintainer="quepid_admin@opensourceconnections.com"
 
@@ -7,7 +7,7 @@ ENV home .
 # Install all system dependencies first to leverage Docker caching
 RUN apt-get update -qq && \
     apt-get install -y --no-install-recommends \
-    vim curl tmux wget netcat graphviz chromium \
+    vim curl tmux wget netcat-traditional graphviz chromium \
     ca-certificates gnupg && \
     mkdir -p /etc/apt/keyrings && \
     curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg && \
