@@ -27,8 +27,8 @@
         <% end %>
         <% if @book.export_file.present? %>
           <p>
-          There is an export file created <%= time_ago_in_words @book.export_file.created_at %> ago 
-          
+          There is an export file created <%= time_ago_in_words @book.export_file.created_at %> ago
+
             <%=link_to rails_blob_path(@book.export_file.blob, only_path: true) do %>
               available to download <i class="bi bi-file-earmark-arrow-down-fill"></i>
             <% end %>.

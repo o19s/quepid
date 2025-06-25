@@ -73,7 +73,7 @@ class Snapshots < Thor
 
     EXAMPLES:
 
-    $ thor snapshots:generate http://solr.quepid.com import.csv
+    $ thor snapshots:generate http://solr.quepidapp.com import.csv
 
     ---------------
 
@@ -82,7 +82,7 @@ class Snapshots < Thor
 
     EXAMPLES:
 
-    $ thor snapshots:generate http://solr.quepid.com import.csv -q "text:foo"
+    $ thor snapshots:generate http://solr.quepidapp.com import.csv -q "text:foo"
 
     ---------------
 
@@ -91,7 +91,7 @@ class Snapshots < Thor
 
     EXAMPLES:
 
-    $ thor snapshots:generate http://solr.quepid.com import.csv -r 20
+    $ thor snapshots:generate http://solr.quepidapp.com import.csv -r 20
 
     ---------------
 
@@ -100,7 +100,7 @@ class Snapshots < Thor
 
     EXAMPLES:
 
-    $ thor snapshots:generate http://solr.quepid.com import.csv -s 0 1
+    $ thor snapshots:generate http://solr.quepidapp.com import.csv -s 0 1
 
     ---------------
 
@@ -109,7 +109,7 @@ class Snapshots < Thor
 
     EXAMPLES:
 
-    $ thor snapshots:generate http://solr.quepid.com import.csv -n 1000
+    $ thor snapshots:generate http://solr.quepidapp.com import.csv -n 1000
 
     ---------------
 
@@ -118,7 +118,7 @@ class Snapshots < Thor
 
     EXAMPLES:
 
-    $ thor snapshots:generate http://solr.quepid.com import.csv -f title
+    $ thor snapshots:generate http://solr.quepidapp.com import.csv -f title
 
     ---------------
 
@@ -127,7 +127,7 @@ class Snapshots < Thor
 
     EXAMPLES:
 
-    $ thor snapshots:generate http://solr.quepid.com import.csv -i uid
+    $ thor snapshots:generate http://solr.quepidapp.com import.csv -i uid
   LONGDESC
   option :query,  type: :string,  aliases: '-q', default: '*:*'
   option :rows,   type: :numeric, aliases: '-r', default: 10
@@ -143,7 +143,7 @@ class Snapshots < Thor
     generator = SnapshotGenerator.new solr_url, opts
     data      = generator.generate_snapshot
 
-    puts 'Success!'.green if write_to_file data, filepath
+    puts 'Success!'.green if write_to_file? data, filepath
   end
 
   private
@@ -153,7 +153,7 @@ class Snapshots < Thor
     require File.expand_path('config/environment.rb')
   end
 
-  def write_to_file data, filepath
+  def write_to_file? data, filepath
     puts 'Generating CSV file'.yellow
 
     begin

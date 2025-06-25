@@ -79,30 +79,8 @@ module Api
         respond_with @judgement
       end
 
-      # @request_body Judgement to be created
-      #   [
-      #     !Hash{
-      #       judgement: Hash{
-      #         query_doc_pair_id: Integer,
-      #         user_id: Integer,
-      #         rating: Float,
-      #         explanation: String,
-      #         judge_later: Boolean,
-      #         unrateable: Boolean
-      #       }
-      #     }
-      #   ]
-      # @request_body_example basic judgement [Hash]
-      #   {
-      #     judgement: {
-      #       query_doc_pair_id: 1,
-      #       user_id: 1,
-      #       rating: 1.0,
-      #       explanation: "This is how I rated this",
-      #       judge_later: false,
-      #       unrateable: false
-      #     }
-      #   }
+      # @request_body Judgement to be created [Reference:#/components/schemas/Judgement]
+      # @request_body_example basic judgement [Reference:#/components/examples/BasicJudgement]
       def create
         judgement_params = extract_judgement_params
         @judgement = @book.judgements.find_or_create_by(
@@ -123,30 +101,8 @@ module Api
         end
       end
 
-      # @request_body Judgement to be updated
-      #   [
-      #     !Hash{
-      #       judgement: Hash{
-      #         query_doc_pair_id: Integer,
-      #         user_id: Integer,
-      #         rating: Float,
-      #         explanation: String,
-      #         judge_later: Boolean,
-      #         unrateable: Boolean
-      #       }
-      #     }
-      #   ]
-      # @request_body_example basic judgement [Hash]
-      #   {
-      #     judgement: {
-      #       query_doc_pair_id: 1,
-      #       user_id: 1,
-      #       rating: 1.0,
-      #       explanation: "This is how I rated this",
-      #       judge_later: false,
-      #       unrateable: false
-      #     }
-      #   }
+      # @request_body Judgement to be updated [Reference:#/components/schemas/Judgement]
+      # @request_body_example basic judgement [Reference:#/components/examples/BasicJudgement]
       def update
         update_params = extract_judgement_params
         if @judgement.update update_params

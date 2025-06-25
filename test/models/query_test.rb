@@ -113,7 +113,7 @@ class QueryTest < ActiveSupport::TestCase
     end
 
     test 'removes random element form the list and rearranges list' do
-      index = (1..queries_case.queries.length - 1).to_a.sample
+      index = (1..(queries_case.queries.length - 1)).to_a.sample
       query = queries_case.queries[index]
 
       query.remove_from_list

@@ -43,7 +43,7 @@ module Api
                     snapshot_query.snapshot_docs.each do |snapshot_doc|
                       rating = Rating.find_by(query_id: snapshot_query.query.id, doc_id: snapshot_doc.doc_id)
                       @csv_array << [ make_csv_safe(snapshot_query.query.query_text), snapshot_doc.doc_id,
-                                      rating.nil? ? nil : rating.rating ]
+                                      rating&.rating ]
                     end
                   end
                 end
