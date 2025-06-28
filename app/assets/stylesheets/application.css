@@ -10,7 +10,7 @@
  * We use Bootstrap Icons to have icons that work between core and the rest of the app
  *= require bootstrap-icons/font/bootstrap-icons
  *
- *= require codemirror/lib/codemirror
+ * CodeMirror 6 styling is now handled via style-mod in JavaScript
  *
  *= require fonts
  *

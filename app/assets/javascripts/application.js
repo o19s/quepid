@@ -20,5 +20,4 @@
 
 //= require party-js/bundle/party
 
-//= require codemirror/lib/codemirror
-//= require codemirror/mode/javascript/javascript
+// CodeMirror imports moved to application2.js with importmaps for CodeMirror 6
