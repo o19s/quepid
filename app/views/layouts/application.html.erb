@@ -88,6 +88,7 @@
     </main>
   </div>
 </div>
+<%= render 'layouts/chat_panel' if @current_user %>
 <%= debugbar_body if defined? Debugbar %> 
 </body>
 </html>

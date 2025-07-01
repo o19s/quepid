@@ -22,6 +22,19 @@ window.dispatchEvent(new Event("vega:load"))
 
 import "ahoy"
 
+// Import and initialize Stimulus
+import { Application } from "@hotwired/stimulus"
+
+const application = Application.start()
+
+// Configure Stimulus development experience
+application.debug = false
+window.Stimulus   = application
+
+// Import and register all Stimulus controllers
+import ChatController from "./controllers/chat_controller"
+application.register("chat", ChatController)
+
 // Import the new CodeMirror module
 import { setupGlobalCodeMirror } from "modules/editor"
 

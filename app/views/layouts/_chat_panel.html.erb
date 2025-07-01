@@ -1,5 +1,6 @@
 <!-- Chat Panel -->
-<div id="chatPanel" class="chat-panel">
+<div data-controller="chat">
+  <div id="chatPanel" class="chat-panel">
   <div class="chat-header d-flex justify-content-between align-items-center p-3 border-bottom">
     <h5 class="mb-0">Quepid Assistant</h5>
     <button type="button" class="btn-close" aria-label="Close" data-action="click->chat#close"></button>
@@ -27,13 +28,14 @@
   </div>
 </div>
 
-<!-- Chat Toggle Button -->
-<button id="chatToggle" 
-        class="btn btn-primary chat-toggle-btn" 
-        data-action="click->chat#toggle"
-        title="Open Chat">
-  💬
-</button>
+  <!-- Chat Toggle Button -->
+  <button id="chatToggle" 
+          class="btn btn-primary chat-toggle-btn" 
+          data-action="click->chat#toggle"
+          title="Open Chat">
+    💬
+  </button>
+</div>
 
 <style>
   /* Chat Panel Styles */
