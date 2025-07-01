@@ -4,7 +4,6 @@ default: &default
   adapter:    mysql2 # Quepid is only tested with MySQL.
   encoding:   utf8mb4
   collation:  utf8mb4_bin
-  reconnect:  false
   pool:       5
   username:   <%= ENV["DB_USERNAME"] %>
   password:   <%= ENV["DB_PASSWORD"] %>
