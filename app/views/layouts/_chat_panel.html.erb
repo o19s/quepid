@@ -1,0 +1,139 @@
+<!-- Chat Panel -->
+<div id="chatPanel" class="chat-panel">
+  <div class="chat-header d-flex justify-content-between align-items-center p-3 border-bottom">
+    <h5 class="mb-0">Quepid Assistant</h5>
+    <button type="button" class="btn-close" aria-label="Close" data-action="click->chat#close"></button>
+  </div>
+  
+  <div class="chat-messages p-3" id="chatMessages">
+    <div class="text-center text-muted py-5">
+      <small>Start a conversation with Quepid!</small>
+    </div>
+  </div>
+  
+  <div class="chat-input-container p-3 border-top">
+    <form data-action="submit->chat#sendMessage">
+      <div class="input-group">
+        <input type="text" 
+               class="form-control" 
+               placeholder="Type your message..." 
+               data-chat-target="messageInput"
+               autocomplete="off">
+        <button class="btn btn-primary" type="submit">
+          Send
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Chat Toggle Button -->
+<button id="chatToggle" 
+        class="btn btn-primary chat-toggle-btn" 
+        data-action="click->chat#toggle"
+        title="Open Chat">
+  💬
+</button>
+
+<style>
+  /* Chat Panel Styles */
+  .chat-panel {
+    position: fixed;
+    right: -400px;
+    top: 0;
+    width: 400px;
+    height: 100%;
+    background-color: #fff;
+    box-shadow: -2px 0 10px rgba(0,0,0,0.1);
+    transition: right 0.3s ease-in-out;
+    z-index: 1050;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .chat-panel.show {
+    right: 0;
+  }
+  
+  .chat-header {
+    background-color: #f8f9fa;
+  }
+  
+  .chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    background-color: #fafafa;
+  }
+  
+  .chat-message {
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: flex-start;
+  }
+  
+  .chat-message.user {
+    justify-content: flex-end;
+  }
+  
+  .chat-message.assistant {
+    justify-content: flex-start;
+  }
+  
+  .message-bubble {
+    max-width: 70%;
+    padding: 0.75rem 1rem;
+    border-radius: 1rem;
+    word-wrap: break-word;
+  }
+  
+  .user .message-bubble {
+    background-color: #007bff;
+    color: white;
+    border-bottom-right-radius: 0.25rem;
+  }
+  
+  .assistant .message-bubble {
+    background-color: #e9ecef;
+    color: #333;
+    border-bottom-left-radius: 0.25rem;
+  }
+  
+  .message-time {
+    font-size: 0.75rem;
+    color: #6c757d;
+    margin-top: 0.25rem;
+  }
+  
+  /* Chat Toggle Button */
+  .chat-toggle-btn {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    z-index: 1049;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    transition: transform 0.3s ease-in-out;
+  }
+  
+  .chat-toggle-btn:hover {
+    transform: scale(1.1);
+  }
+  
+  .chat-toggle-btn.hidden {
+    display: none;
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .chat-panel {
+      width: 100%;
+      right: -100%;
+    }
+  }
+</style>
