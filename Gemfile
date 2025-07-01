@@ -61,8 +61,8 @@ group :development do
   gem 'web-console'
 
   gem 'annotaterb', '~> 4.16'
-  
-  gem "claude-on-rails", "~> 0.1.4"
+
+  gem 'claude-on-rails', '~> 0.1.4'
   # this was commented out in the default build, so doing the same..
   # Add speed badges [https://github.com/MiniProfiler/rack-mini-profiler]
   # gem 'rack-mini-profiler'
