@@ -51,9 +51,20 @@ Below is information related to developing the Quepid open source project, prima
     - [Thor](#thor)
 - [Elasticsearch](#elasticsearch)
 - [Dev Errata](#dev-errata)
-  - [I'd like to use a new Node module](#id-like-to-use-a-new-node-module)
+  - [What is Claude on Rails?](#what-is-claude-on-rails)
+  - [I'd like to use a new Node module, or update a existing one](#id-like-to-use-a-new-node-module-or-update-a-existing-one)
+  - [I'd like to use a new Ruby Gem, or update an existing one](#id-like-to-use-a-new-ruby-gem-or-update-an-existing-one)
+  - [How to test nesting Quepid under a domain.](#how-to-test-nesting-quepid-under-a-domain)
+  - [I'd like to run and test out a local PRODUCTION build](#id-like-to-run-and-test-out-a-local-production-build)
   - [I'd like to test SSL](#id-like-to-test-ssl)
   - [I'd like to test OpenID Auth](#id-like-to-test-openid-auth)
+  - [I'd like to use the latest unreleased version via Docker](#id-like-to-use-the-latest-unreleased-version-via-docker)
+  - [Modifying the database](#modifying-the-database)
+  - [Updating RubyGems](#updating-rubygems)
+  - [How does the Frontend work?](#how-does-the-frontend-work)
+  - [Fonts](#fonts)
+  - [I'd like to develop Jupyterlite](#id-like-to-develop-jupyterlite)
+  - [How does the Personal Access Tokens work?](#how-does-the-personal-access-tokens-work)
 - [QA](#qa)
   - [Seed Data](#seed-data)
 - [Data Map](#data-map)
@@ -66,6 +77,8 @@ Below is information related to developing the Quepid open source project, prima
 # Development Setup
 
 ## I. System Dependencies
+
+Historically Quepid development has REQUIRED Docker.  However, we recently made some tweaks so you can do development outside of Docker, which may be a better direction for some folks.
 
 ### Using Docker Compose
 
@@ -131,6 +144,15 @@ You can still use `docker compose` directly, but for the basic stuff you can use
 * Run front end unit tests: `bin/docker r rails test:frontend`
 * Run back end unit tests: `bin/docker r rails test`
 
+### Using Your Desktop
+
+This assumes that you have already started MySQL and have the database set up.
+
+`bin/setup` to set things up.
+`bin/dev` to do development
+`bin/rails test` to do tests
+
+As you read below, just ignore the `bin/docker r` part of the commands!  Feedback welcome 🙏.
 
 
 ## II. Development Log
@@ -369,6 +391,14 @@ http.cors:
 See more details on the wiki at https://github.com/o19s/quepid/wiki/Troubleshooting-Elasticsearch-and-Quepid
 
 # Dev Errata
+
+## What is Claude on Rails?
+
+Claude on Rails is sort of a vibe coder, sorta a dev framework for Rails available from https://github.com/obie/claude-on-rails.
+
+We're experimenting with using to build Quepid features!  It is used during development.
+
+To get Claude on Rails to work, you need to do development outside of Docker ;-(.
 
 ## I'd like to use a new Node module, or update a existing one
 
