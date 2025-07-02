@@ -44,7 +44,7 @@ gem 'rack-cors', '~> 3.0'
 gem 'responders'
 gem 'rubyzip', '~> 2.4.1' # 3.0 will be breaking
 gem 'sassc-rails', '~> 2.1'
-gem "scout_apm", "~> 5.6" # using on Heroku to look at memory issues
+gem 'scout_apm', '~> 5.6' # using on Heroku to look at memory issues
 gem 'solid_cable', '~> 3.0'
 gem 'solid_queue'
 gem 'thor'
@@ -60,8 +60,8 @@ group :development, :test do
 end
 
 group :development do
-  gem 'claude-on-rails', '~> 0.1.4' # Dev acceleration tool 
-  
+  gem 'claude-on-rails', '~> 0.1.4' # Dev acceleration tool
+
   # Use console on exceptions pages [https://github.com/rails/web-console]
   gem 'web-console'
   gem 'annotaterb', '~> 4.16'
