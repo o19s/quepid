@@ -21,6 +21,11 @@ Rails.application.config.prefer_ssl = bool.deserialize(ENV.fetch('PREFER_SSL', f
 
 Rails.application.config.action_mailer.default_url_options[:protocol] = 'https' if Rails.application.config.prefer_ssl
 
+# == OpenAI Key
+# Quepid can provide extra help if OpenAI is set up, otherwise these features are skipped.
+#
+Rails.application.config.quepid_openai_api_key = ENV.fetch('OPENAI_API_KEY', nil)
+
 # == Quepid Default Scorer
 # New users to Quepid need to have a recommended scorer to use, which they can then
 # override to their own preferred scorer, either one of the defaults shipped with Quepid

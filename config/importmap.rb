@@ -13,12 +13,12 @@ pin 'ahoy', to: 'ahoy.js'
 pin 'js-cookie' # @3.0.5
 
 # Stimulus
-pin "@hotwired/stimulus", to: "stimulus.min.js"
-pin_all_from "app/javascript/controllers", under: "controllers"
+pin '@hotwired/stimulus', to: 'stimulus.min.js'
+pin_all_from 'app/javascript/controllers', under: 'controllers'
 
 # ActionCable
-pin "@rails/actioncable", to: "actioncable.esm.js"
-pin_all_from "app/javascript/channels", under: "channels"
+pin '@rails/actioncable', to: 'actioncable.esm.js'
+pin_all_from 'app/javascript/channels', under: 'channels'
 
 # CodeMirror 6 packages
 pin 'modules/editor', to: 'modules/editor.js'

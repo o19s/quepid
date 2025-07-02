@@ -2,7 +2,8 @@
 
 class ChatChannel < ApplicationCable::Channel
   def subscribed
-    stream_from 'chat_channel'
+    # Connection already authenticated, use current_user from connection
+    stream_from "chat_channel_#{current_user.id}"
   end
 
   def unsubscribed
@@ -10,11 +11,11 @@ class ChatChannel < ApplicationCable::Channel
   end
 
   def receive data
-    # For now, just echo back a hardcoded response
-    ActionCable.server.broadcast('chat_channel', {
-      message:   data['message'],
-      response:  'I am here',
-      timestamp: Time.current.to_s,
-    })
+    # current_user is guaranteed to exist from connection authentication
+    ChatWithLlmJob.perform_later(
+      message:         data['message'],
+      conversation_id: data['conversation_id'] || SecureRandom.uuid,
+      channel_name:    "chat_channel_#{current_user.id}"
+    )
   end
 end

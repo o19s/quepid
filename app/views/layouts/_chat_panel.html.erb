@@ -106,6 +106,25 @@
     margin-top: 0.25rem;
   }
   
+  /* Streaming indicator */
+  .message-bubble.streaming::after {
+    content: '●●●';
+    display: inline-block;
+    animation: streaming 1.4s infinite;
+    margin-left: 0.25rem;
+    font-size: 0.8rem;
+    vertical-align: middle;
+  }
+  
+  @keyframes streaming {
+    0%, 60%, 100% {
+      opacity: 0.3;
+    }
+    30% {
+      opacity: 1;
+    }
+  }
+  
   /* Chat Toggle Button */
   .chat-toggle-btn {
     position: fixed;
