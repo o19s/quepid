@@ -31,10 +31,11 @@ const application = Application.start()
 application.debug = false
 window.Stimulus   = application
 
+// Export for use in controllers/index.js
+export { application }
+
 // Import all Stimulus controllers via the auto-generated index
-//import "./controllers/index"
-import PromptFormController from "./controllers/prompt_form_controller"
-application.register("prompt-form", PromptFormController)
+import "./controllers/index"
 
 // Import the new CodeMirror module
 import { setupGlobalCodeMirror } from "modules/editor"

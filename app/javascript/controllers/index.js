@@ -2,9 +2,7 @@
 // Run that command whenever you add a new controller or create them with
 // ./bin/rails generate stimulus controllerName
 
-// currently not using...
-// 
-//import { application } from "./application2"
+import { application } from "../application2"
 
 // Controllers will be imported automatically when referenced in your application
 // Add any additional controller imports manually here if needed
