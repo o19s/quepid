@@ -26,8 +26,10 @@ gem 'jbuilder', '~> 2.7'
 
 gem 'listen', '~> 3.3'
 gem 'local_time'
+gem 'mini_racer', '~> 0.19.0'
 gem 'mission_control-jobs', '~> 1.0.2' # git: 'https://github.com/rails/mission_control-jobs.git', branch: 'main'
 gem 'mysql2'
+gem 'oas_rails', '~> 1.0'
 gem 'omniauth'
 gem 'omniauth-keycloak'
 gem 'omniauth-google-oauth2'
@@ -42,6 +44,7 @@ gem 'rack-cors', '~> 3.0'
 gem 'responders'
 gem 'rubyzip', '~> 2.4.1' # 3.0 will be breaking
 gem 'sassc-rails', '~> 2.1'
+gem "scout_apm", "~> 5.6" # using on Heroku to look at memory issues
 gem 'solid_cable', '~> 3.0'
 gem 'solid_queue'
 gem 'thor'
@@ -57,12 +60,12 @@ group :development, :test do
 end
 
 group :development do
+  gem 'claude-on-rails', '~> 0.1.4' # Dev acceleration tool 
+  
   # Use console on exceptions pages [https://github.com/rails/web-console]
   gem 'web-console'
-
   gem 'annotaterb', '~> 4.16'
 
-  gem 'claude-on-rails', '~> 0.1.4'
   # this was commented out in the default build, so doing the same..
   # Add speed badges [https://github.com/MiniProfiler/rack-mini-profiler]
   # gem 'rack-mini-profiler'
@@ -88,7 +91,3 @@ group :test do
   gem 'capybara'
   gem 'selenium-webdriver'
 end
-
-gem 'mini_racer', '~> 0.19.0'
-
-gem 'oas_rails', '~> 1.0'

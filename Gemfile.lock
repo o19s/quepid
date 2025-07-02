@@ -535,6 +535,8 @@ GEM
       sprockets (> 3.0)
       sprockets-rails
       tilt
+    scout_apm (5.6.4)
+      parser
     securerandom (0.4.1)
     selenium-webdriver (4.33.0)
       base64 (~> 0.2)
@@ -674,6 +676,7 @@ DEPENDENCIES
   rubocop-rails
   rubyzip (~> 2.4.1)
   sassc-rails (~> 2.1)
+  scout_apm (~> 5.6)
   selenium-webdriver
   simplecov
   solid_cable (~> 3.0)
