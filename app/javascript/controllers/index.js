@@ -2,12 +2,14 @@
 // Run that command whenever you add a new controller or create them with
 // ./bin/rails generate stimulus controllerName
 
-import { application } from "./application"
+// currently not using...
+// 
+//import { application } from "./application2"
 
 // Controllers will be imported automatically when referenced in your application
 // Add any additional controller imports manually here if needed
-import PromptFormController from "./prompt_form_controller"
-application.register("prompt-form", PromptFormController)
+//import PromptFormController from "./prompt_form_controller"
+//application.register("prompt-form", PromptFormController)
 
 // Uncomment to add additional controllers
 // import ChatController from "./chat_controller"
