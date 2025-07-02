@@ -47,7 +47,7 @@ gem 'sassc-rails', '~> 2.1'
 gem 'scout_apm', '~> 5.6' # using on Heroku to look at memory issues
 gem 'solid_cable', '~> 3.0'
 gem 'solid_queue'
-gem "stimulus-rails", "~> 1.3"
+gem 'stimulus-rails', '~> 1.3'
 gem 'thor'
 gem 'turbo-rails', '~> 2.0'
 gem 'vega'

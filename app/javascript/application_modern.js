@@ -1,12 +1,10 @@
+// This file is leverages importmaps and Stimulus and should be just app/javascript/application.js, but we still
+// have the legacy Sprockets that depends on app/assets/javascripts/application.js to deal with.
+
 // Configure your import map in config/importmap.rb. Read more: https://github.com/rails/importmap-rails
-// This is a importmap version of the classic application.js so that we can have
-// both sprockets and importmaps at the same time.
-
-
-// Note: the file in vendor/javascript/vendored-local-time.js is the one that was downloaded via
-// importmap pin.  See https://github.com/basecamp/local_time/issues/113 for others who suggested
-// vendoring it
 import "@hotwired/turbo-rails"
+import "controllers"
+
 import LocalTime from "local-time"
 import Cookies from 'js-cookie'
 LocalTime.start()
@@ -22,21 +20,6 @@ window.dispatchEvent(new Event("vega:load"))
 
 import "ahoy"
 
-// Import and initialize Stimulus
-import { Application } from "@hotwired/stimulus"
-
-const application = Application.start()
-
-// Configure Stimulus development experience
-application.debug = false
-window.Stimulus   = application
-
-// Export for use in controllers/index.js
-export { application }
-
-// Import all Stimulus controllers via the auto-generated index
-import "./controllers/index"
-
 // Import the new CodeMirror module
 import { setupGlobalCodeMirror } from "modules/editor"
 
@@ -45,9 +28,6 @@ setupGlobalCodeMirror();
 
 // Auto-initialize CodeMirror editors when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
-  console.log('DOM ready, looking for CodeMirror textareas...');
-  console.log('CodeMirror available:', typeof window.CodeMirror);
-  
   // Look for textareas with data-codemirror-mode attribute
   const textareas = document.querySelectorAll('textarea[data-codemirror-mode]');
   

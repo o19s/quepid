@@ -18,7 +18,6 @@ Rails.application.config.assets.paths << Rails.root.join('spec/karma') if Rails.
 Rails.application.config.assets.precompile += %w[ core.css core.js admin.css admin_users.css admin.js admin_users.js
                                                   analytics.js ]
 Rails.application.config.assets.precompile += %w[ application_spec.js ]
-Rails.application.config.assets.precompile += %w[ controllers.js controllers/index.js ]
 
 # CSS from node modules
 Rails.application.config.assets.precompile += %w[
