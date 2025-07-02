@@ -72,7 +72,8 @@ class BooksController < ApplicationController
     end
 
     stats_judges = compact_keep_one_nil(stats_judges)
-    stats_judges = stats_judges.sort_by(&:fullname)
+    stats_judges = stats_judges.sort_by { |judge| judge.nil? ? "" : judge.fullname }
+
 
     stats_judges.each do |judge|
       @leaderboard_data << { judge:      judge.nil? ? 'anonymous' : judge.fullname,
