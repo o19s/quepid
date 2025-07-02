@@ -31,9 +31,8 @@ const application = Application.start()
 application.debug = false
 window.Stimulus   = application
 
-// Import and register all Stimulus controllers
-import PromptFormController from "./controllers/prompt_form_controller"
-application.register("prompt-form", PromptFormController)
+// Import all Stimulus controllers via the auto-generated index
+import "./controllers"
 
 // Import the new CodeMirror module
 import { setupGlobalCodeMirror } from "modules/editor"
