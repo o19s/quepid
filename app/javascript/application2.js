@@ -32,7 +32,7 @@ application.debug = false
 window.Stimulus   = application
 
 // Import all Stimulus controllers via the auto-generated index
-import "./controllers"
+import "./controllers/index"
 
 // Import the new CodeMirror module
 import { setupGlobalCodeMirror } from "modules/editor"
