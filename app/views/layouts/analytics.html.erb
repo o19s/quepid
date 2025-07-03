@@ -17,7 +17,7 @@
       <% if @case.public? %>
         <!-- This is probably not the best place for this label long term, but for now -->
         <script>
-          $(function() {
+          document.addEventListener('DOMContentLoaded', function() {
             new ClipboardJS('#public-url');
           });
         </script>

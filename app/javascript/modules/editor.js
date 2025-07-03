@@ -414,11 +414,9 @@ function formatJSON(json) {
 
 // Setup global CodeMirror object for compatibility
 export function setupGlobalCodeMirror() {
-  console.log('Setting up global CodeMirror object');
   window.CodeMirror = {
     fromTextArea,
     whenReady,
     formatJSON
   };
-  console.log('CodeMirror setup complete:', typeof window.CodeMirror);
 }
