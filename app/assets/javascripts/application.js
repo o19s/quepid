@@ -12,12 +12,12 @@
 //
 // The long list of requires for the main Angular 1 application has been moved to core.js.
 // 
-// We have introduced importmaps, which live in application2.js.  This should probably be migrated
+// We have introduced importmaps, which live in application_modern.js.  These below items should probably be migrated
 // over to that file assuming import maps works the way we are hoping!
 
 //= require bootstrap/dist/js/bootstrap.bundle
 //= require jquery
 
-//= require party-js/bundle/party
+// party-js moved to application_modern.js with importmaps
 
-// CodeMirror imports moved to application2.js with importmaps for CodeMirror 6
+// CodeMirror imports moved to application_modern.js with importmaps for CodeMirror 6

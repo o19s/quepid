@@ -39,3 +39,4 @@ pin 'w3c-keyname' # @2.2.8
 pin '@codemirror/lang-javascript', to: '@codemirror--lang-javascript.js' # @6.2.4
 pin '@codemirror/autocomplete', to: '@codemirror--autocomplete.js' # @6.18.6
 pin '@lezer/javascript', to: '@lezer--javascript.js' # @1.5.1
+pin 'party-js' # @2.2.0

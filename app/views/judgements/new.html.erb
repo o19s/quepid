@@ -1,20 +1,13 @@
 <turbo-frame id="query_doc_pair_card">
 <% if @party_time %>
   <p/>
-  <div id="party_here" class="alert alert-success" role="alert">
+  <div id="party_here" class="alert alert-success" role="alert" data-controller="confetti">
     Yay!  You just finished another batch of 50 ratings!   Time to take a mental break.
   </div>
-  <script>
-    party.confetti( document.getElementById("party_here"));
-  </script>
   
   <div class="float-end">    
     <%= link_to "I'm Ready for More!", book_skip_judging_path(@book), class: 'btn btn-info m-1', role: 'button' %>
   </div>
-  <script>
-  
-  
-  </script>
   <div class="card">
     <div class="card-body">
       <h5 class="card-title">Your Progress</h3>
