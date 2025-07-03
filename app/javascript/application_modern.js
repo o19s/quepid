@@ -20,6 +20,10 @@ window.dispatchEvent(new Event("vega:load"))
 
 import "ahoy"
 
+// Import Bootstrap and its dependencies
+import "@popperjs/core"
+import "bootstrap"
+
 // Import the new CodeMirror module
 import { setupGlobalCodeMirror } from "modules/editor"
 

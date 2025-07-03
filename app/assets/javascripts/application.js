@@ -14,9 +14,3 @@
 // 
 // We have introduced importmaps, which live in application_modern.js.  These below items should probably be migrated
 // over to that file assuming import maps works the way we are hoping!
-
-//= require bootstrap/dist/js/bootstrap.bundle
-
-// party-js moved to application_modern.js with importmaps
-
-// CodeMirror imports moved to application_modern.js with importmaps for CodeMirror 6
