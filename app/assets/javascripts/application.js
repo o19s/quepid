@@ -16,7 +16,6 @@
 // over to that file assuming import maps works the way we are hoping!
 
 //= require bootstrap/dist/js/bootstrap.bundle
-//= require jquery
 
 // party-js moved to application_modern.js with importmaps
 
