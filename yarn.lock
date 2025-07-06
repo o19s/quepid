@@ -137,13 +137,13 @@ angular-countup@^0.0.1:
   resolved "https://registry.npmjs.org/angular-countup/-/angular-countup-0.0.1.tgz"
   integrity sha512-3GsC8U3vf/E3ZhZP5YWqEIL3yghLqZYE0yVT5Ht5VH1CDZGYykvZanTWwIs+CXlHcOumdZNqT//h8JBHnO4GUg==
 
-"angular-csv-import@https://github.com/bahaaldine/angular-csv-import":
+"angular-csv-import@https://github.com/bahaaldine/angular-csv-import/archive/master.tar.gz":
   version "0.0.38"
-  resolved "git+ssh://git@github.com/bahaaldine/angular-csv-import.git#923f17da1dcbc19d40d52a2daa1c8843b1fe6f22"
+  resolved "https://github.com/bahaaldine/angular-csv-import/archive/master.tar.gz#320671b38932bdf14142b44f271f4510f2468a14"
 
-"angular-flash@https://github.com/wmluke/angular-flash":
+"angular-flash@https://github.com/wmluke/angular-flash/archive/master.tar.gz":
   version "0.1.14"
-  resolved "git+ssh://git@github.com/wmluke/angular-flash.git#7db7bf177a0908cdc6f2a01d984bd39ea1e3ef1a"
+  resolved "https://github.com/wmluke/angular-flash/archive/master.tar.gz#bc231449f11dfa28c5b07a42a5b8a9ff62b3605c"
 
 angular-mocks@~1.8.3:
   version "1.8.3"
@@ -172,9 +172,9 @@ angular-timeago@~0.4.6:
   dependencies:
     angular "^1.2.10"
 
-"angular-ui-ace@https://github.com/angular-ui/ui-ace":
+"angular-ui-ace@https://github.com/angular-ui/ui-ace/archive/master.tar.gz":
   version "0.2.3"
-  resolved "git+ssh://git@github.com/angular-ui/ui-ace.git#4c62a97e0adc60b7cde2be4caf902ac95c5c8c34"
+  resolved "https://github.com/angular-ui/ui-ace/archive/master.tar.gz#82e4b2e06c30d612d3a0044b3c7424cce1c4bc8a"
 
 angular-ui-bootstrap@~2.5.0:
   version "2.5.6"
@@ -195,9 +195,9 @@ angular-utils-pagination@~0.11.1:
   resolved "https://registry.npmjs.org/angular-utils-pagination/-/angular-utils-pagination-0.11.1.tgz"
   integrity sha512-0ZTwRASUfl9hNGreC5EiJj82mqRfEeoiu6ufnIne3kzDxt28mDqc0c66ZUoTxhosecTJLZVeUOBbfrpeSOUQrA==
 
-"angular-wizard@https://github.com/softwaredoug/angular-wizard.git#0.4.2":
+"angular-wizard@https://github.com/softwaredoug/angular-wizard/archive/0.4.2.tar.gz":
   version "0.4.2"
-  resolved "git+ssh://git@github.com/softwaredoug/angular-wizard.git#d86e03e77296e60c9115622ab7c81221fad37649"
+  resolved "https://github.com/softwaredoug/angular-wizard/archive/0.4.2.tar.gz#8de95afb5ce02915e422fd4c8f87a3cf437d264b"
 
 angular@1.8.3, angular@>=1.2.x, angular@^1.2.10, angular@~1.8.3:
   version "1.8.3"
@@ -1605,9 +1605,9 @@ netmask@^2.0.2:
   resolved "https://registry.npmjs.org/netmask/-/netmask-2.0.2.tgz"
   integrity sha512-dBpDMdxv9Irdq66304OLfEmQ9tbNRFnFTuZiLo+bD+r332bBmMJ8GBLXklIXXgxd3+v9+KUnZaUR5PJMa75Gsg==
 
-"ng-json-explorer@http://github.com/o19s/ng-json-explorer":
+"ng-json-explorer@https://github.com/o19s/ng-json-explorer/archive/master.tar.gz":
   version "1.3.6"
-  resolved "git+ssh://git@github.com/o19s/ng-json-explorer.git#50b57f0914687528a49c880473f9c41d3e9aa310"
+  resolved "https://github.com/o19s/ng-json-explorer/archive/master.tar.gz#a340419eccfe5af3e1aa8089a2289bc8663cf59b"
 
 ng-tags-input@3.2.0:
   version "3.2.0"
