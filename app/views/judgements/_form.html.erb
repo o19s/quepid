@@ -59,10 +59,6 @@ user.id: <%= judgement.user_id %>
 </style>
 
 <script>
-  // debugbar in dev loads a different version of jquery and means we have to
-  // use this $j instead of $ workaround.  See https://github.com/julienbourdeau/debugbar/issues/39.
-  //var $j = jQuery.noConflict();
-
   function rate(rating, key_name) {
       keyDown(key_name);
       resetStylesExcept(key_name);
@@ -70,8 +66,11 @@ user.id: <%= judgement.user_id %>
       delay(100).then(() => (document.getElementsByName("commit")[0].click()));
   }
 
-  $(document).ready(function() {
-      $("#keyPressed_count").text("0");
+  document.addEventListener('DOMContentLoaded', function() {
+      const countElement = document.getElementById("keyPressed_count");
+      if (countElement) {
+          countElement.textContent = "0";
+      }
   });
 
   var count = 0;
@@ -80,27 +79,52 @@ user.id: <%= judgement.user_id %>
   function resetStyles() {
       let keyboard_shortcuts_suffixes = ["a", "s", "d", "f", "g", "h", "j", "k", "l", "sc"];
       keyboard_shortcuts_suffixes.forEach(suffix => {
-              $("#span-for-" + suffix).css("color", "gray").css("font-weight", "normal");
-              $("#button-for-" + suffix).removeClass("btn-preselected");
+          const spanElement = document.getElementById("span-for-" + suffix);
+          const buttonElement = document.getElementById("button-for-" + suffix);
+          
+          if (spanElement) {
+              spanElement.style.color = "gray";
+              spanElement.style.fontWeight = "normal";
           }
-      );
+          
+          if (buttonElement) {
+              buttonElement.classList.remove("btn-preselected");
+          }
+      });
   }
 
   function resetStylesExcept(except_suffix){
       let keyboard_shortcuts_suffixes = ["a", "s", "d", "f", "g", "h", "j", "k", "l", "sc"];
       keyboard_shortcuts_suffixes.forEach(suffix => {
-              if (suffix !== except_suffix) {
-                  $("#span-for-" + suffix).css("color", "gray").css("font-weight", "normal");
-                  $("#button-for-" + suffix).removeClass("btn-preselected");
+          if (suffix !== except_suffix) {
+              const spanElement = document.getElementById("span-for-" + suffix);
+              const buttonElement = document.getElementById("button-for-" + suffix);
+              
+              if (spanElement) {
+                  spanElement.style.color = "gray";
+                  spanElement.style.fontWeight = "normal";
+              }
+              
+              if (buttonElement) {
+                  buttonElement.classList.remove("btn-preselected");
               }
           }
-      );
+      });
   }
 
   function keyDown(suffix) {
       resetStyles();
-      $("#span-for-" + suffix).css("color", "black").css("font-weight", "bold");
-      $("#button-for-" + suffix).addClass("btn-preselected");
+      const spanElement = document.getElementById("span-for-" + suffix);
+      const buttonElement = document.getElementById("button-for-" + suffix);
+      
+      if (spanElement) {
+          spanElement.style.color = "black";
+          spanElement.style.fontWeight = "bold";
+      }
+      
+      if (buttonElement) {
+          buttonElement.classList.add("btn-preselected");
+      }
   }
 
   function delay(time) {
@@ -108,65 +132,80 @@ user.id: <%= judgement.user_id %>
   }
 
   function keyPressed(suffix) {
-      delay(500).then(() => ($("#button-for-" + suffix).click()));
+      delay(500).then(() => {
+          const buttonElement = document.getElementById("button-for-" + suffix);
+          if (buttonElement) {
+              buttonElement.click();
+          }
+      });
   }
 
-  $(document).on('keypress', function(e) {
-      var tag = e.target.tagName.toLowerCase();
-      if (tag == 'textarea') {
+  // Function to check if modal is open
+  function isExplanationModalOpen() {
+      const modal = document.getElementById('explanationModal');
+      return modal && modal.classList.contains('show');
+  }
+
+  document.addEventListener('keypress', function(e) {
+      // Skip if explanation modal is open
+      if (isExplanationModalOpen()) {
         return;
       }
-      // ignore if i am in a textarea, i.e giving an explanation!
-      // very brittle!
 
-      if (e.which == 97 || e.which == 65) {
+      const keyCode = e.which || e.keyCode;
+      
+      if (keyCode == 97 || keyCode == 65) {
           keyPressed("a");
-      } else if (e.which == 115 || e.which == 83) {
+      } else if (keyCode == 115 || keyCode == 83) {
           keyPressed("s");
-      } else if (e.which == 100 || e.which == 68) {
+      } else if (keyCode == 100 || keyCode == 68) {
           keyPressed("d");
-      } else if (e.which == 102 || e.which == 70) {
+      } else if (keyCode == 102 || keyCode == 70) {
           keyPressed("f");
-      } else if (e.which == 103 || e.which == 71) {
+      } else if (keyCode == 103 || keyCode == 71) {
           keyPressed("g");
-      } else if (e.which == 104 || e.which == 72) {
+      } else if (keyCode == 104 || keyCode == 72) {
           keyPressed("h");
-      } else if (e.which == 106 || e.which == 74) {
+      } else if (keyCode == 106 || keyCode == 74) {
           keyPressed("j");
-      } else if (e.which == 107 || e.which == 75) {
+      } else if (keyCode == 107 || keyCode == 75) {
           keyPressed("k");
-      } else if (e.which == 108 || e.which == 76) {
+      } else if (keyCode == 108 || keyCode == 76) {
           keyPressed("l");
-      } else if (e.which == 59 || e.which == 186) {
+      } else if (keyCode == 59 || keyCode == 186) {
           keyPressed("sc");
       }
   });
 
-  $(document).on('keydown', function(e) {
-      var tag = e.target.tagName.toLowerCase();
-
-      if (e.which == 97 || e.which == 65) {
+  document.addEventListener('keydown', function(e) {
+      // Skip if explanation modal is open
+      if (isExplanationModalOpen()) {
+        return;
+      }
+      
+      const keyCode = e.which || e.keyCode;
+      
+      if (keyCode == 97 || keyCode == 65) {
           keyDown("a");
-      } else if (e.which == 115 || e.which == 83) {
+      } else if (keyCode == 115 || keyCode == 83) {
           keyDown("s");
-      } else if (e.which == 100 || e.which == 68) {
+      } else if (keyCode == 100 || keyCode == 68) {
           keyDown("d");
-      } else if (e.which == 102 || e.which == 70) {
+      } else if (keyCode == 102 || keyCode == 70) {
           keyDown("f");
-      } else if (e.which == 103 || e.which == 71) {
+      } else if (keyCode == 103 || keyCode == 71) {
           keyDown("g");
-      } else if (e.which == 104 || e.which == 72) {
+      } else if (keyCode == 104 || keyCode == 72) {
           keyDown("h");
-      } else if (e.which == 106 || e.which == 74) {
+      } else if (keyCode == 106 || keyCode == 74) {
           keyDown("j");
-      } else if (e.which == 107 || e.which == 75) {
+      } else if (keyCode == 107 || keyCode == 75) {
           keyDown("k");
-      } else if (e.which == 108 || e.which == 76) {
+      } else if (keyCode == 108 || keyCode == 76) {
           keyDown("l");
-      } else if (e.which == 59 || e.which == 186) {
+      } else if (keyCode == 59 || keyCode == 186) {
           keyDown("sc");
       }
-
   });
 </script>
 
