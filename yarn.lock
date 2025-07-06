@@ -1393,10 +1393,10 @@ isexe@^2.0.0:
   resolved "https://registry.npmjs.org/isexe/-/isexe-2.0.0.tgz"
   integrity sha512-RHxMLp9lnKHGHRng9QFhRCMbYAcVpn69smSGcq3f36xjgVVWThj4qqLbTLlq7Ssj8B+fIQ1EuCEGI2lKsyQeIw==
 
-jasmine-core@5.7.1:
-  version "5.7.1"
-  resolved "https://registry.npmjs.org/jasmine-core/-/jasmine-core-5.7.1.tgz"
-  integrity sha512-QnurrtpKsPoixxG2R3d1xP0St/2kcX5oTZyDyQJMY+Vzi/HUlu1kGm+2V8Tz+9lV991leB1l0xcsyz40s9xOOw==
+jasmine-core@5.8.0:
+  version "5.8.0"
+  resolved "https://registry.yarnpkg.com/jasmine-core/-/jasmine-core-5.8.0.tgz#8a68b7b209b06c2247d67490bca8604c2fa498cd"
+  integrity sha512-Q9dqmpUAfptwyueW3+HqBOkSuYd9I/clZSSfN97wXE/Nr2ROFNCwIBEC1F6kb3QXS9Fcz0LjFYSDQT+BiwjuhA==
 
 jasmine-core@^4.1.0:
   version "4.6.0"
