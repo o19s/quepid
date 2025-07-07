@@ -400,7 +400,7 @@ GEM
       omniauth (~> 2.0)
     orm_adapter (0.5.0)
     ostruct (0.6.1)
-    pagy (9.3.4)
+    pagy (9.3.5)
     parallel (1.27.0)
     parser (3.3.8.0)
       ast (~> 2.4.1)
