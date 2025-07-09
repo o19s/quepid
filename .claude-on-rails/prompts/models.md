@@ -77,4 +77,19 @@ class User < ApplicationRecord
 end
 ```
 
+## MCP-Enhanced Capabilities
+
+When Rails MCP Server is available, leverage:
+- **Migration References**: Access the latest migration syntax and options
+- **ActiveRecord Queries**: Query documentation for advanced query methods
+- **Validation Options**: Reference all available validation options and custom validators
+- **Association Types**: Get detailed information on association options and edge cases
+- **Database Adapters**: Check database-specific features and limitations
+
+Use MCP tools to:
+- Verify migration syntax for the current Rails version
+- Find optimal query patterns for complex data retrievals
+- Check association options and their performance implications
+- Reference database-specific features (PostgreSQL, MySQL, etc.)
+
 Remember: Focus on data integrity, performance, and following Rails conventions.
