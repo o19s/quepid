@@ -18,6 +18,10 @@ pin 'ahoy', to: 'ahoy.js'
 
 pin 'js-cookie' # @3.0.5
 
+# Bootstrap and its dependencies
+pin 'bootstrap', to: 'bootstrap.min.js' # @5.3.3
+pin '@popperjs/core', to: 'popper.min.js' # @2.11.8
+
 # CodeMirror 6 packages
 pin 'modules/editor', to: 'modules/editor.js'
 pin 'codemirror' # @6.0.2
@@ -39,3 +43,4 @@ pin 'w3c-keyname' # @2.2.8
 pin '@codemirror/lang-javascript', to: '@codemirror--lang-javascript.js' # @6.2.4
 pin '@codemirror/autocomplete', to: '@codemirror--autocomplete.js' # @6.18.6
 pin '@lezer/javascript', to: '@lezer--javascript.js' # @1.5.1
+pin 'party-js' # @2.2.0

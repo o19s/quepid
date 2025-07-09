@@ -2,7 +2,7 @@ FROM ruby:3.4.4-bookworm
 
 LABEL maintainer="quepid_admin@opensourceconnections.com"
 
-ENV home .
+ENV home=.
 
 # Install all system dependencies first to leverage Docker caching
 RUN apt-get update -qq && \
