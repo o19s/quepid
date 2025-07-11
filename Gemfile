@@ -62,7 +62,7 @@ group :development, :test do
 end
 
 group :development do
-  gem 'claude-on-rails', '~> 0.1.4' # Dev acceleration tool
+  gem 'claude-on-rails', '~> 0.2.0' # Dev acceleration tool
 
   # Use console on exceptions pages [https://github.com/rails/web-console]
   gem 'web-console'

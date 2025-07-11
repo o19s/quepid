@@ -2,6 +2,15 @@ version: 1
 swarm:
   name: "Quepid Rails Development Team"
   main: architect
+
+  mcps:
+    - name: rails
+      type: stdio
+      command: rails-mcp-server
+      args: []
+      env:
+        RAILS_ENV: development
+
   instances:
     architect:
       description: "Rails architect coordinating full-stack development for Quepid"
