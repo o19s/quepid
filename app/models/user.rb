@@ -52,6 +52,9 @@
 #  fk_rails_...  (invited_by_id => users.id)
 #
 class User < ApplicationRecord
+  # Encrypted attributes
+  encrypts :llm_key, deterministic: false
+
   # Associations
   has_many :api_keys, dependent: :destroy
 

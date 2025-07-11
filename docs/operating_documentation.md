@@ -18,6 +18,7 @@ This document explains how Quepid can be operated and configured.
 - [Using Personal Access Tokens](#using-personal-access-tokens)
 - [Scripting Users Cases Ratings](#scripting-users-cases-ratings)
 - [Posting Announcements to Users](#posting-announcements-to-users)
+- [ActiveRecord Encryption Setup](#activerecord-encryption-setup)
 - [Integrating External Eval Pipeline](#integrating-external-eval-pipeline)
 
 ## Installing Quepid
@@ -303,6 +304,10 @@ Sometimes you need to communicate to your users, like the fact that a scorer has
 ```
 
 Once they see it, they won't see it again.
+
+## ActiveRecord Encryption Setup
+
+Quepid uses ActiveRecord encryption to protect sensitive data like LLM API keys. For details on how to set up and configure encryption for your Quepid installation, see [ENCRYPTION_SETUP.md](./ENCRYPTION_SETUP.md).
 
 ## Integrating External Eval Pipeline
 
