@@ -109,6 +109,31 @@ class User < Thor
     end
   end
 
+  desc 'add_api_key EMAIL', 'generates and adds an API key to the user'
+  long_desc <<-LONGDESC
+    `user:add_api_key` generates a new API key and assigns it to the user identified by the given email.
+
+    EXAMPLES:
+
+    $ thor user:add_api_key foo@example.com
+  LONGDESC
+  def add_api_key(email)
+    puts "Generating and adding API key for user with email: #{email}".yellow
+
+    load_environment
+
+    user = ::User.where(email: email).first
+
+    unless user
+      puts "Could not find user with email: #{email}".red
+      return
+    end
+
+    api_key = user.api_keys.create! token: SecureRandom.hex
+
+    puts "Success! API key generated and saved: #{api_key.token_digest}".green
+  end
+
   private
 
   def load_environment
