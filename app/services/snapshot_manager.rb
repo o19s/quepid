@@ -66,7 +66,14 @@ class SnapshotManager
     end
 
     # Second, mass insert queries.
-    SnapshotQuery.import queries_to_import
+    # Using Rails' insert_all for bulk insert without callbacks
+    if queries_to_import.any?
+      SnapshotQuery.insert_all(
+        queries_to_import.map do |query|
+          query.attributes.except('id')
+        end
+      )
+    end
     # End of queries import.
 
     # Then import docs for the queries that were just created.
@@ -135,7 +142,14 @@ class SnapshotManager
     end
 
     # Second, mass insert queries.
-    SnapshotQuery.import queries_to_import
+    # Using Rails' insert_all for bulk insert without callbacks
+    if queries_to_import.any?
+      SnapshotQuery.insert_all(
+        queries_to_import.map do |query|
+          query.attributes.except('id')
+        end
+      )
+    end
     # End of queries import.
 
     # Updates keys after we switched them out from the text to the id
@@ -238,7 +252,14 @@ class SnapshotManager
       docs_to_import += query_docs
     end
 
-    SnapshotDoc.import docs_to_import
+    # Using Rails' insert_all for bulk insert without callbacks
+    if docs_to_import.any?
+      SnapshotDoc.insert_all(
+        docs_to_import.map do |doc|
+          doc.attributes.except('id')
+        end
+      )
+    end
 
     self
   end

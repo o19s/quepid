@@ -96,8 +96,17 @@ class RatingsImporter
         queries_to_import << query
       end
 
-      # Mass insert queries
-      Query.import queries_to_import
+      # Mass insert queries using Rails' insert_all
+      if queries_to_import.any?
+        Query.insert_all(
+          queries_to_import.map do |query|
+            query.attributes.except('id').merge(
+              'created_at' => Time.current,
+              'updated_at' => Time.current
+            )
+          end
+        )
+      end
 
       # Refetch the queries now that we've created new ones
       queries_params = {
@@ -140,8 +149,17 @@ class RatingsImporter
       ratings_to_update.each(&:save)
     end
 
-    # Mass insert ratings
-    Rating.import ratings_to_import
+    # Mass insert ratings using Rails' insert_all
+    if ratings_to_import.any?
+      Rating.insert_all(
+        ratings_to_import.map do |rating|
+          rating.attributes.except('id').merge(
+            'created_at' => Time.current,
+            'updated_at' => Time.current
+          )
+        end
+      )
+    end
 
     return unless @options[:clear_existing]
 

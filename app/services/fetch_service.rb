@@ -150,7 +150,14 @@ class FetchService
     )
     snapshot_manager = SnapshotManager.new(@snapshot)
     query_docs = snapshot_manager.setup_docs_for_query(snapshot_query, docs)
-    SnapshotDoc.import query_docs
+    # Using Rails' insert_all for bulk insert without callbacks
+    if query_docs.any?
+      SnapshotDoc.insert_all(
+        query_docs.map do |doc|
+          doc.attributes.except('id')
+        end
+      )
+    end
 
     snapshot_query.reload # without this we get duplicate sets of snapshot_docs
 
