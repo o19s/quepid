@@ -307,7 +307,11 @@ class FetchServiceTest < ActiveSupport::TestCase
       results = fetch_service.setup_docs_for_query snapshot_query, docs
       assert_equal 2, results.count
 
-      SnapshotDoc.import results
+      SnapshotDoc.insert_all(
+        results.map do |doc|
+          doc.attributes.except('id')
+        end
+      )
 
       snapshot_query.reload
       assert_equal 2, snapshot_query.snapshot_docs.count

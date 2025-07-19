@@ -7,8 +7,7 @@ class PopulateBookJob < ApplicationJob
   # rubocop:disable Metrics/MethodLength
   # rubocop:disable Metrics/AbcSize
   def perform book, kase
-    # down the road we should be using ActiveRecord-import and first_or_initialize instead.
-    # See how snapshots are managed.
+    # Using Rails' bulk insert methods for better performance.
 
     book.update(populate_job: "populate started at #{Time.zone.now}")
     compressed_data = book.populate_file.download
@@ -75,7 +74,6 @@ class PopulateBookJob < ApplicationJob
   # rubocop:enable Metrics/MethodLength
   # rubocop:enable Metrics/AbcSize
 
-  # rubocop:disable Rails/SkipsModelValidations
   def fix_duplicate_positions book
     duplicates = book.query_doc_pairs.group(:query_text, :position)
       .having('COUNT(*) > 1')

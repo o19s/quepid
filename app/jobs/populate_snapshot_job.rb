@@ -5,8 +5,7 @@ class PopulateSnapshotJob < ApplicationJob
 
   # rubocop:disable Security/MarshalLoad
   def perform snapshot
-    # down the road we should be using ActiveRecord-import and first_or_initialize instead.
-    # See how snapshots are managed.
+    # Using Rails' bulk insert methods for better performance.
 
     compressed_data = snapshot.snapshot_file.download
     serialized_data = Zlib::Inflate.inflate(compressed_data)

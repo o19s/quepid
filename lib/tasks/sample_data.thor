@@ -480,7 +480,7 @@ class SampleData < Thor
     book_params = data.to_h.deep_symbolize_keys
 
     @book = ::Book.find_by(id: 25)
-    @book&.destroy
+    @book&.really_destroy
     @book = ::Book.new(id: 25)
     options = { force_create_users: true }
     book_importer = ::BookImporter.new @book, realistic_activity_user, book_params, options

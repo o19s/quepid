@@ -138,6 +138,7 @@ class FetchService
   # rubocop:enable Metrics/PerceivedComplexity
 
   # This maybe should be split out into a snapshot_query and a snapshot_docs?
+  # rubocop:disable Metrics/MethodLength
   def store_query_results query, docs, response_status, response_body
     snapshot_query = @snapshot.snapshot_queries.create(
       query:             query,
@@ -150,12 +151,19 @@ class FetchService
     )
     snapshot_manager = SnapshotManager.new(@snapshot)
     query_docs = snapshot_manager.setup_docs_for_query(snapshot_query, docs)
-    SnapshotDoc.import query_docs
+    if query_docs.any?
+      SnapshotDoc.insert_all(
+        query_docs.map do |doc|
+          doc.attributes.except('id')
+        end
+      )
+    end
 
     snapshot_query.reload # without this we get duplicate sets of snapshot_docs
 
     snapshot_query
   end
+  # rubocop:enable Metrics/MethodLength
 
   # Scores phase
   #
