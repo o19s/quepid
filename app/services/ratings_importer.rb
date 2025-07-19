@@ -101,8 +101,8 @@ class RatingsImporter
         Query.insert_all(
           queries_to_import.map do |query|
             query.attributes.except('id').merge(
-              'created_at' => Time.current,
-              'updated_at' => Time.current
+              'created_at' => Time.zone.now,
+              'updated_at' => Time.zone.now
             )
           end
         )
@@ -154,8 +154,8 @@ class RatingsImporter
       Rating.insert_all(
         ratings_to_import.map do |rating|
           rating.attributes.except('id').merge(
-            'created_at' => Time.current,
-            'updated_at' => Time.current
+            'created_at' => Time.zone.now,
+            'updated_at' => Time.zone.now
           )
         end
       )
