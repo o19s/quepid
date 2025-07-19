@@ -12,7 +12,9 @@ AllCops:
     - node_modules/**/*
     - config/initializers/content_security_policy.rb
 
-
+Rails/SkipsModelValidations:
+  Enabled: false # we use .insert_all for our bulk imports
+  
 Capybara/ClickLinkOrButtonStyle:
   Enabled: false # we aren't running system tests
   

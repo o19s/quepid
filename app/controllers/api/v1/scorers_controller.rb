@@ -102,7 +102,6 @@ module Api
 
         @users = User.where(default_scorer_id: @scorer.id)
         if @users.any? && force
-          # rubocop:disable Rails/SkipsModelValidations
           @users.update_all(default_scorer_id: replacement_scorer.id)
           # rubocop:enable Rails/SkipsModelValidations
         elsif @users.any?

@@ -37,7 +37,6 @@ class CaseScoreManager
 
     @score = @the_case.scores.build score_data.except(:try_number)
     saved = @score.save
-    # rubocop:disable Rails/SkipsModelValidations
     if saved
       # for some reason the scorer isn't doing the :touch on the parent case
       @the_case.touch

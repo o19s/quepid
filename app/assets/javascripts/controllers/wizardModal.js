@@ -738,7 +738,7 @@ angular.module('QuepidApp')
         console.log(expectedHeaders);
 
         if (!caseCSVSvc.arrayContains(headers, expectedHeaders)) {
-          let alert = 'Required headers mismatch! Please make sure you have the correct headers in you file (check for correct spelling and capitalization): ';
+          let alert = 'Required headers mismatch! Please make sure you have the correct headers in your file (check for correct spelling and capitalization): ';
           alert += '<br /><strong>';
           alert += expectedHeaders.join(',');
           alert += '</strong>';

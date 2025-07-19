@@ -4,7 +4,6 @@ source 'https://rubygems.org'
 
 ruby '3.4.4'
 
-gem 'activerecord-import', '>= 1.0.7'
 gem 'active_storage_db'
 gem 'acts_as_list', '>= 1.0.1'
 gem 'addressable', '~> 2.8'

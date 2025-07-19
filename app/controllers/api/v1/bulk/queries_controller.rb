@@ -48,7 +48,6 @@ module Api
             }
           end
 
-          # rubocop:disable Rails/SkipsModelValidations
           Query.upsert_all(queries_to_import)
           # rubocop:enable Rails/SkipsModelValidations
 
