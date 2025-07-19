@@ -54,7 +54,6 @@ class ExperimentWithJsonRender < ActionController::TestCase
         updated_at:       Time.current,
       }
     end
-    # rubocop:disable Rails/SkipsModelValidations
     QueryDocPair.insert_all!(query_doc_pairs)
     # rubocop:enable Rails/SkipsModelValidations
   end

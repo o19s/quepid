@@ -74,7 +74,6 @@ class PopulateBookJob < ApplicationJob
   # rubocop:enable Metrics/MethodLength
   # rubocop:enable Metrics/AbcSize
 
-  # rubocop:disable Rails/SkipsModelValidations
   def fix_duplicate_positions book
     duplicates = book.query_doc_pairs.group(:query_text, :position)
       .having('COUNT(*) > 1')

@@ -138,6 +138,7 @@ class FetchService
   # rubocop:enable Metrics/PerceivedComplexity
 
   # This maybe should be split out into a snapshot_query and a snapshot_docs?
+  # rubocop:disable Metrics/MethodLength
   def store_query_results query, docs, response_status, response_body
     snapshot_query = @snapshot.snapshot_queries.create(
       query:             query,
@@ -163,6 +164,7 @@ class FetchService
 
     snapshot_query
   end
+  # rubocop:enable Metrics/MethodLength
 
   # Scores phase
   #

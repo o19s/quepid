@@ -6,7 +6,6 @@ class ExperimentWithBulkInsertTest < ActionDispatch::IntegrationTest
   # This test used to also do activerecord-import .import method test, but we removed that
   # dependency.
 
-  # rubocop:disable Rails/SkipsModelValidations
   let(:user) { users(:doug) }
   let(:scorer) { scorers(:quepid_default_scorer) }
   let(:selection_strategy) { selection_strategies(:multiple_raters) }

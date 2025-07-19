@@ -63,7 +63,6 @@ module Admin
       if @user.save
         if params[:password_encrypted].present?
           # avoid the encrypt call back
-          # rubocop:disable Rails/SkipsModelValidations
           @user.update_column(:password, params[:password_encrypted])
           # rubocop:enable Rails/SkipsModelValidations
         end
