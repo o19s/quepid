@@ -67,7 +67,6 @@ class SnapshotManager
     end
 
     # Second, mass insert queries.
-    # Using Rails' insert_all for bulk insert without callbacks
     if queries_to_import.any?
       SnapshotQuery.insert_all(
         queries_to_import.map do |query|
@@ -146,7 +145,6 @@ class SnapshotManager
     end
 
     # Second, mass insert queries.
-    # Using Rails' insert_all for bulk insert without callbacks
     if queries_to_import.any?
       SnapshotQuery.insert_all(
         queries_to_import.map do |query|
@@ -258,7 +256,6 @@ class SnapshotManager
       docs_to_import += query_docs
     end
 
-    # Using Rails' insert_all for bulk insert without callbacks
     if docs_to_import.any?
       SnapshotDoc.insert_all(
         docs_to_import.map do |doc|
