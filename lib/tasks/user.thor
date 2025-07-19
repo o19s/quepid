@@ -117,7 +117,7 @@ class User < Thor
 
     $ thor user:add_api_key foo@example.com
   LONGDESC
-  def add_api_key(email)
+  def add_api_key email
     puts "Generating and adding API key for user with email: #{email}".yellow
 
     load_environment
