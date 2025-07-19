@@ -2,6 +2,7 @@
 
 require 'colorize'
 
+# rubocop:disable Metrics/ClassLength
 class User < Thor
   # rubocop:disable Metrics/MethodLength
   desc 'create EMAIL USERNAME PASSWORD', 'creates a new user'
@@ -141,3 +142,4 @@ class User < Thor
     require File.expand_path('config/environment.rb')
   end
 end
+# rubocop:enable Metrics/ClassLength
