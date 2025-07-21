@@ -119,6 +119,9 @@ Rails.application.configure do
 end
 # rubocop:enable Metrics/BlockLength
 
-Debugbar.configure do |config|
-  config.enabled = false
+# Debugbar is useful, but not enabled by default in Gemfile
+if defined? Debugbar
+  Debugbar.configure do |config|
+    config.enabled = false
+  end
 end

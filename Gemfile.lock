@@ -155,9 +155,6 @@ GEM
     debug (1.11.0)
       irb (~> 1.10)
       reline (>= 0.3.8)
-    debugbar (0.4.3)
-      actioncable
-      rails
     deep_merge (1.2.2)
     derailed_benchmarks (2.2.1)
       base64
@@ -628,7 +625,6 @@ DEPENDENCIES
   d3-rails (~> 3.5.5)
   database_consistency (~> 2.0)
   debug
-  debugbar
   derailed_benchmarks
   devise (>= 4.6.2)
   devise_invitable (~> 2.0)
