@@ -36,7 +36,7 @@
     "ng-tags-input": "3.2.0",
     "ngclipboard": "^2.0.0",
     "popper.js": "^1.16.1",
-    "splainer-search": "2.34.0",
+    "splainer-search": "2.35.1",
     "tether-shepherd": "latest",
     "vega": "^6.0.0"
   },
