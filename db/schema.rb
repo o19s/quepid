@@ -604,7 +604,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_09_144954) do
     t.string "stored_raw_invitation_token"
     t.string "profile_pic", limit: 4000
     t.string "system_prompt", limit: 4000
-    t.string "llm_key"
+    t.string "llm_key", limit: 4000
     t.json "options"
     t.index ["default_scorer_id"], name: "index_users_on_default_scorer_id"
     t.index ["email"], name: "ix_user_username", unique: true
