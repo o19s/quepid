@@ -72,11 +72,11 @@ group :development do
   # gem 'rack-mini-profiler'
 
   gem 'database_consistency', '~> 2.0', require: false
-  
+
   # This is useful in working on performance issues, but otherwise puts
   # a lot of noise in logs on startup
   # gem 'debugbar'
-  
+
   gem 'derailed_benchmarks'
   gem 'letter_opener'
   gem 'rubocop', require: false
