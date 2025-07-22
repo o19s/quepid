@@ -105,3 +105,9 @@ Rails.application.config.redirect_to_match_search_engine_tls = ENV.fetch('REDIRE
 
 # == If we have nested Quepid under a context, like tools.bigcorp.com/quepid then this deal with that situation.
 Rails.application.config.action_cable.url = "#{ENV.fetch('RAILS_RELATIVE_URL_ROOT', '')}/cable"
+
+# == Set up encryption for Quepid
+# We provide some defaults, but you should set your own keys and NOT lose them.
+Rails.application.config.active_record.encryption.deterministic_key = ENV.fetch('ACTIVE_RECORD_ENCRYPTION_DETERMINISTIC_KEY', 'OItaH6HSftjoxkl9QDejPAmQ8EaFOlwk')
+Rails.application.config.active_record.encryption.key_derivation_salt = ENV.fetch('ACTIVE_RECORD_ENCRYPTION_KEY_DERIVATION_SALT', 'BzPDVAl1jAUquD4p7rM9J40wAwf7CCFh')
+Rails.application.config.active_record.encryption.primary_key = ENV.fetch('ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY', 'bnYX3NlvUJxHWXwNYBgP33yi8BKlN7Ml')
