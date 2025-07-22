@@ -42,7 +42,8 @@ class SnapshotManager
   #   ]
   # }
   # manager.add_docs data
-  #
+  # rubocop:disable Metrics/AbcSize
+  # rubocop:disable Metrics/MethodLength
   def add_docs docs, queries
     queries_to_import = []
 
@@ -66,7 +67,13 @@ class SnapshotManager
     end
 
     # Second, mass insert queries.
-    SnapshotQuery.import queries_to_import
+    if queries_to_import.any?
+      SnapshotQuery.insert_all(
+        queries_to_import.map do |query|
+          query.attributes.except('id')
+        end
+      )
+    end
     # End of queries import.
 
     # Then import docs for the queries that were just created.
@@ -76,6 +83,8 @@ class SnapshotManager
 
     self
   end
+  # rubocop:enable Metrics/AbcSize
+  # rubocop:enable Metrics/MethodLength
 
   #
   # Imports queries and docs to a snapshot.
@@ -105,6 +114,7 @@ class SnapshotManager
   # manager.import_queries data
   #
   # rubocop:disable Metrics/MethodLength
+  # rubocop:disable Metrics/AbcSize
   def import_queries queries
     queries_to_import = []
     keys              = queries.keys
@@ -135,7 +145,13 @@ class SnapshotManager
     end
 
     # Second, mass insert queries.
-    SnapshotQuery.import queries_to_import
+    if queries_to_import.any?
+      SnapshotQuery.insert_all(
+        queries_to_import.map do |query|
+          query.attributes.except('id')
+        end
+      )
+    end
     # End of queries import.
 
     # Updates keys after we switched them out from the text to the id
@@ -149,6 +165,7 @@ class SnapshotManager
     self
   end
   # rubocop:enable Metrics/MethodLength
+  # rubocop:enable Metrics/AbcSize
 
   def csv_to_queries_hash docs
     # print_step 'Transforming csv into a queries hash'
@@ -218,6 +235,7 @@ class SnapshotManager
     result
   end
 
+  # rubocop:disable Metrics/MethodLength
   def import_docs keys, data
     docs_to_import = []
 
@@ -238,10 +256,17 @@ class SnapshotManager
       docs_to_import += query_docs
     end
 
-    SnapshotDoc.import docs_to_import
+    if docs_to_import.any?
+      SnapshotDoc.insert_all(
+        docs_to_import.map do |doc|
+          doc.attributes.except('id')
+        end
+      )
+    end
 
     self
   end
+  # rubocop:enable Metrics/MethodLength
 
   def fetch_or_create_query indexed_queries, query_text
     if indexed_queries[query_text].present?
