@@ -1,5 +1,53 @@
 # Changelog
 
+## 8.2.0 -- 2024-07-22
+
+### What's Changed
+
+* The biggest thing folks may notice is that we've moved from the domain name `quepid.com` to `quepidapp.com`.  This has required lots of updates in documentation, build tooling, and various links scattered around the Quepid codebase.
+
+* You can now set up a case to be processed NIGHTLY!  Quepid will run cases marked "Nightly" and store the score.  It also stores the last FIVE snapshots including document fields for additional analysis. We are limiting Snapshots to 5 to make sure we don't destroy the database ;-), and could evaluate that later.   When you load the case, we still rerun all the queries again, however there is some preliminary work about just loading the last snapshot for these nightly cases: https://github.com/o19s/quepid/pull/1323.
+
+* Lots of improvements around the LLM-as-a-Judge.  Encrypted LLM keys in the database, nicer UI when testing out prompts, ability to evaluate images in the judging process.
+
+* Brand new approach to documenting APIs! OpenAPI 3.1 specification compliant docs, and you can test out API calls right there in Quepid, or get the curl equivalent.  Thank you Apipie for your previous service, and I'm excited about the [OasRails](https://a-chacon.com/en/projects/oas_rails.html) project.  The lead developer, [Andrés](https://github.com/a-chacon) has been great to work with.
+
+### Features
+
+* Nightly Evaluation Support.  https://github.com/o19s/quepid/pull/1288 and https://github.com/o19s/quepid/pull/1289.
+* You can now generate an API key for a user from the commandline: `bundle exec thor user:add_api_key EMAIL`. Thanks @frutik for the contribution in https://github.com/o19s/quepid/pull/1408
+
+* Nightly build and push to DockerHub of Quepid image.  Thanks @frutik for https://github.com/o19s/quepid/pull/1369.
+
+* A new Scorer!  Welcome *NDCG_CUT@10*!  NDCG is properly calculated on all the documents that have been rated for a query.  However, often we want to only look at the top 10, and cut off evaluation there, ignoring all the rest.   That is when you want *NDCG_CUT@10*.  If you had been using *NDCG@10* then you may want to swap.
+
+* API to get the latest snapshot for a case.  Supporting a custom evaluation frontend built by @sjarmak.  Thanks @david-fisher for encouragement.  https://github.com/o19s/quepid/pull/1312 by @epugh.
+
+### Improvements
+
+* LLM-as-a-Judge can now look at images as part of the evaluation!  Thanks @khrabrovart for https://github.com/o19s/quepid/pull/1344 and for writing docs.  Thanks charlie@thesearchjuggler.com for makign this happen.
+
+* When testing out LLM Judge prompt display a nice spinning icon since these can be long!  https://github.com/o19s/quepid/pull/1395 by @epugh.  Did some vibe coding!
+
+* Support Ollama based LLMs for judging.  Thanks @frutik for the initial work in https://github.com/o19s/quepid/pull/1258 that resulted in https://github.com/o19s/quepid/pull/1275.
+
+* Nicer UI around importing books.  Let's make getting data in and out easier.  https://github.com/o19s/quepid/commit/cf0673cf4ba3f3271fcefcc91b7a6e86e5192750 and https://github.com/o19s/quepid/pull/1332 by @epugh.   Thanks @atarora for design input on this.
+
+
+* Optimize the performance of editing books.  https://github.com/o19s/quepid/commit/9605a60dd28b876270cf71ac1510d2704afc64a0 by @epugh.  Thanks charlie@thesearchjuggler.com.
+
+
+
+### Bugs Addressed
+
+* When comparing snapshots, if you had basic auth set up then those credentials were not passed in. Thanks @kiratraynor for finding this, fixed in https://github.com/o19s/quepid/pull/1411 by @epugh.
+
+* Judgements in a Book don't HAVE to have a user id, so fix the UI: https://github.com/o19s/quepid/commit/178594f16c1fe159f6c4789aaaab493bf9d2ee34 by @epugh.
+
+* Fix Quepid API to support the Jupyter Inter Rater Reliablity notebook.  https://github.com/o19s/quepid/pull/1294 by @epugh.
+
+
+
 ## 8.1.0 -- 2024-02-28
 
 We've had lots of folks trying new features of Quepid, and that has led to some nice polish.  
