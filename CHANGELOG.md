@@ -6,7 +6,7 @@
 
 * The biggest thing folks may notice is that we've moved from the domain name `quepid.com` to `quepidapp.com`.  This has required lots of updates in documentation, build tooling, and various links scattered around the Quepid codebase.
 
-* You can now set up a case to be processed NIGHTLY!  Quepid will run cases marked "Nightly" and store the score.  It also stores the last FIVE snapshots including document fields for additional analysis. We are limiting Snapshots to 5 to make sure we don't destroy the database ;-), and could evaluate that later.   When you load the case, we still rerun all the queries again, however there is some preliminary work about just loading the last snapshot for these nightly cases: https://github.com/o19s/quepid/pull/1323.
+* Lots of refinement to the [Continuous Experimentation](https://opensourceconnections.com/blog/2023/10/18/continuous-experimentation-for-search-improvement/) support released in 8.1.0.  Quepid will run cases marked "Nightly" and store the score.  It also stores the last FIVE snapshots including document fields for additional analysis. We are limiting Snapshots to 5 to make sure we don't destroy the database ;-), and could evaluate that later.   When you load the case, we still rerun all the queries again, however there is some preliminary work about just loading the last snapshot for these nightly cases: https://github.com/o19s/quepid/pull/1323.
 
 * Lots of improvements around the LLM-as-a-Judge.  Encrypted LLM keys in the database, nicer UI when testing out prompts, ability to evaluate images in the judging process.
 
