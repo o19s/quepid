@@ -25,7 +25,7 @@
 
 ### Improvements
 
-* LLM-as-a-Judge can now look at images as part of the evaluation!  Thanks @khrabrovart for https://github.com/o19s/quepid/pull/1344 and for writing docs.  Thanks charlie@thesearchjuggler.com for makign this happen.
+* LLM-as-a-Judge can now look at images as part of the evaluation!  Thanks @khrabrovart for https://github.com/o19s/quepid/pull/1344 and for writing docs.  Thanks charlie@thesearchjuggler.com for making this happen.
 
 * When testing out LLM Judge prompt display a nice spinning icon since these can be long!  https://github.com/o19s/quepid/pull/1395 by @epugh.  Did some vibe coding!
 
