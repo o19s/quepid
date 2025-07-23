@@ -1,6 +1,6 @@
 # Changelog
 
-## 8.2.0 -- 2024-07-22
+## 8.2.0 -- 2025-07-23
 
 ### What's Changed
 
@@ -48,7 +48,7 @@
 
 
 
-## 8.1.0 -- 2024-02-28
+## 8.1.0 -- 2025-02-28
 
 We've had lots of folks trying new features of Quepid, and that has led to some nice polish.  
 This is the release for people who don't want the bleeding edge version ;-).
@@ -65,7 +65,7 @@ This is the release for people who don't want the bleeding edge version ;-).
 * Fix a bug where the Judge couldn't be launched from the UI.
 
 
-## 8.0.1 -- 2024-02-19
+## 8.0.1 -- 2025-02-19
 
 Whelp, that didn't take long!  
 
@@ -82,7 +82,7 @@ We broke support for running Quepid on non standard ports like :3000.  https://g
 
 **Full Changelog**: https://github.com/o19s/quepid/compare/v8.0.0...v8.0.1
 
-## 8.0.0 -- 2024-02-14
+## 8.0.0 -- 2025-02-14
 
 It's Valentine's Day 💘, so it seems appropriate to release the next major version of Quepid, the tool to give your queries some ❤️.
 
