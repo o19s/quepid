@@ -109,10 +109,10 @@ class BooksController < ApplicationController
 
   def edit
     @ai_judges = User.only_ai_judges.left_joins(teams: :books).where(teams_books: { book_id: @book.id })
-    
+
     # Bullet really wants :rated_query_doc_pairs to be included, however that kills our performance!
     # In our use case just looks up the count of records per book.
-    @other_books = current_user.books_involved_with.includes([:scorer]).where.not(id: @book.id)
+    @other_books = current_user.books_involved_with.includes([ :scorer ]).where.not(id: @book.id)
   end
 
   def create
