@@ -20,7 +20,7 @@ gem 'devise', '>= 4.6.2'
 gem 'devise_invitable', '~> 2.0'
 gem 'faraday-retry'
 gem 'foreman'
-gem 'importmap-rails', '~> 2.1'
+gem 'importmap-rails', '~> 2.2'
 gem 'jbuilder', '~> 2.7'
 
 gem 'listen', '~> 3.3'
