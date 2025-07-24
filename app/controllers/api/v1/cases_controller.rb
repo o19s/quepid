@@ -7,13 +7,14 @@ module Api
       before_action :set_case, only: [ :show, :update, :destroy ]
       before_action :check_case, only: [ :show, :update, :destroy ]
 
-      # Spiking out can we make an API public?
+      # Special handling for cases that are "public"
       def authenticate_api!
-        set_case
-        return true if @case&.public? || current_user
+        if [ :show, :update, :destroy ].include?(action_name.to_sym)
+          set_case
+          return true if @case&.public?
+        end
 
-        render json:   { reason: 'Unauthorized!' },
-               status: :unauthorized
+        super
       end
 
       # @parameter archived(query) [Boolean] Whether or not to return only archived cases in the response.
