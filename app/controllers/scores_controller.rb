@@ -2,6 +2,7 @@
 
 class ScoresController < ApplicationController
   include Pagy::Backend
+
   before_action :set_case
   def index
     query = @case.scores

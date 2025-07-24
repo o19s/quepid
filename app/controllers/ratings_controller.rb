@@ -2,6 +2,7 @@
 
 class RatingsController < ApplicationController
   include Pagy::Backend
+
   before_action :set_case
 
   # GET /ratings or /ratings.json

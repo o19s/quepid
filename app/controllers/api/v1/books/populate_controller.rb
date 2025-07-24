@@ -7,6 +7,7 @@ module Api
     module Books
       class PopulateController < Api::ApiController
         include ActionView::Helpers::NumberHelper
+
         before_action :set_book, only: [ :update ]
         before_action :check_book, only: [ :update ]
         before_action :set_case
