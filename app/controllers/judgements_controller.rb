@@ -3,6 +3,7 @@
 # rubocop:disable Metrics/ClassLength
 class JudgementsController < ApplicationController
   include Pagy::Backend
+
   before_action :set_judgement, only: [ :show, :edit, :update, :destroy ]
   before_action :set_book
 

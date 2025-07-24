@@ -2,6 +2,7 @@
 
 class QueryDocPairsController < ApplicationController
   include Pagy::Backend
+
   before_action :set_query_doc_pair, only: [ :show, :edit, :update, :destroy ]
   before_action :set_book
 

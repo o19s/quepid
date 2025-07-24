@@ -6,6 +6,7 @@ module Api
     # @tags cases > snapshots
     class SnapshotsController < Api::ApiController
       include ActionView::Helpers::NumberHelper
+
       before_action :set_case
       before_action :check_case
       before_action :set_snapshot,    only: [ :show, :destroy ]

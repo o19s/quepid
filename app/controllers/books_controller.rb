@@ -3,6 +3,7 @@
 # rubocop:disable Metrics/ClassLength
 class BooksController < ApplicationController
   include Pagy::Backend
+
   before_action :set_book,
                 only: [ :show, :edit, :update, :destroy, :combine, :assign_anonymous, :delete_ratings_by_assignee,
                         :reset_unrateable, :reset_judge_later, :delete_query_doc_pairs_below_position,
