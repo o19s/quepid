@@ -32,7 +32,7 @@ angular.module('QuepidApp')
                 message: 'Successfully imported Case.'
               };
               if (response.archived){
-                modalResponse.message += ' Note that this Case is Archived and you will need to unarchive it in order to use it.'
+                modalResponse.message += ' Note that this Case is Archived and you will need to unarchive it in order to use it.';
               }
               $uibModalInstance.close(modalResponse);
             })
