@@ -40,6 +40,10 @@ Quepid makes improving your app's search results a repeatable, reliable engineer
 
 Are you interested in contributing to Quepid or customizing it for your own needs? Check out our [Developer Guide](DEVELOPER_GUIDE.md) for detailed instructions on setting up your development environment, running tests, and debugging.
 
+# Blog Posts About Quepid
+
+People have been sharing how they have used Quepid in various [blog posts](https://github.com/o19s/quepid/wiki/Blog-Posts-About-Quepid) that make good reading.
+
 # Data Map
 
 The [Data Mapping](docs/data_mapping.md) file provides detailed information about the data structure of the app.
