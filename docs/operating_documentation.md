@@ -1,6 +1,6 @@
 # Operating Documentation
 
-This document explains how Quepid can be operated and configured.
+This document explains how Quepid can be operated and configured.   You may also want to look at the [How-To Guides](https://quepid-docs.dev.o19s.com/2/quepid) as well.
 
 - [Installing Quepid](#installing-quepid)
 - [Running behind a load balancer](#running-behind-a-load-balancer)
@@ -311,4 +311,4 @@ Quepid uses ActiveRecord encryption to protect sensitive data like LLM API keys.
 
 ## Integrating External Eval Pipeline
 
-If you have an external evaluation pipeline, you can easily post the results of that pipeline into Quepid using the API.  See (./examples/external_eval) for a simple Python script that demonstrates storing Scores for a Case that are calculated externally.
+If you have an external evaluation pipeline, you can easily post the results of that pipeline into Quepid using the API.  See [./examples/external_eval](https://github.com/o19s/quepid/tree/main/docs/examples/external_eval) for a simple Python script that demonstrates storing Scores for a Case that are calculated externally.
