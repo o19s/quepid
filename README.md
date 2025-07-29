@@ -9,7 +9,7 @@
 
 <img src="https://quepidapp.com/images/logo.png" alt="Quepid logo" title="Quepid" align="right" />
 
-** Quepid now lives at https://go.quepidapp.com/, the old domain quepid.com is retired. **
+**Quepid now lives at https://go.quepidapp.com/, the old domain quepid.com is retired.**
 
 Quepid makes improving your app's search results a repeatable, reliable engineering process that the whole team can understand. It deals with three issues:
 
@@ -20,9 +20,9 @@ Quepid makes improving your app's search results a repeatable, reliable engineer
 3. **Iterations are slow** Moving forward seems impossible. To avoid sliding backwards, progress is slow. Many simply give up on search, depriving users of the means to find critical information.
 
 
-**To learn more, please check out the [Quepid website](http://www.quepidapp.com) and the [Quepid wiki](http://github.com/o19s/quepid/wiki).**
+**To learn more, please check out the [Quepid website](https://www.quepidapp.com) and the [Quepid User Manual](https://quepid-docs.dev.o19s.com/2/quepid).**
 
-**If you are ready to dive right in, you can use the [Hosted Quepid](http://go.quepidapp.com) service right now or follow the [installation steps](https://quepid-docs.dev.o19s.com/2/quepid/61/how-to-deploy-quepid-locally) to set up your own local instance of Quepid.**
+**If you are ready to dive right in, you can use the [Hosted Quepid](https://go.quepidapp.com) service right now or follow the [installation steps](https://quepid-docs.dev.o19s.com/2/quepid/61/how-to-deploy-quepid-locally) to set up your own local instance of Quepid.**
 
 # Table of Contents
 
@@ -42,17 +42,17 @@ Are you interested in contributing to Quepid or customizing it for your own need
 
 # Data Map
 
-Check out the [Data Mapping](docs/data_mapping.md) file for more info about the data structure of the app.
+The [Data Mapping](docs/data_mapping.md) file provides detailed information about the data structure of the app.
 
-Rebuild the [ERD](docs/erd.png) via `bin/docker r bundle exec rake erd:image`
+You can rebuild the [ERD](docs/erd.png) via `bin/docker r bundle exec rake erd:image`
 
 # App Structure
 
-Check out the [App Structure](docs/app_structure.md) file for more info on how Quepid is structured.
+The [App Structure](docs/app_structure.md) file explains how Quepid is structured and organized.
 
 # Operating Documentation
 
-Check out the [Operating Documentation](docs/operating_documentation.md) file for more informations how Quepid can be operated and configured for your company.
+Refer to the [Operating Documentation](docs/operating_documentation.md) file for information on how Quepid can be operated and configured for your company.
 
 # 🙏 Thank You's
 
