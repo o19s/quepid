@@ -1,8 +1,13 @@
 #!/bin/sh
 #set -e
 
-echo "Creating Quepid Database"
-bin/rake db:setup
+echo "Checking if database exists..."
+if bin/rails runner "ActiveRecord::Base.connection.execute('SELECT 1')" > /dev/null 2>&1; then
+  echo "Database already exists, skipping creation..."
+else
+  echo "Database does not exist, creating and setting up..."
+  bin/rake db:setup
+fi
 
 echo "Check DB migration status"
 bin/rake db:migrate:status
