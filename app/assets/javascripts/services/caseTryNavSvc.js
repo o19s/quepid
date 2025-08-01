@@ -122,6 +122,27 @@ angular.module('QuepidApp')
         return [quepidUrlToSwitchTo, protocolToSwitchTo];
       };
       
+      // Return the protocol Quepid is on
+      this.getQuepidProtocol = function(){
+        // Grab just the absolute url without any trailing query parameters
+        var absUrl = $location.absUrl();
+        // In development you might be on port 3000, and for https we need you not on port 3000
+        absUrl = absUrl.replace(':3000','');              
+        var n = absUrl.indexOf('?');
+        
+        var quepidUrlStartsWithHttps = absUrl.startsWith('https');
+        var quepidUrlToSwitchTo = absUrl.substring(0, n !== -1 ? n : absUrl.length);
+        var protocolToSwitchTo = null;
+        if (quepidUrlStartsWithHttps){
+          protocolToSwitchTo = 'http';
+        }
+        else {
+          protocolToSwitchTo = 'https';
+        }
+        
+        return protocolToSwitchTo;
+      };
+      
       
       
       this.appendQueryParams = function (quepidUrl, params) {

@@ -76,8 +76,11 @@ angular.module('QuepidApp')
               }
               else if  (caseTryNavSvc.needToRedirectQuepidProtocol(settingsSvc.editableSettings().searchUrl)){
                 $log.info('Need to redirect browser to different TLS');
-                throw new Error("Blocked Request: mixed-content"); // Signal that we can't run the query with this setup.
-            //    throw new Error('Need to change to different TLS'); // Signal that we need to change TLS.              
+                var message = "";
+                if (settingsSvc.editableSettings().searchEngine === 'solr' && settingsSvc.editableSettings().apiMethod === 'JSONP'){
+                  message = "Quepid is running on " + caseTryNavSvc.getQuepidProtocol() + ", which doesn't match Solr.  Please either use the Proxy Setting with a GET/POST instead of JSONP, or make sure Solr is on the same HTTP protocol";
+                }
+                throw new Error("Blocked Request: mixed-content. "+ message); // Signal that we can't run the query with this setup.
               }
             }
           });
