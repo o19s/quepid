@@ -177,7 +177,7 @@
             <p>
               <span ng-show="showTLSChangeWarning">
                 You have specified a search engine url that is on a different protocol (
-                <code>{{protocolToSwitchTo}}</code> ) than Quepid is on. Please either <a href=" + {{createSearchEndpointLink(settingsSvc.editableSettings().searchEndpointId)}}/edit" target="_self">swap to the proxied connection</a>, or make sure the search engine is on the same HTTP protocol.
+                <code>{{protocolToSwitchTo}}</code> ) than Quepid is on. Please either <a href="{{createSearchEndpointLink(settingsSvc.editableSettings().searchEndpointId)}}/edit" target="_self">swap to the proxied connection</a>, or make sure the search engine is on the same HTTP protocol.
                 This is to comply with browser security constraints.
               </span>
             </p>
