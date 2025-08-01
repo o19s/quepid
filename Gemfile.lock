@@ -260,7 +260,7 @@ GEM
       thor
     i18n (1.14.7)
       concurrent-ruby (~> 1.0)
-    importmap-rails (2.2.1)
+    importmap-rails (2.2.2)
       actionpack (>= 6.0.0)
       activesupport (>= 6.0.0)
       railties (>= 6.0.0)
@@ -419,7 +419,7 @@ GEM
       date
       stringio
     public_suffix (6.0.2)
-    puma (6.6.0)
+    puma (6.6.1)
       nio4r (~> 2.0)
     raabro (1.4.0)
     racc (1.8.1)

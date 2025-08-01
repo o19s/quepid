@@ -17,7 +17,7 @@ services:
   app:
     container_name: quepid_prod_app
     platform: linux/amd64
-    image: o19s/quepid:8.2.0
+    image: o19s/quepid:8.2.1-alpha1
     #env_file:   # Use this approach if you would rather manage your environment settings elsewhere.
     #  - .env.prod
     environment:
@@ -44,9 +44,6 @@ services:
       - EMAIL_PROVIDER=
       - EMAIL_SENDER=
       - QUERY_LIST_SORTABLE=true
-    volumes:
-      - ./entrypoint.sh:/entrypoint.sh
-    entrypoint: ["/entrypoint.sh"]
     ports:
       - 80:3000 # Map to port 80 for outside users when you are not using Nginx
     links:
