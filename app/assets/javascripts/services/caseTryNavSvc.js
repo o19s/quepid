@@ -15,11 +15,11 @@ angular.module('QuepidApp')
       var currNavDelay = 1000;
       var isLoading = false;
 
-      this.isLoading = function() {
+      this.isLoading = function () {
         return isLoading;
       };
 
-      this.navigateTo = function(caseTryObj, navDelay) {
+      this.navigateTo = function (caseTryObj, navDelay) {
         if (navDelay === undefined) {
           navDelay = 1000;
         }
@@ -42,7 +42,7 @@ angular.module('QuepidApp')
           navTryNo = 1;
         }
 
-        $location.search({'sort': sortBy, 'reverse': sortOrder});
+        $location.search({ 'sort': sortBy, 'reverse': sortOrder });
 
         isLoading = true;
 
@@ -51,28 +51,28 @@ angular.module('QuepidApp')
         $location.path(path);
       };
 
-      this.navigationCompleted = function(caseTryObj) {
+      this.navigationCompleted = function (caseTryObj) {
         caseNo = caseTryObj.caseNo;
         tryNo = caseTryObj.tryNo;
 
-        $timeout(function() {
+        $timeout(function () {
           isLoading = false;
         }, currNavDelay);
       };
 
-      this.notFound = function() {
+      this.notFound = function () {
         $location.path('/404.html');
       };
 
-      this.navigateToCasesListing = function(){
+      this.navigateToCasesListing = function () {
         $location.path('/cases/');
       };
 
-      this.getCaseNo = function() {
+      this.getCaseNo = function () {
         return caseNo;
       };
 
-      this.getTryNo = function() {
+      this.getTryNo = function () {
         return tryNo;
       };
       
@@ -80,8 +80,8 @@ angular.module('QuepidApp')
       // to HTTP in order to make calls to a Solr that is running in HTTP as well, otherwise
       // you get this "Mixed Content", which browsers block as a security issue.
       // https://developer.mozilla.org/en-US/docs/Web/Security/Mixed_content
-      this.needToRedirectQuepidProtocol = function(searchUrl) {
-        if (searchUrl){          
+      this.needToRedirectQuepidProtocol = function (searchUrl) {
+        if (searchUrl) {
           // Figure out if we need to redirect based on our search engine's url.
           var quepidStartsWithHttps = $location.protocol() === 'https';
           var searchEngineStartsWithHttps = searchUrl.startsWith('https');
@@ -93,17 +93,17 @@ angular.module('QuepidApp')
       };
       
       // Return the tuple [quepidUrlToSwitchTo, protocolToSwitchTo]
-      this.swapQuepidUrlTLS = function(){
+      this.swapQuepidUrlTLS = function () {
         // Grab just the absolute url without any trailing query parameters
         var absUrl = $location.absUrl();
         // In development you might be on port 3000, and for https we need you not on port 3000
-        absUrl = absUrl.replace(':3000','');              
+        absUrl = absUrl.replace(':3000', '');
         var n = absUrl.indexOf('?');
         
         var quepidUrlStartsWithHttps = absUrl.startsWith('https');
         var quepidUrlToSwitchTo = absUrl.substring(0, n !== -1 ? n : absUrl.length);
         var protocolToSwitchTo = null;
-        if (quepidUrlStartsWithHttps){
+        if (quepidUrlStartsWithHttps) {
           protocolToSwitchTo = 'http';
           quepidUrlToSwitchTo = quepidUrlToSwitchTo.replace('https', 'http');
         }
@@ -113,7 +113,7 @@ angular.module('QuepidApp')
         }
         
         let separator = '?';
-        if (quepidUrlToSwitchTo.includes('?')){
+        if (quepidUrlToSwitchTo.includes('?')) {
           separator = '&';
         }
         
@@ -123,17 +123,17 @@ angular.module('QuepidApp')
       };
       
       // Return the protocol Quepid is on
-      this.getQuepidProtocol = function(){
+      this.getQuepidProtocol = function () {
         // Grab just the absolute url without any trailing query parameters
         var absUrl = $location.absUrl();
         // In development you might be on port 3000, and for https we need you not on port 3000
-        absUrl = absUrl.replace(':3000','');              
+        absUrl = absUrl.replace(':3000', '');
         var n = absUrl.indexOf('?');
         
         var quepidUrlStartsWithHttps = absUrl.startsWith('https');
         var quepidUrlToSwitchTo = absUrl.substring(0, n !== -1 ? n : absUrl.length);
         var protocolToSwitchTo = null;
-        if (quepidUrlStartsWithHttps){
+        if (quepidUrlStartsWithHttps) {
           protocolToSwitchTo = 'http';
         }
         else {
@@ -155,7 +155,7 @@ angular.module('QuepidApp')
         
       };
       
-      this.getQuepidRootUrl = function(){     
+      this.getQuepidRootUrl = function () {
         var absUrl = $location.absUrl();
        
         if (!absUrl.endsWith('/')) {
@@ -166,15 +166,21 @@ angular.module('QuepidApp')
         var match = absUrl.match(/(.*?)(\/case\/|\/teams\/|\/cases\/)/);
         if (match && match[1]) {
           return match[1]; // Return the part of URL before the pattern
-        } 
+        }
         else {
           console.warn('Neither "/case/", "/cases/", nor "/teams/" found in URL');
-        }       
+        }
       };
       
-      this.getQuepidProxyUrl = function(){
+      this.getQuepidProxyUrl = function () {
         return this.getQuepidRootUrl() + '/proxy/fetch?url=';
       };
+      
+      this.createSearchEndpointLink = function (searchEndpointId){
+        let link = caseTryNavSvc.getQuepidRootUrl() + '/search_endpoints/' + searchEndpointId;
+        return link;
+      }
+      
 
     }
   ]);

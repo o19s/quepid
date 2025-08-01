@@ -13,8 +13,7 @@ angular.module('QuepidApp')
       ctrl.team  = $scope.team;
       
       $scope.createSearchEndpointLink = function(searchEndpointId) {
-        let link = caseTryNavSvc.getQuepidRootUrl() + '/search_endpoints/' + searchEndpointId;
-        return link;
+        return caseTryNavSvc.createSearchEndpointLink(searchEndpointId);
       };
 
       // Functions    
