@@ -177,7 +177,7 @@ angular.module('QuepidApp')
       };
       
       this.createSearchEndpointLink = function (searchEndpointId){
-        let link = caseTryNavSvc.getQuepidRootUrl() + '/search_endpoints/' + searchEndpointId;
+        let link = this.getQuepidRootUrl() + '/search_endpoints/' + searchEndpointId;
         return link;
       }
       
