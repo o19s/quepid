@@ -82,7 +82,7 @@ angular.module('QuepidApp')
                   // <a ng-href="{{createSearchEndpointLink(ctrl.searchEndpoint.id)}}/edit" target="_self" class="action-icon">
                   message = "You have specified a search engine url that is on a different protocol ( <code>" + caseTryNavSvc.getQuepidProtocol() + "</code> ) than Quepid is on. Please either <a href=\"" + caseTryNavSvc.createSearchEndpointLink(settingsSvc.editableSettings().searchEndpointId) + "/edit\" target=\"_self\">swap to the proxied connection</a>, or make sure "+ settingsSvc.editableSettings().searchEngine + " is on the same HTTP protocol.";
                 }
-                throw new Error("Blocked Request: mixed-content. "+ message); // Signal that we can't run the query with this setup.
+                //throw new Error("Blocked Request: mixed-content. "+ message); // Signal that we can't run the query with this setup.
               }
             }
           });
