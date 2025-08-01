@@ -76,6 +76,7 @@ angular.module('QuepidApp')
               }
               else if  (caseTryNavSvc.needToRedirectQuepidProtocol(settingsSvc.editableSettings().searchUrl)){
                 $log.info('Need to redirect browser to different TLS');
+                throw new Error("Blocked Request: mixed-content"); // Signal that we can't run the query with this setup.
             //    throw new Error('Need to change to different TLS'); // Signal that we need to change TLS.              
               }
             }
@@ -153,7 +154,7 @@ angular.module('QuepidApp')
           }).catch(function(error) {            
             // brittle logic, but check if we throw the TLS error or if it's from something else.'
             var message = error.message;
-            if (message === 'Need to change to different TLS'){
+            if (message.startsWith('Blocked Request')){
               var resultsTuple = caseTryNavSvc.swapQuepidUrlTLS();
             
               var quepidUrlToSwitchTo = resultsTuple[0];
