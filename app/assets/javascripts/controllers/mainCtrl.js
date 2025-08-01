@@ -76,7 +76,7 @@ angular.module('QuepidApp')
               }
               else if  (caseTryNavSvc.needToRedirectQuepidProtocol(settingsSvc.editableSettings().searchUrl)){
                 $log.info('Need to redirect browser to different TLS');
-                throw new Error('Need to change to different TLS'); // Signal that we need to change TLS.              
+            //    throw new Error('Need to change to different TLS'); // Signal that we need to change TLS.              
               }
             }
           });
