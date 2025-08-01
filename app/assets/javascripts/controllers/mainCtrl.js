@@ -163,7 +163,8 @@ angular.module('QuepidApp')
               var quepidUrlToSwitchTo = resultsTuple[0];
               var protocolToSwitchTo = resultsTuple[1];
             
-              flash.to('search-error').error = '<a href="' + quepidUrlToSwitchTo + '" class="btn btn-primary form-control">Click Here to <span class="glyphicon glyphicon-refresh"></span> Reload Quepid in <code>' + protocolToSwitchTo + '</code> Protocol!';
+              //flash.to('search-error').error = '<a href="' + quepidUrlToSwitchTo + '" class="btn btn-primary form-control">Click Here to <span class="glyphicon glyphicon-refresh"></span> Reload Quepid in <code>' + protocolToSwitchTo + '</code> Protocol!';
+              flash.to('search-error').error = message;
             }
             else if (message.startsWith('Could not retrieve case')){
               flash.to('search-error').error = message;
