@@ -126,14 +126,8 @@ angular.module('QuepidApp')
       this.getQuepidProtocol = function () {
         // Grab just the absolute url without any trailing query parameters
         var absUrl = $location.absUrl();
-        // In development you might be on port 3000, and for https we need you not on port 3000
-        absUrl = absUrl.replace(':3000', '');
-        var n = absUrl.indexOf('?');
-        
-        var quepidUrlStartsWithHttps = absUrl.startsWith('https');
-        var quepidUrlToSwitchTo = absUrl.substring(0, n !== -1 ? n : absUrl.length);
         var protocolToSwitchTo = null;
-        if (quepidUrlStartsWithHttps) {
+        if (absUrl.startsWith('https')){
           protocolToSwitchTo = 'http';
         }
         else {
@@ -176,11 +170,10 @@ angular.module('QuepidApp')
         return this.getQuepidRootUrl() + '/proxy/fetch?url=';
       };
       
-      this.createSearchEndpointLink = function (searchEndpointId){
+      this.createSearchEndpointLink = function (searchEndpointId) {
         let link = this.getQuepidRootUrl() + '/search_endpoints/' + searchEndpointId;
         return link;
-      }
+      };
       
-
     }
   ]);

@@ -76,9 +76,9 @@ angular.module('QuepidApp')
               }
               else if  (caseTryNavSvc.needToRedirectQuepidProtocol(settingsSvc.editableSettings().searchUrl)){
                 $log.error('Can not send queries to search engine due to browser constraints.');
-                var message = "You have specified a search engine url that is on a different protocol ( <code>" + caseTryNavSvc.getQuepidProtocol() + "</code> ) than Quepid is on. Please either <a href=\"" + caseTryNavSvc.createSearchEndpointLink(settingsSvc.editableSettings().searchEndpointId) + "/edit\" target=\"_self\">swap to the proxied connection</a>, or make sure "+ settingsSvc.editableSettings().searchEngine + " is on the same HTTP protocol.";
+                var message = 'You have specified a search engine url that is on a different protocol ( <code>' + caseTryNavSvc.getQuepidProtocol() + '</code> ) than Quepid is on. Please either <a href="' + caseTryNavSvc.createSearchEndpointLink(settingsSvc.editableSettings().searchEndpointId) + '/edit" target="_self">swap to the proxied connection</a>, or make sure ' + settingsSvc.editableSettings().searchEngine + ' is on the same HTTP protocol.';
   
-                throw new Error("Blocked Request: mixed-content. "+ message); // Signal that we can't run the query with this setup.
+                throw new Error('Blocked Request: mixed-content. ' + message); // Signal that we can't run the query with this setup.
               }
             }
           });
@@ -153,15 +153,9 @@ angular.module('QuepidApp')
             updateCaseMetadata();
             paneSvc.refreshElements();
           }).catch(function(error) {            
-            // brittle logic, but check if we throw the TLS error or if it's from something else.'
+            // brittle logic, but check if we throw the TLS error or if it's from something else.
             var message = error.message;
             if (message.startsWith('Blocked Request')){
-              var resultsTuple = caseTryNavSvc.swapQuepidUrlTLS();
-            
-              var quepidUrlToSwitchTo = resultsTuple[0];
-              var protocolToSwitchTo = resultsTuple[1];
-            
-              //flash.to('search-error').error = '<a href="' + quepidUrlToSwitchTo + '" class="btn btn-primary form-control">Click Here to <span class="glyphicon glyphicon-refresh"></span> Reload Quepid in <code>' + protocolToSwitchTo + '</code> Protocol!';
               flash.to('search-error').error = message;
             }
             else if (message.startsWith('Could not retrieve case')){
