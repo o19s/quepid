@@ -78,7 +78,8 @@ angular.module('QuepidApp')
                 $log.info('Need to redirect browser to different TLS');
                 var message = "";
                 if (settingsSvc.editableSettings().searchEngine === 'solr' && settingsSvc.editableSettings().apiMethod === 'JSONP'){
-                  message = "Quepid is running on " + caseTryNavSvc.getQuepidProtocol() + ", which doesn't match Solr.  Please either use the Proxy Setting with a GET/POST instead of JSONP, or make sure Solr is on the same HTTP protocol";
+                  //message = "Quepid is running on " + caseTryNavSvc.getQuepidProtocol() + ", which doesn't match Solr.  Please either swap to the proxied connection, or make sure Solr is on the same HTTP protocol.";
+                  message = "You have specified a search engine url that is on a different protocol ( <code>" + caseTryNavSvc.getQuepidProtocol() + "</code> ) than Quepid is on. Please either swap to the proxied connection, or make sure "+ settingsSvc.editableSettings().searchEngine + " is on the same HTTP protocol.";
                 }
                 throw new Error("Blocked Request: mixed-content. "+ message); // Signal that we can't run the query with this setup.
               }
