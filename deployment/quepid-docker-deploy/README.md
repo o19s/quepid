@@ -5,7 +5,7 @@ The `docker-compose.yml` template creates a MySQL instance, a Ollama instance, a
 Data is persisted between restarts in the `./volumes` sub directories.
 
 
-1. Update `docker-compose.yml` to use the version of quepid (like `o19s/quepid:8.2.0`) that you want to run.
+1. Update `docker-compose.yml` to use the version of quepid (like `o19s/quepid:8.2.0`) that you want to run.   
 
 2. Start Quepid: `docker compose up`, append `-d` to have it run as a background process.
 
