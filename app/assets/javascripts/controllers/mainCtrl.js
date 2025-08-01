@@ -75,14 +75,10 @@ angular.module('QuepidApp')
                 $scope.showTLSChangeWarning = false;
               }
               else if  (caseTryNavSvc.needToRedirectQuepidProtocol(settingsSvc.editableSettings().searchUrl)){
-                $log.info('Need to redirect browser to different TLS');
-                var message = "";
-                if (settingsSvc.editableSettings().searchEngine === 'solr' && settingsSvc.editableSettings().apiMethod === 'JSONP'){
-                  //message = "Quepid is running on " + caseTryNavSvc.getQuepidProtocol() + ", which doesn't match Solr.  Please either swap to the proxied connection, or make sure Solr is on the same HTTP protocol.";
-                  // <a ng-href="{{createSearchEndpointLink(ctrl.searchEndpoint.id)}}/edit" target="_self" class="action-icon">
-                  message = "You have specified a search engine url that is on a different protocol ( <code>" + caseTryNavSvc.getQuepidProtocol() + "</code> ) than Quepid is on. Please either <a href=\"" + caseTryNavSvc.createSearchEndpointLink(settingsSvc.editableSettings().searchEndpointId) + "/edit\" target=\"_self\">swap to the proxied connection</a>, or make sure "+ settingsSvc.editableSettings().searchEngine + " is on the same HTTP protocol.";
-                }
-                //throw new Error("Blocked Request: mixed-content. "+ message); // Signal that we can't run the query with this setup.
+                $log.error('Can not send queries to search engine due to browser constraints.');
+                var message = "You have specified a search engine url that is on a different protocol ( <code>" + caseTryNavSvc.getQuepidProtocol() + "</code> ) than Quepid is on. Please either <a href=\"" + caseTryNavSvc.createSearchEndpointLink(settingsSvc.editableSettings().searchEndpointId) + "/edit\" target=\"_self\">swap to the proxied connection</a>, or make sure "+ settingsSvc.editableSettings().searchEngine + " is on the same HTTP protocol.";
+  
+                throw new Error("Blocked Request: mixed-content. "+ message); // Signal that we can't run the query with this setup.
               }
             }
           });
