@@ -76,14 +76,6 @@ angular.module('QuepidApp')
         return tryNo;
       };
       
-      this.createMainApplicationLink = function (url) {
-        if (configurationSvc.preferSSL() && !url.startsWith('https')) {
-          url = url.replace(':3000', '');
-          url = url.replace('http', 'https');
-        }
-        return url;
-      };
-      
       // If Quepid is running on HTTPS, like on Heroku, then it needs to switch
       // to HTTP in order to make calls to a Solr that is running in HTTP as well, otherwise
       // you get this "Mixed Content", which browsers block as a security issue.

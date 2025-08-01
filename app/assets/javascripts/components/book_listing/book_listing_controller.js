@@ -14,7 +14,6 @@ angular.module('QuepidApp')
       
       $scope.createBookLink = function(bookId) {
         let link = caseTryNavSvc.getQuepidRootUrl() + '/books/' + bookId;
-        link = caseTryNavSvc.createMainApplicationLink(link);
         return link;
       };
 

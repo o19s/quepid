@@ -75,11 +75,10 @@ server {
 ```
 QUEPID_DOMAIN=https://localhost  # Set this to the domain visible to the user
 FORCE_SSL=true                   # Enable this to use https only connections
-PREFER_SSL=true                  # Enable this to have URLs for the main application (not the core case app) be in https mode.
 ```
 
 > ⚠️ Setting `FORCE_SSL=true` will prevent you from testing search engines
-> that are not TLS enabled (`https`)!  You typically want either FORCE_SSL or PREFER_SSL.
+> that are not TLS enabled (`https`) except via the proxy through Quepid option! .
 
 ## Setting up a Context Path
 
