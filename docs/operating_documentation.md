@@ -78,7 +78,7 @@ FORCE_SSL=true                   # Enable this to use https only connections
 ```
 
 > ⚠️ Setting `FORCE_SSL=true` will prevent you from testing search engines
-> that are not TLS enabled (`https`) except via the proxy through Quepid option! .
+> that are not TLS enabled (`https`) except via the proxy through Quepid option.
 
 ## Setting up a Context Path
 
