@@ -151,13 +151,5 @@ module ApplicationHelper
     Rails.logger.error("Invalid URL for search endpoint: #{url} - Error: #{e.message}")
     nil
   end
-
-  def determine_prefer_ssl_options
-    if Rails.configuration.prefer_ssl
-      { protocol: 'https', port: 443 }
-    else
-      { protocol: 'http' }
-    end
-  end
 end
 # rubocop:enable Metrics/ModuleLength
