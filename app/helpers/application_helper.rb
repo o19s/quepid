@@ -151,6 +151,5 @@ module ApplicationHelper
     Rails.logger.error("Invalid URL for search endpoint: #{url} - Error: #{e.message}")
     nil
   end
-  
 end
 # rubocop:enable Metrics/ModuleLength
