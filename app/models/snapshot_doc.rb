@@ -1,25 +1,38 @@
 # frozen_string_literal: true
 
-# == Schema Information
+# <rails-lens:schema:begin>
+# table = "snapshot_docs"
+# database_dialect = "MySQL"
+# storage_engine = "InnoDB"
+# character_set = "latin1"
+# collation = "latin1_swedish_ci"
 #
-# Table name: snapshot_docs
+# columns = [
+#   { name = "id", type = "integer", primary_key = true, nullable = false },
+#   { name = "doc_id", type = "string", nullable = true },
+#   { name = "position", type = "integer", nullable = true },
+#   { name = "snapshot_query_id", type = "integer", nullable = true },
+#   { name = "explain", type = "text", nullable = true },
+#   { name = "rated_only", type = "boolean", nullable = true, default = "0" },
+#   { name = "fields", type = "text", nullable = true }
+# ]
 #
-#  id                :integer          not null, primary key
-#  explain           :text(16777215)
-#  fields            :text(16777215)
-#  position          :integer
-#  rated_only        :boolean          default(FALSE)
-#  doc_id            :string(500)
-#  snapshot_query_id :integer
+# indexes = [
+#   { name = "snapshot_query_id", columns = ["snapshot_query_id"] }
+# ]
 #
-# Indexes
+# foreign_keys = [
+#   { column = "snapshot_query_id", references_table = "snapshot_queries", references_column = "id", name = "snapshot_docs_ibfk_1" }
+# ]
 #
-#  snapshot_query_id  (snapshot_query_id)
-#
-# Foreign Keys
-#
-#  snapshot_docs_ibfk_1  (snapshot_query_id => snapshot_queries.id)
-#
+# == Notes
+# - Association 'snapshot_query' should specify inverse_of
+# - Column 'position' should probably have NOT NULL constraint
+# - Column 'explain' should probably have NOT NULL constraint
+# - Column 'rated_only' should probably have NOT NULL constraint
+# - Column 'fields' should probably have NOT NULL constraint
+# - Missing timestamp columns (created_at, updated_at)
+# <rails-lens:schema:end>
 
 class SnapshotDoc < ApplicationRecord
   belongs_to :snapshot_query, optional: true # shouldn't be

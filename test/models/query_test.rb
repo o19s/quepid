@@ -1,29 +1,5 @@
 # frozen_string_literal: true
 
-# == Schema Information
-#
-# Table name: queries
-#
-#  id               :integer          not null, primary key
-#  arranged_at      :bigint
-#  arranged_next    :bigint
-#  information_need :string(255)
-#  notes            :text(65535)
-#  options          :json
-#  query_text       :string(2048)
-#  created_at       :datetime         not null
-#  updated_at       :datetime         not null
-#  case_id          :integer
-#
-# Indexes
-#
-#  case_id  (case_id)
-#
-# Foreign Keys
-#
-#  queries_ibfk_1  (case_id => cases.id)
-#
-
 require 'test_helper'
 
 class QueryTest < ActiveSupport::TestCase

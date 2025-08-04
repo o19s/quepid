@@ -1,0 +1,8 @@
+# .rails-lens.yml (optional)
+adapter: auto  # auto-detects PostgreSQL/MySQL/SQLite3
+marker_format: rails-lens:schema  # LLM-friendly markers
+include_notes: true  # Performance recommendations
+extensions:
+  enabled: true  # ClosureTree, PostGIS, etc.
+erd:
+  output: docs/diagrams  # For those Midjourney visuals!

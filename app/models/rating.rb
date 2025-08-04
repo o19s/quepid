@@ -1,26 +1,37 @@
 # frozen_string_literal: true
 
-# == Schema Information
+# <rails-lens:schema:begin>
+# table = "ratings"
+# database_dialect = "MySQL"
+# storage_engine = "InnoDB"
+# character_set = "latin1"
+# collation = "latin1_swedish_ci"
 #
-# Table name: ratings
+# columns = [
+#   { name = "id", type = "integer", primary_key = true, nullable = false },
+#   { name = "doc_id", type = "string", nullable = true },
+#   { name = "rating", type = "float", nullable = true },
+#   { name = "query_id", type = "integer", nullable = true },
+#   { name = "created_at", type = "datetime", nullable = false },
+#   { name = "updated_at", type = "datetime", nullable = false },
+#   { name = "user_id", type = "integer", nullable = true }
+# ]
 #
-#  id         :integer          not null, primary key
-#  rating     :float(24)
-#  created_at :datetime         not null
-#  updated_at :datetime         not null
-#  doc_id     :string(500)
-#  query_id   :integer
-#  user_id    :integer
+# indexes = [
+#   { name = "index_ratings_on_doc_id", columns = ["doc_id"] },
+#   { name = "query_id", columns = ["query_id"] }
+# ]
 #
-# Indexes
+# foreign_keys = [
+#   { column = "query_id", references_table = "queries", references_column = "id", name = "ratings_ibfk_1" }
+# ]
 #
-#  index_ratings_on_doc_id  (doc_id)
-#  query_id                 (query_id)
-#
-# Foreign Keys
-#
-#  ratings_ibfk_1  (query_id => queries.id)
-#
+# == Notes
+# - Missing index on foreign key 'user_id'
+# - Missing foreign key constraint on 'user_id' referencing 'users'
+# - Association 'query' should specify inverse_of
+# - Column 'rating' should probably have NOT NULL constraint
+# <rails-lens:schema:end>
 
 class Rating < ApplicationRecord
   belongs_to :query

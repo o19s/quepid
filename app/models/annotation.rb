@@ -1,24 +1,34 @@
 # frozen_string_literal: true
 
-# == Schema Information
+# <rails-lens:schema:begin>
+# table = "annotations"
+# database_dialect = "MySQL"
+# storage_engine = "InnoDB"
+# character_set = "utf8mb3"
+# collation = "utf8mb3_general_ci"
 #
-# Table name: annotations
+# columns = [
+#   { name = "id", type = "integer", primary_key = true, nullable = false },
+#   { name = "message", type = "text", nullable = true },
+#   { name = "source", type = "string", nullable = true },
+#   { name = "user_id", type = "integer", nullable = true },
+#   { name = "created_at", type = "datetime", nullable = false },
+#   { name = "updated_at", type = "datetime", nullable = false }
+# ]
 #
-#  id         :integer          not null, primary key
-#  message    :text(65535)
-#  source     :string(255)
-#  created_at :datetime         not null
-#  updated_at :datetime         not null
-#  user_id    :integer
+# indexes = [
+#   { name = "index_annotations_on_user_id", columns = ["user_id"] }
+# ]
 #
-# Indexes
+# foreign_keys = [
+#   { column = "user_id", references_table = "users", references_column = "id", name = "fk_rails_4043df79bf" }
+# ]
 #
-#  index_annotations_on_user_id  (user_id)
-#
-# Foreign Keys
-#
-#  fk_rails_...  (user_id => users.id)
-#
+# == Notes
+# - Association 'score' should specify inverse_of
+# - Column 'message' should probably have NOT NULL constraint
+# - Column 'source' should probably have NOT NULL constraint
+# <rails-lens:schema:end>
 
 class Annotation < ApplicationRecord
   # Associations

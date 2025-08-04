@@ -1,28 +1,42 @@
 # frozen_string_literal: true
 
-# == Schema Information
+# <rails-lens:schema:begin>
+# table = "judgements"
+# database_dialect = "MySQL"
+# storage_engine = "InnoDB"
+# character_set = "utf8mb3"
+# collation = "utf8mb3_unicode_ci"
 #
-# Table name: judgements
+# columns = [
+#   { name = "id", type = "integer", primary_key = true, nullable = false },
+#   { name = "user_id", type = "integer", nullable = true },
+#   { name = "rating", type = "float", nullable = true },
+#   { name = "query_doc_pair_id", type = "integer", nullable = false },
+#   { name = "created_at", type = "datetime", nullable = false },
+#   { name = "updated_at", type = "datetime", nullable = false },
+#   { name = "unrateable", type = "boolean", nullable = true, default = "0" },
+#   { name = "judge_later", type = "boolean", nullable = true, default = "0" },
+#   { name = "explanation", type = "text", nullable = true }
+# ]
 #
-#  id                :bigint           not null, primary key
-#  explanation       :text(65535)
-#  judge_later       :boolean          default(FALSE)
-#  rating            :float(24)
-#  unrateable        :boolean          default(FALSE)
-#  created_at        :datetime         not null
-#  updated_at        :datetime         not null
-#  query_doc_pair_id :bigint           not null
-#  user_id           :integer
+# indexes = [
+#   { name = "index_judgements_on_user_id_and_query_doc_pair_id", columns = ["user_id", "query_doc_pair_id"], unique = true },
+#   { name = "index_judgements_on_query_doc_pair_id", columns = ["query_doc_pair_id"] }
+# ]
 #
-# Indexes
+# foreign_keys = [
+#   { column = "query_doc_pair_id", references_table = "query_doc_pairs", references_column = "id", name = "fk_rails_e2d07d22d4" }
+# ]
 #
-#  index_judgements_on_query_doc_pair_id              (query_doc_pair_id)
-#  index_judgements_on_user_id_and_query_doc_pair_id  (user_id,query_doc_pair_id) UNIQUE
-#
-# Foreign Keys
-#
-#  fk_rails_...  (query_doc_pair_id => query_doc_pairs.id)
-#
+# == Notes
+# - Missing foreign key constraint on 'user_id' referencing 'users'
+# - Association 'query_doc_pair' should specify inverse_of
+# - Association 'user' should specify inverse_of
+# - Column 'rating' should probably have NOT NULL constraint
+# - Column 'unrateable' should probably have NOT NULL constraint
+# - Column 'judge_later' should probably have NOT NULL constraint
+# - Column 'explanation' should probably have NOT NULL constraint
+# <rails-lens:schema:end>
 class Judgement < ApplicationRecord
   belongs_to :query_doc_pair
   belongs_to :user, optional: true

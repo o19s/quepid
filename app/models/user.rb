@@ -1,56 +1,102 @@
 # frozen_string_literal: true
 
+# <rails-lens:schema:begin>
+# table = "users"
+# database_dialect = "MySQL"
+# storage_engine = "InnoDB"
+# character_set = "latin1"
+# collation = "latin1_swedish_ci"
+#
+# columns = [
+#   { name = "id", type = "integer", primary_key = true, nullable = false },
+#   { name = "email", type = "string", nullable = true },
+#   { name = "password", type = "string", nullable = true },
+#   { name = "agreed_time", type = "datetime", nullable = true },
+#   { name = "agreed", type = "boolean", nullable = true },
+#   { name = "num_logins", type = "integer", nullable = true },
+#   { name = "name", type = "string", nullable = true },
+#   { name = "administrator", type = "boolean", nullable = true, default = "0" },
+#   { name = "reset_password_token", type = "string", nullable = true },
+#   { name = "reset_password_sent_at", type = "datetime", nullable = true },
+#   { name = "company", type = "string", nullable = true },
+#   { name = "locked", type = "boolean", nullable = true },
+#   { name = "locked_at", type = "datetime", nullable = true },
+#   { name = "created_at", type = "datetime", nullable = false },
+#   { name = "updated_at", type = "datetime", nullable = false },
+#   { name = "default_scorer_id", type = "integer", nullable = true },
+#   { name = "email_marketing", type = "boolean", nullable = false, default = "0" },
+#   { name = "invitation_token", type = "string", nullable = true },
+#   { name = "invitation_created_at", type = "datetime", nullable = true },
+#   { name = "invitation_sent_at", type = "datetime", nullable = true },
+#   { name = "invitation_accepted_at", type = "datetime", nullable = true },
+#   { name = "invitation_limit", type = "integer", nullable = true },
+#   { name = "invited_by_id", type = "integer", nullable = true },
+#   { name = "invitations_count", type = "integer", nullable = true, default = "0" },
+#   { name = "completed_case_wizard", type = "boolean", nullable = false, default = "0" },
+#   { name = "stored_raw_invitation_token", type = "string", nullable = true },
+#   { name = "profile_pic", type = "string", nullable = true },
+#   { name = "system_prompt", type = "string", nullable = true },
+#   { name = "llm_key", type = "string", nullable = true },
+#   { name = "options", type = "json", nullable = true }
+# ]
+#
+# indexes = [
+#   { name = "ix_user_username", columns = ["email"], unique = true },
+#   { name = "index_users_on_invitation_token", columns = ["invitation_token"], unique = true },
+#   { name = "index_users_on_reset_password_token", columns = ["reset_password_token"], unique = true },
+#   { name = "index_users_on_default_scorer_id", columns = ["default_scorer_id"] },
+#   { name = "index_users_on_invited_by_id", columns = ["invited_by_id"] },
+#   { name = "index_users_on_name", columns = ["name"] }
+# ]
+#
+# foreign_keys = [
+#   { column = "default_scorer_id", references_table = "scorers", references_column = "id", name = "fk_rails_3c4ba42168" },
+#   { column = "invited_by_id", references_table = "users", references_column = "id", name = "fk_rails_ae14a5013f" }
+# ]
+#
+# == Notes
+# - Association 'api_keys' should specify inverse_of
+# - Association 'scores' should specify inverse_of
+# - Association 'judgements' should specify inverse_of
+# - Association 'case_metadata' should specify inverse_of
+# - Association 'book_metadata' should specify inverse_of
+# - Association 'api_keys' has N+1 query risk. Consider using includes/preload
+# - Association 'cases' has N+1 query risk. Consider using includes/preload
+# - Association 'books' has N+1 query risk. Consider using includes/preload
+# - Association 'queries' has N+1 query risk. Consider using includes/preload
+# - Association 'owned_scorers' has N+1 query risk. Consider using includes/preload
+# - Association 'shared_team_cases' has N+1 query risk. Consider using includes/preload
+# - Association 'shared_scorers' has N+1 query risk. Consider using includes/preload
+# - Association 'scores' has N+1 query risk. Consider using includes/preload
+# - Association 'judgements' has N+1 query risk. Consider using includes/preload
+# - Association 'case_metadata' has N+1 query risk. Consider using includes/preload
+# - Association 'book_metadata' has N+1 query risk. Consider using includes/preload
+# - Association 'announcements' has N+1 query risk. Consider using includes/preload
+# - Column 'email' should probably have NOT NULL constraint
+# - Column 'password' should probably have NOT NULL constraint
+# - Column 'agreed_time' should probably have NOT NULL constraint
+# - Column 'agreed' should probably have NOT NULL constraint
+# - Column 'num_logins' should probably have NOT NULL constraint
+# - Column 'name' should probably have NOT NULL constraint
+# - Column 'administrator' should probably have NOT NULL constraint
+# - Column 'reset_password_token' should probably have NOT NULL constraint
+# - Column 'company' should probably have NOT NULL constraint
+# - Column 'locked' should probably have NOT NULL constraint
+# - Column 'invitation_token' should probably have NOT NULL constraint
+# - Column 'invitation_limit' should probably have NOT NULL constraint
+# - Column 'invitations_count' should probably have NOT NULL constraint
+# - Column 'stored_raw_invitation_token' should probably have NOT NULL constraint
+# - Column 'profile_pic' should probably have NOT NULL constraint
+# - Column 'system_prompt' should probably have NOT NULL constraint
+# - Column 'llm_key' should probably have NOT NULL constraint
+# - Column 'options' should probably have NOT NULL constraint
+# - Boolean column 'agreed' should have a default value
+# - Boolean column 'locked' should have a default value
+# - Column 'email_marketing' is commonly used in queries - consider adding an index
+# - Column 'stored_raw_invitation_token' is commonly used in queries - consider adding an index
+# <rails-lens:schema:end>
 # rubocop:disable Metrics/ClassLength
 
-# == Schema Information
-#
-# Table name: users
-#
-#  id                          :integer          not null, primary key
-#  administrator               :boolean          default(FALSE)
-#  agreed                      :boolean
-#  agreed_time                 :datetime
-#  company                     :string(255)
-#  completed_case_wizard       :boolean          default(FALSE), not null
-#  email                       :string(80)
-#  email_marketing             :boolean          default(FALSE), not null
-#  invitation_accepted_at      :datetime
-#  invitation_created_at       :datetime
-#  invitation_limit            :integer
-#  invitation_sent_at          :datetime
-#  invitation_token            :string(255)
-#  invitations_count           :integer          default(0)
-#  llm_key                     :string(4000)
-#  locked                      :boolean
-#  locked_at                   :datetime
-#  name                        :string(255)
-#  num_logins                  :integer
-#  options                     :json
-#  password                    :string(120)
-#  profile_pic                 :string(4000)
-#  reset_password_sent_at      :datetime
-#  reset_password_token        :string(255)
-#  stored_raw_invitation_token :string(255)
-#  system_prompt               :string(4000)
-#  created_at                  :datetime         not null
-#  updated_at                  :datetime         not null
-#  default_scorer_id           :integer
-#  invited_by_id               :integer
-#
-# Indexes
-#
-#  index_users_on_default_scorer_id     (default_scorer_id)
-#  index_users_on_invitation_token      (invitation_token) UNIQUE
-#  index_users_on_invited_by_id         (invited_by_id)
-#  index_users_on_name                  (name)
-#  index_users_on_reset_password_token  (reset_password_token) UNIQUE
-#  ix_user_username                     (email) UNIQUE
-#
-# Foreign Keys
-#
-#  fk_rails_...  (default_scorer_id => scorers.id)
-#  fk_rails_...  (invited_by_id => users.id)
-#
 class User < ApplicationRecord
   # Encrypted attributes
   encrypts :llm_key, deterministic: false

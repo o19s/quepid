@@ -1,35 +1,53 @@
 # frozen_string_literal: true
 
-# == Schema Information
+# <rails-lens:schema:begin>
+# table = "case_scores"
+# database_dialect = "MySQL"
+# storage_engine = "InnoDB"
+# character_set = "latin1"
+# collation = "latin1_swedish_ci"
 #
-# Table name: case_scores
+# columns = [
+#   { name = "id", type = "integer", primary_key = true, nullable = false },
+#   { name = "case_id", type = "integer", nullable = true },
+#   { name = "user_id", type = "integer", nullable = true },
+#   { name = "try_id", type = "integer", nullable = true },
+#   { name = "score", type = "float", nullable = true },
+#   { name = "all_rated", type = "boolean", nullable = true },
+#   { name = "created_at", type = "datetime", nullable = true },
+#   { name = "queries", type = "binary", nullable = true },
+#   { name = "annotation_id", type = "integer", nullable = true },
+#   { name = "updated_at", type = "datetime", nullable = true },
+#   { name = "scorer_id", type = "integer", nullable = true }
+# ]
 #
-#  id            :integer          not null, primary key
-#  all_rated     :boolean
-#  queries       :binary(16777215)
-#  score         :float(24)
-#  created_at    :datetime
-#  updated_at    :datetime
-#  annotation_id :integer
-#  case_id       :integer
-#  scorer_id     :bigint
-#  try_id        :integer
-#  user_id       :integer
+# indexes = [
+#   { name = "index_case_scores_annotation_id", columns = ["annotation_id"], unique = true },
+#   { name = "case_id", columns = ["case_id"] },
+#   { name = "index_case_scores_on_scorer_id", columns = ["scorer_id"] },
+#   { name = "support_last_score", columns = ["updated_at", "created_at", "id"] },
+#   { name = "user_id", columns = ["user_id"] }
+# ]
 #
-# Indexes
+# foreign_keys = [
+#   { column = "case_id", references_table = "cases", references_column = "id", name = "case_scores_ibfk_1" },
+#   { column = "user_id", references_table = "users", references_column = "id", name = "case_scores_ibfk_2" },
+#   { column = "annotation_id", references_table = "annotations", references_column = "id", name = "fk_rails_293fbffb66" }
+# ]
 #
-#  case_id                          (case_id)
-#  index_case_scores_annotation_id  (annotation_id) UNIQUE
-#  index_case_scores_on_scorer_id   (scorer_id)
-#  support_last_score               (updated_at,created_at,id)
-#  user_id                          (user_id)
-#
-# Foreign Keys
-#
-#  case_scores_ibfk_1  (case_id => cases.id)
-#  case_scores_ibfk_2  (user_id => users.id)
-#  fk_rails_...        (annotation_id => annotations.id)
-#
+# == Notes
+# - Missing index on foreign key 'try_id'
+# - Missing foreign key constraint on 'try_id' referencing 'tries'
+# - Missing foreign key constraint on 'scorer_id' referencing 'scorers'
+# - Association 'case' should specify inverse_of
+# - Association 'user' should specify inverse_of
+# - Association 'annotation' should specify inverse_of
+# - Association 'scorer' should specify inverse_of
+# - Column 'score' should probably have NOT NULL constraint
+# - Column 'all_rated' should probably have NOT NULL constraint
+# - Column 'queries' should probably have NOT NULL constraint
+# - Boolean column 'all_rated' should have a default value
+# <rails-lens:schema:end>
 
 class Score < ApplicationRecord
   self.table_name = 'case_scores'

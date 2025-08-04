@@ -1,28 +1,48 @@
 # frozen_string_literal: true
 
-# == Schema Information
+# <rails-lens:schema:begin>
+# table = "search_endpoints"
+# database_dialect = "MySQL"
+# storage_engine = "InnoDB"
+# character_set = "utf8mb3"
+# collation = "utf8mb3_general_ci"
 #
-# Table name: search_endpoints
+# columns = [
+#   { name = "id", type = "integer", primary_key = true, nullable = false },
+#   { name = "name", type = "string", nullable = true },
+#   { name = "owner_id", type = "integer", nullable = true },
+#   { name = "search_engine", type = "string", nullable = true },
+#   { name = "endpoint_url", type = "string", nullable = true },
+#   { name = "api_method", type = "string", nullable = true },
+#   { name = "custom_headers", type = "string", nullable = true },
+#   { name = "archived", type = "boolean", nullable = true, default = "0" },
+#   { name = "created_at", type = "datetime", nullable = false },
+#   { name = "updated_at", type = "datetime", nullable = false },
+#   { name = "basic_auth_credential", type = "string", nullable = true },
+#   { name = "mapper_code", type = "text", nullable = true },
+#   { name = "proxy_requests", type = "boolean", nullable = true, default = "0" },
+#   { name = "options", type = "json", nullable = true }
+# ]
 #
-#  id                    :bigint           not null, primary key
-#  api_method            :string(255)
-#  archived              :boolean          default(FALSE)
-#  basic_auth_credential :string(255)
-#  custom_headers        :string(6000)
-#  endpoint_url          :string(500)
-#  mapper_code           :text(65535)
-#  name                  :string(255)
-#  options               :json
-#  proxy_requests        :boolean          default(FALSE)
-#  search_engine         :string(50)
-#  created_at            :datetime         not null
-#  updated_at            :datetime         not null
-#  owner_id              :integer
+# indexes = [
+#   { name = "index_search_endpoints_on_owner_id_and_id", columns = ["owner_id", "id"] }
+# ]
 #
-# Indexes
-#
-#  index_search_endpoints_on_owner_id_and_id  (owner_id,id)
-#
+# == Notes
+# - Missing foreign key constraint on 'owner_id' referencing 'users'
+# - Association 'tries' has N+1 query risk. Consider using includes/preload
+# - Column 'name' should probably have NOT NULL constraint
+# - Column 'search_engine' should probably have NOT NULL constraint
+# - Column 'endpoint_url' should probably have NOT NULL constraint
+# - Column 'api_method' should probably have NOT NULL constraint
+# - Column 'custom_headers' should probably have NOT NULL constraint
+# - Column 'archived' should probably have NOT NULL constraint
+# - Column 'basic_auth_credential' should probably have NOT NULL constraint
+# - Column 'mapper_code' should probably have NOT NULL constraint
+# - Column 'proxy_requests' should probably have NOT NULL constraint
+# - Column 'options' should probably have NOT NULL constraint
+# - Column 'mapper_code' is commonly used in queries - consider adding an index
+# <rails-lens:schema:end>
 
 class SearchEndpoint < ApplicationRecord
   # Associations

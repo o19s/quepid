@@ -1,18 +1,26 @@
 # frozen_string_literal: true
 
-# == Schema Information
+# <rails-lens:schema:begin>
+# table = "teams"
+# database_dialect = "MySQL"
+# storage_engine = "InnoDB"
+# character_set = "latin1"
+# collation = "latin1_swedish_ci"
 #
-# Table name: teams
+# columns = [
+#   { name = "id", type = "integer", primary_key = true, nullable = false },
+#   { name = "name", type = "string", nullable = true },
+#   { name = "created_at", type = "datetime", nullable = false },
+#   { name = "updated_at", type = "datetime", nullable = false }
+# ]
 #
-#  id         :integer          not null, primary key
-#  name       :string(255)
-#  created_at :datetime         not null
-#  updated_at :datetime         not null
+# indexes = [
+#   { name = "index_teams_on_name", columns = ["name"] }
+# ]
 #
-# Indexes
-#
-#  index_teams_on_name  (name)
-#
+# == Notes
+# - Column 'name' should probably have NOT NULL constraint
+# <rails-lens:schema:end>
 
 class Team < ApplicationRecord
   # Associations

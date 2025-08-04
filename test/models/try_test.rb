@@ -1,33 +1,5 @@
 # frozen_string_literal: true
 
-# == Schema Information
-#
-# Table name: tries
-#
-#  id                 :integer          not null, primary key
-#  ancestry           :string(3072)
-#  escape_query       :boolean          default(TRUE)
-#  field_spec         :string(500)
-#  name               :string(50)
-#  number_of_rows     :integer          default(10)
-#  query_params       :string(20000)
-#  try_number         :integer
-#  created_at         :datetime         not null
-#  updated_at         :datetime         not null
-#  case_id            :integer
-#  search_endpoint_id :bigint
-#
-# Indexes
-#
-#  case_id                            (case_id)
-#  index_tries_on_search_endpoint_id  (search_endpoint_id)
-#  ix_queryparam_tryNo                (try_number)
-#
-# Foreign Keys
-#
-#  tries_ibfk_1  (case_id => cases.id)
-#
-
 require 'test_helper'
 
 class TryTest < ActiveSupport::TestCase

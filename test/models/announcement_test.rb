@@ -1,21 +1,5 @@
 # frozen_string_literal: true
 
-# == Schema Information
-#
-# Table name: announcements
-#
-#  id         :bigint           not null, primary key
-#  live       :boolean          default(FALSE)
-#  text       :text(65535)
-#  created_at :datetime         not null
-#  updated_at :datetime         not null
-#  author_id  :integer
-#
-# Indexes
-#
-#  index_announcements_author_id  (author_id)
-#  index_announcements_on_live    (live)
-#
 require 'test_helper'
 
 class AnnouncementTest < ActiveSupport::TestCase
