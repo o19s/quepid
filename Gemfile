@@ -70,8 +70,6 @@ group :development do
   # Add speed badges [https://github.com/MiniProfiler/rack-mini-profiler]
   # gem 'rack-mini-profiler'
 
-  gem 'database_consistency', '~> 2.0', require: false
-
   # This is useful in working on performance issues, but otherwise puts
   # a lot of noise in logs on startup
   # gem 'debugbar'
@@ -82,6 +80,7 @@ group :development do
   gem 'rubocop-rails', require: false
   gem 'rubocop-capybara', require: false
   gem 'rails-erd', '~> 1.6'
+  gem 'rails_lens', '~> 0.2.5'
 end
 
 group :test do
@@ -95,5 +94,3 @@ group :test do
   gem 'capybara'
   gem 'selenium-webdriver'
 end
-
-gem 'rails_lens', '~> 0.2.5'
