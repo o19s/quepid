@@ -33,7 +33,6 @@
 # - Column 'fields' should probably have NOT NULL constraint
 # - Missing timestamp columns (created_at, updated_at)
 # <rails-lens:schema:end>
-
 class SnapshotDoc < ApplicationRecord
   belongs_to :snapshot_query, optional: true # shouldn't be
 

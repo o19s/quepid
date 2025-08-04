@@ -42,7 +42,6 @@
 # - Association 'snapshot_docs' has N+1 query risk. Consider using includes/preload
 # - Column 'name' should probably have NOT NULL constraint
 # <rails-lens:schema:end>
-
 class Snapshot < ApplicationRecord
   # Associations
   belongs_to  :case, optional: true # shouldn't be optional!

@@ -43,7 +43,6 @@
 # - Column 'options' should probably have NOT NULL constraint
 # - Column 'mapper_code' is commonly used in queries - consider adding an index
 # <rails-lens:schema:end>
-
 class SearchEndpoint < ApplicationRecord
   # Associations
   # too late now!

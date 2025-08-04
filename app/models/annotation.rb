@@ -29,7 +29,6 @@
 # - Column 'message' should probably have NOT NULL constraint
 # - Column 'source' should probably have NOT NULL constraint
 # <rails-lens:schema:end>
-
 class Annotation < ApplicationRecord
   # Associations
   belongs_to  :user, optional: false

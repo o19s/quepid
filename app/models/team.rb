@@ -21,7 +21,6 @@
 # == Notes
 # - Column 'name' should probably have NOT NULL constraint
 # <rails-lens:schema:end>
-
 class Team < ApplicationRecord
   # Associations
   # too late now!

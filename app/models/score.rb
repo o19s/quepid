@@ -48,7 +48,6 @@
 # - Column 'queries' should probably have NOT NULL constraint
 # - Boolean column 'all_rated' should have a default value
 # <rails-lens:schema:end>
-
 class Score < ApplicationRecord
   self.table_name = 'case_scores'
 

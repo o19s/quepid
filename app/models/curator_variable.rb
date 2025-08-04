@@ -26,7 +26,6 @@
 # - Column 'name' should probably have NOT NULL constraint
 # - Column 'value' should probably have NOT NULL constraint
 # <rails-lens:schema:end>
-
 class CuratorVariable < ApplicationRecord
   belongs_to :try,
              inverse_of: :curator_variables

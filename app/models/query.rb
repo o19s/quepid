@@ -40,7 +40,6 @@
 # - Column 'information_need' should probably have NOT NULL constraint
 # - Column 'options' should probably have NOT NULL constraint
 # <rails-lens:schema:end>
-
 require_relative 'concerns/arrangement/item'
 
 class Query < ApplicationRecord

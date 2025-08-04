@@ -39,7 +39,6 @@
 # - Column 'communal' should probably have NOT NULL constraint
 # - Column 'code' is commonly used in queries - consider adding an index
 # <rails-lens:schema:end>
-
 require 'scale_serializer'
 
 class Scorer < ApplicationRecord

@@ -32,7 +32,6 @@
 # - Association 'query' should specify inverse_of
 # - Column 'rating' should probably have NOT NULL constraint
 # <rails-lens:schema:end>
-
 class Rating < ApplicationRecord
   belongs_to :query
   belongs_to :user, optional: true

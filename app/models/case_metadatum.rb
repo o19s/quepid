@@ -30,7 +30,6 @@
 # - Association 'user' should specify inverse_of
 # - Missing timestamp columns (created_at, updated_at)
 # <rails-lens:schema:end>
-
 class CaseMetadatum < ApplicationRecord
   belongs_to :case
   belongs_to :user

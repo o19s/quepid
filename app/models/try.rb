@@ -47,7 +47,6 @@
 # - Column 'number_of_rows' should probably have NOT NULL constraint
 # - Column 'ancestry' should probably have NOT NULL constraint
 # <rails-lens:schema:end>
-
 require 'solr_arg_parser'
 require 'es_arg_parser'
 

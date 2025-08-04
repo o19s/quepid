@@ -41,7 +41,6 @@
 # - Column 'response_status' is commonly used in queries - consider adding an index
 # - Missing timestamp columns (created_at, updated_at)
 # <rails-lens:schema:end>
-
 class SnapshotQuery < ApplicationRecord
   belongs_to  :snapshot, optional: true # shouldn't be
   belongs_to  :query, optional: true # shouldn't be
