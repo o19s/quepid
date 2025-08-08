@@ -1,31 +1,64 @@
 # frozen_string_literal: true
 
-# == Schema Information
+# <rails-lens:schema:begin>
+# table = "books"
+# database_dialect = "MySQL"
+# storage_engine = "InnoDB"
+# character_set = "utf8mb3"
+# collation = "utf8mb3_unicode_ci"
 #
-# Table name: books
+# columns = [
+#   { name = "id", type = "integer", primary_key = true, nullable = false },
+#   { name = "scorer_id", type = "integer", nullable = true },
+#   { name = "selection_strategy_id", type = "integer", nullable = false },
+#   { name = "name", type = "string", nullable = true },
+#   { name = "created_at", type = "datetime", nullable = false },
+#   { name = "updated_at", type = "datetime", nullable = false },
+#   { name = "support_implicit_judgements", type = "boolean", nullable = true },
+#   { name = "show_rank", type = "boolean", nullable = true, default = "0" },
+#   { name = "owner_id", type = "integer", nullable = true },
+#   { name = "export_job", type = "string", nullable = true },
+#   { name = "import_job", type = "string", nullable = true },
+#   { name = "populate_job", type = "string", nullable = true }
+# ]
 #
-#  id                          :bigint           not null, primary key
-#  export_job                  :string(255)
-#  import_job                  :string(255)
-#  name                        :string(255)
-#  populate_job                :string(255)
-#  show_rank                   :boolean          default(FALSE)
-#  support_implicit_judgements :boolean
-#  created_at                  :datetime         not null
-#  updated_at                  :datetime         not null
-#  owner_id                    :integer
-#  scorer_id                   :integer
-#  selection_strategy_id       :bigint           not null
+# indexes = [
+#   { name = "index_books_owner_id", columns = ["owner_id"] },
+#   { name = "index_books_on_selection_strategy_id", columns = ["selection_strategy_id"] }
+# ]
 #
-# Indexes
+# foreign_keys = [
+#   { column = "selection_strategy_id", references_table = "selection_strategies", references_column = "id", name = "fk_rails_24f1c667d7" }
+# ]
 #
-#  index_books_on_selection_strategy_id  (selection_strategy_id)
-#  index_books_owner_id                  (owner_id)
+# == Polymorphic Associations
+# Polymorphic Targets:
+# - import_file_attachment (as: :record)
+# - export_file_attachment (as: :record)
+# - populate_file_attachment (as: :record)
 #
-# Foreign Keys
-#
-#  fk_rails_...  (selection_strategy_id => selection_strategies.id)
-#
+# == Notes
+# - Missing index on foreign key 'scorer_id'
+# - Missing foreign key constraint on 'owner_id' referencing 'users'
+# - Missing foreign key constraint on 'scorer_id' referencing 'scorers'
+# - Association 'owner' should specify inverse_of
+# - Association 'query_doc_pairs' should specify inverse_of
+# - Association 'cases' should specify inverse_of
+# - Association 'metadata' should specify inverse_of
+# - Association 'query_doc_pairs' has N+1 query risk. Consider using includes/preload
+# - Association 'judgements' has N+1 query risk. Consider using includes/preload
+# - Association 'judges' has N+1 query risk. Consider using includes/preload
+# - Association 'cases' has N+1 query risk. Consider using includes/preload
+# - Association 'rated_query_doc_pairs' has N+1 query risk. Consider using includes/preload
+# - Association 'metadata' has N+1 query risk. Consider using includes/preload
+# - Column 'name' should probably have NOT NULL constraint
+# - Column 'support_implicit_judgements' should probably have NOT NULL constraint
+# - Column 'show_rank' should probably have NOT NULL constraint
+# - Column 'export_job' should probably have NOT NULL constraint
+# - Column 'import_job' should probably have NOT NULL constraint
+# - Column 'populate_job' should probably have NOT NULL constraint
+# - Boolean column 'support_implicit_judgements' should have a default value
+# <rails-lens:schema:end>
 class Book < ApplicationRecord
   # Associations
   # rubocop:disable Rails/HasAndBelongsToMany

@@ -1,25 +1,44 @@
 # frozen_string_literal: true
 
-# == Schema Information
+# <rails-lens:schema:begin>
+# table = "scorers"
+# database_dialect = "MySQL"
+# storage_engine = "InnoDB"
+# character_set = "utf8mb4"
+# collation = "utf8mb4_bin"
 #
-# Table name: scorers
+# columns = [
+#   { name = "id", type = "integer", primary_key = true, nullable = false },
+#   { name = "code", type = "text", nullable = true },
+#   { name = "name", type = "string", nullable = true },
+#   { name = "owner_id", type = "integer", nullable = true },
+#   { name = "scale", type = "string", nullable = true },
+#   { name = "show_scale_labels", type = "boolean", nullable = true, default = "0" },
+#   { name = "scale_with_labels", type = "text", nullable = true },
+#   { name = "created_at", type = "datetime", nullable = false },
+#   { name = "updated_at", type = "datetime", nullable = false },
+#   { name = "communal", type = "boolean", nullable = true, default = "0" }
+# ]
 #
-#  id                :integer          not null, primary key
-#  code              :text(65535)
-#  communal          :boolean          default(FALSE)
-#  name              :string(255)
-#  scale             :string(255)
-#  scale_with_labels :text(65535)
-#  show_scale_labels :boolean          default(FALSE)
-#  created_at        :datetime         not null
-#  updated_at        :datetime         not null
-#  owner_id          :integer
+# indexes = [
+#   { name = "index_scorers_owner_id", columns = ["owner_id"] }
+# ]
 #
-# Indexes
-#
-#  index_scorers_owner_id  (owner_id)
-#
-
+# == Notes
+# - Missing foreign key constraint on 'owner_id' referencing 'users'
+# - Association 'owner' should specify inverse_of
+# - Association 'snapshots' should specify inverse_of
+# - Association 'scores' should specify inverse_of
+# - Association 'snapshots' has N+1 query risk. Consider using includes/preload
+# - Association 'scores' has N+1 query risk. Consider using includes/preload
+# - Column 'code' should probably have NOT NULL constraint
+# - Column 'name' should probably have NOT NULL constraint
+# - Column 'scale' should probably have NOT NULL constraint
+# - Column 'show_scale_labels' should probably have NOT NULL constraint
+# - Column 'scale_with_labels' should probably have NOT NULL constraint
+# - Column 'communal' should probably have NOT NULL constraint
+# - Column 'code' is commonly used in queries - consider adding an index
+# <rails-lens:schema:end>
 require 'scale_serializer'
 
 class Scorer < ApplicationRecord

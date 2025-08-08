@@ -1,20 +1,29 @@
 # frozen_string_literal: true
 
-# == Schema Information
+# <rails-lens:schema:begin>
+# table = "api_keys"
+# database_dialect = "MySQL"
+# storage_engine = "InnoDB"
+# character_set = "utf8mb4"
+# collation = "utf8mb4_0900_ai_ci"
 #
-# Table name: api_keys
+# columns = [
+#   { name = "id", type = "integer", primary_key = true, nullable = false },
+#   { name = "user_id", type = "integer", nullable = true },
+#   { name = "token_digest", type = "string", nullable = false },
+#   { name = "created_at", type = "datetime", nullable = false },
+#   { name = "updated_at", type = "datetime", nullable = false }
+# ]
 #
-#  id           :bigint           not null, primary key
-#  token_digest :string(255)      not null
-#  created_at   :datetime         not null
-#  updated_at   :datetime         not null
-#  user_id      :integer
+# indexes = [
+#   { name = "index_api_keys_on_token_digest", columns = ["token_digest"] },
+#   { name = "index_api_keys_user_id", columns = ["user_id"] }
+# ]
 #
-# Indexes
-#
-#  index_api_keys_on_token_digest  (token_digest)
-#  index_api_keys_user_id          (user_id)
-#
+# == Notes
+# - Missing foreign key constraint on 'user_id' referencing 'users'
+# - Association 'user' should specify inverse_of
+# <rails-lens:schema:end>
 class ApiKey < ApplicationRecord
   HMAC_SECRET_KEY = Rails.application.secret_key_base
   belongs_to :user

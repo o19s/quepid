@@ -1,30 +1,3 @@
-# == Schema Information
-#
-# Table name: cases
-#
-#  id              :integer          not null, primary key
-#  archived        :boolean
-#  case_name       :string(191)
-#  last_try_number :integer
-#  nightly         :boolean
-#  options         :json
-#  public          :boolean
-#  created_at      :datetime         not null
-#  updated_at      :datetime         not null
-#  book_id         :integer
-#  owner_id        :integer
-#  scorer_id       :integer
-#
-# Indexes
-#
-#  idx_owner_archived   (owner_id,archived)
-#  index_cases_book_id  (book_id)
-#  user_id              (owner_id)
-#
-# Foreign Keys
-#
-#  cases_ibfk_1  (owner_id => users.id)
-#
 
 one:
   owner: :doug

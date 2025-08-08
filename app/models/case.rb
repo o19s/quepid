@@ -1,34 +1,64 @@
 # frozen_string_literal: true
 
+# <rails-lens:schema:begin>
+# table = "cases"
+# database_dialect = "MySQL"
+# storage_engine = "InnoDB"
+# character_set = "utf8mb3"
+# collation = "utf8mb3_general_ci"
+#
+# columns = [
+#   { name = "id", type = "integer", primary_key = true, nullable = false },
+#   { name = "case_name", type = "string", nullable = true },
+#   { name = "last_try_number", type = "integer", nullable = true },
+#   { name = "owner_id", type = "integer", nullable = true },
+#   { name = "archived", type = "boolean", nullable = true },
+#   { name = "scorer_id", type = "integer", nullable = true },
+#   { name = "created_at", type = "datetime", nullable = false },
+#   { name = "updated_at", type = "datetime", nullable = false },
+#   { name = "book_id", type = "integer", nullable = true },
+#   { name = "public", type = "boolean", nullable = true },
+#   { name = "options", type = "json", nullable = true },
+#   { name = "nightly", type = "boolean", nullable = true }
+# ]
+#
+# indexes = [
+#   { name = "index_cases_book_id", columns = ["book_id"] },
+#   { name = "idx_owner_archived", columns = ["owner_id", "archived"] },
+#   { name = "user_id", columns = ["owner_id"] }
+# ]
+#
+# foreign_keys = [
+#   { column = "owner_id", references_table = "users", references_column = "id", name = "cases_ibfk_1" }
+# ]
+#
+# == Notes
+# - Missing index on foreign key 'scorer_id'
+# - Index 'idx_owner_archived' might be redundant with 'user_id'
+# - Missing foreign key constraint on 'scorer_id' referencing 'scorers'
+# - Missing foreign key constraint on 'book_id' referencing 'books'
+# - Association 'owner' should specify inverse_of
+# - Association 'metadata' should specify inverse_of
+# - Association 'queries' should specify inverse_of
+# - Association 'snapshots' should specify inverse_of
+# - Association 'book' should specify inverse_of
+# - Association 'tries' has N+1 query risk. Consider using includes/preload
+# - Association 'metadata' has N+1 query risk. Consider using includes/preload
+# - Association 'queries' has N+1 query risk. Consider using includes/preload
+# - Association 'ratings' has N+1 query risk. Consider using includes/preload
+# - Association 'scores' has N+1 query risk. Consider using includes/preload
+# - Association 'snapshots' has N+1 query risk. Consider using includes/preload
+# - Association 'annotations' has N+1 query risk. Consider using includes/preload
+# - Column 'case_name' should probably have NOT NULL constraint
+# - Column 'archived' should probably have NOT NULL constraint
+# - Column 'public' should probably have NOT NULL constraint
+# - Column 'options' should probably have NOT NULL constraint
+# - Column 'nightly' should probably have NOT NULL constraint
+# - Boolean column 'archived' should have a default value
+# - Boolean column 'public' should have a default value
+# - Boolean column 'nightly' should have a default value
+# <rails-lens:schema:end>
 # rubocop:disable Metrics/ClassLength
-
-# == Schema Information
-#
-# Table name: cases
-#
-#  id              :integer          not null, primary key
-#  archived        :boolean
-#  case_name       :string(191)
-#  last_try_number :integer
-#  nightly         :boolean
-#  options         :json
-#  public          :boolean
-#  created_at      :datetime         not null
-#  updated_at      :datetime         not null
-#  book_id         :integer
-#  owner_id        :integer
-#  scorer_id       :integer
-#
-# Indexes
-#
-#  idx_owner_archived   (owner_id,archived)
-#  index_cases_book_id  (book_id)
-#  user_id              (owner_id)
-#
-# Foreign Keys
-#
-#  cases_ibfk_1  (owner_id => users.id)
-#
 
 class Case < ApplicationRecord
   # Associations

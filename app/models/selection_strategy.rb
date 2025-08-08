@@ -1,15 +1,24 @@
 # frozen_string_literal: true
 
-# == Schema Information
+# <rails-lens:schema:begin>
+# table = "selection_strategies"
+# database_dialect = "MySQL"
+# storage_engine = "InnoDB"
+# character_set = "utf8mb3"
+# collation = "utf8mb3_unicode_ci"
 #
-# Table name: selection_strategies
+# columns = [
+#   { name = "id", type = "integer", primary_key = true, nullable = false },
+#   { name = "name", type = "string", nullable = true },
+#   { name = "created_at", type = "datetime", nullable = false },
+#   { name = "updated_at", type = "datetime", nullable = false },
+#   { name = "description", type = "string", nullable = true }
+# ]
 #
-#  id          :bigint           not null, primary key
-#  description :string(255)
-#  name        :string(255)
-#  created_at  :datetime         not null
-#  updated_at  :datetime         not null
-#
+# == Notes
+# - Column 'name' should probably have NOT NULL constraint
+# - Column 'description' should probably have NOT NULL constraint
+# <rails-lens:schema:end>
 class SelectionStrategy < ApplicationRecord
   def single_rater?
     'Single Rater' == name

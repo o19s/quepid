@@ -1,29 +1,45 @@
 # frozen_string_literal: true
 
-# == Schema Information
+# <rails-lens:schema:begin>
+# table = "queries"
+# database_dialect = "MySQL"
+# storage_engine = "InnoDB"
+# character_set = "utf8mb3"
+# collation = "utf8mb3_general_ci"
 #
-# Table name: queries
+# columns = [
+#   { name = "id", type = "integer", primary_key = true, nullable = false },
+#   { name = "arranged_next", type = "integer", nullable = true },
+#   { name = "arranged_at", type = "integer", nullable = true },
+#   { name = "query_text", type = "string", nullable = true },
+#   { name = "notes", type = "text", nullable = true },
+#   { name = "case_id", type = "integer", nullable = true },
+#   { name = "created_at", type = "datetime", nullable = false },
+#   { name = "updated_at", type = "datetime", nullable = false },
+#   { name = "information_need", type = "string", nullable = true },
+#   { name = "options", type = "json", nullable = true }
+# ]
 #
-#  id               :integer          not null, primary key
-#  arranged_at      :bigint
-#  arranged_next    :bigint
-#  information_need :string(255)
-#  notes            :text(65535)
-#  options          :json
-#  query_text       :string(2048)
-#  created_at       :datetime         not null
-#  updated_at       :datetime         not null
-#  case_id          :integer
+# indexes = [
+#   { name = "case_id", columns = ["case_id"] }
+# ]
 #
-# Indexes
+# foreign_keys = [
+#   { column = "case_id", references_table = "cases", references_column = "id", name = "queries_ibfk_1" }
+# ]
 #
-#  case_id  (case_id)
-#
-# Foreign Keys
-#
-#  queries_ibfk_1  (case_id => cases.id)
-#
-
+# == Notes
+# - Association 'case' should specify inverse_of
+# - Association 'ratings' should specify inverse_of
+# - Association 'snapshot_queries' should specify inverse_of
+# - Association 'ratings' has N+1 query risk. Consider using includes/preload
+# - Association 'snapshot_queries' has N+1 query risk. Consider using includes/preload
+# - Column 'arranged_next' should probably have NOT NULL constraint
+# - Column 'query_text' should probably have NOT NULL constraint
+# - Column 'notes' should probably have NOT NULL constraint
+# - Column 'information_need' should probably have NOT NULL constraint
+# - Column 'options' should probably have NOT NULL constraint
+# <rails-lens:schema:end>
 require_relative 'concerns/arrangement/item'
 
 class Query < ApplicationRecord

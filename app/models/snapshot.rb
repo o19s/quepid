@@ -1,28 +1,47 @@
 # frozen_string_literal: true
 
-# == Schema Information
+# <rails-lens:schema:begin>
+# table = "snapshots"
+# database_dialect = "MySQL"
+# storage_engine = "InnoDB"
+# character_set = "latin1"
+# collation = "latin1_swedish_ci"
 #
-# Table name: snapshots
+# columns = [
+#   { name = "id", type = "integer", primary_key = true, nullable = false },
+#   { name = "name", type = "string", nullable = true },
+#   { name = "created_at", type = "datetime", nullable = true },
+#   { name = "case_id", type = "integer", nullable = true },
+#   { name = "updated_at", type = "datetime", nullable = false },
+#   { name = "try_id", type = "integer", nullable = true },
+#   { name = "scorer_id", type = "integer", nullable = true }
+# ]
 #
-#  id         :integer          not null, primary key
-#  name       :string(250)
-#  created_at :datetime
-#  updated_at :datetime         not null
-#  case_id    :integer
-#  scorer_id  :bigint
-#  try_id     :bigint
+# indexes = [
+#   { name = "case_id", columns = ["case_id"] },
+#   { name = "index_snapshots_on_scorer_id", columns = ["scorer_id"] },
+#   { name = "index_snapshots_on_try_id", columns = ["try_id"] }
+# ]
 #
-# Indexes
+# foreign_keys = [
+#   { column = "case_id", references_table = "cases", references_column = "id", name = "snapshots_ibfk_1" }
+# ]
 #
-#  case_id                       (case_id)
-#  index_snapshots_on_scorer_id  (scorer_id)
-#  index_snapshots_on_try_id     (try_id)
+# == Polymorphic Associations
+# Polymorphic Targets:
+# - snapshot_file_attachment (as: :record)
 #
-# Foreign Keys
-#
-#  snapshots_ibfk_1  (case_id => cases.id)
-#
-
+# == Notes
+# - Missing foreign key constraint on 'try_id' referencing 'tries'
+# - Missing foreign key constraint on 'scorer_id' referencing 'scorers'
+# - Association 'case' should specify inverse_of
+# - Association 'try' should specify inverse_of
+# - Association 'scorer' should specify inverse_of
+# - Association 'snapshot_queries' should specify inverse_of
+# - Association 'snapshot_queries' has N+1 query risk. Consider using includes/preload
+# - Association 'snapshot_docs' has N+1 query risk. Consider using includes/preload
+# - Column 'name' should probably have NOT NULL constraint
+# <rails-lens:schema:end>
 class Snapshot < ApplicationRecord
   # Associations
   belongs_to  :case, optional: true # shouldn't be optional!

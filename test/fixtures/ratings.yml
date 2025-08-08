@@ -1,24 +1,3 @@
-# == Schema Information
-#
-# Table name: ratings
-#
-#  id         :integer          not null, primary key
-#  rating     :float(24)
-#  created_at :datetime         not null
-#  updated_at :datetime         not null
-#  doc_id     :string(500)
-#  query_id   :integer
-#  user_id    :integer
-#
-# Indexes
-#
-#  index_ratings_on_doc_id  (doc_id)
-#  query_id                 (query_id)
-#
-# Foreign Keys
-#
-#  ratings_ibfk_1  (query_id => queries.id)
-#
 
 import_rating_1:
   doc_id: '123'

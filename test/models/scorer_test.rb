@@ -1,25 +1,5 @@
 # frozen_string_literal: true
 
-# == Schema Information
-#
-# Table name: scorers
-#
-#  id                :integer          not null, primary key
-#  code              :text(65535)
-#  communal          :boolean          default(FALSE)
-#  name              :string(255)
-#  scale             :string(255)
-#  scale_with_labels :text(65535)
-#  show_scale_labels :boolean          default(FALSE)
-#  created_at        :datetime         not null
-#  updated_at        :datetime         not null
-#  owner_id          :integer
-#
-# Indexes
-#
-#  index_scorers_owner_id  (owner_id)
-#
-
 require 'test_helper'
 
 class ScorerTest < ActiveSupport::TestCase

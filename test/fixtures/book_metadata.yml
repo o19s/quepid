@@ -4,24 +4,6 @@
 # model remove the '{}' from the fixture names and add the columns immediately
 # below each fixture, per the syntax in the comments below
 #
-# == Schema Information
-#
-# Table name: book_metadata
-#
-#  id             :bigint           not null, primary key
-#  last_viewed_at :datetime
-#  book_id        :bigint           not null
-#  user_id        :integer
-#
-# Indexes
-#
-#  index_book_metadata_on_book_id              (book_id)
-#  index_book_metadata_on_user_id_and_book_id  (user_id,book_id)
-#
-# Foreign Keys
-#
-#  fk_rails_...  (book_id => books.id)
-#
 
 past:
   user: :doug

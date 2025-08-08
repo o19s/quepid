@@ -1,31 +1,5 @@
 # frozen_string_literal: true
 
-# == Schema Information
-#
-# Table name: books
-#
-#  id                          :bigint           not null, primary key
-#  export_job                  :string(255)
-#  import_job                  :string(255)
-#  name                        :string(255)
-#  populate_job                :string(255)
-#  show_rank                   :boolean          default(FALSE)
-#  support_implicit_judgements :boolean
-#  created_at                  :datetime         not null
-#  updated_at                  :datetime         not null
-#  owner_id                    :integer
-#  scorer_id                   :integer
-#  selection_strategy_id       :bigint           not null
-#
-# Indexes
-#
-#  index_books_on_selection_strategy_id  (selection_strategy_id)
-#  index_books_owner_id                  (owner_id)
-#
-# Foreign Keys
-#
-#  fk_rails_...  (selection_strategy_id => selection_strategies.id)
-#
 require 'test_helper'
 
 class BookTest < ActiveSupport::TestCase
