@@ -21,7 +21,7 @@ gem 'devise_invitable', '~> 2.0'
 gem 'faraday-retry'
 gem 'foreman'
 gem 'importmap-rails', '~> 2.2'
-gem 'jbuilder', '~> 2.7'
+gem 'jbuilder', '~> 2.14'
 
 gem 'listen', '~> 3.3'
 gem 'local_time'
