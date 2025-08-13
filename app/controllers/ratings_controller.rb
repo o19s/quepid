@@ -14,6 +14,6 @@ class RatingsController < ApplicationController
                           "%#{params[:q]}%", "%#{params[:q]}%", "%#{params[:q]}%")
     end
 
-    @pagy, @ratings = pagy(query.order('updated_at'))
+    @pagy, @ratings = pagy(query.order(:updated_at))
   end
 end

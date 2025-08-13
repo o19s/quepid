@@ -9,7 +9,7 @@ class ScoresController < ApplicationController
 
     query = query.where(scorer_id: params[:scorer_id]) if params[:scorer_id].present?
 
-    @pagy, @scores = pagy(query.order('updated_at'))
+    @pagy, @scores = pagy(query.order(:updated_at))
 
     scorers = @case.scores.includes([ :scorer ]).map(&:scorer).uniq
     @scorer_options = scorers.map { |scorer| [ scorer.name, scorer.id ] }
