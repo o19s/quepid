@@ -65,13 +65,10 @@ group :development do
 
   # Use console on exceptions pages [https://github.com/rails/web-console]
   gem 'web-console'
-  gem 'annotaterb', '~> 4.17'
 
   # this was commented out in the default build, so doing the same..
   # Add speed badges [https://github.com/MiniProfiler/rack-mini-profiler]
   # gem 'rack-mini-profiler'
-
-  gem 'database_consistency', '~> 2.0', require: false
 
   # This is useful in working on performance issues, but otherwise puts
   # a lot of noise in logs on startup
@@ -83,6 +80,7 @@ group :development do
   gem 'rubocop-rails', require: false
   gem 'rubocop-capybara', require: false
   gem 'rails-erd', '~> 1.6'
+  gem 'rails_lens', '~> 0.2.5'
 end
 
 group :test do

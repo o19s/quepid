@@ -1,33 +1,52 @@
 # frozen_string_literal: true
 
-# == Schema Information
+# <rails-lens:schema:begin>
+# table = "tries"
+# database_dialect = "MySQL"
+# storage_engine = "InnoDB"
+# character_set = "latin1"
+# collation = "latin1_swedish_ci"
 #
-# Table name: tries
+# columns = [
+#   { name = "id", type = "integer", primary_key = true, nullable = false },
+#   { name = "try_number", type = "integer", nullable = true },
+#   { name = "query_params", type = "string", nullable = true },
+#   { name = "case_id", type = "integer", nullable = true },
+#   { name = "field_spec", type = "string", nullable = true },
+#   { name = "name", type = "string", nullable = true },
+#   { name = "escape_query", type = "boolean", nullable = true, default = "1" },
+#   { name = "number_of_rows", type = "integer", nullable = true, default = "10" },
+#   { name = "created_at", type = "datetime", nullable = false },
+#   { name = "updated_at", type = "datetime", nullable = false },
+#   { name = "ancestry", type = "string", nullable = true },
+#   { name = "search_endpoint_id", type = "integer", nullable = true }
+# ]
 #
-#  id                 :integer          not null, primary key
-#  ancestry           :string(3072)
-#  escape_query       :boolean          default(TRUE)
-#  field_spec         :string(500)
-#  name               :string(50)
-#  number_of_rows     :integer          default(10)
-#  query_params       :string(20000)
-#  try_number         :integer
-#  created_at         :datetime         not null
-#  updated_at         :datetime         not null
-#  case_id            :integer
-#  search_endpoint_id :bigint
+# indexes = [
+#   { name = "case_id", columns = ["case_id"] },
+#   { name = "index_tries_on_search_endpoint_id", columns = ["search_endpoint_id"] },
+#   { name = "ix_queryparam_tryNo", columns = ["try_number"] }
+# ]
 #
-# Indexes
+# foreign_keys = [
+#   { column = "case_id", references_table = "cases", references_column = "id", name = "tries_ibfk_1" }
+# ]
 #
-#  case_id                            (case_id)
-#  index_tries_on_search_endpoint_id  (search_endpoint_id)
-#  ix_queryparam_tryNo                (try_number)
-#
-# Foreign Keys
-#
-#  tries_ibfk_1  (case_id => cases.id)
-#
-
+# == Notes
+# - Missing foreign key constraint on 'search_endpoint_id' referencing 'search_endpoints'
+# - Association 'case' should specify inverse_of
+# - Association 'search_endpoint' should specify inverse_of
+# - Association 'snapshots' should specify inverse_of
+# - Association 'curator_variables' has N+1 query risk. Consider using includes/preload
+# - Association 'snapshots' has N+1 query risk. Consider using includes/preload
+# - Column 'try_number' should probably have NOT NULL constraint
+# - Column 'query_params' should probably have NOT NULL constraint
+# - Column 'field_spec' should probably have NOT NULL constraint
+# - Column 'name' should probably have NOT NULL constraint
+# - Column 'escape_query' should probably have NOT NULL constraint
+# - Column 'number_of_rows' should probably have NOT NULL constraint
+# - Column 'ancestry' should probably have NOT NULL constraint
+# <rails-lens:schema:end>
 require 'solr_arg_parser'
 require 'es_arg_parser'
 

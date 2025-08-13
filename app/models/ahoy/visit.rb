@@ -1,42 +1,76 @@
 # frozen_string_literal: true
 
-# == Schema Information
+# <rails-lens:schema:begin>
+# table = "ahoy_visits"
+# database_dialect = "MySQL"
+# storage_engine = "InnoDB"
+# character_set = "utf8mb4"
+# collation = "utf8mb4_bin"
 #
-# Table name: ahoy_visits
+# columns = [
+#   { name = "id", type = "integer", primary_key = true, nullable = false },
+#   { name = "visit_token", type = "string", nullable = true },
+#   { name = "visitor_token", type = "string", nullable = true },
+#   { name = "user_id", type = "integer", nullable = true },
+#   { name = "ip", type = "string", nullable = true },
+#   { name = "user_agent", type = "text", nullable = true },
+#   { name = "referrer", type = "text", nullable = true },
+#   { name = "referring_domain", type = "string", nullable = true },
+#   { name = "landing_page", type = "text", nullable = true },
+#   { name = "browser", type = "string", nullable = true },
+#   { name = "os", type = "string", nullable = true },
+#   { name = "device_type", type = "string", nullable = true },
+#   { name = "country", type = "string", nullable = true },
+#   { name = "region", type = "string", nullable = true },
+#   { name = "city", type = "string", nullable = true },
+#   { name = "latitude", type = "float", nullable = true },
+#   { name = "longitude", type = "float", nullable = true },
+#   { name = "utm_source", type = "string", nullable = true },
+#   { name = "utm_medium", type = "string", nullable = true },
+#   { name = "utm_term", type = "string", nullable = true },
+#   { name = "utm_content", type = "string", nullable = true },
+#   { name = "utm_campaign", type = "string", nullable = true },
+#   { name = "app_version", type = "string", nullable = true },
+#   { name = "os_version", type = "string", nullable = true },
+#   { name = "platform", type = "string", nullable = true },
+#   { name = "started_at", type = "datetime", nullable = true }
+# ]
 #
-#  id               :bigint           not null, primary key
-#  app_version      :string(255)
-#  browser          :string(255)
-#  city             :string(255)
-#  country          :string(255)
-#  device_type      :string(255)
-#  ip               :string(255)
-#  landing_page     :text(65535)
-#  latitude         :float(24)
-#  longitude        :float(24)
-#  os               :string(255)
-#  os_version       :string(255)
-#  platform         :string(255)
-#  referrer         :text(65535)
-#  referring_domain :string(255)
-#  region           :string(255)
-#  started_at       :datetime
-#  user_agent       :text(65535)
-#  utm_campaign     :string(255)
-#  utm_content      :string(255)
-#  utm_medium       :string(255)
-#  utm_source       :string(255)
-#  utm_term         :string(255)
-#  visit_token      :string(255)
-#  visitor_token    :string(255)
-#  user_id          :bigint
+# indexes = [
+#   { name = "index_ahoy_visits_on_visit_token", columns = ["visit_token"], unique = true },
+#   { name = "index_ahoy_visits_on_user_id", columns = ["user_id"] },
+#   { name = "index_ahoy_visits_on_visitor_token_and_started_at", columns = ["visitor_token", "started_at"] }
+# ]
 #
-# Indexes
-#
-#  index_ahoy_visits_on_user_id                       (user_id)
-#  index_ahoy_visits_on_visit_token                   (visit_token) UNIQUE
-#  index_ahoy_visits_on_visitor_token_and_started_at  (visitor_token,started_at)
-#
+# == Notes
+# - Missing foreign key constraint on 'user_id' referencing 'users'
+# - Association 'events' has N+1 query risk. Consider using includes/preload
+# - Column 'visit_token' should probably have NOT NULL constraint
+# - Column 'visitor_token' should probably have NOT NULL constraint
+# - Column 'ip' should probably have NOT NULL constraint
+# - Column 'user_agent' should probably have NOT NULL constraint
+# - Column 'referrer' should probably have NOT NULL constraint
+# - Column 'referring_domain' should probably have NOT NULL constraint
+# - Column 'landing_page' should probably have NOT NULL constraint
+# - Column 'browser' should probably have NOT NULL constraint
+# - Column 'os' should probably have NOT NULL constraint
+# - Column 'device_type' should probably have NOT NULL constraint
+# - Column 'country' should probably have NOT NULL constraint
+# - Column 'region' should probably have NOT NULL constraint
+# - Column 'city' should probably have NOT NULL constraint
+# - Column 'latitude' should probably have NOT NULL constraint
+# - Column 'longitude' should probably have NOT NULL constraint
+# - Column 'utm_source' should probably have NOT NULL constraint
+# - Column 'utm_medium' should probably have NOT NULL constraint
+# - Column 'utm_term' should probably have NOT NULL constraint
+# - Column 'utm_content' should probably have NOT NULL constraint
+# - Column 'utm_campaign' should probably have NOT NULL constraint
+# - Column 'app_version' should probably have NOT NULL constraint
+# - Column 'os_version' should probably have NOT NULL constraint
+# - Column 'platform' should probably have NOT NULL constraint
+# - Column 'device_type' is commonly used in queries - consider adding an index
+# - Missing timestamp columns (created_at, updated_at)
+# <rails-lens:schema:end>
 module Ahoy
   class Visit < ApplicationRecord
     self.table_name = 'ahoy_visits'
