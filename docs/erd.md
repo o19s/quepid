@@ -1,0 +1,783 @@
+# Quepid Database Entity Relationship Diagram
+
+This document provides a visual representation of the Quepid database schema using a Mermaid ERD diagram.
+
+## Overview
+
+The ERD below shows all tables in the Quepid database along with their relationships. The diagram includes:
+
+- Core application tables (User, Case, Query, etc.)
+- Authentication and security tables (ApiKey, etc.)
+- Analytics tables (Ahoy::Visit, Ahoy::Event)
+- Background job processing tables (SolidQueue::*)
+- File storage tables (ActiveStorage::*)
+- Admin/monitoring tables (Blazer::*)
+
+## Entity Relationship Diagram
+
+```mermaid
+erDiagram
+
+  %% Theme Configuration
+  %%{init: {
+    "theme": "default",
+    "themeVariables": {
+      "primaryColor": "lightblue",
+      "primaryTextColor": "#333",
+      "primaryBorderColor": "#666",
+      "lineColor": "#666",
+      "secondaryColor": "lightcoral",
+      "tertiaryColor": "lightgreen"
+    }
+  }}%%
+
+  %% Auth Domain
+  User {
+    int id PK
+    varchar email UK
+    varchar password
+    datetime agreed_time
+    boolean agreed
+    int num_logins
+    varchar name
+    boolean administrator
+    varchar reset_password_token UK
+    datetime reset_password_sent_at
+    varchar company
+    boolean locked
+    datetime locked_at
+    datetime created_at
+    datetime updated_at
+    int default_scorer_id FK
+    boolean email_marketing
+    varchar invitation_token UK
+    datetime invitation_created_at
+    datetime invitation_sent_at
+    datetime invitation_accepted_at
+    int invitation_limit
+    int invited_by_id FK
+    int invitations_count
+    boolean completed_case_wizard
+    varchar stored_raw_invitation_token
+    varchar profile_pic
+    varchar system_prompt
+    varchar llm_key
+    json options
+  }
+
+  ActiveStorage::Attachment {
+    int id PK
+    varchar name UK
+    varchar record_type UK
+    int record_id FK UK
+    int blob_id FK UK
+    datetime created_at
+  }
+
+  ActiveStorage::Blob {
+    int id PK
+    varchar key UK
+    varchar filename
+    varchar content_type
+    varchar metadata
+    varchar service_name
+    int byte_size
+    varchar checksum
+    datetime created_at
+  }
+
+  ActiveStorage::VariantRecord {
+    int id PK
+    int blob_id FK UK
+    varchar variation_digest UK
+  }
+
+  ActiveStorageDB::File {
+    int id PK
+    varchar ref UK
+    blob data
+    datetime created_at
+  }
+
+  Ahoy::Event {
+    int id PK
+    int visit_id FK
+    int user_id FK
+    varchar name
+    json properties
+    datetime time
+  }
+
+  Ahoy::Visit {
+    int id PK
+    varchar visit_token UK
+    varchar visitor_token
+    int user_id FK
+    varchar ip
+    varchar user_agent
+    varchar referrer
+    varchar referring_domain
+    varchar landing_page
+    varchar browser
+    varchar os
+    varchar device_type
+    varchar country
+    varchar region
+    varchar city
+    decimal latitude
+    decimal longitude
+    varchar utm_source
+    varchar utm_medium
+    varchar utm_term
+    varchar utm_content
+    varchar utm_campaign
+    varchar app_version
+    varchar os_version
+    varchar platform
+    datetime started_at
+  }
+
+  Annotation {
+    int id PK
+    varchar message
+    varchar source
+    int user_id FK
+    datetime created_at
+    datetime updated_at
+  }
+
+  Announcement {
+    int id PK
+    varchar text
+    int author_id FK
+    datetime created_at
+    datetime updated_at
+    boolean live
+  }
+
+  AnnouncementViewed {
+    int id PK
+    int announcement_id FK
+    int user_id FK
+    datetime created_at
+    datetime updated_at
+  }
+
+  ApiKey {
+    int id PK
+    int user_id FK
+    varchar token_digest
+    datetime created_at
+    datetime updated_at
+  }
+
+  Blazer::Audit {
+    int id PK
+    int user_id FK
+    int query_id FK
+    varchar statement
+    varchar data_source
+    datetime created_at
+  }
+
+  Blazer::Check {
+    int id PK
+    int creator_id FK
+    int query_id FK
+    varchar state
+    varchar schedule
+    varchar emails
+    varchar slack_channels
+    varchar check_type
+    varchar message
+    datetime last_run_at
+    datetime created_at
+    datetime updated_at
+  }
+
+  Blazer::Dashboard {
+    int id PK
+    int creator_id FK
+    varchar name
+    datetime created_at
+    datetime updated_at
+  }
+
+  Blazer::DashboardQuery {
+    int id PK
+    int dashboard_id FK
+    int query_id FK
+    int position
+    datetime created_at
+    datetime updated_at
+  }
+
+  Blazer::Query {
+    int id PK
+    int creator_id FK
+    varchar name
+    varchar description
+    varchar statement
+    varchar data_source
+    varchar status
+    datetime created_at
+    datetime updated_at
+  }
+
+  Book {
+    int id PK
+    int scorer_id FK
+    int selection_strategy_id FK
+    varchar name
+    datetime created_at
+    datetime updated_at
+    boolean support_implicit_judgements
+    boolean show_rank
+    int owner_id FK
+    varchar export_job
+    varchar import_job
+    varchar populate_job
+  }
+
+  BookMetadatum {
+    int id PK
+    int user_id FK
+    int book_id FK
+    datetime last_viewed_at
+  }
+
+  Case {
+    int id PK
+    varchar case_name
+    int last_try_number
+    int owner_id FK
+    boolean archived
+    int scorer_id FK
+    datetime created_at
+    datetime updated_at
+    int book_id FK
+    boolean public
+    json options
+    boolean nightly
+  }
+
+  CaseMetadatum {
+    int id PK
+    int user_id FK
+    int case_id FK
+    datetime last_viewed_at
+  }
+
+  CuratorVariable {
+    int id PK
+    varchar name
+    decimal value
+    int try_id FK
+    datetime created_at
+    datetime updated_at
+  }
+
+  Judgement {
+    int id PK
+    int user_id FK UK
+    decimal rating
+    int query_doc_pair_id FK UK
+    datetime created_at
+    datetime updated_at
+    boolean unrateable
+    boolean judge_later
+    varchar explanation
+  }
+
+  Query {
+    int id PK
+    int arranged_next
+    int arranged_at
+    varchar query_text
+    varchar notes
+    int case_id FK
+    datetime created_at
+    datetime updated_at
+    varchar information_need
+    json options
+  }
+
+  QueryDocPair {
+    int id PK
+    varchar query_text
+    int position
+    mediumtext document_fields
+    int book_id FK
+    datetime created_at
+    datetime updated_at
+    varchar doc_id
+    varchar information_need
+    varchar notes
+    json options
+  }
+
+  Rating {
+    int id PK
+    varchar doc_id
+    decimal rating
+    int query_id FK
+    datetime created_at
+    datetime updated_at
+    int user_id FK
+  }
+
+  Score {
+    int id PK
+    int case_id FK
+    int user_id FK
+    int try_id FK
+    decimal score
+    boolean all_rated
+    datetime created_at
+    blob queries
+    int annotation_id FK UK
+    datetime updated_at
+    int scorer_id FK
+  }
+
+  Scorer {
+    int id PK
+    varchar code
+    varchar name
+    int owner_id FK
+    varchar scale
+    boolean show_scale_labels
+    varchar scale_with_labels
+    datetime created_at
+    datetime updated_at
+    boolean communal
+  }
+
+  SearchEndpoint {
+    int id PK
+    varchar name
+    int owner_id FK
+    varchar search_engine
+    varchar endpoint_url
+    varchar api_method
+    varchar custom_headers
+    boolean archived
+    datetime created_at
+    datetime updated_at
+    varchar basic_auth_credential
+    varchar mapper_code
+    boolean proxy_requests
+    json options
+  }
+
+  SelectionStrategy {
+    int id PK
+    varchar name
+    datetime created_at
+    datetime updated_at
+    varchar description
+  }
+
+  Snapshot {
+    int id PK
+    varchar name
+    datetime created_at
+    int case_id FK
+    datetime updated_at
+    int try_id FK
+    int scorer_id FK
+  }
+
+  SnapshotDoc {
+    int id PK
+    varchar doc_id
+    int position
+    int snapshot_query_id FK
+    mediumtext explain
+    boolean rated_only
+    mediumtext fields
+  }
+
+  SnapshotQuery {
+    int id PK
+    int query_id FK
+    int snapshot_id FK
+    decimal score
+    boolean all_rated
+    int number_of_results
+    int response_status
+  }
+
+  SolidCable::Message {
+    int id PK
+    blob channel
+    blob payload
+    datetime created_at
+    int channel_hash
+  }
+
+  SolidQueue::BlockedExecution {
+    int id PK
+    int job_id FK UK
+    varchar queue_name
+    int priority
+    varchar concurrency_key
+    datetime expires_at
+    datetime created_at
+  }
+
+  SolidQueue::ClaimedExecution {
+    int id PK
+    int job_id FK UK
+    int process_id FK
+    datetime created_at
+  }
+
+  SolidQueue::FailedExecution {
+    int id PK
+    int job_id FK UK
+    varchar error
+    datetime created_at
+  }
+
+  SolidQueue::Job {
+    int id PK
+    varchar queue_name
+    varchar class_name
+    varchar arguments
+    int priority
+    varchar active_job_id
+    datetime scheduled_at
+    datetime finished_at
+    varchar concurrency_key
+    datetime created_at
+    datetime updated_at
+  }
+
+  SolidQueue::Pause {
+    int id PK
+    varchar queue_name UK
+    datetime created_at
+  }
+
+  SolidQueue::Process {
+    int id PK
+    varchar kind
+    datetime last_heartbeat_at
+    int supervisor_id FK UK
+    int pid
+    varchar hostname
+    varchar metadata
+    datetime created_at
+    varchar name UK
+  }
+
+  SolidQueue::ReadyExecution {
+    int id PK
+    int job_id FK UK
+    varchar queue_name
+    int priority
+    datetime created_at
+  }
+
+  SolidQueue::RecurringExecution {
+    int id PK
+    int job_id FK UK
+    varchar task_key UK
+    datetime run_at UK
+    datetime created_at
+  }
+
+  SolidQueue::RecurringTask {
+    int id PK
+    varchar key UK
+    varchar schedule
+    varchar command
+    varchar class_name
+    varchar arguments
+    varchar queue_name
+    int priority
+    boolean static
+    varchar description
+    datetime created_at
+    datetime updated_at
+  }
+
+  SolidQueue::ScheduledExecution {
+    int id PK
+    int job_id FK UK
+    varchar queue_name
+    int priority
+    datetime scheduled_at
+    datetime created_at
+  }
+
+  SolidQueue::Semaphore {
+    int id PK
+    varchar key UK
+    int value
+    datetime expires_at
+    datetime created_at
+    datetime updated_at
+  }
+
+  Team {
+    int id PK
+    varchar name
+    datetime created_at
+    datetime updated_at
+  }
+
+  Try {
+    int id PK
+    int try_number
+    varchar query_params
+    int case_id FK
+    varchar field_spec
+    varchar name
+    boolean escape_query
+    int number_of_rows
+    datetime created_at
+    datetime updated_at
+    varchar ancestry
+    int search_endpoint_id FK
+  }
+
+  WebRequest {
+    int id PK
+    int snapshot_query_id FK UK
+    blob request
+    int response_status
+    int integer
+    blob response
+    datetime created_at
+    datetime updated_at
+  }
+
+
+  %% Entity Styling
+  classDef tableEntity fill:#f9f9f9,stroke:#333,stroke-width:2px
+  classDef viewEntity fill:#e6f3ff,stroke:#333,stroke-width:2px,stroke-dasharray: 5 5
+  classDef materializedViewEntity fill:#ffe6e6,stroke:#333,stroke-width:3px,stroke-dasharray: 5 5
+  class ActiveStorage::Attachment tableEntity
+  class ActiveStorage::Blob tableEntity
+  class ActiveStorage::VariantRecord tableEntity
+  class ActiveStorageDB::File tableEntity
+  class Ahoy::Event tableEntity
+  class Ahoy::Visit tableEntity
+  class Annotation tableEntity
+  class Announcement tableEntity
+  class AnnouncementViewed tableEntity
+  class ApiKey tableEntity
+  class Blazer::Audit tableEntity
+  class Blazer::Check tableEntity
+  class Blazer::Dashboard tableEntity
+  class Blazer::DashboardQuery tableEntity
+  class Blazer::Query tableEntity
+  class Book tableEntity
+  class BookMetadatum tableEntity
+  class Case tableEntity
+  class CaseMetadatum tableEntity
+  class CuratorVariable tableEntity
+  class Judgement tableEntity
+  class Query tableEntity
+  class QueryDocPair tableEntity
+  class Rating tableEntity
+  class Score tableEntity
+  class Scorer tableEntity
+  class SearchEndpoint tableEntity
+  class SelectionStrategy tableEntity
+  class Snapshot tableEntity
+  class SnapshotDoc tableEntity
+  class SnapshotQuery tableEntity
+  class SolidCable::Message tableEntity
+  class SolidQueue::BlockedExecution tableEntity
+  class SolidQueue::ClaimedExecution tableEntity
+  class SolidQueue::FailedExecution tableEntity
+  class SolidQueue::Job tableEntity
+  class SolidQueue::Pause tableEntity
+  class SolidQueue::Process tableEntity
+  class SolidQueue::ReadyExecution tableEntity
+  class SolidQueue::RecurringExecution tableEntity
+  class SolidQueue::RecurringTask tableEntity
+  class SolidQueue::ScheduledExecution tableEntity
+  class SolidQueue::Semaphore tableEntity
+  class Team tableEntity
+  class Try tableEntity
+  class User tableEntity
+  class WebRequest tableEntity
+
+  %% Relationships
+  ActiveStorage::Attachment }o--|| ActiveStorage::Blob : "blob"
+  ActiveStorage::Blob ||--o{ ActiveStorage::Attachment : "attachments"
+  ActiveStorage::Blob ||--o{ ActiveStorage::VariantRecord : "variant_records"
+  ActiveStorage::Blob ||--o| ActiveStorage::Attachment : "preview_image_attachment"
+  ActiveStorage::VariantRecord }o--|| ActiveStorage::Blob : "blob"
+  ActiveStorage::VariantRecord ||--o| ActiveStorage::Attachment : "image_attachment"
+  Ahoy::Event }o--|| Ahoy::Visit : "visit"
+  Ahoy::Event }o--|| User : "user"
+  Ahoy::Visit ||--o{ Ahoy::Event : "events"
+  Ahoy::Visit }o--|| User : "user"
+  Annotation }o--|| User : "user"
+  Annotation ||--o| Score : "score"
+  Announcement }o--|| User : "author"
+  Announcement ||--o{ AnnouncementViewed : "announcement_viewed"
+  AnnouncementViewed }o--|| User : "user"
+  AnnouncementViewed }o--|| Announcement : "announcement"
+  ApiKey }o--|| User : "user"
+  Blazer::Audit }o--|| User : "user"
+  Blazer::Audit }o--|| Blazer::Query : "query"
+  Blazer::Check }o--|| User : "creator"
+  Blazer::Check }o--|| Blazer::Query : "query"
+  Blazer::Dashboard }o--|| User : "creator"
+  Blazer::Dashboard ||--o{ Blazer::DashboardQuery : "dashboard_queries"
+  Blazer::DashboardQuery }o--|| Blazer::Dashboard : "dashboard"
+  Blazer::DashboardQuery }o--|| Blazer::Query : "query"
+  Blazer::Query }o--|| User : "creator"
+  Blazer::Query ||--o{ Blazer::Check : "checks"
+  Blazer::Query ||--o{ Blazer::DashboardQuery : "dashboard_queries"
+  Blazer::Query ||--o{ Blazer::Audit : "audits"
+  Book }o--o{ Team : "teams"
+  Book }o--|| User : "owner"
+  Book }o--o{ User : "ai_judges"
+  Book }o--|| SelectionStrategy : "selection_strategy"
+  Book }o--|| Scorer : "scorer"
+  Book ||--o{ QueryDocPair : "query_doc_pairs"
+  Book ||--o{ Case : "cases"
+  Book ||--o{ QueryDocPair : "rated_query_doc_pairs"
+  Book ||--o{ BookMetadatum : "metadata"
+  Book ||--o| ActiveStorage::Attachment : "import_file_attachment"
+  Book ||--o| ActiveStorage::Attachment : "export_file_attachment"
+  Book ||--o| ActiveStorage::Attachment : "populate_file_attachment"
+  BookMetadatum }o--|| Book : "book"
+  BookMetadatum }o--|| User : "user"
+  Case }o--o{ Team : "teams"
+  Case }o--|| Scorer : "scorer"
+  Case }o--|| User : "owner"
+  Case ||--o{ Try : "tries"
+  Case ||--o{ CaseMetadatum : "metadata"
+  Case ||--o{ Query : "queries"
+  Case ||--o{ Score : "scores"
+  Case ||--o{ Snapshot : "snapshots"
+  Case }o--|| Book : "book"
+  CaseMetadatum }o--|| Case : "case"
+  CaseMetadatum }o--|| User : "user"
+  CuratorVariable }o--|| Try : "try"
+  Judgement }o--|| QueryDocPair : "query_doc_pair"
+  Judgement }o--|| User : "user"
+  Query }o--|| Case : "case"
+  Query ||--o{ Rating : "ratings"
+  Query ||--o{ SnapshotQuery : "snapshot_queries"
+  QueryDocPair }o--|| Book : "book"
+  QueryDocPair ||--o{ Judgement : "judgements"
+  Rating }o--|| Query : "query"
+  Rating }o--|| User : "user"
+  Score }o--|| Case : "case"
+  Score }o--|| User : "user"
+  Score }o--|| Try : "try"
+  Score }o--|| Annotation : "annotation"
+  Score }o--|| Scorer : "scorer"
+  Scorer }o--|| User : "owner"
+  Scorer ||--o{ Snapshot : "snapshots"
+  Scorer ||--o{ Score : "scores"
+  Scorer }o--o{ Team : "teams"
+  SearchEndpoint }o--o{ Team : "teams"
+  SearchEndpoint }o--|| User : "owner"
+  SearchEndpoint ||--o{ Try : "tries"
+  Snapshot }o--|| Case : "case"
+  Snapshot }o--|| Try : "try"
+  Snapshot }o--|| Scorer : "scorer"
+  Snapshot ||--o{ SnapshotQuery : "snapshot_queries"
+  Snapshot ||--o| ActiveStorage::Attachment : "snapshot_file_attachment"
+  SnapshotDoc }o--|| SnapshotQuery : "snapshot_query"
+  SnapshotQuery }o--|| Snapshot : "snapshot"
+  SnapshotQuery }o--|| Query : "query"
+  SnapshotQuery ||--o| WebRequest : "web_request"
+  SnapshotQuery ||--o{ SnapshotDoc : "snapshot_docs"
+  SolidQueue::BlockedExecution }o--|| SolidQueue::Job : "job"
+  SolidQueue::BlockedExecution ||--o| SolidQueue::Semaphore : "semaphore"
+  SolidQueue::ClaimedExecution }o--|| SolidQueue::Job : "job"
+  SolidQueue::ClaimedExecution }o--|| SolidQueue::Process : "process"
+  SolidQueue::FailedExecution }o--|| SolidQueue::Job : "job"
+  SolidQueue::Job ||--o| SolidQueue::RecurringExecution : "recurring_execution"
+  SolidQueue::Job ||--o| SolidQueue::FailedExecution : "failed_execution"
+  SolidQueue::Job ||--o| SolidQueue::ScheduledExecution : "scheduled_execution"
+  SolidQueue::Job ||--o| SolidQueue::BlockedExecution : "blocked_execution"
+  SolidQueue::Job ||--o| SolidQueue::ReadyExecution : "ready_execution"
+  SolidQueue::Job ||--o| SolidQueue::ClaimedExecution : "claimed_execution"
+  SolidQueue::Process ||--o{ SolidQueue::ClaimedExecution : "claimed_executions"
+  SolidQueue::Process }o--|| SolidQueue::Process : "supervisor"
+  SolidQueue::Process ||--o{ SolidQueue::Process : "supervisees"
+  SolidQueue::ReadyExecution }o--|| SolidQueue::Job : "job"
+  SolidQueue::RecurringExecution }o--|| SolidQueue::Job : "job"
+  SolidQueue::RecurringTask ||--o{ SolidQueue::RecurringExecution : "recurring_executions"
+  SolidQueue::ScheduledExecution }o--|| SolidQueue::Job : "job"
+  Team }o--o{ Case : "cases"
+  Team }o--o{ User : "members"
+  Team }o--o{ Scorer : "scorers"
+  Team }o--o{ SearchEndpoint : "search_endpoints"
+  Team }o--o{ Book : "books"
+  Try }o--|| Case : "case"
+  Try }o--|| SearchEndpoint : "search_endpoint"
+  Try ||--o{ CuratorVariable : "curator_variables"
+  Try ||--o{ Snapshot : "snapshots"
+  User ||--o{ ApiKey : "api_keys"
+  User }o--|| Scorer : "default_scorer"
+  User ||--o{ Case : "cases"
+  User ||--o{ Book : "books"
+  User ||--o{ Scorer : "owned_scorers"
+  User }o--o{ Team : "teams"
+  User ||--o{ Score : "scores"
+  User ||--o{ Judgement : "judgements"
+  User ||--o{ CaseMetadatum : "case_metadata"
+  User ||--o{ BookMetadatum : "book_metadata"
+  User ||--o{ Announcement : "announcements"
+  User }o--|| User : "invited_by"
+  WebRequest }o--|| SnapshotQuery : "snapshot_query"
+```
+
+## Table Groups
+
+The diagram organizes tables into logical groups:
+
+### Core Application
+- **User**: User accounts and authentication
+- **Case**: Search evaluation cases
+- **Query**: Search queries within cases
+- **Rating**: Query relevance ratings
+- **Scorer**: Scoring algorithms
+- **Try**: Search engine configuration attempts
+
+### Teams & Collaboration
+- **Team**: User teams
+- **TeamMember**: Team membership
+- **TeamCase**: Cases shared with teams
+- **TeamScorer**: Scorers shared with teams
+
+### Analytics & Tracking
+- **Ahoy::Visit**: User visit tracking
+- **Ahoy::Event**: User event tracking
+- **QueryLog**: Query execution logs
+
+### Background Processing
+- **SolidQueue**: Background job processing tables
+
+### File Storage
+- **ActiveStorage**: File upload and storage tables
+
+### Admin & Monitoring
+- **Blazer**: SQL query builder and dashboard tables
+
+## Regenerating This Diagram
+
+To regenerate this diagram after schema changes:
+
+```bash
+# First, ensure rails_lens annotations are up to date
+bundle exec rails rails_lens:update
+
+# Then generate this markdown file
+bundle exec rails erd_markdown:generate
+```
+
+The ERD is automatically updated after database migrations in development.
