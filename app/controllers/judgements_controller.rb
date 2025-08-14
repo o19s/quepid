@@ -23,7 +23,7 @@ class JudgementsController < ApplicationController
                           "%#{params[:q]}%", "%#{params[:q]}%", "%#{params[:q]}%", "%#{params[:q]}%")
     end
 
-    @pagy, @judgements = pagy(query.order('query_doc_pair_id'))
+    @pagy, @judgements = pagy(query.order(:query_doc_pair_id))
   end
   # rubocop:enable Metrics/AbcSize
 
