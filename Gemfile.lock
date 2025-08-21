@@ -521,7 +521,7 @@ GEM
     ruby-progressbar (1.13.0)
     ruby-statistics (4.0.1)
     ruby2_keywords (0.0.5)
-    rubyzip (3.0.1)
+    rubyzip (3.0.2)
     safely_block (0.5.0)
     scout_apm (5.7.0)
       parser
@@ -661,7 +661,7 @@ DEPENDENCIES
   rubocop
   rubocop-capybara
   rubocop-rails
-  rubyzip (~> 3.0.1)
+  rubyzip (~> 3.0.2)
   scout_apm (~> 5.7)
   selenium-webdriver
   simplecov
