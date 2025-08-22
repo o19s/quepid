@@ -15,7 +15,7 @@ module Books
       @json_file.rewind
 
       @zip_file = Tempfile.new([ 'test', '.zip' ])
-      Zip::File.open(@zip_file, Zip::File::CREATE) do |zipfile|
+      Zip::File.open(@zip_file, create: true) do |zipfile|
         zipfile.add(File.basename(@json_file), @json_file)
       end
 

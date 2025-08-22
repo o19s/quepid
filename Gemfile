@@ -21,14 +21,14 @@ gem 'devise_invitable', '~> 2.0'
 gem 'faraday-retry'
 gem 'foreman'
 gem 'importmap-rails', '~> 2.2'
-gem 'jbuilder', '~> 2.7'
+gem 'jbuilder', '~> 2.14'
 
 gem 'listen', '~> 3.3'
 gem 'local_time'
 gem 'mini_racer', '~> 0.19.0'
 gem 'mission_control-jobs', '~> 1.1.0' # git: 'https://github.com/rails/mission_control-jobs.git', branch: 'main'
 gem 'mysql2'
-gem 'oas_rails', '~> 1.1'
+gem 'oas_rails', '~> 1.3'
 gem 'omniauth'
 gem 'omniauth-keycloak'
 gem 'omniauth-google-oauth2'
@@ -37,14 +37,14 @@ gem 'pagy'
 gem 'postmark-rails'
 gem 'prophet-rb', '~> 0.6.0'
 gem 'puma'
-gem 'rails', '8.0.2'
+gem 'rails', '8.0.2.1'
 gem 'rails-html-sanitizer'
 gem 'rack-cors', '~> 3.0'
 gem 'responders'
-gem 'rubyzip', '~> 2.4.1' # 3.0 will be breaking
+gem 'rubyzip', '~> 3.0.2' # 3.0 will be breaking
 # gem 'sassc-rails', '~> 2.1' # Removed to eliminate Sass dependency while keeping Sprockets
 gem 'sprockets-rails', '~> 3.5.2' # Explicitly added to ensure Sprockets is available
-gem 'scout_apm', '~> 5.6' # using on Heroku to look at memory issues
+gem 'scout_apm', '~> 5.7' # using on Heroku to look at memory issues
 gem 'solid_cable', '~> 3.0'
 gem 'solid_queue'
 gem 'stimulus-rails', '~> 1.3'
