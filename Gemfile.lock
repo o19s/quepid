@@ -579,7 +579,7 @@ GEM
     uniform_notifier (1.16.0)
     uri (1.0.3)
     useragent (0.16.11)
-    vega (0.4.0)
+    vega (0.5.0)
     version_gem (1.1.6)
     warden (1.2.9)
       rack (>= 2.0.9)
