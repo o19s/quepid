@@ -76,7 +76,7 @@ angular.module('QuepidApp')
               }
               else if  (caseTryNavSvc.needToRedirectQuepidProtocol(settingsSvc.editableSettings().searchUrl)){
                 $log.error('Can not send queries to search engine due to browser constraints.');
-                var message = 'You have specified a search engine url that is on a different protocol ( <code>' + caseTryNavSvc.getQuepidProtocol() + '</code> ) than Quepid is on. Please either <a href="' + caseTryNavSvc.createSearchEndpointLink(settingsSvc.editableSettings().searchEndpointId) + '/edit" target="_self">swap to the proxied connection</a>, or make sure ' + settingsSvc.editableSettings().searchEngine + ' is on the same HTTP protocol.';
+                var message = 'You have specified a search engine url that is on a different protocol ( <code>' + caseTryNavSvc.getQuepidProtocol() + '</code> ) than Quepid is running on. Please either <a href="' + caseTryNavSvc.createSearchEndpointLink(settingsSvc.editableSettings().searchEndpointId) + '/edit" target="_self">swap to the proxied connection</a>, or make sure search endpoint is on the same HTTP protocol.';
   
                 throw new Error('Blocked Request: mixed-content. ' + message); // Signal that we can't run the query with this setup.
               }
