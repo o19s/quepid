@@ -5,7 +5,6 @@ angular.module('UtilitiesModule')
     function ConfigurationSvc() {
       var communalScorersOnly;
       var queryListSortable;
-      var preferSSL;
 
       this.setCommunalScorersOnly = function(val) {
         communalScorersOnly = JSON.parse(val);
@@ -22,13 +21,6 @@ angular.module('UtilitiesModule')
       this.isQueryListSortable = function() {
         return queryListSortable;
       };
-      
-      this.setPreferSSL= function (val) {
-        preferSSL = JSON.parse(val);
-      };
-
-      this.preferSSL = function() {
-        return preferSSL;
-      };      
+          
     }
   ]);
