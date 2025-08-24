@@ -112,10 +112,10 @@ accepts@~1.3.4:
     mime-types "~2.1.34"
     negotiator "0.6.3"
 
-ace-builds@^1.32.2:
-  version "1.43.1"
-  resolved "https://registry.yarnpkg.com/ace-builds/-/ace-builds-1.43.1.tgz#96e7431e2ca821563c32f361298c7f899b6c516f"
-  integrity sha512-n9/n+zBhbbkEJjU0FJ4wWAZBDl5G8WYzg4+uIjSER/U3wSSSSVo52W4sco4Jryg11JAJvorExxMr3GDINqtjdA==
+ace-builds@^1.43.2:
+  version "1.43.2"
+  resolved "https://registry.yarnpkg.com/ace-builds/-/ace-builds-1.43.2.tgz#86d7d2f40317a547b7dd13ae862821d6b1e63f3e"
+  integrity sha512-3wzJUJX0RpMc03jo0V8Q3bSb/cKPnS7Nqqw8fVHsCCHweKMiTIxT3fP46EhjmVy6MCuxwP801ere+RW245phGw==
 
 agent-base@^7.1.0, agent-base@^7.1.2:
   version "7.1.4"
