@@ -9,7 +9,7 @@
     "@popperjs/core": "^2.11.6",
     "@rails/actioncable": "8.0.200",
     "@rails/activestorage": "8.0.200",
-    "ace-builds": "^1.32.2",
+    "ace-builds": "^1.43.2",
     "angular": "~1.8.3",
     "angular-animate": "^1.8.3",
     "angular-cookies": "~1.8.3",
