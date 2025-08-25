@@ -37,8 +37,7 @@ module Admin
             .group(:created_at)
             .count
         when 'teams-created'
-          @data = Team.where(owner_id: @user.id)
-            .where(created_at: (params[:start])..(params[:end]))
+          @data = Team.where(created_at: (params[:start])..(params[:end]))
             .group(:created_at)
             .count
         when 'queries-created'
