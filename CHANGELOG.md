@@ -1,5 +1,17 @@
 # Changelog
 
+## 8.2.1 -- 2025-08-25
+
+@david-fisher did some testing and found a couple of regressions:
+
+* Fixed navbar drop down on Admin pages.  https://github.com/o19s/quepid/pull/1459
+* Version numbers not showing up in the Dockerized version of Quepid.  https://github.com/o19s/quepid/commit/632b73cd5a5b3139be3cff070f82287bbd184adc
+* Integrate into `entrypoint.sh` handling Quepid assests in a nested directory like www.mycompany.com/quepid-prod/.
+
+@jesigger fixed the dropdowns for recent cases and books! https://github.com/o19s/quepid/pull/1415
+
+Lastly, nicer docs on deploying Quepid locally: https://quepid-docs.dev.o19s.com/2/quepid/61/how-to-deploy-quepid-locally.
+
 ## 8.2.0 -- 2025-07-23
 
 ### What's Changed
