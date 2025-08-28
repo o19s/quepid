@@ -43,7 +43,7 @@
   
   <!-— facebook open graph tags -->
   <meta property="og:type" content="website" />
-  <meta name="twitter:site" content="@quepid_search2">
+  <meta name="twitter:site" content="@quepid_search">
   <meta property="og:url" content="<%= root_path %>" />
   <meta property="og:title" content="Quepid -- Relevant Search Solved" />
   <meta property="og:description" content="Tired of irrelevant search results? Use Quepid products & services to help improve the quality and relevancy of your search results." />
@@ -51,11 +51,11 @@
   
   <!-— twitter card tags additive with the og: tags -->
   <meta name="twitter:card" content="summary">
-  <meta name="twitter:domain" value="<%=URI.parse(root_url).host%>" />
+  <meta name="twitter:domain" value="<%= URI.parse(root_url).host %>" />
   <meta name="twitter:title" value="Quepid -- Relevant Search Solved" />
   <meta name="twitter:description" value="Tired of irrelevant search results? Use Quepid products & services to help improve the quality and relevancy of your search results." />
   <meta name="twitter:image" content="<%= image_url "quepid-icon.png" %>" />
-  <meta name="twitter:url" value="<%=root_url%>" />
+  <meta name="twitter:url" value="<%= root_url %>" />
 <% end %>
 
   <%# Enable PWA manifest for installable apps (make sure to enable in config/routes.rb too!) %>
