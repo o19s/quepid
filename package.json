@@ -24,7 +24,7 @@
     "angular-ui-bootstrap": "~2.5.0",
     "angular-ui-sortable": "~0.19.0",
     "angular-utils-pagination": "~0.11.1",
-    "angular-wizard": "https://github.com/softwaredoug/angular-wizard/archive/0.4.2.tar.gz",
+    "angular-wizard": "0.10.0",
     "bootstrap": "^5.3.0",
     "bootstrap-icons": "^1.10.3",
     "clipboard": "^2.0.11",
