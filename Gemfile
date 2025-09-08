@@ -41,7 +41,7 @@ gem 'rails', '8.0.2.1'
 gem 'rails-html-sanitizer'
 gem 'rack-cors', '~> 3.0'
 gem 'responders'
-gem 'rubyzip', '~> 3.0.2' # 3.0 will be breaking
+gem 'rubyzip', '~> 3.1.0' # 3.0 will be breaking
 # gem 'sassc-rails', '~> 2.1' # Removed to eliminate Sass dependency while keeping Sprockets
 gem 'sprockets-rails', '~> 3.5.2' # Explicitly added to ensure Sprockets is available
 gem 'scout_apm', '~> 5.7' # using on Heroku to look at memory issues
