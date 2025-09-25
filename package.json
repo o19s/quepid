@@ -31,7 +31,7 @@
     "d3": "~7.9.0",
     "d3-tip": "~0.9.1",
     "file-saver": "^2.0.5",
-    "local-time": "^3.0.0",
+    "local-time": "^3.0.3",
     "ng-json-explorer": "https://github.com/o19s/ng-json-explorer/archive/master.tar.gz",
     "ng-tags-input": "3.2.0",
     "ngclipboard": "^2.0.0",
