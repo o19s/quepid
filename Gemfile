@@ -96,3 +96,5 @@ group :test do
   gem 'capybara'
   gem 'selenium-webdriver'
 end
+
+gem "fast-mcp", "~> 1.5"

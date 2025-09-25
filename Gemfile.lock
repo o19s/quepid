@@ -234,6 +234,13 @@ GEM
       net-http (>= 0.5.0)
     faraday-retry (2.3.2)
       faraday (~> 2.0)
+    fast-mcp (1.5.0)
+      addressable (~> 2.8)
+      base64
+      dry-schema (~> 1.14)
+      json (~> 2.0)
+      mime-types (~> 3.4)
+      rack (~> 3.1)
     fast-mcp-annotations (1.5.2)
       addressable (~> 2.8)
       base64
@@ -631,6 +638,7 @@ DEPENDENCIES
   devise_invitable (~> 2.0)
   dotenv
   faraday-retry
+  fast-mcp (~> 1.5)
   foreman
   importmap-rails (~> 2.2)
   jbuilder (~> 2.14)
