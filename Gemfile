@@ -2,7 +2,7 @@
 
 source 'https://rubygems.org'
 
-ruby '3.4.4'
+ruby '3.4.6'
 
 gem 'active_storage_db'
 gem 'acts_as_list', '>= 1.0.1'
