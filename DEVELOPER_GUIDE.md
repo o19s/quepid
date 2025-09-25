@@ -7,12 +7,19 @@ This guide provides detailed instructions for developers who want to set up, run
 <!-- MarkdownTOC levels="1,2,3,4" autolink=true bracket=round -->
 
 - [Development Setup](#development-setup)
-  - [I. System Dependencies](#i-system-dependencies)
-    - [Using Docker Compose](#using-docker-compose)
+  - [I. System Dependencies](#i-setting-up-quepid-to-do-development)
+    - [Docker Based Setup](#docker-based-setup)
       - [1. Prerequisites](#1-prerequisites)
       - [2. Setup your environment](#2-setup-your-environment)
       - [3. Running the app](#3-running-the-app)
-    - [Using Your Desktop](#using-your-desktop)
+    - [Local Setup ](#local-setup)
+      - [Prerequisites](#prerequisites)
+      - [Database Setup](#database-setup)
+      - [Application Setup](#application-setup)
+      - [Running the Application](#running-the-application)
+      - [Running Tests](#running-tests)
+    - [Large Sample Data for Quepid](#large-sample-data-for-quepid)
+    - [Developing Jupyter notebook](#developing-jupyter-notebook)
   - [II. Development Log](#ii-development-log)
   - [III. Run Tests](#iii-run-tests)
     - [Minitest](#minitest)
@@ -47,60 +54,45 @@ This guide provides detailed instructions for developers who want to set up, run
   - [How do Personal Access Tokens work?](#how-do-personal-access-tokens-work)
 - [Troubleshooting](#troubleshooting)
   - [Docker Issues](#docker-issues)
+    - [Docker Container Won't Start](#docker-container-wont-start)
+    - [Slow Docker Performance](#slow-docker-performance)
   - [Database Issues](#database-issues)
+    - [Database Connection Errors](#database-connection-errors)
+    - [Migration Errors](#migration-errors)
   - [Frontend Issues](#frontend-issues)
+    - [Asset Compilation Errors](#asset-compilation-errors)
+    - [Angular App Not Loading](#angular-app-not-loading)
   - [Testing Issues](#testing-issues)
+    - [Tests Failing Unexpectedly](#tests-failing-unexpectedly)
+    - [Karma Tests Timeout](#karma-tests-timeout)
 - [QA](#qa)
   - [Seed Data](#seed-data)
 
 <!-- /MarkdownTOC -->
 
+
 # Development Setup
 
-## I. System Dependencies
+## I. Setting up Quepid to do Development
 
-Historically Quepid development has REQUIRED Docker. However, we recently made some tweaks so you can do development outside of Docker, which may be a better direction for some folks.
+Historically Quepid development has REQUIRED Docker, which avoids having to deal with installing dependencies like Ruby and MySQL. However, we recently made some tweaks so you can do development without using Docker, which may fit some folks much better.
 
-### Using Docker Compose
-
-Provisioning from an already built machine takes approximately 3 - 4 minutes. Provisioning from scratch takes approximately 20 minutes.
+### Docker Based Setup
 
 #### 1. Prerequisites
 
-Make sure you have installed Ruby.
-
-Make sure you have installed Docker. Go here https://docs.docker.com/get-docker/ for installation instructions. And the Docker app is launched.
-
-To install using brew follow these steps:
-
-```bash
-brew install --cask docker
-brew install --cask docker-toolbox
-```
-
-**NOTE:** you may get a warning about trusting Oracle on the first try. Open System Preferences > Security & Privacy, click the Allow Oracle button, and then try again to install docker-toolbox
+Make sure you have installed Docker.
 
 #### 2. Setup your environment
 
-Run the local Ruby based setup script to setup your Docker images:
+Open up a local terminal.
+
+Run the Bash based setup script to setup your Docker images:
 
 ```bash
 bin/setup_docker
 ```
 
-If you want to create some cases that have 100's and 1000's of queries, then do:
-
-```bash
- bin/docker r bundle exec thor sample_data:large_data
-```
-
-This is useful for stress testing Quepid! Especially the front end application!
-
-Lastly, to run the Jupyter notebooks, you need to run:
-
-```bash
-bin/setup_jupyterlite
-```
 
 #### 3. Running the app
 
@@ -116,7 +108,7 @@ We've created a helper script to run and manage the app through docker that wrap
 You can still use `docker compose` directly, but for the basic stuff you can use the following:
 
 * Start the app: `bin/docker server` or `bin/docker s`
-* Connect to the app container with bash: `bin/docker bash` or `bin/docker ba`
+* Connect to the app container with bash: `bin/docker bash` or `bin/docker b`
 * Connect to the Rails console: `bin/docker console` or `bin/docker c`
 * Run any command: `bin/docker run [COMMAND]` or `bin/docker r [COMMAND]`
 * Run dev mode as daemon: `bin/docker daemon` or `bin/docker q`
@@ -124,7 +116,7 @@ You can still use `docker compose` directly, but for the basic stuff you can use
 * Run front end unit tests: `bin/docker r rails test:frontend`
 * Run back end unit tests: `bin/docker r rails test`
 
-### Using Your Desktop
+### Local Setup
 
 This approach lets you run Quepid directly on your machine without Docker. It provides a more native development experience but requires setting up dependencies manually.
 
@@ -132,7 +124,7 @@ This approach lets you run Quepid directly on your machine without Docker. It pr
 
 1. **Ruby**: Check `.ruby-version` for the current version of Ruby.  We track the latest releases.  We recommend using a version manager like [rbenv](https://github.com/rbenv/rbenv) or [RVM](https://rvm.io/).
 
-2. **Node.js**: Install Node.js 16.x or later.
+2. **Node.js**: Install Node.js 20.x or later.
 
 3. **Yarn**: Install Yarn package manager.
 
@@ -140,9 +132,8 @@ This approach lets you run Quepid directly on your machine without Docker. It pr
 
 #### Database Setup
 
-1. Start up MySQL however you like.  We assume a `root` user.
+1. Start up MySQL however you like.
 
-2. Edit `config/database.yml` with your MySQL connection details if different from defaults.
 
 #### Application Setup
 
@@ -152,19 +143,15 @@ This approach lets you run Quepid directly on your machine without Docker. It pr
 bundle install
 ```
 
-2. Install JavaScript dependencies:
-
-```bash
-yarn install
-```
-
-3. Set up the application:
+2. Set up the application:
 
 ```bash
 bin/setup
 ```
 
-This will set up the database, run migrations, and seed initial data.
+We assume a `root` database user with the password `password`.  If your password is different you will need to edit the `.env` file created after running the setup steps.
+
+This will install node and yarn, set up the database, run migrations, and seed initial data and then start Rails.
 
 #### Running the Application
 
@@ -187,6 +174,37 @@ bundle exec rubocop           # Run Ruby linter
 ```
 
 As you read through the rest of this guide, just ignore the `bin/docker r` part of the commands! Feedback welcome 🙏.
+
+### Large Sample Data for Quepid
+If you want to create some cases that have 100's and 1000's of queries, then do:
+
+```bash
+ bin/docker r bundle exec thor sample_data:large_data
+```
+
+or
+
+```bash
+ bundle exec thor sample_data:large_data
+```
+
+This is useful for stress testing Quepid! Especially the front end application!
+
+### Developing Jupyter notebooks
+
+Jupyter notebooks and the Jupyterlite ecosystem are maintained in https://github.com/o19s/quepid-jupyterlite.
+
+To run the Jupyter notebooks for development, you need to run:
+
+```bash
+bin/setup_jupyterlite_docker
+```
+
+or 
+
+```bash
+bin/setup_jupyterlite
+```
 
 ## II. Development Log
 
