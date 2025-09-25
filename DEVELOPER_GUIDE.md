@@ -7,12 +7,12 @@ This guide provides detailed instructions for developers who want to set up, run
 <!-- MarkdownTOC levels="1,2,3,4" autolink=true bracket=round -->
 
 - [Development Setup](#development-setup)
-  - [I. System Dependencies](#i-system-dependencies)
-    - [Using Docker Compose](#using-docker-compose)
+  - [I. System Dependencies](#i-setting-up-quepid-to-do-development)
+    - [Docker Based Setup](#docker-based-setup)
       - [1. Prerequisites](#1-prerequisites)
       - [2. Setup your environment](#2-setup-your-environment)
       - [3. Running the app](#3-running-the-app)
-    - [Using Your Desktop](#using-your-desktop)
+    - [Local Setup ](#local-setup)
       - [Prerequisites](#prerequisites)
       - [Database Setup](#database-setup)
       - [Application Setup](#application-setup)
@@ -77,7 +77,7 @@ This guide provides detailed instructions for developers who want to set up, run
 
 Historically Quepid development has REQUIRED Docker, which avoids having to deal with installing dependencies like Ruby and MySQL. However, we recently made some tweaks so you can do development without using Docker, which may fit some folks much better.
 
-### Using Docker Compose
+### Docker Based Setup
 
 #### 1. Prerequisites
 
@@ -116,7 +116,7 @@ You can still use `docker compose` directly, but for the basic stuff you can use
 * Run front end unit tests: `bin/docker r rails test:frontend`
 * Run back end unit tests: `bin/docker r rails test`
 
-### Using Your Desktop
+### Local Setup
 
 This approach lets you run Quepid directly on your machine without Docker. It provides a more native development experience but requires setting up dependencies manually.
 
@@ -182,14 +182,28 @@ If you want to create some cases that have 100's and 1000's of queries, then do:
  bin/docker r bundle exec thor sample_data:large_data
 ```
 
+or
+
+```bash
+ bundle exec thor sample_data:large_data
+```
+
 This is useful for stress testing Quepid! Especially the front end application!
 
-### Developing Jupyter notebook
+### Developing Jupyter notebooks
 
-Lastly, to run the Jupyter notebooks, you need to run:
+Jupyter notebooks and the Jupyterlite ecosystem are maintained in https://github.com/o19s/quepid-jupyterlite.
+
+To run the Jupyter notebooks for development, you need to run:
 
 ```bash
 bin/setup_jupyterlite_docker
+```
+
+or 
+
+```bash
+bin/setup_jupyterlite
 ```
 
 ## II. Development Log
