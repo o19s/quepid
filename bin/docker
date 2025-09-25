@@ -1,28 +1,50 @@
-#!/usr/bin/env ruby
-require 'pathname'
-require 'shellwords'
+#!/usr/bin/env bash
+set -e
 
-# path to your application root.
-APP_ROOT = Pathname.new File.expand_path('../../',  __FILE__)
+# This is a wrapper script for docker-compose commands in the Quepid project
+# Usage:
+#   bin/docker server|s                  # Start the app
+#   bin/docker bash|b                    # Connect to the app container with bash
+#   bin/docker console|c                 # Connect to the Rails console
+#   bin/docker run|r [COMMAND]           # Run any command
+#   bin/docker daemon|q                  # Run dev mode as daemon
+#   bin/docker destroy|d                 # Destroy the Docker env
 
-command, *rest = ARGV
+# Get the project root directory
+APP_ROOT=$(dirname $(dirname $(realpath "$0")))
+cd "$APP_ROOT"
 
-Dir.chdir APP_ROOT do
-  case command
-  when 'server', 's'
-    system 'docker compose up --no-deps -d nginx'
-    system 'docker compose run --rm --service-ports app foreman s -f Procfile'
-  when 'bash', 'b'
-    system 'docker compose run --rm app bash'
-  when 'console', 'c'
-    system 'docker compose run --rm app rails console '  # add -e test for test environment
-  when 'run', 'r'
-    system "docker compose --progress=quiet run --rm app #{rest.shelljoin()}"
-  when 'daemon', 'q'
-    system 'docker compose run -d --service-ports app foreman s -f Procfile'
-  when 'destroy', 'd'
-    system 'docker compose down'
-  else
-    puts 'Unknown option (bash|b, console|c, run|r, server|s, daemon|q, destroy|d)'
-  end
-end
+case "$1" in
+  server|s)
+    docker compose up --no-deps -d nginx
+    docker compose run --rm --service-ports app foreman s -f Procfile
+    ;;
+  bash|b)
+    docker compose run --rm app bash
+    ;;
+  console|c)
+    docker compose run --rm app rails console # add -e test for test environment
+    ;;
+  run|r)
+    shift
+    docker compose --progress=quiet run --rm app $@
+    ;;
+  daemon|q)
+    #docker compose up -d
+    docker compose run -d --service-ports app foreman s -f Procfile
+    ;;
+  destroy|d)
+    docker compose down
+    ;;
+  *)
+    echo "Unknown command: $1"
+    echo "Usage:"
+    echo "  bin/docker server|s                  # Start the app"
+    echo "  bin/docker bash|b                    # Connect to the app container with bash"
+    echo "  bin/docker console|c                 # Connect to the Rails console"
+    echo "  bin/docker run|r [COMMAND]           # Run any command"
+    echo "  bin/docker daemon|q                  # Run dev mode as daemon"
+    echo "  bin/docker destroy|d                 # Destroy the Docker env"
+    exit 1
+    ;;
+esac
