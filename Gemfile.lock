@@ -122,7 +122,6 @@ GEM
     bullet (8.0.8)
       activesupport (>= 3.0.0)
       uniform_notifier (~> 1.11)
-    cal-heatmap-rails (3.6.2)
     capybara (3.40.0)
       addressable
       matrix
@@ -666,7 +665,6 @@ DEPENDENCIES
   blazer
   bootsnap
   bullet
-  cal-heatmap-rails (~> 3.6)
   capybara
   claude-on-rails
   colorize
