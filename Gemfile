@@ -14,7 +14,6 @@ gem 'bcrypt'
 gem 'blazer'
 gem 'bootsnap', require: false
 gem 'colorize', require: false
-gem 'd3-rails', '~> 3.5.5' # Old D3 for core Angular app.  We load modern D3 via package.json for cal-heatmap.
 gem 'devise'
 gem 'devise_invitable'
 gem 'faraday-retry'

@@ -59,8 +59,8 @@ angular.module('QuepidApp')
             return d3.ascending(a.updated_at, b.updated_at);
           });
 
-          var x = d3.scale.linear().domain([0, (data.length - 1)]).range([0, ctrl.width]);
-          var y = d3.scale.linear().domain([0, ctrl.max]).range([ctrl.height, 0]);
+          var x = d3.scaleLinear().domain([0, (data.length - 1)]).range([0, ctrl.width]);
+          var y = d3.scaleLinear().domain([0, ctrl.max]).range([ctrl.height, 0]);
 
           var marker = function (xpos, note) {
             $scope.graph.append('line')
@@ -69,14 +69,13 @@ angular.module('QuepidApp')
               .attr('y1', 0)
               .attr('y2', ctrl.height)
               .attr('class', 'marker')
-              .on('mouseover', function () { $scope.tip.show(note, this); })
-              .on('mouseout', $scope.tip.hide)
-              .append('svg:title')
+              .on('mouseover', function (event) { $scope.tip.show(note, this, event); })
+              .on('mouseout', function () { $scope.tip.hide(); })
+              .append('title')
               .text(note);
           };
 
-          var line = d3.svg
-            .line()
+          var line = d3.line()
             .x(function (d, i) {
               var xpos = x(i) + ctrl.margin.left;
 
@@ -90,7 +89,7 @@ angular.module('QuepidApp')
               return y(d.score);
             });
 
-          $scope.graph.append('svg:path').attr('d', line(data));
+          $scope.graph.append('path').attr('d', line(data));
         }
       }
     }
