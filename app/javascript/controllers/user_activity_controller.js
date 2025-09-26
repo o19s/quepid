@@ -43,7 +43,7 @@ export default class UserActivityController extends Controller {
     const signupDate = this.signupDateValue ? new Date(this.signupDateValue) : null
     
     // Fetch actual data or use sample data for testing
-    let data = await this.fetchData(startDate, now)
+    const data = await this.fetchData(startDate, now)
     //data = this.generateSampleData(startDate, now)
     
     // Paint the calendar with GitHub-style configuration
@@ -91,7 +91,7 @@ export default class UserActivityController extends Controller {
     }
     
     // Add event handlers for tooltip
-    var tooltip = this.createTooltipElement(cal)
+    let tooltip = this.createTooltipElement(cal)
     this.setupTooltipHandlers(cal, tooltip)
   }
   
@@ -112,8 +112,9 @@ export default class UserActivityController extends Controller {
         tooltip.innerHTML = `${value} ${label} on ${date}`
         
         // Position and show the tooltip near the mouse
-        tooltip.style.display = 'block'
-        tooltip.style.left = (event.clientX + 1) + 'px'
+        tooltip.style.display = 'block';
+        tooltip.style.left = `${(event.clientX + 1)}px`;
+        
         //tooltip.style.top = (event.clientY + window.scrollY + 10) + 'px'        
       }
     });
@@ -159,7 +160,7 @@ export default class UserActivityController extends Controller {
   // which is useful in testing
   generateSampleData(startDate, endDate) {
     
-    // var sampleData = [
+    // let sampleData = [
     //   { date: '2025-01-01', value: 5 },
     //   { date: '2025-01-10', value: 15 },
     //   { date: '2025-01-20', value: 8 },
