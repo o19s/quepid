@@ -79,3 +79,5 @@ volumes
 .claude-on-rails/sessions/
 .claude-swarm/
 claude-swarm.log
+
+.tool-versions
