@@ -110,7 +110,7 @@
 
     
       <h3>Cases scored</h3>
-      <!--<div
+      <div
         id="cases-scored"
         data-controller="user-activity"
         data-user-activity-url-value="<%= url_for admin_user_pulse_path @user, params: {data: 'scores'} %>"
@@ -118,7 +118,20 @@
         data-user-activity-label-value="cases scored"
         style="margin-bottom: 40px;"
       >
-      </div>-->
+      </div>
+      
+      <h3>Cases created</h3>
+      <div
+        id="cases-created"
+        data-controller="user-activity"
+        data-user-activity-url-value="<%= url_for admin_user_pulse_path @user, params: {data: 'cases-created'} %>"
+        data-user-activity-signup-date-value="<%= @pulse_chart_start_date %>"
+        data-user-activity-label-value="cases created"
+        style="margin-bottom: 40px;"
+      >
+      </div>
+      
+      
       <div id="cal-tooltip" style="display:none; position: absolute; background-color: #24292f; color: white; padding: 8px 12px; border-radius: 6px; font-size: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.12); z-index: 1000; pointer-events: none;">hi</div>
       
       <div id="cal-heatmap"></div>
@@ -202,14 +215,7 @@
           tooltip.style.display = 'none';
         });
         
-        // Update tooltip position on mousemove
-        // document.getElementById('cal-heatmap').addEventListener('mousemove', (event) => {
-        //   const tooltip = document.getElementById('cal-tooltip');
-        //   if (tooltip.style.display === 'block') {
-        //     tooltip.style.left = (event.clientX + 10) + 'px';
-        //     tooltip.style.top = (event.clientY + window.scrollY + 10) + 'px';
-        //   }
-        // });
+        
       </script>
 
    
