@@ -5,7 +5,6 @@ import { Controller } from "@hotwired/stimulus"
 export default class UserActivityController extends Controller {
   static values = { 
     url: String,
-    signupDate: String,
     label: String
   }
 
@@ -33,17 +32,16 @@ export default class UserActivityController extends Controller {
   }
 
   async initializeHeatmap() {
-    const cal = new CalHeatmap()
+    const cal = new CalHeatmap();
     
     // Calculate date range (last 12 months)
-    const now = new Date()
+    const now = new Date();
+    const tomorrow = new Date(now);
+    tomorrow.setDate(now.getDate() + 1)
     const startDate = new Date(now.getFullYear(), now.getMonth() - 11, 1)
-
-    // Parse signup date for highlighting
-    const signupDate = this.signupDateValue ? new Date(this.signupDateValue) : null
     
     // Fetch actual data or use sample data for testing
-    const data = await this.fetchData(startDate, now)
+    const data = await this.fetchData(startDate, tomorrow)
     //data = this.generateSampleData(startDate, now)
     
     // Paint the calendar with GitHub-style configuration
@@ -77,18 +75,6 @@ export default class UserActivityController extends Controller {
         y: 'value',
       },
     });
-      
-    // Highlight signup date if provided
-    if (signupDate) {
-      // Add a visual indicator for signup date
-      setTimeout(() => {
-        const signupTimestamp = Math.floor(signupDate.getTime() / 1000)
-        const signupElement = this.element.querySelector(`[data-date="${signupTimestamp}"]`)
-        if (signupElement) {
-          signupElement.style.border = '2px solid #0969da'
-        }
-      }, 100)
-    }
     
     // Add event handlers for tooltip
     let tooltip = this.createTooltipElement(cal)
@@ -101,11 +87,7 @@ export default class UserActivityController extends Controller {
     cal.on('mouseover', (event, timestamp, value) => {
       if (value > 0) {
         // Format the date nicely
-        const date = new Date(timestamp * 1000).toLocaleDateString('en-US', {
-          year: 'numeric',
-          month: 'long',
-          day: 'numeric'
-        })
+        const date = new Date(timestamp).toISOString().split('T')[0]
       
         // Create tooltip content with proper singular/plural
         const label = value === 1 ? this.labelValue : `${this.labelValue}s`

@@ -108,13 +108,21 @@
     <% else %>
     
 
+      <h3>Cases viewed</h3>
+      <div
+        id="cases-viewed"
+        data-controller="user-activity"
+        data-user-activity-url-value="<%= url_for admin_user_pulse_path @user, params: {data: 'metadata'} %>"
+        data-user-activity-label-value="cases viewed"
+        style="margin-bottom: 40px;"
+      >
+      </div>
     
       <h3>Cases scored</h3>
       <div
         id="cases-scored"
         data-controller="user-activity"
         data-user-activity-url-value="<%= url_for admin_user_pulse_path @user, params: {data: 'scores'} %>"
-        data-user-activity-signup-date-value="<%= @pulse_chart_start_date %>"
         data-user-activity-label-value="cases scored"
         style="margin-bottom: 40px;"
       >
@@ -125,100 +133,40 @@
         id="cases-created"
         data-controller="user-activity"
         data-user-activity-url-value="<%= url_for admin_user_pulse_path @user, params: {data: 'cases-created'} %>"
-        data-user-activity-signup-date-value="<%= @pulse_chart_start_date %>"
         data-user-activity-label-value="cases created"
         style="margin-bottom: 40px;"
       >
       </div>
       
+      <h3>Queries created</h3>
+      <div
+        id="queries-created"
+        data-controller="user-activity"
+        data-user-activity-url-value="<%= url_for admin_user_pulse_path @user, params: {data: 'queries-created'} %>"
+        data-user-activity-label-value="queries created"
+        style="margin-bottom: 40px;"
+      >
+      </div>
       
-      <div id="cal-tooltip" style="display:none; position: absolute; background-color: #24292f; color: white; padding: 8px 12px; border-radius: 6px; font-size: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.12); z-index: 1000; pointer-events: none;">hi</div>
+      <h3>Books created</h3>
+      <div
+        id="books-created"
+        data-controller="user-activity"
+        data-user-activity-url-value="<%= url_for admin_user_pulse_path @user, params: {data: 'books-created'} %>"
+        data-user-activity-label-value="books created"
+        style="margin-bottom: 40px;"
+      >
+      </div>
       
-      <div id="cal-heatmap"></div>
-      
-      <style>
-        .ch-subdomain-bg:hover {
-          stroke: #24292f;
-          stroke-width: 2px;
-        }
-      </style>
-      <script type="module">
-        
-        const cal = new CalHeatmap();
-        cal.paint({
-          itemSelector: '#cal-heatmap',
-          domain: {
-            type: 'month',
-            gutter: 14,
-            label: { 
-              text: 'MMM', 
-              textAlign: 'start', 
-              position: 'top' 
-            }
-          },
-          // Add CSS selector for each subDomain element to include the value as data attribute
-          subDomain: {
-            type: 'ghDay',
-            radius: 2,
-            width: 15,
-            height: 15,
-            gutter: 4,
-            //label: (timestamp, value) => value || '0',
-            //selector: (timestamp, value) => value ? `data-count="${value}"` : 'data-count="0"'
-          },          
-          range: 12,
-          date: {
-              start: new Date(2025, 0, 1), // January 1, 2016
-              timezone: 'UTC' // Use UTC to avoid timezone issues
-          },
-          data: {
-            source: [
-              { date: '2025-01-01', count: 5 },
-              { date: '2025-01-10', count: 15 },
-              { date: '2025-01-20', count: 8 },
-              { date: '2025-07-28', count: 80 },
-            ],
-            type: 'json',
-            x: 'date',
-            y: d => d.count,
-          },
-        });
-        
-        // Handle mouseover events for tooltips
-        cal.on('mouseover', (event, timestamp, value) => {
-          // Get the tooltip element
-          const tooltip = document.getElementById('cal-tooltip');
-          
-          // Format the date nicely
-          const date = new Date(timestamp * 1000).toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
-          });
-          
-          // Create tooltip content with proper singular/plural
-          const label = value === 1 ? 'case scored' : 'cases scored';
-          tooltip.innerHTML = `${value} ${label} on ${date}`;
-          
-          // Position and show the tooltip near the mouse
-          tooltip.style.display = 'block';
-          tooltip.style.left = (event.clientX + 1) + 'px';
-          //tooltip.style.top = (event.clientY + window.scrollY + 1) + 'px';
-          
-          // Log to console as before
-          console.log(`${value} ${label} on ${date}`);
-        });
-        
-        // Handle mouseout to hide tooltip
-        cal.on('mouseout', () => {
-          const tooltip = document.getElementById('cal-tooltip');
-          tooltip.style.display = 'none';
-        });
-        
-        
-      </script>
-
-   
+      <h3>Judgments created</h3>
+      <div
+        id="judgments-created"
+        data-controller="user-activity"
+        data-user-activity-url-value="<%= url_for admin_user_pulse_path @user, params: {data: 'judgments-created'} %>"
+        data-user-activity-label-value="judgments created"
+        style="margin-bottom: 40px;"
+      >
+      </div>      
     </div>
   <% end %>
 </div>
