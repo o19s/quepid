@@ -3,16 +3,21 @@
 /*
   component: qgraph
 
-  displays a line graph of recent scores.
+  displays a line graph of recent scores with annotations.
 
-  ex. <qgraph max=5 scores="scoresVariable"></qgraph>
+  ex. <qgraph max=5 scores="scoresVariable" annotations="annotationsVariable"></qgraph>
 
   arguments:
-    max     (integer)               The maximum possible score for this item.
-    scores  (angular variable name) The list of score to graph in this format:
+    max         (integer)               The maximum possible score for this item.
+    scores      (angular variable name) The list of scores to graph in this format:
                   [
-                    { score: int, updated_at: date, note: string},
-                    { score: int, updated_at: date, note: string}
+                    { score: int, updated_at: date },
+                    { score: int, updated_at: date }
+                  ]
+    annotations (angular variable name) The list of annotations to display as markers:
+                  [
+                    { note: string, updated_at: date },
+                    { note: string, updated_at: date }
                   ]
 
   NOTE: renaming 'max' to 'maxScore' breaks the graph!
@@ -29,8 +34,9 @@ angular.module('QuepidApp')
         controllerAs: 'ctrl',
         templateUrl:  'qgraph/qgraph.html',
         scope:        {
-          max:    '=',
-          scores: '=',
+          max:         '=',
+          scores:      '=',
+          annotations: '=',
         },
         link: function (scope, elem) {
           // Setup d3
