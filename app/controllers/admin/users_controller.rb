@@ -3,7 +3,6 @@
 require 'csv'
 
 module Admin
-  # rubocop:disable Metrics/ClassLength
   class UsersController < Admin::AdminController
     include Pagy::Backend
 
@@ -36,7 +35,6 @@ module Admin
     # GET /admin/users/1
     # GET /admin/users/1.json
     def show
-
     end
 
     def new
@@ -144,5 +142,4 @@ module Admin
       )
     end
   end
-  # rubocop:enable Metrics/ClassLength
 end
