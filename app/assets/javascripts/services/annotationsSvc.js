@@ -36,6 +36,7 @@ angular.module('QuepidApp')
 
         return $http.delete(url)
           .then(function() {
+            broadcastSvc.send('updatedCaseScore', { caseNo: annotation.caseId });
             broadcastSvc.send('annotationDeleted', annotation);
           });
       }
@@ -67,6 +68,7 @@ angular.module('QuepidApp')
 
         return $http.put(url, data)
           .then(function(response) {
+            broadcastSvc.send('updatedCaseScore', { caseNo: annotation.caseId });
             annotation = new AnnotationFactory(response.data);
             return annotation;
           });

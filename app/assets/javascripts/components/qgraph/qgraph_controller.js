@@ -39,14 +39,11 @@ angular.module('QuepidApp')
       ctrl.annotations = $scope.annotations;
 
       // Watches
-      //$scope.$watch('max', function(newVal, oldVal) {
-      //  if (newVal !== undefined) {
       $scope.$watch('max', function() {
         ctrl.max = $scope.max;
         renderGraph();
       });
 
-      //$scope.$watchCollection('scores', function (newVal, oldVal) {
       $scope.$watchCollection('scores', function () {
         ctrl.scores = $scope.scores;
         if (ctrl.max && ctrl.scores.length > 0) {
@@ -54,13 +51,11 @@ angular.module('QuepidApp')
         }
       });
 
-      $scope.$watchCollection('annotations', function (newVal, oldVal) {
-        if (newVal !== undefined) {
-          ctrl.annotations = newVal;
-          // Only re-render if we have scores
-          if (ctrl.scores && ctrl.scores.length > 0 && ctrl.max) {
-            renderGraph();
-          }
+      $scope.$watchCollection('annotations', function () {
+        ctrl.annotations = $scope.annotations;
+        // Only re-render if we have scores
+        if (ctrl.scores && ctrl.scores.length > 0 && ctrl.max) {
+          renderGraph();
         }
       });
 
