@@ -39,21 +39,18 @@ angular.module('QuepidApp')
       ctrl.annotations = $scope.annotations;
 
       // Watches
-      $scope.$watch('max', function(newVal, oldVal) {
-        if (newVal !== undefined) {
-          ctrl.max = newVal;
-          if (ctrl.scores && ctrl.scores.length > 0) {
-            renderGraph();
-          }
-        }
+      //$scope.$watch('max', function(newVal, oldVal) {
+      //  if (newVal !== undefined) {
+      $scope.$watch('max', function() {
+        ctrl.max = $scope.max;
+        renderGraph();
       });
 
-      $scope.$watchCollection('scores', function (newVal, oldVal) {
-        if (newVal) {
-          ctrl.scores = newVal;
-          if (ctrl.max && newVal.length > 0) {
-            renderGraph();
-          }
+      //$scope.$watchCollection('scores', function (newVal, oldVal) {
+      $scope.$watchCollection('scores', function () {
+        ctrl.scores = $scope.scores;
+        if (ctrl.max && ctrl.scores.length > 0) {
+          renderGraph();
         }
       });
 
@@ -174,11 +171,8 @@ angular.module('QuepidApp')
               .attr('x2', xpos)
               .attr('y1', 0)
               .attr('y2', ctrl.height)
-              .style('stroke', 'purple')
-              .style('stroke-width', 2)
-              .style('stroke-opacity', 0.5)
+              .attr('class', 'marker')        
               .style('pointer-events', 'all')
-              .style('cursor', 'pointer')
               .on('mouseover', function (event) { $scope.tip.show(d.message, this, event); })
               .on('mouseout', function () { $scope.tip.hide(); })
               .append('title')
