@@ -60,7 +60,7 @@ angular.module('QuepidApp')
               var coords = d3.pointer(event || d3.event, document.body);
               tooltip.transition()
                 .duration(200)
-                .style('opacity', .9);
+                .style('opacity', 0.9);
               tooltip.html('<div>' + content + '</div>')
                 .style('left', (coords[0] + 10) + 'px')
                 .style('top', (coords[1] - 28) + 'px');
