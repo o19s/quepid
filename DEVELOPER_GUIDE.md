@@ -124,7 +124,7 @@ This approach lets you run Quepid directly on your machine without Docker. It pr
 
 1. **Ruby**: Check `.ruby-version` for the current version of Ruby.  We track the latest releases.  We recommend using a version manager like [rbenv](https://github.com/rbenv/rbenv) or [RVM](https://rvm.io/).
 
-2. **Node.js**: Install Node.js 20.x or later.
+2. **Node.js**: Install Node.js 22.x or later.
 
 3. **Yarn**: Install Yarn package manager.
 

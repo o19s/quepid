@@ -6,6 +6,7 @@ angular.module('QuepidApp')
     controllerAs: 'ctrl',
     templateUrl:  'qscore/qscore.html',
     bindings:      {
+      annotations:  '=',
       diffLabel:    '=',
       fullDiffName: '=',
       maxScore:     '=',

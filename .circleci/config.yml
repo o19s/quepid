@@ -2,7 +2,7 @@ version: 2
 jobs:
   build:
     docker:
-      - image: cimg/ruby:3.4.4-browsers
+      - image: cimg/ruby:3.4.6-browsers
         environment: # environment variables for primary container
           BUNDLE_JOBS: 3
           BUNDLE_RETRY: 3
@@ -29,7 +29,7 @@ jobs:
 
       - run:
           name: Specify bundler!
-          command: gem install bundler:2.6.2
+          command: gem install bundler:2.7.2
 
       - run:
           name: Which bundler?
