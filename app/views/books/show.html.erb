@@ -16,10 +16,23 @@ function updateModalTitle(judgeId) {
 <%= turbo_frame_tag "modal" %>
 
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-  <h1><i class="bi bi-book"></i> <%= book_title @book %></h1>
+  <h1>
+    <i class="bi bi-book"></i> <%= book_title @book %>
+    <% if @book.archived? %>
+      <span class="badge bg-warning">Archived</span>
+    <% end %>
+  </h1>
   <div class="btn-toolbar mb-2 mb-md-0">
     <div class="btn-group me-2">
-      <%= button_to 'Show Query Doc Pairs', book_query_doc_pairs_path(@book), method: :get, class: 'btn btn-sm btn-outline-secondary' %>
+      <% if @book.archived? %>
+        <%= button_to 'Unarchive', unarchive_book_path(@book), method: :patch,
+                    class: "btn btn-sm btn-outline-success",
+                    form: { data: { turbo_confirm: "Are you sure you want to unarchive this book?" } } %>
+      <% else %>
+        <%= button_to 'Archive', archive_book_path(@book), method: :patch,
+                    class: "btn btn-sm btn-outline-warning",
+                    form: { data: { turbo_confirm: "Are you sure you want to archive this book?" } } %>
+      <% end %>
     </div>
   </div>
 </div>
@@ -119,18 +132,18 @@ This book consists of <%= @book.queries_count %> queries.
   <strong>Associated Files:</strong>
   <% if @book.populate_file.attached? %>
     <%= link_to 'Populate book data from Case', rails_blob_path(@book.populate_file.blob, only_path: true) %> <i>(made <%= time_ago_in_words @book.populate_file.created_at %> ago)</i>
-    <%if @book.populate_job %>
+    <% if @book.populate_job %>
       There is currently a populate from a Case job for this Book set up.  It is <code><%= @book.populate_job %></code>.
     <% end %>
   <% end %>
   <% if @book.import_file.attached? %>
     <%= link_to 'Book Import file', rails_blob_path(@book.import_file.blob, only_path: true) %> <i>(made <%= time_ago_in_words @book.import_file.created_at %> ago)</i>
-    <%if @book.import_job %>
+    <% if @book.import_job %>
       There is currently a import job for this Book set up.  It is <code><%= @book.import_job %></code>.
     <% end %>
   <% end %>
   <% if @book.export_file.attached? %>
-    <%if @book.export_job %>
+    <% if @book.export_job %>
       There is currently a export job for this Book set up.  It is <code><%= @book.export_job %></code>.
     <% end %>
     <%= link_to 'Book Exported as JSON file', rails_blob_path(@book.export_file.blob, only_path: true) %> <i>(made <%= time_ago_in_words @book.export_file.created_at %> ago)</i>

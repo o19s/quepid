@@ -128,15 +128,21 @@ angular.module('QuepidApp')
           });
       };
 
-      this.refreshCaseRatingsFromBook = function(caseId, bookId, createMissingQueries) {
-        // http POST api/books/<int:bookId>/case/<int:caseId>/refresh?sync_queries=<bool:createMissingQueries>
+      this.refreshCaseRatingsFromBook = function(caseId, bookId, createMissingQueries, processInBackground) {
+        // http POST api/books/<int:bookId>/case/<int:caseId>/refresh?create_missing_queries=<bool:createMissingQueries>&redirect_to_homepage=<bool:redirectToHomepage>
 
         var payload = {
         };
+        
+        var url = 'api/books/' + bookId + '/cases/' + caseId + '/refresh?create_missing_queries=' + createMissingQueries;
+        if (processInBackground) {
+          url += '&process_in_background=true';
+        }
 
-        return $http.put('api/books/' + bookId + '/cases/' + caseId + '/refresh?create_missing_queries=' + createMissingQueries, payload)
+        return $http.put(url, payload)
           .then(function(response) {
             console.log('refreshed ratings' + response.data);
+            return response; // Return response to allow checking redirect flag
           });
       };
       

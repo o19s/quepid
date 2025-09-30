@@ -93,6 +93,8 @@ Rails.application.routes.draw do
       get 'judgement_stats'
       get 'export'
       patch 'combine'
+      patch 'archive'
+      patch 'unarchive'
       patch 'assign_anonymous'
       patch 'run_judge_judy/:ai_judge_id', action: :run_judge_judy, as: :run_judge_judy
       delete 'delete_ratings_by_assignee', action: :delete_ratings_by_assignee, as: :delete_ratings_by_assignee

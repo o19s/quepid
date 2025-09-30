@@ -9,8 +9,15 @@ module Api
       before_action :set_book, only: [ :show, :update, :destroy ]
       before_action :check_book, only: [ :show, :update, :destroy ]
 
+      # @parameter archived(query) [Boolean] Whether or not to return only archived books in the response.
       def index
-        @books = current_user.books_involved_with
+        archived = deserialize_bool_param(params[:archived])
+        @books = if archived
+                   current_user.books_involved_with.archived
+                 else
+                   current_user.books_involved_with.active
+                 end
+
         respond_with @books
       end
 
@@ -56,7 +63,7 @@ module Api
 
       def book_params
         params.expect(book: [ :scorer_id, :selection_strategy_id, :name, :support_implicit_judgements,
-                              :show_rank ])
+                              :show_rank, :archived ])
       end
 
       def set_book

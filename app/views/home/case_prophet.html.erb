@@ -9,16 +9,16 @@
     <% else %>      
       <%= @case.first_score&.updated_at.to_date.to_fs(:short) || "No score available" %> 
       <% if @case.scores.count > 1 and @case.first_score.updated_at.to_date.to_fs(:short) != @case.last_score.updated_at.to_date.to_fs(:short) %>
-        - <%= @case.last_score.updated_at.to_date.to_fs(:short)%>
+        - <%= @case.last_score.updated_at.to_date.to_fs(:short) %>
       <% end %>
     <% end %>
   </p>       
  <%
   if !@prophet_case_data[:changepoint].zero? %>
     <% if @prophet_case_data[:changepoint].positive? %>
-      <p class="card-text text-success"><%= number_to_percentage(@prophet_case_data[:changepoint] , precision:0) %> increase since <%=time_ago_in_words(@prophet_case_data[:last_changepoint]) %> ago</p>
+      <p class="card-text text-success"><%= number_to_percentage(@prophet_case_data[:changepoint] , precision:0) %> increase since <%= time_ago_in_words(@prophet_case_data[:last_changepoint]) %> ago</p>
     <% else %>
-      <p class="card-text text-danger"><%= number_to_percentage(@prophet_case_data[:changepoint] , precision:0) %> decrease since <%=time_ago_in_words(@prophet_case_data[:last_changepoint]) %> ago</p>
+      <p class="card-text text-danger"><%= number_to_percentage(@prophet_case_data[:changepoint] , precision:0) %> decrease since <%= time_ago_in_words(@prophet_case_data[:last_changepoint]) %> ago</p>
     <% end %>
   <% else %>
     <p class="card-text">&nbsp;</p>
@@ -41,8 +41,9 @@
       y: {field: "y", type: "quantitative"}
     )
     .height(60)
-    .config(axis: {title: nil, labelFontSize: 12}) %>
+    .config(axis: {title: nil, labelFontSize: 9}) %>
 
   <span id="notification-case-<%= @case.id %>">
+    &nbsp;
   </span>
 </turbo-frame>
