@@ -33,13 +33,34 @@
   end
   %>
   
+  <% 
+    # Use layers to render graph.  First layer is scores line, subsequent is annotations.
+    layers = [
+      {
+        mark: {type: "line", tooltip: true, interpolate: "cardinal", point: {size: 60}},
+        encoding: {
+          x: {field: "x", type: "temporal"}.merge(vega_time),
+          y: {field: "y", type: "quantitative"}
+        }
+      }      
+    ]
+    
+    @annotation_data.each do |annotation|
+      layers << {
+        data: {values: [annotation]},
+        mark: {type: "rule", size: 3, color: "purple", tooltip: {content: "text"}},
+        encoding: {
+          x: {field: "x", type: "temporal"}.merge(vega_time),
+          tooltip: {field: "message"}
+        }
+      }
+    end
+    
+  %>
+
   <%= Vega.lite
     .data(@prophet_case_data[:vega_data])
-    .mark(type: "line", tooltip: true, interpolate: "cardinal", point: {size: 60})
-    .encoding(
-      x: {field: "x", type: "temporal"}.merge(vega_time),
-      y: {field: "y", type: "quantitative"}
-    )
+    .layer(layers)  
     .height(60)
     .config(axis: {title: nil, labelFontSize: 9}) %>
 
