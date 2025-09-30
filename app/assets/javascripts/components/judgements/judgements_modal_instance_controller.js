@@ -69,11 +69,29 @@ angular.module('QuepidApp')
       };
 
       var addBooksToLists = function(books) {
+        
+        let sortedBooks = [];
         angular.forEach(books, function (book) {
-          if (listDoesNotHaveBook(ctrl.share.books, book)) {
-            ctrl.share.books.push(book);
+          if (listDoesNotHaveBook(sortedBooks, book)) {
+            sortedBooks.push(book);
           }
         });
+        
+        // Now sort the entire list with active book at the top
+        sortedBooks.sort(function(a, b) {
+          // If a is the active book, it should come first
+          if (a.id === ctrl.activeBookId) {
+            return -1;
+          }
+          // If b is the active book, it should come first
+          if (b.id === ctrl.activeBookId) {
+            return 1;
+          }
+          // If neither is the active book, sort alphabetically by name
+          return a.name.localeCompare(b.name);
+        });
+        
+        ctrl.share.books = sortedBooks;
       };
       var addTeamToLists = function(team) {
         ctrl.share.teams.push(team);
