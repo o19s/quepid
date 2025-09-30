@@ -68,6 +68,14 @@ class HomeController < ApplicationController
         end
       end.uniq
 
+      @annotation_data = @case.annotations.collect do |annotation|
+        if @for_single_day
+          { x: annotation.updated_at.to_fs(:db), message: annotation.message }
+        else
+          { x: annotation.updated_at.to_date.to_fs(:db), message: annotation.message }
+        end
+      end.uniq
+
       # warning! blunt filter below!
       data = data.uniq { |h| h[:ds] }
       data = data.map { |h| h.transform_keys(&:to_s) }
