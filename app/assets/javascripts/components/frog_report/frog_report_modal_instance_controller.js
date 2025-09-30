@@ -255,7 +255,7 @@ angular.module('QuepidApp')
             // Short delay to ensure flash message is visible
             setTimeout(function() {
               $window.location.href = '/';
-            }, 1000);
+            }, 500);
           }
         }, function(response) {
           $scope.processingPrompt.inProgress  = false;
