@@ -7,11 +7,11 @@ class BooksController < ApplicationController
   before_action :set_book,
                 only: [ :show, :edit, :update, :destroy, :combine, :assign_anonymous, :delete_ratings_by_assignee,
                         :reset_unrateable, :reset_judge_later, :delete_query_doc_pairs_below_position,
-                        :eric_steered_us_wrong, :run_judge_judy, :judgement_stats, :export ]
+                        :eric_steered_us_wrong, :run_judge_judy, :judgement_stats, :export, :archive, :unarchive ]
   before_action :check_book,
                 only: [ :show, :edit, :update, :destroy, :combine, :assign_anonymous, :delete_ratings_by_assignee,
                         :reset_unrateable, :reset_judge_later, :delete_query_doc_pairs_below_position,
-                        :eric_steered_us_wrong, :run_judge_judy, :judgement_stats, :export ]
+                        :eric_steered_us_wrong, :run_judge_judy, :judgement_stats, :export, :archive, :unarchive ]
 
   before_action :find_user, only: [ :reset_unrateable, :reset_judge_later, :delete_ratings_by_assignee ]
 
@@ -19,6 +19,13 @@ class BooksController < ApplicationController
 
   def index
     query = current_user.books_involved_with.includes([ :teams, :scorer, :selection_strategy ])
+
+    # Filter by archived status
+    if params[:archived] == 'true'
+      query = query.archived
+    else
+      query = query.active
+    end
 
     query = query.where(teams: { id: params[:team_id] }) if params[:team_id].present?
 
@@ -173,6 +180,16 @@ class BooksController < ApplicationController
   def destroy
     @book.really_destroy
     redirect_to books_path, notice: 'Book is deleted'
+  end
+
+  def archive
+    @book.update(archived: true)
+    redirect_to books_path, notice: "Book '#{@book.name}' has been archived."
+  end
+
+  def unarchive
+    @book.update(archived: false)
+    redirect_to books_path(archived: true), notice: "Book '#{@book.name}' has been unarchived."
   end
 
   # rubocop:disable Metrics/AbcSize

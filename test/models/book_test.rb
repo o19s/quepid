@@ -5,6 +5,7 @@
 # Table name: books
 #
 #  id                          :bigint           not null, primary key
+#  archived                    :boolean          default(FALSE), not null
 #  export_job                  :string(255)
 #  import_job                  :string(255)
 #  name                        :string(255)

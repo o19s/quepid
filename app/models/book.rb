@@ -5,6 +5,7 @@
 # Table name: books
 #
 #  id                          :bigint           not null, primary key
+#  archived                    :boolean          default(FALSE), not null
 #  export_job                  :string(255)
 #  import_job                  :string(255)
 #  name                        :string(255)
@@ -76,6 +77,9 @@ class Book < ApplicationRecord
 
   # Scopes
   include ForUserScope
+
+  scope :active, -> { where(archived: false) }
+  scope :archived, -> { where(archived: true) }
 
   scope :with_counts, -> {
                         select <<~SQL.squish

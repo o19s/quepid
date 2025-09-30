@@ -16,10 +16,23 @@ function updateModalTitle(judgeId) {
 <%= turbo_frame_tag "modal" %>
 
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-  <h1><i class="bi bi-book"></i> <%= book_title @book %></h1>
+  <h1>
+    <i class="bi bi-book"></i> <%= book_title @book %>
+    <% if @book.archived? %>
+      <span class="badge bg-warning">Archived</span>
+    <% end %>
+  </h1>
   <div class="btn-toolbar mb-2 mb-md-0">
     <div class="btn-group me-2">
-      <%= button_to 'Show Query Doc Pairs', book_query_doc_pairs_path(@book), method: :get, class: 'btn btn-sm btn-outline-secondary' %>
+      <% if @book.archived? %>
+        <%= button_to 'Unarchive', unarchive_book_path(@book), method: :patch,
+                    class: "btn btn-sm btn-outline-success",
+                    form: { data: { turbo_confirm: "Are you sure you want to unarchive this book?" } } %>
+      <% else %>
+        <%= button_to 'Archive', archive_book_path(@book), method: :patch,
+                    class: "btn btn-sm btn-outline-warning",
+                    form: { data: { turbo_confirm: "Are you sure you want to archive this book?" } } %>
+      <% end %>
     </div>
   </div>
 </div>
