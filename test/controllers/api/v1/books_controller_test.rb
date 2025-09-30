@@ -15,6 +15,53 @@ module Api
         login_user doug
       end
 
+      describe 'Listing books' do
+        let(:archived_book) { books(:archived_book) }
+        let(:active_book) { books(:james_bond_movies) }
+
+        test 'returns only active books by default' do
+          get :index
+
+          assert_response :ok
+          body = response.parsed_body
+
+          book_names = body['all_books'].map { |b| b['name'] }
+          assert_includes book_names, active_book.name
+          assert_not_includes book_names, archived_book.name
+        end
+
+        test 'returns only archived books when specified' do
+          get :index, params: { archived: true }
+
+          assert_response :ok
+          body = response.parsed_body
+
+          book_names = body['all_books'].map { |b| b['name'] }
+          assert_not_includes book_names, active_book.name
+          assert_includes book_names, archived_book.name
+        end
+
+        test 'archived flag works as a string' do
+          get :index, params: { archived: 'true' }
+
+          assert_response :ok
+          body = response.parsed_body
+
+          book_names = body['all_books'].map { |b| b['name'] }
+          assert_not_includes book_names, active_book.name
+          assert_includes book_names, archived_book.name
+        end
+
+        test 'returns empty array when no books match filter' do
+          # Archive all books except the already archived one
+          doug.books_involved_with.active.each(&:archive!)
+
+          get :index, params: { archived: false }
+          assert_response :ok
+          assert_equal [], response.parsed_body['all_books']
+        end
+      end
+
       describe 'Creating a book' do
         test 'successfully creates a book associated to a team and therefore accessible to user' do
           count     = doug.books_involved_with.count
@@ -54,6 +101,29 @@ module Api
 
             the_book.reload
             assert_equal the_book.name, 'New Name'
+          end
+        end
+
+        describe 'when archiving the book' do
+          test 'successfully marks book as archived' do
+            assert_equal false, the_book.archived
+
+            patch :update, params: { id: the_book.id, book: { archived: true } }
+            assert_response :ok
+
+            the_book.reload
+            assert_equal true, the_book.archived
+          end
+
+          test 'successfully unarchives book' do
+            the_book.update(archived: true)
+            assert_equal true, the_book.archived
+
+            patch :update, params: { id: the_book.id, book: { archived: false } }
+            assert_response :ok
+
+            the_book.reload
+            assert_equal false, the_book.archived
           end
         end
       end

@@ -18,14 +18,17 @@ class BooksController < ApplicationController
   respond_to :html
 
   def index
-    query = current_user.books_involved_with.includes([ :teams, :scorer, :selection_strategy ])
+    # with_counts adds a `book.query_doc_pairs_count` field, which avoids loading
+    # all query_doc_pairs and makes bullet happy.
+    query = current_user.books_involved_with.includes([ :teams, :scorer, :selection_strategy ]).with_counts
 
     # Filter by archived status
-    if params[:archived] == 'true'
-      query = query.archived
-    else
-      query = query.active
-    end
+    archived = deserialize_bool_param(params[:archived])
+    query = if archived
+              query.archived
+            else
+              query.active
+            end
 
     query = query.where(teams: { id: params[:team_id] }) if params[:team_id].present?
 

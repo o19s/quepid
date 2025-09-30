@@ -7,6 +7,7 @@ angular.module('QuepidApp')
     '$uibModalInstance',
     '$log',
     '$location',
+    '$window',
     'flash',
     'caseSvc',
     'bookSvc',
@@ -18,6 +19,7 @@ angular.module('QuepidApp')
       $uibModalInstance,
       $log,
       $location,
+      $window,
       flash,
       caseSvc,
       bookSvc,
@@ -135,15 +137,30 @@ angular.module('QuepidApp')
       ctrl.refreshRatingsFromBook = function () {
         //$uibModalInstance.close(ctrl.options);
         $scope.processingPrompt.inProgress = true;
-        bookSvc.refreshCaseRatingsFromBook(ctrl.share.acase.caseNo, ctrl.activeBookId, ctrl.createMissingQueries)
-        .then(function() {
-          $scope.processingPrompt.inProgress  = false;
+        
+        // 
+        var processInBackground = ctrl.share.acase.queriesCount >= 50 ? true: false;
+        bookSvc.refreshCaseRatingsFromBook(ctrl.share.acase.caseNo, ctrl.activeBookId, ctrl.createMissingQueries, processInBackground)
+        .then(function(response) {
+          $scope.processingPrompt.inProgress = false;
           $uibModalInstance.close(true);
 
-          flash.success = 'Ratings have been refreshed.';
-        }, function(response) {
+          if (processInBackground === true) {
+            flash.success = 'Ratings are being refreshed in the background.';
+          }
+          else {
+            flash.success = 'Ratings have been refreshed.';
+          }
           
-          $scope.processingPrompt.error       = response.data.statusText;
+          // Check if we should redirect to homepage
+          if (response && response.data && processInBackground === true) {
+            // Short delay to ensure flash message is visible
+            setTimeout(function() {
+              $window.location.href = '/';
+            }, 1000);
+          }
+        }, function(response) {
+          $scope.processingPrompt.error = response.data.statusText;
         });
       };
 

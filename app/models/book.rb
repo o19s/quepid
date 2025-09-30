@@ -81,6 +81,14 @@ class Book < ApplicationRecord
   scope :active, -> { where(archived: false) }
   scope :archived, -> { where(archived: true) }
 
+  def archive!
+    update(archived: true)
+  end
+
+  def unarchive!
+    update(archived: false)
+  end
+
   scope :with_counts, -> {
                         select <<~SQL.squish
                           books.*,

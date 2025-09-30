@@ -47,3 +47,10 @@ empty_book:
   scorer: :quepid_default_scorer
   selection_strategy: :single_rater
   name: Empty Book
+
+archived_book:
+  owner: :doug
+  scorer: :quepid_default_scorer
+  selection_strategy: :single_rater
+  name: IamArchivedBook
+  archived: true

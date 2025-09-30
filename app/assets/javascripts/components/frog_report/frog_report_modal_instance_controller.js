@@ -2,9 +2,9 @@
 
 angular.module('QuepidApp')
   .controller('FrogReportModalInstanceCtrl', [
-    '$uibModalInstance', '$scope', 'flash',
+    '$uibModalInstance', '$scope', 'flash','$window',
     'theCase', 'queriesSvc','bookSvc',
-    function ($uibModalInstance, $scope,flash, theCase, queriesSvc, bookSvc) {
+    function ($uibModalInstance, $scope,flash, $window, theCase, queriesSvc, bookSvc) {
       var ctrl = this;
 
       ctrl.theCase = theCase;
@@ -232,20 +232,36 @@ angular.module('QuepidApp')
           $scope.numberOfMissingRatings = ctrl.numberOfMissingRatings();
           $scope.missingRatingsRate = ctrl.missingRatingsRate();
       };
-
+      
       ctrl.refreshRatingsFromBook = function () {
+        //$uibModalInstance.close(ctrl.options);
         $scope.processingPrompt.inProgress = true;
-        bookSvc.refreshCaseRatingsFromBook(ctrl.theCase.caseNo, ctrl.theCase.bookId, false, false)
+        
+        var processInBackground = ctrl.theCase.queriesCount >= 50 ? true: false;
+        bookSvc.refreshCaseRatingsFromBook(ctrl.theCase.caseNo, ctrl.theCase.bookId, false, processInBackground)
         .then(function(response) {
-          $scope.processingPrompt.inProgress  = false;
-          $uibModalInstance.close();
+          $scope.processingPrompt.inProgress = false;
+          $uibModalInstance.close(true);
 
-          flash.success = 'Ratings have been refreshed.';
+          if (processInBackground === true) {
+            flash.success = 'Ratings are being refreshed in the background.';
+          }
+          else {
+            flash.success = 'Ratings have been refreshed.';
+          }
+          
+          // Check if we should redirect to homepage
+          if (response && response.data && processInBackground === true) {
+            // Short delay to ensure flash message is visible
+            setTimeout(function() {
+              $window.location.href = '/';
+            }, 1000);
+          }
         }, function(response) {
           $scope.processingPrompt.inProgress  = false;
-          $scope.processingPrompt.error       = response.data.statusText;
+          $scope.processingPrompt.error = response.data.statusText;
         });
-      };
+      };      
 
 
       ctrl.ok = function () {
