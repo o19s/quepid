@@ -102,4 +102,17 @@ class BulkJudgeController < ApplicationController
       render json: { status: 'error', errors: judgement.errors.full_messages }, status: :unprocessable_entity
     end
   end
+  
+  def destroy
+    judgement = Judgement.find_or_initialize_by(
+      query_doc_pair_id: query_doc_pair.id,
+      user:              current_user
+    )
+    if judgement.destroy
+      UpdateCaseRatingsJob.perform_later judgement.query_doc_pair
+       render json: { status: 'success', judgement_id: judgement.id }
+    else
+      render json: { status: 'error', errors: judgement.errors.full_messages }, status: :unprocessable_entity
+    end
+  end
 end

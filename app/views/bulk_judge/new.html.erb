@@ -191,8 +191,8 @@
                   <!-- Rating buttons -->
                   <div class="rating-buttons mb-3">
                     <strong>Rate this document:</strong>
-                    <div class="d-flex align-items-center mt-2">
-                      <div class="btn-group" role="group">
+                    <div class="mt-2">
+                   <div class="rating-buttons-container d-flex flex-wrap align-items-center" style="gap: 10px; padding: 5px 0;">
                         <% rating_buttons.each do |button| %>
                           <%
                           input_id = "judgement_#{query_doc_pair.id}_#{button['value']}"
@@ -213,22 +213,29 @@
                                  data-rating="<%= button['value'] %>">
                           <label class="btn" for="<%= input_id %>" 
                                  style="background-color: <%= button['style']['background-color'] %>; 
-                                       color: black;
-                                       border: 1px solid rgba(0,0,0,0.2);
-                                       font-weight: 500;">
+                                        color: black;
+                                        border: 1px solid rgba(0,0,0,0.2);
+                                        font-weight: 500;
+                                        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+                                        border-radius: 0.375rem;
+                                        min-width: 45px;
+                                        text-align: center;
+                                        padding: 8px 12px;
+                                        box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
                             <%= button['label'] %>
                           </label>
                         <% end %>
                       </div>
                       <% if judgement.persisted? && judgement.rating.present? %>
                         <button type="button"
-                                class="btn btn-sm btn-outline-secondary ms-3"
+                                class="btn btn-sm btn-outline-secondary ms-2"
                                 data-action="click->bulk-judgement#resetRating"
                                 data-query-doc-pair-id="<%= query_doc_pair.id %>"
                                 title="Clear rating">
                           <i class="bi bi-x-circle"></i> Reset
                         </button>
                       <% end %>
+                      <span id="status_<%= query_doc_pair.id %>" class="ms-2"></span>
                     </div>
                   </div>
 

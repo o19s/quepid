@@ -33,8 +33,8 @@ export default class extends Controller {
     this.showStatus(queryDocPairId, "saving")
 
     try {
-      const response = await fetch(`/books/${bookId}/judge/bulk/save`, {
-        method: "POST",
+      const response = await fetch(`/books/${bookId}/judge/bulk/delete`, {
+        method: "DELETE",
         headers: {
           "Content-Type": "application/json",
           "X-CSRF-Token": this.getCSRFToken()
