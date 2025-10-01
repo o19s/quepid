@@ -323,40 +323,10 @@ user.id: <%= judgement.user_id %>
     return nil
   end
 
-  @use_backup_labels = false
   @show_keyboard_shortcuts = true
 
-  @rating_buttons = []
-  max = @book.scorer.scale.max
-  @book.scorer.scale.each do |s|
-    rating_button = {}
-
-    rating_button["value"] = s.to_s
-    calculated_key = calculate_key(s, max)
-    if calculated_key != nil
-      rating_button["key"] = calculated_key
-    else
-      @show_keyboard_shortcuts = false
-      rating_button["key"] = rating_button["value"]
-    end
-    rating_button["label_backup"] = s.to_s
-    begin
-      rating_button["label"] = @book.scorer.scale_with_labels[s.to_s]
-    rescue
-      rating_button["label"] = ""
-    end
-    if rating_button["label"].blank?
-      @use_backup_labels = true
-      rating_button["label"] = rating_button["label_backup"]
-    end
-    rating_button["class"] = calculate_button_class(s, max)
-    @rating_buttons << rating_button
-  end
-  if @use_backup_labels
-    @rating_buttons.each do |rating_button|
-      rating_button["label"] = rating_button["label_backup"]
-    end
-  end
+  # Use enhanced JudgementHelper to generate rating buttons with scorer labels
+  @rating_buttons = generate_rating_buttons(@book)
 
   scoring_guidelines = {}
   scoring_guidelines['Poor'] = 'Customer feeling: <i>These results are terrible! Maybe I’ll look somewhere else.</i> <br/><mark>0</mark>’s are used when the result is clearly not desired. The goal is for most queries to only show <mark>1</mark>’s, <mark>2</mark>’s and <mark>3</mark>’s. These are our negative examples.'

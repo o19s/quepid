@@ -102,30 +102,8 @@
       <div data-controller="bulk-judgement" data-bulk-judgement-book-id-value="<%= @book.id %>">
 
         <%
-        # Calculate rating buttons once for reuse
-        max = @book.scorer.scale.max
-        rating_buttons = []
-        @book.scorer.scale.each do |s|
-          rating_button = {}
-          rating_button["value"] = s.to_s
-          rating_button["label"] = @book.scorer.scale_with_labels[s.to_s] rescue s.to_s
-          rating_button["label"] = s.to_s if rating_button["label"].blank?
-
-          # Calculate button class based on scale position
-          value_f = s.to_f
-          max_value_f = max.to_f
-          button_class = if value_f <= 0.0
-            "btn-danger"
-          elsif value_f / max_value_f < 0.33
-            "btn-warning"
-          elsif value_f / max_value_f < 0.66
-            "btn-info"
-          else
-            "btn-success"
-          end
-          rating_button["class"] = button_class
-          rating_buttons << rating_button
-        end
+        # Use enhanced JudgementHelper to generate rating buttons with scorer labels
+        rating_buttons = generate_rating_buttons(@book)
         %>
 
         <% doc_counter = @pagy.offset %>
