@@ -46,7 +46,13 @@ user.id: <%= judgement.user_id %>
     .button-other {background-color:gray; box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19); color: #666 !important;}
     .button-other:hover {background-color:gray !important;  box-shadow: 0 12px 16px 0 rgba(0,0,0,0.34), 0 17px 50px 0 rgba(0,0,0,0.19); color: black !important; }
 
-    .btn-preselected { color: black !important; font-weight: bold; font-style: italic; }
+    .btn-preselected { 
+      color: black !important; 
+      font-weight: bold; 
+      border: 2px solid #000 !important; 
+      box-shadow: 0 0 0 0.25rem rgba(0, 0, 0, 0.3) !important; 
+      transform: scale(1.05) !important; 
+    }
 
     .bold-and-black { color: black; font-weight: bold; }
 
@@ -398,7 +404,7 @@ user.id: <%= judgement.user_id %>
           <tbody>
             <% @rating_buttons.each do |b| %>
             <tr>
-              <td><%= button_tag b["label"], type: 'button', class: "btn #{b["class"]}" %></td>
+              <td><%= button_tag b["label"], type: 'button', style: "background-color: #{b['style']['background-color']}; color: black; border: 1px solid rgba(0,0,0,0.2); font-weight: 500;", class: "btn" %></td>
               <td><%= scoring_guidelines.has_key?(b["label"]) ? scoring_guidelines[b["label"]].html_safe : '' %></td>
             </tr>
             <% end %>
@@ -434,14 +440,16 @@ user.id: <%= judgement.user_id %>
           <td></td>
           <% @rating_buttons.each do |b| %>
             <%
-              @button_classes = "btn btn-default "
+              button_style = "background-color: #{b['style']['background-color']}; color: black; border: 1px solid rgba(0,0,0,0.2); font-weight: 500;"
+              @button_classes = "btn "
               if judgement.rating == b["value"].to_i
                 @button_classes = @button_classes + "btn-preselected "
+                button_style += "border: 2px solid #000; transform: scale(1.05);"
               end
             %>
             <td class="padded">
 
-              <%= button_tag b["label"], type: 'button', onclick: "rate("+b["value"]+",\""+b["key"][:name].to_s+"\")", class: @button_classes + b["class"], id:"button-for-#{b["key"][:name]}" %>
+              <%= button_tag b["label"], type: 'button', onclick: "rate("+b["value"]+",\""+b["key"][:name].to_s+"\")", style: "background-color: #{b['style']['background-color']}; color: black; border: 1px solid rgba(0,0,0,0.2); font-weight: 500;", class: @button_classes, id:"button-for-#{b["key"][:name]}" %>
             </td>
           <% end %>
         </tr>
@@ -457,13 +465,15 @@ user.id: <%= judgement.user_id %>
         <tr>
           <% @rating_buttons.each do |b| %>
             <%
-              @button_classes = "btn btn-default "
+              button_style = "background-color: #{b['style']['background-color']}; color: black; border: 1px solid rgba(0,0,0,0.2); font-weight: 500;"
+              @button_classes = "btn "
               if judgement.rating == b["value"].to_i
                 @button_classes = @button_classes + "btn-preselected "
+                button_style += "border: 2px solid #000; transform: scale(1.05);"
               end
             %>
             <td class="padded">
-              <%= button_tag b["label"], type: 'button', onclick: "rate("+b["value"]+",\""+ b["key"].to_s + "\")", class: @button_classes + b["class"], id:"button-for-"+b["key"].to_s %>
+              <%= button_tag b["label"], type: 'button', onclick: "rate("+b["value"]+",\""+ b["key"].to_s + "\")", style: "background-color: #{b['style']['background-color']}; color: black; border: 1px solid rgba(0,0,0,0.2); font-weight: 500;", class: @button_classes, id:"button-for-"+b["key"].to_s %>
             </td>
           <% end %>
         </tr>
