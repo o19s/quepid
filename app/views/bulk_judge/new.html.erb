@@ -93,12 +93,6 @@
         </p>
       </div>
 
-      <% if @pagy.pages > 1 %>
-        <div class="d-flex justify-content-center mb-3">
-          <%== pagy_bootstrap_nav(@pagy) %>
-        </div>
-      <% end %>
-
       <div data-controller="bulk-judgement" data-bulk-judgement-book-id-value="<%= @book.id %>">
 
         <%
