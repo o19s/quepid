@@ -49,7 +49,7 @@ class JudgementsController < ApplicationController
 
     @query_doc_pair = SelectionStrategy.random_query_doc_based_on_strategy(@book, current_user)
     if @query_doc_pair.nil? # no more query doc pairs to be judged!
-      redirect_to book_path(@book)
+      redirect_to book_path(@book), notice: 'You have judged all the documents you can!'
     else
       # NO LONGER USED
       # if @query_doc_pair
