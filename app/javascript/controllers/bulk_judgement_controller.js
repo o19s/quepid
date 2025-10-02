@@ -64,6 +64,12 @@ export default class extends Controller {
       radio.checked = false
     })
 
+    // Remove btn-preselected class from all labels for this query_doc_pair
+    const labels = this.element.querySelectorAll(`#qdp_${queryDocPairId} .rating-buttons-container label`)
+    labels.forEach(label => {
+      label.classList.remove('btn-preselected')
+    })
+
     // Clear explanation field
     const explanationField = this.element.querySelector(`#explanation_${queryDocPairId}`)
     if (explanationField) {
@@ -176,11 +182,24 @@ export default class extends Controller {
   }
 
   updateRatingButtons(queryDocPairId, selectedRating) {
-    // Update radio button state
+    // Update radio button state and handle btn-preselected class
     const radios = this.element.querySelectorAll(`input[name="judgement_${queryDocPairId}"]`)
+    const labels = this.element.querySelectorAll(`#qdp_${queryDocPairId} .rating-buttons-container label`)
+    
+    // First remove btn-preselected from all labels
+    labels.forEach(label => {
+      label.classList.remove('btn-preselected')
+    })
+    
+    // Then update radio states and add btn-preselected to selected button
     radios.forEach(radio => {
       if (radio.value === selectedRating) {
         radio.checked = true
+        // Find the corresponding label and add btn-preselected class
+        const label = this.element.querySelector(`label[for="${radio.id}"]`)
+        if (label) {
+          label.classList.add('btn-preselected')
+        }
       }
     })
   }

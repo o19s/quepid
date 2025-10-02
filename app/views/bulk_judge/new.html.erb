@@ -1,9 +1,9 @@
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
   <h1>Bulk Judgements for <i class="bi bi-book"></i> <%= book_title @book %></h1>
   <div class="btn-toolbar mb-2 mb-md-0">
-    <div class="btn-group me-2">
-      <%= link_to 'Back to Judgements', book_judgements_path(@book), class: "btn btn-sm btn-outline-secondary" %>
-    </div>
+  <div class="btn-group me-2">
+    <%= link_to 'Back to Judgements', book_judgements_path(@book), class: "btn btn-sm btn-outline-secondary" %>
+  </div>
   </div>
 </div>
 
@@ -197,10 +197,13 @@
                           <% rating_buttons.each do |button| %>
                             <%
                             input_id = "judgement_#{query_doc_pair.id}_#{button['value']}"
-                            # Debug: Check if this judgement matches this button's rating
                             is_checked = false
+                            label_classes = "btn"
                             if judgement.persisted? && judgement.rating.present?
-                              is_checked = (judgement.rating.to_s == button["value"].to_s)
+                              is_checked = (judgement.rating.to_i.to_s == button["value"].to_s)
+                              if is_checked
+                                label_classes += " btn-preselected"
+                              end
                             end
                             %>
                             <input type="radio"
@@ -212,7 +215,7 @@
                                    data-action="click->bulk-judgement#saveRating"
                                    data-query-doc-pair-id="<%= query_doc_pair.id %>"
                                    data-rating="<%= button['value'] %>">
-                            <label class="btn" for="<%= input_id %>" 
+                                   <label class="<%= label_classes %>" for="<%= input_id %>" 
                                    style="background-color: <%= button['style']['background-color'] %>; 
                                           color: black;
                                           border: 1px solid rgba(0,0,0,0.2);
@@ -380,6 +383,14 @@
     border: 2px solid #000;
     font-weight: bold;
     transform: scale(1.05);
+  }
+
+  .btn-preselected { 
+    color: black !important; 
+    font-weight: bold !important; 
+    border: 2px solid #000 !important; 
+    box-shadow: 0 0 0 0.25rem rgba(0, 0, 0, 0.3) !important; 
+    transform: scale(1.05) !important; 
   }
 
   .sticky-top {
