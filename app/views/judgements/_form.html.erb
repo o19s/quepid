@@ -1,51 +1,4 @@
-<!--
-<pre>
-DEBUGGING INFORMATION
-query_doc_pair.id: <%= query_doc_pair.id %>
-judgement.id: <%= judgement.id %>
-user.id: <%= judgement.user_id %>
-</pre>
--->
-
 <style>
-    .field { padding: 5px; }
-
-    .button00 {background-color: #ff0000; box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19); color: #666 !important;}
-    .button00:hover { background-color: #ff0000 !important;  box-shadow: 0 12px 16px 0 rgba(0,0,0,0.34), 0 17px 50px 0 rgba(0,0,0,0.19); color: black !important;}
-
-    .button01 {background-color: #fe4000; box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19); color: #666 !important;}
-    .button01:hover { background-color: #fe4000 !important;  box-shadow: 0 12px 16px 0 rgba(0,0,0,0.34), 0 17px 50px 0 rgba(0,0,0,0.19); color: black !important;}
-
-    .button02 {background-color: #f96000; box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19); color: #666 !important;}
-    .button02:hover { background-color: #f96000 !important;  box-shadow: 0 12px 16px 0 rgba(0,0,0,0.34), 0 17px 50px 0 rgba(0,0,0,0.19); color: black !important;}
-
-    .button03 {background-color: #f17a00; box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19); color: #666 !important;}
-    .button03:hover { background-color: #f17a00 !important;  box-shadow: 0 12px 16px 0 rgba(0,0,0,0.34), 0 17px 50px 0 rgba(0,0,0,0.19); color: black !important;}
-
-    .button04 {background-color: #e59100; box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19); color: #666 !important;}
-    .button04:hover { background-color: #e59100 !important;  box-shadow: 0 12px 16px 0 rgba(0,0,0,0.34), 0 17px 50px 0 rgba(0,0,0,0.19); color: black !important;}
-
-    .button05 {background-color: #d7a700; box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19); color: #666 !important;}
-    .button05:hover { background-color: #d7a700 !important;  box-shadow: 0 12px 16px 0 rgba(0,0,0,0.34), 0 17px 50px 0 rgba(0,0,0,0.19); color: black !important;}
-
-    .button06 {background-color: #c4ba00; box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19); color: #666 !important;}
-    .button06:hover { background-color: #c4ba00 !important;  box-shadow: 0 12px 16px 0 rgba(0,0,0,0.34), 0 17px 50px 0 rgba(0,0,0,0.19); color: black !important;}
-
-    .button07 {background-color: #aecd00; box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19); color: #666 !important;}
-    .button07:hover { background-color: #aecd00 !important;  box-shadow: 0 12px 16px 0 rgba(0,0,0,0.34), 0 17px 50px 0 rgba(0,0,0,0.19); color: black !important;}
-
-    .button08 {background-color: #91df00; box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19); color: #666 !important;}
-    .button08:hover { background-color: #91df00 !important;  box-shadow: 0 12px 16px 0 rgba(0,0,0,0.34), 0 17px 50px 0 rgba(0,0,0,0.19); color: black !important;}
-
-    .button09 {background-color: #6aef00; box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19); color: #666 !important;}
-    .button09:hover { background-color: #6aef00 !important;  box-shadow: 0 12px 16px 0 rgba(0,0,0,0.34), 0 17px 50px 0 rgba(0,0,0,0.19); color: black !important;}
-
-    .button10 {background-color: #00ff00; box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19); color: #666 !important;}
-    .button10:hover {background-color: #00ff00 !important;  box-shadow: 0 12px 16px 0 rgba(0,0,0,0.34), 0 17px 50px 0 rgba(0,0,0,0.19); color: black !important; }
-
-    .button-other {background-color:gray; box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19); color: #666 !important;}
-    .button-other:hover {background-color:gray !important;  box-shadow: 0 12px 16px 0 rgba(0,0,0,0.34), 0 17px 50px 0 rgba(0,0,0,0.19); color: black !important; }
-
     .btn-preselected { 
       color: black !important; 
       font-weight: bold; 
@@ -55,11 +8,8 @@ user.id: <%= judgement.user_id %>
     }
 
     .bold-and-black { color: black; font-weight: bold; }
-
     .keyboard-shortcuts-td { padding: 5px; text-align: center; color: #999; }
     .padded { padding:5px; }
-    .left-aligned { text-align: left; }
-    .gray { color: #ccc; }
     .hidden { visibility: hidden!important; display: none!important; }
 
 </style>
@@ -71,16 +21,6 @@ user.id: <%= judgement.user_id %>
       document.getElementById("judgement_rating").value = rating;
       delay(100).then(() => (document.getElementsByName("commit")[0].click()));
   }
-
-  document.addEventListener('DOMContentLoaded', function() {
-      const countElement = document.getElementById("keyPressed_count");
-      if (countElement) {
-          countElement.textContent = "0";
-      }
-  });
-
-  var count = 0;
-  var last_keyPressed = -1;
 
   function resetStyles() {
       let keyboard_shortcuts_suffixes = ["a", "s", "d", "f", "g", "h", "j", "k", "l", "sc"];
@@ -217,120 +157,7 @@ user.id: <%= judgement.user_id %>
 
 
 <%
-
-
-  def calculate_button_class(value, max_value)
-    value_f = value.to_f
-    max_value_f = max_value.to_f
-    if value_f <= 0.0
-      return "button00"
-
-    elsif value_f / max_value_f < 0.1
-      return "button01"
-
-    elsif value_f / max_value_f < 0.2
-      return "button02"
-
-    elsif value_f / max_value_f < 0.3
-      return "button03"
-
-    elsif value_f / max_value_f < 0.4
-      return "button04"
-
-    elsif value_f / max_value_f < 0.5
-      return "button05"
-
-    elsif value_f / max_value_f < 0.6
-      return "button06"
-
-    elsif value_f / max_value_f < 0.7
-      return "button07"
-
-    elsif value_f / max_value_f < 0.8
-      return "button08"
-
-    elsif value_f / max_value_f < 0.9
-      return "button09"
-
-    elsif value_f / max_value_f == 1.0
-      return "button10"
-
-    else return "button-other"
-    end
-
-  end
-
-  def calculate_key(value, max_value)
-    if max_value == 1
-      if value == 0
-        return {"name": "d", "display_name": "d" }
-      else
-        return {"name": "f", "display_name": "f" }
-      end
-    end
-
-    if max_value == 2
-      if value == 0
-        return {"name": "s", "display_name": "s" }
-      elsif value == 1
-        return {"name": "d", "display_name": "d" }
-      else
-        return {"name": "f", "display_name": "f" }
-      end
-    end
-
-    if max_value == 3
-      if value == 0
-        return {"name": "a", "display_name": "a" }
-      elsif value == 1
-        return {"name": "s", "display_name": "s" }
-      elsif value == 2
-        return {"name": "d", "display_name": "d" }
-      elsif value == 3
-        return {"name": "f", "display_name": "f" }
-      end
-    end
-
-    if max_value == 4
-      if value == 1
-        return {"name": "a", "display_name": "a" }
-      elsif value == 2
-        return {"name": "s", "display_name": "s" }
-      elsif value == 3
-        return {"name": "d", "display_name": "d" }
-      elsif value == 4
-        return {"name": "f", "display_name": "f" }
-      end
-    end
-
-    if max_value == 9
-      if value == 0
-        return {"name": "a", "display_name": "a" }
-      elsif value == 1
-        return {"name": "s", "display_name": "s" }
-      elsif value == 2
-        return {"name": "d", "display_name": "d" }
-      elsif value == 3
-        return {"name": "f", "display_name": "f" }
-      elsif value == 4
-        return {"name": "g", "display_name": "g" }
-      elsif value == 5
-        return {"name": "h", "display_name": "h" }
-      elsif value == 6
-        return {"name": "j", "display_name": "j" }
-      elsif value == 7
-        return {"name": "k", "display_name": "k" }
-      elsif value == 8
-        return {"name": "l", "display_name": "l" }
-      elsif value == 9
-        return {"name": "sc", "display_name": ";" }
-      end
-    end
-    return nil
-  end
-
   @show_keyboard_shortcuts = true
-
   # Use enhanced JudgementHelper to generate rating buttons with scorer labels
   @rating_buttons = generate_rating_buttons(@book)
 
@@ -440,11 +267,9 @@ user.id: <%= judgement.user_id %>
           <td></td>
           <% @rating_buttons.each do |b| %>
             <%
-              button_style = "background-color: #{b['style']['background-color']}; color: black; border: 1px solid rgba(0,0,0,0.2); font-weight: 500;"
               @button_classes = "btn "
               if judgement.rating == b["value"].to_i
                 @button_classes = @button_classes + "btn-preselected "
-                button_style += "border: 2px solid #000; transform: scale(1.05);"
               end
             %>
             <td class="padded">
@@ -465,11 +290,9 @@ user.id: <%= judgement.user_id %>
         <tr>
           <% @rating_buttons.each do |b| %>
             <%
-              button_style = "background-color: #{b['style']['background-color']}; color: black; border: 1px solid rgba(0,0,0,0.2); font-weight: 500;"
               @button_classes = "btn "
               if judgement.rating == b["value"].to_i
                 @button_classes = @button_classes + "btn-preselected "
-                button_style += "border: 2px solid #000; transform: scale(1.05);"
               end
             %>
             <td class="padded">
