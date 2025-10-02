@@ -1,7 +1,7 @@
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
   <h1>
-    <%= image_tag @user.avatar_url(:big), size:'96x96', class:'img-rounded', title: 'Avatar image' %>
-    <%= @user.display_name%>    
+    <%= image_tag @user.avatar_url(:big), size:'96x96', class:'img-rounded', title: 'Avatar image' unless @user.ai_judge? %>
+    <%= @user.display_name %>    
   </h1>
   <div class="btn-toolbar mb-2 mb-md-0">
     <div class="btn-group me-2">
@@ -94,7 +94,7 @@
   </div>
 </div>
 
-<hr />
+<hr>
 
 
 <div class="card">
@@ -106,55 +106,67 @@
     <% if @user.pending_invite? %>
       <div class="alert alert-info" role="alert">This user hasn't accepted the invite to join Quepid, therefore no usage data is available.</div>
     <% else %>
+    
+
       <h3>Cases viewed</h3>
       <div
         id="cases-viewed"
-        data-pulse
-        data-item-selector="#cases-viewed"
-        data-signup-date="<%= @pulse_chart_start_date %>"
-        data-url="<%= url_for admin_user_pulse_path @user, params: {data: 'metadata'} %>"
+        data-controller="user-activity"
+        data-user-activity-url-value="<%= url_for admin_user_pulse_path @user, params: {data: 'metadata'} %>"
+        data-user-activity-label-value="cases viewed"
+        style="margin-bottom: 40px;"
       >
       </div>
     
       <h3>Cases scored</h3>
       <div
         id="cases-scored"
-        data-pulse
-        data-item-selector="#cases-scored"
-        data-signup-date="<%= @pulse_chart_start_date %>"
-        data-url="<%= url_for admin_user_pulse_path @user, params: {data: 'scores'} %>"
+        data-controller="user-activity"
+        data-user-activity-url-value="<%= url_for admin_user_pulse_path @user, params: {data: 'scores'} %>"
+        data-user-activity-label-value="cases scored"
+        style="margin-bottom: 40px;"
       >
       </div>
-    
+      
       <h3>Cases created</h3>
       <div
         id="cases-created"
-        data-pulse
-        data-item-selector="#cases-created"
-        data-signup-date="<%= @pulse_chart_start_date %>"
-        data-url="<%= url_for admin_user_pulse_path @user, params: {data: 'cases-created'} %>"
+        data-controller="user-activity"
+        data-user-activity-url-value="<%= url_for admin_user_pulse_path @user, params: {data: 'cases-created'} %>"
+        data-user-activity-label-value="cases created"
+        style="margin-bottom: 40px;"
       >
       </div>
-    
-      <h3>Teams created</h3>
-      <div
-        id="teams-created"
-        data-pulse
-        data-item-selector="#teams-created"
-        data-signup-date="<%= @pulse_chart_start_date %>"
-        data-url="<%= url_for admin_user_pulse_path @user, params: {data: 'teams-created'} %>"
-      >
-      </div>
-    
+      
       <h3>Queries created</h3>
       <div
         id="queries-created"
-        data-pulse
-        data-item-selector="#queries-created"
-        data-signup-date="<%= @pulse_chart_start_date %>"
-        data-url="<%= url_for admin_user_pulse_path @user, params: {data: 'queries-created'} %>"
+        data-controller="user-activity"
+        data-user-activity-url-value="<%= url_for admin_user_pulse_path @user, params: {data: 'queries-created'} %>"
+        data-user-activity-label-value="queries created"
+        style="margin-bottom: 40px;"
       >
       </div>
+      
+      <h3>Books created</h3>
+      <div
+        id="books-created"
+        data-controller="user-activity"
+        data-user-activity-url-value="<%= url_for admin_user_pulse_path @user, params: {data: 'books-created'} %>"
+        data-user-activity-label-value="books created"
+        style="margin-bottom: 40px;"
+      >
+      </div>
+      
+      <h3>Judgments created</h3>
+      <div
+        id="judgments-created"
+        data-controller="user-activity"
+        data-user-activity-url-value="<%= url_for admin_user_pulse_path @user, params: {data: 'judgments-created'} %>"
+        data-user-activity-label-value="judgments created"
+        style="margin-bottom: 40px;"
+      >
+      </div>      
     </div>
   <% end %>
 </div>

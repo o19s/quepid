@@ -3,6 +3,7 @@
 # Table name: books
 #
 #  id                          :bigint           not null, primary key
+#  archived                    :boolean          default(FALSE), not null
 #  export_job                  :string(255)
 #  import_job                  :string(255)
 #  name                        :string(255)
@@ -46,3 +47,10 @@ empty_book:
   scorer: :quepid_default_scorer
   selection_strategy: :single_rater
   name: Empty Book
+
+archived_book:
+  owner: :doug
+  scorer: :quepid_default_scorer
+  selection_strategy: :single_rater
+  name: IamArchivedBook
+  archived: true

@@ -7,6 +7,7 @@ angular.module('QuepidApp')
     '$uibModalInstance',
     '$log',
     '$location',
+    '$window',
     'flash',
     'caseSvc',
     'bookSvc',
@@ -18,6 +19,7 @@ angular.module('QuepidApp')
       $uibModalInstance,
       $log,
       $location,
+      $window,
       flash,
       caseSvc,
       bookSvc,
@@ -69,11 +71,29 @@ angular.module('QuepidApp')
       };
 
       var addBooksToLists = function(books) {
+        
+        let sortedBooks = [];
         angular.forEach(books, function (book) {
-          if (listDoesNotHaveBook(ctrl.share.books, book)) {
-            ctrl.share.books.push(book);
+          if (listDoesNotHaveBook(sortedBooks, book)) {
+            sortedBooks.push(book);
           }
         });
+        
+        // Now sort the entire list with active book at the top
+        sortedBooks.sort(function(a, b) {
+          // If a is the active book, it should come first
+          if (a.id === ctrl.activeBookId) {
+            return -1;
+          }
+          // If b is the active book, it should come first
+          if (b.id === ctrl.activeBookId) {
+            return 1;
+          }
+          // If neither is the active book, sort alphabetically by name
+          return a.name.localeCompare(b.name);
+        });
+        
+        ctrl.share.books = sortedBooks;
       };
       var addTeamToLists = function(team) {
         ctrl.share.teams.push(team);
@@ -117,15 +137,30 @@ angular.module('QuepidApp')
       ctrl.refreshRatingsFromBook = function () {
         //$uibModalInstance.close(ctrl.options);
         $scope.processingPrompt.inProgress = true;
-        bookSvc.refreshCaseRatingsFromBook(ctrl.share.acase.caseNo, ctrl.activeBookId, ctrl.createMissingQueries)
-        .then(function() {
-          $scope.processingPrompt.inProgress  = false;
+        
+        // 
+        var processInBackground = ctrl.share.acase.queriesCount >= 50 ? true: false;
+        bookSvc.refreshCaseRatingsFromBook(ctrl.share.acase.caseNo, ctrl.activeBookId, ctrl.createMissingQueries, processInBackground)
+        .then(function(response) {
+          $scope.processingPrompt.inProgress = false;
           $uibModalInstance.close(true);
 
-          flash.success = 'Ratings have been refreshed.';
-        }, function(response) {
+          if (processInBackground === true) {
+            flash.success = 'Ratings are being refreshed in the background.';
+          }
+          else {
+            flash.success = 'Ratings have been refreshed.';
+          }
           
-          $scope.processingPrompt.error       = response.data.statusText;
+          // Check if we should redirect to homepage
+          if (response && response.data && processInBackground === true) {
+            // Short delay to ensure flash message is visible
+            setTimeout(function() {
+              $window.location.href = '/';
+            }, 500);
+          }
+        }, function(response) {
+          $scope.processingPrompt.error = response.data.statusText;
         });
       };
 

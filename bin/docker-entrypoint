@@ -27,8 +27,12 @@ if [ "${1}" == "foreman" ] || ([ "${@: -2:1}" == "./bin/rails" ] && [ "${@: -1:1
   echo "Completed migrations"
   
   echo "Starting update asset path for context nesting"
-  #RAILS_ENV=production bundle exec rake assets:precompile RAILS_RELATIVE_URL_ROOT=/quepid-prod
-  #SECRET_KEY_BASE_DUMMY=1 ./bin/rails assets:precompile RAILS_RELATIVE_URL_ROOT=/quepid-prod
+  if [ -n "${RAILS_RELATIVE_URL_ROOT+x}" ]; then
+    echo "RAILS_RELATIVE_URL_ROOT is set to '${RAILS_RELATIVE_URL_ROOT}', precompiling assets with this path"
+    RAILS_ENV=production bundle exec rake assets:precompile RAILS_RELATIVE_URL_ROOT=${RAILS_RELATIVE_URL_ROOT}
+  else
+    echo "RAILS_RELATIVE_URL_ROOT is not set, skipping asset precompilation with relative URL"
+  fi
   echo "Completed update asset path"
   
 fi

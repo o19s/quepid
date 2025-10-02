@@ -16,6 +16,7 @@ angular.module('QuepidApp')
     'caseSvc',
     'scorerSvc',
     'configurationSvc',
+    'annotationsSvc',
     function (
       $scope,
       $rootScope,
@@ -29,12 +30,14 @@ angular.module('QuepidApp')
       querySnapshotSvc,
       caseSvc,
       scorerSvc,
-      configurationSvc
+      configurationSvc,
+      annotationsSvc
     ) {
-      console.log('QueriesCtrl instantiated');  
+      console.log('QueriesCtrl instantiated');
       $scope.queriesSvc = queriesSvc;
       $scope.caseSvc = caseSvc;
       $scope.queryListSortable = configurationSvc.isQueryListSortable();
+      $scope.annotations = []; // Initialize annotations array
 
       // The scoringCompleteListener is a workaround for the fact that
       // we create multiple instances of this controller when we reselect the
@@ -127,6 +130,17 @@ angular.module('QuepidApp')
             .then(function(returnedCase) {
               $scope.scores = returnedCase.scores;
             });
+
+          // Also re-fetch annotations
+          annotationsSvc.fetchAll(theCase.caseNo)
+            .then(function(annotations) {
+              console.log('Fetched annotations:', annotations);
+              $scope.annotations = annotations;
+            })
+            .catch(function(err) {
+              console.error('Error fetching annotations:', err);
+              $scope.annotations = [];
+            });
         }
       });
 
@@ -139,6 +153,21 @@ angular.module('QuepidApp')
             $scope.scores = acase.scores;
           } else {
             $scope.scores = [];
+          }
+
+          // Fetch annotations for the case
+          if (acase && acase.caseNo) {
+            annotationsSvc.fetchAll(acase.caseNo)
+              .then(function(annotations) {
+                console.log('Initial fetch of annotations:', annotations);
+                $scope.annotations = annotations;
+              })
+              .catch(function(err) {
+                console.error('Error fetching annotations:', err);
+                $scope.annotations = [];
+              });
+          } else {
+            $scope.annotations = [];
           }
         }
       );

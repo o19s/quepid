@@ -1,5 +1,38 @@
 # Changelog
 
+## 8.3.0 -- 2025-??-??
+
+### Features
+
+* Added ability to Archive a book, similar to how you can Archive a case.  This lets you hide books that you aren't currently using. https://github.com/o19s/quepid/pull/1487
+
+* Developers using Docker no longer need Ruby to be installed locally.  Scripts have been converted to Bash.  https://github.com/o19s/quepid/pull/1479
+
+### Improvements
+
+* Improved syncing of Books and Cases by making it a back ground process if you have more than 50 queries.  Deals with the front end becomign sluggish and timing out when it takes a long time to sync. https://github.com/o19s/quepid/pull/1487
+
+* Simplify book creation by defaulting to Multiple Raters choice. https://github.com/o19s/quepid/pull/1487
+
+* All the updates across all the dependencies!  https://github.com/o19s/quepid/pull/1479
+
+### Bugs Addressed
+
+* Restored Annotation view in the Case screens Scores over time chart.  Fixed some visualization issues IN that chart too.  https://github.com/o19s/quepid/pull/1479
+
+
+## 8.2.1 -- 2025-08-25
+
+@david-fisher did some testing and found a couple of regressions:
+
+* Fixed navbar drop down on Admin pages.  https://github.com/o19s/quepid/pull/1459
+* Version numbers not showing up in the Dockerized version of Quepid.  https://github.com/o19s/quepid/commit/632b73cd5a5b3139be3cff070f82287bbd184adc
+* Integrate into `entrypoint.sh` handling Quepid assests in a nested directory like www.mycompany.com/quepid-prod/.
+
+@jesigger fixed the dropdowns for recent cases and books! https://github.com/o19s/quepid/pull/1415
+
+Lastly, nicer docs on deploying Quepid locally: https://quepid-docs.dev.o19s.com/2/quepid/61/how-to-deploy-quepid-locally.
+
 ## 8.2.0 -- 2025-07-23
 
 ### What's Changed
