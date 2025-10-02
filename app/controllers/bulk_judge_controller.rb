@@ -108,15 +108,16 @@ class BulkJudgeController < ApplicationController
   # rubocop:enable Metrics/AbcSize, Metrics/MethodLength
 
   def destroy
-    judgement = Judgement.find_or_initialize_by(
-      query_doc_pair_id: query_doc_pair.id,
+    judgement = Judgement.find_by(
+      query_doc_pair_id: params[:query_doc_pair_id],
       user:              current_user
     )
-    if judgement.destroy
+
+    if judgement&.destroy
       UpdateCaseRatingsJob.perform_later judgement.query_doc_pair
-      render json: { status: 'success', judgement_id: judgement.id }
+      render json: { status: 'success' }
     else
-      render json: { status: 'error', errors: judgement.errors.full_messages }, status: :unprocessable_entity
+      render json: { status: 'error', message: 'Judgement not found or could not be deleted' }, status: :not_found
     end
   end
 end

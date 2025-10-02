@@ -20,16 +20,7 @@ export default class extends Controller {
     const queryDocPairId = button.dataset.queryDocPairId
     const bookId = this.bookIdValue
 
-    // Clear radio button selection
-    const radios = this.element.querySelectorAll(`input[name="judgement_${queryDocPairId}"]`)
-    radios.forEach(radio => {
-      radio.checked = false
-    })
-
-    // Hide the reset button
-    button.style.display = 'none'
-
-    // Show saving status
+    // Show saving status first
     this.showStatus(queryDocPairId, "saving")
 
     try {
@@ -40,26 +31,43 @@ export default class extends Controller {
           "X-CSRF-Token": this.getCSRFToken()
         },
         body: JSON.stringify({
-          query_doc_pair_id: queryDocPairId,
-          rating: null,
-          reset: true
+          query_doc_pair_id: queryDocPairId
         })
       })
 
       if (response.ok) {
+        // Successfully deleted the judgement
+        this.clearRatingUI(queryDocPairId)
         this.showStatus(queryDocPairId, "reset")
-        // Remove the reset button since there's no rating now
+        button.remove()
+      } else if (response.status === 404) {
+        // No judgement found to delete - this is actually fine for reset
+        this.clearRatingUI(queryDocPairId)
+        this.showStatus(queryDocPairId, "reset")
         button.remove()
       } else {
+        // Other error
         this.showStatus(queryDocPairId, "error")
-        console.error("Failed to reset judgement")
-        // Show the button again on error
-        button.style.display = ''
+        console.error("Failed to reset judgement:", response.status)
       }
     } catch (error) {
       this.showStatus(queryDocPairId, "error")
       console.error("Error resetting judgement:", error)
-      button.style.display = ''
+    }
+  }
+
+  // Helper method to clear rating UI elements
+  clearRatingUI(queryDocPairId) {
+    // Clear radio button selection
+    const radios = this.element.querySelectorAll(`input[name="judgement_${queryDocPairId}"]`)
+    radios.forEach(radio => {
+      radio.checked = false
+    })
+
+    // Clear explanation field
+    const explanationField = this.element.querySelector(`#explanation_${queryDocPairId}`)
+    if (explanationField) {
+      explanationField.value = ''
     }
   }
 
