@@ -88,6 +88,9 @@ Rails.application.routes.draw do
       get 'judge_later' => 'judgements#judge_later'
     end
     get 'judge' => 'judgements#new'
+    get 'judge/bulk' => 'bulk_judge#new'
+    post 'judge/bulk/save' => 'bulk_judge#save'
+    delete 'judge/bulk/delete' => 'bulk_judge#destroy'
     get 'skip_judging' => 'judgements#skip_judging'
     member do
       get 'judgement_stats'

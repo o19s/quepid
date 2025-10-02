@@ -2,6 +2,7 @@
   <h1>Judgements for <i class="bi bi-book"></i> <%= book_title @book %></h1>
   <div class="btn-toolbar mb-2 mb-md-0">
     <div class="btn-group me-2">
+      <%= link_to 'Bulk Judge', book_judge_bulk_path(@book), class: "btn btn-sm btn-primary" %>
       <%= link_to (@shallow ? 'Extended Details' : 'Compact Details'), book_judgements_path(@book, shallow: !@shallow), class: "btn btn-sm btn-outline-secondary" %>
     </div>
   </div>
