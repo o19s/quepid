@@ -7,6 +7,7 @@ class BulkJudgeController < ApplicationController
   before_action :set_book
 
   # GET /books/:book_id/judge/bulk
+  # rubocop:disable Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/MethodLength, Metrics/PerceivedComplexity
   def new
     @query_text = params[:query_text]
     @rank_depth = params[:rank_depth].presence&.to_i
@@ -69,9 +70,11 @@ class BulkJudgeController < ApplicationController
     @total_count = randomized_results.size
     @total_queries = grouped.keys.size
   end
+  # rubocop:enable Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/MethodLength, Metrics/PerceivedComplexity
 
   # POST /books/:book_id/judge/bulk/save
   # Save individual judgement via AJAX
+  # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
   def save
     query_doc_pair = @book.query_doc_pairs.find(params[:query_doc_pair_id])
     judgement = Judgement.find_or_initialize_by(
@@ -102,7 +105,8 @@ class BulkJudgeController < ApplicationController
       render json: { status: 'error', errors: judgement.errors.full_messages }, status: :unprocessable_entity
     end
   end
-  
+  # rubocop:enable Metrics/AbcSize, Metrics/MethodLength
+
   def destroy
     judgement = Judgement.find_or_initialize_by(
       query_doc_pair_id: query_doc_pair.id,
@@ -110,7 +114,7 @@ class BulkJudgeController < ApplicationController
     )
     if judgement.destroy
       UpdateCaseRatingsJob.perform_later judgement.query_doc_pair
-       render json: { status: 'success', judgement_id: judgement.id }
+      render json: { status: 'success', judgement_id: judgement.id }
     else
       render json: { status: 'error', errors: judgement.errors.full_messages }, status: :unprocessable_entity
     end
