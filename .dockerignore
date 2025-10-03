@@ -1,11 +1,36 @@
 # See https://docs.docker.com/engine/reference/builder/#dockerignore-file for more about ignoring files.
 
-# Ignore git directory.
+# Git and version control
 /.git/
 /.gitignore
+/.gitattributes
+/.gitmodules
+/worktrees/
+
+# Documentation and README files
+README.md
+CHANGELOG.md
+DEVELOPER_GUIDE.md
+CODE_OF_CONDUCT.md
+LICENSE
+*.md
+docs/
+
+# Docker files (don't include Docker files in the build context)
+/.dockerignore
+/Dockerfile*
+docker-compose*.yml
+
+# Development and testing
+spec/
+test/
+coverage/
+.rspec
+.rubocop.yml
 
 # Ignore bundler config.
 /.bundle
+/vendor/bundle
 
 # Ignore all environment files.
 /.env*
@@ -13,6 +38,7 @@
 # Ignore all default key files.
 /config/master.key
 /config/credentials/*.key
+/config/credentials.yml.enc
 
 # Ignore all logfiles and tempfiles.
 /log/*
@@ -29,36 +55,67 @@
 !/storage/.keep
 /tmp/storage/*
 !/tmp/storage/.keep
+*.sqlite3
+*.db
 
-# Ignore assets.
+# Node.js and JavaScript
 /node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Ignore built assets.
 /app/assets/builds/*
 !/app/assets/builds/.keep
 /public/assets
+/public/packs/
+/public/packs-test/
+/public/uploads/
+
+# Ruby debugging and development
+.byebug_history
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# OS generated files
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
 
 # Ignore CI service files.
 /.github
+.gitlab-ci.yml
+.travis.yml
+circle.yml
+renovate.json
 
 # Ignore development files
 /.devcontainer
 
-# Ignore Docker-related files
-/.dockerignore
-/Dockerfile*
-
 # Ignore any Docker container volumes
 /volumes/*
 
-# Quepid docs
-docs/
+# Deployment and infrastructure
+deployment/
+.ssl/
+nginx.conf
 
-# Rails generated artifacts
-coverage/
+# Local development tools
+bin/dev
+bin/setup*
+claude-swarm.yml
 
-# Files used by Docker to build images
-docker-compose*.yml
-Dockerfile*
-.env
+# Output and build artifacts
+output/
 
 # CircleCI configuration
 .circleci/**/*
