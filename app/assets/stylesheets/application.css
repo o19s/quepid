@@ -16,6 +16,7 @@
  *
  *= require bootstrap5-add
  *= require signup
+ *= require judgements
  */
 
  .public-share .clipboard-icon {
