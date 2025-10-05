@@ -175,7 +175,7 @@
                           <% if value.is_a? String %>
                             <% if value.starts_with?('http') %>
                               <%= link_to value, value, target: "_blank" %>
-                            <% elsif value.length > 110 %>
+                            <% elsif false %>
                               <br/><%= sanitize value %>
                             <% else %>
                               <%= sanitize value %>
@@ -193,7 +193,7 @@
                     <strong>Rate this document:</strong>
                     <div class="mt-2">
                       <div class="d-flex align-items-center">
-                        <div class="rating-buttons-container d-flex flex-wrap align-items-center" style="gap: 10px; padding: 5px 0;">
+                          <div class="rating-buttons-container d-flex flex-wrap align-items-center">
                           <% rating_buttons.each do |button| %>
                             <%
                             input_id = "judgement_#{query_doc_pair.id}_#{button['value']}"
@@ -216,16 +216,7 @@
                                    data-query-doc-pair-id="<%= query_doc_pair.id %>"
                                    data-rating="<%= button['value'] %>">
                                    <label class="<%= label_classes %>" for="<%= input_id %>" 
-                                   style="background-color: <%= button['style']['background-color'] %>; 
-                                          color: black;
-                                          border: 1px solid rgba(0,0,0,0.2);
-                                          font-weight: 500;
-                                          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-                                          border-radius: 0.375rem;
-                                          min-width: 45px;
-                                          text-align: center;
-                                          padding: 8px 12px;
-                                          box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                                   style="background-color: <%= button['style']['background-color'] %>;">
                               <%= button['label'] %>
                             </label>
                           <% end %>

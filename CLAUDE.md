@@ -12,3 +12,6 @@ To understand how the application is built, consult `./docs/app_structure.md`.
 
 
 Instead of treating true/false parameters as strings in controller methods use our helper `archived = deserialize_bool_param(params[:archived])` to make them booleans.
+
+We use .css, we do not use .scss.
+
