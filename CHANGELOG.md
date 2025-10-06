@@ -1,8 +1,10 @@
 # Changelog
 
-## 8.3.0 -- 2025-??-??
+## 8.3.0 -- 2025-10-06
 
 ### Features
+
+* Bulk Judging UI added for Books.  Want to quickly judge lots of documents for a set of queries in context of each other?  Bulk Judging UI is here.   You can pick a specific depth, say only results in the top 3.  Or you can search for specific query patterns.  Results are presented in random order to counteract position bias in judging.   You can also provide an explanation. https://github.com/o19s/quepid/pull/1490 by @epugh, thanks Joelle for inspiring this to finally happen. 
 
 * Added ability to Archive a book, similar to how you can Archive a case.  This lets you hide books that you aren't currently using. https://github.com/o19s/quepid/pull/1487
 
@@ -15,6 +17,8 @@
 * Simplify book creation by defaulting to Multiple Raters choice. https://github.com/o19s/quepid/pull/1487
 
 * All the updates across all the dependencies!  https://github.com/o19s/quepid/pull/1479
+
+* Finally giving up on smart handling of HTTPS/HTTP protocol IN Quepid.  We tried for a long time to make Quepid aware of a search endpoints TLS setting because the browsers these days don't want you to interact across the protocols.  If Quepid was on `https` and the search endpoint was an `http` url, then we prompted to reload the browser app into the matching `http` url.  This didn't work well when Quepid is behind a proxy, as they typically take of this.  Also, we now have an actual built in capability for Quepid server to send queries to an endpoint, and it doesn't care if it's http or https.  https://github.com/o19s/quepid/pull/1427 by @epugh to remove this.  Fixes https://github.com/o19s/quepid/issues/1410 by @brucks24.
 
 ### Bugs Addressed
 
