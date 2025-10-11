@@ -13,6 +13,7 @@ angular.module('QuepidApp')
     'bookSvc',
     'queriesSvc',
     'acase',
+    'caseTryNavSvc',
     function (
       $rootScope,
       $scope,
@@ -24,7 +25,8 @@ angular.module('QuepidApp')
       caseSvc,
       bookSvc,
       queriesSvc,
-      acase
+      acase,
+      caseTryNavSvc
      ) {
       var ctrl = this;
 
@@ -156,7 +158,7 @@ angular.module('QuepidApp')
           if (response && response.data && processInBackground === true) {
             // Short delay to ensure flash message is visible
             setTimeout(function() {
-              $window.location.href = '/';
+              $window.location.href = caseTryNavSvc.getQuepidRootUrl();
             }, 500);
           }
         }, function(response) {

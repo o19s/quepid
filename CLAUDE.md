@@ -15,3 +15,6 @@ Instead of treating true/false parameters as strings in controller methods use o
 
 We use .css, we do not use .scss.
 
+Never do $window.location.href= '/', do $window.location.href= caseTryNavSvc.getQuepidRootUrl();.
+
+Likewise urls generated should never start with / as we need relative links.

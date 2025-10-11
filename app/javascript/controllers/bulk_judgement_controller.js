@@ -24,7 +24,7 @@ export default class extends Controller {
     this.showStatus(queryDocPairId, "saving")
 
     try {
-      const response = await fetch(`/books/${bookId}/judge/bulk/delete`, {
+      const response = await fetch(`books/${bookId}/judge/bulk/delete`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
@@ -98,7 +98,7 @@ export default class extends Controller {
     const explanation = explanationField ? explanationField.value : ""
 
     try {
-      const response = await fetch(`/books/${bookId}/judge/bulk/save`, {
+      const response = await fetch(`books/${bookId}/judge/bulk/save`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -156,7 +156,7 @@ export default class extends Controller {
       this.showStatus(queryDocPairId, "saving")
 
       try {
-        const response = await fetch(`/books/${bookId}/judge/bulk/save`, {
+        const response = await fetch(`books/${bookId}/judge/bulk/save`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
