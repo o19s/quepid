@@ -72,7 +72,7 @@ This book consists of <%= @book.queries_count %> queries.
 </div>
 <% end %>
 
-<% if @book.populate_file.attached? %>
+<% if @book.populate_job.present? %>
 <div class="alert alert-danger" role="alert">
   Currently populating this book with fresh data from a case.
   <br/>
@@ -130,11 +130,8 @@ This book consists of <%= @book.queries_count %> queries.
 
 <p>
   <strong>Associated Files:</strong>
-  <% if @book.populate_file.attached? %>
-    <%= link_to 'Populate book data from Case', rails_blob_path(@book.populate_file.blob, only_path: true) %> <i>(made <%= time_ago_in_words @book.populate_file.created_at %> ago)</i>
-    <% if @book.populate_job %>
-      There is currently a populate from a Case job for this Book set up.  It is <code><%= @book.populate_job %></code>.
-    <% end %>
+  <% if @book.populate_job %>
+    There is currently a populate from a Case job for this Book set up.  It is <code><%= @book.populate_job %></code>.
   <% end %>
   <% if @book.import_file.attached? %>
     <%= link_to 'Book Import file', rails_blob_path(@book.import_file.blob, only_path: true) %> <i>(made <%= time_ago_in_words @book.import_file.created_at %> ago)</i>

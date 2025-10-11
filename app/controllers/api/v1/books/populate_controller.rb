@@ -23,10 +23,16 @@ module Api
           serialized_data = Marshal.dump(query_doc_pairs_params)
 
           compressed_data = Zlib::Deflate.deflate(serialized_data)
-          @book.populate_file.attach(io: StringIO.new(compressed_data), filename: "book_populate_#{@book.id}.bin.zip",
-                                     content_type: 'application/zip')
+          # Create a temporary file attachment
+          blob = ActiveStorage::Blob.create_and_upload!(
+            io:           StringIO.new(compressed_data),
+            filename:     "book_populate_#{@book.id}.bin.zip",
+            content_type: 'application/zip'
+          )
+
+          # Pass the blob directly to the job instead of creating an attachment
           track_book_populate_queued do
-            PopulateBookJob.perform_later @book, @case
+            PopulateBookJob.perform_later @book, @case, blob
           end
 
           head :no_content

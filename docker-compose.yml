@@ -7,7 +7,7 @@ services:
     env_file:
       - .env
     environment:
-      - RAILS_RELATIVE_URL_ROOT=/quepid-app # Use to nest under a context path like tools.mycompany.com/quepid-app
+      # - RAILS_RELATIVE_URL_ROOT=/quepid-app # Use to nest under a context path like tools.mycompany.com/quepid-app
       - DOCKER_CONTAINER=true
       - QUEPID_DOMAIN=tools.dev.mycorp.com
       - LAUNCHY_DRY_RUN=true # dev only letter_opener gem wants to open a browser when sending emails.

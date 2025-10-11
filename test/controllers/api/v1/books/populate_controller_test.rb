@@ -47,6 +47,8 @@ module Api
             assert_difference 'book.query_doc_pairs.count', 2 do
               put :update, params: data
 
+              assert_enqueued_with(job: PopulateBookJob)
+
               perform_enqueued_jobs
 
               query_doc_pair_star_wars = book.query_doc_pairs.find_by(query_text: 'star wars', doc_id: 'https://www.themoviedb.org/movie/11-star-wars')
@@ -89,6 +91,7 @@ module Api
 
             put :update, params: data
 
+            assert_enqueued_with(job: PopulateBookJob)
             perform_enqueued_jobs
 
             # change position and document fields to test
@@ -99,6 +102,7 @@ module Api
             assert_difference 'book.query_doc_pairs.count', 0 do
               put :update, params: data
 
+              assert_enqueued_with(job: PopulateBookJob)
               perform_enqueued_jobs
 
               query_doc_pair_star_wars = book.query_doc_pairs.find_by(query_text: 'star wars', doc_id: 'https://www.themoviedb.org/movie/11-star-wars')
@@ -162,6 +166,7 @@ module Api
             assert_difference 'book.query_doc_pairs.count', 1 do
               put :update, params: data
 
+              assert_enqueued_with(job: PopulateBookJob)
               perform_enqueued_jobs
 
               assert_response :no_content

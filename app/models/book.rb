@@ -71,7 +71,6 @@ class Book < ApplicationRecord
 
   has_one_attached :import_file
   has_one_attached :export_file
-  has_one_attached :populate_file
 
   after_destroy :delete_attachments
 
@@ -120,6 +119,5 @@ class Book < ApplicationRecord
   def delete_attachments
     import_file.purge_later
     export_file.purge_later
-    populate_file.purge_later
   end
 end
