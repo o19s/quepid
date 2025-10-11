@@ -3,8 +3,8 @@
 angular.module('QuepidApp')
   .controller('FrogReportModalInstanceCtrl', [
     '$uibModalInstance', '$scope', 'flash','$window',
-    'theCase', 'queriesSvc','bookSvc',
-    function ($uibModalInstance, $scope,flash, $window, theCase, queriesSvc, bookSvc) {
+    'theCase', 'queriesSvc','bookSvc', 'caseTryNavSvc',
+    function ($uibModalInstance, $scope,flash, $window, theCase, queriesSvc, bookSvc, caseTryNavSvc) {
       var ctrl = this;
 
       ctrl.theCase = theCase;
@@ -254,7 +254,7 @@ angular.module('QuepidApp')
           if (response && response.data && processInBackground === true) {
             // Short delay to ensure flash message is visible
             setTimeout(function() {
-              $window.location.href = '/';
+              $window.location.href = caseTryNavSvc.getQuepidRootUrl();
             }, 500);
           }
         }, function(response) {
