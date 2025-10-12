@@ -123,7 +123,7 @@ angular.module('QuepidApp')
         };
 
         return $http.put('api/books/' + bookId + '/populate', payload)
-          .then(function(response) {
+          .then(function() {
             console.log('Updated book with case query data.');
           });
       };

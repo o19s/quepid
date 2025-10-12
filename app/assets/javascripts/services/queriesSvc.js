@@ -1213,20 +1213,23 @@ angular.module('QuepidApp')
             var batch = queriesToSync.slice(startIdx, endIdx);
 
             if (batch.length > 0) {
-              // Create a promise for each batch
-              var batchPromise = bookSvc.updateQueryDocPairs(bookId, caseNo, batch)
-                .then(function() {
-                  $log.debug('Book query_doc_pairs batch synced successfully');
-                }, function(error) {
-                  // On error, remove the failed items from cache so they can be retried
-                  angular.forEach(batch, function(query) {
-                    angular.forEach(query.docs, function(doc) {
-                      var cacheKey = query.queryText + ':' + doc.id;
-                      delete syncedPairsCache[bookId][cacheKey];
+              // Create a promise for each batch with proper closure
+              // Use IIFE to capture all variables to prevent closure issues
+              var batchPromise = (function(currentBookSvc, currentBookId, currentCaseNo, currentBatch, currentSyncedPairsCache, currentLogger) {
+                return currentBookSvc.updateQueryDocPairs(currentBookId, currentCaseNo, currentBatch)
+                  .then(function() {
+                   
+                  }, function(error) {
+                    // On error, remove the failed items from cache so they can be retried
+                    angular.forEach(currentBatch, function(query) {
+                      angular.forEach(query.docs, function(doc) {
+                        var cacheKey = query.queryText + ':' + doc.id;
+                        delete currentSyncedPairsCache[currentBookId][cacheKey];
+                      });
                     });
+                    currentLogger.error('Failed to sync book query_doc_pairs batch:', error);
                   });
-                  $log.error('Failed to sync book query_doc_pairs batch:', error);
-                });
+              })(bookSvc, bookId, caseNo, batch, syncedPairsCache, $log);
 
               batchPromises.push(batchPromise);
             }
