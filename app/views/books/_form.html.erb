@@ -91,13 +91,6 @@
       
       <% unless @book.new_record? %>
         <div class="mb-3">
-          <div class="form-check">   
-            <%= form.check_box :delete_populate_file, class: 'form-check-input', checked: false, disabled: !@book.populate_file.attached? %>
-            <%= form.label :delete_populate_file, "Delete Populate File", class: 'form-check-label' %>
-            <div class="form-text">If enabled you have an associated file.  Check this to delete it.</div>
-          </div>
-        </div> 
-        <div class="mb-3">
           <div class="form-check">
             <%= form.check_box :delete_import_file, class: 'form-check-input', checked: false, disabled: !@book.import_file.attached? %>
             <%= form.label :delete_import_file, "Delete Import File", class: 'form-check-label' %>

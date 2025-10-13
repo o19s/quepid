@@ -17,6 +17,7 @@ angular.module('QuepidApp')
     'searchSvc',
     'ratingsStoreSvc',
     'caseTryNavSvc',
+    'bookSvc',
     'DocListFactory',
     'diffResultsSvc',
     'searchErrorTranslatorSvc',
@@ -34,6 +35,7 @@ angular.module('QuepidApp')
       searchSvc,
       ratingsStoreSvc,
       caseTryNavSvc,
+      bookSvc,
       DocListFactory,
       diffResultsSvc,
       searchErrorTranslatorSvc,
@@ -52,12 +54,37 @@ angular.module('QuepidApp')
       this.queries = {};
       this.linkUrl = '';
 
+      // Cache for tracking synced query-doc pairs per book
+      // Format: { bookId: { 'queryText:docId': true } }
+      let syncedPairsCache = {};
+
       svc.reset = reset;
       function reset() {
         svc.queries = {};
         svc.showOnlyRated = false;
         svc.svcVersion++;
+        // Clear sync cache when resetting
+        syncedPairsCache = {};
       }
+
+      // Method to clear cache for a specific book
+      this.clearSyncCache = function(bookId) {
+        if (bookId && syncedPairsCache[bookId]) {
+          delete syncedPairsCache[bookId];
+          $log.debug('Cleared sync cache for book ' + bookId);
+        }
+      };
+
+      // Method to get cache stats for debugging
+      this.getSyncCacheStats = function(bookId) {
+        if (bookId && syncedPairsCache[bookId]) {
+          return {
+            bookId: bookId,
+            syncedPairsCount: Object.keys(syncedPairsCache[bookId]).length
+          };
+        }
+        return null;
+      };
 
       this.getCaseNo = getCaseNo;
       this.createSearcherFromSettings = createSearcherFromSettings;
@@ -652,6 +679,9 @@ angular.module('QuepidApp')
         this.searchAndScore = function() {
           return this.search().then( () => {
             this.score();
+            
+            // Sync query results to associated Book if one exists
+            svc.syncToBook();
           });
         };
 
@@ -767,6 +797,8 @@ angular.module('QuepidApp')
         currSettings = newSettings;
 
         if (caseNo !== newCaseNo) {
+          // Clear sync cache when switching cases
+          syncedPairsCache = {};
           scorerSvc.bootstrap(newCaseNo);
           bootstrapQueries(newCaseNo);
         } else {
@@ -830,6 +862,9 @@ angular.module('QuepidApp')
              * after all searches complete.
              */
             svc.scoreAll();
+
+            // Sync query results to associated Book if one exists
+            svc.syncToBook();
           });
         });
       };
@@ -885,7 +920,7 @@ angular.module('QuepidApp')
 
                 self.queries[query.queryId] = query;
                 svcVersion++;
-                broadcastSvc.send('updatedQueriesList');
+                //broadcastSvc.send('updatedQueriesList');
 
                 resolve();
               }
@@ -1111,6 +1146,105 @@ angular.module('QuepidApp')
 
         svc.scoreAll().then(function() {
           svcVersion++;
+        });
+      };
+
+      this.syncToBook = function() {
+        // Only sync if we have a case with a book associated
+        if (!caseNo || caseNo === -1) {
+          return;
+        }
+
+        // First check if this case has a book associated
+        var checkPath = 'api/cases/' + caseNo;
+        $http.get(checkPath).then(function(response) {
+          var theCase = response.data;
+          if (!theCase.book_id) {
+            return; // No book associated with this case
+          }
+
+          var bookId = theCase.book_id;
+
+          // Initialize cache for this book if not exists
+          if (!syncedPairsCache[bookId]) {
+            syncedPairsCache[bookId] = {};
+          }
+
+          // Filter queries to only include those with new/unsynced results
+          let queriesToSync = [];
+          angular.forEach(svc.queries, function(query) {
+            if (query.docs && query.docs.length > 0) {
+              // Create a modified query with only unsynced docs
+              let unsyncedDocs = [];
+              let hasUnsyncedDocs = false;
+
+              angular.forEach(query.docs, function(doc) {
+                var cacheKey = query.queryText + ':' + doc.id;
+                if (!syncedPairsCache[bookId][cacheKey]) {
+                  unsyncedDocs.push(doc);
+                  hasUnsyncedDocs = true;
+                  // Mark as synced (optimistically)
+                  syncedPairsCache[bookId][cacheKey] = true;
+                }
+              });
+
+              // Only include query if it has unsynced docs
+              if (hasUnsyncedDocs) {
+                // Create a shallow copy of the query with only unsynced docs
+                var queryToSync = {
+                  queryText: query.queryText,
+                  informationNeed: query.informationNeed,
+                  notes: query.notes,
+                  docs: unsyncedDocs
+                };
+                queriesToSync.push(queryToSync);
+              }
+            }
+          });
+
+          // Process queries in batches of 100
+          var batchSize = 100;
+          var totalBatches = Math.ceil(queriesToSync.length / batchSize);
+          var batchPromises = [];
+
+          for (var i = 0; i < totalBatches; i++) {
+            var startIdx = i * batchSize;
+            var endIdx = Math.min(startIdx + batchSize, queriesToSync.length);
+            var batch = queriesToSync.slice(startIdx, endIdx);
+
+            if (batch.length > 0) {
+              // Create a promise for each batch with proper closure
+              // Use IIFE to capture all variables to prevent closure issues
+              var batchPromise = (function(currentBookSvc, currentBookId, currentCaseNo, currentBatch, currentSyncedPairsCache, currentLogger) {
+                return currentBookSvc.updateQueryDocPairs(currentBookId, currentCaseNo, currentBatch)
+                  .then(function() {
+                   
+                  }, function(error) {
+                    // On error, remove the failed items from cache so they can be retried
+                    angular.forEach(currentBatch, function(query) {
+                      angular.forEach(query.docs, function(doc) {
+                        var cacheKey = query.queryText + ':' + doc.id;
+                        delete currentSyncedPairsCache[currentBookId][cacheKey];
+                      });
+                    });
+                    currentLogger.error('Failed to sync book query_doc_pairs batch:', error);
+                  });
+              })(bookSvc, bookId, caseNo, batch, syncedPairsCache, $log);
+
+              batchPromises.push(batchPromise);
+            }
+          }
+
+          // Wait for all batches to complete
+          if (batchPromises.length > 0) {
+            $q.all(batchPromises).then(function() {
+              $log.debug('All book sync batches completed. Total pairs synced: ' + Object.keys(syncedPairsCache[bookId]).length);
+            });
+          } else {
+            $log.debug('No new query-doc pairs to sync for book ' + bookId);
+          }
+        }, function(error) {
+          $log.error('Failed to fetch case details:', error);
         });
       };
 

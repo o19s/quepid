@@ -166,11 +166,10 @@ class BooksController < ApplicationController
 
     @book.update(book_params.except(
                    :team_ids, :ai_judges, :link_the_case, :origin_case_id,
-                   :delete_export_file, :delete_populate_file, :delete_import_file
+                   :delete_export_file, :delete_import_file
                  ))
 
     @book.export_file.purge if '1' == book_params[:delete_export_file]
-    @book.populate_file.purge if '1' == book_params[:delete_populate_file]
     @book.import_file.purge if '1' == book_params[:delete_import_file]
 
     @book.save
@@ -369,7 +368,7 @@ class BooksController < ApplicationController
   def book_params
     params_to_use = params.expect(book: [ :scorer_id, :selection_strategy_id, :name,
                                           :support_implicit_judgements, :link_the_case, :origin_case_id,
-                                          :delete_export_file, :delete_populate_file, :delete_import_file,
+                                          :delete_export_file, :delete_import_file,
                                           :show_rank, { team_ids: [], ai_judge_ids: [] } ])
 
     # Crafting a book[team_ids] parameter from the AngularJS side didn't work, so using top level parameter
