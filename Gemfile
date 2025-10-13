@@ -38,7 +38,7 @@ gem 'puma'
 gem 'rails', '8.0.3'
 gem 'rails-html-sanitizer'
 gem 'rack-cors'
-gem 'responders'
+gem 'responders', '>= 3.2.0'
 gem 'rubyzip'
 # gem 'sassc-rails', '~> 2.1' # Removed to eliminate Sass dependency while keeping Sprockets
 gem 'sprockets-rails' # Explicitly added to ensure Sprockets is available
