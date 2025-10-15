@@ -86,11 +86,7 @@ angular.module('QuepidApp')
       }
 
       function parseResponseObject (response, inspectUrl, searchEngine) {
-        if (searchEngine === 'solr') {
-          return 'One or more of your Solr queries failed to return results, please access your <a href="' +
-                 inspectUrl +
-                 '" target="_blank">Solr instance directly</a> to confirm Solr is accessible and to inspect the error.   If Solr responds, check if you have an ad blocker blocking your queries.  With Solr 8.4.1 and later you need to allow Quepid access to Solr.  Learn more <a href="https://github.com/o19s/quepid/wiki/Troubleshooting-Solr-and-Quepid#compatibility-with-nosniff" target="_blank">on the troubleshooting Solr wiki page</a>.';
-        }
+        
 
         var error = 'An unexpected error was returned: ';
 
@@ -98,7 +94,11 @@ angular.module('QuepidApp')
           error += 'You may have a typo in your URL';
           error += ' (<a href="https://github.com/o19s/quepid/wiki" target="_blank">Quepid Wiki</a> for more help).';
           error += ' If that is not the case, make sure that CORS is enabled in your config.';
-        } else {
+        } 
+        else if ( response.status === 429 && response.headers && response.headers('Retry-After') ) {
+          error = 'Please wait ' + response.headers('Retry-After') + ' seconds before rerunning request.';
+        }
+        else {
           error +=  self.formatCode(response.status);
 
           if ( response.hasOwnProperty('statusText') ) {
@@ -112,10 +112,16 @@ angular.module('QuepidApp')
           if (response.data) {
             if ( angular.isObject(response.data.error) ) {
               error += ': ' + angular.toJson(response.data.error);
-            } else {
+            } else if (response.data.error) {
               error += ': ' + response.data.error;
             }
           }
+        }
+        
+        if (searchEngine === 'solr') {
+          error += ' <br>One or more of your Solr queries failed to return results, please access your <a href="' +
+                 inspectUrl +
+                 '" target="_blank">Solr instance directly</a> to confirm Solr is accessible and to inspect the error.   If Solr responds, check if you have an ad blocker blocking your queries.  With Solr 8.4.1 and later you need to allow Quepid access to Solr.  Learn more <a href="https://github.com/o19s/quepid/wiki/Troubleshooting-Solr-and-Quepid#compatibility-with-nosniff" target="_blank">on the troubleshooting Solr wiki page</a>.';
         }
 
         return error;
