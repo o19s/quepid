@@ -67,7 +67,6 @@ angular.module('QuepidApp')
     
       function createBookLink(book) {
         let bookLink = caseTryNavSvc.getQuepidRootUrl() + '/books/' + book.id;
-        bookLink = caseTryNavSvc.createMainApplicationLink(bookLink);
         return bookLink;
       }
       function createNewBookLink() {
@@ -78,7 +77,6 @@ angular.module('QuepidApp')
           });
           bookLink = `${bookLink}?book[scorer_id]=${$scope.theCase.scorerId}${teamIds}&origin_case_id=${$scope.theCase.caseNo}`;
         } 
-        bookLink = caseTryNavSvc.createMainApplicationLink(bookLink);
         return bookLink;
       }
     }

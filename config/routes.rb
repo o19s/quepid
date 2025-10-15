@@ -9,8 +9,8 @@ Rails.application.routes.draw do
   # get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
 
   mount ActionCable.server => '/cable'
-  apipie
   mount ActiveStorageDB::Engine => '/active_storage_db'
+  mount OasRails::Engine => '/api/docs'
 
   # Render dynamic PWA files from app/views/pwa/*
   # get 'service-worker' => 'rails/pwa#service_worker', as: :pwa_service_worker
@@ -88,11 +88,16 @@ Rails.application.routes.draw do
       get 'judge_later' => 'judgements#judge_later'
     end
     get 'judge' => 'judgements#new'
+    get 'judge/bulk' => 'bulk_judge#new'
+    post 'judge/bulk/save' => 'bulk_judge#save'
+    delete 'judge/bulk/delete' => 'bulk_judge#destroy'
     get 'skip_judging' => 'judgements#skip_judging'
     member do
       get 'judgement_stats'
       get 'export'
       patch 'combine'
+      patch 'archive'
+      patch 'unarchive'
       patch 'assign_anonymous'
       patch 'run_judge_judy/:ai_judge_id', action: :run_judge_judy, as: :run_judge_judy
       delete 'delete_ratings_by_assignee', action: :delete_ratings_by_assignee, as: :delete_ratings_by_assignee
@@ -106,7 +111,7 @@ Rails.application.routes.draw do
   end
 
   namespace :books do
-    resources :import, only: [ :new, :create ]
+    resources :import, only: [ :new, :create, :edit ]
     resources :export, only: [ :update ], param: :book_id
   end
 
@@ -228,9 +233,7 @@ Rails.application.routes.draw do
 
       resources :books, except: [ :new, :edit ] do
         put '/populate' => 'books/populate#update'
-        resources :cases, except: [ :new, :edit ] do
-          put 'refresh' => 'books/refresh#update'
-        end
+        put '/cases/:case_id/refresh' => 'books/refresh#update', as: :refresh
         resources :query_doc_pairs, except: [ :new, :edit ] do
           collection do
             get 'to_be_judged/:judge_id' => 'query_doc_pairs#to_be_judged'

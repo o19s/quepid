@@ -11,7 +11,6 @@ class SampleData < Thor
   # rubocop:disable Metrics/BlockLength
   # rubocop:disable Metrics/CyclomaticComplexity
   # rubocop:disable Metrics/PerceivedComplexity
-  # rubocop:disable Layout/LineLength
 
   desc 'sample_data', 'load the sample data'
   long_desc <<-LONGDESC
@@ -481,7 +480,7 @@ class SampleData < Thor
     book_params = data.to_h.deep_symbolize_keys
 
     @book = ::Book.find_by(id: 25)
-    @book&.destroy
+    @book&.really_destroy
     @book = ::Book.new(id: 25)
     options = { force_create_users: true }
     book_importer = ::BookImporter.new @book, realistic_activity_user, book_params, options
@@ -555,7 +554,6 @@ class SampleData < Thor
   # rubocop:enable Metrics/BlockLength
   # rubocop:enable Metrics/CyclomaticComplexity
   # rubocop:enable Metrics/PerceivedComplexity
-  # rubocop:enable Layout/LineLength
 
   private
 

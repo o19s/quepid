@@ -53,6 +53,7 @@ Rails.application.configure do
     Bullet.enable = true
     Bullet.bullet_logger = true
     Bullet.raise = true # raise an error if n+1 query occurs
+    Bullet.add_safelist type: :unused_eager_loading, class_name: 'ActiveStorage::Attachment', association: :record
   end
 
   # Raises error for missing translations
@@ -71,7 +72,7 @@ Rails.application.configure do
 
   config.mission_control.jobs.http_basic_auth_enabled = false
 
-  ENV['TC_URL'] = 'https://quepid.com/agreement'
+  ENV['TC_URL'] = 'https://quepidapp.com/agreement'
 
   ENV['EMAIL_SENDER'] = 'quepid@o19s.com'
 end

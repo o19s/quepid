@@ -51,7 +51,10 @@
     
       <div class="mb-3">
         <%= form.label :selection_strategy_id, class: 'form-label' %>
-        <%= form.collection_select(:selection_strategy_id, SelectionStrategy.all, :id, :descriptive_name, { prompt: true }, required: true, class: 'form-control') %>
+        <%= form.collection_select(:selection_strategy_id, SelectionStrategy.all.reverse, :id, :descriptive_name, 
+            { prompt: false, selected: book.selection_strategy_id || SelectionStrategy.all.reverse.first.id }, 
+            required: true, class: 'form-control') %>
+        <div class="form-text">The typical choice is multiple judges.  Only pick the single if you want to maximise coverage of ratings by only having a single rating per person.</div>
       </div>
       
       <div class="mb-3">
@@ -87,13 +90,6 @@
       </div>
       
       <% unless @book.new_record? %>
-        <div class="mb-3">
-          <div class="form-check">   
-            <%= form.check_box :delete_populate_file, class: 'form-check-input', checked: false, disabled: !@book.populate_file.attached? %>
-            <%= form.label :delete_populate_file, "Delete Populate File", class: 'form-check-label' %>
-            <div class="form-text">If enabled you have an associated file.  Check this to delete it.</div>
-          </div>
-        </div> 
         <div class="mb-3">
           <div class="form-check">
             <%= form.check_box :delete_import_file, class: 'form-check-input', checked: false, disabled: !@book.import_file.attached? %>

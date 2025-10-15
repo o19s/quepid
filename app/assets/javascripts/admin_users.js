@@ -1,2 +1,2 @@
-//= require admin/scorers
-//= require admin/user_pulse
+//= require d3/dist/d3
+//= require cal-heatmap/dist/cal-heatmap.min

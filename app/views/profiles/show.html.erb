@@ -158,7 +158,7 @@
     </h2>
     
     <p class="form-text">
-      These allow you to access Quepid's <%= link_to 'APIs', apipie_apipie_path %>. Treat these like you would your password!
+      These tokens, sometimes called a Bearer Token, allow you to access Quepid's <%= link_to 'APIs', oas_rails_path %>. Treat these like you would your password!
       <br/>
       For example: <code>curl -H "Authorization: Bearer <%= current_user.api_keys.empty? ? "YOUR_TOKEN" : current_user.api_keys.first.token_digest %>" <%= link_to api_user_url(current_user), api_user_url(current_user) %></code> to look at your own details.
     </p>   

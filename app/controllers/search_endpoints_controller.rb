@@ -2,6 +2,7 @@
 
 class SearchEndpointsController < ApplicationController
   include Pagy::Backend
+
   before_action :set_search_endpoint, only: [ :show, :edit, :update, :destroy, :clone, :archive ]
 
   respond_to :html

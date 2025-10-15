@@ -12,6 +12,9 @@ AllCops:
     - node_modules/**/*
     - config/initializers/content_security_policy.rb
 
+Rails/SkipsModelValidations:
+  Enabled: false # we use .insert_all for our bulk imports
+  
 Capybara/ClickLinkOrButtonStyle:
   Enabled: false # we aren't running system tests
   
@@ -82,7 +85,8 @@ Layout/SpaceInsidePercentLiteralDelimiters:
 Layout/SpaceInsideParens:
   Enabled: false
 
-Layout/LineLength:
+Layout/LineLength: 
+  Enabled: false # our API docs make VERY long lines, so giving up on this one.
   Max: 120
 
 Metrics/BlockLength:

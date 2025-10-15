@@ -46,14 +46,8 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
 
     login_user_for_integration_test user
 
-    # Bullet::Notification::UnoptimizedQueryError:
-    # GET /books
-    #   Need Counter Cache with Active Record size
-    #        Book => [:rated_query_doc_pairs]
-    Bullet.enable = false
     get '/books'
     assert_equal 200, status
-    Bullet.enable = true
 
     patch "/books/#{book.id}/combine", params: { book_ids: { "#{james_bond_movies.id}": '1' } }
     follow_redirect!
@@ -110,6 +104,69 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
 
   let(:single_rater_book) { books(:book_of_star_wars_judgements) }
   let(:single_rater_book2) { books(:book_of_comedy_films) }
+
+  describe 'archiving books' do
+    let(:doug) { users(:doug) }
+    let(:archived_book) { books(:archived_book) }
+
+    test 'successfully archives an active book' do
+      login_user_for_integration_test doug
+
+      assert_equal false, james_bond_movies.archived
+
+      patch "/books/#{james_bond_movies.id}/archive"
+      follow_redirect!
+
+      assert_equal "Book '#{james_bond_movies.name}' has been archived.", flash[:notice]
+      james_bond_movies.reload
+      assert_equal true, james_bond_movies.archived
+    end
+
+    test 'successfully unarchives an archived book' do
+      login_user_for_integration_test doug
+
+      assert_equal true, archived_book.archived
+
+      patch "/books/#{archived_book.id}/unarchive"
+      follow_redirect!
+
+      assert_equal "Book '#{archived_book.name}' has been unarchived.", flash[:notice]
+      archived_book.reload
+      assert_equal false, archived_book.archived
+    end
+
+    test 'redirects to archived books index after unarchiving' do
+      login_user_for_integration_test doug
+
+      patch "/books/#{archived_book.id}/unarchive"
+
+      assert_redirected_to books_path(archived: true)
+    end
+
+    test 'index shows active books by default' do
+      login_user_for_integration_test doug
+
+      get '/books'
+      assert_equal 200, status
+
+      assert_response :success
+
+      assert_match james_bond_movies.name, response.body
+      assert_no_match archived_book.name, response.body
+    end
+
+    test 'index shows archived books when requested' do
+      login_user_for_integration_test doug
+
+      get '/books', params: { archived: 'true' }
+
+      assert_response :success
+
+      assert_no_match james_bond_movies.name, response.body
+      # assert_match archived_book.name, response.body
+    end
+  end
+
   def test_combining_single_rater_strategy_into_multiple_rater_strategy_book_works
     login_user_for_integration_test user
 

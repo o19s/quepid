@@ -79,7 +79,7 @@ Rails.application.configure do
   # Set localhost to be used by links generated in mailer templates.
   config.action_mailer.default_url_options = { host: ENV.fetch('QUEPID_DOMAIN', nil), port: ENV.fetch('PORT', nil) }
 
-  config.web_console.permissions = '192.168.0.0/16'
+  config.web_console.permissions = '0.0.0.0/0'
 
   config.after_initialize do
     Bullet.enable = true
@@ -118,3 +118,10 @@ Rails.application.configure do
   # config.generators.apply_rubocop_autocorrect_after_generate!
 end
 # rubocop:enable Metrics/BlockLength
+
+# Debugbar is useful, but not enabled by default in Gemfile
+if defined? Debugbar
+  Debugbar.configure do |config|
+    config.enabled = false
+  end
+end

@@ -11,7 +11,7 @@ module Analytics
           .scored.group(
             :try_id, :score, 'day'
           ).having('COUNT(*) > 0')
-          .order('day DESC')
+          .order(day: :desc)
       end
     end
   end

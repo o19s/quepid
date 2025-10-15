@@ -20,7 +20,7 @@ require 'test_helper'
 #  invitation_sent_at          :datetime
 #  invitation_token            :string(255)
 #  invitations_count           :integer          default(0)
-#  llm_key                     :string(255)
+#  llm_key                     :string(4000)
 #  locked                      :boolean
 #  locked_at                   :datetime
 #  name                        :string(255)
@@ -52,7 +52,6 @@ require 'test_helper'
 #  fk_rails_...  (invited_by_id => users.id)
 #
 
-# rubocop:disable Layout/LineLength
 class UserTest < ActiveSupport::TestCase
   # Could reorganize this test around AI Judges and Regular Users
   test 'membership in team' do
@@ -262,6 +261,7 @@ class UserTest < ActiveSupport::TestCase
         j.user = nil
         j.save!
       end
+      random.reload
 
       random.destroy
       assert_not random.destroyed?
@@ -412,5 +412,3 @@ class UserTest < ActiveSupport::TestCase
     end
   end
 end
-
-# rubocop:enable Layout/LineLength

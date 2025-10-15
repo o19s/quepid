@@ -3,6 +3,11 @@
 require 'active_support/core_ext/integer/time'
 
 # rubocop:disable Metrics/BlockLength
+
+# if ENV['QUEPID_HOST'].present?
+# Rails.application.routes.default_url_options = { host: ENV['QUEPID_HOST'], protocol: ENV['QUEPID_PROTOCOL'] }
+# nd
+
 Rails.application.configure do
   # Settings specified here will take precedence over those in config/application.rb.
 
@@ -51,7 +56,7 @@ Rails.application.configure do
   # needs updates in thurster world
   # Assume all access to the app is happening through a SSL-terminating reverse proxy.
   # Can be used together with config.force_ssl for Strict-Transport-Security and secure cookies.
-  config.assume_ssl = false
+  # config.assume_ssl = false
 
   # Force all access to the app over SSL, use Strict-Transport-Security, and use secure cookies.
   # config.force_ssl = false
@@ -100,7 +105,20 @@ Rails.application.configure do
   # config.host_authorization = { exclude: ->(request) { request.path == "/up" } }
 
   # Set host to be used by links generated in mailer templates.
-  config.action_mailer.default_url_options = { host: ENV.fetch('QUEPID_DOMAIN', nil) }
+  # config.action_mailer.default_url_options = { host: ENV.fetch('QUEPID_DOMAIN', nil) }
+
+  if ENV['QUEPID_HOST'].present?
+    # Set default URL options for all URL helpers
+    config.action_controller.default_url_options = { host: ENV['QUEPID_HOST'], protocol: ENV.fetch('QUEPID_PROTOCOL', nil) }
+    config.action_controller.asset_host = ENV['QUEPID_HOST']
+    config.action_mailer.asset_host = "#{ENV.fetch('QUEPID_PROTOCOL', nil)}://#{ENV['QUEPID_HOST']}"
+
+    config.action_mailer.default_url_options = {
+      host: ENV['QUEPID_HOST'], protocol: ENV.fetch('QUEPID_PROTOCOL', nil)
+    }
+
+    Rails.application.routes.default_url_options = { host: ENV['QUEPID_HOST'], protocol: ENV.fetch('QUEPID_PROTOCOL', nil) }
+  end
 
   # Specify outgoing SMTP server. Remember to add smtp/* credentials via rails credentials:edit.
   # config.action_mailer.smtp_settings = {

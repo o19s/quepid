@@ -2,44 +2,68 @@
 
 module Api
   module V1
+    # @tags cases > scores
     class CaseScoresController < Api::ApiController
       before_action :set_case
       before_action :check_case
 
-      def_param_group :score_params do
-        param :case_score, Hash, required: true do
-          param :score, Float
-          param :all_rated, [ true, false ]
-          param :try_number, Integer
-          param :last_try_number, Integer
-          param :try_id, Integer
-          # this isn't quite right as we have a hash of "query_id" and "values" here'
-          param :queries, Hash, required: false do
-            param :text, String, desc: 'The actual query text that is being scored.'
-            param :score, Float, desc: 'The score.'
-            param :maxScore, Float, desc: 'The max possible score'
-            param :numFound, Integer, desc: 'How many results matched'
-          end
-        end
-      end
-
       def index
-        @scores = @case.scores.where(scorer: @case.scorer).includes(:annotation, :user).limit(10)
-
+        @scores = @case.scores.where(scorer: @case.scorer).includes(:user).limit(10)
         respond_with @scores
       end
 
+      # @summary Most recent case score
+      # > Returns the most recent score for the case.
       def show
         @score    = @case.scores.first
         @shallow  = false
 
+        unless @score
+          head :no_content
+          return
+        end
+
         respond_with @score
       end
 
-      api :PUT, '/api/cases/:case_id/scores', 'Update a given score for the case.'
-      param :case_id, :number,
-            desc: 'The ID of the requested case.', required: true
-      param_group :score_params
+      # @request_body Score to be created
+      #   [
+      #     !Hash{
+      #       case_score: Hash{
+      #         score: Float,
+      #         all_rated: Boolean,
+      #         try_number: Integer,
+      #         last_try_number: Integer,
+      #         try_id: Integer,
+      #         queries: Hash{
+      #           query_id: Hash{
+      #             text: String,
+      #             score: Float
+      #             maxScore: Float,
+      #             numFound: Integer
+      #           }
+      #         }
+      #       }
+      #     }
+      #   ]
+      # @request_body_example basic score
+      #   [JSON{
+      #     "case_score": {
+      #       "score": 0.4
+      #     }
+      #   }]
+      # @request_body_example complete score
+      #   [JSON{
+      #     "case_score": {
+      #       "score": 0.98,
+      #       "all_rated": false,
+      #       "try_number": 42,
+      #       "queries": {
+      #         "1":{"text":"first query", "score": 1},
+      #         "2":{"text":"second query", "score": 0.96}
+      #       }
+      #     }
+      #   }]
       def update
         service = CaseScoreManager.new @case
 

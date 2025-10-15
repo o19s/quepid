@@ -1,0 +1,66 @@
+services:
+  mysql:
+    container_name: quepid_prod_db
+    image: mysql:8
+    ports:
+      - 3306:3306
+    environment:
+      - MYSQL_ROOT_PASSWORD=password
+    volumes:
+      - ./volumes/mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-ppassword"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+  app:
+    container_name: quepid_prod_app
+    platform: linux/amd64
+    image: o19s/quepid:8.2.1-alpha1
+    #env_file:   # Use this approach if you would rather manage your environment settings elsewhere.
+    #  - .env.prod
+    environment:
+      #- RAILS_RELATIVE_URL_ROOT=/quepid-prod
+      - QUEPID_CONSIDER_ALL_REQUESTS_LOCAL=true
+      - PORT=3000
+      - RACK_ENV=production
+      - RAILS_ENV=production
+      - DATABASE_URL=mysql2://root:password@mysql:3306/quepid
+      - FORCE_SSL=false
+      - MAX_THREADS=2
+      - WEB_CONCURRENCY=2
+      - SECRET_KEY_BASE=some_value_needed_here
+      - RAILS_LOG_TO_STDOUT=true
+      - RAILS_SERVE_STATIC_FILES=true
+      - PRIVACY_URL=
+      - COOKIES_URL=
+      - QUEPID_GA=UA-ERIC
+      - QUEPID_DOMAIN=https://example.com
+      - EMAIL_MARKETING_MODE=false
+      - QUEPID_DEFAULT_SCORER=AP@10
+      - SIGNUP_ENABLED=true
+      - COMMUNAL_SCORERS_ONLY=false
+      - EMAIL_PROVIDER=
+      - EMAIL_SENDER=
+      - QUERY_LIST_SORTABLE=true
+    ports:
+      - 80:3000 # Map to port 80 for outside users when you are not using Nginx
+    links:
+      - mysql
+      - ollama
+    depends_on:
+      mysql:
+        condition: service_healthy
+      ollama:
+        condition: service_started
+      
+  ollama:
+    image: ollama/ollama
+    container_name: ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ./volumes/ollama/data:/tmp/data
+    environment:
+      OLLAMA_MODELS: "/tmp/data/.ollama/models"

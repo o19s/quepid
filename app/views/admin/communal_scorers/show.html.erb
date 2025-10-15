@@ -28,7 +28,7 @@
       </strong>
   
       <div class="col-sm-10 code">
-        <textarea id="codearea"><%= @scorer.code %></textarea>
+        <%= text_area_tag 'codearea', @scorer.code, data: { codemirror_mode: "javascript", codemirror_height: 600, codemirror_readonly: true } %>
       </div>
     </div>
   
@@ -73,11 +73,3 @@
     </div>
   </div>
 </div>
-
-<script>
-  const codemirrorEditor = CodeMirror.fromTextArea(document.getElementById('codearea'), {
-    lineNumbers: true,
-    mode: "javascript",
-    readOnly: true
-  });
-</script>

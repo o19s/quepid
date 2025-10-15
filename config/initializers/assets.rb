@@ -15,7 +15,7 @@ Rails.application.config.assets.paths << Rails.root.join('spec/karma') if Rails.
 # Precompile additional assets.
 # application.js, application.css, and all non-JS/CSS in the app/assets
 # folder are already added.
-Rails.application.config.assets.precompile += %w[ core.css core.js admin.css admin_users.css admin.js admin_users.js
+Rails.application.config.assets.precompile += %w[ core.css core.js admin.css admin_users.css admin_users.js
                                                   analytics.js ]
 Rails.application.config.assets.precompile += %w[ application_spec.js ]
 
@@ -27,5 +27,5 @@ Rails.application.config.assets.precompile += %w[
   ng-tags-input/build/ng-tags-input.bootstrap.min.css
 ]
 
-# For some reason the mapping in core.css.scss isn't working, so do this.'
+# For some reason the mapping in core.css isn't working, so do this.
 Rails.application.config.assets.paths << Rails.root.join('node_modules/bootstrap-icons/font')

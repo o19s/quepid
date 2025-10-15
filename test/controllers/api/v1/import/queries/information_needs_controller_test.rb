@@ -17,7 +17,6 @@ module Api
             login_user user
           end
 
-          # rubocop:disable Layout/LineLength
           describe '#create' do
             test 'updates queries with information needs' do
               acase.queries = []
@@ -168,7 +167,6 @@ module Api
               end
             end
           end
-          # rubocop:enable Layout/LineLength
         end
       end
     end

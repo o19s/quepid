@@ -219,7 +219,7 @@ search_endpoint: es_endpoint.attributes }
           the_try = the_case.tries.latest
 
           try_params = {
-            search_url:    'http://solr.quepid.com',
+            search_url:    'http://solr.quepidapp.com',
             field_spec:    'catch_line',
             query_params:  'q=#$query##',
             search_engine: 'solr',
@@ -250,7 +250,7 @@ search_endpoint: es_endpoint.attributes }
           }
 
           search_endpoint_params = {
-            search_url:    'http://solr.quepid.com',
+            search_url:    'http://solr.quepidapp.com',
             search_engine: 'solr',
           }
 
@@ -371,10 +371,10 @@ search_endpoint: solr_endpoint.attributes }
           assert_equal created_try.number_of_rows, 10
         end
 
-        test 'updates search endpoint' do
+        test 'updates a search endpoint while creating a try' do
           try = the_case.tries.first
           post :create,
-               params: { case_id: the_case.id, try: { parent_try_number: try.try_number },
+               params: { case_id: the_case.id, parent_try_number: try.try_number, try: { name: '' },
 search_endpoint: { search_engine: 'os', endpoint_url: 'http://my.os.url', api_method: 'get' } }
 
           assert_response :ok

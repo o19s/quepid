@@ -5,6 +5,7 @@
 # Table name: books
 #
 #  id                          :bigint           not null, primary key
+#  archived                    :boolean          default(FALSE), not null
 #  export_job                  :string(255)
 #  import_job                  :string(255)
 #  name                        :string(255)
@@ -70,12 +71,22 @@ class Book < ApplicationRecord
 
   has_one_attached :import_file
   has_one_attached :export_file
-  has_one_attached :populate_file
 
   after_destroy :delete_attachments
 
   # Scopes
   include ForUserScope
+
+  scope :active, -> { where(archived: false) }
+  scope :archived, -> { where(archived: true) }
+
+  def archive!
+    update(archived: true)
+  end
+
+  def unarchive!
+    update(archived: false)
+  end
 
   scope :with_counts, -> {
                         select <<~SQL.squish
@@ -108,6 +119,5 @@ class Book < ApplicationRecord
   def delete_attachments
     import_file.purge_later
     export_file.purge_later
-    populate_file.purge_later
   end
 end

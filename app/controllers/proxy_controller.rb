@@ -5,7 +5,6 @@ require 'faraday/follow_redirects'
 
 require 'addressable/uri'
 
-# rubocop:disable Layout/LineLength
 # rubocop:disable Metrics/AbcSize
 # rubocop:disable Metrics/MethodLength
 # rubocop:disable Metrics/PerceivedComplexity
@@ -36,12 +35,28 @@ class ProxyController < ApplicationController
       faraday.ssl.verify = false
       faraday.request :url_encoded
 
-      matching_headers = request.headers.select { |name, _| name.start_with?('HTTP') && !rack_header?(name) }
+      # Collect headers coming from the Rack env. Rails exposes most incoming
+      # request headers with an "HTTP_" prefix (e.g. "HTTP_X_CUSTOM_HEADER").
+      # Certain important headers like "Authorization" are exposed without the
+      # HTTP_ prefix, so include them explicitly. Also filter out known rack
+      # control headers.
+      matching_headers = request.headers.select do |name, _|
+        (name.start_with?('HTTP') || 'Authorization' == name) && !rack_header?(name)
+      end
 
       matching_headers.each do |name, value|
-        converted_name = name.sub('HTTP_', '')
+        # Normalize the header name: strip leading HTTP_ if present, convert
+        # underscores to dashes to match typical HTTP header formatting.
+        converted_name = name.start_with?('HTTP_') ? name.sub('HTTP_', '') : name
         converted_name = converted_name.tr('_', '-')
-        faraday.headers[converted_name] = value
+        # Some Rack headers may be provided as arrays or as values wrapped in
+        # ActionDispatch::Http::Headers; ensure we extract a string value.
+        header_value = if value.is_a?(Array)
+                         value.join(', ')
+                       else
+                         value
+                       end
+        faraday.headers[converted_name] = header_value
       end
 
       faraday.headers['Content-Type'] = 'application/json'
@@ -126,7 +141,6 @@ class ProxyController < ApplicationController
     predefined_rack_headers.include?(header_name)
   end
 end
-# rubocop:enable Layout/LineLength
 # rubocop:enable Metrics/AbcSize
 # rubocop:enable Metrics/MethodLength
 # rubocop:enable Metrics/PerceivedComplexity

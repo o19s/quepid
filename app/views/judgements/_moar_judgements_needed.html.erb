@@ -1,6 +1,7 @@
-<% if @moar_judgements_needed %>  
+<% if @moar_judgements_needed %>
   <div class="alert alert-warning" role="alert">
     <%= link_to 'More Judgements are Needed!', book_judge_path(book), class: 'btn btn-primary', role: 'button' %>
+    <%= link_to 'Judge in Bulk', book_judge_bulk_path(book), class: 'btn btn-info ms-2', role: 'button' %>
   </div>
 <% elsif book.query_doc_pairs.empty? %>
   <div class="alert alert-warning" role="alert">

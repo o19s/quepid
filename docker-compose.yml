@@ -7,7 +7,8 @@ services:
     env_file:
       - .env
     environment:
-     # - RAILS_RELATIVE_URL_ROOT=/quepid-app # Use to nest under a context path like tools.mycompany.com/quepid-app
+      # - RAILS_RELATIVE_URL_ROOT=/quepid-app # Use to nest under a context path like tools.mycompany.com/quepid-app
+      - DOCKER_CONTAINER=true
       - QUEPID_DOMAIN=tools.dev.mycorp.com
       - LAUNCHY_DRY_RUN=true # dev only letter_opener gem wants to open a browser when sending emails.
       - BROWSER=/dev/null
@@ -72,7 +73,7 @@ services:
       OLLAMA_MODELS: "/tmp/data/.ollama/models"
       
   nginx:
-    image: nginx:1.27.1-alpine-slim
+    image: nginx:1.28.0-alpine-slim
     container_name: quepid_nginx
     ports:
       - "443:8443"

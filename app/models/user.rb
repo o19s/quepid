@@ -20,7 +20,7 @@
 #  invitation_sent_at          :datetime
 #  invitation_token            :string(255)
 #  invitations_count           :integer          default(0)
-#  llm_key                     :string(255)
+#  llm_key                     :string(4000)
 #  locked                      :boolean
 #  locked_at                   :datetime
 #  name                        :string(255)
@@ -52,6 +52,9 @@
 #  fk_rails_...  (invited_by_id => users.id)
 #
 class User < ApplicationRecord
+  # Encrypted attributes
+  encrypts :llm_key, deterministic: false
+
   # Associations
   has_many :api_keys, dependent: :destroy
 
@@ -162,7 +165,7 @@ class User < ApplicationRecord
   before_destroy :check_judgements_before_removing!, prepend: true
 
   def check_judgements_before_removing!
-    if judgements.count.positive?
+    if judgements.any?
       errors.add(:base, "Please reassign ownership of the #{judgements.count} judgements." )
       throw(:abort)
     end

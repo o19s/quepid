@@ -5,6 +5,7 @@
 # Table name: books
 #
 #  id                          :bigint           not null, primary key
+#  archived                    :boolean          default(FALSE), not null
 #  export_job                  :string(255)
 #  import_job                  :string(255)
 #  name                        :string(255)
@@ -29,6 +30,39 @@
 require 'test_helper'
 
 class BookTest < ActiveSupport::TestCase
+  describe 'archive functionality' do
+    let(:active_book)   { books(:james_bond_movies) }
+    let(:archived_book) { books(:archived_book) }
+
+    test 'sets archived flag to false by default' do
+      book = Book.create(name: 'test book', scorer: scorers(:quepid_default_scorer),
+                         selection_strategy: selection_strategies(:single_rater))
+
+      assert_equal false, book.archived
+    end
+
+    test 'does not override archived flag if set' do
+      book = Book.create(name: 'test book', archived: true, scorer: scorers(:quepid_default_scorer),
+                         selection_strategy: selection_strategies(:single_rater))
+
+      assert_equal true, book.archived
+    end
+
+    test 'active scope returns only non-archived books' do
+      active_books = Book.active
+
+      assert_includes active_books, active_book
+      assert_not_includes active_books, archived_book
+    end
+
+    test 'archived scope returns only archived books' do
+      archived_books = Book.archived
+
+      assert_includes archived_books, archived_book
+      assert_not_includes archived_books, active_book
+    end
+  end
+
   describe 'returning books for a user' do
     let(:user)                  { users(:random) }
     let(:team)                  { teams(:shared) }

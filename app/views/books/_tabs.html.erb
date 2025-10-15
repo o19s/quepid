@@ -5,6 +5,11 @@
     <% end %> 
   </li>
   <li class="nav-item">
+    <%= link_to book_query_doc_pairs_path(book), class: "nav-link", method: :get do %>
+      Query/Doc Pairs
+    <% end %> 
+  </li>
+  <li class="nav-item">
     <%= link_to judgement_stats_book_path(book), class: "nav-link #{make_active?({action: 'judgement_stats'}) ? 'active' : ''}", method: :get do %>
       <i class="bi bi-bar-chart-fill text-body"></i> Judgement Stats
     <% end %>      
@@ -16,7 +21,7 @@
   </li> 
 
   <li class="nav-item">
-    <%= link_to new_books_import_path, class: "nav-link #{make_active?({controller: 'import'}) ? 'active' : ''}", method: :get do %>
+    <%= link_to edit_books_import_path(book), class: "nav-link #{make_active?({controller: 'import'}) ? 'active' : ''}", method: :get do %>
       <i class="bi bi-file-earmark-arrow-down text-body"></i> Import
     <% end %> 
   </li>

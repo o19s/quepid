@@ -15,7 +15,7 @@ module Books
       @json_file.rewind
 
       @zip_file = Tempfile.new([ 'test', '.zip' ])
-      Zip::File.open(@zip_file, Zip::File::CREATE) do |zipfile|
+      Zip::File.open(@zip_file, create: true) do |zipfile|
         zipfile.add(File.basename(@json_file), @json_file)
       end
 
@@ -50,6 +50,47 @@ module Books
 
       assert_response :redirect
       assert_redirected_to book_path(Book.last)
+    end
+
+    test 'should handle incorrectly formatted JSON file without blowing up' do
+      wrong_json_format = <<~FILE_CONTENT
+        [
+         {
+           "search_term": "abzorb powder",
+           "search_term_type": "otc_searches",
+           "sku_id": 964063,
+           "sku_name": "Abzorb Anti Fungal Dusting Powder | Absorbs Excess Sweat | Controls Itching | Derma Care | Manages Fungal Infections",
+           "score_check": 143847.81,
+           "score_range": 10
+         }
+        ]
+      FILE_CONTENT
+
+      json_string = StringIO.new(wrong_json_format)
+      json_upload = Rack::Test::UploadedFile.new(json_string, 'application/json', original_filename: 'test.json')
+
+      post books_import_index_url, params: { book: { import_file: json_upload } }
+
+      assert_response :ok
+      assert_match(/Invalid JSON file/, response.body)
+    end
+
+    test 'should handle non JSON file upload' do
+      not_json_format = <<~FILE_CONTENT
+        [
+         {
+           "search_term": abzorb powder,#{'         '}
+         }}}}}}}}}}}}}}}}}}}}}}}
+        ]
+      FILE_CONTENT
+
+      json_string = StringIO.new(not_json_format)
+      json_upload = Rack::Test::UploadedFile.new(json_string, 'application/json', original_filename: 'test.json')
+
+      post books_import_index_url, params: { book: { import_file: json_upload } }
+
+      assert_response :ok
+      assert_match(/Invalid JSON file/, response.body)
     end
   end
 end

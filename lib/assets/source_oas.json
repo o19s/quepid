@@ -1,0 +1,196 @@
+{
+  "components": {
+    "schemas": {
+      "Book": {
+        "type": "object",
+        "required": ["book"],
+        "properties": {
+          "book": {
+            "type": "object",
+            "required": ["name", "owner_id", "scorer_id", "selection_strategy_id"],
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "owner_id": {
+                "type": "integer"
+              },
+              "scorer_id": {
+                "type": "integer"
+              },
+              "selection_strategy_id": {
+                "type": "integer"
+              },
+              "show_rank": {
+                "type": "boolean"
+              },
+              "support_implicit_judgements": {
+                "type": "boolean"
+              }
+            }
+          }
+        }
+      },
+      "Judgement": {
+        "type": "object",
+        "required": ["judgement"],
+        "properties": {
+          "judgement": {
+            "type": "object",
+            "required": ["query_doc_pair_id", "user_id", "rating"],
+            "properties": {
+              "query_doc_pair_id": {
+                "type": "integer"
+              },
+              "user_id": {
+                "type": "integer"
+              },
+              "rating": {
+                "type": "number"
+              },
+              "explanation": {
+                "type": "string"
+              },
+              "judge_later": {
+                "type": "boolean"
+              },
+              "unrateable": {
+                "type": "boolean"
+              }
+            }
+          }
+        }
+      },
+      "Try": {
+        "type": "object",
+        "required": ["try"],
+        "properties": {
+          "try": {
+            "type": "object",
+            "required": ["name", "field_spec", "number_of_rows", "query_params"],
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "parent_id": {
+                "type": "integer"
+              },
+              "search_endpoint_id": {
+                "type": "integer"
+              },
+              "query_params": {
+                "type": "string"
+              },
+              "field_spec": {
+                "type": "string"
+              },
+              "escape_query": {
+                "type": "boolean"
+              },
+              "number_of_rows": {
+                "type": "integer"
+              }
+            }
+          },
+          "search_endpoint": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "search_engine": {
+                "type": "string"
+              },
+              "endpoint_url": {
+                "type": "string"
+              },
+              "api_method": {
+                "type": "string"
+              },
+              "archived": {
+                "type": "boolean"
+              },
+              "basic_auth_credential": {
+                "type": "string"
+              },
+              "custom_headers": {
+                "type": "string"
+              },
+              "mapper_code": {
+                "type": "string"
+              },
+              "options": {
+                "type": "object"
+              },
+              "proxy_requests": {
+                "type": "boolean"
+              }
+            }
+          },
+          "curator_vars": {
+            "type": "object"
+          }
+        }
+      }
+    },
+    "examples": {
+      "BasicBook": {
+        "value": {
+          "book": {
+            "name": "Oas",
+            "show_rank": false,
+            "support_implicit_judgements": false,
+            "owner_id": 1,
+            "scorer_id": 1,
+            "selection_strategy_id": 1
+          }
+        }
+      },
+      "TryWithExistingSearchEndpoint": {
+        "value": {
+          "parent_try_number": 1,
+          "try": {
+            "name": "Test Try",
+            "field_spec": "id:id title:catch_line structure text",
+            "number_of_rows": 10,
+            "query_params": "q=#$query##&magicBoost=18",
+            "search_endpoint_id": 1
+          },
+          "curator_vars": {},
+          "search_endpoint": {}
+        }
+      },
+      "TryCreatingNewSearchEndpoint": {
+        "value": {
+          "parent_try_number": 1,
+          "try": {
+            "name": "Test Try",
+            "field_spec": "id:id title:catch_line structure text",
+            "number_of_rows": 10,
+            "query_params": "q=#$query##&magicBoost=18",
+            "search_endpoint_id": 1
+          },
+          "curator_vars": {},
+          "search_endpoint": {
+            "name": "TMDB",
+            "endpoint_url": "https://quepid-solr.dev.o19s.com/solr/tmdb/select",
+            "search_engine": "solr",
+            "api_method": "JSONP"
+          }
+        }
+      },
+      "BasicJudgement": {
+        "value": {
+          "judgement": {
+            "query_doc_pair_id": 1,
+            "user_id": 1,
+            "rating": 1.0,
+            "explanation": "This is how I rated this",
+            "judge_later": false,
+            "unrateable": false
+          }
+        }
+      }
+    }
+  }
+}

@@ -3,21 +3,32 @@
 # rubocop:disable Metrics/ClassLength
 class BooksController < ApplicationController
   include Pagy::Backend
+
   before_action :set_book,
                 only: [ :show, :edit, :update, :destroy, :combine, :assign_anonymous, :delete_ratings_by_assignee,
                         :reset_unrateable, :reset_judge_later, :delete_query_doc_pairs_below_position,
-                        :eric_steered_us_wrong, :run_judge_judy, :judgement_stats, :export ]
+                        :eric_steered_us_wrong, :run_judge_judy, :judgement_stats, :export, :archive, :unarchive ]
   before_action :check_book,
                 only: [ :show, :edit, :update, :destroy, :combine, :assign_anonymous, :delete_ratings_by_assignee,
                         :reset_unrateable, :reset_judge_later, :delete_query_doc_pairs_below_position,
-                        :eric_steered_us_wrong, :run_judge_judy, :judgement_stats, :export ]
+                        :eric_steered_us_wrong, :run_judge_judy, :judgement_stats, :export, :archive, :unarchive ]
 
   before_action :find_user, only: [ :reset_unrateable, :reset_judge_later, :delete_ratings_by_assignee ]
 
   respond_to :html
 
   def index
-    query = current_user.books_involved_with.includes([ :teams, :scorer, :selection_strategy ])
+    # with_counts adds a `book.query_doc_pairs_count` field, which avoids loading
+    # all query_doc_pairs and makes bullet happy.
+    query = current_user.books_involved_with.includes([ :teams, :scorer, :selection_strategy ]).with_counts
+
+    # Filter by archived status
+    archived = deserialize_bool_param(params[:archived])
+    query = if archived
+              query.archived
+            else
+              query.active
+            end
 
     query = query.where(teams: { id: params[:team_id] }) if params[:team_id].present?
 
@@ -36,8 +47,7 @@ class BooksController < ApplicationController
 
     @count_of_anonymous_book_judgements = @book.judgements.where(user: nil).count
 
-    # @moar_judgements_needed = @book.judgements.where(user: current_user).count < @book.query_doc_pairs.count
-    @moar_judgements_needed = !(SelectionStrategy.every_query_doc_pair_has_three_judgements? @book)
+    @moar_judgements_needed = SelectionStrategy.moar_judgements_needed? @book
 
     @cases = @book.cases
 
@@ -49,7 +59,7 @@ class BooksController < ApplicationController
   end
 
   def judgement_stats
-    @moar_judgements_needed = !(SelectionStrategy.every_query_doc_pair_has_three_judgements? @book)
+    @moar_judgements_needed = SelectionStrategy.moar_judgements_needed? @book
 
     @leaderboard_data = []
     @stats_data = []
@@ -73,7 +83,7 @@ class BooksController < ApplicationController
     end
 
     stats_judges = compact_keep_one_nil(stats_judges)
-    stats_judges = stats_judges.sort_by(&:fullname)
+    stats_judges = stats_judges.sort_by { |judge| judge.nil? ? '' : judge.fullname }
 
     stats_judges.each do |judge|
       @leaderboard_data << { judge:      judge.nil? ? 'anonymous' : judge.fullname,
@@ -110,6 +120,10 @@ class BooksController < ApplicationController
 
   def edit
     @ai_judges = User.only_ai_judges.left_joins(teams: :books).where(teams_books: { book_id: @book.id })
+
+    # Bullet really wants :rated_query_doc_pairs to be included, however that kills our performance!
+    # In our use case just looks up the count of records per book.
+    @other_books = current_user.books_involved_with.includes([ :scorer ]).where.not(id: @book.id)
   end
 
   def create
@@ -152,11 +166,10 @@ class BooksController < ApplicationController
 
     @book.update(book_params.except(
                    :team_ids, :ai_judges, :link_the_case, :origin_case_id,
-                   :delete_export_file, :delete_populate_file, :delete_import_file
+                   :delete_export_file, :delete_import_file
                  ))
 
     @book.export_file.purge if '1' == book_params[:delete_export_file]
-    @book.populate_file.purge if '1' == book_params[:delete_populate_file]
     @book.import_file.purge if '1' == book_params[:delete_import_file]
 
     @book.save
@@ -171,11 +184,20 @@ class BooksController < ApplicationController
     redirect_to books_path, notice: 'Book is deleted'
   end
 
+  def archive
+    @book.update(archived: true)
+    redirect_to books_path, notice: "Book '#{@book.name}' has been archived."
+  end
+
+  def unarchive
+    @book.update(archived: false)
+    redirect_to books_path(archived: true), notice: "Book '#{@book.name}' has been unarchived."
+  end
+
   # rubocop:disable Metrics/AbcSize
   # rubocop:disable Metrics/MethodLength
   # rubocop:disable Metrics/CyclomaticComplexity
   # rubocop:disable Metrics/PerceivedComplexity
-  # rubocop:disable Layout/LineLength
   def combine
     book_ids = params[:book_ids].select { |_key, value| '1' == value }.keys.map(&:to_i)
 
@@ -248,7 +270,6 @@ class BooksController < ApplicationController
   # rubocop:enable Metrics/MethodLength
   # rubocop:enable Metrics/CyclomaticComplexity
   # rubocop:enable Metrics/PerceivedComplexity
-  # rubocop:enable Layout/LineLength
 
   def assign_anonymous
     # assignee = @book.team.members.find_by(id: params[:assignee_id])
@@ -347,7 +368,7 @@ class BooksController < ApplicationController
   def book_params
     params_to_use = params.expect(book: [ :scorer_id, :selection_strategy_id, :name,
                                           :support_implicit_judgements, :link_the_case, :origin_case_id,
-                                          :delete_export_file, :delete_populate_file, :delete_import_file,
+                                          :delete_export_file, :delete_import_file,
                                           :show_rank, { team_ids: [], ai_judge_ids: [] } ])
 
     # Crafting a book[team_ids] parameter from the AngularJS side didn't work, so using top level parameter

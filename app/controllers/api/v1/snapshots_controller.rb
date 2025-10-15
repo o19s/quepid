@@ -3,14 +3,16 @@
 require 'action_view'
 module Api
   module V1
+    # @tags cases > snapshots
     class SnapshotsController < Api::ApiController
       include ActionView::Helpers::NumberHelper
+
       before_action :set_case
       before_action :check_case
       before_action :set_snapshot,    only: [ :show, :destroy ]
       before_action :check_snapshot,  only: [ :show, :destroy ]
 
-      # Spiking out can we make an API public?
+      # Special handling for cases that are "public", and therefore it's snapshots
       def authenticate_api!
         set_case
         return true if @case&.public? || current_user
@@ -28,13 +30,14 @@ module Api
         respond_with @snapshots
       end
 
+      # @parameter id(path) [Integer] The ID of the requested snapshots.  Use `latest` to get the most recent snapshot for the case.
+      # @parameter shallow(query) [Boolean] Show detailed snapshot data, defaults to false.
       def show
         @shallow = params[:shallow] || false
         @with_docs = true
         respond_with @snapshot
       end
 
-      # rubocop:disable Layout/LineLength
       def create
         @snapshot = @case.snapshots.build(name: params[:snapshot][:name])
         @snapshot.scorer = @case.scorer
@@ -58,7 +61,6 @@ module Api
           render json: @snapshot.errors, status: :bad_request
         end
       end
-      # rubocop:enable Layout/LineLength
 
       def destroy
         @snapshot.destroy
@@ -70,9 +72,13 @@ module Api
       private
 
       def set_snapshot
-        @snapshot = @case.snapshots
-          .where(id: params[:id])
-          .first
+        @snapshot = if 'latest' == params[:id]
+                      @case.snapshots.order(created_at: :desc).first
+                    else
+                      @case.snapshots
+                        .where(id: params[:id])
+                        .first
+                    end
       end
 
       def check_snapshot

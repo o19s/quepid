@@ -22,7 +22,7 @@
       <div ng-if="settings.searchEngine !== 'static'" class="rerunnable-settings-tab" id='query-params-editor'>
         <h4 class="pull-left">Query Sandbox:</h4>
         <p class="pull-right">
-          <a href="http://quepid.com/docs/#tuning" class="query-help" target="_blank">
+          <a href="http://quepidapp.com/docs/#tuning" class="query-help" target="_blank">
             <span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span>
           </a>
         </p>
@@ -177,9 +177,8 @@
             <p>
               <span ng-show="showTLSChangeWarning">
                 You have specified a search engine url that is on a different protocol (
-                <code>{{protocolToSwitchTo}}</code> ) than Quepid is currently on,
-                so you need to reload Quepid on that protocol. This is to comply with browser security
-                issues.
+                <code>{{protocolToSwitchTo}}</code> ) than Quepid is on. Please either <a href="{{createSearchEndpointLink(settingsSvc.editableSettings().searchEndpointId)}}/edit" target="_self">swap to the proxied connection</a>, or make sure the search endpoint is running on the same HTTP protocol.
+                This is to comply with browser security constraints.
               </span>
             </p>
           </div>

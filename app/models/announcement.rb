@@ -38,7 +38,6 @@ class Announcement < ApplicationRecord
     live
   end
 
-  # rubocop:disable Rails/SkipsModelValidations
   def make_live!
     Announcement.update_all(live: false) # Set all announcements to not live
     update(live: true) # Set the current announcement as live

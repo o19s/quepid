@@ -23,7 +23,7 @@ angular.module('QuepidApp')
           var jsonData = JSON.parse(contents);
          
           caseSvc.importCase(jsonData)
-            .then(function() {
+            .then(function(response) {
               // Handle success
               console.log('File uploaded successfully');
               ctrl.import.loading = false;
@@ -31,6 +31,9 @@ angular.module('QuepidApp')
                 success: true,
                 message: 'Successfully imported Case.'
               };
+              if (response.archived){
+                modalResponse.message += ' Note that this Case is Archived and you will need to unarchive it in order to use it.';
+              }
               $uibModalInstance.close(modalResponse);
             })
             .catch(function(response) {

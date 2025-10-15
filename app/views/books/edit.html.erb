@@ -22,7 +22,7 @@
 
 <%= form_for(@book, url: combine_book_path(@book)) do |form| %>
   <ul class="list-group">  
-    <% @current_user.books_involved_with.includes([:scorer,:rated_query_doc_pairs]).where.not(id: @book.id).each do |book| %>
+    <% @other_books.each do |book| %>
       <li class="list-group-item list-group-item-action">
         <div class="d-flex w-100 justify-content-between align-items-center">        
           <h5 class="mb-1">
@@ -86,7 +86,7 @@
 <%= form_for(@book, url: delete_ratings_by_assignee_book_path(@book), method: :delete, data: { confirm: "Are you sure?" }) do |form| %>
 <div class="mb-3">
   <%= form.label :user_id, class: 'form-label' %>
-  <%= select_tag "user_id", options_from_collection_for_select(@book.teams.flat_map(&:members).uniq, :id, :name, params.dig(:post, :category_id)), required: true, prompt: "Please select judge", class: 'form-control' %>
+  <%= select_tag "user_id", options_from_collection_for_select(@book.judges.uniq, :id, :fullname, params.dig(:post, :category_id)), required: true, prompt: "Please select judge", class: 'form-control' %>
 </div>
 <p>
 <div class="actions">

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_03_14_214403) do
+ActiveRecord::Schema[8.0].define(version: 2025_09_30_153853) do
   create_table "active_storage_attachments", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.string "name", null: false
     t.string "record_type", null: false
@@ -200,6 +200,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_03_14_214403) do
     t.string "export_job"
     t.string "import_job"
     t.string "populate_job"
+    t.boolean "archived", default: false, null: false
     t.index ["owner_id"], name: "index_books_owner_id"
     t.index ["selection_strategy_id"], name: "index_books_on_selection_strategy_id"
   end
@@ -604,7 +605,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_03_14_214403) do
     t.string "stored_raw_invitation_token"
     t.string "profile_pic", limit: 4000
     t.string "system_prompt", limit: 4000
-    t.string "llm_key"
+    t.string "llm_key", limit: 4000
     t.json "options"
     t.index ["default_scorer_id"], name: "index_users_on_default_scorer_id"
     t.index ["email"], name: "ix_user_username", unique: true

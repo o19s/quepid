@@ -20,14 +20,10 @@
 // to enable the drag and drop of queries in a case.
 //
 //= require jquery
-
-//= require jquery-ui/widgets/draggable
-//= require jquery-ui/widgets/droppable
-//= require jquery-ui/widgets/sortable
-
+//= require jquery-ui-dist/jquery-ui.min
 //= require jquery-autoGrowInput
-//= require d3
-//= require d3-tip
+
+//= require d3/dist/d3
 
 //= require angular/angular
 //= require ace-builds/src-min-noconflict/ace

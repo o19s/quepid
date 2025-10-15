@@ -4,11 +4,11 @@ default: &default
   adapter:    mysql2 # Quepid is only tested with MySQL.
   encoding:   utf8mb4
   collation:  utf8mb4_bin
-  reconnect:  false
   pool:       5
   username:   <%= ENV["DB_USERNAME"] %>
   password:   <%= ENV["DB_PASSWORD"] %>
-  host:       <%= ENV["DB_HOST"] %>
+  # Docker requires mysql as host name and local requires IP address.
+  host:       <%= ENV.key?('DOCKER_CONTAINER') ? 'mysql' : '127.0.0.1' %> 
 
 development:
   <<: *default

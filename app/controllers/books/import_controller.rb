@@ -6,14 +6,32 @@ require 'zip'
 
 module Books
   class ImportController < ApplicationController
+    before_action :set_book,
+                  only: [ :edit ]
+
     def new
       @book = Book.new
+    end
+
+    def edit
     end
 
     # rubocop:disable Metrics/MethodLength
     # rubocop:disable Metrics/AbcSize
     # rubocop:disable Metrics/PerceivedComplexity
     # rubocop:disable Metrics/CyclomaticComplexity
+    # @summary Import a complete book as File
+    # @tags books > import/export
+    # @request_body Upload a file(multipart/form-data)
+    #   [
+    #     !Hash{
+    #       book: Hash{
+    #         force_create_users: Boolean,
+    #         import_file: File
+    #       }
+    #     }
+    #   ]
+    # > Note: This is not currently rendering in these API docs properly!
     def create
       @book = Book.new
       @book.owner = current_user
@@ -38,7 +56,12 @@ module Books
                       end
                     else
                       # Handle normal JSON file
-                      read_json(tempfile)
+                      begin
+                        read_json(tempfile)
+                      rescue JSON::ParserError => e
+                        @book.errors.add(:base,
+                                         "Invalid JSON file format. Unable to parse the provided data structure. #{e.message}")
+                      end
                     end
       end
       if @book.errors.empty?
@@ -49,8 +72,8 @@ module Books
 
           service = ::BookImporter.new @book, current_user, params_to_use, { force_create_users: force_create_users }
           service.validate
-        rescue JSON::ParserError => e
-          @book.errors.add(:base, "Invalid JSON file format: #{e.message}")
+        rescue StandardError => e
+          @book.errors.add(:base, "Invalid JSON file: Unable to process the provided data structure. #{e.message}")
         end
       end
       if @book.errors.empty? && @book.save
@@ -72,8 +95,14 @@ module Books
     # rubocop:enable Metrics/AbcSize
     # rubocop:enable Metrics/PerceivedComplexity
     # rubocop:enable Metrics/CyclomaticComplexity
+    # rubocop:enable Layout/LineLength
 
     private
+
+    def set_book
+      @book = current_user.books_involved_with.where(id: params[:id]).first
+      TrackBookViewedJob.perform_later current_user, @book
+    end
 
     def read_json file
       JSON.parse(file.read)

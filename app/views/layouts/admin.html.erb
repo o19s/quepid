@@ -7,9 +7,10 @@
     <meta name="description" content="Tired of irrelevant search results? Use Quepid products & services to help improve the quality and relevancy of your search results.">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <%= stylesheet_link_tag 'admin', media: 'all' %>
+    <%= stylesheet_link_tag 'admin', media: 'all', 'data-turbo-track': 'reload' %>
     <%= csrf_meta_tags %>
-    <%= javascript_include_tag 'admin' %>
+    
+    <%= javascript_importmap_tags 'application_modern' %>
 
   </head>
   <body class="d-flex flex-column h-100">

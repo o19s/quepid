@@ -103,7 +103,7 @@
               <ul ng-if="pendingWizardSettings.searchEngine === 'es'">
                 <li>Is your Elasticsearch behind a firewall or proxy? Try accessing the <a target="_blank" ng-href="{{linkToSearchEndpointUrl()}}">URL directly</a> and see if you get a response</li>
                 <li>Does your Elasticsearch accept HTTP POST requests?</li>
-                <li>Is your Elasticsearch setup for CORS to talk to Quepid's web app (http://app.quepid.com)?</li>
+                <li>Is your Elasticsearch setup for CORS to talk to Quepid's web app (http://go.quepidapp.com)?</li>
                 <li>Do you need an API Key?  If so, set one up under Advanced pane --> Custom Headers.</li>
                 <li>Use the browser <i>Network Inspector</i> to see the actual request.</li>
                 <li>See the <a target="_blank" href="https://github.com/o19s/quepid/wiki/Troubleshooting-Elasticsearch-and-Quepid/">Troubleshooting Elasticsearch and Quepid</a> wiki page for more help!</li>
@@ -112,7 +112,7 @@
               <ul ng-if="pendingWizardSettings.searchEngine === 'os'">
                 <li>Is your OpenSearch behind a firewall or proxy? Try accessing the <a target="_blank" ng-href="{{linkToSearchEndpointUrl()}}">URL directly</a> and see if you get a response</li>
                 <li>Does your OpenSearch accept HTTP POST requests?</li>
-                <li>Is your OpenSearch setup for CORS to talk to Quepid's web app (http://app.quepid.com)?</li>
+                <li>Is your OpenSearch setup for CORS to talk to Quepid's web app (http://go.quepidapp.com)?</li>
                 <li>Use the browser <i>Network Inspector</i> to see the actual request.</li>
                 <li>See the <a target="_blank" href="https://github.com/o19s/quepid/wiki/Troubleshooting-OpenSearch-and-Quepid/">Troubleshooting OpenSearch and Quepid</a> wiki page for more help!</li>
               </ul>
@@ -162,7 +162,7 @@ curl {{pendingWizardSettings.basicAuthCredential ? '-u ' + pendingWizardSettings
               <div class="row">
                 <input style="width: 100%" type="text" ng-change="reset()" ng-model="pendingWizardSettings.searchUrl" class="form-control" />
                 <small title="Manually validates Quepid can get retrieve search results from your URL before continuing" class="pull-right"><button type="button" class="btn btn-link btn-sm" ng-click="validate(true)" ng-disabled="showTLSChangeWarning">ping it</button></small>
-                <p class="help-block">Unsure? <a href="http://quepid.com/how-quepid-works/" target="_blank">Learn More</a> about Quepid's light touch with your search engine &amp; data.
+                <p class="help-block">Unsure? <a href="http://quepidapp.com/how-quepid-works/" target="_blank">Learn More</a> about Quepid's light touch with your search engine &amp; data.
 
                 <p ng-show="pendingWizardSettings.urlFormat" class="help-block tip">
                   Tip: Your URL should look like this {{pendingWizardSettings.urlFormat}}.

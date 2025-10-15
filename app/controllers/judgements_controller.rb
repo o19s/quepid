@@ -3,11 +3,11 @@
 # rubocop:disable Metrics/ClassLength
 class JudgementsController < ApplicationController
   include Pagy::Backend
+
   before_action :set_judgement, only: [ :show, :edit, :update, :destroy ]
   before_action :set_book
 
   # rubocop:disable Metrics/AbcSize
-  # rubocop:disable Layout/LineLength
   def index
     bool = ActiveRecord::Type::Boolean.new
     @shallow = bool.deserialize(params[:shallow] || true )
@@ -23,10 +23,9 @@ class JudgementsController < ApplicationController
                           "%#{params[:q]}%", "%#{params[:q]}%", "%#{params[:q]}%", "%#{params[:q]}%")
     end
 
-    @pagy, @judgements = pagy(query.order('query_doc_pair_id'))
+    @pagy, @judgements = pagy(query.order(:query_doc_pair_id))
   end
   # rubocop:enable Metrics/AbcSize
-  # rubocop:enable Layout/LineLength
 
   def show
     @query_doc_pair = @judgement.query_doc_pair
@@ -36,7 +35,6 @@ class JudgementsController < ApplicationController
     redirect_to book_judge_path(@book)
   end
 
-  # rubocop:disable Layout/LineLength
   # rubocop:disable Metrics/AbcSize
   # rubocop:disable Metrics/CyclomaticComplexity
   # rubocop:disable Metrics/MethodLength
@@ -51,7 +49,7 @@ class JudgementsController < ApplicationController
 
     @query_doc_pair = SelectionStrategy.random_query_doc_based_on_strategy(@book, current_user)
     if @query_doc_pair.nil? # no more query doc pairs to be judged!
-      redirect_to book_path(@book)
+      redirect_to book_path(@book), notice: 'You have judged all the documents you can!'
     else
       # NO LONGER USED
       # if @query_doc_pair
@@ -73,7 +71,6 @@ class JudgementsController < ApplicationController
       end
     end
   end
-  # rubocop:enable Layout/LineLength
   # rubocop:enable Metrics/AbcSize
   # rubocop:enable Metrics/CyclomaticComplexity
   # rubocop:enable Metrics/MethodLength

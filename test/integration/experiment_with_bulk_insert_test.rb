@@ -3,7 +3,9 @@
 require 'test_helper'
 require 'benchmark'
 class ExperimentWithBulkInsertTest < ActionDispatch::IntegrationTest
-  # rubocop:disable Rails/SkipsModelValidations
+  # This test used to also do activerecord-import .import method test, but we removed that
+  # dependency.
+
   let(:user) { users(:doug) }
   let(:scorer) { scorers(:quepid_default_scorer) }
   let(:selection_strategy) { selection_strategies(:multiple_raters) }
@@ -29,30 +31,6 @@ class ExperimentWithBulkInsertTest < ActionDispatch::IntegrationTest
         assert qdp.valid?
       end
       puts "Traditional. Sample data generated successfully.  #{book.query_doc_pairs.count} query doc pairs"
-    end
-
-    # Print the elapsed time
-    puts "Elapsed time: #{result.real} seconds\n"
-  end
-
-  test 'generate and import query/doc pairs with bulk import' do
-    skip('Ignoring all tests in ExperimentWithBulkInsertTest') if @@skip_tests
-    book = user.books.create name: '50000 Query Doc Pairs', scorer: scorer, selection_strategy: selection_strategy
-    assert book.valid?
-    result = Benchmark.measure do
-      query_doc_pairs = []
-      50_000.times do
-        query_text = generate_random_string
-        doc_id = generate_random_string
-        document_fields = generate_lorem_ipsum_json
-        information_need = generate_lorem_ipsum_json
-
-        qdp = QueryDocPair.new book: book, query_text: query_text, doc_id: doc_id, document_fields: document_fields,
-                               information_need: information_need
-        query_doc_pairs << qdp
-      end
-      QueryDocPair.import query_doc_pairs
-      puts "Import. Sample data generated successfully.  #{book.query_doc_pairs.count} query doc pairs"
     end
 
     # Print the elapsed time
@@ -119,7 +97,6 @@ class ExperimentWithBulkInsertTest < ActionDispatch::IntegrationTest
     puts "Elapsed time: #{result.real} seconds\n"
   end
 
-  # rubocop:disable Layout/LineLength
   test 'generate and export query/doc pairs with upsert_all when exists already data' do
     skip('Ignoring all tests in ExperimentWithBulkInsertTest') if @@skip_tests
     book = user.books.create name: '50000 Query Doc Pairs', scorer: scorer, selection_strategy: selection_strategy
@@ -155,7 +132,6 @@ class ExperimentWithBulkInsertTest < ActionDispatch::IntegrationTest
     # Print the elapsed time
     puts "Elapsed time: #{result.real} seconds\n"
   end
-  # rubocop:enable Layout/LineLength
 
   def generate_random_string length: 10
     charset = Array('A'..'Z') + Array('a'..'z')

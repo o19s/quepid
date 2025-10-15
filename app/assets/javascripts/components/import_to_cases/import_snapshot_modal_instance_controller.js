@@ -37,10 +37,19 @@ angular.module('QuepidApp')
           'Snapshot Name', 'Snapshot Time', 'Case ID', 'Query Text', 'Doc ID', 'Doc Position'
         ];
 
-        if ( !angular.equals(headers, expectedHeaders) ) {
-          var alert = 'Headers mismatch! Please make sure you have the correct headers in you file (check for correct spelling and capitalization): ';
+        // Check if all expected headers are included in the uploaded CSV
+        var allHeadersIncluded = expectedHeaders.every(function(header) {
+          return headers.indexOf(header) !== -1;
+        });
+        
+        if (!allHeadersIncluded) {
+          // Get missing headers for the error message
+          var missingHeaders = expectedHeaders.filter(function(header) {
+            return headers.indexOf(header) === -1;
+          });
+          var alert = 'Missing required headers! Please make sure your file includes all required headers (check for correct spelling and capitalization): ';
           alert += '<br /><strong>';
-          alert += expectedHeaders.join(',');
+          alert += missingHeaders.join(', ');
           alert += '</strong>';
 
           ctrl.import.alert = {

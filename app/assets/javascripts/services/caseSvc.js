@@ -299,8 +299,9 @@ angular.module('QuepidApp')
         var data        = { case: caseToImport };
 
         return $http.post(url, data)
-          .then(function() {          
+          .then(function(response) {          
               that.refetchCaseLists();
+            return response.data;
           });
       };
 

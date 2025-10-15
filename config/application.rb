@@ -43,6 +43,11 @@ module Quepid
 
     config.active_job.queue_adapter = :solid_queue
 
+    # == ActiveRecord Encryption Settings
+    # Enable encryption for sensitive data.  Someday, when our database doesn't have potentially mixed encryption state, this should be set to false.
+    # Maybe in Quepid 9?
+    config.active_record.encryption.support_unencrypted_data = true
+
     # == SSL Specific Settings
     # Note, if true then this will allow Quepid to ONLY talk to HTTPS based search engines.
     config.force_ssl = true if 'true' == ENV['FORCE_SSL']

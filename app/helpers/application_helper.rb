@@ -129,7 +129,7 @@ module ApplicationHelper
 
     search_endpoint = kase.tries.first&.search_endpoint
 
-    if search_endpoint && (!search_endpoint.proxy_requests? && search_endpoint.endpoint_url)
+    if search_endpoint && !search_endpoint.proxy_requests? && search_endpoint.endpoint_url
       protocol = get_protocol_from_url(search_endpoint.endpoint_url)
       path_params = {
         protocol: protocol,
@@ -150,14 +150,6 @@ module ApplicationHelper
     # Handle the error (e.g., log it, return nil)
     Rails.logger.error("Invalid URL for search endpoint: #{url} - Error: #{e.message}")
     nil
-  end
-
-  def determine_prefer_ssl_options
-    if Rails.configuration.prefer_ssl
-      { protocol: 'https', port: 443 }
-    else
-      { protocol: 'http' }
-    end
   end
 end
 # rubocop:enable Metrics/ModuleLength
