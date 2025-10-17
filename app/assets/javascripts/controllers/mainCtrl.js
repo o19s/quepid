@@ -89,8 +89,10 @@ angular.module('QuepidApp')
             else {
               flash.success = 'All queries finished successfully!';
 
-              // Automatically create a snapshot after successful search if try doesn't have one
+              // Automatically create a snapshot after successful search AND scoring if try doesn't have one
+              // The searchAll() promise now resolves after scoring is complete
               if (!snapshotId && currentTry) {
+                // Scoring is now complete, safe to create snapshot
                 createSnapshotForTry(currentTry);
               }
             }
@@ -116,6 +118,15 @@ angular.module('QuepidApp')
         var queries = Object.values(queriesSvc.queries);
 
         $log.debug('Creating snapshot for try number ' + tryObj.tryNo);
+
+        // Log scoring status to confirm scoring is complete
+        var scoredCount = 0;
+        angular.forEach(queries, function(query) {
+          if (query.hasBeenScored && query.currentScore) {
+            scoredCount++;
+          }
+        });
+        $log.debug('Scored queries: ' + scoredCount + '/' + queries.length);
 
         // Create the snapshot and pass the try_number to associate it
         querySnapshotSvc.addSnapshot(snapshotName, recordDocumentFields, queries, tryObj.tryNo)

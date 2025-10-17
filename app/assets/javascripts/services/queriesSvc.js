@@ -869,7 +869,8 @@ angular.module('QuepidApp')
 
         // Holy nested promises batman
         return this.pAll(promises, 10).then( () => {
-          $q.all(scorePromises).then( () => {
+          // Return the scoring promise chain so callers can wait for scoring to complete
+          return $q.all(scorePromises).then( () => {
             /*
              * Why are we calling scoreAll after we called score() above?
              *
@@ -880,10 +881,10 @@ angular.module('QuepidApp')
              * We have the split here so the progress bar progresses instead of flying thru
              * after all searches complete.
              */
-            svc.scoreAll();
-
-            // Sync query results to associated Book if one exists
-            svc.syncToBook();
+            return svc.scoreAll().then(() => {
+              // Sync query results to associated Book if one exists
+              svc.syncToBook();
+            });
           });
         });
       };
@@ -1285,7 +1286,9 @@ angular.module('QuepidApp')
           type:           searchEngine,
           // Pass through the queryId and snapshotId from config
           queryId:        searcherOptions.queryId,
-          snapshotId:     searcherOptions.snapshotId
+          snapshotId:     searcherOptions.snapshotId,
+          // Pass the fieldSpec itself so we can use it for document normalization
+          fieldSpec:      fieldSpec
         };
 
         var searcher = new SnapshotSearcherFactory(options);

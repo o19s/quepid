@@ -36,8 +36,14 @@ angular.module('QuepidApp')
 
           if( diffDocs[i] ) {
             var diffDoc = diffDocs[i];
-            $scope.query.maxDiffDocScore = Math.max($scope.query.maxDiffDocScore, diffDoc.score());
-            returnValue[i].diffDoc = diffDoc;
+            // snapshots don't always have the diffDoc.score for some reason.          
+            //if (typeof diffDoc.score === 'function') {
+              $scope.query.maxDiffDocScore = Math.max($scope.query.maxDiffDocScore, diffDoc.score());              
+              //}
+            //else {
+              //console.log('The diffDoc does not have diffDoc.score()')
+              //}
+            returnValue[i].diffDoc = diffDoc;                                    
           } else {
             returnValue[i].diffDoc = null;
           }

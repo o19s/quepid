@@ -106,7 +106,7 @@
                   var doc = new SnapshotDocFactory(docFromApi, options);
                   self.docs.push(doc);
                 });
-              }
+              }              
               
               // Set the number of results found
               self.numFound = self.docs.length;

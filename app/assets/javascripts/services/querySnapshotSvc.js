@@ -39,7 +39,7 @@ angular.module('QuepidApp')
         return convertedfieldSpec;
       }
 
-      var addSnapshotResp = function(snapshots) {        
+  var addSnapshotResp = function(snapshots) {        
         angular.forEach(snapshots, function(snapshot) {
           // locally store snapshot data
           var snapObj = new SnapshotFactory(snapshot);
