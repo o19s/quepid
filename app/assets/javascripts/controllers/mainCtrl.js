@@ -63,22 +63,33 @@ angular.module('QuepidApp')
       // Function to handle the search and its outcomes
       var performSearch = function () {
         var searchPromise;
-        
-        // If a snapshot ID is set, make sure the full data is loaded first
-        if (queriesSvc.snapshotId) {
-          $log.debug('Ensuring full snapshot data is loaded for ID: ' + queriesSvc.snapshotId);
-          searchPromise = querySnapshotSvc.ensureFullSnapshot(queriesSvc.snapshotId)
+        var currentTry = settingsSvc.editableSettings().selectedTry;
+        var snapshotId = currentTry ? currentTry.snapshotId : null;
+
+        // If the try has a snapshot ID, make sure the full data is loaded first
+        if (snapshotId) {
+          $log.debug('Ensuring full snapshot data is loaded for ID: ' + snapshotId);
+          searchPromise = querySnapshotSvc.ensureFullSnapshot(snapshotId)
             .then(function () {
               return queriesSvc.searchAll();
             });
         } else {
           searchPromise = queriesSvc.searchAll();
         }
-        
+
         // Handle search outcomes
         return searchPromise
           .then(function () {
-            flash.success = 'All queries finished successfully!';
+            if (snapshotId){
+              var snapshot = querySnapshotSvc.snapshots[snapshotId];
+              var snapshotName = snapshot ? snapshot.name() : 'Snapshot ' + snapshotId;
+              flash.success = '<i class="fa fa-camera"></i> <strong>Snapshot Mode:</strong> Viewing cached results from "' +
+                            snapshotName + '" instead of executing live queries.';
+            }
+            else {
+              flash.success = 'All queries finished successfully!';
+            }
+
           }, function (errorMsg) {
             var mainErrorMsg = 'Some queries failed to resolve!';
             flash.error = mainErrorMsg;
@@ -142,12 +153,11 @@ angular.module('QuepidApp')
 
                   bootstrapped = true;
 
-                  if (Object.keys(querySnapshotSvc.snapshots).length > 0){
-                    let mostRecentSnapshotId = Object.keys(querySnapshotSvc.snapshots)[0];
-                    
-                    // Tell the queriesSvc to load a snapshot instead of doing queries.
-                    // Should this really be at the Try level?
-                    queriesSvc.snapshotId = mostRecentSnapshotId;
+                  // Check if the current try has a snapshot associated with it
+                  var currentTry = newSettings.selectedTry;
+                  if (currentTry && currentTry.snapshotId) {
+                    $log.debug('Current try has snapshotId: ' + currentTry.snapshotId);
+                    // The snapshotId will be used when creating searchers in queriesSvc
                   }
 
                   return performSearch();

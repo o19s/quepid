@@ -56,7 +56,10 @@
       self.mapperCode    = data.mapper_code;
       self.proxyRequests = data.proxy_requests;
       self.options       = data.options;
+      self.snapshotId    = data.snapshot_id;
 
+      console.log("setting snapshotId to 1 manually");
+      //self.snapshotId = 1;
 
       // transform curator vars to be more angular friendly
       var ngFriendlyCuratorVars = [];

@@ -55,8 +55,6 @@ angular.module('QuepidApp')
       this.displayOrder = [];
       this.queries = {};
       this.linkUrl = '';
-      
-      svc.snapshotId = '';
 
       // Cache for tracking synced query-doc pairs per book
       // Format: { bookId: { 'queryText:docId': true } }
@@ -66,7 +64,6 @@ angular.module('QuepidApp')
       function reset() {
         svc.queries = {};
         svc.showOnlyRated = false;
-        svc.snapshotId = '';
         svc.svcVersion++;
         // Clear sync cache when resetting
         syncedPairsCache = {};
@@ -185,11 +182,11 @@ angular.module('QuepidApp')
           searcherOptions.qOption = { ...passedInSettings.options, ...query.options};
           /*jshint ignore:end */
 
-          // If we are loading from a snapshot, then shortcut everything.
-          if (svc.snapshotId){
+          // If the try has a snapshot, use the snapshot searcher instead
+          if (passedInSettings.selectedTry && passedInSettings.selectedTry.snapshotId){
             // Pass the queryId and snapshotId to the snapshot searcher
             searcherOptions.queryId = query.queryId;
-            searcherOptions.snapshotId = svc.snapshotId;
+            searcherOptions.snapshotId = passedInSettings.selectedTry.snapshotId;
 
             // Create our custom snapshot searcher
             var snapshotSearcher = svc.createSnapshotSearcher(
