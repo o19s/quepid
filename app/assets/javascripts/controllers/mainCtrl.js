@@ -41,29 +41,50 @@ angular.module('QuepidApp')
       var searchEngineChanged = function() {
         return getSearchEngine(caseTryNavSvc.getTryNo()) !== getSearchEngine(tryNo);
       };
-
+      
+      var loadSnapshots = function() {
+        return querySnapshotSvc.bootstrap(caseNo);
+      };
+      
       var init = function() {
         // Make sure we empty stuff from the previous case
         if ( caseChanged() ) {
           queriesSvc.reset();
+          querySnapshotSvc.reset();
         }
 
         angular.forEach(queriesSvc.queries, function(query) {
           query.reset();
         });
+        
+        loadSnapshots();
       };
       
       // Function to handle the search and its outcomes
-      var performSearch = function() {
-        return queriesSvc.searchAll()
-          .then(function() {
+      var performSearch = function () {
+        var searchPromise;
+        
+        // If a snapshot ID is set, make sure the full data is loaded first
+        if (queriesSvc.snapshotId) {
+          $log.debug('Ensuring full snapshot data is loaded for ID: ' + queriesSvc.snapshotId);
+          searchPromise = querySnapshotSvc.ensureFullSnapshot(queriesSvc.snapshotId)
+            .then(function () {
+              return queriesSvc.searchAll();
+            });
+        } else {
+          searchPromise = queriesSvc.searchAll();
+        }
+        
+        // Handle search outcomes
+        return searchPromise
+          .then(function () {
             flash.success = 'All queries finished successfully!';
-          }, function(errorMsg) {
+          }, function (errorMsg) {
             var mainErrorMsg = 'Some queries failed to resolve!';
             flash.error = mainErrorMsg;
             flash.to('search-error').error = errorMsg;
           });
-      }
+      };
 
       var bootstrapCase = function() {
         return caseSvc.get(caseNo)
@@ -120,26 +141,22 @@ angular.module('QuepidApp')
                   flash.to('search-error').error = '';
 
                   bootstrapped = true;
-                  
+
                   if (Object.keys(querySnapshotSvc.snapshots).length > 0){
-                    
                     let mostRecentSnapshotId = Object.keys(querySnapshotSvc.snapshots)[0];
+                    
+                    // Tell the queriesSvc to load a snapshot instead of doing queries.
+                    // Should this really be at the Try level?
                     queriesSvc.snapshotId = mostRecentSnapshotId;
-                    querySnapshotSvc.get(mostRecentSnapshotId).then(function () {
-                      return performSearch();                      
-                    });                  
                   }
-                  else {
-                    return performSearch();
-                  }
+
+                  return performSearch();
                 }
               });
           });
       };
 
-      var loadSnapshots = function() {
-        return querySnapshotSvc.bootstrap(caseNo);
-      };
+
 
       var updateCaseMetadata = function() {
         caseSvc.trackLastViewedAt(caseNo);

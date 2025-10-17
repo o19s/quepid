@@ -8,11 +8,16 @@
       '$log',
       '$filter',
       'docCacheSvc',
-      'normalDocsSvc',
+  //    'normalDocsSvc',
       SnapshotFactory
   ]);
 
-  function SnapshotFactory($log, $filter, docCacheSvc, normalDocsSvc) {
+  function SnapshotFactory(
+    $log, 
+    $filter, 
+    docCacheSvc, 
+  //  normalDocsSvc
+  ) {
     var Snapshot = function(params) {
       var self  = this;
 
@@ -87,9 +92,13 @@
             doc.explain = sDoc.explain;
             doc.rated_only = sDoc.rated_only;
 
-            var explAsJson  = angular.fromJson(doc.explain);
-            var nDoc = angular.copy(doc);
-            nDoc = normalDocsSvc.explainDoc(nDoc, explAsJson);
+            var nDoc = angular.copy(doc.doc);
+            
+            // For some reason, with this, we have a huge problem
+            // with firing events recursively that freaks Angular out
+            // when we open up the document details.
+            // var explAsJson  = angular.fromJson(doc.explain);          
+            //nDoc = normalDocsSvc.explainDoc(nDoc, explAsJson);
 
             searchResults.push(nDoc);
           }

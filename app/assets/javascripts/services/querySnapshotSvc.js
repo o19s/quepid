@@ -27,6 +27,12 @@ angular.module('QuepidApp')
       svc.importSnapshotsToSpecificCase = importSnapshotsToSpecificCase;
       svc.get             = get;
       svc.mapFieldSpecToSolrFormat = mapFieldSpecToSolrFormat;
+      svc.ensureFullSnapshot = ensureFullSnapshot;
+      
+      svc.reset = reset;
+      function reset() {
+        svc.snapshots = {};       
+      }
       
       function mapFieldSpecToSolrFormat(fieldSpec) {
         let convertedfieldSpec = fieldSpec.replace(/id:_([^,]+)/, 'id:$1');
@@ -162,6 +168,7 @@ angular.module('QuepidApp')
         });
 
         var saved = {
+
           'snapshot': {
             'name': name,
             'docs': docs,
@@ -270,15 +277,37 @@ angular.module('QuepidApp')
           });
 
         return deferred.promise;
+
       }
 
       function get(snapshotId) {
-        var url     = 'api/cases/' + caseNo + '/snapshots/' + snapshotId;
+        var url = 'api/cases/' + caseNo + '/snapshots/' + snapshotId;
 
         return $http.get(url)
           .then(function(response) {
             return addSnapshotResp([response.data]);
           });
+      }
+      
+      /**
+       * Ensures that a full snapshot with complete data structure is available
+       * If snapshot is not available or only has shallow data, fetches the complete snapshot
+       * Returns a promise that resolves to the full snapshot
+       */
+      function ensureFullSnapshot(snapshotId) {
+        var snapshotIdStr = '' + snapshotId; // Ensure we have a string ID
+        
+        // Check if we have the snapshot at all and if it has docs
+        if (svc.snapshots[snapshotIdStr] && svc.snapshots[snapshotIdStr].docs) {
+          console.log('Using cached snapshot ' + snapshotIdStr);
+          return $q.when(svc.snapshots[snapshotIdStr]);
+        }
+        
+        // If we don't have it or it doesn't have docs, fetch it
+        console.log('Fetching full snapshot ' + snapshotIdStr);
+        return get(snapshotIdStr).then(function() {
+          return svc.snapshots[snapshotIdStr];
+        });
       }
     }
   ]);

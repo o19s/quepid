@@ -66,6 +66,7 @@ angular.module('QuepidApp')
       function reset() {
         svc.queries = {};
         svc.showOnlyRated = false;
+        svc.snapshotId = '';
         svc.svcVersion++;
         // Clear sync cache when resetting
         syncedPairsCache = {};
@@ -185,9 +186,13 @@ angular.module('QuepidApp')
           /*jshint ignore:end */
 
           // If we are loading from a snapshot, then shortcut everything.
-          if (this.snapshotId){
-            // make our custom things
-            var snapshotSearcher = this.createSnapshotSearcher(
+          if (svc.snapshotId){
+            // Pass the queryId and snapshotId to the snapshot searcher
+            searcherOptions.queryId = query.queryId;
+            searcherOptions.snapshotId = svc.snapshotId;
+
+            // Create our custom snapshot searcher
+            var snapshotSearcher = svc.createSnapshotSearcher(
               passedInSettings.createFieldSpec(),
               passedInSettings.selectedTry.searchUrl,
               args,
@@ -195,7 +200,7 @@ angular.module('QuepidApp')
               searcherOptions,
               passedInSettings.searchEngine
             );
-            return snapshotSearcher; 
+            return snapshotSearcher;
           }
 
           return searchSvc.createSearcher(
@@ -1270,8 +1275,8 @@ angular.module('QuepidApp')
         return caseNo;
       }
       
-      // may not need this or move it?
-      this.createSnapshotSearcher = function (fieldSpec, url, args, queryText, config, searchEngine) {
+      // Create a snapshot searcher that returns cached results instead of executing queries
+      this.createSnapshotSearcher = function (fieldSpec, url, args, queryText, searcherOptions, searchEngine) {
 
         var options = {
           fieldList:      fieldSpec.fieldList(),
@@ -1279,12 +1284,15 @@ angular.module('QuepidApp')
           url:            url,
           args:           args,
           queryText:      queryText,
-          config:         config,
-          type:           searchEngine
+          config:         searcherOptions,
+          type:           searchEngine,
+          // Pass through the queryId and snapshotId from config
+          queryId:        searcherOptions.queryId,
+          snapshotId:     searcherOptions.snapshotId
         };
-        
+
         var searcher = new SnapshotSearcherFactory(options);
-        
+
         return searcher;
       };
     }
