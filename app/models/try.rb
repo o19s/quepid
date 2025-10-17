@@ -47,7 +47,7 @@ class Try < ApplicationRecord
               dependent:  :destroy,
               inverse_of: :try
 
-  has_many   :snapshots,
+  has_one    :snapshot,
              dependent: :nullify
 
   # Callbacks

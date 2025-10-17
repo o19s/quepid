@@ -21,6 +21,7 @@ json.proxy_requests try.search_endpoint&.proxy_requests
 # json.case_options             try.case&.options
 
 json.options try.options
+json.snapshot_id try.snapshot&.id
 
 json.try_number try.try_number
 if try.search_endpoint.present?

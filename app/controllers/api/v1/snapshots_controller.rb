@@ -41,7 +41,15 @@ module Api
       def create
         @snapshot = @case.snapshots.build(name: params[:snapshot][:name])
         @snapshot.scorer = @case.scorer
-        @snapshot.try = @case.tries.first
+
+        # Allow associating the snapshot with a specific try
+        if params[:snapshot][:try_id].present?
+          @snapshot.try = @case.tries.find(params[:snapshot][:try_id])
+        elsif params[:snapshot][:try_number].present?
+          @snapshot.try = @case.tries.find_by(try_number: params[:snapshot][:try_number])
+        else
+          @snapshot.try = @case.tries.first
+        end
 
         if @snapshot.save
           serialized_data = Marshal.dump(snapshot_params)

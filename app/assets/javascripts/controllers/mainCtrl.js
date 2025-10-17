@@ -88,12 +88,49 @@ angular.module('QuepidApp')
             }
             else {
               flash.success = 'All queries finished successfully!';
+
+              // Automatically create a snapshot after successful search if try doesn't have one
+              if (!snapshotId && currentTry) {
+                createSnapshotForTry(currentTry);
+              }
             }
 
           }, function (errorMsg) {
             var mainErrorMsg = 'Some queries failed to resolve!';
             flash.error = mainErrorMsg;
             flash.to('search-error').error = errorMsg;
+          });
+      };
+
+      // Function to create a snapshot and associate it with the current try
+      var createSnapshotForTry = function(tryObj) {
+        // Generate snapshot name with timestamp
+        var now = new Date();
+        var snapshotName = 'Try ' + tryObj.tryNo;
+
+        // Check if we should record document fields (depends on search engine)
+        //var recordDocumentFields = !settingsSvc.supportLookupById(settingsSvc.editableSettings().searchEngine);
+        const recordDocumentFields = true;
+
+        // Get all queries to include in snapshot
+        var queries = Object.values(queriesSvc.queries);
+
+        $log.debug('Creating snapshot for try number ' + tryObj.tryNo);
+
+        // Create the snapshot and pass the try_number to associate it
+        querySnapshotSvc.addSnapshot(snapshotName, recordDocumentFields, queries, tryObj.tryNo)
+          .then(function(snapshot) {
+            // The snapshot should now be associated with the try
+            flash.success = '<i class="fa fa-camera"></i> Snapshot created automatically for Try ' + tryObj.tryNo;
+
+            // Update the try object locally to reflect the new snapshot ID
+            tryObj.snapshotId = snapshot.id;
+
+            $log.debug('Snapshot ' + snapshot.id + ' successfully associated with try ' + tryObj.tryNo);
+          })
+          .catch(function(error) {
+            $log.error('Failed to create snapshot:', error);
+            // Silent failure - don't interrupt the user's workflow
           });
       };
 

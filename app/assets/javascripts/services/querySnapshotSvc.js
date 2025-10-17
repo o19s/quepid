@@ -114,16 +114,23 @@ angular.module('QuepidApp')
           });
       };
 
-      this.addSnapshot = function(name, recordDocumentFields, queries) {
+      this.addSnapshot = function(name, recordDocumentFields, queries, tryNumber) {
         // we may want to refactor the payload structure in the future.
         var docs = {};
         var queriesPayload = {};
         angular.forEach(queries, function(query) {
           queriesPayload[query.queryId] = {
-            'score': query.currentScore.score,
-            'all_rated': query.currentScore.allRated,
             'number_of_results': query.numFound
           };
+          
+          // Calculating the currentScore is async process, so it may not 
+          // have been completed when it's time to add the snapshot.  
+          // Should we look at this and only addSnapshot after calculating scores?
+          // Or not worry about it because we re run score when we load the snapshot
+          if (query.currentScore) {
+            queriesPayload[query.queryId].score = query.currentScore.score;
+            queriesPayload[query.queryId].all_rated = query.currentScore.allRated;
+          }
 
           // The score can be -- if it hasn't actually been scored, so convert
           // that to null for the call to the backend.
@@ -176,11 +183,18 @@ angular.module('QuepidApp')
           }
         };
 
+        // Add try_number to the payload if provided
+        if (tryNumber !== undefined && tryNumber !== null) {
+          saved.snapshot.try_number = tryNumber;
+        }
+
         return $http.post('api/cases/' + caseNo + '/snapshots', saved)
           .then(function(response) {
             return addSnapshotResp([response.data])
               .then(function() {
                 version++;
+                // Return the snapshot data so it can be used by the caller
+                return response.data;
               });
           });
       };
