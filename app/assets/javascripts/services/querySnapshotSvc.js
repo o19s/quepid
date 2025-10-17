@@ -27,13 +27,19 @@ angular.module('QuepidApp')
       svc.importSnapshotsToSpecificCase = importSnapshotsToSpecificCase;
       svc.get             = get;
       svc.mapFieldSpecToSolrFormat = mapFieldSpecToSolrFormat;
+      svc.ensureFullSnapshot = ensureFullSnapshot;
+      
+      svc.reset = reset;
+      function reset() {
+        svc.snapshots = {};       
+      }
       
       function mapFieldSpecToSolrFormat(fieldSpec) {
         let convertedfieldSpec = fieldSpec.replace(/id:_([^,]+)/, 'id:$1');
         return convertedfieldSpec;
       }
 
-      var addSnapshotResp = function(snapshots) {        
+  var addSnapshotResp = function(snapshots) {        
         angular.forEach(snapshots, function(snapshot) {
           // locally store snapshot data
           var snapObj = new SnapshotFactory(snapshot);
@@ -108,16 +114,23 @@ angular.module('QuepidApp')
           });
       };
 
-      this.addSnapshot = function(name, recordDocumentFields, queries) {
+      this.addSnapshot = function(name, recordDocumentFields, queries, tryNumber) {
         // we may want to refactor the payload structure in the future.
         var docs = {};
         var queriesPayload = {};
         angular.forEach(queries, function(query) {
           queriesPayload[query.queryId] = {
-            'score': query.currentScore.score,
-            'all_rated': query.currentScore.allRated,
             'number_of_results': query.numFound
           };
+          
+          // Calculating the currentScore is async process, so it may not 
+          // have been completed when it's time to add the snapshot.  
+          // Should we look at this and only addSnapshot after calculating scores?
+          // Or not worry about it because we re run score when we load the snapshot
+          if (query.currentScore) {
+            queriesPayload[query.queryId].score = query.currentScore.score;
+            queriesPayload[query.queryId].all_rated = query.currentScore.allRated;
+          }
 
           // The score can be -- if it hasn't actually been scored, so convert
           // that to null for the call to the backend.
@@ -162,6 +175,7 @@ angular.module('QuepidApp')
         });
 
         var saved = {
+
           'snapshot': {
             'name': name,
             'docs': docs,
@@ -169,11 +183,18 @@ angular.module('QuepidApp')
           }
         };
 
+        // Add try_number to the payload if provided
+        if (tryNumber !== undefined && tryNumber !== null) {
+          saved.snapshot.try_number = tryNumber;
+        }
+
         return $http.post('api/cases/' + caseNo + '/snapshots', saved)
           .then(function(response) {
             return addSnapshotResp([response.data])
               .then(function() {
                 version++;
+                // Return the snapshot data so it can be used by the caller
+                return response.data;
               });
           });
       };
@@ -270,15 +291,37 @@ angular.module('QuepidApp')
           });
 
         return deferred.promise;
+
       }
 
       function get(snapshotId) {
-        var url     = 'api/cases/' + caseNo + '/snapshots/' + snapshotId+ '?shallow=true';
+        var url = 'api/cases/' + caseNo + '/snapshots/' + snapshotId;
 
         return $http.get(url)
           .then(function(response) {
             return addSnapshotResp([response.data]);
           });
+      }
+      
+      /**
+       * Ensures that a full snapshot with complete data structure is available
+       * If snapshot is not available or only has shallow data, fetches the complete snapshot
+       * Returns a promise that resolves to the full snapshot
+       */
+      function ensureFullSnapshot(snapshotId) {
+        var snapshotIdStr = '' + snapshotId; // Ensure we have a string ID
+        
+        // Check if we have the snapshot at all and if it has docs
+        if (svc.snapshots[snapshotIdStr] && svc.snapshots[snapshotIdStr].docs) {
+          console.log('Using cached snapshot ' + snapshotIdStr);
+          return $q.when(svc.snapshots[snapshotIdStr]);
+        }
+        
+        // If we don't have it or it doesn't have docs, fetch it
+        console.log('Fetching full snapshot ' + snapshotIdStr);
+        return get(snapshotIdStr).then(function() {
+          return svc.snapshots[snapshotIdStr];
+        });
       }
     }
   ]);
