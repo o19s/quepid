@@ -1,6 +1,6 @@
 ## ClaudeOnRails Configuration
 
-You are working on Quepid, a Rails application. Review the ClaudeOnRails context file at @.claude-on-rails/context.md
+You are working on Quepid, a Rails application. Review the ClaudeOnRails context file at @.claude-on-rails/context.md.   The front end core application uses the old Angular 1 framework.
 
 Use yarn instead of npm for package management.
 

@@ -4,13 +4,13 @@
 
 angular.module('QuepidApp')
   .service('querySnapshotSvc', [
-    '$http', '$q',
+    '$http', '$q', '$log',
     'settingsSvc', 'docCacheSvc', 'caseTryNavSvc', 'fieldSpecSvc',
-    'SnapshotFactory',
+    'SnapshotFactory', 'flash',
     function querySnapshotSvc(
-      $http, $q,
+      $http, $q, $log,
       settingsSvc, docCacheSvc, caseTryNavSvc, fieldSpecSvc,
-      SnapshotFactory
+      SnapshotFactory, flash
     ) {
       // caches normal docs for all snapshots
       // TODO invalidation
@@ -27,6 +27,7 @@ angular.module('QuepidApp')
       svc.importSnapshotsToSpecificCase = importSnapshotsToSpecificCase;
       svc.get             = get;
       svc.mapFieldSpecToSolrFormat = mapFieldSpecToSolrFormat;
+      svc.createSnapshotForTry = createSnapshotForTry;
       
       function mapFieldSpecToSolrFormat(fieldSpec) {
         let convertedfieldSpec = fieldSpec.replace(/id:_([^,]+)/, 'id:$1');
@@ -108,17 +109,26 @@ angular.module('QuepidApp')
           });
       };
 
-      this.addSnapshot = function(name, recordDocumentFields, queries) {
+      this.addSnapshot = function(name, recordDocumentFields, queries, tryNumber) {
         // we may want to refactor the payload structure in the future.
         var docs = {};
         var queriesPayload = {};
         angular.forEach(queries, function(query) {
           queriesPayload[query.queryId] = {
-            'score': query.currentScore.score,
-            'all_rated': query.currentScore.allRated,
+//            'score': query.currentScore.score,
+//            'all_rated': query.currentScore.allRated,
             'number_of_results': query.numFound
           };
 
+          // Calculating the currentScore is async process, so it may not 
+          // have been completed when it's time to add the snapshot.  
+          // Should we look at this and only addSnapshot after calculating scores?
+          // Or not worry about it because we re run score when we load the snapshot
+          if (query.currentScore) {
+            queriesPayload[query.queryId].score = query.currentScore.score;
+            queriesPayload[query.queryId].all_rated = query.currentScore.allRated;
+          }
+          
           // The score can be -- if it hasn't actually been scored, so convert
           // that to null for the call to the backend.
           if (queriesPayload[query.queryId].score === '--') {
@@ -168,12 +178,19 @@ angular.module('QuepidApp')
             'queries': queriesPayload
           }
         };
+        
+        // Add try_number to the payload if provided
+        if (tryNumber !== undefined && tryNumber !== null) {
+          saved.snapshot.try_number = tryNumber;
+        }        
 
         return $http.post('api/cases/' + caseNo + '/snapshots', saved)
           .then(function(response) {
             return addSnapshotResp([response.data])
               .then(function() {
                 version++;
+                // Return the snapshot data so it can be used by the caller
+                return response.data;
               });
           });
       };
@@ -273,12 +290,77 @@ angular.module('QuepidApp')
       }
 
       function get(snapshotId) {
-        var url     = 'api/cases/' + caseNo + '/snapshots/' + snapshotId+ '?shallow=true';
+        var url = 'api/cases/' + caseNo + '/snapshots/' + snapshotId;
 
         return $http.get(url)
           .then(function(response) {
             return addSnapshotResp([response.data]);
           });
+      }
+      
+      /**
+       * Creates a snapshot and associates it with the specified try
+       * @param {Object} tryObj - The try object to associate with the snapshot
+       * @param {Array} queries - The queries to include in the snapshot
+       * @returns {Promise} - A promise that resolves with the created snapshot
+       */
+      function createSnapshotForTry(tryObj, queries) {
+        // Generate snapshot name
+        var snapshotName = 'Try ' + tryObj.tryNo;
+
+        // Always record document fields
+        const recordDocumentFields = true;
+
+        $log.debug('Creating snapshot for try number ' + tryObj.tryNo);
+
+        // Log scoring status to confirm scoring is complete
+        var scoredCount = 0;
+        angular.forEach(queries, function(query) {
+          if (query.hasBeenScored && query.currentScore) {
+            scoredCount++;
+          }
+        });
+        $log.debug('Scored queries: ' + scoredCount + '/' + queries.length);
+
+        // Create the snapshot and pass the try_number to associate it
+        return svc.addSnapshot(snapshotName, recordDocumentFields, queries, tryObj.tryNo)
+          .then(function(snapshot) {
+            // The snapshot should now be associated with the try
+            flash.success = '<i class="fa fa-camera"></i> Snapshot created automatically for Try ' + tryObj.tryNo;
+
+            // Update the try object locally to reflect the new snapshot ID
+            tryObj.snapshotId = snapshot.id;
+
+            $log.debug('Snapshot ' + snapshot.id + ' successfully associated with try ' + tryObj.tryNo);
+            
+            return snapshot;
+          })
+          .catch(function(error) {
+            $log.error('Failed to create snapshot:', error);
+            // Re-throw the error to allow the controller to handle it if needed
+            throw error;
+          });
+      }
+            
+      /**
+       * Ensures that a full snapshot with complete data structure is available
+       * If snapshot is not available or only has shallow data, fetches the complete snapshot
+       * Returns a promise that resolves to the full snapshot
+       */
+      function ensureFullSnapshot(snapshotId) {
+        var snapshotIdStr = '' + snapshotId; // Ensure we have a string ID
+
+        // Check if we have the snapshot at all and if it has docs
+        if (svc.snapshots[snapshotIdStr] && svc.snapshots[snapshotIdStr].docs) {
+          console.log('Using cached snapshot ' + snapshotIdStr);
+          return $q.when(svc.snapshots[snapshotIdStr]);
+        }
+
+        // If we don't have it or it doesn't have docs, fetch it
+        console.log('Fetching full snapshot ' + snapshotIdStr);
+        return get(snapshotIdStr).then(function() {
+          return svc.snapshots[snapshotIdStr];
+        });
       }
     }
   ]);

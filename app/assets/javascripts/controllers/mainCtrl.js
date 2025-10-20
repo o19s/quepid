@@ -51,7 +51,7 @@ angular.module('QuepidApp')
         angular.forEach(queriesSvc.queries, function(query) {
           query.reset();
         });
-      };
+      };    
 
       var bootstrapCase = function() {
         return caseSvc.get(caseNo)
@@ -108,9 +108,20 @@ angular.module('QuepidApp')
                   flash.to('search-error').error = '';
 
                   bootstrapped = true;
+                  var currentTry = settingsSvc.editableSettings().selectedTry;
                   return queriesSvc.searchAll()
                     .then(function() {
                       flash.success = 'All queries finished successfully!';
+                      // Automatically create a snapshot after successful search AND scoring if try doesn't have one
+                      // The searchAll() promise now resolves after scoring is complete
+                      //if (!snapshotId && currentTry) {
+                      // Scoring is now complete, safe to create snapshot
+                      querySnapshotSvc.createSnapshotForTry(currentTry, Object.values(queriesSvc.queries))
+                        .catch(function(error) {
+                          // Silent failure - don't interrupt the user's workflow
+                          $log.error('Failed to create snapshot:', error);
+                        });
+                        //}
                     }, function(errorMsg) {
                       var mainErrorMsg = 'Some queries failed to resolve!';
 

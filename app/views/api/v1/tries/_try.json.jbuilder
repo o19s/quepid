@@ -22,7 +22,9 @@ json.proxy_requests try.search_endpoint&.proxy_requests
 
 json.options try.options
 
+json.snapshot_id try.snapshot&.id
 json.try_number try.try_number
+
 if try.search_endpoint.present?
   json.search_endpoint do
     json.partial! 'api/v1/search_endpoints/search_endpoint', search_endpoint: try.search_endpoint
