@@ -298,7 +298,7 @@ GEM
     jbuilder (2.14.1)
       actionview (>= 7.0.0)
       activesupport (>= 7.0.0)
-    json (2.13.2)
+    json (2.15.1)
     json-jwt (1.17.0)
       activesupport (>= 4.2)
       aes_key_wrap
@@ -443,7 +443,7 @@ GEM
     pp (0.6.3)
       prettyprint
     prettyprint (0.2.0)
-    prism (1.4.0)
+    prism (1.6.0)
     prophet-rb (0.6.0)
       cmdstan (>= 0.2)
       logger
@@ -570,11 +570,9 @@ GEM
     scout_apm (5.7.1)
       parser
     securerandom (0.4.1)
-    selenium-webdriver (4.36.0)
+    selenium-webdriver (4.37.0)
       base64 (~> 0.2)
-      json (<= 2.13.2)
       logger (~> 1.4)
-      prism (~> 1.0, < 1.5)
       rexml (~> 3.2, >= 3.2.5)
       rubyzip (>= 1.2.2, < 4.0)
       websocket (~> 1.0)
