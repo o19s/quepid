@@ -33,5 +33,27 @@ class QueryDocPairTest < ActiveSupport::TestCase
 
       assert_equal query_doc_pair.document_fields, '👍 👎 💩'
     end
+
+    describe 'case sensitivity' do
+      test 'query_text is case sensitive' do
+        # Create a query_doc_pair with uppercase query_text
+        uppercase_pair = QueryDocPair.create!(
+          query_text:      'TEST QUERY',
+          doc_id:          'test_doc_1',
+          document_fields: { title: 'Test Document' }.to_json
+        )
+
+        # Try to find the pair using lowercase query_text
+        lowercase_result = QueryDocPair.find_by(query_text: 'test query')
+
+        # With the case-sensitive collation, this should return nil
+        assert_nil lowercase_result, 'Should not find a record with different case'
+
+        # But should find with exact case match
+        exact_case_result = QueryDocPair.find_by(query_text: 'TEST QUERY')
+        assert_not_nil exact_case_result
+        assert_equal uppercase_pair.id, exact_case_result.id
+      end
+    end
   end
 end
