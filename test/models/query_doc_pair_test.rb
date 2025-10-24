@@ -28,6 +28,7 @@ require 'test_helper'
 
 class QueryDocPairTest < ActiveSupport::TestCase
   describe 'emoji support' do
+    let(:book) { books(:james_bond_movies) }
     test 'handles emoji in document_fields' do
       query_doc_pair = QueryDocPair.create document_fields: '👍 👎 💩'
 
@@ -40,7 +41,8 @@ class QueryDocPairTest < ActiveSupport::TestCase
         uppercase_pair = QueryDocPair.create!(
           query_text:      'TEST QUERY',
           doc_id:          'test_doc_1',
-          document_fields: { title: 'Test Document' }.to_json
+          document_fields: { title: 'Test Document' }.to_json,
+          book:            book
         )
 
         # Try to find the pair using lowercase query_text
