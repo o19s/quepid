@@ -1,5 +1,15 @@
 # Changelog
 
+## 8.3.5 -- 2025-10-24
+
+There were a number of 8.3.x releases as we worked through some debugging.   8.3.5 though is the one to use!
+
+* Query Doc Pair query_text should be case sensitive, the same way Query query_text is, but it wasn't.  So you couldn't have two queries with differing case like "Nike" and "nike" in a Book.  Thanks @david-fisher for finding https://github.com/o19s/quepid/issues/1512 and fixed in https://github.com/o19s/quepid/pull/1513.
+
+* Query Doc Pairs for a book are synced when you run a linked Case in the background!  Previously we sent all the data in one huge JSON file that was processed immediately.  Not we submit in chunks of 100 queries, and the data is loaded in the background async to the book, smoothing the workflow.  This happens automagically for you, no need to click the "populate book" button either in the Judgements modal.  https://github.com/o19s/quepid/pull/1496 by @epugh.
+
+* Fix bulk judgements UI under nested deployment routes.  Pin docker image to debian Bookworm for now. https://github.com/o19s/quepid/pull/1495
+
 ## 8.3.0 -- 2025-10-06
 
 ### Features
