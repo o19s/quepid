@@ -565,7 +565,7 @@ GEM
     ruby-progressbar (1.13.0)
     ruby-statistics (4.1.0)
     ruby2_keywords (0.0.5)
-    rubyzip (3.2.0)
+    rubyzip (3.2.1)
     safely_block (0.5.0)
     scout_apm (5.7.1)
       parser
