@@ -24,6 +24,7 @@ angular.module('QuepidApp')
     'esExplainExtractorSvc',
     'solrExplainExtractorSvc',
     'normalDocsSvc',
+    'SnapshotSearcherFactory',
     function queriesSvc(
       $scope,
       $http,
@@ -41,7 +42,8 @@ angular.module('QuepidApp')
       searchErrorTranslatorSvc,
       esExplainExtractorSvc,
       solrExplainExtractorSvc,
-      normalDocsSvc
+      normalDocsSvc,
+      SnapshotSearcherFactory
     ) {
 
       let caseNo = -1;
@@ -180,6 +182,23 @@ angular.module('QuepidApp')
           searcherOptions.qOption = { ...passedInSettings.options, ...query.options};
           /*jshint ignore:end */
 
+          // If the try has a snapshot, use the snapshot searcher instead
+          if (passedInSettings.selectedTry && passedInSettings.selectedTry.snapshotId){
+            // Pass the queryId and snapshotId to the snapshot searcher
+            searcherOptions.queryId = query.queryId;
+            searcherOptions.snapshotId = passedInSettings.selectedTry.snapshotId;
+
+            // Create our custom snapshot searcher
+            var snapshotSearcher = svc.createSnapshotSearcher(
+              passedInSettings.createFieldSpec(),
+              passedInSettings.selectedTry.searchUrl,
+              args,
+              queryText,
+              searcherOptions,
+              passedInSettings.searchEngine
+            );
+            return snapshotSearcher;
+          }
 
           return searchSvc.createSearcher(
             passedInSettings.createFieldSpec(),
@@ -850,7 +869,8 @@ angular.module('QuepidApp')
 
         // Holy nested promises batman
         return this.pAll(promises, 10).then( () => {
-          $q.all(scorePromises).then( () => {
+          // Return the scoring promise chain so callers can wait for scoring to complete
+          return $q.all(scorePromises).then( () => {
             /*
              * Why are we calling scoreAll after we called score() above?
              *
@@ -861,10 +881,10 @@ angular.module('QuepidApp')
              * We have the split here so the progress bar progresses instead of flying thru
              * after all searches complete.
              */
-            svc.scoreAll();
-
-            // Sync query results to associated Book if one exists
-            svc.syncToBook();
+            return svc.scoreAll().then(() => {
+              // Sync query results to associated Book if one exists
+              svc.syncToBook();
+            });
           });
         });
       };
@@ -1252,5 +1272,28 @@ angular.module('QuepidApp')
       function getCaseNo(){
         return caseNo;
       }
+      
+      // Create a snapshot searcher that returns cached results instead of executing queries
+      this.createSnapshotSearcher = function (fieldSpec, url, args, queryText, searcherOptions, searchEngine) {
+
+        var options = {
+          fieldList:      fieldSpec.fieldList(),
+          hlFieldList:    fieldSpec.highlightFieldList(),
+          url:            url,
+          args:           args,
+          queryText:      queryText,
+          config:         searcherOptions,
+          type:           searchEngine,
+          // Pass through the queryId and snapshotId from config
+          queryId:        searcherOptions.queryId,
+          snapshotId:     searcherOptions.snapshotId,
+          // Pass the fieldSpec itself so we can use it for document normalization
+          fieldSpec:      fieldSpec
+        };
+
+        var searcher = new SnapshotSearcherFactory(options);
+
+        return searcher;
+      };
     }
   ]);
