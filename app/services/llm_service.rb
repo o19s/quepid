@@ -93,7 +93,7 @@ class LlmService
       ],
     }
 
-    response = conn.post('/v1/chat/completions') do |req|
+    response = conn.post('v1/chat/completions') do |req|
       req.headers['Authorization'] = "Bearer #{@llm_key}" if @llm_key.present?
       req.options.timeout = @options[:llm_timeout].to_i # Set request timeout
       req.body = body
