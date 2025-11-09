@@ -1437,10 +1437,10 @@ isoformat@^0.2.0:
   resolved "https://registry.yarnpkg.com/isoformat/-/isoformat-0.2.1.tgz#2526344a4276a101b2881848dc337d1d2ae74494"
   integrity sha512-tFLRAygk9NqrRPhJSnNGh7g7oaVWDwR0wKh/GM2LgmPa50Eg4UfyaCO4I8k6EqJHl1/uh2RAD6g06n5ygEnrjQ==
 
-jasmine-core@5.9.0:
-  version "5.9.0"
-  resolved "https://registry.yarnpkg.com/jasmine-core/-/jasmine-core-5.9.0.tgz#140199862ee83f906bf0ff88287e7c440a1776e7"
-  integrity sha512-OMUvF1iI6+gSRYOhMrH4QYothVLN9C3EJ6wm4g7zLJlnaTl8zbaPOr0bTw70l7QxkoM7sVFOWo83u9B2Fe2Zng==
+jasmine-core@5.12.1:
+  version "5.12.1"
+  resolved "https://registry.yarnpkg.com/jasmine-core/-/jasmine-core-5.12.1.tgz#17961990e04a7f7ffafa0e1488875cc9b9d51de3"
+  integrity sha512-P/UbRZ0LKwXe7wEpwDheuhunPwITn4oPALhrJEQJo6756EwNGnsK/TSQrWojBB4cQDQ+VaxWYws9tFNDuiMh2Q==
 
 jasmine-core@^4.1.0:
   version "4.6.0"
