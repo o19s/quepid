@@ -120,4 +120,8 @@ class BulkJudgeController < ApplicationController
       render json: { status: 'error', message: 'Judgement not found or could not be deleted' }, status: :not_found
     end
   end
+  
+  def judgement_params
+    params.permit(:query_doc_pair_id, :rating, :explanation, :reset)
+  end
 end

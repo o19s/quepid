@@ -29,6 +29,18 @@
 threads_count = ENV.fetch("RAILS_MAX_THREADS", 3)
 threads threads_count, threads_count
 
+# Set the environment
+environment ENV.fetch("RAILS_ENV", "development")
+
+# Set the number of workers (processes)
+# For development, we explicitly set 0 workers to run in single mode
+# For other environments, use WEB_CONCURRENCY env var if set, otherwise default to 0
+if ENV["RAILS_ENV"] == "development"
+  workers 0
+else
+  workers ENV.fetch("WEB_CONCURRENCY", 0).to_i
+end
+
 # Specifies the `port` that Puma will listen on to receive requests; default is 3000.
 port ENV.fetch("PORT", 3000)
 
