@@ -1,7 +1,8 @@
 #!/bin/bash
 
-# Build script to concatenate CSS files for the application
-# Creates CSS bundles that match the previous Sprockets manifests
+# Build script to concatenate CSS files for the application.
+# Replaces legacy Sprockets manifests with explicit ordered concatenation.
+# Manifest files now contain only documentation comments (no directives).
 
 echo "Building CSS bundles..."
 

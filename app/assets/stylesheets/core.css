@@ -1,47 +1,41 @@
 /*
-* This is a manifest file that gets compiled into core.css via build_css.sh.
-* The build script concatenates all the CSS files listed below.
- *
- * You're free to add application-wide styles to this file and they'll appear at the bottom of the
- * compiled file so the styles you add here take precedence over styles defined in any styles
- * defined in the other CSS files in this directory. It is generally better to create a new
- * file per style scope.
+ * Core (Angular) CSS manifest (used by build_css.sh).
+ * Former Sprockets directives converted to informational comments only.
  */
  
  /*
- * We use Bootstrap 5 everywhere except the core app, which is stuck in Bootstrap 3.
- * This loads bootstrap3
- *= require bootstrap3
+ * Bootstrap 3 is used here (Angular app)
+ * include bootstrap3.css
  *
- * We use Bootstrap Icons to have icons that work between core and the rest of the app
- *= require bootstrap-icons/font/bootstrap-icons
+ * Shared Bootstrap Icons
+ * include bootstrap-icons/font/bootstrap-icons
  *
- *= require fonts
- *= require bootstrap3-add
+ * include fonts.css
+ * include bootstrap3-add.css
  *
- *= require style
- *= require base
- *= require panes
- *= require stackedChart
+ * include style.css
+ * include base.css
+ * include panes.css
+ * include stackedChart.css
  *
  * Tour/Guides
- *= require "tether-shepherd/dist/css/shepherd-theme-arrows"
- *= require "tour"
+ * include tether-shepherd/dist/css/shepherd-theme-arrows.css
+ * include tour.css
  *
  * Screens
- *= require "cases"
- *= require "scorers"
- *= require "books"
- *= require "search_endpoints"
- *= require "teams"
- *= require "users"
- *= require "docs"
- *= require "settings"
- *= require "qscore"
- *= require "qgraph"
+ * include cases.css
+ * include scorers.css
+ * include books.css
+ * include search_endpoints.css
+ * include teams.css
+ * include users.css
+ * include docs.css
+ * include settings.css
+ * include qscore.css
+ * include qgraph.css
  *
  * Other
- *= require "misc"
- *= require "animation"
- *= require "froggy"
+ * include misc.css
+ * include animation.css
+ * include froggy.css
  */
