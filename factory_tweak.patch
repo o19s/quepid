@@ -1,0 +1,41 @@
+diff --git a/app/assets/javascripts/factories/snapshotDocFactory.js b/app/assets/javascripts/factories/snapshotDocFactory.js
+index c697a3f7..2ca13335 100644
+--- a/app/assets/javascripts/factories/snapshotDocFactory.js
++++ b/app/assets/javascripts/factories/snapshotDocFactory.js
+@@ -30,6 +30,7 @@
+     Doc.prototype.subSnippets    = subSnippets;
+     Doc.prototype.hasThumb       = hasThumb;
+     Doc.prototype.hasImage       = hasImage;
++    Doc.prototype.hotMatchesOutOf = hotMatchesOutOf;
+ 
+     function _url () {
+       // no _url functionality implemented
+@@ -96,6 +97,13 @@
+       return this.image !== null && this.image !== undefined;
+     }
+ 
++    function hotMatchesOutOf (maxDocScore) {
++      /*jslint validthis:true*/
++      // Return empty array for snapshots - no hot matches data available
++      // This needs to always return an array to prevent undefined errors
++      return [];
++    }
++
+     return Doc;
+   }
+ })();
+diff --git a/app/assets/javascripts/factories/snapshotFactory.js b/app/assets/javascripts/factories/snapshotFactory.js
+index 371c7762..c69e787c 100644
+--- a/app/assets/javascripts/factories/snapshotFactory.js
++++ b/app/assets/javascripts/factories/snapshotFactory.js
+@@ -112,6 +112,10 @@
+             nDoc.snippet = function() {
+               return null;
+             };
++            nDoc.hotMatchesOutOf = function(maxDocScore) {
++              // Return empty array for snapshots - no hot matches data
++              return [];
++            };
+             nDoc.explain = function() {
+               return doc.explain ? {
+                 rawStr: function() { return doc.explain; },

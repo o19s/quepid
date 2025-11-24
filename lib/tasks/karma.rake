@@ -69,10 +69,7 @@ namespace :karma  do
   def set_assets_path
     dir = Rails.root.join('tmp/assets').to_s
 
-    # temporarily set the static assets location from public/assets to the
-    # tmp directory
-    Rails.application.config.assets.prefix    = '../tmp/assets'
-    Rails.application.config.assets.manifest  = File.join(Rails.public_path, dir)
+    # NOTE: Asset compilation is now handled by npm scripts, not Rails asset pipeline
   end
 
   # this method compiles all the same javascript files your app will

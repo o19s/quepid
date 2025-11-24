@@ -67,7 +67,8 @@
   <%= csrf_meta_tags %>
   
   <%= javascript_importmap_tags 'application_modern' %>
-  <%= debugbar_head  if defined? Debugbar %> 
+  <%= debugbar_head  if defined? Debugbar %>
+    <%= javascript_include_tag "application", "data-turbo-track": "reload", type: "module" %> 
 </head>
 
 <body>

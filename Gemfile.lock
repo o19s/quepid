@@ -87,11 +87,6 @@ GEM
       safely_block (>= 0.4)
     ancestry (4.3.3)
       activerecord (>= 5.2.6)
-    angular-rails-templates (1.3.1)
-      railties (>= 5.0, < 8.1)
-      sprockets (>= 3.0, < 5)
-      sprockets-rails
-      tilt
     annotaterb (4.19.0)
       activerecord (>= 6.0.0)
       activesupport (>= 6.0.0)
@@ -298,6 +293,8 @@ GEM
     jbuilder (2.14.1)
       actionview (>= 7.0.0)
       activesupport (>= 7.0.0)
+    jsbundling-rails (1.3.1)
+      railties (>= 6.0.0)
     json (2.15.1)
     json-jwt (1.17.0)
       activesupport (>= 4.2)
@@ -449,6 +446,10 @@ GEM
       logger
       numo-narray (>= 0.9.1.7)
       rover-df
+    propshaft (1.3.1)
+      actionpack (>= 7.0.0)
+      activesupport (>= 7.0.0)
+      rack
     psych (5.2.6)
       date
       stringio
@@ -598,19 +599,10 @@ GEM
       railties (>= 7.1)
       thor (>= 1.3.1)
     sorbet-runtime (0.6.12642)
-    sprockets (4.2.2)
-      concurrent-ruby (~> 1.0)
-      logger
-      rack (>= 2.2.4, < 4)
-    sprockets-rails (3.5.2)
-      actionpack (>= 6.1)
-      activesupport (>= 6.1)
-      sprockets (>= 3.0.0)
     stimulus-rails (1.3.4)
       railties (>= 6.0.0)
     stringio (3.1.7)
     thor (1.4.0)
-    tilt (2.6.1)
     timeout (0.4.3)
     traces (0.18.2)
     tsort (0.2.0)
@@ -659,7 +651,6 @@ DEPENDENCIES
   addressable
   ahoy_matey
   ancestry
-  angular-rails-templates
   annotaterb
   bcrypt
   blazer
@@ -678,6 +669,7 @@ DEPENDENCIES
   foreman
   importmap-rails
   jbuilder
+  jsbundling-rails
   letter_opener
   listen
   local_time
@@ -695,6 +687,7 @@ DEPENDENCIES
   pagy
   postmark-rails
   prophet-rb
+  propshaft
   puma
   rack-cors
   rails (= 8.0.3)
@@ -711,7 +704,6 @@ DEPENDENCIES
   simplecov
   solid_cable
   solid_queue
-  sprockets-rails
   stimulus-rails
   thor
   turbo-rails

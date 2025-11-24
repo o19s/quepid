@@ -1,6 +1,6 @@
 /*
- * This is a manifest file that'll be compiled into admin.css, which will include all the files
- * listed below via Sprockets.
+ * This is a manifest file that gets compiled into admin.css via build_css.sh.
+ * The build script concatenates all the CSS files listed below.
  *
  *
 * We use Bootstrap 5 everywhere except the core app, which is stuck in Bootstrap 3.

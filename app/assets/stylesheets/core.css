@@ -1,9 +1,6 @@
 /*
-* This is a manifest file that'll be compiled into application.css, which will include all the files
-* listed below via Sprockets.
- *
- * Any CSS file within this directory, lib/assets/stylesheets, vendor/assets/stylesheets,
- * or any plugin's vendor/assets/stylesheets directory can be referenced here using a relative path.
+* This is a manifest file that gets compiled into core.css via build_css.sh.
+* The build script concatenates all the CSS files listed below.
  *
  * You're free to add application-wide styles to this file and they'll appear at the bottom of the
  * compiled file so the styles you add here take precedence over styles defined in any styles

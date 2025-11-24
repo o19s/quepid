@@ -1,0 +1,3 @@
+web: env RUBY_DEBUG_OPEN=true bin/rails server
+js: npm run build:angular-vendor -- --watch
+css: npm run build:css:watch
