@@ -170,9 +170,7 @@ require 'pagy/extras/bootstrap'
 # (pagy*_nav_js, pagy*_combo_nav_js, and pagy_limit_selector_js)
 # See https://ddnexus.github.io/pagy/docs/api/javascript
 
-# With the asset pipeline
-# Sprockets need to look into the pagy javascripts dir, so add it to the assets paths
-# Rails.application.config.assets.paths << Pagy.root.join('javascripts')
+# NOTE: Pagy JavaScript is available via npm package if needed
 
 # I18n
 

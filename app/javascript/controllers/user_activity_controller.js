@@ -1,5 +1,5 @@
-// This controller uses global variables loaded via Sprockets
-// CalHeatmap and dayjs are available globally from vendor/javascript
+// This controller uses global variables loaded via admin_users.js bundle
+// CalHeatmap and d3 are available globally
 import { Controller } from "@hotwired/stimulus"
 
 export default class UserActivityController extends Controller {

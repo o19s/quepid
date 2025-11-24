@@ -39,7 +39,7 @@ module Quepid
     # config.time_zone = "Central Time (US & Canada)"
     # config.eager_load_paths << Rails.root.join("extras")
 
-    config.angular_templates.ignore_prefix = %w[templates/ components/]
+    # config.angular_templates.ignore_prefix = %w[templates/ components/] # Removed - not using angular-rails-templates
 
     config.active_job.queue_adapter = :solid_queue
 
