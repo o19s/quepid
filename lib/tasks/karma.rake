@@ -4,17 +4,17 @@ require 'colorize'
 
 namespace :karma do
   desc 'Run karma tests in watch mode'
-  task :start do
+  task start: :environment do
     run_karma('start')
   end
 
   desc 'Run karma tests in single run mode'
-  task :run do
+  task run: :environment do
     run_karma('start', '--single-run')
   end
 
   desc 'Run karma tests in CI mode (headless, single run)'
-  task :ci do
+  task ci: :environment do
     run_karma('start', '--single-run')
   end
 
