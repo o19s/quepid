@@ -9,7 +9,6 @@ gem 'acts_as_list'
 gem 'addressable'
 gem 'ahoy_matey'
 gem 'ancestry'
-# gem 'angular-rails-templates' # Removed - using custom template bundler
 gem 'bcrypt'
 gem 'blazer'
 gem 'bootsnap', require: false
@@ -40,8 +39,6 @@ gem 'rails-html-sanitizer'
 gem 'rack-cors'
 gem 'responders'
 gem 'rubyzip'
-# gem 'sassc-rails', '~> 2.1' # Removed - using Propshaft
-# gem 'sprockets-rails' # Removed - using Propshaft
 gem 'propshaft' # Modern asset pipeline for Rails 8
 gem 'jsbundling-rails' # For bundling the Angular 1 app
 gem 'scout_apm' # using on Heroku to look at memory issues

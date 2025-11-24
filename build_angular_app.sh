@@ -152,3 +152,18 @@ cat app/assets/javascripts/ace_config.js >> $OUTPUT_FILE
 
 echo "Angular application bundle created at $OUTPUT_FILE"
 echo "File size: $(du -h $OUTPUT_FILE | cut -f1)"
+
+# Watch mode - rebuild if any JS files change
+if [ "$1" == "--watch" ]; then
+  echo "Watching for Angular app changes..."
+  while true; do
+    # Use fswatch if available, otherwise fall back to basic sleep loop
+    if command -v fswatch &> /dev/null; then
+      fswatch -1 app/assets/javascripts/ > /dev/null
+      echo "Angular app files changed, rebuilding..."
+      $0  # Re-run this script without --watch
+    else
+      sleep 5
+    fi
+  done
+fi

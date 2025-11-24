@@ -75,3 +75,29 @@ function generateTemplateModule() {
 
 // Run the template generation
 generateTemplateModule();
+
+// Watch mode - rebuild if any template files change
+if (process.argv.includes('--watch')) {
+  console.log('Watching for template changes...');
+  const chokidar = require('chokidar');
+  
+  const watcher = chokidar.watch(TEMPLATE_DIRS, {
+    ignored: /(^|[\/\\])\../,
+    persistent: true
+  });
+
+  watcher.on('change', (path) => {
+    console.log(`Template changed: ${path}, rebuilding...`);
+    generateTemplateModule();
+  });
+
+  watcher.on('add', (path) => {
+    console.log(`Template added: ${path}, rebuilding...`);
+    generateTemplateModule();
+  });
+
+  watcher.on('unlink', (path) => {
+    console.log(`Template removed: ${path}, rebuilding...`);
+    generateTemplateModule();
+  });
+}
