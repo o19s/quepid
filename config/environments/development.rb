@@ -68,11 +68,11 @@ Rails.application.configure do
   # Use an evented file watcher to asynchronously detect changes in source code,
   # routes, locales, etc. This feature depends on the listen gem.
   # In Docker, use polling instead to avoid threading issues with listen gem
-  if ENV['DOCKER_CONTAINER']
-    config.file_watcher = ActiveSupport::FileUpdateChecker
-  else
-    config.file_watcher = ActiveSupport::EventedFileUpdateChecker
-  end
+  config.file_watcher = if ENV['DOCKER_CONTAINER']
+                          ActiveSupport::FileUpdateChecker
+                        else
+                          ActiveSupport::EventedFileUpdateChecker
+                        end
 
   config.action_mailer.delivery_method = :letter_opener
   # Set localhost to be used by links generated in mailer templates.
