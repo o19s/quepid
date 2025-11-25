@@ -1,4 +1,4 @@
-web: env RUBY_DEBUG_OPEN=true bin/rails server
+web: bundle exec puma -C config/puma.rb
 js: npm run build:angular-vendor -- --watch
 angular: npm run build:angular-app:watch
 templates: npm run build:angular-templates:watch
