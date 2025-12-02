@@ -53,7 +53,7 @@ module Api
               render json: { message: 'Success!' }, status: :ok
             else
               render json:   { message: "Didn't find #{'this'.pluralize(missing_queries.count)} #{'query'.pluralize(missing_queries.count)} for the case: #{missing_queries.to_sentence}" },
-                     status: :unprocessable_entity
+                     status: :unprocessable_content
             end
           end
           # rubocop:enable Metrics/AbcSize

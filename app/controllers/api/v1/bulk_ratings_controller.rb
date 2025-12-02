@@ -31,7 +31,7 @@ module Api
         if params[:doc_ids].present?
           params[:doc_ids].each do |doc_id|
             rating = @query.ratings.where(doc_id: doc_id).first
-            rating.delete if rating.present?
+            rating.presence&.delete
           end
         end
 
