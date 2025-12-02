@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class ScoresController < ApplicationController
-  include Pagy::Backend
+  include Pagy::Method
 
   before_action :set_case
   def index
