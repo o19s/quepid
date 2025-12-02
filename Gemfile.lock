@@ -396,7 +396,7 @@ GEM
       deep_merge (~> 1.2, >= 1.2.2)
       method_source (~> 1.0)
       yard (~> 0.9)
-    oas_rails (1.3.1)
+    oas_rails (1.3.2)
       easy_talk_two (~> 1.1.2)
       oas_core (>= 1.1.0)
     oauth2 (2.0.17)
@@ -597,7 +597,7 @@ GEM
       fugit (~> 1.11)
       railties (>= 7.1)
       thor (>= 1.3.1)
-    sorbet-runtime (0.6.12642)
+    sorbet-runtime (0.6.12645)
     sprockets (4.2.2)
       concurrent-ruby (~> 1.0)
       logger
