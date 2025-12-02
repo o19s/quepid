@@ -102,7 +102,7 @@ class BulkJudgeController < ApplicationController
       UpdateCaseRatingsJob.perform_later query_doc_pair
       render json: { status: 'success', judgement_id: judgement.id }
     else
-      render json: { status: 'error', errors: judgement.errors.full_messages }, status: :unprocessable_entity
+      render json: { status: 'error', errors: judgement.errors.full_messages }, status: :unprocessable_content
     end
   end
   # rubocop:enable Metrics/AbcSize, Metrics/MethodLength
