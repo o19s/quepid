@@ -4,7 +4,7 @@ require 'csv'
 
 module Admin
   class UsersController < Admin::AdminController
-    include Pagy::Backend
+    include Pagy::Method
 
     before_action :set_user, only: [ :show, :edit, :update, :destroy, :assign_judgements_to_anonymous_user ]
 
