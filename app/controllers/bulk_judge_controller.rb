@@ -52,10 +52,18 @@ class BulkJudgeController < ApplicationController
       randomized_results.concat(docs.shuffle)
     end
 
-    # Now paginate the randomized results
-    @pagy, paginated_query_doc_pairs = pagy(:offset, randomized_results, limit: 25)
+    @pagy, paginated_query_doc_pairs = pagy(randomized_results, items: 25, page: params[:page])
 
-    # Re-group the paginated results for display
+    # If you rate a bunch of documents, and we're filtering to just unrated docs,
+    # then you may not have enough docs left to fill the last page.  In that we
+    # just back up a page, and render.  And the pagy navbar is just skipped in
+    # the footer.
+    if paginated_query_doc_pairs.nil?
+      page = params[:page].to_i
+      page -= 1
+      @pagy, paginated_query_doc_pairs = pagy(randomized_results, items: 25, page: page)
+    end
+
     @grouped_query_doc_pairs = paginated_query_doc_pairs.group_by(&:query_text)
 
     # Prepare judgements for each query_doc_pair on this page
