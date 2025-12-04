@@ -13,9 +13,3 @@ Rails.application.config.assets.paths << Rails.root.join('app/assets/builds')
 
 # Add Karma test files in development/test
 Rails.application.config.assets.paths << Rails.root.join('spec/karma') if Rails.env.local?
-
-# Add Bootstrap Icons font directory
-Rails.application.config.assets.paths << Rails.root.join('node_modules/bootstrap-icons/font')
-
-# NOTE: Avoid scanning packages with broken symlinks (e.g. angular-flash) by not
-# adding node_modules wholesale. Specific subpaths like fonts are added above.
