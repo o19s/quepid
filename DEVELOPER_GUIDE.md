@@ -79,6 +79,9 @@ Historically Quepid development has REQUIRED Docker, which avoids having to deal
 
 ### Docker Based Setup
 
+Gives you preset up Ollama and a simple model for LLM as Judge testing.
+Gives you a preset up proxy for http and https testing.
+
 #### 1. Prerequisites
 
 Make sure you have installed Docker.
@@ -118,7 +121,7 @@ You can still use `docker compose` directly, but for the basic stuff you can use
 
 ### Local Setup
 
-This approach lets you run Quepid directly on your machine without Docker. It provides a more native development experience but requires setting up dependencies manually.
+This approach lets you run Quepid directly on your machine without Docker. It provides a more native development experience but requires setting up dependencies manually.  It may be faster to work with!
 
 #### Prerequisites
 
@@ -132,7 +135,7 @@ This approach lets you run Quepid directly on your machine without Docker. It pr
 
 #### Database Setup
 
-1. Start up MySQL however you like.
+1. Start up MySQL however you like.  Some folks set up Quepid with Docker, and then 
 
 
 #### Application Setup

@@ -1,57 +1,23 @@
 # frozen_string_literal: true
 
-# Pagy initializer file (9.3.3)
-# Customize only what you really need and notice that the core Pagy works also without any of the following lines.
-# Should you just cherry pick part of this file, please maintain the require-order of the extras
+# Pagy initializer file (43.1.8)
+# See https://ddnexus.github.io/pagy/resources/initializer/
 
-# Pagy Variables
-# See https://ddnexus.github.io/pagy/docs/api/pagy#variables
-# You can set any pagy variable as a Pagy::DEFAULT. They can also be overridden per instance by just passing them to
-# Pagy.new|Pagy::Countless.new|Pagy::Calendar::*.new or any of the #pagy* controller methods
-# Here are the few that make more sense as DEFAULTs:
-Pagy::DEFAULT[:limit] = 25
-# Pagy::DEFAULT[:size]        = 7                     # default
-# Pagy::DEFAULT[:ends]        = true                  # default
-# Pagy::DEFAULT[:page_param]  = :page                 # default
-# Pagy::DEFAULT[:count_args]  = []                    # example for non AR ORMs
-# Pagy::DEFAULT[:max_pages]   = 3000                  # example
+############ Global Options ################################################################
+# See https://ddnexus.github.io/pagy/toolbox/options/ for details.
+# Add your global options below. They will be applied globally.
 
-# Extras
-# See https://ddnexus.github.io/pagy/categories/extra
+Pagy.options[:limit] = 25
 
-# Legacy Compatibility Extras
-
-# Size extra: Enable the Array type for the `:size` variable (e.g. `size: [1,4,4,1]`)
-# See https://ddnexus.github.io/pagy/docs/extras/size
-# require 'pagy/extras/size'   # must be required before the other extras
-
-# Backend Extras
-
-# Arel extra: For better performance utilizing grouped ActiveRecord collections:
-# See: https://ddnexus.github.io/pagy/docs/extras/arel
-# require 'pagy/extras/arel'
-
-# Array extra: Paginate arrays efficiently, avoiding expensive array-wrapping and without overriding
-# See https://ddnexus.github.io/pagy/docs/extras/array
-require 'pagy/extras/array'
-
-# Calendar extra: Add pagination filtering by calendar time unit (year, quarter, month, week, day)
-# See https://ddnexus.github.io/pagy/docs/extras/calendar
-# require 'pagy/extras/calendar'
-# Default for each calendar unit class in IRB:
-# >> Pagy::Calendar::Year::DEFAULT
-# >> Pagy::Calendar::Quarter::DEFAULT
-# >> Pagy::Calendar::Month::DEFAULT
-# >> Pagy::Calendar::Week::DEFAULT
-# >> Pagy::Calendar::Day::DEFAULT
+############ JavaScript ####################################################################
+# See https://ddnexus.github.io/pagy/resources/javascript/ for details.
+# Examples for Rails:
+# For apps with an assets pipeline
+# Rails.application.config.assets.paths << Pagy::ROOT.join('javascripts')
 #
-# Uncomment the following lines, if you need calendar localization without using the I18n extra
-# module LocalizePagyCalendar
-#   def localize(time, opts)
-#     ::I18n.l(time, **opts)
-#   end
-# end
-# Pagy::Calendar.prepend LocalizePagyCalendar
+# For apps with a javascript builder (e.g. esbuild, webpack, etc.)
+# javascript_dir = Rails.root.join('app/javascript')
+# Pagy.sync_javascript(javascript_dir, 'pagy.mjs') if Rails.env.development?
 
 # Countless extra: Paginate without any count, saving one query per rendering
 # See https://ddnexus.github.io/pagy/docs/extras/countless
@@ -179,32 +145,17 @@ require 'pagy/extras/bootstrap'
 # Notice: No need to configure anything in this section if your app uses only "en"
 # or if you use the i18n extra below
 #
-# Examples:
-# load the "de" built-in locale:
-# Pagy::I18n.load(locale: 'de')
-#
-# load the "de" locale defined in the custom file at :filepath:
-# Pagy::I18n.load(locale: 'de', filepath: 'path/to/pagy-de.yml')
-#
-# load the "de", "en" and "es" built-in locales:
-# (the first passed :locale will be used also as the default_locale)
-# Pagy::I18n.load({ locale: 'de' },
-#                 { locale: 'en' },
-#                 { locale: 'es' })
-#
-# load the "en" built-in locale, a custom "es" locale,
-# and a totally custom locale complete with a custom :pluralize proc:
-# (the first passed :locale will be used also as the default_locale)
-# Pagy::I18n.load({ locale: 'en' },
-#                 { locale: 'es', filepath: 'path/to/pagy-es.yml' },
-#                 { locale: 'xyz',  # not built-in
-#                   filepath: 'path/to/pagy-xyz.yml',
-#                   pluralize: lambda{ |count| ... } )
+# Pagy::I18n.pathnames << Rails.root.join('config/locales/pagy')
 
-# I18n extra: uses the standard i18n gem which is ~18x slower using ~10x more memory
-# than the default pagy internal i18n (see above)
-# See https://ddnexus.github.io/pagy/docs/extras/i18n
-# require 'pagy/extras/i18n'
+############# I18n Gem Translation #########################################################
+# See https://ddnexus.github.io/pagy/resources/i18n/ for details.
+#
+# Pagy.translate_with_the_slower_i18n_gem!
 
-# When you are done setting your own default freeze it, so it will not get changed accidentally
-Pagy::DEFAULT.freeze
+############# Calendar Localization for non-en locales ####################################
+# See https://ddnexus.github.io/pagy/toolbox/paginators/calendar#localization for details.
+# Add your desired locales to the list and uncomment the following line to enable them,
+# regardless of whether you use the I18n gem for translations or not, whether with
+# Rails or not.
+#
+# Pagy::Calendar.localize_with_rails_i18n_gem(*your_locales)
