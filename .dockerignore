@@ -27,6 +27,10 @@ test/
 coverage/
 .rspec
 .rubocop.yml
+.annotaterb.yml
+.database_consistency.todo.yml
+.database_consistency.yml
+.deepsource.toml
 
 # Ignore bundler config.
 /.bundle
@@ -78,6 +82,7 @@ yarn-error.log*
 # IDE and editor files
 .vscode/
 .idea/
+.zed
 *.swp
 *.swo
 *~
@@ -100,6 +105,7 @@ renovate.json
 
 # Ignore development files
 /.devcontainer
+.claude-on-rails
 
 # Ignore any Docker container volumes
 /volumes/*
