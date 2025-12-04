@@ -63,15 +63,17 @@
   },
   "resolutions": {},
   "scripts": {
-    "build:angular": "./build_angular_app.sh",
-    "build:angular:watch": "./build_angular_app.sh --watch",
+    "build:jquery": "esbuild app/javascript/jquery_bundle.js --bundle --sourcemap --format=iife --platform=browser --outdir=app/assets/builds --public-path=/assets",
+    "build:angular-vendor": "esbuild app/javascript/angular_app.js --bundle --sourcemap --format=iife --outdir=app/assets/builds --public-path=/assets --loader:.png=dataurl --loader:.svg=dataurl --loader:.woff=dataurl --loader:.woff2=dataurl --loader:.ttf=dataurl --loader:.eot=dataurl --external:jquery",
+    "build:angular-app": "./build_angular_app.sh",
+    "build:angular-app:watch": "./build_angular_app.sh --watch",
     "build:angular-templates": "node build_templates.js",
     "build:angular-templates:watch": "node build_templates.js --watch",
-    "build:js": "esbuild app/javascript/jquery_bundle.js app/javascript/admin_users.js app/javascript/analytics.js --bundle --sourcemap --format=iife --outdir=app/assets/builds --public-path=/assets",
-    "build:js:watch": "esbuild app/javascript/jquery_bundle.js app/javascript/admin_users.js app/javascript/analytics.js --bundle --sourcemap --format=iife --outdir=app/assets/builds --public-path=/assets --watch",
+    "build:admin": "esbuild app/javascript/admin_users.js --bundle --sourcemap --format=iife --outdir=app/assets/builds --public-path=/assets",
+    "build:analytics": "esbuild app/javascript/analytics.js --bundle --sourcemap --format=iife --outdir=app/assets/builds --public-path=/assets",
     "build:css": "./build_css.sh",
     "build:css:watch": "./build_css.sh --watch",
-    "build": "npm run build:angular && npm run build:angular-templates && npm run build:js && npm run build:css",
+    "build": "npm run build:css && npm run build:jquery && npm run build:angular-vendor && npm run build:angular-app && npm run build:angular-templates && npm run build:admin && npm run build:analytics",
     "test": "rake karma:run",
     "test:ci": "rake karma:ci"
   }

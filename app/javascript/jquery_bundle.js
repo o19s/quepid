@@ -1,8 +1,8 @@
-// jQuery bundle - must load before angular_app
-// This ensures jQuery is available globally for jQuery UI and other plugins
+// jQuery bundle - ONLY jQuery, not jQuery UI
+// This file is bundled as IIFE by esbuild and must load BEFORE angular_app.js
 
 import jQuery from 'jquery';
 
-// Expose jQuery globally
+// Expose jQuery globally for all other scripts
 window.jQuery = jQuery;
 window.$ = jQuery;

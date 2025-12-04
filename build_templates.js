@@ -81,23 +81,37 @@ if (process.argv.includes('--watch')) {
   console.log('Watching for template changes...');
   const chokidar = require('chokidar');
   
+  let debounceTimer;
+  const DEBOUNCE_DELAY = 300; // Wait 300ms before rebuilding
+  
   const watcher = chokidar.watch(TEMPLATE_DIRS, {
-    ignored: /(^|[\/\\])\../,
-    persistent: true
+    ignored: [/(^|[\/\\])\./, 'node_modules', 'app/assets/builds'],
+    persistent: true,
+    awaitWriteFinish: {
+      stabilityThreshold: 100,
+      pollInterval: 100
+    }
   });
 
+  const debouncedRebuild = () => {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => {
+      console.log('Rebuilding templates...');
+      generateTemplateModule();
+    }, DEBOUNCE_DELAY);
+  };
+
   watcher.on('change', (path) => {
-    console.log(`Template changed: ${path}, rebuilding...`);
-    generateTemplateModule();
+    console.log(`Template changed: ${path}`);
+    debouncedRebuild();
   });
 
   watcher.on('add', (path) => {
-    console.log(`Template added: ${path}, rebuilding...`);
-    generateTemplateModule();
+    debouncedRebuild();
   });
 
   watcher.on('unlink', (path) => {
-    console.log(`Template removed: ${path}, rebuilding...`);
-    generateTemplateModule();
+    console.log(`Template removed: ${path}`);
+    debouncedRebuild();
   });
 }
