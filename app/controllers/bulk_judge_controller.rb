@@ -53,7 +53,7 @@ class BulkJudgeController < ApplicationController
     end
 
     # Now paginate the randomized results
-    @pagy, paginated_query_doc_pairs = pagy(:offset, collection: randomized_results, limit: 25)
+    @pagy, paginated_query_doc_pairs = pagy(:offset, randomized_results, limit: 25)
 
     # Re-group the paginated results for display
     @grouped_query_doc_pairs = paginated_query_doc_pairs.group_by(&:query_text)
