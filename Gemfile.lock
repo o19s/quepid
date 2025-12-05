@@ -258,6 +258,7 @@ GEM
       mime-types (~> 3.4)
       rack (~> 3.1)
     ffi (1.17.2-aarch64-linux-gnu)
+    ffi (1.17.2-arm64-darwin)
     ffi (1.17.2-x86_64-darwin)
     ffi (1.17.2-x86_64-linux-gnu)
     fiber-annotation (0.2.0)
@@ -313,6 +314,7 @@ GEM
     letter_opener (1.10.0)
       launchy (>= 2.2, < 4)
     libv8-node (24.1.0.0-aarch64-linux)
+    libv8-node (24.1.0.0-arm64-darwin)
     libv8-node (24.1.0.0-x86_64-darwin)
     libv8-node (24.1.0.0-x86_64-linux)
     lint_roller (1.1.0)
@@ -382,6 +384,8 @@ GEM
       net-protocol
     nio4r (2.7.4)
     nokogiri (1.18.10-aarch64-linux-gnu)
+      racc (~> 1.4)
+    nokogiri (1.18.10-arm64-darwin)
       racc (~> 1.4)
     nokogiri (1.18.10-x86_64-darwin)
       racc (~> 1.4)
@@ -645,6 +649,7 @@ GEM
 
 PLATFORMS
   aarch64-linux
+  arm64-darwin-23
   x86_64-darwin-22
   x86_64-linux
 
