@@ -17,7 +17,7 @@ cd "$APP_ROOT"
 case "$1" in
   server|s)
     docker compose up --no-deps -d nginx
-    docker compose run --rm --service-ports app foreman s -f Procfile
+    docker compose run --rm --service-ports app foreman s -f Procfile.dev
     ;;
   bash|b)
     docker compose run --rm app bash
@@ -31,7 +31,7 @@ case "$1" in
     ;;
   daemon|q)
     #docker compose up -d
-    docker compose run -d --service-ports app foreman s -f Procfile
+    docker compose run -d --service-ports app foreman s -f Procfile.dev
     ;;
   destroy|d)
     docker compose down
