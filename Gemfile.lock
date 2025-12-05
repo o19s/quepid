@@ -612,7 +612,7 @@ GEM
       railties (>= 6.0.0)
     stringio (3.1.9)
     thor (1.4.0)
-    timeout (0.4.3)
+    timeout (0.4.4)
     traces (0.18.2)
     tsort (0.2.0)
     turbo-rails (2.0.20)
