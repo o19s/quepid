@@ -8,7 +8,7 @@
 <meta name="viewport" content="width=device-width">
 
 <%= stylesheet_link_tag 'core', media: 'all' %>
-<%= stylesheet_link_tag 'ng-json-explorer/dist/angular-json-explorer', 'angular-wizard/dist/angular-wizard', 'ng-tags-input/build/ng-tags-input.min.css', 'ng-tags-input/build/ng-tags-input.bootstrap.min.css', media: 'all' %>
+<%= stylesheet_link_tag 'angular-json-explorer', 'angular-wizard', 'ng-tags-input.min', 'ng-tags-input.bootstrap.min', media: 'all' %>
 <%= csrf_meta_tags %>
 
 <base href="<%= ENV['RAILS_RELATIVE_URL_ROOT'] %>/">
@@ -22,7 +22,10 @@
 
   <%= render 'layouts/footer_core_app' %>
 
-  <%= javascript_include_tag 'core' %>
+  <%= javascript_include_tag 'jquery_bundle' %>
+  <%= javascript_include_tag 'angular_app' %>
+  <%= javascript_include_tag 'angular_templates' %>
+  <%= javascript_include_tag 'quepid_angular_app' %>
 
   <script>
     angular.module('QuepidApp')

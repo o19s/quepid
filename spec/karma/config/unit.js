@@ -6,29 +6,28 @@ process.env.CHROME_BIN = require('puppeteer').executablePath()
 module.exports = function(config) {
   config.set({
 
-    // base path, based on tmp/ folder
-    basePath: '../',
-
+    // Use project root as base (config is in spec/karma/config/)
+    basePath: '../../../',
 
     // frameworks to use
     frameworks: ['jasmine'],
 
-
-    // list of files / patterns to load in the browser
-    // change 'spec/javascripts/**/*_spec.js' to 'spec/javascripts/**/queriesCtrl_spec.js'
-    // to run a single one
+    // list of files / patterns to load in the browser in correct order
+    // Built bundles come from esbuild/npm scripts (no Sprockets tmp/assets)
     files: [
-      'tmp/assets/core*.js',
-      'tmp/assets/application.js',
-      'tmp/assets/application_spec*.js',
+      'app/assets/builds/jquery_bundle.js',
+      'app/assets/builds/angular_app.js',
+      'app/assets/builds/quepid_angular_app.js',
+      'app/assets/builds/angular_templates.js',
+      'node_modules/angular-mocks/angular-mocks.js',
+      'spec/karma/mockBackend.js',
       'spec/javascripts/mock/*.js',
-      'spec/javascripts/**/*_spec.js',
-      'spec/karma/mockBackend.js'
+      'spec/javascripts/**/*_spec.js'
     ],
 
     // list of files to exclude
     exclude: [
-      '**/application2.js', // ignore this importmap related file when running core JS app tests
+      '**/application2.js', // ignore importmap runtime file when running core JS app tests
     ],
 
 
@@ -77,7 +76,16 @@ module.exports = function(config) {
 
     // Continuous Integration mode
     // if true, it capture browsers, run tests and exit
-    singleRun: false
+    singleRun: false,
+
+    // Client configuration
+    client: {
+      jasmine: {
+        random: false,  // Run specs in order for predictable results
+        seed: null,
+        stopSpecOnExpectationFailure: false
+      }
+    }
 
   });
 };

@@ -54,3 +54,8 @@ archived_book:
   selection_strategy: :single_rater
   name: IamArchivedBook
   archived: true
+
+empty_book:
+  scorer: :quepid_default_scorer
+  selection_strategy: :single_rater
+  name: Empty Book

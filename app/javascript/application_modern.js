@@ -1,5 +1,5 @@
-// This file is leverages importmaps and Stimulus and should be just app/javascript/application.js, but we still
-// have the legacy Sprockets that depends on app/assets/javascripts/application.js to deal with.
+// This file leverages importmaps and Stimulus for the modern (non-Angular) parts of the application.
+// The Angular app uses a separate build pipeline via esbuild (see package.json).
 
 // Configure your import map in config/importmap.rb. Read more: https://github.com/rails/importmap-rails
 import "@hotwired/turbo-rails"
