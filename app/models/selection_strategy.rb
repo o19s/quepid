@@ -19,6 +19,39 @@ module SelectionStrategy
     random_query_doc_pair_for_multiple_judges(book, user)
   end
 
+  # Checks if the given user has judged all available query-document pairs
+  # Returns true if the user has no more pairs available to judge
+  def self.user_has_judged_all_available_pairs? book, user
+    random_query_doc_pair_for_multiple_judges(book, user).nil?
+  end
+
+  # Returns true if there are query-doc pairs with zero judgements (highest priority)
+  def self.has_unjudged_pairs? book
+    book.query_doc_pairs
+      .left_joins(:judgements)
+      .group('query_doc_pairs.id')
+      .having('COUNT(judgements.id) = 0')
+      .exists?
+  end
+
+  # Returns count of query-doc pairs with no judgements
+  def self.unjudged_pairs_count book
+    book.query_doc_pairs
+      .left_joins(:judgements)
+      .group('query_doc_pairs.id')
+      .having('COUNT(judgements.id) = 0')
+      .count.size
+  end
+
+  # Returns count of query-doc pairs with 1-2 judgements (partially judged)
+  def self.partially_judged_pairs_count book
+    book.query_doc_pairs
+      .left_joins(:judgements)
+      .group('query_doc_pairs.id')
+      .having('COUNT(judgements.id) BETWEEN 1 AND 2')
+      .count.size
+  end
+
   # Checks if every query-document pair in the book has at least 3 judgements
   def self.every_query_doc_pair_has_three_judgements? book
     query_doc_pair = book.query_doc_pairs
@@ -43,6 +76,4 @@ module SelectionStrategy
       .first
   end
 
-  # private_class_method :every_query_doc_pair_has_three_judgements?,
-  #                     :random_query_doc_pair_for_multiple_judges
 end

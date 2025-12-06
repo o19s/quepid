@@ -130,7 +130,87 @@ class SelectionStrategyTest < ActiveSupport::TestCase
         # But Joe should still be able to get pairs to judge
         assert_not_nil SelectionStrategy.random_query_doc_based_on_strategy(book, joe)
       end
+
+      it 'correctly identifies when user has judged all available pairs' do
+        # Initially, user has not judged all pairs
+        assert_not(SelectionStrategy.user_has_judged_all_available_pairs?(book, matt))
+
+        # Matt judges all pairs once
+        book.query_doc_pairs.each do |qdp|
+          qdp.judgements.create rating: 2.0, user: matt
+        end
+
+        # Now Matt has judged all available pairs
+        assert(SelectionStrategy.user_has_judged_all_available_pairs?(book, matt))
+
+        # But Joe still has not judged any pairs
+        assert_not(SelectionStrategy.user_has_judged_all_available_pairs?(book, joe))
+
+        # Joe judges all pairs once
+        book.query_doc_pairs.each do |qdp|
+          qdp.judgements.create rating: 3.0, user: joe
+        end
+
+        # Now Joe has also judged all available pairs
+        assert(SelectionStrategy.user_has_judged_all_available_pairs?(book, joe))
+      end
+
+      it 'correctly identifies unjudged pairs' do
+        # Initially all pairs are unjudged
+        assert(SelectionStrategy.has_unjudged_pairs?(book))
+        assert_equal total_pairs, SelectionStrategy.unjudged_pairs_count(book)
+        assert_equal 0, SelectionStrategy.partially_judged_pairs_count(book)
+
+        # Matt judges half the pairs
+        pairs_to_judge = book.query_doc_pairs.limit(2)
+        pairs_to_judge.each do |qdp|
+          qdp.judgements.create rating: 2.0, user: matt
+        end
+
+        # Should have fewer unjudged pairs and some partially judged
+        assert(SelectionStrategy.has_unjudged_pairs?(book))
+        assert_equal total_pairs - 2, SelectionStrategy.unjudged_pairs_count(book)
+        assert_equal 2, SelectionStrategy.partially_judged_pairs_count(book)
+
+        # Matt judges all pairs
+        book.query_doc_pairs.each do |qdp|
+          unless qdp.judgements.where(user: matt).exists?
+            qdp.judgements.create rating: 2.0, user: matt
+          end
+        end
+
+        # Should have no unjudged pairs, all are partially judged
+        assert_not(SelectionStrategy.has_unjudged_pairs?(book))
+        assert_equal 0, SelectionStrategy.unjudged_pairs_count(book)
+        assert_equal total_pairs, SelectionStrategy.partially_judged_pairs_count(book)
+
+        # Joe judges all pairs
+        book.query_doc_pairs.each do |qdp|
+          qdp.judgements.create rating: 3.0, user: joe
+        end
+
+        # Still no unjudged, still all partially judged (need 3rd judgement)
+        assert_not(SelectionStrategy.has_unjudged_pairs?(book))
+        assert_equal 0, SelectionStrategy.unjudged_pairs_count(book)
+        assert_equal total_pairs, SelectionStrategy.partially_judged_pairs_count(book)
+
+        # Jane judges all pairs - now complete
+        book.query_doc_pairs.each do |qdp|
+          qdp.judgements.create rating: 1.0, user: jane
+        end
+
+        # Should have no unjudged or partially judged pairs
+        assert_not(SelectionStrategy.has_unjudged_pairs?(book))
+        assert_equal 0, SelectionStrategy.unjudged_pairs_count(book)
+        assert_equal 0, SelectionStrategy.partially_judged_pairs_count(book)
+      end
     end
   end
   # rubocop:enable Style/CombinableLoops
+
+  private
+
+  def total_pairs
+    @total_pairs ||= books(:james_bond_movies).query_doc_pairs.count
+  end
 end
