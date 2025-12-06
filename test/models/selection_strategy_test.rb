@@ -157,7 +157,7 @@ class SelectionStrategyTest < ActiveSupport::TestCase
 
       it 'correctly identifies unjudged pairs' do
         # Initially all pairs are unjudged
-        assert(SelectionStrategy.has_unjudged_pairs?(book))
+        assert(SelectionStrategy.unjudged_pairs?(book))
         assert_equal total_pairs, SelectionStrategy.unjudged_pairs_count(book)
         assert_equal 0, SelectionStrategy.partially_judged_pairs_count(book)
 
@@ -168,19 +168,17 @@ class SelectionStrategyTest < ActiveSupport::TestCase
         end
 
         # Should have fewer unjudged pairs and some partially judged
-        assert(SelectionStrategy.has_unjudged_pairs?(book))
+        assert(SelectionStrategy.unjudged_pairs?(book))
         assert_equal total_pairs - 2, SelectionStrategy.unjudged_pairs_count(book)
         assert_equal 2, SelectionStrategy.partially_judged_pairs_count(book)
 
         # Matt judges all pairs
         book.query_doc_pairs.each do |qdp|
-          unless qdp.judgements.where(user: matt).exists?
-            qdp.judgements.create rating: 2.0, user: matt
-          end
+          qdp.judgements.create rating: 2.0, user: matt unless qdp.judgements.exists?(user: matt)
         end
 
         # Should have no unjudged pairs, all are partially judged
-        assert_not(SelectionStrategy.has_unjudged_pairs?(book))
+        assert_not(SelectionStrategy.unjudged_pairs?(book))
         assert_equal 0, SelectionStrategy.unjudged_pairs_count(book)
         assert_equal total_pairs, SelectionStrategy.partially_judged_pairs_count(book)
 
@@ -190,7 +188,7 @@ class SelectionStrategyTest < ActiveSupport::TestCase
         end
 
         # Still no unjudged, still all partially judged (need 3rd judgement)
-        assert_not(SelectionStrategy.has_unjudged_pairs?(book))
+        assert_not(SelectionStrategy.unjudged_pairs?(book))
         assert_equal 0, SelectionStrategy.unjudged_pairs_count(book)
         assert_equal total_pairs, SelectionStrategy.partially_judged_pairs_count(book)
 
@@ -200,7 +198,7 @@ class SelectionStrategyTest < ActiveSupport::TestCase
         end
 
         # Should have no unjudged or partially judged pairs
-        assert_not(SelectionStrategy.has_unjudged_pairs?(book))
+        assert_not(SelectionStrategy.unjudged_pairs?(book))
         assert_equal 0, SelectionStrategy.unjudged_pairs_count(book)
         assert_equal 0, SelectionStrategy.partially_judged_pairs_count(book)
       end

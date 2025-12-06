@@ -26,7 +26,7 @@ module SelectionStrategy
   end
 
   # Returns true if there are query-doc pairs with zero judgements (highest priority)
-  def self.has_unjudged_pairs? book
+  def self.unjudged_pairs? book
     book.query_doc_pairs
       .left_joins(:judgements)
       .group('query_doc_pairs.id')
@@ -75,5 +75,4 @@ module SelectionStrategy
       .order(Arel.sql('-LOG(1.0 - RAND()) * (position + 1)'))
       .first
   end
-
 end
