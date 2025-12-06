@@ -54,12 +54,6 @@ angular.module('QuepidApp')
           s.scaleWithLabels = s.scale_with_labels;
           delete s.scale_with_labels;    
         });
-
-        angular.forEach(this.books, function(b) {
-          // This is really ugly.  We don't use our standard book mapping, and probably should!
-          b.selectionStrategy = b.selection_strategy;
-          delete b.selection_strategy;
-        });
         
         angular.forEach(this.searchEndpoints, function(b) {
           // This is really ugly.  We don't use our standard book mapping, and probably should!

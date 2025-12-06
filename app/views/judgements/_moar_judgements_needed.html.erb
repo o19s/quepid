@@ -18,14 +18,8 @@
 
   </div>
 <% else %>
-  <% if book.selection_strategy.single_rater? %>
-    <div class="alert alert-success" role="alert">
-    Congratulations! All the query/doc pairs have been judged.
-    </div>
-  <% else %>
-    <div class="alert alert-success" role="alert">
-    Congratulations, all query/doc pairs have been judged by three separate judges.
-    </div>      
-  <% end %>
+  <div class="alert alert-success" role="alert">
+  Congratulations, all query/doc pairs have been judged by three separate judges.
+  </div>
 <% end %>
 <p/>

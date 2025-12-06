@@ -1,57 +1,25 @@
 # frozen_string_literal: true
 
-# == Schema Information
-#
-# Table name: selection_strategies
-#
-#  id          :bigint           not null, primary key
-#  description :string(255)
-#  name        :string(255)
-#  created_at  :datetime         not null
-#  updated_at  :datetime         not null
-#
-class SelectionStrategy < ApplicationRecord
-  def single_rater?
-    'Single Rater' == name
-  end
-
-  # Because of the way the logic looks up existing judgements, if you a judgement
-  # that is either unrateable or judge_later, then it won't be selected.
-  def self.random_query_doc_based_on_strategy book, user
-    case book.selection_strategy.name
-    when 'Single Rater'
-      random_query_doc_pair_for_single_judge(book)
-    when 'Multiple Raters'
-      random_query_doc_pair_for_multiple_judges(book, user)
-    else
-      raise "#{book.selection_strategy.name} is unknown!"
-    end
-  end
-
-  # Because of the way the logic looks up existing judgements, if you a judgement
-  # that is either unrateable or judge_later, then it won't be selected.
+# SelectionStrategy module provides functionality for selecting query-document pairs
+# to be judged. This implementation supports only the "Multiple Raters" strategy,
+# which allows up to three ratings for each query/doc pair.
+module SelectionStrategy
+  # Returns whether more judgements are needed for the given book
+  # Under the Multiple Raters strategy, we need up to 3 judgements per query/doc pair
   def self.moar_judgements_needed? book
-    case book.selection_strategy.name
-    when 'Single Rater'
-      !every_query_doc_pair_has_a_judgement? book
-    when 'Multiple Raters'
-      !every_query_doc_pair_has_three_judgements? book
-    else
-      raise "#{book.selection_strategy.name} is unknown!"
-    end
+    !every_query_doc_pair_has_three_judgements?(book)
   end
 
-  # Randomly select a query doc where we don't have any judgements, and weight it by the position,
-  # so that position of 1 should be returned more often than a position of 5 or 10.
-  # 0 based positions fail the random function, so we add 1
-  def self.random_query_doc_pair_for_single_judge book
-    book.query_doc_pairs.includes(:judgements)
-      .where(:judgements=>{ id: nil })
-      .order(Arel.sql('-LOG(1.0 - RAND()) * (position + 1)'))
-      .first
+  # Randomly selects a query-document pair that needs judging for the given user
+  # Uses position-weighted randomization to prioritize higher-ranked documents
+  # Only selects pairs where:
+  # - The user hasn't already judged this pair
+  # - The pair has fewer than 3 total judgements
+  def self.random_query_doc_based_on_strategy book, user
+    random_query_doc_pair_for_multiple_judges(book, user)
   end
 
-  # Do we want to only require three judgements total?  or let more?
+  # Checks if every query-document pair in the book has at least 3 judgements
   def self.every_query_doc_pair_has_three_judgements? book
     query_doc_pair = book.query_doc_pairs
       .left_joins(:judgements)
@@ -61,29 +29,20 @@ class SelectionStrategy < ApplicationRecord
     query_doc_pair.nil? # if we didn't find a match, then return true
   end
 
-  def self.every_query_doc_pair_has_a_judgement? book
-    query_doc_pair = book.query_doc_pairs
-      .left_joins(:judgements)
-      .group('query_doc_pairs.id')
-      .having('COUNT(judgements.id) < 1')
-      .first
-    query_doc_pair.nil? # if we didn't find a match, then return true
-  end
-
-  # We are randomly with position bias picking query_doc_pairs, up to a limit of 3
+  # Randomly selects a query-doc pair for multiple judges strategy
+  # - Ensures the current user hasn't judged this pair yet
+  # - Ensures the pair has fewer than 3 total judgements
+  # - Uses position-weighted randomization (higher positions are more likely to be selected)
   def self.random_query_doc_pair_for_multiple_judges book, user
-    query_doc_pair = book.query_doc_pairs
+    book.query_doc_pairs
       .left_joins(:judgements)
       .group('query_doc_pairs.id')
       .having('COUNT(CASE WHEN judgements.user_id = ? THEN 1 END) = 0', user.id)
       .having('COUNT(judgements.id) < 3')
       .order(Arel.sql('-LOG(1.0 - RAND()) * (position + 1)'))
       .first
-
-    query_doc_pair
   end
 
-  def descriptive_name
-    "#{name}: #{description}"
-  end
+  # private_class_method :every_query_doc_pair_has_three_judgements?,
+  #                     :random_query_doc_pair_for_multiple_judges
 end

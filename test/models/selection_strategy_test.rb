@@ -1,76 +1,24 @@
 # frozen_string_literal: true
 
-# == Schema Information
-#
-# Table name: selection_strategies
-#
-#  id          :bigint           not null, primary key
-#  description :string(255)
-#  name        :string(255)
-#  created_at  :datetime         not null
-#  updated_at  :datetime         not null
-#
 require 'test_helper'
 
 class SelectionStrategyTest < ActiveSupport::TestCase
-  def times_drawn name, book
+  def times_drawn name, book, user
     counter = 0
 
     ActiveRecord::Base.uncached do
       100.times do
-        qdp = SelectionStrategy.random_query_doc_pair_for_single_judge(book)
-        counter += 1 if qdp.doc_id == name
+        qdp = SelectionStrategy.random_query_doc_based_on_strategy(book, user)
+        counter += 1 if qdp && qdp.doc_id == name
       end
     end
     counter
   end
 
   # rubocop:disable Style/CombinableLoops
-  describe 'single rater per query doc pair strategy' do
-    describe 'return a weighted random based on position' do
-      let(:book) { books(:james_bond_movies) }
-      let(:selection_strategy)  { selection_strategies(:single_rater) }
-      let(:matt)                { users(:matt) }
-      let(:joe)                 { users(:joe) }
-      let(:jane)                { users(:jane) }
-
-      before do
-        book.query_doc_pairs.each { |query_doc_pair| query_doc_pair.judgements.destroy_all }
-        assert_empty book.judgements
-        book.selection_strategy = selection_strategy
-        book.save!
-      end
-
-      it 'draws Sean Connery way more then George Lazenby due to postion in results' do
-        # there can be false positive failures due to the RAND() in mysql...
-        sean_connery_picks = times_drawn('SeanConnery', book)
-        assert sean_connery_picks.positive?
-
-        george_lazenby_picks = times_drawn('GeorgeLazenby', book)
-        assert george_lazenby_picks.positive?
-
-        assert_operator sean_connery_picks, :>, george_lazenby_picks
-      end
-
-      it 'decides when all judgements have been completed' do
-        assert_not(SelectionStrategy.every_query_doc_pair_has_a_judgement?(book))
-        assert(SelectionStrategy.moar_judgements_needed?(book))
-
-        # have random one of three judges rate everything
-        while (query_doc_pair = SelectionStrategy.random_query_doc_pair_for_single_judge(book))
-          query_doc_pair.judgements.create rating: 3.0, user: [ matt, joe, jane ].sample
-        end
-
-        assert(SelectionStrategy.every_query_doc_pair_has_a_judgement?(book))
-        assert_not(SelectionStrategy.moar_judgements_needed?(book))
-      end
-    end
-  end
-
   describe 'multiple raters per query doc pair strategy' do
     describe 'we rate wide each query' do
       let(:book)                { books(:james_bond_movies) }
-      let(:selection_strategy)  { selection_strategies(:multiple_raters) }
       let(:matt)                { users(:matt) }
       let(:joe)                 { users(:joe) }
       let(:jane)                { users(:jane) }
@@ -79,8 +27,18 @@ class SelectionStrategyTest < ActiveSupport::TestCase
       before do
         book.query_doc_pairs.each { |query_doc_pair| query_doc_pair.judgements.delete_all }
         assert_empty book.judgements
-        book.selection_strategy = selection_strategy
         book.save!
+      end
+
+      it 'draws Sean Connery way more then George Lazenby due to position in results' do
+        # there can be false positive failures due to the RAND() in mysql...
+        sean_connery_picks = times_drawn('SeanConnery', book, matt)
+        assert sean_connery_picks.positive?
+
+        george_lazenby_picks = times_drawn('GeorgeLazenby', book, matt)
+        assert george_lazenby_picks.positive?
+
+        assert_operator sean_connery_picks, :>, george_lazenby_picks
       end
 
       it 'should only allow a user to rate once' do
@@ -146,6 +104,31 @@ class SelectionStrategyTest < ActiveSupport::TestCase
 
         assert(SelectionStrategy.every_query_doc_pair_has_three_judgements?(book))
         assert_not(SelectionStrategy.moar_judgements_needed?(book))
+      end
+
+      it 'returns nil when no more judgements needed for user' do
+        # Fill up all query doc pairs with 3 judgements each
+        [ matt, joe, jane ].each do |user|
+          while (query_doc_pair = SelectionStrategy.random_query_doc_based_on_strategy(book, user))
+            query_doc_pair.judgements.create rating: 3.0, user: user
+          end
+        end
+
+        # Now doug should get nil since all pairs already have 3 judgements
+        assert_nil SelectionStrategy.random_query_doc_based_on_strategy(book, doug)
+      end
+
+      it 'returns nil when user has already judged all available pairs' do
+        # Matt judges all pairs once
+        book.query_doc_pairs.each do |qdp|
+          qdp.judgements.create rating: 2.0, user: matt
+        end
+
+        # Matt should get nil since he already judged all pairs
+        assert_nil SelectionStrategy.random_query_doc_based_on_strategy(book, matt)
+
+        # But Joe should still be able to get pairs to judge
+        assert_not_nil SelectionStrategy.random_query_doc_based_on_strategy(book, joe)
       end
     end
   end

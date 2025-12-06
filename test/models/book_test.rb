@@ -16,16 +16,10 @@
 #  updated_at                  :datetime         not null
 #  owner_id                    :integer
 #  scorer_id                   :integer
-#  selection_strategy_id       :bigint           not null
 #
 # Indexes
 #
-#  index_books_on_selection_strategy_id  (selection_strategy_id)
-#  index_books_owner_id                  (owner_id)
-#
-# Foreign Keys
-#
-#  fk_rails_...  (selection_strategy_id => selection_strategies.id)
+#  index_books_owner_id  (owner_id)
 #
 require 'test_helper'
 
@@ -35,15 +29,13 @@ class BookTest < ActiveSupport::TestCase
     let(:archived_book) { books(:archived_book) }
 
     test 'sets archived flag to false by default' do
-      book = Book.create(name: 'test book', scorer: scorers(:quepid_default_scorer),
-                         selection_strategy: selection_strategies(:single_rater))
+      book = Book.create(name: 'test book', scorer: scorers(:quepid_default_scorer))
 
       assert_equal false, book.archived
     end
 
     test 'does not override archived flag if set' do
-      book = Book.create(name: 'test book', archived: true, scorer: scorers(:quepid_default_scorer),
-                         selection_strategy: selection_strategies(:single_rater))
+      book = Book.create(name: 'test book', archived: true, scorer: scorers(:quepid_default_scorer))
 
       assert_equal true, book.archived
     end
@@ -77,13 +69,14 @@ class BookTest < ActiveSupport::TestCase
   end
 
   describe 'sampling random query doc pairs' do
+    let(:user) { users(:random) }
     let(:book) { books(:book_of_star_wars_judgements) }
 
     it 'returns a random query doc pair' do
       query_doc_pair_1 = book.query_doc_pairs.create query_text: 'star wars', doc_id: 'rogue_one'
       query_doc_pair_2 = book.query_doc_pairs.create query_text: 'star wars', doc_id: 'solo_story'
 
-      random_query_doc_pair = SelectionStrategy.random_query_doc_pair_for_single_judge(book)
+      random_query_doc_pair = SelectionStrategy.random_query_doc_pair_for_multiple_judges(book, user)
       assert_not_nil random_query_doc_pair
       assert(random_query_doc_pair == query_doc_pair_1 || random_query_doc_pair == query_doc_pair_2)
     end
@@ -92,13 +85,13 @@ class BookTest < ActiveSupport::TestCase
       query_doc_pair_1 = book.query_doc_pairs.create query_text: 'star wars', doc_id: 'rogue_one'
       query_doc_pair_2 = book.query_doc_pairs.create query_text: 'star wars', doc_id: 'solo_story'
 
-      query_doc_pair_1.judgements.create rating: 2.0
+      query_doc_pair_1.judgements.create rating: 2.0, user: user
 
       # only one of two is a candidate, so sampling will return it every time.
-      random_query_doc_pair = SelectionStrategy.random_query_doc_pair_for_single_judge(book)
+      random_query_doc_pair = SelectionStrategy.random_query_doc_pair_for_multiple_judges(book, user)
       assert_equal query_doc_pair_2, random_query_doc_pair
 
-      random_query_doc_pair = SelectionStrategy.random_query_doc_pair_for_single_judge(book)
+      random_query_doc_pair = SelectionStrategy.random_query_doc_pair_for_multiple_judges(book, user)
       assert_equal query_doc_pair_2, random_query_doc_pair
     end
 
@@ -106,10 +99,10 @@ class BookTest < ActiveSupport::TestCase
       query_doc_pair_1 = book.query_doc_pairs.create query_text: 'star wars', doc_id: 'rogue_one'
       query_doc_pair_2 = book.query_doc_pairs.create query_text: 'star wars', doc_id: 'solo_story'
 
-      query_doc_pair_1.judgements.create rating: 2.0
-      query_doc_pair_2.judgements.create rating: 2.0
+      query_doc_pair_1.judgements.create rating: 2.0, user: user
+      query_doc_pair_2.judgements.create rating: 2.0, user: user
 
-      random_query_doc_pair = SelectionStrategy.random_query_doc_pair_for_single_judge(book)
+      random_query_doc_pair = SelectionStrategy.random_query_doc_pair_for_multiple_judges(book, user)
       assert_nil random_query_doc_pair
     end
   end
