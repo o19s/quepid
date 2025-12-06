@@ -49,7 +49,7 @@ module Api
       #   }]
       def create
         q_params              = query_params
-        q_params[:query_text] = q_params[:query_text].strip # if q_params[:query_text]
+        q_params[:query_text] = q_params[:query_text].strip if q_params[:query_text]
 
         if @case.queries.exists?(query_text: q_params[:query_text])
           # sometimes the query is already created even though we are hitting this..
