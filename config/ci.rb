@@ -10,6 +10,7 @@ CI.run do
   step "Security: Brakeman code analysis", "bin/brakeman --quiet --no-pager --exit-on-warn --exit-on-error"
 
   step "Tests: Rails", "bin/rails test"
+  step "Tests: Rails", "bin/rails test:frontend"
   #step "Tests: System", "bin/rails test:system" We don't have any system tests
   #step "Tests: Seeds", "env RAILS_ENV=test bin/rails db:seed:replant"
 
