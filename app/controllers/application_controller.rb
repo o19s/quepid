@@ -6,7 +6,7 @@ class ApplicationController < ActionController::Base
   include Authentication::CurrentUserManager
   include Authentication::CurrentCaseManager
   include Authentication::CurrentBookManager
-  
+
   # Changes to the importmap will invalidate the etag for HTML responses
   stale_when_importmap_changes
 
