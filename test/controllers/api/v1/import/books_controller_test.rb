@@ -30,10 +30,9 @@ module Api
           end
           test 'alerts when a user assocated with a judgement does not exist' do
             data = {
-              name:               'test book',
-              scorer:             book.scorer.as_json(only: [ :name ]),
-              selection_strategy: book.selection_strategy.as_json(only: [ :name ]),
-              query_doc_pairs:    [
+              name:            'test book',
+              scorer:          book.scorer.as_json(only: [ :name ]),
+              query_doc_pairs: [
                 {
                   query_text: 'dog', doc_id: '123', position: 1,
                   judgements: [
@@ -72,35 +71,13 @@ module Api
             assert_nil Book.find_by(name: 'test book')
           end
 
-          test 'alerts when a selection associated with a book does not exist' do
-            data = {
-              name:               'test book',
-              scorer:             book.scorer.as_json(only: [ :name ]),
-              selection_strategy: {
-                name: 'fake selection',
-              },
-              query_doc_pairs:    [],
-            }
-
-            post :create, params: { book: data, team_id: team.id, format: :json }
-
-            assert_response :bad_request
-
-            body = response.parsed_body
-
-            assert_includes body['selection_strategy'],
-                            "Selection strategy with name 'fake selection' needs to be migrated over first."
-            assert_nil Book.find_by(name: 'test book')
-          end
-
           test 'alerts when a scorer associated with a book does not exist' do
             data = {
-              name:               'test book',
-              scorer:             {
+              name:            'test book',
+              scorer:          {
                 name: 'fake scorer',
               },
-              selection_strategy: book.selection_strategy.as_json(only: [ :name ]),
-              query_doc_pairs:    [],
+              query_doc_pairs: [],
             }
 
             post :create, params: { book: data, team_id: team.id, format: :json }
@@ -116,10 +93,9 @@ module Api
 
           test 'creates a new book' do
             data = {
-              name:               'test book',
-              scorer:             book.scorer.as_json(only: [ :name ]),
-              selection_strategy: book.selection_strategy.as_json(only: [ :name ]),
-              query_doc_pairs:    [
+              name:            'test book',
+              scorer:          book.scorer.as_json(only: [ :name ]),
+              query_doc_pairs: [
                 {
                   query_text: 'dog', doc_id: '123',
                   judgements: [

@@ -91,8 +91,7 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
   def test_differing_scales_blows_up
     login_user_for_integration_test user
 
-    book_to_merge = Book.new(name: 'Book with a 1,2,3,4 scorer', teams: book.teams, scorer: communal_scorer,
-                             selection_strategy: SelectionStrategy.find_by(name: 'Multiple Raters'))
+    book_to_merge = Book.new(name: 'Book with a 1,2,3,4 scorer', teams: book.teams, scorer: communal_scorer)
     book_to_merge.save!
 
     params = { book_ids: { "#{book_to_merge.id}": '1' } }
@@ -170,10 +169,9 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
   def test_combining_single_rater_strategy_into_multiple_rater_strategy_book_works
     login_user_for_integration_test user
 
-    book_with_multiple_raters = Book.create(name:               'Book with a 1,2,3,4 scorer',
-                                            teams:              single_rater_book.teams,
-                                            scorer:             single_rater_book.scorer,
-                                            selection_strategy: SelectionStrategy.find_by(name: 'Multiple Raters'))
+    book_with_multiple_raters = Book.create(name:   'Book with a 1,2,3,4 scorer',
+                                            teams:  single_rater_book.teams,
+                                            scorer: single_rater_book.scorer)
 
     params = { book_ids: { "#{single_rater_book.id}": '1' } }
 

@@ -299,13 +299,7 @@ SearchEndpoint:
   search_engine:
     LengthConstraintChecker:
       enabled: false
-SelectionStrategy:
-  description:
-    LengthConstraintChecker:
-      enabled: false
-  name:
-    LengthConstraintChecker:
-      enabled: false
+
 Snapshot:
   id:
     PrimaryKeyTypeChecker:

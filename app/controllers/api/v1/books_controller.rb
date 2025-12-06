@@ -62,7 +62,7 @@ module Api
       private
 
       def book_params
-        params.expect(book: [ :scorer_id, :selection_strategy_id, :name, :support_implicit_judgements,
+        params.expect(book: [ :scorer_id, :name, :support_implicit_judgements,
                               :show_rank, :archived ])
       end
 

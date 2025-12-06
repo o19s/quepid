@@ -9,7 +9,7 @@ module Books
     let(:user) { users(:random) }
 
     def setup
-      @valid_json = { 'scorer' => { 'name' =>'AP@10' }, selection_strategy: { 'name'=>'Single Rater' } }
+      @valid_json = { 'scorer' => { 'name' =>'AP@10' } }
       @json_file = Tempfile.new([ 'test', '.json' ])
       @json_file.write(@valid_json.to_json)
       @json_file.rewind

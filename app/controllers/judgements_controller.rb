@@ -19,8 +19,8 @@ class JudgementsController < ApplicationController
     query = query.where(judge_later: true) if params[:judge_later].present?
 
     if params[:q].present?
-      query = query.where('doc_id LIKE ? OR query_text LIKE ? OR information_need LIKE ? OR judgements.explanation LIKE ?',
-                          "%#{params[:q]}%", "%#{params[:q]}%", "%#{params[:q]}%", "%#{params[:q]}%")
+      query = query.where('query_doc_pair_id LIKE ? OR doc_id LIKE ? OR query_text LIKE ? OR information_need LIKE ? OR judgements.explanation LIKE ?',
+                          "%#{params[:q]}%", "%#{params[:q]}%", "%#{params[:q]}%", "%#{params[:q]}%", "%#{params[:q]}%")
     end
 
     @pagy, @judgements = pagy(query.order(:query_doc_pair_id))

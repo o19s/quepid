@@ -69,10 +69,9 @@ module Api
 
           post :create, params: {
             book: {
-              name:                  book_name,
-              team_id:               team.id,
-              selection_strategy_id: multiple_raters.id,
-              scorer_id:             quepid_default_scorer.id,
+              name:      book_name,
+              team_id:   team.id,
+              scorer_id: quepid_default_scorer.id,
             },
           }
 

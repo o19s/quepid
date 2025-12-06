@@ -7,7 +7,7 @@
         "properties": {
           "book": {
             "type": "object",
-            "required": ["name", "owner_id", "scorer_id", "selection_strategy_id"],
+            "required": ["name", "owner_id", "scorer_id"],
             "properties": {
               "name": {
                 "type": "string"
@@ -16,9 +16,6 @@
                 "type": "integer"
               },
               "scorer_id": {
-                "type": "integer"
-              },
-              "selection_strategy_id": {
                 "type": "integer"
               },
               "show_rank": {
@@ -141,8 +138,7 @@
             "show_rank": false,
             "support_implicit_judgements": false,
             "owner_id": 1,
-            "scorer_id": 1,
-            "selection_strategy_id": 1
+            "scorer_id": 1
           }
         }
       },

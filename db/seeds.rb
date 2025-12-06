@@ -69,12 +69,4 @@ Scorer.where(name: 'ERR@10').first_or_create(
   communal:           true
 )
 
-SelectionStrategy.where(name: 'Single Rater').first_or_create(
-  name: 'Single Rater',
-  description: 'A single rating for each query/doc pair is all that is required.  The fastest way to get a lot of ratings, with lower quality.'
-)
-
-SelectionStrategy.where(name: 'Multiple Raters').first_or_create(
-  name: 'Multiple Raters',
-  description: 'Allows you to have up to three ratings for each query/doc pair.   Gives higher quality ratings, however with more work.'
-)
+# SelectionStrategy removed - now hardcoded to Multiple Raters strategy
