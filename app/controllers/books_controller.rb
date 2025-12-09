@@ -20,7 +20,7 @@ class BooksController < ApplicationController
   def index
     # with_counts adds a `book.query_doc_pairs_count` field, which avoids loading
     # all query_doc_pairs and makes bullet happy.
-    query = current_user.books_involved_with.includes([ :teams, :scorer, :selection_strategy ]).with_counts
+    query = current_user.books_involved_with.includes([ :teams, :selection_strategy ]).with_counts
 
     # Filter by archived status
     archived = deserialize_bool_param(params[:archived])
@@ -99,10 +99,10 @@ class BooksController < ApplicationController
 
     respond_with(@book)
   end
-
   # rubocop:enable Metrics/AbcSize
   # rubocop:enable Metrics/MethodLength
 
+  # rubocop:disable Metrics/MethodLength
   def new
     # we actually support passing in starting point configuration for a book
     @book = if params[:book]
@@ -111,24 +111,39 @@ class BooksController < ApplicationController
               Book.new
             end
 
+    if params[:scorer_id]
+      scorer = Scorer.find_by(id: params[:scorer_id])
+      if scorer
+        @book.scale = scorer.scale
+        @book.scale_with_labels = scorer.scale_with_labels
+        # Set scorer_id for form dropdown selection
+        @book.scorer_id = params[:scorer_id]
+      end
+    end
+
     @ai_judges = []
 
     @origin_case = current_user.cases_involved_with.where(id: params[:origin_case_id]).first if params[:origin_case_id]
 
     respond_with(@book)
   end
+  # rubocop:enable Metrics/MethodLength
 
   def edit
     @ai_judges = User.only_ai_judges.left_joins(teams: :books).where(teams_books: { book_id: @book.id })
 
     # Bullet really wants :rated_query_doc_pairs to be included, however that kills our performance!
     # In our use case just looks up the count of records per book.
-    @other_books = current_user.books_involved_with.includes([ :scorer ]).where.not(id: @book.id)
+    @other_books = current_user.books_involved_with.where.not(id: @book.id)
   end
 
   def create
     @book = Book.new(book_params)
     @book.owner = current_user
+
+    # Handle scorer selection
+    apply_scorer_to_book(@book, book_params[:scorer_id]) if book_params[:scorer_id].present?
+
     if @book.save
 
       if params[:book][:link_the_case]
@@ -164,8 +179,11 @@ class BooksController < ApplicationController
       @book.ai_judges << User.find(ai_judge_id)
     end
 
+    # Handle scorer selection
+    apply_scorer_to_book(@book, book_params[:scorer_id]) if book_params[:scorer_id].present?
+
     @book.update(book_params.except(
-                   :team_ids, :ai_judges, :link_the_case, :origin_case_id,
+                   :team_ids, :ai_judges, :link_the_case, :origin_case_id, :scorer_id,
                    :delete_export_file, :delete_import_file
                  ))
 
@@ -209,9 +227,9 @@ class BooksController < ApplicationController
       books << book_to_merge
     end
 
-    if books.any? { |b| b.scorer.scale != @book.scorer.scale }
+    if books.any? { |b| b.scale != @book.scale }
       redirect_to book_path(@book),
-                  :alert => "One of the books chosen doesn't have a scorer with the scale #{@book.scorer.scale}" and return
+                  :alert => "One of the books chosen doesn't have a scale matching #{@book.scale}" and return
     end
 
     books.each do |book_to_merge|
@@ -348,6 +366,14 @@ class BooksController < ApplicationController
 
   private
 
+  def apply_scorer_to_book book, scorer_id
+    scorer = current_user.scorers_involved_with.find_by(id: scorer_id)
+    if scorer
+      book.scale = scorer.scale
+      book.scale_with_labels = scorer.scale_with_labels
+    end
+  end
+
   # This set_book is different because we use :id, not :book_id.
   def set_book
     @book = current_user.books_involved_with.where(id: params[:id]).first
@@ -366,7 +392,8 @@ class BooksController < ApplicationController
   end
 
   def book_params
-    params_to_use = params.expect(book: [ :scorer_id, :selection_strategy_id, :name,
+    params_to_use = params.expect(book: [ :scorer_id, :scale, :scale_list, :scale_with_labels,
+                                          :selection_strategy_id, :name,
                                           :support_implicit_judgements, :link_the_case, :origin_case_id,
                                           :delete_export_file, :delete_import_file,
                                           :show_rank, { team_ids: [], ai_judge_ids: [] } ])

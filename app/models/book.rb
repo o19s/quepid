@@ -10,12 +10,13 @@
 #  import_job                  :string(255)
 #  name                        :string(255)
 #  populate_job                :string(255)
+#  scale                       :string(255)
+#  scale_with_labels           :text(65535)
 #  show_rank                   :boolean          default(FALSE)
 #  support_implicit_judgements :boolean
 #  created_at                  :datetime         not null
 #  updated_at                  :datetime         not null
 #  owner_id                    :integer
-#  scorer_id                   :integer
 #  selection_strategy_id       :bigint           not null
 #
 # Indexes
@@ -27,6 +28,8 @@
 #
 #  fk_rails_...  (selection_strategy_id => selection_strategies.id)
 #
+require 'scale_serializer'
+
 class Book < ApplicationRecord
   # Associations
   # rubocop:disable Rails/HasAndBelongsToMany
@@ -50,7 +53,6 @@ class Book < ApplicationRecord
   # rubocop:enable Rails/HasAndBelongsToMany
 
   belongs_to :selection_strategy
-  belongs_to :scorer
   has_many :query_doc_pairs, dependent: :delete_all, autosave: true
 
   has_many   :judgements,
@@ -86,6 +88,28 @@ class Book < ApplicationRecord
 
   def unarchive!
     update(archived: false)
+  end
+
+  # Virtual attribute for form display - allows selecting a scorer to copy scale from
+  attr_accessor :scorer_id
+
+  # Transform scale from array to a string
+  serialize :scale, coder: ScaleSerializer
+  serialize :scale_with_labels, coder: JSON
+
+  after_initialize do |book|
+    book.scale = [] if book.scale.nil? || (book.scale.respond_to?(:empty?) && book.scale.empty?)
+  end
+
+  def scale_list= value
+    self.scale = value.split(',') if value.present?
+  end
+
+  def scale_list
+    # rubocop:disable Style/SafeNavigation
+    scale.join(',') unless scale.nil?
+    # scale&.join(',')
+    # rubocop:enable Style/SafeNavigation
   end
 
   scope :with_counts, -> {

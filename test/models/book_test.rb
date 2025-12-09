@@ -10,12 +10,13 @@
 #  import_job                  :string(255)
 #  name                        :string(255)
 #  populate_job                :string(255)
+#  scale                       :string(255)
+#  scale_with_labels           :text(65535)
 #  show_rank                   :boolean          default(FALSE)
 #  support_implicit_judgements :boolean
 #  created_at                  :datetime         not null
 #  updated_at                  :datetime         not null
 #  owner_id                    :integer
-#  scorer_id                   :integer
 #  selection_strategy_id       :bigint           not null
 #
 # Indexes
@@ -35,14 +36,18 @@ class BookTest < ActiveSupport::TestCase
     let(:archived_book) { books(:archived_book) }
 
     test 'sets archived flag to false by default' do
-      book = Book.create(name: 'test book', scorer: scorers(:quepid_default_scorer),
+      book = Book.create(name: 'test book', 
+                         scale: [0, 1, 2, 3],
+                         scale_with_labels: { '0' => 'Poor', '1' => 'Fair', '2' => 'Good', '3' => 'Great' },
                          selection_strategy: selection_strategies(:single_rater))
 
       assert_equal false, book.archived
     end
 
     test 'does not override archived flag if set' do
-      book = Book.create(name: 'test book', archived: true, scorer: scorers(:quepid_default_scorer),
+      book = Book.create(name: 'test book', archived: true,
+                         scale: [0, 1, 2, 3],
+                         scale_with_labels: { '0' => 'Poor', '1' => 'Fair', '2' => 'Good', '3' => 'Great' },
                          selection_strategy: selection_strategies(:single_rater))
 
       assert_equal true, book.archived
