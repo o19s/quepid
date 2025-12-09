@@ -97,6 +97,9 @@ class Book < ApplicationRecord
   serialize :scale, coder: ScaleSerializer
   serialize :scale_with_labels, coder: JSON
 
+  # Custom validation to prevent scale changes but allow label changes
+  validate :scale_cannot_be_changed_if_judgements_exist
+
   after_initialize do |book|
     book.scale = [] if book.scale.nil? || (book.scale.respond_to?(:empty?) && book.scale.empty?)
   end
@@ -139,6 +142,22 @@ class Book < ApplicationRecord
   end
 
   private
+
+  # Validates that scale values cannot be changed if judgements exist
+  # but allows changing scale_with_labels for the same scale
+  def scale_cannot_be_changed_if_judgements_exist
+    return unless persisted? && scale_changed?
+
+    # Allow scale changes if no judgements exist yet
+    return if judgements.empty?
+
+    # Check if the actual scale values have changed (not just the labels)
+    old_scale = scale_was
+    new_scale = scale
+
+    # If the scale values themselves have changed, prevent it
+    errors.add(:scale, "cannot be changed when judgements exist. Current judgements use scale #{old_scale.inspect}") if old_scale != new_scale
+  end
 
   def delete_attachments
     import_file.purge_later

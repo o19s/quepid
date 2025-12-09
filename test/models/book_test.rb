@@ -153,4 +153,86 @@ class BookTest < ActiveSupport::TestCase
 
     file
   end
+
+  describe 'scale validation' do
+    test 'allows scale changes on books without judgements' do
+      book = Book.create!(
+        name:               'Test Book',
+        scale:              [ 0, 1, 2, 3 ],
+        scale_with_labels:  { '0' => 'Poor', '1' => 'Fair', '2' => 'Good', '3' => 'Great' },
+        selection_strategy: selection_strategies(:single_rater),
+        owner:              users(:doug)
+      )
+
+      # Should be able to change scale when no judgements exist
+      book.scale = [ 1, 2, 3, 4, 5 ]
+      assert book.valid?
+      assert book.save
+    end
+
+    test 'prevents scale changes on books with judgements' do
+      book = books(:james_bond_movies)
+      original_scale = book.scale.dup
+
+      # Create a query doc pair and judgement
+      qdp = book.query_doc_pairs.create!(
+        query_text:      'test query',
+        doc_id:          'test_doc_1',
+        document_fields: '{"title": "Test Document"}'
+      )
+
+      qdp.judgements.create!(
+        user:   users(:doug),
+        rating: 1
+      )
+
+      # Should not be able to change scale when judgements exist
+      book.scale = [ 0, 1, 2, 3, 4 ]
+      assert_not book.valid?
+      assert_includes book.errors[:scale], "cannot be changed when judgements exist. Current judgements use scale #{original_scale.inspect}"
+    end
+
+    test 'allows label changes even with judgements' do
+      book = books(:james_bond_movies)
+
+      # Create a query doc pair and judgement
+      qdp = book.query_doc_pairs.create!(
+        query_text:      'test query',
+        doc_id:          'test_doc_2',
+        document_fields: '{"title": "Test Document"}'
+      )
+
+      qdp.judgements.create!(
+        user:   users(:doug),
+        rating: 1
+      )
+
+      # Should be able to change labels even with judgements
+      book.scale_with_labels = { '0' => 'Terrible', '1' => 'Excellent' }
+      assert book.valid?
+      assert book.save
+    end
+
+    test 'allows setting same scale values even with judgements' do
+      book = books(:james_bond_movies)
+      original_scale = book.scale.dup
+
+      # Create a query doc pair and judgement
+      qdp = book.query_doc_pairs.create!(
+        query_text:      'test query',
+        doc_id:          'test_doc_3',
+        document_fields: '{"title": "Test Document"}'
+      )
+
+      qdp.judgements.create!(
+        user:   users(:doug),
+        rating: 1
+      )
+
+      # Should be able to set the same scale values
+      book.scale = original_scale.dup
+      assert book.valid?
+      assert book.save
+    end
+  end
 end
