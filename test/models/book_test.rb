@@ -36,9 +36,9 @@ class BookTest < ActiveSupport::TestCase
     let(:archived_book) { books(:archived_book) }
 
     test 'sets archived flag to false by default' do
-      book = Book.create(name: 'test book', 
-                         scale: [0, 1, 2, 3],
-                         scale_with_labels: { '0' => 'Poor', '1' => 'Fair', '2' => 'Good', '3' => 'Great' },
+      book = Book.create(name:               'test book',
+                         scale:              [ 0, 1, 2, 3 ],
+                         scale_with_labels:  { '0' => 'Poor', '1' => 'Fair', '2' => 'Good', '3' => 'Great' },
                          selection_strategy: selection_strategies(:single_rater))
 
       assert_equal false, book.archived
@@ -46,7 +46,7 @@ class BookTest < ActiveSupport::TestCase
 
     test 'does not override archived flag if set' do
       book = Book.create(name: 'test book', archived: true,
-                         scale: [0, 1, 2, 3],
+                         scale: [ 0, 1, 2, 3 ],
                          scale_with_labels: { '0' => 'Poor', '1' => 'Fair', '2' => 'Good', '3' => 'Great' },
                          selection_strategy: selection_strategies(:single_rater))
 

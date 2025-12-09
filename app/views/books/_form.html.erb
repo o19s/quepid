@@ -45,37 +45,10 @@
     
       <div class="mb-3">
         <%= form.label :scorer_id, "Rating Scale", class: 'form-label' %>
-        <% 
-          # Get unique scale combinations using pluck to avoid ActiveRecord callbacks
-          scorer_data = @current_user.scorers_involved_with
-            .pluck(:id, :scale, :scale_with_labels)
-          
-          # Create options manually from raw data
-          options_for_select = scorer_data.map do |id, scale, scale_with_labels|
-            scale_display = scale.present? ? scale.join(',') : 'No scale'
-            labels_preview = if scale_with_labels.present? && scale_with_labels.any?
-              " (#{scale_with_labels.values.first(2).join(', ')}#{'...' if scale_with_labels.size > 2})"
-            else
-              ""
-            end
-            display_text = "#{scale_display}#{labels_preview}"
-            [display_text, id]
-          end
-          
-          # Remove duplicates based on display text but keep first occurrence
-          unique_options = []
-          seen_displays = Set.new
-          options_for_select.each do |display_text, id|
-            unless seen_displays.include?(display_text)
-              unique_options << [display_text, id]
-              seen_displays.add(display_text)
-            end
-          end
-        %>
-        <%= form.select(:scorer_id, unique_options, 
+        <%= form.select(:scorer_id, scorer_options_for_select(@current_user), 
               { prompt: "Select a rating scale..." }, 
               { class: 'form-control' }) %>
-        <div class="form-text">Choose from available rating scale configurations. The scale, labels, and display settings will be copied to this book when you save.</div>
+        <div class="form-text">Choose from available rating scale configurations. The scale and labels will be set for this book when you save.</div>
       </div>
     
       <div class="mb-3">
@@ -132,7 +105,7 @@
             <%= form.label :delete_export_file, "Delete Export File", class: 'form-check-label' %>
             <div class="form-text">If enabled you have an associated file.  Check this to delete it.</div>
           </div>
-        </div>  
+        </div>
       <% end %>
       
       <div class="actions">

@@ -97,8 +97,6 @@ module Api
             assert_nil Book.find_by(name: 'test book')
           end
 
-         
-
           test 'creates a new book' do
             data = {
               name:               'test book',

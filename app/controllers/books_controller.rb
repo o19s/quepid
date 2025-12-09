@@ -3,6 +3,7 @@
 # rubocop:disable Metrics/ClassLength
 class BooksController < ApplicationController
   include Pagy::Method
+  include BooksHelper
 
   before_action :set_book,
                 only: [ :show, :edit, :update, :destroy, :combine, :assign_anonymous, :delete_ratings_by_assignee,
@@ -16,6 +17,10 @@ class BooksController < ApplicationController
   before_action :find_user, only: [ :reset_unrateable, :reset_judge_later, :delete_ratings_by_assignee ]
 
   respond_to :html
+
+  # We use "scorer_id" in book_params as a virtual attribute.
+  # Since all the scale related attributes are mastered by a scorer data,
+  # we use the scorer_id to pluck the scale etc for real use.
 
   def index
     # with_counts adds a `book.query_doc_pairs_count` field, which avoids loading
@@ -116,8 +121,8 @@ class BooksController < ApplicationController
       if scorer
         @book.scale = scorer.scale
         @book.scale_with_labels = scorer.scale_with_labels
-        # Set scorer_id for form dropdown selection
-        @book.scorer_id = params[:scorer_id]
+        # Set scorer_id to the one that would appear in dropdown for this scale combination
+        @book.scorer_id = matching_scorer_id_for_book(current_user, @book)
       end
     end
 
@@ -131,6 +136,9 @@ class BooksController < ApplicationController
 
   def edit
     @ai_judges = User.only_ai_judges.left_joins(teams: :books).where(teams_books: { book_id: @book.id })
+
+    # Set scorer_id virtual attribute to preselect matching scorer in dropdown
+    @book.scorer_id = matching_scorer_id_for_book(current_user, @book)
 
     # Bullet really wants :rated_query_doc_pairs to be included, however that kills our performance!
     # In our use case just looks up the count of records per book.
@@ -392,7 +400,7 @@ class BooksController < ApplicationController
   end
 
   def book_params
-    params_to_use = params.expect(book: [ :scorer_id, :scale, :scale_list, :scale_with_labels,
+    params_to_use = params.expect(book: [ :scorer_id,
                                           :selection_strategy_id, :name,
                                           :support_implicit_judgements, :link_the_case, :origin_case_id,
                                           :delete_export_file, :delete_import_file,
