@@ -261,7 +261,7 @@ describe('Service: querySnapshotSvc', function () {
         called++;
         expect(Object.keys(querySnapshotSvc.snapshots).length).toEqual(1);
         expect(querySnapshotSvc.snapshots['5']).toEqual(undefined);
-        expect(querySnapshotSvc.snapshots['12'].name()).toContain('other');
+        expect(querySnapshotSvc.snapshots['12'].name()).toContain('other'); // This test is already resilient to timezone differences
       });
       $httpBackend.flush();
       expect(called).toBe(1);
