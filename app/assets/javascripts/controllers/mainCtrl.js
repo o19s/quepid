@@ -41,16 +41,108 @@ angular.module('QuepidApp')
       var searchEngineChanged = function() {
         return getSearchEngine(caseTryNavSvc.getTryNo()) !== getSearchEngine(tryNo);
       };
-
+      
+      var loadSnapshots = function() {
+        return querySnapshotSvc.bootstrap(caseNo);
+      };
+      
       var init = function() {
         // Make sure we empty stuff from the previous case
         if ( caseChanged() ) {
           queriesSvc.reset();
+          querySnapshotSvc.reset();
         }
 
         angular.forEach(queriesSvc.queries, function(query) {
           query.reset();
         });
+        
+        loadSnapshots();
+      };
+      
+      // Function to handle the search and its outcomes
+      var performSearch = function () {
+        var searchPromise;
+        var currentTry = settingsSvc.editableSettings().selectedTry;
+        var snapshotId = currentTry ? currentTry.snapshotId : null;
+
+        // If the try has a snapshot ID, make sure the full data is loaded first
+        if (snapshotId) {
+          $log.debug('Ensuring full snapshot data is loaded for ID: ' + snapshotId);
+          searchPromise = querySnapshotSvc.ensureFullSnapshot(snapshotId)
+            .then(function () {
+              return queriesSvc.searchAll();
+            });
+        } else {
+          searchPromise = queriesSvc.searchAll();
+        }
+
+        // Handle search outcomes
+        return searchPromise
+          .then(function () {
+            if (snapshotId){
+              var snapshot = querySnapshotSvc.snapshots[snapshotId];
+              var snapshotName = snapshot ? snapshot.name() : 'Snapshot ' + snapshotId;
+              flash.success = '<i class="fa fa-camera"></i> <strong>Snapshot Mode:</strong> Viewing cached results from "' +
+                            snapshotName + '" instead of executing live queries.';
+            }
+            else {
+              flash.success = 'All queries finished successfully!';
+
+              // Automatically create a snapshot after successful search AND scoring if try doesn't have one
+              // The searchAll() promise now resolves after scoring is complete
+              if (!snapshotId && currentTry) {
+                // Scoring is now complete, safe to create snapshot
+                createSnapshotForTry(currentTry);
+              }
+            }
+
+          }, function (errorMsg) {
+            var mainErrorMsg = 'Some queries failed to resolve!';
+            flash.error = mainErrorMsg;
+            flash.to('search-error').error = errorMsg;
+          });
+      };
+
+      // Function to create a snapshot and associate it with the current try
+      var createSnapshotForTry = function(tryObj) {
+        // Generate snapshot name with timestamp
+        var now = new Date();
+        var snapshotName = 'Try ' + tryObj.tryNo;
+
+        // Check if we should record document fields (depends on search engine)
+        //var recordDocumentFields = !settingsSvc.supportLookupById(settingsSvc.editableSettings().searchEngine);
+        const recordDocumentFields = true;
+
+        // Get all queries to include in snapshot
+        var queries = Object.values(queriesSvc.queries);
+
+        $log.debug('Creating snapshot for try number ' + tryObj.tryNo);
+
+        // Log scoring status to confirm scoring is complete
+        var scoredCount = 0;
+        angular.forEach(queries, function(query) {
+          if (query.hasBeenScored && query.currentScore) {
+            scoredCount++;
+          }
+        });
+        $log.debug('Scored queries: ' + scoredCount + '/' + queries.length);
+
+        // Create the snapshot and pass the try_number to associate it
+        querySnapshotSvc.addSnapshot(snapshotName, recordDocumentFields, queries, tryObj.tryNo)
+          .then(function(snapshot) {
+            // The snapshot should now be associated with the try
+            flash.success = '<i class="fa fa-camera"></i> Snapshot created automatically for Try ' + tryObj.tryNo;
+
+            // Update the try object locally to reflect the new snapshot ID
+            tryObj.snapshotId = snapshot.id;
+
+            $log.debug('Snapshot ' + snapshot.id + ' successfully associated with try ' + tryObj.tryNo);
+          })
+          .catch(function(error) {
+            $log.error('Failed to create snapshot:', error);
+            // Silent failure - don't interrupt the user's workflow
+          });
       };
 
       var bootstrapCase = function() {
@@ -108,23 +200,21 @@ angular.module('QuepidApp')
                   flash.to('search-error').error = '';
 
                   bootstrapped = true;
-                  return queriesSvc.searchAll()
-                    .then(function() {
-                      flash.success = 'All queries finished successfully!';
-                    }, function(errorMsg) {
-                      var mainErrorMsg = 'Some queries failed to resolve!';
 
-                      flash.error = mainErrorMsg;
-                      flash.to('search-error').error = errorMsg;
-                    });
+                  // Check if the current try has a snapshot associated with it
+                  var currentTry = newSettings.selectedTry;
+                  if (currentTry && currentTry.snapshotId) {
+                    $log.debug('Current try has snapshotId: ' + currentTry.snapshotId);
+                    // The snapshotId will be used when creating searchers in queriesSvc
+                  }
+
+                  return performSearch();
                 }
               });
           });
       };
 
-      var loadSnapshots = function() {
-        return querySnapshotSvc.bootstrap(caseNo);
-      };
+
 
       var updateCaseMetadata = function() {
         caseSvc.trackLastViewedAt(caseNo);
@@ -148,8 +238,8 @@ angular.module('QuepidApp')
 
         bootstrapCase()
           .then(function() {
+            loadSnapshots();  // this is here just to set the caseNo in the querySnapshotSvc.            
             loadQueries();
-            loadSnapshots();  // this is here just to set the caseNo in the querySnapshotSvc.
             updateCaseMetadata();
             paneSvc.refreshElements();
           }).catch(function(error) {            

@@ -107,9 +107,10 @@ angular.module('QuepidApp')
         // and reverts to the old value.
         // So instead we are creating a tmp variable to use.
         // UGH, this temp requires mapping back to API format of the data!
+        // If you change here, then change TryFactory code too
         var tmp = new TryFactory({
           args:           $scope.settings.selectedTry.args,
-          curator_vars:    $scope.settings.selectedTry.curatorVarsDict(),
+          curator_vars:   $scope.settings.selectedTry.curatorVarsDict(),
           escape_query:   $scope.settings.selectedTry.escapeQuery,
           api_method:     $scope.settings.selectedTry.apiMethod,
           custom_headers: $scope.settings.selectedTry.customHeaders,
@@ -124,6 +125,7 @@ angular.module('QuepidApp')
           try_number:     $scope.settings.selectedTry.tryNo,
           basic_auth_crendential:     $scope.settings.selectedTry.basicAuthCredential,
           options:        $scope.settings.selectedTry.options,
+          snapshot_id:  $scope.settings.selectedTry.snapshotId,
         });
         tmp.updateVars();
         

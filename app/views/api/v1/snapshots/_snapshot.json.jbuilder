@@ -6,6 +6,7 @@ json.id     snapshot.id
 json.name   snapshot.name
 json.time   snapshot.created_at
 json.has_snapshot_file snapshot.snapshot_file.present?
+json.try_id snapshot.try_id
 
 unless shallow
   json.scorer snapshot.scorer, partial: 'api/v1/scorers/communal_scorer', as: :scorer
