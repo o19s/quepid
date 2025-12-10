@@ -2,14 +2,14 @@
 
 # Helper methods for judgement-related views
 module JudgementHelper
-  # Generate rating buttons based on the book's scorer
-  # @param book [Book] The book containing the scorer
+  # Generate rating buttons based on the book's scale
+  # @param book [Book] The book containing the scale
   # @return [Array] Array of button configuration hashes, with :use_backup_labels indicating if fallbacks were used
   # rubocop:disable Metrics/MethodLength, Metrics/BlockLength
   def generate_rating_buttons book
-    max_score = book.scorer.scale.max
+    max_score = book.scale.max
 
-    buttons = book.scorer.scale.map do |score|
+    buttons = book.scale.map do |score|
       # Create the basic button with value and calculated properties
       button = {
         'value'        => score.to_s,
@@ -22,20 +22,20 @@ module JudgementHelper
       button['class'] = calculate_button_class(score, max_score)
 
       # Add HSL color to match Angular app
-      button['style'] = { 'background-color' => calculate_hsl_color(score, book.scorer.scale) }
+      button['style'] = { 'background-color' => calculate_hsl_color(score, book.scale) }
 
-      # Get label from scorer if available
+      # Get label from book's scale_with_labels if available
       begin
         score_str = score.to_s
-        scorer_label = begin
-          book.scorer.scale_with_labels[score_str]
+        scale_label = begin
+          book.scale_with_labels&.dig(score_str)
         rescue StandardError
           nil
         end
-        if scorer_label.present?
-          button['label'] = scorer_label
+        if scale_label.present?
+          button['label'] = scale_label
         else
-          # No label from scorer, using fallback
+          # No label from scale, using fallback
           true
         end
       rescue StandardError
@@ -77,7 +77,7 @@ module JudgementHelper
   # This replicates the same color gradient from the Angular app (ScorerFactory.js)
   # where scores range from red (lowest) to green (highest) on a 0-120 hue scale
   # @param score [Numeric] The rating value
-  # @param scale [Array] The full scale array from the scorer
+  # @param scale [Array] The full scale array from the book
   # @return [String] HSL color string
   def calculate_hsl_color score, scale
     # Match the Angular app's color calculation logic from scaleToColors function

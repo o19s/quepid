@@ -91,7 +91,8 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
   def test_differing_scales_blows_up
     login_user_for_integration_test user
 
-    book_to_merge = Book.new(name: 'Book with a 1,2,3,4 scorer', teams: book.teams, scorer: communal_scorer,
+    book_to_merge = Book.new(name: 'Book with a 1,2,3,4 scale', teams: book.teams,
+                             scale: [ 1, 2, 3, 4 ],
                              selection_strategy: SelectionStrategy.find_by(name: 'Multiple Raters'))
     book_to_merge.save!
 
@@ -99,7 +100,7 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
 
     patch "/books/#{book.id}/combine", params: params
     follow_redirect!
-    assert_equal "One of the books chosen doesn't have a scorer with the scale [0, 1]", flash[:alert]
+    assert_equal "One of the books chosen doesn't have a scale matching [0, 1]", flash[:alert]
   end
 
   let(:single_rater_book) { books(:book_of_star_wars_judgements) }
@@ -170,9 +171,10 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
   def test_combining_single_rater_strategy_into_multiple_rater_strategy_book_works
     login_user_for_integration_test user
 
-    book_with_multiple_raters = Book.create(name:               'Book with a 1,2,3,4 scorer',
+    book_with_multiple_raters = Book.create(name:               'Book with a 1,2,3,4 scale',
                                             teams:              single_rater_book.teams,
-                                            scorer:             single_rater_book.scorer,
+                                            scale:              single_rater_book.scale,
+                                            scale_with_labels:  single_rater_book.scale_with_labels,
                                             selection_strategy: SelectionStrategy.find_by(name: 'Multiple Raters'))
 
     params = { book_ids: { "#{single_rater_book.id}": '1' } }
@@ -184,5 +186,26 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
 
     assert_equal book_with_multiple_raters.query_doc_pairs.count, 2
     assert_equal book_with_multiple_raters.judgements.count, 2
+  end
+
+  def test_scorer_id_copies_scale_fields_when_creating_book
+    login_user_for_integration_test user
+
+    scorer = user.scorers_involved_with.first
+
+    post '/books', params: {
+      book: {
+        name:                  'Test Book with Scorer',
+        scorer_id:             scorer.id,
+        selection_strategy_id: SelectionStrategy.first.id,
+        team_ids:              [ user.teams.first.id ],
+      },
+    }
+
+    follow_redirect!
+    created_book = Book.last
+
+    assert_equal scorer.scale, created_book.scale
+    assert_nil created_book.scale_with_labels
   end
 end
