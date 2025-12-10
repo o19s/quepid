@@ -68,7 +68,7 @@ module Api
         service = CaseScoreManager.new @case
 
         begin
-          scorer_id = @case.scorer.present? ? @case.scorer.id : nil
+          scorer_id = @case.scorer.presence&.id
           score_data  = { user_id: current_user.id, scorer_id: scorer_id }.merge(score_params)
           @score      = service.update score_data
 

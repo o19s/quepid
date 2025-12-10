@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class QueryDocPairsController < ApplicationController
-  include Pagy::Backend
+  include Pagy::Method
 
   before_action :set_query_doc_pair, only: [ :show, :edit, :update, :destroy ]
   before_action :set_book

@@ -2,6 +2,18 @@
 
 You are working on Quepid, a Rails application. Review the ClaudeOnRails context file at @.claude-on-rails/context.md
 
+We run Quepid in Docker primarily.
+
+To set up the enviroment use:
+
+`bin/setup_docker`.
+
+To start rails:
+
+`bin/docker s`
+
+Most commands you want to run you can just prefix with `bin/docker r bundle exec` so `rails console --environment=test` becomes `bin/docker r bundle exec rails console --environment=test`
+
 Use yarn instead of npm for package management.
 
 Documentation goes in the `docs` directory, not a toplevel `doc` directory.

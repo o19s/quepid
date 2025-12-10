@@ -3,12 +3,6 @@
 # This file is loaded into the Dockerfile.prod Dockerfile
 # to faciliate startup steps.
 
-# Enable jemalloc for reduced memory usage and latency.
-if [ -z "${LD_PRELOAD+x}" ]; then
-    LD_PRELOAD=$(find /usr/lib -name libjemalloc.so.2 -print -quit)
-    export LD_PRELOAD
-fi
-
 # If running foreman or rails server, handle database setup
 if [ "${1}" == "foreman" ] || ([ "${@: -2:1}" == "./bin/rails" ] && [ "${@: -1:1}" == "server" ]); then
   echo "Checking if database exists..."

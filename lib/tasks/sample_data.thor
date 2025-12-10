@@ -138,9 +138,9 @@ class SampleData < Thor
     user_params = user_specifics # user_defaults.merge(user_specifics)
     osc_ai_judge = seed_user user_params
     osc_ai_judge.judge_options = {
-      llm_service_url: 'https://api.openai.com',
-      llm_model:       'gpt-4o',
-      llm_timeout:     30,
+      llm_service_url: 'http://ollama:11434',
+      llm_model:       'qwen3:0.6b',
+      llm_timeout:     60,
     }
     print_user_info user_params
 

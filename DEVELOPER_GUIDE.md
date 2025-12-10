@@ -79,6 +79,9 @@ Historically Quepid development has REQUIRED Docker, which avoids having to deal
 
 ### Docker Based Setup
 
+Gives you preset up Ollama and a simple model for LLM as Judge testing.
+Gives you a preset up proxy for http and https testing.
+
 #### 1. Prerequisites
 
 Make sure you have installed Docker.
@@ -118,7 +121,7 @@ You can still use `docker compose` directly, but for the basic stuff you can use
 
 ### Local Setup
 
-This approach lets you run Quepid directly on your machine without Docker. It provides a more native development experience but requires setting up dependencies manually.
+This approach lets you run Quepid directly on your machine without Docker. It provides a more native development experience but requires setting up dependencies manually.  It may be faster to work with!
 
 #### Prerequisites
 
@@ -132,7 +135,7 @@ This approach lets you run Quepid directly on your machine without Docker. It pr
 
 #### Database Setup
 
-1. Start up MySQL however you like.
+1. Start up MySQL however you like.  Some folks set up Quepid with Docker, and then 
 
 
 #### Application Setup
@@ -562,15 +565,25 @@ The `docker-compose.yml` file contains an nginx reverse proxy that uses these ce
 
 Quepid supports OpenID Connect (OIDC) authentication. To test this functionality in development:
 
-1. **Configure the Keycloak Identity Provider**:
+1. **Setup a Hosts entry**
+   There is a redirect to http://keycloak that we need to support.
+   Edit `/etc/hosts` and add:
+   ```
+   # Needed by Quepid to make http://keycloak work everywhere!
+   127.0.0.1       keycloak
+   ```
+
+2. **Configure the Keycloak Identity Provider**:
 
    The development environment includes a Keycloak container set up in the `docker-compose.yml` file. When running the development environment with Docker, Keycloak will be available at http://localhost:9080.
 
    - Default admin credentials: 
      - Username: `admin`
      - Password: `password`
+     
+The below steps are only if you want to customize the setup, and for basic testing you can skip.
 
-2. **Configure Quepid for OIDC**:
+3. **Configure Quepid for OIDC**:
 
    Set the following environment variables in your `.env` file or `docker-compose.override.yml`:
 
@@ -582,7 +595,7 @@ Quepid supports OpenID Connect (OIDC) authentication. To test this functionality
    OPENID_CONNECT_CLIENT_SECRET=your_client_secret
    ```
 
-3. **Set up a Realm and Client in Keycloak**:
+4. **Set up a Realm and Client in Keycloak**:
 
    - Log in to the Keycloak Admin console
    - Create a new realm named `quepid` (or use an existing one)

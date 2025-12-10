@@ -81,7 +81,7 @@ describe('Service: querySnapshotSvc', function () {
       '5': /*snapshot id*/
            {id: '5', /*query id*/
             name: 'myname',
-            time: '1392318891',
+            time: '1516190400000',  // 2018-01-17 12:00:00 UTC (noon, avoids timezone issues)
             docs: { /*the search results for this query*/
               '0': [{id: '1', explain: rawExpl}, {id: '4', explain: rawExpl}, {id: '7', explain: rawExpl}],
               '1': [{id: 'cat', explain: rawExpl}, {id: 'banana', explain: rawExpl}, {id: 'doc', explain: rawExpl}],
@@ -90,7 +90,7 @@ describe('Service: querySnapshotSvc', function () {
       '12':
            {id: '12',
             name: 'other',
-            time: '0',
+            time: '1514808000000',  // 2018-01-01 12:00:00 UTC (noon, avoids timezone issues)
             docs: {
               '9':  [{id: 'lol', explain: rawExpl}, {id: 'wut', explain: rawExpl}],
               '10': [{id: 'light', explain: rawExpl}, {id: 'lamp', explain: rawExpl}, {id: 'lark', explain: rawExpl}],
@@ -106,13 +106,11 @@ describe('Service: querySnapshotSvc', function () {
     expect(querySnapshotSvc.snapshots['5'].id).toBe('5');
     expect(querySnapshotSvc.snapshots['5'].docIdsPerQuery['0']).toEqual(['1', '4', '7']);
     expect(querySnapshotSvc.snapshots['5'].docIdsPerQuery['1']).toEqual(['cat', 'banana', 'doc']);
-    // Skip date part check as it depends on timezone
-    expect(querySnapshotSvc.snapshots['5'].name()).toContain('myname');
+    expect(querySnapshotSvc.snapshots['5'].name()).toEqual('(1/17/18) myname');
     expect(querySnapshotSvc.snapshots['12'].id).toBe('12');
     expect(querySnapshotSvc.snapshots['12'].docIdsPerQuery['9']).toEqual(['lol', 'wut']);
     expect(querySnapshotSvc.snapshots['12'].docIdsPerQuery['10']).toEqual(['light', 'lamp', 'lark']);
-    // Skip date part check as it depends on timezone
-    expect(querySnapshotSvc.snapshots['12'].name()).toContain('other');
+    expect(querySnapshotSvc.snapshots['12'].name()).toEqual('(1/1/18) other');
     $httpBackend.verifyNoOutstandingExpectation();
 
   });
@@ -162,7 +160,7 @@ describe('Service: querySnapshotSvc', function () {
     var addedSnapResp = {
       id:   '5',
       name: 'myname',
-      time: '1392318891',
+      time: '1516190400000',  // 2018-01-17 12:00:00 UTC (noon, avoids timezone issues)
       docs: {
         '0': [
           {id: '1', explain: rawExpl},
@@ -211,8 +209,7 @@ describe('Service: querySnapshotSvc', function () {
       expect(querySnapshotSvc.snapshots['5'].id).toBe('5');
       expect(querySnapshotSvc.snapshots['5'].docIdsPerQuery['0']).toEqual(['1', '4', '7']);
       expect(querySnapshotSvc.snapshots['5'].docIdsPerQuery['1']).toEqual(['cat', 'banana', 'doc']);
-      // Skip date part check as it depends on timezone
-      expect(querySnapshotSvc.snapshots['5'].name()).toContain('myname');
+      expect(querySnapshotSvc.snapshots['5'].name()).toEqual('(1/17/18) myname');
       $httpBackend.verifyNoOutstandingExpectation();
     });
 
