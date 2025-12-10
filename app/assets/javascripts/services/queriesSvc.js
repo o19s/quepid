@@ -17,6 +17,7 @@ angular.module('QuepidApp')
     'searchSvc',
     'ratingsStoreSvc',
     'caseTryNavSvc',
+    'snapshotSearcherSvc',
     'bookSvc',
     'DocListFactory',
     'diffResultsSvc',
@@ -35,6 +36,7 @@ angular.module('QuepidApp')
       searchSvc,
       ratingsStoreSvc,
       caseTryNavSvc,
+      snapshotSearcherSvc,
       bookSvc,
       DocListFactory,
       diffResultsSvc,
@@ -88,6 +90,7 @@ angular.module('QuepidApp')
 
       this.getCaseNo = getCaseNo;
       this.createSearcherFromSettings = createSearcherFromSettings;
+      this.createSearcherFromSnapshot = createSearcherFromSnapshot;
       this.normalizeDocExplains = normalizeDocExplains;
       this.toggleShowOnlyRated = toggleShowOnlyRated;
 
@@ -190,6 +193,10 @@ angular.module('QuepidApp')
             passedInSettings.searchEngine
           );
         }
+      }
+
+      function createSearcherFromSnapshot(snapshotId, query, settings) {
+        return snapshotSearcherSvc.createSearcherFromSnapshot(snapshotId, query, settings);
       }
 
       function normalizeDocExplains(query, searcher, fieldSpec) {
@@ -543,6 +550,50 @@ angular.module('QuepidApp')
                 }
               }
             });
+          });
+        };
+
+        // Method to search using a snapshot instead of live search engine
+        this.searchFromSnapshot = function(snapshotId) {
+          let self = this;
+          
+          return $q(function(resolve, reject) {
+            self.hasBeenScored = false;
+
+            // Create snapshot searcher using the same interface as normal searchers
+            let settings = currSettings;
+            self.searcher = svc.createSearcherFromSnapshot(snapshotId, self, settings);
+
+            if (!self.searcher) {
+              let msg = 'Snapshot not found: ' + snapshotId;
+              self.onError(msg);
+              reject(msg);
+              return;
+            }
+
+            // Use the same search flow as normal search
+            self.searcher.search()
+              .then(function() {
+                self.linkUrl = self.searcher.linkUrl;
+
+                if (self.searcher.inError) {
+                  self.setDocs([], 0);
+                  self.onError('Error loading snapshot results');
+                  reject('Error loading snapshot results');
+                } else {
+                  let error = self.setDocs(self.searcher.docs, self.searcher.numFound);
+                  if (error) {
+                    self.onError(error);
+                    reject(error);
+                  } else {
+                    resolve();
+                  }
+                }
+              }, function() {
+                let msg = 'Failed to load snapshot: ' + snapshotId;
+                self.onError(msg);
+                reject(msg);
+              });
           });
         };
 
