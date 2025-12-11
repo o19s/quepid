@@ -12,36 +12,8 @@ angular.module('QuepidApp')
 
       // Functions
       ctrl.prompt = prompt;
-      ctrl.promptMulti = promptMulti;
 
       function prompt() {
-        var modalInstance = $uibModal.open({
-          templateUrl:  'diff/_modal.html',
-          controller:   'DiffModalInstanceCtrl',
-          controllerAs: 'ctrl',
-          resolve: {
-            initialSelection: function() {
-              return queryViewSvc.diffSetting;
-            }
-          }
-        });
-
-        modalInstance.result
-          .then(function(response) {        
-            queryViewSvc.enableDiff(response);
-            queriesSvc.setDiffSetting(response);
-          },
-          function() {
-            $log.info('INFO: Modal dismissed');
-          }).then(function() {
-            if (!queryViewSvc.isDiffEnabled()){
-              $log.info('rescoring queries after cancelling diff');
-              queriesSvc.updateScores();
-            }
-        });
-      }
-
-      function promptMulti() {
         var currentMultiDiffSettings = multiDiffResultsSvc.getMultiDiffSettings();
         var initialSelection = currentMultiDiffSettings.length > 0 ? currentMultiDiffSettings : null;
         
@@ -77,10 +49,10 @@ angular.module('QuepidApp')
             }
           },
           function() {
-            $log.info('INFO: Multi-diff modal dismissed');
+            $log.info('INFO: Modal dismissed');
           }).then(function() {
             if (!queryViewSvc.isDiffEnabled() && !multiDiffResultsSvc.isMultiDiffEnabled()){
-              $log.info('rescoring queries after cancelling multi-diff');
+              $log.info('rescoring queries after cancelling diff');
               queriesSvc.updateScores();
             }
         });

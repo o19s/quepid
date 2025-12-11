@@ -1,10 +1,10 @@
-# Multi-Snapshot Comparison Feature
+# Snapshot Comparison Feature
 
-The multi-snapshot comparison feature allows you to compare your current search results against 2-3 snapshots simultaneously, providing a comprehensive view of how your search performance has evolved across different points in time.
+The unified snapshot comparison feature allows you to compare your current search results against 1-3 snapshots through a single, streamlined interface, providing a comprehensive view of how your search performance has evolved across different points in time.
 
 ## Overview
 
-This feature extends Quepid's existing single snapshot comparison functionality to support multiple snapshots at once. Instead of comparing against just one previous snapshot, you can now see how your current results stack up against multiple historical baselines.
+This feature replaces the old separate single and multiple snapshot comparison interfaces with a unified system. You can now easily compare against one snapshot for simple comparisons or select multiple snapshots for more comprehensive analysis, all through the same intuitive interface.
 
 ## How to Use
 
@@ -21,12 +21,17 @@ This feature extends Quepid's existing single snapshot comparison functionality 
 3. Each snapshot must be unique - you cannot compare against the same snapshot multiple times
 4. Click "Update Comparison Settings" to apply your selection
 
-### Understanding the Multi-Snapshot View
+### Understanding the Comparison Views
 
-The multi-snapshot view displays results in a side-by-side format:
+The system automatically chooses the best display format based on your selection:
 
+**Single Snapshot (1 selected):** Classic two-column side-by-side view
+- **Column 1**: Current search results  
+- **Column 2**: Selected snapshot results
+
+**Multiple Snapshots (2-3 selected):** Multi-column comparison view
 - **Column 1**: Current search results
-- **Columns 2-4**: Results from each selected snapshot (up to 3)
+- **Columns 2-4**: Results from each selected snapshot
 
 Each column shows:
 - The snapshot name and identifier
@@ -47,64 +52,52 @@ The system automatically highlights differences between current and snapshot res
 At the bottom of the comparison view, you'll see summary statistics including:
 - Total number of results for current search and each snapshot
 - Overall scores for each comparison
-- Export options for further analysis
-
-## Export Functionality
-
-You can export your multi-snapshot comparison data in two formats:
-
-### CSV Export
-Generates a spreadsheet-friendly format with columns for:
-- Position in results
-- Current result details (ID, title, URL, score)
-- Each snapshot's result at that position
-
-### JSON Export
-Provides a structured data format including:
-- Query information and timestamp
-- Snapshot names and metadata
-- Complete result data for programmatic analysis
 
 ## Technical Architecture
 
 ### Services
 
-- **multiDiffResultsSvc**: Core service managing multiple snapshot comparisons
-- **MultiDiffModalInstanceCtrl**: Controller for the snapshot selection modal
-- **QueryMultiDiffResultsCtrl**: Controller for rendering comparison results
+- **multiDiffResultsSvc**: Core service managing snapshot comparisons (both single and multiple)
+- **MultiDiffModalInstanceCtrl**: Unified controller for all snapshot selection
+- **QueryMultiDiffResultsCtrl**: Controller for rendering multi-snapshot comparison results
+- **diffResultsSvc**: Legacy service for single snapshot comparisons (still used internally)
 
 ### Templates
 
-- **_multi_modal.html**: Modal for selecting multiple snapshots
-- **queryMultiDiffResults.html**: Main comparison view template
+- **_multi_modal.html**: Unified modal for selecting 1-3 snapshots
+- **queryMultiDiffResults.html**: Multi-snapshot comparison view template
+- **queryDiffResults.html**: Single snapshot comparison view template (legacy, used for 1 snapshot)
 
 ### Integration Points
 
-The multi-diff functionality integrates with existing Quepid services:
+The unified snapshot functionality integrates with existing Quepid services:
 - Uses existing `querySnapshotSvc` for snapshot management
 - Leverages `snapshotSearcherSvc` for search execution
-- Maintains compatibility with existing single-snapshot diff functionality
+- Automatically routes single snapshot selections to the optimized legacy single-diff display
+- Routes multiple snapshot selections to the new multi-diff display
 
 ## Best Practices
 
 ### Snapshot Selection
 
-- Choose snapshots from different time periods to see evolution over time
-- Compare against key milestone snapshots (e.g., before/after major changes)
-- Limit to 3 snapshots maximum to maintain readability
+- **Start Simple:** Begin with 1 snapshot for basic before/after comparisons
+- **Add Gradually:** Add more snapshots (up to 3 total) for trend analysis
+- **Choose Strategically:** Select snapshots from different time periods or key milestones
+- **Maintain Clarity:** Limit to 3 snapshots maximum to keep results readable
 
 ### Performance Considerations
 
-- Multi-snapshot comparisons require more processing time
-- Each additional snapshot increases query execution time
-- Consider system load when running comparisons on large query sets
+- **Single snapshots:** Fast, optimized legacy performance
+- **Multiple snapshots:** Require more processing time per additional snapshot
+- **System load:** Consider server capacity when running multi-snapshot comparisons on large query sets
+- **Progressive selection:** Start with fewer snapshots and add more as needed
 
 ### Analysis Workflow
 
-1. Start with single-snapshot comparisons to identify major changes
-2. Use multi-snapshot view to understand trends across time
-3. Export data for deeper statistical analysis if needed
-4. Focus on queries showing significant variations across snapshots
+1. **Quick Checks:** Use single snapshot comparisons for fast before/after analysis
+2. **Trend Analysis:** Add additional snapshots to understand changes over time
+3. **Deep Dive:** Export multi-snapshot data for statistical analysis (when using 2+ snapshots)
+4. **Focus Areas:** Identify queries with significant variations across snapshots for further investigation
 
 ## Troubleshooting
 
@@ -132,7 +125,7 @@ The system gracefully handles various error conditions:
 
 ## API Integration
 
-For programmatic access to multi-snapshot comparison data, the export functionality provides structured data that can be consumed by external analysis tools.
+For programmatic access to multi-snapshot comparison data, you can use Quepid's API endpoints to retrieve structured data that can be consumed by external analysis tools.
 
 The JSON export format is particularly suitable for:
 - Statistical analysis tools (R, Python pandas)

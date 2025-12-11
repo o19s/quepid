@@ -7,12 +7,11 @@
       </div>
       <div class="multi-diff-column" ng-repeat="searcher in query.multiDiff.getSearchers() track by $index">
         <h2>{{searcher.name()}}</h2>
-        <small class="text-muted">Snapshot {{$index + 1}}</small>
       </div>
     </div>
 
     <!-- Results comparison rows -->
-    <div ng-repeat="docTuple in query.docTuples()" class="multi-diff-row" style="margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 15px;">
+    <div ng-repeat="docTuple in query.docTuples()" class="multi-diff-row">
       
       <!-- Current search result -->
       <div class="multi-diff-column">
@@ -86,15 +85,7 @@
         </a>
       </div>
       
-      <div class="btn-group" style="margin-left: 10px;" uib-dropdown>
-        <button class="btn btn-default dropdown-toggle" uib-dropdown-toggle>
-          Export Comparison <span class="caret"></span>
-        </button>
-        <ul class="dropdown-menu" uib-dropdown-menu>
-          <li><a href="#" ng-click="exportMultiDiffResults('csv')">Export as CSV</a></li>
-          <li><a href="#" ng-click="exportMultiDiffResults('json')">Export as JSON</a></li>
-        </ul>
-      </div>
+
     </div>
   </div>
 </div>
@@ -128,8 +119,12 @@
 
 .multi-diff-column {
   flex: 1;
-  border-right: 1px solid #eee;
+  border-right: 0px solid #eee;
   padding-right: 15px;
+}
+
+.multi-diff-column:not(:first-child) {
+  padding-left: 15px;
 }
 
 .multi-diff-column:last-child {
@@ -149,7 +144,6 @@
 
 .multi-diff-actions {
   text-align: center;
-  border-top: 1px solid #eee;
   padding-top: 20px;
 }
 
@@ -162,7 +156,7 @@
   
   .multi-diff-column {
     border-right: none;
-    border-bottom: 1px solid #eee;
+    border-bottom: 0px solid #eee;
     margin-bottom: 15px;
   }
   

@@ -1,10 +1,10 @@
-# Multi-Snapshot Comparison Implementation Summary
+# Unified Snapshot Comparison Implementation Summary
 
-This document summarizes the implementation of the multi-snapshot comparison feature for Quepid, which allows users to compare current search results against 2-3 snapshots simultaneously.
+This document summarizes the implementation of the unified snapshot comparison feature for Quepid, which allows users to compare current search results against 1-3 snapshots through a single, streamlined interface.
 
 ## Overview
 
-The feature extends the existing single snapshot comparison functionality to support multiple snapshots at once, providing a comprehensive view of search performance evolution across different time periods.
+The feature replaces the old separate single and multiple snapshot comparison interfaces with a unified system that supports both single and multiple snapshot comparisons through one interface, providing a comprehensive view of search performance evolution across different time periods.
 
 ## Files Created/Modified
 
@@ -25,7 +25,6 @@ The feature extends the existing single snapshot comparison functionality to sup
 - **`app/assets/javascripts/controllers/queryMultiDiffResults.js`**
   - Controller for rendering multi-snapshot comparison results
   - Manages document tuple creation for side-by-side comparison
-  - Provides export functionality (CSV and JSON)
   - Handles visual difference highlighting
 
 ### New Templates
@@ -202,9 +201,17 @@ queriesSvc
 
 ## Dependencies
 
-- Existing Quepid services (querySnapshotSvc, snapshotSearcherSvc)
-- AngularJS 1.x framework
-- UI Bootstrap components
-- Existing CSS framework
+- **Required Services**: querySnapshotSvc, snapshotSearcherSvc, diffResultsSvc
+- **Framework**: AngularJS 1.x with UI Bootstrap components
+- **Styling**: CSS Flexbox support for optimal layout
+- **Browser Support**: Modern browsers with ES5+ JavaScript support
 
-This implementation provides a solid foundation for multi-snapshot comparison functionality while maintaining compatibility with existing Quepid features and following established patterns.
+## Implementation Benefits
+
+- **Simplified UX**: Single entry point eliminates user confusion
+- **Progressive Disclosure**: Start simple, add complexity as needed  
+- **Consistent Backend**: Unified modal logic reduces maintenance burden
+- **Optimized Performance**: Smart routing uses appropriate display for selection count
+- **Future-Proof**: Extensible architecture supports additional comparison features
+
+This implementation provides a solid foundation for snapshot comparison functionality while improving usability and maintainability compared to the previous dual-interface approach.
