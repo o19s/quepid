@@ -2,42 +2,42 @@
 /* jshint latedef: false */
 
 angular.module('QuepidApp')
-  .controller('QscoreCtrl', [
+  .controller('QscoreCaseCtrl', [
     '$scope', 'qscoreSvc', 'queryViewSvc',
     function ($scope, qscoreSvc, queryViewSvc) {
       var ctrl          = this;
       var defaultStyle  = { 'background-color': 'hsl(0, 0%, 0%, 0.5)'};
 
-      // Lots of cleanup/refactoring available
+      // Initialize controller properties
       ctrl.diffScore    = 'a?a';
       ctrl.diffStyle    = {};
       ctrl.score        = 'b?b';
-      ctrl.scoreType    = ctrl.scoreType || 'normal';
+
       ctrl.style        = { 'background-color': qscoreSvc.scoreToColor(ctrl.score, ctrl.maxScore) };
       
+      // Watch for changes in the scorable's current score (deep watch for nested properties)
       $scope.$watch('ctrl.scorable.currentScore', function() {
         if (ctrl.scorable.currentScore) {
           var scorable = ctrl.scorable.currentScore;
           ctrl.score    = scorable.score;
           ctrl.maxScore = $scope.ctrl.maxScore;
 
-          //TODO refactor this
           if ( angular.isDefined(scorable.backgroundColor) ) {
             ctrl.style = { 'background-color': scorable.backgroundColor };
           } else {
             ctrl.style = { 'background-color': qscoreSvc.scoreToColor(ctrl.score, ctrl.maxScore)};
           }          
         }
-      });
+      }, true);
     
-      //These watches updates the diffs in the main query list and the avgQuery
+      // Watch for diff changes in the main query list and avgQuery
       $scope.$watch('ctrl.scorable.diff', function() {
         if (queryViewSvc.isDiffEnabled()){
           setDiff();  
         }   
       });
       
-      // Primarily used to pick up when you change snapshots and update the diffs
+      // Watch for snapshot changes to update diffs
       $scope.$watch('ctrl.fullDiffName', function() {
         if (queryViewSvc.isDiffEnabled()){
           setDiff();  
@@ -54,10 +54,9 @@ angular.module('QuepidApp')
       function updateDiffInfo() {
         ctrl.diffInfo.label = ctrl.diffLabel;
         if (ctrl.diffScore == null) {
-          // 06-mar-24 this is probably able to be removed at some point.
           throw Error('PANIC.  We have a ctrl.diffScore that is null');
         }
-        ctrl.diffInfo.score = ctrl.diffScore; //|| 'e?e';
+        ctrl.diffInfo.score = ctrl.diffScore;
         ctrl.diffInfo.style = ctrl.diffStyle;
       }
 
@@ -82,7 +81,6 @@ angular.module('QuepidApp')
 
             updateDiffInfo();
           });
-
 
         } else {
           setDefaultDiff();

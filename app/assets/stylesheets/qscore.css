@@ -1,10 +1,10 @@
-qscore {
+qscore-case, qscore-query {
 	 padding: 0;
 }
- qscore.case-score {
+ qscore-case.case-score {
 	 margin: 20px 15px -10px 0px;
 }
- qscore .header-rating {
+ qscore-case .header-rating {
 	 border-radius: 5px;
 	 color: #fff;
 	 display: inline-block;
@@ -15,7 +15,7 @@ qscore {
 	 text-align: center;
 	 vertical-align: top;
 }
- qscore .overall-rating {
+ qscore-case .overall-rating, qscore-query .overall-rating {
 	 display: block;
 	 float: left;
 	 height: 100%;
@@ -29,16 +29,27 @@ qscore {
 	 border-top-left-radius: 5px;
 	 border-bottom-left-radius: 5px;
 }
- qscore .overall-rating.diff-score {
+ qscore-query.results-score .overall-rating {
+	 margin: -10px 0px -10px -20px;
+}
+ qscore-query.diff-score .overall-rating {
+	 margin: -10px 20px -10px 0px;
+}
+ qscore-case .overall-rating.diff-score {
 	 border-radius: 0;
 }
- qscore qgraph {
+ qscore-query.diff-score .overall-rating {
+	 border-radius: 0;
+	 border-top-right-radius: 5px;
+	 border-bottom-right-radius: 5px;
+}
+ qscore-case qgraph {
 	 display: inline-block;
 	 height: 80px;
 	 margin: 0px -10px 0px 0px;
 	 width: 150px;
 }
- qscore qgraph svg {
+ qscore-case qgraph svg {
 	 border: 2px solid grey;
 	 border-right-style: none;
 	 border-top-left-radius: 5px;

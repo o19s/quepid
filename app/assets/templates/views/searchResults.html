@@ -3,18 +3,22 @@
   rank="{{$index + 1}}"
   class="clearfix" ng-class="query.state() | queryStateClass">
   <div class="result-header">
-    <qscore
+    <!-- Current query score what the hell-->
+    <qscore-query
       class="results-score"
-      diff-label="''"
-      full-diff-name="''"
       max-score="maxScore || 100";
       scorable="query"
-      score-label="''"
-      score-type="'query'"
-      scores="[]"
       show-diff="displayed.results == displayed.resultsView.diff"
     >
-    </qscore>
+    </qscore-query>
+    <qscore-query
+      ng-if="displayed.results == displayed.resultsView.diff && query.diff"
+      class="results-score diff-score"
+      max-score="maxScore || 100";
+      scorable="query.diff"
+      show-diff="false"
+    >
+    </qscore-query>
 
     <span class="loading-query"></span>
 

@@ -5,7 +5,7 @@
       <div id="case-header" class="row">
         <div class="col-sm-12">
           <div style="display: inline-block">
-            <qscore
+            <qscore-case
               annotations="annotations"
               class="case-score"
               diff-label="queries.selectedDiffName()"
@@ -13,11 +13,10 @@
               max-score="maxScore || 1";
               scorable="queries.avgQuery"
               score-label="getScorer().name"
-              score-type="'header'"
               scores="scores"
               show-diff="queries.selectedDiff() !== null"
             >
-            </qscore>
+            </qscore-case>
           </div>
 
           <div ng-controller="CaseCtrl" style="display:inline-block;vertical-align:top">

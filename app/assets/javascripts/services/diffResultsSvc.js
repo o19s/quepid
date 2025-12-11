@@ -45,7 +45,10 @@ angular.module('QuepidApp')
                     var docsForScoring = diffSearcher.docs.filter(function(d) { 
                       return d.ratedOnly === false; 
                     });
-                    query.diff.diffScore = query.scoreOthers(docsForScoring);
+                    return query.scoreOthers(docsForScoring);
+                  })
+                  .then(function(scoreResult) {
+                    query.diff.diffScore = scoreResult;
                   });
               },
               
@@ -74,7 +77,11 @@ angular.module('QuepidApp')
                 return 'snapshot';
               },
               
-              diffScore: { score: null, allRated: false }
+              diffScore: { score: null, allRated: false },
+              
+              get currentScore() {
+                return this.diffScore;
+              }
             };
             
             // Initialize the diff

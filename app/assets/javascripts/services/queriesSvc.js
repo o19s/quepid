@@ -1104,7 +1104,7 @@ angular.module('QuepidApp')
       };
 
       /*
-       * This method prepares the scores table that the qgraph/qscore needs.
+       * This method prepares the scores table that the qgraph/qscore-case/qscore-query components need.
        *
        */
       this.scoreAll = function(scorables) {

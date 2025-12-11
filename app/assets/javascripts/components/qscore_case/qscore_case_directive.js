@@ -1,10 +1,10 @@
 'use strict';
 
 angular.module('QuepidApp')
-  .component('qscore', {
-    controller:   'QscoreCtrl',
+  .component('qscoreCase', {
+    controller:   'QscoreCaseCtrl',
     controllerAs: 'ctrl',
-    templateUrl:  'qscore/qscore.html',
+    templateUrl:  'qscore_case/qscore_case.html',
     bindings:      {
       annotations:  '=',
       diffLabel:    '=',
@@ -13,7 +13,6 @@ angular.module('QuepidApp')
       scorable:     '=',
       scoreLabel:   '=',
       scores:       '=',
-      scoreType:    '=',
       showDiff:     '=',
     },
   });

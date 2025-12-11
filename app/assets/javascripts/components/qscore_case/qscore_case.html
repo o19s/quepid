@@ -7,7 +7,7 @@
 
 <div
   ng-style="ctrl.style"
-  ng-class="ctrl.scoreType | chooseScoreClass"
+  class="header-rating"
 >
   <span class="scorable-score">
     {{ ctrl.score | scoreDisplay }}
@@ -18,11 +18,10 @@
 </div>
 
 <div
-  class="diff-score"
+  class="diff-score header-rating"
   title="{{ ctrl.fullDiffName }}"
   ng-show="ctrl.showDiff"
   ng-style="ctrl.diffInfo.style"
-  ng-class="ctrl.scoreType | chooseScoreClass"
 >
   <span class="scorable-score">
     {{ ctrl.diffInfo.score | scoreDisplay }}
