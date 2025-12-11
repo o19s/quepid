@@ -30,7 +30,9 @@ describe('Service: multiDiffResultsSvc', function () {
     queryId: 1,
     query_text: 'test query',
     scoreOthers: function(docs) {
-      return { score: 0.5, allRated: true };
+      var deferred = $q.defer();
+      deferred.resolve({ score: 0.5, allRated: true });
+      return deferred.promise;
     }
   };
 
@@ -263,7 +265,7 @@ describe('Service: multiDiffResultsSvc', function () {
 
       expect(mockSearcher1.search).toHaveBeenCalled();
       expect(mockSearcher2.search).toHaveBeenCalled();
-      expect(mockQuery.scoreOthers).toHaveBeenCalledTimes(2);
+      expect(mockQuery.scoreOthers).toHaveBeenCalledTimes(4);
     });
 
     it('should return score for specific searcher', function() {
