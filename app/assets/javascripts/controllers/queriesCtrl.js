@@ -232,6 +232,7 @@ angular.module('QuepidApp')
           return deferred.promise;
         },
         diff: {
+          currentScore: { score: null, allRated: false },
           score: function() {
             return queriesSvc.scoreAllDiffs().then( (scoreInfo) => {
               $scope.queries.avgQuery.diff.currentScore = scoreInfo;
@@ -242,6 +243,28 @@ angular.module('QuepidApp')
         //var diff: null, // TODO fill out
       };
 
+      // Watch for diff changes and trigger case-level diff scoring
+      $scope.$watch('queries.selectedDiff()', function(newVal) {
+        if (newVal !== null && $scope.queries.avgQuery.diff) {
+          // Wait for all individual query diffs to be fetched first
+          var fetchPromises = [];
+          angular.forEach(queriesSvc.queries, function(query) {
+            if (query.diff !== null) {
+              fetchPromises.push(query.diff.fetch());
+            }
+          });
+          
+          // After all individual diffs are fetched, calculate case-level score
+          $q.all(fetchPromises).then(function() {
+            return $scope.queries.avgQuery.diff.score();
+          }).then(function(result) {
+            console.log('Case-level diff scoring result:', result);
+          }).catch(function(error) {
+            console.log('Case-level diff scoring error:', error);
+          });
+        }
+      });
+
       $scope.queries.queriesChanged = function() {
         return queriesSvc.version();
       };
@@ -250,18 +273,7 @@ angular.module('QuepidApp')
         return queryViewSvc.diffSetting;
       };
 
-      $scope.queries.selectedDiffName = function() {
-        var diffName = '';
-        if (queryViewSvc.diffSetting === null) {
-          diffName = 'disabled';
-        }
-        else if (queryViewSvc.diffSetting === 'best') {
-          diffName = 'target';
-        } else {
-          diffName = 'snapshot';
-        }
-        return diffName;
-      };
+
 
       $scope.queries.fullDiffName = function() {
         var fullDiffName = '';

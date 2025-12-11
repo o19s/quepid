@@ -7,12 +7,9 @@ angular.module('QuepidApp')
     templateUrl:  'qscore_case/qscore_case.html',
     bindings:      {
       annotations:  '=',
-      diffLabel:    '=',
-      fullDiffName: '=',
       maxScore:     '=',
       scorable:     '=',
       scoreLabel:   '=',
       scores:       '=',
-      showDiff:     '=',
     },
   });

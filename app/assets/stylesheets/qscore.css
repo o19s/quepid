@@ -4,6 +4,15 @@ qscore-case, qscore-query {
  qscore-case.case-score {
 	 margin: 20px 15px -10px 0px;
 }
+ qscore-case.case-score:not(.diff-score):only-of-type {
+	 margin: 20px 15px -10px 0px;
+}
+ qscore-case.case-score:not(.diff-score):not(:only-of-type) {
+	 margin: 20px 0px -10px 0px;
+}
+ qscore-case.case-score.diff-score {
+	 margin: 20px 15px -10px 0px;
+}
  qscore-case .header-rating {
 	 border-radius: 5px;
 	 color: #fff;
@@ -30,6 +39,9 @@ qscore-case, qscore-query {
 	 border-bottom-left-radius: 5px;
 }
  qscore-query.results-score .overall-rating {
+	 margin: -10px 15px -10px -20px;
+}
+ .dual-query-display qscore-query.results-score .overall-rating {
 	 margin: -10px 0px -10px -20px;
 }
  qscore-query.diff-score .overall-rating {
@@ -37,6 +49,16 @@ qscore-case, qscore-query {
 }
  qscore-case .overall-rating.diff-score {
 	 border-radius: 0;
+}
+ qscore-case.case-score:not(.diff-score):not(:only-of-type) .header-rating {
+	 border-top-right-radius: 0;
+	 border-bottom-right-radius: 0;
+}
+ qscore-case.case-score.diff-score .header-rating {
+	 border-top-left-radius: 0;
+	 border-bottom-left-radius: 0;
+	 border-top-right-radius: 5px;
+	 border-bottom-right-radius: 5px;
 }
  qscore-query.diff-score .overall-rating {
 	 border-radius: 0;

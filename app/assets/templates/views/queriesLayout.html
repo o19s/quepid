@@ -4,17 +4,28 @@
     <div class="pane_main results-control">
       <div id="case-header" class="row">
         <div class="col-sm-12">
-          <div style="display: inline-block">
+          <div style="display: inline-flex; align-items: flex-start;">
+            <!-- Current case score -->
             <qscore-case
               annotations="annotations"
               class="case-score"
-              diff-label="queries.selectedDiffName()"
-              full-diff-name="queries.fullDiffName()"
               max-score="maxScore || 1";
               scorable="queries.avgQuery"
               score-label="getScorer().name"
               scores="scores"
-              show-diff="queries.selectedDiff() !== null"
+            >
+            </qscore-case>
+            
+
+            <!-- Diff/snapshot case score (shown when comparing) -->
+            <qscore-case
+              ng-if="queries.selectedDiff() !== null && queries.avgQuery.diff"
+              class="case-score diff-score"
+              max-score="maxScore || 1";
+              scorable="queries.avgQuery.diff"
+              score-label="queries.fullDiffName()"
+              scores="[]"
+              annotations="[]"
             >
             </qscore-case>
           </div>

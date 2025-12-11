@@ -1125,8 +1125,9 @@ angular.module('QuepidApp')
             }
             
             if (scoreInfo.score === null) {
-              // Added 06-Mar-24.   Delete after a few months if we find out this never happens!
-              throw new Error('Null scoreInfo.score should never happen.');
+              // Handle null scores gracefully in diff/snapshot comparisons
+              console.log('Skipping null score in scoreAll calculation');
+              return; // Skip this scorable and continue with others
             }
             // Treat non-rated queries as zeroes when calculating case score
             // This if means we are skipping over zsr as part of the case score

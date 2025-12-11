@@ -6,7 +6,7 @@ angular.module('QuepidApp')
     '$scope', 'qscoreSvc',
     function ($scope, qscoreSvc) {
       var ctrl          = this;
-      var defaultStyle  = { 'background-color': 'hsl(0, 0%, 0%, 0.5)'};
+
 
       // Initialize controller properties
       ctrl.score        = 'b?b';

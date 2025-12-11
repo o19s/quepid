@@ -17,19 +17,3 @@
   </span>
 </div>
 
-<div
-  class="diff-score header-rating"
-  title="{{ ctrl.fullDiffName }}"
-  ng-show="ctrl.showDiff"
-  ng-style="ctrl.diffInfo.style"
->
-  <span class="scorable-score">
-    {{ ctrl.diffInfo.score | scoreDisplay }}
-  </span>
-  <span
-    ng-show="ctrl.diffInfo.label"
-    class="query-score-label low-profile"
-  >
-    {{ ctrl.diffInfo.label }}
-  </span>
-</div>

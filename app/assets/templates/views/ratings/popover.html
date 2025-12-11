@@ -1,8 +1,9 @@
 <div class="ratingContainer">
-  <div ng-if="query.diff" class="alert alert-warning" role="alert">
+  <!-- May no longer be needed -->
+  <!--div ng-if="query.diff" class="alert alert-warning" role="alert">
     Due to some event glitching in Quepid, after you finish rating documents in Diff view you must go to <br/>
     <diff></diff> and click <i>Update Comparison Settings</i> to rescore the Snapshot
-  </div>
+    </div-->
   <ul class="ratingNums">
     <li class="btn btn-xs ratingNum" ng-repeat="(rating, value) in ratings.scale" ng-click="ratings.rate(rating)" ng-style="{ 'background-color': value.color }">
       {{ rating }}

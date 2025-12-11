@@ -88,7 +88,7 @@ angular.module('QuepidApp')
 
       function validateSelections() {
         // Remove any duplicate or empty selections from the end
-        var validSelections = getValidSelections();
+        getValidSelections();
         // This function is called to trigger UI updates
       }
 
