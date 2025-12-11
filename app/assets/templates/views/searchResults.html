@@ -126,6 +126,13 @@
       </query-diff-results>
     </div>
 
+    <!-- multi-diff display -->
+    <div ng-controller="QueryMultiDiffResultsCtrl" ng-if="displayed.results == displayed.resultsView.multiDiff">
+      <query-multi-diff-results query="query" repeatlength="10">
+        Multi Diff
+      </query-multi-diff-results>
+    </div>
+
     <div ng-if="query.state() === 'error'" class="alert alert-danger" ng-bind-html="query.errorText">
       {{query.errorText}}
     </div>

@@ -7,10 +7,20 @@ angular.module('QuepidApp')
     function() {
       this.enableDiff = function(snapshotId) {
         this.diffSetting = snapshotId;
+        this.multiDiffSettings = [];
+      };
+
+      this.enableMultiDiff = function(snapshotIds) {
+        this.multiDiffSettings = snapshotIds || [];
+        this.diffSetting = null;
       };
 
       this.isDiffEnabled = function() {
         return (this.diffSetting !== null);
+      };
+
+      this.isMultiDiffEnabled = function() {
+        return (this.multiDiffSettings && this.multiDiffSettings.length > 1);
       };
 
       this.isQueryToggled = function(queryId) {
@@ -33,6 +43,7 @@ angular.module('QuepidApp')
 
       this.reset = function() {
         this.diffSetting = null;
+        this.multiDiffSettings = [];
         this.queryToggles = {}; // the toggles, they do nothing
       };
 

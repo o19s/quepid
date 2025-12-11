@@ -1,4 +1,11 @@
 <i class="bi bi-bar-chart-fill" aria-hidden="true"></i>
-<a ng-click="ctrl.prompt()">
-  Compare snapshots
+<a ng-click="ctrl.prompt()" style="margin-right: 10px; cursor: pointer;">
+  Compare snapshots (Single)
 </a>
+|
+<a ng-click="ctrl.promptMulti(); console.log('Multi-diff clicked');" style="margin-left: 10px; cursor: pointer; color: blue;">
+  Multiple Snapshots
+</a>
+<div style="font-size: 10px; color: gray;">
+  Debug: ctrl = {{ctrl}}
+</div>

@@ -3,10 +3,10 @@ angular.module('QuepidApp')
   .controller('SearchResultsCtrl', [
     '$rootScope',
     '$scope', '$log', '$window',
-    'rateBulkSvc', 'queriesSvc', 'queryViewSvc', 'settingsSvc',
+    'rateBulkSvc', 'queriesSvc', 'queryViewSvc', 'settingsSvc', 'multiDiffResultsSvc',
     function (
       $rootScope, $scope, $log, $window,
-      rateBulkSvc, queriesSvc, queryViewSvc, settingsSvc
+      rateBulkSvc, queriesSvc, queryViewSvc, settingsSvc, multiDiffResultsSvc
     ) {
       $scope.queriesSvc = queriesSvc;
 
@@ -17,6 +17,7 @@ angular.module('QuepidApp')
         this.resultsView.finder = 1;
         this.resultsView.results = 2;
         this.resultsView.diff = 3;
+        this.resultsView.multiDiff = 4;
         this.results = this.resultsView.results;
       };
 
@@ -76,9 +77,22 @@ angular.module('QuepidApp')
         }
       });
 
+      // Watch for multi-diff changes
+      $scope.$watch('query.multiDiff', function() {
+        if ($scope.query.multiDiff !== null && multiDiffResultsSvc.isMultiDiffEnabled()) {
+          $scope.displayed.results = $scope.displayed.resultsView.multiDiff;
+        } else if ($scope.query.diff !== null) {
+          $scope.displayed.results = $scope.displayed.resultsView.diff;
+        } else {
+          $scope.displayed.results = $scope.displayed.resultsView.results;
+        }
+      });
+
       // TODO kill this watch!
       $scope.$watch('query.version()', function() {
-        if ($scope.query.diff !== null) {
+        if ($scope.query.multiDiff !== null && multiDiffResultsSvc.isMultiDiffEnabled()) {
+          $scope.query.multiDiff.fetch();
+        } else if ($scope.query.diff !== null) {
           $scope.query.diff.fetch();
         }
       });

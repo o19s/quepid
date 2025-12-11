@@ -21,6 +21,7 @@ angular.module('QuepidApp')
     'bookSvc',
     'DocListFactory',
     'diffResultsSvc',
+    'multiDiffResultsSvc',
     'searchErrorTranslatorSvc',
     'esExplainExtractorSvc',
     'solrExplainExtractorSvc',
@@ -40,6 +41,7 @@ angular.module('QuepidApp')
       bookSvc,
       DocListFactory,
       diffResultsSvc,
+      multiDiffResultsSvc,
       searchErrorTranslatorSvc,
       esExplainExtractorSvc,
       solrExplainExtractorSvc,
@@ -806,6 +808,7 @@ angular.module('QuepidApp')
             that.queries[newQueryId] = newQuery;
             newQueries.push(newQueryId);
             diffResultsSvc.createQueryDiff(newQuery);
+            multiDiffResultsSvc.createQueryMultiDiff(newQuery);
           }
         });
 
@@ -932,6 +935,7 @@ angular.module('QuepidApp')
         };
         let newQuery = new Query(queryJson);
         diffResultsSvc.createQueryDiff(newQuery);
+        multiDiffResultsSvc.createQueryMultiDiff(newQuery);
         return newQuery;
       };
 
@@ -1176,6 +1180,14 @@ angular.module('QuepidApp')
         diffResultsSvc.setDiffSetting(diffSetting);
         angular.forEach(this.queries, function(query) {
           diffResultsSvc.createQueryDiff(query);
+          multiDiffResultsSvc.createQueryMultiDiff(query);
+        });
+      };
+
+      this.setMultiDiffSetting = function(multiDiffSettings) {
+        multiDiffResultsSvc.setMultiDiffSettings(multiDiffSettings);
+        angular.forEach(this.queries, function(query) {
+          multiDiffResultsSvc.createQueryMultiDiff(query);
         });
       };
 

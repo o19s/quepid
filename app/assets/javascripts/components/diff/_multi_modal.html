@@ -1,0 +1,153 @@
+<div class="modal-header">
+  <button type="button" class="close btn-core-close" ng-click="ctrl.cancel()" aria-label="Close"></button>
+  <h3 class="modal-title">Compare Against Multiple Snapshots</h3>
+</div>
+<div class="modal-body">
+  <p>Compare your current search results against up to 3 previous snapshots simultaneously</p>
+  
+  <form action="">
+    <div class="form-group">
+      <input type="radio" id="multi-snapshot" name="diffSelection" value="multi-snapshot" ng-model="ctrl.which">
+      <label for="multi-snapshot">Multiple Snapshots (select 2-3)</label>
+      
+      <div ng-show="ctrl.which === 'multi-snapshot'" class="snapshot-selection-container" style="margin-left: 20px; margin-top: 10px;">
+        <div ng-repeat="selection in ctrl.selections track by $index" class="snapshot-selection-row" style="margin-bottom: 10px; display: flex; align-items: center;">
+          <label style="margin-right: 10px; min-width: 100px;">Snapshot {{$index + 1}}:</label>
+          <select
+            ng-model="ctrl.selections[$index]"
+            ng-options="snapshot.id as snapshot.name() for (id, snapshot) in ctrl.snapshots"
+            ng-change="ctrl.validateSelections()"
+            style="margin-right: 10px; min-width: 200px;"
+          >
+            <option value="">-- Select Snapshot --</option>
+          </select>
+          
+          <button
+            type="button"
+            class="btn btn-xs btn-danger"
+            ng-show="ctrl.selections[$index]"
+            ng-click="ctrl.removeSelection($index)"
+            title="Remove this snapshot"
+          >
+            <i class='bi bi-x-lg'></i>
+          </button>
+        </div>
+        
+        <button
+          type="button"
+          class="btn btn-xs btn-success"
+          ng-show="ctrl.canAddMore()"
+          ng-click="ctrl.addSelection()"
+          title="Add another snapshot"
+        >
+          <i class='bi bi-plus'></i> Add Snapshot
+        </button>
+        
+        <div class="alert alert-info" ng-show="ctrl.selections.length < 2">
+          <strong>Note:</strong> You need to select at least 2 snapshots for multi-comparison.
+        </div>
+        
+        <div class="alert alert-warning" ng-show="ctrl.hasDuplicateSelections()">
+          <strong>Warning:</strong> You have selected the same snapshot multiple times. Each snapshot should be unique.
+        </div>
+        
+        <div class="alert alert-warning" role="alert" ng-if="ctrl.hasProcessingSnapshots()">
+          One or more selected snapshots are currently being processed in the background. You should wait until they complete.
+        </div>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <input type="radio" id="single-snapshot" name="diffSelection" value="snapshot" ng-model="ctrl.which">
+      <label for="single-snapshot">Single Snapshot
+        <select
+          id="singleDiffWith"
+          ng-model="ctrl.singleSelection"
+          ng-options="snapshot.id as snapshot.name() for (id, snapshot) in ctrl.snapshots"
+          ng-show="ctrl.which === 'snapshot'"
+        >
+          <option value="">-- Select Snapshot --</option>
+        </select>
+      </label>
+
+      <a
+        class="btn btn-xs btn-danger"
+        ng-show="ctrl.which === 'snapshot' && ctrl.singleSelection"
+        ng-click="ctrl.toggleDel(ctrl.singleSelection)"
+        title="delete"
+      >
+        <i class='bi bi-x-lg'></i>
+      </a>
+
+      <div class="alert alert-warning" ng-show="ctrl.delStarted()">
+        Are you sure you want to delete this snapshot?
+        <a ng-click="ctrl.delConfirm()">yes</a> /
+        <a ng-click="ctrl.toggleDel(null)">no</a>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <input type="radio" id="disable" name="diffSelection" value="none" ng-model="ctrl.which">
+      <label for="disable">Disable Comparison</label>
+    </div>
+  </form>
+  
+  <div ng-show="ctrl.which === 'multi-snapshot' && ctrl.getValidSelections().length > 1" class="selected-snapshots-preview">
+    <h4>Selected Snapshots for Comparison:</h4>
+    <ul>
+      <li ng-repeat="snapshotId in ctrl.getValidSelections()">
+        <strong>{{ctrl.getSnapshotName(snapshotId)}}</strong>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<div class="modal-footer">
+  <button
+    class="btn btn-default"
+    ng-disabled="ctrl.inProgress || ctrl.nothingSelected()"
+    ng-click="ctrl.ok()"
+  >
+    Update Comparison Settings
+  </button>
+  <button
+    class="btn btn-default"
+    ng-disabled="ctrl.inProgress"
+    ng-click="ctrl.cancel()"
+  >
+    Cancel
+  </button>
+
+  <div ng-show="ctrl.inProgress">
+    <div ng-show="ctrl.which === 'multi-snapshot'">
+      Fetching multiple snapshots, this may take a moment depending on the number of queries and snapshots...
+    </div>
+    <div ng-show="ctrl.which === 'snapshot'">
+      Fetching snapshot info, this may take a moment or two depending on the number of queries to run...
+    </div>
+  </div>
+</div>
+
+<style>
+.snapshot-selection-container {
+  border: 1px solid #ddd;
+  padding: 15px;
+  border-radius: 5px;
+  background-color: #f9f9f9;
+}
+
+.snapshot-selection-row {
+  padding: 5px 0;
+}
+
+.selected-snapshots-preview {
+  margin-top: 20px;
+  padding: 10px;
+  background-color: #e8f4fd;
+  border-radius: 5px;
+}
+
+.selected-snapshots-preview ul {
+  margin-bottom: 0;
+}
+</style>
