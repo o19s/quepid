@@ -18,17 +18,22 @@ angular.module('QuepidApp')
     ) {
       var ctrl = this;
 
-      querySnapshotSvc.getSnapshots().then(function() {
-          ctrl.snapshots = querySnapshotSvc.snapshots;
-        }
-      );
-        
       ctrl.selections      = [null]; // Start with 1 empty selection
       ctrl.disabled        = false;
       ctrl.inProgress      = false;
+      ctrl.snapshots       = null; // Initialize to null until loaded
+
+      // Load snapshots first, then initialize selections
+      querySnapshotSvc.getSnapshots().then(function() {
+          ctrl.snapshots = querySnapshotSvc.snapshots;
+          // Initialize selections after snapshots are loaded
+          initializeSelections();
+        }
+      );
 
       // Functions
       ctrl.cancel                  = cancel;
+      ctrl.clearComparisonView     = clearComparisonView;
       ctrl.delConfirm              = delConfirm;
       ctrl.delStarted              = delStarted;
       ctrl.nothingSelected         = nothingSelected;
@@ -50,18 +55,32 @@ angular.module('QuepidApp')
         }
       });
 
-      // Init - handle initial selection from existing diff
-      if (initialSelection === null) {
-        ctrl.disabled = false;
-      } else if (angular.isArray(initialSelection)) {
-        // Multi-diff mode
-        ctrl.selections = initialSelection.slice(); // Copy array
+      // Initialize selections based on current state
+      function initializeSelections() {
+        // Check actual service state for disabled status
+        ctrl.disabled = queryViewSvc.areComparisonsDisabled();
+        
+        // Handle initial selection from existing diff
+        if (initialSelection === null) {
+          ctrl.selections = [null]; // Default to one empty selection
+        } else if (angular.isArray(initialSelection)) {
+          // Multi-diff mode - preserve existing selections
+          ctrl.selections = initialSelection.slice(); // Copy array
+          if (ctrl.selections.length === 0) {
+            ctrl.selections = [null];
+          }
+        } else if (initialSelection !== null && initialSelection !== undefined) {
+          // Single diff mode - handle both numeric IDs and string IDs
+          ctrl.selections = [initialSelection];
+        } else {
+          // Fallback case
+          ctrl.selections = [null];
+        }
+        
+        // Ensure we have at least one selection slot
         if (ctrl.selections.length === 0) {
           ctrl.selections = [null];
         }
-      } else {
-        // Single diff mode
-        ctrl.selections = [initialSelection];
       }
 
       var delState = null;
@@ -147,7 +166,7 @@ angular.module('QuepidApp')
       }
 
       function getSnapshotName(snapshotId) {
-        if (ctrl.snapshots) {
+        if (ctrl.snapshots && snapshotId !== null && snapshotId !== undefined) {
           var foundSnapshot = null;
           angular.forEach(ctrl.snapshots, function(snapshot) {
             if (snapshot.id === snapshotId) {
@@ -157,6 +176,10 @@ angular.module('QuepidApp')
           if (foundSnapshot) {
             return foundSnapshot.name();
           }
+        }
+        // Return loading message if snapshots aren't loaded yet
+        if (!ctrl.snapshots) {
+          return 'Loading...';
         }
         return 'Unknown Snapshot';
       }
@@ -179,7 +202,7 @@ angular.module('QuepidApp')
             delState = null;
             ctrl.disabled = true;
 
-            queryViewSvc.reset();
+            queryViewSvc.disableComparisons();
             queriesSvc.setDiffSetting(null);
             multiDiffResultsSvc.setMultiDiffSettings([]);
 
@@ -188,57 +211,61 @@ angular.module('QuepidApp')
       }
 
       function nothingSelected() {
-        if (ctrl.disabled) {
-          return false; // Allow disabling comparisons
-        }
         var validSelections = getValidSelections();
         return validSelections.length === 0 || hasDuplicateSelections();
       }
 
+      function clearComparisonView() {
+        queryViewSvc.disableComparisons();
+        queriesSvc.setDiffSetting(null);
+        multiDiffResultsSvc.setMultiDiffSettings([]);
+        $uibModalInstance.close(null);
+        flash.success = 'Comparison view has been cleared.';
+      }
+
       function ok() {
-        if (ctrl.disabled) {
-          // Disable all diffs
-          queryViewSvc.reset();
+        var validSelections = getValidSelections();
+        if (validSelections.length === 0 || hasDuplicateSelections()) {
+          // No valid selections - disable all comparisons (same as Clear Comparison View)
+          queryViewSvc.disableComparisons();
           queriesSvc.setDiffSetting(null);
           multiDiffResultsSvc.setMultiDiffSettings([]);
           $uibModalInstance.close(null);
+          flash.success = 'Comparison view has been cleared.';
         } else {
-          var validSelections = getValidSelections();
-          if (validSelections.length > 0 && !hasDuplicateSelections()) {
-            ctrl.inProgress = true;
-            
-            // Fetch all selected snapshots
-            var fetchPromises = [];
-            angular.forEach(validSelections, function(selectionId) {
-              fetchPromises.push(querySnapshotSvc.get(selectionId));
+          ctrl.inProgress = true;
+          
+          // Fetch all selected snapshots
+          var fetchPromises = [];
+          angular.forEach(validSelections, function(selectionId) {
+            fetchPromises.push(querySnapshotSvc.get(selectionId));
+          });
+          
+          Promise.all(fetchPromises)
+            .then(function() {
+              ctrl.inProgress = false;
+              if (validSelections.length === 1) {
+                // Single snapshot - use legacy single diff
+                $uibModalInstance.close({
+                  type: 'single',
+                  selection: validSelections[0]
+                });
+                flash.success = 'Snapshot loaded successfully for comparison.';
+              } else {
+                // Multiple snapshots - use multi-diff
+                $uibModalInstance.close({
+                  type: 'multi',
+                  selections: validSelections
+                });
+                flash.success = 'Snapshots loaded successfully for comparison.';
+              }
+            })
+            .catch(function(response) {
+              ctrl.inProgress = false;
+              flash.error = 'Could not fetch one or more snapshots!';
+              $log.debug('error fetching snapshots:');
+              $log.debug(response);
             });
-            
-            Promise.all(fetchPromises)
-              .then(function() {
-                ctrl.inProgress = false;
-                if (validSelections.length === 1) {
-                  // Single snapshot - use legacy single diff
-                  $uibModalInstance.close({
-                    type: 'single',
-                    selection: validSelections[0]
-                  });
-                  flash.success = 'Snapshot loaded successfully for comparison.';
-                } else {
-                  // Multiple snapshots - use multi-diff
-                  $uibModalInstance.close({
-                    type: 'multi',
-                    selections: validSelections
-                  });
-                  flash.success = 'Snapshots loaded successfully for comparison.';
-                }
-              })
-              .catch(function(response) {
-                ctrl.inProgress = false;
-                flash.error = 'Could not fetch one or more snapshots!';
-                $log.debug('error fetching snapshots:');
-                $log.debug(response);
-              });
-          }
         }
       }
 

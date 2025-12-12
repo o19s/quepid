@@ -131,7 +131,6 @@ angular.module('QuepidApp')
       // We continue to get multiple of these events, once each time the controller gets
       // created by picking the case in the drop down.  
       $scope.$on('updatedCaseScore', function(event, theCase) {
-        console.log('updatedCaseScore event received');  // Add this line
         //event.stopPropagation(); // we are somehow duplicating this event.
         if (theCase.caseNo === caseSvc.getSelectedCase().caseNo) {
           caseSvc.getSelectedCase()
@@ -267,19 +266,18 @@ angular.module('QuepidApp')
           // After all individual diffs are fetched, calculate case-level score
           $q.all(fetchPromises).then(function() {
             return $scope.queries.avgQuery.diff.score();
-          }).then(function(result) {
-            console.log('Case-level diff scoring result:', result);
-          }).catch(function(error) {
-            console.log('Case-level diff scoring error:', error);
+          }).catch(function() {
+            // Case-level diff scoring error - silently handled
           });
         }
       });
 
       // Watch for any diff changes and trigger case-level multiDiff scoring
       $scope.$watch(function() {
-        return multiDiffResultsSvc.isAnyDiffEnabled();
-      }, function(newVal) {
-        if (newVal) {
+        return JSON.stringify(multiDiffResultsSvc.getMultiDiffSettings());
+      }, function() {
+        var isEnabled = multiDiffResultsSvc.isAnyDiffEnabled();
+        if (isEnabled) {
           // Create case-level multiDiff object similar to individual query multiDiff
           $scope.queries.avgQuery.multiDiff = {
             _caseSearchers: [],
@@ -308,8 +306,8 @@ angular.module('QuepidApp')
               return $q.all(fetchPromises).then(function() {
                 // After all individual query scores are calculated, compute case-level scores
                 return $scope.queries.avgQuery.multiDiff._calculateCaseScores();
-              }).catch(function(error) {
-                console.log('QueriesCtrl: Case-level multiDiff scoring error:', error);
+              }).catch(function() {
+                // Case-level multiDiff scoring error - silently handled
               });
             },
             _calculateCaseScores: function() {
@@ -410,9 +408,6 @@ angular.module('QuepidApp')
                   caseSearcher.diffScore.backgroundColor = qscoreSvc.scoreToColor('--', $scope.maxScore || 1);
                 }
                 caseSearcher.diffScore.allRated = allRated;
-                
-                // Debug logging
-                console.log('Case searcher ' + searcherIndex + ' (' + caseSearcher.name() + ') average score:', caseSearcher.diffScore.score, 'from', validScores, 'queries');
                 
                 self._caseSearchers.push(caseSearcher);
               });

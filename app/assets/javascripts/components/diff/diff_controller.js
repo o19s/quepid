@@ -15,7 +15,24 @@ angular.module('QuepidApp')
 
       function prompt() {
         var currentMultiDiffSettings = multiDiffResultsSvc.getMultiDiffSettings();
-        var initialSelection = currentMultiDiffSettings.length > 0 ? currentMultiDiffSettings : null;
+        var currentSingleDiffSetting = queryViewSvc.diffSetting;
+        var isDisabled = queryViewSvc.areComparisonsDisabled();
+        
+        // Unified state detection: check all possible sources for current diff state
+        var initialSelection = null;
+        if (isDisabled) {
+          // Comparisons are explicitly disabled
+          initialSelection = null;
+        } else if (currentMultiDiffSettings.length > 1) {
+          // Multi-diff mode (2+ snapshots)
+          initialSelection = currentMultiDiffSettings;
+        } else if (currentMultiDiffSettings.length === 1) {
+          // Single diff stored in multiDiffResultsSvc (this is how single diffs actually work internally)
+          initialSelection = currentMultiDiffSettings[0];
+        } else if (currentSingleDiffSetting !== null && currentSingleDiffSetting !== undefined) {
+          // Fallback: single diff stored in queryViewSvc (legacy or timing edge case)
+          initialSelection = currentSingleDiffSetting;
+        }
         
         var modalInstance = $uibModal.open({
           templateUrl:  'diff/_modal.html',
@@ -33,7 +50,7 @@ angular.module('QuepidApp')
           .then(function(response) {
             if (response === null) {
               // Disable all diffs
-              queryViewSvc.reset();
+              queryViewSvc.disableComparisons();
               queriesSvc.setDiffSetting(null);
               multiDiffResultsSvc.setMultiDiffSettings([]);
             } else if (response.type === 'multi') {
