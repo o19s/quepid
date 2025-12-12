@@ -73,71 +73,7 @@ angular.module('QuepidApp')
               }
             };
           }
-          
-          // Keep the old implementation as fallback (commented out for now)
-          /*
-          var settings = settingsSvc.editableSettings();
-          var diffSearcher = snapshotSearcherSvc.createSearcherFromSnapshot(diffSetting, query, settings);
 
-          if (diffSearcher) {
-            query.diffSearcher = diffSearcher;
-            
-            // Create a compatibility wrapper that maintains the old interface
-            query.diff = {
-              fetch: function() {
-                return diffSearcher.search()
-                  .then(function() {
-                    // Calculate diff score using the searcher's docs
-                    var docsForScoring = diffSearcher.docs.filter(function(d) { 
-                      return d.ratedOnly === false; 
-                    });
-                    return query.scoreOthers(docsForScoring);
-                  })
-                  .then(function(scoreResult) {
-                    query.diff.diffScore = scoreResult;
-                  });
-              },
-              
-              docs: function(onlyRated) {
-                onlyRated = onlyRated || false;
-                return diffSearcher.docs.filter(function(d) { 
-                  return d.ratedOnly === onlyRated; 
-                });
-              },
-              
-              name: function() {
-                return diffSearcher.name();
-              },
-              
-              version: function() {
-                return diffSearcher.version();
-              },
-              
-              score: function() {
-                var deferred = $q.defer();
-                deferred.resolve(query.diff.diffScore || { score: null, allRated: false });
-                return deferred.promise;
-              },
-              
-              type: function() {
-                return 'snapshot';
-              },
-              
-              diffScore: { score: null, allRated: false },
-              
-              get currentScore() {
-                return this.diffScore;
-              }
-            };
-            
-            // Initialize the diff
-            query.diff.fetch();
-          } else {
-            console.debug('snapshot not found!');
-            query.diff = null;
-            query.diffSearcher = null;
-          }
-          */
         }
       };
     }
