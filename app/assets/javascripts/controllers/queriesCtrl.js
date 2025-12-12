@@ -18,6 +18,7 @@ angular.module('QuepidApp')
     'scorerSvc',
     'configurationSvc',
     'annotationsSvc',
+    'qscoreSvc',
     function (
       $scope,
       $rootScope,
@@ -33,7 +34,8 @@ angular.module('QuepidApp')
       caseSvc,
       scorerSvc,
       configurationSvc,
-      annotationsSvc
+      annotationsSvc,
+      qscoreSvc,
     ) {
       console.log('QueriesCtrl instantiated');
       $scope.queriesSvc = queriesSvc;
@@ -47,6 +49,11 @@ angular.module('QuepidApp')
       // performed by .calcScore() call.
       const scoringCompleteListener = $rootScope.$on('scoring-complete', () => {
         $scope.queries.avgQuery.calcScore();
+        
+        // Also recalculate case-level multiDiff scores if multiDiff is enabled
+        if ($scope.queries.avgQuery.multiDiff && $scope.queries.avgQuery.multiDiff._calculateCaseScores) {
+          $scope.queries.avgQuery.multiDiff._calculateCaseScores();
+        }
       });
       
       $scope.$on('$destroy', () => {
@@ -275,25 +282,9 @@ angular.module('QuepidApp')
         if (newVal) {
           // Create case-level multiDiff object similar to individual query multiDiff
           $scope.queries.avgQuery.multiDiff = {
+            _caseSearchers: [],
             getSearchers: function() {
-              // Get searchers from the first query's multiDiff (they should all be the same)
-              var firstQuery = null;
-              if (queriesSvc.queries && Array.isArray(queriesSvc.queries)) {
-                firstQuery = queriesSvc.queries.find(function(q) {
-                  return q.multiDiff && q.multiDiff.getSearchers;
-                });
-              } else if (queriesSvc.queries && typeof queriesSvc.queries === 'object') {
-                // Handle case where queries is an object with array-like properties
-                for (var key in queriesSvc.queries) {
-                  var query = queriesSvc.queries[key];
-                  if (query && query.multiDiff && query.multiDiff.getSearchers) {
-                    firstQuery = query;
-                    break;
-                  }
-                }
-              }
-              var searchers = firstQuery ? firstQuery.multiDiff.getSearchers() : [];
-              return searchers;
+              return this._caseSearchers;
             },
             fetch: function() {
               // Wait for all individual query multiDiffs to be fetched first
@@ -315,10 +306,118 @@ angular.module('QuepidApp')
               }
               
               return $q.all(fetchPromises).then(function() {
-                // Case-level multiDiff scoring completed
+                // After all individual query scores are calculated, compute case-level scores
+                return $scope.queries.avgQuery.multiDiff._calculateCaseScores();
               }).catch(function(error) {
                 console.log('QueriesCtrl: Case-level multiDiff scoring error:', error);
               });
+            },
+            _calculateCaseScores: function() {
+              var self = this;
+              
+              // Get searchers from the first query's multiDiff to determine structure
+              var firstQuery = null;
+              if (queriesSvc.queries && Array.isArray(queriesSvc.queries)) {
+                firstQuery = queriesSvc.queries.find(function(q) {
+                  return q.multiDiff && q.multiDiff.getSearchers;
+                });
+              } else if (queriesSvc.queries && typeof queriesSvc.queries === 'object') {
+                for (var key in queriesSvc.queries) {
+                  var query = queriesSvc.queries[key];
+                  if (query && query.multiDiff && query.multiDiff.getSearchers) {
+                    firstQuery = query;
+                    break;
+                  }
+                }
+              }
+              
+              if (!firstQuery) {
+                self._caseSearchers = [];
+                return $q.resolve();
+              }
+              
+              var templateSearchers = firstQuery.multiDiff.getSearchers();
+              self._caseSearchers = [];
+              
+              // For each searcher position, create a case-level searcher with averaged scores
+              angular.forEach(templateSearchers, function(templateSearcher, searcherIndex) {
+                var caseSearcher = {
+                  name: function() { return templateSearcher.name(); },
+                  version: function() { return templateSearcher.version(); },
+                  diffScore: { score: '?', allRated: false },
+                  currentScore: null // Will be set as getter below
+                };
+                
+                // Add currentScore getter for qscore component compatibility
+                Object.defineProperty(caseSearcher, 'currentScore', {
+                  get: function() {
+                    return this.diffScore;
+                  },
+                  enumerable: true,
+                  configurable: true
+                });
+                
+                // Calculate average score across all queries for this searcher
+                var totalScore = 0;
+                var validScores = 0;
+                var allRated = true;
+                
+                // Collect scores from all queries for this searcher index
+                if (queriesSvc.queries && Array.isArray(queriesSvc.queries)) {
+                  angular.forEach(queriesSvc.queries, function(query) {
+                    if (query.multiDiff && query.multiDiff.getSearcher) {
+                      var querySearcher = query.multiDiff.getSearcher(searcherIndex);
+                      if (querySearcher && querySearcher.diffScore) {
+                        var score = querySearcher.diffScore.score;
+                        if (score !== null && score !== undefined && score !== 'zsr' && score !== '--') {
+                          totalScore += score;
+                          validScores++;
+                        }
+                        if (!querySearcher.diffScore.allRated) {
+                          allRated = false;
+                        }
+                      }
+                    }
+                  });
+                } else if (queriesSvc.queries && typeof queriesSvc.queries === 'object') {
+                  for (var key in queriesSvc.queries) {
+                    var query = queriesSvc.queries[key];
+                    if (query && query.multiDiff && query.multiDiff.getSearcher) {
+                      var querySearcher = query.multiDiff.getSearcher(searcherIndex);
+                      if (querySearcher && querySearcher.diffScore) {
+                        var score = querySearcher.diffScore.score;
+                        if (score !== null && score !== undefined && score !== 'zsr' && score !== '--') {
+                          totalScore += score;
+                          validScores++;
+                        }
+                        if (!querySearcher.diffScore.allRated) {
+                          allRated = false;
+                        }
+                      }
+                    }
+                  }
+                }
+                
+                // Calculate final average score
+                if (validScores > 0) {
+                  caseSearcher.diffScore.score = totalScore / validScores;
+                  // Add backgroundColor using qscoreSvc for proper color coding
+                  if ($scope.maxScore && $scope.maxScore > 0) {
+                    caseSearcher.diffScore.backgroundColor = qscoreSvc.scoreToColor(caseSearcher.diffScore.score, $scope.maxScore);
+                  }
+                } else {
+                  caseSearcher.diffScore.score = '--';
+                  caseSearcher.diffScore.backgroundColor = qscoreSvc.scoreToColor('--', $scope.maxScore || 1);
+                }
+                caseSearcher.diffScore.allRated = allRated;
+                
+                // Debug logging
+                console.log('Case searcher ' + searcherIndex + ' (' + caseSearcher.name() + ') average score:', caseSearcher.diffScore.score, 'from', validScores, 'queries');
+                
+                self._caseSearchers.push(caseSearcher);
+              });
+              
+              return $q.resolve();
             }
           };
           
