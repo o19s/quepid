@@ -1,5 +1,15 @@
 <div ng-show="displayed.results == displayed.resultsView.multiDiff">
   <div class="multi-diff-container">
+    <!-- Column headers -->
+    <div class="multi-diff-header">
+      <div class="multi-diff-column">
+        <h2>Current Results</h2>
+      </div>
+      <div class="multi-diff-column" ng-repeat="name in query.multiDiff.names() track by $index">
+        <h2>{{name}}</h2>
+      </div>
+    </div>
+    
     <!-- Results comparison rows -->
     <div ng-repeat="docTuple in query.docTuples()" class="multi-diff-row">
       
@@ -70,7 +80,7 @@
   border-bottom: 2px solid #eee;
 }
 
-.multi-diff-header h3 {
+.multi-diff-header h2 {
   margin: 0 0 10px 0;
   color: #007bff;
   font-size: 1.2em;

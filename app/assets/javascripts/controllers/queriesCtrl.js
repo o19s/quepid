@@ -268,9 +268,9 @@ angular.module('QuepidApp')
         }
       });
 
-      // Watch for multiDiff changes and trigger case-level multiDiff scoring
+      // Watch for any diff changes and trigger case-level multiDiff scoring
       $scope.$watch(function() {
-        return multiDiffResultsSvc.isMultiDiffEnabled();
+        return multiDiffResultsSvc.isAnyDiffEnabled();
       }, function(newVal) {
         if (newVal) {
           // Create case-level multiDiff object similar to individual query multiDiff

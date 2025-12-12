@@ -138,17 +138,10 @@
       </div>
     </div>
 
-    <!-- diff display -->
-    <div ng-controller="DiffResultsCtrl" ng-if="displayed.results == displayed.resultsView.diff">
-      <query-diff-results query="query" repeatlength="10">
-        Diff
-      </query-diff-results>
-    </div>
-
-    <!-- multi-diff display -->
+    <!-- unified diff display (handles both single and multiple snapshots) -->
     <div ng-controller="QueryMultiDiffResultsCtrl" ng-if="displayed.results == displayed.resultsView.multiDiff">
       <query-multi-diff-results query="query" repeatlength="10" max-score="maxScore">
-        Multi Diff
+        Diff Results
       </query-multi-diff-results>
     </div>
 

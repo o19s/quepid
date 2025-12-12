@@ -37,6 +37,10 @@ angular.module('QuepidApp')
         return multiDiffSettings.length > 1;
       };
 
+      this.isAnyDiffEnabled = function() {
+        return multiDiffSettings.length >= 1;
+      };
+
       this.createQueryMultiDiff = function(query) {
         if (multiDiffSettings.length === 0) {
           query.multiDiff = null;
@@ -98,13 +102,23 @@ angular.module('QuepidApp')
                     var docsForScoring = searcher.docs.filter(function(d) { 
                       return d.ratedOnly === false; 
                     });
-                    var scorePromise = query.scoreOthers(docsForScoring);
+                    var scoreResult = query.scoreOthers(docsForScoring);
                     
-                    // Handle the score promise
-                    var resolvedPromise = scorePromise.then(function(scoreResult) {
+                    // Handle both promise and non-promise returns
+                    var resolvedPromise;
+                    if (scoreResult && typeof scoreResult.then === 'function') {
+                      // scoreOthers returned a promise
+                      resolvedPromise = scoreResult.then(function(scoreData) {
+                        searcher.diffScore = scoreData;
+                        return scoreData;
+                      });
+                    } else {
+                      // scoreOthers returned a plain object, wrap it in a resolved promise
+                      var deferred = $q.defer();
                       searcher.diffScore = scoreResult;
-                      return scoreResult;
-                    });
+                      deferred.resolve(scoreResult);
+                      resolvedPromise = deferred.promise;
+                    }
                     
                     scorePromises.push(resolvedPromise);
                   });

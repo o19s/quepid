@@ -69,31 +69,25 @@ angular.module('QuepidApp')
       };
 
       // TODO kill this watch!
+      // Watch for diff changes - legacy support, but now handled by multiDiff
       $scope.$watch('query.diff', function() {
-        if ($scope.query.diff !== null) {
-          $scope.displayed.results = $scope.displayed.resultsView.diff;
-        } else {
-          $scope.displayed.results = $scope.displayed.resultsView.results;
-        }
+        // Single diffs are now handled through the multiDiff path
+        // This watch is kept for compatibility but doesn't change the view
       });
 
-      // Watch for multi-diff changes
+      // Watch for multi-diff changes - unified logic for all diff scenarios
       $scope.$watch('query.multiDiff', function() {
-        if ($scope.query.multiDiff !== null && multiDiffResultsSvc.isMultiDiffEnabled()) {
+        if ($scope.query.multiDiff !== null) {
           $scope.displayed.results = $scope.displayed.resultsView.multiDiff;
-        } else if ($scope.query.diff !== null) {
-          $scope.displayed.results = $scope.displayed.resultsView.diff;
         } else {
           $scope.displayed.results = $scope.displayed.resultsView.results;
         }
       });
 
-      // TODO kill this watch!
+      // Watch for query version changes - unified logic for all diff scenarios
       $scope.$watch('query.version()', function() {
-        if ($scope.query.multiDiff !== null && multiDiffResultsSvc.isMultiDiffEnabled()) {
+        if ($scope.query.multiDiff !== null) {
           $scope.query.multiDiff.fetch();
-        } else if ($scope.query.diff !== null) {
-          $scope.query.diff.fetch();
         }
       });
 
