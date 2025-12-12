@@ -3,10 +3,10 @@ angular.module('QuepidApp')
   .controller('SearchResultsCtrl', [
     '$rootScope',
     '$scope', '$log', '$window',
-    'rateBulkSvc', 'queriesSvc', 'queryViewSvc', 'settingsSvc', 'multiDiffResultsSvc',
+    'rateBulkSvc', 'queriesSvc', 'queryViewSvc', 'settingsSvc',
     function (
       $rootScope, $scope, $log, $window,
-      rateBulkSvc, queriesSvc, queryViewSvc, settingsSvc, multiDiffResultsSvc
+      rateBulkSvc, queriesSvc, queryViewSvc, settingsSvc
     ) {
       $scope.queriesSvc = queriesSvc;
 

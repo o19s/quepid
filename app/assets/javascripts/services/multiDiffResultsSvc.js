@@ -98,7 +98,7 @@ angular.module('QuepidApp')
 
                   // Calculate diff scores for each searcher - need to handle promises
                   var scorePromises = [];
-                  angular.forEach(diffSearchers, function(searcher, index) {
+                  angular.forEach(diffSearchers, function(searcher) {
                     var docsForScoring = searcher.docs.filter(function(d) { 
                       return d.ratedOnly === false; 
                     });
