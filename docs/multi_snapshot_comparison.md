@@ -66,15 +66,14 @@ At the bottom of the comparison view, you'll see summary statistics including:
 
 - **_multi_modal.html**: Unified modal for selecting 1-3 snapshots
 - **queryMultiDiffResults.html**: Multi-snapshot comparison view template
-- **queryDiffResults.html**: Single snapshot comparison view template (legacy, used for 1 snapshot)
+- **queryMultiDiffResults.html**: Unified comparison view template (handles both single and multiple snapshots)
 
 ### Integration Points
 
 The unified snapshot functionality integrates with existing Quepid services:
 - Uses existing `querySnapshotSvc` for snapshot management
 - Leverages `snapshotSearcherSvc` for search execution
-- Automatically routes single snapshot selections to the optimized legacy single-diff display
-- Routes multiple snapshot selections to the new multi-diff display
+- Uses unified multi-diff display for both single and multiple snapshot comparisons
 
 ## Best Practices
 
@@ -87,7 +86,7 @@ The unified snapshot functionality integrates with existing Quepid services:
 
 ### Performance Considerations
 
-- **Single snapshots:** Fast, optimized legacy performance
+- **Single snapshots:** Fast, streamlined performance using unified interface
 - **Multiple snapshots:** Require more processing time per additional snapshot
 - **System load:** Consider server capacity when running multi-snapshot comparisons on large query sets
 - **Progressive selection:** Start with fewer snapshots and add more as needed

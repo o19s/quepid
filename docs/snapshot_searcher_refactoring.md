@@ -215,7 +215,7 @@ The `SnapshotSearcher` class:
 All existing functionality continues to work without changes:
 
 - `diffResultsSvc` maintains its existing API
-- `QueryDiffResults` interface is preserved through compatibility wrapper
+- Unified diff interface provides consistent behavior across all snapshot comparisons
 - Existing controllers and views require no updates
 - All current diff functionality remains intact
 
