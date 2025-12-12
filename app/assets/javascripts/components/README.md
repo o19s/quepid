@@ -1,64 +1,75 @@
 # Quepid Angular Components
 
-## QScore Component Refactoring
+## QScore Component Strategy
 
-The original `qscore` component has been **removed** and replaced with two focused components to simplify maintenance and improve clarity:
+The Quepid application uses a **unified snapshot strategy** with two focused qscore components that handle both single and multiple snapshot scenarios consistently:
 
 - `qscore-case` - For case-level/average query scoring with full features
 - `qscore-query` - For individual query scoring with minimal features
 
+Both components now support **multiple snapshot display** using the same underlying architecture and styling.
+
 ## Components
 
 ### qscore-case
-**Purpose**: Case-level scoring display with graph support and diff functionality
+**Purpose**: Case-level scoring display with graph support and snapshot comparison
 **Used in**: Case headers, average query displays
 
 **Features**:
 - Graph display via `qgraph` component
-- Diff score comparison
+- Multiple snapshot comparison
 - Full annotation support
 - Score labels and custom styling
 - Background color customization
+- Handles both query objects (with `currentScore`) and searcher objects (with `diffScore`)
 
 **Bindings**:
 - `annotations` - Array of annotations for graph display
-- `diff-label` - Label for diff display
-- `full-diff-name` - Full name for diff tooltip
 - `max-score` - Maximum possible score
-- `scorable` - Object containing score data
+- `scorable` - Object containing score data (query or searcher)
 - `score-label` - Label to display with score
 - `scores` - Array of historical scores for graph
-- `show-diff` - Boolean to show/hide diff display
 
 **Example Usage**:
 ```html
+<!-- Single case score -->
 <qscore-case
   annotations="annotations"
   class="case-score"
-  diff-label="queries.selectedDiffName()"
-  full-diff-name="queries.fullDiffName()"
   max-score="maxScore || 1"
   scorable="queries.avgQuery"
   score-label="getScorer().name"
   scores="scores"
-  show-diff="queries.selectedDiff() !== null"
+>
+</qscore-case>
+
+<!-- Snapshot comparison -->
+<qscore-case
+  ng-if="queries.selectedDiff() !== null && queries.avgQuery.diff"
+  class="case-score diff-score"
+  max-score="maxScore || 1"
+  scorable="queries.avgQuery.diff"
+  score-label="queries.fullDiffName()"
+  scores="[]"
+  annotations="[]"
 >
 </qscore-case>
 ```
 
 ### qscore-query
-**Purpose**: Simple individual query scoring display
-**Used in**: Search results, individual query displays
+**Purpose**: Individual query scoring display with snapshot support
+**Used in**: Search results, individual query displays, multi-snapshot comparisons
 
 **Features**:
-- Basic score display
-- Minimal styling
-- No graph or diff support
+- Consistent score display styling
+- Supports both single and multiple snapshots
+- Works with query objects (`currentScore`) and searcher objects (`diffScore`)
+- Minimal styling optimized for query-level display
 
 **Bindings**:
 - `max-score` - Maximum possible score
-- `scorable` - Object containing score data
-- `show-diff` - Boolean (currently unused but kept for compatibility)
+- `scorable` - Object containing score data (query or searcher)
+- `show-diff` - Boolean (maintained for compatibility)
 
 **Example Usage**:
 ```html
@@ -67,94 +78,151 @@ The original `qscore` component has been **removed** and replaced with two focus
   class="results-score"
   max-score="maxScore || 100"
   scorable="query"
-  show-diff="displayed.results == displayed.resultsView.diff"
+  show-diff="false"
 >
 </qscore-query>
 
-<!-- Snapshot comparison (dual display) -->
+<!-- Multi-snapshot display -->
 <qscore-query
-  class="results-score"
+  class="results-score multi-diff-score"
   max-score="maxScore || 100"
-  scorable="query"
-  show-diff="displayed.results == displayed.resultsView.diff"
->
-</qscore-query>
-<qscore-query
-  ng-if="displayed.results == displayed.resultsView.diff && query.diff"
-  class="results-score diff-score"
-  max-score="maxScore || 100"
-  scorable="query.diff"
+  scorable="searcher"
   show-diff="false"
 >
 </qscore-query>
 ```
 
-## Migration Completed
+## Unified Snapshot Strategy
 
-The migration from the original `qscore` component to the two specialized components has been completed:
+### Single Snapshot Comparison
+- Uses side-by-side qscore components (existing behavior)
+- Current score + diff score displayed together
+- Consistent styling and interaction patterns
 
-### Updated Files:
-- `app/assets/templates/views/queriesLayout.html` - Now uses `qscore-case`
-- `app/assets/templates/views/searchResults.html` - Now uses `qscore-query`
-- `app/assets/stylesheets/qscore.css` - Updated to support new components
+### Multiple Snapshot Comparison
+- **New**: Uses the same qscore components in column layout
+- Current score + multiple snapshot scores in organized display
+- **No more separate template** - reuses existing qscore component architecture
+- Consistent styling across all snapshot scenarios
 
-### Removed Files:
-- `app/assets/javascripts/components/qscore/qscore_controller.js` ❌
-- `app/assets/javascripts/components/qscore/qscore_directive.js` ❌
-- `app/assets/javascripts/components/qscore/qscore.html` ❌
-- `app/assets/javascripts/filters/chooseScoreClass.js` ❌ (no longer needed)
+## Data Object Support
 
-### Moved Files:
-- `qscore_service.js` → `app/assets/javascripts/services/qscore_service.js` ✅
+Both components now intelligently handle different types of scorable objects:
 
-## Shared Service
+### Query Objects (Original)
+```javascript
+{
+  currentScore: {
+    score: 0.85,
+    backgroundColor: "#color" // optional
+  }
+}
+```
 
-The `qscoreSvc` service is shared between both components and provides:
-- `scoreToColor(score, maxScore)` - Converts scores to color values for styling
+### Searcher Objects (Multi-Diff)
+```javascript
+{
+  diffScore: {
+    score: 0.72,
+    backgroundColor: "#color" // optional
+  },
+  name: function() { return "Snapshot Name"; },
+  numFound: 1234
+}
+```
 
-## Benefits Achieved
+### Direct Score Objects (Fallback)
+```javascript
+{
+  score: 0.90,
+  backgroundColor: "#color" // optional
+}
+```
 
-1. **🎯 Clearer Intent**: Each component has a specific, focused purpose
-2. **⚡ Better Performance**: Lighter components with only necessary features
-3. **🛠️ Easier Maintenance**: Focused responsibilities make debugging simpler
-4. **🔒 Type Safety**: More predictable component behavior with reduced binding complexity
-5. **📦 Reduced Complexity**: No unused bindings, conditional logic, or dynamic CSS classes
-6. **🧹 Cleaner Code**: Eliminated scoreType property and chooseScoreClass filter
-7. **🎯 Better Snapshot Comparison**: Individual queries now show both current and snapshot scores side-by-side
+## Benefits of Unified Strategy
+
+1. **🎯 Consistent User Experience**: Same visual styling and behavior across all snapshot scenarios
+2. **⚡ Code Reuse**: No duplicate score display logic - multi-diff now uses qscore components
+3. **🛠️ Easier Maintenance**: Single place to update scoring logic and styling
+4. **🔒 Type Safety**: Robust handling of different scorable object types
+5. **📦 Reduced Complexity**: Eliminated separate multi-diff score display implementation
+6. **🎨 Consistent Styling**: All scores use the same color coding and visual design
+7. **🚀 Performance Optimized**: Uses targeted watches to avoid expensive deep object comparisons
+
+## Performance Optimizations
+
+The enhanced controllers use **targeted Angular watches** for optimal performance:
+
+### Single Snapshot Performance
+- **Same as original**: Watches only `ctrl.scorable.currentScore` 
+- **No performance impact**: Existing single snapshot behavior unchanged
+- **Minimal overhead**: Only watches the specific score property that changes
+
+### Multi-Snapshot Performance  
+- **Targeted watching**: Adds only `ctrl.scorable.diffScore` watch for searcher objects
+- **Avoids deep comparison**: Does not watch entire query/searcher objects
+- **Efficient updates**: Only triggers when actual score values change
+
+### Watch Strategy
+```javascript
+// Original behavior - lightweight and fast
+$scope.$watch('ctrl.scorable.currentScore', function() { ... }, true);
+
+// Multi-diff support - only adds one targeted watch  
+$scope.$watch('ctrl.scorable.diffScore', function() { ... }, true);
+```
+
+This approach avoids the expensive deep object watching that would occur if we watched the entire `ctrl.scorable` object.
 
 ## File Structure
 
 ```
 app/assets/javascripts/
 ├── components/
-│   ├── qscore_case/               # Case-level scoring
-│   │   ├── qscore_case_controller.js
+│   ├── qscore_case/               # Case-level scoring (enhanced)
+│   │   ├── qscore_case_controller.js    # Handles multiple scorable types
 │   │   ├── qscore_case_directive.js
 │   │   └── qscore_case.html
-│   └── qscore_query/              # Individual query scoring
-│       ├── qscore_query_controller.js
+│   └── qscore_query/              # Individual query scoring (enhanced)
+│       ├── qscore_query_controller.js   # Handles multiple scorable types
 │       ├── qscore_query_directive.js
 │       └── qscore_query.html
 └── services/
     └── qscore_service.js          # Shared scoring service
 ```
 
-## Additional Optimizations
+## Template Usage
 
-### Eliminated Dynamic Styling
-Since each component now has a fixed purpose, we removed the dynamic `scoreType` property and hardcoded the appropriate CSS classes:
+### Single Diff (Existing)
+- `app/assets/templates/views/queriesLayout.html` - Case-level side-by-side
+- `app/assets/templates/views/searchResults.html` - Query-level side-by-side
 
-- **qscore-case**: Always uses `header-rating` CSS class
-- **qscore-query**: Always uses `overall-rating` CSS class
+### Multi-Diff (Improved)
+- `app/assets/templates/views/queryMultiDiffResults.html` - Now uses qscore-query components
 
-This eliminated:
-- The `scoreType` controller property from both components
-- The `chooseScoreClass` Angular filter (no longer needed)
-- Dynamic CSS class determination at runtime
+## Shared Service
 
-### Bundle Size Reduction
-- JavaScript bundle: **514.1KB → 510.1KB** (4KB reduction)
-- Templates: **107 → 106** templates
-- Removed unused filter and controller properties
-```
+The `qscoreSvc` service is shared between both components and provides:
+- `scoreToColor(score, maxScore)` - Converts scores to color values for styling
 
+## Migration Benefits
+
+### Before
+- **Single snapshots**: Used qscore components ✅
+- **Multiple snapshots**: Reimplemented score display in template ❌
+- **Result**: Inconsistent styling and duplicate code
+
+### After  
+- **Single snapshots**: Uses qscore components ✅
+- **Multiple snapshots**: Uses qscore components ✅  
+- **Result**: Consistent styling and unified code architecture
+
+## Styling Classes
+
+Both components maintain their distinct CSS styling:
+- **qscore-case**: Uses `header-rating` CSS class
+- **qscore-query**: Uses `overall-rating` CSS class
+
+Additional classes for multi-diff context:
+- **multi-diff-score**: Applied to qscore components in multi-diff templates
+- **snapshot-score**: Applied to snapshot qscore components for visual distinction

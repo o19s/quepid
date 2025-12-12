@@ -42,7 +42,7 @@ qscore-case, qscore-query {
 	 margin: -10px 15px -10px -20px;
 }
  .dual-query-display qscore-query.results-score .overall-rating {
-	 margin: -10px 0px -10px -20px;
+	 margin: -10px 15px -10px -20px;
 }
  qscore-query.diff-score .overall-rating {
 	 margin: -10px 20px -10px 0px;

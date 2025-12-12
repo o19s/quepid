@@ -1,12 +1,35 @@
 <div ng-show="displayed.results == displayed.resultsView.multiDiff">
   <div class="multi-diff-container">
-    <!-- Header row with current results and snapshot names -->
+    <!-- Header row with scores using qscore components -->
     <div class="multi-diff-header">
       <div class="multi-diff-column">
-        <h2>Current Results</h2>
+        <h3>Current Results</h3>
+        <!-- Use qscore-query for current results -->
+        <qscore-query
+          class="results-score multi-diff-score"
+          max-score="maxScore || 100"
+          scorable="query"
+          show-diff="false"
+        >
+        </qscore-query>
+        <div class="score-details">
+          <small class="text-muted">{{query.numFound}} results</small>
+        </div>
       </div>
+      
       <div class="multi-diff-column" ng-repeat="searcher in query.multiDiff.getSearchers() track by $index">
-        <h2>{{searcher.name()}}</h2>
+        <h3>{{searcher.name()}}</h3>
+        <!-- Use qscore-query for snapshot results -->
+        <qscore-query
+          class="results-score multi-diff-score snapshot-score"
+          max-score="maxScore || 100"
+          scorable="searcher"
+          show-diff="false"
+        >
+        </qscore-query>
+        <div class="score-details">
+          <small class="text-muted">{{searcher.numFound || 'N/A'}} results</small>
+        </div>
       </div>
     </div>
 
@@ -56,27 +79,6 @@
       </div>
     </div>
 
-    <!-- Summary statistics -->
-    <div class="multi-diff-summary" style="margin-top: 30px; padding: 20px; background-color: #f8f9fa; border-radius: 5px;">
-      <h4>Comparison Summary</h4>
-      <div class="multi-diff-summary-row">
-        <div class="multi-diff-column">
-          <div class="summary-item">
-            <strong>Current Results</strong>
-            <div>Total: {{query.numFound}} results</div>
-            <div ng-show="query.hasScorer()">Score: {{query.score() | number:2}}</div>
-          </div>
-        </div>
-        <div class="multi-diff-column" ng-repeat="searcher in query.multiDiff.getSearchers() track by $index">
-          <div class="summary-item">
-            <strong>{{searcher.name()}}</strong>
-            <div>Total: {{searcher.numFound || 'N/A'}} results</div>
-            <div ng-show="searcher.diffScore">Score: {{searcher.diffScore.score | number:2}}</div>
-          </div>
-        </div>
-      </div>
-    </div>
-
     <!-- Action buttons -->
     <div class="multi-diff-actions" style="margin-top: 20px;">
       <div ng-if="selectedTry.searchEngine == 'solr'">
@@ -84,8 +86,6 @@
           Browse {{query.numFound}} Current Results on Solr
         </a>
       </div>
-      
-
     </div>
   </div>
 </div>
@@ -100,64 +100,71 @@
   display: flex;
   padding-bottom: 15px;
   margin-bottom: 20px;
+  border-bottom: 2px solid #eee;
 }
 
 .multi-diff-header h3 {
-  margin: 0;
+  margin: 0 0 10px 0;
   color: #007bff;
   font-size: 1.2em;
+  text-align: center;
 }
 
 .multi-diff-row {
   display: flex;
   min-height: 200px;
-}
-
-.multi-diff-summary-row {
-  display: flex;
+  border-bottom: 1px solid #f0f0f0;
+  margin-bottom: 20px;
 }
 
 .multi-diff-column {
   flex: 1;
-  border-right: 0px solid #eee;
-  padding-right: 15px;
-}
-
-.multi-diff-column:not(:first-child) {
-  padding-left: 15px;
+  border-right: 1px solid #eee;
+  padding: 0 15px;
+  text-align: center;
 }
 
 .multi-diff-column:last-child {
   border-right: none;
 }
 
-.summary-item {
-  text-align: center;
-  padding: 10px;
+/* Styles for qscore components in multi-diff context */
+.multi-diff-score {
+  display: inline-block;
+  margin: 10px 0;
 }
 
-.summary-item strong {
-  display: block;
-  margin-bottom: 10px;
-  color: #333;
+.multi-diff-score .overall-rating {
+  margin: 0;
+  border-radius: 5px;
+}
+
+.multi-diff-score.snapshot-score .overall-rating {
+  border-top-left-radius: 5px;
+  border-bottom-left-radius: 5px;
+}
+
+.score-details {
+  margin-top: 5px;
 }
 
 .multi-diff-actions {
   text-align: center;
   padding-top: 20px;
+  border-top: 1px solid #eee;
 }
 
 @media (max-width: 768px) {
   .multi-diff-header,
-  .multi-diff-row,
-  .multi-diff-summary-row {
+  .multi-diff-row {
     flex-direction: column;
   }
   
   .multi-diff-column {
     border-right: none;
-    border-bottom: 0px solid #eee;
+    border-bottom: 1px solid #eee;
     margin-bottom: 15px;
+    padding: 15px 0;
   }
   
   .multi-diff-column:last-child {
