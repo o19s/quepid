@@ -2,19 +2,38 @@
   ng-attr-id="{{ 'query-' + query.queryText }}"
   rank="{{$index + 1}}"
   class="clearfix" ng-class="query.state() | queryStateClass">
-  <div class="result-header">
-    <qscore
+  <div class="result-header" ng-class="{'dual-query-display': (displayed.results == displayed.resultsView.diff && query.diff) || (displayed.results == displayed.resultsView.multiDiff && query.multiDiff)}">
+    <!-- Current query score -->
+    <qscore-query
       class="results-score"
-      diff-label="''"
-      full-diff-name="''"
       max-score="maxScore || 100";
       scorable="query"
-      score-label="''"
-      score-type="'query'"
-      scores="[]"
-      show-diff="displayed.results == displayed.resultsView.diff"
+      show-diff="displayed.results == displayed.resultsView.diff || displayed.results == displayed.resultsView.multiDiff"
     >
-    </qscore>
+    </qscore-query>
+    
+    <!-- Single snapshot comparison -->
+    <qscore-query
+      ng-if="displayed.results == displayed.resultsView.diff && query.diff"
+      class="results-score diff-score"
+      max-score="maxScore || 100";
+      scorable="query.diff"
+      show-diff="false"
+    >
+    </qscore-query>
+    
+
+    
+    <!-- Multiple snapshot comparison -->
+    <qscore-query
+      ng-if="displayed.results == displayed.resultsView.multiDiff && query.multiDiff"
+      ng-repeat="searcher in query.multiDiff.getSearchers() track by $index"
+      class="results-score diff-score"
+      max-score="maxScore || 100"
+      scorable="searcher"
+      show-diff="false"
+    >
+    </qscore-query>
 
     <span class="loading-query"></span>
 
@@ -119,11 +138,11 @@
       </div>
     </div>
 
-    <!-- diff display -->
-    <div ng-controller="DiffResultsCtrl" ng-if="displayed.results == displayed.resultsView.diff">
-      <query-diff-results query="query" repeatlength="10">
-        Diff
-      </query-diff-results>
+    <!-- unified diff display (handles both single and multiple snapshots) -->
+    <div ng-controller="QueryMultiDiffResultsCtrl" ng-if="displayed.results == displayed.resultsView.multiDiff">
+      <query-multi-diff-results query="query" repeatlength="10" max-score="maxScore">
+        Diff Results
+      </query-multi-diff-results>
     </div>
 
     <div ng-if="query.state() === 'error'" class="alert alert-danger" ng-bind-html="query.errorText">

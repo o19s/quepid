@@ -8,48 +8,182 @@ angular.module('QuepidApp')
     '$uibModalInstance',
     '$log',
     'flash',
-    'querySnapshotSvc', 'queryViewSvc', 'queriesSvc', 'initialSelection',
+    'querySnapshotSvc', 'queryViewSvc', 'queriesSvc', 'multiDiffResultsSvc', 'initialSelection',
     function(
       $scope,
       $uibModalInstance,
       $log,
       flash,
-      querySnapshotSvc, queryViewSvc, queriesSvc, initialSelection
+      querySnapshotSvc, queryViewSvc, queriesSvc, multiDiffResultsSvc, initialSelection
     ) {
       var ctrl = this;
 
+      ctrl.selections      = [null]; // Start with 1 empty selection
+      ctrl.disabled        = false;
+      ctrl.inProgress      = false;
+      ctrl.snapshots       = null; // Initialize to null until loaded
+
+      // Load snapshots first, then initialize selections
       querySnapshotSvc.getSnapshots().then(function() {
           ctrl.snapshots = querySnapshotSvc.snapshots;
+          // Initialize selections after snapshots are loaded
+          initializeSelections();
         }
       );
-        
-      ctrl.which      = 'snapshot';
-      ctrl.selection  = initialSelection;
-      ctrl.inProgress = false;
 
       // Functions
-      ctrl.cancel          = cancel;
-      ctrl.delConfirm      = delConfirm;
-      ctrl.delStarted      = delStarted;
-      ctrl.nothingSelected = nothingSelected;
-      ctrl.ok              = ok;
-      ctrl.toggleDel       = toggleDel;
-      ctrl.isProcessingFile = isProcessingFile;
-      
+      ctrl.cancel                  = cancel;
+      ctrl.clearComparisonView     = clearComparisonView;
+      ctrl.delConfirm              = delConfirm;
+      ctrl.delStarted              = delStarted;
+      ctrl.nothingSelected         = nothingSelected;
+      ctrl.ok                      = ok;
+      ctrl.toggleDel               = toggleDel;
+      ctrl.addSelection            = addSelection;
+      ctrl.removeSelection         = removeSelection;
+      ctrl.canAddMore              = canAddMore;
+      ctrl.validateSelections      = validateSelections;
+      ctrl.getValidSelections      = getValidSelections;
+      ctrl.hasDuplicateSelections  = hasDuplicateSelections;
+      ctrl.hasProcessingSnapshots  = hasProcessingSnapshots;
+      ctrl.getSnapshotName         = getSnapshotName;
 
       // Watches
-      $scope.$watch('ctrl.selection', function(newVal, oldVal) {
+      $scope.$watchCollection('ctrl.selections', function(newVal, oldVal) {
         if (newVal !== oldVal) {
-          ctrl.which = 'snapshot';
+          validateSelections();
         }
       });
 
-      // Init
-      if (initialSelection === null) {
-        ctrl.which = 'none';
+      // Initialize selections based on current state
+      function initializeSelections() {
+        // Check actual service state for disabled status
+        ctrl.disabled = queryViewSvc.areComparisonsDisabled();
+        
+        // Handle initial selection from existing diff
+        if (initialSelection === null) {
+          ctrl.selections = [null]; // Default to one empty selection
+        } else if (angular.isArray(initialSelection)) {
+          // Multi-diff mode - preserve existing selections
+          ctrl.selections = initialSelection.slice(); // Copy array
+          if (ctrl.selections.length === 0) {
+            ctrl.selections = [null];
+          }
+        } else if (initialSelection !== null && initialSelection !== undefined) {
+          // Single diff mode - handle both numeric IDs and string IDs
+          ctrl.selections = [initialSelection];
+        } else {
+          // Fallback case
+          ctrl.selections = [null];
+        }
+        
+        // Ensure we have at least one selection slot
+        if (ctrl.selections.length === 0) {
+          ctrl.selections = [null];
+        }
       }
 
       var delState = null;
+
+      function addSelection() {
+        if (ctrl.selections.length < multiDiffResultsSvc.getMaxSnapshots()) {
+          ctrl.selections.push(null);
+        }
+      }
+
+      function removeSelection(index) {
+        if (ctrl.selections.length > 1) {
+          ctrl.selections.splice(index, 1);
+        } else {
+          // Just clear the selection but keep the slot
+          ctrl.selections[index] = null;
+        }
+        validateSelections();
+      }
+
+      function canAddMore() {
+        return ctrl.selections.length < multiDiffResultsSvc.getMaxSnapshots();
+      }
+
+      function validateSelections() {
+        // Remove any duplicate or empty selections from the end
+        getValidSelections();
+        // This function is called to trigger UI updates
+      }
+
+      function getValidSelections() {
+        var validSelections = [];
+        var seen = {};
+        
+        angular.forEach(ctrl.selections, function(selection) {
+          if (selection !== null && selection !== undefined && selection !== '' && !seen[selection]) {
+            validSelections.push(selection);
+            seen[selection] = true;
+          }
+        });
+        
+        return validSelections;
+      }
+
+      function hasDuplicateSelections() {
+        var seen = {};
+        var hasDupe = false;
+        
+        angular.forEach(ctrl.selections, function(selection) {
+          if (selection !== null && selection !== undefined && selection !== '') {
+            if (seen[selection]) {
+              hasDupe = true;
+            }
+            seen[selection] = true;
+          }
+        });
+        
+        return hasDupe;
+      }
+
+      function hasProcessingSnapshots() {
+        if (!ctrl.snapshots) {
+          return false;
+        }
+
+        var selectionsToCheck = [];
+        if (ctrl.which === 'multi-snapshot') {
+          selectionsToCheck = getValidSelections();
+        } else if (ctrl.which === 'snapshot' && ctrl.singleSelection) {
+          selectionsToCheck = [ctrl.singleSelection];
+        }
+
+        var hasProcessing = false;
+        angular.forEach(selectionsToCheck, function(selectionId) {
+          angular.forEach(ctrl.snapshots, function(snapshot) {
+            if (snapshot.id === selectionId && snapshot.hasSnapshotFile) {
+              hasProcessing = true;
+            }
+          });
+        });
+
+        return hasProcessing;
+      }
+
+      function getSnapshotName(snapshotId) {
+        if (ctrl.snapshots && snapshotId !== null && snapshotId !== undefined) {
+          var foundSnapshot = null;
+          angular.forEach(ctrl.snapshots, function(snapshot) {
+            if (snapshot.id === snapshotId) {
+              foundSnapshot = snapshot;
+            }
+          });
+          if (foundSnapshot) {
+            return foundSnapshot.name();
+          }
+        }
+        // Return loading message if snapshots aren't loaded yet
+        if (!ctrl.snapshots) {
+          return 'Loading...';
+        }
+        return 'Unknown Snapshot';
+      }
+
       function toggleDel(snapId) {
         if (delState === null) {
           delState = snapId;
@@ -66,58 +200,70 @@ angular.module('QuepidApp')
         querySnapshotSvc.deleteSnapshot(delState)
           .then(function() {
             delState = null;
-            ctrl.which = 'none';
+            ctrl.disabled = true;
 
-            queryViewSvc.reset();
+            queryViewSvc.disableComparisons();
             queriesSvc.setDiffSetting(null);
+            multiDiffResultsSvc.setMultiDiffSettings([]);
 
             flash.success = 'Snapshot deleted successfully.';
           });
       }
-      
-      function isProcessingFile() {
-        if (ctrl.snapshots){
-          var desiredSnapshot = null;
-          angular.forEach(ctrl.snapshots, function(snapshot) {
-            if (snapshot.id === ctrl.selection) {
-              desiredSnapshot = snapshot;
-              return; // exit the loop early
-            }
-          });
-          if (desiredSnapshot){
-            return desiredSnapshot.hasSnapshotFile;
-          }
-          else {
-            return false;
-          }
-        }
-        return false;
-      }
 
       function nothingSelected() {
-        if (  ctrl.which === 'snapshot' &&
-              ( angular.isUndefined(ctrl.selection) ||
-                ctrl.selection === null )
-        ) {
-          return true;
-        }
+        var validSelections = getValidSelections();
+        return validSelections.length === 0 || hasDuplicateSelections();
+      }
 
-        return false;
+      function clearComparisonView() {
+        queryViewSvc.disableComparisons();
+        queriesSvc.setDiffSetting(null);
+        multiDiffResultsSvc.setMultiDiffSettings([]);
+        $uibModalInstance.close(null);
+        flash.success = 'Comparison view has been cleared.';
       }
 
       function ok() {
-        if (ctrl.which === 'none') {
+        var validSelections = getValidSelections();
+        if (validSelections.length === 0 || hasDuplicateSelections()) {
+          // No valid selections - disable all comparisons (same as Clear Comparison View)
+          queryViewSvc.disableComparisons();
+          queriesSvc.setDiffSetting(null);
+          multiDiffResultsSvc.setMultiDiffSettings([]);
           $uibModalInstance.close(null);
+          flash.success = 'Comparison view has been cleared.';
         } else {
           ctrl.inProgress = true;
-          querySnapshotSvc.get(ctrl.selection)
+          
+          // Fetch all selected snapshots
+          var fetchPromises = [];
+          angular.forEach(validSelections, function(selectionId) {
+            fetchPromises.push(querySnapshotSvc.get(selectionId));
+          });
+          
+          Promise.all(fetchPromises)
             .then(function() {
               ctrl.inProgress = false;
-              $uibModalInstance.close(ctrl.selection);
-              flash.success = 'Snapshot loaded successfully.';
-            }, function (response) {
-              flash.error = 'Could note fetch snapshot!';
-              $log.debug('error fetching snapshot:');
+              if (validSelections.length === 1) {
+                // Single snapshot - use legacy single diff
+                $uibModalInstance.close({
+                  type: 'single',
+                  selection: validSelections[0]
+                });
+                flash.success = 'Snapshot loaded successfully for comparison.';
+              } else {
+                // Multiple snapshots - use multi-diff
+                $uibModalInstance.close({
+                  type: 'multi',
+                  selections: validSelections
+                });
+                flash.success = 'Snapshots loaded successfully for comparison.';
+              }
+            })
+            .catch(function(response) {
+              ctrl.inProgress = false;
+              flash.error = 'Could not fetch one or more snapshots!';
+              $log.debug('error fetching snapshots:');
               $log.debug(response);
             });
         }

@@ -7,7 +7,7 @@ angular.module('QuepidApp')
 
       this.scoreToColor = function(score, maxScore) {
         // obviously debugging!
-        if ( score === '?' || score === null || score === 'a?a'|| score === 'b?b'|| score === 'c?c'|| score === 'd?d'|| score === 'e?e') {
+        if ( score === '?' || score === null) {
           return defaultStyle;
         }
 
