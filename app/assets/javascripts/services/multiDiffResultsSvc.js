@@ -57,7 +57,7 @@ angular.module('QuepidApp')
           var diffSearcher = snapshotSearcherSvc.createSearcherFromSnapshot(diffSetting, query, settings);
           if (diffSearcher) {
             // Initialize diffScore immediately for qscore components
-            diffSearcher.diffScore = { score: 'b?b', allRated: false };
+            diffSearcher.diffScore = { score: '?', allRated: false };
             
 
             

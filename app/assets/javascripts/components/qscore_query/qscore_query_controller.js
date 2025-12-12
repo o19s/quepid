@@ -8,7 +8,7 @@ angular.module('QuepidApp')
       var ctrl = this;
 
       // Initialize controller properties
-      ctrl.score = 'b?b';
+      ctrl.score = '?';
       ctrl.style = { 'background-color': qscoreSvc.scoreToColor(ctrl.score, ctrl.maxScore) };
       
       
