@@ -18,8 +18,8 @@ angular.module('QuepidApp')
         var initialSelection = currentMultiDiffSettings.length > 0 ? currentMultiDiffSettings : null;
         
         var modalInstance = $uibModal.open({
-          templateUrl:  'diff/_multi_modal.html',
-          controller:   'MultiDiffModalInstanceCtrl',
+          templateUrl:  'diff/_modal.html',
+          controller:   'DiffModalInstanceCtrl',
           controllerAs: 'ctrl',
           size: 'lg',
           resolve: {

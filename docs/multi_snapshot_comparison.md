@@ -58,13 +58,13 @@ At the bottom of the comparison view, you'll see summary statistics including:
 ### Services
 
 - **multiDiffResultsSvc**: Core service managing snapshot comparisons (both single and multiple)
-- **MultiDiffModalInstanceCtrl**: Unified controller for all snapshot selection
+- **DiffModalInstanceCtrl**: Unified controller for all snapshot selection
 - **QueryMultiDiffResultsCtrl**: Controller for rendering multi-snapshot comparison results
 - **diffResultsSvc**: Legacy service for single snapshot comparisons (still used internally)
 
 ### Templates
 
-- **_multi_modal.html**: Unified modal for selecting 1-3 snapshots
+- **_modal.html**: Unified modal for selecting 1-3 snapshots
 - **queryMultiDiffResults.html**: Multi-snapshot comparison view template
 - **queryMultiDiffResults.html**: Unified comparison view template (handles both single and multiple snapshots)
 

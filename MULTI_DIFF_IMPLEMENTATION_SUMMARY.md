@@ -16,7 +16,7 @@ The feature replaces the old separate single and multiple snapshot comparison in
   - Manages searcher initialization and scoring
 
 ### New Controllers
-- **`app/assets/javascripts/components/diff/multi_diff_modal_instance_controller.js`**
+- **`app/assets/javascripts/components/diff/diff_modal_instance_controller.js`**
   - Modal controller for selecting multiple snapshots
   - Handles validation of snapshot selections
   - Supports both single and multi-snapshot modes
@@ -28,7 +28,7 @@ The feature replaces the old separate single and multiple snapshot comparison in
   - Handles visual difference highlighting
 
 ### New Templates
-- **`app/assets/javascripts/components/diff/_multi_modal.html`**
+- **`app/assets/javascripts/components/diff/_modal.html`**
   - Modal interface for snapshot selection
   - Dynamic snapshot selection with add/remove functionality
   - Validation and error messaging
@@ -41,7 +41,7 @@ The feature replaces the old separate single and multiple snapshot comparison in
   - Responsive design for mobile devices
 
 ### New Directives
-- **`app/assets/javascripts/components/multidiff/query_multi_diff_results_directive.js`**
+- **`app/assets/javascripts/directives/query_multi_diff_results_directive.js`**
   - Directive for multi-diff results component
   - Links controller and template
 

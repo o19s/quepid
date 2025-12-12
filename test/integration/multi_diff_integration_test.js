@@ -212,7 +212,7 @@
         };
         
         // Try to instantiate the controller
-        var ctrl = $controller('MultiDiffModalInstanceCtrl', {
+        var ctrl = $controller('DiffModalInstanceCtrl', {
           $scope: mockScope,
           $uibModalInstance: mockModalInstance,
           querySnapshotSvc: mockQuerySnapshotSvc,
@@ -220,7 +220,7 @@
         });
         
         if (ctrl && typeof ctrl.cancel === 'function' && typeof ctrl.ok === 'function') {
-          console.log('✓ MultiDiffModalInstanceCtrl successfully instantiated');
+          console.log('✓ DiffModalInstanceCtrl successfully instantiated');
           console.log('✓ Required methods available');
           return true;
         } else {
@@ -306,7 +306,7 @@
         
         for (var j = 0; j < templates.length; j++) {
           if (templates[j].id.includes('queryMultiDiffResults') || 
-              templates[j].id.includes('multi_modal')) {
+              templates[j].id.includes('modal')) {
             foundMultiDiffTemplate = true;
             break;
           }

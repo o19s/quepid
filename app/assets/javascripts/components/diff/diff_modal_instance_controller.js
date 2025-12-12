@@ -3,7 +3,7 @@
 /*jslint latedef:false*/
 
 angular.module('QuepidApp')
-  .controller('MultiDiffModalInstanceCtrl', [
+  .controller('DiffModalInstanceCtrl', [
     '$scope',
     '$uibModalInstance',
     '$log',
