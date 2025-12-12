@@ -13,6 +13,7 @@ angular.module('QuepidApp')
     'queriesSvc',
     'queryViewSvc',
     'querySnapshotSvc',
+    'multiDiffResultsSvc',
     'caseSvc',
     'scorerSvc',
     'configurationSvc',
@@ -28,6 +29,7 @@ angular.module('QuepidApp')
       queriesSvc,
       queryViewSvc,
       querySnapshotSvc,
+      multiDiffResultsSvc,
       caseSvc,
       scorerSvc,
       configurationSvc,
@@ -239,7 +241,8 @@ angular.module('QuepidApp')
               return scoreInfo;
             });
           }
-        }
+        },
+        multiDiff: null
         //var diff: null, // TODO fill out
       };
 
@@ -262,6 +265,67 @@ angular.module('QuepidApp')
           }).catch(function(error) {
             console.log('Case-level diff scoring error:', error);
           });
+        }
+      });
+
+      // Watch for multiDiff changes and trigger case-level multiDiff scoring
+      $scope.$watch(function() {
+        return multiDiffResultsSvc.isMultiDiffEnabled();
+      }, function(newVal) {
+        if (newVal) {
+          // Create case-level multiDiff object similar to individual query multiDiff
+          $scope.queries.avgQuery.multiDiff = {
+            getSearchers: function() {
+              // Get searchers from the first query's multiDiff (they should all be the same)
+              var firstQuery = null;
+              if (queriesSvc.queries && Array.isArray(queriesSvc.queries)) {
+                firstQuery = queriesSvc.queries.find(function(q) {
+                  return q.multiDiff && q.multiDiff.getSearchers;
+                });
+              } else if (queriesSvc.queries && typeof queriesSvc.queries === 'object') {
+                // Handle case where queries is an object with array-like properties
+                for (var key in queriesSvc.queries) {
+                  var query = queriesSvc.queries[key];
+                  if (query && query.multiDiff && query.multiDiff.getSearchers) {
+                    firstQuery = query;
+                    break;
+                  }
+                }
+              }
+              var searchers = firstQuery ? firstQuery.multiDiff.getSearchers() : [];
+              return searchers;
+            },
+            fetch: function() {
+              // Wait for all individual query multiDiffs to be fetched first
+              var fetchPromises = [];
+              if (queriesSvc.queries && Array.isArray(queriesSvc.queries)) {
+                angular.forEach(queriesSvc.queries, function(query) {
+                  if (query.multiDiff !== null) {
+                    fetchPromises.push(query.multiDiff.fetch());
+                  }
+                });
+              } else if (queriesSvc.queries && typeof queriesSvc.queries === 'object') {
+                // Handle case where queries is an object
+                for (var key in queriesSvc.queries) {
+                  var query = queriesSvc.queries[key];
+                  if (query && query.multiDiff !== null) {
+                    fetchPromises.push(query.multiDiff.fetch());
+                  }
+                }
+              }
+              
+              return $q.all(fetchPromises).then(function() {
+                // Case-level multiDiff scoring completed
+              }).catch(function(error) {
+                console.log('QueriesCtrl: Case-level multiDiff scoring error:', error);
+              });
+            }
+          };
+          
+          // Initialize the multiDiff
+          $scope.queries.avgQuery.multiDiff.fetch();
+        } else {
+          $scope.queries.avgQuery.multiDiff = null;
         }
       });
 

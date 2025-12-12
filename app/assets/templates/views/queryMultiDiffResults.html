@@ -1,38 +1,5 @@
 <div ng-show="displayed.results == displayed.resultsView.multiDiff">
   <div class="multi-diff-container">
-    <!-- Header row with scores using qscore components -->
-    <div class="multi-diff-header">
-      <div class="multi-diff-column">
-        <h3>Current Results</h3>
-        <!-- Use qscore-query for current results -->
-        <qscore-query
-          class="results-score multi-diff-score"
-          max-score="maxScore || 100"
-          scorable="query"
-          show-diff="false"
-        >
-        </qscore-query>
-        <div class="score-details">
-          <small class="text-muted">{{query.numFound}} results</small>
-        </div>
-      </div>
-      
-      <div class="multi-diff-column" ng-repeat="searcher in query.multiDiff.getSearchers() track by $index">
-        <h3>{{searcher.name()}}</h3>
-        <!-- Use qscore-query for snapshot results -->
-        <qscore-query
-          class="results-score multi-diff-score snapshot-score"
-          max-score="maxScore || 100"
-          scorable="searcher"
-          show-diff="false"
-        >
-        </qscore-query>
-        <div class="score-details">
-          <small class="text-muted">{{searcher.numFound || 'N/A'}} results</small>
-        </div>
-      </div>
-    </div>
-
     <!-- Results comparison rows -->
     <div ng-repeat="docTuple in query.docTuples()" class="multi-diff-row">
       

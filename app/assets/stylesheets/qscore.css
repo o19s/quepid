@@ -11,6 +11,9 @@ qscore-case, qscore-query {
 	 margin: 20px 0px -10px 0px;
 }
  qscore-case.case-score.diff-score {
+	 margin: 20px 0px -10px 0px;
+}
+ qscore-case.case-score.diff-score:last-of-type {
 	 margin: 20px 15px -10px 0px;
 }
  qscore-case .header-rating {
@@ -57,6 +60,10 @@ qscore-case, qscore-query {
  qscore-case.case-score.diff-score .header-rating {
 	 border-top-left-radius: 0;
 	 border-bottom-left-radius: 0;
+	 border-top-right-radius: 0;
+	 border-bottom-right-radius: 0;
+}
+ qscore-case.case-score.diff-score:last-of-type .header-rating {
 	 border-top-right-radius: 5px;
 	 border-bottom-right-radius: 5px;
 }

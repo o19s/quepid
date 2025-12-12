@@ -5,15 +5,16 @@ angular.module('QuepidApp')
   .controller('QscoreQueryCtrl', [
     '$scope', 'qscoreSvc',
     function ($scope, qscoreSvc) {
-      var ctrl          = this;
+      var ctrl = this;
 
       // Initialize controller properties
-      ctrl.score        = 'b?b';
-      ctrl.style        = { 'background-color': qscoreSvc.scoreToColor(ctrl.score, ctrl.maxScore) };
+      ctrl.score = 'b?b';
+      ctrl.style = { 'background-color': qscoreSvc.scoreToColor(ctrl.score, ctrl.maxScore) };
+      
       
       // Helper function to get score from different types of scorable objects
       function getScoreFromScorable(scorable) {
-        // Handle query objects with currentScore (existing behavior)
+        // Handle objects with currentScore (both queries and searchers via getter)
         if (scorable && scorable.currentScore) {
           return {
             score: scorable.currentScore.score,
@@ -21,7 +22,7 @@ angular.module('QuepidApp')
           };
         }
         
-        // Handle searcher objects with diffScore (for multi-diff support)
+        // Handle searcher objects with diffScore (fallback)
         if (scorable && scorable.diffScore) {
           return {
             score: scorable.diffScore.score,
@@ -57,16 +58,9 @@ angular.module('QuepidApp')
         }
       }
       
-      // Watch for changes in the scorable's current score (original behavior - performance optimized)
+      // Watch for changes in the scorable's current score (works for both queries and searchers)
       $scope.$watch('ctrl.scorable.currentScore', function() {
         if (ctrl.scorable && ctrl.scorable.currentScore) {
-          updateScore();
-        }
-      }, true);
-
-      // Watch for changes in searcher's diff score (for multi-diff support)  
-      $scope.$watch('ctrl.scorable.diffScore', function() {
-        if (ctrl.scorable && ctrl.scorable.diffScore) {
           updateScore();
         }
       }, true);

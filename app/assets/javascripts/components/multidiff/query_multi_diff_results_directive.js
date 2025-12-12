@@ -9,7 +9,8 @@ angular.module('QuepidApp')
         templateUrl:  'views/queryMultiDiffResults.html',
         scope: {
           query: '=',
-          repeatlength: '@'
+          repeatlength: '@',
+          maxScore: '='
         }
       };
     }

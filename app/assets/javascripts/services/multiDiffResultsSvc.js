@@ -52,6 +52,23 @@ angular.module('QuepidApp')
         angular.forEach(multiDiffSettings, function(diffSetting) {
           var diffSearcher = snapshotSearcherSvc.createSearcherFromSnapshot(diffSetting, query, settings);
           if (diffSearcher) {
+            // Initialize diffScore immediately for qscore components
+            diffSearcher.diffScore = { score: 'b?b', allRated: false };
+            
+
+            
+            // Add currentScore getter to make searcher compatible with qscore components
+            // This allows qscore components to access diffScore via currentScore property
+            Object.defineProperty(diffSearcher, 'currentScore', {
+              get: function() {
+                return this.diffScore;
+              },
+              enumerable: true,
+              configurable: true
+            });
+            
+
+            
             diffSearchers.push(diffSearcher);
             validSearchers.push({
               searcher: diffSearcher,
@@ -74,13 +91,26 @@ angular.module('QuepidApp')
 
               return $q.all(fetchPromises)
                 .then(function() {
-                  // Calculate diff scores for each searcher
-                  angular.forEach(diffSearchers, function(searcher) {
+
+                  // Calculate diff scores for each searcher - need to handle promises
+                  var scorePromises = [];
+                  angular.forEach(diffSearchers, function(searcher, index) {
                     var docsForScoring = searcher.docs.filter(function(d) { 
                       return d.ratedOnly === false; 
                     });
-                    searcher.diffScore = query.scoreOthers(docsForScoring);
+                    var scorePromise = query.scoreOthers(docsForScoring);
+                    
+                    // Handle the score promise
+                    var resolvedPromise = scorePromise.then(function(scoreResult) {
+                      searcher.diffScore = scoreResult;
+                      return scoreResult;
+                    });
+                    
+                    scorePromises.push(resolvedPromise);
                   });
+                  
+                  // Wait for all scores to be calculated
+                  return $q.all(scorePromises);
                 });
             },
             
@@ -170,6 +200,7 @@ angular.module('QuepidApp')
           };
           
           // Initialize all diffs
+
           query.multiDiff.fetch();
         } else {
           console.debug('no valid snapshots found for multi-diff!');
