@@ -359,7 +359,7 @@ GEM
       railties (>= 7.1)
       stimulus-rails
       turbo-rails
-    mocha (2.8.2)
+    mocha (3.0.0)
       ruby2_keywords (>= 0.0.5)
     msgpack (1.8.0)
     multi_xml (0.7.2)
