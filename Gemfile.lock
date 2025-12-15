@@ -359,8 +359,6 @@ GEM
       railties (>= 7.1)
       stimulus-rails
       turbo-rails
-    mocha (3.0.0)
-      ruby2_keywords (>= 0.0.5)
     msgpack (1.8.0)
     multi_xml (0.7.2)
       bigdecimal (~> 3.1)
@@ -682,7 +680,6 @@ DEPENDENCIES
   mini_racer
   minitest-reporters
   mission_control-jobs
-  mocha
   mysql2
   oas_rails
   omniauth
