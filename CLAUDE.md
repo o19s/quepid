@@ -16,6 +16,8 @@ Most commands you want to run you can just prefix with `bin/docker r bundle exec
 
 Use yarn instead of npm for package management.
 
+Run javascript tests via `bin/docker r yarn test`.
+
 
 Documentation goes in the `docs` directory, not a toplevel `doc` directory.
 
