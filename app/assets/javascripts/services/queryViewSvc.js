@@ -24,9 +24,6 @@ angular.module('QuepidApp')
         return this.comparisonsDisabled === true;
       };
 
-
-
-
       this.isQueryToggled = function(queryId) {
         if (!this.queryToggles.hasOwnProperty(queryId)) {
           this.queryToggles[queryId] = false;

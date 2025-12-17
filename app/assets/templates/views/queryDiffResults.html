@@ -59,7 +59,7 @@
     <!-- Action buttons -->
     <div class="multi-diff-actions" style="margin-top: 20px;">
       <div ng-if="selectedTry.searchEngine == 'solr'">
-        <a ng-show="query.state() !== 'error'" class="btn btn-primary" href="{{query.browseUrl()}}" target="_blank">
+        <a ng-show="query.state() !== 'error'" class="btn btn-primary" ng-href="{{query.browseUrl()}}" target="_blank">
           Browse {{query.numFound}} Current Results on Solr
         </a>
       </div>
