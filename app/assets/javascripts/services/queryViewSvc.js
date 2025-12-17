@@ -7,13 +7,13 @@ angular.module('QuepidApp')
     function() {
       this.enableDiff = function(snapshotId) {
         this.diffSetting = snapshotId;
-        this.multiDiffSettings = [];
+        this.multiDiffSettings = [snapshotId];
         this.comparisonsDisabled = false;
       };
 
       this.enableMultiDiff = function(snapshotIds) {
         this.multiDiffSettings = snapshotIds || [];
-        this.diffSetting = null;
+        this.diffSetting = snapshotIds && snapshotIds.length === 1 ? snapshotIds[0] : null;
         this.comparisonsDisabled = false;
       };
 
@@ -58,6 +58,29 @@ angular.module('QuepidApp')
         this.multiDiffSettings = [];
         this.comparisonsDisabled = false;
         this.queryToggles = {}; // the toggles, they do nothing
+      };
+
+      // Unified getter for all diff settings - returns array format
+      this.getAllDiffSettings = function() {
+        if (this.comparisonsDisabled === true) {
+          return [];
+        }
+        if (this.multiDiffSettings && this.multiDiffSettings.length > 0) {
+          return this.multiDiffSettings;
+        } else if (this.diffSetting !== null) {
+          return [this.diffSetting];
+        }
+        return [];
+      };
+
+      // Get maximum number of snapshots allowed for comparison
+      this.getMaxSnapshots = function() {
+        return 5; // Maximum 5 snapshots for comparison
+      };
+
+      // Check if any diff is enabled (single or multi)
+      this.isAnyDiffEnabled = function() {
+        return this.getAllDiffSettings().length > 0;
       };
 
       this.reset();

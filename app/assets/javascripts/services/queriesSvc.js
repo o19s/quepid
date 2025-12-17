@@ -21,7 +21,6 @@ angular.module('QuepidApp')
     'bookSvc',
     'DocListFactory',
     'diffResultsSvc',
-    'multiDiffResultsSvc',
     'searchErrorTranslatorSvc',
     'esExplainExtractorSvc',
     'solrExplainExtractorSvc',
@@ -41,7 +40,6 @@ angular.module('QuepidApp')
       bookSvc,
       DocListFactory,
       diffResultsSvc,
-      multiDiffResultsSvc,
       searchErrorTranslatorSvc,
       esExplainExtractorSvc,
       solrExplainExtractorSvc,
@@ -808,7 +806,7 @@ angular.module('QuepidApp')
             that.queries[newQueryId] = newQuery;
             newQueries.push(newQueryId);
             diffResultsSvc.createQueryDiff(newQuery);
-            multiDiffResultsSvc.createQueryMultiDiff(newQuery);
+            // multiDiff creation is now handled by diffResultsSvc
           }
         });
 
@@ -935,7 +933,7 @@ angular.module('QuepidApp')
         };
         let newQuery = new Query(queryJson);
         diffResultsSvc.createQueryDiff(newQuery);
-        multiDiffResultsSvc.createQueryMultiDiff(newQuery);
+        // multiDiff creation is now handled by diffResultsSvc
         return newQuery;
       };
 
@@ -1178,17 +1176,18 @@ angular.module('QuepidApp')
       };
 
       this.setDiffSetting = function(diffSetting) {
-        diffResultsSvc.setDiffSetting(diffSetting);
+        // diffResultsSvc.setDiffSetting is no longer needed - state is managed by queryViewSvc
         angular.forEach(this.queries, function(query) {
           diffResultsSvc.createQueryDiff(query);
-          multiDiffResultsSvc.createQueryMultiDiff(query);
+          // multiDiff creation is now handled by diffResultsSvc
         });
       };
 
       this.setMultiDiffSetting = function(multiDiffSettings) {
-        multiDiffResultsSvc.setMultiDiffSettings(multiDiffSettings);
+        // Multi-diff settings are now handled by queryViewSvc automatically
+        // This method is kept for backward compatibility but delegates to diffResultsSvc
         angular.forEach(this.queries, function(query) {
-          multiDiffResultsSvc.createQueryMultiDiff(query);
+          diffResultsSvc.createQueryDiff(query);
         });
       };
 

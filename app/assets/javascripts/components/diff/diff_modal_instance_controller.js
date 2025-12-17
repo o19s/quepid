@@ -8,13 +8,13 @@ angular.module('QuepidApp')
     '$uibModalInstance',
     '$log',
     'flash',
-    'querySnapshotSvc', 'queryViewSvc', 'queriesSvc', 'multiDiffResultsSvc', 'initialSelection',
+    'querySnapshotSvc', 'queryViewSvc', 'queriesSvc', 'initialSelection',
     function(
       $scope,
       $uibModalInstance,
       $log,
       flash,
-      querySnapshotSvc, queryViewSvc, queriesSvc, multiDiffResultsSvc, initialSelection
+      querySnapshotSvc, queryViewSvc, queriesSvc, initialSelection
     ) {
       var ctrl = this;
 
@@ -60,25 +60,14 @@ angular.module('QuepidApp')
         // Check actual service state for disabled status
         ctrl.disabled = queryViewSvc.areComparisonsDisabled();
         
-        // Handle initial selection from existing diff
-        if (initialSelection === null) {
+        // Handle initial selection - now always an array or null
+        if (initialSelection === null || (angular.isArray(initialSelection) && initialSelection.length === 0)) {
           ctrl.selections = [null]; // Default to one empty selection
         } else if (angular.isArray(initialSelection)) {
-          // Multi-diff mode - preserve existing selections
+          // Preserve existing selections (single or multi)
           ctrl.selections = initialSelection.slice(); // Copy array
-          if (ctrl.selections.length === 0) {
-            ctrl.selections = [null];
-          }
-        } else if (initialSelection !== null && initialSelection !== undefined) {
-          // Single diff mode - handle both numeric IDs and string IDs
-          ctrl.selections = [initialSelection];
         } else {
-          // Fallback case
-          ctrl.selections = [null];
-        }
-        
-        // Ensure we have at least one selection slot
-        if (ctrl.selections.length === 0) {
+          // Fallback for any unexpected format
           ctrl.selections = [null];
         }
       }
@@ -86,7 +75,7 @@ angular.module('QuepidApp')
       var delState = null;
 
       function addSelection() {
-        if (ctrl.selections.length < multiDiffResultsSvc.getMaxSnapshots()) {
+        if (ctrl.selections.length < queryViewSvc.getMaxSnapshots()) {
           ctrl.selections.push(null);
         }
       }
@@ -102,7 +91,7 @@ angular.module('QuepidApp')
       }
 
       function canAddMore() {
-        return ctrl.selections.length < multiDiffResultsSvc.getMaxSnapshots();
+        return ctrl.selections.length < queryViewSvc.getMaxSnapshots();
       }
 
       function validateSelections() {
@@ -204,7 +193,6 @@ angular.module('QuepidApp')
 
             queryViewSvc.disableComparisons();
             queriesSvc.setDiffSetting(null);
-            multiDiffResultsSvc.setMultiDiffSettings([]);
 
             flash.success = 'Snapshot deleted successfully.';
           });
@@ -218,7 +206,7 @@ angular.module('QuepidApp')
       function clearComparisonView() {
         queryViewSvc.disableComparisons();
         queriesSvc.setDiffSetting(null);
-        multiDiffResultsSvc.setMultiDiffSettings([]);
+        queriesSvc.setMultiDiffSetting([]);
         $uibModalInstance.close(null);
         flash.success = 'Comparison view has been cleared.';
       }
@@ -229,7 +217,6 @@ angular.module('QuepidApp')
           // No valid selections - disable all comparisons (same as Clear Comparison View)
           queryViewSvc.disableComparisons();
           queriesSvc.setDiffSetting(null);
-          multiDiffResultsSvc.setMultiDiffSettings([]);
           $uibModalInstance.close(null);
           flash.success = 'Comparison view has been cleared.';
         } else {
@@ -244,21 +231,15 @@ angular.module('QuepidApp')
           Promise.all(fetchPromises)
             .then(function() {
               ctrl.inProgress = false;
-              if (validSelections.length === 1) {
-                // Single snapshot - use legacy single diff
-                $uibModalInstance.close({
-                  type: 'single',
-                  selection: validSelections[0]
-                });
-                flash.success = 'Snapshot loaded successfully for comparison.';
-              } else {
-                // Multiple snapshots - use multi-diff
-                $uibModalInstance.close({
-                  type: 'multi',
-                  selections: validSelections
-                });
-                flash.success = 'Snapshots loaded successfully for comparison.';
-              }
+              // Always return selections as array - let controller handle single vs multi
+              $uibModalInstance.close({
+                selections: validSelections
+              });
+              
+              var message = validSelections.length === 1 
+                ? 'Snapshot loaded successfully for comparison.'
+                : 'Snapshots loaded successfully for comparison.';
+              flash.success = message;
             })
             .catch(function(response) {
               ctrl.inProgress = false;

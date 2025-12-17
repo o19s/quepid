@@ -13,7 +13,6 @@ angular.module('QuepidApp')
     'queriesSvc',
     'queryViewSvc',
     'querySnapshotSvc',
-    'multiDiffResultsSvc',
     'caseSvc',
     'scorerSvc',
     'configurationSvc',
@@ -30,7 +29,6 @@ angular.module('QuepidApp')
       queriesSvc,
       queryViewSvc,
       querySnapshotSvc,
-      multiDiffResultsSvc,
       caseSvc,
       scorerSvc,
       configurationSvc,
@@ -274,9 +272,9 @@ angular.module('QuepidApp')
 
       // Watch for any diff changes and trigger case-level multiDiff scoring
       $scope.$watch(function() {
-        return JSON.stringify(multiDiffResultsSvc.getMultiDiffSettings());
+        return JSON.stringify(queryViewSvc.getAllDiffSettings());
       }, function() {
-        var isEnabled = multiDiffResultsSvc.isAnyDiffEnabled();
+        var isEnabled = queryViewSvc.isAnyDiffEnabled();
         if (isEnabled) {
           // Create case-level multiDiff object similar to individual query multiDiff
           $scope.queries.avgQuery.multiDiff = {
