@@ -16,19 +16,7 @@
             >
             </qscore-case>
             
-            <!-- Single snapshot case score -->
-            <qscore-case
-              ng-if="queries.selectedDiff() !== null && queries.avgQuery.diff && !queries.avgQuery.diffs"
-              class="case-score diff-score"
-              max-score="maxScore || 1";
-              scorable="queries.avgQuery.diff"
-              score-label="queries.fullDiffName()"
-              scores="[]"
-              annotations="[]"
-            >
-            </qscore-case>
-            
-            <!-- Multiple snapshot case scores -->
+            <!-- Snapshot case scores -->
             <qscore-case
               ng-if="queries.avgQuery.diffs"
               ng-repeat="searcher in queries.avgQuery.diffs.getSearchers() track by $index"

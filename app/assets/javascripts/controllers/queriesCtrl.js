@@ -266,43 +266,10 @@ angular.module('QuepidApp')
             saveScoring();
           }
         },
-        score: () => {
-          var deferred = $q.defer();
-          deferred.resolve($scope.queries.avgQuery.diff.currentScore);
-          return deferred.promise;
-        },
-        diff: {
-          currentScore: { score: null, allRated: false },
-          score: function() {
-            return queriesSvc.scoreAllDiffs().then( (scoreInfo) => {
-              $scope.queries.avgQuery.diff.currentScore = scoreInfo;
-              return scoreInfo;
-            });
-          }
-        },
         diffs: null
-        //var diff: null, // TODO fill out
       };
 
-      // Watch for diff changes and trigger case-level diff scoring
-      $scope.$watch('queries.selectedDiff()', function(newVal) {
-        if (newVal !== null && $scope.queries.avgQuery.diff) {
-          // Wait for all individual query diffs to be fetched first
-          var fetchPromises = [];
-          angular.forEach(queriesSvc.queries, function(query) {
-            if (query.diff !== null) {
-              fetchPromises.push(query.diff.fetch());
-            }
-          });
-          
-          // After all individual diffs are fetched, calculate case-level score
-          $q.all(fetchPromises).then(function() {
-            return $scope.queries.avgQuery.diff.score();
-          }).catch(function() {
-            // Case-level diff scoring error - silently handled
-          });
-        }
-      });
+
 
       // Watch for any diff changes and trigger case-level diff scoring
       $scope.$watch(function() {
@@ -460,29 +427,9 @@ angular.module('QuepidApp')
         return queriesSvc.version();
       };
 
-      $scope.queries.selectedDiff = function() {
-        return queryViewSvc.diffSetting;
-      };
 
 
 
-      $scope.queries.fullDiffName = function() {
-        var fullDiffName = '';
-        if (queryViewSvc.diffSetting === null) {
-          fullDiffName = 'disabled';
-        }
-        else if (queryViewSvc.diffSetting === 'best') {
-          fullDiffName = 'Highest ratest results for each query';
-        } else {
-          var snapshot = querySnapshotSvc.snapshots[queryViewSvc.diffSetting];
-          // When reopening the snapshot selection UI we clear out the querySnapshotSvc.snapshots
-          // while reloading the data.
-          if (snapshot) { 
-            fullDiffName = snapshot.name();
-          }
-        }
-        return fullDiffName;
-      };
 
       function saveScoring() {
         // finished a batch run, log the result!
