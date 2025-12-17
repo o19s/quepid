@@ -96,7 +96,7 @@ angular.module('QuepidApp')
         var seen = {};
         
         angular.forEach(ctrl.selections, function(selection) {
-          if (selection !== null && selection !== undefined && selection !== '' && !seen[selection]) {
+          if (selection !== null && selection !== '' && !seen[selection]) {
             validSelections.push(selection);
             seen[selection] = true;
           }
@@ -110,7 +110,7 @@ angular.module('QuepidApp')
         var hasDupe = false;
         
         angular.forEach(ctrl.selections, function(selection) {
-          if (selection !== null && selection !== undefined && selection !== '') {
+          if (selection !== null && selection !== '') {
             if (seen[selection]) {
               hasDupe = true;
             }
@@ -178,7 +178,7 @@ angular.module('QuepidApp')
 
       function ok() {
         var validSelections = getValidSelections();
-        if (validSelections.length === 0 || hasDuplicateSelections()) {
+        if (validSelections.length === 0) {
           // No valid selections - disable all comparisons (same as Clear Comparison View)
           queryViewSvc.disableComparisons();
           queriesSvc.refreshAllDiffs();
@@ -201,9 +201,7 @@ angular.module('QuepidApp')
                 selections: validSelections
               });
               
-              var message = validSelections.length === 1 ?
-                'Snapshot loaded successfully for comparison.' :
-                'Snapshots loaded successfully for comparison.';
+              var message = `Snapshot${validSelections.length === 1 ? '' : 's'} loaded successfully for comparison.`;
               flash.success = message;
             })
             .catch(function(response) {
