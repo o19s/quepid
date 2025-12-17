@@ -64,6 +64,7 @@ angular.module('QuepidApp')
       function reset() {
         svc.queries = {};
         svc.showOnlyRated = false;
+        svc.isBootstrapping = false;
         svc.svcVersion++;
         // Clear sync cache when resetting
         syncedPairsCache = {};
@@ -96,6 +97,7 @@ angular.module('QuepidApp')
 
       svc.bootstrapQueries = bootstrapQueries;
       svc.showOnlyRated = false;
+      svc.isBootstrapping = false;
 
       // Rescore on ratings update
       $scope.$on('rating-changed', () => {
@@ -810,6 +812,7 @@ angular.module('QuepidApp')
 
       let querySearchableDeferred = $q.defer();
       function bootstrapQueries(caseNo) {
+        svc.isBootstrapping = true;
         querySearchableDeferred = $q.defer();
         var path = 'api/cases/' + caseNo + '/queries?bootstrap=true';
 
@@ -818,12 +821,15 @@ angular.module('QuepidApp')
             that.queries = {};
             addQueriesFromResp(response.data);
 
+            svc.isBootstrapping = false;
             querySearchableDeferred.resolve();
           }, function(response) {
             $log.debug('Failed to bootstrap queries: ', response);
+            svc.isBootstrapping = false;
             return response;
           }).catch(function(response) {
             $log.debug('Failed to bootstrap queries');
+            svc.isBootstrapping = false;
             return response;
           });
 

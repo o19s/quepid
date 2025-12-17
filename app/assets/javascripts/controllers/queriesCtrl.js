@@ -488,6 +488,9 @@ angular.module('QuepidApp')
       $scope.searching = function() {
         return queriesSvc.hasUnscoredQueries();
       };
+      $scope.isBootstrapping = function() {
+        return queriesSvc.isBootstrapping;
+      };
       $scope.batchPosition = 0;
       $scope.batchSize = 0;
       function getBatchPosition() {
