@@ -79,7 +79,5 @@ angular.module('QuepidApp')
       // Initialize score on load
       updateScore();
       
-      // Diff functionality has been moved to separate components
-      // This component now handles only single score display
     }
   ]);
