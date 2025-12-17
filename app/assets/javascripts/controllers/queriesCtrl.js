@@ -49,13 +49,47 @@ angular.module('QuepidApp')
         $scope.queries.avgQuery.calcScore();
         
         // Also recalculate case-level diff scores if diffs are enabled
-        if ($scope.queries.avgQuery.diffs && $scope.queries.avgQuery.diffs._calculateCaseScores) {
-          $scope.queries.avgQuery.diffs._calculateCaseScores();
+        if ($scope.queries.avgQuery.diffs) {
+          $scope.queries.avgQuery.diffs.calculateCaseScores();
         }
+      });
+      
+      // Debounced case score recalculation to prevent multiple rapid updates
+      var caseScoreUpdateTimeout;
+      
+      // Listen for rating changes to update case scores immediately
+      const ratingChangedListener = $rootScope.$on('rating-changed', () => {
+        // Debounce to prevent multiple rapid recalculations
+        if (caseScoreUpdateTimeout) {
+          clearTimeout(caseScoreUpdateTimeout);
+        }
+        
+        caseScoreUpdateTimeout = setTimeout(() => {
+          // When ratings change, refresh individual query diff scores first
+          if ($scope.queries.avgQuery.diffs) {
+            // Refresh all individual query diffs to get updated scores
+            var refreshPromises = [];
+            angular.forEach(queriesSvc.queries, function(query) {
+              if (query.diffs && query.diffs.fetch) {
+                refreshPromises.push(query.diffs.fetch());
+              }
+            });
+            
+            // Then recalculate case-level scores based on updated diff scores
+            $q.all(refreshPromises).then(function() {
+              $scope.queries.avgQuery.diffs.calculateCaseScores();
+            });
+          }
+          caseScoreUpdateTimeout = null;
+        }, 100); // 100ms debounce
       });
       
       $scope.$on('$destroy', () => {
         scoringCompleteListener(); // Deregister the listener
+        ratingChangedListener(); // Deregister the listener
+        if (caseScoreUpdateTimeout) {
+          clearTimeout(caseScoreUpdateTimeout); // Clean up timeout
+        }
       });
       // $rootScope.$on('scoring-complete', () => {
       //   $scope.queries.avgQuery.calcScore();
@@ -303,12 +337,12 @@ angular.module('QuepidApp')
               
               return $q.all(fetchPromises).then(function() {
                 // After all individual query scores are calculated, compute case-level scores
-                return $scope.queries.avgQuery.diffs._calculateCaseScores();
+                return $scope.queries.avgQuery.diffs.calculateCaseScores();
               }).catch(function() {
                 // Case-level diff scoring error - silently handled
               });
             },
-            _calculateCaseScores: function() {
+            calculateCaseScores: function() {
               var self = this;
               
               // Get searchers from the first query's diffs to determine structure
