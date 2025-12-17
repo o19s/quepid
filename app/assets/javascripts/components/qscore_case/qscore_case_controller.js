@@ -57,22 +57,15 @@ angular.module('QuepidApp')
         }
       }
       
-      // Watch for changes in the scorable's current score (original behavior - performance optimized)
-      $scope.$watch('ctrl.scorable.currentScore', function() {
-        if (ctrl.scorable && ctrl.scorable.currentScore) {
-          updateScore();
-        }
-      }, true);
-
-      // Watch for changes in searcher's diff score (for multi-diff support)  
-      $scope.$watch('ctrl.scorable.diffScore', function() {
-        if (ctrl.scorable && ctrl.scorable.diffScore) {
-          updateScore();
-        }
-      }, true);
-
-      // Watch for maxScore changes to update colors
-      $scope.$watch('ctrl.maxScore', function() {
+      // Watch for changes in specific score properties instead of deep watching entire objects
+      // This improves performance by only watching the properties we actually use
+      $scope.$watchGroup([
+        'ctrl.scorable.currentScore.score',
+        'ctrl.scorable.currentScore.backgroundColor',
+        'ctrl.scorable.diffScore.score',
+        'ctrl.scorable.diffScore.backgroundColor',
+        'ctrl.maxScore'
+      ], function() {
         updateScore();
       });
 
