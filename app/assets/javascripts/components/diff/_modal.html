@@ -13,7 +13,6 @@
         <select
           ng-model="ctrl.selections[$index]"
           ng-options="snapshot.id as snapshot.name() for (id, snapshot) in ctrl.snapshots"
-          ng-change="ctrl.validateSelections()"
           ng-disabled="!ctrl.snapshots"
           style="margin-right: 10px; min-width: 200px;"
         >

@@ -42,7 +42,7 @@ angular.module('QuepidApp')
       ctrl.addSelection            = addSelection;
       ctrl.removeSelection         = removeSelection;
       ctrl.canAddMore              = canAddMore;
-      ctrl.validateSelections      = validateSelections;
+
 
       ctrl.hasDuplicateSelections  = hasDuplicateSelections;
       ctrl.hasProcessingSnapshots  = hasProcessingSnapshots;
@@ -50,9 +50,7 @@ angular.module('QuepidApp')
 
       // Watches
       $scope.$watchCollection('ctrl.selections', function(newVal, oldVal) {
-        if (newVal !== oldVal) {
-          validateSelections();
-        }
+        // Watch for selection changes - UI will update automatically
       });
 
       // Initialize selections based on current state
@@ -84,18 +82,14 @@ angular.module('QuepidApp')
           // Just clear the selection but keep the slot
           ctrl.selections[index] = null;
         }
-        validateSelections();
+
       }
 
       function canAddMore() {
         return ctrl.selections.length < queryViewSvc.getMaxSnapshots();
       }
 
-      function validateSelections() {
-        // Remove any duplicate or empty selections from the end
-        getValidSelections();
-        // This function is called to trigger UI updates
-      }
+
 
       function getValidSelections() {
         var validSelections = [];
