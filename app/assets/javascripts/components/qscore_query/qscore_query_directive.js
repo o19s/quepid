@@ -8,6 +8,5 @@ angular.module('QuepidApp')
     bindings:      {
       maxScore:     '=',
       scorable:     '=',
-      showDiff:     '=',
     },
   });

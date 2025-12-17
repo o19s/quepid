@@ -16,8 +16,7 @@ angular.module('QuepidApp')
         this.resultsView = {};
         this.resultsView.finder = 1;
         this.resultsView.results = 2;
-        this.resultsView.diff = 3;
-        this.resultsView.diffs = 4;
+        this.resultsView.diffs = 3;
         this.results = this.resultsView.results;
       };
 

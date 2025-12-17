@@ -32,7 +32,7 @@ describe('QScore Components', function () {
         'scorable="testScorableCase" ' +
         'scores="testScores" ' +
         'annotations="testAnnotations" ' +
-        'show-diff="false">' +
+        '>' +
         '</qscore-case>'
       )(scope);
       
@@ -57,7 +57,7 @@ describe('QScore Components', function () {
         '<qscore-case ' +
         'max-score="testMaxScore" ' +
         'scorable="testScorableCase" ' +
-        'show-diff="false">' +
+        '>' +
         '</qscore-case>'
       )(scope);
       
@@ -86,8 +86,7 @@ describe('QScore Components', function () {
       var element = $compile(
         '<qscore-query ' +
         'max-score="testMaxScore" ' +
-        'scorable="testScorableQuery" ' +
-        'show-diff="false">' +
+        'scorable="testScorableQuery">' +
         '</qscore-query>'
       )(scope);
       
@@ -110,8 +109,7 @@ describe('QScore Components', function () {
       var element = $compile(
         '<qscore-query ' +
         'max-score="testMaxScore" ' +
-        'scorable="testScorableQuery" ' +
-        'show-diff="false">' +
+        'scorable="testScorableQuery">' +
         '</qscore-query>'
       )(scope);
       

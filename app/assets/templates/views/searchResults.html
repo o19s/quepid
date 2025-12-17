@@ -2,13 +2,12 @@
   ng-attr-id="{{ 'query-' + query.queryText }}"
   rank="{{$index + 1}}"
   class="clearfix" ng-class="query.state() | queryStateClass">
-  <div class="result-header" ng-class="{'dual-query-display': (displayed.results == displayed.resultsView.diff && query.diff) || (displayed.results == displayed.resultsView.diffs && query.diffs)}">
+  <div class="result-header" ng-class="{'dual-query-display': (displayed.results == displayed.resultsView.diffs && query.diffs)}">
     <!-- Current query score -->
     <qscore-query
       class="results-score"
       max-score="maxScore || 100";
-      scorable="query"
-      show-diff="displayed.results == displayed.resultsView.diff || displayed.results == displayed.resultsView.diffs"
+      scorable="query"      
     >
     </qscore-query>
     
@@ -19,7 +18,6 @@
       class="results-score diff-score"
       max-score="maxScore || 100"
       scorable="searcher"
-      show-diff="false"
     >
     </qscore-query>
   
