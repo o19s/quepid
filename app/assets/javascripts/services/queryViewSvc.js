@@ -33,9 +33,6 @@ angular.module('QuepidApp')
         return this.comparisonsDisabled === true;
       };
 
-      this.isDiffEnabled = function() {
-        return (this.diffSetting !== null);
-      };
 
 
 

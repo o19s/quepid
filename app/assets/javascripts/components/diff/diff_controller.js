@@ -44,7 +44,6 @@ angular.module('QuepidApp')
               queryViewSvc.disableComparisons();
               queriesSvc.refreshAllDiffs();
             } else if (response.selections && response.selections.length > 0) {
-              // Always use enableDiffs since it handles both single and multi cases
               queryViewSvc.enableDiffs(response.selections);
               queriesSvc.refreshAllDiffs();
             }
@@ -52,7 +51,7 @@ angular.module('QuepidApp')
           function() {
             $log.info('INFO: Modal dismissed');
           }).then(function() {
-            if (!queryViewSvc.isDiffEnabled() && !queryViewSvc.isAnyDiffEnabled()){
+            if (!queryViewSvc.isAnyDiffEnabled()){
               $log.info('rescoring queries after cancelling diff');
               queriesSvc.updateScores();
             }
