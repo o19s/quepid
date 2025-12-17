@@ -12,21 +12,9 @@
     >
     </qscore-query>
     
-    <!-- Single snapshot comparison -->
+    <!-- Snapshot query scores -->
     <qscore-query
-      ng-if="displayed.results == displayed.resultsView.diff && query.diff"
-      class="results-score diff-score"
-      max-score="maxScore || 100";
-      scorable="query.diff"
-      show-diff="false"
-    >
-    </qscore-query>
-    
-
-    
-    <!-- Multiple snapshot comparison -->
-    <qscore-query
-      ng-if="displayed.results == displayed.resultsView.diffs && query.diffs"
+      ng-if="query.diffs"
       ng-repeat="searcher in query.diffs.getSearchers() track by $index"
       class="results-score diff-score"
       max-score="maxScore || 100"
@@ -34,6 +22,7 @@
       show-diff="false"
     >
     </qscore-query>
+  
 
     <span class="loading-query"></span>
 
