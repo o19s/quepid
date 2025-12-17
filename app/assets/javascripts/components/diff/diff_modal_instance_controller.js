@@ -60,15 +60,12 @@ angular.module('QuepidApp')
         // Check actual service state for disabled status
         ctrl.disabled = queryViewSvc.areComparisonsDisabled();
         
-        // Handle initial selection - now always an array or null
-        if (initialSelection === null || (angular.isArray(initialSelection) && initialSelection.length === 0)) {
+        // Handle initial selection - now always an array
+        if (initialSelection.length === 0) {
           ctrl.selections = [null]; // Default to one empty selection
-        } else if (angular.isArray(initialSelection)) {
+        } else {
           // Preserve existing selections (single or multi)
           ctrl.selections = initialSelection.slice(); // Copy array
-        } else {
-          // Fallback for any unexpected format
-          ctrl.selections = [null];
         }
       }
 

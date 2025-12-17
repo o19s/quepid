@@ -15,11 +15,7 @@ angular.module('QuepidApp')
       ctrl.getCurrentDiffSelection = getCurrentDiffSelection;
 
       function getCurrentDiffSelection() {
-        if (queryViewSvc.areComparisonsDisabled()) {
-          return null;
-        }
-        
-        // Always return the array - let the modal handle the logic
+        // Always return the array - getAllDiffSettings handles disabled state
         return queryViewSvc.getAllDiffSettings();
       }
 
