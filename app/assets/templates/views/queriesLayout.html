@@ -18,7 +18,7 @@
             
             <!-- Single snapshot case score -->
             <qscore-case
-              ng-if="queries.selectedDiff() !== null && queries.avgQuery.diff && !queries.avgQuery.multiDiff"
+              ng-if="queries.selectedDiff() !== null && queries.avgQuery.diff && !queries.avgQuery.diffs"
               class="case-score diff-score"
               max-score="maxScore || 1";
               scorable="queries.avgQuery.diff"
@@ -30,8 +30,8 @@
             
             <!-- Multiple snapshot case scores -->
             <qscore-case
-              ng-if="queries.avgQuery.multiDiff"
-              ng-repeat="searcher in queries.avgQuery.multiDiff.getSearchers() track by $index"
+              ng-if="queries.avgQuery.diffs"
+              ng-repeat="searcher in queries.avgQuery.diffs.getSearchers() track by $index"
               class="case-score diff-score"
               max-score="maxScore || 1";
               scorable="searcher"

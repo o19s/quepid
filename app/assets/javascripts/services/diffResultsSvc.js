@@ -21,11 +21,11 @@ angular.module('QuepidApp')
       queryViewSvc
     ) {
 
-      // Internal method to create multiDiff objects
-      function createQueryMultiDiff(query, diffSettings) {
+      // Internal method to create diff objects
+      function createQueryDiffs(query, diffSettings) {
         if (diffSettings.length === 0) {
-          query.multiDiff = null;
-          query.multiDiffSearchers = [];
+          query.diffs = null;
+          query.diffSearchers = [];
           return;
         }
 
@@ -58,10 +58,10 @@ angular.module('QuepidApp')
         });
 
         if (validSearchers.length > 0) {
-          query.multiDiffSearchers = diffSearchers;
+          query.diffSearchers = diffSearchers;
           
-          // Create multiDiff interface
-          query.multiDiff = {
+          // Create diffs interface
+          query.diffs = {
             fetch: function() {
               var fetchPromises = [];
               
@@ -185,11 +185,11 @@ angular.module('QuepidApp')
           };
           
           // Initialize all diffs
-          query.multiDiff.fetch();
+          query.diffs.fetch();
         } else {
-          console.debug('no valid snapshots found for multi-diff!');
-          query.multiDiff = null;
-          query.multiDiffSearchers = [];
+          console.debug('no valid snapshots found for diff!');
+          query.diffs = null;
+          query.diffSearchers = [];
         }
       }
 
@@ -200,33 +200,29 @@ angular.module('QuepidApp')
         if (allDiffSettings.length === 0) {
           query.diff = null;
           query.diffSearcher = null;
-          query.multiDiff = null;
-          query.multiDiffSearchers = [];
+          query.diffs = null;
+          query.diffSearchers = [];
         } else {
-          // Create multiDiff using internal method
-          createQueryMultiDiff(query, allDiffSettings);
+          // Create diffs using internal method
+          createQueryDiffs(query, allDiffSettings);
           
           // For single diff, create compatibility wrapper to maintain old diff interface
-          if (allDiffSettings.length === 1 && query.multiDiff) {
+          if (allDiffSettings.length === 1 && query.diffs) {
             query.diff = {
               fetch: function() {
-                return query.multiDiff.fetch();
+                return query.diffs.fetch();
               },
-              
               docs: function(onlyRated) {
-                return query.multiDiff.docs(0, onlyRated);
+                return query.diffs.docs(0, onlyRated);
               },
-              
               name: function() {
-                return query.multiDiff.name(0);
+                return query.diffs.name(0);
               },
-              
               version: function() {
-                return query.multiDiff.version(0);
+                return query.diffs.version(0);
               },
-              
               score: function() {
-                return query.multiDiff.score(0);
+                return query.diffs.score(0);
               },
               
               type: function() {
@@ -234,7 +230,7 @@ angular.module('QuepidApp')
               },
               
               get diffScore() {
-                var searchers = query.multiDiff.getSearchers();
+                var searchers = query.diffs.getSearchers();
                 return searchers[0] ? searchers[0].diffScore : { score: null, allRated: false };
               },
               

@@ -192,7 +192,7 @@ angular.module('QuepidApp')
             ctrl.disabled = true;
 
             queryViewSvc.disableComparisons();
-            queriesSvc.setDiffSetting(null);
+            queriesSvc.refreshAllDiffs();
 
             flash.success = 'Snapshot deleted successfully.';
           });
@@ -205,8 +205,7 @@ angular.module('QuepidApp')
 
       function clearComparisonView() {
         queryViewSvc.disableComparisons();
-        queriesSvc.setDiffSetting(null);
-        queriesSvc.setMultiDiffSetting([]);
+        queriesSvc.refreshAllDiffs();
         $uibModalInstance.close(null);
         flash.success = 'Comparison view has been cleared.';
       }
@@ -216,7 +215,7 @@ angular.module('QuepidApp')
         if (validSelections.length === 0 || hasDuplicateSelections()) {
           // No valid selections - disable all comparisons (same as Clear Comparison View)
           queryViewSvc.disableComparisons();
-          queriesSvc.setDiffSetting(null);
+          queriesSvc.refreshAllDiffs();
           $uibModalInstance.close(null);
           flash.success = 'Comparison view has been cleared.';
         } else {

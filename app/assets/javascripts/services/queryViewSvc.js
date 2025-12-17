@@ -5,21 +5,27 @@
 angular.module('QuepidApp')
   .service('queryViewSvc', [
     function() {
+      // Initialize properties
+      this.diffSetting = null;
+      this.diffSettings = [];
+      this.comparisonsDisabled = false;
+      this.queryToggles = {};
+
       this.enableDiff = function(snapshotId) {
         this.diffSetting = snapshotId;
-        this.multiDiffSettings = [snapshotId];
+        this.diffSettings = [snapshotId];
         this.comparisonsDisabled = false;
       };
 
-      this.enableMultiDiff = function(snapshotIds) {
-        this.multiDiffSettings = snapshotIds || [];
+      this.enableDiffs = function(snapshotIds) {
+        this.diffSettings = snapshotIds || [];
         this.diffSetting = snapshotIds && snapshotIds.length === 1 ? snapshotIds[0] : null;
         this.comparisonsDisabled = false;
       };
 
       this.disableComparisons = function() {
         this.diffSetting = null;
-        this.multiDiffSettings = [];
+        this.diffSettings = [];
         this.comparisonsDisabled = true;
       };
 
@@ -31,9 +37,7 @@ angular.module('QuepidApp')
         return (this.diffSetting !== null);
       };
 
-      this.isMultiDiffEnabled = function() {
-        return (this.multiDiffSettings && this.multiDiffSettings.length > 1);
-      };
+
 
       this.isQueryToggled = function(queryId) {
         if (!this.queryToggles.hasOwnProperty(queryId)) {
@@ -55,7 +59,7 @@ angular.module('QuepidApp')
 
       this.reset = function() {
         this.diffSetting = null;
-        this.multiDiffSettings = [];
+        this.diffSettings = [];
         this.comparisonsDisabled = false;
         this.queryToggles = {}; // the toggles, they do nothing
       };
@@ -65,8 +69,8 @@ angular.module('QuepidApp')
         if (this.comparisonsDisabled === true) {
           return [];
         }
-        if (this.multiDiffSettings && this.multiDiffSettings.length > 0) {
-          return this.multiDiffSettings;
+        if (this.diffSettings && this.diffSettings.length > 0) {
+          return this.diffSettings;
         } else if (this.diffSetting !== null) {
           return [this.diffSetting];
         }

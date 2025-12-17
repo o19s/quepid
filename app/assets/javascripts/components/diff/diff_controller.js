@@ -30,7 +30,6 @@ angular.module('QuepidApp')
           templateUrl:  'diff/_modal.html',
           controller:   'DiffModalInstanceCtrl',
           controllerAs: 'ctrl',
-          size: 'lg',
           resolve: {
             initialSelection: function() {
               return initialSelection;
@@ -41,19 +40,19 @@ angular.module('QuepidApp')
         modalInstance.result
           .then(function(response) {
             if (response === null) {
-              // Disable all diffs (diffResultsSvc will handle internal coordination)
+              // Disable all diffs
               queryViewSvc.disableComparisons();
-              queriesSvc.setDiffSetting(null);
+              queriesSvc.refreshAllDiffs();
             } else if (response.selections && response.selections.length > 0) {
-              // Always use enableMultiDiff since it handles both single and multi cases
-              queryViewSvc.enableMultiDiff(response.selections);
-              queriesSvc.setMultiDiffSetting(response.selections);
+              // Always use enableDiffs since it handles both single and multi cases
+              queryViewSvc.enableDiffs(response.selections);
+              queriesSvc.refreshAllDiffs();
             }
           },
           function() {
             $log.info('INFO: Modal dismissed');
           }).then(function() {
-            if (!queryViewSvc.isDiffEnabled() && !queryViewSvc.isMultiDiffEnabled()){
+            if (!queryViewSvc.isDiffEnabled() && !queryViewSvc.isAnyDiffEnabled()){
               $log.info('rescoring queries after cancelling diff');
               queriesSvc.updateScores();
             }

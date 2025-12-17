@@ -1,7 +1,7 @@
 'use strict';
 
 angular.module('QuepidApp')
-  .controller('QueryMultiDiffResultsCtrl', [
+  .controller('QueryDiffResultsCtrl', [
     '$scope',
     'queriesSvc',
     function ($scope, queriesSvc) {
@@ -24,19 +24,19 @@ angular.module('QuepidApp')
         };
       }
 
-      $scope.query.maxMultiDiffDocScores = [];
+      $scope.query.maxDiffDocScores = [];
 
       $scope.query.docTuples = function() {
-        if (!$scope.query.multiDiff || !$scope.query.multiDiff.getSearchers) {
+        if (!$scope.query.diffs || !$scope.query.diffs.getSearchers) {
           return returnValue;
         }
 
-        var allSearchers = $scope.query.multiDiff.getSearchers();
+        var allSearchers = $scope.query.diffs.getSearchers();
         
         // Initialize max scores array
-        $scope.query.maxMultiDiffDocScores = [];
+        $scope.query.maxDiffDocScores = [];
         for (var s = 0; s < allSearchers.length; s++) {
-          $scope.query.maxMultiDiffDocScores[s] = 0;
+          $scope.query.maxDiffDocScores[s] = 0;
         }
 
         for (var i = 0; i < howManyToDisplay; i++) {
@@ -51,12 +51,12 @@ angular.module('QuepidApp')
           returnValue[i].diffDocs = [];
           
           for (var searcherIndex = 0; searcherIndex < allSearchers.length; searcherIndex++) {
-            var diffDocs = $scope.query.multiDiff.docs(searcherIndex, queriesSvc.showOnlyRated);
+            var diffDocs = $scope.query.diffs.docs(searcherIndex, queriesSvc.showOnlyRated);
             
             if (diffDocs[i]) {
               var diffDoc = diffDocs[i];
-              $scope.query.maxMultiDiffDocScores[searcherIndex] = Math.max(
-                $scope.query.maxMultiDiffDocScores[searcherIndex], 
+              $scope.query.maxDiffDocScores[searcherIndex] = Math.max(
+                $scope.query.maxDiffDocScores[searcherIndex], 
                 diffDoc.score()
               );
               returnValue[i].diffDocs[searcherIndex] = diffDoc;

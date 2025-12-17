@@ -1,11 +1,11 @@
-<div ng-show="displayed.results == displayed.resultsView.multiDiff">
+<div ng-show="displayed.results == displayed.resultsView.diffs">
   <div class="multi-diff-container">
     <!-- Column headers -->
     <div class="multi-diff-header">
       <div class="multi-diff-column">
         <h2>Current Results</h2>
       </div>
-      <div class="multi-diff-column" ng-repeat="name in query.multiDiff.names() track by $index">
+      <div class="multi-diff-column" ng-repeat="name in query.diffs.names() track by $index">
         <h2>{{name}}</h2>
       </div>
     </div>
@@ -43,7 +43,7 @@
           class="search-result"
           explain-viewport="'#query-container'"
           explain-view="'full'"
-          max-doc-score="query.maxMultiDiffDocScores[$index]"
+          max-doc-score="query.maxDiffDocScores[$index]"
           doc="diffDoc"
           field-spec="query.fieldSpec"
           rank="{{$parent.$parent.$index + 1}}"

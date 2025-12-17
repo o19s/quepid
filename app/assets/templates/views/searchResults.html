@@ -2,13 +2,13 @@
   ng-attr-id="{{ 'query-' + query.queryText }}"
   rank="{{$index + 1}}"
   class="clearfix" ng-class="query.state() | queryStateClass">
-  <div class="result-header" ng-class="{'dual-query-display': (displayed.results == displayed.resultsView.diff && query.diff) || (displayed.results == displayed.resultsView.multiDiff && query.multiDiff)}">
+  <div class="result-header" ng-class="{'dual-query-display': (displayed.results == displayed.resultsView.diff && query.diff) || (displayed.results == displayed.resultsView.diffs && query.diffs)}">
     <!-- Current query score -->
     <qscore-query
       class="results-score"
       max-score="maxScore || 100";
       scorable="query"
-      show-diff="displayed.results == displayed.resultsView.diff || displayed.results == displayed.resultsView.multiDiff"
+      show-diff="displayed.results == displayed.resultsView.diff || displayed.results == displayed.resultsView.diffs"
     >
     </qscore-query>
     
@@ -26,8 +26,8 @@
     
     <!-- Multiple snapshot comparison -->
     <qscore-query
-      ng-if="displayed.results == displayed.resultsView.multiDiff && query.multiDiff"
-      ng-repeat="searcher in query.multiDiff.getSearchers() track by $index"
+      ng-if="displayed.results == displayed.resultsView.diffs && query.diffs"
+      ng-repeat="searcher in query.diffs.getSearchers() track by $index"
       class="results-score diff-score"
       max-score="maxScore || 100"
       scorable="searcher"
@@ -139,10 +139,10 @@
     </div>
 
     <!-- unified diff display (handles both single and multiple snapshots) -->
-    <div ng-controller="QueryMultiDiffResultsCtrl" ng-if="displayed.results == displayed.resultsView.multiDiff">
-      <query-multi-diff-results query="query" repeatlength="10" max-score="maxScore">
+    <div ng-controller="QueryDiffResultsCtrl" ng-if="displayed.results == displayed.resultsView.diffs">
+      <query-diff-results query="query" repeatlength="10" max-score="maxScore">
         Diff Results
-      </query-multi-diff-results>
+      </query-diff-results>
     </div>
 
     <div ng-if="query.state() === 'error'" class="alert alert-danger" ng-bind-html="query.errorText">

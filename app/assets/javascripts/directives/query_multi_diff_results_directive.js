@@ -1,12 +1,12 @@
 'use strict';
 
 angular.module('QuepidApp')
-  .directive('queryMultiDiffResults', [
+  .directive('queryDiffResults', [
     function () {
       return {
-        controller:   'QueryMultiDiffResultsCtrl',
+        controller:   'QueryDiffResultsCtrl',
         restrict:     'E',
-        templateUrl:  'views/queryMultiDiffResults.html',
+        templateUrl:  'views/queryDiffResults.html',
         scope: {
           query: '=',
           repeatlength: '@',

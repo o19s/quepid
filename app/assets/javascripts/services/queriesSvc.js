@@ -806,7 +806,7 @@ angular.module('QuepidApp')
             that.queries[newQueryId] = newQuery;
             newQueries.push(newQueryId);
             diffResultsSvc.createQueryDiff(newQuery);
-            // multiDiff creation is now handled by diffResultsSvc
+            // diff creation is now handled by diffResultsSvc
           }
         });
 
@@ -933,7 +933,7 @@ angular.module('QuepidApp')
         };
         let newQuery = new Query(queryJson);
         diffResultsSvc.createQueryDiff(newQuery);
-        // multiDiff creation is now handled by diffResultsSvc
+        // diff creation is now handled by diffResultsSvc
         return newQuery;
       };
 
@@ -1175,20 +1175,20 @@ angular.module('QuepidApp')
         });
       };
 
-      this.setDiffSetting = function(diffSetting) {
-        // diffResultsSvc.setDiffSetting is no longer needed - state is managed by queryViewSvc
+      // Refresh diff objects for all queries after state changes
+      this.refreshAllDiffs = function() {
         angular.forEach(this.queries, function(query) {
           diffResultsSvc.createQueryDiff(query);
-          // multiDiff creation is now handled by diffResultsSvc
         });
       };
 
-      this.setMultiDiffSetting = function(multiDiffSettings) {
-        // Multi-diff settings are now handled by queryViewSvc automatically
-        // This method is kept for backward compatibility but delegates to diffResultsSvc
-        angular.forEach(this.queries, function(query) {
-          diffResultsSvc.createQueryDiff(query);
-        });
+      // Backward compatibility methods - delegate to refreshAllDiffs
+      this.setDiffSetting = function(diffSetting) {
+        this.refreshAllDiffs();
+      };
+
+      this.setMultiDiffSetting = function(diffSettings) {
+        this.refreshAllDiffs();
       };
 
       this.scoreAllDiffs = function() {

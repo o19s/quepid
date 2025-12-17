@@ -17,7 +17,7 @@ angular.module('QuepidApp')
         this.resultsView.finder = 1;
         this.resultsView.results = 2;
         this.resultsView.diff = 3;
-        this.resultsView.multiDiff = 4;
+        this.resultsView.diffs = 4;
         this.results = this.resultsView.results;
       };
 
@@ -69,16 +69,16 @@ angular.module('QuepidApp')
       };
 
       // TODO kill this watch!
-      // Watch for diff changes - legacy support, but now handled by multiDiff
+      // Watch for diff changes - legacy support, but now handled by diffs
       $scope.$watch('query.diff', function() {
-        // Single diffs are now handled through the multiDiff path
+        // Single diffs are now handled through the diffs path
         // This watch is kept for compatibility but doesn't change the view
       });
 
-      // Watch for multi-diff changes - unified logic for all diff scenarios
-      $scope.$watch('query.multiDiff', function() {
-        if ($scope.query.multiDiff !== null) {
-          $scope.displayed.results = $scope.displayed.resultsView.multiDiff;
+      // Watch for diff changes - unified logic for all diff scenarios
+      $scope.$watch('query.diffs', function() {
+        if ($scope.query.diffs !== null) {
+          $scope.displayed.results = $scope.displayed.resultsView.diffs;
         } else {
           $scope.displayed.results = $scope.displayed.resultsView.results;
         }
@@ -86,8 +86,8 @@ angular.module('QuepidApp')
 
       // Watch for query version changes - unified logic for all diff scenarios
       $scope.$watch('query.version()', function() {
-        if ($scope.query.multiDiff !== null) {
-          $scope.query.multiDiff.fetch();
+        if ($scope.query.diffs !== null) {
+          $scope.query.diffs.fetch();
         }
       });
 
