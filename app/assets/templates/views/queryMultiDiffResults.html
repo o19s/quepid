@@ -46,12 +46,12 @@
           max-doc-score="query.maxMultiDiffDocScores[$index]"
           doc="diffDoc"
           field-spec="query.fieldSpec"
-          rank="{{$parent.$index + 1}}"
+          rank="{{$parent.$parent.$index + 1}}"
           query="query"
           doc-id="doc.id">
         </search-result>
         <div ng-if="diffDoc == null" class="alert alert-info" role="alert">
-          <small>No result at position {{$parent.$index + 1}}</small>
+          <small>No result at position {{$parent.$parent.$index + 1}}</small>
         </div>
       </div>
     </div>
