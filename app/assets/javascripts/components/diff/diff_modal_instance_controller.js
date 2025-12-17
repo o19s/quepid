@@ -126,14 +126,9 @@ angular.module('QuepidApp')
           return false;
         }
 
-        var selectionsToCheck = [];
-        if (ctrl.which === 'multi-snapshot') {
-          selectionsToCheck = getValidSelections();
-        } else if (ctrl.which === 'snapshot' && ctrl.singleSelection) {
-          selectionsToCheck = [ctrl.singleSelection];
-        }
-
+        var selectionsToCheck = getValidSelections();
         var hasProcessing = false;
+        
         angular.forEach(selectionsToCheck, function(selectionId) {
           angular.forEach(ctrl.snapshots, function(snapshot) {
             if (snapshot.id === selectionId && snapshot.hasSnapshotFile) {
