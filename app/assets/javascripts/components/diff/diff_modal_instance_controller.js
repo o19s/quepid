@@ -36,17 +36,17 @@ angular.module('QuepidApp')
       ctrl.clearComparisonView     = clearComparisonView;
       ctrl.delConfirm              = delConfirm;
       ctrl.delStarted              = delStarted;
-      ctrl.nothingSelected         = nothingSelected;
+
       ctrl.ok                      = ok;
       ctrl.toggleDel               = toggleDel;
       ctrl.addSelection            = addSelection;
       ctrl.removeSelection         = removeSelection;
       ctrl.canAddMore              = canAddMore;
       ctrl.validateSelections      = validateSelections;
-      ctrl.getValidSelections      = getValidSelections;
+
       ctrl.hasDuplicateSelections  = hasDuplicateSelections;
       ctrl.hasProcessingSnapshots  = hasProcessingSnapshots;
-      ctrl.getSnapshotName         = getSnapshotName;
+
 
       // Watches
       $scope.$watchCollection('ctrl.selections', function(newVal, oldVal) {
@@ -154,24 +154,7 @@ angular.module('QuepidApp')
         return hasProcessing;
       }
 
-      function getSnapshotName(snapshotId) {
-        if (ctrl.snapshots && snapshotId !== null && snapshotId !== undefined) {
-          var foundSnapshot = null;
-          angular.forEach(ctrl.snapshots, function(snapshot) {
-            if (snapshot.id === snapshotId) {
-              foundSnapshot = snapshot;
-            }
-          });
-          if (foundSnapshot) {
-            return foundSnapshot.name();
-          }
-        }
-        // Return loading message if snapshots aren't loaded yet
-        if (!ctrl.snapshots) {
-          return 'Loading...';
-        }
-        return 'Unknown Snapshot';
-      }
+
 
       function toggleDel(snapId) {
         if (delState === null) {
@@ -198,10 +181,7 @@ angular.module('QuepidApp')
           });
       }
 
-      function nothingSelected() {
-        var validSelections = getValidSelections();
-        return validSelections.length === 0 || hasDuplicateSelections();
-      }
+
 
       function clearComparisonView() {
         queryViewSvc.disableComparisons();
