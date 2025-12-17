@@ -427,10 +427,6 @@ angular.module('QuepidApp')
         return queriesSvc.version();
       };
 
-
-
-
-
       function saveScoring() {
         // finished a batch run, log the result!
         var caseNo  = parseInt($routeParams.caseNo, 10);
