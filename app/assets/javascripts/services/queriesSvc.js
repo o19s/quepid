@@ -798,15 +798,10 @@ angular.module('QuepidApp')
                 queryWithRatings.deleted === 'true')) {
             let newQueryId = queryWithRatings.query_id;
             queryWithRatings.queryId = queryWithRatings.query_id;
-            // Eric thinks below is not needed.
-            //if (typeof(queryWithRatings.queryId) === 'string') {
-            //  queryWithRatings.queryId = parseInt(queryWithRatings.queryId, 10);
-            //}
             newQuery = new Query(queryWithRatings);
             that.queries[newQueryId] = newQuery;
             newQueries.push(newQueryId);
             diffResultsSvc.createQueryDiff(newQuery);
-            // diff creation is now handled by diffResultsSvc
           }
         });
 
@@ -933,7 +928,6 @@ angular.module('QuepidApp')
         };
         let newQuery = new Query(queryJson);
         diffResultsSvc.createQueryDiff(newQuery);
-        // diff creation is now handled by diffResultsSvc
         return newQuery;
       };
 
@@ -1181,9 +1175,6 @@ angular.module('QuepidApp')
           diffResultsSvc.createQueryDiff(query);
         });
       };
-
-
-
 
       this.scoreAllDiffs = function() {
         let diffs = [];
