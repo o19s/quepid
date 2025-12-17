@@ -212,9 +212,9 @@ angular.module('QuepidApp')
                 selections: validSelections
               });
               
-              var message = validSelections.length === 1 
-                ? 'Snapshot loaded successfully for comparison.'
-                : 'Snapshots loaded successfully for comparison.';
+              var message = validSelections.length === 1 ?
+                'Snapshot loaded successfully for comparison.' :
+                'Snapshots loaded successfully for comparison.';
               flash.success = message;
             })
             .catch(function(response) {

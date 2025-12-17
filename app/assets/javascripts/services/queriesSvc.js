@@ -1182,14 +1182,8 @@ angular.module('QuepidApp')
         });
       };
 
-      // Backward compatibility methods - delegate to refreshAllDiffs
-      this.setDiffSetting = function(diffSetting) {
-        this.refreshAllDiffs();
-      };
 
-      this.setMultiDiffSetting = function(diffSettings) {
-        this.refreshAllDiffs();
-      };
+
 
       this.scoreAllDiffs = function() {
         let diffs = [];
