@@ -118,24 +118,7 @@ angular.module('QuepidApp')
               });
             },
             
-            allDocs: function(onlyRated) {
-              var allDocs = [];
-              onlyRated = onlyRated || false;
-              
-              angular.forEach(diffSearchers, function(searcher, index) {
-                var docs = searcher.docs.filter(function(d) { 
-                  return d.ratedOnly === onlyRated; 
-                });
-                allDocs.push({
-                  searcherIndex: index,
-                  docs: docs,
-                  name: searcher.name()
-                });
-              });
-              
-              return allDocs;
-            },
-            
+
             name: function(searcherIndex) {
               if (angular.isDefined(searcherIndex) && diffSearchers[searcherIndex]) {
                 return diffSearchers[searcherIndex].name();
@@ -175,13 +158,7 @@ angular.module('QuepidApp')
               return deferred.promise;
             },
             
-            type: function() {
-              return 'multi-snapshot';
-            },
-            
-            count: function() {
-              return diffSearchers.length;
-            }
+
           };
           
           // Initialize all diffs
