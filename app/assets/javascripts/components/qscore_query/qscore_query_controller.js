@@ -50,15 +50,14 @@ angular.module('QuepidApp')
         }
       }
       
-      // Watch for changes in the scorable's current score (works for both queries and searchers)
-      $scope.$watch('ctrl.scorable.currentScore', function() {
-        if (ctrl.scorable && ctrl.scorable.currentScore) {
-          updateScore();
-        }
-      }, true);
-
-      // Watch for maxScore changes to update colors
-      $scope.$watch('ctrl.maxScore', function() {
+      // Watch for changes in specific score properties instead of deep watching entire objects
+      // This improves performance by only watching the properties we actually use
+      // AngularJS $parse service handles undefined/null gracefully in these expressions
+      $scope.$watchGroup([
+        'ctrl.scorable.currentScore.score',
+        'ctrl.scorable.currentScore.backgroundColor',
+        'ctrl.maxScore'
+      ], function() {
         updateScore();
       });
 
