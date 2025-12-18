@@ -22,14 +22,6 @@ angular.module('QuepidApp')
           };
         }
         
-        // Handle searcher objects with diffScore (fallback)
-        if (scorable && scorable.diffScore) {
-          return {
-            score: scorable.diffScore.score,
-            backgroundColor: scorable.diffScore.backgroundColor
-          };
-        }
-        
         // Handle direct score objects (fallback)
         if (scorable && angular.isDefined(scorable.score)) {
           return {

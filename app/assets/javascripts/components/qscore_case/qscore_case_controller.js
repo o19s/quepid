@@ -21,13 +21,7 @@ angular.module('QuepidApp')
           };
         }
         
-        // Handle searcher objects with diffScore (for multi-diff support)
-        if (scorable && scorable.diffScore) {
-          return {
-            score: scorable.diffScore.score,
-            backgroundColor: scorable.diffScore.backgroundColor
-          };
-        }
+
         
         // Handle direct score objects (fallback)
         if (scorable && angular.isDefined(scorable.score)) {
@@ -64,12 +58,7 @@ angular.module('QuepidApp')
         }
       }, true);
 
-      // Watch for changes in searcher's diff score (for multi-diff support)  
-      $scope.$watch('ctrl.scorable.diffScore', function() {
-        if (ctrl.scorable && ctrl.scorable.diffScore) {
-          updateScore();
-        }
-      }, true);
+
 
       // Watch for maxScore changes to update colors
       $scope.$watch('ctrl.maxScore', function() {
