@@ -49,7 +49,7 @@ angular.module('QuepidApp')
 
 
       // Watches
-      $scope.$watchCollection('ctrl.selections', function(newVal, oldVal) {
+      $scope.$watchCollection('ctrl.selections', function() {
         // Watch for selection changes - UI will update automatically
       });
 
