@@ -54,7 +54,8 @@ module BooksHelper
                      end
 
     "#{scale_display}#{labels_preview}"
-module BooksHelper
+  end
+
   # Returns AI judges that are available to add to this book
   # (AI judges that belong to the book's teams but aren't already assigned to the book)
   def available_ai_judges_for_book book

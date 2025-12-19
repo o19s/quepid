@@ -30,9 +30,9 @@ class BookTest < ActiveSupport::TestCase
     let(:archived_book) { books(:archived_book) }
 
     test 'sets archived flag to false by default' do
-      book = Book.create(name:               'test book',
-                         scale:              [ 0, 1, 2, 3 ],
-                         scale_with_labels:  { '0' => 'Poor', '1' => 'Fair', '2' => 'Good', '3' => 'Great' })
+      book = Book.create(name:              'test book',
+                         scale:             [ 0, 1, 2, 3 ],
+                         scale_with_labels: { '0' => 'Poor', '1' => 'Fair', '2' => 'Good', '3' => 'Great' })
 
       assert_equal false, book.archived
     end
@@ -150,11 +150,10 @@ class BookTest < ActiveSupport::TestCase
   describe 'scale validation' do
     test 'allows scale changes on books without judgements' do
       book = Book.create!(
-        name:               'Test Book',
-        scale:              [ 0, 1, 2, 3 ],
-        scale_with_labels:  { '0' => 'Poor', '1' => 'Fair', '2' => 'Good', '3' => 'Great' },
-        selection_strategy: selection_strategies(:single_rater),
-        owner:              users(:doug)
+        name:              'Test Book',
+        scale:             [ 0, 1, 2, 3 ],
+        scale_with_labels: { '0' => 'Poor', '1' => 'Fair', '2' => 'Good', '3' => 'Great' },
+        owner:             users(:doug)
       )
 
       # Should be able to change scale when no judgements exist

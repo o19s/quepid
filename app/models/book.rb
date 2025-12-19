@@ -17,7 +17,6 @@
 #  created_at                  :datetime         not null
 #  updated_at                  :datetime         not null
 #  owner_id                    :integer
-#  scorer_id                   :integer
 #
 # Indexes
 #

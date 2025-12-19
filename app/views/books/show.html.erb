@@ -110,16 +110,11 @@ This book consists of <%= @book.queries_count %> queries.
   <% end %>
 </p>
 
-<p>
-  <strong>Rating Scale:</strong>
-  <%= @book.scale.join(', ') if @book.scale.present? %>
-</p>
-
 <% if @book.scale_with_labels.present? %>
 <p>
   <strong>Scale Labels:</strong>
   <% @book.scale_with_labels.each do |value, label| %>
-    <span class="badge bg-secondary me-1"><%= value %>: <%= label %></span>
+    <span class="badge bg-secondary me-1"><%= label %>: <%= value %></span>
   <% end %>
 </p>
 <% end %>

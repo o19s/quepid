@@ -4,7 +4,6 @@
   <td><%= link_to strip_book_title(book), book_path(book) %></td>
   <td><%= book.teams.pluck(:name).join(',') %></td>
   <td>Scale: <%= book.scale.join(',') if book.scale.present? %> </td>
-  <td><%= book.selection_strategy.name %> </td>
   <td>
     <span class="badge bg-primary rounded-pill"><%= book.query_doc_pairs_count %> query/doc pairs</span>
     <% if book.archived? %>

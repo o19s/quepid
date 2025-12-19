@@ -30,12 +30,10 @@ module Api
           end
           test 'alerts when a user assocated with a judgement does not exist' do
             data = {
-              name:               'test book',
-              scale:              book.scale,
-              scale_with_labels:  book.scale_with_labels,
-
-              selection_strategy: book.selection_strategy.as_json(only: [ :name ]),
-              query_doc_pairs:    [
+              name:              'test book',
+              scale:             book.scale,
+              scale_with_labels: book.scale_with_labels,
+              query_doc_pairs:   [
                 {
                   query_text: 'dog', doc_id: '123', position: 1,
                   judgements: [
@@ -74,13 +72,12 @@ module Api
             assert_nil Book.find_by(name: 'test book')
           end
 
-
           test 'creates a new book' do
             data = {
-              name:               'test book',
-              scale:              book.scale,
-              scale_with_labels:  book.scale_with_labels,
-              query_doc_pairs: [
+              name:              'test book',
+              scale:             book.scale,
+              scale_with_labels: book.scale_with_labels,
+              query_doc_pairs:   [
                 {
                   query_text: 'dog', doc_id: '123',
                   judgements: [

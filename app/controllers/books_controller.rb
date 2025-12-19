@@ -25,7 +25,7 @@ class BooksController < ApplicationController
   def index
     # with_counts adds a `book.query_doc_pairs_count` field, which avoids loading
     # all query_doc_pairs and makes bullet happy.
-    query = current_user.books_involved_with.includes([ :teams, :scorer ]).with_counts
+    query = current_user.books_involved_with.includes([ :teams ]).with_counts
 
     # Filter by archived status
     archived = deserialize_bool_param(params[:archived])
@@ -183,7 +183,8 @@ class BooksController < ApplicationController
 
     # checkboxes suck
     @book.ai_judges.clear
-    book_params[:ai_judge_ids].each do |ai_judge_id|
+    ai_judge_ids = book_params[:ai_judge_ids].compact_blank
+    ai_judge_ids.each do |ai_judge_id|
       @book.ai_judges << User.find(ai_judge_id)
     end
 
@@ -199,6 +200,9 @@ class BooksController < ApplicationController
     @book.import_file.purge if '1' == book_params[:delete_import_file]
 
     @book.save
+
+    @ai_judges = User.only_ai_judges.left_joins(teams: :books).where(teams_books: { book_id: @book.id })
+    @other_books = current_user.books_involved_with.where.not(id: @book.id)
 
     respond_with(@book)
   end

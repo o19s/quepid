@@ -92,7 +92,7 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
     login_user_for_integration_test user
 
     book_to_merge = Book.new(name: 'Book with a 1,2,3,4 scale', teams: book.teams,
-      scale: [ 1, 2, 3, 4 ])                            
+                             scale: [ 1, 2, 3, 4 ])
     book_to_merge.save!
 
     params = { book_ids: { "#{book_to_merge.id}": '1' } }
@@ -170,10 +170,10 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
   def test_combining_single_rater_strategy_into_multiple_rater_strategy_book_works
     login_user_for_integration_test user
 
-    book_with_multiple_raters = Book.create(name:               'Book with a 1,2,3,4 scale',
-                                            teams:              single_rater_book.teams,
-                                            scale:              single_rater_book.scale,
-                                            scale_with_labels:  single_rater_book.scale_with_labels)
+    book_with_multiple_raters = Book.create(name:              'Book with a 1,2,3,4 scale',
+                                            teams:             single_rater_book.teams,
+                                            scale:             single_rater_book.scale,
+                                            scale_with_labels: single_rater_book.scale_with_labels)
 
     params = { book_ids: { "#{single_rater_book.id}": '1' } }
 
@@ -193,10 +193,9 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
 
     post '/books', params: {
       book: {
-        name:                  'Test Book with Scorer',
-        scorer_id:             scorer.id,
-        selection_strategy_id: SelectionStrategy.first.id,
-        team_ids:              [ user.teams.first.id ],
+        name:      'Test Book with Scorer',
+        scorer_id: scorer.id,
+        team_ids:  [ user.teams.first.id ],
       },
     }
 

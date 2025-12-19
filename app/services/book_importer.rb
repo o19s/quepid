@@ -78,9 +78,6 @@ class BookImporter
       @book.scale_with_labels = params_to_use[:scale_with_labels] if params_to_use[:scale_with_labels].present?
     end
 
-    selection_strategy_name = params_to_use[:selection_strategy][:name]
-    @book.selection_strategy = SelectionStrategy.find_by(name: selection_strategy_name)
-
     # Force the imported book to be owned by the user doing the importing.  Otherwise you can loose the book!
     @book.owner = User.find_by(email: @current_user.email)
 
