@@ -6,7 +6,7 @@ class BooksHelperTest < ActionView::TestCase
   describe '#available_ai_judges_for_book' do
     it 'returns empty when book has no teams' do
       # Create a book with no teams for this specific test case
-      teamless_book = Book.create!(name: 'Teamless Book', scorer: scorers(:valid))
+      teamless_book = Book.create!(name: 'Teamless Book')
       result = available_ai_judges_for_book(teamless_book)
       assert_empty result
     end
@@ -59,7 +59,7 @@ class BooksHelperTest < ActionView::TestCase
     end
 
     it 'returns false when book has no teams' do
-      teamless_book = Book.create!(name: 'Teamless Book', scorer: scorers(:valid))
+      teamless_book = Book.create!(name: 'Teamless Book')
       assert_not available_ai_judges_for_book?(teamless_book)
     end
 

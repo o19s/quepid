@@ -36,7 +36,7 @@
           </label>
         </div>
         <label for="book_ids_<%= book.id %>" class="form-check-label stretched">
-          <p class="mb-1">Uses a <%= book.scorer.name %> scorer and <%= book.support_implicit_judgements? ? 'supports':'does not support' %> implicit judgements.</p>
+          <p class="mb-1">Uses scale <%= book.scale.join(',') if book.scale.present? %> and <%= book.support_implicit_judgements? ? 'supports':'does not support' %> implicit judgements.</p>
           <small class="text-muted">Updated <%= time_ago_in_words book.updated_at %> ago</small>
         </label>
       </li>
@@ -120,7 +120,7 @@
 <%= form_for(@book, url: eric_steered_us_wrong_book_path(@book), method: :patch, data: { confirm: "Are you sure?" }) do |form| %>
 <div class="mb-3">
   <%= form.label :rating, class: 'form-label' %>
-  <%= select_tag "rating", options_for_select(@book.scorer.scale.sort), required: true, prompt: "Please select rating to assign", class: 'form-control' %>
+  <%= select_tag "rating", options_for_select(@book.scale.sort), required: true, prompt: "Please select rating to assign", class: 'form-control' %>
 </div>
 <p>
 <div class="actions">

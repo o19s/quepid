@@ -32,7 +32,6 @@ fi
 echo -e "\n== Building Docker container =="
 docker compose up ${build_arg} --no-start
 
-echo -e "\n== Configuring bundler to skip documentation generation =="
 bin/docker r bundle config set --local no-document true
 
 bin/docker r yarn
@@ -47,5 +46,3 @@ docker exec ollama ollama pull qwen3:0.6b
 
 echo -e "\n== Setting up Seed Data for Development =="
 bin/docker r bundle exec thor sample_data:sample_data
-
-

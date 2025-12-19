@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_12_06_163533) do
+ActiveRecord::Schema[8.1].define(version: 2025_12_06_221416) do
   create_table "active_storage_attachments", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.bigint "blob_id", null: false
     t.datetime "created_at", null: false
@@ -196,7 +196,8 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_06_163533) do
     t.string "name"
     t.integer "owner_id"
     t.string "populate_job"
-    t.integer "scorer_id"
+    t.string "scale"
+    t.text "scale_with_labels"
     t.boolean "show_rank", default: false
     t.boolean "support_implicit_judgements"
     t.datetime "updated_at", null: false

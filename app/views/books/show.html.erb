@@ -110,10 +110,14 @@ This book consists of <%= @book.queries_count %> queries.
   <% end %>
 </p>
 
+<% if @book.scale_with_labels.present? %>
 <p>
-  <strong>Scorer:</strong>
-  <%= @book.scorer.name %>
+  <strong>Scale Labels:</strong>
+  <% @book.scale_with_labels.each do |value, label| %>
+    <span class="badge bg-secondary me-1"><%= label %>: <%= value %></span>
+  <% end %>
 </p>
+<% end %>
 
 <p>
   <strong>Supports Implicit Judgements:</strong>

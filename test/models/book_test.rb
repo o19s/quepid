@@ -10,12 +10,13 @@
 #  import_job                  :string(255)
 #  name                        :string(255)
 #  populate_job                :string(255)
+#  scale                       :string(255)
+#  scale_with_labels           :text(65535)
 #  show_rank                   :boolean          default(FALSE)
 #  support_implicit_judgements :boolean
 #  created_at                  :datetime         not null
 #  updated_at                  :datetime         not null
 #  owner_id                    :integer
-#  scorer_id                   :integer
 #
 # Indexes
 #
@@ -29,13 +30,17 @@ class BookTest < ActiveSupport::TestCase
     let(:archived_book) { books(:archived_book) }
 
     test 'sets archived flag to false by default' do
-      book = Book.create(name: 'test book', scorer: scorers(:quepid_default_scorer))
+      book = Book.create(name:              'test book',
+                         scale:             [ 0, 1, 2, 3 ],
+                         scale_with_labels: { '0' => 'Poor', '1' => 'Fair', '2' => 'Good', '3' => 'Great' })
 
       assert_equal false, book.archived
     end
 
     test 'does not override archived flag if set' do
-      book = Book.create(name: 'test book', archived: true, scorer: scorers(:quepid_default_scorer))
+      book = Book.create(name: 'test book', archived: true,
+                         scale: [ 0, 1, 2, 3 ],
+                         scale_with_labels: { '0' => 'Poor', '1' => 'Fair', '2' => 'Good', '3' => 'Great' })
 
       assert_equal true, book.archived
     end
@@ -140,5 +145,86 @@ class BookTest < ActiveSupport::TestCase
     file.close
 
     file
+  end
+
+  describe 'scale validation' do
+    test 'allows scale changes on books without judgements' do
+      book = Book.create!(
+        name:              'Test Book',
+        scale:             [ 0, 1, 2, 3 ],
+        scale_with_labels: { '0' => 'Poor', '1' => 'Fair', '2' => 'Good', '3' => 'Great' },
+        owner:             users(:doug)
+      )
+
+      # Should be able to change scale when no judgements exist
+      book.scale = [ 1, 2, 3, 4, 5 ]
+      assert book.valid?
+      assert book.save
+    end
+
+    test 'prevents scale changes on books with judgements' do
+      book = books(:james_bond_movies)
+      original_scale = book.scale.dup
+
+      # Create a query doc pair and judgement
+      qdp = book.query_doc_pairs.create!(
+        query_text:      'test query',
+        doc_id:          'test_doc_1',
+        document_fields: '{"title": "Test Document"}'
+      )
+
+      qdp.judgements.create!(
+        user:   users(:doug),
+        rating: 1
+      )
+
+      # Should not be able to change scale when judgements exist
+      book.scale = [ 0, 1, 2, 3, 4 ]
+      assert_not book.valid?
+      assert_includes book.errors[:scale], "cannot be changed when judgements exist. Current judgements use scale #{original_scale.inspect}"
+    end
+
+    test 'allows label changes even with judgements' do
+      book = books(:james_bond_movies)
+
+      # Create a query doc pair and judgement
+      qdp = book.query_doc_pairs.create!(
+        query_text:      'test query',
+        doc_id:          'test_doc_2',
+        document_fields: '{"title": "Test Document"}'
+      )
+
+      qdp.judgements.create!(
+        user:   users(:doug),
+        rating: 1
+      )
+
+      # Should be able to change labels even with judgements
+      book.scale_with_labels = { '0' => 'Terrible', '1' => 'Excellent' }
+      assert book.valid?
+      assert book.save
+    end
+
+    test 'allows setting same scale values even with judgements' do
+      book = books(:james_bond_movies)
+      original_scale = book.scale.dup
+
+      # Create a query doc pair and judgement
+      qdp = book.query_doc_pairs.create!(
+        query_text:      'test query',
+        doc_id:          'test_doc_3',
+        document_fields: '{"title": "Test Document"}'
+      )
+
+      qdp.judgements.create!(
+        user:   users(:doug),
+        rating: 1
+      )
+
+      # Should be able to set the same scale values
+      book.scale = original_scale.dup
+      assert book.valid?
+      assert book.save
+    end
   end
 end
