@@ -34,9 +34,6 @@ class ExportBookJobTest < ActiveJob::TestCase
       assert_nil body['scorer_id']
       assert_not_nil body['scorer']
       assert_nil body['scorer']['scorer_id']
-
-      assert_nil body['selection_strategy_id']
-      assert_not_nil body['selection_strategy']
     end
   end
 end

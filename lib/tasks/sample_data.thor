@@ -276,8 +276,7 @@ class SampleData < Thor
     # Books
     print_step 'Seeding books................'
 
-    book = ::Book.where(name: 'Book of Ratings', scorer: Scorer.system_default_scorer,
-                        selection_strategy: SelectionStrategy.find_by(name: 'Multiple Raters')).first_or_create
+    book = ::Book.where(name: 'Book of Ratings', scorer: Scorer.system_default_scorer).first_or_create
     book.teams << osc
     book.ai_judges << osc_ai_judge
     book.save
