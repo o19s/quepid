@@ -25,7 +25,7 @@ class BooksController < ApplicationController
   def index
     # with_counts adds a `book.query_doc_pairs_count` field, which avoids loading
     # all query_doc_pairs and makes bullet happy.
-    query = current_user.books_involved_with.includes([ :teams, :selection_strategy ]).with_counts
+    query = current_user.books_involved_with.includes([ :teams, :scorer ]).with_counts
 
     # Filter by archived status
     archived = deserialize_bool_param(params[:archived])
@@ -400,8 +400,7 @@ class BooksController < ApplicationController
   end
 
   def book_params
-    params_to_use = params.expect(book: [ :scorer_id,
-                                          :selection_strategy_id, :name,
+    params_to_use = params.expect(book: [ :scorer_id, :name,
                                           :support_implicit_judgements, :link_the_case, :origin_case_id,
                                           :delete_export_file, :delete_import_file,
                                           :show_rank, { team_ids: [], ai_judge_ids: [] } ])

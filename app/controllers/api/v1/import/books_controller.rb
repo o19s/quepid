@@ -16,9 +16,6 @@ module Api
         #         scorer: Hash{
         #           name: String
         #         },
-        #         selection_strategy: Hash{
-        #           name: String
-        #         },
         #         query_doc_pairs: Array<
         #           Hash{
         #             query_text: String,
@@ -35,9 +32,6 @@ module Api
         #       "name": "bob",
         #       "scorer": {
         #         "name": "nDCG@10"
-        #       },
-        #       "selection_strategy": {
-        #         "name": "Multiple Raters"
         #       },
         #       "query_doc_pairs": [
         #         {

@@ -17,11 +17,29 @@
 #  created_at                  :datetime         not null
 #  updated_at                  :datetime         not null
 #  owner_id                    :integer
-#  selection_strategy_id       :bigint           not null
+#  scorer_id                   :integer
 #
 # Indexes
 #
-#  index_books_on_selection_strategy_id  (selection_strategy_id)
+#  index_books_owner_id  (owner_id)
+#
+#  id                          :bigint           not null, primary key
+#  archived                    :boolean          default(FALSE), not null
+#  export_job                  :string(255)
+#  import_job                  :string(255)
+#  name                        :string(255)
+#  populate_job                :string(255)
+#  show_rank                   :boolean          default(FALSE)
+#  support_implicit_judgements :boolean
+#  created_at                  :datetime         not null
+#  updated_at                  :datetime         not null
+#  owner_id                    :integer
+#  scorer_id                   :integer
+
+#
+# Indexes
+#
+
 #  index_books_owner_id                  (owner_id)
 #
 # Foreign Keys
@@ -52,7 +70,6 @@ class Book < ApplicationRecord
                           join_table: 'books_ai_judges'
   # rubocop:enable Rails/HasAndBelongsToMany
 
-  belongs_to :selection_strategy
   has_many :query_doc_pairs, dependent: :delete_all, autosave: true
 
   has_many   :judgements,

@@ -203,7 +203,6 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_07_133755) do
     t.boolean "support_implicit_judgements"
     t.datetime "updated_at", null: false
     t.index ["owner_id"], name: "index_books_owner_id"
-    t.index ["selection_strategy_id"], name: "index_books_on_selection_strategy_id"
   end
 
   create_table "books_ai_judges", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
@@ -348,13 +347,6 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_07_133755) do
     t.string "search_engine", limit: 50
     t.datetime "updated_at", null: false
     t.index ["owner_id", "id"], name: "index_search_endpoints_on_owner_id_and_id"
-  end
-
-  create_table "selection_strategies", charset: "utf8mb3", collation: "utf8mb3_unicode_ci", force: :cascade do |t|
-    t.datetime "created_at", null: false
-    t.string "description"
-    t.string "name"
-    t.datetime "updated_at", null: false
   end
 
   create_table "snapshot_docs", id: :integer, charset: "latin1", force: :cascade do |t|
@@ -631,7 +623,6 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_07_133755) do
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "annotations", "users"
   add_foreign_key "book_metadata", "books"
-  add_foreign_key "books", "selection_strategies"
   add_foreign_key "books_ai_judges", "books"
   add_foreign_key "case_metadata", "cases", name: "case_metadata_ibfk_1"
   add_foreign_key "case_metadata", "users", name: "case_metadata_ibfk_2"

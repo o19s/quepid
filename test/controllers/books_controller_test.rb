@@ -92,8 +92,7 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
     login_user_for_integration_test user
 
     book_to_merge = Book.new(name: 'Book with a 1,2,3,4 scale', teams: book.teams,
-                             scale: [ 1, 2, 3, 4 ],
-                             selection_strategy: SelectionStrategy.find_by(name: 'Multiple Raters'))
+      scale: [ 1, 2, 3, 4 ])                            
     book_to_merge.save!
 
     params = { book_ids: { "#{book_to_merge.id}": '1' } }
@@ -174,8 +173,7 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
     book_with_multiple_raters = Book.create(name:               'Book with a 1,2,3,4 scale',
                                             teams:              single_rater_book.teams,
                                             scale:              single_rater_book.scale,
-                                            scale_with_labels:  single_rater_book.scale_with_labels,
-                                            selection_strategy: SelectionStrategy.find_by(name: 'Multiple Raters'))
+                                            scale_with_labels:  single_rater_book.scale_with_labels)
 
     params = { book_ids: { "#{single_rater_book.id}": '1' } }
 

@@ -22,7 +22,6 @@ class BookImporter
     @logger = @options[:logger]
   end
 
-  # rubocop:disable Metrics/AbcSize
   # rubocop:disable Metrics/CyclomaticComplexity
   # rubocop:disable Metrics/MethodLength
   # rubocop:disable Metrics/PerceivedComplexity
@@ -31,15 +30,6 @@ class BookImporter
 
     @book.scale = params_to_use[:scale]
     @book.scale_with_labels = params_to_use[:scale_with_labels] if params_to_use[:scale_with_labels].present?
-
-    selection_strategy_name = params_to_use[:selection_strategy][:name]
-    selection_strategy = SelectionStrategy.find_by(name: selection_strategy_name)
-    if selection_strategy.nil?
-      @book.errors.add(:selection_strategy,
-                       "Selection strategy with name '#{selection_strategy_name}' needs to be migrated over first.")
-    else
-      @book.selection_strategy = selection_strategy
-    end
 
     if params_to_use[:query_doc_pairs]
       list_of_emails_of_users = []
@@ -62,7 +52,6 @@ class BookImporter
       end
     end
   end
-  # rubocop:enable Metrics/AbcSize
   # rubocop:enable Metrics/CyclomaticComplexity
   # rubocop:enable Metrics/MethodLength
   # rubocop:enable Metrics/PerceivedComplexity

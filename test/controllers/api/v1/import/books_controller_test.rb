@@ -74,37 +74,13 @@ module Api
             assert_nil Book.find_by(name: 'test book')
           end
 
-          test 'alerts when a selection associated with a book does not exist' do
-            data = {
-              name:               'test book',
-              scale:              book.scale,
-              scale_with_labels:  book.scale_with_labels,
-
-              selection_strategy: {
-                name: 'fake selection',
-              },
-              query_doc_pairs:    [],
-            }
-
-            post :create, params: { book: data, team_id: team.id, format: :json }
-
-            assert_response :bad_request
-
-            body = response.parsed_body
-
-            assert_includes body['selection_strategy'],
-                            "Selection strategy with name 'fake selection' needs to be migrated over first."
-            assert_nil Book.find_by(name: 'test book')
-          end
 
           test 'creates a new book' do
             data = {
               name:               'test book',
               scale:              book.scale,
               scale_with_labels:  book.scale_with_labels,
-
-              selection_strategy: book.selection_strategy.as_json(only: [ :name ]),
-              query_doc_pairs:    [
+              query_doc_pairs: [
                 {
                   query_text: 'dog', doc_id: '123',
                   judgements: [
