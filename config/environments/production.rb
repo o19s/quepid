@@ -130,7 +130,7 @@ Rails.application.configure do
   # }
 
   config.mission_control.jobs.http_basic_auth_enabled = false
-  
+
   config.active_storage.variant_processor = :disabled
 end
 # rubocop:enable Metrics/BlockLength

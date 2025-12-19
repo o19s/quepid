@@ -88,6 +88,6 @@ Rails.application.configure do
   config.active_record.dump_schema_after_migration = false
 
   config.action_mailer.default_url_options = { host: ENV.fetch('QUEPID_DOMAIN', nil) }
-  
+
   config.active_storage.variant_processor = :disabled
 end
