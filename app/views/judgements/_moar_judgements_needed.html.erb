@@ -38,7 +38,7 @@
   <div class="alert alert-info" role="alert">
     <h5><i class="bi bi-person-check"></i> You Have Judged All Available Pairs</h5>
     <p class="mb-2">You have completed judging all <%= user_judgement_count %> query/doc pairs available to you.</p>
-    <p class="mb-0">Some pairs still need additional judgements from other judges to reach the ideal target of 3 judgements each.</p>
+    <p class="mb-0">Some pairs still need additional judgements from other judges to reach the best practice of 3 judgements each.</p>
   </div>
 
 <% elsif @moar_judgements_needed %>
@@ -50,9 +50,9 @@
           <p class="mb-2">You have judged <%= user_judgement_count %> out of <%= total_pairs %> query/doc pairs.</p>
       <% end %>
       <p class="mb-3">
-        <strong>High Priority:</strong> <%= unjudged_pairs %> pairs have <strong>no judgements yet</strong> and need immediate attention.
+        <strong>High Priority:</strong> There are <%= total_pairs - partially_judged_pairs %> pairs that have <strong>no judgements yet</strong> and need immediate attention.
         <% if partially_judged_pairs > 0 %>
-          <br>Additionally, <%= partially_judged_pairs %> pairs have 1-2 judgements and need more to reach our target of 3 judgements each.</br>
+          <br>Additionally, <%= partially_judged_pairs %> pairs have 1-2 judgements and need more to reach the best practice of 3 judgements each.</br>
         <% end %>
       </p>
       
