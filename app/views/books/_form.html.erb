@@ -44,19 +44,13 @@
       <% end %>
     
       <div class="mb-3">
-        <%= form.label :scorer_id, class: 'form-label' %>
-        <%= form.collection_select(:scorer_id, current_user.scorers_involved_with, :id, :name, { prompt: true }, required: true, class: 'form-control') %>
-        <div class="form-text">The scorer you pick drives the options for rating.  So AP@10 would give you relevant and irrelevant, whereas NDCG would give your a four point scale.</div>
+        <%= form.label :scorer_id, "Rating Scale", class: 'form-label' %>
+        <%= form.select(:scorer_id, scorer_options_for_select(@current_user), 
+              { prompt: "Select a rating scale..." }, 
+              { class: 'form-control' }) %>
+        <div class="form-text">Choose from available rating scale configurations. The scale and labels will be set for this book when you save.</div>
       </div>
     
-      <div class="mb-3">
-        <%= form.label :selection_strategy_id, class: 'form-label' %>
-        <%= form.collection_select(:selection_strategy_id, SelectionStrategy.all.reverse, :id, :descriptive_name, 
-            { prompt: false, selected: book.selection_strategy_id || SelectionStrategy.all.reverse.first.id }, 
-            required: true, class: 'form-control') %>
-        <div class="form-text">The typical choice is multiple judges.  Only pick the single if you want to maximise coverage of ratings by only having a single rating per person.</div>
-      </div>
-      
       <div class="mb-3">
         <i class="bi bi-robot"></i>
         <%= form.label :teams, "AI Judges Assigned to this Book", class: 'form-label' %>
@@ -103,7 +97,7 @@
             <%= form.label :delete_export_file, "Delete Export File", class: 'form-check-label' %>
             <div class="form-text">If enabled you have an associated file.  Check this to delete it.</div>
           </div>
-        </div>  
+        </div>
       <% end %>
       
       <div class="actions">

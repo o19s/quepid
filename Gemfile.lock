@@ -160,7 +160,7 @@ GEM
       rexml
     crass (1.0.6)
     csv (3.3.5)
-    database_consistency (2.1.0)
+    database_consistency (2.1.1)
       activerecord (>= 3.2)
     date (3.5.0)
     debug (1.11.0)
@@ -294,7 +294,7 @@ GEM
       activesupport (>= 7.0.0)
     jsbundling-rails (1.3.1)
       railties (>= 6.0.0)
-    json (2.17.1)
+    json (2.18.0)
     json-jwt (1.17.0)
       activesupport (>= 4.2)
       aes_key_wrap
@@ -359,8 +359,6 @@ GEM
       railties (>= 7.1)
       stimulus-rails
       turbo-rails
-    mocha (2.8.2)
-      ruby2_keywords (>= 0.0.5)
     msgpack (1.8.0)
     multi_xml (0.7.2)
       bigdecimal (~> 3.1)
@@ -423,12 +421,12 @@ GEM
     omniauth-oauth2 (1.8.0)
       oauth2 (>= 1.4, < 3)
       omniauth (~> 2.0)
-    omniauth-rails_csrf_protection (2.0.0)
+    omniauth-rails_csrf_protection (2.0.1)
       actionpack (>= 4.2)
       omniauth (~> 2.0)
     orm_adapter (0.5.0)
     ostruct (0.6.3)
-    pagy (43.2.0)
+    pagy (43.2.1)
       json
       yaml
     parallel (1.27.0)
@@ -533,7 +531,7 @@ GEM
     rexml (3.4.4)
     rover-df (0.5.0)
       numo-narray (>= 0.9.1.9)
-    rubocop (1.81.7)
+    rubocop (1.82.0)
       json (~> 2.3)
       language_server-protocol (~> 3.17.0.2)
       lint_roller (~> 1.1.0)
@@ -541,7 +539,7 @@ GEM
       parser (>= 3.3.0.2)
       rainbow (>= 2.2.2, < 4.0)
       regexp_parser (>= 2.9.3, < 3.0)
-      rubocop-ast (>= 1.47.1, < 2.0)
+      rubocop-ast (>= 1.48.0, < 2.0)
       ruby-progressbar (~> 1.7)
       unicode-display_width (>= 2.4.0, < 4.0)
     rubocop-ast (1.48.0)
@@ -571,10 +569,10 @@ GEM
     ruby2_keywords (0.0.5)
     rubyzip (3.2.2)
     safely_block (0.5.0)
-    scout_apm (6.0.0)
+    scout_apm (6.0.1)
       parser
     securerandom (0.4.1)
-    selenium-webdriver (4.38.0)
+    selenium-webdriver (4.39.0)
       base64 (~> 0.2)
       logger (~> 1.4)
       rexml (~> 3.2, >= 3.2.5)
@@ -606,7 +604,7 @@ GEM
       railties (>= 6.0.0)
     stringio (3.1.9)
     thor (1.4.0)
-    timeout (0.4.4)
+    timeout (0.5.0)
     traces (0.18.2)
     tsort (0.2.0)
     turbo-rails (2.0.20)
@@ -682,7 +680,6 @@ DEPENDENCIES
   mini_racer
   minitest-reporters
   mission_control-jobs
-  mocha
   mysql2
   oas_rails
   omniauth
