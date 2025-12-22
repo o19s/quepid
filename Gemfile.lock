@@ -569,7 +569,7 @@ GEM
     ruby2_keywords (0.0.5)
     rubyzip (3.2.2)
     safely_block (0.5.0)
-    scout_apm (6.0.1)
+    scout_apm (6.0.2)
       parser
     securerandom (0.4.1)
     selenium-webdriver (4.39.0)
