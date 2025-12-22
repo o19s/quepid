@@ -2,7 +2,7 @@
   ng-attr-id="{{ 'query-' + query.queryText }}"
   rank="{{$index + 1}}"
   class="clearfix" ng-class="query.state() | queryStateClass">
-  <div class="result-header" ng-class="{'dual-query-display': (displayed.results == displayed.resultsView.diffs && query.diffs)}">
+  <div class="result-header" ng-class="{'diff-query-display': (displayed.results == displayed.resultsView.diffs && query.diffs)}">
     <!-- Current query score -->
     <qscore-query
       class="results-score"

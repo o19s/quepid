@@ -1,20 +1,20 @@
 <div ng-show="displayed.results == displayed.resultsView.diffs">
-  <div class="multi-diff-container">
+  <div class="diff-container">
     <!-- Column headers -->
-    <div class="multi-diff-header">
-      <div class="multi-diff-column">
+    <div class="diff-header">
+      <div class="diff-column">
         <h2>Current Results</h2>
       </div>
-      <div class="multi-diff-column" ng-repeat="name in query.diffs.names() track by $index">
+      <div class="diff-column" ng-repeat="name in query.diffs.names() track by $index">
         <h2>{{name}}</h2>
       </div>
     </div>
     
     <!-- Results comparison rows -->
-    <div ng-repeat="docTuple in query.docTuples()" class="multi-diff-row">
+    <div ng-repeat="docTuple in query.docTuples()" class="diff-row">
       
       <!-- Current search result -->
-      <div class="multi-diff-column">
+      <div class="diff-column">
         <search-result
           ng-if="docTuple.doc != null"
           class="search-result"
@@ -34,7 +34,7 @@
       </div>
 
       <!-- Snapshot results -->
-      <div class="multi-diff-column" ng-repeat="diffDoc in docTuple.diffDocs track by $index">
+      <div class="diff-column" ng-repeat="diffDoc in docTuple.diffDocs track by $index">
         <div ng-if="$parent.$first && diffDoc === null" class="alert alert-warning" role="alert">
           This query is not present in the snapshot so it is treated as ZSR.
         </div>
@@ -57,7 +57,7 @@
     </div>
 
     <!-- Action buttons -->
-    <div class="multi-diff-actions" style="margin-top: 20px;">
+    <div class="diff-actions">
       <div ng-if="selectedTry.searchEngine == 'solr'">
         <a ng-show="query.state() !== 'error'" class="btn btn-primary" ng-href="{{query.browseUrl()}}" target="_blank">
           Browse {{query.numFound}} Current Results on Solr
@@ -67,96 +67,4 @@
   </div>
 </div>
 
-<style>
-.multi-diff-container {
-  padding: 0;
-  width: 100%;
-}
 
-.multi-diff-header {
-  display: flex;
-  margin-bottom: 20px;
-  border-bottom: 2px solid #eee;
-}
-
-.multi-diff-header .multi-diff-column {
-  padding: 0;
-}
-
-
-
-.multi-diff-row {
-  display: flex;
-  min-height: 200px;
-  border-bottom: 1px solid #f0f0f0;
-  margin-bottom: 20px;
-}
-
-.multi-diff-column {
-  flex: 1;
-  border-right: 1px solid #eee;
-  padding: 0 15px;
-  text-align: left;
-}
-
-.multi-diff-column:last-child {
-  border-right: none;
-}
-
-/* Styles for qscore components in multi-diff context */
-.multi-diff-score {
-  display: inline-block;
-  margin: 10px 0;
-}
-
-.multi-diff-score .overall-rating {
-  margin: 0;
-  border-radius: 5px;
-}
-
-.multi-diff-score.snapshot-score .overall-rating {
-  border-top-left-radius: 5px;
-  border-bottom-left-radius: 5px;
-}
-
-.score-details {
-  margin-top: 5px;
-}
-
-.multi-diff-actions {
-  text-align: center;
-  padding-top: 20px;
-  border-top: 1px solid #eee;
-}
-
-@media (max-width: 768px) {
-  .multi-diff-header,
-  .multi-diff-row {
-    flex-direction: column;
-  }
-  
-  .multi-diff-column {
-    border-right: none;
-    border-bottom: 1px solid #eee;
-    margin-bottom: 15px;
-    padding: 15px 0;
-  }
-  
-  .multi-diff-column:last-child {
-    border-bottom: none;
-  }
-}
-
-/* Highlight differences */
-.search-result.different {
-  border-left: 4px solid #ffc107;
-}
-
-.search-result.missing {
-  border-left: 4px solid #dc3545;
-}
-
-.search-result.new {
-  border-left: 4px solid #28a745;
-}
-</style>
