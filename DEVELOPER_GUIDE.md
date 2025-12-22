@@ -306,7 +306,7 @@ For some reason we can't run both with one command, _though we should be able to
 If you want to create a LOT of queries for a user for testing, then run
 
 ```bash
-bin/docker r bundle exec sample_data:large_data
+bin/docker r bundle exec thor sample_data:large_data
 ```
 
 You will have two users, `quepid+100sOfQueries@o19s.com` and `quepid+1000sOfQueries@o19s.com` to test with.

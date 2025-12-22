@@ -2,19 +2,25 @@
   ng-attr-id="{{ 'query-' + query.queryText }}"
   rank="{{$index + 1}}"
   class="clearfix" ng-class="query.state() | queryStateClass">
-  <div class="result-header">
-    <qscore
+  <div class="result-header" ng-class="{'diff-query-display': (displayed.results == displayed.resultsView.diffs && query.diffs)}">
+    <!-- Current query score -->
+    <qscore-query
       class="results-score"
-      diff-label="''"
-      full-diff-name="''"
       max-score="maxScore || 100";
-      scorable="query"
-      score-label="''"
-      score-type="'query'"
-      scores="[]"
-      show-diff="displayed.results == displayed.resultsView.diff"
+      scorable="query"      
     >
-    </qscore>
+    </qscore-query>
+    
+    <!-- Snapshot query scores -->
+    <qscore-query
+      ng-if="query.diffs"
+      ng-repeat="searcher in query.diffs.getSearchers() track by $index"
+      class="results-score diff-score"
+      max-score="maxScore || 100"
+      scorable="searcher"
+    >
+    </qscore-query>
+  
 
     <span class="loading-query"></span>
 
@@ -119,10 +125,10 @@
       </div>
     </div>
 
-    <!-- diff display -->
-    <div ng-controller="DiffResultsCtrl" ng-if="displayed.results == displayed.resultsView.diff">
-      <query-diff-results query="query" repeatlength="10">
-        Diff
+    <!-- unified diff display (handles both single and multiple snapshots) -->
+    <div ng-controller="QueryDiffResultsCtrl" ng-if="displayed.results == displayed.resultsView.diffs">
+      <query-diff-results query="query" repeatlength="10" max-score="maxScore">
+        Diff Results
       </query-diff-results>
     </div>
 

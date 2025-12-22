@@ -10,132 +10,214 @@ angular.module('QuepidApp')
     '$log',
     'querySnapshotSvc',
     'settingsSvc',
+    'snapshotSearcherSvc',
+    'queryViewSvc',
     function diffResultsSvc(
       $q,
       $log,
       querySnapshotSvc,
-      settingsSvc
+      settingsSvc,
+      snapshotSearcherSvc,
+      queryViewSvc
     ) {
 
-      var diffSetting = null;
+      // Internal method to create diff objects
+      function createQueryDiffs(query, diffSettings) {
+        if (diffSettings.length === 0) {
+          query.diffs = null;
+          query.diffSearchers = [];
+          return;
+        }
 
-      // no results
-      var NullFetcher = function() {
-        this.version = function() {
-          return 0;
-        };
+        var settings = settingsSvc.editableSettings();
+        var diffSearchers = [];
+        var validSearchers = [];
 
-        this.docs = [];
-
-        this.fetch = function() {
-          return $q(function(resolve) {
-            resolve();
-          });
-        };
-
-        this.name = function() {
-          return '';
-        };
-      };
-
-      // Adapter for the diff results...
-      // fetch results associated with a snapshot for a specific query
-      var QuerySnapshotFetcher = function(snapshot, query) {
-        this.docs = [];
-        this.version = function() {
-          return query.version();
-        };
-
-        var thisFetcher = this;
-        this.fetch = function() {
-          thisFetcher.docs.length = 0;
-          var savedSearchResults = snapshot.getSearchResults(query.queryId);
-
-          angular.forEach(savedSearchResults, function loopBody(doc) {
-            if ( angular.isDefined(doc) && doc !== null) {
-              var rateableDoc = query.ratingsStore.createRateableDoc(doc);
-              rateableDoc.ratedOnly = doc.rated_only ? doc.rated_only : false;
-              thisFetcher.docs.push(rateableDoc);
-            }
-          });
-
-          return $q(function(resolve) {
-            resolve();
-          });
-        };
-
-        this.name = function() {
-          return snapshot.name();
-        };
-      };
-
-      var nullFetcher = new NullFetcher();
-
-
-      var QueryDiffResults = function(query, fetcher, type) {
-        var thisQDiff = this;
-
-        thisQDiff.fetcher   = fetcher;
-        thisQDiff.diffScore = { score: null, allRated: false };
-
-        var fetch = function() {
-          var settings = settingsSvc.editableSettings();
-
-          return thisQDiff.fetcher.fetch(settings)
-            .then(function() {
-              thisQDiff.diffScore = query.scoreOthers(thisQDiff.fetcher.docs.filter(d => d.ratedOnly === false));
-            }, function(response) {
-              $log.debug('Failed to fetch diff: ', response);
-              return response;
+        // Create searchers for each snapshot
+        angular.forEach(diffSettings, function(diffSetting) {
+          var diffSearcher = snapshotSearcherSvc.createSearcherFromSnapshot(diffSetting, query, settings);
+          if (diffSearcher) {
+            // Initialize diffScore immediately for qscore components
+            diffSearcher.diffScore = { score: '?', allRated: false };
+            
+            // Add currentScore getter to make searcher compatible with qscore components
+            Object.defineProperty(diffSearcher, 'currentScore', {
+              get: function() {
+                return this.diffScore;
+              },
+              enumerable: true,
+              configurable: true
             });
-        };
+            
+            diffSearchers.push(diffSearcher);
+            validSearchers.push({
+              searcher: diffSearcher,
+              setting: diffSetting
+            });
+          }
+        });
 
-        this.fetch = fetch;
+        if (validSearchers.length > 0) {
+          query.diffSearchers = diffSearchers;
+          
+          // Create diffs interface
+          query.diffs = {
+            fetch: function() {
+              var fetchPromises = [];
+              
+              angular.forEach(diffSearchers, function(searcher) {
+                fetchPromises.push(searcher.search());
+              });
 
-        this.version = function() {
-          return this.fetcher.version();
-        };
+              return $q.all(fetchPromises)
+                .then(function() {
+                  // Calculate diff scores for each searcher
+                  var scorePromises = [];
+                  angular.forEach(diffSearchers, function(searcher) {
+                    var docsForScoring = searcher.docs.filter(function(d) { 
+                      return d.ratedOnly === false; 
+                    });
+                    var scoreResult = query.scoreOthers(docsForScoring);
+                    
+                    // Handle both promise and non-promise returns
+                    var resolvedPromise;
+                    if (scoreResult && typeof scoreResult.then === 'function') {
+                      resolvedPromise = scoreResult.then(function(scoreData) {
+                        searcher.diffScore = scoreData;
+                        return scoreData;
+                      });
+                    } else {
+                      var deferred = $q.defer();
+                      searcher.diffScore = scoreResult;
+                      deferred.resolve(scoreResult);
+                      resolvedPromise = deferred.promise;
+                    }
+                    
+                    scorePromises.push(resolvedPromise);
+                  });
+                  
+                  return $q.all(scorePromises);
+                });
+            },
+            
+            getSearchers: function() {
+              return diffSearchers;
+            },
+            
+            getSearcher: function(index) {
+              return diffSearchers[index] || null;
+            },
+            
+            docs: function(searcherIndex, onlyRated) {
+              onlyRated = onlyRated || false;
+              if (searcherIndex < 0 || searcherIndex >= diffSearchers.length) {
+                return [];
+              }
+              return diffSearchers[searcherIndex].docs.filter(function(d) { 
+                return d.ratedOnly === onlyRated; 
+              });
+            },
+            
 
-        this.score = function() {
-          var deferred = $q.defer();
-          deferred.resolve(this.diffScore);
-          return deferred.promise;
-        };
+            name: function(searcherIndex) {
+              if (angular.isDefined(searcherIndex) && diffSearchers[searcherIndex]) {
+                return diffSearchers[searcherIndex].name();
+              }
+              return diffSearchers.map(function(searcher) {
+                return searcher.name();
+              }).join(' vs ');
+            },
+            
+            names: function() {
+              return diffSearchers.map(function(searcher) {
+                return searcher.name();
+              });
+            },
+            
+            version: function(searcherIndex) {
+              if (angular.isDefined(searcherIndex) && diffSearchers[searcherIndex]) {
+                return diffSearchers[searcherIndex].version();
+              }
+              return diffSearchers.map(function(searcher) {
+                return searcher.version();
+              });
+            },
+            
+            score: function(searcherIndex) {
+              var deferred = $q.defer();
+              
+              if (angular.isDefined(searcherIndex) && diffSearchers[searcherIndex]) {
+                deferred.resolve(diffSearchers[searcherIndex].diffScore || { score: null, allRated: false });
+              } else {
+                var allScores = diffSearchers.map(function(searcher) {
+                  return searcher.diffScore || { score: null, allRated: false };
+                });
+                deferred.resolve(allScores);
+              }
+              
+              return deferred.promise;
+            },
+            
 
-        this.docs = function(onlyRated) {
-          onlyRated = onlyRated || false;
-
-          return this.fetcher.docs.filter(d => d.ratedOnly === onlyRated);
-        };
-
-        this.name = function() {
-          return this.fetcher.name();
-        };
-
-        this.type = function() {
-          return type;
-        };
-
-        this.fetch();
-      };
-
-      this.setDiffSetting = function(currDiffSetting) {
-        diffSetting = currDiffSetting;
-      };
+          };
+          
+          // Initialize all diffs
+          query.diffs.fetch();
+        } else {
+          console.debug('no valid snapshots found for diff!');
+          query.diffs = null;
+          query.diffSearchers = [];
+        }
+      }
 
       this.createQueryDiff = function(query) {
-        var fetcher = nullFetcher;
-
-        if (diffSetting === null) {
-          query.diff = null;          
+        // Get current diff settings from queryViewSvc (the single source of truth)
+        var allDiffSettings = queryViewSvc.getAllDiffSettings();
+        
+        if (allDiffSettings.length === 0) {
+          query.diff = null;
+          query.diffSearcher = null;
+          query.diffs = null;
+          query.diffSearchers = [];
         } else {
-          var snapshot = querySnapshotSvc.snapshots[diffSetting];
-
-          if ( snapshot ) {
-            fetcher = new QuerySnapshotFetcher(snapshot, query);
-            query.diff = new QueryDiffResults(query, fetcher, 'snapshot');
-          } else {
-            console.debug('snapshot not found!');
+          // Create diffs using internal method
+          createQueryDiffs(query, allDiffSettings);
+          
+          // For single diff, create compatibility wrapper to maintain old diff interface
+          if (allDiffSettings.length === 1 && query.diffs) {
+            query.diff = {
+              fetch: function() {
+                return query.diffs.fetch();
+              },
+              docs: function(onlyRated) {
+                return query.diffs.docs(0, onlyRated);
+              },
+              name: function() {
+                return query.diffs.name(0);
+              },
+              version: function() {
+                return query.diffs.version(0);
+              },
+              score: function() {
+                return query.diffs.score(0);
+              },
+              
+              type: function() {
+                return 'snapshot';
+              },
+              
+              get diffScore() {
+                var searchers = query.diffs.getSearchers();
+                return searchers[0] ? searchers[0].diffScore : { score: null, allRated: false };
+              },
+              
+              get currentScore() {
+                return this.diffScore;
+              }
+            };
+          } else if (allDiffSettings.length > 1) {
+            // Multi-diff mode - no need for compatibility wrapper
+            query.diff = null;
           }
         }
       };

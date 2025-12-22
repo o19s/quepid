@@ -5,12 +5,23 @@
 angular.module('QuepidApp')
   .service('queryViewSvc', [
     function() {
-      this.enableDiff = function(snapshotId) {
-        this.diffSetting = snapshotId;
+      // Initialize properties
+      this.diffSettings = [];
+      this.comparisonsDisabled = false;
+      this.queryToggles = {};
+
+      this.enableDiffs = function(snapshotIds) {
+        this.diffSettings = snapshotIds;
+        this.comparisonsDisabled = false;
       };
 
-      this.isDiffEnabled = function() {
-        return (this.diffSetting !== null);
+      this.disableComparisons = function() {
+        this.diffSettings = [];
+        this.comparisonsDisabled = true;
+      };
+
+      this.areComparisonsDisabled = function() {
+        return this.comparisonsDisabled === true;
       };
 
       this.isQueryToggled = function(queryId) {
@@ -32,8 +43,27 @@ angular.module('QuepidApp')
       };
 
       this.reset = function() {
-        this.diffSetting = null;
+        this.diffSettings = [];
+        this.comparisonsDisabled = false;
         this.queryToggles = {}; // the toggles, they do nothing
+      };
+
+      // Unified getter for all diff settings - returns array format
+      this.getAllDiffSettings = function() {
+        if (this.comparisonsDisabled === true) {
+          return [];
+        }
+        return this.diffSettings;
+      };
+
+      // Get maximum number of snapshots allowed for comparison
+      this.getMaxSnapshots = function() {
+        return 5; // Maximum 5 snapshots for comparison
+      };
+
+      // Check if any diff is enabled
+      this.isAnyDiffEnabled = function() {
+        return this.getAllDiffSettings().length > 0;
       };
 
       this.reset();

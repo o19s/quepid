@@ -1,46 +1,219 @@
-qscore {
-	 padding: 0;
+/* CSS Custom Properties for consistent spacing and styling */
+:root {
+  --qscore-spacing-sm: 5px;
+  --qscore-spacing-md: 10px;
+  --qscore-spacing-lg: 15px;
+  --qscore-spacing-xl: 20px;
+  --qscore-border-radius: 5px;
+  --qscore-border-width: 1px;
+  --qscore-border-width-thick: 2px;
+  --qscore-highlight-width: 4px;
 }
- qscore.case-score {
-	 margin: 20px 15px -10px 0px;
+
+/* Utility classes for common border radius patterns */
+.border-radius-left {
+  border-top-left-radius: var(--qscore-border-radius);
+  border-bottom-left-radius: var(--qscore-border-radius);
 }
- qscore .header-rating {
-	 border-radius: 5px;
-	 color: #fff;
-	 display: inline-block;
-	 font-size: 22px;
-	 margin: 0;
-	 min-height: 80px;
-	 padding: 15px 0;
-	 text-align: center;
-	 vertical-align: top;
+
+.border-radius-right {
+  border-top-right-radius: var(--qscore-border-radius);
+  border-bottom-right-radius: var(--qscore-border-radius);
 }
- qscore .overall-rating {
-	 display: block;
-	 float: left;
-	 height: 100%;
-	 width: 90px;
-	 margin: -10px 20px -10px -20px;
-	 padding: 10px 0;
-	 color: #fff;
-	 font-family: 'allerbold_italic';
-	 font-size: 22px;
-	 text-align: center;
-	 border-top-left-radius: 5px;
-	 border-bottom-left-radius: 5px;
+
+.border-radius-none {
+  border-radius: 0;
 }
- qscore .overall-rating.diff-score {
-	 border-radius: 0;
+
+.border-radius-full {
+  border-radius: var(--qscore-border-radius);
 }
- qscore qgraph {
-	 display: inline-block;
-	 height: 80px;
-	 margin: 0px -10px 0px 0px;
-	 width: 150px;
+
+/* Base qscore component styles */
+qscore-case, qscore-query {
+  padding: 0;
 }
- qscore qgraph svg {
-	 border: 2px solid grey;
-	 border-right-style: none;
-	 border-top-left-radius: 5px;
-	 border-bottom-left-radius: 5px;
+
+qscore-case.case-score {
+  margin: var(--qscore-spacing-xl) var(--qscore-spacing-lg) calc(-1 * var(--qscore-spacing-md)) 0px;
+}
+
+/* Simplified diff score margins */
+qscore-case.case-score:not(.diff-score):not(:only-of-type),
+qscore-case.case-score.diff-score {
+  margin: var(--qscore-spacing-xl) 0px calc(-1 * var(--qscore-spacing-md)) 0px;
+}
+
+qscore-case.case-score.diff-score:last-of-type {
+  margin: var(--qscore-spacing-xl) var(--qscore-spacing-lg) calc(-1 * var(--qscore-spacing-md)) 0px;
+}
+
+/* Header rating styles */
+qscore-case .header-rating {
+  border-radius: var(--qscore-border-radius);
+  color: #fff;
+  display: inline-block;
+  font-size: 22px;
+  margin: 0;
+  min-height: 80px;
+  padding: var(--qscore-spacing-lg) 0;
+  text-align: center;
+  vertical-align: top;
+}
+
+/* Overall rating styles - consolidated identical selectors */
+qscore-case .overall-rating,
+qscore-query .overall-rating {
+  display: block;
+  float: left;
+  height: 100%;
+  width: 90px;
+  margin: calc(-1 * var(--qscore-spacing-md)) var(--qscore-spacing-xl) calc(-1 * var(--qscore-spacing-md)) calc(-1 * var(--qscore-spacing-xl));
+  padding: var(--qscore-spacing-md) 0;
+  color: #fff;
+  font-family: 'allerbold_italic';
+  font-size: 22px;
+  text-align: center;
+  border-top-left-radius: var(--qscore-border-radius);
+  border-bottom-left-radius: var(--qscore-border-radius);
+}
+
+/* Query score specific positioning - consolidated identical rules */
+qscore-query.results-score .overall-rating,
+.diff-query-display qscore-query.results-score .overall-rating {
+  margin: calc(-1 * var(--qscore-spacing-md)) var(--qscore-spacing-lg) calc(-1 * var(--qscore-spacing-md)) calc(-1 * var(--qscore-spacing-xl));
+}
+
+qscore-query.diff-score .overall-rating {
+  margin: calc(-1 * var(--qscore-spacing-md)) var(--qscore-spacing-xl) calc(-1 * var(--qscore-spacing-md)) 0px;
+}
+
+/* Diff score styling */
+qscore-case .overall-rating.diff-score,
+qscore-query.diff-score .overall-rating {
+  border-radius: 0;
+  border-top-right-radius: var(--qscore-border-radius);
+  border-bottom-right-radius: var(--qscore-border-radius);
+}
+
+/* Border radius adjustments for multiple scores */
+qscore-case.case-score:not(.diff-score):not(:only-of-type) .header-rating {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+qscore-case.case-score.diff-score .header-rating {
+  border-radius: 0;
+}
+
+qscore-case.case-score.diff-score:last-of-type .header-rating {
+  border-top-right-radius: var(--qscore-border-radius);
+  border-bottom-right-radius: var(--qscore-border-radius);
+}
+
+/* Graph styling */
+qscore-case qgraph {
+  display: inline-block;
+  height: 80px;
+  margin: 0px calc(-1 * var(--qscore-spacing-md)) 0px 0px;
+  width: 150px;
+}
+
+qscore-case qgraph svg {
+  border: var(--qscore-border-width-thick) solid grey;
+  border-right-style: none;
+  border-top-left-radius: var(--qscore-border-radius);
+  border-bottom-left-radius: var(--qscore-border-radius);
+}
+
+/* Diff container styles */
+.diff-container {
+  padding: 0;
+  width: 100%;
+}
+
+.diff-header {
+  display: flex;
+  margin-bottom: var(--qscore-spacing-xl);
+  border-bottom: var(--qscore-border-width-thick) solid #eee;
+}
+
+.diff-header .diff-column {
+  padding: 0;
+}
+
+.diff-row {
+  display: flex;
+  min-height: 200px;
+  border-bottom: var(--qscore-border-width) solid #f0f0f0;
+  margin-bottom: var(--qscore-spacing-xl);
+}
+
+.diff-column {
+  flex: 1;
+  border-right: var(--qscore-border-width) solid #eee;
+  padding: 0 var(--qscore-spacing-lg);
+  text-align: left;
+}
+
+.diff-column:last-child {
+  border-right: none;
+}
+
+/* Diff score styling */
+.diff-score-display {
+  display: inline-block;
+  margin: var(--qscore-spacing-md) 0;
+}
+
+.diff-score-display .overall-rating {
+  margin: 0;
+  border-radius: var(--qscore-border-radius);
+}
+
+.diff-score-display.snapshot-score .overall-rating {
+  border-top-left-radius: var(--qscore-border-radius);
+  border-bottom-left-radius: var(--qscore-border-radius);
+}
+
+.score-details {
+  margin-top: var(--qscore-spacing-sm);
+}
+
+.diff-actions {
+  text-align: center;
+  padding-top: var(--qscore-spacing-xl);
+  border-top: var(--qscore-border-width) solid #eee;
+}
+
+/* Search result highlighting */
+.search-result.different {
+  border-left: var(--qscore-highlight-width) solid #ffc107;
+}
+
+.search-result.missing {
+  border-left: var(--qscore-highlight-width) solid #dc3545;
+}
+
+.search-result.new {
+  border-left: var(--qscore-highlight-width) solid #28a745;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .diff-header,
+  .diff-row {
+    flex-direction: column;
+  }
+
+  .diff-column {
+    border-right: none;
+    border-bottom: var(--qscore-border-width) solid #eee;
+    margin-bottom: var(--qscore-spacing-lg);
+    padding: var(--qscore-spacing-lg) 0;
+  }
+
+  .diff-column:last-child {
+    border-bottom: none;
+  }
 }
