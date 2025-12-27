@@ -43,11 +43,11 @@ class CaseToBookToCaseFlowTest < ActionDispatch::IntegrationTest
 
     # print_jobs
 
-    assert_enqueued_jobs 2, except: Ahoy::GeocodeV2Job
+    assert_enqueued_jobs 1, except: Ahoy::GeocodeV2Job
 
     perform_enqueued_jobs
 
-    assert_performed_jobs 2, except: Ahoy::GeocodeV2Job
+    assert_performed_jobs 1, except: Ahoy::GeocodeV2Job
 
     # the new Case that we will populate from a book...
     new_case = Case.create(case_name: 'test case', owner: user)
