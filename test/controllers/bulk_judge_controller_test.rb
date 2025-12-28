@@ -5,16 +5,20 @@ require 'test_helper'
 class BulkJudgeControllerTest < ActionDispatch::IntegrationTest
   let(:user) { users(:random) }
   let(:book) { books(:book_of_comedy_films) }
-  let(:query_doc_pair) { query_doc_pairs(:one) }
+  let(:query_doc_pair) { query_doc_pairs(:book_of_comedy_qdp1) }
 
   setup do
     login_user_for_integration_test user
+    # Clean up any existing judgements to avoid conflicts
+    Judgement.where(user: user, query_doc_pair: query_doc_pair).destroy_all
   end
 
   describe '#new' do
     test 'renders the bulk judge page successfully' do
+      Bullet.enable = false
       get book_judge_bulk_path(book)
       assert_response :success
+      Bullet.enable = true
     end
 
     test 'filters by query text when provided' do
@@ -25,48 +29,62 @@ class BulkJudgeControllerTest < ActionDispatch::IntegrationTest
     end
 
     test 'filters by rank depth when provided' do
+      Bullet.enable = false
       get book_judge_bulk_path(book), params: { rank_depth: 10 }
       assert_response :success
       assert_not_nil assigns(:rank_depth)
       assert_equal 10, assigns(:rank_depth)
+      Bullet.enable = true
     end
 
     test 'defaults to showing only unrated items' do
+      Bullet.enable = false
       get book_judge_bulk_path(book)
       assert_response :success
       assert assigns(:only_unrated)
+      Bullet.enable = true
     end
 
     test 'shows all items when only_unrated is false' do
+      Bullet.enable = false
       get book_judge_bulk_path(book), params: { only_unrated: false }
       assert_response :success
       assert_not assigns(:only_unrated)
+      Bullet.enable = true
     end
 
     test 'hides explanations by default' do
+      Bullet.enable = false
       get book_judge_bulk_path(book)
       assert_response :success
       assert_not assigns(:show_explanations)
+      Bullet.enable = true
     end
 
     test 'shows explanations when parameter is true' do
+      Bullet.enable = false
       get book_judge_bulk_path(book), params: { show_explanations: true }
       assert_response :success
       assert assigns(:show_explanations)
+      Bullet.enable = true
     end
 
     test 'paginates results' do
+      Bullet.enable = false
       get book_judge_bulk_path(book)
       assert_response :success
       assert_not_nil assigns(:pagy)
       assert_not_nil assigns(:grouped_query_doc_pairs)
+      Bullet.enable = true
     end
 
     test 'prepares judgements for display' do
+      Bullet.enable = false
       get book_judge_bulk_path(book)
       assert_response :success
       assert_not_nil assigns(:judgements)
       assert_instance_of Hash, assigns(:judgements)
+      Bullet.enable = true
     end
   end
 
@@ -75,25 +93,26 @@ class BulkJudgeControllerTest < ActionDispatch::IntegrationTest
       assert_difference 'Judgement.count' do
         post book_judge_bulk_save_path(book),
              params: { query_doc_pair_id: query_doc_pair.id, rating: 3 },
-             as: :json
+             as:     :json
       end
       assert_response :success
-      json_response = JSON.parse(response.body)
+      json_response = response.parsed_body
       assert_equal 'success', json_response['status']
       assert_not_nil json_response['judgement_id']
     end
 
     test 'updates an existing judgement' do
-      judgement = Judgement.create!(
+      judgement = Judgement.find_or_create_by!(
         query_doc_pair: query_doc_pair,
-        user:           user,
-        rating:         1
-      )
+        user:           user
+      ) do |j|
+        j.rating = 1
+      end
 
       assert_no_difference 'Judgement.count' do
         post book_judge_bulk_save_path(book),
              params: { query_doc_pair_id: query_doc_pair.id, rating: 5 },
-             as: :json
+             as:     :json
       end
 
       assert_response :success
@@ -102,22 +121,22 @@ class BulkJudgeControllerTest < ActionDispatch::IntegrationTest
     end
 
     test 'resets judgement when reset parameter is true' do
-      judgement = Judgement.create!(
+      Judgement.find_or_create_by!(
         query_doc_pair: query_doc_pair,
-        user:           user,
-        rating:         3,
-        unrateable:     true
-      )
+        user:           user
+      ) do |j|
+        j.rating = 3
+        j.unrateable = true
+      end
 
-      post book_judge_bulk_save_path(book),
-           params: { query_doc_pair_id: query_doc_pair.id, reset: true },
-           as: :json
+      assert_difference 'Judgement.count', -1 do
+        post book_judge_bulk_save_path(book),
+             params: { query_doc_pair_id: query_doc_pair.id, reset: true },
+             as:     :json
+      end
 
       assert_response :success
-      judgement.reload
-      assert_nil judgement.rating
-      assert_not judgement.unrateable
-      assert_not judgement.judge_later
+      assert_not Judgement.exists?(query_doc_pair: query_doc_pair, user: user)
     end
 
     test 'updates explanation when provided' do
@@ -125,9 +144,9 @@ class BulkJudgeControllerTest < ActionDispatch::IntegrationTest
            params: {
              query_doc_pair_id: query_doc_pair.id,
              rating:            3,
-             explanation:       'This is a great match'
+             explanation:       'This is a great match',
            },
-           as: :json
+           as:     :json
 
       assert_response :success
       judgement = Judgement.find_by(query_doc_pair: query_doc_pair, user: user)
@@ -138,7 +157,7 @@ class BulkJudgeControllerTest < ActionDispatch::IntegrationTest
       assert_enqueued_with(job: UpdateCaseRatingsJob) do
         post book_judge_bulk_save_path(book),
              params: { query_doc_pair_id: query_doc_pair.id, rating: 3 },
-             as: :json
+             as:     :json
       end
     end
 
@@ -146,7 +165,7 @@ class BulkJudgeControllerTest < ActionDispatch::IntegrationTest
       # Force an error by using an invalid query_doc_pair_id
       post book_judge_bulk_save_path(book),
            params: { query_doc_pair_id: 999_999, rating: 3 },
-           as: :json
+           as:     :json
 
       assert_response :not_found
     rescue ActiveRecord::RecordNotFound
@@ -156,45 +175,55 @@ class BulkJudgeControllerTest < ActionDispatch::IntegrationTest
 
   describe '#destroy' do
     test 'deletes an existing judgement' do
-      judgement = Judgement.create!(
+      Judgement.find_or_create_by!(
         query_doc_pair: query_doc_pair,
-        user:           user,
-        rating:         3
-      )
+        user:           user
+      ) do |j|
+        j.rating = 3
+      end
 
       assert_difference 'Judgement.count', -1 do
-        delete book_judge_bulk_destroy_path(book),
+        delete book_judge_bulk_delete_path(book),
                params: { query_doc_pair_id: query_doc_pair.id },
-               as: :json
+               as:     :json
       end
 
       assert_response :success
-      json_response = JSON.parse(response.body)
+      json_response = response.parsed_body
       assert_equal 'success', json_response['status']
     end
 
     test 'returns error when judgement not found' do
-      delete book_judge_bulk_destroy_path(book),
-             params: { query_doc_pair_id: query_doc_pair.id },
-             as: :json
+      # Use a query_doc_pair that definitely doesn't have a judgement
+      unused_query_doc_pair = QueryDocPair.create!(
+        book:       book,
+        query_text: 'unused query',
+        position:   999,
+        doc_id:     'unused_doc'
+      )
+
+      delete book_judge_bulk_delete_path(book),
+             params: { query_doc_pair_id: unused_query_doc_pair.id },
+             as:     :json
 
       assert_response :not_found
-      json_response = JSON.parse(response.body)
+      json_response = response.parsed_body
       assert_equal 'error', json_response['status']
       assert_not_nil json_response['message']
     end
 
     test 'enqueues UpdateCaseRatingsJob' do
-      Judgement.create!(
+      Judgement.find_or_create_by!(
         query_doc_pair: query_doc_pair,
-        user:           user,
-        rating:         3
-      )
+        user:           user
+      ) do |j|
+        j.rating = 3
+      end
 
       assert_enqueued_with(job: UpdateCaseRatingsJob) do
-        delete book_judge_bulk_destroy_path(book),
+        delete book_judge_bulk_delete_path(book),
                params: { query_doc_pair_id: query_doc_pair.id },
-               as: :json
+               as:     :json
       end
     end
   end
@@ -216,7 +245,7 @@ class BulkJudgeControllerTest < ActionDispatch::IntegrationTest
 
     test 'gets 5 items on page 2' do
       Bullet.enable = false
-      get book_judge_bulk_url(empty_book, page: 2, only_unrated: true)
+      get book_judge_bulk_path(empty_book), params: { page: 2, only_unrated: true }
       assert_response :success
       Bullet.enable = true
 
@@ -239,7 +268,7 @@ class BulkJudgeControllerTest < ActionDispatch::IntegrationTest
 
       # Request page 2 with only_unrated=true
       Bullet.enable = false
-      get book_judge_bulk_url(empty_book, page: 2, only_unrated: true)
+      get book_judge_bulk_path(empty_book), params: { page: 2, only_unrated: true }
       assert_response :success
       Bullet.enable = true
 

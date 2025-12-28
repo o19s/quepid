@@ -89,27 +89,30 @@ class BulkJudgeController < ApplicationController
       user:              current_user
     )
 
-    # Handle reset - clear rating and related flags
-    if true == params[:reset]
-      judgement.rating = nil
-      judgement.unrateable = false
-      judgement.judge_later = false
-      # Keep explanation if it exists
-    elsif params[:rating].present?
-      # Update rating only if provided and not resetting
-      judgement.rating = params[:rating]
-      judgement.unrateable = false
-      judgement.judge_later = false
-    end
-
-    # Always update explanation if provided
-    judgement.explanation = params[:explanation] if params.key?(:explanation)
-
-    if judgement.save
-      UpdateCaseRatingsJob.perform_later query_doc_pair
-      render json: { status: 'success', judgement_id: judgement.id }
+    # Handle reset - destroy the judgement entirely
+    if deserialize_bool_param(params[:reset])
+      if judgement.persisted?
+        judgement.destroy
+        UpdateCaseRatingsJob.perform_later query_doc_pair
+      end
+      render json: { status: 'success' }
     else
-      render json: { status: 'error', errors: judgement.errors.full_messages }, status: :unprocessable_content
+      # Update rating if provided
+      if params[:rating].present?
+        judgement.rating = params[:rating]
+        judgement.unrateable = false
+        judgement.judge_later = false
+      end
+
+      # Always update explanation if provided
+      judgement.explanation = params[:explanation] if params.key?(:explanation)
+
+      if judgement.save
+        UpdateCaseRatingsJob.perform_later query_doc_pair
+        render json: { status: 'success', judgement_id: judgement.id }
+      else
+        render json: { status: 'error', errors: judgement.errors.full_messages }, status: :unprocessable_content
+      end
     end
   end
   # rubocop:enable Metrics/AbcSize, Metrics/MethodLength
@@ -126,9 +129,5 @@ class BulkJudgeController < ApplicationController
     else
       render json: { status: 'error', message: 'Judgement not found or could not be deleted' }, status: :not_found
     end
-  end
-  
-  def judgement_params
-    params.permit(:query_doc_pair_id, :rating, :explanation, :reset)
   end
 end
