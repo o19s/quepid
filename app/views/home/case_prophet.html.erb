@@ -9,16 +9,16 @@
     <% else %>      
       <%= @case.first_score&.updated_at.to_date.to_fs(:short) || "No score available" %> 
       <% if @case.scores.count > 1 and @case.first_score.updated_at.to_date.to_fs(:short) != @case.last_score.updated_at.to_date.to_fs(:short) %>
-        - <%= @case.last_score.updated_at.to_date.to_fs(:short)%>
+        - <%= @case.last_score.updated_at.to_date.to_fs(:short) %>
       <% end %>
     <% end %>
   </p>       
  <%
   if !@prophet_case_data[:changepoint].zero? %>
     <% if @prophet_case_data[:changepoint].positive? %>
-      <p class="card-text text-success"><%= number_to_percentage(@prophet_case_data[:changepoint] , precision:0) %> increase since <%=time_ago_in_words(@prophet_case_data[:last_changepoint]) %> ago</p>
+      <p class="card-text text-success"><%= number_to_percentage(@prophet_case_data[:changepoint] , precision:0) %> increase since <%= time_ago_in_words(@prophet_case_data[:last_changepoint]) %> ago</p>
     <% else %>
-      <p class="card-text text-danger"><%= number_to_percentage(@prophet_case_data[:changepoint] , precision:0) %> decrease since <%=time_ago_in_words(@prophet_case_data[:last_changepoint]) %> ago</p>
+      <p class="card-text text-danger"><%= number_to_percentage(@prophet_case_data[:changepoint] , precision:0) %> decrease since <%= time_ago_in_words(@prophet_case_data[:last_changepoint]) %> ago</p>
     <% end %>
   <% else %>
     <p class="card-text">&nbsp;</p>
@@ -33,16 +33,38 @@
   end
   %>
   
+  <% 
+    # Use layers to render graph.  First layer is scores line, subsequent is annotations.
+    layers = [
+      {
+        mark: {type: "line", tooltip: true, interpolate: "cardinal", point: {size: 60}},
+        encoding: {
+          x: {field: "x", type: "temporal"}.merge(vega_time),
+          y: {field: "y", type: "quantitative"}
+        }
+      }      
+    ]
+    
+    @annotation_data.each do |annotation|
+      layers << {
+        data: {values: [annotation]},
+        mark: {type: "rule", size: 3, color: "purple", tooltip: {content: "text"}},
+        encoding: {
+          x: {field: "x", type: "temporal"}.merge(vega_time),
+          tooltip: {field: "message"}
+        }
+      }
+    end
+    
+  %>
+
   <%= Vega.lite
     .data(@prophet_case_data[:vega_data])
-    .mark(type: "line", tooltip: true, interpolate: "cardinal", point: {size: 60})
-    .encoding(
-      x: {field: "x", type: "temporal"}.merge(vega_time),
-      y: {field: "y", type: "quantitative"}
-    )
+    .layer(layers)  
     .height(60)
-    .config(axis: {title: nil, labelFontSize: 12}) %>
+    .config(axis: {title: nil, labelFontSize: 9}) %>
 
   <span id="notification-case-<%= @case.id %>">
+    &nbsp;
   </span>
 </turbo-frame>

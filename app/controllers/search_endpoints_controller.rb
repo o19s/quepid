@@ -1,7 +1,8 @@
 # frozen_string_literal: true
 
 class SearchEndpointsController < ApplicationController
-  include Pagy::Backend
+  include Pagy::Method
+
   before_action :set_search_endpoint, only: [ :show, :edit, :update, :destroy, :clone, :archive ]
 
   respond_to :html

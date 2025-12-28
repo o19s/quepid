@@ -14,9 +14,3 @@ json.user_id    score.user_id
 json.email      score.user&.email
 
 json.queries    score.queries unless shallow
-
-if score.annotation
-  json.note score.annotation.message
-else
-  json.note nil
-end

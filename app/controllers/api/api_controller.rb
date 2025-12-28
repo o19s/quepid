@@ -25,7 +25,7 @@ module Api
 
     # Call this API endpoint to test that you have the correct
     # headers set.
-    # @return 200 if successful
+    # return 200 if successful
     def test
       render json: { message: 'Success!' }, status: :ok
     end

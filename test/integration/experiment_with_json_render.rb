@@ -6,6 +6,7 @@ require 'action_view'
 
 class ExperimentWithJsonRender < ActionController::TestCase
   include ActionView::Helpers::NumberHelper
+
   let(:user) { users(:doug) }
   let(:scorer) { scorers(:quepid_default_scorer) }
   let(:selection_strategy) { selection_strategies(:multiple_raters) }
@@ -54,7 +55,6 @@ class ExperimentWithJsonRender < ActionController::TestCase
         updated_at:       Time.current,
       }
     end
-    # rubocop:disable Rails/SkipsModelValidations
     QueryDocPair.insert_all!(query_doc_pairs)
     # rubocop:enable Rails/SkipsModelValidations
   end

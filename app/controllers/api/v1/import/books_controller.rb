@@ -5,20 +5,16 @@ module Api
     module Import
       class BooksController < Api::ApiController
         # rubocop:disable Metrics/MethodLength
-        # @summary Import a complete book
-        # @tags books > import
+        # @summary Import a complete book as JSON
+        # @tags books > import/export
         # @request_body Book to be imported
         #   [
         #     !Hash{
         #       team_id: Integer,
         #       book: Hash{
         #         name: String,
-        #         scorer: Hash{
-        #           name: String
-        #         },
-        #         selection_strategy: Hash{
-        #           name: String
-        #         },
+        #         scale: String,
+        #         scale_with_labels: String,
         #         query_doc_pairs: Array<
         #           Hash{
         #             query_text: String,
@@ -28,40 +24,36 @@ module Api
         #       }
         #     }
         #   ]
-        # @request_body_example basic book [Hash]
-        #   {
-        #     team_id: 1,
-        #     book: {
-        #       name: "bob",
-        #       scorer: {
-        #         name: "nDCG@10"
-        #       },
-        #       selection_strategy: {
-        #         name: "Multiple Raters"
-        #       },
-        #       query_doc_pairs: [
+        # @request_body_example basic book
+        #   [JSON{
+        #     "team_id": 1,
+        #     "book": {
+        #       "name": "bob",
+        #       "scale": "1,2",
+        #       "scale_with_labels": "{\"0\": \"Not Relevant\", \"1\": \"Relevant\"}",
+        #       "query_doc_pairs": [
         #         {
-        #           query_text: "Ice Age",
-        #           doc_id: 425,
-        #           position: 1,
-        #           document_fields: "{\"overview\":\"With the impending flood...\",\"cast\":\"Ray Romano John\"",
-        #           information_need: "Fun kids animated movie with sid the sloth",
-        #           notes: "this is an important query",
-        #           options: "",
-        #           judgements: [
+        #           "query_text": "Ice Age",
+        #           "doc_id": 425,
+        #           "position": 1,
+        #           "document_fields": "{\"overview\":\"With the impending flood...\",\"cast\":\"Ray Romano John\"",
+        #           "information_need": "Fun kids animated movie with sid the sloth",
+        #           "notes": "this is an important query",
+        #           "options": "",
+        #           "judgements": [
         #             {
-        #               rating: 3.0,
-        #               user_email: "epugh@opensourceconnections.com"
+        #               "rating": 3.0,
+        #               "user_email": "epugh@opensourceconnections.com"
         #             },
         #             {
-        #               rating: 2.0,
-        #               user_email: "judge_judy@opensourceconnections.com"
+        #               "rating": 2.0,
+        #               "user_email": "judge_judy@opensourceconnections.com"
         #             }
         #           ]
         #         }
         #       ]
         #     }
-        #   }
+        #   }]
         #
         # > Notice that `document_fields` contains an string encoded JSON!
         def create

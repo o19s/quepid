@@ -1,0 +1,51 @@
+#!/usr/bin/env bash
+set -e
+
+echo "Setting up Rails to run in production mode locally..."
+
+# Generate a secret key if not already set
+if [ -z "$SECRET_KEY_BASE" ]; then
+  export SECRET_KEY_BASE=$(bundle exec rails secret)
+  echo "Generated SECRET_KEY_BASE"
+fi
+
+# Set production environment variables
+export RAILS_ENV=production
+export RACK_ENV=production
+export RAILS_SERVE_STATIC_FILES=true
+export QUEPID_CONSIDER_ALL_REQUESTS_LOCAL=true
+export QUEPID_DOMAIN=localhost
+
+# Database configuration - adjust these as needed
+export DB_USERNAME=root
+export DB_PASSWORD=password
+export DB_NAME=quepid
+export DB_HOST=127.0.0.1   # Use IP instead of "localhost"
+
+#export DATABASE_URL=mysql://root:password@localhost:3306/quepid_production
+
+echo "Environment variables set:"
+echo "  RAILS_ENV=$RAILS_ENV"
+echo "  RACK_ENV=$RACK_ENV"
+echo "  DB_USERNAME=$DB_USERNAME"
+echo "  DB_NAME=$DB_NAME"
+echo "  QUEPID_DOMAIN=$QUEPID_DOMAIN"
+
+# Check if assets need to be precompiled
+if [ ! -d "public/assets" ] || [ "$1" == "--precompile" ]; then
+  echo "Precompiling assets..."
+  bundle exec rails assets:precompile
+else
+  echo "Assets already precompiled. Use --precompile to force recompilation."
+fi
+
+# Ensure production database exists
+#echo "Ensuring production database exists..."
+#bundle exec rails db:migrate
+
+echo "Starting Rails in production mode..."
+echo "Access the application at: http://localhost:3000"
+echo ""
+
+# Start the server
+exec bundle exec puma -C config/puma.rb

@@ -9,8 +9,15 @@ module Api
       before_action :set_book, only: [ :show, :update, :destroy ]
       before_action :check_book, only: [ :show, :update, :destroy ]
 
+      # @parameter archived(query) [Boolean] Whether or not to return only archived books in the response.
       def index
-        @books = current_user.books_involved_with
+        archived = deserialize_bool_param(params[:archived])
+        @books = if archived
+                   current_user.books_involved_with.archived
+                 else
+                   current_user.books_involved_with.active
+                 end
+
         respond_with @books
       end
 
@@ -18,30 +25,8 @@ module Api
         respond_with @book
       end
 
-      # @request_body
-      #   [
-      #     !Hash{
-      #       book: Hash{
-      #         name: String,
-      #         owner_id: !Integer,
-      #         scorer_id: !Integer,
-      #         selection_strategy_id: !Integer,
-      #         show_rank: Boolean,
-      #         support_implicit_judgements: Boolean
-      #       }
-      #     }
-      #   ]
-      # @request_body_example basic book [Hash]
-      #   {
-      #     book: {
-      #       name: "Oas",
-      #       show_rank: false,
-      #       support_implicit_judgements: false,
-      #       owner_id: 1,
-      #       scorer_id: 1,
-      #       selection_strategy_id: 1
-      #     }
-      #   }
+      # @request_body [Reference:#/components/schemas/Book]
+      # @request_body_example basic book [Reference:#/components/examples/BasicBook]
       def create
         @book = Book.new(book_params)
         if params[:book][:team_id]
@@ -55,30 +40,8 @@ module Api
         end
       end
 
-      # @request_body
-      #   [
-      #     !Hash{
-      #       book: Hash{
-      #         name: String,
-      #         owner_id: !Integer,
-      #         scorer_id: !Integer,
-      #         selection_strategy_id: !Integer,
-      #         show_rank: Boolean,
-      #         support_implicit_judgements: Boolean
-      #       }
-      #     }
-      #   ]
-      # @request_body_example basic book [Hash]
-      #   {
-      #     book: {
-      #       name: "Oas",
-      #       show_rank: false,
-      #       support_implicit_judgements: false,
-      #       owner_id: 1,
-      #       scorer_id: 1,
-      #       selection_strategy_id: 1
-      #     }
-      #   }
+      # @request_body [Reference:#/components/schemas/Book]
+      # @request_body_example basic book [Reference:#/components/examples/BasicBook]
       def update
         update_params = book_params
         if @book.update update_params
@@ -99,8 +62,8 @@ module Api
       private
 
       def book_params
-        params.expect(book: [ :scorer_id, :selection_strategy_id, :name, :support_implicit_judgements,
-                              :show_rank ])
+        params.expect(book: [ :scorer_id, :name, :support_implicit_judgements,
+                              :show_rank, :archived ])
       end
 
       def set_book

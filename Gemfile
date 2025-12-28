@@ -2,50 +2,51 @@
 
 source 'https://rubygems.org'
 
-ruby '3.4.4'
+ruby '3.4.6'
 
-gem 'activerecord-import', '>= 1.0.7'
 gem 'active_storage_db'
-gem 'acts_as_list', '>= 1.0.1'
-gem 'addressable', '~> 2.8'
+gem 'acts_as_list'
+gem 'addressable'
 gem 'ahoy_matey'
 gem 'ancestry'
-gem 'angular-rails-templates', '~> 1.3'
-gem 'bcrypt', '~> 3.1.7'
-gem 'blazer', '~> 3.3'
+gem 'bcrypt'
+gem 'blazer'
 gem 'bootsnap', require: false
-gem 'cal-heatmap-rails', '~> 3.6' # provides assets for cal heatmap, that requires old d3
 gem 'colorize', require: false
-gem 'd3-rails', '~> 3.5.5' # For cal heatmap
-gem 'devise', '>= 4.6.2'
-gem 'devise_invitable', '~> 2.0'
+gem 'devise'
+gem 'devise_invitable'
 gem 'faraday-retry'
 gem 'foreman'
-gem 'importmap-rails', '~> 2.1'
-gem 'jbuilder', '~> 2.7'
+gem 'importmap-rails'
+gem 'jbuilder'
 
-gem 'listen', '~> 3.3'
+gem 'listen'
 gem 'local_time'
-gem 'mission_control-jobs', '~> 1.0.2' # git: 'https://github.com/rails/mission_control-jobs.git', branch: 'main'
+gem 'mini_racer'
+gem 'mission_control-jobs' # git: 'https://github.com/rails/mission_control-jobs.git', branch: 'main'
 gem 'mysql2'
+gem 'oas_rails', git: 'https://github.com/a-chacon/oas_rails.git', branch: 'mount-path-and-prefix-path'
 gem 'omniauth'
 gem 'omniauth-keycloak'
 gem 'omniauth-google-oauth2'
 gem 'omniauth-rails_csrf_protection'
 gem 'pagy'
 gem 'postmark-rails'
-gem 'prophet-rb', '~> 0.6.0'
+gem 'prophet-rb'
 gem 'puma'
-gem 'rails', '8.0.2'
+gem 'rails', '8.1.1'
 gem 'rails-html-sanitizer'
-gem 'rack-cors', '~> 3.0'
+gem 'rack-cors'
 gem 'responders'
-gem 'rubyzip', '~> 2.4.1' # 3.0 will be breaking
-gem 'sassc-rails', '~> 2.1'
-gem 'solid_cable', '~> 3.0'
+gem 'rubyzip'
+gem 'propshaft' # Modern asset pipeline for Rails 8
+gem 'jsbundling-rails' # For bundling the Angular 1 app
+gem 'scout_apm' # using on Heroku to look at memory issues
+gem 'solid_cable'
 gem 'solid_queue'
+gem 'stimulus-rails'
 gem 'thor'
-gem 'turbo-rails', '~> 2.0'
+gem 'turbo-rails'
 gem 'vega'
 
 gem 'ruby_llm'
@@ -55,30 +56,36 @@ group :development, :test do
   gem 'debug', platforms: [ :mri, :windows ], require: 'debug/prelude'
   gem 'bullet'
   gem 'memory_profiler'
+  gem 'dotenv' # Enable .env file outside of Docker based environment
 end
 
 group :development do
+  gem 'claude-on-rails' # Dev acceleration tool
+
   # Use console on exceptions pages [https://github.com/rails/web-console]
   gem 'web-console'
+  gem 'annotaterb'
 
-  gem 'annotaterb', '~> 4.14'
   # this was commented out in the default build, so doing the same..
   # Add speed badges [https://github.com/MiniProfiler/rack-mini-profiler]
   # gem 'rack-mini-profiler'
 
-  gem 'database_consistency', '~> 2.0', require: false
-  gem 'debugbar'
+  gem 'database_consistency', require: false
+
+  # This is useful in working on performance issues, but otherwise puts
+  # a lot of noise in logs on startup
+  # gem 'debugbar'
+
   gem 'derailed_benchmarks'
   gem 'letter_opener'
   gem 'rubocop', require: false
   gem 'rubocop-rails', require: false
   gem 'rubocop-capybara', require: false
-  gem 'rails-erd', '~> 1.6'
+  gem 'rails-erd'
 end
 
 group :test do
-  gem 'minitest-reporters', '>= 0.5.0'
-  gem 'mocha', '~> 2.7'
+  gem 'minitest-reporters'
   gem 'simplecov', require: false
   gem 'webmock'
   gem 'rails-controller-testing' # bring back compatibility with rails 4 assigns in controller tests.
@@ -87,7 +94,3 @@ group :test do
   gem 'capybara'
   gem 'selenium-webdriver'
 end
-
-gem 'mini_racer', '~> 0.16.0'
-
-gem 'oas_rails', '~> 0.15.0'

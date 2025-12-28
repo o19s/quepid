@@ -7,13 +7,14 @@ module Api
       before_action :set_case, only: [ :show, :update, :destroy ]
       before_action :check_case, only: [ :show, :update, :destroy ]
 
-      # Spiking out can we make an API public?
+      # Special handling for cases that are "public"
       def authenticate_api!
-        set_case
-        return true if @case&.public? || current_user
+        if [ :show, :update, :destroy ].include?(action_name.to_sym)
+          set_case
+          return true if @case&.public?
+        end
 
-        render json:   { reason: 'Unauthorized!' },
-               status: :unauthorized
+        super
       end
 
       # @parameter archived(query) [Boolean] Whether or not to return only archived cases in the response.
@@ -44,23 +45,18 @@ module Api
       #       }
       #     }
       #   ]
-      # @request_body_example minimal case [Hash]
-      #   {
-      #     case: {
-      #       case_name: "Movies",
-      #       scorer_id: 1
+      # @request_body_example minimal case [JSON{"case": {"case_name": "Movies", "scorer_id": 1}}]
+      # @request_body_example complete case
+      #   [JSON{
+      #       "case": {
+      #         "case_name": "Movies",
+      #         "scorer_id": 1,
+      #         "book_id": 1,
+      #         "archived": false,
+      #         "nightly": true
+      #       }
       #     }
-      #   }
-      # @request_body_example complete case [Hash]
-      #   {
-      #     case: {
-      #       case_name: "Movies",
-      #       scorer_id: 1,
-      #       book_id: 1,
-      #       archived: false,
-      #       nightly: true
-      #     }
-      #   }
+      #   ]
       def create
         @case = current_user.cases.build case_params
 
@@ -86,13 +82,7 @@ module Api
       #       }
       #     }
       #   ]
-      # @request_body_example minimal case [Hash]
-      #   {
-      #     case: {
-      #       case_name: "Movies Are Cool",
-      #       scorer_id: 2
-      #     }
-      #   }
+      # @request_body_example minimal case [JSON{"case": {"case_name": "Movies Are Cool", "scorer_id": 2}}]
       def update
         update_params = case_params
         update_params[:scorer_id] = Scorer.system_default_scorer.id if default_scorer_removed? update_params

@@ -16,10 +16,10 @@ module Api
         #       queries: Array<String>
         #     }
         #   ]
-        # @request_body_example bulk queries [Hash]
-        #   {
-        #     queries: ["star wars", "star trek"]
-        #   }
+        # @request_body_example bulk queries
+        #   [JSON{
+        #     "queries": ["star wars", "star trek"]
+        #   }]
         def create
           # This logic is very similar to the ratings_importer.rb logic.
           queries_to_import = []
@@ -48,7 +48,6 @@ module Api
             }
           end
 
-          # rubocop:disable Rails/SkipsModelValidations
           Query.upsert_all(queries_to_import)
           # rubocop:enable Rails/SkipsModelValidations
 

@@ -1,6 +1,6 @@
 # Operating Documentation
 
-This document explains how Quepid can be operated and configured.
+This document explains how Quepid can be operated and configured.   You may also want to look at the [How-To Guides](https://quepid-docs.dev.o19s.com/2/quepid) as well.
 
 - [Installing Quepid](#installing-quepid)
 - [Running behind a load balancer](#running-behind-a-load-balancer)
@@ -18,6 +18,7 @@ This document explains how Quepid can be operated and configured.
 - [Using Personal Access Tokens](#using-personal-access-tokens)
 - [Scripting Users Cases Ratings](#scripting-users-cases-ratings)
 - [Posting Announcements to Users](#posting-announcements-to-users)
+- [ActiveRecord Encryption Setup](#activerecord-encryption-setup)
 - [Integrating External Eval Pipeline](#integrating-external-eval-pipeline)
 
 ## Installing Quepid
@@ -74,11 +75,10 @@ server {
 ```
 QUEPID_DOMAIN=https://localhost  # Set this to the domain visible to the user
 FORCE_SSL=true                   # Enable this to use https only connections
-PREFER_SSL=true                  # Enable this to have URLs for the main application (not the core case app) be in https mode.
 ```
 
 > ⚠️ Setting `FORCE_SSL=true` will prevent you from testing search engines
-> that are not TLS enabled (`https`)!  You typically want either FORCE_SSL or PREFER_SSL.
+> that are not TLS enabled (`https`) except via the proxy through Quepid option.
 
 ## Setting up a Context Path
 
@@ -304,6 +304,10 @@ Sometimes you need to communicate to your users, like the fact that a scorer has
 
 Once they see it, they won't see it again.
 
+## ActiveRecord Encryption Setup
+
+Quepid uses ActiveRecord encryption to protect sensitive data like LLM API keys. For details on how to set up and configure encryption for your Quepid installation, see [ENCRYPTION_SETUP.md](./ENCRYPTION_SETUP.md).
+
 ## Integrating External Eval Pipeline
 
-If you have an external evaluation pipeline, you can easily post the results of that pipeline into Quepid using the API.  See (./examples/external_eval) for a simple Python script that demonstrates storing Scores for a Case that are calculated externally.
+If you have an external evaluation pipeline, you can easily post the results of that pipeline into Quepid using the API.  See [./examples/external_eval](https://github.com/o19s/quepid/tree/main/docs/examples/external_eval) for a simple Python script that demonstrates storing Scores for a Case that are calculated externally.

@@ -20,7 +20,7 @@ require 'test_helper'
 #  invitation_sent_at          :datetime
 #  invitation_token            :string(255)
 #  invitations_count           :integer          default(0)
-#  llm_key                     :string(255)
+#  llm_key                     :string(4000)
 #  locked                      :boolean
 #  locked_at                   :datetime
 #  name                        :string(255)
@@ -261,6 +261,7 @@ class UserTest < ActiveSupport::TestCase
         j.user = nil
         j.save!
       end
+      random.reload
 
       random.destroy
       assert_not random.destroyed?

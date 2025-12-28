@@ -20,66 +20,9 @@ module Api
 
       # rubocop:disable Metrics/MethodLength
       # rubocop:disable Metrics/AbcSize
-      # @request_body Try to be created
-      #   [
-      #     !Hash{
-      #       parent_try_number: !Integer,
-      #       try: !Hash{
-      #         name: !String,
-      #         parent_id: Integer,
-      #         search_endpoint_id: Integer,
-      #         query_params: String
-      #         field_spec: String,
-      #         escape_query: Boolean,
-      #         number_of_rows: Integer
-      #       },
-      #       search_endpoint: Hash{
-      #         name: !String,
-      #         search_engine: String,
-      #         endpoint_ur: String,
-      #         api_method: String,
-      #         archived: Boolean,
-      #         basic_auth_credential: String,
-      #         custom_headers: String,
-      #         mapper_code: String,
-      #         options: Hash,
-      #         proxy_requests: Boolean
-      #       },
-      #       curator_vars: Hash{
-      #       }
-      #     }
-      #   ]
-      # @request_body_example try with existing search endpoint [Hash]
-      #   {
-      #     parent_try_number:1,
-      #     try: {
-      #       name: "Test Try",
-      #       field_spec: "id:id title:catch_line structure text",
-      #       number_of_rows: 10,
-      #       query_params: "q=#$query##&magicBoost=18",
-      #       search_endpoint_id: 1
-      #     },
-      #     curator_vars: {},
-      #     search_endpoint: {}
-      #   }
-      # @request_body_example try creating a new search endpoint [Hash]
-      #   {
-      #     parent_try_number:1,
-      #     try: {
-      #       name: "Test Try",
-      #       field_spec: "id:id title:catch_line structure text",
-      #       number_of_rows: 10,
-      #       query_params: "q=#$query##&magicBoost=18",
-      #       search_endpoint_id: 1
-      #     },
-      #     curator_vars: {},
-      #     search_endpoint: {
-      #       name: "TMDB",
-      #       endpoint_url: "https://quepid-solr.dev.o19s.com/solr/tmdb/select",
-      #       search_engine: "solr",
-      #       api_method: "JSONP"
-      #     }
-      #   }
+      # @request_body Try to be created [Reference:#/components/schemas/Try]
+      # @request_body_example try with existing search endpoint [Reference:#/components/examples/TryWithExistingSearchEndpoint]
+      # @request_body_example try creating a new search endpoint [Reference:#/components/examples/TryCreatingNewSearchEndpoint]
       def create
         try_parameters_to_use = try_params
 
@@ -132,44 +75,16 @@ module Api
       # rubocop:enable Metrics/AbcSize
 
       # rubocop:disable Metrics/MethodLength
-      # @request_body Try to be updated
-      #   [
-      #     !Hash{
-      #       parent_try_number: !Integer,
-      #       try: !Hash{
-      #         name: String,
-      #         parent_id: Integer,
-      #         search_endpoint_id: Integer,
-      #         query_params: String
-      #         field_spec: String,
-      #         escape_query: Boolean,
-      #         number_of_rows: Integer
-      #       },
-      #       search_endpoint: Hash{
-      #         name: String,
-      #         search_engine: String,
-      #         endpoint_ur: String,
-      #         api_method: String,
-      #         archived: Boolean,
-      #         basic_auth_credential: String,
-      #         custom_headers: String,
-      #         mapper_code: String,
-      #         options: Hash,
-      #         proxy_requests: Boolean
-      #       },
-      #       curator_vars: Hash{
-      #       }
-      #     }
-      #   ]
-      # @request_body_example updating a try [Hash]
-      #   {
-      #     try: {
-      #       name: "New Name",
-      #       number_of_rows: 3
+      # @request_body Try to be updated [Reference:#/components/schemas/Try]
+      # @request_body_example updating a try
+      #   [JSON{
+      #     "try": {
+      #       "name": "New Name",
+      #       "number_of_rows": 3
       #     },
-      #     curator_vars: {},
-      #     search_endpoint: {}
-      #   }
+      #     "curator_vars": {},
+      #     "search_endpoint": {}
+      #   }]
       def update
         search_endpoint_params_to_use = search_endpoint_params
         search_endpoint_params_to_use = convert_blank_values_to_nil search_endpoint_params_to_use

@@ -2,7 +2,8 @@
 
 # rubocop:disable Metrics/ClassLength
 class JudgementsController < ApplicationController
-  include Pagy::Backend
+  include Pagy::Method
+
   before_action :set_judgement, only: [ :show, :edit, :update, :destroy ]
   before_action :set_book
 
@@ -18,11 +19,11 @@ class JudgementsController < ApplicationController
     query = query.where(judge_later: true) if params[:judge_later].present?
 
     if params[:q].present?
-      query = query.where('doc_id LIKE ? OR query_text LIKE ? OR information_need LIKE ? OR judgements.explanation LIKE ?',
-                          "%#{params[:q]}%", "%#{params[:q]}%", "%#{params[:q]}%", "%#{params[:q]}%")
+      query = query.where('query_doc_pair_id LIKE ? OR doc_id LIKE ? OR query_text LIKE ? OR information_need LIKE ? OR judgements.explanation LIKE ?',
+                          "%#{params[:q]}%", "%#{params[:q]}%", "%#{params[:q]}%", "%#{params[:q]}%", "%#{params[:q]}%")
     end
 
-    @pagy, @judgements = pagy(query.order('query_doc_pair_id'))
+    @pagy, @judgements = pagy(query.order(:query_doc_pair_id))
   end
   # rubocop:enable Metrics/AbcSize
 
@@ -48,7 +49,7 @@ class JudgementsController < ApplicationController
 
     @query_doc_pair = SelectionStrategy.random_query_doc_based_on_strategy(@book, current_user)
     if @query_doc_pair.nil? # no more query doc pairs to be judged!
-      redirect_to book_path(@book)
+      redirect_to book_path(@book), notice: 'You have judged all the documents you can!'
     else
       # NO LONGER USED
       # if @query_doc_pair

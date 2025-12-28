@@ -1,6 +1,6 @@
 <turbo-frame id="dropdown_books">
   <% @books.each do |book| %>
-    <li><%= link_to book.name, book_path(book) %></li>
+    <li><%= link_to book.name, book_path(book), data: { turbo_frame: "_top" } %></li>
     <li><hr class="dropdown-divider"></li>
   <% end %>
 </turbo-frame>

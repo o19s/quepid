@@ -101,11 +101,10 @@ module Api
         end
 
         @users = User.where(default_scorer_id: @scorer.id)
-        if @users.count.positive? && force
-          # rubocop:disable Rails/SkipsModelValidations
+        if @users.any? && force
           @users.update_all(default_scorer_id: replacement_scorer.id)
           # rubocop:enable Rails/SkipsModelValidations
-        elsif @users.count.positive?
+        elsif @users.any?
           render(
             json:   {
               error: "Cannot delete the scorer because it is the default for #{@users.count} #{'user'.pluralize(@users.count)}: [#{@users.take(3).map(&:email).to_sentence}]",
@@ -117,11 +116,11 @@ module Api
         end
 
         @cases = Case.where(scorer_id: @scorer.id)
-        if @cases.count.positive? && force
+        if @cases.any? && force
           # We can't have a nil scorer on a case, so setting all to the default.  See comment above about how
           # we should really pass in a replacement scorer id!
           @cases.update_all(scorer_id: replacement_scorer.id) # rubocop:disable Rails/SkipsModelValidations
-        elsif @cases.count.positive?
+        elsif @cases.any?
           render(
             json:   {
               error: "Cannot delete the scorer because it is the default for #{@cases.count} #{'case'.pluralize(@cases.count)}: #{@cases.take(3).map(&:case_name).to_sentence}",

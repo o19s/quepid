@@ -3,46 +3,59 @@
 # Table name: books
 #
 #  id                          :bigint           not null, primary key
+#  archived                    :boolean          default(FALSE), not null
 #  export_job                  :string(255)
 #  import_job                  :string(255)
 #  name                        :string(255)
 #  populate_job                :string(255)
+#  scale                       :string(255)
+#  scale_with_labels           :text(65535)
 #  show_rank                   :boolean          default(FALSE)
 #  support_implicit_judgements :boolean
 #  created_at                  :datetime         not null
 #  updated_at                  :datetime         not null
 #  owner_id                    :integer
-#  scorer_id                   :integer
-#  selection_strategy_id       :bigint           not null
 #
 # Indexes
 #
-#  index_books_on_selection_strategy_id  (selection_strategy_id)
-#  index_books_owner_id                  (owner_id)
-#
-# Foreign Keys
-#
-#  fk_rails_...  (selection_strategy_id => selection_strategies.id)
+#  index_books_owner_id  (owner_id)
 #
 
 book_of_star_wars_judgements:
-  scorer: :quepid_default_scorer
-  selection_strategy: :single_rater
   name: TMDB Star Wars Judgements
+  scale: "0,1,2,3"
+  scale_with_labels: '{"0": "Not Relevant", "1": "Somewhat Relevant", "2": "Relevant", "3": "Highly Relevant"}'
+
 
 book_of_comedy_films:
-  scorer: :quepid_default_scorer
-  selection_strategy: :single_rater
   name: TMDB Greatest Comedies
+  scale: "0,1"
+  scale_with_labels: '{"0": "Not Relevant", "1": "Relevant"}'
+
 
 james_bond_movies:
   owner: :doug
-  scorer: :quepid_default_scorer
-  selection_strategy: :multiple_raters
   name: James Bond Movies
   ai_judges: judge_judy
+  scale: "0,1"
+  scale_with_labels: '{"0": "Not Relevant", "1": "Relevant"}'
+
 
 empty_book:
-  scorer: :quepid_default_scorer
-  selection_strategy: :single_rater
   name: Empty Book
+  scale: "0,1,2,3"
+  scale_with_labels: null
+
+
+archived_book:
+  owner: :doug
+  name: IamArchivedBook
+  archived: true
+  scale: "0,1"
+  scale_with_labels: '{"0": "Not Relevant", "1": "Relevant"}'
+
+
+empty_book_2:
+  name: Empty Book 2
+  scale: "0,1,2,3"
+  scale_with_labels: null

@@ -1,4 +1,4 @@
-<%= form_with url: ai_judge_prompt_path, model: ai_judge do |form| %>
+<%= form_with url: ai_judge_prompt_path, model: ai_judge, data: { controller: "prompt-form", action: "submit->prompt-form#submit" } do |form| %>
   <% if ai_judge.errors.any? %>
     <div style="color: red">
       <h2><%= pluralize(ai_judge.errors.count, "error") %> prohibited this Prompt from being saved:</h2>
@@ -30,17 +30,30 @@
           <%= link_to 'Edit Judge', edit_team_ai_judge_path(team_id: @ai_judge.teams.first.id, id: @ai_judge.id), method: :get, class: 'btn btn-block btn-light float-end' %>
         </div>
       </div>
-      <% if @judgement %>
-      <h2>Rating Information</h2>
-      <div>
-        LLM Response:
-        <%= @judgement.rating %>
-        <br/>
-
-        <%= @judgement.explanation %>
-        
+      <!-- Loading spinner shown during form submission -->
+      <div data-prompt-form-target="loadingSpinner" style="display: none;">
+        <h2>Rating Information</h2>
+        <div class="text-center my-4">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+          <p class="mt-2">Evaluating with AI Judge...</p>
+        </div>
       </div>
-      <% end %>
+      
+      <!-- Rating information shown after response -->
+      <div data-prompt-form-target="ratingInfo">
+        <% if @judgement %>
+          <h2>Rating Information</h2>
+          <div>
+            LLM Response:
+            <%= @judgement.rating %>
+            <br/>
+
+            <%= @judgement.explanation %>
+          </div>
+        <% end %>
+      </div>
     </div>
     <div class="col-md-6">
       <h2>Query Doc Pair to Evaluate</h2>
@@ -64,13 +77,13 @@
           </div>
           
           <div class="field">
-            <%= query_doc_pair_fields.label :document_fields %> <small>JSON formatted</small><br/>
-            <%= query_doc_pair_fields.text_area :document_fields, size: "80x8" %>
+            <%= query_doc_pair_fields.label :document_fields %> <small>JSON</small><br/>
+            <%= query_doc_pair_fields.text_area :document_fields, data: { codemirror_mode: "json", codemirror_height: 400  } %>
           </div>          
           
           <div class="field">
             <%= query_doc_pair_fields.label :options %> <small>JSON</small><br/>
-            <%= query_doc_pair_fields.text_area :options, size: "80x8" %>
+            <%= query_doc_pair_fields.text_area :options, data: { codemirror_mode: "json", codemirror_height: 200  } %>
           </div>  
           
           <div class="field">
@@ -85,83 +98,11 @@
         
    
         <% end %>
+
+
       </div>
     </div>
   </div>
 
  
 <% end %>
-
-
-<script language="javascript">
-  const codemirrorEditor = CodeMirror.fromTextArea(document.getElementById('query_doc_pair_document_fields'), {
-    mode: "application/json",
-    lineNumbers: true,
-    gutters: ["CodeMirror-lint-markers"],
-    lint: true
-  });
-  codemirrorEditor.setSize(null, 400);
-  
-  let content = codemirrorEditor.getValue();
-  try {
-    codemirrorEditor.setValue(JSON.stringify(JSON.parse(content), null, 2));
-  } catch(e) {
-    console.error("Invalid JSON");
-  }
-  
-  
-  // Function to validate JavaScript syntax
-  function validateSyntax(code) {
-    try {
-      // We can NOT validate this until we have working functions.
-      // like setScore etc defined in this space.
-      // Use the built-in `eval` function to check the syntax
-      //eval(code);
-      return true;
-    } catch (error) {
-      return false;
-    }
-  }
-  
-  // Validate syntax on code change
-  codemirrorEditor.on("change", function() {
-    var code = codemirrorEditor.getValue();
-    var isValidSyntax = validateSyntax(code);
-    var errorAnnotation = isValidSyntax ? [] : [{
-      from: CodeMirror.Pos(0, 0),
-      to: CodeMirror.Pos(0, 0),
-      message: "Syntax Error",
-      severity: "error"
-    }];
-    CodeMirror.signal(codemirrorEditor, "lint", codemirrorEditor, errorAnnotation);
-  });
-  
-  // Add linting annotations to show syntax errors
-  codemirrorEditor.on("lint", function(_, annotations) {
-    codemirrorEditor.clearGutter("CodeMirror-lint-markers");
-    annotations.forEach(function(annotation) {
-      codemirrorEditor.setGutterMarker(annotation.from.line, "CodeMirror-lint-markers", createMarker(annotation));
-    });
-  });
-  
-  // Helper function to create gutter marker
-  function createMarker(annotation) {
-    var marker = document.createElement("div");
-    marker.className = "lint-marker " + annotation.severity;
-    marker.title = annotation.message;
-    return marker;
-  }  
-</script>
-
-<style>
-.lint-marker {
-  width: 16px;
-  height: 16px;
-  background-color: red;
-  border-radius: 50%;
-}
-
-.lint-marker.error {
-  background-color: red;
-}
-</style>

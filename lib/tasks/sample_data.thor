@@ -144,9 +144,9 @@ class SampleData < Thor
     user_params = user_specifics # user_defaults.merge(user_specifics)
     osc_ai_judge = seed_user user_params
     osc_ai_judge.judge_options = {
-      llm_service_url: 'https://api.openai.com',
-      llm_model:       'gpt-4o',
-      llm_timeout:     30,
+      llm_service_url: 'http://ollama:11434',
+      llm_model:       'qwen3:0.6b',
+      llm_timeout:     60,
     }
     print_user_info user_params
 
@@ -282,8 +282,11 @@ class SampleData < Thor
     # Books
     print_step 'Seeding books................'
 
-    book = ::Book.where(name: 'Book of Ratings', scorer: Scorer.system_default_scorer,
-                        selection_strategy: SelectionStrategy.find_by(name: 'Multiple Raters')).first_or_create
+    book = ::Book.where(name: 'Book of Ratings').first_or_create
+
+    book.scale = Scorer.system_default_scorer.scale
+    book.scale_with_labels = Scorer.system_default_scorer.scale_with_labels
+
     book.teams << osc
     book.ai_judges << osc_ai_judge
     book.save
@@ -486,7 +489,7 @@ class SampleData < Thor
     book_params = data.to_h.deep_symbolize_keys
 
     @book = ::Book.find_by(id: 25)
-    @book&.destroy
+    @book&.really_destroy
     @book = ::Book.new(id: 25)
     options = { force_create_users: true }
     book_importer = ::BookImporter.new @book, realistic_activity_user, book_params, options

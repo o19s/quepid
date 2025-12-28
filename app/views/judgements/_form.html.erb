@@ -1,68 +1,5 @@
-<!--
-<pre>
-DEBUGGING INFORMATION
-query_doc_pair.id: <%= query_doc_pair.id %>
-judgement.id: <%= judgement.id %>
-user.id: <%= judgement.user_id %>
-</pre>
--->
-
-<style>
-    .field { padding: 5px; }
-
-    .button00 {background-color: #ff0000; box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19); color: #666 !important;}
-    .button00:hover { background-color: #ff0000 !important;  box-shadow: 0 12px 16px 0 rgba(0,0,0,0.34), 0 17px 50px 0 rgba(0,0,0,0.19); color: black !important;}
-
-    .button01 {background-color: #fe4000; box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19); color: #666 !important;}
-    .button01:hover { background-color: #fe4000 !important;  box-shadow: 0 12px 16px 0 rgba(0,0,0,0.34), 0 17px 50px 0 rgba(0,0,0,0.19); color: black !important;}
-
-    .button02 {background-color: #f96000; box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19); color: #666 !important;}
-    .button02:hover { background-color: #f96000 !important;  box-shadow: 0 12px 16px 0 rgba(0,0,0,0.34), 0 17px 50px 0 rgba(0,0,0,0.19); color: black !important;}
-
-    .button03 {background-color: #f17a00; box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19); color: #666 !important;}
-    .button03:hover { background-color: #f17a00 !important;  box-shadow: 0 12px 16px 0 rgba(0,0,0,0.34), 0 17px 50px 0 rgba(0,0,0,0.19); color: black !important;}
-
-    .button04 {background-color: #e59100; box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19); color: #666 !important;}
-    .button04:hover { background-color: #e59100 !important;  box-shadow: 0 12px 16px 0 rgba(0,0,0,0.34), 0 17px 50px 0 rgba(0,0,0,0.19); color: black !important;}
-
-    .button05 {background-color: #d7a700; box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19); color: #666 !important;}
-    .button05:hover { background-color: #d7a700 !important;  box-shadow: 0 12px 16px 0 rgba(0,0,0,0.34), 0 17px 50px 0 rgba(0,0,0,0.19); color: black !important;}
-
-    .button06 {background-color: #c4ba00; box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19); color: #666 !important;}
-    .button06:hover { background-color: #c4ba00 !important;  box-shadow: 0 12px 16px 0 rgba(0,0,0,0.34), 0 17px 50px 0 rgba(0,0,0,0.19); color: black !important;}
-
-    .button07 {background-color: #aecd00; box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19); color: #666 !important;}
-    .button07:hover { background-color: #aecd00 !important;  box-shadow: 0 12px 16px 0 rgba(0,0,0,0.34), 0 17px 50px 0 rgba(0,0,0,0.19); color: black !important;}
-
-    .button08 {background-color: #91df00; box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19); color: #666 !important;}
-    .button08:hover { background-color: #91df00 !important;  box-shadow: 0 12px 16px 0 rgba(0,0,0,0.34), 0 17px 50px 0 rgba(0,0,0,0.19); color: black !important;}
-
-    .button09 {background-color: #6aef00; box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19); color: #666 !important;}
-    .button09:hover { background-color: #6aef00 !important;  box-shadow: 0 12px 16px 0 rgba(0,0,0,0.34), 0 17px 50px 0 rgba(0,0,0,0.19); color: black !important;}
-
-    .button10 {background-color: #00ff00; box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19); color: #666 !important;}
-    .button10:hover {background-color: #00ff00 !important;  box-shadow: 0 12px 16px 0 rgba(0,0,0,0.34), 0 17px 50px 0 rgba(0,0,0,0.19); color: black !important; }
-
-    .button-other {background-color:gray; box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19); color: #666 !important;}
-    .button-other:hover {background-color:gray !important;  box-shadow: 0 12px 16px 0 rgba(0,0,0,0.34), 0 17px 50px 0 rgba(0,0,0,0.19); color: black !important; }
-
-    .btn-preselected { color: black !important; font-weight: bold; font-style: italic; }
-
-    .bold-and-black { color: black; font-weight: bold; }
-
-    .keyboard-shortcuts-td { padding: 5px; text-align: center; color: #999; }
-    .padded { padding:5px; }
-    .left-aligned { text-align: left; }
-    .gray { color: #ccc; }
-    .hidden { visibility: hidden!important; display: none!important; }
-
-</style>
 
 <script>
-  // debugbar in dev loads a different version of jquery and means we have to
-  // use this $j instead of $ workaround.  See https://github.com/julienbourdeau/debugbar/issues/39.
-  //var $j = jQuery.noConflict();
-
   function rate(rating, key_name) {
       keyDown(key_name);
       resetStylesExcept(key_name);
@@ -70,37 +7,55 @@ user.id: <%= judgement.user_id %>
       delay(100).then(() => (document.getElementsByName("commit")[0].click()));
   }
 
-  $(document).ready(function() {
-      $("#keyPressed_count").text("0");
-  });
-
-  var count = 0;
-  var last_keyPressed = -1;
-
   function resetStyles() {
       let keyboard_shortcuts_suffixes = ["a", "s", "d", "f", "g", "h", "j", "k", "l", "sc"];
       keyboard_shortcuts_suffixes.forEach(suffix => {
-              $("#span-for-" + suffix).css("color", "gray").css("font-weight", "normal");
-              $("#button-for-" + suffix).removeClass("btn-preselected");
+          const spanElement = document.getElementById("span-for-" + suffix);
+          const buttonElement = document.getElementById("button-for-" + suffix);
+          
+          if (spanElement) {
+              spanElement.style.color = "gray";
+              spanElement.style.fontWeight = "normal";
           }
-      );
+          
+          if (buttonElement) {
+              buttonElement.classList.remove("btn-preselected");
+          }
+      });
   }
 
   function resetStylesExcept(except_suffix){
       let keyboard_shortcuts_suffixes = ["a", "s", "d", "f", "g", "h", "j", "k", "l", "sc"];
       keyboard_shortcuts_suffixes.forEach(suffix => {
-              if (suffix !== except_suffix) {
-                  $("#span-for-" + suffix).css("color", "gray").css("font-weight", "normal");
-                  $("#button-for-" + suffix).removeClass("btn-preselected");
+          if (suffix !== except_suffix) {
+              const spanElement = document.getElementById("span-for-" + suffix);
+              const buttonElement = document.getElementById("button-for-" + suffix);
+              
+              if (spanElement) {
+                  spanElement.style.color = "gray";
+                  spanElement.style.fontWeight = "normal";
+              }
+              
+              if (buttonElement) {
+                  buttonElement.classList.remove("btn-preselected");
               }
           }
-      );
+      });
   }
 
   function keyDown(suffix) {
       resetStyles();
-      $("#span-for-" + suffix).css("color", "black").css("font-weight", "bold");
-      $("#button-for-" + suffix).addClass("btn-preselected");
+      const spanElement = document.getElementById("span-for-" + suffix);
+      const buttonElement = document.getElementById("button-for-" + suffix);
+      
+      if (spanElement) {
+          spanElement.style.color = "black";
+          spanElement.style.fontWeight = "bold";
+      }
+      
+      if (buttonElement) {
+          buttonElement.classList.add("btn-preselected");
+      }
   }
 
   function delay(time) {
@@ -108,216 +63,88 @@ user.id: <%= judgement.user_id %>
   }
 
   function keyPressed(suffix) {
-      delay(500).then(() => ($("#button-for-" + suffix).click()));
+      delay(500).then(() => {
+          const buttonElement = document.getElementById("button-for-" + suffix);
+          if (buttonElement) {
+              buttonElement.click();
+          }
+      });
   }
 
-  $(document).on('keypress', function(e) {
-      var tag = e.target.tagName.toLowerCase();
-      if (tag == 'textarea') {
+  // Function to check if modal is open
+  function isExplanationModalOpen() {
+      const modal = document.getElementById('explanationModal');
+      return modal && modal.classList.contains('show');
+  }
+
+  document.addEventListener('keypress', function(e) {
+      // Skip if explanation modal is open
+      if (isExplanationModalOpen()) {
         return;
       }
-      // ignore if i am in a textarea, i.e giving an explanation!
-      // very brittle!
 
-      if (e.which == 97 || e.which == 65) {
+      const keyCode = e.which || e.keyCode;
+      
+      if (keyCode == 97 || keyCode == 65) {
           keyPressed("a");
-      } else if (e.which == 115 || e.which == 83) {
+      } else if (keyCode == 115 || keyCode == 83) {
           keyPressed("s");
-      } else if (e.which == 100 || e.which == 68) {
+      } else if (keyCode == 100 || keyCode == 68) {
           keyPressed("d");
-      } else if (e.which == 102 || e.which == 70) {
+      } else if (keyCode == 102 || keyCode == 70) {
           keyPressed("f");
-      } else if (e.which == 103 || e.which == 71) {
+      } else if (keyCode == 103 || keyCode == 71) {
           keyPressed("g");
-      } else if (e.which == 104 || e.which == 72) {
+      } else if (keyCode == 104 || keyCode == 72) {
           keyPressed("h");
-      } else if (e.which == 106 || e.which == 74) {
+      } else if (keyCode == 106 || keyCode == 74) {
           keyPressed("j");
-      } else if (e.which == 107 || e.which == 75) {
+      } else if (keyCode == 107 || keyCode == 75) {
           keyPressed("k");
-      } else if (e.which == 108 || e.which == 76) {
+      } else if (keyCode == 108 || keyCode == 76) {
           keyPressed("l");
-      } else if (e.which == 59 || e.which == 186) {
+      } else if (keyCode == 59 || keyCode == 186) {
           keyPressed("sc");
       }
   });
 
-  $(document).on('keydown', function(e) {
-      var tag = e.target.tagName.toLowerCase();
-
-      if (e.which == 97 || e.which == 65) {
+  document.addEventListener('keydown', function(e) {
+      // Skip if explanation modal is open
+      if (isExplanationModalOpen()) {
+        return;
+      }
+      
+      const keyCode = e.which || e.keyCode;
+      
+      if (keyCode == 97 || keyCode == 65) {
           keyDown("a");
-      } else if (e.which == 115 || e.which == 83) {
+      } else if (keyCode == 115 || keyCode == 83) {
           keyDown("s");
-      } else if (e.which == 100 || e.which == 68) {
+      } else if (keyCode == 100 || keyCode == 68) {
           keyDown("d");
-      } else if (e.which == 102 || e.which == 70) {
+      } else if (keyCode == 102 || keyCode == 70) {
           keyDown("f");
-      } else if (e.which == 103 || e.which == 71) {
+      } else if (keyCode == 103 || keyCode == 71) {
           keyDown("g");
-      } else if (e.which == 104 || e.which == 72) {
+      } else if (keyCode == 104 || keyCode == 72) {
           keyDown("h");
-      } else if (e.which == 106 || e.which == 74) {
+      } else if (keyCode == 106 || keyCode == 74) {
           keyDown("j");
-      } else if (e.which == 107 || e.which == 75) {
+      } else if (keyCode == 107 || keyCode == 75) {
           keyDown("k");
-      } else if (e.which == 108 || e.which == 76) {
+      } else if (keyCode == 108 || keyCode == 76) {
           keyDown("l");
-      } else if (e.which == 59 || e.which == 186) {
+      } else if (keyCode == 59 || keyCode == 186) {
           keyDown("sc");
       }
-
   });
 </script>
 
 
 <%
-
-
-  def calculate_button_class(value, max_value)
-    value_f = value.to_f
-    max_value_f = max_value.to_f
-    if value_f <= 0.0
-      return "button00"
-
-    elsif value_f / max_value_f < 0.1
-      return "button01"
-
-    elsif value_f / max_value_f < 0.2
-      return "button02"
-
-    elsif value_f / max_value_f < 0.3
-      return "button03"
-
-    elsif value_f / max_value_f < 0.4
-      return "button04"
-
-    elsif value_f / max_value_f < 0.5
-      return "button05"
-
-    elsif value_f / max_value_f < 0.6
-      return "button06"
-
-    elsif value_f / max_value_f < 0.7
-      return "button07"
-
-    elsif value_f / max_value_f < 0.8
-      return "button08"
-
-    elsif value_f / max_value_f < 0.9
-      return "button09"
-
-    elsif value_f / max_value_f == 1.0
-      return "button10"
-
-    else return "button-other"
-    end
-
-  end
-
-  def calculate_key(value, max_value)
-    if max_value == 1
-      if value == 0
-        return {"name": "d", "display_name": "d" }
-      else
-        return {"name": "f", "display_name": "f" }
-      end
-    end
-
-    if max_value == 2
-      if value == 0
-        return {"name": "s", "display_name": "s" }
-      elsif value == 1
-        return {"name": "d", "display_name": "d" }
-      else
-        return {"name": "f", "display_name": "f" }
-      end
-    end
-
-    if max_value == 3
-      if value == 0
-        return {"name": "a", "display_name": "a" }
-      elsif value == 1
-        return {"name": "s", "display_name": "s" }
-      elsif value == 2
-        return {"name": "d", "display_name": "d" }
-      elsif value == 3
-        return {"name": "f", "display_name": "f" }
-      end
-    end
-
-    if max_value == 4
-      if value == 1
-        return {"name": "a", "display_name": "a" }
-      elsif value == 2
-        return {"name": "s", "display_name": "s" }
-      elsif value == 3
-        return {"name": "d", "display_name": "d" }
-      elsif value == 4
-        return {"name": "f", "display_name": "f" }
-      end
-    end
-
-    if max_value == 9
-      if value == 0
-        return {"name": "a", "display_name": "a" }
-      elsif value == 1
-        return {"name": "s", "display_name": "s" }
-      elsif value == 2
-        return {"name": "d", "display_name": "d" }
-      elsif value == 3
-        return {"name": "f", "display_name": "f" }
-      elsif value == 4
-        return {"name": "g", "display_name": "g" }
-      elsif value == 5
-        return {"name": "h", "display_name": "h" }
-      elsif value == 6
-        return {"name": "j", "display_name": "j" }
-      elsif value == 7
-        return {"name": "k", "display_name": "k" }
-      elsif value == 8
-        return {"name": "l", "display_name": "l" }
-      elsif value == 9
-        return {"name": "sc", "display_name": ";" }
-      end
-    end
-    return nil
-  end
-
-  @use_backup_labels = false
   @show_keyboard_shortcuts = true
-
-  @rating_buttons = []
-  max = @book.scorer.scale.max
-  @book.scorer.scale.each do |s|
-    rating_button = {}
-
-    rating_button["value"] = s.to_s
-    calculated_key = calculate_key(s, max)
-    if calculated_key != nil
-      rating_button["key"] = calculated_key
-    else
-      @show_keyboard_shortcuts = false
-      rating_button["key"] = rating_button["value"]
-    end
-    rating_button["label_backup"] = s.to_s
-    begin
-      rating_button["label"] = @book.scorer.scale_with_labels[s.to_s]
-    rescue
-      rating_button["label"] = ""
-    end
-    if rating_button["label"].blank?
-      @use_backup_labels = true
-      rating_button["label"] = rating_button["label_backup"]
-    end
-    rating_button["class"] = calculate_button_class(s, max)
-    @rating_buttons << rating_button
-  end
-  if @use_backup_labels
-    @rating_buttons.each do |rating_button|
-      rating_button["label"] = rating_button["label_backup"]
-    end
-  end
+  # Use enhanced JudgementHelper to generate rating buttons with scorer labels
+  @rating_buttons = generate_rating_buttons(@book)
 
   scoring_guidelines = {}
   scoring_guidelines['Poor'] = 'Customer feeling: <i>These results are terrible! Maybe I’ll look somewhere else.</i> <br/><mark>0</mark>’s are used when the result is clearly not desired. The goal is for most queries to only show <mark>1</mark>’s, <mark>2</mark>’s and <mark>3</mark>’s. These are our negative examples.'
@@ -389,7 +216,7 @@ user.id: <%= judgement.user_id %>
           <tbody>
             <% @rating_buttons.each do |b| %>
             <tr>
-              <td><%= button_tag b["label"], type: 'button', class: "btn #{b["class"]}" %></td>
+              <td><%= button_tag b["label"], type: 'button', style: "background-color: #{b['style']['background-color']}; color: black; border: 1px solid rgba(0,0,0,0.2); font-weight: 500;", class: "btn" %></td>
               <td><%= scoring_guidelines.has_key?(b["label"]) ? scoring_guidelines[b["label"]].html_safe : '' %></td>
             </tr>
             <% end %>
@@ -425,14 +252,14 @@ user.id: <%= judgement.user_id %>
           <td></td>
           <% @rating_buttons.each do |b| %>
             <%
-              @button_classes = "btn btn-default "
+              @button_classes = "btn "
               if judgement.rating == b["value"].to_i
                 @button_classes = @button_classes + "btn-preselected "
               end
             %>
             <td class="padded">
 
-              <%= button_tag b["label"], type: 'button', onclick: "rate("+b["value"]+",\""+b["key"][:name].to_s+"\")", class: @button_classes + b["class"], id:"button-for-#{b["key"][:name]}" %>
+              <%= button_tag b["label"], type: 'button', onclick: "rate("+b["value"]+",\""+b["key"][:name].to_s+"\")", style: "background-color: #{b['style']['background-color']}; color: black; border: 1px solid rgba(0,0,0,0.2); font-weight: 500;", class: @button_classes, id:"button-for-#{b["key"][:name]}" %>
             </td>
           <% end %>
         </tr>
@@ -448,13 +275,13 @@ user.id: <%= judgement.user_id %>
         <tr>
           <% @rating_buttons.each do |b| %>
             <%
-              @button_classes = "btn btn-default "
+              @button_classes = "btn "
               if judgement.rating == b["value"].to_i
                 @button_classes = @button_classes + "btn-preselected "
               end
             %>
             <td class="padded">
-              <%= button_tag b["label"], type: 'button', onclick: "rate("+b["value"]+",\""+ b["key"].to_s + "\")", class: @button_classes + b["class"], id:"button-for-"+b["key"].to_s %>
+              <%= button_tag b["label"], type: 'button', onclick: "rate("+b["value"]+",\""+ b["key"].to_s + "\")", style: "background-color: #{b['style']['background-color']}; color: black; border: 1px solid rgba(0,0,0,0.2); font-weight: 500;", class: @button_classes, id:"button-for-"+b["key"].to_s %>
             </td>
           <% end %>
         </tr>

@@ -8,7 +8,7 @@ module Api
       before_action :check_case
 
       def index
-        @scores = @case.scores.where(scorer: @case.scorer).includes(:annotation, :user).limit(10)
+        @scores = @case.scores.where(scorer: @case.scorer).includes(:user).limit(10)
         respond_with @scores
       end
 
@@ -46,29 +46,29 @@ module Api
       #       }
       #     }
       #   ]
-      # @request_body_example basic score [Hash]
-      #   {
-      #     case_score: {
-      #       score: 0.4
+      # @request_body_example basic score
+      #   [JSON{
+      #     "case_score": {
+      #       "score": 0.4
       #     }
-      #   }
-      # @request_body_example complete score [Hash]
-      #   {
-      #     case_score: {
-      #       score: 0.98,
-      #       all_rated: false,
-      #       try_number: 42,
-      #       queries: {
-      #         "1":{text:"first query", score: 1},
-      #         "2":{text:"second query", score: 0.96}
+      #   }]
+      # @request_body_example complete score
+      #   [JSON{
+      #     "case_score": {
+      #       "score": 0.98,
+      #       "all_rated": false,
+      #       "try_number": 42,
+      #       "queries": {
+      #         "1":{"text":"first query", "score": 1},
+      #         "2":{"text":"second query", "score": 0.96}
       #       }
       #     }
-      #   }
+      #   }]
       def update
         service = CaseScoreManager.new @case
 
         begin
-          scorer_id = @case.scorer.present? ? @case.scorer.id : nil
+          scorer_id = @case.scorer.presence&.id
           score_data  = { user_id: current_user.id, scorer_id: scorer_id }.merge(score_params)
           @score      = service.update score_data
 
