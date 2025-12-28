@@ -4,16 +4,14 @@ angular.module('QuepidApp')
   .directive('queryDiffResults', [
     function () {
       return {
-        restrict: 'E',
-        transclude: true,
+        controller:   'QueryDiffResultsCtrl',
+        restrict:     'E',
+        templateUrl:  'views/queryDiffResults.html',
         scope: {
-          /*diffQuery: '=diffquery'*/
           query: '=',
-          repeatlength: '=',
-          diffExplainView: '='
-        },
-        controller: 'QueryDiffResultsCtrl',
-        templateUrl: 'views/queryDiffResults.html'
+          repeatlength: '@',
+          maxScore: '='
+        }
       };
     }
   ]);
