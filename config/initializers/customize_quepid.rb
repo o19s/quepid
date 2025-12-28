@@ -12,6 +12,11 @@ bool = ActiveRecord::Type::Boolean.new
 #
 Rails.application.config.quepid_version = ENV.fetch('QUEPID_VERSION', 'UNKNOWN')
 
+# == OpenAI Key
+# Quepid can provide extra help if OpenAI is set up, otherwise these features are skipped.
+#
+Rails.application.config.quepid_openai_api_key = ENV.fetch('OPENAI_API_KEY', nil)
+
 # == Quepid Default Scorer
 # New users to Quepid need to have a recommended scorer to use, which they can then
 # override to their own preferred scorer, either one of the defaults shipped with Quepid
