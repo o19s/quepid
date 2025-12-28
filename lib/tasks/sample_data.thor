@@ -33,12 +33,11 @@ class SampleData < Thor
 
     tmdb_es_endpoint = ::SearchEndpoint.find_or_create_by   search_engine: :es,
                                                             endpoint_url: 'http://quepid-elasticsearch.dev.o19s.com:9206/tmdb/_search', api_method: 'POST'
-    
-    osc_blog_search_api_endpoint = ::SearchEndpoint.find_or_create_by search_engine: :search_api,
-                                                                    endpoint_url: 'https://opensourceconnections.com/?s=eric', 
-                                                                    api_method: 'GET',
-                                                                    proxy_requests: true
-    
+
+    osc_blog_search_api_endpoint = ::SearchEndpoint.find_or_create_by search_engine:  :search_api,
+                                       endpoint_url:   'https://opensourceconnections.com/?s=eric',
+                                       api_method:     'GET',
+                                       proxy_requests: true
 
     search_api_endpoint = ::SearchEndpoint.find_or_create_by search_engine: :searchapi,
                                                              endpoint_url: 'https://www.lse.ac.uk/Search-Results', api_method: 'GET',
