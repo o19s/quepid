@@ -84,7 +84,6 @@ end
 
 group :test do
   gem 'minitest-reporters'
-  gem 'mocha'
   gem 'simplecov', require: false
   gem 'webmock'
   gem 'rails-controller-testing' # bring back compatibility with rails 4 assigns in controller tests.

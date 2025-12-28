@@ -19,10 +19,12 @@
   </p>
   <p>
     Quepid organizes Judgements in a <b>Book</b> that consists of query and document pairs for human evaluation.
-    Checkmark the <b>Populate Book</b> option to update the book with new and changed queries and documents returned by the Case.
+  </p>
+  <p>
+    As you work with the Case, new query and document pairs are automatically populating the linked Book to be judged.
   </p>
 
-  <div class="text-center" ng-show="ctrl.share.teams.length === 0 && !ctrl.share.loading">
+  <div class="alert alert-info text-center" role="alert" ng-show="ctrl.share.teams.length === 0 && !ctrl.share.loading">
     <p>
       Judgements are meant to be shared with a team, so either
       <a
@@ -53,6 +55,12 @@
 
       <ul class="list-group">
         <li class="list-group-item"
+          ng-class="{ active: ctrl.activeBookId === null }"
+          ng-click="selectBook(null)">
+          <em ng-if="ctrl.share.acase.bookId">None (unselect current book)</em>
+          <em ng-if="!ctrl.share.acase.bookId">None</em>
+        </li>
+        <li class="list-group-item"
           ng-repeat="book in ctrl.share.books track by book.id"
           ng-class="{ active: book.id === ctrl.activeBookId }"
           ng-click="selectBook(book)">
@@ -69,12 +77,12 @@
   <label>
     <input id="populate-book" type="checkbox" ng-model='ctrl.populateBook' ng-disabled="ctrl.share.books.length === 0 || ctrl.share.teams.length === 0"> Populate Book
       <span class="glyphicon glyphicon-question-sign" aria-hidden="true" popover-trigger="'mouseenter'" popover-placement="right" uib-popover="Update the list of query / doc pairs to be judged using the current search results."></span>
-    </input>      
-  </label>
+    </input>          
+  </label> <i>syncing the book with the new query doc pairs from the case now happens automagically in the background and this button may be removed in the future.</i>
   <br/>
   <label>
-    <input id="sync-queries" type="checkbox" ng-model='ctrl.createMissingQueries' ng-disabled="ctrl.share.books.length === 0 || ctrl.share.teams.length === 0"> Create missing Queries
-      <span class="glyphicon glyphicon-question-sign" aria-hidden="true" popover-trigger="'mouseenter'" popover-placement="right" uib-popover="Create queries in the Case that are defined in the Book."></span>
+    <input id="sync-queries" type="checkbox" ng-model='ctrl.createMissingQueries' ng-disabled="ctrl.share.books.length === 0 || ctrl.share.teams.length === 0"> Populate missing Queries in Case from those in Book
+      <span class="glyphicon glyphicon-question-sign" aria-hidden="true" popover-trigger="'mouseenter'" popover-placement="right" uib-popover="Create queries in this Case that are defined in the Book and don't currently exist in the Case."></span>
     </input>  
   </label>
   
@@ -97,13 +105,13 @@
   </a>
   <a class="btn btn-default pull-left" ng-click="ctrl.refreshRatingsFromBook()" ng-disabled="processingPrompt.inProgress || ctrl.populateBook || !ctrl.activeBookId || ctrl.share.acase.bookId !== ctrl.activeBookId" >
     <i class="glyphicon glyphicon-refresh" ng-class="{'spintime': processingPrompt.inProgress}"></i>
-    Refresh ratings from book <i>{{ctrl.activeBookName}}</i>
+    Refresh ratings from book <i ng-show="ctrl.activeBookName">{{ctrl.activeBookName}}</i>
     <span ng-if="ctrl.createMissingQueries">and creating missing queries</span>
   </a>
 
   <button
     class="btn btn-success"
-    ng-show="ctrl.activeBookId && ctrl.specificActionLabel()"
+    ng-show="ctrl.specificActionLabel()"
     ng-click="ctrl.ok()"
     ng-disabled="processingPrompt.inProgress"
   >
