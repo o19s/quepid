@@ -34,7 +34,7 @@ class SampleData < Thor
     tmdb_es_endpoint = ::SearchEndpoint.find_or_create_by   search_engine: :es,
                                                             endpoint_url: 'http://quepid-elasticsearch.dev.o19s.com:9206/tmdb/_search', api_method: 'POST'
 
-    osc_blog_search_api_endpoint = ::SearchEndpoint.find_or_create_by search_engine:  :search_api,
+    ::SearchEndpoint.find_or_create_by search_engine:  :search_api,
                                        endpoint_url:   'https://opensourceconnections.com/?s=eric',
                                        api_method:     'GET',
                                        proxy_requests: true
@@ -143,7 +143,7 @@ class SampleData < Thor
     user_params = user_specifics # user_defaults.merge(user_specifics)
     osc_ai_judge = seed_user user_params
     osc_ai_judge.judge_options = {
-      llm_service_url: 'http://ollama:11434',
+      llm_service_url: 'http://ollama:11430',
       llm_model:       'qwen3:0.6b',
       llm_timeout:     60,
     }

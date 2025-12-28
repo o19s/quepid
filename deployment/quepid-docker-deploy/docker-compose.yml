@@ -59,7 +59,7 @@ services:
     image: ollama/ollama
     container_name: ollama
     ports:
-      - "11434:11434"
+      - "11430:11434"
     volumes:
       - ./volumes/ollama/data:/tmp/data
     environment:

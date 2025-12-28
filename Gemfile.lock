@@ -112,6 +112,7 @@ GEM
       traces (~> 0.18)
     base64 (0.3.0)
     bcrypt (3.1.20)
+    benchmark (0.5.0)
     benchmark-ips (2.14.0)
     bigdecimal (3.3.1)
     bindata (2.5.1)
@@ -673,6 +674,7 @@ DEPENDENCIES
   ancestry
   annotaterb
   bcrypt
+  benchmark (~> 0.5.0)
   blazer
   bootsnap
   bullet
