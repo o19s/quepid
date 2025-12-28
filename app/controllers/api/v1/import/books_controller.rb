@@ -29,8 +29,8 @@ module Api
         #     "team_id": 1,
         #     "book": {
         #       "name": "bob",
-        #       "scale": "1,2"
-        #       "scale_with_labels": "{\"0\": \"Not Relevant\", \"1\": \"Relevant\"}"
+        #       "scale": "1,2",
+        #       "scale_with_labels": "{\"0\": \"Not Relevant\", \"1\": \"Relevant\"}",
         #       "query_doc_pairs": [
         #         {
         #           "query_text": "Ice Age",
