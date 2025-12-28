@@ -272,8 +272,8 @@ angular.module('QuepidApp')
 
 
       // Watch for any diff changes and trigger case-level diff scoring
-      $scope.$watch(function() {
-        return JSON.stringify(queryViewSvc.getAllDiffSettings());
+      $scope.$watchCollection(function() {
+        return queryViewSvc.getAllDiffSettings();
       }, function() {
         var isEnabled = queryViewSvc.isAnyDiffEnabled();
         if (isEnabled) {

@@ -67,13 +67,6 @@ angular.module('QuepidApp')
         }
       };
 
-      // TODO kill this watch!
-      // Watch for diff changes - legacy support, but now handled by diffs
-      $scope.$watch('query.diff', function() {
-        // Single diffs are now handled through the diffs path
-        // This watch is kept for compatibility but doesn't change the view
-      });
-
       // Watch for diff changes - unified logic for all diff scenarios
       $scope.$watch('query.diffs', function() {
         if ($scope.query.diffs !== null) {
