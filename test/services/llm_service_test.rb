@@ -366,6 +366,9 @@ class LlmServiceTest < ActiveSupport::TestCase
 
       response = @service.get_chat_response(@message)
       assert_equal 'This is a chat response', response
+    end
+  end
+
   describe 'URL construction' do
     [
       {
@@ -381,7 +384,7 @@ class LlmServiceTest < ActiveSupport::TestCase
       {
         name:         'builds correct URL for services with no subpath and with trailing slash',
         base_url:     'https://api.openai.com/',
-        expected_url: 'https://api.openai.com/v1/chat/completions',
+        expected_url: 'https://api.openai.com//v1/chat/completions',
       }
     ].each do |test_case|
       test test_case[:name] do

@@ -12,7 +12,6 @@ bool = ActiveRecord::Type::Boolean.new
 #
 Rails.application.config.quepid_version = ENV.fetch('QUEPID_VERSION', 'UNKNOWN')
 
-
 # == OpenAI Key
 # Quepid can provide extra help if OpenAI is set up, otherwise these features are skipped.
 #
