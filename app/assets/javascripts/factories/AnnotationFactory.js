@@ -15,6 +15,7 @@
       // Attributes
       self.caseId     = data.score.case_id;
       self.createdAt  = data.created_at;
+      self.updatedAt  = data.updated_at;
       self.id         = data.id;
       self.message    = data.message;
       self.score      = data.score;

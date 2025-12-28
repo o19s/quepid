@@ -12,14 +12,6 @@ bool = ActiveRecord::Type::Boolean.new
 #
 Rails.application.config.quepid_version = ENV.fetch('QUEPID_VERSION', 'UNKNOWN')
 
-# == Prefer HTTPS Connection
-# If you need to access a search endpoint using http instead of https, then Quepid needs to flip
-# back and forth between those protocols.  However, the rest of the app can run in https mode, and
-# this is what controls creating those connections in https.
-#
-Rails.application.config.prefer_ssl = bool.deserialize(ENV.fetch('PREFER_SSL', false))
-
-Rails.application.config.action_mailer.default_url_options[:protocol] = 'https' if Rails.application.config.prefer_ssl
 
 # == OpenAI Key
 # Quepid can provide extra help if OpenAI is set up, otherwise these features are skipped.
@@ -105,8 +97,11 @@ Rails.application.config.keycloak_site = ENV.fetch('KEYCLOAK_SITE', '')
 # is set up under.
 Rails.application.config.quepid_domain = ENV.fetch('QUEPID_DOMAIN', '')
 
-# == Disable redirecting to match the TLS setting
-Rails.application.config.redirect_to_match_search_engine_tls = ENV.fetch('REDIRECT_TO_MATCH_SEARCH_ENGINE_TLS', true)
-
 # == If we have nested Quepid under a context, like tools.bigcorp.com/quepid then this deal with that situation.
 Rails.application.config.action_cable.url = "#{ENV.fetch('RAILS_RELATIVE_URL_ROOT', '')}/cable"
+
+# == Set up encryption for Quepid
+# We provide some defaults, but you should set your own keys and NOT lose them.
+Rails.application.config.active_record.encryption.deterministic_key = ENV.fetch('ACTIVE_RECORD_ENCRYPTION_DETERMINISTIC_KEY', 'OItaH6HSftjoxkl9QDejPAmQ8EaFOlwk')
+Rails.application.config.active_record.encryption.key_derivation_salt = ENV.fetch('ACTIVE_RECORD_ENCRYPTION_KEY_DERIVATION_SALT', 'BzPDVAl1jAUquD4p7rM9J40wAwf7CCFh')
+Rails.application.config.active_record.encryption.primary_key = ENV.fetch('ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY', 'bnYX3NlvUJxHWXwNYBgP33yi8BKlN7Ml')

@@ -8,9 +8,7 @@
   </div>
 </div>
 
-<p>
-  List out all the query doc pairs collected for a Book.
-</p>
+<%= render 'books/tabs', book: @book %>
 
 <div class="card h-100">
   <div class="card-header">   
@@ -62,6 +60,6 @@
     </table>
   </div>
   <div class="card-footer d-flex justify-content-center">
-    <%== pagy_bootstrap_nav(@pagy) %> 
+    <%== @pagy.series_nav(:bootstrap) %> 
   </div>
 </div>

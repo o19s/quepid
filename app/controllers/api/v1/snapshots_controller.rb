@@ -6,12 +6,13 @@ module Api
     # @tags cases > snapshots
     class SnapshotsController < Api::ApiController
       include ActionView::Helpers::NumberHelper
+
       before_action :set_case
       before_action :check_case
       before_action :set_snapshot,    only: [ :show, :destroy ]
       before_action :check_snapshot,  only: [ :show, :destroy ]
 
-      # Spiking out can we make an API public?
+      # Special handling for cases that are "public", and therefore it's snapshots
       def authenticate_api!
         set_case
         return true if @case&.public? || current_user

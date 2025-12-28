@@ -3,9 +3,9 @@
 require 'csv'
 
 module Admin
-  # rubocop:disable Metrics/ClassLength
   class UsersController < Admin::AdminController
-    include Pagy::Backend
+    include Pagy::Method
+
     before_action :set_user, only: [ :show, :edit, :update, :destroy, :assign_judgements_to_anonymous_user ]
 
     # GET /admin/users
@@ -35,13 +35,6 @@ module Admin
     # GET /admin/users/1
     # GET /admin/users/1.json
     def show
-      # Figure out which date to use in the pulse charts to mark the beginning of the users account with Quepid
-      @pulse_chart_start_date = if @user.terms_and_conditions? && @user.agreed_time.present?
-                                  @user.agreed_time
-                                else
-                                  @user.created_at
-                                end
-      @pulse_chart_start_date = @pulse_chart_start_date.strftime('%Y-%m-%d')
     end
 
     def new
@@ -63,7 +56,6 @@ module Admin
       if @user.save
         if params[:password_encrypted].present?
           # avoid the encrypt call back
-          # rubocop:disable Rails/SkipsModelValidations
           @user.update_column(:password, params[:password_encrypted])
           # rubocop:enable Rails/SkipsModelValidations
         end
@@ -100,7 +92,7 @@ module Admin
           format.json { render :show, status: :ok, location: edit_admin_user_path(@user) }
         else
           format.html { render :edit }
-          format.json { render json: @user.errors, status: :unprocessable_entity }
+          format.json { render json: @user.errors, status: :unprocessable_content }
         end
       end
     end
@@ -117,7 +109,7 @@ module Admin
       else
         respond_to do |format|
           format.html { render :edit }
-          format.json { render json: @user.errors, status: :unprocessable_entity }
+          format.json { render json: @user.errors, status: :unprocessable_content }
         end
       end
     end
@@ -150,5 +142,4 @@ module Admin
       )
     end
   end
-  # rubocop:enable Metrics/ClassLength
 end

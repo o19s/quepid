@@ -1,18 +1,23 @@
 <%= turbo_stream_from(:notifications) %>
 
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-  <h1><i class="bi bi-book"></i> Books</h1>
+  <h1><i class="bi bi-book"></i> Books <%= "(Archived)" if params[:archived] == 'true' %></h1>
   <div class="btn-toolbar mb-2 mb-md-0">
     <div class="btn-group me-2">
-      <%= link_to 'New Book', new_book_path, class: "btn btn-sm btn-outline-primary" %>
-      <%= link_to 'Import Book', new_books_import_path, class: "btn btn-sm btn-outline-secondary" %>
+      <% if params[:archived] == 'true' %>
+        <%= link_to 'View Active Books', books_path, class: "btn btn-sm btn-outline-primary" %>
+      <% else %>
+        <%= link_to 'New Book', new_book_path, class: "btn btn-sm btn-outline-primary" %>
+        <%= link_to 'Import Book', new_books_import_path, class: "btn btn-sm btn-outline-secondary" %>
+        <%= link_to 'View Archived Books', books_path(archived: true), class: "btn btn-sm btn-outline-warning" %>
+      <% end %>
     </div>
   </div>
 </div>
 
 
 <p id="notice"><%= notice %></p>
-<% if @books.empty? %>
+<% if params[:archived] != 'true' && @books.empty? %>
   <div class="alert alert-primary" role="alert">
     Create your first book by clicking on the New Book button above.
   </div>
@@ -20,14 +25,15 @@
 
 <div class="card h-100">
   <div class="card-header">   
-    <%= form_tag(books_path, { method: :get }) do %> 
+    <%= form_tag(books_path, { method: :get }) do %>
+      <%= hidden_field_tag :archived, params[:archived] if params[:archived] %>
       <div class="mb-0 d-flex fs-6 ">
-          
+
         <div class="input-group">
-          <%= text_field_tag :q, params[:q], 
-              class: 'form-control form-control-sm', 
+          <%= text_field_tag :q, params[:q],
+              class: 'form-control form-control-sm',
               placeholder: 'Filter by book name or team name',
-              id: 'q' 
+              id: 'q'
           %>
           <%= button_tag type: 'submit', class: 'btn btn-sm btn-outline-secondary', id: 'button-addon2' do %>
             <i class="bi bi-search-heart"></i>
@@ -57,9 +63,8 @@
           <th>ID</th>
           <th>Name</th>
           <th>Teams</th>
-          <th>Scorer</th>
-          <th>Selection strategy</th>
-          <th></th>
+          <th>Scale</th>
+          <th>Status</th>
         </tr>
       </thead>
   
@@ -69,6 +74,6 @@
     </table>
   </div>
   <div class="card-footer d-flex justify-content-center">
-    <%== pagy_bootstrap_nav(@pagy) %>
+    <%== @pagy.series_nav(:bootstrap) %>
   </div>
 </div>

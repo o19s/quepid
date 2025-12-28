@@ -1,7 +1,8 @@
 # frozen_string_literal: true
 
 class RatingsController < ApplicationController
-  include Pagy::Backend
+  include Pagy::Method
+
   before_action :set_case
 
   # GET /ratings or /ratings.json
@@ -13,6 +14,6 @@ class RatingsController < ApplicationController
                           "%#{params[:q]}%", "%#{params[:q]}%", "%#{params[:q]}%")
     end
 
-    @pagy, @ratings = pagy(query.order('updated_at'))
+    @pagy, @ratings = pagy(query.order(:updated_at))
   end
 end

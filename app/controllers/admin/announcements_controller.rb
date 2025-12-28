@@ -2,7 +2,8 @@
 
 module Admin
   class AnnouncementsController < Admin::AdminController
-    include Pagy::Backend
+    include Pagy::Method
+
     def index
       query = Announcement.order(updated_at: :desc)
       if params[:q].present?

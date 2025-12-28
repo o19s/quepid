@@ -366,6 +366,40 @@ class LlmServiceTest < ActiveSupport::TestCase
 
       response = @service.get_chat_response(@message)
       assert_equal 'This is a chat response', response
+  describe 'URL construction' do
+    [
+      {
+        name:         'builds correct URL for services with subpaths like Gemini',
+        base_url:     'https://generativelanguage.googleapis.com/v1beta/openai',
+        expected_url: 'https://generativelanguage.googleapis.com/v1beta/openai/v1/chat/completions',
+      },
+      {
+        name:         'builds correct URL for services with no subpath and no trailing slash',
+        base_url:     'https://api.openai.com',
+        expected_url: 'https://api.openai.com/v1/chat/completions',
+      },
+      {
+        name:         'builds correct URL for services with no subpath and with trailing slash',
+        base_url:     'https://api.openai.com/',
+        expected_url: 'https://api.openai.com/v1/chat/completions',
+      }
+    ].each do |test_case|
+      test test_case[:name] do
+        stub_request(:post, test_case[:expected_url])
+          .to_return(status: 200, body: { choices: [ { message: { content: '{"judgment": 1, "explanation": "Good"}' } } ] }.to_json, headers: { 'Content-Type' => 'application/json' })
+
+        opts = {
+          llm_service_url: test_case[:base_url],
+        }
+        service = LlmService.new 'api-key', opts
+
+        user_prompt = USER_PROMPT_COMPOSED
+        system_prompt = AiJudgesController::DEFAULT_SYSTEM_PROMPT
+
+        service.get_llm_response(user_prompt, system_prompt)
+
+        assert_requested(:post, test_case[:expected_url])
+      end
     end
   end
 end

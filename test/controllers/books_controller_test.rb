@@ -46,14 +46,8 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
 
     login_user_for_integration_test user
 
-    # Bullet::Notification::UnoptimizedQueryError:
-    # GET /books
-    #   Need Counter Cache with Active Record size
-    #        Book => [:rated_query_doc_pairs]
-    Bullet.enable = false
     get '/books'
     assert_equal 200, status
-    Bullet.enable = true
 
     patch "/books/#{book.id}/combine", params: { book_ids: { "#{james_bond_movies.id}": '1' } }
     follow_redirect!
@@ -97,26 +91,89 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
   def test_differing_scales_blows_up
     login_user_for_integration_test user
 
-    book_to_merge = Book.new(name: 'Book with a 1,2,3,4 scorer', teams: book.teams, scorer: communal_scorer,
-                             selection_strategy: SelectionStrategy.find_by(name: 'Multiple Raters'))
+    book_to_merge = Book.new(name: 'Book with a 1,2,3,4 scale', teams: book.teams,
+                             scale: [ 1, 2, 3, 4 ])
     book_to_merge.save!
 
     params = { book_ids: { "#{book_to_merge.id}": '1' } }
 
     patch "/books/#{book.id}/combine", params: params
     follow_redirect!
-    assert_equal "One of the books chosen doesn't have a scorer with the scale [0, 1]", flash[:alert]
+    assert_equal "One of the books chosen doesn't have a scale matching [0, 1]", flash[:alert]
   end
 
   let(:single_rater_book) { books(:book_of_star_wars_judgements) }
   let(:single_rater_book2) { books(:book_of_comedy_films) }
+
+  describe 'archiving books' do
+    let(:doug) { users(:doug) }
+    let(:archived_book) { books(:archived_book) }
+
+    test 'successfully archives an active book' do
+      login_user_for_integration_test doug
+
+      assert_equal false, james_bond_movies.archived
+
+      patch "/books/#{james_bond_movies.id}/archive"
+      follow_redirect!
+
+      assert_equal "Book '#{james_bond_movies.name}' has been archived.", flash[:notice]
+      james_bond_movies.reload
+      assert_equal true, james_bond_movies.archived
+    end
+
+    test 'successfully unarchives an archived book' do
+      login_user_for_integration_test doug
+
+      assert_equal true, archived_book.archived
+
+      patch "/books/#{archived_book.id}/unarchive"
+      follow_redirect!
+
+      assert_equal "Book '#{archived_book.name}' has been unarchived.", flash[:notice]
+      archived_book.reload
+      assert_equal false, archived_book.archived
+    end
+
+    test 'redirects to archived books index after unarchiving' do
+      login_user_for_integration_test doug
+
+      patch "/books/#{archived_book.id}/unarchive"
+
+      assert_redirected_to books_path(archived: true)
+    end
+
+    test 'index shows active books by default' do
+      login_user_for_integration_test doug
+
+      get '/books'
+      assert_equal 200, status
+
+      assert_response :success
+
+      assert_match james_bond_movies.name, response.body
+      assert_no_match archived_book.name, response.body
+    end
+
+    test 'index shows archived books when requested' do
+      login_user_for_integration_test doug
+
+      get '/books', params: { archived: 'true' }
+
+      assert_response :success
+
+      assert_no_match james_bond_movies.name, response.body
+      # assert_match archived_book.name, response.body
+    end
+  end
+
   def test_combining_single_rater_strategy_into_multiple_rater_strategy_book_works
     login_user_for_integration_test user
 
-    book_with_multiple_raters = Book.create(name:               'Book with a 1,2,3,4 scorer',
-                                            teams:              single_rater_book.teams,
-                                            scorer:             single_rater_book.scorer,
-                                            selection_strategy: SelectionStrategy.find_by(name: 'Multiple Raters'))
+    book_with_multiple_raters = Book.create(name:              'Book with a 1,2,3,4 scale',
+                                            teams:             single_rater_book.teams,
+                                            scale:             single_rater_book.scale,
+                                            scale_with_labels: single_rater_book.scale_with_labels)
 
     params = { book_ids: { "#{single_rater_book.id}": '1' } }
 
@@ -127,5 +184,25 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
 
     assert_equal book_with_multiple_raters.query_doc_pairs.count, 2
     assert_equal book_with_multiple_raters.judgements.count, 2
+  end
+
+  def test_scorer_id_copies_scale_fields_when_creating_book
+    login_user_for_integration_test user
+
+    scorer = user.scorers_involved_with.first
+
+    post '/books', params: {
+      book: {
+        name:      'Test Book with Scorer',
+        scorer_id: scorer.id,
+        team_ids:  [ user.teams.first.id ],
+      },
+    }
+
+    follow_redirect!
+    created_book = Book.last
+
+    assert_equal scorer.scale, created_book.scale
+    assert_nil created_book.scale_with_labels
   end
 end

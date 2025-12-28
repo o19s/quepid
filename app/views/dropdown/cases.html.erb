@@ -1,6 +1,6 @@
 <turbo-frame id="dropdown_cases">
   <% @cases.each do |kase| %>
-  <li><%= link_to_core_case  kase.case_name, kase, kase.last_try_number %></li>
+  <li><%= link_to_core_case  kase.case_name, kase, kase.last_try_number, data: { turbo_frame: "_top" } %></li>
   <li><hr class="dropdown-divider"></li>
   <% end %>
 </turbo-frame>

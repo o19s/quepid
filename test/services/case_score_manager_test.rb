@@ -2,7 +2,6 @@
 
 require 'test_helper'
 
-# rubocop:disable Rails/SkipsModelValidations
 class CaseScoreManagerTest < ActiveSupport::TestCase
   let(:service) { CaseScoreManager.new the_case }
   let(:the_try) { the_case.tries.latest }

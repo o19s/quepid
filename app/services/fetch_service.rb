@@ -126,7 +126,7 @@ class FetchService
         explain:    doc[:explain],
         position:   doc[:position] || (index + 1),
         rated_only: doc[:rated_only] || false,
-        fields:     doc[:fields].blank? ? nil : doc[:fields].to_json,
+        fields:     doc[:fields].presence&.to_json,
       }
       results << query.snapshot_docs.build(doc_params)
     end
@@ -138,6 +138,7 @@ class FetchService
   # rubocop:enable Metrics/PerceivedComplexity
 
   # This maybe should be split out into a snapshot_query and a snapshot_docs?
+  # rubocop:disable Metrics/MethodLength
   def store_query_results query, docs, response_status, response_body
     snapshot_query = @snapshot.snapshot_queries.create(
       query:             query,
@@ -150,12 +151,19 @@ class FetchService
     )
     snapshot_manager = SnapshotManager.new(@snapshot)
     query_docs = snapshot_manager.setup_docs_for_query(snapshot_query, docs)
-    SnapshotDoc.import query_docs
+    if query_docs.any?
+      SnapshotDoc.insert_all(
+        query_docs.map do |doc|
+          doc.attributes.except('id')
+        end
+      )
+    end
 
     snapshot_query.reload # without this we get duplicate sets of snapshot_docs
 
     snapshot_query
   end
+  # rubocop:enable Metrics/MethodLength
 
   # Scores phase
   #
@@ -265,7 +273,7 @@ class FetchService
       score:      average_score,
       scorer_id:  @case.scorer.id,
       try_number: try.try_number,
-      user_id:    user.present? ? user.id : nil,
+      user_id:    user.presence&.id,
     }
 
     score_data
@@ -433,7 +441,7 @@ class FetchService
       each = each.to_unsafe_h if each.is_a?(ActionController::Parameters)
       each = each.to_hash     if each.is_a?(ActiveSupport::HashWithIndifferentAccess)
 
-      each.symbolize_keys! if each.present?
+      each.presence&.symbolize_keys!
     end.compact
 
     result

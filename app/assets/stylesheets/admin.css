@@ -1,19 +1,16 @@
 /*
- * This is a manifest file that'll be compiled into admin.css, which will include all the files
- * listed below via Sprockets.
+ * Admin CSS manifest (used by build_css.sh).
+ * Former Sprockets directives converted to plain comments.
  *
+ * Bootstrap 5 for admin area
+ * include bootstrap/dist/css/bootstrap
  *
-* We use Bootstrap 5 everywhere except the core app, which is stuck in Bootstrap 3.
- * This loads the Bootstrap 5 defined in package.json and in node_modules/bootstrap
- *= require bootstrap/dist/css/bootstrap
+ * Shared Bootstrap Icons
+ * include bootstrap-icons/font/bootstrap-icons
+ * CodeMirror 6 styling via JS
+ * include cal-heatmap/dist/cal-heatmap.css
  *
- * We use Bootstrap Icons to have icons that work between core and the rest of the app
- *= require bootstrap-icons/font/bootstrap-icons
- * CodeMirror 6 styling is now handled via style-mod in JavaScript
- *= require cal-heatmap
- *
- *= require fonts
- *
- *= require bootstrap5-add
- *= require admin2
+ * include fonts.css
+ * include bootstrap5-add.css
+ * include admin2.css
  */
