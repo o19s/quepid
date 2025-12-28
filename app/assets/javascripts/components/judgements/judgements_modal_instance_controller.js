@@ -13,6 +13,7 @@ angular.module('QuepidApp')
     'bookSvc',
     'queriesSvc',
     'acase',
+    'caseTryNavSvc',
     function (
       $rootScope,
       $scope,
@@ -24,7 +25,8 @@ angular.module('QuepidApp')
       caseSvc,
       bookSvc,
       queriesSvc,
-      acase
+      acase,
+      caseTryNavSvc
      ) {
       var ctrl = this;
 
@@ -60,6 +62,7 @@ angular.module('QuepidApp')
           ctrl.activeBookName = book.name;
         }
         ctrl.updateAssociatedBook = true;
+        $log.info('activeBookId is now:', ctrl.activeBookId);
       }
 
       $scope.selectBook = selectBook;
@@ -115,7 +118,10 @@ angular.module('QuepidApp')
         if (ctrl.share.acase.bookId === null && ctrl.activeBookId){
           label = 'Select Book';
         }
-        else if (ctrl.share.acase.bookId !== ctrl.activeBookId){
+        else if (ctrl.share.acase.bookId !== null && ctrl.activeBookId === null){
+          label = 'Unselect Book';
+        }
+        else if (ctrl.share.acase.bookId !== ctrl.activeBookId && ctrl.activeBookId !== null){
           label = 'Change Book';
         }
         else if (ctrl.share.acase.bookId === ctrl.activeBookId){
@@ -156,7 +162,7 @@ angular.module('QuepidApp')
           if (response && response.data && processInBackground === true) {
             // Short delay to ensure flash message is visible
             setTimeout(function() {
-              $window.location.href = '/';
+              $window.location.href = caseTryNavSvc.getQuepidRootUrl();
             }, 500);
           }
         }, function(response) {
@@ -171,6 +177,34 @@ angular.module('QuepidApp')
         if (ctrl.updateAssociatedBook){
           // not handling any errors ;-(
           caseSvc.associateBook(acase, ctrl.activeBookId);
+          
+          // Auto-refresh ratings from the new book if a book is selected
+          if (ctrl.activeBookId) {
+            var processInBackground = ctrl.share.acase.queriesCount >= 50 ? true: false;
+            bookSvc.refreshCaseRatingsFromBook(ctrl.share.acase.caseNo, ctrl.activeBookId, ctrl.createMissingQueries, processInBackground)
+            .then(function(response) {
+              $scope.processingPrompt.inProgress = false;
+              $uibModalInstance.close(true);
+
+              if (processInBackground === true) {
+                flash.success = 'Book changed and ratings are being refreshed in the background.';
+              }
+              else {
+                flash.success = 'Book changed and ratings have been refreshed.';
+              }
+              
+              // Check if we should redirect to homepage
+              if (response && response.data && processInBackground === true) {
+                // Short delay to ensure flash message is visible
+                setTimeout(function() {
+                  $window.location.href = caseTryNavSvc.getQuepidRootUrl();
+                }, 500);
+              }
+            }, function(response) {
+              $scope.processingPrompt.error = response.data.statusText;
+            });
+            return; // Exit early since we're handling the modal close in the refresh callback
+          }
         }
         if (ctrl.populateBook) {
           bookSvc.updateQueryDocPairs(ctrl.activeBookId,ctrl.share.acase.caseNo, queriesSvc.queryArray())
@@ -204,7 +238,7 @@ angular.module('QuepidApp')
         const teamIds = ctrl.share.acase.teams.map(function(team) {
           return `&team_ids[]=${team.id}`;
         });
-        return `books/new?book[scorer_id]=${ctrl.share.acase.scorerId}${teamIds}&origin_case_id=${ctrl.share.acase.caseNo}`;
+        return `books/new?scorer_id=${ctrl.share.acase.scorerId}${teamIds}&origin_case_id=${ctrl.share.acase.caseNo}`;
       };
 
     }

@@ -70,6 +70,15 @@ class ProxyControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
+  test 'should forward Authorization and custom headers' do
+    json_data = { query: 'trek' }.to_json
+
+    post '/proxy/fetch?url=http://solr.quepidapp.com:8983/solr/statedecoded/with_auth', params:  json_data,
+                                                                                        headers: { 'Content-Type' => 'application/json', 'Authorization' => 'Basic dGVzdDp0ZXN0', 'X-Custom-Header' => 'test-value' }
+
+    assert_response :success
+  end
+
   describe 'should follow 302 redirects' do
     test 'on a get' do
       old_url = 'https://example.com/old-url'

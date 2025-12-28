@@ -1,5 +1,51 @@
 # Changelog
 
+## 8.3.7 -- 2025-12-03
+
+* Fixed issue in Bulk Judging when you paginate and you don't have enough docs left due to rating activity to get results by @epugh in https://github.com/o19s/quepid/pull/1554.  Thanks @david-fisher for finding this!
+* Default to Ollama and Qwen model for local LLM as a Judge when doing development by @epugh in https://github.com/o19s/quepid/pull/1553
+
+## 8.3.6 -- 2025-11-20
+
+* LLMService builds the wrong URL for Google’s Gemini (OpenAI-compatible) API.  Thanks @oskrocha for reporting https://github.com/o19s/quepid/issues/1519 and @lauzel for fixing in https://github.com/o19s/quepid/pull/1521.
+
+Sorry it took a few weeks to release Quepid with the fix!
+
+## 8.3.5 -- 2025-10-24
+
+There were a number of 8.3.x releases as we worked through some debugging.   8.3.5 though is the one to use!
+
+* Query Doc Pair query_text should be case sensitive, the same way Query query_text is, but it wasn't.  So you couldn't have two queries with differing case like "Nike" and "nike" in a Book.  Thanks @david-fisher for finding https://github.com/o19s/quepid/issues/1512 and fixed in https://github.com/o19s/quepid/pull/1513.
+
+* Query Doc Pairs for a book are synced when you run a linked Case in the background!  Previously we sent all the data in one huge JSON file that was processed immediately.  Not we submit in chunks of 100 queries, and the data is loaded in the background async to the book, smoothing the workflow.  This happens automagically for you, no need to click the "populate book" button either in the Judgements modal.  https://github.com/o19s/quepid/pull/1496 by @epugh.
+
+* Fix bulk judgements UI under nested deployment routes.  Pin docker image to debian Bookworm for now. https://github.com/o19s/quepid/pull/1495
+
+## 8.3.0 -- 2025-10-06
+
+### Features
+
+* Bulk Judging UI added for Books.  Want to quickly judge lots of documents for a set of queries in context of each other?  Bulk Judging UI is here.   You can pick a specific depth, say only results in the top 3.  Or you can search for specific query patterns.  Results are presented in random order to counteract position bias in judging.   You can also provide an explanation. https://github.com/o19s/quepid/pull/1490 by @epugh, thanks Joelle for inspiring this to finally happen. 
+
+* Added ability to Archive a book, similar to how you can Archive a case.  This lets you hide books that you aren't currently using. https://github.com/o19s/quepid/pull/1487
+
+* Developers using Docker no longer need Ruby to be installed locally.  Scripts have been converted to Bash.  https://github.com/o19s/quepid/pull/1479
+
+### Improvements
+
+* Improved syncing of Books and Cases by making it a back ground process if you have more than 50 queries.  Deals with the front end becomign sluggish and timing out when it takes a long time to sync. https://github.com/o19s/quepid/pull/1487
+
+* Simplify book creation by defaulting to Multiple Raters choice. https://github.com/o19s/quepid/pull/1487
+
+* All the updates across all the dependencies!  https://github.com/o19s/quepid/pull/1479
+
+* Finally giving up on smart handling of HTTPS/HTTP protocol IN Quepid.  We tried for a long time to make Quepid aware of a search endpoints TLS setting because the browsers these days don't want you to interact across the protocols.  If Quepid was on `https` and the search endpoint was an `http` url, then we prompted to reload the browser app into the matching `http` url.  This didn't work well when Quepid is behind a proxy, as they typically take of this.  Also, we now have an actual built in capability for Quepid server to send queries to an endpoint, and it doesn't care if it's http or https.  https://github.com/o19s/quepid/pull/1427 by @epugh to remove this.  Fixes https://github.com/o19s/quepid/issues/1410 by @brucks24.
+
+### Bugs Addressed
+
+* Restored Annotation view in the Case screens Scores over time chart.  Fixed some visualization issues IN that chart too.  https://github.com/o19s/quepid/pull/1479
+
+
 ## 8.2.1 -- 2025-08-25
 
 @david-fisher did some testing and found a couple of regressions:

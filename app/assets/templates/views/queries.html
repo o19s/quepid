@@ -106,9 +106,13 @@
 
       <div class="clearfix"></div>
 
+      <div ng-show="isBootstrapping()" class="alert alert-info search-feedback" role="alert">
+        <i class="glyphicon glyphicon-refresh spintime"></i> <span ng-if="isBootstrapping()">Bootstrapping Queries</span>
+      </div>
+      
       <div ng-show="searching()" class="alert alert-info search-feedback" role="alert">
         <i class="glyphicon glyphicon-refresh spintime"></i> Updating Queries: {{batchPosition}} / {{batchSize}}
-        <small class="text-muted">If counter stalls, do a hard refresh of web page.</small>
+        <small class="text-muted">If the counter stalls, do a hard refresh of Quepid.</small>
       </div>
 
       <!-- let the user know what we're looking at-->

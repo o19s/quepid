@@ -1,21 +1,18 @@
 /*
- * This is a manifest file that'll be compiled into application.css, which will include all the files
- * listed below via Sprockets.
+ * Application CSS manifest (used by build_css.sh).
+ * Former Sprockets directives converted to plain comments for reference only.
  *
+ * We use Bootstrap 5 everywhere except the core app (Bootstrap 3).
+ * include bootstrap/dist/css/bootstrap
  *
- * We use Bootstrap 5 everywhere except the core app, which is stuck in Bootstrap 3.
- * This loads the Bootstrap 5 defined in package.json and in node_modules/bootstrap
- *= require bootstrap/dist/css/bootstrap
+ * We use Bootstrap Icons shared across areas
+ * include bootstrap-icons/font/bootstrap-icons
  *
- * We use Bootstrap Icons to have icons that work between core and the rest of the app
- *= require bootstrap-icons/font/bootstrap-icons
- *
- * CodeMirror 6 styling is now handled via style-mod in JavaScript
- *
- *= require fonts
- *
- *= require bootstrap5-add
- *= require signup
+ * CodeMirror 6 styling handled via style-mod JS
+ * include fonts.css
+ * include bootstrap5-add.css
+ * include signup.css
+ * include judgements.css
  */
 
  .public-share .clipboard-icon {

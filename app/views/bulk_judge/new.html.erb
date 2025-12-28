@@ -1,0 +1,405 @@
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+  <h1>Bulk Judgements for <i class="bi bi-book"></i> <%= book_title @book %></h1>
+  <div class="btn-toolbar mb-2 mb-md-0">
+  <div class="btn-group me-2">
+    <%= link_to 'Back to Judgements', book_judgements_path(@book), class: "btn btn-sm btn-outline-secondary" %>
+  </div>
+  </div>
+</div>
+
+<%= render 'books/tabs', book: @book %>
+
+<div class="card h-100">
+  <div class="card-header">
+    <%= form_tag(book_judge_bulk_path(@book), { method: :get }) do %>
+      <div class="mb-0 d-flex fs-6 align-items-center">
+        <div class="input-group flex-grow-0" style="width: 40%;">
+          <%= text_field_tag :query_text, @query_text,
+              class: 'form-control form-control-sm',
+              placeholder: 'Enter query text to bulk judge',
+              id: 'query_text'
+          %>
+          <%= button_tag type: 'submit', class: 'btn btn-sm btn-outline-secondary', id: 'button-addon2' do %>
+            <i class="bi bi-search-heart"></i> Filter
+          <% end %>
+        </div>
+
+        <div class="d-flex align-items-center ms-3 flex-fill">
+          <div class="form-check">
+            <%= hidden_field_tag :only_unrated, false, id: 'only_unrated_hidden' %>
+            <%= check_box_tag :only_unrated,
+                true,
+                @only_unrated,
+                class: 'form-check-input',
+                id: 'only_unrated',
+                onchange: 'this.form.submit()'
+            %>
+            <label class="form-check-label" for="only_unrated">
+              Unrated
+            </label>
+          </div>
+
+          <div class="d-flex align-items-center ms-4">
+            <label for="rank_depth" class="form-label me-2 mb-0 text-nowrap">Rank Depth:</label>
+            <%= select_tag :rank_depth,
+                options_for_select(
+                  [['All', '']] + @available_positions.map { |pos| ["#{pos}", pos] },
+                  @rank_depth
+                ),
+                class: 'form-select form-select-sm',
+                style: 'width: auto; min-width: 80px;',
+                onchange: 'this.form.submit()'
+            %>
+          </div>
+
+          <div class="form-check ms-4">
+            <%= hidden_field_tag :show_explanations, false, id: 'show_explanations_hidden' %>
+            <%= check_box_tag :show_explanations,
+                true,
+                @show_explanations,
+                class: 'form-check-input',
+                id: 'show_explanations',
+                onchange: 'this.form.submit()'
+            %>
+            <label class="form-check-label" for="show_explanations">
+              Show Explanations
+            </label>
+          </div>
+        </div>
+      </div>
+    <% end %>
+  </div>
+
+  <div class="card-body">
+    <% if @grouped_query_doc_pairs.any? %>
+      <%
+        page_docs = @grouped_query_doc_pairs.values.flatten.size
+        page_queries = @grouped_query_doc_pairs.keys.size
+      %>
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <p class="text-muted mb-0">
+          <% if @pagy.pages > 1 %>
+            Page <%= @pagy.page %> of <%= @pagy.pages %> -
+            Showing <%= @pagy.from %> to <%= @pagy.to %> of <%= @total_count %>
+            <%= @only_unrated ? 'unrated' : '' %> document<%= @total_count != 1 ? 's' : '' %>
+            <%= @rank_depth.present? ? "at rank ≤ #{@rank_depth}" : '' %>
+            across <%= @total_queries %> quer<%= @total_queries != 1 ? 'ies' : 'y' %>.
+          <% else %>
+            Found <%= @total_count %> <%= @only_unrated ? 'unrated' : '' %> document<%= @total_count != 1 ? 's' : '' %>
+            <%= @rank_depth.present? ? "at rank ≤ #{@rank_depth}" : '' %>
+            across <%= @total_queries %> quer<%= @total_queries != 1 ? 'ies' : 'y' %>.
+          <% end %>
+          <br><small>Judgements are saved automatically as you click.</small>
+        </p>
+      </div>
+
+      <div data-controller="bulk-judgement" data-bulk-judgement-book-id-value="<%= @book.id %>">
+
+        <%
+        # Use enhanced JudgementHelper to generate rating buttons with scorer labels
+        rating_buttons = generate_rating_buttons(@book)
+        %>
+
+        <% doc_counter = @pagy.offset %>
+        <% @grouped_query_doc_pairs.each do |query_text, query_doc_pairs| %>
+          <div class="query-group-card card mb-4">
+            <div class="row g-0">
+              <!-- Query sidebar -->
+              <div class="col-md-3 query-sidebar">
+                <div class="sticky-query-label">
+                  <h5 class="query-title">
+                    <i class="bi bi-search"></i> Query
+                  </h5>
+                  <p class="query-text"><strong><%= query_text %></strong></p>
+                  <span class="badge bg-secondary"><%= query_doc_pairs.count %> doc<%= query_doc_pairs.count != 1 ? 's' : '' %></span>
+                </div>
+              </div>
+
+              <!-- Documents section -->
+              <div class="col-md-9">
+                <% query_doc_pairs.each do |query_doc_pair| %>
+                  <% doc_counter += 1 %>
+                  <%
+                  judgement = @judgements[query_doc_pair.id]
+                  document_fields_as_json = document_fields_parses_as_json(query_doc_pair.document_fields)
+
+              image_url = nil
+              if !document_fields_as_json.nil?
+                if document_fields_as_json.has_key?('thumb')
+                  image_url = document_fields_as_json['thumb']
+                elsif document_fields_as_json.has_key?('image')
+                  image_url = document_fields_as_json['image']
+                end
+                  end
+                  %>
+
+                  <div class="document-card mb-3 p-3 border-bottom" id="qdp_<%= query_doc_pair.id %>">
+                    <div class="document-header mb-3 d-flex align-items-center">
+                      <div class="flex-shrink-0 d-flex align-items-center" style="min-width: 150px;">
+                        <span class="badge bg-primary">#<%= doc_counter %></span>
+                        <span id="status_<%= query_doc_pair.id %>" class="ms-2 small"></span>
+                      </div>
+                      <div class="flex-grow-1 text-center mx-4">
+                        <strong>Document ID:</strong> <%= query_doc_pair.doc_id %>
+                        <span class="ms-4"><strong>Rank:</strong> <%= query_doc_pair.position %></span>
+                      </div>
+                      <div class="flex-shrink-0" style="min-width: 150px;">
+                        <!-- Spacer for balance -->
+                      </div>
+                    </div>
+
+                    <div class="document-body">
+                      <div class="row">
+                <% if image_url %>
+                  <div class="col-md-3">
+                    <img src="<%= image_url %>" class="img-fluid rounded" alt="Thumbnail">
+                  </div>
+                  <div class="col-md-9">
+                <% else %>
+                  <div class="col-12">
+                <% end %>
+
+                  <!-- Document fields display -->
+                  <div class="document-content mb-3">
+                    <% if document_fields_as_json.nil? %>
+                      <%= sanitize query_doc_pair.document_fields %>
+                    <% else %>
+                      <% title_value = document_fields_as_json['title'] %>
+                      <% if title_value.present? %>
+                        <h5><%= sanitize title_value %></h5>
+                      <% end %>
+
+                      <% document_fields_as_json.except('title', 'thumb', 'image').each do |field, value| %>
+                        <p>
+                          <span class="fw-bold"><%= field.humanize.titleize %>:</span>
+                          <% if value.is_a? String %>
+                            <% if value.starts_with?('http') %>
+                              <%= link_to value, value, target: "_blank" %>
+                            <% elsif false %>
+                              <br/><%= sanitize value %>
+                            <% else %>
+                              <%= sanitize value %>
+                            <% end %>
+                          <% elsif value.is_a? Array %>
+                            <%= truncate(sanitize(value.size == 1 ? value.first : value.to_sentence), length: 1000) %>
+                          <% end %>
+                        </p>
+                      <% end %>
+                    <% end %>
+                  </div>
+
+                  <!-- Rating buttons -->
+                  <div class="rating-buttons mb-3">
+                    <strong>Rate this document:</strong>
+                    <div class="mt-2">
+                      <div class="d-flex align-items-center">
+                          <div class="rating-buttons-container d-flex flex-wrap align-items-center">
+                          <% rating_buttons.each do |button| %>
+                            <%
+                            input_id = "judgement_#{query_doc_pair.id}_#{button['value']}"
+                            is_checked = false
+                            label_classes = "btn"
+                            if judgement.persisted? && judgement.rating.present?
+                              is_checked = (judgement.rating.to_i.to_s == button["value"].to_s)
+                              if is_checked
+                                label_classes += " btn-preselected"
+                              end
+                            end
+                            %>
+                            <input type="radio"
+                                   class="btn-check"
+                                   name="judgement_<%= query_doc_pair.id %>"
+                                   id="<%= input_id %>"
+                                   value="<%= button['value'] %>"
+                                   <% if is_checked %>checked="checked"<% end %>
+                                   data-action="click->bulk-judgement#saveRating"
+                                   data-query-doc-pair-id="<%= query_doc_pair.id %>"
+                                   data-rating="<%= button['value'] %>">
+                                   <label class="<%= label_classes %>" for="<%= input_id %>" 
+                                   style="background-color: <%= button['style']['background-color'] %>;">
+                              <%= button['label'] %>
+                            </label>
+                          <% end %>
+                        </div>
+                        <% if judgement.persisted? && judgement.rating.present? %>
+                          <button type="button"
+                                  class="btn btn-sm btn-outline-secondary ms-3"
+                                  data-action="click->bulk-judgement#resetRating"
+                                  data-query-doc-pair-id="<%= query_doc_pair.id %>"
+                                  title="Clear rating">
+                            <i class="bi bi-x-circle"></i> Reset
+                          </button>
+                        <% end %>
+                        <span id="status_<%= query_doc_pair.id %>" class="ms-2"></span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Explanation field -->
+                  <% if @show_explanations %>
+                    <div class="explanation-field">
+                      <label for="explanation_<%= query_doc_pair.id %>" class="form-label">
+                        <small>Explanation (optional):</small>
+                      </label>
+                      <%= text_area_tag "explanation_#{query_doc_pair.id}",
+                          judgement.explanation,
+                          class: "form-control form-control-sm",
+                          rows: 2,
+                          id: "explanation_#{query_doc_pair.id}",
+                          data: {
+                            action: "input->bulk-judgement#saveExplanation",
+                            query_doc_pair_id: query_doc_pair.id
+                          } %>
+                    </div>
+                  <% elsif judgement.explanation.present? %>
+                    <!-- Show existing explanation as read-only when checkbox is unchecked -->
+                    <div class="explanation-display text-muted small mt-2">
+                      <strong>Explanation:</strong> <%= judgement.explanation %>
+                    </div>
+                  <% end %>
+
+                        <% if image_url %>
+                          </div>
+                        <% else %>
+                          </div>
+                        <% end %>
+                      </div>
+                    </div>
+                  </div>
+                <% end %>
+              </div>
+            </div>
+          </div>
+        <% end %>
+
+      </div>
+
+      <% if @pagy.pages > 1 %>
+        <div class="d-flex justify-content-center mt-4">
+          <%== @pagy.series_nav(:bootstrap) %>
+        </div>
+      <% end %>
+
+    <% else %>
+      <!-- No documents match the current filters -->
+      <div class="alert alert-warning">
+        <h5 class="alert-heading"><i class="bi bi-funnel"></i> No documents match your current filters</h5>
+        <hr>
+        <p>Current filters applied:</p>
+        <ul class="mb-3">
+          <% if @query_text.present? %>
+            <li>Query text contains: "<strong><%= @query_text %></strong>"</li>
+          <% end %>
+          <% if @only_unrated %>
+            <li>Showing only <strong>unrated</strong> documents</li>
+          <% end %>
+          <% if @rank_depth.present? %>
+            <li>Rank depth limited to: <strong>≤ <%= @rank_depth %></strong></li>
+          <% end %>
+        </ul>
+
+        <p class="mb-0">Try adjusting your filters:</p>
+        <div class="mt-2">
+          <% if @only_unrated %>
+            <%= link_to "Show all documents (including rated)",
+                book_judge_bulk_path(@book, query_text: @query_text, only_unrated: false, rank_depth: @rank_depth, show_explanations: @show_explanations),
+                class: "btn btn-sm btn-outline-primary me-2" %>
+          <% end %>
+          <% if @rank_depth.present? %>
+            <%= link_to "Remove rank depth filter",
+                book_judge_bulk_path(@book, query_text: @query_text, only_unrated: @only_unrated, show_explanations: @show_explanations),
+                class: "btn btn-sm btn-outline-primary me-2" %>
+          <% end %>
+          <% if @query_text.present? %>
+            <%= link_to "Clear query filter",
+                book_judge_bulk_path(@book, only_unrated: @only_unrated, rank_depth: @rank_depth, show_explanations: @show_explanations),
+                class: "btn btn-sm btn-outline-primary me-2" %>
+          <% end %>
+          <%= link_to "Clear all filters",
+              book_judge_bulk_path(@book),
+              class: "btn btn-sm btn-outline-secondary" %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<style>
+  .query-group-card {
+    overflow: visible;
+  }
+
+  .query-sidebar {
+    background-color: #f8f9fa;
+    border-right: 2px solid #dee2e6;
+    min-height: 100%;
+  }
+
+  .sticky-query-label {
+    position: sticky;
+    top: 70px; /* Accounts for navbar height (typically ~56px) plus some padding */
+    padding: 1.5rem;
+  }
+
+  .query-title {
+    color: #6c757d;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.5rem;
+  }
+
+  .query-text {
+    font-size: 1.1rem;
+    color: #212529;
+    word-break: break-word;
+  }
+
+  .document-card {
+    background-color: white;
+  }
+
+  .document-card:last-child {
+    border-bottom: none !important;
+  }
+
+  .document-header {
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #e9ecef;
+    min-height: 3rem;
+  }
+
+  .rating-buttons .btn-check:checked + .btn {
+    box-shadow: 0 0 0 0.25rem rgba(0, 0, 0, 0.3);
+    border: 2px solid #000;
+    font-weight: bold;
+    transform: scale(1.05);
+  }
+
+  .btn-preselected { 
+    color: black !important; 
+    font-weight: bold !important; 
+    border: 2px solid #000 !important; 
+    box-shadow: 0 0 0 0.25rem rgba(0, 0, 0, 0.3) !important; 
+    transform: scale(1.05) !important; 
+  }
+
+  .sticky-top {
+    z-index: 100;
+  }
+
+  .document-content {
+    max-height: 300px;
+    overflow-y: auto;
+  }
+
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  .spin {
+    display: inline-block;
+    animation: spin 1s linear infinite;
+  }
+</style>

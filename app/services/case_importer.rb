@@ -98,7 +98,7 @@ class CaseImporter
     params_to_use[:try][:search_endpoint_id] = search_endpoint.id
     params_to_use[:try][:try_number] = 1
 
-    @case.tries.first.update(params_to_use[:try].except(:curator_variables, :search_endpoint))
+    @case.tries.first.update(params_to_use[:try].except(:curator_variables, :search_endpoint, :id))
 
     params_to_use[:try][:curator_variables]&.each do |curator_variable|
       # not sure why curator_variables.build and then the @case.save doesn't cascade down.

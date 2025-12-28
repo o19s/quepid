@@ -75,4 +75,6 @@ Rails.application.configure do
   ENV['TC_URL'] = 'https://quepidapp.com/agreement'
 
   ENV['EMAIL_SENDER'] = 'quepid@o19s.com'
+
+  config.active_storage.variant_processor = :disabled
 end

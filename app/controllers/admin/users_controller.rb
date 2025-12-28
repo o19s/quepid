@@ -4,7 +4,7 @@ require 'csv'
 
 module Admin
   class UsersController < Admin::AdminController
-    include Pagy::Backend
+    include Pagy::Method
 
     before_action :set_user, only: [ :show, :edit, :update, :destroy, :assign_judgements_to_anonymous_user ]
 
@@ -92,7 +92,7 @@ module Admin
           format.json { render :show, status: :ok, location: edit_admin_user_path(@user) }
         else
           format.html { render :edit }
-          format.json { render json: @user.errors, status: :unprocessable_entity }
+          format.json { render json: @user.errors, status: :unprocessable_content }
         end
       end
     end
@@ -109,7 +109,7 @@ module Admin
       else
         respond_to do |format|
           format.html { render :edit }
-          format.json { render json: @user.errors, status: :unprocessable_entity }
+          format.json { render json: @user.errors, status: :unprocessable_content }
         end
       end
     end

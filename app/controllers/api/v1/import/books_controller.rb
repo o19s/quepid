@@ -13,12 +13,8 @@ module Api
         #       team_id: Integer,
         #       book: Hash{
         #         name: String,
-        #         scorer: Hash{
-        #           name: String
-        #         },
-        #         selection_strategy: Hash{
-        #           name: String
-        #         },
+        #         scale: String,
+        #         scale_with_labels: String,
         #         query_doc_pairs: Array<
         #           Hash{
         #             query_text: String,
@@ -33,12 +29,8 @@ module Api
         #     "team_id": 1,
         #     "book": {
         #       "name": "bob",
-        #       "scorer": {
-        #         "name": "nDCG@10"
-        #       },
-        #       "selection_strategy": {
-        #         "name": "Multiple Raters"
-        #       },
+        #       "scale": "1,2",
+        #       "scale_with_labels": "{\"0\": \"Not Relevant\", \"1\": \"Relevant\"}",
         #       "query_doc_pairs": [
         #         {
         #           "query_text": "Ice Age",

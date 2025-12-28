@@ -33,7 +33,7 @@ class SessionsController < ApplicationController
                          'Unknown email/password combo. Double check you have the correct email address and password, or sign up for a new account.' )
 
         format.html { render :new }
-        format.json { render json: { reason: @error }, status: :unprocessable_entity }
+        format.json { render json: { reason: @error }, status: :unprocessable_content }
       end
     end
   end

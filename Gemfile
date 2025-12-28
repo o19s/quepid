@@ -9,7 +9,6 @@ gem 'acts_as_list'
 gem 'addressable'
 gem 'ahoy_matey'
 gem 'ancestry'
-gem 'angular-rails-templates'
 gem 'bcrypt'
 gem 'blazer'
 gem 'bootsnap', require: false
@@ -26,7 +25,7 @@ gem 'local_time'
 gem 'mini_racer'
 gem 'mission_control-jobs' # git: 'https://github.com/rails/mission_control-jobs.git', branch: 'main'
 gem 'mysql2'
-gem 'oas_rails'
+gem 'oas_rails', git: 'https://github.com/a-chacon/oas_rails.git', branch: 'mount-path-and-prefix-path'
 gem 'omniauth'
 gem 'omniauth-keycloak'
 gem 'omniauth-google-oauth2'
@@ -35,13 +34,13 @@ gem 'pagy'
 gem 'postmark-rails'
 gem 'prophet-rb'
 gem 'puma'
-gem 'rails', '8.0.3'
+gem 'rails', '8.1.1'
 gem 'rails-html-sanitizer'
 gem 'rack-cors'
 gem 'responders'
 gem 'rubyzip'
-# gem 'sassc-rails', '~> 2.1' # Removed to eliminate Sass dependency while keeping Sprockets
-gem 'sprockets-rails' # Explicitly added to ensure Sprockets is available
+gem 'propshaft' # Modern asset pipeline for Rails 8
+gem 'jsbundling-rails' # For bundling the Angular 1 app
 gem 'scout_apm' # using on Heroku to look at memory issues
 gem 'solid_cable'
 gem 'solid_queue'
@@ -85,7 +84,6 @@ end
 
 group :test do
   gem 'minitest-reporters'
-  gem 'mocha'
   gem 'simplecov', require: false
   gem 'webmock'
   gem 'rails-controller-testing' # bring back compatibility with rails 4 assigns in controller tests.

@@ -12,37 +12,94 @@ angular.module('QuepidApp')
       }
 
       var howManyToDisplay = docSource().length;
-      if ( howManyToDisplay < 10 ) {
+      if (howManyToDisplay < 10) {
         howManyToDisplay = 10;
       }
 
-      for(var j = 0; j < howManyToDisplay; j++) { //Initialize some doctuples
-        returnValue[j] = { doc: null, diffDoc: null };
+      // Initialize doc tuples for multi-diff comparison
+      for (var j = 0; j < howManyToDisplay; j++) {
+        returnValue[j] = { 
+          doc: null, 
+          diffDocs: []  // Array to hold docs from multiple snapshots
+        };
       }
 
-      $scope.query.maxDiffDocScore = 0;
+      $scope.query.maxDiffDocScores = [];
 
-      $scope.query.docPairs = function() {
-        var diffDocs = $scope.query.diff.docs(queriesSvc.showOnlyRated);
+      $scope.query.docTuples = function() {
+        if (!$scope.query.diffs || !$scope.query.diffs.getSearchers) {
+          return returnValue;
+        }
 
-        for(var i = 0 ; i < howManyToDisplay; i++) {
-          if( docSource()[i] ) {
+        var allSearchers = $scope.query.diffs.getSearchers();
+        
+        // Initialize max scores array
+        $scope.query.maxDiffDocScores = [];
+        for (var s = 0; s < allSearchers.length; s++) {
+          $scope.query.maxDiffDocScores[s] = 0;
+        }
+
+        for (var i = 0; i < howManyToDisplay; i++) {
+          // Set current search result
+          if (docSource()[i]) {
             returnValue[i].doc = docSource()[i];
           } else {
-            returnValue[i].doc = null;  // To overwrite old docs
-                                        // (ie when switching from snapshot
-                                        // to highest rated
+            returnValue[i].doc = null;
           }
 
-          if( diffDocs[i] ) {
-            var diffDoc = diffDocs[i];
-            $scope.query.maxDiffDocScore = Math.max($scope.query.maxDiffDocScore, diffDoc.score());
-            returnValue[i].diffDoc = diffDoc;
-          } else {
-            returnValue[i].diffDoc = null;
+          // Set diff docs from all searchers
+          returnValue[i].diffDocs = [];
+          
+          for (var searcherIndex = 0; searcherIndex < allSearchers.length; searcherIndex++) {
+            var diffDocs = $scope.query.diffs.docs(searcherIndex, queriesSvc.showOnlyRated);
+            
+            if (diffDocs[i]) {
+              var diffDoc = diffDocs[i];
+              $scope.query.maxDiffDocScores[searcherIndex] = Math.max(
+                $scope.query.maxDiffDocScores[searcherIndex], 
+                diffDoc.score()
+              );
+              returnValue[i].diffDocs[searcherIndex] = diffDoc;
+            } else {
+              returnValue[i].diffDocs[searcherIndex] = null;
+            }
           }
         }
+        
         return returnValue;
+      };
+
+
+
+      // Utility function to detect differences between results
+      $scope.getResultDifference = function(currentDoc, diffDoc) {
+        if (!currentDoc && !diffDoc) {
+          return 'same';
+        }
+        if (!currentDoc && diffDoc) {
+          return 'missing-current';
+        }
+        if (currentDoc && !diffDoc) {
+          return 'missing-snapshot';
+        }
+        if (currentDoc.id === diffDoc.id) {
+          return 'same';
+        }
+        return 'different';
+      };
+
+      // Add CSS classes based on differences
+      $scope.getResultClass = function(difference) {
+        switch (difference) {
+          case 'different':
+            return 'different';
+          case 'missing-current':
+            return 'missing';
+          case 'missing-snapshot':
+            return 'new';
+          default:
+            return '';
+        }
       };
     }
   ]);
