@@ -1,5 +1,16 @@
 # Changelog
 
+## 8.3.7 -- 2025-12-03
+
+* Fixed issue in Bulk Judging when you paginate and you don't have enough docs left due to rating activity to get results by @epugh in https://github.com/o19s/quepid/pull/1554.  Thanks @david-fisher for finding this!
+* Default to Ollama and Qwen model for local LLM as a Judge when doing development by @epugh in https://github.com/o19s/quepid/pull/1553
+
+## 8.3.6 -- 2025-11-20
+
+* LLMService builds the wrong URL for Google’s Gemini (OpenAI-compatible) API.  Thanks @oskrocha for reporting https://github.com/o19s/quepid/issues/1519 and @lauzel for fixing in https://github.com/o19s/quepid/pull/1521.
+
+Sorry it took a few weeks to release Quepid with the fix!
+
 ## 8.3.5 -- 2025-10-24
 
 There were a number of 8.3.x releases as we worked through some debugging.   8.3.5 though is the one to use!

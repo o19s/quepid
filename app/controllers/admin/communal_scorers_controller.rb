@@ -2,7 +2,7 @@
 
 module Admin
   class CommunalScorersController < Admin::AdminController
-    include Pagy::Backend
+    include Pagy::Method
 
     # Properly we should only allow a user with Admin permissions to call this controller...
     before_action :set_scorer, only: [ :show, :edit, :update, :destroy ]

@@ -1,8 +1,7 @@
 # frozen_string_literal: true
 
-require 'pagy/extras/array'
 class BulkJudgeController < ApplicationController
-  include Pagy::Backend
+  include Pagy::Method
 
   before_action :set_book
 
@@ -53,10 +52,18 @@ class BulkJudgeController < ApplicationController
       randomized_results.concat(docs.shuffle)
     end
 
-    # Now paginate the randomized results
-    @pagy, paginated_query_doc_pairs = pagy_array(randomized_results, items: 25)
+    @pagy, paginated_query_doc_pairs = pagy(randomized_results, items: 25, page: params[:page])
 
-    # Re-group the paginated results for display
+    # If you rate a bunch of documents, and we're filtering to just unrated docs,
+    # then you may not have enough docs left to fill the last page.  In that we
+    # just back up a page, and render.  And the pagy navbar is just skipped in
+    # the footer.
+    if paginated_query_doc_pairs.nil?
+      page = params[:page].to_i
+      page -= 1
+      @pagy, paginated_query_doc_pairs = pagy(randomized_results, items: 25, page: page)
+    end
+
     @grouped_query_doc_pairs = paginated_query_doc_pairs.group_by(&:query_text)
 
     # Prepare judgements for each query_doc_pair on this page
@@ -102,7 +109,7 @@ class BulkJudgeController < ApplicationController
       UpdateCaseRatingsJob.perform_later query_doc_pair
       render json: { status: 'success', judgement_id: judgement.id }
     else
-      render json: { status: 'error', errors: judgement.errors.full_messages }, status: :unprocessable_entity
+      render json: { status: 'error', errors: judgement.errors.full_messages }, status: :unprocessable_content
     end
   end
   # rubocop:enable Metrics/AbcSize, Metrics/MethodLength

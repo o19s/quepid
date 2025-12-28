@@ -1,0 +1,7 @@
+web: bundle exec puma -C config/puma.rb
+worker: bundle exec bin/jobs
+jquery: npm run build:jquery -- --watch
+angular_vendor: npm run build:angular-vendor -- --watch
+angular: npm run build:angular-app:watch
+templates: npm run build:angular-templates:watch
+css: npm run build:css:watch

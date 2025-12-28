@@ -92,7 +92,7 @@ angular.module('QuepidApp')
             docCacheSvc.empty();
             scorerSvc.bootstrap(caseNo);
           }
-          diffResultsSvc.setDiffSetting(null);
+          queryViewSvc.disableComparisons();
           docCacheSvc.invalidate();
         }
 

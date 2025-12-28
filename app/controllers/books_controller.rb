@@ -2,7 +2,8 @@
 
 # rubocop:disable Metrics/ClassLength
 class BooksController < ApplicationController
-  include Pagy::Backend
+  include Pagy::Method
+  include BooksHelper
 
   before_action :set_book,
                 only: [ :show, :edit, :update, :destroy, :combine, :assign_anonymous, :delete_ratings_by_assignee,
@@ -17,10 +18,14 @@ class BooksController < ApplicationController
 
   respond_to :html
 
+  # We use "scorer_id" in book_params as a virtual attribute.
+  # Since all the scale related attributes are mastered by a scorer data,
+  # we use the scorer_id to pluck the scale etc for real use.
+
   def index
     # with_counts adds a `book.query_doc_pairs_count` field, which avoids loading
     # all query_doc_pairs and makes bullet happy.
-    query = current_user.books_involved_with.includes([ :teams, :scorer, :selection_strategy ]).with_counts
+    query = current_user.books_involved_with.includes([ :teams ]).with_counts
 
     # Filter by archived status
     archived = deserialize_bool_param(params[:archived])
@@ -99,10 +104,10 @@ class BooksController < ApplicationController
 
     respond_with(@book)
   end
-
   # rubocop:enable Metrics/AbcSize
   # rubocop:enable Metrics/MethodLength
 
+  # rubocop:disable Metrics/MethodLength
   def new
     # we actually support passing in starting point configuration for a book
     @book = if params[:book]
@@ -111,24 +116,42 @@ class BooksController < ApplicationController
               Book.new
             end
 
+    if params[:scorer_id]
+      scorer = Scorer.find_by(id: params[:scorer_id])
+      if scorer
+        @book.scale = scorer.scale
+        @book.scale_with_labels = scorer.scale_with_labels
+        # Set scorer_id to the one that would appear in dropdown for this scale combination
+        @book.scorer_id = matching_scorer_id_for_book(current_user, @book)
+      end
+    end
+
     @ai_judges = []
 
     @origin_case = current_user.cases_involved_with.where(id: params[:origin_case_id]).first if params[:origin_case_id]
 
     respond_with(@book)
   end
+  # rubocop:enable Metrics/MethodLength
 
   def edit
     @ai_judges = User.only_ai_judges.left_joins(teams: :books).where(teams_books: { book_id: @book.id })
 
+    # Set scorer_id virtual attribute to preselect matching scorer in dropdown
+    @book.scorer_id = matching_scorer_id_for_book(current_user, @book)
+
     # Bullet really wants :rated_query_doc_pairs to be included, however that kills our performance!
     # In our use case just looks up the count of records per book.
-    @other_books = current_user.books_involved_with.includes([ :scorer ]).where.not(id: @book.id)
+    @other_books = current_user.books_involved_with.where.not(id: @book.id)
   end
 
   def create
     @book = Book.new(book_params)
     @book.owner = current_user
+
+    # Handle scorer selection
+    apply_scorer_to_book(@book, book_params[:scorer_id]) if book_params[:scorer_id].present?
+
     if @book.save
 
       if params[:book][:link_the_case]
@@ -160,12 +183,16 @@ class BooksController < ApplicationController
 
     # checkboxes suck
     @book.ai_judges.clear
-    book_params[:ai_judge_ids].each do |ai_judge_id|
+    ai_judge_ids = book_params[:ai_judge_ids].compact_blank
+    ai_judge_ids.each do |ai_judge_id|
       @book.ai_judges << User.find(ai_judge_id)
     end
 
+    # Handle scorer selection
+    apply_scorer_to_book(@book, book_params[:scorer_id]) if book_params[:scorer_id].present?
+
     @book.update(book_params.except(
-                   :team_ids, :ai_judges, :link_the_case, :origin_case_id,
+                   :team_ids, :ai_judges, :link_the_case, :origin_case_id, :scorer_id,
                    :delete_export_file, :delete_import_file
                  ))
 
@@ -173,6 +200,9 @@ class BooksController < ApplicationController
     @book.import_file.purge if '1' == book_params[:delete_import_file]
 
     @book.save
+
+    @ai_judges = User.only_ai_judges.left_joins(teams: :books).where(teams_books: { book_id: @book.id })
+    @other_books = current_user.books_involved_with.where.not(id: @book.id)
 
     respond_with(@book)
   end
@@ -209,9 +239,9 @@ class BooksController < ApplicationController
       books << book_to_merge
     end
 
-    if books.any? { |b| b.scorer.scale != @book.scorer.scale }
+    if books.any? { |b| b.scale != @book.scale }
       redirect_to book_path(@book),
-                  :alert => "One of the books chosen doesn't have a scorer with the scale #{@book.scorer.scale}" and return
+                  :alert => "One of the books chosen doesn't have a scale matching #{@book.scale}" and return
     end
 
     books.each do |book_to_merge|
@@ -348,6 +378,14 @@ class BooksController < ApplicationController
 
   private
 
+  def apply_scorer_to_book book, scorer_id
+    scorer = current_user.scorers_involved_with.find_by(id: scorer_id)
+    if scorer
+      book.scale = scorer.scale
+      book.scale_with_labels = scorer.scale_with_labels
+    end
+  end
+
   # This set_book is different because we use :id, not :book_id.
   def set_book
     @book = current_user.books_involved_with.where(id: params[:id]).first
@@ -366,7 +404,7 @@ class BooksController < ApplicationController
   end
 
   def book_params
-    params_to_use = params.expect(book: [ :scorer_id, :selection_strategy_id, :name,
+    params_to_use = params.expect(book: [ :scorer_id, :name,
                                           :support_implicit_judgements, :link_the_case, :origin_case_id,
                                           :delete_export_file, :delete_import_file,
                                           :show_rank, { team_ids: [], ai_judge_ids: [] } ])

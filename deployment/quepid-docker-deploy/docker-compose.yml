@@ -21,7 +21,7 @@ services:
     #env_file:   # Use this approach if you would rather manage your environment settings elsewhere.
     #  - .env.prod
     environment:
-      #- RAILS_RELATIVE_URL_ROOT=/quepid-prod
+      - RAILS_RELATIVE_URL_ROOT=/quepid-prod
       - QUEPID_CONSIDER_ALL_REQUESTS_LOCAL=true
       - PORT=3000
       - RACK_ENV=production

@@ -11,7 +11,7 @@ class ProfilesController < ApplicationController
         format.json { render :show, status: :ok, location: current_user }
       else
         format.html { redirect_to profile_path }
-        format.json { render json: current_user.errors, status: :unprocessable_entity }
+        format.json { render json: current_user.errors, status: :unprocessable_content }
       end
     end
   end

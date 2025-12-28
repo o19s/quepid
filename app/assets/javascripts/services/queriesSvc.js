@@ -17,6 +17,7 @@ angular.module('QuepidApp')
     'searchSvc',
     'ratingsStoreSvc',
     'caseTryNavSvc',
+    'snapshotSearcherSvc',
     'bookSvc',
     'DocListFactory',
     'diffResultsSvc',
@@ -35,6 +36,7 @@ angular.module('QuepidApp')
       searchSvc,
       ratingsStoreSvc,
       caseTryNavSvc,
+      snapshotSearcherSvc,
       bookSvc,
       DocListFactory,
       diffResultsSvc,
@@ -62,6 +64,7 @@ angular.module('QuepidApp')
       function reset() {
         svc.queries = {};
         svc.showOnlyRated = false;
+        svc.isBootstrapping = false;
         svc.svcVersion++;
         // Clear sync cache when resetting
         syncedPairsCache = {};
@@ -88,11 +91,13 @@ angular.module('QuepidApp')
 
       this.getCaseNo = getCaseNo;
       this.createSearcherFromSettings = createSearcherFromSettings;
+      this.createSearcherFromSnapshot = createSearcherFromSnapshot;
       this.normalizeDocExplains = normalizeDocExplains;
       this.toggleShowOnlyRated = toggleShowOnlyRated;
 
       svc.bootstrapQueries = bootstrapQueries;
       svc.showOnlyRated = false;
+      svc.isBootstrapping = false;
 
       // Rescore on ratings update
       $scope.$on('rating-changed', () => {
@@ -190,6 +195,10 @@ angular.module('QuepidApp')
             passedInSettings.searchEngine
           );
         }
+      }
+
+      function createSearcherFromSnapshot(snapshotId, query, settings) {
+        return snapshotSearcherSvc.createSearcherFromSnapshot(snapshotId, query, settings);
       }
 
       function normalizeDocExplains(query, searcher, fieldSpec) {
@@ -546,6 +555,50 @@ angular.module('QuepidApp')
           });
         };
 
+        // Method to search using a snapshot instead of live search engine
+        this.searchFromSnapshot = function(snapshotId) {
+          let self = this;
+          
+          return $q(function(resolve, reject) {
+            self.hasBeenScored = false;
+
+            // Create snapshot searcher using the same interface as normal searchers
+            let settings = currSettings;
+            self.searcher = svc.createSearcherFromSnapshot(snapshotId, self, settings);
+
+            if (!self.searcher) {
+              let msg = 'Snapshot not found: ' + snapshotId;
+              self.onError(msg);
+              reject(msg);
+              return;
+            }
+
+            // Use the same search flow as normal search
+            self.searcher.search()
+              .then(function() {
+                self.linkUrl = self.searcher.linkUrl;
+
+                if (self.searcher.inError) {
+                  self.setDocs([], 0);
+                  self.onError('Error loading snapshot results');
+                  reject('Error loading snapshot results');
+                } else {
+                  let error = self.setDocs(self.searcher.docs, self.searcher.numFound);
+                  if (error) {
+                    self.onError(error);
+                    reject(error);
+                  } else {
+                    resolve();
+                  }
+                }
+              }, function() {
+                let msg = 'Failed to load snapshot: ' + snapshotId;
+                self.onError(msg);
+                reject(msg);
+              });
+          });
+        };
+
         this.paginate = function() {
           let self = this;
 
@@ -747,10 +800,6 @@ angular.module('QuepidApp')
                 queryWithRatings.deleted === 'true')) {
             let newQueryId = queryWithRatings.query_id;
             queryWithRatings.queryId = queryWithRatings.query_id;
-            // Eric thinks below is not needed.
-            //if (typeof(queryWithRatings.queryId) === 'string') {
-            //  queryWithRatings.queryId = parseInt(queryWithRatings.queryId, 10);
-            //}
             newQuery = new Query(queryWithRatings);
             that.queries[newQueryId] = newQuery;
             newQueries.push(newQueryId);
@@ -763,6 +812,7 @@ angular.module('QuepidApp')
 
       let querySearchableDeferred = $q.defer();
       function bootstrapQueries(caseNo) {
+        svc.isBootstrapping = true;
         querySearchableDeferred = $q.defer();
         var path = 'api/cases/' + caseNo + '/queries?bootstrap=true';
 
@@ -771,12 +821,15 @@ angular.module('QuepidApp')
             that.queries = {};
             addQueriesFromResp(response.data);
 
+            svc.isBootstrapping = false;
             querySearchableDeferred.resolve();
           }, function(response) {
             $log.debug('Failed to bootstrap queries: ', response);
+            svc.isBootstrapping = false;
             return response;
           }).catch(function(response) {
             $log.debug('Failed to bootstrap queries');
+            svc.isBootstrapping = false;
             return response;
           });
 
@@ -1049,7 +1102,7 @@ angular.module('QuepidApp')
       };
 
       /*
-       * This method prepares the scores table that the qgraph/qscore needs.
+       * This method prepares the scores table that the qgraph/qscore-case/qscore-query components need.
        *
        */
       this.scoreAll = function(scorables) {
@@ -1070,8 +1123,9 @@ angular.module('QuepidApp')
             }
             
             if (scoreInfo.score === null) {
-              // Added 06-Mar-24.   Delete after a few months if we find out this never happens!
-              throw new Error('Null scoreInfo.score should never happen.');
+              // Handle null scores gracefully in diff/snapshot comparisons
+              console.log('Skipping null score in scoreAll calculation');
+              return; // Skip this scorable and continue with others
             }
             // Treat non-rated queries as zeroes when calculating case score
             // This if means we are skipping over zsr as part of the case score
@@ -1121,8 +1175,8 @@ angular.module('QuepidApp')
         });
       };
 
-      this.setDiffSetting = function(diffSetting) {
-        diffResultsSvc.setDiffSetting(diffSetting);
+      // Refresh diff objects for all queries after state changes
+      this.refreshAllDiffs = function() {
         angular.forEach(this.queries, function(query) {
           diffResultsSvc.createQueryDiff(query);
         });

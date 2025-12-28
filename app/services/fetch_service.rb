@@ -126,7 +126,7 @@ class FetchService
         explain:    doc[:explain],
         position:   doc[:position] || (index + 1),
         rated_only: doc[:rated_only] || false,
-        fields:     doc[:fields].blank? ? nil : doc[:fields].to_json,
+        fields:     doc[:fields].presence&.to_json,
       }
       results << query.snapshot_docs.build(doc_params)
     end
@@ -273,7 +273,7 @@ class FetchService
       score:      average_score,
       scorer_id:  @case.scorer.id,
       try_number: try.try_number,
-      user_id:    user.present? ? user.id : nil,
+      user_id:    user.presence&.id,
     }
 
     score_data
@@ -441,7 +441,7 @@ class FetchService
       each = each.to_unsafe_h if each.is_a?(ActionController::Parameters)
       each = each.to_hash     if each.is_a?(ActiveSupport::HashWithIndifferentAccess)
 
-      each.symbolize_keys! if each.present?
+      each.presence&.symbolize_keys!
     end.compact
 
     result

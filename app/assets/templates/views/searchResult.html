@@ -1,111 +1,109 @@
 <!-- single row showing a single search result (ie a single doc) under a query
      including rating button, title and all fields, and explain info-->
 
-<div class="container">
-  <div class="row">
-    <div class="col-md-10" style="position: relative">
-      <div class="col-ratings">
+<div class="row">
+  <div class="col-md-10" style="position: relative">
+    <div class="col-ratings">
 
-        <div ng-if="doc.error === undefined" class="ratings">
-          <div class="single-rating" uib-popover-template="'views/ratings/popover.html'" popover-trigger="outsideClick" popover-placement="auto right" popover-is-open="ratings.ratingsOn">
-            <span class="btn" ng-style="{rating: displayRating(), scale: ratings.scale} | ratingBgStyle">
-              {{displayRating()}}
-              <span class="caret"></span>
-            </span>
-          </div>
+      <div ng-if="doc.error === undefined" class="ratings">
+        <div class="single-rating" uib-popover-template="'views/ratings/popover.html'" popover-trigger="outsideClick" popover-placement="auto right" popover-is-open="ratings.ratingsOn">
+          <span class="btn" ng-style="{rating: displayRating(), scale: ratings.scale} | ratingBgStyle">
+            {{displayRating()}}
+            <span class="caret"></span>
+          </span>
         </div>
-      </div>
-
-      <div class="col-summary" ng-class="summaryColumnStyle()">
-        <!-- thumbnail/image if the doc has one -->
-        <div ng-show="doc.hasThumb()" class="col-thumbnail" style="text-align: center">
-          <img class="img-thumbnail result-thumbnail" ng-src="{{formatImageUrl(doc.thumb, doc.thumb_options)}}">
-        </div>
-        <div ng-show="doc.hasImage()" class="col-image" style="text-align: center">
-          <img class="img-thumbnail result-image" ng-src="{{formatImageUrl(doc.image, doc.image_options)}}" />
-        </div>
-
-        <!-- Fields -->
-        <ul class="subfields">
-          <!-- Title -->
-          <li class="subTitle">
-            <a ng-click="showDoc()">{{ doc.title }}</a>
-          </li>
-
-          <!-- Error -->
-          <div ng-if="doc.error" class="alert alert-danger">
-            <span class="glyphicon glyphicon-alert"></span>
-            This document can't be uniquely identified, so Quepid can't store ratings for this document. </br> <span ng-bind-html="doc.error"></span>.
-          </div>
-
-          <!-- Media Embeds -->
-          <li ng-repeat="(fieldName, fieldValue) in doc.embeds">
-            <span class="subLabel">{{fieldName}}:</span>
-            <span quepid-embed data-src="fieldValue"></span>
-          </li>
-
-          <!-- Translations -->
-          <li ng-repeat="(fieldName, fieldValue) in doc.translations">
-            <span class="subLabel">{{fieldName}}:</span>
-            <span
-              ng-bind-html="fieldValue"
-            >
-              <!-- Normal display of a snippet -->
-            </span>
-            <span><a href="https://translate.google.com/?sl=auto&tl=en&text={{fieldValue}}" target="_blank"><img ng-src="images/google-translate.png" width="16" height="16"/></a></span>
-          </li>
-          
-          <!-- Unabridgeds -->
-          <li ng-repeat="(fieldName, fieldValue) in doc.unabridgeds">
-            <span class="subLabel">{{fieldName}}:</span>
-            <span
-              ng-bind-html="fieldValue"
-            >
-            </span>
-          </li>          
-
-          <!-- Other fields -->
-          <li ng-repeat="(fieldName, fieldValue) in snippets">
-            <span class="subLabel">{{fieldName}}:</span>
-
-            <span
-              ng-if="isObjectOrArray(fieldValue)"
-            >
-              <!-- output JSON blob -->
-              <json-explorer
-                json-data="fieldValue"
-                collapsed="false">
-              </json-explorer>
-            </span>
-
-            <span
-              ng-if="isUrl(fieldValue)">
-              <!-- Format a HREF link.  Use the original value, not the html escaped snippet. -->
-              <a ng-href="{{ doc.doc[fieldName] }}" target="_blank">{{ doc.doc[fieldName] }}</a>
-            </span>
-
-            <span
-              ng-bind-html="fieldValue"
-              ng-if="!isObjectOrArray(fieldValue) && !isUrl(fieldValue)"
-            >
-              <!-- Normal display of a snippet -->
-            </span>
-          </li>
-
-          <!-- Rank (position in the list) -->
-          <li class='result-rank'>
-            Rank: #{{ rank }}
-          </li>
-        </ul>
       </div>
     </div>
 
-    <div ng-if="explainView === 'full'" class="col-md-2">
-      <div class="stacked-chart-container">
-        <stacked-chart viewport="explainViewport" doc="doc" max-doc-score="maxDocScore"></stacked-chart>
-
-        <!-- <a href="#" ng-click="showDetailed()">Detailed</a> -->
+    <div class="col-summary" ng-class="summaryColumnStyle()">
+      <!-- thumbnail/image if the doc has one -->
+      <div ng-show="doc.hasThumb()" class="col-thumbnail" style="text-align: center">
+        <img class="img-thumbnail result-thumbnail" ng-src="{{formatImageUrl(doc.thumb, doc.thumb_options)}}">
       </div>
+      <div ng-show="doc.hasImage()" class="col-image" style="text-align: center">
+        <img class="img-thumbnail result-image" ng-src="{{formatImageUrl(doc.image, doc.image_options)}}" />
+      </div>
+
+      <!-- Fields -->
+      <ul class="subfields">
+        <!-- Title -->
+        <li class="subTitle">
+          <a ng-click="showDoc()">{{ doc.title }}</a>
+        </li>
+
+        <!-- Error -->
+        <div ng-if="doc.error" class="alert alert-danger">
+          <span class="glyphicon glyphicon-alert"></span>
+          This document can't be uniquely identified, so Quepid can't store ratings for this document. </br> <span ng-bind-html="doc.error"></span>.
+        </div>
+
+        <!-- Media Embeds -->
+        <li ng-repeat="(fieldName, fieldValue) in doc.embeds">
+          <span class="subLabel">{{fieldName}}:</span>
+          <span quepid-embed data-src="fieldValue"></span>
+        </li>
+
+        <!-- Translations -->
+        <li ng-repeat="(fieldName, fieldValue) in doc.translations">
+          <span class="subLabel">{{fieldName}}:</span>
+          <span
+            ng-bind-html="fieldValue"
+          >
+            <!-- Normal display of a snippet -->
+          </span>
+          <span><a ng-href="https://translate.google.com/?sl=auto&tl=en&text={{fieldValue}}" target="_blank"><img ng-src="images/google-translate.png" width="16" height="16"/></a></span>
+        </li>
+        
+        <!-- Unabridgeds -->
+        <li ng-repeat="(fieldName, fieldValue) in doc.unabridgeds">
+          <span class="subLabel">{{fieldName}}:</span>
+          <span
+            ng-bind-html="fieldValue"
+          >
+          </span>
+        </li>          
+
+        <!-- Other fields -->
+        <li ng-repeat="(fieldName, fieldValue) in snippets">
+          <span class="subLabel">{{fieldName}}:</span>
+
+          <span
+            ng-if="isObjectOrArray(fieldValue)"
+          >
+            <!-- output JSON blob -->
+            <json-explorer
+              json-data="fieldValue"
+              collapsed="false">
+            </json-explorer>
+          </span>
+
+          <span
+            ng-if="isUrl(fieldValue)">
+            <!-- Format a HREF link.  Use the original value, not the html escaped snippet. -->
+            <a ng-href="{{ doc.doc[fieldName] }}" target="_blank">{{ doc.doc[fieldName] }}</a>
+          </span>
+
+          <span
+            ng-bind-html="fieldValue"
+            ng-if="!isObjectOrArray(fieldValue) && !isUrl(fieldValue)"
+          >
+            <!-- Normal display of a snippet -->
+          </span>
+        </li>
+
+        <!-- Rank (position in the list) -->
+        <li class='result-rank'>
+          Rank: #{{ rank }}
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <div ng-if="explainView === 'full'" class="col-md-2">
+    <div class="stacked-chart-container">
+      <stacked-chart viewport="explainViewport" doc="doc" max-doc-score="maxDocScore"></stacked-chart>
+
+      <!-- <a href="#" ng-click="showDetailed()">Detailed</a> -->
     </div>
   </div>
 </div>

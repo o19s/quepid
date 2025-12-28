@@ -197,7 +197,7 @@ class SnapshotManager
         explain:    doc[:explain],
         position:   doc[:position] || (index + 1),
         rated_only: doc[:rated_only] || false,
-        fields:     doc[:fields].blank? ? nil : doc[:fields].to_json,
+        fields:     doc[:fields].presence&.to_json,
       }
 
       results << query.snapshot_docs.build(doc_params)
@@ -229,7 +229,7 @@ class SnapshotManager
       each = each.to_unsafe_h if each.is_a?(ActionController::Parameters)
       each = each.to_hash     if each.is_a?(ActiveSupport::HashWithIndifferentAccess)
 
-      each.symbolize_keys! if each.present?
+      each.presence&.symbolize_keys!
     end.compact
 
     result

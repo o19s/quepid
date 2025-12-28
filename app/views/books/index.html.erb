@@ -63,8 +63,7 @@
           <th>ID</th>
           <th>Name</th>
           <th>Teams</th>
-          <th>Scorer</th>
-          <th>Selection strategy</th>
+          <th>Scale</th>
           <th>Status</th>
         </tr>
       </thead>
@@ -75,6 +74,6 @@
     </table>
   </div>
   <div class="card-footer d-flex justify-content-center">
-    <%== pagy_bootstrap_nav(@pagy) %>
+    <%== @pagy.series_nav(:bootstrap) %>
   </div>
 </div>

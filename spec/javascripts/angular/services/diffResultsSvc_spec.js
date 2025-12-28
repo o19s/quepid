@@ -38,6 +38,49 @@ describe('Service: diffResultsSvc', function() {
     snapshots: [mockSnapshot1, mockSnapshot2]
   };
 
+  var mockQueryViewSvc = {
+    diffSettings: [],
+    getAllDiffSettings: function() {
+      return this.diffSettings;
+    },
+    setDiffSettings: function(settings) {
+      this.diffSettings = settings;
+    }
+  };
+
+  var mockRatingsStore = {
+    createRateableDoc: function(doc) {
+      var rateableDoc = angular.copy(doc);
+      rateableDoc.hasRating = function() { return false; };
+      rateableDoc.getRating = function() { return null; };
+      rateableDoc.ratedOnly = false;
+      return rateableDoc;
+    }
+  };
+
+  var mockSnapshotSearcherSvc = {
+    createSearcherFromSnapshot: function(snapshotId, query, settings) {
+      var snapshot = mockQuerySnapshotSvc.snapshots[snapshotId];
+      if (!snapshot) return null;
+      
+      return {
+        docs: snapshot.getSearchResults().map(function(doc) {
+          return mockRatingsStore.createRateableDoc(angular.copy(doc));
+        }),
+        search: function() {
+          return $q.resolve();
+        },
+        name: function() {
+          return 'Snapshot ' + snapshotId;
+        },
+        version: function() {
+          return snapshotId;
+        },
+        diffScore: { score: '?', allRated: false }
+      };
+    }
+  };
+
   // load the service's module
   beforeEach(module('QuepidApp'));
 
@@ -48,6 +91,8 @@ describe('Service: diffResultsSvc', function() {
 
       $provide.value('settingsSvc', mockSettingsSvc);
       $provide.value('querySnapshotSvc', mockQuerySnapshotSvc);
+      $provide.value('queryViewSvc', mockQueryViewSvc);
+      $provide.value('snapshotSearcherSvc', mockSnapshotSearcherSvc);
     });
     inject(function (_$rootScope_, _$q_, _diffResultsSvc_, _fieldSpecSvc_, _ratingsStoreSvc_, _docResolverSvc_, $injector) {
       $httpBackend      = $injector.get('$httpBackend');
@@ -116,60 +161,65 @@ describe('Service: diffResultsSvc', function() {
   });
 
   describe('snapshot diff', function() {
-    beforeEach(function() {
+    beforeEach(function(done) {
       var snapshotId = 0;
-      diffResultsSvc.setDiffSetting(snapshotId);
+      mockQueryViewSvc.setDiffSettings([snapshotId]);
       diffResultsSvc.createQueryDiff(fakeQuery);
-      expect(fakeQuery.diff.docs().length).toEqual(2);
+      
+      // Wait for multiDiff to be created and diff wrapper to be available
+      $rootScope.$apply();
+      setTimeout(function() {
+        expect(fakeQuery.diff).not.toBe(null);
+        expect(fakeQuery.diff.docs().length).toEqual(2);
+        done();
+      }, 0);
     });
 
-    it('contains correct docs', function() {
-      var called = 0;
+    it('contains correct docs', function(done) {
       fakeQuery.diff.fetch().then(function() {
-        expect(fakeQuery.diff.docs()).toContain(doc1);
-        expect(fakeQuery.diff.docs()).toContain(doc2);
-        expect(fakeQuery.diff.docs().length).toEqual(2);
-        called++;
+        var docs = fakeQuery.diff.docs();
+        expect(docs.length).toEqual(2);
+        expect(docs.some(function(doc) { return doc.id === '1' && doc.field1 === 'cats'; })).toBe(true);
+        expect(docs.some(function(doc) { return doc.id === '2' && doc.field1 === 'dogs'; })).toBe(true);
+        done();
       });
 
       $rootScope.$apply();
-      expect(called).toBe(1);
     });
 
-    it('asks correct docs to be scored', function() {
-      var called = 0;
+    it('asks correct docs to be scored', function(done) {
       fakeQuery.diff.fetch().then(function() {
-        expect(fakeQuery.lastScoreDocs).toContain(doc1);
-        expect(fakeQuery.lastScoreDocs).toContain(doc2);
+        expect(fakeQuery.lastScoreDocs.length).toEqual(2);
+        expect(fakeQuery.lastScoreDocs.some(function(doc) { return doc.id === '1' && doc.field1 === 'cats'; })).toBe(true);
+        expect(fakeQuery.lastScoreDocs.some(function(doc) { return doc.id === '2' && doc.field1 === 'dogs'; })).toBe(true);
         expect(fakeQuery.diff.docs().length).toEqual(2);
-        called++;
+        done();
       });
 
       $rootScope.$apply();
-      expect(called).toBe(1);
     });
-    it('refetches same docs', function() {
+    it('refetches same docs', function(done) {
       var called = 0;
       fakeQuery.diff.fetch().then(function() {
-        expect(fakeQuery.diff.docs()).toContain(doc1);
-        expect(fakeQuery.diff.docs()).toContain(doc2);
-        expect(fakeQuery.diff.docs().length).toEqual(2);
+        var docs = fakeQuery.diff.docs();
+        expect(docs.length).toEqual(2);
+        expect(docs.some(function(doc) { return doc.id === '1' && doc.field1 === 'cats'; })).toBe(true);
+        expect(docs.some(function(doc) { return doc.id === '2' && doc.field1 === 'dogs'; })).toBe(true);
         called++;
+
+        // Second fetch
+        fakeQuery.diff.fetch().then(function() {
+          var docs2 = fakeQuery.diff.docs();
+          expect(docs2.length).toEqual(2);
+          expect(docs2.some(function(doc) { return doc.id === '1' && doc.field1 === 'cats'; })).toBe(true);
+          expect(docs2.some(function(doc) { return doc.id === '2' && doc.field1 === 'dogs'; })).toBe(true);
+          called++;
+          expect(called).toBe(2);
+          done();
+        });
       });
 
       $rootScope.$apply();
-      expect(called).toBe(1);
-
-      fakeQuery.diff.fetch();
-      fakeQuery.diff.fetch().then(function() {
-        expect(fakeQuery.diff.docs()).toContain(doc1);
-        expect(fakeQuery.diff.docs()).toContain(doc2);
-        expect(fakeQuery.diff.docs().length).toEqual(2);
-        called++;
-      });
-
-      $rootScope.$apply();
-      expect(called).toBe(2);
     });
   });
 

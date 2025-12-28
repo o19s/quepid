@@ -6,13 +6,13 @@
   },
   "license": "Apache-2.0",
   "engines": {
-    "node": "22.x"
+    "node": ">=20"
   },
   "dependencies": {
     "@popperjs/core": "^2.11.6",
-    "@rails/actioncable": "8.0.300",
-    "@rails/activestorage": "8.0.300",
-    "ace-builds": "^1.32.2",
+    "@rails/actioncable": "8.1.100",
+    "@rails/activestorage": "8.1.100",
+    "ace-builds": "^1.43.4",
     "angular": "~1.8.3",
     "angular-animate": "^1.8.3",
     "angular-cookies": "~1.8.3",
@@ -30,11 +30,14 @@
     "angular-wizard": "https://github.com/softwaredoug/angular-wizard/archive/0.4.2.tar.gz",
     "bootstrap": "^5.3.0",
     "bootstrap-icons": "^1.10.3",
-    "cal-heatmap": "4",
+    "cal-heatmap": "^4.2.4",
     "clipboard": "^2.0.11",
     "d3": "~7.9.0",
     "d3-tip": "~0.9.1",
     "file-saver": "^2.0.5",
+    "jquery": "^3.7.1",
+    "jquery-autogrowinput": "^1.0.3",
+    "jquery-ui-dist": "^1.13.3",
     "local-time": "^3.0.0",
     "ng-json-explorer": "https://github.com/o19s/ng-json-explorer/archive/master.tar.gz",
     "ng-tags-input": "3.2.0",
@@ -42,16 +45,36 @@
     "popper.js": "^1.16.1",
     "splainer-search": "2.35.1",
     "tether-shepherd": "latest",
-    "vega": "^6.0.0"
+    "urijs": "^1.19.11",
+    "vega": "^6.0.0",
+    "vega-embed": "^7.1.0",
+    "vega-lite": "^6.4.1"
   },
   "devDependencies": {
     "angular-mocks": "~1.8.3",
-    "jasmine-core": "5.9.0",
+    "chokidar": "5.0.0",
+    "esbuild": "^0.27.0",
+    "jasmine-core": "5.13.0",
     "jshint": "2.13.6",
     "karma": "^6.4.1",
     "karma-chrome-launcher": "3.2.0",
     "karma-jasmine": "5.1.0",
     "puppeteer": "^24.0.0"
   },
-  "resolutions": {}
+  "resolutions": {},
+  "scripts": {
+    "build:jquery": "esbuild app/javascript/jquery_bundle.js --bundle --sourcemap --format=iife --platform=browser --outdir=app/assets/builds --public-path=/assets",
+    "build:angular-vendor": "esbuild app/javascript/angular_app.js --bundle --sourcemap --format=iife --outdir=app/assets/builds --public-path=/assets --loader:.png=dataurl --loader:.svg=dataurl --loader:.woff=dataurl --loader:.woff2=dataurl --loader:.ttf=dataurl --loader:.eot=dataurl --external:jquery",
+    "build:angular-app": "node build_angular_app.js",
+    "build:angular-app:watch": "node build_angular_app.js --watch",
+    "build:angular-templates": "node build_templates.js",
+    "build:angular-templates:watch": "node build_templates.js --watch",
+    "build:admin": "esbuild app/javascript/admin_users.js --bundle --sourcemap --format=iife --outdir=app/assets/builds --public-path=/assets",
+    "build:analytics": "esbuild app/javascript/analytics.js --bundle --sourcemap --format=iife --outdir=app/assets/builds --public-path=/assets",
+    "build:css": "node build_css.js",
+    "build:css:watch": "node build_css.js --watch",
+    "build": "npm run build:css && npm run build:jquery && npm run build:angular-vendor && npm run build:angular-app && npm run build:angular-templates && npm run build:admin && npm run build:analytics",
+    "test": "rake karma:run",
+    "test:ci": "rake karma:ci"
+  }
 }

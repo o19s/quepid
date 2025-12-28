@@ -37,7 +37,7 @@ OasRails.configure do |config|
 
   # Servers Information. For more details follow: https://spec.openapis.org/oas/latest.html#server-object
   config.servers = [
-    { url: '/', description: 'Relative' }
+    { url: Rails.application.config.relative_url_root || '/', description: 'Relative' }
   ]
 
   # Tag Information. For more details follow: https://spec.openapis.org/oas/latest.html#tag-object
