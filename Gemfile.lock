@@ -1,6 +1,6 @@
 GIT
   remote: https://github.com/a-chacon/oas_rails.git
-  revision: d779204867dcf010dee8e0150fee7f7a4f0c611c
+  revision: 090c0f945060540869494ebbe71aa06a48ba919c
   branch: mount-path-and-prefix-path
   specs:
     oas_rails (1.3.2)
@@ -158,7 +158,7 @@ GEM
     cmdstan (0.5.1)
       csv
     colorize (1.1.0)
-    concurrent-ruby (1.3.5)
+    concurrent-ruby (1.3.6)
     connection_pool (3.0.2)
     console (1.34.2)
       fiber-annotation
@@ -286,7 +286,7 @@ GEM
     hashie (5.0.0)
     heapy (0.2.0)
       thor
-    i18n (1.14.7)
+    i18n (1.14.8)
       concurrent-ruby (~> 1.0)
     importmap-rails (2.2.2)
       actionpack (>= 6.0.0)
@@ -352,7 +352,8 @@ GEM
     mini_mime (1.1.5)
     mini_racer (0.19.1)
       libv8-node (~> 24.1.0.0)
-    minitest (5.26.2)
+    minitest (6.0.1)
+      prism (~> 1.5)
     minitest-reporters (1.7.1)
       ansi
       builder
@@ -605,7 +606,7 @@ GEM
       fugit (~> 1.11)
       railties (>= 7.1)
       thor (>= 1.3.1)
-    sorbet-runtime (0.6.12824)
+    sorbet-runtime (0.6.12872)
     stimulus-rails (1.3.4)
       railties (>= 6.0.0)
     stringio (3.2.0)
