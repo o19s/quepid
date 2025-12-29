@@ -14,7 +14,7 @@ class ExperimentWithRubyLlmExtractorTest < ActionDispatch::IntegrationTest
   let(:selection_strategy) { selection_strategies(:multiple_raters) }
 
   # rubocop:disable Style/ClassVars
-  @@skip_tests = false
+  @@skip_tests = ENV.fetch('OPENAI_API_KEY', nil).nil? ? true : false
   # rubocop:enable Style/ClassVars
 
 

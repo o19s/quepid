@@ -40,7 +40,7 @@ class ExperimentWithRubyLlmTest < ActionDispatch::IntegrationTest
   let(:selection_strategy) { selection_strategies(:multiple_raters) }
 
   # rubocop:disable Style/ClassVars
-  @@skip_tests = false
+  @@skip_tests = ENV.fetch('OPENAI_API_KEY', nil).nil? ? true : false
   # rubocop:enable Style/ClassVars
 
   test 'Start a chat' do
@@ -84,6 +84,7 @@ class ExperimentWithRubyLlmTest < ActionDispatch::IntegrationTest
   end
 
   test 'play with ollama' do
+    skip('Ignoring all tests in ExperimentWithRubyLlmTest') if @@skip_tests
     WebMock.allow_net_connect!
     RubyLLM.configure do |config|
       config.ollama_api_base = 'http://host.docker.internal:11434/v1'
