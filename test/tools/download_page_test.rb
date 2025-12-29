@@ -2,7 +2,7 @@
 
 require 'test_helper'
 
-class DownloadPageTest < ActionDispatch::IntegrationTest
+class DownloadPageTest < ActiveSupport::TestCase
   setup do
     @tool = DownloadPage.new
   end

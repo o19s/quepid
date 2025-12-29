@@ -2,7 +2,7 @@
 
 require 'test_helper'
 
-class JavaScriptExtractorTest < ActionDispatch::IntegrationTest
+class JavaScriptExtractorTest < ActiveSupport::TestCase
   setup do
     @tool = JavaScriptExtractor.new
   end
