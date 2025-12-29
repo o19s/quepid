@@ -6,103 +6,7 @@ require 'nokogiri'
 
 require 'tzinfo'
 
-class DownloadPage < RubyLLM::Tool
-  description 'Downloads a specific web search results page'
-  param :url, desc: 'Webpage Search Results URL (e.g., https://search.ed.ac.uk/?q=mental)'
-
-  def execute url:
-    # url = "https://api.open-meteo.com/v1/forecast?latitude=#{latitude}&longitude=#{longitude}&current=temperature_2m,wind_speed_10m"
-
-    response = Faraday.get(url)
-    # data = JSON.parse(response.body)
-    data = response.body
-    # assuming it's html not json
-    clean_html = strip_css_styling(data)
-    # puts clean_html
-    clean_html
-  rescue StandardError => e
-    { error: e.message }
-  end
-
-  def strip_css_styling html
-    doc = Nokogiri::HTML(html)
-
-    # Remove all style tags
-    doc.css('style').remove
-
-    # Remove all link tags that reference stylesheets
-    doc.css('link[rel="stylesheet"]').remove
-
-    # Remove inline style attributes from all elements
-    doc.css('[style]').each do |element|
-      element.remove_attribute('style')
-    end
-
-    # Remove class attributes (optional, but often used for styling)
-    doc.css('[class]').each do |element|
-      element.remove_attribute('class')
-    end
-
-    # Remove JavaScript
-    doc.css('script').remove                     # Remove script tags
-    doc.xpath('//@*[starts-with(name(), "on")]').each(&:remove)
-    doc.css('[href^="javascript:"]').each do |el|
-      el.remove_attribute('href')                # Remove javascript: URLs
-    end
-
-    # Return the cleaned HTML
-    doc.to_html
-  end
-end
-
-class JavaScriptExtractor < RubyLLM::Tool
-  description 'Extracts JavaScript code blocks from markdown content'
-  param :markdown_content, desc: 'Markdown content string containing JavaScript code blocks'
-
-  def execute markdown_content:
-    # Extract JavaScript code blocks using regex
-    javascript_blocks = extract_javascript_blocks(markdown_content)
-    
-    if javascript_blocks.empty?
-      { error: "No JavaScript code blocks found in the markdown content" }
-    else
-      javascript_blocks.join("\n\n")
-    end
-  rescue StandardError => e
-    { error: e.message }
-  end
-
-  private
-
-  def extract_javascript_blocks(content)
-    # Match code blocks that are either ```javascript or just ```
-    # This regex captures the content between the backticks
-    javascript_blocks = []
-    
-    # Match ```javascript ... ``` blocks
-    content.scan(/```javascript\n(.*?)\n```/m) do |match|
-      javascript_blocks << match[0].strip
-    end
-    
-    # Match ```js ... ``` blocks  
-    content.scan(/```js\n(.*?)\n```/m) do |match|
-      javascript_blocks << match[0].strip
-    end
-    
-    # If no labeled blocks found, try unlabeled ``` blocks that contain JavaScript-like content
-    if javascript_blocks.empty?
-      content.scan(/```\n(.*?)\n```/m) do |match|
-        code = match[0].strip
-        # Simple heuristic: if it contains function, const, let, var, or =>, it's likely JavaScript
-        if code.match?(/(function|const |let |var |=>|\{|\})/)
-          javascript_blocks << code
-        end
-      end
-    end
-    
-    javascript_blocks
-  end
-end
+# RubyLLM tools are auto-loaded from app/tools directory
 
 class ExperimentWithRubyLlmExtractorTest < ActionDispatch::IntegrationTest
   let(:user) { users(:doug) }
@@ -254,22 +158,6 @@ class ExperimentWithRubyLlmExtractorTest < ActionDispatch::IntegrationTest
 
   end
 
-  test "extract javascript from markdown" do
-    skip("Ignoring all tests in ExperimentWithRubyLlmExtractorTest") if @@skip_tests
-
-    fixture_path = Rails.root.join("test", "fixtures", "files", "llm_generated_response.md")
-    markdown_content = File.read(fixture_path)
-    
-    extractor = JavaScriptExtractor.new
-    result = extractor.execute(markdown_content: markdown_content)
-  
-    if result.is_a?(String)
-      puts "Extracted JavaScript:"
-      puts result
-    else
-      puts "Error occurred"
-      puts result[:error] if result[:error]
-    end
-  end
+  # Test removed - see tools_test.rb for working JavaScript extractor tests
 
 end
