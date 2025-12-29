@@ -7,11 +7,10 @@ class DownloadPage < RubyLLM::Tool
   description 'Downloads a specific web search results page'
   param :url, desc: 'Webpage Search Results URL (e.g., https://search.ed.ac.uk/?q=mental)'
 
+  # rubocop:disable Metrics/MethodLength
   def execute url:
     # Validate URL format
-    unless url&.match?(/\Ahttps?:\/\/.+/i)
-      return { error: "Invalid URL format. Must start with http:// or https://" }
-    end
+    return { error: 'Invalid URL format. Must start with http:// or https://' } unless url&.match?(%r{\Ahttps?://.+}i)
 
     response = Faraday.get(url) do |req|
       req.options.timeout = 30        # 30 second timeout
@@ -20,26 +19,23 @@ class DownloadPage < RubyLLM::Tool
     end
 
     # Check for successful response
-    unless response.success?
-      return { error: "HTTP #{response.status}: Failed to fetch URL" }
-    end
+    return { error: "HTTP #{response.status}: Failed to fetch URL" } unless response.success?
 
     # Check if we got content
-    if response.body.nil? || response.body.empty?
-      return { error: "No content received from URL" }
-    end
+    return { error: 'No content received from URL' } if response.body.blank?
 
     data = response.body
     # assuming it's html not json
     clean_html = strip_css_styling(data)
     clean_html
   rescue Faraday::TimeoutError
-    { error: "Request timed out" }
+    { error: 'Request timed out' }
   rescue Faraday::ConnectionFailed
-    { error: "Connection failed - unable to reach URL" }
+    { error: 'Connection failed - unable to reach URL' }
   rescue StandardError => e
     { error: e.message }
   end
+  # rubocop:enable Metrics/MethodLength
 
   private
 

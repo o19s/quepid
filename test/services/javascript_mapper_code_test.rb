@@ -72,7 +72,12 @@ class JavascriptMapperCodeTest < ActiveSupport::TestCase
       #   { id: 3, rating: 1 }
       # ]
 
+      # Two ways to get the mapper code:
+      # 1. Load directly from file (original approach):
       mapper_code = File.read(Rails.root.join('test/fixtures/files/searchapi_mapper_code.js'))
+
+      # 2. Load from fixture (new approach - no manual loading needed):
+      # mapper_code = search_endpoints(:searchapi).mapper_code
       response_body = File.readlines(Rails.root.join('test/fixtures/files/searchapi_response.html'))
       # score = javascript_scorer.score(docs, best_docs, scorer_code)
       docs = javascript_mapper_code.extract_docs mapper_code, response_body

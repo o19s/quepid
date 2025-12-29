@@ -40,7 +40,7 @@ class ExperimentWithRubyLlmTest < ActionDispatch::IntegrationTest
   let(:selection_strategy) { selection_strategies(:multiple_raters) }
 
   # rubocop:disable Style/ClassVars
-  @@skip_tests = ENV.fetch('OPENAI_API_KEY', nil).nil? ? true : false
+  @@skip_tests = ENV.fetch('OPENAI_API_KEY', nil).nil?
   # rubocop:enable Style/ClassVars
 
   test 'Start a chat' do
@@ -54,7 +54,7 @@ class ExperimentWithRubyLlmTest < ActionDispatch::IntegrationTest
     chat = RubyLLM.chat
     chat.ask "What's the difference between attr_reader and attr_accessor?" do |chunk|
       # Each chunk contains a portion of the response
-      # print chunk.content      
+      # print chunk.content
     end
     assert true
   end
@@ -79,7 +79,7 @@ class ExperimentWithRubyLlmTest < ActionDispatch::IntegrationTest
       # Each chunk contains a portion of the response
       print chunk.content
     end
-    
+
     assert true
   end
 
@@ -94,11 +94,11 @@ class ExperimentWithRubyLlmTest < ActionDispatch::IntegrationTest
     chat = RubyLLM.chat(model: 'qwen3:0.6b', provider: 'ollama')
     response = chat.ask("Explain Ruby's eigenclass")
     assert_not response.content.empty?
-  
+
     assert true
   end
 
-  # We believe that direct Ollama is two to four times 
+  # We believe that direct Ollama is two to four times
   # faster than the Docker Ollama image version, and used this test below to benchmark it
   test 'benchmark ollama docker image versus direct' do
     skip('Ignoring benchmark ollama in ExperimentWithRubyLlmTest')
