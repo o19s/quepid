@@ -194,9 +194,10 @@ for_case_queries_case:
   options:        
     corpusId: 12345
  
-searchapi:
-  name:           Custom Search API
-  endpoint_url:   https://www.lse.ac.uk/Search-Results
+edinburgh_uni_search_api:
+  name:           University of Edinburgh
+  endpoint_url:   https://search.ed.ac.uk/
   search_engine:  searchapi
   api_method:     GET
-  mapper_code: <%= File.read(File.expand_path('files/searchapi_mapper_code.js', __dir__)).dump %>
+  proxy_requests: true
+  mapper_code: <%= File.read(File.expand_path('files/edinburgh_uni_searchapi_mapper_code.js', __dir__)).dump %>

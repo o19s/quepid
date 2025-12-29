@@ -57,52 +57,39 @@ class ExperimentWithRubyLlmExtractorTest < ActionDispatch::IntegrationTest
 
     puts "\n\n\nAWESOME\n\n\n"
     chat.with_instructions <<~PROMPT, replace: true
-        You are a helpful JavaScript expert.
-      #{'  '}
-        When generating code, always:
-        - Use modern JavaScript syntax
-        - Include helpful comments
-        - Provide working examples
-        - Wrap ALL JavaScript code in ```javascript code blocks
-        - Provide explanation text outside of code blocks
-        - Keep it very simple, we only want JavaScript that would execute in the V8 engine
-        - There is no DOMParser available to use
-      #{'  '}
-       We want to generate these JavaScript methods:
-        - numberOfResultsMapper which is used to return how many search results were found overall.
-        - docsMapper which converts from the source JSON format to what Quepid expects
-          docsMapper should return at a minimum an "id" key and "title" key for every search result.
-          If there is no obvious id key then look for a URL attribute to use as the id.
-          Please assess if there are other attributes that exist for most of the search results.  And if so please include them.  
-          Examples of attributes include "description", "url", "image".
-          If they don't exist, then don't include them in the docsMapper.
-      #{'  '}
-       Here is an example of numberOfResultsMapper:
-      #{' '}
-       ```javascript
-       numberOfResultsMapper = function(data){
-         return data.length;
-       };
-       ```
-      #{' '}
-       Here is an example of docsMapper:
-      #{' '}
-      ```javascript
-      docsMapper = function(data){
-        let docs = [];
+      You are a JavaScript expert helping create data extraction functions for Quepid.
 
-      #{'  '}
-        for (let doc of data) {
-          docs.push ({
-            id: doc.publication_id,
-            title: doc.title,
-          });
-        }
-        return docs;
-      };
-      ```
-      #{' '}
-      #{' '}
+        **Requirements:**
+        - Generate two JavaScript functions: numberOfResultsMapper and docsMapper#{'  '}
+        - Define functions as: functionName = function(params) {} (not function functionName())
+        - Include brief comments explaining logic
+        - Wrap ALL JavaScript code in ```javascript code blocks
+        - Target V8 engine only (no DOM APIs)
+
+        **Function Specifications:**
+      #{'   '}
+         numberOfResultsMapper: Returns total number of search results found
+         ```javascript#{'         '}
+         numberOfResultsMapper = function(data){
+           return data.length;
+         }
+      #{'   '}
+         docsMapper: Converts source data format to the JSON format that Quepid format expects required "id" and "title" keys.
+         Include additional attributes like "description", "url", "image" only if they exist for most results.
+         Use URL as fallback "id" if no obvious "id" field exists.
+         ```javascript
+         docsMapper = function(data){
+             let docs = [];
+             for (let doc of data) {
+               docs.push({
+                 id: doc.publication_id,
+                 title: doc.title,
+               });
+             }
+             return docs;
+           }
+          ```
+         Analyze the downloaded HTML structure first, then generate appropriate functions.
     PROMPT
 
     response = chat.ask 'Can you generate the JavaScript methods required to convert the raw HTML that was downloaded into the formats that Quepid requires?'
@@ -118,9 +105,9 @@ class ExperimentWithRubyLlmExtractorTest < ActionDispatch::IntegrationTest
     puts response.content
 
     # pp response
-    # 
-    response = chat.ask 'Can you use the Javascript code to parse out the number of results from the html that was downloaded?'
-    puts response.content
+    #
+    # response = chat.ask 'Can you use the Javascript code to parse out the number of results from the html that was downloaded?'
+    # puts response.content
   end
 
   test 'Make Prompt for Nike' do

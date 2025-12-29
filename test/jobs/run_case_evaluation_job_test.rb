@@ -3,12 +3,27 @@
 require 'test_helper'
 
 class RunCaseEvaluationJobTest < ActiveJob::TestCase
-  test 'job can be enqueued' do
+  test 'job can be run' do
+    WebMock.allow_net_connect!
     acase = cases(:one)
     atry = tries(:one)
+    scorer = scorers(:'p@10')
+    search_endpoint = search_endpoints(:edinburgh_uni_search_api)
 
-    assert_enqueued_jobs 1 do
-      RunCaseEvaluationJob.perform_later(acase, atry)
+    acase.scorer = scorer
+    acase.save!
+
+    atry.search_endpoint = search_endpoint
+    atry.save!
+
+    assert acase.snapshots.empty?
+
+    assert_difference 'acase.snapshots.count', 1 do
+      assert_difference 'acase.scores.count', 1 do
+        perform_enqueued_jobs do
+          RunCaseEvaluationJob.perform_now(acase, atry)
+        end
+      end
     end
   end
 
