@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class JavaScriptExtractor < RubyLLM::Tool
+class JavascriptExtractor < RubyLLM::Tool
   description 'Extracts JavaScript code blocks from markdown content'
   param :markdown_content, desc: 'Markdown content string containing JavaScript code blocks'
 

@@ -2,9 +2,9 @@
 
 require 'test_helper'
 
-class JavaScriptExtractorTest < ActiveSupport::TestCase
+class JavascriptExtractorTest < ActiveSupport::TestCase
   setup do
-    @tool = JavaScriptExtractor.new
+    @tool = JavascriptExtractor.new
   end
 
   test 'tool responds to execute method' do

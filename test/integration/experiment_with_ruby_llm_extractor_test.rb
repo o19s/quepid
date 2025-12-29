@@ -28,32 +28,32 @@ class ExperimentWithRubyLlmExtractorTest < ActionDispatch::IntegrationTest
 
     # Start a chat with the default model (GPT-4o-mini)
     chat = RubyLLM.chat
-    chat.with_tools(DownloadPage, JavaScriptExtractor)
+    chat.with_tools(DownloadPage, JavascriptExtractor)
 
     chat.ask 'What is the title of the web page https://search.ed.ac.uk/?q=mental' do |chunk|
       # Each chunk contains a portion of the response
       print chunk.content
     end
 
-    chat.ask 'Can you print out the search query that was used to fetch the page?' do |chunk|
-      # Each chunk contains a portion of the response
-      print chunk.content
-    end
+    # chat.ask 'Can you print out the search query that was used to fetch the page?' do |chunk|
+    #   # Each chunk contains a portion of the response
+    #   print chunk.content
+    # end
 
-    chat.ask 'Can you print out how many total results were found?' do |chunk|
-      # Each chunk contains a portion of the response
-      print chunk.content
-    end
+    # chat.ask 'Can you print out how many total results were found?' do |chunk|
+    #   # Each chunk contains a portion of the response
+    #   print chunk.content
+    # end
 
-    chat.ask 'Can you print out how many individual results were returned in the current page?' do |chunk|
-      # Each chunk contains a portion of the response
-      print chunk.content
-    end
-    puts "\n\n\nBREAK\n\n\n"
-    chat.ask 'For each individual result, can you print out the result in JSON format?  Please include the date, description, any url' do |chunk|
-      # Each chunk contains a portion of the response
-      print chunk.content
-    end
+    # chat.ask 'Can you print out how many individual results were returned in the current page?' do |chunk|
+    #   # Each chunk contains a portion of the response
+    #   print chunk.content
+    # end
+    # puts "\n\n\nBREAK\n\n\n"
+    # chat.ask 'For each individual result, can you print out the result in JSON format?  Please include the date, description, any url' do |chunk|
+    #   # Each chunk contains a portion of the response
+    #   print chunk.content
+    # end
 
     puts "\n\n\nAWESOME\n\n\n"
     chat.with_instructions <<~PROMPT, replace: true
@@ -71,13 +71,17 @@ class ExperimentWithRubyLlmExtractorTest < ActionDispatch::IntegrationTest
        We want to generate these JavaScript methods:
         - numberOfResultsMapper which is used to return how many search results were found overall.
         - docsMapper which converts from the source JSON format to what Quepid expects
-          docsMapper should return at a minimum an id key and title key.
+          docsMapper should return at a minimum an "id" key and "title" key for every search result.
+          If there is no obvious id key then look for a URL attribute to use as the id.
+          Please assess if there are other attributes that exist for most of the search results.  And if so please include them.  
+          Examples of attributes include "description", "url", "image".
+          If they don't exist, then don't include them in the docsMapper.
       #{'  '}
        Here is an example of numberOfResultsMapper:
       #{' '}
        ```javascript
        numberOfResultsMapper = function(data){
-         return data.length
+         return data.length;
        };
        ```
       #{' '}
@@ -101,7 +105,7 @@ class ExperimentWithRubyLlmExtractorTest < ActionDispatch::IntegrationTest
       #{' '}
     PROMPT
 
-    response = chat.ask 'Can you generate the JavaScript methods required to convert the raw HTML into the formats that Quepid requires?'
+    response = chat.ask 'Can you generate the JavaScript methods required to convert the raw HTML that was downloaded into the formats that Quepid requires?'
 
     puts response.content
 
@@ -114,6 +118,9 @@ class ExperimentWithRubyLlmExtractorTest < ActionDispatch::IntegrationTest
     puts response.content
 
     # pp response
+    # 
+    response = chat.ask 'Can you use the Javascript code to parse out the number of results from the html that was downloaded?'
+    puts response.content
   end
 
   test 'Make Prompt for Nike' do

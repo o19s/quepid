@@ -342,28 +342,59 @@ angular.module('QuepidApp')
         else if ($scope.pendingWizardSettings.searchEngine === 'searchapi'){
           // this is suss
           settingsForValidation.args = $scope.pendingWizardSettings.queryParams;
-          
-          /*jshint evil:true */
-          eval(settingsForValidation.mapperCode);
-          /*jshint evil:false */
+        
+          try {
+            /*jshint evil:true */
+            /* jshint undef: false */
+            console.log('About to evaluate mapper code...');
+            
+            // Alternative approach: Use Function constructor which runs in non-strict mode
+            // and has access to global scope
+            var mapperFunction = new Function(settingsForValidation.mapperCode);
+            mapperFunction.call(window);
+            
+            // The functions should now be available on the window object
+            if (window.numberOfResultsMapper) {
+              numberOfResultsMapper = window.numberOfResultsMapper;
+            }
+            if (window.docsMapper) {
+              docsMapper = window.docsMapper;
+            }
+            /*jshint evil:false */
+            /* jshint undef: true */
+            
+      
+          } catch (evalError) {
+            console.error('Error evaluating mapper code:', evalError);
+            console.error('Error stack:', evalError.stack);
+            $scope.mapperInvalid = true;
+            $scope.mapperErrorMessage = 'Mapper code evaluation failed: ' + evalError.message;
+            return; // Exit early if eval fails
+          }
           
           /* jshint undef: false */
           if (typeof numberOfResultsMapper === 'undefined') {
+            console.error('numberOfResultsMapper is undefined after evaluation');
             $scope.mapperInvalid = true;
             $scope.mapperErrorMessage = 'You need to define a "numberOfResultsMapper"';
           }
           else {
+            console.log('numberOfResultsMapper defined successfully:', numberOfResultsMapper);
             settingsForValidation.numberOfResultsMapper = numberOfResultsMapper; 
           }
           
           if (typeof docsMapper === 'undefined') {
+            console.error('docsMapper is undefined after evaluation');
             $scope.mapperInvalid = true;
             $scope.mapperErrorMessage = 'You need to define a "docsMapper"';
           }
           else {
+            console.log('docsMapper defined successfully:', docsMapper);
             settingsForValidation.docsMapper = docsMapper; 
           }
           /* jshint undef: true */
+          
+          console.log('=== END MAPPER CODE DEBUG ===');
           
           // This is an example of what the above mapper code might look like.
           

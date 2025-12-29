@@ -206,7 +206,7 @@ angular.module('QuepidApp')
           proxyRequests: true,
           mapperCode: [
             'numberOfResultsMapper = function(data){',
-            '  return data.length',
+            '  return data.length;',
             '};',
             '',
             'docsMapper = function(data){',

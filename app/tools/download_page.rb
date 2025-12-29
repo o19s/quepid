@@ -1,7 +1,10 @@
 # frozen_string_literal: true
 
 require 'faraday'
-require 'nokogiri'
+require 'faraday/follow_redirects'
+
+require 'addressable/uri'
+require 'base64'
 
 class DownloadPage < RubyLLM::Tool
   description 'Downloads a specific web search results page'
@@ -12,10 +15,41 @@ class DownloadPage < RubyLLM::Tool
     # Validate URL format
     return { error: 'Invalid URL format. Must start with http:// or https://' } unless url&.match?(%r{\Ahttps?://.+}i)
 
-    response = Faraday.get(url) do |req|
+    # Use Addressable::URI instead of straight up URI to support non ascii characters like café
+    uri = Addressable::URI.parse(url)
+    url_without_path = "#{uri.scheme}://#{uri.host}"
+    url_without_path += ":#{uri.port}" unless uri.port.nil?
+
+    connection = Faraday.new(url: url_without_path) do |faraday|
+      # Configure the connection options, such as headers or middleware
+      faraday.response :follow_redirects
+      faraday.ssl.verify = false
+      faraday.request :url_encoded
+
+      # Set User-Agent header like proxy controller sets Content-Type
+      faraday.headers['User-Agent'] = 'Quepid/1.0 (Web Scraper)'
+      
+      # Handle basic auth if present in URL
+      has_credentials = !uri.userinfo.nil?
+      if has_credentials
+        username, password = uri.userinfo.split(':')
+        faraday.headers['Authorization'] = "Basic #{Base64.strict_encode64("#{username}:#{password}")}"
+      end
+      
+      faraday.adapter Faraday.default_adapter
+    end
+
+    response = connection.get do |req|
+      req.path = uri.path
       req.options.timeout = 30        # 30 second timeout
       req.options.open_timeout = 10   # 10 second connection timeout
-      req.headers['User-Agent'] = 'Quepid/1.0 (Web Scraper)'
+      
+      # Handle query parameters if present in URL
+      if uri.query
+        uri.query_values&.each do |key, value|
+          req.params[key] = value
+        end
+      end
     end
 
     # Check for successful response
@@ -25,47 +59,15 @@ class DownloadPage < RubyLLM::Tool
     return { error: 'No content received from URL' } if response.body.blank?
 
     data = response.body
-    # assuming it's html not json
-    clean_html = strip_css_styling(data)
-    clean_html
+    data
   rescue Faraday::TimeoutError
     { error: 'Request timed out' }
-  rescue Faraday::ConnectionFailed
-    { error: 'Connection failed - unable to reach URL' }
+  rescue Faraday::ConnectionFailed => e
+    { error: "Connection failed: #{e.message}" }
   rescue StandardError => e
     { error: e.message }
   end
   # rubocop:enable Metrics/MethodLength
 
   private
-
-  def strip_css_styling html
-    doc = Nokogiri::HTML(html)
-
-    # Remove all style tags
-    doc.css('style').remove
-
-    # Remove all link tags that reference stylesheets
-    doc.css('link[rel="stylesheet"]').remove
-
-    # Remove inline style attributes from all elements
-    doc.css('[style]').each do |element|
-      element.remove_attribute('style')
-    end
-
-    # Remove class attributes (optional, but often used for styling)
-    doc.css('[class]').each do |element|
-      element.remove_attribute('class')
-    end
-
-    # Remove JavaScript
-    doc.css('script').remove                     # Remove script tags
-    doc.xpath('//@*[starts-with(name(), "on")]').each(&:remove)
-    doc.css('[href^="javascript:"]').each do |el|
-      el.remove_attribute('href')                # Remove javascript: URLs
-    end
-
-    # Return the cleaned HTML
-    doc.to_html
-  end
 end

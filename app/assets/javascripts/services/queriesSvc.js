@@ -134,8 +134,24 @@ angular.module('QuepidApp')
           }
           else if (passedInSettings.searchEngine === 'searchapi'){
             /*jshint evil:true */
-            eval(passedInSettings.mapperCode);
+            /* jshint undef: false */
+            console.log('About to evaluate mapper code...');
+            
+            // Alternative approach: Use Function constructor which runs in non-strict mode
+            // and has access to global scope
+            var mapperFunction = new Function(passedInSettings.mapperCode);
+            mapperFunction.call(window);
+            
+            // The functions should now be available on the window object
+            //var numberOfResultsMapper, docsMapper;
+            if (window.numberOfResultsMapper) {
+              numberOfResultsMapper = window.numberOfResultsMapper;
+            }
+            if (window.docsMapper) {
+              docsMapper = window.docsMapper;
+            }
             /*jshint evil:false */
+            /* jshint undef: true */
 
 
             if (typeof docsMapper === 'function') {

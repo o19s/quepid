@@ -103,40 +103,28 @@ class DownloadPageTest < ActiveSupport::TestCase
     assert result[:error].include?('Connection failed'), 'Should mention connection failure'
   end
 
-  test 'strips css styling from html' do
-    html_with_styles = <<~HTML
+  test 'returns raw html without cleaning' do
+    html_content = <<~HTML
       <html>
         <head>
           <title>Test Page</title>
           <style>body { color: red; }</style>
-          <link rel="stylesheet" href="styles.css">
         </head>
-        <body style="background: blue;" class="main-content">
-          <div style="font-size: 14px;" class="content">
-            <script>alert('hello');</script>
-            <p onclick="doSomething()">Clean content</p>
-            <a href="javascript:void(0)">Bad link</a>
-            <a href="https://example.com">Good link</a>
-          </div>
+        <body>
+          <div class="content">Raw HTML content</div>
         </body>
       </html>
     HTML
 
     stub_request(:get, 'https://example.com')
-      .to_return(status: 200, body: html_with_styles)
+      .to_return(status: 200, body: html_content)
 
     result = @tool.execute(url: 'https://example.com')
 
-    assert result.is_a?(String), 'Should return cleaned HTML string'
-    assert_not result.include?('<style>'), 'Should remove style tags'
-    assert_not result.include?('rel="stylesheet"'), 'Should remove stylesheet links'
-    assert_not result.include?('style='), 'Should remove inline styles'
-    assert_not result.include?('class='), 'Should remove class attributes'
-    assert_not result.include?('<script>'), 'Should remove script tags'
-    assert_not result.include?('onclick='), 'Should remove event handlers'
-    assert_not result.include?('javascript:'), 'Should remove javascript URLs'
-    assert result.include?('Clean content'), 'Should preserve text content'
-    assert result.include?('https://example.com'), 'Should preserve regular URLs'
+    assert result.is_a?(String), 'Should return raw HTML string'
+    assert result.include?('<style>'), 'Should preserve style tags'
+    assert result.include?('class='), 'Should preserve class attributes'
+    assert result.include?('Raw HTML content'), 'Should preserve content'
   end
 
   test 'handles general exceptions' do
