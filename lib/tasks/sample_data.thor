@@ -42,7 +42,7 @@ class SampleData < Thor
     search_api_endpoint = ::SearchEndpoint.find_or_create_by search_engine: :searchapi,
                                                              endpoint_url: 'https://www.lse.ac.uk/Search-Results', api_method: 'GET',
                                                              proxy_requests: true,
-                                                             mapper_code: File.read(Rails.root.join('test/fixtures/files/searchapi_mapper_code.js'))
+                                                             mapper_code: File.read(Rails.root.join('test/fixtures/files/edinburgh_uni_searchapi_mapper_code.js'))
 
     print_step 'End of seeding search endpoints................'
 

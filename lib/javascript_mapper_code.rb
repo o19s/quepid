@@ -51,6 +51,35 @@ class JavascriptMapperCode
   # rubocop:enable Metrics/MethodLength
   # rubocop:enable Style/DocumentDynamicEvalDefinition
 
+  # rubocop:disable Metrics/MethodLength
+  # rubocop:disable Style/DocumentDynamicEvalDefinition
+  def extract_number_of_results code_mapper, response_body
+    @context.eval('var numberOfResults = 0;')
+
+    @context.eval(code_mapper)
+
+    @context.eval('validateMappersExist()')
+
+    response_body = response_body.join("\n") if response_body.is_a?(Array)
+
+    @context.eval("var responseBody = #{response_body.to_json};")
+
+    @context.eval <<-JS
+      try {
+        numberOfResults = numberOfResultsMapper(responseBody);
+      } catch (error) {
+        numberOfResults = 0;
+      }
+    JS
+
+    number_of_results = @context.eval('numberOfResults')
+    number_of_results
+  rescue MiniRacer::Error => e
+    raise MapperError, "JavaScript execution error: #{e.message}"
+  end
+  # rubocop:enable Metrics/MethodLength
+  # rubocop:enable Style/DocumentDynamicEvalDefinition
+
   private
 
   def attach_ruby_methods

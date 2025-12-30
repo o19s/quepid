@@ -27,8 +27,8 @@ class ExperimentWithRubyLlmExtractorTest < ActionDispatch::IntegrationTest
     end
 
     # Start a chat with the default model (GPT-4o-mini)
-    chat = RubyLLM.chat
-    chat.with_tools(DownloadPage, JavascriptExtractor)
+    chat = RubyLLM.chat(model: 'gpt-5') # gpt-5 wrote a lot more code and it was better.
+    chat.with_tools(DownloadPage, JavascriptExtractor, JavascriptMapper)
 
     chat.ask 'What is the title of the web page https://search.ed.ac.uk/?q=mental' do |chunk|
       # Each chunk contains a portion of the response
@@ -106,54 +106,7 @@ class ExperimentWithRubyLlmExtractorTest < ActionDispatch::IntegrationTest
 
     # pp response
     #
-    # response = chat.ask 'Can you use the Javascript code to parse out the number of results from the html that was downloaded?'
-    # puts response.content
+    response = chat.ask 'Can you use the JavascriptMapper tool with the Javascript code you created and the HTML content that was downloaded to parse out the number of results and document data?'
+    puts response.content
   end
-
-  test 'Make Prompt for Nike' do
-    assert true
-    skip('Ignoring all tests in ExperimentWithRubyLlmExtractorTest') if @@skip_tests
-    WebMock.allow_net_connect!
-
-    RubyLLM.configure do |config|
-      config.openai_api_key = ENV.fetch('OPENAI_API_KEY', nil)
-    end
-
-    # Start a chat with the default model (GPT-4o-mini)
-    chat = RubyLLM.chat
-    chat.with_tools(DownloadPage)
-
-    chat.ask 'What is the title of the web page https://www.nike.com/w?q=shirts%20without%20stripes' do |chunk|
-      # Each chunk contains a portion of the response
-      print chunk.content
-    end
-
-    chat.ask 'Can you print out the search query that was used to fetch the page?' do |chunk|
-      # Each chunk contains a portion of the response
-      print chunk.content
-    end
-
-    chat.ask 'Can you print out how many total results were found?' do |chunk|
-      # Each chunk contains a portion of the response
-      print chunk.content
-    end
-
-    chat.ask 'Can you print out how many individual results were returned in the current page?' do |chunk|
-      # Each chunk contains a portion of the response
-      print chunk.content
-    end
-    puts 'BREAK'
-    chat.ask 'For each individual result, can you print out the result in JSON format?  Please include the date, description, any url' do |chunk|
-      # Each chunk contains a portion of the response
-      print chunk.content
-    end
-
-    puts 'AWESOME'
-    chat.ask 'Can you generate the JavaScript required to take the raw HTML and convert it to the JSON format you previously used?' do |chunk|
-      # Each chunk contains a portion of the response
-      print chunk.content
-    end
-  end
-
-  # Test removed - see tools_test.rb for working JavaScript extractor tests
 end
