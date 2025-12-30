@@ -29,7 +29,6 @@ export default class extends Controller {
   ]
 
   static values = {
-    searchEndpointId: String,
     fetchUrl: String,
     generateUrl: String,
     testUrl: String,
