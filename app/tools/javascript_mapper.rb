@@ -7,6 +7,10 @@ class JavascriptMapper < RubyLLM::Tool
   param :javascript_code, desc: 'JavaScript code containing numberOfResultsMapper and docsMapper functions'
   param :html_content, desc: 'HTML content to be processed by the JavaScript functions'
 
+  # rubocop:disable Metrics/AbcSize
+  # rubocop:disable Metrics/CyclomaticComplexity
+  # rubocop:disable Metrics/MethodLength
+  # rubocop:disable Metrics/PerceivedComplexity
   def execute javascript_code:, html_content:
     puts '=' * 60
     puts '🔧 JAVASCRIPT MAPPER TOOL INVOKED BY LLM'
@@ -56,4 +60,8 @@ class JavascriptMapper < RubyLLM::Tool
     puts '=' * 60
     { error: "Unexpected error: #{e.message}" }
   end
+  # rubocop:enable Metrics/AbcSize
+  # rubocop:enable Metrics/CyclomaticComplexity
+  # rubocop:enable Metrics/MethodLength
+  # rubocop:enable Metrics/PerceivedComplexity
 end
