@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_12_30_192215) do
+ActiveRecord::Schema[8.1].define(version: 2025_12_30_231328) do
   create_table "active_storage_attachments", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.bigint "blob_id", null: false
     t.datetime "created_at", null: false
@@ -290,7 +290,7 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_30_192215) do
     t.text "request_body"
     t.string "search_url", limit: 2000
     t.datetime "updated_at", null: false
-    t.integer "user_id"
+    t.integer "user_id", null: false
     t.index ["created_at"], name: "index_mapper_wizard_states_on_created_at"
     t.index ["user_id"], name: "index_mapper_wizard_states_on_user_id"
   end

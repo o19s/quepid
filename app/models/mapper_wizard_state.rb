@@ -14,7 +14,7 @@
 #  search_url               :string(2000)
 #  created_at               :datetime         not null
 #  updated_at               :datetime         not null
-#  user_id                  :integer
+#  user_id                  :integer          not null
 #
 # Indexes
 #
@@ -26,7 +26,7 @@
 #  fk_rails_...  (user_id => users.id)
 #
 class MapperWizardState < ApplicationRecord
-  belongs_to :user, optional: true
+  belongs_to :user
 
   validates :search_url, length: { maximum: 2000 }
   validates :http_method, inclusion: { in: %w[GET POST], allow_blank: true }
@@ -34,21 +34,7 @@ class MapperWizardState < ApplicationRecord
   # Find or create a wizard state for a user
   # Each user should only have one active wizard state at a time
   def self.find_or_create_for_user user
-    return create! if user.nil?
-
     find_or_create_by!(user: user)
-  end
-
-  # Get the current wizard state for a user, or nil if none exists
-  def self.current_for_user user
-    return nil if user.nil?
-
-    find_by(user: user)
-  end
-
-  # Clean up old wizard states
-  def self.cleanup_old_states older_than = 1.day.ago
-    where(created_at: ...older_than).delete_all
   end
 
   # Store HTML content from a fetched URL
@@ -63,31 +49,11 @@ class MapperWizardState < ApplicationRecord
     )
   end
 
-  # Build the full URL with query params appended (for fetching/testing)
-  def full_fetch_url
-    return search_url if query_params.blank?
-
-    separator = search_url.include?('?') ? '&' : '?'
-    "#{search_url}#{separator}#{query_params}"
-  end
-
   # Store generated mapper code
   def store_mappers number_of_results_mapper:, docs_mapper:
     update!(
       number_of_results_mapper: number_of_results_mapper,
       docs_mapper:              docs_mapper
-    )
-  end
-
-  # Clear all wizard state for starting fresh
-  def clear!
-    update!(
-      search_url:               nil,
-      http_method:              'GET',
-      request_body:             nil,
-      html_content:             nil,
-      number_of_results_mapper: nil,
-      docs_mapper:              nil
     )
   end
 end
