@@ -31,7 +31,7 @@ class FetchService
 
     @logger = @options[:logger]
 
-    @javascript_mapper_code = JavascriptMapperCode.new(Rails.root.join('lib/mapper_code_logic.js'))
+    @v8_executor = V8MapperExecutor.new(Rails.root.join('lib/mapper_code_logic.js'))
   end
 
   def begin acase, atry
@@ -106,7 +106,7 @@ class FetchService
 
   # should be in some other service??
   def extract_docs_from_response_body_for_searchapi mapper_code, response_body
-    docs = @javascript_mapper_code.extract_docs mapper_code, response_body
+    docs = @v8_executor.extract_docs mapper_code, response_body
     docs
   end
 

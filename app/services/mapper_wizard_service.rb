@@ -2,14 +2,14 @@
 
 # rubocop:disable Metrics/ClassLength
 
-require 'javascript_mapper_code'
+require 'v8_mapper_executor'
 
 class MapperWizardService
   class WizardError < StandardError; end
 
   def initialize api_key: nil
     @api_key = api_key
-    @javascript_mapper = JavascriptMapperCode.new(Rails.root.join('lib/mapper_code_logic.js'))
+    @v8_executor = V8MapperExecutor.new(Rails.root.join('lib/mapper_code_logic.js'))
   end
 
   # Fetch HTML/JSON from a URL using HTTP GET or POST
@@ -95,13 +95,13 @@ class MapperWizardService
                 end
 
     result = if 'numberOfResultsMapper' == mapper_type
-               @javascript_mapper.extract_number_of_results(full_code, html_content)
+               @v8_executor.extract_number_of_results(full_code, html_content)
              else
-               @javascript_mapper.extract_docs(full_code, html_content)
+               @v8_executor.extract_docs(full_code, html_content)
              end
 
     { success: true, result: result }
-  rescue JavascriptMapperCode::MapperError => e
+  rescue V8MapperExecutor::MapperError => e
     { success: false, error: "JavaScript error: #{e.message}" }
   rescue StandardError => e
     { success: false, error: e.message }

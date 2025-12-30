@@ -332,8 +332,6 @@ class ExtractFunctionTest < ActiveSupport::TestCase
     assert result.include?('var jsonVariableStart = data.indexOf')
     assert result.include?('return docs;')
     assert result.match?(/docsMapper\s*=\s*function/)
-
-    puts result
   end
 
   test 'extract_function handles escaped quotes' do

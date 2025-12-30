@@ -2,10 +2,10 @@
 
 require 'test_helper'
 
-# Test specifically for the JavascriptMapper tool functionality
-class JavascriptMapperToolTest < ActionDispatch::IntegrationTest
-  test 'JavascriptMapper tool executes successfully with valid input' do
-    tool = JavascriptMapper.new
+# Test specifically for the MapperTool functionality
+class MapperToolTest < ActionDispatch::IntegrationTest
+  test 'MapperTool executes successfully with valid input' do
+    tool = MapperTool.new
 
     javascript_code = <<~JS
       numberOfResultsMapper = function(data) {
@@ -34,8 +34,8 @@ class JavascriptMapperToolTest < ActionDispatch::IntegrationTest
     assert_equal 'First Document', result[:documents].first['title'], 'First document title should match'
   end
 
-  test 'JavascriptMapper tool handles missing functions gracefully' do
-    tool = JavascriptMapper.new
+  test 'MapperTool handles missing functions gracefully' do
+    tool = MapperTool.new
 
     # JavaScript code missing required functions
     javascript_code = <<~JS
@@ -53,8 +53,8 @@ class JavascriptMapperToolTest < ActionDispatch::IntegrationTest
     assert_includes result[:error], 'JavaScript mapper error', 'Should indicate mapper error'
   end
 
-  test 'JavascriptMapper tool validates input parameters' do
-    tool = JavascriptMapper.new
+  test 'MapperTool validates input parameters' do
+    tool = MapperTool.new
 
     # Test with nil javascript_code
     result = tool.execute(javascript_code: nil, html_content: '<html></html>')
@@ -76,8 +76,8 @@ class JavascriptMapperToolTest < ActionDispatch::IntegrationTest
     assert_includes result[:error], 'Empty HTML content provided'
   end
 
-  test 'JavascriptMapper tool handles JavaScript execution errors' do
-    tool = JavascriptMapper.new
+  test 'MapperTool handles JavaScript execution errors' do
+    tool = MapperTool.new
 
     # JavaScript code with syntax errors
     javascript_code = <<~JS
@@ -99,8 +99,8 @@ class JavascriptMapperToolTest < ActionDispatch::IntegrationTest
            'Should indicate JavaScript-related error'
   end
 
-  test 'JavascriptMapper tool works with realistic HTML parsing' do
-    tool = JavascriptMapper.new
+  test 'MapperTool works with realistic HTML parsing' do
+    tool = MapperTool.new
 
     # More realistic JavaScript that actually parses HTML
     javascript_code = <<~JS
@@ -119,13 +119,13 @@ class JavascriptMapperToolTest < ActionDispatch::IntegrationTest
 
       docsMapper = function(data) {
         var docs = [];
-      #{'  '}
+      #{' ' * 2}
         // Split by div class="result" and process each section
         var parts = data.split('<div class="result"');
-      #{'  '}
+      #{' ' * 2}
         for (var i = 1; i < parts.length; i++) {
           var content = parts[i];
-      #{'    '}
+      #{' ' * 4}
           // Extract URL first
           var aStart = content.indexOf('<a href="');
           var url = '';
@@ -135,30 +135,30 @@ class JavascriptMapperToolTest < ActionDispatch::IntegrationTest
               url = content.substring(aStart + 9, aEnd);
             }
           }
-      #{'    '}
+      #{' ' * 4}
           // Extract title - look for text between <a> tags
           var linkStart = content.indexOf('<a href="');
           if (linkStart !== -1) {
             var linkClose = content.indexOf('>', linkStart);
             var linkEnd = content.indexOf('</a>', linkClose);
-      #{'      '}
+      #{' ' * 6}
             if (linkClose !== -1 && linkEnd !== -1) {
               var title = content.substring(linkClose + 1, linkEnd);
-      #{'        '}
+      #{' ' * 8}
               var doc = {
                 id: i,
                 title: title
               };
-      #{'        '}
+      #{' ' * 8}
               if (url) {
                 doc.url = url;
               }
-      #{'        '}
+      #{' ' * 8}
               docs.push(doc);
             }
           }
         }
-      #{'  '}
+      #{' ' * 2}
         return docs;
       };
     JS

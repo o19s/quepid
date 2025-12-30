@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class JavascriptMapperCode
+class V8MapperExecutor
   class MapperError < StandardError; end
 
   def initialize js_file_path

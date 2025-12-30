@@ -2,31 +2,31 @@
 
 require 'test_helper'
 
-class JavascriptMapperCodeTest < ActiveSupport::TestCase
-  let(:javascript_mapper_code) do
-    JavascriptMapperCode.new(Rails.root.join('lib/mapper_code_logic.js'))
+class V8MapperExecutorTest < ActiveSupport::TestCase
+  let(:v8_executor) do
+    V8MapperExecutor.new(Rails.root.join('lib/mapper_code_logic.js'))
   end
 
   describe 'raising error if required functions are missing' do
     test 'numberOfResultsMapper function is missing' do
       code_mapper = <<~TEXT
-        docsMapper = function(data){#{'                '}
+        docsMapper = function(data){#{' ' * 16}
         };
       TEXT
 
       assert_raises(StandardError) do
-        javascript_mapper_code.extract_docs code_mapper, ''
+        v8_executor.extract_docs code_mapper, ''
       end
     end
 
     test 'docsMapper function is missing' do
       code_mapper = <<~TEXT
-        numberOfResultsMapper = function(data){#{'                '}
+        numberOfResultsMapper = function(data){#{' ' * 16}
         };
       TEXT
 
       assert_raises(StandardError) do
-        javascript_mapper_code.extract_docs code_mapper, ''
+        v8_executor.extract_docs code_mapper, ''
       end
     end
   end
@@ -80,7 +80,7 @@ class JavascriptMapperCodeTest < ActiveSupport::TestCase
       # mapper_code = search_endpoints(:searchapi).mapper_code
       response_body = File.readlines(Rails.root.join('test/fixtures/files/lse_searchapi_response.html'))
       # score = javascript_scorer.score(docs, best_docs, scorer_code)
-      docs = javascript_mapper_code.extract_docs mapper_code, response_body
+      docs = v8_executor.extract_docs mapper_code, response_body
       assert_equal 10, docs.length
 
       doc = docs.second.symbolize_keys

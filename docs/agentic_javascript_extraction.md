@@ -9,7 +9,7 @@ This document describes the implementation of an agentic workflow for JavaScript
 The original JavaScript extraction process had a single-attempt approach:
 1. Download HTML from a search results page
 2. Generate JavaScript functions to parse the HTML
-3. Execute the functions using `JavascriptMapper` tool
+3. Execute the functions using `MapperTool`
 
 This worked well when the JavaScript generation succeeded on the first try, but failed when:
 - The generated JavaScript had syntax errors
@@ -23,9 +23,9 @@ Based on the RubyLLM agentic workflow patterns, we implemented a retry-based app
 
 ### Key Components
 
-1. **JavascriptMapper Tool** (`app/tools/javascript_mapper.rb`)
+1. **MapperTool** (`app/tools/mapper_tool.rb`)
    - Executes JavaScript functions against HTML content
-   - Uses the existing `JavascriptMapperCode` class with V8 engine
+   - Uses the `V8MapperExecutor` class with V8 engine
    - Returns structured results with success/error indicators
    - Enhanced logging for debugging and success detection
 
@@ -52,30 +52,30 @@ while attempt <= max_attempts && !extraction_successful
   puts "\nATTEMPT #{attempt}/#{max_attempts}: Trying JavaScript extraction..."
   
   if attempt == 1
-    response = chat.ask 'Can you use the JavascriptMapper tool with the Javascript code you created and the HTML content that was downloaded to parse out the number of results and document data?'
+    response = chat.ask 'Can you use the MapperTool with the Javascript code you created and the HTML content that was downloaded to parse out the number of results and document data?'
   elsif attempt == 2
     response = chat.ask <<~RETRY_PROMPT
       The previous JavaScript extraction may not have worked properly. Let's try again with a simpler approach:
       
-      1. First, use the JavascriptMapper tool to test your current JavaScript functions
+      1. First, use the MapperTool to test your current JavaScript functions
       2. If the results show 0 documents or 0 total results, create simpler JavaScript functions that use basic string operations instead of complex regex
       3. Focus on finding obvious patterns in the HTML like repeated div classes or common HTML structures
       4. Use indexOf, substring, and split methods instead of complex regex patterns
       
-      Please try the JavascriptMapper tool again with either your current functions or improved simpler ones.
+      Please try the MapperTool again with either your current functions or improved simpler ones.
     RETRY_PROMPT
   else
     response = chat.ask <<~DEBUG_PROMPT
       Let's debug why the extraction isn't working:
       
-      1. Use the JavascriptMapper tool with very simple test functions first:
+      1. Use the MapperTool with very simple test functions first:
          - numberOfResultsMapper that just returns 5 (hardcoded)
          - docsMapper that returns a simple test array like [{id: "test", title: "Test Document"}]
       2. If that works, then gradually make the functions more sophisticated
       3. Look for the most obvious repeating pattern in the HTML (like div tags with consistent classes)
       4. Use only basic string operations: indexOf, substring, split - no regex
       
-      Try the JavascriptMapper tool with either simple test functions or your best attempt at parsing.
+      Try the MapperTool with either simple test functions or your best attempt at parsing.
     DEBUG_PROMPT
   end
   
@@ -92,14 +92,14 @@ end
 
 The workflow detects successful extraction by:
 
-1. **Tool Success Markers**: Looking for `JAVASCRIPT MAPPER TOOL COMPLETED SUCCESSFULLY` in output
+1. **Tool Success Markers**: Looking for `MAPPER TOOL COMPLETED SUCCESSFULLY` in output
 2. **Result Validation**: Parsing document counts and total results from tool output
 3. **Meaningful Data Check**: Ensuring non-zero results were extracted
 4. **Fallback Pattern**: Checking response content for evidence of successful parsing
 
 ```ruby
 def analyze_extraction_results(content)
-  if content.include?('JAVASCRIPT MAPPER TOOL COMPLETED SUCCESSFULLY')
+  if content.include?('MAPPER TOOL COMPLETED SUCCESSFULLY')
     # Parse extracted results from tool output
     doc_count = extract_number_from_content(content, 'Documents extracted:')
     total_results = extract_number_from_content(content, 'Total results counted:')
@@ -143,12 +143,12 @@ end
 # In test files
 test 'html based search page with agentic workflow' do
   chat = RubyLLM.chat(model: 'gpt-4o-mini')
-  chat.with_tools(DownloadPage, JavascriptExtractor, JavascriptMapper)
-  
+  chat.with_tools(DownloadPage, JavascriptExtractor, MapperTool)
+
   # ... download HTML and generate JavaScript functions ...
-  
+
   # Agentic workflow automatically retries on failures
-  response = chat.ask 'Can you use the JavascriptMapper tool...'
+  response = chat.ask 'Can you use the MapperTool...'
   
   # Workflow includes automatic retry logic with progressive simplification
 end
@@ -194,6 +194,6 @@ end
 ## Related Documentation
 
 - [RubyLLM Agentic Workflows](https://rubyllm.com/agentic-workflows/)
-- [JavascriptMapper Tool](../app/tools/javascript_mapper.rb)
-- [JavascriptMapperCode Library](../lib/javascript_mapper_code.rb)
+- [MapperTool](../app/tools/mapper_tool.rb)
+- [V8MapperExecutor](../lib/v8_mapper_executor.rb)
 - [Integration Tests](../test/integration/experiment_with_ruby_llm_extractor_test.rb)
