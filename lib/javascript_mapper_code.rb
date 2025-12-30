@@ -12,7 +12,8 @@ class JavascriptMapperCode
     # Add console.log support
     @context.eval <<-JS
       var console = {
-        log: function(msg) { puts(msg); }
+        log: function(msg) { puts(msg); },
+        error: function(msg) { puts(msg); },
       };
     JS
 

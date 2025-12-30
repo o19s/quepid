@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_12_06_221416) do
+ActiveRecord::Schema[8.1].define(version: 2025_12_30_192215) do
   create_table "active_storage_attachments", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.bigint "blob_id", null: false
     t.datetime "created_at", null: false
@@ -278,6 +278,21 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_06_221416) do
     t.integer "user_id"
     t.index ["query_doc_pair_id"], name: "index_judgements_on_query_doc_pair_id"
     t.index ["user_id", "query_doc_pair_id"], name: "index_judgements_on_user_id_and_query_doc_pair_id", unique: true
+  end
+
+  create_table "mapper_wizard_states", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.text "docs_mapper"
+    t.text "html_content", size: :medium
+    t.string "http_method", limit: 10, default: "GET"
+    t.text "number_of_results_mapper"
+    t.string "query_params"
+    t.text "request_body"
+    t.string "search_url", limit: 2000
+    t.datetime "updated_at", null: false
+    t.integer "user_id"
+    t.index ["created_at"], name: "index_mapper_wizard_states_on_created_at"
+    t.index ["user_id"], name: "index_mapper_wizard_states_on_user_id"
   end
 
   create_table "queries", id: :integer, charset: "utf8mb3", force: :cascade do |t|
@@ -630,6 +645,7 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_06_221416) do
   add_foreign_key "case_scores", "users", name: "case_scores_ibfk_2"
   add_foreign_key "cases", "users", column: "owner_id", name: "cases_ibfk_1"
   add_foreign_key "judgements", "query_doc_pairs"
+  add_foreign_key "mapper_wizard_states", "users"
   add_foreign_key "queries", "cases", name: "queries_ibfk_1"
   add_foreign_key "query_doc_pairs", "books"
   add_foreign_key "ratings", "queries", name: "ratings_ibfk_1"
