@@ -158,25 +158,26 @@ angular.module('QuepidApp')
       // used when you change a searchEndpoint that has already been set up, and then follow normal flow.
       $scope.changeSearchEndpoint = function() {
         var searchEndpointToUse = $scope.searchEndpoints.find(obj => obj.id === $scope.pendingWizardSettings.searchEndpointId);
-      
-        // From search endpoint
+
+        // From search endpoint - these are endpoint-specific settings
         $scope.pendingWizardSettings.searchEngine             = searchEndpointToUse.searchEngine;
         $scope.pendingWizardSettings.searchUrl                = searchEndpointToUse.endpointUrl; // notice remapping
         $scope.pendingWizardSettings.apiMethod                = searchEndpointToUse.apiMethod;
         $scope.pendingWizardSettings.customHeaders            = searchEndpointToUse.customHeaders;
+        $scope.pendingWizardSettings.proxyRequests            = searchEndpointToUse.proxyRequests;
+        $scope.pendingWizardSettings.basicAuthCredential      = searchEndpointToUse.basicAuthCredential;
+        $scope.pendingWizardSettings.mapperCode               = searchEndpointToUse.mapperCode;
 
         // Now grab default settings for the type of search endpoint you are using
-        var settings = settingsSvc.pickSettingsToUse($scope.pendingWizardSettings.searchEngine, $scope.pendingWizardSettings.searchUrl);         
+        // These are display/query settings that have sensible defaults per search engine type
+        var settings = settingsSvc.pickSettingsToUse($scope.pendingWizardSettings.searchEngine, $scope.pendingWizardSettings.searchUrl);
         $scope.pendingWizardSettings.additionalFields         = settings.additionalFields;
         $scope.pendingWizardSettings.fieldSpec                = settings.fieldSpec;
         $scope.pendingWizardSettings.idField                  = settings.idField;
         $scope.pendingWizardSettings.queryParams              = settings.queryParams;
         $scope.pendingWizardSettings.titleField               = settings.titleField;
-        $scope.pendingWizardSettings.proxyRequests            = settings.proxyRequests;
-        $scope.pendingWizardSettings.basicAuthCredential      = settings.basicAuthCredential;
-        $scope.pendingWizardSettings.mapperCode               = settings.mapperCode;
 
-        
+
         $scope.reset();
       };
       
@@ -564,7 +565,8 @@ angular.module('QuepidApp')
         var customTitle = $scope.searchFields.indexOf($scope.pendingWizardSettings.titleField) === -1;
         var customId    = $scope.searchFields.indexOf($scope.pendingWizardSettings.idField) === -1;
 
-        if (customId || customTitle) {
+        // Skip the custom field warning for searchapi since fields are defined by the mapper code
+        if ((customId || customTitle) && $scope.pendingWizardSettings.searchEngine !== 'searchapi') {
           var confirm = $window.confirm('You are using a custom field for the title or ID (could be a typo), are you sure you want to continue?');
 
           if ( !confirm ) {

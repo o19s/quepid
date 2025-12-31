@@ -515,7 +515,31 @@ star wars,1921,3, Star Wars: Return of the Jedi
       <h2>Add Your Search Queries</h2>
       <div>
         <p class="help-block">Start out tuning a couple important search queries:</p>
-        <button class="btn btn-primary pull-right continue" wz-next ng-click="pendingWizardSettings.addQuery(pendingWizardSettings.text)">Continue</button>
+
+        <!-- Query Pattern for Search API -->
+        <div ng-if="pendingWizardSettings.searchEngine === 'searchapi'" class="well well-sm" style="margin-bottom: 15px;">
+          <label class="control-label">Query Pattern</label>
+          <p class="help-block">
+            <strong>Endpoint:</strong> <code>{{ pendingWizardSettings.searchUrl }}</code>
+            <span class="label label-default">{{ pendingWizardSettings.apiMethod }}</span>
+          </p>
+          <p class="help-block">
+            Modify your query structure to include <code>#$query##</code> where the search text should be substituted.
+            Quepid will replace <code>#$query##</code> with each query you add below.
+          </p>
+          <!-- Simple text input for GET requests -->
+          <input ng-if="pendingWizardSettings.apiMethod === 'GET'"
+            type="text"
+            class="form-control"
+            ng-model="pendingWizardSettings.queryParams"
+            placeholder="q=#$query##" />
+          <!-- JSON textarea for POST requests -->
+          <textarea ng-if="pendingWizardSettings.apiMethod !== 'GET'"
+            class="form-control"
+            rows="3"
+            ng-model="pendingWizardSettings.queryParams"
+            placeholder='{ "query": "#$query##" }'></textarea>
+        </div>
 
         <div>
           <form>
@@ -533,6 +557,7 @@ star wars,1921,3, Star Wars: Return of the Jedi
           </div>
         </div>
 
+        <button class="btn btn-primary pull-right continue" wz-next ng-click="pendingWizardSettings.addQuery(pendingWizardSettings.text)">Continue</button>
         <br><br><br><br><br>
       </div>
       </span>
@@ -540,13 +565,7 @@ star wars,1921,3, Star Wars: Return of the Jedi
     <wz-step title="Finish" id="step-six">
       <h1>That's It!</h1>
       <p class="help-block">Go to "Tune Relevance" to iterate on your relevance and manipulate searches</p>
-
-      <div ng-show="pendingWizardSettings.searchEngine === 'searchapi'" class="alert alert-info">
-        <span>
-          You will need to modify the query <code>{{ pendingWizardSettings.queryParams }}</code> you used, substituting <code>#$query##</code> variable in place of the actual query text via the <i>Tune Relevance</i> panel.
-        </span>
-      </div>
-
+      
       <button class="btn-lg btn-success pull-right finish" wz-next>Finish</button>
       <br><br><br><br><br>
     </wz-step>
