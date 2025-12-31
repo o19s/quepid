@@ -21,53 +21,59 @@ Search Endpoints represents a search engine (or API!) that is receiving queries 
 <% end %>
 
   <div class="card h-100">
-    <div class="card-header">   
-      <%= form_tag(search_endpoints_path, { method: :get }) do %> 
-        <div class="mb-0 d-flex fs-6 justify-content-center">
-            
-          <div class="input-group">
-            <%= text_field_tag :q, params[:q], 
-                class: 'form-control form-control-sm', 
+    <div class="card-header">
+      <%= form_tag(search_endpoints_path, { method: :get }) do %>
+        <div class="mb-0 d-flex flex-wrap align-items-center gap-3 fs-6">
+
+          <!-- Search input with fixed width -->
+          <div class="input-group" style="max-width: 280px;">
+            <%= text_field_tag :q, params[:q],
+                class: 'form-control form-control-sm',
                 placeholder: 'Filter by name or url',
-                id: 'q' 
+                id: 'q'
             %>
-            <%= button_tag type: 'submit', class: 'btn btn-sm btn-outline-secondary', id: 'button-addon2' do %>
+            <%= button_tag type: 'submit', class: 'btn btn-sm btn-outline-secondary' do %>
               <i class="bi bi-search-heart"></i>
             <% end %>
           </div>
-          
-          <div class="d-flex justify-content-between">
-            <label class="ms-2">Mine</label>
-            <%= check_box_tag :owned, 
-                true, 
-                params[:owned].present?,
-                class: 'ms-2 form-check-input form-check-input-sm',
-                onchange: 'this.form.submit()'
-            %>
+
+          <!-- Checkboxes -->
+          <div class="d-flex align-items-center gap-3">
+            <div class="form-check form-check-inline mb-0">
+              <%= check_box_tag :owned,
+                  true,
+                  params[:owned].present?,
+                  class: 'form-check-input',
+                  id: 'owned',
+                  onchange: 'this.form.submit()'
+              %>
+              <label class="form-check-label" for="owned">Mine</label>
+            </div>
+
+            <div class="form-check form-check-inline mb-0">
+              <%= check_box_tag :archived,
+                  true,
+                  params[:archived].present?,
+                  class: 'form-check-input',
+                  id: 'archived',
+                  onchange: 'this.form.submit()'
+              %>
+              <label class="form-check-label" for="archived">Archived</label>
+            </div>
           </div>
-          <div class="d-flex flex-row justify-content-between">
-            <label class="ms-2">Archived?</label>
-            <%= check_box_tag :archived, 
-                true, 
-                params[:archived].present?,
-                class: 'ms-2 form-check-input form-check-input-sm',
-                onchange: 'this.form.submit()'
-            %>
-          </div>          
-          <div class="d-flex justify-content-between">
-            <%= select_tag :team_id, 
-                options_for_select(
-                  [['Team', '']] + @current_user.teams.map { |j| [j.name, j.id] },
-                  params[:team_id]
-                ),
-                class: 'form-select form-select-sm ms-4',
-                id: 'team_id',
-                onchange: 'this.form.submit()'
-            %>
-          </div>
-          
-          
-          
+
+          <!-- Team dropdown -->
+          <%= select_tag :team_id,
+              options_for_select(
+                [['All', '']] + @current_user.teams.map { |j| [j.name, j.id] },
+                params[:team_id]
+              ),
+              class: 'form-select form-select-sm',
+              style: 'width: auto; min-width: 140px;',
+              id: 'team_id',
+              onchange: 'this.form.submit()'
+          %>
+
         </div>
       <% end %>
     </div>
