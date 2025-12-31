@@ -54,6 +54,79 @@ class V8MapperExecutorTest < ActiveSupport::TestCase
     end
   end
 
+  describe 'console log capture' do
+    test 'captures console.log messages' do
+      code_mapper = <<~JS
+        numberOfResultsMapper = function(data) {
+          console.log('Testing log capture');
+          return 0;
+        }
+        docsMapper = function(data) { return []; }
+      JS
+
+      v8_executor.extract_number_of_results(code_mapper, '')
+
+      assert_equal 1, v8_executor.logs.length
+      assert_equal 'log', v8_executor.logs.first[:level]
+      assert_equal 'Testing log capture', v8_executor.logs.first[:message]
+      assert v8_executor.logs.first[:timestamp].present?
+    end
+
+    test 'captures multiple log messages in order' do
+      code_mapper = <<~JS
+        numberOfResultsMapper = function(data) {
+          console.log('First message');
+          console.warn('Second message');
+          console.error('Third message');
+          return 0;
+        }
+        docsMapper = function(data) { return []; }
+      JS
+
+      v8_executor.extract_number_of_results(code_mapper, '')
+
+      assert_equal 3, v8_executor.logs.length
+      assert_equal 'First message', v8_executor.logs[0][:message]
+      assert_equal 'log', v8_executor.logs[0][:level]
+      assert_equal 'Second message', v8_executor.logs[1][:message]
+      assert_equal 'warn', v8_executor.logs[1][:level]
+      assert_equal 'Third message', v8_executor.logs[2][:message]
+      assert_equal 'error', v8_executor.logs[2][:level]
+    end
+
+    test 'clear_logs empties the logs array' do
+      code_mapper = <<~JS
+        numberOfResultsMapper = function(data) {
+          console.log('Message to clear');
+          return 0;
+        }
+        docsMapper = function(data) { return []; }
+      JS
+
+      v8_executor.extract_number_of_results(code_mapper, '')
+      assert_equal 1, v8_executor.logs.length
+
+      v8_executor.clear_logs
+      assert_equal 0, v8_executor.logs.length
+    end
+
+    test 'logs objects as JSON' do
+      code_mapper = <<~JS
+        numberOfResultsMapper = function(data) {
+          console.log('Object:', { key: 'value', count: 42 });
+          return 0;
+        }
+        docsMapper = function(data) { return []; }
+      JS
+
+      v8_executor.extract_number_of_results(code_mapper, '')
+
+      assert_equal 1, v8_executor.logs.length
+      assert_includes v8_executor.logs.first[:message], '"key":"value"'
+      assert_includes v8_executor.logs.first[:message], '"count":42'
+    end
+  end
+
   describe 'parsing HTML response body' do
     let(:scorer_code) do
       File.read('db/scorers/ap@10.js')

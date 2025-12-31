@@ -14,6 +14,10 @@ export default class extends Controller {
     "docsMapper",
     "numberOfResultsResult",
     "docsResult",
+    "numberOfResultsLogs",
+    "numberOfResultsLogsContainer",
+    "docsLogs",
+    "docsLogsContainer",
     "status",
     "endpointName",
     "proxyRequests",
@@ -199,7 +203,9 @@ export default class extends Controller {
       this.numberOfResultsEditor,
       this.numberOfResultsMapperTarget,
       this.numberOfResultsResultTarget,
-      this.testNumberButtonTarget
+      this.testNumberButtonTarget,
+      this.numberOfResultsLogsTarget,
+      this.numberOfResultsLogsContainerTarget
     )
   }
 
@@ -211,11 +217,13 @@ export default class extends Controller {
       this.docsEditor,
       this.docsMapperTarget,
       this.docsResultTarget,
-      this.testDocsButtonTarget
+      this.testDocsButtonTarget,
+      this.docsLogsTarget,
+      this.docsLogsContainerTarget
     )
   }
 
-  async testMapper(mapperType, editor, textarea, resultTarget, button) {
+  async testMapper(mapperType, editor, textarea, resultTarget, button, logsTarget, logsContainerTarget) {
     this.captureEditors()
 
     const code = editor ? editor.getValue() : textarea.value
@@ -249,11 +257,36 @@ export default class extends Controller {
         resultTarget.innerHTML = `<pre class="text-danger mb-0">${this.escapeHtml(data.error)}</pre>`
         this.showStatus(`${mapperType} test failed`, "error")
       }
+
+      // Display console logs if any were captured
+      this.displayLogs(data.logs, logsTarget, logsContainerTarget)
     } catch (error) {
       resultTarget.innerHTML = `<pre class="text-danger mb-0">Error: ${this.escapeHtml(error.message)}</pre>`
     } finally {
       this.setButtonLoading(button, false)
     }
+  }
+
+  // Display captured console logs from JavaScript execution
+  displayLogs(logs, logsTarget, logsContainerTarget) {
+    if (!logs || logs.length === 0) {
+      logsContainerTarget.style.display = "none"
+      return
+    }
+
+    logsContainerTarget.style.display = "block"
+
+    const logHtml = logs.map(log => {
+      const levelClass = log.level === 'error' ? 'text-danger' :
+                         log.level === 'warn' ? 'text-warning' :
+                         log.level === 'info' ? 'text-info' : 'text-light'
+      const levelIcon = log.level === 'error' ? '[ERROR]' :
+                        log.level === 'warn' ? '[WARN]' :
+                        log.level === 'info' ? '[INFO]' : '[LOG]'
+      return `<div class="${levelClass}">${this.escapeHtml(levelIcon)} ${this.escapeHtml(log.message)}</div>`
+    }).join('')
+
+    logsTarget.innerHTML = logHtml
   }
 
   // Refine numberOfResultsMapper with AI

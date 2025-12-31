@@ -75,8 +75,11 @@ class MapperWizardService
   # Test a single mapper function
   # rubocop:disable Metrics/MethodLength
   def test_mapper mapper_type:, code:, html_content:
-    return { success: false, error: 'Code is required' } if code.blank?
-    return { success: false, error: 'HTML content is required' } if html_content.blank?
+    return { success: false, error: 'Code is required', logs: [] } if code.blank?
+    return { success: false, error: 'HTML content is required', logs: [] } if html_content.blank?
+
+    # Clear logs before running
+    @v8_executor.clear_logs
 
     # Build complete mapper code with stub for the other function
     full_code = case mapper_type
@@ -91,7 +94,7 @@ class MapperWizardService
                     #{code}
                   JS
                 else
-                  return { success: false, error: 'Invalid mapper type' }
+                  return { success: false, error: 'Invalid mapper type', logs: [] }
                 end
 
     result = if 'numberOfResultsMapper' == mapper_type
@@ -100,11 +103,11 @@ class MapperWizardService
                @v8_executor.extract_docs(full_code, html_content)
              end
 
-    { success: true, result: result }
+    { success: true, result: result, logs: @v8_executor.logs }
   rescue V8MapperExecutor::MapperError => e
-    { success: false, error: "JavaScript error: #{e.message}" }
+    { success: false, error: "JavaScript error: #{e.message}", logs: @v8_executor.logs }
   rescue StandardError => e
-    { success: false, error: e.message }
+    { success: false, error: e.message, logs: @v8_executor.logs }
   end
   # rubocop:enable Metrics/MethodLength
 

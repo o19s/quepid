@@ -1,24 +1,72 @@
 # frozen_string_literal: true
 
+# rubocop:disable Metrics/ClassLength
 class V8MapperExecutor
   class MapperError < StandardError; end
 
+  attr_reader :logs
+
+  # rubocop:disable Metrics/MethodLength
   def initialize js_file_path
     @context = MiniRacer::Context.new
+    @logs = []
 
     # Add Ruby methods to JavaScript context
     attach_ruby_methods
 
-    # Add console.log support
+    # Add console.log support that captures to @logs
     @context.eval <<-JS
       var console = {
-        log: function(msg) { puts(msg); },
-        error: function(msg) { puts(msg); },
+        log: function() {
+          var args = Array.prototype.slice.call(arguments);
+          var message = args.map(function(arg) {
+            if (typeof arg === 'object') {
+              try { return JSON.stringify(arg); } catch(e) { return String(arg); }
+            }
+            return String(arg);
+          }).join(' ');
+          captureLog('log', message);
+        },
+        error: function() {
+          var args = Array.prototype.slice.call(arguments);
+          var message = args.map(function(arg) {
+            if (typeof arg === 'object') {
+              try { return JSON.stringify(arg); } catch(e) { return String(arg); }
+            }
+            return String(arg);
+          }).join(' ');
+          captureLog('error', message);
+        },
+        warn: function() {
+          var args = Array.prototype.slice.call(arguments);
+          var message = args.map(function(arg) {
+            if (typeof arg === 'object') {
+              try { return JSON.stringify(arg); } catch(e) { return String(arg); }
+            }
+            return String(arg);
+          }).join(' ');
+          captureLog('warn', message);
+        },
+        info: function() {
+          var args = Array.prototype.slice.call(arguments);
+          var message = args.map(function(arg) {
+            if (typeof arg === 'object') {
+              try { return JSON.stringify(arg); } catch(e) { return String(arg); }
+            }
+            return String(arg);
+          }).join(' ');
+          captureLog('info', message);
+        }
       };
     JS
 
     # Load your code_mapper JavaScript
     @context.eval(File.read(js_file_path))
+  end
+  # rubocop:enable Metrics/MethodLength
+
+  def clear_logs
+    @logs = []
   end
 
   # rubocop:disable Metrics/MethodLength
@@ -30,9 +78,7 @@ class V8MapperExecutor
 
     @context.eval('validateMappersExist()')
 
-    # puts "response_body: #{response_body.is_a?(Array)}"
     response_body = response_body.join("\n") if response_body.is_a?(Array)
-    # puts "and the body is: #{response_body}"
 
     @context.eval("var responseBody = #{response_body.to_json};")
 
@@ -40,6 +86,7 @@ class V8MapperExecutor
       try {
         docs = docsMapper(responseBody); // Your JavaScript document mapping function
       } catch (error) {
+        console.error('docsMapper error:', error.message);
         ({ error: error.message });
       }
     JS
@@ -69,6 +116,7 @@ class V8MapperExecutor
       try {
         numberOfResults = numberOfResultsMapper(responseBody);
       } catch (error) {
+        console.error('numberOfResultsMapper error:', error.message);
         numberOfResults = 0;
       }
     JS
@@ -84,14 +132,30 @@ class V8MapperExecutor
   private
 
   def attach_ruby_methods
-    @context.attach('puts', ->(message) { puts message })
+    # Capture log messages to @logs array
+    @context.attach('captureLog', ->(level, message) {
+      @logs << { level: level, message: message, timestamp: Time.current.iso8601 }
+      # Also write to server console for debugging
+      # puts "[JS #{level.upcase}] #{message}"
+    })
+
+    # Legacy puts support
+    @context.attach('puts', ->(message) {
+      @logs << { level: 'log', message: message.to_s, timestamp: Time.current.iso8601 }
+      puts message
+    })
 
     # Expose Ruby methods to JavaScript
-    @context.attach('rubyLog', ->(message) { puts(message) })
+    # Think about if I sill need rubyLog when I can write to the server with console.log.
+    @context.attach('rubyLog', ->(message) {
+      @logs << { level: 'log', message: message.to_s, timestamp: Time.current.iso8601 }
+      puts(message)
+    })
 
-    # Add more Ruby methods as needed
+    # Add more Ruby methods as needed.  This is an example of a notional method.
     @context.attach('fetchData', ->(id) {
       Data.find(id).to_json
     })
   end
 end
+# rubocop:enable Metrics/ClassLength
