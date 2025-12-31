@@ -23,8 +23,15 @@ angular.module('QuepidApp')
             $uibModalInstance.dismiss('cancel');
             $window.location = '/';
           });
-          
+
         }
+      };
+
+      $scope.goToMapperWizard = function () {
+        caseSvc.deleteCase(caseSvc.getSelectedCase()).then(function() {
+          $uibModalInstance.dismiss('cancel');
+          $window.location = caseTryNavSvc.getQuepidRootUrl() + '/search_endpoints/mapper_wizard';
+        });
       };
 
       $scope.isChrome = /Chrome/.test($window.navigator.userAgent);

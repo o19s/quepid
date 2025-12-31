@@ -246,6 +246,34 @@ star wars,1921,3, Star Wars: Return of the Jedi
 
             <span ng-if="pendingWizardSettings.searchEngine === 'searchapi'">
               <div class="well well-sm">
+                <div class="alert alert-info">
+                  <h4><i class="bi bi-magic"></i> Custom Mapper Required</h4>
+                  <p>
+                    Search API endpoints require a custom mapper to translate your API's response format into Quepid's expected format.
+                  </p>
+                  <p>
+                    <strong>To set up a Search API endpoint:</strong>
+                  </p>
+                  <ol>
+                    <li>Use the <strong>Mapper Wizard</strong> to create your custom mapper code</li>
+                    <li>Return here and select your new endpoint from <strong>"Use an existing Search Endpoint"</strong> below</li>
+                  </ol>
+                  <p>
+                    <button type="button" class="btn btn-primary" ng-click="goToMapperWizard()">
+                      <i class="bi bi-stars"></i> Use Mapper Wizard
+                    </button>
+                  </p>
+                </div>
+              </div>
+
+              <!-- Legacy inline searchapi configuration -->
+              <p>
+                <button type="button" class="btn btn-sm btn-link" ng-click="isLegacySearchApiCollapsed = !isLegacySearchApiCollapsed">
+                  <i class="bi bi-clock-history"></i> Legacy UI
+                </button>
+              </p>
+              <div uib-collapse="!isLegacySearchApiCollapsed">
+              <div class="well well-sm">
                 <div class="form-group clearfix">
                   <label class="col-sm-3 control-label">API Method</label>
                   <div class="col-sm-9">
@@ -319,9 +347,10 @@ star wars,1921,3, Star Wars: Return of the Jedi
                   </div>
                 </div>
               </div>
+              </div>
             </span>
 
-            <span ng-if="pendingWizardSettings.searchEngine !== 'static'">
+            <span ng-if="pendingWizardSettings.searchEngine !== 'static' || !isLegacySearchApiCollapsed"> 
             <p>
               <button type="button" class="btn btn-sm btn-default" ng-click="isHeaderConfigCollapsed = !isHeaderConfigCollapsed">Advanced</button>
             </p>
@@ -353,7 +382,7 @@ star wars,1921,3, Star Wars: Return of the Jedi
             </div>
             </span>
 
-            <div class="form-group" style="width: 100%">
+            <div ng-if="pendingWizardSettings.searchEngine !== 'searchapi' || isLegacySearchApiCollapsed" class="form-group" style="width: 100%">
               <div class="clearfix"></div>
 
               <div class="row" style="margin-top: 50px;">
