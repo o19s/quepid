@@ -3,7 +3,6 @@
   <div class="btn-toolbar mb-2 mb-md-0">
     <div class="btn-group me-2">
       <%= link_to 'Bulk Judge', book_judge_bulk_path(@book), class: "btn btn-sm btn-primary" %>
-      <%= link_to (@shallow ? 'Extended Details' : 'Compact Details'), book_judgements_path(@book, shallow: !@shallow), class: "btn btn-sm btn-outline-secondary" %>
     </div>
   </div>
 </div>
@@ -13,7 +12,7 @@
 <div class="card h-100">
   <div class="card-header">
     <%= form_tag(book_judgements_path(@book), { method: :get }) do %>
-      <%= hidden_field_tag :shallow, @shallow %>
+      <%= hidden_field_tag :filtered, true %>
       <div class="mb-0 d-flex flex-wrap align-items-center gap-3 fs-6">
 
         <!-- Search input with fixed width -->
@@ -42,6 +41,17 @@
 
         <!-- Checkboxes -->
         <div class="d-flex align-items-center gap-3">
+          <div class="form-check form-check-inline mb-0">
+            <%= check_box_tag :compact,
+                true,
+                @compact,
+                class: 'form-check-input',
+                id: 'compact',
+                onchange: 'this.form.submit()'
+            %>
+            <label class="form-check-label" for="compact">Compact</label>
+          </div>
+
           <div class="form-check form-check-inline mb-0">
             <%= check_box_tag :unrateable,
                 true,
@@ -73,19 +83,20 @@
     <table class="table table-hover table-sm">
       <thead>
         <tr>
-          
-          <th>Query Doc ID</th>   
           <th>Query</th>
+          <th>Query Doc ID</th>   
           <th>Doc ID</th>
           <th>ID</th>
-          <% unless @shallow %>
+          <% unless @compact %>
             <th>Document fields</th>
           <% end %>
           <th>Rating</th>
-          <th>Unrateable</th>
-          <th>Judge Later</th>
+          <% unless @compact %>
+            <th>Unrateable</th>
+            <th>Judge Later</th>
+          <% end %>
           <th>Rater</th>
-          <% unless @shallow %>
+          <% unless @compact %>
             <th>Explanation</th>
             <th>Created At</th>
             <th>Updated At</th>      
@@ -108,10 +119,10 @@
           %>
           <tr class="<%= table_row_style %>">
             <td>
-              <%= judgement.query_doc_pair.id %> 
-            </td>
-            <td>
               <%= judgement.query_doc_pair.query_text %>
+            </td>            
+            <td>
+              <%= judgement.query_doc_pair.id %> 
             </td>
             <td>
               <%= judgement.query_doc_pair.doc_id %>
@@ -119,7 +130,7 @@
             <td>
               <%= link_to judgement.id, edit_book_query_doc_pair_judgement_path(@book, judgement.query_doc_pair, judgement) %>
             </td>
-            <% unless @shallow %>
+            <% unless @compact %>
             <td>            
               <%= truncate(judgement.query_doc_pair.document_fields, length: 150) %>
             </td>
@@ -127,16 +138,18 @@
             <td>
               <%= judgement.rating %>
             </td>
-            <td>
-              <%= judgement.unrateable? ? 'X' : '' %>
-            </td>
-            <td>
-              <%= judgement.judge_later? ? 'X' : '' %>
-            </td>
+            <% unless @compact %>
+              <td>
+                <%= judgement.unrateable? ? 'X' : '' %>
+              </td>
+              <td>
+                <%= judgement.judge_later? ? 'X' : '' %>
+              </td>
+            <% end %>
             <td>
               <%= display_judge_name(judgement.user) %>
             </td>
-            <% unless @shallow %>
+            <% unless @compact %>
               <td>
                 <%= judgement.explanation %>
               </td>
