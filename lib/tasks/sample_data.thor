@@ -40,7 +40,8 @@ class SampleData < Thor
                                        proxy_requests: true
 
     search_api_endpoint = ::SearchEndpoint.find_or_create_by search_engine: :searchapi,
-                                                             endpoint_url: 'https://www.lse.ac.uk/Search-Results', api_method: 'GET',
+                                                            name: "Edinburgh University Website"
+                                                             endpoint_url: 'https://search.ed.ac.uk', api_method: 'GET',
                                                              proxy_requests: true,
                                                              mapper_code: File.read(Rails.root.join('test/fixtures/files/edinburgh_uni_searchapi_mapper_code.js'))
 
@@ -189,8 +190,8 @@ class SampleData < Thor
     searchapi_case = realistic_activity_user.cases.create case_name: 'SEARCHAPI CASE'
     searchapi_try = searchapi_case.tries.latest
     searchapi_params = {
-      field_spec:   'id:id, title:title, summary, url',
-      query_params: 'term=#$query##',
+      field_spec:   'id:id, title:title, url',
+      query_params: 'q=#$query##',
     }
     searchapi_try.search_endpoint = search_api_endpoint
     searchapi_try.update searchapi_params
