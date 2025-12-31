@@ -163,6 +163,11 @@
 
           <div class="dev-body" ng-show="devSettingsEndpointDetails.toggle">
 
+            <p ng-if="settings.selectedTry.endpointArchived" class="alert alert-warning">
+              <span class="glyphicon glyphicon-warning-sign"></span>
+              This search endpoint has been archived. Consider switching to an active endpoint.
+            </p>
+
             <p>
               Name: {{ settings.selectedTry.endpointName }}
             </p>
