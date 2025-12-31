@@ -519,6 +519,13 @@ angular.module('QuepidApp')
               self
             );
 
+            if (!self.searcher) {
+              let msg = 'No Search Endpoint configured. Please select a search endpoint in Settings.';
+              self.onError(msg);
+              reject(msg);
+              return;
+            }
+
             self.ratedSearcher = svc.createSearcherFromSettings(
               currSettings,
               self,
