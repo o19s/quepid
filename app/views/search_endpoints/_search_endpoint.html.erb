@@ -39,7 +39,7 @@
   
   <p>
     <strong>Options:</strong>
-    <%= text_area_tag 'options', search_endpoint.options, data: { codemirror_mode: "json", codemirror_height: 100,codemirror_width: 500, codemirror_readonly: true } %>
+    <%= text_area_tag 'options', (search_endpoint.options || {}).to_json, data: { codemirror_mode: "json", codemirror_height: 100,codemirror_width: 500, codemirror_readonly: true } %>
   </p>  
   
   <p>

@@ -893,6 +893,118 @@ describe('Service: queriesSvc', function () {
     });
   });
 
+  describe('pAll with rate limiting', function() {
+    beforeEach(function() {
+      setupQuerySvc();
+    });
+
+    it('pAll processes all items in the queue without rate limit', function(done) {
+      var results = [];
+      var queue = [
+        function() { results.push(1); return Promise.resolve(1); },
+        function() { results.push(2); return Promise.resolve(2); },
+        function() { results.push(3); return Promise.resolve(3); }
+      ];
+
+      queriesSvc.pAll(queue, null).then(function() {
+        expect(results.length).toBe(3);
+        expect(results).toContain(1);
+        expect(results).toContain(2);
+        expect(results).toContain(3);
+        done();
+      });
+
+      $rootScope.$apply();
+    });
+
+    it('pAll runs concurrently when rate limit is 0', function(done) {
+      var results = [];
+      var queue = [
+        function() { results.push(1); return Promise.resolve(1); },
+        function() { results.push(2); return Promise.resolve(2); }
+      ];
+
+      queriesSvc.pAll(queue, 0).then(function() {
+        expect(results.length).toBe(2);
+        done();
+      });
+
+      $rootScope.$apply();
+    });
+
+    it('pAll enforces rate limit with delays between requests', function(done) {
+      var timestamps = [];
+      var queue = [
+        function() { timestamps.push(Date.now()); return Promise.resolve(1); },
+        function() { timestamps.push(Date.now()); return Promise.resolve(2); },
+        function() { timestamps.push(Date.now()); return Promise.resolve(3); }
+      ];
+
+      // 1200 requests per minute = 20 requests per second = 50ms between requests
+      queriesSvc.pAll(queue, 1200).then(function() {
+        expect(timestamps.length).toBe(3);
+        // With 1200 requests/minute, minimum delay is 50ms
+        var delay1 = timestamps[1] - timestamps[0];
+        var delay2 = timestamps[2] - timestamps[1];
+        // Delays should be at least 40ms (allowing 10ms tolerance for timing imprecision)
+        expect(delay1).toBeGreaterThanOrEqual(40);
+        expect(delay2).toBeGreaterThanOrEqual(40);
+        // Total time should be at least 100ms (2 delays of 50ms each)
+        var totalTime = timestamps[2] - timestamps[0];
+        expect(totalTime).toBeGreaterThanOrEqual(80);
+        done();
+      });
+
+      $rootScope.$apply();
+    });
+
+    it('pAll with 60 req/min takes at least 2 seconds for 3 requests', function(done) {
+      var timestamps = [];
+      var queue = [
+        function() { timestamps.push(Date.now()); return Promise.resolve(1); },
+        function() { timestamps.push(Date.now()); return Promise.resolve(2); },
+        function() { timestamps.push(Date.now()); return Promise.resolve(3); }
+      ];
+
+      // 60 requests per minute = 1 request per second = 1000ms between requests
+      queriesSvc.pAll(queue, 60).then(function() {
+        expect(timestamps.length).toBe(3);
+        // With 60 requests/minute, delay is 1000ms between each request
+        var delay1 = timestamps[1] - timestamps[0];
+        var delay2 = timestamps[2] - timestamps[1];
+        // Each delay should be at least 900ms (allowing 100ms tolerance)
+        expect(delay1).toBeGreaterThanOrEqual(900);
+        expect(delay2).toBeGreaterThanOrEqual(900);
+        // Total time for 3 requests should be at least 1800ms (2 delays)
+        var totalTime = timestamps[2] - timestamps[0];
+        expect(totalTime).toBeGreaterThanOrEqual(1800);
+        done();
+      });
+
+      $rootScope.$apply();
+    }, 10000); // 10 second timeout for this test
+
+    it('pAll processes all items even with rate limiting', function(done) {
+      var results = [];
+      var queue = [
+        function() { results.push(1); return Promise.resolve(1); },
+        function() { results.push(2); return Promise.resolve(2); },
+        function() { results.push(3); return Promise.resolve(3); }
+      ];
+
+      // 60000 requests per minute = 1ms between requests (fast enough for testing)
+      queriesSvc.pAll(queue, 60000).then(function() {
+        expect(results.length).toBe(3);
+        expect(results).toContain(1);
+        expect(results).toContain(2);
+        expect(results).toContain(3);
+        done();
+      });
+
+      $rootScope.$apply();
+    });
+  });
+
   afterEach(function() {
     $httpBackend.verifyNoOutstandingExpectation();
     $httpBackend.verifyNoOutstandingRequest();

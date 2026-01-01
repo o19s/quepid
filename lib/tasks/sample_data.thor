@@ -35,7 +35,8 @@ class SampleData < Thor
                                                             endpoint_url: 'http://quepid-elasticsearch.dev.o19s.com:9206/tmdb/_search', api_method: 'POST'
 
     search_api_endpoint = ::SearchEndpoint.find_or_create_by search_engine: :searchapi,
-                                                             endpoint_url: 'https://www.lse.ac.uk/Search-Results', api_method: 'GET',
+                                                             name: 'Edinburgh University Website',
+                                                             endpoint_url: 'https://search.ed.ac.uk', api_method: 'GET',
                                                              proxy_requests: true,
                                                              mapper_code: File.read(Rails.root.join('test/fixtures/files/searchapi_mapper_code.js'))
 
@@ -413,6 +414,13 @@ class SampleData < Thor
     user_params = user_defaults.merge(user_specifics)
     thousands_of_queries_user = seed_user user_params
     print_user_info user_params
+
+    osc = ::Team.where(name: 'OSC').first_or_create
+    osc.members << hundreds_of_queries_user
+    osc.members << thousands_of_queries_user
+
+    osc.search_endpoints << statedecoded_solr_endpoint
+    osc.save!
 
     hundreds_of_queries_case = hundreds_of_queries_user.cases.create case_name: '100s of Queries'
     solr_try = hundreds_of_queries_case.tries.latest

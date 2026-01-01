@@ -68,9 +68,15 @@
       </div>
     
       <div class="mb-3">
+        <%= form.label :requests_per_minute, "Rate Limit (requests/minute)", class: 'form-label' %>
+        <%= form.number_field :requests_per_minute, min: 0, step: 1, class: 'form-control', style: 'width: 150px' %>
+        <div class="form-text">Limit how fast Quepid sends queries to this search endpoint. Leave blank or 0 for unlimited.</div>
+      </div>
+
+      <div class="mb-3">
         <%= form.label :options, class: 'form-label' %>
         <div class="form-text">This JSON is for passing in settings to the Query Sandbox as a <code>qOption</code>.</div>
-        <%= form.text_area :options, data: { codemirror_mode: "application/json", codemirror_line_numbers: true, codemirror_height: 100 } %>
+        <%= form.text_area :options, value: (search_endpoint.options || {}).to_json, data: { codemirror_mode: "application/json", codemirror_line_numbers: true, codemirror_height: 100 } %>
       </div>
     
       <div class="mb-3">
