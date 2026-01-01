@@ -40,7 +40,7 @@ class SampleData < Thor
                                        proxy_requests: true
 
     search_api_endpoint = ::SearchEndpoint.find_or_create_by search_engine: :searchapi,
-                                                            name: "Edinburgh University Website"
+                                                             name: 'Edinburgh University Website',
                                                              endpoint_url: 'https://search.ed.ac.uk', api_method: 'GET',
                                                              proxy_requests: true,
                                                              mapper_code: File.read(Rails.root.join('test/fixtures/files/edinburgh_uni_searchapi_mapper_code.js'))
