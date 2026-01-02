@@ -28,7 +28,6 @@ module Api
                     params: { case_id: case_without_ratings.id, book_id: book.id, create_missing_queries: true }
 
                 assert_response :success
-                puts "response:  #{response.body}"
 
                 body = response.parsed_body
                 assert_equal 1, body['queries_created']
@@ -67,7 +66,6 @@ module Api
                       params: { case_id: case_without_ratings.id, book_id: book.id, create_missing_queries: true, process_in_background: true }
 
                   assert_response :success
-                  puts "response:  #{response.body}"
 
                   body = response.parsed_body
 

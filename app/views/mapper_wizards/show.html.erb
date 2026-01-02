@@ -1,0 +1,263 @@
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+  <h1>Mapper Wizard</h1>
+  <div class="btn-toolbar mb-2 mb-md-0">
+    <% if @search_endpoint.persisted? %>
+      <%= link_to "Back to Endpoint", search_endpoint_path(@search_endpoint), class: "btn btn-sm btn-outline-secondary" %>
+    <% else %>
+      <%= link_to "Back to Search Endpoints", search_endpoints_path, class: "btn btn-sm btn-outline-secondary" %>
+    <% end %>
+  </div>
+</div>
+
+<% search_endpoint_id = @search_endpoint.persisted? ? @search_endpoint.id : 'new' %>
+
+<div class="card"
+     data-controller="mapper-wizard"
+     data-mapper-wizard-search-endpoint-id-value="<%= search_endpoint_id %>"
+     data-mapper-wizard-fetch-url-value="<%= mapper_wizard_fetch_html_path(search_endpoint_id) %>"
+     data-mapper-wizard-generate-url-value="<%= mapper_wizard_generate_mappers_path(search_endpoint_id) %>"
+     data-mapper-wizard-test-url-value="<%= mapper_wizard_test_mapper_path(search_endpoint_id) %>"
+     data-mapper-wizard-refine-url-value="<%= mapper_wizard_refine_mapper_path(search_endpoint_id) %>"
+     data-mapper-wizard-save-url-value="<%= mapper_wizard_save_path(search_endpoint_id) %>"
+     data-mapper-wizard-has-existing-mappers-value="<%= @has_existing_mappers %>">
+
+  <div class="card-body">
+    <!-- Status Alert -->
+    <div data-mapper-wizard-target="status" class="alert" style="display: none;"></div>
+
+    <!-- Step 1: Fetch HTML -->
+    <div class="mb-4">
+      <h4><span class="badge bg-primary">1</span> Fetch Search Results HTML</h4>
+      <p class="text-muted">Enter a URL of a search results page to fetch its HTML content.</p>
+
+      <div class="row g-3">
+        <div class="col-md-2">
+          <label for="httpMethod" class="form-label">HTTP Method</label>
+          <select class="form-select"
+                  id="httpMethod"
+                  data-mapper-wizard-target="httpMethod"
+                  data-action="change->mapper-wizard#toggleRequestBody">
+            <option value="GET" <%= @search_endpoint.api_method == 'GET' || !@search_endpoint.persisted? ? 'selected' : '' %>>GET</option>
+            <option value="POST" <%= @search_endpoint.api_method == 'POST' ? 'selected' : '' %>>POST</option>
+          </select>
+        </div>
+        <div class="col-md-5">
+          <label for="searchUrl" class="form-label">Search URL (Base)</label>
+          <input type="url"
+                 class="form-control"
+                 id="searchUrl"
+                 placeholder="https://opensourceconnections.com/"
+                 data-mapper-wizard-target="searchUrl"
+                 value="<%= @search_endpoint.endpoint_url %>">
+          <div class="form-text">Base URL saved to endpoint. For POST: use the JSON body below.</div>
+        </div>
+        <div class="col-md-3">
+          <label for="queryParams" class="form-label">Query Params (Testing)</label>
+          <input type="text"
+                 class="form-control"
+                 id="queryParams"
+                 placeholder="s=eric&limit=10"
+                 data-mapper-wizard-target="queryParams"
+                 value="<%= @wizard_state.try(:query_params) %>">
+          <div class="form-text">Appended for testing only, not saved.</div>
+        </div>
+        <div class="col-md-2 d-flex align-items-end">
+          <button type="button"
+                  class="btn btn-primary w-100"
+                  data-mapper-wizard-target="fetchButton"
+                  data-action="click->mapper-wizard#fetchHtml">
+            <i class="bi bi-download"></i> Fetch
+          </button>
+        </div>
+      </div>
+
+      <!-- JSON Body for POST requests -->
+      <div class="row g-3 mt-2" data-mapper-wizard-target="requestBodyContainer" style="display: none;">
+        <div class="col-12">
+          <label for="requestBody" class="form-label">Request Body (JSON)</label>
+          <textarea class="form-control"
+                    id="requestBody"
+                    rows="6"
+                    data-mapper-wizard-target="requestBody"
+                    data-codemirror-mode="application/json"
+                    data-codemirror-line-numbers="true"
+                    data-codemirror-height="150"
+                    placeholder='{"query": "test", "size": 10}'><%= @wizard_state[:request_body] %></textarea>
+          <div class="form-text">Enter the JSON body to send with the POST request.</div>
+        </div>
+      </div>
+
+      <!-- HTML Preview -->
+      <div class="mt-3" data-mapper-wizard-target="htmlPreviewContainer" style="display: none;">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <label class="form-label mb-0">Fetched HTML/JSON Preview</label>
+          <button type="button" class="btn btn-sm btn-outline-secondary" data-action="click->mapper-wizard#toggleHtmlPreview">
+            Expand
+          </button>
+        </div>
+        <pre class="bg-light p-3 border rounded html-preview"
+             data-mapper-wizard-target="htmlPreview"
+             style="max-height: 200px; overflow-y: auto; font-size: 12px; white-space: pre-wrap; word-wrap: break-word;"></pre>
+      </div>
+    </div>
+
+    <hr>
+
+    <!-- Step 2: Generate with AI -->
+    <div class="mb-4" data-mapper-wizard-target="step2" style="display: none;">
+      <h4><span class="badge bg-primary">2</span> Generate Mappers with AI</h4>
+      <p class="text-muted">Enter your OpenAI API key to generate JavaScript mapper functions.</p>
+
+      <div class="row g-3">
+        <div class="col-md-8">
+          <label for="apiKey" class="form-label">OpenAI API Key</label>
+          <input type="password"
+                 class="form-control"
+                 id="apiKey"
+                 placeholder="sk-..."
+                 data-mapper-wizard-target="apiKey">
+          <div class="form-text">Your API key is used only for this request and is not stored.</div>
+        </div>
+        <div class="col-md-4 d-flex align-items-end">
+          <button type="button"
+                  class="btn btn-success w-100"
+                  data-mapper-wizard-target="generateButton"
+                  data-action="click->mapper-wizard#generateMappers">
+            <i class="bi bi-stars"></i> Generate Mappers with AI
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <hr>
+
+    <!-- Step 3: Edit, Test, and Refine -->
+    <div class="mb-4" data-mapper-wizard-target="step3" style="display: none;">
+      <h4><span class="badge bg-primary">3</span> Edit, Test &amp; Refine</h4>
+      <p class="text-muted">Test your mapper functions and refine them as needed. You can edit the code directly or ask AI for improvements.</p>
+
+      <!-- numberOfResultsMapper -->
+      <div class="card mb-3">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <strong>numberOfResultsMapper</strong>
+          <div class="btn-group btn-group-sm">
+            <button type="button"
+                    class="btn btn-outline-primary"
+                    data-mapper-wizard-target="testNumberButton"
+                    data-action="click->mapper-wizard#testNumberOfResultsMapper">
+              <i class="bi bi-play-fill"></i> Test
+            </button>
+            <button type="button"
+                    class="btn btn-outline-warning"
+                    data-mapper-wizard-target="refineNumberButton"
+                    data-action="click->mapper-wizard#refineNumberOfResultsMapper">
+              <i class="bi bi-stars"></i> Refine with AI
+            </button>
+          </div>
+        </div>
+        <div class="card-body">
+          <textarea data-mapper-wizard-target="numberOfResultsMapper"
+                    data-codemirror-mode="javascript"
+                    data-codemirror-line-numbers="true"
+                    data-codemirror-height="200"><%= @existing_number_of_results_mapper || @wizard_state.try(:number_of_results_mapper) || "numberOfResultsMapper = function(data) {\n  // Return total number of search results\n  return 0;\n}" %></textarea>
+          <div class="mt-2">
+            <strong>Test Result:</strong>
+            <div data-mapper-wizard-target="numberOfResultsResult" class="p-2 bg-light border rounded">
+              <em class="text-muted">Click "Test" to see results</em>
+            </div>
+          </div>
+          <div class="mt-2" data-mapper-wizard-target="numberOfResultsLogsContainer" style="display: none;">
+            <strong>Console Logs:</strong>
+            <div data-mapper-wizard-target="numberOfResultsLogs" class="p-2 bg-dark text-light border rounded" style="max-height: 150px; overflow-y: auto; font-family: monospace; font-size: 12px;">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- docsMapper -->
+      <div class="card mb-3">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <strong>docsMapper</strong>
+          <div class="btn-group btn-group-sm">
+            <button type="button"
+                    class="btn btn-outline-primary"
+                    data-mapper-wizard-target="testDocsButton"
+                    data-action="click->mapper-wizard#testDocsMapper">
+              <i class="bi bi-play-fill"></i> Test
+            </button>
+            <button type="button"
+                    class="btn btn-outline-warning"
+                    data-mapper-wizard-target="refineDocsButton"
+                    data-action="click->mapper-wizard#refineDocsMapper">
+              <i class="bi bi-stars"></i> Refine with AI
+            </button>
+          </div>
+        </div>
+        <div class="card-body">
+          <textarea data-mapper-wizard-target="docsMapper"
+                    data-codemirror-mode="javascript"
+                    data-codemirror-line-numbers="true"
+                    data-codemirror-height="300"><%= @existing_docs_mapper || @wizard_state.try(:docs_mapper) || "docsMapper = function(data) {\n  // Return array of {id, title, ...} objects\n  var docs = [];\n  return docs;\n}" %></textarea>
+          <div class="mt-2">
+            <strong>Test Result:</strong>
+            <div data-mapper-wizard-target="docsResult" class="p-2 bg-light border rounded" style="max-height: 300px; overflow-y: auto;">
+              <em class="text-muted">Click "Test" to see results</em>
+            </div>
+          </div>
+          <div class="mt-2" data-mapper-wizard-target="docsLogsContainer" style="display: none;">
+            <strong>Console Logs:</strong>
+            <div data-mapper-wizard-target="docsLogs" class="p-2 bg-dark text-light border rounded" style="max-height: 150px; overflow-y: auto; font-family: monospace; font-size: 12px;">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <hr>
+
+    <!-- Step 4: Save -->
+    <div class="mb-4">
+      <h4><span class="badge bg-primary">4</span> Save Search Endpoint</h4>
+
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label for="endpointName" class="form-label">Endpoint Name</label>
+          <input type="text"
+                 class="form-control"
+                 id="endpointName"
+                 placeholder="My Search API"
+                 data-mapper-wizard-target="endpointName"
+                 value="<%= @search_endpoint.name %>">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Options</label>
+          <div class="form-check form-switch">
+            <input type="checkbox"
+                   class="form-check-input"
+                   id="proxyRequests"
+                   data-mapper-wizard-target="proxyRequests"
+                   <%= @search_endpoint.proxy_requests? || !@search_endpoint.persisted? ? 'checked' : '' %>>
+            <label class="form-check-label" for="proxyRequests">Proxy requests through Quepid</label>
+          </div>
+          <div class="form-text">Recommended for avoiding CORS issues with external search APIs.</div>
+        </div>
+      </div>
+
+      <div class="mt-3">
+        <button type="button"
+                class="btn btn-lg btn-success"
+                data-mapper-wizard-target="saveButton"
+                data-action="click->mapper-wizard#save">
+          <i class="bi bi-check-circle"></i> Save Search Endpoint
+        </button>
+        <span class="text-muted ms-3">HTTP method and URL from Step 1 will be saved.</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .html-preview.expanded {
+    max-height: 600px !important;
+  }
+</style>

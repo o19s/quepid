@@ -387,8 +387,6 @@ class FetchServiceTest < ActiveSupport::TestCase
       assert_equal 1.0, snapshot_query.score # before running P@10
 
       assert_not_nil asnapshot.scorer
-      assert_nil asnapshot.scorer.code
-      asnapshot.scorer.code = File.readlines('./db/scorers/p@10.js', '\n').join('\n')
 
       fetch_service = FetchService.new options
       fetch_service.begin acase, atry
@@ -401,6 +399,40 @@ class FetchServiceTest < ActiveSupport::TestCase
 
       snapshot_query.reload
       assert_equal 0.5, snapshot_query.score
+    end
+  end
+
+  describe 'Web request tracking' do
+    let(:acase)       { cases(:queries_case) }
+    let(:atry)        { tries(:for_case_queries_case) }
+    let(:first_query) { queries(:first_query) }
+
+    it 'skips web request creation when track_web_requests is false (default)' do
+      fetch_service = FetchService.new options
+      fetch_service.begin(acase, atry)
+
+      docs = []
+      response_status = 200
+      response_body = '{"response":{"docs":[]}}'
+
+      assert_no_difference 'WebRequest.count' do
+        fetch_service.store_query_results(first_query, docs, response_status, response_body)
+      end
+    end
+
+    it 'creates web requests when track_web_requests is true' do
+      options_no_tracking = options.merge(track_web_requests: true)
+      fetch_service = FetchService.new options_no_tracking
+
+      fetch_service.begin(acase, atry)
+
+      docs = []
+      response_status = 200
+      response_body = '{"response":{"docs":[]}}'
+
+      assert_difference 'WebRequest.count' do
+        fetch_service.store_query_results(first_query, docs, response_status, response_body)
+      end
     end
   end
 end

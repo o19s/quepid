@@ -9,8 +9,9 @@ class JudgementsController < ApplicationController
 
   # rubocop:disable Metrics/AbcSize
   def index
-    bool = ActiveRecord::Type::Boolean.new
-    @shallow = bool.deserialize(params[:shallow] || true )
+    # compact checkbox: default to checked
+    # when form is submitted (filtered param present), use the checkbox value
+    @compact = params[:filtered].present? ? params[:compact].present? : true
 
     query = @book.judgements.includes([ :query_doc_pair, :user ])
 

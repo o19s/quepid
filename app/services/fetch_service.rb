@@ -10,24 +10,28 @@ class FetchService
   attr_reader :logger, :options
 
   # These are two snapshots related to book 25 and case 6789
-  # that represent Haystack Conference and are used in the sample
+  # that represent work done during a Haystack Conference and are used in the sample
   # Jupyterlite notebooks.  Don't nuke them if they belong to a case 6789.
   HAYSTACK_PUBLIC_CASE = 6789
   SPECIAL_SNAPSHOTS_TO_PRESERVE = [ 2471, 2473 ].freeze
 
   def initialize opts = {}
+    # In late December 2025 we added a switch to disable tracking of web requests
+    # and if in six months we haven't flipped that for some specific
+    # reason, then let's remove it.
     default_options = {
       logger:                     Rails.logger,
       snapshot_limit:             10,
       snapshot_webrequests_limit: 1,
       debug_mode:                 false,
+      track_web_requests:         false,
     }
 
     @options = default_options.merge(opts)
 
     @logger = @options[:logger]
 
-    @javascript_mapper_code = JavascriptMapperCode.new(Rails.root.join('lib/mapper_code_logic.js'))
+    @v8_executor = V8MapperExecutor.new(Rails.root.join('lib/mapper_code_logic.js'))
   end
 
   def begin acase, atry
@@ -102,7 +106,7 @@ class FetchService
 
   # should be in some other service??
   def extract_docs_from_response_body_for_searchapi mapper_code, response_body
-    docs = @javascript_mapper_code.extract_docs mapper_code, response_body
+    docs = @v8_executor.extract_docs mapper_code, response_body
     docs
   end
 
@@ -145,10 +149,12 @@ class FetchService
       number_of_results: docs.count,
       response_status:   response_status
     )
-    snapshot_query.create_web_request(
-      response_status: response_status,
-      response:        response_body
-    )
+    if @options[:track_web_requests]
+      snapshot_query.create_web_request(
+        response_status: response_status,
+        response:        response_body
+      )
+    end
     snapshot_manager = SnapshotManager.new(@snapshot)
     query_docs = snapshot_manager.setup_docs_for_query(snapshot_query, docs)
     if query_docs.any?
@@ -290,10 +296,12 @@ class FetchService
 
     delete_extra_snapshots @case
 
-    @snapshot.name = 'Fetch [CHECKING WEBREQUESTS COUNT]'
-    @snapshot.save!
+    if @options[:track_web_requests]
+      @snapshot.name = 'Fetch [CHECKING WEBREQUESTS COUNT]'
+      @snapshot.save!
 
-    delete_extra_web_requests @case
+      delete_extra_web_requests @case
+    end
 
     @snapshot.name = 'Fetch [COMPLETED]'
     @snapshot.save!

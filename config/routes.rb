@@ -37,6 +37,20 @@ Rails.application.routes.draw do
 
   resources :api_keys, path: 'api-keys', only: [ :create, :destroy ]
 
+  # Mapper Wizard routes MUST be defined before resources :search_endpoints
+  # to prevent /search_endpoints/mapper_wizard from matching search_endpoints#show with id='mapper_wizard'
+  scope 'search_endpoints' do
+    get 'mapper_wizard', to: 'mapper_wizards#show', as: :new_mapper_wizard
+    get ':search_endpoint_id/mapper_wizard', to: 'mapper_wizards#show', as: :mapper_wizard
+    post ':search_endpoint_id/mapper_wizard/fetch_html', to: 'mapper_wizards#fetch_html', as: :mapper_wizard_fetch_html
+    post ':search_endpoint_id/mapper_wizard/generate_mappers', to: 'mapper_wizards#generate_mappers',
+                                                               as: :mapper_wizard_generate_mappers
+    post ':search_endpoint_id/mapper_wizard/test_mapper', to: 'mapper_wizards#test_mapper', as: :mapper_wizard_test_mapper
+    post ':search_endpoint_id/mapper_wizard/refine_mapper', to: 'mapper_wizards#refine_mapper',
+                                                            as: :mapper_wizard_refine_mapper
+    post ':search_endpoint_id/mapper_wizard/save', to: 'mapper_wizards#save', as: :mapper_wizard_save
+  end
+
   resources :search_endpoints do
     member do
       get 'clone'

@@ -7,6 +7,12 @@ services:
     image: mysql:8.4.3
     ports:
       - 3306:3306
+    restart: always
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      retries: 5
+      start_period: 10s      
     environment:
       - MYSQL_ROOT_PASSWORD=password
     volumes:
@@ -16,6 +22,9 @@ services:
     image: o19s/quepid:latest
     #env_file:   # Use this approach if you would rather manage your environment settings elsewhere.
     #  - .env.prod
+    depends_on:
+      mysql:
+        condition: service_healthy    
     environment:
       - PORT=3000
       - RACK_ENV=production

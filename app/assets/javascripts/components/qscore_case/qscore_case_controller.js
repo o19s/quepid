@@ -22,7 +22,8 @@ angular.module('QuepidApp')
         }
         
         // Handle direct score objects (fallback)
-        if (scorable && angular.isDefined(scorable.score)) {
+        // Make sure scorable.score is not a function (Query objects have a score() method)
+        if (scorable && angular.isDefined(scorable.score) && !angular.isFunction(scorable.score)) {
           return {
             score: scorable.score,
             backgroundColor: scorable.backgroundColor

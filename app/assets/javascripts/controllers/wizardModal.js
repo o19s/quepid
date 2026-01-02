@@ -23,8 +23,15 @@ angular.module('QuepidApp')
             $uibModalInstance.dismiss('cancel');
             $window.location = '/';
           });
-          
+
         }
+      };
+
+      $scope.goToMapperWizard = function () {
+        caseSvc.deleteCase(caseSvc.getSelectedCase()).then(function() {
+          $uibModalInstance.dismiss('cancel');
+          $window.location = caseTryNavSvc.getQuepidRootUrl() + '/search_endpoints/mapper_wizard';
+        });
       };
 
       $scope.isChrome = /Chrome/.test($window.navigator.userAgent);
@@ -151,25 +158,26 @@ angular.module('QuepidApp')
       // used when you change a searchEndpoint that has already been set up, and then follow normal flow.
       $scope.changeSearchEndpoint = function() {
         var searchEndpointToUse = $scope.searchEndpoints.find(obj => obj.id === $scope.pendingWizardSettings.searchEndpointId);
-      
-        // From search endpoint
+
+        // From search endpoint - these are endpoint-specific settings
         $scope.pendingWizardSettings.searchEngine             = searchEndpointToUse.searchEngine;
         $scope.pendingWizardSettings.searchUrl                = searchEndpointToUse.endpointUrl; // notice remapping
         $scope.pendingWizardSettings.apiMethod                = searchEndpointToUse.apiMethod;
         $scope.pendingWizardSettings.customHeaders            = searchEndpointToUse.customHeaders;
+        $scope.pendingWizardSettings.proxyRequests            = searchEndpointToUse.proxyRequests;
+        $scope.pendingWizardSettings.basicAuthCredential      = searchEndpointToUse.basicAuthCredential;
+        $scope.pendingWizardSettings.mapperCode               = searchEndpointToUse.mapperCode;
 
         // Now grab default settings for the type of search endpoint you are using
-        var settings = settingsSvc.pickSettingsToUse($scope.pendingWizardSettings.searchEngine, $scope.pendingWizardSettings.searchUrl);         
+        // These are display/query settings that have sensible defaults per search engine type
+        var settings = settingsSvc.pickSettingsToUse($scope.pendingWizardSettings.searchEngine, $scope.pendingWizardSettings.searchUrl);
         $scope.pendingWizardSettings.additionalFields         = settings.additionalFields;
         $scope.pendingWizardSettings.fieldSpec                = settings.fieldSpec;
         $scope.pendingWizardSettings.idField                  = settings.idField;
         $scope.pendingWizardSettings.queryParams              = settings.queryParams;
         $scope.pendingWizardSettings.titleField               = settings.titleField;
-        $scope.pendingWizardSettings.proxyRequests            = settings.proxyRequests;
-        $scope.pendingWizardSettings.basicAuthCredential      = settings.basicAuthCredential;
-        $scope.pendingWizardSettings.mapperCode               = settings.mapperCode;
 
-        
+
         $scope.reset();
       };
       
@@ -342,28 +350,59 @@ angular.module('QuepidApp')
         else if ($scope.pendingWizardSettings.searchEngine === 'searchapi'){
           // this is suss
           settingsForValidation.args = $scope.pendingWizardSettings.queryParams;
-          
-          /*jshint evil:true */
-          eval(settingsForValidation.mapperCode);
-          /*jshint evil:false */
+        
+          try {
+            /*jshint evil:true */
+            /* jshint undef: false */
+            console.log('About to evaluate mapper code...');
+            
+            // Alternative approach: Use Function constructor which runs in non-strict mode
+            // and has access to global scope
+            var mapperFunction = new Function(settingsForValidation.mapperCode);
+            mapperFunction.call(window);
+            
+            // The functions should now be available on the window object
+            if (window.numberOfResultsMapper) {
+              numberOfResultsMapper = window.numberOfResultsMapper;
+            }
+            if (window.docsMapper) {
+              docsMapper = window.docsMapper;
+            }
+            /*jshint evil:false */
+            /* jshint undef: true */
+            
+      
+          } catch (evalError) {
+            console.error('Error evaluating mapper code:', evalError);
+            console.error('Error stack:', evalError.stack);
+            $scope.mapperInvalid = true;
+            $scope.mapperErrorMessage = 'Mapper code evaluation failed: ' + evalError.message;
+            return; // Exit early if eval fails
+          }
           
           /* jshint undef: false */
           if (typeof numberOfResultsMapper === 'undefined') {
+            console.error('numberOfResultsMapper is undefined after evaluation');
             $scope.mapperInvalid = true;
             $scope.mapperErrorMessage = 'You need to define a "numberOfResultsMapper"';
           }
           else {
+            console.log('numberOfResultsMapper defined successfully:', numberOfResultsMapper);
             settingsForValidation.numberOfResultsMapper = numberOfResultsMapper; 
           }
           
           if (typeof docsMapper === 'undefined') {
+            console.error('docsMapper is undefined after evaluation');
             $scope.mapperInvalid = true;
             $scope.mapperErrorMessage = 'You need to define a "docsMapper"';
           }
           else {
+            console.log('docsMapper defined successfully:', docsMapper);
             settingsForValidation.docsMapper = docsMapper; 
           }
           /* jshint undef: true */
+          
+          console.log('=== END MAPPER CODE DEBUG ===');
           
           // This is an example of what the above mapper code might look like.
           
@@ -526,7 +565,8 @@ angular.module('QuepidApp')
         var customTitle = $scope.searchFields.indexOf($scope.pendingWizardSettings.titleField) === -1;
         var customId    = $scope.searchFields.indexOf($scope.pendingWizardSettings.idField) === -1;
 
-        if (customId || customTitle) {
+        // Skip the custom field warning for searchapi since fields are defined by the mapper code
+        if ((customId || customTitle) && $scope.pendingWizardSettings.searchEngine !== 'searchapi') {
           var confirm = $window.confirm('You are using a custom field for the title or ID (could be a typo), are you sure you want to continue?');
 
           if ( !confirm ) {

@@ -186,11 +186,13 @@ angular.module('QuepidApp')
           // no searchUrl or urlFormat because it's code generated!
         },
         searchapi: {
-          queryParams: [
-            '{',
-            '  "query": "QUERY_THAT_MATCHES_AT_LEAST_ONE_DOC"',
-            '}'
-          ].join('\n'),
+          // a lot of these defaults can probably be removed in the future
+          // when we don't create the searchapi in the wizard.
+          // queryParams: [
+          //   '{',
+          //   '  "query": "#$query##"',
+          //   '}'
+          // ].join('\n'),
           escapeQuery: true,
           apiMethod: 'POST',
           headerType: 'None',
@@ -206,7 +208,7 @@ angular.module('QuepidApp')
           proxyRequests: true,
           mapperCode: [
             'numberOfResultsMapper = function(data){',
-            '  return data.length',
+            '  return data.length;',
             '};',
             '',
             'docsMapper = function(data){',
@@ -579,9 +581,7 @@ angular.module('QuepidApp')
 
         var payload = {};
         var payloadTry = {};
-        var payloadSearchEndpoint = {};
         payload.try = payloadTry;
-        payload.search_endpoint = payloadSearchEndpoint;
 
         payload.parent_try_number = settingsToSave.selectedTry.tryNo;
         payload.curator_vars = settingsToSave.selectedTry.curatorVarsDict();
@@ -593,13 +593,23 @@ angular.module('QuepidApp')
         payloadTry.field_spec = settingsToSave.fieldSpec;
         payloadTry.number_of_rows = settingsToSave.numberOfRows;
         payloadTry.query_params = settingsToSave.selectedTry.queryParams;
-        payloadSearchEndpoint.search_engine = settingsToSave.searchEngine;
-        payloadSearchEndpoint.endpoint_url = settingsToSave.searchUrl;
-        payloadSearchEndpoint.api_method = settingsToSave.apiMethod;
-        payloadSearchEndpoint.custom_headers = settingsToSave.customHeaders;
-        payloadSearchEndpoint.basic_auth_credential = settingsToSave.basicAuthCredential;
-        payloadSearchEndpoint.mapper_code = settingsToSave.mapperCode;
-        payloadSearchEndpoint.proxy_requests = settingsToSave.proxyRequests;
+
+        // Either we are using an existing search endpoint
+        if (settingsToSave.searchEndpointId){
+          payloadTry.search_endpoint_id = settingsToSave.searchEndpointId;
+        }
+        // Or we are creating a new one.
+        else {
+          var payloadSearchEndpoint = {};
+          payloadSearchEndpoint.search_engine = settingsToSave.searchEngine;
+          payloadSearchEndpoint.endpoint_url = settingsToSave.searchUrl;
+          payloadSearchEndpoint.api_method = settingsToSave.apiMethod;
+          payloadSearchEndpoint.custom_headers = settingsToSave.customHeaders;
+          payloadSearchEndpoint.basic_auth_credential = settingsToSave.basicAuthCredential;
+          payloadSearchEndpoint.mapper_code = settingsToSave.mapperCode;
+          payloadSearchEndpoint.proxy_requests = settingsToSave.proxyRequests;
+          payload.search_endpoint = payloadSearchEndpoint;
+        }
 
         return $http.put('api/cases/' + currCaseNo + '/tries/' + currTryNo, payload)
           .then(function() {

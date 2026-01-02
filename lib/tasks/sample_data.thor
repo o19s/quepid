@@ -34,11 +34,16 @@ class SampleData < Thor
     tmdb_es_endpoint = ::SearchEndpoint.find_or_create_by   search_engine: :es,
                                                             endpoint_url: 'http://quepid-elasticsearch.dev.o19s.com:9206/tmdb/_search', api_method: 'POST'
 
+    ::SearchEndpoint.find_or_create_by search_engine:  :search_api,
+                                       endpoint_url:   'https://opensourceconnections.com/?s=eric',
+                                       api_method:     'GET',
+                                       proxy_requests: true
+
     search_api_endpoint = ::SearchEndpoint.find_or_create_by search_engine: :searchapi,
                                                              name: 'Edinburgh University Website',
                                                              endpoint_url: 'https://search.ed.ac.uk', api_method: 'GET',
                                                              proxy_requests: true,
-                                                             mapper_code: File.read(Rails.root.join('test/fixtures/files/searchapi_mapper_code.js'))
+                                                             mapper_code: File.read(Rails.root.join('test/fixtures/files/edinburgh_uni_searchapi_mapper_code.js'))
 
     print_step 'End of seeding search endpoints................'
 
@@ -139,7 +144,7 @@ class SampleData < Thor
     user_params = user_specifics # user_defaults.merge(user_specifics)
     osc_ai_judge = seed_user user_params
     osc_ai_judge.judge_options = {
-      llm_service_url: 'http://ollama:11434',
+      llm_service_url: 'http://ollama:11430',
       llm_model:       'qwen3:0.6b',
       llm_timeout:     60,
     }
@@ -185,8 +190,8 @@ class SampleData < Thor
     searchapi_case = realistic_activity_user.cases.create case_name: 'SEARCHAPI CASE'
     searchapi_try = searchapi_case.tries.latest
     searchapi_params = {
-      field_spec:   'id:id, title:title, summary, url',
-      query_params: 'term=#$query##',
+      field_spec:   'id:id, title:title, url',
+      query_params: 'q=#$query##',
     }
     searchapi_try.search_endpoint = search_api_endpoint
     searchapi_try.update searchapi_params
@@ -307,7 +312,7 @@ class SampleData < Thor
 
     # Multiple Cases
     print_step 'Seeding multiple cases................'
-    case_names = [ 'Typeahead: Dairy', 'Typeahead: Meats', 'Typeahead: Dessert', 'Typeahead: Fruit & Veg' ]
+    case_names = [ 'Typeahead: Dairy', 'Typeahead: Meats', 'Typeahead: Dessert' ]
 
     case_names.each do |case_name|
       # check if we've already created the case

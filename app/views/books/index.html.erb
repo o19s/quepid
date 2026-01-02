@@ -24,34 +24,35 @@
 <% end %>
 
 <div class="card h-100">
-  <div class="card-header">   
+  <div class="card-header">
     <%= form_tag(books_path, { method: :get }) do %>
       <%= hidden_field_tag :archived, params[:archived] if params[:archived] %>
-      <div class="mb-0 d-flex fs-6 ">
+      <div class="mb-0 d-flex flex-wrap align-items-center gap-3 fs-6">
 
-        <div class="input-group">
+        <!-- Search input with fixed width -->
+        <div class="input-group" style="max-width: 300px;">
           <%= text_field_tag :q, params[:q],
               class: 'form-control form-control-sm',
               placeholder: 'Filter by book name or team name',
               id: 'q'
           %>
-          <%= button_tag type: 'submit', class: 'btn btn-sm btn-outline-secondary', id: 'button-addon2' do %>
+          <%= button_tag type: 'submit', class: 'btn btn-sm btn-outline-secondary' do %>
             <i class="bi bi-search-heart"></i>
           <% end %>
         </div>
-        
-        <div class="d-flex">
-          <%= select_tag :team_id, 
-              options_for_select(
-                [['Team', '']] + @current_user.teams.map { |j| [j.name, j.id] },
-                params[:team_id]
-              ),
-              class: 'form-select form-select-sm ms-4',
-              id: 'team_id',
-              onchange: 'this.form.submit()'
-          %>
-        </div>
-        
+
+        <!-- Team dropdown -->
+        <%= select_tag :team_id,
+            options_for_select(
+              [['All', '']] + @current_user.teams.map { |j| [j.name, j.id] },
+              params[:team_id]
+            ),
+            class: 'form-select form-select-sm',
+            style: 'width: auto; min-width: 140px;',
+            id: 'team_id',
+            onchange: 'this.form.submit()'
+        %>
+
       </div>
     <% end %>
   </div>

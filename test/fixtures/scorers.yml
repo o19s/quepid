@@ -29,6 +29,7 @@ p@10:
   name: P@10
   scale: 0, 1
   communal: true
+  code: <%= File.read('db/scorers/p@10.js').dump %>
   
 quepid_default_scorer:
   code: pass();

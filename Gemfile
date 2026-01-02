@@ -49,7 +49,10 @@ gem 'thor'
 gem 'turbo-rails'
 gem 'vega'
 
+gem 'ruby_llm'
+
 group :development, :test do
+  gem 'benchmark'
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
   gem 'debug', platforms: [ :mri, :windows ], require: 'debug/prelude'
   gem 'bullet'

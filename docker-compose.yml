@@ -65,12 +65,14 @@ services:
   ollama:
     image: ollama/ollama
     container_name: ollama
+    healthcheck:
+      test: ollama --version || exit 1
     ports:
-      - "11434:11434"
+      - "11430:11434"  # don't conflict with local Ollama.
     volumes:
       - ./volumes/ollama/data:/tmp/data
     environment:
-      OLLAMA_MODELS: "/tmp/data/.ollama/models"
+      OLLAMA_MODELS: "/tmp/data/ollama/models"   
       
   nginx:
     image: nginx:1.29.3-alpine-slim

@@ -3,7 +3,6 @@
   <div class="btn-toolbar mb-2 mb-md-0">
     <div class="btn-group me-2">
       <%= link_to 'Bulk Judge', book_judge_bulk_path(@book), class: "btn btn-sm btn-primary" %>
-      <%= link_to (@shallow ? 'Extended Details' : 'Compact Details'), book_judgements_path(@book, shallow: !@shallow), class: "btn btn-sm btn-outline-secondary" %>
     </div>
   </div>
 </div>
@@ -11,52 +10,71 @@
 <%= render 'books/tabs', book: @book %>
 
 <div class="card h-100">
-  <div class="card-header">   
-    <%= form_tag(book_judgements_path(@book), { method: :get }) do %> 
-      <div class="mb-0 d-flex fs-6 justify-content-center">
-        <%= hidden_field_tag :shallow, @shallow %>
-          
-        <div class="input-group">
-          <%= text_field_tag :q, params[:q], 
-              class: 'form-control form-control-sm', 
-              placeholder: 'Filter by query doc id, query, doc id, info need, or explanation',
-              id: 'q' 
+  <div class="card-header">
+    <%= form_tag(book_judgements_path(@book), { method: :get }) do %>
+      <%= hidden_field_tag :filtered, true %>
+      <div class="mb-0 d-flex flex-wrap align-items-center gap-3 fs-6">
+
+        <!-- Search input with fixed width -->
+        <div class="input-group" style="max-width: 340px;">
+          <%= text_field_tag :q, params[:q],
+              class: 'form-control form-control-sm',
+              placeholder: 'Filter by query, doc id, or explanation',
+              id: 'q'
           %>
-          <%= button_tag type: 'submit', class: 'btn btn-sm btn-outline-secondary', id: 'button-addon2' do %>
+          <%= button_tag type: 'submit', class: 'btn btn-sm btn-outline-secondary' do %>
             <i class="bi bi-search-heart"></i>
           <% end %>
         </div>
-        
-        <div class="d-flex justify-content-between">
-          <%= select_tag :user_id, 
-              options_for_select(
-                [['Judge', '']] + @book.judges.map { |j| [j.fullname, j.id] },
-                params[:user_id]
-              ),
-              class: 'form-select form-select-sm ms-4',
-              id: 'user_id',
-              onchange: 'this.form.submit()'
-          %>
+
+        <!-- Judge dropdown -->
+        <%= select_tag :user_id,
+            options_for_select(
+              [['All Judges', '']] + @book.judges.map { |j| [j.fullname, j.id] },
+              params[:user_id]
+            ),
+            class: 'form-select form-select-sm',
+            style: 'width: auto; min-width: 140px;',
+            id: 'user_id',
+            onchange: 'this.form.submit()'
+        %>
+
+        <!-- Checkboxes -->
+        <div class="d-flex align-items-center gap-3">
+          <div class="form-check form-check-inline mb-0">
+            <%= check_box_tag :compact,
+                true,
+                @compact,
+                class: 'form-check-input',
+                id: 'compact',
+                onchange: 'this.form.submit()'
+            %>
+            <label class="form-check-label" for="compact">Compact</label>
+          </div>
+
+          <div class="form-check form-check-inline mb-0">
+            <%= check_box_tag :unrateable,
+                true,
+                params[:unrateable].present?,
+                class: 'form-check-input',
+                id: 'unrateable',
+                onchange: 'this.form.submit()'
+            %>
+            <label class="form-check-label" for="unrateable">Unrateable</label>
+          </div>
+
+          <div class="form-check form-check-inline mb-0">
+            <%= check_box_tag :judge_later,
+                true,
+                params[:judge_later].present?,
+                class: 'form-check-input',
+                id: 'judge_later',
+                onchange: 'this.form.submit()'
+            %>
+            <label class="form-check-label" for="judge_later">Later</label>
+          </div>
         </div>
-        
-        <div class="d-flex flex-row justify-content-between">
-          <label class="ms-2">Unrateable</label>
-          <%= check_box_tag :unrateable, 
-              true, 
-              params[:unrateable].present?,
-              class: 'ms-2 form-check-input form-check-input-sm',
-              onchange: 'this.form.submit()'
-          %>
-        </div>
-        <div class="d-flex flex-row justify-content-between">
-          <label class="ms-2">Later</label>
-          <%= check_box_tag :judge_later, 
-              true, 
-              params[:judge_later].present?,
-              class: 'ms-2 form-check-input form-check-input-sm',
-              onchange: 'this.form.submit()'
-          %>
-        </div>        
+
       </div>
     <% end %>
   </div>
@@ -65,19 +83,20 @@
     <table class="table table-hover table-sm">
       <thead>
         <tr>
-          
-          <th>Query Doc ID</th>   
           <th>Query</th>
+          <th>Query Doc ID</th>   
           <th>Doc ID</th>
           <th>ID</th>
-          <% unless @shallow %>
+          <% unless @compact %>
             <th>Document fields</th>
           <% end %>
           <th>Rating</th>
-          <th>Unrateable</th>
-          <th>Judge Later</th>
+          <% unless @compact %>
+            <th>Unrateable</th>
+            <th>Judge Later</th>
+          <% end %>
           <th>Rater</th>
-          <% unless @shallow %>
+          <% unless @compact %>
             <th>Explanation</th>
             <th>Created At</th>
             <th>Updated At</th>      
@@ -100,10 +119,10 @@
           %>
           <tr class="<%= table_row_style %>">
             <td>
-              <%= judgement.query_doc_pair.id %> 
-            </td>
-            <td>
               <%= judgement.query_doc_pair.query_text %>
+            </td>            
+            <td>
+              <%= judgement.query_doc_pair.id %> 
             </td>
             <td>
               <%= judgement.query_doc_pair.doc_id %>
@@ -111,7 +130,7 @@
             <td>
               <%= link_to judgement.id, edit_book_query_doc_pair_judgement_path(@book, judgement.query_doc_pair, judgement) %>
             </td>
-            <% unless @shallow %>
+            <% unless @compact %>
             <td>            
               <%= truncate(judgement.query_doc_pair.document_fields, length: 150) %>
             </td>
@@ -119,16 +138,18 @@
             <td>
               <%= judgement.rating %>
             </td>
-            <td>
-              <%= judgement.unrateable? ? 'X' : '' %>
-            </td>
-            <td>
-              <%= judgement.judge_later? ? 'X' : '' %>
-            </td>
+            <% unless @compact %>
+              <td>
+                <%= judgement.unrateable? ? 'X' : '' %>
+              </td>
+              <td>
+                <%= judgement.judge_later? ? 'X' : '' %>
+              </td>
+            <% end %>
             <td>
               <%= display_judge_name(judgement.user) %>
             </td>
-            <% unless @shallow %>
+            <% unless @compact %>
               <td>
                 <%= judgement.explanation %>
               </td>
