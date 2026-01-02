@@ -922,15 +922,10 @@ angular.module('QuepidApp')
 
           promises.push(searchPromiseFn);
         });
-
-        // Get rate limit from settings options (requests per minute)
-        let requestsPerMinute = null;
-        if (currSettings && currSettings.options && currSettings.options.requestsPerMinute) {
-          requestsPerMinute = currSettings.options.requestsPerMinute;
-          $log.info("requestsPerMinute is " + requestsPerMinute);
+        if (currSettings.selectedTry.requestsPerMinute > 0){
+          $log.info('Rate limited to ' + currSettings.selectedTry.requestsPerMinute + ' requests per minute.');
         }
-
-        return this.pAll(promises, requestsPerMinute).then( () => {          
+        return this.pAll(promises, currSettings.selectedTry.requestsPerMinute).then( () => {
           $q.all(scorePromises).then( () => {
             /*
              * Why are we calling scoreAll after we called score() above?

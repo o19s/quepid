@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_12_06_221416) do
+ActiveRecord::Schema[8.1].define(version: 2026_01_02_125621) do
   create_table "active_storage_attachments", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.bigint "blob_id", null: false
     t.datetime "created_at", null: false
@@ -343,6 +343,7 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_06_221416) do
     t.json "options"
     t.integer "owner_id"
     t.boolean "proxy_requests", default: false
+    t.integer "requests_per_minute", default: 0
     t.string "search_engine", limit: 50
     t.datetime "updated_at", null: false
     t.index ["owner_id", "id"], name: "index_search_endpoints_on_owner_id_and_id"

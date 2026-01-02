@@ -63,6 +63,12 @@
       </div>
     
       <div class="mb-3">
+        <%= form.label :requests_per_minute, "Rate Limit (requests/minute)", class: 'form-label' %>
+        <%= form.number_field :requests_per_minute, min: 0, step: 1, class: 'form-control', style: 'width: 150px' %>
+        <div class="form-text">Limit how fast Quepid sends queries to this search endpoint. Leave at 0 for unlimited.</div>
+      </div>
+
+      <div class="mb-3">
         <%= form.label :basic_auth_credential, class: 'form-label' %>
         <%= form.text_field :basic_auth_credential %>
       </div>

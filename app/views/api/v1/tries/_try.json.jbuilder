@@ -16,6 +16,8 @@ json.search_url     try.search_endpoint&.endpoint_url
 json.basic_auth_credential try.search_endpoint&.basic_auth_credential
 json.mapper_code    try.search_endpoint&.mapper_code
 json.proxy_requests try.search_endpoint&.proxy_requests
+json.endpoint_archived try.search_endpoint&.archived
+json.requests_per_minute try.search_endpoint&.requests_per_minute
 
 # json.search_endpoint_options  try.search_endpoint&.options
 # json.case_options             try.case&.options
