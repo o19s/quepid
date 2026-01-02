@@ -1,5 +1,29 @@
 # Changelog
 
+## 8.4.0 -- 2026-01-02
+
+Two big things! And two nice things! 
+
+1) We introduced a Search API Mapper Wizard that simplifies creating your Javascript "data mapping" functions to convert custom search api (including HTML and JSON formats) to what Quepid expects.  It even has a LLM assist for generating the code if you want.  
+
+2) We now support MULTIPLE Snapshots being Diffed!  Comparing current search to various other points in time is one of the most common analysis that you want to do, but our Snapshot support has been, ahem, rough, to say the least.  We completely redid all the logic, and now you can diff multiple snapshots at the same time.  Oh, and we fixed all the little bugs folks had been experiencing.
+
+And the nice things...
+
+1) We revamped how Books are configured so that they are simpler and easier to set up.  No need to pick a "selection strategy" for how many judges you wil have or think about what scale to use in rating anymore.  Plus we cleaned up some data flows between making judgements in a book 
+
+2) We introduced rate limiting as an attribute of a Search Endpoint.  THis ensures that if you need to constrain how fast you are sending the queires you can, to deal with AP rate limits, or just to reduce load on your search engine if you are testing in a live environment! See a [video walkthrough](https://share.descript.com/view/G0ozoslB2xu).
+
+* Introduced configurable rate limiting to keep proxied search endpoints from getting overwhelmed by @epugh in https://github.com/o19s/quepid/pull/1587.
+* Added LLM-powered generation of data mapper Javascript to speed up custom API onboarding by @epugh in https://github.com/o19s/quepid/pull/1285.
+* Swapped to released `oas_rails` gem and cleaned up OpenAPI references (bumped to 3.4.8) by @epugh in https://github.com/o19s/quepid/pull/1589.
+* Propshaft replaces Sprockets, plus importmap cleanups for a leaner asset pipeline by @epugh in https://github.com/o19s/quepid/pull/1540.
+* Snapshot diffing is sturdier (again) so comparing runs behaves under edge cases by @epugh in https://github.com/o19s/quepid/pull/1566.
+* Books now carry their own scale and default to the multiple judges strategy, reducing scorer coupling by @epugh in https://github.com/o19s/quepid/pull/1563 and https://github.com/o19s/quepid/pull/1561.
+* Home page now shows annotations, and bulk judging picked up tests plus safer delete handling by @epugh in https://github.com/o19s/quepid/pull/1488.
+* Dependencies: bcrypt 3.1.21, rubocop 1.82.1, faraday-retry 2.4.0, bootsnap 1.20.x, pagy 43.2.2, scout_apm 6.0.2, selenium-webdriver 4.39.0, omniauth-rails_csrf_protection 2.0.1, annotaterb 4.20.0, dotenv 3.2.0, database_consistency 2.1.1 by @dependabot in assorted PRs (#1586, #1578, #1580, #1579, #1577, #1573, #1574, #1575, #1562, #1567, #1558, #1555, #1564).
+
+
 ## 8.3.7 -- 2025-12-03
 
 * Fixed issue in Bulk Judging when you paginate and you don't have enough docs left due to rating activity to get results by @epugh in https://github.com/o19s/quepid/pull/1554.  Thanks @david-fisher for finding this!
