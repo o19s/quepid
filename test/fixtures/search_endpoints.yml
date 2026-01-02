@@ -12,6 +12,7 @@
 #  name                  :string(255)
 #  options               :json
 #  proxy_requests        :boolean          default(FALSE)
+#  requests_per_minute   :integer          default(0)
 #  search_engine         :string(50)
 #  created_at            :datetime         not null
 #  updated_at            :datetime         not null
