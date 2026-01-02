@@ -18,11 +18,6 @@
       // This method converts the response from the API to angular objects.
       var self  = this;
 
-      // check if the backend has populated these fields or not?
-      //if ( angular.isUndefined(data.search_engine) ) {
-      //  data.search_engine = 'solr';
-      //}
-
       if ( data.query_params === null ) {
         // this app
         if (data.search_engine === 'solr'){
@@ -34,9 +29,8 @@
       }
 
 
-      // Attributes
-      // Note, if you are changing these, then you probably to fix the
-      // var tmp = new TryFactory method in queryParams.js as well.
+      // Attribute mapping from snake to camel case.
+      // don't forget the reverse mapping in toApiFormat() method below.
       self.args          = data.args;
       self.deleted       = false;
       self.escapeQuery   = data.escape_query;
@@ -57,6 +51,7 @@
       self.proxyRequests = data.proxy_requests;
       self.options       = data.options;
       self.endpointArchived = data.endpoint_archived;
+      self.requestsPerMinute = data.requests_per_minute;
 
 
       // transform curator vars to be more angular friendly
@@ -78,6 +73,7 @@
       self.addVar          = addVar;
       self.updateVars      = updateVars;
       self.forEachVar      = forEachVar;
+      self.toApiFormat     = toApiFormat;
 
       // Bootstrap
       self.updateVars();
@@ -172,6 +168,32 @@
 
       function forEachVar(innerBodyFn) {
         angular.forEach(self.curatorVars, innerBodyFn);
+      }
+
+      // Convert back to API format (snake_case) for creating new TryFactory instances
+      function toApiFormat() {
+        return {
+          args:                  self.args,
+          curator_vars:          self.curatorVarsDict(),
+          escape_query:          self.escapeQuery,
+          api_method:            self.apiMethod,
+          custom_headers:        self.customHeaders,
+          field_spec:            self.fieldSpec,
+          name:                  self.name,
+          number_of_rows:        self.numberOfRows,
+          query_params:          self.queryParams,
+          search_endpoint_id:    self.searchEndpointId,
+          endpoint_name:         self.endpointName,
+          search_engine:         self.searchEngine,
+          search_url:            self.searchUrl,
+          try_number:            self.tryNo,
+          basic_auth_credential: self.basicAuthCredential,
+          mapper_code:           self.mapperCode,
+          proxy_requests:        self.proxyRequests,
+          options:               self.options,
+          endpoint_archived:     self.endpointArchived,
+          requests_per_minute:   self.requestsPerMinute,
+        };
       }
     };
 

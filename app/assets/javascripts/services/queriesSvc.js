@@ -891,9 +891,31 @@ angular.module('QuepidApp')
         return querySearchableDeferred.promise;
       };
 
-      this.pAll = async function (queue, concurrency) {
-        let index = 0;
+      // Process a queue of async functions with optional rate limiting
+      // - No rate limit (null/0): runs up to 10 concurrent requests
+      // - With rate limit: runs sequentially with delays between requests
+      this.pAll = async function (queue, requestsPerMinute) {
         const results = [];
+
+        // With rate limiting, run sequentially with delays
+        if (requestsPerMinute && requestsPerMinute > 0) {
+          const minDelayMs = 60000 / requestsPerMinute;
+
+          for (let i = 0; i < queue.length; i++) {
+            if (i > 0) {
+              await new Promise(resolve => setTimeout(resolve, minDelayMs));
+            }
+            const promise = queue[i]();
+            await promise;
+            results[i] = promise;
+          }
+
+          return Promise.all(results);
+        }
+
+        // No rate limit: run with concurrency (max 10 parallel requests)
+        const concurrency = 10;
+        let index = 0;
 
         const worker = async () => {
           while (index < queue.length) {
@@ -923,9 +945,10 @@ angular.module('QuepidApp')
 
           promises.push(searchPromiseFn);
         });
-
-        // Holy nested promises batman
-        return this.pAll(promises, 10).then( () => {
+        if (currSettings.selectedTry.requestsPerMinute > 0){
+          $log.info('Rate limited to ' + currSettings.selectedTry.requestsPerMinute + ' requests per minute.');
+        }
+        return this.pAll(promises, currSettings.selectedTry.requestsPerMinute).then( () => {
           $q.all(scorePromises).then( () => {
             /*
              * Why are we calling scoreAll after we called score() above?

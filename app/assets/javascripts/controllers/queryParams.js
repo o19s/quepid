@@ -106,26 +106,7 @@ angular.module('QuepidApp')
         // try the `queryParams` attribute does not maintain its new value
         // and reverts to the old value.
         // So instead we are creating a tmp variable to use.
-        // UGH, this temp requires mapping back to API format of the data!
-        var tmp = new TryFactory({
-          args:           $scope.settings.selectedTry.args,
-          curator_vars:    $scope.settings.selectedTry.curatorVarsDict(),
-          escape_query:   $scope.settings.selectedTry.escapeQuery,
-          api_method:     $scope.settings.selectedTry.apiMethod,
-          custom_headers: $scope.settings.selectedTry.customHeaders,
-          field_spec:     $scope.settings.selectedTry.fieldSpec,
-          name:           $scope.settings.selectedTry.name,
-          number_of_rows: $scope.settings.selectedTry.numberOfRows,
-          query_params:   $scope.settings.selectedTry.queryParams,
-          search_endpoint_id:  $scope.settings.selectedTry.searchEndpointId,
-          endpoint_name:  $scope.settings.selectedTry.endpointName,
-          search_engine:  $scope.settings.selectedTry.searchEngine,
-          search_url:     $scope.settings.selectedTry.searchUrl,
-          try_number:     $scope.settings.selectedTry.tryNo,
-          basic_auth_crendential:     $scope.settings.selectedTry.basicAuthCredential,
-          options:        $scope.settings.selectedTry.options,
-          endpoint_archived:        $scope.settings.selectedTry.endpointArchived,
-        });
+        var tmp = new TryFactory($scope.settings.selectedTry.toApiFormat());
         tmp.updateVars();
         
         var searchEndpointToUse = searchEndpointSvc.searchEndpoints.find(obj => obj.id === $scope.settings.searchEndpointId);

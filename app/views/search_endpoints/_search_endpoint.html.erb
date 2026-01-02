@@ -38,6 +38,12 @@
   </p>  
   
   <p>
+    <strong>Requests Per Minute:</strong>
+    <%= search_endpoint.requests_per_minute %>
+    <div class="form-text">0 means no throttling</div>
+  </p>  
+  
+  <p>
     <strong>Options:</strong>
     <%= text_area_tag 'options', search_endpoint.options, data: { codemirror_mode: "json", codemirror_height: 100,codemirror_width: 500, codemirror_readonly: true } %>
   </p>  
