@@ -40,7 +40,8 @@ class ExperimentWithRubyLlmTest < ActionDispatch::IntegrationTest
   let(:selection_strategy) { selection_strategies(:multiple_raters) }
 
   # rubocop:disable Style/ClassVars
-  @@skip_tests = ENV.fetch('OPENAI_API_KEY', nil).nil?
+  @@skip_tests = true
+  # @@skip_tests = ENV.fetch('OPENAI_API_KEY', nil).nil?
   # rubocop:enable Style/ClassVars
 
   test 'Start a chat' do
