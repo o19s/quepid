@@ -111,7 +111,7 @@ GEM
       metrics (~> 0.12)
       traces (~> 0.18)
     base64 (0.3.0)
-    bcrypt (3.1.20)
+    bcrypt (3.1.21)
     benchmark (0.5.0)
     benchmark-ips (2.14.0)
     bigdecimal (3.3.1)
