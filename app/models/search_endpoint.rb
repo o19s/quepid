@@ -66,27 +66,6 @@ class SearchEndpoint < ApplicationRecord
     save
   end
 
-  # Virtual attribute for rate limiting (stored in options JSON)
-  def requests_per_minute
-    opts = parsed_options
-    opts['requestsPerMinute']
-  end
-
-  def requests_per_minute= value
-    # Only modify options if a value is explicitly provided
-    # Blank/nil means "don't change" (user didn't touch the field)
-    return if value.blank?
-
-    opts = parsed_options
-    if value.to_i.positive?
-      opts['requestsPerMinute'] = value.to_i
-    else
-      # Value is 0, so remove the rate limit
-      opts.delete('requestsPerMinute')
-    end
-    self.options = opts
-  end
-
   # Helper to parse options whether it's a String or Hash
   def parsed_options
     return {} if options.blank?
@@ -100,6 +79,18 @@ class SearchEndpoint < ApplicationRecord
     else
       options.to_hash
     end
+  end
+
+  # Virtual attribute for form handling - displays and accepts JSON strings
+  def options_json
+    options.to_json
+  end
+
+  def options_json= value
+    new_opts = value.present? ? JSON.parse(value) : {}
+    self.options = new_opts
+  rescue JSON::ParserError
+    self.options = {}
   end
 
   private
