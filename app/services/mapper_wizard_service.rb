@@ -208,7 +208,7 @@ class MapperWizardService
       - Target V8 engine only (no DOM APIs like document.querySelector)
       - Use string parsing methods: indexOf, substring, split, match (simple regex only)
       - If the source is JSON not HTML, then do results = typeof data === 'string' ? JSON.parse(data) : data;
-    
+
 
       **Function Specifications:**
 

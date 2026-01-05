@@ -106,4 +106,65 @@ class SearchEndpointsControllerTest < ActionDispatch::IntegrationTest
 
     assert_redirected_to search_endpoints_url
   end
+
+  describe 'admin restriction' do
+    let(:admin_user) { users(:doug) }
+    let(:non_admin_user) { users(:joey) }
+
+    test 'non-admin user can access index when restriction is disabled' do
+      Rails.application.config.search_endpoint_views_admin_only = false
+      login_user_for_integration_test non_admin_user
+
+      get search_endpoints_url
+      assert_response :success
+    end
+
+    test 'non-admin user is redirected when restriction is enabled' do
+      Rails.application.config.search_endpoint_views_admin_only = true
+      login_user_for_integration_test non_admin_user
+
+      get search_endpoints_url
+      assert_redirected_to root_path
+      assert_equal 'Search Endpoint management is restricted to administrators.', flash[:notice]
+
+      # Reset config
+      Rails.application.config.search_endpoint_views_admin_only = false
+    end
+
+    test 'admin user can access index when restriction is enabled' do
+      Rails.application.config.search_endpoint_views_admin_only = true
+      login_user_for_integration_test admin_user
+
+      get search_endpoints_url
+      assert_response :success
+
+      # Reset config
+      Rails.application.config.search_endpoint_views_admin_only = false
+    end
+
+    test 'non-admin user is redirected from show when restriction is enabled' do
+      Rails.application.config.search_endpoint_views_admin_only = true
+      login_user_for_integration_test non_admin_user
+
+      # Need to use an endpoint the non-admin user would normally have access to
+      search_endpoint = search_endpoints(:for_case_with_two_tries)
+
+      get search_endpoint_url(search_endpoint)
+      assert_redirected_to root_path
+
+      # Reset config
+      Rails.application.config.search_endpoint_views_admin_only = false
+    end
+
+    test 'non-admin user is redirected from new when restriction is enabled' do
+      Rails.application.config.search_endpoint_views_admin_only = true
+      login_user_for_integration_test non_admin_user
+
+      get new_search_endpoint_url
+      assert_redirected_to root_path
+
+      # Reset config
+      Rails.application.config.search_endpoint_views_admin_only = false
+    end
+  end
 end

@@ -3,6 +3,7 @@
 class SearchEndpointsController < ApplicationController
   include Pagy::Method
 
+  before_action :require_admin_if_restricted
   before_action :set_search_endpoint, only: [ :show, :edit, :update, :destroy, :clone, :archive ]
 
   respond_to :html
@@ -83,6 +84,13 @@ class SearchEndpointsController < ApplicationController
   end
 
   private
+
+  def require_admin_if_restricted
+    return unless Rails.application.config.search_endpoint_views_admin_only
+    return if current_user.administrator?
+
+    redirect_to root_path, notice: 'Search Endpoint management is restricted to administrators.'
+  end
 
   def set_search_endpoint
     @search_endpoint = current_user.search_endpoints_involved_with.where(id: params[:id]).first
