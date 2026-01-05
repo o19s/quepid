@@ -66,33 +66,6 @@ class SearchEndpoint < ApplicationRecord
     save
   end
 
-  # Helper to parse options whether it's a String or Hash
-  def parsed_options
-    return {} if options.blank?
-
-    if options.is_a? String
-      begin
-        JSON.parse(options)
-      rescue JSON::ParserError
-        {}
-      end
-    else
-      options.to_hash
-    end
-  end
-
-  # Virtual attribute for form handling - displays and accepts JSON strings
-  def options_json
-    options.to_json
-  end
-
-  def options_json= value
-    new_opts = value.present? ? JSON.parse(value) : {}
-    self.options = new_opts
-  rescue JSON::ParserError
-    self.options = {}
-  end
-
   private
 
   def middle_truncate str, total: 30, lead: 15, trail: 15

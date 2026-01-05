@@ -123,7 +123,7 @@ class MapperWizardService
     truncated_html = html_content.length > 30_000 ? html_content[0...30_000] : html_content
 
     response = chat.ask(<<~PROMPT)
-      You are improving a JavaScript #{mapper_type} function for parsing search results HTML.
+      You are improving a JavaScript #{mapper_type} function for parsing search results HTML or JSON.
 
       Current code:
       ```javascript
@@ -132,8 +132,8 @@ class MapperWizardService
 
       User feedback or issue: #{feedback}
 
-      HTML sample (truncated):
-      ```html
+      HTML or JSON sample (truncated):
+      ```
       #{truncated_html}
       ```
 
@@ -207,6 +207,8 @@ class MapperWizardService
       - Wrap ALL JavaScript code in ```javascript code blocks
       - Target V8 engine only (no DOM APIs like document.querySelector)
       - Use string parsing methods: indexOf, substring, split, match (simple regex only)
+      - If the source is JSON not HTML, then do results = typeof data === 'string' ? JSON.parse(data) : data;
+    
 
       **Function Specifications:**
 
@@ -244,7 +246,7 @@ class MapperWizardService
       }
       ```
 
-      Analyze the HTML structure first, then generate appropriate functions.
+      Analyze the data to figure out if it's HTML or JSON first, then generate appropriate functions.
     PROMPT
   end
 
