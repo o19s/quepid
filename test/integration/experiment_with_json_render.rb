@@ -17,7 +17,7 @@ class ExperimentWithJsonRender < ActionController::TestCase
   test 'generate 50000 query doc pairs as json' do
     skip('Ignoring all tests in ExperimentWithJsonRender')
     book = user.books.create name: '50000 Query Doc Pairs', scorer: scorer, selection_strategy: selection_strategy
-    assert book.valid?
+    assert_predicate book, :valid?
 
     save_big_book book
 

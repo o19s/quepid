@@ -55,7 +55,7 @@ class ScoringTest < ActiveSupport::TestCase
       # begin
       code = File.read(Rails.root.join('db/scorers/p@10.js'))
       score = javascript_scorer.score(docs, best_docs, code)
-      assert_equal 0.5, score
+      assert_in_delta(0.5, score)
       # rescue JavascriptScorer::ScoreError => e
       # puts "Scoring failed: #{e.message}"
       # end

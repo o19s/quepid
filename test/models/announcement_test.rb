@@ -25,21 +25,21 @@ class AnnouncementTest < ActiveSupport::TestCase
     test 'sets live flag to false by default' do
       announcement = Announcement.create(text: 'Hooray! 🥳 is ready to use.')
 
-      assert_equal announcement.live, false
+      assert_not announcement.live
     end
 
     test 'can be set to true, forcing others to false' do
-      assert existing_announcement.live?
+      assert_predicate existing_announcement, :live?
 
       announcement = Announcement.create(text: 'Hooray! 🥳 is ready to use.')
 
-      assert_equal announcement.live, false
+      assert_not announcement.live
       existing_announcement.reload
-      assert_equal existing_announcement.live, true
+      assert existing_announcement.live
 
       announcement.make_live!
       existing_announcement.reload
-      assert_equal existing_announcement.live, false
+      assert_not existing_announcement.live
     end
   end
 end

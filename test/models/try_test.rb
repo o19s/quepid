@@ -75,8 +75,8 @@ class TryTest < ActiveSupport::TestCase
         try   = tries(:try_with_curator_vars)
         args  = try.args
 
-        assert_equal args['q'],   [ '#$query##' ]
-        assert_equal args['qf'],  [ 'text^1 catch_line^2' ]
+        assert_equal [ '#$query##' ], args['q']
+        assert_equal [ 'text^1 catch_line^2' ], args['qf']
       end
     end
 
@@ -225,16 +225,16 @@ class TryTest < ActiveSupport::TestCase
   describe 'handling options' do
     test 'try options logic works when no options defined' do
       try = Try.new
-      assert try.options.empty?
+      assert_empty try.options
     end
 
     test 'try options logic works when options is not actually json' do
       try = tries(:one)
       try.search_endpoint.options = 'not a json string'
-      assert try.options.empty?
+      assert_empty try.options
       try.search_endpoint.options = nil
       try.case.options = 'not a json string'
-      assert try.options.empty?
+      assert_empty try.options
     end
 
     test 'try handles missing options' do

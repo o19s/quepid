@@ -58,7 +58,7 @@ module Api
 
           get :index, params: { archived: false }
           assert_response :ok
-          assert_equal [], response.parsed_body['all_books']
+          assert_empty response.parsed_body['all_books']
         end
       end
 
@@ -99,30 +99,30 @@ module Api
             assert_response :ok
 
             the_book.reload
-            assert_equal the_book.name, 'New Name'
+            assert_equal 'New Name', the_book.name
           end
         end
 
         describe 'when archiving the book' do
           test 'successfully marks book as archived' do
-            assert_equal false, the_book.archived
+            assert_not the_book.archived
 
             patch :update, params: { id: the_book.id, book: { archived: true } }
             assert_response :ok
 
             the_book.reload
-            assert_equal true, the_book.archived
+            assert the_book.archived
           end
 
           test 'successfully unarchives book' do
             the_book.update(archived: true)
-            assert_equal true, the_book.archived
+            assert the_book.archived
 
             patch :update, params: { id: the_book.id, book: { archived: false } }
             assert_response :ok
 
             the_book.reload
-            assert_equal false, the_book.archived
+            assert_not the_book.archived
           end
         end
       end

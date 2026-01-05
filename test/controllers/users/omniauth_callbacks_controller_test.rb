@@ -59,7 +59,7 @@ module Users
         post :google_oauth2
 
         assert_redirected_to root_path
-        assert_equal flash[:alert], 'Can\'t log in a locked user.'
+        assert_equal 'Can\'t log in a locked user.', flash[:alert]
         assert_nil session[:current_user_id], 'does not set a user'
       end
 
@@ -73,7 +73,7 @@ module Users
 
         assert_nil @controller.ahoy.user
         assert_redirected_to root_path
-        assert_equal flash[:alert], 'You can only sign in with already created users.'
+        assert_equal 'You can only sign in with already created users.', flash[:alert]
         assert_nil session[:current_user_id], 'does not set a user'
         Rails.application.config.signup_enabled = true
       end

@@ -219,9 +219,9 @@ module Api
 
           queries = response.parsed_body['queries']
 
-          assert_equal queries[0]['arranged_at'], 1
-          assert_equal queries[1]['arranged_at'], 2
-          assert_equal queries[2]['arranged_at'], 3
+          assert_equal 1, queries[0]['arranged_at']
+          assert_equal 2, queries[1]['arranged_at']
+          assert_equal 3, queries[2]['arranged_at']
         end
       end
 
@@ -237,7 +237,7 @@ module Api
             assert_response :no_content
 
             other_query.reload
-            assert_equal other_query.arranged_at, 0
+            assert_equal 0, other_query.arranged_at
           end
         end
 
@@ -292,13 +292,13 @@ module Api
 
             assert_not_equal  query.case_id, original_case.id
             assert_equal      query.case_id, other_case.id
-            assert_equal      query.arranged_at, 0
+            assert_equal      0, query.arranged_at
             assert_not_includes original_case.queries, query
 
             new_first_query = original_case.queries.first
 
             assert_not_equal  new_first_query, query
-            assert_equal      new_first_query.arranged_at, 0
+            assert_equal      0, new_first_query.arranged_at
           end
         end
 
@@ -310,7 +310,7 @@ module Api
           query.reload
 
           assert_equal      query.case_id, other_case.id
-          assert_equal      query.arranged_at, 0
+          assert_equal      0, query.arranged_at
         end
 
         describe 'analytics' do

@@ -41,8 +41,8 @@ module Api
 
               csv = CSV.parse(response.body, headers: true)
 
-              assert_equal csv[1]['query'], 'star wars' # notice csv injection vulnerability
-              assert_equal csv[1]['information_need'], 'Looking for the original blockbuster movie, followed by the most recent big movies.'
+              assert_equal 'star wars', csv[1]['query'] # notice csv injection vulnerability
+              assert_equal 'Looking for the original blockbuster movie, followed by the most recent big movies.', csv[1]['information_need']
             end
           end
         end

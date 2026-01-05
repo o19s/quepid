@@ -26,7 +26,7 @@ class UserLlmKeyEncryptionTest < ActiveSupport::TestCase
     assert_not_equal 'sk-test-key-123456789', raw_value
 
     # The raw value should look like encrypted data (starts with specific markers)
-    assert raw_value.present?
+    assert_predicate raw_value, :present?
   end
 
   test 'llm_key should be decrypted when loaded' do

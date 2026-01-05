@@ -32,7 +32,7 @@ class MapperWizardsControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :unprocessable_entity
     json = response.parsed_body
-    assert_equal false, json['success']
+    assert_not json['success']
     assert_equal 'URL is required', json['error']
   end
 
@@ -43,7 +43,7 @@ class MapperWizardsControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :unprocessable_entity
     json = response.parsed_body
-    assert_equal false, json['success']
+    assert_not json['success']
     assert_equal 'Invalid URL format', json['error']
   end
 
@@ -54,7 +54,7 @@ class MapperWizardsControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :unprocessable_entity
     json = response.parsed_body
-    assert_equal false, json['success']
+    assert_not json['success']
     assert_equal 'No HTML content. Fetch HTML first.', json['error']
   end
 
@@ -68,7 +68,7 @@ class MapperWizardsControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :unprocessable_entity
     json = response.parsed_body
-    assert_equal false, json['success']
+    assert_not json['success']
     assert_equal 'No HTML content.', json['error']
   end
 
@@ -84,7 +84,7 @@ class MapperWizardsControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :unprocessable_entity
     json = response.parsed_body
-    assert_equal false, json['success']
+    assert_not json['success']
     assert_equal 'No HTML content.', json['error']
   end
 
@@ -107,8 +107,8 @@ class MapperWizardsControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     json = response.parsed_body
-    assert_equal true, json['success']
-    assert json['redirect_url'].present?
+    assert json['success']
+    assert_predicate json['redirect_url'], :present?
 
     # Verify the created endpoint
     endpoint = SearchEndpoint.last
@@ -117,8 +117,8 @@ class MapperWizardsControllerTest < ActionDispatch::IntegrationTest
     assert_equal 'https://example.com/search', endpoint.endpoint_url
     assert_equal 'GET', endpoint.api_method
     assert endpoint.proxy_requests
-    assert endpoint.mapper_code.include?('numberOfResultsMapper')
-    assert endpoint.mapper_code.include?('docsMapper')
+    assert_includes endpoint.mapper_code, 'numberOfResultsMapper'
+    assert_includes endpoint.mapper_code, 'docsMapper'
   end
 
   test 'save updates existing search endpoint' do
@@ -140,12 +140,12 @@ class MapperWizardsControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     json = response.parsed_body
-    assert_equal true, json['success']
+    assert json['success']
 
     # Verify the updated endpoint
     search_endpoint.reload
     assert_equal 'Updated Search API', search_endpoint.name
-    assert search_endpoint.mapper_code.include?('return 100')
+    assert_includes search_endpoint.mapper_code, 'return 100'
   end
 
   test 'save fails with missing name' do
@@ -175,8 +175,8 @@ class MapperWizardsControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :unprocessable_entity
     json = response.parsed_body
-    assert_equal false, json['success']
-    assert json['errors'].present?
+    assert_not json['success']
+    assert_predicate json['errors'], :present?
   end
 end
 
@@ -206,8 +206,8 @@ class ExtractFunctionTest < ActiveSupport::TestCase
     result = controller.send(:extract_function, code, 'docsMapper')
 
     assert_not_nil result
-    assert result.include?('var docs = [];')
-    assert result.include?('return docs;')
+    assert_includes result, 'var docs = [];'
+    assert_includes result, 'return docs;'
   end
 
   test 'extract_function handles strings with braces' do
@@ -329,9 +329,9 @@ class ExtractFunctionTest < ActiveSupport::TestCase
     result = controller.send(:extract_function, code, 'docsMapper')
 
     assert_not_nil result
-    assert result.include?('var jsonVariableStart = data.indexOf')
-    assert result.include?('return docs;')
-    assert result.match?(/docsMapper\s*=\s*function/)
+    assert_includes result, 'var jsonVariableStart = data.indexOf'
+    assert_includes result, 'return docs;'
+    assert_match(/docsMapper\s*=\s*function/, result)
   end
 
   test 'extract_function handles escaped quotes' do

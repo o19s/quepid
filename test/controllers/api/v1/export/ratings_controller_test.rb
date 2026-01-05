@@ -52,7 +52,7 @@ module Api
 
             body = response.parsed_body
 
-            assert_equal body['id_field'],                              'id'
+            assert_equal 'id', body['id_field']
             assert_equal body['index'],                                 the_case.tries.latest.index_name_from_search_url
             assert_equal body['queries'].size,                          the_case.queries.size
             assert_equal body['queries'][1]['placeholders']['$query'],  the_case.queries[1].query_text
@@ -91,7 +91,7 @@ module Api
             csv = CSV.parse(response.body, headers: true)
 
             assert_nil csv[0]['rating']
-            assert_equal csv[0]['query'],                               ' =cmd' # notice csv injection vulnerability
+            assert_equal ' =cmd', csv[0]['query'] # notice csv injection vulnerability
             assert_equal csv[1]['query'],                               the_case.queries[0].query_text
             assert_equal csv[1]['rating'],                              the_case.queries[0].ratings[0].rating.to_s
           end
@@ -195,7 +195,7 @@ file_format: 'basic_snapshot' }
 
             # rubocop:enable  Lint/UselessAssignment
 
-            assert_equal response.content_type, 'text/plain; charset=utf-8'
+            assert_equal 'text/plain; charset=utf-8', response.content_type
           end
         end
       end

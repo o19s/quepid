@@ -68,7 +68,7 @@ class JudgeJudyFlowTest < ActionDispatch::IntegrationTest
     # we don' want users tracked at the case rating level
     assert_nil rating.user
     # assert_equal rating.user, user
-    assert_equal rating.rating, 1
+    assert_equal 1, rating.rating
 
     # make sure we did create a query_doc_pair and a judgmenet.
     query_doc_pair = book.query_doc_pairs.find_by(query_text: query.query_text, doc_id: rating.doc_id)
@@ -124,7 +124,7 @@ class JudgeJudyFlowTest < ActionDispatch::IntegrationTest
 
     # See that the original case rating has changed to be the average of
     # Judge Judy with a 0 and User with 1.   (0+1)/2 = 0.5 rounded to 1.0
-    assert_equal rating.rating, 1
+    assert_equal 1, rating.rating
     assert_nil rating.user # I think that having a "last user who rated" wasn't good idea.'
   end
 end

@@ -99,7 +99,7 @@ module Arrangement
       test 'handles empty list' do
         sequence = List.sequence []
 
-        assert_equal [], sequence
+        assert_empty sequence
       end
     end
 

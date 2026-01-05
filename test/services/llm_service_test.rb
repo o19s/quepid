@@ -44,10 +44,10 @@ class LlmServiceTest < ActiveSupport::TestCase
     test 'making a user prompt with text and image content' do
       user_prompt = service.make_user_prompt query_doc_pair
 
-      assert_equal user_prompt[0][:type], 'text'
+      assert_equal 'text', user_prompt[0][:type]
       assert_includes user_prompt[0][:text], query_doc_pair.query_text
 
-      assert_equal user_prompt[1][:type], 'image_url'
+      assert_equal 'image_url', user_prompt[1][:type]
       assert_equal user_prompt[1][:image_url][:url], USER_PROMPT_IMAGE_URL
     end
 

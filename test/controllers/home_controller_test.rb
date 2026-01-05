@@ -15,10 +15,10 @@ class HomeControllerTest < ActionDispatch::IntegrationTest
     grouped_names = case_names.group_by { |name| name.split(':').first }
 
     assert_not_nil grouped_names['Typeahead']
-    assert_equal grouped_names['Typeahead'].count, 4
+    assert_equal 4, grouped_names['Typeahead'].count
     assert_not_nil grouped_names['Global Search']
-    assert_equal grouped_names['Global Search'].count, 1
+    assert_equal 1, grouped_names['Global Search'].count
     assert_not_nil grouped_names['Nested']
-    assert_equal grouped_names['Nested'].count, 1
+    assert_equal 1, grouped_names['Nested'].count
   end
 end

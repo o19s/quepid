@@ -53,7 +53,7 @@ class SearchEndpointsControllerTest < ActionDispatch::IntegrationTest
     end
 
     assert_redirected_to search_endpoint_url(SearchEndpoint.last)
-    assert SearchEndpoint.last.teams.include?(team)
+    assert_includes SearchEndpoint.last.teams, team
   end
 
   test 'should show search_endpoint' do

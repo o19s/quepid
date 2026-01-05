@@ -7,7 +7,7 @@ class MapperWizardServiceTest < ActiveSupport::TestCase
     service = MapperWizardService.new
     result = service.fetch_html('')
 
-    assert_equal false, result[:success]
+    assert_not result[:success]
     assert_equal 'URL is required', result[:error]
   end
 
@@ -15,7 +15,7 @@ class MapperWizardServiceTest < ActiveSupport::TestCase
     service = MapperWizardService.new
     result = service.fetch_html(nil)
 
-    assert_equal false, result[:success]
+    assert_not result[:success]
     assert_equal 'URL is required', result[:error]
   end
 
@@ -23,7 +23,7 @@ class MapperWizardServiceTest < ActiveSupport::TestCase
     service = MapperWizardService.new
     result = service.fetch_html('not-a-url')
 
-    assert_equal false, result[:success]
+    assert_not result[:success]
     assert_equal 'Invalid URL format', result[:error]
   end
 
@@ -31,7 +31,7 @@ class MapperWizardServiceTest < ActiveSupport::TestCase
     service = MapperWizardService.new
     result = service.fetch_html('example.com/search')
 
-    assert_equal false, result[:success]
+    assert_not result[:success]
     assert_equal 'Invalid URL format', result[:error]
   end
 
@@ -46,8 +46,8 @@ class MapperWizardServiceTest < ActiveSupport::TestCase
     service = MapperWizardService.new
     result = service.fetch_html('https://example.com/search', http_method: 'GET')
 
-    assert_equal true, result[:success]
-    assert result[:html].present?
+    assert result[:success]
+    assert_predicate result[:html], :present?
   end
 
   test 'fetch_html accepts http_method parameter for POST with request_body' do
@@ -62,7 +62,7 @@ class MapperWizardServiceTest < ActiveSupport::TestCase
       request_body: '{"query": "test"}'
     )
 
-    assert_equal true, result[:success]
+    assert result[:success]
     assert_equal '{"results": []}', result[:html]
   end
 
@@ -73,8 +73,8 @@ class MapperWizardServiceTest < ActiveSupport::TestCase
     service = MapperWizardService.new
     result = service.fetch_html('https://example.com/search')
 
-    assert_equal true, result[:success]
-    assert result[:html].present?
+    assert result[:success]
+    assert_predicate result[:html], :present?
   end
 
   test 'fetch_html POST handles connection errors' do
@@ -84,8 +84,8 @@ class MapperWizardServiceTest < ActiveSupport::TestCase
     service = MapperWizardService.new
     result = service.fetch_html('https://example.com/search', http_method: 'POST')
 
-    assert_equal false, result[:success]
-    assert result[:error].include?('Connection failed')
+    assert_not result[:success]
+    assert_includes result[:error], 'Connection failed'
   end
 
   test 'fetch_html POST handles timeout errors' do
@@ -95,7 +95,7 @@ class MapperWizardServiceTest < ActiveSupport::TestCase
     service = MapperWizardService.new
     result = service.fetch_html('https://example.com/search', http_method: 'POST')
 
-    assert_equal false, result[:success]
+    assert_not result[:success]
     assert_equal 'Request timed out', result[:error]
   end
 
@@ -107,7 +107,7 @@ class MapperWizardServiceTest < ActiveSupport::TestCase
       html_content: '<html>test</html>'
     )
 
-    assert_equal false, result[:success]
+    assert_not result[:success]
     assert_equal 'Code is required', result[:error]
   end
 
@@ -119,7 +119,7 @@ class MapperWizardServiceTest < ActiveSupport::TestCase
       html_content: ''
     )
 
-    assert_equal false, result[:success]
+    assert_not result[:success]
     assert_equal 'HTML content is required', result[:error]
   end
 
@@ -131,7 +131,7 @@ class MapperWizardServiceTest < ActiveSupport::TestCase
       html_content: '<html>test</html>'
     )
 
-    assert_equal false, result[:success]
+    assert_not result[:success]
     assert_equal 'Invalid mapper type', result[:error]
   end
 
@@ -145,7 +145,7 @@ class MapperWizardServiceTest < ActiveSupport::TestCase
       html_content: '<html>test</html>'
     )
 
-    assert_equal true, result[:success]
+    assert result[:success]
     assert_equal 42, result[:result]
   end
 
@@ -159,7 +159,7 @@ class MapperWizardServiceTest < ActiveSupport::TestCase
       html_content: '<html>test</html>'
     )
 
-    assert_equal true, result[:success]
+    assert result[:success]
     assert_equal 1, result[:result].length
     assert_equal '1', result[:result][0]['id']
     assert_equal 'Test', result[:result][0]['title']
@@ -175,8 +175,8 @@ class MapperWizardServiceTest < ActiveSupport::TestCase
       html_content: '<html>test</html>'
     )
 
-    assert_equal false, result[:success]
-    assert result[:error].include?('JavaScript error')
+    assert_not result[:success]
+    assert_includes result[:error], 'JavaScript error'
   end
 
   test 'test_mapper handles JavaScript runtime errors' do
@@ -190,7 +190,7 @@ class MapperWizardServiceTest < ActiveSupport::TestCase
     )
 
     # Runtime errors are caught by the mapper and return 0 for numberOfResultsMapper
-    assert_equal true, result[:success]
+    assert result[:success]
     assert_equal 0, result[:result]
   end
 
@@ -211,7 +211,7 @@ class MapperWizardServiceTest < ActiveSupport::TestCase
       html_content: html
     )
 
-    assert_equal true, result[:success]
+    assert result[:success]
     assert_equal 100, result[:result]
   end
 
@@ -243,7 +243,7 @@ class MapperWizardServiceTest < ActiveSupport::TestCase
       html_content: html
     )
 
-    assert_equal true, result[:success]
+    assert result[:success]
     assert_equal 2, result[:result].length
     assert_equal '/doc1', result[:result][0]['id']
     assert_equal 'Title 1', result[:result][0]['title']
@@ -255,7 +255,7 @@ class MapperWizardServiceTest < ActiveSupport::TestCase
     service = MapperWizardService.new
     result = service.generate_mappers('<html>test</html>')
 
-    assert_equal false, result[:success]
+    assert_not result[:success]
     assert_equal 'API key required', result[:error]
   end
 
@@ -263,7 +263,7 @@ class MapperWizardServiceTest < ActiveSupport::TestCase
     service = MapperWizardService.new(api_key: 'sk-test')
     result = service.generate_mappers('')
 
-    assert_equal false, result[:success]
+    assert_not result[:success]
     assert_equal 'HTML content required', result[:error]
   end
 
@@ -276,7 +276,7 @@ class MapperWizardServiceTest < ActiveSupport::TestCase
       html_content: '<html>test</html>'
     )
 
-    assert_equal false, result[:success]
+    assert_not result[:success]
     assert_equal 'API key required', result[:error]
   end
 
@@ -289,9 +289,9 @@ class MapperWizardServiceTest < ActiveSupport::TestCase
     # Use send to test private method
     result = service.send(:extract_single_function, code, 'numberOfResultsMapper')
 
-    assert result.present?, 'Expected to extract numberOfResultsMapper function'
-    assert result.include?('numberOfResultsMapper'), 'Expected result to include function name'
-    assert result.include?('return data.length'), 'Expected result to include return statement'
+    assert_predicate result, :present?, 'Expected to extract numberOfResultsMapper function'
+    assert_includes result, 'numberOfResultsMapper', 'Expected result to include function name'
+    assert_includes result, 'return data.length', 'Expected result to include return statement'
     assert_not result.include?('docsMapper'), 'Expected result to not include docsMapper'
   end
 
@@ -302,9 +302,9 @@ class MapperWizardServiceTest < ActiveSupport::TestCase
 
     result = service.send(:extract_single_function, code, 'docsMapper')
 
-    assert result.present?, 'Expected to extract docsMapper function'
-    assert result.include?('docsMapper'), 'Expected result to include function name'
-    assert result.include?('var docs = []'), 'Expected result to include var docs'
+    assert_predicate result, :present?, 'Expected to extract docsMapper function'
+    assert_includes result, 'docsMapper', 'Expected result to include function name'
+    assert_includes result, 'var docs = []', 'Expected result to include var docs'
     assert_not result.include?('numberOfResultsMapper'), 'Expected result to not include numberOfResultsMapper'
   end
 
@@ -326,11 +326,11 @@ class MapperWizardServiceTest < ActiveSupport::TestCase
 
     result = service.send(:extract_functions_from_response, content)
 
-    assert_equal true, result[:success], "Expected success but got: #{result[:error]}"
-    assert result[:number_of_results_mapper].present?, 'Expected number_of_results_mapper to be present'
-    assert result[:docs_mapper].present?, 'Expected docs_mapper to be present'
-    assert result[:number_of_results_mapper].include?('numberOfResultsMapper')
-    assert result[:docs_mapper].include?('docsMapper')
+    assert result[:success], "Expected success but got: #{result[:error]}"
+    assert_predicate result[:number_of_results_mapper], :present?, 'Expected number_of_results_mapper to be present'
+    assert_predicate result[:docs_mapper], :present?, 'Expected docs_mapper to be present'
+    assert_includes result[:number_of_results_mapper], 'numberOfResultsMapper'
+    assert_includes result[:docs_mapper], 'docsMapper'
   end
 
   test 'extract_functions_from_response handles combined code block' do
@@ -340,9 +340,9 @@ class MapperWizardServiceTest < ActiveSupport::TestCase
 
     result = service.send(:extract_functions_from_response, content)
 
-    assert_equal true, result[:success], "Expected success but got: #{result[:error]}"
-    assert result[:number_of_results_mapper].present?, 'Expected number_of_results_mapper to be present'
-    assert result[:docs_mapper].present?, 'Expected docs_mapper to be present'
+    assert result[:success], "Expected success but got: #{result[:error]}"
+    assert_predicate result[:number_of_results_mapper], :present?, 'Expected number_of_results_mapper to be present'
+    assert_predicate result[:docs_mapper], :present?, 'Expected docs_mapper to be present'
   end
 
   test 'extract_functions_from_response returns error when no code found' do
@@ -352,7 +352,7 @@ class MapperWizardServiceTest < ActiveSupport::TestCase
 
     result = service.send(:extract_functions_from_response, content)
 
-    assert_equal false, result[:success]
+    assert_not result[:success]
     assert_equal 'No JavaScript code found in response', result[:error]
   end
 end

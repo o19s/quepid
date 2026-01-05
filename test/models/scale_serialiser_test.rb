@@ -10,6 +10,6 @@ class ScaleSerializerTest < ActiveSupport::TestCase
 
   test 'dump data with serializer' do
     dump = ScaleSerializer.dump([ 1, 2, 3, 4 ])
-    assert_equal dump, '1,2,3,4'
+    assert_equal '1,2,3,4', dump
   end
 end

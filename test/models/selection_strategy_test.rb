@@ -33,10 +33,10 @@ class SelectionStrategyTest < ActiveSupport::TestCase
       it 'draws Sean Connery way more then George Lazenby due to position in results' do
         # there can be false positive failures due to the RAND() in mysql...
         sean_connery_picks = times_drawn('SeanConnery', book, matt)
-        assert sean_connery_picks.positive?
+        assert_predicate sean_connery_picks, :positive?
 
         george_lazenby_picks = times_drawn('GeorgeLazenby', book, matt)
-        assert george_lazenby_picks.positive?
+        assert_predicate george_lazenby_picks, :positive?
 
         assert_operator sean_connery_picks, :>, george_lazenby_picks
       end

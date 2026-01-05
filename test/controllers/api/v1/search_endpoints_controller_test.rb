@@ -86,7 +86,7 @@ module Api
             # assert_response :ok
 
             one.reload
-            assert_equal one.name, 'New Name'
+            assert_equal 'New Name', one.name
           end
 
           test 'updates name successfully using PUT verb' do
@@ -94,7 +94,7 @@ module Api
             # assert_response :ok
 
             one.reload
-            assert_equal one.name, 'New Name'
+            assert_equal 'New Name', one.name
           end
         end
       end

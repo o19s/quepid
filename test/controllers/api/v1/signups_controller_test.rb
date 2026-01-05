@@ -35,7 +35,7 @@ module Api
 
         test 'user with existing invite is allowed to signup using invite user record and doesnt create a case' do
           invitee = User.invite!({ email: 'invitee@mail.com', password: '' }, user)
-          assert invitee.created_by_invite?
+          assert_predicate invitee, :created_by_invite?
 
           data = { user: { email: invitee.email, password: 'password' } }
 
@@ -79,7 +79,7 @@ module Api
           user = User.find_by(email: 'foo@example.com')
 
           assert_not_equal password, user.password
-          assert BCrypt::Password.new(user.password) == password
+          assert_equal BCrypt::Password.new(user.password), password
         end
 
         test 'sets the defaults, which no longer includes a Case' do
@@ -95,7 +95,7 @@ module Api
           assert_not_nil user.completed_case_wizard
           assert_not_nil user.num_logins
 
-          assert_equal false, user.completed_case_wizard
+          assert_not user.completed_case_wizard
           assert_equal 0, user.num_logins
 
           assert_equal 0, user.cases.count

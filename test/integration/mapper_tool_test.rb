@@ -30,7 +30,7 @@ class MapperToolTest < ActionDispatch::IntegrationTest
     assert result[:success], 'Tool should execute successfully'
     assert_equal 3, result[:document_count], 'Should return 3 documents'
     assert_equal 42, result[:total_results], 'Should return 42 total results'
-    assert result[:documents].is_a?(Array), 'Documents should be an array'
+    assert_kind_of Array, result[:documents], 'Documents should be an array'
     assert_equal 'First Document', result[:documents].first['title'], 'First document title should match'
   end
 

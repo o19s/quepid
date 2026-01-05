@@ -8,6 +8,7 @@ module Books
   class BooksControllerTest < ActionDispatch::IntegrationTest
     let(:user) { users(:random) }
 
+    # rubocop:disable Minitest/AssertionInLifecycleHook
     def setup
       @valid_json = { 'scorer' => { 'name' =>'AP@10' } }
       @json_file = Tempfile.new([ 'test', '.json' ])
@@ -26,6 +27,7 @@ module Books
 
       login_user_for_integration_test user
     end
+    # rubocop:enable Minitest/AssertionInLifecycleHook
 
     def teardown
       @json_file.close

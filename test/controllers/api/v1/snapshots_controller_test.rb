@@ -121,14 +121,14 @@ module Api
             assert_not_nil snapshot_response['id']
 
             snapshot = Snapshot.find(snapshot_response['id'])
-            assert snapshot.snapshot_file.present?
-            assert_equal snapshot.snapshot_queries.length, 0
+            assert_predicate snapshot.snapshot_file, :present?
+            assert_equal 0, snapshot.snapshot_queries.length
 
             perform_enqueued_jobs
 
             snapshot = Snapshot.find(snapshot_response['id'])
             assert_not snapshot.snapshot_file.present?
-            assert_equal snapshot.snapshot_queries.length, 2
+            assert_equal 2, snapshot.snapshot_queries.length
             assert_equal data[:snapshot][:docs].length, snapshot.snapshot_docs.length
 
             data_doc = data[:snapshot][:docs][first_query.id][0]
@@ -147,7 +147,7 @@ module Api
 
             perform_enqueued_jobs
 
-            assert_equal snapshot.snapshot_queries.length, 2
+            assert_equal 2, snapshot.snapshot_queries.length
           end
         end
 

@@ -15,6 +15,12 @@ AllCops:
 
 Minitest/EmptyLineBeforeAssertionMethods:
   Enabled: false
+
+Minitest/MultipleAssertions:
+  Enabled: false
+  
+Minitest/UselessAssertion:
+  Enabled: false
   
 Rails/SkipsModelValidations:
   Enabled: false # we use .insert_all for our bulk imports

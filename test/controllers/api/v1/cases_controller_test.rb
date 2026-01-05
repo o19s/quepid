@@ -39,7 +39,7 @@ module Api
           assert_response :bad_request
 
           body = response.parsed_body
-          assert body['case_name'].include? "can't be blank"
+          assert_includes body['case_name'], "can't be blank"
         end
 
         test 'creates an initial defaults try' do
@@ -90,7 +90,7 @@ module Api
 
           assert_equal body['case_name'], public_case.case_name
           assert_equal body['case_id'],   public_case.id
-          assert_equal body['public'],    true
+          assert body['public']
         end
 
         test 'returns case info for a regular case' do
@@ -101,7 +101,7 @@ module Api
 
           assert_equal body['case_name'], the_case.case_name
           assert_equal body['case_id'],   the_case.id
-          assert_equal body['public'],    false
+          assert_not body['public']
         end
 
         test 'returns tries from newest to oldest' do
@@ -112,8 +112,8 @@ module Api
 
           body = response.parsed_body
 
-          assert_equal body['tries'][0]['try_number'], 2
-          assert_equal body['tries'][1]['try_number'], 1
+          assert_equal 2, body['tries'][0]['try_number']
+          assert_equal 1, body['tries'][1]['try_number']
         end
       end
 
@@ -130,14 +130,14 @@ module Api
         end
 
         test 'only returns the last 10 scores' do
-          assert the_case.scores.count > 10
-          assert 10 == @body['scores'].count, 'limit to 10 scores'
+          assert_operator the_case.scores.count, :>, 10
+          assert_equal 10, @body['scores'].count, 'limit to 10 scores'
         end
 
         test 'returns the most recent scores' do
           oldest_score = scores(:one)
           @body['scores'].each do |s|
-            assert s['id'] != oldest_score.id
+            assert_not_equal s['id'], oldest_score.id
           end
         end
 
@@ -296,7 +296,7 @@ module Api
             assert_response :ok
 
             one.reload
-            assert_equal one.case_name, 'New Name'
+            assert_equal 'New Name', one.case_name
           end
 
           test 'updates name successfully using PUT verb' do
@@ -304,7 +304,7 @@ module Api
             assert_response :ok
 
             one.reload
-            assert_equal one.case_name, 'New Name'
+            assert_equal 'New Name', one.case_name
           end
         end
 
@@ -321,7 +321,7 @@ module Api
             assert_response :ok
 
             one.reload
-            assert_equal one.archived, false
+            assert_not one.archived
 
             assert_equal count_unarchived + 1,  doug.cases.where(archived: false).count
             assert_equal count_archived - 1,    doug.cases.where(archived: true).count
@@ -335,7 +335,7 @@ module Api
             assert_response :ok
 
             one.reload
-            assert_equal one.archived, false
+            assert_not one.archived
 
             assert_equal count_unarchived + 1,  doug.cases.where(archived: false).count
             assert_equal count_archived - 1,    doug.cases.where(archived: true).count
@@ -437,7 +437,7 @@ module Api
           the_case = cases.select { |c| c['case_id'] == shared_with_owner.id }.first
 
           assert_not_nil the_case['teams']
-          assert the_case['teams'].any?
+          assert_predicate the_case['teams'], :any?
         end
 
         test 'does not return cases not shared with the user even if owner is in the same team' do
@@ -486,7 +486,7 @@ module Api
           body  = response.parsed_body
           cases = body['all_cases']
 
-          assert cases.length == doug.cases.where(archived: true).length
+          assert_equal cases.length, doug.cases.where(archived: true).length
           assert_equal cases.first['case_name'], archived.case_name
           assert_equal cases.first['case_id'], archived.id
         end
@@ -499,7 +499,7 @@ module Api
           body  = response.parsed_body
           cases = body['all_cases']
 
-          assert cases.length == doug.cases.where(archived: true).length
+          assert_equal cases.length, doug.cases.where(archived: true).length
           assert_equal cases.first['case_name'], archived.case_name
           assert_equal cases.first['case_id'], archived.id
         end
@@ -601,7 +601,7 @@ module Api
 
           assert_response :bad_request
 
-          assert_equal response.parsed_body['scorer_id'], [ 'is not valid' ]
+          assert_equal [ 'is not valid' ], response.parsed_body['scorer_id']
 
           one.reload
           assert_equal one.scorer, scorer

@@ -251,7 +251,7 @@ class BulkJudgeControllerTest < ActionDispatch::IntegrationTest
 
       # The controller should have backed up to page 1 and returned the 5 remaining unrated docs
       grouped = assigns(:grouped_query_doc_pairs)
-      assert grouped.present?, 'Expected non-empty grouped results on page 2'
+      assert_predicate grouped, :present?, 'Expected non-empty grouped results on page 2'
 
       # Flatten the grouped results to count items
       returned_items = grouped.values.flatten
@@ -274,7 +274,7 @@ class BulkJudgeControllerTest < ActionDispatch::IntegrationTest
 
       # The controller should have backed up to page 1 and returned the 5 remaining unrated docs
       grouped = assigns(:grouped_query_doc_pairs)
-      assert grouped.present?, 'Expected non-empty grouped results after backing up a page'
+      assert_predicate grouped, :present?, 'Expected non-empty grouped results after backing up a page'
 
       # Flatten the grouped results to count items
       returned_items = grouped.values.flatten

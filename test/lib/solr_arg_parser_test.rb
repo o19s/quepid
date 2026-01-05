@@ -6,14 +6,14 @@ class SolrArgParserTest < ActiveSupport::TestCase
   test 'parses nil value' do
     params = nil
     result = SolrArgParser.parse(params)
-    assert result.empty?
+    assert_empty result
   end
 
   test 'parses basic case' do
     params = 'foo=1234'
     result = SolrArgParser.parse(params)
 
-    assert_equal result['foo'], [ '1234' ]
+    assert_equal [ '1234' ], result['foo']
   end
 
   test 'parses multi valued params' do
@@ -28,8 +28,8 @@ class SolrArgParserTest < ActiveSupport::TestCase
     params = 'q={localparam=paramval1}val&foo=1234'
     result = SolrArgParser.parse(params)
 
-    assert_equal result['q'],   [ '{localparam=paramval1}val' ]
-    assert_equal result['foo'], [ '1234' ]
+    assert_equal [ '{localparam=paramval1}val' ], result['q']
+    assert_equal [ '1234' ], result['foo']
   end
 
   test 'replaces curator vars with values' do

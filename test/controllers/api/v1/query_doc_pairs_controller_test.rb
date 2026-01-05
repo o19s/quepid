@@ -52,7 +52,7 @@ query_text: '', doc_id: qdp.doc_id } }
           assert_response :bad_request
 
           body = response.parsed_body
-          assert body['query_text'].include? "can't be blank"
+          assert_includes body['query_text'], "can't be blank"
         end
 
         test 'prevents duplicates' do
@@ -95,7 +95,7 @@ query_text: '', doc_id: qdp.doc_id } }
 
           body = response.parsed_body
 
-          assert body.to_s.include?('query_text')
+          assert_includes body.to_s, 'query_text'
         end
 
         test 'it handles things nicely when no more to be judged' do

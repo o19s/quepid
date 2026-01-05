@@ -158,7 +158,7 @@ module Api
           scores = response.parsed_body['scores']
 
           assert_instance_of Array, scores
-          assert_equal scores.length, 2
+          assert_equal 2, scores.length
           assert_equal scores.length, acase.scores.length
         end
       end
@@ -205,7 +205,7 @@ module Api
 
           assert_response :ok
 
-          assert_equal assigns(:shallow), false
+          assert_not assigns(:shallow)
 
           assert_equal @last_score.id, json_response['id']
           assert_not_nil response.parsed_body['queries']
