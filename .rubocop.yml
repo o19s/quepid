@@ -1,6 +1,7 @@
 plugins: 
   - rubocop-rails
   - rubocop-capybara  
+  - rubocop-minitest
 
 AllCops:
   NewCops: enable
@@ -12,6 +13,9 @@ AllCops:
     - node_modules/**/*
     - config/initializers/content_security_policy.rb
 
+Minitest/EmptyLineBeforeAssertionMethods:
+  Enabled: false
+  
 Rails/SkipsModelValidations:
   Enabled: false # we use .insert_all for our bulk imports
   

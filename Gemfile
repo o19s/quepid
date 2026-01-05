@@ -50,8 +50,6 @@ gem 'thor'
 gem 'turbo-rails'
 gem 'vega'
 
-
-
 group :development, :test do
   gem 'benchmark'
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
@@ -97,3 +95,5 @@ group :test do
   gem 'capybara'
   gem 'selenium-webdriver'
 end
+
+gem 'rubocop-minitest', '~> 0.38.2'
