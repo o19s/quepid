@@ -41,7 +41,6 @@ angular.module('QuepidApp')
       $scope.isStaticCollapsed = true;
       $scope.addedStaticQueries = false;
       $scope.listOfStaticQueries = [];
-      $scope.showSearchApiJavaScriptEditor = true;
       $scope.staticContent = {
         content: null,
         header: true,
@@ -348,8 +347,12 @@ angular.module('QuepidApp')
           settingsForValidation.searchEngine = 'solr';
         }
         else if ($scope.pendingWizardSettings.searchEngine === 'searchapi'){
-          // this is suss
-          settingsForValidation.args = $scope.pendingWizardSettings.queryParams;
+          // Substitute #$query## with the test query for validation
+          var queryParamsWithTestQuery = $scope.pendingWizardSettings.queryParams;
+          if ($scope.pendingWizardSettings.testQuery && $scope.pendingWizardSettings.testQuery.trim().length > 0) {
+            queryParamsWithTestQuery = queryParamsWithTestQuery.replace(/#\$query##/g, $scope.pendingWizardSettings.testQuery);
+          }
+          settingsForValidation.args = queryParamsWithTestQuery;
         
           try {
             /*jshint evil:true */
@@ -429,7 +432,6 @@ angular.module('QuepidApp')
       
         validator.validateUrl()
         .then(function () {
-          $scope.validatorLastResponse = JSON.stringify(validator.searcher.lastResponse,null,2);
           $scope.urlValid     = true;
           
           if ( !$scope.mapperInvalid ){
@@ -441,9 +443,6 @@ angular.module('QuepidApp')
             }
           }
         }, function (error) {
-          
-          $scope.validatorLastResponse = JSON.stringify(validator.searcher.lastResponse,null,2);
-          
           if (error.toString().startsWith('Error: MapperError')){
             $scope.mapperInvalid = true;
             $scope.mapperErrorMessage = error.toString();
