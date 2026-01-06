@@ -4,10 +4,6 @@ require 'active_support/core_ext/integer/time'
 
 # rubocop:disable Metrics/BlockLength
 
-# if ENV['QUEPID_HOST'].present?
-# Rails.application.routes.default_url_options = { host: ENV['QUEPID_HOST'], protocol: ENV['QUEPID_PROTOCOL'] }
-# nd
-
 Rails.application.configure do
   # Settings specified here will take precedence over those in config/application.rb.
 
@@ -107,17 +103,17 @@ Rails.application.configure do
   # Set host to be used by links generated in mailer templates.
   # config.action_mailer.default_url_options = { host: ENV.fetch('QUEPID_DOMAIN', nil) }
 
-  if ENV['QUEPID_HOST'].present?
+  if ENV['QUEPID_DOMAIN'].present?
     # Set default URL options for all URL helpers
-    config.action_controller.default_url_options = { host: ENV['QUEPID_HOST'], protocol: ENV.fetch('QUEPID_PROTOCOL', nil) }
-    config.action_controller.asset_host = ENV['QUEPID_HOST']
-    config.action_mailer.asset_host = "#{ENV.fetch('QUEPID_PROTOCOL', nil)}://#{ENV['QUEPID_HOST']}"
+    config.action_controller.default_url_options = { host: ENV['QUEPID_DOMAIN'], protocol: ENV.fetch('QUEPID_PROTOCOL', nil) }
+    config.action_controller.asset_host = ENV['QUEPID_DOMAIN']
+    config.action_mailer.asset_host = "#{ENV.fetch('QUEPID_PROTOCOL', nil)}://#{ENV['QUEPID_DOMAIN']}"
 
     config.action_mailer.default_url_options = {
-      host: ENV['QUEPID_HOST'], protocol: ENV.fetch('QUEPID_PROTOCOL', nil)
+      host: ENV['QUEPID_DOMAIN'], protocol: ENV.fetch('QUEPID_PROTOCOL', nil)
     }
 
-    Rails.application.routes.default_url_options = { host: ENV['QUEPID_HOST'], protocol: ENV.fetch('QUEPID_PROTOCOL', nil) }
+    Rails.application.routes.default_url_options = { host: ENV['QUEPID_DOMAIN'], protocol: ENV.fetch('QUEPID_PROTOCOL', nil) }
   end
 
   # Specify outgoing SMTP server. Remember to add smtp/* credentials via bin/rails credentials:edit.

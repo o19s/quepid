@@ -107,6 +107,7 @@ Set the from email address via the following `ENV` var:
 EMAIL_SENDER                 # The from email address.  i.e quepid@o19s.com
 ```
 
+Emails have links built in, so you need to set the `QUEPID_DOMAIN` to `your-domain.com` and the `QUEPID_PROTOCOL` to `https`.
 ## Postmark
 
 If you want to use Postmark as your mail delivery service, you have to set the `EMAIL_PROVIDER` to `postmark` and you have to tell Quepid your [Server API Token](https://postmarkapp.com/support/article/1008-what-are-the-account-and-server-api-tokens). This can be done by setting the following `ENV` var:
@@ -177,15 +178,6 @@ To comply with GDPR, and be a good citizen, the hosted version of Quepid asks if
 ```
 EMAIL_MARKETING_MODE=true   # Enables a checkbox on user signup to consent to emails
 ```
-
-## User Tracking
-
-We currently only support Google Analytics, and you enable it by setting the following `ENV` var:
-
-```
-QUEPID_GA=XXXXXXXXXXXX  # Your Google Analytics Key
-```
-
 
 ## Healthcheck
 

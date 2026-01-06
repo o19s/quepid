@@ -35,7 +35,6 @@ services:
       - RAILS_SERVE_STATIC_FILES=true
       - PRIVACY_URL=
       - COOKIES_URL=
-      - QUEPID_GA=UA-ERIC
       - QUEPID_DOMAIN=https://example.com
       - EMAIL_MARKETING_MODE=false
       - QUEPID_DEFAULT_SCORER=AP@10

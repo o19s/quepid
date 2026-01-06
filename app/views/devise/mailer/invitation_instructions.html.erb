@@ -1,6 +1,6 @@
 <p>Hello <%= @resource.email %></p>
 
-<%= User.find_by(id: @resource.invited_by_id).name %> has invited you to join their team on Quepid at <%= root_url %>, you can accept it through the link below.</p>
+<p><%= User.find_by(id: @resource.invited_by_id).name %> has invited you to join their team on Quepid at <%= root_url %>, you can accept it through the link below.</p>
 
 <p><%= accept_invitation_url(@resource, invitation_token: @token) %></p>
 
