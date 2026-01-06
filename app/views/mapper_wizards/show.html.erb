@@ -56,7 +56,7 @@
           <input type="text"
                  class="form-control"
                  id="queryParams"
-                 placeholder="s=eric&limit=10"
+                 placeholder="q=shirts"
                  data-mapper-wizard-target="queryParams"
                  value="<%= @wizard_state.try(:query_params) %>">
           <div class="form-text">Appended for testing only, not saved.</div>
@@ -91,9 +91,14 @@
       <div class="mt-3" data-mapper-wizard-target="htmlPreviewContainer" style="display: none;">
         <div class="d-flex justify-content-between align-items-center mb-2">
           <label class="form-label mb-0">Fetched HTML/JSON Preview</label>
-          <button type="button" class="btn btn-sm btn-outline-secondary" data-action="click->mapper-wizard#toggleHtmlPreview">
-            Expand
-          </button>
+          <div class="btn-group btn-group-sm">
+            <button type="button" class="btn btn-outline-secondary" data-action="click->mapper-wizard#copyHtmlPreview" title="Copy to clipboard">
+              <i class="bi bi-clipboard"></i> Copy
+            </button>
+            <button type="button" class="btn btn-outline-secondary" data-action="click->mapper-wizard#toggleHtmlPreview">
+              Expand
+            </button>
+          </div>
         </div>
         <pre class="bg-light p-3 border rounded html-preview"
              data-mapper-wizard-target="htmlPreview"
