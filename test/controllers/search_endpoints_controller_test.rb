@@ -147,7 +147,7 @@ class SearchEndpointsControllerTest < ActionDispatch::IntegrationTest
       login_user_for_integration_test non_admin_user
 
       # Need to use an endpoint the non-admin user would normally have access to
-      search_endpoint = search_endpoints(:for_case_with_two_tries)
+      search_endpoint = search_endpoints(:one)
 
       get search_endpoint_url(search_endpoint)
       assert_redirected_to root_path
