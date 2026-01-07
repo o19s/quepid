@@ -57,7 +57,7 @@ group :development, :test do
   gem 'bullet'
   gem 'memory_profiler'
   gem 'dotenv' # Enable .env file outside of Docker based environment
-  gem 'minitest', '~> 5.25' # Rails 8.1.1 compatibility, remove with Rails 8.1.2
+  gem 'minitest', '~> 6.0' # Rails 8.1.1 compatibility, remove with Rails 8.1.2
 end
 
 group :development do
