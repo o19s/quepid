@@ -14,7 +14,7 @@ module Api
         assert_response :unauthorized
 
         body = response.parsed_body
-        assert 'Unauthorized!' == body['reason']
+        assert_equal 'Unauthorized!', body['reason']
       end
     end
 
@@ -28,13 +28,13 @@ module Api
         assert_response :ok
 
         body = response.parsed_body
-        assert 'Success!' == body['message']
+        assert_equal 'Success!', body['message']
       end
     end
 
     describe 'Quepid Qonfiguration' do
       test 'signup is enabled' do
-        assert @controller.signup_enabled?
+        assert_predicate @controller, :signup_enabled?
       end
     end
   end

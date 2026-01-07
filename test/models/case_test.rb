@@ -35,13 +35,13 @@ class CaseTest < ActiveSupport::TestCase
     test 'sets archived flag to false by default' do
       acase = Case.create(case_name: 'test case')
 
-      assert_equal acase.archived, false
+      assert_not acase.archived
     end
 
     test 'does not override archived flag if set' do
       acase = Case.create(case_name: 'test case', archived: true)
 
-      assert_equal acase.archived, true
+      assert acase.archived
     end
 
     test "sets the scorer to the user's scorer" do
@@ -65,7 +65,7 @@ class CaseTest < ActiveSupport::TestCase
       acase = Case.create(case_name: 'with q scorer', owner: user)
 
       assert_equal acase.scorer_id, q_scorer.id
-      assert_equal acase.scorer.communal, true
+      assert acase.scorer.communal
     end
 
     test "sets the scorer to the user's scorer even when a q score is available" do
@@ -78,7 +78,7 @@ class CaseTest < ActiveSupport::TestCase
 
       assert_equal acase.scorer_id,       user_scorer.id
       assert_equal acase.scorer_id,       user.default_scorer_id
-      assert_equal acase.scorer.communal, false
+      assert_not acase.scorer.communal
     end
 
     test "sets the scorer to the QUEPID_DEFAULT_SCORER if the user doesn't have one picked" do
@@ -88,7 +88,7 @@ class CaseTest < ActiveSupport::TestCase
       acase = Case.create(case_name: 'with default scorer', owner: user)
 
       assert_equal acase.scorer_id, q_scorer2.id
-      assert_equal acase.scorer.communal, true
+      assert acase.scorer.communal
       assert_equal Rails.application.config.quepid_default_scorer, q_scorer2.name
     end
 
@@ -109,7 +109,7 @@ class CaseTest < ActiveSupport::TestCase
     test 'automatically creates a default try' do
       acase = Case.create(case_name: 'test case')
 
-      assert_equal acase.tries.count, 1
+      assert_equal 1, acase.tries.count
     end
 
     test 'sets the last try of the case' do
@@ -118,14 +118,14 @@ class CaseTest < ActiveSupport::TestCase
       default_try = acase.tries.first
 
       assert_equal default_try.try_number, acase.last_try_number
-      assert_equal default_try.try_number, 1
+      assert_equal 1, default_try.try_number
     end
 
     test 'returns try from highest try number (therefore newest) to lowest' do
       acase = cases(:case_with_two_tries)
 
-      assert_equal acase.tries.first.try_number,  2
-      assert_equal acase.tries.second.try_number, 1
+      assert_equal 2, acase.tries.first.try_number
+      assert_equal 1, acase.tries.second.try_number
     end
 
     test 'sets the default try to the defaults' do
@@ -134,8 +134,8 @@ class CaseTest < ActiveSupport::TestCase
       default_try = acase.tries.first
       assert_not_nil default_try
 
-      assert_equal default_try.name, 'Try 1'
-      assert_equal default_try.escape_query, true
+      assert_equal 'Try 1', default_try.name
+      assert default_try.escape_query
     end
   end
 
@@ -256,7 +256,7 @@ class CaseTest < ActiveSupport::TestCase
         assert_difference 'Try.count', -5 do
           assert_difference 'Query.count', -3 do
             the_case.really_destroy
-            assert the_case.destroyed?
+            assert_predicate the_case, :destroyed?
           end
         end
       end
@@ -269,7 +269,7 @@ class CaseTest < ActiveSupport::TestCase
         the_case.queries.first.destroy
         assert_equal 2, the_case.queries.size
         the_case.really_destroy
-        assert the_case.destroyed?
+        assert_predicate the_case, :destroyed?
       end
     end
   end

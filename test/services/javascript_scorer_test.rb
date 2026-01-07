@@ -31,7 +31,7 @@ class JavascriptScorerTest < ActiveSupport::TestCase
         best_docs = []
 
         score = javascript_scorer.score(docs, best_docs, scorer_code)
-        assert_equal 0.0, score
+        assert_in_delta(0.0, score)
 
         # Calculate score with options
         # error = assert_raises(JavascriptScorer::ScoreError) do
@@ -50,7 +50,7 @@ class JavascriptScorerTest < ActiveSupport::TestCase
         ]
         best_docs = []
         score = javascript_scorer.score(docs, best_docs, scorer_code)
-        assert_equal 0.5, score
+        assert_in_delta(0.5, score)
       end
     end
   end
@@ -75,7 +75,7 @@ class JavascriptScorerTest < ActiveSupport::TestCase
       ]
 
       score = javascript_scorer.score(docs, best_docs, scorer_code)
-      assert_equal 0.25, score
+      assert_in_delta(0.25, score)
     end
 
     test 'situation produces NaN' do
@@ -92,7 +92,7 @@ class JavascriptScorerTest < ActiveSupport::TestCase
                     { :id => '2120998', :rating => 0.0 } ]
 
       score = javascript_scorer.score(docs, best_docs, scorer_code)
-      assert score.nan?
+      assert_predicate score, :nan?
     end
   end
 
@@ -132,7 +132,7 @@ class JavascriptScorerTest < ActiveSupport::TestCase
       best_docs = []
 
       score = javascript_scorer.score(docs, best_docs, scorer_code)
-      assert_equal 4.92, score
+      assert_in_delta(4.92, score)
     end
   end
 
@@ -157,7 +157,7 @@ class JavascriptScorerTest < ActiveSupport::TestCase
       ]
 
       score = javascript_scorer.score(docs, best_docs, scorer_code)
-      assert_equal 0.64, score
+      assert_in_delta(0.64, score)
     end
   end
   describe 'rr@10' do
@@ -176,7 +176,7 @@ class JavascriptScorerTest < ActiveSupport::TestCase
       best_docs = []
 
       score = javascript_scorer.score(docs, best_docs, scorer_code)
-      assert_equal 0.33, score
+      assert_in_delta(0.33, score)
     end
   end
 
@@ -210,7 +210,7 @@ class JavascriptScorerTest < ActiveSupport::TestCase
       best_docs = []
 
       score = javascript_scorer.score(docs, best_docs, scorer_code)
-      assert_equal 1.67, score
+      assert_in_delta(1.67, score)
     end
   end
 end

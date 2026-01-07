@@ -36,7 +36,7 @@ class AccountsControllerTest < ActionController::TestCase
         patch :update, params: data
 
         assert_redirected_to profile_path
-        assert_equal flash[:success], 'Account updated successfully.'
+        assert_equal 'Account updated successfully.', flash[:success]
       end
 
       test 'requires all fields to be filled' do
@@ -52,7 +52,7 @@ class AccountsControllerTest < ActionController::TestCase
         patch :update, params: data
 
         assert_template 'profiles/show'
-        assert_equal flash[:error], 'Oooops! Something happened, please double check your values and try again.'
+        assert_equal 'Oooops! Something happened, please double check your values and try again.', flash[:error]
       end
 
       test 'requires a valid current password' do
@@ -68,7 +68,7 @@ class AccountsControllerTest < ActionController::TestCase
         patch :update, params: data
 
         assert_template 'profiles/show'
-        assert_equal flash[:error], 'The original password is incorrect.'
+        assert_equal 'The original password is incorrect.', flash[:error]
       end
 
       test 'requires new password to match confirmation password' do
@@ -84,9 +84,8 @@ class AccountsControllerTest < ActionController::TestCase
         patch :update, params: data
 
         assert_template 'profiles/show'
-        assert user.errors.full_messages_for(:password_confirmation)
-          .include?("Password confirmation doesn't match Password")
-        assert_equal flash[:error], 'Oooops! Something happened, please double check your values and try again.'
+        assert_includes user.errors.full_messages_for(:password_confirmation), "Password confirmation doesn't match Password"
+        assert_equal 'Oooops! Something happened, please double check your values and try again.', flash[:error]
       end
 
       describe 'analytics' do

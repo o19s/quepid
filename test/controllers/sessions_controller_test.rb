@@ -7,7 +7,7 @@ class SessionsControllerTest < ActionController::TestCase
     post :create, params: { user: { email: 'doug@example.com', password: 'password' }, format: :json }
     assert_response :success
     assert_not_nil session[:current_user_id], 'sets a user'
-    assert session[:current_user_id] == User.find_by(email: 'doug@example.com').id, 'user is doug'
+    assert_equal session[:current_user_id], User.find_by(email: 'doug@example.com').id, 'user is doug'
   end
 
   test 'should not create session for invalid password' do

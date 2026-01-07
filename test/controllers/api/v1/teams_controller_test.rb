@@ -110,7 +110,7 @@ module Api
             assert_response :ok
 
             the_team.reload
-            assert_equal the_team.name, 'New Name'
+            assert_equal 'New Name', the_team.name
           end
 
           test 'returns a not found error when user does not have access to the team' do

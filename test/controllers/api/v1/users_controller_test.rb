@@ -24,7 +24,7 @@ module Api
 
             body = response.parsed_body
 
-            assert body['email'] == matt.email
+            assert_equal body['email'], matt.email
           end
 
           test 'returns basic user info if user exists (other user)' do
@@ -34,8 +34,8 @@ module Api
 
             body = response.parsed_body
 
-            assert body['email'] == doug.email
-            assert body['default_scorer_id'] == doug.default_scorer.id
+            assert_equal body['email'], doug.email
+            assert_equal body['default_scorer_id'], doug.default_scorer.id
           end
 
           test 'returns a not found error if user does not exist' do
@@ -88,7 +88,7 @@ module Api
 
           body = response.parsed_body
 
-          assert body['default_scorer_id'].include? 'Does not exist'
+          assert_includes body['default_scorer_id'], 'Does not exist'
           # assert body['default_scorer_id'].include? I18n.t('activerecord.errors.models.user.attributes.default_scorer_id.existence')
 
           matt.reload
@@ -107,7 +107,7 @@ module Api
           assert_response :success
 
           matt.reload
-          assert 'OSC' == matt.company
+          assert_equal 'OSC', matt.company
         end
       end
 
@@ -124,8 +124,8 @@ module Api
 
             assert_response :ok
 
-            assert_instance_of  Array,  response.parsed_body['users']
-            assert_equal        [],     response.parsed_body['users']
+            assert_instance_of  Array, response.parsed_body['users']
+            assert_empty        response.parsed_body['users']
           end
         end
       end

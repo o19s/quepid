@@ -71,7 +71,7 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
     assert_equal 'Combined 8 query/doc pairs.', flash[:notice]
 
     book.reload
-    assert_equal book.query_doc_pairs.count, 8
+    assert_equal 8, book.query_doc_pairs.count
   end
   # rubocop:enable Metrics/AbcSize
   # rubocop:enable Metrics/MethodLength
@@ -79,13 +79,13 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
   def test_more
     login_user_for_integration_test user
 
-    assert_equal book.query_doc_pairs.count, 1
+    assert_equal 1, book.query_doc_pairs.count
 
     patch "/books/#{book.id}/combine", params: { book_ids: { "#{james_bond_movies.id}": '1' } }
     follow_redirect!
     assert_equal 'Combined 7 query/doc pairs.', flash[:notice]
 
-    assert_equal book.query_doc_pairs.count, 8
+    assert_equal 8, book.query_doc_pairs.count
   end
 
   def test_differing_scales_blows_up
@@ -112,27 +112,27 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
     test 'successfully archives an active book' do
       login_user_for_integration_test doug
 
-      assert_equal false, james_bond_movies.archived
+      assert_not james_bond_movies.archived
 
       patch "/books/#{james_bond_movies.id}/archive"
       follow_redirect!
 
       assert_equal "Book '#{james_bond_movies.name}' has been archived.", flash[:notice]
       james_bond_movies.reload
-      assert_equal true, james_bond_movies.archived
+      assert james_bond_movies.archived
     end
 
     test 'successfully unarchives an archived book' do
       login_user_for_integration_test doug
 
-      assert_equal true, archived_book.archived
+      assert archived_book.archived
 
       patch "/books/#{archived_book.id}/unarchive"
       follow_redirect!
 
       assert_equal "Book '#{archived_book.name}' has been unarchived.", flash[:notice]
       archived_book.reload
-      assert_equal false, archived_book.archived
+      assert_not archived_book.archived
     end
 
     test 'redirects to archived books index after unarchiving' do
@@ -182,8 +182,8 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
     assert_nil flash[:alert]
     assert_equal 'Combined 2 query/doc pairs.', flash[:notice]
 
-    assert_equal book_with_multiple_raters.query_doc_pairs.count, 2
-    assert_equal book_with_multiple_raters.judgements.count, 2
+    assert_equal 2, book_with_multiple_raters.query_doc_pairs.count
+    assert_equal 2, book_with_multiple_raters.judgements.count
   end
 
   def test_scorer_id_copies_scale_fields_when_creating_book

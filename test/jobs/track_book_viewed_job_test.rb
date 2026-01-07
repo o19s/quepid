@@ -20,7 +20,7 @@ class TrackBookViewedJobTest < ActiveJob::TestCase
   end
 
   test 'updates existing metadatum and does not create a new one' do
-    assert book.metadata.where(user: doug).first.last_viewed_at < DateTime.current
+    assert_operator book.metadata.where(user: doug).first.last_viewed_at, :<, DateTime.current
 
     assert_difference 'book.metadata.where(user: doug).count', 0 do
       perform_enqueued_jobs do

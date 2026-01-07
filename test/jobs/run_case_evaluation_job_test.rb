@@ -16,7 +16,7 @@ class RunCaseEvaluationJobTest < ActiveJob::TestCase
     atry.search_endpoint = search_endpoint
     atry.save!
 
-    assert acase.snapshots.empty?
+    assert_empty acase.snapshots
 
     assert_difference 'acase.snapshots.count', 1 do
       assert_difference 'acase.scores.count', 1 do

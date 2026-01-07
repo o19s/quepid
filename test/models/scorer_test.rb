@@ -45,41 +45,41 @@ class ScorerTest < ActiveSupport::TestCase
     test 'handles emoji in name' do
       scorer = Scorer.create name: '👍 👎 💩'
 
-      assert_equal scorer.name, '👍 👎 💩'
+      assert_equal '👍 👎 💩', scorer.name
     end
 
     test 'handles emoji in code' do
       scorer = Scorer.create code: '// 👍 👎 💩'
 
-      assert_equal scorer.code, '// 👍 👎 💩'
+      assert_equal '// 👍 👎 💩', scorer.code
     end
 
     test 'handles emoji in scale_with_labels' do
       scorer = Scorer.create scale_with_labels: { '1' => '👍' }
 
-      assert_equal scorer.scale_with_labels, '1' => '👍'
+      assert_equal({ '1' => '👍' }, scorer.scale_with_labels)
     end
   end
 
   describe 'for_user' do
     it 'includes scorers where user is team owner' do
       scorers = Scorer.for_user(users(:random))
-      assert scorers.include?(scorers(:shared_scorer))
+      assert_includes scorers, scorers(:shared_scorer)
     end
 
     it 'includes scorers connected to teams' do
       scorers = Scorer.for_user(users(:shared_team_member))
-      assert scorers.include?(scorers(:random_scorer))
+      assert_includes scorers, scorers(:random_scorer)
     end
 
     it 'includes scorers owned by user' do
       scorers = Scorer.for_user(users(:random))
-      assert scorers.include?(scorers(:shared_scorer))
+      assert_includes scorers, scorers(:shared_scorer)
     end
 
     it 'includes communal scorers' do
       scorers = Scorer.for_user(users(:doug))
-      assert scorers.include?(scorers(:communal_scorer))
+      assert_includes scorers, scorers(:communal_scorer)
     end
 
     it 'excludes other scorers' do

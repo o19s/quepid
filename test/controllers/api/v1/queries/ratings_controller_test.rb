@@ -29,13 +29,13 @@ module Api
 
             data = response.parsed_body
 
-            assert_equal data['rating'],    4
+            assert_equal 4, data['rating']
             assert_equal data['doc_id'],    doc_id
             assert_equal data['query_id'],  query.id
 
             count = query.ratings.where(doc_id: doc_id).count
 
-            assert_equal count, 1
+            assert_equal 1, count
           end
 
           test "creates a new rating if it didn't already exist" do
@@ -51,13 +51,13 @@ module Api
 
             data = response.parsed_body
 
-            assert_equal data['rating'],    5
+            assert_equal 5, data['rating']
             assert_equal data['doc_id'],    doc_id
             assert_equal data['query_id'],  query.id
 
             count = query.ratings.where(doc_id: doc_id).count
 
-            assert_equal count, 1
+            assert_equal 1, count
           end
 
           test 'updates existing rating for doc' do
@@ -74,13 +74,13 @@ module Api
 
             data = response.parsed_body
 
-            assert_equal data['rating'],    5
+            assert_equal 5, data['rating']
             assert_equal data['doc_id'],    doc_id
             assert_equal data['query_id'],  query.id
 
             count = query.ratings.where(doc_id: doc_id).count
 
-            assert_equal count, 1
+            assert_equal 1, count
           end
 
           test 'works with a url as the id' do
@@ -107,13 +107,13 @@ module Api
 
             data = response.parsed_body
 
-            assert_equal data['rating'],    5
+            assert_equal 5, data['rating']
             assert_equal data['doc_id'],    doc_id
             assert_equal data['query_id'],  query.id
 
             count = query.ratings.where(doc_id: doc_id).count
 
-            assert_equal count, 1
+            assert_equal 1, count
 
             doc_id = 'https://example.com/relative-path2'
             rating = {
@@ -138,13 +138,13 @@ module Api
 
             data = response.parsed_body
 
-            assert_equal data['rating'],    6
+            assert_equal 6, data['rating']
             assert_equal data['doc_id'],    doc_id
             assert_equal data['query_id'],  query.id
 
             count = query.ratings.where(doc_id: doc_id).count
 
-            assert_equal count, 1
+            assert_equal 1, count
 
             # test where we have https but it's all dashes, no / or . character.
             doc_id = 'https-example-com-relative-path2'
@@ -170,13 +170,13 @@ module Api
 
             data = response.parsed_body
 
-            assert_equal data['rating'],    6
+            assert_equal 6, data['rating']
             assert_equal data['doc_id'],    doc_id
             assert_equal data['query_id'],  query.id
 
             count = query.ratings.where(doc_id: doc_id).count
 
-            assert_equal count, 1
+            assert_equal 1, count
           end
 
           test 'works with a document id that contains a period' do
@@ -191,13 +191,13 @@ module Api
 
             data = response.parsed_body
 
-            assert_equal data['rating'],    5
+            assert_equal 5, data['rating']
             assert_equal data['doc_id'],    doc_id
             assert_equal data['query_id'],  query.id
 
             count = query.ratings.where(doc_id: doc_id).count
 
-            assert_equal count, 1
+            assert_equal 1, count
           end
 
           describe 'analytics' do

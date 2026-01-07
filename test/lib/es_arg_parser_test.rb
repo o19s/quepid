@@ -6,14 +6,14 @@ class EsArgParserTest < ActiveSupport::TestCase
   test 'parses nil value' do
     params = nil
     result = EsArgParser.parse(params)
-    assert result.empty?
+    assert_empty result
   end
 
   test 'parses basic case' do
     params = '{ "foo": 1234 }'
     result = EsArgParser.parse(params)
 
-    assert_equal result['foo'], 1234
+    assert_equal 1234, result['foo']
   end
 
   test 'replaces curator vars with values' do
@@ -21,7 +21,7 @@ class EsArgParserTest < ActiveSupport::TestCase
     vars    = { var1: 1, var2: 2 }
     result  = EsArgParser.parse(params, vars)
 
-    assert_equal result['foo'], '1'
+    assert_equal '1', result['foo']
   end
 
   test 'handles params that do not have a curator var' do
@@ -29,7 +29,7 @@ class EsArgParserTest < ActiveSupport::TestCase
     vars    = { k: 1 }
     result  = EsArgParser.parse(params, vars)
 
-    assert_equal result['foo'], 'bar'
+    assert_equal 'bar', result['foo']
   end
 
   test 'handles params with a %' do
@@ -37,8 +37,8 @@ class EsArgParserTest < ActiveSupport::TestCase
     vars    = { var1: 1, var2: 2 }
     result  = EsArgParser.parse(params, vars)
 
-    assert_equal result['foo'], '1'
-    assert_equal result['bar'], '100%'
+    assert_equal '1', result['foo']
+    assert_equal '100%', result['bar']
   end
 
   test 'handles params with a % when no curator vars are given' do
@@ -46,7 +46,7 @@ class EsArgParserTest < ActiveSupport::TestCase
     vars    = {}
     result  = EsArgParser.parse(params, vars)
 
-    assert_equal result['bar'], '100%'
+    assert_equal '100%', result['bar']
   end
 
   test 'works with a car named `boost`' do
@@ -54,6 +54,6 @@ class EsArgParserTest < ActiveSupport::TestCase
     vars    = { boost: 42 }
     result  = EsArgParser.parse(params, vars)
 
-    assert_equal result['foo'], '42'
+    assert_equal '42', result['foo']
   end
 end

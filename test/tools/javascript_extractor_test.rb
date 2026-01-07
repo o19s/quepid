@@ -32,11 +32,11 @@ class JavascriptExtractorTest < ActiveSupport::TestCase
 
     result = @tool.execute(markdown_content: markdown_content)
 
-    assert result.is_a?(String), "Expected string result, got #{result.class}"
-    assert result.include?('numberOfResultsMapper'), 'Should contain numberOfResultsMapper function'
-    assert result.include?('docsMapper'), 'Should contain docsMapper function'
+    assert_kind_of String, result, "Expected string result, got #{result.class}"
+    assert_includes result, 'numberOfResultsMapper', 'Should contain numberOfResultsMapper function'
+    assert_includes result, 'docsMapper', 'Should contain docsMapper function'
     assert_not result.include?('```'), 'Should not contain backticks'
-    assert result.include?("\n\n"), 'Should join blocks with double newlines'
+    assert_includes result, "\n\n", 'Should join blocks with double newlines'
   end
 
   test 'extracts javascript from case insensitive blocks' do
@@ -52,9 +52,9 @@ class JavascriptExtractorTest < ActiveSupport::TestCase
 
     result = @tool.execute(markdown_content: markdown_content)
 
-    assert result.is_a?(String), 'Should extract from case insensitive blocks'
-    assert result.include?("const test = 'uppercase label'"), 'Should extract from JavaScript block'
-    assert result.include?("const test2 = 'uppercase js'"), 'Should extract from JS block'
+    assert_kind_of String, result, 'Should extract from case insensitive blocks'
+    assert_includes result, "const test = 'uppercase label'", 'Should extract from JavaScript block'
+    assert_includes result, "const test2 = 'uppercase js'", 'Should extract from JS block'
   end
 
   test 'handles blocks with extra whitespace' do
@@ -70,9 +70,9 @@ class JavascriptExtractorTest < ActiveSupport::TestCase
 
     result = @tool.execute(markdown_content: markdown_content)
 
-    assert result.is_a?(String), 'Should handle whitespace in block headers'
-    assert result.include?("const test = 'with whitespace'"), 'Should extract despite extra whitespace'
-    assert result.include?("const test2 = 'no space before js'"), 'Should extract from js block'
+    assert_kind_of String, result, 'Should handle whitespace in block headers'
+    assert_includes result, "const test = 'with whitespace'", 'Should extract despite extra whitespace'
+    assert_includes result, "const test2 = 'no space before js'", 'Should extract from js block'
   end
 
   test 'detects unlabeled javascript blocks' do
@@ -101,10 +101,10 @@ class JavascriptExtractorTest < ActiveSupport::TestCase
 
     result = @tool.execute(markdown_content: markdown_content)
 
-    assert result.is_a?(String), 'Should detect JavaScript in unlabeled blocks'
-    assert result.include?('myFunction'), 'Should contain detected function'
-    assert result.include?('arrow'), 'Should contain arrow function'
-    assert result.include?('console.log'), 'Should detect console usage'
+    assert_kind_of String, result, 'Should detect JavaScript in unlabeled blocks'
+    assert_includes result, 'myFunction', 'Should contain detected function'
+    assert_includes result, 'arrow', 'Should contain arrow function'
+    assert_includes result, 'console.log', 'Should detect console usage'
   end
 
   test 'ignores unlabeled non-javascript blocks' do
@@ -132,44 +132,44 @@ class JavascriptExtractorTest < ActiveSupport::TestCase
 
     result = @tool.execute(markdown_content: markdown_content)
 
-    assert result.is_a?(String), 'Should extract only JavaScript-like code'
+    assert_kind_of String, result, 'Should extract only JavaScript-like code'
     assert_not result.include?('SELECT'), 'Should not include SQL'
     assert_not result.include?('ruby_method'), 'Should not include Ruby'
-    assert result.include?('jsCode'), 'Should include JavaScript function'
+    assert_includes result, 'jsCode', 'Should include JavaScript function'
   end
 
   test 'handles empty content' do
     result = @tool.execute(markdown_content: 'No code blocks here')
 
-    assert result.is_a?(Hash), 'Expected hash result for empty content'
+    assert_kind_of Hash, result, 'Expected hash result for empty content'
     assert result.key?(:error), 'Should return error for empty content'
-    assert result[:error].include?('No JavaScript code blocks found'), 'Should mention no code blocks found'
+    assert_includes result[:error], 'No JavaScript code blocks found', 'Should mention no code blocks found'
   end
 
   test 'validates input types' do
     # Test with nil input
     result = @tool.execute(markdown_content: nil)
-    assert result.is_a?(Hash), 'Should return error hash for nil input'
+    assert_kind_of Hash, result, 'Should return error hash for nil input'
     assert result.key?(:error), 'Should have error key'
-    assert result[:error].include?('must be a string'), 'Should mention string requirement'
+    assert_includes result[:error], 'must be a string', 'Should mention string requirement'
 
     # Test with non-string input
     result = @tool.execute(markdown_content: 123)
-    assert result.is_a?(Hash), 'Should return error hash for non-string input'
+    assert_kind_of Hash, result, 'Should return error hash for non-string input'
     assert result.key?(:error), 'Should have error key'
-    assert result[:error].include?('must be a string'), 'Should mention string requirement'
+    assert_includes result[:error], 'must be a string', 'Should mention string requirement'
 
     # Test with empty string
     result = @tool.execute(markdown_content: '')
-    assert result.is_a?(Hash), 'Should return error hash for empty input'
+    assert_kind_of Hash, result, 'Should return error hash for empty input'
     assert result.key?(:error), 'Should have error key'
-    assert result[:error].include?('Empty markdown content'), 'Should mention empty content'
+    assert_includes result[:error], 'Empty markdown content', 'Should mention empty content'
 
     # Test with whitespace only
     result = @tool.execute(markdown_content: "   \n\t  ")
-    assert result.is_a?(Hash), 'Should return error hash for whitespace-only input'
+    assert_kind_of Hash, result, 'Should return error hash for whitespace-only input'
     assert result.key?(:error), 'Should have error key'
-    assert result[:error].include?('Empty markdown content'), 'Should mention empty content'
+    assert_includes result[:error], 'Empty markdown content', 'Should mention empty content'
   end
 
   test 'validates javascript syntax' do
@@ -181,10 +181,10 @@ class JavascriptExtractorTest < ActiveSupport::TestCase
     MARKDOWN
 
     result = @tool.execute(markdown_content: markdown_with_unbalanced_braces)
-    assert result.is_a?(Hash), 'Should return error hash for unbalanced braces'
+    assert_kind_of Hash, result, 'Should return error hash for unbalanced braces'
     assert result.key?(:error), 'Should have error key for syntax errors'
-    assert result[:error].include?('syntax errors'), 'Error should mention syntax errors'
-    assert result[:error].include?('Unbalanced braces'), 'Should specifically mention brace issue'
+    assert_includes result[:error], 'syntax errors', 'Error should mention syntax errors'
+    assert_includes result[:error], 'Unbalanced braces', 'Should specifically mention brace issue'
   end
 
   test 'validates balanced brackets' do
@@ -195,8 +195,8 @@ class JavascriptExtractorTest < ActiveSupport::TestCase
     MARKDOWN
 
     result = @tool.execute(markdown_content: markdown_with_unbalanced_brackets)
-    assert result.is_a?(Hash), 'Should return error hash for unbalanced brackets'
-    assert result[:error].include?('Unbalanced brackets'), 'Should mention bracket issue'
+    assert_kind_of Hash, result, 'Should return error hash for unbalanced brackets'
+    assert_includes result[:error], 'Unbalanced brackets', 'Should mention bracket issue'
   end
 
   test 'validates balanced parentheses' do
@@ -209,8 +209,8 @@ class JavascriptExtractorTest < ActiveSupport::TestCase
     MARKDOWN
 
     result = @tool.execute(markdown_content: markdown_with_unbalanced_parens)
-    assert result.is_a?(Hash), 'Should return error hash for unbalanced parentheses'
-    assert result[:error].include?('Unbalanced parentheses'), 'Should mention parentheses issue'
+    assert_kind_of Hash, result, 'Should return error hash for unbalanced parentheses'
+    assert_includes result[:error], 'Unbalanced parentheses', 'Should mention parentheses issue'
   end
 
   test 'accepts valid javascript syntax' do
@@ -229,9 +229,9 @@ class JavascriptExtractorTest < ActiveSupport::TestCase
     MARKDOWN
 
     result = @tool.execute(markdown_content: markdown_with_valid_js)
-    assert result.is_a?(String), 'Should return string for valid JavaScript'
-    assert result.include?('validFunction'), 'Should contain the function'
-    assert result.include?('arrowFunction'), 'Should contain arrow function'
+    assert_kind_of String, result, 'Should return string for valid JavaScript'
+    assert_includes result, 'validFunction', 'Should contain the function'
+    assert_includes result, 'arrowFunction', 'Should contain arrow function'
   end
 
   test 'works with fixture file' do
@@ -241,14 +241,14 @@ class JavascriptExtractorTest < ActiveSupport::TestCase
     markdown_content = File.read(fixture_path)
     result = @tool.execute(markdown_content: markdown_content)
 
-    assert result.is_a?(String), 'Should extract JavaScript from fixture file'
-    assert result.include?('numberOfResultsMapper'), 'Should contain numberOfResultsMapper function'
-    assert result.include?('docsMapper'), 'Should contain docsMapper function'
+    assert_kind_of String, result, 'Should extract JavaScript from fixture file'
+    assert_includes result, 'numberOfResultsMapper', 'Should contain numberOfResultsMapper function'
+    assert_includes result, 'docsMapper', 'Should contain docsMapper function'
     assert_not result.include?('```'), 'Should not contain backticks in extracted code'
 
     # Verify the extracted code contains expected patterns
-    assert result.match?(/const\s+numberOfResultsMapper\s*=\s*function/), 'Should have numberOfResultsMapper function'
-    assert result.match?(/const\s+docsMapper\s*=\s*function/), 'Should have docsMapper function'
+    assert_match(/const\s+numberOfResultsMapper\s*=\s*function/, result, 'Should have numberOfResultsMapper function')
+    assert_match(/const\s+docsMapper\s*=\s*function/, result, 'Should have docsMapper function')
   end
 
   test 'handles javascript patterns correctly' do
@@ -270,8 +270,8 @@ class JavascriptExtractorTest < ActiveSupport::TestCase
       markdown = "```\n#{pattern}\n```"
       result = @tool.execute(markdown_content: markdown)
 
-      assert result.is_a?(String), "Should detect '#{pattern}' as JavaScript"
-      assert result.include?(pattern.strip), 'Should extract the pattern correctly'
+      assert_kind_of String, result, "Should detect '#{pattern}' as JavaScript"
+      assert_includes result, pattern.strip, 'Should extract the pattern correctly'
     end
   end
 
@@ -284,8 +284,8 @@ class JavascriptExtractorTest < ActiveSupport::TestCase
 
     result = @tool.execute(markdown_content: markdown_content)
 
-    assert result.is_a?(String), 'Should return string for valid blocks'
-    assert result.include?("const valid = 'code'"), 'Should include non-empty block'
+    assert_kind_of String, result, 'Should return string for valid blocks'
+    assert_includes result, "const valid = 'code'", 'Should include non-empty block'
     assert_not result.include?('```'), 'Should not contain backticks in result'
   end
 

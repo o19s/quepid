@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require 'cgi'
-
 module SolrArgParser
   def self.parse query_string, vars = {}
     # join lines, remove extraneous whitespace

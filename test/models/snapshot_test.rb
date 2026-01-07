@@ -54,12 +54,12 @@ class SnapshotTest < ActiveSupport::TestCase
     let(:snapshot_query) { snapshot_queries(:first_snapshot_query) }
 
     test 'deleting a snapshot cascades down' do
-      assert 4, asnapshot.snapshot_docs.size
+      assert_equal(4, asnapshot.snapshot_docs.size)
 
       sq = asnapshot.snapshot_queries.first
       sq.web_request = WebRequest.create
       sq.save!
-      assert sq.web_request.persisted?
+      assert_predicate sq.web_request, :persisted?
 
       snapshots_to_delete = []
       snapshots_to_delete << asnapshot

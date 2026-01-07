@@ -27,8 +27,8 @@ module Api
           assert_not_nil scorer['name']
           assert_not_nil scorer['scale']
 
-          assert_equal user.id,                       scorer['owner_id']
-          assert_equal [],                            scorer['scale']
+          assert_equal user.id, scorer['owner_id']
+          assert_empty scorer['scale']
 
           regex = /Scorer/
           assert_match regex, scorer['name']
@@ -67,7 +67,7 @@ module Api
 
           assert_equal user.id,                       scorer['owner_id']
           assert_equal code,                          scorer['code']
-          assert_equal [],                            scorer['scale']
+          assert_empty scorer['scale']
 
           regex = /Scorer/
           assert_match regex, scorer['name']
@@ -90,8 +90,8 @@ module Api
           assert_not_nil scorer['name']
           assert_not_nil scorer['scale']
 
-          assert_equal user.id,                       scorer['owner_id']
-          assert_equal [],                            scorer['scale']
+          assert_equal user.id, scorer['owner_id']
+          assert_empty scorer['scale']
 
           assert_equal name, scorer['name']
         end
@@ -165,7 +165,7 @@ module Api
 
           error = response.parsed_body
 
-          assert_equal error['error'], 'Communal Scorers Only!'
+          assert_equal 'Communal Scorers Only!', error['error']
         end
 
         describe 'analytics' do
@@ -202,7 +202,7 @@ module Api
           assert_equal scorer.name,       scorer_response['name']
           assert_equal scorer.code,       scorer_response['code']
           assert_equal user.id,           scorer_response['owner_id']
-          assert_equal true,              scorer_response['owned']
+          assert scorer_response['owned']
         end
 
         test 'returns scorer shared with user' do
@@ -234,7 +234,7 @@ module Api
 
           error = response.parsed_body
 
-          assert_equal error['error'], 'Cannot edit a scorer you do not own'
+          assert_equal 'Cannot edit a scorer you do not own', error['error']
         end
 
         test 'return a forbidden error if updating a communal scorer' do
@@ -246,7 +246,7 @@ module Api
 
           error = response.parsed_body
 
-          assert_equal error['error'], 'Cannot edit a scorer you do not own'
+          assert_equal 'Cannot edit a scorer you do not own', error['error']
         end
 
         test 'lets a administrator update a communal scorer' do
@@ -272,7 +272,7 @@ module Api
 
           error = response.parsed_body
 
-          assert_equal error['error'], 'Communal Scorers Only!'
+          assert_equal 'Communal Scorers Only!', error['error']
         end
 
         test 'successfully updates name' do
@@ -383,7 +383,7 @@ module Api
 
             error = response.parsed_body
 
-            assert_equal error['error'], 'Not Found!'
+            assert_equal 'Not Found!', error['error']
           end
 
           test 'allow you to delete a scorer shared but not owned by user' do
@@ -416,7 +416,7 @@ module Api
 
             error = response.parsed_body
 
-            assert_equal error['error'], 'Communal Scorers Only!'
+            assert_equal 'Communal Scorers Only!', error['error']
           end
         end
 
@@ -457,7 +457,7 @@ module Api
             assert_not_nil    default_scorer_user.default_scorer
             assert_equal      default_scorer_user.default_scorer, Scorer.system_default_scorer
 
-            assert_equal User.where(default_scorer_id: default_scorer.id).count, 0
+            assert_equal 0, User.where(default_scorer_id: default_scorer.id).count
           end
         end
 
@@ -494,7 +494,7 @@ module Api
             assert_not_nil    acase.scorer
             assert_equal      acase.scorer.name, Rails.application.config.quepid_default_scorer
 
-            assert_equal Case.where(scorer_id: default_scorer.id).count, 0
+            assert_equal 0, Case.where(scorer_id: default_scorer.id).count
           end
 
           test 'removes default association and deletes scorer when forced, updating to the new scorer' do
@@ -511,7 +511,7 @@ module Api
             assert_not_nil    acase.scorer
             assert_equal      acase.scorer, replacement_scorer
 
-            assert_equal Case.where(scorer_id: default_scorer.id).count, 0
+            assert_equal 0, Case.where(scorer_id: default_scorer.id).count
           end
         end
 

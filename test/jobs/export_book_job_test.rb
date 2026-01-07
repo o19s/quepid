@@ -16,7 +16,7 @@ class ExportBookJobTest < ActiveJob::TestCase
     end
 
     assert_nil book.export_job
-    assert book.export_file.attached?
+    assert_predicate book.export_file, :attached?
 
     # Get the Active Storage attachment
     attachment = book.export_file

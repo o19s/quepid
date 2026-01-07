@@ -69,7 +69,7 @@ class V8MapperExecutorTest < ActiveSupport::TestCase
       assert_equal 1, v8_executor.logs.length
       assert_equal 'log', v8_executor.logs.first[:level]
       assert_equal 'Testing log capture', v8_executor.logs.first[:message]
-      assert v8_executor.logs.first[:timestamp].present?
+      assert_predicate v8_executor.logs.first[:timestamp], :present?
     end
 
     test 'captures multiple log messages in order' do

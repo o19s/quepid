@@ -47,7 +47,7 @@ module Admin
       assert_redirected_to admin_user_path(assigns(:user))
 
       user.reload
-      assert_equal user.email, 'blah@blah.com'
+      assert_equal 'blah@blah.com', user.email
     end
 
     describe 'analytics' do

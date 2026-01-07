@@ -66,7 +66,7 @@ class CaseScoreManagerTest < ActiveSupport::TestCase
             the_case.reload
 
             assert_not_nil the_case.last_score
-            assert_equal the_case.last_score.score, 0
+            assert_equal 0, the_case.last_score.score
           end
         end
       end
@@ -237,7 +237,7 @@ class CaseScoreManagerTest < ActiveSupport::TestCase
             assert_not_nil the_case.last_score
             assert_instance_of Score, the_case.last_score
 
-            assert_equal the_case.last_score.score, 0.79
+            assert_in_delta(the_case.last_score.score, 0.79)
           end
         end
 
@@ -262,7 +262,7 @@ class CaseScoreManagerTest < ActiveSupport::TestCase
             the_case.reload
 
             assert_not_nil the_case.last_score
-            assert_equal the_case.last_score.score, 0.99
+            assert_in_delta(the_case.last_score.score, 0.99)
           end
         end
 
@@ -277,7 +277,7 @@ class CaseScoreManagerTest < ActiveSupport::TestCase
             the_case.reload
 
             assert_not_nil the_case.last_score
-            assert_equal the_case.last_score.score, 0.91
+            assert_in_delta(the_case.last_score.score, 0.91)
           end
         end
       end

@@ -88,7 +88,7 @@ class QueryTest < ActiveSupport::TestCase
 
       previous_query = list.first
       list[1..].each do |query|
-        assert previous_query.arranged_at < query.arranged_at
+        assert_operator previous_query.arranged_at, :<, query.arranged_at
         assert_equal previous_query.arranged_next, query.arranged_at
         previous_query = query
       end
@@ -187,13 +187,13 @@ class QueryTest < ActiveSupport::TestCase
       assert_difference 'Query.count', -1 do
         query.destroy
 
-        assert query.destroyed?
+        assert_predicate query, :destroyed?
       end
     end
 
     test 'does not fetch queries destroyed' do
       query.destroy
-      assert query.destroyed?
+      assert_predicate query, :destroyed?
 
       queries = Query.all
       ids     = queries.map(&:id)
@@ -247,7 +247,7 @@ class QueryTest < ActiveSupport::TestCase
     test 'handles emoji in query_text' do
       query = Query.create query_text: '👍 👎 💩'
 
-      assert_equal query.query_text, '👍 👎 💩'
+      assert_equal '👍 👎 💩', query.query_text
     end
 
     test 'index_by with emoji' do

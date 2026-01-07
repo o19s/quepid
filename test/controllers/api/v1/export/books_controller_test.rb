@@ -19,13 +19,13 @@ module Api
           let(:doug)        { users(:doug) }
 
           test 'the book returns a message on start' do
-            assert doug.books.include? book
+            assert_includes doug.books, book
 
             post :update, params: { book_id: book.id }
             assert_response :ok
             body = response.parsed_body
 
-            assert_equal body['message'], 'Starting export of book as file.'
+            assert_equal 'Starting export of book as file.', body['message']
           end
 
           test 'duplicate calls report back in progress work' do
@@ -54,7 +54,7 @@ module Api
             assert_response :ok
             body = response.parsed_body
 
-            assert_equal body['message'], 'Starting export of book as file.'
+            assert_equal 'Starting export of book as file.', body['message']
 
             perform_enqueued_jobs
 

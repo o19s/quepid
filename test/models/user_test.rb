@@ -65,7 +65,7 @@ class UserTest < ActiveSupport::TestCase
       assert_not_nil user.completed_case_wizard
       assert_not_nil user.num_logins
 
-      assert_equal false, user.completed_case_wizard
+      assert_not user.completed_case_wizard
       assert_equal 0,                        user.num_logins
       assert_equal user.default_scorer.name, Rails.application.config.quepid_default_scorer
     end
@@ -81,7 +81,7 @@ class UserTest < ActiveSupport::TestCase
       assert_not_nil user.completed_case_wizard
       assert_not_nil user.num_logins
 
-      assert_equal true, user.completed_case_wizard
+      assert user.completed_case_wizard
       assert_equal 1, user.num_logins
     end
   end
@@ -94,7 +94,7 @@ class UserTest < ActiveSupport::TestCase
       new_user = User.create(email: 'new@user.com', password: password)
 
       assert_not_equal password, new_user.password
-      assert BCrypt::Password.new(new_user.password) == password
+      assert_equal BCrypt::Password.new(new_user.password), password
     end
 
     test 'does not encrypt the password when updating a user without the password' do
@@ -112,7 +112,7 @@ class UserTest < ActiveSupport::TestCase
       assert_not_equal  current_password, user.password
 
       assert_not_equal  password, user.password
-      assert BCrypt::Password.new(user.password) == password
+      assert_equal BCrypt::Password.new(user.password), password
     end
   end
 
@@ -128,7 +128,7 @@ class UserTest < ActiveSupport::TestCase
 
     test 'Sets agreed_time when agreed set to true when T&C set' do
       user = User.create
-      assert user.terms_and_conditions?
+      assert_predicate user, :terms_and_conditions?
 
       password = 'password'
       new_user = User.create(email: 'new@user.com', password: password, agreed: true)
@@ -191,9 +191,9 @@ class UserTest < ActiveSupport::TestCase
     test 'does not require name to be present' do
       user = User.create(email: 'foo@example.com', password: 'password')
       assert_not user.ai_judge?
-      assert user.valid?
+      assert_predicate user, :valid?
       user.name = 'User Bob'
-      assert user.valid?
+      assert_predicate user, :valid?
     end
   end
 
@@ -204,7 +204,7 @@ class UserTest < ActiveSupport::TestCase
       user = User.create email: 'foo@example.com', password: 'foobar'
 
       assert_not_nil  user.cases
-      assert_equal    user.cases.count, 0
+      assert_equal    0, user.cases.count
       assert_same     case_count, Case.count
     end
   end
@@ -220,14 +220,14 @@ class UserTest < ActiveSupport::TestCase
       user.lock
       user.save
 
-      assert user.locked?
+      assert_predicate user, :locked?
     end
 
     it 'unlocks a user' do
       user.lock
       user.save
 
-      assert user.locked?
+      assert_predicate user, :locked?
 
       user.reload
       user.unlock
@@ -252,7 +252,7 @@ class UserTest < ActiveSupport::TestCase
     it 'ensures a user who is a member of a team that is deleted keeps the team' do
       user.destroy
       assert_not team.destroyed?
-      assert user.destroyed?
+      assert_predicate user, :destroyed?
     end
 
     it 'prevents a user who owns a scorer shared with a team from being deleted' do
@@ -265,7 +265,7 @@ class UserTest < ActiveSupport::TestCase
 
       random.destroy
       assert_not random.destroyed?
-      assert random.errors.full_messages_for(:base).include?('Please remove the scorer Scorer for sharing from the team before deleting this user.')
+      assert_includes random.errors.full_messages_for(:base), 'Please remove the scorer Scorer for sharing from the team before deleting this user.'
     end
 
     it 'deletes a user and their team if no one else is in the team' do
@@ -276,7 +276,7 @@ class UserTest < ActiveSupport::TestCase
 
       assert_difference('User.count', -1) do
         team_owner.destroy
-        assert team_owner.destroyed?
+        assert_predicate team_owner, :destroyed?
       end
 
       shared_team_case.reload
@@ -299,10 +299,10 @@ class UserTest < ActiveSupport::TestCase
     end
 
     it 'prevents you from deleting a user that has judgements' do
-      assert user_with_book_access.judgements.size.positive?
+      assert_predicate user_with_book_access.judgements.size, :positive?
 
       assert_not user_with_book_access.destroy
-      assert user_with_book_access.errors.include?(:base)
+      assert_includes user_with_book_access.errors, :base
       assert_not user_with_book_access.destroyed?
     end
   end
@@ -341,29 +341,29 @@ class UserTest < ActiveSupport::TestCase
       user = User.new
       assert_not user.ai_judge?
       user.llm_key = ''
-      assert user.ai_judge?
+      assert_predicate user, :ai_judge?
       assert_not user.valid?
     end
 
     it 'does not require an email or password address to be valid when is a judge' do
       user = User.new(llm_key: '1234', name: 'Judge Judy')
-      assert user.ai_judge?
-      assert user.valid?
+      assert_predicate user, :ai_judge?
+      assert_predicate user, :valid?
     end
 
     it 'does require name to be valid when is a judge' do
       user = User.new(llm_key: '1234')
-      assert user.ai_judge?
+      assert_predicate user, :ai_judge?
       assert_not user.valid?
       user.name = 'Judge Judy'
-      assert user.valid?
+      assert_predicate user, :valid?
     end
 
     describe 'options to configure the llm server' do
       it 'provides an empty hash' do
         user = User.new(llm_key: '1234', name: 'Judge Judy')
         opts_hash = user.judge_options
-        assert_equal({}, opts_hash)
+        assert_empty(opts_hash)
       end
 
       it 'lets you update the options hash via passing in a hash with new values' do
@@ -398,17 +398,17 @@ class UserTest < ActiveSupport::TestCase
   describe 'The full name of the user' do
     it 'uses the name if possible' do
       user = User.new(name: 'bob')
-      assert 'bob', user.fullname
+      assert_equal('Bob', user.fullname)
     end
 
     it 'uses the email if no name' do
       user = User.new(email: 'bob@bob.com')
-      assert 'bob@bob.com', user.fullname
+      assert_equal('bob@bob.com', user.fullname)
     end
 
     it 'handles it when we got nothing!' do
       user = User.new
-      assert 'Anonymous', user.fullname
+      assert_equal('Anonymous', user.fullname)
     end
   end
 end

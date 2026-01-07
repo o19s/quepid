@@ -37,7 +37,7 @@ module Api
 
         def assert_curator_vars_equal vars, response_vars
           if vars.blank?
-            assert_equal({}, response_vars)
+            assert_empty(response_vars)
           else
             vars.each do |key, value|
               assert_equal response_vars[key.to_s], value

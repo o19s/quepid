@@ -23,8 +23,8 @@ module Api
 
             body = response.parsed_body
 
-            assert body['email'] == matt.email
-            assert body['administrator'] == matt.administrator?
+            assert_equal body['email'], matt.email
+            assert_equal body['administrator'], matt.administrator?
           end
         end
 

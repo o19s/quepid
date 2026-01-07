@@ -20,10 +20,10 @@ module Admin
 
         scorer = Scorer.last
 
-        assert_equal true, scorer.communal
+        assert scorer.communal
         assert_nil scorer.code
         assert_not_nil scorer.name
-        assert_equal [], scorer.scale
+        assert_empty scorer.scale
         assert_equal '', scorer.scale_list
       end
 
@@ -48,7 +48,7 @@ module Admin
 
         assert_not_nil scorer.code
         assert_not_nil scorer.name
-        assert_equal [], scorer.scale
+        assert_empty scorer.scale
 
         assert_equal code, scorer.code
       end
@@ -81,7 +81,7 @@ module Admin
         assert_nil scorer.code
         assert_not_nil scorer.name
         assert_not_nil scorer.scale
-        assert_equal true, scorer.communal
+        assert scorer.communal
 
         assert_equal scale, scorer.scale
       end

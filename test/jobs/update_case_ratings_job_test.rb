@@ -23,7 +23,7 @@ class UpdateCaseRatingsJobTest < ActiveJob::TestCase
       end
     end
     rating = case_with_book.queries.where(query_text: 'my search').first.ratings.where(doc_id: 'DOC123456').first
-    assert_equal 4.0, rating.rating
+    assert_in_delta(4.0, rating.rating)
 
     Judgement.create(query_doc_pair: query_doc_pair, rating: 1.0, user: matt)
 
@@ -33,6 +33,6 @@ class UpdateCaseRatingsJobTest < ActiveJob::TestCase
       end
     end
     rating = case_with_book.queries.where(query_text: 'my search').first.ratings.where(doc_id: 'DOC123456').first
-    assert_equal 3.0, rating.rating
+    assert_in_delta(3.0, rating.rating)
   end
 end

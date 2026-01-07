@@ -56,28 +56,28 @@ class FetchServiceTest < ActiveSupport::TestCase
       fetch_service = FetchService.new options
       response = fetch_service.make_request(atry, first_query)
       assert_not_nil response
-      assert 200 == response.status
+      assert_equal 200, response.status
     end
 
     it 'works with custom headers and JSONP' do
       fetch_service = FetchService.new options
       response = fetch_service.make_request(try_with_headers, first_query)
       assert_not_nil response
-      assert 200 == response.status
+      assert_equal 200, response.status
     end
 
     it 'creates a POST request' do
       fetch_service = FetchService.new options
       response = fetch_service.make_request(es_try_with_curator_vars, first_query)
       assert_not_nil response
-      assert 200 == response.status
+      assert_equal 200, response.status
     end
 
     it 'handles a failed search request' do
       fetch_service = FetchService.new options
       response = fetch_service.make_request(atry, blowup_query)
       assert_not_nil response
-      assert 404 == response.status
+      assert_equal 404, response.status
     end
 
     it 'handles a missing search_endpoint' do
@@ -85,7 +85,7 @@ class FetchServiceTest < ActiveSupport::TestCase
       atry.search_endpoint = nil
       response = fetch_service.make_request(atry, blowup_query)
       assert_not_nil response
-      assert 400 == response.status
+      assert_equal 400, response.status
     end
   end
 
@@ -131,7 +131,7 @@ class FetchServiceTest < ActiveSupport::TestCase
         end
       end
 
-      assert acase.snapshots.count > options[:snapshot_limit]
+      assert_operator acase.snapshots.count, :>, options[:snapshot_limit]
 
       snapshot = fetch_service.begin(acase, atry)
 
@@ -171,7 +171,7 @@ class FetchServiceTest < ActiveSupport::TestCase
         sq = snapshot.snapshot_queries.create
         sq.web_request = WebRequest.create
         sq.save!
-        assert sq.web_request.persisted?
+        assert_predicate sq.web_request, :persisted?
       end
 
       fetch_service.delete_extra_web_requests acase
@@ -384,7 +384,7 @@ class FetchServiceTest < ActiveSupport::TestCase
     let(:snapshot_query) { snapshot_queries(:first_snapshot_query) }
 
     it 'runs a score' do
-      assert_equal 1.0, snapshot_query.score # before running P@10
+      assert_in_delta(1.0, snapshot_query.score) # before running P@10
 
       assert_not_nil asnapshot.scorer
 
@@ -392,13 +392,13 @@ class FetchServiceTest < ActiveSupport::TestCase
       fetch_service.begin acase, atry
       score_data = fetch_service.score_snapshot(asnapshot, atry, nil)
       assert_equal 2, score_data[:queries].size
-      assert_equal 0.25, score_data[:score]
+      assert_in_delta(0.25, score_data[:score])
       assert_nil score_data[:user_id]
       assert_not_nil asnapshot.case.scorer
       assert_equal acase.scorer.id, score_data[:scorer_id]
 
       snapshot_query.reload
-      assert_equal 0.5, snapshot_query.score
+      assert_in_delta(0.5, snapshot_query.score)
     end
   end
 

@@ -34,7 +34,7 @@ class BookTest < ActiveSupport::TestCase
                          scale:             [ 0, 1, 2, 3 ],
                          scale_with_labels: { '0' => 'Poor', '1' => 'Fair', '2' => 'Good', '3' => 'Great' })
 
-      assert_equal false, book.archived
+      assert_not book.archived
     end
 
     test 'does not override archived flag if set' do
@@ -42,7 +42,7 @@ class BookTest < ActiveSupport::TestCase
                          scale: [ 0, 1, 2, 3 ],
                          scale_with_labels: { '0' => 'Poor', '1' => 'Fair', '2' => 'Good', '3' => 'Great' })
 
-      assert_equal true, book.archived
+      assert book.archived
     end
 
     test 'active scope returns only non-archived books' do
@@ -120,8 +120,8 @@ class BookTest < ActiveSupport::TestCase
       assert_not book.import_file.present?
       assert_not book.import_file.attached?
       book.import_file.attach(io: File.open(json_file.path), filename: 'data.json')
-      assert book.import_file.present?
-      assert book.import_file.attached?
+      assert_predicate book.import_file, :present?
+      assert_predicate book.import_file, :attached?
 
       import_file = book.import_file
 
@@ -158,7 +158,7 @@ class BookTest < ActiveSupport::TestCase
 
       # Should be able to change scale when no judgements exist
       book.scale = [ 1, 2, 3, 4, 5 ]
-      assert book.valid?
+      assert_predicate book, :valid?
       assert book.save
     end
 
@@ -201,7 +201,7 @@ class BookTest < ActiveSupport::TestCase
 
       # Should be able to change labels even with judgements
       book.scale_with_labels = { '0' => 'Terrible', '1' => 'Excellent' }
-      assert book.valid?
+      assert_predicate book, :valid?
       assert book.save
     end
 
@@ -223,7 +223,7 @@ class BookTest < ActiveSupport::TestCase
 
       # Should be able to set the same scale values
       book.scale = original_scale.dup
-      assert book.valid?
+      assert_predicate book, :valid?
       assert book.save
     end
   end

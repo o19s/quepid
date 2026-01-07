@@ -20,7 +20,7 @@ class UserInviteFlowTest < ActionDispatch::IntegrationTest
 
     invitee = User.find_by(email: 'friend@example.com')
 
-    assert invitee.created_by_invite?
+    assert_predicate invitee, :created_by_invite?
     assert_not invitee.invitation_accepted?
 
     get logout_url params: { format: :json }
@@ -51,7 +51,7 @@ class UserInviteFlowTest < ActionDispatch::IntegrationTest
 
     invitee.reload
 
-    assert invitee.invitation_accepted?
-    assert_equal invitee.name, 'Bob'
+    assert_predicate invitee, :invitation_accepted?
+    assert_equal 'Bob', invitee.name
   end
 end

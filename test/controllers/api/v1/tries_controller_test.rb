@@ -46,7 +46,7 @@ module Api
 
       def assert_curator_vars_equal vars, response_vars
         if vars.blank?
-          assert_equal({}, response_vars)
+          assert_empty(response_vars)
         else
           vars.each do |key, value|
             assert_equal response_vars[key.to_s], value
@@ -73,7 +73,7 @@ module Api
           body  = response.parsed_body
           tries = body['tries']
 
-          assert_equal tries.count, 1
+          assert_equal 1, tries.count
 
           get :index, params: { case_id: case_with_two_tries.id }
 
@@ -82,7 +82,7 @@ module Api
           body  = response.parsed_body
           tries = body['tries']
 
-          assert_equal tries.count, 2
+          assert_equal 2, tries.count
         end
 
         test 'works for a shared case as well' do
@@ -146,10 +146,10 @@ module Api
           assert_response :ok
 
           the_try.reload
-          assert_equal the_try.name, 'New Name'
+          assert_equal 'New Name', the_try.name
 
           the_try = response.parsed_body
-          assert_equal the_try['name'], 'New Name'
+          assert_equal 'New Name', the_try['name']
         end
 
         test 'can change other parameters too' do
@@ -163,7 +163,7 @@ search_endpoint: solr_endpoint.attributes }
           the_try.reload
           assert_not_equal  the_try.try_number, 'New No'
           assert_equal      the_try.try_number, old_no
-          assert_equal the_try.search_endpoint.search_engine, 'solr'
+          assert_equal 'solr', the_try.search_endpoint.search_engine
 
           put :update,
               params: { case_id: the_case.id, try_number: the_try.try_number, try: { field_spec: 'New field_spec' },
@@ -172,8 +172,8 @@ search_endpoint: es_endpoint.attributes }
           assert_response :ok
 
           the_try.reload
-          assert_equal the_try.field_spec, 'New field_spec'
-          assert_equal the_try.search_endpoint.search_engine, 'es'
+          assert_equal 'New field_spec', the_try.field_spec
+          assert_equal 'es', the_try.search_endpoint.search_engine
         end
       end
 
@@ -211,7 +211,7 @@ search_endpoint: es_endpoint.attributes }
 
             expected_value = { 'q' => [ '#$query##' ] }
 
-            assert expected_value == try_response['args']
+            assert_equal expected_value, try_response['args']
           end
         end
 
@@ -274,7 +274,7 @@ search_endpoint: search_endpoint_params }
 
             expected_value = { 'q' => [ '#$query##' ] }
 
-            assert expected_value == try_response['args']
+            assert_equal expected_value, try_response['args']
           end
         end
 
@@ -313,8 +313,8 @@ search_endpoint: solr_endpoint.attributes }
           the_case.reload
           created_try = the_case.tries.where(try_number: response.parsed_body['try_number']).first
 
-          assert_equal false, response.parsed_body['escape_query']
-          assert_equal false, created_try.escape_query
+          assert_not response.parsed_body['escape_query']
+          assert_not created_try.escape_query
         end
 
         test 'sets api_method param' do
@@ -368,7 +368,7 @@ search_endpoint: solr_endpoint.attributes }
           # assert_equal created_try.search_url,      Try::DEFAULTS[:solr][:search_url]
           # assert_equal created_try.escape_query,    true
           # assert_equal created_try.api_method,      Try::DEFAULTS[:solr][:api_method]
-          assert_equal created_try.number_of_rows, 10
+          assert_equal 10, created_try.number_of_rows
         end
 
         test 'updates a search endpoint while creating a try' do
@@ -383,7 +383,7 @@ search_endpoint: { search_engine: 'os', endpoint_url: 'http://my.os.url', api_me
           created_try = the_case.tries.where(try_number: response.parsed_body['try_number']).first
 
           assert_not_equal try, created_try
-          assert_equal created_try.search_endpoint.search_engine, 'os'
+          assert_equal 'os', created_try.search_endpoint.search_engine
         end
 
         describe 'analytics' do
@@ -450,8 +450,8 @@ search_endpoint: { search_engine: 'os', endpoint_url: 'http://my.os.url', api_me
             assert_match( /#{the_case.last_try_number}/, created_try.name )
             assert_match( /#{created_try.try_number}/,   created_try.name )
 
-            assert_equal created_try.search_endpoint.search_engine, 'solr'
-            assert_equal created_try.escape_query, true
+            assert_equal 'solr', created_try.search_endpoint.search_engine
+            assert created_try.escape_query
           end
         end
 
@@ -473,8 +473,8 @@ search_endpoint: { search_engine: 'os', endpoint_url: 'http://my.os.url', api_me
             assert_not_nil created_try.search_endpoint.search_engine
             assert_not_nil created_try.escape_query
 
-            assert_equal created_try.search_endpoint.search_engine, 'es'
-            assert_equal created_try.escape_query, true
+            assert_equal 'es', created_try.search_endpoint.search_engine
+            assert created_try.escape_query
           end
 
           test 'parses args properly' do
@@ -491,8 +491,8 @@ search_endpoint: es_endpoint.attributes  }
             try_response  = response.parsed_body
             created_try   = the_case.tries.where(try_number: try_response['try_number']).first
 
-            assert_equal created_try.args,      'query' => '#$query##'
-            assert_equal try_response['args'],  'query' => '#$query##'
+            assert_equal({ 'query' => '#$query##' }, created_try.args)
+            assert_equal({ 'query' => '#$query##' }, try_response['args'])
           end
 
           test 'handles bad JSON in query params' do
@@ -532,7 +532,7 @@ search_endpoint: solr_endpoint.attributes }
             solr_search_endpoint = created_try.search_endpoint
 
             assert_equal solr_search_endpoint.search_engine, try_response['search_endpoint']['search_engine']
-            assert solr_search_endpoint.endpoint_url, try_response['search_endpoint']['endpoint_url']
+            assert_equal(solr_search_endpoint.endpoint_url, try_response['search_endpoint']['endpoint_url'])
 
             post :create, params: { case_id: the_case.id, try: { name: '' }, search_endpoint: es_endpoint.attributes }
             try_response  = response.parsed_body
@@ -556,7 +556,7 @@ search_endpoint: solr_endpoint.attributes }
             # assert_not_equal solr_search_endpoint, solr_get_search_endpoint
             assert_not_equal es_search_endpoint, solr_get_search_endpoint
             assert_equal solr_get_search_endpoint.search_engine, try_response['search_endpoint']['search_engine']
-            assert_equal solr_get_search_endpoint.api_method, 'GET'
+            assert_equal 'GET', solr_get_search_endpoint.api_method
           end
         end
       end

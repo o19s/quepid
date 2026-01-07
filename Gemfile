@@ -38,6 +38,7 @@ gem 'rails', '8.1.1'
 gem 'rails-html-sanitizer'
 gem 'rack-cors'
 gem 'responders'
+gem 'ruby_llm'
 gem 'rubyzip'
 gem 'propshaft' # Modern asset pipeline for Rails 8
 gem 'jsbundling-rails' # For bundling the Angular 1 app
@@ -49,8 +50,6 @@ gem 'thor'
 gem 'turbo-rails'
 gem 'vega'
 
-gem 'ruby_llm'
-
 group :development, :test do
   gem 'benchmark'
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
@@ -58,6 +57,7 @@ group :development, :test do
   gem 'bullet'
   gem 'memory_profiler'
   gem 'dotenv' # Enable .env file outside of Docker based environment
+  gem 'minitest', '~> 5.25' # Rails 8.1.1 compatibility, remove with Rails 8.1.2
 end
 
 group :development do
@@ -95,3 +95,5 @@ group :test do
   gem 'capybara'
   gem 'selenium-webdriver'
 end
+
+gem 'rubocop-minitest', '~> 0.38.2'

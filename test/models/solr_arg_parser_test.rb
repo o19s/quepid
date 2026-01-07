@@ -6,7 +6,7 @@ require 'solr_arg_parser'
 class SolrArgParserTest < ActiveSupport::TestCase
   test 'it creates a new solr Args' do
     sa = SolrArgParser.parse('a string')
-    assert sa.is_a? Hash
+    assert_kind_of Hash, sa
   end
 
   test 'split lines and clean whitespace' do

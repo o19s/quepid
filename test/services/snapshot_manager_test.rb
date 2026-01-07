@@ -52,14 +52,14 @@ class SnapshotManagerTest < ActiveSupport::TestCase
 
         assert_not_nil  first_snapshot_query
         assert_equal    first_snapshot_query.query_id, first_query.id
-        assert_equal    first_snapshot_query.score, 0.87
-        assert_equal true, first_snapshot_query.all_rated
+        assert_in_delta(first_snapshot_query.score, 0.87)
+        assert first_snapshot_query.all_rated
         assert_equal 42, first_snapshot_query.number_of_results
 
         assert_not_nil  second_snapshot_query
         assert_equal    second_snapshot_query.query_id, second_query.id
-        assert_equal    second_snapshot_query.score, 0.45
-        assert_equal    false, second_snapshot_query.all_rated
+        assert_in_delta(second_snapshot_query.score, 0.45)
+        assert_not second_snapshot_query.all_rated
         assert_nil      second_snapshot_query.number_of_results
 
         data_doc      = data[:docs][first_query.id][0]

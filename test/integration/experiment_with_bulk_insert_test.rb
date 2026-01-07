@@ -17,7 +17,7 @@ class ExperimentWithBulkInsertTest < ActionDispatch::IntegrationTest
   test 'generate and import query/doc pairs with traditional AR' do
     skip('Ignoring all tests in ExperimentWithBulkInsertTest') if @@skip_tests
     book = user.books.create name: '50000 Query Doc Pairs', scorer: scorer, selection_strategy: selection_strategy
-    assert book.valid?
+    assert_predicate book, :valid?
     result = Benchmark.measure do
       50_000.times do
         query_text = generate_random_string
@@ -28,7 +28,7 @@ class ExperimentWithBulkInsertTest < ActionDispatch::IntegrationTest
         qdp = book.query_doc_pairs.create query_text: query_text, doc_id: doc_id, document_fields: document_fields,
                                           information_need: information_need
         puts "Failed to create qdp: #{qdp.errors.full_messages.join(', ')}" unless qdp.valid?
-        assert qdp.valid?
+        assert_predicate qdp, :valid?
       end
       puts "Traditional. Sample data generated successfully.  #{book.query_doc_pairs.count} query doc pairs"
     end
@@ -40,7 +40,7 @@ class ExperimentWithBulkInsertTest < ActionDispatch::IntegrationTest
   test 'generate and import query/doc pairs with insert_all' do
     skip('Ignoring all tests in ExperimentWithBulkInsertTest') if @@skip_tests
     book = user.books.create name: '50000 Query Doc Pairs', scorer: scorer, selection_strategy: selection_strategy
-    assert book.valid?
+    assert_predicate book, :valid?
     result = Benchmark.measure do
       query_doc_pairs = []
       50_000.times do
@@ -70,7 +70,7 @@ class ExperimentWithBulkInsertTest < ActionDispatch::IntegrationTest
   test 'generate and export query/doc pairs with upsert_all' do
     skip('Ignoring all tests in ExperimentWithBulkInsertTest') if @@skip_tests
     book = user.books.create name: '50000 Query Doc Pairs', scorer: scorer, selection_strategy: selection_strategy
-    assert book.valid?
+    assert_predicate book, :valid?
     result = Benchmark.measure do
       query_doc_pairs = []
       50_000.times do
@@ -100,7 +100,7 @@ class ExperimentWithBulkInsertTest < ActionDispatch::IntegrationTest
   test 'generate and export query/doc pairs with upsert_all when exists already data' do
     skip('Ignoring all tests in ExperimentWithBulkInsertTest') if @@skip_tests
     book = user.books.create name: '50000 Query Doc Pairs', scorer: scorer, selection_strategy: selection_strategy
-    assert book.valid?
+    assert_predicate book, :valid?
 
     query_doc_pairs = []
     50_000.times do

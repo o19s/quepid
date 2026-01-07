@@ -32,7 +32,7 @@ class QueryDocPairTest < ActiveSupport::TestCase
     test 'handles emoji in document_fields' do
       query_doc_pair = QueryDocPair.create document_fields: '👍 👎 💩'
 
-      assert_equal query_doc_pair.document_fields, '👍 👎 💩'
+      assert_equal '👍 👎 💩', query_doc_pair.document_fields
     end
 
     describe 'case sensitivity' do

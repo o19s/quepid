@@ -8,7 +8,7 @@ class UpdateCaseJobTest < ActiveJob::TestCase
   let(:book) { books(:book_of_star_wars_judgements) }
 
   test 'change to book is pushed to case' do
-    assert case_with_book.ratings.empty?
+    assert_empty case_with_book.ratings
 
     assert_difference 'case_with_book.ratings.count', 2 do
       perform_enqueued_jobs do
