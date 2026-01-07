@@ -12,6 +12,7 @@
 #  populate_job                :string(255)
 #  scale                       :string(255)
 #  scale_with_labels           :text(65535)
+#  scoring_guidelines          :text(65535)
 #  show_rank                   :boolean          default(FALSE)
 #  support_implicit_judgements :boolean
 #  created_at                  :datetime         not null
@@ -225,6 +226,45 @@ class BookTest < ActiveSupport::TestCase
       book.scale = original_scale.dup
       assert_predicate book, :valid?
       assert book.save
+    end
+  end
+
+  describe 'scoring guidelines' do
+    test 'default_scoring_guidelines returns four-point guidelines for 4-point scale' do
+      book = Book.new(scale: [ 0, 1, 2, 3 ])
+
+      assert_equal Book::FOUR_POINT_GUIDELINES, book.default_scoring_guidelines
+    end
+
+    test 'default_scoring_guidelines returns two-point guidelines for 2-point scale' do
+      book = Book.new(scale: [ 0, 1 ])
+
+      assert_equal Book::TWO_POINT_GUIDELINES, book.default_scoring_guidelines
+    end
+
+    test 'default_scoring_guidelines returns four-point guidelines for other scales' do
+      book = Book.new(scale: [ 0, 1, 2, 3, 4, 5 ])
+
+      assert_equal Book::FOUR_POINT_GUIDELINES, book.default_scoring_guidelines
+    end
+
+    test 'effective_scoring_guidelines returns custom guidelines when set' do
+      custom_guidelines = '# My Custom Guidelines'
+      book = Book.new(scale: [ 0, 1, 2, 3 ], scoring_guidelines: custom_guidelines)
+
+      assert_equal custom_guidelines, book.effective_scoring_guidelines
+    end
+
+    test 'effective_scoring_guidelines returns default guidelines when not set' do
+      book = Book.new(scale: [ 0, 1, 2, 3 ])
+
+      assert_equal Book::FOUR_POINT_GUIDELINES, book.effective_scoring_guidelines
+    end
+
+    test 'effective_scoring_guidelines returns default guidelines when blank' do
+      book = Book.new(scale: [ 0, 1 ], scoring_guidelines: '   ')
+
+      assert_equal Book::TWO_POINT_GUIDELINES, book.effective_scoring_guidelines
     end
   end
 end

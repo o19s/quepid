@@ -75,4 +75,27 @@ class BooksHelperTest < ActionView::TestCase
       assert_not available_ai_judges_for_book?(book)
     end
   end
+
+  describe '#scorer_scale_lengths' do
+    it 'returns a hash mapping scorer ids to scale lengths' do
+      user = users(:doug)
+      result = scorer_scale_lengths(user)
+
+      assert_instance_of Hash, result
+      # Each value should be an integer representing scale length
+      result.each_value do |length|
+        assert_instance_of Integer, length
+      end
+    end
+
+    it 'correctly identifies 4-point scales' do
+      user = users(:doug)
+      # Find a scorer with a 4-point scale
+      scorer = user.scorers_involved_with.find { |s| 4 == s.scale&.length }
+      skip 'No 4-point scale scorer found for test user' unless scorer
+
+      result = scorer_scale_lengths(user)
+      assert_equal 4, result[scorer.id]
+    end
+  end
 end

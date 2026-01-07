@@ -12,6 +12,7 @@
 #  populate_job                :string(255)
 #  scale                       :string(255)
 #  scale_with_labels           :text(65535)
+#  scoring_guidelines          :text(65535)
 #  show_rank                   :boolean          default(FALSE)
 #  support_implicit_judgements :boolean
 #  created_at                  :datetime         not null
@@ -48,6 +49,22 @@
 require 'scale_serializer'
 
 class Book < ApplicationRecord
+  # Default scoring guidelines templates
+  FOUR_POINT_GUIDELINES = <<~MARKDOWN
+    **0 - Poor:** *Terrible results!* Clearly not desired. These are negative examples.
+    **1 - Fair:** *Not what I'm looking for, but I see why.* Has some right words but misses the point.
+    **2 - Good:** *Worth my time!* Provides partial or survey-level information.
+    **3 - Perfect:** *Exactly what I need!* Reserved for targeted, exact results.
+
+    [Judgement Rating Best Practices](https://github.com/o19s/quepid/wiki/Judgement-Rating-Best-Practices)
+  MARKDOWN
+
+  TWO_POINT_GUIDELINES = <<~MARKDOWN
+    **0 - Irrelevant:** Not helpful. These are not the droids I'm looking for.
+    **1 - Relevant:** Addresses some aspect of my information need.
+
+    [Judgement Rating Best Practices](https://github.com/o19s/quepid/wiki/Judgement-Rating-Best-Practices)
+  MARKDOWN
   # Associations
   # rubocop:disable Rails/HasAndBelongsToMany
   has_and_belongs_to_many :teams,
@@ -118,6 +135,20 @@ class Book < ApplicationRecord
 
   after_initialize do |book|
     book.scale = [] if book.scale.nil? || (book.scale.respond_to?(:empty?) && book.scale.empty?)
+  end
+
+  # Returns the appropriate default scoring guidelines based on the scale size
+  def default_scoring_guidelines
+    return TWO_POINT_GUIDELINES if 2 == scale&.length
+    return FOUR_POINT_GUIDELINES if 4 == scale&.length
+
+    # For other scales, return a generic template
+    FOUR_POINT_GUIDELINES
+  end
+
+  # Returns the scoring guidelines, falling back to defaults if not set
+  def effective_scoring_guidelines
+    scoring_guidelines.presence || default_scoring_guidelines
   end
 
   def scale_list= value

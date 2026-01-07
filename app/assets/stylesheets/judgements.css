@@ -35,3 +35,52 @@
   gap: 10px;
   padding: 5px 0;
 }
+
+/* Scoring guidelines markdown content */
+.scoring-guidelines-content {
+  font-size: 0.95rem;
+}
+
+.scoring-guidelines-content h2 {
+  font-size: 1.25rem;
+  margin-bottom: 1rem;
+}
+
+.scoring-guidelines-content h3 {
+  font-size: 1.1rem;
+  margin-bottom: 0.75rem;
+}
+
+.scoring-guidelines-content table {
+  width: 100%;
+  margin-bottom: 1rem;
+  border-collapse: collapse;
+}
+
+.scoring-guidelines-content th,
+.scoring-guidelines-content td {
+  padding: 0.5rem;
+  border: 1px solid #dee2e6;
+  vertical-align: top;
+}
+
+.scoring-guidelines-content th {
+  background-color: #f8f9fa;
+  font-weight: 600;
+}
+
+.scoring-guidelines-content strong {
+  color: #333;
+}
+
+.scoring-guidelines-content em {
+  color: #666;
+}
+
+.scoring-guidelines-content a {
+  color: #0d6efd;
+}
+
+.scoring-guidelines-content a:hover {
+  text-decoration: underline;
+}

@@ -10,6 +10,7 @@
 #  populate_job                :string(255)
 #  scale                       :string(255)
 #  scale_with_labels           :text(65535)
+#  scoring_guidelines          :text(65535)
 #  show_rank                   :boolean          default(FALSE)
 #  support_implicit_judgements :boolean
 #  created_at                  :datetime         not null
