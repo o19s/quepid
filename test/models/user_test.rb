@@ -398,7 +398,7 @@ class UserTest < ActiveSupport::TestCase
   describe 'The full name of the user' do
     it 'uses the name if possible' do
       user = User.new(name: 'bob')
-      assert_equal('bob@bob.com', user.fullname)
+      assert_equal('Bob', user.fullname)
     end
 
     it 'uses the email if no name' do
