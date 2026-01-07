@@ -21,7 +21,7 @@ services:
     #env_file:   # Use this approach if you would rather manage your environment settings elsewhere.
     #  - .env.prod
     environment:
-      - RAILS_RELATIVE_URL_ROOT=/quepid-prod
+      #- RAILS_RELATIVE_URL_ROOT=/quepid-prod
       - QUEPID_CONSIDER_ALL_REQUESTS_LOCAL=true
       - PORT=3000
       - RACK_ENV=production
@@ -35,8 +35,7 @@ services:
       - RAILS_SERVE_STATIC_FILES=true
       - PRIVACY_URL=
       - COOKIES_URL=
-      - QUEPID_GA=UA-ERIC
-      - QUEPID_DOMAIN=https://example.com
+      - QUEPID_DOMAIN=example.com
       - EMAIL_MARKETING_MODE=false
       - QUEPID_DEFAULT_SCORER=AP@10
       - SIGNUP_ENABLED=true

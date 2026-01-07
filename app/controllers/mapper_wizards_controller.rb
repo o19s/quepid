@@ -3,6 +3,7 @@
 # rubocop:disable Metrics/ClassLength
 
 class MapperWizardsController < ApplicationController
+  before_action :require_admin_if_restricted
   before_action :set_search_endpoint, only: [ :show ]
   before_action :set_wizard_state, only: [ :fetch_html, :generate_mappers, :test_mapper, :refine_mapper, :save ]
 
@@ -180,6 +181,13 @@ class MapperWizardsController < ApplicationController
   # rubocop:enable Metrics/MethodLength
 
   private
+
+  def require_admin_if_restricted
+    return unless Rails.application.config.search_endpoint_views_admin_only
+    return if current_user.administrator?
+
+    redirect_to root_path, notice: 'Search Endpoint management is restricted to administrators.'
+  end
 
   def set_search_endpoint
     return if params[:search_endpoint_id].blank? || 'new' == params[:search_endpoint_id]

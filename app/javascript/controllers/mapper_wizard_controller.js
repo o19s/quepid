@@ -436,6 +436,34 @@ export default class extends Controller {
     }
   }
 
+  // Copy HTML preview content to clipboard
+  async copyHtmlPreview(event) {
+    event.preventDefault()
+
+    // Capture button reference before any await - event.currentTarget becomes null after async operations
+    const button = event.currentTarget
+    const originalHtml = button.innerHTML
+
+    const content = this.htmlPreviewTarget.textContent
+    if (!content) {
+      this.showStatus("No content to copy", "error")
+      return
+    }
+
+    try {
+      await navigator.clipboard.writeText(content)
+      this.showStatus("Copied to clipboard!", "success")
+
+      // Briefly change button icon to show success
+      button.innerHTML = '<i class="bi bi-clipboard-check"></i> Copied!'
+      setTimeout(() => {
+        button.innerHTML = originalHtml
+      }, 2000)
+    } catch (error) {
+      this.showStatus(`Failed to copy: ${error.message}`, "error")
+    }
+  }
+
   // Helper methods
   showStatus(message, type) {
     if (this.hasStatusTarget) {

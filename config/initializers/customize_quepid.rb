@@ -94,6 +94,13 @@ Rails.application.config.quepid_domain = ENV.fetch('QUEPID_DOMAIN', '')
 # == If we have nested Quepid under a context, like tools.bigcorp.com/quepid then this deal with that situation.
 Rails.application.config.action_cable.url = "#{ENV.fetch('RAILS_RELATIVE_URL_ROOT', '')}/cable"
 
+# == Search Endpoint Views Admin Only
+# When enabled, only administrators can access the Search Endpoints management views
+# (index, show, edit, mapper wizard). Regular users will be redirected.
+# This is useful for organizations that want to centrally manage search endpoints.
+#
+Rails.application.config.search_endpoint_views_admin_only = bool.deserialize(ENV.fetch('SEARCH_ENDPOINT_VIEWS_ADMIN_ONLY', false))
+
 # == Set up encryption for Quepid
 # We provide some defaults, but you should set your own keys and NOT lose them.
 Rails.application.config.active_record.encryption.deterministic_key = ENV.fetch('ACTIVE_RECORD_ENCRYPTION_DETERMINISTIC_KEY', 'OItaH6HSftjoxkl9QDejPAmQ8EaFOlwk')

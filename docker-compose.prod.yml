@@ -39,7 +39,7 @@ services:
       - TC_URL=
       - PRIVACY_URL=
       - COOKIES_URL=
-      - QUEPID_DOMAIN=https://example.com
+      - QUEPID_DOMAIN=example.com
       - EMAIL_MARKETING_MODE=false
       - QUEPID_DEFAULT_SCORER=AP@10
       - SIGNUP_ENABLED=true

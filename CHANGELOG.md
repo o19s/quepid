@@ -2,9 +2,9 @@
 
 ## 8.4.0 -- 2026-01-02
 
-Two big things! And two nice things! 
+Two big things! And three nice things! 
 
-1) We introduced a Search API Mapper Wizard that simplifies creating your Javascript "data mapping" functions to convert custom search api (including HTML and JSON formats) to what Quepid expects.  It even has a LLM assist for generating the code if you want.  
+1) We introduced a Search API Mapper Wizard that simplifies creating your Javascript "data mapping" functions to convert custom search api responses (including HTML and JSON formats) to those that Quepid expects.  It even has a LLM assist for generating the code if you want.  Thanks @mikehendo for testing this feature.
 
 2) We now support MULTIPLE Snapshots being Diffed!  Comparing current search to various other points in time is one of the most common analysis that you want to do, but our Snapshot support has been, ahem, rough, to say the least.  We completely redid all the logic, and now you can diff multiple snapshots at the same time.  Oh, and we fixed all the little bugs folks had been experiencing.
 
@@ -14,6 +14,10 @@ And the nice things...
 
 2) We introduced rate limiting as an attribute of a Search Endpoint.  THis ensures that if you need to constrain how fast you are sending the queires you can, to deal with AP rate limits, or just to reduce load on your search engine if you are testing in a live environment! See a [video walkthrough](https://share.descript.com/view/G0ozoslB2xu).
 
+3) Search Endpoints have a lot of settings that maybe folks shouldn't poke around in.  You can now set `SEARCH_ENDPOINT_VIEWS_ADMIN_ONLY=true` to prevent regular users from poking around.  Thanks to @mikehendo for making the request.
+
+* Resolved mix of `QUEPID_HOST` and `QUEPID_DOMAIN` in favour of `QUEPID_DOMAIN` for specifying the domain of Quepid.  Used in links generated in emails. https://github.com/o19s/quepid/commit/51cea26c24bbb3de208900fde8f638b7be085946 by @epugh.
+* Option to prevent casual users from seeing search endpoint details.  https://github.com/o19s/quepid/pull/1592 by @epugh fixes https://github.com/o19s/quepid/issues/1565 by @mikehendo.
 * Introduced configurable rate limiting to keep proxied search endpoints from getting overwhelmed by @epugh in https://github.com/o19s/quepid/pull/1587.
 * Added LLM-powered generation of data mapper Javascript to speed up custom API onboarding by @epugh in https://github.com/o19s/quepid/pull/1285.
 * Swapped to released `oas_rails` gem and cleaned up OpenAPI references (bumped to 3.4.8) by @epugh in https://github.com/o19s/quepid/pull/1589.
