@@ -80,9 +80,10 @@ class RatingsManager
   # rubocop:enable Metrics/AbcSize
   # rubocop:enable Metrics/MethodLength
   # Calculates a rating from multiple judgements using an optimistic-pessimistic approach:
-  # 1. Take the three highest ratings (optimistic: assume the best judges rated highest)
-  # 2. If those judges agree, use that value
-  # 3. If they disagree, use the minimum of the top three (pessimistic: trust the lower rating,
+  # 1. If only 1-2 judgements exist, average them (not enough data for consensus)
+  # 2. Take the three highest ratings (optimistic: assume the best judges rated highest)
+  # 3. If those judges agree, use that value
+  # 4. If they disagree, use the minimum of the top three (pessimistic: trust the lower rating,
   #    assuming judges tend to overrate)
   #
   # @param judgements [ActiveRecord::Relation] Collection of rateable judgements
@@ -90,7 +91,10 @@ class RatingsManager
   def calculate_rating_from_judgements judgements
     ratings = judgements.map(&:rating).sort.reverse
 
-    # Take the top 3 ratings (or fewer if less than 3 exist)
+    # With fewer than 3 judgements, just average them
+    return ratings.sum / ratings.size if ratings.size < 3
+
+    # Take the top 3 ratings
     top_ratings = ratings.first(3)
 
     # If all top ratings agree, use that value

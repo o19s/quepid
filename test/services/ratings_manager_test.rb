@@ -116,11 +116,12 @@ class RatingsImporterTest < ActiveSupport::TestCase
       assert_equal 3, service.send(:calculate_rating_from_judgements, judgements)
     end
 
-    it 'returns the minimum when two judges disagree' do
+    it 'returns the average when two judges disagree' do
       qdp = star_wars_book.query_doc_pairs.create!(query_text: 'test', doc_id: 'doc3')
-      judgements = create_judgements_with_ratings(qdp, [ 3, 2 ])
+      judgements = create_judgements_with_ratings(qdp, [ 4, 1 ])
 
-      assert_equal 2, service.send(:calculate_rating_from_judgements, judgements)
+      # With only 2 judgements, we average: (4 + 1) / 2 = 2.5
+      assert_in_delta(2.5, service.send(:calculate_rating_from_judgements, judgements))
     end
 
     it 'returns the rating when three judges agree' do
