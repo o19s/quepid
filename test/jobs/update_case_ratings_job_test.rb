@@ -8,7 +8,7 @@ class UpdateCaseRatingsJobTest < ActiveJob::TestCase
   let(:case_with_book) { cases(:case_with_book) }
   let(:book) { books(:book_of_star_wars_judgements) }
 
-  test 'account is charged' do
+  test 'update case rating' do
     case_with_book.queries << Query.create(query_text: 'my search')
 
     query_doc_pair = QueryDocPair.create(query_text: 'my search', doc_id: 'DOC123456')
