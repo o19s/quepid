@@ -30,14 +30,14 @@
   <!-- User has judged everything and book is complete -->
   <div class="alert alert-success" role="alert">
     <h5><i class="bi bi-check-circle"></i> All Done!</h5>
-    <p class="mb-0">Congratulations! You have judged all <%= total_pairs %> query/doc pairs, and all pairs have been judged by three separate judges. This book is complete!</p>
+    <p class="mb-0">Congratulations! You have judged all <%= pluralize(total_pairs, 'query/doc pair') %>, and all pairs have been judged by three separate judges. This book is complete!</p>
   </div>
 
 <% elsif current_user_has_judged_all && @moar_judgements_needed %>
   <!-- User has judged all their available pairs but book needs more judgements from others -->
   <div class="alert alert-info" role="alert">
     <h5><i class="bi bi-person-check"></i> You Have Judged All Available Pairs</h5>
-    <p class="mb-2">You have completed judging all <%= user_judgement_count %> query/doc pairs available to you.</p>
+    <p class="mb-2">You have completed judging all <%= pluralize(user_judgement_count, 'query/doc pair') %> available to you.</p>
     <p class="mb-0">Some pairs still need additional judgements from other judges to reach the best practice of 3 judgements each.</p>
   </div>
 
@@ -47,12 +47,13 @@
     <div class="alert alert-danger" role="alert">
       <h5><i class="bi bi-exclamation-circle"></i> Critical: Unjudged Pairs Need Attention</h5>
       <% if user_has_judged_some %>
-          <p class="mb-2">You have judged <%= user_judgement_count %> out of <%= total_pairs %> query/doc pairs.</p>
+          <p class="mb-2">You have judged <%= user_judgement_count %> out of <%= pluralize(total_pairs, 'query/doc pair') %>.</p>
       <% end %>
       <p class="mb-3">
-        <strong>High Priority:</strong> There are <%= total_pairs - partially_judged_pairs %> pairs that have <strong>no judgements yet</strong> and need immediate attention.
+        <strong>High Priority:</strong> There <%= (total_pairs - partially_judged_pairs) == 1 ? 'is' : 'are' %> <%= pluralize(total_pairs - partially_judged_pairs, 'pair') %> that <%= (total_pairs - partially_judged_pairs) == 1 ? 'has' : 'have' %> <strong>no judgements yet</strong> and need immediate attention.
         <% if partially_judged_pairs > 0 %>
-          <br>Additionally, <%= partially_judged_pairs %> pairs have 1-2 judgements and need more to reach the best practice of 3 judgements each.</br>
+          <br>
+          Additionally, <%= pluralize(partially_judged_pairs, 'pair') %> <%= partially_judged_pairs == 1 ? 'has' : 'have' %> fewer than 3 judgements each, with 3 being best practice.
         <% end %>
       </p>
       
@@ -69,10 +70,10 @@
     <div class="alert alert-warning" role="alert">
       <h5><i class="bi bi-clipboard-check"></i> Finishing Up Judgements</h5>
       <% if user_has_judged_some %>
-        <p class="mb-2">You have judged <%= user_judgement_count %> out of <%= total_pairs %> query/doc pairs.</p>
+        <p class="mb-2">You have judged <%= user_judgement_count %> out of <%= pluralize(total_pairs, 'query/doc pair') %>.</p>
       <% end %>
       <p class="mb-3">
-        Good progress! All pairs have at least one judgement, but <%= partially_judged_pairs %> pairs still need additional judgements to reach our target of 3 judgements each for quality assurance.
+        Good progress! All pairs have at least one judgement, but <%= pluralize(partially_judged_pairs, 'pair') %> still <%= partially_judged_pairs == 1 ? 'needs' : 'need' %> additional judgements to reach our target of 3 judgements each for quality assurance.
       </p>
       
       <div class="d-grid gap-2 d-md-flex">
@@ -90,7 +91,7 @@
   <!-- All judgements complete -->
   <div class="alert alert-success" role="alert">
     <h5><i class="bi bi-trophy"></i> Book Complete!</h5>
-    <p class="mb-0">Congratulations! All <%= total_pairs %> query/doc pairs have been judged by three separate judges. This book is ready for analysis.</p>
+    <p class="mb-0">Congratulations! All <%= pluralize(total_pairs, 'query/doc pair') %> have been judged by three separate judges. This book is ready for analysis.</p>
   </div>
 <% end %>
 
