@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_01_02_125621) do
+ActiveRecord::Schema[8.1].define(version: 2026_01_07_100000) do
   create_table "active_storage_attachments", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.bigint "blob_id", null: false
     t.datetime "created_at", null: false
@@ -198,6 +198,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_02_125621) do
     t.string "populate_job"
     t.string "scale"
     t.text "scale_with_labels"
+    t.text "scoring_guidelines"
     t.boolean "show_rank", default: false
     t.boolean "support_implicit_judgements"
     t.datetime "updated_at", null: false

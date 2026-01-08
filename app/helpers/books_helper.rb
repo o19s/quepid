@@ -75,4 +75,16 @@ module BooksHelper
   def available_ai_judges_for_book? book
     available_ai_judges_for_book(book).exists?
   end
+
+  # Returns a hash mapping scorer_id to scale_length for use in JavaScript
+  # @param user [User] The user to get scorers for
+  # @return [Hash] Hash of scorer_id => scale_length
+  def scorer_scale_lengths user
+    result = {}
+    user.scorers_involved_with.pluck(:id, :scale).each do |id, scale|
+      scale_array = scale.is_a?(String) ? scale.split(',') : scale
+      result[id] = scale_array&.length || 0
+    end
+    result
+  end
 end

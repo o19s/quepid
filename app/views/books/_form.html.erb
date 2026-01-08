@@ -20,15 +20,21 @@
         <div class="form-text">The book's name often reflects the goal for the judgements, like <em>Baseline Measurement</em> or a specific problem.</div>
       </div>
     
-      <div class="mb-3">     
+      <div class="mb-3">
         <%= form.label :teams, "Teams to Share this Book With", class: 'form-label' %>
-        <%= form.collection_check_boxes(:team_ids, @current_user.teams, :id, :name) do |b| %>
-          <div class="collection-check-box">
-            <%= b.check_box %>
-            <%= b.label %>
+        <% if @current_user.teams.any? %>
+          <%= form.collection_check_boxes(:team_ids, @current_user.teams, :id, :name) do |b| %>
+            <div class="collection-check-box">
+              <%= b.check_box %>
+              <%= b.label %>
+            </div>
+          <% end %>
+          <div class="form-text">Books are meant to be shared with human raters and relevance engineers, and you do this by picking which teams can use them.</div>
+        <% else %>
+          <div class="alert alert-info" role="alert">
+            <i class="bi bi-info-circle"></i> You don't belong to any teams yet. <%= link_to "Create a team", teams_core_path %> to share this book with other users.
           </div>
         <% end %>
-        <div class="form-text">Books are meant to be shared with human raters and relevance engineers, and you do this by picking which teams can use them.</div>
       </div>
       
       <% if @origin_case %>
@@ -42,14 +48,6 @@
           <div class="form-text">A book can be used by none, one, or more Cases. </div>
         </div>
       <% end %>
-    
-      <div class="mb-3">
-        <%= form.label :scorer_id, "Rating Scale", class: 'form-label' %>
-        <%= form.select(:scorer_id, scorer_options_for_select(@current_user), 
-              { prompt: "Select a rating scale..." }, 
-              { class: 'form-control' }) %>
-        <div class="form-text">Choose from available rating scale configurations. The scale and labels will be set for this book when you save.</div>
-      </div>
     
       <div class="mb-3">
         <i class="bi bi-robot"></i>
@@ -81,6 +79,38 @@
           <%= form.check_box :support_implicit_judgements, class:'form-check-input' %>
         </div>
         <div class="form-text">Regular explicit judgements are on a ordinal scale, however implicit judgements are floats.  This controls how we import the judgements into the main Quepid Case screen.</div>
+      </div>
+
+      <div data-controller="scoring-guidelines"
+           data-scoring-guidelines-scale-lengths-value="<%= scorer_scale_lengths(@current_user).to_json %>">
+        <div class="mb-3">
+          <%= form.label :scorer_id, "Rating Scale", class: 'form-label' %>
+          <%= form.select(:scorer_id, scorer_options_for_select(@current_user),
+                { prompt: "Select a rating scale..." },
+                { class: 'form-control',
+                  data: {
+                    scoring_guidelines_target: 'scorerSelect',
+                    action: 'scoring-guidelines#scaleChanged'
+                  } }) %>
+          <div class="form-text">Choose from available rating scale configurations. The scale and labels will be set for this book when you save.</div>
+        </div>
+
+        <div class="mb-3">
+          <%= form.label :scoring_guidelines, "Scoring Guidelines (Markdown)", class: 'form-label' %>
+          <%= form.text_area :scoring_guidelines,
+              class: 'form-control font-monospace',
+              rows: 10,
+              placeholder: 'Scoring guidelines will be auto-populated when you select a rating scale, or enter your own custom guidelines...',
+              data: {
+                scoring_guidelines_target: 'textarea',
+                four_point: Book::FOUR_POINT_GUIDELINES.strip,
+                two_point: Book::TWO_POINT_GUIDELINES.strip
+              } %>
+          <div class="form-text">
+            Provide guidelines to help judges understand how to rate documents. Supports markdown formatting (tables, bold, italic, links, etc.).
+            Leave blank to use the default guidelines based on the rating scale.
+          </div>
+        </div>
       </div>
       
       <% unless @book.new_record? %>

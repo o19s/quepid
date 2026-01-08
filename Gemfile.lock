@@ -529,6 +529,7 @@ GEM
       erb
       psych (>= 4.0.0)
       tsort
+    redcarpet (3.6.1)
     regexp_parser (2.11.3)
     reline (0.6.3)
       io-console (~> 0.5)
@@ -720,6 +721,7 @@ DEPENDENCIES
   rails-controller-testing
   rails-erd
   rails-html-sanitizer
+  redcarpet
   responders
   rubocop
   rubocop-capybara

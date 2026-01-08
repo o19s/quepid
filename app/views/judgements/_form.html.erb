@@ -146,16 +146,6 @@
   # Use enhanced JudgementHelper to generate rating buttons with scorer labels
   @rating_buttons = generate_rating_buttons(@book)
 
-  scoring_guidelines = {}
-  scoring_guidelines['Poor'] = 'Customer feeling: <i>These results are terrible! Maybe I’ll look somewhere else.</i> <br/><mark>0</mark>’s are used when the result is clearly not desired. The goal is for most queries to only show <mark>1</mark>’s, <mark>2</mark>’s and <mark>3</mark>’s. These are our negative examples.'
-  scoring_guidelines['Fair'] = 'Customer feeling: <i>These results aren’t what I’m looking for, but I can see why they were returned.</i> <br/> A <mark>1</mark> (fair) is used for results that have some of the right words, but are not really about what the query is looking for. Having some <mark>1</mark>’s far down the result list can be ok.'
-  scoring_guidelines['Good'] = 'Customer feeling: <i>These results are good! Looking them over is worth my time.</i> A <mark>2</mark> (good) is for results that provide survey information or a part of the entire information need.'
-  scoring_guidelines['Perfect'] = 'Customer feeling: <i>This is what I am looking for! I do not have to look any further.</i> <br/> A <mark>3</mark> (perfect) is usually reserved for exact results in response to a targeted information need query.'
-
-  scoring_guidelines['Irrelevant'] = 'These are not the droids I am looking for. The result item is not helpful.'
-  scoring_guidelines['Relevant'] = 'These appear to be good droids. The result item addresses some aspect of my information need.'
-
-
   @document_fields_as_json = document_fields_parses_as_json (query_doc_pair.document_fields)
 
   image_url = nil
@@ -210,18 +200,8 @@
       </a>
     </p>
     <div class="collapse pb-3" id="collapseExample">
-      <div class="card card-body">
-        <table class="table table-sm">
-          <span>Read more about <a href="https://github.com/o19s/quepid/wiki/Judgement-Rating-Best-Practices" target="_blank">Judgement Rating Best Practices</a></span>
-          <tbody>
-            <% @rating_buttons.each do |b| %>
-            <tr>
-              <td><%= button_tag b["label"], type: 'button', style: "background-color: #{b['style']['background-color']}; color: black; border: 1px solid rgba(0,0,0,0.2); font-weight: 500;", class: "btn" %></td>
-              <td><%= scoring_guidelines.has_key?(b["label"]) ? scoring_guidelines[b["label"]].html_safe : '' %></td>
-            </tr>
-            <% end %>
-          </tbody>
-        </table>
+      <div class="card card-body scoring-guidelines-content">
+        <%= render_markdown(@book.effective_scoring_guidelines) %>
       </div>
     </div>
     

@@ -91,6 +91,16 @@
           <% end %>
           <br><small>Judgements are saved automatically as you click.</small>
         </p>
+        <div>
+          <a class="btn btn-outline-secondary btn-sm" data-bs-toggle="collapse" href="#scoringGuidelinesCollapse" role="button" aria-expanded="false" aria-controls="scoringGuidelinesCollapse">
+            <i class="bi bi-info-circle"></i> Scoring Guidelines
+          </a>
+        </div>
+      </div>
+      <div class="collapse mb-3" id="scoringGuidelinesCollapse">
+        <div class="card card-body scoring-guidelines-content">
+          <%= render_markdown(@book.effective_scoring_guidelines) %>
+        </div>
       </div>
 
       <div data-controller="bulk-judgement" data-bulk-judgement-book-id-value="<%= @book.id %>">
