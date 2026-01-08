@@ -2,11 +2,11 @@
 
 angular.module('QuepidApp')
   .controller('DetailedDocCtrl', [
-    '$scope', '$uibModalInstance',
+    '$scope', '$uibModalInstance', '$window',
     'settingsSvc','caseTryNavSvc',
     'doc',
     function DetailedDocCtrl(
-      $scope, $uibModalInstance,
+      $scope, $uibModalInstance, $window,
       settingsSvc, caseTryNavSvc,
       doc) {
       
@@ -25,6 +25,12 @@ angular.module('QuepidApp')
         }
                 
         return url;
+      };
+
+      $scope.openDocument = function() {
+        if ($scope.doc._url()) {
+          $window.open($scope.linkToDoc(), '_blank');
+        }
       };
       
       $scope.showAllFields = false;

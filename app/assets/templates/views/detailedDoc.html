@@ -55,9 +55,9 @@
     </div>
   </div>
   
-  <a class="btn btn-primary" ng-href="{{linkToDoc()}}" target="_blank" ng-disabled="doc._url() === null">
+  <button class="btn btn-primary" ng-disabled="doc._url() === null" ng-click="openDocument()">
     View Document
-  </a>
+  </button>
   
   <a class="btn btn-default" ng-show="!showAllFields" ng-click="showAllFields=!showAllFields">View All Fields</a> 
   <a class="btn btn-default" ng-show="showAllFields" ng-click="showAllFields=!showAllFields">Hide All Fields</a>  
