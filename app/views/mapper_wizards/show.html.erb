@@ -87,14 +87,26 @@
         </div>
       </div>
 
-      <!-- Custom Headers (Advanced) -->
+      <!-- Advanced Options -->
       <% existing_headers = @wizard_state.try(:custom_headers).presence || @search_endpoint.custom_headers %>
+      <% existing_basic_auth = @search_endpoint.basic_auth_credential %>
+      <% show_advanced = existing_headers.present? || existing_basic_auth.present? %>
       <div class="row g-3 mt-2">
         <div class="col-12">
           <a class="text-decoration-none" data-bs-toggle="collapse" href="#customHeadersSection" role="button" aria-expanded="false" aria-controls="customHeadersSection">
             <i class="bi bi-gear"></i> Advanced Options
           </a>
-          <div class="collapse <%= existing_headers.present? ? 'show' : '' %>" id="customHeadersSection">
+          <div class="collapse <%= show_advanced ? 'show' : '' %>" id="customHeadersSection">
+            <div class="mt-2">
+              <label for="basicAuthCredential" class="form-label">Basic Auth Credential</label>
+              <input type="text"
+                     class="form-control"
+                     id="basicAuthCredential"
+                     data-mapper-wizard-target="basicAuthCredential"
+                     placeholder="username:password"
+                     value="<%= existing_basic_auth %>">
+              <div class="form-text">Optional. Format: <code>username:password</code>. Used for HTTP Basic Authentication.</div>
+            </div>
             <div class="mt-2">
               <label for="customHeaders" class="form-label">Custom HTTP Headers (JSON)</label>
               <textarea class="form-control"

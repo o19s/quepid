@@ -44,6 +44,7 @@ class MapperWizardsController < ApplicationController
     request_body = params[:request_body]
     query_params = params[:query_params]
     custom_headers = params[:custom_headers]
+    basic_auth_credential = params[:basic_auth_credential]
 
     # Parse custom headers from JSON string to hash
     headers_hash = parse_custom_headers(custom_headers)
@@ -51,7 +52,13 @@ class MapperWizardsController < ApplicationController
     # Build full URL with query params for fetching
     fetch_url = build_fetch_url(params[:search_url], query_params)
 
-    result = service.fetch_html(fetch_url, http_method: http_method, request_body: request_body, headers: headers_hash)
+    result = service.fetch_html(
+      fetch_url,
+      http_method:  http_method,
+      request_body: request_body,
+      headers:      headers_hash,
+      credentials:  basic_auth_credential
+    )
 
     if result[:success]
       # Store base URL and query_params separately
@@ -166,15 +173,17 @@ class MapperWizardsController < ApplicationController
 
     endpoint_url = params[:endpoint_url].presence || @wizard_state.search_url
     custom_headers = params[:custom_headers].presence || @wizard_state.custom_headers
+    basic_auth_credential = params[:basic_auth_credential].presence || @search_endpoint.basic_auth_credential
 
     @search_endpoint.assign_attributes(
-      mapper_code:    combined_code,
-      search_engine:  'searchapi',
-      endpoint_url:   endpoint_url,
-      api_method:     params[:api_method] || 'GET',
-      name:           params[:name],
-      proxy_requests: deserialize_bool_param(params[:proxy_requests]),
-      custom_headers: custom_headers
+      mapper_code:           combined_code,
+      search_engine:         'searchapi',
+      endpoint_url:          endpoint_url,
+      api_method:            params[:api_method] || 'GET',
+      name:                  params[:name],
+      proxy_requests:        deserialize_bool_param(params[:proxy_requests]),
+      custom_headers:        custom_headers,
+      basic_auth_credential: basic_auth_credential
     )
 
     if @search_endpoint.save

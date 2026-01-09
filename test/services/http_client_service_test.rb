@@ -76,6 +76,49 @@ class HttpClientServiceTest < ActiveSupport::TestCase
     assert_equal 'authenticated', response.body
   end
 
+  test 'applies basic auth from credentials parameter' do
+    expected_auth = "Basic #{Base64.strict_encode64('apiuser:secret123')}"
+
+    stub_request(:get, 'https://example.com/api')
+      .with(headers: { 'Authorization' => expected_auth })
+      .to_return(status: 200, body: 'api response')
+
+    client = HttpClientService.new('https://example.com/api', credentials: 'apiuser:secret123')
+    response = client.get
+
+    assert_predicate response, :success?
+    assert_equal 'api response', response.body
+  end
+
+  test 'credentials parameter takes precedence over URL userinfo' do
+    # URL has user:pass but credentials param has different creds
+    expected_auth = "Basic #{Base64.strict_encode64('override:newpass')}"
+
+    stub_request(:get, 'https://example.com/api')
+      .with(headers: { 'Authorization' => expected_auth })
+      .to_return(status: 200, body: 'overridden')
+
+    client = HttpClientService.new('https://user:pass@example.com/api', credentials: 'override:newpass')
+    response = client.get
+
+    assert_predicate response, :success?
+    assert_equal 'overridden', response.body
+  end
+
+  test 'handles password with colon in credentials' do
+    # Password contains a colon: "user:pass:with:colons"
+    expected_auth = "Basic #{Base64.strict_encode64('user:pass:with:colons')}"
+
+    stub_request(:get, 'https://example.com/api')
+      .with(headers: { 'Authorization' => expected_auth })
+      .to_return(status: 200, body: 'ok')
+
+    client = HttpClientService.new('https://example.com/api', credentials: 'user:pass:with:colons')
+    response = client.get
+
+    assert_predicate response, :success?
+  end
+
   test 'merges additional query params with URL params' do
     stub_request(:get, 'https://example.com/search')
       .with(query: { 'q' => 'test', 'rows' => '10' })

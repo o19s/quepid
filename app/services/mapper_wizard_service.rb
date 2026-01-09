@@ -17,8 +17,9 @@ class MapperWizardService
   # @param http_method [String] 'GET' or 'POST' (default: 'GET')
   # @param request_body [String] JSON body for POST requests
   # @param headers [Hash] Custom HTTP headers
+  # @param credentials [String] Basic auth credentials in format "username:password"
   # rubocop:disable Metrics/PerceivedComplexity
-  def fetch_html url, http_method: 'GET', request_body: nil, headers: {}
+  def fetch_html url, http_method: 'GET', request_body: nil, headers: {}, credentials: nil
     return { success: false, error: 'URL is required' } if url.blank?
     return { success: false, error: 'Invalid URL format' } unless url.match?(%r{\Ahttps?://.+}i)
 
@@ -26,7 +27,7 @@ class MapperWizardService
       # Use existing DownloadPage tool for GET requests
       downloader = DownloadPage.new
       headers_json = headers.presence&.to_json
-      result = downloader.execute(url: url, headers: headers_json)
+      result = downloader.execute(url: url, headers: headers_json, credentials: credentials)
 
       if result.is_a?(Hash) && result[:error]
         { success: false, error: result[:error] }
@@ -35,7 +36,7 @@ class MapperWizardService
       end
     else
       # Handle POST requests with JSON body
-      fetch_with_post(url, request_body, headers)
+      fetch_with_post(url, request_body, headers, credentials)
     end
   rescue StandardError => e
     { success: false, error: e.message }
@@ -162,14 +163,14 @@ class MapperWizardService
   private
 
   # Fetch content using POST request with JSON body
-  def fetch_with_post url, request_body, custom_headers = {}
+  def fetch_with_post url, request_body, custom_headers = {}, credentials = nil
     headers = {
       'Content-Type' => 'application/json',
       'Accept'       => 'application/json, text/html, */*',
       'User-Agent'   => 'Quepid/1.0 (Web Scraper)',
     }.merge(custom_headers)
 
-    client = HttpClientService.new(url, headers: headers, timeout: 30, open_timeout: 10)
+    client = HttpClientService.new(url, headers: headers, credentials: credentials, timeout: 30, open_timeout: 10)
     response = client.post(body: request_body)
 
     { success: true, html: response.body }

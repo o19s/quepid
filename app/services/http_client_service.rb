@@ -10,7 +10,7 @@ require 'base64'
 #
 # Features:
 # - URL parsing with Addressable::URI (supports non-ASCII characters like café)
-# - Basic auth extracted from URL userinfo
+# - Basic auth extracted from URL userinfo or credentials parameter
 # - Custom headers support
 # - Configurable timeouts
 # - Debug logging
@@ -23,12 +23,16 @@ require 'base64'
 #   client = HttpClientService.new('https://api.example.com', headers: { 'X-Api-Key' => 'secret' })
 #   response = client.post(body: '{"query": "test"}')
 #
+#   client = HttpClientService.new('https://api.example.com', credentials: 'user:pass')
+#   response = client.get
+#
 class HttpClientService
   attr_reader :uri
 
-  def initialize url, headers: {}, debug: false, timeout: 30, open_timeout: 10
+  def initialize url, headers: {}, credentials: nil, debug: false, timeout: 30, open_timeout: 10
     @url = url
     @headers = headers
+    @credentials = credentials
     @debug = debug
     @timeout = timeout
     @open_timeout = open_timeout
@@ -71,10 +75,10 @@ class HttpClientService
     result
   end
 
-  # Check if URL has embedded credentials
+  # Check if credentials are available (from parameter or URL userinfo)
   # @return [Boolean]
   def has_credentials?
-    !@uri.userinfo.nil?
+    @credentials.present? || !@uri.userinfo.nil?
   end
 
   private
@@ -105,9 +109,11 @@ class HttpClientService
   end
 
   def apply_basic_auth faraday
-    return unless has_credentials?
+    # Prefer explicit credentials parameter over URL userinfo
+    credentials = @credentials.presence || @uri.userinfo
+    return if credentials.blank?
 
-    username, password = @uri.userinfo.split(':')
+    username, password = credentials.split(':', 2)
     faraday.headers['Authorization'] = "Basic #{Base64.strict_encode64("#{username}:#{password}")}"
   end
 

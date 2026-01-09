@@ -7,6 +7,7 @@ export default class extends Controller {
     "httpMethod",
     "requestBody",
     "requestBodyContainer",
+    "basicAuthCredential",
     "customHeaders",
     "apiKey",
     "htmlPreview",
@@ -97,6 +98,7 @@ export default class extends Controller {
     const httpMethod = this.hasHttpMethodTarget ? this.httpMethodTarget.value : 'GET'
     const queryParams = this.hasQueryParamsTarget ? this.queryParamsTarget.value.trim() : ''
     const customHeaders = this.hasCustomHeadersTarget ? this.customHeadersTarget.value.trim() : ''
+    const basicAuthCredential = this.hasBasicAuthCredentialTarget ? this.basicAuthCredentialTarget.value.trim() : ''
 
     // Validate custom headers JSON if provided
     if (customHeaders) {
@@ -133,7 +135,8 @@ export default class extends Controller {
           http_method: httpMethod,
           request_body: requestBody,
           query_params: queryParams,
-          custom_headers: customHeaders
+          custom_headers: customHeaders,
+          basic_auth_credential: basicAuthCredential
         })
       })
 
@@ -408,6 +411,7 @@ export default class extends Controller {
 
     const httpMethod = this.hasHttpMethodTarget ? this.httpMethodTarget.value : 'GET'
     const customHeaders = this.hasCustomHeadersTarget ? this.customHeadersTarget.value.trim() : ''
+    const basicAuthCredential = this.hasBasicAuthCredentialTarget ? this.basicAuthCredentialTarget.value.trim() : ''
 
     try {
       const response = await fetch(this.saveUrlValue, {
@@ -423,7 +427,8 @@ export default class extends Controller {
           endpoint_url: this.searchUrlTarget.value.trim(),
           api_method: httpMethod,
           proxy_requests: this.proxyRequestsTarget.checked,
-          custom_headers: customHeaders
+          custom_headers: customHeaders,
+          basic_auth_credential: basicAuthCredential
         })
       })
 
